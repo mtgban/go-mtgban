@@ -17,6 +17,12 @@ func TestIsUnsupportedShadowsDefault(t *testing.T) {
 		{"Puzzle Insert - Piece 1", true},
 		{"Disney Cruise Promos (Set of 5)", true},
 		{"Mickey Mouse - True Friend", false},
+		// The story inserts a set packs, which end on the word
+		{"Reign of Jafar - Lore Story Insert", true},
+		{"Archazia's Island - Lore Puzzle Story Insert", true},
+		{"Azurite Sea Insert", true},
+		// and the puzzle pieces the datastore does carry, which do not
+		{"Mickey Mouse - Brave Little Tailor Puzzle Insert (Top Left)", true},
 	} {
 		got := Rules{}.IsUnsupported(nil, &mtgmatcher.InputCard{Name: tt.name})
 		if got != tt.want {

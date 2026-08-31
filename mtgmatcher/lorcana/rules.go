@@ -195,8 +195,9 @@ func trimEdition(edition string) string {
 // IsUnsupported drops the non-card products TCGplayer files under its "Cards"
 // product type, so they are skipped instead of reported as unknown names: the
 // puzzle-piece inserts bundled with booster displays (sold per piece and as
-// whole sets) and the multi-card promo lots. No Lorcana card carries either
-// wording and none ever will, since neither is a card.
+// whole sets), the story inserts a set packs beside them, and the multi-card
+// promo lots. No Lorcana card carries any of those wordings and none ever
+// will, since none of them is a card.
 //
 // Both tests are literal and read the name alone. Normalize erases every "s",
 // which turns the lots' "Set of" into "etof" — a substring of "The Queen -
@@ -205,8 +206,15 @@ func trimEdition(edition string) string {
 // variant, "Mickey Mouse - True Friend (Disney Cruise Promo)", which the
 // prefilter leaves in the variation: anchoring at the start of the name keeps
 // the rule off every listing that merely mentions the promotion.
+//
+// The story inserts are named for the set that packs them and end on the
+// word - "Reign of Jafar - Lore Story Insert", "Azurite Sea Insert" - so the
+// suffix is what reads them all without naming each set. No printing the
+// datastore carries ends there: the puzzle inserts it does carry spell which
+// piece they are after it, "Puzzle Insert (Top Left)".
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 	return strings.Contains(inCard.Name, "Puzzle Insert") ||
+		strings.HasSuffix(inCard.Name, "Insert") ||
 		strings.HasPrefix(inCard.Name, "Disney Cruise Promos")
 }
 
