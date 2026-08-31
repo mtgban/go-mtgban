@@ -45,6 +45,20 @@ func TestTitleTreatments(t *testing.T) {
 			title:   "【EN】【エッチング・Foil】(1072)■旧枠■《オパールのモックス/Mox Opal》[SLD] 茶R",
 			wantSet: "SLD", wantNumber: "1072",
 		},
+		{
+			// The marker travels with the number and the frame, so the
+			// variant is never equal to it on a real listing: every
+			// serialized printing but the excepted Sol Ring read as the
+			// plain card it is numbered beside.
+			desc:    "the double rainbow foil is the serialized printing",
+			title:   "買取：【ダブルレインボウ・Foil】(381)■ボーダーレス■《再誕世界、エムラクール/Emrakul, the World Anew》[MH3-BF] 無R",
+			wantSet: "MH3", wantNumber: "381z",
+		},
+		{
+			desc:    "and the same card bought plain stays the borderless one",
+			title:   "買取：【Foil】(381)■ボーダーレス■《再誕世界、エムラクール/Emrakul, the World Anew》[MH3-BF] 無R",
+			wantSet: "MH3", wantNumber: "381",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in, err := preprocess(tt.title)
