@@ -61,9 +61,11 @@ func splitParens(title string) (number, series string) {
 			// card from another.
 			number = group
 			if !powerToughness.MatchString(group) {
-				number = strings.Split(group, "/")[0]
+				// The padding is a collector number's, and a power is not
+				// one: stripping a leading zero off "0/4" leaves "/4",
+				// which names nothing and drops the listing.
+				number = strings.TrimLeft(strings.Split(group, "/")[0], "0")
 			}
-			number = strings.TrimLeft(number, "0")
 		}
 	}
 	return number, series
