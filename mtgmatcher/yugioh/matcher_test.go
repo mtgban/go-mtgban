@@ -142,6 +142,19 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: a character art card is the storefront's product, not a printing",
 		In:   mtgmatcher.InputCard{Name: "Mai Valentine Character Art Card", Edition: "Tokens", Variation: "Super Rare"},
 	},
+	// A set decorates its tiers with a word of its own, and a storefront
+	// writes the tier it knows: neither spells the whole of the other, and
+	// what the wording did name is the word telling the two apart.
+	{
+		Desc: "a tier named in part picks the one printing that says all of it",
+		In:   mtgmatcher.InputCard{Name: "Slifer the Sky Dragon", Edition: "King's Court", Variation: "KICO-EN063 Ultra Rare"},
+	},
+	// BPT numbers two tins, 2002 and 2003, and a number opening on it says
+	// which card but not which tin.
+	{
+		Desc: "negative: a number two sets share names neither of them",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician", Edition: "Promo", Variation: "BPT001 BPT-001 Secret Rare"},
+	},
 	// Konami numbers a printing by the language it was printed in, and this
 	// datastore is the English catalog: the German card is a different piece
 	// of card, not a spelling of the English one.
