@@ -20,7 +20,8 @@ const variantTiebreakFixture = `{
 		"OP09": {"name": "Emperors in the New World", "releaseDate": "2024-12-27"},
 		"OP11": {"name": "A Fist of Divine Speed", "releaseDate": "2025-06-27"},
 		"OP13": {"name": "Carrying On His Will", "releaseDate": "2025-11-21"},
-		"ST-01": {"name": "Starter Deck 1: Straw Hat Crew", "releaseDate": "2022-12-02"}
+		"ST-01": {"name": "Starter Deck 1: Straw Hat Crew", "releaseDate": "2022-12-02"},
+		"OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-12-02"}
 	},
 	"cards": [
 		{"id": "op05-119_527024_foil", "name": "Monkey.D.Luffy", "number": "OP05-119", "setCode": "OP05", "rarity": "SEC", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 527024}},
@@ -31,7 +32,9 @@ const variantTiebreakFixture = `{
 		{"id": "op13-091_657368_foil", "name": "St. Marcus Mars", "number": "OP13-091", "setCode": "OP13", "rarity": "SR", "finish": "Foil", "variant": "Parallel", "image": "x", "externalLinks": {"tcgPlayerId": 657368}},
 		{"id": "st01-012_288241_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "ST-01", "rarity": "SR", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 288241}},
 		{"id": "st01-012_527027_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "OP05", "rarity": "SR", "finish": "Foil", "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 527027}},
-		{"id": "st01-012_529850_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "OP05", "rarity": "SR", "finish": "Foil", "variant": "Alternate Art Gold-Stamped Signature", "image": "x", "externalLinks": {"tcgPlayerId": 529850}}
+		{"id": "st01-012_529850_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "OP05", "rarity": "SR", "finish": "Foil", "variant": "Alternate Art Gold-Stamped Signature", "image": "x", "externalLinks": {"tcgPlayerId": 529850}},
+		{"id": "p-041_531486", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 531486}},
+		{"id": "p-041_532752_foil", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Bandai Card Games Fest 23-24 World Tour", "image": "x", "externalLinks": {"tcgPlayerId": 532752}}
 	]
 }`
 
@@ -95,6 +98,17 @@ func TestVariantTiebreaks(t *testing.T) {
 				Edition: "ST01 - Starter Deck: Straw Hat Crew", Foil: true,
 			},
 			want: "st01-012_529850_foil",
+		},
+		{
+			// A set that hands its cards out is one a storefront names the
+			// base card's set for, so a run of the label reaches it without
+			// the wording having to spell the set as well.
+			desc: "a run reaches an event printing without naming its set",
+			in: mtgmatcher.InputCard{
+				Name: "Monkey.D.Luffy", Variation: "P-041 World Tour 23-24",
+				Edition: "Promo", Foil: true,
+			},
+			want: "p-041_532752_foil",
 		},
 		{
 			desc: "and a listing naming no label at all stays in that deck",
