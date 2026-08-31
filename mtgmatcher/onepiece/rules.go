@@ -556,7 +556,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// Either demand drops the base printing from consideration.
 	described, base, variants := tierByVariant(inCard, candidates)
 	if len(described) > 0 {
-		return finishTiebreak(inCard, editionTiebreak(b, inCard, described))
+		narrowed := editionTiebreak(b, inCard, described)
+		narrowed = lastNamedTiebreak(inCard.Variation, narrowed)
+		return finishTiebreak(inCard, narrowed)
 	}
 	if wantsVariant(inCard, number) {
 		if len(variants) == 0 && wantsUnnamedVariant(inCard) {
@@ -1027,7 +1029,79 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		variants = append(variants, card)
 	}
 	described = mtgmatcher.DescribedVariants(wording, variants)
+	// The edition is in the wording because a storefront files a promo
+	// under its base set and spells the event in the shelf name, but it
+	// describes the shelf and the variation describes the card. Where the
+	// shelf's own words name a label - Cool Stuff Inc buckets a Wanted
+	// Poster printing under "One Piece: SP", which names the sp label worn
+	// by another printing of the same number - the two tie and the listing
+	// aliases away. Let the variation answer alone when it names one
+	// printing and nothing else does.
+	if len(described) > 1 {
+		alone := mtgmatcher.DescribedVariants(strings.ToLower(inCard.Variation), variants)
+		if len(alone) == 1 {
+			described = alone
+		}
+	}
 	return
+}
+
+// lastNamedTiebreak keeps the printings whose label the wording names last.
+//
+// A storefront writes the treatment it means behind the category it belongs
+// to: Cool Stuff Inc sells "St. Marcus Mars (Alternate Art)" for $12 and
+// "St. Marcus Mars (Alternate Art) (Red Parallel)" for $345, and the catalog
+// files those as a printing wearing alternateart and one wearing parallel.
+// A wording naming both names one tag on each with none left over, which is
+// the tie DescribedVariants leaves to its caller, and the words in front are
+// the ones both listings share. What the second listing added is what tells
+// it from the first.
+func lastNamedTiebreak(wording string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) < 2 {
+		return cards
+	}
+	var out []mtgmatcher.Card
+	best := -1
+	for _, card := range cards {
+		at := -1
+		for _, promoType := range card.PromoTypes {
+			said := slugSaidAt(wording, promoType)
+			if said > at {
+				at = said
+			}
+		}
+		if at > best {
+			best, out = at, nil
+		}
+		if at == best {
+			out = append(out, card)
+		}
+	}
+	return out
+}
+
+// slugSaidAt answers the word a wording last begins spelling a slug at, and
+// -1 when it never does. It is SlugDescribes keeping the position it found.
+func slugSaidAt(wording, slug string) int {
+	if slug == "" {
+		return -1
+	}
+	words := strings.Fields(strings.ToLower(wording))
+	at := -1
+	for i := range words {
+		var joined string
+		for j := i; j < len(words); j++ {
+			joined += mtgmatcher.PromoTypeSlug(words[j])
+			if joined == slug {
+				at = i
+				break
+			}
+			if len(joined) >= len(slug) {
+				break
+			}
+		}
+	}
+	return at
 }
 
 // doublePackRe matches the product line a Double Pack Set's two DON!!
