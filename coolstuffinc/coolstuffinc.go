@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -271,7 +272,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 		}
 
 		doc.Find(`div[class="row product-search-row main-container"]`).Each(func(i int, s *goquery.Selection) {
-			cardName := s.Find(`span[itemprop="name"]`).Text()
+			// The storefront escapes its names twice, so the decode the
+			// parser already did leaves the entity still written out:
+			// "Fiendish Engine &#937;" is the Omega the datastore spells.
+			cardName := html.UnescapeString(s.Find(`span[itemprop="name"]`).Text())
 
 			pid, _ := s.Find(`span[class="rating-display "]`).Attr("data-pid")
 			edition := itemName
