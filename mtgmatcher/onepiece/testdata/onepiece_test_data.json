@@ -19,6 +19,16 @@
         "uuid": "don_689811_foil"
     },
     {
+        "description": "a bare number does not let another set's label unpin the edition",
+        "input": {
+            "name": "Monkey.D.Luffy",
+            "variant": "118 Manga",
+            "edition": "Carrying On His Will",
+            "foil": true
+        },
+        "uuid": "op13-118_657402_foil"
+    },
+    {
         "description": "a code naming a set of many printings leaves the wording to choose",
         "input": {
             "name": "Brannew",
@@ -289,6 +299,16 @@
             "edition": "One Piece"
         },
         "uuid": "op01-120_454666_foil"
+    },
+    {
+        "description": "and the printings filed under the base card's own number still answer",
+        "input": {
+            "name": "Nami",
+            "variant": "OP01-016 Manga",
+            "edition": "Romance Dawn",
+            "foil": true
+        },
+        "uuid": "op01-016_587966_foil"
     },
     {
         "description": "bare number hung off the name after a dash",

@@ -490,6 +490,16 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 	if wantsVariant(inCard, number) {
 		return true
 	}
+	// The guard below reads "the number being asked about", and a bare
+	// number is not one: it is the same number in every set of the game, so
+	// a card that only shares its tail passes as the card being asked
+	// about. The edition says which set the listing is in, so the whole
+	// number is read out of it first. The printings this is meant to unpin
+	// the edition for wear the base card's own number, and still do; a
+	// different set's card wears its own, and no longer does.
+	if full := fullNumberInEdition(b, inCard, number); full != "" {
+		number = full
+	}
 	wording := strings.ToLower(inCard.Variation)
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
@@ -1653,6 +1663,34 @@ func codedSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, edition 
 		name = set.Name
 	}
 	return name
+}
+
+// fullNumberInEdition spells a bare collector number the way the edition's
+// own set writes it, "" where the wording already wrote it in full, the
+// edition names no set, or that set holds this card at no single number.
+func fullNumberInEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number string) string {
+	if number == "" {
+		return ""
+	}
+	if set, _ := splitNumber(number); set != "" {
+		return ""
+	}
+	edition, found := b.NormalizedSets[mtgmatcher.Normalize(inCard.Edition)]
+	if !found {
+		return ""
+	}
+	full := ""
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, ok := b.UUIDs[uuid]
+		if !ok || co.Sealed || co.SetCode != edition.Code || !numberMatches(number, co.Number) {
+			continue
+		}
+		if full != "" && full != co.Number {
+			return ""
+		}
+		full = co.Number
+	}
+	return full
 }
 
 // runNamedVariants keeps the printings whose set the variation names and

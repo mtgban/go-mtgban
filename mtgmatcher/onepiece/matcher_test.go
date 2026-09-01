@@ -199,6 +199,22 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016"},
 	},
 	{
+		// The bare number is the same number in every set, and OP11 files a
+		// card at -118 whose label is literally "Manga" where OP13 spells
+		// the same treatment "Super Alternate Art". The edition names OP13
+		// and must keep it.
+		Desc: "a bare number does not let another set's label unpin the edition",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy",
+			Variation: "118 Manga",
+			Edition:   "Carrying On His Will", Foil: true},
+	},
+	{
+		Desc: "and the printings filed under the base card's own number still answer",
+		In: mtgmatcher.InputCard{Name: "Nami",
+			Variation: "OP01-016 Manga",
+			Edition:   "Romance Dawn", Foil: true},
+	},
+	{
 		Desc: "a later set's reprint is reached by the code the wording names",
 		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy",
 			Variation: "OP07-109 OP08 Treasure Rare",
