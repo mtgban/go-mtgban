@@ -637,6 +637,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// variant printing without saying which; the V.n index says the same.
 	// Either demand drops the base printing from consideration.
 	described, base, variants := tierByVariant(inCard, candidates)
+	described = packPairNamed(b, strings.ToLower(inCard.Variation+" "+inCard.Edition), described, variants)
 	if len(described) > 0 {
 		narrowed := editionTiebreak(b, inCard, described)
 		narrowed = lastNamedTiebreak(inCard.Variation, narrowed)
@@ -1374,6 +1375,51 @@ func placeNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 		return candidates
 	}
 	return kept
+}
+
+// packPairNamed answers the printing a wording asked for where an event's
+// two cards carry two product names and the storefront writes only one.
+//
+// An event hands out a card for playing and a card for winning, and the
+// catalog names them "Tournament Pack Vol. 5" and "Winner Pack Vol. 5" -
+// except for two volumes of nine, where the winner's is "Tournament Pack
+// Vol. 2 Winner" instead. Cool Stuff Inc writes one wording for all of them,
+// "Tournament Pack Vol. 5 - Winner". Where the catalog spelled that volume
+// the second way the wording names the label outright and this does nothing.
+// Where it spelled it the first way the wording describes the playing card,
+// the word saying otherwise is left over, and a $56 winner's card was
+// answered with the $2 one handed to everybody who turned up.
+//
+// The word is not read as a place, which placeNarrow says cannot be done:
+// "Winner Pack Vol. 6" is a product named after a place and "Beginners Deck
+// Party | Winner Pack" is a printing awarded for one, and no rule on the
+// word alone told those apart. This asks a different question - whether the
+// catalog holds a pack of the same event named for the place the wording
+// names - and answers only then. The event has to match to the word, so
+// "Winner Pack Vol. 5" is reachable from "Tournament Pack Vol. 5" and from
+// no other wording.
+func packPairNamed(b *mtgmatcher.Backend, wording string, described, variants []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(described) != 1 {
+		return described
+	}
+	label := promoLabel(b, described[0])
+	event, isPlaying := strings.CutPrefix(label, "Tournament Pack ")
+	if !isPlaying {
+		return described
+	}
+	place := placeAsked(wording)
+	// A label already naming the place has answered for itself, which is
+	// how the two volumes the catalog spells the other way keep working.
+	if place == "" || strings.Contains(strings.ToLower(label), place) {
+		return described
+	}
+	want := strings.ToUpper(place[:1]) + place[1:] + " Pack " + event
+	for _, card := range variants {
+		if strings.EqualFold(promoLabel(b, card), want) {
+			return []mtgmatcher.Card{card}
+		}
+	}
+	return described
 }
 
 // placeStem is a label with its finishing place taken off, which is the
