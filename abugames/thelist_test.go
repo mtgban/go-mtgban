@@ -108,3 +108,38 @@ func TestSecretLairDrop(t *testing.T) {
 		})
 	}
 }
+
+// TestMarkedNumber pins the drops a Secret Lair tells apart by a mark on the
+// number alone. The storefront writes that mark in its own number field and
+// no word for the printing anywhere, so the mark outranks the FOIL it leaves
+// out - and the wording's plain copy of the number outranks nothing.
+func TestMarkedNumber(t *testing.T) {
+	for _, test := range []struct {
+		desc    string
+		number  string
+		wantNum string
+	}{
+		{"the drop the mark names", "1630★", "1630★"},
+		{"and the one beside it", "1630", "1630"},
+	} {
+		t.Run(test.desc, func(t *testing.T) {
+			card := ABUCard{DisplayTitle: "Alela, Artful Provocateur (Secret Lair 1630)",
+				Edition: "Secret Lair Drop", Number: test.number}
+			in, err := preprocess(&card)
+			if err != nil {
+				t.Fatalf("preprocess(%q) = %v", card.Number, err)
+			}
+			id, err := mtgmatcher.Match(in)
+			if err != nil {
+				t.Fatalf("Match(%q) = %v", in, err)
+			}
+			co, err := mtgmatcher.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "SLD" || co.Number != test.wantNum {
+				t.Errorf("Match(%q) = %s|%s, want SLD|%s", in, co.SetCode, co.Number, test.wantNum)
+			}
+		})
+	}
+}
