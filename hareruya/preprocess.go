@@ -219,6 +219,12 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
+	// A misprint is not a printing of its own, and answering with the card it
+	// is a misprint of prices that card off the error.
+	if strings.Contains(title, "シンボル無し") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	var cardName string
 	var edition string
 	var variant string
