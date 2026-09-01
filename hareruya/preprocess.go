@@ -431,7 +431,7 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 
 	return &mtgmatcher.InputCard{
 		Name:      cardName,
-		Variation: variant,
+		Variation: strings.TrimSpace(variant),
 		Edition:   edition,
 		Foil:      foil,
 	}, nil
