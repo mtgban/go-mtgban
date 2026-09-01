@@ -607,6 +607,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// A tournament printing is handed out for a finishing place, and the
 	// catalog spells that place at the end of the label beside the event
 	// that awarded it. A listing naming no place is not asking for one.
+	if picked := placeChosen(b, inCard, candidates); picked != nil {
+		return picked
+	}
 	narrowed = placeNarrow(b, inCard, candidates)
 	if len(narrowed) == 1 {
 		return narrowed
@@ -1352,6 +1355,85 @@ func placeNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 	}
 	if len(kept) == 0 {
 		return candidates
+	}
+	return kept
+}
+
+// placeStem is a label with its finishing place taken off, which is the
+// event that awarded it.
+func placeStem(label string) string {
+	if placeAwarded(label) == "" {
+		return label
+	}
+	fields := strings.Fields(label)
+	return strings.Join(fields[:len(fields)-1], " ")
+}
+
+// placeAsked reads the one finishing place a wording names, "" for a wording
+// naming none or more than one. The word has to be a word: "winner" inside
+// "winners" is not this storefront naming a place.
+func placeAsked(wording string) string {
+	said := ""
+	for field := range strings.FieldsSeq(strings.ToLower(wording)) {
+		slug := mtgmatcher.PromoTypeSlug(field)
+		if !slices.Contains(promoPlaces, slug) {
+			continue
+		}
+		if said != "" && said != slug {
+			return ""
+		}
+		said = slug
+	}
+	return said
+}
+
+// placeChosen answers a wording that names a place with the printing awarded
+// for it, where the catalog files that place beside the same event's others.
+//
+// The word on its own says too little to act on. The catalog sells a "Winner
+// Pack" and a "Finalist Card Set", products named after a place rather than
+// awarded for one, and a wording carrying either says "winner" as surely as
+// a wording naming the place does - reading the word wherever it falls moved
+// listings onto the wrong side of that, in both directions.
+//
+// What makes it safe is asking only where the catalog has already said the
+// place is what tells these apart: a family of labels sharing one event and
+// differing in nothing but the place behind it. There the place is the only
+// question the wording can be answering, whatever else its words are doing,
+// and one member of the family carrying the place the wording named is an
+// answer no other member has a claim on. Where no such family stands at the
+// number, or where more than one member answers, this says nothing.
+func placeChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
+	asked := placeAsked(wording)
+	if asked == "" {
+		return nil
+	}
+	families := map[string][]mtgmatcher.Card{}
+	for _, card := range candidates {
+		label := promoLabel(b, card)
+		if label == "" {
+			continue
+		}
+		stem := placeStem(label)
+		families[stem] = append(families[stem], card)
+	}
+	var kept []mtgmatcher.Card
+	for _, family := range families {
+		if len(family) < 2 {
+			continue
+		}
+		for _, card := range family {
+			if placeAwarded(promoLabel(b, card)) == asked {
+				kept = append(kept, card)
+			}
+		}
+	}
+	// Two events can award the same place at one number - an online regional
+	// beside the offline one - and then the place has not said which, so
+	// this says nothing rather than guessing between them.
+	if len(kept) != 1 {
+		return nil
 	}
 	return kept
 }

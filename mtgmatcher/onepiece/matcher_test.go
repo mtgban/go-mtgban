@@ -198,6 +198,18 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016"},
 	},
 	{
+		Desc: "the place a family differs by answers when the wording names it",
+		In: mtgmatcher.InputCard{Name: "Capone\"Gang\"Bege",
+			Variation: "OP04-100w Championship 2023 | Winner",
+			Edition:   "Championships Promo"},
+	},
+	{
+		Desc: "negative: two events awarding one place settle nothing",
+		In: mtgmatcher.InputCard{Name: "Gum-Gum Jet Pistol",
+			Variation: "ST01-015f Regional 2024 | Finalist",
+			Edition:   "Store Tournaments Promos"},
+	},
+	{
 		Desc: "a letter tail no label answers falls to the edition",
 		In: mtgmatcher.InputCard{Name: "Four Thousand-Brick Fist",
 			Variation: "OP05-020s 1st Anniversary Stamp",
