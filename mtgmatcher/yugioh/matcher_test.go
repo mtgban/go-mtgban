@@ -242,6 +242,25 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: a character the catalog pairs two ways decides nothing",
 		In:   mtgmatcher.InputCard{Name: "Yugi Muto Field Center Token", Variation: "Yellow background w/ Dark Magician Common", Edition: "Tokens"},
 	},
+	// A name no set in the game spells is the guard: the set the listing
+	// named is asked for the one name a single typo away. A digit is not a
+	// typo, and four names equally close name none of them.
+	{
+		Desc: "a misspelling reaches the name its own set spells",
+		In:   mtgmatcher.InputCard{Name: "Fearl Imp", Variation: "Common", Edition: "Dark Beginning 1"},
+	},
+	{
+		Desc: "a misspelling in the middle of a longer name",
+		In:   mtgmatcher.InputCard{Name: "Belial - Marqis of Darkness", Variation: "Common", Edition: "Structure Deck Gates of the Underworld"},
+	},
+	{
+		Desc: "negative: an edit landing on a digit is a different card",
+		In:   mtgmatcher.InputCard{Name: "Armed Dragon LV4", Variation: "Common", Edition: "Soul of the Duelist"},
+	},
+	{
+		Desc: "negative: names equally close to the wording decide nothing",
+		In:   mtgmatcher.InputCard{Name: "Spirit Message \"Z\"", Variation: "Common", Edition: "Labyrinth of Nightmare"},
+	},
 	// The mark is invisible, so the name it decorates reads as spelled.
 	{
 		Desc: "an invisible formatting mark is not part of the name",

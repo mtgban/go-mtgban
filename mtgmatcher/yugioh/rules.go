@@ -430,11 +430,33 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 
-	uuids, err := b.SearchHasPrefix(inCard.Name)
-	if err != nil {
+	if name, found := truncatedName(b, inCard); found {
+		inCard.Name = name
 		return
 	}
 
+	// Nothing has answered, so the name is one no set in the game spells -
+	// which is the guard that lets the last reading be a misspelling. A
+	// storefront types "Fearl Imp" for Feral Imp and "Belial - Marqis of
+	// Darkness" for Marquis; the set the listing itself named is asked
+	// whether it has one name a single typo away, and two of them decide
+	// nothing. A real name never reaches here, so no correctly spelled
+	// card can be pulled onto its neighbour.
+	if set := editionSet(b, inCard.Edition); set != nil {
+		if name, found := nearestName(set, inCard.Name); found {
+			inCard.Name = name
+		}
+	}
+}
+
+// truncatedName answers the one name the input is a prefix of, for the feeds
+// that cut a name short, and nothing when the prefix reaches two of them. A
+// number the input carries has to be one that name is printed at.
+func truncatedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) (string, bool) {
+	uuids, err := b.SearchHasPrefix(inCard.Name)
+	if err != nil {
+		return "", false
+	}
 	number := extractNumber(inCard.Variation)
 	var match, matchNorm string
 	for _, uuid := range uuids {
@@ -447,13 +469,108 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		}
 		norm := mtgmatcher.Normalize(co.Name)
 		if match != "" && matchNorm != norm {
-			return
+			return "", false
 		}
 		match, matchNorm = co.Name, norm
 	}
-	if match != "" {
-		inCard.Name = match
+	return match, match != ""
+}
+
+// typoEdits is the budget a misspelling gets, and one is what the storefront
+// feeds actually spend: every misspelled Yu-Gi-Oh name coolstuffinc sends is
+// a single insertion, deletion, substitution or transposition away from the
+// card it means. A second edit buys nothing here and costs the distance its
+// discipline.
+const typoEdits = 1
+
+// typoFloor is the shortest name worth reading as a misspelling. One edit in
+// a short name is a different card more often than it is a typo.
+const typoFloor = 8
+
+// nearestName answers the one name in the set that the input misspells, and
+// nothing when two names are equally close or the name is too short to have
+// a typo read into it.
+func nearestName(set *mtgmatcher.Set, name string) (string, bool) {
+	if len(name) < typoFloor {
+		return "", false
 	}
+	lowered := strings.ToLower(name)
+	var match string
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if !sameDigits(name, card.Name) ||
+			!withinEdits(lowered, strings.ToLower(card.Name), typoEdits) {
+			continue
+		}
+		if match != "" && !strings.EqualFold(match, card.Name) {
+			return "", false
+		}
+		match = card.Name
+	}
+	return match, match != ""
+}
+
+// sameDigits reports whether two names carry the same digits in the same
+// order. A catalog tells its numbered siblings apart by one character -
+// "Armed Dragon LV3" against LV5, "Harpie Lady 1" against 2 - and 255 pairs
+// of names inside a single set are one edit apart for exactly that reason.
+// A typo does not renumber a card, so an edit that lands on a digit is a
+// different card rather than a misspelling of this one.
+func sameDigits(a, b string) bool {
+	i, j := 0, 0
+	for {
+		for i < len(a) && (a[i] < '0' || a[i] > '9') {
+			i++
+		}
+		for j < len(b) && (b[j] < '0' || b[j] > '9') {
+			j++
+		}
+		if i == len(a) || j == len(b) {
+			return i == len(a) && j == len(b)
+		}
+		if a[i] != b[j] {
+			return false
+		}
+		i, j = i+1, j+1
+	}
+}
+
+// withinEdits reports whether two strings are at most budget single-character
+// edits apart, counting a transposition as one edit: "Fearl" is one slip of
+// the fingers from "Feral", not two. Rows are abandoned as soon as every
+// alignment on one of them already costs more than the budget.
+func withinEdits(a, b string, budget int) bool {
+	if len(a)-len(b) > budget || len(b)-len(a) > budget {
+		return false
+	}
+	prev2 := make([]int, len(b)+1)
+	prev := make([]int, len(b)+1)
+	curr := make([]int, len(b)+1)
+	for j := range prev {
+		prev[j] = j
+	}
+	for i := 1; i <= len(a); i++ {
+		curr[0] = i
+		best := curr[0]
+		for j := 1; j <= len(b); j++ {
+			cost := 1
+			if a[i-1] == b[j-1] {
+				cost = 0
+			}
+			curr[j] = min(prev[j]+1, curr[j-1]+1, prev[j-1]+cost)
+			if i > 1 && j > 1 && a[i-1] == b[j-2] && a[i-2] == b[j-1] {
+				curr[j] = min(curr[j], prev2[j-2]+1)
+			}
+			if curr[j] < best {
+				best = curr[j]
+			}
+		}
+		if best > budget {
+			return false
+		}
+		prev2, prev, curr = prev, curr, prev2
+	}
+	return prev[len(b)] <= budget
 }
 
 // AdjustEdition trims the game-name prefix and "Singles" suffix storefronts

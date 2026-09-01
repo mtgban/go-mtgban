@@ -81,6 +81,24 @@
         "uuid": "sbcb-en070_227965_1e"
     },
     {
+        "description": "a misspelling in the middle of a longer name",
+        "input": {
+            "name": "Belial - Marqis of Darkness",
+            "variant": "Common",
+            "edition": "Structure Deck Gates of the Underworld"
+        },
+        "uuid": "sdgu-en015_57091_unl"
+    },
+    {
+        "description": "a misspelling reaches the name its own set spells",
+        "input": {
+            "name": "Fearl Imp",
+            "variant": "Common",
+            "edition": "Dark Beginning 1"
+        },
+        "uuid": "db1-en140_23676_unl"
+    },
+    {
         "description": "a numbered name reads the same with or without its mark",
         "input": {
             "name": "Sasuke Samurai 2",
@@ -289,6 +307,16 @@
         "error": "unknown finish"
     },
     {
+        "description": "negative: an edit landing on a digit is a different card",
+        "input": {
+            "name": "Armed Dragon LV4",
+            "variant": "Common",
+            "edition": "Soul of the Duelist"
+        },
+        "uuid": "",
+        "error": "unknown card name"
+    },
+    {
         "description": "negative: known name with wrong collector number",
         "input": {
             "name": "Blue-Eyes White Dragon",
@@ -305,6 +333,16 @@
         },
         "uuid": "",
         "error": "aliasing detected"
+    },
+    {
+        "description": "negative: names equally close to the wording decide nothing",
+        "input": {
+            "name": "Spirit Message \"Z\"",
+            "variant": "Common",
+            "edition": "Labyrinth of Nightmare"
+        },
+        "uuid": "",
+        "error": "unknown card name"
     },
     {
         "description": "negative: rarity suffix cannot pick among the lettered artworks",
