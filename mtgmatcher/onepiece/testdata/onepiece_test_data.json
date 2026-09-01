@@ -19,6 +19,15 @@
         "uuid": "don_689811_foil"
     },
     {
+        "description": "a code naming a set of many printings leaves the wording to choose",
+        "input": {
+            "name": "Brannew",
+            "variant": "OP03-089 PRB01 Alternate Art",
+            "edition": "OP03 - Pillars of Strength"
+        },
+        "uuid": "op03-089_593315_foil"
+    },
+    {
         "description": "a code naming another set yields to a wording naming one",
         "input": {
             "name": "Kouzuki Oden",
@@ -72,6 +81,15 @@
             "foil": true
         },
         "uuid": "don_655116_foil"
+    },
+    {
+        "description": "a later set's reprint is reached by the code the wording names",
+        "input": {
+            "name": "Monkey.D.Luffy",
+            "variant": "OP07-109 OP08 Treasure Rare",
+            "edition": "OP07 - 500 Years in the Future"
+        },
+        "uuid": "op07-109_564551_foil"
     },
     {
         "description": "a letter dropped out of a name yields to the number beside it",

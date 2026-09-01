@@ -327,6 +327,18 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = event
 		named = true
 	}
+
+	// And for the reprints a later set carries. A treasure rare is printed
+	// in the set after the one the card is numbered for, and this
+	// storefront writes that set's code in front of the treatment -
+	// "OP07-109 (OP08 Treasure Rare)" against an edition still saying OP07
+	// - so the edition names the set the printing is not in and the gate
+	// below deletes the only right answer.
+	coded := codedSetNamed(b, inCard, edition)
+	if coded != "" {
+		edition = coded
+		named = true
+	}
 	inCard.Edition = edition
 
 	// PromoWildcard is the flag Match already reads to skip edition
@@ -1530,6 +1542,71 @@ func mangaChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 		return nil
 	}
 	return best
+}
+
+// variationSetCodeRe matches the set code a storefront writes inside the
+// variation, ahead of the treatment it names.
+var variationSetCodeRe = regexp.MustCompile(`^(?:OP|EB|ST|PRB)[0-9]{2}$`)
+
+// codedSetNamed returns the set a variation names by its code, where exactly
+// one printing of this card's number is filed in it.
+//
+// The uniqueness is the whole guard, and it is what keeps this off the
+// wordings that already answer. A storefront writes "PRB01 Alternate Art" as
+// readily as it writes "OP08 Treasure Rare", and the first names a set
+// holding five printings of that number - the wording picks between them and
+// this must not. Only a code naming one printing has said which card the
+// listing is, and only then is the edition worth overruling.
+//
+// The code is matched as a prefix of the set's own, because a set's code
+// carries what the storefront leaves off: "OP15" is written for the cards
+// the catalog files in OP15-EB04.
+func codedSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, edition string) string {
+	number := inputNumber(b, inCard)
+	if number == "" || inCard.Variation == "" {
+		return ""
+	}
+	var name string
+	for field := range strings.FieldsSeq(inCard.Variation) {
+		code := strings.ToUpper(field)
+		if !variationSetCodeRe.MatchString(code) {
+			continue
+		}
+		var found []mtgmatcher.Card
+		for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+			co, ok := b.UUIDs[uuid]
+			if !ok || co.Sealed || !numberMatches(number, co.Number) {
+				continue
+			}
+			if !strings.HasPrefix(foldSetCode(co.SetCode), foldSetCode(code)) {
+				continue
+			}
+			if len(found) > 0 && found[0].SetCode != co.SetCode {
+				return ""
+			}
+			found = append(found, co.Card)
+		}
+		if len(found) == 0 {
+			continue
+		}
+		set, ok := b.Sets[found[0].SetCode]
+		if !ok || set.Name == edition {
+			continue
+		}
+		// Two printings in the named set leave the wording to choose.
+		seen := map[string]bool{}
+		for _, card := range found {
+			seen[card.UUID] = true
+		}
+		if len(seen) != 1 {
+			return ""
+		}
+		if name != "" && name != set.Name {
+			return ""
+		}
+		name = set.Name
+	}
+	return name
 }
 
 // runNamedVariants keeps the printings whose set the variation names and
