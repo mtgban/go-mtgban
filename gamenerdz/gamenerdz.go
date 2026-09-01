@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"maps"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -19,16 +20,49 @@ const (
 	defaultConcurrency = 8
 )
 
-// The storefront's buylist offers hang off one untitled variant per product
-// today; a titled one names its condition, the way the platform's other
-// stores already spell them.
+// conditionMap spells the condition a buylist variant's title names. The
+// storefront's offers hang off one untitled variant per product today, and
+// an untitled variant names none: the grade is written into the display
+// name instead, and the empty entry is what says to read it there. A titled
+// variant spells its own, the way the platform's other stores already do.
 var conditionMap = map[string]string{
-	"Default Title":     "NM",
+	"Default Title":     "",
 	"Near Mint":         "NM",
 	"Lightly Played":    "SP",
 	"Moderately Played": "MP",
 	"Heavily Played":    "HP",
 	"Damaged":           "PO",
+}
+
+// gradeTag is the grade this storefront writes at the end of a display name
+// when it lists a copy that is not near mint: "Legions Foil(MP)", "Revised
+// Edition (MP)".
+var gradeTag = regexp.MustCompile(`\(([A-Z]{1,2})\)$`)
+
+// gradeMap spells those grades as the conditions mtgban keeps. It is a
+// closed list on purpose: a name ending in some other bracketed capitals is
+// a name, not a grade.
+var gradeMap = map[string]string{
+	"NM": "NM",
+	"LP": "SP",
+	"MP": "MP",
+	"HP": "HP",
+	"D":  "PO",
+}
+
+// grade reads the grade a display name ends in. A name ending in none, or
+// in bracketed capitals that are not one, is the near mint this storefront
+// leaves unwritten.
+func grade(displayName string) string {
+	match := gradeTag.FindStringSubmatch(displayName)
+	if match == nil {
+		return "NM"
+	}
+	cond, found := gradeMap[match[1]]
+	if !found {
+		return "NM"
+	}
+	return cond
 }
 
 // The games this scraper covers, as the storefront names its product lines.
@@ -123,6 +157,9 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 				gn.printf("unknown condition: %s", variant.Title)
 				continue
 			}
+			if cond == "" {
+				cond = grade(product.DisplayName)
+			}
 
 			var priceRatio float64
 			if product.Price > 0 {
@@ -153,7 +190,7 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 		}
 
 		err = gn.inventory.Add(cardID, &mtgban.InventoryEntry{
-			Conditions: "NM",
+			Conditions: grade(product.DisplayName),
 			Price:      variant.Price,
 			Quantity:   variant.InventoryLevel,
 			URL:        retailLink,
