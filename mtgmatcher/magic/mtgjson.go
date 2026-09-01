@@ -653,7 +653,12 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	sealedProducts := map[string]*SealedProduct{}
 	alternates := map[string]mtgmatcher.AlternateProps{}
 	commanderKeywordMap := map[string]string{}
-	var allCardNames []string
+	// Card and token names are collected as sets: the only question ever
+	// asked of them is membership, and scanning the slice they used to be
+	// cost more than every other step of the index build put together once
+	// the catalogue passed thirty thousand names.
+	cardNames := map[string]bool{}
+	tokenNames := map[string]bool{}
 	var tokens []string
 	var allSets []string
 
@@ -666,9 +671,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 		// Load all possible card names
 		for _, card := range set.Cards {
-			if !slices.Contains(allCardNames, card.Name) {
-				allCardNames = append(allCardNames, card.Name)
-			}
+			cardNames[card.Name] = true
 		}
 
 		// Save the names of sealed products for later sorting, and index them
@@ -685,7 +688,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	// depend on the iteration order of the sets
 	for _, set := range ap.Data {
 		for _, token := range set.Tokens {
-			if !slices.Contains(tokens, token.Name) && !slices.Contains(allCardNames, token.Name) {
+			if !tokenNames[token.Name] && !cardNames[token.Name] {
+				tokenNames[token.Name] = true
 				tokens = append(tokens, token.Name)
 			}
 		}
@@ -709,7 +713,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		// Append tokens to the list of considered cards
 		// if they are not named in the same way of a real card
 		for _, token := range set.Tokens {
-			if !slices.Contains(allCardNames, token.Name) {
+			if !cardNames[token.Name] {
 				allCards = append(allCards, token)
 			}
 		}
@@ -1641,29 +1645,172 @@ func toMtgCard(c Card) mtgmatcher.Card {
 		Watermark:           c.Watermark,
 		Images:              c.Images,
 	}
-	mc.ForeignData = make([]struct {
-		Name        string            `json:"name"`
-		Language    string            `json:"language"`
-		Identifiers map[string]string `json:"identifiers"`
-		Type        string            `json:"type"`
-	}, len(c.ForeignData))
-	for i, fd := range c.ForeignData {
-		mc.ForeignData[i].Name = fd.Name
-		mc.ForeignData[i].Language = fd.Language
-		mc.ForeignData[i].Identifiers = fd.Identifiers
-		mc.ForeignData[i].Type = fd.Type
+	// A card with no foreign printings keeps the nil, rather than an empty
+	// slice standing in for one: the set-level cards used to be converted by
+	// a json round-trip, which spelled the absence that way, and the two
+	// paths describing the same card differently is a difference nothing
+	// means.
+	if c.ForeignData != nil {
+		mc.ForeignData = make([]struct {
+			Name        string            `json:"name"`
+			Language    string            `json:"language"`
+			Identifiers map[string]string `json:"identifiers"`
+			Type        string            `json:"type"`
+		}, len(c.ForeignData))
+		for i, fd := range c.ForeignData {
+			mc.ForeignData[i].Name = fd.Name
+			mc.ForeignData[i].Language = fd.Language
+			mc.ForeignData[i].Identifiers = fd.Identifiers
+			mc.ForeignData[i].Type = fd.Type
+		}
 	}
 	return mc
 }
 
-// toMtgSet converts a local Set to *mtgmatcher.Set via JSON round-trip.
+// toMtgBooster converts a local Booster. Its sheets are named by this
+// package, so the map is rebuilt rather than converted whole; the weighted
+// booster list is an anonymous struct both sides spell identically, and
+// carries over as it is.
+func toMtgBooster(b Booster) mtgmatcher.Booster {
+	mb := mtgmatcher.Booster{
+		Boosters:            b.Boosters,
+		BoostersTotalWeight: b.BoostersTotalWeight,
+		Name:                b.Name,
+	}
+	if b.Sheets != nil {
+		mb.Sheets = make(map[string]mtgmatcher.Sheet, len(b.Sheets))
+		for name, sheet := range b.Sheets {
+			mb.Sheets[name] = mtgmatcher.Sheet(sheet)
+		}
+	}
+	return mb
+}
+
+// toMtgSealedContents converts what opening a product can produce. A
+// component describes further components under "variable" mode, so this
+// recurses rather than running as a loop at its one call site.
+func toMtgSealedContents(contents map[string][]SealedContent) map[string][]mtgmatcher.SealedContent {
+	if contents == nil {
+		return nil
+	}
+	out := make(map[string][]mtgmatcher.SealedContent, len(contents))
+	for key, list := range contents {
+		converted := make([]mtgmatcher.SealedContent, len(list))
+		for i, content := range list {
+			converted[i] = mtgmatcher.SealedContent{
+				Code:   content.Code,
+				Count:  content.Count,
+				Foil:   content.Foil,
+				Name:   content.Name,
+				Set:    content.Set,
+				UUID:   content.UUID,
+				Chance: content.Chance,
+				Weight: content.Weight,
+			}
+			for _, config := range content.Configs {
+				converted[i].Configs = append(converted[i].Configs, toMtgSealedContents(config))
+			}
+		}
+		out[key] = converted
+	}
+	return out
+}
+
+// toMtgSealedProduct converts a local SealedProduct.
+func toMtgSealedProduct(p SealedProduct) mtgmatcher.SealedProduct {
+	return mtgmatcher.SealedProduct{
+		Category:    p.Category,
+		Contents:    toMtgSealedContents(p.Contents),
+		Identifiers: p.Identifiers,
+		Name:        p.Name,
+		SetCode:     p.SetCode,
+		CardCount:   p.CardCount,
+		ReleaseDate: p.ReleaseDate,
+		Subtype:     p.Subtype,
+		UUID:        p.UUID,
+	}
+}
+
+// toMtgDeckCards converts one of a preconstructed deck's card lists.
+func toMtgDeckCards(cards []DeckCard) []mtgmatcher.DeckCard {
+	if cards == nil {
+		return nil
+	}
+	out := make([]mtgmatcher.DeckCard, len(cards))
+	for i, card := range cards {
+		out[i] = mtgmatcher.DeckCard(card)
+	}
+	return out
+}
+
+// toMtgSet converts a local Set to *mtgmatcher.Set field by field.
+//
+// It went through json.Marshal and json.Unmarshal until the profile said so:
+// a set carries its cards, tokens, sealed products and decks, so encoding one
+// and parsing it back read the whole catalogue a second time. That was 7.04s
+// of the index build's 11.80s, more than reading the 659MB file cost in the
+// first place. The types the two packages share are identical but named
+// apart, which is all the round-trip was bridging.
 func toMtgSet(s *Set) *mtgmatcher.Set {
 	if s == nil {
 		return nil
 	}
-	data, _ := json.Marshal(s)
-	ms := &mtgmatcher.Set{}
-	_ = json.Unmarshal(data, ms)
+	ms := &mtgmatcher.Set{
+		BaseSetSize:     s.BaseSetSize,
+		Code:            s.Code,
+		IsFoilOnly:      s.IsFoilOnly,
+		IsNonFoilOnly:   s.IsNonFoilOnly,
+		IsOnlineOnly:    s.IsOnlineOnly,
+		KeyruneCode:     s.KeyruneCode,
+		Name:            s.Name,
+		ParentCode:      s.ParentCode,
+		ReleaseDate:     s.ReleaseDate,
+		TokenSetCode:    s.TokenSetCode,
+		Type:            s.Type,
+		Rarities:        s.Rarities,
+		Colors:          s.Colors,
+		ReleaseDateTime: s.ReleaseDateTime,
+	}
+	if s.Cards != nil {
+		ms.Cards = make([]mtgmatcher.Card, len(s.Cards))
+		for i, card := range s.Cards {
+			ms.Cards[i] = toMtgCard(card)
+		}
+	}
+	if s.Tokens != nil {
+		ms.Tokens = make([]mtgmatcher.Card, len(s.Tokens))
+		for i, token := range s.Tokens {
+			ms.Tokens[i] = toMtgCard(token)
+		}
+	}
+	if s.Booster != nil {
+		ms.Booster = make(map[string]mtgmatcher.Booster, len(s.Booster))
+		for name, booster := range s.Booster {
+			ms.Booster[name] = toMtgBooster(booster)
+		}
+	}
+	if s.SealedProduct != nil {
+		ms.SealedProduct = make([]mtgmatcher.SealedProduct, len(s.SealedProduct))
+		for i, product := range s.SealedProduct {
+			ms.SealedProduct[i] = toMtgSealedProduct(product)
+		}
+	}
+	// The deck list's element is an anonymous struct, so the destination is
+	// grown into rather than respelled here: naming that type would copy a
+	// definition that has to stay identical to the matcher's own.
+	ms.Decks = slices.Grow(ms.Decks, len(s.Decks))[:len(s.Decks)]
+	for i, deck := range s.Decks {
+		ms.Decks[i].Code = deck.Code
+		ms.Decks[i].Name = deck.Name
+		ms.Decks[i].SealedProductUUIDs = deck.SealedProductUUIDs
+		ms.Decks[i].Commander = toMtgDeckCards(deck.Commander)
+		ms.Decks[i].DisplayCommander = toMtgDeckCards(deck.DisplayCommander)
+		ms.Decks[i].MainBoard = toMtgDeckCards(deck.MainBoard)
+		ms.Decks[i].Planes = toMtgDeckCards(deck.Planes)
+		ms.Decks[i].Schemes = toMtgDeckCards(deck.Schemes)
+		ms.Decks[i].SideBoard = toMtgDeckCards(deck.SideBoard)
+		ms.Decks[i].Tokens = toMtgDeckCards(deck.Tokens)
+	}
 	return ms
 }
 
