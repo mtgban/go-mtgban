@@ -9,6 +9,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
 var numFixes = map[string]string{
 	"GolgariSignetCM2":                "CM2191",
 	"GolgariSignetCM2v2":              "CM2192",
@@ -115,6 +117,31 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 		for i := range 2 {
 			maybeSet := strings.ToUpper(imgName[:i+3])
 			maybeNum := strings.TrimLeft(imgName[i+3:], "_0")
+			if len(mtgmatcher.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
+				return &mtgmatcher.InputCard{
+					Name:      cardName,
+					Variation: maybeNum,
+					Edition:   maybeSet,
+					Foil:      isFoil,
+				}, nil
+			}
+		}
+		// A letter can stand between the set code and the number, marking
+		// the treatment: "TMCS0032" is the surge foil of TMC 32, where
+		// "TMC0093" is the pixel art one filed at its own number. Neither
+		// length above reads it - three characters leave "S0032", which is
+		// no number, and four leave "TMCS", which is no set - so the two
+		// listings both answer with 93 and the cheaper of them is priced as
+		// the dearer. The letters are dropped and the digits behind them
+		// asked for, which the set and the number together still have to
+		// agree on. The promo pack is left alone: there the letters name a
+		// set of its own rather than a treatment, and "BIGUPP0006" is the
+		// promo pack printing, not the sixth card of The Big Score.
+		maybeSet := strings.ToUpper(imgName[:3])
+		maybeNum := strings.TrimLeft(imgName[3:], "_0")
+		trimmed := strings.TrimLeft(maybeNum, letters)
+		if trimmed != maybeNum && edition != "Universal Promo Pack" {
+			maybeNum = strings.TrimLeft(trimmed, "_0")
 			if len(mtgmatcher.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
 				return &mtgmatcher.InputCard{
 					Name:      cardName,
