@@ -63,12 +63,10 @@ var promoTags = []string{
 // frame it wears.
 const boosterFun = "boosterfun"
 
-// namesTreatment reports a variation that names the frame a card is printed
-// in, which is the wording this storefront's own collector number contradicts.
-func namesTreatment(variation string) bool {
-	probe := mtgmatcher.InputCard{Variation: variation}
-	return probe.IsBorderless() || probe.IsExtendedArt() || probe.IsShowcase() ||
-		probe.IsGenericExtendedArt() || probe.Contains("Retro Frame")
+// finishNamed reports a printing sold in a finish this storefront would spell
+// FOIL, which is the flag its own wording carries.
+func finishNamed(co *mtgmatcher.CardObject) bool {
+	return co.Foil || co.Etched
 }
 
 // resolved answers the printing a description names, and nil when it names
@@ -450,32 +448,31 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	//
 	// Only a number this scraper appended is dropped: a listing spelling
 	// its own is one where the wording and the number already agree.
-	if numbered && namesTreatment(variation) {
+	if numbered {
+		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
 		plain := resolved(cardName, edition, variation, isFoil)
-		if plain != nil && len(plain.PromoTypes) == 0 {
-			bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
+		if bare != "" && plain != nil && len(plain.PromoTypes) == 0 {
 			marked := resolved(cardName, edition, bare, isFoil)
 			if marked != nil && marked.HasPromoType(boosterFun) &&
-				marked.Foil == plain.Foil && marked.Etched == plain.Etched {
+				(finishNamed(marked) == isFoil || finishNamed(marked) == finishNamed(plain)) {
 				variation = bare
 			}
 		}
 	}
 
-	// The same number is wrong the other way round too: a listing naming no
-	// frame at all can carry the number of one, and then the plain card
+	// The same number is wrong the other way round too: a listing whose
+	// whole variation is the number can carry the number of a frame, and then the plain card
 	// answers with its own showcase. Ask again without the number, and keep
 	// the answer only where it reaches a printing the catalog leaves
 	// unmarked - a set whose every printing is marked, like Special Guests,
 	// has no plain card to reach and keeps the number it came with.
-	if numbered && !namesTreatment(variation) {
+	if numbered && strings.TrimSpace(strings.TrimSuffix(variation, card.Number)) == "" {
 		framed := resolved(cardName, edition, variation, isFoil)
 		if framed != nil && framed.HasPromoType(boosterFun) {
-			bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
-			plain := resolved(cardName, edition, bare, isFoil)
-			if plain != nil && len(plain.PromoTypes) == 0 && plain.SetCode == framed.SetCode &&
-				plain.Foil == framed.Foil && plain.Etched == framed.Etched {
-				variation = bare
+			plain := resolved(cardName, edition, "", isFoil)
+			if plain != nil && len(plain.PromoTypes) == 0 &&
+				plain.SetCode == framed.SetCode && finishNamed(plain) == isFoil {
+				variation = ""
 			}
 		}
 	}

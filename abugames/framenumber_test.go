@@ -26,6 +26,12 @@ func TestFrameNumber(t *testing.T) {
 		{"a set numbering its frames below the plain card", "Polygoyf (Extended Art)", "Modern Horizons 3 Commander", "117", "M3C", "65"},
 		{"a frame the storefront numbers correctly stays put", "Kona, Rescue Beastie (Showcase) - FOIL", "Duskmourn: House of Horror", "358", "DSK", "358"},
 		{"a listing spelling its own number stays put", "Salvation Engine (Borderless First-Place 517) - FOIL", "Aetherdrift", "517", "DFT", "517"},
+		{"a ripple foil, which the number knows nothing of", "Talon Gates of Madara (Ripple) - FOIL", "Modern Horizons 3 Commander", "134", "M3C", "82★"},
+		{"a retro frame sold only in etched", "Aeromoeba (Retro Frame ETCHED) - FOIL", "Modern Horizons 2", "37", "MH2", "389"},
+		{"an etched card the wording names outright", "Six (ETCHED) - FOIL", "Modern Horizons 3", "169", "MH3", "484"},
+		{"a frame whose set sells it in no foil at all", "Bladewing, Deathless Tyrant (Extended Art) - FOIL", "Dominaria United Commander", "9", "DMC", "85"},
+		{"a borderless card already on its own number", "Avacyn, Angel of Hope (Borderless)", "Innistrad Remastered", "482", "INR", "482"},
+		{"a showcase already on its own number", "Marina Vendrell (Showcase) - FOIL", "Duskmourn: House of Horror", "360", "DSK", "360"},
 		{"a plain listing carrying the frame's own number", "Nimble Trapfinder", "Zendikar Rising", "332", "ZNR", "72"},
 		{"and its sibling, swapped the same way", "Master of Winds", "Zendikar Rising", "331", "ZNR", "68"},
 		{"a commander deck numbering its frames first", "Wave Goodbye", "The Lost Caverns of Ixalan Commander", "47", "LCC", "79"},
@@ -57,17 +63,19 @@ func TestFrameNumber(t *testing.T) {
 	}
 }
 
-// TestNamesTreatment pins that nothing but a frame is read this way: the
-// retry costs two matches, and a wording naming no frame has nothing to find.
-func TestNamesTreatment(t *testing.T) {
-	for _, v := range []string{"Extended Art", "Borderless", "Showcase", "Retro Frame"} {
-		if !namesTreatment(v) {
-			t.Errorf("namesTreatment(%q) = false, want true", v)
-		}
-	}
-	for _, v := range []string{"", "Prerelease", "JSS Foil", "Buy-A-Box"} {
-		if namesTreatment(v) {
-			t.Errorf("namesTreatment(%q) = true, want false", v)
+// TestFinishNamed pins the flag a printing answers this storefront's FOIL
+// with: etched counts, because the storefront spells it the same way.
+func TestFinishNamed(t *testing.T) {
+	for _, test := range []struct {
+		co   mtgmatcher.CardObject
+		want bool
+	}{
+		{mtgmatcher.CardObject{Foil: true}, true},
+		{mtgmatcher.CardObject{Etched: true}, true},
+		{mtgmatcher.CardObject{}, false},
+	} {
+		if got := finishNamed(&test.co); got != test.want {
+			t.Errorf("finishNamed(foil=%v etched=%v) = %v, want %v", test.co.Foil, test.co.Etched, got, test.want)
 		}
 	}
 }
