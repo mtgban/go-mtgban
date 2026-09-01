@@ -199,6 +199,18 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016"},
 	},
 	{
+		Desc: "a later set's reprint is reached by the code the wording names",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy",
+			Variation: "OP07-109 OP08 Treasure Rare",
+			Edition:   "OP07 - 500 Years in the Future"},
+	},
+	{
+		Desc: "a code naming a set of many printings leaves the wording to choose",
+		In: mtgmatcher.InputCard{Name: "Brannew",
+			Variation: "OP03-089 PRB01 Alternate Art",
+			Edition:   "OP03 - Pillars of Strength"},
+	},
+	{
 		Desc: "the manga art crossed with a parallel is not the plain parallel",
 		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy",
 			Variation: "OP13-118 118 Alternate Art Manga Red Parallel",
