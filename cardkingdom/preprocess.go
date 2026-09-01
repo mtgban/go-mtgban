@@ -419,14 +419,25 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
+	// A graded title is "Name (edition and grade) #id", and the edition may
+	// carry a parenthetical of its own - "(TMNT Foil (Showcase) CGC
+	// Pristine 10)". The split hands those back as a third field, and
+	// refusing them dropped 41 listings of the roughly 950 this storefront
+	// grades, every one of them silently.
 	vars := mtgmatcher.SplitVariants(title)
-	if len(vars) != 2 {
+	if len(vars) != 2 && len(vars) != 3 {
 		return nil, errors.New("unsupported format")
 	}
 
 	cardName := vars[0]
 	edition := strings.Replace(vars[1], "- ", "", -1)
 	variant := ""
+	if len(vars) == 3 {
+		// The inner parenthetical is the treatment, which is what the
+		// score would otherwise have been cut off to leave. The grade goes
+		// missing with it, and is read off the whole title separately.
+		variant = vars[2]
+	}
 
 	// Remove serialized number tags
 	if strings.Contains(cardName, "/") {
@@ -446,7 +457,12 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 			continue
 		}
 		edition = strings.TrimSpace(before)
-		variant = strings.TrimSpace(after)
+		if rest := strings.TrimSpace(after); rest != "" {
+			if variant != "" {
+				variant += " "
+			}
+			variant += rest
+		}
 		break
 	}
 
