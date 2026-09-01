@@ -478,6 +478,16 @@
         "error": "aliasing detected"
     },
     {
+        "description": "negative: two events awarding one place settle nothing",
+        "input": {
+            "name": "Gum-Gum Jet Pistol",
+            "variant": "ST01-015f Regional 2024 | Finalist",
+            "edition": "Store Tournaments Promos"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
         "description": "negative: unknown card name",
         "input": {
             "name": "Nonexistent Imaginary Pirate",
@@ -570,6 +580,15 @@
             "edition": "One Piece Promotion Cards"
         },
         "uuid": "op01-013_557285_foil"
+    },
+    {
+        "description": "the place a family differs by answers when the wording names it",
+        "input": {
+            "name": "Capone\"Gang\"Bege",
+            "variant": "OP04-100w Championship 2023 | Winner",
+            "edition": "Championships Promo"
+        },
+        "uuid": "op04-100_525682_foil"
     },
     {
         "description": "the same code with no marker spelled keeps the base set",
