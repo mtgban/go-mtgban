@@ -34,6 +34,11 @@ func dashSuffix(base, suffix string) string {
 	return base
 }
 
+// prerelease is the one promo a modern set numbers among its own cards, so
+// the wording naming it does not send the listing to the set's promo line.
+// The title is read for it further down either way.
+const prerelease = "プレリリース"
+
 // judgeRewards is the wording every judge tag translates into, spelled once
 // so the tables and the rule cannot drift apart.
 const judgeRewards = "Judge Reward"
@@ -47,7 +52,7 @@ var powerToughness = regexp.MustCompile(`^\d+/\d+$`)
 // it. A trailing group only counts as a series when it spells a set name
 // outright: the matcher's lookup also honors set codes and its own aliases,
 // and the storefront's promo qualifiers land on those by accident.
-func splitParens(title string) (number, series string) {
+func splitParens(title string) (number, series, treatment string) {
 	end := strings.Index(title, "》")
 	for _, loc := range reParens.FindAllStringSubmatchIndex(title, -1) {
 		group := title[loc[2]:loc[3]]
@@ -71,9 +76,19 @@ func splitParens(title string) (number, series string) {
 				// which names nothing and drops the listing.
 				number = strings.TrimLeft(strings.Split(group, "/")[0], "0")
 			}
+			continue
+		}
+
+		// Past the number the title states the treatment, and only the
+		// wordings the table answers are read as one: the rest of what a
+		// group holds there is the card's colour.
+		if treatment == "" && end >= 0 && loc[0] > end && group != prerelease {
+			if _, found := editionTable[group]; found {
+				treatment = group
+			}
 		}
 	}
-	return number, series
+	return number, series, treatment
 }
 
 // Preprocess turns a storefront product into the card description the matcher
@@ -125,7 +140,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	}
 
 	// The number is only found in the JPN line, which may name the series too
-	number, series := splitParens(product.ProductName)
+	number, series, _ := splitParens(product.ProductName)
 	if series != "" {
 		edition = series
 	}
@@ -271,7 +286,7 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	}
 
 	// (168) and (Junior Super Series)
-	number, series := splitParens(title)
+	number, series, promoWording := splitParens(title)
 	if series != "" {
 		edition = series
 	}
@@ -287,7 +302,10 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	// older promos have no number of the set's to give, and the group the
 	// title puts there instead is the treatment - a word, with no digit in
 	// it, which is what tells the two apart.
-	if promoLine && series == "" && !strings.ContainsFunc(number, unicode.IsDigit) {
+	// A title that states the treatment past the number has said which of
+	// the two it is outright, and needs no reading of the number at all.
+	if promoLine && series == "" &&
+		(promoWording != "" || !strings.ContainsFunc(number, unicode.IsDigit)) {
 		edition += "-P"
 	}
 
@@ -318,6 +336,16 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 			variant += " "
 		}
 		variant += number
+	}
+
+	// The treatment follows the number rather than replacing it: the promo
+	// line files more than one printing under the set's own number, and the
+	// number is what picks between them.
+	if promoWording != "" {
+		if variant != "" {
+			variant += " "
+		}
+		variant += editionTable[promoWording]
 	}
 
 	fixup, found := editionTable[edition]
