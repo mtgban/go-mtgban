@@ -26,7 +26,6 @@ func TestFrameNumber(t *testing.T) {
 		{"a set numbering its frames below the plain card", "Polygoyf (Extended Art)", "Modern Horizons 3 Commander", "117", "M3C", "65"},
 		{"a frame the storefront numbers correctly stays put", "Kona, Rescue Beastie (Showcase) - FOIL", "Duskmourn: House of Horror", "358", "DSK", "358"},
 		{"a listing spelling its own number stays put", "Salvation Engine (Borderless First-Place 517) - FOIL", "Aetherdrift", "517", "DFT", "517"},
-		{"a set keeping its two finishes at two numbers", "Aang's Defense (211)", "Avatar: The Last Airbender", "211", "TLE", "266"},
 		{"a ripple foil, which the number knows nothing of", "Talon Gates of Madara (Ripple) - FOIL", "Modern Horizons 3 Commander", "134", "M3C", "82★"},
 		{"a retro frame sold only in etched", "Aeromoeba (Retro Frame ETCHED) - FOIL", "Modern Horizons 2", "37", "MH2", "389"},
 		{"an etched card the wording names outright", "Six (ETCHED) - FOIL", "Modern Horizons 3", "169", "MH3", "484"},

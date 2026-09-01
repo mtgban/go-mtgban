@@ -82,6 +82,12 @@ func markedApart(co *mtgmatcher.CardObject, number string) bool {
 	return found > 1
 }
 
+// numberPrefix is the part of a collector number before its digits, which is
+// the set a reprint came from where a set files its cards that way.
+func numberPrefix(number string) string {
+	return strings.TrimRight(number, "0123456789")
+}
+
 // finishAsked is the finish a listing's own FOIL flag asks the catalog for.
 // Etched counts as one: this storefront spells it the same way.
 func finishAsked(co *mtgmatcher.CardObject, foil bool) bool {
@@ -96,7 +102,10 @@ func finishAsked(co *mtgmatcher.CardObject, foil bool) bool {
 // holds more than one. Everything that is not the finish has to agree - the
 // language, the frame, and what the catalog marks it - so that a foil the
 // set prints apart, a Japanese alternate art beside an English one or an
-// etched showcase beside a plain one, is never mistaken for this card.
+// etched showcase beside a plain one, is never mistaken for this card. So is
+// an alternative: Avatar's tutorial cards carry the set's own names and only
+// that flag tells them from the cards they teach. So is the set a reprint
+// came from, which The List spells into the number it files each card under.
 func finishSibling(co *mtgmatcher.CardObject, foil bool) string {
 	set, err := mtgmatcher.GetSet(co.SetCode)
 	if err != nil {
@@ -107,6 +116,8 @@ func finishSibling(co *mtgmatcher.CardObject, foil bool) string {
 		card := &set.Cards[i]
 		if card.Name != co.Name || card.Number == co.Number ||
 			card.Language != co.Language ||
+			card.IsAlternative != co.IsAlternative ||
+			numberPrefix(card.Number) != numberPrefix(co.Number) ||
 			!slices.Equal(card.FrameEffects, co.FrameEffects) ||
 			!slices.Equal(card.PromoTypes, co.PromoTypes) {
 			continue
