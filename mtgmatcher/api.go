@@ -451,9 +451,10 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 
 	// Resolve which real card name the query means, the way Printings4Card
 	// does: the case-exact entry when one exists, the first normalized
-	// match otherwise. The hash bucket conflates normalize-equal but
-	// distinct names ("Cat Warrior" the token beside "Cat Warriors" the
-	// card), and the printings of one must never answer for the other.
+	// match otherwise. The hash bucket conflates names that normalize the
+	// same but belong to different cards ("Mr. 1 (Daz.Bonez)" beside
+	// "Mr.1 (Daz.Bonez)"), and the printings of one must never answer for
+	// the other.
 	entry, found := b.entry4Name(name)
 	if !found {
 		if b.rules == nil {
