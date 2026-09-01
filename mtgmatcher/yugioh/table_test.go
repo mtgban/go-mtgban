@@ -51,7 +51,7 @@ func TestAdjustEditionAliases(t *testing.T) {
 		{"a set the datastore carries is never rewritten", "Duelist Pack: Crow", "Duelist Pack: Crow"},
 		{"a subtitle the storefronts drop", "Hidden Arsenal 5", "Hidden Arsenal 5: Steelswarm Invasion"},
 		{"a numbered name the catalog subtitles", "Premium Gold 2", "Premium Gold: Return of the Bling"},
-		{"a league series files under the shared set", "Duelist League Series 10", "Duelist League Promo"},
+		{"a league series files under its own season", "Duelist League Series 10", "Duelist League Series 10 participation card"},
 		{"a set name carrying the game name is left whole", "Yu-Gi-Oh! Championship Series 2025 Prize Cards", "Yu-Gi-Oh! Championship Series 2025 Prize Cards"},
 		{"an edition naming nothing is left as it is", "Some Storefront Heading", "Some Storefront Heading"},
 		{"a speed duel deck headed as a starter deck", "Starter Deck: Speed Duel - Battle City Box", "Speed Duel: Battle City Box"},

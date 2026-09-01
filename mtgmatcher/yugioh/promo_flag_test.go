@@ -29,9 +29,11 @@ func TestPromoFlag(t *testing.T) {
 		set  string
 		want bool
 	}{
-		{"Duelist League Promo", true},
+		// The shelves these two used to name hold only sealed now, their
+		// cards having gone to the seasons and volumes that print them.
+		{"Duelist League 13 participation cards", true},
 		{"Judge Promotional Cards", true},
-		{"Shonen Jump Magazine Promos", true},
+		{"Shonen Jump Magazine Promos (JUMP)", true},
 		{"McDonald's Promo", true},
 		{"2014 Mega-Tins", false},
 		{"The Legend of Blue Eyes White Dragon", false},
