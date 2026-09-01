@@ -1659,6 +1659,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			discriminates[i] = withTag && withoutTag
 		}
 
+		// The treatments the listing spells out. A card that carries all of
+		// them answers everything the listing said about itself, whatever
+		// else it carries in silence.
+		var claimed []string
+
 		var filteredOutCards []mtgmatcher.Card
 		for _, card := range outCards {
 			set, found := b.Sets[card.SetCode]
@@ -1688,6 +1693,10 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					}
 				}
 
+				if tagPresent && !slices.Contains(claimed, promoElement.PromoType) {
+					claimed = append(claimed, promoElement.PromoType)
+				}
+
 				if tagPresent && !card.HasPromoType(promoElement.PromoType) {
 					shouldContinue = true
 					break
@@ -1713,6 +1722,30 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// Don't throw away what was found if filtering checks is too aggressive
 		if len(filteredOutCards) > 0 {
 			outCards = filteredOutCards
+		} else if len(claimed) > 0 {
+			// Every candidate was vetoed, so handing the list back untouched
+			// is the only way not to lose the card - but a candidate that
+			// carries every treatment the listing named was vetoed for
+			// something the listing never mentioned, and the ones that
+			// carry none of them were vetoed for contradicting it. Prefer
+			// the former when it is the only one, or the base printing wins
+			// on number and takes the premium card's price with it.
+			var claimants []mtgmatcher.Card
+			for _, card := range outCards {
+				matches := true
+				for _, promoType := range claimed {
+					if !card.HasPromoType(promoType) {
+						matches = false
+						break
+					}
+				}
+				if matches {
+					claimants = append(claimants, card)
+				}
+			}
+			if len(claimants) == 1 {
+				outCards = claimants
+			}
 		}
 	}
 
