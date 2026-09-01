@@ -3,6 +3,7 @@ package lorcana
 import (
 	"errors"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -10,20 +11,29 @@ import (
 )
 
 // loadDatastore opens the datastore the finish suites run against, or skips.
-func loadDatastore(t *testing.T) *mtgmatcher.Backend {
-	t.Helper()
+// datastoreOnce loads the datastore the first time a test asks for it. The
+// suite used to read and parse the file again on every call.
+var datastoreOnce = sync.OnceValues(func() (*mtgmatcher.Backend, error) {
 	path := os.Getenv("LORCANA_PATH")
 	if path == "" {
-		t.Skip("LORCANA_PATH not set; skipping Lorcana finish suite")
+		return nil, nil
 	}
 	f, err := datastore.Open(path)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 	defer f.Close()
-	b, err := Load(f)
+	return Load(f)
+})
+
+func loadDatastore(t *testing.T) *mtgmatcher.Backend {
+	t.Helper()
+	b, err := datastoreOnce()
 	if err != nil {
 		t.Fatal(err)
+	}
+	if b == nil {
+		t.Skip("LORCANA_PATH not set; skipping the Lorcana suite")
 	}
 	return b
 }
