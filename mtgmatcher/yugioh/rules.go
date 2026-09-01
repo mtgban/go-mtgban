@@ -468,7 +468,14 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
 	if named, found := namedSet(b, edition); found {
-		inCard.Edition = siblingSetNamed(b, inCard, named)
+		// The number first: where it names a sibling outright it has
+		// said which edition and nothing is left to infer. Only a
+		// number naming this very set leaves the rarity to answer.
+		edition := siblingSetNamed(b, inCard, named)
+		if edition == named {
+			edition = siblingSetRarity(b, inCard, named)
+		}
+		inCard.Edition = edition
 		spellNumber(b, inCard)
 		return
 	}
@@ -593,6 +600,90 @@ func siblingSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named 
 		return named
 	}
 	return set.Name
+}
+
+// siblingSetRarity answers the edition holding this card at the rarity the
+// wording asks for, where the edition named holds it at no such rarity and
+// exactly one sibling does.
+//
+// siblingSetNamed above reads the number, and answers when the number names
+// a sibling. This reads the rarity, for the listings whose number names the
+// family's first edition and whose only other word is the tier. Cool Stuff
+// Inc sells the Movie Pack's Dark Magician three times over - Gold at $2.50,
+// Secret at $1.50, Ultra at $1.25 - every one of them numbered MVP1-EN054,
+// which is the base edition's number and the base edition holds only the
+// Ultra. All three answered with the Ultra, so one printing carried three
+// prices, and the two dearer cards were sold at the cheap one's.
+//
+// Only an unambiguous answer is given. A rarity two siblings both hold is a
+// question the listing has not answered - the wording says which tier, never
+// which edition - so the edition stands and the pool stays whole, which is
+// the refusal Match is built to make. The same holds for a rarity the family
+// does not print at all: a wording naming a tier no sibling has is naming
+// something else, and this rule has nothing to say about it.
+func siblingSetRarity(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named string) string {
+	current := b.NormalizedSets[mtgmatcher.Normalize(named)]
+	if current == nil {
+		return named
+	}
+	family := setFamily(current.Code)
+	name := mtgmatcher.Normalize(inCard.Name)
+	// The rarities this card is printed at across the family, and the
+	// editions each of them is printed in.
+	editions := map[string]map[string]bool{}
+	for _, code := range b.AllSets {
+		set := b.Sets[code]
+		if set == nil || setFamily(set.Code) != family {
+			continue
+		}
+		for _, card := range set.Cards {
+			if mtgmatcher.Normalize(card.Name) != name {
+				continue
+			}
+			rarity := strings.ToLower(card.Rarity)
+			if editions[rarity] == nil {
+				editions[rarity] = map[string]bool{}
+			}
+			editions[rarity][set.Code] = true
+		}
+	}
+	// The tier the wording spells out, read the way tierByRarity reads
+	// it: every tier the words cover, then the ones another tier's words
+	// contain dropped, so "Gold Secret Rare" is never taken for the
+	// "Gold Rare" whose words it happens to hold. What survives has to be
+	// the one tier, or the wording has not said which.
+	words := strings.Fields(strings.ToLower(inCard.Variation))
+	described := map[string]bool{}
+	for rarity := range editions {
+		if allWordsIn(words, rarity) {
+			described[rarity] = true
+		}
+	}
+	for a := range described {
+		for other := range described {
+			if a != other && wordSubset(a, other) {
+				delete(described, a)
+				break
+			}
+		}
+	}
+	if len(described) != 1 {
+		return named
+	}
+	var asked string
+	for rarity := range described {
+		asked = rarity
+	}
+	holders := editions[asked]
+	if holders[current.Code] || len(holders) != 1 {
+		return named
+	}
+	for code := range holders {
+		if set := b.Sets[code]; set != nil {
+			return set.Name
+		}
+	}
+	return named
 }
 
 // setFamily is the code a set's editions share, which is everything a dash
