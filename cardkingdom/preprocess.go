@@ -478,6 +478,10 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 	}
 	variant = strings.TrimSpace(variant)
 
+	if renamed, found := gradedEditions[edition]; found {
+		edition = renamed
+	}
+
 	if strings.Contains(edition, "Final Fantasy") {
 		if variant != "" {
 			variant += " "
@@ -509,6 +513,22 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 		Variation: variant,
 		Foil:      isFoil,
 	}, nil
+}
+
+// gradedEditions spells an edition this storefront abbreviates the way the
+// catalog writes it out.
+//
+// The abbreviation alone is not the whole of it. "TMNT" on its own reaches
+// the Teenage Mutant Ninja Turtles set, but "TMNT Source Material Cards"
+// reaches nothing and the card falls back to the set it was first printed
+// in - Plague of Vermin to Shadowmoor, Waves of Aggression to Eventide,
+// each an ordinary card standing in for a Universes Beyond reprint. Neither
+// half fixes it by itself: spelling the name out still leaves a trailing
+// "Cards" the catalog does not have, and dropping "Cards" still leaves the
+// abbreviation. So the edition is named outright, which is how every other
+// spelling this storefront uses is handled.
+var gradedEditions = map[string]string{
+	"TMNT Source Material Cards": "Teenage Mutant Ninja Turtles Source Material",
 }
 
 var supportedScores = []string{
