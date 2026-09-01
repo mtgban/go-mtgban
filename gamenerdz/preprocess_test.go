@@ -1,8 +1,28 @@
 package gamenerdz
 
 import (
+	"log"
+	"os"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/internal/datastore"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
+
+// TestMain loads the datastore once for the whole package: the prerelease
+// shelf is read against the catalog, so preprocessing needs one.
+func TestMain(m *testing.M) {
+	path := os.Getenv("ALLPRINTINGS5_PATH")
+	if path == "" {
+		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
+	}
+	err := datastore.Load(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	os.Exit(m.Run())
+}
 
 func TestPreprocess(t *testing.T) {
 	tests := []struct {
@@ -16,6 +36,34 @@ func TestPreprocess(t *testing.T) {
 		foil      bool
 		err       bool
 	}{
+		{
+			// A prerelease stamp, filed under the pseudo-set with the
+			// card's own number: naming the stamp reaches the printing
+			// the shelf means, whatever set that printing belongs to.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName:    "Avatar of Hope (PRE-003) - Prophecy Promos Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "pre", SetName: "Prerelease Cards"},
+			},
+			name:      "Avatar of Hope",
+			edition:   "pre",
+			variation: "003 Prerelease",
+			foil:      true,
+		},
+		{
+			// An ordinary card the storefront shelved as a stamp by
+			// mistake. No stamped printing to reach, so the reading it
+			// already had stands.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName: "Culling Scales (MRD-160) - Mirrodin",
+				ProductData: GNProductData{Set: "pre", SetName: "Prerelease Cards"},
+			},
+			name:      "Culling Scales",
+			edition:   "pre",
+			variation: "160",
+		},
 		{
 			game: GameMagic,
 			product: GNProduct{

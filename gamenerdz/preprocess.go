@@ -54,13 +54,45 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 		edition = product.ProductData.SetName
 	}
 
-	return &mtgmatcher.InputCard{
+	card := &mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: number,
 		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
-	}, nil
+	}
+
+	// The storefront files every prerelease stamp under one pseudo-set,
+	// whatever set the card was printed for. That code names no set the
+	// catalog has, so the edition selects nothing and the number answers
+	// alone - with the ordinary printing, the one the stamp is not. The
+	// number is the card's own, so naming the stamp is enough to reach the
+	// prerelease printing without ever knowing which set it belongs to.
+	// The catalog answering is what says the shelf was right: a handful of
+	// ordinary cards sit on it by mistake, and no stamp to reach is what
+	// tells them apart, so they keep the reading they already had.
+	if strings.EqualFold(edition, preShelf) {
+		stamped := strings.TrimSpace(number + " " + preStamp)
+		probe := mtgmatcher.InputCard{
+			Name:      cardName,
+			Edition:   edition,
+			Variation: stamped,
+			Foil:      card.Foil,
+		}
+		_, err := mtgmatcher.Match(&probe)
+		if err == nil {
+			card.Variation = stamped
+		}
+	}
+
+	return card, nil
 }
+
+// The set code the storefront shelves every prerelease stamp under, and the
+// word the catalog tells those printings apart by.
+const (
+	preShelf = "pre"
+	preStamp = "Prerelease"
+)
 
 // lorcanaNumber is the collector group Lorcana display names carry, like
 // "(17/204)": the printing's own number over the set size the matcher does
