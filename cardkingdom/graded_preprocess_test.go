@@ -28,10 +28,13 @@ func TestPreprocessGradedNested(t *testing.T) {
 			edition: "TMNT Eternal", variant: "Borderless", foil: true,
 		},
 		{
-			desc:    "a plain title still reads as it did",
+			// The abbreviation reaches the set on its own, but not with
+			// "Source Material Cards" behind it: the card falls back to
+			// Shadowmoor, where it was first printed.
+			desc:    "the edition this storefront abbreviates is spelled out",
 			title:   "Plague of Vermin (TMNT Source Material Cards Foil CGC 10) #7067",
 			name:    "Plague of Vermin",
-			edition: "TMNT Source Material Cards", foil: true,
+			edition: "Teenage Mutant Ninja Turtles Source Material", foil: true,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
