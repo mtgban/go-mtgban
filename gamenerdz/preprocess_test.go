@@ -84,6 +84,20 @@ func TestPreprocess(t *testing.T) {
 			finish: "Reverse Holofoil",
 		},
 		{
+			// The finishing place is written in brackets where every other
+			// qualifier gets parentheses. Left as it is the matcher reads no
+			// place at all and answers with the printing awarded none, which
+			// at this number is a $4 card standing against a $558 one.
+			game: GameOnePiece,
+			product: GNProduct{
+				DisplayName: "Monkey.D.Luffy (Offline Regional 2024 Vol. 2) [Finalist] (P-041) One Piece Promotion Cards",
+				ProductData: GNProductData{SetName: "One Piece Promotion Cards"},
+			},
+			name:      "Monkey.D.Luffy (Offline Regional 2024 Vol. 2) (Finalist)",
+			edition:   "One Piece Promotion Cards",
+			variation: "P-041",
+		},
+		{
 			// Variant wording before the code stays in the name for the
 			// matcher to read.
 			game: GameOnePiece,
