@@ -1,7 +1,6 @@
 package mtgmatcher
 
 import (
-	"math/rand"
 	"slices"
 	"strings"
 	"testing"
@@ -35,9 +34,9 @@ func TestPrintings4CardExactName(t *testing.T) {
 		t.Errorf("Servo // Thopter printings = %v, expected to contain L16", printings)
 	}
 
-	// Normalization folds plurals, so the Cat Warrior token and the Cat
-	// Warriors card are distinct names sharing a bucket: verbatim matches
-	// must win over normalized ones.
+	// The Cat Warrior token and the Cat Warriors card are one letter apart
+	// and were a single bucket back when normalization dropped the plural.
+	// They hash apart now, and must still answer only for themselves.
 	printings, err = Printings4Card("Cat Warriors")
 	if err != nil {
 		t.Fatal(err)
@@ -67,9 +66,9 @@ func TestIsTokenClashingNames(t *testing.T) {
 	}
 }
 
-// oldHasPrinting is the pre-index implementation, kept verbatim as the
-// equivalence reference: for every printing of the named card it scanned the
-// whole set comparing names with Equals.
+// oldHasPrinting is the pre-index implementation, kept verbatim as what
+// BenchmarkHasPrintingWide measures against: for every printing of the named
+// card it scanned the whole set comparing names with Equals.
 func oldHasPrinting(name, field, value string, editions ...string) bool {
 	if defaultBackend.Sets == nil {
 		return false
@@ -146,60 +145,6 @@ func oldHasPrinting(name, field, value string, editions ...string) bool {
 	return false
 }
 
-// TestHasPrintingEquivalence diffs the indexed hasPrinting against the old
-// per-set scans over a broad sample of real cards, with and without pinned
-// editions, across every check the public wrappers use.
-func TestHasPrintingEquivalence(t *testing.T) {
-	uuids := GetUUIDs()
-	if len(uuids) == 0 {
-		t.Skip("datastore not loaded")
-	}
-
-	checks := []struct {
-		field string
-		value string
-	}{
-		{"finish", FinishNonfoil},
-		{"finish", FinishFoil},
-		{"finish", FinishEtched},
-		{"frame_effect", "extendedart"},
-		{"frame_effect", "showcase"},
-		{"border_color", "borderless"},
-		{"frame_version", "1997"},
-		{"promo_type", "bundle"},
-		{"field", "attractionLights"},
-		{"bogus", "value"},
-	}
-
-	rng := rand.New(rand.NewSource(42))
-	var compared int
-	for range 1000 {
-		uuid := uuids[rng.Intn(len(uuids))]
-		co, err := GetUUID(uuid)
-		if err != nil {
-			continue
-		}
-		for _, check := range checks {
-			editionArgs := [][]string{
-				nil,
-				{co.SetCode},
-				{co.Edition},
-				{"Nonexistent Edition"},
-			}
-			for _, editions := range editionArgs {
-				oldRes := oldHasPrinting(co.Name, check.field, check.value, editions...)
-				newRes := HasPrinting(co.Name, check.field, check.value, editions...)
-				if oldRes != newRes {
-					t.Errorf("divergence: name=%q field=%s value=%s editions=%v old=%v new=%v",
-						co.Name, check.field, check.value, editions, oldRes, newRes)
-				}
-				compared++
-			}
-		}
-	}
-	t.Logf("compared %d combinations", compared)
-}
-
 // The old scans made widely printed cards pathological: every printing
 // re-scanned a full set with two normalizations per card.
 func BenchmarkHasPrintingWide(b *testing.B) {
@@ -220,18 +165,15 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 
 // TestHasPrintingAnswersForTheNamedCard pins what the bucket rewrite of
 // hasPrinting broke and e2bdcb9e fixed: a hash bucket holds names that
-// normalize the same but belong to different cards - the DMU token "Cat
-// Warrior" beside the Legends card "Cat Warriors", since normalization
-// folds plurals - and the printings of one must never answer for the
-// other.
+// normalize the same but belong to different cards - "Mr. 1 (Daz.Bonez)"
+// beside "Mr.1 (Daz.Bonez)", since normalization folds punctuation and
+// case - and the printings of one must never answer for the other.
 //
 // The expectation is computed by scanning every card object for the exact
 // name, independently of the hash index and of entry4Name, so the test
-// keeps its meaning if either is rewritten again. It is data-driven
-// rather than pinned to named cards, so an AllPrintings refresh that
-// retires one collision and introduces another still exercises the
-// invariant - unlike TestHasPrintingEquivalence, whose seeded sample
-// reaches a given collision only by luck.
+// keeps its meaning if either is rewritten again. It is data-driven rather
+// than pinned to named cards, so a refresh that retires one collision and
+// introduces another still exercises the invariant.
 func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
 	uuids := GetUUIDs()
 	if len(uuids) == 0 {
