@@ -33,6 +33,9 @@ func withGameDatastore(t *testing.T, env string, load func(io.Reader) (*mtgmatch
 	mtgmatcher.SetGlobalDatastore(ds)
 
 	t.Cleanup(func() {
+		if !magicInstalled {
+			return
+		}
 		mtgmatcher.SetGlobalDatastore(magicDatastore)
 	})
 }

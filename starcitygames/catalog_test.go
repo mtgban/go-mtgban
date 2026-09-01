@@ -16,6 +16,8 @@ import (
 // an English-primary set with no distinct foreign set (Portal Three Kingdoms)
 // stays unmatched for the same reason.
 func TestResolveProductForeignSets(t *testing.T) {
+	withMagic(t)
+
 	a1 := []struct {
 		name, sku, lang, num, wantSet, wantNum string
 	}{
@@ -76,6 +78,8 @@ func TestResolveProductForeignSets(t *testing.T) {
 // index doesn't carry. It must resolve to the jpwalker printing WAR #NNN★,
 // honoring the foil flag, rather than being rejected as non-english.
 func TestResolveProductWARJapanese(t *testing.T) {
+	withMagic(t)
+
 	tests := []struct {
 		name     string
 		sku      string
@@ -112,6 +116,8 @@ func TestResolveProductWARJapanese(t *testing.T) {
 // TestResolveProduct exercises the two resolution paths: the Scryfall shortcut
 // (present + resolvable) and the SKU/preprocess fallback (no Scryfall id).
 func TestResolveProduct(t *testing.T) {
+	withMagic(t)
+
 	tests := []struct {
 		name string
 		in   CatalogProduct
