@@ -6,7 +6,7 @@ import "testing"
 // hash bucket: a repeated entry returns every printing of that name once per
 // repeat. Each list holds distinct values of its own kind.
 func TestNameListsAreDistinct(t *testing.T) {
-	b := loadNamesBackend(t)
+	b := loadBackend(t)
 	for _, tt := range []struct {
 		name string
 		list []string

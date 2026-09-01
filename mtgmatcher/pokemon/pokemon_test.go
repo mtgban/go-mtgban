@@ -3,26 +3,36 @@ package pokemon
 import (
 	"os"
 	"slices"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-func loadBackend(t *testing.T) *mtgmatcher.Backend {
-	t.Helper()
+// datastoreOnce loads the datastore the first time a test asks for it. The
+// suite used to read and parse the file again on every call.
+var datastoreOnce = sync.OnceValues(func() (*mtgmatcher.Backend, error) {
 	path := os.Getenv("POKEMON_PATH")
 	if path == "" {
-		t.Skip("POKEMON_PATH not set; skipping Pokemon suite")
+		return nil, nil
 	}
 	f, err := datastore.Open(path)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 	defer f.Close()
-	b, err := Load(f)
+	return Load(f)
+})
+
+func loadBackend(t *testing.T) *mtgmatcher.Backend {
+	t.Helper()
+	b, err := datastoreOnce()
 	if err != nil {
 		t.Fatal(err)
+	}
+	if b == nil {
+		t.Skip("POKEMON_PATH not set; skipping Pokemon suite")
 	}
 	return b
 }
