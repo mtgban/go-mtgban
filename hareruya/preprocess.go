@@ -568,6 +568,7 @@ var editionTable = map[string]string{
 	"WMC":                  "World Magic Cup Qualifiers",
 
 	"DvD": "Duel Decks: Divine vs. Demonic",
+	"EVG": "Duel Decks: Elves vs. Goblins",
 	"EvG": "Duel Decks: Elves vs. Goblins",
 	"GvL": "Duel Decks: Garruk vs. Liliana",
 	"JvC": "Duel Decks: Jace vs. Chandra",
