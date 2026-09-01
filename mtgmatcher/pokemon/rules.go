@@ -619,6 +619,35 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 			break
 		}
 	}
+	// A lettered number the edition admits no printing of names a promo
+	// printing filed in a set of its own. The storefronts sell the
+	// alternate arts under the set the card was first printed in - Cool
+	// Stuff Inc lists "Garbodor (Alt Art) - 51a/145" against "SM Guardians
+	// Rising" - where the catalog files them in "Alternate Art Promos",
+	// which the edition then keeps out. The number is the whole of what
+	// says which printing this is, so it is asked of the catalog entire
+	// before the letter is given up on.
+	if len(candidates) == 0 {
+		promo := letteredPromo(b, inCard, numbers)
+		if len(promo) == 1 {
+			return promo
+		}
+		// The catalog carries the lettered number more than once: TCGplayer
+		// sells several of these promos twice, once at their own size and
+		// once as an oversized jumbo, with the same name, number and finish
+		// and nothing on the card to tell them apart. The set is what tells
+		// them apart, and the wording names it - "(Alt Art)" against
+		// "Alternate Art Promos" beside "Jumbo Cards".
+		if len(promo) > 1 {
+			if named := setNamed(b, inCard, promo); len(named) == 1 {
+				return named
+			}
+			// It named neither, so the letter stands rather than being
+			// dropped: answering with the plain card the promo reprints
+			// would be a third card again.
+			return nil
+		}
+	}
 	// A letter hung off the end of a number the catalog carries without one
 	// is the storefront's own marker for a printing it prices apart:
 	// Strikezone numbers the Master Ball patterns "074M" beside the plain
@@ -680,6 +709,102 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	}
 
 	return tierByLabel(inCard, candidates)
+}
+
+// setStopWords are the words a Pokemon set name shares with too many others
+// to tell one from another.
+var setStopWords = map[string]bool{
+	"promo": true, "promos": true, "card": true, "cards": true,
+	"set": true, "sets": true, "the": true, "and": true,
+	"products": true, "collection": true,
+}
+
+// altArtSpellings are the ways a storefront writes the treatment the catalog
+// files a whole set of, so the set's own name can be looked for in a wording
+// that abbreviates it.
+var altArtSpellings = strings.NewReplacer("alt art", "alternate art")
+
+// setNamed keeps the printings whose set the wording names, by the words of
+// that set's name which are its own.
+//
+// A set name shared down to nothing - "Miscellaneous Cards & Products" is
+// every word a stop word but one - cannot be named by accident this way,
+// and a wording naming none of the sets keeps them all, which the caller
+// reads as the wording having failed to choose.
+func setNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	said := map[string]bool{}
+	wording := altArtSpellings.Replace(strings.ToLower(inCard.Variation + " " + inCard.Edition))
+	for field := range strings.FieldsSeq(wording) {
+		if word := mtgmatcher.PromoTypeSlug(field); word != "" {
+			said[word] = true
+		}
+	}
+	var out []mtgmatcher.Card
+	for _, card := range cards {
+		set, found := b.Sets[card.SetCode]
+		if !found {
+			continue
+		}
+		whole, own := true, false
+		for field := range strings.FieldsSeq(strings.ToLower(set.Name)) {
+			word := mtgmatcher.PromoTypeSlug(field)
+			if word == "" || setStopWords[word] {
+				continue
+			}
+			own = true
+			if !said[word] {
+				whole = false
+				break
+			}
+		}
+		if own && whole {
+			out = append(out, card)
+		}
+	}
+	return out
+}
+
+// letteredNumberRe matches a collector number carrying the letter a promo
+// printing is told apart by, "51a" and "182b" and "SM30a".
+var letteredNumberRe = regexp.MustCompile(`(?i)^[A-Z]{0,4}[0-9]+[a-z]$`)
+
+// letteredPromo collects the printings of this card that carry a lettered
+// number the edition admits none of, wherever the catalog files them.
+//
+// The letter is the storefront's own marker and the catalog's alike: the
+// alternate art promos are numbered for the set they reprint and lettered
+// apart from it, so "51a" names one printing in the whole catalog where
+// "51" names one per set. Reading it across sets is safe for exactly that
+// reason, and only where the edition reached nothing - a lettered number
+// the edition does admit has already answered.
+//
+// Nothing is stripped here. Where the letter names more than one printing
+// the wording has not chosen, and the caller falls through to the tiers
+// that read the rest of it.
+func letteredPromo(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbers []string) []mtgmatcher.Card {
+	var out []mtgmatcher.Card
+	seen := map[string]bool{}
+	for _, number := range numbers {
+		if !letteredNumberRe.MatchString(number) {
+			continue
+		}
+		for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+			co, found := b.UUIDs[uuid]
+			if !found || co.Sealed || !numberMatches(number, co.Number) {
+				continue
+			}
+			key := co.Card.Identifiers["tcgplayerProductId"]
+			if key == "" {
+				key = trimFinishSuffix(uuid)
+			}
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			out = append(out, co.Card)
+		}
+	}
+	return out
 }
 
 // filterByNumber collects the printings of the input's name that the edition

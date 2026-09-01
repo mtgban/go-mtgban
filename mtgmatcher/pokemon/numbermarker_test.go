@@ -44,6 +44,26 @@ func TestNumberMarker(t *testing.T) {
 			wantSet: "BSS", wantNum: "001",
 		},
 		{
+			// The letter is the catalog's own here, not the storefront's:
+			// the alternate art promos are numbered for the set they
+			// reprint and lettered apart from it. Cool Stuff Inc sells
+			// them under that set's name, which is the one set the
+			// printing is not in.
+			desc:    "a lettered promo the edition admits none of",
+			in:      mtgmatcher.InputCard{Name: "Garbodor", Edition: "SM Guardians Rising", Variation: "51a/145 Alt Art"},
+			wantSet: "PR-1938", wantNum: "051a", wantVar: "Cosmos Holo",
+		},
+		{
+			desc:    "the same, for a number the set code is written into",
+			in:      mtgmatcher.InputCard{Name: "Tapu Koko", Edition: "SM Promos", Variation: "SM30a Alt Art"},
+			wantSet: "PR-1938", wantNum: "SM30a",
+		},
+		{
+			desc:    "and the unlettered number still reaches the set it names",
+			in:      mtgmatcher.InputCard{Name: "Garbodor", Edition: "SM Guardians Rising", Variation: "51/145"},
+			wantSet: "SM02", wantNum: "51",
+		},
+		{
 			desc:    "a marked number in a gallery, whose prefix the storefront rebuilds",
 			in:      mtgmatcher.InputCard{Name: "Abomasnow", Edition: "SWSH10: Astral Radiance Trainer Gallery", Variation: "TG001C 1st Edition"},
 			wantSet: "SWSH10-TG", wantNum: "TG01",
@@ -75,4 +95,39 @@ func TestNumberMarker(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestLetteredPromoAmbiguous pins what happens where the catalog carries a
+// lettered number twice. TCGplayer sells several of these promos both at
+// their own size and as an oversized jumbo, filing them under the same name,
+// number and finish with nothing on the card to tell them apart - the set is
+// what does, and a wording naming it picks. One that names neither gets no
+// answer: dropping the letter would reach the plain card the promo reprints,
+// which is a third card again.
+func TestLetteredPromoAmbiguous(t *testing.T) {
+	b := loadBackend(t)
+
+	t.Run("the wording names the set and picks it", func(t *testing.T) {
+		in := mtgmatcher.InputCard{Name: "Darkrai-GX", Edition: "SM Burning Shadows", Variation: "88a/147 Alt Art"}
+		id, err := b.Match(&in)
+		if err != nil {
+			t.Fatalf("Match(%v) = %v", in, err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.SetCode != "PR-1938" || co.Number != "088a" {
+			t.Errorf("Match = %s|%s, want PR-1938|088a", co.SetCode, co.Number)
+		}
+	})
+
+	t.Run("a wording naming neither set gets no answer", func(t *testing.T) {
+		in := mtgmatcher.InputCard{Name: "Rayquaza-GX", Edition: "SM Celestial Storm", Variation: "177a/168 Shiny"}
+		id, err := b.Match(&in)
+		if err == nil {
+			co, _ := b.GetUUID(id)
+			t.Fatalf("Match = %s|%s, want a refusal", co.SetCode, co.Number)
+		}
+	})
 }
