@@ -183,6 +183,14 @@ var promoTypeElements = []promoTypeElement{
 		Tags:      []string{"Fracture", "Fractal"},
 	},
 	{
+		PromoType: PromoTypeCosmicFoil,
+		Tags:      []string{"Cosmic"},
+	},
+	{
+		PromoType: PromoTypeSingularityFoil,
+		Tags:      []string{"Singularity"},
+	},
+	{
 		PromoType: PromoTypeManaFoil,
 		Tags:      []string{"Mana Foil"},
 	},
