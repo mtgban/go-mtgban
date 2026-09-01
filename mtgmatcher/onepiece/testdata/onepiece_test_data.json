@@ -264,6 +264,15 @@
         "uuid": "op01-070_ct244687_foil"
     },
     {
+        "description": "and the catalog's own crossed label answers the same wording",
+        "input": {
+            "name": "Shanks",
+            "variant": "OP01-120 120 Parallel Alternate Art Manga",
+            "edition": "One Piece"
+        },
+        "uuid": "op01-120_454666_foil"
+    },
+    {
         "description": "bare number hung off the name after a dash",
         "input": {
             "name": "\"Buddha\" Sengoku - 077",
@@ -352,6 +361,15 @@
             "variant": "OP01-084"
         },
         "uuid": "op01-084_454615"
+    },
+    {
+        "description": "manga beside a plain alternate art keeps the manga",
+        "input": {
+            "name": "Monkey.D.Luffy",
+            "variant": "EB02-061 Alternate Art Manga",
+            "edition": "One Piece"
+        },
+        "uuid": "eb02-061_629167_foil"
     },
     {
         "description": "negative: a DON!! edition keeps another set's promo out",
@@ -572,6 +590,15 @@
             "edition": "Pre-Errata Cards"
         },
         "uuid": "op01-070_ct244688_foil"
+    },
+    {
+        "description": "the manga art crossed with a parallel is not the plain parallel",
+        "input": {
+            "name": "Monkey.D.Luffy",
+            "variant": "OP13-118 118 Alternate Art Manga Red Parallel",
+            "edition": "One Piece"
+        },
+        "uuid": "op13-118_657401_foil"
     },
     {
         "description": "the ordinal a promo label opens with is not the number either",

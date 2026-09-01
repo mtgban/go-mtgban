@@ -607,6 +607,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// A tournament printing is handed out for a finishing place, and the
 	// catalog spells that place at the end of the label beside the event
 	// that awarded it. A listing naming no place is not asking for one.
+	// A wording naming the manga art names a printing the catalog spells
+	// another way, and the plainer label beside it answers first.
+	if picked := mangaChosen(b, inCard, candidates); picked != nil {
+		return picked
+	}
 	if picked := placeChosen(b, inCard, candidates); picked != nil {
 		return picked
 	}
@@ -1436,6 +1441,95 @@ func placeChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 		return nil
 	}
 	return kept
+}
+
+// mangaWord is what every storefront calls the printings drawn as manga
+// panels. The catalog spells the same treatment "Super Alternate Art" on the
+// sets that print it alone, and writes the word out on the sets that cross it
+// with something else.
+const mangaWord = "manga"
+
+// mangaLabelWords are a label's words with the catalog's spelling of the
+// manga art said the way the storefronts say it, so the two can be compared
+// word for word.
+//
+// The substitution is made on the label, never on the wording. Adding
+// "alternate" and "art" to what a listing said would let them answer for a
+// plain Alternate Art printing standing beside the manga one, which is a
+// different card at the same number - EB02-061 and OP12-118 both hold the
+// pair, and both move to the wrong half of it that way.
+func mangaLabelWords(b *mtgmatcher.Backend, card mtgmatcher.Card) []string {
+	label := promoLabel(b, card)
+	if label == "" {
+		return nil
+	}
+	return labelWords(superAlternateArt.Replace(label))
+}
+
+var superAlternateArt = strings.NewReplacer("Super Alternate Art", "Manga")
+
+// mangaChosen answers a wording naming the manga art with the printing that
+// carries it, where the catalog crosses that art with something else.
+//
+// The catalog files the crossed printings under one label - "Red Super
+// Alternate Art", "Parallel Manga Alternate Art" - while this storefront
+// names the parts separately and in its own order, "(Alternate Art) (Manga)
+// (Red Parallel)". No wording of one describes a label of the other, so the
+// tiering answers with the plainest label the wording happens to contain,
+// which is "Parallel": the base parallel, standing beside a manga printing
+// worth two orders of magnitude more.
+//
+// Only labels carrying the manga art are considered, and only those whose
+// every word the listing said. That second half is what keeps the plain
+// Alternate Art printing out of it, and the first is what keeps a wording
+// naming the art from being answered by a label that does not have it.
+// Where the longest such label is not unique the wording has not chosen,
+// and neither does this.
+func mangaChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
+	if !mtgmatcher.SlugDescribes(wording, mangaWord) {
+		return nil
+	}
+	said := map[string]bool{}
+	for _, word := range labelWords(wording) {
+		said[word] = true
+	}
+	var pool []mtgmatcher.Card
+	for _, card := range candidates {
+		words := mangaLabelWords(b, card)
+		if len(words) == 0 || !slices.Contains(words, mangaWord) {
+			continue
+		}
+		whole := true
+		for _, word := range words {
+			if !said[word] {
+				whole = false
+				break
+			}
+		}
+		if whole {
+			pool = append(pool, card)
+		}
+	}
+	if len(pool) == 0 {
+		return nil
+	}
+	longest := 0
+	for _, card := range pool {
+		if n := len(mangaLabelWords(b, card)); n > longest {
+			longest = n
+		}
+	}
+	var best []mtgmatcher.Card
+	for _, card := range pool {
+		if len(mangaLabelWords(b, card)) == longest {
+			best = append(best, card)
+		}
+	}
+	if len(best) != 1 {
+		return nil
+	}
+	return best
 }
 
 // runNamedVariants keeps the printings whose set the variation names and

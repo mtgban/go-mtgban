@@ -199,6 +199,24 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016"},
 	},
 	{
+		Desc: "the manga art crossed with a parallel is not the plain parallel",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy",
+			Variation: "OP13-118 118 Alternate Art Manga Red Parallel",
+			Edition:   "One Piece"},
+	},
+	{
+		Desc: "and the catalog's own crossed label answers the same wording",
+		In: mtgmatcher.InputCard{Name: "Shanks",
+			Variation: "OP01-120 120 Parallel Alternate Art Manga",
+			Edition:   "One Piece"},
+	},
+	{
+		Desc: "manga beside a plain alternate art keeps the manga",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy",
+			Variation: "EB02-061 Alternate Art Manga",
+			Edition:   "One Piece"},
+	},
+	{
 		Desc: "the place a family differs by answers when the wording names it",
 		In: mtgmatcher.InputCard{Name: "Capone\"Gang\"Bege",
 			Variation: "OP04-100w Championship 2023 | Winner",
