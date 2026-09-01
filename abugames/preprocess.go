@@ -84,19 +84,75 @@ func markedApart(co *mtgmatcher.CardObject, number string) bool {
 	return found > 1
 }
 
+// promoShelves names the run of sets a wording belongs to, for the promos
+// this storefront files under one edition and one number apiece. Two textless
+// Lightning Bolts sit in "MagicFest 2019" numbered 1, and only the words tell
+// the MagicFest printing from the Player Rewards one. The run is named rather
+// than the set because most of these are handed out yearly and the storefront
+// says which programme, never which year.
+var promoShelves = map[string]string{
+	"MagicFest Textless": "MagicFest",
+	"Nationals":          "Nationals Promos",
+	"RCQ":                "Regional Championship Qualifiers",
+	"RPTQ":               "Pro Tour Promos",
+	"Love Your LGS":      "Love Your LGS",
+	"Standard Showdown":  "Standard Showdown",
+}
+
+// promoSet answers the set on that run holding this card. It answers none
+// where the edition already names the run - the storefront keeps a shelf per
+// year for some of them, and there the words repeat the shelf rather than
+// correcting it - and none where the run holds the card more than once,
+// which is a year this cannot pick between.
+func promoSet(name, edition, variation string) string {
+	for wording, shelf := range promoShelves {
+		if !strings.Contains(variation, wording) {
+			continue
+		}
+		if mtgmatcher.Contains(edition, strings.TrimSuffix(wording, " Textless")) {
+			return ""
+		}
+		printings, err := mtgmatcher.Printings4Card(name)
+		if err != nil {
+			return ""
+		}
+		var found string
+		for _, code := range printings {
+			set, err := mtgmatcher.GetSet(code)
+			if err != nil || !strings.Contains(set.Name, shelf) {
+				continue
+			}
+			if found != "" {
+				return ""
+			}
+			found = code
+		}
+		return found
+	}
+	return ""
+}
+
 // numberPrefix is the part of a collector number before its digits, which is
 // the set a reprint came from where a set files its cards that way.
 func numberPrefix(number string) string {
 	return strings.TrimRight(number, "0123456789")
 }
 
+// The finishes a listing's own FOIL flag asks the catalog for, and the one it
+// asks for when it carries no flag at all.
+const (
+	finishFoil    = "foil"
+	finishEtched  = "etched"
+	finishNonfoil = "nonfoil"
+)
+
 // finishAsked is the finish a listing's own FOIL flag asks the catalog for.
 // Etched counts as one: this storefront spells it the same way.
 func finishAsked(co *mtgmatcher.CardObject, foil bool) bool {
 	if foil {
-		return co.HasFinish("foil") || co.HasFinish("etched")
+		return co.HasFinish(finishFoil) || co.HasFinish(finishEtched)
 	}
-	return co.HasFinish("nonfoil")
+	return co.HasFinish(finishNonfoil)
 }
 
 // finishSibling answers the number of the printing beside this one sold in
@@ -212,6 +268,12 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	if len(card.Language) > 0 {
 		lang = card.Language[0]
 	}
+	// The language field says English on rows whose own title says otherwise
+	// - the Japanese 30th Anniversary Serra Angel is filed as English and
+	// sold as Japanese - so read the title where the two disagree.
+	if named, found := strings.CutPrefix(card.Title, "Non-English - "); found && lang == "English" {
+		lang = strings.TrimSpace(strings.SplitN(named, " - ", 2)[0])
+	}
 
 	// Non-Singles magic cards
 	switch card.Layout {
@@ -299,6 +361,14 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 				break
 			}
 		}
+		// A bundle promo is printed in the set it comes with and numbered
+		// there - Frodo, Sauron's Bane is LTR 448 - so the set the listing
+		// names is the set it is in. Moving it to the promo shelf drops the
+		// number that finds it, and the wording alone answers with whatever
+		// else the set marks, its showcase among them.
+		if strings.Contains(variation, "Bundle") {
+			isPromo = false
+		}
 		if isPromo {
 			// Handle promo cards appearing in multiple editions
 			// like Sorcerous Spyglass
@@ -308,6 +378,18 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			// Reset edition, and trust mtgmatcher to find it by its variation
 			edition = "Promo"
 		}
+	}
+
+	if set := promoSet(cardName, card.Edition, variation); set != "" {
+		edition = set
+	}
+
+	// This storefront shelves the textless Player Rewards cards with the
+	// MagicFest ones, and the matcher reads that shelf first and never gets
+	// to the rule that knows the programme by its own name and year. Say
+	// nothing about the shelf and let that rule answer.
+	if mtgmatcher.Contains(variation, "Player Rewards") && mtgmatcher.Contains(edition, "MagicFest") {
+		edition = "Promo"
 	}
 
 	switch edition {
@@ -646,8 +728,15 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	// set has none, the listing names a card that was never printed, and
 	// pricing it against the finish that was is the same collision by
 	// another route - so let it go.
-	if printing := resolved(cardName, edition, variation, lang, isFoil); printing != nil &&
-		!finishAsked(printing, isFoil) {
+	printing := resolved(cardName, edition, variation, lang, isFoil)
+	switch {
+	case printing == nil:
+	case isFoil && !printing.HasFinish(finishFoil) && printing.HasFinish(finishEtched):
+		// A Secret Lair sells some of its cards etched and never in plain
+		// foil, and this storefront calls both of them FOIL, so the etched
+		// one answered with the nonfoil beside it.
+		variation = strings.TrimSpace(variation + " Etched")
+	case !finishAsked(printing, isFoil):
 		sibling := finishSibling(printing, isFoil)
 		if sibling == "" {
 			return nil, errUnprintedFinish
