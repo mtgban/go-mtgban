@@ -3,6 +3,7 @@ package abugames
 import (
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -57,9 +58,54 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
+// finishAsked is the finish a listing's own FOIL flag asks the catalog for.
+// Etched counts as one: this storefront spells it the same way.
+func finishAsked(co *mtgmatcher.CardObject, foil bool) bool {
+	if foil {
+		return co.HasFinish("foil") || co.HasFinish("etched")
+	}
+	return co.HasFinish("nonfoil")
+}
+
+// finishSibling answers the number of the printing beside this one sold in
+// the finish asked for, and none where the set holds no such printing or
+// holds more than one. Everything that is not the finish has to agree - the
+// language, the frame, and what the catalog marks it - so that a foil the
+// set prints apart, a Japanese alternate art beside an English one or an
+// etched showcase beside a plain one, is never mistaken for this card.
+func finishSibling(co *mtgmatcher.CardObject, foil bool) string {
+	set, err := mtgmatcher.GetSet(co.SetCode)
+	if err != nil {
+		return ""
+	}
+	var number string
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if card.Name != co.Name || card.Number == co.Number ||
+			card.Language != co.Language ||
+			!slices.Equal(card.FrameEffects, co.FrameEffects) ||
+			!slices.Equal(card.PromoTypes, co.PromoTypes) {
+			continue
+		}
+		object := mtgmatcher.CardObject{Card: *card}
+		if !finishAsked(&object, foil) {
+			continue
+		}
+		if number != "" {
+			return ""
+		}
+		number = card.Number
+	}
+	return number
+}
+
 // errForeignListing marks a listing in a language the catalog never printed
 // the card in, which has no printing of its own to be priced against.
 var errForeignListing = errors.New("foreign listing")
+
+// errUnprintedFinish marks a listing whose finish the catalog never sold that
+// printing in, which has no printing of its own to be priced against.
+var errUnprintedFinish = errors.New("unprinted finish")
 
 // boosterFun is the mark the catalog gives every frame a set prints beside
 // its plain one - borderless, showcase, extended art, retro. A drop marker
@@ -499,6 +545,25 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			variation += " "
 		}
 		variation += lang
+	}
+
+	// The finish a listing names has to be one the printing was sold in. A
+	// set can keep the two apart at two numbers - Avatar prints Aang's
+	// Defense in foil at 211 and in nonfoil at 266 - and the number names
+	// only one of them, so the foil and the nonfoil answer alike and the
+	// shop's two prices land on a single uuid.
+	//
+	// Take the printing beside it sold in the finish asked for. Where the
+	// set has none, the listing names a card that was never printed, and
+	// pricing it against the finish that was is the same collision by
+	// another route - so let it go.
+	if printing := resolved(cardName, edition, variation, lang, isFoil); printing != nil &&
+		!finishAsked(printing, isFoil) {
+		sibling := finishSibling(printing, isFoil)
+		if sibling == "" {
+			return nil, errUnprintedFinish
+		}
+		variation = sibling
 	}
 
 	// A storefront selling a card in a language the catalog never printed it
