@@ -585,6 +585,7 @@ var editionTable = map[string]string{
 	"拡張アート":                 "Extended Art",
 	"新枠 2008年版ジャッジ褒賞":       "Mordern Frame 2008 Judge Rewards",
 	"旧枠 2000年版ジャッジ褒賞":       "Retro Frame 2000 Judge Rewards",
+	"旧枠 ジャッジ褒賞":             "Retro Frame Judge Rewards",
 	"旧枠 その他プロモ":             "Retro Frame Other Promos",
 	"旧枠 ヒストリープロモ":           "Retro Frame 30th Anniversary",
 	"旧枠 褒賞プログラム":            "Old Frame Rewards Program",
