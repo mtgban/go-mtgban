@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/internal/jsonflex"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -100,7 +101,7 @@ func TestPreprocessMagic(t *testing.T) {
 		card, err := preprocessMagic(VSProduct{
 			DisplayName: tt.display,
 			ProductData: VSProductData{
-				Set:                       flexString(tt.set),
+				Set:                       jsonflex.String(tt.set),
 				SetName:                   tt.setName,
 				CollectorNumberNormalized: tt.number,
 			},
@@ -168,7 +169,7 @@ func TestPreprocessMagicEtched(t *testing.T) {
 		card, err := preprocessMagic(VSProduct{
 			DisplayName: tt.display,
 			ProductData: VSProductData{
-				Set:                       flexString(tt.set),
+				Set:                       jsonflex.String(tt.set),
 				SetName:                   tt.setName,
 				CollectorNumberNormalized: tt.number,
 			},
@@ -489,7 +490,7 @@ func TestPreprocessMagicSubset(t *testing.T) {
 			"rvr", "Ravnica Remastered", 280, "rvr"},
 	} {
 		product := VSProduct{DisplayName: tt.display}
-		product.ProductData.Set = flexString(tt.set)
+		product.ProductData.Set = jsonflex.String(tt.set)
 		product.ProductData.SetName = tt.setName
 		product.ProductData.CollectorNumberNormalized = tt.number
 		card, err := preprocessMagic(product)
