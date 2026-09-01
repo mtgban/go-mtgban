@@ -221,11 +221,15 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		return nil, errors.New("duplicated card")
 	}
 
-	isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil") ||
-		strings.Contains(strings.ToLower(card.DisplayTitle), " - fol") // SS3 Pyroblast
+	// The flag is written with the space and without it, "- FOIL" beside
+	// "-FOIL", and reading only the spaced form priced a foil as a nonfoil.
+	title := strings.ToLower(card.DisplayTitle)
+	isFoil := strings.Contains(title, " foil") ||
+		strings.Contains(title, "-foil") ||
+		strings.Contains(title, " - fol") // SS3 Pyroblast
 
 	edition := card.Edition
-	title := card.DisplayTitle
+	title = card.DisplayTitle
 	if title == "" {
 		title = card.SimpleTitle
 	}
