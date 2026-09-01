@@ -373,10 +373,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		// rules give it, beside the flag-driven defaults, so an input
 		// naming a treatment reaches the exact crossing it names.
 		foilUUIDs := map[string]string{}
-		if plain := findPrinting(group, mtgmatcher.FinishNonfoil, finishUnlimited, finish1stEdition); plain != nil {
+		if plain := pickFinish(group, mtgmatcher.FinishNonfoil, finishUnlimited, finish1stEdition); plain != nil {
 			foilUUIDs[mtgmatcher.FinishNonfoil] = plain.ID
 		}
-		if foil := findPrinting(group, finishHolofoil, finishUnlimitedHolo, finish1stEditionHolo, finishReverseHolofoil); foil != nil {
+		if foil := pickFinish(group, finishHolofoil, finishUnlimitedHolo, finish1stEditionHolo, finishReverseHolofoil); foil != nil {
 			foilUUIDs[mtgmatcher.FinishFoil] = foil.ID
 		}
 		for _, entry := range group {
@@ -476,7 +476,7 @@ func isFoilFinish(finish string) bool {
 
 // findPrinting returns the group's first entry of the first finish present,
 // in the given preference order, or nil when the group has none of them.
-func findPrinting(group []*DatastoreCard, finishes ...string) *DatastoreCard {
+func pickFinish(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 	for _, finish := range finishes {
 		for _, entry := range group {
 			if canonicalFinish(entry.Finish) == finish {
@@ -490,7 +490,7 @@ func findPrinting(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 // pickPrinting is findPrinting with the group's first entry as a fallback,
 // for the card the matcher reads the shared fields off.
 func pickPrinting(group []*DatastoreCard, finishes ...string) *DatastoreCard {
-	if entry := findPrinting(group, finishes...); entry != nil {
+	if entry := pickFinish(group, finishes...); entry != nil {
 		return entry
 	}
 	return group[0]
