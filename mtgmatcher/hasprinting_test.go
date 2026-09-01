@@ -2,6 +2,7 @@ package mtgmatcher
 
 import (
 	"slices"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -161,6 +162,67 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 			oldHasPrinting("Island", "finish", FinishFoil)
 		}
 	})
+}
+
+// TestAliasOnlyBucketNamesOneCard pins the answer for a bucket no card owns
+// - one reached only through a flavor name, a face or a foreign printing.
+// Where the alias names one card it answers with that card; where two cards
+// answer to it, the query names no card. "Pantano" is the Spanish Swamp and
+// the Spanish Quagmire, and answering with either was a guess the caller
+// could not see, decided by which uuid sorted first.
+//
+// The buckets are found in the data rather than named, like the sibling
+// above, so a refresh that retires one collision and introduces another
+// still exercises the rule.
+func TestAliasOnlyBucketNamesOneCard(t *testing.T) {
+	if len(GetUUIDs()) == 0 {
+		t.Skip("datastore not loaded")
+	}
+
+	var named, ambiguous int
+	for norm, uuids := range defaultBackend.Hashes {
+		// The bucket key is queried as the name, which only stands in for
+		// the alias where the key is what normalizing it returns.
+		if Normalize(norm) != norm {
+			continue
+		}
+		names := map[string]bool{}
+		owned := false
+		for _, uuid := range uuids {
+			co, found := defaultBackend.UUIDs[uuid]
+			if !found {
+				continue
+			}
+			if Normalize(co.Name) == norm {
+				owned = true
+				break
+			}
+			names[co.Name] = true
+		}
+		if owned || len(names) == 0 {
+			continue
+		}
+
+		entry, found := defaultBackend.entry4Name(norm)
+		if len(names) > 1 {
+			ambiguous++
+			if found {
+				var list []string
+				for name := range names {
+					list = append(list, name)
+				}
+				sort.Strings(list)
+				t.Errorf("%q answers %q, but %v all answer to it",
+					norm, entry.Name, list)
+			}
+			continue
+		}
+		named++
+		if !found {
+			t.Errorf("%q answers nothing, but only %v answers to it", norm, names)
+		}
+	}
+	t.Logf("alias-only buckets: %d naming one card, %d naming several", named, ambiguous)
 }
 
 // TestHasPrintingAnswersForTheNamedCard pins what the bucket rewrite of

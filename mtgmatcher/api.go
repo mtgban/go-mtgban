@@ -314,22 +314,31 @@ func SearchSealedContains(name string) ([]string, error) {
 // "Servo // Thopter".
 //
 // Lookups pick between them in this order: the card whose name matches
-// verbatim, then any whose name normalizes the same, then the first entry
-// in the bucket.
+// verbatim, then any whose name normalizes the same, then the card the
+// bucket holds only under an alias.
 //
 // The first case is what tells apart the cards that share a bucket outright:
 // normalization folds case and punctuation, so "Mr. 1 (Daz.Bonez)" and
 // "Mr.1 (Daz.Bonez)" are two cards under one key. The second prefers an
 // entry that owns the name over one the bucket holds only as an alias, for
-// a query spelled unlike any of them. The last covers buckets reached only
-// by an alias, such as a flavor name.
+// a query spelled unlike any of them.
+//
+// The last covers the buckets reached only by an alias - a flavor name, a
+// face, a foreign printing - and answers only where the alias names one
+// card. Two cards can answer to one alias: "Pantano" is the Spanish Swamp
+// and the Spanish Quagmire, "Start" is the front face of both Start //
+// Finish and Start // Fire. Nothing in the query says which, so the query
+// names no card, the way a bucket holding no such name at all names none.
+// Answering with either was a guess the caller could not see, and it
+// picked by uuid order.
 func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 	norm := Normalize(name)
 	uuids, found := b.Hashes[norm]
 	if !found {
 		return nil, false
 	}
-	var normalized *CardObject
+	var owner, aliased *CardObject
+	aliasesDisagree := false
 	for _, uuid := range uuids {
 		entry, found := b.UUIDs[uuid]
 		if !found {
@@ -338,15 +347,26 @@ func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 		if strings.EqualFold(entry.Name, name) {
 			return entry, true
 		}
-		if normalized == nil && Normalize(entry.Name) == norm {
-			normalized = entry
+		if Normalize(entry.Name) == norm {
+			if owner == nil {
+				owner = entry
+			}
+			continue
+		}
+		switch {
+		case aliased == nil:
+			aliased = entry
+		case !strings.EqualFold(aliased.Name, entry.Name):
+			aliasesDisagree = true
 		}
 	}
-	if normalized != nil {
-		return normalized, true
+	if owner != nil {
+		return owner, true
 	}
-	entry, found := b.UUIDs[uuids[0]]
-	return entry, found
+	if aliased == nil || aliasesDisagree {
+		return nil, false
+	}
+	return aliased, true
 }
 
 // NameIsToken reports whether the card actually named this way is a token.
@@ -451,9 +471,10 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 
 	// Resolve which real card name the query means, the way Printings4Card
 	// does: the case-exact entry when one exists, the first normalized
-	// match otherwise. The hash bucket conflates normalize-equal but
-	// distinct names ("Cat Warrior" the token beside "Cat Warriors" the
-	// card), and the printings of one must never answer for the other.
+	// match otherwise. The hash bucket conflates names that normalize the
+	// same but belong to different cards ("Mr. 1 (Daz.Bonez)" beside
+	// "Mr.1 (Daz.Bonez)"), and the printings of one must never answer for
+	// the other.
 	entry, found := b.entry4Name(name)
 	if !found {
 		if b.rules == nil {
