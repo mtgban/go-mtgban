@@ -58,6 +58,17 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
+// wearsMark reports a collector number carrying the mark a set adds to tell a
+// second printing from the first - a star, a dagger, a letter after the
+// digits. The storefront writes it where it writes no other word for the
+// printing, so it says more than a finish the listing leaves out.
+func wearsMark(number string) bool {
+	if number == "" || number[0] < '0' || number[0] > '9' {
+		return false
+	}
+	return strings.TrimLeft(number, "0123456789") != ""
+}
+
 // sharesNumber reports a collector number that is the one given wearing
 // whatever mark a set adds to tell a second printing apart - a dagger in
 // Arabian Nights, a letter in Portal, a star in a Secret Lair.
@@ -629,11 +640,22 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	// The wording repeats the number and the storefront's own field spells
+	// it with the mark that tells two printings apart - "(Secret Lair
+	// 1630)" beside a card_number of 1630 with a star. Take the fuller one.
+	if spelled := mtgmatcher.ExtractNumberAny(variation); spelled != "" &&
+		spelled != card.Number && sharesNumber(spelled, card.Number) {
+		variation = strings.Replace(variation, spelled, card.Number, 1)
+	}
+
 	// Use collector number data when the variation carries has none, unless for a couple of editions
 	var numbered bool
 	if card.Number != "" && mtgmatcher.ExtractNumberAny(variation) == "" {
-		switch edition {
-		case "Unfinity", "Promo":
+		switch {
+		case edition == "Unfinity":
+		// A Secret Lair is numbered whatever shelf the storefront files it
+		// on, and the number is the whole of what tells its drops apart.
+		case edition == "Promo" && !mtgmatcher.Contains(variation, "Secret Lair"):
 		default:
 			if variation != "" {
 				variation += " "
@@ -786,6 +808,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	printing := resolved(cardName, edition, variation, lang, isFoil)
 	switch {
 	case printing == nil:
+	case printing.Number == card.Number && wearsMark(card.Number):
+		// The storefront's number names this printing and wears the mark
+		// that tells it from its sibling - 1630 with a star beside plain
+		// 1630 - which says more than the FOIL it forgot to write.
 	case isFoil && !printing.HasFinish(finishFoil) && printing.HasFinish(finishEtched):
 		// A Secret Lair sells some of its cards etched and never in plain
 		// foil, and this storefront calls both of them FOIL, so the etched
