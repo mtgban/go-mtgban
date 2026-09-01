@@ -57,6 +57,10 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
+// errForeignListing marks a listing in a language the catalog never printed
+// the card in, which has no printing of its own to be priced against.
+var errForeignListing = errors.New("foreign listing")
+
 // boosterFun is the mark the catalog gives every frame a set prints beside
 // its plain one - borderless, showcase, extended art, retro. A drop marker
 // like sldbonus is not one of them: it says where a card came from, not what
@@ -71,8 +75,8 @@ func finishNamed(co *mtgmatcher.CardObject) bool {
 
 // resolved answers the printing a description names, and nil when it names
 // none. It matches a copy, so the matcher's own edits stay in the probe.
-func resolved(name, edition, variation string, foil bool) *mtgmatcher.CardObject {
-	probe := mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
+func resolved(name, edition, variation, language string, foil bool) *mtgmatcher.CardObject {
+	probe := mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Language: language, Foil: foil}
 	id, err := mtgmatcher.Match(&probe)
 	if err != nil {
 		return nil
@@ -434,7 +438,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	// only where it reaches a printing on its own.
 	if letter == "" {
 		variant := variantLetter(variation)
-		if variant != "" && resolved(cardName, edition, variant, isFoil) != nil {
+		if variant != "" && resolved(cardName, edition, variant, lang, isFoil) != nil {
 			variation = variant
 		}
 	}
@@ -450,9 +454,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	// its own is one where the wording and the number already agree.
 	if numbered {
 		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
-		plain := resolved(cardName, edition, variation, isFoil)
+		plain := resolved(cardName, edition, variation, lang, isFoil)
 		if bare != "" && plain != nil && len(plain.PromoTypes) == 0 {
-			marked := resolved(cardName, edition, bare, isFoil)
+			marked := resolved(cardName, edition, bare, lang, isFoil)
 			if marked != nil && marked.HasPromoType(boosterFun) &&
 				(finishNamed(marked) == isFoil || finishNamed(marked) == finishNamed(plain)) {
 				variation = bare
@@ -467,9 +471,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	// unmarked - a set whose every printing is marked, like Special Guests,
 	// has no plain card to reach and keeps the number it came with.
 	if numbered && strings.TrimSpace(strings.TrimSuffix(variation, card.Number)) == "" {
-		framed := resolved(cardName, edition, variation, isFoil)
+		framed := resolved(cardName, edition, variation, lang, isFoil)
 		if framed != nil && framed.HasPromoType(boosterFun) {
-			plain := resolved(cardName, edition, "", isFoil)
+			plain := resolved(cardName, edition, "", lang, isFoil)
 			if plain != nil && len(plain.PromoTypes) == 0 &&
 				plain.SetCode == framed.SetCode && finishNamed(plain) == isFoil {
 				variation = ""
@@ -495,6 +499,20 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			variation += " "
 		}
 		variation += lang
+	}
+
+	// A storefront selling a card in a language the catalog never printed it
+	// in has nowhere to file it. The match falls back on the English
+	// printing, and the shop's own price for the Italian copy lands beside
+	// the English one on a single uuid - three prices on 9th Edition Elvish
+	// Piper, English, Italian and Japanese, each of them real. A set that
+	// does hold the printing is reached and kept, the Japanese Chronicles
+	// and the foreign black borders among them.
+	if lang != "" && lang != "English" {
+		printing := resolved(cardName, edition, variation, lang, isFoil)
+		if printing == nil || printing.Language != lang {
+			return nil, errForeignListing
+		}
 	}
 
 	return &mtgmatcher.InputCard{
