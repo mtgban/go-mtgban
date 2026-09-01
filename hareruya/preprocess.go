@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -253,10 +254,12 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	}
 
 	// [EOE]
+	var promoLine bool
 	matches = reBrackets.FindStringSubmatch(title)
 	if len(matches) > 1 {
 		edition = matches[1]
 		if base, suffix, found := strings.Cut(edition, "-"); found {
+			promoLine = suffix == "P"
 			edition = dashSuffix(base, suffix)
 		}
 	}
@@ -265,6 +268,21 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	number, series := splitParens(title)
 	if series != "" {
 		edition = series
+	}
+
+	// A -P edition is the set's promos rather than the set itself, and where
+	// the promo is filed away from that set - the Arena League foils, the
+	// game day and release printings - naming the set pins the listing to
+	// one that does not hold it, before the treatment beside it is read.
+	//
+	// The number says which of the two this is. A modern set files its own
+	// prerelease promo among its cards and the title gives that card's
+	// number, so the set is right and keeping the suffix would lose it. The
+	// older promos have no number of the set's to give, and the group the
+	// title puts there instead is the treatment - a word, with no digit in
+	// it, which is what tells the two apart.
+	if promoLine && series == "" && !strings.ContainsFunc(number, unicode.IsDigit) {
+		edition += "-P"
 	}
 
 	// ■プレリリース■
@@ -474,13 +492,17 @@ var editionTable = map[string]string{
 	"エッチング・Foil":          "Etched Foil",
 	"エラーカード":              "Misprint",
 	"エンブレムあり":             "With Symbol",
+	"エントリーセット":            "Intro Pack Promo",
 	"エンブレムなし":             "No Symbol",
 	"ゲートウェイ":              "Gateway",
+	"ストアチャンピオンシップ":        "Store Championship",
 	"ゲームデー":               "Game Day",
 	"コマンドフェスト":            "Command Fest",
 	"サージ・Foil":            "Surge Foil",
 	"ショーダウン":              "Showdown",
 	"ジャッジ褒賞":              "Judge Rewards",
+	"基本セット系プロモ":           "Promo",
+	"発売記念":                "Release",
 	"スポットライトシリーズプロモ":      "Spotlight Series Promo",
 	"ダブルレインボウ・Foil":       doubleRainbow,
 	"テキストボックスレス ゲームデー":    "PCMP",
