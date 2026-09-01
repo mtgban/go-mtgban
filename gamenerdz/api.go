@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/internal/jsonflex"
 )
 
 const (
@@ -59,33 +60,9 @@ type GNProduct struct {
 // GNProductData is the body of a product, apart from the envelope it arrives
 // in.
 type GNProductData struct {
-	Set     flexString `json:"set"`
-	SetName string     `json:"setName"`
-	Rarity  string     `json:"rarity"`
-}
-
-// flexString reads a field the storefront types differently by game: set is a
-// plain code for most lines but a whole object for some Pokemon products, of
-// which only the id names the set. Anything else decodes to empty rather than
-// failing the page it arrived on.
-type flexString string
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (f *flexString) UnmarshalJSON(data []byte) error {
-	var plain string
-	if json.Unmarshal(data, &plain) == nil {
-		*f = flexString(plain)
-		return nil
-	}
-	var object struct {
-		ID string `json:"id"`
-	}
-	if json.Unmarshal(data, &object) == nil {
-		*f = flexString(object.ID)
-		return nil
-	}
-	*f = ""
-	return nil
+	Set     jsonflex.String `json:"set"`
+	SetName string          `json:"setName"`
+	Rarity  string          `json:"rarity"`
 }
 
 // GNBuyVariant is one buylist offer on a product. The credit price arrives
