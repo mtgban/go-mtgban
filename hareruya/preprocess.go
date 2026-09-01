@@ -469,7 +469,7 @@ var editionTable = map[string]string{
 	"アルターネイト版":            "Alternate",
 	"アンパサンド":              "Ampersand",
 	"アンパサンド・カード":          "Ampersand Promo",
-	"イラスト違い":              "Alternate",
+	"イラスト違い":              "S-Chinese alt art",
 	"ウギンの運命":              "Ugin's Fate",
 	"エッチング・Foil":          "Etched Foil",
 	"エラーカード":              "Misprint",
