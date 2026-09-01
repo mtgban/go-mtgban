@@ -58,7 +58,7 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 		Name:      cardName,
 		Edition:   edition,
 		Variation: number,
-		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
+		Foil:      strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName),
 	}
 
 	// The storefront files every prerelease stamp under one pseudo-set,
@@ -93,6 +93,27 @@ const (
 	preShelf = "pre"
 	preStamp = "Prerelease"
 )
+
+// bracketed is anything this storefront brackets into a display name: the
+// set-and-number tag, the variant wording, the grade it tails a played copy
+// with. What is left is the shelf the product is sold from, which ends in
+// the finish.
+var bracketed = regexp.MustCompile(`\s*\([^)]*\)`)
+
+// nameSaysFoil reads the finish off the name a product is sold under, which
+// the finish field beside it sometimes contradicts. Only this direction is
+// worth reading: a name spelling the finish is a statement, while a name
+// that does not is silence - Aether Revolt's Ajani, Valiant Protector is
+// printed in foil only and its name never says so - so the name adds a
+// finish the field left off and never takes one away.
+//
+// Reading the name whole would not do: a set can be called a foil edition
+// without the product being one, so only the finish the shelf ends in
+// counts.
+func nameSaysFoil(displayName string) bool {
+	shelf := strings.TrimSpace(bracketed.ReplaceAllString(displayName, ""))
+	return strings.HasSuffix(shelf, "Foil")
+}
 
 // lorcanaNumber is the collector group Lorcana display names carry, like
 // "(17/204)": the printing's own number over the set size the matcher does
