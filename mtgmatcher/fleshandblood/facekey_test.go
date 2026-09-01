@@ -8,8 +8,7 @@ import (
 
 // TestFaceKey pins the fold that makes two spellings of one pairing answer
 // alike: order, repetition and case are all things a storefront decides and
-// the card does not. The keys read oddly because Normalize folds plurals by
-// dropping every s, which is its business and not this fold's.
+// the card does not.
 func TestFaceKey(t *testing.T) {
 	for _, tt := range []struct {
 		desc, name, want string

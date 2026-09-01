@@ -32,6 +32,8 @@ func TestSkuSegments(t *testing.T) {
 // with a d suffix while SCG marks it b in the sku, and the scryfall id
 // SCG sends names the first for both.
 func TestResolvePortalVariants(t *testing.T) {
+	withMagic(t)
+
 	if len(mtgmatcher.GetUUIDs()) == 0 {
 		t.Skip("datastore not loaded")
 	}

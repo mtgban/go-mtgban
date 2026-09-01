@@ -34,6 +34,8 @@ func TestLanguageMatches(t *testing.T) {
 // mtgjson keeps one printing for the inherently foreign sets while SCG
 // sells them in several languages, so only the matching one resolves.
 func TestResolveForeignLanguages(t *testing.T) {
+	withMagic(t)
+
 	if len(mtgmatcher.GetUUIDs()) == 0 {
 		t.Skip("datastore not loaded")
 	}

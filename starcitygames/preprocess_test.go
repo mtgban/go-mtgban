@@ -15,28 +15,40 @@ import (
 // second time. A backend is 2.9GB resident and the reload held two.
 var magicDatastore *mtgmatcher.Backend
 
+// magicInstalled records whether TestMain found a Magic datastore. The
+// package does not refuse to run without one: this storefront's catalog
+// covers four games, and the tests for the other three run under the job
+// holding that game's datastore, which does not carry AllPrintings.
+var magicInstalled bool
+
 func TestMain(m *testing.M) {
-	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
-	if allprintingsPath == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
+	if allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH"); allprintingsPath != "" {
+		allPrintingsReader, err := datastore.Open(allprintingsPath)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		ds, err := magic.Load(allPrintingsReader)
+		allPrintingsReader.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		magicDatastore = ds
+		mtgmatcher.SetGlobalDatastore(ds)
+		magicInstalled = true
 	}
-
-	allPrintingsReader, err := datastore.Open(allprintingsPath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer allPrintingsReader.Close()
-
-	ds, err := magic.Load(allPrintingsReader)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	magicDatastore = ds
-	mtgmatcher.SetGlobalDatastore(ds)
 
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 
 	os.Exit(m.Run())
+}
+
+// withMagic skips a test that reads the Magic datastore where none is
+// installed.
+func withMagic(t *testing.T) {
+	t.Helper()
+	if !magicInstalled {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 type SKUTest struct {
@@ -246,6 +258,8 @@ var SKUTests = []SKUTest{
 }
 
 func TestSCGSKU(t *testing.T) {
+	withMagic(t)
+
 	for _, probe := range SKUTests {
 		test := probe
 		t.Run(test.In, func(t *testing.T) {
