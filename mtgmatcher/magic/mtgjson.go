@@ -257,6 +257,7 @@ const (
 	PromoTypeSilverScroll      = "silverscroll"
 	PromoTypeSerialized        = "serialized"
 	PromoTypeSilverFoil        = "silverfoil"
+	PromoTypeSingularityFoil   = "singularityfoil"
 	PromoTypeStarterDeck       = "starterdeck"
 	PromoTypeStepAndCompleat   = "stepandcompleat"
 	PromoTypeStoreChampionship = "storechampionship"
