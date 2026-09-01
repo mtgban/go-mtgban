@@ -389,7 +389,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					if unknownPrinting(cardName, edition) {
 						return
 					}
-					theCard = &mtgmatcher.InputCard{Name: catalogColor(cardName), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(cardName)), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
 				case GamePokemon:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
 				case GameOnePiece:
@@ -618,7 +618,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			if unknownPrinting(product.Name, product.ItemSet) {
 				continue
 			}
-			theCard = &mtgmatcher.InputCard{Name: catalogColor(product.Name), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(product.Name)), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
 		case GameLorcana:
@@ -860,6 +860,39 @@ var csiColors = strings.NewReplacer("(Light Blue)", "(Silver)")
 // files it.
 func catalogColor(name string) string {
 	return csiColors.Replace(name)
+}
+
+// csiSpellings corrects the Yu-Gi-Oh names this storefront misspells. Each
+// key is a name no set in the game has and each value is the card it means,
+// one slip of the fingers away: a doubled letter, a dropped one, a swapped
+// pair. Left as typed they look up nothing at all and the listing goes
+// unpriced.
+//
+// The pairs are spelled out rather than found by nearest match. A catalog
+// tells its numbered siblings apart by a single character - "Armed Dragon
+// LV3" against LV5, "Harpie Lady 1" against 2 - and 255 pairs of names
+// inside one set are a single edit apart for that reason, so a reader that
+// corrects by distance can answer a card the datastore is merely missing
+// with its neighbour. A table cannot.
+var csiSpellings = map[string]string{
+	"Belial - Marqis of Darkness":   "Belial - Marquis of Darkness",
+	"Compulsory Evactuation Device": "Compulsory Evacuation Device",
+	"Fearl Imp":                     "Feral Imp",
+	"Homumculus the Alchemic Being": "Homunculus the Alchemic Being",
+	"Miracle Jurrassic Egg":         "Miracle Jurassic Egg",
+	"Perfect Synch - A-Un":          "Perfect Sync - A-Un",
+	"Rush Recklessely":              "Rush Recklessly",
+	"Sealing Ceremony of Mokuten":   "Sealing Ceremony of Mokuton",
+	"Sealing Cermony of Raiton":     "Sealing Ceremony of Raiton",
+}
+
+// catalogSpelling spells a Yu-Gi-Oh name the way the catalog does, where this
+// storefront has typed it wrong.
+func catalogSpelling(name string) string {
+	if spelled, found := csiSpellings[name]; found {
+		return spelled
+	}
+	return name
 }
 
 var csiRarities = map[string]string{
