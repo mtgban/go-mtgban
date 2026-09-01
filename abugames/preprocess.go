@@ -58,6 +58,30 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
+// markedApart reports a set holding more than one printing of a card whose
+// number is the one given, bare or wearing a mark the storefront never
+// carries. A number that names several printings names none of them.
+func markedApart(co *mtgmatcher.CardObject, number string) bool {
+	if co == nil || number == "" {
+		return false
+	}
+	set, err := mtgmatcher.GetSet(co.SetCode)
+	if err != nil {
+		return false
+	}
+	var found int
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if card.Name != co.Name || card.Language != co.Language {
+			continue
+		}
+		if strings.TrimRight(card.Number, "†★") == number {
+			found++
+		}
+	}
+	return found > 1
+}
+
 // finishAsked is the finish a listing's own FOIL flag asks the catalog for.
 // Etched counts as one: this storefront spells it the same way.
 func finishAsked(co *mtgmatcher.CardObject, foil bool) bool {
@@ -486,6 +510,25 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		variant := variantLetter(variation)
 		if variant != "" && resolved(cardName, edition, variant, lang, isFoil) != nil {
 			variation = variant
+		}
+	}
+
+	// A set can file two printings of a card under one number, telling them
+	// apart with a mark the storefront does not carry - Arabian Nights
+	// holds its two Erg Raiders at 25 and at 25 with a dagger. The number
+	// then picks whichever it lands on first and the wording beside it,
+	// which is the only thing that knows, goes unread. Drop it and let the
+	// wording answer.
+	if numbered {
+		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
+		numbered := resolved(cardName, edition, variation, lang, isFoil)
+		if bare != "" && markedApart(numbered, card.Number) {
+			// Only where what is left says which of them. "The List"
+			// names both printings of Grizzly Fate and neither.
+			marked := resolved(cardName, edition, bare, lang, isFoil)
+			if marked != nil && marked.UUID != numbered.UUID {
+				variation = bare
+			}
 		}
 	}
 
