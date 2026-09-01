@@ -320,7 +320,19 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	}
 	fixup, found = editionTable[variant]
 	if found {
-		variant = fixup
+		// A value naming a set is the table saying which set the printing
+		// is in, and only the edition can carry that. Left in the variant
+		// it still reaches the printing where the edition is already a
+		// promo line of its own, which is how the game day textless cards
+		// resolve. A -P edition is not that: it names one set's promos and
+		// pins the listing among them, and the Champs textless Imperious
+		// Perfect is filed in PCMP rather than with Lorwyn's.
+		_, setErr := mtgmatcher.GetSet(fixup)
+		if promoLine && setErr == nil {
+			edition, variant = fixup, ""
+		} else {
+			variant = fixup
+		}
 	}
 
 	fixup, found = cardTable[cardName]
