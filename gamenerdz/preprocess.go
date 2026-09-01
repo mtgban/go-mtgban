@@ -138,6 +138,15 @@ var onePieceCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
 // twice, once more ahead of that wording - "Baby 5 (OP04-032) (Jolly Roger
 // Foil) (OP04-032)" - so the name runs to the last code and sheds the code's
 // earlier copy, keeping the wording between them.
+// squareDecorations rewrites the brackets this storefront hangs a finishing
+// place in - "(Online Regional 2024 Vol. 2) [Winner]" - as the parentheses it
+// writes every other qualifier in. The matcher splits a parenthetical off the
+// name and reads it as the printing being named; a bracket it leaves in the
+// name, where the place is lost and the listing lands on the printing that
+// was awarded none. That is the whole of the difference between a $558 card
+// and a $4 one at the same number.
+var squareDecorations = strings.NewReplacer("[", "(", "]", ")")
+
 func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 	locs := onePieceCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if locs == nil {
@@ -147,6 +156,7 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 
 	code := product.DisplayName[loc[2]:loc[3]]
 	cardName := strings.ReplaceAll(product.DisplayName[:loc[0]], "("+code+")", "")
+	cardName = squareDecorations.Replace(cardName)
 
 	return &mtgmatcher.InputCard{
 		Name:      strings.Join(strings.Fields(cardName), " "),
