@@ -30,13 +30,24 @@ var editionAliases = map[string]string{
 	`"W" Promos`:                "WoTC Promo",
 
 	// The era-prefixed promo spellings the catalog writes with the era's
-	// long title. SV, MEP, SM, XY and Nintendo are absent on purpose:
-	// their replay puts products on Jumbo, e-League and McDonald's
-	// printings the id route contradicts.
-	"SWSH Black Star Promos": "SWSH: Sword & Shield Promo Cards",
-	"BW Black Star Promos":   "Black and White Promos",
-	"DP Black Star Promos":   "Diamond and Pearl Promos",
-	"HGSS Black Star Promos": "HGSS Promos",
+	// long title. SV, MEP, SM and XY are absent on purpose: their replay
+	// puts products on Jumbo, e-League and McDonald's printings the id
+	// route contradicts.
+	//
+	// Nintendo was absent for the same reason and is back, because the
+	// replay says the opposite of what was feared for it: over the whole
+	// Cool Stuff Inc Pokemon buylist it gains 7 and moves 4, and three of
+	// those four move OFF the Jumbo printings rather than onto them - a
+	// listing filed under "Nintendo Black Star Promos" is not a jumbo.
+	// The fourth is Pikachu 035, which had been answering with the
+	// Evolutions card at a fortieth of the price. Nothing is lost, and 23
+	// of the 40 listings on that shelf already reached the set without
+	// the alias.
+	"SWSH Black Star Promos":     "SWSH: Sword & Shield Promo Cards",
+	"BW Black Star Promos":       "Black and White Promos",
+	"DP Black Star Promos":       "Diamond and Pearl Promos",
+	"HGSS Black Star Promos":     "HGSS Promos",
+	"Nintendo Black Star Promos": "Nintendo Promos",
 
 	// The same promo runs written with the era behind the word rather than
 	// in front of it. Neither of the general readings reaches these: the
