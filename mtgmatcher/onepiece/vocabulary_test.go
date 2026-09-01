@@ -23,6 +23,7 @@ const vocabularyFixture = `{
 	},
 	"cards": [
 		{"id": "op13-118_657400_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 657400}},
+		{"id": "op13-118_657401_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "image": "x", "variant": "Red Super Alternate Art", "externalLinks": {"tcgPlayerId": 657401}},
 		{"id": "op13-118_657402_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "variant": "Super Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 657402}},
 		{"id": "op13-118_657403_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "variant": "Parallel", "image": "x", "externalLinks": {"tcgPlayerId": 657403}},
 		{"id": "op16-011_695995_foil", "name": "Vista", "number": "OP16-011", "setCode": "OP16", "rarity": "SR", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 695995}},
@@ -60,12 +61,17 @@ func TestCatalogVocabulary(t *testing.T) {
 		{
 			// The same listing with the treatment written behind it: the
 			// storefront sells this at $8400 and the one above at $1950.
+			// The catalog crosses the two into one label, "Red Super
+			// Alternate Art", and that is the printing being sold - not
+			// the plain Parallel standing beside it, which the storefront
+			// sells for $25. The words of the crossed label are all said,
+			// and no other label carrying the manga art says more of them.
 			desc: "and the parallel of it is told apart by what it added",
 			in: mtgmatcher.InputCard{
 				Name: "Monkey.D.Luffy", Variation: "OP13-118 Alternate Art Manga Red Parallel",
 				Edition: "OP13 - Carrying On His Will", Foil: true,
 			},
-			want: "op13-118_657403_foil",
+			want: "op13-118_657401_foil",
 		},
 		{
 			desc: "and the plain printing beside it is still the plain one",
