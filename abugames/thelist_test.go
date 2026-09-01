@@ -70,3 +70,41 @@ func TestTheListConflict(t *testing.T) {
 		})
 	}
 }
+
+// TestSecretLairDrop pins the two drops of one card a Secret Lair can hold.
+// The storefront's number is the only thing telling them apart - its wording
+// says "Secret Lair" and no more - and dropping that number to read a star
+// walked the listing over to the other drop entirely.
+func TestSecretLairDrop(t *testing.T) {
+	for _, test := range []struct {
+		desc    string
+		card    ABUCard
+		wantNum string
+	}{
+		{"the drop the number names", ABUCard{
+			DisplayTitle: "Teferi's Ageless Insight (Secret Lair) - FOIL",
+			Edition:      "Promo", Number: "1721"}, "1721★"},
+		{"the other, which the storefront renames", ABUCard{
+			DisplayTitle: "Mimir's Ancient Wisdom | Teferi's Ageless Insight (Secret Lair) - FOIL",
+			Edition:      "Promo", Number: "2214"}, "2214"},
+	} {
+		t.Run(test.desc, func(t *testing.T) {
+			card := test.card
+			in, err := preprocess(&card)
+			if err != nil {
+				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
+			}
+			id, err := mtgmatcher.Match(in)
+			if err != nil {
+				t.Fatalf("Match(%q) = %v", in, err)
+			}
+			co, err := mtgmatcher.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "SLD" || co.Number != test.wantNum {
+				t.Errorf("Match(%q) = %s|%s, want SLD|%s", in, co.SetCode, co.Number, test.wantNum)
+			}
+		})
+	}
+}

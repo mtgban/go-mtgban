@@ -58,6 +58,14 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
+// sharesNumber reports a collector number that is the one given wearing
+// whatever mark a set adds to tell a second printing apart - a dagger in
+// Arabian Nights, a letter in Portal, a star in a Secret Lair.
+func sharesNumber(number, filed string) bool {
+	rest, cut := strings.CutPrefix(filed, number)
+	return cut && strings.TrimLeft(rest, "0123456789") == rest
+}
+
 // markedApart reports a set holding more than one printing of a card whose
 // number is the one given, bare or wearing whatever the set marks its second
 // printing with and the storefront does not carry - a dagger in Arabian
@@ -76,8 +84,7 @@ func markedApart(co *mtgmatcher.CardObject, number string) bool {
 		if card.Name != co.Name || card.Language != co.Language {
 			continue
 		}
-		rest, cut := strings.CutPrefix(card.Number, number)
-		if cut && strings.TrimLeft(rest, "0123456789") == rest {
+		if sharesNumber(number, card.Number) {
 			found++
 		}
 	}
@@ -143,6 +150,18 @@ func numberCorroborates(number, filed string) bool {
 		return number == filed[index+1:]
 	}
 	return false
+}
+
+// framedApart reports a printing the catalog sets apart from the plain one,
+// by the mark it gives a set's own frames or by wearing a frame the plain one
+// does not. A set outside the booster-fun run marks nothing - Teenage Mutant
+// Ninja Turtles files its showcase at 226 with no mark at all - and there the
+// frame is the whole of what says so.
+func framedApart(marked, plain *mtgmatcher.CardObject) bool {
+	if marked.HasPromoType(boosterFun) {
+		return true
+	}
+	return len(marked.FrameEffects) > 0 && !slices.Equal(marked.FrameEffects, plain.FrameEffects)
 }
 
 // numberPrefix is the part of a collector number before its digits, which is
@@ -683,10 +702,14 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
 		numbered := resolved(cardName, edition, variation, lang, isFoil)
 		if bare != "" && markedApart(numbered, card.Number) {
-			// Only where what is left says which of them. "The List"
-			// names both printings of Grizzly Fate and neither.
+			// Only where what is left says which of them - "The List"
+			// names both printings of Grizzly Fate and neither - and only
+			// where it stays among the printings that share the number.
+			// "Secret Lair" says nothing of the star that tells 1721 from
+			// 1721 and walks off to 2214, another drop of the same card.
 			marked := resolved(cardName, edition, bare, lang, isFoil)
-			if marked != nil && marked.UUID != numbered.UUID {
+			if marked != nil && marked.UUID != numbered.UUID &&
+				sharesNumber(card.Number, marked.Number) {
 				variation = bare
 			}
 		}
@@ -706,7 +729,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		plain := resolved(cardName, edition, variation, lang, isFoil)
 		if bare != "" && plain != nil && len(plain.PromoTypes) == 0 {
 			marked := resolved(cardName, edition, bare, lang, isFoil)
-			if marked != nil && marked.HasPromoType(boosterFun) &&
+			if marked != nil && framedApart(marked, plain) &&
 				(finishNamed(marked) == isFoil || finishNamed(marked) == finishNamed(plain)) {
 				variation = bare
 			}
