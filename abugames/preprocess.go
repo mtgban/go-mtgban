@@ -132,6 +132,19 @@ func promoSet(name, edition, variation string) string {
 	return ""
 }
 
+// numberCorroborates reports a storefront number that agrees with the one a
+// reprint set files a card under, whole - "MH2-204" - or as the tail it ends
+// with, where the storefront keeps the original set's own numbering.
+func numberCorroborates(number, filed string) bool {
+	if number == filed {
+		return true
+	}
+	if index := strings.LastIndex(filed, "-"); index >= 0 {
+		return number == filed[index+1:]
+	}
+	return false
+}
+
 // numberPrefix is the part of a collector number before its digits, which is
 // the set a reprint came from where a set files its cards that way.
 func numberPrefix(number string) string {
@@ -195,6 +208,11 @@ func finishSibling(co *mtgmatcher.CardObject, foil bool) string {
 // errForeignListing marks a listing in a language the catalog never printed
 // the card in, which has no printing of its own to be priced against.
 var errForeignListing = errors.New("foreign listing")
+
+// errConflictingNumber marks a listing whose number names a printing of the
+// set it is filed under, where its wording names a reprint somewhere else.
+// Both cannot be true and nothing says which is.
+var errConflictingNumber = errors.New("conflicting number")
 
 // errUnprintedFinish marks a listing whose finish the catalog never sold that
 // printing in, which has no printing of its own to be priced against.
@@ -636,7 +654,21 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	// the reprint go unread, putting the two beside each other.
 	if numbered && mtgmatcher.Contains(variation, "The List") {
 		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
-		if resolved(cardName, edition, bare, lang, isFoil) != nil {
+		reprint := resolved(cardName, edition, bare, lang, isFoil)
+		if reprint != nil {
+			// The storefront carries two numbers for one reprint and the
+			// set holds the card once - Savage Lands is filed at ALA-228
+			// and listed at both 228 and 1025. The second is Commander
+			// Masters' own printing wearing the wrong words: the number
+			// names a card of that set exactly, where 228 names none and
+			// only echoes the reprint's own tail. Let the contradicted one
+			// go rather than pick between them.
+			if !numberCorroborates(card.Number, reprint.Number) {
+				own := resolved(cardName, card.Edition, card.Number, lang, isFoil)
+				if own != nil && own.Number == card.Number {
+					return nil, errConflictingNumber
+				}
+			}
 			variation = bare
 		}
 	}
