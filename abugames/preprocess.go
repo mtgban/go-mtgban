@@ -59,8 +59,9 @@ var promoTags = []string{
 }
 
 // markedApart reports a set holding more than one printing of a card whose
-// number is the one given, bare or wearing a mark the storefront never
-// carries. A number that names several printings names none of them.
+// number is the one given, bare or wearing whatever the set marks its second
+// printing with and the storefront does not carry - a dagger in Arabian
+// Nights, a letter in Portal. A number naming several printings names none.
 func markedApart(co *mtgmatcher.CardObject, number string) bool {
 	if co == nil || number == "" {
 		return false
@@ -75,7 +76,8 @@ func markedApart(co *mtgmatcher.CardObject, number string) bool {
 		if card.Name != co.Name || card.Language != co.Language {
 			continue
 		}
-		if strings.TrimRight(card.Number, "†★") == number {
+		rest, cut := strings.CutPrefix(card.Number, number)
+		if cut && strings.TrimLeft(rest, "0123456789") == rest {
 			found++
 		}
 	}
@@ -491,6 +493,23 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		variation = strings.Replace(variation, "Extented", "Extended", 1)
 	}
 
+	// This storefront calls the black-bordered Fourth Edition BB, where the
+	// catalog files it as the Japanese printing, and WB the white-bordered
+	// one. There is no white-bordered printing in any language but English -
+	// the catalog holds 4ED in English and white, 4BB in Japanese and black,
+	// and nothing else - so a foreign one names a card that was never made,
+	// and the matcher already knows to refuse it under that name.
+	if mtgmatcher.Contains(edition, "4th Edition") {
+		switch variation {
+		case "BB":
+			variation = "Japanese"
+		case "WB":
+			if lang != "" && lang != "English" {
+				variation = "Foreign White Border"
+			}
+		}
+	}
+
 	// Use collector number data when the variation carries has none, unless for a couple of editions
 	var numbered bool
 	if card.Number != "" && mtgmatcher.ExtractNumberAny(variation) == "" {
@@ -525,6 +544,18 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		variant := variantLetter(variation)
 		if variant != "" && resolved(cardName, edition, variant, lang, isFoil) != nil {
 			variation = variant
+		}
+	}
+
+	// "The List" names the set a card was reprinted into, and this
+	// storefront keeps the original set's own number beside it. That set
+	// files its cards under the original's code and number - AVR-20, not 20
+	// - so the bare number reaches the first printing and the words naming
+	// the reprint go unread, putting the two beside each other.
+	if numbered && mtgmatcher.Contains(variation, "The List") {
+		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
+		if resolved(cardName, edition, bare, lang, isFoil) != nil {
+			variation = bare
 		}
 	}
 
