@@ -146,17 +146,6 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	return defaultBackend.GetSetByName(edition, flags...)
 }
 
-// ExternalUUID returns the uuid an outside identifier resolves to, for the ids
-// a game's loader indexed, and an empty string when none does.
-func (b *Backend) ExternalUUID(id string) string {
-	return b.ExternalIdentifiers[id]
-}
-
-// ExternalUUID resolves an outside identifier against the default datastore.
-func ExternalUUID(id string) string {
-	return defaultBackend.ExternalUUID(id)
-}
-
 // AllPromoTypes returns every promo type present in the default datastore.
 func AllPromoTypes() []string {
 	return defaultBackend.AllPromoTypes

@@ -247,7 +247,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[string]string{}
+	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
 	b.SetSealedUUIDs = map[string][]string{}
 
 	// Load all sets first
@@ -413,7 +413,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			if !found {
 				uuid = convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]
 			}
-			b.ExternalIdentifiers[pid] = uuid
+			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = uuid
 		}
 
 		b.Sets[setCode].Cards = append(b.Sets[setCode].Cards, convertedCard)

@@ -330,8 +330,12 @@ type Backend struct {
 	// Sealed uuids bucketed by set code, each bucket sorted
 	SetSealedUUIDs map[string][]string
 
-	// Non-MTGBAN UUID to a card (or product) UUID
-	ExternalIdentifiers map[string]string
+	// Non-MTGBAN identifiers to a card (or product) UUID, one map per id
+	// space so the integer spaces never shadow each other. The uuid filed
+	// for a shared identifier is the printing's base sibling: the nonfoil,
+	// or the foil where no nonfoil was sold, or the etched where nothing
+	// else was.
+	ExternalIdentifiers map[string]map[string]string
 
 	// A list of keywords mapped to the full Commander set name
 	CommanderKeywordMap map[string]string

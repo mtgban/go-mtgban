@@ -285,7 +285,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[string]string{}
+	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
 	b.SetSealedUUIDs = map[string][]string{}
 
 	b.Sets = map[string]*mtgmatcher.Set{}
@@ -460,7 +460,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			if card.FabID != "" {
 				convertedCard.Identifiers["fabId"] = card.FabID
 			}
-			b.ExternalIdentifiers[pid] = card.ID
+			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = card.ID
 		}
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)

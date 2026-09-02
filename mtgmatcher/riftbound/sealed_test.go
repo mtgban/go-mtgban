@@ -139,10 +139,10 @@ func TestSealedOutsideExternalIdentifiers(t *testing.T) {
 	// Sealed ids resolve through BuildSealedProductMap alone; the external
 	// index stays cards-only so MatchID cannot hand a sealed uuid to a
 	// singles scraper
-	if uuid, found := b.ExternalIdentifiers["600001"]; found {
+	if uuid, found := b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer]["600001"]; found {
 		t.Errorf("ExternalIdentifiers[600001] = %q, want absent", uuid)
 	}
-	if _, found := b.ExternalIdentifiers["100001"]; !found {
+	if _, found := b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer]["100001"]; !found {
 		t.Error("the single's product id should stay in ExternalIdentifiers")
 	}
 }
