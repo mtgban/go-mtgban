@@ -179,10 +179,18 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	// variation the table has an answer for reaches listings whose edition is
 	// no promo line at all, and moves them off printings they had right.
 	promoWording, isPromoWording := editionTable[number]
-	if promoLine && series == "" && isPromoWording &&
-		!strings.ContainsFunc(number, unicode.IsDigit) {
+	switch {
+	case promoLine && series == "" && isPromoWording &&
+		!strings.ContainsFunc(number, unicode.IsDigit):
 		edition += "-P"
 		variant = strings.Replace(variant, number, promoWording, 1)
+
+	// A title that gives the promo line and then says nothing at all - no
+	// number of the set's, no treatment - has named the printing as exactly
+	// as it is going to. The set it draws from is not where it is, and the
+	// table below says which line is.
+	case promoLine && series == "" && number == "":
+		edition += "-P"
 	}
 
 	switch edition {
@@ -652,6 +660,17 @@ var promoMap = map[string]map[string]map[string]struct {
 	Edition string
 	Variant string
 }{
+	// The Standard Showdown packs of 2016 are a set of their own holding
+	// nothing but that block's five battle lands, and the storefront files
+	// them under the set they were drawn from, saying only that they are its
+	// promos. Nothing else in the title tells them from that set's own card.
+	"BFZ-P": {
+		"Canopy Vista":     {"": {Edition: "PSS1", Variant: "234"}},
+		"Cinder Glade":     {"": {Edition: "PSS1", Variant: "235"}},
+		"Prairie Stream":   {"": {Edition: "PSS1", Variant: "241"}},
+		"Smoldering Marsh": {"": {Edition: "PSS1", Variant: "247"}},
+		"Sunken Hollow":    {"": {Edition: "PSS1", Variant: "249"}},
+	},
 	"Other event promo": {
 		"Swords to Plowshares": {
 			"Borderless その他イベント記念系": {
