@@ -586,6 +586,7 @@ var editionTable = map[string]string{
 	"エントリーセット":            "Intro Pack Promo",
 	"エンブレムなし":             "No Symbol",
 	"ゲートウェイ":              "Gateway",
+	"ギフトボックス":             "Gift Box",
 	"ストアチャンピオンシップ":        "Store Championship",
 	"ゲームデー":               "Game Day",
 	"コマンドフェスト":            "Command Fest",
