@@ -207,6 +207,17 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			return true
 		}
 
+		// The finish a listing states is read from the group before the card
+		// name, and where it states none the plain card is meant. A printing
+		// sold only in foil has no such card, and answering with the foil
+		// prices it off a copy that was never made. A treatment stated in
+		// that group is a foil by another name and says so itself.
+		co, cerr := mtgmatcher.GetUUID(cardID)
+		if cerr == nil && co.Foil && !theCard.Foil &&
+			!reThick.MatchString(strings.TrimPrefix(title, "【EN】")) {
+			return true
+		}
+
 		var priceRatio, sellPrice float64
 
 		invCards := ha.inventory[cardID]
