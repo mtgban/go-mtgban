@@ -65,6 +65,10 @@ type responseChan struct {
 	cardID   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
+
+	// duplicate marks a listing the catalog does not tell apart from another
+	// this storefront sells, and which is kept only where that one is absent.
+	duplicate bool
 }
 
 func (ha *Hareruya) printf(format string, a ...any) {
@@ -229,10 +233,13 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			priceRatio = price / sellPrice * 100
 		}
 
+		duplicate := strings.Contains(title, setBooster) || strings.Contains(title, secretLairDeck)
+
 		deductions := []float64{1, 0.8, 0.5}
 		for i, deduction := range deductions {
 			out := responseChan{
-				cardID: cardID,
+				cardID:    cardID,
+				duplicate: duplicate,
 				buyEntry: &mtgban.BuylistEntry{
 					Conditions: mtgban.DefaultGradeTags[i],
 					BuyPrice:   price * deduction,
@@ -587,7 +594,32 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 			}
 		}
 	} else if mode == modeBuylist {
+		// The listing holding an id whose copy the catalog does not tell apart,
+		// keyed by that id. A duplicate is kept while it is the only thing sold
+		// under the id, and gives way as soon as the listing it duplicates
+		// arrives - which is either side of it, since the pages are read at
+		// once. Its own remaining grades are told from that listing by the id
+		// the storefront gives them.
+		heldBy := map[string]string{}
+
 		consume = func(record responseChan) {
+			held, isHeld := heldBy[record.cardID]
+			switch {
+			case record.duplicate:
+				if isHeld && held != record.buyEntry.OriginalID {
+					return
+				}
+				if !isHeld {
+					if _, found := ha.buylist[record.cardID]; found {
+						return
+					}
+					heldBy[record.cardID] = record.buyEntry.OriginalID
+				}
+			case isHeld:
+				delete(ha.buylist, record.cardID)
+				delete(heldBy, record.cardID)
+			}
+
 			co, _ := mtgmatcher.GetUUID(record.cardID)
 			// This store tracks the two different EU/US printings as separate entries
 			var err error
