@@ -34,6 +34,10 @@ func dashSuffix(base, suffix string) string {
 	return base
 }
 
+// storeStamped is the wording for a store championship prize printed with
+// the winning shop's name.
+const storeStamped = "店舗名印字入り"
+
 // prerelease is the one promo a modern set numbers among its own cards, so
 // the wording naming it does not send the listing to the set's promo line.
 // The title is read for it further down either way.
@@ -231,6 +235,14 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 // 【EN】【Foil】(086)■プレリリース■《虚空間渡り/Weftwalking》[EOE] 青R
 func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	if strings.Contains(title, "Ultra Pro Puzzle") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
+	// A store championship prize is printed with the winning shop's name on
+	// it. The catalog holds the prize card once, without the name, so the
+	// stamped copy has no printing of its own and answering with the plain
+	// one prices that card off the stamp.
+	if strings.Contains(title, storeStamped) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
