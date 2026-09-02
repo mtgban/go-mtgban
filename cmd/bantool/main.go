@@ -35,6 +35,7 @@ import (
 	"github.com/mtgban/go-mtgban/gamenerdz"
 	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/magiccorner"
+	"github.com/mtgban/go-mtgban/manaleak"
 	"github.com/mtgban/go-mtgban/manapool"
 	"github.com/mtgban/go-mtgban/merlion"
 	"github.com/mtgban/go-mtgban/miniaturemarket"
@@ -348,6 +349,16 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"manaleak": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := manaleak.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
