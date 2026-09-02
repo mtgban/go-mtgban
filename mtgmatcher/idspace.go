@@ -8,6 +8,10 @@ const (
 	IDSpaceMTGJSON   = "mtgjson"
 	IDSpaceScryfall  = "scryfall"
 	IDSpaceTCGplayer = "tcgplayer"
+
+	// The multiverse ids are integers like TCGplayer's, so their space
+	// stays out of idSpaceOrder: only ConvertID reaches it, by name.
+	IDSpaceMultiverse = "multiverse"
 )
 
 // idSpaceOrder is the chain the space-blind lookups walk, in order. A space

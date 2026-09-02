@@ -1143,9 +1143,10 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	var sealed, fullSealed, lowerSealed []string
 	var promoTypes []string
 	externalIDs := map[string]map[string]string{
-		mtgmatcher.IDSpaceMTGJSON:   {},
-		mtgmatcher.IDSpaceScryfall:  {},
-		mtgmatcher.IDSpaceTCGplayer: {},
+		mtgmatcher.IDSpaceMTGJSON:    {},
+		mtgmatcher.IDSpaceScryfall:   {},
+		mtgmatcher.IDSpaceTCGplayer:  {},
+		mtgmatcher.IDSpaceMultiverse: {},
 	}
 	for _, uuid := range append(allUUIDs, allSealedUUIDs...) {
 		card := uuids[uuid]
@@ -1176,6 +1177,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			{"scryfallId", mtgmatcher.IDSpaceScryfall, baseUUID},
 			{"tcgplayerProductId", mtgmatcher.IDSpaceTCGplayer, baseUUID},
 			{"tcgplayerEtchedProductId", mtgmatcher.IDSpaceTCGplayer, etchedUUID},
+			{"multiverseId", mtgmatcher.IDSpaceMultiverse, baseUUID},
 		} {
 			id, found := card.Identifiers[filing.tag]
 			if !found {
