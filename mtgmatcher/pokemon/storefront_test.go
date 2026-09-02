@@ -202,8 +202,14 @@ func TestStorefrontNameTails(t *testing.T) {
 		{"a bracketed letter strips", mtgmatcher.InputCard{
 			Name: "Unown [J]", Edition: "Wizards Black Star Promos", Variation: "038 38"},
 			"38-53_90215"},
+		// Named by the set rather than by the storefront's prize pack
+		// wording, which is unaliased on purpose and refuses: what is
+		// under test is the name, and an edition that cannot narrow
+		// leaves the case resting on there being one candidate. There
+		// were two the day the catalog filed this card in Deck
+		// Exclusives as well.
 		{"a dash subtitle respells as the bracketed supporter", mtgmatcher.InputCard{
-			Name: "Boss's Orders - Cyrus", Edition: "Play! Pokémon Prize Pack Series", Variation: "132 132/172"},
+			Name: "Boss's Orders - Cyrus", Edition: "Prize Pack Series Cards", Variation: "132 132/172"},
 			"132-172_515539"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
