@@ -12,6 +12,7 @@ import (
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // scgCatalogURL is the HawkSearch catalog export. It returns the full product
@@ -243,6 +244,46 @@ func languageMatches(catalogLanguage, cardLanguage string) bool {
 		cardLanguage = "English"
 	}
 	return strings.EqualFold(strings.ReplaceAll(catalogLanguage, " - ", " "), cardLanguage)
+}
+
+// doubleRainbowSibling answers the printing the catalog's finish names when
+// the id sent beside it names another one.
+//
+// The double rainbow is a serialized printing of its own - RVR #313z stands
+// beside #313 - and SCG prices it as one, quoting $900 against $50 for the
+// plain foil. The scryfall id it sends with it is the plain printing's, so
+// both landed on one uuid and the two prices met there. The id is
+// authoritative for everything else and still decides first: this only
+// corrects it where the finish names the treatment and the printing the id
+// reached does not carry it, which leaves the 286 double rainbow products
+// whose id already names the right printing exactly where they were.
+func doubleRainbowSibling(id string, p CatalogProduct) string {
+	if !strings.EqualFold(p.Finish, "Double Rainbow Foil") {
+		return id
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil || co.HasPromoType(magic.PromoTypeDoubleRainbow) {
+		return id
+	}
+
+	var found string
+	for _, card := range mtgmatcher.MatchInSet(co.Name, co.SetCode) {
+		if !card.HasPromoType(magic.PromoTypeDoubleRainbow) {
+			continue
+		}
+		sibling, serr := mtgmatcher.MatchID(card.UUID, true, false)
+		if serr != nil || sibling == id {
+			continue
+		}
+		if found != "" && found != sibling {
+			return id
+		}
+		found = sibling
+	}
+	if found == "" {
+		return id
+	}
+	return found
 }
 
 // skuSetCode returns the set segment of a catalog sku, which carries
@@ -503,7 +544,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 			continue
 		}
 		if out, err := mtgmatcher.MatchID(id, foil, etched); err == nil {
-			return out, nil
+			return doubleRainbowSibling(out, p), nil
 		}
 	}
 
