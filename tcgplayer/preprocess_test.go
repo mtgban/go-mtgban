@@ -84,3 +84,53 @@ func TestPreprocessJapanesePromoTokens(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessOversizedShelf pins the wording surviving the shelf. Every
+// oversized card is sold from one group and the wording is what names the set
+// it came from, so replacing it with the collector number - as every other
+// edition wants - left two shelf-mates carrying the same number and nothing
+// to tell them apart.
+func TestPreprocessOversizedShelf(t *testing.T) {
+	for _, tt := range []struct {
+		desc    string
+		name    string
+		number  string
+		setCode string
+	}{
+		// The same number in both, so only the wording separates them
+		{"the wording names the set", "Interplanar Tunnel (Planechase Anthology)", "2", "OPCA"},
+		{"and the other shelf-mate", "Interplanar Tunnel (Planechase 2012)", "2", "OPC2"},
+		// The wording names how it was given out rather than a set
+		{"a wording naming the promo", "Stairs to Infinity (Release Event Promo)", "1", "PHOP"},
+		// Here it names the set the card is from, not the one the oversized
+		// printing is filed under, and the narrowing answers anyway
+		{"a wording naming the original set", "Comet Storm (Worldwake)", "76", "P10"},
+		{"the schemes sheet", "Choose Your Demise (Archenemy: Nicol Bolas)", "4", "OE01"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			product := tcgplayer.Product{Name: tt.name, CleanName: tt.name}
+			product.ExtendedData = append(product.ExtendedData, struct {
+				Name        string `json:"name"`
+				DisplayName string `json:"displayName"`
+				Value       string `json:"value"`
+			}{Name: "Number", Value: tt.number})
+
+			theCard, err := Preprocess(&product, map[int]string{0: "Oversize Cards"})
+			if err != nil {
+				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
+			}
+			cardID, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			co, err := mtgmatcher.GetUUID(cardID)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", cardID, err)
+			}
+			if co.SetCode != tt.setCode {
+				t.Errorf("Preprocess(%q) matched %s %s #%s, want a printing in %s",
+					tt.name, co.SetCode, co.Card.Name, co.Number, tt.setCode)
+			}
+		})
+	}
+}
