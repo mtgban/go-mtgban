@@ -19,7 +19,7 @@ func TestFoilPrintingID(t *testing.T) {
 
 	// Strixhaven Mystical Archive sells one printing in all three finishes,
 	// which is what lets the flag cross between two of them.
-	plain := mtgmatcher.ExternalUUID("235648")
+	plain := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "235648")
 	if plain == "" {
 		t.Fatal("datastore carries no TCGplayer id 235648")
 	}
