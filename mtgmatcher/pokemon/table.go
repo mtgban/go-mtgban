@@ -27,6 +27,7 @@ var editionAliases = map[string]string{
 
 	// The Wizards-era promos, which the catalog files under the publisher.
 	"Wizards Black Star Promos": "WoTC Promo",
+	"WOTC Black Star Promos":    "WoTC Promo",
 	`"W" Promos`:                "WoTC Promo",
 
 	// The era-prefixed promo spellings the catalog writes with the era's
