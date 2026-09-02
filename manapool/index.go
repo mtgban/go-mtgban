@@ -57,7 +57,8 @@ func (mp *Index) Load(ctx context.Context) error {
 				continue
 			}
 
-			cardID, err := mtgmatcher.MatchID(card.ScryfallID, finish.foil)
+			uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, card.ScryfallID)
+			cardID, err := mtgmatcher.MatchID(uuid, finish.foil)
 			if err != nil {
 				if !isUnindexed(card) {
 					mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)

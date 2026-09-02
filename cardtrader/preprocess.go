@@ -19,10 +19,11 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	number := strings.TrimLeft(bp.Properties.Number, "0")
 	variant := ""
 
-	// Some, but not all, have a proper id we can reuse right away
-	id := mtgmatcher.ExternalUUID(bp.ScryfallID)
+	// Some, but not all, have a proper id we can reuse right away, and the
+	// blueprint says which space each one lives in
+	id := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
 	if id == "" {
-		id = mtgmatcher.ExternalUUID(fmt.Sprintf("%d", bp.TCGplayerID))
+		id = mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
 	}
 	if id != "" {
 		return &mtgmatcher.InputCard{
