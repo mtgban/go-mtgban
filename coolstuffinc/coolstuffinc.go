@@ -115,6 +115,37 @@ var buylistReprintNote = regexp.MustCompile(`(?i)\breprints?\b`)
 var onePieceEvents = map[string]string{
 	"afro luffy promo":   "BANDAI Card Games Fest 25-26",
 	"l.a. dodgers promo": "Dodgers x One Piece",
+	// The playmat and the participation pack name the product the card came
+	// in, where the catalog names the event that handed it out.
+	"bcgf playmat promo":                             "Official Playmat -Bandai Card Games Fest 24-25 Edition-",
+	"offline regional participation pack 2024 vol.2": "Offline Regional 2024 Vol. 2 Participant",
+}
+
+// onePieceStarterDeck matches the starter deck a name states in brackets.
+var onePieceStarterDeck = regexp.MustCompile(`\(Starter Deck (\d+)\)`)
+
+// onePieceShelf answers the set a One Piece listing belongs to, which is the
+// shelf it arrived on except where that shelf says only "Promo".
+//
+// A starter deck card reprinted as a promo is filed here under the promo
+// shelf with the deck named in brackets, and the promo shelf holds a printing
+// of its own at the same number: the P-041 Luffy is both the plain promo and
+// the Starter Deck 18 card. The two met, and a $0.50 deck card was priced as
+// the $60.00 promo standing beside it.
+//
+// The bracket only decides where the shelf has nothing to say. Every other
+// listing naming a deck arrives on a real set already - a Backlight on ST11,
+// a Kuzan on OP12 - and there the shelf is what the catalog agrees with,
+// while the bracket names the deck the card was reprinted from.
+func onePieceShelf(shelf, name string) string {
+	if shelf != "Promo" {
+		return shelf
+	}
+	match := onePieceStarterDeck.FindStringSubmatch(name)
+	if match == nil {
+		return shelf
+	}
+	return "Starter Deck " + match[1]
 }
 
 // eventNamed adds the catalog's name for every event the wording gives its
@@ -620,7 +651,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			}
 			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(product.Name)), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
 		case GameLorcana:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
