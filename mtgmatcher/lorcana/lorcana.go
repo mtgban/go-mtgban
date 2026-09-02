@@ -232,6 +232,22 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	}
 	b.IndexSets()
 
+	// Which printings are promotional, which no single field says. Upstream
+	// stopped publishing nonPromoId, the back-pointer this used to read, and
+	// states the relationship the other way round: a card lists its own promo
+	// printings in promoIds, and a promo says where it came from in
+	// promoSourceCategory. Neither reaches the two sets that are wholly
+	// promotional - D23 Promos and Disney Lorcana Promo Cards carry neither
+	// field on any of their 23 cards - so the set's own type answers there.
+	// A minted printing is outside all three, having no upstream entry to
+	// carry a field or a relationship at all, and is known by its rarity.
+	promoPrintings := map[int]bool{}
+	for _, card := range ac.Cards {
+		for _, id := range card.PromoIDs {
+			promoPrintings[id] = true
+		}
+	}
+
 	// Gather the full reprint list for each name (keyed by normalized name, so
 	// case-variant spellings share one list), in first-appearance order. Every
 	// card of a name carries the same complete list, mirroring how Magic
@@ -337,6 +353,13 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			colors = append(colors, strings.ToLower(color))
 		}
 
+		// A set wholly of promos says so once, rather than every card in it
+		// repeating a field upstream does not set there.
+		promoSet := false
+		if set, found := b.Sets[card.SetCode]; found {
+			promoSet = set.Type == "promo"
+		}
+
 		// Prepare the card and add it to the main array
 		// Since cards are already sorted (by number/id), the order here is preserved
 		convertedCard := mtgmatcher.Card{
@@ -363,7 +386,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			Supertypes: []string{card.Story},
 
 			Printings:  printingsByName[mtgmatcher.Normalize(card.FullName)],
-			IsPromo:    card.NonPromoID != 0,
+			IsPromo:    promoPrintings[card.ID] || card.PromoSourceCategory != "" || promoSet || rarity == "promo",
 			PromoTypes: slugTags(promoTags(card.PromoSourceCategory, card.VarnishType, card.PromoGrouping)),
 
 			OriginalNumber: fmt.Sprintf("%d", card.Number),
