@@ -53,6 +53,25 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 	number := GetProductNumber(product)
 	edition := editions[product.GroupID]
 
+	// The catalog sells several kinds of insert the datastore never carries:
+	// the helper cards a double-faced card ships with, the letter cards of a
+	// countdown kit, the theme cards naming a Jumpstart deck, the biography
+	// and blank cards filling out a World Championship deck. A row for one of
+	// them has nothing to match rather than a name to fix.
+	switch {
+	case strings.HasPrefix(product.Name, "Helper Card"),
+		strings.HasPrefix(product.Name, "Letter Card"),
+		strings.HasSuffix(cardName, "Advertisement Card"),
+		strings.HasSuffix(cardName, "Alignment Card"),
+		strings.HasSuffix(cardName, "Biography Card"),
+		strings.HasSuffix(cardName, "Blank Card"),
+		strings.HasSuffix(cardName, "Helper Card"),
+		strings.HasSuffix(cardName, "Reminder Card"),
+		strings.HasSuffix(cardName, "Rules Card"),
+		strings.HasSuffix(cardName, "Theme Card"):
+		return nil, errors.New("unsupported")
+	}
+
 	// Unsupported cards depending on their variant
 	switch cardName {
 	case "Bruna, Light of Alabaster":
@@ -82,6 +101,21 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		}
 	case "Scrounging Deathclaw":
 		cardName = "Tarmogoyf"
+	case "Emblem":
+		// The catalog names an emblem for the planeswalker that makes it,
+		// "Emblem - Sorin, Lord of Innistrad", and the datastore the other
+		// way round. Say it the datastore's way before the token handling
+		// below replaces the variant with the collector number, and only
+		// when the datastore answers to it: a few emblems are filed under
+		// the bare name the catalog puts after the dash.
+		if variant != "" {
+			named := variant + " Emblem"
+			if _, err := mtgmatcher.Printings4Card(named); err == nil {
+				cardName, variant = named, ""
+			} else if _, err := mtgmatcher.Printings4Card(variant); err == nil {
+				cardName, variant = variant, ""
+			}
+		}
 	default:
 		if strings.Contains(variant, "JP Amazon Exclusive") ||
 			strings.Contains(variant, "SEA Exclusive") ||
