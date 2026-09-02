@@ -122,7 +122,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		if variation != "" {
 			variation += " "
 		}
-		variation = strings.Join(variants[1:], " ")
+		variation += strings.Join(variants[1:], " ")
 	}
 
 	variation = neonInkWording(variation)
