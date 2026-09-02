@@ -134,3 +134,47 @@ func TestPreprocessOversizedShelf(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessJapanesePromoTokensUnderTheirOwnSet pins the sheets sold under
+// the set they came with rather than beside every other set's promos. The
+// wording names no set there, so the edition is what says which sheet is
+// meant. March of the Machine's holds two Spirits and two Treasures, so the
+// number has to keep telling those apart afterwards.
+func TestPreprocessJapanesePromoTokensUnderTheirOwnSet(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		number string
+		want   string
+	}{
+		{"Spirit Token (008) [JP Exclusive]", "8", "8"},
+		{"Treasure Token (009) [JP Exclusive]", "9", "9"},
+		{"Spirit Token (011) [JP Exclusive]", "11", "11"},
+		{"Treasure Token (012) [JP Exclusive]", "12", "12"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			product := tcgplayer.Product{Name: tt.name, CleanName: tt.name}
+			product.ExtendedData = append(product.ExtendedData, struct {
+				Name        string `json:"name"`
+				DisplayName string `json:"displayName"`
+				Value       string `json:"value"`
+			}{Name: "Number", Value: tt.number})
+
+			theCard, err := Preprocess(&product, map[int]string{0: "March of the Machine"})
+			if err != nil {
+				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
+			}
+			cardID, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			co, err := mtgmatcher.GetUUID(cardID)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", cardID, err)
+			}
+			if co.SetCode != "WMOM" || co.Number != tt.want {
+				t.Errorf("Preprocess(%q) matched %s %s #%s, want WMOM #%s",
+					tt.name, co.SetCode, co.Card.Name, co.Number, tt.want)
+			}
+		})
+	}
+}
