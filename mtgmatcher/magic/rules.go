@@ -734,12 +734,45 @@ func namesTokenSetParent(b *mtgmatcher.Backend, set *mtgmatcher.Set, edition str
 	return !slices.Contains(editions, parent.TokenSetCode)
 }
 
+// setHoldsOversized reports whether the set holds an oversized printing of
+// the card, at the collector number when one is given. The number is compared
+// against the printing's own and against the one its decorations were
+// stripped from, because a storefront writes 4 for a card the set numbers 4★.
+func setHoldsOversized(set *mtgmatcher.Set, name, number string) bool {
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if !card.IsOversized || !mtgmatcher.Equals(card.Name, name) {
+			continue
+		}
+		if number == "" || card.Number == number || card.OriginalNumber == number {
+			return true
+		}
+	}
+	return false
+}
+
 // FilterPrintings narrows the sets a card could have come from. See
 // mtgmatcher.GameRules.
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) (printings []string) {
 	maybeYear := mtgmatcher.ExtractYear(inCard.Variation)
 	if maybeYear == "" {
 		maybeYear = mtgmatcher.ExtractYear(inCard.Edition)
+	}
+
+	// The collector number of an oversized listing is worth using only when
+	// a set answers to it: the catalog writes the number of the ordinary
+	// printing as often as the oversized one's, and a number nothing carries
+	// would narrow every candidate away rather than pick one.
+	var oversizedNumber string
+	if mtgmatcher.Contains(inCard.Edition, "Oversize") {
+		number := mtgmatcher.ExtractNumber(inCard.Variation)
+		for _, setCode := range editions {
+			set, found := b.Sets[setCode]
+			if found && number != "" && setHoldsOversized(set, inCard.Name, number) {
+				oversizedNumber = number
+				break
+			}
+		}
 	}
 
 	for _, setCode := range editions {
@@ -760,6 +793,18 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		// does, and only tokens are filed there, so nothing else answers
 		case namesTokenSetParent(b, set, inCard.Edition, editions):
 			// pass-through
+
+		// An edition that says oversize rather than naming a set is the
+		// catalog's shelf for them, one group standing for a dozen sets at
+		// once, so it narrows to the sets that printed the card oversized
+		// and the rest of the input picks among those. Only the edition is
+		// read: a variation saying oversized beside a set we do not carry -
+		// the championship prizes - would otherwise be answered with
+		// whichever other set printed one.
+		case mtgmatcher.Contains(inCard.Edition, "Oversize"):
+			if !setHoldsOversized(set, inCard.Name, oversizedNumber) {
+				continue
+			}
 
 		case inCard.IsPrerelease():
 			switch set.Name {

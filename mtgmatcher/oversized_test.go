@@ -55,3 +55,62 @@ func TestMatchOversized(t *testing.T) {
 		}
 	}
 }
+
+// TestMatchOversizedShelf pins the catalog's shelf for oversized cards being
+// read as a shelf. It names no set - one group stands for a dozen at once -
+// so the word narrows to the sets that printed the card oversized, and the
+// collector number picks among those when one of them answers to it.
+func TestMatchOversizedShelf(t *testing.T) {
+	for _, probe := range []struct {
+		name      string
+		variation string
+		setCode   string
+	}{
+		// One set printed each of these oversized, so the shelf is enough
+		{"Comet Storm", "76", "P10"},
+		{"Wurmcoil Engine", "223", "P10"},
+		{"Lightning Bolt", "M10", "P09"},
+		// Two did, and the number tells them apart: Duskmourn numbers its
+		// reprint 331 where the schemes sheet numbers it 4★
+		{"Choose Your Demise", "4", "OE01"},
+		{"When Will You Learn?", "20", "OE01"},
+		// Three did, and the wording names the one
+		{"Tazeem", "Release Event Promo", "DCI"},
+	} {
+		in := mtgmatcher.InputCard{
+			Name:      probe.name,
+			Edition:   "Oversize Cards",
+			Variation: probe.variation,
+		}
+		id, err := mtgmatcher.Match(&in)
+		if err != nil {
+			t.Errorf("Match(%v) = %v", in, err)
+			continue
+		}
+		co, err := mtgmatcher.GetUUID(id)
+		if err != nil {
+			t.Errorf("GetUUID(%s) = %v", id, err)
+			continue
+		}
+		if co.SetCode != probe.setCode {
+			t.Errorf("Match(%v) = %s (%s %s #%s), want a printing in %s", in, id, co.SetCode, co.Card.Name, co.Number, probe.setCode)
+		}
+	}
+}
+
+// TestMatchOversizedShelfKeepsTheSetsWeSkip pins the shelf being read from the
+// edition alone. A variation saying oversized beside a set the datastore never
+// built - the championship prizes - names a printing that is not carried, and
+// answering it with whichever other set printed one would price the wrong card.
+func TestMatchOversizedShelfKeepsTheSetsWeSkip(t *testing.T) {
+	in := mtgmatcher.InputCard{
+		Name:      "Lightning Bolt",
+		Edition:   "Legacy Championship",
+		Variation: "Oversized",
+	}
+	id, err := mtgmatcher.Match(&in)
+	if err == nil {
+		co, _ := mtgmatcher.GetUUID(id)
+		t.Errorf("Match(%v) = %s (%v), want an error: that printing is not carried", in, id, co)
+	}
+}
