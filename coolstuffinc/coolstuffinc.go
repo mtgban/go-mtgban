@@ -79,6 +79,20 @@ type Coolstuffinc struct {
 	game   string
 }
 
+// pokemonNonHolo matches the bracket a Pokemon name states a plain printing
+// with. The storefront sells a card printed in both finishes as two products
+// telling them apart by that bracket alone - the note is empty and the foil
+// flag is off on both - and read as the holo, a $2.00 Team Aqua's Kyogre was
+// served as the $80.00 one's price.
+//
+// The rarity is what says whether the plain printing was ever made. A holo
+// rare is sold holo and nothing else, so a bracket asking for its plain
+// printing asks for one that does not exist and the row is refused. A plain
+// rare is the opposite: the catalog holding no nonfoil for it is the catalog
+// missing a printing rather than the storefront inventing one, and refusing
+// those would drop 25 real listings to catch nothing.
+var pokemonNonHolo = regexp.MustCompile(`\(Non-?\s?Holo\)`)
+
 // nameParenthetical matches a qualifier a buylist name carries in brackets,
 // like "(Parallel)" or "(Alternate Art)".
 var nameParenthetical = regexp.MustCompile(`\(([^)]+)\)`)
@@ -674,6 +688,14 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				}
 			}
 			continue
+		}
+
+		if csi.game == GamePokemon && pokemonNonHolo.MatchString(product.Name) {
+			co, cerr := mtgmatcher.GetUUID(cardID)
+			if cerr == nil && !co.HasFinish(mtgmatcher.FinishNonfoil) &&
+				strings.Contains(co.Rarity, "Holo") {
+				continue
+			}
 		}
 
 		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
