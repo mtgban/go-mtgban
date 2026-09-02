@@ -3,6 +3,8 @@ package lorcana
 import (
 	"strings"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // englishData is a four-card cut of the upstream shape. Cards 100 and 101 are
@@ -71,10 +73,10 @@ func TestEnglishCardsKeepsArtSiblings(t *testing.T) {
 
 	// The id the two arts share names neither of them, so it goes
 	// unregistered; the id the fold freed resolves to the survivor.
-	if uuid, found := b.ExternalIdentifiers["500"]; found {
+	if uuid, found := b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer]["500"]; found {
 		t.Errorf("the product id both arts claim resolved to %q", uuid)
 	}
-	if uuid := b.ExternalIdentifiers["900"]; uuid != "200" {
+	if uuid := b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer]["900"]; uuid != "200" {
 		t.Errorf("the freed product id resolved to %q, want %q", uuid, "200")
 	}
 }

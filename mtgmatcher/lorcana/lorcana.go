@@ -211,7 +211,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[string]string{}
+	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
 	b.SetSealedUUIDs = map[string][]string{}
 
 	cards := ac.englishCards()
@@ -485,7 +485,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerID),
 			}
 			if len(claimants[card.ExternalLinks.TcgPlayerID]) == 1 {
-				b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerID)] = convertedCard.UUID
+				b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][fmt.Sprint(card.ExternalLinks.TcgPlayerID)] = convertedCard.UUID
 			}
 		}
 
@@ -498,13 +498,13 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			if extra == 0 {
 				continue
 			}
-			if _, found := b.ExternalIdentifiers[fmt.Sprint(extra)]; found {
+			if _, found := b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][fmt.Sprint(extra)]; found {
 				continue
 			}
 			if len(claimants[extra]) != 1 {
 				continue
 			}
-			b.ExternalIdentifiers[fmt.Sprint(extra)] = convertedCard.UUID
+			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][fmt.Sprint(extra)] = convertedCard.UUID
 		}
 
 		// Store a CardObject per finish uuid.

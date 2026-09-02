@@ -61,10 +61,14 @@ func (b *Backend) cardObject4Id(inputID string) (*CardObject, error) {
 		return nil, ErrCardUnknownID
 	}
 
-	// Look up in one of the possible maps
+	// Look up as one of the matcher's own uuids first, then through the id
+	// spaces in their fixed order
 	co, found := b.UUIDs[inputID]
-	if !found {
-		co, found = b.UUIDs[b.ExternalIdentifiers[inputID]]
+	for _, space := range idSpaceOrder {
+		if found {
+			break
+		}
+		co, found = b.UUIDs[b.ExternalIdentifiers[space][inputID]]
 	}
 	if !found {
 		return nil, ErrCardUnknownID

@@ -1142,27 +1142,51 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	var names, fullNames, lowerNames []string
 	var sealed, fullSealed, lowerSealed []string
 	var promoTypes []string
-	externalIDs := map[string]string{}
+	externalIDs := map[string]map[string]string{
+		mtgmatcher.IDSpaceMTGJSON:   {},
+		mtgmatcher.IDSpaceScryfall:  {},
+		mtgmatcher.IDSpaceTCGplayer: {},
+	}
 	for _, uuid := range append(allUUIDs, allSealedUUIDs...) {
 		card := uuids[uuid]
 
-		// Load up the any external id
-		for _, tag := range []string{
-			"mtgjsonId",
-			"scryfallId",
-			"tcgplayerProductId",
-			"tcgplayerEtchedProductId",
+		// The identifiers are shared by every finish sibling, so each id
+		// files at the base sibling - the unsuffixed uuid every branch of
+		// generateCardUUIDs starts from - except the etched product id,
+		// which names the etched printing specifically.
+		baseUUID := card.UUID
+		for _, finish := range []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil, mtgmatcher.FinishEtched} {
+			id, found := card.FoilUUIDs[finish]
+			if found {
+				baseUUID = id
+				break
+			}
+		}
+		etchedUUID, found := card.FoilUUIDs[mtgmatcher.FinishEtched]
+		if !found {
+			etchedUUID = baseUUID
+		}
+
+		for _, filing := range []struct {
+			tag    string
+			space  string
+			target string
+		}{
+			{"mtgjsonId", mtgmatcher.IDSpaceMTGJSON, baseUUID},
+			{"scryfallId", mtgmatcher.IDSpaceScryfall, baseUUID},
+			{"tcgplayerProductId", mtgmatcher.IDSpaceTCGplayer, baseUUID},
+			{"tcgplayerEtchedProductId", mtgmatcher.IDSpaceTCGplayer, etchedUUID},
 		} {
-			id, found := card.Identifiers[tag]
+			id, found := card.Identifiers[filing.tag]
 			if !found {
 				continue
 			}
 			// Skip if already loaded
-			_, found = externalIDs[id]
+			_, found = externalIDs[filing.space][id]
 			if found {
 				continue
 			}
-			externalIDs[id] = card.UUID
+			externalIDs[filing.space][id] = filing.target
 		}
 
 		// Add to the ever growing list of promo types

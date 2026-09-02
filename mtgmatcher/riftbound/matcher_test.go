@@ -468,7 +468,7 @@ func TestRiftboundIdentifiers(t *testing.T) {
 	// points at is the plain printing where one is sold and the foil
 	// otherwise, so there is no single finish to filter the cards by.
 	var n int
-	for pid, uuid := range b.ExternalIdentifiers {
+	for pid, uuid := range b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer] {
 		co, found := b.UUIDs[uuid]
 		if !found {
 			t.Errorf("external identifier %s resolves to %q, which is not a card", pid, uuid)

@@ -84,8 +84,8 @@ func TestLorcanaExtraProductIdsAbsent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(b.ExternalIdentifiers) != 2 {
-		t.Errorf("got %d external ids, want 2", len(b.ExternalIdentifiers))
+	if len(b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer]) != 2 {
+		t.Errorf("got %d external ids, want 2", len(b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer]))
 	}
 	if _, err := b.MatchID("633427", true); err != mtgmatcher.ErrCardUnknownID {
 		t.Errorf("MatchID on the split-foil product = %v, want %v", err, mtgmatcher.ErrCardUnknownID)

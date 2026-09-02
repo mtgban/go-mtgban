@@ -132,7 +132,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[string]string{}
+	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
 	b.SetSealedUUIDs = map[string][]string{}
 
 	b.Sets = map[string]*mtgmatcher.Set{}
@@ -292,7 +292,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// it points at the plain entry where that exists and at the foil
 			// one when the card is only sold foil. MatchID re-resolves the
 			// finish from the caller's own flag either way.
-			b.ExternalIdentifiers[pid] = card.ID
+			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = card.ID
 		}
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
