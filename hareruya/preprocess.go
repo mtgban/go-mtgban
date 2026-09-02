@@ -34,6 +34,14 @@ func dashSuffix(base, suffix string) string {
 	return base
 }
 
+// setBooster and secretLairDeck are the two wordings this storefront uses
+// for a copy the catalog does not tell apart from the one beside it: which
+// booster a card came out of, and whether it was sold in a Secret Lair
+// deck. Either is the same printing, so the listing is kept only where the
+// one it duplicates is absent.
+const setBooster = "ドラフト・セットブースター版"
+const secretLairDeck = "SLD構築済み"
+
 // storeStamped is the wording for a store championship prize printed with
 // the winning shop's name.
 const storeStamped = "店舗名印字入り"
