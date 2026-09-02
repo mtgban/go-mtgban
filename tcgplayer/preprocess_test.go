@@ -42,15 +42,27 @@ func TestPreprocessJapanesePromoTokens(t *testing.T) {
 		name      string
 		cleanName string
 		setCode   string
+		number    string
 	}{
-		{"the qualifier names the set the sheet belongs to", "Bird Token (JP WOE Exclusive)", "Bird Token JP WOE Exclusive", "WWOE"},
-		{"and another set's qualifier names another sheet", "Zombie Token (JP MKM Exclusive)", "Zombie Token JP MKM Exclusive", "WMKM"},
+		{"the qualifier names the set the sheet belongs to", "Bird Token (JP WOE Exclusive)", "Bird Token JP WOE Exclusive", "WWOE", ""},
+		{"and another set's qualifier names another sheet", "Zombie Token (JP MKM Exclusive)", "Zombie Token JP MKM Exclusive", "WMKM", ""},
 		// Dominaria United printed the first of these sheets, and its
 		// qualifier names no set at all
-		{"the bare qualifier is still Dominaria United's", "Bird Token (JP Exclusive)", "Bird Token JP Exclusive", "WDMU"},
+		{"the bare qualifier is still Dominaria United's", "Bird Token (JP Exclusive)", "Bird Token JP Exclusive", "WDMU", ""},
+		// The two tokens of that first sheet carry no qualifier at all,
+		// and only the number says where they came from
+		{"no qualifier at all is that sheet too", "Bird Token", "Bird Token", "WDMU", "2"},
+		{"and so is its zombie", "Zombie Token", "Zombie Token", "WDMU", "3"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			product := tcgplayer.Product{Name: tt.name, CleanName: tt.cleanName}
+			if tt.number != "" {
+				product.ExtendedData = append(product.ExtendedData, struct {
+					Name        string `json:"name"`
+					DisplayName string `json:"displayName"`
+					Value       string `json:"value"`
+				}{Name: "Number", Value: tt.number})
+			}
 			editions := map[int]string{0: "Unique and Miscellaneous Promos"}
 
 			theCard, err := Preprocess(&product, editions)

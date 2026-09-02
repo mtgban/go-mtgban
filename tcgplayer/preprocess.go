@@ -405,6 +405,15 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 					}
 					edition = "WDMU"
 				}
+			} else if isToken(product) && variant == "" &&
+				len(mtgmatcher.MatchInSetNumber(strings.TrimSuffix(cardName, " Token"), "WDMU", number)) > 0 {
+				// The two tokens of the first sheet carry no qualifier at
+				// all, so only their number says where they came from.
+				// Ask the sheet whether it files this name at that number
+				// before taking the number for an answer - and ask under
+				// the name the sheet uses, without the Token the catalog
+				// appends and the token handling below strips.
+				edition = "WDMU"
 			}
 		}
 	case "Pro Tour Promos":
