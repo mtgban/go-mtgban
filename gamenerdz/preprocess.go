@@ -82,16 +82,55 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 		if err == nil {
 			card.Variation = stamped
 		}
+		return card, nil
+	}
+
+	// A set's promos get a shelf code of the storefront's own - "ppthb" for
+	// Theros Beyond Death Promos - which again names no set the catalog
+	// has, so the edition selects nothing and the number answers with the
+	// ordinary printing. The shelf's name is the catalog's own name for
+	// that set, and is what says where to look. Most of these numbers
+	// already carry the letter the catalog files a promo pack under, and
+	// answer as they are; a number without it is still a promo pack, since
+	// the prereleases this shelf would otherwise hold sit on their own. So
+	// the plain reading is asked for first and the pack only when the
+	// catalog turns it down, which is what keeps a promo that is neither
+	// off a promo pack's printing.
+	shelf := product.ProductData.SetName
+	if !namesASet(edition) && namesASet(shelf) {
+		for _, variation := range []string{number, strings.TrimSpace(number + " " + packStamp)} {
+			probe := mtgmatcher.InputCard{
+				Name:      cardName,
+				Edition:   shelf,
+				Variation: variation,
+				Foil:      card.Foil,
+			}
+			_, err := mtgmatcher.Match(&probe)
+			if err != nil {
+				continue
+			}
+			card.Edition = shelf
+			card.Variation = variation
+			break
+		}
 	}
 
 	return card, nil
 }
 
+// namesASet reports whether the catalog knows an edition by this name, which
+// is how a shelf the storefront invented is told from one it shares.
+func namesASet(edition string) bool {
+	_, err := mtgmatcher.GetSetByName(edition)
+	return err == nil
+}
+
 // The set code the storefront shelves every prerelease stamp under, and the
 // word the catalog tells those printings apart by.
 const (
-	preShelf = "pre"
-	preStamp = "Prerelease"
+	preShelf  = "pre"
+	preStamp  = "Prerelease"
+	packStamp = "Promo Pack"
 )
 
 // bracketed is anything this storefront brackets into a display name: the

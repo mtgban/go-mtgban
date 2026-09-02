@@ -52,6 +52,32 @@ func TestPreprocess(t *testing.T) {
 			foil:      true,
 		},
 		{
+			// A set's promos get a shelf code of the storefront's own,
+			// which names no set; the shelf's name is the catalog's own
+			// name for it, and a number with no promo-pack letter still
+			// means the pack, since prereleases shelve elsewhere.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName: "Purphoros, Bronze-Blooded (PPTHB-150) - Theros Beyond Death Promos: (enchantment)",
+				ProductData: GNProductData{Set: "ppthb", SetName: "Theros Beyond Death Promos"},
+			},
+			name:      "Purphoros, Bronze-Blooded",
+			edition:   "Theros Beyond Death Promos",
+			variation: "150 Promo Pack",
+		},
+		{
+			// The same shelf, where the number already carries the letter
+			// the catalog files the pack under: it answers as it is.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName: "Atris, Oracle of Half-Truths (PPTHB-209P) - Theros Beyond Death Promos",
+				ProductData: GNProductData{Set: "ppthb", SetName: "Theros Beyond Death Promos"},
+			},
+			name:      "Atris, Oracle of Half-Truths",
+			edition:   "Theros Beyond Death Promos",
+			variation: "209P",
+		},
+		{
 			// An ordinary card the storefront shelved as a stamp by
 			// mistake. No stamped printing to reach, so the reading it
 			// already had stands.
