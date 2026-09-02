@@ -412,6 +412,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// aliased by the sibling printings
 			co.UUID = entry.ID
 			co.Finish = canonicalFinish(entry.Finish)
+			// Every holo treatment is a foil, and the flag is what a caller
+			// with no finish vocabulary reads: leaving it false filed every
+			// holo printing in the game as a plain one.
+			co.Foil = isFoilFinish(co.Finish)
 			b.UUIDs[entry.ID] = &co
 			b.AllUUIDs = append(b.AllUUIDs, entry.ID)
 			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], entry.ID)
