@@ -25,6 +25,85 @@ func MatchIDFinish(inputID, finish string) (string, error) {
 	return defaultBackend.MatchIDFinish(inputID, finish)
 }
 
+// finishTwins reports whether two set-mates are one card filed as two
+// finish-split entries: the same collector number - the foil twin only adds
+// a suffix - with no primary finish sold by both, which is what tells a
+// twin apart from a promo that happens to share the number. The three
+// finishes named are the axis the flags can ask for, which every loader
+// files its game's vocabulary into, not a magic idiom: a secondary
+// treatment both entries sell - a signed art card - must not hide that
+// the pair splits on the axis.
+func finishTwins(co, altCo *CardObject) bool {
+	if ExtractNumberValue(co.Number) != ExtractNumberValue(altCo.Number) {
+		return false
+	}
+	sameFinish := (co.HasFinish(FinishNonfoil) && altCo.HasFinish(FinishNonfoil)) ||
+		(co.HasFinish(FinishFoil) && altCo.HasFinish(FinishFoil)) ||
+		(co.HasFinish(FinishEtched) && altCo.HasFinish(FinishEtched))
+	return !sameFinish
+}
+
+// FinishSiblings answers every uuid the card behind the id is sold under,
+// itself included: the printing's registered finishes first - the base, the
+// shared ones, then the game's own vocabulary in sorted order - and, for the
+// sets that filed a foil as a card of its own, the set-mates that are its
+// finish twins. A sealed product or an unknown id answers with what it is.
+func (b *Backend) FinishSiblings(inputID string) []string {
+	co, err := b.cardObject4Id(inputID)
+	if err != nil {
+		return nil
+	}
+
+	var siblings []string
+	seen := map[string]bool{}
+	add := func(id string) {
+		if id == "" || seen[id] {
+			return
+		}
+		_, found := b.UUIDs[id]
+		if !found {
+			return
+		}
+		seen[id] = true
+		siblings = append(siblings, id)
+	}
+
+	for _, finish := range []string{FinishNonfoil, FinishFoil, FinishEtched} {
+		add(co.FoilUUIDs[finish])
+	}
+	var extra []string
+	for finish := range co.FoilUUIDs {
+		switch finish {
+		case FinishNonfoil, FinishFoil, FinishEtched:
+			continue
+		}
+		extra = append(extra, finish)
+	}
+	slices.Sort(extra)
+	for _, finish := range extra {
+		add(co.FoilUUIDs[finish])
+	}
+	// A card without a registered map is its own only finish
+	add(co.UUID)
+
+	for _, variation := range co.Variations {
+		altCo, found := b.UUIDs[variation]
+		if !found {
+			continue
+		}
+		if finishTwins(co, altCo) {
+			add(altCo.UUID)
+		}
+	}
+	return siblings
+}
+
+// FinishSiblings answers every uuid the card behind the id is sold under,
+// against the default datastore. See the method.
+func FinishSiblings(inputID string) []string {
+	return defaultBackend.FinishSiblings(inputID)
+}
+
 // Match resolves a storefront's description of a card to the uuid of the one
 // printing it names, using the default datastore. See the method.
 func Match(inCard *InputCard) (cardID string, err error) {
@@ -194,31 +273,20 @@ func (b *Backend) MatchID(inputID string, finishes ...bool) (string, error) {
 			if !found {
 				continue
 			}
-			// We assume that the collector number between the two version
-			// stays the same, with a different suffix
-			if ExtractNumberValue(co.Number) == ExtractNumberValue(altCo.Number) {
-				maybeID := b.output(altCo.Card, isFoil, isEtched)
-				altCo, found = b.UUIDs[maybeID]
-				if !found {
-					continue
-				}
+			if !finishTwins(co, altCo) {
+				continue
+			}
+			maybeID := b.output(altCo.Card, isFoil, isEtched)
+			altCo, found = b.UUIDs[maybeID]
+			if !found {
+				continue
+			}
 
-				// Make sure we're dealing with the same card
-				// (this helps with promos that have similar numbers)
-				// but different finish
-				sameFinish := (co.HasFinish(FinishNonfoil) && altCo.HasFinish(FinishNonfoil)) ||
-					(co.HasFinish(FinishFoil) && altCo.HasFinish(FinishFoil)) ||
-					(co.HasFinish(FinishEtched) && altCo.HasFinish(FinishEtched))
-				if sameFinish {
-					continue
-				}
-
-				// If the alt card finish matches the expected one
-				// then replace the final output uuid
-				if altCo.Foil == isFoil && altCo.Etched == isEtched {
-					outID = maybeID
-					break
-				}
+			// If the alt card finish matches the expected one
+			// then replace the final output uuid
+			if altCo.Foil == isFoil && altCo.Etched == isEtched {
+				outID = maybeID
+				break
 			}
 		}
 	}
