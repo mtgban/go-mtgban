@@ -378,7 +378,33 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
 			} else if isToken(product) && strings.Contains(variant, "JP") && strings.Contains(variant, "Exclusive") {
-				edition = "WDMU"
+				// Six sets print a sheet of Japanese promo tokens, each
+				// filed under a W before the set's own code, and every
+				// one is sold from this same group, so the qualifier is
+				// what tells them apart - "JP WOE Exclusive". Dominaria
+				// United printed the first and names no set at all, so it
+				// answers for the bare form; a code naming no sheet is
+				// refused rather than guessed at, because a wrong id here
+				// overwrites a right one upstream.
+				named := false
+				edition = ""
+				for _, field := range strings.Fields(variant) {
+					if field == "JP" || field == "Exclusive" {
+						continue
+					}
+					named = true
+					set, err := mtgmatcher.GetSet("W" + field)
+					if err == nil && set.Type == "token" {
+						edition = set.Code
+						break
+					}
+				}
+				if edition == "" {
+					if named {
+						return nil, errors.New("unknown token sheet")
+					}
+					edition = "WDMU"
+				}
 			}
 		}
 	case "Pro Tour Promos":
