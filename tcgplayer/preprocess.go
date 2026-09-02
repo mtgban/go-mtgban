@@ -43,6 +43,33 @@ var cardIDs = map[int]string{
 	284939: "P30H",
 }
 
+// japanesePromoSheet answers the sheet of Japanese promo tokens a listing
+// belongs to, and an empty string for anything that is not one of them. The
+// wording names the set when the token is shelved beside every other set's
+// promos, and the edition names it when the token is sold under the set it
+// came with. A sheet the datastore does not carry answers for nothing.
+func japanesePromoSheet(wording, edition string) string {
+	if !strings.Contains(wording, "JP") || !strings.Contains(wording, "Exclusive") {
+		return ""
+	}
+	for _, field := range strings.Fields(wording) {
+		if field == "JP" || field == "Exclusive" {
+			continue
+		}
+		if set, err := mtgmatcher.GetSet("W" + field); err == nil && set.Type == "token" {
+			return set.Code
+		}
+	}
+	parent, err := mtgmatcher.GetSetByName(edition)
+	if err != nil {
+		return ""
+	}
+	if set, err := mtgmatcher.GetSet("W" + parent.Code); err == nil && set.Type == "token" {
+		return set.Code
+	}
+	return ""
+}
+
 // Preprocess turns a catalog product into the card description the matcher
 // takes, splitting TCGplayer's name into a name and its qualifiers and
 // resolving the group id through editions. It reports an error for the
@@ -693,6 +720,15 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		if num != "" {
 			variant = num
 		}
+		// Six sets print a sheet of Japanese promo tokens, each filed under
+		// a W before the set's own code. A sheet sold among the promos of
+		// every set at once names its set in the wording - "JP WOE
+		// Exclusive" - and one sold under the set it came with names
+		// nothing, leaving the edition to say which sheet is meant.
+		if sheet := japanesePromoSheet(ogVariant, edition); sheet != "" {
+			edition = sheet
+		}
+
 		// Decouple
 		ed, found := tokenIDs[product.ProductID]
 		if found {
