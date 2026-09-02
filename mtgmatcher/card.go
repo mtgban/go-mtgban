@@ -1043,3 +1043,34 @@ func (b *Backend) output(card Card, flags ...bool) string {
 	}
 	return id
 }
+
+// hasOversizedPrinting reports whether the datastore carries an oversized
+// printing of the card. A listing that says oversize is asking for one, and
+// the sheets that were never built - the championship prizes, the oversized
+// dungeons - hold nothing it could mean, so the word marks it unsupported.
+//
+// The sets that carry them used to be named by the words in their titles,
+// which read "Commander Legends: Battle for Baldur's Gate" as an oversized
+// Commander product and priced its dungeon as the ordinary token. The edition
+// is the wrong thing to ask: a storefront writes "Magic Player Rewards" for a
+// card filed under "Magic Player Rewards 2009", and a set can hold one
+// oversized printing among ordinary ones. Ask whether the card has such a
+// printing at all, and leave which one to the edition filter below.
+func (b *Backend) hasOversizedPrinting(name string) bool {
+	printings, err := b.Printings4Card(name)
+	if err != nil {
+		return false
+	}
+	for _, code := range printings {
+		set, found := b.Sets[code]
+		if !found {
+			continue
+		}
+		for i := range set.Cards {
+			if set.Cards[i].IsOversized && Equals(set.Cards[i].Name, name) {
+				return true
+			}
+		}
+	}
+	return false
+}

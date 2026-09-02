@@ -374,10 +374,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// Extra check, after any possible edition adjustment has been done
 	switch {
 	// For any unsupported set that wasn't processed previously
-	case inCard.Contains("Oversize") &&
-		!(inCard.Contains("Commander") || inCard.Contains("Vanguard") ||
-			inCard.Contains("Planechase") || inCard.Contains("Archenemy") ||
-			inCard.Contains("Player Rewards")):
+	case inCard.Contains("Oversize") && !b.hasOversizedPrinting(inCard.Name):
 		return "", ErrUnsupported
 	// For any specific missing card
 	case rules.IsSpecificUnsupported(b, inCard):
