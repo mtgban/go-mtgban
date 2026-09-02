@@ -127,6 +127,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	foil := product.FoilFlag == "1"
 	var edition string
 	var variant string
+	var promoLine bool
 
 	// Usually there is more information the JPN product line, but sometimes
 	// we need to look at the English version too
@@ -141,6 +142,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 			}
 		}
 		if base, suffix, found := strings.Cut(edition, "-"); found {
+			promoLine = suffix == "P"
 			edition = dashSuffix(base, suffix)
 		}
 	}
@@ -166,6 +168,21 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	fixup, found = editionTable[edition]
 	if found {
 		edition = fixup
+	}
+	// The promo line a -P edition names holds printings the set itself does
+	// not, and the retail line states which by the same wording the buylist
+	// does. The group the title puts in the number's place is that wording
+	// rather than a number, and only the ones the table answers count: the
+	// rest of what a group holds there says nothing about a promo line.
+	//
+	// The wording is read in the catalog's words only here. Translating every
+	// variation the table has an answer for reaches listings whose edition is
+	// no promo line at all, and moves them off printings they had right.
+	promoWording, isPromoWording := editionTable[number]
+	if promoLine && series == "" && isPromoWording &&
+		!strings.ContainsFunc(number, unicode.IsDigit) {
+		edition += "-P"
+		variant = strings.Replace(variant, number, promoWording, 1)
 	}
 
 	switch edition {
