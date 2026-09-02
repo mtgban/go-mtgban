@@ -660,6 +660,15 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		"Planeshift",
 		"": // cosmetic
 		// Variants are fine as is
+	case "Oversize Cards":
+		// The catalog shelves every oversized card together and names the
+		// set it came from in the wording - "Interplanar Tunnel (Planechase
+		// Anthology)" - which is the only thing telling one shelf-mate from
+		// another, the number being the same in both. Keep it, and fall
+		// back to the number for the ones sold without any wording.
+		if variant == "" {
+			variant = number
+		}
 	default:
 		num := number
 
