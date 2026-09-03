@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -160,6 +161,58 @@ func onePieceShelf(shelf, name string) string {
 		return shelf
 	}
 	return "Starter Deck " + match[1]
+}
+
+// onePieceRenamedTreatment answers the printing a One Piece listing means
+// when it names its treatment with a word the catalog does not use for that
+// set, and "" wherever the listing is already answered.
+//
+// This storefront calls the Gear5 starter deck's premium printing "Full Art"
+// where the catalog files every alternate printing of that set as "Parallel",
+// so the word named no label there and the row settled on the plain card - a
+// $15.00 Monkey.D.Luffy priced as the $0.50 one beside it.
+//
+// The guard is what keeps it from touching a real Full Art. The word must
+// name a label the catalog uses somewhere, so a typo reaches nothing; the
+// card's own set must hold no printing of it, which is false for all 75 real
+// Full Art printings, since their sets are the ones that use the name; and
+// the set must wear a single premium label throughout, so the one printing
+// the storefront can mean is the one the number carries.
+func onePieceRenamedTreatment(id, name string) string {
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil || len(co.PromoTypes) > 0 {
+		return ""
+	}
+	set, err := mtgmatcher.GetSet(co.SetCode)
+	if err != nil {
+		return ""
+	}
+
+	labels := map[string]bool{}
+	var alternate string
+	for _, card := range set.Cards {
+		for _, promoType := range card.PromoTypes {
+			labels[promoType] = true
+		}
+		if card.Number == co.Number && len(card.PromoTypes) > 0 {
+			if alternate != "" && alternate != card.UUID {
+				return ""
+			}
+			alternate = card.UUID
+		}
+	}
+	if len(labels) != 1 || alternate == "" {
+		return ""
+	}
+
+	for _, match := range nameParenthetical.FindAllStringSubmatch(name, -1) {
+		slug := mtgmatcher.PromoTypeSlug(strings.TrimSpace(match[1]))
+		if slug == "" || labels[slug] || !slices.Contains(mtgmatcher.AllPromoTypes(), slug) {
+			continue
+		}
+		return alternate
+	}
+	return ""
 }
 
 // eventNamed adds the catalog's name for every event the wording gives its
@@ -695,6 +748,12 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			if cerr == nil && !co.HasFinish(mtgmatcher.FinishNonfoil) &&
 				strings.Contains(co.Rarity, "Holo") {
 				continue
+			}
+		}
+
+		if csi.game == GameOnePiece {
+			if renamed := onePieceRenamedTreatment(cardID, product.Name); renamed != "" {
+				cardID = renamed
 			}
 		}
 
