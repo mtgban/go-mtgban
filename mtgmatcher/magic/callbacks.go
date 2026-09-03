@@ -1035,7 +1035,7 @@ func sldVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 }
 
 func wcdNumberCompare(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	prefix, sideboard := inCard.WorldChampPrefix()
+	prefix, sideboard := worldChampPrefix(inCard)
 	wcdNum := ExtractWCDNumber(inCard.Variation, prefix, sideboard)
 
 	// If a wcdNum is found, check that it's matching the card number

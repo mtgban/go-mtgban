@@ -971,7 +971,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsFNM():
+		case isFNM(inCard):
 			switch {
 			case strings.HasPrefix(set.Name, "Friday Night Magic "+maybeYear):
 			case set.Name == "Magic × Duel Masters Promos":
@@ -1000,7 +1000,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		case inCard.IsArena():
-			maybeYear = inCard.ArenaYear(maybeYear)
+			maybeYear = arenaYear(inCard, maybeYear)
 			switch {
 			case set.Name == "DCI Legend Membership":
 			case strings.HasPrefix(set.Name, "Arena League "+maybeYear):
@@ -1109,8 +1109,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		// Some providers use "Textless" for MF cards
-		case inCard.IsRewards() && !inCard.IsMagicFest():
-			maybeYear = inCard.PlayerRewardsYear(maybeYear)
+		case isRewards(inCard) && !inCard.IsMagicFest():
+			maybeYear = playerRewardsYear(inCard, maybeYear)
 			switch {
 			case strings.HasPrefix(set.Name, "Magic Player Rewards "+maybeYear):
 			default:
@@ -1323,7 +1323,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsDuelsOfThePW():
+		case isDuelsOfThePW(inCard):
 			switch {
 			case strings.HasPrefix(set.Name, "Duels of the Planeswalkers"):
 			default:
@@ -1375,7 +1375,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		case inCard.IsDuelDecks():
-			variant := inCard.DuelDecksVariant()
+			variant := duelDecksVariant(inCard)
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks") &&
 				!strings.Contains(set.Name, "Anthology"):
@@ -1401,7 +1401,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.IsPremiereShop():
+		case isPremiereShop(inCard):
 			if maybeYear == "" {
 				guilds := append(mtgmatcher.GRNGuilds, mtgmatcher.ARNGuilds...)
 				for _, guild := range guilds {
@@ -1694,7 +1694,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			if num == "" && card.SetCode == "SLD" {
 				num = mtgmatcher.ExtractNumberAny(inCard.Variation)
 			}
-			if inCard.ShouldIgnoreNumber(set.Name, num) {
+			if shouldIgnoreNumber(inCard, set.Name, num) {
 				checkNum = false
 				mtgmatcher.Logger.Println("Skipping number check")
 			}
