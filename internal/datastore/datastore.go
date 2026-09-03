@@ -46,8 +46,8 @@ func b2Credentials() (id, key string) {
 }
 
 // Load opens the datastore the path names and installs it as the global
-// one. It is mtgmatcher.LoadDatastoreFile with the path read the way Open
-// reads it, for the suites that match through the package-level API.
+// one: mtgmatcher.LoadDatastore over a path read the way Open reads it,
+// for the suites that match through the package-level API.
 func Load(path string) error {
 	reader, err := Open(path)
 	if err != nil {

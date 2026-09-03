@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
@@ -36,7 +37,7 @@ func TestPreprocessPokemonQualifier(t *testing.T) {
 	// The rest of the package reads the Magic datastore TestMain loaded, and
 	// the global one is what a probe asks.
 	t.Cleanup(func() {
-		err := mtgmatcher.LoadDatastoreFile(os.Getenv("ALLPRINTINGS5_PATH"))
+		err := datastore.Load(os.Getenv("ALLPRINTINGS5_PATH"))
 		if err != nil {
 			log.Fatalln(err)
 		}

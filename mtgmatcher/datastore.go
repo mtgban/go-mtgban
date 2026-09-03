@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 )
 
 // GameLoader builds a Backend from a datastore reader for a particular game.
@@ -73,16 +72,6 @@ func LoadDatastore(reader io.Reader) error {
 		firstErr = errors.New("unrecognized datastore format")
 	}
 	return fmt.Errorf("mtgmatcher: no registered game could load the datastore: %w", firstErr)
-}
-
-// LoadDatastoreFile is LoadDatastore over a file path.
-func LoadDatastoreFile(filename string) error {
-	reader, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-	return LoadDatastore(reader)
 }
 
 // Open loads the named game's datastore explicitly (sql.Open style) and returns
