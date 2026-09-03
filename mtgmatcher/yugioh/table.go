@@ -154,6 +154,14 @@ var editionAliases = map[string]string{
 var nameRespellings = [][2]string{
 	{"Vampire Orchis", "Vampiric Orchis"},
 	{"Vampire Koala", "Vampiric Koala"},
+
+	// One card, two catalog spellings. Kuwagata α is the only card in
+	// the game whose printed name carries a Greek letter, and the catalog
+	// spells it neither way: Tournament Pack 1 drops the letter and files
+	// the card as "Kuwagata", OTS Tournament Pack 19 writes it out as
+	// "Kuwagata Alpha". The greekLetters replacer reaches the second from
+	// the letter itself, and nothing reached the first from the second.
+	{"Kuwagata", "Kuwagata Alpha"},
 }
 
 // pooledEditions maps a storefront name spanning two of the catalog's sets

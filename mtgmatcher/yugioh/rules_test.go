@@ -102,6 +102,10 @@ func respellBackend() *mtgmatcher.Backend {
 		"OP19": {Name: "OTS Tournament Pack 19", Cards: []mtgmatcher.Card{
 			{Name: "Slime Token", Number: "OP19-EN028"},
 			{Name: "Mask Token", Number: "OP19-EN029"},
+			{Name: "Kuwagata Alpha", Number: "OP19-EN013"},
+		}},
+		"TP1": {Name: "Tournament Pack 1", Cards: []mtgmatcher.Card{
+			{Name: "Kuwagata", Number: "TP1-030"},
 		}},
 		"SDSA": {Name: "Structure Deck: Sacred Beasts", Cards: []mtgmatcher.Card{
 			{Name: "Token: Phantasmal Martyr", Number: "SDSA-EN047"},
@@ -153,6 +157,10 @@ func TestRespellName(t *testing.T) {
 			"Mecha Phantom Beast Token", "OTS Tournament Pack 9", "026", "Mecha Phantom Beast Token"},
 		{"a set printing the name outranks a lying number",
 			"Mask Token", "OTS Tournament Pack 19", "028", "Mask Token"},
+		{"the written-out alpha respells to the set that drops it",
+			"Kuwagata Alpha", "Tournament Pack 1", "030", "Kuwagata"},
+		{"and the letterless name takes the spelling OTS writes out",
+			"Kuwagata", "OTS Tournament Pack 19", "013", "Kuwagata Alpha"},
 		{"a set printing the flip elsewhere outranks it too",
 			"Phantasm Token", "Structure Deck: Sacred Beasts", "047", "Phantasm Token"},
 		{"an edition naming no set decides nothing",
