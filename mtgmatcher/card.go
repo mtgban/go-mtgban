@@ -224,12 +224,6 @@ func (c *InputCard) IsGenericPromo() bool {
 			c.Contains("Unique")) // mtgs
 }
 
-// IsDCIPromo reports a DCI promo, excluding judge rewards, which carry the
-// same mark.
-func (c *InputCard) IsDCIPromo() bool {
-	return c.Contains("DCI") && !c.Contains("Judge")
-}
-
 // IsGenericAltArt reports alternate art, matching Alternative as well as Alt.
 func (c *InputCard) IsGenericAltArt() bool {
 	// "Alt" includes Alternative
@@ -274,25 +268,6 @@ func (c *InputCard) IsJPN() bool {
 		Contains(c.Variation, "Dengeki")
 }
 
-// IsRelease reports a release or launch promo, and refuses a prerelease,
-// whose wording otherwise contains this one.
-func (c *InputCard) IsRelease() bool {
-	return !c.Contains("Prerelease") &&
-		(c.Contains("Release") ||
-			c.Contains("Draft Weekend") ||
-			c.Contains("Launch"))
-}
-
-// IsWPNGateway reports a Wizards Play Network or Gateway promo, including the
-// Commander Party and Moonlit Lands series that ran under it.
-func (c *InputCard) IsWPNGateway() bool {
-	return c.Contains("WPN") ||
-		c.Contains("Gateway") ||
-		Contains(c.Variation, "Wizards Play Network") ||
-		Contains(c.Variation, "Commander Party") || // scg
-		Contains(c.Variation, "Moonlit Lands") // ck
-}
-
 // IsIDWMagazineBook reports a promo that came with print media: comics,
 // magazines, novels, and the retail tie-ins storefronts file alongside them.
 func (c *InputCard) IsIDWMagazineBook() bool {
@@ -323,26 +298,6 @@ func (c *InputCard) IsIDWMagazineBook() bool {
 		c.Contains("Media Insert") // mm+nf
 }
 
-// IsResale reports a resale or repack promo, refusing championship cards,
-// whose wording collides.
-func (c *InputCard) IsResale() bool {
-	return !c.Contains("Championship") && (c.Contains("Repack") || c.Contains("Store") || c.Contains("Resale"))
-}
-
-// IsJudge reports a judge reward.
-func (c *InputCard) IsJudge() bool {
-	return c.Contains("Judge")
-}
-
-// IsMagicFest reports a MagicFest or MagicCon promo, including TCGplayer's
-// MFP code.
-func (c *InputCard) IsMagicFest() bool {
-	return c.Contains("Magic Fest") ||
-		c.Contains("MagicCon") || // scg
-		strings.Contains(c.Edition, "MFP") || // tcg collection
-		strings.Contains(c.Variation, "MFP") // tcg collection
-}
-
 // IsBaB reports a buy-a-box promo, by name, by TCGplayer's BABP or
 // Strikezone's BIBB, or by Box Promos where it is not an Xbox tie-in or a gift
 // box.
@@ -371,11 +326,6 @@ func (c *InputCard) IsFoil() bool {
 func (c *InputCard) IsEtched() bool {
 	// Note this can't be just "etch" because it would catch the "sketch" cards
 	return Contains(c.Variation, "Etched")
-}
-
-// IsArena reports an Arena league promo.
-func (c *InputCard) IsArena() bool {
-	return c.Contains("Arena")
 }
 
 // IsSDCC reports a San Diego Comic-Con promo.
@@ -473,14 +423,6 @@ func (c *InputCard) IsDuelDecks() bool {
 func (c *InputCard) IsDuelDecksAnthology() bool {
 	return strings.Contains(c.Edition, "DDA") ||
 		(Contains(c.Edition, "Duel Decks") && Contains(c.Edition, "Anthology"))
-}
-
-// IsMysteryList reports a Mystery Booster or The List printing. The List is
-// matched raw, since folded it also matches The Little.
-func (c *InputCard) IsMysteryList() bool {
-	return c.Contains("Mystery") || c.Contains("Planeswalker Symbol Reprints") ||
-		// Cannot use c.Contains because it trips with "The Little"
-		strings.Contains(c.Edition, "The List") || strings.Contains(c.Variation, "The List")
 }
 
 // IsSecretLair reports a Secret Lair printing, by name or by set code.

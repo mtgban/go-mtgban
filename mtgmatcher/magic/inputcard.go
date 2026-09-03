@@ -139,7 +139,7 @@ func shouldIgnoreNumber(c *mtgmatcher.InputCard, setName, num string) bool {
 	}
 
 	// This is better handled in thelistCheck()
-	if c.IsMysteryList() && !c.Contains("Unfinity") {
+	if isMysteryList(c) && !c.Contains("Unfinity") {
 		return true
 	}
 
@@ -185,7 +185,7 @@ func isRewards(c *mtgmatcher.InputCard) bool {
 		!mtgmatcher.Contains(c.Variation, "Year of") &&
 		!mtgmatcher.Contains(c.Variation, "Lunar") &&
 		!mtgmatcher.Contains(c.Variation, "Store")) ||
-		(c.Contains("Reward") && !c.IsJudge())
+		(c.Contains("Reward") && !isJudge(c))
 }
 
 // isDuelsOfThePW reports a Duels of the Planeswalkers promo. It compares the
@@ -299,4 +299,62 @@ func isARNDarkMana(c *mtgmatcher.InputCard) bool {
 // which some storefronts mark with a dagger instead of a word.
 func isARNLightMana(c *mtgmatcher.InputCard) bool {
 	return mtgmatcher.Contains(c.Variation, "light") || strings.Contains(c.Variation, "†")
+}
+
+// isDCIPromo reports a DCI promo, excluding judge rewards, which carry the
+// same mark.
+func isDCIPromo(c *mtgmatcher.InputCard) bool {
+	return c.Contains("DCI") && !c.Contains("Judge")
+}
+
+// isWPNGateway reports a Wizards Play Network or Gateway promo, including the
+// Commander Party and Moonlit Lands series that ran under it.
+func isWPNGateway(c *mtgmatcher.InputCard) bool {
+	return c.Contains("WPN") ||
+		c.Contains("Gateway") ||
+		mtgmatcher.Contains(c.Variation, "Wizards Play Network") ||
+		mtgmatcher.Contains(c.Variation, "Commander Party") || // scg
+		mtgmatcher.Contains(c.Variation, "Moonlit Lands") // ck
+}
+
+// isRelease reports a release or launch promo, and refuses a prerelease,
+// whose wording otherwise contains this one.
+func isRelease(c *mtgmatcher.InputCard) bool {
+	return !c.Contains("Prerelease") &&
+		(c.Contains("Release") ||
+			c.Contains("Draft Weekend") ||
+			c.Contains("Launch"))
+}
+
+// isJudge reports a judge reward.
+func isJudge(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Judge")
+}
+
+// isMagicFest reports a MagicFest or MagicCon promo, including TCGplayer's
+// MFP code.
+func isMagicFest(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Magic Fest") ||
+		c.Contains("MagicCon") || // scg
+		strings.Contains(c.Edition, "MFP") || // tcg collection
+		strings.Contains(c.Variation, "MFP") // tcg collection
+}
+
+// isArena reports an Arena league promo.
+func isArena(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Arena")
+}
+
+// isResale reports a resale or repack promo, refusing championship cards,
+// whose wording collides.
+func isResale(c *mtgmatcher.InputCard) bool {
+	return !c.Contains("Championship") && (c.Contains("Repack") || c.Contains("Store") || c.Contains("Resale"))
+}
+
+// isMysteryList reports a Mystery Booster or The List printing. The List is
+// matched raw, since folded it also matches The Little.
+func isMysteryList(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Mystery") || c.Contains("Planeswalker Symbol Reprints") ||
+		// Cannot use c.Contains because it trips with "The Little"
+		strings.Contains(c.Edition, "The List") || strings.Contains(c.Variation, "The List")
 }
