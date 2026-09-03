@@ -709,7 +709,8 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			variation := catalogTreatment(buylistVariation(product))
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: pokemonPromoShelf(product, variation), Variation: variation, Foil: product.IsFoil == 1}
 		case GameRiftbound:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
+			variation := buylistVariation(product)
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: riftboundShelf(product, variation), Variation: variation, Foil: product.IsFoil == 1}
 		// The rarity arrives in a field of its own here, where the sell
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
@@ -951,6 +952,46 @@ func pokemonPromoShelf(product CSIPriceEntry, variation string) string {
 		return product.ItemSet
 	}
 	return "Promo"
+}
+
+// riftboundNotePrefix matches the set code a Riftbound note opens with.
+var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
+
+// riftboundShelf answers the set a Riftbound listing belongs to, which is the
+// shelf it arrived on except where that shelf says only "Promo".
+//
+// The Nexus Night runes are sold under the promo shelf with the set that
+// issued them written at the head of the note - "UNL-R05b", "SFD-R05b" - and
+// the promo shelf holds a printing of its own at that number. All of them met
+// there, so a $5.00 Unleashed Chaos Rune and an $11.00 Spiritforged one were
+// both priced as the Organized Play printing they share a number with.
+//
+// The note only decides where the set it names holds that printing. Vendetta
+// issued no b-lettered rune of its own, so its six listings stay on the promo
+// shelf, which is where the printing they mean actually is.
+func riftboundShelf(product CSIPriceEntry, variation string) string {
+	if product.ItemSet != "Promo" {
+		return product.ItemSet
+	}
+	match := riftboundNotePrefix.FindStringSubmatch(product.Notes)
+	if match == nil {
+		return product.ItemSet
+	}
+	set, err := mtgmatcher.GetSet(match[1])
+	if err != nil {
+		return product.ItemSet
+	}
+	probe := &mtgmatcher.InputCard{
+		Name:      product.Name,
+		Edition:   set.Name,
+		Variation: variation,
+		Foil:      product.IsFoil == 1,
+	}
+	_, err = mtgmatcher.Match(probe)
+	if err != nil {
+		return product.ItemSet
+	}
+	return set.Name
 }
 
 // csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
