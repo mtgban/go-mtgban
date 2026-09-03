@@ -1,13 +1,27 @@
 package strikezone
 
 import (
+	"log"
 	"os"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
+
+// TestMain loads the datastore when one is configured. Some of this
+// package's suites read no cards, so a checkout without it still runs them;
+// the ones that do ask say so and skip.
+func TestMain(m *testing.M) {
+	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
+		if err := datastore.Load(path); err != nil {
+			log.Fatalln(err)
+		}
+	}
+	os.Exit(m.Run())
+}
 
 // TestNeonInkWording pins the four Neon Ink colours to their own printings.
 // The buylist writes them without the word the treatment is named for, and
@@ -15,20 +29,9 @@ import (
 // the plain printing that stands beside them, which prices a $300 card at the
 // bulk one's id.
 func TestNeonInkWording(t *testing.T) {
-	datastorePath := os.Getenv("ALLPRINTINGS5_PATH")
-	if datastorePath == "" {
-		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
+	if len(mtgmatcher.GetAllSets()) == 0 {
+		t.Skip("ALLPRINTINGS5_PATH not set; skipping the Neon Ink suite")
 	}
-	reader, err := datastore.Open(datastorePath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer reader.Close()
-	backend, err := magic.Load(reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(backend)
 
 	tests := []struct {
 		name   string

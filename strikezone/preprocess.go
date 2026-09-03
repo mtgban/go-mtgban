@@ -335,6 +335,14 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		}
 	}
 
+	// Secret Lair files a card under one drop or under several, and the store
+	// says which only where it writes something beside the name. Where the
+	// set holds several, the match that follows picks one of them for no
+	// reason and prices the others as it, so refuse instead of choosing.
+	if edition == "Secret Lair" && variation == "" && hasSeveralDrops(cardName) {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variation,
@@ -342,4 +350,21 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		Foil:      isFoil,
 		Language:  language,
 	}, nil
+}
+
+// hasSeveralDrops reports whether the set files a card under more than one
+// drop. The star that ends a number marks the foil twin of the drop before
+// it, which a listing saying nothing still reaches by its finish alone.
+func hasSeveralDrops(cardName string) bool {
+	cards := mtgmatcher.MatchInSet(cardName, "SLD")
+	if len(cards) < 2 {
+		return false
+	}
+	first := strings.TrimSuffix(cards[0].Number, "★")
+	for _, card := range cards[1:] {
+		if strings.TrimSuffix(card.Number, "★") != first {
+			return true
+		}
+	}
+	return false
 }
