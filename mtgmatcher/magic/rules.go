@@ -177,14 +177,14 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = ed
 	}
 	set, found = b.Sets[strings.ToUpper(variation)]
-	if found && (inCard.IsJudge() || inCard.IsDuelDecks() || inCard.IsDuelDecksAnthology()) {
+	if found && (isJudge(inCard) || inCard.IsDuelDecks() || inCard.IsDuelDecksAnthology()) {
 		edition = set.Name
 	}
 	ed, found = EditionTable[variation]
 	// The Anthologies set has one land with a variant named as an expansion,
 	// so what is found should not overwrite the edition in this case
 	// As for The List, ignore any further variation
-	if found && edition != "Anthologies" && !inCard.IsMysteryList() {
+	if found && edition != "Anthologies" && !isMysteryList(inCard) {
 		edition = ed
 
 		// If edition was found through the variation tag, drop it
@@ -211,7 +211,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = "Zendikar Expeditions"
 	case strings.Contains(edition, "Expeditions") && strings.Contains(edition, "Rising"):
 		edition = "Zendikar Rising Expeditions"
-	case inCard.Contains("Timeshift") && inCard.Contains("Spiral") && !inCard.IsMysteryList():
+	case inCard.Contains("Timeshift") && inCard.Contains("Spiral") && !isMysteryList(inCard):
 		if len(b.MatchInSet(inCard.Name, "TSB")) != 0 {
 			edition = b.Sets["TSB"].Name
 		} else if len(b.MatchInSet(inCard.Name, "TSR")) != 0 {
@@ -226,7 +226,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		// Cut the edition at the first dash, but avoid Prerelease and PromoPack and MB1/List cards
 		// since they are often separated with a dash, but are processed elsewhere
 		// Test for "- " and " -" to avoid catching dashes in the name of the edition
-		if !inCard.IsPrerelease() && !inCard.IsPromoPack() && !inCard.IsMysteryList() &&
+		if !inCard.IsPrerelease() && !inCard.IsPromoPack() && !isMysteryList(inCard) &&
 			(strings.Contains(edition, "- ") || strings.Contains(edition, " -")) {
 			edition = strings.Split(edition, "-")[0]
 			edition = strings.TrimSpace(edition)
@@ -333,7 +333,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	// Special handling since so many providers get this wrong
 	switch {
 	// Prevent tags from being mixed up, only take care of edition changes
-	case inCard.IsMysteryList():
+	case isMysteryList(inCard):
 		switch inCard.Name {
 		case "Rafiq of the Many":
 			edition = "Shards of Alara"
@@ -411,7 +411,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		variation = "Etched"
 
 	// Planechase deduplication
-	case inCard.Contains("Planechase") && len(b.MatchInSet(inCard.Name, "DCI")) != 0 && (inCard.IsRelease() || inCard.IsDCIPromo() || inCard.IsWPNGateway()):
+	case inCard.Contains("Planechase") && len(b.MatchInSet(inCard.Name, "DCI")) != 0 && (isRelease(inCard) || isDCIPromo(inCard) || isWPNGateway(inCard)):
 		edition = b.Sets["DCI"].Name
 	case inCard.Equals("Planechase") && len(b.MatchInSet(inCard.Name, "OHOP")) != 0:
 		edition = b.Sets["OHOP"].Name
@@ -494,7 +494,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = b.Sets["PL21"].Name
 
 	// Love Your LGS 2021, often confused with WPN
-	case (inCard.IsWPNGateway() || inCard.IsGenericPromo()) && inCard.Contains("Retro Frame") && len(b.MatchInSet(inCard.Name, "PLG21")) == 1:
+	case (isWPNGateway(inCard) || inCard.IsGenericPromo()) && inCard.Contains("Retro Frame") && len(b.MatchInSet(inCard.Name, "PLG21")) == 1:
 		edition = b.Sets["PLG21"].Name
 
 	// WPN 2021
@@ -506,7 +506,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = b.Sets["SUNF"].Name
 
 	// Move Release to Prerelease for Battlebond
-	case inCard.IsRelease() && strings.Contains(edition, "Battlebond") && len(b.MatchInSet(inCard.Name, "PBBD")) == 1:
+	case isRelease(inCard) && strings.Contains(edition, "Battlebond") && len(b.MatchInSet(inCard.Name, "PBBD")) == 1:
 		edition = b.Sets["PBBD"].Name
 
 	// Remove edition since the cards are either in ONE or in another set, but single printed
@@ -529,7 +529,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		variation += " Bundle"
 
 	// Many providers don't tag these promos correctly
-	case inCard.IsRelease() && len(b.MatchInSet(inCard.Name, "PBBD")) == 1:
+	case isRelease(inCard) && len(b.MatchInSet(inCard.Name, "PBBD")) == 1:
 		edition = b.Sets["PBBD"].Name
 		variation = "Prerelease"
 
@@ -566,11 +566,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "Starter 2000"
 			}
 		case "Balduvian Horde":
-			if inCard.IsJudge() || inCard.IsGenericPromo() || inCard.IsDCIPromo() {
+			if isJudge(inCard) || inCard.IsGenericPromo() || isDCIPromo(inCard) {
 				edition = "World Championship Promos"
 			}
 		case "Disenchant":
-			if inCard.IsArena() && inCard.Foil {
+			if isArena(inCard) && inCard.Foil {
 				edition = "Friday Night Magic 2003"
 			}
 		case "Nalathni Dragon":
@@ -584,11 +584,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "Release Events"
 			}
 		case "Reya Dawnbringer":
-			if inCard.IsRelease() {
+			if isRelease(inCard) {
 				edition = "Tenth Edition Promos"
 			}
 		case "Ajani Vengeant":
-			if inCard.IsRelease() {
+			if isRelease(inCard) {
 				variation = "Prerelease"
 			}
 		case "Tamiyo's Journal":
@@ -596,44 +596,44 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				variation = "Foil"
 			}
 		case "Underworld Dreams":
-			if inCard.IsDCIPromo() || inCard.IsArena() || inCard.Contains("2HG") || inCard.Contains("Two-Headed Giant") {
+			if isDCIPromo(inCard) || isArena(inCard) || inCard.Contains("2HG") || inCard.Contains("Two-Headed Giant") {
 				edition = "Two-Headed Giant Tournament"
 			}
 		case "Jace Beleren":
-			if inCard.IsDCIPromo() {
+			if isDCIPromo(inCard) {
 				edition = "Miscellaneous Book Promos"
 			}
 		case "Serra Angel":
-			if inCard.IsDCIPromo() || inCard.IsBaB() {
+			if isDCIPromo(inCard) || inCard.IsBaB() {
 				edition = "Wizards of the Coast Online Store"
 			}
 		case "Incinerate", "Counterspell":
-			if inCard.IsDCIPromo() || (inCard.Contains("Legend") && (inCard.Contains("Promo") || inCard.Contains("Member"))) {
+			if isDCIPromo(inCard) || (inCard.Contains("Legend") && (inCard.Contains("Promo") || inCard.Contains("Member"))) {
 				edition = "DCI Legend Membership"
 			}
 		case "Faerie Conclave", "Treetop Village":
-			if inCard.IsWPNGateway() || inCard.Contains("Summer") {
+			if isWPNGateway(inCard) || inCard.Contains("Summer") {
 				edition = "Tenth Edition Promos"
 			}
 		case "Kamahl, Pit Fighter", "Char":
-			if inCard.IsDCIPromo() || inCard.Contains("15th Anniversary") || inCard.IsGenericPromo() {
+			if isDCIPromo(inCard) || inCard.Contains("15th Anniversary") || inCard.IsGenericPromo() {
 				edition = "15th Anniversary Cards"
 			}
 		case "Fling":
-			if (inCard.IsDCIPromo() || inCard.IsWPNGateway()) && mtgmatcher.ExtractNumber(inCard.Variation) == "" {
+			if (isDCIPromo(inCard) || isWPNGateway(inCard)) && mtgmatcher.ExtractNumber(inCard.Variation) == "" {
 				edition = "DCI Promos"
-				if inCard.IsDCIPromo() {
+				if isDCIPromo(inCard) {
 					variation = "50"
-				} else if inCard.IsWPNGateway() {
+				} else if isWPNGateway(inCard) {
 					variation = "69"
 				}
 			}
 		case "Sylvan Ranger":
-			if (inCard.IsDCIPromo() || inCard.IsWPNGateway()) && mtgmatcher.ExtractNumber(inCard.Variation) == "" {
+			if (isDCIPromo(inCard) || isWPNGateway(inCard)) && mtgmatcher.ExtractNumber(inCard.Variation) == "" {
 				edition = "DCI Promos"
-				if inCard.IsDCIPromo() {
+				if isDCIPromo(inCard) {
 					variation = "51"
-				} else if inCard.IsWPNGateway() {
+				} else if isWPNGateway(inCard) {
 					variation = "70"
 				}
 			}
@@ -695,7 +695,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			case "DCI Promos",
 				"Wizards Play Network 2021":
 			default:
-				if inCard.IsWPNGateway() || inCard.Contains("Bring a Friend") {
+				if isWPNGateway(inCard) || inCard.Contains("Bring a Friend") {
 					edition = "Wizards Play Network 2021"
 					if inCard.Contains("Gateway") {
 						edition = "DCI Promos"
@@ -848,7 +848,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		switch {
 		// If the edition matches, use it as is
 		// except for two "catch all" sometimes overlapping sets
-		case mtgmatcher.Equals(inCard.Edition, set.Name) && !inCard.IsMysteryList() && !inCard.IsSecretLair():
+		case mtgmatcher.Equals(inCard.Edition, set.Name) && !isMysteryList(inCard) && !inCard.IsSecretLair():
 			// pass-through
 
 		// The set a token sheet came with names it as surely as the sheet
@@ -930,7 +930,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.IsRelease():
+		case isRelease(inCard):
 			skip := true
 			foundCards := b.MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
@@ -992,14 +992,14 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsJudge():
+		case isJudge(inCard):
 			switch {
 			case strings.HasPrefix(set.Name, "Judge Gift Cards "+maybeYear):
 			default:
 				continue
 			}
 
-		case inCard.IsArena():
+		case isArena(inCard):
 			maybeYear = arenaYear(inCard, maybeYear)
 			switch {
 			case set.Name == "DCI Legend Membership":
@@ -1011,7 +1011,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		// This needs to be above any possible printing type below
 		// Both kinds need to be checked in the same place as there is
 		// a lot of overlap in the product and naming across stores
-		case inCard.IsMysteryList() || inCard.IsSecretLair():
+		case isMysteryList(inCard) || inCard.IsSecretLair():
 			noSymbol := inCard.Contains("No") && inCard.Contains("Symbol")
 			switch set.Code {
 			case "CMB1":
@@ -1082,7 +1082,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 
 				// No PLST in SLD
-				if inCard.IsMysteryList() {
+				if isMysteryList(inCard) {
 					skip = true
 				}
 
@@ -1109,7 +1109,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		// Some providers use "Textless" for MF cards
-		case isRewards(inCard) && !inCard.IsMagicFest():
+		case isRewards(inCard) && !isMagicFest(inCard):
 			maybeYear = playerRewardsYear(inCard, maybeYear)
 			switch {
 			case strings.HasPrefix(set.Name, "Magic Player Rewards "+maybeYear):
@@ -1117,7 +1117,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsWPNGateway():
+		case isWPNGateway(inCard):
 			switch set.Name {
 			case "DCI Promos":
 			case "Innistrad: Crimson Vow",
@@ -1191,7 +1191,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.IsResale():
+		case isResale(inCard):
 			switch set.Code {
 			case "DCI", "P30A", "P30H", "P30M":
 				continue
@@ -1293,7 +1293,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsMagicFest():
+		case isMagicFest(inCard):
 			// Some providers use GP2018 instead of MF2019
 			if maybeYear == "2018" && isBasicLand(inCard) {
 				maybeYear = "2019"
@@ -1732,7 +1732,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					possibleSuffixes = append(possibleSuffixes, "s", SuffixSpecial+"s", SuffixVariant+"s")
 				case isSerialized(inCard):
 					possibleSuffixes = append(possibleSuffixes, "z")
-				case inCard.IsJudge() || inCard.IsResale():
+				case isJudge(inCard) || isResale(inCard):
 					possibleSuffixes = append(possibleSuffixes, SuffixSpecial)
 				case inCard.IsJPN():
 					possibleSuffixes = append(possibleSuffixes, "jpn")
@@ -2144,7 +2144,7 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	case "Red Herring",
 		"Bind // Liberate",
 		"Pick Your Poison":
-		if inCard.IsMysteryList() || inCard.Contains("Playtest") {
+		if isMysteryList(inCard) || inCard.Contains("Playtest") {
 			inCard.Name += " Playtest"
 		}
 	case "Unquenchable Fury":

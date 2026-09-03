@@ -66,7 +66,7 @@ var promoTypeElements = []promoTypeElement{
 		// After ZNR buy-a-box is also present in main set
 		ValidDate: BuyABoxNotUniqueDate,
 		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsBaB() || inCard.IsRelease()
+			return inCard.IsBaB() || isRelease(inCard)
 		},
 		CanBeWild: true,
 	},
@@ -731,9 +731,9 @@ func launchPromoInSet(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 	anyAlternative := card.IsAlternative ||
 		card.BorderColor == BorderColorBorderless ||
 		card.HasFrameEffect(FrameEffectExtendedArt)
-	if (inCard.IsRelease() || inCard.IsBaB()) && !anyAlternative {
+	if (isRelease(inCard) || inCard.IsBaB()) && !anyAlternative {
 		return true
-	} else if !(inCard.IsRelease() || inCard.IsBaB()) && anyAlternative && !card.HasPromoType(PromoTypeBoosterfun) {
+	} else if !(isRelease(inCard) || inCard.IsBaB()) && anyAlternative && !card.HasPromoType(PromoTypeBoosterfun) {
 		return true
 	}
 	return false
@@ -806,9 +806,9 @@ func guildgateVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 
 // Due to the WPN lands
 func wpnCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsWPNGateway() && !card.HasPromoType(PromoTypeWPN) {
+	if isWPNGateway(inCard) && !card.HasPromoType(PromoTypeWPN) {
 		return true
-	} else if !inCard.IsWPNGateway() && card.HasPromoType(PromoTypeWPN) {
+	} else if !isWPNGateway(inCard) && card.HasPromoType(PromoTypeWPN) {
 		return true
 	}
 	return false
@@ -923,7 +923,7 @@ func babOrBuyaboxRetroCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card)
 }
 
 func releaseRetroCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	return retroCheckInternal(inCard.IsRetro() || inCard.IsRelease(), card.FrameVersion)
+	return retroCheckInternal(inCard.IsRetro() || isRelease(inCard), card.FrameVersion)
 }
 
 // Foil cards which exist *only* as misprints
@@ -1170,7 +1170,7 @@ func reskinRenameCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 
 func misprintCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// These cards are allowed to have the star at the end
-	if (isBasicLand(inCard) && inCard.IsJudge()) || inCard.IsPrerelease() {
+	if (isBasicLand(inCard) && isJudge(inCard)) || inCard.IsPrerelease() {
 		return false
 	}
 
