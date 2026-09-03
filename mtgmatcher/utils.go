@@ -384,8 +384,8 @@ func Title(str string) string {
 	return strings.Join(words, " ")
 }
 
-// GCD returns the greatest common divisor, by the Euclidean algorithm.
-func GCD(a, b int) int {
+// greatestCommonDivisor exists for the multiple below.
+func greatestCommonDivisor(a, b int) int {
 	for b != 0 {
 		t := b
 		b = a % b
@@ -394,9 +394,10 @@ func GCD(a, b int) int {
 	return a
 }
 
-// LCM returns the least common multiple, by way of GCD.
-func LCM(a, b int) int {
-	return a * b / GCD(a, b)
+// leastCommonMultiple is folded over a color-balanced sheet's weights:
+// scaled by it, every subsheet keeps its proportions in integers.
+func leastCommonMultiple(a, b int) int {
+	return a * b / greatestCommonDivisor(a, b)
 }
 
 // CardReleaseDate returns the date the card's set was released.
