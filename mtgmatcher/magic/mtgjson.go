@@ -1149,11 +1149,15 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	duplicate(ap.Data, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
 	allSets = append(allSets, "LEGITA", "DRKITA", "4EDALT")
 
-	sldDupes := duplicateCards(ap.Data, "SLD", "JPN", sldJPNLangDupes)
-	ap.Data["SLD"].Cards = append(ap.Data["SLD"].Cards, sldDupes...)
+	if ap.Data["SLD"] != nil {
+		sldDupes := duplicateCards(ap.Data, "SLD", "JPN", sldJPNLangDupes)
+		ap.Data["SLD"].Cards = append(ap.Data["SLD"].Cards, sldDupes...)
+	}
 
-	purlDupes := duplicateCards(ap.Data, "PURL", "JPN", []string{"1"})
-	ap.Data["PURL"].Cards = append(ap.Data["PURL"].Cards, purlDupes...)
+	if ap.Data["PURL"] != nil {
+		purlDupes := duplicateCards(ap.Data, "PURL", "JPN", []string{"1"})
+		ap.Data["PURL"].Cards = append(ap.Data["PURL"].Cards, purlDupes...)
+	}
 
 	// Generate the unique identifiers for singles and products
 	uuids, allUUIDs, allSealedUUIDs, setUUIDs, setSealedUUIDs := generateUUIDsMap(ap.Data)
@@ -1352,6 +1356,11 @@ var mtgColorMap = map[string]int{
 }
 
 func fillinSLDdecks(set *Set) []string {
+	// A datastore cut down for a test may not carry the set at all
+	if set == nil {
+		return nil
+	}
+
 	var output []string
 	for _, product := range set.SealedProduct {
 		if strings.HasPrefix(product.Name, "Secret Lair Commander") {
@@ -1578,6 +1587,10 @@ var langs = map[string]string{
 
 // Duplicate an entire set of cards, using a custom code and a different language
 func duplicate(sets map[string]*Set, name, code, tag, date string) {
+	if sets[code] == nil {
+		return
+	}
+
 	// Copy base set information
 	dup := *sets[code]
 
@@ -1661,6 +1674,10 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 // Duplicate certain cards within the same set according to the language tag
 func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []Card {
 	var duplicates []Card
+
+	if sets[code] == nil {
+		return nil
+	}
 
 	for i := range sets[code].Cards {
 		// Skip unneeded
