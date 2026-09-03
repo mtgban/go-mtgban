@@ -104,19 +104,20 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// AdjustEdition resolves the headings storefronts file this game under onto
+// AliasEdition resolves the headings storefronts file this game under onto
 // the set names the datastore carries. The catalog names a set for the
 // product line it belongs to ("Newtype Rising", "Starter Deck 01: Heroic
 // Beginnings"), and a storefront usually writes the game in front of it.
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := strings.TrimSpace(inCard.Edition)
+// The whole fixup reads only the edition, so it is the fixup entire and
+// AdjustEdition delegates to it.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = strings.TrimSpace(edition)
 	// An edition already naming a set verbatim needs no normalization, and
 	// must not be trimmed out of matching: the promotional sets are named
 	// "Gundam Promotional Cards" and would lose their heading below.
 	for _, set := range b.Sets {
 		if mtgmatcher.Equals(set.Name, edition) {
-			inCard.Edition = edition
-			return
+			return edition
 		}
 	}
 	for _, prefix := range []string{"Gundam Card Game", "Gundam"} {
@@ -133,7 +134,13 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if edition != "" && (mtgmatcher.IsPromoHeading(edition) || endsInPromo(edition)) {
 		edition = "Promos"
 	}
-	inCard.Edition = edition
+	return edition
+}
+
+// AdjustEdition normalizes the edition a storefront published toward a set
+// name; the fixup reads nothing but the edition, so the alias is all of it.
+func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	inCard.Edition = (Rules{}).AliasEdition(b, inCard.Edition)
 }
 
 // endsInPromo reports whether a heading ends in the game's own word for a

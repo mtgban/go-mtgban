@@ -97,19 +97,19 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// AdjustEdition resolves the headings storefronts file this game under onto
+// AliasEdition resolves the headings storefronts file this game under onto
 // the set names the datastore carries. The catalog names a set by its code
 // and title both ("BP01: Dawn of Palpagos"), which a storefront usually
-// writes one half of.
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := strings.TrimSpace(inCard.Edition)
+// writes one half of. The whole fixup reads only the edition, so it is the
+// fixup entire and AdjustEdition delegates to it.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = strings.TrimSpace(edition)
 	// An edition already naming a set verbatim needs no normalization, and
 	// must not be trimmed out of matching: the promo set is named "Palworld
 	// Promo Cards" and would lose its heading below.
 	for _, set := range b.Sets {
 		if mtgmatcher.Equals(set.Name, edition) {
-			inCard.Edition = edition
-			return
+			return edition
 		}
 	}
 	for _, prefix := range []string{"Palworld OFFICIAL CARD GAME", "Palworld Official Card Game", "Palworld"} {
@@ -121,14 +121,20 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 	// A heading naming a set's code alone reaches the set that carries it,
 	// the datastore keying its sets by that code.
-	if _, found := b.Sets[strings.ToUpper(edition)]; found {
-		inCard.Edition = b.Sets[strings.ToUpper(edition)].Name
-		return
+	set, found := b.Sets[strings.ToUpper(edition)]
+	if found {
+		return set.Name
 	}
 	if edition != "" && (mtgmatcher.IsPromoHeading(edition) || endsInPromo(edition)) {
 		edition = "Promos"
 	}
-	inCard.Edition = edition
+	return edition
+}
+
+// AdjustEdition normalizes the edition a storefront published toward a set
+// name; the fixup reads nothing but the edition, so the alias is all of it.
+func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	inCard.Edition = (Rules{}).AliasEdition(b, inCard.Edition)
 }
 
 // endsInPromo reports whether a heading ends in the game's own word for a

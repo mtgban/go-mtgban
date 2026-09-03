@@ -232,15 +232,20 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // or append catalog suffixes ("... Singles"). An edition that still matches
 // no set name simply does not narrow the candidates (the Match skeleton
 // falls back to every printing), so trimming can only help.
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := strings.TrimSpace(inCard.Edition)
+func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	inCard.Edition = r.AliasEdition(b, inCard.Edition)
+}
+
+// AliasEdition spells an edition string toward a set name using the string
+// alone. See mtgmatcher.GameRules.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = strings.TrimSpace(edition)
 	// An edition already naming a set verbatim needs no normalization — and
 	// must not be trimmed out of matching: the promotional sets themselves
 	// are named "Riftbound ... Promotional Cards".
 	for _, set := range b.Sets {
 		if mtgmatcher.Equals(set.Name, edition) {
-			inCard.Edition = edition
-			return
+			return edition
 		}
 	}
 	for _, prefix := range []string{"Riftbound: League of Legends", "Riftbound", "League of Legends"} {
@@ -263,7 +268,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if mtgmatcher.IsPromoHeading(edition) || endsInPromo(edition) {
 		edition = "Promos"
 	}
-	inCard.Edition = edition
+	return edition
 }
 
 // storefrontEditions renames the editions storefronts carry that the gallery

@@ -447,7 +447,24 @@ func adjustFusedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // wording now names the priced entry selectFinish resolves. An edition
 // that still matches no set simply does not narrow the candidates.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := strings.TrimSpace(inCard.Edition)
+	edition, printRun := aliasEdition(inCard.Edition)
+	if printRun != "" {
+		inCard.AddToVariant(printRun)
+	}
+	inCard.Edition = edition
+}
+
+// AliasEdition spells an edition string toward a set name using the string
+// alone. See mtgmatcher.GameRules.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition, _ = aliasEdition(edition)
+	return edition
+}
+
+// aliasEdition trims the decorations storefronts hang on a set name and
+// reports the print-run suffix it removed, if any.
+func aliasEdition(edition string) (string, string) {
+	edition = strings.TrimSpace(edition)
 	for _, prefix := range []string{"Flesh and Blood", "Flesh & Blood"} {
 		if strings.HasPrefix(edition, prefix) {
 			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
@@ -458,12 +475,10 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	for _, suffix := range []string{"1st Edition", "Unlimited Edition", "Unlimited", "Alpha Print Run"} {
 		trimmed := strings.TrimSuffix(edition, suffix)
 		if trimmed != edition {
-			edition = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(trimmed), "-"))
-			inCard.AddToVariant(suffix)
-			break
+			return strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(trimmed), "-")), suffix
 		}
 	}
-	inCard.Edition = edition
+	return edition, ""
 }
 
 // CanonicalFinish owns Flesh and Blood's finish vocabulary, which is the
