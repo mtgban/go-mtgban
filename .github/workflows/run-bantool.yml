@@ -21,6 +21,12 @@ on:
         type: string
       skus-cache-key:
         type: string
+      # The Cardmarket id map (MTGJSON's for Magic, the catalog publisher's
+      # for the rest); replaces the API crawl when given.
+      mkmids-filepath:
+        type: string
+      mkmids-cache-key:
+        type: string
 
 permissions:
   contents: read
@@ -60,6 +66,14 @@ jobs:
           key: ${{ inputs.skus-cache-key }}
           fail-on-cache-miss: true
 
+      - if: ${{ inputs.mkmids-cache-key }}
+        name: Cache Cardmarket id map
+        uses: actions/cache/restore@v5
+        with:
+          path: "datastore/"
+          key: ${{ inputs.mkmids-cache-key }}
+          fail-on-cache-miss: true
+
       - name: Build bantool
         run: |
           cd cmd/bantool
@@ -78,6 +92,7 @@ jobs:
           MAX_CONCURRENCY: "${{ vars.MAX_CONCURRENCY }}"
 
           MTGJSON_TCGSKU_PATH: "${{ inputs.skus-filepath }}"
+          MTGJSON_MKMID_PATH: "${{ inputs.mkmids-filepath }}"
           # The catalog dump is published beside every game's datastore, on
           # the same schedule, and names the product each sku belongs to.
           TCGPLAYER_CATALOG_PATH: "b2://mtgban-datastore/${{ inputs.game }}/tcgplayer-catalog.json.xz"
