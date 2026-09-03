@@ -92,7 +92,9 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		strings.HasSuffix(cardName, "Alignment Card"),
 		strings.HasSuffix(cardName, "Biography Card"),
 		strings.HasSuffix(cardName, "Blank Card"),
+		strings.HasSuffix(cardName, "Game Code Card"),
 		strings.HasSuffix(cardName, "Helper Card"),
+		strings.HasSuffix(cardName, "Insert Card"),
 		strings.HasSuffix(cardName, "Reminder Card"),
 		strings.HasSuffix(cardName, "Rules Card"),
 		strings.HasSuffix(cardName, "Theme Card"):
@@ -486,8 +488,11 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		default:
 			edition = "PSS1"
 
+			// The shelf sells one set per year and the older ones stay on
+			// it, so each new promo set has to be named here. A card the
+			// shelf's own set carries is already right.
 			for _, tag := range []string{
-				"PCBB", "PSS5",
+				"PCBB", "PSS5", "PW26", "PSPL", "PPRO",
 			} {
 				if len(mtgmatcher.MatchInSet(cardName, tag)) > 0 {
 					edition = tag

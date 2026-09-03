@@ -174,3 +174,59 @@ func TestPreprocessJapanesePromoTokensUnderTheirOwnSet(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessStandardShowdownShelf pins the shelf naming one set per year
+// while the older ones stay on it. A card it sells that the shelf's own set
+// never held has to name the promo set that did, or it aliases against every
+// ordinary printing of the same card.
+func TestPreprocessStandardShowdownShelf(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		setCode string
+	}{
+		{"Hellcat, Undying Vigilante", "PW26"},
+		{"Echo, Perceptive Prodigy", "PW26"},
+		{"Mister Fantastic, Reed Richards", "PW26"},
+		{"Dark Deed", "PW26"},
+		{"Elektra, Daughter of the Hand", "PSPL"},
+		{"Quicksilver, Brash Blur", "PPRO"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			product := tcgplayer.Product{Name: tt.name, CleanName: tt.name}
+
+			theCard, err := Preprocess(&product, map[int]string{0: "Standard Showdown Promos"})
+			if err != nil {
+				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
+			}
+			cardID, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			co, err := mtgmatcher.GetUUID(cardID)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", cardID, err)
+			}
+			if co.SetCode != tt.setCode {
+				t.Errorf("Preprocess(%q) matched %s #%s, want a printing in %s",
+					tt.name, co.SetCode, co.Number, tt.setCode)
+			}
+		})
+	}
+}
+
+// TestPreprocessRefusesInserts pins the inserts the datastore holds no row
+// for, which would otherwise be reported as cards it failed to find.
+func TestPreprocessRefusesInserts(t *testing.T) {
+	for _, name := range []string{
+		"Question Mark Insert Card",
+		"FINAL FANTASY VII Game Code Card",
+	} {
+		t.Run(name, func(t *testing.T) {
+			product := tcgplayer.Product{Name: name, CleanName: name}
+			theCard, err := Preprocess(&product, map[int]string{0: "Secret Lair Countdown Kit"})
+			if err == nil {
+				t.Errorf("Preprocess(%q) = %v, want an error: no such card is carried", name, theCard)
+			}
+		})
+	}
+}
