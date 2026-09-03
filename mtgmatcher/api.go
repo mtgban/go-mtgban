@@ -102,7 +102,7 @@ func GetSet(code string) (*Set, error) {
 // GetSetByName returns the set an edition string names, trying the set code
 // first, then the full name, then the many spellings storefronts use for it.
 // The set is shared and must not be modified.
-func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
+func (b *Backend) GetSetByName(edition string) (*Set, error) {
 	if b.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
@@ -119,21 +119,13 @@ func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 		return set, nil
 	}
 
-	// 3. Attempt adjusting the edition with a fake card object
+	// 3. Ask the game to spell the edition the way the datastore does
 	// (skipped when no GameRules are attached, e.g. a hand-built Backend)
-	card := &InputCard{
-		Edition: edition,
-	}
-	if len(flags) > 0 {
-		card.Foil = flags[0]
-	}
 	if b.rules != nil {
-		b.rules.AdjustEdition(b, card)
-	}
-
-	set, found = b.NormalizedSets[Normalize(card.Edition)]
-	if found {
-		return set, nil
+		set, found = b.NormalizedSets[Normalize(b.rules.AliasEdition(b, edition))]
+		if found {
+			return set, nil
+		}
 	}
 
 	// 4. We tried
@@ -142,8 +134,8 @@ func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 
 // GetSetByName returns the set an edition string names, from the default
 // datastore.
-func GetSetByName(edition string, flags ...bool) (*Set, error) {
-	return defaultBackend.GetSetByName(edition, flags...)
+func GetSetByName(edition string) (*Set, error) {
+	return defaultBackend.GetSetByName(edition)
 }
 
 // AllPromoTypes returns every promo type present in the default datastore.

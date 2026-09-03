@@ -772,6 +772,17 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	inCard.Variation = variation
 }
 
+// AliasEdition spells an edition string toward a set name using the string
+// alone. Magic's edition fixup interleaves the string aliasing with the
+// card-dependent rules, so the card-free projection is taken by running the
+// fixup over a card carrying nothing but the edition - every name- and
+// variation-keyed rule idles. See mtgmatcher.GameRules.
+func (r Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	card := mtgmatcher.InputCard{Edition: edition}
+	r.AdjustEdition(b, &card)
+	return card.Edition
+}
+
 // namesTokenSetParent reports whether an edition names the set a token sheet
 // was printed beside. The sheet is filed under its own set - "Hour of
 // Devastation Tokens" - but a storefront selling one of its tokens says
