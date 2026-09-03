@@ -565,7 +565,7 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 				// Rescale weights of the subsheets
 				mult := 1
 				for _, weight := range sheet.Cards {
-					mult = LCM(mult, weight)
+					mult = leastCommonMultiple(mult, weight)
 				}
 
 				// Create subsheets for each color (multi color gets included
