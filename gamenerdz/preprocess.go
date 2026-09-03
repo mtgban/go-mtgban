@@ -208,13 +208,31 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 		finish = ""
 	}
 
-	return &mtgmatcher.InputCard{
+	number := product.DisplayName[loc[2]:loc[3]]
+	card := &mtgmatcher.InputCard{
 		Name:      strings.TrimSpace(product.DisplayName[:loc[0]]),
 		Edition:   product.ProductData.SetName,
-		Variation: product.DisplayName[loc[2]:loc[3]],
+		Variation: number,
 		Finish:    finish,
-	}, nil
+	}
+
+	// A printing's second axis rides just behind the number, bracketed -
+	// "Snorlax - 051 (Pokemon Center Exclusive)". The same set prints the
+	// same number both ways, so the number alone cannot tell them apart,
+	// and this storefront sells the two at $15.31 and $251.59. Wording the
+	// catalog does not know costs nothing, since a variation it cannot
+	// place falls back on the number it was read from.
+	qualifier := pokemonQualifier.FindStringSubmatch(product.DisplayName[loc[3]:])
+	if qualifier != nil {
+		card.Variation = strings.TrimSpace(number + " " + qualifier[1])
+	}
+
+	return card, nil
 }
+
+// pokemonQualifier is the bracketed wording a display name hangs behind the
+// number, before the dash that opens the set.
+var pokemonQualifier = regexp.MustCompile(`^\s*((?:\([^)]*\)\s*)+)`)
 
 // onePieceCode is the card code One Piece display names carry, like
 // "(OP12-042)" or "(ST25-001)", which names the printing on its own.
