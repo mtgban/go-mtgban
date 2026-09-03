@@ -298,12 +298,6 @@ func (c *InputCard) IsOilSlick() bool {
 		strings.Contains(strings.ToLower(c.Edition), "slick")
 }
 
-// IsFNM reports a Friday Night Magic promo, abbreviated or spelled out.
-func (c *InputCard) IsFNM() bool {
-	return c.Contains("FNM") ||
-		c.Contains("Friday Night Magic")
-}
-
 // IsJPN reports a Japanese printing, by language or by the magazines that
 // carried them, Gotta and Dengeki.
 func (c *InputCard) IsJPN() bool {
@@ -379,17 +373,6 @@ func (c *InputCard) IsJudge() bool {
 	return c.Contains("Judge")
 }
 
-// IsRewards reports a player rewards promo: the textless ones, minus the
-// unrelated series that are also textless, or anything else calling itself a
-// reward that is not a judge card.
-func (c *InputCard) IsRewards() bool {
-	return (Contains(c.Variation, "Textless") &&
-		!Contains(c.Variation, "Year of") &&
-		!Contains(c.Variation, "Lunar") &&
-		!Contains(c.Variation, "Store")) ||
-		(c.Contains("Reward") && !c.IsJudge())
-}
-
 // IsMagicFest reports a MagicFest or MagicCon promo, including TCGplayer's
 // MFP code.
 func (c *InputCard) IsMagicFest() bool {
@@ -454,92 +437,6 @@ func (c *InputCard) IsSDCC() bool {
 // IsRetro reports a retro frame printing.
 func (c *InputCard) IsRetro() bool {
 	return c.Contains("Retro")
-}
-
-// PlayerRewardsYear returns the year of a player rewards printing, falling
-// back to the set or artist named in the variation when the listing gives no
-// year of its own.
-func (c *InputCard) PlayerRewardsYear(maybeYear string) string {
-	if maybeYear == "" {
-		switch c.Name {
-		case "Bear":
-			if Contains(c.Variation, "Odyssey") {
-				maybeYear = "2001"
-			} else if Contains(c.Variation, "Onslaught") {
-				maybeYear = "2003"
-			}
-		case "Beast":
-			if Contains(c.Variation, "Odyssey") {
-				maybeYear = "2001"
-			} else if Contains(c.Variation, "Darksteel") {
-				maybeYear = "2004"
-			}
-		case "Elephant":
-			if Contains(c.Variation, "Invasion") {
-				maybeYear = "2001"
-			} else if Contains(c.Variation, "Odyssey") {
-				maybeYear = "2002"
-			}
-		case "Spirit":
-			if Contains(c.Variation, "Planeshift") {
-				maybeYear = "2001"
-			} else if Contains(c.Variation, "Champions") {
-				maybeYear = "2004"
-			}
-		case "Lightning Bolt":
-			if c.Contains("Oversize") {
-				maybeYear = "2009"
-			} else {
-				maybeYear = "2010"
-			}
-		}
-	}
-	return maybeYear
-}
-
-// ArenaYear returns the year of an Arena league printing, deducing it from the
-// artist or set named in the variation when the listing gives no year.
-func (c *InputCard) ArenaYear(maybeYear string) string {
-	if maybeYear == "" {
-		switch {
-		case strings.Contains(c.Variation, "Tony Roberts"):
-			maybeYear = "1996"
-		case strings.Contains(c.Variation, "Urza"),
-			strings.Contains(c.Variation, "Saga"),
-			strings.Contains(c.Variation, "Anthony S. Waters"),
-			strings.Contains(c.Variation, "Donato Giancola"):
-			maybeYear = "1999"
-		case strings.Contains(c.Variation, "Mercadian"),
-			strings.Contains(c.Variation, "Masques"):
-			maybeYear = "2000"
-		case strings.Contains(c.Variation, "Ice Age"),
-			strings.Contains(c.Variation, "IA"),
-			strings.Contains(c.Variation, "Pat Morrissey"),
-			strings.Contains(c.Variation, "Anson Maddocks"),
-			strings.Contains(c.Variation, "Tom Wanerstrand"),
-			strings.Contains(c.Variation, "Christopher Rush"),
-			strings.Contains(c.Variation, "Douglas Shuler"):
-			maybeYear = "2001"
-		case strings.Contains(c.Variation, "Mark Poole"):
-			maybeYear = "2002"
-		case strings.Contains(c.Variation, "Rob Alexander"):
-			maybeYear = "2003"
-		case strings.Contains(c.Variation, "Don Thompson"):
-			maybeYear = "2005"
-		case strings.Contains(c.Variation, "Beta"):
-			switch c.Name {
-			case "Forest":
-				maybeYear = "2001"
-			case "Island":
-				maybeYear = "2002"
-			}
-		}
-	} else if c.Name == "Forest" && strings.Contains(maybeYear, "2002") {
-		maybeYear = "2001"
-	} else if c.Name == "Island" && strings.Contains(maybeYear, "2001") && strings.Contains(c.Variation, "Poole") {
-		maybeYear = "2002"
-	}
-	return maybeYear
 }
 
 // IsWorldChamp reports a World Championship or Pro Tour deck card, from the
@@ -614,25 +511,6 @@ func ParseWorldChampPrefix(variation string) (string, bool) {
 	return "", false
 }
 
-// WorldChampPrefix returns the World Championship deck code for this listing,
-// looking in the variation first and falling back to the edition.
-func (c *InputCard) WorldChampPrefix() (string, bool) {
-	prefix, sideboard := ParseWorldChampPrefix(c.Variation)
-	if prefix == "" {
-		return ParseWorldChampPrefix(c.Edition)
-	}
-	return prefix, sideboard
-}
-
-// IsDuelsOfThePW reports a Duels of the Planeswalkers promo. It compares the
-// raw strings so the fold does not equate Duels with Duel Decks.
-func (c *InputCard) IsDuelsOfThePW() bool {
-	// XXX: do not use c.Contains here
-	return strings.Contains(c.Variation, "Duels") ||
-		strings.Contains(c.Edition, "Duels") ||
-		Contains(c.Variation, "DotP") // tat
-}
-
 // IsBasicFullArt reports a full art basic land, refusing the negations that
 // storefronts write in the same field.
 func (c *InputCard) IsBasicFullArt() bool {
@@ -649,17 +527,6 @@ func (c *InputCard) IsBasicNonFullArt() bool {
 		Contains(c.Variation, "non-full art") ||
 		Contains(c.Variation, "Intro") || // abu
 		Contains(c.Variation, "NOT the full art") // csi
-}
-
-// IsPremiereShop reports a Magic Premiere Shop basic land. It compares the raw
-// strings because the folded form is too short to be safe.
-func (c *InputCard) IsPremiereShop() bool {
-	return c.isBasicLand() &&
-		// XXX: do not use c.Contains here
-		(strings.Contains(c.Variation, "MPS") ||
-			strings.Contains(c.Variation, "Premier") || // csi
-			strings.Contains(c.Edition, "MPS") ||
-			strings.Contains(c.Edition, "Premiere Shop")) // mkm
 }
 
 // IsPortalAlt reports the Portal alternates, which differ by carrying reminder
@@ -683,29 +550,6 @@ func (c *InputCard) IsDuelDecks() bool {
 func (c *InputCard) IsDuelDecksAnthology() bool {
 	return strings.Contains(c.Edition, "DDA") ||
 		(Contains(c.Edition, "Duel Decks") && Contains(c.Edition, "Anthology"))
-}
-
-// DuelDecksVariant returns which half of a Duel Decks pairing the listing
-// names, or an empty string if it is not a Duel Decks card.
-func (c *InputCard) DuelDecksVariant() string {
-	if !c.IsDuelDecks() {
-		return ""
-	}
-
-	// Variation might contain numbers, strip them away
-	variant := c.Variation
-	num := ExtractNumber(variant)
-	variant = strings.TrimSpace(strings.Replace(variant, num, "", 1))
-	if len(variant) < len("Duel Deck") {
-		variant = c.Edition
-	}
-
-	if strings.Contains(variant, ": ") {
-		fields := strings.Split(variant, ": ")
-		variant = fields[len(fields)-1]
-	}
-
-	return variant
 }
 
 // IsMysteryList reports a Mystery Booster or The List printing. The List is
@@ -799,37 +643,6 @@ func (c *InputCard) Contains(prop string) bool {
 // property, ignoring case and punctuation.
 func (c *InputCard) Equals(prop string) bool {
 	return Equals(c.Edition, prop) || Equals(c.Variation, prop)
-}
-
-// ShouldIgnoreNumber reports whether the collector number, where one was
-// given, is too unreliable to narrow with: some storefronts publish a number
-// that belongs to a different printing of the same set.
-func (c *InputCard) ShouldIgnoreNumber(setName, num string) bool {
-	// No misprints or WCD
-	if c.Contains("Misprint") || c.IsWorldChamp() {
-		return true
-	}
-
-	// This is better handled in thelistCheck()
-	if c.IsMysteryList() && !c.Contains("Unfinity") {
-		return true
-	}
-
-	// Unfinity numbers could refer to Attractions
-	if Contains(c.Edition, "unf") {
-		if HasPrinting(c.Name, "field", "attractionLights", "UNF") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
-			return true
-		}
-	}
-
-	// If the number is the same as in the edition, there might be
-	// variation pollution, therefore unreliable (unless they are years)
-	if num != "" && strings.Contains(setName, num) && ExtractYear(setName) == "" {
-		return true
-	}
-
-	return false
-
 }
 
 // IsToken reports whether the name is a token in this datastore. The names a
