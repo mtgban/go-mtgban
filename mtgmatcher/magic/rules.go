@@ -90,25 +90,41 @@ func ravnicaWeekend(c *mtgmatcher.InputCard) (string, string) {
 // edition and tell them apart by the original's own number or by naming the
 // language.
 //
-// Only the original is named here. The reprint's number is not: it used to be
-// written down, and by the time anyone looked three of the five had moved, so
-// every English listing of Shock, Duress and Voltaic Key answered "unknown
-// variant". The edition alone reaches the reprint, being the only English
-// printing under it.
+// Only the original is named here, and only once its English reprint exists -
+// while the Japanese printing is the only one, naming it would veto it. The
+// reprint's number is deliberately absent: it used to be written down, and by
+// the time anyone looked three of the five had moved, so every English listing
+// of Shock, Duress and Voltaic Key answered "unknown variant".
 var mediaInsertOriginals = map[string]struct {
 	// marker is the number a storefront writes for the original, from the
-	// old "Media Promos" numbering.
+	// old "Media Promos" numbering. It is compared against the number the
+	// variation states rather than searched for inside it, so the volumes
+	// numbered #1 apiece say as much as the rest, and a listing leading
+	// with a year still reaches the number written after it.
 	marker string
 	// number is the printing that number names.
 	number string
 	// idw is the comic insert's number, for the one card that had one.
 	idw string
 }{
-	"Diabolic Edict": {marker: "31", number: "2019-2"},
-	"Shock":          {marker: "32", number: "2019-3"},
-	"Duress":         {marker: "34", number: "2019-6", idw: "17"},
-	"Voltaic Key":    {marker: "35", number: "2020-1"},
-	"Dark Ritual":    {marker: "38", number: "2020-4"},
+	"Diabolic Edict":   {marker: "31", number: "2019-2"},
+	"Shock":            {marker: "32", number: "2019-3"},
+	"Duress":           {marker: "34", number: "2019-6", idw: "17"},
+	"Voltaic Key":      {marker: "35", number: "2020-1"},
+	"Dark Ritual":      {marker: "38", number: "2020-4"},
+	"Crop Rotation":    {marker: "42", number: "2020-7"},
+	"Counterspell":     {marker: "44", number: "2021-1"},
+	"Bone Shredder":    {marker: "45", number: "2021-2"},
+	"Disenchant":       {number: "2022-1"},
+	"Wild Growth":      {number: "2022-2"},
+	"Frantic Search":   {number: "2022-4"},
+	"Worn Powerstone":  {number: "2023-2"},
+	"Avalanche Riders": {marker: "55", number: "2023-5"},
+	"Culling the Weak": {marker: "57", number: "2023-8"},
+	"Snuff Out":        {marker: "1", number: "2024-1"},
+	"Gush":             {marker: "1", number: "2024-4"},
+	"Ancestral Mask":   {marker: "1", number: "2025-2"},
+	"Wrath of God":     {marker: "1", number: "2025-3"},
 }
 
 // AdjustEdition normalizes the edition a storefront published toward a set
@@ -499,7 +515,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			case insert.idw != "" && inCard.Contains("IDW"):
 				edition = "IDW Comics Inserts"
 				variation = insert.idw
-			case (insert.marker != "" && strings.Contains(variation, insert.marker)) ||
+			case (insert.marker != "" && mtgmatcher.ExtractNumber(variation) == insert.marker) ||
 				inCard.IsJPN() || inCard.Language == "Japanese":
 				variation = insert.number
 			default:
