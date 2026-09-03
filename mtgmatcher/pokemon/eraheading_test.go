@@ -34,17 +34,17 @@ func TestEraHeadingAliases(t *testing.T) {
 		{
 			desc: "a set headed by its print run is still the set",
 			name: "Charizard", edition: "Base Set Unlimited", number: "4",
-			wantSet: "BS", wantNumber: "004",
+			wantSet: "BS", wantNumber: "4",
 		},
 		{
 			desc: "Mega Evolution's base set is not the one from 1999",
 			name: "Mega Venusaur ex", edition: "Mega Evolution Base Set", number: "003/132",
-			wantSet: "MEG", wantNumber: "003",
+			wantSet: "MEG", wantNumber: "3",
 		},
 		{
 			desc: "and the 1999 one is still itself",
 			name: "Charizard", edition: "Base Set", number: "4",
-			wantSet: "BS", wantNumber: "004",
+			wantSet: "BS", wantNumber: "4",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

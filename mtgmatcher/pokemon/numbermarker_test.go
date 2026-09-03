@@ -26,22 +26,22 @@ func TestNumberMarker(t *testing.T) {
 		{
 			desc:    "the marked number reaches the pattern the wording names",
 			in:      mtgmatcher.InputCard{Name: "Umbreon", Edition: "SV: Prismatic Evolutions", Variation: "059M 1st Edition Master Ball Pattern"},
-			wantSet: "PRE", wantNum: "059", wantVar: "Master Ball Pattern",
+			wantSet: "PRE", wantNum: "59", wantVar: "Master Ball Pattern",
 		},
 		{
 			desc:    "the same number written plain still reaches the plain printing",
 			in:      mtgmatcher.InputCard{Name: "Umbreon", Edition: "SV: Prismatic Evolutions", Variation: "059 1st Edition"},
-			wantSet: "PRE", wantNum: "059", wantVar: "",
+			wantSet: "PRE", wantNum: "59", wantVar: "",
 		},
 		{
 			desc:    "and the pattern is reachable without the marker too",
 			in:      mtgmatcher.InputCard{Name: "Umbreon", Edition: "SV: Prismatic Evolutions", Variation: "059 Master Ball Pattern"},
-			wantSet: "PRE", wantNum: "059", wantVar: "Master Ball Pattern",
+			wantSet: "PRE", wantNum: "59", wantVar: "Master Ball Pattern",
 		},
 		{
 			desc:    "a marked number beside the run the printing was reprinted in",
 			in:      mtgmatcher.InputCard{Name: "Alakazam", Edition: "Base Set Shadowless", Variation: "001A Unlimited"},
-			wantSet: "BSS", wantNum: "001",
+			wantSet: "BSS", wantNum: "1",
 		},
 		{
 			// The letter is the catalog's own here, not the storefront's:
@@ -51,7 +51,7 @@ func TestNumberMarker(t *testing.T) {
 			// printing is not in.
 			desc:    "a lettered promo the edition admits none of",
 			in:      mtgmatcher.InputCard{Name: "Garbodor", Edition: "SM Guardians Rising", Variation: "51a/145 Alt Art"},
-			wantSet: "PR-1938", wantNum: "051a", wantVar: "Cosmos Holo",
+			wantSet: "PR-1938", wantNum: "51a", wantVar: "Cosmos Holo",
 		},
 		{
 			desc:    "the same, for a number the set code is written into",
@@ -117,8 +117,8 @@ func TestLetteredPromoAmbiguous(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if co.SetCode != "PR-1938" || co.Number != "088a" {
-			t.Errorf("Match = %s|%s, want PR-1938|088a", co.SetCode, co.Number)
+		if co.SetCode != "PR-1938" || co.Number != "88a" {
+			t.Errorf("Match = %s|%s, want PR-1938|88a", co.SetCode, co.Number)
 		}
 	})
 

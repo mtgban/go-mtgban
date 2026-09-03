@@ -512,13 +512,20 @@ func trimFinishSuffix(id string) string {
 	return id
 }
 
-// ownNumber is the card's part of the collector number alone: the "082" of
-// the "082/167" printed on the card, the set total being the set's fact
-// rather than the card's. An older datastore writes the whole face into
-// Number, so the split happens here rather than trusting either shape.
+// ownNumber is the card's part of the collector number alone, unpadded: the
+// "82" of the "082/167" printed on the card, the set total being the set's
+// fact rather than the card's. An older datastore writes the whole face into
+// Number, so the split happens here rather than trusting either shape. The
+// padding goes with it because a consumer folding numbers of its own reads
+// "082" and "82" apart, where every reading here already folds them
+// together; OriginalNumber keeps the face as printed.
 func ownNumber(card *DatastoreCard) string {
 	number, _, _ := strings.Cut(card.Number, "/")
-	return number
+	trimmed := strings.TrimLeft(number, "0")
+	if trimmed == "" {
+		return number
+	}
+	return trimmed
 }
 
 // printedNumber is the collector number as the card face prints it, total
