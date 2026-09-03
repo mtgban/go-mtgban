@@ -268,36 +268,6 @@ func (c *InputCard) IsJPN() bool {
 		Contains(c.Variation, "Dengeki")
 }
 
-// IsIDWMagazineBook reports a promo that came with print media: comics,
-// magazines, novels, and the retail tie-ins storefronts file alongside them.
-func (c *InputCard) IsIDWMagazineBook() bool {
-	return strings.HasPrefix(c.Variation, "IDW") || strings.HasPrefix(c.Edition, "IDW") ||
-		c.Contains("Magazine") ||
-		c.Contains("Duelist") ||
-		// Catches Comic and Comics, but skips San Diego Comic-Con
-		(c.Contains("Comic") && !c.Contains("Diego")) ||
-		// Cannot use Contains because it may trigger a false positive
-		// for cards with "book" in their variation (insidious bookworms)
-		c.Variation == "Book" ||
-		c.Variation == "Insert" || // mmc
-		c.Variation == "Japanese Promo" || // tcg
-		c.Contains("Book Insert") ||
-		c.Contains("Walmart") ||
-		c.Contains("Coro Coro") || // stks
-		c.Contains("Graphic Novel") || // stks
-		strings.Contains(c.Variation, "Book Promo") || // sz
-		c.Contains("Top Deck") || // csi
-		c.Contains("Hobby Japan") || // abu+tcg
-		Contains(c.Edition, "CardZ") || // mkm
-		Contains(c.Edition, "Dengeki") || // mkm
-		c.Variation == "Insert Foil" || // ck
-		c.Contains("Beadle & Grimm Phyrexian") || // scg
-		c.Contains("Stance Socks") || // scg
-		c.Contains("Manga Promo") || // csi
-		c.Contains("Media Promo") || // tcg
-		c.Contains("Media Insert") // mm+nf
-}
-
 // IsBaB reports a buy-a-box promo, by name, by TCGplayer's BABP or
 // Strikezone's BIBB, or by Box Promos where it is not an Xbox tie-in or a gift
 // box.
@@ -411,63 +381,9 @@ func ParseWorldChampPrefix(variation string) (string, bool) {
 	return "", false
 }
 
-// IsDuelDecks reports a Duel Decks printing, named by the two sides it pits
-// against each other, and refuses the Anthology reprints.
-func (c *InputCard) IsDuelDecks() bool {
-	return ((c.Contains(" vs ")) ||
-		(strings.Contains(c.Variation, " v. "))) && // tcg
-		!c.Contains("Anthology")
-}
-
-// IsDuelDecksAnthology reports the Duel Decks Anthology reprints.
-func (c *InputCard) IsDuelDecksAnthology() bool {
-	return strings.Contains(c.Edition, "DDA") ||
-		(Contains(c.Edition, "Duel Decks") && Contains(c.Edition, "Anthology"))
-}
-
 // IsSecretLair reports a Secret Lair printing, by name or by set code.
 func (c *InputCard) IsSecretLair() bool {
 	return c.Contains("Secret Lair") || strings.Contains(c.Edition, "SLD")
-}
-
-// HasSecretLairTag reports whether the listing belongs to the given Secret
-// Lair set, which each need their own rule: the drops differ in what they
-// reprint and in how storefronts spell them.
-func (c *InputCard) HasSecretLairTag(code string) bool {
-	var tag bool
-	switch code {
-	case "SLU":
-		// SLU is mostly static and cards are unlikely to reappear elsewhere
-		tag = c.Contains("Ultimate") || len(MatchInSet(c.Name, "SLU")) == 1
-	case "SLX":
-		// SLX only has plain cards, if they are reskinned, they are from SLD
-		tag = !c.IsReskin() || c.Contains("Within") || c.Contains("SLX")
-	case "SLC":
-		// Some of these cards are numbered after the year they represent.
-		// The same numbers double as plain collector numbers in SLD (e.g.
-		// Sol Ring is SLD #1993), so only treat the year as an SLC signal
-		// when that exact card actually exists in SLC at that number.
-		yearStr := ExtractYear(c.Variation)
-		tag = c.Contains("30th") || c.Contains("Countdown") ||
-			(yearStr != "" && len(MatchInSetNumber(c.Name, "SLC", yearStr)) > 0)
-	case "SLP":
-		// Simple check the variations
-		tag = c.Contains("Showdown") || c.Contains("Prize") || c.Contains("Finish") || c.Contains("Play")
-	}
-
-	return c.IsSecretLair() && tag
-}
-
-// PossibleNumberSuffix returns a lone letter from the variation, lowercased,
-// which is how storefronts often carry the suffix of a collector number.
-func (c *InputCard) PossibleNumberSuffix() string {
-	fields := strings.FieldsSeq(c.Variation)
-	for field := range fields {
-		if len(field) == 1 && unicode.IsLetter(rune(field[0])) {
-			return strings.ToLower(field)
-		}
-	}
-	return ""
 }
 
 // Contains reports whether either the edition or the variation contains the

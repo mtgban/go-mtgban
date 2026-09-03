@@ -604,7 +604,7 @@ func variantInArtistOrFlavor(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card
 
 	if !found {
 		// If not found double check if variation contains the same number suffix
-		numberSuffix := inCard.PossibleNumberSuffix()
+		numberSuffix := possibleNumberSuffix(inCard)
 		if numberSuffix == "" || (numberSuffix != "" && !strings.HasSuffix(card.Number, numberSuffix)) {
 			return true
 		}
@@ -683,7 +683,7 @@ func thickDisplayCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 
 // Single letter variants
 func singleLetterVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	numberSuffix := inCard.PossibleNumberSuffix()
+	numberSuffix := possibleNumberSuffix(inCard)
 	if len(card.Variations) > 0 && numberSuffix == "" {
 		numberSuffix = "a"
 	}
@@ -694,7 +694,7 @@ func singleLetterVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bo
 }
 
 func deckmastersVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	numberSuffix := inCard.PossibleNumberSuffix()
+	numberSuffix := possibleNumberSuffix(inCard)
 	switch card.Name {
 	case "Incinerate", "Icy Manipulator":
 		inCard.Foil = inCard.Foil || inCard.Contains("Promo")
@@ -1089,7 +1089,7 @@ func wcdNumberCompare(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 		}
 
 		if len(cn) > 0 && unicode.IsLetter(rune(cn[len(cn)-1])) {
-			suffix := inCard.PossibleNumberSuffix()
+			suffix := possibleNumberSuffix(inCard)
 			if suffix != "" && !strings.HasSuffix(cn, suffix) {
 				return true
 			}
