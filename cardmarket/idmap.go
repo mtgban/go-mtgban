@@ -175,8 +175,32 @@ func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMa
 // same tallies, the same output, and no API. The expansions come from the
 // map too, so nothing from here on needs a credential.
 func (mkm *Index) loadOffline(ctx context.Context) error {
-	byExpansion := map[int][]int{}
+	// The map knows only what MTGJSON has linked; the published product list
+	// knows everything on sale today. Products it names that the map does
+	// not - six thousand and change as of this writing - go down the same
+	// matcher ladder the crawl used, with the one thing the list never
+	// carries left empty: its collector number.
+	products := make(map[int]IDMapProduct, len(mkm.IDMap.Products))
 	for id, product := range mkm.IDMap.Products {
+		products[id] = product
+	}
+	list, err := GetProductListSingles(ctx, mkm.gameID)
+	if err != nil {
+		return err
+	}
+	var unmapped int
+	for _, entry := range list {
+		_, found := products[entry.IDProduct]
+		if found {
+			continue
+		}
+		products[entry.IDProduct] = IDMapProduct{ExpansionID: entry.ExpansionID, Name: entry.Name}
+		unmapped++
+	}
+	mkm.printf("%d products of the list are not in the map and resolve by name", unmapped)
+
+	byExpansion := map[int][]int{}
+	for id, product := range products {
 		byExpansion[product.ExpansionID] = append(byExpansion[product.ExpansionID], id)
 	}
 
@@ -203,7 +227,7 @@ func (mkm *Index) loadOffline(ctx context.Context) error {
 
 			var refused []string
 			for _, id := range ids {
-				mapped := mkm.IDMap.Products[id]
+				mapped := products[id]
 				err := mkm.processMapped(channel, id, mapped, exp.Name)
 				switch {
 				case errors.Is(err, errNoPrinting):
