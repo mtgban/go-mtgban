@@ -106,6 +106,11 @@ type Index struct {
 	// it as plain data.
 	TCGBridge map[int]int
 
+	// IDMap, when set, replaces the API crawl: the catalog is enumerated
+	// and resolved from the published map instead, and Load makes no
+	// authenticated request. bantool loads it from MTGJSON_MKMID_PATH.
+	IDMap *IDMap
+
 	inventory mtgban.InventoryRecord
 
 	// priceGuide holds one game's published prices, indexed by the product
@@ -848,6 +853,12 @@ func (mkm *Index) Load(ctx context.Context) error {
 	}
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
+
+	// Everything above is public downloads either way; the id map replaces
+	// what follows, which is where the authenticated API begins.
+	if mkm.IDMap != nil {
+		return mkm.loadOffline(ctx)
+	}
 
 	list, err := mkm.client.Expansions(ctx, mkm.gameID)
 	if err != nil {

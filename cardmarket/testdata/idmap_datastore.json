@@ -1,0 +1,1200 @@
+{
+ "data": {
+  "CMB1": {
+   "baseSetSize": 121,
+   "cards": [
+    {
+     "artist": "Chris Bellach",
+     "artistIds": [
+      "aa614803-54e2-4ecd-91c2-874f0081458a"
+     ],
+     "availability": [
+      "paper"
+     ],
+     "borderColor": "black",
+     "colorIdentity": [
+      "G"
+     ],
+     "colors": [
+      "G"
+     ],
+     "convertedManaCost": 3.0,
+     "finishes": [
+      "nonfoil"
+     ],
+     "foreignData": [],
+     "frameVersion": "2015",
+     "identifiers": {
+      "cardKingdomId": "230471",
+      "cardsphereId": "63926",
+      "deckboxId": "48649",
+      "mcmId": "414959",
+      "mtgjsonV4Id": "b9b268dc-28e9-531c-80e9-e112f0cd1e50",
+      "multiverseId": "476207",
+      "scryfallCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "scryfallId": "650b02ae-9b69-4ac8-94bd-e5b8808c51b6",
+      "scryfallIllustrationId": "fd60cd8f-88b7-48b6-af0b-7485d9034bc4",
+      "scryfallOracleId": "8899224a-b9da-45a9-945a-a066912caa6b",
+      "tcgplayerProductId": "202742"
+     },
+     "isFunny": true,
+     "language": "English",
+     "layout": "normal",
+     "legalities": {},
+     "manaCost": "{1}{G}{G}",
+     "manaValue": 3.0,
+     "name": "Growth Charm",
+     "number": "77",
+     "originalText": "Choose one \u2014\n\u2022 Rampant Growth\n\u2022 Giant Growth\n\u2022 Regrowth",
+     "printings": [
+      "CMB1",
+      "CMB2"
+     ],
+     "promoTypes": [
+      "playtest"
+     ],
+     "purchaseUrls": {
+      "cardKingdom": "https://mtgjson.com/links/a6aece75f270903e",
+      "cardmarket": "https://mtgjson.com/links/dc9c25d2d5daf3d0",
+      "tcgplayer": "https://mtgjson.com/links/f346f59562eeb353"
+     },
+     "rarity": "rare",
+     "rulings": [
+      {
+       "date": "2019-11-12",
+       "text": "Each mode uses a card name as shorthand for its text. Growth Charm\u2019s name is still Growth Charm, no matter how it grows."
+      },
+      {
+       "date": "2019-11-12",
+       "text": "Giant Growth means \u201cTarget creature gets +3/+3 until end of turn.\u201d"
+      },
+      {
+       "date": "2019-11-12",
+       "text": "Rampant Growth means \u201cSearch your library for a basic land card and put that card onto the battlefield tapped. Then shuffle your library.\u201d"
+      },
+      {
+       "date": "2019-11-12",
+       "text": "Regrowth means \u201cReturn target card from your graveyard to your hand.\u201d"
+      }
+     ],
+     "setCode": "CMB1",
+     "skuIds": {
+      "nonfoil": "f57acc71-609f-5928-adbc-5a637f03bb1a"
+     },
+     "sourceProducts": {
+      "nonfoil": [
+       "48ff4766-9d88-5426-800a-1613c990011b",
+       "82697abd-23fa-5ab8-8fd4-c835c77bdc7c"
+      ]
+     },
+     "subtypes": [],
+     "supertypes": [],
+     "text": "Choose one \u2014\n\u2022 Rampant Growth\n\u2022 Giant Growth\n\u2022 Regrowth",
+     "type": "Instant",
+     "types": [
+      "Instant"
+     ],
+     "uuid": "7beff333-8949-5af6-9851-92cdf3ccb60d"
+    }
+   ],
+   "code": "CMB1",
+   "isFoilOnly": false,
+   "isNonFoilOnly": true,
+   "isOnlineOnly": false,
+   "keyruneCode": "MB1",
+   "languages": [
+    "English"
+   ],
+   "name": "Mystery Booster Playtest Cards 2019",
+   "releaseDate": "2019-11-07",
+   "tcgplayerGroupId": 2570,
+   "totalSetSize": 121,
+   "translations": {
+    "Chinese Simplified": null,
+    "Chinese Traditional": null,
+    "French": null,
+    "German": null,
+    "Italian": null,
+    "Japanese": null,
+    "Korean": null,
+    "Portuguese (Brazil)": null,
+    "Russian": null,
+    "Spanish": null
+   },
+   "type": "funny"
+  },
+  "CMB2": {
+   "baseSetSize": 121,
+   "cards": [
+    {
+     "artist": "Chris Bellach",
+     "artistIds": [
+      "aa614803-54e2-4ecd-91c2-874f0081458a"
+     ],
+     "availability": [
+      "paper"
+     ],
+     "borderColor": "black",
+     "colorIdentity": [
+      "G"
+     ],
+     "colors": [
+      "G"
+     ],
+     "convertedManaCost": 3.0,
+     "finishes": [
+      "nonfoil"
+     ],
+     "foreignData": [],
+     "frameVersion": "2015",
+     "identifiers": {
+      "cardKingdomId": "250076",
+      "cardsphereId": "83018",
+      "deckboxId": "60933",
+      "mcmId": "414959",
+      "mtgjsonV4Id": "182382aa-9193-5170-9324-347fcbf33c92",
+      "scryfallCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "scryfallId": "b6166fc2-50c1-4b46-933b-dcb47efe3470",
+      "scryfallIllustrationId": "fd60cd8f-88b7-48b6-af0b-7485d9034bc4",
+      "scryfallOracleId": "8899224a-b9da-45a9-945a-a066912caa6b",
+      "tcgplayerProductId": "246960"
+     },
+     "isFunny": true,
+     "isReprint": true,
+     "language": "English",
+     "layout": "normal",
+     "legalities": {},
+     "manaCost": "{1}{G}{G}",
+     "manaValue": 3.0,
+     "name": "Growth Charm",
+     "number": "77",
+     "printings": [
+      "CMB1",
+      "CMB2"
+     ],
+     "promoTypes": [
+      "playtest"
+     ],
+     "purchaseUrls": {
+      "cardKingdom": "https://mtgjson.com/links/0e16d43412aaf3dd",
+      "cardmarket": "https://mtgjson.com/links/0c0c2550dc82248f",
+      "tcgplayer": "https://mtgjson.com/links/36c5408e51e4106f"
+     },
+     "rarity": "rare",
+     "rulings": [
+      {
+       "date": "2019-11-12",
+       "text": "Each mode uses a card name as shorthand for its text. Growth Charm\u2019s name is still Growth Charm, no matter how it grows."
+      },
+      {
+       "date": "2019-11-12",
+       "text": "Giant Growth means \u201cTarget creature gets +3/+3 until end of turn.\u201d"
+      },
+      {
+       "date": "2019-11-12",
+       "text": "Rampant Growth means \u201cSearch your library for a basic land card and put that card onto the battlefield tapped. Then shuffle your library.\u201d"
+      },
+      {
+       "date": "2019-11-12",
+       "text": "Regrowth means \u201cReturn target card from your graveyard to your hand.\u201d"
+      }
+     ],
+     "setCode": "CMB2",
+     "skuIds": {
+      "nonfoil": "9dfe4743-2faf-5360-ab8a-83c566560109"
+     },
+     "sourceProducts": {
+      "nonfoil": [
+       "40e449ed-a921-5b8c-92a0-470eb8087d1c",
+       "5adc6380-fdd2-53fd-8ccb-e6c4dadc8b12",
+       "742d13ff-fb70-5b7d-9429-8a13f7eed345",
+       "76750f76-dd6a-5e60-a83f-6e140ff0ebcf",
+       "9dbcbd90-0722-5880-b54e-cb6988adbe4e",
+       "aace20dd-5f80-5fac-94ab-d96d0887bebc",
+       "c178d6ce-be9b-536b-aa85-d1da83ef7f58",
+       "c2756ed2-3beb-5d3c-81fe-56f8b24eaabb",
+       "cbd26a74-d0fd-5a8e-8f28-61f759dc3675"
+      ]
+     },
+     "subtypes": [],
+     "supertypes": [],
+     "text": "Choose one \u2014\n\u2022 Rampant Growth\n\u2022 Giant Growth\n\u2022 Regrowth",
+     "type": "Instant",
+     "types": [
+      "Instant"
+     ],
+     "uuid": "20b40fba-a649-5004-a43e-69ab8b393d87"
+    }
+   ],
+   "code": "CMB2",
+   "isFoilOnly": false,
+   "isNonFoilOnly": true,
+   "isOnlineOnly": false,
+   "keyruneCode": "MB1",
+   "languages": [
+    "English"
+   ],
+   "name": "Mystery Booster Playtest Cards 2021",
+   "releaseDate": "2021-08-20",
+   "tcgplayerGroupId": 2570,
+   "totalSetSize": 121,
+   "translations": {
+    "Chinese Simplified": null,
+    "Chinese Traditional": null,
+    "French": null,
+    "German": null,
+    "Italian": null,
+    "Japanese": null,
+    "Korean": null,
+    "Portuguese (Brazil)": null,
+    "Russian": null,
+    "Spanish": null
+   },
+   "type": "funny"
+  },
+  "ELD": {
+   "baseSetSize": 269,
+   "cards": [
+    {
+     "artist": "Victor Adame Minguez",
+     "artistIds": [
+      "bd8f7368-5b10-4554-b6b8-d052c6aca89f"
+     ],
+     "availability": [
+      "arena",
+      "mtgo",
+      "paper"
+     ],
+     "boosterTypes": [
+      "default"
+     ],
+     "borderColor": "black",
+     "colorIdentity": [
+      "B"
+     ],
+     "colors": [
+      "B"
+     ],
+     "convertedManaCost": 2.0,
+     "faceConvertedManaCost": 2.0,
+     "faceManaValue": 2.0,
+     "faceName": "Order of Midnight",
+     "finishes": [
+      "foil",
+      "nonfoil"
+     ],
+     "foreignData": [
+      {
+       "faceName": "\u5348\u591c\u9a91\u58eb\u56e2",
+       "identifiers": {
+        "multiverseId": "475482",
+        "scryfallId": "e7968d1e-a254-4cf5-b3a6-716041376efc"
+       },
+       "language": "Chinese Simplified",
+       "multiverseId": 475482,
+       "name": "\u5348\u591c\u9a91\u58eb\u56e2 // \u6539\u53d8\u547d\u8fd0",
+       "skuIds": {
+        "foil": "53b21896-7798-5414-80e3-1d9a5adcd408",
+        "nonfoil": "b5bc6447-58ca-538a-a711-4c5e85ae42e4"
+       },
+       "text": "\u98de\u884c\n\u5348\u591c\u9a91\u58eb\u56e2\u4e0d\u80fd\u8fdb\u884c\u963b\u6321\u3002",
+       "type": "\u751f\u7269 \u2014 \u4eba\u7c7b\uff0f\u9a91\u58eb",
+       "uuid": "2c7802ba-5e6e-54e2-bc85-a360138d3e0d"
+      },
+      {
+       "faceName": "\u5348\u591c\u9a0e\u58eb\u5718",
+       "identifiers": {
+        "multiverseId": "475751",
+        "scryfallId": "3f2b0813-23ae-44ec-a78a-58e7a036afbe"
+       },
+       "language": "Chinese Traditional",
+       "multiverseId": 475751,
+       "name": "\u5348\u591c\u9a0e\u58eb\u5718 // \u6539\u8b8a\u547d\u904b",
+       "skuIds": {
+        "foil": "2eed04ea-8330-557d-a360-476508472883",
+        "nonfoil": "f25994c1-d3f1-571b-8399-f8afec171635"
+       },
+       "text": "\u98db\u884c\n\u5348\u591c\u9a0e\u58eb\u5718\u4e0d\u80fd\u9032\u884c\u963b\u64cb\u3002",
+       "type": "\u751f\u7269 \u2014 \u4eba\u985e\uff0f\u9a0e\u58eb",
+       "uuid": "8aa40a64-d79c-5d12-9040-7daf59df1760"
+      },
+      {
+       "faceName": "Ordre de Minuit",
+       "identifiers": {
+        "multiverseId": "473868",
+        "scryfallId": "a1e4ff6f-b75c-4f16-9f3f-4e6ad37fe700"
+       },
+       "language": "French",
+       "multiverseId": 473868,
+       "name": "Ordre de Minuit // Alt\u00e9ration du destin",
+       "skuIds": {
+        "foil": "21bd1b84-6065-51ca-b1a6-424961239417",
+        "nonfoil": "bf02ecf4-1241-58c8-b9d5-d79ea876ebcd"
+       },
+       "text": "Vol\nL'Ordre de Minuit ne peut pas bloquer.",
+       "type": "Cr\u00e9ature \u2014 humain et chevalier",
+       "uuid": "ea6cac00-ca6d-5158-a32c-4032817a55b1"
+      },
+      {
+       "faceName": "Mitternachtsorden",
+       "identifiers": {
+        "multiverseId": "473330",
+        "scryfallId": "40138aea-5d61-4fbe-97d1-fc6b96e20865"
+       },
+       "language": "German",
+       "multiverseId": 473330,
+       "name": "Mitternachtsorden // Ge\u00e4ndertes Los",
+       "skuIds": {
+        "foil": "61702867-541e-5714-a746-ffd64e0a5a87",
+        "nonfoil": "7a131eaa-0c3d-5598-96e7-278b2d8715a7"
+       },
+       "text": "Fliegend\nDer Mitternachtsorden kann nicht blocken.",
+       "type": "Kreatur \u2014 Mensch, Ritter",
+       "uuid": "354ac653-90ad-58ce-879a-92171190ffd1"
+      },
+      {
+       "faceName": "Ordine della Mezzanotte",
+       "identifiers": {
+        "multiverseId": "474137",
+        "scryfallId": "4d7f75c8-1b11-48fd-b04e-d534b44911a7"
+       },
+       "language": "Italian",
+       "multiverseId": 474137,
+       "name": "Ordine della Mezzanotte // Alterare il Destino",
+       "skuIds": {
+        "foil": "3168bc32-546e-5510-a3f2-49edb6cf190b",
+        "nonfoil": "0162f084-f3b3-546c-8732-153b13aec0a0"
+       },
+       "text": "Volare\nL'Ordine della Mezzanotte non pu\u00f2 bloccare.",
+       "type": "Creatura \u2014 Cavaliere Umano",
+       "uuid": "d2ff20ba-cf21-563c-be64-278635a8f3ef"
+      },
+      {
+       "faceName": "\u771f\u591c\u4e2d\u306e\u9a0e\u58eb\u56e3",
+       "identifiers": {
+        "multiverseId": "474406",
+        "scryfallId": "5a838fae-43ce-46e7-ad49-0985503c86e0"
+       },
+       "language": "Japanese",
+       "multiverseId": 474406,
+       "name": "\u771f\u591c\u4e2d\u306e\u9a0e\u58eb\u56e3 // \u904b\uff08\u3046\u3093\uff09\u547d\uff08\u3081\u3044\uff09\u306e\u4fee\uff08\u3057\u3085\u3046\uff09\u6b63\uff08\u305b\u3044\uff09",
+       "skuIds": {
+        "foil": "eb04886e-c6eb-503e-9e0f-c263b961633e",
+        "nonfoil": "64946dec-5d01-558a-adbf-f508c4569aca"
+       },
+       "text": "\u98db\u884c\n\u771f\u591c\u4e2d\u306e\u9a0e\u58eb\u56e3\u3067\u306f\u30d6\u30ed\u30c3\u30af\u3067\u304d\u306a\u3044\u3002",
+       "type": "\u30af\u30ea\u30fc\u30c1\u30e3\u30fc \u2014 \u4eba\u9593\u30fb\u9a0e\u58eb",
+       "uuid": "58d11ad9-6587-5c34-87f9-388d7598e5d3"
+      },
+      {
+       "faceName": "\ud55c\ubc24\uc758 \uae30\uc0ac\ub2e8",
+       "identifiers": {
+        "multiverseId": "474675",
+        "scryfallId": "8d868856-7d26-4ca5-8ccf-cb8f0b3d7d83"
+       },
+       "language": "Korean",
+       "multiverseId": 474675,
+       "name": "\ud55c\ubc24\uc758 \uae30\uc0ac\ub2e8 // \uc6b4\uba85 \ubcc0\uacbd",
+       "skuIds": {
+        "foil": "5b925a5a-b547-5556-b452-fbec7e09aa2e",
+        "nonfoil": "a88bfa38-a1a9-5446-9d1e-a35212a53a3e"
+       },
+       "text": "\ube44\ud589\n\ud55c\ubc24\uc758 \uae30\uc0ac\ub2e8\uc740 \ubc29\uc5b4\ud560 \uc218 \uc5c6\ub2e4.",
+       "type": "\uc0dd\ubb3c \u2014 \uc778\uac04 \uae30\uc0ac",
+       "uuid": "d2eb955b-dfe0-5b8a-8594-484103e1120b"
+      },
+      {
+       "faceName": "Ordem da Meia-noite",
+       "identifiers": {
+        "multiverseId": "474944",
+        "scryfallId": "4c39f4e7-ae85-4b01-8009-785d50075de6"
+       },
+       "language": "Portuguese (Brazil)",
+       "multiverseId": 474944,
+       "name": "Ordem da Meia-noite // Alterar Destino",
+       "skuIds": {
+        "foil": "8590db64-f3b3-5c9a-a7be-867ad20fda01",
+        "nonfoil": "d192dee6-dcf8-5599-9400-2f3af73f019d"
+       },
+       "text": "Voar\nOrdem da Meia-noite n\u00e3o pode bloquear.",
+       "type": "Criatura \u2014 Humano Cavaleiro",
+       "uuid": "a7183e1a-1855-59f3-951c-1789bc44ee13"
+      },
+      {
+       "faceName": "\u041e\u0440\u0434\u0435\u043d \u041f\u043e\u043b\u0443\u043d\u043e\u0447\u0438",
+       "identifiers": {
+        "multiverseId": "475213",
+        "scryfallId": "1c48936c-5b9a-4f5b-b566-0823a0d923cb"
+       },
+       "language": "Russian",
+       "multiverseId": 475213,
+       "name": "\u041e\u0440\u0434\u0435\u043d \u041f\u043e\u043b\u0443\u043d\u043e\u0447\u0438 // \u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0421\u0443\u0434\u044c\u0431\u0443",
+       "skuIds": {
+        "foil": "7a457f92-05db-57be-9ea4-43d7d661697d",
+        "nonfoil": "b12c7bb8-8bb9-5b42-998a-7183d5f833c2"
+       },
+       "text": "\u041f\u043e\u043b\u0435\u0442\n\u041e\u0440\u0434\u0435\u043d \u041f\u043e\u043b\u0443\u043d\u043e\u0447\u0438 \u043d\u0435 \u043c\u043e\u0436\u0435\u0442 \u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u0442\u044c.",
+       "type": "\u0421\u0443\u0449\u0435\u0441\u0442\u0432\u043e \u2014 \u0427\u0435\u043b\u043e\u0432\u0435\u043a \u0420\u044b\u0446\u0430\u0440\u044c",
+       "uuid": "5c811c65-6153-5ef8-8cfe-35b5492d2d14"
+      },
+      {
+       "faceName": "Orden de la Medianoche",
+       "identifiers": {
+        "multiverseId": "473599",
+        "scryfallId": "2c741d7f-4d71-403d-b051-547b71adf402"
+       },
+       "language": "Spanish",
+       "multiverseId": 473599,
+       "name": "Orden de la Medianoche // Alterar el destino",
+       "skuIds": {
+        "foil": "bb34da38-9e59-5e79-8958-ee79e805a2eb",
+        "nonfoil": "d7703684-deb3-5236-bc2f-ebc42edcd74c"
+       },
+       "text": "Vuela.\nLa Orden de la Medianoche no puede bloquear.",
+       "type": "Criatura \u2014 Caballero humano",
+       "uuid": "139613b7-f896-5f7a-9af9-408fddf0dd77"
+      }
+     ],
+     "frameVersion": "2015",
+     "identifiers": {
+      "cardKingdomFoilId": "227730",
+      "cardKingdomId": "227328",
+      "cardsphereFoilId": "62285",
+      "cardsphereId": "62009",
+      "deckboxId": "46155",
+      "mcmId": "398679",
+      "mcmMetaId": "280819",
+      "mtgArenaId": "70246",
+      "mtgjsonV4Id": "89279745-4caf-5b2b-a9c1-45601a87fcdf",
+      "multiverseId": "473061",
+      "scryfallCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "scryfallId": "330cc452-4382-401d-9432-ac27ae6e27ad",
+      "scryfallIllustrationId": "471b0068-badd-4f27-8e51-8149bcfc1542",
+      "scryfallOracleId": "2db17cfc-0947-407f-bd53-d64a48eec314",
+      "tcgplayerProductId": "198405"
+     },
+     "keywords": [
+      "Flying"
+     ],
+     "language": "English",
+     "layout": "adventure",
+     "leadershipSkills": {
+      "brawl": false,
+      "commander": false,
+      "oathbreaker": false,
+      "pauper_commander": true,
+      "predh": false
+     },
+     "legalities": {
+      "brawl": "Legal",
+      "commander": "Legal",
+      "duel": "Legal",
+      "gladiator": "Legal",
+      "historic": "Legal",
+      "legacy": "Legal",
+      "modern": "Legal",
+      "oathbreaker": "Legal",
+      "pioneer": "Legal",
+      "timeless": "Legal",
+      "vintage": "Legal"
+     },
+     "manaCost": "{1}{B}",
+     "manaValue": 2.0,
+     "name": "Order of Midnight // Alter Fate",
+     "number": "99",
+     "originalText": "Return target creature card from your graveyard to your hand. (Then exile this card. You may cast the creature later from exile.) // Flying\nOrder of Midnight can't block.",
+     "originalType": "Creature \u2013 Human Knight",
+     "otherFaceIds": [
+      "c45098e6-b676-5758-ac75-f83d41fe7afa"
+     ],
+     "power": "2",
+     "printings": [
+      "ELD",
+      "MOC",
+      "PLST",
+      "PRM"
+     ],
+     "purchaseUrls": {
+      "cardKingdom": "https://mtgjson.com/links/5f42b6b9685370a5",
+      "cardKingdomFoil": "https://mtgjson.com/links/210ea28debb3aa1a",
+      "cardmarket": "https://mtgjson.com/links/b490a1b156a18d30",
+      "cardmarketFoil": "https://mtgjson.com/links/7add56f183524c0b",
+      "tcgplayer": "https://mtgjson.com/links/f2d42f653b3c7212"
+     },
+     "rarity": "uncommon",
+     "rulings": [
+      {
+       "date": "2019-10-04",
+       "text": "An adventurer card is a permanent card in every zone except the stack, as well as while on the stack if not cast as an Adventure. Ignore its alternative characteristics in those cases. For example, while it's in your graveyard, Giant Killer is a white creature card whose mana value is 1. It can't be the target of the triggered ability of Mystic Sanctuary."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "Casting a card as an Adventure isn't casting it for an alternative cost. Effects that allow you to cast a spell for an alternative cost or without paying its mana cost may allow you to apply those to the Adventure."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If a spell is cast as an Adventure, its controller exiles it instead of putting it into its owner's graveyard as it resolves. For as long as it remains exiled, that player may cast it as a permanent spell. If an Adventure spell leaves the stack in any way other than resolving (most likely by being countered or by failing to resolve because its targets have all become illegal), that card won't be exiled and the spell's controller won't be able to cast it as a permanent later."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an adventurer card ends up in exile for any other reason than by exiling itself while resolving, it won't give you permission to cast it as a permanent spell."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an effect copies an Adventure spell, that copy is exiled as it resolves. It ceases to exist as a state-based action; it's not possible to cast the copy as a permanent."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an effect instructs you to choose a card name, you may choose the alternative Adventure name. Consider only the alternative characteristics to determine whether that is an appropriate name to choose."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an object becomes a copy of an object that has an Adventure, the copy also has an Adventure. If it changes zones, it will either cease to exist (if it's a token) or cease to be a copy (if it's a nontoken permanent), and so you won't be able to cast it as an Adventure."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If you cast an adventurer card as an Adventure, use only its alternative characteristics to determine whether it's legal to cast that spell. For example, if Giant Killer is exiled with the last ability of Vivien, Champion of the Wilds, you can't cast it as Chop Down."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "When casting a spell as an Adventure, use the alternative characteristics and ignore all of the card's normal characteristics. The spell's color, mana cost, mana value, and so on are determined by only those alternative characteristics. If the spell leaves the stack, it immediately resumes using its normal characteristics."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "You must still follow any timing restrictions and permissions for the permanent spell you cast from exile. Normally, you'll be able to cast it only during your main phase while the stack is empty."
+      }
+     ],
+     "setCode": "ELD",
+     "side": "a",
+     "skuIds": {
+      "foil": "3f34debd-ae2f-56e4-851a-19b58c473e28",
+      "nonfoil": "8bac7625-3384-5749-806c-84f4b0d5325b"
+     },
+     "sourceProducts": {
+      "foil": [
+       "0a673c6e-1a8f-5ba9-be12-54d697ea2cf2",
+       "189be110-f54b-56b9-ac13-5b2b8408c822",
+       "1b37ed23-8b96-5fd5-af25-9104e8821759",
+       "1cd7b7a7-5ee2-5502-8dce-f32c7af50657",
+       "1eb270a4-232c-5eb5-bbfe-30257b2154a2",
+       "21d471fb-dfea-5778-99ff-65a3e2264501",
+       "2d5382ed-92c6-574e-980a-3b7e7f5837f8",
+       "41698667-7034-576a-a190-6c5b353e8e48",
+       "52ab691a-5663-5c92-9955-7da0fb99aee3",
+       "61cb35b0-215b-5d52-bcd9-6f55e1769ab2",
+       "679f110a-9bbb-5288-816a-e97ecb8ceb71",
+       "7b8eb64e-3613-5aa7-9b11-e66e8f916600",
+       "b01ef320-c521-57c6-a569-6d8486feb017",
+       "dbd24487-7f84-5b1a-b209-df79ed99f18c",
+       "eb47c692-ac37-5a9f-af44-7b0f9184befa",
+       "ef53429d-bd6d-52df-871a-277c855a1477",
+       "f280c608-84ef-5371-bae2-801205b8f795",
+       "fda22af4-7cde-5356-97b1-3b11d99b1329"
+      ],
+      "nonfoil": [
+       "0a673c6e-1a8f-5ba9-be12-54d697ea2cf2",
+       "16e517f9-4d70-5140-964d-f7e0cbf68f6d",
+       "1cd7b7a7-5ee2-5502-8dce-f32c7af50657",
+       "1d18989d-cf60-527c-8343-e66267520527",
+       "1eb270a4-232c-5eb5-bbfe-30257b2154a2",
+       "21d471fb-dfea-5778-99ff-65a3e2264501",
+       "2d5382ed-92c6-574e-980a-3b7e7f5837f8",
+       "39a6023a-aac1-53c2-a571-86e991a89fa0",
+       "3d97f089-a37a-595c-9bfd-8ac368019c88",
+       "3f3f9a78-949e-5788-b739-3ddd2d769dc9",
+       "41698667-7034-576a-a190-6c5b353e8e48",
+       "468bc4c6-9ccc-526d-8dab-8f0d5ab7cdd7",
+       "52ab691a-5663-5c92-9955-7da0fb99aee3",
+       "895a1791-f4b8-57a6-91e0-f43f044423ea",
+       "9fc95702-85bd-5e07-8c32-c602ac3f4397",
+       "b01ef320-c521-57c6-a569-6d8486feb017",
+       "d44ea963-2a90-5db5-afe7-364da544cf5a",
+       "dbd24487-7f84-5b1a-b209-df79ed99f18c",
+       "e00980ac-f97d-57d5-acf1-a298dd12a0ae",
+       "e82dbd6f-89b9-59d0-973e-3e9b4aa5207c",
+       "eb47c692-ac37-5a9f-af44-7b0f9184befa",
+       "fda22af4-7cde-5356-97b1-3b11d99b1329"
+      ]
+     },
+     "subtypes": [
+      "Human",
+      "Knight"
+     ],
+     "supertypes": [],
+     "text": "Flying\nThis creature can't block.",
+     "toughness": "2",
+     "type": "Creature \u2014 Human Knight",
+     "types": [
+      "Creature"
+     ],
+     "uuid": "a9879e18-ba17-5577-b5da-7e6b433804b7",
+     "variations": [
+      "fa18a3c2-fa27-5460-bd62-0222d1242cb8"
+     ]
+    },
+    {
+     "artist": "Victor Adame Minguez",
+     "artistIds": [
+      "bd8f7368-5b10-4554-b6b8-d052c6aca89f"
+     ],
+     "availability": [
+      "arena",
+      "mtgo",
+      "paper"
+     ],
+     "boosterTypes": [
+      "default"
+     ],
+     "borderColor": "black",
+     "colorIdentity": [
+      "B"
+     ],
+     "colors": [
+      "B"
+     ],
+     "convertedManaCost": 2.0,
+     "faceConvertedManaCost": 2.0,
+     "faceManaValue": 2.0,
+     "faceName": "Alter Fate",
+     "finishes": [
+      "foil",
+      "nonfoil"
+     ],
+     "foreignData": [
+      {
+       "faceName": "\u6539\u53d8\u547d\u8fd0",
+       "identifiers": {
+        "multiverseId": "475482",
+        "scryfallId": "e7968d1e-a254-4cf5-b3a6-716041376efc"
+       },
+       "language": "Chinese Simplified",
+       "multiverseId": 475482,
+       "name": "\u5348\u591c\u9a91\u58eb\u56e2 // \u6539\u53d8\u547d\u8fd0",
+       "skuIds": {
+        "foil": "a112a5de-e684-5e1b-adb0-62950cdda215",
+        "nonfoil": "56308f1c-a5a3-5b99-be75-07cdb59f72fe"
+       },
+       "text": "\u5c06\u76ee\u6807\u751f\u7269\u724c\u4ece\u4f60\u7684\u575f\u5893\u573a\u79fb\u56de\u4f60\u624b\u4e0a\u3002\uff08\u7136\u540e\u653e\u9010\u6b64\u724c\u3002\u4e4b\u540e\u4f60\u8fd8\u53ef\u4ee5\u4ece\u653e\u9010\u533a\u4e2d\u65bd\u653e\u8be5\u751f\u7269\u3002\uff09",
+       "type": "\u6cd5\u672f\uff5e\u5386\u9669",
+       "uuid": "c7b7be59-e239-5fcd-b92e-12e8bf551ef4"
+      },
+      {
+       "faceName": "\u6539\u8b8a\u547d\u904b",
+       "identifiers": {
+        "multiverseId": "475751",
+        "scryfallId": "3f2b0813-23ae-44ec-a78a-58e7a036afbe"
+       },
+       "language": "Chinese Traditional",
+       "multiverseId": 475751,
+       "name": "\u5348\u591c\u9a0e\u58eb\u5718 // \u6539\u8b8a\u547d\u904b",
+       "skuIds": {
+        "foil": "a1110fb6-9679-5fc9-a15c-b687d318cfd6",
+        "nonfoil": "3531259b-54e9-540c-bfa8-565c11d3d5fa"
+       },
+       "text": "\u5c07\u76ee\u6a19\u751f\u7269\u724c\u5f9e\u4f60\u7684\u58b3\u5893\u5834\u79fb\u56de\u4f60\u624b\u4e0a\u3002\uff08\u7136\u5f8c\u653e\u9010\u6b64\u724c\u3002\u4e4b\u5f8c\u4f60\u9084\u53ef\u4ee5\u5f9e\u653e\u9010\u5340\u4e2d\u65bd\u653e\u8a72\u751f\u7269\u3002\uff09",
+       "type": "\u5deb\u8853\uff5e\u6b77\u96aa",
+       "uuid": "e402b127-bcfb-5621-be76-9273c65d12de"
+      },
+      {
+       "faceName": "Alt\u00e9ration du destin",
+       "identifiers": {
+        "multiverseId": "473868",
+        "scryfallId": "a1e4ff6f-b75c-4f16-9f3f-4e6ad37fe700"
+       },
+       "language": "French",
+       "multiverseId": 473868,
+       "name": "Ordre de Minuit // Alt\u00e9ration du destin",
+       "skuIds": {
+        "foil": "a48fd132-8963-5f76-b0b7-78cd9ba306ea",
+        "nonfoil": "fe7b8ce2-43e3-532c-a340-9a3a8a99e79b"
+       },
+       "text": "Renvoyez une carte de cr\u00e9ature cibl\u00e9e depuis votre cimeti\u00e8re dans votre main. (Puis exilez cette carte. Vous pouvez lancer la cr\u00e9ature plus tard depuis l'exil.)",
+       "type": "Rituel : aventure",
+       "uuid": "2c653ff5-a3f9-5f9c-9434-471213db720d"
+      },
+      {
+       "faceName": "Ge\u00e4ndertes Los",
+       "identifiers": {
+        "multiverseId": "473330",
+        "scryfallId": "40138aea-5d61-4fbe-97d1-fc6b96e20865"
+       },
+       "language": "German",
+       "multiverseId": 473330,
+       "name": "Mitternachtsorden // Ge\u00e4ndertes Los",
+       "skuIds": {
+        "foil": "72e416a7-89be-5638-ac71-d91525a89275",
+        "nonfoil": "39387093-11c7-5538-8b9f-7cd3b5f8fd5b"
+       },
+       "text": "Bringe eine Kreaturenkarte deiner Wahl aus deinem Friedhof auf deine Hand zur\u00fcck. (Schicke diese Karte dann ins Exil. Du kannst sie sp\u00e4ter als Kreatur aus dem Exil wirken.)",
+       "type": "Hexerei \u2014 Abenteuer",
+       "uuid": "73b83821-23c1-5288-914d-b639cc086b42"
+      },
+      {
+       "faceName": "Alterare il Destino",
+       "identifiers": {
+        "multiverseId": "474137",
+        "scryfallId": "4d7f75c8-1b11-48fd-b04e-d534b44911a7"
+       },
+       "language": "Italian",
+       "multiverseId": 474137,
+       "name": "Ordine della Mezzanotte // Alterare il Destino",
+       "skuIds": {
+        "foil": "77939a84-f73e-5b12-a298-3646d4cf389f",
+        "nonfoil": "e7d352e5-bfc6-58a0-9fd0-50d039a54246"
+       },
+       "text": "Riprendi in mano una carta creatura bersaglio dal tuo cimitero. (Poi esilia questa carta. Puoi lanciare la creatura in seguito dall'esilio.)",
+       "type": "Stregoneria \u2014 Avventura",
+       "uuid": "7dca7bf4-8956-5c60-a7ea-6d367a3c8284"
+      },
+      {
+       "faceName": "\u904b\uff08\u3046\u3093\uff09\u547d\uff08\u3081\u3044\uff09\u306e\u4fee\uff08\u3057\u3085\u3046\uff09\u6b63\uff08\u305b\u3044\uff09",
+       "identifiers": {
+        "multiverseId": "474406",
+        "scryfallId": "5a838fae-43ce-46e7-ad49-0985503c86e0"
+       },
+       "language": "Japanese",
+       "multiverseId": 474406,
+       "name": "\u771f\u591c\u4e2d\u306e\u9a0e\u58eb\u56e3 // \u904b\uff08\u3046\u3093\uff09\u547d\uff08\u3081\u3044\uff09\u306e\u4fee\uff08\u3057\u3085\u3046\uff09\u6b63\uff08\u305b\u3044\uff09",
+       "skuIds": {
+        "foil": "ccc62ba2-20f1-5721-81d6-b02cd0a452f8",
+        "nonfoil": "2fab2485-c01a-5b68-afa1-59f92e442a15"
+       },
+       "text": "\u3042\u306a\u305f\u306e\u5893\u5730\u304b\u3089\u30af\u30ea\u30fc\u30c1\u30e3\u30fc\u30fb\u30ab\u30fc\u30c9\uff11\u679a\u3092\u5bfe\u8c61\u3068\u3057\u3001\u305d\u308c\u3092\u3042\u306a\u305f\u306e\u624b\u672d\u306b\u623b\u3059\u3002\uff08\u305d\u306e\u5f8c\u3001\u3053\u306e\u30ab\u30fc\u30c9\u3092\u8ffd\u653e\u3059\u308b\u3002\u3042\u306a\u305f\u306f\u5f8c\u3067\u8ffd\u653e\u9818\u57df\u304b\u3089\u3053\u306e\u30af\u30ea\u30fc\u30c1\u30e3\u30fc\u3092\u5531\u3048\u3066\u3082\u3088\u3044\u3002\uff09",
+       "type": "\u30bd\u30fc\u30b5\u30ea\u30fc \u2015 \u51fa\u6765\u4e8b",
+       "uuid": "3ccb9c36-c381-58d8-83f1-4255ce3c1fe1"
+      },
+      {
+       "faceName": "\uc6b4\uba85 \ubcc0\uacbd",
+       "identifiers": {
+        "multiverseId": "474675",
+        "scryfallId": "8d868856-7d26-4ca5-8ccf-cb8f0b3d7d83"
+       },
+       "language": "Korean",
+       "multiverseId": 474675,
+       "name": "\ud55c\ubc24\uc758 \uae30\uc0ac\ub2e8 // \uc6b4\uba85 \ubcc0\uacbd",
+       "skuIds": {
+        "foil": "dcd41632-00d9-5b49-a571-289baa89c879",
+        "nonfoil": "4a3c20c3-35c9-568b-be90-9836b43c6770"
+       },
+       "text": "\ub2f9\uc2e0\uc758 \ubb34\ub364\uc5d0 \uc788\ub294 \uc0dd\ubb3c \uce74\ub4dc\ub97c \ubaa9\ud45c\ub85c \uc815\ud55c\ub2e4. \uadf8 \uce74\ub4dc\ub97c \ub2f9\uc2e0\uc758 \uc190\uc73c\ub85c \ub418\ub3cc\ub9b0\ub2e4. (\uadf8 \ud6c4 \uc774 \uce74\ub4dc\ub97c \ucd94\ubc29\ud55c\ub2e4. \ub2f9\uc2e0\uc740 \ub098\uc911\uc5d0 \ucd94\ubc29 \uc601\uc5ed\uc5d0\uc11c \uc774 \uc0dd\ubb3c\uc744 \ubc1c\ub3d9\ud560 \uc218 \uc788\ub2e4.)",
+       "type": "\uc9d1\uc911\ub9c8\ubc95 \u2014 \ubaa8\ud5d8",
+       "uuid": "f12cc2b8-7d1d-5036-9c9e-7cb2e964f079"
+      },
+      {
+       "faceName": "Alterar Destino",
+       "identifiers": {
+        "multiverseId": "474944",
+        "scryfallId": "4c39f4e7-ae85-4b01-8009-785d50075de6"
+       },
+       "language": "Portuguese (Brazil)",
+       "multiverseId": 474944,
+       "name": "Ordem da Meia-noite // Alterar Destino",
+       "skuIds": {
+        "foil": "b1853dce-b723-5f85-b605-af03f415fdc6",
+        "nonfoil": "6410284e-8db5-5072-b802-8aad74f59407"
+       },
+       "text": "Devolva o card de criatura alvo de seu cemit\u00e9rio para sua m\u00e3o. (Depois, exile este card. Voc\u00ea pode conjurar a criatura posteriormente do ex\u00edlio.)",
+       "type": "Feiti\u00e7o \u2014 Aventura",
+       "uuid": "ef108807-2f46-5a84-8d2c-53a006ea2b5e"
+      },
+      {
+       "faceName": "\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0421\u0443\u0434\u044c\u0431\u0443",
+       "identifiers": {
+        "multiverseId": "475213",
+        "scryfallId": "1c48936c-5b9a-4f5b-b566-0823a0d923cb"
+       },
+       "language": "Russian",
+       "multiverseId": 475213,
+       "name": "\u041e\u0440\u0434\u0435\u043d \u041f\u043e\u043b\u0443\u043d\u043e\u0447\u0438 // \u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0421\u0443\u0434\u044c\u0431\u0443",
+       "skuIds": {
+        "foil": "990f4597-274a-51c2-bc9d-626a60b4a07c",
+        "nonfoil": "faab6268-fdd2-55b5-98b3-d077d967b24e"
+       },
+       "text": "\u0412\u0435\u0440\u043d\u0438\u0442\u0435 \u0446\u0435\u043b\u0435\u0432\u0443\u044e \u043a\u0430\u0440\u0442\u0443 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0430 \u0438\u0437 \u0432\u0430\u0448\u0435\u0433\u043e \u043a\u043b\u0430\u0434\u0431\u0438\u0449\u0430 \u0432 \u0432\u0430\u0448\u0443 \u0440\u0443\u043a\u0443. (\u0417\u0430\u0442\u0435\u043c \u0438\u0437\u0433\u043e\u043d\u0438\u0442\u0435 \u044d\u0442\u0443 \u043a\u0430\u0440\u0442\u0443. \u041f\u043e\u0437\u0436\u0435 \u0432\u044b \u043c\u043e\u0436\u0435\u0442\u0435 \u0440\u0430\u0437\u044b\u0433\u0440\u0430\u0442\u044c \u044d\u0442\u0443 \u043a\u0430\u0440\u0442\u0443 \u043a\u0430\u043a \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u043e \u0438\u0437 \u0438\u0437\u0433\u043d\u0430\u043d\u0438\u044f.)",
+       "type": "\u0412\u043e\u043b\u0448\u0435\u0431\u0441\u0442\u0432\u043e \u2014 \u041f\u0440\u0438\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435",
+       "uuid": "eb7f05d9-7526-502c-adcf-ea322db0c3fd"
+      },
+      {
+       "faceName": "Alterar el destino",
+       "identifiers": {
+        "multiverseId": "473599",
+        "scryfallId": "2c741d7f-4d71-403d-b051-547b71adf402"
+       },
+       "language": "Spanish",
+       "multiverseId": 473599,
+       "name": "Orden de la Medianoche // Alterar el destino",
+       "skuIds": {
+        "foil": "df428311-5b47-5241-8ce9-e71855d58fe6",
+        "nonfoil": "251e2e5a-dfdc-543f-ba49-85d43651f6cf"
+       },
+       "text": "Regresa la carta de criatura objetivo de tu cementerio a tu mano. (Luego, exilia esta carta. Puedes lanzar la criatura m\u00e1s adelante desde el exilio.)",
+       "type": "Conjuro \u2014 Aventura",
+       "uuid": "bac5d03a-bfff-50b3-aaae-e89200d1c398"
+      }
+     ],
+     "frameVersion": "2015",
+     "identifiers": {
+      "cardKingdomFoilId": "227730",
+      "cardKingdomId": "227328",
+      "cardsphereFoilId": "62285",
+      "cardsphereId": "62009",
+      "deckboxId": "46155",
+      "mcmId": "398679",
+      "mcmMetaId": "280819",
+      "mtgArenaId": "70246",
+      "mtgjsonV4Id": "ba891e0c-60c8-59f1-88a4-19dd0d25118e",
+      "multiverseId": "473061",
+      "scryfallCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "scryfallId": "330cc452-4382-401d-9432-ac27ae6e27ad",
+      "scryfallIllustrationId": "471b0068-badd-4f27-8e51-8149bcfc1542",
+      "scryfallOracleId": "2db17cfc-0947-407f-bd53-d64a48eec314",
+      "tcgplayerProductId": "198405"
+     },
+     "keywords": [
+      "Flying"
+     ],
+     "language": "English",
+     "layout": "adventure",
+     "legalities": {
+      "brawl": "Legal",
+      "commander": "Legal",
+      "duel": "Legal",
+      "gladiator": "Legal",
+      "historic": "Legal",
+      "legacy": "Legal",
+      "modern": "Legal",
+      "oathbreaker": "Legal",
+      "pioneer": "Legal",
+      "timeless": "Legal",
+      "vintage": "Legal"
+     },
+     "manaCost": "{1}{B}",
+     "manaValue": 2.0,
+     "name": "Order of Midnight // Alter Fate",
+     "number": "99",
+     "originalText": "Return target creature card from your graveyard to your hand. (Then exile this card. You may cast the creature later from exile.) // Flying\nOrder of Midnight can't block.",
+     "originalType": "Creature \u2013 Human Knight",
+     "otherFaceIds": [
+      "a9879e18-ba17-5577-b5da-7e6b433804b7"
+     ],
+     "printings": [
+      "ELD",
+      "MOC",
+      "PLST",
+      "PRM"
+     ],
+     "purchaseUrls": {
+      "cardKingdom": "https://mtgjson.com/links/fcdea7e22279bbf7",
+      "cardKingdomFoil": "https://mtgjson.com/links/2ceda2de52ddafc0",
+      "cardmarket": "https://mtgjson.com/links/508f4c4571f772d0",
+      "cardmarketFoil": "https://mtgjson.com/links/f201be9e1b9ee14b",
+      "tcgplayer": "https://mtgjson.com/links/2d0897894f219f4b"
+     },
+     "rarity": "uncommon",
+     "rulings": [
+      {
+       "date": "2019-10-04",
+       "text": "An adventurer card is a permanent card in every zone except the stack, as well as while on the stack if not cast as an Adventure. Ignore its alternative characteristics in those cases. For example, while it's in your graveyard, Giant Killer is a white creature card whose mana value is 1. It can't be the target of the triggered ability of Mystic Sanctuary."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "Casting a card as an Adventure isn't casting it for an alternative cost. Effects that allow you to cast a spell for an alternative cost or without paying its mana cost may allow you to apply those to the Adventure."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If a spell is cast as an Adventure, its controller exiles it instead of putting it into its owner's graveyard as it resolves. For as long as it remains exiled, that player may cast it as a permanent spell. If an Adventure spell leaves the stack in any way other than resolving (most likely by being countered or by failing to resolve because its targets have all become illegal), that card won't be exiled and the spell's controller won't be able to cast it as a permanent later."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an adventurer card ends up in exile for any other reason than by exiling itself while resolving, it won't give you permission to cast it as a permanent spell."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an effect copies an Adventure spell, that copy is exiled as it resolves. It ceases to exist as a state-based action; it's not possible to cast the copy as a permanent."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an effect instructs you to choose a card name, you may choose the alternative Adventure name. Consider only the alternative characteristics to determine whether that is an appropriate name to choose."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If an object becomes a copy of an object that has an Adventure, the copy also has an Adventure. If it changes zones, it will either cease to exist (if it's a token) or cease to be a copy (if it's a nontoken permanent), and so you won't be able to cast it as an Adventure."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "If you cast an adventurer card as an Adventure, use only its alternative characteristics to determine whether it's legal to cast that spell. For example, if Giant Killer is exiled with the last ability of Vivien, Champion of the Wilds, you can't cast it as Chop Down."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "When casting a spell as an Adventure, use the alternative characteristics and ignore all of the card's normal characteristics. The spell's color, mana cost, mana value, and so on are determined by only those alternative characteristics. If the spell leaves the stack, it immediately resumes using its normal characteristics."
+      },
+      {
+       "date": "2019-10-04",
+       "text": "You must still follow any timing restrictions and permissions for the permanent spell you cast from exile. Normally, you'll be able to cast it only during your main phase while the stack is empty."
+      }
+     ],
+     "setCode": "ELD",
+     "side": "b",
+     "skuIds": {
+      "foil": "21a27edd-d842-57ec-8635-b73757088db7",
+      "nonfoil": "f0b078fe-2d83-5f2c-b073-c738ca8fa428"
+     },
+     "subtypes": [
+      "Adventure"
+     ],
+     "supertypes": [],
+     "text": "Return target creature card from your graveyard to your hand. (Then exile this card. You may cast the creature later from exile.)",
+     "type": "Sorcery \u2014 Adventure",
+     "types": [
+      "Sorcery"
+     ],
+     "uuid": "c45098e6-b676-5758-ac75-f83d41fe7afa",
+     "variations": [
+      "bacc03fa-774b-5b28-a24e-33d04be38333"
+     ]
+    }
+   ],
+   "code": "ELD",
+   "isFoilOnly": false,
+   "isOnlineOnly": false,
+   "keyruneCode": "ELD",
+   "languages": [
+    "Chinese Simplified",
+    "Chinese Traditional",
+    "English",
+    "French",
+    "German",
+    "Italian",
+    "Japanese",
+    "Korean",
+    "Portuguese (Brazil)",
+    "Russian",
+    "Spanish"
+   ],
+   "mcmId": 2582,
+   "mcmIdExtras": 2587,
+   "mcmName": "Throne of Eldraine",
+   "mtgoCode": "ELD",
+   "name": "Throne of Eldraine",
+   "releaseDate": "2019-10-04",
+   "tcgplayerGroupId": 2494,
+   "tokenSetCode": "TELD",
+   "totalSetSize": 397,
+   "translations": {
+    "Chinese Simplified": null,
+    "Chinese Traditional": null,
+    "French": "Throne of Eldraine",
+    "German": "Throne of Eldraine",
+    "Italian": "Throne of Eldraine",
+    "Japanese": null,
+    "Korean": null,
+    "Portuguese (Brazil)": null,
+    "Russian": null,
+    "Spanish": "Throne of Eldraine"
+   },
+   "type": "expansion"
+  },
+  "UNH": {
+   "baseSetSize": 140,
+   "cards": [
+    {
+     "artist": "Mark Poole",
+     "artistIds": [
+      "bfdeaf09-f915-4058-8e8b-bcac3bc43c33"
+     ],
+     "availability": [
+      "paper"
+     ],
+     "boosterTypes": [
+      "default"
+     ],
+     "borderColor": "silver",
+     "colorIdentity": [
+      "G"
+     ],
+     "colors": [
+      "G"
+     ],
+     "convertedManaCost": 2.0,
+     "finishes": [
+      "nonfoil"
+     ],
+     "flavorText": "\"Two muffins are baking in an oven. One muffin says to the other muffin, 'It's getting hot in here, huh?' The other muffin says, 'Aagh! A talking muffin!'\"",
+     "foreignData": [],
+     "frameVersion": "2003",
+     "identifiers": {
+      "cardKingdomFoilId": "112553",
+      "cardKingdomId": "112413",
+      "cardsphereId": "45451",
+      "mcmId": "14866",
+      "mcmMetaId": "8855",
+      "mtgjsonFoilVersionId": "f3567523-c62d-5903-aee8-7bdfcfc5d993",
+      "mtgjsonV4Id": "669560c8-9a5f-5c15-a1fe-bdacb8bc16ed",
+      "multiverseId": "74293",
+      "scryfallCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "scryfallId": "52e8440d-fce1-4a02-8029-f20a7617ae4f",
+      "scryfallIllustrationId": "36cc37b2-d073-4a35-b5da-6a26dfd9df07",
+      "scryfallOracleId": "aff64135-00dd-44c9-acd8-72a946a6f0b1",
+      "tcgplayerProductId": "37881"
+     },
+     "isFunny": true,
+     "language": "English",
+     "layout": "normal",
+     "legalities": {},
+     "manaCost": "{1}{G}",
+     "manaValue": 2.0,
+     "name": "Laughing Hyena",
+     "number": "103",
+     "originalText": "Gotcha Whenever an opponent laughs, you may say \"Gotcha\" If you do, return Laughing Hyena from your graveyard to your hand.",
+     "originalType": "Creature \u2013 Hyena",
+     "power": "2",
+     "printings": [
+      "UNH"
+     ],
+     "purchaseUrls": {
+      "cardKingdom": "https://mtgjson.com/links/7e4e0cc362f4e994",
+      "cardKingdomFoil": "https://mtgjson.com/links/61ee4841a98e93e2",
+      "cardmarket": "https://mtgjson.com/links/994983e2701efb32",
+      "tcgplayer": "https://mtgjson.com/links/15bd3ec1ba2a8ba7"
+     },
+     "rarity": "common",
+     "setCode": "UNH",
+     "skuIds": {
+      "nonfoil": "33d80450-030f-52fb-83a5-348142df0ece"
+     },
+     "sourceProducts": {
+      "nonfoil": [
+       "34549b07-b5c6-5c72-81ca-811b82064a2c",
+       "ca074888-0b59-5662-81a5-4c3b32c5dae8",
+       "cccaf6ba-ac1a-5a81-9019-23174ecee1c0"
+      ]
+     },
+     "subtypes": [
+      "Hyena"
+     ],
+     "supertypes": [],
+     "text": "Gotcha \u2014 If an opponent laughs, you may say \"Gotcha!\" When you do, return this card from your graveyard to your hand.",
+     "toughness": "2",
+     "type": "Creature \u2014 Hyena",
+     "types": [
+      "Creature"
+     ],
+     "uuid": "aec9aca7-ae93-5d6a-9070-4f6829af218c",
+     "variations": [
+      "f3567523-c62d-5903-aee8-7bdfcfc5d993"
+     ]
+    },
+    {
+     "artist": "Mark Poole",
+     "artistIds": [
+      "bfdeaf09-f915-4058-8e8b-bcac3bc43c33"
+     ],
+     "availability": [
+      "paper"
+     ],
+     "boosterTypes": [
+      "default"
+     ],
+     "borderColor": "silver",
+     "colorIdentity": [
+      "G"
+     ],
+     "colors": [
+      "G"
+     ],
+     "convertedManaCost": 2.0,
+     "finishes": [
+      "foil"
+     ],
+     "flavorText": "\"Two muffins are baking in an oven. One muffin says to the other muffin, 'It's getting hot in here, huh?' The other muffin says, 'Aagh! A talking muffin'\"",
+     "foreignData": [],
+     "frameVersion": "2003",
+     "identifiers": {
+      "cardsphereFoilId": "45450",
+      "mcmId": "14866",
+      "mtgjsonNonFoilVersionId": "aec9aca7-ae93-5d6a-9070-4f6829af218c",
+      "mtgjsonV4Id": "9b4b60de-d204-5b68-80b0-bdb01b1c0ce9",
+      "scryfallCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "scryfallId": "6c0712ff-c689-42fa-9384-f36d1f75c1dd",
+      "scryfallIllustrationId": "36cc37b2-d073-4a35-b5da-6a26dfd9df07",
+      "scryfallOracleId": "aff64135-00dd-44c9-acd8-72a946a6f0b1",
+      "tcgplayerProductId": "37881"
+     },
+     "isFunny": true,
+     "language": "English",
+     "layout": "normal",
+     "legalities": {},
+     "manaCost": "{1}{G}",
+     "manaValue": 2.0,
+     "name": "Laughing Hyena",
+     "number": "103\u2605",
+     "power": "2",
+     "printings": [
+      "UNH"
+     ],
+     "purchaseUrls": {
+      "cardmarket": "https://mtgjson.com/links/d7ae7aa22b4e47ce",
+      "cardmarketFoil": "https://mtgjson.com/links/650f47142f41f426",
+      "tcgplayer": "https://mtgjson.com/links/1a2c1942a28c979c"
+     },
+     "rarity": "common",
+     "setCode": "UNH",
+     "skuIds": {
+      "foil": "9805321c-626b-5919-8601-be3a575f5d07"
+     },
+     "sourceProducts": {
+      "foil": [
+       "34549b07-b5c6-5c72-81ca-811b82064a2c",
+       "ca074888-0b59-5662-81a5-4c3b32c5dae8",
+       "cccaf6ba-ac1a-5a81-9019-23174ecee1c0"
+      ]
+     },
+     "subtypes": [
+      "Hyena"
+     ],
+     "supertypes": [],
+     "text": "Gotcha \u2014 If an opponent laughs, you may say \"Gotcha!\" When you do, return this card from your graveyard to your hand.",
+     "toughness": "2",
+     "type": "Creature \u2014 Hyena",
+     "types": [
+      "Creature"
+     ],
+     "uuid": "f3567523-c62d-5903-aee8-7bdfcfc5d993",
+     "variations": [
+      "aec9aca7-ae93-5d6a-9070-4f6829af218c"
+     ]
+    }
+   ],
+   "code": "UNH",
+   "isFoilOnly": false,
+   "isOnlineOnly": false,
+   "keyruneCode": "UNH",
+   "languages": [
+    "English"
+   ],
+   "mcmId": 59,
+   "mcmName": "Unhinged",
+   "name": "Unhinged",
+   "releaseDate": "2004-11-19",
+   "tcgplayerGroupId": 114,
+   "totalSetSize": 168,
+   "translations": {
+    "Chinese Simplified": null,
+    "Chinese Traditional": null,
+    "French": "Unhinged",
+    "German": "Unhinged",
+    "Italian": "Unhinged",
+    "Japanese": null,
+    "Korean": null,
+    "Portuguese (Brazil)": null,
+    "Russian": null,
+    "Spanish": "Unhinged"
+   },
+   "type": "funny"
+  }
+ },
+ "meta": {
+  "date": "2026-09-03",
+  "version": "5.3.0"
+ }
+}
