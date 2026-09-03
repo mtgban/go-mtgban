@@ -2,6 +2,7 @@ package lorcana
 
 import (
 	"maps"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -24,16 +25,82 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// Gloves Off - and splitting those looked up the bare name instead, so
 	// the errata printing was unreachable even when a listing spelled it out
 	// exactly and answered with the original standing at the same number.
-	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
-		return
-	}
-	if strings.Contains(inCard.Name, "(") {
+	_, canonical := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]
+	if !canonical && strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
 			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
+	adoptQualifiedName(b, inCard)
+}
+
+// qualifiedNameRe matches the trailing parenthetical the catalog keeps inside
+// a name instead of distilling it into a label of its own.
+var qualifiedNameRe = regexp.MustCompile(`\s*\(([^()]*)\)$`)
+
+// adoptQualifiedName adopts the catalog's decorated spelling of a name the
+// storefront wrote bare, where the wording says which decoration it means.
+//
+// Candidates are gathered by name, so a listing writing the bare name can
+// never reach a printing the catalog files with its qualifier inside it. The
+// Errata Version of Bucky, Squirrel Squeak Tutor stands at the same number as
+// the original, and Cool Stuff Inc sells both under one name, telling them
+// apart in a note - "3-Cost Errata, Foil No Ward" against "2-Cost w/ Ward".
+// The errata row answered with the original and was served as its price.
+//
+// The qualifier is what licenses the swap, and three things keep it narrow.
+// The number must be written, so the set and the printing are named rather
+// than guessed. The wording must state a word of the qualifier, so a listing
+// silent about it keeps the bare name the catalog also holds at that number.
+// And two decorated siblings state nothing between them, so they refuse
+// instead of choosing.
+func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	number := extractNumber(inCard.Variation)
+	if number == "" {
+		return
+	}
+	set, err := b.GetSetByName(inCard.Edition)
+	if err != nil || set == nil {
+		return
+	}
+
+	wording := strings.ToLower(inCard.Variation)
+	var adopt string
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		match := qualifiedNameRe.FindStringSubmatchIndex(card.Name)
+		if match == nil || card.Number != number ||
+			!mtgmatcher.Equals(card.Name[:match[0]], inCard.Name) {
+			continue
+		}
+		if !statesQualifier(wording, card.Name[match[2]:match[3]]) {
+			continue
+		}
+		if adopt != "" && !mtgmatcher.Equals(adopt, card.Name) {
+			return
+		}
+		adopt = card.Name
+	}
+	if adopt != "" {
+		inCard.Name = adopt
+	}
+}
+
+// statesQualifier reports whether the wording names the qualifier, which is
+// any word of it the wording repeats. The short words are skipped: those are
+// the ones a note carries for reasons of its own.
+func statesQualifier(wording, qualifier string) bool {
+	for _, word := range strings.Fields(strings.ToLower(qualifier)) {
+		if len(word) < 4 {
+			continue
+		}
+		if strings.Contains(wording, word) {
+			return true
+		}
+	}
+	return false
 }
 
 // AdjustName provides a prefix fallback: scraper feeds sometimes truncate the
