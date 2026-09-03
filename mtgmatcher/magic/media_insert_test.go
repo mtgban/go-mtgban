@@ -29,9 +29,34 @@ func TestMediaInsertReprints(t *testing.T) {
 		// language is all that tells the two printings apart. Counterspell
 		// and Disenchant carry a case of their own elsewhere for unrelated
 		// promos, which is why the rule is not written as a case.
+		{"Crop Rotation", "42", "2020-7", "2025-9"},
+		{"Counterspell", "44", "2021-1", "2025-15"},
+		{"Bone Shredder", "45", "2021-2", "2025-16"},
+		{"Disenchant", "", "2022-1", "2025-17"},
+		{"Wild Growth", "", "2022-2", "2026-2"},
+		{"Frantic Search", "", "2022-4", "2026-20"},
+		{"Worn Powerstone", "", "2023-2", "2026-21"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			assertMediaInsert(t, tt.name, tt.marker, tt.japanese, tt.english)
+		})
+	}
+
+	// The volumes whose English reprint has not landed: the number a
+	// listing writes still reaches the Japanese printing, and so does one
+	// writing nothing, there being no other.
+	for _, tt := range []struct {
+		name, marker, japanese string
+	}{
+		{"Avalanche Riders", "55", "2023-5"},
+		{"Culling the Weak", "57", "2023-8"},
+		{"Snuff Out", "1", "2024-1"},
+		{"Gush", "1", "2024-4"},
+		{"Ancestral Mask", "1", "2025-2"},
+		{"Wrath of God", "1", "2025-3"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			assertMediaInsert(t, tt.name, tt.marker, tt.japanese, tt.japanese)
 		})
 	}
 
