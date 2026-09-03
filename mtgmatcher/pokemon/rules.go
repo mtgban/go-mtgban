@@ -54,6 +54,14 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
+	// A name the catalog misspells and the datastore corrects, respelled
+	// before anything below reads it: the tail strip and the decoration
+	// split both work on a name they can find, and neither can find this
+	// one until it is spelled the way the datastore carries it.
+	if carried, found := normalizedRespellings()[mtgmatcher.Normalize(inCard.Name)]; found {
+		inCard.Name = carried
+		return
+	}
 	stripStorefrontTails(b, inCard)
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return

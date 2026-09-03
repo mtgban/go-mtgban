@@ -113,6 +113,36 @@ var normalizedEditionAliases = sync.OnceValue(func() map[string]string {
 	return aliases
 })
 
+// nameRespellings pair a name the catalog spells one way with the name the
+// datastore carries. The datastore corrects four names TCGplayer misspells
+// - each one contradicted by the catalog's own spelling elsewhere, 59
+// products saying "Exeggutor" against one saying "Exeggcutor" - and a
+// storefront copying the catalog goes on writing the misspelling, so the
+// pair is what lets it still reach the card.
+//
+// Impostor Professor Oak is deliberately absent. Wizards printed the Base
+// Set card "Impostor" and the Base Set 2 and Celebrations reprints
+// "Imposter", so both spellings name real cards and a pair rewriting one
+// into the other would send those reprints to the wrong printing.
+//
+// Read in one direction only. The corrected name resolves on its own, and
+// pairing it back would offer the matcher a name no entry carries.
+var nameRespellings = map[string]string{
+	"Dark Exeggcutor": "Dark Exeggutor",
+	"Drowsee":         "Drowzee",
+	"Team Galactic's Invention G-107 Technical Mach. G": "Team Galactic's Invention G-107 Technical Machine G",
+}
+
+// normalizedRespellings indexes that table the way a name arrives, so the
+// punctuation and casing a storefront writes never decide.
+var normalizedRespellings = sync.OnceValue(func() map[string]string {
+	spellings := make(map[string]string, len(nameRespellings))
+	for written, carried := range nameRespellings {
+		spellings[mtgmatcher.Normalize(written)] = carried
+	}
+	return spellings
+})
+
 // pooledEditions maps the storefront names spanning two of the catalog's
 // sets onto the pair: "Theme Deck & Blisters Exclusives" files what the
 // catalog splits into Blister Exclusives and Deck Exclusives, and a listing
