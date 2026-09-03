@@ -706,7 +706,8 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// finish and prize track, a Yu-Gi-Oh rarity - where One Piece spends
 		// it describing the artwork and Lorcana's changes no answer at all.
 		case GamePokemon:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: catalogTreatment(buylistVariation(product)), Foil: product.IsFoil == 1}
+			variation := catalogTreatment(buylistVariation(product))
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: pokemonPromoShelf(product, variation), Variation: variation, Foil: product.IsFoil == 1}
 		case GameRiftbound:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
 		// The rarity arrives in a field of its own here, where the sell
@@ -919,6 +920,37 @@ var csiTreatments = strings.NewReplacer(
 // storefront spells its own way, and leaves everything else as it stands.
 func catalogTreatment(variation string) string {
 	return csiTreatments.Replace(variation)
+}
+
+// pokemonPromoShelf answers the shelf a Pokemon listing belongs to, which is
+// the one it arrived on unless the catalog files the card as a promo.
+//
+// A promo carrying a main set's number is sold here under that set, with only
+// the rarity field saying otherwise: the Pokemon Day 2025 Eevee sits on SV
+// Prismatic Evolutions at 074/131, where that set's own Eevee already stands.
+// The two met there and a $2.50 promo was priced as the card it was stamped
+// from. The catalog keeps those on a promo shelf instead.
+//
+// The promo shelf only decides where it answers at all. Twenty of the fifty
+// listings this can reach name a printing no promo shelf holds - the Pokemon
+// Rumble cards, the holo promos that are their set's own foil - and those keep
+// the set they arrived on.
+func pokemonPromoShelf(product CSIPriceEntry, variation string) string {
+	if product.RarityName != "Promo" ||
+		strings.Contains(strings.ToLower(product.ItemSet), "promo") {
+		return product.ItemSet
+	}
+	probe := &mtgmatcher.InputCard{
+		Name:      product.Name,
+		Edition:   "Promo",
+		Variation: variation,
+		Foil:      product.IsFoil == 1,
+	}
+	_, err := mtgmatcher.Match(probe)
+	if err != nil {
+		return product.ItemSet
+	}
+	return "Promo"
 }
 
 // csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
