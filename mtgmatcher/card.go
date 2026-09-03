@@ -788,40 +788,6 @@ func (c *InputCard) PossibleNumberSuffix() string {
 	return ""
 }
 
-// RavnicaGuildKit returns which Guild Kit the listing names, by set name or set
-// code, or an empty string if it names none.
-func (c *InputCard) RavnicaGuildKit() string {
-	if !c.Contains("Guild Kit") {
-		return ""
-	}
-
-	if c.Contains("Guilds of Ravnica") || c.Contains("GRN") {
-		return "GRN Guild Kit"
-	}
-	if c.Contains("Ravnica Allegiance") || c.Contains("RNA") {
-		return "RNA Guild Kit"
-	}
-
-	if slices.ContainsFunc(GRNGuilds, c.Contains) {
-		return "GRN Guild Kit"
-	}
-	if slices.ContainsFunc(ARNGuilds, c.Contains) {
-		return "RNA Guild Kit"
-	}
-
-	if c.isBasicLand() {
-		return "Guild Kit"
-	}
-	if len(MatchInSet(c.Name, "GK1")) > 0 {
-		return "GRN Guild Kit"
-	}
-	if len(MatchInSet(c.Name, "GK2")) > 0 {
-		return "RNA Guild Kit"
-	}
-
-	return ""
-}
-
 // Contains reports whether either the edition or the variation contains the
 // property, ignoring case and punctuation. Prefer Contains(c.Variation, prop)
 // where an edition name would match every card printed in it.
