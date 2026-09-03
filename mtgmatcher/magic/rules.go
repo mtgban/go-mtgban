@@ -84,6 +84,41 @@ func ravnicaWeekend(c *mtgmatcher.InputCard) (string, string) {
 	return "", ""
 }
 
+// ravnicaGuildKit returns which Guild Kit the listing names, by set name or
+// set code, or an empty string if it names none. Moved from InputCard, where
+// the method served no caller but this file.
+func ravnicaGuildKit(c *mtgmatcher.InputCard) string {
+	if !c.Contains("Guild Kit") {
+		return ""
+	}
+
+	if c.Contains("Guilds of Ravnica") || c.Contains("GRN") {
+		return "GRN Guild Kit"
+	}
+	if c.Contains("Ravnica Allegiance") || c.Contains("RNA") {
+		return "RNA Guild Kit"
+	}
+
+	if slices.ContainsFunc(mtgmatcher.GRNGuilds, c.Contains) {
+		return "GRN Guild Kit"
+	}
+	if slices.ContainsFunc(mtgmatcher.ARNGuilds, c.Contains) {
+		return "RNA Guild Kit"
+	}
+
+	if isBasicLand(c) {
+		return "Guild Kit"
+	}
+	if len(mtgmatcher.MatchInSet(c.Name, "GK1")) > 0 {
+		return "GRN Guild Kit"
+	}
+	if len(mtgmatcher.MatchInSet(c.Name, "GK2")) > 0 {
+		return "RNA Guild Kit"
+	}
+
+	return ""
+}
+
 // mediaInsertOriginals are the cards given away with the Destroy All Humans
 // manga: a Japanese foil with each original volume, reprinted in English when
 // the volume was translated years later. Storefronts file both under one
@@ -264,7 +299,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	case inCard.Contains("Ravnica Weekend"):
 		edition, variation = ravnicaWeekend(inCard)
 	case inCard.Contains("Guild Kit"):
-		edition = inCard.RavnicaGuildKit()
+		edition = ravnicaGuildKit(inCard)
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
 		num := mtgmatcher.ExtractNumber(variation)
 		if num != "" {
