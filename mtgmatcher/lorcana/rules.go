@@ -19,6 +19,14 @@ type Rules struct{ mtgmatcher.DefaultRules }
 // canonical-name lookup. Unlike Magic it leaves " - " intact, since Lorcana
 // names are "Character - Title".
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	// A name that is itself canonical stays whole: two catalog names carry
+	// their qualifier inside them - the Errata Version of Bucky and of Elsa,
+	// Gloves Off - and splitting those looked up the bare name instead, so
+	// the errata printing was unreachable even when a listing spelled it out
+	// exactly and answered with the original standing at the same number.
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
+		return
+	}
 	if strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
 		if len(vars) > 1 {
