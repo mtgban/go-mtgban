@@ -193,7 +193,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return true
 		} else if err != nil {
-			if theCard.IsBasicLand() {
+			if mtgmatcher.IsBasicLand(theCard.Name) {
 				return true
 			}
 			ha.printf("%v in cardSet %s at page %d", err, cardSet, page)
@@ -292,7 +292,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				continue
 			} else if err != nil {
 				// Skip errors from lands, "misc" promos, and tokens
-				if theCard.IsBasicLand() ||
+				if mtgmatcher.IsBasicLand(theCard.Name) ||
 					strings.Contains(theCard.Edition, "The List") || // lots at set 280
 					strings.Contains(theCard.Edition, "Mystery Booster") || // lots at set 280
 					strings.Contains(product.ProductName, "Token") {

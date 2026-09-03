@@ -104,7 +104,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 			case strings.Contains(edition, "Mystery Booster"):
 			case strings.Contains(theCard.Variation, "Token"):
 			case mtgmatcher.IsToken(theCard.Name):
-			case theCard.IsBasicLand():
+			case mtgmatcher.IsBasicLand(theCard.Name):
 			default:
 				tnt.printf("%v", err)
 				tnt.printf("%q", theCard)
