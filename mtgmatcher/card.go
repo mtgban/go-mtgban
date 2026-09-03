@@ -111,58 +111,6 @@ func IsToken(name string) bool {
 // The vendor abbreviations in the clauses name the storefront whose wording
 // forced that clause: each is a real listing someone published.
 
-// IsUnsupported reports whether the listing is for something with no printing
-// at all behind it: art cards, memorabilia, misprint lots, sealed product and
-// the like.
-func (c *InputCard) IsUnsupported() bool {
-	return c.Contains("Art Series") ||
-		strings.HasSuffix(c.Edition, "Art Variants") || // toa
-		(c.Contains("Art Card") && !c.Contains("Chinese")) || // Art Series, except a well-known edition
-		c.Contains("Complete") || // a complete collection
-		c.Contains("Fallen Empires: Wyvern Misprints") ||
-		c.Contains("Ultra-Pro Puzzle") ||
-		c.Contains("Player Cards") || // scg pro players
-		c.Contains("Foreign White Border") || // for REV and 4ED
-		c.Contains("Filler Cards") || // Misprints from mkm and ct
-		c.Contains("Salvat") || // Salvat-Hachette 2005/2011
-		c.Contains("Redemption Program") || // PRES
-		c.Contains("Heroes of the Realm") || // HTR*
-		c.Contains("Memorabilia") ||
-		c.Contains("Front Card") || // Jumpstart
-		(c.Contains("Duel Masters") && c.Contains("Not Tournament Legal")) || // scg
-		c.Contains("Sealed") ||
-		c.Contains("Un-Known Event Playtest") ||
-		c.Contains("Charlie Brown") || // abu
-		// Oversized are usually ok, but 8th and 9th ed box topper variants
-		// conflict with the actual edition name, so skip them
-		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
-}
-
-// IsSpecificUnsupported reports the named cards unsupported only in one
-// edition or one misprint, rather than as a whole class.
-func (c *InputCard) IsSpecificUnsupported() bool {
-	switch c.Name {
-	case "Spined Wurm":
-		return Contains(c.Edition, "Starter 2000")
-	case "Drudge Skeletons",
-		"Emerald Medallion",
-		"Forest",
-		"Sapphire Medallion",
-		"Serra Angel",
-		"Time Elemental",
-		"Winged Sliver":
-		return c.Contains("Misprint")
-	// Erroneous release information
-	case "Zombify":
-		return c.Contains("Game Night")
-	default:
-		if Contains(c.Name, "Sticker Sheet") {
-			return true
-		}
-	}
-	return false
-}
-
 // IsBasicLand reports whether the name may represent a basic land.
 func IsBasicLand(name string) bool {
 	switch {
@@ -181,15 +129,6 @@ func IsBasicLand(name string) bool {
 		strings.HasPrefix(name, "Wastes"):
 		return true
 	case HasPrefix(name, "Snow-Covered"):
-		return true
-	}
-	return false
-}
-
-// More specific version of the above, for internal use only
-func (c *InputCard) isBasicLand() bool {
-	switch c.Name {
-	case "Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes":
 		return true
 	}
 	return false
@@ -219,12 +158,6 @@ func (c *InputCard) IsGenericPromo() bool {
 			c.Contains("Unique")) // mtgs
 }
 
-// IsGenericAltArt reports alternate art, matching Alternative as well as Alt.
-func (c *InputCard) IsGenericAltArt() bool {
-	// "Alt" includes Alternative
-	return c.Contains("Alt") && c.Contains("Art")
-}
-
 // IsPrerelease reports a prerelease printing; SCG spells it Preview.
 func (c *InputCard) IsPrerelease() bool {
 	return c.Contains("Prerelease") ||
@@ -240,17 +173,6 @@ func (c *InputCard) IsPromoPack() bool {
 		Contains(c.Variation, "Planeswalker Stamp") ||
 		Contains(c.Variation, "Silver Stamped") ||
 		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
-}
-
-// IsReskin reports a reskinned printing, named outright or by its Dracula or
-// Godzilla series. Basic lands are excluded so the Secret Lair Godzilla lands
-// stay ordinary lands.
-func (c *InputCard) IsReskin() bool {
-	return (Contains(c.Variation, "Reskin") ||
-		Contains(c.Variation, "Dracula") ||
-		Contains(c.Variation, "Godzilla")) &&
-		// Needed to distinguish the SLD godzilla lands
-		!c.isBasicLand()
 }
 
 // IsJPN reports a Japanese printing, by language or by the magazines that

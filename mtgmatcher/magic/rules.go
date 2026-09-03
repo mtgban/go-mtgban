@@ -17,7 +17,7 @@ type Rules struct{}
 // IsUnsupported reports the listings Magic has no printing for. See
 // mtgmatcher.GameRules.
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return inCard.IsUnsupported()
+	return isUnsupported(inCard)
 }
 
 // IsSpecificUnsupported reports the named cards unsupported in one edition
@@ -41,7 +41,7 @@ func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.Inp
 		!inCard.Contains("League") && !carriesTokens(b, inCard.Edition) {
 		return true
 	}
-	return inCard.IsSpecificUnsupported()
+	return isSpecificUnsupported(inCard)
 }
 
 // carriesTokens reports whether an edition names a set whose tokens the
@@ -341,7 +341,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		default:
 			// Decouple wrong SLX cards bundled in PLST, as long as they are not reprinted in PLST
 			// In that case we trust the source has been properly tagged and will be decoupled later
-			if !inCard.IsReskin() && len(b.MatchInSet(inCard.Name, "SLX")) != 0 && len(b.MatchInSet(inCard.Name, "PLST")) == 0 {
+			if !isReskin(inCard) && len(b.MatchInSet(inCard.Name, "SLX")) != 0 && len(b.MatchInSet(inCard.Name, "PLST")) == 0 {
 				edition = b.Sets["SLX"].Name
 			}
 		}
@@ -351,7 +351,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = b.Sets["PXTC"].Name
 
 	// BFZ Standard Series
-	case inCard.IsGenericAltArt() && len(b.MatchInSet(inCard.Name, "PSS1")) != 0:
+	case isGenericAltArt(inCard) && len(b.MatchInSet(inCard.Name, "PSS1")) != 0:
 		edition = b.Sets["PSS1"].Name
 
 	// Champs and States
@@ -402,7 +402,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
 	// Promo handling, but they are not set as such in scryfall
-	case (inCard.IsGenericPromo() || inCard.IsGenericAltArt()) && len(b.MatchInSet(inCard.Name, "PLS")) == 2:
+	case (inCard.IsGenericPromo() || isGenericAltArt(inCard)) && len(b.MatchInSet(inCard.Name, "PLS")) == 2:
 		edition = "PLS"
 		variation = "Alternate Art"
 
@@ -562,7 +562,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 		switch inCard.Name {
 		case "Rhox":
-			if inCard.IsGenericAltArt() || inCard.IsGenericPromo() {
+			if isGenericAltArt(inCard) || inCard.IsGenericPromo() {
 				edition = "Starter 2000"
 			}
 		case "Balduvian Horde":
@@ -722,7 +722,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				variation = "Launch"
 			}
 		case "Hangarback Walker":
-			if inCard.IsReskin() || inCard.IsGenericPromo() || strings.Contains(inCard.Edition, "LGS") {
+			if isReskin(inCard) || inCard.IsGenericPromo() || strings.Contains(inCard.Edition, "LGS") {
 				edition = "Love Your LGS 2020"
 			}
 		// Sometimes these cards are not marked as prerelease because they are showcase
@@ -2350,8 +2350,8 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// isBasicLand mirrors core's strict (exact-name) basic-land check for the
-// moved Magic logic; the core method is removed once all callers move.
+// isBasicLand is the strict, exact-name basic-land check, distinct from the
+// loose mtgmatcher.IsBasicLand the scrapers ask about raw listing names.
 func isBasicLand(c *mtgmatcher.InputCard) bool {
 	switch c.Name {
 	case "Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes":

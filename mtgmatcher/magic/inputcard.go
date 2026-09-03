@@ -261,7 +261,7 @@ func isPhyrexian(c *mtgmatcher.InputCard) bool {
 
 // isChineseAltArt reports the Chinese alternate art printings.
 func isChineseAltArt(c *mtgmatcher.InputCard) bool {
-	return (c.Contains("Chinese") || strings.Contains(c.Variation, "CS")) && c.IsGenericAltArt()
+	return (c.Contains("Chinese") || strings.Contains(c.Variation, "CS")) && isGenericAltArt(c)
 }
 
 // isBasicFullArt reports a full art basic land, refusing the negations that
@@ -385,7 +385,7 @@ func hasSecretLairTag(c *mtgmatcher.InputCard, code string) bool {
 		tag = c.Contains("Ultimate") || len(mtgmatcher.MatchInSet(c.Name, "SLU")) == 1
 	case "SLX":
 		// SLX only has plain cards, if they are reskinned, they are from SLD
-		tag = !c.IsReskin() || c.Contains("Within") || c.Contains("SLX")
+		tag = !isReskin(c) || c.Contains("Within") || c.Contains("SLX")
 	case "SLC":
 		// Some of these cards are numbered after the year they represent.
 		// The same numbers double as plain collector numbers in SLD (e.g.
@@ -442,4 +442,73 @@ func possibleNumberSuffix(c *mtgmatcher.InputCard) string {
 		}
 	}
 	return ""
+}
+
+// isReskin reports a reskinned printing, named outright or by its Dracula or
+// Godzilla series. Basic lands are excluded so the Secret Lair Godzilla lands
+// stay ordinary lands.
+func isReskin(c *mtgmatcher.InputCard) bool {
+	return (mtgmatcher.Contains(c.Variation, "Reskin") ||
+		mtgmatcher.Contains(c.Variation, "Dracula") ||
+		mtgmatcher.Contains(c.Variation, "Godzilla")) &&
+		// Needed to distinguish the SLD godzilla lands
+		!isBasicLand(c)
+}
+
+// isGenericAltArt reports alternate art, matching Alternative as well as Alt.
+func isGenericAltArt(c *mtgmatcher.InputCard) bool {
+	// "Alt" includes Alternative
+	return c.Contains("Alt") && c.Contains("Art")
+}
+
+// isUnsupported reports whether the listing is for something with no printing
+// at all behind it: art cards, memorabilia, misprint lots, sealed product and
+// the like.
+func isUnsupported(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Art Series") ||
+		strings.HasSuffix(c.Edition, "Art Variants") || // toa
+		(c.Contains("Art Card") && !c.Contains("Chinese")) || // Art Series, except a well-known edition
+		c.Contains("Complete") || // a complete collection
+		c.Contains("Fallen Empires: Wyvern Misprints") ||
+		c.Contains("Ultra-Pro Puzzle") ||
+		c.Contains("Player Cards") || // scg pro players
+		c.Contains("Foreign White Border") || // for REV and 4ED
+		c.Contains("Filler Cards") || // Misprints from mkm and ct
+		c.Contains("Salvat") || // Salvat-Hachette 2005/2011
+		c.Contains("Redemption Program") || // PRES
+		c.Contains("Heroes of the Realm") || // HTR*
+		c.Contains("Memorabilia") ||
+		c.Contains("Front Card") || // Jumpstart
+		(c.Contains("Duel Masters") && c.Contains("Not Tournament Legal")) || // scg
+		c.Contains("Sealed") ||
+		c.Contains("Un-Known Event Playtest") ||
+		c.Contains("Charlie Brown") || // abu
+		// Oversized are usually ok, but 8th and 9th ed box topper variants
+		// conflict with the actual edition name, so skip them
+		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
+}
+
+// isSpecificUnsupported reports the named cards unsupported only in one
+// edition or one misprint, rather than as a whole class.
+func isSpecificUnsupported(c *mtgmatcher.InputCard) bool {
+	switch c.Name {
+	case "Spined Wurm":
+		return mtgmatcher.Contains(c.Edition, "Starter 2000")
+	case "Drudge Skeletons",
+		"Emerald Medallion",
+		"Forest",
+		"Sapphire Medallion",
+		"Serra Angel",
+		"Time Elemental",
+		"Winged Sliver":
+		return c.Contains("Misprint")
+	// Erroneous release information
+	case "Zombify":
+		return c.Contains("Game Night")
+	default:
+		if mtgmatcher.Contains(c.Name, "Sticker Sheet") {
+			return true
+		}
+	}
+	return false
 }
