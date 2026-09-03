@@ -273,38 +273,8 @@ var setCodePrefixRe = regexp.MustCompile(`^[A-Za-z]+-?[0-9]+(?:-[A-Za-z]+[0-9]+)
 // being asked for before FilterCards ever tiers the candidates, pricing a
 // promo as the base common. The edition still reaches the tiering as
 // wording, so it goes on describing a variant rather than selecting one.
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := strings.TrimSpace(inCard.Edition)
-	for _, prefix := range []string{"One Piece Card Game", "One Piece TCG", "One Piece"} {
-		if strings.HasPrefix(edition, prefix) {
-			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
-			break
-		}
-	}
-	// The code the prefix spells is the storefront saying which set it
-	// means, and it survives the trim: it is the only thing telling the
-	// members of a set family apart once the shared name is all that is
-	// left of the wording.
-	code := strings.Trim(setCodePrefixRe.FindString(edition), " -:")
-	edition = setCodePrefixRe.ReplaceAllString(edition, "")
-	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
-
-	// Storefronts spell a set's name their own way - dropping the ordinal
-	// out of "Starter Deck 1: Straw Hat Crew", writing "500 Years into the
-	// Future" for the set called "500 Years in the Future" - and a name
-	// that is neither equal to nor contained in the datastore's selects
-	// nothing at all. Snap it back to the set it describes when one set
-	// describes it better than every other, keeping any promo line in
-	// front so the event printings are still the ones being named.
-	prefix := promoLineRe.FindString(edition)
-	base := edition[len(prefix):]
-	if prefix == "" {
-		base = shelfLineRe.ReplaceAllString(base, "")
-	}
-	canon := canonicalEdition(b, base, code)
-	if canon != "" {
-		edition = prefix + canon
-	}
+func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	edition := r.AliasEdition(b, inCard.Edition)
 	// A wording abbreviating an event's name is the storefront saying which
 	// set the listing is in, however plainly its edition says the other one.
 	named := false
@@ -349,6 +319,43 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if variantPointedAt(b, inCard, named) {
 		inCard.PromoWildcard = true
 	}
+}
+
+// AliasEdition spells an edition string toward a set name using the string
+// alone. See mtgmatcher.GameRules.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = strings.TrimSpace(edition)
+	for _, prefix := range []string{"One Piece Card Game", "One Piece TCG", "One Piece"} {
+		if strings.HasPrefix(edition, prefix) {
+			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
+			break
+		}
+	}
+	// The code the prefix spells is the storefront saying which set it
+	// means, and it survives the trim: it is the only thing telling the
+	// members of a set family apart once the shared name is all that is
+	// left of the wording.
+	code := strings.Trim(setCodePrefixRe.FindString(edition), " -:")
+	edition = setCodePrefixRe.ReplaceAllString(edition, "")
+	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
+
+	// Storefronts spell a set's name their own way - dropping the ordinal
+	// out of "Starter Deck 1: Straw Hat Crew", writing "500 Years into the
+	// Future" for the set called "500 Years in the Future" - and a name
+	// that is neither equal to nor contained in the datastore's selects
+	// nothing at all. Snap it back to the set it describes when one set
+	// describes it better than every other, keeping any promo line in
+	// front so the event printings are still the ones being named.
+	prefix := promoLineRe.FindString(edition)
+	base := edition[len(prefix):]
+	if prefix == "" {
+		base = shelfLineRe.ReplaceAllString(base, "")
+	}
+	canon := canonicalEdition(b, base, code)
+	if canon != "" {
+		edition = prefix + canon
+	}
+	return edition
 }
 
 // eventSetNamed answers the event set a listing's wording names when its

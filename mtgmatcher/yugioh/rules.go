@@ -500,6 +500,21 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	spellNumber(b, inCard)
 }
 
+// AliasEdition spells an edition string toward a set name using the string
+// alone: the edition-only projection of AdjustEdition, whose sibling and
+// number inference needs a card to read. See mtgmatcher.GameRules.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = strings.TrimSpace(edition)
+	if named, found := namedSet(b, edition); found {
+		return named
+	}
+	edition = trimEditionDecorations(edition)
+	if named, found := namedSet(b, edition); found {
+		return named
+	}
+	return edition
+}
+
 // bareTailRe matches a collector number written without its set code, the
 // language infix and deck letter still on it: "ENF17".
 var bareTailRe = regexp.MustCompile(`^[A-Za-z]{1,4}[0-9]{1,3}$`)

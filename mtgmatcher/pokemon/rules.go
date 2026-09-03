@@ -295,7 +295,24 @@ func reprintedByYear(name, candidate string) bool {
 // decorate set names with, rewrites the names editionAliases carries, and
 // drops the headings that name no set of ours.
 func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := strings.TrimSpace(inCard.Edition)
+	edition := r.AliasEdition(b, inCard.Edition)
+	// The sequin holo printings are the General Mills cereal promos, which
+	// the catalog files in Miscellaneous Cards & Products under the promo
+	// set's own numbering. The promo set a sequin listing names carries
+	// only the plain printing, and landing there would file the sequin
+	// price under the plain product's uuid.
+	if mtgmatcher.SlugDescribes(inCard.Variation, "sequin") {
+		edition = "Miscellaneous Cards & Products"
+	}
+	inCard.Edition = edition
+
+	widenQualifiedName(b, inCard)
+}
+
+// AliasEdition spells an edition string toward a set name using the string
+// alone. See mtgmatcher.GameRules.
+func (r Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = strings.TrimSpace(edition)
 	for _, prefix := range []string{"Pokemon TCG", "Pokemon", "Pokémon"} {
 		if strings.HasPrefix(edition, prefix) {
 			trimmed := strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
@@ -320,7 +337,7 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	// longer ("SWSH03: Darkness Ablaze"); ask what the two have in common
 	// rather than leaving the edition to narrow nothing.
 	// The lookups here are the direct ones on purpose: GetSetByName asks
-	// the rules to adjust the edition, which is this function.
+	// the rules to alias the edition, which is this function.
 	if edition != "" {
 		_, known := b.NormalizedSets[mtgmatcher.Normalize(edition)]
 		if !known {
@@ -346,17 +363,7 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 		}
 	}
-	// The sequin holo printings are the General Mills cereal promos, which
-	// the catalog files in Miscellaneous Cards & Products under the promo
-	// set's own numbering. The promo set a sequin listing names carries
-	// only the plain printing, and landing there would file the sequin
-	// price under the plain product's uuid.
-	if mtgmatcher.SlugDescribes(inCard.Variation, "sequin") {
-		edition = "Miscellaneous Cards & Products"
-	}
-	inCard.Edition = edition
-
-	widenQualifiedName(b, inCard)
+	return edition
 }
 
 // widenQualifiedName adopts the qualified spelling of a name the catalog
