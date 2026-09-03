@@ -59,11 +59,29 @@ func TestPreprocess(t *testing.T) {
 			game: GameMagic,
 			product: GNProduct{
 				DisplayName: "Purphoros, Bronze-Blooded (PPTHB-150) - Theros Beyond Death Promos: (enchantment)",
-				ProductData: GNProductData{Set: "ppthb", SetName: "Theros Beyond Death Promos"},
+				ProductData: GNProductData{Set: "ppthb", CatalogSet: "Theros Beyond Death Promos"},
 			},
 			name:      "Purphoros, Bronze-Blooded",
 			edition:   "Theros Beyond Death Promos",
 			variation: "150 Promo Pack",
+		},
+		{
+			// The shelf label and the catalog's name for a set are two
+			// different fields, and only the second one names a set: this
+			// product is shelved under "Promo Pack: Theros Beyond Death",
+			// which the catalog knows nothing by.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName: "Archon of Sun's Grace (PPTHB-003) - Theros Beyond Death Promos",
+				ProductData: GNProductData{
+					Set:        "ppthb",
+					SetName:    "Promo Pack: Theros Beyond Death",
+					CatalogSet: "Theros Beyond Death Promos",
+				},
+			},
+			name:      "Archon of Sun's Grace",
+			edition:   "Theros Beyond Death Promos",
+			variation: "003 Promo Pack",
 		},
 		{
 			// The same shelf, where the number already carries the letter
@@ -71,7 +89,7 @@ func TestPreprocess(t *testing.T) {
 			game: GameMagic,
 			product: GNProduct{
 				DisplayName: "Atris, Oracle of Half-Truths (PPTHB-209P) - Theros Beyond Death Promos",
-				ProductData: GNProductData{Set: "ppthb", SetName: "Theros Beyond Death Promos"},
+				ProductData: GNProductData{Set: "ppthb", CatalogSet: "Theros Beyond Death Promos"},
 			},
 			name:      "Atris, Oracle of Half-Truths",
 			edition:   "Theros Beyond Death Promos",

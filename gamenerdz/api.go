@@ -60,9 +60,15 @@ type GNProduct struct {
 // GNProductData is the body of a product, apart from the envelope it arrives
 // in.
 type GNProductData struct {
-	Set     jsonflex.String `json:"set"`
-	SetName string          `json:"setName"`
-	Rarity  string          `json:"rarity"`
+	Set jsonflex.String `json:"set"`
+	// The two names a product body carries are not the same name. The
+	// camel-cased one is the shelf this storefront files the product on -
+	// "Promo Pack: Theros Beyond Death", "Prerelease Cards" - while the
+	// snake-cased one is the set the catalog knows it by. They part on a
+	// quarter of the feed, and only the second one names a set.
+	SetName    string `json:"setName"`
+	CatalogSet string `json:"set_name"`
+	Rarity     string `json:"rarity"`
 }
 
 // GNBuyVariant is one buylist offer on a product. The credit price arrives

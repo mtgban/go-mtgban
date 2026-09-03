@@ -96,7 +96,7 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 	// the plain reading is asked for first and the pack only when the
 	// catalog turns it down, which is what keeps a promo that is neither
 	// off a promo pack's printing.
-	shelf := product.ProductData.SetName
+	shelf := product.ProductData.CatalogSet
 	if !namesASet(edition) && namesASet(shelf) {
 		for _, variation := range []string{number, strings.TrimSpace(number + " " + packStamp)} {
 			probe := mtgmatcher.InputCard{
