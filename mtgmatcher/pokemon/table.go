@@ -122,6 +122,16 @@ var normalizedEditionAliases = sync.OnceValue(func() map[string]string {
 // nothing falls through to a global guess.
 var pooledEditions = map[string][]string{
 	"Theme Deck & Blisters Exclusives": {"Blister Exclusives", "Deck Exclusives"},
+
+	// The prize pack series written without the series word. The numbered
+	// spellings alias outright, because the series is in the wording and
+	// the set follows from it; the bare one cannot, for the reason the
+	// alias table records - the set files a holo sibling per series at one
+	// collector number, and an edition that resolves to a set picks one of
+	// them. A pool restricts without resolving: the siblings stay side by
+	// side and refuse, and the printings that merely share a number with
+	// some other set stop being reachable at all.
+	"Play! Pokémon Prize Pack Series": {"Prize Pack Series Cards"},
 }
 
 // normalizedPooledEditions indexes the pooled names the same way.

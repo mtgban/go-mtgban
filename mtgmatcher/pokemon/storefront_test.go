@@ -24,17 +24,25 @@ func TestPromoPseudoExpansionAlias(t *testing.T) {
 		{"mcdonald's collection names its promo set", mtgmatcher.InputCard{
 			Name: "Froakie", Edition: "McDonald's Collection 25th Anniversary", Variation: "022h Holo Promo | 022/025"},
 			"022-025_232336_holo"},
-		// The prize pack series and the SV promos are absent from the
-		// table on purpose: both sets file two products at one collector
-		// number - a holo sibling per series, and SV pairs only an id can
-		// tell apart - so an aliased edition turns a refusal into a coin
-		// flip. Replayed against the products whose TCGplayer id names
-		// the answer, the flip lands wrong for 69 of 260 SV products and
-		// 73 prize pack cards, so the edition stays unaliased and the
+		// The SV promos are absent from both tables on purpose: the set
+		// pairs printings only an id can tell apart, and replayed against
+		// the products whose TCGplayer id names the answer the flip lands
+		// wrong for 69 of 260, so the edition stays unresolved and the
 		// name refuses instead.
-		{"prize pack series refuses the sibling coin flip", mtgmatcher.InputCard{
+		//
+		// The prize pack series was out for the same reason and is back,
+		// pooled rather than aliased. Its siblings carry the treatment
+		// labels now - every one of the 130 numbers the set files more
+		// than one product at is told apart by a label - so restricting
+		// to the set no longer flips a coin. Replayed the same way over
+		// the whole set, the pool answers 937 right against 2 wrong where
+		// the unrestricted name managed 191 against 4, and the 4 it drops
+		// were printings in other sets entirely: a prize pack Zekrom ex
+		// priced as the Black Bolt one. Grotle is filed as a single
+		// product, so refusing it was never the sibling case anyway.
+		{"prize pack series reaches its own set", mtgmatcher.InputCard{
 			Name: "Grotle", Edition: "Play! Pokémon Prize Pack Series", Variation: "007 BRS 007"},
-			""},
+			"007-172_489316"},
 		{"sv black star refuses the sibling coin flip", mtgmatcher.InputCard{
 			Name: "Charizard ex", Edition: "SV Black Star Promos", Variation: "196 SVP 196"},
 			""},
