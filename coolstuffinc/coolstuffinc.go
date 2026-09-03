@@ -505,7 +505,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				} else if err != nil {
 					switch {
 					// Ignore expected misses
-					case theCard.IsBasicLand(),
+					case mtgmatcher.IsBasicLand(theCard.Name),
 						notes == "" && strings.Contains(edition, "The List"),
 						strings.Contains(notes, "Preorder"):
 					default:

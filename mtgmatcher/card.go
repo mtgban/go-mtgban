@@ -186,11 +186,6 @@ func IsBasicLand(name string) bool {
 	return false
 }
 
-// IsBasicLand reports whether the name is a basic land.
-func (c *InputCard) IsBasicLand() bool {
-	return IsBasicLand(c.Name)
-}
-
 // More specific version of the above, for internal use only
 func (c *InputCard) isBasicLand() bool {
 	switch c.Name {

@@ -2206,7 +2206,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 
 	// Move any single letter variation from name to beginning variation
-	if inCard.IsBasicLand() {
+	if mtgmatcher.IsBasicLand(inCard.Name) {
 		fields := strings.Fields(inCard.Name)
 		if len(fields) > 1 {
 			_, err := strconv.Atoi(strings.TrimPrefix(fields[1], "0"))
