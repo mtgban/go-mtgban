@@ -84,6 +84,33 @@ func ravnicaWeekend(c *mtgmatcher.InputCard) (string, string) {
 	return "", ""
 }
 
+// mediaInsertOriginals are the cards given away with the Destroy All Humans
+// manga: a Japanese foil with each original volume, reprinted in English when
+// the volume was translated years later. Storefronts file both under one
+// edition and tell them apart by the original's own number or by naming the
+// language.
+//
+// Only the original is named here. The reprint's number is not: it used to be
+// written down, and by the time anyone looked three of the five had moved, so
+// every English listing of Shock, Duress and Voltaic Key answered "unknown
+// variant". The edition alone reaches the reprint, being the only English
+// printing under it.
+var mediaInsertOriginals = map[string]struct {
+	// marker is the number a storefront writes for the original, from the
+	// old "Media Promos" numbering.
+	marker string
+	// number is the printing that number names.
+	number string
+	// idw is the comic insert's number, for the one card that had one.
+	idw string
+}{
+	"Diabolic Edict": {marker: "31", number: "2019-2"},
+	"Shock":          {marker: "32", number: "2019-3"},
+	"Duress":         {marker: "34", number: "2019-6", idw: "17"},
+	"Voltaic Key":    {marker: "35", number: "2020-1"},
+	"Dark Ritual":    {marker: "38", number: "2020-4"},
+}
+
 // AdjustEdition normalizes the edition a storefront published toward a set
 // name. See mtgmatcher.GameRules.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
@@ -457,6 +484,31 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 	// Single card mismatches
 	default:
+		// A card printed as a Japanese media insert and reprinted in English
+		// years later is one shape, not a dozen special cases: the original
+		// is named by its own number or by its language, and the reprint by
+		// neither. Written here rather than as a case apiece so that a new
+		// volume is a line in the table, and so that the names that already
+		// have a case of their own for something else do not need merging.
+		insert, isMediaInsert := mediaInsertOriginals[inCard.Name]
+		if isMediaInsert && inCard.IsIDWMagazineBook() {
+			edition = "Media and Collaboration Promos"
+			switch {
+			// Duress alone was also a comic insert, and a listing naming
+			// IDW means the comic rather than the manga.
+			case insert.idw != "" && inCard.Contains("IDW"):
+				edition = "IDW Comics Inserts"
+				variation = insert.idw
+			case (insert.marker != "" && strings.Contains(variation, insert.marker)) ||
+				inCard.IsJPN() || inCard.Language == "Japanese":
+				variation = insert.number
+			default:
+				// The reprint is the only English printing under this
+				// edition, so nothing more needs saying about it.
+				variation = ""
+			}
+		}
+
 		switch inCard.Name {
 		case "Rhox":
 			if inCard.IsGenericAltArt() || inCard.IsGenericPromo() {
@@ -636,61 +688,6 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			"Wizard's Rockets":
 			if inCard.IsBorderless() && !inCard.IsPrerelease() {
 				variation += " Prerelease"
-			}
-		case "Diabolic Edict":
-			if inCard.IsIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "31") || inCard.IsJPN() || inCard.Language == "Japanese" {
-					variation = "2019-2"
-				} else {
-					variation = "2024-5"
-				}
-			}
-		case "Shock":
-			if inCard.IsIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "32") || inCard.IsJPN() || inCard.Language == "Japanese" {
-					variation = "2019-3"
-				} else {
-					variation = "2025-1"
-				}
-			}
-		case "Duress":
-			if inCard.IsIDWMagazineBook() {
-				if inCard.Contains("IDW") {
-					edition = "IDW Comics Inserts"
-					variation = "17"
-				} else {
-					edition = "Media and Collaboration Promos"
-
-					if strings.Contains(variation, "34") || inCard.IsJPN() || inCard.Language == "Japanese" {
-						variation = "2019-6"
-					} else {
-						variation = "2025-7"
-					}
-				}
-			}
-		case "Voltaic Key":
-			if inCard.IsIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "35") || inCard.IsJPN() || inCard.Language == "Japanese" {
-					variation = "2020-1"
-				} else {
-					variation = "2025-4"
-				}
-			}
-		case "Dark Ritual":
-			if inCard.IsIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "38") || inCard.IsJPN() || inCard.Language == "Japanese" {
-					variation = "2020-4"
-				} else {
-					variation = "2025-8"
-				}
 			}
 		case "Arcbound Ravager":
 			if inCard.Contains("Qualifiers") || inCard.Contains("WMCQ") {
