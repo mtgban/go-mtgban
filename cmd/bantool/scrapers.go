@@ -165,6 +165,24 @@ func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
 		}
+
+		// The id map replaces the API crawl when present. Only Magic's is
+		// published today; the other games' arrive with the catalog
+		// publisher and will carry paths of their own.
+		idMapPath := os.Getenv("MTGJSON_MKMID_PATH")
+		if idMapPath != "" && game == cardmarket.GameMagic {
+			reader, err := openPath(idMapPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
+			if err != nil {
+				return nil, err
+			}
+			defer reader.Close()
+			idMap, err := cardmarket.LoadIDMap(reader)
+			if err != nil {
+				return nil, err
+			}
+			scraper.IDMap = idMap
+		}
+
 		return scraper, nil
 	}
 }
