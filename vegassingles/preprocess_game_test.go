@@ -258,6 +258,11 @@ func TestPreprocessOnePiece(t *testing.T) {
 		{"Hody Jones (020) (Alternate Art) (OP06-020) - Wings of the Captain Foil", "Hody Jones (020) (Alternate Art)", "OP06-020"},
 		{"Monkey.D.Luffy (Gen Con 2023) (P-037) - One Piece Promotion Cards Foil", "Monkey.D.Luffy (Gen Con 2023)", "P-037"},
 		{"Roronoa Zoro (OP11-016) - A Fist of Divine Speed Release Event Cards", "Roronoa Zoro", "OP11-016"},
+		// The code is stated twice on the printings this storefront says most
+		// about, and the name runs to the last of them: reading the first left
+		// the alternate art asking for the plain printing.
+		{"Roronoa Zoro (EB04-007) (Alternate Art) (EB04-007) - Adventure on Kami's Island Foil",
+			"Roronoa Zoro (EB04-007) (Alternate Art)", "EB04-007"},
 	} {
 		card, err := preprocessOnePiece(VSProduct{DisplayName: tt.display})
 		if err != nil {

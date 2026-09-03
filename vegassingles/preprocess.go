@@ -476,10 +476,17 @@ var onePieceCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
 // wording like (Alternate Art) or (Parallel) from it to pick the printing
 // the storefront is describing.
 func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
-	loc := onePieceCode.FindStringSubmatchIndex(product.DisplayName)
-	if loc == nil {
+	// The wording before the code is what the name keeps, so the code that
+	// ends it is the last one written rather than the first. This storefront
+	// states the code twice on the printings it says most about - "Roronoa
+	// Zoro (EB04-007) (Alternate Art) (EB04-007)" - and reading the first cut
+	// the name off before the qualifier, leaving the alternate art asking for
+	// the plain printing and priced as it.
+	all := onePieceCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
+	if all == nil {
 		return nil, errors.New("no card code in display name")
 	}
+	loc := all[len(all)-1]
 
 	return &mtgmatcher.InputCard{
 		Name:      strings.TrimSpace(product.DisplayName[:loc[0]]),
