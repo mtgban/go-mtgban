@@ -68,6 +68,7 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			inCard.AddToVariant(bracketed)
 		}
 	}
+	inCard.Variation = variantRespellings.Replace(inCard.Variation)
 	respellName(b, inCard)
 	adoptQualifiedName(b, inCard)
 }
@@ -243,6 +244,16 @@ func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // "Skull Knight #2", as the storefronts spell it instead. No catalog name
 // ends in the wording and 32 end in the mark, so the rewrite has one reading.
 var numberedNameRe = regexp.MustCompile(`\s+No\.?\s*([0-9]+)$`)
+
+// variantRespellings spells a decoration the way the catalog files it, for
+// the shorter form a storefront writes instead. The catalog calls a printing's
+// second artwork "Alternate Art"; Cool Stuff Inc brackets it "[Alt Art]", and
+// the short spelling named no label at all - nine of its cards asked for an
+// alternate art and were answered with the plain printing standing at the same
+// number and rarity, a $37.99 House Dragonmaid served as the $4.99 one.
+var variantRespellings = strings.NewReplacer(
+	"Alt Art", "Alternate Art",
+)
 
 // greekLetters spells the letters the catalog writes as words, "Falchion
 // Beta", and no catalog name carries the letter itself.
