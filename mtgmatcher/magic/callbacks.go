@@ -627,9 +627,9 @@ func variantInWatermark(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) boo
 
 // Foil-only-booster cards, non-special version has both foil and non-foil
 func altArtCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsGenericAltArt() && !strings.HasSuffix(card.Number, SuffixSpecial) {
+	if isGenericAltArt(inCard) && !strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
-	} else if !inCard.IsGenericAltArt() && strings.HasSuffix(card.Number, SuffixSpecial) {
+	} else if !isGenericAltArt(inCard) && strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
 	}
 	return false
@@ -785,9 +785,9 @@ func starterDeckCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 
 // Japanese Planeswalkers
 func japaneseCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if (inCard.IsJPN() || inCard.IsGenericAltArt()) && card.Language != LanguageJapanese {
+	if (inCard.IsJPN() || isGenericAltArt(inCard)) && card.Language != LanguageJapanese {
 		return true
-	} else if !inCard.IsJPN() && !inCard.IsGenericAltArt() && card.Language == LanguageJapanese {
+	} else if !inCard.IsJPN() && !isGenericAltArt(inCard) && card.Language == LanguageJapanese {
 		return true
 	}
 	return false
@@ -1138,18 +1138,18 @@ func extendedartCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 // IKO-Style cards with different names
 func reskinGodzillaCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// Also some providers do not tag Japanese-only Godzilla cards as such
-	if inCard.IsReskin() && !card.HasPromoType(PromoTypeGodzilla) {
+	if isReskin(inCard) && !card.HasPromoType(PromoTypeGodzilla) {
 		return true
-	} else if !inCard.IsReskin() && !inCard.BeyondBaseSet && card.HasPromoType(PromoTypeGodzilla) {
+	} else if !isReskin(inCard) && !inCard.BeyondBaseSet && card.HasPromoType(PromoTypeGodzilla) {
 		return true
 	}
 	return false
 }
 
 func reskinDraculaCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsReskin() && !card.HasPromoType(PromoTypeDracula) {
+	if isReskin(inCard) && !card.HasPromoType(PromoTypeDracula) {
 		return true
-	} else if !inCard.IsReskin() && !inCard.BeyondBaseSet && card.HasPromoType(PromoTypeDracula) {
+	} else if !isReskin(inCard) && !inCard.BeyondBaseSet && card.HasPromoType(PromoTypeDracula) {
 		return true
 	}
 	return false
@@ -1160,9 +1160,9 @@ func reskinRenameCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 	if mtgmatcher.ExtractNumber(inCard.Variation) != "" || card.FlavorName == "" {
 		return false
 	}
-	if inCard.IsReskin() && !mtgmatcher.Contains(inCard.OriginalName, card.FlavorName) {
+	if isReskin(inCard) && !mtgmatcher.Contains(inCard.OriginalName, card.FlavorName) {
 		return true
-	} else if !inCard.IsReskin() && mtgmatcher.Contains(inCard.OriginalName, card.FlavorName) {
+	} else if !isReskin(inCard) && mtgmatcher.Contains(inCard.OriginalName, card.FlavorName) {
 		return true
 	}
 	return false
