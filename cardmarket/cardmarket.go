@@ -515,6 +515,57 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	return ""
 }
 
+// resolveMagic answers a product with the printings its two price columns
+// belong to. An empty id under a nil error means the product names nothing
+// this datastore carries, which is a skip rather than a failure.
+func (mkm *Index) resolveMagic(product *MKMProduct) (string, string, error) {
+	// An exact mcmId match ties the product to its printings more
+	// reliably than name/number matching, which cannot tell apart
+	// products sharing a collector number (e.g. RVR 312 vs 312z,
+	// both "312" upstream); preprocess only when no id is known.
+	cardID, cardIDFoil := Fallback(product)
+	if cardID != "" {
+		return cardID, cardIDFoil, nil
+	}
+
+	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
+	if err != nil {
+		_, ok := err.(*PreprocessError)
+		if ok {
+			return "", "", err
+		}
+		return "", "", nil
+	}
+
+	cardID, err = mtgmatcher.Match(theCard)
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return "", "", nil
+	} else if err != nil {
+		if mtgmatcher.IsToken(theCard.Name) ||
+			theCard.Edition == "Pro Tour Collector Set" ||
+			strings.HasPrefix(theCard.Edition, "World Championship Decks") {
+			return "", "", nil
+		}
+
+		mkm.printf("%v", err)
+		mkm.printf("%q", theCard)
+		mkm.printf("%v | %v | %v ", product.Name, product.ExpansionName, product.Number)
+
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
+			probes := alias.Probe()
+			for _, probe := range probes {
+				card, _ := mtgmatcher.GetUUID(probe)
+				mkm.printf("- %s", card)
+			}
+		}
+		return "", "", err
+	}
+
+	cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
+	return cardID, cardIDFoil, nil
+}
+
 func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduct) error {
 	var cardID string
 	var cardIDFoil string
@@ -523,50 +574,10 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 
 	switch mkm.gameID {
 	case GameMagic:
-		// An exact mcmId match ties the product to its printings more
-		// reliably than name/number matching, which cannot tell apart
-		// products sharing a collector number (e.g. RVR 312 vs 312z,
-		// both "312" upstream); preprocess only when no id is known.
-		cardID, cardIDFoil = Fallback(product)
-		if cardID != "" {
-			break
-		}
-
-		theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
-		if err != nil {
-			_, ok := err.(*PreprocessError)
-			if ok {
-				return err
-			}
-			return nil
-		}
-
-		cardID, err = mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			return nil
-		} else if err != nil {
-			if mtgmatcher.IsToken(theCard.Name) ||
-				theCard.Edition == "Pro Tour Collector Set" ||
-				strings.HasPrefix(theCard.Edition, "World Championship Decks") {
-				return nil
-			}
-
-			mkm.printf("%v", err)
-			mkm.printf("%q", theCard)
-			mkm.printf("%v | %v | %v ", product.Name, product.ExpansionName, product.Number)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					mkm.printf("- %s", card)
-				}
-			}
+		cardID, cardIDFoil, err = mkm.resolveMagic(product)
+		if err != nil || cardID == "" {
 			return err
 		}
-
-		cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
 	case GameLorcana, GameRiftbound, GameOnePiece:
 		// One Piece sells one card under several printings that share a
 		// collector number - the alternate arts a V-index stands in for,
@@ -699,6 +710,13 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 		return errors.New("unsupported game")
 	}
 
+	return mkm.emitPrices(channel, product, cardID, cardIDFoil, byName)
+}
+
+// emitPrices lands a product's guide prices on the printings resolved for
+// it, the plain columns on one and the foil columns on the other, in the
+// games that split them.
+func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, cardID, cardIDFoil string, byName bool) error {
 	// Look for the price presence
 	guide, found := mkm.priceGuide[product.IDProduct]
 	if !found {
