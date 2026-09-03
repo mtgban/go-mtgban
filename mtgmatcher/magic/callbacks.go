@@ -58,7 +58,7 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypeSChineseAltArt,
 		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsChineseAltArt()
+			return isChineseAltArt(inCard)
 		},
 	},
 	{
@@ -103,7 +103,7 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypeSurgeFoil,
 		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsSurgeFoil()
+			return isSurgeFoil(inCard)
 		},
 	},
 	{
@@ -116,7 +116,7 @@ var promoTypeElements = []promoTypeElement{
 			if inCard.Contains("Concept") {
 				return true
 			}
-			if inCard.IsBorderless() && mtgmatcher.HasPrinting(inCard.Name, "promo_type", PromoTypeConcept) {
+			if isBorderless(inCard) && mtgmatcher.HasPrinting(inCard.Name, "promo_type", PromoTypeConcept) {
 				return true
 			}
 			return false
@@ -125,7 +125,7 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypeOilSlick,
 		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsOilSlick()
+			return isOilSlick(inCard)
 		},
 	},
 	{
@@ -140,7 +140,7 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypeSerialized,
 		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsSerialized()
+			return isSerialized(inCard)
 		},
 	},
 	{
@@ -504,9 +504,9 @@ func listEditionCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 }
 
 func phyrexianCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsPhyrexian() && card.Language != LanguagePhyrexian {
+	if isPhyrexian(inCard) && card.Language != LanguagePhyrexian {
 		return true
-	} else if !inCard.IsPhyrexian() && card.Language == LanguagePhyrexian {
+	} else if !isPhyrexian(inCard) && card.Language == LanguagePhyrexian {
 		return true
 	}
 	return false
@@ -514,9 +514,9 @@ func phyrexianCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 
 // Handle full vs nonfull art basic land
 func fullartCheckForBasicLands(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsBasicFullArt() && !card.IsFullArt {
+	if isBasicFullArt(inCard) && !card.IsFullArt {
 		return true
-	} else if inCard.IsBasicNonFullArt() && card.IsFullArt {
+	} else if isBasicNonFullArt(inCard) && card.IsFullArt {
 		return true
 	}
 	return false
@@ -552,9 +552,9 @@ func lotrTripleFiltering(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bo
 }
 
 func lightDarkManaCost(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsARNLightMana() && !strings.HasSuffix(card.Number, SuffixVariant) {
+	if isARNLightMana(inCard) && !strings.HasSuffix(card.Number, SuffixVariant) {
 		return true
-	} else if (inCard.IsARNDarkMana() || inCard.Variation == "") && strings.HasSuffix(card.Number, SuffixVariant) {
+	} else if (isARNDarkMana(inCard) || inCard.Variation == "") && strings.HasSuffix(card.Number, SuffixVariant) {
 		return true
 	}
 	return false
@@ -666,16 +666,16 @@ func etchedCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if inCard.IsEtched() && !card.HasFinish(mtgmatcher.FinishEtched) {
 		return true
 		// Some thick display cards are not marked as etched
-	} else if !inCard.IsEtched() && !inCard.IsThickDisplay() && card.HasFinish(mtgmatcher.FinishEtched) {
+	} else if !inCard.IsEtched() && !isThickDisplay(inCard) && card.HasFinish(mtgmatcher.FinishEtched) {
 		return true
 	}
 	return false
 }
 
 func thickDisplayCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsThickDisplay() && !card.HasPromoType(PromoTypeThickDisplay) {
+	if isThickDisplay(inCard) && !card.HasPromoType(PromoTypeThickDisplay) {
 		return true
-	} else if !inCard.IsThickDisplay() && card.HasPromoType(PromoTypeThickDisplay) {
+	} else if !isThickDisplay(inCard) && card.HasPromoType(PromoTypeThickDisplay) {
 		return true
 	}
 	return false
@@ -718,9 +718,9 @@ func deckmastersVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) boo
 
 // Variants related to flavor text presence
 func portalDemoGame(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsPortalAlt() && !strings.HasSuffix(card.Number, SuffixVariant) && !strings.HasSuffix(card.Number, "d") {
+	if isPortalAlt(inCard) && !strings.HasSuffix(card.Number, SuffixVariant) && !strings.HasSuffix(card.Number, "d") {
 		return true
-	} else if !inCard.IsPortalAlt() && (strings.HasSuffix(card.Number, SuffixVariant) || strings.HasSuffix(card.Number, "d")) {
+	} else if !isPortalAlt(inCard) && (strings.HasSuffix(card.Number, SuffixVariant) || strings.HasSuffix(card.Number, "d")) {
 		return true
 	}
 	return false
@@ -753,7 +753,7 @@ func variantInCommanderDeck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card)
 	// Only check when cards do have alts, as some vendors use the
 	// Variation field for unnecessary info for unrelated cards
 	// Skip EA because it does not need this deduplication
-	if !inCard.IsExtendedArt() && !inCard.IsEtched() && hasAlternate {
+	if !isExtendedArt(inCard) && !inCard.IsEtched() && hasAlternate {
 		if inCard.Variation == "" && card.IsAlternative {
 			return true
 		} else if inCard.Variation != "" && !card.IsAlternative {
@@ -831,17 +831,17 @@ func attractionVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 	switch card.Name {
 	case "Space Beleren",
 		"Comet, Stellar Pup":
-		if inCard.IsBorderless() && !inCard.IsGalaxyFoil() {
+		if isBorderless(inCard) && !isGalaxyFoil(inCard) {
 			if card.HasPromoType(PromoTypeGalaxyFoil) {
 				return true
 			}
-		} else if inCard.IsGalaxyFoil() && !inCard.IsBorderless() {
+		} else if isGalaxyFoil(inCard) && !isBorderless(inCard) {
 			if card.BorderColor == BorderColorBorderless {
 				return true
 			}
 		}
 	default:
-		if !inCard.IsBorderless() && !inCard.IsGalaxyFoil() &&
+		if !isBorderless(inCard) && !isGalaxyFoil(inCard) &&
 			slices.Contains(card.Types, "Land") &&
 			card.BorderColor == BorderColorBorderless &&
 			card.HasPromoType(PromoTypeGalaxyFoil) {
@@ -895,9 +895,9 @@ func animeCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 }
 
 func serialCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsSerialized() && !card.HasPromoType(PromoTypeSerialized) {
+	if isSerialized(inCard) && !card.HasPromoType(PromoTypeSerialized) {
 		return true
-	} else if !inCard.IsSerialized() && card.HasPromoType(PromoTypeSerialized) {
+	} else if !isSerialized(inCard) && card.HasPromoType(PromoTypeSerialized) {
 		return true
 	}
 	return false
@@ -937,11 +937,11 @@ func foilMisprint(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 
 	switch card.Name {
 	case "Temple of Abandon":
-		if inCard.IsExtendedArt() || strings.HasPrefix(maybeNumber, "347") {
+		if isExtendedArt(inCard) || strings.HasPrefix(maybeNumber, "347") {
 			return !strings.HasSuffix(card.Number, SuffixSpecial)
 		}
 	case "Strict Proctor":
-		if !inCard.IsExtendedArt() || strings.HasPrefix(maybeNumber, "33") {
+		if !isExtendedArt(inCard) || strings.HasPrefix(maybeNumber, "33") {
 			return !strings.HasSuffix(card.Number, SuffixSpecial)
 		}
 	case "Reflecting Pool":
@@ -1002,7 +1002,7 @@ func sldVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 		"Toxin Sliver",
 		"Virulent Sliver":
 		result := strings.HasSuffix(card.Number, SuffixPhiLow)
-		if inCard.IsStepAndCompleat() {
+		if isStepAndCompleat(inCard) {
 			result = !result
 		}
 		return result
@@ -1018,7 +1018,7 @@ func sldVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	case "Okaun, Eye of Chaos",
 		"Zndrsplt, Eye of Wisdom":
 		result := strings.HasSuffix(card.Number, SuffixSpecial)
-		if inCard.IsThickDisplay() {
+		if isThickDisplay(inCard) {
 			result = !result
 		}
 		return result
@@ -1108,28 +1108,28 @@ func lubuPrereleaseVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) 
 }
 
 func borderlessCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsBorderless() && card.BorderColor != BorderColorBorderless {
+	if isBorderless(inCard) && card.BorderColor != BorderColorBorderless {
 		return true
-	} else if !inCard.IsBorderless() && card.BorderColor == BorderColorBorderless && !card.HasFrameEffect(FrameEffectShowcase) {
+	} else if !isBorderless(inCard) && card.BorderColor == BorderColorBorderless && !card.HasFrameEffect(FrameEffectShowcase) {
 		return true
 	}
 	return false
 }
 
 func showcaseCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsShowcase() && !card.HasFrameEffect(FrameEffectShowcase) {
+	if isShowcase(inCard) && !card.HasFrameEffect(FrameEffectShowcase) {
 		return true
-	} else if !inCard.IsShowcase() && card.HasFrameEffect(FrameEffectShowcase) {
+	} else if !isShowcase(inCard) && card.HasFrameEffect(FrameEffectShowcase) {
 		return true
 	}
 	return false
 }
 
 func extendedartCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if inCard.IsExtendedArt() && !card.HasFrameEffect(FrameEffectExtendedArt) {
+	if isExtendedArt(inCard) && !card.HasFrameEffect(FrameEffectExtendedArt) {
 		return true
 		// BaB are allowed to have extendedart
-	} else if !inCard.IsExtendedArt() && card.HasFrameEffect(FrameEffectExtendedArt) && !card.HasPromoType(PromoTypeBuyABox) {
+	} else if !isExtendedArt(inCard) && card.HasFrameEffect(FrameEffectExtendedArt) && !card.HasPromoType(PromoTypeBuyABox) {
 		return true
 	}
 	return false
@@ -1243,7 +1243,7 @@ func duplicateSomeFoil(inCard *mtgmatcher.InputCard) []string {
 }
 
 func duplicateBasicLands(inCard *mtgmatcher.InputCard) []string {
-	if inCard.IsBasicNonFullArt() {
+	if isBasicNonFullArt(inCard) {
 		return []string{"a"}
 	}
 	return nil
@@ -1257,11 +1257,11 @@ func duplicateJPNPlaneswalkers(inCard *mtgmatcher.InputCard) []string {
 }
 
 func duplicateSLD(inCard *mtgmatcher.InputCard) []string {
-	if inCard.IsStepAndCompleat() {
+	if isStepAndCompleat(inCard) {
 		return []string{SuffixPhiLow, ""}
 	}
 
-	if inCard.IsEtched() || inCard.IsThickDisplay() || inCard.Foil {
+	if inCard.IsEtched() || isThickDisplay(inCard) || inCard.Foil {
 		return []string{SuffixSpecial, ""}
 	}
 

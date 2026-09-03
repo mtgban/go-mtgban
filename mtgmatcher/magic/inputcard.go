@@ -196,3 +196,107 @@ func isDuelsOfThePW(c *mtgmatcher.InputCard) bool {
 		strings.Contains(c.Edition, "Duels") ||
 		mtgmatcher.Contains(c.Variation, "DotP") // tat
 }
+
+// isBorderless reports a borderless printing, from the variation only.
+func isBorderless(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "Borderless")
+}
+
+// isShowcase reports a showcase frame; binderpos storefronts say Sketch.
+func isShowcase(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "Showcase") ||
+		mtgmatcher.Contains(c.Variation, "Sketch") // binderpos
+}
+
+// isExtendedArt reports extended art, from the variation only.
+func isExtendedArt(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "Extended")
+}
+
+// isGenericExtendedArt reports extended or full art, from the variation only.
+func isGenericExtendedArt(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "Art") &&
+		(mtgmatcher.Contains(c.Variation, "Extended") ||
+			mtgmatcher.Contains(c.Variation, "Full"))
+}
+
+// isThickDisplay reports the thick display commander cards.
+func isThickDisplay(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Display") || c.Contains("Thick")
+}
+
+// isSerialized reports a serialized printing, in either field.
+func isSerialized(c *mtgmatcher.InputCard) bool {
+	return strings.Contains(strings.ToLower(c.Variation), "serial") ||
+		strings.Contains(strings.ToLower(c.Edition), "serial")
+}
+
+// isGalaxyFoil reports the galaxy foiling.
+func isGalaxyFoil(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "Galaxy")
+}
+
+// isSurgeFoil reports the surge foiling, in either field.
+func isSurgeFoil(c *mtgmatcher.InputCard) bool {
+	return strings.Contains(strings.ToLower(c.Variation), "surge") ||
+		strings.Contains(strings.ToLower(c.Edition), "surge")
+}
+
+// isOilSlick reports the oil slick foiling, in either field.
+func isOilSlick(c *mtgmatcher.InputCard) bool {
+	return strings.Contains(strings.ToLower(c.Variation), "slick") ||
+		strings.Contains(strings.ToLower(c.Edition), "slick")
+}
+
+// isStepAndCompleat reports the step-and-compleat foiling.
+func isStepAndCompleat(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "Compleat")
+}
+
+// isPhyrexian reports a Phyrexian language printing.
+func isPhyrexian(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "Phyrexian")
+}
+
+// isChineseAltArt reports the Chinese alternate art printings.
+func isChineseAltArt(c *mtgmatcher.InputCard) bool {
+	return (c.Contains("Chinese") || strings.Contains(c.Variation, "CS")) && c.IsGenericAltArt()
+}
+
+// isBasicFullArt reports a full art basic land, refusing the negations that
+// storefronts write in the same field.
+func isBasicFullArt(c *mtgmatcher.InputCard) bool {
+	return isBasicLand(c) &&
+		(mtgmatcher.Contains(c.Variation, "full art") ||
+			c.Variation == "FA") && // csi
+		!mtgmatcher.Contains(c.Variation, "non") &&
+		!mtgmatcher.Contains(c.Variation, "not") // csi
+}
+
+// isBasicNonFullArt reports a basic land explicitly marked as not full art.
+func isBasicNonFullArt(c *mtgmatcher.InputCard) bool {
+	return isBasicLand(c) &&
+		mtgmatcher.Contains(c.Variation, "non-full art") ||
+		mtgmatcher.Contains(c.Variation, "Intro") || // abu
+		mtgmatcher.Contains(c.Variation, "NOT the full art") // csi
+}
+
+// isPortalAlt reports the Portal alternates, which differ by carrying reminder
+// text or by lacking flavor text.
+func isPortalAlt(c *mtgmatcher.InputCard) bool {
+	return (mtgmatcher.Contains(c.Variation, "Reminder Text") &&
+		!mtgmatcher.Contains(c.Variation, "No")) ||
+		mtgmatcher.Contains(c.Variation, "No Flavor Text") || // csi
+		mtgmatcher.Contains(c.Variation, "Without Flavor Text") // csi
+}
+
+// isARNDarkMana reports the dark mana symbol variant of Arabian Nights.
+func isARNDarkMana(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "dark")
+}
+
+// isARNLightMana reports the light mana symbol variant of Arabian Nights,
+// which some storefronts mark with a dagger instead of a word.
+func isARNLightMana(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Variation, "light") || strings.Contains(c.Variation, "†")
+}

@@ -355,7 +355,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = b.Sets["PSS1"].Name
 
 	// Champs and States
-	case inCard.IsGenericExtendedArt() && len(b.MatchInSet(inCard.Name, "PCMP")) != 0:
+	case isGenericExtendedArt(inCard) && len(b.MatchInSet(inCard.Name, "PCMP")) != 0:
 		edition = b.Sets["PCMP"].Name
 
 	// Secret Lair {Ultimate,Drop}
@@ -407,7 +407,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		variation = "Alternate Art"
 
 	// Rename the official name to the the more commonly used name
-	case inCard.Edition == "Commander Legends" && inCard.IsShowcase():
+	case inCard.Edition == "Commander Legends" && isShowcase(inCard):
 		variation = "Etched"
 
 	// Planechase deduplication
@@ -525,7 +525,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = maybeEdition
 
 	// Oilslick lands may not have the bundle tag attached to them
-	case isBasicLand(inCard) && inCard.IsOilSlick() && !inCard.IsBundle():
+	case isBasicLand(inCard) && isOilSlick(inCard) && !inCard.IsBundle():
 		variation += " Bundle"
 
 	// Many providers don't tag these promos correctly
@@ -678,9 +678,9 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 					variation = "75s"
 				} else if inCard.IsPromoPack() {
 					variation = "75p"
-				} else if inCard.IsBorderless() {
+				} else if isBorderless(inCard) {
 					variation = "281"
-				} else if inCard.IsShowcase() {
+				} else if isShowcase(inCard) {
 					variation = "290"
 				} else {
 					variation = "75"
@@ -703,12 +703,12 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				}
 			}
 		case "Runo Stromkirk", "Runo Stromkirk // Krothuss, Lord of the Deep":
-			if inCard.IsShowcase() || mtgmatcher.Contains(inCard.Variation, "Eternal") {
+			if isShowcase(inCard) || mtgmatcher.Contains(inCard.Variation, "Eternal") {
 				num := mtgmatcher.ExtractNumber(inCard.Variation)
 				if num == "" {
 					if mtgmatcher.Contains(inCard.Variation, "Eternal") {
 						variation = "327"
-					} else if inCard.IsShowcase() {
+					} else if isShowcase(inCard) {
 						variation = "316"
 					}
 				}
@@ -727,7 +727,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			}
 		// Sometimes these cards are not marked as prerelease because they are showcase
 		case "Goro-Goro and Satoru", "Katilda and Lier", "Slimefoot and Squee":
-			if inCard.IsShowcase() && !inCard.IsPrerelease() {
+			if isShowcase(inCard) && !inCard.IsPrerelease() {
 				variation += " Prerelease"
 			}
 		// There are three Prerelease editions across two editions
@@ -737,7 +737,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			"Bilbo, Retired Burglar",
 			"Gandalf, Friend of the Shire",
 			"Wizard's Rockets":
-			if inCard.IsBorderless() && !inCard.IsPrerelease() {
+			if isBorderless(inCard) && !inCard.IsPrerelease() {
 				variation += " Prerelease"
 			}
 		case "Arcbound Ravager":
@@ -1471,7 +1471,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.IsThickDisplay():
+		case isThickDisplay(inCard):
 			switch set.Code {
 			// The sets with thick display cards separate from the main commander set
 			case "OC21", "OAFC", "OMIC", "OVOC":
@@ -1526,7 +1526,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		// For all the promos with "Extended Art" which refer to the full art promo
-		case inCard.IsExtendedArt() && !inCard.Contains("Game Day"):
+		case isExtendedArt(inCard) && !inCard.Contains("Game Day"):
 			if setDate.Before(mtgmatcher.PromosForEverybodyYay) {
 				switch set.Code {
 				case "DCI":
@@ -1633,7 +1633,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
 	return (inCard.IsPrerelease() && !co.HasPromoType(PromoTypePrerelease)) ||
 		(inCard.IsPromoPack() && !co.HasPromoType(PromoTypePromoPack)) ||
-		(inCard.IsSerialized() && !co.HasPromoType(PromoTypeSerialized))
+		(isSerialized(inCard) && !co.HasPromoType(PromoTypeSerialized))
 }
 
 // CanonicalFinish adds the etched foil to the shared vocabulary. Only
@@ -1728,9 +1728,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					possibleSuffixes = append(possibleSuffixes, "s")
 				case inCard.IsPromoPack():
 					possibleSuffixes = append(possibleSuffixes, "p")
-				case inCard.IsChineseAltArt():
+				case isChineseAltArt(inCard):
 					possibleSuffixes = append(possibleSuffixes, "s", SuffixSpecial+"s", SuffixVariant+"s")
-				case inCard.IsSerialized():
+				case isSerialized(inCard):
 					possibleSuffixes = append(possibleSuffixes, "z")
 				case inCard.IsJudge() || inCard.IsResale():
 					possibleSuffixes = append(possibleSuffixes, SuffixSpecial)

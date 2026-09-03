@@ -236,13 +236,6 @@ func (c *InputCard) IsGenericAltArt() bool {
 	return c.Contains("Alt") && c.Contains("Art")
 }
 
-// IsGenericExtendedArt reports extended or full art, from the variation only.
-func (c *InputCard) IsGenericExtendedArt() bool {
-	return Contains(c.Variation, "Art") &&
-		(Contains(c.Variation, "Extended") ||
-			Contains(c.Variation, "Full"))
-}
-
 // IsPrerelease reports a prerelease printing; SCG spells it Preview.
 func (c *InputCard) IsPrerelease() bool {
 	return c.Contains("Prerelease") ||
@@ -260,22 +253,6 @@ func (c *InputCard) IsPromoPack() bool {
 		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
 }
 
-// IsBorderless reports a borderless printing, from the variation only.
-func (c *InputCard) IsBorderless() bool {
-	return Contains(c.Variation, "Borderless")
-}
-
-// IsExtendedArt reports extended art, from the variation only.
-func (c *InputCard) IsExtendedArt() bool {
-	return Contains(c.Variation, "Extended")
-}
-
-// IsShowcase reports a showcase frame; binderpos storefronts say Sketch.
-func (c *InputCard) IsShowcase() bool {
-	return Contains(c.Variation, "Showcase") ||
-		Contains(c.Variation, "Sketch") // binderpos
-}
-
 // IsReskin reports a reskinned printing, named outright or by its Dracula or
 // Godzilla series. Basic lands are excluded so the Secret Lair Godzilla lands
 // stay ordinary lands.
@@ -287,17 +264,6 @@ func (c *InputCard) IsReskin() bool {
 		!c.isBasicLand()
 }
 
-// IsStepAndCompleat reports the step-and-compleat foiling.
-func (c *InputCard) IsStepAndCompleat() bool {
-	return Contains(c.Variation, "Compleat")
-}
-
-// IsOilSlick reports the oil slick foiling, in either field.
-func (c *InputCard) IsOilSlick() bool {
-	return strings.Contains(strings.ToLower(c.Variation), "slick") ||
-		strings.Contains(strings.ToLower(c.Edition), "slick")
-}
-
 // IsJPN reports a Japanese printing, by language or by the magazines that
 // carried them, Gotta and Dengeki.
 func (c *InputCard) IsJPN() bool {
@@ -306,11 +272,6 @@ func (c *InputCard) IsJPN() bool {
 		c.Contains("Japanese") ||
 		Contains(c.Variation, "Gotta") ||
 		Contains(c.Variation, "Dengeki")
-}
-
-// IsChineseAltArt reports the Chinese alternate art printings.
-func (c *InputCard) IsChineseAltArt() bool {
-	return (c.Contains("Chinese") || strings.Contains(c.Variation, "CS")) && c.IsGenericAltArt()
 }
 
 // IsRelease reports a release or launch promo, and refuses a prerelease,
@@ -412,17 +373,6 @@ func (c *InputCard) IsEtched() bool {
 	return Contains(c.Variation, "Etched")
 }
 
-// IsARNLightMana reports the light mana symbol variant of Arabian Nights,
-// which some storefronts mark with a dagger instead of a word.
-func (c *InputCard) IsARNLightMana() bool {
-	return Contains(c.Variation, "light") || strings.Contains(c.Variation, "†")
-}
-
-// IsARNDarkMana reports the dark mana symbol variant of Arabian Nights.
-func (c *InputCard) IsARNDarkMana() bool {
-	return Contains(c.Variation, "dark")
-}
-
 // IsArena reports an Arena league promo.
 func (c *InputCard) IsArena() bool {
 	return c.Contains("Arena")
@@ -511,33 +461,6 @@ func ParseWorldChampPrefix(variation string) (string, bool) {
 	return "", false
 }
 
-// IsBasicFullArt reports a full art basic land, refusing the negations that
-// storefronts write in the same field.
-func (c *InputCard) IsBasicFullArt() bool {
-	return c.isBasicLand() &&
-		(Contains(c.Variation, "full art") ||
-			c.Variation == "FA") && // csi
-		!Contains(c.Variation, "non") &&
-		!Contains(c.Variation, "not") // csi
-}
-
-// IsBasicNonFullArt reports a basic land explicitly marked as not full art.
-func (c *InputCard) IsBasicNonFullArt() bool {
-	return c.isBasicLand() &&
-		Contains(c.Variation, "non-full art") ||
-		Contains(c.Variation, "Intro") || // abu
-		Contains(c.Variation, "NOT the full art") // csi
-}
-
-// IsPortalAlt reports the Portal alternates, which differ by carrying reminder
-// text or by lacking flavor text.
-func (c *InputCard) IsPortalAlt() bool {
-	return (Contains(c.Variation, "Reminder Text") &&
-		!Contains(c.Variation, "No")) ||
-		Contains(c.Variation, "No Flavor Text") || // csi
-		Contains(c.Variation, "Without Flavor Text") // csi
-}
-
 // IsDuelDecks reports a Duel Decks printing, named by the two sides it pits
 // against each other, and refuses the Anthology reprints.
 func (c *InputCard) IsDuelDecks() bool {
@@ -591,33 +514,6 @@ func (c *InputCard) HasSecretLairTag(code string) bool {
 	}
 
 	return c.IsSecretLair() && tag
-}
-
-// IsThickDisplay reports the thick display commander cards.
-func (c *InputCard) IsThickDisplay() bool {
-	return c.Contains("Display") || c.Contains("Thick")
-}
-
-// IsPhyrexian reports a Phyrexian language printing.
-func (c *InputCard) IsPhyrexian() bool {
-	return Contains(c.Variation, "Phyrexian")
-}
-
-// IsGalaxyFoil reports the galaxy foiling.
-func (c *InputCard) IsGalaxyFoil() bool {
-	return Contains(c.Variation, "Galaxy")
-}
-
-// IsSurgeFoil reports the surge foiling, in either field.
-func (c *InputCard) IsSurgeFoil() bool {
-	return strings.Contains(strings.ToLower(c.Variation), "surge") ||
-		strings.Contains(strings.ToLower(c.Edition), "surge")
-}
-
-// IsSerialized reports a serialized printing, in either field.
-func (c *InputCard) IsSerialized() bool {
-	return strings.Contains(strings.ToLower(c.Variation), "serial") ||
-		strings.Contains(strings.ToLower(c.Edition), "serial")
 }
 
 // PossibleNumberSuffix returns a lone letter from the variation, lowercased,
