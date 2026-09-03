@@ -177,7 +177,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = ed
 	}
 	set, found = b.Sets[strings.ToUpper(variation)]
-	if found && (isJudge(inCard) || inCard.IsDuelDecks() || inCard.IsDuelDecksAnthology()) {
+	if found && (isJudge(inCard) || isDuelDecks(inCard) || isDuelDecksAnthology(inCard)) {
 		edition = set.Name
 	}
 	ed, found = EditionTable[variation]
@@ -542,7 +542,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		// volume is a line in the table, and so that the names that already
 		// have a case of their own for something else do not need merging.
 		insert, isMediaInsert := mediaInsertOriginals[inCard.Name]
-		if isMediaInsert && inCard.IsIDWMagazineBook() {
+		if isMediaInsert && isIDWMagazineBook(inCard) {
 			edition = "Media and Collaboration Promos"
 			switch {
 			// Duress alone was also a comic insert, and a listing naming
@@ -714,7 +714,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				}
 			}
 		case "Diabolic Tutor":
-			if inCard.IsIDWMagazineBook() {
+			if isIDWMagazineBook(inCard) {
 				edition = "Secret Lair Drop"
 			}
 		case "Magister of Worth":
@@ -1062,7 +1062,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
 				// If these have no strict matches AND are not properly tagged, skip them
-				if len(b.MatchInSetNumber(inCard.Name, set.Code, mtgmatcher.ExtractNumber(inCard.Variation))) == 0 && !inCard.HasSecretLairTag(set.Code) {
+				if len(b.MatchInSetNumber(inCard.Name, set.Code, mtgmatcher.ExtractNumber(inCard.Variation))) == 0 && !hasSecretLairTag(inCard, set.Code) {
 					continue
 				}
 			case "SLD":
@@ -1075,7 +1075,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 					if code == "SLX" && inCard.Name == "Themberchaud" {
 						continue
 					}
-					if len(b.MatchInSet(inCard.Name, code)) > 0 && inCard.HasSecretLairTag(code) {
+					if len(b.MatchInSet(inCard.Name, code)) > 0 && hasSecretLairTag(inCard, code) {
 						skip = true
 						break
 					}
@@ -1142,7 +1142,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.IsIDWMagazineBook():
+		case isIDWMagazineBook(inCard):
 			// No Media cards in these sets
 			switch set.Code {
 			case "P30A", "P30H", "P30M":
@@ -1331,7 +1331,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		// DDA with number or deck variant specified in the variation
-		case inCard.IsDuelDecksAnthology():
+		case isDuelDecksAnthology(inCard):
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks Anthology"):
 				found := false
@@ -1374,7 +1374,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsDuelDecks():
+		case isDuelDecks(inCard):
 			variant := duelDecksVariant(inCard)
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks") &&
