@@ -369,11 +369,6 @@ func (b *Backend) HasNonfoilPrinting(name string, editions ...string) bool {
 	return b.hasPrinting(name, "finish", FinishNonfoil, editions...)
 }
 
-// HasNonfoilPrinting queries the default datastore.
-func HasNonfoilPrinting(name string, editions ...string) bool {
-	return defaultBackend.HasNonfoilPrinting(name, editions...)
-}
-
 // HasFoilPrinting reports whether the named card carries the foil slot. A
 // game whose finish is not foilness answers yes throughout: Yu-Gi-Oh's
 // treatment is the rarity, so every printing points both flag slots at its
@@ -722,11 +717,6 @@ func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	return picks, nil
 }
 
-// GetPicksForDeck queries the default datastore.
-func GetPicksForDeck(setCode, deckName string) ([]string, error) {
-	return defaultBackend.GetPicksForDeck(setCode, deckName)
-}
-
 // GetDecklist returns the uuids of the fixed decks a sealed product contains,
 // for the products whose contents are known rather than drawn.
 func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
@@ -1006,11 +996,6 @@ func (b *Backend) SealedCardUnit(setCode, sealedUUID string) int {
 	return result
 }
 
-// SealedCardUnit queries the default datastore.
-func SealedCardUnit(setCode, sealedUUID string) int {
-	return defaultBackend.SealedCardUnit(setCode, sealedUUID)
-}
-
 // SealedHasDecklist reports whether the product contains a fixed deck whose
 // contents are known.
 func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {
@@ -1093,11 +1078,6 @@ func (b *Backend) SealedBoosterProbabilities(setCode, boosterType string) ([]Pro
 	return probabilities, nil
 }
 
-// SealedBoosterProbabilities queries the default datastore.
-func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabilities, error) {
-	return defaultBackend.SealedBoosterProbabilities(setCode, boosterType)
-}
-
 // SealedSheetProbabilities returns how likely each card on one sheet is to be
 // drawn from it.
 func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
@@ -1127,11 +1107,6 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 	}
 
 	return probs, nil
-}
-
-// SealedSheetProbabilities queries the default datastore.
-func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
-	return defaultBackend.SealedSheetProbabilities(setCode, boosterType, sheetName)
 }
 
 // GetProbabilitiesForSealed returns how likely each card is to appear when the

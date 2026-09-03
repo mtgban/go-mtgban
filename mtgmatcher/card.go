@@ -801,12 +801,6 @@ func (c *InputCard) Equals(prop string) bool {
 	return Equals(c.Edition, prop) || Equals(c.Variation, prop)
 }
 
-// ParseCommanderEdition returns the Commander edition the text names, using
-// the default datastore.
-func ParseCommanderEdition(edition, variant string) string {
-	return defaultBackend.ParseCommanderEdition(edition, variant)
-}
-
 // ShouldIgnoreNumber reports whether the collector number, where one was
 // given, is too unreliable to narrow with: some storefronts publish a number
 // that belongs to a different printing of the same set.

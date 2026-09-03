@@ -232,12 +232,6 @@ func HasPrefix(str1, str2 string) bool {
 	return strings.HasPrefix(Normalize(str1), Normalize(str2))
 }
 
-// HasSuffix reports whether str2 is a suffix of str1 after both are
-// Normalize-d.
-func HasSuffix(str1, str2 string) bool {
-	return strings.HasSuffix(Normalize(str1), Normalize(str2))
-}
-
 // CloseName reports whether got is want with a piece missing off one end or
 // up to two letters wrong, both read Normalize-d. It is the misspelling test
 // a game's rules gate a rename on, once something else - a collector number,
