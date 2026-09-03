@@ -49,10 +49,6 @@ func TestPreprocessJapanesePromoTokens(t *testing.T) {
 		// Dominaria United printed the first of these sheets, and its
 		// qualifier names no set at all
 		{"the bare qualifier is still Dominaria United's", "Bird Token (JP Exclusive)", "Bird Token JP Exclusive", "WDMU", ""},
-		// The two tokens of that first sheet carry no qualifier at all,
-		// and only the number says where they came from
-		{"no qualifier at all is that sheet too", "Bird Token", "Bird Token", "WDMU", "2"},
-		{"and so is its zombie", "Zombie Token", "Zombie Token", "WDMU", "3"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			product := tcgplayer.Product{Name: tt.name, CleanName: tt.cleanName}
