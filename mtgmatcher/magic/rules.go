@@ -1746,9 +1746,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					if num == numSuffix {
 						continue
 					}
+					// The comparison is lowercase, so the suffix folds too
 					number := strings.ToLower(num)
-					if numSuffix != "" && !strings.HasSuffix(number, numSuffix) {
-						number += numSuffix
+					suffix := strings.ToLower(numSuffix)
+					if suffix != "" && !strings.HasSuffix(number, suffix) {
+						number += suffix
 					}
 
 					if number == strings.ToLower(card.Number) {

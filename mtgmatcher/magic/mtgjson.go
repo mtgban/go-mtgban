@@ -273,7 +273,7 @@ const (
 
 	SuffixSpecial = "★"
 	SuffixVariant = "†"
-	SuffixPhiLow  = "φ"
+	SuffixPhi     = "Φ"
 )
 
 // NewPrereleaseDate is when any card in a set could be a prerelease promo,
@@ -1028,8 +1028,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			// Save the original uuid
 			card.Identifiers["mtgjsonId"] = card.UUID
 
-			// Save the collector number stripped of its ★/†/φ decorations
-			card.OriginalNumber = strings.TrimRight(card.Number, SuffixSpecial+SuffixVariant+SuffixPhiLow+"*")
+			// Save the collector number stripped of its ★/†/Φ decorations
+			card.OriginalNumber = strings.TrimRight(card.Number, SuffixSpecial+SuffixVariant+SuffixPhi+"*")
 
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
