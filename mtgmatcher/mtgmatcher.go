@@ -43,6 +43,27 @@ func finishTwins(co, altCo *CardObject) bool {
 	return !sameFinish
 }
 
+// IsFinishTwin reports whether the printing is one of a pair the set filed
+// as two entries for the one card, the twin's number differing only by a
+// suffix. The star such a number ends in is the twin's own, and says nothing
+// about a misprint.
+func (b *Backend) IsFinishTwin(inputID string) bool {
+	co, err := b.cardObject4Id(inputID)
+	if err != nil {
+		return false
+	}
+	for _, variation := range co.Variations {
+		altCo, found := b.UUIDs[variation]
+		if !found {
+			continue
+		}
+		if finishTwins(co, altCo) {
+			return true
+		}
+	}
+	return false
+}
+
 // FinishSiblings answers every uuid the card behind the id is sold under,
 // itself included: the printing's registered finishes first - the base, the
 // shared ones, then the game's own vocabulary in sorted order - and, for the
