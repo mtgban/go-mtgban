@@ -157,18 +157,16 @@ func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMa
 	}
 
 	cardID, cardIDFoil := mkm.resolveUUIDs(product, mapped.UUIDs)
+	byName := false
 	if cardID == "" {
-		if mkm.gameID != GameMagic {
-			return errNoPrinting
-		}
 		var err error
-		cardID, cardIDFoil, err = mkm.resolveMagic(product)
+		cardID, cardIDFoil, byName, err = mkm.resolveProduct(product)
 		if err != nil || cardID == "" {
 			return err
 		}
 	}
 
-	return mkm.emitPrices(channel, product, cardID, cardIDFoil, false)
+	return mkm.emitPrices(channel, product, cardID, cardIDFoil, byName)
 }
 
 // loadOffline continues Load with the crawl replaced by the id map: the

@@ -572,6 +572,19 @@ func (mkm *Index) resolveMagic(product *MKMProduct) (string, string, error) {
 }
 
 func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduct) error {
+	cardID, cardIDFoil, byName, err := mkm.resolveProduct(product)
+	if err != nil || cardID == "" {
+		return err
+	}
+
+	return mkm.emitPrices(channel, product, cardID, cardIDFoil, byName)
+}
+
+// resolveProduct answers a product with the printings its two price columns
+// belong to, whatever the game. An empty id under a nil error means the
+// product names nothing this datastore carries, which is a skip rather than
+// a failure.
+func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, error) {
 	var cardID string
 	var cardIDFoil string
 	var byName bool
@@ -581,7 +594,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 	case GameMagic:
 		cardID, cardIDFoil, err = mkm.resolveMagic(product)
 		if err != nil || cardID == "" {
-			return err
+			return "", "", false, err
 		}
 	case GameLorcana, GameRiftbound, GameOnePiece:
 		// One Piece sells one card under several printings that share a
@@ -600,7 +613,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 					cardID = id
 					cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
 					if mkm.offShelf(product, cardID) {
-						return errNoPrinting
+						return "", "", false, errNoPrinting
 					}
 					break
 				}
@@ -625,7 +638,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 
 		cardID, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			return nil
+			return "", "", false, nil
 		} else if err != nil && !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
 			mkm.printf("%v", err)
 			mkm.printf("%+v", product)
@@ -639,7 +652,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 					mkm.printf("%s: %s", probe, co)
 				}
 			}
-			return err
+			return "", "", false, err
 		}
 		// A wrong-variant miss above may just mean the card has no nonfoil
 		// printing (Match validates the finish); adopt the foil id then.
@@ -657,13 +670,13 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			}
 			mkm.printf("%v", err)
 			mkm.printf("%+v", product)
-			return err
+			return "", "", false, err
 		}
 
 		// One Piece is the catalog that files one card onto shelf after
 		// shelf; see offShelf.
 		if mkm.gameID == GameOnePiece && mkm.offShelf(product, cardID) {
-			return errNoPrinting
+			return "", "", false, errNoPrinting
 		}
 	case GameYuGiOh, GameFleshAndBlood, GamePokemon:
 		// Same-name products abound in these catalogs - and Yu-Gi-Oh and
@@ -692,7 +705,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			byName = cardID != ""
 		}
 		if cardID == "" {
-			return errNoPrinting
+			return "", "", false, errNoPrinting
 		}
 		cardIDFoil = cardID
 		if mkm.gameID == GameYuGiOh {
@@ -712,10 +725,10 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, "Reverse Holofoil")
 		}
 	default:
-		return errors.New("unsupported game")
+		return "", "", false, errors.New("unsupported game")
 	}
 
-	return mkm.emitPrices(channel, product, cardID, cardIDFoil, byName)
+	return cardID, cardIDFoil, byName, nil
 }
 
 // emitPrices lands a product's guide prices on the printings resolved for
