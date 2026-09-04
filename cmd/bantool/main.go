@@ -526,11 +526,17 @@ var options = map[string]*scraperOption{
 	"tcg_index_fleshandblood": {
 		Init: tcgIndexScraper(mtgban.GameFleshAndBlood),
 	},
+	"tcg_index_gundam": {
+		Init: tcgIndexScraper(mtgban.GameGundam),
+	},
 	"tcg_index_lorcana": {
 		Init: tcgIndexScraper(mtgban.GameLorcana),
 	},
 	"tcg_index_onepiece": {
 		Init: tcgIndexScraper(mtgban.GameOnePiece),
+	},
+	"tcg_index_palworld": {
+		Init: tcgIndexScraper(mtgban.GamePalworld),
 	},
 	"tcg_index_pokemon": {
 		Init: tcgIndexScraper(mtgban.GamePokemon),
@@ -580,11 +586,17 @@ var options = map[string]*scraperOption{
 	"tcg_market_fleshandblood": {
 		Init: tcgMarketScraper(mtgban.GameFleshAndBlood),
 	},
+	"tcg_market_gundam": {
+		Init: tcgMarketScraper(mtgban.GameGundam),
+	},
 	"tcg_market_lorcana": {
 		Init: tcgMarketScraper(mtgban.GameLorcana),
 	},
 	"tcg_market_onepiece": {
 		Init: tcgMarketScraper(mtgban.GameOnePiece),
+	},
+	"tcg_market_palworld": {
+		Init: tcgMarketScraper(mtgban.GamePalworld),
 	},
 	"tcg_market_pokemon": {
 		Init: tcgMarketScraper(mtgban.GamePokemon),
@@ -634,11 +646,17 @@ var options = map[string]*scraperOption{
 	"tcg_sealed_fleshandblood": {
 		Init: tcgSealedScraper(mtgban.GameFleshAndBlood),
 	},
+	"tcg_sealed_gundam": {
+		Init: tcgSealedScraper(mtgban.GameGundam),
+	},
 	"tcg_sealed_lorcana": {
 		Init: tcgSealedScraper(mtgban.GameLorcana),
 	},
 	"tcg_sealed_onepiece": {
 		Init: tcgSealedScraper(mtgban.GameOnePiece),
+	},
+	"tcg_sealed_palworld": {
+		Init: tcgSealedScraper(mtgban.GamePalworld),
 	},
 	"tcg_sealed_pokemon": {
 		Init: tcgSealedScraper(mtgban.GamePokemon),
