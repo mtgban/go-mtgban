@@ -224,6 +224,8 @@ func gameLanguage(gameID int, product Product) string {
 		return product.Properties.FabLanguage
 	case GamePokemon:
 		return product.Properties.PokemonLanguage
+	case GameGundam:
+		return product.Properties.GundamLanguage
 	}
 	return ""
 }
@@ -238,6 +240,10 @@ func gameLanguage(gameID int, product Product) string {
 // Version cannot be dropped: several corrected printings share one base
 // number, and the Version is the only thing that says which of them a
 // listing is.
+// parallelTail matches a Gundam collector number and the letters Card Trader
+// hangs off it for a parallel run, keeping the number the datastore spells.
+var parallelTail = regexp.MustCompile(`^([A-Za-z]+[0-9]*-[0-9]+)[a-zA-Z]+$`)
+
 var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z\x{03b1}\x{03b2}]*$`)
 
 // gameVariation spells the printing a blueprint names. One Piece, Riftbound
@@ -289,6 +295,16 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 			return number
 		}
 		return number + " " + version
+	case GameGundam:
+		// Card Trader letters a parallel printing's collector number where
+		// the datastore does not - "GD01-001a", "GD01-001aa", "ST05-010s" -
+		// so the number has to lose the tail to name a printing at all.
+		// Trimming alone is worse than nothing: it collapses every parallel
+		// onto the base card. What separates them again is the Version,
+		// which spells the rarity the way the datastore does, "LR+" beside
+		// "LR++", and says what a rarity cannot besides - "Token", "Store
+		// Tournament | Winner".
+		number = parallelTail.ReplaceAllString(number, "$1")
 	case GamePokemon:
 		// Pokemon's Version carries what the bare number cannot: the real
 		// collector number with its set total ("Holo Promo | 013/025" where
@@ -492,7 +508,8 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 			CategoryOnePieceSingles, CategoryOnePieceOversized, CategoryOnePieceDon,
 			CategoryYuGiOhSingles, CategoryYuGiOhOversized,
 			CategoryFleshAndBloodSingles, CategoryFleshAndBloodArtCardTokens,
-			CategoryPokemonSingles, CategoryPokemonOversized:
+			CategoryPokemonSingles, CategoryPokemonOversized,
+			CategoryGundamSingles:
 			singles = true
 		}
 		if singles == sealed {
