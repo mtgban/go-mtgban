@@ -23,4 +23,5 @@ jobs:
       target: cardmarket_pokemon
       game: "pokemon"
       datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
+      mkmids-filepath: b2://mtgban-datastore/pokemon/cardmarket_catalog.json.xz
     secrets: inherit
