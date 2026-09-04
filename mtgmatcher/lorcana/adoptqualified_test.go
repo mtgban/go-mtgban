@@ -40,6 +40,12 @@ func TestAdoptQualifiedName(t *testing.T) {
 			"Elsa - Gloves Off", "39/204", "255_silver"},
 		{"the decorated name still answers for itself",
 			"Bucky - Squirrel Squeak Tutor (Errata Version)", "73/204", "m-597095_foil"},
+		// The qualifier's category noun alone must not license the swap:
+		// a note about the original says the word version just as well
+		{"a note about the original saying version keeps the original",
+			"Bucky - Squirrel Squeak Tutor", "73/204, Original Version w/ Ward", "289_silver"},
+		{"nor can a longer word smuggle the noun in",
+			"Bucky - Squirrel Squeak Tutor", "73/204, Conversion w/ Ward", "289_silver"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
