@@ -1028,6 +1028,12 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			// Save the original uuid
 			card.Identifiers["mtgjsonId"] = card.UUID
 
+			// The lit bulbs are what tells one attraction printing from
+			// its siblings, so they are filed with the identifiers
+			if len(card.AttractionLights) > 0 {
+				card.Identifiers[attractionLightsID] = attractionTag(card.AttractionLights)
+			}
+
 			// Save the collector number stripped of its ★/†/Φ decorations
 			card.OriginalNumber = strings.TrimRight(card.Number, SuffixSpecial+SuffixVariant+SuffixPhi+"*")
 
@@ -1687,7 +1693,6 @@ const (
 func toMtgCard(c Card) mtgmatcher.Card {
 	mc := mtgmatcher.Card{
 		Artist:              c.Artist,
-		AttractionLights:    c.AttractionLights,
 		BorderColor:         c.BorderColor,
 		Colors:              c.Colors,
 		ColorIdentity:       c.ColorIdentity,

@@ -422,15 +422,6 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 		checkFunc = func(card Card, value string) bool {
 			return card.HasFinish(value)
 		}
-	case "field":
-		switch value {
-		case "attractionLights":
-			checkFunc = func(card Card, value string) bool {
-				return card.AttractionLights != nil
-			}
-		default:
-			return false
-		}
 	default:
 		return false
 	}

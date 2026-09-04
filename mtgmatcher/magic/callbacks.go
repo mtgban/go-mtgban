@@ -816,12 +816,8 @@ func wpnCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatc
 
 // Handle the different Attractions
 func attractionVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-")) {
-		lights := make([]string, 0, len(card.AttractionLights))
-		for _, light := range card.AttractionLights {
-			lights = append(lights, strconv.Itoa(light))
-		}
-		tag := strings.Join(lights, "/")
+	tag := AttractionLights(card)
+	if tag != "" && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-")) {
 		variation := strings.Replace(inCard.Variation, " ", "", -1)
 		variation = strings.Replace(variation, "-", "/", -1)
 		if variation != tag {

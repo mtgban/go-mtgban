@@ -130,7 +130,6 @@ type Set struct {
 // other printing of the same name. Fields follow the MTGJSON project.
 type Card struct {
 	Artist              string              `json:"artist"`
-	AttractionLights    []int               `json:"attractionLights"`
 	BorderColor         string              `json:"borderColor"`
 	Colors              []string            `json:"colors"`
 	ColorIdentity       []string            `json:"colorIdentity"`
