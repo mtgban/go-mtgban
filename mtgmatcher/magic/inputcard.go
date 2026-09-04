@@ -133,7 +133,7 @@ func playerRewardsYear(c *mtgmatcher.InputCard, maybeYear string) string {
 // shouldIgnoreNumber reports whether the collector number, where one was
 // given, is too unreliable to narrow with: some storefronts publish a number
 // that belongs to a different printing of the same set.
-func shouldIgnoreNumber(c *mtgmatcher.InputCard, setName, num string) bool {
+func shouldIgnoreNumber(b *mtgmatcher.Backend, c *mtgmatcher.InputCard, setName, num string) bool {
 	// No misprints or WCD
 	if c.Contains("Misprint") || c.IsWorldChamp() {
 		return true
@@ -146,7 +146,7 @@ func shouldIgnoreNumber(c *mtgmatcher.InputCard, setName, num string) bool {
 
 	// Unfinity numbers could refer to Attractions
 	if mtgmatcher.Contains(c.Edition, "unf") {
-		if mtgmatcher.HasPrinting(c.Name, "field", "attractionLights", "UNF") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
+		if b.HasPrinting(c.Name, "field", "attractionLights", "UNF") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
 			return true
 		}
 	}
@@ -377,12 +377,12 @@ func isDuelDecksAnthology(c *mtgmatcher.InputCard) bool {
 // hasSecretLairTag reports whether the listing belongs to the given Secret
 // Lair set, which each need their own rule: the drops differ in what they
 // reprint and in how storefronts spell them.
-func hasSecretLairTag(c *mtgmatcher.InputCard, code string) bool {
+func hasSecretLairTag(b *mtgmatcher.Backend, c *mtgmatcher.InputCard, code string) bool {
 	var tag bool
 	switch code {
 	case "SLU":
 		// SLU is mostly static and cards are unlikely to reappear elsewhere
-		tag = c.Contains("Ultimate") || len(mtgmatcher.MatchInSet(c.Name, "SLU")) == 1
+		tag = c.Contains("Ultimate") || len(b.MatchInSet(c.Name, "SLU")) == 1
 	case "SLX":
 		// SLX only has plain cards, if they are reskinned, they are from SLD
 		tag = !isReskin(c) || c.Contains("Within") || c.Contains("SLX")
@@ -393,7 +393,7 @@ func hasSecretLairTag(c *mtgmatcher.InputCard, code string) bool {
 		// when that exact card actually exists in SLC at that number.
 		yearStr := mtgmatcher.ExtractYear(c.Variation)
 		tag = c.Contains("30th") || c.Contains("Countdown") ||
-			(yearStr != "" && len(mtgmatcher.MatchInSetNumber(c.Name, "SLC", yearStr)) > 0)
+			(yearStr != "" && len(b.MatchInSetNumber(c.Name, "SLC", yearStr)) > 0)
 	case "SLP":
 		// Simple check the variations
 		tag = c.Contains("Showdown") || c.Contains("Prize") || c.Contains("Finish") || c.Contains("Play")

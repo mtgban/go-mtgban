@@ -87,7 +87,7 @@ func ravnicaWeekend(c *mtgmatcher.InputCard) (string, string) {
 // ravnicaGuildKit returns which Guild Kit the listing names, by set name or
 // set code, or an empty string if it names none. Moved from InputCard, where
 // the method served no caller but this file.
-func ravnicaGuildKit(c *mtgmatcher.InputCard) string {
+func ravnicaGuildKit(b *mtgmatcher.Backend, c *mtgmatcher.InputCard) string {
 	if !c.Contains("Guild Kit") {
 		return ""
 	}
@@ -109,10 +109,10 @@ func ravnicaGuildKit(c *mtgmatcher.InputCard) string {
 	if isBasicLand(c) {
 		return "Guild Kit"
 	}
-	if len(mtgmatcher.MatchInSet(c.Name, "GK1")) > 0 {
+	if len(b.MatchInSet(c.Name, "GK1")) > 0 {
 		return "GRN Guild Kit"
 	}
-	if len(mtgmatcher.MatchInSet(c.Name, "GK2")) > 0 {
+	if len(b.MatchInSet(c.Name, "GK2")) > 0 {
 		return "RNA Guild Kit"
 	}
 
@@ -299,7 +299,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	case inCard.Contains("Ravnica Weekend"):
 		edition, variation = ravnicaWeekend(inCard)
 	case inCard.Contains("Guild Kit"):
-		edition = ravnicaGuildKit(inCard)
+		edition = ravnicaGuildKit(b, inCard)
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
 		num := mtgmatcher.ExtractNumber(variation)
 		if num != "" {
@@ -1062,7 +1062,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
 				// If these have no strict matches AND are not properly tagged, skip them
-				if len(b.MatchInSetNumber(inCard.Name, set.Code, mtgmatcher.ExtractNumber(inCard.Variation))) == 0 && !hasSecretLairTag(inCard, set.Code) {
+				if len(b.MatchInSetNumber(inCard.Name, set.Code, mtgmatcher.ExtractNumber(inCard.Variation))) == 0 && !hasSecretLairTag(b, inCard, set.Code) {
 					continue
 				}
 			case "SLD":
@@ -1075,7 +1075,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 					if code == "SLX" && inCard.Name == "Themberchaud" {
 						continue
 					}
-					if len(b.MatchInSet(inCard.Name, code)) > 0 && hasSecretLairTag(inCard, code) {
+					if len(b.MatchInSet(inCard.Name, code)) > 0 && hasSecretLairTag(b, inCard, code) {
 						skip = true
 						break
 					}
@@ -1694,7 +1694,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			if num == "" && card.SetCode == "SLD" {
 				num = mtgmatcher.ExtractNumberAny(inCard.Variation)
 			}
-			if shouldIgnoreNumber(inCard, set.Name, num) {
+			if shouldIgnoreNumber(b, inCard, set.Name, num) {
 				checkNum = false
 				mtgmatcher.Logger.Println("Skipping number check")
 			}
@@ -1834,7 +1834,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 				var tagPresent bool
 				if promoElement.TagFunc != nil {
-					tagPresent = promoElement.TagFunc(inCard)
+					tagPresent = promoElement.TagFunc(b, inCard)
 				} else {
 					if slices.ContainsFunc(promoElement.Tags, inCard.Contains) {
 						tagPresent = true
@@ -1904,13 +1904,13 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			cardFilterFunc, foundSimple := simpleFilterCallbacks[card.SetCode]
 			cardFilterFuncs, foundComplex := complexFilterCallbacks[card.SetCode]
 			if foundSimple {
-				if cardFilterFunc(inCard, &card) {
+				if cardFilterFunc(b, inCard, &card) {
 					continue
 				}
 			} else if foundComplex {
 				shouldContinue := false
 				for _, fn := range cardFilterFuncs {
-					if fn(inCard, &card) {
+					if fn(b, inCard, &card) {
 						shouldContinue = true
 						break
 					}
@@ -1919,7 +1919,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					continue
 				}
 			} else {
-				if misprintCheck(inCard, &card) {
+				if misprintCheck(b, inCard, &card) {
 					continue
 				}
 			}
@@ -1989,7 +1989,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					continue
 				}
 				setDate := set.ReleaseDateTime
-				if setDate.After(SeparateFinishCollectorNumberDate) && etchedCheck(inCard, &card) {
+				if setDate.After(SeparateFinishCollectorNumberDate) && etchedCheck(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
@@ -2006,7 +2006,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgmatcher.Card
 			for _, card := range outCards {
-				if borderlessCheck(inCard, &card) {
+				if borderlessCheck(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
@@ -2030,7 +2030,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					continue
 				}
 				setDate := set.ReleaseDateTime
-				if setDate.After(mtgmatcher.PromosForEverybodyYay) && extendedartCheck(inCard, &card) {
+				if setDate.After(mtgmatcher.PromosForEverybodyYay) && extendedartCheck(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
@@ -2046,7 +2046,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgmatcher.Card
 			for _, card := range outCards {
-				if showcaseCheck(inCard, &card) {
+				if showcaseCheck(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
