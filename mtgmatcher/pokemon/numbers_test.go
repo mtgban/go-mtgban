@@ -49,6 +49,10 @@ func TestPlainNumberDropsThePadding(t *testing.T) {
 		{"TG01", "TG01"},
 		{"H32", "H32"},
 		{"", ""},
+		// A number of nothing but zeros keeps what it had: trimming it away
+		// would leave a card no plain-number search could reach.
+		{"0", "0"},
+		{"000", "000"},
 	} {
 		if got := plainNumber(tt.in); got != tt.want {
 			t.Errorf("plainNumber(%q) = %q, want %q", tt.in, got, tt.want)

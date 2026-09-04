@@ -27,7 +27,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -529,13 +528,6 @@ func ownNumber(card *DatastoreCard) string {
 	return number
 }
 
-// plainNumberRe matches the collector numbers that are a bare ordinal, with
-// the padding captured apart from the number it pads. That shape is the only
-// one whose leading zeros are padding: everywhere else in the game they are
-// part of a code the card is named by, and "SWSH020" reduced to "SWSH20" is
-// neither what the card prints nor a plainer way of writing it.
-var plainNumberRe = regexp.MustCompile(`^0+([0-9]+[a-zA-Z]?)$`)
-
 // plainNumber is the collector number as a person writes it, which for this
 // game means without the zeros the catalog pads an ordinal out to three
 // digits with: card 1 is written "1", not "001". It is what OriginalNumber
@@ -543,13 +535,24 @@ var plainNumberRe = regexp.MustCompile(`^0+([0-9]+[a-zA-Z]?)$`)
 // card that "cns:001" does. Number keeps the padding, being the number
 // exactly as written.
 //
+// Only a leading zero is dropped, which is the whole of the rule: a number
+// starting with one is a bare ordinal and nothing else, all 140 of them, so
+// the shape needs no describing. The padding inside a code is untouched
+// because a code does not open with it - "SWSH020" and "TG01" keep theirs,
+// and reducing them would invent a spelling that is neither what the card
+// prints nor a plainer way of writing it.
+//
 // Pokemon is the only game this applies to. Every other game here numbers a
-// card with a code - "OP04-047", "YS13-ENV08", "WTR018" - whose zeros are
-// spelling rather than padding, and none of them carries a bare ordinal at
-// all.
+// card with a code - "OP04-047", "YS13-ENV08", "WTR018" - and none of them
+// carries a bare ordinal at all.
+//
+// A number of nothing but zeros would trim away to nothing, and an empty
+// OriginalNumber is a card no plain-number search can reach, so it keeps
+// what it had. No such number exists today; the guard is what makes the
+// trim safe to read.
 func plainNumber(number string) string {
-	if m := plainNumberRe.FindStringSubmatch(number); m != nil {
-		return m[1]
+	if plain := strings.TrimLeft(number, "0"); plain != "" {
+		return plain
 	}
 	return number
 }
