@@ -1001,7 +1001,7 @@ func sldVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 		"Shadowborn Apostle",
 		"Toxin Sliver",
 		"Virulent Sliver":
-		result := strings.HasSuffix(card.Number, SuffixPhiLow)
+		result := strings.HasSuffix(card.Number, SuffixPhi)
 		if isStepAndCompleat(inCard) {
 			result = !result
 		}
@@ -1258,7 +1258,7 @@ func duplicateJPNPlaneswalkers(inCard *mtgmatcher.InputCard) []string {
 
 func duplicateSLD(inCard *mtgmatcher.InputCard) []string {
 	if isStepAndCompleat(inCard) {
-		return []string{SuffixPhiLow, ""}
+		return []string{SuffixPhi, ""}
 	}
 
 	if inCard.IsEtched() || isThickDisplay(inCard) || inCard.Foil {
