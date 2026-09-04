@@ -34,11 +34,6 @@ type promoTypeElement struct {
 	// what a shop calls it.
 	SilentKeeps func(card *mtgmatcher.Card) bool
 
-	// Whether the printing wears the treatment, for the treatments the
-	// catalog files somewhere other than the promo types. Defaults to
-	// reading PromoType.
-	CardFunc func(card *mtgmatcher.Card) bool
-
 	// Whether the tag is only ever read as a claim and never as a denial:
 	// such an element narrows to the treatment it is told about and stands
 	// aside when the listing says nothing.
@@ -54,9 +49,6 @@ type promoTypeElement struct {
 // carriedBy reports whether the printing wears the treatment this element
 // names.
 func (element promoTypeElement) carriedBy(card *mtgmatcher.Card) bool {
-	if element.CardFunc != nil {
-		return element.CardFunc(card)
-	}
 	return card.HasPromoType(element.PromoType)
 }
 
@@ -88,9 +80,7 @@ func (element promoTypeElement) vetoes(b *mtgmatcher.Backend, inCard *mtgmatcher
 var (
 	borderlessTreatment = promoTypeElement{
 		OnlyWhenNamed: true,
-		CardFunc: func(card *mtgmatcher.Card) bool {
-			return card.BorderColor == BorderColorBorderless
-		},
+		PromoType:     PromoTypeBorderless,
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isBorderless(inCard)
 		},
@@ -106,10 +96,8 @@ var (
 	// stopped meaning different things.
 	extendedArtTreatment = promoTypeElement{
 		OnlyWhenNamed: true,
+		PromoType:     PromoTypeExtendedArt,
 		ValidDate:     mtgmatcher.PromosForEverybodyYay,
-		CardFunc: func(card *mtgmatcher.Card) bool {
-			return card.HasFrameEffect(FrameEffectExtendedArt)
-		},
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isExtendedArt(inCard)
 		},
@@ -122,9 +110,7 @@ var (
 	// aside for.
 	showcaseTreatment = promoTypeElement{
 		OnlyWhenNamed: true,
-		CardFunc: func(card *mtgmatcher.Card) bool {
-			return card.HasFrameEffect(FrameEffectShowcase)
-		},
+		PromoType:     PromoTypeShowcase,
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isShowcase(inCard)
 		},

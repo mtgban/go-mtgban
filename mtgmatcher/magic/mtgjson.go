@@ -209,7 +209,14 @@ const (
 	FrameEffectShowcase    = "showcase"
 	FrameEffectShattered   = "shatteredglass"
 
-	PromoTypeArenaLeague       = "arenaleague"
+	PromoTypeArenaLeague = "arenaleague"
+	// The catalog files the border and these two frames outside the promo
+	// types, and the loader says them as promo types as well, so the one
+	// vocabulary answers for every treatment a shop can name.
+	PromoTypeBorderless  = BorderColorBorderless
+	PromoTypeExtendedArt = FrameEffectExtendedArt
+	PromoTypeShowcase    = FrameEffectShowcase
+
 	PromoTypeBoosterfun        = "boosterfun"
 	PromoTypeBundle            = "bundle"
 	PromoTypeBuyABox           = "buyabox"
@@ -887,6 +894,18 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			// Make sure this property is correctly initialized
 			if strings.HasSuffix(card.Number, "p") && !slices.Contains(card.PromoTypes, PromoTypePromoPack) {
 				card.PromoTypes = append(card.PromoTypes, PromoTypePromoPack)
+			}
+
+			// A shop names the border and these frames the way it names any
+			// promo type, so file them among them
+			if card.BorderColor == BorderColorBorderless {
+				card.PromoTypes = append(card.PromoTypes, PromoTypeBorderless)
+			}
+			if card.HasFrameEffect(FrameEffectExtendedArt) {
+				card.PromoTypes = append(card.PromoTypes, PromoTypeExtendedArt)
+			}
+			if card.HasFrameEffect(FrameEffectShowcase) {
+				card.PromoTypes = append(card.PromoTypes, PromoTypeShowcase)
 			}
 
 			// Rename DFCs into a single name
