@@ -51,6 +51,13 @@ func TestFinishSiblings(t *testing.T) {
 						t.Errorf("twin card %s (%s): %v misses the separate-printing twin %s",
 							co.Name, co.SetCode, siblings, altCo.UUID)
 					}
+					// The twin's own finishes ride along, from either side
+					for _, uuid := range altCo.FoilUUIDs {
+						if !slices.Contains(siblings, uuid) {
+							t.Errorf("twin card %s (%s): %v misses the twin's finish %s",
+								co.Name, co.SetCode, siblings, uuid)
+						}
+					}
 					checkedTwin = true
 					break
 				}

@@ -68,31 +68,36 @@ func (b *Backend) FinishSiblings(inputID string) []string {
 		siblings = append(siblings, id)
 	}
 
-	for _, finish := range []string{FinishNonfoil, FinishFoil, FinishEtched} {
-		add(co.FoilUUIDs[finish])
-	}
-	var extra []string
-	for finish := range co.FoilUUIDs {
-		switch finish {
-		case FinishNonfoil, FinishFoil, FinishEtched:
-			continue
+	addFinishes := func(co *CardObject) {
+		for _, finish := range []string{FinishNonfoil, FinishFoil, FinishEtched} {
+			add(co.FoilUUIDs[finish])
 		}
-		extra = append(extra, finish)
+		var extra []string
+		for finish := range co.FoilUUIDs {
+			switch finish {
+			case FinishNonfoil, FinishFoil, FinishEtched:
+				continue
+			}
+			extra = append(extra, finish)
+		}
+		slices.Sort(extra)
+		for _, finish := range extra {
+			add(co.FoilUUIDs[finish])
+		}
+		// A card without a registered map is its own only finish
+		add(co.UUID)
 	}
-	slices.Sort(extra)
-	for _, finish := range extra {
-		add(co.FoilUUIDs[finish])
-	}
-	// A card without a registered map is its own only finish
-	add(co.UUID)
+	addFinishes(co)
 
+	// A twin is a whole card entry, so its registered finishes come along:
+	// entering from the etched twin must still surface the base's foil.
 	for _, variation := range co.Variations {
 		altCo, found := b.UUIDs[variation]
 		if !found {
 			continue
 		}
 		if finishTwins(co, altCo) {
-			add(altCo.UUID)
+			addFinishes(altCo)
 		}
 	}
 	return siblings
