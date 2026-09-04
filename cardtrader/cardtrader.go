@@ -156,7 +156,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				theCard.Language = lang
 			}
 		case GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh, GameFleshAndBlood,
-			GamePokemon:
+			GamePokemon, GameGundam:
 			if gameLanguage(ct.gameID, product) != "en" {
 				continue
 			}
@@ -405,6 +405,8 @@ func (ct *Market) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameFleshAndBlood
 	case GamePokemon:
 		info.Game = mtgban.GamePokemon
+	case GameGundam:
+		info.Game = mtgban.GameGundam
 	}
 	return
 }
