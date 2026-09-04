@@ -703,7 +703,7 @@ func isBlindAttraction(cardName, edition, variation string) bool {
 	}
 	lit := 0
 	for _, card := range mtgmatcher.MatchInSet(cardName, "UNF") {
-		if card.AttractionLights != nil {
+		if magic.AttractionLights(&card) != "" {
 			lit++
 		}
 	}

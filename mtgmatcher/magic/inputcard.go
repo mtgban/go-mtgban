@@ -146,7 +146,7 @@ func shouldIgnoreNumber(b *mtgmatcher.Backend, c *mtgmatcher.InputCard, setName,
 
 	// Unfinity numbers could refer to Attractions
 	if mtgmatcher.Contains(c.Edition, "unf") {
-		if b.HasPrinting(c.Name, "field", "attractionLights", "UNF") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
+		if hasAttractionPrinting(b, c.Name) && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
 			return true
 		}
 	}
