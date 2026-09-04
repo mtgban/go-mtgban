@@ -1819,7 +1819,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		for i, promoElement := range promoTypeElements {
 			var withTag, withoutTag bool
 			for _, card := range outCards {
-				if card.HasPromoType(promoElement.PromoType) {
+				if promoElement.carriedBy(&card) {
 					withTag = true
 				} else {
 					withoutTag = true
@@ -1831,7 +1831,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// The treatments the listing spells out. A card that carries all of
 		// them answers everything the listing said about itself, whatever
 		// else it carries in silence.
-		var claimed []string
+		var claimed []int
 
 		var filteredOutCards []mtgmatcher.Card
 		for _, card := range outCards {
@@ -1853,23 +1853,16 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					continue
 				}
 
-				var tagPresent bool
-				if promoElement.TagFunc != nil {
-					tagPresent = promoElement.TagFunc(b, inCard)
-				} else {
-					if slices.ContainsFunc(promoElement.Tags, inCard.Contains) {
-						tagPresent = true
-					}
+				tagPresent := promoElement.claimedBy(b, inCard)
+
+				if tagPresent && !slices.Contains(claimed, i) {
+					claimed = append(claimed, i)
 				}
 
-				if tagPresent && !slices.Contains(claimed, promoElement.PromoType) {
-					claimed = append(claimed, promoElement.PromoType)
-				}
-
-				if tagPresent && !card.HasPromoType(promoElement.PromoType) {
+				if tagPresent && !promoElement.carriedBy(&card) {
 					shouldContinue = true
 					break
-				} else if !tagPresent && card.HasPromoType(promoElement.PromoType) && !promoElement.OnlyWhenNamed {
+				} else if !tagPresent && promoElement.carriedBy(&card) && !promoElement.OnlyWhenNamed {
 					shouldContinue = true
 					break
 				}
@@ -1902,8 +1895,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			var claimants []mtgmatcher.Card
 			for _, card := range outCards {
 				matches := true
-				for _, promoType := range claimed {
-					if !card.HasPromoType(promoType) {
+				for _, claim := range claimed {
+					if !promoTypeElements[claim].carriedBy(&card) {
 						matches = false
 						break
 					}
@@ -2027,7 +2020,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgmatcher.Card
 			for _, card := range outCards {
-				if borderlessCheck(b, inCard, &card) {
+				if borderlessTreatment.vetoes(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
@@ -2051,7 +2044,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					continue
 				}
 				setDate := set.ReleaseDateTime
-				if setDate.After(mtgmatcher.PromosForEverybodyYay) && extendedartCheck(b, inCard, &card) {
+				if setDate.After(mtgmatcher.PromosForEverybodyYay) && extendedArtTreatment.vetoes(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
@@ -2067,7 +2060,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgmatcher.Card
 			for _, card := range outCards {
-				if showcaseCheck(b, inCard, &card) {
+				if showcaseTreatment.vetoes(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
