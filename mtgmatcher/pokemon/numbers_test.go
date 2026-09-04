@@ -29,6 +29,49 @@ func TestPlainNumberIsPlain(t *testing.T) {
 	}
 }
 
+// TestPlainNumberDropsThePadding pins that the number a search matches is
+// the one a person writes. The catalog pads an ordinal out to three digits
+// and 12,549 printings carry the padding, so an OriginalNumber keeping it
+// answers "cn:001" and refuses "cn:1" - the strict spelling doing the loose
+// spelling's job, which is the whole failure this field exists to avoid.
+//
+// The padding inside a code is not padding: "SWSH020" is what the card is
+// named, and reducing it to "SWSH20" would invent a third spelling that is
+// neither the printed one nor a plainer one.
+func TestPlainNumberDropsThePadding(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		{"001", "1"},
+		{"01", "1"},
+		{"010", "10"},
+		{"088a", "88a"},
+		{"133", "133"},
+		{"SWSH020", "SWSH020"},
+		{"TG01", "TG01"},
+		{"H32", "H32"},
+		{"", ""},
+	} {
+		if got := plainNumber(tt.in); got != tt.want {
+			t.Errorf("plainNumber(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
+// TestPaddingIsGoneFromTheDatastore pins the same thing against every
+// printing the datastore holds, the unit test above covering only the
+// shapes it names.
+func TestPaddingIsGoneFromTheDatastore(t *testing.T) {
+	b := loadBackend(t)
+
+	for uuid, co := range b.UUIDs {
+		if co.Sealed || co.OriginalNumber == "" {
+			continue
+		}
+		if strings.HasPrefix(co.OriginalNumber, "0") {
+			t.Errorf("%s: OriginalNumber %q is still padded", uuid, co.OriginalNumber)
+		}
+	}
+}
+
 // TestPrintedFace pins that the number and the total the loader keeps apart
 // rejoin into the face the card prints, and that a card printing no total
 // stays bare. The emptiness is load-bearing: the verbatim tier reads it to
@@ -41,13 +84,14 @@ func TestPrintedFace(t *testing.T) {
 		desc     string
 		uuid     string
 		number   string
+		plain    string
 		total    string
 		wantFace string
 	}{
 		{
 			desc:   "a card whose face prints a total keeps it",
 			uuid:   "001-102_42346_holo",
-			number: "001", total: "102", wantFace: "001/102",
+			number: "001", plain: "1", total: "102", wantFace: "001/102",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -58,8 +102,10 @@ func TestPrintedFace(t *testing.T) {
 			if co.Number != tt.number {
 				t.Errorf("Number is %q, want %q", co.Number, tt.number)
 			}
-			if co.OriginalNumber != tt.number {
-				t.Errorf("OriginalNumber is %q, want %q", co.OriginalNumber, tt.number)
+			// Number is the number as written, padding and all;
+			// OriginalNumber is the one a person types.
+			if co.OriginalNumber != tt.plain {
+				t.Errorf("OriginalNumber is %q, want %q", co.OriginalNumber, tt.plain)
 			}
 			if co.SetTotal != tt.total {
 				t.Errorf("SetTotal is %q, want %q", co.SetTotal, tt.total)

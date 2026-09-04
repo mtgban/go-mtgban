@@ -27,6 +27,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -372,7 +373,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: ownNumber(card),
+			OriginalNumber: plainNumber(ownNumber(card)),
 			SetTotal:       setTotal(card),
 		}
 
@@ -525,6 +526,31 @@ func trimFinishSuffix(id string) string {
 // Number, so the split happens here rather than trusting either shape.
 func ownNumber(card *DatastoreCard) string {
 	number, _, _ := strings.Cut(card.Number, "/")
+	return number
+}
+
+// plainNumberRe matches the collector numbers that are a bare ordinal, with
+// the padding captured apart from the number it pads. That shape is the only
+// one whose leading zeros are padding: everywhere else in the game they are
+// part of a code the card is named by, and "SWSH020" reduced to "SWSH20" is
+// neither what the card prints nor a plainer way of writing it.
+var plainNumberRe = regexp.MustCompile(`^0+([0-9]+[a-zA-Z]?)$`)
+
+// plainNumber is the collector number as a person writes it, which for this
+// game means without the zeros the catalog pads an ordinal out to three
+// digits with: card 1 is written "1", not "001". It is what OriginalNumber
+// carries, the field a plain-number search matches, so "cn:1" reaches the
+// card that "cns:001" does. Number keeps the padding, being the number
+// exactly as written.
+//
+// Pokemon is the only game this applies to. Every other game here numbers a
+// card with a code - "OP04-047", "YS13-ENV08", "WTR018" - whose zeros are
+// spelling rather than padding, and none of them carries a bare ordinal at
+// all.
+func plainNumber(number string) string {
+	if m := plainNumberRe.FindStringSubmatch(number); m != nil {
+		return m[1]
+	}
 	return number
 }
 
