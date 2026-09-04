@@ -46,6 +46,7 @@ const (
 	GameUnionArena        = 21
 	GameRiftbound         = 22
 	GameGundam            = 23
+	GamePalworld          = 26
 )
 
 // The catalog categories. Card Trader splits every game into product types of
@@ -203,6 +204,36 @@ const (
 	CategoryPokemonBlisters         = 190
 )
 
+// The Gundam category ids run 272-281 and then jump to 287: 282 is Lorcana's
+// and 283-286 belong to Riftbound and Flesh and Blood, so the run is spelled
+// out rather than derived from an iota base, the way One Piece's is.
+const (
+	CategoryGundamSingles      = 272
+	CategoryGundamBoosterBoxes = 273
+	CategoryGundamBoosters     = 274
+	CategoryGundamStarterDecks = 275
+	CategoryGundamPlaymats     = 276
+	CategoryGundamSleeves      = 277
+	CategoryGundamBundles      = 278
+	CategoryGundamDeckBoxes    = 279
+	CategoryGundamMemorabilia  = 280
+	CategoryGundamBoxDisplays  = 281
+	CategoryGundamDice         = 287
+)
+
+// The Palworld categories, spelled out for the same reason: 299 sits inside
+// the run and is One Piece's oversized shelf.
+const (
+	CategoryPalworldSingles      = 298
+	CategoryPalworldBoosterBoxes = 300
+	CategoryPalworldBoosters     = 301
+	CategoryPalworldStarterDecks = 302
+	CategoryPalworldBundles      = 303
+	CategoryPalworldPlaymats     = 304
+	CategoryPalworldSleeves      = 305
+	CategoryPalworldDeckBoxes    = 306
+)
+
 // The Flesh and Blood categories.
 const (
 	CategoryFleshAndBloodSingles             = 80
@@ -279,6 +310,12 @@ type Product struct {
 
 		OnePieceLanguage string `json:"onepiece_language,omitempty"`
 		OnePieceFoil     bool   `json:"onepiece_foil,omitempty"`
+
+		// Gundam and Palworld carry no foil property either, and need
+		// none: every printing of theirs is a product of its own, told
+		// apart by the rarity its number or its version names.
+		GundamLanguage   string `json:"gundam_language,omitempty"`
+		PalworldLanguage string `json:"palworld_language,omitempty"`
 
 		// Yu-Gi-Oh carries no foil property: the rarity is the finish.
 		// Its treatment is the print run instead, which every listing

@@ -241,6 +241,9 @@ var options = map[string]*scraperOption{
 	"cardtrader_fleshandblood": {
 		Init: cardtraderMarketScraper(cardtrader.GameFleshAndBlood),
 	},
+	"cardtrader_gundam": {
+		Init: cardtraderMarketScraper(cardtrader.GameGundam),
+	},
 	"cardtrader_lorcana": {
 		Init: cardtraderMarketScraper(cardtrader.GameLorcana),
 	},
@@ -258,6 +261,9 @@ var options = map[string]*scraperOption{
 	},
 	"cardtrader_sealed_fleshandblood": {
 		Init: cardtraderSealedScraper(cardtrader.GameFleshAndBlood),
+	},
+	"cardtrader_sealed_gundam": {
+		Init: cardtraderSealedScraper(cardtrader.GameGundam),
 	},
 	"cardtrader_sealed_lorcana": {
 		Init: cardtraderSealedScraper(cardtrader.GameLorcana),

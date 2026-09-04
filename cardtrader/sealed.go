@@ -37,7 +37,7 @@ func NewScraperSealed(gameID int, token string) (*Sealed, error) {
 	// simply all fail the language read and the scraper would run empty.
 	switch gameID {
 	case GameMagic, GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh, GameFleshAndBlood,
-		GamePokemon:
+		GamePokemon, GameGundam:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
@@ -240,16 +240,19 @@ var accessoryWords = map[int]string{
 	CategoryMagicDeckBoxes: "deck box", CategoryYuGiOhDeckBoxes: "deck box",
 	CategoryPokemonDeckBoxes: "deck box", CategoryLorcanaDeckBoxes: "deck box",
 	CategoryOnePieceDeckBoxes: "deck box", CategoryRiftboundDeckBoxes: "deck box",
+	CategoryGundamDeckBoxes: "deck box", CategoryPalworldDeckBoxes: "deck box",
 
 	CategoryMagicSleeves: "sleeve", CategoryYuGiOhSleeves: "sleeve",
 	CategoryPokemonSleeves: "sleeve", CategoryLorcanaSleeves: "sleeve",
 	CategoryOnePieceSleeves: "sleeve", CategoryRiftboundSleeves: "sleeve",
 	CategoryFleshAndBloodSleeves: "sleeve",
+	CategoryGundamSleeves:        "sleeve", CategoryPalworldSleeves: "sleeve",
 
 	CategoryMagicPlaymats: "playmat", CategoryYuGiOhPlaymats: "playmat",
 	CategoryPokemonPlaymats: "playmat", CategoryLorcanaPlaymats: "playmat",
 	CategoryOnePiecePlaymats: "playmat", CategoryRiftboundPlaymats: "playmat",
 	CategoryFleshAndBloodPlaymats: "playmat",
+	CategoryGundamPlaymats:        "playmat", CategoryPalworldPlaymats: "playmat",
 
 	CategoryMagicAlbums: "album", CategoryYuGiOhAlbums: "album",
 	CategoryPokemonAlbums: "album", CategoryLorcanaAlbums: "album",
@@ -257,6 +260,7 @@ var accessoryWords = map[int]string{
 
 	CategoryMagicDice: "dice", CategoryYuGiOhDice: "dice",
 	CategoryPokemonDice: "dice", CategoryFleshAndBloodDice: "dice",
+	CategoryGundamDice: "dice",
 
 	CategoryMagicDividers: "divider", CategoryYuGiOhDividers: "divider",
 	CategoryPokemonDividers: "divider",
@@ -428,6 +432,8 @@ func (ct *Sealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameFleshAndBlood
 	case GamePokemon:
 		info.Game = mtgban.GamePokemon
+	case GameGundam:
+		info.Game = mtgban.GameGundam
 	}
 	return
 }
