@@ -66,6 +66,8 @@ var SupportedGames = map[string]int{
 	mtgban.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
 	mtgban.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
 	mtgban.GamePokemon:       tcgplayer.CategoryPokemon,
+	mtgban.GameGundam:        tcgplayer.CategoryGundam,
+	mtgban.GamePalworld:      tcgplayer.CategoryPalworld,
 }
 
 // NewScraperGame returns a singles scraper for one game, authenticated with a

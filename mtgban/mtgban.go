@@ -132,6 +132,8 @@ const (
 	GameYuGiOh        = "YuGiOh"
 	GameFleshAndBlood = "FleshAndBlood"
 	GamePokemon       = "Pokemon"
+	GameGundam        = "Gundam"
+	GamePalworld      = "Palworld"
 )
 
 // ScraperInfo contains
