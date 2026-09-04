@@ -821,14 +821,36 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 }
 
 // AliasEdition spells an edition string toward a set name using the string
-// alone. Magic's edition fixup interleaves the string aliasing with the
-// card-dependent rules, so the card-free projection is taken by running the
-// fixup over a card carrying nothing but the edition - every name- and
-// variation-keyed rule idles. See mtgmatcher.GameRules.
-func (r Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
-	card := mtgmatcher.InputCard{Edition: edition}
-	r.AdjustEdition(b, &card)
-	return card.Edition
+// alone, through the same helpers AdjustEdition reads its wording with -
+// only the rules that need a name or a variation are absent, since a bare
+// edition cannot trip them. The projection test replays this against the
+// card path over every edition either knows, so a rule added to one and not
+// the other fails there instead of drifting. See mtgmatcher.GameRules.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = tableEdition(b, edition)
+	// The card path syncs the card here and reads it for the set-family
+	// checks, so they see this spelling while the aliasing continues.
+	cardEdition := edition
+
+	edition, _ = boxSetEdition(b, "", edition, "")
+	edition, _, _ = setFamilyEdition(b, "", edition, cardEdition, "")
+
+	// The name-keyed fixups past this point go quiet on a bare edition,
+	// except these; the empty cases shadow the rules below them exactly as
+	// their name-keyed counterparts do on the card path.
+	switch {
+	case saysMysteryList(edition, ""):
+	case mtgmatcher.Contains(edition, "Secret Lair") || strings.Contains(edition, "SLD"):
+	case strings.Contains(edition, "Chronicles") &&
+		(mtgmatcher.Contains(edition, "Japanese") || mtgmatcher.Contains(edition, "FBB")):
+		edition = "Chronicles Foreign Black Border"
+	case mtgmatcher.Contains(edition, "Oversize") && !mtgmatcher.Contains(edition, "Plane") &&
+		!mtgmatcher.Contains(edition, "Phenomenon"):
+	case mtgmatcher.Contains(edition, "Phyrexia: All") && mtgmatcher.Contains(edition, "Concept"):
+		edition = "ignored"
+	}
+
+	return edition
 }
 
 // namesTokenSetParent reports whether an edition names the set a token sheet
