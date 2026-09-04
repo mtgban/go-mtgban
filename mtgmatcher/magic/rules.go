@@ -36,12 +36,33 @@ func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.Inp
 	//
 	// The word is looked for with strings rather than Contains, which
 	// filters "token" away before the comparison ever sees it.
-	if (strings.Contains(strings.ToLower(inCard.Edition), "token") ||
-		strings.Contains(strings.ToLower(inCard.Variation), "token")) &&
-		!inCard.Contains("League") && !carriesTokens(b, inCard.Edition) {
-		return true
+	editionSaysToken := strings.Contains(strings.ToLower(inCard.Edition), "token")
+	variationSaysToken := strings.Contains(strings.ToLower(inCard.Variation), "token")
+	if (editionSaysToken || variationSaysToken) && !inCard.Contains("League") {
+		if !carriesTokens(b, inCard.Edition) {
+			return true
+		}
+		// The set's sheet being carried admits the edition, but a
+		// variation saying token asks for a token by this name; when
+		// none is filed the name can only reach the card sharing its
+		// bucket, and a token listing must not price the card.
+		if variationSaysToken && !editionSaysToken && !namesAToken(b, inCard.Name) {
+			return true
+		}
 	}
 	return isSpecificUnsupported(inCard)
+}
+
+// namesAToken reports whether a name is a token's: spelled with the word
+// itself, or filed under the key that appends it - where every plain-named
+// token lives, its bare form left to whatever card normalizes the same way.
+func namesAToken(b *mtgmatcher.Backend, name string) bool {
+	norm := mtgmatcher.Normalize(name)
+	if strings.HasSuffix(norm, "token") {
+		return true
+	}
+	_, found := b.CanonicalNames[norm+"token"]
+	return found
 }
 
 // carriesTokens reports whether an edition names a set whose tokens the
