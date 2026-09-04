@@ -358,23 +358,6 @@ func isMysteryList(c *mtgmatcher.InputCard) bool {
 	return saysMysteryList(c.Edition, c.Variation)
 }
 
-// saysPrerelease and saysPromoPack are InputCard.IsPrerelease and
-// IsPromoPack over the wording alone; they fold back into one spelling once
-// Match's promo narrowing moves into this package and frees those methods.
-func saysPrerelease(edition, variation string) bool {
-	return mtgmatcher.Contains(edition, "Prerelease") || mtgmatcher.Contains(variation, "Prerelease") ||
-		mtgmatcher.Contains(edition, "Preview") || mtgmatcher.Contains(variation, "Preview")
-}
-
-func saysPromoPack(edition, variation string) bool {
-	return mtgmatcher.Contains(edition, "Promo Pack") || mtgmatcher.Contains(variation, "Promo Pack") ||
-		variation == "Dark Frame Promo" ||
-		mtgmatcher.Contains(variation, "Planeswalker Stamp") ||
-		mtgmatcher.Contains(variation, "Silver Stamped") ||
-		(strings.HasSuffix(mtgmatcher.ExtractNumber(variation), "p") &&
-			!mtgmatcher.Contains(edition, "30th") && !mtgmatcher.Contains(variation, "30th"))
-}
-
 // saysMysteryList is isMysteryList over the wording alone, for the edition
 // alias, which has no card to read.
 func saysMysteryList(edition, variation string) bool {
