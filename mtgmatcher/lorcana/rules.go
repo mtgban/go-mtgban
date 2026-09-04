@@ -246,12 +246,18 @@ func soleSet(b *mtgmatcher.Backend, edition string) string {
 // the Floodborn") or append catalog suffixes ("... Singles"). An edition that
 // still matches no set name simply does not narrow the candidates (the Match
 // skeleton falls back to every printing), so trimming can only help.
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := trimEdition(inCard.Edition)
+func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	inCard.Edition = r.AliasEdition(b, inCard.Edition)
+}
+
+// AliasEdition spells an edition string toward a set name using the string
+// alone. See mtgmatcher.GameRules.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition = trimEdition(edition)
 	if mtgmatcher.IsPromoHeading(edition) {
 		edition = ""
 	}
-	inCard.Edition = edition
+	return edition
 }
 
 // trimEdition strips the game name a storefront prefixes a set with and the
