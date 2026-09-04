@@ -1222,10 +1222,13 @@ func misprintCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mt
 		return false
 	}
 
+	// The star is not always a misprint's: where a set filed the foil as a
+	// card of its own, the twin's number wears one too, and dropping it
+	// takes the foil printing of an ordinary card
 	hasSuffix := strings.HasSuffix(card.Number, SuffixVariant) || strings.HasSuffix(card.Number, SuffixSpecial)
 	if inCard.Contains("Misprint") && !hasSuffix {
 		return true
-	} else if !inCard.Contains("Misprint") && hasSuffix {
+	} else if !inCard.Contains("Misprint") && hasSuffix && !b.IsFinishTwin(card.UUID) {
 		return true
 	}
 	return false
