@@ -28,6 +28,7 @@ func TestSecretLairDrop(t *testing.T) {
 		{"any wording at all names the drop", "Kodama's Reach (2294 Reskin)", false},
 		{"a name standing at one drop needs none", "Sliver Hive", false},
 		{"nor does a drop whose other number is its foil twin", "Aether Vial", false},
+		{"nor one whose other number is its step-and-compleat", "Plague Sliver", false},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			card, err := preprocess(tt.name, "Secret Lair", "")
