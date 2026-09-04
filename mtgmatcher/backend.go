@@ -74,6 +74,21 @@ type SealedProduct struct {
 
 // Set is an edition and everything printed in it, cards and sealed alike.
 type Set struct {
+	// BaseSetSize is how many cards the set's base run holds - the "167" a
+	// Magic or Pokemon card prints beside its number, and the same count
+	// where the game publishes it in data instead. Cards numbered above it
+	// are the ones added past that run: Pokemon's secret rares, Lorcana's
+	// enchanted.
+	//
+	// Only four games say it: Magic and Pokemon print it on the card,
+	// Lorcana publishes it as cardCounts.base and Riftbound as
+	// collectorNumberMax. Yu-Gi-Oh, Flesh and Blood, One Piece, Gundam and
+	// Palworld publish no set size at all, and nothing here may invent one
+	// from the highest number carried - the alternate arts and parallel
+	// rares run past the base run, which is the very thing this measures.
+	// Beware a count that looks like one and is not: YGOPRODeck's
+	// num_of_cards is a tally of printings, 355 for a Legend of Blue Eyes
+	// numbered to 126. So zero means "unknown", never "empty".
 	BaseSetSize   int    `json:"baseSetSize"`
 	Code          string `json:"code"`
 	Cards         []Card `json:"cards"`

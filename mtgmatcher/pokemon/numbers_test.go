@@ -1,6 +1,7 @@
 package pokemon
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -84,4 +85,60 @@ func TestPrintedFace(t *testing.T) {
 			t.Skip("no totalless printing in this datastore")
 		}
 	})
+}
+
+// TestBaseSetSize pins the set size the builder reads off the totals its
+// cards print. A pooled set carries none on purpose: World Championship
+// Decks holds cards printed 74/109 beside cards printed 87/101, so there is
+// no one size to report and reporting the commonest would be a guess.
+func TestBaseSetSize(t *testing.T) {
+	b := loadBackend(t)
+
+	var sized int
+	for _, set := range b.Sets {
+		if set.BaseSetSize > 0 {
+			sized++
+		}
+	}
+	if sized == 0 {
+		t.Skip("this datastore predates the published set size")
+	}
+
+	for _, tt := range []struct {
+		code string
+		want int
+	}{
+		{"OBF", 197},
+		{"MEG", 132},
+		{"PRE", 131},
+		{"BS", 102},
+		// Pooled: its cards keep the total of wherever they first appeared.
+		{"WCD", 0},
+	} {
+		set, found := b.Sets[tt.code]
+		if !found {
+			t.Errorf("%s is not a set", tt.code)
+			continue
+		}
+		if set.BaseSetSize != tt.want {
+			t.Errorf("%s: BaseSetSize is %d, want %d", tt.code, set.BaseSetSize, tt.want)
+		}
+	}
+
+	// Whatever a set does report has to be the total its own cards print.
+	for code, set := range b.Sets {
+		if set.BaseSetSize == 0 {
+			continue
+		}
+		want := fmt.Sprint(set.BaseSetSize)
+		for _, card := range set.Cards {
+			if card.SetTotal == "" {
+				continue
+			}
+			if strings.TrimLeft(card.SetTotal, "0") != want {
+				t.Errorf("%s: set size %s but %s prints %s", code, want, card.UUID, card.SetTotal)
+				break
+			}
+		}
+	}
 }

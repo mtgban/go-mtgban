@@ -65,6 +65,11 @@ type DatastoreSet struct {
 	Name         string `json:"name"`
 	ReleaseDate  string `json:"releaseDate"`
 	Abbreviation string `json:"abbreviation,omitempty"`
+	// BaseSetSize is how many cards the set was printed with, the total its
+	// cards print beside their number. It is absent on the pooled sets,
+	// whose cards keep the total of wherever they were first printed and so
+	// agree on none.
+	BaseSetSize int `json:"baseSetSize,omitempty"`
 	// Type is "promo" on the sets that hand their cards out rather than
 	// sell them in packs, and empty on every other.
 	Type string `json:"type,omitempty"`
@@ -256,6 +261,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Type:            set.Type,
 			ReleaseDate:     set.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
+			BaseSetSize:     set.BaseSetSize,
 		}
 	}
 	sort.Strings(b.AllSets)

@@ -34,6 +34,13 @@ type AllCards struct {
 		Type           string `json:"type"`
 		Number         int    `json:"number"`
 		Name           string `json:"name"`
+		// CardCounts is upstream's own tally of the set. Base is the
+		// numbered run a card prints its number out of - the 204 of
+		// "12/204" - with the enchanted and promo printings counted
+		// separately, above it.
+		CardCounts struct {
+			Base int `json:"base"`
+		} `json:"cardCounts"`
 	} `json:"sets"`
 	Cards []struct {
 		Abilities []struct {
@@ -228,6 +235,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			ReleaseDate:     set.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
 			Type:            set.Type,
+			BaseSetSize:     set.CardCounts.Base,
 		}
 	}
 	b.IndexSets()
@@ -535,10 +543,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		b.Sets[code].IsFoilOnly = true
 		b.Sets[code].IsNonFoilOnly = true
 		for _, card := range b.Sets[code].Cards {
-			if b.Sets[code].BaseSetSize == 0 && card.Rarity == "enchanted" {
-				b.Sets[code].BaseSetSize, _ = strconv.Atoi(card.Number)
-			}
-
 			if card.HasFinish("nonfoil") {
 				b.Sets[code].IsNonFoilOnly = false
 			}
