@@ -164,7 +164,7 @@ func shouldIgnoreNumber(c *mtgmatcher.InputCard, setName, num string) bool {
 // isPremiereShop reports a Magic Premiere Shop basic land. It compares the raw
 // strings because the folded form is too short to be safe.
 func isPremiereShop(c *mtgmatcher.InputCard) bool {
-	return isBasicLand(c) &&
+	return isBasicLand(c.Name) &&
 		// XXX: do not use c.Contains here
 		(strings.Contains(c.Variation, "MPS") ||
 			strings.Contains(c.Variation, "Premier") || // csi
@@ -267,7 +267,7 @@ func isChineseAltArt(c *mtgmatcher.InputCard) bool {
 // isBasicFullArt reports a full art basic land, refusing the negations that
 // storefronts write in the same field.
 func isBasicFullArt(c *mtgmatcher.InputCard) bool {
-	return isBasicLand(c) &&
+	return isBasicLand(c.Name) &&
 		(mtgmatcher.Contains(c.Variation, "full art") ||
 			c.Variation == "FA") && // csi
 		!mtgmatcher.Contains(c.Variation, "non") &&
@@ -276,7 +276,7 @@ func isBasicFullArt(c *mtgmatcher.InputCard) bool {
 
 // isBasicNonFullArt reports a basic land explicitly marked as not full art.
 func isBasicNonFullArt(c *mtgmatcher.InputCard) bool {
-	return isBasicLand(c) &&
+	return isBasicLand(c.Name) &&
 		mtgmatcher.Contains(c.Variation, "non-full art") ||
 		mtgmatcher.Contains(c.Variation, "Intro") || // abu
 		mtgmatcher.Contains(c.Variation, "NOT the full art") // csi
@@ -355,9 +355,16 @@ func isResale(c *mtgmatcher.InputCard) bool {
 // isMysteryList reports a Mystery Booster or The List printing. The List is
 // matched raw, since folded it also matches The Little.
 func isMysteryList(c *mtgmatcher.InputCard) bool {
-	return c.Contains("Mystery") || c.Contains("Planeswalker Symbol Reprints") ||
-		// Cannot use c.Contains because it trips with "The Little"
-		strings.Contains(c.Edition, "The List") || strings.Contains(c.Variation, "The List")
+	return saysMysteryList(c.Edition, c.Variation)
+}
+
+// saysMysteryList is isMysteryList over the wording alone, for the edition
+// alias, which has no card to read.
+func saysMysteryList(edition, variation string) bool {
+	return mtgmatcher.Contains(edition, "Mystery") || mtgmatcher.Contains(variation, "Mystery") ||
+		mtgmatcher.Contains(edition, "Planeswalker Symbol Reprints") ||
+		mtgmatcher.Contains(variation, "Planeswalker Symbol Reprints") ||
+		strings.Contains(edition, "The List") || strings.Contains(variation, "The List")
 }
 
 // isDuelDecks reports a Duel Decks printing, named by the two sides it pits
@@ -452,7 +459,7 @@ func isReskin(c *mtgmatcher.InputCard) bool {
 		mtgmatcher.Contains(c.Variation, "Dracula") ||
 		mtgmatcher.Contains(c.Variation, "Godzilla")) &&
 		// Needed to distinguish the SLD godzilla lands
-		!isBasicLand(c)
+		!isBasicLand(c.Name)
 }
 
 // isGenericAltArt reports alternate art, matching Alternative as well as Alt.

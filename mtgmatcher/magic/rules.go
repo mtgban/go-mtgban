@@ -62,9 +62,10 @@ func carriesTokens(b *mtgmatcher.Backend, edition string) bool {
 
 // ravnicaWeekend resolves a Ravnica Weekend printing to its edition and
 // collector number, by number when the input carries one and by guild name
-// through the variant tables otherwise.
-func ravnicaWeekend(c *mtgmatcher.InputCard) (string, string) {
-	num := mtgmatcher.ExtractNumber(c.Variation)
+// through the variant tables otherwise. The wording is the card's own
+// edition and variation, or a bare edition and empties on the alias path.
+func ravnicaWeekend(name, edition, variation string) (string, string) {
+	num := mtgmatcher.ExtractNumber(variation)
 	if strings.HasPrefix(num, "a") {
 		return "GRN Ravnica Weekend", num
 	} else if strings.HasPrefix(num, "b") {
@@ -72,47 +73,49 @@ func ravnicaWeekend(c *mtgmatcher.InputCard) (string, string) {
 	}
 
 	for _, guild := range mtgmatcher.GRNGuilds {
-		if c.Contains(guild) {
-			return "GRN Ravnica Weekend", prwkVariants[c.Name][strings.ToLower(guild)]
+		if mtgmatcher.Contains(edition, guild) || mtgmatcher.Contains(variation, guild) {
+			return "GRN Ravnica Weekend", prwkVariants[name][strings.ToLower(guild)]
 		}
 	}
 	for _, guild := range mtgmatcher.ARNGuilds {
-		if c.Contains(guild) {
-			return "RNA Ravnica Weekend", prw2Variants[c.Name][strings.ToLower(guild)]
+		if mtgmatcher.Contains(edition, guild) || mtgmatcher.Contains(variation, guild) {
+			return "RNA Ravnica Weekend", prw2Variants[name][strings.ToLower(guild)]
 		}
 	}
 	return "", ""
 }
 
-// ravnicaGuildKit returns which Guild Kit the listing names, by set name or
-// set code, or an empty string if it names none. Moved from InputCard, where
-// the method served no caller but this file.
-func ravnicaGuildKit(c *mtgmatcher.InputCard) string {
-	if !c.Contains("Guild Kit") {
+// ravnicaGuildKit returns which Guild Kit the wording names, by set name or
+// set code, or an empty string if it names none.
+func ravnicaGuildKit(name, edition, variation string) string {
+	contains := func(prop string) bool {
+		return mtgmatcher.Contains(edition, prop) || mtgmatcher.Contains(variation, prop)
+	}
+	if !contains("Guild Kit") {
 		return ""
 	}
 
-	if c.Contains("Guilds of Ravnica") || c.Contains("GRN") {
+	if contains("Guilds of Ravnica") || contains("GRN") {
 		return "GRN Guild Kit"
 	}
-	if c.Contains("Ravnica Allegiance") || c.Contains("RNA") {
+	if contains("Ravnica Allegiance") || contains("RNA") {
 		return "RNA Guild Kit"
 	}
 
-	if slices.ContainsFunc(mtgmatcher.GRNGuilds, c.Contains) {
+	if slices.ContainsFunc(mtgmatcher.GRNGuilds, contains) {
 		return "GRN Guild Kit"
 	}
-	if slices.ContainsFunc(mtgmatcher.ARNGuilds, c.Contains) {
+	if slices.ContainsFunc(mtgmatcher.ARNGuilds, contains) {
 		return "RNA Guild Kit"
 	}
 
-	if isBasicLand(c) {
+	if isBasicLand(name) {
 		return "Guild Kit"
 	}
-	if len(mtgmatcher.MatchInSet(c.Name, "GK1")) > 0 {
+	if len(mtgmatcher.MatchInSet(name, "GK1")) > 0 {
 		return "GRN Guild Kit"
 	}
-	if len(mtgmatcher.MatchInSet(c.Name, "GK2")) > 0 {
+	if len(mtgmatcher.MatchInSet(name, "GK2")) > 0 {
 		return "RNA Guild Kit"
 	}
 
@@ -162,25 +165,158 @@ var mediaInsertOriginals = map[string]struct {
 	"Wrath of God":     {marker: "1", number: "2025-3"},
 }
 
-// AdjustEdition normalizes the edition a storefront published toward a set
-// name. See mtgmatcher.GameRules.
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := inCard.Edition
-	variation := inCard.Variation
-
+// tableEdition spells an edition through the set codes and the alias table:
+// a code becomes its set's name, and a name the table knows becomes the one
+// the datastore files it under.
+func tableEdition(b *mtgmatcher.Backend, edition string) string {
 	set, found := b.Sets[strings.ToUpper(edition)]
 	if found {
 		edition = set.Name
 	}
-	ed, found := EditionTable[edition]
-	if found {
+	if ed, found := EditionTable[edition]; found {
 		edition = ed
 	}
-	set, found = b.Sets[strings.ToUpper(variation)]
+	return edition
+}
+
+// trimEditionDecorations cuts the decorations storefronts hang on an edition
+// name - the game-name prefixes, the text past a dash, the known suffix tags
+// - respelling through the alias table after each cut, and reports whether
+// anything came off. keepDashes says the wording spells a promo whose dash
+// belongs to the name rather than a decoration.
+func trimEditionDecorations(edition string, keepDashes bool) (string, bool) {
+	trimmed := false
+	for _, prefix := range []string{
+		"Magic: The Gathering - ",
+		"Magic: the Gathering - ",
+		"Magic: The Gathering | ",
+		"Magic: the Gathering | ",
+	} {
+		edition = strings.TrimPrefix(edition, prefix)
+	}
+
+	// Test for "- " and " -" to avoid catching dashes in the name itself
+	if !keepDashes && (strings.Contains(edition, "- ") || strings.Contains(edition, " -")) {
+		edition = strings.TrimSpace(strings.Split(edition, "-")[0])
+		if ed, found := EditionTable[edition]; found {
+			edition = ed
+		}
+		trimmed = true
+	}
+	for _, tag := range []string{
+		"Box Toppers",
+		"(Collector Edition)",
+		"Collectors",
+		"Collector Booster",
+		"Extras",
+		"Variants",
+		"Etched",
+		"Serialized",
+		"Surge Foil",
+		"Holiday Release",
+		"Alternate Foil",
+		"Retro Frame",
+	} {
+		if strings.HasSuffix(edition, tag) {
+			edition = strings.TrimSuffix(edition, tag)
+			edition = strings.TrimSpace(edition)
+			edition = strings.TrimSuffix(edition, ":")
+			edition = strings.TrimSuffix(edition, "-")
+			edition = strings.TrimSpace(edition)
+			if ed, found := EditionTable[edition]; found {
+				edition = ed
+			}
+			trimmed = true
+		}
+	}
+	return edition, trimmed
+}
+
+// trimUniversesBeyond cuts the Universes Beyond heading off an edition name,
+// respelling what remains through the alias table.
+func trimUniversesBeyond(edition string) string {
+	edition = strings.TrimPrefix(edition, "Universes Beyond")
+	edition = strings.TrimPrefix(edition, "UB")
+	edition = strings.TrimLeft(edition, ":- ")
+	if ed, found := EditionTable[edition]; found {
+		edition = ed
+	}
+	return edition
+}
+
+// boxSetEdition names the box set an edition spells, or trims the
+// decorations off one naming none, reporting whether anything came off.
+func boxSetEdition(edition string) (string, bool) {
+	switch {
+	case mtgmatcher.Contains(edition, "Mythic Edition"):
+		return "Mythic Edition", false
+	case strings.Contains(edition, "Invocation"):
+		return "Amonkhet Invocations", false
+	case strings.Contains(edition, "Inventions"):
+		return "Kaladesh Inventions", false
+	case strings.Contains(edition, "Expeditions") && !strings.Contains(edition, "Rising"):
+		return "Zendikar Expeditions", false
+	case strings.Contains(edition, "Expeditions") && strings.Contains(edition, "Rising"):
+		return "Zendikar Rising Expeditions", false
+	case mtgmatcher.Contains(edition, "Timeshift") && mtgmatcher.Contains(edition, "Spiral") &&
+		!saysMysteryList(edition, ""):
+		// The card's name is what picks the timeshifted sheet; the fixup
+		// asks it after the aliasing, and the trims stay off either way.
+		return edition, false
+	}
+	// A Prerelease, PromoPack or MB1/List dash separates data, not a
+	// decoration; those are processed elsewhere
+	keepDashes := mtgmatcher.Contains(edition, "Prerelease") || mtgmatcher.Contains(edition, "Preview") ||
+		mtgmatcher.Contains(edition, "Promo Pack") || saysMysteryList(edition, "")
+	return trimEditionDecorations(edition, keepDashes)
+}
+
+// setFamilyEdition resolves the set families told apart by their wording -
+// the Universes Beyond and Commander headings, the Ravnica weekends and
+// guild kits, the junior series - returning the edition, the variation, and
+// whether the wording asked for the beyond-base-set search. cardEdition is
+// the spelling the card still holds while the aliasing continues on
+// edition; the alias passes its own pre-trim spelling there.
+func setFamilyEdition(b *mtgmatcher.Backend, name, edition, cardEdition, variation string) (string, string) {
+	contains := func(prop string) bool {
+		return mtgmatcher.Contains(cardEdition, prop) || mtgmatcher.Contains(variation, prop)
+	}
+	switch {
+	case strings.HasPrefix(edition, "Universes Beyond"),
+		strings.HasPrefix(edition, "UB:"):
+		edition = trimUniversesBeyond(edition)
+	case strings.Contains(edition, "Commander") &&
+		(!contains("Oversize") || contains("Plane") || contains("Phenomenon")) &&
+		!contains("Party"):
+		ed := b.ParseCommanderEdition(edition, variation)
+		if ed != "" {
+			edition = ed
+		}
+	case contains("Ravnica Weekend"):
+		ed, vr := ravnicaWeekend(name, cardEdition, variation)
+		if ed != "" {
+			edition, variation = ed, vr
+		}
+	case contains("Guild Kit"):
+		ed := ravnicaGuildKit(name, cardEdition, variation)
+		if ed != "" {
+			edition = ed
+		}
+	}
+	return edition, variation
+}
+
+// AdjustEdition normalizes the edition a storefront published toward a set
+// name. See mtgmatcher.GameRules.
+func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	edition, trimmed := aliasEdition(b, inCard.Edition)
+	variation := inCard.Variation
+
+	set, found := b.Sets[strings.ToUpper(variation)]
 	if found && (isJudge(inCard) || isDuelDecks(inCard) || isDuelDecksAnthology(inCard)) {
 		edition = set.Name
 	}
-	ed, found = EditionTable[variation]
+	ed, found := EditionTable[variation]
 	// The Anthologies set has one land with a variant named as an expansion,
 	// so what is found should not overwrite the edition in this case
 	// As for The List, ignore any further variation
@@ -194,112 +330,39 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			variation = "Etched"
 		}
 	}
+	// If no other variation, set this flag to do a best effort search
+	if trimmed && variation == "" {
+		inCard.BeyondBaseSet = true
+	}
 	inCard.Edition = edition
 	inCard.Variation = variation
 
-	// Adjust box set
+	// What only the card's own wording can add to the aliasing: the box
+	// sets its variation names, and the timeshifted sheet its name picks
 	switch {
-	case inCard.Contains("Mythic Edition"):
+	case mtgmatcher.Contains(variation, "Mythic Edition"):
 		edition = "Mythic Edition"
-	case strings.Contains(edition, "Invocation") ||
-		((edition == "Hour of Devastation" || edition == "Amonkhet") &&
-			strings.Contains(inCard.Variation, "Invocation")):
+	case (edition == "Hour of Devastation" || edition == "Amonkhet") &&
+		strings.Contains(variation, "Invocation"):
 		edition = "Amonkhet Invocations"
-	case strings.Contains(edition, "Inventions"):
-		edition = "Kaladesh Inventions"
-	case strings.Contains(edition, "Expeditions") && !strings.Contains(edition, "Rising"):
-		edition = "Zendikar Expeditions"
-	case strings.Contains(edition, "Expeditions") && strings.Contains(edition, "Rising"):
-		edition = "Zendikar Rising Expeditions"
-	case inCard.Contains("Timeshift") && inCard.Contains("Spiral") && !isMysteryList(inCard):
+	case (mtgmatcher.Contains(edition, "Timeshift") || mtgmatcher.Contains(variation, "Timeshift")) &&
+		(mtgmatcher.Contains(edition, "Spiral") || mtgmatcher.Contains(variation, "Spiral")) &&
+		!isMysteryList(inCard):
 		if len(b.MatchInSet(inCard.Name, "TSB")) != 0 {
 			edition = b.Sets["TSB"].Name
 		} else if len(b.MatchInSet(inCard.Name, "TSR")) != 0 {
 			edition = b.Sets["TSR"].Name
 		}
-	default:
-		edition = strings.TrimPrefix(edition, "Magic: The Gathering - ")
-		edition = strings.TrimPrefix(edition, "Magic: the Gathering - ")
-		edition = strings.TrimPrefix(edition, "Magic: The Gathering | ")
-		edition = strings.TrimPrefix(edition, "Magic: the Gathering | ")
+	}
 
-		// Cut the edition at the first dash, but avoid Prerelease and PromoPack and MB1/List cards
-		// since they are often separated with a dash, but are processed elsewhere
-		// Test for "- " and " -" to avoid catching dashes in the name of the edition
-		if !inCard.IsPrerelease() && !inCard.IsPromoPack() && !isMysteryList(inCard) &&
-			(strings.Contains(edition, "- ") || strings.Contains(edition, " -")) {
-			edition = strings.Split(edition, "-")[0]
-			edition = strings.TrimSpace(edition)
-
-			// Check if the edition name needs further processing
-			ed, found = EditionTable[edition]
-			if found {
-				edition = ed
-			}
-
-			if variation == "" {
-				inCard.BeyondBaseSet = true
-			}
-		}
-		// Loop through known editions tags
-		for _, tag := range []string{
-			"Box Toppers",
-			"(Collector Edition)",
-			"Collectors",
-			"Collector Booster",
-			"Extras",
-			"Variants",
-			"Etched",
-			"Serialized",
-			"Surge Foil",
-			"Holiday Release",
-			"Alternate Foil",
-			"Retro Frame",
-		} {
-			// Strip away any extra tags
-			if strings.HasSuffix(edition, tag) {
-				edition = strings.TrimSuffix(edition, tag)
-				edition = strings.TrimSpace(edition)
-				edition = strings.TrimSuffix(edition, ":")
-				edition = strings.TrimSuffix(edition, "-")
-				edition = strings.TrimSpace(edition)
-
-				// Check if the edition name needs further processing
-				ed, found = EditionTable[edition]
-				if found {
-					edition = ed
-				}
-
-				// If no other variation, set this flag to do a best effort search
-				if variation == "" {
-					inCard.BeyondBaseSet = true
-				}
-			}
-		}
+	// A card whose wording is nothing but the edition has nothing to add
+	// to the aliasing; anything more gets a second look at the set
+	// families, read over the spelling the aliasing settled on.
+	if inCard.Name != "" || variation != "" {
+		edition, variation = setFamilyEdition(b, inCard.Name, edition, edition, variation)
 	}
 
 	switch {
-	case strings.HasPrefix(edition, "Universes Beyond"),
-		strings.HasPrefix(edition, "UB:"):
-		edition = strings.TrimPrefix(edition, "Universes Beyond")
-		edition = strings.TrimPrefix(edition, "UB")
-		edition = strings.TrimLeft(edition, ":- ")
-
-		ed, found = EditionTable[edition]
-		if found {
-			edition = ed
-		}
-	case strings.Contains(edition, "Commander") &&
-		(!inCard.Contains("Oversize") || inCard.Contains("Plane") || inCard.Contains("Phenomenon")) &&
-		!inCard.Contains("Party"):
-		ed := b.ParseCommanderEdition(edition, variation)
-		if ed != "" {
-			edition = ed
-		}
-	case inCard.Contains("Ravnica Weekend"):
-		edition, variation = ravnicaWeekend(inCard)
-	case inCard.Contains("Guild Kit"):
-		edition = ravnicaGuildKit(inCard)
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
 		num := mtgmatcher.ExtractNumber(variation)
 		if num != "" {
@@ -525,7 +588,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = maybeEdition
 
 	// Oilslick lands may not have the bundle tag attached to them
-	case isBasicLand(inCard) && isOilSlick(inCard) && !inCard.IsBundle():
+	case isBasicLand(inCard.Name) && isOilSlick(inCard) && !inCard.IsBundle():
 		variation += " Bundle"
 
 	// Many providers don't tag these promos correctly
@@ -770,6 +833,44 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 	}
 	inCard.Variation = variation
+}
+
+// aliasEdition spells an edition string toward a set name and reports
+// whether decorations came off - the one fact of the aliasing the card
+// fixup needs back, since a trimmed edition with nothing else to say asks
+// for the beyond-base-set search.
+func aliasEdition(b *mtgmatcher.Backend, edition string) (string, bool) {
+	edition = tableEdition(b, edition)
+	// the set-family checks read the spelling the box stage has not
+	// trimmed yet
+	cardEdition := edition
+
+	edition, trimmed := boxSetEdition(edition)
+	edition, _ = setFamilyEdition(b, "", edition, cardEdition, "")
+
+	// The name-keyed fixups past this point go quiet on a bare edition,
+	// except these; the empty cases shadow the rules below them exactly as
+	// their name-keyed counterparts do on the card path.
+	switch {
+	case saysMysteryList(edition, ""):
+	case mtgmatcher.Contains(edition, "Secret Lair") || strings.Contains(edition, "SLD"):
+	case strings.Contains(edition, "Chronicles") &&
+		(mtgmatcher.Contains(edition, "Japanese") || mtgmatcher.Contains(edition, "FBB")):
+		edition = "Chronicles Foreign Black Border"
+	case mtgmatcher.Contains(edition, "Oversize") && !mtgmatcher.Contains(edition, "Plane") &&
+		!mtgmatcher.Contains(edition, "Phenomenon"):
+	case mtgmatcher.Contains(edition, "Phyrexia: All") && mtgmatcher.Contains(edition, "Concept"):
+		edition = "ignored"
+	}
+
+	return edition, trimmed
+}
+
+// AliasEdition spells an edition string toward a set name using the string
+// alone. See mtgmatcher.GameRules.
+func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
+	edition, _ = aliasEdition(b, edition)
+	return edition
 }
 
 // namesTokenSetParent reports whether an edition names the set a token sheet
@@ -1295,7 +1396,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 
 		case isMagicFest(inCard):
 			// Some providers use GP2018 instead of MF2019
-			if maybeYear == "2018" && isBasicLand(inCard) {
+			if maybeYear == "2018" && isBasicLand(inCard.Name) {
 				maybeYear = "2019"
 			}
 			switch {
@@ -1427,12 +1528,12 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case isBasicLand(inCard) && strings.Contains(inCard.Variation, "APAC"):
+		case isBasicLand(inCard.Name) && strings.Contains(inCard.Variation, "APAC"):
 			if set.Name != "Asia Pacific Land Program" {
 				continue
 			}
 
-		case isBasicLand(inCard) && mtgmatcher.Contains(inCard.Variation, "EURO"):
+		case isBasicLand(inCard.Name) && mtgmatcher.Contains(inCard.Variation, "EURO"):
 			if set.Name != "European Land Program" {
 				continue
 			}
@@ -2352,8 +2453,8 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 
 // isBasicLand is the strict, exact-name basic-land check, distinct from the
 // loose mtgmatcher.IsBasicLand the scrapers ask about raw listing names.
-func isBasicLand(c *mtgmatcher.InputCard) bool {
-	switch c.Name {
+func isBasicLand(name string) bool {
+	switch name {
 	case "Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes":
 		return true
 	}

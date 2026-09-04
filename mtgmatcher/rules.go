@@ -25,6 +25,11 @@ type GameRules interface {
 	AdjustName(b *Backend, inCard *InputCard)
 	// AdjustEdition fixes up the input card edition to a known set.
 	AdjustEdition(b *Backend, inCard *InputCard)
+	// AliasEdition spells an edition string the way the datastore names its
+	// set, using only the string itself - the card-free part of
+	// AdjustEdition. GetSetByName's last resort is this hook, never the
+	// full fixup, so an implementation must not route back through it.
+	AliasEdition(b *Backend, edition string) string
 	// FilterPrintings narrows the candidate editions for the input card.
 	FilterPrintings(b *Backend, inCard *InputCard, editions []string) []string
 	// FilterCards narrows the candidate cards for the input card. The cardSet
