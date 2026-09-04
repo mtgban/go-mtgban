@@ -209,10 +209,6 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 
 	cardName, edition, variation = internalPreprocess(cardName, edition, variation, extra)
 
-	if isBlindAttraction(cardName, edition, variation) {
-		return nil, mtgmatcher.ErrUnsupported
-	}
-
 	var id string
 	switch edition {
 	case "Core 2021: Extras",
@@ -687,27 +683,6 @@ func imageName(extra, edition string) (string, string) {
 // slugify spells a name the way the store spells it in an image name.
 func slugify(name string) string {
 	return strings.Trim(slugSeparatorRe.ReplaceAllString(strings.ToLower(name), "-"), "-")
-}
-
-// isBlindAttraction reports whether a listing names an Unfinity attraction
-// without saying which of its lights are lit. That is the only thing telling
-// the printings apart, and the store publishes a print-run index instead - a
-// number that names no light and that no other seller repeats, so there is
-// nothing to read the lit set from and nothing to check a guess against.
-func isBlindAttraction(cardName, edition, variation string) bool {
-	if !strings.HasPrefix(edition, "Unfinity") {
-		return false
-	}
-	if strings.Contains(variation, "/") || strings.Contains(variation, "-") {
-		return false
-	}
-	lit := 0
-	for _, card := range mtgmatcher.MatchInSet(cardName, "UNF") {
-		if magic.AttractionLights(&card) != "" {
-			lit++
-		}
-	}
-	return lit > 1
 }
 
 // unquote returns the name a quoted field means, undoing the wrapping single
