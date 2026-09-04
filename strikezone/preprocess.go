@@ -353,16 +353,17 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 }
 
 // hasSeveralDrops reports whether the set files a card under more than one
-// drop. The star that ends a number marks the foil twin of the drop before
-// it, which a listing saying nothing still reaches by its finish alone.
+// drop. The suffixes a number can end on - the star of a foil twin, the phi
+// of a step-and-compleat - mark twins the wording picks, not drops of their
+// own, and OriginalNumber is the number with all of them already stripped.
 func hasSeveralDrops(cardName string) bool {
 	cards := mtgmatcher.MatchInSet(cardName, "SLD")
 	if len(cards) < 2 {
 		return false
 	}
-	first := strings.TrimSuffix(cards[0].Number, "★")
+	first := cards[0].OriginalNumber
 	for _, card := range cards[1:] {
-		if strings.TrimSuffix(card.Number, "★") != first {
+		if card.OriginalNumber != first {
 			return true
 		}
 	}
