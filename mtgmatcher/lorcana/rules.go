@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -88,15 +89,22 @@ func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// statesQualifier reports whether the wording names the qualifier, which is
-// any word of it the wording repeats. The short words are skipped: those are
-// the ones a note carries for reasons of its own.
+// statesQualifier reports whether the wording names the qualifier: one of
+// its distinguishing words, written whole. The category noun a multi-word
+// qualifier ends on - the Version of "Errata Version" - licenses nothing
+// alone, being the word a note about the other printing carries just as
+// well; and a word is read whole, so a note's own longer words cannot
+// smuggle one in.
 func statesQualifier(wording, qualifier string) bool {
-	for _, word := range strings.Fields(strings.ToLower(qualifier)) {
-		if len(word) < 4 {
-			continue
-		}
-		if strings.Contains(wording, word) {
+	words := strings.Fields(strings.ToLower(qualifier))
+	if len(words) > 1 {
+		words = words[:len(words)-1]
+	}
+	tokens := strings.FieldsFunc(wording, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+	for _, word := range words {
+		if slices.Contains(tokens, word) {
 			return true
 		}
 	}
