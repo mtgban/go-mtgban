@@ -10,6 +10,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -55,6 +56,22 @@ func (mc *Magiccorner) printf(format string, a ...any) {
 	if mc.LogCallback != nil {
 		mc.LogCallback("[MC] "+format, a...)
 	}
+}
+
+// blindAttraction reports whether the printings an aliasing error names are
+// all attractions. Their printings are told apart by which of their lights
+// are lit and by nothing else, and this store publishes a print-run index
+// instead - a number that names no light, and that no other seller repeats
+// - so a listing of one names them all equally. There is nothing to choose
+// between, and nothing worth reporting.
+func blindAttraction(probes []string) bool {
+	for _, probe := range probes {
+		co, err := mtgmatcher.GetUUID(probe)
+		if err != nil || magic.AttractionLights(&co.Card) == "" {
+			return false
+		}
+	}
+	return len(probes) > 0
 }
 
 func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultChan, edition MCEdition) error {
@@ -138,14 +155,18 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				if mtgmatcher.IsBasicLand(card.Name) {
 					continue
 				}
+				var alias *mtgmatcher.AliasingError
+				aliased := errors.As(err, &alias)
+				if aliased && blindAttraction(alias.Probe()) {
+					continue
+				}
+
 				mc.printf("%v", err)
 				mc.printf("%q", theCard)
 				mc.printf("%q", card)
 
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
+				if aliased {
+					for _, probe := range alias.Probe() {
 						card, _ := mtgmatcher.GetUUID(probe)
 						mc.printf("- %s", card)
 					}
@@ -278,13 +299,17 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
+				var alias *mtgmatcher.AliasingError
+				aliased := errors.As(err, &alias)
+				if aliased && blindAttraction(alias.Probe()) {
+					continue
+				}
+
 				mc.printf("%v", err)
 				mc.printf("%q", theCard)
 
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
+				if aliased {
+					for _, probe := range alias.Probe() {
 						card, _ := mtgmatcher.GetUUID(probe)
 						mc.printf("- %s", card)
 					}
