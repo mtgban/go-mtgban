@@ -96,6 +96,9 @@ func TestMatchTokenSetVariation(t *testing.T) {
 		{"Bat Token", "Bloomburrow", "Token", "TBLB"},
 		{"Angel", "Dominaria United", "Token", "TDMU"},
 		{"Wolf", "Innistrad: Midnight Hunt", "Token 13", "TMID"},
+		// The bare name shares its bucket with the Unsanctioned "Bat-",
+		// which used to answer for it; the variation names the token
+		{"Bat", "Bloomburrow", "Token", "TBLB"},
 	} {
 		in := mtgmatcher.InputCard{
 			Name:      probe.name,
@@ -181,6 +184,33 @@ func TestMatchTokenNameKeepsTheEditionFilter(t *testing.T) {
 		if err == nil {
 			co, _ := mtgmatcher.GetUUID(id)
 			t.Errorf("Match(%v) = %s (%v), want an error: no such token is filed there", in, id, co)
+		}
+	}
+}
+
+// TestMatchTokenVariationNamesNoToken pins the refusal of a token listing
+// whose name no token is filed under: the plain key would answer with the
+// card itself, and a token row must not price the card. The refusal asks for
+// a token by name, so a set that files no such token refuses too.
+func TestMatchTokenVariationNamesNoToken(t *testing.T) {
+	for _, probe := range []struct {
+		name      string
+		edition   string
+		variation string
+	}{
+		{"Sheoldred, the Apocalypse", "Dominaria United", "Custom Token"},
+		{"Sol Ring", "Commander Legends", "Token"},
+		{"Rhino", "Ikoria: Lair of Behemoths", "Token"},
+	} {
+		in := mtgmatcher.InputCard{
+			Name:      probe.name,
+			Edition:   probe.edition,
+			Variation: probe.variation,
+		}
+		id, err := mtgmatcher.Match(&in)
+		if err == nil {
+			co, _ := mtgmatcher.GetUUID(id)
+			t.Errorf("Match(%v) = %s (%v), want an error: no such token is filed", in, id, co)
 		}
 	}
 }

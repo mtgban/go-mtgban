@@ -409,10 +409,12 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// A token carrying no Token in its name is filed under a key that says
 	// it, leaving the plain one to whatever card normalizes the same way -
 	// the Unsanctioned "Bat-" answers for "Bat". An edition that files
-	// tokens is asking for the token, so let its key answer first.
+	// tokens is asking for the token, so let its key answer first; so is a
+	// variation that says the word under a plain edition name, or the card
+	// sharing the bucket would answer for the token beside it.
 	var viaTokenKey bool
 	if tokenName, ok := b.CanonicalNames[Normalize(inCard.Name)+"token"]; ok &&
-		b.editionFilesTokens(inCard.Edition) {
+		(b.editionFilesTokens(inCard.Edition) || Contains(inCard.Variation, "Token")) {
 		canonicalName, found, viaTokenKey = tokenName, true, true
 	}
 	if !found {
