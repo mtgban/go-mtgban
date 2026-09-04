@@ -7,11 +7,11 @@
 // one-directional, wired together at load time when the loader attaches the
 // Magic GameRules to the Backend.
 //
-// Known limitation: the filter-callback tables (see callbacks.go) resolve a
-// handful of auxiliary lookups through the package-level mtgmatcher helpers,
-// which consult the global datastore — behavior inherited from the original
-// in-core implementation. Magic rules therefore assume the Backend they serve
-// is also installed via SetGlobalDatastore; a side Backend opened without
-// being made global may answer those auxiliary lookups from the wrong data.
-// Threading the Backend through the callback signatures would lift this.
+// The identification path takes the Backend it serves and reads nothing
+// else: the filter callbacks and the promo tag functions are handed it
+// along with the card, so a Backend opened on the side is matched against
+// its own data whether or not it was installed via SetGlobalDatastore. The
+// exception is the package's exported Has*Printing helpers (wrappers.go),
+// which answer for the global datastore on purpose - they exist for the
+// scrapers, which have no Backend of their own to ask.
 package magic

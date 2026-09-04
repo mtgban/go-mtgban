@@ -366,7 +366,7 @@ func Printings4Card(name string) ([]string, error) {
 // HasNonfoilPrinting reports whether the card was ever sold nonfoil, narrowed
 // to the given editions when any are named.
 func (b *Backend) HasNonfoilPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "finish", FinishNonfoil, editions...)
+	return b.HasPrinting(name, "finish", FinishNonfoil, editions...)
 }
 
 // HasFoilPrinting reports whether the named card carries the foil slot. A
@@ -374,7 +374,7 @@ func (b *Backend) HasNonfoilPrinting(name string, editions ...string) bool {
 // treatment is the rarity, so every printing points both flag slots at its
 // default print run and none of them is a foil anybody sells.
 func (b *Backend) HasFoilPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "finish", FinishFoil, editions...)
+	return b.HasPrinting(name, "finish", FinishFoil, editions...)
 }
 
 // HasFoilPrinting queries the default datastore.
@@ -385,7 +385,7 @@ func HasFoilPrinting(name string, editions ...string) bool {
 // HasEtchedPrinting reports whether the card was ever sold etched, narrowed to
 // the given editions when any are named.
 func (b *Backend) HasEtchedPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "finish", FinishEtched, editions...)
+	return b.HasPrinting(name, "finish", FinishEtched, editions...)
 }
 
 // HasEtchedPrinting queries the default datastore.
@@ -393,7 +393,9 @@ func HasEtchedPrinting(name string, editions ...string) bool {
 	return defaultBackend.HasEtchedPrinting(name, editions...)
 }
 
-func (b *Backend) hasPrinting(name, field, value string, editions ...string) bool {
+// HasPrinting reports whether any printing of the name carries the value
+// in the named field, optionally restricted to the given editions.
+func (b *Backend) HasPrinting(name, field, value string, editions ...string) bool {
 	if b.Sets == nil {
 		return false
 	}
@@ -495,7 +497,7 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 // HasPrinting reports whether any printing of the card carries this value in
 // the named field, narrowed to the given editions when any are named.
 func HasPrinting(name, field, value string, editions ...string) bool {
-	return defaultBackend.hasPrinting(name, field, value, editions...)
+	return defaultBackend.HasPrinting(name, field, value, editions...)
 }
 
 const maxRerollThreshold = 50

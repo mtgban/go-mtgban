@@ -10,7 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-type cardFilterCallback func(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
+type cardFilterCallback func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 
 type promoTypeElement struct {
 	// Name of the promo type to validate
@@ -20,7 +20,7 @@ type promoTypeElement struct {
 	ValidDate time.Time
 
 	// Tag function
-	TagFunc func(inCard *mtgmatcher.InputCard) bool
+	TagFunc func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool
 
 	// Simple tags to check, if TagFunc is not set
 	Tags []string
@@ -51,13 +51,13 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypePromoPack,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return inCard.IsPromoPack()
 		},
 	},
 	{
 		PromoType: PromoTypeSChineseAltArt,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isChineseAltArt(inCard)
 		},
 	},
@@ -65,7 +65,7 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: PromoTypeBuyABox,
 		// After ZNR buy-a-box is also present in main set
 		ValidDate: BuyABoxNotUniqueDate,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return inCard.IsBaB() || isRelease(inCard)
 		},
 		CanBeWild: true,
@@ -85,12 +85,12 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypeGalaxyFoil,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			// A lot of providers don't tag SLD cards as Galaxy, but just foil
 			// (same for RainbowFoil), so this check essentially makes the test
 			// pass, and let filtering continue elsewhere
 			if inCard.IsSecretLair() &&
-				mtgmatcher.HasPrinting(inCard.Name, "promo_type", PromoTypeGalaxyFoil, "SLD") {
+				b.HasPrinting(inCard.Name, "promo_type", PromoTypeGalaxyFoil, "SLD") {
 				// The only card which *also* has RainbowFoil, so the check would fail for Galaxy
 				if inCard.Name == "Command Tower" {
 					return inCard.Contains("1496")
@@ -102,7 +102,7 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypeSurgeFoil,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isSurgeFoil(inCard)
 		},
 	},
@@ -112,11 +112,11 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypeConcept,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			if inCard.Contains("Concept") {
 				return true
 			}
-			if isBorderless(inCard) && mtgmatcher.HasPrinting(inCard.Name, "promo_type", PromoTypeConcept) {
+			if isBorderless(inCard) && b.HasPrinting(inCard.Name, "promo_type", PromoTypeConcept) {
 				return true
 			}
 			return false
@@ -124,7 +124,7 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypeOilSlick,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isOilSlick(inCard)
 		},
 	},
@@ -139,7 +139,7 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypeSerialized,
-		TagFunc: func(inCard *mtgmatcher.InputCard) bool {
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isSerialized(inCard)
 		},
 	},
@@ -377,7 +377,7 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"PLST": {listNumberCompare, listEditionCheck},
 }
 
-func judgeLandCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func judgeLandCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if (inCard.Contains("14") && !strings.HasSuffix(card.Number, SuffixSpecial)) ||
 		inCard.Contains("23") && strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
@@ -388,7 +388,7 @@ func judgeLandCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func listNumberCompare(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func listNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	number := mtgmatcher.ExtractNumber(inCard.Variation)
 
 	// If a number is found, check that it's matching the card number
@@ -409,7 +409,7 @@ func listNumberCompare(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 		maybeEdition = strings.Replace(maybeEdition, "Non-Foil", "", 1)
 		maybeEdition = strings.Replace(maybeEdition, "Foil", "", 1)
 		maybeEdition = strings.TrimLeft(maybeEdition, " -")
-		_, err := mtgmatcher.GetSetByName(maybeEdition)
+		_, err := b.GetSetByName(maybeEdition)
 		if err != nil {
 			return true
 		}
@@ -432,11 +432,11 @@ var onlineCodes = map[string]string{
 	"TPR": "Tempest Remastered",
 }
 
-func listEditionCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	var setName string
 
 	code := strings.Split(card.Number, "-")[0]
-	set, err := mtgmatcher.GetSet(code)
+	set, err := b.GetSet(code)
 	if err == nil {
 		setName = set.Name
 	} else {
@@ -455,7 +455,7 @@ func listEditionCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 	switch inCard.Name {
 	case "Phantom Centaur",
 		"Arcane Teachings":
-		return misprintCheck(inCard, card)
+		return misprintCheck(b, inCard, card)
 	// Cards with same numeric part need special treatment because the chunk below trips the later check
 	case "Laboratory Maniac",
 		"Bad Moon":
@@ -471,7 +471,7 @@ func listEditionCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 		case inCard.Contains("Game Day"):
 			ids, _ := mtgmatcher.SearchEquals(card.Name)
 			for _, id := range ids {
-				co, cerr := mtgmatcher.GetUUID(id)
+				co, cerr := b.GetUUID(id)
 				if cerr == nil && co.SetCode == code && co.HasPromoType(PromoTypeGameDay) {
 					return false
 				}
@@ -503,7 +503,7 @@ func listEditionCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 	return false
 }
 
-func phyrexianCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func phyrexianCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isPhyrexian(inCard) && card.Language != LanguagePhyrexian {
 		return true
 	} else if !isPhyrexian(inCard) && card.Language == LanguagePhyrexian {
@@ -513,7 +513,7 @@ func phyrexianCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 }
 
 // Handle full vs nonfull art basic land
-func fullartCheckForBasicLands(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func fullartCheckForBasicLands(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isBasicFullArt(inCard) && !card.IsFullArt {
 		return true
 	} else if isBasicNonFullArt(inCard) && card.IsFullArt {
@@ -522,7 +522,7 @@ func fullartCheckForBasicLands(inCard *mtgmatcher.InputCard, card *mtgmatcher.Ca
 	return false
 }
 
-func lotrTripleFiltering(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func lotrTripleFiltering(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	switch card.Name {
 	case "Delighted Halfling",
 		"Lobelia Sackville-Baggins",
@@ -551,7 +551,7 @@ func lotrTripleFiltering(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bo
 	return false
 }
 
-func lightDarkManaCost(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func lightDarkManaCost(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isARNLightMana(inCard) && !strings.HasSuffix(card.Number, SuffixVariant) {
 		return true
 	} else if (isARNDarkMana(inCard) || inCard.Variation == "") && strings.HasSuffix(card.Number, SuffixVariant) {
@@ -560,16 +560,16 @@ func lightDarkManaCost(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 	return false
 }
 
-func femVariantInArtist(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func femVariantInArtist(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// Since the check is field by field Foglio may alias Phil or Kaja
 	if strings.Contains(inCard.Variation, "Foglio") {
 		inCard.Variation = strings.Replace(inCard.Variation, "Phil Foglio", "PhilFoglio", 1)
 		inCard.Variation = strings.Replace(inCard.Variation, "Kaja Foglio", "KajaFoglio", 1)
 	}
-	return variantInArtistOrFlavor(inCard, card)
+	return variantInArtistOrFlavor(b, inCard, card)
 }
 
-func variantInArtistOrFlavor(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func variantInArtistOrFlavor(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// Skip the check if this tag is empty, so that users can notice
 	// there is an aliasing problem
 	if inCard.Variation == "" {
@@ -614,7 +614,7 @@ func variantInArtistOrFlavor(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card
 }
 
 // Check watermark when variation has no number information
-func variantInWatermark(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func variantInWatermark(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// Skip the check if this tag is empty, so that users can notice there is an aliasing problem
 	if inCard.Variation == "" {
 		return true
@@ -626,7 +626,7 @@ func variantInWatermark(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) boo
 }
 
 // Foil-only-booster cards, non-special version has both foil and non-foil
-func altArtCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func altArtCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isGenericAltArt(inCard) && !strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
 	} else if !isGenericAltArt(inCard) && strings.HasSuffix(card.Number, SuffixSpecial) {
@@ -637,7 +637,7 @@ func altArtCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 
 // Foil-only-booster cards, non-special version only have non-foil
 // (only works if card has no other duplicates within the same edition)
-func foilCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func foilCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if inCard.Foil && card.HasFinish(mtgmatcher.FinishNonfoil) {
 		return true
 	} else if !inCard.Foil && card.HasFinish(mtgmatcher.FinishFoil) {
@@ -650,9 +650,9 @@ func foilCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 // (Modern Horizons THREE Commander contains the same number of this card)
 // and there are several variants of this card (Satya), so we cannot
 // enable the etched check for *all* of them
-func foilCheckM3C(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func foilCheckM3C(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if card.Number == "3" || card.Number == "23" {
-		return etchedCheck(inCard, card)
+		return etchedCheck(b, inCard, card)
 	}
 	if inCard.Foil && card.HasFinish(mtgmatcher.FinishNonfoil) {
 		return true
@@ -662,7 +662,7 @@ func foilCheckM3C(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func etchedCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func etchedCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if inCard.IsEtched() && !card.HasFinish(mtgmatcher.FinishEtched) {
 		return true
 		// Some thick display cards are not marked as etched
@@ -672,7 +672,7 @@ func etchedCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func thickDisplayCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func thickDisplayCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isThickDisplay(inCard) && !card.HasPromoType(PromoTypeThickDisplay) {
 		return true
 	} else if !isThickDisplay(inCard) && card.HasPromoType(PromoTypeThickDisplay) {
@@ -682,7 +682,7 @@ func thickDisplayCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 }
 
 // Single letter variants
-func singleLetterVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func singleLetterVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	numberSuffix := possibleNumberSuffix(inCard)
 	if len(card.Variations) > 0 && numberSuffix == "" {
 		numberSuffix = "a"
@@ -693,12 +693,12 @@ func singleLetterVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bo
 	return false
 }
 
-func deckmastersVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func deckmastersVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	numberSuffix := possibleNumberSuffix(inCard)
 	switch card.Name {
 	case "Incinerate", "Icy Manipulator":
 		inCard.Foil = inCard.Foil || inCard.Contains("Promo")
-		return foilCheck(inCard, card)
+		return foilCheck(b, inCard, card)
 	default:
 		// Pick the first of the two if not specified
 		if len(card.Variations) > 0 && numberSuffix == "" {
@@ -717,7 +717,7 @@ func deckmastersVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) boo
 }
 
 // Variants related to flavor text presence
-func portalDemoGame(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func portalDemoGame(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isPortalAlt(inCard) && !strings.HasSuffix(card.Number, SuffixVariant) && !strings.HasSuffix(card.Number, "d") {
 		return true
 	} else if !isPortalAlt(inCard) && (strings.HasSuffix(card.Number, SuffixVariant) || strings.HasSuffix(card.Number, "d")) {
@@ -727,7 +727,7 @@ func portalDemoGame(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 }
 
 // Launch promos within the set itself
-func launchPromoInSet(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func launchPromoInSet(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	anyAlternative := card.IsAlternative ||
 		card.BorderColor == BorderColorBorderless ||
 		card.HasFrameEffect(FrameEffectExtendedArt)
@@ -740,11 +740,11 @@ func launchPromoInSet(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 }
 
 // Identical cards
-func variantInCommanderDeck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func variantInCommanderDeck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// Filter only cards that may have the flag set
 	hasAlternate := card.IsAlternative
 	for _, id := range card.Variations {
-		alt, aerr := mtgmatcher.GetUUID(id)
+		alt, aerr := b.GetUUID(id)
 		if aerr == nil && alt.IsAlternative {
 			hasAlternate = true
 			break
@@ -764,16 +764,16 @@ func variantInCommanderDeck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card)
 }
 
 // EA cards from commander decks appear before the normal prints, BeyondBaseSet needs help
-func variantBeforePlainCard(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func variantBeforePlainCard(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	cn, _ := strconv.Atoi(card.Number)
 	if cn > 607 && cn < 930 {
-		return extendedartCheck(inCard, card)
+		return extendedartCheck(b, inCard, card)
 	}
 	return false
 }
 
 // Intro/Starter deck
-func starterDeckCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func starterDeckCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	isStarter := mtgmatcher.Contains(inCard.Variation, "Starter") || mtgmatcher.Contains(inCard.Variation, "Intro")
 	if !isStarter && (card.HasPromoType(PromoTypeStarterDeck) || card.IsAlternative) {
 		return true
@@ -784,7 +784,7 @@ func starterDeckCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 }
 
 // Japanese Planeswalkers
-func japaneseCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func japaneseCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if (inCard.IsJPN() || isGenericAltArt(inCard)) && card.Language != LanguageJapanese {
 		return true
 	} else if !inCard.IsJPN() && !isGenericAltArt(inCard) && card.Language == LanguageJapanese {
@@ -794,7 +794,7 @@ func japaneseCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 }
 
 // Pick one of the printings in case they are not specified
-func guildgateVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func guildgateVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if strings.Contains(card.Name, "Guildgate") && inCard.Variation == "" {
 		cn, _ := strconv.Atoi(card.Number)
 		if cn%2 == 0 {
@@ -805,7 +805,7 @@ func guildgateVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 }
 
 // Due to the WPN lands
-func wpnCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func wpnCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isWPNGateway(inCard) && !card.HasPromoType(PromoTypeWPN) {
 		return true
 	} else if !isWPNGateway(inCard) && card.HasPromoType(PromoTypeWPN) {
@@ -815,7 +815,7 @@ func wpnCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 }
 
 // Handle the different Attractions
-func attractionVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func attractionVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-")) {
 		lights := make([]string, 0, len(card.AttractionLights))
 		for _, light := range card.AttractionLights {
@@ -851,7 +851,7 @@ func attractionVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 	return false
 }
 
-func shatteredCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func shatteredCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	isShattered := inCard.Contains("Shattered") || inCard.Contains("Borderless")
 	if isShattered && !card.HasFrameEffect(FrameEffectShattered) {
 		return true
@@ -862,7 +862,7 @@ func shatteredCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 }
 
 // This check skips serialized cards as their collector numbers would not match
-func schematicCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func schematicCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	cn, err := strconv.Atoi(card.Number)
 	if err != nil {
 		return false
@@ -876,7 +876,7 @@ func schematicCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func animeCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func animeCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	switch card.Name {
 	case "Valorous Stance",
 		"Dragon Fodder",
@@ -894,7 +894,7 @@ func animeCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func serialCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func serialCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isSerialized(inCard) && !card.HasPromoType(PromoTypeSerialized) {
 		return true
 	} else if !isSerialized(inCard) && card.HasPromoType(PromoTypeSerialized) {
@@ -912,22 +912,22 @@ func retroCheckInternal(isRetro bool, cardFrameVersion string) bool {
 	return false
 }
 
-func retroCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func retroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return retroCheckInternal(inCard.IsRetro() || inCard.BeyondBaseSet, card.FrameVersion)
 }
 
 // This edition has retro-only promotional cards, but most
 // providers only tag the promo type, instead of the frame
-func babOrBuyaboxRetroCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func babOrBuyaboxRetroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return retroCheckInternal(inCard.IsBundle() || inCard.IsBaB(), card.FrameVersion)
 }
 
-func releaseRetroCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func releaseRetroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return retroCheckInternal(inCard.IsRetro() || isRelease(inCard), card.FrameVersion)
 }
 
 // Foil cards which exist *only* as misprints
-func foilMisprint(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func foilMisprint(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if !inCard.Foil {
 		return strings.HasSuffix(card.Number, SuffixSpecial)
 	}
@@ -950,7 +950,7 @@ func foilMisprint(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return strings.HasSuffix(card.Number, SuffixSpecial)
 }
 
-func nodateMisprint(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func nodateMisprint(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	switch card.Name {
 	case "Beast of Burden",
 		"Island",
@@ -966,7 +966,7 @@ func nodateMisprint(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return strings.HasSuffix(card.Number, SuffixVariant)
 }
 
-func laquatusMisprint(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func laquatusMisprint(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	switch card.Name {
 	case "Laquatus's Champion":
 		if mtgmatcher.Contains(inCard.Variation, "dark") {
@@ -980,7 +980,7 @@ func laquatusMisprint(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 	return false
 }
 
-func sldVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func sldVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	switch card.Name {
 	case "Geralf's Messenger":
 		return retroCheckInternal(card.Number == "887", card.FrameVersion)
@@ -1008,7 +1008,7 @@ func sldVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 		return result
 	case "Blasphemous Act":
 		if card.Number == "322" {
-			return foilCheck(inCard, card)
+			return foilCheck(b, inCard, card)
 		}
 		result := strings.HasSuffix(card.Number, SuffixSpecial)
 		if inCard.Foil {
@@ -1031,10 +1031,10 @@ func sldVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 		}
 	}
 
-	return foilCheck(inCard, card)
+	return foilCheck(b, inCard, card)
 }
 
-func wcdNumberCompare(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func wcdNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	prefix, sideboard := worldChampPrefix(inCard)
 	wcdNum := ExtractWCDNumber(inCard.Variation, prefix, sideboard)
 
@@ -1098,7 +1098,7 @@ func wcdNumberCompare(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 	return false
 }
 
-func lubuPrereleaseVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func lubuPrereleaseVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if (strings.Contains(inCard.Variation, "April") || strings.Contains(inCard.Variation, "4/29")) && card.OriginalReleaseDate != "1999-04-29" {
 		return true
 	} else if (strings.Contains(inCard.Variation, "July") || strings.Contains(inCard.Variation, "7/4")) && card.OriginalReleaseDate != "1999-07-04" {
@@ -1107,7 +1107,7 @@ func lubuPrereleaseVariant(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) 
 	return false
 }
 
-func borderlessCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func borderlessCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isBorderless(inCard) && card.BorderColor != BorderColorBorderless {
 		return true
 	} else if !isBorderless(inCard) && card.BorderColor == BorderColorBorderless && !card.HasFrameEffect(FrameEffectShowcase) {
@@ -1116,7 +1116,7 @@ func borderlessCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func showcaseCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func showcaseCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isShowcase(inCard) && !card.HasFrameEffect(FrameEffectShowcase) {
 		return true
 	} else if !isShowcase(inCard) && card.HasFrameEffect(FrameEffectShowcase) {
@@ -1125,7 +1125,7 @@ func showcaseCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func extendedartCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func extendedartCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isExtendedArt(inCard) && !card.HasFrameEffect(FrameEffectExtendedArt) {
 		return true
 		// BaB are allowed to have extendedart
@@ -1136,7 +1136,7 @@ func extendedartCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 }
 
 // IKO-Style cards with different names
-func reskinGodzillaCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func reskinGodzillaCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// Also some providers do not tag Japanese-only Godzilla cards as such
 	if isReskin(inCard) && !card.HasPromoType(PromoTypeGodzilla) {
 		return true
@@ -1146,7 +1146,7 @@ func reskinGodzillaCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bo
 	return false
 }
 
-func reskinDraculaCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func reskinDraculaCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if isReskin(inCard) && !card.HasPromoType(PromoTypeDracula) {
 		return true
 	} else if !isReskin(inCard) && !inCard.BeyondBaseSet && card.HasPromoType(PromoTypeDracula) {
@@ -1156,7 +1156,7 @@ func reskinDraculaCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) boo
 }
 
 // In case there is no number information and the card may known with other names
-func reskinRenameCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func reskinRenameCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	if mtgmatcher.ExtractNumber(inCard.Variation) != "" || card.FlavorName == "" {
 		return false
 	}
@@ -1168,7 +1168,7 @@ func reskinRenameCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool
 	return false
 }
 
-func misprintCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func misprintCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// These cards are allowed to have the star at the end
 	if (isBasicLand(inCard) && isJudge(inCard)) || inCard.IsPrerelease() {
 		return false
@@ -1183,7 +1183,7 @@ func misprintCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func draftweekendCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+func draftweekendCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	releaseOrDraft := inCard.Contains("Draft Weekend") || (inCard.Contains("Release") && !inCard.IsPrerelease())
 	if releaseOrDraft && !card.HasPromoType(PromoTypeDraftWeekend) {
 		return true

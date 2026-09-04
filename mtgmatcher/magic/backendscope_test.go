@@ -1,0 +1,78 @@
+package magic
+
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
+
+// The identification hooks used to answer their auxiliary lookups from
+// whichever datastore was installed globally, so a Backend opened on the
+// side was matched against with another one's data. They take the backend
+// now, and these pin that they read it: the same input answered against an
+// empty backend must find nothing, where before it would have found
+// whatever the global happened to hold.
+func TestHelpersReadTheGivenBackend(t *testing.T) {
+	// A name printed exactly once in Secret Lair Ultimate, which is what
+	// the tag check asks the datastore about.
+	var name string
+	for _, card := range testBackend.Sets["SLU"].Cards {
+		if len(testBackend.MatchInSet(card.Name, "SLU")) == 1 {
+			name = card.Name
+			break
+		}
+	}
+	if name == "" {
+		t.Skip("no uniquely printed SLU card in this datastore")
+	}
+
+	// The wording says Secret Lair; which drop it belongs to is what the
+	// datastore is asked.
+	inCard := &mtgmatcher.InputCard{Name: name, Edition: "Secret Lair Drop"}
+	if !hasSecretLairTag(testBackend, inCard, "SLU") {
+		t.Errorf("hasSecretLairTag(%q) = false against the datastore that holds it", name)
+	}
+	if hasSecretLairTag(&mtgmatcher.Backend{}, inCard, "SLU") {
+		t.Errorf("hasSecretLairTag(%q) = true against an empty backend, so it read another", name)
+	}
+}
+
+// The same for the promo tag closures, which reach the datastore to forgive
+// a listing that names a treatment its printing carries untagged.
+func TestPromoTagFuncsReadTheGivenBackend(t *testing.T) {
+	var tagFunc func(*mtgmatcher.Backend, *mtgmatcher.InputCard) bool
+	for _, element := range promoTypeElements {
+		if element.PromoType == PromoTypeConcept {
+			tagFunc = element.TagFunc
+			break
+		}
+	}
+	if tagFunc == nil {
+		t.Fatal("no concept promo element carrying a tag function")
+	}
+
+	// A borderless listing says nothing about the concept treatment, so
+	// the answer is whatever the datastore says the printing carries.
+	var name string
+	for _, uuid := range testBackend.AllUUIDs {
+		co, err := testBackend.GetUUID(uuid)
+		if err != nil || co.Sealed {
+			continue
+		}
+		if co.HasPromoType(PromoTypeConcept) {
+			name = co.Name
+			break
+		}
+	}
+	if name == "" {
+		t.Skip("no concept printing in this datastore")
+	}
+
+	inCard := &mtgmatcher.InputCard{Name: name, Variation: "Borderless"}
+	if !tagFunc(testBackend, inCard) {
+		t.Errorf("concept tag for %q = false against the datastore that holds it", name)
+	}
+	if tagFunc(&mtgmatcher.Backend{}, inCard) {
+		t.Errorf("concept tag for %q = true against an empty backend, so it read another", name)
+	}
+}

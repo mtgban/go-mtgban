@@ -24,7 +24,7 @@ func TestBackendWithoutRules(t *testing.T) {
 	if _, err := b.GetSetByName("Some Set"); err != ErrCardNotInEdition {
 		t.Errorf("GetSetByName with sets = %v, want %v", err, ErrCardNotInEdition)
 	}
-	if b.hasPrinting("Anything", "promo_type", "boosterfun") {
+	if b.HasPrinting("Anything", "promo_type", "boosterfun") {
 		t.Error("hasPrinting = true, want false")
 	}
 
