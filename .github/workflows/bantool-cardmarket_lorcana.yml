@@ -23,4 +23,5 @@ jobs:
       target: cardmarket_lorcana
       game: "lorcana"
       datastore-filepath: b2://mtgban-datastore/lorcana/lorcana.json.xz
+      mkmids-filepath: b2://mtgban-datastore/lorcana/cardmarket_catalog.json.xz
     secrets: inherit

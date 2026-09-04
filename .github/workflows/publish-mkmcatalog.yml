@@ -1,0 +1,41 @@
+name: publish / cardmarket catalogs
+
+# The games MTGJSON does not speak get their Cardmarket id map from this
+# crawl: once a day, like MTGJSON's own file, each catalog is walked through
+# the API and published beside the game's datastore, and the twice-daily
+# price runs read the file instead of crawling. Magic's file comes from
+# MTGJSON and is not built here.
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "14 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        game:
+          [lorcana, riftbound, onepiece, pokemon, yugioh, fleshandblood]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Walk the catalog into B2
+        env:
+          MKM_APP_TOKEN: "${{ secrets.MKM_APP_TOKEN }}"
+          MKM_APP_SECRET: "${{ secrets.MKM_APP_SECRET }}"
+          B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
+          B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+        run: |
+          go run ./cmd/mkmcatalog -game "${{ matrix.game }}" -output "b2://mtgban-datastore/${{ matrix.game }}/cardmarket_catalog.json.xz"

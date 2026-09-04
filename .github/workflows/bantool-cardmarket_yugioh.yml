@@ -23,4 +23,5 @@ jobs:
       target: cardmarket_yugioh
       game: "yugioh"
       datastore-filepath: b2://mtgban-datastore/yugioh/yugioh.json.xz
+      mkmids-filepath: b2://mtgban-datastore/yugioh/cardmarket_catalog.json.xz
     secrets: inherit

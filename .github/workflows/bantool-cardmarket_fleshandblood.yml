@@ -23,4 +23,5 @@ jobs:
       target: cardmarket_fleshandblood
       game: "fleshandblood"
       datastore-filepath: b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz
+      mkmids-filepath: b2://mtgban-datastore/fleshandblood/cardmarket_catalog.json.xz
     secrets: inherit
