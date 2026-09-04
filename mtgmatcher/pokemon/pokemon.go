@@ -366,7 +366,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: printedNumber(card),
+			OriginalNumber: ownNumber(card),
+			SetTotal:       setTotal(card),
 		}
 
 		// Register the uuid each printing prices under the name the game's
@@ -521,13 +522,15 @@ func ownNumber(card *DatastoreCard) string {
 	return number
 }
 
-// printedNumber is the collector number as the card face prints it, total
-// and all, which is what tells a reprint from its original: Cascoon is
-// 44/130 in Diamond & Pearl and 44/127 in Platinum. A card without a total
-// answers with its bare number.
-func printedNumber(card *DatastoreCard) string {
-	if card.Total != "" && !strings.Contains(card.Number, "/") {
-		return card.Number + "/" + card.Total
+// setTotal is the set size the card's face prints beside its number, the
+// "167" of "082/167", which is what tells a reprint from its original:
+// Cascoon is 44/130 in Diamond & Pearl and 44/127 in Platinum. An older
+// datastore spells the total into Number, a newer one keeps it in Total,
+// and a card whose face prints no total at all - which is most promos -
+// answers with nothing, the absence being as much a fact as the number.
+func setTotal(card *DatastoreCard) string {
+	if _, total, found := strings.Cut(card.Number, "/"); found {
+		return total
 	}
-	return card.Number
+	return card.Total
 }

@@ -166,7 +166,24 @@ type Card struct {
 		Type        string            `json:"type"`
 	} `json:"foreignData"`
 
+	// OriginalNumber is Number with the game's own decorations stripped -
+	// Magic's ★ and †, Riftbound's star, Lorcana's variant letter - and so
+	// it is the plain number a search matches. It is never longer than
+	// Number: a loader that widens it here instead of narrowing it turns
+	// the ordinary number search into the strict one.
 	OriginalNumber string
+
+	// SetTotal is the set size the card's own face prints beside its
+	// number, the "167" of "082/167", which is what tells a reprint from
+	// its original - Cascoon is 44/130 in Diamond & Pearl and 44/127 in
+	// Platinum. It is the card's own rather than the set's, because the
+	// pooled sets - World Championship Decks, the promo pools - hold cards
+	// that keep the total of wherever they were first printed, and the set
+	// they sit in has no one size. Empty means the face prints no total at
+	// all, which is most promos, and that emptiness is meaningful: a
+	// bare-numbered promo is a different printing from its totalled
+	// reprint, so nothing may fill it in from Set.BaseSetSize.
+	SetTotal string
 
 	// FoilUUIDs holds one entry per finish the printing is sold in, mapping
 	// it to the uuid that carries it: every finish has a uuid of its own and

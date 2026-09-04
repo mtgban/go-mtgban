@@ -690,9 +690,9 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		var plain, full []mtgmatcher.Card
 		for _, card := range candidates {
 			switch {
-			case fullNumberMatches(inCard.Variation, card.OriginalNumber):
+			case fullNumberMatches(inCard.Variation, printedFace(&card)):
 				full = append(full, card)
-			case strings.EqualFold(number, card.OriginalNumber):
+			case strings.EqualFold(number, printedFace(&card)):
 				plain = append(plain, card)
 			}
 		}
@@ -840,7 +840,7 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		if number != "" && !numberMatchesCard(b, number, &card) {
 			continue
 		}
-		if totalDisagrees(inCard.Variation, card.OriginalNumber) {
+		if totalDisagrees(inCard.Variation, printedFace(&card)) {
 			continue
 		}
 		// An input naming a treatment re-keys the copy's FoilUUIDs so the
@@ -1137,6 +1137,19 @@ func fullNumberMatches(variation, number string) bool {
 		}
 	}
 	return false
+}
+
+// printedFace is the collector number as the card's face prints it, total
+// and all: the number and the set total the loader keeps apart, rejoined
+// for the three comparisons that read the total. A card printing no total
+// answers with its bare number, and that is the whole of the difference
+// the verbatim tier reads - a bare-numbered promo is not the printing its
+// totalled reprint is.
+func printedFace(card *mtgmatcher.Card) string {
+	if card.SetTotal == "" {
+		return card.Number
+	}
+	return card.Number + "/" + card.SetTotal
 }
 
 // numbersMatchCard reports whether any of the collector numbers a wording
