@@ -28,6 +28,12 @@ type promoTypeElement struct {
 	// Whether certain promos are not tagged, and are selected as wildcards
 	CanBeWild bool
 
+	// Printings the denial stands aside for. A listing silent about the
+	// treatment keeps them, though one that names it still narrows to
+	// them: a showcase printing is borderless without the border being
+	// what a shop calls it.
+	SilentKeeps func(card *mtgmatcher.Card) bool
+
 	// Whether the tag is only ever read as a claim and never as a denial:
 	// such an element narrows to the treatment it is told about and stands
 	// aside when the listing says nothing.
@@ -39,6 +45,77 @@ type promoTypeElement struct {
 	// printing to the listing that named nothing.
 	OnlyWhenNamed bool
 }
+
+// carriedBy reports whether the printing wears the treatment this element
+// names.
+func (element promoTypeElement) carriedBy(card *mtgmatcher.Card) bool {
+	return card.HasPromoType(element.PromoType)
+}
+
+// claimedBy reports whether the listing names the treatment this element
+// stands for.
+func (element promoTypeElement) claimedBy(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	if element.TagFunc != nil {
+		return element.TagFunc(b, inCard)
+	}
+	return slices.ContainsFunc(element.Tags, inCard.Contains)
+}
+
+// vetoes reports whether the element rules this printing out, reading the
+// claim and the silence the one way. It is what the stages that run after
+// the filters answering a silence ask, where an element the promo pass
+// carries claim-only still has its denial to state.
+func (element promoTypeElement) vetoes(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+	if element.claimedBy(b, inCard) {
+		return !element.carriedBy(card)
+	}
+	return element.carriedBy(card) && (element.SilentKeeps == nil || !element.SilentKeeps(card))
+}
+
+// The treatments the catalog files outside the promo types: the border on
+// the printing, the frame beside it. A shop names them the way it names
+// every other treatment it sells a card under, so the promo pass reads the
+// claim with the rest, and the stage that runs once the filters answering a
+// silence have spoken reads the denial.
+var (
+	borderlessTreatment = promoTypeElement{
+		OnlyWhenNamed: true,
+		PromoType:     PromoTypeBorderless,
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+			return isBorderless(inCard)
+		},
+		// A showcase printing is borderless without the border being what a
+		// shop calls it.
+		SilentKeeps: func(card *mtgmatcher.Card) bool {
+			return card.HasFrameEffect(FrameEffectShowcase)
+		},
+	}
+
+	// Some old full art promos wear the extended art frame in a sense modern
+	// Extended Art is not, so the claim is read only from the date the two
+	// stopped meaning different things.
+	extendedArtTreatment = promoTypeElement{
+		OnlyWhenNamed: true,
+		PromoType:     PromoTypeExtendedArt,
+		ValidDate:     mtgmatcher.PromosForEverybodyYay,
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+			return isExtendedArt(inCard)
+		},
+		SilentKeeps: func(card *mtgmatcher.Card) bool {
+			return card.HasPromoType(PromoTypeBuyABox)
+		},
+	}
+
+	// The showcase frame states itself both ways with nothing to stand
+	// aside for.
+	showcaseTreatment = promoTypeElement{
+		OnlyWhenNamed: true,
+		PromoType:     PromoTypeShowcase,
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+			return isShowcase(inCard)
+		},
+	}
+)
 
 var promoTypeElements = []promoTypeElement{
 	{
@@ -238,6 +315,9 @@ var promoTypeElements = []promoTypeElement{
 		Tags:          []string{"Neon Ink Yellow"},
 		OnlyWhenNamed: true,
 	},
+	borderlessTreatment,
+	extendedArtTreatment,
+	showcaseTreatment,
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
@@ -323,7 +403,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"PPTK": lubuPrereleaseVariant,
 
-	"ALA": showcaseCheck,
+	"ALA": showcaseTreatment.vetoes,
 
 	"IKO": reskinGodzillaCheck,
 
@@ -767,7 +847,7 @@ func variantInCommanderDeck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard,
 func variantBeforePlainCard(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	cn, _ := strconv.Atoi(card.Number)
 	if cn > 607 && cn < 930 {
-		return extendedartCheck(b, inCard, card)
+		return extendedArtTreatment.vetoes(b, inCard, card)
 	}
 	return false
 }
@@ -1098,34 +1178,6 @@ func lubuPrereleaseVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	if (strings.Contains(inCard.Variation, "April") || strings.Contains(inCard.Variation, "4/29")) && card.OriginalReleaseDate != "1999-04-29" {
 		return true
 	} else if (strings.Contains(inCard.Variation, "July") || strings.Contains(inCard.Variation, "7/4")) && card.OriginalReleaseDate != "1999-07-04" {
-		return true
-	}
-	return false
-}
-
-func borderlessCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if isBorderless(inCard) && card.BorderColor != BorderColorBorderless {
-		return true
-	} else if !isBorderless(inCard) && card.BorderColor == BorderColorBorderless && !card.HasFrameEffect(FrameEffectShowcase) {
-		return true
-	}
-	return false
-}
-
-func showcaseCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if isShowcase(inCard) && !card.HasFrameEffect(FrameEffectShowcase) {
-		return true
-	} else if !isShowcase(inCard) && card.HasFrameEffect(FrameEffectShowcase) {
-		return true
-	}
-	return false
-}
-
-func extendedartCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if isExtendedArt(inCard) && !card.HasFrameEffect(FrameEffectExtendedArt) {
-		return true
-		// BaB are allowed to have extendedart
-	} else if !isExtendedArt(inCard) && card.HasFrameEffect(FrameEffectExtendedArt) && !card.HasPromoType(PromoTypeBuyABox) {
 		return true
 	}
 	return false
