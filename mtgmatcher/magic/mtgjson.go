@@ -690,6 +690,22 @@ func adjustTokens(sets map[string]*Set) {
 	}
 }
 
+// numberDecorations are the marks a collector number is decorated with.
+const numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + "*"
+
+// plainNumber is the collector number without the decoration that tells one
+// printing of it from another, and without whatever the decoration carries
+// behind it: "265†a" is the a of five Tamiyo's Journals and the plain number
+// of every one of them is 265. Trimming from the right reached only the marks
+// standing last, so a dozen numbers spelled "139★s" or "265†a" kept theirs
+// and answered to no search for the number they print.
+func plainNumber(number string) string {
+	if i := strings.IndexAny(number, numberDecorations); i >= 0 {
+		return number[:i]
+	}
+	return number
+}
+
 func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	canonicalNames := map[string]string{}
 	sealedNames := map[string]string{}
@@ -1056,7 +1072,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			}
 
 			// Save the collector number stripped of its ★/†/Φ decorations
-			card.OriginalNumber = strings.TrimRight(card.Number, SuffixSpecial+SuffixVariant+SuffixPhi+"*")
+			card.OriginalNumber = plainNumber(card.Number)
 
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
