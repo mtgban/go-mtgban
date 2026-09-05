@@ -204,6 +204,13 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			}
 		}
 
+		// The name path is a guess where the edition names no set and the
+		// number is not unique to a printing; nameableByEdition says when
+		// that is so, and today only Gundam ever answers no.
+		if cardID == "" && !nameableByEdition(ct.gameID, blueprint) {
+			continue
+		}
+
 		if cardID == "" {
 			var err error
 			cardID, err = mtgmatcher.Match(theCard)
