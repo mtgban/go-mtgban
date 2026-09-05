@@ -408,6 +408,12 @@ func promoShelfNeedsLabel(gameID int, bp *Blueprint) bool {
 	if codedShelf.MatchString(bp.Expansion.Name) {
 		return false
 	}
+	// A mapped shelf names a set, so the number no longer answers alone
+	// and there is nothing left to refuse.
+	_, mapped := gundamShelfSets[bp.Expansion.Name]
+	if mapped {
+		return false
+	}
 	set, err := mtgmatcher.GetSetByName(bp.Expansion.Name)
 	return err != nil || set == nil
 }
@@ -579,4 +585,28 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 	}
 
 	return formatted, expansions
+}
+
+// gundamShelfSets names the Card Trader Gundam shelves that sell one set of
+// the catalog under a name the catalog does not use. Card Trader sells the
+// deck build box's reprints as "Reprints", and files every card on that
+// shelf under the number of the card it reprints, so a shelf naming no set
+// narrows nothing and the number aliases onto the original printing.
+var gundamShelfSets = map[string]string{
+	"Reprints": "SC01",
+}
+
+// gameEdition names the set a blueprint's shelf sells, which is the shelf's
+// own name everywhere but the shelves above.
+func gameEdition(gameID int, bp *Blueprint) string {
+	if gameID == GameGundam {
+		code, found := gundamShelfSets[bp.Expansion.Name]
+		if found {
+			set, err := mtgmatcher.GetSet(code)
+			if err == nil {
+				return set.Name
+			}
+		}
+	}
+	return bp.Expansion.Name
 }
