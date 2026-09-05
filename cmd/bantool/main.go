@@ -689,6 +689,9 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"vegassingles_gundam": {
+		Init: vegassinglesScraper(vegassingles.GameGundam),
+	},
 	"vegassingles_onepiece": {
 		Init: vegassinglesScraper(vegassingles.GameOnePiece),
 	},

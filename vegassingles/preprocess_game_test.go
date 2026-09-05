@@ -280,6 +280,69 @@ func TestPreprocessOnePiece(t *testing.T) {
 	}
 }
 
+func TestPreprocessGundam(t *testing.T) {
+	for _, tt := range []struct {
+		display   string
+		setName   string
+		name      string
+		variation string
+		foil      bool
+	}{
+		// The rarity beside the code is what tells apart the printings
+		// sharing one number, so it rides into the variation.
+		{"Cagalli Yula Athha (R+) (GD01-096) - Newtype Rising Holofoil", "Newtype Rising",
+			"Cagalli Yula Athha", "GD01-096 R+", true},
+		{"Blast Impulse Gundam (C+) (ST09-007) - Starter Deck 09 Destiny Ignition Holofoil",
+			"Starter Deck 09: Destiny Ignition", "Blast Impulse Gundam", "ST09-007 C+", true},
+		// A card whose own name ends in a parenthetical wears two of them,
+		// and only the one nearest the code is the rarity: the catalog
+		// calls this card "Gelgoog (GQ)".
+		{"Gelgoog (GQ) (C+) (ST06-004) - Starter Deck 06 Clan Unity Holofoil",
+			"Starter Deck 06: Clan Unity", "Gelgoog (GQ)", "ST06-004 C+", true},
+		{"Shining Gundam (Super Mode) (R+) (GD05-068) - Freedom Ascension Holofoil",
+			"Freedom Ascension", "Shining Gundam (Super Mode)", "GD05-068 R+", true},
+		// A printing sold in no rarity of its own keeps the bare number.
+		{"Argama (GD02-129) - Dual Impact Holofoil", "Dual Impact", "Argama", "GD02-129", true},
+		// The line is holofoil throughout but for the odd plain card, and
+		// the word it writes is not the "foil" the other lines write.
+		{"Gundam (ST01-001) - Deck Build Box Freedom Ascension", "Deck Build Box Freedom Ascension",
+			"Gundam", "ST01-001", true},
+	} {
+		product := VSProduct{DisplayName: tt.display, SelectedFinish: "Holofoil"}
+		product.ProductData.SetName = tt.setName
+		if !tt.foil {
+			product.SelectedFinish = "Normal"
+		}
+		card, err := preprocessGundam(product)
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if card.Name != tt.name || card.Variation != tt.variation ||
+			card.Edition != tt.setName || card.Foil != tt.foil {
+			t.Errorf("%s:\n got  %q %q %q %v\n want %q %q %q %v", tt.display,
+				card.Name, card.Variation, card.Edition, card.Foil,
+				tt.name, tt.variation, tt.setName, tt.foil)
+		}
+	}
+
+	// The edition comes from the product body, not the tail of the name,
+	// which spells it without its punctuation.
+	product := VSProduct{DisplayName: "Zaku II (C+) (ST03-006) - Starter Deck 03 Zeons Rush Holofoil"}
+	product.ProductData.SetName = "Starter Deck 03: Zeon's Rush"
+	card, err := preprocessGundam(product)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.Edition != "Starter Deck 03: Zeon's Rush" {
+		t.Errorf("edition read off the display name: %q", card.Edition)
+	}
+
+	_, err = preprocessGundam(VSProduct{DisplayName: "Newtype Rising - Booster Box"})
+	if err == nil {
+		t.Error("expected an error for a codeless display name")
+	}
+}
+
 func TestPreprocessPokemon(t *testing.T) {
 	for _, tt := range []struct {
 		display   string

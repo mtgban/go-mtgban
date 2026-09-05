@@ -29,6 +29,7 @@ const (
 	GameRiftbound = "Riftbound"
 	GameOnePiece  = "One Piece"
 	GamePokemon   = "Pokemon"
+	GameGundam    = "Gundam"
 )
 
 // listedConditions names the conditions the store buys, per product line.
@@ -45,6 +46,7 @@ var listedConditions = map[string][]string{
 	GameRiftbound: {"Near Mint"},
 	GamePokemon:   {"Near Mint"},
 	GameOnePiece:  {"Near Mint", "Lightly Played"},
+	GameGundam:    {"Near Mint"},
 }
 
 var conditionMap = map[string]string{
@@ -393,6 +395,8 @@ func (vs *Vegassingles) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameOnePiece
 	case GamePokemon:
 		info.Game = mtgban.GamePokemon
+	case GameGundam:
+		info.Game = mtgban.GameGundam
 	}
 	return
 }
