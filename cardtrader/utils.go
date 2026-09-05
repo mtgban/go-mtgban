@@ -462,13 +462,18 @@ func gameFoil(gameID int, product Product) bool {
 	return false
 }
 
+// unlimitedShelf matches the Card Trader shelves that sell the unlimited run
+// of a set, which it names apart from the first one ("Monarch - Unlimited"
+// beside "Monarch - First").
+var unlimitedShelf = regexp.MustCompile(`(?i)\bUnlimited\b`)
+
 // gameFinish names the finish a listing prices, for the games whose
 // properties name one rather than flagging it. Flesh and Blood is the only
 // one so far: its treatment is a string, and the name reaches the printing's
 // own Cold Foil sibling, which the boolean cannot - it has one bit for a
 // game selling three treatments. The plain values name no treatment and are
 // left to the flag; the stringly-false is what old listings carry.
-func gameFinish(gameID int, product Product) string {
+func gameFinish(gameID int, bp *Blueprint, product Product) string {
 	switch gameID {
 	case GameFleshAndBlood:
 		// The treatment and the print run cross, and the datastore gives
@@ -484,6 +489,13 @@ func gameFinish(gameID int, product Product) string {
 			return "1st Edition " + treatment
 		}
 		if treatment == "Normal" {
+			// The flag only says "not first", which names a printing
+			// wherever the unlimited run exists and names nothing where
+			// it does not - and Card Trader shelves the runs apart, so
+			// the shelf is what can say the run outright.
+			if bp != nil && unlimitedShelf.MatchString(bp.Expansion.Name) {
+				return "Unlimited Edition " + treatment
+			}
 			return ""
 		}
 		return treatment
