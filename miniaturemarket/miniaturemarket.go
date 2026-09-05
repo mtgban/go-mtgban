@@ -142,6 +142,14 @@ func sealedName(game, name string) string {
 			name = strings.Replace(name, " - Starter Deck", "", 1)
 			return strings.TrimSpace("Starter Deck " + match[2] + ": " + strings.TrimSpace(name))
 		}
+		// A Premium Card Collection is named for the series arc it collects.
+		// The canon prefixes that arc with the series it belongs to and ends
+		// on the bracketed code; the storefront spells no series at all, and
+		// writes the code mid-name where every other product carries it.
+		if match != nil && match[1] == "PC" {
+			name = strings.Replace(name, " - ", " - Mobile Suit Gundam ", 1)
+			return strings.TrimSpace(name + match[0])
+		}
 		// Everything else runs the set name straight into what it is sold
 		// as, where the storefront dashes the two apart.
 		name = strings.Replace(name, " - ", " ", 1)

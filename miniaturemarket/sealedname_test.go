@@ -8,6 +8,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/gundam"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 )
 
@@ -81,12 +82,16 @@ func TestSealedNameGundam(t *testing.T) {
 			"Freedom Ascension Deck Build Box",
 		},
 		// The Premium Collections carry a letter after their number, which
-		// One Piece's own pattern does not allow for. The catalog holds no
-		// row for either, so they resolve to nothing - but the code still
-		// has to come off, or the name would not even be asked properly.
+		// One Piece's own pattern does not allow for. The series the arc
+		// belongs to goes back in and the code goes back on the end, which
+		// is where the canon spells both.
 		{
 			"GUNDAM Card Game: Gundam Assemble Premium Collection [PC01A] - Iron Blooded Orphans",
-			"Gundam Assemble Premium Collection Iron Blooded Orphans",
+			"Gundam Assemble Premium Collection - Mobile Suit Gundam Iron Blooded Orphans [PC01A]",
+		},
+		{
+			"GUNDAM Card Game: Gundam Assemble Premium Collection [PC02A] - GQuuuuuuX",
+			"Gundam Assemble Premium Collection - Mobile Suit Gundam GQuuuuuuX [PC02A]",
 		},
 	} {
 		if got := sealedName(GameGundam, tt.in); got != tt.want {
@@ -326,5 +331,52 @@ func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil || co.Name != "Usurp the Shadow Throne Booster Pack" {
 		t.Errorf("resolved to %v, want the Usurp the Shadow Throne Booster Pack", co)
+	}
+}
+
+// TestResolveGundamPremiumCollection pins the Premium Card Collections to the
+// products they price rather than to the string the rewrite spells, since the
+// string is only a means to them.
+//
+// Each collection ships beside a Display and a Case of itself, so a rewrite
+// that put back too little would have those to land on: what keeps it off
+// them is that the resolver refuses a candidate saying a word the listing
+// never did, and neither "Display" nor "Case" is ever listed here.
+func TestResolveGundamPremiumCollection(t *testing.T) {
+	path := os.Getenv("GUNDAM_PATH")
+	if path == "" {
+		t.Skip("GUNDAM_PATH not set")
+	}
+	err := datastore.Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mm := NewScraperSealed(GameGundam)
+	for _, tt := range []struct {
+		desc, listed, want string
+	}{
+		{
+			"the Iron-Blooded Orphans collection",
+			"GUNDAM Card Game: Gundam Assemble Premium Collection [PC01A] - Iron Blooded Orphans",
+			"gcg-pr-679506",
+		},
+		{
+			"the GQuuuuuuX collection",
+			"GUNDAM Card Game: Gundam Assemble Premium Collection [PC02A] - GQuuuuuuX",
+			"gcg-pr-679514",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			uuid, drop := mm.resolveListing("", tt.listed)
+			if uuid == tt.want {
+				return
+			}
+			co, cerr := mtgmatcher.GetUUID(uuid)
+			if cerr != nil {
+				t.Fatalf("resolveListing = (%q, %q), want %s", uuid, drop, tt.want)
+			}
+			t.Errorf("resolveListing landed on %q, want %s", co.Name, tt.want)
+		})
 	}
 }
