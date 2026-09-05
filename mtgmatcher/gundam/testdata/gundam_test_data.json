@@ -1,0 +1,152 @@
+[
+    {
+        "description": "a plain number keeps the plain printing",
+        "input": {
+            "name": "Gundam",
+            "variant": "GD01-001",
+            "edition": "Newtype Rising"
+        },
+        "uuid": "gd01-001_643150_holo"
+    },
+    {
+        "description": "a title naming two sets keeps the set it equals",
+        "input": {
+            "name": "Destiny Gundam",
+            "variant": "GD05-055 R+",
+            "edition": "Freedom Ascension"
+        },
+        "uuid": "gd05-055_707578_holo"
+    },
+    {
+        "description": "bare Beta reaches the beta edition",
+        "input": {
+            "name": "Aile Strike Gundam",
+            "variant": "ST04-001",
+            "edition": "Beta"
+        },
+        "uuid": "st04-001_616623_holo"
+    },
+    {
+        "description": "edition picks between three printings of one number",
+        "input": {
+            "name": "Guntank",
+            "variant": "GD01-008",
+            "edition": "Newtype Rising"
+        },
+        "uuid": "gd01-008_643157"
+    },
+    {
+        "description": "negative: a name the catalog does not carry",
+        "input": {
+            "name": "Not A Gundam Card At All",
+            "variant": "GD01-001"
+        },
+        "error": "unknown card name"
+    },
+    {
+        "description": "negative: a number belonging to no set of this game",
+        "input": {
+            "name": "Gundam",
+            "variant": "ZZ99-999"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: a token named without its set",
+        "input": {
+            "name": "Gundam",
+            "variant": "T-001 Token"
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "parenthetical is part of the real name",
+        "input": {
+            "name": "Gelgoog (GQ)",
+            "variant": "ST06-004",
+            "edition": "Starter Deck 06: Clan Unity"
+        },
+        "uuid": "st06-004_660489"
+    },
+    {
+        "description": "promotional EX base shelf names its own set",
+        "input": {
+            "name": "EX Base",
+            "variant": "EXBP-019",
+            "edition": "Promotional EX Base Tokens"
+        },
+        "uuid": "exbp-019"
+    },
+    {
+        "description": "promotional resource token shelf names its own set",
+        "input": {
+            "name": "Resource",
+            "variant": "RP-067",
+            "edition": "Promotional Resource Tokens"
+        },
+        "uuid": "rp-067"
+    },
+    {
+        "description": "rarity separates a parallel from the card it parallels",
+        "input": {
+            "name": "Gundam",
+            "variant": "GD01-001 LR+",
+            "edition": "Newtype Rising"
+        },
+        "uuid": "gd01-001_645356_holo"
+    },
+    {
+        "description": "starter deck named by its title alone",
+        "input": {
+            "name": "Suletta Mercury",
+            "variant": "ST01-011",
+            "edition": "Heroic Beginnings"
+        },
+        "uuid": "st01-011_641446"
+    },
+    {
+        "description": "starter deck named the way the catalog names it",
+        "input": {
+            "name": "Suletta Mercury",
+            "variant": "ST01-011",
+            "edition": "Starter Deck 01: Heroic Beginnings"
+        },
+        "uuid": "st01-011_641446"
+    },
+    {
+        "description": "that name with its rarity beside it",
+        "input": {
+            "name": "Gelgoog (GQ)",
+            "variant": "ST06-004 C+",
+            "edition": "Starter Deck 06: Clan Unity"
+        },
+        "uuid": "st06-004_660490_holo"
+    },
+    {
+        "description": "the beta edition of that same number",
+        "input": {
+            "name": "Guntank",
+            "variant": "GD01-008",
+            "edition": "Edition Beta"
+        },
+        "uuid": "gd01-008_616633"
+    },
+    {
+        "description": "the doubled rarity is its own printing",
+        "input": {
+            "name": "Gundam",
+            "variant": "GD01-001 LR++",
+            "edition": "Newtype Rising"
+        },
+        "uuid": "gd01-001_645375_holo"
+    },
+    {
+        "description": "the token word reaches the token",
+        "input": {
+            "name": "Gundam",
+            "variant": "T-001 Token",
+            "edition": "Newtype Rising"
+        },
+        "uuid": "t-001_643280"
+    }
+]

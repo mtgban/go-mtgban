@@ -1,0 +1,74 @@
+[
+    {
+        "description": "a number answers without an edition",
+        "input": {
+            "name": "Suzaku - Hellfire Wings",
+            "variant": "EBP01-002"
+        },
+        "uuid": "ebp01-002_713882_foil"
+    },
+    {
+        "description": "a super special parallel names its own printing",
+        "input": {
+            "name": "Jormuntide Ignis - Savage Lava Dragon",
+            "variant": "EBP01-001SSP"
+        },
+        "uuid": "ebp01-001ssp_713881_foil"
+    },
+    {
+        "description": "and its super parallel",
+        "input": {
+            "name": "Suzaku - Hellfire Wings",
+            "variant": "EBP01-002SP"
+        },
+        "uuid": "ebp01-002sp_713884_foil"
+    },
+    {
+        "description": "negative: a name the catalog does not carry",
+        "input": {
+            "name": "Not A Palworld Card At All",
+            "variant": "EBP01-001"
+        },
+        "error": "unknown card name"
+    },
+    {
+        "description": "negative: a number belonging to no set of this game",
+        "input": {
+            "name": "Grizzbolt - Rumbling Tank",
+            "variant": "ZZ99-999"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "the over super rare of that same number",
+        "input": {
+            "name": "Suzaku - Hellfire Wings",
+            "variant": "EBP01-002OSR"
+        },
+        "uuid": "ebp01-002osr_713883_foil"
+    },
+    {
+        "description": "the plain number is a printing of its own",
+        "input": {
+            "name": "Grizzbolt - Rumbling Tank",
+            "variant": "ETD01-001"
+        },
+        "uuid": "etd01-001_713801"
+    },
+    {
+        "description": "the rarity code written after the name",
+        "input": {
+            "name": "Grizzbolt - Rumbling Tank (TSR)",
+            "variant": "ETD01-001"
+        },
+        "uuid": "etd01-001tsr_713803_foil"
+    },
+    {
+        "description": "the rarity tail is part of the number",
+        "input": {
+            "name": "Grizzbolt - Rumbling Tank",
+            "variant": "ETD01-001TSR"
+        },
+        "uuid": "etd01-001tsr_713803_foil"
+    }
+]

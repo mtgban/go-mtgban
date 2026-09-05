@@ -147,6 +147,80 @@ jobs:
           b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
           xz -d "${{ steps.get_key.outputs.filepath }}.xz"
 
+  cache-gundam:
+    runs-on: ubuntu-latest
+    outputs:
+      key: ${{ steps.get_key.outputs.key }}
+      filepath: ${{ steps.get_key.outputs.filepath }}
+    env:
+      B2_URI: "b2://mtgban-datastore/gundam/gundam.json.xz"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+    steps:
+      - name: Fetch file checksum
+        id: get_key
+        run: |
+          pipx install b2
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          base=$(basename "$B2_URI" .xz)
+          # B2 serves no HTTP etag, so the object's own metadata stands in:
+          # it carries the file id, sha1 and upload timestamp, all of which
+          # change when the datastore is republished
+          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
+          echo "key=$base-$etag" >> $GITHUB_OUTPUT
+          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
+
+      - name: Cache path
+        id: cache_file
+        uses: actions/cache@v5
+        with:
+          path: "datastore/"
+          key: ${{ steps.get_key.outputs.key }}
+
+      - if: steps.cache_file.outputs.cache-hit != 'true'
+        name: Download file
+        run: |
+          mkdir -p datastore/
+          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
+          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+
+  cache-palworld:
+    runs-on: ubuntu-latest
+    outputs:
+      key: ${{ steps.get_key.outputs.key }}
+      filepath: ${{ steps.get_key.outputs.filepath }}
+    env:
+      B2_URI: "b2://mtgban-datastore/palworld/palworld.json.xz"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+    steps:
+      - name: Fetch file checksum
+        id: get_key
+        run: |
+          pipx install b2
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          base=$(basename "$B2_URI" .xz)
+          # B2 serves no HTTP etag, so the object's own metadata stands in:
+          # it carries the file id, sha1 and upload timestamp, all of which
+          # change when the datastore is republished
+          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
+          echo "key=$base-$etag" >> $GITHUB_OUTPUT
+          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
+
+      - name: Cache path
+        id: cache_file
+        uses: actions/cache@v5
+        with:
+          path: "datastore/"
+          key: ${{ steps.get_key.outputs.key }}
+
+      - if: steps.cache_file.outputs.cache-hit != 'true'
+        name: Download file
+        run: |
+          mkdir -p datastore/
+          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
+          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+
   cache-onepiece:
     runs-on: ubuntu-latest
     outputs:
@@ -411,6 +485,76 @@ jobs:
         run: |
           go test ./mtgmatcher/riftbound/... ./vegassingles/... ./starcitygames/... -v
 
+  test-gundam:
+    needs: cache-gundam
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install golang
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Cache Gundam Datastore
+        uses: actions/cache/restore@v5
+        with:
+          path: "datastore/"
+          key: ${{ needs.cache-gundam.outputs.key }}
+          fail-on-cache-miss: true
+
+      # A red run states exactly which datastore bytes it tested against,
+      # diffable against the bucket or a local build; a golden failure is
+      # diagnosed by fingerprint instead of by guessing which version of a
+      # datastore the run happened to hold.
+      - name: Datastore fingerprint
+        run: |
+          sha256sum ${{ needs.cache-gundam.outputs.filepath }}
+          ls -l datastore/
+
+      - name: Test
+        env:
+          GUNDAM_PATH: "${{ github.workspace }}/${{ needs.cache-gundam.outputs.filepath }}"
+        run: |
+          go test ./mtgmatcher/gundam/... ./cardtrader/... -v
+
+  test-palworld:
+    needs: cache-palworld
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install golang
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Cache Palworld Datastore
+        uses: actions/cache/restore@v5
+        with:
+          path: "datastore/"
+          key: ${{ needs.cache-palworld.outputs.key }}
+          fail-on-cache-miss: true
+
+      # A red run states exactly which datastore bytes it tested against,
+      # diffable against the bucket or a local build; a golden failure is
+      # diagnosed by fingerprint instead of by guessing which version of a
+      # datastore the run happened to hold.
+      - name: Datastore fingerprint
+        run: |
+          sha256sum ${{ needs.cache-palworld.outputs.filepath }}
+          ls -l datastore/
+
+      - name: Test
+        env:
+          PALWORLD_PATH: "${{ github.workspace }}/${{ needs.cache-palworld.outputs.filepath }}"
+        run: |
+          go test ./mtgmatcher/palworld/... -v
+
   test-onepiece:
     needs: cache-onepiece
     runs-on: ubuntu-latest
@@ -558,7 +702,8 @@ jobs:
   # wave a broken tree through.
   mtgban-ci:
     needs: [style, test-magic, test-lorcana, test-riftbound, test-onepiece,
-            test-yugioh, test-fleshandblood, test-pokemon]
+            test-yugioh, test-fleshandblood, test-pokemon, test-gundam,
+            test-palworld]
     if: always()
     runs-on: ubuntu-latest
 
