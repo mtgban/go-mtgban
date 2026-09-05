@@ -377,7 +377,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: plainNumber(ownNumber(card)),
+			OriginalNumber: Rules{}.PlainNumber(ownNumber(card)),
 			SetTotal:       setTotal(card),
 		}
 

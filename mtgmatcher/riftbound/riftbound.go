@@ -388,10 +388,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			Printings: printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			// The star marks a variant printing rather than a different
-			// number, so the plain number reaches it here, the way Magic
-			// strips its own decorations.
-			OriginalNumber: strings.TrimRight(number, "*"),
+			OriginalNumber: Rules{}.PlainNumber(number),
 		}
 		// Register the uuid each finish resolves to, spelling the finish out
 		// in the uuid itself, so output()/Match resolve to them.

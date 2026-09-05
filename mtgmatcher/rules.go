@@ -60,6 +60,16 @@ type GameRules interface {
 	// names are data rather than a fixed list may instead hand back the
 	// normalized name and let the lookup fail.
 	CanonicalFinish(name string) string
+	// PlainNumber reduces a collector number to the one a person writes,
+	// which is the number the loader stores as Card.OriginalNumber: Magic
+	// drops the mark and the letters that name a printing, Pokemon the zeros
+	// its catalog pads an ordinal with, Riftbound its star, Lorcana its
+	// variant letter, and a game that writes its numbers plainly hands the
+	// number back. The game owns this the way it owns its finish names, so a
+	// caller folding a number a person typed need not know which marks
+	// belong to which game - and one that rebuilt the vocabulary for itself
+	// got the case of Magic's phi wrong.
+	PlainNumber(number string) string
 }
 
 // SetRules attaches the game-specific identification hooks used by Match. A
