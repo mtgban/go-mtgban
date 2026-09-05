@@ -2,10 +2,20 @@ name: Run CI
 
 on:
   workflow_dispatch: {}
-  push: {}
+  # A branch with a pull request open answers for it there, so pushing to one
+  # would otherwise run the whole suite twice over the same commit.
+  push:
+    branches:
+      - master
   pull_request: {}
   schedule:
     - cron: "0 0 * * *"
+
+# One run per branch: a push that supersedes another stops it rather than
+# racing it for the runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
