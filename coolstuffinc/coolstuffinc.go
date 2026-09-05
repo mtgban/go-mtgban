@@ -497,7 +497,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				case GameGundam:
 					name, variation := gundamCard(cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity)), Foil: isFoil}
-				case GameLorcana, GameRiftbound, GamePalworld:
+				// Palworld numbers a parallel apart from the card it
+				// parallels, so the note names one printing on its own -
+				// once the rarity code this storefront sometimes types onto
+				// the number is written back beside it.
+				case GamePalworld:
+					theCard = &mtgmatcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
+				case GameLorcana, GameRiftbound:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
 					csi.printf("unsupported game")
@@ -735,8 +741,12 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName)), Foil: product.IsFoil == 1}
 		// Palworld numbers a parallel apart from the card it parallels, the
 		// rarity riding in the number's own tail, so the plain reading names
-		// one printing and nothing has to be read out of the wording.
-		case GameLorcana, GamePalworld:
+		// one printing and nothing has to be read out of the wording. This
+		// feed writes its numbers clean today, but it is the same hands
+		// typing the sell listings that glue the rarity onto one.
+		case GamePalworld:
+			theCard = &mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(product.Number), Foil: product.IsFoil == 1}
+		case GameLorcana:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
 			return errors.New("unsupported game")
