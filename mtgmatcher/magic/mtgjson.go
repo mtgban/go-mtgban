@@ -874,11 +874,14 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 					card.PromoTypes = append(card.PromoTypes, "wizardsplaynetwork")
 				}
 
-			case "CMB1", "CMB2":
+			case "CMB1", "CMB2", "MB2":
 				// Rename cards that have names clashing with real cards
 				switch card.Name {
 				case "Pick Your Poison",
-					"Red Herring":
+					"Red Herring",
+					// Normalizing drops the comma that is all this has
+					// over Glimpse the Unthinkable
+					"Glimpse, the Unthinkable":
 					card.Name += " Playtest"
 				// This could mess up Bind (INV)
 				case "Bind // Liberate":

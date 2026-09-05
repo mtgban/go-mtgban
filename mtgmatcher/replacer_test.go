@@ -61,8 +61,9 @@ var NormalizeTests = []NormalizeTest{
 		Out: "forestb",
 	},
 	{
+		// An article is a word of the name like any other
 		In:  "them the removed",
-		Out: "themremoved",
+		Out: "themtheremoved",
 	},
 	{
 		In:  "Jakub Šlem",
@@ -85,12 +86,18 @@ var NormalizeTests = []NormalizeTest{
 		Out: "trial and error",
 	},
 	{
+		// However it is typeset, and the card is Will-o'-the-Wisp
 		In:  "Will o' the Wisp",
-		Out: "willowisp",
+		Out: "willothewisp",
 	},
 	{
+		In:  "Will-o'-the-Wisp",
+		Out: "willothewisp",
+	},
+	{
+		// Kept its spaces while a rule shielded it from the article step
 		In:  "Reverse the Polarity",
-		Out: "reverse the polarity",
+		Out: "reversethepolarity",
 	},
 	{
 		In:  "Welcome to...",

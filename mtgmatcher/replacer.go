@@ -7,18 +7,6 @@ import (
 )
 
 var replacerStrings = []string{
-	// Remove a very common field, sometimes added with no reason
-	// Needs the dashes to work with will-o'-the-wisp, which is why
-	// it needs to be before removing the dash step
-	" the ", "",
-	"-the-", "",
-	// Hopefully "of/from the" is specific enough
-	"of the", "of the",
-	"from the", "from the",
-
-	// I can't even
-	"jeong, the", "jeongthe",
-
 	// Wrong escaping or conversion
 	"&quot;", "",
 
@@ -90,8 +78,6 @@ var replacerStrings = []string{
 	" and ", "",
 	" to ", "",
 	" & ", "",
-	"reverse the polarity", "reverse the polarity",
-	"glimpse, the unthinkable", "glimpse, the unthinkable",
 
 	// Accented characters; see asciiReplacer, which folds the same set for
 	// callers that tokenize rather than normalize.
