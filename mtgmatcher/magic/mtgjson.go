@@ -690,8 +690,12 @@ func adjustTokens(sets map[string]*Set) {
 	}
 }
 
-// numberDecorations are the marks a collector number is decorated with.
-const numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + "*"
+// numberDecorations are the marks a collector number is decorated with, and
+// plainNumberTail the letters that stand behind one to name its printing.
+const (
+	numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + "*"
+	plainNumberTail   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+)
 
 // plainNumber is the collector number without the decoration that tells one
 // printing of it from another, and without whatever the decoration carries
@@ -701,9 +705,18 @@ const numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + "*"
 // and answered to no search for the number they print.
 func plainNumber(number string) string {
 	if i := strings.IndexAny(number, numberDecorations); i >= 0 {
-		return number[:i]
+		number = number[:i]
 	}
-	return number
+	// The letters a number ends in name the printing rather than number it:
+	// the s of a prerelease, the p of a promo pack, the alt of the alternate
+	// fourth edition. They go the way the marks do, so the two printings of
+	// one card agree on the number they print - 139s and 139★s are both the
+	// 139 of Tenth Edition. A number that is letters alone is a number.
+	plain := strings.TrimRight(number, plainNumberTail)
+	if plain == "" {
+		return number
+	}
+	return plain
 }
 
 func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
