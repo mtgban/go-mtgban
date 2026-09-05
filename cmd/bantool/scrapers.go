@@ -65,8 +65,10 @@ func starcitygamesKey() (string, error) {
 // failing and pricing nothing.
 func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
+		// An id map run makes no authenticated call, so a missing MKM
+		// credential refuses only the runs that would crawl.
 		appToken, appSecret, err := cardmarketCredentials()
-		if err != nil {
+		if err != nil && os.Getenv("MTGJSON_MKMID_PATH") == "" {
 			return nil, err
 		}
 		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
@@ -95,7 +97,7 @@ func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (
 func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		appToken, appSecret, err := cardmarketCredentials()
-		if err != nil {
+		if err != nil && os.Getenv("MTGJSON_MKMID_PATH") == "" {
 			return nil, err
 		}
 		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
@@ -161,7 +163,7 @@ func tcgSYPScraper(game string) func() (mtgban.Scraper, error) {
 func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		appToken, appSecret, err := cardmarketCredentials()
-		if err != nil {
+		if err != nil && os.Getenv("MTGJSON_MKMID_PATH") == "" {
 			return nil, err
 		}
 		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
