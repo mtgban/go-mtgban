@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_sealed_gundam]
   schedule:
-    - cron: "20 3,15 * * *"
+    - cron: "10 6,18 * * *"
 
 permissions:
   contents: read

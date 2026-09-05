@@ -136,7 +136,9 @@ jobs:
       # own reload on a variable of the same name for the same reason.
       #
       # The match is on whole words: a substring test would let "piece"
-      # stand for "onepiece". An unset variable names no game and so tells
+      # stand for "onepiece". Runs of whitespace collapse to one space
+      # first, so a value typed one game per line reads the same as a
+      # space-separated one. An unset variable names no game and so tells
       # no site, which is the safe way round - a run that published and
       # said nothing loses the reload, where a run that fails loses the
       # green tick on work that was done.
@@ -146,7 +148,7 @@ jobs:
           RELOAD_GAMES: "${{ vars.RELOAD_GAMES }}"
           GAME: "${{ inputs.game }}"
         run: |
-          case " ${RELOAD_GAMES:-} " in
+          case " $(printf '%s' "${RELOAD_GAMES:-}" | tr -s '[:space:]' ' ') " in
           *" $GAME "*) ;;
           *)
             echo "$GAME is not in RELOAD_GAMES (${RELOAD_GAMES:-unset}); priced without asking the site to reload"
