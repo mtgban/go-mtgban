@@ -173,6 +173,13 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		return err
 	}
 
+	if sz.game == GameMagic {
+		co, coErr := mtgmatcher.GetUUID(cardID)
+		if coErr == nil && namesAbsentTreatment(theCard.Variation, co) {
+			return nil
+		}
+	}
+
 	cardPrice, err := mtgmatcher.ParsePrice(price)
 	if err != nil || cardPrice <= 0 {
 		return err

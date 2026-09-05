@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // neonInkColors are the Neon Ink treatments the catalog files under a colour.
@@ -364,6 +365,45 @@ func hasSeveralDrops(cardName string) bool {
 	first := cards[0].OriginalNumber
 	for _, card := range cards[1:] {
 		if card.OriginalNumber != first {
+			return true
+		}
+	}
+	return false
+}
+
+// retroFrameVersion is the frame the catalog files the retro printings under.
+const retroFrameVersion = "1997"
+
+// treatmentClaims pairs a word the store writes with what the catalog files
+// that treatment under. The store spells these out only where it is selling
+// the printing wearing one, so they are read as claims and never as denials.
+//
+// Only the words the catalog answers as a promo type belong here. The store
+// also writes "Rainbow Foil" and "Confetti Foil", which name the finish a
+// Secret Lair is sold in rather than a treatment the printing wears, and
+// reading those as claims refuses 62 of its listings for saying so.
+var treatmentClaims = []struct {
+	tag   string
+	wears func(co *mtgmatcher.CardObject) bool
+}{
+	{"Retro Frame", func(co *mtgmatcher.CardObject) bool {
+		return co.FrameVersion == retroFrameVersion
+	}},
+	{"Textured", func(co *mtgmatcher.CardObject) bool {
+		return co.HasPromoType(magic.PromoTypeTextured)
+	}},
+	{"Surge Foil", func(co *mtgmatcher.CardObject) bool {
+		return co.HasPromoType(magic.PromoTypeSurgeFoil)
+	}},
+}
+
+// namesAbsentTreatment reports whether the listing spells out a treatment the
+// printing it was answered with does not wear. The store says these words
+// about the card in hand, so an answer without one is a different card, and
+// the price it carries belongs to that card rather than this listing.
+func namesAbsentTreatment(variation string, co *mtgmatcher.CardObject) bool {
+	for _, claim := range treatmentClaims {
+		if mtgmatcher.Contains(variation, claim.tag) && !claim.wears(co) {
 			return true
 		}
 	}
