@@ -54,6 +54,19 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
+	if strings.Contains(inCard.Name, deltaMark) {
+		inCard.Name = strings.ReplaceAll(inCard.Name, deltaMark, "")
+		inCard.AddToVariant(deltaSpecies)
+	}
+	if name := cardMarks.Replace(inCard.Name); name != inCard.Name {
+		inCard.Name = name
+	}
+	if name := strings.Join(strings.Fields(inCard.Name), " "); name != inCard.Name {
+		inCard.Name = name
+	}
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
+		return
+	}
 	stripStorefrontTails(b, inCard)
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
@@ -718,6 +731,22 @@ var setStopWords = map[string]bool{
 	"set": true, "sets": true, "the": true, "and": true,
 	"products": true, "collection": true,
 }
+
+// The marks an old card wears in its name, read the way the catalog keeps
+// each: it writes the star and the prism star into the name it files, and
+// files the delta species beside the name instead, as the variant the
+// printing carries. They are read only once the name has failed to name a
+// card, so the one printing the catalog itself spells with a symbol is
+// never rewritten.
+const (
+	deltaMark    = "δ"
+	deltaSpecies = "Delta Species"
+)
+
+var cardMarks = strings.NewReplacer(
+	"◇", "Prism Star",
+	"★", "Star",
+)
 
 // altArtSpellings are the ways a storefront writes the treatment the catalog
 // files a whole set of, so the set's own name can be looked for in a wording
