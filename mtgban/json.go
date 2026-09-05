@@ -2,6 +2,7 @@ package mtgban
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
@@ -65,13 +66,96 @@ func WriteVendorToJSON(vendor Vendor, w io.Writer) error {
 	return json.NewEncoder(w).Encode(&data)
 }
 
+// readScraperJSON decodes a dump one card at a time. Handing the whole
+// file to Decode makes it buffer every byte before parsing any of it,
+// which on a gigabyte-sized dump costs about twice the file in buffer
+// growth alone and keeps the raw text resident alongside the prices it
+// decodes into. Walking the object instead leaves the decoder holding
+// one card's entries at a time.
+func readScraperJSON(r io.Reader) (*scraperJSON, error) {
+	var data scraperJSON
+	dec := json.NewDecoder(r)
+
+	// Opening brace of the dump
+	_, err := dec.Token()
+	if err != nil {
+		return nil, err
+	}
+
+	for dec.More() {
+		keyToken, err := dec.Token()
+		if err != nil {
+			return nil, err
+		}
+		key, ok := keyToken.(string)
+		if !ok {
+			return nil, fmt.Errorf("dump holds %v where a field name was due", keyToken)
+		}
+
+		switch key {
+		case "info":
+			err = dec.Decode(&data.Info)
+		case "inventory":
+			data.Inventory = InventoryRecord{}
+			err = decodeRecord(dec, data.Inventory)
+		case "buylist":
+			data.Buylist = BuylistRecord{}
+			err = decodeRecord(dec, data.Buylist)
+		default:
+			// Anything a later writer adds, read past and drop
+			var skip json.RawMessage
+			err = dec.Decode(&skip)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Closing brace of the dump
+	_, err = dec.Token()
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
+}
+
+// decodeRecord fills one price side, decoding the entries of a card as
+// they are reached rather than the side as a whole.
+func decodeRecord[T any](dec *json.Decoder, out map[string][]T) error {
+	// Opening brace of the record
+	_, err := dec.Token()
+	if err != nil {
+		return err
+	}
+
+	for dec.More() {
+		keyToken, err := dec.Token()
+		if err != nil {
+			return err
+		}
+		cardID, ok := keyToken.(string)
+		if !ok {
+			return fmt.Errorf("record holds %v where a card id was due", keyToken)
+		}
+
+		var entries []T
+		err = dec.Decode(&entries)
+		if err != nil {
+			return err
+		}
+		out[cardID] = entries
+	}
+
+	// Closing brace of the record
+	_, err = dec.Token()
+	return err
+}
+
 // ReadSellerFromJSON rebuilds a seller from what the Write functions emit.
 // The result carries prices and the info it was written with, not the scraper
 // that produced them: it never reaches the network and Load is a no-op.
 func ReadSellerFromJSON(r io.Reader) (Seller, error) {
-	var data scraperJSON
-
-	err := json.NewDecoder(r).Decode(&data)
+	data, err := readScraperJSON(r)
 	if err != nil {
 		return nil, err
 	}
@@ -83,9 +167,7 @@ func ReadSellerFromJSON(r io.Reader) (Seller, error) {
 // with the same caveat as ReadSellerFromJSON: prices only, no scraper behind
 // them.
 func ReadVendorFromJSON(r io.Reader) (Vendor, error) {
-	var data scraperJSON
-
-	err := json.NewDecoder(r).Decode(&data)
+	data, err := readScraperJSON(r)
 	if err != nil {
 		return nil, err
 	}
