@@ -265,6 +265,24 @@ func skuNumber(sku string) string {
 	return fields[3]
 }
 
+// lowerVariantLetter puts a variant letter into the case the datastore spells
+// it in. Star City Games writes the letter that demands the variant printing
+// either way, and the matcher reads the case, so an upper-case one asks for
+// the plain card sharing the number and quietly gets it.
+//
+// The letter is only ever the one following a digit: the all-letter segments
+// ("PRM-FAB_233") name a set instead, and lowering those would lose the code.
+func lowerVariantLetter(number string) string {
+	cut := len(number)
+	for cut > 0 && unicode.IsLetter(rune(number[cut-1])) {
+		cut--
+	}
+	if cut == 0 || cut == len(number) || !unicode.IsDigit(rune(number[cut-1])) {
+		return number
+	}
+	return number[:cut] + strings.ToLower(number[cut:])
+}
+
 // fabPrintRunMarkers are the print-run suffixes Star City Games glues onto a
 // Flesh and Blood set code in its skus, listed longest first so the trim takes
 // the whole marker. The datastore numbers a card with the bare code and crosses
@@ -290,7 +308,7 @@ var fabPrintRunMarkers = []string{"12", "1", "2", "U"}
 // and keeping it last costs nothing since a prefixed number that resolves is
 // always the more specific answer.
 func fabNumbers(sku string) []string {
-	number := skuNumber(sku)
+	number := lowerVariantLetter(skuNumber(sku))
 	bare := strings.ReplaceAll(number, "_", " ")
 	if number == "" {
 		return []string{bare}

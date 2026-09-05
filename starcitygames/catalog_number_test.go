@@ -37,6 +37,10 @@ func TestFabNumbers(t *testing.T) {
 			[]string{"LGS127 // LGS128", "LGS 127 128"}},
 		{"the variant letter rides along", "SGL-FAB-MON1-155b-ENC",
 			[]string{"MON1155b", "MON155b", "155b"}},
+		// Star City Games writes the same letter either way and the matcher
+		// reads the case, so an upper-case one asked for the plain card.
+		{"an upper-case variant letter is lowered", "SGL-FAB-MST-31V-ENR",
+			[]string{"MST31v", "31v"}},
 		{"a lettered part stays the wording it is", "SGL-FAB-AGB-019_CC-ENN",
 			[]string{"AGB019 CC", "019 CC"}},
 		// A sku short of a number segment has nothing to prefix, and one
