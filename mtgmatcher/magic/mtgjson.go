@@ -692,10 +692,9 @@ func adjustTokens(sets map[string]*Set) {
 
 // numberDecorations are the marks a collector number is decorated with, and
 // plainNumberTail the letters that stand behind one to name its printing.
-const (
-	numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + "*"
-	plainNumberTail   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-)
+const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+var numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + strings.ToLower(SuffixPhi) + "*"
 
 // plainNumber is the collector number without the decoration that tells one
 // printing of it from another, and without whatever the decoration carries
