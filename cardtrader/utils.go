@@ -380,6 +380,35 @@ func fabWording(version, number string) string {
 // refuses the listing outright, so it moves into the name instead. A name
 // already saying it is left alone: "Grinder Token" must not become
 // "Token: Grinder Token".
+// nameableByEdition reports whether a blueprint carrying no TCGplayer id
+// may be matched by its name, edition and number alone.
+//
+// It only ever answers no for Gundam, and only because that game's numbers
+// are not unique. Its promotional shelves reprint another set's card under
+// that card's own number, so the edition is what tells the reprint from the
+// original - and Card Trader files those reprints under shelves the
+// datastore names no set for: "Premium Accessory and Card Set", "Gundam
+// Championships", "Reprints". The edition then selects nothing, the number
+// answers alone, and a "1st Anniversary" promo is published at the ordinary
+// card's identity. Not pricing it is the better of the two wrongs.
+//
+// Measured over every id-less Gundam blueprint that resolves by name: this
+// refuses the 15 that resolved to the wrong printing and keeps all 8 that
+// resolved to the right one, whose shelves - "Promotional EX Base Tokens",
+// "Promotional EX Resource Tokens", "Promotional Resource Tokens" - are
+// verbatim the names of EXBP, EXRP and RP.
+//
+// The other games are left alone deliberately. Where a number names one
+// printing on its own, an unresolvable edition costs nothing and refusing
+// on it would drop listings that match correctly today.
+func nameableByEdition(gameID int, bp *Blueprint) bool {
+	if gameID != GameGundam || bp.TCGplayerID != 0 {
+		return true
+	}
+	set, err := mtgmatcher.GetSetByName(bp.Expansion.Name)
+	return err == nil && set != nil
+}
+
 func gameName(gameID int, bp *Blueprint) string {
 	if gameID == GameYuGiOh && bp.Version == "Token" &&
 		!mtgmatcher.Contains(bp.Name, "token") {
