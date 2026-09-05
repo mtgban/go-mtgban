@@ -99,6 +99,7 @@ type Set struct {
 	Name          string `json:"name"`
 	ParentCode    string `json:"parentCode"`
 	ReleaseDate   string `json:"releaseDate"`
+	Symbol        string `json:"symbol"` // pokemon only
 	TokenSetCode  string `json:"tokenSetCode"`
 	Tokens        []Card `json:"tokens"`
 	Type          string `json:"type"`
