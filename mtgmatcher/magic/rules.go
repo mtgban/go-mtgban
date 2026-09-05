@@ -2159,7 +2159,8 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	switch inCard.Name {
 	case "Red Herring",
 		"Bind // Liberate",
-		"Pick Your Poison":
+		"Pick Your Poison",
+		"Glimpse, the Unthinkable":
 		if isMysteryList(inCard) || inCard.Contains("Playtest") {
 			inCard.Name += " Playtest"
 		}
