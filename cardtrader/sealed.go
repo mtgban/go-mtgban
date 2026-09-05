@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -196,6 +197,18 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 		// blueprints the same, so a name that reaches both runs and
 		// refuses can still be settled by the shelf it sits on.
 		uuid, err := mtgmatcher.ResolveSealedWithHint(bp.Name, bp.Expansion.Name)
+		// The set code some storefronts open a sealed name with is the
+		// vendor's filing, not a word of the product: the resolver's
+		// vocabulary is built from set names and never sees a code, so
+		// the letters read as the vendor naming something else. Retried
+		// and never substituted, so the trim can turn a refusal into an
+		// answer and can never turn one answer into another.
+		if err != nil {
+			trimmed := sealedNameWithoutShelfCode(bp)
+			if trimmed != bp.Name {
+				uuid, err = mtgmatcher.ResolveSealedWithHint(trimmed, bp.Expansion.Name)
+			}
+		}
 		// A name the resolver turns down is the whole reason this
 		// scraper prices a fraction of the catalog, so say which
 		// name and which refusal, the way the singles path does.
@@ -221,6 +234,27 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 	}
 
 	return productMap
+}
+
+// sealedShelfCodeRe splits the set code a storefront opens a name with into
+// the letters that name the line and the number that names the set.
+var sealedShelfCodeRe = regexp.MustCompile(`^([A-Za-z]{1,4})-?([0-9]{1,2})\s*[:-]\s+`)
+
+// sealedNameWithoutShelfCode takes the letters of a set code off the head of a
+// product name, when they are the letters of the code its own shelf opens
+// with. The number stays: the catalog spells it into the product's own name
+// ("Starter Deck 10: Generation Pulse"), and dropping it loses the one word
+// that tells the starter decks apart.
+func sealedNameWithoutShelfCode(bp *Blueprint) string {
+	name := sealedShelfCodeRe.FindStringSubmatch(bp.Name)
+	if name == nil {
+		return bp.Name
+	}
+	shelf := sealedShelfCodeRe.FindStringSubmatch(bp.Expansion.Name)
+	if shelf == nil || !strings.EqualFold(name[1], shelf[1]) || name[2] != shelf[2] {
+		return bp.Name
+	}
+	return name[2] + " " + bp.Name[len(name[0]):]
 }
 
 // accessoryWords name what CardTrader files in each of its accessory
