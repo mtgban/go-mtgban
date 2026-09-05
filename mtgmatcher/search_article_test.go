@@ -174,7 +174,7 @@ func TestSearchHasPrefixStillFindsAName(t *testing.T) {
 // card carries a qualifier instead, the way every other playtest card whose
 // name clashes with a real one does.
 func TestAClashingPlaytestNameStaysApart(t *testing.T) {
-	real, err := mtgmatcher.SearchEquals("Glimpse the Unthinkable")
+	realCard, err := mtgmatcher.SearchEquals("Glimpse the Unthinkable")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,7 +188,7 @@ func TestAClashingPlaytestNameStaysApart(t *testing.T) {
 	}
 
 	held := map[string]bool{}
-	for _, id := range real {
+	for _, id := range realCard {
 		held[id] = true
 	}
 	for _, id := range playtest {
