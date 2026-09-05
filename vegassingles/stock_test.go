@@ -154,10 +154,10 @@ func ahriFoil() VSProduct {
 	}
 }
 
-// TestRiftboundStock runs the guard against a game this scraper is actually
-// scheduled for. The Magic cases above cover the same code, but Magic is no
-// longer a target, so a run that only had those was a run proving nothing
-// about what ships.
+// TestRiftboundStock runs the guard against a game whose shelf this scraper
+// actually publishes. The Magic cases above cover the same code, but Magic is
+// a target for its buylist alone, so a run that only had those was a run
+// proving nothing about any shelf that ships.
 func TestRiftboundStock(t *testing.T) {
 	withRiftbound(t)
 

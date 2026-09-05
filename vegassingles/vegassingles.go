@@ -85,10 +85,12 @@ type Vegassingles struct {
 	client *VSClient
 	game   string
 
-	inventoryDate time.Time
-	buylistDate   time.Time
-	inventory     mtgban.InventoryRecord
-	buylist       mtgban.BuylistRecord
+	inventoryDate  time.Time
+	buylistDate    time.Time
+	inventory      mtgban.InventoryRecord
+	buylist        mtgban.BuylistRecord
+	DisableRetail  bool
+	DisableBuylist bool
 }
 
 // NewScraper returns a scraper for one game.
@@ -149,63 +151,67 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	// record keeps the one it has and drops the new one, which is the right
 	// answer; reporting each as an error only buried the run's real ones
 	// under a thousand lines of it.
-	for _, variant := range product.VariantInfo {
-		if variant.OfferPrice == 0 {
-			continue
-		}
+	if !vs.DisableBuylist {
+		for _, variant := range product.VariantInfo {
+			if variant.OfferPrice == 0 {
+				continue
+			}
 
-		if !vs.listed(variant.Title) {
-			continue
-		}
+			if !vs.listed(variant.Title) {
+				continue
+			}
 
-		cond, found := conditionMap[variant.Title]
-		if !found {
-			vs.printf("unknown condition: %s", variant.Title)
-			continue
-		}
+			cond, found := conditionMap[variant.Title]
+			if !found {
+				vs.printf("unknown condition: %s", variant.Title)
+				continue
+			}
 
-		var priceRatio float64
-		if product.Price > 0 {
-			priceRatio = variant.OfferPrice / product.Price * 100
-		}
+			var priceRatio float64
+			if product.Price > 0 {
+				priceRatio = variant.OfferPrice / product.Price * 100
+			}
 
-		err = vs.buylist.Add(cardID, &mtgban.BuylistEntry{
-			Conditions: cond,
-			BuyPrice:   variant.OfferPrice,
-			PriceRatio: priceRatio,
-			URL:        buylistLink,
-			OriginalID: strconv.FormatInt(product.ProductID, 10),
-			InstanceID: strconv.FormatInt(variant.ID, 10),
-		})
-		if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
-			vs.printf("%d: %s", product.ProductID, err.Error())
+			err = vs.buylist.Add(cardID, &mtgban.BuylistEntry{
+				Conditions: cond,
+				BuyPrice:   variant.OfferPrice,
+				PriceRatio: priceRatio,
+				URL:        buylistLink,
+				OriginalID: strconv.FormatInt(product.ProductID, 10),
+				InstanceID: strconv.FormatInt(variant.ID, 10),
+			})
+			if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
+				vs.printf("%d: %s", product.ProductID, err.Error())
+			}
 		}
 	}
 
 	// Process retail variants (from variant_info)
-	for _, variant := range product.RetailVariantInfo {
-		// A condition the store holds none of is not on sale whatever number
-		// hangs off it: Add() treats a zero quantity as unsaid and writes 1,
-		// so the row would be published as a copy in stock.
-		if variant.Price == 0 || variant.InventoryQuantity < 1 {
-			continue
-		}
+	if !vs.DisableRetail {
+		for _, variant := range product.RetailVariantInfo {
+			// A condition the store holds none of is not on sale whatever number
+			// hangs off it: Add() treats a zero quantity as unsaid and writes 1,
+			// so the row would be published as a copy in stock.
+			if variant.Price == 0 || variant.InventoryQuantity < 1 {
+				continue
+			}
 
-		cond, found := conditionMap[variant.Title]
-		if !found {
-			continue
-		}
+			cond, found := conditionMap[variant.Title]
+			if !found {
+				continue
+			}
 
-		err = vs.inventory.Add(cardID, &mtgban.InventoryEntry{
-			Conditions: cond,
-			Price:      variant.Price,
-			Quantity:   variant.InventoryQuantity,
-			URL:        retailLink,
-			OriginalID: strconv.FormatInt(product.ProductID, 10),
-			InstanceID: variant.SKU,
-		})
-		if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
-			vs.printf("%d: %s", product.ProductID, err.Error())
+			err = vs.inventory.Add(cardID, &mtgban.InventoryEntry{
+				Conditions: cond,
+				Price:      variant.Price,
+				Quantity:   variant.InventoryQuantity,
+				URL:        retailLink,
+				OriginalID: strconv.FormatInt(product.ProductID, 10),
+				InstanceID: variant.SKU,
+			})
+			if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
+				vs.printf("%d: %s", product.ProductID, err.Error())
+			}
 		}
 	}
 
@@ -365,6 +371,16 @@ func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint 
 type pageResult struct {
 	page     int
 	products []VSProduct
+}
+
+// SetConfig turns off either half of the scrape. See mtgban.ScraperConfig.
+//
+// One crawl answers for both halves, so the one left on still pays for the
+// walk that reaches it; what turning the other off saves is publishing a
+// shelf the store does not keep.
+func (vs *Vegassingles) SetConfig(opt mtgban.ScraperOptions) {
+	vs.DisableRetail = opt.DisableRetail
+	vs.DisableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
