@@ -226,6 +226,8 @@ func gameLanguage(gameID int, product Product) string {
 		return product.Properties.PokemonLanguage
 	case GameGundam:
 		return product.Properties.GundamLanguage
+	case GamePalworld:
+		return product.Properties.PalworldLanguage
 	}
 	return ""
 }
@@ -509,7 +511,7 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 			CategoryYuGiOhSingles, CategoryYuGiOhOversized,
 			CategoryFleshAndBloodSingles, CategoryFleshAndBloodArtCardTokens,
 			CategoryPokemonSingles, CategoryPokemonOversized,
-			CategoryGundamSingles:
+			CategoryGundamSingles, CategoryPalworldSingles:
 			singles = true
 		}
 		if singles == sealed {

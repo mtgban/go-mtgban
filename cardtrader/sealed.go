@@ -240,19 +240,19 @@ var accessoryWords = map[int]string{
 	CategoryMagicDeckBoxes: "deck box", CategoryYuGiOhDeckBoxes: "deck box",
 	CategoryPokemonDeckBoxes: "deck box", CategoryLorcanaDeckBoxes: "deck box",
 	CategoryOnePieceDeckBoxes: "deck box", CategoryRiftboundDeckBoxes: "deck box",
-	CategoryGundamDeckBoxes: "deck box",
+	CategoryGundamDeckBoxes: "deck box", CategoryPalworldDeckBoxes: "deck box",
 
 	CategoryMagicSleeves: "sleeve", CategoryYuGiOhSleeves: "sleeve",
 	CategoryPokemonSleeves: "sleeve", CategoryLorcanaSleeves: "sleeve",
 	CategoryOnePieceSleeves: "sleeve", CategoryRiftboundSleeves: "sleeve",
 	CategoryFleshAndBloodSleeves: "sleeve",
-	CategoryGundamSleeves:        "sleeve",
+	CategoryGundamSleeves:        "sleeve", CategoryPalworldSleeves: "sleeve",
 
 	CategoryMagicPlaymats: "playmat", CategoryYuGiOhPlaymats: "playmat",
 	CategoryPokemonPlaymats: "playmat", CategoryLorcanaPlaymats: "playmat",
 	CategoryOnePiecePlaymats: "playmat", CategoryRiftboundPlaymats: "playmat",
 	CategoryFleshAndBloodPlaymats: "playmat",
-	CategoryGundamPlaymats:        "playmat",
+	CategoryGundamPlaymats:        "playmat", CategoryPalworldPlaymats: "playmat",
 
 	CategoryMagicAlbums: "album", CategoryYuGiOhAlbums: "album",
 	CategoryPokemonAlbums: "album", CategoryLorcanaAlbums: "album",
