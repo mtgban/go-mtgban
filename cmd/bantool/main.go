@@ -1070,6 +1070,33 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 	return bucket, nil
 }
 
+// configureScraper turns off the half a target was not asked for.
+//
+// The type assertion is the only thing standing between an option and a
+// scraper that cannot honour it, and it says nothing when it fails: a target
+// asked for one half by a scraper holding both ran whole and published both.
+// Refusing it names the target instead, where the empty half used to be found
+// by reading the output.
+func configureScraper(name string, opt *scraperOption, scraper mtgban.Scraper) error {
+	config, ok := scraper.(mtgban.ScraperConfig)
+	if ok {
+		config.SetConfig(mtgban.ScraperOptions{
+			DisableRetail:  opt.OnlyVendor,
+			DisableBuylist: opt.OnlySeller,
+		})
+		return nil
+	}
+	if !opt.OnlyVendor && !opt.OnlySeller {
+		return nil
+	}
+	half := "buylist"
+	if opt.OnlySeller {
+		half = "retail"
+	}
+	return fmt.Errorf("%s was asked for its %s alone, but does not implement "+
+		"mtgban.ScraperConfig and would publish both halves", name, half)
+}
+
 func run() int {
 	start := time.Now()
 
@@ -1196,7 +1223,7 @@ func run() int {
 	var scrapers []mtgban.Scraper
 
 	// Initialize the enabled scrapers
-	for _, opt := range options {
+	for name, opt := range options {
 		if !opt.Enabled {
 			continue
 		}
@@ -1208,12 +1235,10 @@ func run() int {
 		}
 
 		// Check if any sub data source needs to be disabled
-		config, ok := scraper.(mtgban.ScraperConfig)
-		if ok {
-			config.SetConfig(mtgban.ScraperOptions{
-				DisableRetail:  opt.OnlyVendor,
-				DisableBuylist: opt.OnlySeller,
-			})
+		err = configureScraper(name, opt, scraper)
+		if err != nil {
+			log.Println(err)
+			return 1
 		}
 
 		scrapers = append(scrapers, scraper)
