@@ -73,6 +73,10 @@ type DatastoreSet struct {
 	// Type is "promo" on the sets that hand their cards out rather than
 	// sell them in packs, and empty on every other.
 	Type string `json:"type,omitempty"`
+	// Symbol is the URL of the mark this set's cards print, as tcgdex
+	// serves it. Absent on the sets tcgdex holds no symbol for, which are
+	// the McDonald's collections and most of the promo drawers.
+	Symbol string `json:"symbol,omitempty"`
 }
 
 // DatastoreCard is one printing of one product: a card as the catalog sells
@@ -262,6 +266,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			ReleaseDate:     set.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
 			BaseSetSize:     set.BaseSetSize,
+			Symbol:          set.Symbol,
 		}
 	}
 	sort.Strings(b.AllSets)
