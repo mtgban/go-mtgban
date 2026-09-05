@@ -42,37 +42,38 @@ func TestHelpersReadTheGivenBackend(t *testing.T) {
 func TestPromoTagFuncsReadTheGivenBackend(t *testing.T) {
 	var tagFunc func(*mtgmatcher.Backend, *mtgmatcher.InputCard) bool
 	for _, element := range promoTypeElements {
-		if element.PromoType == PromoTypeConcept {
+		if element.PromoType == PromoTypeGalaxyFoil {
 			tagFunc = element.TagFunc
 			break
 		}
 	}
 	if tagFunc == nil {
-		t.Fatal("no concept promo element carrying a tag function")
+		t.Fatal("no galaxy foil promo element carrying a tag function")
 	}
 
-	// A borderless listing says nothing about the concept treatment, so
-	// the answer is whatever the datastore says the printing carries.
+	// A Secret Lair foil says nothing about the galaxy treatment, so what
+	// the drop was printed in is what the datastore is asked. Command Tower
+	// is the one name the closure answers by number instead.
 	var name string
 	for _, uuid := range testBackend.AllUUIDs {
 		co, err := testBackend.GetUUID(uuid)
-		if err != nil || co.Sealed {
+		if err != nil || co.Sealed || co.Name == "Command Tower" {
 			continue
 		}
-		if co.HasPromoType(PromoTypeConcept) {
+		if co.SetCode == "SLD" && co.HasPromoType(PromoTypeGalaxyFoil) {
 			name = co.Name
 			break
 		}
 	}
 	if name == "" {
-		t.Skip("no concept printing in this datastore")
+		t.Skip("no galaxy foil printing in this datastore")
 	}
 
-	inCard := &mtgmatcher.InputCard{Name: name, Variation: "Borderless"}
+	inCard := &mtgmatcher.InputCard{Name: name, Edition: "Secret Lair Drop", Foil: true}
 	if !tagFunc(testBackend, inCard) {
-		t.Errorf("concept tag for %q = false against the datastore that holds it", name)
+		t.Errorf("galaxy foil tag for %q = false against the datastore that holds it", name)
 	}
 	if tagFunc(&mtgmatcher.Backend{}, inCard) {
-		t.Errorf("concept tag for %q = true against an empty backend, so it read another", name)
+		t.Errorf("galaxy foil tag for %q = true against an empty backend, so it read another", name)
 	}
 }
