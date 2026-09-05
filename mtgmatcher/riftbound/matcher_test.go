@@ -107,6 +107,29 @@ var riftboundSeeds = []matchTest{
 		Desc: "token number with zero-padded letter prefix",
 		In:   mtgmatcher.InputCard{Name: "Gold", Variation: "T05"},
 	},
+	// Vendetta numbers the plain token and its full-art sibling alike, in a
+	// set no promo tier reaches, so the finish is all that separates them.
+	// Seeded as CardTrader sends it, front face only, so the prefix fallback
+	// is on the path too.
+	{
+		Desc: "same-numbered main-set siblings answer by the listed finish",
+		In:   mtgmatcher.InputCard{Name: "Shadow Clone", Variation: "T05", Edition: "Vendetta"},
+	},
+	{
+		Desc: "the foil half of that pair is the full-art printing",
+		In:   mtgmatcher.InputCard{Name: "Shadow Clone", Variation: "T05", Edition: "Vendetta", Foil: true},
+	},
+	// The other shape the finish settles: the organized-play promos issue a
+	// Best Of foil and a Prize Wall nonfoil under one number, and a bare
+	// number describes neither type, so both sit in the same tier.
+	{
+		Desc: "promo siblings of one number answer by the listed finish",
+		In:   mtgmatcher.InputCard{Name: "Rumble, Mechanized Menace", Variation: "181", Edition: "Riftbound Organized Play Promotional Cards"},
+	},
+	{
+		Desc: "the foil half of that promo pair is the Best Of printing",
+		In:   mtgmatcher.InputCard{Name: "Rumble, Mechanized Menace", Variation: "181", Edition: "Riftbound Organized Play Promotional Cards", Foil: true},
+	},
 	{
 		Desc: "parenthetical is part of the real name",
 		In:   mtgmatcher.InputCard{Name: "Recruit (NX)", Variation: "272"},
