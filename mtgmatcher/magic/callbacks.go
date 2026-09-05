@@ -189,7 +189,15 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypeConcept,
-		Tags:      []string{"Concept"},
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+			if inCard.Contains("Concept") {
+				return true
+			}
+			if isBorderless(inCard) && b.HasPrinting(inCard.Name, "promo_type", PromoTypeConcept) {
+				return true
+			}
+			return false
+		},
 	},
 	{
 		PromoType: PromoTypeOilSlick,

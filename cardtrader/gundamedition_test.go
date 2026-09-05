@@ -8,10 +8,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/gundam"
 )
 
-// TestNameableByEdition pins the two answers that need no datastore: every
-// game but Gundam is nameable, and so is a Gundam blueprint carrying a
-// TCGplayer id, the id naming the printing outright.
-func TestNameableByEdition(t *testing.T) {
+// TestPromoShelfNeedsLabel pins the two answers that need no datastore:
+// no game but Gundam is ever asked for a label, and neither is a Gundam
+// blueprint carrying a TCGplayer id, the id naming the printing outright.
+func TestPromoShelfNeedsLabel(t *testing.T) {
 	for _, tt := range []struct {
 		desc   string
 		gameID int
@@ -22,19 +22,19 @@ func TestNameableByEdition(t *testing.T) {
 			desc:   "another game is left alone",
 			gameID: GameOnePiece,
 			bp:     Blueprint{},
-			want:   true,
+			want:   false,
 		},
 		{
 			desc:   "a Gundam blueprint with an id never reaches the name path",
 			gameID: GameGundam,
 			bp:     Blueprint{TCGplayerID: 616528},
-			want:   true,
+			want:   false,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			bp := tt.bp
-			if got := nameableByEdition(tt.gameID, &bp); got != tt.want {
-				t.Errorf("nameableByEdition = %v, want %v", got, tt.want)
+			if got := promoShelfNeedsLabel(tt.gameID, &bp); got != tt.want {
+				t.Errorf("promoShelfNeedsLabel = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -42,18 +42,14 @@ func TestNameableByEdition(t *testing.T) {
 
 // TestGundamShelvesNameASet pins the split the guard rests on, which is a
 // fact about Card Trader's shelf names rather than about this code: the
-// shelves whose id-less blueprints resolve to the right printing are named
-// exactly as the datastore names those sets, and the shelves that reprint
-// another set's card under its own number are named nothing the datastore
-// knows.
+// shelves selling nothing but promotional reprints are named nothing the
+// datastore knows, and the shelves whose id-less blueprints name their own
+// set are named exactly as the datastore names those sets.
 //
-// Measured over every id-less Gundam blueprint that resolves by name: the
-// three shelves below that name no set carry all 15 that resolved to the
-// wrong printing, and the three that do carry all 8 that resolved to the
-// right one. A shelf renamed on either side moves a listing between those
+// A shelf renamed on either side moves every listing on it between those
 // groups silently, which is what this is here to catch.
 //
-// nameableByEdition asks the same question of the global datastore; the
+// promoShelfNeedsLabel asks the same question of the global datastore; the
 // lookup is the whole of it, so this asks the loaded backend directly
 // rather than swapping what every other test in this package runs against.
 func TestGundamShelvesNameASet(t *testing.T) {

@@ -204,13 +204,6 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			}
 		}
 
-		// The name path is a guess where the edition names no set and the
-		// number is not unique to a printing; nameableByEdition says when
-		// that is so, and today only Gundam ever answers no.
-		if cardID == "" && !nameableByEdition(ct.gameID, blueprint) {
-			continue
-		}
-
 		if cardID == "" {
 			var err error
 			cardID, err = mtgmatcher.Match(theCard)
@@ -229,6 +222,16 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 					}
 				}
 				continue
+			}
+			// A promotional shelf sells no ordinary card, so an answer
+			// carrying no promotional label is the number having spoken
+			// alone; promoShelfNeedsLabel says when that is worth refusing,
+			// and today only Gundam ever says so.
+			if promoShelfNeedsLabel(ct.gameID, blueprint) {
+				co, err := mtgmatcher.GetUUID(cardID)
+				if err != nil || len(co.PromoTypes) == 0 {
+					continue
+				}
 			}
 		}
 
