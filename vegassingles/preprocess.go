@@ -43,6 +43,8 @@ func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
 		return preprocessOnePiece(product)
 	case GamePokemon:
 		return preprocessPokemon(product)
+	case GameGundam:
+		return preprocessGundam(product)
 	}
 	return preprocessMagic(product)
 }
@@ -432,6 +434,49 @@ var riftboundTag = regexp.MustCompile(`\(([^)]+)\)`)
 // with a star - but the promotional printings share one plain number and the
 // tag is the whole difference: the organized play set files Rengar, Trophy
 // Hunter at 120 twice, once as the champion card and once not.
+// gundamRarity is the rarity this storefront brackets behind a name, right
+// before the code: "Cagalli Yula Athha (R+) (GD01-096)". Only the one
+// nearest the code is the rarity - a card whose own name ends in a
+// parenthetical wears two, and "Gelgoog (GQ)" is what the catalog calls that
+// card, not a Gelgoog of rarity GQ.
+var gundamRarity = regexp.MustCompile(`\s*\(([A-Za-z]{1,3}\+*)\)\s*$`)
+
+// A Gundam display name reads
+//
+//	Blast Impulse Gundam (C+) (ST09-007) - Starter Deck 09 Destiny Ignition Holofoil
+//
+// The code names the printing, and the rarity beside it is what tells apart
+// the printings sharing one number - this game marks a parallel run by
+// suffixing the rarity rather than by lettering the number. The edition
+// comes from the product body rather than the tail of the name, which spells
+// it without its punctuation: the tail says "Starter Deck 09 Destiny
+// Ignition" where the catalog and the body both say "Starter Deck 09:
+// Destiny Ignition".
+func preprocessGundam(product VSProduct) (*mtgmatcher.InputCard, error) {
+	all := gundamCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
+	if all == nil {
+		return nil, errors.New("no card code in display name")
+	}
+	loc := all[len(all)-1]
+
+	cardName := strings.TrimSpace(product.DisplayName[:loc[0]])
+	variation := product.DisplayName[loc[2]:loc[3]]
+	if rarity := gundamRarity.FindStringSubmatch(cardName); rarity != nil {
+		variation += " " + rarity[1]
+		cardName = strings.TrimSpace(gundamRarity.ReplaceAllString(cardName, ""))
+	}
+
+	return &mtgmatcher.InputCard{
+		Name:      cardName,
+		Edition:   product.ProductData.SetName,
+		Variation: strings.TrimSpace(variation),
+		// The game sells one printing in one finish, and this line is
+		// holofoil throughout but for the odd plain card, so the finish is
+		// whatever is not that rather than the word "foil" other lines use.
+		Foil: !strings.EqualFold(product.SelectedFinish, "Normal"),
+	}, nil
+}
+
 func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
 	loc := riftboundNumber.FindStringSubmatchIndex(product.DisplayName)
 	if loc == nil {
@@ -467,6 +512,10 @@ func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
 // onePieceCode is the card code One Piece display names carry, like
 // "(OP06-020)" or "(P-037)", which names the printing on its own.
 var onePieceCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
+
+// gundamCode is the card code Gundam display names carry, like "(GD02-129)"
+// or "(EXBP-005)", which names the printing on its own.
+var gundamCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
 
 // A One Piece display name reads
 //
