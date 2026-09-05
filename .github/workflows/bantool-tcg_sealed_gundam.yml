@@ -1,0 +1,26 @@
+name: gundam / tcg_sealed
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [tcg_sealed_gundam]
+  schedule:
+    - cron: "20 3,15 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-tcgplayer
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: tcg_sealed_gundam
+      game: "gundam"
+      datastore-filepath: b2://mtgban-datastore/gundam/gundam.json.xz
+    secrets: inherit

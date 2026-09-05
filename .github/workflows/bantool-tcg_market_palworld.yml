@@ -1,0 +1,26 @@
+name: palworld / tcg_market
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [tcg_market_palworld]
+  schedule:
+    - cron: "34 3,15 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-tcgplayer
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: tcg_market_palworld
+      game: "palworld"
+      datastore-filepath: b2://mtgban-datastore/palworld/palworld.json.xz
+    secrets: inherit
