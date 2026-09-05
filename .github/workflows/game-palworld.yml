@@ -1,0 +1,15 @@
+name: palworld / all
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  trigger:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-game.yml
+    with:
+      game: "palworld"
