@@ -393,15 +393,29 @@ func fabWording(version, number string) string {
 // label is a contradiction, and publishing it files a promo's price at the
 // ordinary card's identity.
 //
-// The blueprints whose shelf does name a set are never asked: the edition
-// narrows for them, so the number then names one printing.
+// A shelf that names a set is never asked, and so is one that opens with the
+// game's own set code: Bandai brands its sets that way and the catalog spells
+// the code into the set name too, so "GD-01: Newtype Rising" is a set's shelf
+// even though no exact lookup answers for it. The starter decks are why the
+// code has to be read rather than the name looked up - the catalog files them
+// as "Starter Deck 01: Heroic Beginnings", which "ST-01: Heroic Beginnings"
+// never reaches by name. Of Card Trader's 37 Gundam shelves, 4 name a set, 22
+// carry a code, and the 11 left are the promotional ones this asks about.
 func promoShelfNeedsLabel(gameID int, bp *Blueprint) bool {
 	if gameID != GameGundam || bp.TCGplayerID != 0 {
+		return false
+	}
+	if codedShelf.MatchString(bp.Expansion.Name) {
 		return false
 	}
 	set, err := mtgmatcher.GetSetByName(bp.Expansion.Name)
 	return err != nil || set == nil
 }
+
+// codedShelf matches a shelf named for the set it sells, opening with that
+// set's code: "GD-01: Newtype Rising", "EB-01: Eternal Nexus", and the
+// lowercase "St-14: Heavy Dominion" Card Trader writes for one of them.
+var codedShelf = regexp.MustCompile(`(?i)^[a-z]{1,4}-?[0-9]{1,2}\s*[:-]\s+`)
 
 func gameName(gameID int, bp *Blueprint) string {
 	if gameID == GameYuGiOh && bp.Version == "Token" &&

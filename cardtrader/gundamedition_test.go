@@ -8,6 +8,14 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/gundam"
 )
 
+// shelf names a blueprint's expansion, which is the only field the guard
+// reads besides the game and the id.
+func shelf(name string) Blueprint {
+	var bp Blueprint
+	bp.Expansion.Name = name
+	return bp
+}
+
 // TestPromoShelfNeedsLabel pins the two answers that need no datastore:
 // no game but Gundam is ever asked for a label, and neither is a Gundam
 // blueprint carrying a TCGplayer id, the id naming the printing outright.
@@ -29,6 +37,41 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 			gameID: GameGundam,
 			bp:     Blueprint{TCGplayerID: 616528},
 			want:   false,
+		},
+		{
+			// The set shelves the catalog cannot be asked for by name. It
+			// files the starter decks as "Starter Deck 01: Heroic
+			// Beginnings", so the shelf is only recognisable by its code.
+			desc:   "a numbered set shelf is not a promotional one",
+			gameID: GameGundam,
+			bp:     shelf("ST-01: Heroic Beginnings"),
+			want:   false,
+		},
+		{
+			desc:   "nor is it when Card Trader lowercases the code",
+			gameID: GameGundam,
+			bp:     shelf("St-14: Heavy Dominion"),
+			want:   false,
+		},
+		{
+			desc:   "nor a booster set's own shelf",
+			gameID: GameGundam,
+			bp:     shelf("GD-01: Newtype Rising"),
+			want:   false,
+		},
+		{
+			// What the guard is actually for: a shelf naming no set and
+			// carrying no code, selling reprints under another set's number.
+			desc:   "a promotional shelf still is",
+			gameID: GameGundam,
+			bp:     shelf("Premium Accessory and Card Set"),
+			want:   true,
+		},
+		{
+			desc:   "and so is the reprint shelf",
+			gameID: GameGundam,
+			bp:     shelf("Reprints"),
+			want:   true,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
