@@ -82,6 +82,7 @@ func run() error {
 		}
 		payload.Data.Expansions[strconv.Itoa(expansion.IDExpansion)] = cardmarket.IDMapExpansion{
 			Name: expansion.Name,
+			Code: expansion.SetCode,
 		}
 		for _, product := range products {
 			payload.Data.Products[strconv.Itoa(product.IDProduct)] = cardmarket.IDMapProduct{

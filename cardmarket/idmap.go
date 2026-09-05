@@ -24,9 +24,11 @@ type IDMapProduct struct {
 }
 
 // IDMapExpansion names one expansion of the catalog and the set codes it
-// covers.
+// covers. Code is the marketplace's own abbreviation, which is where the
+// foreign catalogs say what they are; MTGJSON's file does not carry it.
 type IDMapExpansion struct {
 	Name     string   `json:"name"`
+	Code     string   `json:"code,omitempty"`
 	SetCodes []string `json:"setCodes,omitempty"`
 }
 
@@ -169,6 +171,26 @@ func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMa
 	return mkm.emitPrices(channel, product, cardID, cardIDFoil, byName)
 }
 
+// idMapUsable reports whether the id map can stand in for the crawl. For
+// the games that shelve whole foreign catalogs, the map says which shelves
+// those are only through the expansion codes: a map written before it
+// carried them cannot be walked safely, so the crawl keeps answering until
+// the day's publish brings them.
+func (mkm *Index) idMapUsable() bool {
+	switch mkm.gameID {
+	case GameOnePiece, GameYuGiOh:
+	default:
+		return true
+	}
+	for _, expansion := range mkm.IDMap.Expansions {
+		if expansion.Code != "" {
+			return true
+		}
+	}
+	mkm.printf("The id map carries no expansion codes to tell the foreign shelves by; crawling instead")
+	return false
+}
+
 // loadOffline continues Load with the crawl replaced by the id map: the
 // same tallies, the same output, and no API. The expansions come from the
 // map too, so nothing from here on needs a credential.
@@ -204,16 +226,36 @@ func (mkm *Index) loadOffline(ctx context.Context) error {
 
 	var items []MKMExpansion
 	for expansionID := range byExpansion {
-		name := mkm.IDMap.Expansions[expansionID].Name
+		entry := mkm.IDMap.Expansions[expansionID]
+		name := entry.Name
 		if name == "" {
 			name = fmt.Sprintf("expansion %d", expansionID)
 		}
 		if mkm.TargetEdition != "" && name != mkm.TargetEdition {
 			continue
 		}
-		items = append(items, MKMExpansion{IDExpansion: expansionID, Name: name})
+		items = append(items, MKMExpansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].IDExpansion < items[j].IDExpansion })
+
+	// The same shelves the crawl refuses to walk: the foreign catalogs are
+	// whole programs of their own whose prices must not land on the English
+	// printings, and One Piece's duplicate shelves resolve through the same
+	// shelved table Load builds. See Load's twin of this switch.
+	switch mkm.gameID {
+	case GameOnePiece, GameYuGiOh:
+		kept := items[:0]
+		for _, exp := range items {
+			if strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name) {
+				continue
+			}
+			kept = append(kept, exp)
+		}
+		items = kept
+		if mkm.gameID == GameOnePiece {
+			mkm.shelved = shelvedSets(items)
+		}
+	}
 
 	mkm.printf("Parsing %d expansion ids from the id map", len(items))
 
