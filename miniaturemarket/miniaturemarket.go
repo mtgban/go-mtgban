@@ -41,6 +41,7 @@ const (
 	GameOnePiece  = "onepiece"
 
 	GameFleshAndBlood = "fleshandblood"
+	GameGundam        = "gundam"
 )
 
 // gameWidgets are the CMS navigation ids behind each game's storefront
@@ -53,6 +54,7 @@ var gameWidgets = map[string]string{
 	GameOnePiece:  "f7ac67a9aa8d255282de7d11391e1b69",
 
 	GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
+	GameGundam:        "019be1227c9b730eb41abadcdd09015a",
 }
 
 // NewScraperSealed returns a sealed scraper for one game.
@@ -71,6 +73,15 @@ const defaultConcurrency = 6
 // storefront prefix, availability and pack-count parentheticals, and the
 // set code in brackets where the canonical names spell no code at all.
 var (
+	// gundamDecorations are the shelf tags this storefront hangs off a
+	// Gundam product: a pack count and the banner it was new under.
+	gundamDecorations = regexp.MustCompile(`\s*\((?:New Arrival|Preorder|\d+)\)`)
+
+	// gundamSetCode is the bracketed code the storefront writes mid-name.
+	// The trailing letter is the Premium Collections' - "[PC01A]" - which
+	// One Piece's own pattern does not allow for.
+	gundamSetCode = regexp.MustCompile(`\s*\[([A-Z]+)(\d+)[A-Z]?\]`)
+
 	onePieceDecorations = regexp.MustCompile(`\s*\((?:Preorder|\d+ Packs?)\)`)
 	onePieceSetCode     = regexp.MustCompile(`\s*\[([A-Z]+)-?(\d+)\]`)
 )
@@ -118,6 +129,25 @@ func sealedName(game, name string) string {
 		}
 		return strings.TrimSpace(name)
 	}
+	if game == GameGundam {
+		name = strings.TrimPrefix(name, "GUNDAM Card Game: ")
+		name = gundamDecorations.ReplaceAllString(name, "")
+
+		// The canon names a starter deck for its number and the set it is,
+		// where the storefront brackets the code in the middle and says what
+		// it is at the end - the same shape One Piece writes below.
+		match := gundamSetCode.FindStringSubmatch(name)
+		name = gundamSetCode.ReplaceAllString(name, "")
+		if match != nil && match[1] == "ST" {
+			name = strings.Replace(name, " - Starter Deck", "", 1)
+			return strings.TrimSpace("Starter Deck " + match[2] + ": " + strings.TrimSpace(name))
+		}
+		// Everything else runs the set name straight into what it is sold
+		// as, where the storefront dashes the two apart.
+		name = strings.Replace(name, " - ", " ", 1)
+		return strings.TrimSpace(name)
+	}
+
 	if game != GameOnePiece {
 		return name
 	}
@@ -521,6 +551,8 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameOnePiece
 	case GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
+	case GameGundam:
+		info.Game = mtgban.GameGundam
 	}
 	return
 }
