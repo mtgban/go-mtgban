@@ -336,6 +336,15 @@
         "uuid": "opp-669263_foil"
     },
     {
+        "description": "promo siblings of one number answer by the listed finish",
+        "input": {
+            "name": "Rumble, Mechanized Menace",
+            "variant": "181",
+            "edition": "Riftbound Organized Play Promotional Cards"
+        },
+        "uuid": "opp-689192_nonfoil"
+    },
+    {
         "description": "promo-shaped legend name still reaches the main set",
         "input": {
             "name": "Teemo - Swift Scout",
@@ -360,6 +369,15 @@
             "edition": "Riftbound Organized Play Promotional Cards"
         },
         "uuid": "opp-662882_foil"
+    },
+    {
+        "description": "same-numbered main-set siblings answer by the listed finish",
+        "input": {
+            "name": "Shadow Clone",
+            "variant": "T05",
+            "edition": "Vendetta"
+        },
+        "uuid": "ven-709916_nonfoil"
     },
     {
         "description": "shortened gallery champion resolves",
@@ -426,6 +444,26 @@
             "foil": true
         },
         "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "the foil half of that pair is the full-art printing",
+        "input": {
+            "name": "Shadow Clone",
+            "variant": "T05",
+            "edition": "Vendetta",
+            "foil": true
+        },
+        "uuid": "ven-713239_foil"
+    },
+    {
+        "description": "the foil half of that promo pair is the Best Of printing",
+        "input": {
+            "name": "Rumble, Mechanized Menace",
+            "variant": "181",
+            "edition": "Riftbound Organized Play Promotional Cards",
+            "foil": true
+        },
+        "uuid": "opp-684996_foil"
     },
     {
         "description": "the release-event heading narrows to the set that issued it",
