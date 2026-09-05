@@ -329,3 +329,57 @@ func sealedSubsumedBackend() *mtgmatcher.Backend {
 	backend.IndexSets()
 	return backend
 }
+
+// sealedShelfCodeBackend is two sets a storefront files under a Bandai set
+// code, one of them named for the number that code carries.
+func sealedShelfCodeBackend() *mtgmatcher.Backend {
+	backend := &mtgmatcher.Backend{
+		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*mtgmatcher.Set{
+			"GD05": {Name: "Freedom Ascension", Code: "GD05"},
+			"ST10": {Name: "Starter Deck 10: Generation Pulse", Code: "ST10"},
+		},
+	}
+	backend.AddSealed("gd05-case", "Freedom Ascension Booster Box Case", "GD05", "", 0)
+	backend.AddSealed("st10-deck", "Starter Deck 10: Generation Pulse", "ST10", "", 0)
+	backend.SortSealed()
+	backend.IndexSets()
+	return backend
+}
+
+// TestBuildProductMapTrimsShelfCode pins the set code a storefront opens a
+// sealed name with. The resolver's vocabulary is built from set names and
+// never sees a code, so the letters read as the vendor naming a different
+// product and the only candidate is dropped. The trim is guarded on the
+// shelf's own code, and keeps the number the catalog spells into the name.
+func TestBuildProductMapTrimsShelfCode(t *testing.T) {
+	mtgmatcher.SetGlobalDatastore(sealedShelfCodeBackend())
+	ct := &Sealed{gameID: GameGundam}
+
+	for _, tt := range []struct {
+		name  string
+		shelf string
+		want  []string
+	}{
+		{"GD-05: Freedom Ascension Booster Box Case", "GD-05: Freedom Ascension", []string{"gd05-case"}},
+		// CardTrader lowercases the code on some of its own shelves.
+		{"GD-05: Freedom Ascension Booster Box Case", "Gd-05: Freedom Ascension", []string{"gd05-case"}},
+		// The number is the one word telling the starter decks apart.
+		{"ST-10: Generation Pulse Starter Deck", "ST-10: Generation Pulse", []string{"st10-deck"}},
+		// A shelf naming no code cannot vouch for a head that merely
+		// looks like one, and a code that is not its own vouches for
+		// nothing.
+		{"EX-01: Freedom Ascension Booster Box Case", "Gundam Promos", nil},
+		{"XX-05: Freedom Ascension Booster Box Case", "GD-05: Freedom Ascension", nil},
+		{"GD-06: Freedom Ascension Booster Box Case", "GD-05: Freedom Ascension", nil},
+	} {
+		blueprint := &Blueprint{ID: 1, Name: tt.name}
+		blueprint.Expansion.Name = tt.shelf
+		got := ct.buildProductMap(map[int]*Blueprint{1: blueprint})[1]
+		if !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q on %q: got %v, want %v", tt.name, tt.shelf, got, tt.want)
+		}
+	}
+}
