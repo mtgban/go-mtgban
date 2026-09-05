@@ -84,6 +84,10 @@ func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
 		}
+		err = loadCardmarketIDMap(scraper)
+		if err != nil {
+			return nil, err
+		}
 		return scraper, nil
 	}
 }
@@ -106,6 +110,10 @@ func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scr
 		scraper.Affiliate = os.Getenv("MKM_PARTNER")
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
+		}
+		err = loadCardmarketIDMap(scraper)
+		if err != nil {
+			return nil, err
 		}
 		return scraper, nil
 	}
@@ -165,25 +173,34 @@ func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
 		}
-
-		// The id map replaces the API crawl when present, whatever the
-		// game: MTGJSON publishes Magic's, mkmcatalog builds the rest.
-		idMapPath := os.Getenv("MTGJSON_MKMID_PATH")
-		if idMapPath != "" {
-			reader, err := openPath(idMapPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-			if err != nil {
-				return nil, err
-			}
-			defer reader.Close()
-			idMap, err := cardmarket.LoadIDMap(reader)
-			if err != nil {
-				return nil, err
-			}
-			scraper.IDMap = idMap
+		err = loadCardmarketIDMap(scraper)
+		if err != nil {
+			return nil, err
 		}
-
 		return scraper, nil
 	}
+}
+
+// loadCardmarketIDMap hands an index scraper the published id map when one
+// is addressed, whatever the game and whichever constructor built it:
+// MTGJSON publishes Magic's, mkmcatalog builds the rest, and the map
+// replaces the API crawl.
+func loadCardmarketIDMap(scraper *cardmarket.Index) error {
+	idMapPath := os.Getenv("MTGJSON_MKMID_PATH")
+	if idMapPath == "" {
+		return nil
+	}
+	reader, err := openPath(idMapPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	idMap, err := cardmarket.LoadIDMap(reader)
+	if err != nil {
+		return err
+	}
+	scraper.IDMap = idMap
+	return nil
 }
 
 // bridgedGame is the CardTrader game whose catalog stands in for a Cardmarket
