@@ -267,7 +267,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 			// The collector number carries no decoration of its own, so the
 			// plain number a search matches is the number itself.
-			OriginalNumber: card.Number,
+			OriginalNumber: Rules{}.PlainNumber(card.Number),
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
 

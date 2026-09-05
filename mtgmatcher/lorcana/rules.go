@@ -313,6 +313,19 @@ func (Rules) CanonicalFinish(name string) string {
 	return canonicalFinish(name)
 }
 
+// plainNumberTail are the letters a variant is spelled with behind a number.
+const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// PlainNumber implements mtgmatcher.GameRules. The letter behind the number
+// names the variant, and the number it varies is the number the card prints.
+func (Rules) PlainNumber(number string) string {
+	plain := strings.TrimRight(number, plainNumberTail)
+	if plain == "" {
+		return number
+	}
+	return plain
+}
+
 func canonicalFinish(name string) string {
 	normalized := mtgmatcher.NormalizeFinish(name)
 	switch normalized {

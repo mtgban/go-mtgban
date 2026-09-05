@@ -1085,7 +1085,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			}
 
 			// Save the collector number stripped of its ★/†/Φ decorations
-			card.OriginalNumber = plainNumber(card.Number)
+			card.OriginalNumber = Rules{}.PlainNumber(card.Number)
 
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)

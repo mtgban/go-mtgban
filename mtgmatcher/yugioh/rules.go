@@ -947,6 +947,12 @@ func (Rules) CanonicalFinish(name string) string {
 	return canonicalFinish(name)
 }
 
+// PlainNumber implements mtgmatcher.GameRules. This game writes its collector
+// numbers plainly, so a number is its own plain form.
+func (Rules) PlainNumber(number string) string {
+	return number
+}
+
 func canonicalFinish(name string) string {
 	normalized := mtgmatcher.NormalizeFinish(name)
 	if mtgmatcher.CanonicalFinish(normalized) != "" {
