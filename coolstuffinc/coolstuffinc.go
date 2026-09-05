@@ -495,8 +495,8 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				case GameOnePiece:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
 				case GameGundam:
-					name, variation := gundamCard(cardName, "")
-					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes), Foil: isFoil}
+					name, variation := gundamCard(cardName, gundamNumber(notes))
+					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity)), Foil: isFoil}
 				case GameLorcana, GameRiftbound, GamePalworld:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
@@ -732,7 +732,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// the parallel runs apart.
 		case GameGundam:
 			name, variation := gundamCard(product.Name, product.Number)
-			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: variation, Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName)), Foil: product.IsFoil == 1}
 		// Palworld numbers a parallel apart from the card it parallels, the
 		// rarity riding in the number's own tail, so the plain reading names
 		// one printing and nothing has to be read out of the wording.

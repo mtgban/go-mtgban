@@ -37,11 +37,50 @@ func TestGundamCard(t *testing.T) {
 		// The token shelf names the art the token wears; the number says
 		// which of the two it is.
 		{"Aile Strike Gundam (T-008)", "T-008", "Aile Strike Gundam", "T-008 Token"},
+		// The sell listing has no number field, so the one written inside
+		// the name is the only one there is - and it still has to reach the
+		// token gate.
+		{"A Show of Resolve (GD01-100)", "", "A Show of Resolve", "GD01-100"},
+		{"Battle of Aces (GD01-111) (Alt-Art +)", "", "Battle of Aces", "GD01-111 Alt-Art +"},
+		{"Aile Strike Gundam (T-008)", "", "Aile Strike Gundam", "T-008 Token"},
 	} {
 		gotName, gotVariation := gundamCard(tt.name, tt.number)
 		if gotName != tt.wantName || gotVariation != tt.want {
 			t.Errorf("gundamCard(%q, %q)\n got  %q %q\n want %q %q",
 				tt.name, tt.number, gotName, gotVariation, tt.wantName, tt.want)
+		}
+	}
+}
+
+func TestGundamTier(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		// The storefront abbreviates the suffix the catalog writes out, and
+		// the suffix is what tells a parallel run from the printing it
+		// parallels at the same number.
+		{"CP", "C+"},
+		{"LGRPP", "LR++"},
+		{"U", "Uncommon"},
+		// A rarity both spell alike passes through whole.
+		{"Legend Rare", "Legend Rare"},
+		{"", ""},
+	} {
+		if got := gundamTier(tt.in); got != tt.want {
+			t.Errorf("gundamTier(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
+func TestGundamNumber(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		// The notes spell the number in full where the name drops a digit.
+		{"GD03-072", "GD03-072"},
+		{"Alt-Art + GD01-111", "GD01-111"},
+		// The token shelf spends the same field on the art the token wears.
+		{"Gundam Age-1 Normal", ""},
+		{"", ""},
+	} {
+		if got := gundamNumber(tt.in); got != tt.want {
+			t.Errorf("gundamNumber(%q) = %q, want %q", tt.in, got, tt.want)
 		}
 	}
 }
