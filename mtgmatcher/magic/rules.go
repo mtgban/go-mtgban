@@ -1668,6 +1668,11 @@ func (Rules) CanonicalFinish(name string) string {
 	return mtgmatcher.CanonicalFinish(name)
 }
 
+// PlainNumber implements mtgmatcher.GameRules.
+func (Rules) PlainNumber(number string) string {
+	return plainNumber(number)
+}
+
 // sameSet reports whether every candidate is filed in one and the same set.
 func sameSet(cards []mtgmatcher.Card) bool {
 	for _, card := range cards[1:] {

@@ -147,6 +147,21 @@ func (Rules) CanonicalFinish(name string) string {
 	return mtgmatcher.CanonicalFinish(name)
 }
 
+// plainNumberTail are the treatment codes a number is suffixed with.
+const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// PlainNumber implements mtgmatcher.GameRules. The letters behind a number
+// name the treatment rather than number it - EBP01-001OSR and EBP01-001SSP
+// are the Jormuntide Ignis that EBP01-001 is - so the number they carry is
+// the plain one. Every one of the 89 stands beside its base number.
+func (Rules) PlainNumber(number string) string {
+	plain := strings.TrimRight(number, plainNumberTail)
+	if plain == "" {
+		return number
+	}
+	return plain
+}
+
 // FilterCards narrows candidates by edition and collector number. The
 // number's tail is the rarity's code and the whole of what tells a parallel
 // from the card it parallels, so the run's number narrows first and the

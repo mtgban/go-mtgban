@@ -98,6 +98,12 @@ func IsToken(name string) bool {
 	return defaultBackend.IsToken(name)
 }
 
+// PlainNumber reduces a collector number to the one a person writes, as the
+// loaded game reduces it.
+func PlainNumber(number string) string {
+	return defaultBackend.PlainNumber(number)
+}
+
 // The Is* predicates below read the free text a storefront published, not the
 // datastore: they decide what a listing claims, and the rules then decide
 // whether a printing can honour the claim.
@@ -327,6 +333,15 @@ func (b *Backend) IsToken(name string) bool {
 		return false
 	}
 	return b.rules.IsToken(b, name)
+}
+
+// PlainNumber reduces a collector number the way this datastore's game does.
+// A datastore with no rules attached hands the number back.
+func (b *Backend) PlainNumber(number string) string {
+	if b.rules == nil {
+		return number
+	}
+	return b.rules.PlainNumber(number)
 }
 
 // ParseCommanderEdition returns the Commander edition the text names, or an

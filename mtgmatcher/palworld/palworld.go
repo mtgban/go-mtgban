@@ -261,7 +261,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// The rarity code the number ends in is part of the number the
 			// card is sold under, not a decoration laid over a plainer one,
 			// so the plain number a search matches is the number itself.
-			OriginalNumber: card.Number,
+			OriginalNumber: Rules{}.PlainNumber(card.Number),
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
 

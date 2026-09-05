@@ -299,7 +299,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: card.Number,
+			OriginalNumber: Rules{}.PlainNumber(card.Number),
 		}
 		// Register the uuid each run prices under the name the game's rules
 		// give it, beside the flag-driven defaults, so an input naming a run

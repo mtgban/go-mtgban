@@ -345,6 +345,12 @@ func (Rules) CanonicalFinish(name string) string {
 	return mtgmatcher.CanonicalFinish(name)
 }
 
+// PlainNumber implements mtgmatcher.GameRules. The star marks a variant
+// printing rather than a different number.
+func (Rules) PlainNumber(number string) string {
+	return strings.TrimRight(number, "*")
+}
+
 // FilterCards narrows candidates by edition, collector number, and finish,
 // mirroring the Lorcana rules: candidates come from the name hash (stable
 // load order), the cardSet keys carry the sets matching the input edition

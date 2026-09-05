@@ -553,6 +553,12 @@ func (Rules) CanonicalFinish(name string) string {
 	return mtgmatcher.CanonicalFinish(name)
 }
 
+// PlainNumber implements mtgmatcher.GameRules. This game writes its collector
+// numbers plainly, so a number is its own plain form.
+func (Rules) PlainNumber(number string) string {
+	return number
+}
+
 // FilterCards narrows candidates by edition, collector number and variant.
 // The variant tiering mirrors the number sharing in the data: when the
 // input's wording describes a variant label, the printings it describes

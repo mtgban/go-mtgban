@@ -397,7 +397,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			IsPromo:    promoPrintings[card.ID] || card.PromoSourceCategory != "" || promoSet || rarity == "promo",
 			PromoTypes: slugTags(promoTags(card.PromoSourceCategory, card.VarnishType, card.PromoGrouping)),
 
-			OriginalNumber: fmt.Sprintf("%d", card.Number),
+			OriginalNumber: Rules{}.PlainNumber(fmt.Sprintf("%d%s", card.Number, card.Variant)),
 		}
 		// Register the uuid each finish resolves to. Nonfoil keeps the bare
 		// uuid and every foil is suffixed with the finish it carries, the
