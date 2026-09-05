@@ -1042,6 +1042,12 @@ func (Rules) CanonicalFinish(name string) string {
 	return canonicalFinish(name)
 }
 
+// PlainNumber implements mtgmatcher.GameRules. The catalog pads an ordinal
+// out to three digits, and a person writes card 1 as "1", not "001".
+func (Rules) PlainNumber(number string) string {
+	return plainNumber(number)
+}
+
 func canonicalFinish(name string) string {
 	normalized := mtgmatcher.NormalizeFinish(name)
 	switch normalized {
