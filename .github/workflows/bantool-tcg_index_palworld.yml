@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_index_palworld]
   schedule:
-    - cron: "27 3,15 * * *"
+    - cron: "10 7,19 * * *"
 
 permissions:
   contents: read

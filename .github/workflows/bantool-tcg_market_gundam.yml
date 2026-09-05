@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_market_gundam]
   schedule:
-    - cron: "13 3,15 * * *"
+    - cron: "10 5,17 * * *"
 
 permissions:
   contents: read
