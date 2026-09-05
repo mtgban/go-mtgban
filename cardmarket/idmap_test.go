@@ -157,3 +157,38 @@ func TestResolveUUIDs(t *testing.T) {
 		})
 	}
 }
+
+// TestIDMapUsable pins the guard that keeps a code-less map from standing
+// in for the crawl of the games that shelve whole foreign catalogs: without
+// the expansion codes the map cannot say which shelves those are, and the
+// crawl keeps answering until a publish brings them.
+func TestIDMapUsable(t *testing.T) {
+	coded := &IDMap{Expansions: map[int]IDMapExpansion{
+		1: {Name: "Romance Dawn", Code: "OP01"},
+		2: {Name: "Romance Dawn", Code: "OP01-JP"},
+	}}
+	bare := &IDMap{Expansions: map[int]IDMapExpansion{
+		1: {Name: "Romance Dawn"},
+	}}
+
+	for _, tt := range []struct {
+		gameID int
+		idMap  *IDMap
+		want   bool
+	}{
+		{GameOnePiece, coded, true},
+		{GameOnePiece, bare, false},
+		{GameYuGiOh, bare, false},
+		{GameMagic, bare, true},
+	} {
+		mkm, err := NewScraperIndex(tt.gameID, "", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		mkm.IDMap = tt.idMap
+		if got := mkm.idMapUsable(); got != tt.want {
+			t.Errorf("idMapUsable(game %d, coded %v) = %v, want %v",
+				tt.gameID, tt.idMap == coded, got, tt.want)
+		}
+	}
+}

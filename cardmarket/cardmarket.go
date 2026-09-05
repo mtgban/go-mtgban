@@ -869,7 +869,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 
 	// Everything above is public downloads either way; the id map replaces
 	// what follows, which is where the authenticated API begins.
-	if mkm.IDMap != nil {
+	if mkm.IDMap != nil && mkm.idMapUsable() {
 		return mkm.loadOffline(ctx)
 	}
 
