@@ -175,7 +175,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				// A listing is one printing in one finish, and the games
 				// whose properties name it say which; the flag beside it
 				// keeps carrying the plain foilness like everywhere else.
-				Finish: gameFinish(ct.gameID, product),
+				Finish: gameFinish(ct.gameID, blueprint, product),
 				Foil:   gameFoil(ct.gameID, product),
 			}
 		default:
