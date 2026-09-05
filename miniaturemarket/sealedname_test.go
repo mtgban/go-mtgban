@@ -51,6 +51,50 @@ func TestSealedNameOnePiece(t *testing.T) {
 
 // TestSealedNameFleshAndBlood pins the rewrites against listings read off
 // the storefront, and the shapes they have to leave alone.
+func TestSealedNameGundam(t *testing.T) {
+	for _, tt := range []struct {
+		in   string
+		want string
+	}{
+		// The deck number moves to the front, where the canonical names
+		// lead with it, the same way One Piece's does.
+		{
+			"GUNDAM Card Game: Clan Unity [ST06] - Starter Deck",
+			"Starter Deck 06: Clan Unity",
+		},
+		{
+			"GUNDAM Card Game: Iron Bloom [ST05] - Starter Deck",
+			"Starter Deck 05: Iron Bloom",
+		},
+		// Everything else runs the set name straight into what it is sold
+		// as, and the pack count the storefront hangs off it falls away.
+		{
+			"GUNDAM Card Game: Freedom Ascension [GD05] - Booster Box (24)",
+			"Freedom Ascension Booster Box",
+		},
+		{
+			"GUNDAM Card Game: Freedom Ascension [GD05] - Booster Pack",
+			"Freedom Ascension Booster Pack",
+		},
+		{
+			"GUNDAM Card Game: Freedom Ascension [SC01] - Deck Build Box (New Arrival)",
+			"Freedom Ascension Deck Build Box",
+		},
+		// The Premium Collections carry a letter after their number, which
+		// One Piece's own pattern does not allow for. The catalog holds no
+		// row for either, so they resolve to nothing - but the code still
+		// has to come off, or the name would not even be asked properly.
+		{
+			"GUNDAM Card Game: Gundam Assemble Premium Collection [PC01A] - Iron Blooded Orphans",
+			"Gundam Assemble Premium Collection Iron Blooded Orphans",
+		},
+	} {
+		if got := sealedName(GameGundam, tt.in); got != tt.want {
+			t.Errorf("%s:\n got  %q\n want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
 func TestSealedNameFleshAndBlood(t *testing.T) {
 	for _, tt := range []struct {
 		in   string

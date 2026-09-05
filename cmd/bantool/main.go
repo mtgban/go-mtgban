@@ -409,6 +409,9 @@ var options = map[string]*scraperOption{
 	"miniaturemarket_sealed_fleshandblood": {
 		Init: miniaturemarketSealedScraper(miniaturemarket.GameFleshAndBlood),
 	},
+	"miniaturemarket_sealed_gundam": {
+		Init: miniaturemarketSealedScraper(miniaturemarket.GameGundam),
+	},
 	"miniaturemarket_sealed_lorcana": {
 		Init: miniaturemarketSealedScraper(miniaturemarket.GameLorcana),
 	},
