@@ -208,8 +208,9 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			continue
 		}
 		// The finish deliberately does not narrow here, for the same reason
-		// FilterCards does not gate on it: half the game is sold in a single
-		// finish, so a wrong or missing flag would drop the true candidate.
+		// collectPrintings does not gate on it: half the game is sold in a
+		// single finish, so a wrong or missing flag would drop the true
+		// candidate, and here that loses the name rather than a printing.
 		//
 		// Names compare normalized because the promo sets spell the epithet
 		// with a dash where the main sets use a comma ("Annie - Fiery" for
@@ -429,7 +430,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	case len(untyped) > 0:
 		tier = untyped
 	}
-	return preferBasePrinting(b, inCard, number, promoOrigin(b, inCard.Variation, tier))
+	tier = preferBasePrinting(b, inCard, number, promoOrigin(b, inCard.Variation, tier))
+	return preferListedFinish(inCard, tier)
 }
 
 // promoOrigin narrows a tier of promotional printings to the ones issued
@@ -614,13 +616,12 @@ func collectPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		if number != "" && !strings.EqualFold(number, card.Number) {
 			continue
 		}
-		// The finish deliberately does not filter here. Riftbound gives each
-		// printing its own collector number, so it never tells two cards
-		// apart - it only chooses between the uuids of one card, which
-		// output() does, clamping to the finishes the printing is actually
-		// sold in. Dropping candidates on it would lose the roughly half of
-		// the game sold in a single finish to any storefront that reports
-		// the flag wrongly, or does not report it at all.
+		// The finish deliberately does not filter here. Dropping candidates
+		// on it would lose the roughly half of the game sold in a single
+		// finish to any storefront that reports the flag wrongly, or does
+		// not report it at all; where it does tell two printings of one
+		// number apart, preferListedFinish reads it at the end, on a tie the
+		// wording could not break.
 		out = append(out, card)
 	}
 	return out
@@ -670,6 +671,42 @@ func leadingNumber(number string) int {
 		out = out*10 + int(number[i]-'0')
 	}
 	return out
+}
+
+// preferListedFinish keeps the printings sold in the finish the listing
+// prices, and only when everything above left more than one candidate.
+//
+// A collector number almost always names one printing, so the number and the
+// storefront's wording settle the rest. Two shapes escape them, and in both
+// the tied printings are sold in one finish each, so the flag the listing
+// already carries names one of them outright: Vendetta numbers the plain
+// "Shadow Clone // Tentacle" and its full-art sibling alike, in a set no
+// promo tier reaches; and the organized-play promos pair a Best Of foil with
+// a Prize Wall nonfoil under one number, typed so differently that a plain
+// variation describes neither.
+//
+// Running last and only on a tie costs no printing: a finish no candidate
+// carries leaves the list alone, so the roughly half of the game sold in a
+// single finish still answers a storefront that reports the flag wrongly, or
+// does not report it at all.
+func preferListedFinish(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) <= 1 {
+		return cards
+	}
+	finish := mtgmatcher.FinishNonfoil
+	if inCard.Foil {
+		finish = mtgmatcher.FinishFoil
+	}
+	var sold []mtgmatcher.Card
+	for _, card := range cards {
+		if card.HasFinish(finish) {
+			sold = append(sold, card)
+		}
+	}
+	if len(sold) == 0 {
+		return cards
+	}
+	return sold
 }
 
 // qualifierWords are the storefront's qualifying words: what the variation
