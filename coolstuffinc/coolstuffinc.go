@@ -41,6 +41,8 @@ const (
 	GameOnePiece          = "optcg"
 	GameStarWarsUnlimited = "swu"
 	GamePokemon           = "pokemon"
+	GameGundam            = "gundam"
+	GamePalworld          = "palworld"
 )
 
 var deductions = []float64{1, 1, 0.75}
@@ -492,7 +494,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
 				case GameOnePiece:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
-				case GameLorcana, GameRiftbound:
+				case GameGundam:
+					name, variation := gundamCard(cardName, "")
+					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes), Foil: isFoil}
+				case GameLorcana, GameRiftbound, GamePalworld:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
 					csi.printf("unsupported game")
@@ -721,7 +726,17 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(product.Name)), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
-		case GameLorcana:
+		// Gundam prints the same card at the same number in three sets, so
+		// the shelf has to narrow and the storefront's own code prefix stops
+		// it naming one; the wording it hangs behind the name is what tells
+		// the parallel runs apart.
+		case GameGundam:
+			name, variation := gundamCard(product.Name, product.Number)
+			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: variation, Foil: product.IsFoil == 1}
+		// Palworld numbers a parallel apart from the card it parallels, the
+		// rarity riding in the number's own tail, so the plain reading names
+		// one printing and nothing has to be read out of the wording.
+		case GameLorcana, GamePalworld:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
 			return errors.New("unsupported game")
@@ -875,6 +890,10 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GamePokemon
 	case GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
+	case GameGundam:
+		info.Game = mtgban.GameGundam
+	case GamePalworld:
+		info.Game = mtgban.GamePalworld
 	}
 	return
 }

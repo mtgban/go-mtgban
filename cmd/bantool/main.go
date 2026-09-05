@@ -286,11 +286,17 @@ var options = map[string]*scraperOption{
 	"coolstuffinc": {
 		Init: coolstuffincScraper(coolstuffinc.GameMagic),
 	},
+	"coolstuffinc_gundam": {
+		Init: coolstuffincScraper(coolstuffinc.GameGundam),
+	},
 	"coolstuffinc_lorcana": {
 		Init: coolstuffincScraper(coolstuffinc.GameLorcana),
 	},
 	"coolstuffinc_onepiece": {
 		Init: coolstuffincScraper(coolstuffinc.GameOnePiece),
+	},
+	"coolstuffinc_palworld": {
+		Init: coolstuffincScraper(coolstuffinc.GamePalworld),
 	},
 	"coolstuffinc_pokemon": {
 		Init: coolstuffincScraper(coolstuffinc.GamePokemon),

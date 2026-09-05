@@ -589,6 +589,10 @@ func (csi *Sealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GamePokemon
 	case GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
+	case GameGundam:
+		info.Game = mtgban.GameGundam
+	case GamePalworld:
+		info.Game = mtgban.GamePalworld
 	}
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
