@@ -68,10 +68,13 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 			want:   true,
 		},
 		{
-			desc:   "and so is the reprint shelf",
+			// The reprint shelf sells one set of ours whole, so it is
+			// mapped to that set's name and the number stops answering
+			// alone; there is nothing left for the guard to refuse.
+			desc:   "a mapped shelf names a set after all",
 			gameID: GameGundam,
 			bp:     shelf("Reprints"),
-			want:   true,
+			want:   false,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -134,6 +137,44 @@ func TestGundamShelvesNameASet(t *testing.T) {
 			}
 			if got != tt.code {
 				t.Errorf("GetSetByName(%q) = %q, want %q", tt.shelf, got, tt.code)
+			}
+		})
+	}
+}
+
+// TestGundamShelfSets pins both halves of what gundamShelfSets asserts: the
+// shelf names no set of ours, which is why the mapping is needed at all, and
+// the code it maps to names one, which is what the mapping answers with.
+//
+// Either half moving silently reverts the shelf to aliasing on its numbers,
+// so this fails rather than the listings quietly changing identity.
+func TestGundamShelfSets(t *testing.T) {
+	path := os.Getenv("GUNDAM_PATH")
+	if path == "" {
+		t.Skip("GUNDAM_PATH not set; skipping the Gundam shelf mapping")
+	}
+	f, err := datastore.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := gundam.Load(f)
+	f.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for name, code := range gundamShelfSets {
+		t.Run(name, func(t *testing.T) {
+			set, err := b.GetSetByName(name)
+			if err == nil && set != nil {
+				t.Errorf("shelf %q names set %q; the mapping is unnecessary", name, set.Code)
+			}
+			set, err = b.GetSet(code)
+			if err != nil || set == nil {
+				t.Fatalf("GetSet(%q) = %v; the mapping names no set", code, err)
+			}
+			if set.Name == "" {
+				t.Errorf("set %q has no name to answer with", code)
 			}
 		})
 	}

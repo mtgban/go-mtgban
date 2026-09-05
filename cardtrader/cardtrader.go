@@ -170,7 +170,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			}
 			theCard = &mtgmatcher.InputCard{
 				Name:      gameName(ct.gameID, blueprint),
-				Edition:   blueprint.Expansion.Name,
+				Edition:   gameEdition(ct.gameID, blueprint),
 				Variation: gameVariation(ct.gameID, blueprint, number),
 				// A listing is one printing in one finish, and the games
 				// whose properties name it say which; the flag beside it
