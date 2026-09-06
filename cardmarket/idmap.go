@@ -33,9 +33,9 @@ type IDMapExpansion struct {
 }
 
 // IDMap is the published Cardmarket catalog: every singles product mapped to
-// the printings it sells, which replaces walking the API for the same
-// answer. MTGJSON publishes the Magic one; the other games' are built by the
-// same crawl this map retires, run once against each game's datastore.
+// the printings it sells, which is what the index prices from instead of
+// walking the API. MTGJSON publishes the Magic one; mkmcatalog builds the
+// other games' by walking the API once a day.
 type IDMap struct {
 	Products   map[int]IDMapProduct
 	Expansions map[int]IDMapExpansion
@@ -130,7 +130,7 @@ func (mkm *Index) resolveUUIDs(product *MKMProduct, uuids []string) (string, str
 			cardIDFoil = foil[0]
 		} else {
 			// The entry lists no foil printing, but the datastore may
-			// still carry one, the way the crawl probes for it.
+			// still carry one, the way processProduct probes for it.
 			cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
 		}
 	case len(foil) > 0:
@@ -143,8 +143,9 @@ func (mkm *Index) resolveUUIDs(product *MKMProduct, uuids []string) (string, str
 }
 
 // processMapped prices one product of the id map. The map answers first;
-// what it left unmapped goes down the same ladder the crawl uses, so a
-// product the file does not know yet is matched rather than lost.
+// what it left unmapped is priced from what the catalog says of it, the way
+// processProduct does, so a product the file does not know yet is matched
+// rather than lost.
 func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMapProduct, expansionName string) error {
 	product := &MKMProduct{
 		IDProduct:     id,
@@ -159,47 +160,42 @@ func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMa
 	}
 
 	cardID, cardIDFoil := mkm.resolveUUIDs(product, mapped.UUIDs)
-	byName := false
 	if cardID == "" {
-		var err error
-		cardID, cardIDFoil, byName, err = mkm.resolveProduct(product)
-		if err != nil || cardID == "" {
-			return err
-		}
+		return mkm.processProduct(channel, product)
 	}
-
-	return mkm.emitPrices(channel, product, cardID, cardIDFoil, byName)
+	return mkm.emitPrices(channel, product, cardID, cardIDFoil, false)
 }
 
-// idMapUsable reports whether the id map can stand in for the crawl. For
-// the games that shelve whole foreign catalogs, the map says which shelves
-// those are only through the expansion codes: a map written before it
-// carried them cannot be walked safely, so the crawl keeps answering until
-// the day's publish brings them.
-func (mkm *Index) idMapUsable() bool {
+// checkIDMap reports whether the id map can be walked. For the games that
+// shelve whole foreign catalogs, the map says which shelves those are only
+// through the expansion codes: a map written before it carried them cannot
+// be walked safely, and the run refuses rather than price the foreign
+// printings onto the English ones.
+func (mkm *Index) checkIDMap() error {
+	if mkm.IDMap == nil {
+		return errors.New("no id map to price from")
+	}
 	switch mkm.gameID {
 	case GameOnePiece, GameYuGiOh:
 	default:
-		return true
+		return nil
 	}
 	for _, expansion := range mkm.IDMap.Expansions {
 		if expansion.Code != "" {
-			return true
+			return nil
 		}
 	}
-	mkm.printf("The id map carries no expansion codes to tell the foreign shelves by; crawling instead")
-	return false
+	return errors.New("the id map carries no expansion codes to tell the foreign shelves by")
 }
 
-// loadOffline continues Load with the crawl replaced by the id map: the
-// same tallies, the same output, and no API. The expansions come from the
-// map too, so nothing from here on needs a credential.
-func (mkm *Index) loadOffline(ctx context.Context) error {
+// walkIDMap prices every product of the id map, and of the product list
+// beside it, expansion by expansion.
+func (mkm *Index) walkIDMap(ctx context.Context) error {
 	// The map knows only what MTGJSON has linked; the published product list
 	// knows everything on sale today. Products it names that the map does
-	// not - six thousand and change as of this writing - go down the same
-	// matcher ladder the crawl used, with the one thing the list never
-	// carries left empty: its collector number.
+	// not - several thousand for Magic - are priced from what the catalog
+	// says of them, with the one thing the list never carries left empty:
+	// their collector number.
 	products := make(map[int]IDMapProduct, len(mkm.IDMap.Products))
 	for id, product := range mkm.IDMap.Products {
 		products[id] = product
@@ -238,10 +234,13 @@ func (mkm *Index) loadOffline(ctx context.Context) error {
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].IDExpansion < items[j].IDExpansion })
 
-	// The same shelves the crawl refuses to walk: the foreign catalogs are
-	// whole programs of their own whose prices must not land on the English
-	// printings, and One Piece's duplicate shelves resolve through the same
-	// shelved table Load builds. See Load's twin of this switch.
+	// The non-English programs are whole separate catalogs (OP01-JP beside
+	// OP01, "Metal Raiders (Korean)" beside Metal Raiders) whose prices must
+	// not land on the English printings the datastore carries. Yu-Gi-Oh
+	// shelves them the same way, and one more besides: the PMT tail marks
+	// the European multi-language print of a set, which is a catalog of its
+	// own for the same reason. One Piece's duplicate shelves resolve through
+	// the shelved table; see offShelf.
 	switch mkm.gameID {
 	case GameOnePiece, GameYuGiOh:
 		kept := items[:0]

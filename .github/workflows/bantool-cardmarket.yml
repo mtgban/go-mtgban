@@ -24,10 +24,7 @@ jobs:
       game: "magic"
     secrets: inherit
 
-  # Until the id map has a published URL the var stays unset, this job is
-  # skipped, and deploy runs the API crawl exactly as before.
   cache-mkmids:
-    if: ${{ vars.MKMIDS_MAGIC != '' }}
     uses: ./.github/workflows/cache-file.yml
     with:
       url: ${{ vars.MKMIDS_MAGIC }}
@@ -37,7 +34,6 @@ jobs:
   deploy:
     name: ${{ github.workflow }}
     needs: [cache-datastore, cache-mkmids]
-    if: ${{ !cancelled() && needs.cache-datastore.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.cache-mkmids.result) }}
     uses: ./.github/workflows/run-bantool.yml
     with:
       target: cardmarket

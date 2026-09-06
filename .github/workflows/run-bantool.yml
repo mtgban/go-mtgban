@@ -21,8 +21,8 @@ on:
         type: string
       skus-cache-key:
         type: string
-      # The Cardmarket id map (MTGJSON's for Magic, the catalog publisher's
-      # for the rest); replaces the API crawl when given.
+      # The Cardmarket id map the index prices from (MTGJSON's for Magic,
+      # the catalog publisher's for the rest).
       mkmids-filepath:
         type: string
       mkmids-cache-key:

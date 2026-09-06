@@ -65,13 +65,8 @@ func starcitygamesKey() (string, error) {
 // failing and pricing nothing.
 func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		// An id map run makes no authenticated call, so a missing MKM
-		// credential refuses only the runs that would crawl.
-		appToken, appSecret, err := cardmarketCredentials()
-		if err != nil && os.Getenv("MTGJSON_MKMID_PATH") == "" {
-			return nil, err
-		}
-		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
+		scraper := cardmarket.NewScraperIndex(game)
+		err := loadCardmarketIDMap(scraper)
 		if err != nil {
 			return nil, err
 		}
@@ -86,21 +81,14 @@ func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
 		}
-		err = loadCardmarketIDMap(scraper)
-		if err != nil {
-			return nil, err
-		}
 		return scraper, nil
 	}
 }
 
 func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		appToken, appSecret, err := cardmarketCredentials()
-		if err != nil && os.Getenv("MTGJSON_MKMID_PATH") == "" {
-			return nil, err
-		}
-		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
+		scraper := cardmarket.NewScraperIndex(game)
+		err := loadCardmarketIDMap(scraper)
 		if err != nil {
 			return nil, err
 		}
@@ -112,10 +100,6 @@ func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scr
 		scraper.Affiliate = os.Getenv("MKM_PARTNER")
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
-		}
-		err = loadCardmarketIDMap(scraper)
-		if err != nil {
-			return nil, err
 		}
 		return scraper, nil
 	}
@@ -162,11 +146,8 @@ func tcgSYPScraper(game string) func() (mtgban.Scraper, error) {
 
 func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		appToken, appSecret, err := cardmarketCredentials()
-		if err != nil && os.Getenv("MTGJSON_MKMID_PATH") == "" {
-			return nil, err
-		}
-		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
+		scraper := cardmarket.NewScraperIndex(game)
+		err := loadCardmarketIDMap(scraper)
 		if err != nil {
 			return nil, err
 		}
@@ -175,22 +156,17 @@ func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
 		}
-		err = loadCardmarketIDMap(scraper)
-		if err != nil {
-			return nil, err
-		}
 		return scraper, nil
 	}
 }
 
-// loadCardmarketIDMap hands an index scraper the published id map when one
-// is addressed, whatever the game and whichever constructor built it:
-// MTGJSON publishes Magic's, mkmcatalog builds the rest, and the map
-// replaces the API crawl.
+// loadCardmarketIDMap hands an index scraper the published catalog it prices
+// from, whatever the game and whichever constructor built it: MTGJSON
+// publishes Magic's, mkmcatalog builds the rest.
 func loadCardmarketIDMap(scraper *cardmarket.Index) error {
 	idMapPath := os.Getenv("MTGJSON_MKMID_PATH")
 	if idMapPath == "" {
-		return nil
+		return errors.New("missing MTGJSON_MKMID_PATH env var")
 	}
 	reader, err := openPath(idMapPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 	if err != nil {

@@ -158,11 +158,11 @@ func TestResolveUUIDs(t *testing.T) {
 	}
 }
 
-// TestIDMapUsable pins the guard that keeps a code-less map from standing
-// in for the crawl of the games that shelve whole foreign catalogs: without
-// the expansion codes the map cannot say which shelves those are, and the
-// crawl keeps answering until a publish brings them.
-func TestIDMapUsable(t *testing.T) {
+// TestCheckIDMap pins the guard on a code-less map for the games that
+// shelve whole foreign catalogs: without the expansion codes the map cannot
+// say which shelves those are, and Load refuses to walk it rather than
+// price the foreign printings onto the English ones.
+func TestCheckIDMap(t *testing.T) {
 	coded := &IDMap{Expansions: map[int]IDMapExpansion{
 		1: {Name: "Romance Dawn", Code: "OP01"},
 		2: {Name: "Romance Dawn", Code: "OP01-JP"},
@@ -172,23 +172,22 @@ func TestIDMapUsable(t *testing.T) {
 	}}
 
 	for _, tt := range []struct {
+		name   string
 		gameID int
 		idMap  *IDMap
-		want   bool
+		usable bool
 	}{
-		{GameOnePiece, coded, true},
-		{GameOnePiece, bare, false},
-		{GameYuGiOh, bare, false},
-		{GameMagic, bare, true},
+		{"one piece coded", GameOnePiece, coded, true},
+		{"one piece bare", GameOnePiece, bare, false},
+		{"yugioh bare", GameYuGiOh, bare, false},
+		{"magic bare", GameMagic, bare, true},
+		{"magic none", GameMagic, nil, false},
 	} {
-		mkm, err := NewScraperIndex(tt.gameID, "", "")
-		if err != nil {
-			t.Fatal(err)
-		}
+		mkm := NewScraperIndex(tt.gameID)
 		mkm.IDMap = tt.idMap
-		if got := mkm.idMapUsable(); got != tt.want {
-			t.Errorf("idMapUsable(game %d, coded %v) = %v, want %v",
-				tt.gameID, tt.idMap == coded, got, tt.want)
+		err := mkm.checkIDMap()
+		if (err == nil) != tt.usable {
+			t.Errorf("%s: checkIDMap() = %v, want usable %v", tt.name, err, tt.usable)
 		}
 	}
 }
