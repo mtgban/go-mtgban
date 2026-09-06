@@ -104,6 +104,28 @@ func (inv InventoryRecord) AddUnique(cardID string, entry *InventoryEntry) error
 	return inv.add(cardID, entry, 3)
 }
 
+// AddCheapest records one price per card and condition: the lowest one. A
+// feed that lists a printing under more than one product - a token sold from
+// several decks, a card the store files in two of its own lines - names it
+// once per product, each with its own price. The site shows one row for the
+// grade, and a buyer pays the lower of them, so the second is folded into the
+// first by keeping whichever price is lower, and the link that goes with it.
+func (inv InventoryRecord) AddCheapest(cardID string, entry *InventoryEntry) error {
+	err := inv.add(cardID, entry, 3)
+	if !errors.Is(err, ErrDuplicateEntry) {
+		return err
+	}
+	for i := range inv[cardID] {
+		if inv[cardID][i].Conditions == entry.Conditions && inv[cardID][i].SellerName == entry.SellerName && entry.Price < inv[cardID][i].Price {
+			inv[cardID][i].Price = entry.Price
+			inv[cardID][i].URL = entry.URL
+			inv[cardID][i].OriginalID = entry.OriginalID
+			inv[cardID][i].InstanceID = entry.InstanceID
+		}
+	}
+	return nil
+}
+
 // AddRelaxed adds an entry to the buylist, folding a duplicate into the
 // quantity of the one already there rather than reporting it.
 func (bl BuylistRecord) AddRelaxed(cardID string, entry *BuylistEntry) error {

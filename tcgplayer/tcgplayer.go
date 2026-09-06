@@ -378,13 +378,17 @@ func (tcg *Market) Load(ctx context.Context) error {
 	}()
 
 	for result := range channel {
-		err := tcg.inventory.AddStrict(result.cardID, &result.entry)
+		// A token is sold from every deck it comes in, and the catalog
+		// names no product of its own for it, so the sku file lists each
+		// deck's skus under the one printing: one price per deck arrives,
+		// and the grade is priced at the lowest of them.
+		err := tcg.inventory.AddCheapest(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 		}
 		if result.bl != nil {
 			err := tcg.buylist.Add(result.cardID, result.bl)
-			if err != nil {
+			if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
 				tcg.printf("%s", err.Error())
 			}
 		}
