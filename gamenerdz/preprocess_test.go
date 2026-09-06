@@ -47,7 +47,7 @@ func TestPreprocess(t *testing.T) {
 				ProductData:    GNProductData{Set: "pre", SetName: "Prerelease Cards"},
 			},
 			name:      "Avatar of Hope",
-			edition:   "pre",
+			edition:   "Prophecy Promos",
 			variation: "003 Prerelease",
 			foil:      true,
 		},
@@ -62,8 +62,8 @@ func TestPreprocess(t *testing.T) {
 				ProductData: GNProductData{Set: "ppthb", CatalogSet: "Theros Beyond Death Promos"},
 			},
 			name:      "Purphoros, Bronze-Blooded",
-			edition:   "Theros Beyond Death Promos",
-			variation: "150 Promo Pack",
+			edition:   "pthb",
+			variation: "150p",
 		},
 		{
 			// The shelf label and the catalog's name for a set are two
@@ -80,8 +80,8 @@ func TestPreprocess(t *testing.T) {
 				},
 			},
 			name:      "Archon of Sun's Grace",
-			edition:   "Theros Beyond Death Promos",
-			variation: "003 Promo Pack",
+			edition:   "pthb",
+			variation: "003p",
 		},
 		{
 			// The same shelf, where the number already carries the letter
@@ -92,7 +92,7 @@ func TestPreprocess(t *testing.T) {
 				ProductData: GNProductData{Set: "ppthb", CatalogSet: "Theros Beyond Death Promos"},
 			},
 			name:      "Atris, Oracle of Half-Truths",
-			edition:   "Theros Beyond Death Promos",
+			edition:   "pthb",
 			variation: "209P",
 		},
 		{
@@ -105,7 +105,7 @@ func TestPreprocess(t *testing.T) {
 				ProductData: GNProductData{Set: "pre", SetName: "Prerelease Cards"},
 			},
 			name:      "Culling Scales",
-			edition:   "pre",
+			edition:   "Mirrodin",
 			variation: "160",
 		},
 		{
