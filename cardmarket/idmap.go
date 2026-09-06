@@ -152,6 +152,17 @@ func sameProduct(gameID int) func(a, b *MKMProduct) bool {
 		return yugiohSameProduct
 	case GameOnePiece:
 		return onePieceSameProduct
+	case GameFleshAndBlood:
+		return fabSameProduct
+	}
+	return nil
+}
+
+// faceOf answers the rule telling a product that names one face of a fused
+// printing, for the games whose shelves sell a card face by face.
+func faceOf(gameID int) func(product *MKMProduct, cardID string) bool {
+	if gameID == GameFleshAndBlood {
+		return fabFaceOf
 	}
 	return nil
 }
@@ -178,12 +189,13 @@ type resolved struct {
 // what it left unmapped is answered from what the catalog says of it, the
 // way processProduct does, so a product the file does not know yet is
 // matched rather than lost.
-func (mkm *Index) resolveMapped(id int, mapped IDMapProduct, expansionName string) resolved {
+func (mkm *Index) resolveMapped(id int, mapped IDMapProduct, expansion MKMExpansion) resolved {
 	product := &MKMProduct{
 		IDProduct:     id,
 		Name:          mapped.Name,
 		Number:        mapped.Number,
-		ExpansionName: expansionName,
+		ExpansionName: expansion.Name,
+		ExpansionCode: expansion.SetCode,
 	}
 
 	cardID, cardIDFoil := mkm.resolveUUIDs(product, mapped.UUIDs)
@@ -294,10 +306,13 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 
 			results := make([]resolved, 0, len(ids))
 			for _, id := range ids {
-				results = append(results, mkm.resolveMapped(id, products[id], exp.Name))
+				results = append(results, mkm.resolveMapped(id, products[id], exp))
+			}
+			if mkm.gameID == GameFleshAndBlood {
+				mkm.disownBridged(results)
 			}
 			if same := sameProduct(mkm.gameID); same != nil {
-				twinsAmong(results, same)
+				twinsAmong(results, same, faceOf(mkm.gameID))
 			}
 
 			// A refusal is named once per name and number: the same

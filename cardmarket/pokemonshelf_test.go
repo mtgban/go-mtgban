@@ -72,7 +72,7 @@ func TestPokemonTwins(t *testing.T) {
 		{product: product(7, "Torracat ", "25"), cardID: "torracat", byName: true},
 		{product: product(8, "Popplio ", "39"), err: errNoPrinting},
 	}
-	twinsAmong(results, pokemonSameProduct)
+	twinsAmong(results, pokemonSameProduct, nil)
 	want := map[int]error{2: errTwin, 3: errTwin, 4: errTwin, 6: errTwin, 8: errNoPrinting}
 	for _, r := range results {
 		if !errors.Is(r.err, want[r.product.IDProduct]) {

@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 var filteredExpansionsTags = []string{
@@ -292,10 +294,195 @@ func fabFinish(expansion, name string) string {
 	switch {
 	case run != "" && treatment != "":
 		return run + " " + treatment
-	case treatment != "" && treatment != "Normal":
+	case treatment != "":
 		return treatment
 	}
 	return ""
+}
+
+// fabWording matches a parenthetical Cardmarket writes past a Flesh and
+// Blood card's own name: a treatment, the art ahead of it, a label the
+// datastore keeps in the printing's name, or a pitch color.
+var fabWording = regexp.MustCompile(`^(?:(?:Extended|Alternate) Art(?: (?:Regular|Rainbow Foil|Cold Foil))?|Regular|Rainbow Foil|Cold Foil(?: Golden)?|Marvel|Golden|Artist Proof|Red|Yellow|Blue)$`)
+
+// fabArt matches the art parenthetical alone, the one a set may carry no
+// printing of its own for.
+var fabArt = regexp.MustCompile(` \((?:Extended|Alternate) Art\)$`)
+
+// fabBaseName strips every wording parenthetical off a Cardmarket product
+// name, leaving the card's own name, pitch included: what two products of
+// one card share, and two products of different cards do not.
+func fabBaseName(name string) string {
+	for {
+		open := strings.LastIndex(name, " (")
+		if open < 0 || !strings.HasSuffix(name, ")") {
+			return name
+		}
+		tail := name[open+2 : len(name)-1]
+		if !fabWording.MatchString(tail) || fabPitch(tail) {
+			return name
+		}
+		name = name[:open]
+	}
+}
+
+// fabPitch reports whether a parenthetical names a pitch color, which
+// belongs to the card's name: Sink Below (Red) and Sink Below (Blue) are
+// two cards.
+func fabPitch(word string) bool {
+	return word == "Red" || word == "Yellow" || word == "Blue"
+}
+
+// fabDropArt answers a name without the art parenthetical fabTreatment
+// left on it, for the sets that file the art under the plain name.
+func fabDropArt(name string) string {
+	return fabArt.ReplaceAllString(name, "")
+}
+
+// fabSameProduct reports whether two Cardmarket Flesh and Blood products
+// are the same card sold twice: the same name once the treatment, art and
+// labels are off it, at the same number - or one of them the unpitched
+// listing of the other, the older spelling of a card the expansion sells
+// pitched too.
+func fabSameProduct(a, b *MKMProduct) bool {
+	// The same listing twice, whatever numbers the two copies wear
+	if strings.EqualFold(a.Name, b.Name) {
+		return true
+	}
+	if a.Number != "" && b.Number != "" && !sameFabNumber(a.Number, b.Number) {
+		return false
+	}
+	return fabSameCard(fabBaseName(a.Name), fabBaseName(b.Name))
+}
+
+// fabSameCard reports whether two card names, wording already off them,
+// name one card: the same name, or one the unpitched spelling of the
+// other, which is how the older listings and the token-sized reprints
+// write a card the set sells pitched.
+func fabSameCard(nameA, nameB string) bool {
+	if strings.EqualFold(nameA, nameB) {
+		return true
+	}
+	return strings.EqualFold(unpitched(nameA), nameB) || strings.EqualFold(nameA, unpitched(nameB))
+}
+
+// fabPitchTail matches the pitch parenthetical ending a name.
+var fabPitchTail = regexp.MustCompile(` \((?:Red|Yellow|Blue)\)$`)
+
+func unpitched(name string) string {
+	return fabPitchTail.ReplaceAllString(name, "")
+}
+
+// fabFaceOf reports whether a Cardmarket product names one face of the
+// fused printing it is beside: the storefront sells a double-sided hero
+// face by face, and the datastore files the card once under both faces.
+func fabFaceOf(product *MKMProduct, cardID string) bool {
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil || !strings.Contains(co.Name, "//") {
+		return false
+	}
+	name := mtgmatcher.Normalize(fabBaseName(product.Name))
+	for _, face := range strings.Split(co.Name, "//") {
+		if mtgmatcher.Normalize(strings.TrimSpace(face)) == name {
+			return true
+		}
+	}
+	return false
+}
+
+// fabNamesPrinting reports whether a product names the printing an id
+// landed it on: the same card, or one face of a fused card. The bridge
+// speaks through another marketplace's links, and a link tied to the
+// wrong product lands a card on its neighbour's printing.
+func fabNamesPrinting(product *MKMProduct, cardID string) bool {
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	if fabSameCard(fabBaseName(product.Name), fabBaseName(co.Name)) {
+		return true
+	}
+	return fabFaceOf(product, cardID)
+}
+
+// fabNumberPrefix splits a collector number into the letters a set opens
+// its numbers on and the digits after them.
+var fabNumberPrefix = regexp.MustCompile(`^([A-Za-z0-9]*?[A-Za-z])(\d{3,4})[A-Za-z]*$`)
+
+// fabSetPrefix answers the letters a set's collector numbers open on, or
+// nothing for a set numbered by digits alone. Cardmarket writes the digits
+// and the datastore the whole number, and a fused card answers to a face's
+// number only when it is written whole.
+func fabSetPrefix(set *mtgmatcher.Set) string {
+	for _, card := range set.Cards {
+		if fields := fabNumberPrefix.FindStringSubmatch(card.Number); fields != nil {
+			return fields[1]
+		}
+	}
+	return ""
+}
+
+// shelf is one set a product may be filed in, with the way its numbers
+// are read there: the prefix a promo programme's numbers carry, and the
+// print run the expansion names.
+type shelf struct {
+	set          *mtgmatcher.Set
+	edition      string
+	numberPrefix string
+	printRun     string
+}
+
+// fabShelves names the sets a Cardmarket Flesh and Blood product may be
+// filed in, in the order they are asked. Cardmarket sells each print run
+// as its own expansion ("Monarch - First"), a name no set of ours carries:
+// the run belongs to the printing, where fabFinish puts it, and the set is
+// looked up without it. What Cardmarket calls the expansion is not always
+// what we call the set, and translating is the fallback rather than the
+// first move, so an expansion whose name we already know keeps answering
+// for itself. A promo programme is asked of its own set before the one set
+// every programme was once filed in, and an expansion no name places is
+// asked of the set wearing its code, which is how the Silver Age decks and
+// the Slingshot promos are filed.
+func fabShelves(product *MKMProduct) []shelf {
+	printRun, edition := fabPrintRun(product.ExpansionName)
+	var shelves []shelf
+	if prefix, promo := fabPromoPrefixes[edition]; promo {
+		programme, err := mtgmatcher.GetSet(prefix)
+		if err == nil {
+			shelves = append(shelves, shelf{set: programme, edition: programme.Name, numberPrefix: prefix, printRun: printRun})
+		}
+		set, err := mtgmatcher.GetSetByName(fabPromoSet)
+		if err == nil {
+			shelves = append(shelves, shelf{set: set, edition: fabPromoSet, numberPrefix: prefix, printRun: printRun})
+		}
+		return shelves
+	}
+	set, err := mtgmatcher.GetSetByName(edition)
+	if err == nil {
+		shelves = append(shelves, shelf{set: set, edition: edition, printRun: printRun})
+	} else {
+		translated, _ := fabEdition(edition)
+		set, err = mtgmatcher.GetSetByName(translated)
+		if err == nil {
+			shelves = append(shelves, shelf{set: set, edition: translated, printRun: printRun})
+		}
+	}
+	if product.ExpansionCode != "" {
+		coded, cerr := mtgmatcher.GetSet(product.ExpansionCode)
+		if cerr == nil && !shelved(shelves, coded) {
+			shelves = append(shelves, shelf{set: coded, edition: coded.Name, printRun: printRun})
+		}
+	}
+	return shelves
+}
+
+func shelved(shelves []shelf, set *mtgmatcher.Set) bool {
+	for _, sh := range shelves {
+		if sh.set.Code == set.Code {
+			return true
+		}
+	}
+	return false
 }
 
 // SecondPrinting names the prices of the printing sold beside the product's
@@ -523,4 +710,63 @@ func BuildURL(idProduct, idGame int, affiliate string, foil bool) string {
 
 	u.RawQuery = v.Encode()
 	return u.String()
+}
+
+// disownBridged takes the bridge's answer away from a product it landed on
+// a card the same shelf sells, and prices, under another product's name,
+// and lets the name answer instead. The bridge speaks through another
+// marketplace's links, and a link tied to the neighbouring product lands
+// a card on its neighbour's printing: Cardmarket's Herald of Ravages on
+// the datastore's Herald of Rebirth, the red Lead with Heart on the
+// yellow. A spelling the datastore does not share is not that - no priced
+// product of the shelf claims the printing - and the id keeps its say
+// over it, the misspelt listing of a card the shelf also sells refused
+// included.
+func (mkm *Index) disownBridged(results []resolved) {
+	claimed := map[string]bool{}
+	for _, r := range results {
+		if r.err != nil || r.cardID == "" {
+			continue
+		}
+		name := fabBaseName(r.product.Name)
+		claimed[mtgmatcher.Normalize(name)] = true
+		claimed[mtgmatcher.Normalize(unpitched(name))] = true
+	}
+	for i, r := range results {
+		if r.err != nil || r.cardID == "" || r.byName || fabNamesPrinting(r.product, r.cardID) {
+			continue
+		}
+		co, err := mtgmatcher.GetUUID(r.cardID)
+		if err != nil || !claimed[mtgmatcher.Normalize(fabBaseName(co.Name))] {
+			continue
+		}
+		cardID := mkm.matchProduct(r.product)
+		if cardID == "" {
+			results[i] = resolved{product: r.product, err: errNoPrinting}
+			continue
+		}
+		results[i] = resolved{product: r.product, cardID: cardID, cardIDFoil: cardID, byName: true}
+	}
+}
+
+// fabNumbers answers the forms a Cardmarket number is asked in: whole,
+// opening on the letters its set writes, which is how the datastore
+// writes it and the only way a fused card answers to its faces' numbers;
+// as written; and not at all, since a deck the two catalogs number
+// differently still names its cards, and a name the set holds once is
+// the card whatever number it was sold under.
+func fabNumbers(prefix, number string) []string {
+	numbers := []string{number}
+	if prefix != "" && number != "" {
+		parts := strings.Split(number, "/")
+		for i, part := range parts {
+			if part != "" && part[0] >= '0' && part[0] <= '9' {
+				parts[i] = prefix + part
+			}
+		}
+		if whole := strings.Join(parts, "//"); whole != number {
+			numbers = append([]string{whole}, numbers...)
+		}
+	}
+	return append(numbers, "")
 }

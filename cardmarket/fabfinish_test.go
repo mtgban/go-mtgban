@@ -16,17 +16,17 @@ func TestFabFinish(t *testing.T) {
 		// and the datastore files under every other set's 1st Edition.
 		{"Welcome to Rathe - Alpha", "Last Ditch Effort (Regular)", "1st Edition Normal"},
 		{"Welcome to Rathe - Alpha", "Sink Below (Red) (Rainbow Foil)", "1st Edition Rainbow Foil"},
-		// No run named: the treatment alone still names a printing, unless
-		// it is the plain one the id already answers with.
+		// No run named: the treatment alone still names a printing, the
+		// plain one included.
 		{"LSS Promos", "Go Bananas (Rainbow Foil)", "Rainbow Foil"},
 		{"LSS Promos", "Taylor", ""},
-		{"LSS Promos", "Ruu'di, Gem Keeper (Regular)", ""},
+		{"LSS Promos", "Ruu'di, Gem Keeper (Regular)", "Normal"},
 		// A parenthetical that is part of the card's name, not a treatment.
 		{"LSS Promos", "Sigil of Suffering (Yellow)", ""},
 		// The art spelled ahead of the treatment says nothing about the
 		// finish, and the treatment behind it says all of it.
 		{"GEM Pack Promos", "Display Loyalty (Extended Art Rainbow Foil)", "Rainbow Foil"},
-		{"GEM Pack Promos", "Fast and Furious (Extended Art Regular)", ""},
+		{"GEM Pack Promos", "Fast and Furious (Extended Art Regular)", "Normal"},
 		{"Crucible of War - First", "Twinning Blade (Extended Art Rainbow Foil)", "1st Edition Rainbow Foil"},
 	} {
 		if got := fabFinish(tt.expansion, tt.name); got != tt.want {

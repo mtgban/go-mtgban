@@ -168,7 +168,7 @@ func pokemonCodeCard(name string) bool {
 // and the rest give way. A printing held by a product of another name is
 // left to the inventory to refuse out loud, since that is a disagreement
 // worth reading.
-func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool) {
+func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool, face func(product *MKMProduct, cardID string) bool) {
 	held := map[string][]int{}
 	var holders []int
 	for i, r := range results {
@@ -181,7 +181,7 @@ func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool) {
 		if r.err == nil && r.cardID != "" && r.byName {
 			twin := false
 			for _, j := range held[r.cardID] {
-				if pokemonSameProduct(results[j].product, r.product) {
+				if same(results[j].product, r.product) || (face != nil && face(r.product, r.cardID)) {
 					twin = true
 					break
 				}
@@ -203,7 +203,7 @@ func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool) {
 			continue
 		}
 		for _, j := range holders {
-			if same(results[j].product, r.product) {
+			if same(results[j].product, r.product) || (face != nil && face(r.product, results[j].cardID)) {
 				results[i].err = errTwin
 				break
 			}
