@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -121,20 +122,11 @@ func (gn *Gamenerdz) printf(format string, a ...any) {
 }
 
 func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
-	theCard, err := preprocess(product, gn.game)
+	cardID, err := gn.resolveProduct(mode, product)
 	if err != nil {
-		// Name the product, the way the failure below already does. A
-		// reason alone says a listing was dropped without saying which,
-		// and a bucket nobody can read is a bucket nobody empties
-		return fmt.Errorf("%s %q: %w", product.ID, product.DisplayName, err)
+		return err
 	}
-
-	cardID, err := mtgmatcher.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
-		return nil
-	} else if err != nil {
-		gn.printf("%v", err)
-		gn.printf("%s: %q", product.ID, product.DisplayName)
+	if cardID == "" {
 		return nil
 	}
 
@@ -203,6 +195,42 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 	}
 
 	return nil
+}
+
+// resolveProduct names the printing a product is. The retail feed carries
+// the catalog's own TCGplayer id for nearly every product, and it answers
+// first: the display name is the storefront's own wording, and where the two
+// disagree the id is right - a name copied from another card, a promo pack
+// printing named as the plain one. The buylist feed carries no id, so its
+// wording is read the way the retail wording is, and the retail ids are
+// what that reading is measured against. An empty id under a nil error is
+// a product the catalog does not carry.
+func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
+	if mode == modeRetail && gn.game == GameMagic && product.ProductData.TCGProductID != 0 {
+		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
+		cardID, err := mtgmatcher.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil)
+		if err == nil {
+			return cardID, nil
+		}
+	}
+
+	theCard, err := preprocess(product, gn.game)
+	if err != nil {
+		// Name the product, the way the failure below already does. A
+		// reason alone says a listing was dropped without saying which,
+		// and a bucket nobody can read is a bucket nobody empties
+		return "", fmt.Errorf("%s %q: %w", product.ID, product.DisplayName, err)
+	}
+
+	cardID, err := mtgmatcher.Match(theCard)
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return "", nil
+	} else if err != nil {
+		gn.printf("%v", err)
+		gn.printf("%s: %q", product.ID, product.DisplayName)
+		return "", nil
+	}
+	return cardID, nil
 }
 
 // crawlState is what one mode's passes accumulate together: the products any

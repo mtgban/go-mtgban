@@ -69,6 +69,14 @@ type GNProductData struct {
 	SetName    string `json:"setName"`
 	CatalogSet string `json:"set_name"`
 	Rarity     string `json:"rarity"`
+	// The retail feed carries the catalog's own record of the card: its
+	// TCGplayer product id and the name TCGplayer sells it under, beside
+	// the collector number as printed. The buylist feed carries none of
+	// them, only the number with its letters and padding stripped.
+	TCGProductID int64           `json:"tcgplayer_productId"`
+	CatalogName  string          `json:"name"`
+	Number       jsonflex.String `json:"collector_number"`
+	NumberDigits jsonflex.String `json:"collector_number_normalized"`
 }
 
 // GNBuyVariant is one buylist offer on a product. The credit price arrives
