@@ -702,6 +702,24 @@ func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	return picks, nil
 }
 
+// productNamesEtched reports whether a sealed product's name says the cards
+// it holds are the etched printings. mtgjson has no field for it: a Secret
+// Lair sold etched is a separate product whose card contents carry the plain
+// foil flag, because etched is the only foil those cards come in.
+//
+// Read a word at a time rather than by substring or suffix: a Foundations
+// commander deck called "Wretched Ranks" holds nothing etched, and "Secret
+// Lair Drop The Tokyo Lands Etched Foil" does even though the name does not
+// end there.
+func productNamesEtched(name string) bool {
+	for _, word := range strings.Fields(name) {
+		if strings.EqualFold(word, "Etched") {
+			return true
+		}
+	}
+	return false
+}
+
 // GetDecklist returns the uuids of the fixed decks a sealed product contains,
 // for the products whose contents are known rather than drawn.
 func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
@@ -720,12 +738,13 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 		if sealedUUID != product.UUID {
 			continue
 		}
+		etched := productNamesEtched(product.Name)
 
 		for key, contents := range product.Contents {
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := MatchID(content.UUID, content.Foil)
+					uuid, err := MatchID(content.UUID, content.Foil, etched)
 					if err != nil {
 						return nil, err
 					}
@@ -785,12 +804,13 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 		if sealedUUID != product.UUID {
 			continue
 		}
+		etched := productNamesEtched(product.Name)
 
 		for key, contents := range product.Contents {
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := MatchID(content.UUID, content.Foil)
+					uuid, err := MatchID(content.UUID, content.Foil, etched)
 					if err != nil {
 						return nil, err
 					}
@@ -857,7 +877,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 					config := variableChooser.Pick()
 
 					for _, card := range config["card"] {
-						uuid, err := MatchID(card.UUID, card.Foil)
+						uuid, err := MatchID(card.UUID, card.Foil, etched)
 						if err != nil {
 							return nil, err
 						}
@@ -1108,12 +1128,13 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 		if sealedUUID != product.UUID {
 			continue
 		}
+		etched := productNamesEtched(product.Name)
 
 		for key, contents := range product.Contents {
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := MatchID(content.UUID, content.Foil)
+					uuid, err := MatchID(content.UUID, content.Foil, etched)
 					if err != nil {
 						return nil, err
 					}
@@ -1186,7 +1207,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 
 						var variableProbs []ProductProbabilities
 						for _, card := range config["card"] {
-							uuid, err := MatchID(card.UUID, card.Foil)
+							uuid, err := MatchID(card.UUID, card.Foil, etched)
 							if err != nil {
 								return nil, err
 							}
