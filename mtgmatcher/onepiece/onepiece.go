@@ -32,6 +32,10 @@ type Datastore struct {
 	Sets map[string]struct {
 		Name        string `json:"name"`
 		ReleaseDate string `json:"releaseDate"`
+
+		// Type is "promo" on the sets that hand their cards out rather
+		// than sell them in packs, and empty on every other.
+		Type string `json:"type,omitempty"`
 	} `json:"sets"`
 	Cards  []DatastoreCard   `json:"cards"`
 	Sealed []DatastoreSealed `json:"sealed"`
@@ -64,6 +68,12 @@ type DatastoreCard struct {
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
+
+		// The official card list's printing id, in the place every other identifier
+		// lives. The datastore writes it here and flat on the entry both,
+		// and the flat field above is what this falls back to for a
+		// datastore built before it moved.
+		BandaiID string `json:"bandaiId,omitempty"`
 	} `json:"externalLinks"`
 }
 
@@ -101,13 +111,21 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 }
 
 // setIsPromotional reports whether a set hands out promotional printings.
-// The datastore types no set, so the name carries it: the promo set names
-// itself "One Piece Promotion Cards", and the pre-release sets hand out
-// stamped copies ahead of a release, which are promos by every other name.
-// Matching on the name rather than the code keeps the Premium Booster sets
-// out, whose codes begin "PRB" but which are an ordinary product.
-func setIsPromotional(name string) bool {
-	lower := strings.ToLower(name)
+// The datastore types the sets it knows to be promotional; where it says
+// nothing the name carries it, as it did alone until the datastore learned
+// to say so. The promo set names itself "One Piece Promotion Cards", and the
+// pre-release sets hand out stamped copies ahead of a release, which are
+// promos by every other name. Matching on the name rather than the code
+// keeps the Premium Booster sets out, whose codes begin "PRB" but which are
+// an ordinary product.
+func setIsPromotional(set *mtgmatcher.Set) bool {
+	if set == nil {
+		return false
+	}
+	if set.Type == "promo" {
+		return true
+	}
+	lower := strings.ToLower(set.Name)
 	return strings.Contains(lower, "promotion cards") || strings.Contains(lower, "pre-release")
 }
 
@@ -144,6 +162,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Code:            code,
 			ReleaseDate:     set.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
+			Type:            set.Type,
 		}
 	}
 	sort.Strings(b.AllSets)
@@ -273,7 +292,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Rarity:     card.Rarity,
 			Types:      []string{card.Type},
 			PromoTypes: promoTypes,
-			IsPromo:    setIsPromotional(b.Sets[card.SetCode].Name),
+			IsPromo:    setIsPromotional(b.Sets[card.SetCode]),
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
 			OriginalNumber: Rules{}.PlainNumber(card.Number),
@@ -285,7 +304,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			convertedCard.Identifiers = map[string]string{
 				"tcgplayerProductId": pid,
 			}
-			if card.BandaiID != "" {
+			if id := card.ExternalLinks.BandaiID; id != "" {
+				convertedCard.Identifiers["bandaiId"] = id
+			} else if card.BandaiID != "" {
 				convertedCard.Identifiers["bandaiId"] = card.BandaiID
 			}
 			// The product id names the product, not one of its finishes, so
