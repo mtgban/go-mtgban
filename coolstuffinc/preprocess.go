@@ -4,6 +4,7 @@ import (
 	"errors"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -106,6 +107,11 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 	fixup, found = nameTable[cardName]
 	if found {
 		cardName = fixup
+	}
+
+	cardName, edition, variant, err := magicShelfFixups(cardName, edition, variant)
+	if err != nil {
+		return nil, err
 	}
 
 	// Skip tokens with the same names as cards
@@ -500,6 +506,11 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		cleanVar = vars
 	}
 
+	cardName, edition, variant, err := magicShelfFixups(cardName, edition, variant)
+	if err != nil {
+		return nil, err
+	}
+
 	// Skip tokens with the same names as cards
 	if strings.Contains(variant, "Emblem") && !mtgmatcher.IsToken(cardName) {
 		return nil, mtgmatcher.ErrUnsupported
@@ -669,3 +680,40 @@ func Preprocess(card CSICard) (*mtgmatcher.InputCard, error) {
 		Foil:      card.IsFoil,
 	}, nil
 }
+
+// magicShelfFixups reads the shapes this storefront gives a few classes of
+// listing before the matcher sees them: an emblem named "Emblem" with the
+// planeswalker in the notes, where the catalog names it after the
+// planeswalker; the duel decks headed in the singular; the blank cards a
+// few sets ship, which are not cards; a note saying either of two numbers
+// may be received, of which the first is the one asked for; and the T the
+// storefront hangs on a token's number.
+func magicShelfFixups(cardName, edition, variant string) (string, string, string, error) {
+	if cardName == "Emblem" && variant != "" {
+		if strings.Contains(variant, "Token") || strings.Contains(variant, "//") {
+			return "", "", "", mtgmatcher.ErrUnsupported
+		}
+		// The buylist writes the token number ahead of the planeswalker
+		// ("7 The Capitoline Triad", "8/8 Tamiyo, the Moon Sage").
+		cardName, variant = emblemNumber.ReplaceAllString(variant, "")+" Emblem", ""
+	}
+	if strings.HasPrefix(cardName, "Blank Card") {
+		return "", "", "", mtgmatcher.ErrUnsupported
+	}
+	if strings.HasPrefix(edition, "Duel Deck:") {
+		edition = "Duel Decks:" + strings.TrimPrefix(edition, "Duel Deck:")
+	}
+	if m := eitherNumber.FindStringSubmatch(variant); m != nil {
+		variant = strings.TrimLeft(m[1], "0")
+	}
+	if m := tokenNumber.FindStringSubmatch(variant); m != nil {
+		variant = m[1] + " Token"
+	}
+	return cardName, edition, variant, nil
+}
+
+var (
+	eitherNumber = regexp.MustCompile(`(?i)either card number (\d+) or \d+`)
+	tokenNumber  = regexp.MustCompile(`^(\d+)T Token$`)
+	emblemNumber = regexp.MustCompile(`^\d+(?:/\d+)?[A-Za-z]? `)
+)
