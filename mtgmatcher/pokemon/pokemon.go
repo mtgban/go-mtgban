@@ -117,6 +117,12 @@ type DatastoreCard struct {
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
+
+		// The tcgdex identifier, in the place every other identifier
+		// lives. The datastore writes it here and flat on the entry both,
+		// and the flat field above is what this falls back to for a
+		// datastore built before it moved.
+		TcgdexID string `json:"tcgdexId,omitempty"`
 	} `json:"externalLinks"`
 }
 
@@ -401,7 +407,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			convertedCard.Identifiers = map[string]string{
 				"tcgplayerProductId": pid,
 			}
-			if card.TcgdexID != "" {
+			if id := card.ExternalLinks.TcgdexID; id != "" {
+				convertedCard.Identifiers["tcgdexId"] = id
+			} else if card.TcgdexID != "" {
 				convertedCard.Identifiers["tcgdexId"] = card.TcgdexID
 			}
 			// The product id names the product, not one of its printings,

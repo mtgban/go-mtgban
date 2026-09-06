@@ -421,7 +421,8 @@ func promoSetBegun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
 	if !fullNumberRe.MatchString(number) {
 		return ""
 	}
-	var name, code string
+	var promoSet *mtgmatcher.Set
+	var code string
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
 		if !found || co.Sealed || len(co.PromoTypes) == 0 ||
@@ -441,12 +442,12 @@ func promoSetBegun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
 		if code != "" && code != co.SetCode {
 			return ""
 		}
-		name, code = set.Name, co.SetCode
+		promoSet, code = set, co.SetCode
 	}
-	if !setIsPromotional(name) {
+	if !setIsPromotional(promoSet) {
 		return ""
 	}
-	return name
+	return promoSet.Name
 }
 
 // slugsRunOf reports whether a wording spells a run of any of the labels a
@@ -1735,7 +1736,7 @@ func runNamedVariants(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbe
 			continue
 		}
 		set, found := b.Sets[card.SetCode]
-		if found && setIsPromotional(set.Name) {
+		if found && setIsPromotional(set) {
 			out = append(out, card)
 			continue
 		}

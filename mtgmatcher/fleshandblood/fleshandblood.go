@@ -88,6 +88,12 @@ type DatastoreCard struct {
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
+
+		// The Legend Story Studios card identifier, in the place every other identifier
+		// lives. The datastore writes it here and flat on the entry both,
+		// and the flat field above is what this falls back to for a
+		// datastore built before it moved.
+		FabID string `json:"fabId,omitempty"`
 	} `json:"externalLinks"`
 }
 
@@ -457,7 +463,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			convertedCard.Identifiers = map[string]string{
 				"tcgplayerProductId": pid,
 			}
-			if card.FabID != "" {
+			if id := card.ExternalLinks.FabID; id != "" {
+				convertedCard.Identifiers["fabId"] = id
+			} else if card.FabID != "" {
 				convertedCard.Identifiers["fabId"] = card.FabID
 			}
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = card.ID

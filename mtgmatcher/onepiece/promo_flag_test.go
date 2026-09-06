@@ -1,27 +1,42 @@
 package onepiece
 
-import "testing"
+import (
+	"testing"
 
-// TestPromoFlag pins what "is:promo" answers with. The datastore types no
-// set, so the flag is read off the set name; the Premium Booster sets are
-// the trap, their codes beginning "PRB" while they are an ordinary product.
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
+
+// TestPromoFlag pins what "is:promo" answers with. The datastore types the
+// sets it knows to be promotional and the name answers where it says
+// nothing, so both paths are pinned here; the Premium Booster sets are the
+// trap, their codes beginning "PRB" while they are an ordinary product.
 func TestPromoFlag(t *testing.T) {
 	b := loadBackend(t)
 
 	for _, tt := range []struct {
 		name string
+		kind string
 		want bool
 	}{
-		{"One Piece Promotion Cards", true},
-		{"Paramount War Pre-Release Cards", true},
-		{"Super Pre-Release Starter Deck 1: Straw Hat Crew", true},
-		{"Premium Booster -The Best-", false},
-		{"Extra Booster: Memorial Collection", false},
-		{"Starter Deck 31: RED Monkey.D.Luffy", false},
+		{"One Piece Promotion Cards", "promo", true},
+		{"Paramount War Pre-Release Cards", "promo", true},
+		// The type answers for a set whose name says nothing.
+		{"Royal Blood Release Event Cards", "promo", true},
+		// And the name still answers for a datastore that types nothing.
+		{"One Piece Promotion Cards", "", true},
+		{"Paramount War Pre-Release Cards", "", true},
+		{"Super Pre-Release Starter Deck 1: Straw Hat Crew", "", true},
+		{"Premium Booster -The Best-", "", false},
+		{"Extra Booster: Memorial Collection", "", false},
+		{"Starter Deck 31: RED Monkey.D.Luffy", "", false},
 	} {
-		if got := setIsPromotional(tt.name); got != tt.want {
-			t.Errorf("setIsPromotional(%q) = %v, want %v", tt.name, got, tt.want)
+		set := &mtgmatcher.Set{Name: tt.name, Type: tt.kind}
+		if got := setIsPromotional(set); got != tt.want {
+			t.Errorf("setIsPromotional(%q, type %q) = %v, want %v", tt.name, tt.kind, got, tt.want)
 		}
+	}
+	if setIsPromotional(nil) {
+		t.Error("setIsPromotional(nil) is true; a set the backend does not hold is not promotional")
 	}
 
 	// The printing that started this: a promo Nami no bare name could reach.
