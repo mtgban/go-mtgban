@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -323,6 +324,12 @@ func fabNumbers(sku string) []string {
 	var candidates []string
 	for _, prefix := range []string{code, trimPrintRun(code)} {
 		candidate := prefixNumber(prefix, parts)
+		if spelled, found := fabNumberRespellings[candidate]; found {
+			candidate = spelled
+		}
+		if label, found := fabWordings[candidate]; found {
+			candidate += " " + label
+		}
 		if candidate != "" && candidate != bare && !slices.Contains(candidates, candidate) {
 			candidates = append(candidates, candidate)
 		}
@@ -421,13 +428,13 @@ func fabMarkedSibling(id string, p CatalogProduct) string {
 		return id
 	}
 	co, err := mtgmatcher.GetUUID(id)
-	if err != nil || len(co.PromoTypes) > 0 {
+	if err != nil || len(fabTreatments(co.PromoTypes)) > 0 {
 		return id
 	}
 
 	var found string
 	for _, card := range mtgmatcher.MatchWithNumber(co.Name, co.SetCode, co.Number) {
-		if len(card.PromoTypes) == 0 {
+		if len(fabTreatments(card.PromoTypes)) == 0 {
 			continue
 		}
 		// A treatment the catalog has a field for is that field's to name.
@@ -450,6 +457,23 @@ func fabMarkedSibling(id string, p CatalogProduct) string {
 		return id
 	}
 	return found
+}
+
+// fabTreatments answers the labels on a printing that name a treatment. The
+// datastore files a pitch color as a label on the printings of a card sold
+// in one pitch, and a pitch is a piece of the name: the plain Drop of
+// Dragon Blood is labelled red beside its extended art, and the marker on
+// the second sku has to find the extended art from it.
+func fabTreatments(promoTypes []string) []string {
+	var labels []string
+	for _, promoType := range promoTypes {
+		switch promoType {
+		case "red", "yellow", "blue":
+			continue
+		}
+		labels = append(labels, promoType)
+	}
+	return labels
 }
 
 func isAllLetters(field string) bool {
@@ -565,9 +589,27 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// The catalog's own finish name rides beside the flag: a product is one
 	// printing in one treatment, and only the name says which.
 	if game == GameFleshAndBlood {
+		if fabInserts[p.Name] {
+			return "", mtgmatcher.ErrUnsupported
+		}
+		name := p.Name
+		if spelled, found := fabNames[name]; found {
+			name = spelled
+		}
 		edition, finish := fabPrintRun(p.Set, p.Finish)
 		numbers := fabNumbers(p.SKU)
-		id, err := fabMatch(p.Name, edition, finish, p.Rarity, foil, numbers)
+		if position := fabArtPosition(name, p.SKU); position != "" {
+			numbers = []string{position}
+		}
+		id, err := fabMatch(name, edition, finish, p.Rarity, foil, numbers)
+		// A promo is one card in one treatment, so its number names the
+		// printing and the finish beside it can only agree or misname
+		// it: Boast FAB189 is sold as a cold foil where the datastore's
+		// only FAB189 is the rainbow one. A set card is sold in several
+		// treatments and its finish keeps its say.
+		if err != nil && p.Set == fabPromoShelf {
+			id, err = fabMatch(name, edition, "", p.Rarity, foil, numbers)
+		}
 		if err == nil {
 			return fabMarkedSibling(id, p), nil
 		}
@@ -579,7 +621,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		// it has to hold exactly one number - the genuine double-sided
 		// cards carry a pair ("048_047") and a front-face retry would
 		// flatten them onto the ordinary single.
-		front, _, twoFaced := strings.Cut(p.Name, " // ")
+		front, _, twoFaced := strings.Cut(name, " // ")
 		if twoFaced && fabSingleNumbered(p.SKU) {
 			retry, rerr := fabMatch(front, edition, finish, p.Rarity, foil, numbers)
 			if rerr == nil {
@@ -849,12 +891,83 @@ func fabMatch(name, edition, finish, rarity string, foil bool, numbers []string)
 	return "", err
 }
 
+// fabFinishes spells a finish the way the datastore does where the catalog
+// names the same treatment by its color: the cold foil of a promo is gold,
+// and "Gold Foil" is what Talismanic Lens FAB066 is sold as.
+var fabFinishes = map[string]string{
+	"Gold Foil": "Cold Foil",
+}
+
+// fabPromoShelf is the catalog's set for every promo.
+const fabPromoShelf = "Promotional Cards"
+
+// fabNames spells the names the catalog misspells.
+var fabNames = map[string]string{
+	"Deep Recess of Existence": "Deep Recesses of Existence",
+	"Robe of Resourcefullness": "Robe of Resourcefulness",
+}
+
+// fabNumberRespellings spells the collector numbers the catalog misspells:
+// Attention Grabbers is APS006, the sixth card of the Pleiades armory deck,
+// on the card and everywhere but this sku.
+var fabNumberRespellings = map[string]string{
+	"APS056": "APS006",
+}
+
+// fabWordings are the labels the datastore tells the printings of one
+// number apart by where the catalog lettered them instead: the three
+// marvels of Seismic Surge are its 112a, 112b and 112c, sold as Trees,
+// Crystals and Lava on the storefront, and labelled forest, crystal and
+// lava in the datastore.
+var fabWordings = map[string]string{
+	"MPG112a": "forest",
+	"MPG112b": "crystal",
+	"MPG112c": "lava",
+}
+
+// fabInserts are the products the catalog sells as Flesh and Blood singles
+// that are not cards, so no datastore will ever carry them.
+var fabInserts = map[string]bool{
+	"Binder Label": true,
+}
+
+// fabArtPositions are the nine pieces the Antiquity Pack art cards cut a
+// picture into, in the order the catalog numbers them: P01 is the top left
+// piece of Eye of Ophidia and P09 the bottom right, then P10 through P18 the
+// next picture. The datastore labels each piece by its position and numbers
+// none of them, so the position is what the number becomes.
+var fabArtPositions = []string{
+	"top left", "top center", "top right",
+	"middle left", "middle center", "middle right",
+	"bottom left", "bottom center", "bottom right",
+}
+
+// fabArtPosition answers the piece an art card sku names, empty for any
+// other product.
+func fabArtPosition(name, sku string) string {
+	if !strings.HasSuffix(name, " Art Card") {
+		return ""
+	}
+	number := skuNumber(sku)
+	if !strings.HasPrefix(number, "P") {
+		return ""
+	}
+	index, err := strconv.Atoi(number[1:])
+	if err != nil || index < 1 {
+		return ""
+	}
+	return fabArtPositions[(index-1)%len(fabArtPositions)]
+}
+
 // fabPrintRun moves the print run out of a Flesh and Blood set name and into
 // the finish. The catalog spells the run as part of the set, "Tales of Aria
 // (1st Edition)", where the datastore keeps one set and crosses the run with
 // the treatment, so the two runs of a card are two printings and the set name
 // alone reaches neither in particular. A set without a run is left as it is.
 func fabPrintRun(set, finish string) (string, string) {
+	if translated, found := fabFinishes[finish]; found {
+		finish = translated
+	}
 	var run string
 	switch {
 	case strings.HasSuffix(set, " (1st Edition)"):
