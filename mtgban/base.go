@@ -117,10 +117,7 @@ func (inv InventoryRecord) AddCheapest(cardID string, entry *InventoryEntry) err
 	}
 	for i := range inv[cardID] {
 		if inv[cardID][i].Conditions == entry.Conditions && inv[cardID][i].SellerName == entry.SellerName && entry.Price < inv[cardID][i].Price {
-			inv[cardID][i].Price = entry.Price
-			inv[cardID][i].URL = entry.URL
-			inv[cardID][i].OriginalID = entry.OriginalID
-			inv[cardID][i].InstanceID = entry.InstanceID
+			inv[cardID][i] = *entry
 		}
 	}
 	return nil

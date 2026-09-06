@@ -8,8 +8,8 @@ import "testing"
 func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 	inv := InventoryRecord{}
 	for _, e := range []InventoryEntry{
-		{Conditions: "NM", Price: 25, URL: "first"},
-		{Conditions: "NM", Price: 15, URL: "cheaper"},
+		{Conditions: "NM", Price: 25, URL: "first", Quantity: 9},
+		{Conditions: "NM", Price: 15, URL: "cheaper", Quantity: 3},
 		{Conditions: "NM", Price: 40, URL: "dearer"},
 		{Conditions: "SP", Price: 9, URL: "other-grade"},
 		{Conditions: "NM", Price: 1, URL: "other-seller", SellerName: "B"},
@@ -26,8 +26,8 @@ func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 	if len(got) != 3 {
 		t.Fatalf("published %d rows, want NM, SP and NM/B: %+v", len(got), got)
 	}
-	if nm := got["NM/"]; nm.Price != 15 || nm.URL != "cheaper" {
-		t.Errorf("NM is %.0f from %q, want 15 from the cheaper product", nm.Price, nm.URL)
+	if nm := got["NM/"]; nm.Price != 15 || nm.URL != "cheaper" || nm.Quantity != 3 {
+		t.Errorf("NM is %.0f x%d from %q, want 15 x3 from the cheaper product", nm.Price, nm.Quantity, nm.URL)
 	}
 	if sp := got["SP/"]; sp.Price != 9 {
 		t.Errorf("SP is %.0f, want 9", sp.Price)
