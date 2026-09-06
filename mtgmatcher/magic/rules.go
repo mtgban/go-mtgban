@@ -2203,6 +2203,26 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 	}
 
+	// A token shares its name with the other tokens of its kind in the
+	// set, and what tells them apart on the card is the color: a set
+	// prints a white Human and a red one, a blue Spirit and a white one.
+	// A listing that names the color is answered with the token of that
+	// color; one that names none keeps every candidate and aliases,
+	// since nothing on the listing says which it is.
+	if len(outCards) > 1 && b.IsToken(inCard.Name) {
+		if colors := namedColors(inCard.Variation); colors != nil {
+			var filteredOutCards []mtgmatcher.Card
+			for _, card := range outCards {
+				if sameColors(card.Colors, colors) {
+					filteredOutCards = append(filteredOutCards, card)
+				}
+			}
+			if len(filteredOutCards) > 0 {
+				outCards = filteredOutCards
+			}
+		}
+	}
+
 	// The candidates were gathered by ranging a map, so the order they
 	// come out in changes from one call to the next. Callers that keep
 	// the first of several - Match does for gold-bordered sets, where
@@ -2481,4 +2501,46 @@ func isBasicLand(name string) bool {
 		return true
 	}
 	return false
+}
+
+// colorWords are the colors a listing spells out, as the catalog letters
+// them.
+var colorWords = map[string]string{
+	"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G",
+}
+
+// namedColors reads the colors a token listing names, in the catalog's
+// letters, or nil when it names none. "Colorless" names the empty set.
+func namedColors(variation string) []string {
+	var colors []string
+	named := false
+	for _, word := range strings.FieldsFunc(strings.ToLower(variation), func(r rune) bool {
+		return r == ' ' || r == '-' || r == '/' || r == ','
+	}) {
+		if word == "colorless" {
+			named = true
+			continue
+		}
+		if letter, found := colorWords[word]; found {
+			named = true
+			colors = append(colors, letter)
+		}
+	}
+	if !named {
+		return nil
+	}
+	return colors
+}
+
+// sameColors reports whether a printing is exactly the colors named.
+func sameColors(colors, named []string) bool {
+	if len(colors) != len(named) {
+		return false
+	}
+	for _, letter := range named {
+		if !slices.Contains(colors, letter) {
+			return false
+		}
+	}
+	return true
 }
