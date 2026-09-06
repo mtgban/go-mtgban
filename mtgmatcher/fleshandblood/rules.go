@@ -451,7 +451,79 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if printRun != "" {
 		inCard.AddToVariant(printRun)
 	}
+	if shelf := promoShelf(b, edition, inCard.Name, extractNumber(inCard.Variation)); shelf != "" {
+		edition = shelf
+	}
 	inCard.Edition = edition
+}
+
+// promoShelf answers the set holding the promo a listing names, or nothing
+// for a listing that is not a promo's or a number no promo set holds.
+//
+// The promos are filed on the set of their programme where the datastore
+// keeps one and on the one set every programme was once filed in
+// otherwise, and a storefront names neither reliably: "Promos" is the FAB
+// programme's own set by name, and the older set is "Promo Cards". Under
+// a promo edition the number says which set: its letters name the
+// programme, and the programme's set is asked for the number before the
+// older one is, so HER089 is found on the older set where the Hero
+// programme's own holds only HER156. A number without letters names the
+// card only with the name beside it.
+func promoShelf(b *mtgmatcher.Backend, edition, name, number string) string {
+	if number == "" || !strings.Contains(strings.ToLower(edition), "promo") {
+		return ""
+	}
+	letters := numberLetters(number)
+	var codes []string
+	if letters != "" {
+		codes = append(codes, strings.ToUpper(letters))
+	}
+	for _, code := range promoSetCodes(b) {
+		if !slices.Contains(codes, code) {
+			codes = append(codes, code)
+		}
+	}
+	norm := mtgmatcher.Normalize(name)
+	for _, code := range codes {
+		set, found := b.Sets[code]
+		if !found {
+			continue
+		}
+		for _, card := range set.Cards {
+			if !numberMatches(number, card.Number) {
+				continue
+			}
+			if letters == "" && mtgmatcher.Normalize(card.Name) != norm {
+				continue
+			}
+			return set.Name
+		}
+	}
+	return ""
+}
+
+// promoSetCodes lists the sets that hand their cards out, by code and in a
+// fixed order: the datastore's own promo type, and the sets named for it.
+func promoSetCodes(b *mtgmatcher.Backend) []string {
+	var codes []string
+	for code, set := range b.Sets {
+		if set.Type == setTypePromo || strings.Contains(strings.ToLower(set.Name), "promo") {
+			codes = append(codes, code)
+		}
+	}
+	sort.Strings(codes)
+	return codes
+}
+
+// numberLetters answers the letters a collector number opens on, the
+// programme a promo's number names.
+func numberLetters(number string) string {
+	for i, r := range number {
+		if r >= '0' && r <= '9' {
+			return number[:i]
+		}
+	}
+	return ""
 }
 
 // AliasEdition spells an edition string toward a set name using the string
