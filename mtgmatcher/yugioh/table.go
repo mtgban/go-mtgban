@@ -62,6 +62,21 @@ var editionAliases = map[string]string{
 	"Duelist League Series 9":  "Duelist League Series 9 participation card",
 	"Duelist League Series 10": "Duelist League Series 10 participation card",
 
+	// Card Trader heads the Mega-Tin packs by one tin where the catalog
+	// pluralises them, and drops the possessive off the video game.
+	"2014 Mega-Tin Mega Pack":                     "2014 Mega-Tins Mega Pack",
+	"2015 Mega-Tin Mega Pack":                     "2015 Mega-Tins Mega Pack",
+	"2016 Mega-Tin Mega Pack":                     "2016 Mega-Tins Mega Pack",
+	"2017 Mega-Tin Mega Pack":                     "2017 Mega-Tins Mega Pack",
+	"2018 Mega-Tin Mega Pack":                     "2018 Mega-Tins Mega Pack",
+	"Eternal Duelist's Soul":                      "Eternal Duelist Soul",
+	"Forbidden Legacy 1":                          "Forbidden Legacy",
+	"Kaiba's Collector Box":                       "Collector's Boxes (KACB)",
+	"Reshef of Destruction Promos":                "Reshef of Destruction",
+	"5D's Stardust Accelerator Promotional Cards": "Stardust Accelerator Promos",
+	"Token Promos 3":                              "Yu-Gi-Oh! Tokens",
+	"Token Promos 4":                              "Yu-Gi-Oh! Tokens",
+
 	"Legendary Collection 2: Mega Pack":                   "Legendary Collection 2",
 	"Legendary Collection 2: The Duel Academy Years":      "Legendary Collection 2",
 	"Legendary Collection 3: Mega Pack":                   "Legendary Collection 3: Yugi's World",
@@ -174,6 +189,9 @@ var nameRespellings = [][2]string{
 	{"Meteor Black Dragon", "Meteor B. Dragon"},
 	{"Earthbound Immortal Revival", "Earthbound Revival"},
 	{"Roar of the Earthbound Immortal", "Roar of the Earthbound"},
+	// The catalog files the Rise of Destiny printing under the name
+	// without its prefix.
+	{"B.E.S. Big Core", "Big Core"},
 }
 
 // pooledEditions maps a storefront name spanning two of the catalog's sets
@@ -191,6 +209,14 @@ var pooledEditions = map[string][]string{
 	"Starter Deck: Speed Dueling": {
 		"Speed Duel Decks: Destiny Masters",
 		"Speed Duel Decks: Duelists of Tomorrow",
+	},
+	// The two half-decks the catalog files the 2-Player Starter Deck as,
+	// Yuya's Saber Force and Declan's Dark Legion. The commons both decks
+	// hold are two printings of one card in one box, and a listing naming
+	// the box alone stays refused between them.
+	"2-Player Starter Deck Yuya & Declan": {
+		"Starter Deck: Saber Force",
+		"Starter Deck: Dark Legion",
 	},
 }
 
