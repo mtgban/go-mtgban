@@ -160,6 +160,9 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			if gameLanguage(ct.gameID, product) != "en" {
 				continue
 			}
+			if unsupportedBlueprint(ct.gameID, blueprint) {
+				continue
+			}
 			// A listing copies the collector number when it is created and
 			// never refreshes it, so a blueprint corrected later leaves its
 			// older listings quoting a number that now belongs to a
