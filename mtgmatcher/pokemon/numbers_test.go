@@ -163,7 +163,10 @@ func TestBaseSetSize(t *testing.T) {
 		{"PRE", 131},
 		{"BS", 102},
 		// Pooled: its cards keep the total of wherever they first appeared.
-		{"WCD", 0},
+		// Splitting the shelf into a set per championship did not change
+		// that - a 2016 deck reprints cards from a decade of sets, so the
+		// year's cards agree on no total either.
+		{"WCD2016", 0},
 	} {
 		set, found := b.Sets[tt.code]
 		if !found {

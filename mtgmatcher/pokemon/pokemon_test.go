@@ -271,7 +271,10 @@ func TestNameCarriesNumber(t *testing.T) {
 			Name: "Wingull - 70/100", Edition: "EX Crystal Guardians"}, "70-100_90608"},
 		{"a parenthetical beside it is split off too", mtgmatcher.InputCard{
 			Name: "Wingull - 70/100 (Reverse Foil)", Edition: "EX Crystal Guardians"}, "70-100_90608_reverse"},
-		{"a name that is really spelled that way is left whole", mtgmatcher.InputCard{
+		// The year is not a tail to strip here, it is which championship:
+		// each is a set of its own and the storefront writes the shelf they
+		// all used to share.
+		{"the year in the name names the championship", mtgmatcher.InputCard{
 			Name: "Torchic - 2004", Edition: "World Championship Decks", Variation: "74/109"}, "74-109_477355"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
