@@ -3,6 +3,7 @@ package manapool
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"strings"
 	"time"
@@ -52,7 +53,13 @@ func (mp *Manapool) Load(ctx context.Context) error {
 	}
 
 	mp.printf("Found %d prices", len(pricelist))
+	mp.price(pricelist)
+	mp.inventoryDate = time.Now()
+	return nil
+}
 
+// price records every row of the list the store answers with.
+func (mp *Manapool) price(pricelist []Product) {
 	for _, card := range pricelist {
 		cardID, err := mtgmatcher.MatchID(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
 		if err != nil {
@@ -115,15 +122,8 @@ func (mp *Manapool) Load(ctx context.Context) error {
 			Price:      price,
 			URL:        link,
 		}
-		err = mp.inventory.AddUnique(cardID, out)
-		if err != nil {
-			mp.printf("%v", err)
-		}
+		mp.addCheapest(cardID, out)
 	}
-
-	mp.inventoryDate = time.Now()
-
-	return nil
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
@@ -138,4 +138,26 @@ func (mp *Manapool) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mp.inventoryDate
 	info.NoQuantityInventory = true
 	return
+}
+
+// addCheapest records one price per printing and grade: the lowest one. The
+// list carries a row per product, and a printing the store files under more
+// than one product - the same token from several decks, a card in two of its
+// own product lines - arrives once per product, each with its own low price.
+// The site shows one row for the grade, and a buyer pays the lower of them.
+func (mp *Manapool) addCheapest(cardID string, entry *mtgban.InventoryEntry) {
+	err := mp.inventory.AddUnique(cardID, entry)
+	if !errors.Is(err, mtgban.ErrDuplicateEntry) {
+		if err != nil {
+			mp.printf("%v", err)
+		}
+		return
+	}
+	entries := mp.inventory[cardID]
+	for i := range entries {
+		if entries[i].Conditions == entry.Conditions && entry.Price < entries[i].Price {
+			entries[i].Price = entry.Price
+			entries[i].URL = entry.URL
+		}
+	}
 }
