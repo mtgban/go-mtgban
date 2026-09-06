@@ -100,6 +100,9 @@ var editionAliases = map[string]string{
 	"BW Trainer Kit":                   "BW Trainer Kit: Excadrill & Zoroark",
 	"Burger King DP Promos 2008":       "Burger King Promos",
 	"Burger King Platinum Promos 2009": "Burger King Promos",
+	// Card Trader's league shelf, which the catalog files with the
+	// championship cards.
+	"League Promos": "League & Championship Cards",
 }
 
 // normalizedEditionAliases indexes the table the way an edition arrives, so
@@ -151,7 +154,12 @@ var normalizedRespellings = sync.OnceValue(func() map[string]string {
 // the candidates to the pool, so the collector number picks within it and
 // nothing falls through to a global guess.
 var pooledEditions = map[string][]string{
-	"Theme Deck & Blisters Exclusives": {"Blister Exclusives", "Deck Exclusives"},
+	// The cosmos holos of the ex boxes and the set-stamped promos of the
+	// prerelease kits are filed with the miscellaneous cards, so the
+	// shelf pools those too; the wording names the cosmos or the stamp,
+	// and the retailer exclusives beside them wear a label the wording
+	// never spells.
+	"Theme Deck & Blisters Exclusives": {"Blister Exclusives", "Deck Exclusives", "Miscellaneous Cards & Products"},
 
 	// The prize pack series written without the series word. The numbered
 	// spellings alias outright, because the series is in the wording and
