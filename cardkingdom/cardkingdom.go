@@ -107,6 +107,17 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			}
 		}
 
+		// A double-faced token is one card selling two faces, and the
+		// sheet files each face as its own printing
+		ids := []string{cardID}
+		if back, ok := backFace(card); ok {
+			backID, err := matchBack(back)
+			if err == nil {
+				ids = append(ids, backID)
+			}
+		}
+		token := isToken(cardID)
+
 		u, _ := url.Parse("https://www.cardkingdom.com/")
 
 		u.Path = card.URL
@@ -156,17 +167,32 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 						"RetailPrice": fmt.Sprint(card.PriceRetail),
 					}
 				}
-				err = ck.inventory.AddUnique(cardID, out)
+				for _, id := range ids {
+					entry := *out
+					// A face is sold on more than one card of its
+					// sheet, at each card's own price
+					if token {
+						err = ck.inventory.AddCheapest(id, &entry)
+					} else {
+						err = ck.inventory.AddUnique(id, &entry)
+					}
+					if err != nil && !skipErrors {
+						ck.printf("%v", err)
+					}
+				}
 			}
 		} else if ck.PreserveOOS {
 			// Only save URL information
 			out := &mtgban.InventoryEntry{
 				URL: link,
 			}
-			err = ck.inventory.AddUnique(cardID, out)
-		}
-		if err != nil && !skipErrors {
-			ck.printf("%v", err)
+			for _, id := range ids {
+				entry := *out
+				err = ck.inventory.AddUnique(id, &entry)
+				if err != nil && !skipErrors && !(token && errors.Is(err, mtgban.ErrDuplicateEntry)) {
+					ck.printf("%v", err)
+				}
+			}
 		}
 
 		u, _ = url.Parse("https://www.cardkingdom.com/purchasing/mtg_singles")
@@ -231,9 +257,12 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 						"CKID":      strconv.Itoa(card.ID),
 					}
 				}
-				err = ck.buylist.Add(cardID, out)
-				if err != nil && !skipErrors {
-					ck.printf("%v", err)
+				for _, id := range ids {
+					entry := *out
+					err = ck.buylist.Add(id, &entry)
+					if err != nil && !skipErrors && !(token && errors.Is(err, mtgban.ErrDuplicateEntry)) {
+						ck.printf("%v", err)
+					}
 				}
 			}
 		} else if ck.PreserveOOS {
@@ -246,9 +275,12 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					Conditions: grade,
 					VendorName: availableTraderNames[1],
 				}
-				err = ck.buylist.Add(cardID, out)
-				if err != nil && !skipErrors {
-					ck.printf("%v", err)
+				for _, id := range ids {
+					entry := *out
+					err = ck.buylist.Add(id, &entry)
+					if err != nil && !skipErrors && !(token && errors.Is(err, mtgban.ErrDuplicateEntry)) {
+						ck.printf("%v", err)
+					}
 				}
 			}
 		}
@@ -260,6 +292,24 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 	ck.buylistDate = time.Now()
 
 	return nil
+}
+
+// matchBack resolves the back face of a double-faced token, which has no
+// id of its own to fall back on: a face the sheet cannot answer by name
+// stays unpriced, beside the front the product already prices.
+func matchBack(card cardkingdom.Product) (string, error) {
+	theCard, err := Preprocess(card)
+	if err != nil {
+		return "", err
+	}
+	return mtgmatcher.Match(theCard)
+}
+
+// isToken reports whether a printing is a token, a face CK sells on every
+// double-faced card it appears on.
+func isToken(cardID string) bool {
+	co, err := mtgmatcher.GetUUID(cardID)
+	return err == nil && co.Layout == "token"
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.

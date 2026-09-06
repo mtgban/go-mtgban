@@ -2,6 +2,7 @@ package cardkingdom
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/mtgban/go-cardkingdom"
@@ -422,6 +423,41 @@ func sheetHolds(code, name string) bool {
 		}
 	}
 	return false
+}
+
+// A double-faced token's variation names both faces' numbers, the front
+// first, and a face's number can be bracketed into its name instead
+var (
+	faceNumbers    = regexp.MustCompile(`^(\d+) (//|-) (\d+)(.*)$`)
+	faceNumberTail = regexp.MustCompile(` \((\d{3,4})\)`)
+)
+
+// backFace answers the product CK would list for the face on the back of a
+// double-faced token, and false for anything else. The sku names the front
+// face's number; the back's is read off the variation or the name when it
+// is written there, and left blank for the sheet to answer by name.
+func backFace(card cardkingdom.Product) (cardkingdom.Product, bool) {
+	separator := " // "
+	if !strings.Contains(card.Name, separator) {
+		separator = " - "
+	}
+	faces := strings.Split(card.Name, separator)
+	if len(faces) != 2 ||
+		!(strings.Contains(card.Name, "Token") || strings.Contains(card.Name, "Emblem")) {
+		return card, false
+	}
+	code, _, _ := strings.Cut(card.SKU, "-")
+
+	var number string
+	if fields := faceNumbers.FindStringSubmatch(card.Variation); fields != nil {
+		number = fields[3]
+		card.Variation = fields[3] + " " + fields[2] + " " + fields[1] + fields[4]
+	} else if fields := faceNumberTail.FindStringSubmatch(faces[1]); fields != nil {
+		number = fields[1]
+	}
+	card.Name = faceNumberTail.ReplaceAllString(faces[1], "") + " // " + faceNumberTail.ReplaceAllString(faces[0], "")
+	card.SKU = code + "-" + number
+	return card, true
 }
 
 func tokenPrinting(code, number string) *mtgmatcher.Card {
