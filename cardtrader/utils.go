@@ -266,6 +266,12 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 			return strings.TrimSpace(number + " " + fabPuzzlePiece(bp.Version))
 		}
 	}
+	if gameID == GameYuGiOh {
+		if ygoUnnumberedShelves[bp.Expansion.Name] {
+			return bp.Version
+		}
+		number = ygoNumber(bp, number)
+	}
 	if bp.Version == "" || number == "" {
 		return number
 	}
@@ -443,7 +449,99 @@ func gameName(gameID int, bp *Blueprint) string {
 			return name
 		}
 	}
+	if gameID == GameYuGiOh {
+		if spelled, found := ygoNames[bp.Name]; found {
+			return spelled
+		}
+	}
 	return bp.Name
+}
+
+// ygoNames spells the Yu-Gi-Oh names Card Trader misspells. Most lost a run
+// of letters somewhere in the feed - "Plant" is "ant", "Recklessly" is
+// "Recklely", "Amazoness" is "Amazone" - and one is a card renamed by the
+// catalog.
+var ygoNames = map[string]string{
+	"Cyber Repair ant":            "Cyber Repair Plant",
+	"Fusion Recycling ant":        "Fusion Recycling Plant",
+	"Rush Recklely":               "Rush Recklessly",
+	"Mask of Weakne":              "Mask of Weakness",
+	"Amazone Archers":             "Amazoness Archers",
+	"Amazone Chain Master":        "Amazoness Chain Master",
+	"Amazone Heirloom":            "Amazoness Heirloom",
+	"Amazone Sage":                "Amazoness Sage",
+	"Amazone Village":             "Amazoness Village",
+	"Amazone Swords Woman":        "Amazoness Swords Woman",
+	"Timelord Progenitor Vulgate": "Timelord Progenitor Vorpgate",
+	"Neymar Jr":                   "Token: NEYMAR JR",
+}
+
+// ygoBlueprintNumbers are the collector numbers Card Trader writes as an
+// index of its own where the card wears another set's code, keyed by the
+// blueprint since the index names another card of the shelf: the Raging
+// Battle tin promos are RGBT-ENPP1 through RGBT-ENPP6 and filed under the
+// booster as 001 through 006, the Force of the Breaker special edition's
+// Volcanic Rocket is FOTB-ENSP1 filed as 001, the Reshef of Destruction
+// promo of Sage's Stone is ROD-EN003 filed as 001sec, and the Stardust
+// Accelerator promos are filed under each other's numbers.
+var ygoBlueprintNumbers = map[int]string{
+	70127: "RGBT-ENPP1",
+	70129: "RGBT-ENPP2",
+	70122: "RGBT-ENPP3",
+	70128: "RGBT-ENPP4",
+	70125: "RGBT-ENPP6",
+	81236: "FOTB-ENSP1",
+	75159: "ROD-EN003",
+	85478: "WC09-EN002",
+	85476: "WC09-EN003",
+	// The duelist packs' Assault Mode Activate is DP09-EN022 filed as 002
+	// and Captain Tenacious DP05-EN002 filed as 011; each pack holds the
+	// card once.
+	79602: "DP09-EN022",
+	82918: "DP05-EN002",
+}
+
+// ygoShelfNumberRe matches the numbers Card Trader writes on the shelves
+// that pool several sets, with the set's own index ahead of the card's:
+// "5-001" on the Duelist League shelf is DL5-EN001, "1-E002" is DL1-E002,
+// and "1-001" on the R comic shelf is YR01-EN001.
+var ygoShelfNumberRe = regexp.MustCompile(`^([0-9]+)-(E?)([0-9]{3})$`)
+
+// ygoTokenShelfRe matches the token shelves, numbered by their sheet.
+var ygoTokenShelfRe = regexp.MustCompile(`^Token Promos ([0-9]+)$`)
+
+// ygoNumber spells a Yu-Gi-Oh blueprint's collector number the way the
+// catalog does, where Card Trader wrote its own index instead.
+func ygoNumber(bp *Blueprint, number string) string {
+	if spelled, found := ygoBlueprintNumbers[bp.ID]; found {
+		return spelled
+	}
+	if m := ygoTokenShelfRe.FindStringSubmatch(bp.Expansion.Name); m != nil && number != "" {
+		return "TKN" + m[1] + "-EN" + number
+	}
+	m := ygoShelfNumberRe.FindStringSubmatch(number)
+	if m == nil {
+		return number
+	}
+	infix := "EN"
+	if m[2] != "" {
+		infix = m[2]
+	}
+	switch bp.Expansion.Name {
+	case "Duelist League Promos Upperdeck":
+		return "DL" + m[1] + "-" + infix + m[3]
+	case "R Comic Book Promos":
+		return fmt.Sprintf("YR%02s-%s%s", m[1], infix, m[3])
+	}
+	return number
+}
+
+// ygoUnnumberedShelves are the shelves whose collector numbers are Card
+// Trader's own running count rather than the cards': the 2-Player Starter
+// Deck numbers Fabled Ashenveil 007 where the card is YS15-ENL09, and the
+// count drifts further down the deck. The rarity is all the listing says.
+var ygoUnnumberedShelves = map[string]bool{
+	"2-Player Starter Deck Yuya & Declan": true,
 }
 
 // fabNames spells the Flesh and Blood names Card Trader misspells.
@@ -744,6 +842,20 @@ var gundamShelfSets = map[string]string{
 	"Reprints": "SC01",
 }
 
+// ygoBlueprintEditions are the sets Card Trader shelves a promo under the
+// booster it was released with, keyed by the blueprint: the Raging Battle
+// tin promos RGBT-ENPP1 through RGBT-ENPP6 are filed under "Raging Battle",
+// which holds Level Retuner at RGBT-EN069 alone, and the Force of the
+// Breaker sneak preview promo under the booster.
+var ygoBlueprintEditions = map[int]string{
+	70127: "Duelist Pack Collection Tin",
+	70129: "Duelist Pack Collection Tin",
+	70122: "Duelist Pack Collection Tin",
+	70128: "Duelist Pack Collection Tin",
+	70125: "Duelist Pack Collection Tin",
+	81236: "Sneak Preview Series 3",
+}
+
 // gameEdition names the set a blueprint's shelf sells, which is the shelf's
 // own name everywhere but the shelves above.
 func gameEdition(gameID int, bp *Blueprint) string {
@@ -754,6 +866,11 @@ func gameEdition(gameID int, bp *Blueprint) string {
 			if err == nil {
 				return set.Name
 			}
+		}
+	}
+	if gameID == GameYuGiOh {
+		if edition, found := ygoBlueprintEditions[bp.ID]; found {
+			return edition
 		}
 	}
 	return bp.Expansion.Name
