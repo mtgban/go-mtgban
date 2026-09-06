@@ -163,7 +163,6 @@ func TestProcessProductByName(t *testing.T) {
 		Name:          "Prismatic Shield (Red) (Regular)",
 		Number:        "MON092",
 		ExpansionName: "Monarch - First",
-		CountArticles: 119,
 	}
 
 	for _, tt := range []struct {

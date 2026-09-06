@@ -69,7 +69,6 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 				Name:          tt.product,
 				Number:        "OP05-069",
 				ExpansionName: "Awakening of the New Era",
-				CountArticles: 1,
 			}
 			channel := make(chan responseChan, 8)
 			if err := mkm.processProduct(channel, &product); err != nil {

@@ -726,11 +726,6 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 	if perTreatment || (!co.Foil && !co.Etched) {
 		link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, false)
 
-		quantity := product.CountArticles - product.CountFoils
-		if perTreatment {
-			quantity = product.CountArticles
-		}
-
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
 				continue
@@ -743,7 +738,6 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      prices[i] * mkm.exchangeRate,
-					Quantity:   quantity,
 					URL:        link,
 					SellerName: availableIndexNames[i],
 					OriginalID: fmt.Sprint(product.IDProduct),
@@ -771,7 +765,6 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 						entry: mtgban.InventoryEntry{
 							Conditions: "NM",
 							Price:      foilprices[i] * mkm.exchangeRate,
-							Quantity:   product.CountFoils,
 							URL:        link,
 							SellerName: availableIndexNames[i],
 							OriginalID: fmt.Sprint(product.IDProduct),
@@ -786,7 +779,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 		link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
 
 		for i := range availableIndexNames {
-			if foilprices[i] == 0 || product.CountFoils == 0 {
+			if foilprices[i] == 0 {
 				continue
 			}
 			out := responseChan{
@@ -796,7 +789,6 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      foilprices[i] * mkm.exchangeRate,
-					Quantity:   product.CountFoils,
 					URL:        link,
 					SellerName: availableIndexNames[i],
 					OriginalID: fmt.Sprint(product.IDProduct),

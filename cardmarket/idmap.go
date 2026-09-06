@@ -152,11 +152,6 @@ func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMa
 		Name:          mapped.Name,
 		Number:        mapped.Number,
 		ExpansionName: expansionName,
-		// The map carries no listing counts, so each column reports one
-		// copy, the way the TCGplayer index does; the crawl's counts were
-		// the one thing the API alone knew.
-		CountArticles: 2,
-		CountFoils:    1,
 	}
 
 	cardID, cardIDFoil := mkm.resolveUUIDs(product, mapped.UUIDs)
