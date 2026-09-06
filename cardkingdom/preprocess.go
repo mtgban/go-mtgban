@@ -259,6 +259,16 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	edition := setCode
 	variation := strings.ToLower(number)
 
+	// CK titles a punch card after its set, while the datastore files it as
+	// Punchcard on the set's token sheet, and a sheet without one has
+	// nothing for the row to land on
+	if strings.HasSuffix(card.Name, " Punch Card") {
+		if !sheetHolds(setCode, "Punchcard") {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+		card.Name = "Punchcard"
+	}
+
 	// Validate if setCode exists, if not preserve info from the card
 	if !setCodeExists(setCode) {
 		if (len(setCode) > 3 && setCodeExists(setCode[len(setCode)-3:])) ||
@@ -401,6 +411,19 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 // tokenPrinting answers the printing a token sheet files at a number, asking
 // the sheet rather than the name because a token only carries the Token
 // suffix when a real card answers to the same name.
+func sheetHolds(code, name string) bool {
+	set, err := mtgmatcher.GetSet(code)
+	if err != nil {
+		return false
+	}
+	for _, printing := range set.Cards {
+		if printing.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 func tokenPrinting(code, number string) *mtgmatcher.Card {
 	set, err := mtgmatcher.GetSet(code)
 	if err != nil || set.Type != "token" {
