@@ -106,7 +106,11 @@ func splitParens(title string) (number, series, treatment string) {
 // Preprocess turns a storefront product into the card description the matcher
 // takes, reporting an error for what is not a card.
 func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
-	if strings.Contains(product.ProductNameEN, "Wyvern back") ||
+	// The art cards a set booster carries are filed in art series sets the
+	// datastore does not carry, so a row of one has no printing to reach
+	if strings.Contains(product.ProductNameEN, "【Art Card】") ||
+		strings.Contains(product.ProductName, "【アート・カード】") ||
+		strings.Contains(product.ProductNameEN, "Wyvern back") ||
 		strings.Contains(product.ProductNameEN, "Orversized") ||
 		strings.Contains(product.ProductNameEN, "Oversized") ||
 		strings.Contains(product.ProductNameEN, "Error Card") ||
