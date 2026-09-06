@@ -653,7 +653,9 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 			} else {
 				err = csi.inventory.Add(record.cardID, record.invEntry)
 			}
-			if err != nil {
+			// The search lists a card once per shelf it sits on, so the
+			// same listing arrives twice; the second is the same entry.
+			if err != nil && !strings.Contains(err.Error(), "same url, and qty") {
 				csi.printf("%s", err.Error())
 			}
 		},
@@ -813,6 +815,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			}
 
 			err := csi.buylist.Add(cardID, &buyEntry)
+			if errors.Is(err, mtgban.ErrDuplicateEntry) {
+				// The buylist names a token once per deck it came in,
+				// every one at one price for the one printing.
+				continue
+			}
 			if err != nil {
 				csi.printf("%s", err.Error())
 				continue
