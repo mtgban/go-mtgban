@@ -106,9 +106,9 @@ type Index struct {
 	// it as plain data.
 	TCGBridge map[int]int
 
-	// IDMap, when set, replaces the API crawl: the catalog is enumerated
-	// and resolved from the published map instead, and Load makes no
-	// authenticated request. bantool loads it from MTGJSON_MKMID_PATH.
+	// IDMap is the published catalog Load prices from: the products are
+	// enumerated and resolved from it, and no request is signed. bantool
+	// loads it from MTGJSON_MKMID_PATH.
 	IDMap *IDMap
 
 	inventory mtgban.InventoryRecord
@@ -122,7 +122,6 @@ type Index struct {
 	// sells it; see offShelf. Load fills it once the expansions are known.
 	shelved map[string]string
 
-	client *MKMClient
 	gameID int
 }
 
@@ -141,50 +140,20 @@ func (mkm *Index) printf(format string, a ...any) {
 	}
 }
 
-// NewScraperIndex returns an index scraper for one game, authenticated with an
-// app token and secret.
-func NewScraperIndex(gameID int, appToken, appSecret string) (*Index, error) {
+// NewScraperIndex returns an index scraper for one game. It prices from the
+// published catalog and the public price guide, so it needs no credential.
+func NewScraperIndex(gameID int) *Index {
 	mkm := Index{}
 	mkm.inventory = mtgban.InventoryRecord{}
-	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
 	mkm.gameID = gameID
-	return &mkm, nil
+	return &mkm
 }
 
 // errNoPrinting marks a product no route named a printing of ours for. It
 // is what the id-and-name route answers with instead of nothing at all, so a
 // refusal is counted and said out loud rather than passing for a success.
 var errNoPrinting = errors.New("named no printing of ours")
-
-func (mkm *Index) processEdition(ctx context.Context, channel chan<- responseChan, expansion MKMExpansion) error {
-	products, err := mkm.client.MKMProductsInExpansion(ctx, expansion.IDExpansion)
-	if err != nil {
-		// The pool logs this and moves on, and the run's tally used to
-		// close over the expansions that did answer as though they were
-		// all of them: a run several expansions timed out of read as a
-		// smaller catalog rather than a partial one. Say the expansion is
-		// missing from the count instead of leaving it out silently.
-		channel <- responseChan{tally: true, unread: true}
-		return err
-	}
-
-	var refused []string
-	for _, product := range products {
-		err := mkm.processProduct(channel, &product)
-		switch {
-		case errors.Is(err, errNoPrinting):
-			refused = append(refused, fmt.Sprintf("%d %q (%s) in %s",
-				product.IDProduct, product.Name, product.Number, product.ExpansionName))
-		case err != nil:
-			mkm.printf("product id %d returned %s", product.IDProduct, err)
-		}
-	}
-
-	mkm.reportRefused(expansion.Name, len(products), refused)
-	channel <- responseChan{tally: true, walked: len(products), refused: len(refused)}
-	return nil
-}
 
 // reportRefused says what an expansion refused and counts it into the run's
 // tally. Every refusal is named, one line each, except in an expansion
@@ -850,6 +819,11 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mkm *Index) Load(ctx context.Context) error {
+	err := mkm.checkIDMap()
+	if err != nil {
+		return err
+	}
+
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
@@ -867,69 +841,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	// Everything above is public downloads either way; the id map replaces
-	// what follows, which is where the authenticated API begins.
-	if mkm.IDMap != nil && mkm.idMapUsable() {
-		return mkm.loadOffline(ctx)
-	}
-
-	list, err := mkm.client.Expansions(ctx, mkm.gameID)
-	if err != nil {
-		return err
-	}
-	list = FilterAndSortExpansions(list)
-
-	// The non-English programs are whole separate catalogs (OP01-JP beside
-	// OP01, "Metal Raiders (Korean)" beside Metal Raiders) whose prices must
-	// not land on the English printings the datastore carries. Yu-Gi-Oh
-	// shelves them the same way, and one more besides: the PMT tail marks
-	// the European multi-language print of a set, which is a catalog of its
-	// own for the same reason.
-	switch mkm.gameID {
-	case GameOnePiece, GameYuGiOh:
-		kept := list[:0]
-		for _, exp := range list {
-			if strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name) {
-				continue
-			}
-			kept = append(kept, exp)
-		}
-		list = kept
-		if mkm.gameID == GameOnePiece {
-			mkm.shelved = shelvedSets(list)
-		}
-	}
-
-	mkm.printf("Parsing %d expansion ids", len(list))
-
-	// Pre-filter items if a target edition is set
-	items := list
-	if mkm.TargetEdition != "" {
-		items = nil
-		for _, exp := range list {
-			if exp.Name == mkm.TargetEdition {
-				items = append(items, exp)
-			}
-		}
-	}
-
-	walked, refused, unread := mkm.collectPrices(ctx, items,
-		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
-			mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
-			err := mkm.processEdition(ctx, channel, exp)
-			if err != nil {
-				return fmt.Errorf("expansion %s (id %d) returned %s", exp.Name, exp.IDExpansion, err.Error())
-			}
-			return nil
-		})
-
-	mkm.printf("Walked %d products, %d of which named no printing of ours", walked, refused)
-	if unread > 0 {
-		mkm.printf("%d of %d expansions never answered, and none of their products is in that count", unread, len(items))
-	}
-	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
-	mkm.inventoryDate = time.Now()
-	return nil
+	return mkm.walkIDMap(ctx)
 }
 
 // collectPrices runs worker over every expansion and files what it produces
