@@ -125,6 +125,14 @@ var cardTable = map[string]string{
 
 	// Funny cards
 	"(Untitled Card": "_____",
+
+	// Misspellings, each read off the printing the set holds
+	"Frosteliff Siege":        "Frostcliff Siege",
+	"Kefka, Court Magem":      "Kefka, Court Mage // Kefka, Ruler of Ruin",
+	"Maha, Its Feather Night": "Maha, Its Feathers Night",
+	"Nine Live":               "Nine Lives",
+	"Sauron, Dino Devoteee":   "Sauron, Dino Devotee",
+	"Swords to Plowshare":     "Swords to Plowshares",
 }
 
 // Map a card/edition set to a correct edition
