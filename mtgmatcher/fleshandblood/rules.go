@@ -29,7 +29,7 @@ var fullNumberRe = regexp.MustCompile(`^[0-9]?[A-Za-z]+[0-9]{1,4}[a-zA-Z]?$`)
 // pairNumberRe matches the fused-card numbers ("WTR040 // WTR039",
 // cardtrader's compact "UPR002//UPR165") so the pair survives extraction
 // whole instead of field splitting cutting it at the separator.
-var pairNumberRe = regexp.MustCompile(`[0-9]?[A-Za-z]+[0-9]{1,4}\s*/{1,2}\s*[0-9]?[A-Za-z]+[0-9]{1,4}`)
+var pairNumberRe = regexp.MustCompile(`[0-9]?[A-Za-z]+[0-9]{1,4}[a-zA-Z]?(?:\s*/{1,2}\s*[0-9]?[A-Za-z]+[0-9]{1,4}[a-zA-Z]?)+`)
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -68,9 +68,13 @@ var qualifierRe = regexp.MustCompile(`\s*\((?i:Red|Yellow|Blue|Marvel)\)$`)
 // name, so the rewrite reaches nothing but this.
 var dashQualifierRe = regexp.MustCompile(`\s+-\s+((?i:Red|Yellow|Blue|Marvel))$`)
 
-// qualifiers are the spellings a qualified name is tried in, the empty one
-// standing for the undecorated name.
-var qualifiers = []string{"", " (Red)", " (Yellow)", " (Blue)", " (Marvel)"}
+// pitches are the pitch spellings a qualified name is tried in, the empty
+// one standing for the undecorated name, and marvelLabel is the treatment
+// label any of them can grow: the datastore spells a marvel of a pitched
+// card "Runechant of Greed (Yellow) (Marvel)".
+var pitches = []string{"", " (Red)", " (Yellow)", " (Blue)"}
+
+const marvelLabel = " (Marvel)"
 
 // adjustQualifier re-spells the name's qualifier as the printing the input's
 // collector number names spells it.
@@ -96,7 +100,12 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if !fullNumberRe.MatchString(number) && !pairNumberRe.MatchString(number) {
 		return
 	}
-	if numberedAs(b, inCard.Name, number) {
+	// A spelling numbered as the input is the input's own only while a
+	// printing under it is sold in the finish the input names: the plain
+	// "Florian, Rotwood Harbinger" is ROS001 and sold plain, and a listing
+	// demanding its cold foil names the "(Marvel)" spelled beside it, which
+	// is the only ROS001 sold cold.
+	if numberedAs(b, inCard.Name, number) && soldAs(b, inCard.Name, number, inCard.Finish) {
 		return
 	}
 	// A face of a fused card outranks a treatment label: the plain
@@ -120,7 +129,11 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if len(fused) > 1 && fusedAnswers(b, fused, inCard) {
 			return
 		}
-		if len(fused) == 1 {
+		// One fused claimant answers only in a finish it was sold in: a
+		// listing demanding the cold foil of a hero the fused card keeps
+		// plain names the labelled printing beside it, and a rename
+		// would hide that printing behind a card that cannot be priced.
+		if len(fused) == 1 && fusedAnswers(b, fused, inCard) {
 			inCard.Name = fused[0]
 			inCard.Variation = strings.Replace(inCard.Variation, number, pairs[0], 1)
 			return
@@ -141,19 +154,21 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	var match, stem string
 	var tried []string
 	for _, candidate := range stems {
-		for _, qualifier := range qualifiers {
-			spelling := candidate + qualifier
-			if slices.Contains(tried, spelling) {
-				continue
+		for _, pitch := range pitches {
+			for _, label := range []string{"", marvelLabel} {
+				spelling := candidate + pitch + label
+				if slices.Contains(tried, spelling) {
+					continue
+				}
+				tried = append(tried, spelling)
+				if !numberedAs(b, spelling, number) || !soldAs(b, spelling, number, inCard.Finish) {
+					continue
+				}
+				if match != "" {
+					return
+				}
+				match, stem = spelling, candidate
 			}
-			tried = append(tried, spelling)
-			if !numberedAs(b, spelling, number) {
-				continue
-			}
-			if match != "" {
-				return
-			}
-			match, stem = spelling, candidate
 		}
 	}
 	if match == "" {
@@ -231,6 +246,24 @@ func numberedAs(b *mtgmatcher.Backend, name, number string) bool {
 	return false
 }
 
+// soldAs reports whether a printing filed under the name at the number is
+// sold in the finish, any printing answering an input that names none.
+func soldAs(b *mtgmatcher.Backend, name, number, finish string) bool {
+	if finish == "" {
+		return true
+	}
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || !numberMatches(number, co.Number) {
+			continue
+		}
+		if b.FinishUUID(&co.Card, finish) != "" {
+			return true
+		}
+	}
+	return false
+}
+
 // AdjustName provides a prefix fallback for truncated feeds, adopting the
 // one name among the prefix matches that carries the input's number. The
 // pitch-color names resolve here: a bare "Breakneck Battery" extends into
@@ -270,7 +303,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// marvel label's own printing while fused cards claim the face at this
 	// number.
 	if strings.HasSuffix(match, "(Marvel)") && number != "" {
-		if names, _ := fusedFaceAt(b, inCard.Name, number); len(names) > 0 {
+		if names, _ := fusedFaceAt(b, inCard.Name, number); len(names) > 0 && fusedAnswers(b, names, inCard) {
 			return
 		}
 	}
@@ -391,14 +424,21 @@ func adjustFusedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 	pair := pairNumberRe.FindString(inCard.Variation)
-	if pair != "" && numberedAs(b, inCard.Name, pair) {
+	// The spelling is the input's own only while a printing under it is
+	// sold in the finish named, the way adjustQualifier reads a spelling:
+	// the token "Aether Ashwing // Ash" is plain, and its cold foil is
+	// filed as "Ash // Aether Ashwing" beside it.
+	if pair != "" && numberedAs(b, inCard.Name, pair) && soldAs(b, inCard.Name, pair, inCard.Finish) {
 		return
 	}
 	names := fusedNamedBy(b, inCard.Name)
+	if len(names) == 0 && pair != "" {
+		names = fusedNumbered(b, inCard.Name, pair)
+	}
 	name := ""
 	if pair != "" {
 		for _, candidate := range names {
-			if !numberedAs(b, candidate, pair) {
+			if !numberedAs(b, candidate, pair) || !soldAs(b, candidate, pair, inCard.Finish) {
 				continue
 			}
 			if name != "" {
@@ -438,6 +478,33 @@ func adjustFusedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if number != "" {
 		inCard.Variation = strings.Replace(inCard.Variation, pair, number, 1)
 	}
+}
+
+// fusedNumbered answers the fused cards carrying the pair number whose faces
+// the name also spells, for a name that spells them in a way no face set
+// answers: Star City Games writes the double-sided token "Marked // Fealty"
+// as "Fealty / Marked // Fealty / Marked", one face per side of the slash.
+// The pair picks the printing, since two faces number one card, and a face
+// of the printing found in the name is what vouches that the pair was read
+// off this card and not off a neighbour's number.
+func fusedNumbered(b *mtgmatcher.Backend, name, pair string) []string {
+	norm := mtgmatcher.Normalize(name)
+	var names []string
+	for _, co := range b.UUIDs {
+		if co.Sealed || !strings.Contains(co.Name, "//") || !strings.Contains(co.Number, "/") {
+			continue
+		}
+		if !numberMatches(pair, co.Number) || slices.Contains(names, co.Name) {
+			continue
+		}
+		for face := range strings.SplitSeq(co.Name, "//") {
+			if strings.Contains(norm, mtgmatcher.Normalize(face)) {
+				names = append(names, co.Name)
+				break
+			}
+		}
+	}
+	return names
 }
 
 // AdjustEdition trims the game-name prefix and the "Singles" suffix
@@ -588,7 +655,7 @@ func canonicalFinish(name string) string {
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 
-	var candidates []mtgmatcher.Card
+	var candidates, exact []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
@@ -614,9 +681,14 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
 		}
-		if number != "" && !numberMatches(number, card.Number) {
+		// A printing the catalog left unnumbered cannot disagree with a
+		// number: the Antiquity Pack art cards and the armory decks'
+		// counters carry none, and the storefront's number for them is
+		// its own.
+		if number != "" && card.Number != "" && !numberMatches(number, card.Number) {
 			continue
 		}
+		numbered := number == "" || card.Number == "" || numberMatchesOn(number, card.Number, false)
 		// An input naming a print run or a treatment re-keys the copy's
 		// FoilUUIDs so the flag-driven resolution downstream lands on that
 		// printing's entry. Both slots move together: a printing spans one
@@ -644,6 +716,16 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			card.FoilUUIDs = foilUUIDs
 		}
 		candidates = append(candidates, card)
+		if numbered {
+			exact = append(exact, card)
+		}
+	}
+	// A printing wearing the number outranks one wearing it under a
+	// label: the Unlimited "Helm of Isen's Peak" is WTR042 beside the
+	// "WTR042-C" product sold in the same finish, and the label is the
+	// storefront's to name.
+	if len(exact) > 0 {
+		candidates = exact
 	}
 	if len(candidates) <= 1 {
 		return candidates
@@ -654,6 +736,12 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return described
 	}
 	if wantsVariant(number) {
+		// The letter says which variant where the printings are lettered:
+		// the three cold foils of Lightning Flow are OMN203's "a", "b"
+		// and "c", and a storefront writes the letter onto the number.
+		if lettered := labelledBy(number[len(number)-1:], variants); len(lettered) > 0 {
+			return lettered
+		}
 		if len(variants) > 0 {
 			return variants
 		}
@@ -666,15 +754,21 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 }
 
 // tierByVariant splits the candidates into the ones whose variant label the
-// input's variation describes, the base printings, and the variant
-// printings. Only the variation is consulted: set names carry the labels'
-// words. When several labels are described, the finish tokens step aside —
-// a label spelled from them alone ("Cold Foil" the label) defers to the
-// label the rest of the wording still describes.
+// input's variation or finish describes, the base printings, and the
+// variant printings. The set name is not consulted: set names carry the
+// labels' words. The finish is, since a label is spelled from a treatment
+// where nothing else tells two printings apart - the plain cold foil of
+// Ash // Aether Ashwing is labelled "Cold Foil" beside the marvel - and a
+// caller naming the treatment in the field names that label. When several
+// labels are described, the finish tokens step aside — a label spelled
+// from them alone ("Cold Foil" the label) defers to the label the rest of
+// the wording still describes.
 func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (described, base, variants []mtgmatcher.Card) {
-	words := strings.Fields(strings.ToLower(inCard.Variation))
+	wording := strings.TrimSpace(inCard.Variation + " " + inCard.Finish)
+	words := strings.Fields(strings.ToLower(wording))
+	onePitch := len(pitchesOf(candidates)) <= 1
 	for _, card := range candidates {
-		if len(card.PromoTypes) == 0 {
+		if len(card.PromoTypes) == 0 || onePitch && len(treatments(card)) == 0 {
 			base = append(base, card)
 			continue
 		}
@@ -682,7 +776,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 	}
 	// The tags are tokens now, so the wording's words are joined back up a
 	// run at a time to ask whether they name them.
-	described = mtgmatcher.DescribedVariants(inCard.Variation, variants)
+	described = mtgmatcher.DescribedVariants(wording, variants)
 	if len(described) > 1 {
 		var bare []string
 		for _, word := range words {
@@ -696,6 +790,56 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		}
 	}
 	return
+}
+
+// pitchLabel reports whether a label is a pitch color.
+func pitchLabel(label string) bool {
+	switch label {
+	case "red", "yellow", "blue":
+		return true
+	}
+	return false
+}
+
+// pitchesOf answers the distinct pitch colors labelled on the printings.
+func pitchesOf(cards []mtgmatcher.Card) []string {
+	var colors []string
+	for _, card := range cards {
+		for _, promoType := range card.PromoTypes {
+			if pitchLabel(promoType) && !slices.Contains(colors, promoType) {
+				colors = append(colors, promoType)
+			}
+		}
+	}
+	return colors
+}
+
+// treatments answers the labels on a printing that name a treatment. A
+// pitch color is a piece of the name, whichever field the catalog filed it
+// under, and where the printings at a number all wear the same one it tells
+// none of them apart: "Drop of Dragon Blood" is red on every printing, and
+// the label on the base printing would otherwise leave the extended art
+// beside it with no base to be a variant of. Two pitches at one number are
+// two cards, and there the label keeps telling them apart.
+func treatments(card mtgmatcher.Card) []string {
+	var labels []string
+	for _, promoType := range card.PromoTypes {
+		if !pitchLabel(promoType) {
+			labels = append(labels, promoType)
+		}
+	}
+	return labels
+}
+
+// labelledBy answers the printings carrying the label.
+func labelledBy(label string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	var labelled []mtgmatcher.Card
+	for _, card := range cards {
+		if slices.Contains(card.PromoTypes, label) {
+			labelled = append(labelled, card)
+		}
+	}
+	return labelled
 }
 
 // finishToken reports whether selectFinish consumes the word.
@@ -821,6 +965,11 @@ func canonicalNumber(number string) string {
 // the digit tail of the front code. Leading zeros never decide ("40"
 // matches "WTR040").
 func numberMatches(input, full string) bool {
+	return numberMatchesOn(input, full, true)
+}
+
+// numberMatchesOn is numberMatches with the label stems read or not.
+func numberMatchesOn(input, full string, stems bool) bool {
 	ci := canonicalNumber(input)
 	cf := canonicalNumber(full)
 	if strings.EqualFold(ci, cf) {
@@ -845,22 +994,59 @@ func numberMatches(input, full string) bool {
 	if trimmed != ci && strings.EqualFold(trimmed, cf) {
 		return true
 	}
+	// The catalog numbers a labelled printing with its label, "ROS001-MV"
+	// for the marvel of ROS001 and "DTD193-CF" for the cold foil of
+	// DTD193, where the card wears the plain number and so does every
+	// storefront. The name and the finish are what tell the labelled
+	// printing from the plain one, so the stem is the number.
+	if stems {
+		if stem := labelStem(cf); stem != cf && numberMatchesOn(ci, stem, false) {
+			return true
+		}
+	}
 	front, _, _ := strings.Cut(cf, "/")
 	if strings.Contains(cf, "/") && strings.EqualFold(ci, front) {
 		return true
+	}
+	// The catalog numbers some double-sided cards by one face alone: the
+	// cold foil "Ash // Aether Ashwing" is UPR043, the token printing of
+	// the same two faces UPR042//UPR043. A pair the storefront wrote for
+	// it names that face among the two.
+	if strings.Contains(ci, "/") && !strings.Contains(cf, "/") {
+		for half := range strings.SplitSeq(ci, "/") {
+			if numberMatchesOn(half, cf, stems) {
+				return true
+			}
+		}
 	}
 	inFront, _, _ := strings.Cut(ci, "/")
 	inFront = strings.TrimRight(inFront, letters)
 	return isAllDigits(inFront) && canonicalTail(inFront) == canonicalTail(digitTail(front))
 }
 
+// labelStem strips the label a catalog number wears after a dash ("-MV"),
+// answering the number unchanged when it wears none. A pair is never
+// labelled.
+func labelStem(number string) string {
+	if strings.Contains(number, "/") {
+		return number
+	}
+	stem, label, found := strings.Cut(number, "-")
+	if !found || label == "" || strings.ToUpper(label) != label || strings.ContainsAny(label, "0123456789") {
+		return number
+	}
+	return stem
+}
+
 // sortedPair folds a pair number's halves and sorts them, so the two orders
 // a fused card's number is written in compare equal whatever padding or case
-// either half arrived with. Numbers that are not pairs fold whole.
+// either half arrived with, and whatever letter a storefront hung on a half
+// to tell its pairings of one face apart ("MST158c"). Numbers that are not
+// pairs fold whole.
 func sortedPair(number string) string {
 	halves := strings.Split(number, "/")
 	for i, half := range halves {
-		halves[i] = foldNumber(half)
+		halves[i] = foldNumber(strings.TrimRight(half, letters))
 	}
 	sort.Strings(halves)
 	return strings.Join(halves, "/")
