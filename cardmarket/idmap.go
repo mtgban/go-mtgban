@@ -142,6 +142,18 @@ func (mkm *Index) resolveUUIDs(product *MKMProduct, uuids []string) (string, str
 	return cardID, cardIDFoil
 }
 
+// sameProduct says whether two products of a game's shelves are the same
+// card sold twice, for the games whose shelves do that; nil for the rest.
+func sameProduct(gameID int) func(a, b *MKMProduct) bool {
+	switch gameID {
+	case GamePokemon:
+		return pokemonSameProduct
+	case GameYuGiOh:
+		return yugiohSameProduct
+	}
+	return nil
+}
+
 // resolved is what one product of the walk answered with, held until its
 // expansion is read whole, so a product can be judged beside its siblings.
 type resolved struct {
@@ -274,8 +286,8 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 			for _, id := range ids {
 				results = append(results, mkm.resolveMapped(id, products[id], exp.Name))
 			}
-			if mkm.gameID == GamePokemon {
-				pokemonTwins(results)
+			if same := sameProduct(mkm.gameID); same != nil {
+				twinsAmong(results, same)
 			}
 
 			// A refusal is named once per name and number: the same

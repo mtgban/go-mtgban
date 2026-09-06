@@ -158,16 +158,17 @@ func pokemonCodeCard(name string) bool {
 	return strings.Contains(name, "Code Card")
 }
 
-// pokemonTwins refuses the by-name results whose printing a product of the
-// same name and number in the same expansion already holds. Cardmarket
-// sells a stamped, cosmos or deck variant as a second product with the same
-// name and number and nothing else to tell it by, and an unnumbered product
-// beside a numbered one of the same name is the same case; the name reaches
-// the plain printing for both. An id-resolved sibling holds its printing
-// outright; among by-name siblings the first holds it and the rest give
-// way. A printing held by a product of another name is left to the
-// inventory to refuse out loud, since that is a disagreement worth reading.
-func pokemonTwins(results []resolved) {
+// twinsAmong refuses the by-name results whose printing a product the game
+// calls the same in the same expansion already holds. Cardmarket sells a
+// stamped, cosmos or deck variant as a second product with the same name and
+// number and nothing else to tell it by, an unnumbered product beside a
+// numbered one of the same name, and a print run as a version index; the
+// name reaches the plain printing for all of them. An id-resolved sibling
+// holds its printing outright; among by-name siblings the first holds it
+// and the rest give way. A printing held by a product of another name is
+// left to the inventory to refuse out loud, since that is a disagreement
+// worth reading.
+func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool) {
 	held := map[string][]int{}
 	var holders []int
 	for i, r := range results {
@@ -201,7 +202,7 @@ func pokemonTwins(results []resolved) {
 			continue
 		}
 		for _, j := range holders {
-			if pokemonSameProduct(results[j].product, r.product) {
+			if same(results[j].product, r.product) {
 				results[i].err = errTwin
 				break
 			}
