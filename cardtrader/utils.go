@@ -272,6 +272,9 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		}
 		number = ygoNumber(bp, number)
 	}
+	if gameID == GamePokemon && bp.Expansion.Name == pkmLeagueShelf && !pkmCollectorNumberRe.MatchString(number) {
+		return bp.Version
+	}
 	if bp.Version == "" || number == "" {
 		return number
 	}
@@ -873,5 +876,41 @@ func gameEdition(gameID int, bp *Blueprint) string {
 			return edition
 		}
 	}
+	if gameID == GamePokemon {
+		if edition, found := pkmShelfEditions[bp.Expansion.Name]; found && !strings.Contains(bp.Version, "Jumbo") {
+			return edition
+		}
+	}
 	return bp.Expansion.Name
+}
+
+// pkmShelfEditions are the Pokemon shelves Card Trader heads by the era's
+// black star promos where the catalog names the era's promo set. The
+// matcher's own alias table leaves these out because other storefronts
+// file jumbos under the same words; Card Trader says "Jumbo" in the
+// version, and a jumbo keeps the shelf's own name.
+var pkmShelfEditions = map[string]string{
+	"SV Black Star Promos": "SV: Scarlet & Violet Promo Cards",
+}
+
+// pkmInserts are the products Card Trader sells as Pokemon singles that are
+// not cards.
+var pkmInserts = map[string]bool{
+	"VSTAR Marker": true,
+}
+
+// pkmLeagueShelf is the shelf whose number field carries the card's year
+// or its online code rather than a collector number: the league energies
+// are unnumbered, and "2006" or "KUF-7XB-05C" names nothing the catalog
+// numbers. The version says the year and the treatment, which is what
+// the catalog labels them by.
+const pkmLeagueShelf = "League Promos"
+
+// pkmCollectorNumberRe matches a Pokemon collector number, with or without
+// its set total, as opposed to a year or an online code.
+var pkmCollectorNumberRe = regexp.MustCompile(`^[A-Za-z]{0,4}[0-9]{1,3}[a-z]?(?:/[0-9]{1,3})?[a-z]?$`)
+
+// unsupportedBlueprint reports a blueprint no datastore carries a card for.
+func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
+	return gameID == GamePokemon && pkmInserts[bp.Name]
 }
