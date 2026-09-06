@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -115,6 +116,11 @@ func LoadTCGSKUs(reader io.Reader) (SKUMap, error) {
 	return payload.Data, nil
 }
 
+// ErrSYPNotAuthenticated is returned when the store answers the SYP export
+// with its logon page rather than the list: the TCGAuthTicket_Production
+// cookie in TCGPLAYER_AUTH is expired or missing.
+var ErrSYPNotAuthenticated = errors.New("syp export not authenticated: TCGPLAYER_AUTH is expired or missing")
+
 const (
 	// SYPCSVURL serves the Store Your Products list as a CSV
 	SYPCSVURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList"
@@ -129,7 +135,13 @@ type TCGSYP struct {
 
 // LoadSYP downloads the Store Your Products list as a CSV.
 func LoadSYP(ctx context.Context, category int, auth string) ([]TCGSYP, error) {
-	u, err := url.Parse(SYPCSVURL)
+	return loadSYPFrom(ctx, SYPCSVURL, category, auth)
+}
+
+// loadSYPFrom is LoadSYP against any address, so the store's answers can be
+// stood in for.
+func loadSYPFrom(ctx context.Context, address string, category int, auth string) ([]TCGSYP, error) {
+	u, err := url.Parse(address)
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +163,17 @@ func LoadSYP(ctx context.Context, category int, auth string) ([]TCGSYP, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	// A ticket the store no longer honours is answered with a redirect to
+	// the logon page, which the client follows: the body is that page, the
+	// CSV reader finds no record in it, and the list read as empty when it
+	// was never served. The page the response ended on says which it was.
+	if strings.Contains(resp.Request.URL.Path, "/account/logon") {
+		return nil, ErrSYPNotAuthenticated
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("syp export: unexpected status code %d", resp.StatusCode)
+	}
 
 	csvReader := csv.NewReader(resp.Body)
 	csvReader.ReuseRecord = true
