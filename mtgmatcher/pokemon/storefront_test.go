@@ -88,8 +88,11 @@ func TestPooledBlisterDeckHeading(t *testing.T) {
 		{"the version's treatment picks the plain half of the pool", mtgmatcher.InputCard{
 			Name: "Zacian", Edition: "Theme Deck & Blisters Exclusives", Variation: "045 Non-Holo | 045/094"},
 			"045-094_664005"},
-		{"a card the pool does not carry refuses", mtgmatcher.InputCard{
+		{"the cosmos holo of an ex box lands with the miscellaneous cards", mtgmatcher.InputCard{
 			Name: "Maschiff", Edition: "Theme Deck & Blisters Exclusives", Variation: "146 Cosmos Holo | 142/193"},
+			"142-193_544444_holo"},
+		{"a card the pool does not carry refuses", mtgmatcher.InputCard{
+			Name: "Chansey", Edition: "Theme Deck & Blisters Exclusives", Variation: "003 Cosmos Holo | 003/102"},
 			""},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -263,5 +266,31 @@ func TestUnresolvedEditionDoesNotWiden(t *testing.T) {
 	}
 	if id != "swsh088_234276_holo" {
 		t.Errorf("Match(%v) = %s (%v), want swsh088_234276_holo", in, id, b.UUIDs[id])
+	}
+}
+
+// TestExtractNumbersSkipsYears pins that a bare year in the wording is not
+// read as a collector number: the league energies are unnumbered and
+// labelled by year, and "2006 Non-Holo Promo" names the label.
+func TestExtractNumbersSkipsYears(t *testing.T) {
+	for _, tt := range []struct {
+		wording string
+		want    []string
+	}{
+		{"FFE-9JT-SUX | 2006 Non-Holo Promo", nil},
+		{"2006 Unnumbered", nil},
+		{"Cosmos Holo | 024/167", []string{"024"}},
+		{"SVP 205", []string{"205"}},
+	} {
+		got := extractNumbers(tt.wording)
+		if len(got) != len(tt.want) {
+			t.Errorf("extractNumbers(%q) = %v, want %v", tt.wording, got, tt.want)
+			continue
+		}
+		for i := range got {
+			if got[i] != tt.want[i] {
+				t.Errorf("extractNumbers(%q) = %v, want %v", tt.wording, got, tt.want)
+			}
+		}
 	}
 }

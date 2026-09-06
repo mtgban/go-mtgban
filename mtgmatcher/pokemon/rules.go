@@ -1180,12 +1180,22 @@ func canonicalFinish(name string) string {
 func extractNumbers(variation string) []string {
 	var numbers []string
 	for field := range strings.FieldsSeq(variation) {
+		// A year is not a collector number: the league energies are
+		// unnumbered and labelled by the year they were handed out, and
+		// a wording saying "2006 Non-Holo Promo" names the label.
+		if bareYearRe.MatchString(field) {
+			continue
+		}
 		if m := fullNumberRe.FindStringSubmatch(field); m != nil {
 			numbers = append(numbers, m[1])
 		}
 	}
 	return numbers
 }
+
+// bareYearRe matches a field that is nothing but a year, which no collector
+// number is a digit short of.
+var bareYearRe = regexp.MustCompile(`^(?:19|20)[0-9]{2}$`)
 
 // numberMatches compares a storefront's collector number against the
 // catalog's, which carries the set total the storefront usually drops
