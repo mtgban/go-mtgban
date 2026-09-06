@@ -1,6 +1,7 @@
 package strikezone
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -26,6 +27,9 @@ func neonInkWording(variation string) string {
 	return variation
 }
 
+// duelDeck matches the duel deck shelves as this storefront heads them.
+var duelDeck = regexp.MustCompile(`^Duel Deck (.+) VS (.+)$`)
+
 func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
 	var variation string
 
@@ -37,6 +41,35 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 	cn, found := cardTable[cardName]
 	if found {
 		cardName = cn
+	}
+	cardName = strings.ReplaceAll(cardName, " / ", " // ")
+	// A flavor name written before the card's own ("Astral Tiran - Primeval
+	// Titan") keeps the card's own.
+	if head, tail, dashed := strings.Cut(cardName, " - "); dashed {
+		if _, err := mtgmatcher.SearchEquals(mtgmatcher.SplitVariants(tail)[0]); err == nil {
+			if _, err := mtgmatcher.SearchEquals(head); err != nil {
+				cardName = tail
+			}
+		}
+	}
+	// The same flavor name arrives split by the storefront's own dash
+	// reading, the card's own name carried in the notes behind its
+	// treatment ("Astral Tiran" with "Showcase Primeval Titan"): the notes
+	// name the card, and the treatment stays a note.
+	if _, err := mtgmatcher.SearchEquals(cardName); err != nil && notes != "" {
+		for _, treatment := range []string{"Showcase ", "Borderless ", "Extended Art "} {
+			if tail, found := strings.CutPrefix(notes, treatment); found {
+				if _, err := mtgmatcher.SearchEquals(tail); err == nil {
+					cardName, notes = tail, strings.TrimSpace(treatment)
+					break
+				}
+			}
+		}
+	}
+	// The duel decks are headed "Duel Deck X VS Y" where the catalog says
+	// "Duel Decks: X vs. Y".
+	if m := duelDeck.FindStringSubmatch(edition); m != nil {
+		edition = "Duel Decks: " + m[1] + " vs. " + m[2]
 	}
 
 	// Sometimes the buylist specifies tags at the end of the card name,
