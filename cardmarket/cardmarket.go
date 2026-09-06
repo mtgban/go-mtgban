@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -140,6 +141,10 @@ type Index struct {
 	// enumerated and resolved from it, and no request is signed. bantool
 	// loads it from MTGJSON_MKMID_PATH.
 	IDMap *IDMap
+	// numbers indexes a set's collector numbers by the card they name,
+	// built on first use; see yugiohNumberTaken.
+	numbers   map[string]map[string]string
+	numbersMu sync.Mutex
 
 	inventory mtgban.InventoryRecord
 
@@ -414,8 +419,12 @@ func yugiohRun(product *MKMProduct) string {
 // without both an unknown set's cards land on whichever set happens to hold
 // a number like theirs.
 func (mkm *Index) matchProduct(product *MKMProduct) string {
-	if mkm.gameID == GamePokemon {
+	switch mkm.gameID {
+	case GamePokemon:
 		id, _ := mkm.matchPokemon(product)
+		return id
+	case GameYuGiOh:
+		id, _ := mkm.matchYugioh(product)
 		return id
 	}
 	edition := product.ExpansionName
@@ -720,12 +729,17 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		// part of the catalog - half of Yu-Gi-Oh's, a third of Flesh and
 		// Blood's - and what it leaves out is ordinary cards. They can be
 		// named without it.
-		if cardID == "" && mkm.gameID == GamePokemon {
-			cardID, err = mkm.matchPokemon(product)
+		if cardID == "" {
+			switch mkm.gameID {
+			case GamePokemon:
+				cardID, err = mkm.matchPokemon(product)
+			case GameYuGiOh:
+				cardID, err = mkm.matchYugioh(product)
+			}
 			if err != nil {
 				return "", "", false, err
 			}
-			byName = true
+			byName = cardID != ""
 		}
 		if cardID == "" {
 			cardID = mkm.matchProduct(product)
@@ -933,10 +947,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worke
 		}
 	}
 
-	collector := namedLast{add: addOne}
-	if mkm.gameID == GamePokemon {
-		collector.twin = pokemonSameProduct
-	}
+	collector := namedLast{add: addOne, twin: sameProduct(mkm.gameID)}
 
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
 

@@ -45,8 +45,8 @@ func TestProcessProductRefusal(t *testing.T) {
 		Number:        "001",
 		ExpansionName: "Beginner's Edition 1",
 	})
-	if !errors.Is(err, errNoPrinting) {
-		t.Errorf("a product of a catalog we carry no set for returned %v, want %v", err, errNoPrinting)
+	if !errors.Is(err, errForeign) {
+		t.Errorf("a product of a catalog we carry no set for returned %v, want %v", err, errForeign)
 	}
 
 	err = mkm.processProduct(channel, &MKMProduct{
