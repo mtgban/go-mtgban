@@ -164,6 +164,16 @@ var editionAliases = map[string]string{
 var nameRespellings = [][2]string{
 	{"Vampire Orchis", "Vampiric Orchis"},
 	{"Vampire Koala", "Vampiric Koala"},
+
+	// The cards Konami renamed, which the catalog files under the name
+	// each set printed and Cardmarket writes under the current one
+	// whichever set the product is from.
+	{"Red-Eyes Black Dragon", "Red-Eyes B. Dragon"},
+	{"Black Skull Dragon", "B. Skull Dragon"},
+	{"Black Dragon's Chick", "Red-Eyes B. Chick"},
+	{"Meteor Black Dragon", "Meteor B. Dragon"},
+	{"Earthbound Immortal Revival", "Earthbound Revival"},
+	{"Roar of the Earthbound Immortal", "Roar of the Earthbound"},
 }
 
 // pooledEditions maps a storefront name spanning two of the catalog's sets
