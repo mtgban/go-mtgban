@@ -767,7 +767,7 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		}
 	}
 
-	return tierByLabel(inCard, candidates)
+	return tierByLabel(b, inCard, candidates)
 }
 
 // setStopWords are the words a Pokemon set name shares with too many others
@@ -939,8 +939,9 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 // variation describes, the base printings, and the labelled printings. Only
 // the variation is consulted: set names carry the label words themselves
 // ("Team Plasma" is a label and part of three set names).
-func tierByLabel(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+func tierByLabel(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
 	var described, base, labelled []mtgmatcher.Card
+	var most [3]int
 	for _, card := range candidates {
 		if len(card.PromoTypes) == 0 {
 			base = append(base, card)
@@ -949,11 +950,32 @@ func tierByLabel(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []m
 		labelled = append(labelled, card)
 		// The tag is a token, so the wording's words are joined back up a
 		// run at a time to ask whether they name it.
+		var named, opened int
 		for _, promoType := range card.PromoTypes {
-			if mtgmatcher.SlugDescribes(inCard.Variation, promoType) {
-				described = append(described, card)
-				break
+			switch {
+			case mtgmatcher.SlugDescribes(inCard.Variation, promoType):
+				named++
+			case labelOpened(b, inCard.Variation, promoType):
+				opened++
 			}
+		}
+		if named == 0 {
+			continue
+		}
+		// A printing sharing a label with its siblings is told from them by
+		// the labels it does not share, so the candidate the wording names
+		// most fully wins outright: the retailer stampings of one promo all
+		// carry "cosmos holo" and differ only in the retailer.
+		// Naming a label outright outranks naming what one opens with, and
+		// a printing wearing nothing the wording left unsaid outranks one
+		// carrying a label besides - the plain prerelease against the staff
+		// one, both of which a wording saying "Prerelease" names once.
+		depth := [3]int{named, opened, named + opened - len(card.PromoTypes)}
+		if depth != most && deeper(depth, most) {
+			most, described = depth, nil
+		}
+		if depth == most {
+			described = append(described, card)
 		}
 	}
 	if len(described) > 0 {
@@ -992,6 +1014,32 @@ func tierByLabel(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []m
 		}
 	}
 	return plainest
+}
+
+// deeper reports whether one reading of a printing's labels says more about
+// it than another, weighing the counts in the order they are worth.
+func deeper(depth, than [3]int) bool {
+	for i := range depth {
+		if depth[i] != than[i] {
+			return depth[i] > than[i]
+		}
+	}
+	return false
+}
+
+// labelOpened reports whether a wording names the words a label opens with
+// but not the whole of it. The catalog closes a retailer's label with what
+// the retailer's copies are - "gamestop exclusive" - where the storefront
+// names the retailer alone, and the shared tail is exactly what makes the
+// retailers' labels alike.
+func labelOpened(b *mtgmatcher.Backend, wording, promoType string) bool {
+	words := strings.Fields(b.PromoTypeLabels[promoType])
+	for i := len(words) - 1; i > 0; i-- {
+		if mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(strings.Join(words[:i], ""))) {
+			return true
+		}
+	}
+	return false
 }
 
 // describesPlain reports whether the wording names the untreated printing:
