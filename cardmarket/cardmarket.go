@@ -28,13 +28,10 @@ type responseChan struct {
 	byName bool
 	// tally carries an edition's walked and refused counts in place of a
 	// price, one record per edition, so the pool's single collector can
-	// count the run without the workers sharing anything. An edition whose
-	// catalog never arrived sends one too, with nothing counted and unread
-	// set, so the run's total says how much of the catalog it is a total of.
+	// count the run without the workers sharing anything.
 	tally   bool
 	walked  int
 	refused int
-	unread  bool
 }
 
 // namedLast holds back the prices whose printing was named until every
@@ -55,7 +52,6 @@ type namedLast struct {
 	// runs on one goroutine, so plain counts are all this takes.
 	walked  int
 	refused int
-	unread  int
 }
 
 // collect takes one result, adding it, holding it back, or counting it
@@ -64,9 +60,6 @@ func (n *namedLast) collect(result responseChan) {
 	if result.tally {
 		n.walked += result.walked
 		n.refused += result.refused
-		if result.unread {
-			n.unread++
-		}
 		return
 	}
 	if result.byName {
@@ -849,7 +842,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 // wait namedLast describes is actually taken: the pool hands its results to
 // the collector rather than to the inventory, so a named price cannot win a
 // printing merely by being walked first.
-func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) (walked, refused, unread int) {
+func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) (walked, refused int) {
 	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
 	// one, and a cardtrader blueprint names every Cardmarket product it
 	// sells as, so nothing stops two products from resolving to one
@@ -885,7 +878,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worke
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
 
 	mkm.printf("Adding %d prices whose printing was named", collector.flush())
-	return collector.walked, collector.refused, collector.unread
+	return collector.walked, collector.refused
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
