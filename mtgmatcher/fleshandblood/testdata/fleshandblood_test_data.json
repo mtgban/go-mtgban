@@ -8,6 +8,14 @@
         "uuid": "wtr005_225015_1ecold"
     },
     {
+        "description": "a fused face at its number outranks the marvel label",
+        "input": {
+            "name": "Kassai",
+            "variant": "HVY091"
+        },
+        "uuid": "hvy091-hvy093_536816"
+    },
+    {
         "description": "a pair no printing wears adopts the number the printings agree on",
         "input": {
             "name": "Prism // Iris of Reality",
@@ -17,12 +25,30 @@
         "uuid": "mon088-mon002_238658_unl"
     },
     {
+        "description": "a pitch-qualified name grows the treatment label at its number",
+        "input": {
+            "name": "Wild Ride (Red)",
+            "variant": "TNP001"
+        },
+        "uuid": "tnp001_692575_rainbow"
+    },
+    {
         "description": "a tag written behind another still names its printing",
         "input": {
             "name": "Tome of Quandaries",
             "variant": "OMN133 Extended Art"
         },
         "uuid": "omn133_693428_cold"
+    },
+    {
+        "description": "a treatment no fused pair wears reaches the label at the number",
+        "input": {
+            "name": "Cindra",
+            "variant": "HNT055",
+            "foil": true,
+            "finish": "Cold Foil"
+        },
+        "uuid": "hnt055_606729_cold"
     },
     {
         "description": "alpha print run rides the 1st edition entry",
@@ -142,7 +168,7 @@
         "uuid": "mst025_543929_cold"
     },
     {
-        "description": "a fused face at its number outranks the marvel label",
+        "description": "marvel qualifier is adopted from the numbered printing",
         "input": {
             "name": "Kassai",
             "variant": "HVY091"
@@ -167,10 +193,31 @@
         "error": "aliasing detected"
     },
     {
+        "description": "negative: a plain listing of a face still refuses two claimants",
+        "input": {
+            "name": "Iyslander",
+            "variant": "UPR103",
+            "finish": "Normal"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
         "description": "negative: a respelling still has to name a printing at the number",
         "input": {
             "name": "Hyper Driver (Red)",
             "variant": "ARC999"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: a treatment the label never wore refuses all the same",
+        "input": {
+            "name": "Cindra",
+            "variant": "HNT055",
+            "foil": true,
+            "finish": "Rainbow Foil"
         },
         "uuid": "",
         "error": "unknown variant"
@@ -203,6 +250,16 @@
         },
         "uuid": "",
         "error": "aliasing detected"
+    },
+    {
+        "description": "negative: the name path refuses a treatment the product never sold",
+        "input": {
+            "name": "Fyendal's Spring Tunic",
+            "variant": "FAB001",
+            "foil": true,
+            "finish": "Rainbow Foil"
+        },
+        "uuid": "fab001_225501_1ecold"
     },
     {
         "description": "negative: unknown card name",
@@ -313,40 +370,6 @@
         "uuid": "wtr215_225309_unl"
     },
     {
-        "description": "the printing named beside the id prices that printing's entry",
-        "input": {
-            "id": "225015",
-            "finish": "Unlimited Edition Normal"
-        },
-        "uuid": "wtr005_225015_unl"
-    },
-    {
-        "description": "treatment wording spelling a label defers to the named variant",
-        "input": {
-            "name": "Ash // Aether Ashwing (Marvel)",
-            "variant": "UPR043 Cold Foil",
-            "foil": true
-        },
-        "uuid": "upr043_275749_cold"
-    },
-    {
-        "description": "the plain face of a marvel pair lands on the fused card",
-        "input": {
-            "name": "Enigma",
-            "variant": "MST026"
-        },
-        "uuid": "mst024-mst026_553538"
-    },
-    {
-        "description": "two fused claimants refuse rather than guess",
-        "input": {
-            "name": "Cindra",
-            "variant": "HNT055"
-        },
-        "uuid": "",
-        "error": "unknown variant"
-    },
-    {
         "description": "the marvel row stays reachable through its lettered number",
         "input": {
             "name": "Enigma",
@@ -355,13 +378,14 @@
         "uuid": "mst026_551473_cold"
     },
     {
-        "description": "the prefix fallback refuses the marvel label while fused cards claim the face",
+        "description": "the name path prices a promo in the one treatment it was sold in, whatever finish was named",
         "input": {
-            "name": "Kayo, Strong-arm",
-            "variant": "SUP064"
+            "name": "Fyendal's Spring Tunic",
+            "variant": "FAB001",
+            "foil": true,
+            "finish": "Rainbow Foil"
         },
-        "uuid": "",
-        "error": "unknown variant"
+        "uuid": "fab001_225501_1ecold"
     },
     {
         "description": "the named finish picks its treatment sibling at the number",
@@ -386,33 +410,12 @@
         "uuid": "ros000_578820_rainbow"
     },
     {
-        "description": "negative: the name path refuses a treatment the product never sold",
+        "description": "the plain face of a marvel pair lands on the fused card",
         "input": {
-            "name": "Fyendal's Spring Tunic",
-            "variant": "FAB001",
-            "foil": true,
-            "finish": "Rainbow Foil"
+            "name": "Enigma",
+            "variant": "MST026"
         },
-        "uuid": "",
-        "error": "unknown variant"
-    },
-    {
-        "description": "a pitch-qualified name grows the treatment label at its number",
-        "input": {
-            "name": "Wild Ride (Red)",
-            "variant": "TNP001"
-        },
-        "uuid": "tnp001_692575_rainbow"
-    },
-    {
-        "description": "a treatment no fused pair wears reaches the label at the number",
-        "input": {
-            "name": "Cindra",
-            "variant": "HNT055",
-            "foil": true,
-            "finish": "Cold Foil"
-        },
-        "uuid": "hnt055_606729_cold"
+        "uuid": "mst024-mst026_553538"
     },
     {
         "description": "the prefix fallback reaches it too",
@@ -425,22 +428,36 @@
         "uuid": "sup064_653952_cold"
     },
     {
-        "description": "negative: a treatment the label never wore refuses all the same",
+        "description": "the prefix fallback refuses the marvel label while fused cards claim the face",
         "input": {
-            "name": "Cindra",
-            "variant": "HNT055",
-            "foil": true,
-            "finish": "Rainbow Foil"
+            "name": "Kayo, Strong-arm",
+            "variant": "SUP064"
         },
         "uuid": "",
         "error": "unknown variant"
     },
     {
-        "description": "negative: a plain listing of a face still refuses two claimants",
+        "description": "the printing named beside the id prices that printing's entry",
         "input": {
-            "name": "Iyslander",
-            "variant": "UPR103",
-            "finish": "Normal"
+            "id": "225015",
+            "finish": "Unlimited Edition Normal"
+        },
+        "uuid": "wtr005_225015_unl"
+    },
+    {
+        "description": "treatment wording spelling a label defers to the named variant",
+        "input": {
+            "name": "Ash // Aether Ashwing (Marvel)",
+            "variant": "UPR043 Cold Foil",
+            "foil": true
+        },
+        "uuid": "upr043_275749_cold"
+    },
+    {
+        "description": "two fused claimants refuse rather than guess",
+        "input": {
+            "name": "Cindra",
+            "variant": "HNT055"
         },
         "uuid": "",
         "error": "unknown variant"

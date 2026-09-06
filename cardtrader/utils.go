@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -259,6 +260,12 @@ var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z\x{03b
 // years and volume numbers, and with nothing ahead of them one of those would
 // answer as the collector number and select nothing at all.
 func gameVariation(gameID int, bp *Blueprint, number string) string {
+	if gameID == GameFleshAndBlood {
+		number = fabNumber(bp, number)
+		if fabPuzzleRe.MatchString(bp.Name) {
+			return strings.TrimSpace(number + " " + fabPuzzlePiece(bp.Version))
+		}
+	}
 	if bp.Version == "" || number == "" {
 		return number
 	}
@@ -428,7 +435,136 @@ func gameName(gameID int, bp *Blueprint) string {
 		!mtgmatcher.Contains(bp.Name, "token") {
 		return "Token: " + bp.Name
 	}
+	if gameID == GameFleshAndBlood {
+		if spelled, found := fabNames[bp.Name]; found {
+			return spelled
+		}
+		if name := fabPuzzleName(bp); name != "" {
+			return name
+		}
+	}
 	return bp.Name
+}
+
+// fabNames spells the Flesh and Blood names Card Trader misspells.
+var fabNames = map[string]string{
+	"Kassai of the Golden Sands": "Kassai of the Golden Sand",
+}
+
+// fabCodes spells the set codes Card Trader misspells in its collector
+// numbers: the Heavy Hitters tokens are "HBY240" through "HBY242".
+var fabCodes = map[string]string{
+	"HBY": "HVY",
+}
+
+// fabBlueprintNumbers are the collector numbers Card Trader got wrong on a
+// blueprint, keyed by the blueprint since the number it wrote names another
+// card of the set: the Alpha shelf's Nimble Strike is filed a hundred below
+// WTR185-187 and its Wrecker Romp a hundred above WTR029-031 (Cardmarket
+// files both under the numbers the cards wear), and the Chane blitz deck's
+// Bounding Demigon is CHN009 where CHN010 is Piercing Shadow Vise.
+var fabBlueprintNumbers = map[int]string{
+	215356: "WTR185",
+	215357: "WTR186",
+	215358: "WTR187",
+	215188: "WTR029",
+	215189: "WTR030",
+	215190: "WTR031",
+	158167: "CHN009",
+}
+
+// fabNumber spells a Flesh and Blood blueprint's collector number the way the
+// card wears it.
+func fabNumber(bp *Blueprint, number string) string {
+	if spelled, found := fabBlueprintNumbers[bp.ID]; found {
+		return spelled
+	}
+	for code, spelled := range fabCodes {
+		if strings.HasPrefix(number, code) {
+			return spelled + strings.TrimPrefix(number, code)
+		}
+	}
+	return number
+}
+
+// fabPuzzleRe matches the name Card Trader gives a piece of a puzzle art
+// card, quoting the face the piece is cut from.
+var fabPuzzleRe = regexp.MustCompile(`^"(.+)" Macro Puzzle Card$`)
+
+// fabPuzzleFaces spells the faces Card Trader names its own way: the map on
+// the back of the Treasure Island puzzle is "Chart the High Seas" to it and
+// "High Seas Map" to the datastore.
+var fabPuzzleFaces = map[string]string{
+	"Chart the High Seas": "High Seas Map",
+}
+
+// fabArtCardSuffixes are the tails the datastore hangs on a double-sided art
+// card's pair of faces.
+var fabArtCardSuffixes = []string{" Double Sided Art Card", " Doubled Sided Art Card"}
+
+// fabPuzzleName answers the datastore's name for a puzzle piece blueprint,
+// empty for any other blueprint or a face no art card carries. Card Trader
+// sells each face of a double-sided puzzle card as a product of its own,
+// "\"Uzuri, Switchblade\" Macro Puzzle Card" and "\"Emperor, Dracai of Aesir\"
+// Macro Puzzle Card", where the datastore keeps one printing per piece named
+// by both faces; the face finds the printing, and the piece is the version's
+// to say.
+func fabPuzzleName(bp *Blueprint) string {
+	face := fabPuzzleFace(bp.Name)
+	if face == "" {
+		return ""
+	}
+	uuids, err := mtgmatcher.SearchContains(face)
+	if err != nil {
+		return ""
+	}
+	var names []string
+	for _, uuid := range uuids {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil || !strings.Contains(co.Name, "//") {
+			continue
+		}
+		if !strings.Contains(co.Name, "Art Card") && !strings.Contains(co.Number, "PZL") {
+			continue
+		}
+		name := co.Name
+		for _, suffix := range fabArtCardSuffixes {
+			name = strings.TrimSuffix(name, suffix)
+		}
+		for part := range strings.SplitSeq(name, "//") {
+			if mtgmatcher.Normalize(part) == mtgmatcher.Normalize(face) && !slices.Contains(names, co.Name) {
+				names = append(names, co.Name)
+			}
+		}
+	}
+	if len(names) != 1 {
+		return ""
+	}
+	return names[0]
+}
+
+// fabPuzzleFace answers the face a puzzle piece blueprint quotes, spelled
+// the way the datastore spells it, empty for any other blueprint.
+func fabPuzzleFace(name string) string {
+	m := fabPuzzleRe.FindStringSubmatch(name)
+	if m == nil {
+		return ""
+	}
+	if spelled, found := fabPuzzleFaces[m[1]]; found {
+		return spelled
+	}
+	return m[1]
+}
+
+// fabPuzzlePiece spells the piece a puzzle blueprint's version names the way
+// the datastore labels it: the middle piece is "Center" to Card Trader and
+// "Middle Center" or "Center" to the datastore, and the longer spelling
+// describes both.
+func fabPuzzlePiece(version string) string {
+	if strings.EqualFold(version, "Center") {
+		return "Middle Center"
+	}
+	return version
 }
 
 func gameFoil(gameID int, product Product) bool {
