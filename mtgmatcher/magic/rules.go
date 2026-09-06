@@ -2275,7 +2275,18 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			inCard.Name += " Token"
 		}
 	case "Shapeshifter":
-		if !(inCard.Contains("Edition") ||
+		// A storefront may name the edition by its code
+		edition := inCard.Edition
+		set, found := b.Sets[strings.ToUpper(edition)]
+		if found {
+			edition = set.Name
+		}
+		if !(mtgmatcher.Contains(edition, "Edition") ||
+			mtgmatcher.Contains(edition, "Foreign") ||
+			mtgmatcher.Contains(edition, "Antiquities") ||
+			mtgmatcher.Contains(edition, "Reinassance") ||
+			mtgmatcher.Contains(edition, "Rinascimento") ||
+			inCard.Contains("Edition") ||
 			inCard.Contains("Foreign") ||
 			inCard.Contains("Antiquities") ||
 			inCard.Contains("Reinassance") ||
