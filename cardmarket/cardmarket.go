@@ -26,6 +26,9 @@ type responseChan struct {
 	// byName marks a price whose printing was named rather than looked
 	// up by id, which is a guess however well guarded; see namedLast.
 	byName bool
+	// product is what was priced, for the collector to tell a twin of a
+	// product already priced from a disagreement worth reporting.
+	product *MKMProduct
 	// tally carries an edition's walked and refused counts in place of a
 	// price, one record per edition, so the pool's single collector can
 	// count the run without the workers sharing anything.
@@ -48,6 +51,17 @@ type responseChan struct {
 type namedLast struct {
 	add   func(responseChan)
 	named []responseChan
+	// held is what priced each printing so far, keyed by uuid and by the
+	// name of the price column, so a named price for a printing another
+	// product of the same name already holds gives way silently: it is
+	// the same card sold again on another shelf, and the inventory would
+	// only refuse it out loud.
+	held map[string]*MKMProduct
+	// twin says whether two products are the same card sold twice, for
+	// the games whose shelves do that; nil leaves every collision to the
+	// inventory.
+	twin  func(a, b *MKMProduct) bool
+	twins int
 	// The run's tally, summed from the editions' records; the collector
 	// runs on one goroutine, so plain counts are all this takes.
 	walked  int
@@ -66,16 +80,39 @@ func (n *namedLast) collect(result responseChan) {
 		n.named = append(n.named, result)
 		return
 	}
-	n.add(result)
+	if n.hold(result) {
+		n.add(result)
+	}
+}
+
+// hold records what priced a printing's column, and reports whether the
+// price is the first of its product for it: a product named like the one
+// already there is the same card sold again on another shelf, and the
+// inventory would only refuse it out loud.
+func (n *namedLast) hold(result responseChan) bool {
+	if n.held == nil {
+		n.held = map[string]*MKMProduct{}
+	}
+	key := result.cardID + "|" + result.entry.SellerName
+	if holder := n.held[key]; holder != nil && result.product != nil && n.twin != nil && n.twin(holder, result.product) {
+		n.twins++
+		return false
+	}
+	n.held[key] = result.product
+	return true
 }
 
 // flush adds everything held back, in the order it arrived, and reports how
-// much that was.
-func (n *namedLast) flush() int {
+// much that was and how much of it gave way to a product already priced.
+func (n *namedLast) flush() (added, twins int) {
+	before := n.twins
 	for i := range n.named {
-		n.add(n.named[i])
+		if n.hold(n.named[i]) {
+			n.add(n.named[i])
+			added++
+		}
 	}
-	return len(n.named)
+	return added, n.twins - before
 }
 
 // Index prices singles from Cardmarket's price guide, the low and
@@ -148,17 +185,36 @@ func NewScraperIndex(gameID int) *Index {
 // refusal is counted and said out loud rather than passing for a success.
 var errNoPrinting = errors.New("named no printing of ours")
 
+// errTwin marks a product named and numbered like another of its expansion,
+// which the catalog does not say which variant of the card it is.
+var errTwin = errors.New("twin of another product")
+
+// errForeign marks a product of a catalog the datastore does not carry.
+var errForeign = errors.New("of a catalog we do not carry")
+
 // reportRefused says what an expansion refused and counts it into the run's
 // tally. Every refusal is named, one line each, except in an expansion
 // nothing resolved in: that is a catalog we do not carry at all - Cardmarket
 // sells whole Japanese programs the datastores have no set for - and the
 // count is the whole story, where naming each of its products would be tens
 // of thousands of lines saying it again.
-func (mkm *Index) reportRefused(expansion string, total int, refused []string) {
-	if len(refused) == 0 {
+func (mkm *Index) reportRefused(expansion string, total int, refused []string, twins, foreign int) {
+	count := len(refused) + twins + foreign
+	if count == 0 {
 		return
 	}
-	mkm.printf("%s: %d of %d products named no printing of ours", expansion, len(refused), total)
+	line := fmt.Sprintf("%s: %d of %d products named no printing of ours", expansion, count, total)
+	var why []string
+	if twins > 0 {
+		why = append(why, fmt.Sprintf("%d twins of another product", twins))
+	}
+	if foreign > 0 {
+		why = append(why, fmt.Sprintf("%d of a catalog we do not carry", foreign))
+	}
+	if len(why) > 0 {
+		line += " (" + strings.Join(why, ", ") + ")"
+	}
+	mkm.printf("%s", line)
 	if len(refused) == total {
 		return
 	}
@@ -358,12 +414,11 @@ func yugiohRun(product *MKMProduct) string {
 // without both an unknown set's cards land on whichever set happens to hold
 // a number like theirs.
 func (mkm *Index) matchProduct(product *MKMProduct) string {
-	edition := product.ExpansionName
-	// A non-English catalog wearing an English set's name passes that gate,
-	// so it needs one of its own.
-	if mkm.gameID == GamePokemon && pokemonForeignDenied(edition, product.Number) {
-		return ""
+	if mkm.gameID == GamePokemon {
+		id, _ := mkm.matchPokemon(product)
+		return id
 	}
+	edition := product.ExpansionName
 	var printRun, numberPrefix string
 	if mkm.gameID == GameFleshAndBlood {
 		// Cardmarket sells each print run as its own expansion
@@ -646,6 +701,9 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		// though Pokemon does - so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by first, and only
 		// falls back on what the catalog says of it.
+		if mkm.gameID == GamePokemon && pokemonCodeCard(product.Name) {
+			return "", "", false, nil
+		}
 		if tcgID, found := mkm.TCGBridge[product.IDProduct]; found {
 			cardID, _ = mtgmatcher.MatchID(fmt.Sprint(tcgID), false)
 			// The flag lands on the product's default printing, where the
@@ -662,6 +720,13 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		// part of the catalog - half of Yu-Gi-Oh's, a third of Flesh and
 		// Blood's - and what it leaves out is ordinary cards. They can be
 		// named without it.
+		if cardID == "" && mkm.gameID == GamePokemon {
+			cardID, err = mkm.matchPokemon(product)
+			if err != nil {
+				return "", "", false, err
+			}
+			byName = true
+		}
 		if cardID == "" {
 			cardID = mkm.matchProduct(product)
 			byName = cardID != ""
@@ -732,9 +797,10 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 			}
 
 			out := responseChan{
-				ogID:   product.IDProduct,
-				cardID: cardID,
-				byName: byName,
+				ogID:    product.IDProduct,
+				product: product,
+				cardID:  cardID,
+				byName:  byName,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      prices[i] * mkm.exchangeRate,
@@ -759,9 +825,10 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 						continue
 					}
 					out := responseChan{
-						ogID:   product.IDProduct,
-						cardID: cardIDFoil,
-						byName: byName,
+						ogID:    product.IDProduct,
+						product: product,
+						cardID:  cardIDFoil,
+						byName:  byName,
 						entry: mtgban.InventoryEntry{
 							Conditions: "NM",
 							Price:      foilprices[i] * mkm.exchangeRate,
@@ -783,9 +850,10 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 				continue
 			}
 			out := responseChan{
-				ogID:   product.IDProduct,
-				cardID: cardID,
-				byName: byName,
+				ogID:    product.IDProduct,
+				product: product,
+				cardID:  cardID,
+				byName:  byName,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      foilprices[i] * mkm.exchangeRate,
@@ -866,10 +934,17 @@ func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worke
 	}
 
 	collector := namedLast{add: addOne}
+	if mkm.gameID == GamePokemon {
+		collector.twin = pokemonSameProduct
+	}
 
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
 
-	mkm.printf("Adding %d prices whose printing was named", collector.flush())
+	added, _ := collector.flush()
+	mkm.printf("Adding %d prices whose printing was named", added)
+	if collector.twins > 0 {
+		mkm.printf("%d prices gave way to a product of the same name already priced", collector.twins)
+	}
 	return collector.walked, collector.refused
 }
 

@@ -142,11 +142,21 @@ func (mkm *Index) resolveUUIDs(product *MKMProduct, uuids []string) (string, str
 	return cardID, cardIDFoil
 }
 
-// processMapped prices one product of the id map. The map answers first;
-// what it left unmapped is priced from what the catalog says of it, the way
-// processProduct does, so a product the file does not know yet is matched
-// rather than lost.
-func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMapProduct, expansionName string) error {
+// resolved is what one product of the walk answered with, held until its
+// expansion is read whole, so a product can be judged beside its siblings.
+type resolved struct {
+	product    *MKMProduct
+	cardID     string
+	cardIDFoil string
+	byName     bool
+	err        error
+}
+
+// resolveMapped answers one product of the id map. The map answers first;
+// what it left unmapped is answered from what the catalog says of it, the
+// way processProduct does, so a product the file does not know yet is
+// matched rather than lost.
+func (mkm *Index) resolveMapped(id int, mapped IDMapProduct, expansionName string) resolved {
 	product := &MKMProduct{
 		IDProduct:     id,
 		Name:          mapped.Name,
@@ -155,10 +165,11 @@ func (mkm *Index) processMapped(channel chan<- responseChan, id int, mapped IDMa
 	}
 
 	cardID, cardIDFoil := mkm.resolveUUIDs(product, mapped.UUIDs)
-	if cardID == "" {
-		return mkm.processProduct(channel, product)
+	if cardID != "" {
+		return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
 	}
-	return mkm.emitPrices(channel, product, cardID, cardIDFoil, false)
+	cardID, cardIDFoil, byName, err := mkm.resolveProduct(product)
+	return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil, byName: byName, err: err}
 }
 
 // checkIDMap reports whether the id map can be walked. For the games that
@@ -259,21 +270,47 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 			ids := byExpansion[exp.IDExpansion]
 			sort.Ints(ids)
 
-			var refused []string
+			results := make([]resolved, 0, len(ids))
 			for _, id := range ids {
-				mapped := products[id]
-				err := mkm.processMapped(channel, id, mapped, exp.Name)
+				results = append(results, mkm.resolveMapped(id, products[id], exp.Name))
+			}
+			if mkm.gameID == GamePokemon {
+				pokemonTwins(results)
+			}
+
+			// A refusal is named once per name and number: the same
+			// card sold as several products refuses as one card.
+			var refused []string
+			named := map[string]int{}
+			var twins, foreign, refusals int
+			for i := range results {
+				r := &results[i]
+				id, mapped := r.product.IDProduct, products[r.product.IDProduct]
+				err := r.err
+				if err == nil && r.cardID != "" {
+					err = mkm.emitPrices(channel, r.product, r.cardID, r.cardIDFoil, r.byName)
+				}
 				switch {
+				case errors.Is(err, errTwin):
+					twins++
+				case errors.Is(err, errForeign):
+					foreign++
 				case errors.Is(err, errNoPrinting):
-					refused = append(refused, fmt.Sprintf("%d %q (%s) in %s",
-						id, mapped.Name, mapped.Number, exp.Name))
+					refusals++
+					key := fmt.Sprintf("%q (%s) in %s", pokemonName(mapped.Name), mapped.Number, exp.Name)
+					if at, seen := named[key]; seen {
+						refused[at] += "+"
+						continue
+					}
+					named[key] = len(refused)
+					refused = append(refused, fmt.Sprintf("%d %s", id, key))
 				case err != nil:
 					mkm.printf("product id %d returned %s", id, err)
 				}
 			}
 
-			mkm.reportRefused(exp.Name, len(ids), refused)
-			channel <- responseChan{tally: true, walked: len(ids), refused: len(refused)}
+			mkm.reportRefused(exp.Name, len(ids), refused, twins, foreign)
+			channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign}
 			return nil
 		})
 
