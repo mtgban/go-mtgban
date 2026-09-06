@@ -258,7 +258,7 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 
 	mkm.printf("Parsing %d expansion ids from the id map", len(items))
 
-	walked, refused, unread := mkm.collectPrices(ctx, items,
+	walked, refused := mkm.collectPrices(ctx, items,
 		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
 			mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
 			ids := byExpansion[exp.IDExpansion]
@@ -283,9 +283,6 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 		})
 
 	mkm.printf("Walked %d products, %d of which named no printing of ours", walked, refused)
-	if unread > 0 {
-		mkm.printf("%d of %d expansions never answered, and none of their products is in that count", unread, len(items))
-	}
 	mkm.inventoryDate = time.Now()
 	return nil
 }
