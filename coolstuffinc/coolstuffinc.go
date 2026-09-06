@@ -491,7 +491,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					}
 					theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(cardName)), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
 				case GamePokemon:
-					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
+					theCard = pokemonListing(cardName, edition, catalogTreatment(notes), isFoil)
 				case GameOnePiece:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
 				case GameGundam:
@@ -720,7 +720,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it describing the artwork and Lorcana's changes no answer at all.
 		case GamePokemon:
 			variation := catalogTreatment(buylistVariation(product))
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: pokemonPromoShelf(product, variation), Variation: variation, Foil: product.IsFoil == 1}
+			theCard = pokemonListing(product.Name, pokemonPromoShelf(product, variation), variation, product.IsFoil == 1)
 		case GameRiftbound:
 			variation := buylistVariation(product)
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: riftboundShelf(product, variation), Variation: variation, Foil: product.IsFoil == 1}
@@ -958,6 +958,137 @@ var csiTreatments = strings.NewReplacer(
 func catalogTreatment(variation string) string {
 	return csiTreatments.Replace(variation)
 }
+
+// pokemonListing reads a Pokemon listing the way the catalog names it. The
+// Classic Collection reprints are sold under Celebrations with the
+// collection in the note; the special energies are named "Special Metal
+// Energy" where the catalog names the energy and labels it special; the
+// Base Set Professor Oak is spelled "Imposter" the way Base Set 2 prints
+// it, though Base Set printed "Impostor"; Nidoran is named without the sex
+// the catalog names it by, which the number settles; and the Elite Four
+// cards of the Platinum sets are named "Alakazam 4" for the catalog's
+// "Alakazam E4".
+func pokemonListing(name, edition, variation string, foil bool) *mtgmatcher.InputCard {
+	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
+	if edition == "Celebrations" && strings.Contains(variation, "Classic Collection") {
+		card.Edition = "Celebrations: Classic Collection"
+		if m := classicNumber.FindStringSubmatch(variation); m != nil {
+			card.Variation = m[1]
+		}
+	}
+	if m := specialEnergy.FindStringSubmatch(name); m != nil {
+		card.Name = m[1]
+		card.Variation = strings.TrimSpace("Special " + card.Variation)
+	}
+	if name == "Imposter Professor Oak" && strings.HasPrefix(edition, "Base Set") && !strings.HasPrefix(edition, "Base Set 2") {
+		card.Name = "Impostor Professor Oak"
+	}
+	if m := eliteFour.FindStringSubmatch(name); m != nil && strings.HasPrefix(edition, "Platinum") {
+		card.Name = m[1] + " E4"
+	}
+	// An energy or promo sold under a main set with the energy or promo
+	// set's own number ("MEE007" on Ascended Heroes) is that set's.
+	if m := prefixedNumber.FindStringSubmatch(variation); m != nil {
+		if set, found := pokemonNumberSets[m[1]]; found {
+			card.Edition = set
+			// The catalog numbers the older promo sets with the
+			// programme on ("SM190") and the newer ones without.
+			if m[1] != "SM" && m[1] != "SWSH" {
+				card.Variation = strings.Replace(variation, m[0], m[2], 1)
+			}
+		}
+	}
+	if respelled, found := pokemonRespellings[name]; found {
+		card.Name = respelled
+	}
+	// The notes say a printing is the plain one ("Non-Stamped Version"),
+	// name the illustrator, or name the stamp a promo carries; the plain
+	// words come off, and a stamp names a promo shelf the catalog files
+	// apart from the set the listing arrived on.
+	card.Variation = strings.TrimSpace(plainWords.ReplaceAllString(card.Variation, " "))
+	if stamped.MatchString(card.Variation) {
+		card.Edition = "Promo"
+	}
+	// The Team Galactic inventions are named by their invention alone
+	// where the catalog names the invention with its number.
+	if _, err := mtgmatcher.SearchEquals(card.Name); err != nil {
+		if invention := galacticInvention(card.Name); invention != "" {
+			card.Name = invention
+		}
+	}
+	// The catalog letters the type in a special energy's name ("Bubbly W
+	// Energy") where the storefront spells it out, but not in every one
+	// ("Magnetic Metal Energy"), so the spelled name is kept where the
+	// catalog knows it.
+	if m := typedEnergy.FindStringSubmatch(card.Name); m != nil {
+		if _, err := mtgmatcher.SearchEquals(card.Name); err != nil {
+			card.Name = m[1] + " " + energyLetters[m[2]] + " Energy"
+		}
+	}
+	if name == "Nidoran" || name == "Nidoran?" {
+		for _, sex := range []string{"Nidoran M", "Nidoran F"} {
+			probe := *card
+			probe.Name = sex
+			if _, err := mtgmatcher.Match(&probe); err == nil {
+				card.Name = sex
+				break
+			}
+		}
+	}
+	return card
+}
+
+// pokemonNumberSets are the sets a number's prefix names outright.
+var pokemonNumberSets = map[string]string{
+	"MEE":  "MEE: Mega Evolution Energies",
+	"SVE":  "SVE: Scarlet & Violet Energies",
+	"MEP":  "ME: Mega Evolution Promo",
+	"SVP":  "SV: Scarlet & Violet Promo Cards",
+	"SWSH": "SWSH: Sword & Shield Promo Cards",
+	"SM":   "SM Promos",
+}
+
+// pokemonRespellings pairs the names this storefront misspells with the
+// catalog's own.
+var pokemonRespellings = map[string]string{
+	"Galatic HQ":      "Galactic HQ",
+	"Poke Turn":       "Poké Turn",
+	"Sprigattito":     "Sprigatito",
+	"Unit Energy GFW": "Unit Energy GRW",
+}
+
+var (
+	plainWords = regexp.MustCompile(`(?i)\bNon-?Stamped(?: Version)?\b|\bIllus\. [^,]+,`)
+	stamped    = regexp.MustCompile(`(?i)\bStamp(?:ed)?\b`)
+)
+
+// galacticInvention names the Team Galactic invention the catalog files
+// under its number, or nothing when no invention ends in the name given.
+func galacticInvention(name string) string {
+	found := ""
+	for _, candidate := range mtgmatcher.AllNames("canonical", false) {
+		if strings.HasPrefix(candidate, "Team Galactic's Invention") && strings.HasSuffix(candidate, " "+name) {
+			if found != "" {
+				return ""
+			}
+			found = candidate
+		}
+	}
+	return found
+}
+
+var energyLetters = map[string]string{
+	"Grass": "G", "Fire": "R", "Water": "W", "Lightning": "L", "Psychic": "P",
+	"Fighting": "F", "Darkness": "D", "Metal": "M", "Fairy": "Y", "Dragon": "N",
+}
+
+var (
+	typedEnergy    = regexp.MustCompile(`^(\w+) (Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy|Dragon) Energy$`)
+	prefixedNumber = regexp.MustCompile(`\b(MEE|SVE|MEP|SVP|SWSH|SM)(\d{3})\b`)
+	classicNumber  = regexp.MustCompile(`Classic Collection (\d+)`)
+	specialEnergy  = regexp.MustCompile(`^Special ((?:Metal|Darkness) Energy)$`)
+	eliteFour      = regexp.MustCompile(`^(.+) 4$`)
+)
 
 // pokemonPromoShelf answers the shelf a Pokemon listing belongs to, which is
 // the one it arrived on unless the catalog files the card as a promo.
