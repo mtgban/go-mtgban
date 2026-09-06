@@ -16,7 +16,10 @@ import (
 // Blood beside its extended art, the unnumbered counter card, the fused
 // tokens a storefront spells face by face, the cold foils of Ash // Aether
 // Ashwing numbered by one face, and the two backs of Marlynn sharing a
-// pair.
+// pair. Beside them the promos a storefront names a finish for that the
+// number contradicts, the marvel of Nebula Duality the datastore indexes
+// under its label as well, the Heavy Hitters token a listing flags as a
+// first edition, and the Alpha run of Nimble Strike.
 const labelFixture = `{
 	"game": "fleshandblood",
 	"sets": {
@@ -30,7 +33,11 @@ const labelFixture = `{
 		"SUP": {"name": "Super Slam", "releaseDate": "2025-09-26"},
 		"HS": {"name": "High Seas", "releaseDate": "2025-06-06"},
 		"UPR": {"name": "Uprising", "releaseDate": "2022-07-01"},
-		"WTR": {"name": "Welcome to Rathe", "releaseDate": "2019-10-11"}
+		"WTR": {"name": "Welcome to Rathe", "releaseDate": "2019-10-11"},
+		"PR": {"name": "Flesh and Blood: Promo Cards", "releaseDate": "2019-10-11", "type": "promo"},
+		"HER": {"name": "Hero Card Promos", "releaseDate": ""},
+		"HVY": {"name": "Heavy Hitters", "releaseDate": "2024-02-02"},
+		"FAB": {"name": "Promos", "releaseDate": ""}
 	},
 	"cards": [
 		{"externalLinks": {"fabId": "DTD193", "tcgPlayerId": 502936}, "fabId": "DTD193", "finish": "Cold Foil", "id": "dtd193-cf_502936_cold", "image": "https://tcgplayer-cdn.tcgplayer.com/product/502936_400w.jpg", "name": "Nasreth, the Soul Harrower (Marvel)", "number": "DTD193-CF", "rarity": "Marvel", "setCode": "DTD"},
@@ -70,7 +77,28 @@ const labelFixture = `{
 		{"externalLinks": {"fabId": "WTR042"}, "fabId": "WTR042", "finish": "Unlimited Edition Rainbow Foil", "id": "wtr042_unlrainbow", "image": "https://legendstory-production-s3-public.s3.amazonaws.com/media/cards/large/WTR042.webp", "name": "Helm of Isen's Peak", "number": "WTR042", "rarity": "Common", "setCode": "WTR"},
 		{"externalLinks": {"tcgPlayerId": 635619}, "finish": "Normal", "id": "sea083-sea247_635619", "image": "https://tcgplayer-cdn.tcgplayer.com/product/635619_400w.jpg", "name": "Marlynn // Treasure Island", "number": "SEA083//SEA247", "rarity": "Basic", "setCode": "HS"},
 		{"externalLinks": {"tcgPlayerId": 651892}, "finish": "Normal", "id": "sea083-sea247_651892", "image": "https://tcgplayer-cdn.tcgplayer.com/product/651892_400w.jpg", "name": "Marlynn // Arrows Back", "number": "SEA083//SEA247", "rarity": "Basic", "setCode": "HS"},
-		{"externalLinks": {"fabId": "SEA083", "tcgPlayerId": 634589}, "fabId": "SEA083", "finish": "Cold Foil", "id": "sea083_634589_cold", "image": "https://tcgplayer-cdn.tcgplayer.com/product/634589_400w.jpg", "name": "Marlynn (Marvel)", "number": "SEA083", "rarity": "Marvel", "setCode": "HS"}
+		{"externalLinks": {"fabId": "SEA083", "tcgPlayerId": 634589}, "fabId": "SEA083", "finish": "Cold Foil", "id": "sea083_634589_cold", "image": "https://tcgplayer-cdn.tcgplayer.com/product/634589_400w.jpg", "name": "Marlynn (Marvel)", "number": "SEA083", "rarity": "Marvel", "setCode": "HS"},
+		{"externalLinks": {"fabId": "FAB465", "tcgPlayerId": 705053}, "fabId": "FAB465", "finish": "Cold Foil", "id": "fab465_705053_cold", "image": "https://tcgplayer-cdn.tcgplayer.com/product/705053_400w.jpg", "name": "Nebula Duality", "number": "FAB465", "rarity": "Promo", "setCode": "PR"},
+		{"externalLinks": {"tcgPlayerId": 705060}, "finish": "Cold Foil", "id": "fab465_705060_cold", "image": "https://tcgplayer-cdn.tcgplayer.com/product/705060_400w.jpg", "name": "Nebula Duality", "number": "FAB465", "promoTypes": ["marvel"], "rarity": "Marvel", "setCode": "PR", "variant": "Marvel"},
+		{"externalLinks": {"fabId": "OMN121", "tcgPlayerId": 682863}, "fabId": "OMN121", "finish": "Normal", "id": "omn121_682863", "image": "https://tcgplayer-cdn.tcgplayer.com/product/682863_400w.jpg", "name": "Nebula Duality (Red)", "number": "OMN121", "rarity": "Common", "setCode": "OMN"},
+		{"externalLinks": {"fabId": "OMN121", "tcgPlayerId": 682863}, "fabId": "OMN121", "finish": "Rainbow Foil", "id": "omn121_682863_rainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/682863_400w.jpg", "name": "Nebula Duality (Red)", "number": "OMN121", "rarity": "Common", "setCode": "OMN"},
+		{"externalLinks": {"fabId": "FAB476", "tcgPlayerId": 684315}, "fabId": "FAB476", "finish": "Cold Foil", "id": "fab476_684315_cold", "image": "https://tcgplayer-cdn.tcgplayer.com/product/684315_400w.jpg", "name": "Flowstate Embodiment", "number": "FAB476", "rarity": "Promo", "setCode": "PR"},
+		{"externalLinks": {"tcgPlayerId": 692573}, "finish": "Rainbow Foil", "id": "tnp011_692573_rainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/692573_400w.jpg", "name": "Warrior's Valor (Yellow) (Marvel)", "number": "TNP011", "rarity": "Promo", "setCode": "PR"},
+		{"externalLinks": {"fabId": "WTR130", "tcgPlayerId": 225174}, "fabId": "WTR130", "finish": "1st Edition Normal", "id": "wtr130_225174_1e", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225174_400w.jpg", "name": "Warrior's Valor (Yellow)", "number": "WTR130", "rarity": "Rare", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "WTR130", "tcgPlayerId": 225174}, "fabId": "WTR130", "finish": "1st Edition Rainbow Foil", "id": "wtr130_225174_1erainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225174_400w.jpg", "name": "Warrior's Valor (Yellow)", "number": "WTR130", "rarity": "Rare", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "WTR130", "tcgPlayerId": 225174}, "fabId": "WTR130", "finish": "Unlimited Edition Normal", "id": "wtr130_225174_unl", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225174_400w.jpg", "name": "Warrior's Valor (Yellow)", "number": "WTR130", "rarity": "Rare", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "WTR130", "tcgPlayerId": 225174}, "fabId": "WTR130", "finish": "Unlimited Edition Rainbow Foil", "id": "wtr130_225174_unlrainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225174_400w.jpg", "name": "Warrior's Valor (Yellow)", "number": "WTR130", "rarity": "Rare", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "HER089", "tcgPlayerId": 526144}, "fabId": "HER089", "finish": "Cold Foil", "id": "her089_526144_cold", "image": "https://tcgplayer-cdn.tcgplayer.com/product/526144_400w.jpg", "name": "Dash I/O", "number": "HER089", "rarity": "Promo", "setCode": "PR"},
+		{"externalLinks": {"fabId": "HER156"}, "fabId": "HER156", "finish": "Rainbow Foil", "id": "her156_rainbow", "image": "https://legendstory-production-s3-public.s3.amazonaws.com/media/cards/large/HER156-RF.webp", "name": "Dash I/O", "number": "HER156", "rarity": "Promo", "setCode": "HER"},
+		{"externalLinks": {"fabId": "HVY242"}, "fabId": "HVY242", "finish": "Normal", "id": "hvy242", "image": "https://legendstory-production-s3-public.s3.amazonaws.com/media/cards/large/HVY242.webp", "name": "Vigor", "number": "HVY242", "rarity": "Token", "setCode": "HVY"},
+		{"externalLinks": {"fabId": "FAB470", "tcgPlayerId": 701606}, "fabId": "FAB470", "finish": "Rainbow Foil", "id": "fab470_701606_rainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/701606_400w.jpg", "name": "Lightning Flow", "number": "FAB470", "promoTypes": ["a"], "rarity": "Promo", "setCode": "PR", "variant": "A"},
+		{"externalLinks": {"fabId": "FAB470", "tcgPlayerId": 701607}, "fabId": "FAB470", "finish": "Rainbow Foil", "id": "fab470_701607_rainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/701607_400w.jpg", "name": "Lightning Flow", "number": "FAB470", "promoTypes": ["b"], "rarity": "Promo", "setCode": "PR", "variant": "B"},
+		{"externalLinks": {"fabId": "FAB470", "tcgPlayerId": 701608}, "fabId": "FAB470", "finish": "Rainbow Foil", "id": "fab470_701608_rainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/701608_400w.jpg", "name": "Lightning Flow", "number": "FAB470", "promoTypes": ["c"], "rarity": "Promo", "setCode": "PR", "variant": "C"},
+		{"externalLinks": {"fabId": "WTR187", "tcgPlayerId": 225270}, "fabId": "WTR187", "finish": "1st Edition Normal", "id": "wtr187_225270_1e", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225270_400w.jpg", "name": "Nimble Strike (Blue)", "number": "WTR187", "rarity": "Common", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "WTR187", "tcgPlayerId": 225270}, "fabId": "WTR187", "finish": "1st Edition Rainbow Foil", "id": "wtr187_225270_1erainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225270_400w.jpg", "name": "Nimble Strike (Blue)", "number": "WTR187", "rarity": "Common", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "WTR187", "tcgPlayerId": 225270}, "fabId": "WTR187", "finish": "Unlimited Edition Normal", "id": "wtr187_225270_unl", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225270_400w.jpg", "name": "Nimble Strike (Blue)", "number": "WTR187", "rarity": "Common", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "WTR187", "tcgPlayerId": 225270}, "fabId": "WTR187", "finish": "Unlimited Edition Rainbow Foil", "id": "wtr187_225270_unlrainbow", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225270_400w.jpg", "name": "Nimble Strike (Blue)", "number": "WTR187", "rarity": "Common", "setCode": "WTR"},
+		{"externalLinks": {"fabId": "FAB412"}, "fabId": "FAB412", "finish": "Normal", "id": "fab412", "image": "https://legendstory-production-s3-public.s3.amazonaws.com/media/cards/large/FAB412-GF.webp", "name": "Dynastic Diadem", "number": "FAB412", "rarity": "Promo", "setCode": "FAB"}
 	]
 }`
 
@@ -125,6 +153,50 @@ func TestLabelledNumbers(t *testing.T) {
 	in := mtgmatcher.InputCard{Name: "Marlynn", Edition: "High Seas", Variation: "SEA083", Finish: "Non-foil"}
 	if got, err := mtgmatcher.Match(&in); err == nil {
 		t.Errorf("Match(Marlynn, SEA083) = %q, want a refusal", got)
+	}
+}
+
+// TestPromoFinishes pins that a promo's number outranks the finish a
+// storefront wrote beside it, that a run a product was never printed in
+// names its treatment, that a marvel indexed under its label is one answer
+// with the plain spelling, and that the Alpha shelf is the first run.
+func TestPromoFinishes(t *testing.T) {
+	b, err := Load(strings.NewReader(labelFixture))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mtgmatcher.SetGlobalDatastore(b)
+	for _, tt := range []struct {
+		desc                             string
+		name, edition, variation, finish string
+		foil                             bool
+		want                             string
+	}{
+		{"a promo sold in one treatment answers a finish it was not sold in", "Flowstate Embodiment", "FAB Organized Play", "FAB476 Extended Art", "Rainbow Foil", true, "fab476_684315_cold"},
+		{"and so does the marvel spelled beside a pitched name", "Warrior's Valor - Yellow", "Tournament Pack", "TNP011 Marvel", "Cold Foil", true, "tnp011_692573_rainbow"},
+		{"a promo the catalog files plain answers a foil listing", "Dynastic Diadem", "FAB Organized Play", "FAB412 Golden Cold Foil", "Cold Foil", true, "fab412"},
+		{"the marvel indexed under its label is one answer with the plain spelling", "Nebula Duality - Red", "FAB Organized Play", "FAB465 Marvel", "Cold Foil", true, "fab465_705060_cold"},
+		{"and the plain spelling answers without the label", "Nebula Duality - Red", "FAB Organized Play", "FAB465", "Cold Foil", true, "fab465_705053_cold"},
+		{"a first edition flag on a product printed in no run names the treatment", "Vigor", "Heavy Hitters", "HVY242", "1st Edition Normal", false, "hvy242"},
+		{"on a promo too", "Dash I/O", "Hero Card Promos", "HER089", "1st Edition Cold Foil", true, "her089_526144_cold"},
+		{"a two-letter tail still names the lettered printing", "Lightning Flow", "FAB Organized Play", "FAB470eb Extended Art", "Rainbow Foil", true, "fab470_701607_rainbow"},
+		{"the Alpha shelf is the first run", "Nimble Strike (Blue)", "Welcome to Rathe - Alpha", "WTR187", "", false, "wtr187_225270_1e"},
+	} {
+		in := mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.variation, Finish: tt.finish, Foil: tt.foil}
+		got, err := mtgmatcher.Match(&in)
+		if err != nil {
+			t.Errorf("%s: Match(%q, %q, %q, %q) = %v", tt.desc, tt.name, tt.edition, tt.variation, tt.finish, err)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("%s: Match(%q, %q, %q, %q) = %q, want %q", tt.desc, tt.name, tt.edition, tt.variation, tt.finish, got, tt.want)
+		}
+	}
+	// A set card is sold in several treatments, and a finish it was never
+	// sold in still names no printing.
+	in := mtgmatcher.InputCard{Name: "Nimble Strike (Blue)", Edition: "Welcome to Rathe", Variation: "WTR187", Finish: "1st Edition Cold Foil", Foil: true}
+	if got, err := mtgmatcher.Match(&in); err == nil {
+		t.Errorf("Match(Nimble Strike (Blue), WTR187, 1st Edition Cold Foil) = %q, want a refusal", got)
 	}
 }
 
