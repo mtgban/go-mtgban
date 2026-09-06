@@ -24,7 +24,7 @@ type Rules struct{ mtgmatcher.DefaultRules }
 // "1HP408", with an optional letter tail (cardtrader suffixes marvels
 // "MST238m"). The dashed numbers ("MST158-A") are left to the variant
 // wording, which carries the same tail.
-var fullNumberRe = regexp.MustCompile(`^[0-9]?[A-Za-z]+[0-9]{1,4}[a-zA-Z]?$`)
+var fullNumberRe = regexp.MustCompile(`^[0-9]?[A-Za-z]+[0-9]{1,4}[a-zA-Z]{0,2}$`)
 
 // pairNumberRe matches the fused-card numbers ("WTR040 // WTR039",
 // cardtrader's compact "UPR002//UPR165") so the pair survives extraction
@@ -151,25 +151,39 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if inCard.Name != base {
 		stems = append(stems, inCard.Name)
 	}
-	var match, stem string
+	var numbered, sold []spelling
 	var tried []string
 	for _, candidate := range stems {
 		for _, pitch := range pitches {
 			for _, label := range []string{"", marvelLabel} {
-				spelling := candidate + pitch + label
-				if slices.Contains(tried, spelling) {
+				name := candidate + pitch + label
+				if slices.Contains(tried, name) {
 					continue
 				}
-				tried = append(tried, spelling)
-				if !numberedAs(b, spelling, number) || !soldAs(b, spelling, number, inCard.Finish) {
+				tried = append(tried, name)
+				if !numberedAs(b, name, number) {
 					continue
 				}
-				if match != "" {
-					return
+				numbered = append(numbered, spelling{name, candidate})
+				if soldAs(b, name, number, inCard.Finish) {
+					sold = append(sold, spelling{name, candidate})
 				}
-				match, stem = spelling, candidate
 			}
 		}
+	}
+	match, stem := oneSpelling(sold)
+	// A promo is one card, and its number names it whatever finish the
+	// storefront wrote beside it: Boast FAB189 is sold as a cold foil where
+	// the only FAB189 is the rainbow one, and the Tournament Pack marvels as
+	// cold foils where they are rainbow. The finish then has nothing left to
+	// say, and it is dropped so the number can answer. A set card is sold in
+	// several treatments, and there the finish keeps its say.
+	if match == "" && len(sold) == 0 {
+		match, stem = oneSpelling(numbered)
+		if match == "" || !promoNumbered(b, match, number) {
+			return
+		}
+		inCard.Finish = ""
 	}
 	if match == "" {
 		return
@@ -193,6 +207,47 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		inCard.AddToVariant(dropped)
 	}
 	inCard.Name = match
+}
+
+// spelling is a name a qualifier respelling tried, with the stem it grew from.
+type spelling struct {
+	name, stem string
+}
+
+// oneSpelling answers the spelling the respelling settles on, or nothing
+// where the spellings name more than one card. The marvel label names a
+// printing rather than a card, and the datastore indexes a marvel under the
+// labelled spelling beside the plain one, so "Nebula Duality" and "Nebula
+// Duality (Marvel)" are one answer: the plain spelling, since the label is
+// the wording's to describe.
+func oneSpelling(spellings []spelling) (string, string) {
+	var chosen spelling
+	for _, candidate := range spellings {
+		if chosen.name != "" && strings.TrimSuffix(candidate.name, marvelLabel) != strings.TrimSuffix(chosen.name, marvelLabel) {
+			return "", ""
+		}
+		if chosen.name == "" || strings.HasSuffix(chosen.name, marvelLabel) {
+			chosen = candidate
+		}
+	}
+	return chosen.name, chosen.stem
+}
+
+// promoNumbered reports whether every printing filed under the name at the
+// number is a promo.
+func promoNumbered(b *mtgmatcher.Backend, name, number string) bool {
+	var numbered bool
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || !numberMatches(number, co.Number) {
+			continue
+		}
+		if !co.IsPromo && co.Rarity != "Promo" {
+			return false
+		}
+		numbered = true
+	}
+	return numbered
 }
 
 // qualifierWord returns the label inside a name's qualifier parenthetical,
@@ -611,7 +666,9 @@ func aliasEdition(edition string) (string, string) {
 		}
 	}
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
-	for _, suffix := range []string{"1st Edition", "Unlimited Edition", "Unlimited", "Alpha Print Run"} {
+	// Card Trader shelves the runs as "Welcome to Rathe - Alpha" and
+	// "Monarch - First" beside "Monarch - Unlimited".
+	for _, suffix := range []string{"1st Edition", "Unlimited Edition", "Unlimited", "Alpha Print Run", "Alpha", "First"} {
 		trimmed := strings.TrimSuffix(edition, suffix)
 		if trimmed != edition {
 			return strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(trimmed), "-")), suffix

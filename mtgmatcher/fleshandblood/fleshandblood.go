@@ -423,6 +423,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		// it has. Only where the product has no bare printing of its own:
 		// an alias is a spelling, and must never shadow a real entry.
 		finishAliases := map[string]string{}
+		var runs bool
 		for _, treatment := range []string{treatmentNormal, treatmentRainbowFoil, treatmentColdFoil} {
 			if _, sold := foilUUIDs[treatment]; sold {
 				continue
@@ -430,7 +431,23 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			for _, edition := range []string{editionUnlimited, edition1st} {
 				if _, found := foilUUIDs[edition+treatment]; found {
 					finishAliases[treatment] = edition + treatment
+					runs = true
 					break
+				}
+			}
+		}
+		// The converse: a product sold in no run at all answers a run a
+		// storefront names anyway with the treatment. Card Trader's
+		// listings raise a first-edition flag on the Heavy Hitters tokens
+		// and the Hero promos, and neither set was ever printed in runs, so
+		// the flag says nothing the treatment has not.
+		if !runs {
+			for _, treatment := range []string{treatmentNormal, treatmentRainbowFoil, treatmentColdFoil} {
+				if _, sold := foilUUIDs[treatment]; !sold {
+					continue
+				}
+				for _, edition := range []string{editionUnlimited, edition1st} {
+					finishAliases[edition+treatment] = treatment
 				}
 			}
 		}
