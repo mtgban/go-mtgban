@@ -194,11 +194,12 @@ func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool) {
 			holders = append(holders, i)
 		}
 	}
-	// A refusal beside a same-named product that holds a printing is the
+	// A miss beside a same-named product that holds a printing is the
 	// same twin: the legacy unnumbered product of a card the expansion
-	// sells numbered too, which the name alone cannot place.
+	// sells numbered too, or the version of a promo the name alone cannot
+	// tell from the versions already priced.
 	for i, r := range results {
-		if !errors.Is(r.err, errNoPrinting) {
+		if r.err == nil || errors.Is(r.err, errForeign) {
 			continue
 		}
 		for _, j := range holders {
