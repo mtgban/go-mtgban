@@ -602,14 +602,6 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 			numbers = []string{position}
 		}
 		id, err := fabMatch(name, edition, finish, p.Rarity, foil, numbers)
-		// A promo is one card in one treatment, so its number names the
-		// printing and the finish beside it can only agree or misname
-		// it: Boast FAB189 is sold as a cold foil where the datastore's
-		// only FAB189 is the rainbow one. A set card is sold in several
-		// treatments and its finish keeps its say.
-		if err != nil && p.Set == fabPromoShelf {
-			id, err = fabMatch(name, edition, "", p.Rarity, foil, numbers)
-		}
 		if err == nil {
 			return fabMarkedSibling(id, p), nil
 		}
@@ -897,9 +889,6 @@ func fabMatch(name, edition, finish, rarity string, foil bool, numbers []string)
 var fabFinishes = map[string]string{
 	"Gold Foil": "Cold Foil",
 }
-
-// fabPromoShelf is the catalog's set for every promo.
-const fabPromoShelf = "Promotional Cards"
 
 // fabNames spells the names the catalog misspells.
 var fabNames = map[string]string{
