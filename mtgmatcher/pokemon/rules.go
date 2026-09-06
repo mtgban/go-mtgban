@@ -304,9 +304,35 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	if mtgmatcher.SlugDescribes(inCard.Variation, "sequin") {
 		edition = "Miscellaneous Cards & Products"
 	}
+	// A championship is a set of its own, named for the year it was held,
+	// and a storefront writes the shelf they all used to share. The year is
+	// on the card instead - "Torchic - 2004" - so it says which.
+	if worldsShelfRe.MatchString(edition) {
+		if year := worldsYear(inCard); year != "" {
+			edition = year + " " + edition
+		}
+	}
 	inCard.Edition = edition
 
 	widenQualifiedName(b, inCard)
+}
+
+// worldsShelfRe matches the shelf every World Championship deck was filed
+// on before each championship became a set, and yearRe the year that says
+// which one a card belongs to.
+var (
+	worldsShelfRe = regexp.MustCompile(`(?i)^world championship decks?$`)
+	yearRe        = regexp.MustCompile(`\b((?:19|20)\d{2})\b`)
+)
+
+// worldsYear reads the championship year off whatever the caller filled in.
+func worldsYear(inCard *mtgmatcher.InputCard) string {
+	for _, field := range []string{inCard.Name, inCard.Variation} {
+		if m := yearRe.FindStringSubmatch(field); m != nil {
+			return m[1]
+		}
+	}
+	return ""
 }
 
 // AliasEdition spells an edition string toward a set name using the string
@@ -944,7 +970,28 @@ func tierByLabel(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []m
 	if len(base) > 0 {
 		return base
 	}
-	return labelled
+	if len(labelled) == 0 {
+		return labelled
+	}
+	// Every candidate carries a label, which is what a promo run looks like
+	// once the run's own name is a label rather than part of the card's:
+	// "Archeops (Prerelease)" carries "prerelease" where it used to carry
+	// nothing, beside a "Prerelease Staff" carrying two. The least
+	// decorated is the one a wording naming none of them means, and a tie
+	// at the fewest still surfaces rather than guessing between them.
+	fewest := len(labelled[0].PromoTypes)
+	for _, card := range labelled {
+		if len(card.PromoTypes) < fewest {
+			fewest = len(card.PromoTypes)
+		}
+	}
+	var plainest []mtgmatcher.Card
+	for _, card := range labelled {
+		if len(card.PromoTypes) == fewest {
+			plainest = append(plainest, card)
+		}
+	}
+	return plainest
 }
 
 // describesPlain reports whether the wording names the untreated printing:
