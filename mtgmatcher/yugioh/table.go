@@ -97,16 +97,26 @@ var editionAliases = map[string]string{
 	"Dark Revelation 2": "Dark Revelation Volume 2",
 	"Dark Revelation 3": "Dark Revelation Volume 3",
 	"Dark Revelation 4": "Dark Revelation Volume 4",
-	"Hidden Arsenal 5":  "Hidden Arsenal 5: Steelswarm Invasion",
-	"Hidden Arsenal 6":  "Hidden Arsenal 6: Omega Xyz",
-	"Hidden Arsenal 7":  "Hidden Arsenal 7: Knight of Stars",
-	"Premium Gold 2":    "Premium Gold: Return of the Bling",
+	// Cool Stuff Inc pluralises the run. Graded against every name it
+	// files under each: 125, 120 and 127 of them print in volumes 2, 3
+	// and 4, none anywhere else.
+	"Dark Revelations 1": "Dark Revelation Volume 1",
+	"Dark Revelations 2": "Dark Revelation Volume 2",
+	"Dark Revelations 3": "Dark Revelation Volume 3",
+	"Dark Revelations 4": "Dark Revelation Volume 4",
+	"Hidden Arsenal 5":   "Hidden Arsenal 5: Steelswarm Invasion",
+	"Hidden Arsenal 6":   "Hidden Arsenal 6: Omega Xyz",
+	"Hidden Arsenal 7":   "Hidden Arsenal 7: Knight of Stars",
+	"Premium Gold 2":     "Premium Gold: Return of the Bling",
 
 	"Battle Pack 2: Round 2":           "Battle Pack 2: War of the Giants Round 2",
 	"Duelist Pack Collection Tin 2010": "Duelist Pack Collection Tin",
 	"Gold Series 1":                    "Gold Series 2008",
 	"McDonald's Promo Pack 1":          "McDonald's Promo",
 	"World Championship 2006":          "World Championship 2006: Ultimate Masters",
+	// The article and colon the catalog spells and the storefront drops;
+	// all 28 names Cool Stuff Inc files under it print in the deck.
+	"Structure Deck Dark Emperor": "Structure Deck: The Dark Emperor",
 
 	// The booster the catalog numbers in words.
 	"Turbo Pack 1": "Turbo Pack Booster One Pack",
