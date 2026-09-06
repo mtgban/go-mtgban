@@ -117,6 +117,9 @@ type MKMProduct struct {
 	Website       string `json:"website"`
 	Number        string `json:"number"`
 	ExpansionName string `json:"expansionName"`
+	// ExpansionCode is the marketplace's own abbreviation of the
+	// expansion, read off the id map rather than the product
+	ExpansionCode string `json:"-"`
 	Expansion     struct {
 		IDExpansion int    `json:"idExpansion"`
 		Name        string `json:"enName"`

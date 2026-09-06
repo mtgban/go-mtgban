@@ -61,7 +61,10 @@ type namedLast struct {
 	// twin says whether two products are the same card sold twice, for
 	// the games whose shelves do that; nil leaves every collision to the
 	// inventory.
-	twin  func(a, b *MKMProduct) bool
+	twin func(a, b *MKMProduct) bool
+	// face says whether a product names one face of the fused printing
+	// it is beside, the other way a shelf sells one card twice
+	face  func(product *MKMProduct, cardID string) bool
 	twins int
 	// The run's tally, summed from the editions' records; the collector
 	// runs on one goroutine, so plain counts are all this takes.
@@ -95,9 +98,11 @@ func (n *namedLast) hold(result responseChan) bool {
 		n.held = map[string]*MKMProduct{}
 	}
 	key := result.cardID + "|" + result.entry.SellerName
-	if holder := n.held[key]; holder != nil && result.product != nil && n.twin != nil && n.twin(holder, result.product) {
-		n.twins++
-		return false
+	if holder := n.held[key]; holder != nil && result.product != nil {
+		if (n.twin != nil && n.twin(holder, result.product)) || (n.face != nil && n.face(result.product, result.cardID)) {
+			n.twins++
+			return false
+		}
 	}
 	n.held[key] = result.product
 	return true
@@ -427,25 +432,17 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		id, _ := mkm.matchYugioh(product)
 		return id
 	}
-	edition := product.ExpansionName
-	var printRun, numberPrefix string
+	var shelves []shelf
 	if mkm.gameID == GameFleshAndBlood {
-		// Cardmarket sells each print run as its own expansion
-		// ("Monarch - First"), a name no set of ours carries: the run
-		// belongs to the printing, where productFinish puts it, reading
-		// the same suffix off the untouched expansion name.
-		printRun, edition = fabPrintRun(edition)
+		shelves = fabShelves(product)
+	} else {
+		set, err := mtgmatcher.GetSetByName(product.ExpansionName)
+		if err != nil {
+			return ""
+		}
+		shelves = []shelf{{set: set, edition: product.ExpansionName}}
 	}
-	set, err := mtgmatcher.GetSetByName(edition)
-	if err != nil && mkm.gameID == GameFleshAndBlood {
-		// What Cardmarket calls the expansion is not always what we call
-		// the set. Translating is the fallback rather than the first move,
-		// so an expansion whose name we already know keeps answering for
-		// itself and only the ones nothing answers for are rewritten.
-		edition, numberPrefix = fabEdition(edition)
-		set, err = mtgmatcher.GetSetByName(edition)
-	}
-	if err != nil {
+	if len(shelves) == 0 {
 		return ""
 	}
 	names := []string{versionTail.ReplaceAllString(product.Name, "")}
@@ -453,14 +450,27 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		// The treatment parenthetical is the printing's, not the name's:
 		// fabFinish reads it off the untouched product name below, and a
 		// card whose own name ends in a parenthetical ("Sink Below (Red)")
-		// keeps it, so the exact name reaches the matcher whole. The raw
-		// name stays as the fallback: the sets spelling a pitch color the
-		// other one's way ("Rawhide Rumble" at ARR012, "Rawhide Rumble
-		// (Red)" at HVY023) file the stripped name under the wrong set,
-		// and only the decorated one still finds them.
+		// keeps it, so the exact name reaches the matcher whole. The art
+		// ahead of the treatment stays on the name for the sets that file
+		// it as a printing of its own, and comes off for the sets that do
+		// not. The raw name stays as the fallback: the sets spelling a
+		// pitch color the other one's way ("Rawhide Rumble" at ARR012,
+		// "Rawhide Rumble (Red)" at HVY023) file the stripped name under
+		// the wrong set, and only the decorated one still finds them.
 		_, stripped := fabTreatment(names[0])
 		if stripped != names[0] {
-			names = []string{stripped, names[0]}
+			names = []string{stripped}
+			if plain := fabDropArt(stripped); plain != stripped {
+				names = append(names, plain)
+			}
+			names = append(names, versionTail.ReplaceAllString(product.Name, ""))
+		}
+		// A double-sided card is filed under both faces and, in the
+		// treatments the fused row was never sold in, under the front
+		// face alone: Aether Ashwing // Ash is plain, and the cold foil
+		// is Aether Ashwing's.
+		if front, _, fused := strings.Cut(names[0], " // "); fused && !strings.Contains(product.Number, "/") {
+			names = append(names, front)
 		}
 	}
 
@@ -478,23 +488,12 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		}
 	}
 
-	numbers := []string{product.Number}
-	// A promo's programme is the prefix our numbering carries and the
-	// expansion Cardmarket sells it under, so the number is only whole once
-	// the two are put back together.
-	if numberPrefix != "" {
-		numbers = []string{numberPrefix + product.Number, product.Number}
-	}
-	// The oldest Yu-Gi-Oh sets are numbered by their original Asian print
-	// ("A015") where the datastore numbers them by set ("LOB-015"); the
-	// digits are what the two agree on.
-	if tail := numberTail.FindString(product.Number); tail != "" && set.Code != "" {
-		numbers = append(numbers, set.Code+"-"+tail)
-	}
-
 	// A game selling one card in several print runs needs one of them
-	// named, or the runs alias and nothing resolves. The later run is what
-	// the id route lands on, so it is what the fallback asks for first.
+	// named, or the runs alias and nothing resolves. A product naming its
+	// treatment names the printing it is, and that printing is asked for
+	// first wherever the shelves keep it; the card's own printing stands
+	// only when no shelf carries the named one, the card being agreed on
+	// and the finish the one disagreement.
 	finishes := []string{""}
 	switch mkm.gameID {
 	case GameYuGiOh:
@@ -505,41 +504,76 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		finishes = []string{productFinish(mkm.gameID, product), ""}
 	}
 
-	for _, name := range names {
-		for _, number := range numbers {
-			variation := strings.TrimSpace(number + " " + rarity)
-			for _, finish := range finishes {
-				id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
-					Name:      name,
-					Edition:   edition,
-					Variation: variation,
-					Finish:    finish,
-				})
-				if err != nil {
-					continue
+	// The named finish is asked for on every shelf before the plain
+	// printing is settled for on any, so a card the fused row was never
+	// sold cold in is found under its front face rather than priced as
+	// the plain fused card.
+	for _, finish := range finishes {
+		for _, sh := range shelves {
+			set, edition, numberPrefix, printRun := sh.set, sh.edition, sh.numberPrefix, sh.printRun
+			numbers := []string{product.Number}
+			// A promo's programme is the prefix our numbering carries
+			// and the expansion Cardmarket sells it under, so the number
+			// is only whole once the two are put back together; and any
+			// set numbering its cards on letters of its own is asked with
+			// them, since a fused card answers to its faces' numbers only
+			// when they are whole.
+			if mkm.gameID == GameFleshAndBlood {
+				prefix := numberPrefix
+				if prefix == "" {
+					prefix = fabSetPrefix(set)
 				}
-				co, cerr := mtgmatcher.GetUUID(id)
-				if cerr != nil || !strings.EqualFold(co.SetCode, set.Code) {
-					continue
+				numbers = fabNumbers(prefix, product.Number)
+			}
+			// The oldest Yu-Gi-Oh sets are numbered by their original
+			// Asian print ("A015") where the datastore numbers them by
+			// set ("LOB-015"); the digits are what the two agree on.
+			if tail := numberTail.FindString(product.Number); tail != "" && set.Code != "" && mkm.gameID == GameYuGiOh {
+				numbers = append(numbers, set.Code+"-"+tail)
+			}
+
+			// A number is asked of every spelling before a looser number
+			// is asked of any: the name alone comes last, after every
+			// spelling has been tried at the number, so a wording the set
+			// files no printing under cannot slip past the number onto
+			// the card's plainest printing.
+			for _, number := range numbers {
+				for _, name := range names {
+					variation := strings.TrimSpace(number + " " + rarity)
+					id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+						Name:      name,
+						Edition:   edition,
+						Variation: variation,
+						Finish:    finish,
+					})
+					if err != nil {
+						continue
+					}
+					co, cerr := mtgmatcher.GetUUID(id)
+					if cerr != nil || !strings.EqualFold(co.SetCode, set.Code) {
+						continue
+					}
+					// The run has to hold too, for the same reason the
+					// set does: a card the datastore keeps in one run
+					// only is answered with that run whichever was asked
+					// for, and the other run's expansion sells the very
+					// same card.
+					if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
+						continue
+					}
+					if mkm.gameID == GameYuGiOh && otherPrintRun(product.Number, co.Number) {
+						continue
+					}
+					// A promo's number is only whole with its programme,
+					// and a name is not enough on its own: the same card
+					// is handed out by several of them, so an answer that
+					// did not come back with the number asked for is
+					// another programme's.
+					if numberPrefix != "" && !sameFabNumber(co.Number, numberPrefix+product.Number) {
+						continue
+					}
+					return id
 				}
-				// The run has to hold too, for the same reason the set
-				// does: a card the datastore keeps in one run only is
-				// answered with that run whichever was asked for, and the
-				// other run's expansion sells the very same card.
-				if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
-					continue
-				}
-				if mkm.gameID == GameYuGiOh && otherPrintRun(product.Number, co.Number) {
-					continue
-				}
-				// A promo's number is only whole with its programme, and a
-				// name is not enough on its own: the same card is handed
-				// out by several of them, so an answer that did not come
-				// back with the number asked for is another programme's.
-				if numberPrefix != "" && !sameFabNumber(co.Number, numberPrefix+product.Number) {
-					continue
-				}
-				return id
 			}
 		}
 	}
@@ -722,16 +756,20 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		if mkm.gameID == GamePokemon && pokemonCodeCard(product.Name) {
 			return "", "", false, nil
 		}
+		// The id names the card, and the product's own wording names the
+		// printing: Cardmarket sells each Flesh and Blood treatment as its
+		// own product and each print run as its own expansion, and the
+		// flag alone lands on the id's default printing. The printing the
+		// wording names is asked for first, of the id and then of the
+		// name, since the id's card may carry it under another row; only
+		// when nothing carries it does the id's own printing stand, the
+		// card being agreed on and the finish the one disagreement.
+		var loose string
 		if tcgID, found := mkm.TCGBridge[product.IDProduct]; found {
 			cardID, _ = mtgmatcher.MatchID(fmt.Sprint(tcgID), false)
-			// The flag lands on the product's default printing, where the
-			// catalog says which printing this product actually is:
-			// Cardmarket sells each Flesh and Blood treatment as its own
-			// product and each print run as its own expansion.
-			if finish := productFinish(mkm.gameID, product); finish != "" {
-				if id, ferr := mtgmatcher.MatchIDFinish(fmt.Sprint(tcgID), finish); ferr == nil {
-					cardID = id
-				}
+			if finish := productFinish(mkm.gameID, product); finish != "" && cardID != "" {
+				loose = cardID
+				cardID, _ = mtgmatcher.MatchIDFinish(fmt.Sprint(tcgID), finish)
 			}
 		}
 		// The bridge speaks through cardtrader's blueprints and knows only
@@ -753,6 +791,9 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		if cardID == "" {
 			cardID = mkm.matchProduct(product)
 			byName = cardID != ""
+		}
+		if cardID == "" {
+			cardID = loose
 		}
 		if cardID == "" {
 			return "", "", false, errNoPrinting
@@ -956,7 +997,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worke
 		}
 	}
 
-	collector := namedLast{add: addOne, twin: sameProduct(mkm.gameID)}
+	collector := namedLast{add: addOne, twin: sameProduct(mkm.gameID), face: faceOf(mkm.gameID)}
 
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
 
