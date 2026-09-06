@@ -150,8 +150,18 @@ func sameProduct(gameID int) func(a, b *MKMProduct) bool {
 		return pokemonSameProduct
 	case GameYuGiOh:
 		return yugiohSameProduct
+	case GameOnePiece:
+		return onePieceSameProduct
 	}
 	return nil
+}
+
+// onePieceSameProduct reports whether two One Piece products are the same
+// card sold twice: the same name, code tag included, once the version index
+// is off it. The shelves sell each event copy of a promo as a version, and
+// the name reaches the same family for every one of them.
+func onePieceSameProduct(a, b *MKMProduct) bool {
+	return mtgmatcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == mtgmatcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
 }
 
 // resolved is what one product of the walk answered with, held until its
