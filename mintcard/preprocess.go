@@ -11,6 +11,11 @@ func setCodeExists(code string) bool {
 	return err == nil
 }
 
+func nameExists(name string) bool {
+	uuids, err := mtgmatcher.SearchEquals(name)
+	return err == nil && len(uuids) > 0
+}
+
 var nameTable = map[string]string{
 	"Godzilla, King of Monsters":             "Godzilla, King of the Monsters",
 	"Tavern Ruffian // Tavern Champion":      "Tavern Ruffian // Tavern Smasher",
@@ -24,9 +29,25 @@ var name2edition = map[string]string{
 	"Fiendish Duo": "PKHM",
 }
 
+// codeTable maps the set codes the storefront invents onto the datastore's
+var codeTable = map[string]string{
+	"PVC": "DDE",
+}
+
 func preprocess(cardName, number, finish, langauge, edition, setCode string) (*mtgmatcher.InputCard, error) {
 	if setCode == "FWB" {
 		return nil, mtgmatcher.ErrUnsupported
+	}
+	// The inserts a booster carries beside its cards, and the emblems the
+	// datastore files with the tokens, have no printing of their own here
+	if strings.Contains(cardName, "Theme Card") ||
+		strings.Contains(cardName, "Helper Card") ||
+		strings.HasPrefix(cardName, "Emblem ") ||
+		strings.Contains(cardName, "Signature") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+	if fixup, found := codeTable[setCode]; found {
+		setCode = fixup
 	}
 	if strings.Count(cardName, "Token") > 1 {
 		return nil, mtgmatcher.ErrUnsupported
@@ -58,6 +79,12 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 	if found {
 		cardName = fixup
 	}
+	// A promo printed under a flavor name is listed by that name with the
+	// card's own in the first parenthetical: "Fatalism (Arcane Denial)"
+	if len(s) > 1 && !nameExists(cardName) && nameExists(s[1]) {
+		cardName = s[1]
+		variant = strings.TrimSpace(strings.Join(s[2:], " "))
+	}
 
 	switch setCode {
 	case "PMSC":
@@ -78,6 +105,12 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 			variant = "Commander 2011"
 		}
 	case "SLD":
+		// The shelf holds the drops, the convention promos and the
+		// commander decks alike, and only the card says which
+		edition = setCode
+		if len(mtgmatcher.MatchInSet(cardName, "SLD")) == 0 && len(mtgmatcher.MatchInSet(cardName, "SLP")) > 0 {
+			edition = "SLP"
+		}
 		if len(mtgmatcher.MatchInSet(cardName, "SLC")) == 1 {
 			edition = "SLC"
 			if len(mtgmatcher.MatchInSet(cardName, "SLD")) > 0 && mtgmatcher.ExtractYear(variant) == "" {
