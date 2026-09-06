@@ -458,17 +458,26 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			convertedCard.FinishAliases = finishAliases
 		}
 
+		// Each identifier is guarded on its own. The product id and the
+		// upstream id are separate facts about a printing, and gathering
+		// them under one guard lost the second whenever the first was
+		// missing: a card upstream names and TCGplayer does not sell
+		// carried no identifier at all, though its own id was in hand.
+		identifiers := map[string]string{}
 		if card.ExternalLinks.TcgPlayerID != 0 {
 			pid := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
-			convertedCard.Identifiers = map[string]string{
-				"tcgplayerProductId": pid,
-			}
-			if id := card.ExternalLinks.FabID; id != "" {
-				convertedCard.Identifiers["fabId"] = id
-			} else if card.FabID != "" {
-				convertedCard.Identifiers["fabId"] = card.FabID
-			}
+			identifiers["tcgplayerProductId"] = pid
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = card.ID
+		}
+		if id := card.ExternalLinks.FabID; id != "" {
+			identifiers["fabId"] = id
+		} else if card.FabID != "" {
+			identifiers["fabId"] = card.FabID
+		}
+		// A printing with neither keeps the nil map it had, so nothing is
+		// stamped with an empty string for want of a value.
+		if len(identifiers) > 0 {
+			convertedCard.Identifiers = identifiers
 		}
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
