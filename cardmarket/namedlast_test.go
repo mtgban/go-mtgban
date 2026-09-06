@@ -165,7 +165,7 @@ func TestCollectTally(t *testing.T) {
 	if added != 1 {
 		t.Errorf("prices added before flush = %d, want 1", added)
 	}
-	if got := collector.flush(); got != 1 {
+	if got, _ := collector.flush(); got != 1 {
 		t.Errorf("named prices flushed = %d, want 1", got)
 	}
 }
