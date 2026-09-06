@@ -104,14 +104,12 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 			Name:          "Prismatic Shield (Red) (Regular)",
 			Number:        "MON092",
 			ExpansionName: "Monarch - First",
-			CountArticles: 119,
 		},
 		{
 			IDProduct:     999001,
 			Name:          "Prismatic Shield (Red) (Regular)",
 			Number:        "MON092",
 			ExpansionName: "Monarch - First",
-			CountArticles: 12,
 		},
 	}
 

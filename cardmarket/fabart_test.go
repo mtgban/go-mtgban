@@ -54,14 +54,12 @@ func TestGemPackTreatments(t *testing.T) {
 			Name:          "Display Loyalty (Regular)",
 			Number:        "010",
 			ExpansionName: "GEM Pack Promos",
-			CountArticles: 40,
 		},
 		{
 			IDProduct:     810195,
 			Name:          "Display Loyalty (Extended Art Rainbow Foil)",
 			Number:        "010",
 			ExpansionName: "GEM Pack Promos",
-			CountArticles: 12,
 		},
 	}
 
