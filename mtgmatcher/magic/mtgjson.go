@@ -860,9 +860,6 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 			case "SLD":
 				switch card.Number {
-				// One of the tokens is a DFC but burns a card number, skip it
-				case "28":
-					continue
 				// Source is "technically correct" but it gets too messy to track
 				case "589":
 					card.Finishes = []string{"nonfoil", "etched"}
