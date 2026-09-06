@@ -141,6 +141,20 @@ var onePieceEvents = map[string]string{
 // onePieceStarterDeck matches the starter deck a name states in brackets.
 var onePieceStarterDeck = regexp.MustCompile(`\(Starter Deck (\d+)\)`)
 
+// onePieceSpellings spells the One Piece names this storefront writes its
+// own way: the Heroines Edition event card lost a word.
+var onePieceSpellings = map[string]string{
+	"But If We See Each Other Again...Will You Call Me Your Shipmate?!!": "But If We Ever See Each Other Again... Will You Call Me Your Shipmate?!!",
+}
+
+// onePieceSpelling spells a One Piece name the way the catalog does.
+func onePieceSpelling(name string) string {
+	if spelled, found := onePieceSpellings[name]; found {
+		return spelled
+	}
+	return name
+}
+
 // onePieceShelf answers the set a One Piece listing belongs to, which is the
 // shelf it arrived on except where that shelf says only "Promo".
 //
@@ -493,7 +507,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				case GamePokemon:
 					theCard = pokemonListing(cardName, edition, catalogTreatment(notes), isFoil)
 				case GameOnePiece:
-					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
 				case GameGundam:
 					name, variation := gundamCard(cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity)), Foil: isFoil}
@@ -641,12 +655,21 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 		itemNames = filtered
 	}
 
+	// The search answers a product on every shelf it is filed on, and a
+	// Heroines Edition card sits on two, so the same offer arrives twice
+	// with one url, one condition and one quantity. The second is the
+	// first again, not a second seller, and adding it would only be
+	// refused as the duplicate it is.
+	seen := map[string]bool{}
 	mtgban.WorkerPool(ctx, csi.MaxConcurrency, itemNames,
 		func(ctx context.Context, itemName string, results chan<- responseChan) error {
 			csi.printf("Processing %s", itemName)
 			return csi.processSearch(ctx, results, itemName, rarities)
 		},
 		func(record responseChan) {
+			if offerSeen(seen, record.invEntry) {
+				return
+			}
 			var err error
 			if record.relaxed {
 				err = csi.inventory.AddRelaxed(record.cardID, record.invEntry)
@@ -667,6 +690,17 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	csi.inventoryDate = time.Now()
 
 	return nil
+}
+
+// offerSeen reports whether an offer with this url and condition was already
+// collected, and records it otherwise.
+func offerSeen(seen map[string]bool, entry *mtgban.InventoryEntry) bool {
+	key := entry.URL + "\x00" + entry.Conditions
+	if seen[key] {
+		return true
+	}
+	seen[key] = true
+	return false
 }
 
 func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
@@ -733,7 +767,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			}
 			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(product.Name)), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(product.Name), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
 		// Gundam prints the same card at the same number in three sets, so
 		// the shelf has to narrow and the storefront's own code prefix stops
 		// it naming one; the wording it hangs behind the name is what tells
