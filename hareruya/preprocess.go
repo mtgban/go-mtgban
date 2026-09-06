@@ -235,12 +235,22 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 			if len(fields) > 1 {
 				edition += " " + fields[1]
 			}
-		} else if strings.Contains(product.ProductNameEN, "Prerelease") {
+		} else if strings.Contains(product.ProductNameEN, "Prerelease") &&
+			(number == "" || len(mtgmatcher.MatchInSetNumber(cardName, edition, number)) != 1) {
+			// A prerelease card is filed on the set's promo line, unless
+			// the set numbers it among its own cards, which every set
+			// since Murders at Karlov Manor does: the number the title
+			// carries then names the printing in the set itself.
 			edition += " Prerelease"
 		}
 
 		variant = strings.Replace(variant, "RetroF ", "Retro Frame ", 1)
 		cardName = strings.TrimPrefix(cardName, "【Gold Frame】")
+		// The Pool Party drop's dazzle foil is marked where the foil
+		// otherwise is, and only the marker tells it from the plain foil
+		if strings.Contains(product.ProductNameEN, "【Pool Party・Foil】") {
+			variant = strings.TrimSpace("Pool Party " + variant)
+		}
 	}
 
 	override, found := promoMap[edition][cardName][variant]
@@ -515,6 +525,8 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 }
 
 var cardTable = map[string]string{
+	// The Secret Lair flavor name the title puts ahead of the card's own
+	"Chancla relámpagos":                 "Lightning Greaves",
 	"Chicken ? la King":                  "Chicken à la King",
 	"Adorable | KittenAdorable | Kitten": "Adorable Kitten",
 	"Tyrannosaurs Rex":                   "Tyrannosaurus Rex",
@@ -535,22 +547,23 @@ var cardTable = map[string]string{
 const doubleRainbow = "Double Rainbow Foil"
 
 var treatmentTable = map[string]string{
-	"S&C・Foil":       "Step-and-Compleat Foil",
-	"エッチング・Foil":     "Etched Foil",
-	"オイルスリック・Foil":   "Oil Slick",
-	"ギャラクシー・Foil":    "Galaxy Foil",
-	"コンフェッティ・Foil":   "Confetti Foil",
-	"サージ・Foil":       "Surge Foil",
-	"ダブルレインボウ・Foil":  doubleRainbow,
-	"テクスチャー・Foil":    "Textured Foil",
-	"ドラゴンスケイル・Foil":  "Dragonscale Foil",
-	"ネオンインク・Foil":    "Neon Ink",
-	"ハロー・Foil":       "Halo Foil",
-	"ファーストプレイス・Foil": "First Place Foil",
-	"リップル・Foil":      "Ripple Foil",
-	"レイズド・Foil":      "Raised Foil",
-	"不可視インク":         "Invisible Ink",
-	"銀幕・Foil":        "Silver Foil",
+	"Pool Party・Foil": "Pool Party",
+	"S&C・Foil":        "Step-and-Compleat Foil",
+	"エッチング・Foil":      "Etched Foil",
+	"オイルスリック・Foil":    "Oil Slick",
+	"ギャラクシー・Foil":     "Galaxy Foil",
+	"コンフェッティ・Foil":    "Confetti Foil",
+	"サージ・Foil":        "Surge Foil",
+	"ダブルレインボウ・Foil":   doubleRainbow,
+	"テクスチャー・Foil":     "Textured Foil",
+	"ドラゴンスケイル・Foil":   "Dragonscale Foil",
+	"ネオンインク・Foil":     "Neon Ink",
+	"ハロー・Foil":        "Halo Foil",
+	"ファーストプレイス・Foil":  "First Place Foil",
+	"リップル・Foil":       "Ripple Foil",
+	"レイズド・Foil":       "Raised Foil",
+	"不可視インク":          "Invisible Ink",
+	"銀幕・Foil":         "Silver Foil",
 
 	// Not a finish: the alternate printing is announced in the same group.
 	"アルターネイト版": "Alternate",
@@ -685,6 +698,12 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 	},
 	"Other Event Promo": {
+		"Ephemerate": {
+			"夏休み": {
+				Edition: "PSVC",
+				Variant: "1",
+			},
+		},
 		"Swiftfoot Boots": {
 			"卯年プロモ": {
 				Edition: "PL23",
@@ -779,6 +798,12 @@ var promoMap = map[string]map[string]map[string]struct {
 				Variant: "1",
 			},
 		},
+		"Mutavault": {
+			"PCMP": {
+				Edition: "PCMP",
+				Variant: "12",
+			},
+		},
 	},
 	"PB・Draft Promos": {
 		"Arcane Signet": {
@@ -800,6 +825,151 @@ var promoMap = map[string]map[string]map[string]struct {
 			},
 		},
 	},
+	// The 2025 and 2026 promo shelves: each card's Wizards Play Network
+	// or Standard Showdown printing, filed by year, the Spotlight Series
+	// set, and the Final Fantasy Standard Showdown set.
+	"Showdown Promo": {
+		"Squall, SeeD Mercenary": {
+			"Borderless スタンダード・ショーダウン": {
+				Edition: "PSS5",
+				Variant: "2",
+			},
+		},
+		"Ultima": {
+			"Borderless スタンダード・ショーダウン": {
+				Edition: "PSS5",
+				Variant: "1",
+			},
+		},
+		"Carnage, Crimson Chaos": {
+			"スタンダード・ショーダウン": {
+				Edition: "PW25",
+				Variant: "13",
+			},
+		},
+		"Unlucky Cabbage Merchant": {
+			"スタンダード・ショーダウン": {
+				Edition: "PW25",
+				Variant: "15",
+			},
+		},
+		"Lightning Bolt": {
+			"Borderless スタンダード・ショーダウン": {
+				Edition: "PW26",
+				Variant: "5",
+			},
+		},
+		"Into the Flood Maw": {
+			"Retro Frame スタンダード・ショーダウン": {
+				Edition: "PW26",
+				Variant: "8",
+			},
+		},
+		"Dark Deed": {
+			"スタンダード・ショーダウン": {
+				Edition: "PW26",
+				Variant: "12",
+			},
+		},
+	},
+	"Commander Event Promo": {
+		"Echo, Perceptive Prodigy": {
+			"コマンダーイベントプロモ": {
+				Edition: "PW26",
+				Variant: "11",
+			},
+		},
+		"Mister Fantastic, Reed Richards": {
+			"コマンダーイベントプロモ": {
+				Edition: "PW26",
+				Variant: "10",
+			},
+		},
+		"Farhaven Elf": {
+			"Retro Frame コマンダーイベントプロモ": {
+				Edition: "PW26",
+				Variant: "2",
+			},
+		},
+		"Access Tunnel": {
+			"Retro Frame コマンダーイベントプロモ": {
+				Edition: "PW26",
+				Variant: "9",
+			},
+		},
+		"Command Tower": {
+			"Full-Art コマンダーイベントプロモ": {
+				Edition: "PW25",
+				Variant: "17",
+			},
+		},
+	},
+	"Magic Presents Promo": {
+		"Hellcat, Undying Vigilante": {
+			"マジック・プレゼンツプロモ": {
+				Edition: "PW26",
+				Variant: "13",
+			},
+		},
+	},
+	"LRW-P": {
+		"Imperious Perfect": {
+			"Game Day": {
+				Edition: "PCMP",
+				Variant: "9",
+			},
+		},
+	},
+	"UNF-P Prerelease": {
+		"Water Gun Balloon Game": {
+			"Prerelease": {
+				Edition: "UNF",
+				Variant: "538",
+			},
+		},
+	},
+	"M14-P": {
+		"Scavenging Ooze": {
+			"Promo": {
+				Edition: "PDP14",
+				Variant: "3",
+			},
+		},
+	},
+	// The Pool Party drop reprints cards under their earlier sets' numbers
+	// in the title, and the datastore files it under its own; the dazzle
+	// foil is the marked product, the plain foil and nonfoil the other.
+	"SLD": {
+		"Deadly Dispute": {
+			"2XM-080":            {Edition: "SLD", Variant: "IFIYW-1"},
+			"Pool Party 2XM-080": {Edition: "SLD", Variant: "IFIYW-6"},
+		},
+		"Thrill of Possibility": {
+			"J22-615":            {Edition: "SLD", Variant: "IFIYW-3"},
+			"Pool Party J22-615": {Edition: "SLD", Variant: "IFIYW-8"},
+		},
+		"Lightning Greaves": {
+			"NCC-382":            {Edition: "SLD", Variant: "IFIYW-4"},
+			"Pool Party NCC-382": {Edition: "SLD", Variant: "IFIYW-9"},
+		},
+		"Sol Ring": {
+			"SCD-288":            {Edition: "SLD", Variant: "IFIYW-5"},
+			"Pool Party SCD-288": {Edition: "SLD", Variant: "IFIYW-10"},
+		},
+		"Lightning Bolt": {
+			"GN2-042":            {Edition: "SLD", Variant: "IFIYW-2"},
+			"Pool Party GN2-042": {Edition: "SLD", Variant: "IFIYW-7"},
+		},
+	},
+	"IKO": {
+		// The first Godzilla print, before the name was changed
+		"Void Beckoner": {
+			"First edition 373a": {
+				Edition: "IKO",
+				Variant: "373",
+			},
+		},
+	},
 	"Standard Showdown Promo": {
 		"Monstrous Rage": {
 			"Retro Frame Standard Showdown": {
@@ -816,7 +986,51 @@ var promoMap = map[string]map[string]map[string]struct {
 			},
 		},
 	},
+	// The buylist names the promo shelf by its shooting-star mark, and
+	// the wording beside the card by the program that handed it out.
+	"流星マーク": {
+		"Unstoppable Slasher": {
+			"ジャパンスタンダードカッププロモ": {Edition: "PJSC", Variant: "2026-2"},
+		},
+		"Sheltered by Ghosts": {
+			"ジャパンスタンダードカッププロモ": {Edition: "PJSC", Variant: "2026-1"},
+		},
+		"Swords to Plowshares": {
+			"Borderless Other Event": {Edition: "PF25", Variant: "12"},
+			"ボーダーレス メディア系プロモ":        {Edition: "PMEI", Variant: "2026-4"},
+		},
+		"Katara, the Fearless": {
+			"Extended Art MagicCon Promo": {Edition: "PURL", Variant: "2025-3"},
+		},
+		"Pyroblast": {
+			"": {Edition: "PW23", Variant: "8"},
+		},
+		"Reliquary Tower": {
+			"Fullart CommandFest": {Edition: "PF23", Variant: "3"},
+		},
+		"Zombie Master": {
+			"Borderless Player Rewards": {Edition: "PW24", Variant: "3"},
+		},
+		"Lord of Atlantis": {
+			"Borderless Player Rewards": {Edition: "PW24", Variant: "2"},
+		},
+		"Serra Angel": {
+			"Borderless Player Rewards": {Edition: "PW24", Variant: "1"},
+		},
+	},
 	"Spotlight Series Promo": {
+		"Day of Black Sun": {
+			"スポットライトシリーズプロモ": {
+				Edition: "PSPL",
+				Variant: "7",
+			},
+		},
+		"Get Lost": {
+			"Borderless スポットライトシリーズプロモ": {
+				Edition: "PSPL",
+				Variant: "5",
+			},
+		},
 		"Cloud, Midgar Mercenary": {
 			"Borderless スポットライトシリーズプロモ": {
 				Edition: "PPRO",
@@ -897,6 +1111,16 @@ var promoMap = map[string]map[string]map[string]struct {
 				Variant: "7",
 			},
 		},
+		"Vampiric Tutor": {
+			"2000Ver. 2000年版ジャッジ褒賞": {
+				Edition: "G00",
+				Variant: "2",
+			},
+			"2018Ver. 2018年版ジャッジ褒賞": {
+				Edition: "J18",
+				Variant: "2",
+			},
+		},
 		"Wasteland": {
 			"2010Ver. 2010年版ジャッジ褒賞": {
 				Edition: "G10",
@@ -909,6 +1133,18 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 	},
 	"Game Day Promos": {
+		"Urza's Factory": {
+			"ゲームデー": {
+				Edition: "PCMP",
+				Variant: "5",
+			},
+		},
+		"Bramblewood Paragon": {
+			"ゲームデー": {
+				Edition: "PCMP",
+				Variant: "11",
+			},
+		},
 		"Mutavault": {
 			"ゲームデー": {
 				Edition: "PCMP",
@@ -939,6 +1175,12 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 	},
 	"": {
+		"Mirrored Depths": {
+			"その他プロモ": {
+				Edition: "DCI",
+				Variant: "44",
+			},
+		},
 		"Celestine Reef": {
 			"その他プロモ": {
 				Edition: "DCI",
