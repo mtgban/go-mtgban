@@ -3,6 +3,7 @@ package strikezone
 import (
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -66,6 +67,61 @@ func parseDetails(details string) (treatment, run, language string) {
 }
 
 var errForeignListing = errors.New("not an English listing")
+
+// fabRunSets are the sets printed in runs, and the only ones the datastore
+// crosses a run with a treatment for: every set since Everfest was printed
+// once, promos included, and files under the bare treatment.
+var fabRunSets = []string{
+	"Welcome to Rathe",
+	"Arcane Rising",
+	"Crucible of War",
+	"Monarch",
+	"Tales of Aria",
+	"Everfest",
+}
+
+// fabPromoNumber matches the number a promo row spells into its name: the
+// programme's letters and the digits, or the "Hero" wording the storefront
+// writes for the hero programme, at either end of the name.
+var (
+	fabHeroTail   = regexp.MustCompile(`\s+Hero\s?(\d{2,3})$`)
+	fabGluedHead  = regexp.MustCompile(`^-\s*([A-Z]{2,4}\d{3,4})`)
+	fabNumberSpan = regexp.MustCompile(`\s+-\s+[A-Z]{2,4}\d{3,4}\b`)
+	fabGluedPair  = regexp.MustCompile(`^([A-Z]{2,4}\d{3,4})([A-Z]{2,4}\d{3,4})$`)
+)
+
+// fabNumberRespellings are the numbers the storefront misspells, and the
+// number the datastore writes for the same printing.
+var fabNumberRespellings = map[string]string{
+	"JDC008": "JDG008",
+}
+
+// fabListing reads a Flesh and Blood row's name and number for the number
+// the storefront spelled its own way, in the shapes the promo shelf writes:
+// "Fai Rising Rebellion Hero065", "- HER084Prism, Advent of Thrones",
+// "Hexagore, the Death Hydra - FAB186 (Golden) - FAB186", whose second
+// copy the dash-tail rule above leaves behind, and the two numbers of a
+// double-sided promo run together.
+func fabListing(cardName, number string) (string, string) {
+	if fields := fabHeroTail.FindStringSubmatch(cardName); fields != nil {
+		digits := fields[1]
+		for len(digits) < 3 {
+			digits = "0" + digits
+		}
+		return strings.TrimSpace(cardName[:len(cardName)-len(fields[0])]), "HER" + digits
+	}
+	if fields := fabGluedHead.FindStringSubmatch(cardName); fields != nil {
+		return strings.TrimSpace(cardName[len(fields[0]):]), fields[1]
+	}
+	// A double-sided promo's two numbers are written as one word
+	if fields := fabGluedPair.FindStringSubmatch(number); fields != nil {
+		number = fields[1] + "//" + fields[2]
+	}
+	if respelled, found := fabNumberRespellings[number]; found {
+		number = respelled
+	}
+	return strings.TrimSpace(fabNumberSpan.ReplaceAllString(cardName, "")), number
+}
 
 // preprocessDetails turns a row of the games priced through the generic item
 // table into the matcher's input: the name and edition as listed, the Number
@@ -158,12 +214,23 @@ func preprocessDetails(game, cardName, edition, number, details string) (*mtgmat
 			Finish:    finish,
 		}, nil
 	case GameFleshAndBlood:
+		cardName, number = fabListing(cardName, number)
 		// The datastore crosses the run with the treatment, so the two
-		// runs of a card are two printings: "1st Edition Cold Foil".
+		// runs of a card are two printings: "1st Edition Cold Foil". The
+		// storefront stamps "1st Edition" on every row of every set, and
+		// only the sets printed in runs have a printing for it: on a
+		// promo or a modern set the stamp names nothing, and the
+		// treatment alone is the printing. On the promo shelf the
+		// treatment is no better than the stamp - the golden cold foil
+		// sold as a rainbow foil, the rainbow foil as a cold, a foil-only
+		// promo as plain - and the number names the printing on its own.
 		finish := treatment
-		if run == "Unlimited" {
-			finish = "Unlimited Edition " + finish
-		} else if run != "" {
+		if strings.Contains(edition, "Promo") {
+			finish = ""
+		} else if run != "" && slices.Contains(fabRunSets, strings.TrimPrefix(edition, "Flesh and Blood ")) {
+			if run == "Unlimited" {
+				run = "Unlimited Edition"
+			}
 			finish = run + " " + finish
 		}
 		return &mtgmatcher.InputCard{
