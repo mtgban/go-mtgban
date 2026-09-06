@@ -722,6 +722,12 @@ func productNamesEtched(name string) bool {
 
 // GetDecklist returns the uuids of the fixed decks a sealed product contains,
 // for the products whose contents are known rather than drawn.
+//
+// Fixed means fixed: asking twice answers twice the same. Where a product
+// draws for something - the Countdown Kits upgrade cards to foil at a chance
+// the data cannot express - that belongs to opening a copy rather than to the
+// product, and lives in GetPicksForSealed and in the odds
+// GetProbabilitiesForSealed carries.
 func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 	var picks []string
 
@@ -759,21 +765,6 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name)
 					if err != nil {
 						return nil, err
-					}
-
-					// This set data cannot be represented in mtgjson data without
-					// breaking the output format, instead hack things here
-					if content.Set == "slc" {
-						for i := 0; i < len(deckPicks)-1; i++ {
-							n := rand.Intn(10)
-							if n < 3 {
-								uuidFoil, err := MatchID(deckPicks[i], true)
-								if err != nil {
-									continue
-								}
-								deckPicks[i] = uuidFoil
-							}
-						}
 					}
 
 					picks = append(picks, deckPicks...)
