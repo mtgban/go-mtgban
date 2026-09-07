@@ -140,6 +140,15 @@ type GalleryCard struct {
 	// empty and every card falls back to being sold in both.
 	Finishes []string `json:"finishes,omitempty"`
 
+	// PrintingIDs is the uuid each finish prices, published by the builder
+	// rather than spelled here. A uuid is what a price is keyed on, and
+	// spelling one from a finish name means a change to how this package
+	// spells finishes moves identity that lives outside it - silently,
+	// since a moved uuid resolves to nothing rather than erroring. A
+	// datastore that carries none is spelled from below, as every one was
+	// before the builder began publishing them.
+	PrintingIDs map[string]string `json:"printingIds,omitempty"`
+
 	// PromoTypes carries the parenthetical qualifiers the builder strips
 	// from a promotional printing's TCGplayer name ("Sett - The Boss
 	// (Metal) (Best Of)" becomes "Sett - The Boss" with promo types
@@ -394,7 +403,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		// in the uuid itself, so output()/Match resolve to them.
 		convertedCard.FoilUUIDs = map[string]string{}
 		for _, finish := range convertedCard.Finishes {
-			convertedCard.FoilUUIDs[finish] = card.ID + "_" + finish
+			convertedCard.FoilUUIDs[finish] = printingUUID(card, finish)
 		}
 
 		if card.TCGplayerProductID != 0 {
@@ -506,6 +515,16 @@ var riftboundRarityMap = map[string]int{
 // A datastore built before that was recorded says nothing, and the honest
 // answer there is both: it is the assumption the whole game was loaded under
 // until now, and narrowing on no evidence would strand real printings.
+// printingUUID is the uuid a finish prices: the one the datastore
+// publishes, and where it publishes none the finish spelled into the card's
+// id, which is how every uuid here was reached before.
+func printingUUID(card GalleryCard, finish string) string {
+	if uuid := card.PrintingIDs[finish]; uuid != "" {
+		return uuid
+	}
+	return card.ID + "_" + finish
+}
+
 func cardFinishes(card GalleryCard) []string {
 	var out []string
 	for _, finish := range card.Finishes {

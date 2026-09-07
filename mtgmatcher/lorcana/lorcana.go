@@ -49,14 +49,24 @@ type AllCards struct {
 			Name     string `json:"name"`
 			Type     string `json:"type"`
 		} `json:"abilities,omitempty"`
-		Artists          []string          `json:"artists"`
-		ArtistsText      string            `json:"artistsText"`
-		Code             string            `json:"code"`
-		Color            string            `json:"color"`
-		Colors           []string          `json:"colors"`
-		Cost             int               `json:"cost"`
-		FlavorText       string            `json:"flavorText,omitempty"`
-		FoilTypes        []string          `json:"foilTypes,omitempty"`
+		Artists     []string `json:"artists"`
+		ArtistsText string   `json:"artistsText"`
+		Code        string   `json:"code"`
+		Color       string   `json:"color"`
+		Colors      []string `json:"colors"`
+		Cost        int      `json:"cost"`
+		FlavorText  string   `json:"flavorText,omitempty"`
+		FoilTypes   []string `json:"foilTypes,omitempty"`
+
+		// PrintingIDs is the uuid each foil type prices, keyed by the foil
+		// type as upstream spells it ("None", "Silver") and published by
+		// the builder rather than spelled here. A uuid is what a price is
+		// keyed on, and 3,200 of this game's are reached by spelling a
+		// foil type through canonicalFinish - so a change to that
+		// normalization moves identity that lives outside this package,
+		// silently, since a moved uuid resolves to nothing rather than
+		// erroring. A datastore that carries none is spelled from below.
+		PrintingIDs      map[string]string `json:"printingIds,omitempty"`
 		FullIdentifier   string            `json:"fullIdentifier"`
 		FullName         string            `json:"fullName"`
 		FullText         string            `json:"fullText"`
@@ -416,18 +426,26 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		baseUUID := convertedCard.UUID
 		foilSeen := false
 		for i, finish := range finishes {
+			// The foil type this position was read from, which is the key
+			// the builder publishes a uuid under. A card upstream lists
+			// none is the plain printing alone and has no key to look up.
+			var foilType string
+			if i < len(card.FoilTypes) {
+				foilType = card.FoilTypes[i]
+			}
 			if finish != mtgmatcher.FinishFoil {
-				finishUUIDs[mtgmatcher.FinishNonfoil] = baseUUID
-				stored = append(stored, perFinish{baseUUID, false, mtgmatcher.FinishNonfoil})
+				uuid := published(card.PrintingIDs, foilType, baseUUID)
+				finishUUIDs[mtgmatcher.FinishNonfoil] = uuid
+				stored = append(stored, perFinish{uuid, false, mtgmatcher.FinishNonfoil})
 				continue
 			}
 
 			// The exported foil type as the vocabulary spells it ("silver",
 			// "rainbowpillars", …). Nonfoil above uses the matcher's own
 			// constant instead of the export's "None" placeholder.
-			finishName := canonicalFinish(card.FoilTypes[i])
+			finishName := canonicalFinish(foilType)
 
-			uuid := baseUUID + "_" + finishName
+			uuid := published(card.PrintingIDs, foilType, baseUUID+"_"+finishName)
 			// The printing's first foil answers the plain foil flag; the
 			// sub-types past it are keyed by their own name, which is what
 			// keeps a flag from reaching a treatment nobody asked for.
@@ -629,6 +647,16 @@ var lorcanaRarityMap = map[string]int{
 	"enchanted": 7,
 	"iconic":    8,
 	"special":   9,
+}
+
+// published is the uuid the datastore names for a foil type, and the
+// spelled one where it names none - which is how every uuid here was
+// reached before the builder began publishing them.
+func published(ids map[string]string, foilType, spelled string) string {
+	if uuid := ids[foilType]; uuid != "" {
+		return uuid
+	}
+	return spelled
 }
 
 // standardFoil is LorcanaJSON's name for the cold foil almost every Lorcana
