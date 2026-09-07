@@ -36,6 +36,10 @@ type responseChan struct {
 	tally   bool
 	walked  int
 	refused int
+	// foreign is how many of the refused were products of a catalog we do
+	// not carry, which the run reports as its own figure: they are shelves
+	// nobody can act on, where the rest of the refusals are work.
+	foreign int
 }
 
 // namedLast holds back the prices whose printing was named until every
@@ -70,6 +74,7 @@ type namedLast struct {
 	// runs on one goroutine, so plain counts are all this takes.
 	walked  int
 	refused int
+	foreign int
 }
 
 // collect takes one result, adding it, holding it back, or counting it
@@ -78,6 +83,7 @@ func (n *namedLast) collect(result responseChan) {
 	if result.tally {
 		n.walked += result.walked
 		n.refused += result.refused
+		n.foreign += result.foreign
 		return
 	}
 	if result.byName {
@@ -208,11 +214,19 @@ var errForeign = errors.New("of a catalog we do not carry")
 // sells whole Japanese programs the datastores have no set for - and the
 // count is the whole story, where naming each of its products would be tens
 // of thousands of lines saying it again.
+//
+// A shelf whose every refusal is a foreign one is not worth even that line.
+// Cardmarket files the Japanese and other Asian Pokemon catalogs under the
+// same game as the English one - 535 of its 774 shelves, 43,603 products -
+// and those are programs we do not carry rather than printings we failed to
+// find, so a run saying so shelf by shelf is 532 lines that name no work.
+// The run's own tally still counts them, and walkIDMap says how many in one
+// line at the end.
 func (mkm *Index) reportRefused(expansion string, total int, refused []string, twins, foreign int) {
-	count := len(refused) + twins + foreign
-	if count == 0 {
+	if len(refused) == 0 && twins == 0 {
 		return
 	}
+	count := len(refused) + twins + foreign
 	line := fmt.Sprintf("%s: %d of %d products named no printing of ours", expansion, count, total)
 	var why []string
 	if twins > 0 {
@@ -966,7 +980,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 // wait namedLast describes is actually taken: the pool hands its results to
 // the collector rather than to the inventory, so a named price cannot win a
 // printing merely by being walked first.
-func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) (walked, refused int) {
+func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) (walked, refused, foreign int) {
 	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
 	// one, and a cardtrader blueprint names every Cardmarket product it
 	// sells as, so nothing stops two products from resolving to one
@@ -1006,7 +1020,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worke
 	if collector.twins > 0 {
 		mkm.printf("%d prices gave way to a product of the same name already priced", collector.twins)
 	}
-	return collector.walked, collector.refused
+	return collector.walked, collector.refused, collector.foreign
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
