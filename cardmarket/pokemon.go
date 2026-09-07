@@ -177,10 +177,23 @@ var pokemonEnergyLetters = map[string]string{
 	"F": "Fighting", "D": "Darkness", "M": "Metal", "Y": "Fairy", "N": "Dragon", "C": "Colorless",
 }
 
-// pokemonCodeCard reports whether a product is a code for the online game
-// rather than a card.
+// pokemonNonCards are the products a Pokemon shelf sells that are not cards.
+// A booster box's VSTAR marker is a counter, printed on card stock and
+// shelved beside the singles, and no catalog has a row for one.
+var pokemonNonCards = []string{
+	"Code Card",
+	"VSTAR Marker",
+}
+
+// pokemonCodeCard reports whether a product is something other than a card -
+// a code for the online game, or one of the markers a set ships with.
 func pokemonCodeCard(name string) bool {
-	return strings.Contains(name, "Code Card")
+	for _, kind := range pokemonNonCards {
+		if strings.Contains(name, kind) {
+			return true
+		}
+	}
+	return false
 }
 
 // twinsAmong refuses the by-name results whose printing a product the game
@@ -284,8 +297,14 @@ var pokemonPromoNumber = regexp.MustCompile(`^([A-Z]+) (\S+)$`)
 
 // pokemonLettered matches a collector number with a letter hung off it,
 // which is how the alternate-art promos are numbered after the card they
-// reprint ("92a").
-var pokemonLettered = regexp.MustCompile(`^\d+[a-z]$`)
+// reprint: "92a", and "XY198a" where the programme's prefix is written too.
+var pokemonLettered = regexp.MustCompile(`^[A-Za-z]*\d+[a-z]$`)
+
+// pokemonLetteredSets are the two sets those numbers belong to. Cardmarket
+// shelves such a product under the set it reprints - "Field Blower 125a" on
+// Guardians Rising - while the datastore files it with the programme that
+// handed it out, and the two programmes number their cards the same way.
+var pokemonLetteredSets = []string{"Alternate Art Promos", "League & Championship Cards"}
 
 // matchPokemon names a Pokemon product's printing from what the catalog
 // says of it, held to the sets its expansion may hold.
@@ -312,7 +331,9 @@ func (mkm *Index) matchPokemon(product *MKMProduct) (string, error) {
 		candidates = append(candidates, candidate{edition, number, prefix != ""})
 	}
 	if pokemonLettered.MatchString(number) {
-		candidates = append(candidates, candidate{"Alternate Art Promos", number, false})
+		for _, edition := range pokemonLetteredSets {
+			candidates = append(candidates, candidate{edition, number, false})
+		}
 	}
 	if m := pokemonPromoNumber.FindStringSubmatch(product.Number); m != nil {
 		if shelf, found := pokemonPromoCodes[m[1]]; found {
