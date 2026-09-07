@@ -578,7 +578,14 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 				return mtgmatcher.MatchID(card.ID, foil, etched)
 			}
 		}
-		return mtgmatcher.Match(card)
+		id, err := mtgmatcher.Match(card)
+		if err != nil || !etched {
+			return id, err
+		}
+		// Only the catalog's finish name says a product is the etched
+		// printing - the sku spells it as a plain foil - and the wording
+		// path has no other way to hear it.
+		return mtgmatcher.MatchID(id, foil, etched)
 	}
 
 	// Flesh and Blood reads its number off the sku instead: the segments
