@@ -78,27 +78,30 @@ func splitRowsPerFinish(t *testing.T, data []byte) []byte {
 	if err := json.Unmarshal(data, &doc); err != nil {
 		t.Fatal(err)
 	}
-	blades := doc["pageProps"].(map[string]any)["page"].(map[string]any)["blades"].([]any)
+	page := object(t, object(t, doc, "pageProps"), "page")
+	blades, ok := page["blades"].([]any)
+	if !ok {
+		t.Fatal("the payload holds no blades")
+	}
+	var found bool
 	for _, raw := range blades {
-		blade, _ := raw.(map[string]any)
-		if blade == nil || blade["type"] != "riftboundCardGallery" {
+		blade, ok := raw.(map[string]any)
+		if !ok || blade["type"] != "riftboundCardGallery" {
 			continue
 		}
-		cards := blade["cards"].(map[string]any)
+		found = true
+		cards := object(t, blade, "cards")
+		items, ok := cards["items"].([]any)
+		if !ok {
+			t.Fatal("the gallery holds no card items")
+		}
 		var split []any
-		for _, item := range cards["items"].([]any) {
-			row := item.(map[string]any)
-			finishes := []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
-			if listed, ok := row["finishes"].([]any); ok && len(listed) > 0 {
-				finishes = nil
-				for _, f := range listed {
-					switch name, _ := f.(string); name {
-					case mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil:
-						finishes = append(finishes, name)
-					}
-				}
+		for _, item := range items {
+			row, ok := item.(map[string]any)
+			if !ok {
+				t.Fatalf("a card item is %T, not an object", item)
 			}
-			for _, finish := range finishes {
+			for _, finish := range rowSoldIn(row) {
 				printing := map[string]any{}
 				for k, v := range row {
 					printing[k] = v
@@ -111,9 +114,47 @@ func splitRowsPerFinish(t *testing.T, data []byte) []byte {
 		}
 		cards["items"] = split
 	}
+	if !found {
+		t.Fatal("the payload holds no card gallery blade")
+	}
 	out, err := json.Marshal(doc)
 	if err != nil {
 		t.Fatal(err)
+	}
+	return out
+}
+
+// rowSoldIn is the finishes a raw gallery row is sold in, falling back to
+// both where the row lists none - the same fallback the loader makes.
+func rowSoldIn(row map[string]any) []string {
+	listed, ok := row["finishes"].([]any)
+	if !ok {
+		return []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
+	}
+	var out []string
+	for _, raw := range listed {
+		name, ok := raw.(string)
+		if !ok {
+			continue
+		}
+		switch name {
+		case mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil:
+			out = append(out, name)
+		}
+	}
+	if len(out) == 0 {
+		return []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
+	}
+	return out
+}
+
+// object reads a nested object out of a decoded payload, failing the test
+// rather than panicking where the shape is not what it says.
+func object(t *testing.T, holder map[string]any, key string) map[string]any {
+	t.Helper()
+	out, ok := holder[key].(map[string]any)
+	if !ok {
+		t.Fatalf("%q is %T, not an object", key, holder[key])
 	}
 	return out
 }
