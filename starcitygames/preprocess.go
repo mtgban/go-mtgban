@@ -124,6 +124,14 @@ var playPromoPrefixes = map[string]bool{
 	"LNY": true, "PRES": true,
 }
 
+// conventionPrefixes are the SCG SKU prefixes for the promos handed out at a
+// convention - MagicFest, CommandFest, MagicCon and the Commander promo that
+// goes with them. Each names a year, and the year's promos are one PF<yy> set
+// whatever the convention was called that year.
+var conventionPrefixes = map[string]bool{
+	"FEST": true, "CF": true, "MC": true, "MFCMD": true,
+}
+
 // isPlayPromoSet reports whether a set code is one of the Wizards Play Network /
 // store-promo families: PW* (Wizards Play), PLG* (Love Your LGS), PL<year>
 // (Play), PSPL.
@@ -169,6 +177,64 @@ func playPromoPrinting(cardName string) (code, number string, ok bool) {
 	return "", "", false
 }
 
+// trimShelfDigit drops the digit SCG glues onto a set code to give a second
+// shelf a segment of its own, where what is left is still a code. The segment
+// cannot go through fixupSetCode: that reads the same digit as the oversized
+// shelf it means in the sku's set position, so "CMD2" comes back as OCMD,
+// while LNCH_CMD2_184 is a Commander 2011 launch party foil.
+func trimShelfDigit(code string) string {
+	_, err := mtgmatcher.GetSet(code)
+	if err == nil {
+		return code
+	}
+	if len(code) <= 3 || !unicode.IsDigit(rune(code[len(code)-1])) {
+		return code
+	}
+	trimmed := code[:len(code)-1]
+	_, err = mtgmatcher.GetSet(trimmed)
+	if err != nil {
+		return code
+	}
+	return trimmed
+}
+
+// playPromoTarget answers where a Wizards Play Network or store-event promo
+// sku points, strongest claim first. The card's unique Play-promo printing
+// leads, because the year and set in the sku are unreliable there. Failing
+// that the segment names the set the promo belongs to, and the printing sits
+// in that set's promo set or, for a release promo, in the set itself. Failing
+// both, the shop has filed a tournament promo on a store shelf; that is asked
+// last, so a card with any stronger claim never reaches it.
+func playPromoTarget(cardName string, fields []string) (string, string, bool) {
+	code, number, found := playPromoPrinting(cardName)
+	if found {
+		return code, number, true
+	}
+	if len(fields) == 3 {
+		base := trimShelfDigit(fields[1])
+		num := strings.TrimLeft(fields[2], "0")
+		for _, candidate := range []string{"P" + base, base} {
+			if len(mtgmatcher.MatchWithNumber(cardName, candidate, num)) == 0 {
+				continue
+			}
+			return candidate, num, true
+		}
+	}
+	cards := mtgmatcher.MatchInSet(cardName, "PPRO")
+	if len(cards) == 1 {
+		return "PPRO", cards[0].Number, true
+	}
+	return "", "", false
+}
+
+// poolPartyDazzleFoils names the Secret Lair printing a Pool Party foil is,
+// where the shop sends no identifier for it. The drop reprints cards under the
+// collector numbers of the sets they first appeared in, and Secret Lair's own
+// card at that number is a different one, so no reading of the sku reaches it.
+var poolPartyDazzleFoils = map[string]string{
+	"SECRET_JSS_615": "IFIYW-8",
+}
+
 // ProcessSKU turns one of SCG's SKUs into the card description the matcher
 // takes. The SKU spells out the brand, the set, the collector number and the
 // finishing, in shapes that differ by what kind of card it is:
@@ -194,6 +260,9 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	number := strings.TrimLeft(fields[3], "0")
 	language := fields[4][:2]
 	foil := fields[4][2] != 'N'
+	// The finish letter is N for plain, F for foil and A for an alt foil -
+	// surge, confetti, dazzle and the rest, which the segment never spells.
+	altFoil := fields[4][2] == 'A'
 
 	// The Italian Legends and The Dark are their own sets rather than
 	// foreign-language reprints of the English ones. Only remap when the set is
@@ -267,6 +336,12 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		switch {
 		// Decouple Secret Lair
 		case len(fields) > 2 && fields[0] == "SECRET":
+			variant, tabled := poolPartyDazzleFoils[number]
+			if tabled && altFoil {
+				setCode = "SLD"
+				number = variant
+				break
+			}
 			setCode = fields[1]
 			number = strings.TrimLeft(fields[2], "0")
 			if len(mtgmatcher.MatchWithNumber(cardName, setCode, number)) == 0 &&
@@ -293,16 +368,20 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
-		case len(fields) > 2 && len(fields[1]) == 4 &&
-			(strings.HasPrefix(number, "FEST_") || strings.HasPrefix(number, "CF_")):
-			setCode = "PF" + fields[1][2:]
+		case len(fields) > 2 && len(fields[1]) == 4 && conventionPrefixes[fields[0]]:
+			// The sku's own number counts the shelf, not the set, so the
+			// card's place in the year's set is the only thing that gives
+			// it a collector number - and a year whose promos went out
+			// under some other set has none to give.
+			convention := "PF" + fields[1][2:]
 
-			if cardName == "Counterspell" && setCode == "PF23" {
-				setCode = "PF24"
+			if cardName == "Counterspell" && convention == "PF23" {
+				convention = "PF24"
 			}
 
-			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			cards := mtgmatcher.MatchInSet(cardName, convention)
 			if len(cards) == 1 {
+				setCode = convention
 				number = cards[0].Number
 			}
 		case strings.HasPrefix(number, "NYCC24_"):
@@ -396,16 +475,18 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 				}
 			}
 		case strings.HasPrefix(number, "PRE_") && len(fields) == 3:
-			// Prerelease promo. Usually P<SET> #<num>s, but some sets carry the
-			// prerelease reprint in the main set instead (e.g. LCI #188), so
-			// fall back to <SET> #<num> when the promo set has no such card.
+			// Prerelease promo. A modern promo set numbers it <num>s and an
+			// old one plainly <num>; where the promo set has neither, the
+			// main set carries the prerelease reprint itself (e.g. LCI #188).
 			num := strings.TrimLeft(fields[2], "0")
-			if len(mtgmatcher.MatchWithNumber(cardName, "P"+fields[1], num+"s")) > 0 {
-				setCode = "P" + fields[1]
-				number = num + "s"
-			} else {
-				setCode = fields[1]
-				number = num
+			promo := "P" + fields[1]
+			setCode, number = fields[1], num
+			for _, candidate := range []string{num + "s", num} {
+				if len(mtgmatcher.MatchWithNumber(cardName, promo, candidate)) == 0 {
+					continue
+				}
+				setCode, number = promo, candidate
+				break
 			}
 		case strings.HasPrefix(number, "SCHP_") && len(fields) == 3:
 			// Store Championship promo: SCHP_<year>_<num> -> SCH #<num>.
@@ -418,21 +499,17 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 				number = cards[0].Number
 			}
 		case len(fields) > 0 && playPromoPrefixes[fields[0]]:
-			// Wizards Play Network / store-event promo: resolve to the card's
-			// unique Play-promo printing. When there's no such printing, some of
-			// these (e.g. RLS_INR release promos) reference a real set directly.
-			if code, num, ok := playPromoPrinting(cardName); ok {
+			code, num, found := playPromoTarget(cardName, fields)
+			if found {
 				setCode = code
 				number = num
-			} else if len(fields) == 3 {
-				if _, err := mtgmatcher.GetSet(fields[1]); err == nil {
-					setCode = fields[1]
-					number = strings.TrimLeft(fields[2], "0")
-				}
 			}
-		case (strings.HasPrefix(number, "BUN_") || strings.HasPrefix(number, "BAB_")) && len(fields) == 3:
-			// Bundle / Buy-a-Box promo: P<SET> #<num>.
-			setCode = "P" + fields[1]
+		case (strings.HasPrefix(number, "BUN_") || strings.HasPrefix(number, "BAB_") ||
+			strings.HasPrefix(number, "LNCH_")) && len(fields) == 3:
+			// Bundle, buy-a-box or launch party promo: P<SET> #<num>. The
+			// launch promos carry the digit SCG glues on for a second shelf,
+			// which is no part of the set code.
+			setCode = "P" + trimShelfDigit(fields[1])
 			number = strings.TrimLeft(fields[2], "0")
 		}
 	case "PUMA":
@@ -461,6 +538,18 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 
 	// Check if we found it and return the id
 	out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
+	// A printing that shows only the front of a card with an Omen or
+	// Adventure back is filed under that face's name alone, while the
+	// catalog goes on naming both faces at every number. The retry asks
+	// for that name exactly: MatchWithNumber narrows by substring, which
+	// on a one-word face would answer with any card at the number whose
+	// name merely contains it.
+	if len(out) == 0 {
+		front, _, twoFaced := strings.Cut(cardName, " // ")
+		if twoFaced {
+			out = mtgmatcher.MatchInSetNumber(front, setCode, number)
+		}
+	}
 	if len(out) == 1 {
 		card := out[0]
 		// If there's a single finish make sure the number+finish combination is correct
