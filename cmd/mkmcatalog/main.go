@@ -89,6 +89,8 @@ func run() error {
 				ExpansionID: expansion.IDExpansion,
 				Name:        product.Name,
 				Number:      product.Number,
+				Rarity:      product.Rarity,
+				Version:     cardmarket.ProductVersion(&product),
 			}
 		}
 		log.Printf("[%d/%d] %s: %d products", i+1, len(expansions), expansion.Name, len(products))

@@ -116,6 +116,10 @@ type MKMProduct struct {
 	Name          string `json:"enName"`
 	Website       string `json:"website"`
 	Number        string `json:"number"`
+	// Rarity is what the marketplace calls the printing's rarity. It is the
+	// game's own vocabulary where the game has one - Common through Secret
+	// Rare for Pokemon - and "Promo" for a whole promotional shelf.
+	Rarity        string `json:"rarity"`
 	ExpansionName string `json:"expansionName"`
 	// ExpansionCode is the marketplace's own abbreviation of the
 	// expansion, read off the id map rather than the product
