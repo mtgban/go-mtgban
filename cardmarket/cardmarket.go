@@ -208,6 +208,22 @@ var errTwin = errors.New("twin of another product")
 // errForeign marks a product of a catalog the datastore does not carry.
 var errForeign = errors.New("of a catalog we do not carry")
 
+// noPrinting answers the error a product no route named a printing for
+// refuses with - which for a Pokemon basic energy is no error at all.
+//
+// Every set prints the nine basic energies and reprints them unchanged for
+// years, so the catalogs shelve them where no printing of ours is separable:
+// by the year they were printed, or on a trainer kit's own shelf, one product
+// standing for a card a dozen sets carry. Naming those is the same noise
+// Magic's tokens are, and resolveMagic already passes over them for the same
+// reason. They are 57 of the 177 lines a Pokemon run still reports.
+func (mkm *Index) noPrinting(product *MKMProduct) error {
+	if mkm.gameID == GamePokemon && pokemonBasicEnergy(pokemonName(product.Name)) {
+		return nil
+	}
+	return errNoPrinting
+}
+
 // reportRefused says what an expansion refused and counts it into the run's
 // tally. Every refusal is named, one line each, except in an expansion
 // nothing resolved in: that is a catalog we do not carry at all - Cardmarket
@@ -798,6 +814,9 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 				cardID, err = mkm.matchYugioh(product)
 			}
 			if err != nil {
+				if errors.Is(err, errNoPrinting) {
+					err = mkm.noPrinting(product)
+				}
 				return "", "", false, err
 			}
 			byName = cardID != ""
@@ -810,7 +829,7 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 			cardID = loose
 		}
 		if cardID == "" {
-			return "", "", false, errNoPrinting
+			return "", "", false, mkm.noPrinting(product)
 		}
 		cardIDFoil = cardID
 		if mkm.gameID == GameYuGiOh {

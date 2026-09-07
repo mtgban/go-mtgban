@@ -61,6 +61,31 @@ func pokemonForeignDenied(expansion, number string) bool {
 	return !(numberedOK && number != "")
 }
 
+// pokemonEnergyTypes are the nine kinds of basic energy. The catalog names
+// one either way round - "Grass Energy" and "Basic Grass Energy" are both on
+// the shelves - and the datastore carries both spellings too.
+var pokemonEnergyTypes = []string{
+	"Grass", "Fire", "Water", "Lightning", "Psychic",
+	"Fighting", "Darkness", "Metal", "Fairy",
+}
+
+// pokemonBasicEnergy reports whether a name is a basic energy's. The whole
+// name is read rather than a substring of it: "Rainbow Energy", "Jet Energy"
+// and "Luminous Energy" are special energies that a shelf sells on their own
+// account, and "Superior Energy Retrieval" is not an energy at all.
+func pokemonBasicEnergy(name string) bool {
+	name = strings.TrimSpace(name)
+	if len(name) > len("Basic ") && strings.EqualFold(name[:len("Basic ")], "Basic ") {
+		name = name[len("Basic "):]
+	}
+	for _, kind := range pokemonEnergyTypes {
+		if strings.EqualFold(name, kind+" Energy") {
+			return true
+		}
+	}
+	return false
+}
+
 // pokemonExpansion is what a Cardmarket expansion name means in the
 // catalog's terms: the sets its products may be printings of, tried in
 // order, and the programme prefix the promo numbers are written without.
