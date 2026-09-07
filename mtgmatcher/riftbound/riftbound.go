@@ -140,6 +140,15 @@ type GalleryCard struct {
 	// empty and every card falls back to being sold in both.
 	Finishes []string `json:"finishes,omitempty"`
 
+	// Finish is set when the datastore publishes one row per printing
+	// rather than one per card, which is how every other game here
+	// publishes: the row names the one finish it is and carries the uuid
+	// that finish prices, rather than a list for this loader to explode.
+	// Empty on a row that speaks for a whole card, and the two shapes read
+	// the same way below because a card's rows group under the product id
+	// they share.
+	Finish string `json:"finish,omitempty"`
+
 	// PromoTypes carries the parenthetical qualifiers the builder strips
 	// from a promotional printing's TCGplayer name ("Sett - The Boss
 	// (Metal) (Best Of)" becomes "Sett - The Boss" with promo types
@@ -337,8 +346,28 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	sort.Strings(b.AllCanonicalNames)
 	sort.Strings(b.AllLowerNames)
 
+	// Group sibling rows back into their card. A datastore publishing one
+	// row per printing names the finish on each row and gives each its own
+	// uuid; one publishing a row per card carries the finish list instead
+	// and leaves every group at one row. Both read the same way from here,
+	// and the grouping is a no-op on the older shape - no two of its rows
+	// share a product id.
+	var cardOrder []string
+	rowsByCard := map[string][]GalleryCard{}
+	for _, row := range gallery.Cards.Items {
+		key := cardKey(row)
+		if _, found := rowsByCard[key]; !found {
+			cardOrder = append(cardOrder, key)
+		}
+		rowsByCard[key] = append(rowsByCard[key], row)
+	}
+
 	// Load all cards and store them in their relative sets
-	for _, card := range gallery.Cards.Items {
+	for _, key := range cardOrder {
+		rows := rowsByCard[key]
+		// Every row of a group says the same thing about the card; only
+		// the finish and the uuid differ, and those are read per row.
+		card := rows[0]
 		setCode := card.Set.Value.ID
 		if b.Sets[setCode] == nil {
 			continue
@@ -355,12 +384,32 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 		number := numberFromPublicCode(card.PublicCode)
 
+		// The finishes the card is sold in, gathered over its rows in the
+		// order they are published, and the uuid each of them prices.
+		var finishes []string
+		finishUUIDs := map[string]string{}
+		for _, row := range rows {
+			for _, finish := range rowFinishes(row) {
+				if _, found := finishUUIDs[finish]; found {
+					continue
+				}
+				finishes = append(finishes, finish)
+				finishUUIDs[finish] = rowUUID(row, finish)
+			}
+		}
+		if len(finishes) == 0 {
+			continue
+		}
+
 		convertedCard := mtgmatcher.Card{
-			UUID: card.ID,
+			// The card's own uuid names no printing here - every stored
+			// one carries a finish - so it stays the bare id it always was,
+			// which a per-printing row spells with the finish on the end.
+			UUID: trimFinishSuffix(card.ID),
 
 			Name:     card.Name,
 			SetCode:  setCode,
-			Finishes: cardFinishes(card),
+			Finishes: finishes,
 			Number:   number,
 			Images: map[string]string{
 				"full":      card.CardImage.URL,
@@ -392,10 +441,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		}
 		// Register the uuid each finish resolves to, spelling the finish out
 		// in the uuid itself, so output()/Match resolve to them.
-		convertedCard.FoilUUIDs = map[string]string{}
-		for _, finish := range convertedCard.Finishes {
-			convertedCard.FoilUUIDs[finish] = card.ID + "_" + finish
-		}
+		convertedCard.FoilUUIDs = finishUUIDs
 
 		if card.TCGplayerProductID != 0 {
 			pid := fmt.Sprint(card.TCGplayerProductID)
@@ -506,6 +552,52 @@ var riftboundRarityMap = map[string]int{
 // A datastore built before that was recorded says nothing, and the honest
 // answer there is both: it is the assumption the whole game was loaded under
 // until now, and narrowing on no evidence would strand real printings.
+// cardKey is the card a row belongs to: the TCGplayer product id, which
+// every finish of one card shares - the product is the card and its
+// printings are skus underneath it. A row the catalog sells nothing for
+// falls back to its own id with any finish suffix taken off, which is what
+// the nine tokens the gallery carries and TCGplayer does not resolve to.
+func cardKey(card GalleryCard) string {
+	if card.TCGplayerProductID != 0 {
+		return fmt.Sprint(card.TCGplayerProductID)
+	}
+	return trimFinishSuffix(card.ID)
+}
+
+// trimFinishSuffix takes the finish off a per-printing uuid. A row that
+// names no finish carries none, so this leaves the older shape's ids alone.
+func trimFinishSuffix(id string) string {
+	for _, finish := range []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil} {
+		if trimmed, cut := strings.CutSuffix(id, "_"+finish); cut {
+			return trimmed
+		}
+	}
+	return id
+}
+
+// rowFinishes is the finishes one row speaks for: the one it names where it
+// names one, and the list it carries where it speaks for a whole card.
+func rowFinishes(card GalleryCard) []string {
+	if card.Finish != "" {
+		switch card.Finish {
+		case mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil:
+			return []string{card.Finish}
+		}
+		return nil
+	}
+	return cardFinishes(card)
+}
+
+// rowUUID is the uuid a finish prices. A per-printing row is already that
+// uuid; a card row holds one uuid for several finishes, so the finish is
+// spelled into it here the way the builder would have.
+func rowUUID(card GalleryCard, finish string) string {
+	if card.Finish != "" {
+		return card.ID
+	}
+	return card.ID + "_" + finish
+}
+
 func cardFinishes(card GalleryCard) []string {
 	var out []string
 	for _, finish := range card.Finishes {
