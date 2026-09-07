@@ -255,6 +255,80 @@ var SKUTests = []SKUTest{
 		In:   "SGL-MTG-PRM-ARENA_USG_338-ENF1",
 		Out:  "206ed424-ffd7-596f-864b-487f775cc0d1",
 	},
+	{
+		// Convention promo: the sku's number counts the shelf, so the
+		// year's set is what gives the card a collector number.
+		Name: "J. Jonah Jameson",
+		In:   "SGL-MTG-PRM-MC_2025_003-ENF1",
+		Out:  "07604a4b-adfb-506b-ab4b-5856ff83f130",
+	},
+	{
+		Name: "Reliquary Tower",
+		In:   "SGL-MTG-PRM-MFCMD_2023_001-ENN1",
+		Out:  "8c439230-3efe-5286-9336-b6c2464c9773",
+	},
+	{
+		// Prerelease promo from before the promo sets suffixed the
+		// number with an s.
+		Name: "Raging Kavu",
+		In:   "SGL-MTG-PRM-PRE_INV_262-ENF1",
+		Out:  "c83d5f72-45eb-5672-996b-83c5ec170d4d",
+	},
+	{
+		Name: "Questing Phelddagrif",
+		In:   "SGL-MTG-PRM-PRE_PLS_119-ENF1",
+		Out:  "c28e1276-53af-520a-ac0f-bdbf0231d029",
+	},
+	{
+		// Borderless art of a card with an Omen back, filed under the
+		// front face while the catalog goes on naming both.
+		Name: "Bloomvine Regent // Claim Territory",
+		In:   "SGL-MTG-TDM2-381-ENF1",
+		Out:  "357bf17f-0860-5f62-a41f-08b623726866",
+	},
+	{
+		// Launch party promo: the segment names the set and the
+		// printing sits in that set's promo set, past the digit the
+		// second shelf carries.
+		Name: "Basandra, Battle Seraph",
+		In:   "SGL-MTG-PRM2-LNCH_CMD2_184-ENF1",
+		Out:  "6e78f3ef-278b-5779-bba4-a3bcae569718",
+	},
+	{
+		// A store shelf's set is tried through its promo set before the
+		// set itself: PHOU #129, not HOU #129.
+		Name: "Ramunap Excavator",
+		In:   "SGL-MTG-PRM-DRFT_HOU_129-ENF1",
+		Out:  "b84b4b86-e8ed-5a6f-adc6-026b64ea0ddf",
+	},
+	{
+		// A tournament promo filed on the Play shelf, reached only
+		// because nothing with a stronger claim answered.
+		Name: "Quicksilver, Brash Blur",
+		In:   "SGL-MTG-PRM-PLAY_MSH_005-ENF1",
+		Out:  "3f0760fd-41ff-5726-b7bd-0889a0769ee9",
+	},
+	{
+		// Arcbound Ravager has a Pro Tour printing too, and must keep
+		// the Play printing its sku names.
+		Name: "Arcbound Ravager",
+		In:   "SGL-MTG-PRM-LNY_2023_004-ENF1",
+		Out:  "c04b97ec-5f88-5709-992b-486303835d3d",
+	},
+	{
+		// The Pool Party dazzle foil, which no reading of the sku
+		// reaches.
+		Name: "Thrill of Possibility",
+		In:   "SGL-MTG-PRM-SECRET_JSS_615-ENA1",
+		Out:  "e92a9e8f-cc9e-5749-a735-889e5e634af5",
+	},
+	{
+		// The plain printing shares that segment and must not be
+		// answered with the dazzle foil; it resolves by identifier.
+		Name: "Thrill of Possibility",
+		In:   "SGL-MTG-PRM-SECRET_JSS_615-ENF1",
+		Err:  "not found",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {
