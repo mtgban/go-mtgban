@@ -49,14 +49,25 @@ type AllCards struct {
 			Name     string `json:"name"`
 			Type     string `json:"type"`
 		} `json:"abilities,omitempty"`
-		Artists          []string          `json:"artists"`
-		ArtistsText      string            `json:"artistsText"`
-		Code             string            `json:"code"`
-		Color            string            `json:"color"`
-		Colors           []string          `json:"colors"`
-		Cost             int               `json:"cost"`
-		FlavorText       string            `json:"flavorText,omitempty"`
-		FoilTypes        []string          `json:"foilTypes,omitempty"`
+		Artists     []string `json:"artists"`
+		ArtistsText string   `json:"artistsText"`
+		Code        string   `json:"code"`
+		Color       string   `json:"color"`
+		Colors      []string `json:"colors"`
+		Cost        int      `json:"cost"`
+		FlavorText  string   `json:"flavorText,omitempty"`
+		FoilTypes   []string `json:"foilTypes,omitempty"`
+
+		// Finish and UUID are set when the datastore publishes one row per
+		// printing rather than one per card, which is how every other game
+		// here publishes: the row names the one foil type it is - "None"
+		// for the plain printing - and carries the uuid that printing
+		// prices. The id stays LorcanaJSON's own, which is the card's and
+		// is what the rows of one card group under. Both empty on a row
+		// that speaks for a whole card, and the two shapes read the same
+		// way below.
+		Finish           string            `json:"finish,omitempty"`
+		UUID             string            `json:"uuid,omitempty"`
 		FullIdentifier   string            `json:"fullIdentifier"`
 		FullName         string            `json:"fullName"`
 		FullText         string            `json:"fullText"`
@@ -166,8 +177,16 @@ func (ac *AllCards) englishCards() []int {
 		// The collector number as printed, letter included: that letter is
 		// all that separates the same-numbered art siblings ("4a" to "4e"),
 		// and the number alone would file them under one identity.
-		identity := fmt.Sprintf("%d|%d|%d|%s|%d%s",
-			el.TcgPlayerID, el.CardmarketID, el.CardTraderID, card.SetCode, card.Number, card.Variant)
+		//
+		// The finish is part of it too, because a datastore publishing a
+		// row per printing gives one card several rows that agree on every
+		// other field - the product, the set and the number are the card's,
+		// not the printing's - and dropping them as duplicates would leave
+		// the card sold in whichever finish happened to be listed first. It
+		// is empty on a row speaking for a whole card, so the older shape
+		// dedups exactly as it did.
+		identity := fmt.Sprintf("%d|%d|%d|%s|%d%s|%s",
+			el.TcgPlayerID, el.CardmarketID, el.CardTraderID, card.SetCode, card.Number, card.Variant, card.Finish)
 		if seen[identity] {
 			continue
 		}
@@ -331,21 +350,42 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	}
 
 	// Load all cards and store them in their relative sets
+	// Group sibling rows back into their card. A datastore publishing one
+	// row per printing names the foil type on each row and carries the uuid
+	// that printing prices; one publishing a row per card carries the foil
+	// type list instead and leaves every group at one row. They group under
+	// LorcanaJSON's own card id, which is the card's identity in either
+	// shape, so the grouping is a no-op on the shape published today.
+	var cardOrder []int
+	rowsByCard := map[int][]int{}
 	for _, i := range cards {
-		card := ac.Cards[i]
+		id := ac.Cards[i].ID
+		if _, found := rowsByCard[id]; !found {
+			cardOrder = append(cardOrder, id)
+		}
+		rowsByCard[id] = append(rowsByCard[id], i)
+	}
+
+	for _, id := range cardOrder {
+		rows := rowsByCard[id]
+		// Every row of a group says the same thing about the card; only the
+		// foil type and the uuid differ, and those are read per row.
+		card := ac.Cards[rows[0]]
 		// Normalize Lorcana's many foil-type names (Silver, Satin, Magma, …) to
 		// the matcher's finish constants: "None" is nonfoil, everything else is
 		// foil, so output() can select the right (foil) uuid downstream. Which
 		// foil each of them is stays on the uuid carrying it, below.
-		finishes := make([]string, len(card.FoilTypes))
-		for i, finish := range card.FoilTypes {
+		printings := cardPrintings(ac, rows)
+		finishes := make([]string, len(printings))
+		for i, sold := range printings {
 			finishes[i] = mtgmatcher.FinishFoil
-			if canonicalFinish(finish) == mtgmatcher.FinishNonfoil {
+			if canonicalFinish(sold.foilType) == mtgmatcher.FinishNonfoil {
 				finishes[i] = mtgmatcher.FinishNonfoil
 			}
 		}
 		if len(finishes) == 0 {
 			finishes = append(finishes, mtgmatcher.FinishNonfoil)
+			printings = append(printings, printing{})
 		}
 
 		// Ensure no spaces are present for ease of future comparisons
@@ -417,17 +457,27 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		foilSeen := false
 		for i, finish := range finishes {
 			if finish != mtgmatcher.FinishFoil {
-				finishUUIDs[mtgmatcher.FinishNonfoil] = baseUUID
-				stored = append(stored, perFinish{baseUUID, false, mtgmatcher.FinishNonfoil})
+				uuid := printings[i].uuid
+				if uuid == "" {
+					uuid = baseUUID
+				}
+				finishUUIDs[mtgmatcher.FinishNonfoil] = uuid
+				stored = append(stored, perFinish{uuid, false, mtgmatcher.FinishNonfoil})
 				continue
 			}
 
 			// The exported foil type as the vocabulary spells it ("silver",
 			// "rainbowpillars", …). Nonfoil above uses the matcher's own
 			// constant instead of the export's "None" placeholder.
-			finishName := canonicalFinish(card.FoilTypes[i])
+			finishName := canonicalFinish(printings[i].foilType)
 
-			uuid := baseUUID + "_" + finishName
+			// A per-printing row carries the uuid it prices; a card row
+			// holds one uuid for several finishes, so the finish is spelled
+			// into it here the way the builder would have.
+			uuid := printings[i].uuid
+			if uuid == "" {
+				uuid = baseUUID + "_" + finishName
+			}
 			// The printing's first foil answers the plain foil flag; the
 			// sub-types past it are keyed by their own name, which is what
 			// keeps a flag from reaching a treatment nobody asked for.
@@ -629,6 +679,34 @@ var lorcanaRarityMap = map[string]int{
 	"enchanted": 7,
 	"iconic":    8,
 	"special":   9,
+}
+
+// printing is one row's contribution to a card: the foil type LorcanaJSON
+// names it with, and the uuid that printing prices where the row carries
+// one. A row speaking for a whole card carries no uuid, and the caller
+// spells one from the card's own.
+type printing struct {
+	foilType string
+	uuid     string
+}
+
+// cardPrintings is the printings a card's rows describe, in the order they
+// are published - which is the order the foil types were listed in, and
+// what decides which foil answers the plain foil flag and which is a
+// treatment past it.
+func cardPrintings(ac *AllCards, rows []int) []printing {
+	var out []printing
+	for _, i := range rows {
+		card := ac.Cards[i]
+		if card.Finish != "" {
+			out = append(out, printing{foilType: card.Finish, uuid: card.UUID})
+			continue
+		}
+		for _, foilType := range card.FoilTypes {
+			out = append(out, printing{foilType: foilType})
+		}
+	}
+	return out
 }
 
 // standardFoil is LorcanaJSON's name for the cold foil almost every Lorcana
