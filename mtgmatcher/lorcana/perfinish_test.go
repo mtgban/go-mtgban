@@ -99,8 +99,10 @@ func splitRowsPerFinish(t *testing.T, data []byte) []byte {
 			t.Fatalf("a card's id is %T, not a number", row["id"])
 		}
 		base := cardUUID(int(id))
-		foilTypes, _ := row["foilTypes"].([]any)
-		if len(foilTypes) == 0 {
+		foilTypes, listed := row["foilTypes"].([]any)
+		if !listed || len(foilTypes) == 0 {
+			// A card upstream lists no foil type for is sold in the plain
+			// printing alone, which is one row either way.
 			split = append(split, row)
 			continue
 		}
