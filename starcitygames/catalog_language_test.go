@@ -1,32 +1,32 @@
 package starcitygames
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// The catalog spells two-part languages with a dash mtgjson does not
-// use, and an absent language means English on both sides.
-func TestLanguageMatches(t *testing.T) {
+// The catalog spells two-part languages with a dash mtgjson does not use, and
+// English - which an absent language also means - is the empty tag, the one
+// that claims nothing about which printing is being sold.
+func TestCatalogLanguageTag(t *testing.T) {
 	tests := []struct {
-		catalog, card string
-		want          bool
+		catalog, want string
 	}{
-		{"English", "English", true},
-		{"", "English", true},
-		{"English", "", true},
-		{"Japanese", "Japanese", true},
-		{"Chinese - Traditional", "Chinese Traditional", true},
-		{"Chinese - Simplified", "Chinese Simplified", true},
-		{"German", "Italian", false},
-		{"French", "Italian", false},
-		{"Korean", "Japanese", false},
-		{"Chinese - Traditional", "Japanese", false},
+		{"English", ""},
+		{"", ""},
+		{"Japanese", "Japanese"},
+		{"Italian", "Italian"},
+		{"German", "German"},
+		{"Korean", "Korean"},
+		{"Chinese - Traditional", "Chinese Traditional"},
+		{"Chinese - Simplified", "Chinese Simplified"},
+		{"Portuguese", "Portuguese"},
 	}
 	for _, test := range tests {
-		if got := languageMatches(test.catalog, test.card); got != test.want {
-			t.Errorf("languageMatches(%q, %q) = %v", test.catalog, test.card, got)
+		if got := catalogLanguageTag(test.catalog); got != test.want {
+			t.Errorf("catalogLanguageTag(%q) = %q, want %q", test.catalog, got, test.want)
 		}
 	}
 }
@@ -90,8 +90,63 @@ func TestResolveForeignLanguages(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !languageMatches(test.product.Language, co.Language) {
+			if claimed := catalogLanguageTag(test.product.Language); claimed != "" &&
+				!strings.Contains(co.Language, claimed) {
 				t.Errorf("resolved to a %s printing for a %s product", co.Language, test.product.Language)
+			}
+		})
+	}
+}
+
+// A printing that was only ever made in one language other than English is
+// still what the shop is selling: the sku carries "-EN" because that is what
+// the grammar emits, and the collector number beside it has already said which
+// printing is meant. Dropping these lost the Dwarvish cards in The Hobbit, the
+// Phyrexian Secret Lairs and the promos printed as a gimmick in a single tongue.
+func TestResolveEnglishTagOnForeignPrinting(t *testing.T) {
+	withMagic(t)
+
+	for _, test := range []struct {
+		product          CatalogProduct
+		wantSet, wantNum string
+		wantCardLanguage string
+	}{
+		{
+			CatalogProduct{
+				Name: "Mox Amber", Set: "The Hobbit Eternal", Language: "English",
+				CollectorNumber: "096", SKU: "SGL-MTG-HOC-096-ENN",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+			}, "HOC", "96", "Dwarvish",
+		},
+		{
+			CatalogProduct{
+				Name: "Jin-Gitaxias, Progress Tyrant", Set: "Kamigawa: Neon Dynasty",
+				Language: "English", CollectorNumber: "307", SKU: "SGL-MTG-NEO2-307-ENN",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+			}, "NEO", "307", "Phyrexian",
+		},
+		{
+			CatalogProduct{
+				Name: "Sheoldred, Whispering One", Set: "Secret Lair Drop",
+				Language: "English", CollectorNumber: "211",
+				SKU:    "SGL-MTG-PRM-SECRET_SLD_211-ENN",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+			}, "SLD", "211", "Phyrexian",
+		},
+	} {
+		t.Run(test.product.SKU, func(t *testing.T) {
+			id, err := resolveProduct(GameMagic, test.product)
+			if err != nil {
+				t.Fatalf("resolveProduct: %v", err)
+			}
+			co, err := mtgmatcher.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != test.wantSet || co.Number != test.wantNum ||
+				co.Language != test.wantCardLanguage {
+				t.Errorf("got %s #%s (%s), want %s #%s (%s)", co.SetCode, co.Number,
+					co.Language, test.wantSet, test.wantNum, test.wantCardLanguage)
 			}
 		})
 	}

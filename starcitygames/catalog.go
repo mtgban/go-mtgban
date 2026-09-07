@@ -221,29 +221,41 @@ func resolveProduct(game int, p CatalogProduct) (string, error) {
 		return "", err
 	}
 
-	// The inherently foreign sets hold a single printing each - FBB is
-	// Italian and 4BB Japanese - while SCG sells them in six or seven
-	// languages. Every language other than the one the printing actually
-	// is collapses onto that uuid, and the products then fight over the
-	// same key. Keep only the language that matches.
+	// A language other than English is the catalog saying which of a card's
+	// language printings this product is, and it has to be the one that was
+	// found: the inherently foreign sets hold a single printing each while
+	// SCG lists them once per language it believes it has, and without this
+	// they all collapse onto it and fight over the same key.
+	//
+	// English says nothing. It is what the sku grammar emits by default, and
+	// the shelves where the shop does mean a language never carry it, so it
+	// cannot disqualify a printing made in one tongue only - whose collector
+	// number has already said which. This is the matcher's own rule, which
+	// filters on the language tag only where the tag is set or the candidates
+	// did not come down to one.
 	co, cerr := mtgmatcher.GetUUID(id)
-	if cerr == nil && !languageMatches(p.Language, co.Language) {
+	claimed := catalogLanguageTag(p.Language)
+	if cerr == nil && claimed != "" && !strings.Contains(co.Language, claimed) {
 		return "", mtgmatcher.ErrUnsupported
 	}
 	return id, nil
 }
 
-// languageMatches reports whether the language a product is sold in is
-// the language of the printing it resolved to. The catalog spells the
-// two-part languages with a dash that mtgjson does not use.
-func languageMatches(catalogLanguage, cardLanguage string) bool {
-	if catalogLanguage == "" {
-		catalogLanguage = "English"
+// catalogLanguageTag turns the language a product is sold in into the tag the
+// matcher files a printing under, which is empty for English. The catalog
+// spells the two-part languages with a dash mtgjson does not use, so the name
+// goes through the matcher's own code table rather than being compared as
+// prose - and the spelling there is the shop's, so its case is not held
+// against it. One the table does not know is left as it is spelled.
+func catalogLanguageTag(catalogLanguage string) string {
+	spelled := strings.ReplaceAll(catalogLanguage, " - ", " ")
+	for tag, code := range mtgmatcher.LanguageTag2LanguageCode {
+		if !strings.EqualFold(tag, spelled) {
+			continue
+		}
+		return mtgmatcher.LanguageCode2LanguageTag[code]
 	}
-	if cardLanguage == "" {
-		cardLanguage = "English"
-	}
-	return strings.EqualFold(strings.ReplaceAll(catalogLanguage, " - ", " "), cardLanguage)
+	return spelled
 }
 
 // skuSetCode returns the set segment of a catalog sku, which carries
