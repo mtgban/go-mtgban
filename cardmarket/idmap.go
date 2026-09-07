@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,10 +18,53 @@ import (
 // IDMapProduct is one product of the published catalog: what the marketplace
 // calls it, where it files it, and the printings it stands for.
 type IDMapProduct struct {
-	ExpansionID int      `json:"expansionId"`
-	Name        string   `json:"name"`
-	Number      string   `json:"number,omitempty"`
-	UUIDs       []string `json:"uuids,omitempty"`
+	ExpansionID int    `json:"expansionId"`
+	Name        string `json:"name"`
+	Number      string `json:"number,omitempty"`
+	Rarity      string `json:"rarity,omitempty"`
+	// Version is the index the marketplace counts a card's printings with
+	// where one shelf sells several - the second Budew of a stamp
+	// programme, the master-ball pattern beside the poke-ball one. It is
+	// the only thing telling two products of one name and number apart, and
+	// zero where the product carries none. See productVersion for where it
+	// is read from, which is not the same field in every game.
+	Version int      `json:"version,omitempty"`
+	UUIDs   []string `json:"uuids,omitempty"`
+}
+
+// nameVersionRe matches the index Cardmarket writes into a product's name,
+// which is where Magic and Yu-Gi-Oh carry it: "Feral Shadow (V.1)" and
+// "7 Colored Fish (V.2 - Common)" both.
+var nameVersionRe = regexp.MustCompile(`\(V\.(\d+)`)
+
+// slugVersionRe matches the same index written into the product's own web
+// address, which is where Pokemon carries it and nowhere else:
+// "Budew-V2-SEAPRE-004". The last occurrence is the index, the segments
+// before it being the card's name - "Serperior-V-V3-SITTG13" is Serperior V
+// at version 3, and the V of its name carries no digits to be mistaken for
+// one.
+var slugVersionRe = regexp.MustCompile(`-V(\d+)-`)
+
+// ProductVersion reads that index off a product, or zero where it carries
+// none. The marketplace publishes it in the name for some games and only in
+// the address for others - of the catalogs we walk, 31,523 of Yu-Gi-Oh's
+// 86,628 products name it and not one of Pokemon's 72,752 does, though its
+// shelves are full of it - so both are read and the name wins.
+func ProductVersion(product *MKMProduct) int {
+	if fields := nameVersionRe.FindStringSubmatch(product.Name); fields != nil {
+		version, err := strconv.Atoi(fields[1])
+		if err == nil {
+			return version
+		}
+	}
+	matches := slugVersionRe.FindAllStringSubmatch(product.Website, -1)
+	if len(matches) > 0 {
+		version, err := strconv.Atoi(matches[len(matches)-1][1])
+		if err == nil {
+			return version
+		}
+	}
+	return 0
 }
 
 // IDMapExpansion names one expansion of the catalog and the set codes it
