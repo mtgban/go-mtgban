@@ -135,3 +135,105 @@ func TestNoPrintingSkipsBasicEnergy(t *testing.T) {
 		})
 	}
 }
+
+// letteredDatastore is the published datastore cut down to the two promo
+// programmes whose numbers carry a letter, every row copied verbatim from
+// it. Field Blower 125a was handed out at league play and Camerupt is an
+// alternate art, and Cardmarket shelves each under the set it reprints -
+// "Guardians Rising", "XY Black Star Promos" - rather than the programme
+// that gave it out.
+const letteredDatastore = `{
+ "game": "pokemon",
+ "sets": {
+  "SM02": {"abbreviation": "SM02", "baseSetSize": 145, "name": "SM - Guardians Rising", "releaseDate": "2017-05-05"},
+  "PR-1451": {"abbreviation": "PR", "name": "XY Promos", "releaseDate": "2013-12-16", "type": "promo"},
+  "PR-1539": {"abbreviation": "PR", "name": "League & Championship Cards", "releaseDate": "2016-06-01"},
+  "PR-1938": {"abbreviation": "PR", "name": "Alternate Art Promos", "releaseDate": "2014-08-13", "type": "promo"}
+ },
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 185137}, "finish": "Reverse Holofoil", "id": "125a-145_185137_reverse", "name": "Field Blower", "number": "125a", "originalName": "Field Blower - 125a/145 (Pokemon League)", "promoTypes": ["pokemon league"], "rarity": "Promo", "setCode": "PR-1539", "total": "145", "type": "Item", "variant": "Pokemon League"},
+  {"externalLinks": {"tcgPlayerId": 148345}, "finish": "Holofoil", "id": "xy198a_148345_holo", "name": "M Camerupt EX", "number": "XY198a", "originalName": "M Camerupt EX - XY198a", "rarity": "Promo", "setCode": "PR-1938", "type": "Fire"}
+ ]
+}`
+
+// TestMatchPokemonLettered pins that a number with a letter hung off it
+// reaches both programmes that number their cards that way, and that the
+// prefixed spelling reaches them too. Only Alternate Art Promos was tried
+// before, so every League & Championship product refused.
+func TestMatchPokemonLettered(t *testing.T) {
+	if err := mtgmatcher.LoadDatastore(strings.NewReader(letteredDatastore)); err != nil {
+		t.Fatal(err)
+	}
+	mkm := &Index{gameID: GamePokemon}
+
+	for _, tt := range []struct {
+		desc      string
+		product   MKMProduct
+		wantID    string
+		wantError error
+	}{
+		{
+			// The shelf is the set it reprints, and the row is the
+			// league programme's.
+			desc:    "a league promo reaches League & Championship Cards",
+			product: MKMProduct{Name: "Field Blower", Number: "125a", ExpansionName: "SM - Guardians Rising"},
+			wantID:  "125a-145_185137_reverse",
+		},
+		{
+			// The promo shelf writes its programme's prefix onto the
+			// number, so the letter test has to see past it.
+			desc:    "a prefixed number still reads as lettered",
+			product: MKMProduct{Name: "M Camerupt EX", Number: "198a", ExpansionName: "XY Black Star Promos"},
+			wantID:  "xy198a_148345_holo",
+		},
+		{
+			// A plain number names no lettered promo, and the shelf
+			// carries no row for it.
+			desc:      "a plain number reaches neither programme",
+			product:   MKMProduct{Name: "Field Blower", Number: "125", ExpansionName: "SM - Guardians Rising"},
+			wantError: errNoPrinting,
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			product := tt.product
+			id, err := mkm.matchPokemon(&product)
+			if tt.wantError != nil {
+				if !errors.Is(err, tt.wantError) {
+					t.Fatalf("matchPokemon = (%q, %v), want error %v", id, err, tt.wantError)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("matchPokemon returned %v", err)
+			}
+			if id != tt.wantID {
+				t.Errorf("matchPokemon = %q, want %q", id, tt.wantID)
+			}
+		})
+	}
+}
+
+// TestPokemonCodeCard pins what a Pokemon shelf sells that is not a card.
+func TestPokemonCodeCard(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		want bool
+	}{
+		{"Code Card - Sword & Shield", true},
+		{"Online Code Card", true},
+		// A counter the booster box ships with, printed on card stock and
+		// shelved beside the singles; no catalog has a row for one.
+		{"VSTAR Marker", true},
+		// The Pokemon themselves are cards, and their names open the
+		// same way.
+		{"Arceus VSTAR", false},
+		{"Charizard VSTAR", false},
+		{"Pikachu", false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := pokemonCodeCard(tt.name); got != tt.want {
+				t.Errorf("pokemonCodeCard(%q) = %v, want %v", tt.name, got, tt.want)
+			}
+		})
+	}
+}
