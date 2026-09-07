@@ -11,6 +11,60 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// namedID picks between the two ids a blueprint carries, preferring the
+// scryfall one as before and only weighing the name where the vendor's own
+// ids contradict each other.
+//
+// An id is the surest thing a storefront publishes, but the two are not
+// checked against each other on the way in and a shelf can be filed a card
+// off: Card Trader's eight Strixhaven promos each carry the scryfall id of
+// the card before them, so "Exponential Growth" priced as Ecological
+// Appreciation. It runs the other way too - two blueprints carry a
+// TCGplayer id belonging to another card - so neither space can simply win.
+//
+// Where the ids name two different cards the blueprint's own name is the
+// third thing said about it, and the id it agrees with is the one to keep.
+// Where the name settles nothing, which is what a pair of tokens sold under
+// one blueprint looks like, the order stands and nothing changes.
+func namedID(scryfallID, tcgplayerID, cardName string) string {
+	if scryfallID == "" {
+		return tcgplayerID
+	}
+	if tcgplayerID == "" || scryfallID == tcgplayerID {
+		return scryfallID
+	}
+
+	scryfallCard, err := mtgmatcher.GetUUID(scryfallID)
+	if err != nil {
+		return scryfallID
+	}
+	tcgplayerCard, err := mtgmatcher.GetUUID(tcgplayerID)
+	if err != nil {
+		return scryfallID
+	}
+	if mtgmatcher.Equals(scryfallCard.Name, tcgplayerCard.Name) {
+		return scryfallID
+	}
+
+	namesScryfall := idNamesCard(scryfallCard, cardName)
+	namesTCGplayer := idNamesCard(tcgplayerCard, cardName)
+	if namesTCGplayer && !namesScryfall {
+		return tcgplayerID
+	}
+	return scryfallID
+}
+
+// idNamesCard reports whether a card is the one a blueprint's wording names.
+// A storefront writes the front of a two-faced card where the catalog spells
+// both halves, so the front alone stands for the whole.
+func idNamesCard(co *mtgmatcher.CardObject, cardName string) bool {
+	if mtgmatcher.Equals(co.Name, cardName) || mtgmatcher.Equals(co.FaceName, cardName) {
+		return true
+	}
+	front, _, split := strings.Cut(co.Name, " // ")
+	return split && mtgmatcher.Equals(front, cardName)
+}
+
 // Preprocess turns a blueprint into the card description the matcher takes,
 // reporting an error for the blueprints that are not cards.
 func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
@@ -21,10 +75,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 
 	// Some, but not all, have a proper id we can reuse right away, and the
 	// blueprint says which space each one lives in
-	id := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
-	if id == "" {
-		id = mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
-	}
+	scryfallID := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
+	tcgplayerID := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
+	id := namedID(scryfallID, tcgplayerID, cardName)
 	if id != "" {
 		return &mtgmatcher.InputCard{
 			ID: id,
