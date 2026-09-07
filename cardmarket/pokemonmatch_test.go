@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -61,5 +62,76 @@ func TestMatchProductForeignExpansion(t *testing.T) {
 		if got != tt.want {
 			t.Errorf("matchProduct(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
 		}
+	}
+}
+
+// TestPokemonBasicEnergy pins which names go quiet. The whole name is read,
+// not a substring of it: a shelf sells the special energies on their own
+// account, and one Trainer merely has the word in its title.
+func TestPokemonBasicEnergy(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		want bool
+	}{
+		// The nine kinds, both ways the catalog writes them.
+		{"Grass Energy", true},
+		{"Fire Energy", true},
+		{"Water Energy", true},
+		{"Lightning Energy", true},
+		{"Psychic Energy", true},
+		{"Fighting Energy", true},
+		{"Darkness Energy", true},
+		{"Metal Energy", true},
+		{"Fairy Energy", true},
+		{"Basic Grass Energy", true},
+		{"Basic Lightning Energy", true},
+		// Cardmarket pads some of its names with a trailing space.
+		{"Water Energy ", true},
+		{"basic water energy", true},
+		// Special energies are cards a shelf sells for themselves, and a
+		// run that cannot place one has something to say about it.
+		{"Rainbow Energy", false},
+		{"Jet Energy", false},
+		{"Luminous Energy", false},
+		{"Double Colorless Energy", false},
+		{"Herbal Energy", false},
+		// Not an energy at all - a Trainer with the word in its name,
+		// which a substring test would have swallowed.
+		{"Superior Energy Retrieval", false},
+		{"Energy Retrieval", false},
+		{"Energy Search", false},
+		// Nor is a Pokemon whose name merely opens the same way.
+		{"Grass", false},
+		{"", false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := pokemonBasicEnergy(tt.name); got != tt.want {
+				t.Errorf("pokemonBasicEnergy(%q) = %v, want %v", tt.name, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestNoPrintingSkipsBasicEnergy pins that the skip is the Pokemon index's
+// alone, and that a game sharing the route still refuses out loud.
+func TestNoPrintingSkipsBasicEnergy(t *testing.T) {
+	for _, tt := range []struct {
+		desc   string
+		gameID int
+		name   string
+		want   error
+	}{
+		{"a Pokemon basic energy goes quiet", GamePokemon, "Water Energy", nil},
+		{"its bracketed spelling too", GamePokemon, "Grass Energy [Basic]", nil},
+		{"a Pokemon special energy still refuses", GamePokemon, "Rainbow Energy", errNoPrinting},
+		{"an ordinary Pokemon card still refuses", GamePokemon, "Pikachu", errNoPrinting},
+		{"another game's energy still refuses", GameYuGiOh, "Water Energy", errNoPrinting},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			mkm := &Index{gameID: tt.gameID}
+			if got := mkm.noPrinting(&MKMProduct{Name: tt.name}); !errors.Is(got, tt.want) {
+				t.Errorf("noPrinting(%q) = %v, want %v", tt.name, got, tt.want)
+			}
+		})
 	}
 }
