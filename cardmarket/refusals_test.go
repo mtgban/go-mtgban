@@ -64,11 +64,19 @@ func TestProcessProductRefusal(t *testing.T) {
 // in a set we carry can be read off the log the way the id route's misses
 // already can - except in an expansion nothing resolved in, which is a
 // catalog we carry no set for and says so once instead of once per product.
+//
+// A shelf whose refusals are all foreign ones says nothing at all. The line
+// would name no work: Cardmarket files whole Japanese and other Asian
+// programs beside the English catalog, and those are sets we do not carry
+// rather than printings we failed to find. The run's closing tally counts
+// them instead.
 func TestReportRefused(t *testing.T) {
 	for _, tt := range []struct {
 		name    string
 		total   int
 		refused []string
+		twins   int
+		foreign int
 		want    []string
 	}{
 		{
@@ -93,11 +101,45 @@ func TestReportRefused(t *testing.T) {
 			refused: []string{"first", "second"},
 			want:    []string{"[MKMIndex] Terminal World: 2 of 2 products named no printing of ours"},
 		},
+		{
+			name:    "a shelf of a catalog we do not carry says nothing",
+			total:   115,
+			foreign: 115,
+			want:    nil,
+		},
+		{
+			// Whether the shelf priced anything does not change what it
+			// refused: XY Promos sells twelve English promos beside 399
+			// Japanese ones, and the 399 are still a catalog we do not
+			// carry.
+			name:    "nor does it when some of the shelf was priced",
+			total:   411,
+			foreign: 399,
+			want:    nil,
+		},
+		{
+			name:  "a twin is work, and the line says why",
+			total: 3,
+			twins: 1,
+			want:  []string{"[MKMIndex] Terminal World: 1 of 3 products named no printing of ours (1 twins of another product)"},
+		},
+		{
+			// A shelf refusing both ways is reported, its foreign half
+			// counted among the reasons rather than silencing the line.
+			name:    "foreign products are counted beside a real refusal",
+			total:   5,
+			refused: []string{"first"},
+			foreign: 2,
+			want: []string{
+				"[MKMIndex] Terminal World: 3 of 5 products named no printing of ours (2 of a catalog we do not carry)",
+				"[MKMIndex] no printing for first",
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			var sink logSink
 			mkm := &Index{LogCallback: sink.callback}
-			mkm.reportRefused("Terminal World", tt.total, tt.refused, 0, 0)
+			mkm.reportRefused("Terminal World", tt.total, tt.refused, tt.twins, tt.foreign)
 
 			if len(sink.lines) != len(tt.want) {
 				t.Fatalf("said %d lines %q, want %d", len(sink.lines), sink.lines, len(tt.want))
