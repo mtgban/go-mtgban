@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -131,6 +132,40 @@ var yugiohVersionVariants = map[string][]string{
 	"WI26": {"OTS Stamp", "Regional Qualifier Stamp", "Judge Stamp"},
 }
 
+// yugiohOversized answers the oversized card a product names, which the
+// shelf cannot. An oversized card is not the set's card: the marketplace
+// files it under the deck it was handed out with - Machina Fortress under
+// Structure Deck: Machina Mayhem, numbered SDMM-EN001 - and the datastore
+// files it in the collector or value box it actually came in, which for that
+// card is VBX. Set and number therefore disagree by construction, and the
+// name and the tag are what is left.
+//
+// It answers only where exactly one printing of ours carries the name and
+// the tag. Twenty-six of the thirty-eight oversized products have no such
+// printing at all and stay refused, which is what they are: cards we do not
+// carry.
+func yugiohOversized(name string) (string, error) {
+	uuids, err := mtgmatcher.SearchEquals(name)
+	if err != nil {
+		return "", errNoPrinting
+	}
+	var found string
+	for _, uuid := range uuids {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil || !slices.Contains(co.PromoTypes, "oversized") {
+			continue
+		}
+		if found != "" {
+			return "", errNoPrinting
+		}
+		found = uuid
+	}
+	if found == "" {
+		return "", errNoPrinting
+	}
+	return found, nil
+}
+
 // matchYugioh names a Yu-Gi-Oh product's printing from what the catalog
 // says of it, held to the sets its expansion may hold. A number written with
 // a region prefix names a print run of its own ("EN000" is the European
@@ -142,6 +177,13 @@ func (mkm *Index) matchYugioh(product *cm.Product) (string, error) {
 	var rarity string
 	if fields := rarityTail.FindStringSubmatch(product.Name); fields != nil {
 		rarity = fields[1]
+	}
+	// The oversized printing is not in the shelf's set; only the name and
+	// the tag reach it. See yugiohOversized.
+	if strings.EqualFold(rarity, "Oversized") {
+		if id, err := yugiohOversized(name); err == nil {
+			return id, nil
+		}
 	}
 	region := ""
 	if product.Number != "" {
