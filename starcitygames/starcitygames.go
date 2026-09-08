@@ -33,6 +33,12 @@ type Starcitygames struct {
 	setIDs map[string]int
 	client *SCGClient
 	game   int
+
+	// bulkRated counts the buylist figures dropped as a bulk tier's rate.
+	// It is logged rather than used: the rates are SCG's and can change
+	// under us, and a table gone stale shows up here as a count that falls
+	// off a cliff.
+	bulkRated int
 }
 
 // NewScraper returns a singles scraper for one game, using the given API key.
@@ -51,6 +57,7 @@ func (scg *Starcitygames) reset() {
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.buckets = map[string]struct{}{}
+	scg.bulkRated = 0
 }
 
 func (scg *Starcitygames) printf(format string, a ...any) {
@@ -172,7 +179,11 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 			}
 		}
 
-		if buyPrice, err := mtgmatcher.ParsePrice(v.SellListPrice); err == nil && buyPrice > 0 {
+		buyPrice, priced, bulk := buylistPrice(scg.game, p, v.SellListPrice)
+		if bulk {
+			scg.bulkRated++
+		}
+		if priced {
 			var priceRatio float64
 			if retailPrice > 0 {
 				priceRatio = buyPrice / retailPrice * 100
@@ -225,7 +236,7 @@ func (scg *Starcitygames) loadCatalog(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	scg.printf("Processed %d products total", count)
+	scg.printf("Processed %d products total, %d buylist prices were a bulk rate", count, scg.bulkRated)
 
 	now := time.Now()
 	scg.inventoryDate = now
