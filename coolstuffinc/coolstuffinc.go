@@ -327,6 +327,55 @@ func offerCondition(fullRow, qtyStr, bundleStr string) string {
 	}
 }
 
+// conditionRuns are the print runs this storefront names where a condition
+// would go. The run is a finish in the game's own vocabulary rather than a
+// state of the card, and the spelling has to be exact: asking for the plain
+// run of a card printed in holo answers with the holo of the other run - the
+// unlimited Lapras where the first-edition one was listed, at a fraction of
+// its price - so both spellings are tried and the answer is checked for
+// carrying the run before it is taken.
+var conditionRuns = map[string][]string{
+	"1st Edition": {"1st Edition Holofoil", "1st Edition"},
+}
+
+// conditionRun reads the run a row names in its condition column, giving the
+// finishes it may be sold as, widest first.
+func conditionRun(conditions string) []string {
+	for marker, finishes := range conditionRuns {
+		if strings.Contains(conditions, marker) {
+			return finishes
+		}
+	}
+	return nil
+}
+
+// matchRun resolves a listing sold as one of a card's print runs, refusing
+// an answer that does not carry it rather than pricing the run as the
+// ordinary printing.
+func matchRun(inCard *mtgmatcher.InputCard, finishes []string) (string, error) {
+	var err error
+	for _, finish := range finishes {
+		probe := *inCard
+		probe.Finish = finish
+		var cardID string
+		cardID, err = mtgmatcher.Match(&probe)
+		if err != nil {
+			continue
+		}
+		co, uerr := mtgmatcher.GetUUID(cardID)
+		if uerr != nil {
+			continue
+		}
+		if co.Finish == mtgmatcher.Normalize(finish) {
+			return cardID, nil
+		}
+	}
+	if err == nil {
+		err = mtgmatcher.ErrUnsupported
+	}
+	return "", err
+}
+
 // skippedConditions name a copy the catalog has no row for, so there is
 // nothing to price it as and nothing to report either. Asian names no
 // language in particular, and the only Evolving Wilds sold under it - the
@@ -514,6 +563,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					conditions = "Near Mint"
 				}
 
+				runFinishes := conditionRun(conditions)
+				if runFinishes != nil {
+					conditions = "Near Mint"
+				}
+
 				if isSkippedCondition(conditions) {
 					return
 				}
@@ -596,7 +650,12 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					theCard.Variation = strings.TrimSpace(theCard.Variation + " " + printing)
 				}
 
-				cardID, err := mtgmatcher.Match(theCard)
+				var cardID string
+				if runFinishes != nil {
+					cardID, err = matchRun(theCard, runFinishes)
+				} else {
+					cardID, err = mtgmatcher.Match(theCard)
+				}
 				if errors.Is(err, mtgmatcher.ErrUnsupported) {
 					return
 				} else if err != nil {
