@@ -1,8 +1,11 @@
 package coolstuffinc
 
 import (
+	"slices"
 	"strings"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // TestBuylistVariation pins what the buylist tells the matcher about a
@@ -132,5 +135,74 @@ func TestBuylistYuGiOhNamesTheRarity(t *testing.T) {
 				t.Errorf("buylist variation = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestIsGraded pins which wordings mean the copy is not being sold at a
+// condition tier. One Piece sells PSA slabs and the condition parser used to
+// refuse them outright, so the listing was dropped rather than priced.
+func TestIsGraded(t *testing.T) {
+	for _, tt := range []struct {
+		conditions string
+		want       bool
+	}{
+		// The storefront repeats the wording in the row it is read from.
+		{"PSA 10  PSA 10 ", true},
+		{"BGS 9.5", true},
+		{"Unique", true},
+		{"Non-Foil", true},
+		{"Near Mint", false},
+		{"Foil Near Mint", false},
+		{"Played", false},
+		{"", false},
+	} {
+		t.Run(tt.conditions, func(t *testing.T) {
+			if got := isGraded(tt.conditions); got != tt.want {
+				t.Errorf("isGraded(%q) = %v, want %v", tt.conditions, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestMarketNamesCarryTheGradedSeller pins that every game can publish a
+// graded price. The scraper files one under its own seller whatever the game,
+// but the name used to be offered for Magic alone, so everywhere else the
+// entry was written and then dropped by the split, which collects only the
+// names a market answers with. A game holding no graded copy publishes
+// nothing extra: the split skips a seller whose inventory is empty.
+func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
+	for _, game := range []string{GameMagic, GameOnePiece, GamePokemon, GameYuGiOh,
+		GameLorcana, GameRiftbound, GameGundam, GamePalworld} {
+		t.Run(game, func(t *testing.T) {
+			names := NewScraper(game).MarketNames()
+			if !slices.Contains(names, "Cool Stuff Inc (unique)") {
+				t.Errorf("MarketNames() = %v, want the graded seller among them", names)
+			}
+		})
+	}
+}
+
+// TestUnfoldSkipsTheEmptyGradedSeller pins what makes it safe to answer with
+// the graded seller for every game: a game holding no graded copy publishes
+// nothing extra, because the split drops a seller whose inventory is empty.
+// Palworld is that game today.
+func TestUnfoldSkipsTheEmptyGradedSeller(t *testing.T) {
+	csi := NewScraper(GamePalworld)
+	csi.inventory["some-uuid"] = []mtgban.InventoryEntry{{
+		Conditions: "NM",
+		Price:      1,
+		Quantity:   1,
+		SellerName: "Cool Stuff Inc",
+	}}
+
+	sellers, _ := mtgban.UnfoldScrapers([]mtgban.Scraper{csi})
+
+	var names []string
+	for _, seller := range sellers {
+		names = append(names, seller.Info().Name)
+	}
+	want := []string{"Cool Stuff Inc"}
+	if !slices.Equal(names, want) {
+		t.Errorf("UnfoldScrapers gave %v, want %v", names, want)
 	}
 }
