@@ -438,12 +438,11 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			// a treatment has no standard foil for it to land on, so the
 			// treatment answers it - which is what the caller meant, there
 			// being nothing else foil about the card.
-			if _, found := finishUUIDs[mtgmatcher.FinishFoil]; !found {
-				if uuid, found := finishUUIDs[finishHolofoil]; found {
-					finishUUIDs[mtgmatcher.FinishFoil] = uuid
-					finishAliases[finishHolofoil] = mtgmatcher.FinishFoil
-				}
-			}
+			// No alias from the standard foil onto the treatment. A caller
+			// naming Cold Foil is pricing that sku, and a card sold only
+			// in a treatment has none - answering with the treatment's
+			// uuid would file two sku prices under one printing. The flag
+			// form reaches it instead, over the coarse pair below.
 			// Finishes is the coarse pair output() reads, not the names
 			// above: a card sold in a treatment is sold foil.
 			var coarse []string
@@ -533,9 +532,16 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// single sku TCGplayer names Holofoil, and 15 of them are foiled in
 		// plain silver, so reading the name as "a treatment past the silver"
 		// refuses the only sku those products have.
-		if _, found := finishAliases[tcgSpecialFoil]; !found {
-			if _, sold := finishUUIDs[mtgmatcher.FinishFoil]; sold {
-				finishAliases[tcgSpecialFoil] = mtgmatcher.FinishFoil
+		//
+		// Only where the finishes were spelled from foil types. A datastore
+		// naming them in TCGplayer's words sells Holofoil as a finish of its
+		// own, and aliasing the name onto the standard foil would answer a
+		// caller pricing the treatment with the sku beside it.
+		if _, named := finishUUIDs[finishHolofoil]; !named {
+			if _, found := finishAliases[tcgSpecialFoil]; !found {
+				if _, sold := finishUUIDs[mtgmatcher.FinishFoil]; sold {
+					finishAliases[tcgSpecialFoil] = mtgmatcher.FinishFoil
+				}
 			}
 		}
 		if len(finishAliases) > 0 {
