@@ -123,7 +123,7 @@
         "input": {
             "name": "Dark Child - Starter"
         },
-        "uuid": "ogs-017-024_nonfoil"
+        "uuid": "ogs-017-024"
     },
     {
         "description": "edition narrows a name printed in two sets",
@@ -131,7 +131,7 @@
             "name": "Recruit (NX)",
             "edition": "Vendetta"
         },
-        "uuid": "ven-t04_nonfoil"
+        "uuid": "ven-t04"
     },
     {
         "description": "foil resolves to its own uuid",
@@ -308,14 +308,14 @@
             "name": "Recruit (NX)",
             "variant": "272"
         },
-        "uuid": "ogn-272-298_nonfoil"
+        "uuid": "ogn-272-298"
     },
     {
         "description": "parenthetical name resolves without a number",
         "input": {
             "name": "Recruit (DE)"
         },
-        "uuid": "ogn-271-298_nonfoil"
+        "uuid": "ogn-271-298"
     },
     {
         "description": "promo edition disambiguates a number shared across promo sets",
@@ -342,7 +342,7 @@
             "variant": "181",
             "edition": "Riftbound Organized Play Promotional Cards"
         },
-        "uuid": "opp-689192_nonfoil"
+        "uuid": "opp-689192"
     },
     {
         "description": "promo-shaped legend name still reaches the main set",
@@ -377,7 +377,7 @@
             "variant": "T05",
             "edition": "Vendetta"
         },
-        "uuid": "ven-709916_nonfoil"
+        "uuid": "ven-709916"
     },
     {
         "description": "shortened gallery champion resolves",
@@ -385,7 +385,7 @@
             "name": "Master Yi - Meditative",
             "variant": "4"
         },
-        "uuid": "ogs-004-024_nonfoil"
+        "uuid": "ogs-004-024"
     },
     {
         "description": "signed showcase number resolves to the starred printing",
@@ -417,7 +417,7 @@
             "name": "Lux - Lady of Luminosity (Starter)",
             "variant": "21"
         },
-        "uuid": "ogs-021-024_nonfoil"
+        "uuid": "ogs-021-024"
     },
     {
         "description": "storefront-named promo edition reaches the promotional set",
@@ -426,7 +426,7 @@
             "variant": "116",
             "edition": "Organized Play"
         },
-        "uuid": "opp-678194_nonfoil"
+        "uuid": "opp-678194"
     },
     {
         "description": "storefront-prefixed edition still narrows",
@@ -546,7 +546,7 @@
             "name": "Gold",
             "variant": "T05"
         },
-        "uuid": "unl-t05_nonfoil"
+        "uuid": "unl-t05"
     },
     {
         "description": "truncated name colliding with a promo of the same number",
@@ -554,7 +554,7 @@
             "name": "Annie, F",
             "variant": "1"
         },
-        "uuid": "ogs-001-024_nonfoil"
+        "uuid": "ogs-001-024"
     },
     {
         "description": "truncated name of a foil-only printing without the flag",
