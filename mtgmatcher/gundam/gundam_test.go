@@ -200,7 +200,9 @@ func TestNumberReachesItsPrinting(t *testing.T) {
 		}
 		// The promo set reprints a card once per event it was handed out
 		// at, every one of them at the main set's number and rarity, so the
-		// event is part of what names the printing.
+		// event is part of what names the printing, and so is the part of
+		// a multi-part token it is, which the builder keeps among them for
+		// that reason.
 		for _, promoType := range co.PromoTypes {
 			variation += " " + b.PromoTypeLabels[promoType]
 		}
