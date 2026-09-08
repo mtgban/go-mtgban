@@ -438,11 +438,17 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			// a treatment has no standard foil for it to land on, so the
 			// treatment answers it - which is what the caller meant, there
 			// being nothing else foil about the card.
-			// No alias from the standard foil onto the treatment. A caller
-			// naming Cold Foil is pricing that sku, and a card sold only
-			// in a treatment has none - answering with the treatment's
-			// uuid would file two sku prices under one printing. The flag
-			// form reaches it instead, over the coarse pair below.
+			// The coarse key the flag form resolves through, which a card
+			// sold only in a treatment has no printing of its own for.
+			// Pokemon files the same key the same way. The named form is
+			// not answered by it: FinishUUID refuses a key whose printing
+			// is sold in another finish, so a caller pricing a Cold Foil
+			// sku this card does not have is told so.
+			if _, found := finishUUIDs[mtgmatcher.FinishFoil]; !found {
+				if uuid, found := finishUUIDs[finishHolofoil]; found {
+					finishUUIDs[mtgmatcher.FinishFoil] = uuid
+				}
+			}
 			// Finishes is the coarse pair output() reads, not the names
 			// above: a card sold in a treatment is sold foil.
 			var coarse []string
