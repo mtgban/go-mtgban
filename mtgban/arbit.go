@@ -275,6 +275,83 @@ func (r *resolvedOpts) filterCard(cardID string) (*mtgmatcher.CardObject, float6
 	return co, customFactor, true
 }
 
+// buyable reports whether the copy on the shelf is one the options allow
+// buying at all, and what it costs once every factor they carry is applied.
+// Both reports are about a copy someone could buy, so both ask this.
+func (r *resolvedOpts) buyable(cardID string, entry InventoryEntry, noQuantity bool, factor float64) (float64, bool) {
+	if slices.Contains(r.filterConditions, entry.Conditions) {
+		return 0, false
+	}
+	if r.filterSellers != nil && !slices.Contains(r.filterSellers, entry.SellerName) && !slices.Contains(r.filterSellers, entry.CustomFields["SubSellerName"]) {
+		return 0, false
+	}
+	if r.filterBundle && !entry.Bundle {
+		return 0, false
+	}
+	if !noQuantity && entry.Quantity < r.minQty {
+		return 0, false
+	}
+	if entry.Price < r.minPrice {
+		return 0, false
+	}
+	if r.filterPriceFunc != nil {
+		custom, skip := r.filterPriceFunc(cardID, entry)
+		if skip {
+			return 0, false
+		}
+		factor *= custom
+	}
+	return entry.Price * factor * r.rate, true
+}
+
+// arbitrage is the comparison both reports are: what a copy costs against
+// what the other side gives for it. quotePrice is that other side brought to
+// this copy's condition - a buylist offer for its grade, or another shelf's
+// price regraded - and quoteQty how many it will take, zero for no limit.
+// The caller fills in which side the quote came from.
+func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price, quotePrice float64, quoteQty int) (ArbitEntry, bool) {
+	if price == 0 || quotePrice == 0 {
+		return ArbitEntry{}, false
+	}
+
+	spread := 100 * (quotePrice - price) / price
+	difference := quotePrice - price
+
+	if r.maxSpread != 0 && spread > r.maxSpread {
+		return ArbitEntry{}, false
+	}
+	if difference < r.minDiff {
+		return ArbitEntry{}, false
+	}
+	if spread < r.minSpread {
+		return ArbitEntry{}, false
+	}
+
+	// Find the minimum amount tradable
+	qty := entry.Quantity
+	if quoteQty != 0 {
+		qty = min(entry.Quantity, quoteQty)
+	}
+
+	profitability := (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
+	if qty > 1 {
+		profitability *= math.Sqrt(float64(qty))
+	}
+	if profitability < r.minProfitability {
+		return ArbitEntry{}, false
+	}
+
+	return ArbitEntry{
+		CardID:             cardID,
+		InventoryEntry:     entry,
+		Difference:         difference,
+		AbsoluteDifference: difference * float64(qty),
+		Spread:             spread,
+		Quantity:           qty,
+		Profitability:      profitability,
+	}, true
+}
+
 // Arbit reports the cards a vendor buys for more than a seller asks, the
 // trade that pays for itself. Only cards both sides carry are considered, and
 // opts filters the rest.
@@ -305,41 +382,17 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			continue
 		}
 
-		initialFactor := customFactor
 		for _, invEntry := range invEntries {
+			price, ok := r.buyable(cardID, invEntry, seller.Info().NoQuantityInventory, customFactor)
+			if !ok {
+				continue
+			}
+
 			// Re-anchor on NM for every inventory entry: the condition
 			// matching below only rebinds this when the entry is not NM,
 			// so a value carried over from a previous iteration would
 			// price this entry against another entry's grade
 			blEntry := nmEntry
-
-			if slices.Contains(r.filterConditions, invEntry.Conditions) {
-				continue
-			}
-			if r.filterSellers != nil && !slices.Contains(r.filterSellers, invEntry.SellerName) && !slices.Contains(r.filterSellers, invEntry.CustomFields["SubSellerName"]) {
-				continue
-			}
-			if r.filterBundle && !invEntry.Bundle {
-				continue
-			}
-			if !seller.Info().NoQuantityInventory && invEntry.Quantity < r.minQty {
-				continue
-			}
-			if invEntry.Price < r.minPrice {
-				continue
-			}
-
-			if r.filterPriceFunc != nil {
-				factor, skip := r.filterPriceFunc(cardID, invEntry)
-				if skip {
-					continue
-				}
-
-				customFactor = initialFactor * factor
-			}
-
-			// Apply the optional previously established factor
-			price := invEntry.Price * customFactor * r.rate
 
 			// When invEntry is not NM, we need to account for conditions
 			if invEntry.Conditions != "NM" {
@@ -357,55 +410,16 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 				}
 			}
 
-			blPrice := blEntry.BuyPrice
-
-			if price == 0 || blPrice == 0 {
-				continue
-			}
-
 			// Check again to account for conditions
-			if blPrice < r.minBuyPrice {
+			if blEntry.BuyPrice < r.minBuyPrice {
 				continue
 			}
 
-			spread := 100 * (blPrice - price) / price
-			difference := blPrice - price
-
-			if r.maxSpread != 0 && spread > r.maxSpread {
+			res, ok := r.arbitrage(cardID, invEntry, price, blEntry.BuyPrice, blEntry.Quantity)
+			if !ok {
 				continue
 			}
-			if difference < r.minDiff {
-				continue
-			}
-			if spread < r.minSpread {
-				continue
-			}
-
-			// Find the minimum amount tradable
-			qty := invEntry.Quantity
-			if blEntry.Quantity != 0 {
-				qty = min(invEntry.Quantity, blEntry.Quantity)
-			}
-
-			profitability := (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
-			if qty > 1 {
-				profitability *= math.Sqrt(float64(qty))
-			}
-
-			if profitability < r.minProfitability {
-				continue
-			}
-
-			res := ArbitEntry{
-				CardID:             cardID,
-				BuylistEntry:       blEntry,
-				InventoryEntry:     invEntry,
-				Difference:         difference,
-				AbsoluteDifference: difference * float64(qty),
-				Spread:             spread,
-				Quantity:           qty,
-				Profitability:      profitability,
-			}
+			res.BuylistEntry = blEntry
 			result = append(result, res)
 		}
 	}
@@ -438,39 +452,29 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 			continue
 		}
 
-		initialFactor := customFactor
-		for _, refEntry := range refEntries {
-			if slices.Contains(r.filterConditions, refEntry.Conditions) {
+		// The copy being bought leads, the way it does in Arbit: the
+		// options describe what is worth buying, so they are asked once
+		// about the copy rather than once per price quoted at it.
+		for _, invEntry := range invEntries {
+			price, ok := r.buyable(cardID, invEntry, probe.Info().NoQuantityInventory, customFactor)
+			if !ok {
 				continue
 			}
-			if refEntry.Price < r.minPrice {
+
+			invGrade, found := defaultGradeMap[invEntry.Conditions]
+			if !found || invGrade <= 0 {
 				continue
 			}
 
-			if r.filterPriceFunc != nil {
-				factor, skip := r.filterPriceFunc(cardID, refEntry)
-				if skip {
+			for _, refEntry := range refEntries {
+				if slices.Contains(r.filterConditions, refEntry.Conditions) {
 					continue
 				}
-				customFactor = initialFactor * factor
-			}
-
-			for _, invEntry := range invEntries {
-				if slices.Contains(r.filterConditions, invEntry.Conditions) {
-					continue
-				}
-				if !probe.Info().NoQuantityInventory && invEntry.Quantity < r.minQty {
-					continue
-				}
-				if invEntry.Price < r.minPrice {
+				if refEntry.Price < r.minPrice {
 					continue
 				}
 
-				// Apply the optional previously established factor
-				refPrice := refEntry.Price * customFactor
-				price := invEntry.Price
-
-				// Undo the reference's own grade before applying the probe's,
+				// Undo the reference's own grade before applying the copy's,
 				// otherwise a non-NM reference is compared against a rescaled
 				// copy of itself. A zero factor cannot be divided by, so skip
 				// the pair rather than report an infinite spread.
@@ -478,53 +482,12 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 				if !found || refGrade <= 0 {
 					continue
 				}
-				invGrade, found := defaultGradeMap[invEntry.Conditions]
-				if !found || invGrade <= 0 {
+
+				res, ok := r.arbitrage(cardID, invEntry, price, refEntry.Price*invGrade/refGrade, refEntry.Quantity)
+				if !ok {
 					continue
 				}
-				refPrice *= invGrade / refGrade
-
-				if price == 0 {
-					continue
-				}
-
-				spread := 100 * (refPrice - price) / price
-				difference := refPrice - price
-
-				if r.maxSpread != 0 && spread > r.maxSpread {
-					continue
-				}
-				if difference < r.minDiff {
-					continue
-				}
-				if spread < r.minSpread {
-					continue
-				}
-
-				// Find the minimum amount tradable
-				qty := invEntry.Quantity
-				if refEntry.Quantity != 0 {
-					qty = min(invEntry.Quantity, refEntry.Quantity)
-				}
-
-				profitability := (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
-				if qty > 1 {
-					profitability *= math.Sqrt(float64(qty))
-				}
-
-				if profitability < r.minProfitability {
-					continue
-				}
-
-				res := ArbitEntry{
-					CardID:         cardID,
-					InventoryEntry: invEntry,
-					ReferenceEntry: refEntry,
-					Difference:     difference,
-					Spread:         spread,
-					Quantity:       qty,
-					Profitability:  profitability,
-				}
+				res.ReferenceEntry = refEntry
 				result = append(result, res)
 			}
 		}

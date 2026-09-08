@@ -217,9 +217,9 @@ func TestMismatchFilters(t *testing.T) {
 		{"a price filter can refuse the pair", &ArbitOpts{
 			CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 1, true },
 		}, 0},
-		{"a price filter can rescale the reference", &ArbitOpts{
+		{"a price filter rescales the copy being bought", &ArbitOpts{
 			CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 0.4, false },
-		}, 0},
+		}, 1},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			installCards(t, plainCard())
@@ -280,6 +280,144 @@ func TestMismatchFiltersTheProbeSide(t *testing.T) {
 				}, ScraperInfo{Name: "reference"}),
 				sellerOf(InventoryRecord{
 					"card": {{Conditions: tt.probeCond, Price: tt.probePrice, Quantity: 1}},
+				}, ScraperInfo{Name: "probe"}))
+			if len(entries) != 0 {
+				t.Errorf("Mismatch returned %d entries, want none", len(entries))
+			}
+		})
+	}
+}
+
+// TestMismatchScalesTheBoughtSide pins which price the factors move. Arbit
+// applies them to the copy being bought, and this report used to apply them
+// to the reference instead, so the same options read one way here and the
+// other way there.
+func TestMismatchScalesTheBoughtSide(t *testing.T) {
+	installCards(t, plainCard())
+
+	entries := Mismatch(&ArbitOpts{
+		MinDiff:           -1000,
+		MinSpread:         -1000,
+		CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 0.5, false },
+	},
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+		}, ScraperInfo{Name: "reference"}),
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 6, Quantity: 1}},
+		}, ScraperInfo{Name: "probe"}))
+	if len(entries) != 1 {
+		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
+	}
+	// The copy costs 6, halved to 3; the reference stays at 10.
+	if got := entries[0].Difference; math.Abs(got-7) > 1e-9 {
+		t.Errorf("Difference = %v, want 7", got)
+	}
+}
+
+// The rate reaches this report too, for the same reason.
+func TestMismatchAppliesTheRate(t *testing.T) {
+	installCards(t, plainCard())
+
+	entries := Mismatch(&ArbitOpts{Rate: 2},
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+		}, ScraperInfo{Name: "reference"}),
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 3, Quantity: 1}},
+		}, ScraperInfo{Name: "probe"}))
+	if len(entries) != 1 {
+		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
+	}
+	if got := entries[0].Difference; math.Abs(got-4) > 1e-9 {
+		t.Errorf("Difference = %v, want 4", got)
+	}
+}
+
+// And the absolute difference, which this report never filled in.
+func TestMismatchReportsTheAbsoluteDifference(t *testing.T) {
+	installCards(t, plainCard())
+
+	entries := Mismatch(nil,
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 10, Quantity: 3}},
+		}, ScraperInfo{Name: "reference"}),
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 6, Quantity: 3}},
+		}, ScraperInfo{Name: "probe"}))
+	if len(entries) != 1 {
+		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
+	}
+	if got := entries[0].AbsoluteDifference; math.Abs(got-12) > 1e-9 {
+		t.Errorf("AbsoluteDifference = %v, want 12", got)
+	}
+}
+
+// The seller and bundle filters reach it as well.
+func TestMismatchFiltersTheShelf(t *testing.T) {
+	for _, tt := range []struct {
+		desc string
+		opts *ArbitOpts
+		want int
+	}{
+		{"another seller's name drops the copy", &ArbitOpts{Sellers: []string{"other"}}, 0},
+		{"its own seller name keeps it", &ArbitOpts{Sellers: []string{"shop"}}, 1},
+		{"bundles only drops a loose copy", &ArbitOpts{OnlyBundles: true}, 0},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			installCards(t, plainCard())
+			entries := Mismatch(tt.opts,
+				sellerOf(InventoryRecord{
+					"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+				}, ScraperInfo{Name: "reference"}),
+				sellerOf(InventoryRecord{
+					"card": {{Conditions: "NM", Price: 5, Quantity: 1, SellerName: "shop"}},
+				}, ScraperInfo{Name: "probe"}))
+			if len(entries) != tt.want {
+				t.Errorf("Mismatch returned %d entries, want %d", len(entries), tt.want)
+			}
+		})
+	}
+}
+
+// A reference asking nothing quotes nothing, the way a vendor offering
+// nothing does.
+func TestMismatchSkipsAReferenceOfNothing(t *testing.T) {
+	installCards(t, plainCard())
+
+	entries := Mismatch(&ArbitOpts{MinDiff: -1000, MinSpread: -1000},
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 0, Quantity: 1}},
+		}, ScraperInfo{Name: "reference"}),
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 5, Quantity: 1}},
+		}, ScraperInfo{Name: "probe"}))
+	if len(entries) != 0 {
+		t.Errorf("Mismatch returned %d entries, want none", len(entries))
+	}
+}
+
+// TestMismatchFiltersTheReferenceSide is the mirror of the probe-side test:
+// the copy being bought is asked about first now, so a pair where only the
+// reference offends reaches the checks made on it.
+func TestMismatchFiltersTheReferenceSide(t *testing.T) {
+	for _, tt := range []struct {
+		desc     string
+		opts     *ArbitOpts
+		refCond  string
+		refPrice float64
+	}{
+		{"a condition ignored only on the reference", &ArbitOpts{Conditions: []string{"SP"}}, "SP", 20},
+		{"a price floor the reference alone falls under", &ArbitOpts{MinPrice: 5}, "NM", 4},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			installCards(t, plainCard())
+			entries := Mismatch(tt.opts,
+				sellerOf(InventoryRecord{
+					"card": {{Conditions: tt.refCond, Price: tt.refPrice, Quantity: 1}},
+				}, ScraperInfo{Name: "reference"}),
+				sellerOf(InventoryRecord{
+					"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
 				}, ScraperInfo{Name: "probe"}))
 			if len(entries) != 0 {
 				t.Errorf("Mismatch returned %d entries, want none", len(entries))
