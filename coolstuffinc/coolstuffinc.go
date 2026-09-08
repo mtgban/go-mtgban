@@ -310,7 +310,12 @@ const saleTail = "Was\u00a0"
 // until nothing more comes off reads them in whatever order the page lays
 // them out, and a row running none is unchanged by the first pass.
 func offerCondition(fullRow, qtyStr, bundleStr string) string {
-	conditions := strings.TrimLeft(fullRow, qtyStr+"+ ")
+	// The count is a prefix, not a set of characters to eat: trimming it as
+	// a cutset ate the leading digit of a condition that opens with one,
+	// which is how "1st Edition" reached the log as "st Edition".
+	conditions := strings.TrimPrefix(fullRow, qtyStr)
+	conditions = strings.TrimPrefix(conditions, "+")
+	conditions = strings.TrimLeft(conditions, " ")
 	conditions = strings.Split(conditions, "$")[0]
 	for {
 		trimmed := strings.TrimSuffix(conditions, bundleStr)
@@ -320,6 +325,26 @@ func offerCondition(fullRow, qtyStr, bundleStr string) string {
 		}
 		conditions = trimmed
 	}
+}
+
+// conditionPrintings are the printings this storefront sells as an offer of
+// their own, naming them where a condition would go. The run is a real
+// printing rather than a state of the card, so the wording moves to the
+// variation and lets the matcher pick it, and the offer is priced as the
+// stock it is.
+var conditionPrintings = map[string]string{
+	"PRE-ERRATA": "Pre-Errata",
+}
+
+// conditionPrinting reads the printing a row names in its condition column,
+// or "" where the wording names a condition.
+func conditionPrinting(conditions string) string {
+	for marker, variation := range conditionPrintings {
+		if strings.Contains(conditions, marker) {
+			return variation
+		}
+	}
+	return ""
 }
 
 // gradedMarkers are the wordings a row carries when the copy is not being
@@ -467,6 +492,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					graded = true
 				}
 
+				printing := conditionPrinting(conditions)
+				if printing != "" {
+					conditions = "Near Mint"
+				}
+
 				// Sometimes etched cards have a Near Mint and Near Mint Foil condition
 				// for the same card
 				if strings.Contains(cardName, "Foil-etched") {
@@ -539,6 +569,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				default:
 					csi.printf("unsupported game")
 					return
+				}
+
+				if printing != "" {
+					theCard.Variation = strings.TrimSpace(theCard.Variation + " " + printing)
 				}
 
 				cardID, err := mtgmatcher.Match(theCard)

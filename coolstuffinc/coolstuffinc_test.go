@@ -206,3 +206,14 @@ func TestUnfoldSkipsTheEmptyGradedSeller(t *testing.T) {
 		t.Errorf("UnfoldScrapers gave %v, want %v", names, want)
 	}
 }
+
+// TestOfferConditionKeepsALeadingDigit pins the trim the count is cut with.
+// It was a cutset, so a condition opening with a digit the count also
+// carries lost it, and "1st Edition" was reported as "st Edition".
+func TestOfferConditionKeepsALeadingDigit(t *testing.T) {
+	got := offerCondition("1 1st Edition  1st Edition $19.99Add to Cart", "1", "")
+	want := "1st Edition  1st Edition "
+	if got != want {
+		t.Errorf("offerCondition = %q, want %q", got, want)
+	}
+}
