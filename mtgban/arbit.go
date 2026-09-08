@@ -304,18 +304,40 @@ func (r *resolvedOpts) buyable(cardID string, entry InventoryEntry, noQuantity b
 	return entry.Price * factor * r.rate, true
 }
 
+// quote is what the other side is worth for one copy: the price it pays or
+// asks, already brought to that copy's condition, how many it will take -
+// zero for no limit - and the entry it was read from, which the row carries
+// so a caller can show its working.
+type quote struct {
+	price    float64
+	quantity int
+
+	// Exactly one of these is set, and it says which report the row belongs
+	// to: a vendor's offer to buy, or another shelf's asking price.
+	buylist BuylistEntry
+	shelf   InventoryEntry
+}
+
+// buys is the quote a vendor's offer makes.
+func buys(entry BuylistEntry) quote {
+	return quote{price: entry.BuyPrice, quantity: entry.Quantity, buylist: entry}
+}
+
+// asks is the quote another shelf makes, at the price its copy is worth once
+// regraded to the one being bought.
+func asks(entry InventoryEntry, regraded float64) quote {
+	return quote{price: regraded, quantity: entry.Quantity, shelf: entry}
+}
+
 // arbitrage is the comparison both reports are: what a copy costs against
-// what the other side gives for it. quotePrice is that other side brought to
-// this copy's condition - a buylist offer for its grade, or another shelf's
-// price regraded - and quoteQty how many it will take, zero for no limit.
-// The caller fills in which side the quote came from.
-func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price, quotePrice float64, quoteQty int) (ArbitEntry, bool) {
-	if price == 0 || quotePrice == 0 {
+// what the other side gives for it.
+func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price float64, q quote) (ArbitEntry, bool) {
+	if price == 0 || q.price == 0 {
 		return ArbitEntry{}, false
 	}
 
-	spread := 100 * (quotePrice - price) / price
-	difference := quotePrice - price
+	spread := 100 * (q.price - price) / price
+	difference := q.price - price
 
 	if r.maxSpread != 0 && spread > r.maxSpread {
 		return ArbitEntry{}, false
@@ -329,8 +351,8 @@ func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price, quo
 
 	// Find the minimum amount tradable
 	qty := entry.Quantity
-	if quoteQty != 0 {
-		qty = min(entry.Quantity, quoteQty)
+	if q.quantity != 0 {
+		qty = min(entry.Quantity, q.quantity)
 	}
 
 	profitability := (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
@@ -344,6 +366,8 @@ func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price, quo
 	return ArbitEntry{
 		CardID:             cardID,
 		InventoryEntry:     entry,
+		BuylistEntry:       q.buylist,
+		ReferenceEntry:     q.shelf,
 		Difference:         difference,
 		AbsoluteDifference: difference * float64(qty),
 		Spread:             spread,
@@ -415,11 +439,10 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 				continue
 			}
 
-			res, ok := r.arbitrage(cardID, invEntry, price, blEntry.BuyPrice, blEntry.Quantity)
+			res, ok := r.arbitrage(cardID, invEntry, price, buys(blEntry))
 			if !ok {
 				continue
 			}
-			res.BuylistEntry = blEntry
 			result = append(result, res)
 		}
 	}
@@ -483,11 +506,10 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 					continue
 				}
 
-				res, ok := r.arbitrage(cardID, invEntry, price, refEntry.Price*invGrade/refGrade, refEntry.Quantity)
+				res, ok := r.arbitrage(cardID, invEntry, price, asks(refEntry, refEntry.Price*invGrade/refGrade))
 				if !ok {
 					continue
 				}
-				res.ReferenceEntry = refEntry
 				result = append(result, res)
 			}
 		}

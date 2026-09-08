@@ -2,6 +2,7 @@ package mtgban
 
 import (
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -384,5 +385,43 @@ func TestArbitRechecksTheBuyFloorPerCondition(t *testing.T) {
 		}}, ScraperInfo{Name: "seller"}))
 	if len(entries) != 0 {
 		t.Errorf("Arbit returned %d entries, want none: the played offer is below the floor", len(entries))
+	}
+}
+
+// TestArbitrageReturnsACompleteRow pins what the quote is for: the row comes
+// back carrying the side it was made against, rather than a caller having to
+// finish it. A row that reached the caller half-filled would say nothing
+// about where its number came from.
+func TestArbitrageReturnsACompleteRow(t *testing.T) {
+	r := resolveOpts(nil)
+
+	bought := InventoryEntry{Conditions: "NM", Price: 10, Quantity: 2}
+	offer := BuylistEntry{Conditions: "NM", BuyPrice: 15, Quantity: 5}
+	row, ok := r.arbitrage("card", bought, bought.Price, buys(offer))
+	if !ok {
+		t.Fatal("arbitrage refused a trade that clears every threshold")
+	}
+	if !reflect.DeepEqual(row.BuylistEntry, offer) {
+		t.Errorf("BuylistEntry = %+v, want the offer it was made against", row.BuylistEntry)
+	}
+	if !reflect.DeepEqual(row.ReferenceEntry, InventoryEntry{}) {
+		t.Errorf("a buylist row carries a reference entry: %+v", row.ReferenceEntry)
+	}
+
+	shelf := InventoryEntry{Conditions: "NM", Price: 15, Quantity: 5}
+	row, ok = r.arbitrage("card", bought, bought.Price, asks(shelf, shelf.Price))
+	if !ok {
+		t.Fatal("arbitrage refused a comparison that clears every threshold")
+	}
+	if !reflect.DeepEqual(row.ReferenceEntry, shelf) {
+		t.Errorf("ReferenceEntry = %+v, want the shelf it was compared against", row.ReferenceEntry)
+	}
+	if !reflect.DeepEqual(row.BuylistEntry, BuylistEntry{}) {
+		t.Errorf("a shelf row carries a buylist entry: %+v", row.BuylistEntry)
+	}
+
+	// Either side quoting nothing is not a comparison.
+	if _, ok := r.arbitrage("card", bought, bought.Price, buys(BuylistEntry{})); ok {
+		t.Error("arbitrage took a quote of nothing")
 	}
 }
