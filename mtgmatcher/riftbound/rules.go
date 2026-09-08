@@ -344,11 +344,18 @@ func legendName(b *mtgmatcher.Backend, name string, targetsPromo bool) string {
 	return match
 }
 
-// CanonicalFinish adds nothing to the shared vocabulary: Riftbound sells a
-// printing plain or foil and the datastore already records those with the
-// matcher's constants.
+// CanonicalFinish keeps Riftbound's finish vocabulary open. The datastore
+// names a finish the way TCGplayer prices it, and TCGplayer sells this
+// category Normal and Foil today - but the printings under a category are
+// the vendor's to add, and a third one should arrive as data rather than as
+// a release of this package. So a name the shared vocabulary does not place
+// is normalized and handed back, and whether it names anything is decided by
+// the printing's own finishes rather than by a list kept here.
 func (Rules) CanonicalFinish(name string) string {
-	return mtgmatcher.CanonicalFinish(name)
+	if finish := mtgmatcher.CanonicalFinish(name); finish != "" {
+		return finish
+	}
+	return mtgmatcher.NormalizeFinish(name)
 }
 
 // PlainNumber implements mtgmatcher.GameRules. The star marks a variant

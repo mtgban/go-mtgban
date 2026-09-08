@@ -58,9 +58,9 @@ type AllCards struct {
 		FlavorText  string   `json:"flavorText,omitempty"`
 		FoilTypes   []string `json:"foilTypes,omitempty"`
 
-		// PrintingIDs is the uuid each foil type prices, keyed by the foil
-		// type as upstream spells it ("None", "Silver") and published by
-		// the builder rather than spelled here. A uuid is what a price is
+		// PrintingIDs is the uuid each finish prices, keyed by the finish
+		// as TCGplayer prices it ("Normal", "Cold Foil", "Holofoil") and
+		// published by the builder rather than spelled here. A uuid is what a price is
 		// keyed on, and 3,200 of this game's are reached by spelling a
 		// foil type through canonicalFinish - so a change to that
 		// normalization moves identity that lives outside this package,
@@ -70,7 +70,8 @@ type AllCards struct {
 
 		// FinishAliases are the other spellings that reach a printing:
 		// upstream's own name for a foil ("silver", "rainbowpillars")
-		// against the finish TCGplayer sells it under. A storefront naming
+		// against the finish TCGplayer sells it under, named as TCGplayer
+		// names it. A storefront naming
 		// the treatment is naming a printing, and without these it would
 		// land on the standard foil instead of the one it asked for.
 		FinishAliases    map[string]string `json:"finishAliases,omitempty"`
@@ -430,10 +431,18 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		var stored []perFinish
 		baseUUID := convertedCard.UUID
 		if len(card.PrintingIDs) > 0 {
-			for finish, uuid := range card.PrintingIDs {
+			for name, uuid := range card.PrintingIDs {
+				// The datastore names a finish the way TCGplayer prices
+				// it; this package spells finishes its own way, and
+				// canonicalFinish is the one crossing between them.
+				finish := canonicalFinish(name)
 				finishUUIDs[finish] = uuid
 				stored = append(stored, perFinish{uuid, finish != mtgmatcher.FinishNonfoil, finish})
 			}
+			// A map has no order, and the CardObjects below are registered
+			// in this one - AllUUIDs and the name hashes would otherwise
+			// come out in a different order on every load.
+			sort.Slice(stored, func(i, j int) bool { return stored[i].name < stored[j].name })
 			// A bare foil flag has to reach a printing. A card sold only in
 			// a treatment has no standard foil for it to land on, so the
 			// treatment answers it - which is what the caller meant, there
@@ -464,8 +473,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			sort.Strings(coarse)
 			convertedCard.Finishes = coarse
 			for name, finish := range card.FinishAliases {
+				// Both halves are the datastore's words: the spelling a
+				// storefront reaches the printing by, against the finish
+				// TCGplayer sells it under.
+				finish = canonicalFinish(finish)
 				if _, sold := finishUUIDs[finish]; sold {
-					finishAliases[name] = finish
+					finishAliases[canonicalFinish(name)] = finish
 				}
 			}
 		} else {
