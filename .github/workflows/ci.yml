@@ -76,8 +76,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/lorcana/lorcana.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key
@@ -117,8 +117,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/riftbound/riftbound.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key
@@ -154,8 +154,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/gundam/gundam.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key
@@ -191,8 +191,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/palworld/palworld.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key
@@ -228,8 +228,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/onepiece/onepiece.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key
@@ -265,8 +265,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/yugioh/yugioh.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key
@@ -302,8 +302,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key
@@ -344,8 +344,8 @@ jobs:
       filepath: ${{ steps.get_key.outputs.filepath }}
     env:
       B2_URI: "b2://mtgban-datastore/pokemon/pokemon.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
     steps:
       - name: Fetch file checksum
         id: get_key

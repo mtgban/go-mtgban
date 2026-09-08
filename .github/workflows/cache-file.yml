@@ -70,8 +70,8 @@ jobs:
       - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != ''
         name: Upload to B2
         env:
-          B2KEY: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-          B2SECRET: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+          B2KEY: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
+          B2SECRET: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
         run: |
           pipx install b2
           b2 account authorize $B2KEY $B2SECRET
