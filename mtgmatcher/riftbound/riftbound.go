@@ -141,6 +141,17 @@ type GalleryCard struct {
 	// card falls back to being sold in both.
 	Finishes []string `json:"finishes,omitempty"`
 
+	// Printings is what a card's printings are, one entry each: the finish
+	// TCGplayer prices it under and the uuid it is quoted by. It replaces
+	// the printingIds map and the finishes list both, which were the same
+	// set of printings said twice - one naming them, the other naming what
+	// each is called. A datastore published before it carries neither and
+	// is read from the two above.
+	Printings []struct {
+		Finish string `json:"finish"`
+		ID     string `json:"id"`
+	} `json:"printings,omitempty"`
+
 	// PrintingIDs is the uuid each finish prices, keyed by the finish as
 	// TCGplayer prices it and published by the builder rather than spelled
 	// here. A uuid is what a price is keyed on, and
@@ -523,6 +534,11 @@ var riftboundRarityMap = map[string]int{
 func printingUUID(card GalleryCard, finish string) string {
 	// Keyed by the datastore's own spelling, which is TCGplayer's, so the
 	// key is placed the same way the finish it answers for was.
+	for _, printing := range card.Printings {
+		if printing.ID != "" && (Rules{}).CanonicalFinish(printing.Finish) == finish {
+			return printing.ID
+		}
+	}
 	for name, uuid := range card.PrintingIDs {
 		if uuid != "" && (Rules{}).CanonicalFinish(name) == finish {
 			return uuid
@@ -532,8 +548,17 @@ func printingUUID(card GalleryCard, finish string) string {
 }
 
 func cardFinishes(card GalleryCard) []string {
+	// The printings array names them where the datastore publishes it; the
+	// list beside it is what one published before it carried.
+	named := card.Finishes
+	if len(card.Printings) > 0 {
+		named = make([]string, 0, len(card.Printings))
+		for _, printing := range card.Printings {
+			named = append(named, printing.Finish)
+		}
+	}
 	var out []string
-	for _, finish := range card.Finishes {
+	for _, finish := range named {
 		// The datastore names a finish the way TCGplayer prices it
 		// ("Normal", "Foil"); the ones built before it did name it the way
 		// this package spells it. CanonicalFinish places both, and places a

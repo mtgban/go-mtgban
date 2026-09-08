@@ -8,10 +8,14 @@ package riftbound
 // falls back on title-casing the token - so a promo the catalog adds tomorrow
 // shows up plainly spelled rather than not at all.
 var promoTypeLabels = map[string]string{
-	"alternateart":    "Alternate Art",
-	"bestof":          "Best Of",
-	"champion":        "Champion",
-	"fistbumppromo":   "Fist Bump Promo",
+	"alternateart": "Alternate Art",
+	"bestof":       "Best Of",
+	"champion":     "Champion",
+	// The catalog writes "Fist Bump Promo" and the builder trims the
+	// " Promo" every qualifier here is published without, so the token is
+	// the two words that are left.
+	"fistbump":        "Fist Bump",
+	"fullart":         "Full Art",
 	"ggez":            "GG EZ",
 	"launchexclusive": "Launch Exclusive",
 	"metal":           "Metal",

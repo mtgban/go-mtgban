@@ -530,44 +530,46 @@ func TestRiftboundFinishUUIDs(t *testing.T) {
 	var bases int
 	for uuid, co := range b.UUIDs {
 		// Sealed products live outside the finish machinery: no finish,
-		// no finish-suffixed uuid, nothing to round-trip
+		// no uuid to round-trip.
 		if co.Sealed {
 			continue
 		}
-		if strings.HasSuffix(uuid, "_"+mtgmatcher.FinishFoil) {
-			if !co.Foil || co.Finish != mtgmatcher.FinishFoil {
-				t.Errorf("%s: foil entry with foil=%v finish=%q", uuid, co.Foil, co.Finish)
+		// What an entry is, it says. Reading the finish off the id's tail
+		// is what pinned the "_nonfoil" the datastore has stopped spelling,
+		// and a uuid is a name rather than a description.
+		if co.Finish == mtgmatcher.FinishFoil {
+			if !co.Foil {
+				t.Errorf("%s: foil finish with foil=%v", uuid, co.Foil)
 			}
-			continue
+		} else {
+			if co.Foil || co.Finish != mtgmatcher.FinishNonfoil {
+				t.Errorf("%s: plain entry with foil=%v finish=%q", uuid, co.Foil, co.Finish)
+			}
+			bases++
 		}
-		if !strings.HasSuffix(uuid, "_"+mtgmatcher.FinishNonfoil) {
-			t.Errorf("%s: uuid does not spell out its finish", uuid)
-			continue
+		if co.FoilUUIDs[co.Finish] != uuid {
+			t.Errorf("%s: FoilUUIDs do not round-trip for %q: %v", uuid, co.Finish, co.FoilUUIDs)
 		}
-		bases++
-		if co.Foil || co.Finish != mtgmatcher.FinishNonfoil {
-			t.Errorf("%s: nonfoil entry with foil=%v finish=%q", uuid, co.Foil, co.Finish)
-		}
-		// A foil sibling is no longer guaranteed: the datastore records the
+		// A foil sibling is not guaranteed: the datastore records the
 		// finishes each printing is sold in, and about half of Riftbound is
-		// sold in one. What must hold is that a uuid exists for exactly the
-		// recorded finishes, and that each round-trips through FoilUUIDs.
-		if co.FoilUUIDs[mtgmatcher.FinishNonfoil] != uuid {
-			t.Errorf("%s: FoilUUIDs do not round-trip: %v", uuid, co.FoilUUIDs)
-		}
-		sibling := strings.TrimSuffix(uuid, "_"+mtgmatcher.FinishNonfoil) + "_" + mtgmatcher.FinishFoil
-		foil, found := b.UUIDs[sibling]
-		if found != co.HasFinish(mtgmatcher.FinishFoil) {
-			t.Errorf("%s: foil uuid present=%v but HasFinish(foil)=%v",
-				uuid, found, co.HasFinish(mtgmatcher.FinishFoil))
-			continue
-		}
-		if found && co.FoilUUIDs[mtgmatcher.FinishFoil] != foil.UUID {
-			t.Errorf("%s: foil sibling does not round-trip: %v", uuid, co.FoilUUIDs)
+		// sold in one. What must hold is that a uuid is named for exactly
+		// the finishes recorded, and that every one it names is stored.
+		for _, finish := range []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil} {
+			named, found := co.FoilUUIDs[finish]
+			if found != co.HasFinish(finish) {
+				t.Errorf("%s: FoilUUIDs names %q=%v but HasFinish(%s)=%v",
+					uuid, finish, found, finish, co.HasFinish(finish))
+				continue
+			}
+			if found {
+				if _, stored := b.UUIDs[named]; !stored {
+					t.Errorf("%s: %q names %s, which is no printing of ours", uuid, finish, named)
+				}
+			}
 		}
 	}
 	if bases == 0 {
 		t.Fatal("no cards loaded")
 	}
-	t.Logf("%d cards, %d uuids", bases, len(b.UUIDs))
+	t.Logf("%d plain printings, %d uuids", bases, len(b.UUIDs))
 }
