@@ -97,8 +97,12 @@ func TestFinishVocabulary(t *testing.T) {
 		{"1st Edition Holofoil", finish1stEditionHolo},
 		{"Unlimited", finishUnlimited},
 		{"Unlimited Holofoil", finishUnlimitedHolo},
-		{"Cold Foil", ""},
-		{"Rainbow Pillars", ""},
+		// Printings other games sell, named rather than refused: the
+		// vocabulary is open so one TCGplayer adds to this category
+		// reaches a uuid without a release. Naming is not selling -
+		// MatchIDFinish refuses a finish this datastore does not carry.
+		{"Cold Foil", "coldfoil"},
+		{"Rainbow Pillars", "rainbowpillars"},
 	} {
 		if got := canonicalFinish(tt.name); got != tt.want {
 			t.Errorf("canonicalFinish(%q) = %q, want %q", tt.name, got, tt.want)

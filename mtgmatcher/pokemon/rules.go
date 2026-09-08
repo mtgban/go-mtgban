@@ -1139,7 +1139,12 @@ func hasAllTokens(words, tokens []string) bool {
 // The plain printings belong to the shared vocabulary — "Normal" is nonfoil
 // everywhere TCGplayer writes it — and the treatments past it are this
 // game's own, spelled with both axes so neither the run nor the treatment is
-// lost.
+// lost.//
+// The vocabulary is open past that. TCGplayer adds a printing to a category
+// when it likes and the builder carries it under its own name rather than
+// dropping it, so a name neither vocabulary places is normalized and handed
+// back - it reaches a uuid only if the printing's own finishes hold one, and
+// a list kept here would refuse a real priced printing the day one arrives.
 func (Rules) CanonicalFinish(name string) string {
 	return canonicalFinish(name)
 }
@@ -1170,7 +1175,12 @@ func canonicalFinish(name string) string {
 	case "unlimitedholo":
 		return finishUnlimitedHolo
 	}
-	return mtgmatcher.CanonicalFinish(normalized)
+	if finish := mtgmatcher.CanonicalFinish(normalized); finish != "" {
+		return finish
+	}
+	// A printing the catalog has grown past the crossings above: handed
+	// back as itself, so the printing's own finishes decide.
+	return normalized
 }
 
 // extractNumbers pulls the collector numbers out of a storefront's variation
