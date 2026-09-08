@@ -41,9 +41,12 @@ func TestPublishedPrintingIDsWin(t *testing.T) {
 	t.Logf("%d published uuids honoured", len(want))
 }
 
-// stampPrintingIDs writes a printingIds map onto every gallery row, naming
-// a uuid the spelling below could not arrive at, and answers the uuids it
-// wrote.
+// stampPrintingIDs renames the uuid of every printing a gallery row carries,
+// to one the spelling below could not arrive at, and answers the uuids it
+// wrote. It stamps whichever shape the datastore publishes - printings[]
+// carries a finish and its uuid together, and printingIds is the map a
+// datastore published before it - so the invariant is pinned against both
+// rather than against the one on its way out.
 func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 	t.Helper()
 	var doc map[string]any
@@ -84,6 +87,22 @@ func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 			id, ok := row["id"].(string)
 			if !ok {
 				t.Fatalf("a card id is %T, not a string", row["id"])
+			}
+			if printings, listed := row["printings"].([]any); listed {
+				for _, raw := range printings {
+					printing, ok := raw.(map[string]any)
+					if !ok {
+						t.Fatalf("a printing is %T, not an object", raw)
+					}
+					finish, ok := printing["finish"].(string)
+					if !ok || finish == "" {
+						t.Fatalf("a printing of card %s names no finish", id)
+					}
+					uuid := "published-" + id + "-" + finish
+					printing["id"] = uuid
+					want[uuid] = true
+				}
+				continue
 			}
 			// Only the finishes the row is sold in are stored, so only
 			// those are expected: stamping a uuid for a finish the card
