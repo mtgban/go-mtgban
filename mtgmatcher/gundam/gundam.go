@@ -56,6 +56,17 @@ type DatastoreCard struct {
 	// that print one ("Waverider Mode").
 	Variant string `json:"variant,omitempty"`
 
+	// PromoTypes are those same qualifiers as tokens, one per promotion,
+	// which is what a query is written in. The variant above is the words
+	// a reader is shown, and it carries what the tokens leave out: the
+	// builder keeps the card's subject out of them - which part of a
+	// multi-part token this is - and that is what tells two printings apart
+	// when their promotions are identical.
+	//
+	// A datastore carrying none is read from the variant, as every one was
+	// before the builder published them apart.
+	PromoTypes []string `json:"promoTypes,omitempty"`
+
 	// Finish is the TCGplayer printing this entry prices, "Normal" or
 	// "Holofoil". Entries sharing everything but the finish are the same
 	// product sold both ways.
@@ -169,14 +180,25 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		slug := mtgmatcher.PromoTypeSlug(card.Variant)
-		if !slices.Contains(b.AllPromoTypes, slug) {
-			b.AllPromoTypes = append(b.AllPromoTypes, slug)
-		}
-		// First spelling seen wins: the catalog writes a couple of these
-		// events two ways, and one token can only read back as one.
-		if b.PromoTypeLabels[slug] == "" {
-			b.PromoTypeLabels[slug] = card.Variant
+		// A printing wears one token per promotion where the builder
+		// publishes them apart, and its whole variant read as one where it
+		// does not. Each reads back as itself: pairing a token with the
+		// joined variant would show "finalist" as "World Championship
+		// Regionals 26-27 Season 2 Finalist".
+		for _, label := range promoLabelsOf(&card) {
+			slug := mtgmatcher.PromoTypeSlug(label)
+			if slug == "" {
+				continue
+			}
+			if !slices.Contains(b.AllPromoTypes, slug) {
+				b.AllPromoTypes = append(b.AllPromoTypes, slug)
+			}
+			// First spelling seen wins: the catalog writes a couple of
+			// these events two ways, and one token can only read back as
+			// one.
+			if b.PromoTypeLabels[slug] == "" {
+				b.PromoTypeLabels[slug] = label
+			}
 		}
 		b.AddName(qualified)
 	}
@@ -224,8 +246,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		var promoTypes []string
-		if card.Variant != "" {
-			promoTypes = []string{mtgmatcher.PromoTypeSlug(card.Variant)}
+		for _, label := range promoLabelsOf(card) {
+			if slug := mtgmatcher.PromoTypeSlug(label); slug != "" {
+				promoTypes = append(promoTypes, slug)
+			}
 		}
 
 		// Only the finishes a product is actually sold in are registered:
@@ -418,4 +442,16 @@ func productKeyOf(identifiers map[string]string, uuid string) string {
 		return id
 	}
 	return uuid
+}
+
+// promoLabelsOf names the promotions a printing carries, in the words they
+// are written in.
+func promoLabelsOf(card *DatastoreCard) []string {
+	if len(card.PromoTypes) > 0 {
+		return card.PromoTypes
+	}
+	if card.Variant != "" {
+		return []string{card.Variant}
+	}
+	return nil
 }
