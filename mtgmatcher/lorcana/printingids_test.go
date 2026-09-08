@@ -41,10 +41,25 @@ func TestPublishedPrintingIDsWin(t *testing.T) {
 	t.Logf("%d published uuids honoured", len(want))
 }
 
-// stampPrintingIDs writes a printingIds map onto every card that lists a
-// foil type, naming a uuid the spelling below could not arrive at, and
-// answers the uuids it wrote.
+// stampPrintingIDs renames the uuid of every printing a card carries, to one
+// the spelling below could not arrive at, and answers the uuids it wrote.
 func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
+	t.Helper()
+	want := map[string]bool{}
+	out := restamp(t, data, func(id int, finish string) string {
+		uuid := fmt.Sprintf("published-%d-%s", id, finish)
+		want[uuid] = true
+		return uuid
+	})
+	return out, want
+}
+
+// restamp rewrites every printing's uuid, in whichever shape the datastore
+// publishes them: printings[] carries a finish and its uuid together, and
+// printingIds is the map a datastore published before it. Both are stamped
+// so this pins the invariant against either, and nothing here has to know
+// which one it was handed.
+func restamp(t *testing.T, data []byte, name func(id int, finish string) string) []byte {
 	t.Helper()
 	var doc map[string]any
 	if err := json.Unmarshal(data, &doc); err != nil {
@@ -54,7 +69,6 @@ func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 	if !ok {
 		t.Fatal("the payload holds no cards")
 	}
-	want := map[string]bool{}
 	for _, item := range rows {
 		row, ok := item.(map[string]any)
 		if !ok {
@@ -64,30 +78,34 @@ func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 		if !ok {
 			t.Fatalf("a card id is %T, not a number", row["id"])
 		}
-		foilTypes, listed := row["foilTypes"].([]any)
-		if !listed || len(foilTypes) == 0 {
+		if printings, listed := row["printings"].([]any); listed {
+			for _, raw := range printings {
+				printing, ok := raw.(map[string]any)
+				if !ok {
+					t.Fatalf("a printing is %T, not an object", raw)
+				}
+				finish, ok := printing["finish"].(string)
+				if !ok || finish == "" {
+					t.Fatalf("a printing of card %d names no finish", int(id))
+				}
+				printing["id"] = name(int(id), finish)
+			}
 			continue
 		}
-		ids := map[string]any{}
-		for _, raw := range foilTypes {
-			foilType, ok := raw.(string)
-			if !ok {
-				t.Fatalf("a foil type is %T, not a string", raw)
-			}
-			// The same sub-type listed twice is one printing, and the
-			// loader stores it once, so it is expected once.
-			uuid := fmt.Sprintf("published-%d-%s", int(id), foilType)
-			ids[foilType] = uuid
-			want[uuid] = true
+		ids, listed := row["printingIds"].(map[string]any)
+		if !listed || len(ids) == 0 {
+			continue
 		}
-		row["printingIds"] = ids
+		for finish := range ids {
+			ids[finish] = name(int(id), finish)
+		}
 	}
 	doc["cards"] = rows
 	out, err := json.Marshal(doc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return out, want
+	return out
 }
 
 // TestPrintingIDsNamedTheVendorsWay pins the crossing between the two
@@ -126,56 +144,18 @@ func TestPrintingIDsNamedTheVendorsWay(t *testing.T) {
 	t.Logf("%d uuids keyed by TCGplayer's own names reached their finish", len(want))
 }
 
-// stampVendorPrintingIDs writes a printingIds map keyed the way the builder
-// keys it - by the TCGplayer printing the card's own externalLinks name -
-// and answers each uuid it wrote against the finish it should be stored
-// under.
+// stampVendorPrintingIDs renames every printing's uuid to one naming the
+// finish it should be stored under, keyed the way the builder keys it - by
+// the TCGplayer printing name - and answers each against that finish.
 func stampVendorPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]string) {
 	t.Helper()
-	var doc map[string]any
-	if err := json.Unmarshal(data, &doc); err != nil {
-		t.Fatal(err)
-	}
-	rows, ok := doc["cards"].([]any)
-	if !ok {
-		t.Fatal("the payload holds no cards")
-	}
 	want := map[string]string{}
-	for _, item := range rows {
-		row, ok := item.(map[string]any)
-		if !ok {
-			t.Fatalf("a card is %T, not an object", item)
-		}
-		id, ok := row["id"].(float64)
-		if !ok {
-			t.Fatalf("a card id is %T, not a number", row["id"])
-		}
-		links, ok := row["externalLinks"].(map[string]any)
-		if !ok {
-			continue
-		}
-		printings, listed := links["tcgPrintings"].([]any)
-		if !listed || len(printings) == 0 {
-			continue
-		}
-		ids := map[string]any{}
-		for _, raw := range printings {
-			name, ok := raw.(string)
-			if !ok {
-				t.Fatalf("a TCGplayer printing is %T, not a string", raw)
-			}
-			finish := canonicalFinish(name)
-			// One finish named twice is one printing, stored once.
-			uuid := fmt.Sprintf("vendor-%d-%s", int(id), finish)
-			ids[name] = uuid
-			want[uuid] = finish
-		}
-		row["printingIds"] = ids
-	}
-	doc["cards"] = rows
-	out, err := json.Marshal(doc)
-	if err != nil {
-		t.Fatal(err)
-	}
+	out := restamp(t, data, func(id int, printing string) string {
+		finish := canonicalFinish(printing)
+		// One finish named twice is one printing, stored once.
+		uuid := fmt.Sprintf("vendor-%d-%s", id, finish)
+		want[uuid] = finish
+		return uuid
+	})
 	return out, want
 }

@@ -74,7 +74,21 @@ type AllCards struct {
 		// names it. A storefront naming
 		// the treatment is naming a printing, and without these it would
 		// land on the standard foil instead of the one it asked for.
-		FinishAliases    map[string]string `json:"finishAliases,omitempty"`
+		FinishAliases map[string]string `json:"finishAliases,omitempty"`
+
+		// Printings is what a card's printings are, one entry each: the
+		// finish TCGplayer prices it under, the uuid it is quoted by, and
+		// the treatments that printing is the printing of.
+		//
+		// It replaces the three above, which said the same things about a
+		// card in three places and left every reader to join them by finish
+		// name. A datastore published before it carries none, and is read
+		// the old way.
+		Printings []struct {
+			Finish     string   `json:"finish"`
+			ID         string   `json:"id"`
+			PromoTypes []string `json:"promoTypes,omitempty"`
+		} `json:"printings,omitempty"`
 		FullIdentifier   string            `json:"fullIdentifier"`
 		FullName         string            `json:"fullName"`
 		FullText         string            `json:"fullText"`
@@ -165,6 +179,7 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	if len(payload.Cards) == 0 || len(payload.Sets) == 0 {
 		return nil, errors.New("empty LorcanaJSON file")
 	}
+	payload.adoptPrintings()
 	return payload.newBackend(), nil
 }
 
@@ -298,6 +313,40 @@ func promoTags(published []string, grouping string) []string {
 	// The published list belongs to the card, so the pool goes onto a copy
 	// of it rather than onto whatever the slice still has room for.
 	return append(slices.Clone(tags), grouping)
+}
+
+// adoptPrintings fills the three older shapes from the printings array, so
+// the rest of this package asks the same questions of either datastore. It is
+// the whole of the compatibility: nothing downstream knows which one it is
+// reading.
+//
+// The treatments are put back on the card as well as kept against their
+// printing. A Card here is the card, not one of its printings - a query for
+// "rainbowpillars" is asking for the card that has such a printing - and it
+// is the alias that says which printing it is, exactly as before.
+func (ac *AllCards) adoptPrintings() {
+	for i := range ac.Cards {
+		card := &ac.Cards[i]
+		if len(card.Printings) == 0 {
+			continue
+		}
+		card.FoilTypes = make([]string, 0, len(card.Printings))
+		card.PrintingIDs = make(map[string]string, len(card.Printings))
+		aliases := map[string]string{}
+		for _, printing := range card.Printings {
+			card.FoilTypes = append(card.FoilTypes, printing.Finish)
+			card.PrintingIDs[printing.Finish] = printing.ID
+			for _, treatment := range printing.PromoTypes {
+				aliases[treatment] = printing.Finish
+				if !slices.Contains(card.PromoTypes, treatment) {
+					card.PromoTypes = append(card.PromoTypes, treatment)
+				}
+			}
+		}
+		if len(aliases) > 0 {
+			card.FinishAliases = aliases
+		}
+	}
 }
 
 func (ac *AllCards) newBackend() *mtgmatcher.Backend {
