@@ -66,7 +66,14 @@ type AllCards struct {
 		// normalization moves identity that lives outside this package,
 		// silently, since a moved uuid resolves to nothing rather than
 		// erroring. A datastore that carries none is spelled from below.
-		PrintingIDs      map[string]string `json:"printingIds,omitempty"`
+		PrintingIDs map[string]string `json:"printingIds,omitempty"`
+
+		// FinishAliases are the other spellings that reach a printing:
+		// upstream's own name for a foil ("silver", "rainbowpillars")
+		// against the finish TCGplayer sells it under. A storefront naming
+		// the treatment is naming a printing, and without these it would
+		// land on the standard foil instead of the one it asked for.
+		FinishAliases    map[string]string `json:"finishAliases,omitempty"`
 		FullIdentifier   string            `json:"fullIdentifier"`
 		FullName         string            `json:"fullName"`
 		FullText         string            `json:"fullText"`
@@ -409,12 +416,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 			PlainNumber: Rules{}.PlainNumber(fmt.Sprintf("%d%s", card.Number, card.Variant)),
 		}
-		// Register the uuid each finish resolves to. Nonfoil keeps the bare
-		// uuid and every foil is suffixed with the finish it carries, the
-		// way the other games spell theirs: a uuid says which printing it
-		// prices rather than only that it is "a foil". The suffix derives
-		// from the finish name, not its position, so it is stable across
-		// data updates that reorder or add foil types.
+		// Register the uuid each finish prices. Where the datastore names
+		// them - which it does in TCGplayer's own words, the vocabulary
+		// prices arrive in - they are read; where it does not, they are
+		// spelled from the foil type as they were before it did.
 		finishUUIDs := map[string]string{}
 		finishAliases := map[string]string{}
 		type perFinish struct {
@@ -424,53 +429,89 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 		var stored []perFinish
 		baseUUID := convertedCard.UUID
-		foilSeen := false
-		for i, finish := range finishes {
-			// The foil type this position was read from, which is the key
-			// the builder publishes a uuid under. A card upstream lists
-			// none is the plain printing alone and has no key to look up.
-			var foilType string
-			if i < len(card.FoilTypes) {
-				foilType = card.FoilTypes[i]
+		if len(card.PrintingIDs) > 0 {
+			for finish, uuid := range card.PrintingIDs {
+				finishUUIDs[finish] = uuid
+				stored = append(stored, perFinish{uuid, finish != mtgmatcher.FinishNonfoil, finish})
 			}
-			if finish != mtgmatcher.FinishFoil {
-				uuid := published(card.PrintingIDs, foilType, baseUUID)
-				finishUUIDs[mtgmatcher.FinishNonfoil] = uuid
-				stored = append(stored, perFinish{uuid, false, mtgmatcher.FinishNonfoil})
-				continue
+			// A bare foil flag has to reach a printing. A card sold only in
+			// a treatment has no standard foil for it to land on, so the
+			// treatment answers it - which is what the caller meant, there
+			// being nothing else foil about the card.
+			if _, found := finishUUIDs[mtgmatcher.FinishFoil]; !found {
+				if uuid, found := finishUUIDs[finishHolofoil]; found {
+					finishUUIDs[mtgmatcher.FinishFoil] = uuid
+					finishAliases[finishHolofoil] = mtgmatcher.FinishFoil
+				}
 			}
+			// Finishes is the coarse pair output() reads, not the names
+			// above: a card sold in a treatment is sold foil.
+			var coarse []string
+			for _, s := range stored {
+				name := mtgmatcher.FinishNonfoil
+				if s.foil {
+					name = mtgmatcher.FinishFoil
+				}
+				if !slices.Contains(coarse, name) {
+					coarse = append(coarse, name)
+				}
+			}
+			sort.Strings(coarse)
+			convertedCard.Finishes = coarse
+			for name, finish := range card.FinishAliases {
+				if _, sold := finishUUIDs[finish]; sold {
+					finishAliases[name] = finish
+				}
+			}
+		} else {
+			foilSeen := false
+			for i, finish := range finishes {
+				// The foil type this position was read from, which is the key
+				// the builder publishes a uuid under. A card upstream lists
+				// none is the plain printing alone and has no key to look up.
+				var foilType string
+				if i < len(card.FoilTypes) {
+					foilType = card.FoilTypes[i]
+				}
+				if finish != mtgmatcher.FinishFoil {
+					uuid := published(card.PrintingIDs, foilType, baseUUID)
+					finishUUIDs[mtgmatcher.FinishNonfoil] = uuid
+					stored = append(stored, perFinish{uuid, false, mtgmatcher.FinishNonfoil})
+					continue
+				}
 
-			// The exported foil type as the vocabulary spells it ("silver",
-			// "rainbowpillars", …). Nonfoil above uses the matcher's own
-			// constant instead of the export's "None" placeholder.
-			finishName := canonicalFinish(foilType)
+				// The exported foil type as the vocabulary spells it ("silver",
+				// "rainbowpillars", …). Nonfoil above uses the matcher's own
+				// constant instead of the export's "None" placeholder.
+				finishName := canonicalFinish(foilType)
 
-			uuid := published(card.PrintingIDs, foilType, baseUUID+"_"+finishName)
-			// The printing's first foil answers the plain foil flag; the
-			// sub-types past it are keyed by their own name, which is what
-			// keeps a flag from reaching a treatment nobody asked for.
-			key := mtgmatcher.FinishFoil
-			if foilSeen {
-				key = finishName
-			}
-			foilSeen = true
-			finishUUIDs[key] = uuid
-			stored = append(stored, perFinish{uuid, true, finishName})
+				uuid := published(card.PrintingIDs, foilType, baseUUID+"_"+finishName)
+				// The printing's first foil answers the plain foil flag; the
+				// sub-types past it are keyed by their own name, which is what
+				// keeps a flag from reaching a treatment nobody asked for.
+				key := mtgmatcher.FinishFoil
+				if foilSeen {
+					key = finishName
+				}
+				foilSeen = true
+				finishUUIDs[key] = uuid
+				stored = append(stored, perFinish{uuid, true, finishName})
 
-			// The standard foil is keyed under the shared constant whatever
-			// the printing's foil type is called, so its own name is
-			// registered as a spelling that reaches it.
-			if finishName != key {
-				finishAliases[finishName] = key
-			}
-			// TCGplayer prices a Lorcana printing in up to four printings:
-			// Normal, Foil and Cold Foil for the silver foil almost every
-			// card is foiled in, and Holofoil for the treatment past it.
-			// Which uuid that names is the printing's own business: the
-			// sub-type where there is one, since the foil types are visited
-			// in exported order and it wins over the standard foil.
-			if finishName != standardFoil {
-				finishAliases[tcgSpecialFoil] = key
+				// The standard foil is keyed under the shared constant whatever
+				// the printing's foil type is called, so its own name is
+				// registered as a spelling that reaches it.
+				if finishName != key {
+					finishAliases[finishName] = key
+				}
+				// TCGplayer prices a Lorcana printing in up to four printings:
+				// Normal, Foil and Cold Foil for the silver foil almost every
+				// card is foiled in, and Holofoil for the treatment past it.
+				// Which uuid that names is the printing's own business: the
+				// sub-type where there is one, since the foil types are visited
+				// in exported order and it wins over the standard foil.
+				if finishName != standardFoil {
+					finishAliases[tcgSpecialFoil] = key
+				}
 			}
 		}
 		convertedCard.FoilUUIDs = finishUUIDs
@@ -666,6 +707,11 @@ const standardFoil = "silver"
 
 // tcgSpecialFoil is the one name TCGplayer prices any such treatment under.
 const tcgSpecialFoil = "holofoil"
+
+// finishHolofoil is the third name TCGplayer prices a Lorcana printing
+// under, beside Normal and Cold Foil, and the one a datastore naming its
+// finishes uses for every treatment past the standard foil.
+const finishHolofoil = "holofoil"
 
 var lorcanaColorNameMap = map[string]string{
 	"W": "white",
