@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
@@ -30,16 +32,16 @@ func TestProcessProductRefusal(t *testing.T) {
 	}
 
 	mkm := &Index{
-		gameID:       GameYuGiOh,
+		gameID:       cm.GameYuGiOh,
 		exchangeRate: 1,
-		priceGuide: map[int]PriceGuide{
+		priceGuide: map[int]cm.PriceGuide{
 			1: {IDProduct: 1, LowPrice: 1, TrendPrice: 2},
 			2: {IDProduct: 2, LowPrice: 1, TrendPrice: 2},
 		},
 	}
 	channel := make(chan responseChan, 8)
 
-	err = mkm.processProduct(channel, &MKMProduct{
+	err = mkm.processProduct(channel, &cm.Product{
 		IDProduct:     1,
 		Name:          "Blue-Eyes White Dragon",
 		Number:        "001",
@@ -49,7 +51,7 @@ func TestProcessProductRefusal(t *testing.T) {
 		t.Errorf("a product of a catalog we carry no set for returned %v, want %v", err, errForeign)
 	}
 
-	err = mkm.processProduct(channel, &MKMProduct{
+	err = mkm.processProduct(channel, &cm.Product{
 		IDProduct:     2,
 		Name:          "Guardian Elma (V.1 - Common)",
 		Number:        "005",

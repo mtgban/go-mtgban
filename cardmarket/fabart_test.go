@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
@@ -48,7 +50,7 @@ func TestGemPackTreatments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	products := []MKMProduct{
+	products := []cm.Product{
 		{
 			IDProduct:     810664,
 			Name:          "Display Loyalty (Regular)",
@@ -64,19 +66,19 @@ func TestGemPackTreatments(t *testing.T) {
 	}
 
 	mkm := &Index{
-		gameID:         GameFleshAndBlood,
+		gameID:         cm.GameFleshAndBlood,
 		exchangeRate:   1,
 		MaxConcurrency: 1,
 		inventory:      mtgban.InventoryRecord{},
 		TCGBridge:      map[int]int{810664: 616347, 810195: 616347},
-		priceGuide: map[int]PriceGuide{
+		priceGuide: map[int]cm.PriceGuide{
 			810664: {IDProduct: 810664, LowPrice: 1, TrendPrice: 2},
 			810195: {IDProduct: 810195, LowPrice: 9, TrendPrice: 10},
 		},
 	}
 
-	mkm.collectPrices(context.Background(), []MKMExpansion{{Name: "GEM Pack Promos"}},
-		func(_ context.Context, _ MKMExpansion, channel chan<- responseChan) error {
+	mkm.collectPrices(context.Background(), []cm.Expansion{{Name: "GEM Pack Promos"}},
+		func(_ context.Context, _ cm.Expansion, channel chan<- responseChan) error {
 			for i := range products {
 				err := mkm.processProduct(channel, &products[i])
 				if err != nil {
@@ -114,13 +116,13 @@ func TestMatchProductExtendedArt(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Index{gameID: GameFleshAndBlood}
+	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct{ name, want string }{
 		{"Twinning Blade (Extended Art Rainbow Foil)", "cru082_225983_1erainbow"},
 		{"Twinning Blade (Rainbow Foil)", "cru082_225982_1erainbow"},
 		{"Twinning Blade (Regular)", "cru082_225982_1e"},
 	} {
-		got := mkm.matchProduct(&MKMProduct{
+		got := mkm.matchProduct(&cm.Product{
 			Name:          tt.name,
 			Number:        "CRU082",
 			ExpansionName: "Crucible of War - First",

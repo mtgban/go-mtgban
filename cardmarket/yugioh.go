@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -103,7 +105,7 @@ func yugiohEditions(expansion string) []string {
 // asked, because the oldest sets are sold once more under a numbering
 // shifted by a card or two, and two products named alike that reached one
 // printing are that printing's however they are numbered.
-func yugiohSameProduct(a, b *MKMProduct) bool {
+func yugiohSameProduct(a, b *cm.Product) bool {
 	return mtgmatcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == mtgmatcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
 }
 
@@ -113,7 +115,7 @@ func yugiohSameProduct(a, b *MKMProduct) bool {
 // print, "A000" the Asian), carried only where the catalog has a set for it;
 // an expansion naming no set of ours, or a run we have no set for, is a
 // catalog we do not carry rather than a product that named nothing.
-func (mkm *Index) matchYugioh(product *MKMProduct) (string, error) {
+func (mkm *Index) matchYugioh(product *cm.Product) (string, error) {
 	name := versionTail.ReplaceAllString(product.Name, "")
 	var rarity string
 	if fields := rarityTail.FindStringSubmatch(product.Name); fields != nil {

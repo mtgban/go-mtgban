@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -113,7 +115,7 @@ func checkLoadedID(cardName string, productID int) []string {
 // mtgjson occasionally stamps the same mcmId on sibling variants (30A frame
 // pairs for example), so printings whose number agrees with the product's
 // take precedence over the arbitrary last one found.
-func Fallback(product *MKMProduct) (string, string) {
+func Fallback(product *cm.Product) (string, string) {
 	var cardID, cardIDFoil string
 
 	// First check if the product id is known

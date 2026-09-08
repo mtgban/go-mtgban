@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strings"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -206,7 +208,7 @@ func pokemonCodeCard(name string) bool {
 // and the rest give way. A printing held by a product of another name is
 // left to the inventory to refuse out loud, since that is a disagreement
 // worth reading.
-func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool, face func(product *MKMProduct, cardID string) bool) {
+func twinsAmong(results []resolved, same func(a, b *cm.Product) bool, face func(product *cm.Product, cardID string) bool) {
 	held := map[string][]int{}
 	var holders []int
 	for i, r := range results {
@@ -254,7 +256,7 @@ func twinsAmong(results []resolved, same func(a, b *MKMProduct) bool, face func(
 // Deck)" parenthetical, the "Basic" an energy is sometimes written with -
 // and the same number, or none, once the letter a shelf hangs off it and
 // the zeros it pads with are off.
-func pokemonSameProduct(a, b *MKMProduct) bool {
+func pokemonSameProduct(a, b *cm.Product) bool {
 	if pokemonPlainName(a.Name) != pokemonPlainName(b.Name) {
 		return false
 	}
@@ -312,7 +314,7 @@ var pokemonLetteredSets = []string{"Alternate Art Promos", "League & Championshi
 // says of it, held to the sets its expansion may hold. An expansion naming
 // no set of ours is a catalog we do not carry, and a miss in one is said so
 // rather than reported product by product.
-func (mkm *Index) matchPokemon(product *MKMProduct) (string, error) {
+func (mkm *Index) matchPokemon(product *cm.Product) (string, error) {
 	if pokemonForeignDenied(product.ExpansionName, product.Number) {
 		return "", errForeign
 	}

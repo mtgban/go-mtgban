@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
@@ -48,7 +50,7 @@ func TestMatchProductPrintRunPrefix(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Index{gameID: GameYuGiOh}
+	mkm := &Index{gameID: cm.GameYuGiOh}
 	for _, tt := range []struct {
 		name, expansion, product, number, want string
 	}{
@@ -98,7 +100,7 @@ func TestMatchProductPrintRunPrefix(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := mkm.matchProduct(&MKMProduct{
+			got := mkm.matchProduct(&cm.Product{
 				Name:          tt.product,
 				Number:        tt.number,
 				ExpansionName: tt.expansion,

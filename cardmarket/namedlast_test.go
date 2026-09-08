@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
@@ -98,7 +100,7 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 
 	const uuid = "mon092_237847_1e"
 	// The bridge knows the second of the two, so the first resolves by name.
-	products := []MKMProduct{
+	products := []cm.Product{
 		{
 			IDProduct:     602755,
 			Name:          "Prismatic Shield (Red) (Regular)",
@@ -114,19 +116,19 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 	}
 
 	mkm := &Index{
-		gameID:         GameFleshAndBlood,
+		gameID:         cm.GameFleshAndBlood,
 		exchangeRate:   1,
 		MaxConcurrency: 1,
 		inventory:      mtgban.InventoryRecord{},
 		TCGBridge:      map[int]int{999001: 237847},
-		priceGuide: map[int]PriceGuide{
+		priceGuide: map[int]cm.PriceGuide{
 			602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
 			999001: {IDProduct: 999001, LowPrice: 1, TrendPrice: 2},
 		},
 	}
 
-	mkm.collectPrices(context.Background(), []MKMExpansion{{Name: "Monarch - First"}},
-		func(_ context.Context, _ MKMExpansion, channel chan<- responseChan) error {
+	mkm.collectPrices(context.Background(), []cm.Expansion{{Name: "Monarch - First"}},
+		func(_ context.Context, _ cm.Expansion, channel chan<- responseChan) error {
 			for i := range products {
 				err := mkm.processProduct(channel, &products[i])
 				if err != nil {

@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
@@ -34,7 +36,7 @@ func TestMatchPokemonShelves(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Index{gameID: GamePokemon}
+	mkm := &Index{gameID: cm.GamePokemon}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 		err                           error
@@ -46,7 +48,7 @@ func TestMatchPokemonShelves(t *testing.T) {
 		{"Shiny Treasure ex", "Pikachu", "04", "", errForeign},
 		{"XY Promos", "Pikachu", "", "", errForeign},
 	} {
-		product := MKMProduct{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion}
+		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion}
 		got, err := mkm.matchPokemon(&product)
 		if got != tt.want || !errors.Is(err, tt.err) {
 			t.Errorf("%q in %q (%s) = %q, %v; want %q, %v", tt.name, tt.expansion, tt.number, got, err, tt.want, tt.err)
@@ -59,8 +61,8 @@ func TestMatchPokemonShelves(t *testing.T) {
 // holds the printing for both, and that a refusal beside such a sibling is
 // counted as a twin rather than reported.
 func TestPokemonTwins(t *testing.T) {
-	product := func(id int, name, number string) *MKMProduct {
-		return &MKMProduct{IDProduct: id, Name: name, Number: number, ExpansionName: "Sun & Moon"}
+	product := func(id int, name, number string) *cm.Product {
+		return &cm.Product{IDProduct: id, Name: name, Number: number, ExpansionName: "Sun & Moon"}
 	}
 	results := []resolved{
 		{product: product(1, "Rowlet ", "9"), cardID: "rowlet"},
@@ -86,17 +88,17 @@ func TestPokemonTwins(t *testing.T) {
 
 func TestPokemonSameProduct(t *testing.T) {
 	for _, tt := range []struct {
-		a, b MKMProduct
+		a, b cm.Product
 		want bool
 	}{
-		{MKMProduct{Name: "Galvantula ", Number: "27"}, MKMProduct{Name: "Galvantula (Theme Deck)", Number: "27P"}, true},
-		{MKMProduct{Name: "Toxtricity V ", Number: "70"}, MKMProduct{Name: "Toxtricity V ", Number: "070"}, true},
-		{MKMProduct{Name: "Darkness Energy", Number: ""}, MKMProduct{Name: "Basic Darkness Energy", Number: ""}, true},
-		{MKMProduct{Name: "Flareon V ", Number: "149"}, MKMProduct{Name: "Flareon V ", Number: "SWSH 149"}, true},
-		{MKMProduct{Name: "Magnetic [M] Energy", Number: "085"}, MKMProduct{Name: "Magnetic Metal Energy", Number: "85"}, true},
-		{MKMProduct{Name: "Pikachu ", Number: "101"}, MKMProduct{Name: "Pikachu ", Number: "190"}, false},
-		{MKMProduct{Name: "Judge", Number: "SVI 176"}, MKMProduct{Name: "Judge", Number: "DRI 167"}, false},
-		{MKMProduct{Name: "Latios ", Number: "MEG 101"}, MKMProduct{Name: "Lunatone ", Number: "MEG 074"}, false},
+		{cm.Product{Name: "Galvantula ", Number: "27"}, cm.Product{Name: "Galvantula (Theme Deck)", Number: "27P"}, true},
+		{cm.Product{Name: "Toxtricity V ", Number: "70"}, cm.Product{Name: "Toxtricity V ", Number: "070"}, true},
+		{cm.Product{Name: "Darkness Energy", Number: ""}, cm.Product{Name: "Basic Darkness Energy", Number: ""}, true},
+		{cm.Product{Name: "Flareon V ", Number: "149"}, cm.Product{Name: "Flareon V ", Number: "SWSH 149"}, true},
+		{cm.Product{Name: "Magnetic [M] Energy", Number: "085"}, cm.Product{Name: "Magnetic Metal Energy", Number: "85"}, true},
+		{cm.Product{Name: "Pikachu ", Number: "101"}, cm.Product{Name: "Pikachu ", Number: "190"}, false},
+		{cm.Product{Name: "Judge", Number: "SVI 176"}, cm.Product{Name: "Judge", Number: "DRI 167"}, false},
+		{cm.Product{Name: "Latios ", Number: "MEG 101"}, cm.Product{Name: "Lunatone ", Number: "MEG 074"}, false},
 	} {
 		if got := pokemonSameProduct(&tt.a, &tt.b); got != tt.want {
 			t.Errorf("%q/%q vs %q/%q = %v, want %v", tt.a.Name, tt.a.Number, tt.b.Name, tt.b.Number, got, tt.want)

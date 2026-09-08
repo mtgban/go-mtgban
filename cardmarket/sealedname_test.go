@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
@@ -88,12 +90,12 @@ func TestSealedRenamed(t *testing.T) {
 		name   string
 		want   string
 	}{
-		{GameOnePiece, "The Best Booster", "Premium Booster Booster"},
-		{GameOnePiece, "The Best Vol.2 Sleeved Booster", "Premium Booster Vol.2 Sleeved Booster"},
+		{cm.GameOnePiece, "The Best Booster", "Premium Booster Booster"},
+		{cm.GameOnePiece, "The Best Vol.2 Sleeved Booster", "Premium Booster Vol.2 Sleeved Booster"},
 		// The word has to be the product's, not any word starting the same.
-		{GameOnePiece, "The Bestiary Booster", ""},
+		{cm.GameOnePiece, "The Bestiary Booster", ""},
 		// Another game's catalog is another vocabulary.
-		{GameYuGiOh, "The Best Booster", ""},
+		{cm.GameYuGiOh, "The Best Booster", ""},
 	} {
 		got, found := sealedRenamed(tt.gameID, tt.name)
 		if tt.want == "" {
@@ -161,7 +163,7 @@ func TestResolveSealedNameRunSilent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Sealed{gameID: GameYuGiOh}
+	mkm := &Sealed{gameID: cm.GameYuGiOh}
 	for _, tt := range []struct {
 		name, want string
 	}{
@@ -225,7 +227,7 @@ func TestResolveSealedNameNamedRun(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Sealed{gameID: GameFleshAndBlood}
+	mkm := &Sealed{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct {
 		name, want string
 	}{
@@ -284,7 +286,7 @@ func TestResolveSealedNameRenamed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Sealed{gameID: GameOnePiece}
+	mkm := &Sealed{gameID: cm.GameOnePiece}
 	for _, tt := range []struct {
 		name, want string
 	}{

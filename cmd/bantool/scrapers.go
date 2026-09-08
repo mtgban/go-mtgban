@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/coolstuffinc"
@@ -66,7 +68,7 @@ func starcitygamesKey() (string, error) {
 func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		scraper := cardmarket.NewScraperIndex(game)
-		err := loadCardmarketIDMap(scraper)
+		err := loadCardmarketCatalog(scraper)
 		if err != nil {
 			return nil, err
 		}
@@ -88,7 +90,7 @@ func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (
 func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		scraper := cardmarket.NewScraperIndex(game)
-		err := loadCardmarketIDMap(scraper)
+		err := loadCardmarketCatalog(scraper)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +149,7 @@ func tcgSYPScraper(game string) func() (mtgban.Scraper, error) {
 func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		scraper := cardmarket.NewScraperIndex(game)
-		err := loadCardmarketIDMap(scraper)
+		err := loadCardmarketCatalog(scraper)
 		if err != nil {
 			return nil, err
 		}
@@ -160,24 +162,24 @@ func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 	}
 }
 
-// loadCardmarketIDMap hands an index scraper the published catalog it prices
+// loadCardmarketCatalog hands an index scraper the published catalog it prices
 // from, whatever the game and whichever constructor built it: MTGJSON
-// publishes Magic's, mkmcatalog builds the rest.
-func loadCardmarketIDMap(scraper *cardmarket.Index) error {
-	idMapPath := os.Getenv("MTGJSON_MKMID_PATH")
-	if idMapPath == "" {
+// publishes Magic's, go-cardmarket's mkmcatalog builds the rest.
+func loadCardmarketCatalog(scraper *cardmarket.Index) error {
+	path := os.Getenv("MTGJSON_MKMID_PATH")
+	if path == "" {
 		return errors.New("missing MTGJSON_MKMID_PATH env var")
 	}
-	reader, err := openPath(idMapPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
+	reader, err := openPath(path, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
-	idMap, err := cardmarket.LoadIDMap(reader)
+	catalog, err := cm.LoadCatalog(reader)
 	if err != nil {
 		return err
 	}
-	scraper.IDMap = idMap
+	scraper.Catalog = catalog
 	return nil
 }
 

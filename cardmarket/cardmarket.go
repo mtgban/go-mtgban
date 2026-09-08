@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -29,7 +31,7 @@ type responseChan struct {
 	byName bool
 	// product is what was priced, for the collector to tell a twin of a
 	// product already priced from a disagreement worth reporting.
-	product *MKMProduct
+	product *cm.Product
 	// tally carries an edition's walked and refused counts in place of a
 	// price, one record per edition, so the pool's single collector can
 	// count the run without the workers sharing anything.
@@ -61,14 +63,14 @@ type namedLast struct {
 	// product of the same name already holds gives way silently: it is
 	// the same card sold again on another shelf, and the inventory would
 	// only refuse it out loud.
-	held map[string]*MKMProduct
+	held map[string]*cm.Product
 	// twin says whether two products are the same card sold twice, for
 	// the games whose shelves do that; nil leaves every collision to the
 	// inventory.
-	twin func(a, b *MKMProduct) bool
+	twin func(a, b *cm.Product) bool
 	// face says whether a product names one face of the fused printing
 	// it is beside, the other way a shelf sells one card twice
-	face  func(product *MKMProduct, cardID string) bool
+	face  func(product *cm.Product, cardID string) bool
 	twins int
 	// The run's tally, summed from the editions' records; the collector
 	// runs on one goroutine, so plain counts are all this takes.
@@ -101,7 +103,7 @@ func (n *namedLast) collect(result responseChan) {
 // inventory would only refuse it out loud.
 func (n *namedLast) hold(result responseChan) bool {
 	if n.held == nil {
-		n.held = map[string]*MKMProduct{}
+		n.held = map[string]*cm.Product{}
 	}
 	key := result.cardID + "|" + result.entry.SellerName
 	if holder := n.held[key]; holder != nil && result.product != nil {
@@ -148,10 +150,10 @@ type Index struct {
 	// it as plain data.
 	TCGBridge map[int]int
 
-	// IDMap is the published catalog Load prices from: the products are
+	// Catalog is the published catalog Load prices from: the products are
 	// enumerated and resolved from it, and no request is signed. bantool
 	// loads it from MTGJSON_MKMID_PATH.
-	IDMap *IDMap
+	Catalog *cm.Catalog
 	// numbers indexes a set's collector numbers by the card they name,
 	// built on first use; see yugiohNumberTaken.
 	numbers   map[string]map[string]string
@@ -162,7 +164,7 @@ type Index struct {
 	// priceGuide holds one game's published prices, indexed by the product
 	// id they belong to: a run asks for one product's prices tens of
 	// thousands of times, once per product in the catalog.
-	priceGuide map[int]PriceGuide
+	priceGuide map[int]cm.PriceGuide
 
 	// shelved names, for each set of ours, the expansion of this run that
 	// sells it; see offShelf. Load fills it once the expansions are known.
@@ -217,8 +219,8 @@ var errForeign = errors.New("of a catalog we do not carry")
 // standing for a card a dozen sets carry. Naming those is the same noise
 // Magic's tokens are, and resolveMagic already passes over them for the same
 // reason. They are 57 of the 177 lines a Pokemon run still reports.
-func (mkm *Index) noPrinting(product *MKMProduct) error {
-	if mkm.gameID == GamePokemon && pokemonBasicEnergy(pokemonName(product.Name)) {
+func (mkm *Index) noPrinting(product *cm.Product) error {
+	if mkm.gameID == cm.GamePokemon && pokemonBasicEnergy(pokemonName(product.Name)) {
 		return nil
 	}
 	return errNoPrinting
@@ -236,7 +238,7 @@ func (mkm *Index) noPrinting(product *MKMProduct) error {
 // same game as the English one - 535 of its 774 shelves, 43,603 products -
 // and those are programs we do not carry rather than printings we failed to
 // find, so a run saying so shelf by shelf is 532 lines that name no work.
-// The run's own tally still counts them, and walkIDMap says how many in one
+// The run's own tally still counts them, and walkCatalog says how many in one
 // line at the end.
 func (mkm *Index) reportRefused(expansion string, total int, refused []string, twins, foreign int) {
 	if len(refused) == 0 && twins == 0 {
@@ -308,7 +310,7 @@ func onePieceNumber(name, number, expansion string) string {
 // shelvedSets names, for each set of ours, the one expansion of this catalog
 // that sells it. A set no expansion names is absent, and so is an expansion
 // naming no set.
-func shelvedSets(list []MKMExpansion) map[string]string {
+func shelvedSets(list []cm.Expansion) map[string]string {
 	shelved := make(map[string]string, len(list))
 	for _, exp := range list {
 		set, err := mtgmatcher.GetSetByName(exp.Name)
@@ -340,7 +342,7 @@ func shelvedSets(list []MKMExpansion) map[string]string {
 // shelf the datastore files it. The set has to be one this catalog sells
 // elsewhere, too: where no other expansion names it nothing else is pricing
 // it, and refusing would drop the only price there is.
-func (mkm *Index) offShelf(product *MKMProduct, cardID string) bool {
+func (mkm *Index) offShelf(product *cm.Product, cardID string) bool {
 	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil || len(co.PromoTypes) > 0 {
 		return false
@@ -380,8 +382,8 @@ func otherPrintRun(number, full string) bool {
 
 // productFinish names the printing a product is, for the catalogs that sell
 // each printing as its own product rather than as a column beside the card.
-func productFinish(gameID int, product *MKMProduct) string {
-	if gameID == GameFleshAndBlood {
+func productFinish(gameID int, product *cm.Product) string {
+	if gameID == cm.GameFleshAndBlood {
 		return fabFinish(product.ExpansionName, product.Name)
 	}
 	return ""
@@ -428,7 +430,7 @@ var yugiohFirstAtIndexOne = map[string]bool{}
 //
 // Measured over the run's collisions, the higher index is the dearer product
 // 924 times against 388, so it is the first edition by default.
-func yugiohRun(product *MKMProduct) string {
+func yugiohRun(product *cm.Product) string {
 	fields := yugiohRunIndex.FindStringSubmatch(product.Name)
 	if fields == nil {
 		return ""
@@ -453,17 +455,17 @@ func yugiohRun(product *MKMProduct) string {
 // do not, and Match reaches past the edition when nothing in it fits, so
 // without both an unknown set's cards land on whichever set happens to hold
 // a number like theirs.
-func (mkm *Index) matchProduct(product *MKMProduct) string {
+func (mkm *Index) matchProduct(product *cm.Product) string {
 	switch mkm.gameID {
-	case GamePokemon:
+	case cm.GamePokemon:
 		id, _ := mkm.matchPokemon(product)
 		return id
-	case GameYuGiOh:
+	case cm.GameYuGiOh:
 		id, _ := mkm.matchYugioh(product)
 		return id
 	}
 	var shelves []shelf
-	if mkm.gameID == GameFleshAndBlood {
+	if mkm.gameID == cm.GameFleshAndBlood {
 		shelves = fabShelves(product)
 	} else {
 		set, err := mtgmatcher.GetSetByName(product.ExpansionName)
@@ -476,7 +478,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		return ""
 	}
 	names := []string{versionTail.ReplaceAllString(product.Name, "")}
-	if mkm.gameID == GameFleshAndBlood {
+	if mkm.gameID == cm.GameFleshAndBlood {
 		// The treatment parenthetical is the printing's, not the name's:
 		// fabFinish reads it off the untouched product name below, and a
 		// card whose own name ends in a parenthetical ("Sink Below (Red)")
@@ -512,7 +514,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	// other catalogs write their own vocabulary in that tail - Riftbound
 	// spells treatments there - so this stays the one game's.
 	var rarity string
-	if mkm.gameID == GameYuGiOh {
+	if mkm.gameID == cm.GameYuGiOh {
 		if fields := rarityTail.FindStringSubmatch(product.Name); fields != nil {
 			rarity = fields[1]
 		}
@@ -526,11 +528,11 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	// and the finish the one disagreement.
 	finishes := []string{""}
 	switch mkm.gameID {
-	case GameYuGiOh:
+	case cm.GameYuGiOh:
 		// The later run is what the id route lands on, so it is what the
 		// fallback asks for after the index has had its say.
 		finishes = []string{yugiohRun(product), "Unlimited", ""}
-	case GameFleshAndBlood:
+	case cm.GameFleshAndBlood:
 		finishes = []string{productFinish(mkm.gameID, product), ""}
 	}
 
@@ -548,7 +550,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 			// set numbering its cards on letters of its own is asked with
 			// them, since a fused card answers to its faces' numbers only
 			// when they are whole.
-			if mkm.gameID == GameFleshAndBlood {
+			if mkm.gameID == cm.GameFleshAndBlood {
 				prefix := numberPrefix
 				if prefix == "" {
 					prefix = fabSetPrefix(set)
@@ -558,7 +560,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 			// The oldest Yu-Gi-Oh sets are numbered by their original
 			// Asian print ("A015") where the datastore numbers them by
 			// set ("LOB-015"); the digits are what the two agree on.
-			if tail := numberTail.FindString(product.Number); tail != "" && set.Code != "" && mkm.gameID == GameYuGiOh {
+			if tail := numberTail.FindString(product.Number); tail != "" && set.Code != "" && mkm.gameID == cm.GameYuGiOh {
 				numbers = append(numbers, set.Code+"-"+tail)
 			}
 
@@ -591,7 +593,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 					if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
 						continue
 					}
-					if mkm.gameID == GameYuGiOh && otherPrintRun(product.Number, co.Number) {
+					if mkm.gameID == cm.GameYuGiOh && otherPrintRun(product.Number, co.Number) {
 						continue
 					}
 					// A promo's number is only whole with its programme,
@@ -613,7 +615,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 // resolveMagic answers a product with the printings its two price columns
 // belong to. An empty id under a nil error means the product names nothing
 // this datastore carries, which is a skip rather than a failure.
-func (mkm *Index) resolveMagic(product *MKMProduct) (string, string, error) {
+func (mkm *Index) resolveMagic(product *cm.Product) (string, string, error) {
 	// An exact mcmId match ties the product to its printings more
 	// reliably than name/number matching, which cannot tell apart
 	// products sharing a collector number (e.g. RVR 312 vs 312z,
@@ -661,7 +663,7 @@ func (mkm *Index) resolveMagic(product *MKMProduct) (string, string, error) {
 	return cardID, cardIDFoil, nil
 }
 
-func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduct) error {
+func (mkm *Index) processProduct(channel chan<- responseChan, product *cm.Product) error {
 	cardID, cardIDFoil, byName, err := mkm.resolveProduct(product)
 	if err != nil || cardID == "" {
 		return err
@@ -674,19 +676,19 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 // belong to, whatever the game. An empty id under a nil error means the
 // product names nothing this datastore carries, which is a skip rather than
 // a failure.
-func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, error) {
+func (mkm *Index) resolveProduct(product *cm.Product) (string, string, bool, error) {
 	var cardID string
 	var cardIDFoil string
 	var byName bool
 	var err error
 
 	switch mkm.gameID {
-	case GameMagic:
+	case cm.GameMagic:
 		cardID, cardIDFoil, err = mkm.resolveMagic(product)
 		if err != nil || cardID == "" {
 			return "", "", false, err
 		}
-	case GameLorcana, GameRiftbound, GameOnePiece:
+	case cm.GameLorcana, cm.GameRiftbound, cm.GameOnePiece:
 		// One Piece sells one card under several printings that share a
 		// collector number - the alternate arts a V-index stands in for,
 		// and the promo shelves that reprint a booster card at its own
@@ -697,7 +699,7 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		// It answers first, and what it does not know the catalog still
 		// names below. The bridge speaks through cardtrader's blueprints
 		// and so knows only part of the shelf.
-		if mkm.gameID == GameOnePiece {
+		if mkm.gameID == cm.GameOnePiece {
 			if tcgID, found := mkm.TCGBridge[product.IDProduct]; found {
 				if id, idErr := mtgmatcher.MatchID(fmt.Sprint(tcgID), false); idErr == nil {
 					cardID = id
@@ -713,7 +715,7 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
 		number := product.Number
-		if mkm.gameID == GameOnePiece {
+		if mkm.gameID == cm.GameOnePiece {
 			number = onePieceNumber(cardName, product.Number, product.ExpansionName)
 		}
 		// The V-index cardmarket synthesizes for same-number siblings is
@@ -734,7 +736,7 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 			// siblings first - a version of a card another version
 			// already priced is a twin, not a report - so the walk says
 			// what is left to say; see twinsAmong.
-			if mkm.gameID == GameOnePiece {
+			if mkm.gameID == cm.GameOnePiece {
 				return "", "", false, err
 			}
 			mkm.printf("%v", err)
@@ -765,7 +767,7 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 			if errFoil != nil {
 				err = errFoil
 			}
-			if mkm.gameID != GameOnePiece {
+			if mkm.gameID != cm.GameOnePiece {
 				mkm.printf("%v", err)
 				mkm.printf("%+v", product)
 			}
@@ -774,16 +776,16 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 
 		// One Piece is the catalog that files one card onto shelf after
 		// shelf; see offShelf.
-		if mkm.gameID == GameOnePiece && mkm.offShelf(product, cardID) {
+		if mkm.gameID == cm.GameOnePiece && mkm.offShelf(product, cardID) {
 			return "", "", false, errNoPrinting
 		}
-	case GameYuGiOh, GameFleshAndBlood, GamePokemon:
+	case cm.GameYuGiOh, cm.GameFleshAndBlood, cm.GamePokemon:
 		// Same-name products abound in these catalogs - and Yu-Gi-Oh and
 		// Flesh and Blood carry no collector number to tell them apart,
 		// though Pokemon does - so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by first, and only
 		// falls back on what the catalog says of it.
-		if mkm.gameID == GamePokemon && pokemonCodeCard(product.Name) {
+		if mkm.gameID == cm.GamePokemon && pokemonCodeCard(product.Name) {
 			return "", "", false, nil
 		}
 		// The id names the card, and the product's own wording names the
@@ -808,9 +810,9 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 		// named without it.
 		if cardID == "" {
 			switch mkm.gameID {
-			case GamePokemon:
+			case cm.GamePokemon:
 				cardID, err = mkm.matchPokemon(product)
-			case GameYuGiOh:
+			case cm.GameYuGiOh:
 				cardID, err = mkm.matchYugioh(product)
 			}
 			if err != nil {
@@ -832,7 +834,7 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 			return "", "", false, mkm.noPrinting(product)
 		}
 		cardIDFoil = cardID
-		if mkm.gameID == GameYuGiOh {
+		if mkm.gameID == cm.GameYuGiOh {
 			// Yu-Gi-Oh's second column is the first edition's, which is a
 			// print run rather than a foil, so the flag cannot name it -
 			// both flags answer with the unlimited printing and the column
@@ -841,7 +843,7 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 			// sold in no first edition, which the guard below drops.
 			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, "1st Edition")
 		}
-		if mkm.gameID == GamePokemon {
+		if mkm.gameID == cm.GamePokemon {
 			// Pokemon's second column is the reverse holo's, which the flag
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
@@ -858,11 +860,11 @@ func (mkm *Index) resolveProduct(product *MKMProduct) (string, string, bool, err
 // emitPrices lands a product's guide prices on the printings resolved for
 // it, the plain columns on one and the foil columns on the other, in the
 // games that split them.
-func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, cardID, cardIDFoil string, byName bool) error {
+func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, cardID, cardIDFoil string, byName bool) error {
 	// Look for the price presence
 	guide, found := mkm.priceGuide[product.IDProduct]
 	if !found {
-		return fmt.Errorf("IdProduct %d not found in PriceGuide", product.IDProduct)
+		return fmt.Errorf("IdProduct %d not found in cm.PriceGuide", product.IDProduct)
 	}
 
 	// Sorted as availableIndexNames
@@ -880,13 +882,13 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 	// printing's whatever its foilness - there is no second column for
 	// them to be in. Every other catalog keeps the foil beside the plain
 	// card and splits the two across the columns.
-	perTreatment := mkm.gameID == GameFleshAndBlood || mkm.gameID == GameOnePiece
+	perTreatment := mkm.gameID == cm.GameFleshAndBlood || mkm.gameID == cm.GameOnePiece
 
 	// If card is not foil, add prices from the prices array, then check
 	// if there is a foil printing, and add prices from the foilprices array.
 	// If a card is foil-only or is etched, then we just use foilprices data.
 	if perTreatment || (!co.Foil && !co.Etched) {
-		link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, false)
+		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, false)
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
@@ -911,7 +913,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 		}
 
 		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
-			link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
+			link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
 
 			// An empty foil id means the card has no foil printing (Match
 			// errored on the foil probe), so residual foil prices in the
@@ -940,7 +942,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 			}
 		}
 	} else {
-		link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
+		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 {
@@ -969,7 +971,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *MKMProduct, c
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mkm *Index) Load(ctx context.Context) error {
-	err := mkm.checkIDMap()
+	err := mkm.checkCatalog()
 	if err != nil {
 		return err
 	}
@@ -980,18 +982,18 @@ func (mkm *Index) Load(ctx context.Context) error {
 	}
 	mkm.exchangeRate = rate
 
-	priceGuide, err := GetPriceGuide(ctx, mkm.gameID)
+	priceGuide, err := cm.DownloadPriceGuide(ctx, mkm.gameID)
 	if err != nil {
 		return err
 	}
-	mkm.priceGuide = make(map[int]PriceGuide, len(priceGuide))
+	mkm.priceGuide = make(map[int]cm.PriceGuide, len(priceGuide))
 	for _, entry := range priceGuide {
 		mkm.priceGuide[entry.IDProduct] = entry
 	}
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	return mkm.walkIDMap(ctx)
+	return mkm.walkCatalog(ctx)
 }
 
 // collectPrices runs worker over every expansion and files what it produces
@@ -999,7 +1001,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 // wait namedLast describes is actually taken: the pool hands its results to
 // the collector rather than to the inventory, so a named price cannot win a
 // printing merely by being walked first.
-func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) (walked, refused, foreign int) {
+func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worker func(context.Context, cm.Expansion, chan<- responseChan) error) (walked, refused, foreign int) {
 	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
 	// one, and a cardtrader blueprint names every Cardmarket product it
 	// sells as, so nothing stops two products from resolving to one
@@ -1008,7 +1010,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worke
 	// than a second row no consumer can choose between.
 	add := mkm.inventory.AddStrict
 	switch mkm.gameID {
-	case GameYuGiOh, GameFleshAndBlood, GamePokemon:
+	case cm.GameYuGiOh, cm.GameFleshAndBlood, cm.GamePokemon:
 		add = mkm.inventory.AddUnique
 	}
 
@@ -1070,19 +1072,19 @@ func (mkm *Index) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.Family = "MKM"
 	switch mkm.gameID {
-	case GameMagic:
+	case cm.GameMagic:
 		info.Game = mtgban.GameMagic
-	case GameLorcana:
+	case cm.GameLorcana:
 		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
+	case cm.GameRiftbound:
 		info.Game = mtgban.GameRiftbound
-	case GameOnePiece:
+	case cm.GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameYuGiOh:
+	case cm.GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
-	case GameFleshAndBlood:
+	case cm.GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
-	case GamePokemon:
+	case cm.GamePokemon:
 		info.Game = mtgban.GamePokemon
 	}
 	return

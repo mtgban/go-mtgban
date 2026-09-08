@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
@@ -43,7 +45,7 @@ const offShelfDatastore = `{
 
 // opShelves are the expansions of the cut-down catalog, the ones the two
 // products above sit on and the ones already pricing what they reached.
-var opShelves = []MKMExpansion{
+var opShelves = []cm.Expansion{
 	{Name: "Paramount War"},
 	{Name: "Promos: Paramount War"},
 	{Name: "Legacy of the Master"},
@@ -64,26 +66,26 @@ func TestOffShelf(t *testing.T) {
 
 	for _, tt := range []struct {
 		what    string
-		product MKMProduct
+		product cm.Product
 		want    string
 	}{
 		{
 			what: "the tournament copy of a booster card is not the booster card",
-			product: MKMProduct{
+			product: cm.Product{
 				IDProduct: 794707, Name: "Mr.1 (Daz.Bonez) (OP02-063) (V.1)",
 				Number: "OP02-063", ExpansionName: "Special Tournament Promos",
 			},
 		},
 		{
 			what: "a deck reprint the datastore does not carry is not the booster card",
-			product: MKMProduct{
+			product: cm.Product{
 				IDProduct: 900308, Name: "Zephyr(Navy) (OP12-046)",
 				Number: "OP12-046", ExpansionName: "Starter Deck: Blue Kuzan",
 			},
 		},
 		{
 			what: "the booster's own shelf keeps the booster card",
-			product: MKMProduct{
+			product: cm.Product{
 				IDProduct: 700916, Name: "Mr.1 (Daz.Bonez) (OP02-063)",
 				Number: "OP02-063", ExpansionName: "Paramount War",
 			},
@@ -91,7 +93,7 @@ func TestOffShelf(t *testing.T) {
 		},
 		{
 			what: "the booster's own shelf keeps the other booster card",
-			product: MKMProduct{
+			product: cm.Product{
 				IDProduct: 842945, Name: "Zephyr(Navy) (OP12-046)",
 				Number: "OP12-046", ExpansionName: "Legacy of the Master",
 			},
@@ -99,7 +101,7 @@ func TestOffShelf(t *testing.T) {
 		},
 		{
 			what: "a shelf naming no set of ours keeps what only it prices",
-			product: MKMProduct{
+			product: cm.Product{
 				IDProduct: 701207, Name: "Mr.1 (Daz.Bonez) (OP02-063)",
 				Number: "OP02-063", ExpansionName: "Promos: Paramount War",
 			},
@@ -107,7 +109,7 @@ func TestOffShelf(t *testing.T) {
 		},
 		{
 			what: "a deck reprint the datastore does carry stays on the deck's shelf",
-			product: MKMProduct{
+			product: cm.Product{
 				IDProduct: 900309, Name: "Sengoku (OP12-047)",
 				Number: "OP12-047", ExpansionName: "Starter Deck: Blue Kuzan",
 			},
@@ -116,10 +118,10 @@ func TestOffShelf(t *testing.T) {
 	} {
 		t.Run(tt.what, func(t *testing.T) {
 			mkm := &Index{
-				gameID:       GameOnePiece,
+				gameID:       cm.GameOnePiece,
 				exchangeRate: 1,
 				shelved:      shelvedSets(opShelves),
-				priceGuide: map[int]PriceGuide{
+				priceGuide: map[int]cm.PriceGuide{
 					tt.product.IDProduct: {IDProduct: tt.product.IDProduct, LowPrice: 1, TrendPrice: 2},
 				},
 			}

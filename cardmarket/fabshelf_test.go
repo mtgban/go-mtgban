@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -81,7 +83,7 @@ func TestFabShelves(t *testing.T) {
 		{"Nowhere Deck", "NOPE", nil},
 	} {
 		var got []string
-		for _, sh := range fabShelves(&MKMProduct{ExpansionName: tt.expansion, ExpansionCode: tt.code}) {
+		for _, sh := range fabShelves(&cm.Product{ExpansionName: tt.expansion, ExpansionCode: tt.code}) {
 			got = append(got, sh.set.Code)
 		}
 		if strings.Join(got, ",") != strings.Join(tt.want, ",") {
@@ -114,17 +116,17 @@ func TestFabBaseName(t *testing.T) {
 // the same listing under two numbers - and not two pitches of a card.
 func TestFabSameProduct(t *testing.T) {
 	for _, tt := range []struct {
-		a, b MKMProduct
+		a, b cm.Product
 		want bool
 	}{
-		{MKMProduct{Name: "Silver (Regular)", Number: "245"}, MKMProduct{Name: "Silver (Rainbow Foil)", Number: "245"}, true},
-		{MKMProduct{Name: "Ice Bolt (Regular)", Number: "135"}, MKMProduct{Name: "Ice Bolt (Blue) (Regular)", Number: "135"}, true},
-		{MKMProduct{Name: "Engulfing Light (Red) (Regular)", Number: "014"}, MKMProduct{Name: "Engulfing Light (Red) (Regular)", Number: "009"}, true},
-		{MKMProduct{Name: "Pleiades, Superstar (Regular)", Number: "009"}, MKMProduct{Name: "Pleiades, Superstar (Marvel)", Number: "009"}, true},
-		{MKMProduct{Name: "Galaxxi Black (Cold Foil)", Number: "155"}, MKMProduct{Name: "Galaxxi Black"}, true},
-		{MKMProduct{Name: "Bonebreaker Bellow (Red) (Regular)", Number: "016"}, MKMProduct{Name: "Bonebreaker Bellow (Yellow) (Regular)", Number: "020"}, false},
-		{MKMProduct{Name: "Kunai of Retribution (Cold Foil Golden)", Number: "415"}, MKMProduct{Name: "Kunai of Retribution (Cold Foil Golden)", Number: "416"}, true},
-		{MKMProduct{Name: "Herald of Ravages (Blue) (Regular)", Number: "017"}, MKMProduct{Name: "Herald of Rebirth (Blue) (Regular)", Number: "018"}, false},
+		{cm.Product{Name: "Silver (Regular)", Number: "245"}, cm.Product{Name: "Silver (Rainbow Foil)", Number: "245"}, true},
+		{cm.Product{Name: "Ice Bolt (Regular)", Number: "135"}, cm.Product{Name: "Ice Bolt (Blue) (Regular)", Number: "135"}, true},
+		{cm.Product{Name: "Engulfing Light (Red) (Regular)", Number: "014"}, cm.Product{Name: "Engulfing Light (Red) (Regular)", Number: "009"}, true},
+		{cm.Product{Name: "Pleiades, Superstar (Regular)", Number: "009"}, cm.Product{Name: "Pleiades, Superstar (Marvel)", Number: "009"}, true},
+		{cm.Product{Name: "Galaxxi Black (Cold Foil)", Number: "155"}, cm.Product{Name: "Galaxxi Black"}, true},
+		{cm.Product{Name: "Bonebreaker Bellow (Red) (Regular)", Number: "016"}, cm.Product{Name: "Bonebreaker Bellow (Yellow) (Regular)", Number: "020"}, false},
+		{cm.Product{Name: "Kunai of Retribution (Cold Foil Golden)", Number: "415"}, cm.Product{Name: "Kunai of Retribution (Cold Foil Golden)", Number: "416"}, true},
+		{cm.Product{Name: "Herald of Ravages (Blue) (Regular)", Number: "017"}, cm.Product{Name: "Herald of Rebirth (Blue) (Regular)", Number: "018"}, false},
 	} {
 		if got := fabSameProduct(&tt.a, &tt.b); got != tt.want {
 			t.Errorf("fabSameProduct(%q, %q) = %v, want %v", tt.a.Name, tt.b.Name, got, tt.want)
@@ -139,7 +141,7 @@ func TestFabSameProduct(t *testing.T) {
 // shelf carries the treatment.
 func TestMatchProductFinishes(t *testing.T) {
 	loadFabShelfDatastore(t)
-	mkm := &Index{gameID: GameFleshAndBlood}
+	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct {
 		expansion, code, name, number, want string
 	}{
@@ -157,7 +159,7 @@ func TestMatchProductFinishes(t *testing.T) {
 		{"High Seas", "SEA", "Gravy Bones, Shipwrecked Looter (Marvel)", "043", "sea043_624358_cold"},
 		{"Heavy Hitters", "HVY", "Lead With Heart (Yellow) (Rainbow Foil)", "193", "hvy193_533598_rainbow"},
 	} {
-		product := MKMProduct{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion, ExpansionCode: tt.code}
+		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion, ExpansionCode: tt.code}
 		if got := mkm.matchProduct(&product); got != tt.want {
 			t.Errorf("matchProduct(%q, %q %s) = %q, want %q", tt.expansion, tt.name, tt.number, got, tt.want)
 		}
@@ -171,16 +173,16 @@ func TestMatchProductFinishes(t *testing.T) {
 // back for the collector to fold beside the plain product.
 func TestResolveProductBridgeFinish(t *testing.T) {
 	loadFabShelfDatastore(t)
-	mkm := &Index{gameID: GameFleshAndBlood, TCGBridge: map[int]int{1: 577711, 2: 453353, 3: 275840}}
+	mkm := &Index{gameID: cm.GameFleshAndBlood, TCGBridge: map[int]int{1: 577711, 2: 453353, 3: 275840}}
 	for _, tt := range []struct {
-		product MKMProduct
+		product cm.Product
 		want    string
 		byName  bool
 	}{
-		{MKMProduct{IDProduct: 1, Name: "Will of Arcana (Rainbow Foil)", Number: "000", ExpansionName: "Rosetta"}, "ros000_578820_rainbow", true},
-		{MKMProduct{IDProduct: 2, Name: "Silver (Rainbow Foil)", Number: "245", ExpansionName: "Dynasty"}, "dyn245_453353", true},
-		{MKMProduct{IDProduct: 3, Name: "Aether Ashwing // Ash (Cold Foil)", Number: "042", ExpansionName: "Uprising"}, "upr042_cold", true},
-		{MKMProduct{IDProduct: 3, Name: "Aether Ashwing // Ash (Regular)", Number: "042", ExpansionName: "Uprising"}, "upr042-upr043_275840", false},
+		{cm.Product{IDProduct: 1, Name: "Will of Arcana (Rainbow Foil)", Number: "000", ExpansionName: "Rosetta"}, "ros000_578820_rainbow", true},
+		{cm.Product{IDProduct: 2, Name: "Silver (Rainbow Foil)", Number: "245", ExpansionName: "Dynasty"}, "dyn245_453353", true},
+		{cm.Product{IDProduct: 3, Name: "Aether Ashwing // Ash (Cold Foil)", Number: "042", ExpansionName: "Uprising"}, "upr042_cold", true},
+		{cm.Product{IDProduct: 3, Name: "Aether Ashwing // Ash (Regular)", Number: "042", ExpansionName: "Uprising"}, "upr042-upr043_275840", false},
 	} {
 		got, _, byName, err := mkm.resolveProduct(&tt.product)
 		if err != nil || got != tt.want || byName != tt.byName {
@@ -196,9 +198,9 @@ func TestResolveProductBridgeFinish(t *testing.T) {
 // sells under went unpriced.
 func TestDisownBridged(t *testing.T) {
 	loadFabShelfDatastore(t)
-	mkm := &Index{gameID: GameFleshAndBlood}
-	ravages := &MKMProduct{Name: "Herald of Ravages (Blue) (Regular)", Number: "017", ExpansionName: "Monarch - Prism Blitz Deck"}
-	rebirth := &MKMProduct{Name: "Herald of Rebirth (Blue) (Regular)", Number: "018", ExpansionName: "Monarch - Prism Blitz Deck"}
+	mkm := &Index{gameID: cm.GameFleshAndBlood}
+	ravages := &cm.Product{Name: "Herald of Ravages (Blue) (Regular)", Number: "017", ExpansionName: "Monarch - Prism Blitz Deck"}
+	rebirth := &cm.Product{Name: "Herald of Rebirth (Blue) (Regular)", Number: "018", ExpansionName: "Monarch - Prism Blitz Deck"}
 	results := []resolved{
 		{product: ravages, cardID: "psm018_238518", cardIDFoil: "psm018_238518"},
 		{product: rebirth, cardID: "psm018_238518", cardIDFoil: "psm018_238518", byName: true},
@@ -208,8 +210,8 @@ func TestDisownBridged(t *testing.T) {
 		t.Errorf("Herald of Ravages kept %q byName=%v, want psm017_238517 by name", results[0].cardID, results[0].byName)
 	}
 
-	red := &MKMProduct{Name: "Lead With Heart (Red) (Regular)", Number: "192", ExpansionName: "Heavy Hitters"}
-	yellow := &MKMProduct{Name: "Lead With Heart (Yellow) (Regular)", Number: "193", ExpansionName: "Heavy Hitters"}
+	red := &cm.Product{Name: "Lead With Heart (Red) (Regular)", Number: "192", ExpansionName: "Heavy Hitters"}
+	yellow := &cm.Product{Name: "Lead With Heart (Yellow) (Regular)", Number: "193", ExpansionName: "Heavy Hitters"}
 	results = []resolved{
 		{product: red, cardID: "hvy193_533598", cardIDFoil: "hvy193_533598"},
 		{product: yellow, cardID: "hvy192_533597", cardIDFoil: "hvy192_533597"},
@@ -219,7 +221,7 @@ func TestDisownBridged(t *testing.T) {
 		t.Errorf("Lead with Heart landed red on %q and yellow on %q, want each on its own", results[0].cardID, results[1].cardID)
 	}
 
-	typo := &MKMProduct{Name: "Herald of Rebirht (Blue) (Regular)", Number: "018", ExpansionName: "Monarch - Prism Blitz Deck"}
+	typo := &cm.Product{Name: "Herald of Rebirht (Blue) (Regular)", Number: "018", ExpansionName: "Monarch - Prism Blitz Deck"}
 	results = []resolved{
 		{product: typo, cardID: "psm018_238518", cardIDFoil: "psm018_238518"},
 		{product: rebirth, err: errNoPrinting},
@@ -234,8 +236,8 @@ func TestDisownBridged(t *testing.T) {
 // another product already holds is its twin, and refused quietly.
 func TestTwinsAmongFaces(t *testing.T) {
 	loadFabShelfDatastore(t)
-	adult := &MKMProduct{Name: "Tuffnut, Bumbling Hulkster (Regular)", Number: "001", ExpansionName: "Super Slam"}
-	young := &MKMProduct{Name: "Tuffnut (Regular)", Number: "002", ExpansionName: "Super Slam"}
+	adult := &cm.Product{Name: "Tuffnut, Bumbling Hulkster (Regular)", Number: "001", ExpansionName: "Super Slam"}
+	young := &cm.Product{Name: "Tuffnut (Regular)", Number: "002", ExpansionName: "Super Slam"}
 	results := []resolved{
 		{product: adult, cardID: "sup001-sup002_656933", cardIDFoil: "sup001-sup002_656933", byName: true},
 		{product: young, err: errNoPrinting},
