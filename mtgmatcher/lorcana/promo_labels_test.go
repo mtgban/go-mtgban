@@ -17,8 +17,16 @@ func TestPromoTypeLabels(t *testing.T) {
 			t.Errorf("tag %q reads back as nothing", tag)
 		}
 	}
+	// The datastore publishes a slug and nothing else, so the words come
+	// from this side. A title-caser cannot put back the boundaries the slug
+	// dropped, which is what the table is for.
 	if got := b.PromoTypeLabel("organizedplay"); got != "Organized Play" {
 		t.Errorf("PromoTypeLabel(%q) = %q, want %q", "organizedplay", got, "Organized Play")
+	}
+	// An initialism the datastore still spells with capitals of its own is
+	// shown as written rather than title-cased into "Pd1".
+	if got := b.PromoTypeLabel("pd1"); got != "PD1" {
+		t.Errorf("PromoTypeLabel(%q) = %q, want %q", "pd1", got, "PD1")
 	}
 	// An unknown token still reads as something rather than empty.
 	if got := b.PromoTypeLabel("nosuchtag"); got == "" {

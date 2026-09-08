@@ -44,6 +44,22 @@ type Datastore struct {
 	Sealed []DatastoreSealed `json:"sealed"`
 }
 
+// promoTypeLabels are the words behind a token, where a title-caser cannot
+// work them out. Decoration is this side's job: the datastore publishes a
+// token for a consumer to interpret, and a data file that spells one for
+// display has decided the display for every consumer at once.
+var promoTypeLabels = map[string]string{
+	"bushiroadexpo2026": "Bushiroad EXPO 2026",
+}
+
+// promoTypeLabel is the words a token is shown as.
+func promoTypeLabel(slug string) string {
+	if label, found := promoTypeLabels[slug]; found {
+		return label
+	}
+	return mtgmatcher.Title(slug)
+}
+
 // DatastoreCard is one printing as the datastore publishes it.
 type DatastoreCard struct {
 	ID   string `json:"id"`
@@ -64,6 +80,17 @@ type DatastoreCard struct {
 	// parentheses are an echo of the number's own tail, and the builder
 	// drops them rather than filing the same fact twice.
 	Variant string `json:"variant,omitempty"`
+
+	// PromoTypes are the labels the builder distils from the same qualifiers
+	// the variant above is joined from, one entry per label: the joined
+	// string is what a printing is called, the list is what it is matched
+	// on. Slugging the joined string instead makes one token of a whole
+	// phrase, and "Super Pre-Release Participant" then reads back as neither
+	// of the two labels it names.
+	//
+	// An entry carrying none is read from the variant, which is where every
+	// label came from before the builders published them apart.
+	PromoTypes []string `json:"promoTypes,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, "Normal" or
 	// "Foil".
@@ -170,12 +197,26 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		slug := mtgmatcher.PromoTypeSlug(card.Variant)
-		if !slices.Contains(b.AllPromoTypes, slug) {
-			b.AllPromoTypes = append(b.AllPromoTypes, slug)
-		}
-		if b.PromoTypeLabels[slug] == "" {
-			b.PromoTypeLabels[slug] = card.Variant
+		// A printing wears one label per promo type where the builder
+		// publishes them, and its whole variant read as one where it does
+		// not. Each label has to read back as itself, so a slug is paired
+		// with the words it was made from rather than with the joined
+		// variant: "participant" would otherwise be shown as "Super
+		// Pre-Release Participant".
+		for _, label := range card.PromoTypes {
+			slug := mtgmatcher.PromoTypeSlug(label)
+			if slug == "" {
+				continue
+			}
+			if !slices.Contains(b.AllPromoTypes, slug) {
+				b.AllPromoTypes = append(b.AllPromoTypes, slug)
+			}
+			// First spelling seen wins: the catalog writes a couple of
+			// these events two ways, and one token can only read back as
+			// one.
+			if b.PromoTypeLabels[slug] == "" {
+				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
+			}
 		}
 		b.AddName(qualified)
 	}
@@ -220,8 +261,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		var promoTypes []string
-		if card.Variant != "" {
-			promoTypes = []string{mtgmatcher.PromoTypeSlug(card.Variant)}
+		for _, label := range card.PromoTypes {
+			if slug := mtgmatcher.PromoTypeSlug(label); slug != "" {
+				promoTypes = append(promoTypes, slug)
+			}
 		}
 
 		var finishes []string
