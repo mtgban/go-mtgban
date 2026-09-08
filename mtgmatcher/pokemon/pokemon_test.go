@@ -65,10 +65,7 @@ func TestFinishIdentity(t *testing.T) {
 		if co.Sealed {
 			continue
 		}
-		key := co.Identifiers["tcgplayerProductId"]
-		if key == "" {
-			key = trimFinishSuffix(uuid, co.Finish)
-		}
+		key := productKeyOf(co.Identifiers, uuid)
 		if byProduct[key] == nil {
 			byProduct[key] = map[string]string{}
 		}

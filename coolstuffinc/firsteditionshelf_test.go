@@ -27,9 +27,9 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 	for _, tt := range []struct {
 		name, edition, wantID string
 	}{
-		{"Lapras - 10/62", "1st Edition Fossil", "10-62_44419_1eholo"},
-		{"Vileplume - 15/64", "1st Edition Jungle", "15-64_45126_1eholo"},
-		{"Alakazam - 1/102", "1st Edition Base Set", "001-102_42346_1eholo"},
+		{"Lapras - 10/62", "1st Edition Fossil", "10-62_44419_1steditionholofoil"},
+		{"Vileplume - 15/64", "1st Edition Jungle", "15-64_45126_1steditionholofoil"},
+		{"Alakazam - 1/102", "1st Edition Base Set", "001-102_42346_1steditionholofoil"},
 	} {
 		t.Run(tt.edition+" "+tt.name, func(t *testing.T) {
 			shelf, run := firstEditionShelf(tt.edition)

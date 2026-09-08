@@ -231,13 +231,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	products := map[string]*product{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
-		// The product id is what identifies a product; the id's printing
-		// tail is only what to fall back on where the builder stamped
-		// none.
-		key := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
-		if card.ExternalLinks.TcgPlayerID == 0 {
-			key = trimFinishSuffix(card.ID, card.Finish)
-		}
+		key := card.productKey()
 		entry, found := products[key]
 		if !found {
 			entry = &product{}
@@ -415,25 +409,28 @@ func splitColors(color string) []string {
 	return fields
 }
 
-// trimFinishSuffix strips the printing tail the builder hangs off an entry's
-// id, spelled from the entry's own finish the way the builder spells it: the
-// plain printing takes the bare id and every other takes its own name. Read
-// off the entry rather than from a list of this game's printings, so a
-// printing TCGplayer adds folds with the rest.
-func trimFinishSuffix(id, finish string) string {
-	if slug := finishSlug(finish); slug != "" && slug != "normal" {
-		return strings.TrimSuffix(id, "_"+slug)
+// productKey names the product an entry is a printing of, read off what the
+// entry publishes: the product id the catalog stamps on every printing it
+// sells. An entry the builder mints carries none - it is minted one printing
+// at a time, from an upstream record nothing else is minted from - so it is a
+// product of one printing and stands for itself.
+//
+// Nothing here takes an id apart. The tail an id ends in is the builder's to
+// spell, and a loader that reads one stops folding the day the spelling
+// changes - which is exactly what "_holo" becoming "_holofoil" did here.
+func (card *DatastoreCard) productKey() string {
+	if card.ExternalLinks.TcgPlayerID != 0 {
+		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 	}
-	return id
+	return card.ID
 }
 
-// finishSlug spells a printing name the way an id carries it.
-func finishSlug(name string) string {
-	var out strings.Builder
-	for _, r := range strings.ToLower(name) {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
-			out.WriteRune(r)
-		}
+// productKeyOf is the same key read off a card the backend already holds,
+// where the product id hangs off Identifiers and the entry's own id is the
+// uuid being asked about.
+func productKeyOf(identifiers map[string]string, uuid string) string {
+	if id := identifiers["tcgplayerProductId"]; id != "" {
+		return id
 	}
-	return out.String()
+	return uuid
 }

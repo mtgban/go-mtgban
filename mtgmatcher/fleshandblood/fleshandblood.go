@@ -354,17 +354,13 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// Group sibling entries back into their product: a product priced in
 	// several printings is the same card several times, and the matcher
 	// wants it once, with FoilUUIDs naming the uuid each printing prices.
-	// The builder stamps every entry with its product's tcgPlayerId; an
-	// entry left without one falls back to its id with the finish suffix
-	// stripped.
+	// Which entries are one product is read off the identifiers they
+	// publish, never off the shape of their ids.
 	var productOrder []string
 	products := map[string][]*DatastoreCard{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
-		key := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
-		if card.ExternalLinks.TcgPlayerID == 0 {
-			key = trimFinishSuffix(card.ID)
-		}
+		key := card.productKey()
 		if _, found := products[key]; !found {
 			productOrder = append(productOrder, key)
 		}
@@ -586,18 +582,38 @@ func pickFinish(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 	return nil
 }
 
-// trimFinishSuffix strips the finish tail the builder suffixes ids with
-// (the plain Normal entry keeps the bare id), the grouping fallback for an
-// entry without a tcgPlayerId.
-func trimFinishSuffix(id string) string {
-	for _, suffix := range []string{
-		"_1e", "_1erainbow", "_1ecold",
-		"_unl", "_unlrainbow", "_unlcold",
-		"_rainbow", "_cold",
-	} {
-		if strings.HasSuffix(id, suffix) {
-			return strings.TrimSuffix(id, suffix)
-		}
+// productKey names the product an entry is a printing of, read off what the
+// entry publishes. A product the catalog sells stamps its product id on every
+// printing of it; an entry minted for a card the catalog sells no product for
+// names the Legend Story Studios card its printings were minted together
+// from. An entry naming neither is a product of one printing, and stands for
+// itself.
+//
+// Nothing here takes an id apart. The tail an id ends in is the builder's to
+// spell, and a loader that reads one stops folding the day the spelling
+// changes - which is exactly what "_holo" becoming "_holofoil" did here.
+func (card *DatastoreCard) productKey() string {
+	if card.ExternalLinks.TcgPlayerID != 0 {
+		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 	}
-	return id
+	if id := card.ExternalLinks.FabID; id != "" {
+		return id
+	}
+	if card.FabID != "" {
+		return card.FabID
+	}
+	return card.ID
+}
+
+// productKeyOf is the same key read off a card the backend already holds,
+// where those ids hang off Identifiers and the entry's own id is the uuid
+// being asked about.
+func productKeyOf(identifiers map[string]string, uuid string) string {
+	if id := identifiers["tcgplayerProductId"]; id != "" {
+		return id
+	}
+	if id := identifiers["fabId"]; id != "" {
+		return id
+	}
+	return uuid
 }

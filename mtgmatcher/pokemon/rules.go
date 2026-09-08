@@ -868,10 +868,7 @@ func letteredPromo(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbers 
 			if !found || co.Sealed || !numberMatches(number, co.Number) {
 				continue
 			}
-			key := co.Card.Identifiers["tcgplayerProductId"]
-			if key == "" {
-				key = trimFinishSuffix(uuid, co.Finish)
-			}
+			key := productKeyOf(co.Card.Identifiers, uuid)
 			if seen[key] {
 				continue
 			}
@@ -900,10 +897,7 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		// exactly once, and output() picks the printing afterwards. The
 		// loader writes each entry's uuid onto its Card, which rules the
 		// uuid out as the folding key.
-		key := card.Identifiers["tcgplayerProductId"]
-		if key == "" {
-			key = trimFinishSuffix(uuid, co.Finish)
-		}
+		key := productKeyOf(card.Identifiers, uuid)
 		if seen[key] {
 			continue
 		}

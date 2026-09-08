@@ -1036,10 +1036,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// exactly once, and output() picks the run afterwards. The loader
 		// writes each entry's uuid onto its Card, which rules the uuid out
 		// as the folding key.
-		key := card.Identifiers["tcgplayerProductId"]
-		if key == "" {
-			key = trimRunSuffix(uuid, co.Finish)
-		}
+		key := productKeyOf(card.Identifiers, uuid)
 		if seen[key] {
 			continue
 		}

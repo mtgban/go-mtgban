@@ -29,11 +29,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// finishSuffix is the id suffix the builder hangs off the foil entry of a
-// product. It is the one suffix the game has, so folding a product's
-// entries back together is a single TrimSuffix.
-const finishSuffix = "_foil"
-
 // Datastore is the cmd/palworld output: sets keyed by code, one card entry
 // per priced finish, and the sealed products.
 type Datastore struct {
@@ -200,7 +195,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	products := map[string]*product{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
-		key := strings.TrimSuffix(card.ID, finishSuffix)
+		key := card.productKey()
 		entry, found := products[key]
 		if !found {
 			entry = &product{}
@@ -347,6 +342,32 @@ var palworldRarityMap = map[string]int{
 }
 
 // cardTypes is the card's type, as the one-element list a Card carries.
+// productKey names the product an entry is a printing of, read off what the
+// entry publishes: the product id the catalog stamps on every printing it
+// sells. An entry the builder mints carries none - it is minted one printing
+// at a time, from an upstream record nothing else is minted from - so it is a
+// product of one printing and stands for itself.
+//
+// Nothing here takes an id apart. The tail an id ends in is the builder's to
+// spell, and a loader that reads one stops folding the day the spelling
+// changes - which is exactly what "_holo" becoming "_holofoil" did here.
+func (card *DatastoreCard) productKey() string {
+	if card.ExternalLinks.TcgPlayerID != 0 {
+		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
+	}
+	return card.ID
+}
+
+// productKeyOf is the same key read off a card the backend already holds,
+// where the product id hangs off Identifiers and the entry's own id is the
+// uuid being asked about.
+func productKeyOf(identifiers map[string]string, uuid string) string {
+	if id := identifiers["tcgplayerProductId"]; id != "" {
+		return id
+	}
+	return uuid
+}
+
 func cardTypes(cardType string) []string {
 	if cardType == "" {
 		return nil

@@ -19,7 +19,6 @@ import (
 	"io"
 	"slices"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -245,16 +244,13 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// Group sibling entries back into their product: a product priced in
 	// several print runs is the same card several times, and the matcher
 	// wants it once, with FoilUUIDs naming the uuid each run prices. The
-	// builder stamps every entry with its product's tcgPlayerId; an entry
-	// left without one falls back to its id with the run suffix stripped.
+	// Which entries are one product is read off the identifiers they
+	// publish, never off the shape of their ids.
 	var productOrder []string
 	products := map[string][]*DatastoreCard{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
-		key := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
-		if card.ExternalLinks.TcgPlayerID == 0 {
-			key = trimRunSuffix(card.ID, card.Finish)
-		}
+		key := card.productKey()
 		if _, found := products[key]; !found {
 			productOrder = append(productOrder, key)
 		}
@@ -390,25 +386,28 @@ func pickRun(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 	return group[0]
 }
 
-// trimRunSuffix strips the print-run tail the builder suffixes ids with,
-// spelled from the entry's own finish the way the builder spells it - the
-// grouping fallback for an entry without a tcgPlayerId. Read off the entry
-// rather than from a list of this game's print runs, so one TCGplayer adds
-// folds with the rest.
-func trimRunSuffix(id, finish string) string {
-	if slug := finishSlug(finish); slug != "" && slug != "normal" {
-		return strings.TrimSuffix(id, "_"+slug)
+// productKey names the product an entry is a printing of, read off what the
+// entry publishes: the product id the catalog stamps on every printing it
+// sells. An entry the builder mints carries none - it is minted one printing
+// at a time, from an upstream record nothing else is minted from - so it is a
+// product of one printing and stands for itself.
+//
+// Nothing here takes an id apart. The tail an id ends in is the builder's to
+// spell, and a loader that reads one stops folding the day the spelling
+// changes - which is exactly what "_holo" becoming "_holofoil" did here.
+func (card *DatastoreCard) productKey() string {
+	if card.ExternalLinks.TcgPlayerID != 0 {
+		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 	}
-	return id
+	return card.ID
 }
 
-// finishSlug spells a printing name the way an id carries it.
-func finishSlug(name string) string {
-	var out strings.Builder
-	for _, r := range strings.ToLower(name) {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
-			out.WriteRune(r)
-		}
+// productKeyOf is the same key read off a card the backend already holds,
+// where the product id hangs off Identifiers and the entry's own id is the
+// uuid being asked about.
+func productKeyOf(identifiers map[string]string, uuid string) string {
+	if id := identifiers["tcgplayerProductId"]; id != "" {
+		return id
 	}
-	return out.String()
+	return uuid
 }
