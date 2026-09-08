@@ -556,9 +556,17 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 // is sold plain or foil, spelled "Normal" and "Foil" by the catalog the
 // datastore is built from, and both are names every game shares. The parallel
 // and manga treatments are variants of a printing, each priced as a product
-// of its own, not finishes of one.
+// of its own, not finishes of one.//
+// The vocabulary is open past that. TCGplayer adds a printing to a category
+// when it likes and the builder carries it under its own name rather than
+// dropping it, so a name neither vocabulary places is normalized and handed
+// back - it reaches a uuid only if the printing's own finishes hold one, and
+// a list kept here would refuse a real priced printing the day one arrives.
 func (Rules) CanonicalFinish(name string) string {
-	return mtgmatcher.CanonicalFinish(name)
+	if finish := mtgmatcher.CanonicalFinish(name); finish != "" {
+		return finish
+	}
+	return mtgmatcher.NormalizeFinish(name)
 }
 
 // PlainNumber implements mtgmatcher.GameRules. This game writes its collector

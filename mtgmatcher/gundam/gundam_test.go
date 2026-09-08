@@ -91,12 +91,42 @@ func TestHolofoilIsTheFoil(t *testing.T) {
 		{"Holo", mtgmatcher.FinishFoil},
 		{"Foil", mtgmatcher.FinishFoil},
 		{"Normal", mtgmatcher.FinishNonfoil},
-		{"Cold Foil", ""},
+		// A printing another game sells is named rather than refused: the
+		// vocabulary is open so that one TCGplayer adds to this category
+		// reaches a uuid without a release. Naming it is not selling it -
+		// MatchIDFinish refuses a finish the datastore does not carry,
+		// which is where a caller learns this game has no such printing.
+		{"Cold Foil", "coldfoil"},
 	} {
 		if got := (Rules{}).CanonicalFinish(tt.in); got != tt.want {
 			t.Errorf("CanonicalFinish(%q) = %q, want %q", tt.in, got, tt.want)
 		}
 	}
+}
+
+// TestAFinishThisGameDoesNotSellIsStillRefused is the other half: opening
+// the vocabulary moved the refusal, it did not remove it.
+func TestAFinishThisGameDoesNotSellIsStillRefused(t *testing.T) {
+	b := loadBackend(t)
+	var checked int
+	for uuid, co := range b.UUIDs {
+		if co.Sealed {
+			continue
+		}
+		for _, name := range []string{"Cold Foil", "Rainbow Pillars", "Prismatic Foil"} {
+			if got, err := b.MatchIDFinish(uuid, name); err == nil {
+				t.Fatalf("MatchIDFinish(%s, %q) = %q with no error", uuid, name, got)
+			}
+		}
+		checked++
+		if checked > 200 {
+			break
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no printing was checked")
+	}
+	t.Logf("%d printings, each refusing all three", checked)
 }
 
 // TestRarityTellsParallelsApart pins what identifies a printing in this
