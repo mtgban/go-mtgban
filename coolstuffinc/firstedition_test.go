@@ -32,8 +32,8 @@ func TestConditionRunReachesTheRun(t *testing.T) {
 		name, edition string
 		wantID        string
 	}{
-		{"Alakazam - 1/102", "Base Set", "001-102_42346_1eholo"},
-		{"Lapras - 10/62", "Fossil", "10-62_44419_1eholo"},
+		{"Alakazam - 1/102", "Base Set", "001-102_42346_1steditionholofoil"},
+		{"Lapras - 10/62", "Fossil", "10-62_44419_1steditionholofoil"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			finishes := conditionRun("1st Edition  1st Edition ")

@@ -192,14 +192,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			continue
 		}
 		// A dual-printing product files both finish uuids under the name
-		// bucket; fold the holofoil one back onto the base id so each
-		// candidate appears once, and let output() pick the finish. The
-		// base id carries underscores of its own, so the fixed suffix is
-		// what is trimmed rather than the first underscore.
-		base := co.Card.Identifiers["tcgplayerProductId"]
-		if base == "" {
-			base = trimFinishSuffix(uuid, co.Finish)
-		}
+		// bucket; fold them onto the product they print so each candidate
+		// appears once, and let output() pick the finish.
+		base := productKeyOf(co.Card.Identifiers, uuid)
 		if seen[base] {
 			continue
 		}

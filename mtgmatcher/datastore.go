@@ -7,6 +7,22 @@ import (
 	"io"
 )
 
+// A datastore entry's id is opaque. The builder that publishes it spells it,
+// and no loader here reads one apart: what an id was once taken apart for -
+// which product an entry belongs to, which printing of that product it is -
+// every datastore publishes as a field of its own, so a loader asks for the
+// fact instead of inferring it from a shape.
+//
+// This is not a style preference. Four loaders used to recover an entry's
+// product by trimming a literal tail off its id, and when the builders began
+// spelling those tails from the printing's own name - "_holo" became
+// "_holofoil", "_1e" became "_1stedition" - the trimming stopped matching and
+// printings of one product became separate cards. Nothing threw: the ids were
+// still well formed, still unique, still stable, and one game's grouping test
+// was the only thing that noticed. A grouping read off a published field
+// cannot fail that way, and it leaves the builder free to respell an id, or
+// to stop spelling it out of anything at all.
+
 // GameLoader builds a Backend from a datastore reader for a particular game.
 type GameLoader func(io.Reader) (*Backend, error)
 

@@ -594,14 +594,10 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		card := co.Card
 
 		// A dual-printing product files both its finish uuids under the
-		// name bucket; fold the foil one back onto the bare id so each
+		// name bucket; fold them onto the product they print so each
 		// candidate appears exactly once, and output() picks the finish
-		// afterwards. The base id's own underscores rule out the first-
-		// underscore cut riftbound uses, but the foil suffix is fixed.
-		base := co.Card.Identifiers["tcgplayerProductId"]
-		if base == "" {
-			base = trimFinishSuffix(uuid, co.Finish)
-		}
+		// afterwards.
+		base := productKeyOf(co.Card.Identifiers, uuid)
 		if seen[base] {
 			continue
 		}

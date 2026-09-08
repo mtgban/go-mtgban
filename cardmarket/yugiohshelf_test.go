@@ -17,6 +17,9 @@ import (
 // the storefront names without its article, its European print in the set
 // the catalog keeps for that run, and a Mega-Tin card numbered with the
 // region infix the storefront leaves out.
+//
+// The two runs carry the product id they are two runs of, the way every
+// entry the real datastore publishes does: it is what pairs them.
 const yugiohShelfDatastore = `{
  "game": "yugioh",
  "sets": {
@@ -25,8 +28,8 @@ const yugiohShelfDatastore = `{
   "MP18": {"abbreviation": "MP18", "name": "2018 Mega-Tins Mega Pack", "releaseDate": "2018-08-30"}
  },
  "cards": [
-  {"finish": "1st Edition", "id": "lob-000_22538_1stedition", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
-  {"finish": "Unlimited", "id": "lob-000_22538_unlimited", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
+  {"externalLinks": {"tcgPlayerId": 22538}, "finish": "1st Edition", "id": "lob-000_22538_1stedition", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
+  {"externalLinks": {"tcgPlayerId": 22538}, "finish": "Unlimited", "id": "lob-000_22538_unlimited", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
   {"finish": "Unlimited", "id": "lob-en000_1", "name": "Tri-Horned Dragon", "number": "LOB-EN000", "rarity": "Secret Rare", "setCode": "LOB-EN"},
   {"finish": "1st Edition", "id": "mp18-en065_1", "name": "Topologic Bomber Dragon", "number": "MP18-EN065", "rarity": "Prismatic Secret Rare", "setCode": "MP18"}
  ]
