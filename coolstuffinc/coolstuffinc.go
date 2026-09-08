@@ -327,6 +327,21 @@ func offerCondition(fullRow, qtyStr, bundleStr string) string {
 	}
 }
 
+// firstEditionShelf reads the print run a Pokemon shelf names in its own
+// title. The storefront files the first-edition run of a set as a shelf
+// beside the set - "1st Edition Fossil" next to "Fossil" - where the catalog
+// files the run as a finish of the set itself, so the shelf name has to
+// become one. Left as it was, every listing on those shelves matched the
+// unlimited printing and was published at a fraction of its price, and
+// nothing said so: the match succeeded, it just answered with the other run.
+func firstEditionShelf(edition string) (string, []string) {
+	trimmed := strings.TrimPrefix(edition, "1st Edition ")
+	if trimmed == edition {
+		return edition, nil
+	}
+	return trimmed, conditionRuns["1st Edition"]
+}
+
 // conditionRuns are the print runs this storefront names where a condition
 // would go. The run is a finish in the game's own vocabulary rather than a
 // state of the card, and the spelling has to be exact: asking for the plain
@@ -627,7 +642,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					}
 					theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(cardName)), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
 				case GamePokemon:
-					theCard = pokemonListing(cardName, edition, catalogTreatment(notes), isFoil)
+					shelf, shelfRun := firstEditionShelf(edition)
+					if shelfRun != nil {
+						runFinishes = shelfRun
+					}
+					theCard = pokemonListing(cardName, shelf, catalogTreatment(notes), isFoil)
 				case GameOnePiece:
 					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
 				case GameGundam:
