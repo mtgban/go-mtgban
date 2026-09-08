@@ -103,7 +103,7 @@ func TestLoadCatalogRetryStartsClean(t *testing.T) {
 	// of them is reported as the duplicate of itself it would otherwise be.
 	want := []string{
 		"[SCG] Catalog stream broke after 1 products, downloading it again",
-		"[SCG] Processed 2 products total",
+		"[SCG] Processed 2 products total, 0 buylist prices were a bulk rate",
 	}
 	if !slices.Equal(reported, want) {
 		t.Errorf("the run said %q, want %q", reported, want)
