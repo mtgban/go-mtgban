@@ -327,6 +327,23 @@ func offerCondition(fullRow, qtyStr, bundleStr string) string {
 	}
 }
 
+// skippedConditions name a copy the catalog has no row for, so there is
+// nothing to price it as and nothing to report either. Asian names no
+// language in particular, and the only Evolving Wilds sold under it - the
+// one listing that carries the wording - is a name with no set, number or
+// language beside it, against seventy-seven printings that are all English.
+var skippedConditions = []string{"Asian"}
+
+// isSkippedCondition reports whether the wording names one of those.
+func isSkippedCondition(conditions string) bool {
+	for _, skipped := range skippedConditions {
+		if strings.Contains(conditions, skipped) {
+			return true
+		}
+	}
+	return false
+}
+
 // conditionPrintings are the printings this storefront sells as an offer of
 // their own, naming them where a condition would go. The run is a real
 // printing rather than a state of the card, so the wording moves to the
@@ -495,6 +512,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				printing := conditionPrinting(conditions)
 				if printing != "" {
 					conditions = "Near Mint"
+				}
+
+				if isSkippedCondition(conditions) {
+					return
 				}
 
 				// Sometimes etched cards have a Near Mint and Near Mint Foil condition
