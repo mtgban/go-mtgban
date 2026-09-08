@@ -26,6 +26,8 @@ import (
 	"github.com/scizorman/go-ndjson"
 
 	_ "github.com/joho/godotenv/autoload"
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/abugames"
 	"github.com/mtgban/go-mtgban/arcanafrisia"
 	"github.com/mtgban/go-mtgban/cardkingdom"
@@ -177,22 +179,22 @@ var options = map[string]*scraperOption{
 		},
 	},
 	"cardmarket": {
-		Init: cardmarketIndexScraper(cardmarket.GameMagic),
+		Init: cardmarketIndexScraper(cm.GameMagic),
 	},
 	"cardmarket_fleshandblood": {
-		Init: cardmarketBridgedIndexScraper(cardmarket.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
+		Init: cardmarketBridgedIndexScraper(cm.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
 	},
 	"cardmarket_lorcana": {
-		Init: cardmarketIndexScraper(cardmarket.GameLorcana),
+		Init: cardmarketIndexScraper(cm.GameLorcana),
 	},
 	"cardmarket_onepiece": {
-		Init: cardmarketOptionallyBridgedIndexScraper(cardmarket.GameOnePiece, cardtrader.GameOnePiece),
+		Init: cardmarketOptionallyBridgedIndexScraper(cm.GameOnePiece, cardtrader.GameOnePiece),
 	},
 	"cardmarket_pokemon": {
-		Init: cardmarketBridgedIndexScraper(cardmarket.GamePokemon, cardtrader.GamePokemon),
+		Init: cardmarketBridgedIndexScraper(cm.GamePokemon, cardtrader.GamePokemon),
 	},
 	"cardmarket_riftbound": {
-		Init: cardmarketIndexScraper(cardmarket.GameRiftbound),
+		Init: cardmarketIndexScraper(cm.GameRiftbound),
 	},
 	"cardmarket_sealed": {
 		Init: func() (mtgban.Scraper, error) {
@@ -202,7 +204,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameMagic, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cm.GameMagic, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
@@ -215,25 +217,25 @@ var options = map[string]*scraperOption{
 		},
 	},
 	"cardmarket_sealed_fleshandblood": {
-		Init: cardmarketSealedScraper(cardmarket.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
+		Init: cardmarketSealedScraper(cm.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
 	},
 	"cardmarket_sealed_lorcana": {
-		Init: cardmarketSealedScraper(cardmarket.GameLorcana, cardtrader.GameLorcana),
+		Init: cardmarketSealedScraper(cm.GameLorcana, cardtrader.GameLorcana),
 	},
 	"cardmarket_sealed_onepiece": {
-		Init: cardmarketSealedScraper(cardmarket.GameOnePiece, cardtrader.GameOnePiece),
+		Init: cardmarketSealedScraper(cm.GameOnePiece, cardtrader.GameOnePiece),
 	},
 	"cardmarket_sealed_pokemon": {
-		Init: cardmarketSealedScraper(cardmarket.GamePokemon, cardtrader.GamePokemon),
+		Init: cardmarketSealedScraper(cm.GamePokemon, cardtrader.GamePokemon),
 	},
 	"cardmarket_sealed_riftbound": {
-		Init: cardmarketSealedScraper(cardmarket.GameRiftbound, cardtrader.GameRiftbound),
+		Init: cardmarketSealedScraper(cm.GameRiftbound, cardtrader.GameRiftbound),
 	},
 	"cardmarket_sealed_yugioh": {
-		Init: cardmarketSealedScraper(cardmarket.GameYuGiOh, cardtrader.GameYuGiOh),
+		Init: cardmarketSealedScraper(cm.GameYuGiOh, cardtrader.GameYuGiOh),
 	},
 	"cardmarket_yugioh": {
-		Init: cardmarketBridgedIndexScraper(cardmarket.GameYuGiOh, cardtrader.GameYuGiOh),
+		Init: cardmarketBridgedIndexScraper(cm.GameYuGiOh, cardtrader.GameYuGiOh),
 	},
 	"cardtrader": {
 		Init: cardtraderMarketScraper(cardtrader.GameMagic),

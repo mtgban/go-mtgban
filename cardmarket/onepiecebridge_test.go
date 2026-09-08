@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
@@ -60,11 +62,11 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			mkm := &Index{
-				gameID:     GameOnePiece,
+				gameID:     cm.GameOnePiece,
 				TCGBridge:  tt.bridge,
-				priceGuide: map[int]PriceGuide{tt.mkmID: {IDProduct: tt.mkmID, LowPrice: 1, TrendPrice: 2}},
+				priceGuide: map[int]cm.PriceGuide{tt.mkmID: {IDProduct: tt.mkmID, LowPrice: 1, TrendPrice: 2}},
 			}
-			product := MKMProduct{
+			product := cm.Product{
 				IDProduct:     tt.mkmID,
 				Name:          tt.product,
 				Number:        "OP05-069",

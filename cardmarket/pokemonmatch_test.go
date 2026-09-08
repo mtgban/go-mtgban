@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
@@ -43,7 +45,7 @@ func TestMatchProductForeignExpansion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Index{gameID: GamePokemon}
+	mkm := &Index{gameID: cm.GamePokemon}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 	}{
@@ -53,7 +55,7 @@ func TestMatchProductForeignExpansion(t *testing.T) {
 		{"XY Promos", "Pikachu", "", ""},
 		{"XY Promos", "Mega Tokyo's Pikachu", "98", "98-xy-p_268261"},
 	} {
-		product := MKMProduct{
+		product := cm.Product{
 			Name:          tt.name,
 			Number:        tt.number,
 			ExpansionName: tt.expansion,
@@ -121,15 +123,15 @@ func TestNoPrintingSkipsBasicEnergy(t *testing.T) {
 		name   string
 		want   error
 	}{
-		{"a Pokemon basic energy goes quiet", GamePokemon, "Water Energy", nil},
-		{"its bracketed spelling too", GamePokemon, "Grass Energy [Basic]", nil},
-		{"a Pokemon special energy still refuses", GamePokemon, "Rainbow Energy", errNoPrinting},
-		{"an ordinary Pokemon card still refuses", GamePokemon, "Pikachu", errNoPrinting},
-		{"another game's energy still refuses", GameYuGiOh, "Water Energy", errNoPrinting},
+		{"a Pokemon basic energy goes quiet", cm.GamePokemon, "Water Energy", nil},
+		{"its bracketed spelling too", cm.GamePokemon, "Grass Energy [Basic]", nil},
+		{"a Pokemon special energy still refuses", cm.GamePokemon, "Rainbow Energy", errNoPrinting},
+		{"an ordinary Pokemon card still refuses", cm.GamePokemon, "Pikachu", errNoPrinting},
+		{"another game's energy still refuses", cm.GameYuGiOh, "Water Energy", errNoPrinting},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			mkm := &Index{gameID: tt.gameID}
-			if got := mkm.noPrinting(&MKMProduct{Name: tt.name}); !errors.Is(got, tt.want) {
+			if got := mkm.noPrinting(&cm.Product{Name: tt.name}); !errors.Is(got, tt.want) {
 				t.Errorf("noPrinting(%q) = %v, want %v", tt.name, got, tt.want)
 			}
 		})
@@ -164,11 +166,11 @@ func TestMatchPokemonLettered(t *testing.T) {
 	if err := mtgmatcher.LoadDatastore(strings.NewReader(letteredDatastore)); err != nil {
 		t.Fatal(err)
 	}
-	mkm := &Index{gameID: GamePokemon}
+	mkm := &Index{gameID: cm.GamePokemon}
 
 	for _, tt := range []struct {
 		desc      string
-		product   MKMProduct
+		product   cm.Product
 		wantID    string
 		wantError error
 	}{
@@ -176,21 +178,21 @@ func TestMatchPokemonLettered(t *testing.T) {
 			// The shelf is the set it reprints, and the row is the
 			// league programme's.
 			desc:    "a league promo reaches League & Championship Cards",
-			product: MKMProduct{Name: "Field Blower", Number: "125a", ExpansionName: "SM - Guardians Rising"},
+			product: cm.Product{Name: "Field Blower", Number: "125a", ExpansionName: "SM - Guardians Rising"},
 			wantID:  "125a-145_185137_reverse",
 		},
 		{
 			// The promo shelf writes its programme's prefix onto the
 			// number, so the letter test has to see past it.
 			desc:    "a prefixed number still reads as lettered",
-			product: MKMProduct{Name: "M Camerupt EX", Number: "198a", ExpansionName: "XY Black Star Promos"},
+			product: cm.Product{Name: "M Camerupt EX", Number: "198a", ExpansionName: "XY Black Star Promos"},
 			wantID:  "xy198a_148345_holo",
 		},
 		{
 			// A plain number names no lettered promo, and the shelf
 			// carries no row for it.
 			desc:      "a plain number reaches neither programme",
-			product:   MKMProduct{Name: "Field Blower", Number: "125", ExpansionName: "SM - Guardians Rising"},
+			product:   cm.Product{Name: "Field Blower", Number: "125", ExpansionName: "SM - Guardians Rising"},
 			wantError: errNoPrinting,
 		},
 	} {

@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -72,7 +74,7 @@ func TestFabPromoProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Index{gameID: GameFleshAndBlood}
+	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct{ name, number, expansion, want string }{
 		{"Energy Potion (Cold Foil)", "012", "FAB Promos", "fab012_cold"},
 		{"Dash, Inventor Extraordinaire (Cold Foil)", "009", "Hero Promos", "her009_cold"},
@@ -80,7 +82,7 @@ func TestFabPromoProduct(t *testing.T) {
 		// unresolved rather than landing on the other one's card.
 		{"Energy Potion (Cold Foil)", "009", "FAB Promos", ""},
 	} {
-		product := MKMProduct{
+		product := cm.Product{
 			Name:          tt.name,
 			Number:        tt.number,
 			ExpansionName: tt.expansion,

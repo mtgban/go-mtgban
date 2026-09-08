@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
@@ -40,7 +42,7 @@ func TestMatchYugiohShelves(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Index{gameID: GameYuGiOh}
+	mkm := &Index{gameID: cm.GameYuGiOh}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 		err                           error
@@ -53,7 +55,7 @@ func TestMatchYugiohShelves(t *testing.T) {
 		{"2018 Mega-Tin Mega Pack", "Gouki Re-Match", "070", "", errNoPrinting},
 		{"Legend of Blue Eyes White Dragon (LDD)", "Tri-Horned Dragon", "000", "", errForeign},
 	} {
-		product := MKMProduct{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion}
+		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion}
 		got, err := mkm.matchYugioh(&product)
 		if got != tt.want || !errors.Is(err, tt.err) {
 			t.Errorf("%q in %q (%s) = %q, %v; want %q, %v", tt.name, tt.expansion, tt.number, got, err, tt.want, tt.err)
@@ -63,14 +65,14 @@ func TestMatchYugiohShelves(t *testing.T) {
 
 func TestYugiohSameProduct(t *testing.T) {
 	for _, tt := range []struct {
-		a, b MKMProduct
+		a, b cm.Product
 		want bool
 	}{
-		{MKMProduct{Name: "Feral Imp (V.1 - Common)", Number: "001"}, MKMProduct{Name: "Feral Imp (V.2 - Common)", Number: "001"}, true},
-		{MKMProduct{Name: "Feral Imp (V.3 - Common)", Number: "EN001"}, MKMProduct{Name: "Feral Imp (V.2 - Common)", Number: "001"}, true},
-		{MKMProduct{Name: "Tri-Horned Dragon", Number: ""}, MKMProduct{Name: "Tri-Horned Dragon", Number: ""}, true},
-		{MKMProduct{Name: "Harpie Lady (V.1 - Common)", Number: "008"}, MKMProduct{Name: "Harpie Lady Sisters (V.1 - Super Rare)", Number: "009"}, false},
-		{MKMProduct{Name: "Griggle (V.2 - Common)", Number: "016"}, MKMProduct{Name: "Rescue-ACE Monitor", Number: "279"}, false},
+		{cm.Product{Name: "Feral Imp (V.1 - Common)", Number: "001"}, cm.Product{Name: "Feral Imp (V.2 - Common)", Number: "001"}, true},
+		{cm.Product{Name: "Feral Imp (V.3 - Common)", Number: "EN001"}, cm.Product{Name: "Feral Imp (V.2 - Common)", Number: "001"}, true},
+		{cm.Product{Name: "Tri-Horned Dragon", Number: ""}, cm.Product{Name: "Tri-Horned Dragon", Number: ""}, true},
+		{cm.Product{Name: "Harpie Lady (V.1 - Common)", Number: "008"}, cm.Product{Name: "Harpie Lady Sisters (V.1 - Super Rare)", Number: "009"}, false},
+		{cm.Product{Name: "Griggle (V.2 - Common)", Number: "016"}, cm.Product{Name: "Rescue-ACE Monitor", Number: "279"}, false},
 	} {
 		if got := yugiohSameProduct(&tt.a, &tt.b); got != tt.want {
 			t.Errorf("%q/%q vs %q/%q = %v, want %v", tt.a.Name, tt.a.Number, tt.b.Name, tt.b.Number, got, tt.want)

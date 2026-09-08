@@ -1,16 +1,12 @@
 package cardmarket
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
 	"regexp"
 	"sort"
 	"strings"
 
-	"github.com/hashicorp/go-cleanhttp"
+	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -39,8 +35,8 @@ var filteredExpansionsTags = []string{
 
 // FilterAndSortExpansions drops the expansions that hold nothing worth pricing
 // and returns the rest oldest first.
-func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
-	var out []MKMExpansion
+func FilterAndSortExpansions(expansions []cm.Expansion) []cm.Expansion {
+	var out []cm.Expansion
 	for _, exp := range expansions {
 		var skip bool
 		for _, tag := range filteredExpansionsTags {
@@ -58,62 +54,6 @@ func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
 		return out[i].Name < out[j].Name
 	})
 	return out
-}
-
-// The games Cardmarket carries, as their API numbers them.
-const (
-	GameMagic = iota + 1
-	GameWorldOfWarcraft
-	GameYuGiOh
-	_
-	GameTheSpoils
-	GamePokemon
-	GameForceOfWill
-	GameCardfightVanguard
-	GameFinalFantasy
-	GameWeissSchwarz
-	GameDragoborne
-	GameMyLittlePony
-	GameDragonBallSuper
-	_
-	GameStarWarsDestiny
-	GameFleshAndBlood
-	GameDigimon
-	GameOnePiece
-	GameLorcana
-	GameBattleSpiritsSaga
-	GameStarWarsUnlimited
-	GameRiftbound
-)
-
-const (
-	priceGuideURL         = "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_%d.json"
-	productListSinglesURL = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_%d.json"
-	productListSealedURL  = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_nonsingles_%d.json"
-)
-
-// PriceGuide is one product's published prices: the low, the trend, and the
-// averages Cardmarket derives rather than any single listing.
-type PriceGuide struct {
-	IDProduct        int     `json:"idProduct"`
-	AvgSellPrice     float64 `json:"avg"`
-	LowPrice         float64 `json:"low"`
-	TrendPrice       float64 `json:"trend"`
-	FoilAvgSellPrice float64 `json:"avg-foil"`
-	FoilLowPrice     float64 `json:"low-foil"`
-	FoilTrendPrice   float64 `json:"trend-foil"`
-	// Pokemon's guide names the second printing's prices "holo" rather
-	// than "foil", and publishes them for the cards sold in a reverse
-	// holo and for no others; see SecondPrinting.
-	HoloAvgSellPrice float64 `json:"avg-holo"`
-	HoloLowPrice     float64 `json:"low-holo"`
-	HoloTrendPrice   float64 `json:"trend-holo"`
-	AvgDay1          float64 `json:"avg1"`
-	AvgDay7          float64 `json:"avg7"`
-	AvgDay30         float64 `json:"avg30"`
-	FoilAvgDay1      float64 `json:"avg1-foil"`
-	FoilAvgDay7      float64 `json:"avg7-foil"`
-	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
 // fabPrintRuns names the print run a Cardmarket Flesh and Blood expansion
@@ -344,7 +284,7 @@ func fabDropArt(name string) string {
 // labels are off it, at the same number - or one of them the unpitched
 // listing of the other, the older spelling of a card the expansion sells
 // pitched too.
-func fabSameProduct(a, b *MKMProduct) bool {
+func fabSameProduct(a, b *cm.Product) bool {
 	// The same listing twice, whatever numbers the two copies wear
 	if strings.EqualFold(a.Name, b.Name) {
 		return true
@@ -376,7 +316,7 @@ func unpitched(name string) string {
 // fabFaceOf reports whether a Cardmarket product names one face of the
 // fused printing it is beside: the storefront sells a double-sided hero
 // face by face, and the datastore files the card once under both faces.
-func fabFaceOf(product *MKMProduct, cardID string) bool {
+func fabFaceOf(product *cm.Product, cardID string) bool {
 	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil || !strings.Contains(co.Name, "//") {
 		return false
@@ -394,7 +334,7 @@ func fabFaceOf(product *MKMProduct, cardID string) bool {
 // landed it on: the same card, or one face of a fused card. The bridge
 // speaks through another marketplace's links, and a link tied to the
 // wrong product lands a card on its neighbour's printing.
-func fabNamesPrinting(product *MKMProduct, cardID string) bool {
+func fabNamesPrinting(product *cm.Product, cardID string) bool {
 	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
 		return false
@@ -443,7 +383,7 @@ type shelf struct {
 // every programme was once filed in, and an expansion no name places is
 // asked of the set wearing its code, which is how the Silver Age decks and
 // the Slingshot promos are filed.
-func fabShelves(product *MKMProduct) []shelf {
+func fabShelves(product *cm.Product) []shelf {
 	printRun, edition := fabPrintRun(product.ExpansionName)
 	var shelves []shelf
 	if prefix, promo := fabPromoPrefixes[edition]; promo {
@@ -485,94 +425,9 @@ func shelved(shelves []shelf, set *mtgmatcher.Set) bool {
 	return false
 }
 
-// SecondPrinting names the prices of the printing sold beside the product's
-// default one, under whichever heading the game's guide publishes them. Most
-// games sell a foil beside a plain card; Pokemon sells a reverse holo, and
-// its guide says so.
-func (pg PriceGuide) SecondPrinting(gameID int) (low, trend float64) {
-	if gameID == GamePokemon {
-		return pg.HoloLowPrice, pg.HoloTrendPrice
-	}
-	return pg.FoilLowPrice, pg.FoilTrendPrice
-}
-
-// GetPriceGuide downloads the published price guide for one game.
-func GetPriceGuide(ctx context.Context, gameID int) ([]PriceGuide, error) {
-	link := fmt.Sprintf(priceGuideURL, gameID)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := cleanhttp.DefaultClient().Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var response struct {
-		Version     int          `json:"version"`
-		CreatedAt   string       `json:"createdAt"`
-		PriceGuides []PriceGuide `json:"priceGuides"`
-	}
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, err
-	}
-
-	return response.PriceGuides, nil
-}
-
-// ProductList is one entry of the catalog dump, which names products without
-// pricing them.
-type ProductList struct {
-	IDProduct    int    `json:"idProduct"`
-	Name         string `json:"name"`
-	CategoryID   int    `json:"idCategory"`
-	CategoryName string `json:"categoryName"`
-	ExpansionID  int    `json:"idExpansion"`
-	MetacardID   int    `json:"idMetacard"`
-	DateAdded    string `json:"dateAdded"`
-}
-
-// GetProductListSingles downloads the catalog of one game's singles.
-func GetProductListSingles(ctx context.Context, gameID int) ([]ProductList, error) {
-	return getProductList(ctx, fmt.Sprintf(productListSinglesURL, gameID))
-}
-
-// GetProductListSealed downloads the catalog of one game's sealed product.
-func GetProductListSealed(ctx context.Context, gameID int) ([]ProductList, error) {
-	return getProductList(ctx, fmt.Sprintf(productListSealedURL, gameID))
-}
-
-func getProductList(ctx context.Context, link string) ([]ProductList, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := cleanhttp.DefaultClient().Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var response struct {
-		Version   int           `json:"version"`
-		CreatedAt string        `json:"createdAt"`
-		Products  []ProductList `json:"products"`
-	}
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, err
-	}
-
-	return response.Products, nil
-}
-
 // SanitizeProductList drops the duplicate names an edition can carry, which
 // would otherwise resolve to whichever entry was seen last.
-func SanitizeProductList(productList []ProductList) {
+func SanitizeProductList(productList []cm.ProductList) {
 	// Lower product id means lower version number
 	for i := range productList {
 		name := productList[i].Name
@@ -611,105 +466,6 @@ func SanitizeProductList(productList []ProductList) {
 			}
 		}
 	}
-}
-
-// gameNames is how Cardmarket spells each covered catalog in its URL paths
-// (/en/Magic/..., /en/Lorcana/...). Cardmarket has no game-agnostic product
-// path, so every URL builder here goes through it, and both directions of the
-// lookup read this one table rather than keeping their own list.
-var gameNames = map[int]string{
-	GameMagic:         "Magic",
-	GameLorcana:       "Lorcana",
-	GameRiftbound:     "Riftbound",
-	GameOnePiece:      "OnePiece",
-	GameYuGiOh:        "YuGiOh",
-	GameFleshAndBlood: "FleshAndBlood",
-	GamePokemon:       "Pokemon",
-}
-
-// GameName returns the game as Cardmarket spells it, or "" for a game whose
-// catalog is not covered.
-func GameName(idGame int) string {
-	return gameNames[idGame]
-}
-
-// GameFromName is the inverse, matching case-insensitively so a caller can
-// hand over the name it already knows a game by ("lorcana") instead of
-// translating to an id first; an unnamed game is Magic. Unknown games answer
-// 0, which the URL builders reject: a game Cardmarket does not carry yields no
-// link at all rather than one pointing at a path it does not serve.
-func GameFromName(name string) int {
-	if name == "" {
-		return GameMagic
-	}
-	for idGame, gameName := range gameNames {
-		if strings.EqualFold(gameName, name) {
-			return idGame
-		}
-	}
-	return 0
-}
-
-// SearchURL returns the catalog search for a product name, the fallback for a
-// card whose Cardmarket product id is not known. Empty for an uncovered game,
-// like BuildURL.
-func SearchURL(name string, idGame int, affiliate string) string {
-	game := GameName(idGame)
-	if game == "" {
-		return ""
-	}
-
-	u, err := url.Parse(fmt.Sprintf("https://www.cardmarket.com/en/%s/Products/Search", game))
-	if err != nil {
-		return ""
-	}
-
-	v := url.Values{}
-	v.Set("searchString", name)
-	setAffiliate(v, affiliate)
-
-	u.RawQuery = v.Encode()
-	return u.String()
-}
-
-func setAffiliate(v url.Values, affiliate string) {
-	if affiliate == "" {
-		return
-	}
-	v.Set("utm_source", affiliate)
-	v.Set("utm_medium", "text")
-	v.Set("utm_campaign", "card_prices")
-}
-
-// BuildURL builds the storefront link for a product, carrying an affiliate tag
-// when one is given.
-func BuildURL(idProduct, idGame int, affiliate string, foil bool) string {
-	game := GameName(idGame)
-	if game == "" {
-		return ""
-	}
-
-	u, err := url.Parse(fmt.Sprintf("https://www.cardmarket.com/en/%s/Products", game))
-	if err != nil {
-		return ""
-	}
-
-	v := url.Values{}
-
-	v.Set("idProduct", fmt.Sprint(idProduct))
-
-	// Set English as preferred language, it switches to the default one
-	// automatically in case the card has is non-English only
-	v.Set("language", "1")
-
-	if foil {
-		v.Set("isFoil", "Y")
-	}
-
-	setAffiliate(v, affiliate)
-
-	u.RawQuery = v.Encode()
-	return u.String()
 }
 
 // disownBridged takes the bridge's answer away from a product it landed on

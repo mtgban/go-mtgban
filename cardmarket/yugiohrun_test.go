@@ -1,6 +1,10 @@
 package cardmarket
 
-import "testing"
+import (
+	"testing"
+
+	cm "github.com/mtgban/go-cardmarket"
+)
 
 // TestYugiohRun pins how the index Cardmarket appends to a Yu-Gi-Oh product
 // name is read. A set printed twice sells both runs under one name, one
@@ -33,7 +37,7 @@ func TestYugiohRun(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			product := &MKMProduct{Name: tt.name, ExpansionName: tt.expansion}
+			product := &cm.Product{Name: tt.name, ExpansionName: tt.expansion}
 			if got := yugiohRun(product); got != tt.want {
 				t.Errorf("yugiohRun(%q) = %q, want %q", tt.name, got, tt.want)
 			}
@@ -54,14 +58,14 @@ func TestYugiohRunOverride(t *testing.T) {
 		{"Card (V.1 - Rare)", "1st Edition"},
 		{"Card (V.2 - Rare)", "Unlimited"},
 	} {
-		product := &MKMProduct{Name: tt.name, ExpansionName: set}
+		product := &cm.Product{Name: tt.name, ExpansionName: set}
 		if got := yugiohRun(product); got != tt.want {
 			t.Errorf("with the override, yugiohRun(%q) = %q, want %q", tt.name, got, tt.want)
 		}
 	}
 
 	// A set nobody named keeps reading the default way.
-	product := &MKMProduct{Name: "Card (V.1 - Rare)", ExpansionName: "Ordinary Set"}
+	product := &cm.Product{Name: "Card (V.1 - Rare)", ExpansionName: "Ordinary Set"}
 	if got := yugiohRun(product); got != "Unlimited" {
 		t.Errorf("an unnamed set read as %q, want Unlimited", got)
 	}

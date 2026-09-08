@@ -2,127 +2,16 @@ package cardmarket
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
-
-// IDMapProduct is one product of the published catalog: what the marketplace
-// calls it, where it files it, and the printings it stands for.
-type IDMapProduct struct {
-	ExpansionID int    `json:"expansionId"`
-	Name        string `json:"name"`
-	Number      string `json:"number,omitempty"`
-	Rarity      string `json:"rarity,omitempty"`
-	// Version is the index the marketplace counts a card's printings with
-	// where one shelf sells several - the second Budew of a stamp
-	// programme, the master-ball pattern beside the poke-ball one. It is
-	// the only thing telling two products of one name and number apart, and
-	// zero where the product carries none. See productVersion for where it
-	// is read from, which is not the same field in every game.
-	Version int      `json:"version,omitempty"`
-	UUIDs   []string `json:"uuids,omitempty"`
-}
-
-// nameVersionRe matches the index Cardmarket writes into a product's name,
-// which is where Magic and Yu-Gi-Oh carry it: "Feral Shadow (V.1)" and
-// "7 Colored Fish (V.2 - Common)" both.
-var nameVersionRe = regexp.MustCompile(`\(V\.(\d+)`)
-
-// slugVersionRe matches the same index written into the product's own web
-// address, which is where Pokemon carries it and nowhere else:
-// "Budew-V2-SEAPRE-004". The last occurrence is the index, the segments
-// before it being the card's name - "Serperior-V-V3-SITTG13" is Serperior V
-// at version 3, and the V of its name carries no digits to be mistaken for
-// one.
-var slugVersionRe = regexp.MustCompile(`-V(\d+)-`)
-
-// ProductVersion reads that index off a product, or zero where it carries
-// none. The marketplace publishes it in the name for some games and only in
-// the address for others - of the catalogs we walk, 31,523 of Yu-Gi-Oh's
-// 86,628 products name it and not one of Pokemon's 72,752 does, though its
-// shelves are full of it - so both are read and the name wins.
-func ProductVersion(product *MKMProduct) int {
-	if fields := nameVersionRe.FindStringSubmatch(product.Name); fields != nil {
-		version, err := strconv.Atoi(fields[1])
-		if err == nil {
-			return version
-		}
-	}
-	matches := slugVersionRe.FindAllStringSubmatch(product.Website, -1)
-	if len(matches) > 0 {
-		version, err := strconv.Atoi(matches[len(matches)-1][1])
-		if err == nil {
-			return version
-		}
-	}
-	return 0
-}
-
-// IDMapExpansion names one expansion of the catalog and the set codes it
-// covers. Code is the marketplace's own abbreviation, which is where the
-// foreign catalogs say what they are; MTGJSON's file does not carry it.
-type IDMapExpansion struct {
-	Name     string   `json:"name"`
-	Code     string   `json:"code,omitempty"`
-	SetCodes []string `json:"setCodes,omitempty"`
-}
-
-// IDMap is the published Cardmarket catalog: every singles product mapped to
-// the printings it sells, which is what the index prices from instead of
-// walking the API. MTGJSON publishes the Magic one; mkmcatalog builds the
-// other games' by walking the API once a day.
-type IDMap struct {
-	Products   map[int]IDMapProduct
-	Expansions map[int]IDMapExpansion
-}
-
-// LoadIDMap reads a published catalog. The file keys both tables by the
-// stringified ids JSON forces on it; the map keys them by the numbers they
-// are.
-func LoadIDMap(reader io.Reader) (*IDMap, error) {
-	var payload struct {
-		Data struct {
-			Expansions map[string]IDMapExpansion `json:"expansions"`
-			Products   map[string]IDMapProduct   `json:"products"`
-		} `json:"data"`
-	}
-	err := json.NewDecoder(reader).Decode(&payload)
-	if err != nil {
-		return nil, err
-	}
-	if len(payload.Data.Products) == 0 {
-		return nil, errors.New("empty id map")
-	}
-
-	out := IDMap{
-		Products:   make(map[int]IDMapProduct, len(payload.Data.Products)),
-		Expansions: make(map[int]IDMapExpansion, len(payload.Data.Expansions)),
-	}
-	for key, product := range payload.Data.Products {
-		id, err := strconv.Atoi(key)
-		if err != nil {
-			return nil, fmt.Errorf("product id %q: %w", key, err)
-		}
-		out.Products[id] = product
-	}
-	for key, expansion := range payload.Data.Expansions {
-		id, err := strconv.Atoi(key)
-		if err != nil {
-			return nil, fmt.Errorf("expansion id %q: %w", key, err)
-		}
-		out.Expansions[id] = expansion
-	}
-	return &out, nil
-}
 
 // resolveUUIDs answers a product from the printings its map entry lists,
 // splitting them by finish the way the guide's columns are split. Ids the
@@ -131,7 +20,7 @@ func LoadIDMap(reader io.Reader) (*IDMap, error) {
 // printing whose number agrees with the product's wins, the way Fallback
 // already prefers it; a pick between printings the number cannot settle is
 // said out loud. Both ids empty means the entry decided nothing.
-func (mkm *Index) resolveUUIDs(product *MKMProduct, uuids []string) (string, string) {
+func (mkm *Index) resolveUUIDs(product *cm.Product, uuids []string) (string, string) {
 	var plain, foil []string
 	var plainMatched, foilMatched bool
 	for _, uuid := range uuids {
@@ -188,15 +77,15 @@ func (mkm *Index) resolveUUIDs(product *MKMProduct, uuids []string) (string, str
 
 // sameProduct says whether two products of a game's shelves are the same
 // card sold twice, for the games whose shelves do that; nil for the rest.
-func sameProduct(gameID int) func(a, b *MKMProduct) bool {
+func sameProduct(gameID int) func(a, b *cm.Product) bool {
 	switch gameID {
-	case GamePokemon:
+	case cm.GamePokemon:
 		return pokemonSameProduct
-	case GameYuGiOh:
+	case cm.GameYuGiOh:
 		return yugiohSameProduct
-	case GameOnePiece:
+	case cm.GameOnePiece:
 		return onePieceSameProduct
-	case GameFleshAndBlood:
+	case cm.GameFleshAndBlood:
 		return fabSameProduct
 	}
 	return nil
@@ -204,8 +93,8 @@ func sameProduct(gameID int) func(a, b *MKMProduct) bool {
 
 // faceOf answers the rule telling a product that names one face of a fused
 // printing, for the games whose shelves sell a card face by face.
-func faceOf(gameID int) func(product *MKMProduct, cardID string) bool {
-	if gameID == GameFleshAndBlood {
+func faceOf(gameID int) func(product *cm.Product, cardID string) bool {
+	if gameID == cm.GameFleshAndBlood {
 		return fabFaceOf
 	}
 	return nil
@@ -215,14 +104,14 @@ func faceOf(gameID int) func(product *MKMProduct, cardID string) bool {
 // card sold twice: the same name, code tag included, once the version index
 // is off it. The shelves sell each event copy of a promo as a version, and
 // the name reaches the same family for every one of them.
-func onePieceSameProduct(a, b *MKMProduct) bool {
+func onePieceSameProduct(a, b *cm.Product) bool {
 	return mtgmatcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == mtgmatcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
 }
 
 // resolved is what one product of the walk answered with, held until its
 // expansion is read whole, so a product can be judged beside its siblings.
 type resolved struct {
-	product    *MKMProduct
+	product    *cm.Product
 	cardID     string
 	cardIDFoil string
 	byName     bool
@@ -233,8 +122,8 @@ type resolved struct {
 // what it left unmapped is answered from what the catalog says of it, the
 // way processProduct does, so a product the file does not know yet is
 // matched rather than lost.
-func (mkm *Index) resolveMapped(id int, mapped IDMapProduct, expansion MKMExpansion) resolved {
-	product := &MKMProduct{
+func (mkm *Index) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.Expansion) resolved {
+	product := &cm.Product{
 		IDProduct:     id,
 		Name:          mapped.Name,
 		Number:        mapped.Number,
@@ -250,21 +139,21 @@ func (mkm *Index) resolveMapped(id int, mapped IDMapProduct, expansion MKMExpans
 	return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil, byName: byName, err: err}
 }
 
-// checkIDMap reports whether the id map can be walked. For the games that
+// checkCatalog reports whether the id map can be walked. For the games that
 // shelve whole foreign catalogs, the map says which shelves those are only
 // through the expansion codes: a map written before it carried them cannot
 // be walked safely, and the run refuses rather than price the foreign
 // printings onto the English ones.
-func (mkm *Index) checkIDMap() error {
-	if mkm.IDMap == nil {
+func (mkm *Index) checkCatalog() error {
+	if mkm.Catalog == nil {
 		return errors.New("no id map to price from")
 	}
 	switch mkm.gameID {
-	case GameOnePiece, GameYuGiOh:
+	case cm.GameOnePiece, cm.GameYuGiOh:
 	default:
 		return nil
 	}
-	for _, expansion := range mkm.IDMap.Expansions {
+	for _, expansion := range mkm.Catalog.Data.Expansions {
 		if expansion.Code != "" {
 			return nil
 		}
@@ -272,19 +161,19 @@ func (mkm *Index) checkIDMap() error {
 	return errors.New("the id map carries no expansion codes to tell the foreign shelves by")
 }
 
-// walkIDMap prices every product of the id map, and of the product list
+// walkCatalog prices every product of the id map, and of the product list
 // beside it, expansion by expansion.
-func (mkm *Index) walkIDMap(ctx context.Context) error {
+func (mkm *Index) walkCatalog(ctx context.Context) error {
 	// The map knows only what MTGJSON has linked; the published product list
 	// knows everything on sale today. Products it names that the map does
 	// not - several thousand for Magic - are priced from what the catalog
 	// says of them, with the one thing the list never carries left empty:
 	// their collector number.
-	products := make(map[int]IDMapProduct, len(mkm.IDMap.Products))
-	for id, product := range mkm.IDMap.Products {
+	products := make(map[int]cm.CatalogProduct, len(mkm.Catalog.Data.Products))
+	for id, product := range mkm.Catalog.Data.Products {
 		products[id] = product
 	}
-	list, err := GetProductListSingles(ctx, mkm.gameID)
+	list, err := cm.DownloadProductListSingles(ctx, mkm.gameID)
 	if err != nil {
 		return err
 	}
@@ -294,7 +183,7 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 		if found {
 			continue
 		}
-		products[entry.IDProduct] = IDMapProduct{ExpansionID: entry.ExpansionID, Name: entry.Name}
+		products[entry.IDProduct] = cm.CatalogProduct{ExpansionID: entry.ExpansionID, Name: entry.Name}
 		unmapped++
 	}
 	mkm.printf("%d products of the list are not in the map and resolve by name", unmapped)
@@ -304,9 +193,9 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 		byExpansion[product.ExpansionID] = append(byExpansion[product.ExpansionID], id)
 	}
 
-	var items []MKMExpansion
+	var items []cm.Expansion
 	for expansionID := range byExpansion {
-		entry := mkm.IDMap.Expansions[expansionID]
+		entry := mkm.Catalog.Data.Expansions[expansionID]
 		name := entry.Name
 		if name == "" {
 			name = fmt.Sprintf("expansion %d", expansionID)
@@ -314,7 +203,7 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 		if mkm.TargetEdition != "" && name != mkm.TargetEdition {
 			continue
 		}
-		items = append(items, MKMExpansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})
+		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].IDExpansion < items[j].IDExpansion })
 
@@ -326,7 +215,7 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 	// own for the same reason. One Piece's duplicate shelves resolve through
 	// the shelved table; see offShelf.
 	switch mkm.gameID {
-	case GameOnePiece, GameYuGiOh:
+	case cm.GameOnePiece, cm.GameYuGiOh:
 		kept := items[:0]
 		for _, exp := range items {
 			if strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name) {
@@ -335,7 +224,7 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 			kept = append(kept, exp)
 		}
 		items = kept
-		if mkm.gameID == GameOnePiece {
+		if mkm.gameID == cm.GameOnePiece {
 			mkm.shelved = shelvedSets(items)
 		}
 	}
@@ -343,7 +232,7 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 	mkm.printf("Parsing %d expansion ids from the id map", len(items))
 
 	walked, refused, foreign := mkm.collectPrices(ctx, items,
-		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
+		func(ctx context.Context, exp cm.Expansion, channel chan<- responseChan) error {
 			mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
 			ids := byExpansion[exp.IDExpansion]
 			sort.Ints(ids)
@@ -352,7 +241,7 @@ func (mkm *Index) walkIDMap(ctx context.Context) error {
 			for _, id := range ids {
 				results = append(results, mkm.resolveMapped(id, products[id], exp))
 			}
-			if mkm.gameID == GameFleshAndBlood {
+			if mkm.gameID == cm.GameFleshAndBlood {
 				mkm.disownBridged(results)
 			}
 			if same := sameProduct(mkm.gameID); same != nil {

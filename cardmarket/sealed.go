@@ -12,6 +12,8 @@ import (
 	"time"
 	"unicode"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -40,7 +42,7 @@ type Sealed struct {
 
 	inventory mtgban.InventoryRecord
 
-	client *MKMClient
+	client *cm.Client
 	gameID int
 }
 
@@ -54,14 +56,14 @@ func (mkm *Sealed) printf(format string, a ...any) {
 // app token and secret.
 func NewScraperSealed(gameID int, appToken, appSecret string) (*Sealed, error) {
 	switch gameID {
-	case GameMagic, GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh, GameFleshAndBlood,
-		GamePokemon:
+	case cm.GameMagic, cm.GameLorcana, cm.GameRiftbound, cm.GameOnePiece, cm.GameYuGiOh, cm.GameFleshAndBlood,
+		cm.GamePokemon:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
 	mkm := Sealed{}
 	mkm.inventory = mtgban.InventoryRecord{}
-	mkm.client = NewMKMClient(appToken, appSecret)
+	mkm.client = cm.NewClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
 	mkm.gameID = gameID
 	return &mkm, nil
@@ -105,12 +107,12 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 	for !done && page < 5 {
 		// We process a tenth of the typical request because we only need the first few results
 		// But if there are multiple ids for the same product (ie foil SLDs), then we query more
-		entities := MaxEntities / 10
+		entities := cm.MaxEntities / 10
 		if len(uuids) > 1 {
-			entities = MaxEntities
+			entities = cm.MaxEntities
 		}
 
-		articles, err := mkm.client.MKMSimpleArticles(ctx, idProduct, true, page, entities)
+		articles, err := mkm.client.Articles(ctx, idProduct, cm.DefaultArticleFilter(true), page, entities)
 		if err != nil {
 			return err
 		}
@@ -147,7 +149,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 				continue
 			}
 
-			link := BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, article.IsFoil)
+			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, article.IsFoil)
 			out := responseChan{
 				cardID: uuid,
 				entry: mtgban.InventoryEntry{
@@ -198,7 +200,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	// Magic is not among them whatever its map looks like: its sealed names
 	// collide too readily to be trusted on their own, which is the same
 	// reason the CardTrader sealed scraper stops its name pass there.
-	nameFallback := len(productMap) == 0 && mkm.gameID != GameMagic
+	nameFallback := len(productMap) == 0 && mkm.gameID != cm.GameMagic
 	if nameFallback && len(mkm.TCGBridge) > 0 {
 		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
 		for mkmID, tcgID := range mkm.TCGBridge {
@@ -211,7 +213,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 		mkm.printf("Bridged %d sealed products through the TCGplayer id", len(productMap))
 	}
 
-	productList, err := GetProductListSealed(ctx, mkm.gameID)
+	productList, err := cm.DownloadProductListSealed(ctx, mkm.gameID)
 	if err != nil {
 		return err
 	}
@@ -360,19 +362,19 @@ func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.SealedMode = true
 	switch mkm.gameID {
-	case GameMagic:
+	case cm.GameMagic:
 		info.Game = mtgban.GameMagic
-	case GameLorcana:
+	case cm.GameLorcana:
 		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
+	case cm.GameRiftbound:
 		info.Game = mtgban.GameRiftbound
-	case GameOnePiece:
+	case cm.GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameYuGiOh:
+	case cm.GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
-	case GameFleshAndBlood:
+	case cm.GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
-	case GamePokemon:
+	case cm.GamePokemon:
 		info.Game = mtgban.GamePokemon
 	}
 	return
@@ -510,7 +512,7 @@ type sealedRename struct {
 // A rename is keyed by game because a marketplace's word for one game's
 // product says nothing about another's.
 var sealedRenames = map[int][]sealedRename{
-	GameOnePiece: {
+	cm.GameOnePiece: {
 		{regexp.MustCompile(`(?i)^the best\b`), "Premium Booster"},
 	},
 }

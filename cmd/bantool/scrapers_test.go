@@ -3,7 +3,8 @@ package main
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/cardmarket"
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/cardtrader"
 )
 
@@ -22,10 +23,10 @@ func TestCardmarketNeedsItsBridge(t *testing.T) {
 	t.Setenv("MKM_APP_SECRET", "secret")
 	t.Setenv("CARDTRADER_TOKEN_BEARER", "")
 
-	if _, err := cardmarketSealedScraper(cardmarket.GamePokemon, cardtrader.GamePokemon)(); err == nil {
+	if _, err := cardmarketSealedScraper(cm.GamePokemon, cardtrader.GamePokemon)(); err == nil {
 		t.Error("the sealed scraper was built without a bridge")
 	}
-	if _, err := cardmarketBridgedIndexScraper(cardmarket.GameYuGiOh, cardtrader.GameYuGiOh)(); err == nil {
+	if _, err := cardmarketBridgedIndexScraper(cm.GameYuGiOh, cardtrader.GameYuGiOh)(); err == nil {
 		t.Error("the singles scraper was built without a bridge")
 	}
 }

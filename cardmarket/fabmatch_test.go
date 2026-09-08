@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -53,7 +55,7 @@ func loadFabDatastore(t *testing.T) {
 func TestMatchProductPrintRun(t *testing.T) {
 	loadFabDatastore(t)
 
-	mkm := &Index{gameID: GameFleshAndBlood}
+	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 	}{
@@ -75,7 +77,7 @@ func TestMatchProductPrintRun(t *testing.T) {
 		// suffix or not.
 		{"Monarch - Boltyn Blitz Deck", "Prismatic Shield (Red) (Regular)", "MON092", ""},
 	} {
-		product := MKMProduct{
+		product := cm.Product{
 			Name:          tt.name,
 			Number:        tt.number,
 			ExpansionName: tt.expansion,
@@ -126,7 +128,7 @@ func TestMatchProductTreatmentTail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mkm := &Index{gameID: GameFleshAndBlood}
+	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 	}{
@@ -137,7 +139,7 @@ func TestMatchProductTreatmentTail(t *testing.T) {
 		{"Heavy Hitters", "Rawhide Rumble (Red) (Rainbow Foil)", "023", "hvy023_533460_rainbow"},
 		{"Armory Deck: Rhinar", "Rawhide Rumble (Red) (Regular)", "012", "arr012_663031"},
 	} {
-		product := MKMProduct{
+		product := cm.Product{
 			Name:          tt.name,
 			Number:        tt.number,
 			ExpansionName: tt.expansion,
@@ -158,7 +160,7 @@ func TestProcessProductByName(t *testing.T) {
 
 	// Cardmarket 602755, the first-edition Monarch printing of Prismatic
 	// Shield (Red), which the datastore keys by TCGplayer id 237847.
-	product := MKMProduct{
+	product := cm.Product{
 		IDProduct:     602755,
 		Name:          "Prismatic Shield (Red) (Regular)",
 		Number:        "MON092",
@@ -175,10 +177,10 @@ func TestProcessProductByName(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			mkm := &Index{
-				gameID:       GameFleshAndBlood,
+				gameID:       cm.GameFleshAndBlood,
 				exchangeRate: 1,
 				TCGBridge:    tt.bridge,
-				priceGuide: map[int]PriceGuide{
+				priceGuide: map[int]cm.PriceGuide{
 					602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
 				},
 			}
