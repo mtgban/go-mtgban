@@ -99,12 +99,17 @@ type AllCards struct {
 		Errata           []string          `json:"errata,omitempty"`
 		Clarifications   []string          `json:"clarifications,omitempty"`
 		Effects          []string          `json:"effects,omitempty"`
-		// The datastore spells a promotional printing's provenance in its
-		// own fields rather than in the name, which carries no
-		// parentheticals at all: where it was handed out, and the finish it
-		// was handed out in.
+		// Where a promotional printing was handed out, read for whether
+		// there was a promotion at all rather than for what it was called.
 		PromoSourceCategory string `json:"promoSourceCategory,omitempty"`
-		VarnishType         string `json:"varnishType,omitempty"`
+		// PromoTypes are the promotions themselves, as the builder distils
+		// them. It leaves out a varnish every card of a rarity wears, leaves
+		// out the "Promo" category that says only what the set says, and
+		// carries the foil treatment a printing is sold in, which upstream
+		// keeps in a field of its own and this package reads as a finish.
+		// None of that is worked out again here: a card it labelled with
+		// nothing is a card with no promotion.
+		PromoTypes []string `json:"promoTypes,omitempty"`
 		// PromoGrouping is the pool a promotional printing was numbered
 		// within, which storefronts write behind its number.
 		PromoGrouping    string `json:"promoGrouping,omitempty"`
@@ -210,23 +215,89 @@ func slugTags(tags []string) []string {
 // card names carries a parenthesis - so the tags come from the fields the
 // datastore keeps them in.
 //
-// The pool is among them because it is the only thing that tells two promos
-// of one card apart when they also share a number: the datastore numbers each
-// pool from one, so "Maleficent - Monstrous Dragon" is card 5 of both the P1
-// pool and the P3 one. Storefronts print it where a set card writes its set
-// size - "5/P3" against "87/204" - and the tag is what lets that be read.
-func promoTags(sourceCategory, varnishType, grouping string) []string {
-	var tags []string
-	if sourceCategory != "" {
-		tags = append(tags, sourceCategory)
+// The builder publishes the labels now, so where it does they are what this
+// returns: read off the same fields but read better, and carrying the foil
+// treatment besides. A datastore built before it published them is read the
+// old way, off the two fields it kept them in.
+//
+// The pool is added either way, because the builder leaves it out. It is
+// right to: a numbering pool is not a promotion. But it is also the only
+// thing that tells two promos of one card apart when they also share a
+// number - the datastore numbers each pool from one, so "Maleficent -
+// Monstrous Dragon" is card 5 of both the P1 pool and the P3 one - and
+// poolTiebreak reads it back off PromoTypes. Storefronts print it where a set
+// card writes its set size, "5/P3" against "87/204".
+// promoTypeLabels are the words behind a token. Decoration is this side's
+// job - the datastore publishes a slug and nothing else, and a slug cannot
+// give back the boundaries it dropped, so "verticalwave" reads as
+// "Verticalwave" to a title-caser and has to be written down instead.
+//
+// It is also the only place a promotion is renamed. The token stays what the
+// datastore published - it is the vocabulary a query is written in, and a
+// matcher answering to one spelling while the datastore publishes another
+// agree on nothing - so "serialnumbered" keeps its name and is merely shown
+// as "Serialized".
+//
+// Only the tokens a title-caser gets wrong are here. A single word it gets
+// right on its own, and so does an initialism the caser leaves alone
+// ("d23"), so listing those would only be a second place to keep them in
+// step with the first.
+var promoTypeLabels = map[string]string{
+	"calendarwave": "Calendar Wave",
+	// The two exclusives are a language's, and the card says which in a
+	// field of its own: "Chinese (S)" and "Japanese". The initials are what
+	// TCGplayer prints in the product name, and they are not worth showing
+	// a reader who has not seen the shelf they came off.
+	"csexclusive":       "Simplified Chinese Exclusive",
+	"disney100":         "Disney 100",
+	"disneycruise":      "Disney Cruise",
+	"disneyparksstores": "Disney Parks & Stores",
+	"freeform":          "Free Form",
+	"illumineersquest":  "Illumineer's Quest",
+	"jpexclusive":       "Japanese Exclusive",
+	"magicalplaces":     "Magical Places",
+	"mattehotfoil":      "Matte Hot Foil",
+	"organizedplay":     "Organized Play",
+	"rainbowhotfoil":    "Rainbow Hot Foil",
+	"rainbowpillars":    "Rainbow Pillars",
+	"seawave":           "Sea Wave",
+	"serialnumbered":    "Serialized",
+	"verticalwave":      "Vertical Wave",
+}
+
+// promoTypeLabel is the words a token is shown as, from the table above
+// where a title-caser cannot work them out.
+func promoTypeLabel(slug, published string) string {
+	if label, found := promoTypeLabels[slug]; found {
+		return label
 	}
-	if varnishType != "" {
-		tags = append(tags, varnishType)
+	// A tag that arrives with capitals of its own is shown as it is
+	// written: the promo pool is published as "PD1" rather than slugged,
+	// and a title-caser would only make it "Pd1".
+	if published != strings.ToLower(published) {
+		return published
 	}
-	if grouping != "" {
-		tags = append(tags, grouping)
+	return mtgmatcher.Title(slug)
+}
+
+func promoTags(published []string, grouping string) []string {
+	// The labels are the builder's, and nothing is worked out from the
+	// fields it read them off. It is the half that can see whether a varnish
+	// belongs to a rarity or to a printing, so a card it gave no label is a
+	// card with no promotion - not one to derive labels for, which is how
+	// HighGloss and "Promo" kept coming back after being dropped on purpose.
+	tags := published
+	if grouping == "" {
+		return tags
 	}
-	return tags
+	for _, tag := range tags {
+		if strings.EqualFold(tag, grouping) {
+			return tags
+		}
+	}
+	// The published list belongs to the card, so the pool goes onto a copy
+	// of it rather than onto whatever the slice still has room for.
+	return append(slices.Clone(tags), grouping)
 }
 
 func (ac *AllCards) newBackend() *mtgmatcher.Backend {
@@ -309,13 +380,13 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.FullName
 		}
-		for _, tag := range promoTags(card.PromoSourceCategory, card.VarnishType, card.PromoGrouping) {
+		for _, tag := range promoTags(card.PromoTypes, card.PromoGrouping) {
 			slug := mtgmatcher.PromoTypeSlug(tag)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
 			}
 			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = tag
+				b.PromoTypeLabels[slug] = promoTypeLabel(slug, tag)
 			}
 		}
 		b.AddName(card.FullName)
@@ -413,7 +484,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 			Printings:  printingsByName[mtgmatcher.Normalize(card.FullName)],
 			IsPromo:    promoPrintings[card.ID] || card.PromoSourceCategory != "" || promoSet || rarity == "promo",
-			PromoTypes: slugTags(promoTags(card.PromoSourceCategory, card.VarnishType, card.PromoGrouping)),
+			PromoTypes: slugTags(promoTags(card.PromoTypes, card.PromoGrouping)),
 
 			PlainNumber: Rules{}.PlainNumber(fmt.Sprintf("%d%s", card.Number, card.Variant)),
 		}
