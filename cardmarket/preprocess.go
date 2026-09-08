@@ -126,9 +126,9 @@ func Fallback(product *MKMProduct) (string, string) {
 	var numberMatched, numberMatchedFoil bool
 	for _, id := range ids {
 		co, _ := mtgmatcher.GetUUID(id)
-		// OriginalNumber is Number stripped of the ★/†-style decorations
+		// PlainNumber is Number stripped of the ★/†-style decorations
 		// that MKM numbers never carry
-		sameNumber := strings.EqualFold(co.OriginalNumber, product.Number)
+		sameNumber := strings.EqualFold(co.PlainNumber, product.Number)
 		if co.Etched {
 			switch co.SetCode {
 			// These set codes cannot be represented

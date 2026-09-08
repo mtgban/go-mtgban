@@ -383,8 +383,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: Rules{}.PlainNumber(ownNumber(card)),
-			SetTotal:       setTotal(card),
+			PlainNumber: Rules{}.PlainNumber(ownNumber(card)),
+			SetTotal:    setTotal(card),
 		}
 
 		// Register the uuid each printing prices under the name the game's
@@ -552,7 +552,7 @@ func ownNumber(card *DatastoreCard) string {
 
 // plainNumber is the collector number as a person writes it, which for this
 // game means without the zeros the catalog pads an ordinal out to three
-// digits with: card 1 is written "1", not "001". It is what OriginalNumber
+// digits with: card 1 is written "1", not "001". It is what PlainNumber
 // carries, the field a plain-number search matches, so "cn:1" reaches the
 // card that "cns:001" does. Number keeps the padding, being the number
 // exactly as written.
@@ -569,7 +569,7 @@ func ownNumber(card *DatastoreCard) string {
 // carries a bare ordinal at all.
 //
 // A number of nothing but zeros would trim away to nothing, and an empty
-// OriginalNumber is a card no plain-number search can reach, so it keeps
+// PlainNumber is a card no plain-number search can reach, so it keeps
 // what it had. No such number exists today; the guard is what makes the
 // trim safe to read.
 func plainNumber(number string) string {

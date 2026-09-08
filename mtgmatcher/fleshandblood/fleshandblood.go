@@ -468,7 +468,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: Rules{}.PlainNumber(card.Number),
+			PlainNumber: Rules{}.PlainNumber(card.Number),
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
 		if len(finishAliases) > 0 {

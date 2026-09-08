@@ -63,7 +63,7 @@ func TestFinishIdentity(t *testing.T) {
 	}
 }
 
-// TestPlainNumberIsPlain pins the contract every game keeps: OriginalNumber
+// TestPlainNumberIsPlain pins the contract every game keeps: PlainNumber
 // is Number with the game's decorations stripped, never anything wider. The
 // website's "cn:" search filters on it and "cns:" on Number.
 func TestPlainNumberIsPlain(t *testing.T) {
@@ -73,8 +73,8 @@ func TestPlainNumberIsPlain(t *testing.T) {
 		if co.Sealed || co.Number == "" {
 			continue
 		}
-		if len(co.OriginalNumber) > len(co.Number) {
-			t.Errorf("%s: OriginalNumber %q is wider than Number %q", uuid, co.OriginalNumber, co.Number)
+		if len(co.PlainNumber) > len(co.Number) {
+			t.Errorf("%s: PlainNumber %q is wider than Number %q", uuid, co.PlainNumber, co.Number)
 		}
 	}
 }

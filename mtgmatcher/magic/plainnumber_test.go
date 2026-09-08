@@ -41,7 +41,7 @@ func TestPlainNumberKeepsTheListNumbers(t *testing.T) {
 }
 
 // TestPlainNumberMatchesLoader pins the rules to the loader. PlainNumber is
-// what folds a number a person typed, and OriginalNumber is what it is
+// what folds a number a person typed, and the card carries what it is
 // compared against, so the two spelling a number differently finds nothing
 // and raises nothing - the failure a caller reads as "no such card".
 func TestPlainNumberMatchesLoader(t *testing.T) {
@@ -68,9 +68,9 @@ func TestPlainNumberMatchesLoader(t *testing.T) {
 		}
 		for _, card := range set.Cards {
 			plain := Rules{}.PlainNumber(card.Number)
-			if plain != card.OriginalNumber {
-				t.Errorf("%s %q: PlainNumber is %q, OriginalNumber is %q",
-					code, card.Number, plain, card.OriginalNumber)
+			if plain != card.PlainNumber {
+				t.Errorf("%s %q: the rule folds to %q, the card carries %q",
+					code, card.Number, plain, card.PlainNumber)
 			}
 			// Folding a number already plain has nothing left to do.
 			again := Rules{}.PlainNumber(plain)

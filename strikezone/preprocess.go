@@ -389,15 +389,15 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 // hasSeveralDrops reports whether the set files a card under more than one
 // drop. The suffixes a number can end on - the star of a foil twin, the phi
 // of a step-and-compleat - mark twins the wording picks, not drops of their
-// own, and OriginalNumber is the number with all of them already stripped.
+// own, and PlainNumber is the number with all of them already stripped.
 func hasSeveralDrops(cardName string) bool {
 	cards := mtgmatcher.MatchInSet(cardName, "SLD")
 	if len(cards) < 2 {
 		return false
 	}
-	first := cards[0].OriginalNumber
+	first := cards[0].PlainNumber
 	for _, card := range cards[1:] {
-		if card.OriginalNumber != first {
+		if card.PlainNumber != first {
 			return true
 		}
 	}

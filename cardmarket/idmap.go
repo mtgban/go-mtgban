@@ -139,7 +139,7 @@ func (mkm *Index) resolveUUIDs(product *MKMProduct, uuids []string) (string, str
 		if err != nil {
 			continue
 		}
-		sameNumber := strings.EqualFold(co.OriginalNumber, product.Number)
+		sameNumber := strings.EqualFold(co.PlainNumber, product.Number)
 		if co.Foil || co.Etched {
 			if sameNumber && !foilMatched {
 				foil = append([]string{uuid}, foil...)

@@ -66,7 +66,7 @@ type GameRules interface {
 	// normalized name and let the lookup fail.
 	CanonicalFinish(name string) string
 	// PlainNumber reduces a collector number to the one a person writes,
-	// which is the number the loader stores as Card.OriginalNumber: Magic
+	// which is the number the loader stores as Card.PlainNumber: Magic
 	// drops the mark and the letters that name a printing, Pokemon the zeros
 	// its catalog pads an ordinal with, Riftbound its star, Lorcana its
 	// variant letter, and a game that writes its numbers plainly hands the
