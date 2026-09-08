@@ -55,10 +55,12 @@ func TestFinishPromotion(t *testing.T) {
 
 		seen := map[string]string{}
 		for key, target := range co.FoilUUIDs {
-			if other, found := seen[target]; found {
+			if other, found := seen[target]; found && !coarseFoilPair(key, other) {
 				t.Errorf("%s: finishes %q and %q share uuid %s", uuid, other, key, target)
 			}
-			seen[target] = key
+			if _, found := seen[target]; !found {
+				seen[target] = key
+			}
 
 			targetCo, err := b.GetUUID(target)
 			if err != nil {
@@ -169,4 +171,23 @@ func TestVendorFinishNames(t *testing.T) {
 			withSubType, specialOnly, plainFoil)
 	}
 	t.Logf("%d sub-typed, %d special-foil-only, %d plain-foil printings", withSubType, specialOnly, plainFoil)
+}
+
+// coarseFoilPair reports whether two keys sharing a uuid are the bare foil
+// flag and the precise finish that answers it. A card sold only in a
+// treatment has no standard foil printing, so the flag has to land on the
+// treatment - Pokemon files the same key the same way, on 36,497 printings.
+// The named form is not answered by it: FinishUUID refuses a key whose
+// printing is sold in another finish. Any other pair sharing a uuid is two
+// sku prices under one printing, which is what this guards.
+func coarseFoilPair(a, b string) bool {
+	if a == b {
+		return false
+	}
+	for _, pair := range [2][2]string{{a, b}, {b, a}} {
+		if pair[0] == mtgmatcher.FinishFoil && pair[1] != mtgmatcher.FinishNonfoil {
+			return true
+		}
+	}
+	return false
 }
