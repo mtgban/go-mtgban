@@ -20,10 +20,10 @@ const siblingSetFixture = `{
 		"MVP1-ENS": {"name": "The Dark Side of Dimensions Movie Pack: Secret Edition", "releaseDate": "2018-03-09"}
 	},
 	"cards": [
-		{"id": "mvp1-en054_unl", "name": "Dark Magician", "number": "MVP1-EN054", "setCode": "MVP1", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 120956}},
-		{"id": "mvp1-eng54_unl", "name": "Dark Magician", "number": "MVP1-ENG54", "setCode": "MVP1-ENG", "rarity": "Gold Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 126694}},
-		{"id": "mvp1-engv3_unl", "name": "Dark Magician", "number": "MVP1-ENGV3", "setCode": "MVP1-ENG", "rarity": "Gold Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 126695}},
-		{"id": "mvp1-ens54_unl", "name": "Dark Magician", "number": "MVP1-ENS54", "setCode": "MVP1-ENS", "rarity": "Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 207865}}
+		{"id": "mvp1-en054_unlimited", "name": "Dark Magician", "number": "MVP1-EN054", "setCode": "MVP1", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 120956}},
+		{"id": "mvp1-eng54_unlimited", "name": "Dark Magician", "number": "MVP1-ENG54", "setCode": "MVP1-ENG", "rarity": "Gold Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 126694}},
+		{"id": "mvp1-engv3_unlimited", "name": "Dark Magician", "number": "MVP1-ENGV3", "setCode": "MVP1-ENG", "rarity": "Gold Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 126695}},
+		{"id": "mvp1-ens54_unlimited", "name": "Dark Magician", "number": "MVP1-ENS54", "setCode": "MVP1-ENS", "rarity": "Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 207865}}
 	]
 }`
 
@@ -43,10 +43,10 @@ func TestSiblingSetNamed(t *testing.T) {
 		variation string
 		want      string
 	}{
-		{"the family's own printing", "MVP1-EN054 Ultra Rare", "mvp1-en054_unl"},
-		{"the gold edition it is sold beside", "MVP1-ENG54 Gold Rare", "mvp1-eng54_unl"},
-		{"its secret rare, numbered apart again", "MVP1-ENGV3 Gold Secret Rare", "mvp1-engv3_unl"},
-		{"and the secret edition", "MVP1-ENS54 Secret Rare", "mvp1-ens54_unl"},
+		{"the family's own printing", "MVP1-EN054 Ultra Rare", "mvp1-en054_unlimited"},
+		{"the gold edition it is sold beside", "MVP1-ENG54 Gold Rare", "mvp1-eng54_unlimited"},
+		{"its secret rare, numbered apart again", "MVP1-ENGV3 Gold Secret Rare", "mvp1-engv3_unlimited"},
+		{"and the secret edition", "MVP1-ENS54 Secret Rare", "mvp1-ens54_unlimited"},
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {

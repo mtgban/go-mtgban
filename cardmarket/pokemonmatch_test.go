@@ -22,9 +22,9 @@ const pokemonDatastore = `{
  "game": "pokemon",
  "sets": {"JU": {"abbreviation": "JU", "name": "Jungle", "releaseDate": "1999-06-16"}, "PR-1451": {"abbreviation": "PR", "name": "XY Promos", "releaseDate": "2013-12-16", "type": "promo"}},
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "1st Edition", "id": "39-64_45142_1e", "name": "Marowak", "number": "39/64", "rarity": "Uncommon", "setCode": "JU"},
-  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "Unlimited", "id": "39-64_45142_unl", "name": "Marowak", "number": "39/64", "rarity": "Uncommon", "setCode": "JU"},
-  {"externalLinks": {"tcgPlayerId": 114004}, "finish": "Holofoil", "id": "xy95_114004_holo", "name": "Pikachu", "number": "XY95", "rarity": "Promo", "setCode": "PR-1451"},
+  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "1st Edition", "id": "39-64_45142_1stedition", "name": "Marowak", "number": "39/64", "rarity": "Uncommon", "setCode": "JU"},
+  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "Unlimited", "id": "39-64_45142_unlimited", "name": "Marowak", "number": "39/64", "rarity": "Uncommon", "setCode": "JU"},
+  {"externalLinks": {"tcgPlayerId": 114004}, "finish": "Holofoil", "id": "xy95_114004_holofoil", "name": "Pikachu", "number": "XY95", "rarity": "Promo", "setCode": "PR-1451"},
   {"externalLinks": {"tcgPlayerId": 268261}, "finish": "Normal", "id": "98-xy-p_268261", "name": "Mega Tokyo's Pikachu", "number": "98/XY-P", "rarity": "Promo", "setCode": "PR-1451"}
  ]
 }`
@@ -49,7 +49,7 @@ func TestMatchProductForeignExpansion(t *testing.T) {
 	for _, tt := range []struct {
 		expansion, name, number, want string
 	}{
-		{"Jungle", "Marowak", "39", "39-64_45142_unl"},
+		{"Jungle", "Marowak", "39", "39-64_45142_unlimited"},
 		{"Pokémon Jungle", "Marowak", "39", ""},
 		{"Magma Gang VS Aqua Gang: Double Crisis", "Marowak", "39", ""},
 		{"XY Promos", "Pikachu", "", ""},
@@ -153,8 +153,8 @@ const letteredDatastore = `{
   "PR-1938": {"abbreviation": "PR", "name": "Alternate Art Promos", "releaseDate": "2014-08-13", "type": "promo"}
  },
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 185137}, "finish": "Reverse Holofoil", "id": "125a-145_185137_reverse", "name": "Field Blower", "number": "125a", "originalName": "Field Blower - 125a/145 (Pokemon League)", "promoTypes": ["pokemon league"], "rarity": "Promo", "setCode": "PR-1539", "total": "145", "type": "Item", "variant": "Pokemon League"},
-  {"externalLinks": {"tcgPlayerId": 148345}, "finish": "Holofoil", "id": "xy198a_148345_holo", "name": "M Camerupt EX", "number": "XY198a", "originalName": "M Camerupt EX - XY198a", "rarity": "Promo", "setCode": "PR-1938", "type": "Fire"}
+  {"externalLinks": {"tcgPlayerId": 185137}, "finish": "Reverse Holofoil", "id": "125a-145_185137_reverseholofoil", "name": "Field Blower", "number": "125a", "originalName": "Field Blower - 125a/145 (Pokemon League)", "promoTypes": ["pokemon league"], "rarity": "Promo", "setCode": "PR-1539", "total": "145", "type": "Item", "variant": "Pokemon League"},
+  {"externalLinks": {"tcgPlayerId": 148345}, "finish": "Holofoil", "id": "xy198a_148345_holofoil", "name": "M Camerupt EX", "number": "XY198a", "originalName": "M Camerupt EX - XY198a", "rarity": "Promo", "setCode": "PR-1938", "type": "Fire"}
  ]
 }`
 
@@ -179,14 +179,14 @@ func TestMatchPokemonLettered(t *testing.T) {
 			// league programme's.
 			desc:    "a league promo reaches League & Championship Cards",
 			product: cm.Product{Name: "Field Blower", Number: "125a", ExpansionName: "SM - Guardians Rising"},
-			wantID:  "125a-145_185137_reverse",
+			wantID:  "125a-145_185137_reverseholofoil",
 		},
 		{
 			// The promo shelf writes its programme's prefix onto the
 			// number, so the letter test has to see past it.
 			desc:    "a prefixed number still reads as lettered",
 			product: cm.Product{Name: "M Camerupt EX", Number: "198a", ExpansionName: "XY Black Star Promos"},
-			wantID:  "xy198a_148345_holo",
+			wantID:  "xy198a_148345_holofoil",
 		},
 		{
 			// A plain number names no lettered promo, and the shelf

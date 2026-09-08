@@ -598,7 +598,10 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// candidate appears exactly once, and output() picks the finish
 		// afterwards. The base id's own underscores rule out the first-
 		// underscore cut riftbound uses, but the foil suffix is fixed.
-		base := strings.TrimSuffix(uuid, "_foil")
+		base := co.Card.Identifiers["tcgplayerProductId"]
+		if base == "" {
+			base = trimFinishSuffix(uuid, co.Finish)
+		}
 		if seen[base] {
 			continue
 		}

@@ -870,7 +870,7 @@ func letteredPromo(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbers 
 			}
 			key := co.Card.Identifiers["tcgplayerProductId"]
 			if key == "" {
-				key = trimFinishSuffix(uuid)
+				key = trimFinishSuffix(uuid, co.Finish)
 			}
 			if seen[key] {
 				continue
@@ -902,7 +902,7 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		// uuid out as the folding key.
 		key := card.Identifiers["tcgplayerProductId"]
 		if key == "" {
-			key = trimFinishSuffix(uuid)
+			key = trimFinishSuffix(uuid, co.Finish)
 		}
 		if seen[key] {
 			continue

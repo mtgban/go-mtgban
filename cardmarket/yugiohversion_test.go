@@ -21,9 +21,9 @@ const yugiohVersionDatastore = `{
   "WI26": {"abbreviation": "WI26", "name": "Winner's Pack 2026-2027", "releaseDate": "2026-07-15"}
  },
  "cards": [
-  {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 708831}, "finish": "Unlimited", "id": "wi26-en001_708831_unl", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["ots stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "OTS Stamp"},
-  {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 710112}, "finish": "Unlimited", "id": "wi26-en001_710112_unl", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["regional qualifier stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "Regional Qualifier Stamp"},
-  {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 710152}, "finish": "Unlimited", "id": "wi26-en001_710152_unl", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["judge stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "Judge Stamp"}
+  {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 708831}, "finish": "Unlimited", "id": "wi26-en001_708831_unlimited", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["ots stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "OTS Stamp"},
+  {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 710112}, "finish": "Unlimited", "id": "wi26-en001_710112_unlimited", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["regional qualifier stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "Regional Qualifier Stamp"},
+  {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 710152}, "finish": "Unlimited", "id": "wi26-en001_710152_unlimited", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["judge stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "Judge Stamp"}
  ]
 }`
 
@@ -43,9 +43,9 @@ func TestYugiohVersionVariants(t *testing.T) {
 		name string
 		want string
 	}{
-		{"Ghost Ogre & Snow Rabbit (V.1 - Ultra Rare)", "wi26-en001_708831_unl"},
-		{"Ghost Ogre & Snow Rabbit (V.2 - Ultra Rare)", "wi26-en001_710112_unl"},
-		{"Ghost Ogre & Snow Rabbit (V.3 - Ultra Rare)", "wi26-en001_710152_unl"},
+		{"Ghost Ogre & Snow Rabbit (V.1 - Ultra Rare)", "wi26-en001_708831_unlimited"},
+		{"Ghost Ogre & Snow Rabbit (V.2 - Ultra Rare)", "wi26-en001_710112_unlimited"},
+		{"Ghost Ogre & Snow Rabbit (V.3 - Ultra Rare)", "wi26-en001_710152_unlimited"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			id, err := mkm.matchYugioh(&cm.Product{

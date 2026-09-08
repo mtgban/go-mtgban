@@ -26,18 +26,18 @@ const qualifiedNameFixture = `{
 		"CRV":   {"name": "Cybernetic Revolution", "releaseDate": "2005-08-17"}
 	},
 	"cards": [
-		{"id": "lcgx-en001_56799_unl", "name": "Elemental HERO Avian", "number": "LCGX-EN001", "setCode": "LC02", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 56799}},
-		{"id": "lcgx-en002_56800_unl", "name": "Elemental HERO Avian (Alternate Art)", "number": "LCGX-EN002", "setCode": "LC02", "rarity": "Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 56800}},
-		{"id": "lcgx-en182_56745_unl", "name": "Cyber End Dragon (Alternate Art)", "number": "LCGX-EN182", "setCode": "LC02", "rarity": "Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 56745}},
-		{"id": "crv-en036_36001_1e", "name": "Cyber End Dragon", "number": "CRV-EN036", "setCode": "CRV", "rarity": "Ultra Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 36001}},
-		{"id": "ss03-ena22_196260_1e", "name": "White Elephant's Gift (A)", "number": "SS03-ENA22", "setCode": "SS03", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 196260}},
-		{"id": "ss03-enb24_196261_1e", "name": "White Elephant's Gift", "number": "SS03-ENB24", "setCode": "SS03", "rarity": "Common", "variant": "B", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 196261}},
-		{"id": "sgx1-ena12_286001_1e", "name": "Polymerization (A)", "number": "SGX1-ENA12", "setCode": "G2970", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 286001}},
-		{"id": "sgx1-enc12_286002_1e", "name": "Polymerization", "number": "SGX1-ENC12", "setCode": "G2970", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 286002}},
-		{"id": "sbc1-ena01_512195_1e", "name": "Dark Magician (A)", "number": "SBC1-ENA01", "setCode": "SBC1", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512195}},
-		{"id": "sbc1-ena01_512196_1e", "name": "Dark Magician (A)", "number": "SBC1-ENA01", "setCode": "SBC1", "rarity": "Secret Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512196}},
-		{"id": "sbc1-eng01_512387_1e", "name": "Dark Magician", "number": "SBC1-ENG01", "setCode": "SBC1", "rarity": "Secret Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512387}},
-		{"id": "sbc1-eng10_512388_1e", "name": "Dark Magician", "number": "SBC1-ENG10", "setCode": "SBC1", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512388}}
+		{"id": "lcgx-en001_56799_unlimited", "name": "Elemental HERO Avian", "number": "LCGX-EN001", "setCode": "LC02", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 56799}},
+		{"id": "lcgx-en002_56800_unlimited", "name": "Elemental HERO Avian (Alternate Art)", "number": "LCGX-EN002", "setCode": "LC02", "rarity": "Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 56800}},
+		{"id": "lcgx-en182_56745_unlimited", "name": "Cyber End Dragon (Alternate Art)", "number": "LCGX-EN182", "setCode": "LC02", "rarity": "Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 56745}},
+		{"id": "crv-en036_36001_1stedition", "name": "Cyber End Dragon", "number": "CRV-EN036", "setCode": "CRV", "rarity": "Ultra Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 36001}},
+		{"id": "ss03-ena22_196260_1stedition", "name": "White Elephant's Gift (A)", "number": "SS03-ENA22", "setCode": "SS03", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 196260}},
+		{"id": "ss03-enb24_196261_1stedition", "name": "White Elephant's Gift", "number": "SS03-ENB24", "setCode": "SS03", "rarity": "Common", "variant": "B", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 196261}},
+		{"id": "sgx1-ena12_286001_1stedition", "name": "Polymerization (A)", "number": "SGX1-ENA12", "setCode": "G2970", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 286001}},
+		{"id": "sgx1-enc12_286002_1stedition", "name": "Polymerization", "number": "SGX1-ENC12", "setCode": "G2970", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 286002}},
+		{"id": "sbc1-ena01_512195_1stedition", "name": "Dark Magician (A)", "number": "SBC1-ENA01", "setCode": "SBC1", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512195}},
+		{"id": "sbc1-ena01_512196_1stedition", "name": "Dark Magician (A)", "number": "SBC1-ENA01", "setCode": "SBC1", "rarity": "Secret Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512196}},
+		{"id": "sbc1-eng01_512387_1stedition", "name": "Dark Magician", "number": "SBC1-ENG01", "setCode": "SBC1", "rarity": "Secret Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512387}},
+		{"id": "sbc1-eng10_512388_1stedition", "name": "Dark Magician", "number": "SBC1-ENG10", "setCode": "SBC1", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512388}}
 	]
 }`
 
@@ -60,61 +60,61 @@ func TestQualifiedNameAdoptedByNumber(t *testing.T) {
 			desc: "the number picks the decorated sibling",
 			in: mtgmatcher.InputCard{Name: "Elemental HERO Avian", Variation: "002sec Secret Rare",
 				Edition: "Legendary Collection 2: Mega Pack"},
-			want: "lcgx-en002_56800_unl",
+			want: "lcgx-en002_56800_unlimited",
 		},
 		{
 			desc: "and leaves the plain one at its own number",
 			in: mtgmatcher.InputCard{Name: "Elemental HERO Avian", Variation: "001 Common",
 				Edition: "Legendary Collection 2: Mega Pack"},
-			want: "lcgx-en001_56799_unl",
+			want: "lcgx-en001_56799_unlimited",
 		},
 		{
 			desc: "a deck letter kept inside the name reads the same way",
 			in: mtgmatcher.InputCard{Name: "White Elephant's Gift", Variation: "022 Common",
 				Edition: "Speed Duel Decks: Ultimate Predators"},
-			want: "ss03-ena22_196260_1e",
+			want: "ss03-ena22_196260_1stedition",
 		},
 		{
 			desc: "the sibling spelled plainly keeps its own number",
 			in: mtgmatcher.InputCard{Name: "White Elephant's Gift", Variation: "024 Common",
 				Edition: "Speed Duel Decks: Ultimate Predators"},
-			want: "ss03-enb24_196261_1e",
+			want: "ss03-enb24_196261_1stedition",
 		},
 		{
 			desc: "a set printing the bare name at that very number keeps it",
 			in: mtgmatcher.InputCard{Name: "Polymerization", Variation: "012 Common",
 				Edition: "Speed Duel GX: Duel Academy Box"},
-			want: "sgx1-enc12_286002_1e",
+			want: "sgx1-enc12_286002_1stedition",
 		},
 		{
 			desc: "a full number the set spells exactly reaches its own deck letter",
 			in: mtgmatcher.InputCard{Name: "Dark Magician (Purple Armor)", Variation: "SBC1-ENA01 Secret Rare",
 				Edition: "Speed Duel: Streets of Battle City"},
-			want: "sbc1-ena01_512196_1e",
+			want: "sbc1-ena01_512196_1stedition",
 		},
 		{
 			desc: "written bare it adopts the same printing",
 			in: mtgmatcher.InputCard{Name: "Dark Magician", Variation: "SBC1-ENA01 Common",
 				Edition: "Speed Duel: Streets of Battle City"},
-			want: "sbc1-ena01_512195_1e",
+			want: "sbc1-ena01_512195_1stedition",
 		},
 		{
 			desc: "while the bare name at its own exact number keeps it",
 			in: mtgmatcher.InputCard{Name: "Dark Magician (Red Armor)", Variation: "SBC1-ENG01 Secret Rare",
 				Edition: "Speed Duel: Streets of Battle City"},
-			want: "sbc1-eng01_512387_1e",
+			want: "sbc1-eng01_512387_1stedition",
 		},
 		{
 			desc: "the decorated name still answers to itself",
 			in: mtgmatcher.InputCard{Name: "Cyber End Dragon (Alternate Art)", Variation: "182sec Secret Rare",
 				Edition: "Legendary Collection 2: Mega Pack"},
-			want: "lcgx-en182_56745_unl",
+			want: "lcgx-en182_56745_unlimited",
 		},
 		{
 			desc: "an input naming no number is never renamed",
 			in: mtgmatcher.InputCard{Name: "Cyber End Dragon", Variation: "",
 				Edition: "Legendary Collection 2: Mega Pack"},
-			want: "crv-en036_36001_1e",
+			want: "crv-en036_36001_1stedition",
 		},
 		{
 			desc: "and neither is one naming no set",
@@ -126,7 +126,7 @@ func TestQualifiedNameAdoptedByNumber(t *testing.T) {
 			desc: "the number reaches it once the set is named",
 			in: mtgmatcher.InputCard{Name: "Cyber End Dragon", Variation: "182sec Secret Rare",
 				Edition: "Legendary Collection 2: Mega Pack"},
-			want: "lcgx-en182_56745_unl",
+			want: "lcgx-en182_56745_unlimited",
 		},
 	}
 

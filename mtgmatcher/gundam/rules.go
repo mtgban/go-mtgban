@@ -196,7 +196,10 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// candidate appears once, and let output() pick the finish. The
 		// base id carries underscores of its own, so the fixed suffix is
 		// what is trimmed rather than the first underscore.
-		base := strings.TrimSuffix(uuid, finishSuffix)
+		base := co.Card.Identifiers["tcgplayerProductId"]
+		if base == "" {
+			base = trimFinishSuffix(uuid, co.Finish)
+		}
 		if seen[base] {
 			continue
 		}

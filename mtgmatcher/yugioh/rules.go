@@ -1038,7 +1038,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// as the folding key.
 		key := card.Identifiers["tcgplayerProductId"]
 		if key == "" {
-			key = trimRunSuffix(uuid)
+			key = trimRunSuffix(uuid, co.Finish)
 		}
 		if seen[key] {
 			continue

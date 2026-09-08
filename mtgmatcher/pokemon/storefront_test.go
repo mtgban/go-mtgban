@@ -23,7 +23,7 @@ func TestPromoPseudoExpansionAlias(t *testing.T) {
 			"14-53_87417"},
 		{"mcdonald's collection names its promo set", mtgmatcher.InputCard{
 			Name: "Froakie", Edition: "McDonald's Collection 25th Anniversary", Variation: "022h Holo Promo | 022/025"},
-			"022-025_232336_holo"},
+			"022-025_232336_holofoil"},
 		// The SV promos are absent from both tables on purpose: the set
 		// pairs printings only an id can tell apart, and replayed against
 		// the products whose TCGplayer id names the answer the flip lands
@@ -90,7 +90,7 @@ func TestPooledBlisterDeckHeading(t *testing.T) {
 			"045-094_664005"},
 		{"the cosmos holo of an ex box lands with the miscellaneous cards", mtgmatcher.InputCard{
 			Name: "Maschiff", Edition: "Theme Deck & Blisters Exclusives", Variation: "146 Cosmos Holo | 142/193"},
-			"142-193_544444_holo"},
+			"142-193_544444_holofoil"},
 		{"a card the pool does not carry refuses", mtgmatcher.InputCard{
 			Name: "Chansey", Edition: "Theme Deck & Blisters Exclusives", Variation: "003 Cosmos Holo | 003/102"},
 			""},
@@ -139,16 +139,16 @@ func TestVersionWording(t *testing.T) {
 		{"a stamp wording still reaches a stamped sibling", mtgmatcher.InputCard{
 			Name: "Buddy-Buddy Poffin", Edition: "League Promos", Variation: "144staff STAFF | Reverse Holo 144",
 			Finish: "Reverse Holofoil", Foil: true},
-			"144-162_638139_reverse"},
+			"144-162_638139_reverseholofoil"},
 		{"a sequin wording reaches the general mills printing", mtgmatcher.InputCard{
 			Name: "Jangmo-o", Edition: "SM Black Star Promos", Variation: "SM40sq Sequin Holo Promo | SM40"},
-			"sm40_161466_holo"},
+			"sm40_161466_holofoil"},
 		{"a cosmos wording refuses a printing that cannot be one", mtgmatcher.InputCard{
 			Name: "Fezandipiti", Edition: "Theme Deck & Blisters Exclusives", Variation: "096 Cosmos Holo | 096/167"},
 			""},
 		{"a cosmos wording keeps a printing selling the holo", mtgmatcher.InputCard{
 			Name: "Eevee", Edition: "Wizards Black Star Promos", Variation: "011 Cosmos Holo 11"},
-			"11-53_85074_holo"},
+			"11-53_85074_holofoil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in := tt.in
@@ -209,7 +209,7 @@ func TestStorefrontNameTails(t *testing.T) {
 			"21-53_87557"},
 		{"the delta species tail strips", mtgmatcher.InputCard{
 			Name: "Deoxys δ Delta Species", Edition: "POP Series 4", Variation: "02/17h Holo Promo | 2/17"},
-			"002-017_84765_holo"},
+			"002-017_84765_holofoil"},
 		{"a bracketed letter strips", mtgmatcher.InputCard{
 			Name: "Unown [J]", Edition: "Wizards Black Star Promos", Variation: "038 38"},
 			"38-53_90215"},
@@ -264,7 +264,7 @@ func TestUnresolvedEditionDoesNotWiden(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", in, err)
 	}
-	if id != "swsh088_234276_holo" {
+	if id != "swsh088_234276_holofoil" {
 		t.Errorf("Match(%v) = %s (%v), want swsh088_234276_holo", in, id, b.UUIDs[id])
 	}
 }

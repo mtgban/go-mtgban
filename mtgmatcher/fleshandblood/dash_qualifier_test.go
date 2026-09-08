@@ -20,11 +20,11 @@ const dashQualifierFixture = `{
 		"MON": {"name": "Monarch", "releaseDate": "2021-05-07"}
 	},
 	"cards": [
-		{"id": "arc036_225629_unl", "name": "Hyper Driver", "number": "ARC036", "setCode": "ARC", "rarity": "Rare", "finish": "Normal", "image": "x"},
-		{"id": "dyn110_452817_unl", "name": "Hyper Driver (Red)", "number": "DYN110", "setCode": "DYN", "rarity": "Rare", "finish": "Normal", "image": "x"},
-		{"id": "mon075_237817_unl", "name": "Impenetrable Belief (Red)", "number": "MON075", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"},
-		{"id": "mon076_237818_unl", "name": "Impenetrable Belief (Yellow)", "number": "MON076", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"},
-		{"id": "mon077_237819_unl", "name": "Impenetrable Belief (Blue)", "number": "MON077", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"}
+		{"id": "arc036_225629_unlimited", "name": "Hyper Driver", "number": "ARC036", "setCode": "ARC", "rarity": "Rare", "finish": "Normal", "image": "x"},
+		{"id": "dyn110_452817_unlimited", "name": "Hyper Driver (Red)", "number": "DYN110", "setCode": "DYN", "rarity": "Rare", "finish": "Normal", "image": "x"},
+		{"id": "mon075_237817_unlimited", "name": "Impenetrable Belief (Red)", "number": "MON075", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"},
+		{"id": "mon076_237818_unlimited", "name": "Impenetrable Belief (Yellow)", "number": "MON076", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"},
+		{"id": "mon077_237819_unlimited", "name": "Impenetrable Belief (Blue)", "number": "MON077", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"}
 	]
 }`
 
@@ -49,28 +49,28 @@ func TestDashSpelledQualifier(t *testing.T) {
 			desc:       "a dashed qualifier drops onto the unqualified printing its number names",
 			dash:       mtgmatcher.InputCard{Name: "Hyper Driver - Red", Variation: "ARC036", Edition: "Arcane Rising"},
 			paren:      mtgmatcher.InputCard{Name: "Hyper Driver (Red)", Variation: "ARC036", Edition: "Arcane Rising"},
-			want:       "arc036_225629_unl",
+			want:       "arc036_225629_unlimited",
 			wantRename: "Hyper Driver",
 		},
 		{
 			desc:       "and keeps the qualified printing where the number names that one",
 			dash:       mtgmatcher.InputCard{Name: "Hyper Driver - Red", Variation: "DYN110", Edition: "Dynasty"},
 			paren:      mtgmatcher.InputCard{Name: "Hyper Driver (Red)", Variation: "DYN110", Edition: "Dynasty"},
-			want:       "dyn110_452817_unl",
+			want:       "dyn110_452817_unlimited",
 			wantRename: "Hyper Driver (Red)",
 		},
 		{
 			desc:       "the number outranks the storefront's own pitch, as it always has",
 			dash:       mtgmatcher.InputCard{Name: "Impenetrable Belief - Red", Variation: "MON076", Edition: "Monarch"},
 			paren:      mtgmatcher.InputCard{Name: "Impenetrable Belief (Red)", Variation: "MON076", Edition: "Monarch"},
-			want:       "mon076_237818_unl",
+			want:       "mon076_237818_unlimited",
 			wantRename: "Impenetrable Belief (Yellow)",
 		},
 		{
 			desc:       "a dashed name agreeing with its number is left where it is",
 			dash:       mtgmatcher.InputCard{Name: "Impenetrable Belief - Blue", Variation: "MON077", Edition: "Monarch"},
 			paren:      mtgmatcher.InputCard{Name: "Impenetrable Belief (Blue)", Variation: "MON077", Edition: "Monarch"},
-			want:       "mon077_237819_unl",
+			want:       "mon077_237819_unlimited",
 			wantRename: "Impenetrable Belief (Blue)",
 		},
 	}

@@ -67,16 +67,16 @@ func TestCatalogFabShapes(t *testing.T) {
 		p    CatalogProduct
 		want string
 	}{
-		{"gold foil", product("SGL-FAB-PRM-FAB_066-ENG", "Talismanic Lens", "Promotional Cards", "Gold Foil", "Alt Foil"), "fab066_275543_cold"},
-		{"promo finish misnamed", product("SGL-FAB-PRM-FAB_189-ENC", "Boast", "Promotional Cards", "Cold Foil", "Alt Foil"), "fab189_580618_rainbow"},
-		{"promo marvel misnamed", product("SGL-FAB-PRM-TNP_001-ENC", "Wild Ride (Red)", "Promotional Cards", "Cold Foil", "Alt Foil"), "tnp001_692575_rainbow"},
-		{"art card piece", product("SGL-FAB-ANQ-P08-ENR", "Eye of Ophidia Art Card", "Antiquity Pack", "Rainbow Foil", "Foil"), "688788_rainbow"},
-		{"art card of the next picture", product("SGL-FAB-ANQ-P14-ENR", "Heart of Fyendal Art Card", "Antiquity Pack", "Rainbow Foil", "Foil"), "688794_rainbow"},
-		{"pitch-labelled base", product("SGL-FAB-HNT-155-ENR", "Drop of Dragon Blood", "The Hunted", "Rainbow Foil", "Foil"), "hnt155_611179_rainbow"},
-		{"marker finds the extended art past the pitch label", product("SGL-FAB-HNT2-155-ENR", "Drop of Dragon Blood", "The Hunted", "Rainbow Foil", "Foil"), "hnt155_614550_rainbow"},
+		{"gold foil", product("SGL-FAB-PRM-FAB_066-ENG", "Talismanic Lens", "Promotional Cards", "Gold Foil", "Alt Foil"), "fab066_275543_coldfoil"},
+		{"promo finish misnamed", product("SGL-FAB-PRM-FAB_189-ENC", "Boast", "Promotional Cards", "Cold Foil", "Alt Foil"), "fab189_580618_rainbowfoil"},
+		{"promo marvel misnamed", product("SGL-FAB-PRM-TNP_001-ENC", "Wild Ride (Red)", "Promotional Cards", "Cold Foil", "Alt Foil"), "tnp001_692575_rainbowfoil"},
+		{"art card piece", product("SGL-FAB-ANQ-P08-ENR", "Eye of Ophidia Art Card", "Antiquity Pack", "Rainbow Foil", "Foil"), "688788_rainbowfoil"},
+		{"art card of the next picture", product("SGL-FAB-ANQ-P14-ENR", "Heart of Fyendal Art Card", "Antiquity Pack", "Rainbow Foil", "Foil"), "688794_rainbowfoil"},
+		{"pitch-labelled base", product("SGL-FAB-HNT-155-ENR", "Drop of Dragon Blood", "The Hunted", "Rainbow Foil", "Foil"), "hnt155_611179_rainbowfoil"},
+		{"marker finds the extended art past the pitch label", product("SGL-FAB-HNT2-155-ENR", "Drop of Dragon Blood", "The Hunted", "Rainbow Foil", "Foil"), "hnt155_614550_rainbowfoil"},
 		{"misspelt name", product("SGL-FAB-PEN-190-ENN", "Deep Recess of Existence", "Compendium of Rathe", "Non-foil", "Non-foil"), "pen190_676395"},
-		{"misspelt number", product("SGL-FAB-APS-056-ENR", "Attention Grabbers", "Armory Deck: Pleiades", "Rainbow Foil", "Foil"), "aps006_653806_rainbow"},
-		{"lettered marvels", product("SGL-FAB-MPG2-112b-ENC", "Seismic Surge", "Mastery Pack Guardian", "Cold Foil", "Alt Foil"), "mpg112_647746_cold"},
+		{"misspelt number", product("SGL-FAB-APS-056-ENR", "Attention Grabbers", "Armory Deck: Pleiades", "Rainbow Foil", "Foil"), "aps006_653806_rainbowfoil"},
+		{"lettered marvels", product("SGL-FAB-MPG2-112b-ENC", "Seismic Surge", "Mastery Pack Guardian", "Cold Foil", "Alt Foil"), "mpg112_647746_coldfoil"},
 	} {
 		got, err := resolveProduct(GameFleshAndBlood, tt.p)
 		if err != nil {

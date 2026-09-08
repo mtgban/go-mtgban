@@ -24,10 +24,10 @@ func TestNameRespelling(t *testing.T) {
 	}{
 		{"the catalog's spelling of the Pokemon reaches it",
 			mtgmatcher.InputCard{Name: "Dark Exeggcutor", Edition: "Neo Destiny", Variation: "033 033/105"},
-			"033-105_84593_unl"},
+			"033-105_84593_unlimited"},
 		{"and so does the Pokemon's own",
 			mtgmatcher.InputCard{Name: "Dark Exeggutor", Edition: "Neo Destiny", Variation: "033 033/105"},
-			"033-105_84593_unl"},
+			"033-105_84593_unlimited"},
 		{"the catalog's spelling of Drowzee reaches it",
 			mtgmatcher.InputCard{Name: "Drowsee", Edition: "EX FireRed & LeafGreen", Variation: "32 32/112"},
 			"32-112_84973"},

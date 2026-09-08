@@ -6,7 +6,7 @@
             "variant": "GD01-001",
             "edition": "Newtype Rising"
         },
-        "uuid": "gd01-001_643150_holo"
+        "uuid": "gd01-001_643150_holofoil"
     },
     {
         "description": "a title naming two sets keeps the set it equals",
@@ -15,7 +15,7 @@
             "variant": "GD05-055 R+",
             "edition": "Freedom Ascension"
         },
-        "uuid": "gd05-055_707578_holo"
+        "uuid": "gd05-055_707578_holofoil"
     },
     {
         "description": "bare Beta reaches the beta edition",
@@ -24,7 +24,7 @@
             "variant": "ST04-001",
             "edition": "Beta"
         },
-        "uuid": "st04-001_616623_holo"
+        "uuid": "st04-001_616623_holofoil"
     },
     {
         "description": "edition picks between three printings of one number",
@@ -93,7 +93,7 @@
             "variant": "GD01-001 LR+",
             "edition": "Newtype Rising"
         },
-        "uuid": "gd01-001_645356_holo"
+        "uuid": "gd01-001_645356_holofoil"
     },
     {
         "description": "starter deck named by its title alone",
@@ -120,7 +120,7 @@
             "variant": "ST06-004 C+",
             "edition": "Starter Deck 06: Clan Unity"
         },
-        "uuid": "st06-004_660490_holo"
+        "uuid": "st06-004_660490_holofoil"
     },
     {
         "description": "the beta edition of that same number",
@@ -138,7 +138,7 @@
             "variant": "GD01-001 LR++",
             "edition": "Newtype Rising"
         },
-        "uuid": "gd01-001_645375_holo"
+        "uuid": "gd01-001_645375_holofoil"
     },
     {
         "description": "the token word reaches the token",

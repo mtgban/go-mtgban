@@ -253,7 +253,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		card := &payload.Cards[i]
 		key := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 		if card.ExternalLinks.TcgPlayerID == 0 {
-			key = trimRunSuffix(card.ID)
+			key = trimRunSuffix(card.ID, card.Finish)
 		}
 		if _, found := products[key]; !found {
 			productOrder = append(productOrder, key)
@@ -391,12 +391,24 @@ func pickRun(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 }
 
 // trimRunSuffix strips the print-run tail the builder suffixes ids with,
-// the grouping fallback for an entry without a tcgPlayerId.
-func trimRunSuffix(id string) string {
-	for _, suffix := range []string{"_1e", "_unl", "_lim"} {
-		if strings.HasSuffix(id, suffix) {
-			return strings.TrimSuffix(id, suffix)
-		}
+// spelled from the entry's own finish the way the builder spells it - the
+// grouping fallback for an entry without a tcgPlayerId. Read off the entry
+// rather than from a list of this game's print runs, so one TCGplayer adds
+// folds with the rest.
+func trimRunSuffix(id, finish string) string {
+	if slug := finishSlug(finish); slug != "" && slug != "normal" {
+		return strings.TrimSuffix(id, "_"+slug)
 	}
 	return id
+}
+
+// finishSlug spells a printing name the way an id carries it.
+func finishSlug(name string) string {
+	var out strings.Builder
+	for _, r := range strings.ToLower(name) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
 }

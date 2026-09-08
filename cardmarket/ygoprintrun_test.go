@@ -26,12 +26,12 @@ const ygoDatastore = `{
   "G2970": {"name": "Speed Duel GX: Duel Academy Box", "releaseDate": "2022-04-01"}
  },
  "cards": [
-  {"attribute": "WIND", "externalLinks": {"tcgPlayerId": 22823}, "finish": "1st Edition", "id": "dcr-005_22823_1e", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
-  {"attribute": "WIND", "externalLinks": {"tcgPlayerId": 22823}, "finish": "Unlimited", "id": "dcr-005_22823_unl", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
-  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 95478}, "finish": "1st Edition", "id": "sece-en086_95478_1e", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
-  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 95478}, "finish": "Unlimited", "id": "sece-en086_95478_unl", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
-  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 96145}, "finish": "Limited", "id": "sece-ens14_96145_lim", "name": "Good & Evil in the Burning Abyss", "number": "SECE-ENS14", "promoTypes": ["se"], "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell", "variant": "SE"},
-  {"attribute": "TRAP", "externalLinks": {"tcgPlayerId": 266282}, "finish": "1st Edition", "id": "sgx1-end19_266282_1e", "name": "Damage Condenser", "number": "SGX1-END19", "rarity": "Common", "setCode": "G2970", "type": "Normal Trap"}
+  {"attribute": "WIND", "externalLinks": {"tcgPlayerId": 22823}, "finish": "1st Edition", "id": "dcr-005_22823_1stedition", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
+  {"attribute": "WIND", "externalLinks": {"tcgPlayerId": 22823}, "finish": "Unlimited", "id": "dcr-005_22823_unlimited", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
+  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 95478}, "finish": "1st Edition", "id": "sece-en086_95478_1stedition", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
+  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 95478}, "finish": "Unlimited", "id": "sece-en086_95478_unlimited", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
+  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 96145}, "finish": "Limited", "id": "sece-ens14_96145_limited", "name": "Good & Evil in the Burning Abyss", "number": "SECE-ENS14", "promoTypes": ["se"], "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell", "variant": "SE"},
+  {"attribute": "TRAP", "externalLinks": {"tcgPlayerId": 266282}, "finish": "1st Edition", "id": "sgx1-end19_266282_1stedition", "name": "Damage Condenser", "number": "SGX1-END19", "rarity": "Common", "setCode": "G2970", "type": "Normal Trap"}
  ]
 }`
 
@@ -59,7 +59,7 @@ func TestMatchProductPrintRunPrefix(t *testing.T) {
 			expansion: "Dark Crisis",
 			product:   "Guardian Elma (V.1 - Common)",
 			number:    "005",
-			want:      "dcr-005_22823_unl",
+			want:      "dcr-005_22823_unlimited",
 		},
 		{
 			// The row is DCR-005 and this product is DCR-EN005, a run we
@@ -76,7 +76,7 @@ func TestMatchProductPrintRunPrefix(t *testing.T) {
 			expansion: "Secrets of Eternity",
 			product:   "Good & Evil in the Burning Abyss (V.1 - Super Rare)",
 			number:    "086",
-			want:      "sece-en086_95478_unl",
+			want:      "sece-en086_95478_unlimited",
 		},
 		{
 			// The special edition is a printing we do carry, so refusing
@@ -86,7 +86,7 @@ func TestMatchProductPrintRunPrefix(t *testing.T) {
 			expansion: "Secrets of Eternity",
 			product:   "Good & Evil in the Burning Abyss (V.2 - Super Rare)",
 			number:    "S14",
-			want:      "sece-ens14_96145_lim",
+			want:      "sece-ens14_96145_limited",
 		},
 		{
 			// "D19" is the tail of "SGX1-END19" with the region infix the
@@ -96,7 +96,7 @@ func TestMatchProductPrintRunPrefix(t *testing.T) {
 			expansion: "Speed Duel GX: Duel Academy Box",
 			product:   "Damage Condenser",
 			number:    "D19",
-			want:      "sgx1-end19_266282_1e",
+			want:      "sgx1-end19_266282_1stedition",
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
