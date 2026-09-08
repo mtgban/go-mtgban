@@ -7,11 +7,11 @@ import (
 )
 
 // TestPlainNumberIsPlain pins the contract every game keeps: Number is the
-// strict number a precise match is made on, and OriginalNumber is that
+// strict number a precise match is made on, and PlainNumber is that
 // number with the game's decorations stripped - never anything more. The
-// website reads the two apart, "cn:" against OriginalNumber and "cns:"
+// website reads the two apart, "cn:" against PlainNumber and "cns:"
 // against Number, so a loader that files the wider spelling in
-// OriginalNumber leaves the ordinary number search matching nothing while
+// PlainNumber leaves the ordinary number search matching nothing while
 // the strict one works, which is the wrong way round.
 func TestPlainNumberIsPlain(t *testing.T) {
 	b := loadBackend(t)
@@ -20,18 +20,18 @@ func TestPlainNumberIsPlain(t *testing.T) {
 		if co.Number == "" {
 			continue
 		}
-		if len(co.OriginalNumber) > len(co.Number) {
-			t.Errorf("%s: OriginalNumber %q is wider than Number %q", uuid, co.OriginalNumber, co.Number)
+		if len(co.PlainNumber) > len(co.Number) {
+			t.Errorf("%s: PlainNumber %q is wider than Number %q", uuid, co.PlainNumber, co.Number)
 		}
-		if strings.Contains(co.OriginalNumber, "/") {
-			t.Errorf("%s: OriginalNumber %q carries a set total", uuid, co.OriginalNumber)
+		if strings.Contains(co.PlainNumber, "/") {
+			t.Errorf("%s: PlainNumber %q carries a set total", uuid, co.PlainNumber)
 		}
 	}
 }
 
 // TestPlainNumberDropsThePadding pins that the number a search matches is
 // the one a person writes. The catalog pads an ordinal out to three digits
-// and 12,549 printings carry the padding, so an OriginalNumber keeping it
+// and 12,549 printings carry the padding, so a PlainNumber keeping it
 // answers "cn:001" and refuses "cn:1" - the strict spelling doing the loose
 // spelling's job, which is the whole failure this field exists to avoid.
 //
@@ -67,11 +67,11 @@ func TestPaddingIsGoneFromTheDatastore(t *testing.T) {
 	b := loadBackend(t)
 
 	for uuid, co := range b.UUIDs {
-		if co.Sealed || co.OriginalNumber == "" {
+		if co.Sealed || co.PlainNumber == "" {
 			continue
 		}
-		if strings.HasPrefix(co.OriginalNumber, "0") {
-			t.Errorf("%s: OriginalNumber %q is still padded", uuid, co.OriginalNumber)
+		if strings.HasPrefix(co.PlainNumber, "0") {
+			t.Errorf("%s: PlainNumber %q is still padded", uuid, co.PlainNumber)
 		}
 	}
 }
@@ -107,9 +107,9 @@ func TestPrintedFace(t *testing.T) {
 				t.Errorf("Number is %q, want %q", co.Number, tt.number)
 			}
 			// Number is the number as written, padding and all;
-			// OriginalNumber is the one a person types.
-			if co.OriginalNumber != tt.plain {
-				t.Errorf("OriginalNumber is %q, want %q", co.OriginalNumber, tt.plain)
+			// PlainNumber is the one a person types.
+			if co.PlainNumber != tt.plain {
+				t.Errorf("PlainNumber is %q, want %q", co.PlainNumber, tt.plain)
 			}
 			if co.SetTotal != tt.total {
 				t.Errorf("SetTotal is %q, want %q", co.SetTotal, tt.total)

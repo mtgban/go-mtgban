@@ -928,7 +928,7 @@ func setHoldsOversized(set *mtgmatcher.Set, name, number string) bool {
 		if !card.IsOversized || !mtgmatcher.Equals(card.Name, name) {
 			continue
 		}
-		if number == "" || card.Number == number || card.OriginalNumber == number {
+		if number == "" || card.Number == number || card.PlainNumber == number {
 			return true
 		}
 	}

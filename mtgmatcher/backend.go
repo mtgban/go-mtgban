@@ -181,12 +181,12 @@ type Card struct {
 		Type        string            `json:"type"`
 	} `json:"foreignData"`
 
-	// OriginalNumber is Number with the game's own decorations stripped -
+	// PlainNumber is Number with the game's own decorations stripped -
 	// Magic's ★ and †, Riftbound's star, Lorcana's variant letter - and so
-	// it is the plain number a search matches. It is never longer than
-	// Number: a loader that widens it here instead of narrowing it turns
-	// the ordinary number search into the strict one.
-	OriginalNumber string
+	// it is the number a search matches. It is never longer than Number: a
+	// loader that widens it here instead of narrowing it turns the ordinary
+	// number search into the strict one.
+	PlainNumber string
 
 	// SetTotal is the set size the card's own face prints beside its
 	// number, the "167" of "082/167", which is what tells a reprint from

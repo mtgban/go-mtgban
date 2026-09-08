@@ -388,7 +388,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			Printings: printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: Rules{}.PlainNumber(number),
+			PlainNumber: Rules{}.PlainNumber(number),
 		}
 		// Register the uuid each finish resolves to, spelling the finish out
 		// in the uuid itself, so output()/Match resolve to them.

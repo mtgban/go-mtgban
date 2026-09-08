@@ -171,7 +171,7 @@ type Card struct {
 		Type        string            `json:"type"`
 	} `json:"foreignData"`
 
-	OriginalNumber string
+	PlainNumber string
 
 	// A list of URLs containing the image of the card
 	// At a minimum "full" and "thumbnail" versions should be provided
@@ -1084,7 +1084,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			}
 
 			// Save the collector number stripped of its ★/†/Φ decorations
-			card.OriginalNumber = Rules{}.PlainNumber(card.Number)
+			card.PlainNumber = Rules{}.PlainNumber(card.Number)
 
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
@@ -1786,7 +1786,7 @@ func toMtgCard(c Card) mtgmatcher.Card {
 		Layout:              c.Layout,
 		Name:                c.Name,
 		Number:              c.Number,
-		OriginalNumber:      c.OriginalNumber,
+		PlainNumber:         c.PlainNumber,
 		OriginalReleaseDate: c.OriginalReleaseDate,
 		PrintedName:         c.PrintedName,
 		PrintedType:         c.PrintedType,

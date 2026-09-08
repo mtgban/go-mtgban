@@ -295,7 +295,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    setIsPromotional(b.Sets[card.SetCode]),
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: Rules{}.PlainNumber(card.Number),
+			PlainNumber: Rules{}.PlainNumber(card.Number),
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
 

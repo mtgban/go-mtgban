@@ -50,7 +50,7 @@ const numberFixture = `{
 }`
 
 // TestCollectorNumbers pins that a printing keeps the number it is sold
-// under. OriginalNumber is what a plain-number search matches, so it may
+// under. PlainNumber is what a plain-number search matches, so it may
 // drop the star and nothing else: filling it from the numeric collector
 // number instead left every lettered printing unreachable by number.
 func TestCollectorNumbers(t *testing.T) {
@@ -76,8 +76,8 @@ func TestCollectorNumbers(t *testing.T) {
 		if co.Number != tt.number {
 			t.Errorf("%s: Number is %q, want %q", tt.uuid, co.Number, tt.number)
 		}
-		if co.OriginalNumber != tt.originalWant {
-			t.Errorf("%s: OriginalNumber is %q, want %q", tt.uuid, co.OriginalNumber, tt.originalWant)
+		if co.PlainNumber != tt.originalWant {
+			t.Errorf("%s: PlainNumber is %q, want %q", tt.uuid, co.PlainNumber, tt.originalWant)
 		}
 	}
 }
