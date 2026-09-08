@@ -36,9 +36,7 @@ func TestCatalogLanguageTag(t *testing.T) {
 func TestResolveForeignLanguages(t *testing.T) {
 	withMagic(t)
 
-	if len(mtgmatcher.GetUUIDs()) == 0 {
-		t.Skip("datastore not loaded")
-	}
+	withMagic(t)
 	tests := []struct {
 		desc    string
 		product CatalogProduct
