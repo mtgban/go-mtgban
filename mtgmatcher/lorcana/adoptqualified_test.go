@@ -33,19 +33,19 @@ func TestAdoptQualifiedName(t *testing.T) {
 		{"a note naming the errata reaches the errata",
 			"Bucky - Squirrel Squeak Tutor", "73/204, 3-Cost Errata, Foil No Ward", "m-597095_foil"},
 		{"a note silent about it keeps the original",
-			"Bucky - Squirrel Squeak Tutor", "73/204, 2-Cost w/ Ward", "289_silver"},
+			"Bucky - Squirrel Squeak Tutor", "73/204, 2-Cost w/ Ward", "289_foil"},
 		{"the other errata reads the same way",
 			"Elsa - Gloves Off", "39/204, Errata", "m-618771_foil"},
 		{"and is left alone unnamed",
-			"Elsa - Gloves Off", "39/204", "255_silver"},
+			"Elsa - Gloves Off", "39/204", "255_foil"},
 		{"the decorated name still answers for itself",
 			"Bucky - Squirrel Squeak Tutor (Errata Version)", "73/204", "m-597095_foil"},
 		// The qualifier's category noun alone must not license the swap:
 		// a note about the original says the word version just as well
 		{"a note about the original saying version keeps the original",
-			"Bucky - Squirrel Squeak Tutor", "73/204, Original Version w/ Ward", "289_silver"},
+			"Bucky - Squirrel Squeak Tutor", "73/204, Original Version w/ Ward", "289_foil"},
 		{"nor can a longer word smuggle the noun in",
-			"Bucky - Squirrel Squeak Tutor", "73/204, Conversion w/ Ward", "289_silver"},
+			"Bucky - Squirrel Squeak Tutor", "73/204, Conversion w/ Ward", "289_foil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{

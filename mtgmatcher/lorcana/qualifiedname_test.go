@@ -34,7 +34,7 @@ func TestQualifiedNameStaysWhole(t *testing.T) {
 		{"and so does the other one",
 			"Elsa - Gloves Off (Errata Version)", "39/204", "m-618771_foil"},
 		{"while the bare name still reaches the original",
-			"Bucky - Squirrel Squeak Tutor", "73/204", "289_silver"},
+			"Bucky - Squirrel Squeak Tutor", "73/204", "289_foil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{

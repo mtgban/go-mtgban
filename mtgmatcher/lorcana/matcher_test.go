@@ -61,7 +61,7 @@ var lorcanaSeeds = []matchTest{
 		// Promotion runs from any sibling: a sub-type's own uuid demotes
 		// to the plain printing when the caller prices that sku.
 		Desc: "a sub-type uuid plus a finish reaches its plain sibling",
-		In:   mtgmatcher.InputCard{ID: "1951_rainbowpillars", Finish: "Normal"},
+		In:   mtgmatcher.InputCard{ID: "1951_holofoil", Finish: "Normal"},
 	},
 	{
 		// An id with no finish beside it is still the flag's question, so
