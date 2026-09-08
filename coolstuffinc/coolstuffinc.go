@@ -429,11 +429,14 @@ func conditionPrinting(conditions string) string {
 }
 
 // gradedMarkers are the wordings a row carries when the copy is not being
-// sold at a condition tier: a slab named for the service that graded it, or
-// the one-off the storefront files as unique. A grade is not a condition and
-// its price is not the card's, so such a row is published as its own seller
-// rather than beside the ungraded copies.
-var gradedMarkers = []string{"BGS", "PSA", "Non-Foil", "Unique"}
+// sold at a condition tier: a slab named for the service that graded it, the
+// one-off the storefront files as unique, or the printing a single copy is
+// when it is sold on another printing's product - the shadowless Venusaur
+// offered on the unlimited Venusaur's page, at three times what the copy
+// beside it costs. None of those is a condition and none of their prices is
+// the card's, so such a row is published as its own seller rather than
+// beside the ordinary copies.
+var gradedMarkers = []string{"BGS", "PSA", "Non-Foil", "Unique", "Shadowless", "No Set Symbol"}
 
 // isGraded reports whether the condition wording names one of those rather
 // than a condition. A wording it does not know is refused by the condition

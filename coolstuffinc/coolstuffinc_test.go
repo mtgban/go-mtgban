@@ -237,3 +237,27 @@ func TestIsSkippedCondition(t *testing.T) {
 		})
 	}
 }
+
+// TestIsGradedTakesTheSingleCopyPrintings pins the copies a storefront sells
+// on another printing's product. The shadowless Venusaur is offered on the
+// unlimited Venusaur's page at $299.99 beside a $99.99 unique copy, so its
+// price is not the product's and must not sit with the ordinary conditions.
+func TestIsGradedTakesTheSingleCopyPrintings(t *testing.T) {
+	for _, conditions := range []string{
+		"Shadowless  Shadowless ",
+		"No Set Symbol  No Set Symbol ",
+	} {
+		t.Run(conditions, func(t *testing.T) {
+			if !isGraded(conditions) {
+				t.Errorf("isGraded(%q) = false, want true", conditions)
+			}
+		})
+	}
+	for _, conditions := range []string{"Near Mint", "Foil Near Mint", "Played"} {
+		t.Run(conditions, func(t *testing.T) {
+			if isGraded(conditions) {
+				t.Errorf("isGraded(%q) = true, want false", conditions)
+			}
+		})
+	}
+}
