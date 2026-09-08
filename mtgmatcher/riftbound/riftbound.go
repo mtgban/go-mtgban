@@ -135,13 +135,15 @@ type GalleryCard struct {
 	TCGplayerProductID int `json:"tcgplayerProductId,omitempty"`
 
 	// Finishes is likewise stamped by the builder, from the printings the
-	// TCGplayer catalog lists for that product. The gallery says nothing
-	// about finish, so a datastore built before this was recorded leaves it
-	// empty and every card falls back to being sold in both.
+	// TCGplayer catalog lists for that product, named as TCGplayer names
+	// them ("Normal", "Foil"). The gallery says nothing about finish, so a
+	// datastore built before this was recorded leaves it empty and every
+	// card falls back to being sold in both.
 	Finishes []string `json:"finishes,omitempty"`
 
-	// PrintingIDs is the uuid each finish prices, published by the builder
-	// rather than spelled here. A uuid is what a price is keyed on, and
+	// PrintingIDs is the uuid each finish prices, keyed by the finish as
+	// TCGplayer prices it and published by the builder rather than spelled
+	// here. A uuid is what a price is keyed on, and
 	// spelling one from a finish name means a change to how this package
 	// spells finishes moves identity that lives outside it - silently,
 	// since a moved uuid resolves to nothing rather than erroring. A
@@ -519,8 +521,12 @@ var riftboundRarityMap = map[string]int{
 // publishes, and where it publishes none the finish spelled into the card's
 // id, which is how every uuid here was reached before.
 func printingUUID(card GalleryCard, finish string) string {
-	if uuid := card.PrintingIDs[finish]; uuid != "" {
-		return uuid
+	// Keyed by the datastore's own spelling, which is TCGplayer's, so the
+	// key is placed the same way the finish it answers for was.
+	for name, uuid := range card.PrintingIDs {
+		if uuid != "" && (Rules{}).CanonicalFinish(name) == finish {
+			return uuid
+		}
 	}
 	return card.ID + "_" + finish
 }
@@ -528,10 +534,15 @@ func printingUUID(card GalleryCard, finish string) string {
 func cardFinishes(card GalleryCard) []string {
 	var out []string
 	for _, finish := range card.Finishes {
-		switch finish {
-		case mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil:
-			out = append(out, finish)
+		// The datastore names a finish the way TCGplayer prices it
+		// ("Normal", "Foil"); the ones built before it did name it the way
+		// this package spells it. CanonicalFinish places both, and places a
+		// printing TCGplayer adds later without being taught it first.
+		finish = (Rules{}).CanonicalFinish(finish)
+		if finish == "" || slices.Contains(out, finish) {
+			continue
 		}
+		out = append(out, finish)
 	}
 	if len(out) == 0 {
 		return []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
