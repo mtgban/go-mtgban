@@ -288,8 +288,12 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 			if cerr != nil {
 				t.Fatalf("GetUUID(%q): %v", rainbow, cerr)
 			}
-			if co.Finish != "rainbowpillars" {
-				t.Errorf("rainbow foil resolved to the %q printing, want rainbowpillars", co.Finish)
+			// The datastore names the finishes the way TCGplayer sells
+			// them, so the treatment past the standard foil is "holofoil";
+			// "rainbowpillars" is the spelling that reaches it, not the
+			// name it wears.
+			if co.Finish != "holofoil" {
+				t.Errorf("rainbow foil resolved to the %q printing, want holofoil", co.Finish)
 			}
 
 			standard, err := resolveProduct(GameLorcana, CatalogProduct{
@@ -306,8 +310,10 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 	}
 
 	// A printing sold in one foil only is untouched by the name: it has no
-	// rainbow sibling to reach, and the flag still answers with the foil it
-	// does have.
+	// sibling treatment to reach, so the name lands on the only foil it has.
+	// Checked against the printing's own finishes rather than by naming one,
+	// because that single foil is itself sold as a Holofoil - the finish a
+	// two-foil card's treatment wears.
 	id, err := resolveProduct(GameLorcana, CatalogProduct{
 		SKU: "SGL-LOR-010b-242-ENA", Name: "Hades - Looking for a Deal",
 		Set: "Whispers in the Well", CollectorNumber: "242",
@@ -317,7 +323,12 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 		t.Fatalf("foil-only printing: %v", err)
 	}
 	co, cerr := mtgmatcher.GetUUID(id)
-	if cerr != nil || co.Finish == "rainbowpillars" {
-		t.Errorf("foil-only printing resolved to %v (%v), want its own foil", co, cerr)
+	if cerr != nil {
+		t.Fatalf("foil-only printing: GetUUID(%q): %v", id, cerr)
+	}
+	for name, uuid := range co.FoilUUIDs {
+		if uuid != id {
+			t.Errorf("foil-only printing: %q reaches %s, but the name resolved to %s", name, uuid, id)
+		}
 	}
 }
