@@ -109,6 +109,28 @@ func yugiohSameProduct(a, b *cm.Product) bool {
 	return mtgmatcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == mtgmatcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
 }
 
+// yugiohVersionVariants names the printings a shelf sells under one name,
+// one number and one rarity, in the order Cardmarket's version index counts
+// them. Winner's Pack 2026-2027 hands the same forty cards out through three
+// programmes and stamps each with the programme's mark; the datastore keeps
+// the three apart by that stamp, and Cardmarket keeps them apart by nothing
+// at all - V.1, V.2 and V.3 carry the same rarity, the same reprint count
+// and a web address that only repeats the name. Without a label the three
+// products alias onto the three rows and none of them prices.
+//
+// THE ORDER IS A DEFAULT, NOT A FACT. Nothing publishes it, and CardTrader,
+// which arbitrates elsewhere, carries no WI26 expansion at all. What the
+// published price guide says is that V.1 is the cheapest of the three on all
+// 25 cards priced in every version, and that V.3 is the dearest on 21 of
+// them - which fits OTS packs being the widely handed-out programme and the
+// judge mark the scarce one, and is the whole of the evidence. The prices
+// within one card run from 22.50 to 550, so a row found wrong is worth
+// correcting here rather than reasoning about: swap two labels and the
+// products follow.
+var yugiohVersionVariants = map[string][]string{
+	"WI26": {"OTS Stamp", "Regional Qualifier Stamp", "Judge Stamp"},
+}
+
 // matchYugioh names a Yu-Gi-Oh product's printing from what the catalog
 // says of it, held to the sets its expansion may hold. A number written with
 // a region prefix names a print run of its own ("EN000" is the European
@@ -168,6 +190,16 @@ func (mkm *Index) matchYugioh(product *cm.Product) (string, error) {
 			}
 			for _, number := range numbers {
 				variation := strings.TrimSpace(number + " " + rarity)
+				// A shelf whose printings differ only by a mark the
+				// storefront does not name takes it from the version
+				// index; see yugiohVersionVariants on what that order is
+				// worth. A version the table does not cover is left
+				// alone, and aliases as it did before.
+				if labels := yugiohVersionVariants[strings.TrimSuffix(set.Code, "-EN")]; labels != nil {
+					if index := cm.ProductVersion(product); index >= 1 && index <= len(labels) {
+						variation = strings.TrimSpace(variation + " " + labels[index-1])
+					}
+				}
 				for _, finish := range finishes {
 					id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 						Name:      name,
