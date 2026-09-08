@@ -322,6 +322,25 @@ func offerCondition(fullRow, qtyStr, bundleStr string) string {
 	}
 }
 
+// gradedMarkers are the wordings a row carries when the copy is not being
+// sold at a condition tier: a slab named for the service that graded it, or
+// the one-off the storefront files as unique. A grade is not a condition and
+// its price is not the card's, so such a row is published as its own seller
+// rather than beside the ungraded copies.
+var gradedMarkers = []string{"BGS", "PSA", "Non-Foil", "Unique"}
+
+// isGraded reports whether the condition wording names one of those rather
+// than a condition. A wording it does not know is refused by the condition
+// parser, which says so, so a new grading service costs a line here.
+func isGraded(conditions string) bool {
+	for _, marker := range gradedMarkers {
+		if strings.Contains(conditions, marker) {
+			return true
+		}
+	}
+	return false
+}
+
 // bundleRe matches the wording of the bundle promotion, whatever count it
 // gives away: "Buy 1 get 3 free!" sells four copies for the listed price.
 var bundleRe = regexp.MustCompile(`^Buy 1 get (\d+) free!$`)
@@ -443,9 +462,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				isFoil := strings.HasPrefix(conditions, "Foil")
 
-				if strings.Contains(conditions, "BGS") ||
-					strings.Contains(conditions, "Non-Foil") ||
-					strings.Contains(conditions, "Unique") {
+				if isGraded(conditions) {
 					conditions = "Near Mint"
 					graded = true
 				}
@@ -907,9 +924,6 @@ func (csi *Coolstuffinc) Buylist() mtgban.BuylistRecord {
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
 func (csi *Coolstuffinc) MarketNames() []string {
-	if csi.Info().Game != mtgban.GameMagic {
-		return availableMarketNames[:1]
-	}
 	return availableMarketNames
 }
 
