@@ -217,3 +217,23 @@ func TestOfferConditionKeepsALeadingDigit(t *testing.T) {
 		t.Errorf("offerCondition = %q, want %q", got, want)
 	}
 }
+
+// TestIsSkippedCondition pins the wordings refused on purpose rather than
+// reported: they name a copy the catalog has no row for.
+func TestIsSkippedCondition(t *testing.T) {
+	for _, tt := range []struct {
+		conditions string
+		want       bool
+	}{
+		{"Asian Near Mint", true},
+		{"Near Mint", false},
+		{"Foil Near Mint", false},
+		{"Played", false},
+	} {
+		t.Run(tt.conditions, func(t *testing.T) {
+			if got := isSkippedCondition(tt.conditions); got != tt.want {
+				t.Errorf("isSkippedCondition(%q) = %v, want %v", tt.conditions, got, tt.want)
+			}
+		})
+	}
+}
