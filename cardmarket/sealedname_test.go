@@ -142,7 +142,7 @@ const ygohDatastore = `{
   "HA02": {"name": "Hidden Arsenal 2", "releaseDate": "2010-07-20"}
  },
  "cards": [
-  {"attribute": "WATER", "externalLinks": {"tcgPlayerId": 33740}, "finish": "Unlimited", "id": "ha01-en001_33740_unl", "name": "Blizzed, Defender of the Ice Barrier", "number": "HA01-EN001", "rarity": "Secret Rare", "setCode": "HA01", "type": "Effect Monster"}
+  {"attribute": "WATER", "externalLinks": {"tcgPlayerId": 33740}, "finish": "Unlimited", "id": "ha01-en001_33740_unlimited", "name": "Blizzed, Defender of the Ice Barrier", "number": "HA01-EN001", "rarity": "Secret Rare", "setCode": "HA01", "type": "Effect Monster"}
  ],
  "sealed": [
   {"externalLinks": {"tcgPlayerId": 33771}, "id": "ha01-33771", "name": "Hidden Arsenal - Booster Pack [Unlimited Edition]", "releaseDate": "2009-11-10", "setCode": "HA01"},
@@ -205,7 +205,7 @@ const fabSealedDatastore = `{
   "WTR": {"name": "Welcome to Rathe", "releaseDate": "2019-10-11"}
  },
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 261310}, "fabId": "EVR000", "finish": "1st Edition Cold Foil", "id": "evr000_261310_1ecold", "name": "Grandeur of Valahai", "number": "EVR000", "rarity": "Fabled", "setCode": "EVR"}
+  {"externalLinks": {"tcgPlayerId": 261310}, "fabId": "EVR000", "finish": "1st Edition Cold Foil", "id": "evr000_261310_1steditioncoldfoil", "name": "Grandeur of Valahai", "number": "EVR000", "rarity": "Fabled", "setCode": "EVR"}
  ],
  "sealed": [
   {"externalLinks": {"tcgPlayerId": 224725}, "id": "cru-224725", "name": "Crucible of War Booster Pack [1st Edition]", "releaseDate": "2020-08-28", "setCode": "CRU"},

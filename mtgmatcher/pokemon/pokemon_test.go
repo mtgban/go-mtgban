@@ -67,7 +67,7 @@ func TestFinishIdentity(t *testing.T) {
 		}
 		key := co.Identifiers["tcgplayerProductId"]
 		if key == "" {
-			key = trimFinishSuffix(uuid)
+			key = trimFinishSuffix(uuid, co.Finish)
 		}
 		if byProduct[key] == nil {
 			byProduct[key] = map[string]string{}
@@ -274,7 +274,7 @@ func TestNameCarriesNumber(t *testing.T) {
 		{"the number glued to the name still reaches the card", mtgmatcher.InputCard{
 			Name: "Wingull - 70/100", Edition: "EX Crystal Guardians"}, "70-100_90608"},
 		{"a parenthetical beside it is split off too", mtgmatcher.InputCard{
-			Name: "Wingull - 70/100 (Reverse Foil)", Edition: "EX Crystal Guardians"}, "70-100_90608_reverse"},
+			Name: "Wingull - 70/100 (Reverse Foil)", Edition: "EX Crystal Guardians"}, "70-100_90608_reverseholofoil"},
 		// The year is not a tail to strip here, it is which championship:
 		// each is a set of its own and the storefront writes the shelf they
 		// all used to share.
@@ -344,7 +344,7 @@ func TestQualifiedNameWidening(t *testing.T) {
 		{"the set's own qualifier", mtgmatcher.InputCard{
 			Name: "Accelgor - 8/101", Edition: "BW Plasma Blast"}, "8-101_83461"},
 		{"a promo run's qualifier", mtgmatcher.InputCard{
-			Name: "Archeops - SWSH272", Edition: "SWSH Promos"}, "swsh272_451847_holo"},
+			Name: "Archeops - SWSH272", Edition: "SWSH Promos"}, "swsh272_451847_holofoil"},
 		{"a bracketed qualifier", mtgmatcher.InputCard{
 			Name: "Professor's Research - 085/086", Edition: "SV Black Bolt"}, "085-086_642533"},
 		{"the bare name answering the number keeps it", mtgmatcher.InputCard{
@@ -376,11 +376,11 @@ func TestSetCodePrefixedNumber(t *testing.T) {
 		want string
 	}{
 		{"the promo set's own code", mtgmatcher.InputCard{
-			Name: "Ampharos ex", Edition: "SV Promos", Variation: "SVP016"}, "016_484397_holo"},
+			Name: "Ampharos ex", Edition: "SV Promos", Variation: "SVP016"}, "016_484397_holofoil"},
 		{"another era's promo set", mtgmatcher.InputCard{
-			Name: "Alakazam", Edition: "ME Promos", Variation: "MEP003"}, "003_654597_holo"},
+			Name: "Alakazam", Edition: "ME Promos", Variation: "MEP003"}, "003_654597_holofoil"},
 		{"the qualified name is reached through it too", mtgmatcher.InputCard{
-			Name: "Baxcalibur", Edition: "SV Promos", Variation: "SVP019"}, "019_501885_holo"},
+			Name: "Baxcalibur", Edition: "SV Promos", Variation: "SVP019"}, "019_501885_holofoil"},
 		// The prefix has to be the set's own code: stripping letters
 		// freely would read the promo set's SVP016 as the 016 of every
 		// Scarlet & Violet set there is.
@@ -453,24 +453,24 @@ func TestSecondNumberInWording(t *testing.T) {
 		want string
 	}{
 		{"a padded field before the real number", mtgmatcher.InputCard{
-			Name: "Ampharos-EX - 27/98", Edition: "XY Ancient Origins", Variation: "001"}, "27-98_101448_holo"},
+			Name: "Ampharos-EX - 27/98", Edition: "XY Ancient Origins", Variation: "001"}, "27-98_101448_holofoil"},
 		{"a field naming a number the set does not have", mtgmatcher.InputCard{
 			Name: "Drowzee - 74a/147", Edition: "Aquapolis", Variation: "74"}, "074a-147_84971"},
 		{"a field naming another set's card", mtgmatcher.InputCard{
-			Name: "Swablu - SH5", Edition: "Platinum Base Set", Variation: "132"}, "sh5_89659_reverse"},
+			Name: "Swablu - SH5", Edition: "Platinum Base Set", Variation: "132"}, "sh5_89659_reverseholofoil"},
 		// The order is the safety property, and these two pin it. The feed
 		// has swapped the two numbers of Plasma Blast's pair of Palkia EX
 		// printings between the name and the field, so this row's field
 		// names the other row's answer and reading it first prices it as
 		// the sibling.
 		{"the name wins over the field it was swapped with", mtgmatcher.InputCard{
-			Name: "Palkia-EX - 66/101", Edition: "BW Plasma Blast", Variation: "100/101"}, "66-101_87915_holo"},
+			Name: "Palkia-EX - 66/101", Edition: "BW Plasma Blast", Variation: "100/101"}, "66-101_87915_holofoil"},
 		// And where the edition names no set every printing of the name
 		// competes, so the field's bare "5" reaches a McDonald's promo
 		// numbered 005/012 as readily as the Nintendo promo numbered 005,
 		// while the name's "005" is one of them verbatim.
 		{"a field the promo sets all answer to", mtgmatcher.InputCard{
-			Name: "Mudkip - 005", Edition: "Nintendo Black Star Promos", Variation: "5"}, "005_87608_holo"},
+			Name: "Mudkip - 005", Edition: "Nintendo Black Star Promos", Variation: "5"}, "005_87608_holofoil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in := tt.in
@@ -501,16 +501,16 @@ func TestDecoratedNameSplit(t *testing.T) {
 		// Four quarter cards share this name and only the number says
 		// which; cutting at the parenthesis leaves them aliased.
 		{"the number written after a parenthetical", mtgmatcher.InputCard{
-			Name: "Greninja V-Union (Bottom Left) - SWSH157", Edition: "SWSH Promos"}, "swsh157_248889_holo"},
+			Name: "Greninja V-Union (Bottom Left) - SWSH157", Edition: "SWSH Promos"}, "swsh157_248889_holofoil"},
 		{"the number with wording behind it", mtgmatcher.InputCard{
-			Name: "Dragonite - 5/20 - Normal Holo", Edition: "Dragon Vault"}, "5-20_84915_holo"},
+			Name: "Dragonite - 5/20 - Normal Holo", Edition: "Dragon Vault"}, "5-20_84915_holofoil"},
 		{"the wording behind it still speaks", mtgmatcher.InputCard{
 			Name: "Braixen - 9/39 - NON-HOLO", Edition: "XY Kalos Starter"}, "9-39_83949"},
 		// The catalog spells a few promos with the number inside the name,
 		// which an ordinary decorated listing collides with once its
 		// parenthetical is gone. The head is what says which was meant.
 		{"a promo spelled with its number does not capture the listing", mtgmatcher.InputCard{
-			Name: "Bouffalant (Non-Holo) - 119/142", Edition: "SV Stellar Crown", Variation: "119/142"}, "119-142_567345_holo"},
+			Name: "Bouffalant (Non-Holo) - 119/142", Edition: "SV Stellar Crown", Variation: "119/142"}, "119-142_567345_holofoil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in := tt.in
@@ -589,7 +589,7 @@ func TestPromoEraEdition(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", in, err)
 	}
-	if want := "swsh103_234299_holo"; id != want {
+	if want := "swsh103_234299_holofoil"; id != want {
 		t.Errorf("Match(%v) = %s (%v), want %s", in, id, b.UUIDs[id], want)
 	}
 }
@@ -607,13 +607,13 @@ func TestSubsetOfEdition(t *testing.T) {
 		want string
 	}{
 		{"a Radiant Collection card", mtgmatcher.InputCard{
-			Name: "Cinccino - RC19/RC25", Edition: "BW Legendary Treasures"}, "rc19-rc25_84321_holo"},
+			Name: "Cinccino - RC19/RC25", Edition: "BW Legendary Treasures"}, "rc19-rc25_84321_holofoil"},
 		{"a Trainer Gallery card", mtgmatcher.InputCard{
-			Name: "Flareon - TG01/TG30", Edition: "SWSH Brilliant Stars"}, "tg01-tg30_264210_holo"},
+			Name: "Flareon - TG01/TG30", Edition: "SWSH Brilliant Stars"}, "tg01-tg30_264210_holofoil"},
 		// CL-23323 is "Trading Card Game Classic", not a part of Call of
 		// Legends, and it carries a Gyarados of its own at 007/034.
 		{"an unrelated set sharing the code shape", mtgmatcher.InputCard{
-			Name: "Gyarados - 7/95", Edition: "Call of Legends", Variation: "7"}, "7-95_85999_holo"},
+			Name: "Gyarados - 7/95", Edition: "Call of Legends", Variation: "7"}, "7-95_85999_holofoil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in := tt.in

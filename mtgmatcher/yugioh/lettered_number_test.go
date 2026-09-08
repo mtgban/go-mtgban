@@ -22,11 +22,11 @@ const letteredNumberFixture = `{
 		"SECE": {"name": "Secrets of Eternity", "releaseDate": "2015-01-16"}
 	},
 	"cards": [
-		{"id": "ldk2-enj26_123593_unl", "name": "Polymerization", "number": "LDK2-ENJ26", "setCode": "LDK2", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 123593}},
-		{"id": "ldk2-enk22_123546_unl", "name": "Polymerization", "number": "LDK2-ENK22", "setCode": "LDK2", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 123546}},
-		{"id": "25yc-enp03_637084_lim", "name": "Blackwing - Gale the Whirlwind", "number": "25YC-ENP03", "setCode": "25YC", "rarity": "Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 637084}},
-		{"id": "sece-en013_100013_1e", "name": "Infernoid Antra", "number": "SECE-EN013", "setCode": "SECE", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100013}},
-		{"id": "sece-ens03_100003_1e", "name": "Infernoid Antra", "number": "SECE-ENS03", "setCode": "SECE", "rarity": "Super Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100003}}
+		{"id": "ldk2-enj26_123593_unlimited", "name": "Polymerization", "number": "LDK2-ENJ26", "setCode": "LDK2", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 123593}},
+		{"id": "ldk2-enk22_123546_unlimited", "name": "Polymerization", "number": "LDK2-ENK22", "setCode": "LDK2", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 123546}},
+		{"id": "25yc-enp03_637084_limited", "name": "Blackwing - Gale the Whirlwind", "number": "25YC-ENP03", "setCode": "25YC", "rarity": "Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 637084}},
+		{"id": "sece-en013_100013_1stedition", "name": "Infernoid Antra", "number": "SECE-EN013", "setCode": "SECE", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100013}},
+		{"id": "sece-ens03_100003_1stedition", "name": "Infernoid Antra", "number": "SECE-ENS03", "setCode": "SECE", "rarity": "Super Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100003}}
 	]
 }`
 
@@ -49,37 +49,37 @@ func TestLetterLedNumberRead(t *testing.T) {
 			desc: "the deck letter picks its own printing",
 			in: mtgmatcher.InputCard{Name: "Polymerization", Variation: "J26 Common",
 				Edition: "Legendary Decks II"},
-			want: "ldk2-enj26_123593_unl",
+			want: "ldk2-enj26_123593_unlimited",
 		},
 		{
 			desc: "and so does the other deck's",
 			in: mtgmatcher.InputCard{Name: "Polymerization", Variation: "K22 Common",
 				Edition: "Legendary Decks II"},
-			want: "ldk2-enk22_123546_unl",
+			want: "ldk2-enk22_123546_unlimited",
 		},
 		{
 			desc: "a prize sheet number reads the same way, tail and all",
 			in: mtgmatcher.InputCard{Name: "Blackwing - Gale the Whirlwind",
 				Variation: "P03 Rare | YCS Stamp", Edition: "Championship Prize Cards 2025"},
-			want: "25yc-enp03_637084_lim",
+			want: "25yc-enp03_637084_limited",
 		},
 		{
 			desc: "the rarity sheet's number is no longer answered by its neighbour",
 			in: mtgmatcher.InputCard{Name: "Infernoid Antra", Variation: "S03 Super Rare",
 				Edition: "Secrets of Eternity"},
-			want: "sece-ens03_100003_1e",
+			want: "sece-ens03_100003_1stedition",
 		},
 		{
 			desc: "a full number keeps its precedence over any letter-led field",
 			in: mtgmatcher.InputCard{Name: "Polymerization", Variation: "LDK2-ENK22 Common",
 				Edition: "Legendary Decks II"},
-			want: "ldk2-enk22_123546_unl",
+			want: "ldk2-enk22_123546_unlimited",
 		},
 		{
 			desc: "and so does a plain digit run",
 			in: mtgmatcher.InputCard{Name: "Infernoid Antra", Variation: "013 Common",
 				Edition: "Secrets of Eternity"},
-			want: "sece-en013_100013_1e",
+			want: "sece-en013_100013_1stedition",
 		},
 	}
 

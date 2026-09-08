@@ -23,12 +23,12 @@ const promoShelfFixture = `{
 		"EVO": {"name": "Bright Lights", "releaseDate": "2023-10-13"}
 	},
 	"cards": [
-		{"externalLinks": {"fabId": "FAB305"}, "fabId": "FAB305", "finish": "Cold Foil", "id": "fab305_cold", "name": "Imperial Seal of Command", "number": "FAB305", "rarity": "Promo", "setCode": "FAB"},
-		{"externalLinks": {"fabId": "HER156"}, "fabId": "HER156", "finish": "Rainbow Foil", "id": "her156_rainbow", "name": "Dash I/O", "number": "HER156", "rarity": "Promo", "setCode": "HER"},
-		{"externalLinks": {"fabId": "LGS125"}, "fabId": "LGS125", "finish": "Cold Foil", "id": "lgs125_cold", "name": "Bloodrot Pox", "number": "LGS125", "rarity": "Promo", "setCode": "LGS"},
-		{"externalLinks": {"fabId": "HER089", "tcgPlayerId": 518587}, "fabId": "HER089", "finish": "Cold Foil", "id": "her089_518587_cold", "name": "Dash I/O", "number": "HER089", "rarity": "Promo", "setCode": "PR"},
-		{"externalLinks": {"fabId": "FAB133", "tcgPlayerId": 497121}, "fabId": "FAB133", "finish": "Rainbow Foil", "id": "fab133_497121_rainbow", "name": "Bloodrot Pox", "number": "FAB133", "rarity": "Promo", "setCode": "PR"},
-		{"externalLinks": {"fabId": "FAB172", "tcgPlayerId": 537819}, "fabId": "FAB172", "finish": "Rainbow Foil", "id": "fab172_537819_rainbow", "name": "Meganetic Protocol", "number": "FAB172", "rarity": "Promo", "setCode": "PR"},
+		{"externalLinks": {"fabId": "FAB305"}, "fabId": "FAB305", "finish": "Cold Foil", "id": "fab305_coldfoil", "name": "Imperial Seal of Command", "number": "FAB305", "rarity": "Promo", "setCode": "FAB"},
+		{"externalLinks": {"fabId": "HER156"}, "fabId": "HER156", "finish": "Rainbow Foil", "id": "her156_rainbowfoil", "name": "Dash I/O", "number": "HER156", "rarity": "Promo", "setCode": "HER"},
+		{"externalLinks": {"fabId": "LGS125"}, "fabId": "LGS125", "finish": "Cold Foil", "id": "lgs125_coldfoil", "name": "Bloodrot Pox", "number": "LGS125", "rarity": "Promo", "setCode": "LGS"},
+		{"externalLinks": {"fabId": "HER089", "tcgPlayerId": 518587}, "fabId": "HER089", "finish": "Cold Foil", "id": "her089_518587_coldfoil", "name": "Dash I/O", "number": "HER089", "rarity": "Promo", "setCode": "PR"},
+		{"externalLinks": {"fabId": "FAB133", "tcgPlayerId": 497121}, "fabId": "FAB133", "finish": "Rainbow Foil", "id": "fab133_497121_rainbowfoil", "name": "Bloodrot Pox", "number": "FAB133", "rarity": "Promo", "setCode": "PR"},
+		{"externalLinks": {"fabId": "FAB172", "tcgPlayerId": 537819}, "fabId": "FAB172", "finish": "Rainbow Foil", "id": "fab172_537819_rainbowfoil", "name": "Meganetic Protocol", "number": "FAB172", "rarity": "Promo", "setCode": "PR"},
 		{"externalLinks": {"fabId": "EVO001", "tcgPlayerId": 518564}, "fabId": "EVO001", "finish": "Normal", "id": "evo001_518564", "name": "Dash I/O", "number": "EVO001", "rarity": "Legendary", "setCode": "EVO"}
 	]
 }`
@@ -46,13 +46,13 @@ func TestPromoShelf(t *testing.T) {
 	for _, tt := range []struct {
 		name, edition, number, want string
 	}{
-		{"Dash I/O", "Promos", "HER089", "her089_518587_cold"},
-		{"Dash I/O", "Flesh and Blood Promos", "HER156", "her156_rainbow"},
-		{"Dash I/O", "Promotional Cards", "HER089", "her089_518587_cold"},
-		{"Bloodrot Pox", "Promos", "FAB133", "fab133_497121_rainbow"},
-		{"Bloodrot Pox", "Flesh and Blood: Promo Cards", "LGS125", "lgs125_cold"},
-		{"Imperial Seal of Command", "Flesh and Blood Promos", "FAB305", "fab305_cold"},
-		{"Meganetic Protocol", "Promos", "172", "fab172_537819_rainbow"},
+		{"Dash I/O", "Promos", "HER089", "her089_518587_coldfoil"},
+		{"Dash I/O", "Flesh and Blood Promos", "HER156", "her156_rainbowfoil"},
+		{"Dash I/O", "Promotional Cards", "HER089", "her089_518587_coldfoil"},
+		{"Bloodrot Pox", "Promos", "FAB133", "fab133_497121_rainbowfoil"},
+		{"Bloodrot Pox", "Flesh and Blood: Promo Cards", "LGS125", "lgs125_coldfoil"},
+		{"Imperial Seal of Command", "Flesh and Blood Promos", "FAB305", "fab305_coldfoil"},
+		{"Meganetic Protocol", "Promos", "172", "fab172_537819_rainbowfoil"},
 		// A set the storefront names outright is not a promo shelf
 		{"Dash I/O", "Bright Lights", "EVO001", "evo001_518564"},
 	} {

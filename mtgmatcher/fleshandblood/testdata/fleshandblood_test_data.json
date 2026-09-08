@@ -5,7 +5,7 @@
             "id": "225015",
             "finish": "Cold Foil"
         },
-        "uuid": "wtr005_225015_1ecold"
+        "uuid": "wtr005_225015_1steditioncoldfoil"
     },
     {
         "description": "a fused face at its number outranks the marvel label",
@@ -22,7 +22,7 @@
             "variant": "MON220//MON068",
             "edition": "Monarch - Unlimited"
         },
-        "uuid": "mon088-mon002_238658_unl"
+        "uuid": "mon088-mon002_238658_unlimitededitionnormal"
     },
     {
         "description": "a pitch-qualified name grows the treatment label at its number",
@@ -30,7 +30,7 @@
             "name": "Wild Ride (Red)",
             "variant": "TNP001"
         },
-        "uuid": "tnp001_692575_rainbow"
+        "uuid": "tnp001_692575_rainbowfoil"
     },
     {
         "description": "a tag written behind another still names its printing",
@@ -38,7 +38,7 @@
             "name": "Tome of Quandaries",
             "variant": "OMN133 Extended Art"
         },
-        "uuid": "omn133_693428_cold"
+        "uuid": "omn133_693428_coldfoil"
     },
     {
         "description": "a treatment no fused pair wears reaches the label at the number",
@@ -48,7 +48,7 @@
             "foil": true,
             "finish": "Cold Foil"
         },
-        "uuid": "hnt055_606729_cold"
+        "uuid": "hnt055_606729_coldfoil"
     },
     {
         "description": "alpha print run rides the 1st edition entry",
@@ -57,7 +57,7 @@
             "variant": "18",
             "edition": "Welcome to Rathe - Alpha Print Run"
         },
-        "uuid": "wtr018_225035_1e"
+        "uuid": "wtr018_225035_1steditionnormal"
     },
     {
         "description": "bare number with the marvel tail still demands the variant",
@@ -65,7 +65,7 @@
             "name": "Enigma, New Moon",
             "variant": "238m"
         },
-        "uuid": "mst238_552791_cold"
+        "uuid": "mst238_552791_coldfoil"
     },
     {
         "description": "bare truncated name adopts the pitch parenthetical carrying the number",
@@ -73,7 +73,7 @@
             "name": "Breakneck Battery",
             "variant": "WTR011"
         },
-        "uuid": "wtr011_225027_unl"
+        "uuid": "wtr011_225027_unlimitededitionnormal"
     },
     {
         "description": "canonical fused spelling keeps its own printing at its number",
@@ -89,7 +89,7 @@
             "name": "Sink Below (Red)",
             "variant": "WTR215"
         },
-        "uuid": "wtr215_225309_unl"
+        "uuid": "wtr215_225309_unlimitededitionnormal"
     },
     {
         "description": "cardtrader marvel letter tail demands the variant",
@@ -97,7 +97,7 @@
             "name": "Enigma, New Moon",
             "variant": "MST238m"
         },
-        "uuid": "mst238_552791_cold"
+        "uuid": "mst238_552791_coldfoil"
     },
     {
         "description": "cardtrader print-run suffix strips off the edition",
@@ -106,7 +106,7 @@
             "variant": "18",
             "edition": "Welcome to Rathe - 1st Edition"
         },
-        "uuid": "wtr018_225035_1e"
+        "uuid": "wtr018_225035_1steditionnormal"
     },
     {
         "description": "cold foil wording picks the cold entry over the rainbow default",
@@ -115,7 +115,7 @@
             "variant": "UPR126 Cold Foil",
             "foil": true
         },
-        "uuid": "upr126_270490_cold"
+        "uuid": "upr126_270490_coldfoil"
     },
     {
         "description": "dashed pitch color normalizes onto the parenthetical name",
@@ -123,7 +123,7 @@
             "name": "Sink Below - Red",
             "variant": "WTR215"
         },
-        "uuid": "wtr215_225309_unl"
+        "uuid": "wtr215_225309_unlimitededitionnormal"
     },
     {
         "description": "doubled fused spelling folds onto its pairing",
@@ -140,7 +140,7 @@
             "name": "Anothos // Bravo",
             "variant": "WTR040"
         },
-        "uuid": "wtr040-wtr039_225011_unl"
+        "uuid": "wtr040-wtr039_225011_unlimitededitionnormal"
     },
     {
         "description": "letter label beside the treatment wording picks its product",
@@ -149,7 +149,7 @@
             "variant": "OMN203 Cold Foil",
             "foil": true
         },
-        "uuid": "omn203_682884_cold"
+        "uuid": "omn203_682884_coldfoil"
     },
     {
         "description": "marvel label survives a respelling onto a pitch-qualified name",
@@ -157,7 +157,7 @@
             "name": "Golden Skull (Marvel)",
             "variant": "OMN240"
         },
-        "uuid": "omn240_695289_cold"
+        "uuid": "omn240_695289_coldfoil"
     },
     {
         "description": "marvel label survives a respelling onto the plain name",
@@ -165,7 +165,7 @@
             "name": "Enigma, Ledger of Ancestry (Marvel)",
             "variant": "MST025"
         },
-        "uuid": "mst025_543929_cold"
+        "uuid": "mst025_543929_coldfoil"
     },
     {
         "description": "marvel qualifier is adopted from the numbered printing",
@@ -259,7 +259,7 @@
             "foil": true,
             "finish": "Rainbow Foil"
         },
-        "uuid": "fab001_225501_1ecold"
+        "uuid": "fab001_225501_1steditioncoldfoil"
     },
     {
         "description": "negative: unknown card name",
@@ -276,7 +276,7 @@
             "name": "Anothos // Bravo",
             "variant": "WTR040 // WTR039"
         },
-        "uuid": "wtr040-wtr039_225011_unl"
+        "uuid": "wtr040-wtr039_225011_unlimitededitionnormal"
     },
     {
         "description": "pair number matches in either face order",
@@ -285,7 +285,7 @@
             "variant": "MON104//MON186",
             "edition": "Monarch - Unlimited"
         },
-        "uuid": "mon186-mon104_238659_unl"
+        "uuid": "mon186-mon104_238659_unlimitededitionnormal"
     },
     {
         "description": "pair number picks among the spellings sharing the faces",
@@ -294,7 +294,7 @@
             "variant": "WTR225//WTR078 Unlimited",
             "edition": "Welcome to Rathe"
         },
-        "uuid": "wtr078-wtr225_225216_unl"
+        "uuid": "wtr078-wtr225_225216_unlimitededitionnormal"
     },
     {
         "description": "pitch label survives when the number wears the color as a label",
@@ -302,7 +302,7 @@
             "name": "Staunch Response (Red)",
             "variant": "TNP019"
         },
-        "uuid": "tnp019_692569_rainbow"
+        "uuid": "tnp019_692569_rainbowfoil"
     },
     {
         "description": "pitch qualifier drops for the yellow spelling too",
@@ -310,7 +310,7 @@
             "name": "Bittering Thorns (Yellow)",
             "variant": "CRU072"
         },
-        "uuid": "cru072_225969_unl"
+        "uuid": "cru072_225969_unlimitededitionnormal"
     },
     {
         "description": "pitch qualifier drops when the numbered printing spells it without",
@@ -318,7 +318,7 @@
             "name": "Hyper Driver (Red)",
             "variant": "ARC036"
         },
-        "uuid": "arc036_225629_unl"
+        "uuid": "arc036_225629_unlimitededitionnormal"
     },
     {
         "description": "pitch qualifier is adopted when the numbered printing spells it",
@@ -335,7 +335,7 @@
             "variant": "WTR215 Rainbow Foil",
             "edition": "Flesh & Blood: Welcome to Rathe Singles"
         },
-        "uuid": "wtr215_225309_unlrainbow"
+        "uuid": "wtr215_225309_unlimitededitionrainbowfoil"
     },
     {
         "description": "reversed fused spelling adopts the datastore face order",
@@ -344,14 +344,14 @@
             "variant": "MON104//MON186",
             "edition": "Monarch - Unlimited"
         },
-        "uuid": "mon186-mon104_238659_unl"
+        "uuid": "mon186-mon104_238659_unlimitededitionnormal"
     },
     {
         "description": "storefront wording picks the variant it describes",
         "input": {
             "name": "Enigma, New Moon (Marvel)"
         },
-        "uuid": "mst238_552791_cold"
+        "uuid": "mst238_552791_coldfoil"
     },
     {
         "description": "tcgplayer printing name routes both finish axes",
@@ -360,14 +360,14 @@
             "variant": "WTR215 1st Edition Rainbow Foil",
             "foil": true
         },
-        "uuid": "wtr215_225309_1erainbow"
+        "uuid": "wtr215_225309_1steditionrainbowfoil"
     },
     {
         "description": "tcgplayer product id resolves through the identifier index",
         "input": {
             "id": "225309"
         },
-        "uuid": "wtr215_225309_unl"
+        "uuid": "wtr215_225309_unlimitededitionnormal"
     },
     {
         "description": "the marvel row stays reachable through its lettered number",
@@ -375,7 +375,7 @@
             "name": "Enigma",
             "variant": "MST026m"
         },
-        "uuid": "mst026_551473_cold"
+        "uuid": "mst026_551473_coldfoil"
     },
     {
         "description": "the name path prices a promo in the one treatment it was sold in, whatever finish was named",
@@ -385,7 +385,7 @@
             "foil": true,
             "finish": "Rainbow Foil"
         },
-        "uuid": "fab001_225501_1ecold"
+        "uuid": "fab001_225501_1steditioncoldfoil"
     },
     {
         "description": "the named finish picks its treatment sibling at the number",
@@ -396,7 +396,7 @@
             "foil": true,
             "finish": "Cold Foil"
         },
-        "uuid": "ros000_577711_cold"
+        "uuid": "ros000_577711_coldfoil"
     },
     {
         "description": "the other treatment of the same number picks the other sibling",
@@ -407,7 +407,7 @@
             "foil": true,
             "finish": "Rainbow Foil"
         },
-        "uuid": "ros000_578820_rainbow"
+        "uuid": "ros000_578820_rainbowfoil"
     },
     {
         "description": "the plain face of a marvel pair lands on the fused card",
@@ -425,7 +425,7 @@
             "foil": true,
             "finish": "Cold Foil"
         },
-        "uuid": "sup064_653952_cold"
+        "uuid": "sup064_653952_coldfoil"
     },
     {
         "description": "the prefix fallback refuses the marvel label while fused cards claim the face",
@@ -442,7 +442,7 @@
             "id": "225015",
             "finish": "Unlimited Edition Normal"
         },
-        "uuid": "wtr005_225015_unl"
+        "uuid": "wtr005_225015_unlimitededitionnormal"
     },
     {
         "description": "treatment wording spelling a label defers to the named variant",
@@ -451,7 +451,7 @@
             "variant": "UPR043 Cold Foil",
             "foil": true
         },
-        "uuid": "upr043_275749_cold"
+        "uuid": "upr043_275749_coldfoil"
     },
     {
         "description": "two fused claimants refuse rather than guess",

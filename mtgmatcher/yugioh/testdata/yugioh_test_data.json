@@ -5,7 +5,7 @@
             "name": "Blue-Eyes White Dragon",
             "variant": "LOB-001 1st Edition"
         },
-        "uuid": "lob-001_21792_1e"
+        "uuid": "lob-001_21792_1stedition"
     },
     {
         "description": "a bare tail is spelled out by the set it names",
@@ -14,7 +14,7 @@
             "variant": "ENF17 Common Common",
             "edition": "Speed Duel GX: Duelists of Shadows"
         },
-        "uuid": "sgx3-enf17_489489_1e"
+        "uuid": "sgx3-enf17_489489_1stedition"
     },
     {
         "description": "a bracketed decoration reads as the parenthetical it is",
@@ -23,7 +23,7 @@
             "variant": "RA01-EN043 Platinum Secret Rare",
             "edition": "25th Anniversary Rarity Collection"
         },
-        "uuid": "ra01-en043_524542_1e"
+        "uuid": "ra01-en043_524542_1stedition"
     },
     {
         "description": "a character's field center is reached through its prefix",
@@ -32,7 +32,7 @@
             "variant": "Blue background w/ Blue-Eyes White Dragon Common",
             "edition": "Tokens"
         },
-        "uuid": "200573_unl"
+        "uuid": "200573_unlimited"
     },
     {
         "description": "a colour names the league printing its number already placed",
@@ -41,7 +41,7 @@
             "variant": "DL18-EN002 Rare Blue",
             "edition": "Duelist League Promo"
         },
-        "uuid": "dl18-en002_94895_unl"
+        "uuid": "dl18-en002_94895_unlimited"
     },
     {
         "description": "a field center flips onto the phrase order the catalog files",
@@ -50,7 +50,7 @@
             "variant": "Cat ears and tail Common",
             "edition": "Tokens"
         },
-        "uuid": "200576_unl"
+        "uuid": "200576_unlimited"
     },
     {
         "description": "a foil flag names no run, and the wording answers instead",
@@ -60,7 +60,7 @@
             "variant": "TP1-017",
             "finish": "Foil"
         },
-        "uuid": "tp1-017_22708_unl"
+        "uuid": "tp1-017_22708_unlimited"
     },
     {
         "description": "a league written without its padding still names its set",
@@ -69,7 +69,7 @@
             "variant": "DL09-EN001 Rare Blue",
             "edition": "Duelist League 9"
         },
-        "uuid": "dl09-en001_77377_unl"
+        "uuid": "dl09-en001_77377_unlimited"
     },
     {
         "description": "a letter the catalog writes as a word",
@@ -78,7 +78,7 @@
             "variant": "Common",
             "edition": "Starter Deck: Speed Duel - Battle City Box"
         },
-        "uuid": "sbcb-en070_227965_1e"
+        "uuid": "sbcb-en070_227965_1stedition"
     },
     {
         "description": "a numbered name reads the same with or without its mark",
@@ -87,7 +87,7 @@
             "variant": "DR1-EN221 Common",
             "edition": "Dark Revelation 1"
         },
-        "uuid": "dr1-en221_24008_unl"
+        "uuid": "dr1-en221_24008_unlimited"
     },
     {
         "description": "a second colour of the same number names its own printing",
@@ -96,7 +96,7 @@
             "variant": "DL18-EN002 Rare Red",
             "edition": "Duelist League Promo"
         },
-        "uuid": "dl18-en002_94964_unl"
+        "uuid": "dl18-en002_94964_unlimited"
     },
     {
         "description": "a second run reaches its own sibling of the same product",
@@ -104,7 +104,7 @@
             "id": "69074",
             "finish": "Limited"
         },
-        "uuid": "ys13-env03_69074_lim"
+        "uuid": "ys13-env03_69074_limited"
     },
     {
         "description": "a set named without the box it is sold in",
@@ -113,7 +113,7 @@
             "variant": "ENG11 Common",
             "edition": "Speed Duel GX: Duel Academy"
         },
-        "uuid": "sgx1-eng11_266197_1e"
+        "uuid": "sgx1-eng11_266197_1stedition"
     },
     {
         "description": "a tier named in part picks the one printing that says all of it",
@@ -122,7 +122,7 @@
             "variant": "KICO-EN063 Ultra Rare",
             "edition": "King's Court"
         },
-        "uuid": "kico-en063_243517_1e"
+        "uuid": "kico-en063_243517_1stedition"
     },
     {
         "description": "a token the storefront names its own way answers to its number",
@@ -131,7 +131,7 @@
             "variant": "TKN4-EN029 Super Rare",
             "edition": "Tokens"
         },
-        "uuid": "tkn4-en029_152514_unl"
+        "uuid": "tkn4-en029_152514_unlimited"
     },
     {
         "description": "a wording naming one tag keeps the printing wearing only it",
@@ -139,7 +139,7 @@
             "name": "Dark Magician Girl the Dragon Knight",
             "variant": "DLCS-EN006 Blue"
         },
-        "uuid": "dlcs-en006_222244_1e"
+        "uuid": "dlcs-en006_222244_1stedition"
     },
     {
         "description": "a wording naming two tags reaches the printing wearing both",
@@ -147,7 +147,7 @@
             "name": "Dark Magician Girl the Dragon Knight",
             "variant": "DLCS-EN006 Alternate Art Blue"
         },
-        "uuid": "dlcs-en006_222248_1e"
+        "uuid": "dlcs-en006_222248_1stedition"
     },
     {
         "description": "an invisible formatting mark is not part of the name",
@@ -156,7 +156,7 @@
             "variant": "Common",
             "edition": "Blazing Vortex"
         },
-        "uuid": "blvo-en091_231404_1e"
+        "uuid": "blvo-en091_231404_1stedition"
     },
     {
         "description": "an unshared number names the card its listing misspells",
@@ -165,7 +165,7 @@
             "variant": "SDWA-EN035 Common",
             "edition": "Structure Deck Samurai Warlords"
         },
-        "uuid": "sdwa-en035_59877_1e"
+        "uuid": "sdwa-en035_59877_1stedition"
     },
     {
         "description": "cardtrader alternate-art tail drops the base art",
@@ -174,7 +174,7 @@
             "variant": "019ua",
             "edition": "25th Anniversary Rarity Collection"
         },
-        "uuid": "ra01-en019_525017_1e"
+        "uuid": "ra01-en019_525017_1stedition"
     },
     {
         "description": "cardtrader rarity suffix picks the rarity",
@@ -183,7 +183,7 @@
             "variant": "019qsec",
             "edition": "25th Anniversary Rarity Collection"
         },
-        "uuid": "ra01-en019_525011_1e"
+        "uuid": "ra01-en019_525011_1stedition"
     },
     {
         "description": "cardtrader suffix keeps the base art",
@@ -192,7 +192,7 @@
             "variant": "019u",
             "edition": "25th Anniversary Rarity Collection"
         },
-        "uuid": "ra01-en019_525008_1e"
+        "uuid": "ra01-en019_525008_1stedition"
     },
     {
         "description": "clean name with the full collector number",
@@ -200,7 +200,7 @@
             "name": "Blue-Eyes White Dragon",
             "variant": "LOB-001"
         },
-        "uuid": "lob-001_21792_unl"
+        "uuid": "lob-001_21792_unlimited"
     },
     {
         "description": "language infix on the input number is ignored within the edition",
@@ -209,7 +209,7 @@
             "variant": "LOB-EN001",
             "edition": "The Legend of Blue Eyes White Dragon"
         },
-        "uuid": "lob-001_21792_unl"
+        "uuid": "lob-001_21792_unlimited"
     },
     {
         "description": "letter label beside the rarity wording picks its product",
@@ -217,7 +217,7 @@
             "name": "Dark Magician Girl (A) (Quarter Century Secret Rare)",
             "edition": "Quarter Century Bonanza"
         },
-        "uuid": "ra03-en123_592813_1e"
+        "uuid": "ra03-en123_592813_1stedition"
     },
     {
         "description": "limited wording routes to the limited print run",
@@ -225,7 +225,7 @@
             "name": "Blizzed, Defender of the Ice Barrier",
             "variant": "HA01-EN001 Limited"
         },
-        "uuid": "ha01-en001_33740_lim"
+        "uuid": "ha01-en001_33740_limited"
     },
     {
         "description": "negative: a character art card is the storefront's product, not a printing",
@@ -339,7 +339,7 @@
             "name": "Eldlich the Golden Lord (Quarter Century Secret Rare)",
             "edition": "25th Anniversary Rarity Collection"
         },
-        "uuid": "ra01-en019_525011_1e"
+        "uuid": "ra01-en019_525011_1stedition"
     },
     {
         "description": "single product for the number needs no rarity signal",
@@ -347,7 +347,7 @@
             "name": "Dark Hole",
             "variant": "LOB-052"
         },
-        "uuid": "lob-052_21873_unl"
+        "uuid": "lob-052_21873_unlimited"
     },
     {
         "description": "storefront edition decorations strip away",
@@ -356,7 +356,7 @@
             "variant": "1st Edition",
             "edition": "Yu-Gi-Oh! The Legend of Blue Eyes White Dragon Singles"
         },
-        "uuid": "lob-001_21792_1e"
+        "uuid": "lob-001_21792_1stedition"
     },
     {
         "description": "tcgplayer artwork parenthetical picks the variant",
@@ -364,14 +364,14 @@
             "name": "Harpie Lady (Original Artwork)",
             "variant": "MRD-008"
         },
-        "uuid": "mrd-008_22062_unl"
+        "uuid": "mrd-008_22062_unlimited"
     },
     {
         "description": "tcgplayer product id resolves through the identifier index",
         "input": {
             "id": "525011"
         },
-        "uuid": "ra01-en019_525011_1e"
+        "uuid": "ra01-en019_525011_1stedition"
     },
     {
         "description": "tcgplayer rarity parenthetical picks the rarity",
@@ -379,7 +379,7 @@
             "name": "Eldlich the Golden Lord (Secret Rare)",
             "edition": "25th Anniversary Rarity Collection"
         },
-        "uuid": "ra01-en019_525009_1e"
+        "uuid": "ra01-en019_525009_1stedition"
     },
     {
         "description": "the mark numbering a repeated name is read from the wording",
@@ -388,7 +388,7 @@
             "variant": "Common",
             "edition": "Legacy of Darkness"
         },
-        "uuid": "lod-006_22408_unl"
+        "uuid": "lod-006_22408_unlimited"
     },
     {
         "description": "the run named beside the id prices that run's entry",
@@ -396,7 +396,7 @@
             "id": "69074",
             "finish": "1st Edition"
         },
-        "uuid": "ys13-env03_69074_1e"
+        "uuid": "ys13-env03_69074_1stedition"
     },
     {
         "description": "the sibling deck letter keeps its own printing",
@@ -405,7 +405,7 @@
             "variant": "ENG14 Common Common",
             "edition": "Speed Duel GX: Duelists of Shadows"
         },
-        "uuid": "sgx3-eng14_489506_1e"
+        "uuid": "sgx3-eng14_489506_1stedition"
     },
     {
         "description": "unlimited wording is not read as limited",
@@ -413,6 +413,6 @@
             "name": "Blizzed, Defender of the Ice Barrier",
             "variant": "HA01-EN001 Unlimited"
         },
-        "uuid": "ha01-en001_33740_unl"
+        "uuid": "ha01-en001_33740_unlimited"
     }
 ]

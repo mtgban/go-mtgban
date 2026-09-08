@@ -59,8 +59,8 @@ const fabPromoDatastore = `{
  "game": "fleshandblood",
  "sets": {"PR": {"name": "Flesh and Blood: Promo Cards", "releaseDate": "2019-10-11"}},
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 604800}, "finish": "Cold Foil", "id": "fab012_cold", "name": "Energy Potion", "number": "FAB012", "rarity": "Promo", "setCode": "PR"},
-  {"externalLinks": {"tcgPlayerId": 604846}, "finish": "Cold Foil", "id": "her009_cold", "name": "Dash, Inventor Extraordinaire", "number": "HER009", "rarity": "Promo", "setCode": "PR"}
+  {"externalLinks": {"tcgPlayerId": 604800}, "finish": "Cold Foil", "id": "fab012_coldfoil", "name": "Energy Potion", "number": "FAB012", "rarity": "Promo", "setCode": "PR"},
+  {"externalLinks": {"tcgPlayerId": 604846}, "finish": "Cold Foil", "id": "her009_coldfoil", "name": "Dash, Inventor Extraordinaire", "number": "HER009", "rarity": "Promo", "setCode": "PR"}
  ]
 }`
 
@@ -76,8 +76,8 @@ func TestFabPromoProduct(t *testing.T) {
 
 	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct{ name, number, expansion, want string }{
-		{"Energy Potion (Cold Foil)", "012", "FAB Promos", "fab012_cold"},
-		{"Dash, Inventor Extraordinaire (Cold Foil)", "009", "Hero Promos", "her009_cold"},
+		{"Energy Potion (Cold Foil)", "012", "FAB Promos", "fab012_coldfoil"},
+		{"Dash, Inventor Extraordinaire (Cold Foil)", "009", "Hero Promos", "her009_coldfoil"},
 		// The same number under the programme that does not issue it stays
 		// unresolved rather than landing on the other one's card.
 		{"Energy Potion (Cold Foil)", "009", "FAB Promos", ""},

@@ -30,12 +30,12 @@ const catchAllFixture = `{
 		"LOB2": {"name": "Legend of Blue Eyes White Dragon 25th Anniversary", "releaseDate": "2023-02-24"}
 	},
 	"cards": [
-		{"id": "lart-en004_158235_lim", "name": "Exodia the Forbidden One", "number": "LART-EN004", "setCode": "LART", "rarity": "Ultra Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 158235}},
-		{"id": "ubp1-en005_26541_lim", "name": "Exodia the Forbidden One", "number": "UBP1-EN005", "setCode": "UBP1", "rarity": "Secret Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 26541}},
-		{"id": "tn23-en002_514575_lim", "name": "Exodia the Forbidden One", "number": "TN23-EN002", "setCode": "TN23", "rarity": "Quarter Century Secret Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 514575}},
-		{"id": "dl09-en001_1_unl", "name": "Exodia the Forbidden One", "number": "DL09-EN001", "setCode": "DL09", "rarity": "Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 1}},
-		{"id": "lob-001_21792_1e", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB", "rarity": "Ultra Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 21792}},
-		{"id": "lob-001_21793_unl", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB2", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 21793}}
+		{"id": "lart-en004_158235_limited", "name": "Exodia the Forbidden One", "number": "LART-EN004", "setCode": "LART", "rarity": "Ultra Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 158235}},
+		{"id": "ubp1-en005_26541_limited", "name": "Exodia the Forbidden One", "number": "UBP1-EN005", "setCode": "UBP1", "rarity": "Secret Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 26541}},
+		{"id": "tn23-en002_514575_limited", "name": "Exodia the Forbidden One", "number": "TN23-EN002", "setCode": "TN23", "rarity": "Quarter Century Secret Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 514575}},
+		{"id": "dl09-en001_1_unlimited", "name": "Exodia the Forbidden One", "number": "DL09-EN001", "setCode": "DL09", "rarity": "Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 1}},
+		{"id": "lob-001_21792_1stedition", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB", "rarity": "Ultra Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 21792}},
+		{"id": "lob-001_21793_unlimited", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB2", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 21793}}
 	]
 }`
 
@@ -62,29 +62,29 @@ func TestNumberSetAnswersCatchAllEdition(t *testing.T) {
 		{
 			desc: "the undashed number names its own set",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "LARTEN004", Edition: "Promo"},
-			want: "lart-en004_158235_lim",
+			want: "lart-en004_158235_limited",
 		},
 		{
 			// The three rows differ in nothing but this number, and it is what
 			// keeps a $170 Secret Rare buy price off the $22 Ultra Rare.
 			desc: "the secret rare reaches its own set",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "UBP1EN005", Edition: "Promo"},
-			want: "ubp1-en005_26541_lim",
+			want: "ubp1-en005_26541_limited",
 		},
 		{
 			desc: "the quarter century rare reaches its own set",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "TN23EN002", Edition: "Promo"},
-			want: "tn23-en002_514575_lim",
+			want: "tn23-en002_514575_limited",
 		},
 		{
 			desc: "the dashed spelling of the same number reads the same",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "UBP1-EN005", Edition: "Promo"},
-			want: "ubp1-en005_26541_lim",
+			want: "ubp1-en005_26541_limited",
 		},
 		{
 			desc: "the rarity the note spells rides along unharmed",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "TN23EN002 Quarter Century Rare", Edition: "Promo"},
-			want: "tn23-en002_514575_lim",
+			want: "tn23-en002_514575_limited",
 		},
 		{
 			// The number is the storefront's own claim, and one pointing at a
@@ -92,17 +92,17 @@ func TestNumberSetAnswersCatchAllEdition(t *testing.T) {
 			// listing belongs: the bucket keeps whatever it was reaching.
 			desc: "a number naming a set without the card leaves the edition alone",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "LOB001", Edition: "Promo"},
-			want: "dl09-en001_1_unl",
+			want: "dl09-en001_1_unlimited",
 		},
 		{
 			desc: "an edition that names a set is never overridden",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "UBP1EN005", Edition: "Duelist League Promo"},
-			want: "dl09-en001_1_unl",
+			want: "dl09-en001_1_unlimited",
 		},
 		{
 			desc: "a decorated edition that names a set is not overridden either",
 			in:   mtgmatcher.InputCard{Name: "Exodia the Forbidden One", Variation: "UBP1EN005", Edition: "Yu-Gi-Oh! Duelist League Promo Singles"},
-			want: "dl09-en001_1_unl",
+			want: "dl09-en001_1_unlimited",
 		},
 	}
 

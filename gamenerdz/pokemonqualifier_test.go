@@ -21,8 +21,8 @@ const snorlaxDatastore = `{
  "game": "pokemon",
  "sets": {"SVP": {"abbreviation": "SVP", "name": "SV: Scarlet & Violet Promo Cards", "releaseDate": "2023-03-31", "type": "promo"}},
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 517175}, "finish": "Holofoil", "id": "051_517175_holo", "name": "Snorlax", "number": "051", "rarity": "Promo", "setCode": "SVP", "type": "Colorless"},
-  {"externalLinks": {"tcgPlayerId": 517270}, "finish": "Holofoil", "id": "051_517270_holo", "name": "Snorlax", "number": "051", "promoTypes": ["pokemon center exclusive"], "rarity": "Promo", "setCode": "SVP", "type": "Colorless", "variant": "Pokemon Center Exclusive"}
+  {"externalLinks": {"tcgPlayerId": 517175}, "finish": "Holofoil", "id": "051_517175_holofoil", "name": "Snorlax", "number": "051", "rarity": "Promo", "setCode": "SVP", "type": "Colorless"},
+  {"externalLinks": {"tcgPlayerId": 517270}, "finish": "Holofoil", "id": "051_517270_holofoil", "name": "Snorlax", "number": "051", "promoTypes": ["pokemon center exclusive"], "rarity": "Promo", "setCode": "SVP", "type": "Colorless", "variant": "Pokemon Center Exclusive"}
  ]
 }`
 
@@ -47,11 +47,11 @@ func TestPreprocessPokemonQualifier(t *testing.T) {
 		displayName string
 		uuid        string
 	}{
-		{"Snorlax - 051 (Pokemon Center Exclusive)  - SV Scarlet  Violet Promo Cards Holofoil", "051_517270_holo"},
-		{"Snorlax - 051  - SV Scarlet  Violet Promo Cards Holofoil", "051_517175_holo"},
+		{"Snorlax - 051 (Pokemon Center Exclusive)  - SV Scarlet  Violet Promo Cards Holofoil", "051_517270_holofoil"},
+		{"Snorlax - 051  - SV Scarlet  Violet Promo Cards Holofoil", "051_517175_holofoil"},
 		// Wording the catalog cannot place falls back on the number it was
 		// read from, so it costs the listing nothing.
-		{"Snorlax - 051 (Sealed In A Jar)  - SV Scarlet  Violet Promo Cards Holofoil", "051_517175_holo"},
+		{"Snorlax - 051 (Sealed In A Jar)  - SV Scarlet  Violet Promo Cards Holofoil", "051_517175_holofoil"},
 	}
 	for _, tt := range tests {
 		product := GNProduct{

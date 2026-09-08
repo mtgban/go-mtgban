@@ -29,8 +29,8 @@ func TestPromoLabelDepth(t *testing.T) {
 	mtgmatcher.SetGlobalDatastore(b)
 
 	for _, tt := range []struct{ desc, variation, want string }{
-		{"the retailer is what tells the stampings apart", "117 GameStop Cosmos Holo", "117-159_626640_holo"},
-		{"and the other retailer likewise", "117 EB Games Cosmos Holo", "117-159_629648_holo"},
+		{"the retailer is what tells the stampings apart", "117 GameStop Cosmos Holo", "117-159_626640_holofoil"},
+		{"and the other retailer likewise", "117 EB Games Cosmos Holo", "117-159_629648_holofoil"},
 		// Naming only the shared label names no one of them, and saying so
 		// beats answering with whichever came first.
 		{"the shared label alone still aliases", "117 Cosmos Holo", ""},

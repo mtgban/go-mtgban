@@ -25,8 +25,8 @@ const yugiohShelfDatastore = `{
   "MP18": {"abbreviation": "MP18", "name": "2018 Mega-Tins Mega Pack", "releaseDate": "2018-08-30"}
  },
  "cards": [
-  {"finish": "1st Edition", "id": "lob-000_22538_1e", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
-  {"finish": "Unlimited", "id": "lob-000_22538_unl", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
+  {"finish": "1st Edition", "id": "lob-000_22538_1stedition", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
+  {"finish": "Unlimited", "id": "lob-000_22538_unlimited", "name": "Tri-Horned Dragon", "number": "LOB-000", "rarity": "Secret Rare", "setCode": "LOB"},
   {"finish": "Unlimited", "id": "lob-en000_1", "name": "Tri-Horned Dragon", "number": "LOB-EN000", "rarity": "Secret Rare", "setCode": "LOB-EN"},
   {"finish": "1st Edition", "id": "mp18-en065_1", "name": "Topologic Bomber Dragon", "number": "MP18-EN065", "rarity": "Prismatic Secret Rare", "setCode": "MP18"}
  ]
@@ -47,8 +47,8 @@ func TestMatchYugiohShelves(t *testing.T) {
 		expansion, name, number, want string
 		err                           error
 	}{
-		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.1 - Secret Rare)", "000", "lob-000_22538_unl", nil},
-		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.2 - Secret Rare)", "000", "lob-000_22538_1e", nil},
+		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.1 - Secret Rare)", "000", "lob-000_22538_unlimited", nil},
+		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.2 - Secret Rare)", "000", "lob-000_22538_1stedition", nil},
 		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.4 - Secret Rare)", "EN000", "lob-en000_1", nil},
 		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.3 - Secret Rare)", "A000", "", errForeign},
 		{"2018 Mega-Tin Mega Pack", "Topologic Bomber Dragon", "065", "mp18-en065_1", nil},

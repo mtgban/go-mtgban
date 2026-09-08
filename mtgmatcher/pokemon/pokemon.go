@@ -338,7 +338,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		card := &payload.Cards[i]
 		key := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 		if card.ExternalLinks.TcgPlayerID == 0 {
-			key = trimFinishSuffix(card.ID)
+			key = trimFinishSuffix(card.ID, card.Finish)
 		}
 		if _, found := products[key]; !found {
 			productOrder = append(productOrder, key)
@@ -529,16 +529,27 @@ func pickPrinting(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 	return group[0]
 }
 
-// trimFinishSuffix strips the printing tail the builder suffixes ids with,
-// the grouping fallback for an entry without a tcgPlayerId. The longer
-// suffixes are tried first, so "_1eholo" is not read as "_holo".
-func trimFinishSuffix(id string) string {
-	for _, suffix := range []string{"_1eholo", "_unlholo", "_reverse", "_holo", "_1e", "_unl"} {
-		if strings.HasSuffix(id, suffix) {
-			return strings.TrimSuffix(id, suffix)
-		}
+// trimFinishSuffix strips the printing tail the builder hangs off an entry's
+// id, spelled from the entry's own finish the way the builder spells it: the
+// plain printing takes the bare id and every other takes its own name. Read
+// off the entry rather than from a list of this game's printings, so a
+// printing TCGplayer adds folds with the rest.
+func trimFinishSuffix(id, finish string) string {
+	if slug := finishSlug(finish); slug != "" && slug != "normal" {
+		return strings.TrimSuffix(id, "_"+slug)
 	}
 	return id
+}
+
+// finishSlug spells a printing name the way an id carries it.
+func finishSlug(name string) string {
+	var out strings.Builder
+	for _, r := range strings.ToLower(name) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
 }
 
 // ownNumber is the card's part of the collector number alone: the "082" of

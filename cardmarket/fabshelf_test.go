@@ -39,21 +39,21 @@ const fabShelfDatastore = `{
   {"externalLinks": {"fabId": "PSM018", "tcgPlayerId": 238518}, "fabId": "PSM018", "finish": "Normal", "id": "psm018_238518", "name": "Herald of Rebirth (Blue)", "number": "PSM018", "rarity": "Common", "setCode": "PSM"},
   {"externalLinks": {"tcgPlayerId": 275840}, "finish": "Normal", "id": "upr042-upr043_275840", "name": "Aether Ashwing // Ash", "number": "UPR042//UPR043", "rarity": "Token", "setCode": "UPR"},
   {"externalLinks": {"fabId": "UPR042"}, "fabId": "UPR042", "finish": "Normal", "id": "upr042", "name": "Aether Ashwing", "number": "UPR042", "rarity": "Token", "setCode": "UPR"},
-  {"externalLinks": {"fabId": "UPR042"}, "fabId": "UPR042", "finish": "Cold Foil", "id": "upr042_cold", "name": "Aether Ashwing", "number": "UPR042", "rarity": "Token", "setCode": "UPR"},
+  {"externalLinks": {"fabId": "UPR042"}, "fabId": "UPR042", "finish": "Cold Foil", "id": "upr042_coldfoil", "name": "Aether Ashwing", "number": "UPR042", "rarity": "Token", "setCode": "UPR"},
   {"externalLinks": {"fabId": "DYN245", "tcgPlayerId": 453353}, "fabId": "DYN245", "finish": "Normal", "id": "dyn245_453353", "name": "Silver", "number": "DYN245", "rarity": "Common", "setCode": "DYN"},
   {"externalLinks": {"fabId": "HVY192", "tcgPlayerId": 533597}, "fabId": "HVY192", "finish": "Normal", "id": "hvy192_533597", "name": "Lead with Heart (Red)", "number": "HVY192", "rarity": "Common", "setCode": "HVY"},
-  {"externalLinks": {"fabId": "HVY192", "tcgPlayerId": 533597}, "fabId": "HVY192", "finish": "Rainbow Foil", "id": "hvy192_533597_rainbow", "name": "Lead with Heart (Red)", "number": "HVY192", "rarity": "Common", "setCode": "HVY"},
+  {"externalLinks": {"fabId": "HVY192", "tcgPlayerId": 533597}, "fabId": "HVY192", "finish": "Rainbow Foil", "id": "hvy192_533597_rainbowfoil", "name": "Lead with Heart (Red)", "number": "HVY192", "rarity": "Common", "setCode": "HVY"},
   {"externalLinks": {"fabId": "HVY193", "tcgPlayerId": 533598}, "fabId": "HVY193", "finish": "Normal", "id": "hvy193_533598", "name": "Lead with Heart (Yellow)", "number": "HVY193", "rarity": "Common", "setCode": "HVY"},
-  {"externalLinks": {"fabId": "HVY193", "tcgPlayerId": 533598}, "fabId": "HVY193", "finish": "Rainbow Foil", "id": "hvy193_533598_rainbow", "name": "Lead with Heart (Yellow)", "number": "HVY193", "rarity": "Common", "setCode": "HVY"},
-  {"externalLinks": {"fabId": "ROS000", "tcgPlayerId": 577711}, "fabId": "ROS000", "finish": "Cold Foil", "id": "ros000_577711_cold", "name": "Will of Arcana", "number": "ROS000", "promoTypes": ["cold foil"], "rarity": "Fabled", "setCode": "ROS", "variant": "Cold Foil"},
-  {"externalLinks": {"fabId": "ROS000", "tcgPlayerId": 578820}, "fabId": "ROS000", "finish": "Rainbow Foil", "id": "ros000_578820_rainbow", "name": "Will of Arcana", "number": "ROS000", "promoTypes": ["rainbow foil"], "rarity": "Fabled", "setCode": "ROS", "variant": "Rainbow Foil"},
-  {"externalLinks": {"fabId": "SEA043", "tcgPlayerId": 624358}, "fabId": "SEA043", "finish": "Cold Foil", "id": "sea043_624358_cold", "name": "Gravy Bones, Shipwrecked Looter (Marvel)", "number": "SEA043", "rarity": "Marvel", "setCode": "HS"},
+  {"externalLinks": {"fabId": "HVY193", "tcgPlayerId": 533598}, "fabId": "HVY193", "finish": "Rainbow Foil", "id": "hvy193_533598_rainbowfoil", "name": "Lead with Heart (Yellow)", "number": "HVY193", "rarity": "Common", "setCode": "HVY"},
+  {"externalLinks": {"fabId": "ROS000", "tcgPlayerId": 577711}, "fabId": "ROS000", "finish": "Cold Foil", "id": "ros000_577711_coldfoil", "name": "Will of Arcana", "number": "ROS000", "promoTypes": ["cold foil"], "rarity": "Fabled", "setCode": "ROS", "variant": "Cold Foil"},
+  {"externalLinks": {"fabId": "ROS000", "tcgPlayerId": 578820}, "fabId": "ROS000", "finish": "Rainbow Foil", "id": "ros000_578820_rainbowfoil", "name": "Will of Arcana", "number": "ROS000", "promoTypes": ["rainbow foil"], "rarity": "Fabled", "setCode": "ROS", "variant": "Rainbow Foil"},
+  {"externalLinks": {"fabId": "SEA043", "tcgPlayerId": 624358}, "fabId": "SEA043", "finish": "Cold Foil", "id": "sea043_624358_coldfoil", "name": "Gravy Bones, Shipwrecked Looter (Marvel)", "number": "SEA043", "rarity": "Marvel", "setCode": "HS"},
   {"externalLinks": {"tcgPlayerId": 638044}, "finish": "Normal", "id": "sea043-sea044_638044", "name": "Gravy Bones, Shipwrecked Looter // Gravy Bones", "number": "SEA043//SEA044", "rarity": "Basic", "setCode": "HS"},
-  {"externalLinks": {"fabId": "SUP001", "tcgPlayerId": 641658}, "fabId": "SUP001", "finish": "Cold Foil", "id": "sup001_641658_cold", "name": "Tuffnut, Bumbling Hulkster (Marvel)", "number": "SUP001", "rarity": "Marvel", "setCode": "SUP"},
+  {"externalLinks": {"fabId": "SUP001", "tcgPlayerId": 641658}, "fabId": "SUP001", "finish": "Cold Foil", "id": "sup001_641658_coldfoil", "name": "Tuffnut, Bumbling Hulkster (Marvel)", "number": "SUP001", "rarity": "Marvel", "setCode": "SUP"},
   {"externalLinks": {"tcgPlayerId": 656933}, "finish": "Normal", "id": "sup001-sup002_656933", "name": "Tuffnut, Bumbling Hulkster // Tuffnut", "number": "SUP001//SUP002", "rarity": "Basic", "setCode": "SUP"},
   {"externalLinks": {"fabId": "FAB298"}, "fabId": "FAB298", "finish": "Normal", "id": "fab298", "name": "Tide Flippers", "number": "FAB298", "rarity": "Promo", "setCode": "FAB"},
-  {"externalLinks": {"fabId": "FAB305"}, "fabId": "FAB305", "finish": "Cold Foil", "id": "fab305_cold", "name": "Imperial Seal of Command", "number": "FAB305", "rarity": "Promo", "setCode": "FAB"},
-  {"externalLinks": {"fabId": "HER069"}, "fabId": "HER069", "finish": "Cold Foil", "id": "her069_cold", "name": "Prism, Sculptor of Arc Light", "number": "HER069", "rarity": "Promo", "setCode": "HER"},
+  {"externalLinks": {"fabId": "FAB305"}, "fabId": "FAB305", "finish": "Cold Foil", "id": "fab305_coldfoil", "name": "Imperial Seal of Command", "number": "FAB305", "rarity": "Promo", "setCode": "FAB"},
+  {"externalLinks": {"fabId": "HER069"}, "fabId": "HER069", "finish": "Cold Foil", "id": "her069_coldfoil", "name": "Prism, Sculptor of Arc Light", "number": "HER069", "rarity": "Promo", "setCode": "HER"},
   {"externalLinks": {"fabId": "SAR033"}, "fabId": "SAR033", "finish": "Normal", "id": "sar033", "name": "Graphene Chelicera", "number": "SAR033", "rarity": "Basic", "setCode": "SAR"}
  ]
 }`
@@ -145,19 +145,19 @@ func TestMatchProductFinishes(t *testing.T) {
 	for _, tt := range []struct {
 		expansion, code, name, number, want string
 	}{
-		{"Rosetta", "ROS", "Will of Arcana (Rainbow Foil)", "000", "ros000_578820_rainbow"},
-		{"Rosetta", "ROS", "Will of Arcana (Cold Foil)", "000", "ros000_577711_cold"},
+		{"Rosetta", "ROS", "Will of Arcana (Rainbow Foil)", "000", "ros000_578820_rainbowfoil"},
+		{"Rosetta", "ROS", "Will of Arcana (Cold Foil)", "000", "ros000_577711_coldfoil"},
 		{"Dynasty", "DYN", "Silver (Regular)", "245", "dyn245_453353"},
 		{"Dynasty", "DYN", "Silver (Rainbow Foil)", "245", "dyn245_453353"},
 		{"Uprising", "UPR", "Aether Ashwing // Ash (Regular)", "042", "upr042-upr043_275840"},
-		{"Uprising", "UPR", "Aether Ashwing // Ash (Cold Foil)", "042", "upr042_cold"},
+		{"Uprising", "UPR", "Aether Ashwing // Ash (Cold Foil)", "042", "upr042_coldfoil"},
 		{"FAB Promos", "FAB", "Tide Flippers (Cold Foil Golden)", "298", "fab298"},
-		{"FAB Promos", "FAB", "Imperial Seal of Command (Cold Foil)", "305", "fab305_cold"},
-		{"Hero Promos", "HER", "Prism, Sculptor of Arc Light (Cold Foil)", "069", "her069_cold"},
+		{"FAB Promos", "FAB", "Imperial Seal of Command (Cold Foil)", "305", "fab305_coldfoil"},
+		{"Hero Promos", "HER", "Prism, Sculptor of Arc Light (Cold Foil)", "069", "her069_coldfoil"},
 		{"Silver Age Deck - Arakni, Web of Deceit", "SAR", "Graphene Chelicera (Regular)", "033", "sar033"},
 		{"High Seas", "SEA", "Gravy Bones, Shipwrecked Looter (Regular)", "043", "sea043-sea044_638044"},
-		{"High Seas", "SEA", "Gravy Bones, Shipwrecked Looter (Marvel)", "043", "sea043_624358_cold"},
-		{"Heavy Hitters", "HVY", "Lead With Heart (Yellow) (Rainbow Foil)", "193", "hvy193_533598_rainbow"},
+		{"High Seas", "SEA", "Gravy Bones, Shipwrecked Looter (Marvel)", "043", "sea043_624358_coldfoil"},
+		{"Heavy Hitters", "HVY", "Lead With Heart (Yellow) (Rainbow Foil)", "193", "hvy193_533598_rainbowfoil"},
 	} {
 		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion, ExpansionCode: tt.code}
 		if got := mkm.matchProduct(&product); got != tt.want {
@@ -179,9 +179,9 @@ func TestResolveProductBridgeFinish(t *testing.T) {
 		want    string
 		byName  bool
 	}{
-		{cm.Product{IDProduct: 1, Name: "Will of Arcana (Rainbow Foil)", Number: "000", ExpansionName: "Rosetta"}, "ros000_578820_rainbow", true},
+		{cm.Product{IDProduct: 1, Name: "Will of Arcana (Rainbow Foil)", Number: "000", ExpansionName: "Rosetta"}, "ros000_578820_rainbowfoil", true},
 		{cm.Product{IDProduct: 2, Name: "Silver (Rainbow Foil)", Number: "245", ExpansionName: "Dynasty"}, "dyn245_453353", true},
-		{cm.Product{IDProduct: 3, Name: "Aether Ashwing // Ash (Cold Foil)", Number: "042", ExpansionName: "Uprising"}, "upr042_cold", true},
+		{cm.Product{IDProduct: 3, Name: "Aether Ashwing // Ash (Cold Foil)", Number: "042", ExpansionName: "Uprising"}, "upr042_coldfoil", true},
 		{cm.Product{IDProduct: 3, Name: "Aether Ashwing // Ash (Regular)", Number: "042", ExpansionName: "Uprising"}, "upr042-upr043_275840", false},
 	} {
 		got, _, byName, err := mkm.resolveProduct(&tt.product)

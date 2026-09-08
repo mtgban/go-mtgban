@@ -24,12 +24,12 @@ const fabArtDatastore = `{
  "sets": {"GEM": {"name": "GEM Pack 1", "releaseDate": "2025-02-01"}, "CRU": {"name": "Crucible of War", "releaseDate": "2020-08-28"}},
  "cards": [
   {"externalLinks": {"tcgPlayerId": 616347}, "fabId": "GEM010", "finish": "Normal", "id": "gem010_616347", "name": "Display Loyalty (Red)", "number": "GEM010", "rarity": "Promo", "setCode": "GEM"},
-  {"externalLinks": {"tcgPlayerId": 616347}, "fabId": "GEM010", "finish": "Rainbow Foil", "id": "gem010_616347_rainbow", "name": "Display Loyalty (Red)", "number": "GEM010", "rarity": "Promo", "setCode": "GEM"},
-  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "1st Edition Normal", "id": "cru082_225982_1e", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
-  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "1st Edition Rainbow Foil", "id": "cru082_225982_1erainbow", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
-  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "Unlimited Edition Normal", "id": "cru082_225982_unl", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
-  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "Unlimited Edition Rainbow Foil", "id": "cru082_225982_unlrainbow", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
-  {"externalLinks": {"tcgPlayerId": 225983}, "fabId": "CRU082", "finish": "1st Edition Rainbow Foil", "id": "cru082_225983_1erainbow", "name": "Twinning Blade", "number": "CRU082", "promoTypes": ["extended art"], "rarity": "Majestic", "setCode": "CRU", "variant": "Extended Art"}
+  {"externalLinks": {"tcgPlayerId": 616347}, "fabId": "GEM010", "finish": "Rainbow Foil", "id": "gem010_616347_rainbowfoil", "name": "Display Loyalty (Red)", "number": "GEM010", "rarity": "Promo", "setCode": "GEM"},
+  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "1st Edition Normal", "id": "cru082_225982_1stedition", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
+  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "1st Edition Rainbow Foil", "id": "cru082_225982_1steditionrainbowfoil", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
+  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "Unlimited Edition Normal", "id": "cru082_225982_unlimited", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
+  {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "Unlimited Edition Rainbow Foil", "id": "cru082_225982_unlimitededitionrainbowfoil", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
+  {"externalLinks": {"tcgPlayerId": 225983}, "fabId": "CRU082", "finish": "1st Edition Rainbow Foil", "id": "cru082_225983_1steditionrainbowfoil", "name": "Twinning Blade", "number": "CRU082", "promoTypes": ["extended art"], "rarity": "Majestic", "setCode": "CRU", "variant": "Extended Art"}
  ]
 }`
 
@@ -89,8 +89,8 @@ func TestGemPackTreatments(t *testing.T) {
 		})
 
 	for uuid, want := range map[string]string{
-		"gem010_616347":         "810664",
-		"gem010_616347_rainbow": "810195",
+		"gem010_616347":             "810664",
+		"gem010_616347_rainbowfoil": "810195",
 	} {
 		entries := mkm.inventory[uuid]
 		if len(entries) != len(availableIndexNames) {
@@ -118,9 +118,9 @@ func TestMatchProductExtendedArt(t *testing.T) {
 
 	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct{ name, want string }{
-		{"Twinning Blade (Extended Art Rainbow Foil)", "cru082_225983_1erainbow"},
-		{"Twinning Blade (Rainbow Foil)", "cru082_225982_1erainbow"},
-		{"Twinning Blade (Regular)", "cru082_225982_1e"},
+		{"Twinning Blade (Extended Art Rainbow Foil)", "cru082_225983_1steditionrainbowfoil"},
+		{"Twinning Blade (Rainbow Foil)", "cru082_225982_1steditionrainbowfoil"},
+		{"Twinning Blade (Regular)", "cru082_225982_1stedition"},
 	} {
 		got := mkm.matchProduct(&cm.Product{
 			Name:          tt.name,

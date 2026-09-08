@@ -94,7 +94,7 @@ func TestPrintedFace(t *testing.T) {
 	}{
 		{
 			desc:   "a card whose face prints a total keeps it",
-			uuid:   "001-102_42346_holo",
+			uuid:   "001-102_42346_holofoil",
 			number: "001", plain: "1", total: "102", wantFace: "001/102",
 		},
 	} {

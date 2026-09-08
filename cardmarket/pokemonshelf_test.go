@@ -20,9 +20,9 @@ const pokemonShelfDatastore = `{
  "game": "pokemon",
  "sets": {"SMP": {"abbreviation": "SMP", "name": "SM Promos", "releaseDate": "2016-11-18", "type": "promo"}, "SM01": {"abbreviation": "SM01", "name": "SM Base Set", "releaseDate": "2017-02-03"}},
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 127160}, "finish": "Holofoil", "id": "sm04_127160_holo", "name": "Pikachu", "number": "SM04", "rarity": "Promo", "setCode": "SMP"},
+  {"externalLinks": {"tcgPlayerId": 127160}, "finish": "Holofoil", "id": "sm04_127160_holofoil", "name": "Pikachu", "number": "SM04", "rarity": "Promo", "setCode": "SMP"},
   {"externalLinks": {"tcgPlayerId": 126880}, "finish": "Normal", "id": "9-149_126880", "name": "Rowlet", "number": "9", "rarity": "Common", "setCode": "SM01"},
-  {"externalLinks": {"tcgPlayerId": 126880}, "finish": "Reverse Holofoil", "id": "9-149_126880_reverse", "name": "Rowlet", "number": "9", "rarity": "Common", "setCode": "SM01"}
+  {"externalLinks": {"tcgPlayerId": 126880}, "finish": "Reverse Holofoil", "id": "9-149_126880_reverseholofoil", "name": "Rowlet", "number": "9", "rarity": "Common", "setCode": "SM01"}
  ]
 }`
 
@@ -41,7 +41,7 @@ func TestMatchPokemonShelves(t *testing.T) {
 		expansion, name, number, want string
 		err                           error
 	}{
-		{"SM Black Star Promos", "Pikachu ", "04", "sm04_127160_holo", nil},
+		{"SM Black Star Promos", "Pikachu ", "04", "sm04_127160_holofoil", nil},
 		{"Sun & Moon", "Rowlet ", "9", "9-149_126880", nil},
 		{"Sun & Moon", "Rowlet [Tackle | Leafage]", "9", "9-149_126880", nil},
 		{"Sun & Moon", "Litten", "24", "", errNoPrinting},

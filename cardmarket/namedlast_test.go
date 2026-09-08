@@ -29,7 +29,7 @@ func entry(price float64, ogID int) mtgban.InventoryEntry {
 // first. The named one has to arrive second whatever order the pool walked
 // the catalog in.
 func TestNamedLast(t *testing.T) {
-	const uuid = "lod-005_22583_unl"
+	const uuid = "lod-005_22583_unlimited"
 
 	for _, tt := range []struct {
 		name    string
@@ -98,7 +98,7 @@ func TestNamedLast(t *testing.T) {
 func TestCollectPricesDefersNamed(t *testing.T) {
 	loadFabDatastore(t)
 
-	const uuid = "mon092_237847_1e"
+	const uuid = "mon092_237847_1stedition"
 	// The bridge knows the second of the two, so the first resolves by name.
 	products := []cm.Product{
 		{

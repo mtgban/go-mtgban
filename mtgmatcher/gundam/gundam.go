@@ -6,7 +6,8 @@
 // every entry is one priced printing of an English single product, so
 // every uuid is priced by construction. Almost every product sells in a
 // single finish, and the one sold both plain and holofoil carries an entry
-// per finish, the holofoil one's id suffixed "_holo". Alternate arts and
+// per finish, the holofoil one's id suffixed with the printing's name.
+// Alternate arts and
 // event printings share their base card's collector number and are told
 // apart by the variant label the builder distills from the product name.
 package gundam
@@ -23,11 +24,6 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
-
-// finishSuffix is the id suffix the builder hangs off the holofoil entry of
-// a product sold both ways. It is the one suffix the game has, so folding a
-// product's entries back together is a single TrimSuffix.
-const finishSuffix = "_holo"
 
 // Datastore is the cmd/gundam output: sets keyed by code, one card entry
 // per priced finish, and the sealed products.
@@ -201,7 +197,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	products := map[string]*product{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
-		key := strings.TrimSuffix(card.ID, finishSuffix)
+		// The product id is what identifies a product; the id's printing
+		// tail is only what to fall back on where the builder stamped
+		// none. Folding on the tail alone made the grouping depend on how
+		// a suffix is spelled, which is the builder's business.
+		key := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
+		if card.ExternalLinks.TcgPlayerID == 0 {
+			key = trimFinishSuffix(card.ID, card.Finish)
+		}
 		entry, found := products[key]
 		if !found {
 			entry = &product{}
@@ -396,4 +399,27 @@ func splitColors(color string) []string {
 		fields[i] = strings.TrimSpace(fields[i])
 	}
 	return fields
+}
+
+// trimFinishSuffix strips the printing tail the builder hangs off an entry's
+// id, spelled from the entry's own finish the way the builder spells it: the
+// plain printing takes the bare id and every other takes its own name. Read
+// off the entry rather than from a list of this game's printings, so a
+// printing TCGplayer adds folds with the rest.
+func trimFinishSuffix(id, finish string) string {
+	if slug := finishSlug(finish); slug != "" && slug != "normal" {
+		return strings.TrimSuffix(id, "_"+slug)
+	}
+	return id
+}
+
+// finishSlug spells a printing name the way an id carries it.
+func finishSlug(name string) string {
+	var out strings.Builder
+	for _, r := range strings.ToLower(name) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
 }
