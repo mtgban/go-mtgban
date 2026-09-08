@@ -162,6 +162,10 @@ func TestSealedNameCollidingWithCard(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match = %v, want the card", err)
 	}
+	// The fixture above publishes no printings array, so this is the uuid
+	// printingUUID falls back to spelling - what a datastore built before
+	// cmd/riftbound named them carries, and the only thing still exercising
+	// that path now the published file has moved on.
 	if uuid != "ogn-001_nonfoil" {
 		t.Errorf("Match = %q, want %q", uuid, "ogn-001_nonfoil")
 	}
