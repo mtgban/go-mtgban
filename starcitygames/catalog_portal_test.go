@@ -34,9 +34,7 @@ func TestSkuSegments(t *testing.T) {
 func TestResolvePortalVariants(t *testing.T) {
 	withMagic(t)
 
-	if len(mtgmatcher.GetUUIDs()) == 0 {
-		t.Skip("datastore not loaded")
-	}
+	withMagic(t)
 	base := CatalogProduct{
 		Name: "Armored Pegasus", Set: "Portal", Language: "English",
 		CollectorNumber: "006", FinishGroup: "Non-foil",

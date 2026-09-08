@@ -9,9 +9,7 @@ import (
 // Duel Decks: Anthology reprints four earlier decks and mtgjson keeps
 // them under the original codes, which survive only in the sku.
 func TestResolveAnthologySubdeck(t *testing.T) {
-	if len(mtgmatcher.GetUUIDs()) == 0 {
-		t.Skip("datastore not loaded")
-	}
+	withMagic(t)
 	base := CatalogProduct{
 		Name: "Forest", Set: "Duel Decks: Anthology", Language: "English",
 		CollectorNumber: "28", FinishGroup: "Non-foil",

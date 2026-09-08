@@ -2,8 +2,6 @@ package starcitygames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // SCG braces anything that is not a normal card, and preprocess read
@@ -12,9 +10,7 @@ import (
 // they are, so the suffix invented names nothing carries - every
 // Unfinity sticker sheet resolved to nothing because of it.
 func TestPreprocessBracedNonTokens(t *testing.T) {
-	if len(mtgmatcher.GetUUIDs()) == 0 {
-		t.Skip("datastore not loaded")
-	}
+	withMagic(t)
 
 	tests := []struct {
 		desc     string
