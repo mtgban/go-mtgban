@@ -15,6 +15,10 @@ import (
 // The spellings are the catalog's own: "HERO Art", "ScR", "Blu-Ray DVD
 // Promo", down to the hyphen in "Blue - DL18".
 //
+// A printing's mark is not here and is not a promo type: the ink it was made
+// in, the version it is and the letter its artwork is filed under are
+// published on their own and read into the watermark.
+//
 // The whole of a promotion's name is the variant beside it, which the builder
 // publishes untouched: these are the words of the token, not of the printing.
 var promoTypeLabels = map[string]string{
@@ -35,7 +39,6 @@ var promoTypeLabels = map[string]string{
 	"battleofchaos":          "Battle of Chaos",
 	"battlesoflegend":        "Battles of Legend",
 	"blazingvortex":          "Blazing Vortex",
-	"bluedl18":               "Blue - DL18",
 	"bluraydvdpromo":         "Blu-Ray DVD Promo",
 	"burstofdestiny":         "Burst of Destiny",
 	"burstprotocol":          "Burst Protocol",
@@ -54,7 +57,6 @@ var promoTypeLabels = map[string]string{
 	"eu":                     "EU",
 	"extendedart":            "Extended Art",
 	"fishrecipe":             "Fish Recipe",
-	"greendl18":              "Green - DL18",
 	"heroart":                "HERO Art",
 	"infiniteforbidden":      "Infinite Forbidden",
 	"japaneseart":            "Japanese Art",
@@ -67,6 +69,7 @@ var promoTypeLabels = map[string]string{
 	"meatrecipe":             "Meat Recipe",
 	"neuronengage":           "Neuron Engage!",
 	"newart":                 "New Art",
+	"originalart":            "Original Art",
 	"originalartwork":        "Original Artwork",
 	"otsstamp":               "OTS Stamp",
 	"phantomrage":            "Phantom Rage",
@@ -75,11 +78,7 @@ var promoTypeLabels = map[string]string{
 	"premieredition":         "Premier Edition",
 	"preregistration":        "Pre-registration",
 	"pur":                    "PUR",
-	"purplealternateart":     "Purple Alternate Art",
-	"purpledl18":             "Purple - DL18",
 	"rageoftheabyss":         "Rage of the Abyss",
-	"redalternateart":        "Red Alternate Art",
-	"reddl18":                "Red - DL18",
 	"regionalqualifierstamp": "Regional Qualifier Stamp",
 	"remoteduelycs":          "Remote Duel YCS",
 	"reprintartwork":         "Reprint Artwork",
@@ -90,15 +89,10 @@ var promoTypeLabels = map[string]string{
 	"staffrecipe":            "Staff Recipe",
 	"starlightrare":          "Starlight Rare",
 	"supremedarkness":        "Supreme Darkness",
-	"tealoriginalart":        "Teal Original Art",
 	"todaysmenu":             "Today's Menu",
 	"top8":                   "Top 8",
 	"udsqualifier":           "UDS Qualifier",
 	"unlimitedmisprint":      "Unlimited Misprint",
-	"version1":               "Version 1",
-	"version2":               "Version 2",
-	"version3":               "Version 3",
-	"version4":               "Version 4",
 	"videogame":              "Video Game",
 	"worldchampionship":      "World Championship",
 	"yugiohday":              "Yu-Gi-Oh! Day",

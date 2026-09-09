@@ -115,6 +115,25 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: rarity suffix cannot pick among the lettered artworks",
 		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl", Variation: "RA03-EN123qsec"},
 	},
+	// The two marks that are not an ink. Neither says what promoted the
+	// printing; both say which printing of the number it is, and for these
+	// two numbers they are the whole of what says it.
+	{
+		Desc: "a letter picks among the artworks the rarity cannot",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl", Variation: "RA03-EN123qsec B"},
+	},
+	{
+		Desc: "a version picks among the printings of one number and rarity",
+		In: mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LDK2-ENK01 Version 4",
+			Edition: "Legendary Decks II"},
+	},
+	{
+		// Every version of these numbers is sold twice, once by the set
+		// and once by its reprint, so the version says which printing
+		// without saying which set - and the set is what is missing here.
+		Desc: "negative: a version alone does not choose between a set and its reprint",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LCKC-EN001 Version 3"},
+	},
 	{
 		Desc: "negative: unknown card name",
 		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Duelist", Variation: "LOB-001"},

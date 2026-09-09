@@ -1279,7 +1279,33 @@ func numberedWording(variation, number string) string {
 	return variation + " " + match[1]
 }
 
+// tierByMark keeps the candidates whose mark the wording names - the ink a
+// printing was made in, the version it is, or the letter its artwork is
+// filed under. A mark says which printing of a number this is rather than
+// what promoted it, so it is not among the promo types and narrows on its
+// own and before them: Duelist League alone is 325 groups of printings at
+// one name, one number and one rarity, told apart by the ink and nothing
+// else, and a wording naming one has named the printing.
+//
+// Nothing is kept where the wording names no mark. Narrowing on a mark the
+// listing never mentioned would answer with a printing picked at random,
+// and the tiers below still have their say - a wording of "Blue" reaches
+// the plain blue printing rather than the alternate-art one wearing the
+// same ink, because that one is a variant and the plain one is not.
+func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	var marked []mtgmatcher.Card
+	for _, card := range candidates {
+		if card.Watermark != "" && mtgmatcher.SlugDescribes(wording, card.Watermark) {
+			marked = append(marked, card)
+		}
+	}
+	return marked
+}
+
 func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string) []mtgmatcher.Card {
+	if marked := tierByMark(inCard.Variation, candidates); len(marked) > 0 {
+		candidates = marked
+	}
 	var base, variants []mtgmatcher.Card
 	for _, card := range candidates {
 		if len(card.PromoTypes) == 0 {
@@ -1291,9 +1317,8 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 	// The tags are tokens now, so the wording's words are joined back up a
 	// run at a time to ask whether they name them. The collector number's
 	// own set segment goes on the end of the wording first: a tag naming
-	// the set it belongs to ("bluedl18", the blue Duelist League 18
-	// printing) is spelled by a storefront as the colour alone, because the
-	// number beside it already said which league. Handing the segment back
+	// the set it belongs to is spelled by a storefront without it, because
+	// the number beside it already said which set. Handing the segment back
 	// lets the run close, and it can only ever close a tag that names the
 	// set the number named.
 	described := mtgmatcher.DescribedVariants(numberedWording(inCard.Variation, number), variants)
