@@ -135,6 +135,15 @@ var yugiohSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LCKC-EN001 Version 3"},
 	},
 	{
+		// The advent calendars are printed in German and named in it, so
+		// the name reaches one printing on its own and the language filter
+		// has nothing to choose between. A language is not a promotion
+		// either, and this holds whether the datastore says so in a field
+		// of its own or still says it as a tag.
+		Desc: "a German printing is reached by the name it is printed under",
+		In:   mtgmatcher.InputCard{Name: `Junk Synchron - "Gerumpelsynchronisierer"`, Variation: "AC11-DE001"},
+	},
+	{
 		Desc: "negative: unknown card name",
 		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Duelist", Variation: "LOB-001"},
 	},
