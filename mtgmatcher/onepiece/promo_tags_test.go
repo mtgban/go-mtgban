@@ -2,6 +2,7 @@ package onepiece
 
 import (
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -18,21 +19,34 @@ func TestPromoTagsAreSlugs(t *testing.T) {
 			t.Errorf("declared tag %q is not its own slug (%q)", tag, slug)
 		}
 	}
-	for _, tag := range []string{"alternateart", "parallel", "manga", "premiumcardcollectionbestselectionvol6"} {
+	for _, tag := range []string{"alternateart", "parallel", "manga"} {
 		if !slices.Contains(b.AllPromoTypes, tag) {
 			t.Errorf("tag %q is not declared", tag)
 		}
 	}
 
-	// The printing that started this: reachable by the event that issued it.
+	// The printing that started this: reachable by the event that issued
+	// it, whichever way the datastore spells that event. One publishing a
+	// shelf's whole product name files it under a single long tag,
+	// "premiumcardcollectionbestselectionvol6"; one that takes the
+	// instalment off files it under the collection with "Vol. 6" beside it
+	// as the mark. The tag is not the same in the two, and the event it
+	// reads back as is.
+	const issuedBy = "premium card collection"
 	var hits int
 	for _, uuid := range b.AllUUIDs {
 		co, err := b.GetUUID(uuid)
-		if err == nil && co.HasPromoType("premiumcardcollectionbestselectionvol6") {
-			hits++
+		if err != nil {
+			continue
+		}
+		for _, tag := range co.PromoTypes {
+			if strings.Contains(strings.ToLower(b.PromoTypeLabel(tag)), issuedBy) {
+				hits++
+				break
+			}
 		}
 	}
 	if hits == 0 {
-		t.Error("no printing carries the Best Selection Vol. 6 tag")
+		t.Error("no printing is reachable by the Premium Card Collection that issued it")
 	}
 }

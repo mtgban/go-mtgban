@@ -13,6 +13,7 @@
 package onepiece
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -55,6 +56,27 @@ type DatastoreCard struct {
 	// empty for the base printing, "Alternate Art", "Parallel", "Manga",
 	// "SP" or an event name for the others.
 	Variant string `json:"variant,omitempty"`
+
+	// PromoTypes are the labels the variant distils to, one entry each.
+	// A datastore says them as words or as slugs depending on when it was
+	// built, and promoTypeWords reads either.
+	PromoTypes []string `json:"promoTypes,omitempty"`
+
+	// Watermark is the mark saying which copy of a number this is where
+	// nothing else does: the DON!! character, the deck, the instalment, or
+	// the season a promotion ran in. It is part of a printing's wording,
+	// not a promotion, so it is written back onto the label rather than
+	// declared as a tag.
+	Watermark string `json:"watermark,omitempty"`
+
+	// OriginalReleaseDate is the day a promotion ran, where the set that
+	// holds it says another. "One Piece Promotion Cards" is dated
+	// 2022-09-30 and holds everything handed out since.
+	OriginalReleaseDate string `json:"originalReleaseDate,omitempty"`
+
+	// Language is the language a printing is printed in, where the catalog
+	// calls it out. Everything else is English.
+	Language string `json:"language,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, "Normal" or
 	// "Foil". Entries sharing everything but the finish are the same
@@ -167,6 +189,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	sort.Strings(b.AllSets)
 	b.IndexSets()
 
+	marked := datastoreMarks(payload.Cards)
+
 	printingsByName := map[string][]string{}
 	for _, card := range payload.Cards {
 		n := mtgmatcher.Normalize(card.Name)
@@ -202,14 +226,16 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		slug := mtgmatcher.PromoTypeSlug(card.Variant)
-		if !slices.Contains(b.AllPromoTypes, slug) {
-			b.AllPromoTypes = append(b.AllPromoTypes, slug)
-		}
-		// First spelling seen wins: the catalog writes a couple of these
-		// events two ways, and one token can only read back as one.
-		if b.PromoTypeLabels[slug] == "" {
-			b.PromoTypeLabels[slug] = card.Variant
+		for _, promoType := range promoTypeValues(&card, marked) {
+			slug := mtgmatcher.PromoTypeSlug(promoType)
+			if !slices.Contains(b.AllPromoTypes, slug) {
+				b.AllPromoTypes = append(b.AllPromoTypes, slug)
+			}
+			// First spelling seen wins: the catalog writes a couple of
+			// these events two ways, and one token reads back as one.
+			if b.PromoTypeLabels[slug] == "" {
+				b.PromoTypeLabels[slug] = promoTypeSpelling(promoType)
+			}
 		}
 		b.AddName(qualified)
 	}
@@ -257,8 +283,35 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		var promoTypes []string
-		if card.Variant != "" {
-			promoTypes = []string{mtgmatcher.PromoTypeSlug(card.Variant)}
+		for _, promoType := range promoTypeValues(card, marked) {
+			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(promoType))
+		}
+		// The mark rides with the tags on the card, though it is never
+		// declared as one. It is not a promotion - nothing promoted a
+		// DON!! card for picturing Nami - so it has no place in the
+		// vocabulary a query is written against; but every DON!! card is
+		// named "DON!! Card" at one number, so what it pictures is the
+		// only thing a listing can name to tell one from another, and
+		// every rule that asks what a printing answers with reads this
+		// list. The other games keep undeclared tokens on the card for
+		// the same reason.
+		if card.Watermark != "" {
+			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(card.Watermark))
+		}
+		// A rarity the catalog also writes in a product name rides with
+		// them for the same reason. The builder drops such a label because
+		// the rarity field says it - "Vista (TR)" is filed at rarity TR -
+		// and a listing that names it is naming that printing and not the
+		// plain one beside it at the same number.
+		if quoted := quotedRarity(card.Rarity); quoted != "" {
+			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(quoted))
+		}
+		// So does the date, where the datastore publishes one the set does
+		// not state: "Treasure Cup August 2025" stands beside a plain
+		// "Treasure Cup" at another number, and the date is the whole of
+		// what a listing has to tell them apart by.
+		if when := promoDate(card.OriginalReleaseDate); when != "" {
+			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(when))
 		}
 
 		// Only the finishes a product is actually sold in are registered:
@@ -286,13 +339,15 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"full":      card.Image,
 				"thumbnail": card.Image,
 			},
-			Language:   "English",
-			Colors:     splitColors(card.Color),
-			Rarity:     card.Rarity,
-			Types:      []string{card.Type},
-			PromoTypes: promoTypes,
-			IsPromo:    setIsPromotional(b.Sets[card.SetCode]),
-			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
+			Language:            cmp.Or(card.Language, "English"),
+			Colors:              splitColors(card.Color),
+			Rarity:              card.Rarity,
+			Types:               []string{card.Type},
+			PromoTypes:          promoTypes,
+			Watermark:           card.Watermark,
+			OriginalReleaseDate: card.OriginalReleaseDate,
+			IsPromo:             setIsPromotional(b.Sets[card.SetCode]),
+			Printings:           printingsByName[mtgmatcher.Normalize(card.Name)],
 
 			PlainNumber: Rules{}.PlainNumber(card.Number),
 		}

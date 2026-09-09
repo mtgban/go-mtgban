@@ -16,30 +16,33 @@ func TestEventNamed(t *testing.T) {
 	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	tests := []struct {
-		desc      string
-		name      string
-		edition   string
-		number    string
-		wantSet   string
-		wantPromo string
+		desc       string
+		name       string
+		edition    string
+		number     string
+		wantSet    string
+		wantPromos [][]string
 	}{
 		{
 			desc: "the promo named after the art it shows",
 			name: "Monkey.D.Luffy (073) (Afro Luffy Promo)", number: "OP07-073",
 			edition: "OP07 - 500 Years in the Future",
-			wantSet: "OP-PR", wantPromo: "bandaicardgamesfest2526",
+			wantSet: "OP-PR",
+			// The season is a tag of its own where the datastore takes it
+			// off the fest's name and files it as the mark it is.
+			wantPromos: [][]string{{"bandaicardgamesfest2526"}, {"bandaicardgamesfest", "2526"}},
 		},
 		{
 			desc: "the promo named after the team it was handed out by",
 			name: "Monkey.D.Luffy (EB02-010) (L.A. Dodgers Promo)", number: "EB02-010",
 			edition: "EB02 - Anime 25th Collection",
-			wantSet: "OP-PR", wantPromo: "dodgersxonepiece",
+			wantSet: "OP-PR", wantPromos: [][]string{{"dodgersxonepiece"}},
 		},
 		{
 			desc: "and the plain listing beside them is unmoved",
 			name: "Monkey.D.Luffy (073)", number: "OP07-073",
 			edition: "OP07 - 500 Years in the Future",
-			wantSet: "OP07", wantPromo: "",
+			wantSet: "OP07",
 		},
 	}
 	for _, test := range tests {
@@ -61,20 +64,15 @@ func TestEventNamed(t *testing.T) {
 			if co.SetCode != test.wantSet {
 				t.Errorf("Match(%q) = set %s, want %s", card, co.SetCode, test.wantSet)
 			}
-			if test.wantPromo == "" {
+			if len(test.wantPromos) == 0 {
 				if len(co.PromoTypes) != 0 {
 					t.Errorf("Match(%q) = %v, want no label", card, co.PromoTypes)
 				}
 				return
 			}
-			var found bool
-			for _, promoType := range co.PromoTypes {
-				if promoType == test.wantPromo {
-					found = true
-				}
-			}
-			if !found {
-				t.Errorf("Match(%q) = %v, want one of them to be %q", card, co.PromoTypes, test.wantPromo)
+			if !promoTypesSpell(co.PromoTypes, test.wantPromos...) {
+				t.Errorf("Match(%q) = %v, want %v spelled among them",
+					card, co.PromoTypes, test.wantPromos)
 			}
 		})
 	}
