@@ -13,8 +13,16 @@
             "name": "Junk Synchron - \"Gerumpelsynchronisierer\"",
             "variant": "AC11-DE001"
         },
-        "uuid": "",
-        "error": "unsupported"
+        "uuid": "ac11-de001_251882_limited"
+    },
+    {
+        "description": "a German printing this datastore carries is reached by its number",
+        "input": {
+            "name": "Nitrokrieger",
+            "variant": "AC11-DE021 Ultra Rare",
+            "edition": "Promo"
+        },
+        "uuid": "ac11-de021_251903_limited"
     },
     {
         "description": "a bare tail is spelled out by the set it names",
@@ -105,6 +113,14 @@
             "edition": "Dark Revelation 1"
         },
         "uuid": "dr1-en221_24008_unlimited"
+    },
+    {
+        "description": "a promo whose number only looks foreign is reached",
+        "input": {
+            "name": "Sinister Serpent",
+            "variant": "TFK-SP001"
+        },
+        "uuid": "tfk-sp001_200191_unlimited"
     },
     {
         "description": "a second colour of the same number names its own printing",
@@ -254,6 +270,16 @@
         "uuid": "ha01-en001_33740_limited"
     },
     {
+        "description": "negative: a German printing of a number carried only in English is not ours",
+        "input": {
+            "name": "Dark Magician",
+            "variant": "LOB-DE005",
+            "edition": "Promo"
+        },
+        "uuid": "",
+        "error": "unsupported"
+    },
+    {
         "description": "negative: a character art card is the storefront's product, not a printing",
         "input": {
             "name": "Mai Valentine Character Art Card",
@@ -300,8 +326,7 @@
             "variant": "AC11-DE021 Ultra Rare",
             "edition": "Promo"
         },
-        "uuid": "",
-        "error": "unsupported"
+        "uuid": "ac11-de021_251903_limited"
     },
     {
         "description": "negative: a run the product was never priced in refuses the sibling",
