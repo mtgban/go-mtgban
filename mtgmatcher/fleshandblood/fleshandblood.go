@@ -63,6 +63,12 @@ type DatastoreCard struct {
 	SetCode string `json:"setCode"`
 	Rarity  string `json:"rarity"`
 
+	// Color is the colour a printing pitches for - "Red", "Yellow", "Blue" -
+	// which the catalog carries as the pitch value printed on the card. A
+	// card that pitches for nothing carries none: a hero, an equipment, a
+	// token.
+	Color string `json:"color,omitempty"`
+
 	// Finish is the TCGplayer printing this entry prices, drawn from the
 	// closed vocabulary of "1st Edition" or "Unlimited Edition" (or
 	// neither) crossed with "Normal", "Rainbow Foil" or "Cold Foil".
@@ -330,12 +336,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
 			}
-			// The builder folds a qualifier to lower case on the way in,
-			// so the words are title-cased back and the acronyms looked
-			// up. First spelling seen wins: the catalog writes a few of
-			// these two ways, and one token can only read back as one.
+			// Looked up by the slug, not by what the datastore spelled:
+			// the words are on their way out of it, and a token reaching
+			// its label the same way either side of that is what lets the
+			// two halves land in any order. First spelling seen wins - the
+			// catalog writes a few of these two ways, and one token can
+			// only read back as one.
 			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(promoType)
+				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
 			}
 		}
 		// Searchable but never canonical: the qualified spelling names one
@@ -460,6 +468,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			},
 			Language:   "English",
 			Rarity:     card.Rarity,
+			Colors:     splitColors(card.Color),
 			PromoTypes: promoTypes,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
@@ -616,4 +625,20 @@ func productKeyOf(identifiers map[string]string, uuid string) string {
 		return id
 	}
 	return uuid
+}
+
+// splitColors reads the colours a printing pitches for. Flesh and Blood
+// prints one, but the field is shaped the way every other game here shapes
+// it, so a double-faced printing that ever pitches two says so.
+func splitColors(color string) []string {
+	if color == "" {
+		return nil
+	}
+	fields := strings.FieldsFunc(color, func(r rune) bool {
+		return r == ';' || r == '/'
+	})
+	for i := range fields {
+		fields[i] = strings.TrimSpace(fields[i])
+	}
+	return fields
 }

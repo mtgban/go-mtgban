@@ -25,10 +25,12 @@ func TestPromoTypeLabels(t *testing.T) {
 		{"marvel", "Marvel"},
 		{"treasure", "Treasure"},
 		// The cases that say why the words are looked up rather than
-		// guessed: title-casing gives "Cc Tag" and "Fab362".
+		// guessed: the datastore publishes a slug, and title-casing one
+		// gives "Cctag" and "Extendedart".
 		{"cctag", "CC Tag"},
-		{"fab362", "FAB362"},
-		{"jpnexclusive", "JPN Exclusive"},
+		{"extendedart", "Extended Art"},
+		{"japanesealternateart", "Japanese Alternate Art"},
+		{"topleft", "Top Left"},
 	} {
 		if got := b.PromoTypeLabel(tt.promoType); got != tt.want {
 			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.promoType, got, tt.want)
