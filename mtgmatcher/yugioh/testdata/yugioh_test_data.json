@@ -72,6 +72,14 @@
         "uuid": "dl09-en001_77377_unlimited"
     },
     {
+        "description": "a letter picks among the artworks the rarity cannot",
+        "input": {
+            "name": "Dark Magician Girl",
+            "variant": "RA03-EN123qsec B"
+        },
+        "uuid": "ra03-en123_593849_1stedition"
+    },
+    {
         "description": "a letter the catalog writes as a word",
         "input": {
             "name": "Falchionβ",
@@ -132,6 +140,15 @@
             "edition": "Tokens"
         },
         "uuid": "tkn4-en029_152514_unlimited"
+    },
+    {
+        "description": "a version picks among the printings of one number and rarity",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LDK2-ENK01 Version 4",
+            "edition": "Legendary Decks II"
+        },
+        "uuid": "ldk2-enk01_123620_unlimited"
     },
     {
         "description": "a wording naming one tag keeps the printing wearing only it",
@@ -287,6 +304,15 @@
         },
         "uuid": "",
         "error": "unknown finish"
+    },
+    {
+        "description": "negative: a version alone does not choose between a set and its reprint",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LCKC-EN001 Version 3"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
     },
     {
         "description": "negative: known name with wrong collector number",

@@ -3,6 +3,8 @@ package yugioh
 import (
 	"slices"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPromoTagsAndQualifiedNames pins what tells sibling products apart.
@@ -13,7 +15,7 @@ import (
 func TestPromoTagsAndQualifiedNames(t *testing.T) {
 	b := loadBackend(t)
 
-	for _, tag := range []string{"purple", "alternateart", "duelterminal", "otsstamp"} {
+	for _, tag := range []string{"alternateart", "duelterminal", "otsstamp"} {
 		if !slices.Contains(b.AllPromoTypes, tag) {
 			t.Errorf("promo type %q is not declared, so nothing will print it", tag)
 		}
@@ -28,6 +30,22 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 		}
 	}
 
+	// A mark says which printing of a number this is - the ink the Duelist
+	// League printings differ on, the version four Blue-Eyes differ on, the
+	// letter three Dark Magician Girls differ on - and it is moving out of
+	// the promo types into a watermark, a mark being no more a promotion
+	// than a rarity is. Which side of that move this datastore is on is
+	// read from the datastore rather than assumed, so this holds either way
+	// round and the two halves can land in any order.
+	if marked(b) {
+		for _, mark := range []string{"purple", "green", "blue", "red", "silver", "bronze",
+			"version1", "version2", "version3", "version4", "a", "b", "c"} {
+			if slices.Contains(b.AllPromoTypes, mark) {
+				t.Errorf("mark %q is declared as a promo type as well", mark)
+			}
+		}
+	}
+
 	bare, err := b.SearchEquals("Dark Magician")
 	if err != nil {
 		t.Fatal(err)
@@ -36,7 +54,12 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 		t.Errorf("bare name reached %d printings, expected every printing of the name", len(bare))
 	}
 
-	for _, tt := range []struct{ query, promoType string }{
+	// The mark reaches its printing and is said once: a Duelist League
+	// printing wears no promotion, so a tag saying "purple" beside a
+	// watermark saying the same would be the fact written twice. The
+	// version and the artwork letter are the same kind of mark and are
+	// checked beside it, three axes that are not promotions.
+	for _, tt := range []struct{ query, color string }{
 		{"Dark Magician (Purple)", "purple"},
 		{"Dark Magician (Green)", "green"},
 	} {
@@ -53,8 +76,19 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !slices.Contains(co.PromoTypes, tt.promoType) {
-			t.Errorf("%q reached a printing tagged %v, want one carrying %q", tt.query, co.PromoTypes, tt.promoType)
+		// Said once, wherever it is said. A printing carrying the colour
+		// as a watermark and again as a tag is the fact written twice,
+		// which is what a variant read back per card would do.
+		held := 0
+		if co.Watermark == tt.color {
+			held++
+		}
+		if slices.Contains(co.PromoTypes, tt.color) {
+			held++
+		}
+		if held != 1 {
+			t.Errorf("%q reached a printing inked %q and tagged %v, want %q said exactly once",
+				tt.query, co.Watermark, co.PromoTypes, tt.color)
 		}
 	}
 
@@ -75,4 +109,15 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 			t.Errorf("the name's bucket reached %q from %s, want only the card of that name", co.Name, co.SetCode)
 		}
 	}
+}
+
+// marked reports whether this datastore gives a printing's mark a field of
+// its own. Nothing else in the game wears a watermark, so one is enough.
+func marked(b *mtgmatcher.Backend) bool {
+	for _, co := range b.UUIDs {
+		if co.Watermark != "" {
+			return true
+		}
+	}
+	return false
 }

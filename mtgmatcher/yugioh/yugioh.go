@@ -75,6 +75,17 @@ type DatastoreCard struct {
 	// is what CardReleaseDate falls back to.
 	OriginalReleaseDate string `json:"originalReleaseDate,omitempty"`
 
+	// Watermark is the mark saying which printing of a number this is: the
+	// ink it was made in ("blue", one of six Duelist League foils), the
+	// version ("version1", one of four Blue-Eyes at LCKC-EN001), or the
+	// letter its artwork is filed under ("a", one of three Dark Magician
+	// Girls at RA03-EN123). For those printings it is the only thing
+	// telling one from its siblings, and no printing wears two.
+	//
+	// It is not the card's own LIGHT or DARK, which is Attribute, and it
+	// is not a promotion, which is why it is not among the promo types.
+	Watermark string `json:"watermark,omitempty"`
+
 	// Finish is the TCGplayer printing this entry prices, "1st Edition",
 	// "Unlimited" or "Limited". Entries sharing everything but the finish
 	// are the same product sold in several print runs.
@@ -129,11 +140,20 @@ const setTypePromo = "promo"
 // carries only the joined spelling, which stays one tag rather than being
 // split on spaces: several labels are two words long ("Duel Terminal"), and
 // splitting would declare halves of them that name nothing.
-func promoTypesOf(card *DatastoreCard) []string {
+//
+// Whether to fall back is asked of the datastore and not of the card. A
+// datastore that labels anything labels everything it meant to, so a card
+// without a list has no labels rather than an unread one - and reading its
+// variant back would put on exactly what the builder took off. The colours
+// are why that matters here: an ink is published as the ink it is, and a
+// printing wearing nothing else has no promo types at all, which is what
+// lets the wording reach it through the ink instead of through a tag that
+// says the same thing twice.
+func promoTypesOf(card *DatastoreCard, labelled bool) []string {
 	if len(card.PromoTypes) > 0 {
 		return card.PromoTypes
 	}
-	if card.Variant == "" {
+	if labelled || card.Variant == "" {
 		return nil
 	}
 	return []string{card.Variant}
@@ -142,8 +162,8 @@ func promoTypesOf(card *DatastoreCard) []string {
 // promoTypeSlugs is promoTypesOf as the tokens a query can carry, which is
 // what a card stores: a search splits its words apart before a filter sees
 // them, so a tag only survives the trip as one.
-func promoTypeSlugs(card *DatastoreCard) []string {
-	labels := promoTypesOf(card)
+func promoTypeSlugs(card *DatastoreCard, labelled bool) []string {
+	labels := promoTypesOf(card, labelled)
 	if len(labels) == 0 {
 		return nil
 	}
@@ -180,6 +200,16 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
+
+	// Whether this datastore labels its printings at all, asked once: see
+	// promoTypesOf.
+	var labelled bool
+	for _, card := range payload.Cards {
+		if len(card.PromoTypes) > 0 {
+			labelled = true
+			break
+		}
+	}
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
@@ -222,7 +252,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		for _, promoType := range promoTypesOf(&card) {
+		for _, promoType := range promoTypesOf(&card, labelled) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
@@ -274,7 +304,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		promoTypes := promoTypeSlugs(card)
+		promoTypes := promoTypeSlugs(card, labelled)
 
 		var colors []string
 		if card.Attribute != "" {
@@ -299,6 +329,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Rarity:   card.Rarity,
 
 			OriginalReleaseDate: card.OriginalReleaseDate,
+
+			// The one field on a Card for a mark a printing wears that is
+			// neither a promotion nor a property of the card - Magic tells
+			// the Guild Kits apart by it the same way. Colors is the card's
+			// Attribute and stays that: a printing's ink beside a monster's
+			// DARK would be two vocabularies in one field, and the site
+			// filters colours through it.
+			Watermark: card.Watermark,
 
 			Types:      []string{card.Type},
 			PromoTypes: promoTypes,
