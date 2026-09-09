@@ -785,6 +785,15 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return candidates
 	}
 
+	// A wording naming a pitch value names the printing that pitches for
+	// it. The value is a field of its own - the same card is printed at
+	// three of them and the catalog writes which into the product name -
+	// so it is read off the field rather than off the label, which is
+	// what slugging the whole variant used to do for it.
+	if pitched := pitchNarrow(inCard, candidates); len(pitched) > 0 {
+		candidates = pitched
+	}
+
 	described, base, variants := tierByVariant(inCard, candidates)
 	if len(described) > 0 {
 		return described
@@ -1136,4 +1145,40 @@ func canonicalTail(number string) string {
 		return "0"
 	}
 	return trimmed
+}
+
+// pitchValues are what a Flesh and Blood card pitches for.
+var pitchValues = []string{"red", "yellow", "blue"}
+
+// pitchNarrow keeps the printings pitching for the value a wording names,
+// and says nothing where the wording names none, names two, or names one
+// every candidate pitches for.
+func pitchNarrow(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	wording := strings.ToLower(inCard.Variation)
+	var named string
+	for _, value := range pitchValues {
+		if !mtgmatcher.SlugDescribes(wording, value) {
+			continue
+		}
+		if named != "" {
+			return nil
+		}
+		named = value
+	}
+	if named == "" {
+		return nil
+	}
+	var kept []mtgmatcher.Card
+	for _, card := range candidates {
+		for _, color := range card.Colors {
+			if strings.EqualFold(color, named) {
+				kept = append(kept, card)
+				break
+			}
+		}
+	}
+	if len(kept) == len(candidates) {
+		return nil
+	}
+	return kept
 }
