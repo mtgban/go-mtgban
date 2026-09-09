@@ -1,50 +1,43 @@
 package fleshandblood
 
 import (
-	"strings"
-
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// promoTypeWords spells the words title-casing cannot put back. The builder
-// folds a qualifier to lower case before it reaches the datastore, which
-// leaves an acronym looking like an ordinary word: "cc tag" title-cases to
-// "Cc Tag", and the set codes to "Aur" and "Fab362". Everything
-// else the catalog writes is ordinary words, and title-casing spells those
-// itself.
+// promoTypeLabels are the words behind a token. Decoration is this side's
+// job - the datastore publishes a slug and nothing else, and a slug cannot
+// give back the boundaries it dropped, so "extendedart" reads as
+// "Extendedart" to a title-caser and has to be written down instead.
 //
-// A word missing from this list still reads as something - it is title-cased
-// like any other - so a promo the catalog adds tomorrow shows up plainly
-// spelled rather than not at all.
-var promoTypeWords = map[string]string{
-	"aur":    "AUR",
-	"cc":     "CC",
-	"fab362": "FAB362",
-	"fab385": "FAB385",
-	"fab442": "FAB442",
-	"her052": "HER052",
-	"jdg070": "JDG070",
-	"jdg082": "JDG082",
-	"jpn":    "JPN",
-	"lgs247": "LGS247",
-	"lgs391": "LGS391",
-	"lgs423": "LGS423",
-	"ter":    "TER",
-	"tnp020": "TNP020",
+// Only the tokens a title-caser gets wrong are here. A single word it gets
+// right on its own - "marvel", "golden", "treasure", "reverse", the pitch
+// values and the elements - so listing those would only be a second place to
+// keep them in step with the first.
+var promoTypeLabels = map[string]string{
+	"alternateart":         "Alternate Art",
+	"bottomcenter":         "Bottom Center",
+	"bottomleft":           "Bottom Left",
+	"bottomright":          "Bottom Right",
+	"cctag":                "CC Tag",
+	"chinesealternateart":  "Chinese Alternate Art",
+	"extendedart":          "Extended Art",
+	"japanesealternateart": "Japanese Alternate Art",
+	"japaneseexclusive":    "Japanese Exclusive",
+	"middlecenter":         "Middle Center",
+	"middleleft":           "Middle Left",
+	"middleright":          "Middle Right",
+	"pleiadessuperstar":    "Pleiades, Superstar",
+	"topcenter":            "Top Center",
+	"topleft":              "Top Left",
+	"topright":             "Top Right",
 }
 
-// promoTypeLabel spells a qualifier the way a reader should see it: the
-// catalog's own words, title-cased, with the words above put back as they
-// are written. Unlike Magic and Riftbound, whose tokens ran their words
-// together with nothing to split them on, these qualifiers keep their
-// spaces, so the words themselves survive the fold and only their case is
-// lost.
+// promoTypeLabel spells a token the way a reader should see it: the words
+// above where a title-caser cannot work them out, and the title-cased token
+// otherwise.
 func promoTypeLabel(promoType string) string {
-	words := strings.Split(mtgmatcher.Title(promoType), " ")
-	for i, word := range words {
-		if spelled, found := promoTypeWords[strings.ToLower(word)]; found {
-			words[i] = spelled
-		}
+	if label, found := promoTypeLabels[promoType]; found {
+		return label
 	}
-	return strings.Join(words, " ")
+	return mtgmatcher.Title(promoType)
 }
