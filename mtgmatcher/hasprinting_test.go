@@ -12,9 +12,7 @@ import (
 // the queried name, regardless of the bucket order the load process
 // produced.
 func TestPrintings4CardExactName(t *testing.T) {
-	if len(GetUUIDs()) == 0 {
-		t.Skip("datastore not loaded")
-	}
+	realDatastore(t)
 
 	printings, err := Printings4Card("Servo")
 	if err != nil {
@@ -57,9 +55,7 @@ func TestPrintings4CardExactName(t *testing.T) {
 // token table no matter the order sets are iterated during load: these
 // names used to flip classification from process to process.
 func TestIsTokenClashingNames(t *testing.T) {
-	if len(GetUUIDs()) == 0 {
-		t.Skip("datastore not loaded")
-	}
+	realDatastore(t)
 	for _, name := range []string{"Scarecrow", "Spark Elemental", "Spellgorger Weird"} {
 		if IsToken(name) {
 			t.Errorf("IsToken(%q) = true, but a real card carries this name", name)
@@ -167,6 +163,7 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 // than pinned to named cards, so a refresh that retires one collision and
 // introduces another still exercises the invariant.
 func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
+	realDatastore(t)
 	uuids := GetUUIDs()
 	if len(uuids) == 0 {
 		t.Skip("datastore not loaded")

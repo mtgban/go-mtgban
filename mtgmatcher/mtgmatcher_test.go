@@ -3,6 +3,7 @@ package mtgmatcher_test
 import (
 	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -15,26 +16,13 @@ import (
 // promo types, alternate names), so the tests load Magic and drive it through
 // the package-level API. The Magic replay corpus itself lives with its rules,
 // in mtgmatcher/magic.
-var testBackend *mtgmatcher.Backend
+var (
+	testBackend   *mtgmatcher.Backend
+	datastoreOnce sync.Once
+	datastoreErr  error
+)
 
 func TestMain(m *testing.M) {
-	// The tests inside the package cannot install this themselves: a loader
-	// would import mtgmatcher and this file is mtgmatcher, so TestMain is the
-	// only place that can hand them a datastore. A run without one is no
-	// longer refused, it just reaches the guards below.
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path != "" {
-		reader, err := datastore.Open(path)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		testBackend, err = magic.Load(reader)
-		reader.Close()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		mtgmatcher.SetGlobalDatastore(testBackend)
-	}
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 	os.Exit(m.Run())
 }
@@ -43,6 +31,33 @@ func TestMain(m *testing.M) {
 // none.
 func realDatastore(t *testing.T) {
 	t.Helper()
+	datastoreOnce.Do(func() {
+		if len(mtgmatcher.GetAllSets()) > 0 {
+			testBackend = mtgmatcher.GlobalDatastore()
+			return
+		}
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		reader, err := datastore.Open(path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		defer reader.Close()
+
+		backend, err := magic.Load(reader)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		testBackend = backend
+		mtgmatcher.SetGlobalDatastore(testBackend)
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
+	}
 	if testBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
