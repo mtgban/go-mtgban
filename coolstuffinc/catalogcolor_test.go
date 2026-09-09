@@ -12,6 +12,12 @@ import (
 // in. Nothing but the colour tells them apart, and this storefront names one
 // of them differently: "Light Blue" says the word blue, so it answered with
 // the blue printing and two products met on one id.
+//
+// Where the colour is written is the datastore's business and has moved: an
+// ink is a mark a printing wears rather than a thing that promoted it, so it
+// is published as a watermark now where it used to be a promo type. Both are
+// read, because what this test is about is which printing the wording
+// reaches, not which field says so.
 func TestCatalogColor(t *testing.T) {
 	withGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
@@ -39,14 +45,14 @@ func TestCatalogColor(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			var found bool
+			found := co.Watermark == test.promo
 			for _, promoType := range co.PromoTypes {
 				if promoType == test.promo {
 					found = true
 				}
 			}
 			if !found {
-				t.Errorf("Match(%q) = %s %v, want one of them to be %q", test.name, co.Number, co.PromoTypes, test.promo)
+				t.Errorf("Match(%q) = %s inked %q %v, want %q", test.name, co.Number, co.Watermark, co.PromoTypes, test.promo)
 			}
 		})
 	}
