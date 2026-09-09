@@ -1,10 +1,8 @@
 package pokemon
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -13,20 +11,7 @@ import (
 // compared against, so the two spelling a number differently finds nothing
 // and raises nothing - the failure a caller reads as "no such card".
 func TestPlainNumberMatchesLoader(t *testing.T) {
-	path := os.Getenv("POKEMON_PATH")
-	if path == "" {
-		t.Skip("Need POKEMON_PATH set to run this test")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	b, err := Load(f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(b)
+	loadBackend(t)
 
 	var seen int
 	for _, code := range mtgmatcher.GetAllSets() {

@@ -1,10 +1,8 @@
 package lorcana
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -13,20 +11,7 @@ import (
 // the game answered false - and a promo filter that matches nothing looks
 // exactly like a game with no promos in it.
 func TestIsPromoIsSet(t *testing.T) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		t.Skip("Need LORCANA_PATH set to run this test")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	b, err := Load(f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(b)
+	loadDatastore(t)
 
 	var promos, total, inPromoSet, promoSetFlagged int
 	for _, uuid := range mtgmatcher.GetUUIDs() {
