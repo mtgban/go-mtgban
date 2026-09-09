@@ -1305,6 +1305,10 @@ func numberedWording(variation, number string) string {
 // one name, one number and one rarity, told apart by the ink and nothing
 // else, and a wording naming one has named the printing.
 //
+// The mark is slugged where it is compared, because it is published as the
+// words it is made of rather than as a token: a query carries a token and a
+// datastore says a fact, and "version 1" is the fact.
+//
 // Nothing is kept where the wording names no mark. Narrowing on a mark the
 // listing never mentioned would answer with a printing picked at random,
 // and the tiers below still have their say - a wording of "Blue" reaches
@@ -1313,7 +1317,7 @@ func numberedWording(variation, number string) string {
 func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
 	var marked []mtgmatcher.Card
 	for _, card := range candidates {
-		if card.Watermark != "" && mtgmatcher.SlugDescribes(wording, card.Watermark) {
+		if card.Watermark != "" && mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(card.Watermark)) {
 			marked = append(marked, card)
 		}
 	}
