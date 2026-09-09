@@ -1,8 +1,8 @@
 package palworld
 
 import (
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -13,24 +13,34 @@ import (
 // against directly; the same one is installed as the global.
 var testBackend *mtgmatcher.Backend
 
-func TestMain(m *testing.M) {
-	path := os.Getenv("PALWORLD_PATH")
-	if path != "" {
-		b, err := datastore.Read("palworld", path)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		testBackend = b
-		mtgmatcher.SetGlobalDatastore(b)
-	}
-	os.Exit(m.Run())
-}
-
 // loadBackend hands a test the datastore TestMain read, or skips it where
 // the run carries none: each suite runs under the job holding its own
 // game's file, and not the others'.
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+)
+
+// loadBackend installs the datastore the first time a test asks for it, and
+// skips where the run carries none.
 func loadBackend(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("PALWORLD_PATH")
+		if path == "" {
+			return
+		}
+		b, err := datastore.Read("palworld", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		testBackend = b
+		mtgmatcher.SetGlobalDatastore(b)
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
+	}
 	if testBackend == nil {
 		t.Skip("Need PALWORLD_PATH set to run this test")
 	}
