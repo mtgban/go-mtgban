@@ -163,6 +163,21 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	// The etched printing is a finish of its own, which the matcher reads off
+	// the word in the variation. Asking for it can only improve on the reading
+	// already reached: a card whose one finish is etched answers by number
+	// alone and does not move, and one with no etched printing at all keeps
+	// what it had. No product that says etched reaches the shelves returning
+	// above this, so asking once here covers them all.
+	if saysEtched(product) {
+		probe := *card
+		probe.Variation = strings.TrimSpace(card.Variation + " " + etchedStamp)
+		_, err := mtgmatcher.Match(&probe)
+		if err == nil {
+			card.Variation = probe.Variation
+		}
+	}
+
 	// The miscellaneous shelves number their products themselves ("UMP-003"
 	// for a Costco bundle promo the catalog numbers 2025-13), so the number
 	// says nothing to the catalog and the wording in the name's other
@@ -234,6 +249,34 @@ func magicWording(displayName string) string {
 		words = append(words, strings.Trim(tag, "()"))
 	}
 	return strings.Join(words, " ")
+}
+
+// etchedStamp is the word the catalog tells an etched printing by, and
+// etchedSKU the segment this storefront marks one with.
+const (
+	etchedStamp = "Etched"
+	etchedSKU   = "-EF-"
+)
+
+// saysEtched reports whether a product is sold as the etched printing. Two of
+// the three ways this storefront spells it can be trusted: the segment the sku
+// carries and the wording the display brackets beside the number. The shelf
+// tail cannot - it reads "Etched Foil" on ordinary foils too, and every
+// product that claims it there alone is a second listing of a foil sibling at
+// the same price.
+func saysEtched(product GNProduct) bool {
+	if strings.EqualFold(product.SelectedFinish, "etched") {
+		return true
+	}
+	if strings.Contains(strings.ToLower(magicWording(product.DisplayName)), strings.ToLower(etchedStamp)) {
+		return true
+	}
+	for _, variant := range product.RetailVariants {
+		if strings.Contains(variant.SKU, etchedSKU) {
+			return true
+		}
+	}
+	return false
 }
 
 // magicRespellings pairs the names this storefront misspells with the

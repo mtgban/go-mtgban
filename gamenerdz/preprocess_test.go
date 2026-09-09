@@ -37,6 +37,68 @@ func TestPreprocess(t *testing.T) {
 		err       bool
 	}{
 		{
+			// The etched printing is a finish of its own. The bracketed
+			// wording is one of the two ways this storefront spells it,
+			// and the only one on a Modern Horizons 2 retro frame, whose
+			// number carries all three finishes at once.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName:    "Aeromoeba (Retro Frame) (Foil Etched) (MH2-389) - Modern Horizons 2 Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "mh2", SetName: "Modern Horizons 2"},
+			},
+			name:      "Aeromoeba",
+			edition:   "Modern Horizons 2",
+			variation: "389 Etched",
+			foil:      true,
+		},
+		{
+			// The other way is the segment the sku carries.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName:    "Aeromoeba (MH2-389) - Modern Horizons 2 Etched Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "mh2", SetName: "Modern Horizons 2"},
+				RetailVariants: []GNRetailVariant{{SKU: "MTG-MH2-389-EF-7NTYUWLWDO"}},
+			},
+			name:      "Aeromoeba",
+			edition:   "Modern Horizons 2",
+			variation: "389 Etched",
+			foil:      true,
+		},
+		{
+			// The shelf tail alone is not one of them: it reads "Etched
+			// Foil" on ordinary foils too, and every product that claims
+			// it there and nowhere else is a second listing of a foil
+			// sibling at the same price.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName:    "Arid Mesa - Modern Horizons 2 Etched Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "mh2", SetName: "Modern Horizons 2", NumberDigits: "436"},
+				RetailVariants: []GNRetailVariant{{SKU: "MTG-MH2-436-F-BEUFVXJ561"}},
+			},
+			name:      "Arid Mesa",
+			edition:   "Modern Horizons 2",
+			variation: "436",
+			foil:      true,
+		},
+		{
+			// A card whose only finish is etched answers by number alone
+			// and must not be moved off it.
+			game: GameMagic,
+			product: GNProduct{
+				DisplayName:    "Abbot of Keral Keep (2X2-446) - Double Masters 2022 Etched Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "2x2", SetName: "Double Masters 2022"},
+				RetailVariants: []GNRetailVariant{{SKU: "MTG-2X2-446-EF-FD4P1K77CT"}},
+			},
+			name:      "Abbot of Keral Keep",
+			edition:   "Double Masters 2022",
+			variation: "446 Etched",
+			foil:      true,
+		},
+		{
 			// A prerelease stamp, filed under the pseudo-set with the
 			// card's own number: naming the stamp reaches the printing
 			// the shelf means, whatever set that printing belongs to.
