@@ -68,6 +68,13 @@ type DatastoreCard struct {
 	// tags, and a query naming either has to reach the printing.
 	PromoTypes []string `json:"promoTypes,omitempty"`
 
+	// OriginalReleaseDate is when this printing released, published only
+	// where its set's date does not cover it - the Back to Duel field
+	// centres are handed out monthly at events and filed under a set the
+	// catalog dates to 2006. Empty means the set dates the printing, which
+	// is what CardReleaseDate falls back to.
+	OriginalReleaseDate string `json:"originalReleaseDate,omitempty"`
+
 	// Finish is the TCGplayer printing this entry prices, "1st Edition",
 	// "Unlimited" or "Limited". Entries sharing everything but the finish
 	// are the same product sold in several print runs.
@@ -287,9 +294,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"full":      card.Image,
 				"thumbnail": card.Image,
 			},
-			Language:   "English",
-			Colors:     colors,
-			Rarity:     card.Rarity,
+			Language: "English",
+			Colors:   colors,
+			Rarity:   card.Rarity,
+
+			OriginalReleaseDate: card.OriginalReleaseDate,
+
 			Types:      []string{card.Type},
 			PromoTypes: promoTypes,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
