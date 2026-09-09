@@ -87,6 +87,13 @@ type DatastoreCard struct {
 	// printing.
 	PromoTypes []string `json:"promoTypes,omitempty"`
 
+	// Watermark is the mark saying which copy of a number this is where
+	// nothing else does: the artwork letter that is all there is between
+	// three printings of Lightning Flow at OMN203. It is no promotion -
+	// nothing promoted a card for being the second drawing of it - so it
+	// rides with the tags on the card without being declared as one.
+	Watermark string `json:"watermark,omitempty"`
+
 	// FabID is the official Legend Story Studios card identifier,
 	// annotated where the builder could align the two sources.
 	FabID string `json:"fabId,omitempty"`
@@ -192,7 +199,16 @@ const setTypePromo = "promo"
 // carries only the joined spelling, which stays one label rather than being
 // split on spaces: several are two words long ("Extended Art"), and
 // splitting would leave halves that name nothing.
-func promoTypesOf(card *DatastoreCard) []string {
+func promoTypesOf(card *DatastoreCard, marked bool) []string {
+	if marked {
+		// A datastore publishing marks has taken the artwork letters out of
+		// the variant and put them there, so the published list is the
+		// whole of what promoted this printing - including where it is
+		// empty, which is a printing no promotion touched. Falling back to
+		// the variant for one of those is what declared "158a" and "center"
+		// as promotions.
+		return card.PromoTypes
+	}
 	if len(card.PromoTypes) > 0 {
 		return card.PromoTypes
 	}
@@ -202,11 +218,30 @@ func promoTypesOf(card *DatastoreCard) []string {
 	return []string{card.Variant}
 }
 
+// quotedRarities are the rarities this catalog writes in a product name as
+// well as in the rarity field. Marvel is the one: "Enigma, New Moon
+// (Marvel)" is filed at rarity Marvel, and every other rarity is only ever
+// the field.
+var quotedRarities = map[string]string{"Marvel": "Marvel"}
+
+// datastoreMarks says whether a datastore publishes the mark saying which
+// copy of a number a printing is. The question is asked of the datastore and
+// never of the card: a card publishing no promo type is a card no promotion
+// touched, not one to work labels out for.
+func datastoreMarks(cards []DatastoreCard) bool {
+	for i := range cards {
+		if cards[i].Watermark != "" {
+			return true
+		}
+	}
+	return false
+}
+
 // promoTypeSlugs is promoTypesOf as the tokens a query can carry, which is
 // what a card stores: a search splits its words apart before a filter sees
 // them, so a tag only survives the trip as one.
-func promoTypeSlugs(card *DatastoreCard) []string {
-	labels := promoTypesOf(card)
+func promoTypeSlugs(card *DatastoreCard, marked bool) []string {
+	labels := promoTypesOf(card, marked)
 	if len(labels) == 0 {
 		return nil
 	}
@@ -222,9 +257,9 @@ func promoTypeSlugs(card *DatastoreCard) []string {
 // the full list either way, which the matcher still reads to tell sibling
 // printings apart; only the declaration is filtered, the same terms
 // Riftbound carries its number-restating labels on.
-func describingPromoTypes(card *DatastoreCard) []string {
+func describingPromoTypes(card *DatastoreCard, marked bool) []string {
 	var out []string
-	for _, promoType := range promoTypesOf(card) {
+	for _, promoType := range promoTypesOf(card, marked) {
 		if describingVariant(promoType, card.Finish, card.Number) == "" {
 			continue
 		}
@@ -290,6 +325,8 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 }
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
+	marked := datastoreMarks(payload.Cards)
+
 	var b mtgmatcher.Backend
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
@@ -330,7 +367,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		for _, promoType := range describingPromoTypes(&card) {
+		for _, promoType := range describingPromoTypes(&card, marked) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
@@ -399,7 +436,19 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		promoTypes := promoTypeSlugs(card)
+		promoTypes := promoTypeSlugs(card, marked)
+		// The mark rides with them without being declared: it is a fact a
+		// listing names, and for an artwork letter it is the only one.
+		if card.Watermark != "" {
+			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(card.Watermark))
+		}
+		// So does a rarity the catalog also writes in a product name. The
+		// builder drops such a label because the rarity field says it, and
+		// a listing saying "Enigma, New Moon (Marvel)" is naming that
+		// printing and not the plain one beside it at the same number.
+		if quoted := quotedRarities[card.Rarity]; quoted != "" {
+			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(quoted))
+		}
 
 		// Only the foilness classes the product is actually sold in are
 		// registered: output() folds a storefront's unreliable foil flag
