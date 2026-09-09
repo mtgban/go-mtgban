@@ -12,6 +12,7 @@ import (
 // oversized Commander product and its dungeon was priced as the ordinary
 // token filed beside it.
 func TestMatchOversized(t *testing.T) {
+	realDatastore(t)
 	for _, probe := range []struct {
 		name      string
 		edition   string
@@ -61,6 +62,7 @@ func TestMatchOversized(t *testing.T) {
 // so the word narrows to the sets that printed the card oversized, and the
 // collector number picks among those when one of them answers to it.
 func TestMatchOversizedShelf(t *testing.T) {
+	realDatastore(t)
 	for _, probe := range []struct {
 		name      string
 		variation string

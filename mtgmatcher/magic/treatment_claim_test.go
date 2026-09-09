@@ -19,6 +19,7 @@ import (
 // read that silence have had their say, so a plain Ninja Pizza [TMC] listing
 // still answers with the borderless #93 rather than #32.
 func TestTreatmentClaim(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc            string
 		in              mtgmatcher.InputCard

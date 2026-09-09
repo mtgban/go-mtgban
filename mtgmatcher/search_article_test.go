@@ -120,6 +120,7 @@ func TestSearchContainsStillFindsAWholeName(t *testing.T) {
 // An article on its own is a word like any other, and names it: it does not
 // come out empty, which every name would hold.
 func TestSearchContainsKeepsAnArticleOnlyQuery(t *testing.T) {
+	realDatastore(t)
 	found, err := mtgmatcher.SearchContains("the")
 	if err != nil {
 		t.Fatal(err)
@@ -174,6 +175,7 @@ func TestSearchHasPrefixStillFindsAName(t *testing.T) {
 // card carries a qualifier instead, the way every other playtest card whose
 // name clashes with a real one does.
 func TestAClashingPlaytestNameStaysApart(t *testing.T) {
+	realDatastore(t)
 	realCard, err := mtgmatcher.SearchEquals("Glimpse the Unthinkable")
 	if err != nil {
 		t.Fatal(err)

@@ -10,6 +10,7 @@ import (
 // names a carried token set: the token is filed right there, so the edition
 // is not a leak to be refused but the exact address of the printing.
 func TestMatchTokenSetEdition(t *testing.T) {
+	realDatastore(t)
 	in := mtgmatcher.InputCard{
 		Name:      "Wolf",
 		Edition:   "Innistrad: Midnight Hunt Tokens",
@@ -32,6 +33,7 @@ func TestMatchTokenSetEdition(t *testing.T) {
 // carried token set's own name being parsed down to the commander set it
 // stems from, which would lose the tokens filed under it.
 func TestParseCommanderEditionKeepsTokenSets(t *testing.T) {
+	realDatastore(t)
 	for _, edition := range []string{
 		"Commander 2019 Tokens",
 		"March of the Machine Commander Tokens",
@@ -47,6 +49,7 @@ func TestParseCommanderEditionKeepsTokenSets(t *testing.T) {
 // its own answers first, and a sheet it merely stems from answers only for
 // the tokens the named one never carried.
 func TestMatchTokenSetParentPicksNamedSheet(t *testing.T) {
+	realDatastore(t)
 	for _, probe := range []struct {
 		name    string
 		edition string
@@ -87,6 +90,7 @@ func TestMatchTokenSetParentPicksNamedSheet(t *testing.T) {
 // variation alike, so asking only the edition whether its tokens are carried
 // left every row that named the set plainly and said token beside it refused.
 func TestMatchTokenSetVariation(t *testing.T) {
+	realDatastore(t)
 	for _, probe := range []struct {
 		name      string
 		edition   string
@@ -127,6 +131,7 @@ func TestMatchTokenSetVariation(t *testing.T) {
 // card that normalizes the same way - "Bat" reached the Unsanctioned "Bat-"
 // and "Rhino" the Unstable "Rhino-", whatever edition asked.
 func TestMatchTokenNameUnderTokenEdition(t *testing.T) {
+	realDatastore(t)
 	for _, probe := range []struct {
 		name      string
 		edition   string

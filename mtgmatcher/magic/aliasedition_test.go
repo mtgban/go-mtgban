@@ -12,6 +12,7 @@ import (
 // decorated spellings storefronts hang on them, so a rule added to one path
 // and not the other fails here instead of drifting.
 func TestAliasEditionProjectsAdjustEdition(t *testing.T) {
+	realDatastore(t)
 	seen := map[string]bool{}
 	var corpus []string
 	add := func(edition string) {

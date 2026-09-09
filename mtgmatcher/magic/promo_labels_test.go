@@ -17,6 +17,7 @@ import (
 // The fallback spells the token plainly in the meantime, so nothing is
 // unreadable while the entry is written; the run names what is missing.
 func TestPromoTypeLabels(t *testing.T) {
+	realDatastore(t)
 	b := testBackend
 
 	var unlabelled []string

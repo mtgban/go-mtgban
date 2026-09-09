@@ -12,6 +12,7 @@ import (
 // left unread, every one of these cards also has a prerelease printing whose
 // promo set outranks the one the wording asked for.
 func TestPromoWordingNamesItsSet(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc     string
 		in       mtgmatcher.InputCard

@@ -15,6 +15,7 @@ import (
 // Duress and Voltaic Key each pointed at a number the set does not hold, so
 // every English listing of them answered "unknown variant".
 func TestMediaInsertReprints(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		name              string
 		marker            string

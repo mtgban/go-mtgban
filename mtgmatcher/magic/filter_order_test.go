@@ -12,6 +12,7 @@ import (
 // same listing resolves to a different physical card from one call to
 // the next, and every inventory diff churns forever.
 func TestFilterCardsOrderIsStable(t *testing.T) {
+	realDatastore(t)
 	if len(testBackend.GetUUIDs()) == 0 {
 		t.Skip("mtgmatcher datastore not loaded")
 	}

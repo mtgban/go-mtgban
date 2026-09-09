@@ -18,24 +18,32 @@ import (
 var testBackend *mtgmatcher.Backend
 
 func TestMain(m *testing.M) {
-	datastorePath := os.Getenv("ALLPRINTINGS5_PATH")
-	if datastorePath == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run this suite")
+	// The tests inside the package cannot install this themselves: a loader
+	// would import mtgmatcher and this file is mtgmatcher, so TestMain is the
+	// only place that can hand them a datastore. A run without one is no
+	// longer refused, it just reaches the guards below.
+	path := os.Getenv("ALLPRINTINGS5_PATH")
+	if path != "" {
+		reader, err := datastore.Open(path)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		testBackend, err = magic.Load(reader)
+		reader.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		mtgmatcher.SetGlobalDatastore(testBackend)
 	}
-
-	datastoreReader, err := datastore.Open(datastorePath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer datastoreReader.Close()
-
-	testBackend, err = magic.Load(datastoreReader)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	mtgmatcher.SetGlobalDatastore(testBackend)
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
-
 	os.Exit(m.Run())
+}
+
+// realDatastore skips a test that reads the datastore where the run carries
+// none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	if testBackend == nil {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }

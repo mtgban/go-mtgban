@@ -43,6 +43,7 @@ func TestPlainNumberKeepsTheListNumbers(t *testing.T) {
 // compared against, so the two spelling a number differently finds nothing
 // and raises nothing - the failure a caller reads as "no such card".
 func TestPlainNumberMatchesLoader(t *testing.T) {
+	realDatastore(t)
 	var seen int
 	for _, code := range mtgmatcher.GetAllSets() {
 		set, err := mtgmatcher.GetSet(code)
