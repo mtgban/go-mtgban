@@ -2,8 +2,8 @@ package sealedev
 
 import (
 	"context"
+	"log"
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -13,21 +13,32 @@ import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
-var loadOnce sync.Once
+// installed records whether TestMain found a Magic datastore. The EV tests
+// read real sealed contents, so there is nothing to fake, and a run without
+// the file skips them.
+var installed bool
 
-// realDatastore loads the published Magic datastore once for the suite. The
-// value is drawn from real sealed contents, so there is nothing to fake: a
-// hand-built product would be a guess about the shape being priced.
+func TestMain(m *testing.M) {
+	path := os.Getenv("ALLPRINTINGS5_PATH")
+	if path != "" {
+		b, err := datastore.Read("magic", path)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		mtgmatcher.SetGlobalDatastore(b)
+		installed = true
+	}
+	os.Exit(m.Run())
+}
+
+// realDatastore skips a test that reads the published Magic datastore where
+// none is installed. The value is drawn from real sealed contents, so there
+// is nothing to fake: a hand-built product would be a guess about the shape
+// being priced.
 func realDatastore(t *testing.T) {
 	t.Helper()
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path == "" {
-		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
-	}
-	var err error
-	loadOnce.Do(func() { err = datastore.Load(path) })
-	if err != nil {
-		t.Fatal(err)
+	if !installed {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
 }
 

@@ -2,40 +2,40 @@ package lorcana
 
 import (
 	"errors"
+	"log"
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// loadDatastore opens the datastore the finish suites run against, or skips.
-// datastoreOnce loads the datastore the first time a test asks for it. The
-// suite used to read and parse the file again on every call.
-var datastoreOnce = sync.OnceValues(func() (*mtgmatcher.Backend, error) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		return nil, nil
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	return Load(f)
-})
+// testBackend is the datastore TestMain read, for the tests to match
+// against directly; the same one is installed as the global.
+var testBackend *mtgmatcher.Backend
 
+func TestMain(m *testing.M) {
+	path := os.Getenv("LORCANA_PATH")
+	if path != "" {
+		b, err := datastore.Read("lorcana", path)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		testBackend = b
+		mtgmatcher.SetGlobalDatastore(b)
+	}
+	os.Exit(m.Run())
+}
+
+// loadDatastore hands a test the datastore TestMain read, or skips it where
+// the run carries none: each suite runs under the job holding its own
+// game's file, and not the others'.
 func loadDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
-	b, err := datastoreOnce()
-	if err != nil {
-		t.Fatal(err)
+	if testBackend == nil {
+		t.Skip("Need LORCANA_PATH set to run this test")
 	}
-	if b == nil {
-		t.Skip("LORCANA_PATH not set; skipping the Lorcana suite")
-	}
-	return b
+	return testBackend
 }
 
 // TestFinishPromotion walks every printing in the datastore and asks every

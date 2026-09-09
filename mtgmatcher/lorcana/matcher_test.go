@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -259,19 +258,7 @@ var lorcanaSeeds = []matchTest{
 }
 
 func TestLorcanaMatch(t *testing.T) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		t.Skip("LORCANA_PATH not set; skipping Lorcana matcher suite")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	b, err := Load(f)
-	if err != nil {
-		t.Fatal(err)
-	}
+	b := loadDatastore(t)
 
 	data, err := os.ReadFile(lorcanaTestData)
 	if err != nil {
@@ -386,19 +373,7 @@ func regenerateLorcanaTestData(t *testing.T, b *mtgmatcher.Backend, tests []matc
 // "nonfoil", and a sub-type suffixed uuid agrees with the name that derived
 // it.
 func TestLorcanaFinishNames(t *testing.T) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		t.Skip("LORCANA_PATH not set; skipping Lorcana matcher suite")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	b, err := Load(f)
-	if err != nil {
-		t.Fatal(err)
-	}
+	b := loadDatastore(t)
 
 	subTypes := map[string]int{}
 	for uuid, co := range b.UUIDs {

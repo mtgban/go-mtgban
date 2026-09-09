@@ -1,10 +1,8 @@
 package lorcana
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -13,20 +11,7 @@ import (
 // name, so the errata printing was unreachable even spelled out exactly and
 // answered with the original standing at the same number.
 func TestQualifiedNameStaysWhole(t *testing.T) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		t.Skip("Need LORCANA_PATH set to run this test")
-	}
-	reader, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer reader.Close()
-	backend, err := Load(reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(backend)
+	loadDatastore(t)
 
 	for _, tt := range []struct{ desc, name, number, want string }{
 		{"the errata printing answers to its own name",

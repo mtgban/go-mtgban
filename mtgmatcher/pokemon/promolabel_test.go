@@ -1,10 +1,8 @@
 package pokemon
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -13,20 +11,7 @@ import (
 // printings of one number differ only in the retailer that stamped them, so
 // the wording naming a retailer has to outrank the wording naming none.
 func TestPromoLabelDepth(t *testing.T) {
-	path := os.Getenv("POKEMON_PATH")
-	if path == "" {
-		t.Skip("POKEMON_PATH not set; skipping the promo label depth")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := Load(f)
-	f.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(b)
+	loadBackend(t)
 
 	for _, tt := range []struct{ desc, variation, want string }{
 		{"the retailer is what tells the stampings apart", "117 GameStop Cosmos Holo", "117-159_626640_holofoil"},

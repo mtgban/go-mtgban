@@ -1,10 +1,8 @@
 package pokemon
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -14,20 +12,7 @@ import (
 // set the finish without ever setting the flag, so every holo printing in the
 // game was filed as a plain one.
 func TestFoilFlagAgreesWithFinish(t *testing.T) {
-	path := os.Getenv("POKEMON_PATH")
-	if path == "" {
-		t.Skip("Need POKEMON_PATH set to run this test")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	b, err := Load(f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(b)
+	loadBackend(t)
 
 	var foil, total, disagree int
 	for _, uuid := range mtgmatcher.GetUUIDs() {
