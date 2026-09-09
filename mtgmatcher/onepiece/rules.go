@@ -425,14 +425,15 @@ func promoSetBegun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
 	var code string
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed || len(co.PromoTypes) == 0 ||
+		tokens := labelTokens(co.Card)
+		if !found || co.Sealed || len(tokens) == 0 ||
 			!numberMatches(number, co.Number) {
 			continue
 		}
-		if mtgmatcher.SlugDescribesAny(inCard.Variation, co.PromoTypes) {
+		if mtgmatcher.SlugDescribesAny(inCard.Variation, tokens) {
 			return ""
 		}
-		if !slugsRunOf(inCard.Variation, co.PromoTypes) {
+		if !slugsRunOf(inCard.Variation, tokens) {
 			continue
 		}
 		set, found := b.Sets[co.SetCode]
@@ -511,7 +512,8 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 	wording := strings.ToLower(inCard.Variation)
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed || len(co.PromoTypes) == 0 {
+		tokens := labelTokens(co.Card)
+		if !found || co.Sealed || len(tokens) == 0 {
 			continue
 		}
 		// Only a printing of the number being asked about can say that this
@@ -527,7 +529,7 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 		// the catalog's "Alternate Art Gold-Stamped Signature" has said
 		// which printing it means, and pinning the edition to the set the
 		// card was first printed in deletes that printing outright.
-		if mtgmatcher.SlugDescribesAny(wording, co.PromoTypes) {
+		if mtgmatcher.SlugDescribesAny(wording, tokens) {
 			return true
 		}
 		// A run of a label points at the variant as plainly as the whole of
@@ -538,14 +540,14 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 		// the same run already named the set the listing is filed in,
 		// though - that wording has said where to look, and unpinning the
 		// edition throws the answer away.
-		if !named && slugsRunOf(wording, co.PromoTypes) {
+		if !named && slugsRunOf(wording, tokens) {
 			return true
 		}
 		// A set's own word for a treatment points at it as plainly as the
 		// game's: the wording says manga and the printing is the one
 		// Premium Booster Vol. 2 files that art under, which the edition
 		// naming the set the card was first printed in would delete.
-		if setVocabularyNames(wording, co.SetCode, co.PromoTypes) {
+		if setVocabularyNames(wording, co.SetCode, tokens) {
 			return true
 		}
 	}
@@ -667,11 +669,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// The letter tail cardtrader appends to a number ("OP01-001a") means a
 	// variant printing without saying which; the V.n index says the same.
 	// Either demand drops the base printing from consideration.
-	described, base, variants := tierByVariant(inCard, candidates)
+	described, base, variants := tierByVariant(b, inCard, candidates)
 	described = packPairNamed(b, strings.ToLower(inCard.Variation+" "+inCard.Edition), described, variants)
 	if len(described) > 0 {
 		narrowed := editionTiebreak(b, inCard, described)
-		narrowed = lastNamedTiebreak(inCard.Variation, narrowed)
+		narrowed = lastNamedTiebreak(b, inCard.Variation, narrowed)
 		return finishTiebreak(inCard, narrowed)
 	}
 	if wantsVariant(inCard, number) {
@@ -1176,10 +1178,10 @@ func isEventSet(code string) bool {
 
 // tierByVariant splits the candidates into the ones whose variant label the
 // input's wording describes, the base printings, and the variant printings.
-func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (described, base, variants []mtgmatcher.Card) {
+func tierByVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (described, base, variants []mtgmatcher.Card) {
 	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
 	for _, card := range candidates {
-		if len(card.PromoTypes) == 0 {
+		if promoLabel(b, card) == "" {
 			base = append(base, card)
 			continue
 		}
@@ -1739,7 +1741,7 @@ func runNamedVariants(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbe
 	wording := strings.ToLower(inCard.Variation)
 	var out []mtgmatcher.Card
 	for _, card := range cards {
-		if !slugsRunOf(wording, card.PromoTypes) {
+		if !slugsRunOf(wording, labelTokens(card)) {
 			continue
 		}
 		set, found := b.Sets[card.SetCode]
@@ -1820,7 +1822,7 @@ func catalogWording(wording string) string {
 // the tie DescribedVariants leaves to its caller, and the words in front are
 // the ones both listings share. What the second listing added is what tells
 // it from the first.
-func lastNamedTiebreak(wording string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+func lastNamedTiebreak(b *mtgmatcher.Backend, wording string, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	if len(cards) < 2 {
 		return cards
 	}
@@ -1828,7 +1830,7 @@ func lastNamedTiebreak(wording string, cards []mtgmatcher.Card) []mtgmatcher.Car
 	best := -1
 	for _, card := range cards {
 		at := -1
-		for _, promoType := range card.PromoTypes {
+		for _, promoType := range labelTokens(card) {
 			said := slugSaidAt(wording, promoType)
 			if said > at {
 				at = said
@@ -2068,9 +2070,17 @@ func groupByIdentity(b *mtgmatcher.Backend, candidates []mtgmatcher.Card) (map[s
 		// A label that is the treatment word alone is not a treated half of
 		// anything: those are the coloured DON!! promos, filed under the name
 		// of their colour.
-		treated := len(words) > 1 && words[len(words)-1] == goldTreatment
+		//
+		// Where the word falls is not read. The catalog wrote it last -
+		// "Buggy Gold" - and a datastore that publishes the character as a
+		// mark says the same printing as "Gold Buggy", the promotion in
+		// front of the mark it marks. Either way the treatment is the word
+		// and the rest is the identity it treats.
+		treated := len(words) > 1 && slices.Contains(words, goldTreatment)
 		if treated {
-			words = words[:len(words)-1]
+			words = slices.DeleteFunc(words, func(word string) bool {
+				return word == goldTreatment
+			})
 		}
 		key := strings.Join(words, " ")
 		group, found := groups[key]
@@ -2124,13 +2134,46 @@ func treatmentSaid(wording string) bool {
 	return false
 }
 
-// promoLabel returns the words a printing's single promo type was distilled
-// from. A printing wearing none is the set's plain one and has no label.
+// labelTokens are the tokens a printing answers a wording with, which are
+// its promo types: the register puts the mark among them, because a mark is
+// a fact a listing names even though it is no promotion.
+func labelTokens(card mtgmatcher.Card) []string {
+	return card.PromoTypes
+}
+
+// promoLabel builds a printing's wording out of the facts the datastore
+// publishes: the words its promo types read as, the mark saying which copy
+// of the number it is, and on the end the place it was awarded for, which is
+// where the catalog wrote it and where placeAwarded reads it.
 func promoLabel(b *mtgmatcher.Backend, card mtgmatcher.Card) string {
-	if len(card.PromoTypes) != 1 {
-		return ""
+	mark := mtgmatcher.PromoTypeSlug(card.Watermark)
+	when := promoDate(card.OriginalReleaseDate)
+	dated := mtgmatcher.PromoTypeSlug(when)
+	var event, place []string
+	for _, promoType := range card.PromoTypes {
+		switch {
+		case promoType == mark, promoType == dated:
+			// The mark and the date ride among the tags so that a listing
+			// can name them; they are written out below, in the place the
+			// catalog wrote them, rather than twice.
+			continue
+		case slices.Contains(promoPlaces, promoType):
+			place = append(place, b.PromoTypeLabel(promoType))
+		default:
+			event = append(event, b.PromoTypeLabel(promoType))
+		}
 	}
-	return b.PromoTypeLabels[card.PromoTypes[0]]
+	if card.Watermark != "" {
+		event = append(event, mtgmatcher.Title(card.Watermark))
+	}
+	// The date the promotion ran, where the datastore publishes one the set
+	// does not: the catalog writes it into the label - "Treasure Cup August
+	// 2025" beside a plain "Treasure Cup" - and the two are told apart by
+	// nothing else.
+	if when != "" {
+		event = append(event, when)
+	}
+	return strings.Join(append(event, place...), " ")
 }
 
 // labelWords cuts a label or a wording into the words a comparison can be
