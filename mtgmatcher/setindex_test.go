@@ -8,10 +8,8 @@ import (
 // membership for singles and sealed, sorted buckets, and the multi-code
 // union equal to the concatenation of the individual buckets.
 func TestGetUUIDsInSet(t *testing.T) {
+	realDatastore(t)
 	sets := GetAllSets()
-	if len(sets) == 0 {
-		t.Skip("datastore not loaded")
-	}
 
 	// Rebuild the expected buckets the slow way.
 	wantSingles := map[string]int{}

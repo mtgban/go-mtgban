@@ -11,9 +11,7 @@ import (
 // to check before dereferencing: MatchID walks it for any card whose
 // finish does not match the request, which is an ordinary lookup.
 func TestMatchIDOverAbsentVariations(t *testing.T) {
-	if len(GetUUIDs()) == 0 {
-		t.Skip("datastore not loaded")
-	}
+	realDatastore(t)
 
 	var withAbsent, unmatched int
 	for _, uuid := range GetUUIDs() {
