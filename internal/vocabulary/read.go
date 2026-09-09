@@ -43,10 +43,19 @@ func cardsOf(payload map[string]any) []map[string]any {
 	if held, found := payload["cards"]; found {
 		return objects(held)
 	}
-	page, _ := payload["pageProps"].(map[string]any)
-	held, _ := page["page"].(map[string]any)
+	page, nested := payload["pageProps"].(map[string]any)
+	if !nested {
+		return nil
+	}
+	held, paged := page["page"].(map[string]any)
+	if !paged {
+		return nil
+	}
 	for _, blade := range objects(held["blades"]) {
-		gallery, _ := blade["cards"].(map[string]any)
+		gallery, holds := blade["cards"].(map[string]any)
+		if !holds {
+			continue
+		}
 		if items := objects(gallery["items"]); len(items) > 0 {
 			return items
 		}
