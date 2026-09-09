@@ -19,18 +19,26 @@ func TestPromoTypeLabels(t *testing.T) {
 			t.Errorf("tag %q reads back as nothing", tag)
 		}
 	}
+	// These read the table rather than the backend's map of it. The map
+	// holds what the datastore publishes today, so asserting through it
+	// would pin the test to one datastore and break the moment the builder
+	// folds a token differently - which is the half of this work that lands
+	// first. The spellings are the table's business either way.
 	for _, tt := range []struct{ promoType, want string }{
 		{"alternateart", "Alternate Art"},
 		{"duelterminal", "Duel Terminal"},
 		{"purple", "Purple"},
 		{"japaneseexclusive", "Japanese Exclusive"},
 		// The cases that say why the words are looked up rather than
-		// guessed: title-casing gives "Ots Stamp" and "Gx Tag Force 2".
+		// guessed: title-casing gives "Ots Stamp" and "Uds Qualifier", and
+		// the catalog spells a secret rare "ScR" where it spells the rest
+		// of its abbreviations in capitals.
 		{"otsstamp", "OTS Stamp"},
-		{"gxtagforce2", "GX Tag Force 2"},
-		{"scr", "SCR"},
+		{"udsqualifier", "UDS Qualifier"},
+		{"heroart", "HERO Art"},
+		{"scr", "ScR"},
 	} {
-		if got := b.PromoTypeLabel(tt.promoType); got != tt.want {
+		if got := promoTypeLabel(tt.promoType); got != tt.want {
 			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.promoType, got, tt.want)
 		}
 	}
