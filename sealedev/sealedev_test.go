@@ -2,8 +2,8 @@ package sealedev
 
 import (
 	"context"
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -13,30 +13,39 @@ import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
-// installed records whether TestMain found a Magic datastore. The EV tests
-// read real sealed contents, so there is nothing to fake, and a run without
-// the file skips them.
-var installed bool
+// The Magic datastore is parsed the first time a test asks for it rather
+// than up front. Most of this package prices entries it is handed and never
+// reads a card, so the parse is ten seconds against a tenth of a second of
+// testing, and charging it to every run made selecting one of those tests as
+// slow as running all of them.
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	installed     bool
+)
 
-func TestMain(m *testing.M) {
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path != "" {
-		b, err := datastore.Read("magic", path)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		mtgmatcher.SetGlobalDatastore(b)
-		installed = true
-	}
-	os.Exit(m.Run())
-}
-
-// realDatastore skips a test that reads the published Magic datastore where
-// none is installed. The value is drawn from real sealed contents, so there
-// is nothing to fake: a hand-built product would be a guess about the shape
-// being priced.
+// realDatastore installs the published Magic datastore, skipping the test
+// where none is configured. The value is drawn from real sealed contents, so
+// there is nothing to fake: a hand-built product would be a guess about the
+// shape being priced.
 func realDatastore(t *testing.T) {
 	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		backend, err := datastore.Read("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		mtgmatcher.SetGlobalDatastore(backend)
+		installed = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
+	}
 	if !installed {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
