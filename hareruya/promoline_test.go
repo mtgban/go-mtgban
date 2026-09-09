@@ -13,9 +13,7 @@ import (
 // Showdown lands. Four of those five are not stocked today, so nothing but
 // this exercises them.
 func TestRetailPromoLine(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the promo line suite")
-	}
+	realDatastore(t)
 
 	for _, tt := range []struct {
 		desc, jp, en, card, foil string

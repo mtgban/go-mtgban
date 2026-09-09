@@ -1,8 +1,8 @@
 package strikezone
 
 import (
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -14,13 +14,34 @@ import (
 // TestMain loads the datastore when one is configured. Some of this
 // package's suites read no cards, so a checkout without it still runs them;
 // the ones that do ask say so and skip.
-func TestMain(m *testing.M) {
-	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
-		if err := datastore.Load("magic", path); err != nil {
-			log.Fatalln(err)
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
 		}
+		err := datastore.Load("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-	os.Exit(m.Run())
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 // TestNeonInkWording pins the four Neon Ink colours to their own printings.
@@ -29,9 +50,7 @@ func TestMain(m *testing.M) {
 // the plain printing that stands beside them, which prices a $300 card at the
 // bulk one's id.
 func TestNeonInkWording(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the Neon Ink suite")
-	}
+	realDatastore(t)
 
 	tests := []struct {
 		name   string

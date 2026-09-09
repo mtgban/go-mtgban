@@ -2,8 +2,8 @@ package mintcard
 
 import (
 	"errors"
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -12,13 +12,34 @@ import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-func TestMain(m *testing.M) {
-	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
-		if err := datastore.Load("magic", path); err != nil {
-			log.Fatalln(err)
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
 		}
+		err := datastore.Load("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-	os.Exit(m.Run())
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 // TestPreprocessInserts pins that the inserts a booster carries beside its
@@ -42,9 +63,7 @@ func TestPreprocessInserts(t *testing.T) {
 // datastore's: a duel deck code of its own, and a Final Fantasy buy-a-box
 // promo listed under its flavor name with the card's own in parentheses.
 func TestPreprocessShelves(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set")
-	}
+	realDatastore(t)
 	for _, tt := range []struct {
 		name, edition, code, language string
 		wantSet, wantNumber           string

@@ -12,9 +12,7 @@ import (
 // year in its title; and a prerelease card the set numbers among its own,
 // which every set since Murders at Karlov Manor does.
 func TestPromoShelf(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the promo shelf suite")
-	}
+	realDatastore(t)
 
 	for _, tt := range []struct {
 		desc, jp, en, card, foil string
@@ -105,9 +103,7 @@ func TestPromoShelf(t *testing.T) {
 // that handed it out, and the Pool Party drop's dazzle foil, told from the
 // plain foil only by the marker in the foil's place.
 func TestBuylistPromoShelf(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the buylist promo shelf suite")
-	}
+	realDatastore(t)
 	for _, tt := range []struct {
 		title, wantSet, wantNumber string
 	}{

@@ -1,12 +1,11 @@
 package magiccorner
 
 import (
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -15,13 +14,34 @@ import (
 // package's tests read no cards, so a checkout without it still runs them;
 // the promo-edition test asks the datastore whether a name is a set, and
 // says so when it cannot.
-func TestMain(m *testing.M) {
-	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
-		if err := datastore.Load("magic", path); err != nil {
-			log.Fatalln(err)
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
 		}
+		err := datastore.Load("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-	os.Exit(m.Run())
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 // TestPromoSetBase pins which editions are read as an expansion's promos.
@@ -29,9 +49,7 @@ func TestMain(m *testing.M) {
 // cannot decide; what follows from getting this wrong is that every card
 // with a promo pack printing anywhere gets stamped as one.
 func TestPromoSetBase(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the promo edition suite")
-	}
+	realDatastore(t)
 
 	for _, tt := range []struct {
 		desc, edition, wantBase string

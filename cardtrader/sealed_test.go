@@ -2,10 +2,10 @@ package cardtrader
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -16,20 +16,41 @@ import (
 // TestMain loads the datastore once for the whole package, where a run
 // carries one: most of this package reads no cards, and the games this
 // scraper is scheduled for run under jobs holding their own datastore.
-func TestMain(m *testing.M) {
-	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
 		reader, err := datastore.Open(path)
 		if err != nil {
-			log.Fatalln(err)
+			datastoreErr = err
+			return
 		}
 		backend, err := magic.Load(reader)
 		reader.Close()
 		if err != nil {
-			log.Fatalln(err)
+			datastoreErr = err
+			return
 		}
 		mtgmatcher.SetGlobalDatastore(backend)
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-	os.Exit(m.Run())
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 // TestBuildProductMap pins the sealed product-map fallbacks blueprint by
@@ -39,9 +60,7 @@ func TestMain(m *testing.M) {
 // on for every other game. The fixtures are drawn from the datastore so
 // the test holds across its releases.
 func TestBuildProductMap(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the datastore-backed cases")
-	}
+	realDatastore(t)
 
 	ctMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
 	tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
