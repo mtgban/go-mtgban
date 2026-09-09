@@ -2,13 +2,11 @@ package cardmarket
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
@@ -45,10 +43,7 @@ const fabArtDatastore = `{
 // prices is thrown away: 269 rejections over 134 printings in the night of
 // 2026-08-23, 226 of them this pack's.
 func TestGemPackTreatments(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(fabArtDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "fleshandblood", fabArtDatastore)
 
 	products := []cm.Product{
 		{
@@ -111,10 +106,7 @@ func TestGemPackTreatments(t *testing.T) {
 // to the card's would answer with the ordinary printing instead - and take
 // the price the ordinary product had.
 func TestMatchProductExtendedArt(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(fabArtDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "fleshandblood", fabArtDatastore)
 
 	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct{ name, want string }{

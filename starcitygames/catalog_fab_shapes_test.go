@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
 func TestFabArtPosition(t *testing.T) {
@@ -54,7 +55,7 @@ func TestFabTreatments(t *testing.T) {
 // pitch-labelled base finds the extended art, a misspelt name and a
 // misspelt number reach the printing, and an insert is no card.
 func TestCatalogFabShapes(t *testing.T) {
-	withGameDatastore(t, "FLESHANDBLOOD_PATH", fleshandblood.Load)
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sku, name, set, finish, group string) CatalogProduct {
 		return CatalogProduct{

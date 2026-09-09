@@ -7,8 +7,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -60,9 +58,7 @@ const fabShelfDatastore = `{
 
 func loadFabShelfDatastore(t *testing.T) {
 	t.Helper()
-	if err := mtgmatcher.LoadDatastore(strings.NewReader(fabShelfDatastore)); err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "fleshandblood", fabShelfDatastore)
 }
 
 // TestFabShelves pins the sets a product is asked of, in order: a promo

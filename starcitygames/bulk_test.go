@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
 // TestBulkBuyRates pins every rate the table quotes. The numbers are SCG's,
@@ -118,7 +118,7 @@ func TestBuylistPrice(t *testing.T) {
 // TestCatalogDropsBulkBuyPrice drives the scraper itself, to show the rate is
 // dropped from the buylist without costing the card its retail listing.
 func TestCatalogDropsBulkBuyPrice(t *testing.T) {
-	withGameDatastore(t, "FLESHANDBLOOD_PATH", fleshandblood.Load)
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sellList string) CatalogProduct {
 		return CatalogProduct{

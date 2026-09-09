@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/palworld"
@@ -48,19 +46,7 @@ func TestPalworldNotes(t *testing.T) {
 // the correction is a row that should leave the table rather than sit there
 // rewriting a listing that now means something.
 func TestPalworldListing(t *testing.T) {
-	path := os.Getenv("PALWORLD_PATH")
-	if path == "" {
-		t.Skip("Need PALWORLD_PATH variable set to run this test")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := mtgmatcher.Open("palworld", f)
-	f.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
+	b := readGameDatastore(t, "palworld", "PALWORLD_PATH")
 
 	for _, tt := range []struct {
 		name, edition, notes, uuid string

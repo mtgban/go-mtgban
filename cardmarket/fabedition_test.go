@@ -1,12 +1,9 @@
 package cardmarket
 
 import (
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
@@ -69,10 +66,7 @@ const fabPromoDatastore = `{
 // printing: both of these are "012" and "009" to Cardmarket, and the
 // programme it sells them under is the only thing telling them apart.
 func TestFabPromoProduct(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(fabPromoDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "fleshandblood", fabPromoDatastore)
 
 	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct{ name, number, expansion, want string }{

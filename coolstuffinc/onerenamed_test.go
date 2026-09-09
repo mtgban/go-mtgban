@@ -1,12 +1,7 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 )
 
 // TestOnePieceRenamedTreatment pins what the rename may and may not reach.
@@ -15,20 +10,7 @@ import (
 // reaches this at all. The label check behind it is defensive, for a set that
 // someday wears Full Art alone.
 func TestOnePieceRenamedTreatment(t *testing.T) {
-	path := os.Getenv("ONEPIECE_PATH")
-	if path == "" {
-		t.Skip("Need ONEPIECE_PATH set to run this test")
-	}
-	reader, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer reader.Close()
-	backend, err := onepiece.Load(reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(backend)
+	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	for _, tt := range []struct {
 		desc, id, name, want string

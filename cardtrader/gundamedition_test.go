@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher/gundam"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/gundam"
 )
 
 // shelf names a blueprint's expansion, which is the only field the guard
@@ -99,19 +101,7 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 // lookup is the whole of it, so this asks the loaded backend directly
 // rather than swapping what every other test in this package runs against.
 func TestGundamShelvesNameASet(t *testing.T) {
-	path := os.Getenv("GUNDAM_PATH")
-	if path == "" {
-		t.Skip("GUNDAM_PATH not set; skipping the Gundam shelf split")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := gundam.Load(f)
-	f.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
+	b := gundamBackend(t)
 
 	for _, tt := range []struct {
 		shelf string
@@ -149,19 +139,7 @@ func TestGundamShelvesNameASet(t *testing.T) {
 // Either half moving silently reverts the shelf to aliasing on its numbers,
 // so this fails rather than the listings quietly changing identity.
 func TestGundamShelfSets(t *testing.T) {
-	path := os.Getenv("GUNDAM_PATH")
-	if path == "" {
-		t.Skip("GUNDAM_PATH not set; skipping the Gundam shelf mapping")
-	}
-	f, err := datastore.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := gundam.Load(f)
-	f.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
+	b := gundamBackend(t)
 
 	for name, code := range gundamShelfSets {
 		t.Run(name, func(t *testing.T) {
@@ -178,4 +156,19 @@ func TestGundamShelfSets(t *testing.T) {
 			}
 		})
 	}
+}
+
+// gundamBackend reads the Gundam datastore for a test to ask directly, or
+// skips the test where the run carries none.
+func gundamBackend(t *testing.T) *mtgmatcher.Backend {
+	t.Helper()
+	path := os.Getenv("GUNDAM_PATH")
+	if path == "" {
+		t.Skip("GUNDAM_PATH not set; skipping the Gundam shelves")
+	}
+	b, err := datastore.Read("gundam", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
 }

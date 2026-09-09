@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -15,13 +13,7 @@ import (
 // goes up under the art, so the wording named nothing and the base printing
 // answered - $1400 on one of them.
 func TestEventNamed(t *testing.T) {
-	path := os.Getenv("ONEPIECE_PATH")
-	if path == "" {
-		t.Skip("Need ONEPIECE_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	tests := []struct {
 		desc      string

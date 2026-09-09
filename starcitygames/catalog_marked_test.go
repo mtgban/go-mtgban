@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
 // TestFabVariantMarked pins which set codes are read as carrying the marker.
@@ -44,7 +45,7 @@ func TestFabVariantMarked(t *testing.T) {
 // Extended Art War Machine and the ordinary rainbow foil beside it were one
 // entry with two Star City Games rows under it.
 func TestCatalogFabMarkedPrinting(t *testing.T) {
-	withGameDatastore(t, "FLESHANDBLOOD_PATH", fleshandblood.Load)
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	for _, tt := range []struct {
 		desc    string

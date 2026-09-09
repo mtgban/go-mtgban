@@ -3,7 +3,6 @@ package cardmarket
 import (
 	"maps"
 	"slices"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -158,10 +157,7 @@ const ygohDatastore = `{
 // catalogue has to decide: a product the datastore holds in one run is that
 // run, one it holds in two is not said by the name at all.
 func TestResolveSealedNameRunSilent(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(ygohDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "yugioh", ygohDatastore)
 
 	mkm := &Sealed{gameID: cm.GameYuGiOh}
 	for _, tt := range []struct {
@@ -222,10 +218,7 @@ const fabSealedDatastore = `{
 // First Booster" - and the run it named has to come back on, or the two runs
 // answer each other's names.
 func TestResolveSealedNameNamedRun(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(fabSealedDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "fleshandblood", fabSealedDatastore)
 
 	mkm := &Sealed{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct {
@@ -281,10 +274,7 @@ const opDatastore = `{
 // TestResolveSealedNameRenamed pins the marketplace's name reaching the
 // datastore's product.
 func TestResolveSealedNameRenamed(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(opDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "onepiece", opDatastore)
 
 	mkm := &Sealed{gameID: cm.GameOnePiece}
 	for _, tt := range []struct {

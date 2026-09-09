@@ -10,11 +10,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// magicDatastore is the datastore TestMain loaded, kept so a test that
-// installs another game's can put this one back without reading the file a
-// second time. A backend is 2.9GB resident and the reload held two.
-var magicDatastore *mtgmatcher.Backend
-
 // magicInstalled records whether TestMain found a Magic datastore. The
 // package does not refuse to run without one: this storefront's catalog
 // covers four games, and the tests for the other three run under the job
@@ -32,7 +27,6 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		magicDatastore = ds
 		mtgmatcher.SetGlobalDatastore(ds)
 		magicInstalled = true
 	}

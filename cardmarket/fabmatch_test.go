@@ -1,12 +1,9 @@
 package cardmarket
 
 import (
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
@@ -38,10 +35,7 @@ const fabDatastore = `{
 // matcher answers from.
 func loadFabDatastore(t *testing.T) {
 	t.Helper()
-	err := mtgmatcher.LoadDatastore(strings.NewReader(fabDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "fleshandblood", fabDatastore)
 }
 
 // TestMatchProductPrintRun pins what the name fallback answers for a
@@ -123,10 +117,7 @@ const fabSpellingDatastore = `{
 // Rumble" bare, so its product's stripped name is Heavy Hitters' card and
 // only the decorated one still splits down to the printing.
 func TestMatchProductTreatmentTail(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(fabSpellingDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "fleshandblood", fabSpellingDatastore)
 
 	mkm := &Index{gameID: cm.GameFleshAndBlood}
 	for _, tt := range []struct {

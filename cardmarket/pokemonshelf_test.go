@@ -2,12 +2,9 @@ package cardmarket
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
@@ -31,10 +28,7 @@ const pokemonShelfDatastore = `{
 // number, and says which kind of miss a miss is: a set we carry that holds
 // no such card, or a catalog we do not carry at all.
 func TestMatchPokemonShelves(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(pokemonShelfDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "pokemon", pokemonShelfDatastore)
 
 	mkm := &Index{gameID: cm.GamePokemon}
 	for _, tt := range []struct {

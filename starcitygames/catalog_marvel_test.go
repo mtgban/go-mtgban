@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
 // TestCatalogFabMarvel pins the tier the catalog spends a field of its own on.
@@ -15,7 +16,7 @@ import (
 // for the Dynasty marvel of Construct Nitro Mechanoid, and that price was
 // being quoted against the ordinary cold foil beside it.
 func TestCatalogFabMarvel(t *testing.T) {
-	withGameDatastore(t, "FLESHANDBLOOD_PATH", fleshandblood.Load)
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(rarity string) CatalogProduct {
 		return CatalogProduct{

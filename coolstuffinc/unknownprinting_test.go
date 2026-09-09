@@ -1,11 +1,9 @@
 package coolstuffinc
 
 import (
-	"os"
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -60,13 +58,7 @@ func TestUnknownPrinting(t *testing.T) {
 // TestUnknownPrintingKept pins that the printing each dropped listing was
 // landing on still resolves: the drop is one listing, not the card.
 func TestUnknownPrintingKept(t *testing.T) {
-	path := os.Getenv("YUGIOH_PATH")
-	if path == "" {
-		t.Skip("Need YUGIOH_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	for _, test := range []struct {
 		name, edition, variation, wantSet, wantNumber string

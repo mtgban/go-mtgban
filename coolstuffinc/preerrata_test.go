@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -15,13 +13,7 @@ import (
 // refused as an unsupported condition and the listing dropped, though the
 // catalog carries every run they name.
 func TestConditionPrintingReachesTheRun(t *testing.T) {
-	path := os.Getenv("ONEPIECE_PATH")
-	if path == "" {
-		t.Skip("Need ONEPIECE_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	// The four rows the last runs refused, each naming a parallel whose
 	// pre-errata run the catalog files on its own.

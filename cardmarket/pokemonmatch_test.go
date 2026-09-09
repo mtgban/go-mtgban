@@ -2,12 +2,9 @@ package cardmarket
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
@@ -40,10 +37,7 @@ const pokemonDatastore = `{
 // twelve Japanese promos under their ##/XY-P numbers, and a numbered product
 // is asking for one of them.
 func TestMatchProductForeignExpansion(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(pokemonDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "pokemon", pokemonDatastore)
 
 	mkm := &Index{gameID: cm.GamePokemon}
 	for _, tt := range []struct {
@@ -163,9 +157,7 @@ const letteredDatastore = `{
 // prefixed spelling reaches them too. Only Alternate Art Promos was tried
 // before, so every League & Championship product refused.
 func TestMatchPokemonLettered(t *testing.T) {
-	if err := mtgmatcher.LoadDatastore(strings.NewReader(letteredDatastore)); err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "pokemon", letteredDatastore)
 	mkm := &Index{gameID: cm.GamePokemon}
 
 	for _, tt := range []struct {

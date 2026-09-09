@@ -9,7 +9,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
 // TestLoadCatalogRetryStartsClean drives the singles scraper through a catalog
@@ -26,7 +26,7 @@ import (
 // has to end up with one card holding the pair's copies once, and with the
 // listing on record as a pair exactly once.
 func TestLoadCatalogRetryStartsClean(t *testing.T) {
-	withGameDatastore(t, "FLESHANDBLOOD_PATH", fleshandblood.Load)
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sku string, nm, sp int) CatalogProduct {
 		return CatalogProduct{

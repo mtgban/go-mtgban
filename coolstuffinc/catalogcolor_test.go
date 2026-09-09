@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -15,13 +13,7 @@ import (
 // of them differently: "Light Blue" says the word blue, so it answered with
 // the blue printing and two products met on one id.
 func TestCatalogColor(t *testing.T) {
-	path := os.Getenv("YUGIOH_PATH")
-	if path == "" {
-		t.Skip("Need YUGIOH_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	tests := []struct {
 		name  string

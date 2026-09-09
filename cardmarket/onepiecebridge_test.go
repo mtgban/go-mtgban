@@ -1,12 +1,9 @@
 package cardmarket
 
 import (
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 )
@@ -33,9 +30,7 @@ const onePieceDatastore = `{
 // on each other's printing. The bridge says which outright, and where it says
 // nothing the catalog still names what it can.
 func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
-	if err := mtgmatcher.LoadDatastore(strings.NewReader(onePieceDatastore)); err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "onepiece", onePieceDatastore)
 
 	for _, tt := range []struct {
 		desc    string

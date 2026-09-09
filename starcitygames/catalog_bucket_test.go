@@ -3,7 +3,7 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
 // TestSecondBucketMerges covers the Armory Deck singles Star City Games splits
@@ -19,7 +19,7 @@ import (
 // The quantities are the ones the catalog carried on 2026-08-24: eleven Near
 // Mint and five Played under the plain sku, seven and two under the second.
 func TestSecondBucketMerges(t *testing.T) {
-	withGameDatastore(t, "FLESHANDBLOOD_PATH", fleshandblood.Load)
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sku string, nm, sp int) CatalogProduct {
 		return CatalogProduct{
