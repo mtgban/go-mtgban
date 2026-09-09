@@ -15,7 +15,7 @@ import (
 // package's tests read no cards, so a checkout without it still runs them.
 func TestMain(m *testing.M) {
 	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
-		if err := datastore.Load(path); err != nil {
+		if err := datastore.Load("magic", path); err != nil {
 			log.Fatalln(err)
 		}
 	}

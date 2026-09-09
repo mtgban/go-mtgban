@@ -262,33 +262,24 @@ blank import and pays for nothing it does not use:
 import _ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 ```
 
-`mtgmatcher/games` is a meta-package that blank-imports all three, for
-consumers that want every game with a single import; `cmd/bantool` does
+`mtgmatcher/games` is a meta-package that blank-imports every game, for
+consumers that want them all with a single import; `cmd/bantool` does
 exactly that. The trade-off is spelled out in its doc comment: it links every
-game and its transitive dependencies into the binary and puts every loader
-into auto-detection.
+game and its transitive dependencies into the binary.
 
-**Loading.** `LoadDatastore(reader)` auto-detects the game. It fails fast with
-a pointed error if no game is registered ("blank-import a game package such
-as …"), reads the input once into memory, and then hands a fresh
-`bytes.Reader` to each registered loader in registration order. Loaders are
-written to reject formats they do not recognize, so the first success wins and
-is installed with `SetGlobalDatastore(b)`. If every loader fails, the returned
-error is `"mtgmatcher: no registered game could load the datastore: %w"`
-wrapping the *first* loader's error — so a malformed MTGJSON file may surface
-as whichever game happened to be tried first, not as a Magic parse error. Keep
-that in mind when reading a load failure. `LoadDatastoreFile(path)` opens the
-file and delegates.
-
-When the game is known, skip auto-detection entirely:
+**Loading.** The caller names the game:
 
 ```go
 func Open(name string, reader io.Reader) (*Backend, error)
 ```
 
 `Open` loads exactly the named game and returns the `Backend` **without**
-installing it as the global one — the escape hatch for consumers that want to
-own their backend's lifetime (see the concurrency note below).
+installing it as the global one; `SetGlobalDatastore(b)` installs it. Asking
+for a game nothing registered fails with an error naming the games that are.
+There is no auto-detection: the loader that once tried every registered game
+in turn decoded AllPrintings through three foreign decoders before Magic's,
+behind a buffer of the whole file, and was removed. bantool reads the game
+off the scraper it runs; a suite names its own in its TestMain.
 
 **The global-backend concurrency contract.** `defaultBackend` is a
 package-global *struct value* (`var defaultBackend Backend`) with **no
@@ -298,7 +289,7 @@ simply copies the pointed-to struct into it. All the package-level accessors
 with no locking. The intended contract is "build once, read-only after" —
 concurrency safety by immutability, not by locks. That contract is violated in
 practice: the reference consumer exposes an authenticated
-`/api/load/datastore` endpoint that re-runs `LoadDatastore` on a live server,
+`/api/load/datastore` endpoint that reloads the datastore on a live server,
 reassigning the global while HTTP handlers concurrently read it, and
 reassigning a multi-word struct value concurrent with readers is a data race
 under the Go memory model.
@@ -1007,10 +998,9 @@ datastore, and never runs scrapers in-process. Canonical patterns:
 - **Activate a game, then load the datastore once at startup** — the matcher
   can match nothing until a game package is linked in, so blank-import
   `mtgmatcher/games` (or just the games you serve) and then call
-  `mtgmatcher.LoadDatastore(reader)` streamed from a `simplecloud` bucket,
-  firing async cache builds afterwards. When the game is known,
-  `mtgmatcher.Open("magic", reader)` skips auto-detection and hands back a
-  `*Backend` you own. A signature-verified `/api/load/datastore` endpoint can
+  `mtgmatcher.Open(game, reader)` streamed from a `simplecloud` bucket and
+  install the `*Backend` with `SetGlobalDatastore`, firing async cache builds
+  afterwards. A signature-verified `/api/load/datastore` endpoint can
   reload the global at runtime (see the §2.1 race caveat, and prefer an
   `atomic.Pointer[Backend]` over the global if you do this).
 - **Consume pre-scraped JSON** — `mtgban.ReadSellerFromJSON` /
