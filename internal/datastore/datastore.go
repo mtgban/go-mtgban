@@ -56,3 +56,15 @@ func Load(path string) error {
 	defer reader.Close()
 	return mtgmatcher.LoadDatastore(reader)
 }
+
+// Read opens the datastore the path names and reads it as the game's,
+// handing back the backend without installing it. The game has to be
+// registered by the binary, the way its own package's blank import does.
+func Read(game, path string) (*mtgmatcher.Backend, error) {
+	reader, err := Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return mtgmatcher.Open(game, reader)
+}
