@@ -438,6 +438,13 @@ func SetGlobalDatastore(b *Backend) {
 	defaultBackend = *b
 }
 
+// GlobalDatastore returns a copy of the installed datastore, so what a
+// caller swaps in for a while can be put back afterwards.
+func GlobalDatastore() *Backend {
+	b := defaultBackend
+	return &b
+}
+
 // SetGlobalLogger points the matcher's diagnostics at a logger of your own.
 func SetGlobalLogger(userLogger *log.Logger) {
 	Logger = userLogger
