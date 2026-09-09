@@ -2,51 +2,11 @@ package vegassingles
 
 import (
 	"encoding/json"
-	"errors"
-	"log"
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
-
-// The magic preprocessor asks the datastore what a display name's own reading
-// of a product resolves to before preferring it, so its tests need the real
-// one. The other games' preprocessors read the display name alone.
-func TestMain(m *testing.M) {
-	// Install it where a run carries one and run the rest of the package
-	// where it does not: this scraper is scheduled for Riftbound, One Piece
-	// and Pokemon, each of which runs under a job holding its own datastore
-	// and not AllPrintings. Refusing the package for want of the Magic file
-	// left those three games with no run at all.
-	if err := installMagic(); err != nil {
-		log.Println("skipping the Magic tests:", err)
-	}
-	os.Exit(m.Run())
-}
-
-func installMagic() error {
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path == "" {
-		return errors.New("ALLPRINTINGS5_PATH is not set")
-	}
-	reader, err := datastore.Open(path)
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-
-	ds, err := magic.Load(reader)
-	if err != nil {
-		return err
-	}
-	mtgmatcher.SetGlobalDatastore(ds)
-	magicInstalled = true
-	return nil
-}
 
 func TestPreprocessMagic(t *testing.T) {
 	withMagic(t)

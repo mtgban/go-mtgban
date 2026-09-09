@@ -3,6 +3,7 @@ package starcitygames
 import (
 	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -10,36 +11,45 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// magicInstalled records whether TestMain found a Magic datastore. The
-// package does not refuse to run without one: this storefront's catalog
-// covers four games, and the tests for the other three run under the job
-// holding that game's datastore, which does not carry AllPrintings.
-var magicInstalled bool
-
 func TestMain(m *testing.M) {
-	if allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH"); allprintingsPath != "" {
-		allPrintingsReader, err := datastore.Open(allprintingsPath)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		ds, err := magic.Load(allPrintingsReader)
-		allPrintingsReader.Close()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		mtgmatcher.SetGlobalDatastore(ds)
-		magicInstalled = true
-	}
-
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
-
 	os.Exit(m.Run())
 }
 
 // withMagic skips a test that reads the Magic datastore where none is
 // installed.
+var (
+	magicOnce      sync.Once
+	magicErr       error
+	magicInstalled bool
+)
+
+// withMagic installs AllPrintings the first time a test asks for it, and
+// skips where the run carries none.
 func withMagic(t *testing.T) {
 	t.Helper()
+	magicOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		reader, err := datastore.Open(path)
+		if err != nil {
+			magicErr = err
+			return
+		}
+		ds, err := magic.Load(reader)
+		reader.Close()
+		if err != nil {
+			magicErr = err
+			return
+		}
+		mtgmatcher.SetGlobalDatastore(ds)
+		magicInstalled = true
+	})
+	if magicErr != nil {
+		t.Fatal(magicErr)
+	}
 	if !magicInstalled {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
