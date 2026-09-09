@@ -50,6 +50,12 @@ type Published struct {
 	// carry these on a card without declaring them.
 	Facts []string
 
+	// Words are the catalog's own wording for each token: the run of words
+	// in a carrying printing's variant whose slug is that token. A token
+	// the catalog never writes in words has none, and nothing is said
+	// about it.
+	Words map[string]string
+
 	// Marked says whether this datastore publishes the mark saying which
 	// copy of a number a printing is. A datastore that does has had the
 	// subjects and the artwork letters taken out of the variant, so a token
@@ -85,11 +91,22 @@ type Problems struct {
 	// Mangled are labels whose ordinals were capitalised by a title-caser
 	// that does not know what an ordinal is.
 	Mangled []string
+
+	// RunTogether are labels of one word for a token the catalog writes as
+	// several. A slug has no spaces left in it and title-casing cannot put
+	// them back, so a token the loader keeps no words for is shown to a
+	// reader as "Legendarybattledeck".
+	//
+	// The words are not guessed at: they are the catalog's own, read off
+	// the variants of the printings that carry the token. A token the
+	// catalog writes as one word - "participation", "stamped" - reads back
+	// as one word and is right.
+	RunTogether []string
 }
 
 // Any reports whether anything was found.
 func (p Problems) Any() bool {
-	return len(p.Unstated)+len(p.NotSlugs)+len(p.Unlabelled)+len(p.Mangled) > 0
+	return len(p.Unstated)+len(p.NotSlugs)+len(p.Unlabelled)+len(p.Mangled)+len(p.RunTogether) > 0
 }
 
 // Lines are the problems as one line each.
@@ -109,6 +126,7 @@ func (p Problems) Lines() []string {
 	say("declared tokens are not slugs", p.NotSlugs)
 	say("declared tokens read back as their own slug", p.Unlabelled)
 	say("labels have an ordinal a title-caser capitalised", p.Mangled)
+	say("labels read as one word for a token the catalog writes as several", p.RunTogether)
 	return out
 }
 
@@ -133,6 +151,9 @@ func Check(loaded Backend, stated Published) Problems {
 		}
 		if ordinalCaps.MatchString(label) {
 			found.Mangled = append(found.Mangled, token+" = "+label)
+		}
+		if words := stated.Words[token]; len(strings.Fields(words)) > 1 && len(strings.Fields(label)) == 1 {
+			found.RunTogether = append(found.RunTogether, fmt.Sprintf("%s = %q, written %q", token, label, words))
 		}
 	}
 	return found

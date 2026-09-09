@@ -11,7 +11,11 @@ import (
 // TestCheckReadsTheRules holds each rule against a loader that breaks it and
 // one that does not, so the rules hold wherever the tests run.
 func TestCheckReadsTheRules(t *testing.T) {
-	stated := Published{Tokens: []string{"alternateart", "sp"}, Facts: []string{"boahancock", "tr"}}
+	stated := Published{
+		Tokens: []string{"alternateart", "sp", "challengebox"},
+		Facts:  []string{"boahancock", "tr"},
+		Words:  map[string]string{"challengebox": "Challenge Box", "sp": "SP"},
+	}
 	for _, test := range []struct {
 		desc   string
 		loaded Backend
@@ -55,6 +59,30 @@ func TestCheckReadsTheRules(t *testing.T) {
 			desc:   "a token a reader is shown the slug of",
 			loaded: Backend{Declared: []string{"alternateart"}},
 			want:   func(p Problems) int { return len(p.Unlabelled) },
+		},
+		{
+			desc: "a label of one word for a token the catalog writes as two",
+			loaded: Backend{
+				Declared: []string{"challengebox"},
+				Labels:   map[string]string{"challengebox": "Challengebox"},
+			},
+			want: func(p Problems) int { return len(p.RunTogether) },
+		},
+		{
+			desc: "and the same token once the words are written down",
+			loaded: Backend{
+				Declared: []string{"challengebox"},
+				Labels:   map[string]string{"challengebox": "Challenge Box"},
+			},
+			want: func(p Problems) int { return len(p.RunTogether) },
+		},
+		{
+			desc: "and a token the catalog itself writes as one word",
+			loaded: Backend{
+				Declared: []string{"sp"},
+				Labels:   map[string]string{"sp": "Special"},
+			},
+			want: func(p Problems) int { return len(p.RunTogether) },
 		},
 		{
 			desc: "an ordinal a title-caser capitalised",

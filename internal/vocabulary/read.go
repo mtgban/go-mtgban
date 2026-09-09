@@ -92,8 +92,9 @@ func ReadPublished(path string) (Published, error) {
 	if len(cards) == 0 {
 		return Published{}, fmt.Errorf("%s: %w", path, ErrNotDatastore)
 	}
-	var stated Published
+	stated := Published{Words: map[string]string{}}
 	for _, card := range cards {
+		wordsSaid(card, stated.Words)
 		if _, marked := card["watermark"]; marked {
 			stated.Marked = true
 		}
@@ -108,6 +109,40 @@ func ReadPublished(path string) (Published, error) {
 	}
 	stated.Tokens, stated.Facts = sorted(stated.Tokens), sorted(stated.Facts)
 	return stated, nil
+}
+
+// wordsSaid records the catalog's own wording for each token a card wears:
+// the run of words in its variant whose slug is that token.
+//
+// The variant is the label the catalog wrote, which the tokens are distilled
+// out of, so the words are in it wherever the builder folded rather than
+// renamed. A token whose words are nowhere in it - one folded onto another
+// spelling - is left unsaid rather than guessed at.
+func wordsSaid(card map[string]any, words map[string]string) {
+	variant, prose := card["variant"].(string)
+	if !prose || variant == "" {
+		return
+	}
+	wanted := map[string]bool{}
+	for _, token := range scalars(card["promoTypes"]) {
+		if slug := mtgmatcher.PromoTypeSlug(token); words[slug] == "" {
+			wanted[slug] = true
+		}
+	}
+	if len(wanted) == 0 {
+		return
+	}
+	fields := strings.Fields(variant)
+	for i := range fields {
+		for j := i + 1; j <= len(fields); j++ {
+			span := strings.Join(fields[i:j], " ")
+			slug := mtgmatcher.PromoTypeSlug(span)
+			if wanted[slug] {
+				words[slug] = span
+				delete(wanted, slug)
+			}
+		}
+	}
 }
 
 // walk reads every fact a card states, however deep it states it. A game
