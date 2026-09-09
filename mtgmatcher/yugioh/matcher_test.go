@@ -137,9 +137,7 @@ var yugiohSeeds = []matchTest{
 	{
 		// The advent calendars are printed in German and named in it, so
 		// the name reaches one printing on its own and the language filter
-		// has nothing to choose between. A language is not a promotion
-		// either, and this holds whether the datastore says so in a field
-		// of its own or still says it as a tag.
+		// has nothing to choose between.
 		Desc: "a German printing is reached by the name it is printed under",
 		In:   mtgmatcher.InputCard{Name: `Junk Synchron - "Gerumpelsynchronisierer"`, Variation: "AC11-DE001"},
 	},
@@ -185,11 +183,25 @@ var yugiohSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Dark Magician", Edition: "Promo", Variation: "BPT001 BPT-001 Secret Rare"},
 	},
 	// Konami numbers a printing by the language it was printed in, and this
-	// datastore is the English catalog: the German card is a different piece
-	// of card, not a spelling of the English one.
+	// datastore is mostly the English catalog - so a foreign number is a
+	// sign of a printing it has no row for. A sign and not a rule: the
+	// advent calendars are German and carried as German, so the number is
+	// asked of the datastore rather than assumed about.
 	{
-		Desc: "negative: a printing numbered in another language is not ours",
+		Desc: "a German printing this datastore carries is reached by its number",
 		In:   mtgmatcher.InputCard{Name: "Nitrokrieger", Edition: "Promo", Variation: "AC11-DE021 Ultra Rare"},
+	},
+	{
+		Desc: "negative: a German printing of a number carried only in English is not ours",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician", Edition: "Promo", Variation: "LOB-DE005"},
+	},
+	{
+		// The sign is not always a language. The Falsebound Kingdom
+		// numbers its two promos SP001 and SP002, English cards whose SP
+		// the infix read as Spanish; asking the datastore answers this
+		// the same way it answers the German ones.
+		Desc: "a promo whose number only looks foreign is reached",
+		In:   mtgmatcher.InputCard{Name: "Sinister Serpent", Variation: "TFK-SP001"},
 	},
 	// The storefront brackets what it elsewhere parenthesizes, and the
 	// bracket says the same thing about the printing.

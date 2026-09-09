@@ -827,10 +827,15 @@ var foreignInfixes = map[string]bool{
 // segment and the digits behind it: "AC14-DE021" is AC14, DE and 021.
 var foreignNumberRe = regexp.MustCompile(`^([A-Za-z0-9]+)-([A-Za-z]{2})[0-9]`)
 
-// IsUnsupported reports that a listing names a printing in a language this
-// datastore does not carry, which is a card it has no row for rather than a
-// card it failed to find. Saying so lets the caller skip it in silence, where
-// a refusal would be reported as a miss every run.
+// IsUnsupported reports that a listing names a printing this datastore has no
+// row for rather than one it failed to find. Saying so lets the caller skip it
+// in silence, where a refusal would be reported as a miss every run.
+//
+// A foreign collector number is the sign of one, because the catalog sells
+// far more of the language printings than it files: the number says which
+// language and the datastore has only the English row. It is a sign and not
+// a rule, so it yields to the datastore whenever the number is one this
+// datastore actually carries.
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 	// The character art cards are the storefront's own product rather than
 	// a printing: they carry no collector number and the catalog has no row
@@ -840,9 +845,22 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	}
 	for _, field := range strings.Fields(inCard.Variation) {
 		match := foreignNumberRe.FindStringSubmatch(field)
-		if match != nil && foreignInfixes[strings.ToUpper(match[2])] {
-			return true
+		if match == nil || !foreignInfixes[strings.ToUpper(match[2])] {
+			continue
 		}
+		// A printing this datastore carries is not one it has no row for,
+		// whatever language it was printed in. The advent calendars are
+		// German and carried as German, all 48 of them; "Magi Magi
+		// Magician Gal" WJMP-JP018 is a Japanese promo the catalog sells;
+		// and "Sinister Serpent" TFK-SP001 is not Spanish at all, the SP
+		// being The Falsebound Kingdom's own numbering rather than a
+		// language. Asking whether the number is carried answers all three
+		// without a list of exceptions, and goes on refusing the language
+		// printings of a number this datastore has only in English.
+		if set, found := b.Sets[strings.ToUpper(match[1])]; found && setSpellsNumber(set, field) {
+			continue
+		}
+		return true
 	}
 	return false
 }
