@@ -139,6 +139,16 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
+
+	// Whether this datastore publishes promo types at all. A card without
+	// them is then a card with none.
+	var labelled bool
+	for i := range payload.Cards {
+		if len(payload.Cards[i].PromoTypes) > 0 {
+			labelled = true
+			break
+		}
+	}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
 	b.SetSealedUUIDs = map[string][]string{}
@@ -185,7 +195,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		// does not. Each reads back as itself: pairing a token with the
 		// joined variant would show "finalist" as "World Championship
 		// Regionals 26-27 Season 2 Finalist".
-		for _, label := range promoLabelsOf(&card) {
+		for _, label := range promoLabelsOf(&card, labelled) {
 			slug := mtgmatcher.PromoTypeSlug(label)
 			if slug == "" {
 				continue
@@ -197,7 +207,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// these events two ways, and one token can only read back as
 			// one.
 			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = label
+				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
 			}
 		}
 		b.AddName(qualified)
@@ -246,7 +256,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		var promoTypes []string
-		for _, label := range promoLabelsOf(card) {
+		for _, label := range promoLabelsOf(card, labelled) {
 			if slug := mtgmatcher.PromoTypeSlug(label); slug != "" {
 				promoTypes = append(promoTypes, slug)
 			}
@@ -446,11 +456,17 @@ func productKeyOf(identifiers map[string]string, uuid string) string {
 
 // promoLabelsOf names the promotions a printing carries, in the words they
 // are written in.
-func promoLabelsOf(card *DatastoreCard) []string {
+func promoLabelsOf(card *DatastoreCard, labelled bool) []string {
 	if len(card.PromoTypes) > 0 {
 		return card.PromoTypes
 	}
-	if card.Variant != "" {
+	// The fallback is for a datastore that publishes no labels at all, not
+	// for a card the builder deliberately gave none. Leaving it per-card put
+	// back everything the builder drops - the subject a printing depicts,
+	// the numbering it carries - through the very gap that says they were
+	// dropped: 35 tokens over 40 cards, "2ndform", "earthalliance" and
+	// "005006" among them.
+	if !labelled && card.Variant != "" {
 		return []string{card.Variant}
 	}
 	return nil
