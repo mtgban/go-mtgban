@@ -11,6 +11,7 @@ import (
 // one number apiece, where only the wording says which programme handed the
 // card out.
 func TestPromoShelf(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -65,6 +66,7 @@ func TestPromoShelf(t *testing.T) {
 // TestEtchedForFoil pins the Secret Lair cards sold etched and never in plain
 // foil, which this storefront calls FOIL like any other.
 func TestEtchedForFoil(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct{ desc, title, number string }{
 		{"a basic land sold etched", "Mountain (Secret Lair 49) - FOIL", "49"},
 		{"and a spell", "Temur Sabertooth (Secret Lair) - FOIL", "308"},

@@ -11,6 +11,7 @@ import (
 // never carries. The number names both and so names neither, and the wording
 // beside it - which is the only thing that knows - went unread.
 func TestMarkedApart(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard

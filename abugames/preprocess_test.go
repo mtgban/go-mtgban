@@ -1,8 +1,8 @@
 package abugames
 
 import (
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -14,15 +14,34 @@ import (
 // TestMain loads the datastore once for the whole package. A backend is
 // 2.9GB resident, and a test that loads its own holds a second one for as
 // long as the binary runs.
-func TestMain(m *testing.M) {
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		err := datastore.Load("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-	if err := datastore.Load("magic", path); err != nil {
-		log.Fatalln(err)
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
-	os.Exit(m.Run())
 }
 
 // TestSecretLairNumberOverStaleCardNumber guards the case where ABU's
@@ -30,6 +49,7 @@ func TestMain(m *testing.M) {
 // numbers can be >= 1993, which the year-capped ExtractNumber can't see; a stale
 // card.Number ("1933") must not clobber the authoritative title number ("7010").
 func TestSecretLairNumberOverStaleCardNumber(t *testing.T) {
+	realDatastore(t)
 	tests := []struct {
 		name    string
 		number  string // ABU card_number

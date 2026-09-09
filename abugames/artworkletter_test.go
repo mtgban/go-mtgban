@@ -11,6 +11,7 @@ import (
 // collector number, so the number buried the letter and every artwork of a
 // land answered with the same printing.
 func TestArtworkLetter(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		title   string

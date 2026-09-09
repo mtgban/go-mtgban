@@ -12,6 +12,7 @@ import (
 // storefront carries both for one card, the reprint set holds it once, and
 // nothing in either listing says which of them is the reprint.
 func TestTheListNumber(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -50,6 +51,7 @@ func TestTheListNumber(t *testing.T) {
 // set exactly, contradicting the reprint their wording names. Both cannot be
 // true, so neither is priced.
 func TestTheListConflict(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc string
 		card ABUCard
@@ -76,6 +78,7 @@ func TestTheListConflict(t *testing.T) {
 // says "Secret Lair" and no more - and dropping that number to read a star
 // walked the listing over to the other drop entirely.
 func TestSecretLairDrop(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -114,6 +117,7 @@ func TestSecretLairDrop(t *testing.T) {
 // no word for the printing anywhere, so the mark outranks the FOIL it leaves
 // out - and the wording's plain copy of the number outranks nothing.
 func TestMarkedNumber(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		number  string

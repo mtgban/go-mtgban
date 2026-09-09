@@ -11,6 +11,7 @@ import (
 // says only who played it, and reading that silence as "not the sideboard"
 // put Leon Lindback's City of Brass on Eric Tam's copy.
 func TestWorldChampSideboard(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		title   string

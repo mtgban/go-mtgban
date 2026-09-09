@@ -11,6 +11,7 @@ import (
 // The letter is the whole identity - the words beside it are the storefront's
 // own name for the art - and the collector number, appended last, buried it.
 func TestVariantLetter(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard

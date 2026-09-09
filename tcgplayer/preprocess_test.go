@@ -1,8 +1,8 @@
 package tcgplayer
 
 import (
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -12,18 +12,34 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-func TestMain(m *testing.M) {
-	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
-	if allprintingsPath == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
-	}
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
 
-	err := datastore.Load("magic", allprintingsPath)
-	if err != nil {
-		log.Fatalln(err)
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		err := datastore.Load("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-
-	os.Exit(m.Run())
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 // TestPreprocessJapanesePromoTokens pins which sheet a Japanese promo token
@@ -32,6 +48,7 @@ func TestMain(m *testing.M) {
 // as Dominaria United's reported the Wilds of Eldraine bird as the Dominaria
 // bird, which would have overwritten a right id upstream with a wrong one.
 func TestPreprocessJapanesePromoTokens(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc      string
 		name      string
@@ -82,6 +99,7 @@ func TestPreprocessJapanesePromoTokens(t *testing.T) {
 // edition wants - left two shelf-mates carrying the same number and nothing
 // to tell them apart.
 func TestPreprocessOversizedShelf(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		name    string
@@ -132,6 +150,7 @@ func TestPreprocessOversizedShelf(t *testing.T) {
 // meant. March of the Machine's holds two Spirits and two Treasures, so the
 // number has to keep telling those apart afterwards.
 func TestPreprocessJapanesePromoTokensUnderTheirOwnSet(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		name   string
 		number string
@@ -175,6 +194,7 @@ func TestPreprocessJapanesePromoTokensUnderTheirOwnSet(t *testing.T) {
 // never held has to name the promo set that did, or it aliases against every
 // ordinary printing of the same card.
 func TestPreprocessStandardShowdownShelf(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		name    string
 		setCode string
