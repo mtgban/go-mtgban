@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 	if path == "" {
 		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
 	}
-	err := datastore.Load(path)
+	err := datastore.Load("magic", path)
 	if err != nil {
 		log.Fatalln(err)
 	}

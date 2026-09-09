@@ -171,8 +171,7 @@ type GalleryCard struct {
 }
 
 // Load reads an official card-gallery payload from r and returns a Backend
-// for it, or an error when r does not hold a Riftbound card gallery (so
-// LoadDatastore's auto-detection can move on to the next registered game).
+// for it, or an error when r does not hold a Riftbound card gallery.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	var payload CardGallery
 	err := json.NewDecoder(r).Decode(&payload)

@@ -213,21 +213,23 @@ whose `init()` calls `mtgmatcher.RegisterGame(name, Load)` — the
 
 The consequence is that **a game only exists if something imports it**. A
 consumer blank-imports the games it needs, or blank-imports
-`mtgmatcher/games` to get all three (`cmd/bantool` does the latter); with no
-game registered at all, `LoadDatastore` returns an explicit "no game
-registered" error rather than silently matching nothing.
+`mtgmatcher/games` to get all of them (`cmd/bantool` does the latter); asking
+`Open` for a game nothing registered is an error naming the games that are.
 
 ### Datastore loading
 
-`mtgmatcher.LoadDatastore(reader)` auto-detects the game: it buffers the input
-and replays it to every registered loader in registration order, taking the
-first that succeeds — loaders are expected to reject formats they do not
-recognize. The winning `Backend` is installed as the process-global datastore
-via `SetGlobalDatastore`. `LoadDatastoreFile` is the same thing over a path.
+`mtgmatcher.Open(name, reader)` loads the named game's datastore: it runs
+exactly one loader and hands back the `*Backend` without touching the global,
+which `SetGlobalDatastore` installs. `RegisteredGames()` lists what is
+currently linked in. `internal/datastore.Read(game, path)` is the same over a
+path that may be a file, an `http(s)://` URL or a `b2://` object, `.xz` or
+not; a suite reads its game's file that way in its TestMain, or in a helper
+of its own for another game's.
 
-When the game is already known, prefer `mtgmatcher.Open(name, reader)`: it
-runs exactly one loader and hands back the `*Backend` without touching the
-global. `RegisteredGames()` lists what is currently linked in.
+There is no auto-detection. The caller always knows the game — bantool reads
+it off the scraper it runs, a test off the package it sits in — and the
+loader that tried every registered game in turn decoded AllPrintings three
+times over before reaching Magic's, behind a buffer of the whole file.
 
 `Backend` is exported and carries instance methods (`b.Match`, `b.GetUUID`,
 `b.GetSetByName`, ...); the package-level functions of the same name are thin

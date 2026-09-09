@@ -1,8 +1,6 @@
 package mtgmatcher
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
 	"io"
 )
@@ -58,36 +56,6 @@ func RegisteredGames() []string {
 		names[i] = g.name
 	}
 	return names
-}
-
-// LoadDatastore auto-detects the datastore's game among the registered games
-// and installs it as the global backend. At least one game package must be
-// blank-imported. Preserved for source compatibility with the pre-sub-package
-// loading API: each registered loader is tried in registration order and the
-// first that succeeds wins (loaders reject formats they don't recognize).
-func LoadDatastore(reader io.Reader) error {
-	if len(registeredGames) == 0 {
-		return errors.New("mtgmatcher: no game registered; blank-import a game package such as github.com/mtgban/go-mtgban/mtgmatcher/magic")
-	}
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-	var firstErr error
-	for _, g := range registeredGames {
-		b, err := g.load(bytes.NewReader(data))
-		if err == nil && b != nil {
-			SetGlobalDatastore(b)
-			return nil
-		}
-		if firstErr == nil && err != nil {
-			firstErr = err
-		}
-	}
-	if firstErr == nil {
-		firstErr = errors.New("unrecognized datastore format")
-	}
-	return fmt.Errorf("mtgmatcher: no registered game could load the datastore: %w", firstErr)
 }
 
 // Open loads the named game's datastore explicitly (sql.Open style) and returns

@@ -148,8 +148,7 @@ type DatastoreSealed struct {
 }
 
 // Load reads a Pokemon datastore from r and returns a Backend for it, or an
-// error when r holds something else (so LoadDatastore's auto-detection can
-// move on to the next registered game). The datastore names its game at the
+// error when r holds something else. The datastore names its game at the
 // root, and every card carries the identity fields the backend is built
 // from. The collector number is not among them: the catalog sells cards it
 // numbers with nothing at all.

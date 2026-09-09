@@ -115,8 +115,7 @@ type DatastoreSealed struct {
 }
 
 // Load reads a Palworld datastore from r and returns a Backend for it, or
-// an error when r holds something else, so LoadDatastore's auto-detection
-// can move on to the next registered game. The datastore names its game at
+// an error when r holds something else. The datastore names its game at
 // the root, and every card carries the identity fields the backend is built
 // from - the collector number excepted, which one real printing lacks.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {

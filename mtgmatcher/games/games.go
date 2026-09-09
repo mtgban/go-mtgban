@@ -5,10 +5,8 @@
 //	import _ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 //
 // This links every game (and its transitive dependencies) into the binary and
-// puts every loader into mtgmatcher.LoadDatastore's auto-detection. For a
-// leaner build, or to control which loaders auto-detection considers,
-// blank-import only the specific mtgmatcher/<game> packages you need. When the
-// game is known, load it explicitly with mtgmatcher.Open.
+// makes every game's name known to mtgmatcher.Open. For a leaner build,
+// blank-import only the specific mtgmatcher/<game> packages you need.
 package games
 
 import (
