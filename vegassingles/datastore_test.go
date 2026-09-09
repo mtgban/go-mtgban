@@ -2,26 +2,52 @@ package vegassingles
 
 import (
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
 )
 
-// magicInstalled records whether TestMain found a Magic datastore. The package
-// no longer refuses to run without one: the games this scraper is scheduled
-// for are the other three, and their CI jobs carry their own datastore and
-// not this one.
-var magicInstalled bool
-
 // withMagic skips a test that reads the Magic datastore where none is
 // installed.
+var (
+	magicOnce      sync.Once
+	magicErr       error
+	magicInstalled bool
+)
+
+// withMagic installs AllPrintings the first time a test asks for it, and
+// skips where the run carries none.
 func withMagic(t *testing.T) {
 	t.Helper()
+	magicOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		reader, err := datastore.Open(path)
+		if err != nil {
+			magicErr = err
+			return
+		}
+		ds, err := magic.Load(reader)
+		reader.Close()
+		if err != nil {
+			magicErr = err
+			return
+		}
+		mtgmatcher.SetGlobalDatastore(ds)
+		magicInstalled = true
+	})
+	if magicErr != nil {
+		t.Fatal(magicErr)
+	}
 	if !magicInstalled {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
