@@ -23,6 +23,7 @@
 package pokemon
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -110,6 +111,20 @@ type DatastoreCard struct {
 	// labels, and a query naming either has to reach the printing.
 	PromoTypes []string `json:"promoTypes,omitempty"`
 
+	// Language is what the printing is printed in, where that is not
+	// English: the Pikachu World Collection is one Pikachu printed in
+	// eight languages and sold as eight cards, and the language is what
+	// tells those printings apart. Empty means English, which is what
+	// every other entry is.
+	Language string `json:"language,omitempty"`
+
+	// OriginalReleaseDate is when this printing was handed out, published
+	// only where its set's date does not cover it. The promo shelves are
+	// why: "League & Championship Cards" is one set holding cards given
+	// away from 2006 to 2011, and the shelf is dated 2016. Empty means the
+	// set dates the printing, which is what CardReleaseDate falls back to.
+	OriginalReleaseDate string `json:"originalReleaseDate,omitempty"`
+
 	// Watermark is the mark saying which copy of a collector number this
 	// printing is, rather than what promoted it: the player whose World
 	// Championship deck it came in, the theme deck a promo was packed in
@@ -175,17 +190,19 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 // "Pokemon Center Exclusive"), and splitting would leave pieces that name
 // nothing.
 //
-// A printing wearing a mark does not fall back. Its variant is the mark
-// said again - "Jason Klaczynski" beside a watermark of the same - and
-// reading it back would label the printing with what the builder took out
-// on purpose. Where no mark is published the fallback stands: this builder
-// leaves plenty of labels in the variant alone, and they are the only way
-// a wording reaches those printings.
-func promoTypesOf(card *DatastoreCard) []string {
+// Whether to fall back on that spelling is asked of the datastore and not of
+// the card. A datastore that marks anything has been through the whole of
+// this - its inks, its languages, its dates and the sets a promo reprints
+// are published as fields of their own - so a card of it with no labels has
+// none, and reading its variant back would put on exactly what the builder
+// took off. That was not a hypothetical: the variant said "Italian" beside
+// a language of the same, "2017" beside a set already dated to 2017, and
+// "Red" for a shiny its collector number already tells apart.
+func promoTypesOf(card *DatastoreCard, marked bool) []string {
 	if len(card.PromoTypes) > 0 {
 		return card.PromoTypes
 	}
-	if card.Watermark != "" || card.Variant == "" {
+	if marked || card.Variant == "" {
 		return nil
 	}
 	return []string{card.Variant}
@@ -198,10 +215,10 @@ func promoTypesOf(card *DatastoreCard) []string {
 // the full list either way, which the matcher still reads to tell sibling
 // printings apart; only the declaration is filtered, the same terms
 // Riftbound carries its number-restating labels on.
-func describingPromoTypes(card *DatastoreCard) []string {
+func describingPromoTypes(card *DatastoreCard, marked bool) []string {
 	sold := canonicalFinish(card.Finish)
 	var out []string
-	for _, promoType := range promoTypesOf(card) {
+	for _, promoType := range promoTypesOf(card, marked) {
 		if label := canonicalFinish(promoType); label != "" && strings.Contains(sold, label) {
 			continue
 		}
@@ -213,8 +230,8 @@ func describingPromoTypes(card *DatastoreCard) []string {
 // promoTypeSlugs is promoTypesOf as the tokens a query can carry, which is
 // what a card stores: a search splits its words apart before a filter sees
 // them, so a tag only survives the trip as one.
-func promoTypeSlugs(card *DatastoreCard) []string {
-	labels := promoTypesOf(card)
+func promoTypeSlugs(card *DatastoreCard, marked bool) []string {
+	labels := promoTypesOf(card, marked)
 	if len(labels) == 0 {
 		return nil
 	}
@@ -265,6 +282,15 @@ func (payload *Datastore) upperCodes() {
 }
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
+	// Whether this datastore marks its printings at all, asked once: see
+	// promoTypesOf.
+	var marked bool
+	for i := range payload.Cards {
+		if payload.Cards[i].Watermark != "" {
+			marked = true
+			break
+		}
+	}
 	payload.upperCodes()
 
 	var b mtgmatcher.Backend
@@ -314,7 +340,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		for _, promoType := range describingPromoTypes(card) {
+		for _, promoType := range describingPromoTypes(card, marked) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !seenPromoType[slug] {
 				seenPromoType[slug] = true
@@ -388,11 +414,17 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"full":      card.Image,
 				"thumbnail": card.Image,
 			},
-			Language:   "English",
-			Rarity:     card.Rarity,
-			Watermark:  card.Watermark,
+			// English unless the printing says otherwise, which only the
+			// Pikachu World Collection does. A language is not a promotion
+			// and is not among the promo types.
+			Language:  cmp.Or(card.Language, "English"),
+			Rarity:    card.Rarity,
+			Watermark: card.Watermark,
+
+			OriginalReleaseDate: card.OriginalReleaseDate,
+
 			Types:      types,
-			PromoTypes: promoTypeSlugs(card),
+			PromoTypes: promoTypeSlugs(card, marked),
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
