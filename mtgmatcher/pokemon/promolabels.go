@@ -19,6 +19,7 @@ import (
 // "e-League" and the capitals in "SNAP" and "SWSH215-218".
 var promoTypeLabels = map[string]string{
 	"10thanniversary":                       "10th Anniversary",
+	"11thmoviecommemorationset":             "11th Movie Commemoration Set",
 	"151metalcard":                          "151 Metal Card",
 	"1stplace":                              "1st Place",
 	"20042005":                              "2004-2005",
@@ -158,6 +159,7 @@ var promoTypeLabels = map[string]string{
 	"masterballpattern":                     "Master Ball Pattern",
 	"meddlingsparkspremiumcollection":       "Meddling Sparks Premium Collection",
 	"megaevolutionstamped":                  "Mega Evolution Stamped",
+	"meijichocolateexclusivepromo":          "Meiji Chocolate Exclusive Promo",
 	"metalcard":                             "Metal Card",
 	"mewtwostamped":                         "Mewtwo Stamped",
 	"mirageholo":                            "Mirage Holo",
