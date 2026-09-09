@@ -237,13 +237,8 @@ func TestPromoTypeLabels(t *testing.T) {
 	for _, tt := range []struct{ tag, want string }{
 		{"fullart", "Full Art"},
 		{"pokemoncenterexclusive", "Pokemon Center Exclusive"},
-		// The artist names the World Championship decks reprint under,
-		// which title-casing spells on its own.
-		{"shintaroito", "Shintaro Ito"},
-		// The cases that say why the words are looked up rather than
-		// guessed: title-casing gives "Charizard Gx" and "Bw Black Star
-		// Promos".
-		{"charizardgx", "Charizard GX"},
+		// The case that says why the words are looked up rather than
+		// guessed: title-casing gives "Bw Black Star Promos".
 		{"bwblackstarpromos", "BW Black Star Promos"},
 	} {
 		if got := b.PromoTypeLabel(tt.tag); got != tt.want {
@@ -253,6 +248,39 @@ func TestPromoTypeLabels(t *testing.T) {
 	// An unknown token still reads as something rather than empty.
 	if got := b.PromoTypeLabel("nosuchtag"); got == "" {
 		t.Error("an undeclared tag reads back as nothing")
+	}
+}
+
+// TestMarkedPrintingsSayItOnce pins the split between a promotion and a mark.
+// A mark says which copy of a collector number a printing is - the player
+// whose World Championship deck it came in, the tin a code card was sold in -
+// and nothing promoted any of them, so a marked printing wears the mark and
+// not a tag saying the same thing over again.
+//
+// Which side of that split this datastore is on is read from the datastore
+// rather than assumed, so this holds either way round and the two halves can
+// land in any order.
+func TestMarkedPrintingsSayItOnce(t *testing.T) {
+	b := loadBackend(t)
+
+	var marked int
+	for _, co := range b.UUIDs {
+		if co.Sealed || co.Watermark == "" {
+			continue
+		}
+		marked++
+		if slices.Contains(co.PromoTypes, mtgmatcher.PromoTypeSlug(co.Watermark)) {
+			t.Errorf("%s (%s) is marked %q and tagged with it too", co.Name, co.SetCode, co.Watermark)
+		}
+	}
+	if marked == 0 {
+		t.Skip("this datastore marks no printing; nothing to pin")
+	}
+	// The marks are not promotions and are not declared as any.
+	for _, tag := range []string{"shintaroito", "charizardgx", "jasonklaczynski"} {
+		if slices.Contains(b.AllPromoTypes, tag) {
+			t.Errorf("mark %q is declared as a promo type", tag)
+		}
 	}
 }
 

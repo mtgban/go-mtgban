@@ -110,6 +110,15 @@ type DatastoreCard struct {
 	// labels, and a query naming either has to reach the printing.
 	PromoTypes []string `json:"promoTypes,omitempty"`
 
+	// Watermark is the mark saying which copy of a collector number this
+	// printing is, rather than what promoted it: the player whose World
+	// Championship deck it came in, the theme deck a promo was packed in
+	// ("Latias" against "Latios"), the set it was reprinted from, the
+	// place a Battle Academy stamp gives it, or the blister a code card
+	// was sold on. Nothing promoted any of them, and for 890 printings the
+	// mark is the whole of what tells one from its siblings.
+	Watermark string `json:"watermark,omitempty"`
+
 	// TcgdexID is the tcgdex identifier, annotated where the builder could
 	// align the two sources.
 	TcgdexID string `json:"tcgdexId,omitempty"`
@@ -166,11 +175,18 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 // split on spaces: plenty of labels are several words long ("Cosmos Holo",
 // "Pokemon Center Exclusive"), and splitting would leave pieces that name
 // nothing.
+//
+// A printing wearing a mark does not fall back. Its variant is the mark
+// said again - "Jason Klaczynski" beside a watermark of the same - and
+// reading it back would label the printing with what the builder took out
+// on purpose. Where no mark is published the fallback stands: this builder
+// leaves plenty of labels in the variant alone, and they are the only way
+// a wording reaches those printings.
 func promoTypesOf(card *DatastoreCard) []string {
 	if len(card.PromoTypes) > 0 {
 		return card.PromoTypes
 	}
-	if card.Variant == "" {
+	if card.Watermark != "" || card.Variant == "" {
 		return nil
 	}
 	return []string{card.Variant}
@@ -375,6 +391,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			},
 			Language:   "English",
 			Rarity:     card.Rarity,
+			Watermark:  card.Watermark,
 			Types:      types,
 			PromoTypes: promoTypeSlugs(card),
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,

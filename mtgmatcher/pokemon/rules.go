@@ -767,6 +767,9 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		}
 	}
 
+	if marked := tierByMark(inCard.Variation, candidates); len(marked) > 0 {
+		candidates = marked
+	}
 	return tierByLabel(b, inCard, candidates)
 }
 
@@ -927,6 +930,26 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		candidates = append(candidates, card)
 	}
 	return candidates
+}
+
+// tierByMark keeps the candidates whose mark the wording names - the player
+// whose World Championship deck a card came in, the theme deck a promo was
+// packed in, the set it was reprinted from, the place a Battle Academy stamp
+// gives it, the blister a code card was sold on. A mark says which copy of a
+// number a printing is rather than what promoted it, so it is not among the
+// promo types and narrows on its own and before them.
+//
+// Nothing is kept where the wording names no mark. Narrowing on a mark the
+// listing never mentioned would answer with a copy picked at random, and the
+// tiers below still have their say.
+func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	var marked []mtgmatcher.Card
+	for _, card := range candidates {
+		if card.Watermark != "" && mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(card.Watermark)) {
+			marked = append(marked, card)
+		}
+	}
+	return marked
 }
 
 // tierByLabel splits the candidates into the ones whose label the input's
