@@ -8,6 +8,15 @@
         "uuid": "lob-001_21792_1stedition"
     },
     {
+        "description": "a German printing is reached by the name it is printed under",
+        "input": {
+            "name": "Junk Synchron - \"Gerumpelsynchronisierer\"",
+            "variant": "AC11-DE001"
+        },
+        "uuid": "",
+        "error": "unsupported"
+    },
+    {
         "description": "a bare tail is spelled out by the set it names",
         "input": {
             "name": "Different Dimension Gate",

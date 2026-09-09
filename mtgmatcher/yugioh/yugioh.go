@@ -13,6 +13,7 @@
 package yugioh
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -74,6 +75,12 @@ type DatastoreCard struct {
 	// catalog dates to 2006. Empty means the set dates the printing, which
 	// is what CardReleaseDate falls back to.
 	OriginalReleaseDate string `json:"originalReleaseDate,omitempty"`
+
+	// Language is what the printing is printed in, where that is not
+	// English: the advent calendars are sold in German and their cards are
+	// named in it, "Junk Synchron - \"Gerumpelsynchronisierer\"" at
+	// AC11-DE001. Empty means English, which is what every other entry is.
+	Language string `json:"language,omitempty"`
 
 	// Watermark is the mark saying which printing of a number this is: the
 	// ink it was made in ("blue", one of six Duelist League foils), the
@@ -324,7 +331,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"full":      card.Image,
 				"thumbnail": card.Image,
 			},
-			Language: "English",
+			// English unless the printing says otherwise, which only the
+			// German advent calendars do. A language is not a promotion and
+			// is not among the promo types; the matcher already refuses a
+			// printing whose language a listing did not ask for.
+			Language: cmp.Or(card.Language, "English"),
 			Colors:   colors,
 			Rarity:   card.Rarity,
 
