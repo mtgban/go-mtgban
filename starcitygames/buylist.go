@@ -166,7 +166,8 @@ func gamePath(game int) string {
 // SCGBuylistURL builds the sell-your-cards bookmark link that lists a product
 // for sale to SCG, filtered to the given set ids (as opposed to the retail page
 // SCGProductURL points to). The segment order mirrors the storefront's own URL
-// builder. Returns "" if no set ids are given.
+// builder, and the link excludes bulk so it shows the same offers the scraper
+// publishes. Returns "" if no set ids are given.
 func SCGBuylistURL(game int, name, language string, setIDs []int) string {
 	if len(setIDs) == 0 {
 		return ""
@@ -191,7 +192,7 @@ func SCGBuylistURL(game int, name, language string, setIDs []int) string {
 		"bookmark",
 		nameSeg,                  // cardName
 		"0",                      // cardNameExactMatch
-		"0",                      // filterOutBulkProducts
+		"1",                      // filterOutBulkProducts
 		"0",                      // filterOnlyHotlist
 		"0",                      // exportAsCSV
 		strings.Join(ids, "%2C"), // set_ids
