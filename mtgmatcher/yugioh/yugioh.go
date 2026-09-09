@@ -225,7 +225,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// up. First spelling seen wins: the catalog writes a few of
 			// these two ways, and one token can only read back as one.
 			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(promoType)
+				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
 			}
 		}
 		// Searchable but never canonical: the qualified spelling names one
