@@ -594,27 +594,39 @@ func ownNumber(card *DatastoreCard) string {
 // card that "cns:001" does. Number keeps the padding, being the number
 // exactly as written.
 //
-// Only a leading zero is dropped, which is the whole of the rule: a number
-// starting with one is a bare ordinal and nothing else, all 140 of them, so
-// the shape needs no describing. The padding inside a code is untouched
-// because a code does not open with it - "SWSH020" and "TG01" keep theirs,
-// and reducing them would invent a spelling that is neither what the card
-// prints nor a plainer way of writing it.
+// The letter a number ends in goes the same way, for the same reason it
+// goes in Magic and in Lorcana: it names which of a number's printings this
+// is rather than numbering it, so "002a" and "002b" are both the 2 that
+// "002" is, and a plain-number search reaches all three. 89 numbers wear
+// one.
+//
+// The padding inside a code is untouched because a code does not open with
+// it - "SWSH020" and "TG01" keep theirs, and reducing them would invent a
+// spelling that is neither what the card prints nor a plainer way of
+// writing it. Nor does the letter trim touch them, a code ending in its
+// digits: all 1,386 are left as they are.
 //
 // Pokemon is the only game this applies to. Every other game here numbers a
 // card with a code - "OP04-047", "YS13-ENV08", "WTR018" - and none of them
 // carries a bare ordinal at all.
 //
-// A number of nothing but zeros would trim away to nothing, and an empty
-// PlainNumber is a card no plain-number search can reach, so it keeps
-// what it had. No such number exists today; the guard is what makes the
-// trim safe to read.
+// A number of nothing but letters, or of nothing but zeros, would trim away
+// to nothing, and an empty PlainNumber is a card no plain-number search can
+// reach, so each trim keeps what it had. No such number exists today; the
+// guards are what make the trims safe to read.
 func plainNumber(number string) string {
+	if plain := strings.TrimRight(number, plainNumberTail); plain != "" {
+		number = plain
+	}
 	if plain := strings.TrimLeft(number, "0"); plain != "" {
 		return plain
 	}
 	return number
 }
+
+// plainNumberTail are the letters a printing is spelled with behind a
+// number, the same tail Magic and Lorcana drop.
+const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // setTotal is the set size the card's face prints beside its number, the
 // "167" of "082/167", which is what tells a reprint from its original:
