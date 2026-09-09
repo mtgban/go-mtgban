@@ -34,6 +34,39 @@ func preprocess(product GNProduct, game string) (*mtgmatcher.InputCard, error) {
 // the origin set into the number ("LIST-C16-177", "LIST-229/350").
 var magicCode = regexp.MustCompile(`\((?:[0-9A-Z]{2,6}, )?([0-9A-Z&]{2,6})-([0-9A-Za-z★†φ/-]*)\)`)
 
+// skuFamily is the sku a storefront product shares with its own other
+// finish: the whole of it less the segment that marks the finish.
+// MTG-RNA-249-F-6NUARTU9FH and MTG-RNA-249-6NUARTU9FH are one product sold
+// two ways, so either can be read for what the other's body says.
+func skuFamily(product GNProduct) string {
+	for _, variant := range product.RetailVariants {
+		if variant.SKU == "" {
+			continue
+		}
+		fields := strings.Split(variant.SKU, "-")
+		family := make([]string, 0, len(fields))
+		for i, field := range fields {
+			if i > 0 && i < len(fields)-1 && (field == "F" || field == "EF") {
+				continue
+			}
+			family = append(family, field)
+		}
+		return strings.Join(family, "-")
+	}
+	return ""
+}
+
+// bodyNamesOwnSet reports whether a product's body names the set its own
+// display name does. A product with no set tag to read has nothing to
+// disagree with and counts as its own witness.
+func bodyNamesOwnSet(product GNProduct) bool {
+	tags := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
+	if len(tags) == 0 {
+		return true
+	}
+	return strings.EqualFold(tags[len(tags)-1][1], string(product.ProductData.Set))
+}
+
 // magicOrigin is the bare set-code tag a List display name puts before the
 // number when the number alone would not say which printing the card is
 // reprinted from: "Ancestral Mask (MMQ) (LIST-229/350)".
