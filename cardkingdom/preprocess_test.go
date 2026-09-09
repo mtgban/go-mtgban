@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-cardkingdom"
@@ -16,26 +17,45 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
-	if allprintingsPath == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
-	}
-
-	allPrintingsReader, err := datastore.Open(allprintingsPath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer allPrintingsReader.Close()
-
-	ds, err := magic.Load(allPrintingsReader)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	mtgmatcher.SetGlobalDatastore(ds)
-
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
-
 	os.Exit(m.Run())
+}
+
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		reader, err := datastore.Open(path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		ds, err := magic.Load(reader)
+		reader.Close()
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		mtgmatcher.SetGlobalDatastore(ds)
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
+	}
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 var PriceListTest = `
@@ -59,6 +79,7 @@ var priceListResults = []string{
 }
 
 func TestPreprocess(t *testing.T) {
+	realDatastore(t)
 	var products []cardkingdom.Product
 	err := json.NewDecoder(strings.NewReader(PriceListTest)).Decode(&products)
 	if err != nil {
@@ -100,6 +121,7 @@ func TestPreprocess(t *testing.T) {
 // datastore does not carry must reach the filing set once its treatment
 // wrapping is stripped.
 func TestPreprocessTokens(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		product cardkingdom.Product
@@ -158,6 +180,7 @@ func TestPreprocessTokens(t *testing.T) {
 // its bare number reaches the Guilds of Ravnica one, which is the wrong
 // card at the right number.
 func TestPreprocessListAngelToken(t *testing.T) {
+	realDatastore(t)
 	theCard, err := Preprocess(cardkingdom.Product{
 		SKU:     "MTAFR-001",
 		Name:    "Angel Token // Spirit Token",
@@ -183,6 +206,7 @@ func TestPreprocessListAngelToken(t *testing.T) {
 // parenthetical on a card shared with another token, and the Mythic Edition
 // numbering that diverges from mtgjson's so only the name can carry the row.
 func TestPreprocessEmblems(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		product cardkingdom.Product
@@ -248,6 +272,7 @@ func TestPreprocessEmblems(t *testing.T) {
 // sweep into the double-faced token split, which renamed them after their
 // first face and lost the row.
 func TestPreprocessSplitCard(t *testing.T) {
+	realDatastore(t)
 	theCard, err := Preprocess(cardkingdom.Product{
 		SKU:     "TSR-186",
 		Name:    "Rough // Tumble",
@@ -271,6 +296,7 @@ func TestPreprocessSplitCard(t *testing.T) {
 }
 
 func TestPreprocessTokenFoilRefused(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		product cardkingdom.Product
@@ -317,6 +343,7 @@ func TestPreprocessTokenFoilRefused(t *testing.T) {
 }
 
 func TestUnindexedTokenSheet(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		sku  string
 		want bool

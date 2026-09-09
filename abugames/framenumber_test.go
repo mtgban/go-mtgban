@@ -11,6 +11,7 @@ import (
 // appended last, so it buried the frame a listing named - and it is wrong the
 // other way round too, naming a frame on a listing that names none.
 func TestFrameNumber(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		title   string

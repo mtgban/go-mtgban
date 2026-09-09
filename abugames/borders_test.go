@@ -26,6 +26,7 @@ func TestForeignWhiteBorder(t *testing.T) {
 // than a dagger. Portal drops the reminder text from its second printing and
 // files it at 69d, and reading only a dagger left both listings on 69.
 func TestNumberMarks(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard

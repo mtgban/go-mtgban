@@ -10,6 +10,7 @@ import (
 // without. Reading only the spaced form priced a foil as a nonfoil, and put
 // its price beside the nonfoil's on one uuid.
 func TestFoilFlag(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc  string
 		title string

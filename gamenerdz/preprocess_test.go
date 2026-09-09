@@ -1,8 +1,8 @@
 package gamenerdz
 
 import (
-	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -12,19 +12,38 @@ import (
 
 // TestMain loads the datastore once for the whole package: the prerelease
 // shelf is read against the catalog, so preprocessing needs one.
-func TestMain(m *testing.M) {
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		err := datastore.Load("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-	err := datastore.Load("magic", path)
-	if err != nil {
-		log.Fatalln(err)
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
-	os.Exit(m.Run())
 }
 
 func TestPreprocess(t *testing.T) {
+	realDatastore(t)
 	tests := []struct {
 		game    string
 		product GNProduct

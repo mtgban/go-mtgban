@@ -10,6 +10,7 @@ import (
 // to price them against, and answering with the finish that was printed puts
 // two of the storefront's prices on one uuid.
 func TestUnprintedFinish(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc string
 		card ABUCard
@@ -35,6 +36,7 @@ func TestUnprintedFinish(t *testing.T) {
 // printed the card in. The match falls back on the English printing, so the
 // storefront's Italian and Japanese prices land beside its English one.
 func TestForeignListing(t *testing.T) {
+	realDatastore(t)
 	for _, test := range []struct {
 		desc string
 		card ABUCard
