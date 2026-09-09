@@ -13,9 +13,7 @@ import (
 // printing the wording was naming. Each pair below is one card sold twice,
 // the reward and the original, at prices that are not each other's.
 func TestJudgeReward(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the judge reward suite")
-	}
+	realDatastore(t)
 
 	for _, test := range []struct {
 		desc    string

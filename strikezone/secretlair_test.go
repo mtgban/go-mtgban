@@ -12,9 +12,7 @@ import (
 // several: a listing saying nothing about which reaches one of them for no
 // reason, and every other drop is then priced as that one.
 func TestSecretLairDrop(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the Secret Lair suite")
-	}
+	realDatastore(t)
 
 	// The store writes the drop inside the name it publishes, never in the
 	// condition column beside it, so that is where these say it.

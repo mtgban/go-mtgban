@@ -3,27 +3,47 @@ package manapool
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // TestMain loads the datastore when one is configured; the unit test below
 // reads no cards, so a checkout without it still runs that.
-func TestMain(m *testing.M) {
-	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
-		if err := datastore.Load("magic", path); err != nil {
-			log.Fatalln(err)
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+	datastoreOK   bool
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
 		}
+		err := datastore.Load("magic", path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		datastoreOK = true
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
 	}
-	os.Exit(m.Run())
+	if !datastoreOK {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 // TestAddCheapestKeepsTheLowerPrice pins that a printing the store files under
@@ -58,9 +78,10 @@ func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 // to a lower product, which is the change this buys.
 func TestReplayCapturedVariants(t *testing.T) {
 	path := os.Getenv("MANAPOOL_VARIANTS_PATH")
-	if path == "" || len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("MANAPOOL_VARIANTS_PATH or ALLPRINTINGS5_PATH not set")
+	if path == "" {
+		t.Skip("MANAPOOL_VARIANTS_PATH not set")
 	}
+	realDatastore(t)
 	f, err := os.Open(path)
 	if err != nil {
 		t.Fatal(err)

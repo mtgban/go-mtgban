@@ -13,9 +13,7 @@ import (
 // printing. The ids are drawn from the datastore so the test holds across
 // its releases.
 func TestFoilPrintingID(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the datastore-backed cases")
-	}
+	realDatastore(t)
 
 	// Strixhaven Mystical Archive sells one printing in all three finishes,
 	// which is what lets the flag cross between two of them.

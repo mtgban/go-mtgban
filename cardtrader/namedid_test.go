@@ -1,7 +1,6 @@
 package cardtrader
 
 import (
-	"os"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -14,9 +13,7 @@ import (
 // "Exponential Growth" priced as Ecological Appreciation for as long as the
 // listing stood.
 func TestNamedID(t *testing.T) {
-	if os.Getenv("ALLPRINTINGS5_PATH") == "" {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the id preference")
-	}
+	realDatastore(t)
 	uuid := func(space, id string) string {
 		out := mtgmatcher.ConvertID(space, id)
 		if out == "" {

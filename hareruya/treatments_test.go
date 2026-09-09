@@ -13,9 +13,7 @@ import (
 // printings the shop pays the most for. Each pair below is the same card
 // bought twice, once with the marker and once without.
 func TestTitleTreatments(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("ALLPRINTINGS5_PATH not set; skipping the treatment suite")
-	}
+	realDatastore(t)
 
 	for _, tt := range []struct {
 		desc, title, wantSet, wantNumber string

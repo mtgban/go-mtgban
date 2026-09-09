@@ -11,9 +11,7 @@ import (
 // so the name alone puts every one of them on the plain printing: the three
 // Aang listings below are bought at three prices and answered with one card.
 func TestBuylistNumber(t *testing.T) {
-	if len(mtgmatcher.GetAllSets()) == 0 {
-		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
-	}
+	realDatastore(t)
 
 	const name = "Aang, at the Crossroads // Aang, Destined Savior"
 	tests := []struct {
