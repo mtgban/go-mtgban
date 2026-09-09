@@ -47,6 +47,14 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      # A test either does not read a datastore or asks for one and skips
+      # where the run carries none. With nothing configured the whole tree
+      # has to come back green, so a test that reads one without asking
+      # fails here - rather than passing because whichever job it landed in
+      # happened to load a datastore before it ran.
+      - name: Tests skip rather than fail without a datastore
+        run: go test ./...
+
       - name: Lint
         run: |
           go run github.com/mgechev/revive@v1.13.0 \
