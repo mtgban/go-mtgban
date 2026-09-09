@@ -18,6 +18,7 @@ import (
 	"os/signal"
 	"path"
 	"runtime/debug"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -82,6 +83,42 @@ type scraperOption struct {
 	OnlySeller bool
 	OnlyVendor bool
 	Init       func() (mtgban.Scraper, error)
+}
+
+// scraperGame names the game a scraper option prices, read off its name:
+// every scraper but Magic's is suffixed with the game it is scheduled for
+// ("cardmarket_pokemon", "starcitygames_sealed_lorcana"), and a name that
+// ends on no game is a Magic scraper ("cardmarket", "tcg_index").
+func scraperGame(name string) string {
+	suffix := name[strings.LastIndex(name, "_")+1:]
+	if slices.Contains(mtgmatcher.RegisteredGames(), suffix) {
+		return suffix
+	}
+	return "magic"
+}
+
+// runGame names the one game the enabled scrapers price. A run loads one
+// datastore and opens it by that name rather than trying every game's
+// loader on it, so enabling scrapers of two games is refused up front.
+func runGame(options map[string]*scraperOption) (string, error) {
+	var games []string
+	for name, opt := range options {
+		if !opt.Enabled {
+			continue
+		}
+		game := scraperGame(name)
+		if !slices.Contains(games, game) {
+			games = append(games, game)
+		}
+	}
+	switch len(games) {
+	case 0:
+		return "", errors.New("no scraper configured, run with -h for a list of commands")
+	case 1:
+		return games[0], nil
+	}
+	slices.Sort(games)
+	return "", fmt.Errorf("the enabled scrapers price %s, and a run loads one datastore", strings.Join(games, " and "))
 }
 
 // cardtraderBridge maps every Cardmarket product id to the TCGplayer id of
@@ -1222,6 +1259,12 @@ func run() int {
 		}
 	}
 
+	game, err := runGame(options)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+
 	datastoreReader, err := simplecloud.InitReader(context.Background(), datastoreBucket, *datastoreOpt)
 	if err != nil {
 		log.Println(err)
@@ -1230,12 +1273,13 @@ func run() int {
 	defer datastoreReader.Close()
 
 	now := time.Now()
-	err = mtgmatcher.LoadDatastore(datastoreReader)
+	backend, err := mtgmatcher.Open(game, datastoreReader)
 	if err != nil {
 		log.Println(err)
 		return 1
 	}
-	log.Println("loading datastore took:", time.Since(now))
+	mtgmatcher.SetGlobalDatastore(backend)
+	log.Printf("loading datastore took: %v (%s)", time.Since(now), game)
 
 	var scrapers []mtgban.Scraper
 
