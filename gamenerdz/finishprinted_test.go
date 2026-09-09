@@ -12,6 +12,8 @@ import (
 // there is - the minted one carrying a price of its own, six dollars against
 // four cents on Iconic Shield.
 func TestFinishPrinted(t *testing.T) {
+	realDatastore(t)
+
 	for _, tt := range []struct {
 		desc                 string
 		product              GNProduct
