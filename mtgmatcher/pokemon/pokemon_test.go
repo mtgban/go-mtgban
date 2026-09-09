@@ -231,8 +231,18 @@ func TestPromoTypeLabels(t *testing.T) {
 		t.Errorf("%d tags declared but %d labelled", len(b.AllPromoTypes), len(b.PromoTypeLabels))
 	}
 	for _, tag := range b.AllPromoTypes {
-		if b.PromoTypeLabel(tag) == "" {
+		label := b.PromoTypeLabel(tag)
+		if label == "" {
 			t.Errorf("tag %q reads back as nothing", tag)
+			continue
+		}
+		// And reads back as the words that made it. A token is a label
+		// with its spaces and punctuation taken out, so putting them back
+		// has to give the token again: a spelling that slugs to something
+		// else is a spelling of some other tag, which is how a table
+		// written by hand goes wrong.
+		if slug := mtgmatcher.PromoTypeSlug(label); slug != tag {
+			t.Errorf("tag %q reads back as %q, which is the tag %q", tag, label, slug)
 		}
 	}
 	for _, tt := range []struct{ tag, want string }{
