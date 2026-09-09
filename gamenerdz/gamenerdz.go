@@ -222,6 +222,8 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		return "", fmt.Errorf("%s %q: %w", product.ID, product.DisplayName, err)
 	}
 
+	foil, etched := theCard.Foil, gn.game == GameMagic && saysEtched(product)
+
 	cardID, err := mtgmatcher.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return "", nil
@@ -230,7 +232,34 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		gn.printf("%s: %q", product.ID, product.DisplayName)
 		return "", nil
 	}
+
+	// The finish a listing names has to be one the printing was sold in.
+	// This storefront mints a "-F-" sku beside the plain one whether or not
+	// the set ever printed a foil, and where it did not both listings answer
+	// with the single printing there is - the minted one carrying a price of
+	// its own, which the buylist keeps whenever it is the higher of the two.
+	// Nothing else was printed to move it to, so let it go.
+	if gn.game == GameMagic && !finishPrinted(cardID, foil, etched) {
+		return "", nil
+	}
 	return cardID, nil
+}
+
+// finishPrinted reports whether the printing a product resolved to was sold in
+// the finish the product names. An id the catalog cannot place says nothing
+// either way and is left alone.
+func finishPrinted(cardID string, foil, etched bool) bool {
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil {
+		return true
+	}
+	switch {
+	case etched:
+		return co.HasFinish(mtgmatcher.FinishEtched)
+	case foil:
+		return co.HasFinish(mtgmatcher.FinishFoil)
+	}
+	return co.HasFinish(mtgmatcher.FinishNonfoil)
 }
 
 // crawlState is what one mode's passes accumulate together: the products any
