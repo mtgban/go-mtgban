@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -31,21 +32,7 @@ var testBackend *mtgmatcher.Backend
 var matchTests []MatchTest
 
 func TestMain(m *testing.M) {
-	datastorePath := os.Getenv("ALLPRINTINGS5_PATH")
-	if datastorePath == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run this suite")
-	}
-
-	datastoreReader, err := datastore.Open(datastorePath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer datastoreReader.Close()
-
-	testBackend, err = Load(datastoreReader)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 
 	testDataReader, err := os.Open(testDataFile)
 	if err != nil {
@@ -57,13 +44,43 @@ func TestMain(m *testing.M) {
 	}
 	// Close the file right away so that it can be modified later
 	testDataReader.Close()
-
-	// The auxiliary lookups of the filter callbacks resolve through the
-	// global datastore (see doc.go), and TestVariants reads it too.
-	mtgmatcher.SetGlobalDatastore(testBackend)
-	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
-
 	os.Exit(m.Run())
+}
+
+var (
+	datastoreOnce sync.Once
+	datastoreErr  error
+)
+
+// realDatastore installs the Magic datastore the first time a test asks for
+// it, and skips where the run carries none.
+func realDatastore(t *testing.T) {
+	t.Helper()
+	datastoreOnce.Do(func() {
+		path := os.Getenv("ALLPRINTINGS5_PATH")
+		if path == "" {
+			return
+		}
+		reader, err := datastore.Open(path)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		defer reader.Close()
+		b, err := Load(reader)
+		if err != nil {
+			datastoreErr = err
+			return
+		}
+		testBackend = b
+		mtgmatcher.SetGlobalDatastore(testBackend)
+	})
+	if datastoreErr != nil {
+		t.Fatal(datastoreErr)
+	}
+	if testBackend == nil {
+		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
+	}
 }
 
 func runMatch(b *mtgmatcher.Backend, test MatchTest) (string, error) {
@@ -89,6 +106,7 @@ func runMatch(b *mtgmatcher.Backend, test MatchTest) (string, error) {
 }
 
 func TestMatch(t *testing.T) {
+	realDatastore(t)
 	var shouldUpdateTests bool
 
 	for i, probe := range matchTests {

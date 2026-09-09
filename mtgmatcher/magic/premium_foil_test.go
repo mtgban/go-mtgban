@@ -13,6 +13,7 @@ import (
 // listings are here too, since narrowing to the treatment is only right if
 // silence still lands on the printing that wears none.
 func TestPremiumFoilClaim(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc      string
 		in        mtgmatcher.InputCard

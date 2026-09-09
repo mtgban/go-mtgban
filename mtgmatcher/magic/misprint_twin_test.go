@@ -15,6 +15,7 @@ import (
 // printing that way and answered with the borderless one standing beside it,
 // three stages before the border was ever read.
 func TestMisprintTwin(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		in      mtgmatcher.InputCard

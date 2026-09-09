@@ -60,6 +60,7 @@ func BenchmarkSearchRegexp(b *testing.B) {
 }
 
 func TestSearchRegexp(t *testing.T) {
+	realDatastore(t)
 	hashes, err := mtgmatcher.SearchRegexp("Lotus$")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
@@ -86,6 +87,7 @@ func TestSearchRegexp(t *testing.T) {
 }
 
 func TestSearchFlavor(t *testing.T) {
+	realDatastore(t)
 	hashes, err := mtgmatcher.SearchEquals("Stay with Me")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
@@ -111,6 +113,7 @@ func TestSearchFlavor(t *testing.T) {
 }
 
 func TestSearchHalfName(t *testing.T) {
+	realDatastore(t)
 	hashes, err := mtgmatcher.SearchEquals("Jonathan Harker")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
@@ -136,6 +139,7 @@ func TestSearchHalfName(t *testing.T) {
 }
 
 func TestPrintings(t *testing.T) {
+	realDatastore(t)
 	setCodes, _ := mtgmatcher.Printings4Card("Black Lotus")
 	if len(setCodes) != 6 {
 		t.Error("FAIL: Printings should be exactly 6 results, got " + fmt.Sprint(setCodes))

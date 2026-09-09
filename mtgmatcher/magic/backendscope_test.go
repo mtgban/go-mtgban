@@ -13,6 +13,7 @@ import (
 // empty backend must find nothing, where before it would have found
 // whatever the global happened to hold.
 func TestHelpersReadTheGivenBackend(t *testing.T) {
+	realDatastore(t)
 	// A name printed exactly once in Secret Lair Ultimate, which is what
 	// the tag check asks the datastore about.
 	var name string
@@ -40,6 +41,7 @@ func TestHelpersReadTheGivenBackend(t *testing.T) {
 // The same for the promo tag closures, which reach the datastore to forgive
 // a listing that names a treatment its printing carries untagged.
 func TestPromoTagFuncsReadTheGivenBackend(t *testing.T) {
+	realDatastore(t)
 	var tagFunc func(*mtgmatcher.Backend, *mtgmatcher.InputCard) bool
 	for _, element := range promoTypeElements {
 		if element.PromoType == PromoTypeGalaxyFoil {

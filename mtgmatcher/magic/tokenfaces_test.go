@@ -11,6 +11,7 @@ import (
 // its faces repeat the names of Apocalypse's "Night // Day" card; whoever
 // registers "Night" last owns the lookup, and it has to be the card.
 func TestTokenFaceKeepsCardName(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		face, edition, want string
 	}{

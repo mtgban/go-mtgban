@@ -10,6 +10,7 @@ import (
 // is a contract, not an accident of load order: a shared id resolves to the
 // base sibling, and the etched product id to the etched one.
 func TestConvertIDFilesTheBaseSibling(t *testing.T) {
+	realDatastore(t)
 	var checkedBase, checkedEtched bool
 	for _, uuid := range testBackend.AllUUIDs {
 		co, err := testBackend.GetUUID(uuid)

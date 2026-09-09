@@ -11,6 +11,7 @@ import (
 // of the space-blind chain: the same integer must be reachable as a
 // multiverse id by name and never as one bare.
 func TestMultiverseIdentifiers(t *testing.T) {
+	realDatastore(t)
 	uuid := testBackend.ConvertID(mtgmatcher.IDSpaceMultiverse, "29728")
 	if uuid == "" {
 		t.Fatal("multiverse id 29728 did not resolve")

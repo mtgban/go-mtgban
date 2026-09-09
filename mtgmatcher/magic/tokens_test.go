@@ -13,6 +13,7 @@ import (
 // token word, and sealed products naming a card count - which now belong to
 // nobody.
 func TestIsToken(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		name string
 		want bool
@@ -77,6 +78,7 @@ func TestIsToken(t *testing.T) {
 // dropped: the datastore carries those names itself, so the backend still
 // reads them as tokens even though the heuristic no longer claims them.
 func TestIsTokenDatastoreAnswersTheRest(t *testing.T) {
+	realDatastore(t)
 	for _, name := range []string{
 		"Copy",
 		"The Monarch",
@@ -103,6 +105,7 @@ func TestIsTokenDatastoreAnswersTheRest(t *testing.T) {
 // exactly where these three land, so claiming them meant answering
 // ErrUnsupported instead of resolving them.
 func TestNarrowedIsTokenReachesRealCards(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		name, edition, want string
 	}{

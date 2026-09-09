@@ -12,6 +12,7 @@ import (
 // treatment written down and once without, where reading the second listing
 // forgivingly costs the first its printing.
 func TestTreatmentDenial(t *testing.T) {
+	realDatastore(t)
 	for _, tt := range []struct {
 		desc        string
 		in          mtgmatcher.InputCard

@@ -11,6 +11,7 @@ import (
 // finishes whichever sibling it is asked from, and the foils the old sets
 // filed as cards of their own, which no FoilUUIDs map links.
 func TestFinishSiblings(t *testing.T) {
+	realDatastore(t)
 	var checkedSplit, checkedTwin bool
 	for _, uuid := range testBackend.AllUUIDs {
 		co, err := testBackend.GetUUID(uuid)

@@ -13,6 +13,7 @@ import (
 // apart. The invariant is pinned against the datastore itself rather than a
 // handful of names, so a refresh cannot quietly empty it.
 func TestAttractionLightsAreFiled(t *testing.T) {
+	realDatastore(t)
 	lit := map[string]bool{}
 	printings := 0
 	for _, card := range testBackend.Sets["UNF"].Cards {
@@ -50,6 +51,7 @@ func TestAttractionLightsAreFiled(t *testing.T) {
 // whole reason they are kept: same name, same set, differing only in which
 // bulbs are lit.
 func TestAttractionLightsTellSiblingsApart(t *testing.T) {
+	realDatastore(t)
 	seen := map[string]string{}
 	for _, card := range testBackend.MatchInSet("Balloon Stand", "UNF") {
 		c := card

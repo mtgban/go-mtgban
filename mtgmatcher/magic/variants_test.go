@@ -9,6 +9,7 @@ import (
 )
 
 func TestVariants(t *testing.T) {
+	realDatastore(t)
 	for edition, table := range VariantsTable {
 		set, err := mtgmatcher.GetSetByName(edition)
 		if err != nil {
