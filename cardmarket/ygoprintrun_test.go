@@ -1,12 +1,9 @@
 package cardmarket
 
 import (
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
@@ -45,10 +42,7 @@ const ygoDatastore = `{
 // prefix has to be the answer's own, the region infix the datastore writes
 // and Cardmarket omits aside.
 func TestMatchProductPrintRunPrefix(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(ygoDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "yugioh", ygoDatastore)
 
 	mkm := &Index{gameID: cm.GameYuGiOh}
 	for _, tt := range []struct {

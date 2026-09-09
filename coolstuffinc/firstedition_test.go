@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -20,13 +18,7 @@ import (
 // other run, so an answer not carrying the run is refused instead of being
 // published as the ordinary printing at a fraction of the price.
 func TestConditionRunReachesTheRun(t *testing.T) {
-	path := os.Getenv("POKEMON_PATH")
-	if path == "" {
-		t.Skip("Need POKEMON_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	for _, tt := range []struct {
 		name, edition string
@@ -58,13 +50,7 @@ func TestConditionRunReachesTheRun(t *testing.T) {
 // TestMatchRunRefusesTheOtherRun pins the refusal: a run the card was not
 // printed in must not answer with the run it was.
 func TestMatchRunRefusesTheOtherRun(t *testing.T) {
-	path := os.Getenv("POKEMON_PATH")
-	if path == "" {
-		t.Skip("Need POKEMON_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	// This card has no first-edition printing, so the wording names nothing
 	// the catalog can answer with.

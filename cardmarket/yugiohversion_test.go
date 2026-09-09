@@ -1,12 +1,9 @@
 package cardmarket
 
 import (
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
@@ -33,9 +30,7 @@ const yugiohVersionDatastore = `{
 // rows and none of them prices; the point of the rule is not only that they
 // land but that they land apart, which is what a shared uuid would break.
 func TestYugiohVersionVariants(t *testing.T) {
-	if err := mtgmatcher.LoadDatastore(strings.NewReader(yugiohVersionDatastore)); err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "yugioh", yugiohVersionDatastore)
 	mkm := NewScraperIndex(cm.GameYuGiOh)
 
 	seen := map[string]string{}
@@ -71,9 +66,7 @@ func TestYugiohVersionVariants(t *testing.T) {
 // left as it was. A fourth printing appearing on the shelf must alias rather
 // than borrow the third one's stamp, so that it is seen and named.
 func TestYugiohVersionUncovered(t *testing.T) {
-	if err := mtgmatcher.LoadDatastore(strings.NewReader(yugiohVersionDatastore)); err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "yugioh", yugiohVersionDatastore)
 	mkm := NewScraperIndex(cm.GameYuGiOh)
 	_, err := mkm.matchYugioh(&cm.Product{
 		Name:          "Ghost Ogre & Snow Rabbit (V.4 - Ultra Rare)",

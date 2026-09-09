@@ -1,10 +1,8 @@
 package miniaturemarket
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -164,13 +162,7 @@ func TestSealedNameOtherGamesUntouched(t *testing.T) {
 // them while pricing nothing is indistinguishable from a catalog with
 // nothing in it.
 func TestResolveListing(t *testing.T) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		t.Skip("LORCANA_PATH not set")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "lorcana", "LORCANA_PATH")
 
 	mm := NewScraperSealed(GameLorcana)
 	for _, tt := range []struct {
@@ -285,13 +277,7 @@ func TestExtraWords(t *testing.T) {
 // forgiveness is granted only where a card accounts for the added words, and
 // the case a box is not is what that rule exists to refuse.
 func TestResolveByNamedCard(t *testing.T) {
-	path := os.Getenv("FLESHANDBLOOD_PATH")
-	if path == "" {
-		t.Skip("FLESHANDBLOOD_PATH not set")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	// A hero the storefront names by their first word only.
 	uuid, err := resolveByNamedCard("Silver Age Chapter 3 Deck - Blaze (Wizard)")
@@ -315,13 +301,7 @@ func TestResolveByNamedCard(t *testing.T) {
 // runs after the resolver, and running it over an answer already found both
 // discarded the answer and left nothing to report the failure with.
 func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
-	path := os.Getenv("FLESHANDBLOOD_PATH")
-	if path == "" {
-		t.Skip("FLESHANDBLOOD_PATH not set")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	mm := NewScraperSealed(GameFleshAndBlood)
 	uuid, drop := mm.resolveListing("", "Flesh & Blood TCG: Usurp the Shadow Throne - Booster Pack (Preorder)")
@@ -343,14 +323,7 @@ func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
 // them is that the resolver refuses a candidate saying a word the listing
 // never did, and neither "Display" nor "Case" is ever listed here.
 func TestResolveGundamPremiumCollection(t *testing.T) {
-	path := os.Getenv("GUNDAM_PATH")
-	if path == "" {
-		t.Skip("GUNDAM_PATH not set")
-	}
-	err := datastore.Load(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "gundam", "GUNDAM_PATH")
 
 	mm := NewScraperSealed(GameGundam)
 	for _, tt := range []struct {

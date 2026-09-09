@@ -11,9 +11,10 @@ import (
 // lookup reads the card to know which finish it is quoting.
 func installCards(t *testing.T, cards map[string]*mtgmatcher.CardObject) {
 	t.Helper()
+	previous := mtgmatcher.GlobalDatastore()
 	mtgmatcher.SetGlobalDatastore(&mtgmatcher.Backend{UUIDs: cards})
 	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(&mtgmatcher.Backend{})
+		mtgmatcher.SetGlobalDatastore(previous)
 	})
 }
 

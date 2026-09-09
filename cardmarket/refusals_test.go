@@ -3,12 +3,9 @@ package cardmarket
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
@@ -26,10 +23,7 @@ func (s *logSink) callback(format string, a ...any) {
 // so a whole catalog going unpriced looked exactly like a run with nothing
 // to report.
 func TestProcessProductRefusal(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(ygoDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "yugioh", ygoDatastore)
 
 	mkm := &Index{
 		gameID:       cm.GameYuGiOh,
@@ -41,7 +35,7 @@ func TestProcessProductRefusal(t *testing.T) {
 	}
 	channel := make(chan responseChan, 8)
 
-	err = mkm.processProduct(channel, &cm.Product{
+	err := mkm.processProduct(channel, &cm.Product{
 		IDProduct:     1,
 		Name:          "Blue-Eyes White Dragon",
 		Number:        "001",

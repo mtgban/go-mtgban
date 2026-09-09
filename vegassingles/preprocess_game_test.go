@@ -43,7 +43,6 @@ func installMagic() error {
 	if err != nil {
 		return err
 	}
-	magicDatastore = ds
 	mtgmatcher.SetGlobalDatastore(ds)
 	magicInstalled = true
 	return nil

@@ -151,7 +151,7 @@ func sealedRunsBackend() *mtgmatcher.Backend {
 // name and no TCGplayer id - so throwing it away leaves the two of them
 // answering to one name and neither of them priced.
 func TestBuildProductMapReadsExpansion(t *testing.T) {
-	mtgmatcher.SetGlobalDatastore(sealedRunsBackend())
+	useBackend(t, sealedRunsBackend())
 
 	blueprint := &Blueprint{ID: 1, Name: "Crucible of War Booster Box"}
 	blueprints := map[int]*Blueprint{1: blueprint}
@@ -177,7 +177,7 @@ func TestBuildProductMapReadsExpansion(t *testing.T) {
 // drop in this pass does. A count with no names behind it cannot be checked
 // against the catalog.
 func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
-	mtgmatcher.SetGlobalDatastore(sealedRunsBackend())
+	useBackend(t, sealedRunsBackend())
 
 	var logged []string
 	ct := &Sealed{gameID: GameFleshAndBlood}
@@ -208,7 +208,7 @@ func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
 // category alone is not enough, because CardTrader files real sealed product
 // under its accessory categories often enough to matter.
 func TestBuildProductMapDropsAccessories(t *testing.T) {
-	mtgmatcher.SetGlobalDatastore(sealedAccessoryBackend())
+	useBackend(t, sealedAccessoryBackend())
 
 	ct := &Sealed{gameID: GameFleshAndBlood}
 	for _, tt := range []struct {
@@ -266,7 +266,7 @@ func sealedAccessoryBackend() *mtgmatcher.Backend {
 // the bundle's price then lands on a single box. The longer name is the one
 // that loses: its extra word is the thing it sells.
 func TestBuildProductMapDropsSubsumed(t *testing.T) {
-	mtgmatcher.SetGlobalDatastore(sealedSubsumedBackend())
+	useBackend(t, sealedSubsumedBackend())
 
 	ct := &Sealed{gameID: GameFleshAndBlood}
 	// The bundle alone is nothing but a spelling of the product, and
@@ -355,7 +355,7 @@ func sealedShelfCodeBackend() *mtgmatcher.Backend {
 // product and the only candidate is dropped. The trim is guarded on the
 // shelf's own code, and keeps the number the catalog spells into the name.
 func TestBuildProductMapTrimsShelfCode(t *testing.T) {
-	mtgmatcher.SetGlobalDatastore(sealedShelfCodeBackend())
+	useBackend(t, sealedShelfCodeBackend())
 	ct := &Sealed{gameID: GameGundam}
 
 	for _, tt := range []struct {
@@ -382,4 +382,16 @@ func TestBuildProductMapTrimsShelfCode(t *testing.T) {
 			t.Errorf("%q on %q: got %v, want %v", tt.name, tt.shelf, got, tt.want)
 		}
 	}
+}
+
+// useBackend installs a backend as the global datastore for the test and
+// puts back the one that stood before, so the handful of rows a sealed test
+// builds is not what the next test matches against.
+func useBackend(t *testing.T, b *mtgmatcher.Backend) {
+	t.Helper()
+	previous := mtgmatcher.GlobalDatastore()
+	mtgmatcher.SetGlobalDatastore(b)
+	t.Cleanup(func() {
+		mtgmatcher.SetGlobalDatastore(previous)
+	})
 }

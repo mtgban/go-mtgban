@@ -1,10 +1,7 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/internal/datastore"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
@@ -15,13 +12,7 @@ import (
 // both under the pixel art one: the cheaper listing was priced as the dearer
 // printing.
 func TestPreprocessImageLetter(t *testing.T) {
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path == "" {
-		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
 
 	for _, tt := range []struct {
 		desc    string

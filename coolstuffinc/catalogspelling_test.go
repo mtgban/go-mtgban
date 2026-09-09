@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -17,13 +15,7 @@ import (
 // fixes its own spelling - is a pair that should leave the table rather than
 // sit there rewriting a name that now means something.
 func TestCatalogSpelling(t *testing.T) {
-	path := os.Getenv("YUGIOH_PATH")
-	if path == "" {
-		t.Skip("Need YUGIOH_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	tests := []struct {
 		name      string

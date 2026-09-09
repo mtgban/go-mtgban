@@ -1,12 +1,9 @@
 package cardmarket
 
 import (
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
@@ -35,9 +32,7 @@ const yugiohOversizedDatastore = `{
 // it under, and that the ordinary card of that same deck and number is not
 // what it reaches.
 func TestYugiohOversized(t *testing.T) {
-	if err := mtgmatcher.LoadDatastore(strings.NewReader(yugiohOversizedDatastore)); err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "yugioh", yugiohOversizedDatastore)
 	mkm := NewScraperIndex(cm.GameYuGiOh)
 
 	for _, tt := range []struct {

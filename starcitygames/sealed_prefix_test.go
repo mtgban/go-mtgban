@@ -1,12 +1,12 @@
 package starcitygames
 
 import (
-	"io"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
-	"github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
 )
 
 // TestSealedUntrimmedGamePrefixResolves covers the two games whose sealed
@@ -21,21 +21,20 @@ import (
 // stocking them.
 func TestSealedUntrimmedGamePrefixResolves(t *testing.T) {
 	for _, tt := range []struct {
-		game, env string
-		load      func(io.Reader) (*mtgmatcher.Backend, error)
-		names     []string
+		game, datastore, env string
+		names                []string
 	}{
-		{"Riftbound", "RIFTBOUND_PATH", riftbound.Load, []string{
+		{"Riftbound", "riftbound", "RIFTBOUND_PATH", []string{
 			"Riftbound: League of Legends TCG - Origins Booster Box",
 			"Riftbound: League of Legends TCG - Spiritforged Booster Box",
 		}},
-		{"Lorcana", "LORCANA_PATH", lorcana.Load, []string{
+		{"Lorcana", "lorcana", "LORCANA_PATH", []string{
 			"Lorcana: The First Chapter Booster Box",
 			"Lorcana: Into the Inklands Booster Box",
 		}},
 	} {
 		t.Run(tt.game, func(t *testing.T) {
-			withGameDatastore(t, tt.env, tt.load)
+			withGameDatastore(t, tt.datastore, tt.env)
 			for _, catalogName := range tt.names {
 				product := CatalogProduct{Name: catalogName, Game: tt.game}
 				name := sealedProductName(product)

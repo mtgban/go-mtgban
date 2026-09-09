@@ -23,9 +23,11 @@ func loadCatalogDatastore(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer reader.Close()
-	if err := mtgmatcher.LoadDatastore(reader); err != nil {
+	b, err := mtgmatcher.Open("magic", reader)
+	if err != nil {
 		t.Fatal(err)
 	}
+	installBackend(t, b)
 }
 
 // The uuids are real entries of the published Magic map, chosen for their

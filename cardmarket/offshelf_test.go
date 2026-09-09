@@ -2,12 +2,9 @@ package cardmarket
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 )
@@ -59,10 +56,7 @@ var opShelves = []cm.Expansion{
 // plain booster card, which the booster's own shelf sells as a product of
 // its own. A refusal says less than a price, and claims nothing.
 func TestOffShelf(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(offShelfDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "onepiece", offShelfDatastore)
 
 	for _, tt := range []struct {
 		what    string
@@ -158,10 +152,7 @@ func TestOffShelf(t *testing.T) {
 // TestShelvedSets pins which expansions of a catalog name a set of ours: the
 // booster and the deck do, and the promo buckets Cardmarket invents do not.
 func TestShelvedSets(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(offShelfDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "onepiece", offShelfDatastore)
 
 	shelved := shelvedSets(opShelves)
 	want := map[string]string{

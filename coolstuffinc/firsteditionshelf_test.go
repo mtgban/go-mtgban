@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -16,13 +14,7 @@ import (
 // unlimited printing instead - silently, since the match succeeded, it just
 // answered with the other run.
 func TestFirstEditionShelfReachesTheRun(t *testing.T) {
-	path := os.Getenv("POKEMON_PATH")
-	if path == "" {
-		t.Skip("Need POKEMON_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	for _, tt := range []struct {
 		name, edition, wantID string
@@ -56,13 +48,7 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 // safe: a card the set has no first-edition row for is refused rather than
 // answered with the unlimited printing, which is what used to be published.
 func TestFirstEditionShelfRefusesTheOtherRun(t *testing.T) {
-	path := os.Getenv("POKEMON_PATH")
-	if path == "" {
-		t.Skip("Need POKEMON_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
-	}
+	withGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	// Base Set carries one first-edition row, Alakazam; the rest of the set
 	// has none, so this names a run the catalog cannot answer with.

@@ -2,12 +2,9 @@ package cardmarket
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
@@ -40,10 +37,7 @@ const yugiohShelfDatastore = `{
 // the region infix back on a number, follows a European number to the set
 // kept for that print, and says which kind of miss a miss is.
 func TestMatchYugiohShelves(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(yugiohShelfDatastore))
-	if err != nil {
-		t.Fatal(err)
-	}
+	installDatastore(t, "yugioh", yugiohShelfDatastore)
 
 	mkm := &Index{gameID: cm.GameYuGiOh}
 	for _, tt := range []struct {

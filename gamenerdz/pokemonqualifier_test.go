@@ -1,12 +1,9 @@
 package gamenerdz
 
 import (
-	"log"
-	"os"
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
@@ -30,17 +27,16 @@ const snorlaxDatastore = `{
 // reaches the printing it names. The storefront sells these two at $15.31
 // and $251.59, and the number they share is all the scraper used to read.
 func TestPreprocessPokemonQualifier(t *testing.T) {
-	err := mtgmatcher.LoadDatastore(strings.NewReader(snorlaxDatastore))
+	b, err := mtgmatcher.Open("pokemon", strings.NewReader(snorlaxDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}
 	// The rest of the package reads the Magic datastore TestMain loaded, and
 	// the global one is what a probe asks.
+	previous := mtgmatcher.GlobalDatastore()
+	mtgmatcher.SetGlobalDatastore(b)
 	t.Cleanup(func() {
-		err := datastore.Load(os.Getenv("ALLPRINTINGS5_PATH"))
-		if err != nil {
-			log.Fatalln(err)
-		}
+		mtgmatcher.SetGlobalDatastore(previous)
 	})
 
 	tests := []struct {
