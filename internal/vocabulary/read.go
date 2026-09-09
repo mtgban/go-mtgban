@@ -33,30 +33,65 @@ var aside = map[string]bool{"variant": true, "id": true, "image": true, "images"
 // loader deriving a token from the variant is falling back the way it is
 // documented to, and the variant counts as something the datastore states.
 
+// cardsOf finds a datastore's cards, in either place a game keeps them.
+//
+// Most write them at the top. Riftbound's upstream is the card gallery Riot
+// serves its own site, and the builder publishes that document with the
+// cards where they already were - so a reader that stops at the top level
+// sees none and reports the whole game clean.
+func cardsOf(payload map[string]any) []map[string]any {
+	if held, found := payload["cards"]; found {
+		return objects(held)
+	}
+	page, _ := payload["pageProps"].(map[string]any)
+	held, _ := page["page"].(map[string]any)
+	for _, blade := range objects(held["blades"]) {
+		gallery, _ := blade["cards"].(map[string]any)
+		if items := objects(gallery["items"]); len(items) > 0 {
+			return items
+		}
+	}
+	return nil
+}
+
+// objects reads a field as the list of cards it holds.
+func objects(value any) []map[string]any {
+	list, ok := value.([]any)
+	if !ok {
+		return nil
+	}
+	out := make([]map[string]any, 0, len(list))
+	for _, one := range list {
+		if card, ok := one.(map[string]any); ok {
+			out = append(out, card)
+		}
+	}
+	return out
+}
+
 // ReadPublished reads what a datastore states, without the loader's help.
 func ReadPublished(path string) (Published, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return Published{}, err
 	}
-	var payload struct {
-		Cards []map[string]any `json:"cards"`
-	}
+	var payload map[string]any
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return Published{}, err
 	}
-	if len(payload.Cards) == 0 {
+	cards := cardsOf(payload)
+	if len(cards) == 0 {
 		return Published{}, fmt.Errorf("%s: %w", path, ErrNotDatastore)
 	}
 	var stated Published
-	for _, card := range payload.Cards {
+	for _, card := range cards {
 		if _, marked := card["watermark"]; marked {
 			stated.Marked = true
 		}
 		walk(card, &stated)
 	}
 	if !stated.Marked {
-		for _, card := range payload.Cards {
+		for _, card := range cards {
 			if variant, prose := card["variant"].(string); prose {
 				stated.Facts = append(stated.Facts, mtgmatcher.PromoTypeSlug(variant))
 			}
