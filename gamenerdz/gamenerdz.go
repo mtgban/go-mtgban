@@ -262,6 +262,35 @@ func finishPrinted(cardID string, foil, etched bool) bool {
 	return co.HasFinish(mtgmatcher.FinishNonfoil)
 }
 
+// release decides the products the crawl held back, now that it has been
+// everywhere. A body naming a set the display name does not is this
+// storefront's own shelf code where the product's other finish carries the
+// same body - a promo pack is coded "ppm21" where the name writes PPM21, on
+// both of them, and a Special Guest keeps its own code under either name -
+// and a body belonging to another product where the two finishes disagree
+// about it. Game Nerdz resolves a body by matching a product's number
+// against other skus as a substring, so MTG-WOE-199-WC5VKQJZA2 takes the
+// body, the price and the finish of MTG-MOC-103-QXUYX199FD, whose hash
+// happens to spell 199. The twin escapes because its own sku string does not
+// match, and that is what makes the pair worth comparing.
+func (gn *Gamenerdz) release(mode string, state *crawlState) {
+	var dropped int
+	for _, product := range state.held {
+		if len(state.bodies[skuFamily(product)]) > 1 {
+			dropped++
+			continue
+		}
+		err := gn.processProduct(mode, product)
+		if err != nil {
+			gn.printf("process error: %s", err.Error())
+		}
+	}
+	state.held = nil
+	if dropped > 0 {
+		gn.printf("%s dropped %d products whose body belongs to another", mode, dropped)
+	}
+}
+
 // crawlState is what one mode's passes accumulate together: the products any
 // pass already processed, and the rarity and finish vocabularies harvested
 // from the rows themselves, so a narrower slice never has to be known ahead
@@ -270,6 +299,13 @@ type crawlState struct {
 	seen     map[string]bool
 	rarities map[string]bool
 	finishes map[string]bool
+	// A product whose body names a set its own display name does not is
+	// held back until the crawl has been everywhere: what tells a body
+	// belonging to another product from a shelf this storefront simply
+	// codes its own way is whether the finish twin beside it carries the
+	// same body. See release.
+	bodies map[string]map[string]bool
+	held   []GNProduct
 }
 
 func sorted(set map[string]bool) []string {
@@ -321,11 +357,13 @@ func (gn *Gamenerdz) scrape(ctx context.Context, mode string) error {
 		seen:     map[string]bool{},
 		rarities: map[string]bool{},
 		finishes: map[string]bool{},
+		bodies:   map[string]map[string]bool{},
 	}
 	err := gn.widen(ctx, mode, map[string]string{}, gn.axes(), state)
 	if err != nil {
 		return err
 	}
+	gn.release(mode, state)
 	gn.printf("%s processed %d products", mode, len(state.seen))
 
 	return nil
@@ -436,6 +474,19 @@ func (gn *Gamenerdz) crawl(ctx context.Context, mode, sortDir string, filters ma
 			}
 			if product.SelectedFinish != "" {
 				state.finishes[product.SelectedFinish] = true
+			}
+			if gn.game == GameMagic {
+				family := skuFamily(product)
+				if family != "" {
+					if state.bodies[family] == nil {
+						state.bodies[family] = map[string]bool{}
+					}
+					state.bodies[family][strings.ToLower(string(product.ProductData.Set))] = true
+					if !bodyNamesOwnSet(product) {
+						state.held = append(state.held, product)
+						continue
+					}
+				}
 			}
 			err := gn.processProduct(mode, product)
 			if err != nil {
