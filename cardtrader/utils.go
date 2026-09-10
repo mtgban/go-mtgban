@@ -436,8 +436,10 @@ func promoShelfNeedsLabel(gameID int, bp *Blueprint) bool {
 
 // codedShelf matches a shelf named for the set it sells, opening with that
 // set's code: "GD-01: Newtype Rising", "EB-01: Eternal Nexus", and the
-// lowercase "St-14: Heavy Dominion" Card Trader writes for one of them.
-var codedShelf = regexp.MustCompile(`(?i)^[a-z]{1,4}-?[0-9]{1,2}\s*[:-]\s+`)
+// lowercase "St-14: Heavy Dominion" Card Trader writes for one of them. The
+// code is captured in two halves, the letters that name the line and the
+// number that names the set, for the sealed names that open the same way.
+var codedShelf = regexp.MustCompile(`(?i)^([a-z]{1,4})-?([0-9]{1,2})\s*[:-]\s+`)
 
 func gameName(gameID int, bp *Blueprint) string {
 	if gameID == GameYuGiOh && bp.Version == "Token" &&
