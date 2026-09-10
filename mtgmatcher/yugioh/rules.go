@@ -1351,7 +1351,7 @@ func numberedWording(variation, number string) string {
 func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
 	var marked []mtgmatcher.Card
 	for _, card := range candidates {
-		if card.Watermark != "" && mtgmatcher.SlugDescribes(wording, card.Watermark) {
+		if card.Watermark != "" && mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(card.Watermark)) {
 			marked = append(marked, card)
 		}
 	}
