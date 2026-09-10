@@ -122,6 +122,43 @@ var gundamSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Gundam", Variation: "T-001 Token"},
 	},
 	{
+		// A storefront shelves a promo under the set it is numbered for,
+		// and the promo set is where the stamped reprint lives. The label
+		// beside the name is what says so, and unpinning the edition is
+		// what lets it be heard.
+		Desc: "an event label reaches the promo set the shelf does not name",
+		In:   mtgmatcher.InputCard{Name: "Gundam Dynames", Edition: "Celestial Drive", Variation: "ST07-005 Newtype Challenge 2026 Legend Rare"},
+	},
+	{
+		// The same shelf, no label: the base printing is what a listing
+		// naming no event means, and the unpin must not reach past it.
+		Desc: "the same shelf without a label keeps the base printing",
+		In:   mtgmatcher.InputCard{Name: "Gundam Dynames", Edition: "Celestial Drive", Variation: "ST07-005 Legend Rare"},
+	},
+	{
+		// The SP of a starter deck's card is sold in a booster released
+		// later, and the storefront still shelves it under the deck.
+		Desc: "an SP label reaches the booster that carries it",
+		In:   mtgmatcher.InputCard{Name: "Suletta Mercury", Edition: "Heroic Beginnings", Variation: "ST01-011 SP C+"},
+	},
+	{
+		// No label to go on here - the second parallel carries none - so
+		// the rarity is what says the printing is filed elsewhere.
+		Desc: "a rarity the shelf does not carry reaches the set that does",
+		In:   mtgmatcher.InputCard{Name: "Phoenix Gundam (Power Unleashed) (EX)", Edition: "Generation Pulse", Variation: "ST10-006 Alt-Art ++ LR++"},
+	},
+	{
+		Desc: "the rarities that shelf does carry stay on it",
+		In:   mtgmatcher.InputCard{Name: "Phoenix Gundam (Power Unleashed) (EX)", Edition: "Generation Pulse", Variation: "ST10-006 Alt-Art + LR+"},
+	},
+	{
+		// The unpin must not reach the beta edition: the deck and its beta
+		// print this parallel alike, and a shelf that carries the rarity
+		// named is answered by the shelf.
+		Desc: "a parallel the shelf carries is not unpinned toward beta",
+		In:   mtgmatcher.InputCard{Name: "Gundam", Edition: "Starter Deck 01: Heroic Beginnings", Variation: "ST01-001 LR+"},
+	},
+	{
 		Desc: "negative: a number belonging to no set of this game",
 		In:   mtgmatcher.InputCard{Name: "Gundam", Variation: "ZZ99-999"},
 	},

@@ -1,5 +1,14 @@
 [
     {
+        "description": "a parallel the shelf carries is not unpinned toward beta",
+        "input": {
+            "name": "Gundam",
+            "variant": "ST01-001 LR+",
+            "edition": "Starter Deck 01: Heroic Beginnings"
+        },
+        "uuid": "st01-001_641452_holofoil"
+    },
+    {
         "description": "a plain number keeps the plain printing",
         "input": {
             "name": "Gundam",
@@ -9,6 +18,15 @@
         "uuid": "gd01-001_643150_holofoil"
     },
     {
+        "description": "a rarity the shelf does not carry reaches the set that does",
+        "input": {
+            "name": "Phoenix Gundam (Power Unleashed) (EX)",
+            "variant": "ST10-006 Alt-Art ++ LR++",
+            "edition": "Generation Pulse"
+        },
+        "uuid": "st10-006_702815_holofoil"
+    },
+    {
         "description": "a title naming two sets keeps the set it equals",
         "input": {
             "name": "Destiny Gundam",
@@ -16,6 +34,24 @@
             "edition": "Freedom Ascension"
         },
         "uuid": "gd05-055_707578_holofoil"
+    },
+    {
+        "description": "an SP label reaches the booster that carries it",
+        "input": {
+            "name": "Suletta Mercury",
+            "variant": "ST01-011 SP C+",
+            "edition": "Heroic Beginnings"
+        },
+        "uuid": "st01-011_707594_holofoil"
+    },
+    {
+        "description": "an event label reaches the promo set the shelf does not name",
+        "input": {
+            "name": "Gundam Dynames",
+            "variant": "ST07-005 Newtype Challenge 2026 Legend Rare",
+            "edition": "Celestial Drive"
+        },
+        "uuid": "st07-005_681967_holofoil"
     },
     {
         "description": "bare Beta reaches the beta edition",
@@ -139,6 +175,24 @@
             "edition": "Newtype Rising"
         },
         "uuid": "gd01-001_645375_holofoil"
+    },
+    {
+        "description": "the rarities that shelf does carry stay on it",
+        "input": {
+            "name": "Phoenix Gundam (Power Unleashed) (EX)",
+            "variant": "ST10-006 Alt-Art + LR+",
+            "edition": "Generation Pulse"
+        },
+        "uuid": "st10-006_702837_holofoil"
+    },
+    {
+        "description": "the same shelf without a label keeps the base printing",
+        "input": {
+            "name": "Gundam Dynames",
+            "variant": "ST07-005 Legend Rare",
+            "edition": "Celestial Drive"
+        },
+        "uuid": "st07-005_671914_holofoil"
     },
     {
         "description": "the token word reaches the token",
