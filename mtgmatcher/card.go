@@ -445,7 +445,10 @@ func (b *Backend) output(card Card, flags ...bool) string {
 	hasFoil := card.HasFinish(FinishFoil)
 	hasEtched := card.HasFinish(FinishEtched)
 
-	etched := len(flags) > 1 && flags[1]
+	// The etched flag is answered only by a card sold etched. One that is
+	// not keeps the foil flag beside it: that is the finish the caller
+	// asked for next, not none at all.
+	etched := len(flags) > 1 && flags[1] && hasEtched
 	foil := len(flags) > 0 && flags[0] && !etched
 
 	// In case the foiling information is incorrect
@@ -463,8 +466,6 @@ func (b *Backend) output(card Card, flags ...bool) string {
 	// In case the etching information is incorrect
 	if !etched && !hasNonfoil && !hasFoil {
 		etched = true
-	} else if etched && !hasEtched {
-		etched = false
 	}
 	if hasEtched && !hasNonfoil && !hasFoil {
 		etched = true
