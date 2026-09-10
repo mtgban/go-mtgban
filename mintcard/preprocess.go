@@ -39,11 +39,13 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 		return nil, mtgmatcher.ErrUnsupported
 	}
 	// The inserts a booster carries beside its cards, and the emblems the
-	// datastore files with the tokens, have no printing of their own here
-	if strings.Contains(cardName, "Theme Card") ||
+	// datastore files with the tokens, have no printing of their own here.
+	// A name the datastore carries whole is a card whatever it says:
+	// Signature Slam and Emblem of the Warmind are cards.
+	if !nameExists(cardName) && (strings.Contains(cardName, "Theme Card") ||
 		strings.Contains(cardName, "Helper Card") ||
 		strings.HasPrefix(cardName, "Emblem ") ||
-		strings.Contains(cardName, "Signature") {
+		strings.Contains(cardName, "Signature")) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 	if fixup, found := codeTable[setCode]; found {

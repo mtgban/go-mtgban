@@ -60,8 +60,9 @@ func TestPreprocessInserts(t *testing.T) {
 }
 
 // TestPreprocessShelves pins the storefront's own spellings against the
-// datastore's: a duel deck code of its own, and a Final Fantasy buy-a-box
-// promo listed under its flavor name with the card's own in parentheses.
+// datastore's: a duel deck code of its own, a Final Fantasy buy-a-box
+// promo listed under its flavor name with the card's own in parentheses,
+// and the two cards whose names read like inserts.
 func TestPreprocessShelves(t *testing.T) {
 	realDatastore(t)
 	for _, tt := range []struct {
@@ -70,6 +71,8 @@ func TestPreprocessShelves(t *testing.T) {
 	}{
 		{"Coalition Relic", "Duel Decks: Phyrexia vs. Coalition", "PVC", "English", "DDE", "54"},
 		{"Fatalism (Arcane Denial) (Final Fantasy Buy-a-Box)", "Promo: Buy-A-Box", "PBAB", "Japanese", "RFIN", "J2"},
+		{"Signature Slam", "Modern Horizons 3", "MH3", "English", "MH3", "168"},
+		{"Emblem of the Warmind", "Future Sight", "FUT", "English", "FUT", "112"},
 	} {
 		theCard, err := preprocess(tt.name, "", "Regular", tt.language, tt.edition, tt.code)
 		if err != nil {
