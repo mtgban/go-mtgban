@@ -526,14 +526,6 @@ var riftboundRarityMap = map[string]int{
 	"showcase": 5,
 }
 
-// cardFinishes returns the finishes a printing is sold in. The gallery says
-// nothing about finish, so the builder stamps what the TCGplayer catalog
-// lists for the product it maps to; most of the game is sold in one finish
-// only, promotional printings being foil and starter cards plain.
-//
-// A datastore built before that was recorded says nothing, and the honest
-// answer there is both: it is the assumption the whole game was loaded under
-// until now, and narrowing on no evidence would strand real printings.
 // printingUUID is the uuid a finish prices: the one the datastore
 // publishes, and where it publishes none the finish spelled into the card's
 // id, which is how every uuid here was reached before.
@@ -553,6 +545,14 @@ func printingUUID(card GalleryCard, finish string) string {
 	return card.ID + "_" + finish
 }
 
+// cardFinishes returns the finishes a printing is sold in. The gallery says
+// nothing about finish, so the builder stamps what the TCGplayer catalog
+// lists for the product it maps to; most of the game is sold in one finish
+// only, promotional printings being foil and starter cards plain.
+//
+// A datastore built before that was recorded says nothing, and the honest
+// answer there is both: it is the assumption the whole game was loaded under
+// until now, and narrowing on no evidence would strand real printings.
 func cardFinishes(card GalleryCard) []string {
 	// The printings array names them where the datastore publishes it; the
 	// list beside it is what one published before it carried.
