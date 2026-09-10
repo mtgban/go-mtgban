@@ -206,9 +206,10 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 // what that reading is measured against. An empty id under a nil error is
 // a product the catalog does not carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
+	etched := gn.game == GameMagic && saysEtched(product)
 	if mode == modeRetail && gn.game == GameMagic && product.ProductData.TCGProductID != 0 {
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
-		cardID, err := mtgmatcher.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil)
+		cardID, err := mtgmatcher.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil, etched)
 		if err == nil {
 			return cardID, nil
 		}
@@ -222,7 +223,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		return "", fmt.Errorf("%s %q: %w", product.ID, product.DisplayName, err)
 	}
 
-	foil, etched := theCard.Foil, gn.game == GameMagic && saysEtched(product)
+	foil := theCard.Foil
 
 	cardID, err := mtgmatcher.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
