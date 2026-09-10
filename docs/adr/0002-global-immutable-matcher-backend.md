@@ -11,6 +11,12 @@
 > argument no longer applies, and the contract has widened to bind callers as
 > well. Superseded statements are marked where they occur.
 
+> **Amendment (2026-09-10).** `LoadDatastore` and `LoadDatastoreFile` were
+> removed in #519. A datastore is opened by the name of its game,
+> `Open(name, reader)`, and installed with `SetGlobalDatastore`; nothing
+> sniffs a format any more, and bantool names the game from the scraper it
+> runs. The text below describes the loaders as they were.
+
 ## Context
 
 `mtgmatcher` resolves identity against a `Backend` built from a game's

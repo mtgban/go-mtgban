@@ -418,7 +418,8 @@ structures are the Magic loader's own, in `mtgmatcher/magic/mtgjson.go`.
 loader and **nil for both Lorcana and Riftbound** cards, so consumers must
 handle that. It also carries the cross-game additions described above:
 `FoilUUIDs`, `Finish`, `Images` (at minimum a `"full"` and a `"thumbnail"`
-URL) and `OriginalNumber` (the pre-canonicalization collector number).
+URL) and `PlainNumber` (the collector number as a person writes it, the game's
+marks and decorations off; `OriginalNumber` before v0.8.3).
 
 **No compatibility shims.** The Magic promo-type constants live only in
 `mtgmatcher/magic`; core keeps no re-declared copies of them. Downstream code
