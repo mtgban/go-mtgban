@@ -746,9 +746,12 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 		}
 		etched := productNamesEtched(product.Name)
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
+		// The contents are keyed by kind, and a map walks its keys in no
+		// order; the three kinds a decklist reads are walked as written,
+		// so the same product answers the same list every time.
+		for _, kind := range []string{"card", "deck", "sealed"} {
+			for _, content := range product.Contents[kind] {
+				switch kind {
 				case "card":
 					uuid, err := MatchID(content.UUID, content.Foil, etched)
 					if err != nil {

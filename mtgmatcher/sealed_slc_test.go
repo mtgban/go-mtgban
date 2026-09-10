@@ -11,6 +11,7 @@ import (
 // carries a chance of a foil rather than a fixed finish.
 func slcProduct(t *testing.T) string {
 	t.Helper()
+	realDatastore(t)
 	set, err := mtgmatcher.GetSet("SLC")
 	if err != nil {
 		t.Skip("no SLC in this datastore:", err)
@@ -54,19 +55,12 @@ func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
 		t.Fatal("the product opens into nothing")
 	}
 
-	// Sorted, because the contents are walked from a map and the order of two
-	// content keys is not the order of the cards.
-	want := slices.Clone(first)
-	slices.Sort(want)
-
 	for i := 0; i < 5; i++ {
 		again, err := mtgmatcher.GetDecklist("SLC", uuid)
 		if err != nil {
 			t.Fatal(err)
 		}
-		got := slices.Clone(again)
-		slices.Sort(got)
-		if !slices.Equal(got, want) {
+		if !slices.Equal(again, first) {
 			foil, nonfoil := finishes(t, again)
 			t.Fatalf("call %d answered differently: %d cards (%d foil, %d nonfoil)",
 				i+2, len(again), foil, nonfoil)
