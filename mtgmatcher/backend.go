@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"slices"
 	"strings"
 	"time"
@@ -246,6 +247,18 @@ func (c Card) String() string {
 // HasFinish reports whether the printing was sold in this finish.
 func (c *Card) HasFinish(fi string) bool {
 	return slices.Contains(c.Finishes, fi)
+}
+
+// PrintingKey names the printing a card is one finish of: the uuid of the
+// first finish it is sold in, by name, which every finish sibling of the
+// printing shares. The games storing a CardObject per finish fold their
+// candidates on it, so a printing sold in two finishes is one candidate
+// however the datastore spelled the two uuids.
+func PrintingKey(card Card) string {
+	if len(card.FoilUUIDs) == 0 {
+		return card.UUID
+	}
+	return card.FoilUUIDs[slices.Min(slices.Collect(maps.Keys(card.FoilUUIDs)))]
 }
 
 // HasFrameEffect reports whether the printing carries this frame effect.

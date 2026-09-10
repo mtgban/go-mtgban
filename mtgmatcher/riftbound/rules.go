@@ -614,18 +614,16 @@ func collectPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 			continue
 		}
 
-		// Foil printings are stored under a "_f"-suffixed uuid; fold them
-		// back onto the base card so each candidate appears exactly once.
-		// Base uuids never contain underscores, so the first underscore
-		// marks the start of the finish suffix.
-		base := uuid
-		if idx := strings.IndexByte(uuid, '_'); idx >= 0 {
-			base = uuid[:idx]
-		}
-		if seen[base] {
+		// Every finish of a printing is stored under a uuid of its own;
+		// fold them back onto the printing so each candidate appears
+		// exactly once. The uuids are the datastore's to spell, so the
+		// printing is told by the finishes it is sold in rather than by
+		// cutting its uuid at a character.
+		key := mtgmatcher.PrintingKey(co.Card)
+		if seen[key] {
 			continue
 		}
-		seen[base] = true
+		seen[key] = true
 
 		card := co.Card
 
