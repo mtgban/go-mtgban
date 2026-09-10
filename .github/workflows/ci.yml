@@ -11,10 +11,13 @@ on:
   schedule:
     - cron: "0 0 * * *"
 
-# One run per branch: a push that supersedes another stops it rather than
-# racing it for the runners.
+# One run per branch and trigger: a push that supersedes another stops it
+# rather than racing it for the runners. The trigger is part of the key
+# because the nightly schedule and a push to master would otherwise share
+# it, and whichever came second cancelled the first - which mtgban-ci
+# counts as a broken run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
