@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // ordinalCaps matches an ordinal a title-caser has capitalised: "1St
@@ -92,15 +94,20 @@ type Problems struct {
 	// that does not know what an ordinal is.
 	Mangled []string
 
-	// RunTogether are labels of one word for a token the catalog writes as
-	// several. A slug has no spaces left in it and title-casing cannot put
-	// them back, so a token the loader keeps no words for is shown to a
-	// reader as "Legendarybattledeck".
+	// RunTogether are labels the loader kept no words for, shown to a
+	// reader as the slug title-cased: "Legendarybattledeck" for a token the
+	// catalog writes "Legendary Battle Deck", "Prerelease" for one it
+	// writes "Pre-Release".
 	//
 	// The words are not guessed at: they are the catalog's own, read off
-	// the variants of the printings that carry the token. A token the
-	// catalog writes as one word - "participation", "stamped" - reads back
-	// as one word and is right.
+	// the variants of the printings that carry the token.
+	//
+	// Only a label that is exactly what title-casing the token gives is
+	// read as one nobody wrote. Anything else is somebody's, and theirs to
+	// spell: "Special" for the tag sp, "Championship Series" for cs, and
+	// Toys "R" Us where the catalog writes Toys R Us. Case is not read
+	// either, so a table may write "Bandai Card Games Fest" where the
+	// catalog shouts it.
 	RunTogether []string
 }
 
@@ -152,7 +159,8 @@ func Check(loaded Backend, stated Published) Problems {
 		if ordinalCaps.MatchString(label) {
 			found.Mangled = append(found.Mangled, token+" = "+label)
 		}
-		if words := stated.Words[token]; len(strings.Fields(words)) > 1 && len(strings.Fields(label)) == 1 {
+		words := stated.Words[token]
+		if words != "" && label == mtgmatcher.Title(token) && !strings.EqualFold(label, words) {
 			found.RunTogether = append(found.RunTogether, fmt.Sprintf("%s = %q, written %q", token, label, words))
 		}
 	}
@@ -181,4 +189,10 @@ func sorted(list []string) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// Slug is a label as the token a query would carry, for telling a label the
+// loader kept from one it title-cased out of the token.
+func Slug(label string) string {
+	return mtgmatcher.PromoTypeSlug(label)
 }
