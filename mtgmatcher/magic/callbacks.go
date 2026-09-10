@@ -213,6 +213,10 @@ var promoTypeElements = []promoTypeElement{
 		},
 	},
 	{
+		PromoType: PromoTypeDoubleRainbow,
+		Tags:      []string{"Double Rainbow"},
+	},
+	{
 		PromoType: PromoTypeConfettiFoil,
 		Tags:      []string{"Confetti"},
 	},
