@@ -20,7 +20,6 @@ import (
 	"io"
 	"slices"
 	"sort"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -205,25 +204,6 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
-// qualifiers are the name-qualifiers the catalog sells a printing under, by
-// uuid: "Mayhem Fur Hire (Starlight Rare)" beside a plain "Mayhem Fur Hire"
-// at the same number, "Dark Magician (Arkana)" beside its 6th to 9th Arts.
-// The matcher's Card has no field for the qualifier, and the tiers need two
-// things of it: whether a printing wears one at all, since a listing that
-// says nothing means the plain product, and whether the wording spells it
-// whole, since then the listing has named the product.
-var qualifiers sync.Map
-
-// qualifierOf is the qualifier a printing was sold under, or "".
-func qualifierOf(uuid string) string {
-	if qualifier, found := qualifiers.Load(uuid); found {
-		if text, ok := qualifier.(string); ok {
-			return text
-		}
-	}
-	return ""
-}
-
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
@@ -320,6 +300,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		products[key] = append(products[key], card)
 	}
 
+	// The name-qualifiers the catalog sells a printing under, by uuid, for
+	// the rules to read; see Rules.
+	qualifiers := map[string]string{}
 	for _, key := range productOrder {
 		group := products[key]
 		// The run both flag values resolve to: a run is not foilness, so a
@@ -413,7 +396,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			co.UUID = entry.ID
 			co.Finish = canonicalFinish(entry.Finish)
 			if card.Variant != "" {
-				qualifiers.Store(entry.ID, card.Variant)
+				qualifiers[entry.ID] = card.Variant
 			}
 			b.UUIDs[entry.ID] = &co
 			b.AllUUIDs = append(b.AllUUIDs, entry.ID)
@@ -449,7 +432,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 	b.SortSealed()
 
-	b.SetRules(Rules{})
+	b.SetRules(Rules{qualifiers: qualifiers})
 
 	return &b
 }
