@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -17,24 +18,27 @@ var (
 		"UUID", "Name", "Edition", "Finish", "Number", "Rarity",
 	}
 
-	// InventoryHeader is the header written to every inventory file
-	InventoryHeader = append(CardHeader, "Conditions", "Price", "Quantity", "URL")
+	// InventoryHeader is the header written to every inventory file. Each
+	// header is its own array: built by appending to the one before, the
+	// longer ones shared the shorter's spare capacity, and a writer
+	// appending to a shorter header wrote over a longer one's columns.
+	InventoryHeader = slices.Concat(CardHeader, []string{"Conditions", "Price", "Quantity", "URL"})
 
 	// MarketHeader is the header written to a market's per-seller files
-	MarketHeader = append(InventoryHeader, "Seller", "Bundle")
+	MarketHeader = slices.Concat(InventoryHeader, []string{"Seller", "Bundle"})
 
 	// CartHeader is MarketHeader plus the ids a carter needs to place an order
-	CartHeader = append(MarketHeader, "Original Id", "Instance Id")
+	CartHeader = slices.Concat(MarketHeader, []string{"Original Id", "Instance Id"})
 
 	// BuylistHeader is the header written to every buylist file
-	BuylistHeader = append(CardHeader, "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Vendor")
+	BuylistHeader = slices.Concat(CardHeader, []string{"Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Vendor"})
 
 	// ArbitHeader is the header for the arbitrage reports, carrying both
 	// prices and the numbers derived from them
-	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Difference", "Spread", "Abs Difference", "Profitability", "Buy Link", "Sell Link")
+	ArbitHeader = slices.Concat(CardHeader, []string{"Conditions", "Available", "Sell Price", "Buy Price", "Difference", "Spread", "Abs Difference", "Profitability", "Buy Link", "Sell Link"})
 
 	// MismatchHeader is the header for the mismatch reports
-	MismatchHeader = append(CardHeader, "Conditions", "Price", "Reference", "Difference", "Spread")
+	MismatchHeader = slices.Concat(CardHeader, []string{"Conditions", "Price", "Reference", "Difference", "Spread"})
 )
 
 func record2entry(record []string) (*InventoryEntry, error) {
@@ -545,8 +549,7 @@ func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
 	hasExtraSeller := false
 	header := InventoryHeader
 	if len(penny) > 0 && penny[0].InventoryEntry.SellerName != "" {
-		header = append(header, "Seller")
-		header = append(header, "Bundle")
+		header = MarketHeader
 		hasExtraSeller = true
 	}
 	err := csvWriter.Write(header)

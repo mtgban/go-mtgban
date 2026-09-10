@@ -488,6 +488,30 @@ func TestReportsNameTheSellerWhenThereIsOne(t *testing.T) {
 // Every report header is built by appending to the one before it, so they
 // share a backing array; a writer that widens its own copy for a market must
 // not widen the package's, or the next report is written under the wrong one.
+// TestHeadersShareNoArray pins that each header is its own array: built by
+// appending to the one before, a shorter header's spare capacity was the
+// longer one's columns, and appending to the shorter wrote over them.
+func TestHeadersShareNoArray(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		shorter []string
+		longer  []string
+	}{
+		{"card and inventory", CardHeader, InventoryHeader},
+		{"inventory and market", InventoryHeader, MarketHeader},
+		{"market and cart", MarketHeader, CartHeader},
+		{"card and buylist", CardHeader, BuylistHeader},
+		{"card and arbit", CardHeader, ArbitHeader},
+		{"card and mismatch", CardHeader, MismatchHeader},
+	} {
+		was := slices.Clone(tc.longer)
+		_ = append(tc.shorter, "probe")
+		if !slices.Equal(tc.longer, was) {
+			t.Errorf("%s: appending to the shorter header changed the longer one to %v", tc.name, tc.longer)
+		}
+	}
+}
+
 func TestReportsLeaveTheSharedHeadersAlone(t *testing.T) {
 	installCards(t, csvCards())
 
