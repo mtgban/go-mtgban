@@ -948,17 +948,30 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 // number a printing is rather than what promoted it, so it is not among the
 // promo types and narrows on its own and before them.
 //
-// Nothing is kept where the wording names no mark. Narrowing on a mark the
-// listing never mentioned would answer with a copy picked at random, and the
-// tiers below still have their say.
+// Where the wording names no mark the unmarked printings are kept, the way
+// tierByLabel keeps the plain ones over the labelled: a listing that says
+// nothing about which copy it prices means the copy that needs nothing said.
+// Narrowing to a mark the listing never mentioned would answer with a copy
+// picked at random, and a number whose printings are all marked, or none of
+// them, is left to the tiers below exactly as before.
 func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
-	var marked []mtgmatcher.Card
+	var marked, unmarked []mtgmatcher.Card
 	for _, card := range candidates {
-		if card.Watermark != "" && mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(card.Watermark)) {
+		if card.Watermark == "" {
+			unmarked = append(unmarked, card)
+			continue
+		}
+		if mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(card.Watermark)) {
 			marked = append(marked, card)
 		}
 	}
-	return marked
+	if len(marked) > 0 {
+		return marked
+	}
+	if len(unmarked) == len(candidates) {
+		return nil
+	}
+	return unmarked
 }
 
 // tierByLabel splits the candidates into the ones whose label the input's

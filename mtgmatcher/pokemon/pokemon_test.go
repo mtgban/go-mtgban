@@ -259,8 +259,8 @@ func TestPromoTypeLabels(t *testing.T) {
 		{"fullart", "Full Art"},
 		{"pokemoncenterexclusive", "Pokemon Center Exclusive"},
 		// The case that says why the words are looked up rather than
-		// guessed: title-casing gives "Bw Black Star Promos".
-		{"bwblackstarpromos", "BW Black Star Promos"},
+		// guessed: title-casing gives "Hgssstylenonholo".
+		{"hgssstylenonholo", "HGSS Style Non-Holo"},
 	} {
 		if got := b.PromoTypeLabel(tt.tag); got != tt.want {
 			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.tag, got, tt.want)
