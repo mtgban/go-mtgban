@@ -132,9 +132,25 @@ func wordsSaid(card map[string]any, words map[string]string) {
 	if len(wanted) == 0 {
 		return
 	}
-	fields := strings.Fields(variant)
+	// The words the mark holds come out first. A builder takes the date or
+	// the instalment from the middle of a label and publishes it as the
+	// mark, so what is left of the variant is the token's own wording:
+	// "BANDAI CARD GAMES Fest 23-24 World Tour" is that fest's world tour,
+	// with 23-24 the season it ran in. Removing what is published is not
+	// guessing at the words - it is reading the other field.
+	fields := withoutMark(variant, mark(card["watermark"]))
 	for i := range fields {
+		// A word that slugs to nothing is punctuation the catalog wrote
+		// between two labels, not part of either: "Learn Together Deck Set
+		// - Set Sail Event" holds a dash that would otherwise be read as
+		// the first word of the event's name.
+		if mtgmatcher.PromoTypeSlug(fields[i]) == "" {
+			continue
+		}
 		for j := i + 1; j <= len(fields); j++ {
+			if mtgmatcher.PromoTypeSlug(fields[j-1]) == "" {
+				continue
+			}
 			span := strings.Join(fields[i:j], " ")
 			slug := mtgmatcher.PromoTypeSlug(span)
 			if wanted[slug] {
@@ -143,6 +159,39 @@ func wordsSaid(card map[string]any, words map[string]string) {
 			}
 		}
 	}
+}
+
+// mark reads a card's watermark, which a datastore that publishes none
+// leaves absent.
+func mark(value any) string {
+	held, marked := value.(string)
+	if !marked {
+		return ""
+	}
+	return held
+}
+
+// withoutMark is a variant's words with the mark's own taken out, so that a
+// token the builder cut around the mark can still be found whole.
+func withoutMark(variant, mark string) []string {
+	fields := strings.Fields(variant)
+	if mark == "" {
+		return fields
+	}
+	held := map[string]int{}
+	for _, word := range strings.Fields(mark) {
+		held[mtgmatcher.PromoTypeSlug(word)]++
+	}
+	kept := make([]string, 0, len(fields))
+	for _, word := range fields {
+		slug := mtgmatcher.PromoTypeSlug(word)
+		if held[slug] > 0 {
+			held[slug]--
+			continue
+		}
+		kept = append(kept, word)
+	}
+	return kept
 }
 
 // walk reads every fact a card states, however deep it states it. A game

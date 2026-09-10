@@ -12,9 +12,12 @@ import (
 // one that does not, so the rules hold wherever the tests run.
 func TestCheckReadsTheRules(t *testing.T) {
 	stated := Published{
-		Tokens: []string{"alternateart", "sp", "challengebox"},
+		Tokens: []string{"alternateart", "sp", "challengebox", "prerelease", "toysrus"},
 		Facts:  []string{"boahancock", "tr"},
-		Words:  map[string]string{"challengebox": "Challenge Box", "sp": "SP"},
+		Words: map[string]string{
+			"challengebox": "Challenge Box", "sp": "SP",
+			"prerelease": "Pre-Release", "toysrus": "Toys R Us",
+		},
 	}
 	for _, test := range []struct {
 		desc   string
@@ -73,6 +76,22 @@ func TestCheckReadsTheRules(t *testing.T) {
 			loaded: Backend{
 				Declared: []string{"challengebox"},
 				Labels:   map[string]string{"challengebox": "Challenge Box"},
+			},
+			want: func(p Problems) int { return len(p.RunTogether) },
+		},
+		{
+			desc: "a label nobody wrote, for a token the catalog hyphenates",
+			loaded: Backend{
+				Declared: []string{"prerelease"},
+				Labels:   map[string]string{"prerelease": "Prerelease"},
+			},
+			want: func(p Problems) int { return len(p.RunTogether) },
+		},
+		{
+			desc: "and a label somebody wrote, spelled better than the catalog",
+			loaded: Backend{
+				Declared: []string{"toysrus"},
+				Labels:   map[string]string{"toysrus": `Toys "R" Us`},
 			},
 			want: func(p Problems) int { return len(p.RunTogether) },
 		},
