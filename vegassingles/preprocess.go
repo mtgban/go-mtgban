@@ -453,7 +453,7 @@ var gundamRarity = regexp.MustCompile(`\s*\(([A-Za-z]{1,3}\+*)\)\s*$`)
 // Ignition" where the catalog and the body both say "Starter Deck 09:
 // Destiny Ignition".
 func preprocessGundam(product VSProduct) (*mtgmatcher.InputCard, error) {
-	all := gundamCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
+	all := bandaiCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if all == nil {
 		return nil, errors.New("no card code in display name")
 	}
@@ -509,13 +509,10 @@ func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
 	}, nil
 }
 
-// onePieceCode is the card code One Piece display names carry, like
-// "(OP06-020)" or "(P-037)", which names the printing on its own.
-var onePieceCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
-
-// gundamCode is the card code Gundam display names carry, like "(GD02-129)"
-// or "(EXBP-005)", which names the printing on its own.
-var gundamCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
+// bandaiCode is the card code the display names of Bandai's games carry,
+// like "(OP06-020)" or "(P-037)" for One Piece and "(GD02-129)" or
+// "(EXBP-005)" for Gundam, which names the printing on its own.
+var bandaiCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
 
 // A One Piece display name reads
 //
@@ -531,7 +528,7 @@ func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// Zoro (EB04-007) (Alternate Art) (EB04-007)" - and reading the first cut
 	// the name off before the qualifier, leaving the alternate art asking for
 	// the plain printing and priced as it.
-	all := onePieceCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
+	all := bandaiCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if all == nil {
 		return nil, errors.New("no card code in display name")
 	}
