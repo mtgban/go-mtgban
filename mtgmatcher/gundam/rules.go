@@ -219,14 +219,26 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
-	// The qualified spellings are in the name index, so a storefront writing
-	// "Gundam SP" reaches "Gundam (SP)" once the qualifier is a variation.
-	needle := mtgmatcher.Normalize(inCard.Name + " " + inCard.Variation)
-	for _, name := range b.AllNames {
-		if mtgmatcher.Normalize(name) == needle {
-			inCard.Name = b.CanonicalNames[mtgmatcher.Normalize(name)]
-			return
+	// The qualified spellings are in the name hashes, so a storefront
+	// writing "Gundam SP" reaches "Gundam (SP)", whether it wrote the
+	// qualifier into the name or beside it: the name becomes the
+	// printing's own and the qualifier its labels, spelled into the
+	// variation for the tiering to read. The qualified spelling is never
+	// canonical, which is why CanonicalNames cannot answer here.
+	for _, needle := range []string{
+		mtgmatcher.Normalize(inCard.Name),
+		mtgmatcher.Normalize(inCard.Name + " " + inCard.Variation),
+	} {
+		uuids := b.Hashes[needle]
+		if len(uuids) == 0 {
+			continue
 		}
+		co := b.UUIDs[uuids[0]]
+		inCard.Name = co.Name
+		for _, promoType := range co.PromoTypes {
+			inCard.AddToVariant(b.PromoTypeLabel(promoType))
+		}
+		return
 	}
 	// A truncated feed keeps the head of the name; accept it when exactly
 	// one canonical name starts with what was written. Names compare
