@@ -96,6 +96,43 @@ func replay(b *mtgmatcher.Backend, path string) ([]string, error) {
 	for _, group := range catalog.Groups {
 		editions[group.GroupID] = group.Name
 	}
+	// REPLAY_SHELF_TOTALS replays the number the way a storefront that
+	// composes number/size from its shelf writes it: the card's own
+	// numerator over the total most of the group's cards print, or over the
+	// group's card count where none prints one. Right wherever the shelf is
+	// the printing's own set, wrong wherever the set pools cards from
+	// elsewhere - Unown Z/28 sold as Z/115 - which is what a matcher has to
+	// survive, and 4,442 printings in 58 sets of the Pokemon datastore are
+	// numbered against a total their shelf does not share.
+	shelfTotals := os.Getenv("REPLAY_SHELF_TOTALS") != ""
+	shelfFigure := map[int]string{}
+	if shelfTotals {
+		totals := map[int]map[string]int{}
+		count := map[int]int{}
+		for _, product := range catalog.Products {
+			if product.ProductType != "Cards" {
+				continue
+			}
+			count[product.GroupID]++
+			for _, extended := range product.ExtendedData {
+				if _, total, found := strings.Cut(extended.Value, "/"); extended.Name == "Number" && found && total != "" {
+					if totals[product.GroupID] == nil {
+						totals[product.GroupID] = map[string]int{}
+					}
+					totals[product.GroupID][strings.TrimLeft(total, "0")]++
+				}
+			}
+		}
+		for group, n := range count {
+			figure, most := fmt.Sprint(n), 0
+			for total, seen := range totals[group] {
+				if seen > most || seen == most && total < figure {
+					figure, most = total, seen
+				}
+			}
+			shelfFigure[group] = figure
+		}
+	}
 	lines := make([]string, 0, len(catalog.Products))
 	for _, product := range catalog.Products {
 		if product.ProductType != "Cards" {
@@ -107,7 +144,11 @@ func replay(b *mtgmatcher.Backend, path string) ([]string, error) {
 		// that no storefront is ambiguous about.
 		for _, extended := range product.ExtendedData {
 			if extended.Name == "Number" && extended.Value != "" {
-				wording = append(wording, extended.Value)
+				number := extended.Value
+				if numerator, _, found := strings.Cut(number, "/"); shelfTotals && found {
+					number = numerator + "/" + shelfFigure[product.GroupID]
+				}
+				wording = append(wording, number)
 			}
 		}
 		for _, qualifier := range parens.FindAllStringSubmatch(product.Name, -1) {
