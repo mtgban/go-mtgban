@@ -466,22 +466,94 @@ func preprocessLorcana(product GNProduct) (*mtgmatcher.InputCard, error) {
 	}, nil
 }
 
-// pokemonNumber is the collector number Pokemon display names carry inline,
-// like "63", "65/130" or "SWSH197", set apart by spaces rather than
-// parentheses.
-var pokemonNumber = regexp.MustCompile(` ([A-Z]{0,5}\d+[a-zA-Z]?(?:/\d+)?) `)
+// pokemonNumber is a collector number as this game's display names write
+// them: "63", "65/130", "SWSH197", and the lettered numbers the alphabet
+// sets carry - Unown is "Z/115" and the Alph Lithographs are "ONE/123".
+var pokemonNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?(?:/[0-9]+)?|[A-Z]+/[0-9]+)$`)
+
+// pokemonSizedNumber is the half of those written over the set's size,
+// "65/130" or "Z/115". Only a card's collector number is written that way,
+// so where one appears it is the number and the name ends in front of it -
+// which is what tells "Alakazam E4 38/111" from "Dragonite 149/165 (Cosmos
+// Holo) 149", the one carrying its own suffix and the other the catalog's
+// number repeated.
+var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]+)/[0-9]+$`)
+
+// pokemonGenders spells the symbols this storefront prints on a face where
+// the catalog writes the letter: Nidoran and its Gym-era owners are filed as
+// "Nidoran F" and "Nidoran M".
+var pokemonGenders = strings.NewReplacer("♀", "F", "♂", "M")
 
 // A Pokemon display name reads
 //
 //	Abra 65/130 - Base Set 2 Reverse Holofoil
+//	Galarian Zapdos - 082/203 (Cosmos Holo) 82 - Miscellaneous Cards  Products
 //
-// The name is what stands before the number; the finish travels in its own
-// field for this game, where the matcher tells Holofoil from Reverse
-// Holofoil by wording.
+// The shelf stands behind the last dash, the number just before it, and the
+// name before that. A card whose own name ends in something number-shaped -
+// "Alakazam E4", "Darkness Cube 01", "Team Magma Technical Machine 01" - is
+// why the number is read from the end rather than the start: reading the
+// first took the card's own suffix for its collector number and asked for a
+// card nobody prints. The finish travels in its own field for this game,
+// where the matcher tells Holofoil from Reverse Holofoil by wording.
 func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
-	loc := pokemonNumber.FindStringSubmatchIndex(product.DisplayName)
-	if loc == nil {
+	shelf := strings.LastIndex(product.DisplayName, " - ")
+	if shelf < 0 {
 		return nil, errors.New("no collector number in display name")
+	}
+	head := product.DisplayName[:shelf]
+
+	// A name of its own carrying a dash puts the number after it, so what
+	// stands before the first dash is the name entire and everything after
+	// it describes the printing.
+	name, rest, dashed := strings.Cut(head, " - ")
+	if !dashed {
+		name, rest = head, ""
+	}
+
+	var number string
+	if !dashed {
+		// The printed number is the one written over the set's size, and
+		// it opens the description wherever it appears: what follows is
+		// the catalog's own number and the wording. Where none is written
+		// over a size, the last number-shaped field is the collector
+		// number and anything earlier belongs to the name.
+		fields := strings.Fields(head)
+		at := -1
+		for i, field := range fields {
+			if pokemonSizedNumber.MatchString(field) {
+				at = i
+				break
+			}
+		}
+		if at < 0 {
+			for i := len(fields) - 1; i >= 0; i-- {
+				if pokemonNumber.MatchString(fields[i]) {
+					at = i
+					break
+				}
+			}
+		}
+		if at < 0 {
+			return nil, errors.New("no collector number in display name")
+		}
+		number = fields[at]
+		name = strings.Join(fields[:at], " ")
+		rest = strings.Join(fields[at+1:], " ")
+	}
+	// The printed number opens the description where the name carried a
+	// dash, the catalog's own following it; the printed one is the one that
+	// names a printing.
+	if dashed {
+		for _, field := range strings.Fields(rest) {
+			if pokemonNumber.MatchString(field) {
+				number = field
+				break
+			}
+		}
+		if number == "" {
+			return nil, errors.New("no collector number in display name")
+		}
 	}
 
 	finish := product.SelectedFinish
@@ -489,9 +561,8 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 		finish = ""
 	}
 
-	number := product.DisplayName[loc[2]:loc[3]]
 	card := &mtgmatcher.InputCard{
-		Name:      strings.TrimSpace(product.DisplayName[:loc[0]]),
+		Name:      pokemonGenders.Replace(strings.TrimSuffix(strings.TrimSpace(name), " -")),
 		Edition:   product.ProductData.SetName,
 		Variation: number,
 		Finish:    finish,
@@ -503,8 +574,7 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 	// and this storefront sells the two at $15.31 and $251.59. Wording the
 	// catalog does not know costs nothing, since a variation it cannot
 	// place falls back on the number it was read from.
-	qualifier := pokemonQualifier.FindStringSubmatch(product.DisplayName[loc[3]:])
-	if qualifier != nil {
+	if qualifier := pokemonQualifier.FindStringSubmatch(strings.TrimPrefix(strings.TrimSpace(rest), number)); qualifier != nil {
 		card.Variation = strings.TrimSpace(number + " " + qualifier[1])
 	}
 
