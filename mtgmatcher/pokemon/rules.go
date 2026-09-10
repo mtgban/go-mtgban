@@ -4,6 +4,7 @@ import (
 	"maps"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -888,6 +889,9 @@ func letteredPromo(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbers 
 func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card, number string) []mtgmatcher.Card {
 	var candidates []mtgmatcher.Card
 	seen := map[string]bool{}
+	// The sizes the edition's shelf can lend a listing, read once and only
+	// where a total has to be told from the shelf's.
+	var figures map[string]bool
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
 		if !found || co.Sealed {
@@ -913,7 +917,12 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 			continue
 		}
 		if totalDisagrees(inCard.Variation, printedFace(&card)) {
-			continue
+			if figures == nil {
+				figures = shelfFigures(b, cardSet)
+			}
+			if !shelfTotal(inCard.Variation, &card, figures) {
+				continue
+			}
 		}
 		// An input naming a treatment re-keys the copy's FoilUUIDs so the
 		// flag-driven resolution downstream lands on that printing. Both
@@ -1213,12 +1222,25 @@ func extractNumbers(variation string) []string {
 		if bareYearRe.MatchString(field) {
 			continue
 		}
+		if m := letterNumberRe.FindStringSubmatch(field); m != nil {
+			numbers = append(numbers, m[1])
+			continue
+		}
 		if m := fullNumberRe.FindStringSubmatch(field); m != nil {
 			numbers = append(numbers, m[1])
 		}
 	}
 	return numbers
 }
+
+// letterNumberRe matches a collector number whose numerator is letters
+// alone, written over its total: the twenty-eight Unown of EX Unseen Forces
+// are "A/28" through "Z/28", "!/28" and "?/28", and the Alph Lithographs
+// "ONE/123" through "FOUR/95". Read by the shape above, the digits behind
+// the slash were the number and the card was never found - the face itself
+// answered "unknown variant". The total is required, since a bare letter
+// beside a name is a label ("Unown (Z)") and reads as one.
+var letterNumberRe = regexp.MustCompile(`^([A-Z]{1,5}|[!?])/\d+$`)
 
 // bareYearRe matches a field that is nothing but a year, which no collector
 // number is a digit short of.
@@ -1291,6 +1313,93 @@ func totalDisagrees(variation, number string) bool {
 		saw = true
 	}
 	return saw
+}
+
+// yearlessRe is the year a set of a yearly run is named with, in front of
+// the run's name: "2015 World Championship Decks".
+var yearlessRe = regexp.MustCompile(`^(?:19|20)\d{2} `)
+
+// shelfTotal reports whether the total the wording spells for the card's
+// numerator is the shelf's figure rather than the card's. A storefront that
+// composes number/size from the set it files a card under is right wherever
+// the shelf is the printing's own set and wrong wherever the set pools
+// cards from elsewhere: Unown prints Z/28 and is sold as Z/115 under EX
+// Unseen Forces, and every Celebrations Classic Collection card keeps its
+// original set's total against a shelf of 25. Such a total names the shelf
+// the listing already names in its edition, so it contradicts nothing -
+// where a total the shelf could not have produced still vetoes, since that
+// one names another set's printing.
+func shelfTotal(variation string, card *mtgmatcher.Card, figures map[string]bool) bool {
+	numerator, _, _ := strings.Cut(printedFace(card), "/")
+	for _, field := range strings.Fields(variation) {
+		fieldNumerator, fieldTotal, cut := strings.Cut(field, "/")
+		if !cut || foldNumber(fieldNumerator) != foldNumber(numerator) {
+			continue
+		}
+		if got := foldTotal(fieldTotal); got != "" && figures[got] {
+			return true
+		}
+	}
+	return false
+}
+
+// shelfFigures are the sizes a storefront can read off the shelf a listing
+// names to write behind a slash: the base size the datastore states for a
+// set the edition admits, the total most cards on the shelf print, and how
+// many cards the shelf holds. Game Nerdz writes the second for EX Unseen
+// Forces (115) and the third for the Classic Collection (25).
+//
+// The shelf is every set the edition admits, read together with the years
+// of the same run. The catalog files all the World Championship Decks under
+// one group where the datastore keeps a set per year, and the year in a
+// listing's name narrows the edition to its own year before this runs; a
+// storefront with the one shelf derives its figure from the whole run - 100,
+// the total most of the decks' cards print - which no single year's figures
+// would recognise. A set named as another with a year in front is a year of
+// it, and the run is the only such family the datastore holds.
+func shelfFigures(b *mtgmatcher.Backend, cardSet map[string][]mtgmatcher.Card) map[string]bool {
+	out := map[string]bool{}
+	totals := map[string]int{}
+	products := map[string]bool{}
+	shelf := map[string]bool{}
+	for code := range cardSet {
+		set := b.Sets[code]
+		if set == nil {
+			continue
+		}
+		shelf[code] = true
+		run := yearlessRe.ReplaceAllString(set.Name, "")
+		for other, candidate := range b.Sets {
+			if yearlessRe.ReplaceAllString(candidate.Name, "") == run {
+				shelf[other] = true
+			}
+		}
+	}
+	for code := range shelf {
+		set := b.Sets[code]
+		if set.BaseSetSize > 0 {
+			out[strconv.Itoa(set.BaseSetSize)] = true
+		}
+		for i := range set.Cards {
+			card := &set.Cards[i]
+			products[productKeyOf(card.Identifiers, card.UUID)] = true
+			if total := foldTotal(card.SetTotal); total != "" {
+				totals[total]++
+			}
+		}
+	}
+	out[strconv.Itoa(len(products))] = true
+	var dominant string
+	var most int
+	for total, n := range totals {
+		if n > most || n == most && total < dominant {
+			dominant, most = total, n
+		}
+	}
+	if dominant != "" {
+		out[dominant] = true
+	}
+	return out
 }
 
 // foldTotal reduces a set total to its digits, dropping the zero padding
