@@ -632,16 +632,17 @@ func labelLength(promoTypes []string) int {
 }
 
 // wordsDescribe reports whether the storefront's wording says every promo
-// type the printing carries. The containment runs that way round so a
-// wording naming one event cannot answer for a printing of another.
+// type the printing carries, each as a run of whole words. The containment
+// runs that way round so a wording naming one event cannot answer for a
+// printing of another, and it is whole words rather than a substring so a
+// note saying "Special" does not name the sp printing, nor "Ahead" the
+// head one - which #536 let reach across editions.
 func wordsDescribe(wording string, promoTypes []string) bool {
-	said := mtgmatcher.Normalize(wording)
-	if said == "" {
+	if len(promoTypes) == 0 {
 		return false
 	}
 	for _, promoType := range promoTypes {
-		label := mtgmatcher.Normalize(promoType)
-		if label == "" || !strings.Contains(said, label) {
+		if !mtgmatcher.SlugDescribes(wording, promoType) {
 			return false
 		}
 	}
