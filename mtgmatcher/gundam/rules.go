@@ -2,6 +2,8 @@ package gundam
 
 import (
 	"regexp"
+	"slices"
+	"sort"
 	"strings"
 	"sync"
 
@@ -37,6 +39,10 @@ var dashNumberRe = regexp.MustCompile(`\s+-\s+([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\
 // it is, since a card of this game may carry a parenthetical of its own.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
+		// A name that is a card may still be the head of another: "Delta
+		// Plus" is GD01-006, and "Delta Plus" beside "Waverider Mode" is
+		// GD02-017.
+		rejoinName(b, inCard)
 		return
 	}
 	if m := dashNumberRe.FindStringSubmatch(inCard.Name); m != nil {
@@ -63,6 +69,146 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
+	rejoinName(b, inCard)
+}
+
+// rejoinName gives a name back the parenthetical that was split off it. The
+// datastore names a card the way the game's list does - "Delta Plus
+// (Waverider Mode)", "Freedom Gundam (METEOR)", "Elan Ceres (Enhanced
+// Person Number 4)" - and a storefront writes the head plain with the rest
+// beside it as a qualifier, which the split above produces too. The head is
+// a card of this game on its own often enough (GD01-006 is a Delta Plus)
+// that the canonical lookup would stop there and read the qualifier as a
+// variant no printing of it has; and where the head is no card at all the
+// qualifier was still left behind once AdjustName found the spelling.
+//
+// The collector numbers in the variation are set aside first, since a
+// listing writes its number wherever it likes and no name holds one. Then
+// the leading words go back onto the name, longest run first, where the two
+// spell a canonical name, and what is left stays the variation: "Freedom
+// Gundam" and "GD03-076 Meteor Boost Kit 01" is "Freedom Gundam (METEOR)"
+// at GD03-076 from the Boost Kit. Where the card puts its parenthetical in
+// the middle - "Guncannon (108) & Guncannon (109)", "Zaku (Four Snake
+// Eyes') [YETI] (GQ)" - the split hands the words back in another order, so
+// the one canonical name holding every word of the head and made only of
+// words the listing wrote is taken, and the words it did not use - the
+// rarity of a parallel - stay the variation.
+//
+// Only the canonical names are consulted, never the qualified spellings a
+// printing is searchable under: "Gundam" beside "SP" must stay the suit
+// and its rarity, which FilterCards reads, and not become a name.
+func rejoinName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	if inCard.Variation == "" {
+		return
+	}
+	var numbers, words []string
+	for _, word := range strings.Fields(inCard.Variation) {
+		if fullNumberRe.MatchString(word) {
+			numbers = append(numbers, word)
+		} else {
+			words = append(words, word)
+		}
+	}
+	if len(words) == 0 || headHoldsNumber(b, inCard.Name, numbers) {
+		return
+	}
+	variation := func(left []string) string {
+		return strings.Join(append(slices.Clone(numbers), left...), " ")
+	}
+	for i := len(words); i > 0; i-- {
+		key := mtgmatcher.Normalize(inCard.Name + " " + strings.Join(words[:i], " "))
+		if canonical, found := b.CanonicalNames[key]; found {
+			inCard.Name = canonical
+			inCard.Variation = variation(words[i:])
+			return
+		}
+	}
+	head := bagOfWords(inCard.Name)
+	have := bagOfWords(inCard.Name + " " + strings.Join(words, " "))
+	var match string
+	var leftover map[string]int
+	for _, canonical := range b.CanonicalNames {
+		if !strings.ContainsAny(canonical, "([") {
+			continue
+		}
+		bag := bagOfWords(canonical)
+		if _, holdsHead := subtract(bag, head); !holdsHead {
+			continue
+		}
+		left, spelled := subtract(have, bag)
+		if !spelled {
+			continue
+		}
+		if match != "" && match != canonical {
+			return
+		}
+		match, leftover = canonical, left
+	}
+	if match == "" {
+		return
+	}
+	var left []string
+	for _, word := range words {
+		if key := mtgmatcher.Normalize(word); leftover[key] > 0 {
+			leftover[key]--
+			left = append(left, word)
+		}
+	}
+	inCard.Name = match
+	inCard.Variation = variation(left)
+}
+
+// headHoldsNumber reports whether the name as written is a card with a
+// printing at one of the numbers the listing carries. Then the listing means
+// that card and the words beside it are its own qualifier, not a name's:
+// "GN Armor" at GD03-057 beside "Type-E" is the card the datastore files
+// under that head, wherever it also files a "GN Armor Type-E". A listing
+// carrying no number says nothing here.
+func headHoldsNumber(b *mtgmatcher.Backend, name string, numbers []string) bool {
+	if len(numbers) == 0 {
+		return false
+	}
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found {
+			continue
+		}
+		for _, number := range numbers {
+			if mtgmatcher.Equals(co.Number, number) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// bagOfWords is the words of a name, normalized one by one and sorted, so
+// two spellings that place a parenthetical differently compare equal.
+func bagOfWords(s string) []string {
+	var out []string
+	for _, field := range strings.Fields(s) {
+		if word := mtgmatcher.Normalize(field); word != "" {
+			out = append(out, word)
+		}
+	}
+	sort.Strings(out)
+	return out
+}
+
+// subtract takes one bag of words out of another, and says whether every
+// word was there to take. What is left is counted by word.
+func subtract(have, take []string) (map[string]int, bool) {
+	left := map[string]int{}
+	for _, word := range have {
+		left[word]++
+	}
+	for _, word := range take {
+		if left[word] == 0 {
+			return nil, false
+		}
+		left[word]--
+	}
+	return left, true
 }
 
 // AdjustName reaches the printings the catalog files under a qualified
