@@ -39,6 +39,10 @@ func NewRules(b *mtgmatcher.Backend) Rules {
 // kept out of the capture.
 var fullNumberRe = regexp.MustCompile(`(?i)\b([A-Z]{0,4}\d+[a-z]?)(?:/\d+)?\b`)
 
+// dashedNumberRe matches a collector number written with a dash where the
+// card prints a slash, digits on both sides and nothing else.
+var dashedNumberRe = regexp.MustCompile(`^\d{1,3}-\d{1,3}$`)
+
 // numberTailRe matches a collector number standing alone, which is the shape
 // the storefronts writing one into the name leave behind once the name is
 // split off it.
@@ -200,6 +204,12 @@ func splitDecorations(b *mtgmatcher.Backend, raw string) (string, []string) {
 	numbered := func(knownHead bool) (string, []string, bool) {
 		for i := len(parts) - 1; i >= 1; i-- {
 			segment := strings.TrimSpace(parts[i])
+			// The catalog spells one number with a dash for its slash,
+			// "Morpeko - 072-167" at 072/167; a run of letters and digits
+			// like "SWSH287-290" is a span of numbers and not this.
+			if dashedNumberRe.MatchString(segment) {
+				segment = strings.Replace(segment, "-", "/", 1)
+			}
 			if !numberTailRe.MatchString(segment) {
 				continue
 			}
@@ -224,6 +234,32 @@ func splitDecorations(b *mtgmatcher.Backend, raw string) (string, []string) {
 	}
 	if head, split, found := numbered(false); found {
 		return head, split
+	}
+	// A bracketed qualifier behind the number is read last, and only where
+	// nothing above could read the name with it on: the catalog writes the
+	// set a Burger King promo reprints in brackets after the number,
+	// "Pichu - 45/106 [Platinum]", and a name carrying a bracket of its
+	// own - "Ancient Technical Machine [Ice]" - was found whole above and
+	// never reaches this.
+	if strings.Contains(name, "[") {
+		peeled, bracketed := name, tags
+		for {
+			begin := strings.Index(peeled, "[")
+			if begin < 0 {
+				break
+			}
+			end := strings.Index(peeled[begin:], "]")
+			if end < 0 {
+				break
+			}
+			bracketed = append(bracketed, strings.TrimSpace(peeled[begin+1:begin+end]))
+			peeled = strings.Join(strings.Fields(peeled[:begin]+" "+peeled[begin+end+1:]), " ")
+		}
+		if peeled != name {
+			if head, split := splitDecorations(b, peeled); head != peeled || known(peeled) {
+				return head, append(bracketed[len(tags):], split...)
+			}
+		}
 	}
 	return name, tags
 }
