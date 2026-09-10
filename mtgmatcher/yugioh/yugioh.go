@@ -20,6 +20,7 @@ import (
 	"io"
 	"slices"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -202,6 +203,23 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 		return ""
 	}
 	return qualified
+}
+
+// qualifiers are the name-qualifiers the catalog sells a printing under, by
+// uuid: "Mayhem Fur Hire (Starlight Rare)" beside a plain "Mayhem Fur Hire"
+// at the same number, "Dark Magician (Arkana)" beside its 6th to 9th Arts.
+// The matcher's Card has no field for the qualifier, and the tiers need two
+// things of it: whether a printing wears one at all, since a listing that
+// says nothing means the plain product, and whether the wording spells it
+// whole, since then the listing has named the product.
+var qualifiers sync.Map
+
+// qualifierOf is the qualifier a printing was sold under, or "".
+func qualifierOf(uuid string) string {
+	if qualifier, found := qualifiers.Load(uuid); found {
+		return qualifier.(string)
+	}
+	return ""
 }
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
@@ -392,6 +410,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// aliased by the sibling runs
 			co.UUID = entry.ID
 			co.Finish = canonicalFinish(entry.Finish)
+			if card.Variant != "" {
+				qualifiers.Store(entry.ID, card.Variant)
+			}
 			b.UUIDs[entry.ID] = &co
 			b.AllUUIDs = append(b.AllUUIDs, entry.ID)
 			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], entry.ID)

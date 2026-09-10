@@ -1144,6 +1144,19 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 		return out
 	}
 
+	// A wording that spells a sibling's own qualifier whole has named that
+	// product, and no word of it is read as a piece of a rarity: 26LP-EN001
+	// sells "Monster Reborn (Emblazoned)", the Starlight Rare, beside
+	// "Monster Reborn (Emblazoned Secret Rare)", and "Emblazoned" spells the
+	// first one's qualifier whole and only part of the second one's rarity.
+	// Read as a rarity narrowed by one word it went to the second. The
+	// qualifier itself is the variant tier's to answer, after the number's
+	// suffix below has had its say - "RA03-EN123qsec B" is the letter B at
+	// the rarity the suffix names.
+	if len(qualifierNamed(words, candidates)) > 0 {
+		return suffixNarrowed(candidates, number)
+	}
+
 	if decorated, found := decoratedRarity(words, candidates); found {
 		var out []mtgmatcher.Card
 		for _, card := range candidates {
@@ -1164,6 +1177,12 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 		return out
 	}
 
+	return suffixNarrowed(candidates, number)
+}
+
+// suffixNarrowed keeps the candidates at the rarity the collector number's
+// suffix encodes, or every candidate where the number carries none.
+func suffixNarrowed(candidates []mtgmatcher.Card, number string) []mtgmatcher.Card {
 	rarity := suffixRarity(number)
 	if rarity == "" {
 		return candidates
@@ -1324,9 +1343,21 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 	if marked := tierByMark(inCard.Variation, candidates); len(marked) > 0 {
 		candidates = marked
 	}
+	// A wording spelling a printing's qualifier whole has named it: "Dark
+	// Magician (Arkana)" is the Arkana artwork among five arts of
+	// RA04-EN106, and "Blue" is the blue ink of DLCS-EN006 rather than the
+	// alternate art in the same ink.
+	if named := qualifierNamed(strings.Fields(strings.ToLower(inCard.Variation)), candidates); len(named) > 0 {
+		return named
+	}
+	// A printing is plain when it carries no label and the catalog sells it
+	// under the bare name. One sold as "Mayhem Fur Hire (Starlight Rare)"
+	// beside a plain "Mayhem Fur Hire" is the decorated one even once its
+	// qualifier has become its rarity rather than a label: a listing that
+	// says nothing means the plain product, the way it does for labels.
 	var base, variants []mtgmatcher.Card
 	for _, card := range candidates {
-		if len(card.PromoTypes) == 0 {
+		if len(card.PromoTypes) == 0 && qualifierOf(card.UUID) == "" {
 			base = append(base, card)
 			continue
 		}
@@ -1353,6 +1384,35 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 		return base
 	}
 	return candidates
+}
+
+// qualifierNamed keeps the candidates whose qualifier the wording spells
+// whole, and of those the ones saying the most: "Alternate Art Blue" spells
+// "Blue" as well, and a wording saying all three words means the alternate
+// art. Nothing is kept where the wording spells none, so the tiers around
+// it still have their say.
+func qualifierNamed(words []string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	named := map[string]bool{}
+	for _, card := range candidates {
+		if qualifier := strings.ToLower(qualifierOf(card.UUID)); qualifier != "" && allWordsIn(words, qualifier) {
+			named[qualifier] = true
+		}
+	}
+	for a := range named {
+		for other := range named {
+			if a != other && wordSubset(a, other) {
+				delete(named, a)
+				break
+			}
+		}
+	}
+	var out []mtgmatcher.Card
+	for _, card := range candidates {
+		if named[strings.ToLower(qualifierOf(card.UUID))] {
+			out = append(out, card)
+		}
+	}
+	return out
 }
 
 // allWordsIn reports whether the wording's words include every word of the
