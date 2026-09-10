@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -146,31 +147,86 @@ func GetBuylist(ctx context.Context, game string) ([]CSIPriceEntry, error) {
 }
 
 func fetchBuylist(ctx context.Context, link string) ([]CSIPriceEntry, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	data, err := fetchWhole(ctx, link)
 	if err != nil {
 		return nil, err
-	}
-
-	// Disable gzip compression
-	req.Header.Set("Accept-Encoding", "identity")
-
-	resp, err := csiClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode/100 != 2 {
-		return nil, fmt.Errorf("unexpected %d status code", resp.StatusCode)
 	}
 
 	var entries []CSIPriceEntry
-	err = json.NewDecoder(resp.Body).Decode(&entries)
+	err = json.Unmarshal(data, &entries)
 	if err != nil {
 		return nil, err
 	}
 
 	return entries, nil
+}
+
+// fetchWhole downloads a link in full, asking again for the part that did
+// not arrive.
+//
+// The sell list is an 18MB uncompressed download and the storefront cuts it
+// mid-stream about one fetch in three, answering 200 with a short body and
+// no transport error, so only the decode notices. Retrying the whole file
+// leaves the run failing whenever three attempts land badly, which is what
+// reddened the Pokemon workflow.
+//
+// The response states Content-Length and the server honours Range, so a
+// short body is both detectable and resumable: each pass asks only for the
+// bytes still missing. The loop ends when the body is whole or when a pass
+// adds nothing, rather than after a set number of tries.
+func fetchWhole(ctx context.Context, link string) ([]byte, error) {
+	var body []byte
+	for {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+		if err != nil {
+			return nil, err
+		}
+
+		// Disable gzip compression
+		req.Header.Set("Accept-Encoding", "identity")
+		if len(body) > 0 {
+			req.Header.Set("Range", fmt.Sprintf("bytes=%d-", len(body)))
+		}
+
+		resp, err := csiClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		if resp.StatusCode/100 != 2 {
+			resp.Body.Close()
+			return nil, fmt.Errorf("unexpected %d status code", resp.StatusCode)
+		}
+		// A server that will not honour the range answers with the whole
+		// file again, so what arrives replaces what we held instead of
+		// extending it.
+		if resp.StatusCode != http.StatusPartialContent {
+			body = nil
+		}
+
+		have := len(body)
+		chunk, readErr := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		body = append(body, chunk...)
+
+		// A body that ends early is the very shape this works around: keep
+		// what arrived and ask for the rest. Anything else is a real error.
+		if readErr != nil && !errors.Is(readErr, io.ErrUnexpectedEOF) {
+			return nil, readErr
+		}
+
+		// Only Content-Length says how much there was to read; without it
+		// a short body cannot be told from a complete one.
+		if resp.ContentLength < 0 {
+			return body, nil
+		}
+		total := have + int(resp.ContentLength)
+		if len(body) >= total {
+			return body, nil
+		}
+		if len(chunk) == 0 {
+			return nil, fmt.Errorf("read stalled at %d of %d bytes", len(body), total)
+		}
+	}
 }
 
 // LoadBuylistEditions returns the edition-to-id map the storefront links are
