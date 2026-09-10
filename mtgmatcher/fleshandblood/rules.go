@@ -45,6 +45,10 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
+	if name := regrownName(b, inCard); name != "" {
+		inCard.Name = name
+		return
+	}
 	if strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
 		if len(vars) > 1 {
@@ -96,8 +100,9 @@ const marvelLabel = " (Marvel)"
 // parenthetical the re-spelling drops is handed to the wording, since the same
 // shape also spells a treatment label rather than a piece of the name.
 func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	number := extractNumber(inCard.Variation)
-	if !fullNumberRe.MatchString(number) && !pairNumberRe.MatchString(number) {
+	number := labelledNumber(inCard.Variation)
+	if !fullNumberRe.MatchString(number) && !pairNumberRe.MatchString(number) &&
+		!dashedNumberRe.MatchString(number) {
 		return
 	}
 	// A spelling numbered as the input is the input's own only while a
@@ -248,6 +253,58 @@ func promoNumbered(b *mtgmatcher.Backend, name, number string) bool {
 		numbered = true
 	}
 	return numbered
+}
+
+// dashedNumberRe matches the number a catalog writes with the label it
+// belongs to: "ROS002-MV" for the marvel of ROS002, "DTD193-CF" for a cold
+// foil. extractNumber leaves these to the wording, since the tail is what
+// the wording spells - but the re-spelling below reads one, because a
+// number is the only thing that makes a re-spelling safe and numberMatches
+// already reads the stem back out of it.
+var dashedNumberRe = regexp.MustCompile(`^[0-9]?[A-Za-z]+[0-9]{1,4}-[A-Za-z]{1,3}$`)
+
+// labelledNumber is extractNumber, falling back on a number written with
+// its label. "Florian" listed at ROS002-MV read as no number at all, so the
+// re-spelling never ran and the listing answered with the plain Florian of
+// another set.
+func labelledNumber(variation string) string {
+	if number := extractNumber(variation); number != "" {
+		return number
+	}
+	for _, field := range strings.Fields(variation) {
+		if dashedNumberRe.MatchString(field) {
+			return field
+		}
+	}
+	return ""
+}
+
+// regrownName is the input's name with the qualifier its wording carries
+// put back on, empty where the wording names none or the spelling it makes
+// is not a name this datastore knows.
+//
+// A pitch color is part of a Flesh and Blood name, but a storefront writes
+// it as a parenthetical like any other and the split before the lookup
+// takes it off: "To the Point (Red)" arrives as "To the Point" with "Red"
+// in the wording, and nothing is named that. The word is the storefront's
+// own, so putting it back is reading the listing rather than guessing at
+// it - unlike a number, which names a printing and never a name.
+//
+// It answers only for a name the datastore does not otherwise know, which
+// is what keeps it off the other direction this file already handles: a
+// marvel the datastore labels beside the plain name is reached by that
+// plain name, and a plain name is canonical, so the split keeps its say.
+func regrownName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
+	for _, word := range strings.Fields(inCard.Variation) {
+		word = strings.Trim(word, "()")
+		if !qualifierRe.MatchString(" (" + word + ")") {
+			continue
+		}
+		if name := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name+" ("+word+")")]; name != "" {
+			return name
+		}
+	}
+	return ""
 }
 
 // qualifierWord returns the label inside a name's qualifier parenthetical,
