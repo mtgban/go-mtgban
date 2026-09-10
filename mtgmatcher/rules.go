@@ -71,11 +71,15 @@ type GameRules interface {
 	// its catalog pads an ordinal with, Riftbound its star, Lorcana its
 	// variant letter, and the games that number their cards behind a set
 	// code - Flesh and Blood, One Piece, Gundam, Yu-Gi-Oh - everything but
-	// the ordinal itself. A number carrying no ordinal at all yields
-	// nothing rather than itself. The game owns this the way it owns its
-	// finish names, so a caller folding a number a person typed need not
-	// know which marks belong to which game - and one that rebuilt the
-	// vocabulary for itself got the case of Magic's phi wrong.
+	// the ordinal itself, through PlainOrdinal. A number reduced to nothing
+	// is answered two ways, and each game says which: the games numbering
+	// behind a code yield nothing for a number carrying no ordinal, since
+	// a word like DON is not the ordinal a search folds towards, while
+	// Magic, Pokemon, Lorcana and Palworld hand such a number back, there
+	// being no other number for a person to write. The game owns this the
+	// way it owns its finish names, so a caller folding a number a person
+	// typed need not know which marks belong to which game - and one that
+	// rebuilt the vocabulary for itself got the case of Magic's phi wrong.
 	PlainNumber(number string) string
 }
 
