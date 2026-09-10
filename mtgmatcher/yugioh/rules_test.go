@@ -207,7 +207,7 @@ func TestTierByRarity(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			inCard := &mtgmatcher.InputCard{Variation: test.variation}
 			var kept []string
-			for _, card := range tierByRarity(inCard, candidates, test.number) {
+			for _, card := range tierByRarity(inCard, candidates, test.number, nil) {
 				kept = append(kept, card.UUID)
 			}
 			if len(kept) != 1 || kept[0] != test.want {

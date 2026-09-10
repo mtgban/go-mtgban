@@ -20,7 +20,25 @@ import (
 // input naming a run - in the finish field, or in the wording for the
 // storefronts that have no such field - resolves to that run's entry
 // instead of the default one.
-type Rules struct{ mtgmatcher.DefaultRules }
+type Rules struct {
+	mtgmatcher.DefaultRules
+
+	// qualifiers are the name-qualifiers the catalog sells a printing
+	// under, by uuid: "Mayhem Fur Hire (Starlight Rare)" beside a plain
+	// "Mayhem Fur Hire" at the same number, "Dark Magician (Arkana)"
+	// beside its 6th to 9th Arts. The matcher's Card has no field for the
+	// qualifier, and the tiers need two things of it: whether a printing
+	// wears one at all, since a listing that says nothing means the plain
+	// product, and whether the wording spells it whole, since then the
+	// listing has named the product. They are the backend's that loaded
+	// them, built with it and gone with it.
+	qualifiers map[string]string
+}
+
+// qualifierOf is the qualifier a printing was sold under, or "".
+func qualifierOf(qualifiers map[string]string, uuid string) string {
+	return qualifiers[uuid]
+}
 
 // fullNumberRe matches the game's collector number shapes: "LOB-001",
 // "RA01-EN019", "YGLD-ENA03", with an optional letter tail (cardtrader
@@ -1026,7 +1044,7 @@ func canonicalFinish(name string) string {
 // and surfaces as an aliasing error rather than a guess. The variant label
 // tiering mirrors One Piece: a described label wins, a demanded-but-unnamed
 // variant (the "a" tail) drops the base art, and a plain input keeps it.
-func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
+func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	// A pooled storefront name restricts the candidates to its pair of sets
 	// outright: the edition kept the name, so nothing upstream could narrow,
 	// and every printing the card ever had was answering instead.
@@ -1128,11 +1146,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 	}
 
-	candidates = tierByRarity(inCard, candidates, number)
+	candidates = tierByRarity(inCard, candidates, number, r.qualifiers)
 	if len(candidates) <= 1 {
 		return candidates
 	}
-	return tierByVariant(inCard, candidates, number)
+	return tierByVariant(inCard, candidates, number, r.qualifiers)
 }
 
 // tierByRarity keeps the candidates whose rarity the input's wording spells
@@ -1141,7 +1159,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 // suffix narrows through the suffix map. No signal keeps every candidate.
 // Only the variation speaks: set names carry rarity words themselves
 // ("McDonald's Promo").
-func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string) []mtgmatcher.Card {
+func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string, qualifiers map[string]string) []mtgmatcher.Card {
 	words := strings.Fields(strings.ToLower(inCard.Variation))
 
 	described := map[string]bool{}
@@ -1178,7 +1196,7 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 	// qualifier itself is the variant tier's to answer, after the number's
 	// suffix below has had its say - "RA03-EN123qsec B" is the letter B at
 	// the rarity the suffix names.
-	if len(qualifierNamed(words, candidates)) > 0 {
+	if len(qualifierNamed(words, candidates, qualifiers)) > 0 {
 		return suffixNarrowed(candidates, number)
 	}
 
@@ -1364,7 +1382,7 @@ func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card 
 	return marked
 }
 
-func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string) []mtgmatcher.Card {
+func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string, qualifiers map[string]string) []mtgmatcher.Card {
 	if marked := tierByMark(inCard.Variation, candidates); len(marked) > 0 {
 		candidates = marked
 	}
@@ -1372,7 +1390,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 	// Magician (Arkana)" is the Arkana artwork among five arts of
 	// RA04-EN106, and "Blue" is the blue ink of DLCS-EN006 rather than the
 	// alternate art in the same ink.
-	if named := qualifierNamed(strings.Fields(strings.ToLower(inCard.Variation)), candidates); len(named) > 0 {
+	if named := qualifierNamed(strings.Fields(strings.ToLower(inCard.Variation)), candidates, qualifiers); len(named) > 0 {
 		return named
 	}
 	// A printing is plain when it carries no label and the catalog sells it
@@ -1382,7 +1400,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 	// says nothing means the plain product, the way it does for labels.
 	var base, variants []mtgmatcher.Card
 	for _, card := range candidates {
-		if len(card.PromoTypes) == 0 && qualifierOf(card.UUID) == "" {
+		if len(card.PromoTypes) == 0 && qualifierOf(qualifiers, card.UUID) == "" {
 			base = append(base, card)
 			continue
 		}
@@ -1416,10 +1434,10 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 // "Blue" as well, and a wording saying all three words means the alternate
 // art. Nothing is kept where the wording spells none, so the tiers around
 // it still have their say.
-func qualifierNamed(words []string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+func qualifierNamed(words []string, candidates []mtgmatcher.Card, qualifiers map[string]string) []mtgmatcher.Card {
 	named := map[string]bool{}
 	for _, card := range candidates {
-		if qualifier := strings.ToLower(qualifierOf(card.UUID)); qualifier != "" && allWordsIn(words, qualifier) {
+		if qualifier := strings.ToLower(qualifierOf(qualifiers, card.UUID)); qualifier != "" && allWordsIn(words, qualifier) {
 			named[qualifier] = true
 		}
 	}
@@ -1433,7 +1451,7 @@ func qualifierNamed(words []string, candidates []mtgmatcher.Card) []mtgmatcher.C
 	}
 	var out []mtgmatcher.Card
 	for _, card := range candidates {
-		if named[strings.ToLower(qualifierOf(card.UUID))] {
+		if named[strings.ToLower(qualifierOf(qualifiers, card.UUID))] {
 			out = append(out, card)
 		}
 	}
