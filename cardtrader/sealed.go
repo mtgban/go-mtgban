@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"maps"
-	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -236,21 +235,17 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 	return productMap
 }
 
-// sealedShelfCodeRe splits the set code a storefront opens a name with into
-// the letters that name the line and the number that names the set.
-var sealedShelfCodeRe = regexp.MustCompile(`^([A-Za-z]{1,4})-?([0-9]{1,2})\s*[:-]\s+`)
-
 // sealedNameWithoutShelfCode takes the letters of a set code off the head of a
 // product name, when they are the letters of the code its own shelf opens
 // with. The number stays: the catalog spells it into the product's own name
 // ("Starter Deck 10: Generation Pulse"), and dropping it loses the one word
 // that tells the starter decks apart.
 func sealedNameWithoutShelfCode(bp *Blueprint) string {
-	name := sealedShelfCodeRe.FindStringSubmatch(bp.Name)
+	name := codedShelf.FindStringSubmatch(bp.Name)
 	if name == nil {
 		return bp.Name
 	}
-	shelf := sealedShelfCodeRe.FindStringSubmatch(bp.Expansion.Name)
+	shelf := codedShelf.FindStringSubmatch(bp.Expansion.Name)
 	if shelf == nil || !strings.EqualFold(name[1], shelf[1]) || name[2] != shelf[2] {
 		return bp.Name
 	}
