@@ -52,6 +52,67 @@ func TestGundamCard(t *testing.T) {
 	}
 }
 
+func TestGundamName(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		// The four names this storefront types its own way, one letter or
+		// one word off the catalog.
+		{"Adbul's Maganac", "Abdul's Maganac"},
+		{"Tiffa Adill & Freedom", "Tiffa Adill & Freeden"},
+		// A glyph the storefront names in brackets and the catalog reads
+		// straight through.
+		{"Xi (Symbol) Gundam", "Xi Gundam"},
+		{"(Turn A Symbol) Gundam", "Turn A Gundam"},
+		{"Xi (Symbol) Gundam (Flight Form)", "Xi Gundam (Flight Form)"},
+		// Both halves of a card printing two, whose numbers the catalog
+		// keeps behind the joined name.
+		{"Guncannon (108) & Guncannon (109)", "Guncannon & Guncannon (108) (109)"},
+		{"Core Booster (005) & Core Booster (006)", "Core Booster & Core Booster (005) (006)"},
+		// A name carrying a parenthetical of its own is left alone.
+		{"Unicorn Gundam (Destroy Mode)", "Unicorn Gundam (Destroy Mode)"},
+		{"GQuuuuuuX (Omega Psycommu)", "GQuuuuuuX (Omega Psycommu)"},
+	} {
+		if got := gundamName(tt.in); got != tt.want {
+			t.Errorf("gundamName(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
+func TestGundamNumberSpelling(t *testing.T) {
+	for _, tt := range []struct{ number, name, want string }{
+		// Every number this game prints is a run code and three digits, so
+		// a dropped digit and an extra zero are both the storefront's own
+		// typing.
+		{"GD02-57", "Zedas (GD02-57)", "GD02-057"},
+		{"EXBP-0013", "EX Base (EXBP-013) (Promo)", "EXBP-013"},
+		{"GD01-100", "A Show of Resolve (GD01-100)", "GD01-100"},
+		// A parallel lettered onto the number the catalog letters nothing,
+		// where the name spells the same number plain.
+		{"R-008A", "Resource (R-008) (Alt-Art +)", "R-008"},
+		// And a lettered number the name does not spell plain is left as
+		// written rather than guessed at.
+		{"R-008A", "Resource (Alt-Art +)", "R-008A"},
+		{"", "", ""},
+	} {
+		if got := gundamNumberSpelling(tt.number, tt.name); got != tt.want {
+			t.Errorf("gundamNumberSpelling(%q, %q) = %q, want %q", tt.number, tt.name, got, tt.want)
+		}
+	}
+}
+
+func TestGundamTokenName(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		// The catalog writes the word before the qualifier, not after it.
+		{"GQuuuuuuX (Omega Psycommu)", "GQuuuuuuX Token (Omega Psycommu)"},
+		// A token whose name carries no qualifier is reached by the word
+		// alone, which Match adds for itself.
+		{"Char's Zaku II", "Char's Zaku II"},
+	} {
+		if got := gundamTokenName(tt.in); got != tt.want {
+			t.Errorf("gundamTokenName(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
 func TestGundamTier(t *testing.T) {
 	for _, tt := range []struct{ in, want string }{
 		// The storefront abbreviates the suffix the catalog writes out, and
