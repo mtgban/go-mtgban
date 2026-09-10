@@ -94,13 +94,13 @@ func TestMatchProductPrintRunPrefix(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := mkm.matchProduct(&cm.Product{
+			got, _ := mkm.matchYugioh(&cm.Product{
 				Name:          tt.product,
 				Number:        tt.number,
 				ExpansionName: tt.expansion,
 			})
 			if got != tt.want {
-				t.Errorf("matchProduct(%q, %q) = %q, want %q", tt.product, tt.number, got, tt.want)
+				t.Errorf("matchYugioh(%q, %q) = %q, want %q", tt.product, tt.number, got, tt.want)
 			}
 		})
 	}

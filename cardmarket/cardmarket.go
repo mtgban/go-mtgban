@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -432,118 +431,43 @@ func foreignShelf(name string) bool {
 	return false
 }
 
-// yugiohRunIndex captures the index Cardmarket appends to a Yu-Gi-Oh product
-// name when one card is sold as several products.
-var yugiohRunIndex = regexp.MustCompile(` \(V\.(\d+) - `)
-
-// yugiohFirstAtIndexOne names the sets whose index counts the other way
-// round. Cardmarket synthesizes the index per set and what it counts differs
-// from one to the next - a rarity here, a print run there - so no reading of
-// it is right everywhere. The default below is the one the catalog bears out
-// most often; a set whose prices say its runs are swapped belongs here, and
-// the entry is all it takes to correct it.
-var yugiohFirstAtIndexOne = map[string]bool{}
-
-// yugiohRun names the print run a product's index stands for, or nothing
-// when it carries no index.
-//
-// A set printed twice sells both runs under one name, and nothing else the
-// catalog says tells them apart: the collector number is the same, the
-// rarity is the same, and the shelf is the same. Only the index is left, and
-// it is read here rather than trusted - the first edition is the scarcer run
-// and the dearer one, which is how a set that reads the wrong way round is
-// found and added above.
-//
-// Measured over the run's collisions, the higher index is the dearer product
-// 924 times against 388, so it is the first edition by default.
-func yugiohRun(product *cm.Product) string {
-	fields := yugiohRunIndex.FindStringSubmatch(product.Name)
-	if fields == nil {
-		return ""
-	}
-	index, err := strconv.Atoi(fields[1])
-	if err != nil || index < 1 {
-		return ""
-	}
-	first := index > 1
-	if yugiohFirstAtIndexOne[product.ExpansionName] {
-		first = index == 1
-	}
-	if first {
-		return "1st Edition"
-	}
-	return "Unlimited"
-}
-
-// matchProduct resolves a product the bridge does not know, from what the
-// catalog says of it. The edition has to name a set of ours and the answer
-// has to be in it: Cardmarket carries whole Japanese catalogs the datastores
-// do not, and Match reaches past the edition when nothing in it fits, so
-// without both an unknown set's cards land on whichever set happens to hold
-// a number like theirs.
-func (mkm *Index) matchProduct(product *cm.Product) string {
-	switch mkm.gameID {
-	case cm.GamePokemon:
-		id, _ := mkm.matchPokemon(product)
-		return id
-	case cm.GameYuGiOh:
-		id, _ := mkm.matchYugioh(product)
-		return id
-	}
-	var shelves []shelf
-	if mkm.gameID == cm.GameFleshAndBlood {
-		shelves = fabShelves(product)
-	} else {
-		set, err := mtgmatcher.GetSetByName(product.ExpansionName)
-		if err != nil {
-			return ""
-		}
-		shelves = []shelf{{set: set, edition: product.ExpansionName}}
-	}
+// matchFab resolves a Flesh and Blood product the bridge does not know,
+// from what the catalog says of it. The edition has to name a set of ours
+// and the answer has to be in it: Cardmarket carries whole catalogs the
+// datastores do not, and Match reaches past the edition when nothing in it
+// fits, so without both an unknown set's cards land on whichever set happens
+// to hold a number like theirs. Pokemon and Yu-Gi-Oh name their products
+// through matchPokemon and matchYugioh, and every other game through the
+// matcher alone; see resolveProduct.
+func (mkm *Index) matchFab(product *cm.Product) string {
+	shelves := fabShelves(product)
 	if len(shelves) == 0 {
 		return ""
 	}
+	// The treatment parenthetical is the printing's, not the name's:
+	// fabFinish reads it off the untouched product name below, and a card
+	// whose own name ends in a parenthetical ("Sink Below (Red)") keeps
+	// it, so the exact name reaches the matcher whole. The art ahead of
+	// the treatment stays on the name for the sets that file it as a
+	// printing of its own, and comes off for the sets that do not. The raw
+	// name stays as the fallback: the sets spelling a pitch color the other
+	// one's way ("Rawhide Rumble" at ARR012, "Rawhide Rumble (Red)" at
+	// HVY023) file the stripped name under the wrong set, and only the
+	// decorated one still finds them.
 	names := []string{versionTail.ReplaceAllString(product.Name, "")}
-	if mkm.gameID == cm.GameFleshAndBlood {
-		// The treatment parenthetical is the printing's, not the name's:
-		// fabFinish reads it off the untouched product name below, and a
-		// card whose own name ends in a parenthetical ("Sink Below (Red)")
-		// keeps it, so the exact name reaches the matcher whole. The art
-		// ahead of the treatment stays on the name for the sets that file
-		// it as a printing of its own, and comes off for the sets that do
-		// not. The raw name stays as the fallback: the sets spelling a
-		// pitch color the other one's way ("Rawhide Rumble" at ARR012,
-		// "Rawhide Rumble (Red)" at HVY023) file the stripped name under
-		// the wrong set, and only the decorated one still finds them.
-		_, stripped := fabTreatment(names[0])
-		if stripped != names[0] {
-			names = []string{stripped}
-			if plain := fabDropArt(stripped); plain != stripped {
-				names = append(names, plain)
-			}
-			names = append(names, versionTail.ReplaceAllString(product.Name, ""))
+	_, stripped := fabTreatment(names[0])
+	if stripped != names[0] {
+		names = []string{stripped}
+		if plain := fabDropArt(stripped); plain != stripped {
+			names = append(names, plain)
 		}
-		// A double-sided card is filed under both faces and, in the
-		// treatments the fused row was never sold in, under the front
-		// face alone: Aether Ashwing // Ash is plain, and the cold foil
-		// is Aether Ashwing's.
-		if front, _, fused := strings.Cut(names[0], " // "); fused && !strings.Contains(product.Number, "/") {
-			names = append(names, front)
-		}
+		names = append(names, versionTail.ReplaceAllString(product.Name, ""))
 	}
-
-	// A Yu-Gi-Oh card is named by name + number + rarity, and a set prints
-	// one number in several rarities ("Ultra Rare" beside "Ultimate Rare"):
-	// with the tail only deleted the two are indistinguishable and both go
-	// unpriced. The rarity does not belong in the name, so it rides beside
-	// the number instead, which is where the matcher reads it from. The
-	// other catalogs write their own vocabulary in that tail - Riftbound
-	// spells treatments there - so this stays the one game's.
-	var rarity string
-	if mkm.gameID == cm.GameYuGiOh {
-		if fields := rarityTail.FindStringSubmatch(product.Name); fields != nil {
-			rarity = fields[1]
-		}
+	// A double-sided card is filed under both faces and, in the treatments
+	// the fused row was never sold in, under the front face alone: Aether
+	// Ashwing // Ash is plain, and the cold foil is Aether Ashwing's.
+	if front, _, fused := strings.Cut(names[0], " // "); fused && !strings.Contains(product.Number, "/") {
+		names = append(names, front)
 	}
 
 	// A game selling one card in several print runs needs one of them
@@ -552,15 +476,7 @@ func (mkm *Index) matchProduct(product *cm.Product) string {
 	// first wherever the shelves keep it; the card's own printing stands
 	// only when no shelf carries the named one, the card being agreed on
 	// and the finish the one disagreement.
-	finishes := []string{""}
-	switch mkm.gameID {
-	case cm.GameYuGiOh:
-		// The later run is what the id route lands on, so it is what the
-		// fallback asks for after the index has had its say.
-		finishes = []string{yugiohRun(product), "Unlimited", ""}
-	case cm.GameFleshAndBlood:
-		finishes = []string{productFinish(mkm.gameID, product), ""}
-	}
+	finishes := []string{fabFinish(product.ExpansionName, product.Name), ""}
 
 	// The named finish is asked for on every shelf before the plain
 	// printing is settled for on any, so a card the fused row was never
@@ -569,26 +485,17 @@ func (mkm *Index) matchProduct(product *cm.Product) string {
 	for _, finish := range finishes {
 		for _, sh := range shelves {
 			set, edition, numberPrefix, printRun := sh.set, sh.edition, sh.numberPrefix, sh.printRun
-			numbers := []string{product.Number}
 			// A promo's programme is the prefix our numbering carries
 			// and the expansion Cardmarket sells it under, so the number
 			// is only whole once the two are put back together; and any
 			// set numbering its cards on letters of its own is asked with
 			// them, since a fused card answers to its faces' numbers only
 			// when they are whole.
-			if mkm.gameID == cm.GameFleshAndBlood {
-				prefix := numberPrefix
-				if prefix == "" {
-					prefix = fabSetPrefix(set)
-				}
-				numbers = fabNumbers(prefix, product.Number)
+			prefix := numberPrefix
+			if prefix == "" {
+				prefix = fabSetPrefix(set)
 			}
-			// The oldest Yu-Gi-Oh sets are numbered by their original
-			// Asian print ("A015") where the datastore numbers them by
-			// set ("LOB-015"); the digits are what the two agree on.
-			if tail := numberTail.FindString(product.Number); tail != "" && set.Code != "" && mkm.gameID == cm.GameYuGiOh {
-				numbers = append(numbers, set.Code+"-"+tail)
-			}
+			numbers := fabNumbers(prefix, product.Number)
 
 			// A number is asked of every spelling before a looser number
 			// is asked of any: the name alone comes last, after every
@@ -597,11 +504,10 @@ func (mkm *Index) matchProduct(product *cm.Product) string {
 			// the card's plainest printing.
 			for _, number := range numbers {
 				for _, name := range names {
-					variation := strings.TrimSpace(number + " " + rarity)
 					id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 						Name:      name,
 						Edition:   edition,
-						Variation: variation,
+						Variation: number,
 						Finish:    finish,
 					})
 					if err != nil {
@@ -617,9 +523,6 @@ func (mkm *Index) matchProduct(product *cm.Product) string {
 					// for, and the other run's expansion sells the very
 					// same card.
 					if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
-						continue
-					}
-					if mkm.gameID == cm.GameYuGiOh && otherPrintRun(product.Number, co.Number) {
 						continue
 					}
 					// A promo's number is only whole with its programme,
@@ -849,8 +752,8 @@ func (mkm *Index) resolveProduct(product *cm.Product) (string, string, bool, err
 			}
 			byName = cardID != ""
 		}
-		if cardID == "" {
-			cardID = mkm.matchProduct(product)
+		if cardID == "" && mkm.gameID == cm.GameFleshAndBlood {
+			cardID = mkm.matchFab(product)
 			byName = cardID != ""
 		}
 		if cardID == "" {

@@ -114,13 +114,13 @@ func TestMatchProductExtendedArt(t *testing.T) {
 		{"Twinning Blade (Rainbow Foil)", "cru082_225982_1steditionrainbowfoil"},
 		{"Twinning Blade (Regular)", "cru082_225982_1stedition"},
 	} {
-		got := mkm.matchProduct(&cm.Product{
+		got := mkm.matchFab(&cm.Product{
 			Name:          tt.name,
 			Number:        "CRU082",
 			ExpansionName: "Crucible of War - First",
 		})
 		if got != tt.want {
-			t.Errorf("matchProduct(%q) = %q, want %q", tt.name, got, tt.want)
+			t.Errorf("matchFab(%q) = %q, want %q", tt.name, got, tt.want)
 		}
 	}
 }

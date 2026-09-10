@@ -81,8 +81,8 @@ func TestFabPromoProduct(t *testing.T) {
 			Number:        tt.number,
 			ExpansionName: tt.expansion,
 		}
-		if got := mkm.matchProduct(&product); got != tt.want {
-			t.Errorf("matchProduct(%q in %s, %s) = %q, want %q",
+		if got := mkm.matchFab(&product); got != tt.want {
+			t.Errorf("matchFab(%q in %s, %s) = %q, want %q",
 				tt.name, tt.expansion, tt.number, got, tt.want)
 		}
 	}

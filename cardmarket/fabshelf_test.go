@@ -156,8 +156,8 @@ func TestMatchProductFinishes(t *testing.T) {
 		{"Heavy Hitters", "HVY", "Lead With Heart (Yellow) (Rainbow Foil)", "193", "hvy193_533598_rainbowfoil"},
 	} {
 		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion, ExpansionCode: tt.code}
-		if got := mkm.matchProduct(&product); got != tt.want {
-			t.Errorf("matchProduct(%q, %q %s) = %q, want %q", tt.expansion, tt.name, tt.number, got, tt.want)
+		if got := mkm.matchFab(&product); got != tt.want {
+			t.Errorf("matchFab(%q, %q %s) = %q, want %q", tt.expansion, tt.name, tt.number, got, tt.want)
 		}
 	}
 }

@@ -496,7 +496,7 @@ func (mkm *Index) disownBridged(results []resolved) {
 		if err != nil || !claimed[mtgmatcher.Normalize(fabBaseName(co.Name))] {
 			continue
 		}
-		cardID := mkm.matchProduct(r.product)
+		cardID := mkm.matchFab(r.product)
 		if cardID == "" {
 			results[i] = resolved{product: r.product, err: errNoPrinting}
 			continue
