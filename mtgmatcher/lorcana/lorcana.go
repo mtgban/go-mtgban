@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"slices"
 	"sort"
 	"strconv"
@@ -551,28 +552,35 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		var stored []perFinish
 		baseUUID := convertedCard.UUID
 		if len(card.PrintingIDs) > 0 {
-			for name, uuid := range card.PrintingIDs {
+			// The names are walked in order, and the first to reach a
+			// finish keeps it: two of TCGplayer's names place on one finish
+			// here - "Foil" and "Cold Foil" are both the standard foil -
+			// and a map walked as it comes would hand the finish to
+			// whichever came out last, a different uuid on every load.
+			for _, name := range slices.Sorted(maps.Keys(card.PrintingIDs)) {
 				// The datastore names a finish the way TCGplayer prices
 				// it; this package spells finishes its own way, and
 				// canonicalFinish is the one crossing between them.
 				finish := canonicalFinish(name)
+				if _, placed := finishUUIDs[finish]; placed {
+					continue
+				}
+				uuid := card.PrintingIDs[name]
 				finishUUIDs[finish] = uuid
 				stored = append(stored, perFinish{uuid, finish != mtgmatcher.FinishNonfoil, finish})
 			}
-			// A map has no order, and the CardObjects below are registered
-			// in this one - AllUUIDs and the name hashes would otherwise
-			// come out in a different order on every load.
+			// The CardObjects below are registered in this order, so
+			// AllUUIDs and the name hashes come out the same on every load.
 			sort.Slice(stored, func(i, j int) bool { return stored[i].name < stored[j].name })
-			// A bare foil flag has to reach a printing. A card sold only in
-			// a treatment has no standard foil for it to land on, so the
-			// treatment answers it - which is what the caller meant, there
-			// being nothing else foil about the card.
-			// The coarse key the flag form resolves through, which a card
-			// sold only in a treatment has no printing of its own for.
-			// Pokemon files the same key the same way. The named form is
-			// not answered by it: FinishUUID refuses a key whose printing
-			// is sold in another finish, so a caller pricing a Cold Foil
-			// sku this card does not have is told so.
+			// A bare foil flag has to reach a printing, and the coarse key
+			// it resolves through is one a card sold only in a treatment
+			// has no printing of its own for, so the treatment answers it
+			// - which is what the caller meant, there being nothing else
+			// foil about the card. Pokemon files the same key the same
+			// way. The named form is not answered by it: FinishUUID
+			// refuses a key whose printing is sold in another finish, so a
+			// caller pricing a Cold Foil sku this card does not have is
+			// told so.
 			if _, found := finishUUIDs[mtgmatcher.FinishFoil]; !found {
 				if uuid, found := finishUUIDs[finishHolofoil]; found {
 					finishUUIDs[mtgmatcher.FinishFoil] = uuid
