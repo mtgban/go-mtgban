@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -110,7 +111,7 @@ func TestRunEVValuesAProduct(t *testing.T) {
 	uuid, setCode := sealedProduct(t, true)
 
 	ss := NewScraper("")
-	ss.FastMode = true
+	ss.Repetitions = 10
 	ss.prices = pricedAt(t, setCode, uuid, 1)
 
 	results, errs := ss.runEV(context.Background(), uuid)
@@ -161,7 +162,7 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 	uuid, setCode := sealedProduct(t, false)
 
 	ss := NewScraper("")
-	ss.FastMode = true
+	ss.Repetitions = 10
 	ss.prices = pricedAt(t, setCode, uuid, 1)
 
 	results, _ := ss.runEV(context.Background(), uuid)
@@ -209,7 +210,7 @@ func TestRunEVReportsAProductItCannotOpen(t *testing.T) {
 	realDatastore(t)
 
 	ss := NewScraper("")
-	ss.FastMode = true
+	ss.Repetitions = 10
 	ss.prices = &BANPriceResponse{
 		Retail:  map[string]map[string]*BanPrice{},
 		Buylist: map[string]map[string]*BanPrice{},
@@ -231,7 +232,7 @@ func TestRunEVDropsAProductWorthNothing(t *testing.T) {
 	uuid, _ := sealedProduct(t, true)
 
 	ss := NewScraper("")
-	ss.FastMode = true
+	ss.Repetitions = 10
 	ss.prices = &BANPriceResponse{
 		Retail:  map[string]map[string]*BanPrice{},
 		Buylist: map[string]map[string]*BanPrice{},
@@ -251,11 +252,24 @@ func TestRunEVStopsWhenCancelled(t *testing.T) {
 	ss := NewScraper("")
 	ss.prices = pricedAt(t, setCode, uuid, 1)
 
+	// It still answers, on whatever it managed to draw; what matters is
+	// that it returns rather than finishing the openings asked for - which
+	// are made more than a run could ever finish, so that returning at all
+	// is the cancellation and nothing else.
+	ss.Repetitions = 1 << 30
+
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	// It still answers, on whatever it managed to draw; what matters is
-	// that it returns rather than finishing five thousand openings.
-	ss.runEV(ctx, uuid)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		ss.runEV(ctx, uuid)
+	}()
+	select {
+	case <-done:
+	case <-time.After(30 * time.Second):
+		t.Fatal("runEV kept opening after its context was cancelled")
+	}
 }
 
 // TestMarketNames pins the sub-sellers this scraper splits into: one per
@@ -310,7 +324,7 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 	}
 
 	ss := NewScraper("")
-	ss.FastMode = true
+	ss.Repetitions = 10
 	ss.prices = r
 
 	results, _ := ss.runEV(context.Background(), uuid)
