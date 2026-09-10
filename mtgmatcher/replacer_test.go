@@ -183,3 +183,23 @@ func TestContains(t *testing.T) {
 		})
 	}
 }
+
+// The two tables are kept by hand and have to fold the same letters: š was
+// in one and not the other, so a sealed name kept a mark a card name lost.
+func TestBothTablesFoldTheSameLetters(t *testing.T) {
+	for i := 0; i < len(asciiStrings); i += 2 {
+		letter, plain := asciiStrings[i], asciiStrings[i+1]
+		if Normalize(letter) != plain {
+			t.Errorf("Normalize(%q) = %q, want %q", letter, Normalize(letter), plain)
+		}
+	}
+}
+
+// Every caller folds after lowercasing, so a name that shouts its accent
+// reads as the one that does not.
+func TestSealedTokensFoldAnUppercaseAccent(t *testing.T) {
+	got := sealedTokenCounts("ÉOMER")
+	if got["eomer"] != 1 {
+		t.Errorf("sealedTokenCounts(%q) = %v, want the plain token", "ÉOMER", got)
+	}
+}
