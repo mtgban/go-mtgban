@@ -456,3 +456,38 @@ var promoHeadings = sync.OnceValue(func() map[string]bool {
 func IsPromoHeading(edition string) bool {
 	return promoHeadings()[Normalize(edition)]
 }
+
+// ordinalLetters are the letters a printing can be spelled with behind its
+// ordinal, which name the printing rather than number it.
+const ordinalLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// ordinalRun is the run of digits a number ends with once those letters are
+// gone.
+var ordinalRun = regexp.MustCompile(`[0-9]+$`)
+
+// PlainOrdinal reduces a collector number to the ordinal it carries, without
+// the padding or the codes written either side of it: OP01-007 is card 7,
+// and so is WTR007 and YS13-ENV07. The whole number stays on Card.Number and
+// is what names a printing; this is the shorthand a person types and a
+// storefront publishes, and the ordinal is what the two spellings agree on.
+// A number carrying no ordinal - the DON!! cards, a leader numbered by a
+// word - has none to answer with and yields nothing, rather than an ordinal
+// it never printed or a word that is not one. The games numbering their
+// cards behind a set code answer PlainNumber with it.
+func PlainOrdinal(number string) string {
+	run := ordinalRun.FindString(strings.TrimRight(number, ordinalLetters))
+	if run == "" {
+		return ""
+	}
+	return CanonicalTail(run)
+}
+
+// CanonicalTail strips the leading zeros off a bare number, an all-zero run
+// staying "0", so that "007" and "7" read as one number.
+func CanonicalTail(number string) string {
+	trimmed := strings.TrimLeft(number, "0")
+	if trimmed == "" && number != "" {
+		return "0"
+	}
+	return trimmed
+}

@@ -519,7 +519,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			},
 			Language:   "English",
 			Rarity:     card.Rarity,
-			Colors:     splitColors(card.Color),
+			Colors:     mtgmatcher.SplitColors(card.Color),
 			PromoTypes: promoTypes,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
@@ -676,20 +676,4 @@ func productKeyOf(identifiers map[string]string, uuid string) string {
 		return id
 	}
 	return uuid
-}
-
-// splitColors reads the colours a printing pitches for. Flesh and Blood
-// prints one, but the field is shaped the way every other game here shapes
-// it, so a double-faced printing that ever pitches two says so.
-func splitColors(color string) []string {
-	if color == "" {
-		return nil
-	}
-	fields := strings.FieldsFunc(color, func(r rune) bool {
-		return r == ';' || r == '/'
-	})
-	for i := range fields {
-		fields[i] = strings.TrimSpace(fields[i])
-	}
-	return fields
 }

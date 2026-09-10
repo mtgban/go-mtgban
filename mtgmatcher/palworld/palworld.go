@@ -290,7 +290,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"thumbnail": card.Image,
 			},
 			Language:   "English",
-			Colors:     splitColors(card.Color),
+			Colors:     mtgmatcher.SplitColors(card.Color),
 			Rarity:     card.Rarity,
 			Types:      cardTypes(card.Type),
 			PromoTypes: promoTypes,
@@ -401,33 +401,9 @@ func (card *DatastoreCard) productKey() string {
 	return card.ID
 }
 
-// productKeyOf is the same key read off a card the backend already holds,
-// where the product id hangs off Identifiers and the entry's own id is the
-// uuid being asked about.
-func productKeyOf(identifiers map[string]string, uuid string) string {
-	if id := identifiers["tcgplayerProductId"]; id != "" {
-		return id
-	}
-	return uuid
-}
-
 func cardTypes(cardType string) []string {
 	if cardType == "" {
 		return nil
 	}
 	return []string{cardType}
-}
-
-// splitColors turns the catalog's color value into its components.
-func splitColors(color string) []string {
-	if color == "" {
-		return nil
-	}
-	fields := strings.FieldsFunc(color, func(r rune) bool {
-		return r == ';' || r == '/'
-	})
-	for i := range fields {
-		fields[i] = strings.TrimSpace(fields[i])
-	}
-	return fields
 }
