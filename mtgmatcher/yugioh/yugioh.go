@@ -286,9 +286,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	// Group sibling entries back into their product: a product priced in
 	// several print runs is the same card several times, and the matcher
-	// wants it once, with FoilUUIDs naming the uuid each run prices. The
-	// Which entries are one product is read off the identifiers they
-	// publish, never off the shape of their ids.
+	// wants it once, with FoilUUIDs naming the uuid each run prices. Which
+	// entries are one product is read off the identifiers they publish,
+	// never off the shape of their ids.
 	var productOrder []string
 	products := map[string][]*DatastoreCard{}
 	for i := range payload.Cards {

@@ -1475,7 +1475,8 @@ func hasAllTokens(words, tokens []string) bool {
 // The plain printings belong to the shared vocabulary — "Normal" is nonfoil
 // everywhere TCGplayer writes it — and the treatments past it are this
 // game's own, spelled with both axes so neither the run nor the treatment is
-// lost.//
+// lost.
+//
 // The vocabulary is open past that. TCGplayer adds a printing to a category
 // when it likes and the builder carries it under its own name rather than
 // dropping it, so a name neither vocabulary places is normalized and handed
