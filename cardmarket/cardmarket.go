@@ -167,12 +167,13 @@ type Index struct {
 	TargetEdition string
 
 	// TCGBridge maps a Cardmarket product id to the TCGplayer id of the
-	// same single, for the keyless catalogs (yugioh, flesh and blood)
-	// whose products carry no collector number and no version index, so
-	// same-name products are told apart only by an exact id. bantool
-	// builds it from cardtrader's blueprints, the one source linking the
-	// two marketplaces; the scraper itself stays vendor-pure and receives
-	// it as plain data.
+	// same single, for the catalogs whose same-name products are told
+	// apart only by an exact id: Yu-Gi-Oh and Flesh and Blood carry no
+	// collector number, Pokemon sells one card on shelf after shelf, and
+	// One Piece files the printings a number cannot tell apart under a
+	// version index of its own. bantool builds it from cardtrader's
+	// blueprints, the one source linking the two marketplaces; the scraper
+	// itself stays vendor-pure and receives it as plain data.
 	TCGBridge map[int]int
 
 	// Catalog is the published catalog Load prices from: the products are
