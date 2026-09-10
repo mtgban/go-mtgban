@@ -3,6 +3,7 @@ package cardmarket
 import (
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -299,4 +300,47 @@ func (mkm *Index) yugiohNumberTaken(setCode string, numbers []string, name strin
 		}
 	}
 	return false
+}
+
+// yugiohRunIndex captures the index Cardmarket appends to a Yu-Gi-Oh product
+// name when one card is sold as several products.
+var yugiohRunIndex = regexp.MustCompile(` \(V\.(\d+) - `)
+
+// yugiohFirstAtIndexOne names the sets whose index counts the other way
+// round. Cardmarket synthesizes the index per set and what it counts differs
+// from one to the next - a rarity here, a print run there - so no reading of
+// it is right everywhere. The default below is the one the catalog bears out
+// most often; a set whose prices say its runs are swapped belongs here, and
+// the entry is all it takes to correct it.
+var yugiohFirstAtIndexOne = map[string]bool{}
+
+// yugiohRun names the print run a product's index stands for, or nothing
+// when it carries no index.
+//
+// A set printed twice sells both runs under one name, and nothing else the
+// catalog says tells them apart: the collector number is the same, the
+// rarity is the same, and the shelf is the same. Only the index is left, and
+// it is read here rather than trusted - the first edition is the scarcer run
+// and the dearer one, which is how a set that reads the wrong way round is
+// found and added above.
+//
+// Measured over the run's collisions, the higher index is the dearer product
+// 924 times against 388, so it is the first edition by default.
+func yugiohRun(product *cm.Product) string {
+	fields := yugiohRunIndex.FindStringSubmatch(product.Name)
+	if fields == nil {
+		return ""
+	}
+	index, err := strconv.Atoi(fields[1])
+	if err != nil || index < 1 {
+		return ""
+	}
+	first := index > 1
+	if yugiohFirstAtIndexOne[product.ExpansionName] {
+		first = index == 1
+	}
+	if first {
+		return "1st Edition"
+	}
+	return "Unlimited"
 }

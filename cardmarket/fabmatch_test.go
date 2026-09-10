@@ -76,9 +76,9 @@ func TestMatchProductPrintRun(t *testing.T) {
 			Number:        tt.number,
 			ExpansionName: tt.expansion,
 		}
-		got := mkm.matchProduct(&product)
+		got := mkm.matchFab(&product)
 		if got != tt.want {
-			t.Errorf("matchProduct(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
+			t.Errorf("matchFab(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
 		}
 	}
 }
@@ -135,9 +135,9 @@ func TestMatchProductTreatmentTail(t *testing.T) {
 			Number:        tt.number,
 			ExpansionName: tt.expansion,
 		}
-		got := mkm.matchProduct(&product)
+		got := mkm.matchFab(&product)
 		if got != tt.want {
-			t.Errorf("matchProduct(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
+			t.Errorf("matchFab(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
 		}
 	}
 }

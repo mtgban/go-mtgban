@@ -54,9 +54,9 @@ func TestMatchProductForeignExpansion(t *testing.T) {
 			Number:        tt.number,
 			ExpansionName: tt.expansion,
 		}
-		got := mkm.matchProduct(&product)
+		got, _ := mkm.matchPokemon(&product)
 		if got != tt.want {
-			t.Errorf("matchProduct(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
+			t.Errorf("matchPokemon(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
 		}
 	}
 }
