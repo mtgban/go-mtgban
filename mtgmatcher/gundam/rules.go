@@ -437,33 +437,7 @@ func (Rules) CanonicalFinish(name string) string {
 
 // PlainNumber implements mtgmatcher.GameRules. A number carries its set code and pads the ordinal behind it, where a person writes the ordinal alone: GD01-001 is card 1.
 func (Rules) PlainNumber(number string) string {
-	return plainNumber(number)
-}
-
-// plainNumberTail are the letters a printing can be spelled with behind its
-// ordinal, which name the printing rather than number it.
-const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-// plainNumberRun is the run of digits a number ends with once those letters
-// are gone.
-var plainNumberRun = regexp.MustCompile(`[0-9]+$`)
-
-// plainNumber reduces a collector number to the ordinal it carries, without
-// the padding or the codes written either side of it. The whole number stays
-// on Card.Number and is what names a printing; this is the shorthand a person
-// types and a storefront publishes, and the ordinal is what the two spellings
-// agree on. A number carrying no ordinal has none to answer with and yields
-// nothing, rather than an ordinal it never printed or a word that is not one.
-func plainNumber(number string) string {
-	run := plainNumberRun.FindString(strings.TrimRight(number, plainNumberTail))
-	if run == "" {
-		return ""
-	}
-	plain := strings.TrimLeft(run, "0")
-	if plain == "" {
-		plain = "0"
-	}
-	return plain
+	return mtgmatcher.PlainOrdinal(number)
 }
 
 // FilterCards narrows candidates by edition, collector number and then by
@@ -483,7 +457,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// A dual-printing product files both finish uuids under the name
 		// bucket; fold them onto the product they print so each candidate
 		// appears once, and let output() pick the finish.
-		base := productKeyOf(co.Card.Identifiers, uuid)
+		base := mtgmatcher.ProductKeyOf(co.Card.Identifiers, uuid)
 		if seen[base] {
 			continue
 		}

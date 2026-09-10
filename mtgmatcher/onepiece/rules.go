@@ -573,33 +573,7 @@ func (Rules) CanonicalFinish(name string) string {
 
 // PlainNumber implements mtgmatcher.GameRules. A number carries its set code and pads the ordinal behind it, where a person writes the ordinal alone: OP01-007 is card 7.
 func (Rules) PlainNumber(number string) string {
-	return plainNumber(number)
-}
-
-// plainNumberTail are the letters a printing can be spelled with behind its
-// ordinal, which name the printing rather than number it.
-const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-// plainNumberRun is the run of digits a number ends with once those letters
-// are gone.
-var plainNumberRun = regexp.MustCompile(`[0-9]+$`)
-
-// plainNumber reduces a collector number to the ordinal it carries, without
-// the padding or the codes written either side of it. The whole number stays
-// on Card.Number and is what names a printing; this is the shorthand a person
-// types and a storefront publishes, and the ordinal is what the two spellings
-// agree on. A number carrying no ordinal has none to answer with and yields
-// nothing, rather than an ordinal it never printed or a word that is not one.
-func plainNumber(number string) string {
-	run := plainNumberRun.FindString(strings.TrimRight(number, plainNumberTail))
-	if run == "" {
-		return ""
-	}
-	plain := strings.TrimLeft(run, "0")
-	if plain == "" {
-		plain = "0"
-	}
-	return plain
+	return mtgmatcher.PlainOrdinal(number)
 }
 
 // FilterCards narrows candidates by edition, collector number and variant.
@@ -624,7 +598,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// name bucket; fold them onto the product they print so each
 		// candidate appears exactly once, and output() picks the finish
 		// afterwards.
-		base := productKeyOf(co.Card.Identifiers, uuid)
+		base := mtgmatcher.ProductKeyOf(co.Card.Identifiers, uuid)
 		if seen[base] {
 			continue
 		}
@@ -2569,7 +2543,7 @@ func numberMatches(input, full string) bool {
 	if inSet != "" && !strings.EqualFold(inSet, fullSet) {
 		return false
 	}
-	return inTail != "" && canonicalTail(inTail) == canonicalTail(fullTail)
+	return inTail != "" && mtgmatcher.CanonicalTail(inTail) == mtgmatcher.CanonicalTail(fullTail)
 }
 
 // splitNumber cuts a collector number into its set code and numeric tail,
@@ -2580,14 +2554,4 @@ func splitNumber(number string) (set, tail string) {
 		return number[:idx], number[idx+1:]
 	}
 	return "", number
-}
-
-// canonicalTail strips leading zeros from a bare number, an all-zero run
-// staying "0".
-func canonicalTail(number string) string {
-	trimmed := strings.TrimLeft(number, "0")
-	if trimmed == "" && number != "" {
-		return "0"
-	}
-	return trimmed
 }

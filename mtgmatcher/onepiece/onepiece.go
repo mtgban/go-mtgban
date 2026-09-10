@@ -340,7 +340,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"thumbnail": card.Image,
 			},
 			Language:            cmp.Or(card.Language, "English"),
-			Colors:              splitColors(card.Color),
+			Colors:              mtgmatcher.SplitColors(card.Color),
 			Rarity:              card.Rarity,
 			Types:               []string{card.Type},
 			PromoTypes:          promoTypes,
@@ -448,21 +448,6 @@ var onepieceRarityMap = map[string]int{
 	"PR":  9,
 }
 
-// splitColors turns the catalog's color value into its components
-// ("Red;Green" and "Red/Green" both appear in the wild).
-func splitColors(color string) []string {
-	if color == "" {
-		return nil
-	}
-	fields := strings.FieldsFunc(color, func(r rune) bool {
-		return r == ';' || r == '/'
-	})
-	for i := range fields {
-		fields[i] = strings.TrimSpace(fields[i])
-	}
-	return fields
-}
-
 // productKey names the product an entry is a printing of, read off what the
 // entry publishes: the product id the catalog stamps on every printing it
 // sells. An entry the builder mints carries none - it is minted one printing
@@ -477,14 +462,4 @@ func (card *DatastoreCard) productKey() string {
 		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 	}
 	return card.ID
-}
-
-// productKeyOf is the same key read off a card the backend already holds,
-// where the product id hangs off Identifiers and the entry's own id is the
-// uuid being asked about.
-func productKeyOf(identifiers map[string]string, uuid string) string {
-	if id := identifiers["tcgplayerProductId"]; id != "" {
-		return id
-	}
-	return uuid
 }

@@ -193,7 +193,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if !found || co.Sealed {
 			continue
 		}
-		base := productKeyOf(co.Card.Identifiers, uuid)
+		base := mtgmatcher.ProductKeyOf(co.Card.Identifiers, uuid)
 		if seen[base] {
 			continue
 		}

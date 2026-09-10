@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 // A datastore entry's id is opaque. The builder that publishes it spells it,
@@ -23,6 +24,35 @@ import (
 
 // GameLoader builds a Backend from a datastore reader for a particular game.
 type GameLoader func(io.Reader) (*Backend, error)
+
+// ProductKeyOf names the product a stored card is a printing of: the
+// TCGplayer product id the datastore stamps on every printing it sells,
+// and the entry's own uuid where it stamps none - an entry the builder
+// mints is minted one printing at a time, so it is a product of one
+// printing and stands for itself. The games whose datastores sell each
+// finish as an entry of its own fold their candidates on it; see the note
+// at the top of this file for why the uuid is never taken apart instead.
+func ProductKeyOf(identifiers map[string]string, uuid string) string {
+	if id := identifiers["tcgplayerProductId"]; id != "" {
+		return id
+	}
+	return uuid
+}
+
+// SplitColors turns the colour value a Bandai-shaped catalog publishes into
+// its components, "Red/Green" and "Red; Green" alike.
+func SplitColors(color string) []string {
+	if color == "" {
+		return nil
+	}
+	fields := strings.FieldsFunc(color, func(r rune) bool {
+		return r == ';' || r == '/'
+	})
+	for i := range fields {
+		fields[i] = strings.TrimSpace(fields[i])
+	}
+	return fields
+}
 
 type registeredGame struct {
 	name string
