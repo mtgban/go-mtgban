@@ -980,10 +980,35 @@ func (Rules) CanonicalFinish(name string) string {
 	return canonicalFinish(name)
 }
 
-// PlainNumber implements mtgmatcher.GameRules. This game writes its collector
-// numbers plainly, so a number is its own plain form.
+// PlainNumber implements mtgmatcher.GameRules. A number carries its set code, then the language its print run was published in, then a padded ordinal, where a person writes the ordinal alone: LOB-EN001 is card 1.
 func (Rules) PlainNumber(number string) string {
-	return number
+	return plainNumber(number)
+}
+
+// plainNumberTail are the letters a printing can be spelled with behind its
+// ordinal, which name the printing rather than number it.
+const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// plainNumberRun is the run of digits a number ends with once those letters
+// are gone.
+var plainNumberRun = regexp.MustCompile(`[0-9]+$`)
+
+// plainNumber reduces a collector number to the ordinal it carries, without
+// the padding or the codes written either side of it. The whole number stays
+// on Card.Number and is what names a printing; this is the shorthand a person
+// types and a storefront publishes, and the ordinal is what the two spellings
+// agree on. A number carrying no ordinal has none to answer with and yields
+// nothing, rather than an ordinal it never printed or a word that is not one.
+func plainNumber(number string) string {
+	run := plainNumberRun.FindString(strings.TrimRight(number, plainNumberTail))
+	if run == "" {
+		return ""
+	}
+	plain := strings.TrimLeft(run, "0")
+	if plain == "" {
+		plain = "0"
+	}
+	return plain
 }
 
 func canonicalFinish(name string) string {
