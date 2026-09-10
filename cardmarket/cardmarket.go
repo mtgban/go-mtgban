@@ -848,7 +848,7 @@ func (mkm *Index) resolveProduct(product *cm.Product) (string, string, bool, err
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
 			// is never reached.
-			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, "Reverse Holofoil")
+			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, pokemonReverseHolo)
 		}
 	default:
 		return "", "", false, errors.New("unsupported game")
@@ -856,6 +856,10 @@ func (mkm *Index) resolveProduct(product *cm.Product) (string, string, bool, err
 
 	return cardID, cardIDFoil, byName, nil
 }
+
+// pokemonReverseHolo is the printing Pokemon's guide prices in its second
+// pair of columns, as TCGplayer names it.
+const pokemonReverseHolo = "Reverse Holofoil"
 
 // emitPrices lands a product's guide prices on the printings resolved for
 // it, the plain columns on one and the foil columns on the other, in the
@@ -879,15 +883,25 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 
 	// A catalog that gives each treatment its own product prices one
 	// printing per product, and the product's own columns are that
-	// printing's whatever its foilness - there is no second column for
-	// them to be in. Every other catalog keeps the foil beside the plain
-	// card and splits the two across the columns.
+	// printing's whatever its finish - there is no second column for them
+	// to be in. Every other catalog keeps a second printing beside the
+	// first and splits the two across the columns: the foil beside the
+	// plain card, or in Pokemon's guide the reverse holo beside whatever
+	// the card's own printing is, holo or plain or a print run. The finish
+	// the loader stored says which side of that split the printing is on;
+	// the foil flag cannot, a Pokemon holo being a foil to the flag and a
+	// printing of its own to the guide - which is how the holos were priced
+	// from the reverse's columns and the reverses from nothing.
 	perTreatment := mkm.gameID == cm.GameFleshAndBlood || mkm.gameID == cm.GameOnePiece
+	second := co.Finish != mtgmatcher.FinishNonfoil
+	if mkm.gameID == cm.GamePokemon {
+		second = co.Finish == mtgmatcher.NormalizeFinish(pokemonReverseHolo)
+	}
 
-	// If card is not foil, add prices from the prices array, then check
-	// if there is a foil printing, and add prices from the foilprices array.
-	// If a card is foil-only or is etched, then we just use foilprices data.
-	if perTreatment || (!co.Foil && !co.Etched) {
+	// A printing on the first side takes the first pair and hands the
+	// second pair to the printing beside it; one on the second side is
+	// priced by the second pair alone.
+	if perTreatment || !second {
 		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, false)
 
 		for i := range availableIndexNames {
