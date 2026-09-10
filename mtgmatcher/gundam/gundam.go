@@ -103,7 +103,7 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 		return nil, errors.New("not a Gundam datastore")
 	}
 	for _, card := range payload.Cards {
-		if card.ID == "" || card.Name == "" || card.Number == "" || card.Finish == "" {
+		if card.ID == "" || card.Name == "" || card.Finish == "" {
 			return nil, errors.New("not a Gundam datastore")
 		}
 	}
@@ -251,6 +251,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			card = entry.foil
 		}
 		if b.Sets[card.SetCode] == nil {
+			mtgmatcher.Logger.Printf("dropping %s: its set %q is not in the datastore", card.ID, card.SetCode)
 			continue
 		}
 

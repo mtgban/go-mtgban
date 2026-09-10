@@ -66,9 +66,10 @@ type DatastoreCard struct {
 	Name string `json:"name"`
 
 	// Number is the collector number, the rarity's code included where the
-	// printing carries one ("ETD01-001TSR"). A single printing carries none
-	// at all - the catalog sells a "Soul" the card list does not number -
-	// so this is not a field a card is required to have.
+	// printing carries one ("ETD01-001TSR"). Every printing the datastore
+	// carries today has one; a card without is loaded rather than refused,
+	// the way Gundam loads one, since the number is the matcher's to miss
+	// and not the loader's to demand.
 	Number  string `json:"number,omitempty"`
 	SetCode string `json:"setCode"`
 	Rarity  string `json:"rarity"`
@@ -117,7 +118,7 @@ type DatastoreSealed struct {
 // Load reads a Palworld datastore from r and returns a Backend for it, or
 // an error when r holds something else. The datastore names its game at
 // the root, and every card carries the identity fields the backend is built
-// from - the collector number excepted, which one real printing lacks.
+// from; the collector number is not one of them.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	var payload Datastore
 	if err := json.NewDecoder(r).Decode(&payload); err != nil {
@@ -256,6 +257,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			card = entry.foil
 		}
 		if b.Sets[card.SetCode] == nil {
+			mtgmatcher.Logger.Printf("dropping %s: its set %q is not in the datastore", card.ID, card.SetCode)
 			continue
 		}
 
