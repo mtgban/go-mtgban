@@ -54,6 +54,17 @@ func TestPromoShelf(t *testing.T) {
 			wantSet: "MKM", wantNumber: "431",
 		},
 		{
+			// The set holds a prerelease-tagged borderless at the very
+			// number, and the promo line the date-stamped one the listing
+			// sells; the title's number named the set's card and the two
+			// aliased.
+			desc: "a prerelease card whose set also numbers a prerelease at its number",
+			jp:   "【Foil】(402)■ボーダーレス■《Delighted Halfling》(プレリリース)[LTR-P] 緑U",
+			en:   "【Foil】(402)■Borderless■《Delighted Halfling》(Prerelease)[LTR-P]",
+			card: "Delighted Halfling", foil: "1",
+			wantSet: "PLTR", wantNumber: "402s",
+		},
+		{
 			desc: "a prerelease card of a set that files them on its promo line",
 			jp:   "【Foil】《Water Gun Balloon Game》(プレリリース)[UNF-P] 茶",
 			en:   "【Foil】《Water Gun Balloon Game》[Prerelease]",
