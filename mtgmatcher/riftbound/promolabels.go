@@ -29,4 +29,11 @@ var promoTypeLabels = map[string]string{
 	"top8":            "Top 8",
 	"ultimate":        "Ultimate",
 	"vendetta":        "Vendetta",
+	// The five T1 Worlds Champion cards, filed by the bundle each copy came
+	// in: the commemoration is one token and the bundle another, so a
+	// query for either reaches the printing.
+	"playerbundle":           "Player Bundle",
+	"serialnumbered":         "Serial Numbered",
+	"signatureeditionbundle": "Signature Edition Bundle",
+	"t1worldschampion":       "T1 Worlds Champion",
 }
