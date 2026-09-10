@@ -226,23 +226,6 @@ func slugTags(tags []string) []string {
 	return out
 }
 
-// promoTags names what tells a promotional printing from the ordinary one of
-// the same name. Lorcana writes none of this into the name - not one of its
-// card names carries a parenthesis - so the tags come from the fields the
-// datastore keeps them in.
-//
-// The builder publishes the labels now, so where it does they are what this
-// returns: read off the same fields but read better, and carrying the foil
-// treatment besides. A datastore built before it published them is read the
-// old way, off the two fields it kept them in.
-//
-// The pool is added either way, because the builder leaves it out. It is
-// right to: a numbering pool is not a promotion. But it is also the only
-// thing that tells two promos of one card apart when they also share a
-// number - the datastore numbers each pool from one, so "Maleficent -
-// Monstrous Dragon" is card 5 of both the P1 pool and the P3 one - and
-// poolTiebreak reads it back off PromoTypes. Storefronts print it where a set
-// card writes its set size, "5/P3" against "87/204".
 // promoTypeLabels are the words behind a token. Decoration is this side's
 // job - the datastore publishes a slug and nothing else, and a slug cannot
 // give back the boundaries it dropped, so "verticalwave" reads as
@@ -296,6 +279,23 @@ func promoTypeLabel(slug, published string) string {
 	return mtgmatcher.Title(slug)
 }
 
+// promoTags names what tells a promotional printing from the ordinary one of
+// the same name. Lorcana writes none of this into the name - not one of its
+// card names carries a parenthesis - so the tags come from the fields the
+// datastore keeps them in.
+//
+// The builder publishes the labels now, so where it does they are what this
+// returns: read off the same fields but read better, and carrying the foil
+// treatment besides. A datastore built before it published them is read the
+// old way, off the two fields it kept them in.
+//
+// The pool is added either way, because the builder leaves it out. It is
+// right to: a numbering pool is not a promotion. But it is also the only
+// thing that tells two promos of one card apart when they also share a
+// number - the datastore numbers each pool from one, so "Maleficent -
+// Monstrous Dragon" is card 5 of both the P1 pool and the P3 one - and
+// poolTiebreak reads it back off PromoTypes. Storefronts print it where a set
+// card writes its set size, "5/P3" against "87/204".
 func promoTags(published []string, grouping string) []string {
 	// The labels are the builder's, and nothing is worked out from the
 	// fields it read them off. It is the half that can see whether a varnish
@@ -410,17 +410,11 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// Each list holds distinct values of its own kind. Two spellings can
-	// normalize to one string - "Teemo, Scout" and "Teemo - Scout" both
-	// become "teemocout" - and AllNames holds the normalized form, so
-	// appending once per distinct spelling put one entry in twice.
-	// searchFunc adds a matching entry's whole hash bucket, so every card
-	// of that name came back from a search once per spelling.
-	// Load all card names. AllNames holds the normalized name, and the
-	// case-variant pairs below normalize to one string, so appending once
-	// per distinct spelling put that entry in the list twice. searchFunc
-	// adds a matching entry's whole hash bucket, so a search returned every
-	// printing of such a name once per spelling.
+	// Each list holds distinct values of its own kind. AllNames holds the
+	// normalized name, and the case-variant pairs below normalize to one
+	// string, so appending once per distinct spelling put that entry in the
+	// list twice; searchFunc adds a matching entry's whole hash bucket, so
+	// a search returned every printing of such a name once per spelling.
 	for _, i := range cards {
 		card := ac.Cards[i]
 		// First-seen wins: two Lorcana cards whose names differ only in case
@@ -620,7 +614,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 					foilType = card.FoilTypes[i]
 				}
 				if finish != mtgmatcher.FinishFoil {
-					uuid := published(card.PrintingIDs, foilType, baseUUID)
+					uuid := baseUUID
 					finishUUIDs[mtgmatcher.FinishNonfoil] = uuid
 					stored = append(stored, perFinish{uuid, false, mtgmatcher.FinishNonfoil})
 					continue
@@ -631,7 +625,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 				// constant instead of the export's "None" placeholder.
 				finishName := canonicalFinish(foilType)
 
-				uuid := published(card.PrintingIDs, foilType, baseUUID+"_"+finishName)
+				uuid := baseUUID + "_" + finishName
 				// The printing's first foil answers the plain foil flag; the
 				// sub-types past it are keyed by their own name, which is what
 				// keeps a flag from reaching a treatment nobody asked for.
@@ -656,7 +650,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 				// sub-type where there is one, since the foil types are visited
 				// in exported order and it wins over the standard foil.
 				if finishName != standardFoil {
-					finishAliases[tcgSpecialFoil] = key
+					finishAliases[finishHolofoil] = key
 				}
 			}
 		}
@@ -685,9 +679,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// own, and aliasing the name onto the standard foil would answer a
 		// caller pricing the treatment with the sku beside it.
 		if _, named := finishUUIDs[finishHolofoil]; !named {
-			if _, found := finishAliases[tcgSpecialFoil]; !found {
+			if _, found := finishAliases[finishHolofoil]; !found {
 				if _, sold := finishUUIDs[mtgmatcher.FinishFoil]; sold {
-					finishAliases[tcgSpecialFoil] = mtgmatcher.FinishFoil
+					finishAliases[finishHolofoil] = mtgmatcher.FinishFoil
 				}
 			}
 		}
@@ -843,27 +837,15 @@ var lorcanaRarityMap = map[string]int{
 	"special":   9,
 }
 
-// published is the uuid the datastore names for a foil type, and the
-// spelled one where it names none - which is how every uuid here was
-// reached before the builder began publishing them.
-func published(ids map[string]string, foilType, spelled string) string {
-	if uuid := ids[foilType]; uuid != "" {
-		return uuid
-	}
-	return spelled
-}
-
 // standardFoil is LorcanaJSON's name for the cold foil almost every Lorcana
 // card is foiled in (2717 of the 3242 printings in the datastore at the time
 // of writing); every other foil type is a treatment on top of it.
 const standardFoil = "silver"
 
-// tcgSpecialFoil is the one name TCGplayer prices any such treatment under.
-const tcgSpecialFoil = "holofoil"
-
 // finishHolofoil is the third name TCGplayer prices a Lorcana printing
-// under, beside Normal and Cold Foil, and the one a datastore naming its
-// finishes uses for every treatment past the standard foil.
+// under, beside Normal and Cold Foil: the one it prices any treatment past
+// the standard foil under, and the one a datastore naming its finishes
+// uses for every such treatment.
 const finishHolofoil = "holofoil"
 
 var lorcanaColorNameMap = map[string]string{
