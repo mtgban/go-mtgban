@@ -3,6 +3,8 @@ package mtgban
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -155,6 +157,20 @@ func TestReadFromJSONRejectsMalformed(t *testing.T) {
 	}
 }
 
+// A side written as null is a side with nothing in it: a writer before the
+// streaming reader put a nil map out that way, and the reader has to take
+// it back the way the whole-file Decode did.
+func TestReadFromJSONAcceptsANullSide(t *testing.T) {
+	raw := `{"info":{"shorthand":"TS"},"inventory":null,"buylist":null}`
+	seller, err := ReadSellerFromJSON(strings.NewReader(raw))
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	if len(seller.Inventory()) != 0 {
+		t.Errorf("inventory = %v, want nothing", seller.Inventory())
+	}
+}
+
 // WriteScraperToJSON writes whichever sides the scraper has, so a store that
 // both sells and buys lands in one file the readers each take their half of.
 func TestWriteScraperToJSONWritesBothSides(t *testing.T) {
@@ -251,23 +267,29 @@ func TestWriteScraperToJSONWritesOnlyTheSidesTheScraperHas(t *testing.T) {
 
 // The decode walks the dump token by token rather than handing it all to
 // Decode, so a shape that is valid JSON but not a dump has to be refused
-// where the walk reaches it instead of read as far as it parses.
+// where the walk reaches it instead of read as far as it parses, and named
+// for what it is: the walk used to read past an opening it never checked
+// and fail on the next token, or on a bare EOF, with nothing said about
+// the file.
 func TestReadFromJSONRejectsWhatIsNotADump(t *testing.T) {
 	for _, tc := range []struct {
 		raw  string
 		want string
 	}{
-		{`[1,2]`, "field name"},
-		{`{"inventory":[1,2]}`, "card id"},
-		{`{"buylist":[1,2]}`, "card id"},
+		{`[1,2]`, "dump holds ["},
+		{`"dump"`, "dump holds dump"},
+		{`{"inventory":[1,2]}`, "record holds ["},
+		{`{"buylist":[1,2]}`, "record holds ["},
+		{`{"inventory":5}`, "record holds 5"},
+		{`{"buylist":"none"}`, "record holds none"},
 	} {
 		_, err := ReadSellerFromJSON(strings.NewReader(tc.raw))
 		if err == nil {
 			t.Errorf("%q: want an error, got none", tc.raw)
 			continue
 		}
-		if !strings.Contains(err.Error(), tc.want) {
-			t.Errorf("%q: error %q does not say where %s was due", tc.raw, err, tc.want)
+		if errors.Is(err, io.EOF) || !strings.Contains(err.Error(), tc.want) {
+			t.Errorf("%q: error %q does not say %q", tc.raw, err, tc.want)
 		}
 	}
 }

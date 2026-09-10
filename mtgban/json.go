@@ -76,8 +76,7 @@ func readScraperJSON(r io.Reader) (*scraperJSON, error) {
 	var data scraperJSON
 	dec := json.NewDecoder(r)
 
-	// Opening brace of the dump
-	_, err := dec.Token()
+	err := expectDelim(dec, '{', "dump")
 	if err != nil {
 		return nil, err
 	}
@@ -111,21 +110,41 @@ func readScraperJSON(r io.Reader) (*scraperJSON, error) {
 		}
 	}
 
-	// Closing brace of the dump
-	_, err = dec.Token()
+	err = expectDelim(dec, '}', "dump")
 	if err != nil {
 		return nil, err
 	}
 	return &data, nil
 }
 
-// decodeRecord fills one price side, decoding the entries of a card as
-// they are reached rather than the side as a whole.
-func decodeRecord[T any](dec *json.Decoder, out map[string][]T) error {
-	// Opening brace of the record
-	_, err := dec.Token()
+// expectDelim reads one token and requires it to be the delimiter given, so
+// a file of another shape is named for what it is rather than walked into
+// a bare EOF or a token nobody expected.
+func expectDelim(dec *json.Decoder, want json.Delim, what string) error {
+	token, err := dec.Token()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", what, err)
+	}
+	if delim, ok := token.(json.Delim); !ok || delim != want {
+		return fmt.Errorf("%s holds %v where %v was due", what, token, want)
+	}
+	return nil
+}
+
+// decodeRecord fills one price side, decoding the entries of a card as
+// they are reached rather than the side as a whole. A side written as null
+// is a side with nothing in it: a writer before the streaming reader put a
+// nil map out that way, and the whole-file Decode read it back as empty.
+func decodeRecord[T any](dec *json.Decoder, out map[string][]T) error {
+	token, err := dec.Token()
+	if err != nil {
+		return fmt.Errorf("record: %w", err)
+	}
+	if token == nil {
+		return nil
+	}
+	if delim, ok := token.(json.Delim); !ok || delim != '{' {
+		return fmt.Errorf("record holds %v where { was due", token)
 	}
 
 	for dec.More() {
@@ -146,9 +165,7 @@ func decodeRecord[T any](dec *json.Decoder, out map[string][]T) error {
 		out[cardID] = entries
 	}
 
-	// Closing brace of the record
-	_, err = dec.Token()
-	return err
+	return expectDelim(dec, '}', "record")
 }
 
 // ReadSellerFromJSON rebuilds a seller from what the Write functions emit.
