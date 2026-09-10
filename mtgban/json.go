@@ -18,7 +18,9 @@ type scraperJSON struct {
 // WriteScraperToJSON writes whichever sides of a scraper exist: a Market gets
 // both its inventory and its buylist, a plain Seller or Vendor only its own.
 // The timestamp of a side that came back empty is dropped, so a reader can
-// tell "not collected" from "collected and found nothing".
+// tell "not collected" from "collected and found nothing". bantool writes
+// the two sides to files of their own, through WriteSellerToJSON and
+// WriteVendorToJSON; this is for a caller keeping a market whole.
 func WriteScraperToJSON(scraper Scraper, w io.Writer) error {
 	var data scraperJSON
 
