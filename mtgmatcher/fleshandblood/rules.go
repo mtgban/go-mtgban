@@ -1080,6 +1080,14 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // bare treatment takes the plainest print run sold with it. A wording
 // naming no finish, or a printing the product was not priced in, keeps the
 // flag-driven default.
+//
+// A marvel names the cold foil it is printed in: 278 of the catalog's 289
+// marvel rows are cold foil, the rest rainbow-foil hero promos filed at the
+// rarity, and a product sold in no cold foil keeps the default as it does
+// for any treatment it was not priced in. The word stays a label to the
+// tiering, which is what tells the marvel from the plain cold foil beside
+// it; here it tells the marvel from a plain copy the catalog also files at
+// the marvel rarity, which the tiering cannot.
 func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
 	var edition, treatment string
 	for word := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
@@ -1091,7 +1099,7 @@ func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
 			edition = editionUnlimited
 		case "rainbow":
 			treatment = treatmentRainbowFoil
-		case "cold":
+		case "cold", "marvel":
 			treatment = treatmentColdFoil
 		case "normal":
 			treatment = treatmentNormal

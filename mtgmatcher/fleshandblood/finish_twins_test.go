@@ -9,11 +9,11 @@ import (
 )
 
 // finishTwinsFixture holds the products the catalog sells twice at one
-// number, once per finish: the cold and rainbow foil "Will of Arcana" and
-// The Hunted's art card plain and in cold foil, beside the Mastery Pack
-// Uzuri, whose plain copy the catalog files at the marvel rarity. Ash and
-// the Invoke are the pairs a label already tells apart. Every row is the
-// datastore's.
+// number, once per finish: the cold and rainbow foil "Will of Arcana", The
+// Hunted's art card plain and in cold foil, and the Mastery Pack Uzuri,
+// whose plain copy the catalog files at the marvel rarity beside the marvel
+// itself. Ash and the Invoke are the pairs a label already tells apart.
+// Every row is the datastore's.
 const finishTwinsFixture = `{
 	"game": "fleshandblood",
 	"sets": {
@@ -83,6 +83,19 @@ func TestFinishTwins(t *testing.T) {
 			desc: "the treatment in the wording reaches it too",
 			in:   mtgmatcher.InputCard{Name: "The Hunted Art Card", Variation: "Cold Foil", Edition: "The Hunted"},
 			want: "618221_coldfoil",
+		},
+		{
+			// The catalog files the plain Uzuri at the marvel rarity, so
+			// both twins wear the label and the marvel's cold foil is
+			// what tells them apart.
+			desc: "a marvel names the cold foil it is printed in",
+			in:   mtgmatcher.InputCard{Name: "Uzuri (Marvel)", Variation: "MPA004", Edition: "Mastery Pack Assassin"},
+			want: "mpa004_711376_coldfoil",
+		},
+		{
+			desc: "and the plain copy answers the plain wording",
+			in:   mtgmatcher.InputCard{Name: "Uzuri", Variation: "MPA004", Edition: "Mastery Pack Assassin"},
+			want: "mpa004_711375",
 		},
 		{
 			desc: "a label the wording describes still outranks the finish",
