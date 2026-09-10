@@ -18,9 +18,17 @@ func shelf(name string) Blueprint {
 	return bp
 }
 
-// TestPromoShelfNeedsLabel pins the two answers that need no datastore:
-// no game but Gundam is ever asked for a label, and neither is a Gundam
-// blueprint carrying a TCGplayer id, the id naming the printing outright.
+// withID is a blueprint the bridge knows a TCGplayer id for.
+func withID(bp Blueprint, id int) Blueprint {
+	bp.TCGplayerID = id
+	return bp
+}
+
+// TestPromoShelfNeedsLabel pins the answers that need no datastore: no
+// game but Gundam is ever asked for a label, and a Gundam blueprint is
+// asked whether or not it carries a TCGplayer id - the guard runs inside
+// the name fallback, which is where a blueprint lands once its id has
+// answered nothing.
 func TestPromoShelfNeedsLabel(t *testing.T) {
 	for _, tt := range []struct {
 		desc   string
@@ -35,10 +43,10 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 			want:   false,
 		},
 		{
-			desc:   "a Gundam blueprint with an id never reaches the name path",
+			desc:   "a Gundam blueprint whose id answered nothing is asked like any other",
 			gameID: GameGundam,
-			bp:     Blueprint{TCGplayerID: 616528},
-			want:   false,
+			bp:     withID(shelf("Premium Accessory and Card Set"), 616528),
+			want:   true,
 		},
 		{
 			// The set shelves the catalog cannot be asked for by name. It
