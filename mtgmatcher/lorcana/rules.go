@@ -375,29 +375,20 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	chased := false
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		// Every finish of a printing is stored under a uuid of its own,
-		// suffixed with the finish it carries; fold them back onto the
-		// printing so each candidate appears exactly once. Base uuids are
-		// numeric, so the first underscore marks the start of the suffix.
-		base := uuid
-		if idx := strings.IndexByte(uuid, '_'); idx >= 0 {
-			base = uuid[:idx]
-		}
-		if seen[base] {
-			continue
-		}
-		seen[base] = true
-
-		// A printing sold in no nonfoil has nothing under the bare uuid -
-		// every finish it has is suffixed - so the entry that folded here
-		// stands for it.
-		co, found := b.UUIDs[base]
-		if !found {
-			co, found = b.UUIDs[uuid]
-		}
+		co, found := b.UUIDs[uuid]
 		if !found {
 			continue
 		}
+		// Every finish of a printing is stored under a uuid of its own;
+		// fold them back onto the printing so each candidate appears
+		// exactly once. The uuids are the datastore's to spell, so the
+		// printing is told by the finishes it is sold in rather than by
+		// cutting its uuid at a character.
+		key := mtgmatcher.PrintingKey(co.Card)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
 		// Sealed products share the name buckets but never match as
 		// cards; without this a sealed product named like a card would
 		// read as an aliased printing of it

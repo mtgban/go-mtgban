@@ -39,6 +39,31 @@ func TestPublishedPrintingIDsWin(t *testing.T) {
 		}
 	}
 	t.Logf("%d published uuids honoured", len(want))
+
+	// The uuids are the datastore's to spell, and a card sold in two
+	// finishes is still one card to Match: folding its finishes by the
+	// shape of their uuids aliased every such card the moment the builder
+	// spelled them another way.
+	var twoFinish *mtgmatcher.CardObject
+	for _, uuid := range b.AllUUIDs {
+		co := b.UUIDs[uuid]
+		if co.Sealed || len(co.Finishes) < 2 {
+			continue
+		}
+		twoFinish = co
+		break
+	}
+	if twoFinish == nil {
+		t.Fatal("no card is sold in two finishes, so the fold is not being tested")
+	}
+	in := mtgmatcher.InputCard{Name: twoFinish.Name, Edition: twoFinish.Edition, Variation: twoFinish.Number}
+	got, err := b.Match(&in)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v, want the card's plain printing", in, err)
+	}
+	if got != twoFinish.FoilUUIDs[mtgmatcher.FinishNonfoil] {
+		t.Errorf("Match(%v) = %s, want %s", in, got, twoFinish.FoilUUIDs[mtgmatcher.FinishNonfoil])
+	}
 }
 
 // stampPrintingIDs renames the uuid of every printing a gallery row carries,
