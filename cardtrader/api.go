@@ -313,7 +313,13 @@ type Product struct {
 
 		// Gundam and Palworld carry no foil property either, and need
 		// none: every printing of theirs is a product of its own, told
-		// apart by the rarity its number or its version names.
+		// apart by the rarity its number or its version names. Palworld
+		// splits the rarity code off its collector number into a
+		// palworld_rarity property, which nothing reads yet: the singles
+		// target is not wired - gameVariation has no Palworld arm and
+		// NewScraperSealed refuses the game - and whoever wires it reads
+		// that property back onto the number first, or every parallel the
+		// bridge cannot name by id is priced as the base card.
 		GundamLanguage   string `json:"gundam_language,omitempty"`
 		PalworldLanguage string `json:"palworld_language,omitempty"`
 
