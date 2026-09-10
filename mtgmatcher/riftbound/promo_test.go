@@ -85,6 +85,36 @@ const promoFixture = `{
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["metal", "best of"],
 				"finishes": ["foil"]
+			},
+			{
+				"id": "opp-906",
+				"name": "Fixture Wolf",
+				"number": "T1A001",
+				"publicCode": "OPP-T1A001/005",
+				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"rarity": {"value": {"id": "showcase"}},
+				"promoTypes": ["t1worldschampion", "playerbundle"],
+				"finishes": ["foil"]
+			},
+			{
+				"id": "opp-907",
+				"name": "Fixture Wolf",
+				"number": "T1S001",
+				"publicCode": "OPP-T1S001/005",
+				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"rarity": {"value": {"id": "showcase"}},
+				"promoTypes": ["t1worldschampion", "signatureeditionbundle"],
+				"finishes": ["foil"]
+			},
+			{
+				"id": "opp-908",
+				"name": "Fixture Wolf",
+				"number": "T1S001",
+				"publicCode": "OPP-T1S001/005",
+				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"rarity": {"value": {"id": "showcase"}},
+				"promoTypes": ["t1worldschampion", "signatureeditionbundle", "serialnumbered"],
+				"finishes": ["foil"]
 			}
 		]}
 	}]}}
@@ -141,6 +171,26 @@ func TestPromoTypeSelection(t *testing.T) {
 			desc: "two variants both described stay ambiguous",
 			in:   mtgmatcher.InputCard{Name: "Fixture Blade", Edition: "Promo", Variation: "139"},
 			err:  true,
+		},
+		{
+			// "T1" is the esports team the promotion commemorates, and
+			// nothing in the game is numbered T1: the wording has to answer
+			// on its own once the number it looks like names no printing.
+			desc: "a promotion opening with something number-shaped still answers",
+			in:   mtgmatcher.InputCard{Name: "Fixture Wolf (T1 Worlds Champion Player Bundle)", Edition: "Promo"},
+			want: "opp-906_foil",
+		},
+		{
+			desc: "the bundle beside it answers its own printing",
+			in:   mtgmatcher.InputCard{Name: "Fixture Wolf (T1 Worlds Champion Signature Edition Bundle)", Edition: "Promo"},
+			want: "opp-907_foil",
+		},
+		{
+			// The shorter label is said by this wording too, so both
+			// printings are described and the longer one is the one meant.
+			desc: "the longest label the wording describes is the one it means",
+			in:   mtgmatcher.InputCard{Name: "Fixture Wolf (T1 Worlds Champion Signature Edition Bundle) (Serial Numbered)", Edition: "Promo"},
+			want: "opp-908_foil",
 		},
 	}
 	for _, test := range tests {

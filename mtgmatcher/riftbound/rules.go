@@ -397,6 +397,27 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 	}
 
+	// A promotion whose name opens with something number-shaped leaves
+	// extractNumber holding a word. TCGplayer files the five T1 Worlds
+	// Champion cards as "(T1 Worlds Champion Player Bundle)" and "T1" is the
+	// esports team the cards commemorate, not a collector number: nothing in
+	// the game is numbered T1, and the printings themselves are at T1A001
+	// and T1S001. The number filter then admits nothing and all fifteen
+	// miss, which is how they read before this - half of every riftbound
+	// product name the catalog holds that answers with nothing.
+	//
+	// So when the number named no printing of the name at all, ask the
+	// wording on its own and keep only the printings whose every promo type
+	// it says. A wording that was only a number still misses, since a bare
+	// number describes no promo types.
+	if len(out) == 0 {
+		for _, card := range collectPrintings(b, inCard, cardSet, allowPromo, "") {
+			if len(card.PromoTypes) > 0 && wordsDescribe(inCard.Variation, card.PromoTypes) {
+				out = append(out, card)
+			}
+		}
+	}
+
 	// Sibling promos share one clean name - and, for the organized-play
 	// cards, even the main set's collector number - so the number alone
 	// can leave several candidates. They rank in tiers:
@@ -434,7 +455,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	tier := out
 	switch {
 	case len(described) > 0:
-		tier = described
+		tier = longestDescribed(described)
 	case len(promoPlain) > 0:
 		tier = promoPlain
 	case len(promoTyped) > 0 && len(qualifierWords(inCard.Variation)) == 0:
@@ -737,6 +758,40 @@ func qualifierWords(variation string) []string {
 		out = append(out, field)
 	}
 	return out
+}
+
+// longestDescribed keeps the printings wearing the longest label the
+// storefront's wording said.
+//
+// The labels nest. "T1 Worlds Champion Signature Edition Bundle Serial
+// Numbered" says everything the same bundle without the serial says, so a
+// wording spelling the longer one describes both printings and the pair
+// reads as an ambiguity that prices neither - which is how the five
+// serial-numbered printings read. The longest label a wording describes is
+// the one it meant, the way gundam reads its nested event labels.
+func longestDescribed(cards []mtgmatcher.Card) []mtgmatcher.Card {
+	longest := 0
+	for _, card := range cards {
+		if n := labelLength(card.PromoTypes); n > longest {
+			longest = n
+		}
+	}
+	var out []mtgmatcher.Card
+	for _, card := range cards {
+		if labelLength(card.PromoTypes) == longest {
+			out = append(out, card)
+		}
+	}
+	return out
+}
+
+// labelLength is how much of a wording a printing's promo types account for.
+func labelLength(promoTypes []string) int {
+	var total int
+	for _, promoType := range promoTypes {
+		total += len(promoType)
+	}
+	return total
 }
 
 // wordsDescribe reports whether every word of every promo type is said in
