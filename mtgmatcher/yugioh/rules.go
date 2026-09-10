@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"sync"
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -959,31 +958,8 @@ func namedSet(b *mtgmatcher.Backend, edition string) (string, bool) {
 	if set, found := normalizedEditionAliases()[normalized]; found {
 		return set, true
 	}
-	if duelistLeagueRe().MatchString(normalized) {
-		return duelistLeagueSet, true
-	}
 	return "", false
 }
-
-// duelistLeagueRe matches a Duelist League named by its own number, however
-// the storefront writes it: the table spelled them out one by one and padded
-// the single digits, so "Duelist League 9" reached nothing where "Duelist
-// League 09" did, and the tenth league was never listed at all.
-//
-// Every league shares the one set code, so the number is all that varies and
-// none of it has to be enumerated. The league's own number stays in the
-// collector number, which is where the printing is told apart.
-// It is built from Normalize's own spelling rather than from the words: the
-// normalizer drops every "s", so the name it files this under is
-// "duelitleague", and writing that out by hand would rot the first time the
-// normalizer changed its mind. Built on first use, since Normalize memoizes
-// through a map this package's init sets up.
-var duelistLeagueRe = sync.OnceValue(func() *regexp.Regexp {
-	return regexp.MustCompile(`^` + regexp.QuoteMeta(mtgmatcher.Normalize("Duelist League")) + `[0-9]+$`)
-})
-
-// duelistLeagueSet is the set every Duelist League is collected in.
-const duelistLeagueSet = "Duelist League Promo"
 
 // CanonicalFinish owns Yu-Gi-Oh's finish vocabulary, which is the print runs
 // the catalog prices and nothing else. The runs are data rather than a fixed
