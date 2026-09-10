@@ -656,7 +656,49 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 		candidates = cosmos
 	}
+
+	// A wording naming a placement - Staff, Champion, Top 32 - prices a
+	// copy the plain printing is not, and a survivor wearing none of the
+	// placements it names is that plain printing, or another placement's:
+	// refuse rather than price it. A wording naming the placement of a
+	// card the edition sells only plain is a card we do not carry.
+	if len(candidates) > 0 {
+		if named := placementsNamed(b, labelWording(inCard.Variation)); len(named) > 0 && !wearsAny(candidates, named) {
+			return nil
+		}
+	}
 	return candidates
+}
+
+// placements are the labels that tell the copies of one promo apart by
+// where its holder placed, which no storefront names by accident.
+var placements = []string{"staff", "champion", "finalist", "semifinalist", "quarterfinalist", "top32", "top16", "top8", "top4", "winner"}
+
+// placementsNamed lists the placements the datastore labels with that the
+// wording names.
+func placementsNamed(b *mtgmatcher.Backend, wording string) []string {
+	var named []string
+	for _, placement := range placements {
+		if _, labelled := b.PromoTypeLabels[placement]; !labelled {
+			continue
+		}
+		if mtgmatcher.SlugDescribes(wording, placement) {
+			named = append(named, placement)
+		}
+	}
+	return named
+}
+
+// wearsAny reports whether some candidate wears one of the labels.
+func wearsAny(candidates []mtgmatcher.Card, labels []string) bool {
+	for _, card := range candidates {
+		for _, promoType := range card.PromoTypes {
+			if slices.Contains(labels, promoType) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // wearsCosmosOrHolo reports whether the printing can be the Cosmos Holo a
@@ -773,6 +815,49 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	if len(candidates) <= 1 {
 		return candidates
 	}
+	// A wording that wrote no number means the copy that carries none,
+	// where the catalog files one beside a numbered twin under the same
+	// mark: the World Championship decks sell an energy both ways under
+	// one player's name, and the deck's own rule keeps whichever came
+	// first.
+	if len(numbers) == 0 {
+		if bare := unnumberedTwins(candidates); len(bare) > 0 {
+			candidates = bare
+		}
+	}
+
+	// A wording naming a printing's label has said which copy it prices,
+	// and the tiers below - the verbatim number, the mark - are read among
+	// the copies it named: the placement tiers of a Champions Festival
+	// wear no year where the plain copy does, and the year alone kept the
+	// plain. A wording naming the plain treatment too is the ambiguity
+	// tierByLabel surfaces, and keeps every copy for it.
+	wording := labelWording(inCard.Variation)
+	// A wording naming a stamp prices a stamped copy, and the stamp is a
+	// label spelled its own way ("Stamp" for the stamped): the copies
+	// wearing one are the candidates, before anything else is read.
+	if demandsStamp(wording) {
+		if stamped := wearingStamp(candidates); len(stamped) > 0 {
+			candidates = stamped
+		}
+	}
+	if !describesPlain(wording) {
+		described, _, _ := labelReading(b, wording, candidates)
+		marked := marksNamed(wording, candidates)
+		// A wording naming a mark and a label both means the copy wearing
+		// both - the Stellar Crown stamp on the Cosmos Holo - and where no
+		// copy wears both, the label says more about which copy is priced
+		// than the mark does.
+		both := intersection(described, marked)
+		switch {
+		case len(both) > 0:
+			candidates = both
+		case len(described) > 0:
+			candidates = described
+		case len(marked) > 0:
+			candidates = marked
+		}
+	}
 
 	// A verbatim collector number beats a prefix-folded match, and so does
 	// one whose set total agrees. The total is what separates a reprint
@@ -804,10 +889,109 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		}
 	}
 
-	if marked := tierByMark(inCard.Variation, candidates); len(marked) > 0 {
+	if marked := tierByMark(wording, candidates); len(marked) > 0 {
 		candidates = marked
 	}
-	return tierByLabel(b, inCard, candidates)
+	return tierByLabel(b, wording, candidates)
+}
+
+// wearingStamp keeps the candidates wearing a stamp label.
+func wearingStamp(candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	var stamped []mtgmatcher.Card
+	for _, card := range candidates {
+		for _, promoType := range card.PromoTypes {
+			if strings.Contains(promoType, "stamp") {
+				stamped = append(stamped, card)
+				break
+			}
+		}
+	}
+	return stamped
+}
+
+// unnumberedTwins keeps the candidates carrying no number where the rest
+// carry one and every one of them wears the same mark, and nothing
+// otherwise: the twins are one card the catalog files twice.
+func unnumberedTwins(candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	var bare []mtgmatcher.Card
+	for _, card := range candidates {
+		if card.Watermark == "" || card.Watermark != candidates[0].Watermark {
+			return nil
+		}
+		if card.Number == "" {
+			bare = append(bare, card)
+		}
+	}
+	if len(bare) == len(candidates) {
+		return nil
+	}
+	return bare
+}
+
+// spelledNumberRe matches the placements a storefront spells out where
+// the labels carry figures: "Top Thirty-Two" is the top32 card.
+var spelledNumberRe = regexp.MustCompile(`(?i)\b(thirty[- ]two|sixteen|eight|four)\b`)
+
+var spelledNumbers = map[string]string{
+	"thirty-two": "32", "thirty two": "32", "sixteen": "16", "eight": "8", "four": "4",
+}
+
+// accents folds the one accent a storefront writes into a label's words:
+// the catalog spells the Pokemon Center without it.
+var accents = strings.NewReplacer("é", "e", "É", "E")
+
+// labelWording is the variation read the way the labels are written, in
+// lower case, without accents, and with its spelled-out placements as
+// figures.
+func labelWording(variation string) string {
+	variation = accents.Replace(strings.ToLower(variation))
+	return spelledNumberRe.ReplaceAllStringFunc(variation, func(word string) string {
+		return spelledNumbers[word]
+	})
+}
+
+// wordNamed reports whether a word of a label or a mark is in the wording,
+// a plural counting as its singular: the catalog writes "Regional
+// Championships" where a storefront writes the one it is pricing.
+func wordNamed(words []string, word string) bool {
+	word = strings.TrimSuffix(mtgmatcher.PromoTypeSlug(word), "s")
+	for _, candidate := range words {
+		candidate = strings.TrimSuffix(mtgmatcher.PromoTypeSlug(candidate), "s")
+		// A word of some length is named by a word it opens: the catalog
+		// writes "Cosmos Holo" where the storefront writes "Cosmos
+		// Holofoil". Short words open too many others to be read that way.
+		if candidate == word || (len(word) >= 4 && strings.HasPrefix(candidate, word)) {
+			return true
+		}
+	}
+	return false
+}
+
+// labelNamed reports whether a wording names a label: by its token joined
+// up the way SlugDescribes reads it, or word by word in the label's own
+// order with other words between - "WotC 2002 League Promo" names the
+// WotC League Promo, and only the words of a label of more than one word
+// are read that way, since a lone word names too much.
+func labelNamed(b *mtgmatcher.Backend, wording, promoType string) bool {
+	if mtgmatcher.SlugDescribes(wording, promoType) {
+		return true
+	}
+	label := strings.Fields(b.PromoTypeLabels[promoType])
+	if len(label) < 2 {
+		return false
+	}
+	words := strings.Fields(wording)
+	for _, word := range label {
+		var at int
+		for at < len(words) && !wordNamed(words[at:at+1], word) {
+			at++
+		}
+		if at == len(words) {
+			return false
+		}
+		words = words[at+1:]
+	}
+	return true
 }
 
 // setStopWords are the words a Pokemon set name shares with too many others
@@ -991,18 +1175,14 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 // picked at random, and a number whose printings are all marked, or none of
 // them, is left to the tiers below exactly as before.
 func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
-	var marked, unmarked []mtgmatcher.Card
+	if marked := marksNamed(wording, candidates); len(marked) > 0 {
+		return marked
+	}
+	var unmarked []mtgmatcher.Card
 	for _, card := range candidates {
 		if card.Watermark == "" {
 			unmarked = append(unmarked, card)
-			continue
 		}
-		if mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(card.Watermark)) {
-			marked = append(marked, card)
-		}
-	}
-	if len(marked) > 0 {
-		return marked
 	}
 	if len(unmarked) == len(candidates) {
 		return nil
@@ -1010,56 +1190,78 @@ func tierByMark(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card 
 	return unmarked
 }
 
-// tierByLabel splits the candidates into the ones whose label the input's
-// variation describes, the base printings, and the labelled printings. Only
-// the variation is consulted: set names carry the label words themselves
-// ("Team Plasma" is a label and part of three set names).
-func tierByLabel(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
-	var described, base, labelled []mtgmatcher.Card
-	var most [3]int
+// marksNamed keeps the candidates whose mark the wording names, and among
+// them the ones named most fully: a mark contained in a longer one -
+// "Zacian V" in "Zacian V International Version" - is named by every
+// wording that names the longer.
+func marksNamed(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	var marked []mtgmatcher.Card
+	var most int
 	for _, card := range candidates {
-		if len(card.PromoTypes) == 0 {
-			base = append(base, card)
+		if card.Watermark == "" {
 			continue
 		}
-		labelled = append(labelled, card)
-		// The tag is a token, so the wording's words are joined back up a
-		// run at a time to ask whether they name it.
-		var named, opened int
-		for _, promoType := range card.PromoTypes {
-			switch {
-			case mtgmatcher.SlugDescribes(inCard.Variation, promoType):
-				named++
-			case labelOpened(b, inCard.Variation, promoType):
-				opened++
-			}
-		}
-		if named == 0 {
+		words := strings.Fields(card.Watermark)
+		if !markNamed(wording, words) {
 			continue
 		}
-		// A printing sharing a label with its siblings is told from them by
-		// the labels it does not share, so the candidate the wording names
-		// most fully wins outright: the retailer stampings of one promo all
-		// carry "cosmos holo" and differ only in the retailer.
-		// Naming a label outright outranks naming what one opens with, and
-		// a printing wearing nothing the wording left unsaid outranks one
-		// carrying a label besides - the plain prerelease against the staff
-		// one, both of which a wording saying "Prerelease" names once.
-		depth := [3]int{named, opened, named + opened - len(card.PromoTypes)}
-		if depth != most && deeper(depth, most) {
-			most, described = depth, nil
+		if len(words) > most {
+			most, marked = len(words), nil
 		}
-		if depth == most {
-			described = append(described, card)
+		if len(words) == most {
+			marked = append(marked, card)
 		}
 	}
+	return marked
+}
+
+// intersection keeps the cards of the first list that the second holds too.
+func intersection(a, b []mtgmatcher.Card) []mtgmatcher.Card {
+	var both []mtgmatcher.Card
+	for _, card := range a {
+		for _, other := range b {
+			if card.UUID == other.UUID {
+				both = append(both, card)
+				break
+			}
+		}
+	}
+	return both
+}
+
+// markNamed reports whether a wording names a mark: joined up the way
+// SlugDescribes reads a token, or, for a mark of several words, by every
+// one of its words in any order - the storefront writes the tin behind
+// the version where the catalog writes it before.
+func markNamed(wording string, mark []string) bool {
+	if mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(strings.Join(mark, ""))) {
+		return true
+	}
+	if len(mark) < 2 {
+		return false
+	}
+	words := strings.Fields(wording)
+	for _, word := range mark {
+		if !wordNamed(words, word) {
+			return false
+		}
+	}
+	return true
+}
+
+// tierByLabel splits the candidates into the ones whose label the wording
+// describes, the base printings, and the labelled printings. Only the
+// variation is consulted: set names carry the label words themselves
+// ("Team Plasma" is a label and part of three set names).
+func tierByLabel(b *mtgmatcher.Backend, wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	described, base, labelled := labelReading(b, wording, candidates)
 	if len(described) > 0 {
 		// A wording can spell two treatments at once: CardTrader files the
 		// plain and the Cosmos Holo printing of a number under one
 		// blueprint and writes "Non-Holo / Cosmos Holo" for both. The
 		// listing does not say which it prices, so both stand and the
 		// ambiguity surfaces rather than every copy repricing the holo.
-		if len(base) > 0 && describesPlain(inCard.Variation) {
+		if len(base) > 0 && describesPlain(wording) {
 			return append(base, described...)
 		}
 		return described
@@ -1091,9 +1293,62 @@ func tierByLabel(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 	return plainest
 }
 
+// labelReading sorts the candidates by what the wording says of their
+// labels: the ones it names, most fully first, the base printings wearing
+// none, and every labelled one.
+func labelReading(b *mtgmatcher.Backend, wording string, candidates []mtgmatcher.Card) (described, base, labelled []mtgmatcher.Card) {
+	var most [4]int
+	for _, card := range candidates {
+		if len(card.PromoTypes) == 0 {
+			base = append(base, card)
+			continue
+		}
+		labelled = append(labelled, card)
+		// A label is weighed by how much of it the wording spells, so the
+		// one a wording names whole outranks the one it names inside it:
+		// "Quarter Finalist" names the quarter-finalist and, with its last
+		// word alone, the finalist too.
+		var named, opened, spelled int
+		for _, promoType := range card.PromoTypes {
+			switch {
+			case labelNamed(b, wording, promoType):
+				named++
+				spelled += len(promoType)
+			case labelOpened(b, wording, promoType):
+				opened++
+				// A label opened with two words or more is as good as
+				// named: "Pokemon Center" is the Pokemon Center Exclusive,
+				// where "Pokemon" alone opens half the labels there are.
+				if opened := labelOpening(b, wording, promoType); strings.Count(opened, " ") >= 1 {
+					spelled += len(mtgmatcher.PromoTypeSlug(opened))
+				}
+			}
+		}
+		if named == 0 && spelled == 0 {
+			continue
+		}
+		// A printing sharing a label with its siblings is told from them by
+		// the labels it does not share, so the candidate the wording names
+		// most fully wins outright: the retailer stampings of one promo all
+		// carry "cosmos holo" and differ only in the retailer.
+		// Naming a label outright outranks naming what one opens with, and
+		// a printing wearing nothing the wording left unsaid outranks one
+		// carrying a label besides - the plain prerelease against the staff
+		// one, both of which a wording saying "Prerelease" names once.
+		depth := [4]int{spelled, named, opened, named + opened - len(card.PromoTypes)}
+		if depth != most && deeper(depth, most) {
+			most, described = depth, nil
+		}
+		if depth == most {
+			described = append(described, card)
+		}
+	}
+	return described, base, labelled
+}
+
 // deeper reports whether one reading of a printing's labels says more about
 // it than another, weighing the counts in the order they are worth.
-func deeper(depth, than [3]int) bool {
+func deeper(depth, than [4]int) bool {
 	for i := range depth {
 		if depth[i] != than[i] {
 			return depth[i] > than[i]
@@ -1108,13 +1363,19 @@ func deeper(depth, than [3]int) bool {
 // names the retailer alone, and the shared tail is exactly what makes the
 // retailers' labels alike.
 func labelOpened(b *mtgmatcher.Backend, wording, promoType string) bool {
+	return labelOpening(b, wording, promoType) != ""
+}
+
+// labelOpening is the longest run of words a label opens with that the
+// wording names, or nothing.
+func labelOpening(b *mtgmatcher.Backend, wording, promoType string) string {
 	words := strings.Fields(b.PromoTypeLabels[promoType])
 	for i := len(words) - 1; i > 0; i-- {
 		if mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(strings.Join(words[:i], ""))) {
-			return true
+			return strings.Join(words[:i], " ")
 		}
 	}
-	return false
+	return ""
 }
 
 // describesPlain reports whether the wording names the untreated printing:
