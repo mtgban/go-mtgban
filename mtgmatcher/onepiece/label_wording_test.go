@@ -79,12 +79,30 @@ func TestLabelWording(t *testing.T) {
 			want: "p-041_531486",
 		},
 		{
+			// "Finalist" is a word of the set's name, and the mark "25-26
+			// 2" is written at both ends of it.
+			desc: "a place inside a label the wording spells whole is not asked",
+			in: mtgmatcher.InputCard{
+				Name: "Koala", Variation: "P-069 CS 25-26 Finalist Card Set 2",
+				Edition: "One Piece Promotion Cards",
+			},
+			want: "p-069_668434_foil",
+		},
+		{
 			desc: "and the place on its own still picks the finalist's event pack",
 			in: mtgmatcher.InputCard{
 				Name: "Koala", Variation: "P-069 CS 25-26 Event Pack Finalist Ver.",
 				Edition: "One Piece Promotion Cards",
 			},
 			want: "p-069_649666_foil",
+		},
+		{
+			desc: "a mark of two words is named by a wording saying both apart",
+			in: mtgmatcher.InputCard{
+				Name: "Koala", Variation: "P-069 CS 25-26 Winner Card Set 2",
+				Edition: "One Piece Promotion Cards",
+			},
+			want: "p-069_668435_foil",
 		},
 	}
 	for _, tt := range tests {

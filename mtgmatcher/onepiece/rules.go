@@ -1212,6 +1212,7 @@ func tierByVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidat
 		}
 		variants = append(variants, card)
 	}
+	wording = markWording(wording, variants)
 	described = mtgmatcher.DescribedVariants(wording, variants)
 	// A storefront that named no label at all may have named one in its own
 	// words. Asking again in the catalog's is a fallback and never more: a
@@ -1233,12 +1234,49 @@ func tierByVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidat
 	// aliases away. Let the variation answer alone when it names one
 	// printing and nothing else does.
 	if len(described) > 1 {
-		alone := mtgmatcher.DescribedVariants(strings.ToLower(inCard.Variation), variants)
+		alone := mtgmatcher.DescribedVariants(markWording(strings.ToLower(inCard.Variation), variants), variants)
 		if len(alone) == 1 {
 			described = alone
 		}
 	}
 	return
+}
+
+// markWording adds the mark of every candidate whose words the wording says,
+// spelled the way the mark's tag is, and returns it unchanged when it says
+// none whole.
+//
+// A mark of several words is one tag, and the tag is a run of whole words
+// to a wording - which the catalog's own wording cannot spell where it wrote
+// the words apart: "CS 25-26 Finalist Card Set 2" is marked "25-26 2", the
+// season at one end of the label and the set's number at the other. A
+// wording that says every word of the mark has named it, whatever it wrote
+// between them, and the copy the mark tells from the others at this number
+// was answering a wording that could not have been more specific.
+func markWording(wording string, candidates []mtgmatcher.Card) string {
+	for _, card := range candidates {
+		if markSaid(wording, card.Watermark) {
+			wording += " " + strings.ToLower(card.Watermark)
+		}
+	}
+	return wording
+}
+
+// markSaid reports whether a wording says every word of a mark of several
+// words, in any order. A mark of one word is a run of one whole word, which
+// SlugDescribes already reads.
+func markSaid(wording, mark string) bool {
+	words := labelWords(mark)
+	if len(words) < 2 {
+		return false
+	}
+	said := labelWords(wording)
+	for _, word := range words {
+		if !slices.Contains(said, word) {
+			return false
+		}
+	}
+	return true
 }
 
 // errataWord is what both sides call the printings a game corrected: an early
