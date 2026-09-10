@@ -499,6 +499,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 					continue
 				}
 				for _, edition := range []string{editionUnlimited, edition1st} {
+					if _, found := foilUUIDs[edition+treatment]; found {
+						continue
+					}
 					finishAliases[edition+treatment] = treatment
 				}
 			}
