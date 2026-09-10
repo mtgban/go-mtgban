@@ -38,6 +38,16 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 	if setCode == "FWB" {
 		return nil, mtgmatcher.ErrUnsupported
 	}
+	// The double-faced helper cards a booster carries are the datastore's
+	// substitute cards, filed in a set of their own beside the one they
+	// came in and numbered from one: "Helper Card (9/9)" of Kaldheim is
+	// card 9 of SKHM. A helper card of a set the datastore files none for
+	// stays an insert below.
+	if index, found := strings.CutPrefix(cardName, "Helper Card ("); found && setCodeExists("S"+setCode) {
+		number, _, _ = strings.Cut(strings.TrimSuffix(index, ")"), "/")
+		cardName = "Double-Faced Substitute Card"
+		setCode = "S" + setCode
+	}
 	// The inserts a booster carries beside its cards, and the emblems the
 	// datastore files with the tokens, have no printing of their own here.
 	// A name the datastore carries whole is a card whatever it says:

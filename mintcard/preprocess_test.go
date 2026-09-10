@@ -43,8 +43,9 @@ func realDatastore(t *testing.T) {
 }
 
 // TestPreprocessInserts pins that the inserts a booster carries beside its
-// cards - theme cards, helper cards - and the emblems and signed cards are
-// refused quietly: 364 of the 411 lines of the night of 2026-09-06.
+// cards - theme cards, the helper cards of a set the datastore files none
+// for - and the emblems and signed cards are refused quietly: 364 of the
+// 411 lines of the night of 2026-09-06.
 func TestPreprocessInserts(t *testing.T) {
 	for _, name := range []string{
 		"Angels Theme Card",
@@ -62,7 +63,8 @@ func TestPreprocessInserts(t *testing.T) {
 // TestPreprocessShelves pins the storefront's own spellings against the
 // datastore's: a duel deck code of its own, a Final Fantasy buy-a-box
 // promo listed under its flavor name with the card's own in parentheses,
-// and the two cards whose names read like inserts.
+// the helper card of a set whose substitute cards the datastore files, and
+// the two cards whose names read like inserts.
 func TestPreprocessShelves(t *testing.T) {
 	realDatastore(t)
 	for _, tt := range []struct {
@@ -71,6 +73,7 @@ func TestPreprocessShelves(t *testing.T) {
 	}{
 		{"Coalition Relic", "Duel Decks: Phyrexia vs. Coalition", "PVC", "English", "DDE", "54"},
 		{"Fatalism (Arcane Denial) (Final Fantasy Buy-a-Box)", "Promo: Buy-A-Box", "PBAB", "Japanese", "RFIN", "J2"},
+		{"Helper Card (9/9)", "Kaldheim", "KHM", "English", "SKHM", "9"},
 		{"Signature Slam", "Modern Horizons 3", "MH3", "English", "MH3", "168"},
 		{"Emblem of the Warmind", "Future Sight", "FUT", "English", "FUT", "112"},
 	} {
