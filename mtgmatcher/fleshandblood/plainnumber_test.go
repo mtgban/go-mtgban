@@ -6,14 +6,32 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestPlainNumberMatchesLoader pins the rules to the loader. PlainNumber is
-// what folds a number a person typed, and the card carries what it is
-// compared against, so the two spelling a number differently finds nothing
-// and raises nothing - the failure a caller reads as "no such card".
+// TestPlainNumber pins the shorthand this game's numbers reduce to. The whole
+// number stays on Card.Number and is what names a printing; PlainNumber is
+// the ordinal a person types, which is also what a storefront publishes.
+func TestPlainNumber(t *testing.T) {
+	for _, tt := range []struct {
+		number, want string
+	}{
+		{"1HP085", "85"},
+		{"1HP001", "1"},
+		{"HER0156", "156"},
+		{"WTR160", "160"},
+		{"", ""},
+	} {
+		got := Rules{}.PlainNumber(tt.number)
+		if got != tt.want {
+			t.Errorf("PlainNumber(%q) = %q, want %q", tt.number, got, tt.want)
+		}
+	}
+}
+
+// TestPlainNumberMatchesLoader pins the rule to what the loader stored, and
+// that an ordinal already reduced has nothing left to fold.
 func TestPlainNumberMatchesLoader(t *testing.T) {
 	loadBackend(t)
 
-	var seen int
+	var seen, folded int
 	for _, code := range mtgmatcher.GetAllSets() {
 		set, err := mtgmatcher.GetSet(code)
 		if err != nil {
@@ -25,15 +43,27 @@ func TestPlainNumberMatchesLoader(t *testing.T) {
 				t.Errorf("%s %q: the rule folds to %q, the card carries %q",
 					code, card.Number, plain, card.PlainNumber)
 			}
-			// Folding a number already plain has nothing left to do.
+			if len(plain) > len(card.Number) {
+				t.Errorf("%s: PlainNumber %q is wider than Number %q",
+					code, plain, card.Number)
+			}
 			again := Rules{}.PlainNumber(plain)
 			if again != plain {
-				t.Errorf("%s %q: folding %q again gives %q", code, card.Number, plain, again)
+				t.Errorf("%s %q: folding %q again gives %q",
+					code, card.Number, plain, again)
+			}
+			if plain != card.Number {
+				folded++
 			}
 			seen++
 		}
 	}
 	if seen == 0 {
 		t.Fatal("no cards to check")
+	}
+	// The reduction is the whole point of the rule; a datastore that started
+	// publishing bare ordinals would leave this passing while testing nothing.
+	if folded == 0 {
+		t.Errorf("no number of %d reduced to anything shorter", seen)
 	}
 }
