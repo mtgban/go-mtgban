@@ -167,7 +167,10 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 		ml.processProduct(mode, product)
 	}
 
-	pages := (total + pageLimit - 1) / pageLimit
+	pages, err := pageCount(total, len(products))
+	if err != nil {
+		return fmt.Errorf("%s: %w", mode, err)
+	}
 	ml.printf("%s: %d products over %d pages", mode, total, pages)
 
 	pageNums := make([]int, 0, pages)
@@ -245,4 +248,15 @@ func (ml *Manaleak) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ml.inventoryDate
 	info.BuylistTimestamp = &ml.buylistDate
 	return
+}
+
+// pageCount sizes the fan-out off the listing's own count of what it
+// paginates. A count smaller than the first page is a count that was not
+// read - the "Showing … of N" line moved or went missing - and sizing the
+// run on it walked one page and reported it as the whole store.
+func pageCount(total, onFirstPage int) (int, error) {
+	if total < onFirstPage {
+		return 0, fmt.Errorf("the listing counts %d products and its first page holds %d", total, onFirstPage)
+	}
+	return (total + pageLimit - 1) / pageLimit, nil
 }
