@@ -173,9 +173,11 @@ func fetchBuylist(ctx context.Context, link string) ([]CSIPriceEntry, error) {
 // The response states Content-Length and the server honours Range, so a
 // short body is both detectable and resumable: each pass asks only for the
 // bytes still missing. The loop ends when the body is whole or when a pass
-// adds nothing, rather than after a set number of tries.
+// got no further than the one before, rather than after a set number of
+// tries.
 func fetchWhole(ctx context.Context, link string) ([]byte, error) {
 	var body []byte
+	longest := 0
 	for {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 		if err != nil {
@@ -234,9 +236,13 @@ func fetchWhole(ctx context.Context, link string) ([]byte, error) {
 		if len(body) >= total {
 			return body, nil
 		}
-		if len(chunk) == 0 {
+		// A pass that got no further than the one before is a server that
+		// will not hand over the rest, whether it stalled or started the
+		// file over, and asking again only asks again.
+		if len(body) <= longest {
 			return nil, fmt.Errorf("read stalled at %d of %d bytes", len(body), total)
 		}
+		longest = len(body)
 	}
 }
 
