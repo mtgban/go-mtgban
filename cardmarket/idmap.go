@@ -63,7 +63,7 @@ func (mkm *Index) resolveUUIDs(product *cm.Product, uuids []string) (string, str
 			cardIDFoil = foil[0]
 		} else {
 			// The entry lists no foil printing, but the datastore may
-			// still carry one, the way processProduct probes for it.
+			// still carry one, the way resolveProduct probes for it.
 			cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
 		}
 	case len(foil) > 0:
@@ -119,9 +119,9 @@ type resolved struct {
 }
 
 // resolveMapped answers one product of the id map. The map answers first;
-// what it left unmapped is answered from what the catalog says of it, the
-// way processProduct does, so a product the file does not know yet is
-// matched rather than lost.
+// what it left unmapped is answered from what the catalog says of it, by
+// resolveProduct, so a product the file does not know yet is matched rather
+// than lost.
 func (mkm *Index) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.Expansion) resolved {
 	product := &cm.Product{
 		IDProduct:     id,
