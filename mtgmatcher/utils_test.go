@@ -520,7 +520,6 @@ var NumberTests = []ExtractTest{
 
 func TestExtractNumber(t *testing.T) {
 	realDatastore(t)
-	realDatastore(t)
 
 	for _, probe := range NumberTests {
 		test := probe
@@ -537,7 +536,6 @@ func TestExtractNumber(t *testing.T) {
 }
 
 func TestAlias(t *testing.T) {
-	realDatastore(t)
 	realDatastore(t)
 
 	inCard := &InputCard{

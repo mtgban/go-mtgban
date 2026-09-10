@@ -165,9 +165,6 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
 	realDatastore(t)
 	uuids := GetUUIDs()
-	if len(uuids) == 0 {
-		t.Skip("datastore not loaded")
-	}
 
 	// Group the real card names by the bucket they hash into, keeping
 	// only the buckets that hold more than one distinct name.

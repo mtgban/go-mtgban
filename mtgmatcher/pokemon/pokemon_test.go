@@ -10,11 +10,11 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// testBackend is the datastore TestMain read, for the tests to match
+// testBackend is the datastore loadBackend read, for the tests to match
 // against directly; the same one is installed as the global.
 var testBackend *mtgmatcher.Backend
 
-// loadBackend hands a test the datastore TestMain read, or skips it where
+// loadBackend hands a test the datastore it read, or skips it where
 // the run carries none: each suite runs under the job holding its own
 // game's file, and not the others'.
 var (

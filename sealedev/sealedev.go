@@ -20,11 +20,10 @@ import (
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
-// How many openings are simulated before an average settles, in full and in
-// fast mode.
 const (
-	EVAverageRepetition = 5000
-	EVFastRepetition    = 10
+	// defaultRepetitions is how many openings are simulated before an
+	// average settles, where the scraper is not told otherwise.
+	defaultRepetitions = 5000
 
 	defaultConcurrency = 8
 )
@@ -33,12 +32,16 @@ const (
 // its contents against singles prices rather than reading any storefront.
 type Scraper struct {
 	LogCallback      mtgban.LogCallbackFunc
-	FastMode         bool
 	Affiliate        string
 	BuylistAffiliate string
 	TargetEdition    string
 	TargetProduct    string
 	MaxConcurrency   int
+	// Repetitions is how many openings of a random product are simulated
+	// before its average settles. NewScraper sets the default; a caller
+	// wanting a quick answer lowers it, and a test wanting a run that
+	// cannot finish raises it.
+	Repetitions int
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -162,6 +165,7 @@ func NewScraper(sig string) *Scraper {
 	ss.buylist = mtgban.BuylistRecord{}
 	ss.banpriceKey = sig
 	ss.MaxConcurrency = defaultConcurrency
+	ss.Repetitions = defaultRepetitions
 	return &ss
 }
 
@@ -228,7 +232,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 
 	// Resolve each card's price a single time per parameter (skipped cards
 	// resolve to 0). This keeps the price lookups out of the simulation loop,
-	// which can run up to EVAverageRepetition times.
+	// which can run Repetitions times.
 	unitPrices := make([]map[string]float64, len(evParameters))
 	for i := range evParameters {
 		priceSource := ss.prices.Retail
@@ -268,10 +272,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		}
 	} else {
 		// Random contents: Monte Carlo the simulation parameters.
-		repeats := EVAverageRepetition
-		if ss.FastMode {
-			repeats = EVFastRepetition
-		}
+		repeats := ss.Repetitions
 
 		var mu sync.Mutex
 		var wg sync.WaitGroup
@@ -461,9 +462,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 			continue
 		}
 
-		if !ss.FastMode {
-			ss.printf("Running EV on [%s] %s (%d/%d)", co.SetCode, co.Name, i+1, len(uuids))
-		}
+		ss.printf("Running EV on [%s] %s (%d/%d)", co.SetCode, co.Name, i+1, len(uuids))
 
 		results, messages := ss.runEV(ctx, uuid)
 
