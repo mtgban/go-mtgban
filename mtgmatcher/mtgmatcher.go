@@ -315,6 +315,12 @@ func (b *Backend) MatchID(inputID string, finishes ...bool) (string, error) {
 				break
 			}
 		}
+		// Nothing is sold etched, neither this printing nor a twin of it:
+		// the etched flag named a finish the card does not come in, and
+		// the foil flag beside it is what the caller asked for next.
+		if isEtched && len(finishes) > 0 && finishes[0] && !b.UUIDs[outID].Etched {
+			return b.MatchID(inputID, true, false)
+		}
 	}
 	return outID, nil
 }
