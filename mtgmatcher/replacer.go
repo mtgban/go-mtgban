@@ -128,6 +128,16 @@ var asciiStrings = []string{
 // asciiReplacer folds a marked letter to the plain ascii it stands for.
 var asciiReplacer = strings.NewReplacer(asciiStrings...)
 
+// asciiLower lowercases a name and folds the marks its letters carry.
+//
+// The order is not interchangeable and is why this is a function rather
+// than two calls at each site: asciiStrings knows only the lowercase
+// letters, so folding first leaves an uppercase mark standing, and a name
+// that shouts its accent reads as a different name from one that does not.
+func asciiLower(name string) string {
+	return asciiReplacer.Replace(strings.ToLower(name))
+}
+
 var replacer = strings.NewReplacer(replacerStrings...)
 
 // Normalize is called millions of times, and the generic Replacer
