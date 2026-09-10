@@ -47,7 +47,11 @@ jobs:
       - name: Fetch file checksum
         id: get_etag
         run: |
-          etag=$(curl -sI "${{ inputs.url }}" | grep -i etag | tr -d '\r"' | cut -f 2 -d " ")
+          etag=$(curl -sIL "${{ inputs.url }}" | grep -i etag | tail -n 1 | tr -d '\r"' | cut -f 2 -d " ")
+          if [ -z "$etag" ]; then
+            echo "no ETag served for ${{ inputs.url }}: the cache key could never change"
+            exit 1
+          fi
           base=$(basename "${{ inputs.url }}" | cut -d? -f1)
           key=$base-$etag
           filepath=${{ inputs.path }}$base
