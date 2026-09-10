@@ -217,7 +217,9 @@ var qualifiers sync.Map
 // qualifierOf is the qualifier a printing was sold under, or "".
 func qualifierOf(uuid string) string {
 	if qualifier, found := qualifiers.Load(uuid); found {
-		return qualifier.(string)
+		if text, ok := qualifier.(string); ok {
+			return text
+		}
 	}
 	return ""
 }
