@@ -1305,10 +1305,6 @@ func run() int {
 		scrapers = append(scrapers, scraper)
 	}
 
-	if len(scrapers) == 0 {
-		log.Println("No scraper configured, run with -h for a list of commands")
-		return 1
-	}
 	countSellers, countVendors := mtgban.CountScrapers(scrapers)
 	log.Println("Configured with", countSellers, "sellers and", countVendors, "vendors")
 
