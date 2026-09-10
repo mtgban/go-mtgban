@@ -246,6 +246,7 @@ func TestTwinsAmongFaces(t *testing.T) {
 	collector := namedLast{add: func(responseChan) {}, twin: fabSameProduct, face: fabFaceOf}
 	collector.collect(responseChan{cardID: "sup001-sup002_656933", product: adult})
 	collector.collect(responseChan{cardID: "sup001-sup002_656933", product: young})
+	collector.flush()
 	if collector.twins != 1 {
 		t.Errorf("the collector held %d twins, want the young hero to give way", collector.twins)
 	}

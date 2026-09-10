@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -56,8 +57,8 @@ type responseChan struct {
 // about a different one. Waiting decides it instead: the guess is offered
 // only where nothing verified stands.
 type namedLast struct {
-	add   func(responseChan)
-	named []responseChan
+	add     func(responseChan)
+	results []responseChan
 	// held is what priced each printing so far, keyed by uuid and by the
 	// name of the price column, so a named price for a printing another
 	// product of the same name already holds gives way silently: it is
@@ -79,8 +80,12 @@ type namedLast struct {
 	foreign int
 }
 
-// collect takes one result, adding it, holding it back, or counting it
-// into the run's tally.
+// collect takes one result, holding it back or counting it into the run's
+// tally. Every price waits for flush, the named ones and the rest alike:
+// the pool walks the expansions in whatever order they finish, and which of
+// two products reaching one printing arrived first would otherwise be
+// decided by that, so a promo sold on two shelves took one shelf's price
+// this run and the other's next. flush puts them in the catalog's order.
 func (n *namedLast) collect(result responseChan) {
 	if result.tally {
 		n.walked += result.walked
@@ -88,13 +93,7 @@ func (n *namedLast) collect(result responseChan) {
 		n.foreign += result.foreign
 		return
 	}
-	if result.byName {
-		n.named = append(n.named, result)
-		return
-	}
-	if n.hold(result) {
-		n.add(result)
-	}
+	n.results = append(n.results, result)
 }
 
 // hold records what priced a printing's column, and reports whether the
@@ -116,17 +115,44 @@ func (n *namedLast) hold(result responseChan) bool {
 	return true
 }
 
-// flush adds everything held back, in the order it arrived, and reports how
-// much that was and how much of it gave way to a product already priced.
+// flush adds everything held back, the prices looked up by id first and
+// the named ones after them, each in the order of the catalog - expansion,
+// then product - and reports how many named prices went in and how many
+// gave way to a product already priced.
 func (n *namedLast) flush() (added, twins int) {
+	sort.SliceStable(n.results, func(i, j int) bool {
+		a, b := n.results[i], n.results[j]
+		if a.byName != b.byName {
+			return !a.byName
+		}
+		return productBefore(a.product, b.product)
+	})
 	before := n.twins
-	for i := range n.named {
-		if n.hold(n.named[i]) {
-			n.add(n.named[i])
+	for i := range n.results {
+		if !n.hold(n.results[i]) {
+			continue
+		}
+		n.add(n.results[i])
+		if n.results[i].byName {
 			added++
 		}
 	}
 	return added, n.twins - before
+}
+
+// productBefore orders two products the way the catalog files them, by
+// expansion and then by product id, with a result carrying no product last.
+func productBefore(a, b *cm.Product) bool {
+	if a == nil || b == nil {
+		return a != nil && b == nil
+	}
+	if a.Expansion.IDExpansion != b.Expansion.IDExpansion {
+		return a.Expansion.IDExpansion < b.Expansion.IDExpansion
+	}
+	if a.ExpansionName != b.ExpansionName {
+		return a.ExpansionName < b.ExpansionName
+	}
+	return a.IDProduct < b.IDProduct
 }
 
 // Index prices singles from Cardmarket's price guide, the low and

@@ -10,6 +10,13 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
+// filed builds a product as the walk files it, on an expansion.
+func filed(expansion, id int) *cm.Product {
+	product := &cm.Product{IDProduct: id}
+	product.Expansion.IDExpansion = expansion
+	return product
+}
+
 // entry builds the one shape the index produces, a single index price for
 // one printing.
 func entry(price float64, ogID int) mtgban.InventoryEntry {
@@ -64,6 +71,25 @@ func TestNamedLast(t *testing.T) {
 			results: []responseChan{
 				{ogID: 581132, cardID: uuid, entry: entry(2.5, 581132), byName: true},
 				{ogID: 581133, cardID: uuid, entry: entry(3.5, 581133), byName: true},
+			},
+			want: 2.5,
+		},
+		{
+			// The pool walks the expansions in whatever order they
+			// finish, and the catalog's order is the one that holds
+			// from one run to the next.
+			name: "two prices of one printing keep the catalog's order, not the pool's",
+			results: []responseChan{
+				{ogID: 106410, cardID: uuid, entry: entry(1.5, 106410), product: filed(20, 106410)},
+				{ogID: 106409, cardID: uuid, entry: entry(2.5, 106409), product: filed(10, 106409)},
+			},
+			want: 2.5,
+		},
+		{
+			name: "and within one expansion the lower product id holds it",
+			results: []responseChan{
+				{ogID: 106410, cardID: uuid, entry: entry(1.5, 106410), product: filed(10, 106410)},
+				{ogID: 106409, cardID: uuid, entry: entry(2.5, 106409), product: filed(10, 106409)},
 			},
 			want: 2.5,
 		},
@@ -151,7 +177,8 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 
 // TestCollectTally pins the run's tally riding the results channel: one
 // record per edition, summed by the collector on its single goroutine, and
-// never mistaken for a price.
+// never mistaken for a price. Every price waits for flush, and the count
+// flush reports is the named ones.
 func TestCollectTally(t *testing.T) {
 	var added int
 	collector := namedLast{add: func(responseChan) { added++ }}
@@ -164,10 +191,13 @@ func TestCollectTally(t *testing.T) {
 	if collector.walked != 65 || collector.refused != 3 {
 		t.Errorf("tally = %d/%d, want 65/3", collector.walked, collector.refused)
 	}
-	if added != 1 {
-		t.Errorf("prices added before flush = %d, want 1", added)
+	if added != 0 {
+		t.Errorf("prices added before flush = %d, want 0", added)
 	}
 	if got, _ := collector.flush(); got != 1 {
 		t.Errorf("named prices flushed = %d, want 1", got)
+	}
+	if added != 2 {
+		t.Errorf("prices added by flush = %d, want 2", added)
 	}
 }

@@ -130,6 +130,7 @@ func (mkm *Index) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.E
 		ExpansionName: expansion.Name,
 		ExpansionCode: expansion.SetCode,
 	}
+	product.Expansion.IDExpansion = expansion.IDExpansion
 
 	cardID, cardIDFoil := mkm.resolveUUIDs(product, mapped.UUIDs)
 	if cardID != "" {
