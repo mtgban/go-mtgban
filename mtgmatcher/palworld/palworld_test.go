@@ -68,8 +68,9 @@ func TestFinishIdentity(t *testing.T) {
 
 // TestPlainNumberIsPlain pins the contract every game keeps: PlainNumber
 // is Number with the game's decorations stripped, never anything wider. The
-// rarity code this game's numbers end in is part of the number rather than
-// a decoration over it, so the two are equal throughout.
+// rarity code this game's numbers end in is the decoration - EBP01-001OSR
+// is the Jormuntide Ignis that EBP01-001 is - so the plain number is the
+// run's number, the code off, and the number itself where it wears none.
 func TestPlainNumberIsPlain(t *testing.T) {
 	b := loadBackend(t)
 
@@ -77,8 +78,12 @@ func TestPlainNumberIsPlain(t *testing.T) {
 		if co.Sealed || co.Number == "" {
 			continue
 		}
-		if len(co.PlainNumber) > len(co.Number) {
-			t.Errorf("%s: PlainNumber %q is wider than Number %q", uuid, co.PlainNumber, co.Number)
+		want := co.Number
+		if run, tail := splitNumber(co.Number); tail != "" {
+			want = run
+		}
+		if co.PlainNumber != want {
+			t.Errorf("%s: PlainNumber %q, want %q for Number %q", uuid, co.PlainNumber, want, co.Number)
 		}
 	}
 }
@@ -86,7 +91,7 @@ func TestPlainNumberIsPlain(t *testing.T) {
 // TestNumbersAreUnique pins what identifies a printing in this game. Unlike
 // the other Bandai-shaped games, a parallel is numbered apart from the card
 // it parallels rather than sharing its number under a different rarity, so
-// a number decides on its own and the rules never have to tier.
+// a number names one product and the rules never have to tier.
 func TestNumbersAreUnique(t *testing.T) {
 	b := loadBackend(t)
 
@@ -96,10 +101,16 @@ func TestNumbersAreUnique(t *testing.T) {
 			continue
 		}
 		key := co.SetCode + "|" + co.Number
-		if other, found := seen[key]; found && other != co.Name {
-			t.Errorf("%s is carried by both %q and %q", key, other, co.Name)
+		// The finishes of one product fold onto the product: the uuid of
+		// its plain printing where it has one, the foil's otherwise.
+		printing := co.FoilUUIDs[mtgmatcher.FinishNonfoil]
+		if printing == "" {
+			printing = co.FoilUUIDs[mtgmatcher.FinishFoil]
 		}
-		seen[key] = co.Name
+		if other, found := seen[key]; found && other != printing {
+			t.Errorf("%s is carried by both %s and %s", key, other, printing)
+		}
+		seen[key] = printing
 	}
 }
 

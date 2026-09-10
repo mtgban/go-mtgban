@@ -3,7 +3,6 @@ package gundam
 import (
 	"os"
 	"slices"
-	"strings"
 	"sync"
 	"testing"
 
@@ -142,9 +141,9 @@ func TestAFinishThisGameDoesNotSellIsStillRefused(t *testing.T) {
 }
 
 // TestRarityTellsParallelsApart pins what identifies a printing in this
-// game. 382 of its collector numbers are carried by two products apiece,
-// under the same name and with no variant label between them, and the only
-// thing that differs is the rarity: the parallel run suffixes it with "+".
+// game. 439 of its collector numbers are carried by several products under
+// the same name with no variant label between them, and the only thing
+// that differs is the rarity: the parallel run suffixes it with "+".
 // A wording that names neither has to reach the plain run, since that is
 // what a listing without a qualifier means.
 func TestRarityTellsParallelsApart(t *testing.T) {
@@ -263,8 +262,17 @@ func TestSealedIsNotACard(t *testing.T) {
 			continue
 		}
 		sealed++
-		if !strings.Contains(strings.ToLower(co.Name), "gundam") && co.Name == "" {
+		if co.Name == "" {
 			t.Errorf("%s is sealed but unnamed", co.UUID)
+			continue
+		}
+		in := mtgmatcher.InputCard{Name: co.Name}
+		id, err := b.Match(&in)
+		if err != nil {
+			continue
+		}
+		if answered := b.UUIDs[id]; answered != nil && answered.Sealed {
+			t.Errorf("Match(%q) answered the sealed product %s", co.Name, id)
 		}
 	}
 	if sealed == 0 {

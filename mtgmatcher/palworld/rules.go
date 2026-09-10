@@ -148,7 +148,8 @@ func endsInPromo(edition string) bool {
 
 // CanonicalFinish adds nothing to the shared vocabulary: this game sells a
 // printing plain or foil, and the catalog already spells those the way the
-// matcher does.//
+// matcher does.
+//
 // The vocabulary is open past that. TCGplayer adds a printing to a category
 // when it likes and the builder carries it under its own name rather than
 // dropping it, so a name neither vocabulary places is normalized and handed
