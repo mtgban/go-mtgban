@@ -236,5 +236,6 @@ func (tcg *TCGGameIndex) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
 	info.Game = tcg.game
+	info.Family = "TCG"
 	return
 }
