@@ -309,8 +309,6 @@ var pokemonLettered = regexp.MustCompile(`^[A-Za-z]*\d+[a-z]$`)
 var pokemonLetteredSets = []string{"Alternate Art Promos", "League & Championship Cards"}
 
 // matchPokemon names a Pokemon product's printing from what the catalog
-// says of it, held to the sets its expansion may hold.
-// matchPokemon names a Pokemon product's printing from what the catalog
 // says of it, held to the sets its expansion may hold. An expansion naming
 // no set of ours is a catalog we do not carry, and a miss in one is said so
 // rather than reported product by product.

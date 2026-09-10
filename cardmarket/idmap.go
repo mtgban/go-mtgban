@@ -140,6 +140,16 @@ func (mkm *Index) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.E
 	return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil, byName: byName, err: err}
 }
 
+// refusalName is the card a refused product names, as the report files it:
+// a Pokemon product carries its attacks and energy symbols in brackets the
+// card's name does not, and every other game's product name is the card's.
+func (mkm *Index) refusalName(name string) string {
+	if mkm.gameID == cm.GamePokemon {
+		return pokemonName(name)
+	}
+	return name
+}
+
 // checkCatalog reports whether the id map can be walked. For the games that
 // shelve whole foreign catalogs, the map says which shelves those are only
 // through the expansion codes: a map written before it carried them cannot
@@ -268,7 +278,7 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 					foreign++
 				case errors.Is(err, errNoPrinting):
 					refusals++
-					key := fmt.Sprintf("%q (%s) in %s", pokemonName(mapped.Name), mapped.Number, exp.Name)
+					key := fmt.Sprintf("%q (%s) in %s", mkm.refusalName(mapped.Name), mapped.Number, exp.Name)
 					if at, seen := named[key]; seen {
 						refused[at] += "+"
 						continue
