@@ -257,6 +257,62 @@ func TestPreprocess(t *testing.T) {
 			finish: "Reverse Holofoil",
 		},
 		{
+			// A card whose own name ends in something number-shaped. The
+			// number written over the set's size is the collector number,
+			// and the suffix in front of it belongs to the name.
+			game: GamePokemon,
+			product: GNProduct{
+				DisplayName:    "Alakazam E4 38/111 - Rising Rivals",
+				SelectedFinish: "Normal",
+				ProductData:    GNProductData{SetName: "Rising Rivals"},
+			},
+			name: "Alakazam E4", edition: "Rising Rivals", variation: "38/111",
+		},
+		{
+			game: GamePokemon,
+			product: GNProduct{
+				DisplayName:    "Energy Removal 2 80/109 - Ruby  Sapphire",
+				SelectedFinish: "Normal",
+				ProductData:    GNProductData{SetName: "Ruby and Sapphire"},
+			},
+			name: "Energy Removal 2", edition: "Ruby and Sapphire", variation: "80/109",
+		},
+		{
+			// The catalog's own number repeated behind the printed one, and
+			// the wording between them. The name ends at the printed number
+			// whether or not a dash of its own opens the description.
+			game: GamePokemon,
+			product: GNProduct{
+				DisplayName:    "Dragonite 149/165 (Cosmos Holo) 149 - Miscellaneous Cards  Products Holofoil",
+				SelectedFinish: "Holofoil",
+				ProductData:    GNProductData{SetName: "Miscellaneous Cards & Products"},
+			},
+			name: "Dragonite", edition: "Miscellaneous Cards & Products",
+			variation: "149/165 (Cosmos Holo)", finish: "Holofoil",
+		},
+		{
+			// A shelf whose numbers are letters.
+			game: GamePokemon,
+			product: GNProduct{
+				DisplayName:    "Unown Z/115 - Unseen Forces Holofoil",
+				SelectedFinish: "Holofoil",
+				ProductData:    GNProductData{SetName: "Unseen Forces"},
+			},
+			name: "Unown", edition: "Unseen Forces", variation: "Z/115",
+			finish: "Holofoil",
+		},
+		{
+			// The symbol this storefront prints where the catalog writes
+			// the letter.
+			game: GamePokemon,
+			product: GNProduct{
+				DisplayName:    "Nidoran ♀ 81/144 - Skyridge",
+				SelectedFinish: "Normal",
+				ProductData:    GNProductData{SetName: "Skyridge"},
+			},
+			name: "Nidoran F", edition: "Skyridge", variation: "81/144",
+		},
+		{
 			// The finishing place is written in brackets where every other
 			// qualifier gets parentheses. Left as it is the matcher reads no
 			// place at all and answers with the printing awarded none, which
