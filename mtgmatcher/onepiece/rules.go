@@ -699,6 +699,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	if len(described) > 0 {
 		narrowed := editionTiebreak(b, inCard, described)
 		narrowed = lastNamedTiebreak(b, inCard.Variation, narrowed)
+		narrowed = unnumberedTiebreak(number, narrowed)
 		return finishTiebreak(inCard, narrowed)
 	}
 	if wantsVariant(inCard, number) {
@@ -1957,6 +1958,31 @@ func catalogWording(wording string) string {
 	return wording
 }
 
+// unnumberedTiebreak keeps the one printing numbered by a word where the
+// wording wrote no number and the printings beside it wear one.
+//
+// The 3rd Anniversary Tournament pack holds a leader card the catalog files
+// under "LEADER" and a card filed under ST01-012, both wearing the pack's
+// label and nothing else, and the catalog names the second by its number and
+// the first by nothing: the number is what tells the one from the other,
+// and a listing that wrote none is the card there was no number to write.
+// A wording carrying a number has already chosen and is left alone.
+func unnumberedTiebreak(number string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if number != "" || len(cards) < 2 {
+		return cards
+	}
+	var worded []mtgmatcher.Card
+	for _, card := range cards {
+		if !strings.ContainsFunc(card.Number, unicode.IsDigit) {
+			worded = append(worded, card)
+		}
+	}
+	if len(worded) != 1 {
+		return cards
+	}
+	return worded
+}
+
 // lastNamedTiebreak keeps the printings whose label the wording names last.
 //
 // A storefront writes the treatment it means behind the category it belongs
@@ -2393,13 +2419,89 @@ func wantsUnnamedVariant(inCard *mtgmatcher.InputCard) bool {
 
 // inputNumber is extractNumber with the card being asked about in hand: the
 // number a storefront wrote only narrows when the printings of that name
-// wear collector numbers it could be one of.
+// wear collector numbers it could be one of, and the words it spent on a
+// label are not the number.
 func inputNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
-	number := extractNumber(inCard.Variation)
+	number := extractNumber(unlabelled(b, inCard.Name, inCard.Variation))
 	if number == "" || numbered(b, inCard.Name) {
 		return number
 	}
 	return ""
+}
+
+// unlabelled is a wording with every label it spells out whole taken off,
+// among the labels the printings of a name wear, and every mark it says
+// every word of.
+//
+// extractNumber falls back on the first word opening with a digit, and the
+// labels carry words that do: the ordinal of an anniversary, the count in
+// "3 Brothers Pack", the year a promotion ran, the instalment of a pack. A
+// storefront writing no number for the leader card of the 3rd Anniversary
+// Tournament pack was read as asking for number 3, which every set's third
+// card answers and the leader does not. A word the wording spent on a label
+// the catalog wears is that label's word; what is left is where a number
+// could be. The mark is read as markWording reads it, a word at a time,
+// because the catalog writes its words apart.
+func unlabelled(b *mtgmatcher.Backend, name, wording string) string {
+	words := strings.Fields(wording)
+	kept := make([]bool, len(words))
+	for i := range kept {
+		kept[i] = true
+	}
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed {
+			continue
+		}
+		for _, promoType := range co.PromoTypes {
+			for first, last := range slugRuns(words, promoType) {
+				for i := first; i <= last; i++ {
+					kept[i] = false
+				}
+			}
+		}
+		if !markSaid(wording, co.Watermark) {
+			continue
+		}
+		for _, mark := range labelWords(co.Watermark) {
+			for i, word := range words {
+				if mtgmatcher.PromoTypeSlug(word) == mark {
+					kept[i] = false
+				}
+			}
+		}
+	}
+	var out []string
+	for i, word := range words {
+		if kept[i] {
+			out = append(out, word)
+		}
+	}
+	return strings.Join(out, " ")
+}
+
+// slugRuns finds the runs of whole words in a wording that spell a slug, as
+// SlugDescribes reads them, keyed by the first word's index and holding the
+// last's.
+func slugRuns(words []string, slug string) map[int]int {
+	runs := map[int]int{}
+	if slug == "" {
+		return runs
+	}
+	for i := range words {
+		var joined string
+		for j := i; j < len(words); j++ {
+			joined += mtgmatcher.PromoTypeSlug(words[j])
+			if joined == slug {
+				runs[i] = j
+				break
+			}
+			if len(joined) >= len(slug) {
+				break
+			}
+		}
+	}
+	return runs
 }
 
 // numbered reports whether any printing of a name wears a collector number
