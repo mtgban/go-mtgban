@@ -196,7 +196,7 @@ func sealedNamesBoxOnly(name string) bool {
 // a name says each of its words.
 func sealedTokenCounts(name string) map[string]int {
 	out := map[string]int{}
-	for _, tok := range sealedTokenRe.FindAllString(strings.ToLower(asciiReplacer.Replace(name)), -1) {
+	for _, tok := range sealedTokenRe.FindAllString(asciiReplacer.Replace(strings.ToLower(name)), -1) {
 		if sealedFiller[tok] {
 			continue
 		}
