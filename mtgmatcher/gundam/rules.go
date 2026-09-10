@@ -14,8 +14,9 @@ import (
 // identified by name + collector number, and where several printings share
 // one number it is the rarity that tells them apart: this game marks a
 // parallel run by suffixing the rarity rather than by lettering the number
-// or renaming the card. 382 of the game's numbers are shared that way, and
-// every one of those groups differs in rarity and in nothing else.
+// or renaming the card. 454 of the game's numbers are shared that way, and
+// 439 of those groups differ in rarity and in nothing else; the rest wear
+// a label.
 type Rules struct{ mtgmatcher.DefaultRules }
 
 // fullNumberRe matches the game's collector number shapes: "GD01-001",
@@ -416,7 +417,8 @@ func endsInPromo(edition string) bool {
 
 // CanonicalFinish names the one finish this game has of its own. The catalog
 // calls a stamped printing "Holofoil", which is this game's standard foil
-// and its only one, so it and the vendor spellings of it reach FinishFoil.//
+// and its only one, so it and the vendor spellings of it reach FinishFoil.
+//
 // The vocabulary is open past that. TCGplayer adds a printing to a category
 // when it likes and the builder carries it under its own name rather than
 // dropping it, so a name neither vocabulary places is normalized and handed

@@ -385,7 +385,6 @@ var palworldRarityMap = map[string]int{
 	"Promo":                      14,
 }
 
-// cardTypes is the card's type, as the one-element list a Card carries.
 // productKey names the product an entry is a printing of, read off what the
 // entry publishes: the product id the catalog stamps on every printing it
 // sells. An entry the builder mints carries none - it is minted one printing
