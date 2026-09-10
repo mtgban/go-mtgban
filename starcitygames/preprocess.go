@@ -492,6 +492,10 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			// Store Championship promo: SCHP_<year>_<num> -> SCH #<num>.
 			setCode = "SCH"
 			number = strings.TrimLeft(fields[2], "0")
+		case strings.HasPrefix(number, "AMP_") && len(fields) == 3:
+			// Ampersand promo: the embossed printing, P<set> #<num>a.
+			setCode = "P" + fields[1]
+			number = strings.TrimLeft(fields[2], "0") + "a"
 		case strings.HasPrefix(number, "15A_") && len(fields) == 3:
 			// 15th Anniversary promo.
 			setCode = "P15A"
@@ -670,6 +674,7 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 	// and the Match search doesn't upgrade these custom tags
 	switch {
 	case strings.Contains(variant, "Serial"),
+		strings.Contains(variant, "Double Rainbow"),
 		strings.Contains(variant, "Compleat"),
 		strings.Contains(variant, "Oversized"):
 		canProcessSKU = false

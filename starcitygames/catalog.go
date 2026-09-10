@@ -191,10 +191,16 @@ func catalogFoil(p CatalogProduct) bool {
 
 // catalogHit synthesizes the minimal Hit that preprocess needs from a catalog
 // product, used as the fallback when the Scryfall shortcut doesn't apply.
+// The finish rides in as the subtitle, where preprocess reads the wording
+// that names a different printing than the sku's number.
 func catalogHit(p CatalogProduct, foil bool) Hit {
 	finishType := 1
 	if foil {
 		finishType = 2
+	}
+	var subtitle string
+	if strings.Contains(p.Finish, "Double Rainbow") {
+		subtitle = p.Finish
 	}
 	return Hit{
 		Name:                p.Name,
@@ -202,7 +208,7 @@ func catalogHit(p CatalogProduct, foil bool) Hit {
 		Language:            p.Language,
 		CollectorNumber:     p.CollectorNumber,
 		FinishPricingTypeID: finishType,
-		Variants:            []Variant{{Sku: p.SKU}},
+		Variants:            []Variant{{Sku: p.SKU, Subtitle: subtitle}},
 	}
 }
 
@@ -550,15 +556,20 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// (MatchID resolves a bare product id through the external-id index and
 	// applies the finish exactly like the scryfall path). Etched is the only
 	// alt-foil that changes the printing; every other alt-foil shares the plain
-	// foil's id. (SCG sends null ids today, so in practice this fires only once
-	// they start populating them.)
+	// foil's id. An id the product's own wording contradicts is refused,
+	// and the sku-driven path below reads the wording instead.
 	for _, id := range []string{p.ScryfallID, p.TCGPlayerID} {
 		if id == "" {
 			continue
 		}
-		if out, err := mtgmatcher.MatchID(id, foil, etched); err == nil {
-			return out, nil
+		out, err := mtgmatcher.MatchID(id, foil, etched)
+		if err != nil {
+			continue
 		}
+		if idContradictsProduct(p, out) {
+			break
+		}
+		return out, nil
 	}
 
 	// Magic needs catalog-specific fixups before the generic matcher.
@@ -656,6 +667,25 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		Variation: p.CollectorNumber,
 		Foil:      foil,
 	})
+}
+
+// idContradictsProduct reports whether the resolved printing lacks what the
+// product's own record says of itself; a product saying nothing cannot
+// contradict.
+func idContradictsProduct(p CatalogProduct, uuid string) bool {
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil {
+		return false
+	}
+	if strings.Contains(p.Finish, "Double Rainbow") &&
+		!co.HasPromoType("doublerainbow") && !co.HasPromoType("rainbowfoil") &&
+		!co.HasPromoType("serialized") {
+		return true
+	}
+	if strings.Contains(p.SKU, "-AMP_") && !co.HasPromoType("embossed") {
+		return true
+	}
+	return false
 }
 
 // secondBucketMarker is what Star City Games appends to a sku's number segment
