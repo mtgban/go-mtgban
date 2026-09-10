@@ -15,10 +15,12 @@ import (
 // first, kept on.
 func TestResolveProductEtchedByID(t *testing.T) {
 	realDatastore(t)
+	// An etched printing filed beside its foil on one card is the shape
+	// that folds: one sold etched alone has nothing to fold to.
 	var etchedUUID, tcgID string
 	for _, uuid := range mtgmatcher.GetUUIDs() {
 		co, err := mtgmatcher.GetUUID(uuid)
-		if err != nil || !co.Etched {
+		if err != nil || !co.Etched || !co.HasFinish(mtgmatcher.FinishFoil) {
 			continue
 		}
 		if id := co.Identifiers["tcgplayerEtchedProductId"]; id != "" {
