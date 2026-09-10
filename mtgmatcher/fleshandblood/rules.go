@@ -796,6 +796,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 	var candidates, exact []mtgmatcher.Card
 	seen := map[string]bool{}
+	named := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
 		if !found || co.Sealed {
@@ -850,6 +851,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			foilUUIDs[mtgmatcher.FinishNonfoil] = uuid
 			foilUUIDs[mtgmatcher.FinishFoil] = uuid
 			card.FoilUUIDs = foilUUIDs
+			named[card.UUID] = true
 		}
 		candidates = append(candidates, card)
 		if numbered {
@@ -875,7 +877,54 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	if pitched := pitchNarrow(inCard, candidates); len(pitched) > 0 {
 		candidates = pitched
 	}
+	return finishTwins(inCard, named, labelTier(inCard, number, candidates))
+}
 
+// finishTwins settles a tie between printings that the finish tells apart.
+//
+// The catalog sells a few products twice at one number, once per finish and
+// differing in nothing else: ROS000 is the cold foil "Will of Arcana" beside
+// the rainbow one, and The Hunted's art card is sold plain and in cold foil.
+// The loader used to label each with its finish, read off the variant the
+// catalog spells it into; the variant is prose the datastore has since
+// distilled into the promo types, and a printing publishing none wears no
+// label, so the twins tie on everything the tiering reads. The finish is a
+// fact of the printing, and the one the wording spoke to: a wording naming
+// a finish re-keyed the copy sold in it and no other, and a wording naming
+// none prices the copy sold in the foilness its flag says. Two copies sold
+// in that foilness are still a tie.
+func finishTwins(inCard *mtgmatcher.InputCard, named map[string]bool, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) < 2 {
+		return cards
+	}
+	var kept []mtgmatcher.Card
+	for _, card := range cards {
+		if named[card.UUID] {
+			kept = append(kept, card)
+		}
+	}
+	if len(kept) > 0 {
+		return kept
+	}
+	finish := mtgmatcher.FinishNonfoil
+	if inCard.Foil {
+		finish = mtgmatcher.FinishFoil
+	}
+	for _, card := range cards {
+		if slices.Contains(card.Finishes, finish) {
+			kept = append(kept, card)
+		}
+	}
+	if len(kept) > 0 {
+		return kept
+	}
+	return cards
+}
+
+// labelTier picks among the candidates by the labels the wording describes:
+// the printings it describes, else the variants a letter tail demands, else
+// the base printings.
+func labelTier(inCard *mtgmatcher.InputCard, number string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
 	described, base, variants := tierByVariant(inCard, candidates)
 	if len(described) > 0 {
 		return described
