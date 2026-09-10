@@ -1,4 +1,4 @@
-package yugioh
+package gundam
 
 import (
 	"slices"
