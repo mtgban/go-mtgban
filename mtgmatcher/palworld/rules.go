@@ -258,20 +258,42 @@ func withTail(cards []mtgmatcher.Card, tail string) []mtgmatcher.Card {
 // substring of "TSR" and of any number ending in one, so a normalized
 // contains would read every trial-deck listing as a Super Rare.
 //
-// A wording naming two codes names neither, there being no saying which was
-// meant.
+// The spelled rarities contain one another as words do: "Over Super Rare"
+// says "Super Rare" and "Trial Deck Super Parallel" says "Super Parallel",
+// and a wording naming the longer has not named the shorter, so the longest
+// spelling said wins, the way Gundam reads its rarities. A wording naming
+// two codes neither contains names neither, there being no saying which
+// was meant.
 func tailSaid(variation string) string {
 	if strings.TrimSpace(variation) == "" {
 		return ""
 	}
-	var found string
+	// Which codes the wording said, and whether by spelling the rarity
+	// out rather than by the code itself: only a spelling can sit inside
+	// a longer one.
+	spelled := map[string]bool{}
 	for tail, rarity := range rarityTails {
-		if saysWord(variation, tail) || saysWord(variation, rarity) {
-			if found != "" && found != tail {
-				return ""
-			}
-			found = tail
+		if saysWord(variation, tail) {
+			spelled[tail] = false
+		} else if saysWord(variation, rarity) {
+			spelled[tail] = true
 		}
+	}
+	var found string
+	for tail, bySpelling := range spelled {
+		inside := false
+		for other := range spelled {
+			if other != tail && bySpelling && strings.Contains(rarityTails[other], rarityTails[tail]) {
+				inside = true
+			}
+		}
+		if inside {
+			continue
+		}
+		if found != "" && found != tail {
+			return ""
+		}
+		found = tail
 	}
 	return found
 }
