@@ -122,6 +122,7 @@ var promoTypeLabels = map[string]string{
 	"releaseeventwinnerpack":       "Release Event Winner Pack",
 	"reprint":                      "Reprint",
 	"retailpromo":                  "Retail Promo",
+	"rocksdxebec":                  "Rocks D. Xebec",
 	"round1promo":                  "Round 1 Promo",
 	"sealedbattle":                 "Sealed Battle",
 	"sealedbattlekit":              "Sealed Battle Kit",
