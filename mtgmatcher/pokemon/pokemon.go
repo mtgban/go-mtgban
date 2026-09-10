@@ -510,13 +510,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		b.Sets[code].Rarities = rarities
 	}
 
-	// Sealed products live in the sealed namespace throughout: uuids in
-	// AllSealedUUIDs, names in the sealed name index, and the product id as
-	// an identifier for BuildSealedProductMap rather than the external
+	// Sealed products live in the sealed namespace throughout - uuids in
+	// AllSealedUUIDs, names in the sealed name index, and the product id
+	// as an identifier for BuildSealedProductMap rather than the external
 	// identifier index, mirroring how Magic keeps sealed out of MatchID's
-	// reach.
-	// Sealed products live in the sealed namespace throughout; AddSealed
-	// is what files them there.
+	// reach - and AddSealed is what files them there.
 	for _, product := range payload.Sealed {
 		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
@@ -552,7 +550,7 @@ func isFoilFinish(finish string) bool {
 	return strings.Contains(finish, "holofoil") || finish == mtgmatcher.FinishFoil
 }
 
-// findPrinting returns the group's first entry of the first finish present,
+// pickFinish returns the group's first entry of the first finish present,
 // in the given preference order, or nil when the group has none of them.
 func pickFinish(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 	for _, finish := range finishes {
@@ -565,7 +563,7 @@ func pickFinish(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 	return nil
 }
 
-// pickPrinting is findPrinting with the group's first entry as a fallback,
+// pickPrinting is pickFinish with the group's first entry as a fallback,
 // for the card the matcher reads the shared fields off.
 func pickPrinting(group []*DatastoreCard, finishes ...string) *DatastoreCard {
 	if entry := pickFinish(group, finishes...); entry != nil {
@@ -637,9 +635,10 @@ func ownNumber(card *DatastoreCard) string {
 // writing it. Nor does the letter trim touch them, a code ending in its
 // digits: all 1,386 are left as they are.
 //
-// Pokemon is the only game this applies to. Every other game here numbers a
-// card with a code - "OP04-047", "YS13-ENV08", "WTR018" - and none of them
-// carries a bare ordinal at all.
+// Pokemon is the game this applies to. Lorcana and Riftbound number their
+// cards bare as well but never pad them, and the games numbering a card
+// behind a code - "OP04-047", "YS13-ENV08", "WTR018" - fold to the ordinal
+// through mtgmatcher.PlainOrdinal.
 //
 // A number of nothing but letters, or of nothing but zeros, would trim away
 // to nothing, and an empty PlainNumber is a card no plain-number search can

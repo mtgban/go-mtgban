@@ -1083,7 +1083,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				card.Identifiers[attractionLightsID] = attractionTag(card.AttractionLights)
 			}
 
-			// Save the collector number stripped of its ★/†/Φ decorations
+			// Save the collector number stripped of its ★/†/Φ marks and of
+			// the letters that name a printing rather than number it
 			card.PlainNumber = Rules{}.PlainNumber(card.Number)
 
 			// Now assign the card to the list of cards to be saved
