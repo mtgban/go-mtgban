@@ -418,7 +418,7 @@ func fabWording(version, number string) string {
 // never reaches by name. Of Card Trader's 37 Gundam shelves, 4 name a set, 22
 // carry a code, and the 11 left are the promotional ones this asks about.
 func promoShelfNeedsLabel(gameID int, bp *Blueprint) bool {
-	if gameID != GameGundam || bp.TCGplayerID != 0 {
+	if gameID != GameGundam {
 		return false
 	}
 	if codedShelf.MatchString(bp.Expansion.Name) {
