@@ -827,7 +827,7 @@ func extractNumber(variation string) string {
 		number = number[idx+1:]
 	}
 	number = strings.Split(number, "/")[0]
-	number = CanonicalNumber(number)
+	number = canonicalNumber(number)
 	if len(number) > 1 && (number[len(number)-1] == 's' || number[len(number)-1] == 'S') {
 		if last := number[len(number)-2]; last >= '0' && last <= '9' {
 			number = number[:len(number)-1] + "*"

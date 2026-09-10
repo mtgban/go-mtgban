@@ -253,7 +253,7 @@ func describingPromoTypes(promoTypes []string, number string) []string {
 		// Both sides go through the number canonicalization first: the
 		// qualifier keeps the catalog's zeros ("R06c") where the number has
 		// already lost them ("r6c").
-		if mtgmatcher.Normalize(CanonicalNumber(promoType)) == mtgmatcher.Normalize(number) {
+		if mtgmatcher.Normalize(canonicalNumber(promoType)) == mtgmatcher.Normalize(number) {
 			continue
 		}
 		out = append(out, promoType)
@@ -592,14 +592,14 @@ func numberFromPublicCode(publicCode string) string {
 		code = code[idx+1:]
 	}
 	code = strings.Split(code, "/")[0]
-	return CanonicalNumber(code)
+	return canonicalNumber(code)
 }
 
-// CanonicalNumber strips leading zeros from the digit run of a collector
+// canonicalNumber strips leading zeros from the digit run of a collector
 // number, preserving any letter prefix ("T01" -> "T1") and any suffix
 // ("066a" -> "66a"). An all-zero run stays "0" so a genuine zero input
 // errors instead of silently disabling the number filter.
-func CanonicalNumber(number string) string {
+func canonicalNumber(number string) string {
 	i := 0
 	for i < len(number) && (number[i] < '0' || number[i] > '9') {
 		i++
