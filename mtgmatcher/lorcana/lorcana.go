@@ -755,11 +755,11 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		b.Sets[code].IsFoilOnly = true
 		b.Sets[code].IsNonFoilOnly = true
 		for _, card := range b.Sets[code].Cards {
-			if card.HasFinish("nonfoil") {
-				b.Sets[code].IsNonFoilOnly = false
-			}
-			if !card.HasFinish("nonfoil") {
+			if card.HasFinish(mtgmatcher.FinishNonfoil) {
 				b.Sets[code].IsFoilOnly = false
+			}
+			if card.HasFinish(mtgmatcher.FinishFoil) {
+				b.Sets[code].IsNonFoilOnly = false
 			}
 
 			if !slices.Contains(rarities, card.Rarity) {
