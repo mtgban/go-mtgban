@@ -69,11 +69,13 @@ type GameRules interface {
 	// which is the number the loader stores as Card.PlainNumber: Magic
 	// drops the mark and the letters that name a printing, Pokemon the zeros
 	// its catalog pads an ordinal with, Riftbound its star, Lorcana its
-	// variant letter, and a game that writes its numbers plainly hands the
-	// number back. The game owns this the way it owns its finish names, so a
-	// caller folding a number a person typed need not know which marks
-	// belong to which game - and one that rebuilt the vocabulary for itself
-	// got the case of Magic's phi wrong.
+	// variant letter, and the games that number their cards behind a set
+	// code - Flesh and Blood, One Piece, Gundam, Yu-Gi-Oh - everything but
+	// the ordinal itself. A number carrying no ordinal at all yields
+	// nothing rather than itself. The game owns this the way it owns its
+	// finish names, so a caller folding a number a person typed need not
+	// know which marks belong to which game - and one that rebuilt the
+	// vocabulary for itself got the case of Magic's phi wrong.
 	PlainNumber(number string) string
 }
 
