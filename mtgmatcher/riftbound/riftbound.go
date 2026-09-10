@@ -424,12 +424,16 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 				"tcgplayerProductId": pid,
 			}
 			// The product id names the printing, not one of its finishes, so
-			// it points at the plain one where that exists and at the foil
-			// when the card is only sold foil. MatchID re-resolves the finish
-			// from the caller's own flag either way.
+			// it points at the plain one where that exists, at the foil when
+			// the card is only sold foil, and at whatever finish it is sold
+			// in when that is a treatment alone. MatchID re-resolves the
+			// finish from the caller's own flag either way.
 			uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]
 			if !found {
-				uuid = convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]
+				uuid, found = convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]
+			}
+			if !found && len(convertedCard.Finishes) > 0 {
+				uuid = convertedCard.FoilUUIDs[convertedCard.Finishes[0]]
 			}
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = uuid
 		}
@@ -439,13 +443,16 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		// Store a CardObject per finish uuid, over the finishes the printing
 		// is actually sold in rather than both: a card sold in one finish
 		// has no uuid for the other, and reaching for it would file a
-		// CardObject under the empty string.
+		// CardObject under the empty string. Every finish but the plain one
+		// is a foil to the flag, the way Lorcana reads its treatments:
+		// CanonicalFinish places a printing TCGplayer adds later, and one
+		// sold in a treatment alone is not sold plain.
 		for _, finish := range convertedCard.Finishes {
 			s := struct {
 				uuid string
 				foil bool
 				name string
-			}{convertedCard.FoilUUIDs[finish], finish == mtgmatcher.FinishFoil, finish}
+			}{convertedCard.FoilUUIDs[finish], finish != mtgmatcher.FinishNonfoil, finish}
 			if _, found := b.UUIDs[s.uuid]; found {
 				continue
 			}
