@@ -103,6 +103,28 @@ func splitParens(title string) (number, series, treatment string) {
 	return number, series, treatment
 }
 
+// prereleaseOnPromoLine reports whether a prerelease card is filed on the
+// set's promo line rather than among the set's own cards.
+//
+// Every set since Murders at Karlov Manor numbers its prerelease cards
+// among its own, and the number the title carries then names the printing
+// in the set itself. A set before it files them on the promo line under
+// the base card's number with an "s" behind it, so a title carrying the
+// base number names the plain card in the set - and The Lord of the Rings
+// does both, holding a prerelease-tagged borderless at 402 beside the promo
+// line's date-stamped 402s, which is the one a prerelease listing sells.
+// The promo line is asked first: where it holds a prerelease printing of
+// the card, that is where the listing belongs, whatever the set holds at
+// the number.
+func prereleaseOnPromoLine(cardName, edition, number string) bool {
+	for _, card := range mtgmatcher.MatchInSet(cardName, "P"+edition) {
+		if card.HasPromoType("prerelease") {
+			return true
+		}
+	}
+	return number == "" || len(mtgmatcher.MatchInSetNumber(cardName, edition, number)) != 1
+}
+
 // Preprocess turns a storefront product into the card description the matcher
 // takes, reporting an error for what is not a card.
 func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
@@ -235,12 +257,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 			if len(fields) > 1 {
 				edition += " " + fields[1]
 			}
-		} else if strings.Contains(product.ProductNameEN, "Prerelease") &&
-			(number == "" || len(mtgmatcher.MatchInSetNumber(cardName, edition, number)) != 1) {
-			// A prerelease card is filed on the set's promo line, unless
-			// the set numbers it among its own cards, which every set
-			// since Murders at Karlov Manor does: the number the title
-			// carries then names the printing in the set itself.
+		} else if strings.Contains(product.ProductNameEN, "Prerelease") && prereleaseOnPromoLine(cardName, edition, number) {
 			edition += " Prerelease"
 		}
 
