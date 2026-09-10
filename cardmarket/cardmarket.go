@@ -1000,6 +1000,11 @@ func (mkm *Index) Load(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// An empty guide is a download that went wrong, not a day with no
+	// prices, and walking the catalog against it logs one miss per product.
+	if len(priceGuide) == 0 {
+		return errors.New("empty price guide")
+	}
 	mkm.priceGuide = make(map[int]cm.PriceGuide, len(priceGuide))
 	for _, entry := range priceGuide {
 		mkm.priceGuide[entry.IDProduct] = entry
