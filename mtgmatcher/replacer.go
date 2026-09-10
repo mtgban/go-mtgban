@@ -1,12 +1,13 @@
 package mtgmatcher
 
 import (
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
 )
 
-var replacerStrings = []string{
+var replacerStrings = slices.Concat([]string{
 	// Wrong escaping or conversion
 	"&quot;", "",
 
@@ -78,47 +79,11 @@ var replacerStrings = []string{
 	" and ", "",
 	" to ", "",
 	" & ", "",
-
-	// Accented characters; see asciiReplacer, which folds the same set for
-	// callers that tokenize rather than normalize.
-	"â", "a",
-	"á", "a",
-	"à", "a",
-	"ä", "a",
-	"ā", "a",
-	"ã", "a",
-	"é", "e",
-	"è", "e",
-	"ê", "e",
-	"ë", "e",
-	"ē", "e",
-	"í", "i",
-	"ì", "i",
-	"î", "i",
-	"ï", "i",
-	"ī", "i",
-	"ó", "o",
-	"ò", "o",
-	"ô", "o",
-	"ö", "o",
-	"ō", "o",
-	"õ", "o",
-	"ú", "u",
-	"ù", "u",
-	"û", "u",
-	"ü", "u",
-	"ū", "u",
-	"ñ", "n",
-	"ç", "c",
-	"ð", "d",
-	"š", "s",
-	"æ", "ae",
-	"ß", "ss",
-
+}, asciiStrings, []string{
 	// Spaces are overrated, except when not
 	"waste land", "waste land",
 	" ", "",
-}
+})
 
 // asciiStrings folds the letters that carry a mark down to the plain ascii
 // they stand for, and nothing else, for the callers that split a name into
