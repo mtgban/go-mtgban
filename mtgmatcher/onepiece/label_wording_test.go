@@ -104,6 +104,24 @@ func TestLabelWording(t *testing.T) {
 			},
 			want: "p-069_668435_foil",
 		},
+		{
+			// Neither the ordinal nor the count is a collector number,
+			// and the leader is the card the catalog writes none for.
+			desc: "the words of a label are not the number",
+			in: mtgmatcher.InputCard{
+				Name: "Monkey.D.Luffy", Variation: "3rd Anniversary Tournament 3 Brothers Pack",
+				Edition: "Carrying On His Will: 3rd Anniversary Tournament Cards",
+			},
+			want: "leader_661879",
+		},
+		{
+			desc: "and the card packed with it is named by its number",
+			in: mtgmatcher.InputCard{
+				Name: "Monkey.D.Luffy", Variation: "ST01-012 3rd Anniversary Tournament 3 Brothers Pack",
+				Edition: "Carrying On His Will: 3rd Anniversary Tournament Cards",
+			},
+			want: "st01-012_661882",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -116,5 +134,31 @@ func TestLabelWording(t *testing.T) {
 				t.Fatalf("Match(%v) = %s, want %s", tt.in, got, tt.want)
 			}
 		})
+	}
+}
+
+// TestUnlabelled pins what the number reading is left once the label words
+// are gone: a full number stays whatever the label says, a bare one stays
+// where no label holds it, and the words of a label go whether the wording
+// spells the label as a run or the mark's words apart.
+func TestUnlabelled(t *testing.T) {
+	b, err := Load(strings.NewReader(labelWordingFixture))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name, wording, want string
+	}{
+		{"Monkey.D.Luffy", "3rd Anniversary Tournament 3 Brothers Pack", ""},
+		{"Monkey.D.Luffy", "ST01-012 3rd Anniversary Tournament 3 Brothers Pack", "ST01-012"},
+		{"Monkey.D.Luffy", "041 Offline Regional 2024 Vol. 2 Participant", "041"},
+		{"Koala", "CS 25-26 Top Player Pack Vol. 2", ""},
+		{"Koala", "069 CS 25-26 Finalist Card Set 2", "069"},
+	}
+	for _, tt := range tests {
+		got := extractNumber(unlabelled(b, tt.name, tt.wording))
+		if got != tt.want {
+			t.Errorf("unlabelled(%q, %q) reads number %q, want %q", tt.name, tt.wording, got, tt.want)
+		}
 	}
 }
