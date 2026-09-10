@@ -271,6 +271,12 @@ func pokemonPlainName(name string) string {
 	return mtgmatcher.Normalize(name)
 }
 
+// pokemonPlainNumber is the number two products are compared on: the
+// programme a promo's number is written with comes off first, and what is
+// left is reduced the way the Pokemon rules reduce a plain number - the
+// letters behind it and the zeros before it. The reduction is spelled here
+// rather than asked of the matcher because the comparison runs on products
+// before any backend is installed, in the tests that pin the twins.
 func pokemonPlainNumber(number string) string {
 	if m := pokemonPromoNumber.FindStringSubmatch(strings.TrimSpace(number)); m != nil {
 		number = m[2]
