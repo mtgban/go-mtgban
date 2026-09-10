@@ -138,9 +138,113 @@ func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
 }
 
 // AdjustEdition normalizes the edition a storefront published toward a set
-// name; the fixup reads nothing but the edition, so the alias is all of it.
+// name, and unpins it where the listing's own wording names a printing that
+// set does not hold.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	inCard.Edition = (Rules{}).AliasEdition(b, inCard.Edition)
+	if pointedElsewhere(b, inCard) {
+		inCard.PromoWildcard = true
+	}
+}
+
+// pointedElsewhere reports whether the listing's wording names a printing of
+// its number that the edition it published excludes.
+//
+// A storefront shelves a card under the set it is numbered for, and this game
+// prints elsewhere at that same number: the promo sets reprint a card for
+// every event it was handed out at, and a later booster carries the SP and
+// the second parallel of a card a starter deck introduced. Both are shelved
+// by the storefront under the original set, so the edition names a set that
+// holds only the base printing while the wording beside it names one of the
+// others - and the edition gate then deletes the only right answer, leaving
+// the base printing to be priced at the parallel's price. Cool Stuff Inc
+// bought Gundam Dynames ST07-005 at $585 against a $1.99 ask that way: the
+// Newtype Challenge stamp is in the promo set, the shelf said ST07.
+//
+// PromoWildcard is the flag Match already reads to skip edition selection,
+// leaving FilterCards to choose on the label and the rarity - which is what
+// the wording named in the first place. It is set only where the wording
+// picks a printing outside the edition and none inside it, so a listing the
+// edition was answering correctly keeps its answer.
+func pointedElsewhere(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	number := extractNumber(inCard.Variation)
+	if number == "" || inCard.Edition == "" {
+		return false
+	}
+	inside, outside := numberedByEdition(b, inCard, number)
+	if len(inside) == 0 || len(outside) == 0 {
+		return false
+	}
+	// The label first: a wording naming an event names the printing handed
+	// out at it, and the base printing carries no label to be named by.
+	if labelled(inCard.Variation, outside) && !labelled(inCard.Variation, inside) {
+		return true
+	}
+	// Then the rarity, which is this game's own way of telling a parallel
+	// from the run it parallels. A rarity the edition's printings do not
+	// carry is the wording saying the printing is filed elsewhere: the
+	// second parallel of a starter deck's card is sold in the booster that
+	// follows it, so ST10-006 is Legend Rare and LR+ under Generation Pulse
+	// and LR++ only under Eternal Nexus.
+	return saysAnyRarity(inCard.Variation, outside) && !saysAnyRarity(inCard.Variation, inside)
+}
+
+// saysAnyRarity reports whether the wording spells the rarity of any of these
+// printings. It differs from rarityNamed in narrowing nothing: a group of one
+// still answers, which is the whole question being asked here.
+func saysAnyRarity(wording string, cards []mtgmatcher.Card) bool {
+	for _, card := range cards {
+		if saysRarity(wording, card.Rarity) {
+			return true
+		}
+	}
+	return false
+}
+
+// numberedByEdition splits the printings of the input's name at the given
+// number into those the edition names and those it does not, reading the
+// edition the way Match itself does: an exact set name where one answers,
+// and a contained one otherwise.
+func numberedByEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number string) (inside, outside []mtgmatcher.Card) {
+	var numbered []mtgmatcher.Card
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || !strings.EqualFold(number, co.Number) {
+			continue
+		}
+		numbered = append(numbered, co.Card)
+	}
+	var exact bool
+	for _, card := range numbered {
+		if mtgmatcher.Equals(b.Sets[card.SetCode].Name, inCard.Edition) {
+			exact = true
+			break
+		}
+	}
+	for _, card := range numbered {
+		setName := b.Sets[card.SetCode].Name
+		named := mtgmatcher.Equals(setName, inCard.Edition)
+		if !exact {
+			named = mtgmatcher.Contains(setName, inCard.Edition)
+		}
+		if named {
+			inside = append(inside, card)
+		} else {
+			outside = append(outside, card)
+		}
+	}
+	return inside, outside
+}
+
+// labelled reports whether the wording describes the labels of any of these
+// printings, which is what says the listing means a labelled one.
+func labelled(wording string, cards []mtgmatcher.Card) bool {
+	for _, card := range cards {
+		if len(card.PromoTypes) > 0 && wordsDescribe(wording, card.PromoTypes) {
+			return true
+		}
+	}
+	return false
 }
 
 // endsInPromo reports whether a heading ends in the game's own word for a
