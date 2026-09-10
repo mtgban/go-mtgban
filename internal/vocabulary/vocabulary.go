@@ -111,11 +111,6 @@ type Problems struct {
 	RunTogether []string
 }
 
-// Any reports whether anything was found.
-func (p Problems) Any() bool {
-	return len(p.Unstated)+len(p.NotSlugs)+len(p.Unlabelled)+len(p.Mangled)+len(p.RunTogether) > 0
-}
-
 // Lines are the problems as one line each.
 func (p Problems) Lines() []string {
 	var out []string
@@ -189,10 +184,4 @@ func sorted(list []string) []string {
 	}
 	sort.Strings(out)
 	return out
-}
-
-// Slug is a label as the token a query would carry, for telling a label the
-// loader kept from one it title-cased out of the token.
-func Slug(label string) string {
-	return mtgmatcher.PromoTypeSlug(label)
 }

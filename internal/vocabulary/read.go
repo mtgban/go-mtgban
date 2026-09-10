@@ -28,11 +28,6 @@ var ErrNotDatastore = errors.New("no cards: this is not a built datastore")
 // loader is free to carry it without declaring it.
 var aside = map[string]bool{"variant": true, "id": true, "image": true, "images": true}
 
-// marking is the field whose presence says a builder has taken the facts out
-// of the variant and put them in fields of their own. Until it does, a
-// loader deriving a token from the variant is falling back the way it is
-// documented to, and the variant counts as something the datastore states.
-
 // cardsOf finds a datastore's cards, in either place a game keeps them.
 //
 // Most write them at the top. Riftbound's upstream is the card gallery Riot
