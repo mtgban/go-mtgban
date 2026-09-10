@@ -592,15 +592,6 @@ func (mkm *Index) resolveMagic(product *cm.Product) (string, string, error) {
 	return cardID, cardIDFoil, nil
 }
 
-func (mkm *Index) processProduct(channel chan<- responseChan, product *cm.Product) error {
-	cardID, cardIDFoil, byName, err := mkm.resolveProduct(product)
-	if err != nil || cardID == "" {
-		return err
-	}
-
-	return mkm.emitPrices(channel, product, cardID, cardIDFoil, byName)
-}
-
 // resolveProduct answers a product with the printings its two price columns
 // belong to, whatever the game. An empty id under a nil error means the
 // product names nothing this datastore carries, which is a skip rather than
