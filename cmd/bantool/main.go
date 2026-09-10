@@ -235,13 +235,11 @@ var options = map[string]*scraperOption{
 	},
 	"cardmarket_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
-			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
-			if mkmAppToken == "" || mkmAppSecret == "" {
-				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			appToken, appSecret, err := cardmarketCredentials()
+			if err != nil {
+				return nil, err
 			}
-
-			scraper, err := cardmarket.NewScraperSealed(cm.GameMagic, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cm.GameMagic, appToken, appSecret)
 			if err != nil {
 				return nil, err
 			}
