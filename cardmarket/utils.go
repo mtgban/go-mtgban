@@ -1,60 +1,13 @@
 package cardmarket
 
 import (
-	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
-
-var filteredExpansionsTags = []string{
-	"Boomer Tokns",
-	"Filler Cards",
-	"For Science!",
-	"Gatherers' Tavern",
-	"GnD Cards",
-	"Heroes of the Realm",
-	"Mana ZenZero",
-	"MKM Series",
-	"Oversized",
-	"Player Cards",
-	"Revista Serra Promos",
-	"Rk post Products",
-	"SAWATARIX",
-	"Starcity",
-	"Street Clans",
-	"Three for One",
-	"Token",
-	"TokyoMTG Products",
-	"Vanlubow",
-}
-
-// FilterAndSortExpansions drops the expansions that hold nothing worth pricing
-// and returns the rest oldest first.
-func FilterAndSortExpansions(expansions []cm.Expansion) []cm.Expansion {
-	var out []cm.Expansion
-	for _, exp := range expansions {
-		var skip bool
-		for _, tag := range filteredExpansionsTags {
-			if strings.Contains(exp.Name, tag) {
-				skip = true
-				break
-			}
-		}
-		if skip {
-			continue
-		}
-		out = append(out, exp)
-	}
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].Name < out[j].Name
-	})
-	return out
-}
 
 // fabPrintRuns names the print run a Cardmarket Flesh and Blood expansion
 // spells into its own name, one expansion per run of the same set. Welcome
@@ -423,49 +376,6 @@ func shelved(shelves []shelf, set *mtgmatcher.Set) bool {
 		}
 	}
 	return false
-}
-
-// SanitizeProductList drops the duplicate names an edition can carry, which
-// would otherwise resolve to whichever entry was seen last.
-func SanitizeProductList(productList []cm.ProductList) {
-	// Lower product id means lower version number
-	for i := range productList {
-		name := productList[i].Name
-		// Skip already processed entries
-		if strings.Contains(name, "(V.") {
-			continue
-		}
-
-		version := 0
-		first := 0
-		for j := range productList {
-			// Look through the current edition only
-			if productList[i].ExpansionID != productList[j].ExpansionID {
-				continue
-			}
-
-			if name == productList[j].Name {
-				// Save the reference to the first element as it's not guaranteed that
-				// a. we'll find duplicates in the same edition
-				// b. duplicates are grouped together (they might have wide gaps
-				// At least the rule of lower id -> lower version number still stands
-				if version == 0 {
-					first = j
-				}
-				version++
-
-				// If multiple ids are found, we need to update the version of the first
-				// element (and only the first time) and then update the version of the
-				// current entry
-				if version > 1 {
-					if version == 2 {
-						productList[first].Name = fmt.Sprintf("%s (V.%d)", name, 1)
-					}
-					productList[j].Name = fmt.Sprintf("%s (V.%d)", name, version)
-				}
-			}
-		}
-	}
 }
 
 // disownBridged takes the bridge's answer away from a product it landed on
