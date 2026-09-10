@@ -22,6 +22,7 @@ func TestFetchWholeResumesATruncatedBody(t *testing.T) {
 		desc     string
 		cut      int  // bytes served before the body is cut, 0 for none
 		noRanges bool // the server ignores Range and starts over
+		noLength bool // the server states no Content-Length
 		want     string
 		wantErr  bool
 		serves   int
@@ -39,6 +40,14 @@ func TestFetchWholeResumesATruncatedBody(t *testing.T) {
 		{
 			desc: "a body that stops arriving is an error, not a loop",
 			cut:  0, want: "", wantErr: true, serves: 2,
+		},
+		{
+			// Without Content-Length there is nothing to resume against,
+			// so a cut body must be reported rather than returned as the
+			// file. A compressed response is the way this arises: Go
+			// reports -1 for a length it had to decompress.
+			desc: "a cut body with no stated length is an error",
+			cut:  1234, noLength: true, wantErr: true, serves: 1,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -65,9 +74,28 @@ func TestFetchWholeResumesATruncatedBody(t *testing.T) {
 				}
 				// Content-Length is what makes the shortfall visible, so
 				// state the length of what SHOULD arrive.
-				w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+				if !tt.noLength {
+					w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+				}
 				w.WriteHeader(status)
 				_, _ = w.Write([]byte(send))
+				// A handler that just returns ends its chunked body
+				// cleanly, which the client cannot tell from a whole one.
+				// Dropping the connection is what a cut body actually
+				// looks like on the wire.
+				if len(send) < len(body) && tt.noLength {
+					if flusher, ok := w.(http.Flusher); ok {
+						flusher.Flush()
+					}
+					hijacker, ok := w.(http.Hijacker)
+					if !ok {
+						return
+					}
+					conn, _, err := hijacker.Hijack()
+					if err == nil {
+						_ = conn.Close()
+					}
+				}
 			}))
 			defer srv.Close()
 

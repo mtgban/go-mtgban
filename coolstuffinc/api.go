@@ -182,7 +182,10 @@ func fetchWhole(ctx context.Context, link string) ([]byte, error) {
 			return nil, err
 		}
 
-		// Disable gzip compression
+		// Ask for the bytes as they are stored. The storefront serves this
+		// path uncompressed whatever is offered - it gzips its PHP pages
+		// but not /GeneratedFiles - and saying so keeps Content-Length
+		// meaningful, which is what the resume below measures against.
 		req.Header.Set("Accept-Encoding", "identity")
 		if len(body) > 0 {
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-", len(body)))
@@ -208,16 +211,24 @@ func fetchWhole(ctx context.Context, link string) ([]byte, error) {
 		resp.Body.Close()
 		body = append(body, chunk...)
 
+		// Only Content-Length says how much there was to read, and it
+		// survives only while the body arrives exactly as sent: leave the
+		// transport to negotiate compression, or ask for it, and Go
+		// answers -1 for a length it had to decompress. With nothing to
+		// measure against there is no resuming and no telling a whole body
+		// from a cut one, so a read that ended early has to be reported
+		// rather than passed off as the file.
+		if resp.ContentLength < 0 {
+			if readErr != nil {
+				return nil, readErr
+			}
+			return body, nil
+		}
+
 		// A body that ends early is the very shape this works around: keep
 		// what arrived and ask for the rest. Anything else is a real error.
 		if readErr != nil && !errors.Is(readErr, io.ErrUnexpectedEOF) {
 			return nil, readErr
-		}
-
-		// Only Content-Length says how much there was to read; without it
-		// a short body cannot be told from a complete one.
-		if resp.ContentLength < 0 {
-			return body, nil
 		}
 		total := have + int(resp.ContentLength)
 		if len(body) >= total {
