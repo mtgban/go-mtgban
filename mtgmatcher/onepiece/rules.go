@@ -1382,6 +1382,42 @@ func errataNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidate
 // which the catalog writes as the last word of the label.
 var promoPlaces = []string{"winner", "finalist", "participant"}
 
+// placeSpellings are the storefronts' other words for a place, keyed by
+// their slug. The catalog tags the printing handed to everyone who played
+// as the participant's and names the product it came in a "Participation
+// Pack", and the storefronts write the second word for the first.
+var placeSpellings = map[string]string{
+	"participation": "participant",
+}
+
+// placeWord reads the finishing place a word names, "" for a word naming
+// none. The word has to be a word: "winner" inside "winners" is not this
+// storefront naming a place.
+func placeWord(word string) string {
+	slug := mtgmatcher.PromoTypeSlug(word)
+	if slices.Contains(promoPlaces, slug) {
+		return slug
+	}
+	return placeSpellings[slug]
+}
+
+// placeMentioned reports whether a wording carries any place word, in the
+// catalog's spelling or a storefront's. Only presence is asked: "winners"
+// mentions a place as surely as "winner" does.
+func placeMentioned(wording string) bool {
+	for _, place := range promoPlaces {
+		if strings.Contains(wording, place) {
+			return true
+		}
+	}
+	for spelling := range placeSpellings {
+		if strings.Contains(wording, spelling) {
+			return true
+		}
+	}
+	return false
+}
+
 // placeAwarded reads the finishing place a label is awarded for, "" for a
 // label naming none. Only the last word is read: the catalog also sells a
 // "Winner Pack" and a "Finalist Card Set", products named after a place
@@ -1418,10 +1454,8 @@ func placeAwarded(label string) string {
 // prices a common card as a rare.
 func placeNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
 	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
-	for _, place := range promoPlaces {
-		if strings.Contains(wording, place) {
-			return candidates
-		}
+	if placeMentioned(wording) {
+		return candidates
 	}
 	var kept []mtgmatcher.Card
 	for _, card := range candidates {
@@ -1491,13 +1525,12 @@ func placeStem(label string) string {
 }
 
 // placeAsked reads the one finishing place a wording names, "" for a wording
-// naming none or more than one. The word has to be a word: "winner" inside
-// "winners" is not this storefront naming a place.
+// naming none or more than one.
 func placeAsked(wording string) string {
 	said := ""
-	for field := range strings.FieldsSeq(strings.ToLower(wording)) {
-		slug := mtgmatcher.PromoTypeSlug(field)
-		if !slices.Contains(promoPlaces, slug) {
+	for field := range strings.FieldsSeq(wording) {
+		slug := placeWord(field)
+		if slug == "" {
 			continue
 		}
 		if said != "" && said != slug {
@@ -1527,7 +1560,7 @@ func placeAsked(wording string) string {
 func placeChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
 	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
 	asked := placeAsked(wording)
-	if asked == "" {
+	if asked == "" || placeLabelled(b, wording, asked, candidates) {
 		return nil
 	}
 	families := map[string][]mtgmatcher.Card{}
@@ -1556,7 +1589,56 @@ func placeChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 	if len(kept) != 1 {
 		return nil
 	}
+	// The place is the only question the wording can be answering where
+	// its other words name nothing better. "CS 2024 Participation" names
+	// the championship's own participant printing by two of its tags, and
+	// the regional family standing at the same number, whose participant
+	// the place alone would pick, by one; the wording has said more than
+	// the place, and the tiering reads what it said.
+	named := tagsNamed(wording, kept[0])
+	for _, card := range candidates {
+		if tagsNamed(wording, card) > named {
+			return nil
+		}
+	}
 	return kept
+}
+
+// tagsNamed counts the tags of a printing a wording names.
+func tagsNamed(wording string, card mtgmatcher.Card) int {
+	named := 0
+	for _, promoType := range card.PromoTypes {
+		if mtgmatcher.SlugDescribes(wording, promoType) {
+			named++
+		}
+	}
+	return named
+}
+
+// placeLabelled reports whether the place a wording names is a word of a
+// label the wording spells out whole, worn by one of the candidates.
+//
+// The catalog names products after a place as well as awarding printings
+// for one, and a wording spelling "Finalist Card Set" has said the word
+// "finalist" without asking for the finalist's printing of the event pack
+// filed beside it. The whole label is the storefront saying which product
+// it means, and the place inside it is that product's name rather than a
+// question of its own; the tiering reads the label, and the place is left
+// to the wordings that say it on its own.
+func placeLabelled(b *mtgmatcher.Backend, wording, place string, candidates []mtgmatcher.Card) bool {
+	for _, card := range candidates {
+		for _, promoType := range card.PromoTypes {
+			if slices.Contains(promoPlaces, promoType) || !mtgmatcher.SlugDescribes(wording, promoType) {
+				continue
+			}
+			for word := range strings.FieldsSeq(b.PromoTypeLabel(promoType)) {
+				if placeWord(word) == place {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // mangaWord is what every storefront calls the printings drawn as manga
