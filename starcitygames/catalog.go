@@ -613,6 +613,23 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 			}
 		}
 
+		// A "PP_<CODE>_<NUM>" sku names the promo-pack printing of set
+		// P<CODE>, which the datastore numbers <NUM>p. The name is passed as
+		// a free self-check: the printing the grammar names carries the
+		// product's own name in every case the catalog holds.
+		if rest, found := strings.CutPrefix(skuNumber(p.SKU), "PP_"); found {
+			code, number, split := strings.Cut(rest, "_")
+			if split {
+				number = strings.TrimLeft(number, "0")
+				out := mtgmatcher.MatchWithNumber(p.Name, "P"+code, number+"p")
+				if len(out) == 1 {
+					if id, err := mtgmatcher.MatchID(out[0].UUID, foil, false); err == nil {
+						return id, nil
+					}
+				}
+			}
+		}
+
 		card, err := preprocess(catalogHit(p, foil))
 		if err != nil {
 			return "", err
@@ -748,6 +765,14 @@ func idContradictsProduct(p CatalogProduct, uuid string) bool {
 		return true
 	}
 	if strings.Contains(p.SKU, "-AMP_") && !co.HasPromoType("embossed") {
+		return true
+	}
+	// And its dual. The shelf and the finish are the only two ways this
+	// catalog names an embossed card, so an id landing on one from a product
+	// that says neither is the generator keying on the collector number and
+	// reaching the Ampersand twin.
+	if co.HasPromoType("embossed") &&
+		!strings.Contains(p.SKU, "-AMP_") && !strings.Contains(p.Finish, "Embossed") {
 		return true
 	}
 	// Modern Horizons' Timeshifts are a set of their own, mtgjson's H1R, sold
