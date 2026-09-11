@@ -743,7 +743,33 @@ func idContradictsProduct(p CatalogProduct, uuid string) bool {
 	if skuSetCode(p.SKU) == "MH12" && !co.HasPromoType("boosterfun") {
 		return true
 	}
+	// A World Championship sku names the year's deck set, and the identifiers
+	// routinely name the ordinary printing the deck reprinted: a gold-bordered
+	// $1.25 Covetous Dragon was priced as Urza's Destiny's $4.99 rare, and the
+	// deck printing went unlisted. The year segment says which set, so a
+	// printing from any other - the original, or another year's deck - is
+	// refused and the sku read instead.
+	if set, named := worldsSetFromSKU(p.SKU); named && co.SetCode != set {
+		return true
+	}
 	return false
+}
+
+// worldsSetFromSKU names the World Championship set a sku's year segment asks
+// for. The 1996 Pro Tour Collector Set is filed as PTC, every later year as
+// WC<yy>; the championships ended in 2004.
+func worldsSetFromSKU(sku string) (string, bool) {
+	if skuSetCode(sku) != "WCHP" {
+		return "", false
+	}
+	number := skuNumber(sku)
+	if len(number) < 2 || !unicode.IsDigit(rune(number[0])) || !unicode.IsDigit(rune(number[1])) {
+		return "", false
+	}
+	if number[:2] == "96" {
+		return "PTC", true
+	}
+	return "WC" + number[:2], true
 }
 
 // secondBucketMarker is what Star City Games appends to a sku's number segment
