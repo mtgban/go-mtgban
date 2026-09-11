@@ -191,7 +191,7 @@ func SCGBuylistURL(game int, name, language string, setIDs []int) string {
 		gamePath(game),
 		"bookmark",
 		nameSeg,                  // cardName
-		"0",                      // cardNameExactMatch
+		"1",                      // cardNameExactMatch
 		"1",                      // filterOutBulkProducts
 		"0",                      // filterOnlyHotlist
 		"0",                      // exportAsCSV
