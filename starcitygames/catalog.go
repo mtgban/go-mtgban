@@ -551,6 +551,17 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		}
 	}
 
+	// A promo-shelf printing is steered by its sku for the same reason the
+	// Portal pair is: the identifiers name another printing entirely.
+	if game == GameMagic {
+		if printing, found := promoShelfPrintings[skuNumber(p.SKU)]; found {
+			out := mtgmatcher.MatchWithNumber("", printing.set, printing.number)
+			if len(out) == 1 {
+				return mtgmatcher.MatchID(out[0].UUID, foil, etched)
+			}
+		}
+	}
+
 	// The authoritative identifiers resolve directly through the identifier
 	// index, regardless of game: Scryfall id first, then the TCGplayer id
 	// (MatchID resolves a bare product id through the external-id index and
@@ -667,6 +678,44 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		Variation: p.CollectorNumber,
 		Foil:      foil,
 	})
+}
+
+// promoShelfPrintings names the printing behind a sku that SCG files on its
+// generic Promo shelf, for the products that shelf leaves unplaceable.
+//
+// The shelf loses the printing twice over. A League Tokens promo is numbered
+// for the set whose league handed it out, which is not where mtgjson keeps it
+// - the tokens are their own yearly sets, L12 through L17 - and twelve of the
+// thirteen carry no identifier at all, so nothing but the sku says which. The
+// thirteenth is worse: {Monk Token} LEAG_FRF_L01, listed at $34.99 and bought
+// at $15.00, carries Fate Reforged's set-token scryfall id and so was priced
+// as that $0.49 common, the higher bid winning the shared id.
+//
+// The League half is closed rather than derived: the leagues ran from 2012 to
+// 2017, and the catalog's thirteen products are exactly the datastore's
+// thirteen reachable rows. Two are the same creature in one year, L13's Boros
+// Soldier for Gatecrash and its mono-white one for Theros, which no rule
+// reading the product could tell apart.
+var promoShelfPrintings = map[string]struct{ set, number string }{
+	"LEAG_M13_L01":    {"L12", "1"},
+	"LEAG_RTR_L01":    {"L12", "2"},
+	"LEAG_GTC_L01":    {"L13", "1"},
+	"LEAG_DGM_L01":    {"L13", "2"},
+	"LEAG_M14_L01":    {"L13", "3"},
+	"LEAG_THS_L01":    {"L13", "4"},
+	"LEAG_BNG_T01":    {"L14", "1"},
+	"LEAG_JOU_L01":    {"L14", "2"},
+	"LEAG_M15_L01":    {"L14", "3"},
+	"LEAG_KTK_L01":    {"L14", "4"},
+	"LEAG_FRF_L01":    {"L15", "1"},
+	"LEAG_KLD_T05T09": {"L16", "5"},
+	"LEAG_AER_T01T00": {"L17", "1"},
+
+	// Cowboy Bebop's five Standard Showdown promos are SCG's SSD_2024_NNNb,
+	// beside the basic lands that take the same numbers unsuffixed. Four
+	// carry their own identifiers and place themselves; Disdainful Stroke
+	// carries Friday Night Magic 2015's, nine years earlier.
+	"SSD_2024_002b": {"PCBB", "2"},
 }
 
 // idContradictsProduct reports whether the resolved printing lacks what the
