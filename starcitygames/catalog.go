@@ -793,6 +793,15 @@ func idContradictsProduct(p CatalogProduct, uuid string) bool {
 	if set, named := worldsSetFromSKU(p.SKU); named && co.SetCode != set {
 		return true
 	}
+	// Standard Showdown is an event, not a set: mtgjson files each year's
+	// promos under whichever set ran them, while the shop numbers them by the
+	// year and the place in that year's cycle. The 2024 lands carry the 2019
+	// promo pack's identifiers and were priced as them, so an id landing
+	// anywhere but on a Standard Showdown printing is naming another event's
+	// card. The wording path reads the year and finds the right one.
+	if strings.HasPrefix(skuNumber(p.SKU), "SSD_") && !co.HasPromoType("standardshowdown") {
+		return true
+	}
 	return false
 }
 
