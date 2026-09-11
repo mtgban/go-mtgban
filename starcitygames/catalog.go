@@ -734,6 +734,15 @@ func idContradictsProduct(p CatalogProduct, uuid string) bool {
 	if strings.Contains(p.SKU, "-AMP_") && !co.HasPromoType("embossed") {
 		return true
 	}
+	// Modern Horizons' Timeshifts are a set of their own, mtgjson's H1R, sold
+	// on the MH12 shelf and priced apart from the originals - but the catalog
+	// hands twenty-six of the forty the original's identifiers. No Modern
+	// Horizons printing is booster fun and every Timeshifts one is, so an id
+	// landing on a plain printing is naming the very card the shelf exists to
+	// tell apart. The wording path already renames MH12 to H1R.
+	if skuSetCode(p.SKU) == "MH12" && !co.HasPromoType("boosterfun") {
+		return true
+	}
 	return false
 }
 
