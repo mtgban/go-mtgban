@@ -541,6 +541,22 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		}
 	}
 
+	// Star City Games letters a prerelease number that names two printings:
+	// the datestamped promo, and the set's own card the stamp was put on.
+	// Both products carry the promo's identifiers, so the second shelf has to
+	// be steered by its sku before the identifiers get a say - the letter is
+	// the whole of what separates them. The set code rides in the sku's own
+	// number segment, the product's set saying only "Promo".
+	if game == GameMagic && strings.HasPrefix(skuNumber(p.SKU), "PRE_") && strings.HasSuffix(skuNumber(p.SKU), "b") {
+		fields := strings.Split(strings.TrimSuffix(skuNumber(p.SKU), "b"), "_")
+		if len(fields) == 3 {
+			out := mtgmatcher.MatchWithNumber(p.Name, fields[1], strings.TrimLeft(fields[2], "0"))
+			if len(out) == 1 && !out[0].HasPromoType("datestamped") {
+				return mtgmatcher.MatchID(out[0].UUID, foil, etched)
+			}
+		}
+	}
+
 	// Duel Decks: Anthology reprints four earlier duel decks, and mtgjson
 	// keeps them under their original codes. The product's set name says
 	// only "Anthology", so the deck it belongs to is read from the sku.
