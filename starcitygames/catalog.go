@@ -244,6 +244,21 @@ func resolveProduct(game int, p CatalogProduct) (string, error) {
 	if cerr == nil && claimed != "" && !strings.Contains(co.Language, claimed) {
 		return "", mtgmatcher.ErrUnsupported
 	}
+
+	// A Store Championship promo was struck in foil alone, so the shop's
+	// unfoiled listing of one has nothing to land on. Both listings resolve
+	// to the single printing there is - the id index and the wording path
+	// alike hand back the one finish a printing was made in, whichever was
+	// asked for - and the pair then meets on one key, where the record keeps
+	// both and the dearer prices the card: a $99.99 City of Brass beside the
+	// $249.99 foil. Only this shelf is guarded, because only here is the
+	// absence proven; elsewhere an unfoiled product landing on a foil-only
+	// printing is a resolution that went wrong earlier, and refusing it would
+	// bury the mistake rather than fix it.
+	if cerr == nil && !catalogFoil(p) && co.Foil &&
+		strings.HasPrefix(skuNumber(p.SKU), "SCHP_") {
+		return "", mtgmatcher.ErrUnsupported
+	}
 	return id, nil
 }
 
