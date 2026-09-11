@@ -596,7 +596,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		if idContradictsProduct(p, out) {
 			break
 		}
-		return out, nil
+		return resalePrinting(out, p, foil, etched), nil
 	}
 
 	// Magic needs catalog-specific fixups before the generic matcher.
@@ -794,6 +794,50 @@ func idContradictsProduct(p CatalogProduct, uuid string) bool {
 		return true
 	}
 	return false
+}
+
+// resaleMarker opens the number segment of the sku Star City Games gives a
+// WotC resale promo.
+const resaleMarker = "RESL_"
+
+// resalePrinting returns the resale printing a RESL sku names, given the
+// printing its identifiers landed on. SCG copies the promo-pack product's
+// identifiers onto the resale product beside it, so the ids name the right
+// card in the right promo set and the wrong treatment - both products then
+// answer to the promo pack's uuid and the dearer wins.
+//
+// The datastore's own promoType is what separates the two, and the set the id
+// lands in is what bounds the search: where that set holds exactly one resale
+// printing of the name, that is what is being sold. Where it holds none the id
+// stands, because the shelf also carries printings mtgjson labels no resale
+// and refusing those would lose the only answer there is.
+func resalePrinting(id string, p CatalogProduct, foil, etched bool) string {
+	if !strings.HasPrefix(skuNumber(p.SKU), resaleMarker) {
+		return id
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil || co.HasPromoType("resale") {
+		return id
+	}
+	var found string
+	for _, card := range mtgmatcher.MatchInSet(co.Name, co.SetCode) {
+		sibling, serr := mtgmatcher.GetUUID(card.UUID)
+		if serr != nil || !sibling.HasPromoType("resale") {
+			continue
+		}
+		out, merr := mtgmatcher.MatchID(card.UUID, foil, etched)
+		if merr != nil || out == id {
+			continue
+		}
+		if found != "" && found != out {
+			return id
+		}
+		found = out
+	}
+	if found == "" {
+		return id
+	}
+	return found
 }
 
 // worldsSetFromSKU names the World Championship set a sku's year segment asks
