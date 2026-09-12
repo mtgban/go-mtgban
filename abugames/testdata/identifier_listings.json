@@ -1,0 +1,266 @@
+[
+  {
+    "group": "135246",
+    "card": {
+      "id": "237882",
+      "display_title": "Forest (B Night)",
+      "simple_title": "Forest",
+      "magic_edition_sort": "5th Edition",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "447",
+      "layout": "Normal",
+      "scryfall_id": [
+        "13635ba7-0635-4c16-9e14-444470e06287"
+      ],
+      "tcgplayer_id": [
+        18114
+      ]
+    },
+    "set": "5ED",
+    "number": "447",
+    "primary": true
+  },
+  {
+    "group": "219763",
+    "card": {
+      "id": "375806",
+      "display_title": "Plains (38)",
+      "simple_title": "Plains",
+      "magic_edition_sort": "Venser vs. Koth",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "40",
+      "layout": "Normal",
+      "scryfall_id": [
+        "65beef5d-df12-4e33-a585-b32f552b58a3"
+      ],
+      "tcgplayer_id": [
+        77315
+      ]
+    },
+    "set": "DDI",
+    "number": "38",
+    "primary": false
+  },
+  {
+    "group": "7572010",
+    "card": {
+      "id": "1895354",
+      "display_title": "Master of Winds",
+      "simple_title": "Master of Winds",
+      "magic_edition_sort": "Zendikar Rising",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "331",
+      "layout": "Normal",
+      "scryfall_id": [
+        "63663faa-3ccb-4299-b393-347eefaf3c7b"
+      ],
+      "tcgplayer_id": [
+        222156
+      ]
+    },
+    "set": "ZNR",
+    "number": "68",
+    "primary": false
+  },
+  {
+    "group": "7648443",
+    "card": {
+      "id": "2003578",
+      "display_title": "Strict Proctor - FOIL",
+      "simple_title": "Strict Proctor",
+      "magic_edition_sort": "Strixhaven: School of Mages",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "33",
+      "layout": "Normal",
+      "scryfall_id": [
+        "95f1e36a-6838-49de-b7dc-697cbcd1e892"
+      ],
+      "tcgplayer_id": [
+        235585
+      ]
+    },
+    "set": "STX",
+    "number": "33",
+    "primary": true
+  },
+  {
+    "group": "7821684",
+    "card": {
+      "id": "2240543",
+      "display_title": "Katerina of Myra's Marvels",
+      "simple_title": "Katerina of Myra's Marvels",
+      "magic_edition_sort": "Unfinity",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "245",
+      "layout": "Normal",
+      "scryfall_id": [
+        "ef89827b-39b0-4dbb-9516-ee2e47012938"
+      ],
+      "tcgplayer_id": [
+        287269
+      ]
+    },
+    "set": "UNF",
+    "number": "16",
+    "primary": false
+  },
+  {
+    "group": "7935312",
+    "card": {
+      "id": "2378452",
+      "display_title": "Samwise the Stouthearted (Bundle Promo)",
+      "simple_title": "Samwise the Stouthearted",
+      "magic_edition_sort": "Promo",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "449",
+      "layout": "Normal",
+      "scryfall_id": [
+        "16891fb5-1388-465c-8d86-97de0ee94ef1"
+      ],
+      "tcgplayer_id": [
+        488269
+      ]
+    },
+    "set": "LTR",
+    "number": "449",
+    "primary": true
+  },
+  {
+    "group": "7975258",
+    "card": {
+      "id": "2439314",
+      "display_title": "Bronzebeak Foragers",
+      "simple_title": "Bronzebeak Foragers",
+      "magic_edition_sort": "The Lost Caverns of Ixalan Commander",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "37",
+      "layout": "Normal",
+      "scryfall_id": [
+        "37730957-0483-49b7-9fe0-aff7c45f5d03"
+      ],
+      "tcgplayer_id": [
+        526234
+      ]
+    },
+    "set": "LCC",
+    "number": "69",
+    "primary": false
+  },
+  {
+    "group": "8103846",
+    "card": {
+      "id": "2633695",
+      "display_title": "Web-Warriors (Borderless)",
+      "simple_title": "Web-Warriors",
+      "magic_edition_sort": "Marvel's Spider-Man",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "159",
+      "layout": "Normal",
+      "scryfall_id": [
+        "741f5373-b51a-421a-9a74-326f0575c99b"
+      ],
+      "tcgplayer_id": [
+        646634
+      ]
+    },
+    "set": "SPM",
+    "number": "203",
+    "primary": true
+  },
+  {
+    "group": "8111263",
+    "card": {
+      "id": "2642638",
+      "display_title": "Counterspell (MagicFest) - FOIL",
+      "simple_title": "Counterspell",
+      "magic_edition_sort": "Promo",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "1",
+      "layout": "Normal",
+      "scryfall_id": [
+        "8916e24f-9c74-4b6c-9894-d60669854f35"
+      ],
+      "tcgplayer_id": [
+        540987
+      ]
+    },
+    "set": "PF24",
+    "number": "1",
+    "primary": true
+  },
+  {
+    "group": "8118507",
+    "card": {
+      "id": "2655495",
+      "display_title": "Counterspell (NYCC 2024) - FOIL",
+      "simple_title": "Counterspell",
+      "magic_edition_sort": "Promo",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "2",
+      "layout": "Normal",
+      "scryfall_id": [
+        "f2a7042f-a6f0-4e77-86a2-5eb0d2587363"
+      ],
+      "tcgplayer_id": [
+        589737
+      ]
+    },
+    "set": "PURL",
+    "number": "2",
+    "primary": true
+  },
+  {
+    "group": "8127339",
+    "card": {
+      "id": "2671270",
+      "display_title": "Triceraton Commander (Showcase)",
+      "simple_title": "Triceraton Commander",
+      "magic_edition_sort": "Teenage Mutant Ninja Turtles",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "25",
+      "layout": "Normal",
+      "scryfall_id": [
+        "71ce86cc-6367-4166-82f5-7e794a9e4c5d"
+      ],
+      "tcgplayer_id": [
+        679062
+      ]
+    },
+    "set": "TMT",
+    "number": "226",
+    "primary": true
+  }
+]

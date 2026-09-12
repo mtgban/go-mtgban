@@ -1,0 +1,555 @@
+[
+  {
+    "group": "8082778",
+    "card": {
+      "id": "2598246",
+      "card_number": "1",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Promo",
+      "title": "English",
+      "product_id": "8082778",
+      "display_title": "Sakure-Tribe Elder (Love Your LGS 2024) - FOIL",
+      "simple_title": "Sakura-Tribe Elder"
+    },
+    "uuid": "7a78e63f-9ad3-5279-b4aa-a387132d68e8"
+  },
+  {
+    "group": "7511433",
+    "card": {
+      "id": "1822694",
+      "language": [
+        "English"
+      ],
+      "layout": "Playtest",
+      "magic_edition_sort": "Mystery Booster Playtest Cards 2019",
+      "title": "English",
+      "product_id": "7511433",
+      "display_title": "Trial and Error (Playtest Card A - With PW Symbol)",
+      "simple_title": "Trial and Error Playtest card"
+    },
+    "uuid": "1edf860e-69aa-52f8-a792-3c8041b756af"
+  },
+  {
+    "group": "8118527",
+    "card": {
+      "id": "2655546",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Secret Lair Promo",
+      "scryfall_id": [
+        "4ccab9dd-95b1-491b-b9d4-da60d87d8edd"
+      ],
+      "tcgplayer_id": [
+        628288
+      ],
+      "title": "English",
+      "product_id": "8118527",
+      "display_title": "Fauna Shaman (Secret Lair)",
+      "simple_title": "Fauna Shaman"
+    },
+    "uuid": "fafdb233-52cf-5faf-9396-d6be11609bf4"
+  },
+  {
+    "group": "8118529",
+    "card": {
+      "id": "2655553",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Secret Lair Promo",
+      "scryfall_id": [
+        "4ccab9dd-95b1-491b-b9d4-da60d87d8edd"
+      ],
+      "tcgplayer_id": [
+        628288
+      ],
+      "title": "English",
+      "product_id": "8118529",
+      "display_title": "Fauna Shaman (Secret Lair) - FOIL",
+      "simple_title": "Fauna Shaman"
+    },
+    "uuid": "fafdb233-52cf-5faf-9396-d6be11609bf4_f"
+  },
+  {
+    "group": "8118980",
+    "card": {
+      "id": "2656146",
+      "card_number": "12",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Promo",
+      "scryfall_id": [
+        "d7a7b817-90a3-4cb4-bbea-316f98ff0402"
+      ],
+      "tcgplayer_id": [
+        638817
+      ],
+      "title": "English",
+      "product_id": "8118980",
+      "display_title": "Swords to Plowshares (MagicCon 2025) - FOIL",
+      "simple_title": "Swords to Plowshares"
+    },
+    "uuid": "eed6da3e-91f8-58e4-ae7e-cb16a2c9fbed"
+  },
+  {
+    "group": "8118982",
+    "card": {
+      "id": "2656150",
+      "card_number": "6",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Promo",
+      "scryfall_id": [
+        "719438b8-7b66-4f13-a568-80202365cc1a"
+      ],
+      "tcgplayer_id": [
+        633051
+      ],
+      "title": "English",
+      "product_id": "8118982",
+      "display_title": "Ugin, the Spirit Dragon (MagicCon Retro Frame) - FOIL",
+      "simple_title": "Ugin, the Spirit Dragon"
+    },
+    "uuid": "47e67179-b6f4-5928-911c-90e5672b2f9c"
+  },
+  {
+    "group": "8118986",
+    "card": {
+      "id": "2656168",
+      "card_number": "10",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Promo",
+      "scryfall_id": [
+        "527c262d-3315-4f7b-9f31-907f6656461c"
+      ],
+      "tcgplayer_id": [
+        648212
+      ],
+      "title": "English",
+      "product_id": "8118986",
+      "display_title": "Arcane Signet (Commandfest 2025)",
+      "simple_title": "Arcane Signet"
+    },
+    "uuid": "4b9acf09-a52c-59e9-9578-4fca4ef8b86f"
+  },
+  {
+    "group": "8118988",
+    "card": {
+      "id": "2656161",
+      "card_number": "10",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Promo",
+      "scryfall_id": [
+        "527c262d-3315-4f7b-9f31-907f6656461c"
+      ],
+      "tcgplayer_id": [
+        648212
+      ],
+      "title": "English",
+      "product_id": "8118988",
+      "display_title": "Arcane Signet (Commandfest 2025) - FOIL",
+      "simple_title": "Arcane Signet"
+    },
+    "uuid": "4b9acf09-a52c-59e9-9578-4fca4ef8b86f_f"
+  },
+  {
+    "group": "8118990",
+    "card": {
+      "id": "2656173",
+      "card_number": "13",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Promo",
+      "scryfall_id": [
+        "6580f4f9-870b-4258-8dce-48c606b90a6c"
+      ],
+      "tcgplayer_id": [
+        649649
+      ],
+      "title": "English",
+      "product_id": "8118990",
+      "display_title": "Lightning Bolt (MagicCon 2025) - FOIL",
+      "simple_title": "Lightning Bolt"
+    },
+    "uuid": "c7d04140-bd26-5fc3-8c9c-c79cea4be3b9"
+  },
+  {
+    "group": "8151431",
+    "card": {
+      "id": "2714203",
+      "card_number": "253",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "title": "English",
+      "product_id": "8151431",
+      "display_title": "Deathcap Glade (Promo Pack)",
+      "simple_title": "Deathcap Glade"
+    },
+    "uuid": "0d019134-7c9f-5e6b-9011-c8b9ddb221e8"
+  },
+  {
+    "group": "8151591",
+    "card": {
+      "id": "2714207",
+      "card_number": "253",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "title": "English",
+      "product_id": "8151591",
+      "display_title": "Deathcap Glade (Promo Pack) - FOIL",
+      "simple_title": "Deathcap Glade"
+    },
+    "uuid": "0d019134-7c9f-5e6b-9011-c8b9ddb221e8_f"
+  },
+  {
+    "group": "8151787",
+    "card": {
+      "id": "2713430",
+      "card_number": "267",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "title": "English",
+      "product_id": "8151787",
+      "display_title": "Steam Vents (Promo Pack) - FOIL",
+      "simple_title": "Steam Vents"
+    },
+    "uuid": "2020a7b1-0314-5b50-9b53-4b3b5e388c63_f"
+  },
+  {
+    "group": "8151947",
+    "card": {
+      "id": "2713428",
+      "card_number": "267",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "title": "English",
+      "product_id": "8151947",
+      "display_title": "Steam Vents (Promo Pack)",
+      "simple_title": "Steam Vents"
+    },
+    "uuid": "2020a7b1-0314-5b50-9b53-4b3b5e388c63"
+  },
+  {
+    "group": "8111219",
+    "card": {
+      "id": "2642524",
+      "card_number": "1",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Wizards Play Network 2022",
+      "scryfall_id": [
+        "8ea9612c-db1a-4858-816a-0f88d3080b4c"
+      ],
+      "tcgplayer_id": [
+        518815
+      ],
+      "title": "English",
+      "product_id": "8111219",
+      "display_title": "Serra Angel (WPN Borderless) - FOIL",
+      "simple_title": "Serra Angel"
+    },
+    "uuid": "5458f1a8-9b7a-5a48-a594-48be1eedb510"
+  },
+  {
+    "group": "8082768",
+    "card": {
+      "id": "2598226",
+      "card_number": "432",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Murders at Karlov Manor",
+      "scryfall_id": [
+        "bfa1bd2f-25bd-4fbd-877b-cef00ab7f92f"
+      ],
+      "tcgplayer_id": [
+        533008
+      ],
+      "title": "English",
+      "product_id": "8082768",
+      "display_title": "Voja, Jaws of the Conclave - Prerelease (no date stamp) - FOIL",
+      "simple_title": "Voja, Jaws of the Conclave"
+    },
+    "uuid": "2b58868e-0dab-5a3e-9218-d94cbfbc4f2d"
+  },
+  {
+    "group": "8082771",
+    "card": {
+      "id": "2598233",
+      "card_number": "431",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Murders at Karlov Manor",
+      "scryfall_id": [
+        "2c5a7550-fe1a-4797-9583-70ab56cfac0d"
+      ],
+      "tcgplayer_id": [
+        532914
+      ],
+      "title": "English",
+      "product_id": "8082771",
+      "display_title": "Tomik, Wielder of Law - Prerelease (no date stamp) - FOIL",
+      "simple_title": "Tomik, Wielder of Law"
+    },
+    "uuid": "a4cd2e06-df57-5bf5-9e53-5a36272b53a5"
+  },
+  {
+    "group": "8127097",
+    "card": {
+      "id": "2669854",
+      "card_number": "131",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Teenage Mutant Ninja Turtles Eternal",
+      "scryfall_id": [
+        "ef9d3e48-85c2-4347-810f-a6a0725b288d"
+      ],
+      "tcgplayer_id": [
+        657757
+      ],
+      "title": "English",
+      "product_id": "8127097",
+      "display_title": "Dark Ritual (Borderless Pizza Bundle Promo) - FOIL",
+      "simple_title": "Dark Ritual"
+    },
+    "uuid": "d74242bc-0796-5613-95b3-ffbbdc936f31"
+  },
+  {
+    "group": "8127107",
+    "card": {
+      "id": "2669883",
+      "card_number": "136",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Teenage Mutant Ninja Turtles Eternal",
+      "scryfall_id": [
+        "b35b5b3f-3daa-4091-9de4-1e6a7da27a74"
+      ],
+      "tcgplayer_id": [
+        679207
+      ],
+      "title": "English",
+      "product_id": "8127107",
+      "display_title": "Sword of Hearth and Home (Borderless Pizza Bundle Promo) - FOIL",
+      "simple_title": "Sword of Hearth and Home"
+    },
+    "uuid": "2b5d4a4c-e1fb-5cb3-a08a-6100874e0d7a"
+  },
+  {
+    "group": "8124578",
+    "card": {
+      "id": "2666073",
+      "card_number": "310",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Outlaws of Thunder Junction Commander",
+      "scryfall_id": [
+        "1b0431c1-4310-46f8-8d1e-b6e56de7453d"
+      ],
+      "tcgplayer_id": [
+        545384
+      ],
+      "title": "English",
+      "product_id": "8124578",
+      "display_title": "Path of Ancestry (The List)",
+      "simple_title": "Path of Ancestry"
+    },
+    "uuid": "15b8e060-3509-5f08-bbbf-576dce3e6ea8"
+  },
+  {
+    "group": "8098901",
+    "card": {
+      "id": "2625964",
+      "card_number": "37",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Elves vs. Goblins",
+      "scryfall_id": [
+        "c8bbb06d-147c-4423-8bbd-e47a1f0a85aa"
+      ],
+      "tcgplayer_id": [
+        37720
+      ],
+      "title": "English",
+      "product_id": "8098901",
+      "display_title": "Gempalm Incinerator (The List)",
+      "simple_title": "Gempalm Incinerator"
+    },
+    "uuid": "e54dccbe-48d1-5be2-a774-7d43978f2372"
+  },
+  {
+    "group": "8107290",
+    "card": {
+      "id": "2638584",
+      "card_number": "37",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Duel Decks Anthology: Elves vs. Goblins",
+      "scryfall_id": [
+        "7a6001b3-da55-4213-80e2-27ef749ebec5"
+      ],
+      "tcgplayer_id": [
+        93636
+      ],
+      "title": "English",
+      "product_id": "8107290",
+      "display_title": "Gempalm Incinerator (The List)",
+      "simple_title": "Gempalm Incinerator"
+    },
+    "uuid": "e54dccbe-48d1-5be2-a774-7d43978f2372"
+  },
+  {
+    "group": "8149750",
+    "card": {
+      "id": "2706423",
+      "card_number": "247",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Secrets of Strixhaven Commander",
+      "scryfall_id": [
+        "dfbda387-3c7d-4c80-97c3-60c9d4757244"
+      ],
+      "tcgplayer_id": [
+        687428
+      ],
+      "title": "English",
+      "product_id": "8149750",
+      "display_title": "Mana Geyser (The List)",
+      "simple_title": "Mana Geyser"
+    },
+    "uuid": "527b77ba-59e9-51f7-b217-d932bc57bdcc"
+  },
+  {
+    "group": "8061616",
+    "card": {
+      "id": "2562721",
+      "card_number": "413",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Commander Masters",
+      "scryfall_id": [
+        "64401acc-d080-4763-b67a-95164c11c69e"
+      ],
+      "tcgplayer_id": [
+        503911
+      ],
+      "title": "English",
+      "product_id": "8061616",
+      "display_title": "Sword of the Animist (The List)",
+      "simple_title": "Sword of the Animist"
+    },
+    "error": "aliasing detected"
+  },
+  {
+    "group": "7687716",
+    "card": {
+      "id": "2050373",
+      "card_number": "301s",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Modern Horizons 2 Promos",
+      "title": "English",
+      "product_id": "7687716",
+      "display_title": "Cabal Coffers (Prerelease) - FOIL",
+      "simple_title": "Cabal Coffers"
+    },
+    "error": "unknown edition"
+  },
+  {
+    "group": "7817709",
+    "card": {
+      "id": "2236162",
+      "card_number": "282",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Dominaria United",
+      "title": "English",
+      "product_id": "7817709",
+      "display_title": "Serra Redeemer (Prerelease) - FOIL",
+      "simple_title": "Serra Redeemer"
+    },
+    "error": "unknown edition"
+  },
+  {
+    "group": "7817878",
+    "card": {
+      "id": "2235061",
+      "card_number": "282",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Dominaria United",
+      "title": "English",
+      "product_id": "7817878",
+      "display_title": "Serra Redeemer (Promo Pack)",
+      "simple_title": "Serra Redeemer"
+    },
+    "error": "unknown edition"
+  },
+  {
+    "group": "7703309",
+    "card": {
+      "id": "2075252",
+      "language": [
+        "English"
+      ],
+      "layout": "Playtest",
+      "magic_edition_sort": "Mystery Booster Playtest Cards 2021",
+      "title": "English",
+      "product_id": "7703309",
+      "display_title": "Trial and Error (Playtest Card B - No PW Symbol)",
+      "simple_title": "Trial and Error Playtest card"
+    },
+    "uuid": "f6508a43-1c2c-59e9-b213-6fec99af1c7f"
+  }
+]

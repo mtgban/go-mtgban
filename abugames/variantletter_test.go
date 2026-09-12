@@ -8,8 +8,8 @@ import (
 
 // TestVariantLetter pins the printing a listing reaches when a set prints one
 // card several times over and this storefront tells them apart by a letter.
-// The letter is the whole identity - the words beside it are the storefront's
-// own name for the art - and the collector number, appended last, buried it.
+// Use the letter when no exact artwork description is known. Cataloged
+// descriptions take priority because ABU's letters can differ from suffixes.
 func TestVariantLetter(t *testing.T) {
 	realDatastore(t)
 	for _, test := range []struct {
@@ -25,9 +25,9 @@ func TestVariantLetter(t *testing.T) {
 		{"a letter the storefront writes with a dash", ABUCard{
 			DisplayTitle: "Secret Base (e Crossbreed Labs)", Edition: "Unstable", Number: "165"}, "UST", "165e"},
 		{"a set whose own numbering the letters were scrambled against", ABUCard{
-			DisplayTitle: "Strip Mine (c No Horizon)", Edition: "Antiquities", Number: "82"}, "ATQ", "82c"},
+			DisplayTitle: "Strip Mine (c No Horizon)", Edition: "Antiquities", Number: "82"}, "ATQ", "82a"},
 		{"and its sibling", ABUCard{
-			DisplayTitle: "Strip Mine (a Even)", Edition: "Antiquities", Number: "82"}, "ATQ", "82a"},
+			DisplayTitle: "Strip Mine (a Even)", Edition: "Antiquities", Number: "82"}, "ATQ", "82b"},
 		{"a card the catalog files under a dagger", ABUCard{
 			DisplayTitle: "Sudden Setback (b - Black Bottle)", Edition: "Murders at Karlov Manor", Number: "72"}, "MKM", "72†"},
 		{"the plain half of that pair", ABUCard{

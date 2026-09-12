@@ -1,0 +1,407 @@
+[
+  {
+    "group": "306549",
+    "card": {
+      "id": "557395",
+      "card_number": "243\u2020",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "5th Edition",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "cc2850e8-f135-4a51-905b-ae30b83913a6"
+      ],
+      "tcgplayer_id": [
+        2212
+      ],
+      "title": "English",
+      "display_title": "Inferno (Portuguese Copyright)",
+      "simple_title": "Inferno"
+    },
+    "uuid": "a64c5a3b-f77b-50d9-b01c-1735809a2fb8",
+    "without_ids": true
+  },
+  {
+    "group": "306562",
+    "card": {
+      "id": "557420",
+      "card_number": "232\u2020",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "5th Edition",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "0e4aaab5-a202-4905-839b-ebf39b910082"
+      ],
+      "title": "English",
+      "display_title": "Game of Chaos (Portuguese Copyright)",
+      "simple_title": "Game of Chaos"
+    },
+    "uuid": "577ae165-cfb3-5a7b-b6fc-2c3d5f42292b",
+    "without_ids": true
+  },
+  {
+    "group": "306566",
+    "card": {
+      "id": "623948",
+      "card_number": "250\u2020",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "5th Edition",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "ffef6ac8-a42c-4025-b4ef-3f772129b8f7"
+      ],
+      "tcgplayer_id": [
+        2268
+      ],
+      "title": "English",
+      "display_title": "Manabarbs (Portuguese Copyright)",
+      "simple_title": "Manabarbs"
+    },
+    "uuid": "4d8b1e13-856b-5961-880a-ebff6efabef9",
+    "without_ids": true
+  },
+  {
+    "group": "306569",
+    "card": {
+      "id": "557431",
+      "card_number": "267\u2020",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "5th Edition",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "b97e7318-f916-4556-9f89-dda7914359c1"
+      ],
+      "tcgplayer_id": [
+        2372
+      ],
+      "title": "English",
+      "display_title": "Shivan Dragon (Portuguese Copyright)",
+      "simple_title": "Shivan Dragon"
+    },
+    "uuid": "2f118c2e-da99-54a6-894b-5c948d74b0f4",
+    "without_ids": true
+  },
+  {
+    "group": "306572",
+    "card": {
+      "id": "1479165",
+      "card_number": "244\u2020",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "5th Edition",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "346eef90-35c3-4153-a64a-55f4d7b232e2"
+      ],
+      "tcgplayer_id": [
+        2217
+      ],
+      "title": "English",
+      "display_title": "Ironclaw Curse (Portuguese Copyright)",
+      "simple_title": "Ironclaw Curse"
+    },
+    "uuid": "dacd6e5e-bb13-5cd2-abce-2ba553c36840",
+    "without_ids": true
+  },
+  {
+    "group": "8079018",
+    "card": {
+      "id": "2592741",
+      "card_number": "147f",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Unstable",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "e09bef24-a186-4697-bd33-446fe6e25376"
+      ],
+      "tcgplayer_id": [
+        154452
+      ],
+      "title": "English",
+      "display_title": "Everythingamajig (f Scry The List) - FOIL",
+      "simple_title": "Everythingamajig"
+    },
+    "uuid": "56c7b720-a483-574d-be25-66be58aba029",
+    "without_ids": true
+  },
+  {
+    "group": "8124078",
+    "card": {
+      "id": "2665448",
+      "card_number": "147a",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Unstable",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "e09bef24-a186-4697-bd33-446fe6e25376"
+      ],
+      "tcgplayer_id": [
+        153198
+      ],
+      "title": "English",
+      "display_title": "Everythingamajig (a Move The List) - FOIL",
+      "simple_title": "Everythingamajig"
+    },
+    "uuid": "0db15fc1-8d74-5371-9950-0556f56ab363",
+    "without_ids": true
+  },
+  {
+    "group": "8079030",
+    "card": {
+      "id": "2592769",
+      "card_number": "113a",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Unstable",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "be3e867a-208d-4a23-b8a8-a48866889a8d"
+      ],
+      "tcgplayer_id": [
+        152466
+      ],
+      "title": "English",
+      "display_title": "Ineffable Blessing (a Flavorful or Bland) - (The List) FOIL ",
+      "simple_title": "Ineffable Blessing"
+    },
+    "uuid": "c7ae756f-75b8-5142-a57c-0fb857464713",
+    "without_ids": true
+  },
+  {
+    "group": "8124090",
+    "card": {
+      "id": "2665469",
+      "card_number": "113c",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Unstable",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "91144259-d0a1-4e49-9f9b-9be7e36361d9"
+      ],
+      "tcgplayer_id": [
+        154468
+      ],
+      "title": "English",
+      "display_title": "Ineffable Blessing (c Bordered) - FOIL (The List)",
+      "simple_title": "Ineffable Blessing"
+    },
+    "uuid": "60209c55-7456-5616-adea-8b8925a88062",
+    "without_ids": true
+  },
+  {
+    "group": "8079001",
+    "card": {
+      "id": "2592702",
+      "card_number": "102",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Unstable",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "d17892f5-5c4a-4149-8d5e-ba9df013866e"
+      ],
+      "tcgplayer_id": [
+        153191
+      ],
+      "title": "English",
+      "display_title": "As Luck Would Have It - (The List) FOIL ",
+      "simple_title": "As Luck Would Have It"
+    },
+    "uuid": "aabf9d35-5d14-56b1-8bbe-424de570f50b",
+    "without_ids": true
+  },
+  {
+    "group": "8038516",
+    "card": {
+      "id": "2528618",
+      "card_number": "61",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Unsanctioned",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "2cf4a081-3532-45e5-be72-1ff2fb88bb08"
+      ],
+      "tcgplayer_id": [
+        208544
+      ],
+      "title": "English ",
+      "display_title": "B-I-N-G-O (The List) - FOIL",
+      "simple_title": "B-I-N-G-O"
+    },
+    "uuid": "e383111c-fd23-5c10-a669-4a3cc3dfa595",
+    "without_ids": true
+  },
+  {
+    "group": "135459",
+    "card": {
+      "id": "238307",
+      "card_number": "267",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "5th Edition",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "64b05edd-4128-4150-9457-8aff895bd0b7"
+      ],
+      "tcgplayer_id": [
+        2372
+      ],
+      "title": "English",
+      "display_title": "Shivan Dragon",
+      "simple_title": "Shivan Dragon"
+    },
+    "uuid": "7a24a4dd-a3e5-5b06-b133-ad4fd6293eb0",
+    "without_ids": false
+  },
+  {
+    "group": "319771",
+    "card": {
+      "id": "754371",
+      "card_number": "1E06",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Junior Series Europe",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "65195553-a7a0-414f-b945-25d93dc76395"
+      ],
+      "tcgplayer_id": [
+        38221
+      ],
+      "title": "English",
+      "display_title": "Sakura-Tribe Elder (European Junior Series) - FOIL",
+      "simple_title": "Sakura-Tribe Elder"
+    },
+    "uuid": "d89c1fd3-c643-5b3b-bee4-636423ae5d43",
+    "without_ids": false
+  },
+  {
+    "group": "412812",
+    "card": {
+      "id": "1484464",
+      "card_number": "49b",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Unstable",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "2a90b2b6-d96e-4c13-83be-849d2ec1d845"
+      ],
+      "tcgplayer_id": [
+        154419
+      ],
+      "title": "English",
+      "display_title": "Very Cryptic Command (b Untap)",
+      "simple_title": "Very Cryptic Command"
+    },
+    "uuid": "7d4c7d8b-0be9-55db-93f4-22a78866defe",
+    "without_ids": false
+  },
+  {
+    "group": "8022375",
+    "card": {
+      "id": "2504378",
+      "card_number": "131s",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Promo",
+      "rarity": "Rare",
+      "scryfall_id": [
+        "f1357d73-9886-4666-b402-fada7dd8d4bf"
+      ],
+      "tcgplayer_id": [
+        552498
+      ],
+      "title": "English",
+      "display_title": "Powerbalance (Bundle Promo) - FOIL",
+      "simple_title": "Powerbalance"
+    },
+    "uuid": "377020f2-f3eb-5ae2-8952-913c23198025",
+    "without_ids": false
+  },
+  {
+    "group": "8103846",
+    "card": {
+      "id": "2633695",
+      "card_number": "159",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Marvel's Spider-Man",
+      "rarity": "Uncommon",
+      "scryfall_id": [
+        "741f5373-b51a-421a-9a74-326f0575c99b"
+      ],
+      "tcgplayer_id": [
+        646634
+      ],
+      "title": "English",
+      "display_title": "Web-Warriors (Borderless)",
+      "simple_title": "Web-Warriors"
+    },
+    "uuid": "237bedb2-14f0-5666-8f79-d846e8dac927",
+    "without_ids": false
+  },
+  {
+    "group": "8084755",
+    "card": {
+      "id": "2599248",
+      "card_number": "63",
+      "language": [
+        "English"
+      ],
+      "layout": "Normal",
+      "magic_edition_sort": "Final Fantasy: Through the Ages",
+      "rarity": "Uncommon",
+      "scryfall_id": [
+        "bcf0d751-5c47-4531-add4-acd07b82adf5"
+      ],
+      "tcgplayer_id": [
+        632707
+      ],
+      "title": "English",
+      "display_title": "Luka Stadium | Strixhaven Stadium",
+      "simple_title": "Strixhaven Stadium"
+    },
+    "uuid": "e8b82cd5-fecd-5015-84ee-8e5b2457a636",
+    "without_ids": false
+  }
+]

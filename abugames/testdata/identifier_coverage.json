@@ -1,0 +1,476 @@
+[
+  {
+    "group": "149782",
+    "card": {
+      "id": "1616801",
+      "display_title": "Avatar of Discord (Prerelease) - FOIL",
+      "simple_title": "Avatar of Discord",
+      "magic_edition_sort": "Dissension Promos",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "140\u2605",
+      "scryfall_id": [
+        "48ccc561-5726-45df-b27a-e101ea9c0bac"
+      ],
+      "tcgplayer_id": [
+        38367
+      ]
+    },
+    "uuid": "0dc2b213-72e8-53c0-90ef-1063b34cbde1",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "7477972",
+    "card": {
+      "id": "1585799",
+      "display_title": "Admiral's Order (Promo Pack)",
+      "simple_title": "Admiral's Order",
+      "magic_edition_sort": "Rivals of Ixalan Promos",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "31p",
+      "scryfall_id": [
+        "27e508f2-5f4e-4d8c-8e72-b896d5e204ad"
+      ],
+      "tcgplayer_id": [
+        193349
+      ]
+    },
+    "uuid": "5df1d6bc-2c19-5dd5-9a93-ec2d64397a16",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "149762",
+    "card": {
+      "id": "1608141",
+      "display_title": "Accumulated Knowledge (FNM) - FOIL",
+      "simple_title": "Accumulated Knowledge",
+      "magic_edition_sort": "Friday Night Magic 2004",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "8",
+      "scryfall_id": [
+        "dc65a1b2-c183-433e-b4b2-d3e7f612c724"
+      ],
+      "tcgplayer_id": [
+        38058
+      ]
+    },
+    "uuid": "ca5341c6-fa1b-598b-9c12-b14aa40541cd",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "149773",
+    "card": {
+      "id": "1429932",
+      "display_title": "Argothian Enchantress (Judge) - FOIL",
+      "simple_title": "Argothian Enchantress",
+      "magic_edition_sort": "Judge Gift Cards 2003",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "2",
+      "scryfall_id": [
+        "70364605-5f20-40e1-b18b-dec6d3d4d3aa"
+      ],
+      "tcgplayer_id": [
+        37961
+      ]
+    },
+    "uuid": "5bc4588f-7e9b-5f05-8b46-56e0e910e3ae",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "8087697",
+    "card": {
+      "id": "2607497",
+      "display_title": "Coin of Fate (Surge) - FOIL",
+      "simple_title": "Coin of Fate",
+      "magic_edition_sort": "Final Fantasy Commander",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "15",
+      "scryfall_id": [
+        "cde3765f-e25c-4d16-b361-448167ed8736"
+      ],
+      "tcgplayer_id": [
+        636799
+      ]
+    },
+    "uuid": "aca4afb0-02ce-5dab-8e61-0215b8661dd1_f",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "149769",
+    "card": {
+      "id": "678832",
+      "display_title": "Arc Lightning (Arena) - FOIL",
+      "simple_title": "Arc Lightning",
+      "magic_edition_sort": "Arena League 2002",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "3",
+      "scryfall_id": [
+        "f4a13429-8741-478b-8b17-1a0d8a1a7d02"
+      ],
+      "tcgplayer_id": [
+        37965
+      ]
+    },
+    "uuid": "109427e6-b6a4-53fe-aba4-676d1f351ad6",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "149784",
+    "card": {
+      "id": "266957",
+      "display_title": "Azorius Guildmage (Release Promo) - FOIL",
+      "simple_title": "Azorius Guildmage",
+      "magic_edition_sort": "Dissension Promos",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "141\u2605",
+      "scryfall_id": [
+        "d35674a0-2704-46d0-8eba-dd06251abfea"
+      ],
+      "tcgplayer_id": [
+        38417
+      ]
+    },
+    "uuid": "98e57ac1-59bf-5338-aadd-5c57c25db926",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "337642",
+    "card": {
+      "id": "620101",
+      "display_title": "Avalanche Tusker (Intro Pack Promo) - FOIL",
+      "simple_title": "Avalanche Tusker",
+      "magic_edition_sort": "Khans of Tarkir Promos",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "166",
+      "scryfall_id": [
+        "bd8d74ee-a0e6-4111-bb74-9059fbc4b354"
+      ],
+      "tcgplayer_id": [
+        93507
+      ]
+    },
+    "uuid": "e91e2448-5d73-5350-907d-c2a27662df45",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "7787305",
+    "card": {
+      "id": "2196772",
+      "display_title": "Arbor Elf (Store Championship)",
+      "simple_title": "Arbor Elf",
+      "magic_edition_sort": "Wizards Play Network 2021",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "1",
+      "scryfall_id": [
+        "3178e55c-7e49-4621-906a-a66e5656e276"
+      ],
+      "tcgplayer_id": [
+        257319
+      ]
+    },
+    "uuid": "0a274f1f-ec30-5adc-b55e-0b9c81cae256",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "224111",
+    "card": {
+      "id": "1639020",
+      "display_title": "Curse of Thirst (WPN) - FOIL",
+      "simple_title": "Curse of Thirst",
+      "magic_edition_sort": "Wizards Play Network 2012",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "81",
+      "scryfall_id": [
+        "2fa2b4ac-a62f-45c6-88fb-6ad44c6af28c"
+      ],
+      "tcgplayer_id": [
+        71288
+      ]
+    },
+    "uuid": "db9b31f8-e602-5930-9b52-dee275646f80",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "149916",
+    "card": {
+      "id": "267222",
+      "display_title": "Hypnotic Specter (Player Rewards) - FOIL",
+      "simple_title": "Hypnotic Specter",
+      "magic_edition_sort": "Magic Player Rewards 2006",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "1",
+      "scryfall_id": [
+        "9b433633-42a1-4474-a9b8-2ff5e541f6d1"
+      ],
+      "tcgplayer_id": [
+        38314
+      ]
+    },
+    "uuid": "fd318fb9-3e47-5f9d-aad3-20b8bf8fe880",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "136249",
+    "card": {
+      "id": "239887",
+      "display_title": "Aether Flash - FOIL",
+      "simple_title": "Aether Flash",
+      "magic_edition_sort": "7th Edition",
+      "layout": "Normal",
+      "rarity": "Uncommon",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "172",
+      "scryfall_id": [
+        "780f9197-e910-4c7a-bb4b-2c4a94903c39"
+      ],
+      "tcgplayer_id": [
+        3159
+      ]
+    },
+    "uuid": "8ee43db3-a2ff-5ef3-bcd6-4e2ef0970b9d",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "414077",
+    "card": {
+      "id": "773208",
+      "display_title": "Brass's Bounty (Prerelease) - FOIL",
+      "simple_title": "Brass's Bounty",
+      "magic_edition_sort": "Rivals of Ixalan Promos",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "94s",
+      "scryfall_id": [
+        "c60b7724-6333-42a0-9abb-12feea5f3cb1"
+      ],
+      "tcgplayer_id": [
+        155931
+      ]
+    },
+    "uuid": "59519e57-d61b-543a-8f37-c36fd9e06163",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "8061863",
+    "card": {
+      "id": "2567617",
+      "display_title": "Brass's Bounty (Prerelease) - FOIL",
+      "simple_title": "Brass's Bounty",
+      "magic_edition_sort": "Foundations Promos",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "190s",
+      "scryfall_id": [
+        "84ff997f-4852-4533-af06-fef596337496"
+      ],
+      "tcgplayer_id": [
+        593202
+      ]
+    },
+    "uuid": "05810113-9e67-58e2-a1e0-3d0d8ee37383",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "8022377",
+    "card": {
+      "id": "2504421",
+      "display_title": "Flusterstorm (Buy-A-Box Promo) - FOIL",
+      "simple_title": "Flusterstorm",
+      "magic_edition_sort": "Modern Horizons 3",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "496",
+      "scryfall_id": [
+        "75a98ff2-6e78-4133-ad4e-c62c396ba1e0"
+      ],
+      "tcgplayer_id": [
+        552494
+      ]
+    },
+    "uuid": "",
+    "primary": false,
+    "error": "unprinted finish"
+  },
+  {
+    "group": "376558",
+    "card": {
+      "id": "1422051",
+      "display_title": "Tamiyo's Journal - FOIL",
+      "simple_title": "Tamiyo's Journal",
+      "magic_edition_sort": "Shadows over Innistrad",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "265",
+      "scryfall_id": [
+        "b474378c-5fa8-418f-8d76-23e78003ed18"
+      ],
+      "tcgplayer_id": [
+        114853
+      ]
+    },
+    "uuid": "eb08862e-454a-510e-90f4-04e5adc335d5",
+    "primary": false,
+    "error": ""
+  },
+  {
+    "group": "375943",
+    "card": {
+      "id": "717844",
+      "display_title": "Skin Invasion / Skin Shredder",
+      "simple_title": "Skin Invasion / Skin Shredder",
+      "magic_edition_sort": "Shadows over Innistrad",
+      "layout": "Transform",
+      "rarity": "Uncommon",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "182",
+      "scryfall_id": [
+        "c0243401-e3ae-41c6-a3a0-9cd4b330c200"
+      ],
+      "tcgplayer_id": [
+        116497
+      ]
+    },
+    "uuid": "73a278af-00a6-5386-ad47-3791e00ceecc",
+    "primary": false,
+    "error": ""
+  },
+  {
+    "group": "139693",
+    "card": {
+      "id": "1140706",
+      "display_title": "Hired Muscle",
+      "simple_title": "Hired Muscle",
+      "magic_edition_sort": "Betrayers of Kamigawa",
+      "layout": "Flip",
+      "rarity": "Uncommon",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "69",
+      "scryfall_id": null,
+      "tcgplayer_id": null,
+      "multiverseid": [
+        74476
+      ]
+    },
+    "uuid": "f4989495-0939-544f-9b84-d7b82cb1fdd1",
+    "primary": true,
+    "error": ""
+  },
+  {
+    "group": "8084755",
+    "card": {
+      "id": "2599248",
+      "display_title": "Luka Stadium | Strixhaven Stadium",
+      "simple_title": "Strixhaven Stadium",
+      "magic_edition_sort": "Final Fantasy: Through the Ages",
+      "layout": "Normal",
+      "rarity": "Uncommon",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "63",
+      "scryfall_id": [
+        "bcf0d751-5c47-4531-add4-acd07b82adf5"
+      ],
+      "tcgplayer_id": [
+        632707
+      ]
+    },
+    "uuid": "e8b82cd5-fecd-5015-84ee-8e5b2457a636",
+    "primary": false,
+    "error": ""
+  }
+]

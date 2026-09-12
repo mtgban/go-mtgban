@@ -79,7 +79,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			continue
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := matchCard(&group.Doclist.Docs[0], theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
