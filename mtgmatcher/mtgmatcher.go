@@ -501,88 +501,9 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		}
 	}
 
-	// This map will contain the setCode and an array of possible matches for
-	// each edition.
 	cardSet := map[string][]Card{}
-
-	// Only one printing, it *has* to be it
-	if len(printings) == 1 {
-		cardSet[printings[0]] = b.MatchInSet(inCard.Name, printings[0])
-	} else if !inCard.PromoWildcard && !inCard.IsSecretLair() {
-		// If multiple printing, try filtering to the closest name
-		// described by the inCard.Edition.
-		// This is skipped if we're in the wildcard Promo mode, as we
-		// need as many editions as possible.
-		Logger.Println("Several printings found, iterating over edition name")
-
-		// First loop, search for a perfect match
-		for _, setCode := range printings {
-			// Perfect match, the card *has* to be present in the set
-			if Equals(b.Sets[setCode].Name, inCard.Edition) {
-				Logger.Println("Found a perfect match with", inCard.Edition, setCode)
-				cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
-
-				set := b.Sets[setCode]
-
-				// In case it's a well known promo, consider the promo sets (or vice
-				// versa for promo sets) in order to let filtering take care of them
-				// JPN cards are skipped because they are well set usually
-				if !inCard.IsJPN() && (inCard.IsPrerelease() || inCard.IsPromoPack() ||
-					(inCard.IsBundle() && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
-					(inCard.IsBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
-					setName := b.Sets[setCode].Name
-					if !strings.HasSuffix(setName, "Promos") {
-						setCode = "P" + setCode
-						set, found := b.Sets[setCode]
-						if found {
-							Logger.Println("Detected possible promo, adding edition", set.Name, setCode)
-							cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
-						}
-					} else {
-						setCode = strings.TrimPrefix(setCode, "P")
-						set, found := b.Sets[setCode]
-						if found {
-							Logger.Println("Detected possible non-promo, adding edition", set.Name, setCode)
-							cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
-						}
-					}
-				}
-			}
-		}
-
-		// Second loop, hope that a portion of the edition is in the set Name
-		// This may result in false positives under certain circumstances.
-		if len(cardSet) == 0 {
-			Logger.Println("No perfect match found, trying with heuristics")
-			for _, setCode := range printings {
-				set := b.Sets[setCode]
-
-				// Skip heuristics for WCD as short version would catch a lot
-				if inCard.IsWorldChamp() {
-					break
-				}
-
-				if Contains(set.Name, inCard.Edition) ||
-					// If a card is promotional, only consider promotional sets
-					(b.IsGenericPromo(inCard) && strings.HasSuffix(set.Name, "Promos")) ||
-					// If it is Bundle or BaB, also consider base sets if recent enough
-					(inCard.IsBundle() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
-					(inCard.IsBaB() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {
-					Logger.Println("Found a possible match with", inCard.Edition, setCode)
-					cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
-				}
-			}
-		}
-	}
-
-	// Third loop, YOLO
-	// Let's consider every edition and hope the second pass will filter
-	// duplicates out. This may result in false positives of course.
-	if len(cardSet) == 0 {
-		Logger.Println("No loose match found, trying all")
-		for _, setCode := range printings {
-			cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
-		}
+	for _, code := range rules.CandidateSets(b, inCard, printings) {
+		cardSet[code] = b.MatchInSet(inCard.Name, code)
 	}
 
 	Logger.Println("Found these possible matches")
@@ -604,14 +525,9 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		Logger.Println(card.SetCode, card.Name, card.Number)
 	}
 
-	// Just keep the first card found for gold-bordered sets
-	if len(outCards) > 1 {
-		if inCard.IsWorldChamp() {
-			Logger.Println("Dropping a few extra entries...")
-			Logger.Println(outCards[1:])
-			outCards = []Card{outCards[0]}
-		}
-	}
+	// Final game policy runs before language filtering: Magic historically
+	// trims World Championship candidates here, even across languages.
+	outCards = rules.FinalizeCandidates(b, inCard, outCards)
 
 	// Language check - out of filterCards to catch single cases too
 	if inCard.Language != "" || len(outCards) > 1 {

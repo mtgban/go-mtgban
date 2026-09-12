@@ -1345,13 +1345,13 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			// These sets are always Prerelease, except for a couple of intro packs
 			// that are marked in an unpredictable way
 			if setDate.After(magic.NewPrereleaseDate) &&
-				setDate.Before(mtgmatcher.PromosForEverybodyYay) {
+				setDate.Before(magic.PromosForEverybodyYay) {
 
 				variant = "Prerelease"
 				if ogVariant == "V.2" {
 					variant = number
 				}
-			} else if setDate.After(mtgmatcher.PromosForEverybodyYay) {
+			} else if setDate.After(magic.PromosForEverybodyYay) {
 				// Default tags
 				customVariant := ""
 				specialTag := "V.0" // custom, ignored for most cases

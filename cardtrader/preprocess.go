@@ -344,7 +344,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 					return nil, err
 				}
 
-				if setDate.After(mtgmatcher.PromosForEverybodyYay) {
+				if setDate.After(magic.PromosForEverybodyYay) {
 					notPromoPack := false
 					num, convErr := strconv.Atoi(number)
 					parentSet, setErr := mtgmatcher.GetSet(set.ParentCode)

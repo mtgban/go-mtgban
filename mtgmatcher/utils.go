@@ -70,14 +70,6 @@ const (
 	NightmareCard   = "The Ultimate Nightmare of Wizards of the Coast® Customer Service"
 )
 
-// BuyABoxInExpansionSetsDate is when buy-a-box promos began appearing in the
-// expansion set rather than in a promos set of their own.
-var BuyABoxInExpansionSetsDate = time.Date(2018, time.April, 1, 0, 0, 0, 0, time.UTC)
-
-// PromosForEverybodyYay is when assorted promos began appearing in the
-// expansion set itself.
-var PromosForEverybodyYay = time.Date(2019, time.October, 1, 0, 0, 0, 0, time.UTC)
-
 // GRNGuilds are the guilds printed in Guilds of Ravnica.
 var GRNGuilds = []string{"Boros", "Dimir", "Golgari", "Izzet", "Selesnya"}
 
