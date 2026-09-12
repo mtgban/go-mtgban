@@ -11,10 +11,14 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// ArbitOpts narrows what Arbit, Mismatch and Pennystock will report. Every
-// field is a filter whose zero value means "do not filter", so the empty
-// struct returns everything the two sides have in common.
+// ArbitOpts configures the datastore, filters and thresholds used by Arbit
+// and Mismatch. Zero-valued filters leave the two sides' common cards eligible.
 type ArbitOpts struct {
+	// Backend is the immutable datastore used for this report. When nil,
+	// Arbit and Mismatch capture the global datastore once at entry. Custom
+	// callbacks doing auxiliary lookups should use the same backend.
+	Backend *mtgmatcher.Backend
+
 	// Extra factor to modify Inventory prices
 	Rate float64
 
@@ -148,6 +152,7 @@ func (ae ArbitEntry) String() string {
 // resolvedOpts holds the resolved filter and threshold values from ArbitOpts,
 // with defaults applied for nil opts.
 type resolvedOpts struct {
+	backend                *mtgmatcher.Backend
 	minDiff                float64
 	minSpread              float64
 	maxSpread              float64
@@ -178,10 +183,15 @@ type resolvedOpts struct {
 
 func resolveOpts(opts *ArbitOpts) resolvedOpts {
 	r := resolvedOpts{
-		rate: 1.0,
+		rate:    1.0,
+		backend: mtgmatcher.GlobalDatastore(),
 	}
 	if opts == nil {
 		return r
+	}
+
+	if opts.Backend != nil {
+		r.backend = opts.Backend
 	}
 
 	if opts.MinDiff != 0 {
@@ -224,7 +234,7 @@ func resolveOpts(opts *ArbitOpts) resolvedOpts {
 // filterCard checks whether a card should be skipped based on the resolved
 // options. Returns the custom factor and true if the card should be kept.
 func (r *resolvedOpts) filterCard(cardID string) (*mtgmatcher.CardObject, float64, bool) {
-	co, err := mtgmatcher.GetUUID(cardID)
+	co, err := r.backend.GetUUID(cardID)
 	if err != nil {
 		return nil, 0, false
 	}
@@ -237,7 +247,7 @@ func (r *resolvedOpts) filterCard(cardID string) (*mtgmatcher.CardObject, float6
 	if r.filterOnlyFoil && !co.Foil && !co.Etched {
 		return nil, 0, false
 	}
-	if r.filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardID) {
+	if r.filterDecksOnly && co.Sealed && !r.backend.SealedHasDecklist(co.SetCode, cardID) {
 		return nil, 0, false
 	}
 	if r.filterRLOnly && !co.IsReserved {
@@ -525,9 +535,10 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 // default.
 func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 	var result []ArbitEntry
+	backend := mtgmatcher.GlobalDatastore()
 
 	for cardID, entries := range seller.Inventory() {
-		co, err := mtgmatcher.GetUUID(cardID)
+		co, err := backend.GetUUID(cardID)
 		if err != nil {
 			continue
 		}
