@@ -169,6 +169,7 @@ var EditionTable = map[string]string{
 	"Stained Glass Art":       "Secret Lair Drop",
 	"Stained Glass Promo":     "Secret Lair Drop",
 	"Secret Lair Drop Series": "Secret Lair Drop",
+	"Secret Lair Promo":       "Secret Lair Showdown",
 	"Secret Lair RCQ Promo":   "Secret Lair Showdown",
 
 	"Ponies: The Galloping": "Ponies: The Galloping",
@@ -483,6 +484,7 @@ var EditionTable = map[string]string{
 	"Hascon Promo Foil":     "HasCon 2017",
 	"Hascon Promo":          "HasCon 2017",
 	"Hascon 2017 Promo":     "HasCon 2017",
+	"NYCC 2024":             "URL/Convention Promos",
 	"PAX Prime Promo":       "URL/Convention Promos",
 	"2012 Convention Promo": "URL/Convention Promos",
 	"URL Convention Promo":  "URL/Convention Promos",

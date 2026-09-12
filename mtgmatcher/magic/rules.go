@@ -1422,7 +1422,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 			switch {
 			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
-				if len(b.MatchInSet(inCard.Name, "SLP")) > 0 && !inCard.Contains("Fest") {
+				if len(b.MatchInSet(inCard.Name, "SLP")) > 0 && !inCard.Contains("Fest") && !inCard.Contains("MagicCon") {
 					continue
 				}
 			case set.Code == "PLG21":

@@ -339,28 +339,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		inCard.Foil = true
 	}
 
-	// Set up language
-	if inCard.Language != "" {
-		lang, found := LanguageCode2LanguageTag[strings.ToLower(inCard.Language)]
-		if found {
-			inCard.Language = lang
-		} else {
-			for field := range strings.FieldsSeq(inCard.Language) {
-				field = Title(field)
-				if slices.Contains(allLanguageTags, field) {
-					inCard.Language = field
-					break
-				}
-			}
-		}
-	}
-	// Override if needed
-	for _, tag := range allLanguageTags {
-		if inCard.Contains(tag) {
-			inCard.Language = tag
-			break
-		}
-	}
+	inCard.normalizeLanguage()
 
 	// Look up by uuid
 	if inCard.ID != "" {
@@ -380,7 +359,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 			// Validation step
 			switch {
 			// Only the default language is supported by id
-			case inCard.Language != "" && !strings.Contains(co.Language, inCard.Language):
+			case inCard.Language != "" && !matchesLanguage(co.Language, inCard.Language):
 				Logger.Printf("Language validation failed, resetting card")
 				inCard.Name = co.Name
 				inCard.Edition = co.Edition
@@ -639,7 +618,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		var filteredOutCards []Card
 		for _, card := range outCards {
 			if (inCard.Language == "" && card.Language != "English") ||
-				!strings.Contains(card.Language, inCard.Language) {
+				!matchesLanguage(card.Language, inCard.Language) {
 				Logger.Println("Dropping different language prints...")
 				Logger.Println(card.SetCode, card.Name, card.Number, card.Language)
 				continue

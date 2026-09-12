@@ -397,7 +397,8 @@ func (b *Backend) ParseCommanderEdition(edition, variant string) string {
 	}
 	for key, ed := range b.CommanderKeywordMap {
 		if strings.Contains(strings.ToLower(edition), strings.ToLower(key)) {
-			if strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo") {
+			// Bundle promos retain the commander set and its collector numbers.
+			if strings.Contains(edition, "Promo") || (strings.Contains(variant, "Promo") && !Contains(variant, "Bundle")) {
 				ed += " Promos"
 			}
 			return ed

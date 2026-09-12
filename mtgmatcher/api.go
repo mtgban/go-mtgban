@@ -346,7 +346,26 @@ func (b *Backend) Printings4Card(name string) ([]string, error) {
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
-	return entry.Printings, nil
+	// Same-name variants can have different reprint histories (Unstable's
+	// Ineffable Blessing is one example). One arbitrary variant cannot
+	// describe all printings of the name. Keep the selected entry's order
+	// and add only sets carried by other entries with that exact name.
+	printings := slices.Clone(entry.Printings)
+	for _, id := range b.Hashes[Normalize(entry.Name)] {
+		other, ok := b.UUIDs[id]
+		if !ok || !strings.EqualFold(other.Name, entry.Name) || (other.Layout == "token") != (entry.Layout == "token") {
+			continue
+		}
+		if slices.Equal(other.Printings, entry.Printings) {
+			continue
+		}
+		for _, set := range other.Printings {
+			if !slices.Contains(printings, set) {
+				printings = append(printings, set)
+			}
+		}
+	}
+	return printings, nil
 }
 
 // Printings4Card returns the sets a card was printed in, from the default

@@ -337,6 +337,7 @@ func isJudge(c *mtgmatcher.InputCard) bool {
 func isMagicFest(c *mtgmatcher.InputCard) bool {
 	return c.Contains("Magic Fest") ||
 		c.Contains("MagicCon") || // scg
+		c.Contains("CommandFest") || // abu
 		strings.Contains(c.Edition, "MFP") || // tcg collection
 		strings.Contains(c.Variation, "MFP") // tcg collection
 }

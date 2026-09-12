@@ -3833,6 +3833,8 @@ var ulstVariants = map[string]map[string]string{
 
 		"proliferate 147/216 the list a": "55",
 		"scry 2 147/216 the list f":      "56",
+		"f scry the list":                "56",
+		"a move the list":                "55",
 
 		"a 'move counter'": "55",
 		"f 'scry'":         "56",
@@ -3850,6 +3852,8 @@ var ulstVariants = map[string]map[string]string{
 
 		"flavorful/bland 113/216 the list a":                "38",
 		"white-bordered/silver-bordered 113/216 the list c": "37",
+		"a flavorful or bland the list":                     "38",
+		"c bordered the list":                               "37",
 
 		"a 'flavorful or bland'":       "38",
 		"c 'white or silver-bordered'": "37",
