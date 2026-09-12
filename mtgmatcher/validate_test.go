@@ -40,7 +40,7 @@ func TestValidateID(t *testing.T) {
 
 func TestValidatePrintingRejectsUnknownRules(t *testing.T) {
 	realDatastore(t)
-	b := defaultBackend
+	b := GlobalDatastore()
 	b.rules = nil
 	id := ConvertID(IDSpaceScryfall, "8916e24f-9c74-4b6c-9894-d60669854f35")
 	if b.ValidatePrinting(InputCard{Name: "Counterspell"}, id) {

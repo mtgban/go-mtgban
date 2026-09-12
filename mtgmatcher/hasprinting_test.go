@@ -43,10 +43,10 @@ func TestPrintings4CardExactName(t *testing.T) {
 	if !slices.Contains(printings, "LEG") || slices.Contains(printings, "DMU") {
 		t.Errorf("Cat Warriors printings = %v, expected LEG without DMU", printings)
 	}
-	if !defaultBackend.NameIsToken("Cat Warrior") {
+	if !currentBackend().NameIsToken("Cat Warrior") {
 		t.Error("the card named exactly Cat Warrior is the DMU token")
 	}
-	if defaultBackend.NameIsToken("Cat Warriors") {
+	if currentBackend().NameIsToken("Cat Warriors") {
 		t.Error("Cat Warriors is a regular card, not a token")
 	}
 }
@@ -67,7 +67,8 @@ func TestIsTokenClashingNames(t *testing.T) {
 // BenchmarkHasPrintingWide measures against: for every printing of the named
 // card it scanned the whole set comparing names with Equals.
 func oldHasPrinting(name, field, value string, editions ...string) bool {
-	if defaultBackend.Sets == nil {
+	b := currentBackend()
+	if b.Sets == nil {
 		return false
 	}
 
@@ -97,14 +98,14 @@ func oldHasPrinting(name, field, value string, editions ...string) bool {
 		return false
 	}
 
-	printings, err := Printings4Card(name)
+	printings, err := b.Printings4Card(name)
 	if err != nil {
 		cc := &InputCard{
 			Name: name,
 		}
-		defaultBackend.rules.AdjustName(&defaultBackend, cc)
+		b.rules.AdjustName(b, cc)
 		name = cc.Name
-		printings, err = Printings4Card(name)
+		printings, err = b.Printings4Card(name)
 		if err != nil {
 			return false
 		}
@@ -112,13 +113,13 @@ func oldHasPrinting(name, field, value string, editions ...string) bool {
 	for _, code := range printings {
 		var set *Set
 		if len(editions) > 0 {
-			set = defaultBackend.Sets[editions[0]]
+			set = b.Sets[editions[0]]
 			if set == nil {
-				set, _ = GetSetByName(editions[0])
+				set, _ = b.GetSetByName(editions[0])
 			}
 		}
 		if set == nil {
-			set = defaultBackend.Sets[code]
+			set = b.Sets[code]
 			if set == nil {
 				continue
 			}

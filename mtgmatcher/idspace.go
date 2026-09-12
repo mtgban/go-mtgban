@@ -35,5 +35,5 @@ func (b *Backend) ConvertID(space, inputID string) string {
 // ConvertID resolves an external identifier in one named id space against the
 // default datastore. See the method.
 func ConvertID(space, inputID string) string {
-	return defaultBackend.ConvertID(space, inputID)
+	return currentBackend().ConvertID(space, inputID)
 }

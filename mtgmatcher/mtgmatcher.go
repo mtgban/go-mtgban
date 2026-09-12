@@ -15,14 +15,14 @@ import (
 // MatchID resolves an identifier a storefront already knows to the uuid of a
 // printing, using the default datastore. See the method.
 func MatchID(inputID string, finishes ...bool) (string, error) {
-	return defaultBackend.MatchID(inputID, finishes...)
+	return currentBackend().MatchID(inputID, finishes...)
 }
 
 // MatchIDFinish resolves an id to the uuid of the printing's sibling sold in
 // the named finish, spelled however the caller's source spells it. See the
 // method.
 func MatchIDFinish(inputID, finish string) (string, error) {
-	return defaultBackend.MatchIDFinish(inputID, finish)
+	return currentBackend().MatchIDFinish(inputID, finish)
 }
 
 // finishTwins reports whether two set-mates are one card filed as two
@@ -127,33 +127,33 @@ func (b *Backend) FinishSiblings(inputID string) []string {
 // FinishSiblings answers every uuid the card behind the id is sold under,
 // against the default datastore. See the method.
 func FinishSiblings(inputID string) []string {
-	return defaultBackend.FinishSiblings(inputID)
+	return currentBackend().FinishSiblings(inputID)
 }
 
 // Match resolves a storefront's description of a card to the uuid of the one
 // printing it names, using the default datastore. See the method.
 func Match(inCard *InputCard) (cardID string, err error) {
-	return defaultBackend.Match(inCard)
+	return currentBackend().Match(inCard)
 }
 
 // MatchInSet returns every printing in the set whose name is exactly the one
 // given, against the default datastore. A combined name is matched on its
 // first half alone.
 func MatchInSet(cardName string, setCode string) (outCards []Card) {
-	return defaultBackend.MatchInSet(cardName, setCode)
+	return currentBackend().MatchInSet(cardName, setCode)
 }
 
 // MatchInSetNumber returns every printing in the set with exactly this name
 // and collector number, against the default datastore.
 func MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
-	return defaultBackend.MatchInSetNumber(cardName, setCode, number)
+	return currentBackend().MatchInSetNumber(cardName, setCode, number)
 }
 
 // MatchWithNumber returns every printing with this set code and collector
 // number, against the default datastore. The name only narrows the result and
 // may be empty.
 func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
-	return defaultBackend.MatchWithNumber(cardName, setCode, number)
+	return currentBackend().MatchWithNumber(cardName, setCode, number)
 }
 
 // cardObject4Id resolves whatever identifier a caller sends - one of the
