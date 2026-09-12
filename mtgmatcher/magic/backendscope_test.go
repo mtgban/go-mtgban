@@ -6,6 +6,32 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// The List's Game Day exception must search the backend whose printing is
+// being checked, even when the global has no such card (or a different one).
+func TestListGameDayReadsTheGivenBackend(t *testing.T) {
+	previous := mtgmatcher.GlobalDatastore()
+	t.Cleanup(func() { mtgmatcher.SetGlobalDatastore(previous) })
+	mtgmatcher.SetGlobalDatastore(&mtgmatcher.Backend{})
+
+	card := mtgmatcher.Card{Name: "Test Reward", Number: "TST-1"}
+	b := &mtgmatcher.Backend{
+		Sets:   map[string]*mtgmatcher.Set{"TST": {Name: "Test Expansion"}},
+		Hashes: map[string][]string{mtgmatcher.Normalize(card.Name): {"reward"}},
+		UUIDs: map[string]*mtgmatcher.CardObject{
+			"reward": {Card: mtgmatcher.Card{SetCode: "TST", PromoTypes: []string{PromoTypeGameDay}}},
+		},
+	}
+	in := &mtgmatcher.InputCard{Name: card.Name, Variation: "Game Day"}
+	if listEditionCheck(b, in, &card) {
+		t.Fatal("Game Day printing was rejected because the global did not carry it")
+	}
+	mtgmatcher.SetGlobalDatastore(b)
+	other := &mtgmatcher.Backend{Sets: b.Sets, UUIDs: b.UUIDs}
+	if !listEditionCheck(other, in, &card) {
+		t.Fatal("Game Day printing was admitted from the global name index")
+	}
+}
+
 // The identification hooks used to answer their auxiliary lookups from
 // whichever datastore was installed globally, so a Backend opened on the
 // side was matched against with another one's data. They take the backend

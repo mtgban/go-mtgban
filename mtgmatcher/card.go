@@ -143,13 +143,21 @@ func IsBasicLand(name string) bool {
 // IsGenericPromo reports a promo with no more specific kind, one that
 // probably needs further analysis to categorize: it excludes every promo the
 // other predicates recognise, and tokens, then accepts the leftovers that say
-// Promo or name a store event.
+// Promo or name a store event. Token names are read from the global datastore;
+// matcher rules use Backend.IsGenericPromo to stay on their own snapshot.
 func (c *InputCard) IsGenericPromo() bool {
+	return currentBackend().IsGenericPromo(c)
+}
+
+// IsGenericPromo classifies the input's promo wording while resolving token
+// names against this backend. Rules must use this method rather than the
+// InputCard convenience method, which consults the global datastore.
+func (b *Backend) IsGenericPromo(c *InputCard) bool {
 	return !c.IsBaB() && !c.IsPromoPack() && !c.IsPrerelease() && !c.IsSDCC() &&
 		!c.IsRetro() &&
 		!c.Contains("Year of the") && // tcg
 		!c.Contains("Deckmasters") && // no real promos here, just foils
-		!c.Contains("Token") && !IsToken(c.Name) &&
+		!c.Contains("Token") && !b.IsToken(c.Name) &&
 		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
 			c.Contains("Gift Box") || // ck+scg
 			(c.Contains("Promo") && c.Contains("Intro Pack")) || // scg

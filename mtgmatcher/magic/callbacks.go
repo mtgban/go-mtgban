@@ -545,7 +545,7 @@ func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 				return false
 			}
 		case inCard.Contains("Game Day"):
-			ids, _ := mtgmatcher.SearchEquals(card.Name)
+			ids, _ := b.SearchEquals(card.Name)
 			for _, id := range ids {
 				co, cerr := b.GetUUID(id)
 				if cerr == nil && co.SetCode == code && co.HasPromoType(PromoTypeGameDay) {
