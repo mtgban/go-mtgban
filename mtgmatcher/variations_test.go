@@ -22,7 +22,7 @@ func TestMatchIDOverAbsentVariations(t *testing.T) {
 
 		var absent bool
 		for _, variation := range co.Variations {
-			if _, found := defaultBackend.UUIDs[variation]; !found {
+			if _, found := currentBackend().UUIDs[variation]; !found {
 				absent = true
 				break
 			}

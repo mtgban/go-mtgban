@@ -95,13 +95,13 @@ func (c *InputCard) AddToVariant(tag string) {
 
 // IsToken reports whether the name may represent a token.
 func IsToken(name string) bool {
-	return defaultBackend.IsToken(name)
+	return currentBackend().IsToken(name)
 }
 
 // PlainNumber reduces a collector number to the one a person writes, as the
 // loaded game reduces it.
 func PlainNumber(number string) string {
-	return defaultBackend.PlainNumber(number)
+	return currentBackend().PlainNumber(number)
 }
 
 // The Is* predicates below read the free text a storefront published, not the

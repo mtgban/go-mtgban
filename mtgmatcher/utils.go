@@ -422,7 +422,7 @@ func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 // CardReleaseDate returns the release date of the card's set, from the default
 // datastore.
 func CardReleaseDate(cardID string) (time.Time, error) {
-	return defaultBackend.CardReleaseDate(cardID)
+	return currentBackend().CardReleaseDate(cardID)
 }
 
 // promoHeadings are the headings storefronts file promotional printings

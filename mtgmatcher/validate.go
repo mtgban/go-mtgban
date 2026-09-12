@@ -72,7 +72,7 @@ func (b *Backend) ValidateID(in InputCard, options IDValidationOptions) (string,
 
 // ValidateID checks a candidate UUID through the default backend.
 func ValidateID(in InputCard, options IDValidationOptions) (string, error) {
-	return defaultBackend.ValidateID(in, options)
+	return currentBackend().ValidateID(in, options)
 }
 
 // printingValidator is optional: games must explicitly implement conservative
@@ -95,5 +95,5 @@ func (b *Backend) ValidatePrinting(in InputCard, id string) bool {
 
 // ValidatePrinting validates descriptors through the default backend.
 func ValidatePrinting(in InputCard, id string) bool {
-	return defaultBackend.ValidatePrinting(in, id)
+	return currentBackend().ValidatePrinting(in, id)
 }

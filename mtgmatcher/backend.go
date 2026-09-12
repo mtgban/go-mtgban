@@ -7,6 +7,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -303,7 +304,17 @@ type AlternateProps struct {
 	IsFlavor       bool
 }
 
-var defaultBackend Backend
+var defaultBackend atomic.Pointer[Backend]
+
+// currentBackend pins one immutable snapshot for the caller's operation.
+// Before the first load, the empty backend preserves the lookup errors and
+// empty results the package-level API has always returned.
+func currentBackend() *Backend {
+	if b := defaultBackend.Load(); b != nil {
+		return b
+	}
+	return &Backend{}
+}
 
 // Backend is a loaded datastore: every set and printing of one game, with the
 // indexes Match needs and the game's own rules attached. Build one through a
@@ -438,23 +449,25 @@ func (b *Backend) IndexSets() {
 	}
 }
 
-// SetGlobalDatastore installs the datastore the package-level Match, MatchID
-// and the rest resolve against. It copies the value, so later changes to b do
-// not reach the installed one.
+// SetGlobalDatastore atomically publishes a shallow copy of b. Readers already
+// using the previous snapshot finish against it. The maps, slices and card
+// pointers are shared with b and must not be mutated after publication; only
+// reassigning fields on b is independent of the installed snapshot.
 func SetGlobalDatastore(b *Backend) {
-	// The sealed index is read-only and built from the datastore alone, so a
-	// datastore whose loader never filed a sealed product through SortSealed
-	// gets one here rather than paying for one on every lookup.
-	if b.sealedIdx == nil {
-		b.sealedIdx = b.buildSealedIndex()
+	snapshot := *b
+	// Build on the copy so publishing a backend does not mutate the caller's
+	// value, including when several callers publish the same backend.
+	if snapshot.sealedIdx == nil {
+		snapshot.sealedIdx = snapshot.buildSealedIndex()
 	}
-	defaultBackend = *b
+	defaultBackend.Store(&snapshot)
 }
 
-// GlobalDatastore returns a copy of the installed datastore, so what a
-// caller swaps in for a while can be put back afterwards.
+// GlobalDatastore captures the current snapshot as a shallow copy. Its methods
+// keep using that snapshot even if another datastore is published meanwhile.
+// Maps, slices and card pointers remain shared and must not be modified.
 func GlobalDatastore() *Backend {
-	b := defaultBackend
+	b := *currentBackend()
 	return &b
 }
 
