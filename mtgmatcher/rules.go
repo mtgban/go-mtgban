@@ -32,6 +32,14 @@ type GameRules interface {
 	AliasEdition(b *Backend, edition string) string
 	// FilterPrintings narrows the candidate editions for the input card.
 	FilterPrintings(b *Backend, inCard *InputCard, editions []string) []string
+	// CandidateSets selects set codes after FilterPrintings and may expand
+	// them to related editions. Match materializes those sets before calling
+	// FilterCards. DefaultRules tries exact edition, loose edition, then all.
+	CandidateSets(b *Backend, inCard *InputCard, editions []string) []string
+	// FinalizeCandidates applies the game's final ambiguity policy after
+	// FilterCards and before language filtering. DefaultRules keeps every
+	// candidate; order is the deterministic order returned by FilterCards.
+	FinalizeCandidates(b *Backend, inCard *InputCard, cards []Card) []Card
 	// FilterCards narrows the candidate cards for the input card. The cardSet
 	// map iterates in random order; implementations are responsible for
 	// producing deterministic output ordering when more than one candidate

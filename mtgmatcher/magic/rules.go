@@ -9,9 +9,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// Rules implements mtgmatcher.GameRules for Magic: the Gathering. The bodies of
-// the hooks are being relocated here from core mtgmatcher one subsystem at a
-// time; hooks whose body has not moved yet delegate to the core method.
+// Rules implements mtgmatcher.GameRules for Magic: the Gathering, including
+// candidate edition selection and the World Championship ambiguity policy.
 type Rules struct{}
 
 // IsUnsupported reports the listings Magic has no printing for. See
@@ -1035,7 +1034,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				case strings.HasPrefix(set.Name, "30th Anniversary"):
 					continue
 				case strings.HasSuffix(set.Name, "Promos"):
-				case setDate.After(mtgmatcher.PromosForEverybodyYay) && (set.Type == "expansion" || set.Type == "core"):
+				case setDate.After(PromosForEverybodyYay) && (set.Type == "expansion" || set.Type == "core"):
 					skip := true
 					foundCards := b.MatchInSet(inCard.Name, setCode)
 					for _, card := range foundCards {
@@ -1649,7 +1648,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 
 		// For all the promos with "Extended Art" which refer to the full art promo
 		case isExtendedArt(inCard) && !inCard.Contains("Game Day"):
-			if setDate.Before(mtgmatcher.PromosForEverybodyYay) {
+			if setDate.Before(PromosForEverybodyYay) {
 				switch set.Code {
 				case "DCI":
 				default:
@@ -2150,7 +2149,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					continue
 				}
 				setDate := set.ReleaseDateTime
-				if setDate.After(mtgmatcher.PromosForEverybodyYay) && extendedArtTreatment.vetoes(b, inCard, &card) {
+				if setDate.After(PromosForEverybodyYay) && extendedArtTreatment.vetoes(b, inCard, &card) {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)

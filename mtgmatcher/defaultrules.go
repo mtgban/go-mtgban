@@ -11,7 +11,7 @@ package mtgmatcher
 // means any of those has to say so itself, which is the point - a hook
 // nobody wrote is a hook nobody has to read.
 //
-// Magic implements all three for real and embeds nothing.
+// Magic implements its policies explicitly and embeds nothing.
 type DefaultRules struct{}
 
 // FilterPrintings keeps every candidate edition.
@@ -44,4 +44,34 @@ func (DefaultRules) IsSpecificUnsupported(b *Backend, inCard *InputCard) bool {
 // tagged.
 func (DefaultRules) MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool {
 	return false
+}
+
+// CandidateSets prefers an exact edition name, then a partial name. When
+// neither identifies a set, or PromoWildcard requests a wider search, all
+// printings reach the game's card filter.
+func (DefaultRules) CandidateSets(b *Backend, inCard *InputCard, editions []string) []string {
+	if len(editions) <= 1 || inCard.PromoWildcard {
+		return editions
+	}
+	var exact, loose []string
+	for _, code := range editions {
+		set := b.Sets[code]
+		if Equals(set.Name, inCard.Edition) {
+			exact = append(exact, code)
+		} else if Contains(set.Name, inCard.Edition) {
+			loose = append(loose, code)
+		}
+	}
+	if len(exact) > 0 {
+		return exact
+	}
+	if len(loose) > 0 {
+		return loose
+	}
+	return editions
+}
+
+// FinalizeCandidates leaves ambiguity for the shared pipeline to report.
+func (DefaultRules) FinalizeCandidates(b *Backend, inCard *InputCard, cards []Card) []Card {
+	return cards
 }

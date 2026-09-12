@@ -15,6 +15,14 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// BuyABoxInExpansionSetsDate is when buy-a-box promos began appearing in the
+// expansion set rather than in a promos set of their own.
+var BuyABoxInExpansionSetsDate = time.Date(2018, time.April, 1, 0, 0, 0, 0, time.UTC)
+
+// PromosForEverybodyYay is when assorted promos began appearing in the
+// expansion set itself.
+var PromosForEverybodyYay = time.Date(2019, time.October, 1, 0, 0, 0, 0, time.UTC)
+
 // Sheet is one pool a booster draws from, as mtgjson publishes it.
 type Sheet struct {
 	AllowDuplicates bool           `json:"allowDuplicates"`
@@ -1149,7 +1157,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		// Adjust the setBaseSize to take into account the cards with
 		// the same name in the same set (also make sure that it is
 		// correctly initialized)
-		if set.ReleaseDateTime.After(mtgmatcher.PromosForEverybodyYay) {
+		if set.ReleaseDateTime.After(PromosForEverybodyYay) {
 			for _, card := range set.Cards {
 				if card.HasPromoType(PromoTypeBoosterfun) {
 					// Usually boosterfun cards have real numbers

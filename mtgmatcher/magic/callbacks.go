@@ -97,7 +97,7 @@ var (
 	extendedArtTreatment = promoTypeElement{
 		OnlyWhenNamed: true,
 		PromoType:     PromoTypeExtendedArt,
-		ValidDate:     mtgmatcher.PromosForEverybodyYay,
+		ValidDate:     PromosForEverybodyYay,
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 			return isExtendedArt(inCard)
 		},
