@@ -240,3 +240,20 @@ func cardHasProperty(card Card, field, value string) bool {
 	}
 	return false
 }
+
+func TestPrintings4CardVariantReprints(t *testing.T) {
+	realDatastore(t)
+	printings, err := Printings4Card("Ineffable Blessing")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(printings, "UST") || !slices.Contains(printings, "ULST") {
+		t.Fatalf("variant reprints missing from %v", printings)
+	}
+	// Callers must not mutate a catalog card's printing list through the result.
+	printings[0] = "invalid"
+	again, err := Printings4Card("Ineffable Blessing")
+	if err != nil || slices.Contains(again, "invalid") {
+		t.Fatalf("lookup mutated catalog: %v %v", again, err)
+	}
+}
