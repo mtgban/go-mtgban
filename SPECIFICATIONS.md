@@ -281,44 +281,37 @@ in turn decoded AllPrintings through three foreign decoders before Magic's,
 behind a buffer of the whole file, and was removed. bantool reads the game
 off the scraper it runs; a suite names its own in its TestMain.
 
-**The global-backend concurrency contract.** `defaultBackend` is a
-package-global *struct value* (`var defaultBackend Backend`) with **no
-mutex/RWMutex/atomic guarding it**, and `SetGlobalDatastore(b *Backend)`
-simply copies the pointed-to struct into it. All the package-level accessors
-(`GetUUID`, `GetSet`, `Match`, `Search*`, …) read its maps and slices directly
-with no locking. The intended contract is "build once, read-only after" —
-concurrency safety by immutability, not by locks. That contract is violated in
-practice: the reference consumer exposes an authenticated
-`/api/load/datastore` endpoint that reloads the datastore on a live server,
-reassigning the global while HTTP handlers concurrently read it, and
-reassigning a multi-word struct value concurrent with readers is a data race
-under the Go memory model.
+**The global-backend concurrency contract.** `SetGlobalDatastore` atomically
+publishes a shallow copy behind `atomic.Pointer[Backend]`. Each package-level
+lookup captures one snapshot and completes against it, even when another
+caller publishes a replacement. Before the first load, lookups retain their
+empty-datastore behavior. See [ADR-0003](docs/adr/0003-atomic-backend-snapshots.md),
+which supersedes ADR-0002's unsynchronized publication decision.
 
-The escape hatch now exists, though. `Backend` is an exported type carrying
-almost the whole accessor surface as instance methods, and `Open()` hands one
-back without touching the global, so an embedder can publish it through an
-`atomic.Pointer[mtgmatcher.Backend]` exactly as the same consumer already does
-for its scraper sets. Treat "immutable after load" as the documented intent of
-the *package-level* API; a consumer that needs hot swaps should manage its own
-`*Backend`. One caveat applies to Magic specifically: `mtgmatcher/magic/doc.go`
-records that a handful of the filter callbacks still resolve auxiliary lookups
-through the package-level helpers, which read the global. Magic rules
-therefore assume the `Backend` they serve is *also* the installed global one;
-a side backend opened without being made global may answer those auxiliary
-lookups from the wrong data.
+The copy isolates field assignments, **not nested mutations**: maps, slices,
+card pointers and rules remain shared and must be immutable after publication.
+Publication builds a missing sealed index on the copy rather than changing the
+caller's backend. `GlobalDatastore()` returns a shallow copy of the captured
+snapshot, suitable for several related lookups or restoring a prior default.
 
-**Backend as a type.** Nearly every operation exists twice: as a method on
-`*Backend` and as a thin package-level function delegating to
-`defaultBackend`. So `mtgmatcher.Match(inCard)` is
-`defaultBackend.Match(inCard)`, and likewise for `MatchId`, `GetUUID`,
-`GetSet`, `Search*`, `BoosterGen`, the sealed API and the rest. New code that
-owns its backend should call the methods; the package-level wrappers exist for
-the (large) body of existing callers and for convenience. The conversion is not
-complete: `GetUUIDsInSet`, `GetSealedUUIDsInSet`, `AllNames`, `AllPromoTypes`
-and `HasPrinting` still exist only as package-level functions reading
-`defaultBackend`, so a consumer holding its own `*Backend` cannot reach them —
-the same global coupling `magic/doc.go` warns about, seen from the caller's
-side.
+**Backend as a type.** `Open()` returns an independent `*Backend`. Magic's
+identification callbacks search that backend, including The List's Game Day
+exception and the token lookup in `Backend.IsGenericPromo`. Its exported
+`Has*Printing` convenience wrappers still deliberately
+answer for the global datastore. A process serving several games should keep
+one backend per game and call instance methods rather than swapping the global
+between requests.
+
+Atomic publication does not make separate package-level calls one transaction.
+`Arbit` and `Mismatch` capture the global once per report, or use
+`ArbitOpts.Backend` when provided; `Pennystock` also captures once. Custom
+callbacks doing auxiliary lookups must use the same captured backend. A caller
+requiring snapshot consistency while rendering the result must likewise keep
+that backend, since an `ArbitEntry` stores a card ID rather than its datastore.
+
+Most accessors have instance methods. `GetUUIDsInSet`, `GetSealedUUIDsInSet`,
+`AllNames` and `AllPromoTypes` remain package-level helpers; their corresponding
+indexes are available on `Backend`. `HasPrinting` has an instance method.
 
 **What the Magic loader does** — data *repair*, not just indexing. This is the
 heavyweight path, and it now lives entirely in `mtgmatcher/magic/mtgjson.go`
@@ -450,15 +443,12 @@ use to distinguish printings while protecting legitimately-parenthesized
 names such as *Erase (Not the Urza's Legacy One)* and *B.F.M.*; all three
 games' `Prefilter` hooks call it.
 
-Two behavior-gating date constants stay in core `mtgmatcher/utils.go` —
-`BuyABoxInExpansionSetsDate` (2018-04) and `PromosForEverybodyYay`
-(2019-10) — because the core `Match` skeleton itself consults them when it
-decides whether to enrol a promo sibling set. The rest of the Magic
-vocabulary moved to `mtgmatcher/magic/mtgjson.go`: `NewPrereleaseDate`
-(2014-09), `BuyABoxNotUniqueDate` (2020-09) and
-`SeparateFinishCollectorNumberDate` (2022-02), alongside the
-`PromoType*`/`FrameEffect*`/`BorderColor*` constant set and the `★`/`†`
-number suffixes.
+Magic's promo dates live in `mtgmatcher/magic/mtgjson.go`, including
+`BuyABoxInExpansionSetsDate` (2018-04) and `PromosForEverybodyYay` (2019-10).
+Magic's candidate-set policy consults them; core no longer knows which dates
+admit promo siblings. Callers of the former core symbols must import `magic`.
+The other date thresholds and `PromoType*`/`FrameEffect*`/`BorderColor*`
+vocabulary also remain in that game package.
 
 ### 2.3 Input and ID matching
 
@@ -503,8 +493,9 @@ tolerance for wrong foil flags from scrapers is a deliberate design point —
 ### 2.4 The `Match()` pipeline and `GameRules`
 
 `Match` is a `Backend` method (`mtgmatcher/mtgmatcher.go`) with a package-level
-wrapper. It owns the skeleton; every game-specific stage is dispatched through
-the `GameRules` value the loader attached:
+wrapper. It owns the skeleton; game-specific stages are dispatched through
+the `GameRules` value the loader attached. The principal matching hooks are
+shown below; `mtgmatcher/rules.go` defines the full interface:
 
 ```go
 type GameRules interface {
@@ -512,6 +503,8 @@ type GameRules interface {
     AdjustName(b *Backend, inCard *InputCard)
     AdjustEdition(b *Backend, inCard *InputCard)
     FilterPrintings(b *Backend, inCard *InputCard, editions []string) []string
+    CandidateSets(b *Backend, inCard *InputCard, editions []string) []string
+    FinalizeCandidates(b *Backend, inCard *InputCard, cards []Card) []Card
     FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card
     IsUnsupported(b *Backend, inCard *InputCard) bool
     IsSpecificUnsupported(b *Backend, inCard *InputCard) bool
@@ -578,18 +571,25 @@ The pipeline:
    more than one printing survives *or* the original name ended in "Token"
    (single-printing token names still need filtering). An empty result is
    `ErrCardNotInEdition`, or `ErrUnsupported` for tokens/oversize. Then a
-   three-pass loop builds `cardSet map[setCode][]Card` via `MatchInSet()`:
-   (a) perfect normalized edition-name match — and for
-   prerelease/promo-pack/bundle/BaB inputs it *also* enrols the `P<code>`
-   promo sibling set (or strips the `P` for the reverse), skipping JPN cards
-   and gating bundle/BaB on the core date constants;
-   (b) heuristic pass: edition substring containment, generic promos
-   restricted to `*Promos` sets, bundle/BaB allowed into recent-enough base
-   sets — skipped wholesale for World Championship inputs, whose short set
-   names would over-match;
-   (c) YOLO pass: all printings, trusting downstream filtering.
-   Passes (a)/(b) are skipped in `PromoWildcard`/Secret Lair mode, which
-   wants maximal candidates.
+   call to `rules.CandidateSets` chooses the set codes, which core materializes
+   into `cardSet map[setCode][]Card` via `MatchInSet()`.
+
+   `DefaultRules` tries exact normalized edition names, then partial names,
+   then all printings. `PromoWildcard` keeps all printings, as used by Gundam
+   and One Piece. It applies no Magic promo or World Championship policy.
+
+   Pokemon overrides the loose pass to retain its promo-shelf fallback: when
+   generic promo wording names no exact edition, `*Promos` shelves join loose
+   edition matches before the fallback to all printings. This prevents an
+   unresolved promo edition from resolving straight to an ordinary printing.
+
+   Magic owns its historical three passes in `magic/candidates.go`: exact
+   edition matches can enroll the `P<code>` promo sibling (or the base set in
+   reverse); loose matches admit generic promos and recent bundle/BaB sets;
+   and the final fallback admits all printings. Japanese wording suppresses
+   sibling expansion, World Championship skips loose matching, and Secret
+   Lair or `PromoWildcard` skips both narrowing passes. A lone printing still
+   bypasses expansion. Date thresholds retain strict before/after boundaries.
 8. **Card-level disambiguation** — `rules.FilterCards`, run
    **unconditionally**. This is a deliberate change from the pre-`GameRules`
    pipeline, which returned a lone candidate without validating it: Lorcana
@@ -597,10 +597,11 @@ The pipeline:
    wrong-numbered card through. Magic preserves the historical behavior
    *inside* its own hook — a single card in a single set is returned as-is,
    so a lone candidate still matches even when the variation carries junk —
-   but that is now the game's choice rather than the skeleton's. World
-   Championship inputs then keep only the first match (decks are per-player
-   duplicates), and a core language filter drops non-English prints unless a
-   language was requested.
+   but that is now the game's choice rather than the skeleton's.
+   `rules.FinalizeCandidates` then applies final game policy. Magic keeps only
+   the first World Championship candidate; other games retain ambiguity.
+   This hook runs **before** core's language filter, preserving Magic's
+   historical ordering even when the first candidate is in another language.
 9. **Verdict** — 0 cards: `ErrCardWrongVariant` (or `ErrCardMissingVariant`
    if no variation was given, `ErrUnsupported` if a language was involved);
    1 card: `output()` plus a final `rules.MissingPromoTag` validation;
@@ -931,7 +932,8 @@ rotation), plus the in-house `go-cardkingdom` and `go-tcgplayer` clients.
 
 > The load-bearing decisions below are recorded as ADRs in
 > [`docs/adr/`](docs/adr/) with full context and alternatives: UUID-as-key
-> (ADR-0001) and the immutable global backend (ADR-0002).
+> (ADR-0001), the original global backend (ADR-0002), and atomic snapshot
+> publication (ADR-0003, superseding ADR-0002).
 
 1. **Everything keys on the mtgmatcher UUID** — scrapers are thin
    translators; correctness lives in one place. (By convention, not
@@ -957,11 +959,10 @@ rotation), plus the in-house `go-cardkingdom` and `go-tcgplayer` clients.
 7. **Injected logging + bounded worker pools** — uniform operational
    behavior; the WorkerPool migration of the legacy colly trio is the
    remaining standardization gap.
-8. **Build-once, read-only state** — the matcher backend is an immutable
-   global *by convention*. The contract is unenforced and violated by the
-   consumer's runtime reload endpoint (§2.1); `Open()` plus an
-   `atomic.Pointer[Backend]` is the supported way out for consumers that need
-   hot swaps.
+8. **Immutable snapshots** — loaders build independent backends. Atomic
+   publication changes the default without changing an in-flight operation's
+   data. Several related operations capture a backend explicitly; nested
+   maps, slices and pointers must remain immutable. See ADR-0003.
 
 ## 6. Extending the system
 
@@ -1001,9 +1002,9 @@ datastore, and never runs scrapers in-process. Canonical patterns:
   `mtgmatcher/games` (or just the games you serve) and then call
   `mtgmatcher.Open(game, reader)` streamed from a `simplecloud` bucket and
   install the `*Backend` with `SetGlobalDatastore`, firing async cache builds
-  afterwards. A signature-verified `/api/load/datastore` endpoint can
-  reload the global at runtime (see the §2.1 race caveat, and prefer an
-  `atomic.Pointer[Backend]` over the global if you do this).
+  afterwards. Publication through `SetGlobalDatastore` is atomic. The current website has
+  removed its runtime reload endpoint; library callers that need replacement
+  still must preserve the immutability and snapshot scope described in §2.1.
 - **Consume pre-scraped JSON** — `mtgban.ReadSellerFromJSON` /
   `ReadVendorFromJSON` per `game/name/kind/shorthand`. The live sets sit
   behind `atomic.Pointer[[]mtgban.Seller]` / `[[]mtgban.Vendor]` for lock-free

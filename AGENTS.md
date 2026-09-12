@@ -32,14 +32,11 @@ mtgmatcher/games/      meta-package that blank-imports all three games
 cmd/                   tools; cmd/bantool is the production orchestrator
 ```
 
-The split is not quite finished. Magic's logic, its variant tables and its
-replay corpus all live in `mtgmatcher/magic` now, but the edition aliases are
-still parked in core: `mtgmatcher/editions.go`, which the Magic rules read as
-`mtgmatcher.EditionTable`. Two behaviour-gating dates
-(`BuyABoxInExpansionSetsDate`, `PromosForEverybodyYay`) also stay in core,
-because the core `Match` pipeline itself consults them when it enrols a
-card's promo sibling sets. Expect to touch core occasionally for a Magic-only
-change.
+Magic's edition aliases, variants, replay corpus and promo dates live in
+`mtgmatcher/magic`. Its `CandidateSets` hook owns promo sibling expansion,
+Secret Lair widening and edition-selection policy; `FinalizeCandidates` owns
+the World Championship trim. Core materializes the selected sets and applies
+language filtering after the final game hook.
 
 The dependency runs one way: a game package imports core `mtgmatcher`, and no
 non-test file in core imports a game package. That one-directional rule is
@@ -177,26 +174,21 @@ as a new baseline.
 
 `Match()` is one pipeline shared by every game. The steps that differ per game
 are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`:
-`Prefilter`, `AdjustName`, `AdjustEdition`, `FilterPrintings`, `FilterCards`,
-`IsUnsupported`, `IsSpecificUnsupported`, and `MissingPromoTag`. A game's
+`Prefilter`, `AdjustName`, `AdjustEdition`, `FilterPrintings`, `CandidateSets`,
+`FilterCards`, `FinalizeCandidates`, `IsUnsupported`, `IsSpecificUnsupported`,
+and `MissingPromoTag` (see `rules.go` for the complete interface). A game's
 loader attaches its implementation with `Backend.SetRules` when it builds the
 `Backend`; a `Backend` that never got rules returns `ErrDatastoreEmpty` from
 `Match` rather than panicking.
 
-Two properties of the seam matter when writing a hook. First, not everything
-is dispatched. The token and oversize gates, the edition-selection loops that
-build the candidate `cardSet`, the World Championship single-card trim, and
-the language filter all stay hardcoded in `Match`. Name and variant
-preprocessing, by contrast, *is* dispatched — it runs inside each game's
-`Prefilter` (Magic splits bracketed editions plus parenthesized and dashed
-variants off the name there; Lorcana only the parenthetical). Note that the
-doc comment on `GameRules` in `mtgmatcher/rules.go` still describes that
-preprocessing as core-resident; the code is the authority. Second, hooks
-receive the `InputCard` by pointer and are expected to mutate it — the
-mutations persist through the rest of the pipeline and remain visible to the
-caller after `Match` returns. Magic's `AdjustEdition`, for instance, sets
-`PromoWildcard` and `BeyondBaseSet` for `FilterPrintings` and `FilterCards`
-to read.
+Two properties of the seam matter when writing a hook. First, core retains
+language handling and shared token/oversize admission, but games own candidate
+edition selection and final ambiguity policy. `DefaultRules.CandidateSets`
+tries exact names, partial names, then all editions; `PromoWildcard` requests
+all editions. Magic overrides this policy and trims World Championship cards
+before the core language filter, preserving its historical ordering. Second,
+hooks receive `InputCard` by pointer and may mutate it; those mutations persist
+through the rest of the pipeline and remain visible to the caller.
 
 `FilterCards` receives a map, which Go iterates in random order. An
 implementation is responsible for producing deterministic output when more
@@ -300,19 +292,15 @@ map: it is identified by SKU and has its own scrapers.
 
 ## Gotchas
 
-- The global matcher backend (`defaultBackend`) is a **package global,
-  immutable after load by convention, and unsynchronized.** Reads are safe
-  concurrently — *but only as long as it is never reloaded.*
-  `SetGlobalDatastore` performs a plain, non-atomic struct copy, and the
-  reference consumer reassigns it at runtime through `/api/load/datastore`
-  with no locking. That is a latent data race; do not add an in-process reload
-  without making the swap atomic. See `docs/adr/0002`.
-- Magic's filter callbacks resolve a few auxiliary lookups through the
-  package-level `mtgmatcher` helpers, which consult the *global* datastore
-  (documented in `mtgmatcher/magic/doc.go`). A Magic `Backend` obtained from
-  `Open()` but never installed with `SetGlobalDatastore` can therefore answer
-  those lookups from the wrong data. Threading the `Backend` through the
-  callback signatures would lift the limitation.
+- The global matcher backend is published through `atomic.Pointer[Backend]`.
+  Each package-level operation captures one immutable snapshot. Several calls
+  can span publications: capture `GlobalDatastore()` for related lookups, or
+  pass `ArbitOpts.Backend` for a report using an explicit backend. The snapshot
+  is a shallow copy; maps, slices, cards and rules remain shared and must not
+  be mutated after publication. See `docs/adr/0003-atomic-backend-snapshots.md`.
+- Magic identification callbacks use the supplied backend. Only the exported
+  `magic.Has*Printing` convenience wrappers intentionally consult the global.
+  Keep new identification lookups on `b`, including in callbacks.
 - The Magic promo-type constants (`PromoTypeBoosterfun`, `PromoTypeBuyABox`,
   `PromoTypePrerelease`, `PromoTypePromoPack`, `PromoTypeThickDisplay` and the
   rest) live only in `mtgmatcher/magic`. Core keeps no shim copies, so code
