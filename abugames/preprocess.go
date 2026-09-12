@@ -7,10 +7,12 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 var cardTable = map[string]string{
 	// Typos
+	"Sakure-Tribe Elder":                  "Sakura-Tribe Elder",
 	"Bogart Brute":                        "Boggart Brute",
 	"Deathgazer Cockatrice":               "Deathgaze Cockatrice",
 	"Elminate":                            "Eliminate",
@@ -291,6 +293,20 @@ func variantLetter(variation string) string {
 	return match[1]
 }
 
+// describedArtwork preserves exact artwork descriptions already cataloged by
+// the matcher. ABU's letter is not necessarily the catalog's suffix: Strip
+// Mine "d Tower" is 82c, while the bare letter "d" names another artwork.
+func describedArtwork(name, edition, variation string) string {
+	if variantLetter(variation) == "" {
+		return ""
+	}
+	set, err := mtgmatcher.GetSetByName(edition)
+	if err != nil {
+		return ""
+	}
+	return magic.VariantsTable[set.Name][name][strings.ToLower(variation)]
+}
+
 // artworkLetterRe matches the letter a basic land's title opens its variation
 // with, and the words the storefront hangs off it.
 var artworkLetterRe = regexp.MustCompile(`^([A-F])\b`)
@@ -312,6 +328,8 @@ func artworkLetter(cardName, variation string) string {
 }
 
 func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
+	corrected := correctListing(*card)
+	card = &corrected
 	lang := ""
 	if len(card.Language) > 0 {
 		lang = card.Language[0]
@@ -400,7 +418,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 
 		variation = strings.Replace(variation, "Not Tournament Legal", "", 1)
 
-		variation = strings.TrimSpace(variation)
+		variation = strings.Join(strings.Fields(variation), " ")
 
 		isPromo := false
 		for _, tag := range promoTags {
@@ -417,6 +435,18 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		if strings.Contains(variation, "Bundle") {
 			isPromo = false
 		}
+		// Unstamped prerelease cards such as MKM #431-432 are filed in the
+		// expansion itself. Keep that exact set/number when the catalog
+		// independently confirms the prerelease printing.
+		if variation == "Prerelease no date stamp" {
+			if set, err := mtgmatcher.GetSetByName(edition); err == nil {
+				for _, candidate := range mtgmatcher.MatchInSet(cardName, set.Code) {
+					if candidate.Number == card.Number && candidate.HasPromoType("prerelease") {
+						isPromo = false
+					}
+				}
+			}
+		}
 		if isPromo {
 			// Handle promo cards appearing in multiple editions
 			// like Sorcerous Spyglass
@@ -426,6 +456,30 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			// Reset edition, and trust mtgmatcher to find it by its variation
 			edition = "Promo"
 		}
+	}
+
+	// These are English cards with a misprinted copyright line. Passing
+	// "Portuguese" to Match would override the listing's English language.
+	// Only replace the exact description when its marked catalog number
+	// establishes the Fifth Edition misprint independently of vendor IDs.
+	if variation == "Portuguese Copyright" {
+		if set, err := mtgmatcher.GetSetByName(edition); err == nil && set.Code == "5ED" && strings.HasSuffix(card.Number, "†") {
+			for _, candidate := range mtgmatcher.MatchInSet(cardName, set.Code) {
+				if candidate.Number == card.Number && candidate.Language == "English" {
+					variation = card.Number
+					break
+				}
+			}
+		}
+	}
+
+	// The vendor IDs are the primary identity when they agree with the
+	// listing's name, language, finish and printing descriptors. Known copied
+	// IDs and descriptions the ID checks cannot establish use the text path.
+	if identified := identifiedCard(card, mtgmatcher.InputCard{
+		Name: cardName, Edition: edition, Variation: variation, Foil: isFoil, Language: lang,
+	}); identified != nil {
+		return identified, nil
 	}
 
 	if set := promoSet(cardName, card.Edition, variation); set != "" {
@@ -648,6 +702,12 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		variation = strings.Replace(variation, spelled, card.Number, 1)
 	}
 
+	// Resolve a cataloged artwork description before adding the vendor's
+	// number or reducing its letter. The same table also validates vendor IDs.
+	if number := describedArtwork(cardName, edition, variation); number != "" {
+		variation = number
+	}
+
 	// Use collector number data when the variation carries has none, unless for a couple of editions
 	var numbered bool
 	if card.Number != "" && mtgmatcher.ExtractNumberAny(variation) == "" {
@@ -655,7 +715,12 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		case edition == "Unfinity":
 		// A Secret Lair is numbered whatever shelf the storefront files it
 		// on, and the number is the whole of what tells its drops apart.
-		case edition == "Promo" && !mtgmatcher.Contains(variation, "Secret Lair"):
+		// MagicFest reprints can span years; its collector number separates
+		// Counterspell in PF24 (#1) from PF26 (#5). A promo pack without a
+		// shelf also needs its number to distinguish reprinted promo lands.
+		case edition == "Promo" && !mtgmatcher.Contains(variation, "Secret Lair") &&
+			!mtgmatcher.Contains(variation, "MagicFest") &&
+			!(card.Edition == "" && mtgmatcher.Contains(variation, "Promo Pack")):
 		default:
 			if variation != "" {
 				variation += " "
@@ -683,7 +748,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	// only where it reaches a printing on its own.
 	if letter == "" {
 		variant := variantLetter(variation)
-		if variant != "" && resolved(cardName, edition, variant, lang, isFoil) != nil {
+		if variant != "" && !mtgmatcher.Contains(variation, "The List") && resolved(cardName, edition, variant, lang, isFoil) != nil {
 			variation = variant
 		}
 	}
@@ -707,7 +772,13 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			if !numberCorroborates(card.Number, reprint.Number) {
 				own := resolved(cardName, card.Edition, card.Number, lang, isFoil)
 				if own != nil && own.Number == card.Number {
-					return nil, errConflictingNumber
+					// ULST assigns new catalog numbers to cards still printed
+					// with their original set's numbers. Require the named variant
+					// to identify that same original printing before dropping it.
+					original := resolved(cardName, card.Edition, strings.ReplaceAll(bare, "The List", ""), lang, isFoil)
+					if reprint.SetCode != "ULST" || original == nil || original.UUID != own.UUID {
+						return nil, errConflictingNumber
+					}
 				}
 			}
 			variation = bare
@@ -782,8 +853,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		cardName = strings.TrimSpace(cardName)
 	}
 
+	// The playtest card is literally named Trial and Error; only the
+	// ordinary split card needs the historical Trial // Error alias.
 	name, found := cardTable[cardName]
-	if found {
+	if found && !(cardName == "Trial and Error" && mtgmatcher.Contains(edition, "Playtest")) {
 		cardName = name
 	}
 

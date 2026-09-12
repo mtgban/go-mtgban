@@ -16,6 +16,7 @@ import (
 // ABUCard is one card as ABU's catalog describes it.
 type ABUCard struct {
 	ID           string `json:"id"`
+	ProductID    string `json:"product_id"`
 	DisplayTitle string `json:"display_title"`
 	SimpleTitle  string `json:"simple_title"`
 
@@ -29,6 +30,10 @@ type ABUCard struct {
 	Language []string `json:"language"`
 	Title    string   `json:"title"`
 	Number   string   `json:"card_number"`
+
+	ScryfallIDs   []string `json:"scryfall_id"`
+	TCGplayerIDs  []int64  `json:"tcgplayer_id"`
+	MultiverseIDs []int64  `json:"multiverseid"`
 
 	SellPrice       float64 `json:"price"`
 	SellQuantity    int     `json:"quantity"`
@@ -70,10 +75,10 @@ const (
 	// abuFieldList restricts Solr responses to the fields ABUCard decodes.
 	// Without it each doc returns all ~56 stored fields (oracle text, ebay
 	// metadata, images, ...), inflating the page payload ~9x.
-	abuFieldList = "id,display_title,simple_title,complete_description," +
+	abuFieldList = "id,product_id,display_title,simple_title,complete_description," +
 		"magic_edition_sort,condition,layout,rarity,language,title," +
 		"card_number,price,quantity,sub_qty,buy_list_quantity," +
-		"buy_price,trade_price"
+		"buy_price,trade_price,scryfall_id,tcgplayer_id,multiverseid"
 
 	abuBaseURL = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20-magic_features%3A(%22Actual%20Picture%20Card%22)`
 

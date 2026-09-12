@@ -1,0 +1,86 @@
+[
+  {
+    "group": "138664",
+    "card": {
+      "id": "244718",
+      "card_number": "82b",
+      "language": [
+        "English"
+      ],
+      "magic_edition_sort": "Antiquities",
+      "scryfall_id": [
+        "a48bd745-5e9f-4807-97b0-29222a5b838d"
+      ],
+      "tcgplayer_id": [
+        71526
+      ],
+      "title": "English",
+      "display_title": "Strip Mine (a Even)",
+      "simple_title": "Strip Mine"
+    },
+    "number": "82b"
+  },
+  {
+    "group": "138665",
+    "card": {
+      "id": "366355",
+      "card_number": "82d",
+      "language": [
+        "English"
+      ],
+      "magic_edition_sort": "Antiquities",
+      "scryfall_id": [
+        "e0f6a92f-edd8-4cb6-be91-f3ec229b20a6"
+      ],
+      "tcgplayer_id": [
+        71527
+      ],
+      "title": "English",
+      "display_title": "Strip Mine (b Uneven)",
+      "simple_title": "Strip Mine"
+    },
+    "number": "82d"
+  },
+  {
+    "group": "138666",
+    "card": {
+      "id": "1522098",
+      "card_number": "82a",
+      "language": [
+        "English"
+      ],
+      "magic_edition_sort": "Antiquities",
+      "scryfall_id": [
+        "e7880157-7f27-4f1b-9cdc-ab36a6252376"
+      ],
+      "tcgplayer_id": [
+        71525
+      ],
+      "title": "English",
+      "display_title": "Strip Mine (c No Horizon)",
+      "simple_title": "Strip Mine"
+    },
+    "number": "82a"
+  },
+  {
+    "group": "138667",
+    "card": {
+      "id": "1522292",
+      "card_number": "82c",
+      "language": [
+        "English"
+      ],
+      "magic_edition_sort": "Antiquities",
+      "scryfall_id": [
+        "917e98db-a0c4-4836-9e4b-3fda142eedf6"
+      ],
+      "tcgplayer_id": [
+        71524
+      ],
+      "title": "English",
+      "display_title": "Strip Mine (d Tower)",
+      "simple_title": "Strip Mine"
+    },
+    "number": "82c"
+  }
+]
