@@ -564,7 +564,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 
 				if Contains(set.Name, inCard.Edition) ||
 					// If a card is promotional, only consider promotional sets
-					(inCard.IsGenericPromo() && strings.HasSuffix(set.Name, "Promos")) ||
+					(b.IsGenericPromo(inCard) && strings.HasSuffix(set.Name, "Promos")) ||
 					// If it is Bundle or BaB, also consider base sets if recent enough
 					(inCard.IsBundle() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
 					(inCard.IsBaB() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {

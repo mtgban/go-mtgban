@@ -81,3 +81,19 @@ func TestGlobalDatastoreConcurrentPublication(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestGenericPromoUsesBackendTokenNames(t *testing.T) {
+	previous := GlobalDatastore()
+	t.Cleanup(func() { SetGlobalDatastore(previous) })
+	in := &InputCard{Name: "Test Reward", Variation: "Promo"}
+	withToken := &Backend{Tokens: []string{in.Name}}
+	withoutToken := &Backend{}
+	SetGlobalDatastore(withToken)
+	if !withoutToken.IsGenericPromo(in) {
+		t.Fatal("independent backend used the global token list")
+	}
+	SetGlobalDatastore(withoutToken)
+	if withToken.IsGenericPromo(in) {
+		t.Fatal("independent backend ignored its own token list")
+	}
+}
