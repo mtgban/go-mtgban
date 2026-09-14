@@ -221,5 +221,6 @@ func (abu *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &abu.inventoryDate
 	info.BuylistTimestamp = &abu.buylistDate
 	info.SealedMode = true
+	info.Game = mtgban.GameMagic
 	return
 }

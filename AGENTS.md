@@ -354,8 +354,9 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    that game's rather than Magic's — nothing to register beyond the name
    itself. One `bantool-<store>_<game>.yml` workflow per target.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
-   `SealedMode`, `CreditMultiplier`, `Family`, and `Game` (`mtgban.GameMagic`
-   is the empty string, so a non-Magic scraper must set `Game` explicitly).
+   `SealedMode`, `CreditMultiplier`, `Family`, and `Game` — every scraper sets
+   `Game` explicitly now, `mtgban.GameMagic` included; nothing reads as Magic
+   by default.
 6. A scraper that prices more than one game takes an `mtgban.Game` and nothing
    else: `NewScraper(game mtgban.Game, ...) (*T, error)`. The vendor's own
    naming for its games — slugs, catalog ids, department numbers — stays
@@ -365,9 +366,10 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    between the two and both converts and validates, and a game the map does
    not hold is refused at the constructor. Store the typed game on the struct
    so `Info()` reads `info.Game = x.game` rather than switching a vendor value
-   back into one; keep every read that drives a run on the vendor value, whose
-   zero value names no real game (`mtgban.GameMagic` is `""`, so an unset
-   typed field reads as Magic rather than as a mistake).
+   back into one; keep every read that drives a run on the vendor value. The
+   typed field's zero value names no real game — a constructor that forgets to
+   set it produces an empty `Game`, which the map-lookup validation above
+   already refuses rather than silently defaulting to Magic.
 
 ### Adding a game
 

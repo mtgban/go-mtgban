@@ -117,9 +117,10 @@ both. Pin this in `base_test.go` before touching the add path.
 `ScraperInfo` carries identity (`Name`, `Shorthand`, `CountryFlag`, and
 `Game`) plus behavior flags consumed by the analysis layer. `Game` is of type
 `mtgban.Game`, a named string whose values are the constants `mtgban.GameMagic`,
-`GameLorcana`, `GameRiftbound` and the rest (`mtgban.AllGames` lists all nine),
-where **`GameMagic` is the empty string**: an empty `Game` means Magic, not
-"unknown". Giving it a type of its own is what settles which naming a scraper is *built*
+`GameLorcana`, `GameRiftbound` and the rest (`mtgban.AllGames` lists all nine).
+Every scraper sets `Game` explicitly, `GameMagic` included: the zero value
+names no real game, so an unset field is a bug to fix rather than a reading
+of Magic. Giving it a type of its own is what settles which naming a scraper is *built*
 from: a multi-game scraper takes an `mtgban.Game`, converts it to the vendor's
 own naming through one unexported map, and sets `Game` back from the typed
 value it was handed. The vendor's spellings stay exported — each package's API

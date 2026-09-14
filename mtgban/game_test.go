@@ -6,16 +6,17 @@ import (
 	"testing"
 )
 
-// TestGameWireFormat pins the string every game is published as. ScraperInfo
-// is marshalled into the dumps the site reads, so a game's value is a wire
-// format and not an internal label: renaming one here renames it in every
-// dump already written.
+// TestGameWireFormat pins the string every game is published as, Magic
+// included now that it is a named value rather than the zero value.
+// ScraperInfo is marshalled into the dumps the site reads, so a game's
+// value is a wire format and not an internal label: renaming one here
+// renames it in every dump already written.
 func TestGameWireFormat(t *testing.T) {
 	for _, tt := range []struct {
 		game Game
 		want string
 	}{
-		{GameMagic, ""},
+		{GameMagic, "Magic"},
 		{GameLorcana, "Lorcana"},
 		{GameRiftbound, "Riftbound"},
 		{GameOnePiece, "OnePiece"},
@@ -37,15 +38,14 @@ func TestGameWireFormat(t *testing.T) {
 	}
 }
 
-// TestScraperInfoGameJSON pins that giving Game a type of its own did not
-// change the JSON: Magic still writes no field at all, and every other game
-// writes the same string it always did.
+// TestScraperInfoGameJSON pins that every game, Magic included, now writes
+// an explicit game field rather than Magic relying on an omitted zero value.
 func TestScraperInfoGameJSON(t *testing.T) {
 	for _, tt := range []struct {
 		game Game
 		want string
 	}{
-		{GameMagic, `{"name":"","shorthand":""}`},
+		{GameMagic, `{"name":"","shorthand":"","game":"Magic"}`},
 		{GamePokemon, `{"name":"","shorthand":"","game":"Pokemon"}`},
 	} {
 		blob, err := json.Marshal(ScraperInfo{Game: tt.game})

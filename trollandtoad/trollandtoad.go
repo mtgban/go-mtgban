@@ -316,5 +316,6 @@ func (tnt *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TNT"
 	info.InventoryTimestamp = &tnt.inventoryDate
+	info.Game = mtgban.GameMagic
 	return
 }

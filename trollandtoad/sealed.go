@@ -217,5 +217,6 @@ func (tnt *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TNTSealed"
 	info.InventoryTimestamp = &tnt.inventoryDate
 	info.SealedMode = true
+	info.Game = mtgban.GameMagic
 	return
 }
