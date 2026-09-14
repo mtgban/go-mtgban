@@ -448,6 +448,80 @@ func fabVariantMarked(sku string) bool {
 	return trimPrintRun(code) != code
 }
 
+// fabPlainSibling steers a fabMatch result off a Marvel printing when the
+// product's own rarity does not say Marvel. fabMatch's rarity argument only
+// ever asks for the Marvel printing, through fabTiers appending it to the
+// number - nothing steers a product priced at any other rarity away from
+// whichever id an unmarked query happens to land on, and a survey of the
+// datastore found it lands on the Marvel one. "042b" Aether Ashwing // Ash
+// is catalogued rarity "Token" at $9.99, beside its own "042" Marvel twin at
+// $69.99, and without this both share the Marvel uuid at every grade.
+//
+// Only a clean pair is resolved: a (set, number, foilness) carrying more
+// than one non-Marvel candidate is left exactly as fabMatch found it, since
+// nothing here says which of those the product is either. A survey of the
+// whole Flesh and Blood datastore found 36 (set, number, foilness) keys
+// holding both a Marvel and a non-Marvel printing, 32 of them this clean.
+func fabPlainSibling(id, rarity string) string {
+	if rarity == "Marvel" {
+		return id
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil || !co.HasPromoType("marvel") {
+		return id
+	}
+	var plain string
+	for _, twin := range mtgmatcher.MatchWithNumber("", co.SetCode, co.Number) {
+		tco, terr := mtgmatcher.GetUUID(twin.UUID)
+		if terr != nil || tco.HasPromoType("marvel") || tco.Foil != co.Foil {
+			continue
+		}
+		if plain != "" {
+			return id
+		}
+		plain = twin.UUID
+	}
+	if plain == "" {
+		return id
+	}
+	return plain
+}
+
+// fabRenamedTwins names the promo type a sku's own printing carries, for the
+// one shelf where the catalog sends the same name for two different cards.
+// SUP2-009b-ENC is $549.99 beside SUP2-009-ENC's $109.99, both sold as
+// "Pleiades, Superstar" - but the dearer one is the Maori printing, which
+// the datastore carries under its own card name, "Hinewhitu, Hautipua",
+// with "Pleiades, Superstar" folded into a promo type instead of the name.
+// Nothing about the product's own fields says to look for that: the sku is
+// what marks it. A survey of the whole datastore for a second row at one
+// (set, number, foilness) carrying a different name found exactly this one
+// pair, so the table is closed rather than a rule guessing at a convention.
+var fabRenamedTwins = map[string]string{
+	"SGL-FAB-SUP2-009b-ENC": "pleiadessuperstar",
+}
+
+// fabRenamedTwin steers a fabMatch result onto the printing fabRenamedTwins
+// names, given the one the match landed on.
+func fabRenamedTwin(id, sku string) string {
+	want, renamed := fabRenamedTwins[sku]
+	if !renamed {
+		return id
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil {
+		return id
+	}
+	for _, twin := range mtgmatcher.MatchWithNumber("", co.SetCode, co.Number) {
+		tco, terr := mtgmatcher.GetUUID(twin.UUID)
+		if terr != nil || !tco.HasPromoType(want) || tco.Foil != co.Foil {
+			continue
+		}
+		return twin.UUID
+	}
+	return id
+}
+
 // fabMarkedSibling returns the printing a marked sku names, given the plain
 // one the match landed on. The marker says that a second printing of this
 // number exists and not which it is, so the datastore is what names it: where
@@ -692,6 +766,8 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		}
 		id, err := fabMatch(name, edition, finish, p.Rarity, foil, numbers)
 		if err == nil {
+			id = fabPlainSibling(id, p.Rarity)
+			id = fabRenamedTwin(id, p.SKU)
 			return fabMarkedSibling(id, p), nil
 		}
 		// A product named by both its faces at a single collector number
