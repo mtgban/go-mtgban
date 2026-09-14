@@ -218,8 +218,8 @@ path that may be a file, an `http(s)://` URL or a `b2://` object, `.xz` or
 not; a suite reads its game's file that way in its TestMain, or in a helper
 of its own for another game's.
 
-There is no auto-detection. The caller always knows the game — bantool reads
-it off the scraper it runs, a test off the package it sits in — and the
+There is no auto-detection. The caller always knows the game — bantool takes
+it as its own `-game` flag, a test off the package it sits in — and the
 loader that tried every registered game in turn decoded AllPrintings three
 times over before reaching Magic's, behind a buffer of the whole file.
 
@@ -273,13 +273,20 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    follow `ninetyfive` for an API-backed store or `mtgseattle` for an
    HTML-scraped one.
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
-4. Register a `scraperOption` in `cmd/bantool`'s `options`, keyed first by
-   game and then by the store's own name (`options["magic"]["cardtrader"]`,
-   `options["lorcana"]["cardtrader"]`) — the game is never parsed back out of
-   a name, so a store keeps the same key under every game it prices. Add a
-   `.github/workflows/bantool-<store>.yml` per game; the external target name
-   (`-<store>_lorcana`, `-<store>_riftbound`) is unchanged, and comes from
-   `scraperFlagName`, not from the registration key.
+4. Register a `scraperOption` in `cmd/bantool`'s `options`, keyed by the
+   store's own name alone: one entry serves every game it prices, since
+   `Init` now takes the game bantool was run with (`-game lorcana`, empty
+   for Magic) and is the one place that checks whether the store supports
+   it, translating the name into whatever constant that store's own package
+   wants. A store whose games differ only in that constant needs one small
+   translation table and no second entry; give `OnlySeller`/`OnlyVendor` the
+   games (plural - both take `[]string`) where the store cannot honour the
+   other side, the way Vegas Singles does for Magic alone. Add a
+   `.github/workflows/bantool-<store>.yml` per game, each passing its own
+   `target:`/`game:` pair to `run-bantool.yml` exactly as it already had
+   to; `run-bantool.yml` derives bantool's own flag by stripping `game`'s
+   suffix back off `target`, so no caller states a store name that is not
+   already implied by the two it already gives.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` (`mtgban.GameMagic`
    is the empty string, so a non-Magic scraper must set `Game` explicitly).

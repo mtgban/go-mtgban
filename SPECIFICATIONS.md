@@ -278,8 +278,8 @@ installing it as the global one; `SetGlobalDatastore(b)` installs it. Asking
 for a game nothing registered fails with an error naming the games that are.
 There is no auto-detection: the loader that once tried every registered game
 in turn decoded AllPrintings through three foreign decoders before Magic's,
-behind a buffer of the whole file, and was removed. bantool reads the game
-off the scraper it runs; a suite names its own in its TestMain.
+behind a buffer of the whole file, and was removed. bantool takes the game
+as its own `-game` flag; a suite names its own in its TestMain.
 
 **The global-backend concurrency contract.** `SetGlobalDatastore` atomically
 publishes a shallow copy behind `atomic.Pointer[Backend]`. Each package-level
@@ -884,28 +884,36 @@ untracked working-tree WIP (`manapoolSeller`, `mkmhtml2csv`, `mp2ckbl`,
 treat anything not in the list above as unreviewed, and note that some of it
 embeds live credentials.
 
-- **bantool** — `options` is a `map[game]map[store]*scraperOption{constructor,
-  flags}`, so a store's key is the same under every game it prices
-  (`options["riftbound"]["cardtrader"]`, `options["lorcana"]["cardtrader"]`)
-  and the game a target prices is never parsed back out of a name; most
-  stores are registered under several games (cardmarket and cardtrader
-  appear under nearly all nine), and a few are one game's alone (merlion
-  only ever prices Riftbound; strikezone's Lorcana entry has no Riftbound
-  counterpart). `flattenOptions` indexes every entry under the external
-  name it has always run as (`scraperFlagName`: the store's own name for
-  Magic, `<store>_<game>` otherwise) for flag registration and
-  `-scrapers`/`-sellers`/`-vendors` lookup — the CLI surface this produces
-  is unchanged by the split, and a name two games' entries both compute is
-  refused at startup rather than silently dropping one.
-  `-format` json/csv/ndjson (each also with an `.xz` variant); output through
-  `github.com/mtgban/simplecloud` to local/B2/GCS/S3/HTTP; optional HMAC
-  signing (`BAN_SECRET`); all credentials via env vars (godotenv autoload).
-  It blank-imports `mtgmatcher/games`, which is what lets `-datastore` accept
-  a file for any registered game without further configuration. Init
-  closures set `scraper.LogCallback = GlobalLogCallback` as a **direct field
-  assignment on the concrete pointer** in more than forty places — the binding
-  constraint on any `BaseScraper` refactor (the field must stay exported and
-  embedding-reachable).
+- **bantool** — `options` is a flat `map[store]*scraperOption`, one entry per
+  store regardless of how many games it prices: `Init` takes the game
+  bantool was run with (`func(game string) (mtgban.Scraper, error)`) and is
+  the one place that checks whether the store supports it, translating the
+  canonical name into whatever constant that store's own package wants
+  (an int for CardTrader, Cardmarket and StarCityGames, a display string
+  for the rest, none of them spelled alike). `-game` selects it on the command line
+  (empty means Magic, mirroring `mtgban.GameMagic`); a store that only ever
+  priced one game keeps its old constructor wrapped in `onlyGame(name,
+  build)`, which refuses every other game by name. `OnlySeller`/`OnlyVendor`
+  hold the games (not a bool - a store can differ by game, the way Vegas
+  Singles is buylist-only for Magic and not for the four games beside it)
+  a store cannot answer the other side for. The external target name a
+  workflow schedules (`-cardtrader_lorcana`, `-cardtrader_riftbound`) no
+  longer exists as a bantool flag; every caller still passes it as
+  `target` (unchanged, since the published dump path and the site's
+  reload config still key on it) alongside the `game` it always named,
+  and `run-bantool.yml` strips `game`'s suffix back off `target` to get
+  the flag bantool now takes, `-<store> -game <game>` - nothing a caller
+  was not already saying.
+  Selection otherwise unchanged: `-scrapers`/`-sellers`/`-vendors` by store
+  name; `-format` json/csv/ndjson (each also with an `.xz` variant); output
+  through `github.com/mtgban/simplecloud` to local/B2/GCS/S3/HTTP; optional
+  HMAC signing (`BAN_SECRET`); all credentials via env vars (godotenv
+  autoload). It blank-imports `mtgmatcher/games`, which is what lets
+  `-datastore` accept a file for any registered game without further
+  configuration. Constructors set `scraper.LogCallback = GlobalLogCallback`
+  as a **direct field assignment on the concrete pointer** in over thirty
+  places — the binding constraint on any `BaseScraper` refactor (the field
+  must stay exported and embedding-reachable).
 - **manapoolOrders** — Mana Pool buyer-order CSV dumps.
 - **mkmPriceGuide** — Cardmarket price-guide export.
 - **boosterGen / boosterList** — booster simulation and sealed introspection
