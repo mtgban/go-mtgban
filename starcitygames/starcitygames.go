@@ -1,5 +1,9 @@
 // Package starcitygames scrapes Star City Games, for singles and sealed
 // product, across every game they carry.
+//
+// See README.md for the id-collision defect class this package spends
+// most of its resolution logic defending against, and the method for
+// finding and fixing the next one.
 package starcitygames
 
 import (

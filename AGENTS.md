@@ -15,6 +15,13 @@ correctness lives in `mtgmatcher`. If a card matches wrong, fix it in
 `mtgmatcher` — usually in a data table, and for Magic inside the
 `mtgmatcher/magic` sub-package — not in the scraper.
 
+The exception is a vendor's own identifier being wrong, or shared between
+two genuinely different products — that's the vendor's data to distrust,
+which makes it the scraper's fix, not `mtgmatcher`'s.
+`starcitygames/README.md` works through that whole defect class end to end:
+how it's found, the fix shapes (a general rule, a closed table, a
+refusal), and the repeatable method for catching the next one.
+
 ## Layout
 
 ```
