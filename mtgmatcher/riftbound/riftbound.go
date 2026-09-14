@@ -172,10 +172,27 @@ type GalleryCard struct {
 
 // Load reads an official card-gallery payload from r and returns a Backend
 // for it, or an error when r does not hold a Riftbound card gallery.
+//
+// It reads either shape: the document itself, or the document wrapped in
+// a {"meta":...,"data":...} envelope, in which case "data" holds the
+// payload.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
-	var payload CardGallery
-	err := json.NewDecoder(r).Decode(&payload)
+	raw, err := io.ReadAll(r)
 	if err != nil {
+		return nil, err
+	}
+	var envelope struct {
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		return nil, err
+	}
+	if envelope.Data != nil {
+		raw = envelope.Data
+	}
+
+	var payload CardGallery
+	if err := json.Unmarshal(raw, &payload); err != nil {
 		return nil, err
 	}
 	for _, blade := range payload.PageProps.Page.Blades {
