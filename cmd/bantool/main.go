@@ -1122,7 +1122,20 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 // asked for one half by a scraper holding both ran whole and published both.
 // Refusing it names the target instead, where the empty half used to be found
 // by reading the output.
+//
+// Asking for both halves alone is refused here too, because the two ways of
+// asking meet on the same two fields. A few entries declare OnlySeller or
+// OnlyVendor as a fact about the store - Vegas Singles keeps no Magic singles
+// shelf, MTG Seattle no buylist - and -sellers/-vendors say the same thing for
+// one run, so a flag can name a store whose own entry already answers for the
+// other half, or both flags can name one store between them. Neither leaves
+// anything to publish, and the empty record would surface at the dump, with
+// the crawl already spent.
 func configureScraper(name string, opt *scraperOption, scraper mtgban.Scraper) error {
+	if opt.OnlySeller && opt.OnlyVendor {
+		return fmt.Errorf("%s was asked for its retail alone and its buylist "+
+			"alone at once, which leaves nothing to publish", name)
+	}
 	config, ok := scraper.(mtgban.ScraperConfig)
 	if ok {
 		config.SetConfig(mtgban.ScraperOptions{
@@ -1225,6 +1238,9 @@ func run() int {
 			options[name].Enabled = true
 		}
 	}
+	// Clearing the other half here would overwrite what the entry itself
+	// says about the store rather than meet it; both are left standing, and
+	// configureScraper refuses the pair that cannot hold.
 	if *sellersOpt != "" {
 		sells := strings.SplitSeq(*sellersOpt, ",")
 		for name := range sells {
@@ -1234,7 +1250,6 @@ func run() int {
 			}
 			options[name].Enabled = true
 			options[name].OnlySeller = true
-			options[name].OnlyVendor = false
 		}
 	}
 	if *vendorsOpt != "" {
@@ -1245,7 +1260,6 @@ func run() int {
 				return 1
 			}
 			options[name].Enabled = true
-			options[name].OnlySeller = false
 			options[name].OnlyVendor = true
 		}
 	}

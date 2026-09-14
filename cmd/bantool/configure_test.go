@@ -65,6 +65,32 @@ func TestConfigureScraperRefusesWhatItCannotHonour(t *testing.T) {
 	}
 }
 
+// TestConfigureScraperRefusesBothHalvesAtOnce pins that a target held to its
+// retail alone and its buylist alone at once is refused, by a scraper that
+// could answer either option on its own as much as by one that can answer
+// neither. -sellers and -vendors write the very fields a store's own entry
+// declares, so the contradiction arrives one of three ways - a flag over the
+// entry, the entry over a flag, or the two flags over each other - and only
+// the pair of fields, not where they came from, says a run has nothing left
+// to publish. The flags used to resolve it by whichever was named last,
+// overwriting the entry outright.
+func TestConfigureScraperRefusesBothHalvesAtOnce(t *testing.T) {
+	scraper := &configurableScraper{}
+	opt := scraperOption{OnlySeller: true, OnlyVendor: true}
+	err := configureScraper("sometarget", &opt, scraper)
+	if err == nil {
+		t.Fatal("got no error, want one naming the target")
+	}
+	if !strings.Contains(err.Error(), "sometarget") {
+		t.Errorf("error does not name the target: %v", err)
+	}
+	// Told anything at all, this scraper would have been told to drop both
+	// halves, which is the silent whole-run-for-nothing being refused.
+	if scraper.got != (mtgban.ScraperOptions{}) {
+		t.Errorf("the scraper was configured anyway: %+v", scraper.got)
+	}
+}
+
 // TestConfigureScraperPassesTheOptionThrough pins the other side: a scraper
 // that answers the option is told exactly what was asked, and the two halves
 // are not crossed - OnlyVendor turns retail off, not the buylist it names.
