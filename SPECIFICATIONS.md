@@ -960,25 +960,33 @@ untracked working-tree WIP (`manapoolSeller`, `mkmhtml2csv`, `mp2ckbl`,
 treat anything not in the list above as unreviewed, and note that some of it
 embeds live credentials.
 
-- **bantool** — a registry of `scraperOption{constructor, flags}` in
-  `cmd/bantool/main.go` (moved there from a `scrapers.go` this doc used to
-  point at) for every target, well past a hundred once every scraper's own
-  per-game and `_sealed` variants are counted (14 `*_riftbound` targets, 14
-  `*_lorcana` ones, and the rest of the eight non-Magic games besides). A
-  target names its own game: `scraperGame(name)` reads the suffix after the
-  last underscore and checks it against `mtgmatcher.RegisteredGames()`, so
-  registering `<store>_<game>` is what assigns the game — nothing to
-  enumerate by hand — and a name ending on no registered game is read as
-  Magic's. Selection via `-scrapers`/`-sellers`/`-vendors`; `-format`
-  json/csv/ndjson (each also with an `.xz` variant); output through
+- **bantool** — a registry of `scraperOption{Init, flags}` in
+  `cmd/bantool/main.go` for every target, well past a hundred once every
+  scraper's own per-game and `_sealed` variants are counted (14 `*_riftbound`
+  targets, 14 `*_lorcana` ones, and the rest of the eight non-Magic games
+  besides). The `Init` closures of a store that prices several games are
+  written once each in `cmd/bantool/scrapers.go` and instanced per game from
+  the registry (`cardtraderMarketScraper(mtgban.GameLorcana)`), so the entry
+  itself is a name, a game constant and its flags. A target names its own
+  game: `scraperGame(name)` reads the suffix after the last underscore and
+  checks it against `mtgmatcher.RegisteredGames()`, so registering
+  `<store>_<game>` is what assigns the game — nothing to enumerate by hand —
+  and a name ending on no registered game is read as Magic's; a target and the
+  `game` input of the workflow scheduling it are pinned against each other by
+  `cmd/bantool/workflows_test.go`. Selection via a target's own bare flag
+  (`-tcg_market`, which is what `run-bantool.yml` invokes) or
+  `-scrapers`/`-sellers`/`-vendors`; the latter two also hold a target to one
+  half of its data, and a target whose entry already answers for the other
+  half alone is refused rather than overwritten. `-format` json/csv/ndjson
+  (each also with an `.xz` variant); output through
   `github.com/mtgban/simplecloud` to local/B2/GCS/S3/HTTP; optional HMAC
   signing (`BAN_SECRET`); all credentials via env vars (godotenv autoload).
   It blank-imports `mtgmatcher/games`, which is what lets `-datastore` accept
   a file for any of the nine games without further configuration. Init
   closures set `scraper.LogCallback = GlobalLogCallback` as a **direct field
-  assignment on the concrete pointer** in more than forty places — the binding
-  constraint on any `BaseScraper` refactor (the field must stay exported and
-  embedding-reachable).
+  assignment on the concrete pointer** in forty places across those two files
+  — the binding constraint on any `BaseScraper` refactor (the field must stay
+  exported and embedding-reachable).
 - **manapoolOrders** — Mana Pool buyer-order CSV dumps.
 - **mkmPriceGuide** — Cardmarket price-guide export.
 - **boosterGen / boosterList** — booster simulation and sealed introspection
