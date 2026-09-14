@@ -340,12 +340,45 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` (`mtgban.GameMagic`
    is the empty string, so a non-Magic scraper must set `Game` explicitly).
+6. A scraper that prices more than one game takes an `mtgban.Game` and nothing
+   else: `NewScraper(game mtgban.Game, ...) (*T, error)`. The vendor's own
+   naming for its games — slugs, catalog ids, department numbers — stays
+   exported, because the package's own API helpers take one (`Search`,
+   `SCGBuylistURL`, `NewGNClient`); what a caller no longer needs it for is
+   building a scraper. One `map[mtgban.Game]<vendor value>` per package sits
+   between the two and both converts and validates, and a game the map does
+   not hold is refused at the constructor. Store the typed game on the struct
+   so `Info()` reads `info.Game = x.game` rather than switching a vendor value
+   back into one; keep every read that drives a run on the vendor value, whose
+   zero value names no real game (`mtgban.GameMagic` is `""`, so an unset
+   typed field reads as Magic rather than as a mistake).
+
+### Adding a game
+
+A game is added in `mtgban` first and reaches the scrapers from there:
+
+1. Add the `mtgban.Game` constant in `mtgban/mtgban.go` and list it in
+   `mtgban.AllGames`. Both are pinned by `mtgban/game_test.go`, which also
+   pins the string it is published as — that value is a wire format, carried
+   in every dump, so pick it once and do not rename it later.
+2. Register the matcher side: a loader, a `GameRules` implementation and a
+   `register.go` under `mtgmatcher/<game>/`, plus the blank import in
+   `mtgmatcher/games/games.go`.
+3. Per storefront that carries it: one constant naming the vendor's own
+   spelling beside that package's existing ones, and one line in its
+   `<recv>Games` map. Nothing else in the scraper changes — the switches that
+   used to translate a vendor id back into a game are gone.
+4. Per scraper that should run it: a `scraperOption` named `<store>_<game>`
+   in `cmd/bantool/main.go` and a `bantool-<store>_<game>.yml` workflow.
+5. Wire the game's datastore into `.github/workflows/ci.yml` — a cache job and
+   a `test-<game>` job — and add its path variable to
+   `internal/vocabulary/read.go`'s `Games`.
 
 For TCGplayer specifically, the per-game scrapers `TCGGame` and `TCGGameIndex`
-are built from the `tcgplayer.SupportedGames` map, which associates a game tag
-with the TCGplayer category serving it. Adding a game there is one table entry
-plus the bantool options and workflows. Magic is deliberately absent from that
-map: it is identified by SKU and has its own scrapers.
+are built from the `tcgplayer` package's `tcgGames` map, which associates a
+game with the TCGplayer category serving it. Adding a game there is one table
+entry plus the bantool options and workflows. Magic is deliberately absent from
+that map: it is identified by SKU and has its own scrapers.
 
 **Do not copy as templates:** `trollandtoad`, `wizardscupboard`, and
 `strikezone` still use `gocolly` with hand-rolled concurrency; they predate

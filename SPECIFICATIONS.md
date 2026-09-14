@@ -115,13 +115,18 @@ reorders entries, or flips the sort direction in `add()`, silently corrupts
 both. Pin this in `base_test.go` before touching the add path.
 
 `ScraperInfo` carries identity (`Name`, `Shorthand`, `CountryFlag`, and
-`Game`) plus behavior flags consumed by the analysis layer. `Game` draws from
-the named constants `mtgban.GameMagic`, `GameLorcana` and `GameRiftbound`,
+`Game`) plus behavior flags consumed by the analysis layer. `Game` is of type
+`mtgban.Game`, a named string whose values are the constants `mtgban.GameMagic`,
+`GameLorcana`, `GameRiftbound` and the rest (`mtgban.AllGames` lists all nine),
 where **`GameMagic` is the empty string**: an empty `Game` means Magic, not
-"unknown". The scrapers that serve more than one game set it from their own
-per-game construction: cardmarket, cardtrader, coolstuffinc, ninetyfive,
-starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`, and
-trollandtoad's `generic.go`. The behavior flags are `MetadataOnly` (index
+"unknown". Giving it a type of its own is what settles which naming a scraper is *built*
+from: a multi-game scraper takes an `mtgban.Game`, converts it to the vendor's
+own naming through one unexported map, and sets `Game` back from the typed
+value it was handed. The vendor's spellings stay exported — each package's API
+helpers take one — but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
+cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket, ninetyfive,
+starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
+trollandtoad's `generic.go`, and vegassingles. The behavior flags are `MetadataOnly` (index
 prices only, no conditions or quantities), `NoQuantityInventory`,
 `SealedMode`, `CreditMultiplier`
 (store-credit ratio), `Family` (price-coalescing group), plus
@@ -881,8 +886,8 @@ by reading back `inventory[cardId]` before inserting the buylist row.
 | Package | Service & auth | Notes |
 |---|---|---|
 | `tcgplayer` | OAuth via `go-tcgplayer` + cookie-authed marketplace APIs | Largest: Market/Index/Sealed/SYP-list/per-seller scrapers, plus the table-driven single-game pair (see below); SKU map keyed by UUID; TCG Direct modeled as a Vendor with net-after-fees pricing |
-| `cardmarket` | OAuth 1.0 HMAC-SHA1 (gentle retry) | `CardMarketIndex` is a **Market** (`MarketNames → MKM Low/Trend`, `MetadataOnly`, `Family="MKM"`); EUR→USD; all eight non-Magic games via game id; `CardMarketSealed` separate |
-| `cardtrader` | Bearer token | `CardtraderMarket` (**Market**, 3 seller tiers, `Family="CT"`, `CountryFlag="EU"`); all eight non-Magic games via game id; `CardtraderSealed` mirror; bulk upload + cart APIs |
+| `cardmarket` | OAuth 1.0 HMAC-SHA1 (gentle retry) | `CardMarketIndex` is a **Market** (`MarketNames → MKM Low/Trend`, `MetadataOnly`, `Family="MKM"`); EUR→USD; all eight non-Magic games, each built from an `mtgban.Game` and mapped to Cardmarket's id inside the package; `CardMarketSealed` separate |
+| `cardtrader` | Bearer token | `CardtraderMarket` (**Market**, 3 seller tiers, `Family="CT"`, `CountryFlag="EU"`); all eight non-Magic games, each built from an `mtgban.Game` and mapped to Card Trader's id inside the package; `CardtraderSealed` mirror; bulk upload + cart APIs |
 | `cardkingdom` | Public pricelist via `go-cardkingdom` (file/URL-fed, no own client) | Full 4-condition buylist with price ratios; `CreditMultiplier 1.3`; singles + `sealed.go` + `graded.go` are three scrapers |
 | `manapool` | Public JSON API | Exactly two scrapers: `Manapool` (aggregate, `MatchId` by Scryfall id, `NoQuantityInventory`) and `ManapoolSealed` |
 | `arcanafrisia` | Public buylist endpoint | Buylist-only EU vendor, shorthand `AF`; matches by Scryfall id and maps the store's NM/EX/GD grades onto NM/SP/MP |
@@ -894,7 +899,7 @@ by reading back `inventory[cardId]` before inserting the buylist row.
 table:
 
 ```go
-var SupportedGames = map[string]int{
+var tcgGames = map[mtgban.Game]int{
     mtgban.GameLorcana:       tcgplayer.CategoryLorcana,
     mtgban.GameRiftbound:     tcgplayer.CategoryRiftbound,
     mtgban.GameOnePiece:      tcgplayer.CategoryOnePiece,
@@ -917,9 +922,9 @@ resolvable — see §2.3).
 ### HTML / crawler
 
 `starcitygames` (HawkSearch/Meilisearch APIs, serialized detection, sealed,
-plus Lorcana, Riftbound and Flesh and Blood behind its numeric game ids),
-`coolstuffinc` (seven of the eight non-Magic games — every one but Flesh and
-Blood — `CreditMultiplier 1.25`),
+plus Lorcana, Riftbound and Flesh and Blood, which its `scgGames` table maps
+onto SCG's numeric game ids), `coolstuffinc` (seven of the eight non-Magic
+games — every one but Flesh and Blood — `CreditMultiplier 1.25`),
 `hareruya` (JPY, **bespoke 403 → 5-min backoff**), `magiccorner` (EUR,
 Italian), `abugames` (Solr, MINT-aware grading, `InfoForScraper`), `mtgseattle`
 (`CreditMultiplier 1.33`), `ninetyfive`, `mintcard` (rides TCG SKUs,
@@ -1080,11 +1085,13 @@ grep every game package for the sibling field it is meant to travel with
 too, or add a shared setter every loader calls (`IndexSets`,
 `IndexSetUUIDs`) rather than trusting nine separate hand-written loops to
 stay in sync. Add the game to `mtgmatcher/games`, add a `Game` constant in
-`mtgban`, and make `Load` reject inputs it does not recognize so
-auto-detection can move past it. Existing storefronts often come cheaply: a
-TCGplayer category is one entry in
-`tcgplayer.SupportedGames`, and cardmarket / cardtrader / coolstuffinc /
-starcitygames all select games by id.
+`mtgban` and list it in `mtgban.AllGames`, and make `Load` reject inputs it
+does not recognize so auto-detection can move past it. Existing storefronts
+often come cheaply: a TCGplayer category is one entry in `tcgplayer`'s
+`tcgGames`, and cardmarket / cardtrader / coolstuffinc / starcitygames each
+need one constant naming the storefront's own spelling plus one line in their
+`map[mtgban.Game]<vendor value>`. See the *Adding a game* checklist in
+`AGENTS.md` for the bantool options, workflows and CI jobs that go with it.
 
 ---
 
