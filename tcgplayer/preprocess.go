@@ -2,6 +2,7 @@ package tcgplayer
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -190,7 +191,18 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			strings.Contains(variant, "JP Hareruya Exclusive") {
 			return nil, errors.New("unofficial")
 		} else if isToken(product) && strings.Contains(product.CleanName, "Double") {
-			return nil, errors.New("duplicate")
+			// A two-sided token sheet's product is named "A // B Double-
+			// Sided Token" - a real pairing, not a data error, but neither
+			// half's own name is unique in its set, so the product id is
+			// the whole identity here. Resolve by it (mtgmatcher mints a
+			// combined entity keyed to it when the pairing survives its
+			// own exclusion checks, mtgmatcher/magic/tokenpairs.go) and
+			// refuse only what the datastore does not carry.
+			id := strconv.Itoa(product.ProductID)
+			if mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id) == "" {
+				return nil, errors.New("no derived pairing for this id")
+			}
+			return &mtgmatcher.InputCard{ID: id}, nil
 		} else if strings.Contains(edition, "Tales of Middle-earth") && strings.HasSuffix(cardName, "Scene") {
 			return nil, errors.New("unsupported")
 		}
@@ -740,12 +752,22 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = sheet
 		}
 
-		// Skip double-faced token cards by checking if there are
-		// multiple collector numbers reported
-		// We cannot trust the name exclusively since it can get corrected
+		// A two-sided token sheet prints two collector numbers, one per
+		// face, so this product's own is spelled "A // B" - a real pairing,
+		// not a data error, but the wording alone cannot say which pairing:
+		// the same name pairs with several different partners across a
+		// sheet, and neither face's own name is unique in its set. The
+		// product id is the whole identity here; mtgmatcher mints a
+		// combined entity keyed to it when the pairing survives its own
+		// exclusion checks (mtgmatcher/magic/tokenpairs.go), so resolve by
+		// id and refuse only what the datastore does not carry.
 		rawNum := RawProductNumber(product)
 		if strings.Contains(rawNum, "//") {
-			return nil, errors.New("duplicate")
+			id := strconv.Itoa(product.ProductID)
+			if mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id) == "" {
+				return nil, errors.New("no derived pairing for this id")
+			}
+			return &mtgmatcher.InputCard{ID: id}, nil
 		}
 	}
 
