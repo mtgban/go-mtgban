@@ -43,6 +43,21 @@ var cardIDs = map[int]string{
 	284939: "P30H",
 }
 
+// promoWaveIDs overrides both the edition and the number for products the
+// catalog sells from a shelf shared by many unrelated promo waves - WPN &
+// Gateway Promos, Unique and Miscellaneous Promos, the two Mythic Edition
+// prerelease bundles - where the catalog's own Number field counts a
+// position within that wave rather than spelling the card's real collector
+// number, so nothing short of the id ties the row back to its printing.
+var promoWaveIDs = map[int][2]string{
+	638515: {"PMEI", "2025-26"},      // Zidane, Tantalus Thief
+	693062: {"PW26", "16"},           // Wood Elves
+	693063: {"PURL", "2026-1"},       // Tom, Bert, and William
+	695512: {"PMEI", "2026-12"},      // Turtle Lair
+	177063: {"Mythic Edition", "G3"}, // Construct token, Defender
+	184417: {"Mythic Edition", "R1"}, // Construct token, +1/+1 per artifact
+}
+
 // japanesePromoSheet answers the sheet of Japanese promo tokens a listing
 // belongs to, and an empty string for anything that is not one of them. The
 // wording names the set when the token is shelved beside every other set's
@@ -763,6 +778,14 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 	}
 
 	isFoil := strings.Contains(ogVariant, "Foil")
+
+	// Override any listing the catalog's own Number field cannot be
+	// trusted for - it counts a position within the promo wave the
+	// product ships from rather than spelling the card's real collector
+	// number - after every other pass, so nothing further rewrites it.
+	if wave, found := promoWaveIDs[product.ProductID]; found {
+		edition, variant = wave[0], wave[1]
+	}
 
 	card := mtgmatcher.InputCard{
 		Name:      cardName,
