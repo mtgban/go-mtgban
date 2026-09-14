@@ -237,6 +237,18 @@ func (tcg *Index) Load(ctx context.Context) error {
 			tcg.printf("skipping id %s, claimed by more than one set: %v", id, sets)
 		}
 
+		// Bucketed once, not per set: a two-sided token sheet's combined
+		// entity (mtgmatcher/magic/tokenpairs.go) carries no id conflict of
+		// its own to check - it is never in set.Cards, so crossSetProductIDs
+		// never even sees it - but it is priced from its own set-scoped walk
+		// below all the same, same as every other id here.
+		derivedBySet := map[string][]*mtgmatcher.CardObject{}
+		for _, co := range mtgmatcher.GlobalDatastore().UUIDs {
+			if co.Identifiers["derivedTokenPair"] == "true" {
+				derivedBySet[co.SetCode] = append(derivedBySet[co.SetCode], co)
+			}
+		}
+
 		sets := mtgmatcher.GetAllSets()
 		i := 1
 		for _, code := range sets {
@@ -261,6 +273,24 @@ func (tcg *Index) Load(ctx context.Context) error {
 						TCGProductID: tcgEtchedID,
 						UUID:         card.UUID,
 						Etched:       true,
+					}
+				}
+			}
+
+			// A two-sided token sheet's combined entity is not in set.Cards
+			// (see mtgmatcher/magic/tokenpairs.go), so the walk above never
+			// reaches it; price it by its own id here instead. That id is
+			// never one crossSetProductIDs would flag - a derived entity's
+			// own tcgplayerProductId is never claimed by anything else, by
+			// construction - the check is kept for the same reason every
+			// other id above is checked against it: one rule, no exception
+			// carved out for this one path.
+			for _, co := range derivedBySet[code] {
+				tcgID := co.Identifiers["tcgplayerProductId"]
+				if tcgID != "" && collisions[tcgID] == nil {
+					pages <- indexChan{
+						TCGProductID: tcgID,
+						UUID:         co.UUID,
 					}
 				}
 			}
