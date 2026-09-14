@@ -9,53 +9,56 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-var tokenIDs = map[int]string{
-	78614:  "MPR",
-	78617:  "MPR",
-	78618:  "MPR",
-	78621:  "MPR",
-	78632:  "MPR",
-	78622:  "PR2",
-	78631:  "PR2",
-	78636:  "PR2",
-	78615:  "P03",
-	78623:  "P03",
-	78630:  "P03",
-	78613:  "P04",
-	78633:  "P04",
-	78417:  "L12",
-	78444:  "L13",
-	78526:  "L13",
-	82612:  "L13",
-	108434: "L14",
-	108436: "L13",
-	108437: "L14",
-}
-
-var cardIDs = map[int]string{
+// productOverrides answers, by the catalog's own product id, the printing a
+// listing the wording cannot place on its own belongs to: an edition the
+// wording never names (the League and Player Rewards token cycles, the
+// 30th Anniversary promos each sharing a name with several editions) or a
+// catalog Number field that counts a position within a promo wave rather
+// than spelling the real collector number (the League tokens that reuse a
+// generic set code, the two Mythic Edition Construct tokens, the WPN &
+// Gateway and Unique and Miscellaneous Promos one-offs). An empty Number
+// leaves whatever the wording and the rest of Preprocess already settled
+// on.
+var productOverrides = map[int]struct{ Edition, Number string }{
 	// Serra Angel
-	284951: "P30A",
-	284923: "P30H",
-	284921: "P30H",
+	284951: {"P30A", ""},
+	284923: {"P30H", ""},
+	284921: {"P30H", ""},
 	// Shivan Dragon
-	515925: "P30T",
-	284937: "P30H",
-	284939: "P30H",
-}
+	515925: {"P30T", ""},
+	284937: {"P30H", ""},
+	284939: {"P30H", ""},
 
-// promoWaveIDs overrides both the edition and the number for products the
-// catalog sells from a shelf shared by many unrelated promo waves - WPN &
-// Gateway Promos, Unique and Miscellaneous Promos, the two Mythic Edition
-// prerelease bundles - where the catalog's own Number field counts a
-// position within that wave rather than spelling the card's real collector
-// number, so nothing short of the id ties the row back to its printing.
-var promoWaveIDs = map[int][2]string{
-	638515: {"PMEI", "2025-26"},      // Zidane, Tantalus Thief
-	693062: {"PW26", "16"},           // Wood Elves
-	693063: {"PURL", "2026-1"},       // Tom, Bert, and William
-	695512: {"PMEI", "2026-12"},      // Turtle Lair
-	177063: {"Mythic Edition", "G3"}, // Construct token, Defender
-	184417: {"Mythic Edition", "R1"}, // Construct token, +1/+1 per artifact
+	// Magic Player Rewards / League token cycles
+	78614:  {"MPR", ""},
+	78617:  {"MPR", ""},
+	78618:  {"MPR", ""},
+	78621:  {"MPR", ""},
+	78632:  {"MPR", ""},
+	78622:  {"PR2", ""},
+	78631:  {"PR2", ""},
+	78636:  {"PR2", ""},
+	78615:  {"P03", ""},
+	78623:  {"P03", ""},
+	78630:  {"P03", ""},
+	78613:  {"P04", ""},
+	78633:  {"P04", ""},
+	78417:  {"L12", ""},
+	78444:  {"L13", "1"},
+	78526:  {"L13", ""},
+	82612:  {"L13", "4"},
+	108434: {"L14", ""},
+	108436: {"L13", ""},
+	108437: {"L14", ""},
+
+	// A catch-all promo shelf's own Number counts a position on that
+	// shelf, not the printing's collector number
+	638515: {"PMEI", "2025-26"}, // Zidane, Tantalus Thief
+	693062: {"PW26", "16"},      // Wood Elves
+	693063: {"PURL", "2026-1"},  // Tom, Bert, and William
+	695512: {"PMEI", "2026-12"}, // Turtle Lair
+	177063: {"MED", "G3"},       // Construct token, Defender
+	184417: {"MED", "R1"},       // Construct token, +1/+1 per artifact
 }
 
 // japanesePromoSheet answers the sheet of Japanese promo tokens a listing
@@ -715,12 +718,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		}
 	}
 
-	// Override any complex cases
-	ed, found := cardIDs[product.ProductID]
-	if found {
-		edition = ed
-	}
-
 	if isToken(product) && edition != "Unfinity" {
 		// Strip pw/tou numbers that could be misinterpreted as numbers
 		if strings.Contains(variant, "/") {
@@ -738,20 +735,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		// nothing, leaving the edition to say which sheet is meant.
 		if sheet := japanesePromoSheet(ogVariant, edition); sheet != "" {
 			edition = sheet
-		}
-
-		// Decouple
-		ed, found := tokenIDs[product.ProductID]
-		if found {
-			edition = ed
-		}
-
-		if edition == "L13" {
-			if product.ProductID == 82612 {
-				variant = "4"
-			} else if product.ProductID == 78444 {
-				variant = "1"
-			}
 		}
 
 		// Skip double-faced token cards by checking if there are
@@ -779,12 +762,14 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 
 	isFoil := strings.Contains(ogVariant, "Foil")
 
-	// Override any listing the catalog's own Number field cannot be
-	// trusted for - it counts a position within the promo wave the
-	// product ships from rather than spelling the card's real collector
-	// number - after every other pass, so nothing further rewrites it.
-	if wave, found := promoWaveIDs[product.ProductID]; found {
-		edition, variant = wave[0], wave[1]
+	// Give the id the last word over both fields, after every other pass
+	// has had its say, so nothing downstream rewrites it back. An empty
+	// Number leaves whatever the rest of Preprocess already settled on.
+	if o, found := productOverrides[product.ProductID]; found {
+		edition = o.Edition
+		if o.Number != "" {
+			variant = o.Number
+		}
 	}
 
 	card := mtgmatcher.InputCard{
