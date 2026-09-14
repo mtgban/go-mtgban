@@ -59,6 +59,21 @@ var productOverrides = map[int]struct{ Edition, Number string }{
 	695512: {"PMEI", "2026-12"}, // Turtle Lair
 	177063: {"MED", "G3"},       // Construct token, Defender
 	184417: {"MED", "R1"},       // Construct token, +1/+1 per artifact
+
+	// Sold from the Oversize shelf, which two sets answer for - the
+	// wording names the ordinary edition the card first shipped in, not
+	// either oversized sheet, and nothing about it favors the right one
+	// of the two over the other
+	232237: {"P11", "96"}, // Glissa, the Traitor
+
+	// Unique and Miscellaneous Promos names none of these on its own; each
+	// was a lone card-name rule pinning the one bundle promo the shelf
+	// sells under that name, same shape as the shelf's other one-offs
+	207058: {"THB", "352"}, // Arasta of the Endless Web
+	236058: {"STX", "377"}, // Archmage Emeritus
+	239423: {"MH2", "492"}, // Yusri, Fortune's Flame
+	252865: {"VOW", "404"}, // Sigarda's Summons
+	268367: {"SNC", "450"}, // Gala Greeters (English)
 }
 
 // japanesePromoSheet answers the sheet of Japanese promo tokens a listing
@@ -121,14 +136,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 
 	// Unsupported cards depending on their variant
 	switch cardName {
-	case "Bruna, Light of Alabaster":
-		if variant == "Commander 2018" {
-			return nil, errors.New("does not exist")
-		}
-	case "Glissa, the Traitor":
-		if variant == "Mirrodin Besieged" {
-			return nil, errors.New("untracked")
-		}
 	case "Elvish Vanguard":
 		if strings.Contains(variant, "Spanish") ||
 			strings.Contains(variant, "French") ||
@@ -366,18 +373,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		switch cardName {
 		case "Fiendish Duo":
 			edition = "PKHM"
-		case "Arasta of the Endless Web":
-			edition = "THB"
-			variant = "352"
-		case "Archmage Emeritus":
-			edition = "STX"
-			variant = "377"
-		case "Yusri, Fortune's Flame":
-			edition = "MH2"
-			variant = "492"
-		case "Sigarda's Summons":
-			edition = "VOW"
-			variant = "404"
 		case "Serra Angel":
 			if variant == "" {
 				edition = "PWOS"
@@ -398,11 +393,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			}
 		case "Lotus Petal":
 			edition = "P30M"
-		case "Gala Greeters":
-			if variant == "English" {
-				edition = "SNC"
-				variant = "450"
-			}
 		case "Tishana's Tidebinder", "Brotherhood's End":
 			if variant == "JP Exclusive" {
 				edition = "pjsc"
