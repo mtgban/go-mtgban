@@ -218,13 +218,13 @@ doesn't.
 
 Updated 2026-09-14, after a second pass through this list.
 
-- **Gala Greeters, 10 of 11 language listings — fixed, not yet pushed.**
+- **Gala Greeters, 10 of 11 language listings — fixed, merged.**
   All 11 ids folded into `productOverrides` (English `268367` plus the
   10 others, each mapped to its own-language `SNC` printing — the
-  datastore does carry all 11). Committed locally as
-  `gala-greeters-languages` (`3c918f01`); full gate green.
+  datastore does carry all 11). `gala-greeters-languages` (`3c918f01`,
+  mtgban/go-mtgban#591).
 
-- **`PUNK` ("Black Lotus Unknown Planechase") — fixed, not yet pushed.**
+- **`PUNK` ("Black Lotus Unknown Planechase") — fixed, merged.**
   A live catalog walk (2026-09-14) confirmed TCGplayer sells ~46 of its
   52 plane cards for real, so the "not on sale anywhere" `skipSet` entry
   was stale. Checked collision safety properly before touching it: PUNK
@@ -236,8 +236,8 @@ Updated 2026-09-14, after a second pass through this list.
   Planechase, MID when it says Innistrad: Midnight Hunt), and with no
   edition given at all it correctly reports aliasing rather than
   guessing — same safe-failure shape as before PUNK was unskipped, just
-  with a third candidate in the list. Committed locally as
-  `punk-frontcards-skipset`; full gate green.
+  with a third candidate in the list. `punk-frontcards-skipset`
+  (mtgban/go-mtgban#592).
 
 - **The "Front Cards" `skipSet` suffix — investigated, deliberately left
   alone.** `FJMP` (13 of 46 divider cards live) and `FTMC` (1 of 5, TMNT's
@@ -254,37 +254,59 @@ Updated 2026-09-14, after a second pass through this list.
   if a future card here turns out not to carry `layout: front_card`,
   redo this check before assuming the same reasoning applies.
 
-- **`Ertai, the Corrupted` PLST aliasing — root-caused, not fixed.**
-  `Ertai, the Corrupted (Alt. Art Foil)` from Planeshift aliases against
+- **`Ertai, the Corrupted` PLST aliasing — fixed, merged.**
+  `Ertai, the Corrupted (Alt. Art Foil)` from Planeshift aliased against
   **two** candidates: the correct `PLS #107★` and a spurious `PLST
-  #PLS-107` (The List's plain reprint of the same card). Traced all the
-  way down: an "Alt. Art" wording that gets fully trimmed away during
-  name-fixup sets `InputCard.BeyondBaseSet = true` (a deliberate "widen
-  the search" signal for cases where an alt-art genuinely lives in
-  SLD/PLST), which admits the List candidate; `listEditionCheck`'s own
-  stand-down logic (`the edition already names this printing's origin
-  set → don't reject`) then lets it survive, because nothing there knows
-  the base set already produced one confident answer via its own
-  `simpleFilterCallbacks` entry (`altArtCheck` for PLS). Confirmed this
-  is narrow, not systemic: a *plain* Planeshift card with a PLST reprint
-  resolves fine (checked three at random) — `BeyondBaseSet` only fires
-  when there's nothing left after trimming. This needs its own PR with a
-  full corpus measurement (the shape of the fix likely touches
-  `listEditionCheck` broadly, which serves every base-set-vs-List
-  disambiguation, not just this one card) — don't rush it.
+  #PLS-107` (The List's plain reprint of the same card). Root cause:
+  `listEditionCheck` stands down whenever the input's edition already
+  names the printing's origin set (meant so a plain "Planeshift" query
+  still falls through to The List) — but an edition of just "PLS"
+  trivially names PLS's own reprint too, so the stand-down fired even
+  when PLS's own `altArtCheck` had already narrowed to one confident
+  answer. Measured the corpus before touching the shared function: only
+  three Planeshift cards carry this plain/starred pair shape at all
+  (Tahngarth, Talruum Hero; Ertai, the Corrupted; Skyship Weatherlight),
+  and only Ertai also has a List reprint to collide with. Fix is
+  general, not hardcoded: `listEditionCheck` now rejects a List
+  candidate whenever the input asks for alternate art and the origin set
+  holds a starred sibling for that exact card and number. All 37 plain
+  (non-alt-art) Planeshift cards with a List reprint checked directly,
+  unaffected. `ertai-plst-aliasing` (mtgban/go-mtgban#599).
 
-- **`PUNK` ("Black Lotus Unknown Planechase") and the "Front Cards"
-  exclusion — same root shape as the two retired refusals, not touched.**
-  `skipSet` still hardcodes `PUNK` as "not on sale anywhere" (23 of the
-  Oversize-shelf warnings) even though TCGplayer now sells it for real.
-  Same story for any set whose name ends in `"Front Cards"` (a TMNT
-  divider-card product, `FTMC`, sells one of its five cards — `Bosses +
-  Events` — on TCGplayer despite the whole category being excluded).
-  Both are deferred specifically because unskipping either risks a real
-  name collision: `PUNK`'s "No Way Out" plane shares a name with a real,
-  commonly-priced card (`MID`/`DBL`). Don't flip either `skipSet` entry
-  without checking collision safety the way the original oversized-shelf
-  work did, and re-measuring the full corpus.
+- **`OAFR`/`OCLB` ("oversized dungeons") — fixed, merged.**
+  Same stale-`skipSet` shape as PUNK: 4 of their 5 cards (Tomb of
+  Annihilation, Lost Mine of Phandelver, Undercity // The Initiative,
+  one side of Dungeon of the Mad Mage) carry real, live TCGplayer ids.
+  Unskipping alone regressed an existing golden (`TestMatchOversized`):
+  `FilterPrintings`' oversize-shelf case only read `inCard.Edition`, so
+  a listing naming the ordinary parent set with "Oversized" only in the
+  variation — the shape both sets use — lost a tie-break to the ordinary
+  token sheet filed under the same name. A first, broader fix (reading
+  the variation everywhere) caused a *worse* regression: any set holding
+  an oversized card anywhere in the catalog then won regardless of the
+  edition actually named. Fixed narrowly: the variation-only signal is
+  honored only for a candidate whose own parent set matches the edition
+  given. `oafr-oclb-skipset` (mtgban/go-mtgban#596).
+
+- **Two upstream id-collision reports found, fixed against locally,
+  merged (2026-09-14) — still need submitting upstream.** `AFR`'s
+  ordinary Dungeon of the Mad Mage (scryfallId
+  `6f509dbe-6ec7-4438-ab36-e20be46c9922`) and
+  `OAFR`'s oversized one (`0202cf00-cbdd-499f-809d-cb0b8c085550`) both
+  carry TCGplayer id `245106`, which belongs only to the oversized item
+  (its own product name is "Dungeon of the Mad Mage Token (AFR)", under
+  Oversize Cards). `PJSE`'s Sakura-Tribe Elder (`65195553-a7a0-414f-
+  b945-25d93dc76395`) and `PSUS`'s (`f630b943-4ca2-4168-8522-
+  3fd2cfacab5a`) both carry id `38221`, which belongs to `PSUS` (product
+  name "Sakura-Tribe Elder (Junior Super Series)"). `Match()`
+  disambiguates both correctly by edition regardless, but
+  `tcgplayer/index.go`'s TCG Index price scraper priced by the stored id
+  directly, bypassing `Match` — so the wrong side of each pair was
+  already being mispriced, independent of anything above. Added
+  `crossSetProductIDs` (general, not hardcoded to either id): any
+  TCGplayer id claimed by cards from more than one set is skipped
+  entirely rather than raced between workers.
+  `tcgindex-crossset-guard` (mtgban/go-mtgban#598).
 
 - **`Case of the Lost Witness` / `Oracle of the Alpha` / `Perforator
   Crocodile` (Mystery Booster Commander Edition, `MBC`) — the user has
@@ -319,19 +341,19 @@ Updated 2026-09-14, after a second pass through this list.
   in a different function. Don't build it here; if the datastore-side
   token model work ever starts, that's where this belongs.
 
-- **The walk count — fresh run taken 2026-09-14, after PUNK/Gala
-  Greeters/Front-Cards above (not yet pushed).** 645 CSV rows total, not
-  comparable to the old "48" figure — that number predates full token
-  coverage resolving cleanly enough to *reach* the comparison step, so
-  it undercounted. Split out: 74 are `The List` (excluded per the rule
-  above), 566 are ordinary upstream-missing-id rows (Scryfall/MTGJSON
-  has no id yet — overwhelmingly emblem/token sheets, the same
-  submission backlog as before, just bigger now that more of them
-  resolve at all), and 5 are same-uuid duplicate-listing artifacts of
-  this *tool's* own `AddStrict` + concurrent paging (two live TCGplayer
-  products for one printing race to be "the" id compared against the
-  datastore's; not a matcher bug — same shape as the already-documented
-  `Battlefield Forge`/`SLD` duplicate). **Zero real matcher bugs in this
+- **The walk count — fresh run taken 2026-09-14, before PUNK/Gala
+  Greeters/OAFR/Ertai above.** 645 CSV rows total, not comparable to the
+  old "48" figure — that number predates full token coverage resolving
+  cleanly enough to *reach* the comparison step, so it undercounted.
+  Split out: 74 are `The List` (excluded per the rule above), 566 are
+  ordinary upstream-missing-id rows (Scryfall/MTGJSON has no id yet —
+  overwhelmingly emblem/token sheets, the same submission backlog as
+  before, just bigger now that more of them resolve at all), and 5 are
+  same-uuid duplicate-listing artifacts of this *tool's* own
+  `AddStrict` + concurrent paging (two live TCGplayer products for one
+  printing race to be "the" id compared against the datastore's; not a
+  matcher bug — same shape as the already-documented `Battlefield
+  Forge`/`SLD` duplicate). **Zero real matcher bugs in this
   walk.** Re-run fresh before quoting a number to anyone, as always —
   this one predates the PUNK/Gala Greeters commits above.
 
