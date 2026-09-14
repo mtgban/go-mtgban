@@ -1,7 +1,8 @@
 # ADR-0001: The mtgmatcher UUID is the universal key
 
 **Status:** Accepted
-**Date:** 2026-06-28 (amended 2026-08-08 for the game-agnostic matcher)
+**Date:** 2026-06-28 (amended 2026-08-08 for the game-agnostic matcher;
+2026-09-14 for the `mtgban.Game` type)
 **Deciders:** Maintainer (Vittorio Giovara)
 
 > **Amendment note.** The decision below was not reversed; the world it
@@ -9,6 +10,14 @@
 > text has been updated to say what the universal key *is* today and which of
 > the original sub-claims were superseded. Superseded statements are called
 > out where they occur rather than silently rewritten.
+>
+> **Amendment, 2026-09-14.** A scraper is now *built* from the `mtgban.Game`
+> type rather than from each vendor's own spelling of a game, so the per-game
+> tables named below are unexported and keyed by it; `tcgplayer.SupportedGames`
+> is now `tcgGames`. The vendors' own spellings remain exported, since each
+> package's API helpers still take one. The decision is untouched - the uuid is
+> still the universal key, and the tables still hold the only multi-game
+> knowledge a scraper has.
 
 > **Amendment (2026-09-10).** `LoadDatastore` and `LoadDatastoreFile` were
 > removed in #519. A datastore is opened by the name of its game,
@@ -107,9 +116,9 @@ back to `ExternalIdentifiers`, so a scraper that has a clean product id can
 hand it over verbatim and still land on the canonical key.
 
 On the scraper side, the only multi-game knowledge that exists is a lookup
-table: `tcgplayer.SupportedGames` (`tcgplayer/game.go`) maps a game tag to the
-TCGplayer category serving it, and both generic TCGplayer scrapers — `TCGGame`
-and `TCGGameIndex` — refuse to be constructed for a game absent from it. Magic
+table: `tcgGames` (`tcgplayer/game.go`) maps an `mtgban.Game` to the TCGplayer
+category serving it, and both generic TCGplayer scrapers — `TCGGame` and
+`TCGGameIndex` — refuse to be constructed for a game absent from it. Magic
 is deliberately absent: it is identified by SKU and has its own scrapers. The
 generic pair resolves identity solely through `mtgmatcher`; supporting one more
 game there is one table entry plus a matcher datastore.
@@ -133,9 +142,9 @@ game there is one table entry plus a matcher datastore.
   likewise contained: a loader, a `GameRules` implementation and a
   `register.go`. No identity logic moves into a scraper and nothing downstream
   changes at all, because everything downstream keys on the uuid and never
-  inspects it; the scraper-side cost is a game tag in `mtgban` (alongside
-  `GameLorcana` and `GameRiftbound`) and, for TCGplayer coverage, one
-  `SupportedGames` entry.
+  inspects it; the scraper-side cost is one `mtgban.Game` constant (alongside
+  `GameLorcana` and `GameRiftbound`, and listed in `mtgban.AllGames`) and, for
+  TCGplayer coverage, one `tcgGames` entry.
 - **Harder:** `mtgmatcher` is a large, central, data-heavy package and the
   single point of failure for correctness — hence its per-game regression
   replays and the "tables before code" rule. There are three corpora now, one
