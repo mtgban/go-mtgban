@@ -147,8 +147,10 @@ behind its url.
 
 ## The recurring shape: a promo shelf collides with a real one
 
-Found three times, independently, in three different games, each entirely
-on the **buylist** path:
+Found three times, independently, in three different games — first on the
+**buylist** path in each case, where it was fixed and shipped; the retail
+path turned out to carry the identical live listings, unfixed, until the
+measurement lower down in this section closed that gap too:
 
 > A card is sold under CSI's catch-all `Promo` shelf, and the wording
 > beside it — a note, a bracket in the name — names the *real* set or
@@ -178,23 +180,40 @@ on the **buylist** path:
   issued no b-lettered rune of its own, so its six listings correctly stay
   on `Promo`, which is where their printing really is.
 
-All three share the shape *redirect only when the redirect target
-resolves; otherwise leave the shelf alone* — never force the wording's
-edition and let a bad guess collide with something else. If a fourth game
-shows the same symptom (a same-numbered pair, one on a real set and one on
-`Promo`/a catch-all shelf, told apart by a note or a bracket the current
-code doesn't read), this is the shape to reach for, and the guard to copy.
+Two of the three — `pokemonPromoShelf` and `riftboundShelf` — share the
+same guard: *redirect only when the redirect target resolves*, verified
+with an actual `mtgmatcher.Match` probe before committing to it.
+`onePieceShelf` is looser: it redirects on the shelf-plus-bracket pattern
+alone, with no resolve check, trusting that nothing else on the `Promo`
+shelf ever carries a `(Starter Deck N)`-shaped bracket that isn't this
+collision. That has held so far, but it is a real difference in rigor,
+not just a simpler special case — if a fourth game needs this shape,
+copy the probing version, not `onePieceShelf`'s.
 
-**Note for whoever looks next:** all three fixes above are wired into
-`parseBL` (the buylist switch) only. `processSearch` (retail) has no call
-to `onePieceShelf`, `pokemonPromoShelf`, or `riftboundShelf` — One Piece's
-retail case builds its variation straight from raw `notes` via
-`eventNamed` rather than `nameQualifiers(cardName)`, and Pokemon/Riftbound
-retail pass `edition`/`notes` straight through. Whether retail can produce
-the same collision is unverified — `processSearch` iterates one real
-"Item Set" shelf at a time (including a literal `"Promo"` shelf, if the
-storefront's own facet list carries one), so the shape may well recur
-there with a live capture. Nobody has checked.
+All three are wired into `processSearch` (retail) as well as `parseBL`
+(buylist) — confirmed as a live gap, not a hypothetical one, by fetching
+each game's affected shelf live and replaying every row through the pre-
+and post-fix resolution:
+
+```
+                          shelf                          compared  same  moved  gained  lost
+One Piece                "Promo"                              220   213      7       0     0
+Riftbound                "Promo"                               99    87     12       0     0
+Pokemon                  "SV Prismatic Evolutions"             459   457      2       0     0
+```
+
+Every move landed on the correct printing — the same six Starter Deck
+cards, the same twelve Nexus Night runes, and the Pokemon Day 2025 Eevee
+*and* a Sylveon carrying the identical bracket that hadn't turned up in
+the buylist capture. `pokemonPromoShelf` and `riftboundShelf` were
+refactored to take primitive fields instead of `CSIPriceEntry` so both
+paths could share one implementation; `onePieceShelf` needed no change,
+since it already took primitives.
+
+`nameQualifiers` remains buylist-only by design — One Piece's retail
+`notes` field genuinely describes the artwork rather than the printing
+(see "Per-game wording" below), which is a different, still-open question
+from the shelf collision this section is about.
 
 ## Per-game wording, briefly
 
@@ -295,9 +314,10 @@ there with a live capture. Nobody has checked.
 
 - `pokemonPromoShelf`, `riftboundShelf`, and all of `pokemonListing` (and
   its dozen sub-rules) carry **no dedicated unit test** — nothing in
-  `coolstuffinc/*_test.go` references any of the three by name. Every
-  other per-game shelf/wording function in this file has one.
-- The retail-vs-buylist asymmetry under "recurring shape" above.
+  `coolstuffinc/*_test.go` references either of the first two by name,
+  even though each now has two call sites. `onePieceShelf` does
+  (`oneshelf_test.go`); it's the odd one out among the three "recurring
+  shape" functions for having no such gap.
 - `GameDragonBallSuper` (`"dbs"`) and `GameStarWarsUnlimited` (`"swu"`) are
   shelf-name constants CSI itself uses, sitting unwired in this file —
   `mtgban.Game` has no constant for either game yet (`mtgban/mtgban.go`),
