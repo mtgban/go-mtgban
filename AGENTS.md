@@ -273,9 +273,13 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    follow `ninetyfive` for an API-backed store or `mtgseattle` for an
    HTML-scraped one.
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
-4. Register a `scraperOption` in `cmd/bantool` and add a
-   `.github/workflows/bantool-<store>.yml`. Non-Magic scrapers get one option
-   and one workflow per game, named `<store>_lorcana` / `<store>_riftbound`.
+4. Register a `scraperOption` in `cmd/bantool`'s `options`, keyed first by
+   game and then by the store's own name (`options["magic"]["cardtrader"]`,
+   `options["lorcana"]["cardtrader"]`) — the game is never parsed back out of
+   a name, so a store keeps the same key under every game it prices. Add a
+   `.github/workflows/bantool-<store>.yml` per game; the external target name
+   (`-<store>_lorcana`, `-<store>_riftbound`) is unchanged, and comes from
+   `scraperFlagName`, not from the registration key.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` (`mtgban.GameMagic`
    is the empty string, so a non-Magic scraper must set `Game` explicitly).

@@ -884,16 +884,24 @@ untracked working-tree WIP (`manapoolSeller`, `mkmhtml2csv`, `mp2ckbl`,
 treat anything not in the list above as unreviewed, and note that some of it
 embeds live credentials.
 
-- **bantool** — a registry of `scraperOption{constructor, flags}` for every
-  target, including the per-game ones: six `*_riftbound` targets (cardmarket,
-  cardtrader, coolstuffinc, starcitygames, tcg_index, tcg_market) and seven
-  `*_lorcana` ones — the same six plus `strikezone_lorcana`, which has no
-  Riftbound counterpart. Selection via `-scrapers`/`-sellers`/`-vendors`;
+- **bantool** — `options` is a `map[game]map[store]*scraperOption{constructor,
+  flags}`, so a store's key is the same under every game it prices
+  (`options["riftbound"]["cardtrader"]`, `options["lorcana"]["cardtrader"]`)
+  and the game a target prices is never parsed back out of a name; most
+  stores are registered under several games (cardmarket and cardtrader
+  appear under nearly all nine), and a few are one game's alone (merlion
+  only ever prices Riftbound; strikezone's Lorcana entry has no Riftbound
+  counterpart). `flattenOptions` indexes every entry under the external
+  name it has always run as (`scraperFlagName`: the store's own name for
+  Magic, `<store>_<game>` otherwise) for flag registration and
+  `-scrapers`/`-sellers`/`-vendors` lookup — the CLI surface this produces
+  is unchanged by the split, and a name two games' entries both compute is
+  refused at startup rather than silently dropping one.
   `-format` json/csv/ndjson (each also with an `.xz` variant); output through
   `github.com/mtgban/simplecloud` to local/B2/GCS/S3/HTTP; optional HMAC
   signing (`BAN_SECRET`); all credentials via env vars (godotenv autoload).
   It blank-imports `mtgmatcher/games`, which is what lets `-datastore` accept
-  a file for any of the three games without further configuration. Init
+  a file for any registered game without further configuration. Init
   closures set `scraper.LogCallback = GlobalLogCallback` as a **direct field
   assignment on the concrete pointer** in more than forty places — the binding
   constraint on any `BaseScraper` refactor (the field must stay exported and
