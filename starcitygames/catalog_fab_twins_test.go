@@ -1,6 +1,7 @@
 package starcitygames
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -82,6 +83,122 @@ func TestResolveFleshAndBloodMarvelTwins(t *testing.T) {
 			}
 			if got := co.HasPromoType("pleiadessuperstar"); got != tt.wantMaori {
 				t.Errorf("%s resolved to the Maori printing=%v, want %v (name=%q)", tt.p.SKU, got, tt.wantMaori, co.Name)
+			}
+		})
+	}
+}
+
+// requireCredit skips a case whose premise the installed datastore does not
+// hold. datastore-gen only started publishing Flesh and Blood's artist field
+// once this fix needed it to steer by, and the datastore a checkout carries
+// may still predate that: against such a copy fabCreditedTwin has nothing to
+// match either uuid's Artist against and correctly leaves both alone, which
+// is not this test's premise to assert against.
+func requireCredit(t *testing.T, uuid string) {
+	t.Helper()
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil || co.Artist == "" {
+		t.Skipf("the installed Flesh and Blood datastore does not carry an artist for %s yet", uuid)
+	}
+}
+
+// TestResolveFleshAndBloodCreditedTwins pins the shelf where the catalog's
+// name is not enough either: SCG sells two artist-commissioned Auroras at
+// ROS008 under names that fold to the same match once "(Marvel)" is read
+// off, and only datastore-gen's own credit field - carried nowhere else in
+// this product - says which sku is which. Fixtures are copied from the
+// export verbatim.
+func TestResolveFleshAndBloodCreditedTwins(t *testing.T) {
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	requireCredit(t, "ros008_565391_coldfoil")
+
+	for _, tt := range []struct {
+		desc       string
+		p          CatalogProduct
+		wantArtist string
+	}{
+		{
+			desc: "008a is credited to Asur Misoa",
+			p: CatalogProduct{
+				SKU: "SGL-FAB-ROS2-008a-ENC", Name: "Aurora",
+				Game: "Flesh and Blood", Set: "Rosetta", Rarity: "Marvel",
+				Finish: "Cold Foil", FinishGroup: "Alt Foil",
+				Language: "English", CollectorNumber: "008",
+				ProductType: ProductTypeSingles,
+			},
+			wantArtist: "Asur Misoa",
+		},
+		{
+			desc: "008b to Ramza Ardyputra",
+			p: CatalogProduct{
+				SKU: "SGL-FAB-ROS2-008b-ENC", Name: "Aurora",
+				Game: "Flesh and Blood", Set: "Rosetta", Rarity: "Marvel",
+				Finish: "Cold Foil", FinishGroup: "Alt Foil",
+				Language: "English", CollectorNumber: "008",
+				ProductType: ProductTypeSingles,
+			},
+			wantArtist: "Ramza Ardyputra",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			id, err := resolveProduct(GameFleshAndBlood, tt.p)
+			if err != nil {
+				t.Fatalf("resolveProduct(%s) = %v", tt.p.SKU, err)
+			}
+			co, err := mtgmatcher.GetUUID(id)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", id, err)
+			}
+			if co.Artist != tt.wantArtist {
+				t.Errorf("%s resolved to artist %q, want %q", tt.p.SKU, co.Artist, tt.wantArtist)
+			}
+		})
+	}
+
+	t.Run("the pair lands on two different uuids", func(t *testing.T) {
+		idA, errA := resolveProduct(GameFleshAndBlood, CatalogProduct{
+			SKU: "SGL-FAB-ROS2-008a-ENC", Name: "Aurora",
+			Game: "Flesh and Blood", Set: "Rosetta", Rarity: "Marvel",
+			Finish: "Cold Foil", FinishGroup: "Alt Foil",
+			Language: "English", CollectorNumber: "008",
+			ProductType: ProductTypeSingles,
+		})
+		idB, errB := resolveProduct(GameFleshAndBlood, CatalogProduct{
+			SKU: "SGL-FAB-ROS2-008b-ENC", Name: "Aurora",
+			Game: "Flesh and Blood", Set: "Rosetta", Rarity: "Marvel",
+			Finish: "Cold Foil", FinishGroup: "Alt Foil",
+			Language: "English", CollectorNumber: "008",
+			ProductType: ProductTypeSingles,
+		})
+		if errA != nil || errB != nil {
+			t.Fatalf("resolveProduct errors: %v, %v", errA, errB)
+		}
+		if idA == idB {
+			t.Errorf("008a and 008b resolved to the same uuid %s", idA)
+		}
+	})
+}
+
+// TestFleshAndBloodDuplicateStockRefused pins the shelf that is refused
+// rather than steered: Sanctuary of Aria's "027a" and "027b" both sell the
+// one ROS027 token the datastore carries, at their own price, and nothing
+// says which is the card's price - so both are unsupported rather than
+// letting whichever streams first win.
+func TestFleshAndBloodDuplicateStockRefused(t *testing.T) {
+	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+
+	for _, sku := range []string{"SGL-FAB-ROS-027a-ENN", "SGL-FAB-ROS-027b-ENN"} {
+		t.Run(sku, func(t *testing.T) {
+			p := CatalogProduct{
+				SKU: sku, Name: "Sanctuary of Aria",
+				Game: "Flesh and Blood", Set: "Rosetta", Rarity: "Token",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+				Language: "English", CollectorNumber: "027",
+				ProductType: ProductTypeSingles,
+			}
+			_, err := resolveProduct(GameFleshAndBlood, p)
+			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+				t.Errorf("resolveProduct(%s) = %v, want ErrUnsupported", sku, err)
 			}
 		})
 	}
