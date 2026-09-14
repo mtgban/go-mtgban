@@ -670,9 +670,12 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					if shelfRun != nil {
 						runFinishes = shelfRun
 					}
-					theCard = pokemonListing(cardName, shelf, catalogTreatment(notes), isFoil)
+					variation := catalogTreatment(notes)
+					shelf = pokemonPromoShelf(cardName, shelf, rarity, isFoil, variation)
+					theCard = pokemonListing(cardName, shelf, variation, isFoil)
 				case mtgban.GameOnePiece:
-					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
+					shelf := onePieceShelf(edition, cardName)
+					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(notes), Foil: isFoil}
 				case mtgban.GameGundam:
 					name, variation := gundamCard(cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity)), Foil: isFoil}
@@ -682,7 +685,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				// the number is written back beside it.
 				case mtgban.GamePalworld:
 					theCard = &mtgmatcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
-				case mtgban.GameLorcana, mtgban.GameRiftbound:
+				case mtgban.GameRiftbound:
+					shelf := riftboundShelf(edition, notes, cardName, notes, isFoil)
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: shelf, Variation: notes, Foil: isFoil}
+				case mtgban.GameLorcana:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				}
 
@@ -930,10 +936,12 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it describing the artwork and Lorcana's changes no answer at all.
 		case mtgban.GamePokemon:
 			variation := catalogTreatment(buylistVariation(product))
-			theCard = pokemonListing(product.Name, pokemonPromoShelf(product, variation), variation, product.IsFoil == 1)
+			shelf := pokemonPromoShelf(product.Name, product.ItemSet, product.RarityName, product.IsFoil == 1, variation)
+			theCard = pokemonListing(product.Name, shelf, variation, product.IsFoil == 1)
 		case mtgban.GameRiftbound:
 			variation := buylistVariation(product)
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: riftboundShelf(product, variation), Variation: variation, Foil: product.IsFoil == 1}
+			shelf := riftboundShelf(product.ItemSet, product.Notes, product.Name, variation, product.IsFoil == 1)
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
 		// The rarity arrives in a field of its own here, where the sell
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
@@ -1288,23 +1296,27 @@ var (
 // from. The catalog keeps those on a promo shelf instead.
 //
 // The promo shelf only decides where it answers at all. Twenty of the fifty
-// listings this can reach name a printing no promo shelf holds - the Pokemon
-// Rumble cards, the holo promos that are their set's own foil - and those keep
-// the set they arrived on.
-func pokemonPromoShelf(product CSIPriceEntry, variation string) string {
-	if product.RarityName != "Promo" ||
-		strings.Contains(strings.ToLower(product.ItemSet), "promo") {
-		return product.ItemSet
+// buylist listings this can reach name a printing no promo shelf holds - the
+// Pokemon Rumble cards, the holo promos that are their set's own foil - and
+// those keep the set they arrived on. The same shape reproduces on retail -
+// the identical "Eevee - 074/131 (Pokemon Day 2025)" listing sits on the same
+// shelf, with the same breadcrumb rarity "Promo" - so both sides call this
+// with their own name for the rarity field: RarityName on the buylist, the
+// scraped breadcrumb text on retail.
+func pokemonPromoShelf(name, itemSet, rarityName string, foil bool, variation string) string {
+	if rarityName != "Promo" ||
+		strings.Contains(strings.ToLower(itemSet), "promo") {
+		return itemSet
 	}
 	probe := &mtgmatcher.InputCard{
-		Name:      product.Name,
+		Name:      name,
 		Edition:   "Promo",
 		Variation: variation,
-		Foil:      product.IsFoil == 1,
+		Foil:      foil,
 	}
 	_, err := mtgmatcher.Match(probe)
 	if err != nil {
-		return product.ItemSet
+		return itemSet
 	}
 	return "Promo"
 }
@@ -1319,32 +1331,33 @@ var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
 // issued them written at the head of the note - "UNL-R05b", "SFD-R05b" - and
 // the promo shelf holds a printing of its own at that number. All of them met
 // there, so a $5.00 Unleashed Chaos Rune and an $11.00 Spiritforged one were
-// both priced as the Organized Play printing they share a number with.
+// both priced as the Organized Play printing they share a number with. The
+// same three listings, word for word, sell on the retail search too.
 //
 // The note only decides where the set it names holds that printing. Vendetta
 // issued no b-lettered rune of its own, so its six listings stay on the promo
 // shelf, which is where the printing they mean actually is.
-func riftboundShelf(product CSIPriceEntry, variation string) string {
-	if product.ItemSet != "Promo" {
-		return product.ItemSet
+func riftboundShelf(itemSet, notes, name, variation string, foil bool) string {
+	if itemSet != "Promo" {
+		return itemSet
 	}
-	match := riftboundNotePrefix.FindStringSubmatch(product.Notes)
+	match := riftboundNotePrefix.FindStringSubmatch(notes)
 	if match == nil {
-		return product.ItemSet
+		return itemSet
 	}
 	set, err := mtgmatcher.GetSet(match[1])
 	if err != nil {
-		return product.ItemSet
+		return itemSet
 	}
 	probe := &mtgmatcher.InputCard{
-		Name:      product.Name,
+		Name:      name,
 		Edition:   set.Name,
 		Variation: variation,
-		Foil:      product.IsFoil == 1,
+		Foil:      foil,
 	}
 	_, err = mtgmatcher.Match(probe)
 	if err != nil {
-		return product.ItemSet
+		return itemSet
 	}
 	return set.Name
 }
