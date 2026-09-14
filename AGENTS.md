@@ -3,9 +3,10 @@
 Guidance for AI coding agents working on **go-mtgban**, a trading-card
 market-data platform: scrape store inventories and buylists, normalize every
 listing to a canonical card identity, then compute arbitrage across stores.
-Three games are supported today — Magic: The Gathering, Lorcana, and
-Riftbound. Read `SPECIFICATIONS.md` for the full architecture and `docs/adr/`
-for the reasoning behind the load-bearing decisions.
+Nine games are supported today — Magic: The Gathering, Lorcana, Riftbound,
+One Piece, Yu-Gi-Oh, Flesh and Blood, Pokemon, Gundam, and Palworld. Read
+`SPECIFICATIONS.md` for the full architecture and `docs/adr/` for the
+reasoning behind the load-bearing decisions.
 
 ## The one rule that matters
 
@@ -26,7 +27,13 @@ mtgmatcher/            game-agnostic core: Backend, Match()/MatchId(), the
 mtgmatcher/magic/      Magic rules, MTGJSON loader, promo/frame vocabulary
 mtgmatcher/lorcana/    Lorcana rules, loader, replay corpus
 mtgmatcher/riftbound/  Riftbound rules, loader, replay corpus
-mtgmatcher/games/      meta-package that blank-imports all three games
+mtgmatcher/fleshandblood/ Flesh and Blood rules, loader, replay corpus
+mtgmatcher/gundam/     Gundam rules, loader, replay corpus
+mtgmatcher/onepiece/   One Piece rules, loader, replay corpus
+mtgmatcher/palworld/   Palworld rules, loader, replay corpus
+mtgmatcher/pokemon/    Pokemon rules, loader
+mtgmatcher/yugioh/     Yu-Gi-Oh rules, loader, replay corpus
+mtgmatcher/games/      meta-package that blank-imports all nine games
 <store>/               one package per store (tcgplayer, cardkingdom,
                        cardmarket, ...)
 cmd/                   tools; cmd/bantool is the production orchestrator
@@ -77,11 +84,14 @@ environment variables:
 - `ALLPRINTINGS5_PATH` — MTGJSON `AllPrintings5.json`. Feeds the core
   `mtgmatcher` suite and `mtgmatcher/magic`, both of which load it through
   `magic.Load`, as well as the abugames, cardkingdom and starcitygames
-  scraper suites.
-- `LORCANA_PATH` — the LorcanaJSON all-cards file, plain uncompressed JSON.
-  Feeds `mtgmatcher/lorcana`.
-- `RIFTBOUND_PATH` — the Riftbound datastore, built by
-  `github.com/mtgban/riftbound-datastore`. Feeds `mtgmatcher/riftbound`.
+  scraper suites. Magic is the one game whose datastore is not built by
+  `datastore-gen`.
+- `LORCANA_PATH`, `RIFTBOUND_PATH`, `ONEPIECE_PATH`, `YUGIOH_PATH`,
+  `FLESHANDBLOOD_PATH`, `POKEMON_PATH`, `GUNDAM_PATH`, and `PALWORLD_PATH` —
+  one datastore per remaining game, all built by
+  `github.com/mtgban/datastore-gen`. Each feeds its matching
+  `mtgmatcher/<game>` suite (`mtgmatcher/lorcana`, `mtgmatcher/riftbound`,
+  and so on).
 
 The asymmetry is deliberate but sharp-edged. Both Magic-backed suites — core
 `mtgmatcher` and `mtgmatcher/magic` — fail fast: their `TestMain` calls
@@ -91,18 +101,27 @@ tests that need no datastore at all such as the replacer and utility tests.
 The Lorcana and Riftbound suites call `t.Skip` instead, so a contributor
 without either dump still gets a green (if thinner) run.
 
-Use absolute paths for all three variables. A relative path is resolved
-against the directory of the package under test, so a single relative value
-cannot serve suites that sit at different depths in the tree — and they do:
+Use absolute paths for every variable. A relative path is resolved against
+the directory of the package under test, so a single relative value cannot
+serve suites that sit at different depths in the tree — and they do:
 `ALLPRINTINGS5_PATH` is read from `mtgmatcher` one level down and from
-`mtgmatcher/magic` two. CI passes all three as absolute paths for that
-reason.
+`mtgmatcher/magic` two. CI passes every one as an absolute path, per game,
+for that reason.
 
 CI restores all three datastores from `actions/cache` before testing. Magic
 and Lorcana are fetched from the URLs in the `DATASTORE_MAGIC` and
 `DATASTORE_LORCANA` repository variables; Riftbound has no public URL and is
 pulled from a private B2 bucket, keyed on the object's own metadata because B2
 serves no HTTP etag.
+
+`internal/vocabulary` runs two checks across the datastore-gen boundary, each
+gated on the `<GAME>_PATH` variables above and skipping the games whose
+variable is unset. `TestLoadersReadWhatIsPublished` holds every loader's
+promo-type word table to what the published datastore actually states, so a
+loader that folds or drops a word cannot drift unnoticed.
+`TestReplayCatalogNames` matches every product name in a `REPLAY_CATALOG`
+TCGplayer catalog dump and writes the verdicts to `REPLAY_OUT`, for diffing
+two checkouts against each other rather than against a fixed assertion.
 
 ### The three golden suites
 
@@ -200,8 +219,9 @@ aliasing diagnostics.
 Each game package ships `rules.go` (its `GameRules` implementation), a
 `Load(io.Reader) (*mtgmatcher.Backend, error)` function, and a `register.go`
 whose `init()` calls `mtgmatcher.RegisterGame(name, Load)` — the
-`database/sql` driver idiom — under the names `magic`, `lorcana`, and
-`riftbound`.
+`database/sql` driver idiom — under the name of its own package: `magic`,
+`lorcana`, `riftbound`, `onepiece`, `yugioh`, `fleshandblood`, `pokemon`,
+`gundam`, and `palworld`.
 
 The consequence is that **a game only exists if something imports it**. A
 consumer blank-imports the games it needs, or blank-imports
