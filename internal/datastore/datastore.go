@@ -11,6 +11,7 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"os"
 
@@ -22,6 +23,30 @@ import (
 // concurrentDownloads matches what the scraping tools ask B2 for: the
 // datastores are tens of megabytes and arrive in ranged parts.
 const concurrentDownloads = 20
+
+// Payload reads a datastore and hands back the document a decoder should
+// see: the value of "data" where the file is the {"meta":...,"data":...}
+// envelope the builders publish, and the file itself where it is not.
+//
+// Loaders unwrap this for themselves. It is here for the suites that read a
+// published datastore without going through one - they decode the document's
+// own top level, and would see an empty payload the day the envelope lands.
+func Payload(r io.Reader) ([]byte, error) {
+	raw, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	var envelope struct {
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		return nil, err
+	}
+	if envelope.Data != nil {
+		return envelope.Data, nil
+	}
+	return raw, nil
+}
 
 // Open returns a reader over the datastore the path names. The caller
 // closes it. Credentials come from the environment, which simplecloud

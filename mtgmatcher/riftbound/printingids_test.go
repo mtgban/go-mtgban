@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -74,8 +75,12 @@ func TestPublishedPrintingIDsWin(t *testing.T) {
 // rather than against the one on its way out.
 func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 	t.Helper()
+	payload, err := datastore.Payload(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
 	var doc map[string]any
-	if err := json.Unmarshal(data, &doc); err != nil {
+	if err := json.Unmarshal(payload, &doc); err != nil {
 		t.Fatal(err)
 	}
 	props, ok := doc["pageProps"].(map[string]any)
