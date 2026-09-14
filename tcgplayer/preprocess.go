@@ -68,12 +68,25 @@ var productOverrides = map[int]struct{ Edition, Number string }{
 
 	// Unique and Miscellaneous Promos names none of these on its own; each
 	// was a lone card-name rule pinning the one bundle promo the shelf
-	// sells under that name, same shape as the shelf's other one-offs
+	// sells under that name, same shape as the shelf's other one-offs.
+	// Gala Greeters is the exception with more than one: the shelf sells
+	// it in eleven languages, one id per language, and the collector
+	// number is what tells them apart once the set is known
 	207058: {"THB", "352"}, // Arasta of the Endless Web
 	236058: {"STX", "377"}, // Archmage Emeritus
 	239423: {"MH2", "492"}, // Yusri, Fortune's Flame
 	252865: {"VOW", "404"}, // Sigarda's Summons
 	268367: {"SNC", "450"}, // Gala Greeters (English)
+	268368: {"SNC", "460"}, // Gala Greeters (Spanish)
+	268369: {"SNC", "459"}, // Gala Greeters (Russian)
+	268370: {"SNC", "458"}, // Gala Greeters (Portuguese)
+	268371: {"SNC", "457"}, // Gala Greeters (Korean)
+	268373: {"SNC", "455"}, // Gala Greeters (Italian)
+	268374: {"SNC", "456"}, // Gala Greeters (Japanese)
+	268375: {"SNC", "453"}, // Gala Greeters (German)
+	268376: {"SNC", "454"}, // Gala Greeters (French)
+	268377: {"SNC", "452"}, // Gala Greeters (Chinese Traditional)
+	268378: {"SNC", "451"}, // Gala Greeters (Chinese Simplified)
 }
 
 // japanesePromoSheet answers the sheet of Japanese promo tokens a listing
