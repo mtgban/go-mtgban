@@ -83,7 +83,10 @@ type scraperOption struct {
 	// other side for - Vegas Singles keeps no Magic singles shelf,
 	// CoolStuffInc Sealed publishes no Yu-Gi-Oh buylist - where the same
 	// store answers with both sides for every other game it prices. Most
-	// entries leave both nil.
+	// entries leave both nil. run()'s own -sellers/-vendors flags extend
+	// whichever list names the selected game for this run alone: asking
+	// for a side this store's own data already lacks the other side for
+	// is refused as a contradiction, the same as asking for both.
 	OnlySeller []string
 	OnlyVendor []string
 	Init       func(game string) (mtgban.Scraper, error)
@@ -816,6 +819,8 @@ func run() int {
 	scrapersOpt := flag.String("scrapers", "", "Comma-separated list of scrapers to enable")
 	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable")
 	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable")
+	targetOpt := flag.String("target", "", "Store to enable, by its own name - -game already "+
+		"says which game, so a name still carrying its \"_<game>\" suffix is not found")
 
 	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv/ndjson)")
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
@@ -880,20 +885,19 @@ func run() int {
 		game = "magic"
 	}
 
-	// forceSeller and forceVendor are this run's -sellers/-vendors asking for
-	// one half regardless of what the selected game's own data says; they
-	// stand apart from OnlySeller/OnlyVendor, which name a fact about a
-	// store's feed for one game and must not be overwritten by a flag that
-	// only ever means "for this run".
-	forceSeller := map[string]bool{}
-	forceVendor := map[string]bool{}
-
 	// Enable Scrapers or Sellers/Vendors
 	scraps := strings.SplitSeq(*scrapersOpt, ",")
 	for name := range scraps {
 		if options[name] != nil {
 			options[name].Enabled = true
 		}
+	}
+	if *targetOpt != "" {
+		if options[*targetOpt] == nil {
+			log.Printf("target %q not found", *targetOpt)
+			return 1
+		}
+		options[*targetOpt].Enabled = true
 	}
 	if *sellersOpt != "" {
 		sells := strings.SplitSeq(*sellersOpt, ",")
@@ -903,8 +907,7 @@ func run() int {
 				return 1
 			}
 			options[name].Enabled = true
-			forceSeller[name] = true
-			delete(forceVendor, name)
+			options[name].OnlySeller = append(options[name].OnlySeller, game)
 		}
 	}
 	if *vendorsOpt != "" {
@@ -915,8 +918,7 @@ func run() int {
 				return 1
 			}
 			options[name].Enabled = true
-			forceVendor[name] = true
-			delete(forceSeller, name)
+			options[name].OnlyVendor = append(options[name].OnlyVendor, game)
 		}
 	}
 
@@ -970,19 +972,14 @@ func run() int {
 		}
 
 		// Check if any sub data source needs to be disabled
-		onlySeller := forceSeller[name] || slices.Contains(opt.OnlySeller, game)
-		onlyVendor := forceVendor[name] || slices.Contains(opt.OnlyVendor, game)
+		onlySeller := slices.Contains(opt.OnlySeller, game)
+		onlyVendor := slices.Contains(opt.OnlyVendor, game)
 		if onlySeller && onlyVendor {
-			// -sellers/-vendors asked for the one half the selected game's
-			// own data says this store cannot answer for the other -
-			// forceSeller met a structural OnlyVendor, or forceVendor met a
-			// structural OnlySeller. Both true would tell configureScraper
-			// to publish neither, which is not what either flag asked for.
-			asked, has := "retail", "a buylist"
-			if forceVendor[name] {
-				asked, has = "buylist", "a retail shelf"
-			}
-			log.Printf("%s was asked for its %s alone, but %s is all it has for %s", name, asked, has, game)
+			// Either -sellers and -vendors both named this store, or one
+			// of them named the very side the selected game's own data
+			// already says this store lacks the other for. Either way,
+			// that leaves nothing for configureScraper to publish.
+			log.Printf("%s cannot be limited to retail alone and buylist alone for %s at once", name, game)
 			return 1
 		}
 		err = configureScraper(name, onlySeller, onlyVendor, scraper)
