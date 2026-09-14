@@ -1,7 +1,6 @@
 package coolstuffinc
 
 import (
-	"errors"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -611,73 +610,6 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		Variation: variant,
 		Edition:   edition,
 		Foil:      isFoil,
-	}, nil
-}
-
-// Preprocess turns a price-list entry into the card description the matcher
-// takes.
-func Preprocess(card CSICard) (*mtgmatcher.InputCard, error) {
-	cardName := card.Name
-	variant := card.Variation
-	edition := card.Edition
-
-	if mtgmatcher.Contains(cardName, "Signed by") {
-		return nil, errors.New("not singles")
-	}
-
-	fields := mtgmatcher.SplitVariants(cardName)
-	cardName = fields[0]
-	if len(fields) > 1 {
-		if variant != "" {
-			variant += " "
-		}
-		variant += strings.Join(fields[1:], " ")
-	}
-
-	switch edition {
-	case "Online Arena":
-		return nil, errors.New("not supported")
-	case "Black Bordered (foreign)":
-		switch variant {
-		case "German", "French", "Spanish", "Chinese", "Korean":
-			return nil, errors.New("not supported")
-		case "Italian":
-			edition = "FBB"
-		case "Japanese":
-			edition = "4BB"
-		}
-	case "Ikoria: Lair of Behemoths: Variants":
-		if variant == "Japanese" {
-			switch cardName {
-			case "Dirge Bat", "Mysterious Egg", "Crystalline Giant":
-				variant += " Godzilla"
-			default:
-				return nil, errors.New("not supported")
-			}
-		}
-	case "Prerelease Promo":
-		switch cardName {
-		case "On Serra's Wings":
-			return nil, errors.New("does not exist")
-		}
-	case "Portal 3 Kingdoms":
-		if variant == "Japanese" || variant == "Chinese" {
-			return nil, errors.New("not english")
-		}
-	case "Mystical Archive", "Double Masters: Variants":
-		variant = strings.Replace(variant, "Showcase Frame", "", 1)
-	case "Dominaria United: Variants":
-		if variant == "Stained Glass Frame" {
-			variant = "Showcase"
-		}
-	}
-
-	return &mtgmatcher.InputCard{
-		ID:        card.ScryfallID,
-		Name:      cardName,
-		Variation: variant,
-		Edition:   edition,
-		Foil:      card.IsFoil,
 	}, nil
 }
 
