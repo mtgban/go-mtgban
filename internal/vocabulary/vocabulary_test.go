@@ -131,6 +131,30 @@ func TestCheckReadsTheRules(t *testing.T) {
 	}
 }
 
+// TestLinesOmitsDrift pins the one split Lines and Drift make: a token
+// nobody has labelled yet is Drift alone, gone from Lines entirely, while
+// every other rule stays in Lines where TestCheckReadsTheRules already
+// holds it. Gundam and One Piece have both shipped a set with a token
+// their label table had not caught up to; this is what should happen the
+// next time a set does, not what it takes another live run to notice.
+func TestLinesOmitsDrift(t *testing.T) {
+	stated := Published{
+		Tokens: []string{"challengebox"},
+		Words:  map[string]string{"challengebox": "Challenge Box"},
+	}
+	found := Check(Backend{
+		Declared: []string{"challengebox"},
+		Labels:   map[string]string{"challengebox": "Challengebox"},
+	}, stated)
+
+	if lines := found.Lines(); len(lines) != 0 {
+		t.Errorf("Lines() = %v, want none - a label nobody wrote is Drift's to report", lines)
+	}
+	if drift := found.Drift(); len(drift) != 1 {
+		t.Errorf("Drift() = %v, want the one RunTogether line", drift)
+	}
+}
+
 // TestLoadersReadWhatIsPublished holds every game's loader to the datastore
 // the run carries. A job carries one game, so the others skip; a run
 // carrying none says so rather than passing on nothing.
@@ -157,8 +181,12 @@ func TestLoadersReadWhatIsPublished(t *testing.T) {
 				t.Fatal(err)
 			}
 			read++
-			for _, line := range Check(loaded, stated).Lines() {
+			found := Check(loaded, stated)
+			for _, line := range found.Lines() {
 				t.Errorf("%s: %s", game, line)
+			}
+			for _, line := range found.Drift() {
+				t.Logf("%s: %s", game, line)
 			}
 		})
 	}
