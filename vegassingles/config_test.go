@@ -21,7 +21,10 @@ func TestMagicPublishesOnlyTheBuylist(t *testing.T) {
 	product := entombFoil()
 	product.RetailVariantInfo[0].InventoryQuantity = 2
 
-	vs := NewScraper(GameMagic)
+	vs, err := NewScraper(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	vs.SetConfig(mtgban.ScraperOptions{DisableRetail: true})
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)
@@ -51,7 +54,10 @@ func TestDisablingTheBuylistLeavesTheShelf(t *testing.T) {
 	product := entombFoil()
 	product.RetailVariantInfo[0].InventoryQuantity = 2
 
-	vs := NewScraper(GameMagic)
+	vs, err := NewScraper(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	vs.SetConfig(mtgban.ScraperOptions{DisableBuylist: true})
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)

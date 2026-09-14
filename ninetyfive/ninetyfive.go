@@ -26,13 +26,22 @@ const (
 	GameLorcana = "LRC"
 )
 
+// nfGames is what NewScraper is built through: it names the set supertype
+// the feed tags a game with, and a game named nowhere here is not one 95mtg
+// is read for.
+var nfGames = map[mtgban.Game]string{
+	mtgban.GameMagic:   GameMagic,
+	mtgban.GameLorcana: GameLorcana,
+}
+
 // Ninetyfive prices 95mtg's stock.
 type Ninetyfive struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
-	client *NFClient
-	game   string
+	client    *NFClient
+	game      mtgban.Game
+	supertype string
 
 	inventoryDate  time.Time
 	inventory      mtgban.InventoryRecord
@@ -42,15 +51,19 @@ type Ninetyfive struct {
 	DisableBuylist bool
 }
 
-// NewScraper returns a scraper for one game, failing if the catalog cannot be
-// read.
-func NewScraper(game string) (*Ninetyfive, error) {
+// NewScraper returns a scraper for one game.
+func NewScraper(game mtgban.Game) (*Ninetyfive, error) {
+	supertype, ok := nfGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	nf := Ninetyfive{}
 	nf.inventory = mtgban.InventoryRecord{}
 	nf.buylist = mtgban.BuylistRecord{}
 	nf.client = NewNFClient()
 	nf.MaxConcurrency = defaultConcurrency
 	nf.game = game
+	nf.supertype = supertype
 	return &nf, nil
 }
 
@@ -62,7 +75,7 @@ func (nf *Ninetyfive) printf(format string, a ...any) {
 
 func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode string) error {
 	for key, items := range allPrices {
-		if allCards[key].SetSupertype != nf.game {
+		if allCards[key].SetSupertype != nf.supertype {
 			continue
 		}
 		for sku, priceSet := range items {
@@ -95,16 +108,13 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 
 			var theCard *mtgmatcher.InputCard
 			switch nf.game {
-			case GameMagic:
+			case mtgban.GameMagic:
 				theCard, err = preprocess(allCards, key, lang, foil)
 				if err != nil {
 					continue
 				}
-			case GameLorcana:
+			case mtgban.GameLorcana:
 				theCard = &mtgmatcher.InputCard{Name: allCards[key].CardName, Edition: allCards[key].SetName, Variation: allCards[key].CardNum, Foil: foil}
-			default:
-				nf.printf("unsupported game")
-				continue
 			}
 
 			cardID, err := mtgmatcher.Match(theCard)
@@ -286,11 +296,6 @@ func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "95"
 	info.InventoryTimestamp = &nf.inventoryDate
 	info.BuylistTimestamp = &nf.buylistDate
-	switch nf.game {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	}
+	info.Game = nf.game
 	return
 }

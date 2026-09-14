@@ -112,7 +112,8 @@ type GNClient struct {
 }
 
 // NewGNClient returns a client for one product line, in the storefront's own
-// spelling (the Game constants).
+// spelling - what gnGames translates an mtgban.Game into, and what
+// NewScraper hands down.
 func NewGNClient(productLine string) *GNClient {
 	gn := GNClient{}
 	client := retryablehttp.NewClient()

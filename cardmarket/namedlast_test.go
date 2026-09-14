@@ -141,16 +141,16 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 		},
 	}
 
-	mkm := &Index{
-		gameID:         cm.GameFleshAndBlood,
-		exchangeRate:   1,
-		MaxConcurrency: 1,
-		inventory:      mtgban.InventoryRecord{},
-		TCGBridge:      map[int]int{999001: 237847},
-		priceGuide: map[int]cm.PriceGuide{
-			602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
-			999001: {IDProduct: 999001, LowPrice: 1, TrendPrice: 2},
-		},
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
+	mkm.exchangeRate = 1
+	mkm.MaxConcurrency = 1
+	mkm.TCGBridge = map[int]int{999001: 237847}
+	mkm.priceGuide = map[int]cm.PriceGuide{
+		602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
+		999001: {IDProduct: 999001, LowPrice: 1, TrendPrice: 2},
 	}
 
 	mkm.collectPrices(context.Background(), []cm.Expansion{{Name: "Monarch - First"}},

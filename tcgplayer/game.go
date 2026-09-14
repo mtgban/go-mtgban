@@ -15,8 +15,8 @@ import (
 
 // TCGGame is the retail scraper for any single-game TCGplayer category whose
 // cards the matcher identifies by name + collector number + finish (Lorcana,
-// Riftbound, ...); Magic has its own SKU-driven scrapers. SupportedGames
-// below maps each game tag to the category it is served from.
+// Riftbound, ...); Magic has its own SKU-driven scrapers. tcgGames below maps
+// each game to the category it is served from.
 type TCGGame struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -32,7 +32,7 @@ type TCGGame struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
-	game                string
+	game                mtgban.Game
 
 	productTypes []string
 
@@ -55,11 +55,11 @@ func (tcg *TCGGame) printf(format string, a ...any) {
 	}
 }
 
-// SupportedGames maps every game tag TCGGame and TCGGameIndex can be built
-// for to the TCGplayer category carrying it. Magic is deliberately absent: it
-// is identified by SKU and has its own scrapers. Supporting one more game is
-// one entry here, provided the matcher has a datastore for it.
-var SupportedGames = map[string]int{
+// tcgGames maps every game TCGGame and TCGGameIndex can be built for to the
+// TCGplayer category carrying it. Magic is deliberately absent: it is
+// identified by SKU and has its own scrapers. Supporting one more game is one
+// entry here, provided the matcher has a datastore for it.
+var tcgGames = map[mtgban.Game]int{
 	mtgban.GameLorcana:       tcgplayer.CategoryLorcana,
 	mtgban.GameRiftbound:     tcgplayer.CategoryRiftbound,
 	mtgban.GameOnePiece:      tcgplayer.CategoryOnePiece,
@@ -72,8 +72,8 @@ var SupportedGames = map[string]int{
 
 // NewScraperGame returns a singles scraper for one game, authenticated with a
 // partner API key pair.
-func NewScraperGame(game, publicID, privateID string) (*TCGGame, error) {
-	category, found := SupportedGames[game]
+func NewScraperGame(game mtgban.Game, publicID, privateID string) (*TCGGame, error) {
+	category, found := tcgGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
@@ -102,7 +102,7 @@ func NewScraperGame(game, publicID, privateID string) (*TCGGame, error) {
 // adds later is picked up rather than silently skipped. Products resolve
 // through the sealed product map by their product id, the identity the
 // datastore stamps on every sealed entry.
-func NewScraperGameSealed(game, publicID, privateID string) (*TCGGame, error) {
+func NewScraperGameSealed(game mtgban.Game, publicID, privateID string) (*TCGGame, error) {
 	tcg, err := NewScraperGame(game, publicID, privateID)
 	if err != nil {
 		return nil, err

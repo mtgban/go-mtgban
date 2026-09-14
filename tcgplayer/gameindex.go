@@ -30,7 +30,7 @@ type TCGGameIndex struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
-	game                string
+	game                mtgban.Game
 
 	productTypes []string
 
@@ -49,8 +49,8 @@ func (tcg *TCGGameIndex) printf(format string, a ...any) {
 
 // NewScraperGameIndex returns an index scraper for one game, authenticated
 // with a partner API key pair.
-func NewScraperGameIndex(game, publicID, privateID string) (*TCGGameIndex, error) {
-	category, found := SupportedGames[game]
+func NewScraperGameIndex(game mtgban.Game, publicID, privateID string) (*TCGGameIndex, error) {
+	category, found := tcgGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}

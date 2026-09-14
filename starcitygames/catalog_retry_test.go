@@ -9,6 +9,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -80,7 +82,10 @@ func TestLoadCatalogRetryStartsClean(t *testing.T) {
 	}))
 	defer sets.Close()
 
-	scg := NewScraper(GameFleshAndBlood, "")
+	scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	client := *scg.client
 	client.catalogURL = srv.URL
 	client.setsURL = sets.URL

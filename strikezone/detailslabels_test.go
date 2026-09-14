@@ -1,6 +1,10 @@
 package strikezone
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+)
 
 // TestPreprocessDetailsLabels pins what comes off a Pokemon row's name. The
 // storefront writes the number as the card's share of the set and hangs the
@@ -58,7 +62,7 @@ func TestPreprocessDetailsLabels(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			got, err := preprocessDetails(GamePokemon, tt.cardName, tt.edition, tt.number, details)
+			got, err := preprocessDetails(mtgban.GamePokemon, tt.cardName, tt.edition, tt.number, details)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -3,6 +3,8 @@ package starcitygames
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -44,7 +46,10 @@ func TestSecondBucketMerges(t *testing.T) {
 		{"the marked record first", []CatalogProduct{marked, plain}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			scg := NewScraper(GameFleshAndBlood, "")
+			scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+			if err != nil {
+				t.Fatal(err)
+			}
 			var logs int
 			scg.LogCallback = func(format string, a ...any) { logs++ }
 			for _, p := range tt.order {
@@ -78,7 +83,10 @@ func TestSecondBucketMerges(t *testing.T) {
 // the rest of it: every record is about to arrive a second time, and a first
 // arrival must not be taken for a second one.
 func TestStreamRetryForgetsBuckets(t *testing.T) {
-	scg := NewScraper(GameFleshAndBlood, "")
+	scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	scg.buckets["SGL-FAB-AGB-014-ENN"] = struct{}{}
 	scg.reset()
 

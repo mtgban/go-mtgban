@@ -30,41 +30,38 @@ type Miniaturemarket struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 	productMap    map[string]string
-	game          string
+	game          mtgban.Game
+	widget        string
 }
 
-// The games this scraper covers, as their storefront widget names them.
-const (
-	GameMagic     = "magic"
-	GameLorcana   = "lorcana"
-	GameRiftbound = "riftbound"
-	GameOnePiece  = "onepiece"
-
-	GameFleshAndBlood = "fleshandblood"
-	GameGundam        = "gundam"
-)
-
-// gameWidgets are the CMS navigation ids behind each game's storefront
-// category, read off the category pages; the widget serves the paginated
-// product listing the scraper walks.
-var gameWidgets = map[string]string{
-	GameMagic:     "be53d253d6bc3258a8160556dda3e9b2",
-	GameLorcana:   "4e0223a87610176ef0d24ef6d2dcde3a",
-	GameRiftbound: "019be122ca9779e5af00a663d064f775",
-	GameOnePiece:  "f7ac67a9aa8d255282de7d11391e1b69",
-
-	GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
-	GameGundam:        "019be1227c9b730eb41abadcdd09015a",
+// mmGames is what NewScraperSealed is built through, and a game named
+// nowhere here is not one Miniature Market is read for. The value is the CMS
+// navigation id behind the game's category page, read off the category pages,
+// which serves the paginated product listing the scraper walks; unlike the
+// other storefronts there is no separate shelf name to expose, since the
+// widget id is the only thing a request ever carries.
+var mmGames = map[mtgban.Game]string{
+	mtgban.GameMagic:         "be53d253d6bc3258a8160556dda3e9b2",
+	mtgban.GameLorcana:       "4e0223a87610176ef0d24ef6d2dcde3a",
+	mtgban.GameRiftbound:     "019be122ca9779e5af00a663d064f775",
+	mtgban.GameOnePiece:      "f7ac67a9aa8d255282de7d11391e1b69",
+	mtgban.GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
+	mtgban.GameGundam:        "019be1227c9b730eb41abadcdd09015a",
 }
 
 // NewScraperSealed returns a sealed scraper for one game.
-func NewScraperSealed(game string) *Miniaturemarket {
+func NewScraperSealed(game mtgban.Game) (*Miniaturemarket, error) {
+	widget, ok := mmGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	mm := Miniaturemarket{}
 	mm.inventory = mtgban.InventoryRecord{}
 	mm.MaxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
 	mm.game = game
-	return &mm
+	mm.widget = widget
+	return &mm, nil
 }
 
 const defaultConcurrency = 6
@@ -106,8 +103,8 @@ var fabDeckSet = regexp.MustCompile(`\s+Deck - Set of \d+`)
 // prefix and parentheticals only decorate, and the bracket code either
 // carries the deck number the canon leads with, or restates a set the rest
 // of the name already spells.
-func sealedName(game, name string) string {
-	if game == GameFleshAndBlood {
+func sealedName(game mtgban.Game, name string) string {
+	if game == mtgban.GameFleshAndBlood {
 		name = strings.TrimPrefix(name, "Flesh & Blood TCG: ")
 		name = fabPackCount.ReplaceAllString(name, "")
 		// The canon spells an unlimited printing as a bracketed edition at
@@ -129,7 +126,7 @@ func sealedName(game, name string) string {
 		}
 		return strings.TrimSpace(name)
 	}
-	if game == GameGundam {
+	if game == mtgban.GameGundam {
 		name = strings.TrimPrefix(name, "GUNDAM Card Game: ")
 		name = gundamDecorations.ReplaceAllString(name, "")
 
@@ -156,7 +153,7 @@ func sealedName(game, name string) string {
 		return strings.TrimSpace(name)
 	}
 
-	if game != GameOnePiece {
+	if game != mtgban.GameOnePiece {
 		return name
 	}
 
@@ -309,7 +306,7 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 	if uuid, found := mm.productMap[id]; found {
 		return uuid, ""
 	}
-	if mm.game == GameMagic {
+	if mm.game == mtgban.GameMagic {
 		return "", "no datastore id"
 	}
 	name := strings.TrimSpace(sealedName(mm.game, listed))
@@ -355,7 +352,7 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 }
 
 func (mm *Miniaturemarket) mainURL() string {
-	return "https://www.miniaturemarket.com/widgets/cms/navigation/" + gameWidgets[mm.game] + "?filter-inStock=1&no-aggregations=1&order=name-asc&p=1"
+	return "https://www.miniaturemarket.com/widgets/cms/navigation/" + mm.widget + "?filter-inStock=1&no-aggregations=1&order=name-asc&p=1"
 }
 
 type respChan struct {
@@ -479,7 +476,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
 	}
 	mm.printf("Loaded %d sealed products", len(mm.productMap))
-	if mm.game != GameMagic {
+	if mm.game != mtgban.GameMagic {
 		mm.printf("Resolving %s products by name", mm.game)
 	}
 
@@ -548,19 +545,6 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mm.inventoryDate
 	info.SealedMode = true
 	info.NoQuantityInventory = true
-	switch mm.game {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	case GameOnePiece:
-		info.Game = mtgban.GameOnePiece
-	case GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	case GameGundam:
-		info.Game = mtgban.GameGundam
-	}
+	info.Game = mm.game
 	return
 }

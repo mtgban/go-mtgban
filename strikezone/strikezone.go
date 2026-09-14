@@ -25,6 +25,17 @@ const (
 	GameFleshAndBlood = "Flesh_and_Blood"
 )
 
+// szGames is what NewScraper is built through: it names the storefront
+// category a game is filed under, and a game named nowhere here is not one
+// Strike Zone is read for.
+var szGames = map[mtgban.Game]string{
+	mtgban.GameMagic:         GameMagic,
+	mtgban.GameLorcana:       GameLorcana,
+	mtgban.GamePokemon:       GamePokemon,
+	mtgban.GameYuGiOh:        GameYuGiOh,
+	mtgban.GameFleshAndBlood: GameFleshAndBlood,
+}
+
 const (
 	defaultConcurrency = 8
 
@@ -70,17 +81,23 @@ type Strikezone struct {
 	DisableRetail  bool
 	DisableBuylist bool
 
-	game string
+	game  mtgban.Game
+	shelf string
 }
 
 // NewScraper returns a scraper for one game.
-func NewScraper(game string) *Strikezone {
+func NewScraper(game mtgban.Game) (*Strikezone, error) {
+	shelf, ok := szGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	sz := Strikezone{}
 	sz.inventory = mtgban.InventoryRecord{}
 	sz.buylist = mtgban.BuylistRecord{}
 	sz.MaxConcurrency = defaultConcurrency
 	sz.game = game
-	return &sz
+	sz.shelf = shelf
+	return &sz, nil
 }
 
 func (sz *Strikezone) printf(format string, a ...any) {
@@ -110,7 +127,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	// handling below are shared.
 	var theCard *mtgmatcher.InputCard
 	switch sz.game {
-	case GameMagic:
+	case mtgban.GameMagic:
 		if mode == modeRetail {
 			notes = el.ChildText("td:nth-child(4)")
 			cond = el.ChildText("td:nth-child(5)")
@@ -128,7 +145,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 			return nil
 		}
 		theCard = c
-	case GameLorcana:
+	case mtgban.GameLorcana:
 		notes = el.ChildText("td:nth-child(2)")
 		cond = el.ChildText("td:nth-child(4)")
 		qty = el.ChildText("td:nth-child(5)")
@@ -136,7 +153,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
 		theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: foil}
-	case GamePokemon, GameYuGiOh, GameFleshAndBlood:
+	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
 		number := el.ChildText("td:nth-child(2)")
 		cond = el.ChildText("td:nth-child(4)")
 		qty = el.ChildText("td:nth-child(5)")
@@ -173,7 +190,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		return err
 	}
 
-	if sz.game == GameMagic {
+	if sz.game == mtgban.GameMagic {
 		co, coErr := mtgmatcher.GetUUID(cardID)
 		if coErr == nil && namesAbsentTreatment(theCard.Variation, co) {
 			return nil
@@ -302,7 +319,7 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		// Only the Magic categories render the denser rtti table; every
 		// other game lists retail and buylist alike in the generic one.
 		tableRowName := "table.rtti tr"
-		if mode == modeBuylist || sz.game != GameMagic {
+		if mode == modeBuylist || sz.game != mtgban.GameMagic {
 			tableRowName = "table.ItemTable tr"
 		}
 
@@ -318,14 +335,14 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 
 	var link string
 	if mode == modeRetail {
-		link = fmt.Sprintf(szInventoryURL, sz.game)
+		link = fmt.Sprintf(szInventoryURL, sz.shelf)
 		// The storefront files the Flesh and Blood singles under a bare
 		// name no other game shares, instead of its own prefixed one.
-		if sz.game == GameFleshAndBlood {
+		if sz.game == mtgban.GameFleshAndBlood {
 			link = "http://shop.strikezoneonline.com/Category/Singles.html"
 		}
 	} else if mode == modeBuylist {
-		link = fmt.Sprintf(szBuylistURL, sz.game)
+		link = fmt.Sprintf(szBuylistURL, sz.shelf)
 	}
 	sz.printf("Visiting %s", link)
 	c.Visit(link)
@@ -403,17 +420,6 @@ func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "SZ"
 	info.InventoryTimestamp = &sz.inventoryDate
 	info.BuylistTimestamp = &sz.buylistDate
-	switch sz.game {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case GamePokemon:
-		info.Game = mtgban.GamePokemon
-	case GameYuGiOh:
-		info.Game = mtgban.GameYuGiOh
-	case GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	}
+	info.Game = sz.game
 	return
 }

@@ -14,7 +14,7 @@ import (
 // number here reads someone else's SYP list rather than failing.
 func TestNewScraperSYPGames(t *testing.T) {
 	for _, tt := range []struct {
-		game     string
+		game     mtgban.Game
 		category int
 		wantErr  bool
 	}{
@@ -27,8 +27,8 @@ func TestNewScraperSYPGames(t *testing.T) {
 		{game: mtgban.GameLorcana, wantErr: true},
 		{game: mtgban.GameOnePiece, wantErr: true},
 	} {
-		name := tt.game
-		if name == mtgban.GameMagic {
+		name := string(tt.game)
+		if tt.game == mtgban.GameMagic {
 			name = "Magic"
 		}
 		t.Run(name, func(t *testing.T) {

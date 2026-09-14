@@ -1,6 +1,10 @@
 package vegassingles
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+)
 
 // entombFoil is the product as the storefront answers for it, trimmed to the
 // fields the retail and buylist sides read. The store holds none of it in any
@@ -36,7 +40,10 @@ func entombFoil() VSProduct {
 func TestOutOfStockIsNotForSale(t *testing.T) {
 	withMagic(t)
 
-	vs := NewScraper(GameMagic)
+	vs, err := NewScraper(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := vs.processProduct(entombFoil()); err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +79,10 @@ func TestStockedRowsSurvive(t *testing.T) {
 	product.RetailVariantInfo[0].InventoryQuantity = 2 // Near Mint
 	product.RetailVariantInfo[3].InventoryQuantity = 1 // Heavily Played
 
-	vs := NewScraper(GameMagic)
+	vs, err := NewScraper(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +118,10 @@ func TestBuylistKeepsTheLowerConditions(t *testing.T) {
 	product.VariantInfo[3].OfferPrice = 149.99 // Heavily Played, bid on
 	product.VariantInfo[4].OfferPrice = 99.99  // Damaged, bid on
 
-	vs := NewScraper(GameMagic)
+	vs, err := NewScraper(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +174,10 @@ func ahriFoil() VSProduct {
 func TestRiftboundStock(t *testing.T) {
 	withRiftbound(t)
 
-	vs := NewScraper(GameRiftbound)
+	vs, err := NewScraper(mtgban.GameRiftbound)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := vs.processProduct(ahriFoil()); err != nil {
 		t.Fatal(err)
 	}
@@ -217,7 +233,10 @@ func TestOnePieceStock(t *testing.T) {
 		},
 	}
 
-	vs := NewScraper(GameOnePiece)
+	vs, err := NewScraper(mtgban.GameOnePiece)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +269,10 @@ func TestPokemonStock(t *testing.T) {
 		},
 	}
 
-	vs := NewScraper(GamePokemon)
+	vs, err := NewScraper(mtgban.GamePokemon)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)
 	}

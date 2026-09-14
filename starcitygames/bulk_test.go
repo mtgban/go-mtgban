@@ -4,6 +4,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -145,7 +147,10 @@ func TestCatalogDropsBulkBuyPrice(t *testing.T) {
 		{"as is a real one", "4.00", 1, 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			scg := NewScraper(GameFleshAndBlood, "")
+			scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+			if err != nil {
+				t.Fatal(err)
+			}
 			scg.LogCallback = nil
 			scg.processProduct(product(tt.sellList))
 

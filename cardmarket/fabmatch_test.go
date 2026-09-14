@@ -5,6 +5,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -49,7 +51,10 @@ func loadFabDatastore(t *testing.T) {
 func TestMatchProductPrintRun(t *testing.T) {
 	loadFabDatastore(t)
 
-	mkm := &Index{gameID: cm.GameFleshAndBlood}
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 	}{
@@ -119,7 +124,10 @@ const fabSpellingDatastore = `{
 func TestMatchProductTreatmentTail(t *testing.T) {
 	installDatastore(t, "fleshandblood", fabSpellingDatastore)
 
-	mkm := &Index{gameID: cm.GameFleshAndBlood}
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 	}{
@@ -167,17 +175,18 @@ func TestProcessProductByName(t *testing.T) {
 		{"a product the bridge misses resolves through its name", nil, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			mkm := &Index{
-				gameID:       cm.GameFleshAndBlood,
-				exchangeRate: 1,
-				TCGBridge:    tt.bridge,
-				priceGuide: map[int]cm.PriceGuide{
-					602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
-				},
+			mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+			if err != nil {
+				t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+			}
+			mkm.exchangeRate = 1
+			mkm.TCGBridge = tt.bridge
+			mkm.priceGuide = map[int]cm.PriceGuide{
+				602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
 			}
 
 			channel := make(chan responseChan, len(availableIndexNames))
-			err := mkm.processProduct(channel, &product)
+			err = mkm.processProduct(channel, &product)
 			if err != nil {
 				t.Fatal(err)
 			}

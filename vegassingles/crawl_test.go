@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // storefront answers pages of a catalog of total products laid out size to a
@@ -43,7 +45,10 @@ func (s *storefront) handler(t *testing.T) http.HandlerFunc {
 func (s *storefront) scraper(t *testing.T) (*Vegassingles, func()) {
 	t.Helper()
 	srv := httptest.NewServer(s.handler(t))
-	vs := NewScraper(GameRiftbound)
+	vs, err := NewScraper(mtgban.GameRiftbound)
+	if err != nil {
+		t.Fatal(err)
+	}
 	client := *vs.client
 	client.baseURL = srv.URL
 	vs.client = &client

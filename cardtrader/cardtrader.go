@@ -38,6 +38,7 @@ type Market struct {
 
 	blueprints map[int]*Blueprint
 
+	game   mtgban.Game
 	gameID int
 }
 
@@ -53,12 +54,17 @@ var name2shorthand = map[string]string{
 
 // NewScraperMarket returns a market scraper for one game, authenticated with a
 // full API token.
-func NewScraperMarket(gameID int, token string) (*Market, error) {
+func NewScraperMarket(game mtgban.Game, token string) (*Market, error) {
+	id, found := ctGames[game]
+	if !found {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	ct := Market{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
-	ct.gameID = gameID
+	ct.game = game
+	ct.gameID = id
 	return &ct, nil
 }
 
@@ -181,9 +187,6 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				Finish: gameFinish(ct.gameID, blueprint, product),
 				Foil:   gameFoil(ct.gameID, product),
 			}
-		default:
-			ct.printf("unsupported game %d", ct.gameID)
-			return
 		}
 
 		// The blueprint carries the TCGplayer product id, which names the
@@ -320,7 +323,7 @@ func (ct *Market) Load(ctx context.Context) error {
 	if ct.TargetEdition != "" {
 		ct.printf("-> only targeting edition %s", ct.TargetEdition)
 	}
-	blueprintsRaw, expansionsRaw, err := BlueprintsForGame(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
 	if err != nil {
 		return err
 	}
@@ -403,25 +406,6 @@ func (ct *Market) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.Family = "CT"
-	switch ct.gameID {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	case GameOnePiece:
-		info.Game = mtgban.GameOnePiece
-	case GameYuGiOh:
-		info.Game = mtgban.GameYuGiOh
-	case GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	case GamePokemon:
-		info.Game = mtgban.GamePokemon
-	case GameGundam:
-		info.Game = mtgban.GameGundam
-	case GamePalworld:
-		info.Game = mtgban.GamePalworld
-	}
+	info.Game = ct.game
 	return
 }

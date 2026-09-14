@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -171,10 +172,14 @@ func TestIsGraded(t *testing.T) {
 // names a market answers with. A game holding no graded copy publishes
 // nothing extra: the split skips a seller whose inventory is empty.
 func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
-	for _, game := range []string{GameMagic, GameOnePiece, GamePokemon, GameYuGiOh,
-		GameLorcana, GameRiftbound, GameGundam, GamePalworld} {
-		t.Run(game, func(t *testing.T) {
-			names := NewScraper(game).MarketNames()
+	for _, game := range []mtgban.Game{mtgban.GameMagic, mtgban.GameOnePiece, mtgban.GamePokemon, mtgban.GameYuGiOh,
+		mtgban.GameLorcana, mtgban.GameRiftbound, mtgban.GameGundam, mtgban.GamePalworld} {
+		t.Run(fmt.Sprintf("%q", game), func(t *testing.T) {
+			csi, err := NewScraper(game)
+			if err != nil {
+				t.Fatalf("NewScraper(%q) = %v", game, err)
+			}
+			names := csi.MarketNames()
 			if !slices.Contains(names, "Cool Stuff Inc (unique)") {
 				t.Errorf("MarketNames() = %v, want the graded seller among them", names)
 			}
@@ -187,7 +192,10 @@ func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
 // nothing extra, because the split drops a seller whose inventory is empty.
 // Palworld is that game today.
 func TestUnfoldSkipsTheEmptyGradedSeller(t *testing.T) {
-	csi := NewScraper(GamePalworld)
+	csi, err := NewScraper(mtgban.GamePalworld)
+	if err != nil {
+		t.Fatalf("NewScraper(GamePalworld) = %v", err)
+	}
 	csi.inventory["some-uuid"] = []mtgban.InventoryEntry{{
 		Conditions: "NM",
 		Price:      1,

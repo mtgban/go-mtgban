@@ -14,10 +14,10 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-// SYPGames are the categories Store Your Products is read for, one line per
-// game. Magic is absent from SupportedGames because its singles are priced
-// through scrapers of their own, but its SYP list is served the same way.
-var SYPGames = map[string]int{
+// sypGames are the categories Store Your Products is read for, one line per
+// game. Magic is absent from tcgGames because its singles are priced through
+// scrapers of their own, but its SYP list is served the same way.
+var sypGames = map[mtgban.Game]int{
 	mtgban.GameMagic:   tcgplayer.CategoryMagic,
 	mtgban.GamePokemon: tcgplayer.CategoryPokemon,
 }
@@ -106,7 +106,7 @@ type TCGSYPList struct {
 	// sku id, the datastore knows product ids.
 	Catalog SYPCatalog
 
-	game        string
+	game        mtgban.Game
 	category    int
 	auth        string
 	buylistDate time.Time
@@ -122,8 +122,8 @@ func (tcg *TCGSYPList) printf(format string, a ...any) {
 // NewScraperSYP returns a SYP scraper for any game the list is read for. The
 // list is served against an authorization ticket alone, so this needs no API
 // credentials of its own.
-func NewScraperSYP(game, auth string) (*TCGSYPList, error) {
-	category, found := SYPGames[game]
+func NewScraperSYP(game mtgban.Game, auth string) (*TCGSYPList, error) {
+	category, found := sypGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported SYP game %q", game)
 	}

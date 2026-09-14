@@ -43,6 +43,8 @@ type Sealed struct {
 	inventory mtgban.InventoryRecord
 
 	client *cm.Client
+
+	game   mtgban.Game
 	gameID int
 }
 
@@ -54,18 +56,17 @@ func (mkm *Sealed) printf(format string, a ...any) {
 
 // NewScraperSealed returns a sealed scraper for one game, authenticated with an
 // app token and secret.
-func NewScraperSealed(gameID int, appToken, appSecret string) (*Sealed, error) {
-	switch gameID {
-	case cm.GameMagic, cm.GameLorcana, cm.GameRiftbound, cm.GameOnePiece, cm.GameYuGiOh, cm.GameFleshAndBlood,
-		cm.GamePokemon:
-	default:
-		return nil, fmt.Errorf("unsupported game %d", gameID)
+func NewScraperSealed(game mtgban.Game, appToken, appSecret string) (*Sealed, error) {
+	id, found := mkmGames[game]
+	if !found {
+		return nil, fmt.Errorf("unsupported game %q", game)
 	}
 	mkm := Sealed{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = cm.NewClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
-	mkm.gameID = gameID
+	mkm.game = game
+	mkm.gameID = id
 	return &mkm, nil
 }
 
@@ -361,22 +362,7 @@ func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.SealedMode = true
-	switch mkm.gameID {
-	case cm.GameMagic:
-		info.Game = mtgban.GameMagic
-	case cm.GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case cm.GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	case cm.GameOnePiece:
-		info.Game = mtgban.GameOnePiece
-	case cm.GameYuGiOh:
-		info.Game = mtgban.GameYuGiOh
-	case cm.GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	case cm.GamePokemon:
-		info.Game = mtgban.GamePokemon
-	}
+	info.Game = mkm.game
 	return
 }
 

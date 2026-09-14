@@ -60,16 +60,16 @@ func TestGemPackTreatments(t *testing.T) {
 		},
 	}
 
-	mkm := &Index{
-		gameID:         cm.GameFleshAndBlood,
-		exchangeRate:   1,
-		MaxConcurrency: 1,
-		inventory:      mtgban.InventoryRecord{},
-		TCGBridge:      map[int]int{810664: 616347, 810195: 616347},
-		priceGuide: map[int]cm.PriceGuide{
-			810664: {IDProduct: 810664, LowPrice: 1, TrendPrice: 2},
-			810195: {IDProduct: 810195, LowPrice: 9, TrendPrice: 10},
-		},
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
+	mkm.exchangeRate = 1
+	mkm.MaxConcurrency = 1
+	mkm.TCGBridge = map[int]int{810664: 616347, 810195: 616347}
+	mkm.priceGuide = map[int]cm.PriceGuide{
+		810664: {IDProduct: 810664, LowPrice: 1, TrendPrice: 2},
+		810195: {IDProduct: 810195, LowPrice: 9, TrendPrice: 10},
 	}
 
 	mkm.collectPrices(context.Background(), []cm.Expansion{{Name: "GEM Pack Promos"}},
@@ -108,7 +108,10 @@ func TestGemPackTreatments(t *testing.T) {
 func TestMatchProductExtendedArt(t *testing.T) {
 	installDatastore(t, "fleshandblood", fabArtDatastore)
 
-	mkm := &Index{gameID: cm.GameFleshAndBlood}
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
 	for _, tt := range []struct{ name, want string }{
 		{"Twinning Blade (Extended Art Rainbow Foil)", "cru082_225983_1steditionrainbowfoil"},
 		{"Twinning Blade (Rainbow Foil)", "cru082_225982_1steditionrainbowfoil"},

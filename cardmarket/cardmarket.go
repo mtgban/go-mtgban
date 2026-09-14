@@ -196,6 +196,7 @@ type Index struct {
 	// sells it; see offShelf. Load fills it once the expansions are known.
 	shelved map[string]string
 
+	game   mtgban.Game
 	gameID int
 }
 
@@ -208,6 +209,18 @@ var name2shorthand = map[string]string{
 	"MKM Trend": "MKMTrend",
 }
 
+// mkmGames is the only way into these scrapers: a game names its Cardmarket
+// id here or it is not one this package is read for.
+var mkmGames = map[mtgban.Game]int{
+	mtgban.GameMagic:         cm.GameMagic,
+	mtgban.GameLorcana:       cm.GameLorcana,
+	mtgban.GameRiftbound:     cm.GameRiftbound,
+	mtgban.GameOnePiece:      cm.GameOnePiece,
+	mtgban.GameYuGiOh:        cm.GameYuGiOh,
+	mtgban.GameFleshAndBlood: cm.GameFleshAndBlood,
+	mtgban.GamePokemon:       cm.GamePokemon,
+}
+
 func (mkm *Index) printf(format string, a ...any) {
 	if mkm.LogCallback != nil {
 		mkm.LogCallback("[MKMIndex] "+format, a...)
@@ -216,12 +229,17 @@ func (mkm *Index) printf(format string, a ...any) {
 
 // NewScraperIndex returns an index scraper for one game. It prices from the
 // published catalog and the public price guide, so it needs no credential.
-func NewScraperIndex(gameID int) *Index {
+func NewScraperIndex(game mtgban.Game) (*Index, error) {
+	id, found := mkmGames[game]
+	if !found {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	mkm := Index{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.MaxConcurrency = defaultConcurrency
-	mkm.gameID = gameID
-	return &mkm
+	mkm.game = game
+	mkm.gameID = id
+	return &mkm, nil
 }
 
 // errNoPrinting marks a product no route named a printing of ours for. It
@@ -1011,21 +1029,6 @@ func (mkm *Index) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.MetadataOnly = true
 	info.Family = "MKM"
-	switch mkm.gameID {
-	case cm.GameMagic:
-		info.Game = mtgban.GameMagic
-	case cm.GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case cm.GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	case cm.GameOnePiece:
-		info.Game = mtgban.GameOnePiece
-	case cm.GameYuGiOh:
-		info.Game = mtgban.GameYuGiOh
-	case cm.GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	case cm.GamePokemon:
-		info.Game = mtgban.GamePokemon
-	}
+	info.Game = mkm.game
 	return
 }

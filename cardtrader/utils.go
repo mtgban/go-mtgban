@@ -174,7 +174,24 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ma
 // the lot. A non-empty targetEdition narrows the fetch to that expansion
 // by name or code; logf, when given, reports the skips. The expansions
 // are returned too, since callers key edition names off them.
-func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, targetEdition string, logf func(string, ...any)) ([]Blueprint, []Expansion, error) {
+func BlueprintsForGame(ctx context.Context, client *CTAuthClient, game mtgban.Game, targetEdition string, logf func(string, ...any)) ([]Blueprint, []Expansion, error) {
+	gameID, found := ctGames[game]
+	if !found {
+		return nil, nil, fmt.Errorf("unsupported game %q", game)
+	}
+	return BlueprintsForGameID(ctx, client, gameID, targetEdition, logf)
+}
+
+// BlueprintsForGameID is the same fetch asked by Card Trader's own catalog
+// number, which reaches the games above that mtgban models no Game for at
+// all - Digimon, Vanguard, Union Arena and the rest of this catalog.
+//
+// It is also what the scrapers here call, because they already hold the id:
+// asking by the typed game would make a run read one field where everything
+// else reads the other, and the Game a scraper never set is Magic rather than
+// nothing - so a disagreement would fetch Magic's blueprints and process them
+// as some other game without saying a word.
+func BlueprintsForGameID(ctx context.Context, client *CTAuthClient, gameID int, targetEdition string, logf func(string, ...any)) ([]Blueprint, []Expansion, error) {
 	expansions, err := client.Expansions(ctx)
 	if err != nil {
 		return nil, nil, err

@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -33,7 +34,10 @@ func TestResolveProductEtchedByID(t *testing.T) {
 	}
 	co, _ := mtgmatcher.GetUUID(etchedUUID)
 
-	gn := NewScraper(GameMagic)
+	gn, err := NewScraper(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	id, err := strconv.ParseInt(tcgID, 10, 64)
 	if err != nil {
 		t.Fatal(err)

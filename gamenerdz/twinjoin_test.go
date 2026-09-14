@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 func product(sku, display, set string) GNProduct {
@@ -85,7 +86,10 @@ func TestReleaseHeldProducts(t *testing.T) {
 		"Chrome Mox (Borderless) (DFT-092) - Special Guests Foil", "spg")
 	shelf.BuyVariants = []GNBuyVariant{{Title: "Default Title", OfferPrice: 157.69}}
 
-	gn := NewScraper(GameMagic)
+	gn, err := NewScraper(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	state := &crawlState{
 		seen:     map[string]bool{},
 		rarities: map[string]bool{},

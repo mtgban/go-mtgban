@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -27,7 +28,7 @@ var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?$`)
 // price of its own, while the id it would resolve to is the printing's, held
 // by the ordinary listing standing beside it. Publishing the copy's price
 // under the printing's id lets a one-off set what the card is worth.
-func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
+func preprocess(product VSProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
 	if uniqueCopy.MatchString(strings.TrimSpace(product.DisplayName)) {
 		return nil, errors.New("listing is one particular copy, not the printing")
 	}
@@ -37,13 +38,13 @@ func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
 	}
 
 	switch game {
-	case GameRiftbound:
+	case mtgban.GameRiftbound:
 		return preprocessRiftbound(product)
-	case GameOnePiece:
+	case mtgban.GameOnePiece:
 		return preprocessOnePiece(product)
-	case GamePokemon:
+	case mtgban.GamePokemon:
 		return preprocessPokemon(product)
-	case GameGundam:
+	case mtgban.GameGundam:
 		return preprocessGundam(product)
 	}
 	return preprocessMagic(product)

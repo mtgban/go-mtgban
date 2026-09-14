@@ -119,22 +119,46 @@ func (be BuylistEntry) Qty() int {
 	return be.Quantity
 }
 
+// Game is one of the games mtgban prices, and the only naming a scraper is
+// built from. A vendor numbers or spells its own games however it likes, and
+// that naming stays inside the vendor's package: it converts at its edge, so
+// a caller wiring a scraper up names the game once, here.
+//
+// The values are the wire format ScraperInfo.Game is published as; changing
+// one changes every dump and every consumer reading them.
+type Game string
+
 // The games a scraper can price, as carried in ScraperInfo.Game.
 //
 // Magic is the empty string rather than a name of its own, so a scraper that
 // never sets Game reads as Magic. Anything comparing games has to account for
 // that: an unset field is not an unknown game.
 const (
-	GameMagic         = ""
-	GameLorcana       = "Lorcana"
-	GameRiftbound     = "Riftbound"
-	GameOnePiece      = "OnePiece"
-	GameYuGiOh        = "YuGiOh"
-	GameFleshAndBlood = "FleshAndBlood"
-	GamePokemon       = "Pokemon"
-	GameGundam        = "Gundam"
-	GamePalworld      = "Palworld"
+	GameMagic         Game = ""
+	GameLorcana       Game = "Lorcana"
+	GameRiftbound     Game = "Riftbound"
+	GameOnePiece      Game = "OnePiece"
+	GameYuGiOh        Game = "YuGiOh"
+	GameFleshAndBlood Game = "FleshAndBlood"
+	GamePokemon       Game = "Pokemon"
+	GameGundam        Game = "Gundam"
+	GamePalworld      Game = "Palworld"
 )
+
+// AllGames is every game above, in a settled order: the official list, for a
+// caller that has to run through all of them rather than name one. A game
+// added to the constants belongs here too.
+var AllGames = []Game{
+	GameMagic,
+	GameLorcana,
+	GameRiftbound,
+	GameOnePiece,
+	GameYuGiOh,
+	GameFleshAndBlood,
+	GamePokemon,
+	GameGundam,
+	GamePalworld,
+}
 
 // ScraperInfo contains
 type ScraperInfo struct {
@@ -172,7 +196,7 @@ type ScraperInfo struct {
 	Family string `json:"family,omitempty"`
 
 	// Which game the scraper belongs to
-	Game string `json:"game,omitempty"`
+	Game Game `json:"game,omitempty"`
 }
 
 // DefaultGradeTags are the conditions most scrapers report.

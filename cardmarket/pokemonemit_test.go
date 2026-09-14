@@ -5,6 +5,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
 
@@ -38,15 +40,16 @@ const pokemonEmitDatastore = `{
 func TestEmitPokemonColumns(t *testing.T) {
 	installDatastore(t, "pokemon", pokemonEmitDatastore)
 
-	mkm := &Index{
-		gameID:       cm.GamePokemon,
-		exchangeRate: 1,
-		priceGuide: map[int]cm.PriceGuide{
-			1: {IDProduct: 1, LowPrice: 1, TrendPrice: 2},
-			2: {IDProduct: 2, LowPrice: 3, TrendPrice: 4, HoloLowPrice: 5, HoloTrendPrice: 6},
-			3: {IDProduct: 3, LowPrice: 7, TrendPrice: 8, HoloLowPrice: 9, HoloTrendPrice: 10},
-			4: {IDProduct: 4, LowPrice: 11, TrendPrice: 12, HoloLowPrice: 13, HoloTrendPrice: 14},
-		},
+	mkm, err := NewScraperIndex(mtgban.GamePokemon)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GamePokemon) = %v", err)
+	}
+	mkm.exchangeRate = 1
+	mkm.priceGuide = map[int]cm.PriceGuide{
+		1: {IDProduct: 1, LowPrice: 1, TrendPrice: 2},
+		2: {IDProduct: 2, LowPrice: 3, TrendPrice: 4, HoloLowPrice: 5, HoloTrendPrice: 6},
+		3: {IDProduct: 3, LowPrice: 7, TrendPrice: 8, HoloLowPrice: 9, HoloTrendPrice: 10},
+		4: {IDProduct: 4, LowPrice: 11, TrendPrice: 12, HoloLowPrice: 13, HoloTrendPrice: 14},
 	}
 	products := []cm.Product{
 		{IDProduct: 1, Name: "Pikachu ", Number: "04", ExpansionName: "SM Black Star Promos"},

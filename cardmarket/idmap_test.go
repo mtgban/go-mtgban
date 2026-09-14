@@ -6,6 +6,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -37,7 +38,10 @@ func loadCatalogDatastore(t *testing.T) {
 func TestResolveUUIDs(t *testing.T) {
 	loadCatalogDatastore(t)
 
-	mkm := &Index{gameID: cm.GameMagic}
+	mkm, err := NewScraperIndex(mtgban.GameMagic)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameMagic) = %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -130,19 +134,22 @@ func TestCheckCatalog(t *testing.T) {
 
 	for _, tt := range []struct {
 		name    string
-		gameID  int
+		game    mtgban.Game
 		catalog *cm.Catalog
 		usable  bool
 	}{
-		{"one piece coded", cm.GameOnePiece, coded, true},
-		{"one piece bare", cm.GameOnePiece, bare, false},
-		{"yugioh bare", cm.GameYuGiOh, bare, false},
-		{"magic bare", cm.GameMagic, bare, true},
-		{"magic none", cm.GameMagic, nil, false},
+		{"one piece coded", mtgban.GameOnePiece, coded, true},
+		{"one piece bare", mtgban.GameOnePiece, bare, false},
+		{"yugioh bare", mtgban.GameYuGiOh, bare, false},
+		{"magic bare", mtgban.GameMagic, bare, true},
+		{"magic none", mtgban.GameMagic, nil, false},
 	} {
-		mkm := NewScraperIndex(tt.gameID)
+		mkm, err := NewScraperIndex(tt.game)
+		if err != nil {
+			t.Fatalf("%s: NewScraperIndex(%v) = %v", tt.name, tt.game, err)
+		}
 		mkm.Catalog = tt.catalog
-		err := mkm.checkCatalog()
+		err = mkm.checkCatalog()
 		if (err == nil) != tt.usable {
 			t.Errorf("%s: checkCatalog() = %v, want usable %v", tt.name, err, tt.usable)
 		}

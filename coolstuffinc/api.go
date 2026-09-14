@@ -117,9 +117,9 @@ type CSIPriceEntry struct {
 	CreditPrice string `json:"CreditPrice"`
 }
 
-// GetBuylist returns what Cool Stuff Inc is buying for one game.
-func GetBuylist(ctx context.Context, game string) ([]CSIPriceEntry, error) {
-	link := fmt.Sprintf(csiBuylistURL, game)
+// GetBuylist returns what Cool Stuff Inc is buying on one storefront shelf.
+func GetBuylist(ctx context.Context, shelf string) ([]CSIPriceEntry, error) {
+	link := fmt.Sprintf(csiBuylistURL, shelf)
 
 	// The sell list is a large uncompressed download that occasionally
 	// truncates mid-stream (unexpected EOF), so retry the whole fetch.
@@ -248,8 +248,8 @@ func fetchWhole(ctx context.Context, link string) ([]byte, error) {
 
 // LoadBuylistEditions returns the edition-to-id map the storefront links are
 // built from.
-func LoadBuylistEditions(ctx context.Context, game string) (map[string]string, error) {
-	link := csiBuylistLink + game
+func LoadBuylistEditions(ctx context.Context, shelf string) (map[string]string, error) {
+	link := csiBuylistLink + shelf
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -295,7 +295,7 @@ type SearchResult struct {
 
 // Search resolves an item name to its id and returns the first page of
 // results, narrowed to the given rarity tiers.
-func Search(ctx context.Context, game, itemName string, skipOOS bool, rarities []string) (*SearchResult, error) {
+func Search(ctx context.Context, shelf, itemName string, skipOOS bool, rarities []string) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", "")
 	v.Set("f[Artist][]", "")
@@ -327,7 +327,7 @@ func Search(ctx context.Context, game, itemName string, skipOOS bool, rarities [
 		v.Add("f[Rarity][]", rarity)
 	}
 	v.Set("f[ItemSet][]", itemName)
-	v.Set("s", game)
+	v.Set("s", shelf)
 	v.Set("page", "1")
 	v.Set("resultsPerPage", "50")
 	v.Set("submit", "Search")
