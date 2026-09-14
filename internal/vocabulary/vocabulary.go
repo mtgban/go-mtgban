@@ -111,7 +111,10 @@ type Problems struct {
 	RunTogether []string
 }
 
-// Lines are the problems as one line each.
+// Lines are the problems that mean the loader itself is wrong: it invented
+// a token, declared something a query could not carry, showed a reader the
+// bare slug, or handed one an ordinal a title-caser mangled. These hold
+// wherever this runs, whatever the datastore currently carries.
 func (p Problems) Lines() []string {
 	var out []string
 	say := func(what string, found []string) {
@@ -128,8 +131,28 @@ func (p Problems) Lines() []string {
 	say("declared tokens are not slugs", p.NotSlugs)
 	say("declared tokens read back as their own slug", p.Unlabelled)
 	say("labels have an ordinal a title-caser capitalised", p.Mangled)
-	say("labels read as one word for a token the catalog writes as several", p.RunTogether)
 	return out
+}
+
+// Drift is RunTogether alone, apart from Lines because it means something
+// different: not the loader wrong, but a label table a set has outrun. It
+// only ever fires where nobody has written a label at all - the moment one
+// is, however it reads, the token leaves this and Lines has no opinion on
+// it - so what is left is the one shape a release predictably produces:
+// a token the catalog just started naming, worn before its label is. The
+// catalog's own words are right there in the same datastore this read, so
+// nothing here is a guess; it is a run saying which labels are due, not
+// which are broken.
+func (p Problems) Drift() []string {
+	if len(p.RunTogether) == 0 {
+		return nil
+	}
+	shown := p.RunTogether
+	if len(shown) > 8 {
+		shown = shown[:8]
+	}
+	return []string{fmt.Sprintf("%d labels read as one word for a token the catalog writes as several: %s",
+		len(p.RunTogether), strings.Join(shown, ", "))}
 }
 
 // Check holds a loader to the datastore it read.
