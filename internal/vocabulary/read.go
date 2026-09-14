@@ -28,6 +28,16 @@ var ErrNotDatastore = errors.New("no cards: this is not a built datastore")
 // loader is free to carry it without declaring it.
 var aside = map[string]bool{"variant": true, "id": true, "image": true, "images": true}
 
+// unwrap returns payload's "data" value when payload is the
+// {"meta":...,"data":...} envelope every builder now publishes, and payload
+// itself otherwise - a published datastore this reads may be either shape.
+func unwrap(payload map[string]any) map[string]any {
+	if data, ok := payload["data"].(map[string]any); ok {
+		return data
+	}
+	return payload
+}
+
 // cardsOf finds a datastore's cards, in either place a game keeps them.
 //
 // Most write them at the top. Riftbound's upstream is the card gallery Riot
@@ -83,7 +93,7 @@ func ReadPublished(path string) (Published, error) {
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return Published{}, err
 	}
-	cards := cardsOf(payload)
+	cards := cardsOf(unwrap(payload))
 	if len(cards) == 0 {
 		return Published{}, fmt.Errorf("%s: %w", path, ErrNotDatastore)
 	}

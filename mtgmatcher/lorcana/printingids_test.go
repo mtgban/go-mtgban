@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -88,8 +89,12 @@ func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 // which one it was handed.
 func restamp(t *testing.T, data []byte, name func(id int, finish string) string) []byte {
 	t.Helper()
+	payload, err := datastore.Payload(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
 	var doc map[string]any
-	if err := json.Unmarshal(data, &doc); err != nil {
+	if err := json.Unmarshal(payload, &doc); err != nil {
 		t.Fatal(err)
 	}
 	rows, ok := doc["cards"].([]any)

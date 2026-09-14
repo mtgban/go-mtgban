@@ -13,9 +13,9 @@ import (
 // TestLoadAcceptsMetaDataEnvelope pins that Load reads a datastore wrapped
 // in the {"meta":...,"data":...} envelope into the same Backend it reads
 // from the legacy flat shape. The wrapped form strips "game" out of data
-// and carries it only in meta.game, the way datastore-gen's writer
-// actually publishes it - a wrapped payload that still carried its own
-// "game" would never exercise the fallback Load needs.
+// The payload keeps every key it had, "game" included: the envelope moves
+// the document under "data" and adds a meta beside it, and nothing about
+// the document itself changes.
 func TestLoadAcceptsMetaDataEnvelope(t *testing.T) {
 	legacy, err := Load(strings.NewReader(labelOverlapFixture))
 	if err != nil {
@@ -26,13 +26,12 @@ func TestLoadAcceptsMetaDataEnvelope(t *testing.T) {
 	if err := json.Unmarshal([]byte(labelOverlapFixture), &payload); err != nil {
 		t.Fatal(err)
 	}
-	delete(payload, "game")
 	data, err := json.Marshal(payload)
 	if err != nil {
 		t.Fatal(err)
 	}
 	envelope, err := json.Marshal(map[string]any{
-		"meta": map[string]any{"date": "2026-09-14", "version": "1", "game": "onepiece"},
+		"meta": map[string]any{"date": "2026-09-14", "version": "1"},
 		"data": json.RawMessage(data),
 	})
 	if err != nil {

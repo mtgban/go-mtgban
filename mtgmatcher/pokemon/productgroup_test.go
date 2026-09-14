@@ -37,8 +37,12 @@ func TestProductGroupHoldsOneCard(t *testing.T) {
 	}
 	defer f.Close()
 
+	raw, err := datastore.Payload(f)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var payload Datastore
-	if err := json.NewDecoder(f).Decode(&payload); err != nil {
+	if err := json.Unmarshal(raw, &payload); err != nil {
 		t.Fatal(err)
 	}
 
