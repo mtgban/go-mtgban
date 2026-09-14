@@ -4968,5 +4968,23 @@
             "edition": "Aetherdrift",
             "foil": true
         }
+    },
+    {
+        "uuid": "396d83ed-f449-56f0-887a-08b54ad55b07",
+        "description": "language_fbb_is_forced_to_italian",
+        "input": {
+            "name": "Animate Wall",
+            "edition": "Foreign Black Border",
+            "language": "Italian"
+        }
+    },
+    {
+        "uuid": "3b9c696b-8457-595b-a991-b0545c49b293",
+        "description": "language_4bb_is_forced_to_japanese",
+        "input": {
+            "name": "Alabaster Potion",
+            "edition": "Fourth Edition Foreign Black Border",
+            "language": "Japanese"
+        }
     }
 ]
