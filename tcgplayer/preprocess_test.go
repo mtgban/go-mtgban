@@ -245,3 +245,44 @@ func TestPreprocessRefusesInserts(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessZetaSet pins the crossover shelf's group name resolving to
+// the set it names. The catalog calls the group "Secret Lair x MSCHF: The
+// Zeta Set" while the datastore calls the set "The Zeta Set", and nothing
+// tied the two together: every product on this shelf named an unknown
+// edition. Each name repeats three times under a randomized three-digit
+// number the set itself carries, so the number is what tells the copies
+// apart once the edition is found.
+func TestPreprocessZetaSet(t *testing.T) {
+	realDatastore(t)
+	for _, tt := range []struct {
+		name   string
+		number string
+	}{
+		{"All That Glitters (0001)", "1"},
+		{"All That Glitters (0122)", "122"},
+		{"All That Glitters (0243)", "243"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			product := tcgplayer.Product{Name: tt.name, CleanName: tt.name}
+			editions := map[int]string{0: "Secret Lair x MSCHF: The Zeta Set"}
+
+			theCard, err := Preprocess(&product, editions)
+			if err != nil {
+				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
+			}
+			cardID, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			co, err := mtgmatcher.GetUUID(cardID)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", cardID, err)
+			}
+			if co.SetCode != "SLZ" || co.Number != tt.number {
+				t.Errorf("Preprocess(%q) matched %s #%s, want SLZ #%s",
+					tt.name, co.SetCode, co.Number, tt.number)
+			}
+		})
+	}
+}

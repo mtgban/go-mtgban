@@ -164,13 +164,14 @@ var EditionTable = map[string]string{
 	"Promos: Euro Lands": "European Land Program",
 
 	// Secret Lair extra cards
-	"SLD Stained Glass Promo": "Secret Lair Drop",
-	"Stained Glass":           "Secret Lair Drop",
-	"Stained Glass Art":       "Secret Lair Drop",
-	"Stained Glass Promo":     "Secret Lair Drop",
-	"Secret Lair Drop Series": "Secret Lair Drop",
-	"Secret Lair Promo":       "Secret Lair Showdown",
-	"Secret Lair RCQ Promo":   "Secret Lair Showdown",
+	"SLD Stained Glass Promo":           "Secret Lair Drop",
+	"Stained Glass":                     "Secret Lair Drop",
+	"Stained Glass Art":                 "Secret Lair Drop",
+	"Stained Glass Promo":               "Secret Lair Drop",
+	"Secret Lair Drop Series":           "Secret Lair Drop",
+	"Secret Lair x MSCHF: The Zeta Set": "The Zeta Set",
+	"Secret Lair Promo":                 "Secret Lair Showdown",
+	"Secret Lair RCQ Promo":             "Secret Lair Showdown",
 
 	"Ponies: The Galloping": "Ponies: The Galloping",
 
