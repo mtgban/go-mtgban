@@ -105,3 +105,18 @@ func TestRunGame(t *testing.T) {
 		})
 	}
 }
+
+// TestOptionsHasNoCrossGameNameCollision guards the production table against
+// the failure mode flattenOptions exists to refuse: two entries under
+// different games computing the same scraperFlagName, which would silently
+// keep only one of them (flattenOptions panics on that; this pins that the
+// real table never reaches it, and that the count comes out whole).
+func TestOptionsHasNoCrossGameNameCollision(t *testing.T) {
+	var want int
+	for _, scrapers := range options {
+		want += len(scrapers)
+	}
+	if got := len(flattenOptions(options)); got != want {
+		t.Errorf("flattenOptions(options) has %d entries, want %d", got, want)
+	}
+}

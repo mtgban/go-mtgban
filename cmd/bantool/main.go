@@ -100,11 +100,23 @@ func scraperFlagName(game, name string) string {
 // by, for the callers that just want "the target named X": flag registration
 // and the -scrapers/-sellers/-vendors lookups. The pointers are shared with
 // options, so enabling an entry here enables the same one runGame sees.
+//
+// Two entries landing on the same name is no longer a compile error the way
+// a duplicate key in one flat literal was: the game and the store are two
+// separate keys now, and nothing but this name stops them from colliding
+// across games. Panicking here trades a scraper silently dropped - whichever
+// pointer a random map iteration happened to write last - for a run that
+// refuses to start at all, which is the failure worth having for a registry
+// nothing else checks.
 func flattenOptions(options map[string]map[string]*scraperOption) map[string]*scraperOption {
 	flat := make(map[string]*scraperOption)
 	for game, scrapers := range options {
 		for name, opt := range scrapers {
-			flat[scraperFlagName(game, name)] = opt
+			key := scraperFlagName(game, name)
+			if _, exists := flat[key]; exists {
+				panic(fmt.Sprintf("bantool: %q is registered under more than one game", key))
+			}
+			flat[key] = opt
 		}
 	}
 	return flat
@@ -117,13 +129,10 @@ func runGame(options map[string]map[string]*scraperOption) (string, error) {
 	var games []string
 	for game, scrapers := range options {
 		for _, opt := range scrapers {
-			if !opt.Enabled {
-				continue
-			}
-			if !slices.Contains(games, game) {
+			if opt.Enabled {
 				games = append(games, game)
+				break
 			}
-			break
 		}
 	}
 	switch len(games) {
