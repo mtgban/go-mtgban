@@ -104,6 +104,9 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 		return nil, err
 	}
 	var envelope struct {
+		Meta struct {
+			Game string `json:"game"`
+		} `json:"meta"`
 		Data json.RawMessage `json:"data"`
 	}
 	if err := json.Unmarshal(raw, &envelope); err != nil {
@@ -116,6 +119,12 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	var payload Datastore
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return nil, err
+	}
+	// Game moved from the document's own top level into meta.game when
+	// the document is the {"meta":...,"data":...} envelope; the legacy
+	// shape still carries it here, on payload itself.
+	if payload.Game == "" {
+		payload.Game = envelope.Meta.Game
 	}
 	if payload.Game != "gundam" || len(payload.Sets) == 0 || len(payload.Cards) == 0 {
 		return nil, errors.New("not a Gundam datastore")

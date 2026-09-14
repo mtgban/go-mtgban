@@ -1,6 +1,7 @@
 package fleshandblood
 
 import (
+	"encoding/json"
 	"reflect"
 	"sort"
 	"strings"
@@ -11,14 +12,34 @@ import (
 
 // TestLoadAcceptsMetaDataEnvelope pins that Load reads a datastore wrapped
 // in the {"meta":...,"data":...} envelope into the same Backend it reads
-// from the legacy flat shape.
+// from the legacy flat shape. The wrapped form strips "game" out of data
+// and carries it only in meta.game, the way datastore-gen's writer
+// actually publishes it - a wrapped payload that still carried its own
+// "game" would never exercise the fallback Load needs.
 func TestLoadAcceptsMetaDataEnvelope(t *testing.T) {
 	legacy, err := Load(strings.NewReader(dashQualifierFixture))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	wrapped, err := Load(strings.NewReader(`{"meta":{"date":"2026-09-14","version":"1","game":"fleshandblood"},"data":` + dashQualifierFixture + `}`))
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(dashQualifierFixture), &payload); err != nil {
+		t.Fatal(err)
+	}
+	delete(payload, "game")
+	data, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	envelope, err := json.Marshal(map[string]any{
+		"meta": map[string]any{"date": "2026-09-14", "version": "1", "game": "fleshandblood"},
+		"data": json.RawMessage(data),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wrapped, err := Load(strings.NewReader(string(envelope)))
 	if err != nil {
 		t.Fatal(err)
 	}
