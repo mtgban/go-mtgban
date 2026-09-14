@@ -374,7 +374,7 @@ sealed-name arrays backing prefix/contains/regexp search; `SetUUIDs` and
 `AllSealedUUIDs`; and the unexported `rules GameRules` that a loader attaches
 with `SetRules`.
 
-Two of those deserve their own note:
+Three of those deserve their own note:
 
 - **`UUIDs` holds pointers.** `map[string]*CardObject`, and `GetUUID` hands
   the pointer straight back. The object is shared with every other caller and
@@ -385,6 +385,14 @@ Two of those deserve their own note:
   live in other packages). It visits set codes in sorted order so that two
   sets normalizing to the same name resolve deterministically — lowest code
   wins — replacing a linear rescan that followed random map order.
+- **`SetUUIDs` is built by the exported `IndexSetUUIDs()`**, its `IndexSets()`
+  counterpart: every loader must call it once `UUIDs` and `AllUUIDs` are
+  populated. Nothing else fills this bucket — unlike `SetSealedUUIDs`, which
+  `AddSealed` builds incrementally as each sealed product is filed, there is
+  no per-card add path shared across games, so a loader that never calls
+  `IndexSetUUIDs()` leaves `SetUUIDs` permanently nil with no error to show
+  for it. That is exactly what happened to eight of the nine game loaders
+  before this method existed (§6).
 
 **UUID scheme and finishes.** The source datastore's UUID identifies a
 printing; a card that exists in several finishes registers each one
@@ -977,14 +985,34 @@ mtgmatcher's typed errors, variant tables, and per-set callbacks exist.
 
 **Adding a game**: create `mtgmatcher/<game>/` with a `Load(io.Reader)
 (*mtgmatcher.Backend, error)` that converts the source data (populating
-`Sets`, `UUIDs`, `Hashes`, `CanonicalNames`, `ExternalIdentifiers` and
-`FoilUUIDs`, then calling `IndexSets()` and `SetRules()`), a `rules.go`
-implementing `GameRules`, a `register.go` whose `init()` calls
-`RegisterGame`, and a replay suite gated on a `<GAME>_PATH` environment
-variable with a regeneration flag. Add the game to `mtgmatcher/games`, add a
-`Game` constant in `mtgban`, and make `Load` reject inputs it does not
-recognize so auto-detection can move past it. Existing storefronts often come
-along cheaply: a TCGplayer category is one entry in
+`Sets`, `UUIDs`, `AllUUIDs`, `AllSets`, `Hashes`, `CanonicalNames`,
+`ExternalIdentifiers` and `FoilUUIDs`, filing sealed products through
+`AddSealed`/`SortSealed`, then calling `IndexSets()` and `IndexSetUUIDs()`
+once `UUIDs`/`AllUUIDs` are in and `SetRules()`), a `rules.go` implementing
+`GameRules`, a `register.go` whose `init()` calls `RegisterGame`, and a
+replay suite gated on a `<GAME>_PATH` environment variable with a
+regeneration flag. **Every `Backend` field a loader is responsible for
+needs an explicit line setting it — there is no default that makes a zero
+map or slice merely "smaller"; a nil `SetUUIDs` looks identical to an empty
+one until a caller reads it and gets nothing back.** `IndexSetUUIDs()` was
+added to close exactly this gap: eight of the nine loaders built `AllUUIDs`
+and `UUIDs` correctly but had nothing to call, so `SetUUIDs` stayed nil and
+`GetUUIDsInSet` silently answered empty for every set of every game but
+Magic, whose loader alone built the same bucketing by hand — which
+mtgban-website's edition-only searches (`s:CODE`, seeded from that index
+alone when there is no text to search) read as "no results" rather than
+"index not built," for every non-Magic deployment, until a test that
+actually loads a real datastore (not a hand-built fixture standing in for
+one) caught it. When you add a new field to `Backend` that an index or a
+lookup depends on,
+grep every game package for the sibling field it is meant to travel with
+(`AllUUIDs`, `SetSealedUUIDs`, …) and confirm each one sets the new field
+too, or add a shared setter every loader calls (`IndexSets`,
+`IndexSetUUIDs`) rather than trusting nine separate hand-written loops to
+stay in sync. Add the game to `mtgmatcher/games`, add a `Game` constant in
+`mtgban`, and make `Load` reject inputs it does not recognize so
+auto-detection can move past it. Existing storefronts often come cheaply: a
+TCGplayer category is one entry in
 `tcgplayer.SupportedGames`, and cardmarket / cardtrader / coolstuffinc /
 starcitygames all select games by id.
 
