@@ -522,6 +522,43 @@ func fabRenamedTwin(id, sku string) string {
 	return id
 }
 
+// fabCreditedTwins names the artist a sku's own printing carries, for the
+// shelf where two products share a number and, once "(Marvel)" is folded
+// into the matched variant, a name: SGL-FAB-ROS2-008a-ENC is sold as "Aurora
+// (Asur Misoa)" and SGL-FAB-ROS2-008b-ENC as "Aurora (Ramza Ardyputra)", and
+// nothing about either product's own fields said which uuid was which until
+// datastore-gen started publishing the credit the-fab-cube carries and
+// TCGplayer's own catalog does not. The table is closed rather than a rule
+// guessing at a convention, the way fabRenamedTwins is: a survey for any
+// other (set, number, foilness) with two candidate rows and no other way to
+// tell them apart is this campaign's to run again if datastore-gen publishes
+// more artists than it does today.
+var fabCreditedTwins = map[string]string{
+	"SGL-FAB-ROS2-008a-ENC": "Asur Misoa",
+	"SGL-FAB-ROS2-008b-ENC": "Ramza Ardyputra",
+}
+
+// fabCreditedTwin steers a fabMatch result onto the printing fabCreditedTwins
+// names, given the one the match landed on.
+func fabCreditedTwin(id, sku string) string {
+	want, credited := fabCreditedTwins[sku]
+	if !credited {
+		return id
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil {
+		return id
+	}
+	for _, twin := range mtgmatcher.MatchWithNumber("", co.SetCode, co.Number) {
+		tco, terr := mtgmatcher.GetUUID(twin.UUID)
+		if terr != nil || tco.Artist != want || tco.Foil != co.Foil {
+			continue
+		}
+		return twin.UUID
+	}
+	return id
+}
+
 // fabMarkedSibling returns the printing a marked sku names, given the plain
 // one the match landed on. The marker says that a second printing of this
 // number exists and not which it is, so the datastore is what names it: where
@@ -755,6 +792,9 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		if fabInserts[p.Name] {
 			return "", mtgmatcher.ErrUnsupported
 		}
+		if fabDuplicateStock[p.SKU] {
+			return "", mtgmatcher.ErrUnsupported
+		}
 		name := p.Name
 		if spelled, found := fabNames[name]; found {
 			name = spelled
@@ -768,6 +808,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		if err == nil {
 			id = fabPlainSibling(id, p.Rarity)
 			id = fabRenamedTwin(id, p.SKU)
+			id = fabCreditedTwin(id, p.SKU)
 			return fabMarkedSibling(id, p), nil
 		}
 		// A product named by both its faces at a single collector number
@@ -1236,6 +1277,24 @@ var fabWordings = map[string]string{
 // that are not cards, so no datastore will ever carry them.
 var fabInserts = map[string]bool{
 	"Binder Label": true,
+}
+
+// fabDuplicateStock are the skus SCG lists twice for one row the datastore
+// does not distinguish further. Sanctuary of Aria's "027a" is titled
+// "(Assorted Back)" on the storefront and its "027b" "(Feet)", both selling
+// the same ROS027 token at their own price - $0.29 and $1.49 - and neither
+// is more the card's price than the other, so resolving lands both on one
+// uuid rather than name which is being sold. Both are refused instead of
+// let one win by whichever streams first.
+//
+// A survey of the whole datastore for any other lettered number two skus
+// land on found only this pair - the shapes fabPlainSibling, fabRenamedTwin
+// and fabCreditedTwin steer are all a letter naming a printing the datastore
+// does carry, which this is not - so the table is closed rather than a rule
+// that would also catch those.
+var fabDuplicateStock = map[string]bool{
+	"SGL-FAB-ROS-027a-ENN": true,
+	"SGL-FAB-ROS-027b-ENN": true,
 }
 
 // fabArtPositions are the nine pieces the Antiquity Pack art cards cut a
