@@ -339,3 +339,12 @@ map: it is identified by SKU and has its own scrapers.
   current `.gitignore` catches `*.exe`/`*.dll`/`*.so`/`*.dylib`/`*.test` and
   `*.csv`, but **not** extensionless Go binaries and **not** datastore
   `*.json` files, so check `git status` before staging.
+
+## Task-specific guides
+
+- **Scraper log noise, refusals, or a suspicious cross-vendor / buy-vs-ask
+  price**: read `docs/agents/noise-sweep/README.md` before starting. It
+  covers ranking targets from CI refusal lines and site-captured spreads,
+  replaying a vendor's feed through the production path rather than
+  hand-built `Match()` calls, classifying each shape into scraper table /
+  matcher rule / datastore gap, and the report format the work is graded by.
