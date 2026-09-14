@@ -6,10 +6,11 @@
 go-mtgban is a trading-card market-data platform: it scrapes retail
 inventories and buylists from a couple of dozen card stores and marketplaces,
 normalizes every listing to a canonical card identity, and computes arbitrage
-opportunities between them. Magic: The Gathering is the primary game; Disney
-Lorcana and Riftbound (the League of Legends TCG) are supported alongside it,
-each with its own datastore, its own matching rules, and its own set of
-scraper targets.
+opportunities between them. Magic: The Gathering is the primary game; eight
+more are supported alongside it — Disney Lorcana, Riftbound (the League of
+Legends TCG), One Piece, Yu-Gi-Oh, Flesh and Blood, Pokemon, Gundam and
+Palworld — each with its own datastore, its own matching rules, and its own
+set of scraper targets.
 
 The system has three layers. `cmd/bantool` runs the scrapers under scheduled
 GitHub Actions and uploads per-store JSON snapshots; a long-running consumer
@@ -22,7 +23,8 @@ cmd/* tools, GitHub Actions                          orchestration & ops
 scraper packages (tcgplayer/, cardkingdom/, ...)     one package per store
 ─────────────────────────────────────────────
 mtgmatcher/                                          game-agnostic core
-  + mtgmatcher/{magic,lorcana,riftbound}             per-game loaders & rules
+  + mtgmatcher/{magic,lorcana,riftbound,onepiece,     per-game loaders & rules
+      yugioh,fleshandblood,pokemon,gundam,palworld}    (nine, one per game)
 ─────────────────────────────────────────────
 mtgban/                                              interfaces, records, analysis
 ```
@@ -235,8 +237,9 @@ sets and dozens of promo classes.
 
 The package is **game-agnostic core plus one package per game**. Core owns the
 `Backend` data model, the `Match()` skeleton, normalization, the search API and
-the sealed-product API; `mtgmatcher/magic`, `mtgmatcher/lorcana` and
-`mtgmatcher/riftbound` each own their datastore loader and the game-specific
+the sealed-product API; the nine `mtgmatcher/<game>` packages (`magic`,
+`lorcana`, `riftbound`, `onepiece`, `yugioh`, `fleshandblood`, `pokemon`,
+`gundam`, `palworld`) each own their datastore loader and the game-specific
 identification logic that core dispatches through the `GameRules` interface.
 The dependency runs one way only — the game packages import core, core never
 imports a game package — which is what keeps the vocabularies from bleeding
@@ -254,9 +257,11 @@ func RegisterGame(name string, load GameLoader)  // panics on nil or duplicate
 func RegisteredGames() []string                  // registration order
 ```
 
-Each game package has a `register.go` whose `init()` calls `RegisterGame` —
-`"magic"`, `"lorcana"`, `"riftbound"` — so a consumer activates a game with a
-blank import and pays for nothing it does not use:
+Each game package has a `register.go` whose `init()` calls `RegisterGame`,
+under the name of its own package — `"magic"`, `"lorcana"`, `"riftbound"`,
+`"onepiece"`, `"yugioh"`, `"fleshandblood"`, `"pokemon"`, `"gundam"`,
+`"palworld"` — so a consumer activates a game with a blank import and pays
+for nothing it does not use:
 
 ```go
 import _ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -416,8 +421,8 @@ structures are the Magic loader's own, in `mtgmatcher/magic/mtgjson.go`.
 `CardObject` is a `Card` plus the resolved `Edition`/`Foil`/`Etched`/`Sealed`.
 `Card` carries the MTGJSON field set, including `Legalities map[string]string`
 (JSON tag `legalities`, format → legality) — populated only by the Magic
-loader and **nil for both Lorcana and Riftbound** cards, so consumers must
-handle that. It also carries the cross-game additions described above:
+loader and **nil for every other game's** cards, so consumers must handle
+that. It also carries the cross-game additions described above:
 `FoilUUIDs`, `Finish`, `Images` (at minimum a `"full"` and a `"thumbnail"`
 URL) and `PlainNumber` (the collector number as a person writes it, the game's
 marks and decorations off; `OriginalNumber` before v0.8.3).
@@ -448,8 +453,8 @@ single-letter suffixes lowercased (`123s` prerelease, `123p` promo pack) and
 understands PLST's `SET-123` format. `ExtractYear()` handles `'06`/`M15`
 style abbreviations. `SplitVariants()` splits the parenthesized fields stores
 use to distinguish printings while protecting legitimately-parenthesized
-names such as *Erase (Not the Urza's Legacy One)* and *B.F.M.*; all three
-games' `Prefilter` hooks call it.
+names such as *Erase (Not the Urza's Legacy One)* and *B.F.M.*; eight of
+the nine games' `Prefilter` hooks call it — every one but Pokemon's.
 
 Magic's promo dates live in `mtgmatcher/magic/mtgjson.go`, including
 `BuyABoxInExpansionSetsDate` (2018-04) and `PromosForEverybodyYay` (2019-10).
@@ -510,6 +515,7 @@ type GameRules interface {
     Prefilter(b *Backend, inCard *InputCard)
     AdjustName(b *Backend, inCard *InputCard)
     AdjustEdition(b *Backend, inCard *InputCard)
+    AliasEdition(b *Backend, edition string) string
     FilterPrintings(b *Backend, inCard *InputCard, editions []string) []string
     CandidateSets(b *Backend, inCard *InputCard, editions []string) []string
     FinalizeCandidates(b *Backend, inCard *InputCard, cards []Card) []Card
@@ -517,8 +523,20 @@ type GameRules interface {
     IsUnsupported(b *Backend, inCard *InputCard) bool
     IsSpecificUnsupported(b *Backend, inCard *InputCard) bool
     MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
+    IsToken(b *Backend, name string) bool
+    CanonicalFinish(name string) string
+    PlainNumber(number string) string
 }
 ```
+
+Four methods were added after this pipeline first shipped, as more games
+exposed vocabulary the original ten hooks had nowhere to put: `AliasEdition`
+spells an edition string the way the datastore names its set, card-free,
+for `GetSetByName`'s last resort; `IsToken` names a token by wording alone,
+for a game whose checklists and rules tips describe one without a token
+type of its own; `CanonicalFinish` and `PlainNumber` (described above,
+under "Data model") let a game own its finish vocabulary and its
+collector-number shorthand the same way it already owned edition names.
 
 Two contracts matter when implementing it. **Hooks receive the `InputCard` by
 pointer and may mutate it**; mutations persist for the rest of the pipeline
@@ -627,12 +645,16 @@ found-but-invalid-promo-tag signal.
 
 Each game package has the same shape: a `Load()` datastore converter, a
 `rules.go` holding the `GameRules` implementation, a `register.go` whose
-`init()` calls `RegisterGame`, and a golden replay suite. Lorcana and Riftbound
-keep that suite inside the package and need nothing else — three source files
-apiece. Magic needs considerably more (`callbacks.go`, `table.go`,
-`wrappers.go`, a `doc.go`), and its replay suite is the one piece that did not
-move: it still lives in core's `mtgmatcher` test package (§2.7). What differs
-between the games is how much identification logic each needs.
+`init()` calls `RegisterGame`, and (all but Pokemon) a golden replay suite
+kept inside the package. Lorcana and Palworld stay at three source files;
+the other six add a `table.go` and/or a `promolabels.go` (the promo-type
+word list a game's storefronts spell out, checked against the published
+datastore by `internal/vocabulary`) as their own vocabulary grew, up to
+Pokemon's six. Magic needs considerably more (`callbacks.go`, `table.go`,
+`wrappers.go`, a `doc.go`, `variants.go`), and its replay suite is the one
+piece that did not move: it still lives in core's `mtgmatcher` test package
+(§2.7). What differs between the games is how much identification logic
+each needs.
 
 **Magic** (`mtgmatcher/magic/rules.go`, ~2,050 lines) carries essentially all
 of it. `FilterPrintings` eliminates whole sets using the input's promo
@@ -664,16 +686,28 @@ This three-tier design — **data tables first, generic number/promo logic
 second, per-set code last** — is the Magic package's core maintenance pattern:
 most new-set support lands as table entries, not code.
 
-**Lorcana and Riftbound** need none of that. Both have no edition aliases, no
-variant tables and no promo types, so `FilterPrintings`, `IsUnsupported`,
-`IsSpecificUnsupported` and `MissingPromoTag` are no-ops, and the real work is
-name + collector number + finish narrowing in `FilterCards`, with the edition
-breaking ties when it resolves. The interesting details are the ones the data
-forces: Lorcana honors the name hash rather than the edition-keyed `cardSet`
-values so that case-variant spellings (three real pairs exist) stay reachable,
-and it strips leading zeros from numbers while keeping a genuine `"0"`
-reachable; Riftbound canonicalizes numbers out of the public code
-("OGN-066a/298" → "66a") and refuses promo sets unless explicitly targeted.
+**The other seven** need far less of that, and share a common shape: each
+game's `Rules` type embeds `mtgmatcher.DefaultRules` and overrides only the
+hooks its own catalog forces. `FilterPrintings`, `FinalizeCandidates`,
+`MissingPromoTag` and `IsToken` fall through to `DefaultRules` — a genuine
+no-op — for all seven; none of them override `IsSpecificUnsupported` either.
+A couple override one hook further where their catalog has a real, narrow
+case to handle: Lorcana and Yu-Gi-Oh give `IsUnsupported` real logic (Lorcana
+drops puzzle-insert and cruise-promo products; Yu-Gi-Oh drops the storefront's
+own character-art cards, which carry no collector number and no catalog row),
+and Pokemon overrides `CandidateSets` to fold `*Promos` shelves into the loose
+pass before falling back to every printing. The real, shared work across all
+seven is name + collector number + finish narrowing in `FilterCards`, with
+the edition breaking ties when it resolves. The interesting details are the
+ones each game's own data forces: Lorcana honors the name hash rather than
+the edition-keyed `cardSet` values so that case-variant spellings (three real
+pairs exist) stay reachable, and it strips leading zeros from numbers while
+keeping a genuine `"0"` reachable; Riftbound canonicalizes numbers out of the
+public code ("OGN-066a/298" → "66a") and refuses promo sets unless explicitly
+targeted; One Piece, Yu-Gi-Oh, Flesh and Blood and Gundam each strip a
+different shape of padding and set-code prefix off the ordinal a person
+actually types (`PlainNumber`, §2.1's "Data model") rather than the
+catalog's own spelling.
 
 ### 2.6 Sealed products & search API (`mtgmatcher/api.go`)
 
@@ -727,29 +761,43 @@ Sealed products are modeled end-to-end:
 
 ### 2.7 Testing — strategy & coverage map
 
-**What exists.** Each game has a data-driven golden replay suite that matches
-a corpus of real inputs against expected UUIDs or errors, gated on an
-environment variable pointing at a real datastore, with a flag that
-regenerates expectations after intentional changes:
+**What exists.** Eight of the nine games have a data-driven golden replay
+suite that matches a corpus of real inputs against expected UUIDs or errors,
+gated on an environment variable pointing at a real datastore, with a flag
+that regenerates expectations after intentional changes — only Pokemon has
+none yet:
 
 | Game | Suite | Corpus | Env var | Regenerate |
 |---|---|---|---|---|
 | Magic | `mtgmatcher/magic/matcher_test.go` | `mtgmatcher/magic/testdata/magic_test_data.json` | `ALLPRINTINGS5_PATH` | `-u` |
 | Lorcana | `mtgmatcher/lorcana/matcher_test.go` | `mtgmatcher/lorcana/testdata/lorcana_test_data.json` | `LORCANA_PATH` | `-update-lorcana` |
 | Riftbound | `mtgmatcher/riftbound/matcher_test.go` | `mtgmatcher/riftbound/testdata/riftbound_test_data.json` | `RIFTBOUND_PATH` | `-update-riftbound` |
+| One Piece | `mtgmatcher/onepiece/matcher_test.go` | `mtgmatcher/onepiece/testdata/onepiece_test_data.json` | `ONEPIECE_PATH` | `-update-onepiece` |
+| Yu-Gi-Oh | `mtgmatcher/yugioh/matcher_test.go` | `mtgmatcher/yugioh/testdata/yugioh_test_data.json` | `YUGIOH_PATH` | `-update-yugioh` |
+| Flesh and Blood | `mtgmatcher/fleshandblood/matcher_test.go` | `mtgmatcher/fleshandblood/testdata/fleshandblood_test_data.json` | `FLESHANDBLOOD_PATH` | `-update-fleshandblood` |
+| Gundam | `mtgmatcher/gundam/matcher_test.go` | `mtgmatcher/gundam/testdata/gundam_test_data.json` | `GUNDAM_PATH` | `-update-gundam` |
+| Palworld | `mtgmatcher/palworld/matcher_test.go` | `mtgmatcher/palworld/testdata/palworld_test_data.json` | `PALWORLD_PATH` | `-update-palworld` |
+| Pokemon | — none yet — | — | `POKEMON_PATH` | — |
 
 These are the regression harness for the heuristic tables. Run the relevant
 regeneration after a *deliberate* matching change and **review the diff** —
-never blindly accept it. The Lorcana and Riftbound suites additionally carry
+never blindly accept it. All seven non-Magic suites additionally carry
 hand-authored seed cases whose expected verdicts are baked by the regeneration
 rather than hard-coded, with a `"negative:"` description prefix declaring the
 author's intent so the regeneration fails loudly when the outcome class
 changes.
 
-Note the three suites do not behave alike when their datastore is missing: the
-Lorcana and Riftbound suites call `t.Skip`, while the Magic suite's `TestMain`
-fails outright ("Need ALLPRINTINGS5_PATH variable set to run this suite").
-Set `ALLPRINTINGS5_PATH` before running `go test ./mtgmatcher/...`.
+Every suite behaves alike when its datastore is missing, Magic included:
+each loads its backend lazily behind a `sync.Once`-guarded `realDatastore(t)`
+helper and calls `t.Skip("Need <VAR> set to run this test")` on the tests
+that need it. This is a change from when only Magic, Lorcana and Riftbound
+existed — Magic's `TestMain` used to call `log.Fatalln` and take the whole
+binary down on a missing `ALLPRINTINGS5_PATH`; that call was removed, and
+today's Magic `TestMain` calls `log.Fatalln` only if its own golden
+`testdata/magic_test_data.json` fails to open or parse, a repo integrity
+fault rather than a missing-datastore one. Set the relevant `<GAME>_PATH`
+variables before running `go test ./mtgmatcher/...` to exercise more than
+the datastore-free tests.
 
 Unit tests cover normalization, number/year extraction, variants-table
 integrity, the set index, the search surface, `HasPrinting`, CSV write-error
@@ -771,7 +819,7 @@ asymmetry:
 |-------|---------|-----------|----------------|-------|
 | **Money path** (top risk) | `Arbit`, `Mismatch`, `Pennystock`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No** — runs in CI | none beyond `Add*` |
 | **Matcher** (data integrity) | `Match`/`MatchId`, normalization, variants/editions, sealed API | data-backed regression replay | **Yes** — one per game | replay + unit |
-| **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 3 of 24 |
+| **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 7 of 27 |
 
 Principles: (1) **the money path is unit-testable and unprotected — cover it
 first**, with in-test records and no datastore dependency; (2)
@@ -780,17 +828,24 @@ first**, with in-test records and no datastore dependency; (2)
 just functions** — the `entries[0] == NM` ordering is a sort side effect that
 `Arbit` and the CSV writers depend on, so pin it directly; (4) **scrapers:
 breadth over depth** — a few fixture table tests for the gnarliest
-preprocessors (cardmarket, cardtrader, tcgplayer) catch the realistic break.
-`abugames`, `cardkingdom` and `starcitygames` already have `preprocess_test.go`
-files to copy from.
+preprocessors catch the realistic break; `cardmarket` and `cardtrader` (both
+now covering all eight non-Magic games) have grown well past table-test
+fixtures into dozens of narrow, named `*_test.go` files each. `abugames`,
+`cardkingdom`, `gamenerdz`, `magiccorner`, `mintcard`, `starcitygames` and
+`tcgplayer` have a `preprocess_test.go` to copy the table-test shape from;
+about a dozen more packages carry tests of some other shape (a `*_test.go`
+covering a specific fix) without one.
 
-**CI provisions all three datastores.** `.github/workflows/ci.yml` runs
-`cache-datastore` (Magic, via the reusable `cache-file.yml`), `cache-lorcana`
-(same, over a plain uncompressed LorcanaJSON file) and a bespoke
-`cache-riftbound` job — Riftbound has no public URL, so the file built by
-`github.com/mtgban/riftbound-datastore` is pulled from its private B2 bucket
-and cached under the same key/filepath contract. The test step then exports
-`ALLPRINTINGS5_PATH`, `LORCANA_PATH` and `RIFTBOUND_PATH` before running
+**CI provisions all nine datastores.** `.github/workflows/ci.yml` runs one
+`cache-<game>` job per game. Only `cache-datastore` (Magic) uses the reusable
+`cache-file.yml` against a public URL (`vars.DATASTORE_MAGIC`). Every other
+game, `cache-lorcana` included — Lorcana moved off its own former public URL
+alongside this doc's other stale claims — pulls its `.json.xz` from the
+private `mtgban-datastore` B2 bucket (built by that game's own
+`*-datastore` publisher, `github.com/mtgban/riftbound-datastore` for
+Riftbound and `datastore-gen` for the rest) and caches it under a key built
+from the object's own metadata, since B2 serves no HTTP etag. The test step
+then exports all nine `<GAME>_PATH` variables before running
 `go test ./... -v`, so the data-backed suites actually execute in CI rather
 than skipping into a falsely green run.
 
@@ -826,8 +881,8 @@ by reading back `inventory[cardId]` before inserting the buylist row.
 | Package | Service & auth | Notes |
 |---|---|---|
 | `tcgplayer` | OAuth via `go-tcgplayer` + cookie-authed marketplace APIs | Largest: Market/Index/Sealed/SYP-list/per-seller scrapers, plus the table-driven single-game pair (see below); SKU map keyed by UUID; TCG Direct modeled as a Vendor with net-after-fees pricing |
-| `cardmarket` | OAuth 1.0 HMAC-SHA1 (gentle retry) | `CardMarketIndex` is a **Market** (`MarketNames → MKM Low/Trend`, `MetadataOnly`, `Family="MKM"`); EUR→USD; Lorcana and Riftbound via game id; `CardMarketSealed` separate |
-| `cardtrader` | Bearer token | `CardtraderMarket` (**Market**, 3 seller tiers, `Family="CT"`, `CountryFlag="EU"`); Lorcana and Riftbound via game id; `CardtraderSealed` mirror; bulk upload + cart APIs |
+| `cardmarket` | OAuth 1.0 HMAC-SHA1 (gentle retry) | `CardMarketIndex` is a **Market** (`MarketNames → MKM Low/Trend`, `MetadataOnly`, `Family="MKM"`); EUR→USD; all eight non-Magic games via game id; `CardMarketSealed` separate |
+| `cardtrader` | Bearer token | `CardtraderMarket` (**Market**, 3 seller tiers, `Family="CT"`, `CountryFlag="EU"`); all eight non-Magic games via game id; `CardtraderSealed` mirror; bulk upload + cart APIs |
 | `cardkingdom` | Public pricelist via `go-cardkingdom` (file/URL-fed, no own client) | Full 4-condition buylist with price ratios; `CreditMultiplier 1.3`; singles + `sealed.go` + `graded.go` are three scrapers |
 | `manapool` | Public JSON API | Exactly two scrapers: `Manapool` (aggregate, `MatchId` by Scryfall id, `NoQuantityInventory`) and `ManapoolSealed` |
 | `arcanafrisia` | Public buylist endpoint | Buylist-only EU vendor, shorthand `AF`; matches by Scryfall id and maps the store's NM/EX/GD grades onto NM/SP/MP |
@@ -840,23 +895,31 @@ table:
 
 ```go
 var SupportedGames = map[string]int{
-    mtgban.GameLorcana:   tcgplayer.CategoryLorcana,
-    mtgban.GameRiftbound: tcgplayer.CategoryRiftbound,
+    mtgban.GameLorcana:       tcgplayer.CategoryLorcana,
+    mtgban.GameRiftbound:     tcgplayer.CategoryRiftbound,
+    mtgban.GameOnePiece:      tcgplayer.CategoryOnePiece,
+    mtgban.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
+    mtgban.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
+    mtgban.GamePokemon:       tcgplayer.CategoryPokemon,
+    mtgban.GameGundam:        tcgplayer.CategoryGundam,
+    mtgban.GamePalworld:      tcgplayer.CategoryPalworld,
 }
 ```
 
-Supporting one more game is one entry here, provided the matcher has a
-datastore for it. Magic is deliberately absent: it is identified by SKU and
-has its own scrapers. Both game scrapers pass the printing name through the
-`InputCard.Variation` field alongside the collector number, so the game's
-rules can tell foil sub-types apart (this is what makes Lorcana's
-"Holofoil" convention resolvable — see §2.3).
+Every non-Magic game is in the table today; supporting a tenth would be one
+more entry here, provided the matcher has a datastore for it. Magic is
+deliberately absent: it is identified by SKU and has its own scrapers. Both
+game scrapers pass the printing name through the `InputCard.Variation`
+field alongside the collector number, so the game's rules can tell foil
+sub-types apart (this is what makes Lorcana's "Holofoil" convention
+resolvable — see §2.3).
 
 ### HTML / crawler
 
 `starcitygames` (HawkSearch/Meilisearch APIs, serialized detection, sealed,
-plus Lorcana and Riftbound behind its numeric game ids), `coolstuffinc`
-(multi-game including Lorcana and Riftbound, `CreditMultiplier 1.25`),
+plus Lorcana, Riftbound and Flesh and Blood behind its numeric game ids),
+`coolstuffinc` (seven of the eight non-Magic games — every one but Flesh and
+Blood — `CreditMultiplier 1.25`),
 `hareruya` (JPY, **bespoke 403 → 5-min backoff**), `magiccorner` (EUR,
 Italian), `abugames` (Solr, MINT-aware grading, `InfoForScraper`), `mtgseattle`
 (`CreditMultiplier 1.33`), `ninetyfive`, `mintcard` (rides TCG SKUs,
@@ -892,16 +955,21 @@ untracked working-tree WIP (`manapoolSeller`, `mkmhtml2csv`, `mp2ckbl`,
 treat anything not in the list above as unreviewed, and note that some of it
 embeds live credentials.
 
-- **bantool** — a registry of `scraperOption{constructor, flags}` for every
-  target, including the per-game ones: six `*_riftbound` targets (cardmarket,
-  cardtrader, coolstuffinc, starcitygames, tcg_index, tcg_market) and seven
-  `*_lorcana` ones — the same six plus `strikezone_lorcana`, which has no
-  Riftbound counterpart. Selection via `-scrapers`/`-sellers`/`-vendors`;
-  `-format` json/csv/ndjson (each also with an `.xz` variant); output through
+- **bantool** — a registry of `scraperOption{constructor, flags}` in
+  `cmd/bantool/main.go` (moved there from a `scrapers.go` this doc used to
+  point at) for every target, well past a hundred once every scraper's own
+  per-game and `_sealed` variants are counted (14 `*_riftbound` targets, 14
+  `*_lorcana` ones, and the rest of the eight non-Magic games besides). A
+  target names its own game: `scraperGame(name)` reads the suffix after the
+  last underscore and checks it against `mtgmatcher.RegisteredGames()`, so
+  registering `<store>_<game>` is what assigns the game — nothing to
+  enumerate by hand — and a name ending on no registered game is read as
+  Magic's. Selection via `-scrapers`/`-sellers`/`-vendors`; `-format`
+  json/csv/ndjson (each also with an `.xz` variant); output through
   `github.com/mtgban/simplecloud` to local/B2/GCS/S3/HTTP; optional HMAC
   signing (`BAN_SECRET`); all credentials via env vars (godotenv autoload).
   It blank-imports `mtgmatcher/games`, which is what lets `-datastore` accept
-  a file for any of the three games without further configuration. Init
+  a file for any of the nine games without further configuration. Init
   closures set `scraper.LogCallback = GlobalLogCallback` as a **direct field
   assignment on the concrete pointer** in more than forty places — the binding
   constraint on any `BaseScraper` refactor (the field must stay exported and
@@ -912,22 +980,24 @@ embeds live credentials.
   over the mtgmatcher sealed API.
 - **tcgid4scryfall** — TCGplayer id → Scryfall id mapping export.
 
-**CI** (`.github/workflows/`). `ci.yml` provisions the three datastores (§2.7)
+**CI** (`.github/workflows/`). `ci.yml` provisions all nine datastores (§2.7)
 and then gates on three steps in order: **Check formatting** (fails on any
-`gofmt -l` output), **Vet** (`go vet ./...`), and `go test ./... -v`. There is
-one `bantool-<target>.yml` per scraper target — including the per-game
-variants such as `bantool-cardmarket_lorcana.yml` and
-`bantool-tcg_market_riftbound.yml` — each triggered by cron plus
+`gofmt -l` output), **Vet** (`go vet ./...`), and `go test ./... -v`. There
+are well past a hundred `bantool-<target>.yml` files, one per scraper target
+— including the per-game variants such as `bantool-cardmarket_lorcana.yml`
+and `bantool-tcg_market_riftbound.yml` — each triggered by cron plus
 `workflow_dispatch`/`repository_dispatch`, and each delegating to the reusable
 `run-bantool.yml` with `target`, `game` and `datastore-filepath` inputs.
 `run-bantool.yml` uploads to `b2://mtgban-dumps/<game>/<target>` and then pings
 a signed `http://<game>.mtgban.com/api/load/<target>` URL so the server reloads
 the fresh snapshot. Magic targets prepend a `cache-datastore` job and pass a
-cached local path; Riftbound targets skip caching entirely and pass a `b2://`
-path that bantool reads directly (which is why they need the datastore B2
-keys), and they run on 12-hour crons under a queued concurrency group rather
-than the main Magic stores' hourly schedule. No Makefile or Docker — plain
-`go build` per `cmd/` subdirectory.
+cached local path; every other game's targets skip caching entirely and pass
+a `b2://` path that bantool reads directly (which is why they need the
+datastore B2 keys). Cron cadence and concurrency grouping are set per
+scraper target, not by a Magic-vs-everyone-else rule — `cardmarket`'s own
+targets, Magic's included, run twice daily under a `queue: max` concurrency
+group regardless of game, and other scrapers use their own schedule. No
+Makefile or Docker — plain `go build` per `cmd/` subdirectory.
 
 **Key dependencies**: goquery/colly (HTML), retryablehttp + cleanhttp
 (HTTP), simplecloud (storage abstraction), go-ndjson, weightedrand (boosters),
