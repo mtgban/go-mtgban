@@ -4,34 +4,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgban"
 )
-
-// TestOnlyGame pins the wrapper every single-game store's Init goes through:
-// it answers for the one game it was given and refuses everything else by
-// name, without touching the constructor it wraps.
-func TestOnlyGame(t *testing.T) {
-	var built bool
-	build := onlyGame("magic", func() (mtgban.Scraper, error) {
-		built = true
-		return nil, nil
-	})
-
-	if _, err := build("lorcana"); err == nil {
-		t.Error("a game other than the one supported was not refused")
-	}
-	if built {
-		t.Error("the wrapped constructor ran for a game it does not support")
-	}
-
-	if _, err := build("magic"); err != nil {
-		t.Errorf("the supported game was refused: %v", err)
-	}
-	if !built {
-		t.Error("the wrapped constructor did not run for the game it supports")
-	}
-}
 
 // allGames is every game mtgmatcher registers plus Magic, which is not in
 // that list because bantool reads it off a scraper's name rather than a
@@ -41,11 +14,10 @@ var allGames = []string{
 	"palworld", "pokemon", "riftbound", "yugioh",
 }
 
-// TestOptionsSupportsExactlyItsRegisteredGames pins which games each store's
-// Init answers for, with no credentials configured at all: every constructor
-// checks its own game table before it reads an env var, so "does not
-// support" and a missing-credential error are never confused for one
-// another, and this needs nothing but the table itself to run everywhere.
+// TestOptionsSupportsExactlyItsRegisteredGames pins every store's declared
+// Supports directly - the one thing run() actually reads to decide whether
+// a game reaches Init at all, and nil on any entry here would silently
+// refuse it for every game rather than the one or few it should.
 func TestOptionsSupportsExactlyItsRegisteredGames(t *testing.T) {
 	want := map[string][]string{
 		"abugames":               {"magic"},
@@ -94,6 +66,34 @@ func TestOptionsSupportsExactlyItsRegisteredGames(t *testing.T) {
 			t.Errorf("%s: not named in this test's expectations", name)
 			continue
 		}
+
+		got := slices.Clone(opt.Supports)
+		slices.Sort(got)
+		if !slices.Equal(got, wantGames) {
+			t.Errorf("%s.Supports = %v, want %v", name, got, wantGames)
+		}
+	}
+}
+
+// TestMultiGameInitAgreesWithSupports cross-checks a multi-game family's own
+// Init against what its Supports declares. Supports is what run() actually
+// reads to gate a game before Init ever runs, but every multi-game family
+// also keeps checking its own translation table from inside Init - the
+// table Supports was copied from - so the two could still drift apart
+// silently if only one of them were ever updated. Calling Init with no
+// credentials configured at all is what makes this meaningful: every one
+// of these constructors checks its table before it reads an env var, so
+// "does not support"/"unsupported" and a missing-credential error are
+// never confused for one another. Single-game entries have no such table
+// of their own to check against - Supports is the only thing that gates
+// them - so they are skipped here on the same signal that named them
+// single-game in the first place: exactly one supported game.
+func TestMultiGameInitAgreesWithSupports(t *testing.T) {
+	for name, opt := range options {
+		if len(opt.Supports) <= 1 {
+			continue
+		}
+
 		var got []string
 		for _, game := range allGames {
 			_, err := opt.Init(game)
@@ -102,8 +102,11 @@ func TestOptionsSupportsExactlyItsRegisteredGames(t *testing.T) {
 			}
 		}
 		slices.Sort(got)
-		if !slices.Equal(got, wantGames) {
-			t.Errorf("%s supports %v, want %v", name, got, wantGames)
+
+		want := slices.Clone(opt.Supports)
+		slices.Sort(want)
+		if !slices.Equal(got, want) {
+			t.Errorf("%s: Init accepts %v, Supports declares %v", name, got, want)
 		}
 	}
 }
