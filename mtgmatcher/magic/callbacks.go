@@ -511,7 +511,9 @@ var onlineCodes = map[string]string{
 func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	var setName string
 
-	code := strings.Split(card.Number, "-")[0]
+	cardNumbers := strings.Split(card.Number, "-")
+	code := cardNumbers[0]
+	cardNumber := cardNumbers[len(cardNumbers)-1]
 	set, err := b.GetSet(code)
 	if err == nil {
 		setName = set.Name
@@ -525,6 +527,17 @@ func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 	// The few promo sets will have the same number, so filter out all input card that might
 	// resemble a promo, unless correctly tagged
 	if !strings.HasSuffix(setName, "Promos") && (inCard.Contains("P"+code) || inCard.Contains("Promos")) {
+		return true
+	}
+
+	// A listing that explicitly asks for the alternate-art printing can't
+	// be answered by the List's reprint when the origin set tells the two
+	// apart by a starred number (Planeshift's Ertai, the Corrupted): the
+	// List carries one entry for the card, not one per printing, so it
+	// cannot honor the distinction and must stand aside for the origin
+	// set's own starred candidate, which a filter of its own (PLS's
+	// altArtCheck) already narrows to correctly.
+	if isGenericAltArt(inCard) && len(b.MatchInSetNumber(inCard.Name, code, cardNumber+SuffixSpecial)) != 0 {
 		return true
 	}
 
