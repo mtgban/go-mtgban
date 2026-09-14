@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -21,9 +22,9 @@ var scheduledTarget = regexp.MustCompile(
 // TestEveryTargetIsScheduledByItsOwnWorkflow pins the registry against the
 // workflows that run it, in both directions and on the game each names.
 //
-// The three are one contract split across two trees. bantool derives the
-// datastore it loads from the target's own name, through scraperGame, while
-// run-bantool.yml spends its separate `game` input on where the results go:
+// The three are one contract split across two trees. bantool loads the
+// datastore of the game a target is registered under, while run-bantool.yml
+// spends its separate `game` input on where the results go:
 // the b2://mtgban-dumps/<game>/<target> path, the TCGplayer catalog beside
 // that game's datastore, and the <game>.mtgban.com host told to reload. A
 // file whose two inputs disagree therefore prices one game and publishes it
@@ -40,6 +41,21 @@ func TestEveryTargetIsScheduledByItsOwnWorkflow(t *testing.T) {
 	}
 	if len(paths) == 0 {
 		t.Fatalf("no bantool workflow found under %s", workflowsDir)
+	}
+
+	flatOptions := flattenOptions(options)
+
+	// registeredGame is the game a target is registered under, which is now
+	// which sub-map holds it rather than anything its name says.
+	registeredGame := func(target string) string {
+		for game, scrapers := range options {
+			for name := range scrapers {
+				if scraperFlagName(game, name) == target {
+					return strings.ToLower(string(game))
+				}
+			}
+		}
+		return ""
 	}
 
 	scheduled := map[string]string{}
@@ -59,13 +75,13 @@ func TestEveryTargetIsScheduledByItsOwnWorkflow(t *testing.T) {
 		if want := "bantool-" + target + ".yml"; file != want {
 			t.Errorf("%s schedules %s, which belongs in %s", file, target, want)
 		}
-		if options[target] == nil {
+		if flatOptions[target] == nil {
 			t.Errorf("%s schedules %s, which is not a registered target", file, target)
 			continue
 		}
-		if got := scraperGame(target); got != game {
-			t.Errorf("%s runs %s, whose name says %s, under game %q: the prices would "+
-				"be published under the wrong game", file, target, got, game)
+		if got := registeredGame(target); got != game {
+			t.Errorf("%s runs %s, which is registered under %s, under game %q: the prices "+
+				"would be published under the wrong game", file, target, got, game)
 		}
 		if other, seen := scheduled[target]; seen {
 			t.Errorf("%s and an earlier workflow both schedule %s (%s)", file, target, other)
@@ -73,7 +89,7 @@ func TestEveryTargetIsScheduledByItsOwnWorkflow(t *testing.T) {
 		scheduled[target] = file
 	}
 
-	for target := range options {
+	for target := range flatOptions {
 		if scheduled[target] == "" {
 			t.Errorf("%s is registered but no workflow schedules it", target)
 		}
