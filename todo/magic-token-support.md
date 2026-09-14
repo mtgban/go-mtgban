@@ -216,17 +216,43 @@ doesn't.
 
 ## What's still open
 
-Roughly by how self-contained each is to pick up:
+Updated 2026-09-14, after a second pass through this list.
 
-- **Gala Greeters, 10 of 11 language listings.** The Unique-and-
-  Miscellaneous-Promos shelf sells this card in 11 languages under 11
-  separate ids; only the English one is handled (folded into
-  `productOverrides` in #583). Found during that audit, deliberately
-  left alone — it's a gap, not a regression, and wasn't what that PR was
-  chasing. Needs the other 10 ids (English is `268367`; the rest were on
-  the same catalog page in the September scan) mapped to whatever
-  foreign-language `SNC` Gala Greeters printings the datastore carries,
-  if it carries them at all — check that first.
+- **Gala Greeters, 10 of 11 language listings — fixed, not yet pushed.**
+  All 11 ids folded into `productOverrides` (English `268367` plus the
+  10 others, each mapped to its own-language `SNC` printing — the
+  datastore does carry all 11). Committed locally as
+  `gala-greeters-languages` (`3c918f01`); full gate green.
+
+- **`PUNK` ("Black Lotus Unknown Planechase") — fixed, not yet pushed.**
+  A live catalog walk (2026-09-14) confirmed TCGplayer sells ~46 of its
+  52 plane cards for real, so the "not on sale anywhere" `skipSet` entry
+  was stale. Checked collision safety properly before touching it: PUNK
+  shares exactly two names with cards outside itself — `No Way Out`
+  (also `MID`/`DBL`, the risk this item was originally deferred over)
+  and `Artist Alley` (also the still-skipped `UNK`, untouched by this
+  change). Probed both through `Match()` directly: `No Way Out` resolves
+  by edition with zero ambiguity either way (PUNK when the edition says
+  Planechase, MID when it says Innistrad: Midnight Hunt), and with no
+  edition given at all it correctly reports aliasing rather than
+  guessing — same safe-failure shape as before PUNK was unskipped, just
+  with a third candidate in the list. Committed locally as
+  `punk-frontcards-skipset`; full gate green.
+
+- **The "Front Cards" `skipSet` suffix — investigated, deliberately left
+  alone.** `FJMP` (13 of 46 divider cards live) and `FTMC` (1 of 5, TMNT's
+  `Bosses + Events`) do have real TCGplayer ids, same shape as PUNK. But
+  unlike PUNK, unskipping them buys nothing: every card in both sets
+  carries `layout: "front_card"`, and `isUnsupported` already has a
+  standing, code-independent guard — `c.Contains("Front Card")` — that a
+  genuine live scrape of one of these products trips on its own,
+  regardless of whether the set is loaded. Confirmed by probing FJMP's
+  `Phyrexian` (id `218188`) directly: unskipping it does not make the
+  live product match (still refused, exactly as before), it only adds a
+  second, spurious `Phyrexian` candidate to plain name lookups — real
+  ambiguity with no corresponding fix. Left `skipSet` untouched for both;
+  if a future card here turns out not to carry `layout: front_card`,
+  redo this check before assuming the same reasoning applies.
 
 - **`Ertai, the Corrupted` PLST aliasing — root-caused, not fixed.**
   `Ertai, the Corrupted (Alt. Art Foil)` from Planeshift aliases against
@@ -271,23 +297,43 @@ Roughly by how self-contained each is to pick up:
   this writing (`releaseDate: 2026-11-09`), and TCGplayer already lists
   real product ids for all three.
 
-- **`LoadTCGSKUs` still keys skus by uuid with no dedup filter.** The
-  original Dragon Token report (a Ravnica Remastered CK listing compared
-  against a *double-faced* TCGplayer product) traced back to MTGJSON's
-  sku file attaching one multi-face product's sku to **both** faces'
-  uuids. `tcgplayer/utils.go`'s `LoadTCGSKUs` still does nothing about
-  this — it will keep happening for any double-faced token product until
-  either Scryfall assigns per-face ids (unlikely, TCGplayer sells one
-  physical object) or a load-time filter drops any productId that maps to
-  more than one distinct printing. Never built; would help independently
-  of how the upstream id submissions land.
+- **`LoadTCGSKUs` dedup filter — investigated 2026-09-14, do NOT build
+  this.** The plan on record here (a load-time filter dropping any
+  productId spanning more than one uuid) was measured against the local
+  sku file before writing any code, and ruled out as badly overbroad:
+  10,985 of 112,626 productIds span >1 distinct uuid, but only 3,378 of
+  those touch a token-layout uuid at all — the other 7,607 are ordinary
+  double-faced/split/adventure/transform *cards*, where one physical
+  TCGplayer product legitimately supplying both mtgjson face-entries is
+  correct, not a bug. Narrowing to the token-only 3,378: 84 are a
+  double-faced token's two faces sharing one product (also legitimate,
+  same shape as the card case), and the remaining 3,199 are TCGplayer's
+  own double-sided token products (`Keimi`/`Spirit` on one product id,
+  etc.) — also legitimate. **Zero** cases were found of a token id
+  colliding with an unrelated real card, the shape that would actually
+  be a bug. On top of that: Vittorio closed the three PRs that already
+  tried to fix token pricing/dedupe from the scraper side (#461, #472,
+  #463) with "the magic tokens need some datastore work which is
+  separate from this" — see `[[feedback_magic_tokens_datastore_first]]`
+  in project memory. A `LoadTCGSKUs` filter is the same category of fix
+  in a different function. Don't build it here; if the datastore-side
+  token model work ever starts, that's where this belongs.
 
-- **The 76→(smaller) walk count needs a fresh run.** Every fix above was
-  measured against a walk taken *before* the next fix landed, per the
-  drift-control discipline (never trust a stale walk against a moving
-  matcher). The last full count on record was 48 after #581, before the
-  #583 folds. Run `cmd/tcgid4scryfall` fresh before reporting a number to
-  anyone; don't quote an old one.
+- **The walk count — fresh run taken 2026-09-14, after PUNK/Gala
+  Greeters/Front-Cards above (not yet pushed).** 645 CSV rows total, not
+  comparable to the old "48" figure — that number predates full token
+  coverage resolving cleanly enough to *reach* the comparison step, so
+  it undercounted. Split out: 74 are `The List` (excluded per the rule
+  above), 566 are ordinary upstream-missing-id rows (Scryfall/MTGJSON
+  has no id yet — overwhelmingly emblem/token sheets, the same
+  submission backlog as before, just bigger now that more of them
+  resolve at all), and 5 are same-uuid duplicate-listing artifacts of
+  this *tool's* own `AddStrict` + concurrent paging (two live TCGplayer
+  products for one printing race to be "the" id compared against the
+  datastore's; not a matcher bug — same shape as the already-documented
+  `Battlefield Forge`/`SLD` duplicate). **Zero real matcher bugs in this
+  walk.** Re-run fresh before quoting a number to anyone, as always —
+  this one predates the PUNK/Gala Greeters commits above.
 
 ## Method notes worth keeping
 
