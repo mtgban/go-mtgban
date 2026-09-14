@@ -5,10 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	cm "github.com/mtgban/go-cardmarket"
-
-	"github.com/mtgban/go-mtgban/cardtrader"
 )
 
 // TestCardmarketNeedsItsBridge pins that a Cardmarket target Cardmarket cannot
@@ -34,12 +30,35 @@ func TestCardmarketNeedsItsBridge(t *testing.T) {
 	}
 	t.Setenv("MTGJSON_MKMID_PATH", catalog)
 
-	_, err = cardmarketSealedScraper(cm.GamePokemon, cardtrader.GamePokemon)()
+	_, err = cardmarketSealedScraper("pokemon")
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
 		t.Errorf("the sealed scraper was built without a bridge: %v", err)
 	}
-	_, err = cardmarketBridgedIndexScraper(cm.GameYuGiOh, cardtrader.GameYuGiOh)()
+	_, err = cardmarketScraper("yugioh")
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
 		t.Errorf("the singles scraper was built without a bridge: %v", err)
+	}
+}
+
+// TestCardmarketOnepieceWidensRatherThanRefuses pins the one game whose
+// bridge is optional on the singles side: unlike Pokemon and Yu-Gi-Oh, a
+// missing CardTrader bridge costs One Piece some printings and nothing else,
+// so the scraper still builds. The sealed side has no such exemption -
+// TestCardmarketNeedsItsBridge does not cover it since Pokemon and Yu-Gi-Oh
+// already pin every non-Magic sealed game as mandatory.
+func TestCardmarketOnepieceWidensRatherThanRefuses(t *testing.T) {
+	t.Setenv("MKM_APP_TOKEN", "token")
+	t.Setenv("MKM_APP_SECRET", "secret")
+	t.Setenv("CARDTRADER_TOKEN_BEARER", "")
+	catalog := filepath.Join(t.TempDir(), "catalog.json")
+	err := os.WriteFile(catalog, []byte(`{"data":{"products":{"1":{"expansionId":1,"name":"Luffy"}}}}`), 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("MTGJSON_MKMID_PATH", catalog)
+
+	_, err = cardmarketScraper("onepiece")
+	if err != nil {
+		t.Errorf("a missing bridge refused the one game it should only widen: %v", err)
 	}
 }

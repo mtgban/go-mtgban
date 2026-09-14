@@ -1,122 +1,109 @@
 package main
 
-import "testing"
+import (
+	"slices"
+	"strings"
+	"testing"
 
-// TestScraperFlagName pins the naming every workflow and -scrapers/-sellers/
-// -vendors caller already depends on: a Magic target keeps its bare name,
-// and every other game's is suffixed with it.
-func TestScraperFlagName(t *testing.T) {
-	for _, tt := range []struct {
-		game, name, want string
-	}{
-		{"magic", "cardmarket", "cardmarket"},
-		{"magic", "cardmarket_sealed", "cardmarket_sealed"},
-		{"magic", "tcg_index", "tcg_index"},
-		{"pokemon", "cardmarket", "cardmarket_pokemon"},
-		{"pokemon", "cardmarket_sealed", "cardmarket_sealed_pokemon"},
-		{"lorcana", "starcitygames_sealed", "starcitygames_sealed_lorcana"},
-		{"fleshandblood", "tcg_syplist", "tcg_syplist_fleshandblood"},
-		{"riftbound", "cardtrader", "cardtrader_riftbound"},
-	} {
-		if got := scraperFlagName(tt.game, tt.name); got != tt.want {
-			t.Errorf("scraperFlagName(%q, %q) = %q, want %q", tt.game, tt.name, got, tt.want)
+	"github.com/mtgban/go-mtgban/mtgban"
+)
+
+// TestOnlyGame pins the wrapper every single-game store's Init goes through:
+// it answers for the one game it was given and refuses everything else by
+// name, without touching the constructor it wraps.
+func TestOnlyGame(t *testing.T) {
+	var built bool
+	build := onlyGame("magic", func() (mtgban.Scraper, error) {
+		built = true
+		return nil, nil
+	})
+
+	if _, err := build("lorcana"); err == nil {
+		t.Error("a game other than the one supported was not refused")
+	}
+	if built {
+		t.Error("the wrapped constructor ran for a game it does not support")
+	}
+
+	if _, err := build("magic"); err != nil {
+		t.Errorf("the supported game was refused: %v", err)
+	}
+	if !built {
+		t.Error("the wrapped constructor did not run for the game it supports")
+	}
+}
+
+// allGames is every game mtgmatcher registers plus Magic, which is not in
+// that list because bantool reads it off a scraper's name rather than a
+// registered loader.
+var allGames = []string{
+	"magic", "fleshandblood", "gundam", "lorcana", "onepiece",
+	"palworld", "pokemon", "riftbound", "yugioh",
+}
+
+// TestOptionsSupportsExactlyItsRegisteredGames pins which games each store's
+// Init answers for, with no credentials configured at all: every constructor
+// checks its own game table before it reads an env var, so "does not
+// support" and a missing-credential error are never confused for one
+// another, and this needs nothing but the table itself to run everywhere.
+func TestOptionsSupportsExactlyItsRegisteredGames(t *testing.T) {
+	want := map[string][]string{
+		"abugames":               {"magic"},
+		"abugames_sealed":        {"magic"},
+		"arcanafrisia":           {"magic"},
+		"cardkingdom":            {"magic"},
+		"cardkingdom_graded":     {"magic"},
+		"cardkingdom_sealed":     {"magic"},
+		"hareruya":               {"magic"},
+		"hareruya_sealed":        {"magic"},
+		"magiccorner":            {"magic"},
+		"manaleak":               {"magic"},
+		"manapool":               {"magic"},
+		"manapool_index":         {"magic"},
+		"manapool_sealed":        {"magic"},
+		"mintcard":               {"magic"},
+		"mtgseattle":             {"magic"},
+		"sealed_ev":              {"magic"},
+		"trollandtoad":           {"magic"},
+		"merlion":                {"riftbound"},
+		"cardmarket":             {"fleshandblood", "lorcana", "magic", "onepiece", "pokemon", "riftbound", "yugioh"},
+		"cardmarket_sealed":      {"fleshandblood", "lorcana", "magic", "onepiece", "pokemon", "riftbound", "yugioh"},
+		"cardtrader":             {"fleshandblood", "gundam", "lorcana", "magic", "onepiece", "pokemon", "riftbound", "yugioh"},
+		"cardtrader_sealed":      {"fleshandblood", "gundam", "lorcana", "magic", "onepiece", "pokemon", "riftbound", "yugioh"},
+		"coolstuffinc":           {"gundam", "lorcana", "magic", "onepiece", "palworld", "pokemon", "riftbound", "yugioh"},
+		"coolstuffinc_sealed":    {"lorcana", "magic", "onepiece", "pokemon", "riftbound", "yugioh"},
+		"gamenerdz":              {"fleshandblood", "lorcana", "magic", "onepiece", "pokemon"},
+		"miniaturemarket_sealed": {"fleshandblood", "gundam", "lorcana", "magic", "onepiece", "riftbound"},
+		"starcitygames":          {"fleshandblood", "lorcana", "magic", "riftbound"},
+		"starcitygames_sealed":   {"fleshandblood", "lorcana", "magic", "riftbound"},
+		"strikezone":             {"fleshandblood", "lorcana", "magic", "pokemon"},
+		"tcg_index":              {"fleshandblood", "gundam", "lorcana", "magic", "onepiece", "palworld", "pokemon", "riftbound", "yugioh"},
+		"tcg_market":             {"fleshandblood", "gundam", "lorcana", "magic", "onepiece", "palworld", "pokemon", "riftbound", "yugioh"},
+		"tcg_sealed":             {"fleshandblood", "gundam", "lorcana", "magic", "onepiece", "palworld", "pokemon", "riftbound", "yugioh"},
+		"tcg_syplist":            {"magic", "pokemon"},
+		"vegassingles":           {"gundam", "magic", "onepiece", "pokemon", "riftbound"},
+	}
+
+	if len(want) != len(options) {
+		t.Fatalf("this test names %d stores, options has %d - one was added or removed without updating the other", len(want), len(options))
+	}
+
+	for name, opt := range options {
+		wantGames, ok := want[name]
+		if !ok {
+			t.Errorf("%s: not named in this test's expectations", name)
+			continue
 		}
-	}
-}
-
-// TestFlattenOptionsKeepsEveryEntryUnderItsFlagName pins the other side of
-// the same naming: flattening a nested game:store table has to reach every
-// entry, under the name scraperFlagName gives it, and reach it as the same
-// *scraperOption the nested table holds - a copy would let the two drift
-// apart the moment a flag flipped one and not the other.
-func TestFlattenOptionsKeepsEveryEntryUnderItsFlagName(t *testing.T) {
-	cardmarket := &scraperOption{}
-	cardmarketPokemon := &scraperOption{}
-	nested := map[string]map[string]*scraperOption{
-		"magic":   {"cardmarket": cardmarket},
-		"pokemon": {"cardmarket": cardmarketPokemon},
-	}
-
-	flat := flattenOptions(nested)
-	if len(flat) != 2 {
-		t.Fatalf("flattenOptions() has %d entries, want 2: %v", len(flat), flat)
-	}
-	if flat["cardmarket"] != cardmarket {
-		t.Errorf(`flat["cardmarket"] = %p, want the Magic entry %p`, flat["cardmarket"], cardmarket)
-	}
-	if flat["cardmarket_pokemon"] != cardmarketPokemon {
-		t.Errorf(`flat["cardmarket_pokemon"] = %p, want the Pokemon entry %p`, flat["cardmarket_pokemon"], cardmarketPokemon)
-	}
-
-	flat["cardmarket"].Enabled = true
-	if !nested["magic"]["cardmarket"].Enabled {
-		t.Error("enabling the flattened entry left the nested one untouched")
-	}
-}
-
-// TestRunGame pins that a run names one game or refuses: one datastore is
-// loaded, so scrapers of two games cannot share a run. Every case carries a
-// disabled entry in a third game, which a naive count of games present
-// (rather than games with something enabled) would misread.
-func TestRunGame(t *testing.T) {
-	disabledThirdGame := map[string]*scraperOption{"cardmarket": {}}
-	for _, tt := range []struct {
-		desc    string
-		options map[string]map[string]*scraperOption
-		want    string
-		wantErr bool
-	}{
-		{
-			"one game",
-			map[string]map[string]*scraperOption{
-				"yugioh":  disabledThirdGame,
-				"pokemon": {"cardmarket": {Enabled: true}, "tcg_syplist": {Enabled: true}},
-			},
-			"pokemon", false,
-		},
-		{
-			"magic by default",
-			map[string]map[string]*scraperOption{
-				"yugioh": disabledThirdGame,
-				"magic":  {"cardmarket": {Enabled: true}, "cardmarket_sealed": {Enabled: true}},
-			},
-			"magic", false,
-		},
-		{
-			"nothing enabled",
-			map[string]map[string]*scraperOption{"yugioh": disabledThirdGame},
-			"", true,
-		},
-		{
-			"two games",
-			map[string]map[string]*scraperOption{
-				"yugioh":  disabledThirdGame,
-				"pokemon": {"cardmarket": {Enabled: true}},
-				"magic":   {"cardmarket": {Enabled: true}},
-			},
-			"", true,
-		},
-	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			got, err := runGame(tt.options)
-			if (err != nil) != tt.wantErr || got != tt.want {
-				t.Errorf("runGame() = %q, %v; want %q, error %v", got, err, tt.want, tt.wantErr)
+		var got []string
+		for _, game := range allGames {
+			_, err := opt.Init(game)
+			if err == nil || !strings.Contains(err.Error(), "does not support") && !strings.Contains(err.Error(), "unsupported") {
+				got = append(got, game)
 			}
-		})
-	}
-}
-
-// TestOptionsHasNoCrossGameNameCollision guards the production table against
-// the failure mode flattenOptions exists to refuse: two entries under
-// different games computing the same scraperFlagName, which would silently
-// keep only one of them (flattenOptions panics on that; this pins that the
-// real table never reaches it, and that the count comes out whole).
-func TestOptionsHasNoCrossGameNameCollision(t *testing.T) {
-	var want int
-	for _, scrapers := range options {
-		want += len(scrapers)
-	}
-	if got := len(flattenOptions(options)); got != want {
-		t.Errorf("flattenOptions(options) has %d entries, want %d", got, want)
+		}
+		slices.Sort(got)
+		if !slices.Equal(got, wantGames) {
+			t.Errorf("%s supports %v, want %v", name, got, wantGames)
+		}
 	}
 }

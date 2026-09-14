@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"testing"
 
@@ -33,19 +34,19 @@ func (c *configurableScraper) SetConfig(opt mtgban.ScraperOptions) {
 // it fails, so this is the only place the mismatch can be named.
 func TestConfigureScraperRefusesWhatItCannotHonour(t *testing.T) {
 	for _, tt := range []struct {
-		desc     string
-		opt      scraperOption
-		wantErr  bool
-		wantHalf string
+		desc                   string
+		onlySeller, onlyVendor bool
+		wantErr                bool
+		wantHalf               string
 	}{
-		{"asked for the buylist alone", scraperOption{OnlyVendor: true}, true, "buylist"},
-		{"asked for the retail alone", scraperOption{OnlySeller: true}, true, "retail"},
+		{"asked for the buylist alone", false, true, true, "buylist"},
+		{"asked for the retail alone", true, false, true, "retail"},
 		// A scraper with one half of its own is registered without either
 		// option, and there is nothing to honour: most targets are these.
-		{"asked for neither", scraperOption{}, false, ""},
+		{"asked for neither", false, false, false, ""},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			err := configureScraper("sometarget", &tt.opt, plainScraper{})
+			err := configureScraper("sometarget", tt.onlySeller, tt.onlyVendor, plainScraper{})
 			if !tt.wantErr {
 				if err != nil {
 					t.Fatalf("got %v, want no error", err)
@@ -67,22 +68,20 @@ func TestConfigureScraperRefusesWhatItCannotHonour(t *testing.T) {
 
 // TestConfigureScraperPassesTheOptionThrough pins the other side: a scraper
 // that answers the option is told exactly what was asked, and the two halves
-// are not crossed - OnlyVendor turns retail off, not the buylist it names.
+// are not crossed - onlyVendor turns retail off, not the buylist it names.
 func TestConfigureScraperPassesTheOptionThrough(t *testing.T) {
 	for _, tt := range []struct {
-		desc string
-		opt  scraperOption
-		want mtgban.ScraperOptions
+		desc                   string
+		onlySeller, onlyVendor bool
+		want                   mtgban.ScraperOptions
 	}{
-		{"the buylist alone drops retail", scraperOption{OnlyVendor: true},
-			mtgban.ScraperOptions{DisableRetail: true}},
-		{"the retail alone drops the buylist", scraperOption{OnlySeller: true},
-			mtgban.ScraperOptions{DisableBuylist: true}},
-		{"neither drops nothing", scraperOption{}, mtgban.ScraperOptions{}},
+		{"the buylist alone drops retail", false, true, mtgban.ScraperOptions{DisableRetail: true}},
+		{"the retail alone drops the buylist", true, false, mtgban.ScraperOptions{DisableBuylist: true}},
+		{"neither drops nothing", false, false, mtgban.ScraperOptions{}},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			scraper := &configurableScraper{}
-			err := configureScraper("sometarget", &tt.opt, scraper)
+			err := configureScraper("sometarget", tt.onlySeller, tt.onlyVendor, scraper)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -93,31 +92,32 @@ func TestConfigureScraperPassesTheOptionThrough(t *testing.T) {
 	}
 }
 
-// TestRegisteredHalvesAreHonoured walks the targets that ask for one half and
-// checks each can actually be told to drop the other. Registering the option
-// on a scraper that cannot answer it is silent at runtime and shows up only as
-// an output holding the half that was not asked for, which is how Vegas
-// Singles published an empty Magic shelf twice a day.
+// TestRegisteredHalvesAreHonoured walks every (store, game) pair that asks
+// for one half and checks each can actually be told to drop the other.
+// Registering the option on a scraper that cannot answer it is silent at
+// runtime and shows up only as an output holding the half that was not asked
+// for, which is how Vegas Singles published an empty Magic shelf twice a day.
 func TestRegisteredHalvesAreHonoured(t *testing.T) {
 	var checked int
-	for name, opt := range flattenOptions(options) {
-		if !opt.OnlyVendor && !opt.OnlySeller {
-			continue
-		}
-		scraper, err := opt.Init()
-		if err != nil {
-			// Init reads credentials for some targets, and a checkout
-			// without them still runs the rest.
-			t.Logf("skipping %s: %v", name, err)
-			continue
-		}
-		checked++
-		if err := configureScraper(name, opt, scraper); err != nil {
-			t.Error(err)
+	for name, opt := range options {
+		for _, game := range append(append([]string{}, opt.OnlySeller...), opt.OnlyVendor...) {
+			scraper, err := opt.Init(game)
+			if err != nil {
+				// Init reads credentials for some targets, and a checkout
+				// without them still runs the rest.
+				t.Logf("skipping %s/%s: %v", name, game, err)
+				continue
+			}
+			checked++
+			onlySeller := slices.Contains(opt.OnlySeller, game)
+			onlyVendor := slices.Contains(opt.OnlyVendor, game)
+			if err := configureScraper(name, onlySeller, onlyVendor, scraper); err != nil {
+				t.Error(err)
+			}
 		}
 	}
 	if checked == 0 {
 		t.Skip("no target asks for a single half, or none could be built here")
 	}
-	t.Logf("checked %d targets that ask for a single half", checked)
+	t.Logf("checked %d (store, game) pairs that ask for a single half", checked)
 }

@@ -27,30 +27,22 @@ import (
 	"github.com/scizorman/go-ndjson"
 
 	_ "github.com/joho/godotenv/autoload"
-	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/abugames"
 	"github.com/mtgban/go-mtgban/arcanafrisia"
 	"github.com/mtgban/go-mtgban/cardkingdom"
-	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
-	"github.com/mtgban/go-mtgban/coolstuffinc"
-	"github.com/mtgban/go-mtgban/gamenerdz"
 	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/manaleak"
 	"github.com/mtgban/go-mtgban/manapool"
 	"github.com/mtgban/go-mtgban/merlion"
-	"github.com/mtgban/go-mtgban/miniaturemarket"
 	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/sealedev"
-	"github.com/mtgban/go-mtgban/starcitygames"
-	"github.com/mtgban/go-mtgban/strikezone"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 	"github.com/mtgban/go-mtgban/trollandtoad"
-	"github.com/mtgban/go-mtgban/vegassingles"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/simplecloud"
@@ -79,70 +71,29 @@ var Commit = func() string {
 }()
 
 type scraperOption struct {
-	Enabled    bool
-	OnlySeller bool
-	OnlyVendor bool
-	Init       func() (mtgban.Scraper, error)
+	Enabled bool
+	// OnlySeller and OnlyVendor name the games a store cannot honour the
+	// other side for - Vegas Singles keeps no Magic singles shelf,
+	// CoolStuffInc Sealed publishes no Yu-Gi-Oh buylist - where the same
+	// store answers with both sides for every other game it prices. Most
+	// entries leave both nil.
+	OnlySeller []string
+	OnlyVendor []string
+	Init       func(game string) (mtgban.Scraper, error)
 }
 
-// scraperFlagName is the external name a target is known by: the store's own
-// name for Magic, and store+"_"+game for every other game - the name every
-// workflow and -scrapers/-sellers/-vendors caller already uses. It is the one
-// place that composes the two; nowhere else needs to.
-func scraperFlagName(game, name string) string {
-	if game == "magic" {
-		return name
-	}
-	return name + "_" + game
-}
-
-// flattenOptions indexes every game's scrapers under the name each is enabled
-// by, for the callers that just want "the target named X": flag registration
-// and the -scrapers/-sellers/-vendors lookups. The pointers are shared with
-// options, so enabling an entry here enables the same one runGame sees.
-//
-// Two entries landing on the same name is no longer a compile error the way
-// a duplicate key in one flat literal was: the game and the store are two
-// separate keys now, and nothing but this name stops them from colliding
-// across games. Panicking here trades a scraper silently dropped - whichever
-// pointer a random map iteration happened to write last - for a run that
-// refuses to start at all, which is the failure worth having for a registry
-// nothing else checks.
-func flattenOptions(options map[string]map[string]*scraperOption) map[string]*scraperOption {
-	flat := make(map[string]*scraperOption)
-	for game, scrapers := range options {
-		for name, opt := range scrapers {
-			key := scraperFlagName(game, name)
-			if _, exists := flat[key]; exists {
-				panic(fmt.Sprintf("bantool: %q is registered under more than one game", key))
-			}
-			flat[key] = opt
+// onlyGame wraps a constructor that only ever built one game's scraper, back
+// from when that was true by construction: it lived under one key in a
+// registry with no game parameter to check. Read the game and refuse
+// anything else, which is what the flat, game-parameterized registry needs
+// every entry to do for itself now.
+func onlyGame(supported string, build func() (mtgban.Scraper, error)) func(string) (mtgban.Scraper, error) {
+	return func(game string) (mtgban.Scraper, error) {
+		if game != supported {
+			return nil, fmt.Errorf("does not support %q", game)
 		}
+		return build()
 	}
-	return flat
-}
-
-// runGame names the one game the enabled scrapers price. A run loads one
-// datastore and opens it by that name rather than trying every game's
-// loader on it, so enabling scrapers of two games is refused up front.
-func runGame(options map[string]map[string]*scraperOption) (string, error) {
-	var games []string
-	for game, scrapers := range options {
-		for _, opt := range scrapers {
-			if opt.Enabled {
-				games = append(games, game)
-				break
-			}
-		}
-	}
-	switch len(games) {
-	case 0:
-		return "", errors.New("no scraper configured, run with -h for a list of commands")
-	case 1:
-		return games[0], nil
-	}
-	slices.Sort(games)
-	return "", fmt.Errorf("the enabled scrapers price %s, and a run loads one datastore", strings.Join(games, " and "))
 }
 
 // cardtraderBridge maps every Cardmarket product id to the TCGplayer id of
@@ -182,619 +133,264 @@ func init() {
 	log.Println("Workers running with", MaxConcurrency, "parallel threads")
 }
 
-var options = map[string]map[string]*scraperOption{
-	"fleshandblood": {
-		"cardmarket": {
-			Init: cardmarketBridgedIndexScraper(cm.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
-		},
-		"cardmarket_sealed": {
-			Init: cardmarketSealedScraper(cm.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
-		},
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GameFleshAndBlood),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GameFleshAndBlood),
-		},
-		"gamenerdz": {
-			Init: gamenerdzScraper(gamenerdz.GameFleshAndBlood),
-		},
-		"miniaturemarket_sealed": {
-			Init: miniaturemarketSealedScraper(miniaturemarket.GameFleshAndBlood),
-		},
-		"starcitygames": {
-			Init: starcitygamesScraper(starcitygames.GameFleshAndBlood),
-		},
-		"starcitygames_sealed": {
-			Init: starcitygamesSealedScraper(starcitygames.GameFleshAndBlood),
-		},
-		"strikezone": {
-			Init: strikezoneScraper(strikezone.GameFleshAndBlood),
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GameFleshAndBlood),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GameFleshAndBlood),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GameFleshAndBlood),
-		},
+var options = map[string]*scraperOption{
+	"abugames": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := abugames.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		}),
 	},
-	"gundam": {
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GameGundam),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GameGundam),
-		},
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GameGundam),
-		},
-		"miniaturemarket_sealed": {
-			Init: miniaturemarketSealedScraper(miniaturemarket.GameGundam),
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GameGundam),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GameGundam),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GameGundam),
-		},
-		"vegassingles": {
-			Init: vegassinglesScraper(vegassingles.GameGundam),
-		},
+	"abugames_sealed": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := abugames.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		}),
 	},
-	"lorcana": {
-		"cardmarket": {
-			Init: cardmarketIndexScraper(cm.GameLorcana),
-		},
-		"cardmarket_sealed": {
-			Init: cardmarketSealedScraper(cm.GameLorcana, cardtrader.GameLorcana),
-		},
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GameLorcana),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GameLorcana),
-		},
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GameLorcana),
-		},
-		"coolstuffinc_sealed": {
-			Init: coolstuffincSealedScraper(coolstuffinc.GameLorcana),
-		},
-		"gamenerdz": {
-			Init: gamenerdzScraper(gamenerdz.GameLorcana),
-		},
-		"miniaturemarket_sealed": {
-			Init: miniaturemarketSealedScraper(miniaturemarket.GameLorcana),
-		},
-		"starcitygames": {
-			Init: starcitygamesScraper(starcitygames.GameLorcana),
-		},
-		"starcitygames_sealed": {
-			Init: starcitygamesSealedScraper(starcitygames.GameLorcana),
-		},
-		"strikezone": {
-			Init: strikezoneScraper(strikezone.GameLorcana),
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GameLorcana),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GameLorcana),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GameLorcana),
-		},
+	"arcanafrisia": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := arcanafrisia.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		}),
 	},
-	"magic": {
-		"abugames": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := abugames.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"abugames_sealed": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := abugames.NewScraperSealed()
-				scraper.LogCallback = GlobalLogCallback
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"arcanafrisia": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := arcanafrisia.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				return scraper, nil
-			},
-		},
-		"cardkingdom": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := cardkingdom.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Partner = os.Getenv("CK_PARTNER")
-				scraper.PreserveOOS = true
-				return scraper, nil
-			},
-		},
-		"cardkingdom_graded": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper, err := cardkingdom.NewScraperGraded()
-				if err != nil {
-					return nil, err
-				}
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Partner = os.Getenv("CK_PARTNER")
-				return scraper, nil
-			},
-		},
-		"cardkingdom_sealed": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := cardkingdom.NewScraperSealed()
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Partner = os.Getenv("CK_PARTNER")
-				scraper.PreserveOOS = true
-				return scraper, nil
-			},
-		},
-		"cardmarket": {
-			Init: cardmarketIndexScraper(cm.GameMagic),
-		},
-		"cardmarket_sealed": {
-			Init: func() (mtgban.Scraper, error) {
-				appToken, appSecret, err := cardmarketCredentials()
-				if err != nil {
-					return nil, err
-				}
-				scraper, err := cardmarket.NewScraperSealed(cm.GameMagic, appToken, appSecret)
-				if err != nil {
-					return nil, err
-				}
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Affiliate = os.Getenv("MKM_PARTNER")
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GameMagic),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GameMagic),
-		},
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GameMagic),
-		},
-		"coolstuffinc_sealed": {
-			Init: coolstuffincSealedScraper(coolstuffinc.GameMagic),
-		},
-		"gamenerdz": {
-			Init: gamenerdzScraper(gamenerdz.GameMagic),
-		},
-		"hareruya": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := hareruya.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				return scraper, nil
-			},
-		},
-		"hareruya_sealed": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := hareruya.NewScraperSealed()
-				scraper.LogCallback = GlobalLogCallback
-				return scraper, nil
-			},
-		},
-		"magiccorner": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper, err := magiccorner.NewScraper()
-				if err != nil {
-					return nil, err
-				}
-				scraper.LogCallback = GlobalLogCallback
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"manaleak": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := manaleak.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"manapool": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := manapool.NewScraper()
-				scraper.Partner = os.Getenv("MP_PARTNER")
-				scraper.LogCallback = GlobalLogCallback
-				return scraper, nil
-			},
-		},
-		"manapool_index": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := manapool.NewScraperIndex()
-				scraper.Partner = os.Getenv("MP_PARTNER")
-				scraper.LogCallback = GlobalLogCallback
-				return scraper, nil
-			},
-		},
-		"manapool_sealed": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := manapool.NewScraperSealed()
-				scraper.Partner = os.Getenv("MP_PARTNER")
-				scraper.LogCallback = GlobalLogCallback
-				return scraper, nil
-			},
-		},
-		"miniaturemarket_sealed": {
-			Init: miniaturemarketSealedScraper(miniaturemarket.GameMagic),
-		},
-		"mintcard": {
-			Init: func() (mtgban.Scraper, error) {
-				tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
-				if tcgSKUPath == "" {
-					return nil, errors.New("missing MTGJSON_TCGSKU_PATH env var")
-				}
-
-				scraper := mintcard.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Partner = os.Getenv("MINT_PARTNER")
-
-				start := time.Now()
-				skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-				if err != nil {
-					return nil, err
-				}
-				defer skuReader.Close()
-				skus, err := tcgplayer.LoadTCGSKUs(skuReader)
-				if err != nil {
-					return nil, err
-				}
-				scraper.SKUsData = skus
-				log.Println("loading skus took:", time.Since(start))
-
-				return scraper, nil
-			},
-		},
-		"mtgseattle": {
-			OnlySeller: true,
-			Init: func() (mtgban.Scraper, error) {
-				scraper := mtgseattle.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"sealed_ev": {
-			Init: func() (mtgban.Scraper, error) {
-				banKey := os.Getenv("BAN_API_KEY")
-				if banKey == "" {
-					return nil, errors.New("missing BAN_API_KEY env var")
-				}
-				scraper := sealedev.NewScraper(banKey)
-				scraper.Affiliate = os.Getenv("TCG_PARTNER")
-				scraper.BuylistAffiliate = os.Getenv("CK_PARTNER")
-				scraper.LogCallback = GlobalLogCallback
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"starcitygames": {
-			Init: starcitygamesScraper(starcitygames.GameMagic),
-		},
-		"starcitygames_sealed": {
-			Init: starcitygamesSealedScraper(starcitygames.GameMagic),
-		},
-		"strikezone": {
-			Init: strikezoneScraper(strikezone.GameMagic),
-		},
-		"tcg_index": {
-			Init: func() (mtgban.Scraper, error) {
-				tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-				tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-				if tcgPublicID == "" || tcgPrivateID == "" {
-					return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
-				}
-
-				scraper, err := tcgplayer.NewScraperIndex(tcgPublicID, tcgPrivateID)
-				if err != nil {
-					return nil, err
-				}
-
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Affiliate = os.Getenv("TCG_PARTNER")
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		"tcg_market": {
-			Init: func() (mtgban.Scraper, error) {
-				tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-				tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-				tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
-				if tcgPublicID == "" || tcgPrivateID == "" || tcgSKUPath == "" {
-					return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
-				}
-
-				scraper, err := tcgplayer.NewScraperMarket(tcgPublicID, tcgPrivateID)
-				if err != nil {
-					return nil, err
-				}
-
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Affiliate = os.Getenv("TCG_PARTNER")
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-
-				start := time.Now()
-				skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-				if err != nil {
-					return nil, err
-				}
-				defer skuReader.Close()
-				skus, err := tcgplayer.LoadTCGSKUs(skuReader)
-				if err != nil {
-					return nil, err
-				}
-				scraper.SKUsData = skus
-				log.Println("loading skus took:", time.Since(start))
-
-				return scraper, nil
-			},
-		},
-		"tcg_sealed": {
-			Init: func() (mtgban.Scraper, error) {
-				tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-				tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-				tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
-				if tcgPublicID == "" || tcgPrivateID == "" || tcgSKUPath == "" {
-					return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
-				}
-
-				scraper, err := tcgplayer.NewScraperSealed(tcgPublicID, tcgPrivateID)
-				if err != nil {
-					return nil, err
-				}
-
-				scraper.LogCallback = GlobalLogCallback
-				scraper.Affiliate = os.Getenv("TCG_PARTNER")
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-
-				start := time.Now()
-				skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-				if err != nil {
-					return nil, err
-				}
-				defer skuReader.Close()
-				skus, err := tcgplayer.LoadTCGSKUs(skuReader)
-				if err != nil {
-					return nil, err
-				}
-				scraper.SKUsData = skus
-				log.Println("loading skus took:", time.Since(start))
-
-				return scraper, nil
-			},
-		},
-		"tcg_syplist": {
-			Init: tcgSYPScraper(mtgban.GameMagic),
-		},
-		"trollandtoad": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := trollandtoad.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				if MaxConcurrency != 0 {
-					scraper.MaxConcurrency = MaxConcurrency
-				}
-				return scraper, nil
-			},
-		},
-		// The store keeps no Magic singles shelf - not one variant in 960 sampled
-		// had stock - so only the half it does answer for is asked here.
-		"vegassingles": {
-			OnlyVendor: true,
-			Init:       vegassinglesScraper(vegassingles.GameMagic),
-		},
+	"cardkingdom": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := cardkingdom.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CK_PARTNER")
+			scraper.PreserveOOS = true
+			return scraper, nil
+		}),
 	},
-	"onepiece": {
-		"cardmarket": {
-			Init: cardmarketOptionallyBridgedIndexScraper(cm.GameOnePiece, cardtrader.GameOnePiece),
-		},
-		"cardmarket_sealed": {
-			Init: cardmarketSealedScraper(cm.GameOnePiece, cardtrader.GameOnePiece),
-		},
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GameOnePiece),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GameOnePiece),
-		},
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GameOnePiece),
-		},
-		"coolstuffinc_sealed": {
-			Init: coolstuffincSealedScraper(coolstuffinc.GameOnePiece),
-		},
-		"gamenerdz": {
-			Init: gamenerdzScraper(gamenerdz.GameOnePiece),
-		},
-		"miniaturemarket_sealed": {
-			Init: miniaturemarketSealedScraper(miniaturemarket.GameOnePiece),
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GameOnePiece),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GameOnePiece),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GameOnePiece),
-		},
-		"vegassingles": {
-			Init: vegassinglesScraper(vegassingles.GameOnePiece),
-		},
+	"cardkingdom_graded": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper, err := cardkingdom.NewScraperGraded()
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CK_PARTNER")
+			return scraper, nil
+		}),
 	},
-	"palworld": {
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GamePalworld),
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GamePalworld),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GamePalworld),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GamePalworld),
-		},
+	"cardkingdom_sealed": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := cardkingdom.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CK_PARTNER")
+			scraper.PreserveOOS = true
+			return scraper, nil
+		}),
 	},
-	"pokemon": {
-		"cardmarket": {
-			Init: cardmarketBridgedIndexScraper(cm.GamePokemon, cardtrader.GamePokemon),
-		},
-		"cardmarket_sealed": {
-			Init: cardmarketSealedScraper(cm.GamePokemon, cardtrader.GamePokemon),
-		},
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GamePokemon),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GamePokemon),
-		},
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GamePokemon),
-		},
-		"coolstuffinc_sealed": {
-			Init: coolstuffincSealedScraper(coolstuffinc.GamePokemon),
-		},
-		"gamenerdz": {
-			Init: gamenerdzScraper(gamenerdz.GamePokemon),
-		},
-		"strikezone": {
-			Init: strikezoneScraper(strikezone.GamePokemon),
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GamePokemon),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GamePokemon),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GamePokemon),
-		},
-		"tcg_syplist": {
-			Init: tcgSYPScraper(mtgban.GamePokemon),
-		},
-		"vegassingles": {
-			Init: vegassinglesScraper(vegassingles.GamePokemon),
-		},
+	"hareruya": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := hareruya.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		}),
 	},
-	"riftbound": {
-		"cardmarket": {
-			Init: cardmarketIndexScraper(cm.GameRiftbound),
-		},
-		"cardmarket_sealed": {
-			Init: cardmarketSealedScraper(cm.GameRiftbound, cardtrader.GameRiftbound),
-		},
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GameRiftbound),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GameRiftbound),
-		},
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GameRiftbound),
-		},
-		"coolstuffinc_sealed": {
-			Init: coolstuffincSealedScraper(coolstuffinc.GameRiftbound),
-		},
-		"merlion": {
-			Init: func() (mtgban.Scraper, error) {
-				scraper := merlion.NewScraper()
-				scraper.LogCallback = GlobalLogCallback
-				return scraper, nil
-			},
-		},
-		"miniaturemarket_sealed": {
-			Init: miniaturemarketSealedScraper(miniaturemarket.GameRiftbound),
-		},
-		"starcitygames": {
-			Init: starcitygamesScraper(starcitygames.GameRiftbound),
-		},
-		"starcitygames_sealed": {
-			Init: starcitygamesSealedScraper(starcitygames.GameRiftbound),
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GameRiftbound),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GameRiftbound),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GameRiftbound),
-		},
-		"vegassingles": {
-			Init: vegassinglesScraper(vegassingles.GameRiftbound),
-		},
+	"hareruya_sealed": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := hareruya.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		}),
 	},
-	"yugioh": {
-		"cardmarket": {
-			Init: cardmarketBridgedIndexScraper(cm.GameYuGiOh, cardtrader.GameYuGiOh),
-		},
-		"cardmarket_sealed": {
-			Init: cardmarketSealedScraper(cm.GameYuGiOh, cardtrader.GameYuGiOh),
-		},
-		"cardtrader": {
-			Init: cardtraderMarketScraper(cardtrader.GameYuGiOh),
-		},
-		"cardtrader_sealed": {
-			Init: cardtraderSealedScraper(cardtrader.GameYuGiOh),
-		},
-		"coolstuffinc": {
-			Init: coolstuffincScraper(coolstuffinc.GameYuGiOh),
-		},
-		"coolstuffinc_sealed": {
-			Init:       coolstuffincSealedScraper(coolstuffinc.GameYuGiOh),
-			OnlySeller: true,
-		},
-		"tcg_index": {
-			Init: tcgIndexScraper(mtgban.GameYuGiOh),
-		},
-		"tcg_market": {
-			Init: tcgMarketScraper(mtgban.GameYuGiOh),
-		},
-		"tcg_sealed": {
-			Init: tcgSealedScraper(mtgban.GameYuGiOh),
-		},
+	"magiccorner": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper, err := magiccorner.NewScraper()
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		}),
 	},
+	"manaleak": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := manaleak.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		}),
+	},
+	"manapool": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := manapool.NewScraper()
+			scraper.Partner = os.Getenv("MP_PARTNER")
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		}),
+	},
+	"manapool_index": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := manapool.NewScraperIndex()
+			scraper.Partner = os.Getenv("MP_PARTNER")
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		}),
+	},
+	"manapool_sealed": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := manapool.NewScraperSealed()
+			scraper.Partner = os.Getenv("MP_PARTNER")
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		}),
+	},
+	"mintcard": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
+			if tcgSKUPath == "" {
+				return nil, errors.New("missing MTGJSON_TCGSKU_PATH env var")
+			}
+
+			scraper := mintcard.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("MINT_PARTNER")
+
+			start := time.Now()
+			skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
+			if err != nil {
+				return nil, err
+			}
+			defer skuReader.Close()
+			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
+			if err != nil {
+				return nil, err
+			}
+			scraper.SKUsData = skus
+			log.Println("loading skus took:", time.Since(start))
+
+			return scraper, nil
+		}),
+	},
+	"sealed_ev": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			banKey := os.Getenv("BAN_API_KEY")
+			if banKey == "" {
+				return nil, errors.New("missing BAN_API_KEY env var")
+			}
+			scraper := sealedev.NewScraper(banKey)
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			scraper.BuylistAffiliate = os.Getenv("CK_PARTNER")
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		}),
+	},
+	"trollandtoad": {
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := trollandtoad.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		}),
+	},
+	"mtgseattle": {
+		OnlySeller: []string{"magic"},
+		Init: onlyGame("magic", func() (mtgban.Scraper, error) {
+			scraper := mtgseattle.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		}),
+	},
+	"merlion": {
+		Init: onlyGame("riftbound", func() (mtgban.Scraper, error) {
+			scraper := merlion.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		}),
+	},
+	"cardmarket": {
+		Init: cardmarketScraper,
+	},
+	"cardmarket_sealed": {
+		Init: cardmarketSealedScraper,
+	},
+	"cardtrader": {
+		Init: cardtraderMarketScraper,
+	},
+	"cardtrader_sealed": {
+		Init: cardtraderSealedScraper,
+	},
+	"coolstuffinc": {
+		Init: coolstuffincScraper,
+	},
+	"coolstuffinc_sealed": {
+		OnlySeller: []string{"yugioh"},
+		Init:       coolstuffincSealedScraper,
+	},
+	"gamenerdz": {
+		Init: gamenerdzScraper,
+	},
+	"miniaturemarket_sealed": {
+		Init: miniaturemarketSealedScraper,
+	},
+	"starcitygames": {
+		Init: starcitygamesScraper,
+	},
+	"starcitygames_sealed": {
+		Init: starcitygamesSealedScraper,
+	},
+	"strikezone": {
+		Init: strikezoneScraper,
+	},
+	"tcg_index": {
+		Init: tcgIndexScraper,
+	},
+	"tcg_market": {
+		Init: tcgMarketScraper,
+	},
+	"tcg_sealed": {
+		Init: tcgSealedScraper,
+	},
+	"tcg_syplist": {
+		Init: tcgSYPScraper,
+	},
+	"vegassingles": {
+		OnlyVendor: []string{"magic"},
+		Init:       vegassinglesScraper,
+	},
+}
+
+// init names every store's own refusal: onlyGame's build has no name to
+// give an unsupported game's error (it only ever receives the game and a
+// bare constructor), where every multi-game family's own error already
+// names itself. Wrapping Init once here, after every entry, closes the gap
+// for both alike rather than threading a name through onlyGame's eighteen
+// call sites.
+func init() {
+	for name, opt := range options {
+		build := opt.Init
+		opt.Init = func(game string) (mtgban.Scraper, error) {
+			scraper, err := build(game)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", name, err)
+			}
+			return scraper, nil
+		}
+	}
 }
 
 type inventoryElement struct {
@@ -1171,20 +767,20 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 // asked for one half by a scraper holding both ran whole and published both.
 // Refusing it names the target instead, where the empty half used to be found
 // by reading the output.
-func configureScraper(name string, opt *scraperOption, scraper mtgban.Scraper) error {
+func configureScraper(name string, onlySeller, onlyVendor bool, scraper mtgban.Scraper) error {
 	config, ok := scraper.(mtgban.ScraperConfig)
 	if ok {
 		config.SetConfig(mtgban.ScraperOptions{
-			DisableRetail:  opt.OnlyVendor,
-			DisableBuylist: opt.OnlySeller,
+			DisableRetail:  onlyVendor,
+			DisableBuylist: onlySeller,
 		})
 		return nil
 	}
-	if !opt.OnlyVendor && !opt.OnlySeller {
+	if !onlyVendor && !onlySeller {
 		return nil
 	}
 	half := "buylist"
-	if opt.OnlySeller {
+	if onlySeller {
 		half = "retail"
 	}
 	return fmt.Errorf("%s was asked for its %s alone, but does not implement "+
@@ -1194,15 +790,17 @@ func configureScraper(name string, opt *scraperOption, scraper mtgban.Scraper) e
 func run() int {
 	start := time.Now()
 
-	flat := flattenOptions(options)
-
-	for key, val := range flat {
+	for key, val := range options {
 		label := key
 		if label != "" {
 			label = strings.ToUpper(label[:1]) + label[1:]
 		}
 		flag.BoolVar(&val.Enabled, key, false, "Enable "+label)
 	}
+
+	// The empty default mirrors mtgban.GameMagic: a scraper that never names
+	// its game is Magic's, and so is a run that never names one.
+	gameOpt := flag.String("game", "", "Canonical game to price (empty means Magic)")
 
 	datastoreOpt := flag.String("datastore", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
@@ -1269,41 +867,60 @@ func run() int {
 		return 1
 	}
 
+	game := *gameOpt
+	if game == "" {
+		game = "magic"
+	}
+
+	// forceSeller and forceVendor are this run's -sellers/-vendors asking for
+	// one half regardless of what the selected game's own data says; they
+	// stand apart from OnlySeller/OnlyVendor, which name a fact about a
+	// store's feed for one game and must not be overwritten by a flag that
+	// only ever means "for this run".
+	forceSeller := map[string]bool{}
+	forceVendor := map[string]bool{}
+
 	// Enable Scrapers or Sellers/Vendors
 	scraps := strings.SplitSeq(*scrapersOpt, ",")
 	for name := range scraps {
-		if flat[name] != nil {
-			flat[name].Enabled = true
+		if options[name] != nil {
+			options[name].Enabled = true
 		}
 	}
 	if *sellersOpt != "" {
 		sells := strings.SplitSeq(*sellersOpt, ",")
 		for name := range sells {
-			if flat[name] == nil {
+			if options[name] == nil {
 				log.Println("Seller", name, "not found")
 				return 1
 			}
-			flat[name].Enabled = true
-			flat[name].OnlySeller = true
-			flat[name].OnlyVendor = false
+			options[name].Enabled = true
+			forceSeller[name] = true
+			delete(forceVendor, name)
 		}
 	}
 	if *vendorsOpt != "" {
 		vends := strings.SplitSeq(*vendorsOpt, ",")
 		for name := range vends {
-			if flat[name] == nil {
+			if options[name] == nil {
 				log.Println("Vendor", name, "not found")
 				return 1
 			}
-			flat[name].Enabled = true
-			flat[name].OnlySeller = false
-			flat[name].OnlyVendor = true
+			options[name].Enabled = true
+			forceVendor[name] = true
+			delete(forceSeller, name)
 		}
 	}
 
-	game, err := runGame(options)
-	if err != nil {
-		log.Println(err)
+	var anyEnabled bool
+	for _, opt := range options {
+		if opt.Enabled {
+			anyEnabled = true
+			break
+		}
+	}
+	if !anyEnabled {
+		log.Println("no scraper configured, run with -h for a list of commands")
 		return 1
 	}
 
@@ -1326,19 +943,34 @@ func run() int {
 	var scrapers []mtgban.Scraper
 
 	// Initialize the enabled scrapers
-	for name, opt := range flat {
+	for name, opt := range options {
 		if !opt.Enabled {
 			continue
 		}
 
-		scraper, err := opt.Init()
+		scraper, err := opt.Init(game)
 		if err != nil {
 			log.Println(err)
 			return 1
 		}
 
 		// Check if any sub data source needs to be disabled
-		err = configureScraper(name, opt, scraper)
+		onlySeller := forceSeller[name] || slices.Contains(opt.OnlySeller, game)
+		onlyVendor := forceVendor[name] || slices.Contains(opt.OnlyVendor, game)
+		if onlySeller && onlyVendor {
+			// -sellers/-vendors asked for the one half the selected game's
+			// own data says this store cannot answer for the other -
+			// forceSeller met a structural OnlyVendor, or forceVendor met a
+			// structural OnlySeller. Both true would tell configureScraper
+			// to publish neither, which is not what either flag asked for.
+			asked, has := "retail", "a buylist"
+			if forceVendor[name] {
+				asked, has = "buylist", "a retail shelf"
+			}
+			log.Printf("%s was asked for its %s alone, but %s is all it has for %s", name, asked, has, game)
+			return 1
+		}
+		err = configureScraper(name, onlySeller, onlyVendor, scraper)
 		if err != nil {
 			log.Println(err)
 			return 1
