@@ -87,6 +87,14 @@ type DatastoreCard struct {
 	// printing.
 	PromoTypes []string `json:"promoTypes,omitempty"`
 
+	// Artist is the credit the catalog never carries at all, joined from
+	// every face's own name where the printing has more than one - it is
+	// the only field that tells two products sharing a number and a
+	// stripped-down name apart, where two Aurora (Marvel) rows are one
+	// card's Extended Art and the other its Alternate Art and nothing
+	// else in this struct says which is which.
+	Artist string `json:"artist,omitempty"`
+
 	// Watermark is the mark saying which copy of a number this is where
 	// nothing else does: the artwork letter that is all there is between
 	// three printings of Lightning Flow at OMN203. It is no promotion -
@@ -523,6 +531,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			PromoTypes: promoTypes,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
+			Artist:     card.Artist,
 
 			PlainNumber: Rules{}.PlainNumber(card.Number),
 		}
