@@ -917,6 +917,19 @@ func namesTokenSetParent(b *mtgmatcher.Backend, set *mtgmatcher.Set, edition str
 	return !slices.Contains(editions, parent.TokenSetCode)
 }
 
+// namesOversizedSetParent reports whether an edition names the set an
+// all-oversized sibling was printed beside - the same address its
+// token-sheet sibling answers to in namesTokenSetParent. A listing that
+// also says oversized (in either field, checked by the caller) reaches
+// this sibling rather than the token sheet filed under the same name.
+func namesOversizedSetParent(b *mtgmatcher.Backend, set *mtgmatcher.Set, edition string) bool {
+	if set.ParentCode == "" {
+		return false
+	}
+	parent, found := b.Sets[set.ParentCode]
+	return found && mtgmatcher.Equals(edition, parent.Name)
+}
+
 // setHoldsOversized reports whether the set holds an oversized printing of
 // the card, at the collector number when one is given. The number is compared
 // against the printing's own and against the one its decorations were
@@ -947,7 +960,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	// printing as often as the oversized one's, and a number nothing carries
 	// would narrow every candidate away rather than pick one.
 	var oversizedNumber string
-	if mtgmatcher.Contains(inCard.Edition, "Oversize") {
+	if inCard.Contains("Oversize") {
 		number := mtgmatcher.ExtractNumber(inCard.Variation)
 		for _, setCode := range editions {
 			set, found := b.Sets[setCode]
@@ -973,18 +986,30 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			// pass-through
 
 		// The set a token sheet came with names it as surely as the sheet
-		// does, and only tokens are filed there, so nothing else answers
-		case namesTokenSetParent(b, set, inCard.Edition, editions):
+		// does, and only tokens are filed there, so nothing else answers -
+		// unless the listing says oversized, which a token sheet never is;
+		// deferring to the oversize case below lets a same-named oversized
+		// sibling (a dungeon card's parent set can hold both) win instead of
+		// the sheet by default.
+		case namesTokenSetParent(b, set, inCard.Edition, editions) && !inCard.Contains("Oversize"):
 			// pass-through
 
 		// An edition that says oversize rather than naming a set is the
 		// catalog's shelf for them, one group standing for a dozen sets at
 		// once, so it narrows to the sets that printed the card oversized
-		// and the rest of the input picks among those. Only the edition is
-		// read: a variation saying oversized beside a set we do not carry -
-		// the championship prizes - would otherwise be answered with
-		// whichever other set printed one.
-		case mtgmatcher.Contains(inCard.Edition, "Oversize"):
+		// and the rest of the input picks among those. Reading only the
+		// edition here, not the variation too, is deliberate: a variation
+		// saying oversized beside a set we do not carry - the championship
+		// prizes - would otherwise be answered with whichever unrelated set
+		// printed one oversized, anywhere in the catalog.
+		//
+		// The one variation-only case let in is a listing whose edition
+		// names *this* set's own parent - the same address its token-sheet
+		// sibling answers to - since that ties the "oversized" back to a
+		// sibling this printing actually has, rather than to the whole
+		// shelf.
+		case mtgmatcher.Contains(inCard.Edition, "Oversize") ||
+			(inCard.Contains("Oversize") && namesOversizedSetParent(b, set, inCard.Edition)):
 			if !setHoldsOversized(set, inCard.Name, oversizedNumber) {
 				continue
 			}

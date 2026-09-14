@@ -7,10 +7,13 @@ import (
 )
 
 // TestMatchOversized pins which listings the word oversize marks unsupported.
-// The sets naming an oversized product used to be recognized by the words in
-// their titles, so "Commander Legends: Battle for Baldur's Gate" read as an
-// oversized Commander product and its dungeon was priced as the ordinary
-// token filed beside it.
+// A dungeon's oversized sheet (OAFR, OCLB) is filed under its parent set's
+// name exactly where the ordinary token sheet is too, so a listing naming
+// the parent and saying oversized only in the variation - the common shape,
+// not the shelf's own "Oversize Cards" edition - used to read as the
+// ordinary token filed beside it instead: the sheet went unrecognized (no
+// candidate at all before it was carried), and once carried, the token
+// sheet's own edition match won the tie unchallenged. Both are pinned here.
 func TestMatchOversized(t *testing.T) {
 	realDatastore(t)
 	for _, probe := range []struct {
@@ -19,9 +22,10 @@ func TestMatchOversized(t *testing.T) {
 		variation string
 		setCode   string
 	}{
-		// The oversized sheets the datastore never built
-		{"Undercity // The Initiative", "Commander Legends: Battle for Baldur's Gate", "Oversized", ""},
-		{"Lost Mine of Phandelver", "Adventures in the Forgotten Realms", "Oversized", ""},
+		// Oversized sheets naming their parent set, disambiguated from the
+		// ordinary token sheet filed under the very same name
+		{"Undercity // The Initiative", "Commander Legends: Battle for Baldur's Gate", "Oversized", "OCLB"},
+		{"Lost Mine of Phandelver", "Adventures in the Forgotten Realms", "Oversized", "OAFR"},
 		// The oversized printings it does carry, however they are addressed:
 		// by the set the sheet was printed beside, and by a set name the
 		// storefront leaves the year off
