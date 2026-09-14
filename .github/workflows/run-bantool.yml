@@ -3,6 +3,15 @@ name: Run bantool
 on:
   workflow_call:
     inputs:
+      # Names this run externally: the B2 dump path and the signed reload
+      # URL both key off it, and mtgban-website's own reload config is keyed
+      # by this exact string, so it stays whatever every caller has always
+      # passed - the store's own name for a Magic target, suffixed with the
+      # game for every other one. The bantool flag this run enables is that
+      # same name with the "_<game>" suffix stripped back off below, since
+      # bantool takes the game as its own -game flag now; every caller
+      # already states both target and game, so nothing is inferred that
+      # was not already said.
       target:
         required: true
         type: string
@@ -82,6 +91,9 @@ jobs:
       - name: Run bantool
         id: run_bantool
         env:
+          TARGET: "${{ inputs.target }}"
+          GAME: "${{ inputs.game }}"
+
           CK_PARTNER: "${{ vars.CK_PARTNER }}"
           CSI_PARTNER: "${{ vars.CSI_PARTNER }}"
           CT_PARTNER: "${{ vars.CT_PARTNER }}"
@@ -113,10 +125,21 @@ jobs:
           TCGPLAYER_PUBLIC_KEY: "${{ secrets.TCGPLAYER_PUBLIC_KEY }}"
         run: |
           set +e
+          # The bantool flag is target with its "_$GAME" suffix, if any,
+          # stripped back off - the store's own name is all target ever
+          # was before it was told apart from another game's copy of the
+          # same store by that suffix, and target/game are both already
+          # given above, so nothing here is inferred that was not said.
+          STORE="$TARGET"
+          if [ "$GAME" != "magic" ]; then
+            STORE="${STORE%_$GAME}"
+          fi
+
           bantool -datastore ${{ inputs.datastore-filepath }} \
                   -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
                   -format json.xz \
-                  -${{ inputs.target }}
+                  -"$STORE" \
+                  -game "$GAME"
           EXIT=$?
           echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
           set -e
