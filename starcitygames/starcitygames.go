@@ -269,12 +269,14 @@ func (scg *Starcitygames) secondStock(sku string) bool {
 
 // addInventoryStock files a variant's retail record with the strictness the
 // bucket decision picked: a second bucket merges into the first rather than
-// reading as the duplicate it would otherwise be.
+// reading as the duplicate it would otherwise be, and a primary record is
+// unique - one card sells for one price at one grade, so a second one here is
+// the sweep's own signature, two catalog products folding onto one uuid.
 func (scg *Starcitygames) addInventoryStock(second bool, cardID string, entry *mtgban.InventoryEntry) error {
 	if second {
 		return scg.inventory.Add(cardID, entry)
 	}
-	return scg.inventory.AddStrict(cardID, entry)
+	return scg.inventory.AddUnique(cardID, entry)
 }
 
 // addBuylistStock is addInventoryStock for the buylist side of the record.
@@ -282,7 +284,7 @@ func (scg *Starcitygames) addBuylistStock(second bool, cardID string, entry *mtg
 	if second {
 		return scg.buylist.AddRelaxed(cardID, entry)
 	}
-	return scg.buylist.Add(cardID, entry)
+	return scg.buylist.AddUnique(cardID, entry)
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
