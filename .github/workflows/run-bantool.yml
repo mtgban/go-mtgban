@@ -7,11 +7,11 @@ on:
       # URL both key off it, and mtgban-website's own reload config is keyed
       # by this exact string, so it stays whatever every caller has always
       # passed - the store's own name for a Magic target, suffixed with the
-      # game for every other one. The bantool flag this run enables is that
-      # same name with the "_<game>" suffix stripped back off below, since
-      # bantool takes the game as its own -game flag now; every caller
-      # already states both target and game, so nothing is inferred that
-      # was not already said.
+      # game for every other one. bantool's own -target flag takes a store's
+      # name literally, with no decoding of its own (-game already says the
+      # game), so this step strips the suffix back off before passing it
+      # along; every caller already states both target and game, so nothing
+      # is inferred here that was not already said.
       target:
         required: true
         type: string
@@ -125,11 +125,12 @@ jobs:
           TCGPLAYER_PUBLIC_KEY: "${{ secrets.TCGPLAYER_PUBLIC_KEY }}"
         run: |
           set +e
-          # The bantool flag is target with its "_$GAME" suffix, if any,
-          # stripped back off - the store's own name is all target ever
+          # bantool's -target takes a store's own name literally, with no
+          # decoding of its own - the store's own name is all target ever
           # was before it was told apart from another game's copy of the
-          # same store by that suffix, and target/game are both already
-          # given above, so nothing here is inferred that was not said.
+          # same store by the "_$GAME" suffix, and target/game are both
+          # already given above, so nothing here is inferred that was not
+          # already said.
           STORE="$TARGET"
           if [ "$GAME" != "magic" ]; then
             STORE="${STORE%_$GAME}"
@@ -138,8 +139,8 @@ jobs:
           bantool -datastore ${{ inputs.datastore-filepath }} \
                   -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
                   -format json.xz \
-                  -"$STORE" \
-                  -game "$GAME"
+                  -game "$GAME" \
+                  -target "$STORE"
           EXIT=$?
           echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
           set -e
