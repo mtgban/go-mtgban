@@ -100,7 +100,7 @@ func TestConfigureScraperPassesTheOptionThrough(t *testing.T) {
 // Singles published an empty Magic shelf twice a day.
 func TestRegisteredHalvesAreHonoured(t *testing.T) {
 	var checked int
-	for name, opt := range options {
+	for name, opt := range flattenOptions(options) {
 		if !opt.OnlyVendor && !opt.OnlySeller {
 			continue
 		}
