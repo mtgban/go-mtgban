@@ -267,5 +267,6 @@ func (mint *MTGMintCard) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mint.inventoryDate
 	info.BuylistTimestamp = &mint.buylistDate
 	info.CreditMultiplier = 1.1
+	info.Game = mtgban.GameMagic
 	return
 }

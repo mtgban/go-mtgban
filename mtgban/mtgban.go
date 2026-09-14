@@ -129,12 +129,8 @@ func (be BuylistEntry) Qty() int {
 type Game string
 
 // The games a scraper can price, as carried in ScraperInfo.Game.
-//
-// Magic is the empty string rather than a name of its own, so a scraper that
-// never sets Game reads as Magic. Anything comparing games has to account for
-// that: an unset field is not an unknown game.
 const (
-	GameMagic         Game = ""
+	GameMagic         Game = "Magic"
 	GameLorcana       Game = "Lorcana"
 	GameRiftbound     Game = "Riftbound"
 	GameOnePiece      Game = "OnePiece"
@@ -196,7 +192,7 @@ type ScraperInfo struct {
 	Family string `json:"family,omitempty"`
 
 	// Which game the scraper belongs to
-	Game Game `json:"game,omitempty"`
+	Game Game `json:"game"`
 }
 
 // DefaultGradeTags are the conditions most scrapers report.

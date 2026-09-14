@@ -193,5 +193,6 @@ func (ck *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.BuylistTimestamp = &ck.buylistDate
 	info.SealedMode = true
 	info.CreditMultiplier = 1.3
+	info.Game = mtgban.GameMagic
 	return
 }

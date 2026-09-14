@@ -537,5 +537,6 @@ func (ss *Scraper) Info() (info mtgban.ScraperInfo) {
 	info.SealedMode = true
 	info.CreditMultiplier = 1.3
 	info.Family = "EV"
+	info.Game = mtgban.GameMagic
 	return
 }
