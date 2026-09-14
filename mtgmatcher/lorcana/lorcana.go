@@ -814,6 +814,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		b.IndexSets()
 	}
 
+	b.IndexSetUUIDs()
+
 	b.SetRules(Rules{})
 
 	return &b

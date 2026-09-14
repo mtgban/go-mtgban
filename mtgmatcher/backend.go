@@ -449,6 +449,32 @@ func (b *Backend) IndexSets() {
 	}
 }
 
+// IndexSetUUIDs buckets every non-sealed uuid in AllUUIDs by its card's
+// SetCode into SetUUIDs, the per-set sorted index GetUUIDsInSet reads. The
+// sealed counterpart, SetSealedUUIDs, is instead built incrementally as
+// AddSealed files each product; there is no analogous per-card add path, so
+// a loader builds UUIDs and AllUUIDs itself, then calls this once - the
+// same way every loader calls IndexSets once its Sets are populated, which
+// is why this is exported too. Skipping it leaves SetUUIDs nil and
+// GetUUIDsInSet silently answering empty for every set, which is exactly
+// what every non-Magic game's loader did until this method existed: the
+// website's edition-only searches (s:CODE, seeded from this index alone,
+// see mtgban-website's searchAndFilter) came back empty for every game but
+// Magic, whose loader hand-built the same bucketing inline.
+func (b *Backend) IndexSetUUIDs() {
+	b.SetUUIDs = map[string][]string{}
+	for _, uuid := range b.AllUUIDs {
+		co := b.UUIDs[uuid]
+		if co == nil {
+			continue
+		}
+		b.SetUUIDs[co.SetCode] = append(b.SetUUIDs[co.SetCode], uuid)
+	}
+	for code := range b.SetUUIDs {
+		slices.Sort(b.SetUUIDs[code])
+	}
+}
+
 // SetGlobalDatastore atomically publishes a shallow copy of b. Readers already
 // using the previous snapshot finish against it. The maps, slices and card
 // pointers are shared with b and must not be mutated after publication; only

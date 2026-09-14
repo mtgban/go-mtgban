@@ -520,6 +520,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 	b.SortSealed()
 
+	b.IndexSetUUIDs()
+
 	b.SetRules(NewRules(&b))
 
 	return &b
