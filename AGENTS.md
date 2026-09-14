@@ -120,6 +120,14 @@ serve suites that sit at different depths in the tree — and they do:
 `mtgmatcher/magic` two. CI passes every one as an absolute path, per game,
 for that reason.
 
+**Locally**, `go test` does not source `.env` on its own — only
+`cmd/bantool` does, via a blank `godotenv/autoload` import in its own
+`main.go`. Export the variables yourself before running a suite that needs
+one, e.g. `set -a; . .env; set +a; go test ./mtgmatcher/...`, or
+`source .env && go test ./...` if your shell's `source` does the same. CI
+needs none of this: it exports every `<GAME>_PATH` directly as job env
+(below), so this is a local-checkout step only.
+
 CI restores all nine datastores from `actions/cache` before testing, one
 `cache-<game>` job per game. Only Magic has a public URL: `cache-datastore`
 calls the reusable `cache-file.yml` with `vars.DATASTORE_MAGIC`. Every other
