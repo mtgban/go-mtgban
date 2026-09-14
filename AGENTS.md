@@ -18,25 +18,25 @@ correctness lives in `mtgmatcher`. If a card matches wrong, fix it in
 ## Layout
 
 ```
-mtgban/                interfaces (Scraper/Seller/Vendor), records,
-                       Arbit/Mismatch, CSV I/O, WorkerPool
-mtgmatcher/            game-agnostic core: Backend, Match()/MatchId(), the
-                       GameRules seam, the game registry, the search API,
-                       the shared EditionTable/VariantsTable, and the Magic
-                       replay suite
-mtgmatcher/magic/      Magic rules, MTGJSON loader, promo/frame vocabulary
-mtgmatcher/lorcana/    Lorcana rules, loader, replay corpus
-mtgmatcher/riftbound/  Riftbound rules, loader, replay corpus
-mtgmatcher/fleshandblood/ Flesh and Blood rules, loader, replay corpus
-mtgmatcher/gundam/     Gundam rules, loader, replay corpus
-mtgmatcher/onepiece/   One Piece rules, loader, replay corpus
-mtgmatcher/palworld/   Palworld rules, loader, replay corpus
-mtgmatcher/pokemon/    Pokemon rules, loader
-mtgmatcher/yugioh/     Yu-Gi-Oh rules, loader, replay corpus
-mtgmatcher/games/      meta-package that blank-imports all nine games
-<store>/               one package per store (tcgplayer, cardkingdom,
-                       cardmarket, ...)
-cmd/                   tools; cmd/bantool is the production orchestrator
+mtgban/                    interfaces (Scraper/Seller/Vendor), records,
+                           Arbit/Mismatch, CSV I/O, WorkerPool
+mtgmatcher/                game-agnostic core: Backend, Match()/MatchId(),
+                           the GameRules seam, the game registry, the
+                           search API, the shared EditionTable/
+                           VariantsTable, and the Magic replay suite
+mtgmatcher/magic/          Magic rules, MTGJSON loader, promo/frame vocabulary
+mtgmatcher/lorcana/        Lorcana rules, loader, replay corpus
+mtgmatcher/riftbound/      Riftbound rules, loader, replay corpus
+mtgmatcher/fleshandblood/  Flesh and Blood rules, loader, replay corpus
+mtgmatcher/gundam/         Gundam rules, loader, replay corpus
+mtgmatcher/onepiece/       One Piece rules, loader, replay corpus
+mtgmatcher/palworld/       Palworld rules, loader, replay corpus
+mtgmatcher/pokemon/        Pokemon rules, loader (no replay corpus yet)
+mtgmatcher/yugioh/         Yu-Gi-Oh rules, loader, replay corpus
+mtgmatcher/games/          meta-package that blank-imports all nine games
+<store>/                   one package per store (tcgplayer, cardkingdom,
+                           cardmarket, ...)
+cmd/                       tools; cmd/bantool is the production orchestrator
 ```
 
 Magic's edition aliases, variants, replay corpus and promo dates live in
@@ -70,11 +70,15 @@ build rather than merely drawing a review comment. The tree is gofmt-clean
 today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
-in `mtgban/`, in `mtgmatcher/` and its `lorcana` and `riftbound`
-sub-packages, and in several scraper packages (`abugames`, `cardkingdom`,
-`starcitygames`, `tcgplayer`). A subset run can pass while CI fails.
-`mtgmatcher/magic` has no test files of its own — it is covered indirectly,
-through the core Magic replay suite.
+in `mtgban/`, in `mtgmatcher/` and every one of its nine `mtgmatcher/<game>`
+sub-packages, and in about a third of the scraper packages (`abugames`,
+`cardkingdom`, `cardmarket`, `cardtrader`, `coolstuffinc`, `gamenerdz`,
+`hareruya`, `starcitygames`, `tcgplayer`, and others — check for a `*_test.go`
+file before assuming a package has none). A subset run can pass while CI
+fails. `mtgmatcher/magic` carries the largest test suite of any package in
+the repo (two dozen `*_test.go` files); the core Magic *replay* suite is a
+separate thing, still living in `mtgmatcher`'s own test package (see "The
+golden suites" below).
 
 ### Datastores
 
@@ -83,9 +87,12 @@ environment variables:
 
 - `ALLPRINTINGS5_PATH` — MTGJSON `AllPrintings5.json`. Feeds the core
   `mtgmatcher` suite and `mtgmatcher/magic`, both of which load it through
-  `magic.Load`, as well as the abugames, cardkingdom and starcitygames
-  scraper suites. Magic is the one game whose datastore is not built by
-  `datastore-gen`.
+  `magic.Load`, as well as every scraper suite that needs a real Magic
+  datastore to test its `preprocess.go` (abugames, cardkingdom, cardmarket,
+  cardtrader, gamenerdz, hareruya, magiccorner, manapool, mintcard,
+  sealedev, starcitygames, tcgplayer, vegassingles — grep a package for the
+  literal skip message before assuming it is or is not among them). Magic
+  is the one game whose datastore is not built by `datastore-gen`.
 - `LORCANA_PATH`, `RIFTBOUND_PATH`, `ONEPIECE_PATH`, `YUGIOH_PATH`,
   `FLESHANDBLOOD_PATH`, `POKEMON_PATH`, `GUNDAM_PATH`, and `PALWORLD_PATH` —
   one datastore per remaining game, all built by
@@ -93,13 +100,18 @@ environment variables:
   `mtgmatcher/<game>` suite (`mtgmatcher/lorcana`, `mtgmatcher/riftbound`,
   and so on).
 
-The asymmetry is deliberate but sharp-edged. Both Magic-backed suites — core
-`mtgmatcher` and `mtgmatcher/magic` — fail fast: their `TestMain` calls
-`log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run this suite")` when
-it is unset, which takes down the whole package's test binary, including the
-tests that need no datastore at all such as the replacer and utility tests.
-The Lorcana and Riftbound suites call `t.Skip` instead, so a contributor
-without either dump still gets a green (if thinner) run.
+There is no fail-fast/skip asymmetry between games any more — there used to
+be, when only Magic, Lorcana and Riftbound existed, and older prose (this
+file's own history included) still describes Magic's `TestMain` calling
+`log.Fatalln` and taking the whole binary down when `ALLPRINTINGS5_PATH` is
+unset. That call was removed. Every suite, Magic and core `mtgmatcher`
+included, now loads its datastore lazily behind a `sync.Once`-guarded
+`realDatastore(t)` helper and calls `t.Skip("Need <VAR> set to run this
+test")` on the tests that need it, so a contributor missing every one of the
+nine datastores still gets a green, if much thinner, `go test ./...` run.
+`mtgmatcher/magic`'s `TestMain` still calls `log.Fatalln`, but only if its own
+golden `testdata/magic_test_data.json` fails to open or parse — a repo
+integrity fault, not a missing-env-var one.
 
 Use absolute paths for every variable. A relative path is resolved against
 the directory of the package under test, so a single relative value cannot
@@ -108,11 +120,12 @@ serve suites that sit at different depths in the tree — and they do:
 `mtgmatcher/magic` two. CI passes every one as an absolute path, per game,
 for that reason.
 
-CI restores all three datastores from `actions/cache` before testing. Magic
-and Lorcana are fetched from the URLs in the `DATASTORE_MAGIC` and
-`DATASTORE_LORCANA` repository variables; Riftbound has no public URL and is
-pulled from a private B2 bucket, keyed on the object's own metadata because B2
-serves no HTTP etag.
+CI restores all nine datastores from `actions/cache` before testing, one
+`cache-<game>` job per game. Only Magic has a public URL: `cache-datastore`
+calls the reusable `cache-file.yml` with `vars.DATASTORE_MAGIC`. Every other
+game — Lorcana included, which used to be the other public-URL exception —
+is pulled from the private `mtgban-datastore` B2 bucket and cached under a
+key built from the object's own metadata, since B2 serves no HTTP etag.
 
 `internal/vocabulary` runs two checks across the datastore-gen boundary, each
 gated on the `<GAME>_PATH` variables above and skipping the games whose
@@ -123,39 +136,42 @@ loader that folds or drops a word cannot drift unnoticed.
 TCGplayer catalog dump and writes the verdicts to `REPLAY_OUT`, for diffing
 two checkouts against each other rather than against a fixed assertion.
 
-### The three golden suites
+### The golden suites
 
-Each game owns a replay corpus of *(input card → expected verdict)* pairs,
-and each has its own regeneration flag:
-
-The flag belongs to the test binary, not to `go test`, so the package has to
-come first — `go test -u ./mtgmatcher/magic/` fails with "no Go files in" the
-repository root, having read `-u` as a `go` flag and dropped the path.
+Eight of the nine games own a replay corpus of *(input card → expected
+verdict)* pairs under their own `testdata/` directory, each with its own
+regeneration flag; only Pokemon has none yet. The flag belongs to the test
+binary, not to `go test`, so the package has to come first — `go test -u
+./mtgmatcher/magic/` fails with "no Go files in" the repository root, having
+read `-u` as a `go` flag and dropped the path.
 
 ```sh
 # mtgmatcher/magic     -> testdata/magic_test_data.json
 go test ./mtgmatcher/magic/ -run TestMatch -u
 
-# mtgmatcher/lorcana   -> testdata/lorcana_test_data.json
-go test ./mtgmatcher/lorcana/ -update-lorcana
-
-# mtgmatcher/riftbound -> testdata/riftbound_test_data.json
-go test ./mtgmatcher/riftbound/ -update-riftbound
+# every other game     -> testdata/<game>_test_data.json
+go test ./mtgmatcher/lorcana/     -update-lorcana
+go test ./mtgmatcher/riftbound/   -update-riftbound
+go test ./mtgmatcher/onepiece/    -update-onepiece
+go test ./mtgmatcher/yugioh/      -update-yugioh
+go test ./mtgmatcher/fleshandblood/ -update-fleshandblood
+go test ./mtgmatcher/gundam/      -update-gundam
+go test ./mtgmatcher/palworld/    -update-palworld
 ```
 
-All three corpora sit under a `testdata/` directory beside the rules they
-exercise. The Magic regeneration flag is the odd one out: it is the bare
-`-u` it has always been, rather than being named after its game.
+The Magic regeneration flag is the odd one out: it is the bare `-u` it has
+always been, rather than `-update-magic`. Every other game follows
+`-update-<game>` exactly.
 
-Regenerate only after an *intentional* matching change, and read the resulting
-diff line by line. The Lorcana and Riftbound regenerators carry two extra
-safety nets: they refuse to flip a case between success and error (a
-verdict-class flip fails the test and leaves the golden file untouched), and
-they re-insert their hand-authored seed cases — `lorcanaSeeds` and
-`riftboundSeeds` — which pin the contract edges the sampled corpus cannot
-reach. The Magic regenerator has neither guard; it silently rewrites the
-expected uuid of any case that now resolves differently and trusts you to
-read the diff.
+Regenerate only after an *intentional* matching change, and read the
+resulting diff line by line. All seven non-Magic regenerators carry two
+extra safety nets Magic's lacks: they refuse to flip a case between success
+and error (a verdict-class flip fails the test and leaves the golden file
+untouched), and they re-insert their own hand-authored seed cases — each
+package has its own `<game>Seeds`, e.g. `lorcanaSeeds`, `riftboundSeeds` —
+which pin the contract edges the sampled corpus cannot reach. The Magic
+regenerator has neither guard; it silently rewrites the expected uuid of any
+case that now resolves differently and trusts you to read the diff.
 
 **The Magic corpus is an invariant, not a scoreboard.** Making the matcher
 game-agnostic was meant to preserve pre-refactor Magic behavior exactly,
@@ -192,11 +208,13 @@ as a new baseline.
 ### GameRules
 
 `Match()` is one pipeline shared by every game. The steps that differ per game
-are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`:
-`Prefilter`, `AdjustName`, `AdjustEdition`, `FilterPrintings`, `CandidateSets`,
-`FilterCards`, `FinalizeCandidates`, `IsUnsupported`, `IsSpecificUnsupported`,
-and `MissingPromoTag` (see `rules.go` for the complete interface). A game's
-loader attaches its implementation with `Backend.SetRules` when it builds the
+are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`, 14
+methods in all: `Prefilter`, `AdjustName`, `AdjustEdition`, `AliasEdition`,
+`FilterPrintings`, `CandidateSets`, `FinalizeCandidates`, `FilterCards`,
+`IsUnsupported`, `IsSpecificUnsupported`, `MissingPromoTag`, `IsToken`,
+`CanonicalFinish`, and `PlainNumber` (read `rules.go` itself — each method
+carries a paragraph explaining what it owns and why). A game's loader
+attaches its implementation with `Backend.SetRules` when it builds the
 `Backend`; a `Backend` that never got rules returns `ErrDatastoreEmpty` from
 `Match` rather than panicking.
 
@@ -268,12 +286,22 @@ itself a standing "tables before code" violation; do not grow it without a
 good reason. Read the `Match` pipeline in `mtgmatcher/mtgmatcher.go`, and the
 ordering notes in `SPECIFICATIONS.md`, before editing any stage.
 
-Lorcana and Riftbound need far less of this. Both identify a card by name plus
-collector number plus finish, so half their hooks are literal no-ops —
-`FilterPrintings` returns the editions untouched and `IsUnsupported`,
-`IsSpecificUnsupported` and `MissingPromoTag` all return `false`. The real
-work is edition and number normalization in `Prefilter`/`AdjustName`/
-`AdjustEdition` and the number-and-finish disambiguation in `FilterCards`.
+Every non-Magic game needs far less of this, and shares the shape: each
+embeds `mtgmatcher.DefaultRules` (`Rules struct{ DefaultRules }`) and
+overrides only what it actually needs different. All eight rely on
+`DefaultRules` — a real no-op — for
+`FilterPrintings`, `FinalizeCandidates`, `MissingPromoTag` and `IsToken`, and
+all eight implement their own `Prefilter`, `AdjustName`, `AdjustEdition`,
+`AliasEdition`, `FilterCards`, `CanonicalFinish` and `PlainNumber`, which is
+where a game's actual vocabulary — its editions, its number shapes, its
+finish names — lives. A few games additionally override one hook for a
+narrow, real check: Lorcana and Yu-Gi-Oh override `IsUnsupported` (Lorcana
+drops puzzle-insert and cruise-promo products; Yu-Gi-Oh drops storefront
+character-art cards that carry no collector number), and Pokemon overrides
+`CandidateSets` to fold `*Promos` shelves into its loose-edition pass. The
+real, shared work across all eight is edition and number normalization in
+`Prefilter`/`AdjustName`/`AdjustEdition`/`AliasEdition` and the
+number-and-finish disambiguation in `FilterCards`.
 
 ### Search API
 
@@ -294,8 +322,13 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    HTML-scraped one.
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
 4. Register a `scraperOption` in `cmd/bantool` and add a
-   `.github/workflows/bantool-<store>.yml`. Non-Magic scrapers get one option
-   and one workflow per game, named `<store>_lorcana` / `<store>_riftbound`.
+   `.github/workflows/bantool-<store>.yml`. A target's own name says its
+   game: `scraperGame` in `cmd/bantool/main.go` reads the suffix after the
+   last underscore and checks it against `mtgmatcher.RegisteredGames()`, so
+   naming a non-Magic option `<store>_<game>` (`coolstuffinc_pokemon`,
+   `cardtrader_gundam`, `starcitygames_sealed_lorcana`) is what makes it
+   that game's rather than Magic's — nothing to register beyond the name
+   itself. One `bantool-<store>_<game>.yml` workflow per target.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` (`mtgban.GameMagic`
    is the empty string, so a non-Magic scraper must set `Game` explicitly).
@@ -343,7 +376,7 @@ map: it is identified by SKU and has its own scrapers.
   The reference's own grade is divided out before the probe's is applied, so a
   non-NM reference is not compared against a rescaled copy of itself.
 - `Card.Legalities` is populated only by the MTGJSON loader, so it is nil for
-  both Lorcana and Riftbound.
+  every non-Magic card, all eight other games alike.
 - `WriteBuylistToCSV` is the one CSV writer taking a middle `creditMultiplier`
   argument; `GetExchangeRate` returns the *reciprocal* — a multiply-to-USD
   factor.
