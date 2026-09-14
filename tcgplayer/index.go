@@ -3,6 +3,7 @@ package tcgplayer
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -146,6 +147,49 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 	return nil
 }
 
+// crossSetProductIDs reports every TCGplayer product id (regular or etched)
+// claimed by cards from more than one set, keyed to the sets that claim it.
+// A double-faced card's two faces, or a plain misprint beside the copy it
+// doubles, always share a set - a same-named oversized sibling does not, and
+// neither does an id MTGJSON has simply copied onto the wrong printing (the
+// Dungeon of the Mad Mage report this guards against: AFR's ordinary card
+// and OAFR's oversized one both carry 245106, which belongs only to the
+// oversized product). Spanning more than one set means the id is wrong on
+// at least one of them, and pricing from it would be a guess.
+func crossSetProductIDs() map[string][]string {
+	setsByID := map[string]map[string]bool{}
+	for _, code := range mtgmatcher.GetAllSets() {
+		set, err := mtgmatcher.GetSet(code)
+		if err != nil {
+			continue
+		}
+		for _, card := range set.Cards {
+			for _, key := range [...]string{"tcgplayerProductId", "tcgplayerEtchedProductId"} {
+				id, found := card.Identifiers[key]
+				if !found {
+					continue
+				}
+				if setsByID[id] == nil {
+					setsByID[id] = map[string]bool{}
+				}
+				setsByID[id][code] = true
+			}
+		}
+	}
+
+	collisions := map[string][]string{}
+	for id, sets := range setsByID {
+		if len(sets) <= 1 {
+			continue
+		}
+		for code := range sets {
+			collisions[id] = append(collisions[id], code)
+		}
+		sort.Strings(collisions[id])
+	}
+	return collisions
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *Index) Load(ctx context.Context) error {
 	pages := make(chan indexChan)
@@ -188,6 +232,11 @@ func (tcg *Index) Load(ctx context.Context) error {
 	}
 
 	go func() {
+		collisions := crossSetProductIDs()
+		for id, sets := range collisions {
+			tcg.printf("skipping id %s, claimed by more than one set: %v", id, sets)
+		}
+
 		sets := mtgmatcher.GetAllSets()
 		i := 1
 		for _, code := range sets {
@@ -198,7 +247,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 
 			for _, card := range set.Cards {
 				tcgID, found := card.Identifiers["tcgplayerProductId"]
-				if found {
+				if found && collisions[tcgID] == nil {
 					pages <- indexChan{
 						TCGProductID: tcgID,
 						UUID:         card.UUID,
@@ -207,7 +256,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 
 				// Sometimes etched-only cards have two tcgIds by mistake, skip one
 				tcgEtchedID, found := card.Identifiers["tcgplayerEtchedProductId"]
-				if found && tcgEtchedID != tcgID {
+				if found && tcgEtchedID != tcgID && collisions[tcgEtchedID] == nil {
 					pages <- indexChan{
 						TCGProductID: tcgEtchedID,
 						UUID:         card.UUID,
