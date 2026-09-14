@@ -276,17 +276,25 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
 4. Register a `scraperOption` in `cmd/bantool`'s `options`, keyed by the
    store's own name alone: one entry serves every game it prices, since
    `Init` now takes the game bantool was run with (`-game lorcana`, empty
-   for Magic) and is the one place that checks whether the store supports
-   it, translating the name into whatever constant that store's own package
-   wants. A store whose games differ only in that constant needs one small
-   translation table and no second entry; give `OnlySeller`/`OnlyVendor` the
-   games (plural - both take `[]string`) where the store cannot honour the
-   other side, the way Vegas Singles does for Magic alone. Add a
-   `.github/workflows/bantool-<store>.yml` per game, each passing its own
-   `target:`/`game:` pair to `run-bantool.yml` exactly as it already had
-   to; `run-bantool.yml` derives bantool's own flag by stripping `game`'s
-   suffix back off `target`, so no caller states a store name that is not
-   already implied by the two it already gives.
+   for Magic) and translates it into whatever constant that store's own
+   package wants. A store whose games differ only in that constant needs
+   one small translation table and no second entry. Every entry names the
+   games it answers for in `Supports []string`, checked centrally before
+   `Init` ever runs, so a game missing from it is refused by name without
+   `Init` running at all - nil supports nothing, not everything, so a new
+   entry that forgets this is refused for every game rather than reaching
+   `Init` unchecked. A multi-game family's `Supports` mirrors its own
+   translation table, which `Init` also keeps checking against directly;
+   `TestMultiGameInitAgreesWithSupports` catches the two drifting apart.
+   Give `OnlySeller`/`OnlyVendor` the games (plural - both take `[]string`)
+   where the store cannot honour the other side, the way Vegas Singles does
+   for Magic alone. Add a `.github/workflows/bantool-<store>.yml` per game,
+   each passing its own `target:`/`game:` pair to `run-bantool.yml` exactly
+   as it already had to; bantool's own `-target` flag takes a store's name
+   literally, with no decoding of its own, since `-game` already says the
+   game - `run-bantool.yml`'s own shell strips the `_<game>` suffix back
+   off `target` before passing it along, so no caller states a store name
+   that is not already implied by the two it already gives.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` (`mtgban.GameMagic`
    is the empty string, so a non-Magic scraper must set `Game` explicitly).

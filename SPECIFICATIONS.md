@@ -886,24 +886,32 @@ embeds live credentials.
 
 - **bantool** — `options` is a flat `map[store]*scraperOption`, one entry per
   store regardless of how many games it prices: `Init` takes the game
-  bantool was run with (`func(game string) (mtgban.Scraper, error)`) and is
-  the one place that checks whether the store supports it, translating the
-  canonical name into whatever constant that store's own package wants
-  (an int for CardTrader, Cardmarket and StarCityGames, a display string
-  for the rest, none of them spelled alike). `-game` selects it on the command line
-  (empty means Magic, mirroring `mtgban.GameMagic`); a store that only ever
-  priced one game keeps its old constructor wrapped in `onlyGame(name,
-  build)`, which refuses every other game by name. `OnlySeller`/`OnlyVendor`
-  hold the games (not a bool - a store can differ by game, the way Vegas
-  Singles is buylist-only for Magic and not for the four games beside it)
-  a store cannot answer the other side for. The external target name a
-  workflow schedules (`-cardtrader_lorcana`, `-cardtrader_riftbound`) no
-  longer exists as a bantool flag; every caller still passes it as
-  `target` (unchanged, since the published dump path and the site's
-  reload config still key on it) alongside the `game` it always named,
-  and `run-bantool.yml` strips `game`'s suffix back off `target` to get
-  the flag bantool now takes, `-<store> -game <game>` - nothing a caller
-  was not already saying.
+  bantool was run with (`func(game string) (mtgban.Scraper, error)`),
+  translating the canonical name into whatever constant that store's own
+  package wants (an int for CardTrader, Cardmarket and StarCityGames, a
+  display string for the rest, none of them spelled alike). `-game` selects
+  it on the command line (empty means Magic, mirroring `mtgban.GameMagic`).
+  Whether a store supports the selected game is checked centrally, before
+  `Init` ever runs, against every entry's own `Supports []string` - nil
+  supports nothing, not everything, so a new entry that forgets to set it
+  is refused for every game rather than reaching `Init` unchecked. A
+  store whose own package covers several games states the same list in
+  `Supports` that its own translation table already implies, and `Init`
+  keeps checking that table too; `TestMultiGameInitAgreesWithSupports`
+  catches the two drifting apart.
+  `OnlySeller`/`OnlyVendor` hold the games (not a bool - a store can differ
+  by game, the way Vegas Singles is buylist-only for Magic and not for the
+  four games beside it) a store cannot answer the other side for. The
+  external target name a workflow schedules (`-cardtrader_lorcana`,
+  `-cardtrader_riftbound`) no longer exists as a bantool flag naming a
+  store directly; every caller still passes it as `target` (unchanged,
+  since the published dump path and the site's reload config still key on
+  it) alongside the `game` it always named. bantool's own `-target` flag
+  takes a store's name literally, with no decoding of its own - `-game`
+  already says the game, so a name still carrying its `_<game>` suffix is
+  simply not found - and `run-bantool.yml`'s own shell strips that suffix
+  back off `target` before passing it along, the one caller that still
+  has a composite name to reduce.
   Selection otherwise unchanged: `-scrapers`/`-sellers`/`-vendors` by store
   name; `-format` json/csv/ndjson (each also with an `.xz` variant); output
   through `github.com/mtgban/simplecloud` to local/B2/GCS/S3/HTTP; optional
