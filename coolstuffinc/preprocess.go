@@ -158,7 +158,26 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 		}
 	}
 
+	var language string
 	switch edition {
+	// The shelf mixes every foreign black-bordered print run under one
+	// name; the language written in the note or the bracket is the only
+	// thing that says which one. Only Italian (FBB) and Japanese (4BB)
+	// have a row in the datastore - the rest were never captured as their
+	// own set, so a German/French/Spanish/Chinese/Korean listing has
+	// nothing to resolve against.
+	case "Black Bordered (foreign)":
+		switch {
+		case strings.Contains(variant, "Italian"):
+			edition = "FBB"
+			language = "Italian"
+		case strings.Contains(variant, "Japanese"):
+			edition = "4BB"
+			language = "Japanese"
+		default:
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
 	case "Promo":
 		// Black Lotus - Ultra Pro Puzzle - Eight of 9
 		if strings.Contains(cardName, "Ultra Pro Puzzle") {
@@ -211,6 +230,7 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 		Variation: variant,
 		Edition:   edition,
 		Foil:      isFoil,
+		Language:  language,
 	}, nil
 }
 
