@@ -22,6 +22,15 @@ which makes it the scraper's fix, not `mtgmatcher`'s.
 how it's found, the fix shapes (a general rule, a closed table, a
 refusal), and the repeatable method for catching the next one.
 
+The opposite exception is a vendor that publishes **no** identifier at
+all: Cool Stuff Inc's buylist and retail feeds carry none, for any of the
+eight games it prices, so every resolution is wording- and shelf-driven
+and the shelf itself is sometimes wrong. `coolstuffinc/README.md` names
+the recurring shape found three times independently across three
+games — a promo shelf holding a printing that collides with a real set's,
+told apart only by a note or bracket the code has to read — and where it
+has, and hasn't yet, been fixed.
+
 ## Layout
 
 ```
