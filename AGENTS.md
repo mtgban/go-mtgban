@@ -281,9 +281,10 @@ not; a suite reads its game's file that way in its TestMain, or in a helper
 of its own for another game's.
 
 There is no auto-detection. The caller always knows the game — bantool reads
-it off the scraper it runs, a test off the package it sits in — and the
-loader that tried every registered game in turn decoded AllPrintings three
-times over before reaching Magic's, behind a buffer of the whole file.
+it off the registry key its target sits under, a test off the package it sits
+in — and the loader that tried every registered game in turn decoded
+AllPrintings three times over before reaching Magic's, behind a buffer of the
+whole file.
 
 `Backend` is exported and carries instance methods (`b.Match`, `b.GetUUID`,
 `b.GetSetByName`, ...); the package-level functions of the same name are thin
@@ -346,13 +347,16 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    HTML-scraped one.
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
 4. Register a `scraperOption` in `cmd/bantool` and add a
-   `.github/workflows/bantool-<store>.yml`. A target's own name says its
-   game: `scraperGame` in `cmd/bantool/main.go` reads the suffix after the
-   last underscore and checks it against `mtgmatcher.RegisteredGames()`, so
-   naming a non-Magic option `<store>_<game>` (`coolstuffinc_pokemon`,
-   `cardtrader_gundam`, `starcitygames_sealed_lorcana`) is what makes it
-   that game's rather than Magic's — nothing to register beyond the name
-   itself. One `bantool-<store>_<game>.yml` workflow per target.
+   `.github/workflows/bantool-<store>.yml`. `options` in
+   `cmd/bantool/main.go` is keyed by `mtgban.Game` first and by the store's
+   own name second, so a target's game is the sub-map it is written under
+   rather than anything its name says. `scraperFlagName` composes the
+   external name the flag and the workflow use — the store's name alone
+   under `mtgban.GameMagic`, `<store>_<game>` under every other game
+   (`coolstuffinc_pokemon`, `cardtrader_gundam`,
+   `starcitygames_sealed_lorcana`) — and `flattenOptions` builds the by-name
+   view the flags are registered from. One `bantool-<store>_<game>.yml`
+   workflow per target.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` — every scraper sets
    `Game` explicitly now, `mtgban.GameMagic` included; nothing reads as Magic
@@ -386,8 +390,9 @@ A game is added in `mtgban` first and reaches the scrapers from there:
    spelling beside that package's existing ones, and one line in its
    `<recv>Games` map. Nothing else in the scraper changes — the switches that
    used to translate a vendor id back into a game are gone.
-4. Per scraper that should run it: a `scraperOption` named `<store>_<game>`
-   in `cmd/bantool/main.go` and a `bantool-<store>_<game>.yml` workflow.
+4. Per scraper that should run it: a `scraperOption` under the game's key in
+   `cmd/bantool/main.go`'s `options`, and a `bantool-<store>_<game>.yml`
+   workflow.
 5. Wire the game's datastore into `.github/workflows/ci.yml` — a cache job and
    a `test-<game>` job — and add its path variable to
    `internal/vocabulary/read.go`'s `Games`.

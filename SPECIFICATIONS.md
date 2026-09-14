@@ -290,7 +290,8 @@ for a game nothing registered fails with an error naming the games that are.
 There is no auto-detection: the loader that once tried every registered game
 in turn decoded AllPrintings through three foreign decoders before Magic's,
 behind a buffer of the whole file, and was removed. bantool reads the game
-off the scraper it runs; a suite names its own in its TestMain.
+off the registry key its target sits under; a suite names its own in its
+TestMain.
 
 **The global-backend concurrency contract.** `SetGlobalDatastore` atomically
 publishes a shallow copy behind `atomic.Pointer[Backend]`. Each package-level
@@ -968,12 +969,19 @@ embeds live credentials.
   besides). The `Init` closures of a store that prices several games are
   written once each in `cmd/bantool/scrapers.go` and instanced per game from
   the registry (`cardtraderMarketScraper(mtgban.GameLorcana)`), so the entry
-  itself is a name, a game constant and its flags. A target names its own
-  game: `scraperGame(name)` reads the suffix after the last underscore and
-  checks it against `mtgmatcher.RegisteredGames()`, so registering
-  `<store>_<game>` is what assigns the game — nothing to enumerate by hand —
-  and a name ending on no registered game is read as Magic's; a target and the
-  `game` input of the workflow scheduling it are pinned against each other by
+  itself is a name, a game constant and its flags. The registry is a
+  `map[mtgban.Game]map[string]*scraperOption`: the game is the outer key and
+  the store's own name the inner one, so a target's game is which sub-map
+  holds it rather than something re-derived from its name at runtime.
+  `scraperFlagName(game, name)` composes the external name the two make — the
+  store's name alone under `mtgban.GameMagic`, `<store>_<game>` under every
+  other game — and `flattenOptions` builds the by-name view that flag
+  registration, the `-scrapers`/`-sellers`/`-vendors` lookups and the Init
+  loop all read, sharing pointers with the nested map so enabling a target by
+  its flag name enables the entry `runGame` sees. It panics if two games claim
+  one external name, which is the collision a single flat literal used to
+  catch at compile time. A target and the `game` input of the workflow
+  scheduling it are pinned against each other by
   `cmd/bantool/workflows_test.go`. Selection via a target's own bare flag
   (`-tcg_market`, which is what `run-bantool.yml` invokes) or
   `-scrapers`/`-sellers`/`-vendors`; the latter two also hold a target to one
