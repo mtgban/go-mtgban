@@ -16,25 +16,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// CSICard is one card in the price list.
-type CSICard struct {
-	ID             int     `json:"id,string"`
-	URL            string  `json:"url"`
-	Name           string  `json:"name"`
-	ScryfallID     string  `json:"scryfallid"`
-	Variation      string  `json:"variation"`
-	Edition        string  `json:"edition"`
-	Language       string  `json:"language"`
-	IsFoil         bool    `json:"is_foil,string"`
-	PriceRetail    float64 `json:"price_retail,string"`
-	QuantityRetail int     `json:"qty_retail,string"`
-	PriceBuy       float64 `json:"price_buy,string"`
-	QuantityBuy    int     `json:"qty_buying,string"`
-}
-
 const (
-	csiPricelistURL = "https://www.coolstuffinc.com/gateway_json.php?k="
-
 	csiBuylistURL  = "https://www.coolstuffinc.com/GeneratedFiles/SellList/Section-%s.json"
 	csiBuylistLink = "https://www.coolstuffinc.com/main_selllist.php?s="
 )
@@ -56,52 +38,6 @@ func newCSIHTTPClient() *http.Client {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	return client.StandardClient()
-}
-
-// CSIClient reads Cool Stuff Inc's price list, which needs a key.
-type CSIClient struct {
-	client *http.Client
-	key    string
-}
-
-// NewCSIClient returns a client using the given key.
-func NewCSIClient(key string) *CSIClient {
-	csi := CSIClient{}
-	csi.client = csiClient
-	csi.key = key
-	return &csi
-}
-
-// GetPriceList returns the whole price list in one call.
-func (csi *CSIClient) GetPriceList(ctx context.Context) ([]CSICard, error) {
-	link := csiPricelistURL + csi.key
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := csi.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var pricelist struct {
-		Meta struct {
-			CreatedAt string `json:"created_at"`
-		} `json:"meta"`
-		Data []CSICard `json:"data"`
-	}
-	err = json.Unmarshal(data, &pricelist)
-	if err != nil {
-		return nil, err
-	}
-
-	return pricelist.Data, nil
 }
 
 // CSIPriceEntry is one card in the buylist feed.
