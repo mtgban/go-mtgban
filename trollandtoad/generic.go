@@ -30,6 +30,13 @@ const (
 	GameLorcana = "6"
 )
 
+// tntGames is what NewGenericScraper is built through: it names the
+// storefront department a game is filed under, and a game named nowhere here
+// is not one Troll and Toad is read for.
+var tntGames = map[mtgban.Game]string{
+	mtgban.GameLorcana: GameLorcana,
+}
+
 // Generic prices the singles of any game Troll and Toad carries,
 // by the department number they file it under.
 type Generic struct {
@@ -45,18 +52,24 @@ type Generic struct {
 	DisableRetail  bool
 	DisableBuylist bool
 
-	game string
+	game mtgban.Game
+	dept string
 }
 
 // NewGenericScraper returns a singles scraper for one game.
-func NewGenericScraper(game string) *Generic {
+func NewGenericScraper(game mtgban.Game) (*Generic, error) {
+	dept, ok := tntGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	tnt := Generic{}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
 	tnt.game = game
+	tnt.dept = dept
 
 	tnt.MaxConcurrency = defaultConcurrency
-	return &tnt
+	return &tnt, nil
 }
 
 func (tnt *Generic) printf(format string, a ...any) {
@@ -253,7 +266,7 @@ func (tnt *Generic) scrapePages(ctx context.Context, link string) error {
 
 func (tnt *Generic) scrape(ctx context.Context) error {
 	var link string
-	if tnt.game == GameLorcana {
+	if tnt.game == mtgban.GameLorcana {
 		link = "https://www.trollandtoad.com/disney-lorcana/19773"
 	}
 
@@ -290,7 +303,7 @@ func (tnt *Generic) scrape(ctx context.Context) error {
 }
 
 func (tnt *Generic) scrapeBuylist(ctx context.Context) error {
-	link := buylistURL + tnt.game
+	link := buylistURL + tnt.dept
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -456,9 +469,6 @@ func (tnt *Generic) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TNT"
 	info.InventoryTimestamp = &tnt.inventoryDate
 	info.BuylistTimestamp = &tnt.buylistDate
-	switch tnt.game {
-	case "6":
-		info.Game = mtgban.GameLorcana
-	}
+	info.Game = tnt.game
 	return
 }

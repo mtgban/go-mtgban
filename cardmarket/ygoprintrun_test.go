@@ -5,6 +5,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -44,7 +46,10 @@ const ygoDatastore = `{
 func TestMatchProductPrintRunPrefix(t *testing.T) {
 	installDatastore(t, "yugioh", ygoDatastore)
 
-	mkm := &Index{gameID: cm.GameYuGiOh}
+	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+	}
 	for _, tt := range []struct {
 		name, expansion, product, number, want string
 	}{

@@ -7,6 +7,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
@@ -159,7 +160,10 @@ const ygohDatastore = `{
 func TestResolveSealedNameRunSilent(t *testing.T) {
 	installDatastore(t, "yugioh", ygohDatastore)
 
-	mkm := &Sealed{gameID: cm.GameYuGiOh}
+	mkm, err := NewScraperSealed(mtgban.GameYuGiOh, "", "")
+	if err != nil {
+		t.Fatalf("NewScraperSealed(mtgban.GameYuGiOh) = %v", err)
+	}
 	for _, tt := range []struct {
 		name, want string
 	}{
@@ -220,7 +224,10 @@ const fabSealedDatastore = `{
 func TestResolveSealedNameNamedRun(t *testing.T) {
 	installDatastore(t, "fleshandblood", fabSealedDatastore)
 
-	mkm := &Sealed{gameID: cm.GameFleshAndBlood}
+	mkm, err := NewScraperSealed(mtgban.GameFleshAndBlood, "", "")
+	if err != nil {
+		t.Fatalf("NewScraperSealed(mtgban.GameFleshAndBlood) = %v", err)
+	}
 	for _, tt := range []struct {
 		name, want string
 	}{
@@ -276,7 +283,10 @@ const opDatastore = `{
 func TestResolveSealedNameRenamed(t *testing.T) {
 	installDatastore(t, "onepiece", opDatastore)
 
-	mkm := &Sealed{gameID: cm.GameOnePiece}
+	mkm, err := NewScraperSealed(mtgban.GameOnePiece, "", "")
+	if err != nil {
+		t.Fatalf("NewScraperSealed(mtgban.GameOnePiece) = %v", err)
+	}
 	for _, tt := range []struct {
 		name, want string
 	}{
@@ -332,6 +342,9 @@ func TestPruneSubsumed(t *testing.T) {
 			productMap[id] = []string{"ogn-box"}
 			named["ogn-box"] = append(named["ogn-box"], id)
 		}
+		// pruneSubsumed reads neither game nor gameID, and no game is under
+		// test here, so the zero-value struct is used directly rather than
+		// naming one through the constructor.
 		mkm := &Sealed{}
 		productIDs, _ := mkm.pruneSubsumed(tt.names, productMap, named,
 			slices.Sorted(maps.Keys(tt.names)))

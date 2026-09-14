@@ -65,14 +65,17 @@ func starcitygamesKey() (string, error) {
 // cannot tell apart. So a cardtrader that will not answer costs those
 // printings and nothing else, and the run goes ahead saying so rather than
 // failing and pricing nothing.
-func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
+func cardmarketOptionallyBridgedIndexScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := cardmarket.NewScraperIndex(game)
-		err := loadCardmarketCatalog(scraper)
+		scraper, err := cardmarket.NewScraperIndex(game)
 		if err != nil {
 			return nil, err
 		}
-		bridge, err := cardtraderBridge(bridgedGame)
+		err = loadCardmarketCatalog(scraper)
+		if err != nil {
+			return nil, err
+		}
+		bridge, err := cardtraderBridge(game)
 		if err != nil {
 			log.Printf("bridge unavailable, naming what the catalog can on its own: %v", err)
 		} else {
@@ -87,14 +90,17 @@ func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (
 	}
 }
 
-func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
+func cardmarketBridgedIndexScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := cardmarket.NewScraperIndex(game)
-		err := loadCardmarketCatalog(scraper)
+		scraper, err := cardmarket.NewScraperIndex(game)
 		if err != nil {
 			return nil, err
 		}
-		scraper.TCGBridge, err = cardtraderBridge(bridgedGame)
+		err = loadCardmarketCatalog(scraper)
+		if err != nil {
+			return nil, err
+		}
+		scraper.TCGBridge, err = cardtraderBridge(game)
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +116,7 @@ func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scr
 // tcgSYPScraper reads Store Your Products, which is served per category and
 // resolved against the catalog rather than an exported sku file, so every
 // game the list covers reads the same way.
-func tcgSYPScraper(game string) func() (mtgban.Scraper, error) {
+func tcgSYPScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		auth := os.Getenv("TCGPLAYER_AUTH")
 		if auth == "" {
@@ -146,10 +152,13 @@ func tcgSYPScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
+func cardmarketIndexScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := cardmarket.NewScraperIndex(game)
-		err := loadCardmarketCatalog(scraper)
+		scraper, err := cardmarket.NewScraperIndex(game)
+		if err != nil {
+			return nil, err
+		}
+		err = loadCardmarketCatalog(scraper)
 		if err != nil {
 			return nil, err
 		}
@@ -183,10 +192,7 @@ func loadCardmarketCatalog(scraper *cardmarket.Index) error {
 	return nil
 }
 
-// bridgedGame is the CardTrader game whose catalog stands in for a Cardmarket
-// one, for the games where Cardmarket publishes no ids of its own.
-
-func cardmarketSealedScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
+func cardmarketSealedScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		appToken, appSecret, err := cardmarketCredentials()
 		if err != nil {
@@ -196,7 +202,7 @@ func cardmarketSealedScraper(game int, bridgedGame int) func() (mtgban.Scraper, 
 		if err != nil {
 			return nil, err
 		}
-		scraper.TCGBridge, err = cardtraderBridge(bridgedGame)
+		scraper.TCGBridge, err = cardtraderBridge(game)
 		if err != nil {
 			return nil, err
 		}
@@ -209,7 +215,7 @@ func cardmarketSealedScraper(game int, bridgedGame int) func() (mtgban.Scraper, 
 	}
 }
 
-func cardtraderMarketScraper(game int) func() (mtgban.Scraper, error) {
+func cardtraderMarketScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		token, err := cardtraderToken()
 		if err != nil {
@@ -228,7 +234,7 @@ func cardtraderMarketScraper(game int) func() (mtgban.Scraper, error) {
 	}
 }
 
-func cardtraderSealedScraper(game int) func() (mtgban.Scraper, error) {
+func cardtraderSealedScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		token, err := cardtraderToken()
 		if err != nil {
@@ -247,9 +253,12 @@ func cardtraderSealedScraper(game int) func() (mtgban.Scraper, error) {
 	}
 }
 
-func coolstuffincScraper(game string) func() (mtgban.Scraper, error) {
+func coolstuffincScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := coolstuffinc.NewScraper(game)
+		scraper, err := coolstuffinc.NewScraper(game)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		scraper.Partner = os.Getenv("CSI_PARTNER")
 		if MaxConcurrency != 0 {
@@ -259,9 +268,12 @@ func coolstuffincScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func coolstuffincSealedScraper(game string) func() (mtgban.Scraper, error) {
+func coolstuffincSealedScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := coolstuffinc.NewScraperSealed(game)
+		scraper, err := coolstuffinc.NewScraperSealed(game)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		scraper.Partner = os.Getenv("CSI_PARTNER")
 		if MaxConcurrency != 0 {
@@ -271,9 +283,12 @@ func coolstuffincSealedScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func gamenerdzScraper(game string) func() (mtgban.Scraper, error) {
+func gamenerdzScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := gamenerdz.NewScraper(game)
+		scraper, err := gamenerdz.NewScraper(game)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
@@ -282,9 +297,12 @@ func gamenerdzScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func miniaturemarketSealedScraper(game string) func() (mtgban.Scraper, error) {
+func miniaturemarketSealedScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := miniaturemarket.NewScraperSealed(game)
+		scraper, err := miniaturemarket.NewScraperSealed(game)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		scraper.Affiliate = os.Getenv("MM_PARTNER")
 		if MaxConcurrency != 0 {
@@ -294,35 +312,44 @@ func miniaturemarketSealedScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func starcitygamesScraper(game int) func() (mtgban.Scraper, error) {
+func starcitygamesScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		apiKey, err := starcitygamesKey()
 		if err != nil {
 			return nil, err
 		}
-		scraper := starcitygames.NewScraper(game, apiKey)
+		scraper, err := starcitygames.NewScraper(game, apiKey)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		scraper.Affiliate = os.Getenv("SCG_PARTNER")
 		return scraper, nil
 	}
 }
 
-func starcitygamesSealedScraper(game int) func() (mtgban.Scraper, error) {
+func starcitygamesSealedScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		apiKey, err := starcitygamesKey()
 		if err != nil {
 			return nil, err
 		}
-		scraper := starcitygames.NewScraperSealed(game, apiKey)
+		scraper, err := starcitygames.NewScraperSealed(game, apiKey)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		scraper.Affiliate = os.Getenv("SCG_PARTNER")
 		return scraper, nil
 	}
 }
 
-func strikezoneScraper(game string) func() (mtgban.Scraper, error) {
+func strikezoneScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := strikezone.NewScraper(game)
+		scraper, err := strikezone.NewScraper(game)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
@@ -331,7 +358,7 @@ func strikezoneScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func tcgIndexScraper(game string) func() (mtgban.Scraper, error) {
+func tcgIndexScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		publicID, privateID, err := tcgplayerCredentials()
 		if err != nil {
@@ -350,7 +377,7 @@ func tcgIndexScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func tcgMarketScraper(game string) func() (mtgban.Scraper, error) {
+func tcgMarketScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		publicID, privateID, err := tcgplayerCredentials()
 		if err != nil {
@@ -369,7 +396,7 @@ func tcgMarketScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func tcgSealedScraper(game string) func() (mtgban.Scraper, error) {
+func tcgSealedScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		publicID, privateID, err := tcgplayerCredentials()
 		if err != nil {
@@ -388,9 +415,12 @@ func tcgSealedScraper(game string) func() (mtgban.Scraper, error) {
 	}
 }
 
-func vegassinglesScraper(game string) func() (mtgban.Scraper, error) {
+func vegassinglesScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
-		scraper := vegassingles.NewScraper(game)
+		scraper, err := vegassingles.NewScraper(game)
+		if err != nil {
+			return nil, err
+		}
 		scraper.LogCallback = GlobalLogCallback
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency

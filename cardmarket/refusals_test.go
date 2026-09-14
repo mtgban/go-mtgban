@@ -7,6 +7,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -25,17 +27,18 @@ func (s *logSink) callback(format string, a ...any) {
 func TestProcessProductRefusal(t *testing.T) {
 	installDatastore(t, "yugioh", ygoDatastore)
 
-	mkm := &Index{
-		gameID:       cm.GameYuGiOh,
-		exchangeRate: 1,
-		priceGuide: map[int]cm.PriceGuide{
-			1: {IDProduct: 1, LowPrice: 1, TrendPrice: 2},
-			2: {IDProduct: 2, LowPrice: 1, TrendPrice: 2},
-		},
+	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+	}
+	mkm.exchangeRate = 1
+	mkm.priceGuide = map[int]cm.PriceGuide{
+		1: {IDProduct: 1, LowPrice: 1, TrendPrice: 2},
+		2: {IDProduct: 2, LowPrice: 1, TrendPrice: 2},
 	}
 	channel := make(chan responseChan, 8)
 
-	err := mkm.processProduct(channel, &cm.Product{
+	err = mkm.processProduct(channel, &cm.Product{
 		IDProduct:     1,
 		Name:          "Blue-Eyes White Dragon",
 		Number:        "001",

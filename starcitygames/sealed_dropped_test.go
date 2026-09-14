@@ -15,7 +15,10 @@ import (
 // would move the number with stock rather than with coverage - the reading the
 // drop tally beside it is there to prevent.
 func TestSealedPricedCount(t *testing.T) {
-	scg := NewScraperSealed(GameLorcana, "")
+	scg, err := NewScraperSealed(mtgban.GameLorcana, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	// One product on both sides, one it has stock of and will not buy, one it
 	// will buy and has no stock of. Three products carry a price; neither side
 	// on its own says three.
@@ -44,7 +47,10 @@ func TestSealedPricedCount(t *testing.T) {
 func TestSealedDropAccounting(t *testing.T) {
 	withLorcana(t)
 
-	scg := NewScraperSealed(GameLorcana, "")
+	scg, err := NewScraperSealed(mtgban.GameLorcana, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	var logs []string
 	scg.LogCallback = func(format string, a ...any) { logs = append(logs, fmt.Sprintf(format, a...)) }
 	scg.productMap = map[string]string{}

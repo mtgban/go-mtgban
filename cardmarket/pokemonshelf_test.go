@@ -6,6 +6,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
 
@@ -30,7 +32,10 @@ const pokemonShelfDatastore = `{
 func TestMatchPokemonShelves(t *testing.T) {
 	installDatastore(t, "pokemon", pokemonShelfDatastore)
 
-	mkm := &Index{gameID: cm.GamePokemon}
+	mkm, err := NewScraperIndex(mtgban.GamePokemon)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GamePokemon) = %v", err)
+	}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 		err                           error

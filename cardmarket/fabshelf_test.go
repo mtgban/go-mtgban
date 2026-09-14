@@ -7,6 +7,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -137,7 +139,10 @@ func TestFabSameProduct(t *testing.T) {
 // shelf carries the treatment.
 func TestMatchProductFinishes(t *testing.T) {
 	loadFabShelfDatastore(t)
-	mkm := &Index{gameID: cm.GameFleshAndBlood}
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
 	for _, tt := range []struct {
 		expansion, code, name, number, want string
 	}{
@@ -169,7 +174,11 @@ func TestMatchProductFinishes(t *testing.T) {
 // back for the collector to fold beside the plain product.
 func TestResolveProductBridgeFinish(t *testing.T) {
 	loadFabShelfDatastore(t)
-	mkm := &Index{gameID: cm.GameFleshAndBlood, TCGBridge: map[int]int{1: 577711, 2: 453353, 3: 275840}}
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
+	mkm.TCGBridge = map[int]int{1: 577711, 2: 453353, 3: 275840}
 	for _, tt := range []struct {
 		product cm.Product
 		want    string
@@ -194,7 +203,10 @@ func TestResolveProductBridgeFinish(t *testing.T) {
 // sells under went unpriced.
 func TestDisownBridged(t *testing.T) {
 	loadFabShelfDatastore(t)
-	mkm := &Index{gameID: cm.GameFleshAndBlood}
+	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+	}
 	ravages := &cm.Product{Name: "Herald of Ravages (Blue) (Regular)", Number: "017", ExpansionName: "Monarch - Prism Blitz Deck"}
 	rebirth := &cm.Product{Name: "Herald of Rebirth (Blue) (Regular)", Number: "018", ExpansionName: "Monarch - Prism Blitz Deck"}
 	results := []resolved{

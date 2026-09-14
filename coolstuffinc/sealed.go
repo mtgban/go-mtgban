@@ -37,11 +37,16 @@ type Sealed struct {
 	DisableBuylist bool
 
 	client *http.Client
-	game   string
+	game   mtgban.Game
+	shelf  string
 }
 
 // NewScraperSealed returns a sealed scraper for one game.
-func NewScraperSealed(game string) *Sealed {
+func NewScraperSealed(game mtgban.Game) (*Sealed, error) {
+	shelf, ok := csiGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	csi := Sealed{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
@@ -51,7 +56,7 @@ func NewScraperSealed(game string) *Sealed {
 	csi.MaxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
-	if game == GameMagic {
+	if game == mtgban.GameMagic {
 		for _, uuid := range mtgmatcher.GetSealedUUIDs() {
 			co, err := mtgmatcher.GetUUID(uuid)
 			if err != nil {
@@ -65,7 +70,8 @@ func NewScraperSealed(game string) *Sealed {
 		}
 	}
 	csi.game = game
-	return &csi
+	csi.shelf = shelf
+	return &csi, nil
 }
 
 func (csi *Sealed) printf(format string, a ...any) {
@@ -218,7 +224,7 @@ func (csi *Sealed) scrape(ctx context.Context) error {
 }
 
 func (csi *Sealed) parseBL(ctx context.Context) error {
-	products, err := GetBuylist(ctx, csi.game)
+	products, err := GetBuylist(ctx, csi.shelf)
 	if err != nil {
 		return err
 	}
@@ -232,7 +238,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 		// Build link early to help debug
 		u, _ := url.Parse(csiBuylistLink)
 		v := url.Values{}
-		v.Set("s", csi.game)
+		v.Set("s", csi.shelf)
 		v.Set("a", "1")
 		v.Set("name", product.Name)
 		u.RawQuery = v.Encode()
@@ -243,7 +249,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 		// skipping the language variants the datastores never carry.
 		uuid, found := csi.productMap[product.PID]
 		if !found {
-			if csi.game == GameMagic {
+			if csi.game == mtgban.GameMagic {
 				continue
 			}
 			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
@@ -304,7 +310,7 @@ func (csi *Sealed) Load(ctx context.Context) error {
 	// other games ride the same set-facet search the singles use, with
 	// the sealed-name resolver telling the sealed rows apart from the
 	// card ones.
-	if csi.game != GameMagic {
+	if csi.game != mtgban.GameMagic {
 		var errs []error
 		if !csi.DisableRetail {
 			if err := csi.scrapeBysets(ctx); err != nil {
@@ -385,7 +391,7 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 // facets, which sealed products have none of and would be filtered out
 // by. The name route rather than the set facet: lorcana sealed carries
 // no ItemSet at all, where riftbound's does.
-func searchSealed(ctx context.Context, game, query string) (*SearchResult, error) {
+func searchSealed(ctx context.Context, shelf, query string) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", query)
 	v.Set("f[Artist][]", "")
@@ -410,7 +416,7 @@ func searchSealed(ctx context.Context, game, query string) (*SearchResult, error
 	// constraint excludes them outright
 	v.Set("f[Rarity][]", "")
 	v.Set("f[ItemSet][]", "")
-	v.Set("s", game)
+	v.Set("s", shelf)
 	v.Set("page", "1")
 	v.Set("resultsPerPage", "50")
 	v.Set("submit", "Search")
@@ -454,7 +460,7 @@ func searchSealed(ctx context.Context, game, query string) (*SearchResult, error
 // row the sealed-name resolver recognizes. English only: language-variant
 // names are skipped before resolution.
 func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) error {
-	result, err := searchSealed(ctx, csi.game, query)
+	result, err := searchSealed(ctx, csi.shelf, query)
 	if err != nil {
 		return err
 	}
@@ -487,7 +493,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		rows := doc.Find(`div[class="row product-search-row main-container"]`)
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
-			if csi.game == GameYuGiOh {
+			if csi.game == mtgban.GameYuGiOh {
 				// The storefront leads its yugioh sealed listings with the
 				// game's own name, which the canonical names never carry.
 				productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")
@@ -576,24 +582,7 @@ func (csi *Sealed) Buylist() mtgban.BuylistRecord {
 func (csi *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSISealed"
-	switch csi.game {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	case GameOnePiece:
-		info.Game = mtgban.GameOnePiece
-	case GamePokemon:
-		info.Game = mtgban.GamePokemon
-	case GameYuGiOh:
-		info.Game = mtgban.GameYuGiOh
-	case GameGundam:
-		info.Game = mtgban.GameGundam
-	case GamePalworld:
-		info.Game = mtgban.GamePalworld
-	}
+	info.Game = csi.game
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
 	info.SealedMode = true

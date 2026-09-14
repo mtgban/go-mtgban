@@ -6,6 +6,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
 
@@ -39,7 +41,10 @@ const pokemonDatastore = `{
 func TestMatchProductForeignExpansion(t *testing.T) {
 	installDatastore(t, "pokemon", pokemonDatastore)
 
-	mkm := &Index{gameID: cm.GamePokemon}
+	mkm, err := NewScraperIndex(mtgban.GamePokemon)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GamePokemon) = %v", err)
+	}
 	for _, tt := range []struct {
 		expansion, name, number, want string
 	}{
@@ -112,19 +117,22 @@ func TestPokemonBasicEnergy(t *testing.T) {
 // alone, and that a game sharing the route still refuses out loud.
 func TestNoPrintingSkipsBasicEnergy(t *testing.T) {
 	for _, tt := range []struct {
-		desc   string
-		gameID int
-		name   string
-		want   error
+		desc string
+		game mtgban.Game
+		name string
+		want error
 	}{
-		{"a Pokemon basic energy goes quiet", cm.GamePokemon, "Water Energy", nil},
-		{"its bracketed spelling too", cm.GamePokemon, "Grass Energy [Basic]", nil},
-		{"a Pokemon special energy still refuses", cm.GamePokemon, "Rainbow Energy", errNoPrinting},
-		{"an ordinary Pokemon card still refuses", cm.GamePokemon, "Pikachu", errNoPrinting},
-		{"another game's energy still refuses", cm.GameYuGiOh, "Water Energy", errNoPrinting},
+		{"a Pokemon basic energy goes quiet", mtgban.GamePokemon, "Water Energy", nil},
+		{"its bracketed spelling too", mtgban.GamePokemon, "Grass Energy [Basic]", nil},
+		{"a Pokemon special energy still refuses", mtgban.GamePokemon, "Rainbow Energy", errNoPrinting},
+		{"an ordinary Pokemon card still refuses", mtgban.GamePokemon, "Pikachu", errNoPrinting},
+		{"another game's energy still refuses", mtgban.GameYuGiOh, "Water Energy", errNoPrinting},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			mkm := &Index{gameID: tt.gameID}
+			mkm, err := NewScraperIndex(tt.game)
+			if err != nil {
+				t.Fatalf("NewScraperIndex(%v) = %v", tt.game, err)
+			}
 			if got := mkm.noPrinting(&cm.Product{Name: tt.name}); !errors.Is(got, tt.want) {
 				t.Errorf("noPrinting(%q) = %v, want %v", tt.name, got, tt.want)
 			}
@@ -158,7 +166,10 @@ const letteredDatastore = `{
 // before, so every League & Championship product refused.
 func TestMatchPokemonLettered(t *testing.T) {
 	installDatastore(t, "pokemon", letteredDatastore)
-	mkm := &Index{gameID: cm.GamePokemon}
+	mkm, err := NewScraperIndex(mtgban.GamePokemon)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GamePokemon) = %v", err)
+	}
 
 	for _, tt := range []struct {
 		desc      string

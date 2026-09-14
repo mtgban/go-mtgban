@@ -28,7 +28,8 @@ type Sealed struct {
 	setIDs     map[string]int
 	dropped    map[string]int
 	client     *SCGClient
-	game       int
+	game       mtgban.Game
+	gameID     int
 }
 
 // pricedProducts counts the products a run came away with a price for, on
@@ -57,13 +58,18 @@ func (scg *Sealed) drop(reason string) {
 
 // NewScraperSealed returns a sealed scraper for one game, using the given API
 // key.
-func NewScraperSealed(game int, apiKey string) *Sealed {
+func NewScraperSealed(game mtgban.Game, apiKey string) (*Sealed, error) {
+	gameID, ok := scgGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	scg := Sealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient(apiKey)
 	scg.game = game
-	return &scg
+	scg.gameID = gameID
+	return &scg, nil
 }
 
 func (scg *Sealed) printf(format string, a ...any) {
@@ -147,7 +153,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	if p.ProductType != ProductTypeSealed {
 		return
 	}
-	if gameFromCatalog(p.Game) != scg.game {
+	if gameFromCatalog(p.Game) != scg.gameID {
 		return
 	}
 
@@ -156,7 +162,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	// lorcana) resolve by name instead, English only, unique or nothing.
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
-		if scg.game == GameMagic {
+		if scg.game == mtgban.GameMagic {
 			scg.drop("sku the datastore does not carry")
 			return
 		}
@@ -192,7 +198,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	buyURL := link
 	ids := setIDsForProduct(scg.setIDs, p.Name, p.SKU)
 	if len(ids) > 0 {
-		buyURL = SCGBuylistURL(scg.game, p.Name, p.Language, ids)
+		buyURL = SCGBuylistURL(scg.gameID, p.Name, p.Language, ids)
 	}
 
 	for _, v := range p.Variants {
@@ -235,7 +241,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 func (scg *Sealed) Load(ctx context.Context) error {
 	scg.productMap = buildProductMap()
 
-	setIDs, err := scg.client.SetIDs(ctx, scg.game)
+	setIDs, err := scg.client.SetIDs(ctx, scg.gameID)
 	if err != nil {
 		scg.printf("could not load set ids for buylist links: %v", err)
 	}
@@ -291,15 +297,6 @@ func (scg *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.SealedMode = true
-	switch scg.game {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	}
+	info.Game = scg.game
 	return
 }

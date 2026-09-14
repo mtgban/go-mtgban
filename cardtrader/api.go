@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -48,6 +50,23 @@ const (
 	GameGundam            = 23
 	GamePalworld          = 26
 )
+
+// ctGames is what the two constructors are built through: it names the
+// catalog number Card Trader files a game under, and a game named nowhere
+// here is not one we are read for. The numbers above stay public: they are
+// this catalog's own vocabulary, and they cover games mtgban has no Game for
+// at all.
+var ctGames = map[mtgban.Game]int{
+	mtgban.GameMagic:         GameMagic,
+	mtgban.GameYuGiOh:        GameYuGiOh,
+	mtgban.GamePokemon:       GamePokemon,
+	mtgban.GameFleshAndBlood: GameFleshAndBlood,
+	mtgban.GameOnePiece:      GameOnePiece,
+	mtgban.GameLorcana:       GameLorcana,
+	mtgban.GameRiftbound:     GameRiftbound,
+	mtgban.GameGundam:        GameGundam,
+	mtgban.GamePalworld:      GamePalworld,
+}
 
 // The catalog categories. Card Trader splits every game into product types of
 // its own, and a blueprint belongs to exactly one of them.

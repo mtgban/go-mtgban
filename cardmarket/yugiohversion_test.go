@@ -5,6 +5,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -31,7 +33,10 @@ const yugiohVersionDatastore = `{
 // land but that they land apart, which is what a shared uuid would break.
 func TestYugiohVersionVariants(t *testing.T) {
 	installDatastore(t, "yugioh", yugiohVersionDatastore)
-	mkm := NewScraperIndex(cm.GameYuGiOh)
+	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+	}
 
 	seen := map[string]string{}
 	for _, tt := range []struct {
@@ -67,8 +72,11 @@ func TestYugiohVersionVariants(t *testing.T) {
 // than borrow the third one's stamp, so that it is seen and named.
 func TestYugiohVersionUncovered(t *testing.T) {
 	installDatastore(t, "yugioh", yugiohVersionDatastore)
-	mkm := NewScraperIndex(cm.GameYuGiOh)
-	_, err := mkm.matchYugioh(&cm.Product{
+	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+	}
+	_, err = mkm.matchYugioh(&cm.Product{
 		Name:          "Ghost Ogre & Snow Rabbit (V.4 - Ultra Rare)",
 		Number:        "001",
 		ExpansionName: "Winner's Pack 2026-2027",

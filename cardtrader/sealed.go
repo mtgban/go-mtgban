@@ -27,26 +27,30 @@ type Sealed struct {
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
-	gameID        int
+
+	game   mtgban.Game
+	gameID int
 }
 
 // NewScraperSealed returns a sealed scraper for one game, authenticated with a
 // full API token.
-func NewScraperSealed(gameID int, token string) (*Sealed, error) {
+func NewScraperSealed(game mtgban.Game, token string) (*Sealed, error) {
+	id, found := ctGames[game]
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
-	switch gameID {
-	case GameMagic, GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh, GameFleshAndBlood,
-		GamePokemon, GameGundam:
-	default:
-		return nil, fmt.Errorf("unsupported game %d", gameID)
+	// Palworld is the one game the shared table carries that this side has
+	// never been built for, so it is refused here rather than left out of
+	// the table the market scraper reads too.
+	if !found || game == mtgban.GamePalworld {
+		return nil, fmt.Errorf("unsupported game %q", game)
 	}
 	ct := Sealed{}
 	ct.inventory = mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
 	ct.MaxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
-	ct.gameID = gameID
+	ct.game = game
+	ct.gameID = id
 	return &ct, nil
 }
 
@@ -355,7 +359,7 @@ func (ct *Sealed) Load(ctx context.Context) error {
 	if ct.TargetEdition != "" {
 		ct.printf("-> only targeting edition %s", ct.TargetEdition)
 	}
-	blueprintsRaw, expansionsRaw, err := BlueprintsForGame(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
 	if err != nil {
 		return err
 	}
@@ -440,23 +444,6 @@ func (ct *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.SealedMode = true
-	switch ct.gameID {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	case GameOnePiece:
-		info.Game = mtgban.GameOnePiece
-	case GameYuGiOh:
-		info.Game = mtgban.GameYuGiOh
-	case GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	case GamePokemon:
-		info.Game = mtgban.GamePokemon
-	case GameGundam:
-		info.Game = mtgban.GameGundam
-	}
+	info.Game = ct.game
 	return
 }

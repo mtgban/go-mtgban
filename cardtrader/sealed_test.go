@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -126,7 +128,10 @@ func TestBuildProductMap(t *testing.T) {
 		orphanID + 1: {ID: orphanID + 1, Name: resolvableName},
 	}
 
-	ct := &Sealed{gameID: GameMagic}
+	ct, err := NewScraperSealed(mtgban.GameMagic, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	productMap := ct.buildProductMap(blueprints)
 	if !reflect.DeepEqual(productMap[ctID], ctUUIDs) {
 		t.Errorf("answered blueprint overridden: got %v, want %v", productMap[ctID], ctUUIDs)
@@ -138,7 +143,10 @@ func TestBuildProductMap(t *testing.T) {
 		t.Errorf("magic name pass fired: got %v", uuids)
 	}
 
-	ct = &Sealed{gameID: GamePokemon}
+	ct, err = NewScraperSealed(mtgban.GamePokemon, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	productMap = ct.buildProductMap(blueprints)
 	if !reflect.DeepEqual(productMap[orphanID+1], []string{resolvedUUID}) {
 		t.Errorf("name pass did not fire: got %v, want %v", productMap[orphanID+1], []string{resolvedUUID})
@@ -174,7 +182,10 @@ func TestBuildProductMapReadsExpansion(t *testing.T) {
 
 	blueprint := &Blueprint{ID: 1, Name: "Crucible of War Booster Box"}
 	blueprints := map[int]*Blueprint{1: blueprint}
-	ct := &Sealed{gameID: GameFleshAndBlood}
+	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if uuids, found := ct.buildProductMap(blueprints)[1]; found {
 		t.Errorf("a blueprint naming no run resolved to %v", uuids)
@@ -199,7 +210,10 @@ func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
 	useBackend(t, sealedRunsBackend())
 
 	var logged []string
-	ct := &Sealed{gameID: GameFleshAndBlood}
+	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	ct.LogCallback = func(format string, a ...any) {
 		logged = append(logged, fmt.Sprintf(format, a...))
 	}
@@ -229,7 +243,10 @@ func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
 func TestBuildProductMapDropsAccessories(t *testing.T) {
 	useBackend(t, sealedAccessoryBackend())
 
-	ct := &Sealed{gameID: GameFleshAndBlood}
+	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, tt := range []struct {
 		desc     string
 		category int
@@ -287,7 +304,10 @@ func sealedAccessoryBackend() *mtgmatcher.Backend {
 func TestBuildProductMapDropsSubsumed(t *testing.T) {
 	useBackend(t, sealedSubsumedBackend())
 
-	ct := &Sealed{gameID: GameFleshAndBlood}
+	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	// The bundle alone is nothing but a spelling of the product, and
 	// dropping it there would cost the product its only price.
 	alone := ct.buildProductMap(map[int]*Blueprint{
@@ -375,7 +395,10 @@ func sealedShelfCodeBackend() *mtgmatcher.Backend {
 // shelf's own code, and keeps the number the catalog spells into the name.
 func TestBuildProductMapTrimsShelfCode(t *testing.T) {
 	useBackend(t, sealedShelfCodeBackend())
-	ct := &Sealed{gameID: GameGundam}
+	ct, err := NewScraperSealed(mtgban.GameGundam, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	for _, tt := range []struct {
 		name  string

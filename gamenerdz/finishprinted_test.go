@@ -3,6 +3,7 @@ package gamenerdz
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -50,7 +51,7 @@ func TestFinishPrinted(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(tt.product, GameMagic)
+			card, err := preprocess(tt.product, mtgban.GameMagic)
 			if err != nil {
 				t.Fatalf("preprocess: %v", err)
 			}

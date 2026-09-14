@@ -32,21 +32,32 @@ const (
 	GameGundam    = "Gundam"
 )
 
-// listedConditions names the conditions the store buys, per product line.
-// The storefront's buylist lists a condition only where the store has
+// vsGames is what NewScraper is built through: it names the product line a
+// game is sold under, and a game named nowhere here is not one Vegas Singles
+// is read for. The lines themselves stay public, since NewVSClient takes one.
+var vsGames = map[mtgban.Game]string{
+	mtgban.GameMagic:     GameMagic,
+	mtgban.GameRiftbound: GameRiftbound,
+	mtgban.GameOnePiece:  GameOnePiece,
+	mtgban.GamePokemon:   GamePokemon,
+	mtgban.GameGundam:    GameGundam,
+}
+
+// listedConditions names the conditions the store buys, per game. The
+// storefront's buylist lists a condition only where the store has
 // configured it for that line, but the search endpoint answers with an
 // offer for every condition whatever the line, so the rest arrive here as
-// bids the store will not honour. A line named nowhere below is bought in
+// bids the store will not honour. A game named nowhere below is bought in
 // every condition.
 //
 // It is a buylist setting and reaches nothing else: what the store sells
 // is whatever it has on the shelf, in whatever grade it graded it, and the
 // stock count beside each retail listing is what says so.
-var listedConditions = map[string][]string{
-	GameRiftbound: {"Near Mint"},
-	GamePokemon:   {"Near Mint"},
-	GameOnePiece:  {"Near Mint", "Lightly Played"},
-	GameGundam:    {"Near Mint"},
+var listedConditions = map[mtgban.Game][]string{
+	mtgban.GameRiftbound: {"Near Mint"},
+	mtgban.GamePokemon:   {"Near Mint"},
+	mtgban.GameOnePiece:  {"Near Mint", "Lightly Played"},
+	mtgban.GameGundam:    {"Near Mint"},
 }
 
 var conditionMap = map[string]string{
@@ -83,7 +94,8 @@ type Vegassingles struct {
 	MaxConcurrency int
 
 	client *VSClient
-	game   string
+	game   mtgban.Game
+	line   string
 
 	inventoryDate  time.Time
 	buylistDate    time.Time
@@ -94,14 +106,19 @@ type Vegassingles struct {
 }
 
 // NewScraper returns a scraper for one game.
-func NewScraper(game string) *Vegassingles {
+func NewScraper(game mtgban.Game) (*Vegassingles, error) {
+	line, ok := vsGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	vs := Vegassingles{}
 	vs.inventory = mtgban.InventoryRecord{}
 	vs.buylist = mtgban.BuylistRecord{}
-	vs.client = NewVSClient(game)
+	vs.client = NewVSClient(line)
 	vs.game = game
+	vs.line = line
 	vs.MaxConcurrency = defaultConcurrency
-	return &vs
+	return &vs, nil
 }
 
 func (vs *Vegassingles) printf(format string, a ...any) {
@@ -137,7 +154,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 
 	u, _ := url.Parse("https://buylist.vegas.singles/retailer/buylist")
 	q := u.Query()
-	q.Set("product_line", vs.game)
+	q.Set("product_line", vs.line)
 	q.Set("q", product.DisplayName)
 	q.Set("sort", "Relevance")
 	u.RawQuery = q.Encode()
@@ -404,15 +421,6 @@ func (vs *Vegassingles) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "VS"
 	info.InventoryTimestamp = &vs.inventoryDate
 	info.BuylistTimestamp = &vs.buylistDate
-	switch vs.game {
-	case GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	case GameOnePiece:
-		info.Game = mtgban.GameOnePiece
-	case GamePokemon:
-		info.Game = mtgban.GamePokemon
-	case GameGundam:
-		info.Game = mtgban.GameGundam
-	}
+	info.Game = vs.game
 	return
 }

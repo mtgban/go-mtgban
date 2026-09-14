@@ -5,6 +5,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -33,7 +35,10 @@ const yugiohOversizedDatastore = `{
 // what it reaches.
 func TestYugiohOversized(t *testing.T) {
 	installDatastore(t, "yugioh", yugiohOversizedDatastore)
-	mkm := NewScraperIndex(cm.GameYuGiOh)
+	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+	}
 
 	for _, tt := range []struct {
 		desc, name, expansion, number, want string

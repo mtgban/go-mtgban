@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // The games this scraper covers, as SCG's API numbers them
@@ -16,6 +17,17 @@ const (
 	GameLorcana       = 3
 	GameRiftbound     = 5
 )
+
+// scgGames is what the two constructors are built through: it names the id
+// SCG's API numbers a game with, and a game named nowhere here is not one
+// Star City Games is read for. The ids themselves stay public - SCGBuylistURL
+// and SCGClient.SetIDs each ask for one.
+var scgGames = map[mtgban.Game]int{
+	mtgban.GameMagic:         GameMagic,
+	mtgban.GameFleshAndBlood: GameFleshAndBlood,
+	mtgban.GameLorcana:       GameLorcana,
+	mtgban.GameRiftbound:     GameRiftbound,
+}
 
 // SCGClient reads SCG's catalog API.
 type SCGClient struct {

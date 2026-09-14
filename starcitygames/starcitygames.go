@@ -32,7 +32,8 @@ type Starcitygames struct {
 
 	setIDs map[string]int
 	client *SCGClient
-	game   int
+	game   mtgban.Game
+	gameID int
 
 	// bulkRated counts the buylist figures dropped as a bulk tier's rate.
 	// It is logged rather than used: the rates are SCG's and can change
@@ -42,12 +43,17 @@ type Starcitygames struct {
 }
 
 // NewScraper returns a singles scraper for one game, using the given API key.
-func NewScraper(game int, apiKey string) *Starcitygames {
+func NewScraper(game mtgban.Game, apiKey string) (*Starcitygames, error) {
+	gameID, ok := scgGames[game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	scg := Starcitygames{}
 	scg.reset()
 	scg.client = NewSCGClient(apiKey)
 	scg.game = game
-	return &scg
+	scg.gameID = gameID
+	return &scg, nil
 }
 
 // reset drops everything a run has collected, for a stream that broke and has
@@ -85,14 +91,14 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 	if !strings.HasPrefix(p.SKU, "SGL-") {
 		return
 	}
-	if gameFromCatalog(p.Game) != scg.game {
+	if gameFromCatalog(p.Game) != scg.gameID {
 		return
 	}
 	if scg.TargetEdition != "" && scg.TargetEdition != p.Set {
 		return
 	}
 
-	cardID, err := resolveProduct(scg.game, p)
+	cardID, err := resolveProduct(scg.gameID, p)
 	if err != nil {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
@@ -120,7 +126,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 	buyURL := link
 	ids := setIDsForProduct(scg.setIDs, p.Set, p.SKU)
 	if len(ids) > 0 {
-		buyURL = SCGBuylistURL(scg.game, p.Name, p.Language, ids)
+		buyURL = SCGBuylistURL(scg.gameID, p.Name, p.Language, ids)
 	}
 
 	customFields := map[string]string{
@@ -179,7 +185,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 			}
 		}
 
-		buyPrice, priced, bulk := buylistPrice(scg.game, p, v.SellListPrice)
+		buyPrice, priced, bulk := buylistPrice(scg.gameID, p, v.SellListPrice)
 		if bulk {
 			scg.bulkRated++
 		}
@@ -214,7 +220,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 // (price/qty) and buylist (sell_list_price) data per variant, and fills the
 // inventory and buylist in one pass.
 func (scg *Starcitygames) loadCatalog(ctx context.Context) error {
-	setIDs, err := scg.client.SetIDs(ctx, scg.game)
+	setIDs, err := scg.client.SetIDs(ctx, scg.gameID)
 	if err != nil {
 		scg.printf("could not load set ids for buylist links: %v", err)
 	}
@@ -304,15 +310,6 @@ func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.CreditMultiplier = 1.3
-	switch scg.game {
-	case GameMagic:
-		info.Game = mtgban.GameMagic
-	case GameFleshAndBlood:
-		info.Game = mtgban.GameFleshAndBlood
-	case GameLorcana:
-		info.Game = mtgban.GameLorcana
-	case GameRiftbound:
-		info.Game = mtgban.GameRiftbound
-	}
+	info.Game = scg.game
 	return
 }

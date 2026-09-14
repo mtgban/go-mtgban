@@ -1,6 +1,10 @@
 package vegassingles
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+)
 
 // TestOversizeHeading pins which listings in the storefront's oversize bin are
 // display pieces and which are singles it happens to file there. The bin's own
@@ -17,7 +21,7 @@ func TestOversizeHeading(t *testing.T) {
 		product := VSProduct{DisplayName: display}
 		product.ProductData.Set = "over"
 		product.ProductData.SetName = "Oversize Cards"
-		if _, err := preprocess(product, GameMagic); err == nil {
+		if _, err := preprocess(product, mtgban.GameMagic); err == nil {
 			t.Errorf("%s: read as a single, want refused as a display card", display)
 		}
 	}
@@ -31,7 +35,7 @@ func TestOversizeHeading(t *testing.T) {
 		product := VSProduct{DisplayName: display}
 		product.ProductData.Set = "over"
 		product.ProductData.SetName = "Oversize Cards"
-		if _, err := preprocess(product, GameMagic); err != nil {
+		if _, err := preprocess(product, mtgban.GameMagic); err != nil {
 			t.Errorf("%s: refused as a display card, want read as a single (%v)", display, err)
 		}
 	}

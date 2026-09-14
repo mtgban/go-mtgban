@@ -86,7 +86,8 @@ type VSClient struct {
 }
 
 // NewVSClient returns a client for one product line, in the storefront's own
-// spelling (the Game constants).
+// spelling - what vsGames translates an mtgban.Game into, and what
+// NewScraper hands down.
 func NewVSClient(productLine string) *VSClient {
 	vs := VSClient{}
 	client := retryablehttp.NewClient()

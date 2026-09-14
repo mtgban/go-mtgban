@@ -3,6 +3,7 @@ package miniaturemarket
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -41,7 +42,7 @@ func TestSealedNameOnePiece(t *testing.T) {
 			"Heroines Gift Collection",
 		},
 	} {
-		got := sealedName(GameOnePiece, tt.in)
+		got := sealedName(mtgban.GameOnePiece, tt.in)
 		if got != tt.want {
 			t.Errorf("%q:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
@@ -92,7 +93,7 @@ func TestSealedNameGundam(t *testing.T) {
 			"Gundam Assemble Premium Collection - Mobile Suit Gundam GQuuuuuuX [PC02A]",
 		},
 	} {
-		if got := sealedName(GameGundam, tt.in); got != tt.want {
+		if got := sealedName(mtgban.GameGundam, tt.in); got != tt.want {
 			t.Errorf("%s:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
 	}
@@ -142,7 +143,7 @@ func TestSealedNameFleshAndBlood(t *testing.T) {
 			"Usurp the Shadow Throne Booster Pack (Preorder)",
 		},
 	} {
-		got := sealedName(GameFleshAndBlood, tt.in)
+		got := sealedName(mtgban.GameFleshAndBlood, tt.in)
 		if got != tt.want {
 			t.Errorf("%q:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
@@ -152,7 +153,7 @@ func TestSealedNameFleshAndBlood(t *testing.T) {
 // The other games' names already read like their canon: nothing moves.
 func TestSealedNameOtherGamesUntouched(t *testing.T) {
 	name := "Riftbound: League of Legends TCG - Origins Booster Box (Preorder)"
-	if got := sealedName(GameRiftbound, name); got != name {
+	if got := sealedName(mtgban.GameRiftbound, name); got != name {
 		t.Errorf("riftbound name rewritten: %q", got)
 	}
 }
@@ -164,7 +165,10 @@ func TestSealedNameOtherGamesUntouched(t *testing.T) {
 func TestResolveListing(t *testing.T) {
 	withGameDatastore(t, "lorcana", "LORCANA_PATH")
 
-	mm := NewScraperSealed(GameLorcana)
+	mm, err := NewScraperSealed(mtgban.GameLorcana)
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, tt := range []struct {
 		desc, id, listed string
 		wantDrop         bool
@@ -190,7 +194,10 @@ func TestResolveListing(t *testing.T) {
 
 	// A Magic listing routes through the id alone, and one the datastore
 	// does not carry says so rather than vanishing.
-	magic := NewScraperSealed(GameMagic)
+	magic, err := NewScraperSealed(mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if _, drop := magic.resolveListing("nosuchid", "Whatever Box"); drop != "no datastore id" {
 		t.Errorf("an unmapped Magic listing dropped with %q", drop)
 	}
@@ -303,7 +310,10 @@ func TestResolveByNamedCard(t *testing.T) {
 func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
 	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
-	mm := NewScraperSealed(GameFleshAndBlood)
+	mm, err := NewScraperSealed(mtgban.GameFleshAndBlood)
+	if err != nil {
+		t.Fatal(err)
+	}
 	uuid, drop := mm.resolveListing("", "Flesh & Blood TCG: Usurp the Shadow Throne - Booster Pack (Preorder)")
 	if drop != "" || uuid == "" {
 		t.Fatalf("resolveListing = (%q, %q), want the booster pack", uuid, drop)
@@ -325,7 +335,10 @@ func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
 func TestResolveGundamPremiumCollection(t *testing.T) {
 	withGameDatastore(t, "gundam", "GUNDAM_PATH")
 
-	mm := NewScraperSealed(GameGundam)
+	mm, err := NewScraperSealed(mtgban.GameGundam)
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, tt := range []struct {
 		desc, listed, want string
 	}{

@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -12,15 +13,15 @@ import (
 // grammar its game's display names follow. The finish always comes from the
 // selectedFinish field, which names the printing in each game's own words;
 // the display name only restates it as a tail on the set.
-func preprocess(product GNProduct, game string) (*mtgmatcher.InputCard, error) {
+func preprocess(product GNProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
 	switch game {
-	case GameLorcana:
+	case mtgban.GameLorcana:
 		return preprocessLorcana(product)
-	case GamePokemon:
+	case mtgban.GamePokemon:
 		return preprocessPokemon(product)
-	case GameOnePiece:
+	case mtgban.GameOnePiece:
 		return preprocessOnePiece(product)
-	case GameFleshAndBlood:
+	case mtgban.GameFleshAndBlood:
 		return preprocessFleshAndBlood(product)
 	}
 	return preprocessMagic(product)

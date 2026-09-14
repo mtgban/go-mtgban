@@ -6,6 +6,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 )
 
@@ -111,16 +113,17 @@ func TestOffShelf(t *testing.T) {
 		},
 	} {
 		t.Run(tt.what, func(t *testing.T) {
-			mkm := &Index{
-				gameID:       cm.GameOnePiece,
-				exchangeRate: 1,
-				shelved:      shelvedSets(opShelves),
-				priceGuide: map[int]cm.PriceGuide{
-					tt.product.IDProduct: {IDProduct: tt.product.IDProduct, LowPrice: 1, TrendPrice: 2},
-				},
+			mkm, err := NewScraperIndex(mtgban.GameOnePiece)
+			if err != nil {
+				t.Fatalf("NewScraperIndex(mtgban.GameOnePiece) = %v", err)
+			}
+			mkm.exchangeRate = 1
+			mkm.shelved = shelvedSets(opShelves)
+			mkm.priceGuide = map[int]cm.PriceGuide{
+				tt.product.IDProduct: {IDProduct: tt.product.IDProduct, LowPrice: 1, TrendPrice: 2},
 			}
 			channel := make(chan responseChan, 8)
-			err := mkm.processProduct(channel, &tt.product)
+			err = mkm.processProduct(channel, &tt.product)
 			close(channel)
 
 			if tt.want == "" {
