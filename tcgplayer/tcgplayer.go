@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -196,6 +197,30 @@ func (tcg *Market) Load(ctx context.Context) error {
 
 	start := time.Now()
 
+	// A two-sided token sheet's product is filed under both of its single-
+	// faced tokens' sku lists in the datastore's own sku file - one physical
+	// card, one price, but two unrelated uuids both listing it - so priced
+	// the ordinary way it lands on both, and a token that pairs with several
+	// partners absorbs every one of their prices. mtgmatcher now mints a
+	// combined entity for it; derivedProductIDs is every id one of those
+	// entities claims, read once so the per-card walk below can skip it
+	// rather than mis-price the single-faced token, and derivedBySet is
+	// where each entity's own combined walk (below) prices it instead.
+	derivedProductIDs := map[int]bool{}
+	derivedBySet := map[string][]*mtgmatcher.CardObject{}
+	for _, co := range mtgmatcher.GlobalDatastore().UUIDs {
+		if co.Identifiers["derivedTokenPair"] != "true" {
+			continue
+		}
+		derivedBySet[co.SetCode] = append(derivedBySet[co.SetCode], co)
+		for _, id := range strings.Split(co.Identifiers["tcgplayerProductIds"], ",") {
+			n, err := strconv.Atoi(id)
+			if err == nil {
+				derivedProductIDs[n] = true
+			}
+		}
+	}
+
 	pages := make(chan marketChan)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -347,6 +372,12 @@ func (tcg *Market) Load(ctx context.Context) error {
 					if !hasEtched && sku.Finish == "ETCHED" {
 						continue
 					}
+					// This product is a two-sided token sheet's pairing, not
+					// this single-faced token alone; the walk below prices
+					// it once, on the entity that is actually that product.
+					if derivedProductIDs[sku.ProductID] {
+						continue
+					}
 					// Make sure the right id is parsed
 					// Check for tcgplayerProductId due to non-English cards from duplicated sets
 					if sku.Finish != "ETCHED" && card.Identifiers["tcgplayerProductId"] != "" && fmt.Sprint(sku.ProductID) != card.Identifiers["tcgplayerProductId"] {
@@ -361,6 +392,59 @@ func (tcg *Market) Load(ctx context.Context) error {
 
 					pages <- marketChan{
 						UUID:      card.UUID,
+						Condition: sku.Condition,
+						Printing:  sku.Printing,
+						Finish:    sku.Finish,
+						ProductID: sku.ProductID,
+						SkuID:     sku.SkuID,
+						Language:  sku.Language,
+					}
+				}
+			}
+
+			// Price each two-sided token sheet's combined entity once, from
+			// whichever single-faced side's sku list carries its own ids -
+			// mtgjson files one product's skus under both faces, which is
+			// the collision derivedProductIDs above steers away from them.
+			for _, co := range derivedBySet[set.Code] {
+				skus, found := skusMap[co.Identifiers["tokenPairPartA"]]
+				if !found {
+					skus, found = skusMap[co.Identifiers["tokenPairPartB"]]
+				}
+				if !found {
+					continue
+				}
+
+				ownIDs := map[string]bool{}
+				for _, id := range strings.Split(co.Identifiers["tcgplayerProductIds"], ",") {
+					ownIDs[id] = true
+				}
+				wantPrinting := "NORMAL"
+				if co.Foil {
+					wantPrinting = "FOIL"
+				}
+
+				for _, sku := range skus {
+					if !ownIDs[strconv.Itoa(sku.ProductID)] {
+						continue
+					}
+					if sku.Condition == "UNOPENED" || sku.Finish == "ETCHED" {
+						continue
+					}
+					if sku.Printing != wantPrinting {
+						continue
+					}
+					if !mtgmatcher.Equals(sku.Language, co.Language) && sku.Language != "ENGLISH" {
+						continue
+					}
+					_, dupe := idsFound[sku.SkuID]
+					if dupe {
+						continue
+					}
+					idsFound[sku.SkuID] = struct{}{}
+
+					pages <- marketChan{
+						UUID:      co.UUID,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
 						Finish:    sku.Finish,
