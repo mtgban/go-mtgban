@@ -136,9 +136,27 @@ type DatastoreSealed struct {
 // the backend is built from. The collector number is not among them: the
 // set art cards carry none, and a card the catalog sells under no number
 // still has to be sold.
+//
+// It reads either shape: the document itself, or the document wrapped in
+// a {"meta":...,"data":...} envelope, in which case "data" holds the
+// payload.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
+	raw, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	var envelope struct {
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		return nil, err
+	}
+	if envelope.Data != nil {
+		raw = envelope.Data
+	}
+
 	var payload Datastore
-	if err := json.NewDecoder(r).Decode(&payload); err != nil {
+	if err := json.Unmarshal(raw, &payload); err != nil {
 		return nil, err
 	}
 	if payload.Game != "fleshandblood" || len(payload.Sets) == 0 || len(payload.Cards) == 0 {
