@@ -6,6 +6,7 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestBanHost pins the subdomain a game's own price snapshot is fetched
@@ -166,7 +167,7 @@ func TestSnapshotFirstAvailable(t *testing.T) {
 }
 
 // TestMarketCandidatesThresholds pins the three-way filter's arithmetic
-// directly, without going through mtgmatcher.GetUUIDs() - the uuids here
+// directly, without going through a backend's GetUUIDs() - the uuids here
 // are plain labels, not real ones, which is fine: marketCandidates never
 // resolves them to a card, only reads them back out of the snapshot.
 func TestMarketCandidatesThresholds(t *testing.T) {
@@ -291,7 +292,7 @@ func TestMarketCandidatesThresholds(t *testing.T) {
 }
 
 func TestMarketCandidatesUnfilteredGame(t *testing.T) {
-	if got := marketCandidates(999999, &banSnapshot{}); got != nil {
+	if got := marketCandidates(&mtgmatcher.Backend{}, 999999, &banSnapshot{}); got != nil {
 		t.Errorf("marketCandidates for an unfiltered game = %v, want nil", got)
 	}
 }

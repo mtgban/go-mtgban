@@ -6,8 +6,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 )
 
@@ -58,7 +56,7 @@ var opShelves = []cm.Expansion{
 // plain booster card, which the booster's own shelf sells as a product of
 // its own. A refusal says less than a price, and claims nothing.
 func TestOffShelf(t *testing.T) {
-	installDatastore(t, "onepiece", offShelfDatastore)
+	b := datastoreBackend(t, "onepiece", offShelfDatastore)
 
 	for _, tt := range []struct {
 		what    string
@@ -113,12 +111,12 @@ func TestOffShelf(t *testing.T) {
 		},
 	} {
 		t.Run(tt.what, func(t *testing.T) {
-			mkm, err := NewScraperIndex(mtgban.GameOnePiece)
+			mkm, err := NewScraperIndex(b)
 			if err != nil {
-				t.Fatalf("NewScraperIndex(mtgban.GameOnePiece) = %v", err)
+				t.Fatalf("NewScraperIndex(b) = %v", err)
 			}
 			mkm.exchangeRate = 1
-			mkm.shelved = shelvedSets(opShelves)
+			mkm.shelved = shelvedSets(b, opShelves)
 			mkm.priceGuide = map[int]cm.PriceGuide{
 				tt.product.IDProduct: {IDProduct: tt.product.IDProduct, LowPrice: 1, TrendPrice: 2},
 			}
@@ -155,9 +153,9 @@ func TestOffShelf(t *testing.T) {
 // TestShelvedSets pins which expansions of a catalog name a set of ours: the
 // booster and the deck do, and the promo buckets Cardmarket invents do not.
 func TestShelvedSets(t *testing.T) {
-	installDatastore(t, "onepiece", offShelfDatastore)
+	b := datastoreBackend(t, "onepiece", offShelfDatastore)
 
-	shelved := shelvedSets(opShelves)
+	shelved := shelvedSets(b, opShelves)
 	want := map[string]string{
 		"OP02":  "Paramount War",
 		"OP12":  "Legacy of the Master",
