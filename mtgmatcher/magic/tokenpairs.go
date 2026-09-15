@@ -471,22 +471,47 @@ var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
 })
 
 // NormalizeTokenFace reduces one face's name to the form a vendor's own
-// wording and the datastore's own name compare equal by: no artist
-// parenthetical a vendor sometimes appends to tell two otherwise-identical
-// tokens apart, no "Token" suffix (a vendor spells it, the datastore's own
-// Card.Name from a derived pairing does not, since it is the pairing's own
-// combined name split back apart), case-folded. The parenthetical must come
-// off first - it sits after the suffix in a vendor's own wording ("X Token
-// (Artist)"), so trimming the suffix before the parenthetical leaves it
-// unable to ever match (it never finds " Token" at the end of "X Token
-// (Artist)", only of "X Token").
+// wording and the datastore's own name compare equal by: no brace wrapping
+// a vendor uses to mark a token name (harmless to strip where a vendor
+// never uses it), no artist or variant parenthetical a vendor sometimes
+// appends to tell two otherwise-identical tokens apart, no " Token" suffix
+// (a vendor spells it, the datastore's own Card.Name from a derived pairing
+// does not, since it is the pairing's own combined name split back apart),
+// case-folded. The parenthetical must come off before the suffix - it sits
+// after the suffix in a vendor's own wording ("X Token (Artist)"), so
+// trimming the suffix first leaves it unable to ever match (it never finds
+// " Token" at the end of "X Token (Artist)", only of "X Token").
 func NormalizeTokenFace(name string) string {
+	return strings.ToLower(strings.TrimSpace(cleanFaceName(name)))
+}
+
+// stripFaceWrapping removes the cosmetic wrapping a vendor puts on a raw
+// face name - braces, an artist or variant parenthetical - while preserving
+// case and the " Token" suffix, for a caller that needs the datastore's own
+// properly-cased name for an exact-match lookup (MatchInSetNumber) and
+// cannot assume the suffix is absent: most token Card.Names drop it, but
+// some carry it as part of their own real name (e.g. a promotional token
+// disambiguated from a same-named nontoken card, "Kobolds of Kher Keep
+// Token"). See cleanFaceName for the form that also strips the suffix.
+func stripFaceWrapping(name string) string {
+	name = strings.TrimSpace(name)
+	name = strings.TrimPrefix(name, "{")
+	if idx := strings.Index(name, "}"); idx >= 0 {
+		name = name[:idx] + name[idx+1:]
+	}
 	name = strings.TrimSpace(name)
 	if idx := strings.Index(name, " ("); idx >= 0 {
 		name = name[:idx]
 	}
-	name = strings.TrimSuffix(strings.TrimSpace(name), " Token")
-	return strings.ToLower(strings.TrimSpace(name))
+	return strings.TrimSpace(name)
+}
+
+// cleanFaceName is stripFaceWrapping plus the " Token" suffix a vendor
+// spells that the datastore's own Card.Name usually does not - true for
+// every derived pairing's own split-apart face, and for mtgjson's own
+// natively combined "X // Y" names (MatchNativeTokenPair).
+func cleanFaceName(name string) string {
+	return strings.TrimSuffix(stripFaceWrapping(name), " Token")
 }
 
 // SplitTokenPairName splits a two-sided token listing's name into its two
@@ -570,7 +595,10 @@ func MatchTokenPairingBySetNumber(setCode, number, listingName string, foil bool
 	if second == "" || strings.Contains(second, " // ") || strings.Contains(second, " - ") {
 		return ""
 	}
-	for _, face := range []string{first, strings.TrimSuffix(first, " Token")} {
+	// Most token Card.Names drop the " Token" suffix a vendor spells, but
+	// some carry it as part of their own real name - try both forms
+	// rather than assume either.
+	for _, face := range []string{stripFaceWrapping(first), cleanFaceName(first)} {
 		cards := mtgmatcher.MatchInSetNumber(face, setCode, number)
 		if len(cards) != 1 {
 			continue
@@ -578,6 +606,39 @@ func MatchTokenPairingBySetNumber(setCode, number, listingName string, foil bool
 		id := TokenPairIndex()[cards[0].UUID][NormalizeTokenFace(second)]
 		if id := tokenPairingFinishOK(id, foil); id != "" {
 			return id
+		}
+	}
+	return ""
+}
+
+// MatchNativeTokenPair resolves a two-sided token listing to a real,
+// natively-combined mtgjson printing at a known set and number - a
+// different case from MatchTokenPairingBySetNumber's synthetic
+// tokenProducts-derived pairing (above): mtgjson sometimes already files a
+// two-sided token sheet as one ordinary printing of its own, under a
+// "X // Y" name, the same way it files a fixed double-faced token like
+// Undercity // The Initiative - there is no derived entity to look up,
+// only an ordinary printing this vendor's own two-part listing name has to
+// be reconstructed to match. Tries both face orders, since a vendor's own
+// listing order does not always agree with mtgjson's ("Weird Token //
+// Goblin Token" names the same printing as mtgjson's own "Goblin //
+// Weird"). Returns "" when neither order resolves to exactly one printing
+// - callers apply their own finish handling (e.g. mtgmatcher.MatchID) to
+// the uuid this returns, the same as any other set+number resolution.
+func MatchNativeTokenPair(setCode, number, listingName string) string {
+	first, second := SplitTokenPairName(listingName)
+	if second == "" {
+		return ""
+	}
+	// mtgjson's own combined name carries neither face's " Token" suffix
+	// ("Copy // Horror", never "Copy Token // Horror Token"), the same as
+	// a derived pairing's own split-apart faces - cleanFaceName strips it
+	// alongside the wrapping, case preserved for this exact-match lookup.
+	a, b := cleanFaceName(first), cleanFaceName(second)
+	for _, combined := range []string{a + " // " + b, b + " // " + a} {
+		out := mtgmatcher.MatchInSetNumber(combined, setCode, number)
+		if len(out) == 1 {
+			return out[0].UUID
 		}
 	}
 	return ""

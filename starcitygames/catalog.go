@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // scgCatalogURL is the HawkSearch catalog export. It returns the full product
@@ -297,6 +298,22 @@ func skuNumber(sku string) string {
 		return ""
 	}
 	return fields[3]
+}
+
+// leadingTokenNumber returns the number embedded at the very start of a
+// two-sided token sku's own number segment, stripping one leading "T" -
+// SCG's own treatment/token-shelf marker, distinct from the target token
+// set's own "T" prefix - and leading zeros. "T16_AFR_T14" and "T9T8" both
+// give "16" and "9": the first face's own number, whether the sku spells
+// the second face's set and number after an underscore or runs directly
+// into it.
+func leadingTokenNumber(numberField string) string {
+	s := strings.TrimPrefix(numberField, "T")
+	end := 0
+	for end < len(s) && s[end] >= '0' && s[end] <= '9' {
+		end++
+	}
+	return strings.TrimLeft(s[:end], "0")
 }
 
 // lowerVariantLetter puts a variant letter into the case the datastore spells
@@ -690,6 +707,59 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		number := strings.TrimLeft(p.CollectorNumber, "0")
 		if out := mtgmatcher.MatchWithNumber(p.Name, skuSetCode(p.SKU), number); len(out) == 1 {
 			return mtgmatcher.MatchID(out[0].UUID, foil, etched)
+		}
+	}
+
+	// A two-sided token sheet prints one physical card for a pairing
+	// mtgmatcher/magic may already carry a combined entity for
+	// (tokenpairs.go) - resolve that precisely, by id, before the plain
+	// identifier lookup further down, which resolves the id straight
+	// through with no regard for what the other half of the listing's
+	// own name says, silently pricing the whole two-sided product as if
+	// it were just the one face the id happens to anchor. (The
+	// promo-shelf table below is unaffected either way: its own
+	// MatchWithNumber("", set, number) call already finds mtgjson's own
+	// combined "X // Y" printing whole where one exists, the same way
+	// MatchNativeTokenPair below does explicitly.) See
+	// magic.MatchTokenPairing, shared with cardkingdom's own version of
+	// this same problem.
+	if game == GameMagic && strings.Contains(p.Name, " // ") && strings.Contains(p.Name, "Token") {
+		if tcgID := magic.MatchTokenPairing(p.ScryfallID, p.Name, foil); tcgID != "" {
+			if id, err := mtgmatcher.MatchID(tcgID, foil, etched); err == nil {
+				return id, nil
+			}
+		}
+
+		// A two-sided token listing SCG never publishes a scryfallId for
+		// at all, but whose own sku already names the filing set directly
+		// (as opposed to the Mystery Booster/List shape further below,
+		// which bundles two unrelated sets' own tokens into one sku and
+		// has no single filing set to anchor from) - try the set that sku
+		// segment names, by both mechanisms a two-sided listing can
+		// resolve through: a real printing mtgjson already files under
+		// one combined "X // Y" name of its own (magic.MatchNativeTokenPair,
+		// e.g. Guild Kit's "Copy // Horror"), or a synthetic
+		// tokenProducts-derived pairing anchored by the first face alone
+		// (magic.MatchTokenPairingBySetNumber, the same mechanism as
+		// cardkingdom's own sku-anchored fallback).
+		if p.ScryfallID == "" {
+			tokenSet := "T" + skuSetCode(p.SKU)
+			if _, err := mtgmatcher.GetSet(tokenSet); err != nil {
+				tokenSet = skuSetCode(p.SKU)
+			}
+			if _, err := mtgmatcher.GetSet(tokenSet); err == nil {
+				number := leadingTokenNumber(skuNumber(p.SKU))
+				if uuid := magic.MatchNativeTokenPair(tokenSet, number, p.Name); uuid != "" {
+					if id, err := mtgmatcher.MatchID(uuid, foil, etched); err == nil {
+						return id, nil
+					}
+				}
+				if tcgID := magic.MatchTokenPairingBySetNumber(tokenSet, number, p.Name, foil); tcgID != "" {
+					if id, err := mtgmatcher.MatchID(tcgID, foil, etched); err == nil {
+						return id, nil
+					}
+				}
+			}
 		}
 	}
 
