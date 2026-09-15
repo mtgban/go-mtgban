@@ -94,7 +94,7 @@ var productOverrides = map[int]struct{ Edition, Number string }{
 // wording names the set when the token is shelved beside every other set's
 // promos, and the edition names it when the token is sold under the set it
 // came with. A sheet the datastore does not carry answers for nothing.
-func japanesePromoSheet(wording, edition string) string {
+func japanesePromoSheet(b *mtgmatcher.Backend, wording, edition string) string {
 	if !strings.Contains(wording, "JP") || !strings.Contains(wording, "Exclusive") {
 		return ""
 	}
@@ -102,15 +102,15 @@ func japanesePromoSheet(wording, edition string) string {
 		if field == "JP" || field == "Exclusive" {
 			continue
 		}
-		if set, err := mtgmatcher.GetSet("W" + field); err == nil && set.Type == "token" {
+		if set, err := b.GetSet("W" + field); err == nil && set.Type == "token" {
 			return set.Code
 		}
 	}
-	parent, err := mtgmatcher.GetSetByName(edition)
+	parent, err := b.GetSetByName(edition)
 	if err != nil {
 		return ""
 	}
-	if set, err := mtgmatcher.GetSet("W" + parent.Code); err == nil && set.Type == "token" {
+	if set, err := b.GetSet("W" + parent.Code); err == nil && set.Type == "token" {
 		return set.Code
 	}
 	return ""
@@ -120,7 +120,7 @@ func japanesePromoSheet(wording, edition string) string {
 // takes, splitting TCGplayer's name into a name and its qualifiers and
 // resolving the group id through editions. It reports an error for the
 // products that are not cards.
-func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[int]string) (*mtgmatcher.InputCard, error) {
 	cardName, variant := GetProductNameAndVariant(product)
 
 	number := GetProductNumber(product)
@@ -177,9 +177,9 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		// the bare name the catalog puts after the dash.
 		if variant != "" {
 			named := variant + " Emblem"
-			if _, err := mtgmatcher.Printings4Card(named); err == nil {
+			if _, err := b.Printings4Card(named); err == nil {
 				cardName, variant = named, ""
-			} else if _, err := mtgmatcher.Printings4Card(variant); err == nil {
+			} else if _, err := b.Printings4Card(variant); err == nil {
 				cardName, variant = variant, ""
 			}
 		}
@@ -351,7 +351,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				}
 			case "Royal Assassin":
 			default:
-				if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
+				if len(b.MatchInSet(cardName, "PSUS")) == 1 {
 					edition = "PSUS"
 				}
 			}
@@ -425,7 +425,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		case "Lightning Bolt":
 			edition = "PW26"
 		default:
-			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
+			if variant == "JP Exclusive Summer Vacation" && len(b.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
 			} else if isToken(product) && strings.Contains(variant, "JP") && strings.Contains(variant, "Exclusive") {
 				// Six sets print a sheet of Japanese promo tokens, each
@@ -443,7 +443,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 						continue
 					}
 					named = true
-					set, err := mtgmatcher.GetSet("W" + field)
+					set, err := b.GetSet("W" + field)
 					if err == nil && set.Type == "token" {
 						edition = set.Code
 						break
@@ -477,7 +477,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			variant = "299"
 		default:
 			for _, code := range []string{"PR23", "SLP"} {
-				cards := mtgmatcher.MatchInSet(cardName, code)
+				cards := b.MatchInSet(cardName, code)
 				if len(cards) > 0 {
 					edition = cards[0].SetCode
 					variant = cards[0].Number
@@ -515,7 +515,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			for _, tag := range []string{
 				"PCBB", "PSS5", "PW26", "PSPL", "PPRO",
 			} {
-				if len(mtgmatcher.MatchInSet(cardName, tag)) > 0 {
+				if len(b.MatchInSet(cardName, tag)) > 0 {
 					edition = tag
 				}
 			}
@@ -542,7 +542,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				vars = strings.ToLower(vars)
 
 				if vars != "" {
-					set, _ := mtgmatcher.GetSet(code)
+					set, _ := b.GetSet(code)
 
 					tag := magic.VariantsTable[set.Name][cardName][vars]
 					if tag != "" {
@@ -625,9 +625,9 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			return nil, errors.New("untracked")
 		}
 	case "Special Occasion":
-		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
+		if len(b.MatchInSet(cardName, "PCEL")) == 1 {
 			edition = "PCEL"
-		} else if len(mtgmatcher.MatchInSet(cardName, "HHO")) == 1 {
+		} else if len(b.MatchInSet(cardName, "HHO")) == 1 {
 			edition = "HHO"
 		} else {
 			return nil, errors.New("untracked")
@@ -674,7 +674,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		case "The First Sliver", "Serra the Benevolent", "Ponder",
 			"Ugin, the Spirit Dragon", "Sliver Hive",
 			"The Ur-Dragon", "Scourge of Valkas":
-			cards := mtgmatcher.MatchInSet(cardName, "PF25")
+			cards := b.MatchInSet(cardName, "PF25")
 			if len(cards) > 0 && (number == "3" || number == "2" || number == "1") {
 				edition = "PF25"
 				variant = cards[0].Number
@@ -736,7 +736,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		// every set at once names its set in the wording - "JP WOE
 		// Exclusive" - and one sold under the set it came with names
 		// nothing, leaving the edition to say which sheet is meant.
-		if sheet := japanesePromoSheet(ogVariant, edition); sheet != "" {
+		if sheet := japanesePromoSheet(b, ogVariant, edition); sheet != "" {
 			edition = sheet
 		}
 

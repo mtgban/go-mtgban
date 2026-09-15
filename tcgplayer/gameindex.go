@@ -34,7 +34,8 @@ type TCGGameIndex struct {
 
 	productTypes []string
 
-	client *tcgplayer.Client
+	backend *mtgmatcher.Backend
+	client  *tcgplayer.Client
 }
 
 func (tcg *TCGGameIndex) printf(format string, a ...any) {
@@ -49,7 +50,11 @@ func (tcg *TCGGameIndex) printf(format string, a ...any) {
 
 // NewScraperGameIndex returns an index scraper for one game, authenticated
 // with a partner API key pair.
-func NewScraperGameIndex(game mtgban.Game, publicID, privateID string) (*TCGGameIndex, error) {
+func NewScraperGameIndex(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGameIndex, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	category, found := tcgGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -61,6 +66,7 @@ func NewScraperGameIndex(game mtgban.Game, publicID, privateID string) (*TCGGame
 	}
 
 	tcg := TCGGameIndex{}
+	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
@@ -112,7 +118,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 			Finish:    result.SubTypeName,
 			Foil:      result.SubTypeName != "Normal",
 		}
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := tcg.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -126,7 +132,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 				probes := alias.Probe()
 				tcg.printf("%d %s got ids: %s", product.ProductID, cardName, probes)
 				for _, probe := range probes {
-					co, _ := mtgmatcher.GetUUID(probe)
+					co, _ := tcg.backend.GetUUID(probe)
 					tcg.printf("%s: %s", probe, co)
 				}
 			}
