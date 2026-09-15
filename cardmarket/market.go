@@ -83,9 +83,13 @@ func (mkm *Market) bounce() bool {
 	return mkm.bounced >= maxBounced
 }
 
-// NewScraperMarket returns a live-listing scraper for one game, authenticated
-// with an app token and secret.
-func NewScraperMarket(game mtgban.Game, appToken, appSecret string) (*Market, error) {
+// NewScraperMarket returns a live-listing scraper matching against b,
+// authenticated with an app token and secret.
+func NewScraperMarket(b *mtgmatcher.Backend, appToken, appSecret string) (*Market, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	id, found := mkmGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -94,6 +98,7 @@ func NewScraperMarket(game mtgban.Game, appToken, appSecret string) (*Market, er
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = cm.NewClient(appToken, appSecret)
 	mkm.game = game
+	mkm.resolver.backend = b
 	mkm.resolver.gameID = id
 	mkm.resolver.printf = mkm.printf
 	return &mkm, nil
@@ -244,7 +249,7 @@ func (mkm *Market) Load(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("loading the price snapshot to pre-filter this catalog: %w", err)
 			}
-			candidates = marketCandidates(mkm.gameID, snap)
+			candidates = marketCandidates(mkm.backend, mkm.gameID, snap)
 			mkm.printf("Restricting to %d of this game's uuids, from the price snapshot", len(candidates))
 		case marketFilterRequired[mkm.gameID]:
 			return fmt.Errorf("%s needs a pre-filtered candidate set to fit its scrape budget, and BanPriceKey is not set", mkm.game)
@@ -314,7 +319,7 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 		}
 		items = kept
 		if mkm.gameID == cm.GameOnePiece {
-			mkm.shelved = shelvedSets(items)
+			mkm.shelved = shelvedSets(mkm.backend, items)
 		}
 	}
 
@@ -405,7 +410,7 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 		mkm.disownBridged(results)
 	}
 	if same := sameProduct(mkm.gameID); same != nil {
-		twinsAmong(results, same, faceOf(mkm.gameID))
+		twinsAmong(results, same, faceOf(mkm.backend, mkm.gameID))
 	}
 
 	var refusedNames []string
@@ -578,7 +583,7 @@ func isCheaper(held map[string]float64, cond string, price float64) bool {
 // error, so every listing is also checked against the printing actually
 // being priced through its own article-level flag before being accepted.
 func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID string, byName bool, finish string) error {
-	co, err := mtgmatcher.GetUUID(cardID)
+	co, err := mkm.backend.GetUUID(cardID)
 	if err != nil {
 		return err
 	}

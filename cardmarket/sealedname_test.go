@@ -7,7 +7,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
@@ -158,11 +157,11 @@ const ygohDatastore = `{
 // catalogue has to decide: a product the datastore holds in one run is that
 // run, one it holds in two is not said by the name at all.
 func TestResolveSealedNameRunSilent(t *testing.T) {
-	installDatastore(t, "yugioh", ygohDatastore)
+	b := datastoreBackend(t, "yugioh", ygohDatastore)
 
-	mkm, err := NewScraperSealed(mtgban.GameYuGiOh, "", "")
+	mkm, err := NewScraperSealed(b, "", "")
 	if err != nil {
-		t.Fatalf("NewScraperSealed(mtgban.GameYuGiOh) = %v", err)
+		t.Fatalf("NewScraperSealed(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		name, want string
@@ -222,11 +221,11 @@ const fabSealedDatastore = `{
 // First Booster" - and the run it named has to come back on, or the two runs
 // answer each other's names.
 func TestResolveSealedNameNamedRun(t *testing.T) {
-	installDatastore(t, "fleshandblood", fabSealedDatastore)
+	b := datastoreBackend(t, "fleshandblood", fabSealedDatastore)
 
-	mkm, err := NewScraperSealed(mtgban.GameFleshAndBlood, "", "")
+	mkm, err := NewScraperSealed(b, "", "")
 	if err != nil {
-		t.Fatalf("NewScraperSealed(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperSealed(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		name, want string
@@ -281,11 +280,11 @@ const opDatastore = `{
 // TestResolveSealedNameRenamed pins the marketplace's name reaching the
 // datastore's product.
 func TestResolveSealedNameRenamed(t *testing.T) {
-	installDatastore(t, "onepiece", opDatastore)
+	b := datastoreBackend(t, "onepiece", opDatastore)
 
-	mkm, err := NewScraperSealed(mtgban.GameOnePiece, "", "")
+	mkm, err := NewScraperSealed(b, "", "")
 	if err != nil {
-		t.Fatalf("NewScraperSealed(mtgban.GameOnePiece) = %v", err)
+		t.Fatalf("NewScraperSealed(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		name, want string
@@ -308,7 +307,7 @@ func TestResolveSealedNameRenamed(t *testing.T) {
 // half box's price then lands on the whole one. The name that says the product
 // in the fewest words keeps it, which is what leaves the product priced.
 func TestPruneSubsumed(t *testing.T) {
-	mtgmatcher.SetGlobalDatastore(sealedPruneBackend())
+	b := sealedPruneBackend()
 
 	for _, tt := range []struct {
 		desc  string
@@ -343,9 +342,10 @@ func TestPruneSubsumed(t *testing.T) {
 			named["ogn-box"] = append(named["ogn-box"], id)
 		}
 		// pruneSubsumed reads neither game nor gameID, and no game is under
-		// test here, so the zero-value struct is used directly rather than
-		// naming one through the constructor.
-		mkm := &Sealed{}
+		// test here, so the struct is built directly rather than naming one
+		// through the constructor - only backend, which it does read, is
+		// set.
+		mkm := &Sealed{backend: b}
 		productIDs, _ := mkm.pruneSubsumed(tt.names, productMap, named,
 			slices.Sorted(maps.Keys(tt.names)))
 		got := slices.Sorted(maps.Keys(productMap))
