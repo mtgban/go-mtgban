@@ -1,6 +1,6 @@
 # ADR-0003: Atomically publish immutable backend snapshots
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0004
 **Date:** 2026-09-12
 **Supersedes:** ADR-0002's unsynchronized global publication
 

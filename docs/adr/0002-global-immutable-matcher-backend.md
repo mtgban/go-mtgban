@@ -1,6 +1,6 @@
 # ADR-0002: Global, immutable-after-load, unsynchronized matcher backend
 
-**Status:** Accepted — with an open follow-up (live-reload race)
+**Status:** Superseded by ADR-0003, then ADR-0004
 **Date:** 2026-06-28 (amended 2026-08-08 for the game-agnostic matcher)
 **Deciders:** Maintainer (Vittorio Giovara)
 

@@ -223,8 +223,8 @@ as a new baseline.
 - **gofmt always.** CI enforces it; `gofmt -l .` must print nothing.
 - **No global loggers.** Each scraper takes a
   `LogCallback mtgban.LogCallbackFunc` and logs through a tagged `printf`
-  helper (`[TAG] `-prefixed). `mtgmatcher` logs to `io.Discard` unless
-  `SetGlobalLogger` is called.
+  helper (`[TAG] `-prefixed). The matcher logs through the `Logger` on the
+  `Backend` it is asked through (`b.Logf`), and is quiet while that is nil.
 - **Insert via the `Add*` family**, never by appending to the map directly.
   `Add`/`AddRelaxed`/`AddStrict`/`AddUnique` enforce defaults (NM, qty 1),
   validate conditions against `FullGradeTags`, merge duplicates, and keep each
@@ -284,12 +284,15 @@ consumer blank-imports the games it needs, or blank-imports
 ### Datastore loading
 
 `mtgmatcher.Open(name, reader)` loads the named game's datastore: it runs
-exactly one loader and hands back the `*Backend` without touching the global,
-which `SetGlobalDatastore` installs. `RegisteredGames()` lists what is
-currently linked in. `internal/datastore.Read(game, path)` is the same over a
-path that may be a file, an `http(s)://` URL or a `b2://` object, `.xz` or
-not; a suite reads its game's file that way in its TestMain, or in a helper
-of its own for another game's.
+exactly one loader and hands back the `*Backend`, stamped with the game it
+was loaded as (`b.Game`). There is no global datastore: every lookup is a
+method on the backend a caller holds, a scraper is built on one
+(`mtgban.NewScraper(b, name, auth, opts...)`) and matches against it alone,
+and a test builds the backend it needs and passes it. `RegisteredGames()`
+lists what is currently linked in. `internal/datastore.Read(game, path)` is
+`Open` over a path that may be a file, an `http(s)://` URL or a `b2://`
+object, `.xz` or not; a suite reads its game's file that way once, in a
+helper that hands the backend to each test.
 
 There is no auto-detection. The caller always knows the game — bantool reads
 it off the registry key its target sits under, a test off the package it sits
@@ -297,9 +300,9 @@ in — and the loader that tried every registered game in turn decoded
 AllPrintings three times over before reaching Magic's, behind a buffer of the
 whole file.
 
-`Backend` is exported and carries instance methods (`b.Match`, `b.GetUUID`,
-`b.GetSetByName`, ...); the package-level functions of the same name are thin
-wrappers over the global backend.
+`Backend` is exported and every lookup is one of its methods (`b.Match`,
+`b.GetUUID`, `b.GetSetByName`, ...); there are no package-level functions
+of the same name, and no backend the package keeps for you.
 
 ### Tables before code
 
@@ -420,14 +423,17 @@ that map: it is identified by SKU and has its own scrapers.
 
 ## Gotchas
 
-- The global matcher backend is published through `atomic.Pointer[Backend]`.
-  Each package-level operation captures one immutable snapshot. Several calls
-  can span publications: capture `GlobalDatastore()` for related lookups, or
-  pass `ArbitOpts.Backend` for a report using an explicit backend. The snapshot
-  is a shallow copy; maps, slices, cards and rules remain shared and must not
-  be mutated after publication. See `docs/adr/0003-atomic-backend-snapshots.md`.
-- Magic identification callbacks use the supplied backend. Only the exported
-  `magic.Has*Printing` convenience wrappers intentionally consult the global.
+- A `Backend` is immutable once loaded: its maps, slices, cards and rules
+  are shared by every scraper built on it and must not be mutated. Replacing
+  a datastore means loading a new backend and building new scrapers on it;
+  nothing is published process-wide. `ArbitOpts.Backend` is the only
+  datastore a report reads, and a nil one resolves nothing. See
+  `docs/adr/0004-localized-matcher-and-scraper-registry.md`.
+- Everything that reads a datastore is a method on `*Backend`, including
+  `ExtractNumber` (it skips set codes) and the `magic.Has*Printing` helpers
+  (they take the backend first). The package-level functions that remain
+  (`Normalize`, `Title`, `ExtractYear`, `SplitVariants`, ...) read no
+  datastore.
   Keep new identification lookups on `b`, including in callbacks.
 - The Magic promo-type constants (`PromoTypeBoosterfun`, `PromoTypeBuyABox`,
   `PromoTypePrerelease`, `PromoTypePromoPack`, `PromoTypeThickDisplay` and the
