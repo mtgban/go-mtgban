@@ -56,9 +56,9 @@ jobs:
       # fails here - rather than passing because whichever job it landed in
       # happened to load a datastore before it ran.
       - name: Tests skip rather than fail without a datastore
-        # The synthetic publication tests exercise concurrent readers and
-        # publishers without loading a datastore. Keep the race detector on
-        # so an unsafe global swap cannot pass just by returning valid IDs.
+        # Keep the race detector on: the scrapers fan out over goroutines
+        # that share one backend, and the fixture tests are where a data
+        # race on it shows without a datastore.
         run: go test -race ./...
 
       - name: Lint

@@ -47,11 +47,10 @@ func withMagic(t *testing.T) *mtgmatcher.Backend {
 	return magicB
 }
 
-// withGameDatastore installs another game's datastore for the duration of a
-// test and puts back what stood before, since the package-level matcher
-// holds a single datastore and the rest of this package's tests are Magic ones.
-// The test is skipped where that game's datastore is not configured, which
-// is how the shared `go test ./...` run sees it.
+// withGameDatastore loads another game's datastore for a test, where the
+// rest of this package's tests are Magic ones. The test is skipped where
+// that game's datastore is not configured, which is how the shared
+// `go test ./...` run sees it.
 func withGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)

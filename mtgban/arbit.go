@@ -14,9 +14,10 @@ import (
 // ArbitOpts configures the datastore, filters and thresholds used by Arbit
 // and Mismatch. Zero-valued filters leave the two sides' common cards eligible.
 type ArbitOpts struct {
-	// Backend is the immutable datastore used for this report - this is
-	// where a caller passes its own backend. When nil, Arbit and Mismatch
-	// capture the global datastore once at entry. Custom callbacks doing
+	// Backend is the datastore used for this report. A nil Backend, or a nil
+	// ArbitOpts, resolves against an empty &mtgmatcher.Backend{}, so every
+	// card lookup fails and no entry is produced - the same result an
+	// unpublished global datastore used to give. Custom callbacks doing
 	// auxiliary lookups should use the same backend.
 	Backend *mtgmatcher.Backend
 
@@ -188,7 +189,7 @@ type resolvedOpts struct {
 func resolveOpts(opts *ArbitOpts) resolvedOpts {
 	r := resolvedOpts{
 		rate:    1.0,
-		backend: mtgmatcher.GlobalDatastore(),
+		backend: &mtgmatcher.Backend{},
 	}
 	if opts == nil {
 		return r
@@ -540,7 +541,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 // nil-dereferencing on the first lookup.
 func Pennystock(b *mtgmatcher.Backend, seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 	if b == nil {
-		b = mtgmatcher.GlobalDatastore()
+		b = &mtgmatcher.Backend{}
 	}
 	var result []ArbitEntry
 
