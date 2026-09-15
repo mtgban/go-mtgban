@@ -11,15 +11,15 @@ import (
 // the listing and support its language, finish and printing descriptors. Both
 // namespaces may carry copied IDs, so an unresolved disagreement falls back to
 // text rather than giving either source unconditional priority.
-func identifiedCard(card *ABUCard, in mtgmatcher.InputCard) *mtgmatcher.InputCard {
+func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCard) *mtgmatcher.InputCard {
 	var found string
 	conflict := false
 	consider := func(space, external string) {
-		base := mtgmatcher.ConvertID(space, external)
+		base := b.ConvertID(space, external)
 		if base == "" {
 			return
 		}
-		co, err := mtgmatcher.GetUUID(base)
+		co, err := b.GetUUID(base)
 		if err != nil {
 			return
 		}
@@ -31,7 +31,7 @@ func identifiedCard(card *ABUCard, in mtgmatcher.InputCard) *mtgmatcher.InputCar
 		// Multiverse identifies a catalog printing, but older ABU shelves
 		// include reprints and special editions with copied original IDs.
 		if space == mtgmatcher.IDSpaceMultiverse {
-			set, setErr := mtgmatcher.GetSetByName(card.Edition)
+			set, setErr := b.GetSetByName(card.Edition)
 			if setErr != nil || set.Code != co.SetCode || (card.Number != "" && card.Number != co.Number) {
 				return
 			}
@@ -56,19 +56,19 @@ func identifiedCard(card *ABUCard, in mtgmatcher.InputCard) *mtgmatcher.InputCar
 		probe := in
 		probe.Name = identifierName(in.Name)
 		probe.ID, probe.Finish, probe.Language = base, finish, lang
-		id, err := mtgmatcher.ValidateID(probe, mtgmatcher.IDValidationOptions{AllowFinishSiblings: true})
+		id, err := b.ValidateID(probe, mtgmatcher.IDValidationOptions{AllowFinishSiblings: true})
 		if err != nil {
 			return
 		}
-		co, err = mtgmatcher.GetUUID(id)
+		co, err = b.GetUUID(id)
 		if err != nil {
 			return
 		}
-		if set, err := mtgmatcher.GetSetByName(card.Edition); err == nil && set.Code != co.SetCode &&
+		if set, err := b.GetSetByName(card.Edition); err == nil && set.Code != co.SetCode &&
 			!(in.Contains("The List") && co.SetCode == "PLST") {
 			return
 		}
-		if !idDescribesPrinting(card, &in, co) {
+		if !idDescribesPrinting(b, card, &in, co) {
 			return
 		}
 		if found != "" && found != id {
@@ -97,7 +97,7 @@ func identifiedCard(card *ABUCard, in mtgmatcher.InputCard) *mtgmatcher.InputCar
 	if found == "" || conflict {
 		return nil
 	}
-	co, _ := mtgmatcher.GetUUID(found)
+	co, _ := b.GetUUID(found)
 	in.ID = found
 	in.Foil = co.Foil || co.Etched
 	if co.Etched {
@@ -122,9 +122,9 @@ func identifierName(name string) string {
 // catalog audit found copied IDs on The List, lettered artwork, marked-number
 // variants and special finishes. Those descriptions keep their existing text
 // rules unless the candidate explicitly establishes the distinction.
-func idDescribesPrinting(card *ABUCard, in *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
+func idDescribesPrinting(b *mtgmatcher.Backend, card *ABUCard, in *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
 	variation := in.Variation
-	if number := describedArtwork(in.Name, card.Edition, variation); number != "" {
+	if number := describedArtwork(b, in.Name, card.Edition, variation); number != "" {
 		return co.Number == number
 	}
 	// A marked collector number names a printing the vendor's base ID
@@ -157,5 +157,5 @@ func idDescribesPrinting(card *ABUCard, in *mtgmatcher.InputCard, co *mtgmatcher
 	}
 	probe := *in
 	probe.Variation = variation
-	return mtgmatcher.ValidatePrinting(probe, co.UUID)
+	return b.ValidatePrinting(probe, co.UUID)
 }

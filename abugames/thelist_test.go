@@ -3,8 +3,6 @@ package abugames
 import (
 	"errors"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestTheListNumber pins what a listing reaches when its wording names a
@@ -12,7 +10,7 @@ import (
 // storefront carries both for one card, the reprint set holds it once, and
 // nothing in either listing says which of them is the reprint.
 func TestTheListNumber(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -28,15 +26,15 @@ func TestTheListNumber(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -51,7 +49,7 @@ func TestTheListNumber(t *testing.T) {
 // set exactly, contradicting the reprint their wording names. Both cannot be
 // true, so neither is priced.
 func TestTheListConflict(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc string
 		card ABUCard
@@ -65,7 +63,7 @@ func TestTheListConflict(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if !errors.Is(err, errConflictingNumber) {
 				t.Errorf("preprocess(%q) = %v, %v, want %v", card.DisplayTitle, in, err, errConflictingNumber)
 			}
@@ -78,7 +76,7 @@ func TestTheListConflict(t *testing.T) {
 // says "Secret Lair" and no more - and dropping that number to read a star
 // walked the listing over to the other drop entirely.
 func TestSecretLairDrop(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -93,15 +91,15 @@ func TestSecretLairDrop(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -117,7 +115,7 @@ func TestSecretLairDrop(t *testing.T) {
 // no word for the printing anywhere, so the mark outranks the FOIL it leaves
 // out - and the wording's plain copy of the number outranks nothing.
 func TestMarkedNumber(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		number  string
@@ -129,15 +127,15 @@ func TestMarkedNumber(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			card := ABUCard{DisplayTitle: "Alela, Artful Provocateur (Secret Lair 1630)",
 				Edition: "Secret Lair Drop", Number: test.number}
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", card.Number, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
