@@ -2,8 +2,6 @@ package pokemon
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestFoilFlagAgreesWithFinish pins that the flag and the finish name say the
@@ -12,11 +10,11 @@ import (
 // set the finish without ever setting the flag, so every holo printing in the
 // game was filed as a plain one.
 func TestFoilFlagAgreesWithFinish(t *testing.T) {
-	loadBackend(t)
+	b := loadBackend(t)
 
 	var foil, total, disagree int
-	for _, uuid := range mtgmatcher.GetUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil || co.Sealed {
 			continue
 		}
