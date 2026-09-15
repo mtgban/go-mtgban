@@ -5,7 +5,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
@@ -33,11 +33,10 @@ const fabDatastore = `{
  ]
 }`
 
-// loadFabDatastore installs the cut-down datastore as the global backend the
-// matcher answers from.
-func loadFabDatastore(t *testing.T) {
+// loadFabDatastore reads the cut-down datastore the matcher answers from.
+func loadFabDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
-	installDatastore(t, "fleshandblood", fabDatastore)
+	return datastoreBackend(t, "fleshandblood", fabDatastore)
 }
 
 // TestMatchProductPrintRun pins what the name fallback answers for a
@@ -49,11 +48,11 @@ func loadFabDatastore(t *testing.T) {
 // whichever was asked for - and the other run's expansion sells the very
 // same card.
 func TestMatchProductPrintRun(t *testing.T) {
-	loadFabDatastore(t)
+	b := loadFabDatastore(t)
 
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		expansion, name, number, want string
@@ -122,11 +121,11 @@ const fabSpellingDatastore = `{
 // Rumble" bare, so its product's stripped name is Heavy Hitters' card and
 // only the decorated one still splits down to the printing.
 func TestMatchProductTreatmentTail(t *testing.T) {
-	installDatastore(t, "fleshandblood", fabSpellingDatastore)
+	b := datastoreBackend(t, "fleshandblood", fabSpellingDatastore)
 
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		expansion, name, number, want string
@@ -155,7 +154,7 @@ func TestMatchProductTreatmentTail(t *testing.T) {
 // guess; one the bridge has never heard of resolves through its name, and
 // every price it produces has to say so, or namedLast has nothing to sort by.
 func TestProcessProductByName(t *testing.T) {
-	loadFabDatastore(t)
+	b := loadFabDatastore(t)
 
 	// Cardmarket 602755, the first-edition Monarch printing of Prismatic
 	// Shield (Red), which the datastore keys by TCGplayer id 237847.
@@ -175,9 +174,9 @@ func TestProcessProductByName(t *testing.T) {
 		{"a product the bridge misses resolves through its name", nil, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+			mkm, err := NewScraperIndex(b)
 			if err != nil {
-				t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+				t.Fatalf("NewScraperIndex(b) = %v", err)
 			}
 			mkm.exchangeRate = 1
 			mkm.TCGBridge = tt.bridge

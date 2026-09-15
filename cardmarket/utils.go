@@ -269,8 +269,8 @@ func unpitched(name string) string {
 // fabFaceOf reports whether a Cardmarket product names one face of the
 // fused printing it is beside: the storefront sells a double-sided hero
 // face by face, and the datastore files the card once under both faces.
-func fabFaceOf(product *cm.Product, cardID string) bool {
-	co, err := mtgmatcher.GetUUID(cardID)
+func fabFaceOf(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
+	co, err := b.GetUUID(cardID)
 	if err != nil || !strings.Contains(co.Name, "//") {
 		return false
 	}
@@ -287,15 +287,15 @@ func fabFaceOf(product *cm.Product, cardID string) bool {
 // landed it on: the same card, or one face of a fused card. The bridge
 // speaks through another marketplace's links, and a link tied to the
 // wrong product lands a card on its neighbour's printing.
-func fabNamesPrinting(product *cm.Product, cardID string) bool {
-	co, err := mtgmatcher.GetUUID(cardID)
+func fabNamesPrinting(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
+	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return false
 	}
 	if fabSameCard(fabBaseName(product.Name), fabBaseName(co.Name)) {
 		return true
 	}
-	return fabFaceOf(product, cardID)
+	return fabFaceOf(b, product, cardID)
 }
 
 // fabNumberPrefix splits a collector number into the letters a set opens
@@ -336,32 +336,32 @@ type shelf struct {
 // every programme was once filed in, and an expansion no name places is
 // asked of the set wearing its code, which is how the Silver Age decks and
 // the Slingshot promos are filed.
-func fabShelves(product *cm.Product) []shelf {
+func fabShelves(b *mtgmatcher.Backend, product *cm.Product) []shelf {
 	printRun, edition := fabPrintRun(product.ExpansionName)
 	var shelves []shelf
 	if prefix, promo := fabPromoPrefixes[edition]; promo {
-		programme, err := mtgmatcher.GetSet(prefix)
+		programme, err := b.GetSet(prefix)
 		if err == nil {
 			shelves = append(shelves, shelf{set: programme, edition: programme.Name, numberPrefix: prefix, printRun: printRun})
 		}
-		set, err := mtgmatcher.GetSetByName(fabPromoSet)
+		set, err := b.GetSetByName(fabPromoSet)
 		if err == nil {
 			shelves = append(shelves, shelf{set: set, edition: fabPromoSet, numberPrefix: prefix, printRun: printRun})
 		}
 		return shelves
 	}
-	set, err := mtgmatcher.GetSetByName(edition)
+	set, err := b.GetSetByName(edition)
 	if err == nil {
 		shelves = append(shelves, shelf{set: set, edition: edition, printRun: printRun})
 	} else {
 		translated, _ := fabEdition(edition)
-		set, err = mtgmatcher.GetSetByName(translated)
+		set, err = b.GetSetByName(translated)
 		if err == nil {
 			shelves = append(shelves, shelf{set: set, edition: translated, printRun: printRun})
 		}
 	}
 	if product.ExpansionCode != "" {
-		coded, cerr := mtgmatcher.GetSet(product.ExpansionCode)
+		coded, cerr := b.GetSet(product.ExpansionCode)
 		if cerr == nil && !shelved(shelves, coded) {
 			shelves = append(shelves, shelf{set: coded, edition: coded.Name, printRun: printRun})
 		}

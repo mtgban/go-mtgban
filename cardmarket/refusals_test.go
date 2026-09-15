@@ -7,8 +7,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -25,11 +23,11 @@ func (s *logSink) callback(format string, a ...any) {
 // so a whole catalog going unpriced looked exactly like a run with nothing
 // to report.
 func TestProcessProductRefusal(t *testing.T) {
-	installDatastore(t, "yugioh", ygoDatastore)
+	b := datastoreBackend(t, "yugioh", ygoDatastore)
 
-	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	mkm.exchangeRate = 1
 	mkm.priceGuide = map[int]cm.PriceGuide{

@@ -367,7 +367,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 				if err != nil {
 					return nil, err
 				}
-				scraper, err := cardmarket.NewScraperSealed(mtgban.GameMagic, appToken, appSecret)
+				scraper, err := cardmarket.NewScraperSealed(b, appToken, appSecret)
 				if err != nil {
 					return nil, err
 				}
