@@ -34,6 +34,8 @@ type Hareruya struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	exchangeRate float64
 
 	inventory     mtgban.InventoryRecord
@@ -49,9 +51,9 @@ type Hareruya struct {
 	client *http.Client
 }
 
-// NewScraper returns a singles scraper.
-func NewScraper() *Hareruya {
-	ha := Hareruya{}
+// NewScraper returns a singles scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Hareruya {
+	ha := Hareruya{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	ha.MaxConcurrency = defaultConcurrency
@@ -184,12 +186,12 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 		}
 		seen[id] = true
 
-		theCard, err := preprocess(title)
+		theCard, err := preprocess(ha.backend, title)
 		if err != nil {
 			return true
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := ha.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return true
 		} else if err != nil {
@@ -204,7 +206,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := ha.backend.GetUUID(probe)
 					ha.printf("- %s", card)
 				}
 			}
@@ -216,7 +218,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 		// sold only in foil has no such card, and answering with the foil
 		// prices it off a copy that was never made. A treatment stated in
 		// that group is a foil by another name and says so itself.
-		co, cerr := mtgmatcher.GetUUID(cardID)
+		co, cerr := ha.backend.GetUUID(cardID)
 		if cerr == nil && co.Foil && !theCard.Foil &&
 			!reThick.MatchString(strings.TrimPrefix(title, "【EN】")) {
 			return true
@@ -282,12 +284,12 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 		}
 
 		for _, product := range products {
-			theCard, err := Preprocess(product)
+			theCard, err := Preprocess(ha.backend, product)
 			if err != nil {
 				continue
 			}
 
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := ha.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -306,7 +308,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
+						card, _ := ha.backend.GetUUID(probe)
 						ha.printf("- %s", card)
 					}
 				}
@@ -620,7 +622,7 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 				delete(heldBy, record.cardID)
 			}
 
-			co, _ := mtgmatcher.GetUUID(record.cardID)
+			co, _ := ha.backend.GetUUID(record.cardID)
 			// This store tracks the two different EU/US printings as separate entries
 			var err error
 			if co.SetCode == "MPS" {
