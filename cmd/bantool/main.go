@@ -462,7 +462,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 					return nil, errors.New("missing MTGJSON_TCGSKU_PATH env var")
 				}
 
-				scraper := mintcard.NewScraper()
+				scraper := mintcard.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				scraper.Partner = os.Getenv("MINT_PARTNER")
 
