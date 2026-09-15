@@ -468,5 +468,6 @@ func (ms *MTGSeattle) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ms.inventoryDate
 	info.BuylistTimestamp = &ms.buylistDate
 	info.CreditMultiplier = 1.33
+	info.Game = mtgban.GameMagic
 	return
 }
