@@ -36,13 +36,18 @@ type Sealed struct {
 	DisableRetail  bool
 	DisableBuylist bool
 
-	client *http.Client
-	game   mtgban.Game
-	shelf  string
+	client  *http.Client
+	game    mtgban.Game
+	shelf   string
+	backend *mtgmatcher.Backend
 }
 
-// NewScraperSealed returns a sealed scraper for one game.
-func NewScraperSealed(game mtgban.Game) (*Sealed, error) {
+// NewScraperSealed returns a sealed scraper for the datastore's game.
+func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	shelf, ok := csiGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -57,8 +62,8 @@ func NewScraperSealed(game mtgban.Game) (*Sealed, error) {
 
 	csi.productMap = map[string]string{}
 	if game == mtgban.GameMagic {
-		for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-			co, err := mtgmatcher.GetUUID(uuid)
+		for _, uuid := range b.GetSealedUUIDs() {
+			co, err := b.GetUUID(uuid)
 			if err != nil {
 				continue
 			}
@@ -71,6 +76,7 @@ func NewScraperSealed(game mtgban.Game) (*Sealed, error) {
 	}
 	csi.game = game
 	csi.shelf = shelf
+	csi.backend = b
 	return &csi, nil
 }
 
@@ -255,7 +261,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
 				continue
 			}
-			resolved, err := mtgmatcher.ResolveSealed(product.Name)
+			resolved, err := csi.backend.ResolveSealed(product.Name)
 			if err != nil {
 				continue
 			}
@@ -502,7 +508,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 			if productName == "" || mtgmatcher.SealedIsLanguageVariant(productName) {
 				return
 			}
-			uuid, err := mtgmatcher.ResolveSealed(productName)
+			uuid, err := csi.backend.ResolveSealed(productName)
 			if err != nil {
 				// A card row, or a product the datastore does not carry
 				return

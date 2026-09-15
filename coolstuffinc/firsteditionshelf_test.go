@@ -3,8 +3,6 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
@@ -14,7 +12,7 @@ import (
 // unlimited printing instead - silently, since the match succeeded, it just
 // answered with the other run.
 func TestFirstEditionShelfReachesTheRun(t *testing.T) {
-	withGameDatastore(t, "pokemon", "POKEMON_PATH")
+	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	for _, tt := range []struct {
 		name, edition, wantID string
@@ -28,16 +26,16 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 			if run == nil {
 				t.Fatalf("firstEditionShelf(%q) named no run", tt.edition)
 			}
-			card := pokemonListing(tt.name, shelf, "", false)
+			card := pokemonListing(b, tt.name, shelf, "", false)
 			if card == nil {
 				t.Fatal("the listing preprocessed to nothing")
 			}
-			id, err := matchRun(card, run)
+			id, err := matchRun(b, card, run)
 			if err != nil {
 				t.Fatalf("matchRun = %v", err)
 			}
 			if id != tt.wantID {
-				co, _ := mtgmatcher.GetUUID(id)
+				co, _ := b.GetUUID(id)
 				t.Errorf("matchRun = %q (finish %q), want %q", id, co.Finish, tt.wantID)
 			}
 		})
@@ -48,18 +46,18 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 // safe: a card the set has no first-edition row for is refused rather than
 // answered with the unlimited printing, which is what used to be published.
 func TestFirstEditionShelfRefusesTheOtherRun(t *testing.T) {
-	withGameDatastore(t, "pokemon", "POKEMON_PATH")
+	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	// Base Set carries one first-edition row, Alakazam; the rest of the set
 	// has none, so this names a run the catalog cannot answer with.
 	shelf, run := firstEditionShelf("1st Edition Base Set")
-	card := pokemonListing("Venusaur - 15/102", shelf, "", false)
+	card := pokemonListing(b, "Venusaur - 15/102", shelf, "", false)
 	if card == nil {
 		t.Skip("the listing preprocessed to nothing")
 	}
-	id, err := matchRun(card, run)
+	id, err := matchRun(b, card, run)
 	if err == nil {
-		co, _ := mtgmatcher.GetUUID(id)
+		co, _ := b.GetUUID(id)
 		t.Errorf("matchRun = %q (finish %q), want a refusal", id, co.Finish)
 	}
 }

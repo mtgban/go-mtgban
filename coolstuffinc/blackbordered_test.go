@@ -18,7 +18,7 @@ import (
 // claims - correctly stays unresolved rather than being forced onto a set
 // that never carried it.
 func TestPreprocessBlackBorderedForeign(t *testing.T) {
-	withGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
 
 	for _, tt := range []struct {
 		desc         string
@@ -69,7 +69,7 @@ func TestPreprocessBlackBorderedForeign(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(tt.name, "Black Bordered (foreign)", tt.variant, "")
+			card, err := preprocess(b, tt.name, "Black Bordered (foreign)", tt.variant, "")
 			if tt.wantPreErr {
 				if err != mtgmatcher.ErrUnsupported {
 					t.Fatalf("preprocess(%q) = %v, want ErrUnsupported", tt.name, err)
@@ -84,7 +84,7 @@ func TestPreprocessBlackBorderedForeign(t *testing.T) {
 					tt.name, card.Edition, card.Language, tt.wantEd, tt.wantLang)
 			}
 
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if tt.wantResolved && (err != nil || id == "") {
 				t.Errorf("Match(%+v) = %q, %v, want a resolved id", card, id, err)
 			} else if !tt.wantResolved && err == nil {

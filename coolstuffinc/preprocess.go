@@ -64,7 +64,7 @@ var nameTable = map[string]string{
 	"Odric, Lunarch Marshall":                "Odric, Lunarch Marshal",
 }
 
-func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
 	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
 	fixup, found := numFixes[imgName]
 	if found {
@@ -114,7 +114,7 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 	}
 
 	// Skip tokens with the same names as cards
-	if strings.Contains(variant, "Emblem") && !mtgmatcher.IsToken(cardName) {
+	if strings.Contains(variant, "Emblem") && !b.IsToken(cardName) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
@@ -122,7 +122,7 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 		for i := range 2 {
 			maybeSet := strings.ToUpper(imgName[:i+3])
 			maybeNum := strings.TrimLeft(imgName[i+3:], "_0")
-			if len(mtgmatcher.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
+			if len(b.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
 				return &mtgmatcher.InputCard{
 					Name:      cardName,
 					Variation: maybeNum,
@@ -147,7 +147,7 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 		trimmed := strings.TrimLeft(maybeNum, letters)
 		if trimmed != maybeNum && edition != "Universal Promo Pack" {
 			maybeNum = strings.TrimLeft(trimmed, "_0")
-			if len(mtgmatcher.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
+			if len(b.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
 				return &mtgmatcher.InputCard{
 					Name:      cardName,
 					Variation: maybeNum,
@@ -482,7 +482,7 @@ func card2promo(cardName, variant string) (string, string) {
 
 // PreprocessBuylist is Preprocess for the buylist feed, which describes a card
 // differently from the sale catalog.
-func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
+func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 	num := strings.TrimLeft(card.Number, "0")
 	cleanVar := cleanVariant(card.Notes)
 	edition := card.ItemSet
@@ -531,7 +531,7 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 	}
 
 	// Skip tokens with the same names as cards
-	if strings.Contains(variant, "Emblem") && !mtgmatcher.IsToken(cardName) {
+	if strings.Contains(variant, "Emblem") && !b.IsToken(cardName) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
