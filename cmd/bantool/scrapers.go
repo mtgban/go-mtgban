@@ -128,7 +128,7 @@ func tcgSYPScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, 
 			return nil, errors.New("missing TCGPLAYER_CATALOG_PATH env var")
 		}
 
-		scraper, err := tcgplayer.NewScraperSYP(game, auth)
+		scraper, err := tcgplayer.NewScraperSYP(b, auth)
 		if err != nil {
 			return nil, err
 		}
@@ -469,7 +469,7 @@ func tcgIndexScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := tcgplayer.NewScraperGameIndex(game, publicID, privateID)
+		scraper, err := tcgplayer.NewScraperGameIndex(b, publicID, privateID)
 		if err != nil {
 			return nil, err
 		}
@@ -488,7 +488,7 @@ func tcgMarketScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scrape
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := tcgplayer.NewScraperGame(game, publicID, privateID)
+		scraper, err := tcgplayer.NewScraperGame(b, publicID, privateID)
 		if err != nil {
 			return nil, err
 		}
@@ -507,7 +507,7 @@ func tcgSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scrape
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := tcgplayer.NewScraperGameSealed(game, publicID, privateID)
+		scraper, err := tcgplayer.NewScraperGameSealed(b, publicID, privateID)
 		if err != nil {
 			return nil, err
 		}

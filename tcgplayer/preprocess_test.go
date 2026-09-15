@@ -13,33 +13,34 @@ import (
 )
 
 var (
-	datastoreOnce sync.Once
-	datastoreErr  error
-	datastoreOK   bool
+	datastoreOnce    sync.Once
+	datastoreErr     error
+	datastoreBackend *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// realDatastore loads the Magic datastore the first time a test asks for it,
+// and skips where the run carries none.
+func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		err := datastore.Load("magic", path)
+		b, err := datastore.Read("magic", path)
 		if err != nil {
 			datastoreErr = err
 			return
 		}
-		datastoreOK = true
+		datastoreBackend = b
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreBackend
 }
 
 // TestPreprocessJapanesePromoTokens pins which sheet a Japanese promo token
@@ -48,7 +49,7 @@ func realDatastore(t *testing.T) {
 // as Dominaria United's reported the Wilds of Eldraine bird as the Dominaria
 // bird, which would have overwritten a right id upstream with a wrong one.
 func TestPreprocessJapanesePromoTokens(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		desc      string
 		name      string
@@ -73,15 +74,15 @@ func TestPreprocessJapanesePromoTokens(t *testing.T) {
 			}
 			editions := map[int]string{0: "Unique and Miscellaneous Promos"}
 
-			theCard, err := Preprocess(&product, editions)
+			theCard, err := Preprocess(b, &product, editions)
 			if err != nil {
 				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", cardID, err)
 			}
@@ -99,7 +100,7 @@ func TestPreprocessJapanesePromoTokens(t *testing.T) {
 // edition wants - left two shelf-mates carrying the same number and nothing
 // to tell them apart.
 func TestPreprocessOversizedShelf(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		name    string
@@ -124,15 +125,15 @@ func TestPreprocessOversizedShelf(t *testing.T) {
 				Value       string `json:"value"`
 			}{Name: "Number", Value: tt.number})
 
-			theCard, err := Preprocess(&product, map[int]string{0: "Oversize Cards"})
+			theCard, err := Preprocess(b, &product, map[int]string{0: "Oversize Cards"})
 			if err != nil {
 				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", cardID, err)
 			}
@@ -150,7 +151,7 @@ func TestPreprocessOversizedShelf(t *testing.T) {
 // meant. March of the Machine's holds two Spirits and two Treasures, so the
 // number has to keep telling those apart afterwards.
 func TestPreprocessJapanesePromoTokensUnderTheirOwnSet(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		name   string
 		number string
@@ -169,15 +170,15 @@ func TestPreprocessJapanesePromoTokensUnderTheirOwnSet(t *testing.T) {
 				Value       string `json:"value"`
 			}{Name: "Number", Value: tt.number})
 
-			theCard, err := Preprocess(&product, map[int]string{0: "March of the Machine"})
+			theCard, err := Preprocess(b, &product, map[int]string{0: "March of the Machine"})
 			if err != nil {
 				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", cardID, err)
 			}
@@ -194,7 +195,7 @@ func TestPreprocessJapanesePromoTokensUnderTheirOwnSet(t *testing.T) {
 // never held has to name the promo set that did, or it aliases against every
 // ordinary printing of the same card.
 func TestPreprocessStandardShowdownShelf(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		name    string
 		setCode string
@@ -209,15 +210,15 @@ func TestPreprocessStandardShowdownShelf(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			product := tcgplayer.Product{Name: tt.name, CleanName: tt.name}
 
-			theCard, err := Preprocess(&product, map[int]string{0: "Standard Showdown Promos"})
+			theCard, err := Preprocess(b, &product, map[int]string{0: "Standard Showdown Promos"})
 			if err != nil {
 				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", cardID, err)
 			}
@@ -232,13 +233,16 @@ func TestPreprocessStandardShowdownShelf(t *testing.T) {
 // TestPreprocessRefusesInserts pins the inserts the datastore holds no row
 // for, which would otherwise be reported as cards it failed to find.
 func TestPreprocessRefusesInserts(t *testing.T) {
+	// No datastore lookup is reached on this path, so an empty backend is
+	// enough.
+	b := &mtgmatcher.Backend{}
 	for _, name := range []string{
 		"Question Mark Insert Card",
 		"FINAL FANTASY VII Game Code Card",
 	} {
 		t.Run(name, func(t *testing.T) {
 			product := tcgplayer.Product{Name: name, CleanName: name}
-			theCard, err := Preprocess(&product, map[int]string{0: "Secret Lair Countdown Kit"})
+			theCard, err := Preprocess(b, &product, map[int]string{0: "Secret Lair Countdown Kit"})
 			if err == nil {
 				t.Errorf("Preprocess(%q) = %v, want an error: no such card is carried", name, theCard)
 			}
@@ -254,7 +258,7 @@ func TestPreprocessRefusesInserts(t *testing.T) {
 // number the set itself carries, so the number is what tells the copies
 // apart once the edition is found.
 func TestPreprocessZetaSet(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		name   string
 		number string
@@ -267,15 +271,15 @@ func TestPreprocessZetaSet(t *testing.T) {
 			product := tcgplayer.Product{Name: tt.name, CleanName: tt.name}
 			editions := map[int]string{0: "Secret Lair x MSCHF: The Zeta Set"}
 
-			theCard, err := Preprocess(&product, editions)
+			theCard, err := Preprocess(b, &product, editions)
 			if err != nil {
 				t.Fatalf("Preprocess(%q) = %v", tt.name, err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", cardID, err)
 			}
