@@ -5,8 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -44,11 +42,11 @@ const ygoDatastore = `{
 // prefix has to be the answer's own, the region infix the datastore writes
 // and Cardmarket omits aside.
 func TestMatchProductPrintRunPrefix(t *testing.T) {
-	installDatastore(t, "yugioh", ygoDatastore)
+	b := datastoreBackend(t, "yugioh", ygoDatastore)
 
-	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		name, expansion, product, number, want string

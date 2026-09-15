@@ -6,8 +6,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -43,7 +41,7 @@ const fabArtDatastore = `{
 // prices is thrown away: 269 rejections over 134 printings in the night of
 // 2026-08-23, 226 of them this pack's.
 func TestGemPackTreatments(t *testing.T) {
-	installDatastore(t, "fleshandblood", fabArtDatastore)
+	b := datastoreBackend(t, "fleshandblood", fabArtDatastore)
 
 	products := []cm.Product{
 		{
@@ -60,9 +58,9 @@ func TestGemPackTreatments(t *testing.T) {
 		},
 	}
 
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	mkm.exchangeRate = 1
 	mkm.MaxConcurrency = 1
@@ -106,11 +104,11 @@ func TestGemPackTreatments(t *testing.T) {
 // to the card's would answer with the ordinary printing instead - and take
 // the price the ordinary product had.
 func TestMatchProductExtendedArt(t *testing.T) {
-	installDatastore(t, "fleshandblood", fabArtDatastore)
+	b := datastoreBackend(t, "fleshandblood", fabArtDatastore)
 
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	for _, tt := range []struct{ name, want string }{
 		{"Twinning Blade (Extended Art Rainbow Foil)", "cru082_225983_1steditionrainbowfoil"},

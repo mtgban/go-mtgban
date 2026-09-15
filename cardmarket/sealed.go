@@ -46,6 +46,9 @@ type Sealed struct {
 
 	game   mtgban.Game
 	gameID int
+
+	// backend is the datastore this scraper matches against.
+	backend *mtgmatcher.Backend
 }
 
 func (mkm *Sealed) printf(format string, a ...any) {
@@ -54,9 +57,13 @@ func (mkm *Sealed) printf(format string, a ...any) {
 	}
 }
 
-// NewScraperSealed returns a sealed scraper for one game, authenticated with an
-// app token and secret.
-func NewScraperSealed(game mtgban.Game, appToken, appSecret string) (*Sealed, error) {
+// NewScraperSealed returns a sealed scraper matching against b,
+// authenticated with an app token and secret.
+func NewScraperSealed(b *mtgmatcher.Backend, appToken, appSecret string) (*Sealed, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	id, found := mkmGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -67,6 +74,7 @@ func NewScraperSealed(game mtgban.Game, appToken, appSecret string) (*Sealed, er
 	mkm.MaxConcurrency = defaultConcurrency
 	mkm.game = game
 	mkm.gameID = id
+	mkm.backend = b
 	return &mkm, nil
 }
 
@@ -195,7 +203,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	}
 	mkm.exchangeRate = rate
 
-	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
+	productMap := mkm.backend.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 
 	// A datastore that does not catalog cardmarket's own ids resolves by
@@ -209,7 +217,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	// reason the CardTrader sealed scraper stops its name pass there.
 	nameFallback := len(productMap) == 0 && mkm.gameID != cm.GameMagic
 	if nameFallback && len(mkm.TCGBridge) > 0 {
-		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+		tcgMap := mkm.backend.BuildSealedProductMap("tcgplayerProductId")
 		for mkmID, tcgID := range mkm.TCGBridge {
 			uuids, found := tcgMap[tcgID]
 			if !found {
@@ -232,7 +240,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	earlyRunSiblings := map[string]bool{}
 	var printRuns printRunIndex
 	if nameFallback {
-		printRuns = newPrintRunIndex()
+		printRuns = newPrintRunIndex(mkm.backend)
 		for _, product := range productList {
 			if namesEarlyPrintRun(product.Name) {
 				earlyRunSiblings[sealedBaseKey(product.Name)] = true
@@ -320,7 +328,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, productIDs,
 		func(ctx context.Context, idProduct int, channel chan<- responseChan) error {
 			uuids := productMap[idProduct]
-			co, err := mtgmatcher.GetUUID(uuids[0])
+			co, err := mkm.backend.GetUUID(uuids[0])
 			if err != nil {
 				return nil
 			}
@@ -339,7 +347,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 		func(result responseChan) {
 			err := mkm.inventory.AddStrict(result.cardID, &result.entry)
 			if err != nil {
-				_, cerr := mtgmatcher.GetUUID(result.cardID)
+				_, cerr := mkm.backend.GetUUID(result.cardID)
 				if cerr != nil {
 					mkm.printf("%s - %s: %s", result.entry.OriginalID, cerr.Error(), result.cardID)
 					return
@@ -377,15 +385,15 @@ func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 // is left over is not a different product but the same one spelled the way the
 // marketplace spells it, so the two spellings it differs by are tried in turn.
 func (mkm *Sealed) resolveSealedName(name string) (string, error) {
-	uuid, err := mtgmatcher.ResolveSealed(name)
+	uuid, err := mkm.backend.ResolveSealed(name)
 	if err == nil {
 		return uuid, nil
 	}
-	if uuid, found := resolveSealedRun(name); found {
+	if uuid, found := resolveSealedRun(mkm.backend, name); found {
 		return uuid, nil
 	}
 	if renamed, found := sealedRenamed(mkm.gameID, name); found {
-		uuid, rerr := mtgmatcher.ResolveSealed(renamed)
+		uuid, rerr := mkm.backend.ResolveSealed(renamed)
 		if rerr == nil {
 			return uuid, nil
 		}
@@ -406,7 +414,7 @@ func (mkm *Sealed) resolveSealedName(name string) (string, error) {
 func (mkm *Sealed) pruneSubsumed(names map[int]string, productMap map[int][]string, named map[string][]int, productIDs []int) ([]int, int) {
 	var pruned int
 	for uuid, ids := range named {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := mkm.backend.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -567,15 +575,15 @@ func editionRunSpellings(name string) []string {
 // never wrote, and a candidate reached by handing it one has to answer for
 // everything else the vendor did write. Two runs answering equally well is a
 // name that does not say which it is, and stays unresolved.
-func resolveSealedRun(name string) (string, bool) {
+func resolveSealedRun(b *mtgmatcher.Backend, name string) (string, bool) {
 	var found string
 	seen := map[string]bool{}
 	for _, spelling := range editionRunSpellings(name) {
-		uuid, err := mtgmatcher.ResolveSealed(spelling)
+		uuid, err := b.ResolveSealed(spelling)
 		if err != nil {
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -715,10 +723,10 @@ type printRunEntry struct {
 	wave int
 }
 
-func newPrintRunIndex() printRunIndex {
+func newPrintRunIndex(b *mtgmatcher.Backend) printRunIndex {
 	index := printRunIndex{}
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}

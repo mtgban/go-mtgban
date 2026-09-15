@@ -5,8 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -32,10 +30,10 @@ const yugiohVersionDatastore = `{
 // rows and none of them prices; the point of the rule is not only that they
 // land but that they land apart, which is what a shared uuid would break.
 func TestYugiohVersionVariants(t *testing.T) {
-	installDatastore(t, "yugioh", yugiohVersionDatastore)
-	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	b := datastoreBackend(t, "yugioh", yugiohVersionDatastore)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 
 	seen := map[string]string{}
@@ -71,10 +69,10 @@ func TestYugiohVersionVariants(t *testing.T) {
 // left as it was. A fourth printing appearing on the shelf must alias rather
 // than borrow the third one's stamp, so that it is seen and named.
 func TestYugiohVersionUncovered(t *testing.T) {
-	installDatastore(t, "yugioh", yugiohVersionDatastore)
-	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	b := datastoreBackend(t, "yugioh", yugiohVersionDatastore)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	_, err = mkm.matchYugioh(&cm.Product{
 		Name:          "Ghost Ogre & Snow Rabbit (V.4 - Ultra Rare)",

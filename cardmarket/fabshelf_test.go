@@ -7,7 +7,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
@@ -58,9 +58,9 @@ const fabShelfDatastore = `{
  ]
 }`
 
-func loadFabShelfDatastore(t *testing.T) {
+func loadFabShelfDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
-	installDatastore(t, "fleshandblood", fabShelfDatastore)
+	return datastoreBackend(t, "fleshandblood", fabShelfDatastore)
 }
 
 // TestFabShelves pins the sets a product is asked of, in order: a promo
@@ -68,7 +68,7 @@ func loadFabShelfDatastore(t *testing.T) {
 // the set an expansion names by name, and the set wearing the expansion's
 // code when no name places it.
 func TestFabShelves(t *testing.T) {
-	loadFabShelfDatastore(t)
+	b := loadFabShelfDatastore(t)
 	for _, tt := range []struct {
 		expansion, code string
 		want            []string
@@ -81,7 +81,7 @@ func TestFabShelves(t *testing.T) {
 		{"Nowhere Deck", "NOPE", nil},
 	} {
 		var got []string
-		for _, sh := range fabShelves(&cm.Product{ExpansionName: tt.expansion, ExpansionCode: tt.code}) {
+		for _, sh := range fabShelves(b, &cm.Product{ExpansionName: tt.expansion, ExpansionCode: tt.code}) {
 			got = append(got, sh.set.Code)
 		}
 		if strings.Join(got, ",") != strings.Join(tt.want, ",") {
@@ -138,10 +138,10 @@ func TestFabSameProduct(t *testing.T) {
 // the programme's own set - and on the card's plain printing only when no
 // shelf carries the treatment.
 func TestMatchProductFinishes(t *testing.T) {
-	loadFabShelfDatastore(t)
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	b := loadFabShelfDatastore(t)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		expansion, code, name, number, want string
@@ -173,10 +173,10 @@ func TestMatchProductFinishes(t *testing.T) {
 // it comes to rest on the card's plain printing, by name and so held
 // back for the collector to fold beside the plain product.
 func TestResolveProductBridgeFinish(t *testing.T) {
-	loadFabShelfDatastore(t)
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	b := loadFabShelfDatastore(t)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	mkm.TCGBridge = map[int]int{1: 577711, 2: 453353, 3: 275840}
 	for _, tt := range []struct {
@@ -202,10 +202,10 @@ func TestResolveProductBridgeFinish(t *testing.T) {
 // that a misspelt listing keeps its id when the spelling the shelf also
 // sells under went unpriced.
 func TestDisownBridged(t *testing.T) {
-	loadFabShelfDatastore(t)
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	b := loadFabShelfDatastore(t)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	ravages := &cm.Product{Name: "Herald of Ravages (Blue) (Regular)", Number: "017", ExpansionName: "Monarch - Prism Blitz Deck"}
 	rebirth := &cm.Product{Name: "Herald of Rebirth (Blue) (Regular)", Number: "018", ExpansionName: "Monarch - Prism Blitz Deck"}
@@ -243,19 +243,20 @@ func TestDisownBridged(t *testing.T) {
 // TestTwinsAmongFaces pins that a product naming one face of a fused card
 // another product already holds is its twin, and refused quietly.
 func TestTwinsAmongFaces(t *testing.T) {
-	loadFabShelfDatastore(t)
+	b := loadFabShelfDatastore(t)
 	adult := &cm.Product{Name: "Tuffnut, Bumbling Hulkster (Regular)", Number: "001", ExpansionName: "Super Slam"}
 	young := &cm.Product{Name: "Tuffnut (Regular)", Number: "002", ExpansionName: "Super Slam"}
 	results := []resolved{
 		{product: adult, cardID: "sup001-sup002_656933", cardIDFoil: "sup001-sup002_656933", byName: true},
 		{product: young, err: errNoPrinting},
 	}
-	twinsAmong(results, fabSameProduct, fabFaceOf)
+	face := func(product *cm.Product, cardID string) bool { return fabFaceOf(b, product, cardID) }
+	twinsAmong(results, fabSameProduct, face)
 	if !errors.Is(results[1].err, errTwin) {
 		t.Errorf("the young hero's refusal is %v, want errTwin beside the fused card", results[1].err)
 	}
 
-	collector := namedLast{add: func(responseChan) {}, twin: fabSameProduct, face: fabFaceOf}
+	collector := namedLast{add: func(responseChan) {}, twin: fabSameProduct, face: face}
 	collector.collect(responseChan{cardID: "sup001-sup002_656933", product: adult})
 	collector.collect(responseChan{cardID: "sup001-sup002_656933", product: young})
 	collector.flush()

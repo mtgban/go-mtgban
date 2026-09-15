@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -17,7 +18,7 @@ import (
 // row copied verbatim: Laughing Hyena and its starred foil, both faces of
 // Order of Midnight, and the two same-numbered Growth Charms of the Mystery
 // Booster playtest sets.
-func loadCatalogDatastore(t *testing.T) {
+func loadCatalogDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	reader, err := os.Open("testdata/idmap_datastore.json")
 	if err != nil {
@@ -28,7 +29,7 @@ func loadCatalogDatastore(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	installBackend(t, b)
+	return b
 }
 
 // The uuids are real entries of the published Magic map, chosen for their
@@ -36,11 +37,11 @@ func loadCatalogDatastore(t *testing.T) {
 // its back face the datastore never indexes, and a product whose printings
 // share a number that therefore settles nothing.
 func TestResolveUUIDs(t *testing.T) {
-	loadCatalogDatastore(t)
+	b := loadCatalogDatastore(t)
 
-	mkm, err := NewScraperIndex(mtgban.GameMagic)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameMagic) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 
 	tests := []struct {
@@ -96,7 +97,7 @@ func TestResolveUUIDs(t *testing.T) {
 			if cardID == "" {
 				t.Fatal("resolved nothing")
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("plain id %q: %v", cardID, err)
 			}
@@ -107,7 +108,7 @@ func TestResolveUUIDs(t *testing.T) {
 				if cardIDFoil == "" || cardIDFoil == cardID {
 					t.Fatalf("foil column got %q, want a distinct printing", cardIDFoil)
 				}
-				foilCo, err := mtgmatcher.GetUUID(cardIDFoil)
+				foilCo, err := b.GetUUID(cardIDFoil)
 				if err != nil {
 					t.Fatalf("foil id %q: %v", cardIDFoil, err)
 				}
@@ -144,7 +145,7 @@ func TestCheckCatalog(t *testing.T) {
 		{"magic bare", mtgban.GameMagic, bare, true},
 		{"magic none", mtgban.GameMagic, nil, false},
 	} {
-		mkm, err := NewScraperIndex(tt.game)
+		mkm, err := NewScraperIndex(&mtgmatcher.Backend{Game: strings.ToLower(string(tt.game))})
 		if err != nil {
 			t.Fatalf("%s: NewScraperIndex(%v) = %v", tt.name, tt.game, err)
 		}
