@@ -33,12 +33,14 @@ type Trollandtoad struct {
 	inventoryDate  time.Time
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	inventory mtgban.InventoryRecord
 }
 
-// NewScraper returns a Magic singles scraper.
-func NewScraper() *Trollandtoad {
-	tnt := Trollandtoad{}
+// NewScraper returns a Magic singles scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Trollandtoad {
+	tnt := Trollandtoad{backend: b}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.MaxConcurrency = defaultConcurrency
 	return &tnt
@@ -90,11 +92,11 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 			return
 		}
 
-		theCard, err := preprocess(cardName, edition)
+		theCard, err := preprocess(tnt.backend, cardName, edition)
 		if err != nil {
 			return
 		}
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := tnt.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -103,7 +105,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 			case strings.Contains(edition, "The List"):
 			case strings.Contains(edition, "Mystery Booster"):
 			case strings.Contains(theCard.Variation, "Token"):
-			case mtgmatcher.IsToken(theCard.Name):
+			case tnt.backend.IsToken(theCard.Name):
 			case mtgmatcher.IsBasicLand(theCard.Name):
 			default:
 				tnt.printf("%v", err)
@@ -114,7 +116,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
+						card, _ := tnt.backend.GetUUID(probe)
 						tnt.printf("- %s", card)
 					}
 				}
