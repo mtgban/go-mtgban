@@ -404,7 +404,7 @@ func gamenerdzScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scrape
 
 func miniaturemarketSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := miniaturemarket.NewScraperSealed(game)
+		scraper, err := miniaturemarket.NewScraperSealed(b)
 		if err != nil {
 			return nil, err
 		}
