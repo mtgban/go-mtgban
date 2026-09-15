@@ -618,7 +618,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"trollandtoad": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := trollandtoad.NewScraper()
+				scraper := trollandtoad.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
 					scraper.MaxConcurrency = MaxConcurrency
