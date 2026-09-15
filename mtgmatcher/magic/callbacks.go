@@ -129,7 +129,7 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypePromoPack,
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsPromoPack()
+			return b.IsPromoPack(inCard)
 		},
 	},
 	{

@@ -81,14 +81,3 @@ func Read(game, path string) (*mtgmatcher.Backend, error) {
 	defer reader.Close()
 	return mtgmatcher.Open(game, reader)
 }
-
-// Load reads the datastore the path names as the game's and installs it as
-// the global one, for the suites that match through the package-level API.
-func Load(game, path string) error {
-	b, err := Read(game, path)
-	if err != nil {
-		return err
-	}
-	mtgmatcher.SetGlobalDatastore(b)
-	return nil
-}

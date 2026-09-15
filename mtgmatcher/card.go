@@ -60,14 +60,6 @@ func (c *InputCard) String() string {
 	name := c.Name
 	edition := c.Edition
 
-	if name == "" {
-		co, err := GetUUID(c.ID)
-		if err == nil {
-			name = co.Name
-			edition = co.Edition
-		}
-	}
-
 	if c.Variation != "" {
 		name = fmt.Sprintf("%s ('%s')", name, c.Variation)
 	}
@@ -91,17 +83,6 @@ func (c *InputCard) AddToVariant(tag string) {
 		c.Variation += " "
 	}
 	c.Variation += tag
-}
-
-// IsToken reports whether the name may represent a token.
-func IsToken(name string) bool {
-	return currentBackend().IsToken(name)
-}
-
-// PlainNumber reduces a collector number to the one a person writes, as the
-// loaded game reduces it.
-func PlainNumber(number string) string {
-	return currentBackend().PlainNumber(number)
 }
 
 // The Is* predicates below read the free text a storefront published, not the
@@ -140,20 +121,10 @@ func IsBasicLand(name string) bool {
 	return false
 }
 
-// IsGenericPromo reports a promo with no more specific kind, one that
-// probably needs further analysis to categorize: it excludes every promo the
-// other predicates recognise, and tokens, then accepts the leftovers that say
-// Promo or name a store event. Token names are read from the global datastore;
-// matcher rules use Backend.IsGenericPromo to stay on their own snapshot.
-func (c *InputCard) IsGenericPromo() bool {
-	return currentBackend().IsGenericPromo(c)
-}
-
 // IsGenericPromo classifies the input's promo wording while resolving token
-// names against this backend. Rules must use this method rather than the
-// InputCard convenience method, which consults the global datastore.
+// names against this backend.
 func (b *Backend) IsGenericPromo(c *InputCard) bool {
-	return !c.IsBaB() && !c.IsPromoPack() && !c.IsPrerelease() && !c.IsSDCC() &&
+	return !c.IsBaB() && !b.IsPromoPack(c) && !c.IsPrerelease() && !c.IsSDCC() &&
 		!c.IsRetro() &&
 		!c.Contains("Year of the") && // tcg
 		!c.Contains("Deckmasters") && // no real promos here, just foils
@@ -181,12 +152,12 @@ func (c *InputCard) IsPrerelease() bool {
 // IsPromoPack reports a promo pack printing, by name, by the stamp it carries,
 // or by a collector number ending in p, which the 30th Anniversary numbers
 // reuse for something else.
-func (c *InputCard) IsPromoPack() bool {
+func (b *Backend) IsPromoPack(c *InputCard) bool {
 	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
 		Contains(c.Variation, "Planeswalker Stamp") ||
 		Contains(c.Variation, "Silver Stamped") ||
-		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
+		(strings.HasSuffix(b.ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
 }
 
 // IsJPN reports a Japanese printing, by language or by the magazines that

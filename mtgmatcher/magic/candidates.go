@@ -33,7 +33,7 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 				// In case it's a well known promo, consider the promo sets (or vice
 				// versa for promo sets) in order to let filtering take care of them
 				// JPN cards are skipped because they are well set usually
-				if !inCard.IsJPN() && (inCard.IsPrerelease() || inCard.IsPromoPack() ||
+				if !inCard.IsJPN() && (inCard.IsPrerelease() || b.IsPromoPack(inCard) ||
 					(inCard.IsBundle() && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
 					(inCard.IsBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
 					setName := b.Sets[setCode].Name

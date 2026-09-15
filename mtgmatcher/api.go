@@ -19,20 +19,10 @@ func (b *Backend) GetUUIDs() []string {
 	return b.AllUUIDs
 }
 
-// GetUUIDs returns every non-sealed uuid in the default datastore.
-func GetUUIDs() []string {
-	return currentBackend().GetUUIDs()
-}
-
 // GetSealedUUIDs returns every sealed uuid in the datastore. The result
 // aliases the backend index and must not be modified.
 func (b *Backend) GetSealedUUIDs() []string {
 	return b.AllSealedUUIDs
-}
-
-// GetSealedUUIDs returns every sealed uuid in the default datastore.
-func GetSealedUUIDs() []string {
-	return currentBackend().GetSealedUUIDs()
 }
 
 // GetUUIDsInSet returns every non-sealed uuid printed in the given set,
@@ -43,19 +33,9 @@ func (b *Backend) GetUUIDsInSet(code string) []string {
 	return b.SetUUIDs[strings.ToUpper(code)]
 }
 
-// GetUUIDsInSet is Backend.GetUUIDsInSet on the global datastore.
-func GetUUIDsInSet(code string) []string {
-	return currentBackend().GetUUIDsInSet(code)
-}
-
 // GetSealedUUIDsInSet is the sealed-product counterpart of GetUUIDsInSet.
 func (b *Backend) GetSealedUUIDsInSet(code string) []string {
 	return b.SetSealedUUIDs[strings.ToUpper(code)]
-}
-
-// GetSealedUUIDsInSet is Backend.GetSealedUUIDsInSet on the global datastore.
-func GetSealedUUIDsInSet(code string) []string {
-	return currentBackend().GetSealedUUIDsInSet(code)
 }
 
 // GetUUID returns the card object stored for the given uuid. The object
@@ -73,20 +53,9 @@ func (b *Backend) GetUUID(uuid string) (*CardObject, error) {
 	return co, nil
 }
 
-// GetUUID returns the card object for the uuid, from the default datastore.
-// The object is shared and must not be modified.
-func GetUUID(uuid string) (*CardObject, error) {
-	return currentBackend().GetUUID(uuid)
-}
-
 // GetAllSets returns every set code in the datastore.
 func (b *Backend) GetAllSets() []string {
 	return b.AllSets
-}
-
-// GetAllSets returns every set code in the default datastore.
-func GetAllSets() []string {
-	return currentBackend().GetAllSets()
 }
 
 // GetSet returns the set with this code, matched case-insensitively. The set
@@ -102,11 +71,6 @@ func (b *Backend) GetSet(code string) (*Set, error) {
 	}
 
 	return set, nil
-}
-
-// GetSet returns the set with this code, from the default datastore.
-func GetSet(code string) (*Set, error) {
-	return currentBackend().GetSet(code)
 }
 
 // GetSetByName returns the set an edition string names, trying the set code
@@ -142,17 +106,6 @@ func (b *Backend) GetSetByName(edition string) (*Set, error) {
 	return nil, ErrCardNotInEdition
 }
 
-// GetSetByName returns the set an edition string names, from the default
-// datastore.
-func GetSetByName(edition string) (*Set, error) {
-	return currentBackend().GetSetByName(edition)
-}
-
-// AllPromoTypes returns every promo type present in the default datastore.
-func AllPromoTypes() []string {
-	return currentBackend().AllPromoTypes
-}
-
 // Names returns every card or sealed name in the datastore, in the requested
 // form: normalized, lowercase, or canonical. An unknown form returns nothing.
 // It is not called AllNames because that is the normalized list's own field.
@@ -177,11 +130,6 @@ func (b *Backend) Names(variant string, sealed bool) []string {
 	return nil
 }
 
-// AllNames is Backend.Names on the global datastore.
-func AllNames(variant string, sealed bool) []string {
-	return currentBackend().Names(variant, sealed)
-}
-
 // SearchEquals returns the uuids of every printing whose name matches exactly,
 // ignoring case and punctuation. An empty name returns everything.
 func (b *Backend) SearchEquals(name string) ([]string, error) {
@@ -197,22 +145,11 @@ func (b *Backend) SearchEquals(name string) ([]string, error) {
 	return results, nil
 }
 
-// SearchEquals searches the default datastore by exact name.
-func SearchEquals(name string) ([]string, error) {
-	return currentBackend().SearchEquals(name)
-}
-
 // SearchSealedEquals is the sealed-product counterpart of SearchEquals.
 func (b *Backend) SearchSealedEquals(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllSealed, func(a, c string) bool {
 		return a == c
 	})
-}
-
-// SearchSealedEquals searches the default datastore's sealed products by exact
-// name.
-func SearchSealedEquals(name string) ([]string, error) {
-	return currentBackend().SearchSealedEquals(name)
 }
 
 func (b *Backend) searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
@@ -250,20 +187,10 @@ func (b *Backend) SearchHasPrefix(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllNames, strings.HasPrefix)
 }
 
-// SearchHasPrefix searches the default datastore by name prefix.
-func SearchHasPrefix(name string) ([]string, error) {
-	return currentBackend().SearchHasPrefix(name)
-}
-
 // SearchContains returns the uuids of every printing whose name contains the
 // input.
 func (b *Backend) SearchContains(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllNames, strings.Contains)
-}
-
-// SearchContains searches the default datastore by substring.
-func SearchContains(name string) ([]string, error) {
-	return currentBackend().SearchContains(name)
 }
 
 // SearchRegexp returns the uuids of every printing whose name matches the
@@ -285,20 +212,9 @@ func (b *Backend) SearchRegexp(name string) ([]string, error) {
 	return hashes, nil
 }
 
-// SearchRegexp searches the default datastore by regular expression.
-func SearchRegexp(name string) ([]string, error) {
-	return currentBackend().SearchRegexp(name)
-}
-
 // SearchSealedContains is the sealed-product counterpart of SearchContains.
 func (b *Backend) SearchSealedContains(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllSealed, strings.Contains)
-}
-
-// SearchSealedContains searches the default datastore's sealed products by
-// substring.
-func SearchSealedContains(name string) ([]string, error) {
-	return currentBackend().SearchSealedContains(name)
 }
 
 // entry4Name returns the bucket entry actually named this way.
@@ -383,12 +299,6 @@ func (b *Backend) Printings4Card(name string) ([]string, error) {
 	return printings, nil
 }
 
-// Printings4Card returns the sets a card was printed in, from the default
-// datastore.
-func Printings4Card(name string) ([]string, error) {
-	return currentBackend().Printings4Card(name)
-}
-
 // HasNonfoilPrinting reports whether the card was ever sold nonfoil, narrowed
 // to the given editions when any are named.
 func (b *Backend) HasNonfoilPrinting(name string, editions ...string) bool {
@@ -403,20 +313,10 @@ func (b *Backend) HasFoilPrinting(name string, editions ...string) bool {
 	return b.HasPrinting(name, "finish", FinishFoil, editions...)
 }
 
-// HasFoilPrinting queries the default datastore.
-func HasFoilPrinting(name string, editions ...string) bool {
-	return currentBackend().HasFoilPrinting(name, editions...)
-}
-
 // HasEtchedPrinting reports whether the card was ever sold etched, narrowed to
 // the given editions when any are named.
 func (b *Backend) HasEtchedPrinting(name string, editions ...string) bool {
 	return b.HasPrinting(name, "finish", FinishEtched, editions...)
-}
-
-// HasEtchedPrinting queries the default datastore.
-func HasEtchedPrinting(name string, editions ...string) bool {
-	return currentBackend().HasEtchedPrinting(name, editions...)
 }
 
 // HasPrinting reports whether any printing of the name carries the value
@@ -509,12 +409,6 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 	}
 
 	return false
-}
-
-// HasPrinting reports whether any printing of the card carries this value in
-// the named field, narrowed to the given editions when any are named.
-func HasPrinting(name, field, value string, editions ...string) bool {
-	return currentBackend().HasPrinting(name, field, value, editions...)
 }
 
 const maxRerollThreshold = 50
@@ -688,11 +582,6 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 	return picks, nil
 }
 
-// BoosterGen opens a booster from the default datastore.
-func BoosterGen(setCode, boosterType string) ([]string, error) {
-	return currentBackend().BoosterGen(setCode, boosterType)
-}
-
 // GetPicksForDeck returns the uuids a preconstructed deck contains.
 func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	var picks []string
@@ -811,11 +700,6 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 	}
 
 	return picks, nil
-}
-
-// GetDecklist queries the default datastore.
-func GetDecklist(setCode, sealedUUID string) ([]string, error) {
-	return currentBackend().GetDecklist(setCode, sealedUUID)
 }
 
 // GetPicksForSealed opens a sealed product once, resolving its packs and decks
@@ -942,11 +826,6 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 	return picks, nil
 }
 
-// GetPicksForSealed opens a product from the default datastore.
-func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
-	return currentBackend().GetPicksForSealed(setCode, sealedUUID)
-}
-
 // SealedIsRandom reports whether opening the product twice can give different
 // cards, which is what separates a booster from a fixed deck.
 func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
@@ -989,11 +868,6 @@ func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
 	}
 
 	return false
-}
-
-// SealedIsRandom queries the default datastore.
-func SealedIsRandom(setCode, sealedUUID string) bool {
-	return currentBackend().SealedIsRandom(setCode, sealedUUID)
 }
 
 // SealedCardUnit returns how many cards the product holds in total.
@@ -1057,11 +931,6 @@ func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {
 	}
 
 	return false
-}
-
-// SealedHasDecklist queries the default datastore.
-func SealedHasDecklist(setCode, sealedUUID string) bool {
-	return currentBackend().SealedHasDecklist(setCode, sealedUUID)
 }
 
 // ProductProbabilities is one uuid and how likely opening a product is to
@@ -1289,11 +1158,6 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 	return probs, nil
 }
 
-// GetProbabilitiesForSealed queries the default datastore.
-func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabilities, error) {
-	return currentBackend().GetProbabilitiesForSealed(setCode, sealedUUID)
-}
-
 // BuildSealedProductMap indexes the sealed products by one of their outside
 // identifiers, skipping any product that does not carry it. A slice usually
 // holds a single uuid, but an id shared by a foil and a nonfoil product holds
@@ -1345,12 +1209,6 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 		})
 	}
 	return productMap
-}
-
-// BuildSealedProductMap indexes the default datastore's sealed products by an
-// outside identifier.
-func BuildSealedProductMap(idName string) map[int][]string {
-	return currentBackend().BuildSealedProductMap(idName)
 }
 
 // PromoTypeSlug renders a promo type as the single token that identifies it:
@@ -1539,10 +1397,4 @@ func (b *Backend) PromoTypeLabel(promoType string) string {
 		return label
 	}
 	return Title(promoType)
-}
-
-// PromoTypeLabel spells a promo type as PromoTypeLabel does, in the default
-// backend.
-func PromoTypeLabel(promoType string) string {
-	return currentBackend().PromoTypeLabel(promoType)
 }

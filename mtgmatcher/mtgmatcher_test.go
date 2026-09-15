@@ -26,8 +26,8 @@ func realDatastore(t *testing.T) {
 }
 
 // testBackendOrEmpty is for the tests that degrade gracefully with no
-// datastore loaded rather than skipping: they read the empty Backend
-// currentBackend() used to fall back to, and simply find nothing to check.
+// datastore loaded rather than skipping: they read an empty Backend, as an
+// unloaded run always did, and simply find nothing to check.
 func testBackendOrEmpty() *mtgmatcher.Backend {
 	if testBackend != nil {
 		return testBackend

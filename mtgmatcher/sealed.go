@@ -839,19 +839,6 @@ func unexplainedTokens(vendor []string, candSet, setTokens, counts map[string]bo
 	return n
 }
 
-// ResolveSealed resolves a storefront's name for a sealed product to its uuid,
-// using the default datastore.
-func ResolveSealed(name string) (string, error) {
-	return currentBackend().ResolveSealed(name)
-}
-
-// ResolveSealedWithHint resolves a storefront's name for a sealed product to
-// its uuid, letting the phrase the storefront files it under settle a tie the
-// name alone cannot, using the default datastore.
-func ResolveSealedWithHint(name, hint string) (string, error) {
-	return currentBackend().ResolveSealedWithHint(name, hint)
-}
-
 // SealedNameSubsumed reports whether a storefront name says everything one of
 // the names beside it says and at least one word more, with the shelf they all
 // sit on discounted.

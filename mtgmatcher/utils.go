@@ -149,20 +149,10 @@ func (b *Backend) ExtractNumber(str string) string {
 	return b.extractNumber(str, 1993)
 }
 
-// ExtractNumber is Backend.ExtractNumber on the global datastore.
-func ExtractNumber(str string) string {
-	return currentBackend().ExtractNumber(str)
-}
-
 // ExtractNumberAny returns the first number in the input whatever its length,
 // where ExtractNumber caps how many digits it will accept.
 func (b *Backend) ExtractNumberAny(str string) string {
 	return b.extractNumber(str, math.MaxInt32)
-}
-
-// ExtractNumberAny is Backend.ExtractNumberAny on the global datastore.
-func ExtractNumberAny(str string) string {
-	return currentBackend().ExtractNumberAny(str)
 }
 
 func (b *Backend) extractNumber(str string, threshold int) string {
@@ -423,12 +413,6 @@ func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 	}
 
 	return time.Parse("2006-01-02", releaseDate)
-}
-
-// CardReleaseDate returns the release date of the card's set, from the default
-// datastore.
-func CardReleaseDate(cardID string) (time.Time, error) {
-	return currentBackend().CardReleaseDate(cardID)
 }
 
 // promoHeadings are the headings storefronts file promotional printings
