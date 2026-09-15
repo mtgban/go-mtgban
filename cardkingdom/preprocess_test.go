@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -13,49 +12,39 @@ import (
 	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
-)
 
-func TestMain(m *testing.M) {
-	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
-	os.Exit(m.Run())
-}
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+)
 
 var (
-	datastoreOnce sync.Once
-	datastoreErr  error
-	datastoreOK   bool
+	datastoreOnce    sync.Once
+	datastoreErr     error
+	datastoreBackend *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// realDatastore reads the Magic datastore the first time a test asks for it,
+// and skips where the run carries none.
+func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		reader, err := datastore.Open(path)
+		b, err := datastore.Read("magic", path)
 		if err != nil {
 			datastoreErr = err
 			return
 		}
-		ds, err := magic.Load(reader)
-		reader.Close()
-		if err != nil {
-			datastoreErr = err
-			return
-		}
-		mtgmatcher.SetGlobalDatastore(ds)
-		datastoreOK = true
+		datastoreBackend = b
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreBackend
 }
 
 var PriceListTest = `
@@ -79,7 +68,7 @@ var priceListResults = []string{
 }
 
 func TestPreprocess(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	var products []cardkingdom.Product
 	err := json.NewDecoder(strings.NewReader(PriceListTest)).Decode(&products)
 	if err != nil {
@@ -93,20 +82,20 @@ func TestPreprocess(t *testing.T) {
 		t.Run(fmt.Sprint(test.Name), func(t *testing.T) {
 			t.Parallel()
 
-			theCard, err := Preprocess(test)
+			theCard, err := Preprocess(b, test)
 			if err != nil {
 				t.Errorf("FAIL: unxpected Preprocess error: %s", err)
 				return
 			}
 
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Errorf("FAIL: unxpected Match error: %s", err)
 				return
 			}
 
 			if cardID != priceListResults[idx] {
-				co, _ := mtgmatcher.GetUUID(cardID)
+				co, _ := b.GetUUID(cardID)
 				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.Name, priceListResults[idx], cardID, co)
 				return
 			}
@@ -121,7 +110,7 @@ func TestPreprocess(t *testing.T) {
 // datastore does not carry must reach the filing set once its treatment
 // wrapping is stripped.
 func TestPreprocessTokens(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		product cardkingdom.Product
@@ -153,18 +142,18 @@ func TestPreprocessTokens(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			theCard, err := Preprocess(tt.product)
+			theCard, err := Preprocess(b, tt.product)
 			if err != nil {
 				t.Fatalf("Preprocess(%v) = %v", tt.product, err)
 			}
 			if theCard.Name != tt.name {
 				t.Errorf("Preprocess name = %q, want %q", theCard.Name, tt.name)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", cardID, err)
 			}
@@ -181,8 +170,8 @@ func TestPreprocessTokens(t *testing.T) {
 // the name alone. Commander 2018 carries the Angel/Cat pairing under the same
 // scryfall_id CK ships for it.
 func TestPreprocessTokenPairing(t *testing.T) {
-	realDatastore(t)
-	theCard, err := Preprocess(cardkingdom.Product{
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
 		SKU:        "TC18-003",
 		ScryfallID: "6ac609aa-49d1-4330-b718-a90b0560da52",
 		Name:       "Angel Token - Cat Token",
@@ -191,13 +180,13 @@ func TestPreprocessTokenPairing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Preprocess: %v", err)
 	}
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := b.Match(theCard)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
 	const want = "3695fffc-7192-528c-83c8-b9893e6c4aa1_tp_dfd98280-5bf8-5d7d-a4ed-a90b91be8734"
 	if cardID != want {
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Angel // Cat pairing", theCard, cardID, co)
 	}
 }
@@ -207,8 +196,8 @@ func TestPreprocessTokenPairing(t *testing.T) {
 // CK's own wording puts them in - "X Token (Artist)" needs the parenthetical
 // gone before the suffix trim can ever find it at the end of the string.
 func TestPreprocessTokenPairingParenthetical(t *testing.T) {
-	realDatastore(t)
-	theCard, err := Preprocess(cardkingdom.Product{
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
 		SKU:        "TPCA-002",
 		ScryfallID: "b71177f3-a7cb-4d38-b8c7-daa5b8266a19",
 		Name:       "Eldrazi Spawn Token (Briclot) - Eldrazi Token (Proce)",
@@ -217,13 +206,13 @@ func TestPreprocessTokenPairingParenthetical(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Preprocess: %v", err)
 	}
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := b.Match(theCard)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
 	const want = "89c709c6-2fa7-5408-a5bf-5762b82d5477_tp_9d1ed5df-e69a-5bce-96fc-20dce8047d8a"
 	if cardID != want {
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Eldrazi // Eldrazi Spawn pairing", theCard, cardID, co)
 	}
 }
@@ -234,8 +223,8 @@ func TestPreprocessTokenPairingParenthetical(t *testing.T) {
 // id against the Cat Warrior face, so the Cat half is the partner to look
 // up, not the other way the naming order would otherwise suggest.
 func TestPreprocessTokenPairingSecondHalfAnchored(t *testing.T) {
-	realDatastore(t)
-	theCard, err := Preprocess(cardkingdom.Product{
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
 		SKU:        "TC17-001",
 		ScryfallID: "29c4e4f2-0040-4490-b357-660d729ad9cc",
 		Name:       "Cat Token - Cat Warrior Token",
@@ -244,13 +233,13 @@ func TestPreprocessTokenPairingSecondHalfAnchored(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Preprocess: %v", err)
 	}
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := b.Match(theCard)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
 	const want = "7a13db1f-523c-5b19-80e5-d4d6f0121c6b_tp_7e5dc858-2163-5de0-95cb-f0e2933a7f7f"
 	if cardID != want {
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Cat // Cat Warrior pairing", theCard, cardID, co)
 	}
 }
@@ -261,8 +250,8 @@ func TestPreprocessTokenPairingSecondHalfAnchored(t *testing.T) {
 // (no vendor sells that exact ad-hoc pairing as one product), so the first
 // face is anchored by its own sku-derived set and number instead.
 func TestPreprocessTokenPairingBySetNumber(t *testing.T) {
-	realDatastore(t)
-	theCard, err := Preprocess(cardkingdom.Product{
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
 		SKU:     "MTMKC-0012",
 		Name:    "Kobolds of Kher Keep Token // Soldier Token",
 		Edition: "Mystery Booster/The List",
@@ -270,13 +259,13 @@ func TestPreprocessTokenPairingBySetNumber(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Preprocess: %v", err)
 	}
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := b.Match(theCard)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
 	const want = "6aabcac2-f43d-5895-99fc-68c948e41e34_tp_b39718f3-8bdc-5726-9b59-c690d962b222"
 	if cardID != want {
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Soldier // Kobolds of Kher Keep Token pairing", theCard, cardID, co)
 	}
 }
@@ -286,7 +275,7 @@ func TestPreprocessTokenPairingBySetNumber(t *testing.T) {
 // duplicate number the token set actually catalogues as the foil printing -
 // the bare number these skus name is filed nonfoil-only.
 func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		sku  string
 		name string
@@ -296,7 +285,7 @@ func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 		{"SFT40K-016", "Spawn Token // Plaguebearer of Nurgle Token", "014c729a-bbdc-5569-afe8-7155ec517de7"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
-			theCard, err := Preprocess(cardkingdom.Product{
+			theCard, err := Preprocess(b, cardkingdom.Product{
 				SKU:     tt.sku,
 				Name:    tt.name,
 				Edition: "Warhammer 40,000",
@@ -305,12 +294,12 @@ func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Preprocess: %v", err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
 			if cardID != tt.want {
-				co, _ := mtgmatcher.GetUUID(cardID)
+				co, _ := b.GetUUID(cardID)
 				t.Errorf("Match(%v) = %s (%v), want the ★-suffixed foil printing", theCard, cardID, co)
 			}
 		})
@@ -322,8 +311,8 @@ func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 // its bare number reaches the Guilds of Ravnica one, which is the wrong
 // card at the right number.
 func TestPreprocessListAngelToken(t *testing.T) {
-	realDatastore(t)
-	theCard, err := Preprocess(cardkingdom.Product{
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
 		SKU:     "MTAFR-001",
 		Name:    "Angel Token // Spirit Token",
 		Edition: "Mystery Booster/The List",
@@ -331,13 +320,13 @@ func TestPreprocessListAngelToken(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Preprocess: %v", err)
 	}
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := b.Match(theCard)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
 	const want = "ba22fdaf-8d82-5f14-a5f0-3e5908f04d8c"
 	if cardID != want {
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the Forgotten Realms Angel", theCard, cardID, co)
 	}
 }
@@ -348,7 +337,7 @@ func TestPreprocessListAngelToken(t *testing.T) {
 // parenthetical on a card shared with another token, and the Mythic Edition
 // numbering that diverges from mtgjson's so only the name can carry the row.
 func TestPreprocessEmblems(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		product cardkingdom.Product
@@ -391,19 +380,19 @@ func TestPreprocessEmblems(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			theCard, err := Preprocess(tt.product)
+			theCard, err := Preprocess(b, tt.product)
 			if err != nil {
 				t.Fatalf("Preprocess(%v) = %v", tt.product, err)
 			}
 			if theCard.Name != tt.name {
 				t.Errorf("Preprocess name = %q, want %q", theCard.Name, tt.name)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", theCard, err)
 			}
 			if cardID != tt.uuid {
-				co, _ := mtgmatcher.GetUUID(cardID)
+				co, _ := b.GetUUID(cardID)
 				t.Errorf("Match(%v) = %s (%v), want %s", theCard, cardID, co, tt.uuid)
 			}
 		})
@@ -414,8 +403,8 @@ func TestPreprocessEmblems(t *testing.T) {
 // sweep into the double-faced token split, which renamed them after their
 // first face and lost the row.
 func TestPreprocessSplitCard(t *testing.T) {
-	realDatastore(t)
-	theCard, err := Preprocess(cardkingdom.Product{
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
 		SKU:     "TSR-186",
 		Name:    "Rough // Tumble",
 		Edition: "Time Spiral Remastered",
@@ -426,19 +415,19 @@ func TestPreprocessSplitCard(t *testing.T) {
 	if theCard.Name != "Rough // Tumble" {
 		t.Errorf("Preprocess name = %q, want the whole split card", theCard.Name)
 	}
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := b.Match(theCard)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
 	const want = "609b3e64-4e46-595c-a99d-bcbb04691d4f"
 	if cardID != want {
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the Time Spiral Remastered split card", theCard, cardID, co)
 	}
 }
 
 func TestPreprocessTokenFoilRefused(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		desc    string
 		product cardkingdom.Product
@@ -476,7 +465,7 @@ func TestPreprocessTokenFoilRefused(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			theCard, err := Preprocess(tt.product)
+			theCard, err := Preprocess(b, tt.product)
 			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 				t.Errorf("Preprocess(%v) = %v, %v, want ErrUnsupported", tt.product, theCard, err)
 			}
@@ -485,7 +474,7 @@ func TestPreprocessTokenFoilRefused(t *testing.T) {
 }
 
 func TestUnindexedTokenSheet(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		sku  string
 		want bool
@@ -503,7 +492,7 @@ func TestUnindexedTokenSheet(t *testing.T) {
 		{"nosku", false},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
-			if got := unindexedTokenSheet(tt.sku); got != tt.want {
+			if got := unindexedTokenSheet(b, tt.sku); got != tt.want {
 				t.Errorf("unindexedTokenSheet(%q) = %v, want %v", tt.sku, got, tt.want)
 			}
 		})

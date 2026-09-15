@@ -27,25 +27,29 @@ type Cardkingdom struct {
 	inventoryDate time.Time
 	buylistDate   time.Time
 
+	backend *mtgmatcher.Backend
+
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 }
 
 // NewScraperLocal returns a singles scraper reading the feed from a file
 // instead of the network.
-func NewScraperLocal(localPath string) *Cardkingdom {
+func NewScraperLocal(b *mtgmatcher.Backend, localPath string) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
 	ck.localPath = localPath
+	ck.backend = b
 	return &ck
 }
 
 // NewScraper returns a singles scraper reading Card Kingdom's published feed.
-func NewScraper() *Cardkingdom {
+func NewScraper(b *mtgmatcher.Backend) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
+	ck.backend = b
 	return &ck
 }
 
@@ -73,7 +77,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 	for _, card := range pricelist {
 		skipErrors := card.Edition == "Mystery Booster/The List"
 
-		theCard, err := Preprocess(card)
+		theCard, err := Preprocess(ck.backend, card)
 		if err != nil {
 			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 				ck.printf("%v", err)
@@ -81,14 +85,14 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			continue
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := ck.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
 			ogErr := err
-			cardID, err = mtgmatcher.MatchID(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
+			cardID, err = ck.backend.MatchID(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
 			if err != nil {
-				if skipErrors || unindexedTokenSheet(card.SKU) {
+				if skipErrors || unindexedTokenSheet(ck.backend, card.SKU) {
 					continue
 				}
 				ck.printf("%v", ogErr)
@@ -99,7 +103,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
+						card, _ := ck.backend.GetUUID(probe)
 						ck.printf("- %s", card)
 					}
 				}
