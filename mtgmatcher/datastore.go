@@ -99,6 +99,7 @@ func Open(name string, reader io.Reader) (*Backend, error) {
 			if err != nil {
 				return nil, err
 			}
+			b.Game = name
 			if b.sealedIdx == nil {
 				b.sealedIdx = b.buildSealedIndex()
 			}
