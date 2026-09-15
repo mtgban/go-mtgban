@@ -57,12 +57,28 @@ grant nothing without the private key, safe to commit). What's left:
    placeholder replaced by `base64 < private-key.pem | tr -d '\n')` of
    the App's downloaded `.pem` - never commit that copy. DO's GitHub App
    is already installed org-wide on `mtgban` (confirmed via the API
-   before writing this), so no separate authorization step is needed;
-   `deploy_on_push: true` means future pushes to this directory redeploy
-   the runner automatically.
+   before writing this), so no separate authorization step is needed.
 2. Confirm the runner shows up at
    <https://github.com/mtgban/go-mtgban/settings/actions/runners> - idle,
    labeled `cardmarket-market`.
+
+**`deploy_on_push` is deliberately `false`.** `source_dir` scopes the
+build context, not the deploy trigger - DO redeploys on every push to
+`master`, anywhere in the monorepo, regardless of `source_dir` (a known,
+still-open DO limitation, not something this config can work around).
+Confirmed live: an unrelated workflow-file merge redeployed this app and
+killed a Market job 13 minutes into a run expected to take hours, on a
+repo that merges many times a day. Redeploy by hand after changing
+anything in this directory:
+
+```
+doctl apps update <app-id> --spec .github/runner/app.yaml
+```
+
+using a local copy with the real `GH_APP_PRIVATE_KEY_B64` filled in, or
+`doctl apps spec get <app-id>` first to round-trip the already-set secret
+(it comes back as DO's own encrypted placeholder, safe to resubmit
+unchanged) without ever needing the real value again.
 
 To rotate the private key later (only ever a deliberate choice, nothing
 forces it): generate a new one from the App's settings page, set the new
