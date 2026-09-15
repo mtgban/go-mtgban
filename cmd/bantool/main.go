@@ -188,6 +188,9 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		"cardmarket": {
 			Init: cardmarketBridgedIndexScraper(mtgban.GameFleshAndBlood),
 		},
+		"cardmarket_market": {
+			Init: cardmarketBridgedMarketScraper(mtgban.GameFleshAndBlood),
+		},
 		"cardmarket_sealed": {
 			Init: cardmarketSealedScraper(mtgban.GameFleshAndBlood),
 		},
@@ -251,6 +254,9 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 	mtgban.GameLorcana: {
 		"cardmarket": {
 			Init: cardmarketIndexScraper(mtgban.GameLorcana),
+		},
+		"cardmarket_market": {
+			Init: cardmarketMarketScraper(mtgban.GameLorcana),
 		},
 		"cardmarket_sealed": {
 			Init: cardmarketSealedScraper(mtgban.GameLorcana),
@@ -351,6 +357,9 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"cardmarket": {
 			Init: cardmarketIndexScraper(mtgban.GameMagic),
+		},
+		"cardmarket_market": {
+			Init: cardmarketMarketScraper(mtgban.GameMagic),
 		},
 		"cardmarket_sealed": {
 			Init: func() (mtgban.Scraper, error) {
@@ -629,6 +638,9 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		"cardmarket": {
 			Init: cardmarketOptionallyBridgedIndexScraper(mtgban.GameOnePiece),
 		},
+		"cardmarket_market": {
+			Init: cardmarketOptionallyBridgedMarketScraper(mtgban.GameOnePiece),
+		},
 		"cardmarket_sealed": {
 			Init: cardmarketSealedScraper(mtgban.GameOnePiece),
 		},
@@ -681,6 +693,9 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		"cardmarket": {
 			Init: cardmarketBridgedIndexScraper(mtgban.GamePokemon),
 		},
+		"cardmarket_market": {
+			Init: cardmarketBridgedMarketScraper(mtgban.GamePokemon),
+		},
 		"cardmarket_sealed": {
 			Init: cardmarketSealedScraper(mtgban.GamePokemon),
 		},
@@ -721,6 +736,9 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 	mtgban.GameRiftbound: {
 		"cardmarket": {
 			Init: cardmarketIndexScraper(mtgban.GameRiftbound),
+		},
+		"cardmarket_market": {
+			Init: cardmarketMarketScraper(mtgban.GameRiftbound),
 		},
 		"cardmarket_sealed": {
 			Init: cardmarketSealedScraper(mtgban.GameRiftbound),
@@ -769,6 +787,9 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 	mtgban.GameYuGiOh: {
 		"cardmarket": {
 			Init: cardmarketBridgedIndexScraper(mtgban.GameYuGiOh),
+		},
+		"cardmarket_market": {
+			Init: cardmarketBridgedMarketScraper(mtgban.GameYuGiOh),
 		},
 		"cardmarket_sealed": {
 			Init: cardmarketSealedScraper(mtgban.GameYuGiOh),

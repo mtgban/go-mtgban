@@ -1,0 +1,28 @@
+name: pokemon / cardmarket_market
+
+# No schedule yet - see bantool-cardmarket_market.yml's comment: this
+# catalog needs the same offline pre-filter and the same self-hosted
+# runner Magic and YuGiOh's Market jobs are waiting on.
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [cardmarket_market_pokemon]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-cardmarket
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: cardmarket_market_pokemon
+      game: "pokemon"
+      datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
+      mkmids-filepath: b2://mtgban-datastore/pokemon/cardmarket_catalog.json.xz
+    secrets: inherit

@@ -192,6 +192,110 @@ func loadCardmarketCatalog(scraper *cardmarket.Index) error {
 	return nil
 }
 
+// loadCardmarketMarketCatalog is loadCardmarketCatalog for a Market scraper
+// rather than an Index one - the two are unrelated concrete types, so
+// nothing but the field they both promote from the shared resolver can be
+// written in common between them.
+func loadCardmarketMarketCatalog(scraper *cardmarket.Market) error {
+	path := os.Getenv("MTGJSON_MKMID_PATH")
+	if path == "" {
+		return errors.New("missing MTGJSON_MKMID_PATH env var")
+	}
+	reader, err := openPath(path, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	catalog, err := cm.LoadCatalog(reader)
+	if err != nil {
+		return err
+	}
+	scraper.Catalog = catalog
+	return nil
+}
+
+// cardmarketMarketScraper is the plain Market scraper, for the games whose
+// catalog resolves without a TCGplayer bridge - the same games
+// cardmarketIndexScraper covers without one.
+func cardmarketMarketScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		appToken, appSecret, err := cardmarketCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardmarket.NewScraperMarket(game, appToken, appSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = loadCardmarketMarketCatalog(scraper)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MKM_PARTNER")
+		scraper.BanPriceKey = os.Getenv("BAN_API_KEY")
+		return scraper, nil
+	}
+}
+
+// cardmarketBridgedMarketScraper is cardmarketMarketScraper for the games
+// that cannot name half their catalog without the TCGplayer bridge - the
+// same games cardmarketBridgedIndexScraper requires one for.
+func cardmarketBridgedMarketScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		appToken, appSecret, err := cardmarketCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardmarket.NewScraperMarket(game, appToken, appSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = loadCardmarketMarketCatalog(scraper)
+		if err != nil {
+			return nil, err
+		}
+		scraper.TCGBridge, err = cardtraderBridge(game)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MKM_PARTNER")
+		scraper.BanPriceKey = os.Getenv("BAN_API_KEY")
+		return scraper, nil
+	}
+}
+
+// cardmarketOptionallyBridgedMarketScraper is cardmarketMarketScraper for a
+// game the bridge only improves - the same games
+// cardmarketOptionallyBridgedIndexScraper degrades gracefully for.
+func cardmarketOptionallyBridgedMarketScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		appToken, appSecret, err := cardmarketCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardmarket.NewScraperMarket(game, appToken, appSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = loadCardmarketMarketCatalog(scraper)
+		if err != nil {
+			return nil, err
+		}
+		bridge, err := cardtraderBridge(game)
+		if err != nil {
+			log.Printf("bridge unavailable, naming what the catalog can on its own: %v", err)
+		} else {
+			scraper.TCGBridge = bridge
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MKM_PARTNER")
+		scraper.BanPriceKey = os.Getenv("BAN_API_KEY")
+		return scraper, nil
+	}
+}
+
 func cardmarketSealedScraper(game mtgban.Game) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		appToken, appSecret, err := cardmarketCredentials()
