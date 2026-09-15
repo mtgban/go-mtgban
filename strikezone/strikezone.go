@@ -81,12 +81,17 @@ type Strikezone struct {
 	DisableRetail  bool
 	DisableBuylist bool
 
-	game  mtgban.Game
-	shelf string
+	backend *mtgmatcher.Backend
+	game    mtgban.Game
+	shelf   string
 }
 
-// NewScraper returns a scraper for one game.
-func NewScraper(game mtgban.Game) (*Strikezone, error) {
+// NewScraper returns a scraper for the datastore's game.
+func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	shelf, ok := szGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -95,6 +100,7 @@ func NewScraper(game mtgban.Game) (*Strikezone, error) {
 	sz.inventory = mtgban.InventoryRecord{}
 	sz.buylist = mtgban.BuylistRecord{}
 	sz.MaxConcurrency = defaultConcurrency
+	sz.backend = b
 	sz.game = game
 	sz.shelf = shelf
 	return &sz, nil
@@ -140,7 +146,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 			price = el.ChildText("td:nth-child(6)")
 		}
 
-		c, err := preprocess(cardName, edition, notes)
+		c, err := preprocess(sz.backend, cardName, edition, notes)
 		if err != nil {
 			return nil
 		}
@@ -168,7 +174,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		return nil
 	}
 
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := sz.backend.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -183,7 +189,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		var alias *mtgmatcher.AliasingError
 		if errors.As(err, &alias) {
 			for _, probe := range alias.Probe() {
-				card, _ := mtgmatcher.GetUUID(probe)
+				card, _ := sz.backend.GetUUID(probe)
 				sz.printf("- %s", card)
 			}
 		}
@@ -191,7 +197,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	}
 
 	if sz.game == mtgban.GameMagic {
-		co, coErr := mtgmatcher.GetUUID(cardID)
+		co, coErr := sz.backend.GetUUID(cardID)
 		if coErr == nil && namesAbsentTreatment(theCard.Variation, co) {
 			return nil
 		}
