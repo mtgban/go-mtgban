@@ -23,6 +23,8 @@ type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate  time.Time
 	MaxConcurrency int
 
@@ -34,9 +36,9 @@ type Sealed struct {
 	client *http.Client
 }
 
-// NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *Sealed {
-	tnt := Sealed{}
+// NewScraperSealed returns a sealed scraper matching against b.
+func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
+	tnt := Sealed{backend: b}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
@@ -45,8 +47,8 @@ func NewScraperSealed() *Sealed {
 	tnt.MaxConcurrency = defaultConcurrency
 
 	tnt.productMap = map[string]string{}
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
