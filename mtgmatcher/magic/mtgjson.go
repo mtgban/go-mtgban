@@ -179,11 +179,35 @@ type Card struct {
 		Type        string            `json:"type"`
 	} `json:"foreignData"`
 
+	// TokenProducts names, for a token this printing shares a physical card
+	// with, every vendor product that sells the pair - a two-sided token
+	// sheet prints two card faces on one object, and mtgjson does not mint
+	// a combined printing of its own for most of them the way it does for
+	// layout "double_faced_token". See tokenpairs.go.
+	TokenProducts []TokenProduct `json:"tokenProducts"`
+
 	PlainNumber string
 
 	// A list of URLs containing the image of the card
 	// At a minimum "full" and "thumbnail" versions should be provided
 	Images map[string]string
+}
+
+// TokenProduct is one vendor product selling a physical card that prints two
+// token faces. Its TokenParts names the two mtgjson printings it carries.
+type TokenProduct struct {
+	Identifiers map[string]string `json:"identifiers"`
+	TokenParts  []TokenPart       `json:"tokenParts"`
+}
+
+// TokenPart is one face of a TokenProduct. A face mtgjson has not
+// individually catalogued as its own card carries FaceID/FaceName instead
+// of a UUID - there is no printing to point a derived entity at.
+type TokenPart struct {
+	UUID      string `json:"uuid"`
+	FaceID    string `json:"faceId"`
+	FaceName  string `json:"faceName"`
+	TokenType string `json:"tokenType"`
 }
 
 // Card implements the Stringer interface
@@ -1338,6 +1362,26 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	mSets := make(map[string]*mtgmatcher.Set, len(ap.Data))
 	for k, v := range ap.Data {
 		mSets[k] = toMtgSet(v)
+	}
+
+	// Mint the combined entity for every two-sided token sheet whose
+	// pairing data resolves safely, now that every id and uuid above is
+	// filed - an id a real printing already claims is refused rather than
+	// shadowed. Nothing here touches hashes or canonicalNames, and no
+	// derived uuid is added to allUUIDs: a derived entity reaches Match
+	// only by its own TCGplayer product id, never by name, and a consumer
+	// that wants every one of them (a future pricing pass, say) filters
+	// uuids for Identifiers["derivedTokenPair"] == "true" rather than
+	// reading a second index kept only for that - one fact, one place.
+	// See tokenpairs.go.
+	derivedCards, tokenPairs := deriveTokenPairs(ap.Data, uuids, externalIDs[mtgmatcher.IDSpaceTCGplayer])
+	mtgmatcher.Logger.Printf("%s", tokenPairs)
+	for _, card := range derivedCards {
+		edition := card.SetCode
+		if set, found := mSets[card.SetCode]; found {
+			edition = set.Name
+		}
+		generateCardUUIDs(card, uuids, edition)
 	}
 
 	var b mtgmatcher.Backend
