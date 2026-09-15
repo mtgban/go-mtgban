@@ -68,7 +68,7 @@ func starcitygamesKey() (string, error) {
 // failing and pricing nothing.
 func cardmarketOptionallyBridgedIndexScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := cardmarket.NewScraperIndex(game)
+		scraper, err := cardmarket.NewScraperIndex(b)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +93,7 @@ func cardmarketOptionallyBridgedIndexScraper(game mtgban.Game) func(*mtgmatcher.
 
 func cardmarketBridgedIndexScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := cardmarket.NewScraperIndex(game)
+		scraper, err := cardmarket.NewScraperIndex(b)
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +155,7 @@ func tcgSYPScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, 
 
 func cardmarketIndexScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := cardmarket.NewScraperIndex(game)
+		scraper, err := cardmarket.NewScraperIndex(b)
 		if err != nil {
 			return nil, err
 		}
@@ -224,7 +224,7 @@ func cardmarketMarketScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := cardmarket.NewScraperMarket(game, appToken, appSecret)
+		scraper, err := cardmarket.NewScraperMarket(b, appToken, appSecret)
 		if err != nil {
 			return nil, err
 		}
@@ -248,7 +248,7 @@ func cardmarketBridgedMarketScraper(game mtgban.Game) func(*mtgmatcher.Backend) 
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := cardmarket.NewScraperMarket(game, appToken, appSecret)
+		scraper, err := cardmarket.NewScraperMarket(b, appToken, appSecret)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +276,7 @@ func cardmarketOptionallyBridgedMarketScraper(game mtgban.Game) func(*mtgmatcher
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := cardmarket.NewScraperMarket(game, appToken, appSecret)
+		scraper, err := cardmarket.NewScraperMarket(b, appToken, appSecret)
 		if err != nil {
 			return nil, err
 		}
@@ -303,7 +303,7 @@ func cardmarketSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := cardmarket.NewScraperSealed(game, appToken, appSecret)
+		scraper, err := cardmarket.NewScraperSealed(b, appToken, appSecret)
 		if err != nil {
 			return nil, err
 		}
