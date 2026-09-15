@@ -1422,6 +1422,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 
 	b.SetRules(Rules{})
+	b.SortSealed()
 
 	return &b
 }

@@ -89,11 +89,20 @@ func RegisteredGames() []string {
 }
 
 // Open loads the named game's datastore explicitly (sql.Open style) and returns
-// the Backend without installing it as the global one.
+// the Backend without installing it as the global one, with its sealed index
+// built: a loader that does not call SortSealed would otherwise leave
+// ResolveSealed rebuilding the index on every call.
 func Open(name string, reader io.Reader) (*Backend, error) {
 	for _, g := range registeredGames {
 		if g.name == name {
-			return g.load(reader)
+			b, err := g.load(reader)
+			if err != nil {
+				return nil, err
+			}
+			if b.sealedIdx == nil {
+				b.sealedIdx = b.buildSealedIndex()
+			}
+			return b, nil
 		}
 	}
 	return nil, fmt.Errorf("mtgmatcher: unknown game %q (registered: %v)", name, RegisteredGames())
