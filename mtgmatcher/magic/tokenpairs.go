@@ -537,8 +537,45 @@ func unionFinishes(a, b []string) []string {
 // sync.OnceValue rather than a package-level initializer: GlobalDatastore
 // is populated by the running program after mtgjson is parsed, not at Go's
 // own package-init time, so the index can only be built on first use.
-var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
-	data := map[string]map[string]string{}
+//
+// TokenPairIndex is a thin accessor over tokenPairIndices' shared walk
+// (below), not its own separate OnceValue over GlobalDatastore - see that
+// function's own comment on why a second one was worth avoiding.
+func TokenPairIndex() map[string]map[string]string {
+	return tokenPairIndices().byFace
+}
+
+// tokenPairIndicesData is what one walk of the datastore's derived
+// pairings builds for every index in this file keyed off of it - both
+// TokenPairIndex's name-keyed shape and TokenPairIDByUUIDs' uuid-pair-keyed
+// one need the identical set of pairings, gathered the identical way, so
+// one walk builds both rather than each maintaining its own separate
+// GlobalDatastore snapshot.
+type tokenPairIndicesData struct {
+	byFace     map[string]map[string]string
+	byUUIDPair map[[2]string]string
+}
+
+// tokenPairIndices is the single sync.OnceValue every index in this file
+// reads from, walking GlobalDatastore's derived pairings exactly once
+// rather than once per index. A second OnceValue snapshotting
+// GlobalDatastore independently (TokenPairIDByUUIDs briefly was one, on
+// its way to this file) doubles the same frozen-at-first-use lifetime
+// this index already accepts - see GlobalDatastore's own doc comment: a
+// snapshot taken once and never invalidated goes stale if the published
+// datastore is ever swapped out from under a long-running process, a
+// pre-existing limitation of every index in this file, not something this
+// consolidation fixes. Adding a second independently-frozen snapshot
+// would only double that exposure for no benefit, since both indices
+// describe the identical pairing set; consolidating to one walk keeps the
+// exposure at its current, already-accepted size instead of growing it.
+// A real fix belongs with mtgmatcher's own move off a single published
+// global (tracked separately, see PR #615) - not invented ad hoc here
+// against an API surface already being removed.
+var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
+	byFace := map[string]map[string]string{}
+	byUUIDPair := map[[2]string]string{}
+	byUUIDPairAmbiguous := map[[2]string]bool{}
 	ambiguous := map[string]map[string]bool{}
 
 	addPairing := func(face, partnerName, id string) {
@@ -549,18 +586,18 @@ var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
 		if ambiguous[face][key] {
 			return
 		}
-		if data[face] == nil {
-			data[face] = map[string]string{}
+		if byFace[face] == nil {
+			byFace[face] = map[string]string{}
 		}
-		if existing, found := data[face][key]; found {
+		if existing, found := byFace[face][key]; found {
 			if existing == id {
 				return
 			}
-			delete(data[face], key)
+			delete(byFace[face], key)
 			ambiguous[face][key] = true
 			return
 		}
-		data[face][key] = id
+		byFace[face][key] = id
 	}
 
 	backend := mtgmatcher.GlobalDatastore()
@@ -575,18 +612,33 @@ var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
 		partB := co.Identifiers["tokenPairPartB"]
 		coA, errA := mtgmatcher.GetUUID(partA)
 		coB, errB := mtgmatcher.GetUUID(partB)
-		if errA != nil || errB != nil {
-			continue
-		}
 		id := co.Identifiers["tcgplayerProductId"]
 		if id == "" {
 			continue
 		}
 
-		addPairing(partA, coB.Card.Name, id)
-		addPairing(partB, coA.Card.Name, id)
+		if errA == nil && errB == nil {
+			addPairing(partA, coB.Card.Name, id)
+			addPairing(partB, coA.Card.Name, id)
+		}
+
+		if partA != "" && partB != "" {
+			key := [2]string{partA, partB}
+			if partB < partA {
+				key = [2]string{partB, partA}
+			}
+			if byUUIDPairAmbiguous[key] {
+				continue
+			}
+			if existing, found := byUUIDPair[key]; found && existing != id {
+				delete(byUUIDPair, key)
+				byUUIDPairAmbiguous[key] = true
+				continue
+			}
+			byUUIDPair[key] = id
+		}
 	}
-	return data
+	return tokenPairIndicesData{byFace: byFace, byUUIDPair: byUUIDPair}
 })
 
 // NormalizeTokenFace reduces one face's name to the form a vendor's own
@@ -850,37 +902,23 @@ func VerifyTokenPairingFinish(id string, foil bool) string {
 // MatchInSetNumber on each face's own filing set and number, the same
 // discipline MatchTokenPairingBySetNumber already trusts for one face -
 // rather than by name. Unlike TokenPairIndex (keyed by one face's uuid to
-// the *other* face's own name, normalized, and deliberately blanked on a
-// same-normalized-name collision - see its own doc comment), two already-
-// known uuids can never collide with each other the way two vendor-
-// spelled names can, so this index needs no such refusal.
+// the *other* face's own name, normalized), a genuine collision here would
+// mean two different derived Card entities claim the identical unordered
+// uuid pair - not expected, since deriveTokenPairs already dedupes by
+// exactly that unordered pair on the way in, so this should never fire in
+// practice. Blanked on one anyway, the same "don't know, refuse" discipline
+// as TokenPairIndex's own collision handling, rather than trusting that
+// invariant silently: a last-write-wins map would otherwise let a future
+// change to deriveTokenPairs's own dedup silently start returning an
+// arbitrary pick between two real pairings instead of refusing.
 //
-// sync.OnceValue for the same reason as TokenPairIndex: GlobalDatastore is
-// populated after mtgjson is parsed, not at Go's own package-init time.
-var TokenPairIDByUUIDs = sync.OnceValue(func() map[[2]string]string {
-	data := map[[2]string]string{}
-	backend := mtgmatcher.GlobalDatastore()
-	seen := map[string]bool{}
-	for uuid, co := range backend.UUIDs {
-		if co.Identifiers["derivedTokenPair"] != "true" || seen[uuid] {
-			continue
-		}
-		seen[uuid] = true
-
-		partA := co.Identifiers["tokenPairPartA"]
-		partB := co.Identifiers["tokenPairPartB"]
-		id := co.Identifiers["tcgplayerProductId"]
-		if partA == "" || partB == "" || id == "" {
-			continue
-		}
-		key := [2]string{partA, partB}
-		if partB < partA {
-			key = [2]string{partB, partA}
-		}
-		data[key] = id
-	}
-	return data
-})
+// Built from the same single walk TokenPairIndex reads from (see
+// tokenPairIndices) rather than its own separate OnceValue over
+// GlobalDatastore - two indices describing the identical pairing set have
+// no reason to hold two independently-frozen snapshots of it.
+func TokenPairIDByUUIDs() map[[2]string]string {
+	return tokenPairIndices().byUUIDPair
+}
 
 // MatchTokenPairingByUUIDs resolves a two-sided token listing given both
 // faces' own uuids, each already anchored unambiguously by identity
