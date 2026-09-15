@@ -757,7 +757,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"merlion": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := merlion.NewScraper()
+				scraper := merlion.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
 			},
