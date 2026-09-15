@@ -596,16 +596,46 @@ func TestVerifiedPairCollisionRefusesRatherThanGuess(t *testing.T) {
 	realDatastore(t)
 
 	bird := testBackend.MatchInSetNumber("Bird", "TFIN", "17")
-	wizard := testBackend.MatchInSetNumber("Wizard", "TFIN", "14")
-	if len(bird) != 1 || len(wizard) != 1 {
-		t.Skip("Bird/Wizard TFIN #17/#14 not present in this datastore")
+	// TFIN's own real derived pairing's own Wizard partner.
+	realWizard := testBackend.MatchInSetNumber("Wizard", "TFIN", "15")
+	// This table's own, different Wizard this same Bird also verifiably
+	// pairs with - two real, distinct physical products.
+	verifiedWizard := testBackend.MatchInSetNumber("Wizard", "TFIN", "14")
+	if len(bird) != 1 || len(realWizard) != 1 || len(verifiedWizard) != 1 {
+		t.Skip("Bird/Wizard TFIN #17/#20/#14 not present in this datastore")
+	}
+	if realWizard[0].UUID == verifiedWizard[0].UUID {
+		t.Skip("TFIN's own Wizard and this table's verified Wizard are the same printing in this datastore - the collision this test pins no longer exists")
 	}
 
-	if id := MatchTokenPairingByUUIDs(bird[0].UUID, wizard[0].UUID, false); id != "" {
-		t.Errorf("MatchTokenPairingByUUIDs(TFIN Bird, TFIN Wizard) = %q, want \"\": a face uuid already anchored by identity is unambiguous even though the generic name pair is not", id)
+	// Both faces already anchored by identity (not by name) is
+	// unambiguous even between two colliding uuid pairs: a caller with
+	// both uuids in hand already knows which physical pairing it means,
+	// so it isn't asking the name-keyed indices anything at all.
+	if id := MatchTokenPairingByUUIDs(bird[0].UUID, realWizard[0].UUID, false); id == "" {
+		t.Error("MatchTokenPairingByUUIDs(TFIN Bird, TFIN's own Wizard) = \"\", want a match: this exact uuid pair is unambiguous regardless of what else Bird's name collides with")
+	}
+	if id := MatchTokenPairingByUUIDs(bird[0].UUID, verifiedWizard[0].UUID, false); id == "" {
+		t.Error("MatchTokenPairingByUUIDs(TFIN Bird, this table's verified Wizard) = \"\", want a match: this exact uuid pair is unambiguous too")
 	}
 
+	// The real pin: a caller with only Bird anchored and the bare name
+	// "Wizard" to go on (TokenPairIndex/byFace, what
+	// MatchTokenPairingBySetNumber actually asks) cannot tell TFIN's own
+	// Wizard from this table's different one, and must refuse rather
+	// than pick either arbitrarily.
 	if id, found := TokenPairIndex()[bird[0].UUID]["wizard"]; found {
 		t.Errorf("TokenPairIndex[Bird][wizard] = %q, want no entry: TFIN's own Bird pairs with more than one real Wizard across this table plus mtgjson's own tokenProducts, and the name alone cannot tell them apart", id)
+	}
+
+	// The same collision, for a caller with neither face anchored at all
+	// (TokenPairIDByBothNames, what MatchTokenPairingByNamesAndEdition
+	// asks before its own edition check ever runs).
+	key := [2]string{NormalizeTokenFace("Bird"), NormalizeTokenFace("Wizard")}
+	if key[1] < key[0] {
+		key = [2]string{key[1], key[0]}
+	}
+	if id, found := TokenPairIDByBothNames()[key]; found {
+		t.Errorf("TokenPairIDByBothNames[Bird,Wizard] = %q, want no entry", id)
 	}
 }

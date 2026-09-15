@@ -34,12 +34,18 @@ package magic
 // real pairing shares a normalized name key. Before this table existed,
 // some of those collisions were invisible - only one of the several real
 // candidates was known at all, so nothing looked ambiguous. Measured on
-// Card Trader's real catalog: adding this table's entries revealed 198
+// Card Trader's real catalog: adding this table's entries revealed 169
 // previously-silent collisions this way (each independently confirmed to
 // have more than one genuinely distinct real candidate, not a false
-// positive), while adding 116 new resolutions of its own - a net drop in
-// raw resolved count alongside a net gain in verified-safe ones, exactly
-// the tradeoff "don't know, refuse" has always made in this file.
+// positive - every one re-verified against tokenPairIndices's own,
+// finish-independent identifier, after an earlier finish-dependent
+// fallback there had inflated this same count to 198 by mistaking a
+// vendorVerifiedPair entity's own foil and nonfoil sibling uuids for two
+// different pairings), while adding 341 new resolutions of its own on Card
+// Trader plus 16 more on Star City Games (purely additive there, zero
+// losses) - a net gain of 118 resolved Card Trader listings and 8 resolved
+// Star City Games listings even after every genuine refusal, on top of the
+// safety this table's refusals add on their own.
 var verifiedNoUpstreamPairs = []struct{ a, b string }{
 	{"003cfec6-d5a5-5426-8943-9991e8c8195f", "29d32a74-4bc4-58c4-8441-257804031d98"}, // Thopter // Satyr
 	{"003cfec6-d5a5-5426-8943-9991e8c8195f", "edc00932-5ffc-5f52-8da6-d5298d564464"}, // Thopter // Cat
