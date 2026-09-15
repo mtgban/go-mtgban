@@ -42,6 +42,10 @@ permissions:
 jobs:
   run-bantool:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
+    # Self-hosted runners still get GitHub's 360m default job timeout;
+    # bantool uploads its dump once at the end, so a kill loses the whole
+    # run, not just its tail.
+    timeout-minutes: 1440
 
     steps:
       - name: Checkout repository
