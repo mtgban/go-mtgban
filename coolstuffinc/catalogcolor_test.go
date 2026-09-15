@@ -19,7 +19,7 @@ import (
 // read, because what this test is about is which printing the wording
 // reaches, not which field says so.
 func TestCatalogColor(t *testing.T) {
-	withGameDatastore(t, "yugioh", "YUGIOH_PATH")
+	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	tests := []struct {
 		name  string
@@ -37,11 +37,11 @@ func TestCatalogColor(t *testing.T) {
 				Edition:   "Duelist League 9",
 				Variation: "DL09-EN003 Rare",
 			}
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", test.name, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
