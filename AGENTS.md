@@ -47,7 +47,7 @@ Cardmarket scrapers or the `resolver` they share.
 ```
 mtgban/                    interfaces (Scraper/Seller/Vendor), records,
                            Arbit/Mismatch, CSV I/O, WorkerPool
-mtgmatcher/                game-agnostic core: Backend, Match()/MatchId(),
+mtgmatcher/                game-agnostic core: Backend, b.Match/b.MatchID,
                            the GameRules seam, the game registry, the
                            search API, the shared EditionTable/
                            VariantsTable, and the Magic replay suite
@@ -223,8 +223,8 @@ as a new baseline.
 - **gofmt always.** CI enforces it; `gofmt -l .` must print nothing.
 - **No global loggers.** Each scraper takes a
   `LogCallback mtgban.LogCallbackFunc` and logs through a tagged `printf`
-  helper (`[TAG] `-prefixed). `mtgmatcher` logs to `io.Discard` unless
-  `SetGlobalLogger` is called.
+  helper (`[TAG] `-prefixed). The matcher logs through the `Logger` on the
+  `Backend` it is asked through (`b.Logf`), and is quiet while that is nil.
 - **Insert via the `Add*` family**, never by appending to the map directly.
   `Add`/`AddRelaxed`/`AddStrict`/`AddUnique` enforce defaults (NM, qty 1),
   validate conditions against `FullGradeTags`, merge duplicates, and keep each
@@ -284,12 +284,15 @@ consumer blank-imports the games it needs, or blank-imports
 ### Datastore loading
 
 `mtgmatcher.Open(name, reader)` loads the named game's datastore: it runs
-exactly one loader and hands back the `*Backend` without touching the global,
-which `SetGlobalDatastore` installs. `RegisteredGames()` lists what is
-currently linked in. `internal/datastore.Read(game, path)` is the same over a
-path that may be a file, an `http(s)://` URL or a `b2://` object, `.xz` or
-not; a suite reads its game's file that way in its TestMain, or in a helper
-of its own for another game's.
+exactly one loader and hands back the `*Backend`, stamped with the game it
+was loaded as (`b.Game`). There is no global datastore: every lookup is a
+method on the backend a caller holds, a scraper is built on one
+(`mtgban.NewScraper(b, name, opts...)`) and matches against it alone,
+and a test builds the backend it needs and passes it. `RegisteredGames()`
+lists what is currently linked in. `internal/datastore.Read(game, path)` is
+`Open` over a path that may be a file, an `http(s)://` URL or a `b2://`
+object, `.xz` or not; a suite reads its game's file that way once, in a
+helper that hands the backend to each test.
 
 There is no auto-detection. The caller always knows the game — bantool reads
 it off the registry key its target sits under, a test off the package it sits
@@ -297,9 +300,9 @@ in — and the loader that tried every registered game in turn decoded
 AllPrintings three times over before reaching Magic's, behind a buffer of the
 whole file.
 
-`Backend` is exported and carries instance methods (`b.Match`, `b.GetUUID`,
-`b.GetSetByName`, ...); the package-level functions of the same name are thin
-wrappers over the global backend.
+`Backend` is exported and every lookup is one of its methods (`b.Match`,
+`b.GetUUID`, `b.GetSetByName`, ...); there are no package-level functions
+of the same name, and no backend the package keeps for you.
 
 ### Tables before code
 
@@ -344,47 +347,53 @@ number-and-finish disambiguation in `FilterCards`.
 There is no `SimpleSearch` — it was removed when Lorcana stopped having a
 separate matching path, and every scraper now goes through `Match()`. The core
 lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
-`GetSealedUUIDsInSet`, `AllNames`, and the `Search*` family.
+`GetSealedUUIDsInSet`, `Names`, and the `Search*` family.
 
 ## Adding a scraper
 
 1. New package with the standard layout: `<store>.go` (struct plus
    `Load`/`Inventory`/`Buylist`/`Info`), `api.go` (client and auth),
-   `preprocess.go` (store text → `InputCard` → `Match()`), optional
+   `preprocess.go` (store text → `InputCard` → `b.Match()`), optional
    `sealed.go`.
 2. Embed the common fields (`LogCallback`, `MaxConcurrency`,
-   `DisableRetail`/`DisableBuylist`, inventory/buylist plus timestamps) —
-   follow `ninetyfive` for an API-backed store or `mtgseattle` for an
-   HTML-scraped one.
+   `DisableRetail`/`DisableBuylist`, inventory/buylist plus timestamps) and
+   keep the `*mtgmatcher.Backend` the constructor was handed in an unexported
+   field — follow `starcitygames` for an API-backed store or `mtgseattle` for
+   an HTML-scraped one. Not `ninetyfive`: ADR-0004 records it as converted
+   but deliberately unregistered, a store retired from bantool work.
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
-4. Register a `scraperOption` in `cmd/bantool` and add a
-   `.github/workflows/bantool-<store>.yml`. `options` in
-   `cmd/bantool/main.go` is keyed by `mtgban.Game` first and by the store's
-   own name second, so a target's game is the sub-map it is written under
-   rather than anything its name says. `scraperFlagName` composes the
-   external name the flag and the workflow use — the store's name alone
-   under `mtgban.GameMagic`, `<store>_<game>` under every other game
-   (`coolstuffinc_pokemon`, `cardtrader_gundam`,
-   `starcitygames_sealed_lorcana`) — and `flattenOptions` builds the by-name
-   view the flags are registered from. One `bantool-<store>_<game>.yml`
-   workflow per target.
+4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
+   constructor)` — `name` is the external flag the store has always been
+   known by, the store's own name alone under `mtgban.GameMagic` and
+   `<store>_<game>` under every other game (`coolstuffinc_pokemon`,
+   `cardtrader_gundam`, `starcitygames_sealed_lorcana`), and `games` is
+   every game the scraper prices. Blank-import the package in
+   `cmd/bantool/main.go`: `targets()` walks `mtgban.AllGames` ×
+   `mtgban.Registered(game)` to build the flag table, so a registered
+   scraper needs no entry written there by hand, only the import. Add one
+   `bantool-<store>_<game>.yml` workflow per target —
+   `cmd/bantool/workflows_test.go`'s
+   `TestEveryTargetIsScheduledByItsOwnWorkflow` fails the build if a
+   registered target has no workflow scheduling it, or a workflow names a
+   target that is not registered.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` — every scraper sets
    `Game` explicitly now, `mtgban.GameMagic` included; nothing reads as Magic
    by default.
-6. A scraper that prices more than one game takes an `mtgban.Game` and nothing
-   else: `NewScraper(game mtgban.Game, ...) (*T, error)`. The vendor's own
+6. The constructor takes the datastore first and nothing naming a game:
+   `NewScraper(b *mtgmatcher.Backend, ...) (*T, error)`. A scraper that prices
+   more than one game reads which one with `mtgban.GameOf(b)`, so it cannot be
+   told one game and matched against another's datastore. The vendor's own
    naming for its games — slugs, catalog ids, department numbers — stays
    exported, because the package's own API helpers take one (`Search`,
    `SCGBuylistURL`, `NewGNClient`); what a caller no longer needs it for is
    building a scraper. One `map[mtgban.Game]<vendor value>` per package sits
    between the two and both converts and validates, and a game the map does
-   not hold is refused at the constructor. Store the typed game on the struct
+   not hold is refused at the constructor — as is a datastore that names no
+   game at all, which `GameOf` rejects before the map is asked, rather than
+   anything silently defaulting to Magic. Store the typed game on the struct
    so `Info()` reads `info.Game = x.game` rather than switching a vendor value
-   back into one; keep every read that drives a run on the vendor value. The
-   typed field's zero value names no real game — a constructor that forgets to
-   set it produces an empty `Game`, which the map-lookup validation above
-   already refuses rather than silently defaulting to Magic.
+   back into one; keep every read that drives a run on the vendor value.
 
 ### Adding a game
 
@@ -401,9 +410,11 @@ A game is added in `mtgban` first and reaches the scrapers from there:
    spelling beside that package's existing ones, and one line in its
    `<recv>Games` map. Nothing else in the scraper changes — the switches that
    used to translate a vendor id back into a game are gone.
-4. Per scraper that should run it: a `scraperOption` under the game's key in
-   `cmd/bantool/main.go`'s `options`, and a `bantool-<store>_<game>.yml`
-   workflow.
+4. Per scraper that should run it: add the game to that store's own
+   `register.go` (its `mtgban.Register` games list) alongside the map entry
+   from step 3, and add a `bantool-<store>_<game>.yml` workflow. Nothing is
+   written in `cmd/bantool/main.go` itself — `targets()` derives the entry
+   from the registry.
 5. Wire the game's datastore into `.github/workflows/ci.yml` — a cache job and
    a `test-<game>` job — and add its path variable to
    `internal/vocabulary/read.go`'s `Games`.
@@ -420,14 +431,17 @@ that map: it is identified by SKU and has its own scrapers.
 
 ## Gotchas
 
-- The global matcher backend is published through `atomic.Pointer[Backend]`.
-  Each package-level operation captures one immutable snapshot. Several calls
-  can span publications: capture `GlobalDatastore()` for related lookups, or
-  pass `ArbitOpts.Backend` for a report using an explicit backend. The snapshot
-  is a shallow copy; maps, slices, cards and rules remain shared and must not
-  be mutated after publication. See `docs/adr/0003-atomic-backend-snapshots.md`.
-- Magic identification callbacks use the supplied backend. Only the exported
-  `magic.Has*Printing` convenience wrappers intentionally consult the global.
+- A `Backend` is immutable once loaded: its maps, slices, cards and rules
+  are shared by every scraper built on it and must not be mutated. Replacing
+  a datastore means loading a new backend and building new scrapers on it;
+  nothing is published process-wide. `ArbitOpts.Backend` is the only
+  datastore a report reads, and a nil one resolves nothing. See
+  `docs/adr/0004-localized-matcher-and-scraper-registry.md`.
+- Everything that reads a datastore is a method on `*Backend`, including
+  the `magic.Has*Printing` helpers (they take the backend first).
+  `ExtractNumber` and `ExtractNumberAny` read no datastore and stay
+  package-level functions, along with `Normalize`, `Title`, `ExtractYear`,
+  `SplitVariants` and the rest.
   Keep new identification lookups on `b`, including in callbacks.
 - The Magic promo-type constants (`PromoTypeBoosterfun`, `PromoTypeBuyABox`,
   `PromoTypePrerelease`, `PromoTypePromoPack`, `PromoTypeThickDisplay` and the
