@@ -41,10 +41,10 @@ var (
 	MismatchHeader = slices.Concat(CardHeader, []string{"Conditions", "Price", "Reference", "Difference", "Spread"})
 )
 
-func record2entry(record []string) (*InventoryEntry, error) {
+func record2entry(b *mtgmatcher.Backend, record []string) (*InventoryEntry, error) {
 	index := len(CardHeader)
 	cardID := record[0]
-	_, err := mtgmatcher.GetUUID(cardID)
+	_, err := b.GetUUID(cardID)
 	if err != nil && !strings.Contains(cardID, "|") {
 		return nil, fmt.Errorf("error reading record: %v (%v)", err, record)
 	}
@@ -102,7 +102,8 @@ func record2entry(record []string) (*InventoryEntry, error) {
 // the first unreadable row unless the optional flag is false, in which case
 // bad rows are skipped and whatever parsed is returned; use that for a file
 // from somewhere else, not for one this package wrote.
-func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
+// b is the datastore every card id is checked against, and must not be nil.
+func LoadInventoryFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (InventoryRecord, error) {
 	strict := true
 	if len(flags) > 0 {
 		strict = flags[0]
@@ -154,7 +155,7 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 			continue
 		}
 
-		entry, err := record2entry(record)
+		entry, err := record2entry(b, record)
 		if err != nil {
 			if strict {
 				return nil, err
@@ -173,7 +174,7 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 
 // LoadBuylistFromCSV reads what WriteBuylistToCSV produced, with the same
 // optional leniency as LoadInventoryFromCSV.
-func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
+func LoadBuylistFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (BuylistRecord, error) {
 	strict := true
 	if len(flags) > 0 {
 		strict = flags[0]
@@ -219,7 +220,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 
 		index := len(CardHeader)
 		cardID := record[0]
-		_, err = mtgmatcher.GetUUID(cardID)
+		_, err = b.GetUUID(cardID)
 		if err != nil {
 			if strict {
 				return nil, fmt.Errorf("error reading record: %v (%v)", err, record)
@@ -286,7 +287,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 	return buylist, nil
 }
 
-func cardID2record(cardID string) ([]string, error) {
+func cardID2record(b *mtgmatcher.Backend, cardID string) ([]string, error) {
 	if strings.Contains(cardID, "|") {
 		fields := strings.Split(cardID, "|")
 		if len(fields) != 4 {
@@ -303,7 +304,7 @@ func cardID2record(cardID string) ([]string, error) {
 		return record, nil
 	}
 
-	co, err := mtgmatcher.GetUUID(cardID)
+	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil, err
 	}
@@ -330,7 +331,7 @@ func cardID2record(cardID string) ([]string, error) {
 
 // WriteInventoryToCSV writes an inventory under CardHeader, or under the
 // Market headers when the entries name a seller.
-func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
+func WriteInventoryToCSV(b *mtgmatcher.Backend, inventory InventoryRecord, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -351,7 +352,7 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 	}
 
 	for cardID, entries := range inventory {
-		cardHeader, err := cardID2record(cardID)
+		cardHeader, err := cardID2record(b, cardID)
 		if err != nil {
 			continue
 		}
@@ -392,7 +393,7 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 // WriteBuylistToCSV writes a buylist, adding a trade-price column worth
 // creditMuliplier times the cash price, for vendors who pay more in credit.
 // Pass 1 to make the two columns agree.
-func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writer) error {
+func WriteBuylistToCSV(b *mtgmatcher.Backend, buylist BuylistRecord, creditMuliplier float64, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -403,7 +404,7 @@ func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writ
 
 	for cardID, entries := range buylist {
 		for _, entry := range entries {
-			record, err := cardID2record(cardID)
+			record, err := cardID2record(b, cardID)
 			if err != nil {
 				continue
 			}
@@ -431,7 +432,7 @@ func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writ
 
 // WriteArbitrageToCSV writes what Arbit returned, both prices and the spread
 // and profitability derived from them.
-func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
+func WriteArbitrageToCSV(b *mtgmatcher.Backend, arbitrage []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -451,7 +452,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 		bl := entry.BuylistEntry
 		inv := entry.InventoryEntry
 
-		record, err := cardID2record(entry.CardID)
+		record, err := cardID2record(b, entry.CardID)
 		if err != nil {
 			continue
 		}
@@ -489,7 +490,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 
 // WriteMismatchToCSV writes what Mismatch returned, the probed price beside
 // the reference it was compared against.
-func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
+func WriteMismatchToCSV(b *mtgmatcher.Backend, mismatch []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -510,7 +511,7 @@ func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 		inv := entry.InventoryEntry
 		ref := entry.ReferenceEntry
 
-		record, err := cardID2record(entry.CardID)
+		record, err := cardID2record(b, entry.CardID)
 		if err != nil {
 			continue
 		}
@@ -542,7 +543,7 @@ func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 }
 
 // WritePennyToCSV writes what Pennystock returned.
-func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
+func WritePennyToCSV(b *mtgmatcher.Backend, penny []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -560,7 +561,7 @@ func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
 	for _, entry := range penny {
 		inv := entry.InventoryEntry
 
-		record, err := cardID2record(entry.CardID)
+		record, err := cardID2record(b, entry.CardID)
 		if err != nil {
 			continue
 		}
