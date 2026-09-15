@@ -32,13 +32,16 @@ type Cardsphere struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	client  *Client
 	buylist mtgban.BuylistRecord
 }
 
-// NewScraper returns a scraper authenticated with the given token.
-func NewScraper(token string) *Cardsphere {
-	cs := Cardsphere{}
+// NewScraper returns a scraper matching against b, authenticated with the
+// given token.
+func NewScraper(b *mtgmatcher.Backend, token string) *Cardsphere {
+	cs := Cardsphere{backend: b}
 	cs.buylist = mtgban.BuylistRecord{}
 	cs.MaxConcurrency = defaultConcurrency
 	cs.client = NewClient(token)
@@ -65,7 +68,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 	for _, offer := range offers {
 		// Look for the right Id
 		masterID := fmt.Sprint(offer.MasterID)
-		ids, _ := mtgmatcher.SearchEquals(offer.CardName)
+		ids, _ := cs.backend.SearchEquals(offer.CardName)
 		if len(ids) == 0 {
 			continue
 		}
@@ -73,7 +76,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 		for _, finish := range offer.Finishes {
 			var foundID string
 			for _, id := range ids {
-				co, err := mtgmatcher.GetUUID(id)
+				co, err := cs.backend.GetUUID(id)
 				if err != nil {
 					continue
 				}
@@ -94,7 +97,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 				etched = strings.Contains(offer.Sets[0].Name, "Etched")
 			}
 
-			cardID, err := mtgmatcher.MatchID(foundID, finish == "F", etched)
+			cardID, err := cs.backend.MatchID(foundID, finish == "F", etched)
 			if err != nil {
 				continue
 			}
@@ -185,7 +188,7 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 			// This would be better with a select, but for now just print a message
 			// that we're still alive every minute
 			if time.Now().After(lastTime.Add(60 * time.Second)) {
-				card, _ := mtgmatcher.GetUUID(result.cardID)
+				card, _ := cs.backend.GetUUID(result.cardID)
 				cs.printf("Still going, last processed card: %s", card)
 				lastTime = time.Now()
 			}
