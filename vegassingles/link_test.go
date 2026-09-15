@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestProductSlug pins the shape of the storefront's product path. The
@@ -58,7 +59,7 @@ func TestCrawlAsksForStock(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	vs, err := NewScraper(mtgban.GameRiftbound)
+	vs, err := NewScraper(&mtgmatcher.Backend{Game: "riftbound"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +93,7 @@ func TestListedConditions(t *testing.T) {
 		{"a line configured nowhere deals in them all", mtgban.GameMagic, "Damaged", true},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			vs, err := NewScraper(tt.game)
+			vs, err := NewScraper(&mtgmatcher.Backend{Game: string(tt.game)})
 			if err != nil {
 				t.Fatal(err)
 			}
