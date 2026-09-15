@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestCardmarketNeedsItsBridge pins that a Cardmarket target Cardmarket cannot
@@ -32,15 +33,15 @@ func TestCardmarketNeedsItsBridge(t *testing.T) {
 	}
 	t.Setenv("MTGJSON_MKMID_PATH", catalog)
 
-	_, err = cardmarketSealedScraper(mtgban.GamePokemon)()
+	_, err = cardmarketSealedScraper(mtgban.GamePokemon)(&mtgmatcher.Backend{})
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
 		t.Errorf("the sealed scraper was built without a bridge: %v", err)
 	}
-	_, err = cardmarketBridgedIndexScraper(mtgban.GameYuGiOh)()
+	_, err = cardmarketBridgedIndexScraper(mtgban.GameYuGiOh)(&mtgmatcher.Backend{})
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
 		t.Errorf("the singles scraper was built without a bridge: %v", err)
 	}
-	_, err = cardmarketBridgedMarketScraper(mtgban.GameYuGiOh)()
+	_, err = cardmarketBridgedMarketScraper(mtgban.GameYuGiOh)(&mtgmatcher.Backend{})
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
 		t.Errorf("the market scraper was built without a bridge: %v", err)
 	}
