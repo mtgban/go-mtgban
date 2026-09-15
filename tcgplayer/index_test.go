@@ -2,17 +2,15 @@ package tcgplayer
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestCrossSetProductIDs pins the id-vs-set collisions this datastore
 // carries, so a fix or a fresh upstream id assignment shows up here rather
 // than silently changing what the price scraper skips.
 func TestCrossSetProductIDs(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
-	collisions := crossSetProductIDs()
+	collisions := crossSetProductIDs(b)
 
 	want := map[string][]string{
 		// AFR's ordinary Dungeon of the Mad Mage is filed under its
@@ -41,7 +39,7 @@ func TestCrossSetProductIDs(t *testing.T) {
 
 	// A double-faced card's two faces share one id and one set - not a
 	// collision this guard should ever flag.
-	co, err := mtgmatcher.GetUUID("d514cf1d-cbbb-5c26-8d17-83439facfe19")
+	co, err := b.GetUUID("d514cf1d-cbbb-5c26-8d17-83439facfe19")
 	if err != nil {
 		t.Fatal(err)
 	}
