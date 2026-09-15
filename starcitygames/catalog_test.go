@@ -3,8 +3,6 @@ package starcitygames
 import (
 	"strings"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestResolveProductForeignSets covers inherently foreign sets: their canonical
@@ -16,7 +14,7 @@ import (
 // an English-primary set with no distinct foreign set (Portal Three Kingdoms)
 // stays unmatched for the same reason.
 func TestResolveProductForeignSets(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	a1 := []struct {
 		name, sku, lang, num, wantSet, wantNum string
@@ -28,7 +26,7 @@ func TestResolveProductForeignSets(t *testing.T) {
 	}
 	for _, tt := range a1 {
 		t.Run(tt.name, func(t *testing.T) {
-			id, err := resolveProduct(GameMagic, CatalogProduct{
+			id, err := resolveProduct(b, GameMagic, CatalogProduct{
 				SKU: tt.sku, Name: tt.name, Game: "Magic: The Gathering",
 				Language: tt.lang, CollectorNumber: tt.num,
 				Finish: "Non-foil", FinishGroup: "Non-foil",
@@ -36,7 +34,7 @@ func TestResolveProductForeignSets(t *testing.T) {
 			if err != nil {
 				t.Fatalf("resolveProduct: %v", err)
 			}
-			co, _ := mtgmatcher.GetUUID(id)
+			co, _ := b.GetUUID(id)
 			if co.SetCode != tt.wantSet || co.Number != tt.wantNum {
 				t.Errorf("got %s #%s, want %s #%s", co.SetCode, co.Number, tt.wantSet, tt.wantNum)
 			}
@@ -45,11 +43,11 @@ func TestResolveProductForeignSets(t *testing.T) {
 
 	// Foreign Portal Three Kingdoms has no distinct set, so it must not collapse
 	// onto the English printing.
-	if id, err := resolveProduct(GameMagic, CatalogProduct{
+	if id, err := resolveProduct(b, GameMagic, CatalogProduct{
 		SKU: "SGL-MTG-PTK-137-JAN", Name: "Hua Tuo, Honored Physician", Game: "Magic: The Gathering",
 		Language: "Japanese", CollectorNumber: "137", Finish: "Non-foil", FinishGroup: "Non-foil",
 	}); err == nil {
-		co, _ := mtgmatcher.GetUUID(id)
+		co, _ := b.GetUUID(id)
 		t.Errorf("Portal Three Kingdoms Japanese collapsed onto %s #%s, want unmatched", co.SetCode, co.Number)
 	}
 
@@ -61,12 +59,12 @@ func TestResolveProductForeignSets(t *testing.T) {
 		{"Mishra's Factory", "SGL-MTG-4BB-361-ZTN", "Chinese - Traditional", "361"},
 		{"Vesuvan Doppelganger", "SGL-MTG-3BB-88-DEN", "German", "88"},
 	} {
-		if id, err := resolveProduct(GameMagic, CatalogProduct{
+		if id, err := resolveProduct(b, GameMagic, CatalogProduct{
 			SKU: tt.sku, Name: tt.name, Game: "Magic: The Gathering",
 			Language: tt.lang, CollectorNumber: tt.num,
 			Finish: "Non-foil", FinishGroup: "Non-foil",
 		}); err == nil {
-			co, _ := mtgmatcher.GetUUID(id)
+			co, _ := b.GetUUID(id)
 			t.Errorf("%s %s collapsed onto %s #%s (%s), want unmatched",
 				tt.name, tt.lang, co.SetCode, co.Number, co.Language)
 		}
@@ -78,7 +76,7 @@ func TestResolveProductForeignSets(t *testing.T) {
 // index doesn't carry. It must resolve to the jpwalker printing WAR #NNN★,
 // honoring the foil flag, rather than being rejected as non-english.
 func TestResolveProductWARJapanese(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	tests := []struct {
 		name     string
@@ -92,7 +90,7 @@ func TestResolveProductWARJapanese(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id, err := resolveProduct(GameMagic, CatalogProduct{
+			id, err := resolveProduct(b, GameMagic, CatalogProduct{
 				SKU:             tt.sku,
 				Name:            "Ajani, the Greathearted",
 				Game:            "Magic: The Gathering",
@@ -105,7 +103,7 @@ func TestResolveProductWARJapanese(t *testing.T) {
 			if err != nil {
 				t.Fatalf("resolveProduct: %v", err)
 			}
-			co, _ := mtgmatcher.GetUUID(id)
+			co, _ := b.GetUUID(id)
 			if co.SetCode != "WAR" || co.Number != tt.wantNum || co.Foil != tt.wantFoil {
 				t.Errorf("got %s #%s foil=%v, want WAR #%s foil=%v", co.SetCode, co.Number, co.Foil, tt.wantNum, tt.wantFoil)
 			}
@@ -116,7 +114,7 @@ func TestResolveProductWARJapanese(t *testing.T) {
 // TestResolveProduct exercises the two resolution paths: the Scryfall shortcut
 // (present + resolvable) and the SKU/preprocess fallback (no Scryfall id).
 func TestResolveProduct(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	tests := []struct {
 		name string
@@ -188,12 +186,12 @@ func TestResolveProduct(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := resolveProduct(GameMagic, tt.in)
+			got, err := resolveProduct(b, GameMagic, tt.in)
 			if err != nil {
 				t.Fatalf("resolveProduct: %v", err)
 			}
 			if got != tt.want {
-				co, _ := mtgmatcher.GetUUID(got)
+				co, _ := b.GetUUID(got)
 				t.Errorf("got %q (%s), want %q", got, co, tt.want)
 			}
 		})
@@ -203,9 +201,11 @@ func TestResolveProduct(t *testing.T) {
 // TestResolveProductTCGPlayerID round-trips a real TCGplayer id: with the
 // scryfall id absent, the tcgplayer id alone must resolve to the same card.
 func TestResolveProductTCGPlayerID(t *testing.T) {
+	b := withMagic(t)
+
 	var tcgID, wantUUID string
-	for _, uuid := range mtgmatcher.GetUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil || co.Foil || co.Etched {
 			continue
 		}
@@ -218,7 +218,7 @@ func TestResolveProductTCGPlayerID(t *testing.T) {
 		t.Skip("no tcgplayerProductId in datastore")
 	}
 
-	got, err := resolveProduct(GameMagic, CatalogProduct{
+	got, err := resolveProduct(b, GameMagic, CatalogProduct{
 		SKU: "SGL-MTG-NONE-1-ENN", Name: "ignored", Game: "Magic: The Gathering",
 		TCGPlayerID: tcgID, Finish: "Non-foil", FinishGroup: "Non-foil",
 	})

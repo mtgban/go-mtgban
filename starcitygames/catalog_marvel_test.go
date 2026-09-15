@@ -3,8 +3,6 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -16,7 +14,7 @@ import (
 // for the Dynasty marvel of Construct Nitro Mechanoid, and that price was
 // being quoted against the ordinary cold foil beside it.
 func TestCatalogFabMarvel(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(rarity string) CatalogProduct {
 		return CatalogProduct{
@@ -37,11 +35,11 @@ func TestCatalogFabMarvel(t *testing.T) {
 		{"as does a catalog that says nothing", "", "Majestic"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameFleshAndBlood, product(tt.rarity))
+			id, err := resolveProduct(b, GameFleshAndBlood, product(tt.rarity))
 			if err != nil {
 				t.Fatalf("resolveProduct(%q) = %v", tt.rarity, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}

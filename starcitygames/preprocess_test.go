@@ -8,51 +8,42 @@ import (
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
-)
 
-func TestMain(m *testing.M) {
-	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
-	os.Exit(m.Run())
-}
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+)
 
 // withMagic skips a test that reads the Magic datastore where none is
 // installed.
 var (
-	magicOnce      sync.Once
-	magicErr       error
-	magicInstalled bool
+	magicOnce    sync.Once
+	magicErr     error
+	magicBackend *mtgmatcher.Backend
 )
 
-// withMagic installs AllPrintings the first time a test asks for it, and
-// skips where the run carries none.
-func withMagic(t *testing.T) {
+// withMagic loads AllPrintings the first time a test asks for it, and skips
+// where the run carries none.
+func withMagic(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	magicOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		reader, err := datastore.Open(path)
+		b, err := datastore.Read("magic", path)
 		if err != nil {
 			magicErr = err
 			return
 		}
-		ds, err := magic.Load(reader)
-		reader.Close()
-		if err != nil {
-			magicErr = err
-			return
-		}
-		mtgmatcher.SetGlobalDatastore(ds)
-		magicInstalled = true
+		b.Logger = log.New(os.Stderr, "", 0)
+		magicBackend = b
 	})
 	if magicErr != nil {
 		t.Fatal(magicErr)
 	}
-	if !magicInstalled {
+	if magicBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return magicBackend
 }
 
 type SKUTest struct {
@@ -336,13 +327,13 @@ var SKUTests = []SKUTest{
 }
 
 func TestSCGSKU(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, probe := range SKUTests {
 		test := probe
 		t.Run(test.In, func(t *testing.T) {
 			t.Parallel()
-			out, err := ProcessSKU(test.Name, test.In)
+			out, err := ProcessSKU(b, test.Name, test.In)
 			if err == nil && test.Err != "" {
 				t.Errorf("FAIL: Expected error: %s", test.Err)
 				return
@@ -358,7 +349,7 @@ func TestSCGSKU(t *testing.T) {
 				}
 			}
 			if out.ID != test.Out {
-				co, _ := mtgmatcher.GetUUID(out.ID)
+				co, _ := b.GetUUID(out.ID)
 				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.In, test.Out, out.ID, co)
 				return
 			}

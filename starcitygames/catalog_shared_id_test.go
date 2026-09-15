@@ -2,8 +2,6 @@ package starcitygames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestSharedIdentifierPairs pins the printings Star City Games tells apart on
@@ -13,7 +11,7 @@ import (
 // keeps the dearer entry. The fixtures are copied from the export verbatim,
 // shared identifiers and all, because the shared identifier is the point.
 func TestSharedIdentifierPairs(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc                string
@@ -142,11 +140,11 @@ func TestSharedIdentifierPairs(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameMagic, tt.p)
+			id, err := resolveProduct(b, GameMagic, tt.p)
 			if err != nil {
 				t.Fatalf("resolveProduct(%s) = %v", tt.p.SKU, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
