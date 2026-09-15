@@ -802,7 +802,7 @@ func foilPrintingID(b *mtgmatcher.Backend, cardID, name string) string {
 	// and refusing (returning "") rather than guessing wrong when the
 	// pairing was never sold in that finish at all.
 	if co.Identifiers["derivedTokenPair"] == "true" {
-		verified := magic.VerifyTokenPairingFinish(co.Identifiers["tcgplayerProductId"], true)
+		verified := magic.VerifyTokenPairingFinish(b, co.Identifiers["tcgplayerProductId"], true)
 		if verified == "" {
 			return ""
 		}
