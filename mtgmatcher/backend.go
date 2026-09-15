@@ -320,6 +320,21 @@ func currentBackend() *Backend {
 // indexes Match needs and the game's own rules attached. Build one through a
 // game's Load, not by hand.
 type Backend struct {
+	// Game is the name Open loaded this datastore under, as the game's
+	// package registered it ("magic", "pokemon"): what a scraper built on
+	// this backend prices. A backend assembled by hand carries whatever its
+	// builder wrote here, and nothing until it does.
+	Game string
+
+	// Logger receives the matcher's diagnostics: which finish a listing
+	// named that the game does not, which candidates an id lookup found.
+	// It is the caller's to set, so two backends in one process can
+	// report to two places. A backend that leaves it nil reports through
+	// the package Logger for now, and shares that one sink with every
+	// other backend that leaves it nil; nil goes quiet when the package
+	// logger goes.
+	Logger *log.Logger
+
 	// Slice of all set codes loaded
 	AllSets []string
 
@@ -419,6 +434,26 @@ type Backend struct {
 // Logger receives the matcher's diagnostics. It discards them until
 // SetGlobalLogger says otherwise.
 var Logger = log.New(io.Discard, "", log.LstdFlags)
+
+// Logf reports a diagnostic to the backend's Logger, and to the package
+// Logger when there is none. The rules a game attaches through SetRules
+// report through this too, so a datastore's diagnostics all land where
+// its owner said.
+func (b *Backend) Logf(format string, a ...any) {
+	b.logger().Printf(format, a...)
+}
+
+// Log is Logf for a message with nothing to format.
+func (b *Backend) Log(a ...any) {
+	b.logger().Println(a...)
+}
+
+func (b *Backend) logger() *log.Logger {
+	if b.Logger != nil {
+		return b.Logger
+	}
+	return Logger
+}
 
 const (
 	suffixFoil   = "_f"
