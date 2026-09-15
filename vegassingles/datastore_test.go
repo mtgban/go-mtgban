@@ -8,7 +8,7 @@ import (
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
@@ -17,40 +17,34 @@ import (
 // withMagic skips a test that reads the Magic datastore where none is
 // installed.
 var (
-	magicOnce      sync.Once
-	magicErr       error
-	magicInstalled bool
+	magicOnce sync.Once
+	magicErr  error
+	magicB    *mtgmatcher.Backend
 )
 
-// withMagic installs AllPrintings the first time a test asks for it, and
-// skips where the run carries none.
-func withMagic(t *testing.T) {
+// withMagic installs AllPrintings as the global the first time a test asks
+// for it, and skips where the run carries none.
+func withMagic(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	magicOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		reader, err := datastore.Open(path)
+		b, err := datastore.Read("magic", path)
 		if err != nil {
 			magicErr = err
 			return
 		}
-		ds, err := magic.Load(reader)
-		reader.Close()
-		if err != nil {
-			magicErr = err
-			return
-		}
-		mtgmatcher.SetGlobalDatastore(ds)
-		magicInstalled = true
+		magicB = b
 	})
 	if magicErr != nil {
 		t.Fatal(magicErr)
 	}
-	if !magicInstalled {
+	if magicB == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return magicB
 }
 
 // withGameDatastore installs another game's datastore for the duration of a
@@ -58,7 +52,7 @@ func withMagic(t *testing.T) {
 // holds a single datastore and the rest of this package's tests are Magic ones.
 // The test is skipped where that game's datastore is not configured, which
 // is how the shared `go test ./...` run sees it.
-func withGameDatastore(t *testing.T, game, env string) {
+func withGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {
@@ -68,24 +62,20 @@ func withGameDatastore(t *testing.T, game, env string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(b)
-	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(previous)
-	})
+	return b
 }
 
-func withRiftbound(t *testing.T) {
+func withRiftbound(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
-	withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
+	return withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
 }
 
-func withOnePiece(t *testing.T) {
+func withOnePiece(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
-	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+	return withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 }
 
-func withPokemon(t *testing.T) {
+func withPokemon(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
-	withGameDatastore(t, "pokemon", "POKEMON_PATH")
+	return withGameDatastore(t, "pokemon", "POKEMON_PATH")
 }
