@@ -13,8 +13,8 @@ import (
 // (38) names DDI #40 by ID, and The List listings carry the original's IDs.
 // A successful text match therefore wins; IDs cannot override its distinctions
 // or resurrect an unsupported listing.
-func matchCard(card *ABUCard, in *mtgmatcher.InputCard) (string, error) {
-	id, err := mtgmatcher.Match(in)
+func matchCard(b *mtgmatcher.Backend, card *ABUCard, in *mtgmatcher.InputCard) (string, error) {
+	id, err := b.Match(in)
 	var alias *mtgmatcher.AliasingError
 	if !errors.As(err, &alias) {
 		return id, err
@@ -29,11 +29,11 @@ func matchCard(card *ABUCard, in *mtgmatcher.InputCard) (string, error) {
 	var found string
 	conflict := false
 	consider := func(space, external string) {
-		base := mtgmatcher.ConvertID(space, external)
+		base := b.ConvertID(space, external)
 		if base == "" {
 			return
 		}
-		candidate, lookupErr := mtgmatcher.MatchIDFinish(base, finish)
+		candidate, lookupErr := b.MatchIDFinish(base, finish)
 		if lookupErr != nil || !slices.Contains(candidates, candidate) {
 			return
 		}
@@ -41,7 +41,7 @@ func matchCard(card *ABUCard, in *mtgmatcher.InputCard) (string, error) {
 		probe := *in
 		probe.ID = candidate
 		probe.Finish = finish
-		validated, lookupErr := mtgmatcher.ValidateID(probe, mtgmatcher.IDValidationOptions{})
+		validated, lookupErr := b.ValidateID(probe, mtgmatcher.IDValidationOptions{})
 		if lookupErr != nil || validated != candidate {
 			return
 		}
