@@ -11,7 +11,7 @@ import (
 // printings of one number differ only in the retailer that stamped them, so
 // the wording naming a retailer has to outrank the wording naming none.
 func TestPromoLabelDepth(t *testing.T) {
-	loadBackend(t)
+	b := loadBackend(t)
 
 	for _, tt := range []struct{ desc, variation, want string }{
 		{"the retailer is what tells the stampings apart", "117 GameStop Cosmos Holo", "117-159_626640_holofoil"},
@@ -21,7 +21,7 @@ func TestPromoLabelDepth(t *testing.T) {
 		{"the shared label alone still aliases", "117 Cosmos Holo", ""},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: "Hop's Snorlax", Variation: tt.variation})
+			id, err := b.Match(&mtgmatcher.InputCard{Name: "Hop's Snorlax", Variation: tt.variation})
 			if id != tt.want {
 				t.Errorf("Match(%q) = %q (err %v), want %q", tt.variation, id, err, tt.want)
 			}
