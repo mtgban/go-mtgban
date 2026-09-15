@@ -18,14 +18,16 @@ type Manapool struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 }
 
 // NewScraper returns a scraper pricing Mana Pool's singles, both what they
-// sell and what they buy.
-func NewScraper() *Manapool {
-	mp := Manapool{}
+// sell and what they buy, matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Manapool {
+	mp := Manapool{backend: b}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
 }
@@ -41,8 +43,8 @@ func (mp *Manapool) printf(format string, a ...any) {
 // editions are dropped when the datastore is built - oversize, minigames,
 // front cards, playtest - and a sheet of tokens the datastore carries no set
 // for is dropped the same way, which is what the edition answers for.
-func isUnindexed(card Product) bool {
-	_, err := mtgmatcher.GetSet(card.SetCode)
+func isUnindexed(b *mtgmatcher.Backend, card Product) bool {
+	_, err := b.GetSet(card.SetCode)
 	return err != nil
 }
 
@@ -65,14 +67,13 @@ func (mp *Manapool) price(pricelist []Product) {
 		foil := card.FinishID == "FO"
 		etched := card.FinishID == "EF"
 
-		cardID, err := mtgmatcher.MatchID(card.ScryfallID, foil, etched)
+		cardID, err := mp.backend.MatchID(card.ScryfallID, foil, etched)
 		if err != nil {
-			if !isUnindexed(card) {
+			if !isUnindexed(mp.backend, card) {
 				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
 			}
 			continue
 		}
-
 		// A two-sided token sheet prints one physical card for a pairing
 		// mtgmatcher/magic may already carry a combined entity for. mtgjson
 		// already models some of these natively (one single entity of its
@@ -90,7 +91,7 @@ func (mp *Manapool) price(pricelist []Product) {
 		// own verifiedNoUpstreamPairs correction), and a listing whose own
 		// name says two faces is worth more than a single-face guess would
 		// silently be wrong for is worth refusing instead.
-		co, err := mtgmatcher.GetUUID(cardID)
+		co, err := mp.backend.GetUUID(cardID)
 		if err != nil {
 			continue
 		}

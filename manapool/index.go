@@ -17,13 +17,15 @@ type Index struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 }
 
-// NewScraperIndex returns an index scraper.
-func NewScraperIndex() *Index {
-	mp := Index{}
+// NewScraperIndex returns an index scraper matching against b.
+func NewScraperIndex(b *mtgmatcher.Backend) *Index {
+	mp := Index{backend: b}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
 }
@@ -59,10 +61,10 @@ func (mp *Index) Load(ctx context.Context) error {
 				continue
 			}
 
-			uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, card.ScryfallID)
-			cardID, err := mtgmatcher.MatchID(uuid, finish.foil)
+			uuid := mp.backend.ConvertID(mtgmatcher.IDSpaceScryfall, card.ScryfallID)
+			cardID, err := mp.backend.MatchID(uuid, finish.foil)
 			if err != nil {
-				if !isUnindexed(card) {
+				if !isUnindexed(mp.backend, card) {
 					mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
 				}
 				continue
