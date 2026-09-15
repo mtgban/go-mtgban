@@ -20,16 +20,16 @@ import (
 // testing, and charging it to every run made selecting one of those tests as
 // slow as running all of them.
 var (
-	datastoreOnce sync.Once
-	datastoreErr  error
-	installed     bool
+	datastoreOnce    sync.Once
+	datastoreErr     error
+	datastoreBackend *mtgmatcher.Backend
 )
 
-// realDatastore installs the published Magic datastore, skipping the test
-// where none is configured. The value is drawn from real sealed contents, so
-// there is nothing to fake: a hand-built product would be a guess about the
-// shape being priced.
-func realDatastore(t *testing.T) {
+// realDatastore loads the published Magic datastore, skipping the test where
+// none is configured. The value is drawn from real sealed contents, so there
+// is nothing to fake: a hand-built product would be a guess about the shape
+// being priced.
+func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -41,33 +41,33 @@ func realDatastore(t *testing.T) {
 			datastoreErr = err
 			return
 		}
-		mtgmatcher.SetGlobalDatastore(backend)
-		installed = true
+		datastoreBackend = backend
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !installed {
+	if datastoreBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreBackend
 }
 
 // sealedProduct finds a product the datastore holds contents for, either one
 // whose contents are drawn at random or one whose contents are fixed. Picking
 // it at runtime keeps the test true across a datastore refresh, where a uuid
 // written down here would rot.
-func sealedProduct(t *testing.T, wantRandom bool) (string, string) {
+func sealedProduct(t *testing.T, b *mtgmatcher.Backend, wantRandom bool) (string, string) {
 	t.Helper()
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
-		probs, err := mtgmatcher.GetProbabilitiesForSealed(co.SetCode, uuid)
+		probs, err := b.GetProbabilitiesForSealed(co.SetCode, uuid)
 		if err != nil || len(probs) == 0 {
 			continue
 		}
-		if mtgmatcher.SealedIsRandom(co.SetCode, uuid) == wantRandom {
+		if b.SealedIsRandom(co.SetCode, uuid) == wantRandom {
 			return uuid, co.SetCode
 		}
 	}
@@ -78,13 +78,13 @@ func sealedProduct(t *testing.T, wantRandom bool) (string, string) {
 // pricedAt quotes every card the product can contain at the same price, in
 // every store the parameters read, so what comes out is arithmetic on the
 // contents rather than on which store happened to carry what.
-func pricedAt(t *testing.T, setCode, uuid string, price float64) *BANPriceResponse {
+func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price float64) *BANPriceResponse {
 	t.Helper()
 	r := &BANPriceResponse{
 		Retail:  map[string]map[string]*BanPrice{},
 		Buylist: map[string]map[string]*BanPrice{},
 	}
-	probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, uuid)
+	probs, err := b.GetProbabilitiesForSealed(setCode, uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,8 +96,8 @@ func pricedAt(t *testing.T, setCode, uuid string, price float64) *BANPriceRespon
 	}
 	for _, prob := range probs {
 		for store := range stores {
-			r.setRetail(prob.UUID, store, price)
-			r.setBuylist(prob.UUID, store, price)
+			r.setRetail(b, prob.UUID, store, price)
+			r.setBuylist(b, prob.UUID, store, price)
 		}
 	}
 	return r
@@ -107,12 +107,12 @@ func pricedAt(t *testing.T, setCode, uuid string, price float64) *BANPriceRespon
 // back valued, on every parameter, and in the shape each one asks for: the
 // buylist parameter offers to buy it, the rest price it for sale.
 func TestRunEVValuesAProduct(t *testing.T) {
-	realDatastore(t)
-	uuid, setCode := sealedProduct(t, true)
+	b := realDatastore(t)
+	uuid, setCode := sealedProduct(t, b, true)
 
-	ss := NewScraper("")
+	ss := NewScraper(b, "")
 	ss.Repetitions = 10
-	ss.prices = pricedAt(t, setCode, uuid, 1)
+	ss.prices = pricedAt(t, b, setCode, uuid, 1)
 
 	results, errs := ss.runEV(context.Background(), uuid)
 	if len(errs) != 0 {
@@ -158,12 +158,12 @@ func TestRunEVValuesAProduct(t *testing.T) {
 // simulated value is its probability value rather than five thousand
 // identical openings.
 func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
-	realDatastore(t)
-	uuid, setCode := sealedProduct(t, false)
+	b := realDatastore(t)
+	uuid, setCode := sealedProduct(t, b, false)
 
-	ss := NewScraper("")
+	ss := NewScraper(b, "")
 	ss.Repetitions = 10
-	ss.prices = pricedAt(t, setCode, uuid, 1)
+	ss.prices = pricedAt(t, b, setCode, uuid, 1)
 
 	results, _ := ss.runEV(context.Background(), uuid)
 	byName := map[string]float64{}
@@ -207,9 +207,9 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 // A product the datastore has no contents for is reported rather than valued
 // at nothing silently.
 func TestRunEVReportsAProductItCannotOpen(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
-	ss := NewScraper("")
+	ss := NewScraper(b, "")
 	ss.Repetitions = 10
 	ss.prices = &BANPriceResponse{
 		Retail:  map[string]map[string]*BanPrice{},
@@ -228,10 +228,10 @@ func TestRunEVReportsAProductItCannotOpen(t *testing.T) {
 // Priced at nothing, a product is worth nothing, and says so by returning no
 // rows rather than rows of zeroes.
 func TestRunEVDropsAProductWorthNothing(t *testing.T) {
-	realDatastore(t)
-	uuid, _ := sealedProduct(t, true)
+	b := realDatastore(t)
+	uuid, _ := sealedProduct(t, b, true)
 
-	ss := NewScraper("")
+	ss := NewScraper(b, "")
 	ss.Repetitions = 10
 	ss.prices = &BANPriceResponse{
 		Retail:  map[string]map[string]*BanPrice{},
@@ -246,11 +246,11 @@ func TestRunEVDropsAProductWorthNothing(t *testing.T) {
 
 // A cancelled context stops the openings rather than running all of them.
 func TestRunEVStopsWhenCancelled(t *testing.T) {
-	realDatastore(t)
-	uuid, setCode := sealedProduct(t, true)
+	b := realDatastore(t)
+	uuid, setCode := sealedProduct(t, b, true)
 
-	ss := NewScraper("")
-	ss.prices = pricedAt(t, setCode, uuid, 1)
+	ss := NewScraper(b, "")
+	ss.prices = pricedAt(t, b, setCode, uuid, 1)
 
 	// It still answers, on whatever it managed to draw; what matters is
 	// that it returns rather than finishing the openings asked for - which
@@ -275,7 +275,9 @@ func TestRunEVStopsWhenCancelled(t *testing.T) {
 // TestMarketNames pins the sub-sellers this scraper splits into: one per
 // measure that prices the product for sale.
 func TestMarketNames(t *testing.T) {
-	ss := NewScraper("")
+	// No datastore lookup is reached on this path, so an empty backend is
+	// enough.
+	ss := NewScraper(&mtgmatcher.Backend{}, "")
 	names := ss.MarketNames()
 	if len(names) == 0 {
 		t.Fatal("the scraper names no measures")
@@ -296,8 +298,8 @@ func TestMarketNames(t *testing.T) {
 // same, and a caller deciding whether to buy one wants to know by how much,
 // so the deviation and the interquartile range ride along with the row.
 func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
-	realDatastore(t)
-	uuid, setCode := sealedProduct(t, true)
+	b := realDatastore(t)
+	uuid, setCode := sealedProduct(t, b, true)
 
 	// Price the contents unevenly, or every opening is worth the same and
 	// there is no spread to report.
@@ -305,7 +307,7 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 		Retail:  map[string]map[string]*BanPrice{},
 		Buylist: map[string]map[string]*BanPrice{},
 	}
-	probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, uuid)
+	probs, err := b.GetProbabilitiesForSealed(setCode, uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,12 +320,12 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 	for i, prob := range probs {
 		price := float64(1 + i%50)
 		for store := range stores {
-			r.setRetail(prob.UUID, store, price)
-			r.setBuylist(prob.UUID, store, price)
+			r.setRetail(b, prob.UUID, store, price)
+			r.setBuylist(b, prob.UUID, store, price)
 		}
 	}
 
-	ss := NewScraper("")
+	ss := NewScraper(b, "")
 	ss.Repetitions = 10
 	ss.prices = r
 
@@ -352,7 +354,9 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 
 // The records a caller reads are the ones the load filled in.
 func TestInventoryAndBuylistAreWhatWasLoaded(t *testing.T) {
-	ss := NewScraper("")
+	// No datastore lookup is reached on this path, so an empty backend is
+	// enough.
+	ss := NewScraper(&mtgmatcher.Backend{}, "")
 	if got := len(ss.Inventory()); got != 0 {
 		t.Errorf("a fresh scraper holds %d inventory rows, want none", got)
 	}

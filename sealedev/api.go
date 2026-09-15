@@ -44,12 +44,12 @@ const (
 	MaxSinglePrice = 10000.0
 )
 
-func getPrice(uuid string, price *BanPrice) float64 {
+func getPrice(b *mtgmatcher.Backend, uuid string, price *BanPrice) float64 {
 	if price == nil {
 		return 0
 	}
 
-	co, err := mtgmatcher.GetUUID(uuid)
+	co, err := b.GetUUID(uuid)
 	if err != nil {
 		return 0
 	}
@@ -78,16 +78,16 @@ func getPrice(uuid string, price *BanPrice) float64 {
 	return result
 }
 
-func (r *BANPriceResponse) getRetail(uuid, source string) float64 {
-	return getPrice(uuid, r.Retail[uuid][source])
+func (r *BANPriceResponse) getRetail(b *mtgmatcher.Backend, uuid, source string) float64 {
+	return getPrice(b, uuid, r.Retail[uuid][source])
 }
 
-func (r *BANPriceResponse) getBuylist(uuid, source string) float64 {
-	return getPrice(uuid, r.Buylist[uuid][source])
+func (r *BANPriceResponse) getBuylist(b *mtgmatcher.Backend, uuid, source string) float64 {
+	return getPrice(b, uuid, r.Buylist[uuid][source])
 }
 
-func (r *BANPriceResponse) setRetail(uuid, store string, price float64) {
-	co, err := mtgmatcher.GetUUID(uuid)
+func (r *BANPriceResponse) setRetail(b *mtgmatcher.Backend, uuid, store string, price float64) {
+	co, err := b.GetUUID(uuid)
 	if err != nil {
 		return
 	}
@@ -110,8 +110,8 @@ func (r *BANPriceResponse) setRetail(uuid, store string, price float64) {
 	}
 }
 
-func (r *BANPriceResponse) setBuylist(uuid, store string, price float64) {
-	co, err := mtgmatcher.GetUUID(uuid)
+func (r *BANPriceResponse) setBuylist(b *mtgmatcher.Backend, uuid, store string, price float64) {
+	co, err := b.GetUUID(uuid)
 	if err != nil {
 		return
 	}
@@ -157,7 +157,7 @@ func getCT0fees(price float64) float64 {
 	return 0.64
 }
 
-func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, error) {
+func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string) (*BANPriceResponse, error) {
 	link := fmt.Sprintf(banAPIURL, selected, sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -197,11 +197,11 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 	}
 
 	// Adjust Direct/CT0 estimates and prune bulk in a single pass over the catalog.
-	uuids := mtgmatcher.GetUUIDs()
+	uuids := b.GetUUIDs()
 	for _, uuid := range uuids {
-		tcgLow := response.getRetail(uuid, "TCGLow")
-		tcgMarket := response.getRetail(uuid, "TCGMarket")
-		directNet := response.getBuylist(uuid, "TCGDirectNet")
+		tcgLow := response.getRetail(b, uuid, "TCGLow")
+		tcgMarket := response.getRetail(b, uuid, "TCGMarket")
+		directNet := response.getBuylist(b, uuid, "TCGDirectNet")
 
 		if directNet == 0 {
 			// TCG Direct (net) is missing: estimate it from Market, falling back
@@ -221,7 +221,7 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 				// Adjust estimate for fees
 				directNet = tcgplayer.DirectPriceAfterFees(directNet)
 
-				response.setBuylist(uuid, "TCGDirectNet", directNet)
+				response.setBuylist(b, uuid, "TCGDirectNet", directNet)
 			}
 		} else if directNet/2 > tcgMarket {
 			// Direct exists but looks unreliable: cap it at twice Low, or drop it.
@@ -230,26 +230,26 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 				delete(response.Buylist[uuid], "TCGDirectNet")
 			} else {
 				directNet = tcgplayer.DirectPriceAfterFees(tcgLow * 2)
-				response.setBuylist(uuid, "TCGDirectNet", directNet)
+				response.setBuylist(b, uuid, "TCGDirectNet", directNet)
 			}
 		}
 
 		// Create a custom price
-		direct := response.getRetail(uuid, "TCGDirect")
+		direct := response.getRetail(b, uuid, "TCGDirect")
 		directSyp := tcgplayer.DirectSYPPriceAfterFees(direct)
-		response.setBuylist(uuid, "TCGDirectSYPNet", directSyp)
+		response.setBuylist(b, uuid, "TCGDirectSYPNet", directSyp)
 
 		// CardTrader Zero: subtract its flat fee.
-		ct0 := response.getRetail(uuid, "CT0")
+		ct0 := response.getRetail(b, uuid, "CT0")
 		ct0 -= getCT0fees(ct0)
 		if ct0 > 0 {
-			response.setRetail(uuid, "CT0", ct0)
+			response.setRetail(b, uuid, "CT0", ct0)
 		}
 
 		// Prune prices too low to matter, after the adjustments above.
 		for _, category := range []map[string]map[string]*BanPrice{response.Retail, response.Buylist} {
 			for store := range category[uuid] {
-				if getPrice(uuid, category[uuid][store]) < BulkThreshold {
+				if getPrice(b, uuid, category[uuid][store]) < BulkThreshold {
 					delete(category[uuid], store)
 				}
 			}
@@ -261,10 +261,10 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 
 // maxStorePrice returns the highest available price for a card across the given
 // source stores (0 if none are present).
-func maxStorePrice(uuid string, prices map[string]map[string]*BanPrice, stores []string) float64 {
+func maxStorePrice(b *mtgmatcher.Backend, uuid string, prices map[string]map[string]*BanPrice, stores []string) float64 {
 	var price float64
 	for _, source := range stores {
-		sourcePrice := getPrice(uuid, prices[uuid][source])
+		sourcePrice := getPrice(b, uuid, prices[uuid][source])
 		if sourcePrice > price {
 			price = sourcePrice
 		}
