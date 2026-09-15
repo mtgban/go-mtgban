@@ -1,0 +1,47 @@
+# DigitalOcean App Platform spec for the cardmarket-market self-hosted
+# runner. Deploy with:
+#
+#   doctl apps create --spec .github/runner/app.yaml
+#
+# GH_APP_ID and GH_APP_INSTALLATION_ID below are the real values for the
+# "mtgban-cardmarket-runner" GitHub App, already created and installed on
+# mtgban/go-mtgban - safe to commit, an id alone grants nothing without
+# the private key. GH_APP_PRIVATE_KEY_B64 is a placeholder - DO NOT commit
+# a real key here. Base64-encode the App's downloaded .pem
+# (base64 < private-key.pem | tr -d '\n') and set the real value after
+# creating the app, either via the DO dashboard (this app's Settings >
+# App-Level Environment Variables, marked Encrypted) or:
+#
+#   doctl apps update <app-id> --spec .github/runner/app.yaml
+#
+# from a local, uncommitted copy of this file with the real value filled
+# in - never through a file that reaches the repo.
+name: mtgban-cardmarket-runner
+region: sfo3
+workers:
+  - name: cardmarket-market
+    github:
+      repo: mtgban/go-mtgban
+      branch: master
+      deploy_on_push: true
+    source_dir: .github/runner
+    dockerfile_path: Dockerfile
+    instance_count: 1
+    instance_size_slug: basic-xs
+    envs:
+      - key: GH_REPO
+        scope: RUN_TIME
+        value: "mtgban/go-mtgban"
+      - key: RUNNER_LABELS
+        scope: RUN_TIME
+        value: "cardmarket-market"
+      - key: GH_APP_ID
+        scope: RUN_TIME
+        value: "4953260"
+      - key: GH_APP_INSTALLATION_ID
+        scope: RUN_TIME
+        value: "161916144"
+      - key: GH_APP_PRIVATE_KEY_B64
+        scope: RUN_TIME
+        type: SECRET
+        value: "REPLACE_ME"
