@@ -28,29 +28,6 @@ import (
 // purpose. See deriveTokenPairs for the full exclusion ladder.
 const derivedTokenPairSuffix = "_tp_"
 
-// tokenPairReport tallies why a tokenProducts pairing did or did not
-// produce a derived entity, logged once so a fresh datastore's shape is
-// visible without re-deriving these counts from scratch.
-type tokenPairReport struct {
-	entries          int // tokenProducts entries with exactly 2 tokenParts
-	faceIDOnly       int // a face mtgjson never catalogued as its own card
-	selfPair         int // both faces are the same uuid
-	unresolvableUUID int // a face's uuid is not (or no longer) in this datastore
-	alreadyModeled   int // one face is itself layout "double_faced_token"
-	layoutExcluded   int // a face's layout is not token or emblem
-	noUsableID       int // every id naming this pair is ambiguous or already claimed
-	noCommonAncestor int // the two faces' sets share no ancestor
-	derived          int // entities actually minted
-}
-
-func (r tokenPairReport) String() string {
-	return fmt.Sprintf(
-		"tokenProducts pairs: %d entries -> %d derived (excluded: %d faceId-only, %d self-pair, "+
-			"%d unresolvable uuid, %d already modeled, %d layout, %d no usable id, %d no common ancestor)",
-		r.entries, r.derived, r.faceIDOnly, r.selfPair, r.unresolvableUUID,
-		r.alreadyModeled, r.layoutExcluded, r.noUsableID, r.noCommonAncestor)
-}
-
 // pairKey identifies a physical pairing by its two uuids, always ordered
 // a < b so the same pairing hashes the same way regardless of which face's
 // tokenProducts entry it was read from.
@@ -71,9 +48,7 @@ func newPairKey(u1, u2 string) pairKey {
 // ExternalIdentifiers[tcgplayer], read to refuse an id a real printing
 // already owns and written to file each derived entity's own ids at its
 // base sibling, the same convention every other identifier follows.
-func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObject, tcgIDs map[string]string) ([]Card, tokenPairReport) {
-	var report tokenPairReport
-
+func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObject, tcgIDs map[string]string) []Card {
 	// pairIDs collects every id seen for a pairing; idPairs collects every
 	// pairing seen for an id. An id naming more than one pairing describes
 	// two different physical objects and answers for neither - the same
@@ -104,16 +79,12 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 					if len(tp.TokenParts) != 2 {
 						continue
 					}
-					report.entries++
-
 					id := tp.Identifiers["tcgplayerProductId"]
 					u1, u2 := tp.TokenParts[0].UUID, tp.TokenParts[1].UUID
 					if id == "" || u1 == "" || u2 == "" {
-						report.faceIDOnly++
 						continue
 					}
 					if u1 == u2 {
-						report.selfPair++
 						continue
 					}
 
@@ -243,15 +214,12 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 		co1, found1 := uuids[key.a]
 		co2, found2 := uuids[key.b]
 		if !found1 || !found2 {
-			report.unresolvableUUID++
 			continue
 		}
 		if co1.Layout == "double_faced_token" || co2.Layout == "double_faced_token" {
-			report.alreadyModeled++
 			continue
 		}
 		if !isTokenPairLayout(co1.Layout) || !isTokenPairLayout(co2.Layout) {
-			report.layoutExcluded++
 			continue
 		}
 
@@ -272,14 +240,12 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 			usableIDs = append(usableIDs, n)
 		}
 		if len(usableIDs) == 0 {
-			report.noUsableID++
 			continue
 		}
 		sort.Ints(usableIDs)
 
 		home := homeSet(sets, co1.SetCode, co2.SetCode)
 		if home == "" {
-			report.noCommonAncestor++
 			continue
 		}
 
@@ -292,11 +258,9 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 				tcgIDs[id] = card.UUID
 			}
 		}
-
-		report.derived++
 	}
 
-	return derived, report
+	return derived
 }
 
 // isTokenPairLayout reports whether a face's layout is one this loader
