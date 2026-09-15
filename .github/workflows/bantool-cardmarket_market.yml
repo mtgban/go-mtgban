@@ -22,31 +22,25 @@ concurrency:
   queue: max
 
 jobs:
-  cache-datastore:
-    uses: ./.github/workflows/cache-file.yml
-    with:
-      url: ${{ vars.DATASTORE_MAGIC }}
-      path: "datastore/"
-      game: "magic"
-    secrets: inherit
-
-  cache-mkmids:
-    uses: ./.github/workflows/cache-file.yml
-    with:
-      url: ${{ vars.MKMIDS_MAGIC }}
-      path: "datastore/"
-    secrets: inherit
-
+  # No cache-datastore/cache-mkmids jobs here, unlike the Index workflow
+  # this was copied from: actions/cache cannot restore on this job's own
+  # self-hosted runner an entry a GitHub-hosted job saved (a real, documented
+  # gap, not a flake - confirmed live, twice, against this exact key). Both
+  # files are read live over HTTPS instead, straight from the same
+  # DATASTORE_MAGIC/MKMIDS_MAGIC variables the Index workflow's
+  # cache-datastore/cache-mkmids jobs download from - simplecloud.Open
+  # supports that scheme directly, no staging required. AllPrintings.json.xz
+  # happens to already be mirrored into B2 by that Index workflow's own
+  # cache-datastore job, but this one has no reason to depend on that
+  # mirror existing when the same variable already names where to read it
+  # from directly.
   deploy:
     name: ${{ github.workflow }}
-    needs: [cache-datastore, cache-mkmids]
     uses: ./.github/workflows/run-bantool.yml
     with:
       target: cardmarket_market
       game: "magic"
-      datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
-      datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
-      mkmids-filepath: ${{ needs.cache-mkmids.outputs.filepath }}
-      mkmids-cache-key: ${{ needs.cache-mkmids.outputs.key }}
+      datastore-filepath: ${{ vars.DATASTORE_MAGIC }}
+      mkmids-filepath: ${{ vars.MKMIDS_MAGIC }}
       runs-on: '["self-hosted", "cardmarket-market"]'
     secrets: inherit
