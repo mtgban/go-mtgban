@@ -32,7 +32,8 @@ func TestNewScraperSYPGames(t *testing.T) {
 			name = "Magic"
 		}
 		t.Run(name, func(t *testing.T) {
-			scraper, err := NewScraperSYP(tt.game, "auth")
+			b := &mtgmatcher.Backend{Game: string(tt.game)}
+			scraper, err := NewScraperSYP(b, "auth")
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("NewScraperSYP(%q) was accepted, want refused", tt.game)
