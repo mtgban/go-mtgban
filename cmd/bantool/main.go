@@ -393,14 +393,14 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"hareruya": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := hareruya.NewScraper()
+				scraper := hareruya.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
 			},
 		},
 		"hareruya_sealed": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := hareruya.NewScraperSealed()
+				scraper := hareruya.NewScraperSealed(b)
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
 			},

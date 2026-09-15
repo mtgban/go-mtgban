@@ -2,8 +2,6 @@ package hareruya
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestJudgeReward pins the set a judge reward is filed in against the set the
@@ -13,8 +11,6 @@ import (
 // printing the wording was naming. Each pair below is one card sold twice,
 // the reward and the original, at prices that are not each other's.
 func TestJudgeReward(t *testing.T) {
-	realDatastore(t)
-
 	for _, test := range []struct {
 		desc    string
 		title   string
@@ -43,15 +39,16 @@ func TestJudgeReward(t *testing.T) {
 		},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
-			in, err := preprocess(test.title)
+			b := withMagic(t)
+			in, err := preprocess(b, test.title)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", test.title, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
