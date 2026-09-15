@@ -10,12 +10,19 @@ GitHub integration, not a separately-pushed image.
 
 ## Why App Platform over a Droplet
 
-Sized at `basic-xs` (1 shared vCPU, 1GB RAM, $10/mo): the scraping itself
-is light (Market walks its catalog at concurrency 1, mostly blocked on
-network I/O), but each job does a fresh `go install` of bantool and loads
-Magic's full catalog into `mtgmatcher` - the one tier up from the $5 floor
-buys headroom against an OOM burning hours of live API quota for nothing,
-cheap insurance either way.
+Sized at `basic-s` (1 shared vCPU, 2GB RAM, $20/mo). Started at `basic-xs`
+(1GB, $10/mo) on the reasoning that the scraping itself is light (Market
+walks its catalog at concurrency 1, mostly blocked on network I/O) and a
+tier above the $5 floor was cheap insurance - measured wrong: Magic's
+first real run OOM'd during `go install` alone, before its catalog ever
+reached `mtgmatcher`. Sampled `/v2/monitoring/metrics/apps/memory_percentage`
+through the crash: 8.8% baseline, 52.0% two and a half minutes into the
+build, 85.4% (~874MB of 1024MB) two minutes after that, then a sample two
+minutes later already back down to 9.9% - the process had been killed
+and its memory freed. GitHub's own "the self-hosted runner lost
+communication with the server" landed about eight minutes after that
+drop, reading as a heartbeat timeout catching an already-dead container,
+not an instant crash report.
 
 App Platform's `worker` component is a plain long-running background
 process, the same shape a GitHub Actions runner already is, so nothing

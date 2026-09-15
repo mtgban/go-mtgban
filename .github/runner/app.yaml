@@ -37,7 +37,7 @@ workers:
     source_dir: .github/runner
     dockerfile_path: .github/runner/Dockerfile
     instance_count: 1
-    instance_size_slug: basic-xs
+    instance_size_slug: basic-s
     envs:
       - key: GH_REPO
         scope: RUN_TIME
