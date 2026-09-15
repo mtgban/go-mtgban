@@ -10,8 +10,8 @@ import (
 )
 
 // TestCardmarketNeedsItsBridge pins that a Cardmarket target Cardmarket cannot
-// identify on its own refuses to be built without the CardTrader bridge, sealed
-// as well as singles.
+// identify on its own refuses to be built without the CardTrader bridge, all
+// three scrapers alike - sealed, singles, and the live-listing market.
 //
 // The scraper can price by name where the bridge is missing, and that is the
 // weaker answer, not the same one: the bridge settles a product by an id both
@@ -39,5 +39,9 @@ func TestCardmarketNeedsItsBridge(t *testing.T) {
 	_, err = cardmarketBridgedIndexScraper(mtgban.GameYuGiOh)()
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
 		t.Errorf("the singles scraper was built without a bridge: %v", err)
+	}
+	_, err = cardmarketBridgedMarketScraper(mtgban.GameYuGiOh)()
+	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
+		t.Errorf("the market scraper was built without a bridge: %v", err)
 	}
 }

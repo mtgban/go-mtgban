@@ -1,0 +1,27 @@
+name: onepiece / cardmarket_market
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [cardmarket_market_onepiece]
+  schedule:
+    - cron: "40 9 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-cardmarket
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: cardmarket_market_onepiece
+      game: "onepiece"
+      datastore-filepath: b2://mtgban-datastore/onepiece/onepiece.json.xz
+      mkmids-filepath: b2://mtgban-datastore/onepiece/cardmarket_catalog.json.xz
+    secrets: inherit
