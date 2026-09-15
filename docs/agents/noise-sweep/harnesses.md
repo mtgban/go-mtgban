@@ -174,7 +174,7 @@ const labelFixture = `{
 
 b, err := Load(strings.NewReader(labelFixture))
 if err != nil { t.Fatal(err) }
-mtgmatcher.SetGlobalDatastore(b)
+// hand b to what is under test: b.Match(...), or the scraper built on it
 ```
 
 Generate the fixture rather than typing it:

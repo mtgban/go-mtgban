@@ -284,46 +284,42 @@ game and its transitive dependencies into the binary.
 func Open(name string, reader io.Reader) (*Backend, error)
 ```
 
-`Open` loads exactly the named game and returns the `Backend` **without**
-installing it as the global one; `SetGlobalDatastore(b)` installs it. Asking
-for a game nothing registered fails with an error naming the games that are.
+`Open` loads exactly the named game and returns the `Backend`, stamped with
+the name it was loaded as (`b.Game`). There is no global datastore to install
+it into: a caller holds the backend and asks it. Asking for a game nothing
+registered fails with an error naming the games that are.
 There is no auto-detection: the loader that once tried every registered game
 in turn decoded AllPrintings through three foreign decoders before Magic's,
 behind a buffer of the whole file, and was removed. bantool reads the game
-off the registry key its target sits under; a suite names its own in its
-TestMain.
+off the registry key its target sits under; a suite names its own in the
+helper that loads it.
 
-**The global-backend concurrency contract.** `SetGlobalDatastore` atomically
-publishes a shallow copy behind `atomic.Pointer[Backend]`. Each package-level
-lookup captures one snapshot and completes against it, even when another
-caller publishes a replacement. Before the first load, lookups retain their
-empty-datastore behavior. See [ADR-0003](docs/adr/0003-atomic-backend-snapshots.md),
-which supersedes ADR-0002's unsynchronized publication decision.
-
-The copy isolates field assignments, **not nested mutations**: maps, slices,
-card pointers and rules remain shared and must be immutable after publication.
-Publication builds a missing sealed index on the copy rather than changing the
-caller's backend. `GlobalDatastore()` returns a shallow copy of the captured
-snapshot, suitable for several related lookups or restoring a prior default.
+**No global backend.** Every lookup is a method on `*Backend`; the package
+keeps no datastore of its own and no package-level logger (`b.Logger`, read
+through `b.Logf`, is the caller's to set). A scraper is built on a backend
+with `mtgban.NewScraper(b, name, auth, opts...)` and matches against that one
+alone; two games can be priced in one process by two backends. A backend is
+immutable once loaded: maps, slices, card pointers and rules are shared by
+everything built on it. Replacing a datastore is loading another backend and
+building new scrapers on it. See
+[ADR-0004](docs/adr/0004-localized-matcher-and-scraper-registry.md), which
+supersedes the global publication of ADR-0002 and ADR-0003.
 
 **Backend as a type.** `Open()` returns an independent `*Backend`. Magic's
 identification callbacks search that backend, including The List's Game Day
-exception and the token lookup in `Backend.IsGenericPromo`. Its exported
-`Has*Printing` convenience wrappers still deliberately
-answer for the global datastore. A process serving several games should keep
-one backend per game and call instance methods rather than swapping the global
-between requests.
+exception and the token lookup in `Backend.IsGenericPromo`; its exported
+`Has*Printing` helpers take the backend first. A process serving several
+games keeps one backend per game and asks each.
 
-Atomic publication does not make separate package-level calls one transaction.
-`Arbit` and `Mismatch` capture the global once per report, or use
-`ArbitOpts.Backend` when provided; `Pennystock` also captures once. Custom
-callbacks doing auxiliary lookups must use the same captured backend. A caller
-requiring snapshot consistency while rendering the result must likewise keep
-that backend, since an `ArbitEntry` stores a card ID rather than its datastore.
+`Arbit` and `Mismatch` read `ArbitOpts.Backend` alone; `Pennystock` and the
+CSV readers and writers take the backend as their first parameter. Custom
+callbacks doing auxiliary lookups use the same backend, and a caller rendering
+an `ArbitEntry` keeps it too, since the entry stores a card ID rather than its
+datastore.
 
-Most accessors have instance methods. `GetUUIDsInSet`, `GetSealedUUIDsInSet`,
-`AllNames` and `AllPromoTypes` remain package-level helpers; their corresponding
-indexes are available on `Backend`. `HasPrinting` has an instance method.
+Every accessor is an instance method, `GetUUIDsInSet`, `GetSealedUUIDsInSet`,
+`Names` (the former `AllNames`) and `ExtractNumber` included; `AllPromoTypes`
+is a field.
 
 **What the Magic loader does** — data *repair*, not just indexing. This is the
 heavyweight path, and it now lives entirely in `mtgmatcher/magic/mtgjson.go`
@@ -1123,10 +1119,10 @@ datastore, and never runs scrapers in-process. Canonical patterns:
   can match nothing until a game package is linked in, so blank-import
   `mtgmatcher/games` (or just the games you serve) and then call
   `mtgmatcher.Open(game, reader)` streamed from a `simplecloud` bucket and
-  install the `*Backend` with `SetGlobalDatastore`, firing async cache builds
-  afterwards. Publication through `SetGlobalDatastore` is atomic. The current website has
-  removed its runtime reload endpoint; library callers that need replacement
-  still must preserve the immutability and snapshot scope described in §2.1.
+  keep the `*Backend` it returns: every lookup is a method on it, and a
+  scraper is built on it with `mtgban.NewScraper`. Replacing the datastore
+  is loading another backend; the old one stays valid for whatever still
+  holds it, and must not be mutated (§2.1).
 - **Consume pre-scraped JSON** — `mtgban.ReadSellerFromJSON` /
   `ReadVendorFromJSON` per `game/name/kind/shorthand`. The live sets sit
   behind `atomic.Pointer[[]mtgban.Seller]` / `[[]mtgban.Vendor]` for lock-free
