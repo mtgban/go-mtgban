@@ -1,6 +1,10 @@
 package magiccorner
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // The older sets' reprints are told apart in the variants table by the
 // store's own image name, and the store's "(Version N)" tag names none of
@@ -56,9 +60,10 @@ func TestInternalPreprocessVersionTag(t *testing.T) {
 		},
 	}
 
+	b := &mtgmatcher.Backend{}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			_, _, got := internalPreprocess(tt.name, tt.edition, tt.variation, tt.extra)
+			_, _, got := internalPreprocess(b, tt.name, tt.edition, tt.variation, tt.extra)
 			if got != tt.want {
 				t.Errorf("variation = %q, want %q", got, tt.want)
 			}

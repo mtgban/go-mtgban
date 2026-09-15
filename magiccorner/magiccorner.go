@@ -34,14 +34,24 @@ type Magiccorner struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 	client    *MCClient
+	backend   *mtgmatcher.Backend
 }
 
-// NewScraper returns a scraper, failing if the edition list cannot be read.
-func NewScraper() (*Magiccorner, error) {
+// NewScraper returns a scraper against the datastore, failing if the
+// datastore is not Magic's or the edition list cannot be read.
+func NewScraper(b *mtgmatcher.Backend) (*Magiccorner, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
+	if game != mtgban.GameMagic {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
 	mc := Magiccorner{}
 	mc.inventory = mtgban.InventoryRecord{}
 	mc.buylist = mtgban.BuylistRecord{}
 	mc.client = NewMCClient()
+	mc.backend = b
 	mc.MaxConcurrency = defaultConcurrency
 	return &mc, nil
 }
@@ -64,9 +74,9 @@ func (mc *Magiccorner) printf(format string, a ...any) {
 // instead - a number that names no light, and that no other seller repeats
 // - so a listing of one names them all equally. There is nothing to choose
 // between, and nothing worth reporting.
-func blindAttraction(probes []string) bool {
+func blindAttraction(b *mtgmatcher.Backend, probes []string) bool {
 	for _, probe := range probes {
-		co, err := mtgmatcher.GetUUID(probe)
+		co, err := b.GetUUID(probe)
 		if err != nil || magic.AttractionLights(&co.Card) == "" {
 			return false
 		}
@@ -140,12 +150,12 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				continue
 			}
 
-			theCard, err := preprocess(&card, i)
+			theCard, err := preprocess(mc.backend, &card, i)
 			if err != nil {
 				continue
 			}
 
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := mc.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -157,7 +167,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				}
 				var alias *mtgmatcher.AliasingError
 				aliased := errors.As(err, &alias)
-				if aliased && blindAttraction(alias.Probe()) {
+				if aliased && blindAttraction(mc.backend, alias.Probe()) {
 					continue
 				}
 
@@ -167,7 +177,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 
 				if aliased {
 					for _, probe := range alias.Probe() {
-						card, _ := mtgmatcher.GetUUID(probe)
+						card, _ := mc.backend.GetUUID(probe)
 						mc.printf("- %s", card)
 					}
 				}
@@ -290,18 +300,18 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 				continue
 			}
 
-			theCard, err := preprocessBL(cardName, edition, product.ID, product.SerialNumber)
+			theCard, err := preprocessBL(mc.backend, cardName, edition, product.ID, product.SerialNumber)
 			if err != nil {
 				continue
 			}
 
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := mc.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
 				var alias *mtgmatcher.AliasingError
 				aliased := errors.As(err, &alias)
-				if aliased && blindAttraction(alias.Probe()) {
+				if aliased && blindAttraction(mc.backend, alias.Probe()) {
 					continue
 				}
 
@@ -310,7 +320,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 
 				if aliased {
 					for _, probe := range alias.Probe() {
-						card, _ := mtgmatcher.GetUUID(probe)
+						card, _ := mc.backend.GetUUID(probe)
 						mc.printf("- %s", card)
 					}
 				}
