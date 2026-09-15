@@ -42,7 +42,6 @@ func TestPromoShelf(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mtgmatcher.SetGlobalDatastore(b)
 	for _, tt := range []struct {
 		name, edition, number, want string
 	}{
@@ -57,7 +56,7 @@ func TestPromoShelf(t *testing.T) {
 		{"Dash I/O", "Bright Lights", "EVO001", "evo001_518564"},
 	} {
 		in := mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.number, Foil: true}
-		got, err := mtgmatcher.Match(&in)
+		got, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("Match(%q, %q, %q) = %v", tt.name, tt.edition, tt.number, err)
 			continue
