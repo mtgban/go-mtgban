@@ -1,6 +1,10 @@
 package cardtrader
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // TestFabNumber pins the collector numbers Card Trader misspells: a set code
 // with a letter wrong, and the blueprints whose number names another card of
@@ -62,7 +66,7 @@ func TestFabPuzzle(t *testing.T) {
 
 func TestFabNames(t *testing.T) {
 	bp := Blueprint{Name: "Kassai of the Golden Sands"}
-	if got := gameName(GameFleshAndBlood, &bp); got != "Kassai of the Golden Sand" {
+	if got := gameName(&mtgmatcher.Backend{}, GameFleshAndBlood, &bp); got != "Kassai of the Golden Sand" {
 		t.Errorf("gameName = %q, want the datastore's spelling", got)
 	}
 }
