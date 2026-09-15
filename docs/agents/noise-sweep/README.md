@@ -205,15 +205,12 @@ the `project-datastore-gaps` memory so datastore-gen work can be batched.
 - `tcgdirectnet` and `syp` are wrong at the source. Their spreads and ratios
   cannot be fixed here — exclude them from any ranking rather than chasing them.
 - No arbitrary caps: fix the real termination condition instead.
-- A new `*_test.go` changes test ORDER, and Go runs a package's files in
-  filename order with one shared global datastore. A test that installs a
-  non-Magic datastore leaks it whenever the job has no Magic datastore to put
-  back, so a file sorting earlier than an existing test can make that test stop
-  skipping and fail on a card it was never meant to see. Each CI job configures
-  exactly ONE game. Before pushing a new test file, re-run the package under
-  each job's single datastore (`env -u ... ONE_PATH=... go test ./pkg/`), not
-  just your full local env, and guard on the datastore you need rather than on
-  "any datastore loaded".
+- Each CI job configures exactly ONE game. A test asks for the datastore it
+  needs through the package's helper (`withMagic(t)`, `withLorcana(t)`) and
+  skips where that one is not configured; there is no shared datastore for
+  another test to leave behind. Before pushing a new test file, re-run the
+  package under each job's single datastore (`env -u ... ONE_PATH=... go test
+  ./pkg/`), not just your full local env.
 
 ## Numbers this method produced (2026-09-06/07)
 
