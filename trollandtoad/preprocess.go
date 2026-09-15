@@ -160,7 +160,7 @@ var tagsTable = []string{
 // storefront's unsorted Mystery Booster lots.
 const MB1ProductHash = "48ff4766-9d88-5426-800a-1613c990011b"
 
-func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, fullName, edition string) (*mtgmatcher.InputCard, error) {
 	if edition == "Bulk" || fullName == "" {
 		return nil, errors.New("bulk")
 	}
@@ -481,7 +481,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 			}
 		}
 	case "Secret Lair Drop Series":
-		num := mtgmatcher.ExtractNumber(fullName)
+		num := b.ExtractNumber(fullName)
 		if num != "" {
 			variant = num
 			cardName = strings.Replace(cardName, " "+num, "", 1)
@@ -534,7 +534,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 			"Wren's Run Vanquisher":
 			return nil, errors.New("wrong edition")
 		case "Lightning Bolt":
-			variant = mtgmatcher.ExtractNumber(fullName)
+			variant = b.ExtractNumber(fullName)
 		}
 	case "Innistrad Midnight Hunt Collector Booster":
 		if strings.Contains(cardName, "Tovolar, Dire Overlord") {
@@ -542,13 +542,13 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		}
 
 	case "Mystery Booster":
-		picks, err := mtgmatcher.GetProbabilitiesForSealed("MB1", MB1ProductHash)
+		picks, err := b.GetProbabilitiesForSealed("MB1", MB1ProductHash)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, pick := range picks {
-			co, err := mtgmatcher.GetUUID(pick.UUID)
+			co, err := b.GetUUID(pick.UUID)
 			if err != nil {
 				continue
 			}
@@ -696,12 +696,12 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 
 	// Some cards have an extra number at the end, use it as variant
 	// and strip it from the card name
-	extraNum := mtgmatcher.ExtractNumber(cardName)
+	extraNum := b.ExtractNumber(cardName)
 	// In case there is a second number in the card name
 	if strings.HasSuffix(extraNum, ":") {
 		idx := strings.Index(cardName, ":")
 		if idx > 0 {
-			extraNum = mtgmatcher.ExtractNumber(cardName[idx:])
+			extraNum = b.ExtractNumber(cardName[idx:])
 		}
 	}
 	if extraNum != "" {

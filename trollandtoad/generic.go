@@ -43,6 +43,8 @@ type Generic struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
@@ -56,13 +58,17 @@ type Generic struct {
 	dept string
 }
 
-// NewGenericScraper returns a singles scraper for one game.
-func NewGenericScraper(game mtgban.Game) (*Generic, error) {
+// NewGenericScraper returns a singles scraper for the game b was loaded for.
+func NewGenericScraper(b *mtgmatcher.Backend) (*Generic, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	dept, ok := tntGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
-	tnt := Generic{}
+	tnt := Generic{backend: b}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
 	tnt.game = game
@@ -129,7 +135,7 @@ func (tnt *Generic) parsePages(ctx context.Context, link string, lastPage int) e
 		number := chunks[len(chunks)-2]
 		foil := strings.Contains(strings.ToLower(chunks[len(chunks)-1]), "foil")
 
-		cardID, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
+		cardID, err := tnt.backend.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -141,7 +147,7 @@ func (tnt *Generic) parsePages(ctx context.Context, link string, lastPage int) e
 				probes := alias.Probe()
 				tnt.printf("%s got ids: %s", cardName, probes)
 				for _, probe := range probes {
-					co, _ := mtgmatcher.GetUUID(probe)
+					co, _ := tnt.backend.GetUUID(probe)
 					tnt.printf("%s: %s", probe, co)
 				}
 			}
@@ -366,7 +372,7 @@ func (tnt *Generic) scrapeBuylist(ctx context.Context) error {
 		foil := strings.Contains(strings.ToLower(chunks[len(chunks)-1]), "foil")
 		link := buylistLinkURL + cardName
 
-		cardID, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
+		cardID, err := tnt.backend.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -378,7 +384,7 @@ func (tnt *Generic) scrapeBuylist(ctx context.Context) error {
 				probes := alias.Probe()
 				tnt.printf("%s got ids: %s", cardName, probes)
 				for _, probe := range probes {
-					co, _ := mtgmatcher.GetUUID(probe)
+					co, _ := tnt.backend.GetUUID(probe)
 					tnt.printf("%s: %s", probe, co)
 				}
 			}
