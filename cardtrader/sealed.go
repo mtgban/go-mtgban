@@ -24,6 +24,7 @@ type Sealed struct {
 
 	exchangeRates map[string]float64
 	client        *CTAuthClient
+	backend       *mtgmatcher.Backend
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -32,9 +33,13 @@ type Sealed struct {
 	gameID int
 }
 
-// NewScraperSealed returns a sealed scraper for one game, authenticated with a
-// full API token.
-func NewScraperSealed(game mtgban.Game, token string) (*Sealed, error) {
+// NewScraperSealed returns a sealed scraper for the datastore's game,
+// authenticated with a full API token.
+func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	id, found := ctGames[game]
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
@@ -49,6 +54,7 @@ func NewScraperSealed(game mtgban.Game, token string) (*Sealed, error) {
 	// API is strongly rated limited, hardcode a lower amount
 	ct.MaxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
+	ct.backend = b
 	ct.game = game
 	ct.gameID = id
 	return &ct, nil
@@ -148,10 +154,10 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 // sealed scraper resolves the same leftovers - except for Magic, whose
 // sealed namespace is too collision-prone to trust a name alone.
 func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]string {
-	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
+	productMap := ct.backend.BuildSealedProductMap("cardtraderId")
 	ct.printf("Loaded %d sealed products", len(productMap))
 
-	tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+	tcgMap := ct.backend.BuildSealedProductMap("tcgplayerProductId")
 	var bridged int
 	for id, bp := range blueprints {
 		if _, found := productMap[id]; found {
@@ -199,7 +205,7 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 		// set apart ("Crucible of War - Unlimited") while naming both
 		// blueprints the same, so a name that reaches both runs and
 		// refuses can still be settled by the shelf it sits on.
-		uuid, err := mtgmatcher.ResolveSealedWithHint(bp.Name, bp.Expansion.Name)
+		uuid, err := ct.backend.ResolveSealedWithHint(bp.Name, bp.Expansion.Name)
 		// The set code some storefronts open a sealed name with is the
 		// vendor's filing, not a word of the product: the resolver's
 		// vocabulary is built from set names and never sees a code, so
@@ -209,7 +215,7 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 		if err != nil {
 			trimmed := sealedNameWithoutShelfCode(bp)
 			if trimmed != bp.Name {
-				uuid, err = mtgmatcher.ResolveSealedWithHint(trimmed, bp.Expansion.Name)
+				uuid, err = ct.backend.ResolveSealedWithHint(trimmed, bp.Expansion.Name)
 			}
 		}
 		// A name the resolver turns down is the whole reason this
@@ -322,7 +328,7 @@ func sealedNamePassSkips(bp *Blueprint) (bool, string) {
 func (ct *Sealed) pruneSubsumed(blueprints map[int]*Blueprint, productMap map[int][]string, named map[string][]int) int {
 	var pruned int
 	for uuid, ids := range named {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := ct.backend.GetUUID(uuid)
 		if err != nil {
 			continue
 		}

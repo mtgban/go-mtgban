@@ -1,6 +1,10 @@
 package cardtrader
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // TestYgoNumber pins the collector numbers Card Trader writes its own way:
 // the blueprints filed under another card's number, the token sheets and
@@ -37,8 +41,9 @@ func TestYgoNumber(t *testing.T) {
 // Trader spells its own way: a misspelt name, a shelf whose numbers are its
 // own count, and a promo shelved under the booster it came with.
 func TestYgoShelves(t *testing.T) {
+	b := &mtgmatcher.Backend{}
 	bp := Blueprint{Name: "Cyber Repair ant", Version: "Ultra Rare"}
-	if got := gameName(GameYuGiOh, &bp); got != "Cyber Repair Plant" {
+	if got := gameName(b, GameYuGiOh, &bp); got != "Cyber Repair Plant" {
 		t.Errorf("gameName = %q, want the catalog's spelling", got)
 	}
 	bp = Blueprint{Name: "Fabled Ashenveil", Version: "Common"}
@@ -48,7 +53,7 @@ func TestYgoShelves(t *testing.T) {
 	}
 	bp = Blueprint{ID: 70125, Name: "Level Retuner", Version: "Super Rare"}
 	bp.Expansion.Name = "Raging Battle"
-	if got := gameEdition(GameYuGiOh, &bp); got != "Duelist Pack Collection Tin" {
+	if got := gameEdition(b, GameYuGiOh, &bp); got != "Duelist Pack Collection Tin" {
 		t.Errorf("gameEdition(RGBT-ENPP6) = %q, want the tin", got)
 	}
 	if got := gameVariation(GameYuGiOh, &bp, "006"); got != "RGBT-ENPP6 Super Rare" {
@@ -56,7 +61,7 @@ func TestYgoShelves(t *testing.T) {
 	}
 	bp = Blueprint{ID: 1, Name: "Harpie Lady", Version: "Common"}
 	bp.Expansion.Name = "Metal Raiders"
-	if got := gameEdition(GameYuGiOh, &bp); got != "Metal Raiders" {
+	if got := gameEdition(b, GameYuGiOh, &bp); got != "Metal Raiders" {
 		t.Errorf("gameEdition(Metal Raiders) = %q", got)
 	}
 }
