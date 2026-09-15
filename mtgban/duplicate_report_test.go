@@ -47,7 +47,7 @@ func TestDuplicateBuylistReportNamesTheCollision(t *testing.T) {
 			t.Errorf("the report carries the %s entry, which is not the collision:\n%s", grade, err)
 		}
 	}
-	// Four lines: the reason, the card, the new entry and the one it hit.
+	// Four lines: the reason, the key, the new entry and the one it hit.
 	if got := strings.Count(err.Error(), "\n"); got != 3 {
 		t.Errorf("the report spans %d newlines, want 3:\n%s", got, err)
 	}

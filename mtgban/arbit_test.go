@@ -8,17 +8,11 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// installCards puts a datastore behind GetUUID for the duration of one test.
-// Every arbitrage function reads the card to filter on it, so a card the
-// datastore does not hold is skipped outright and the arithmetic below would
-// never run.
-func installCards(t *testing.T, cards map[string]*mtgmatcher.CardObject) {
-	t.Helper()
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(&mtgmatcher.Backend{UUIDs: cards})
-	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(previous)
-	})
+// backendFor builds a *mtgmatcher.Backend around a fixed set of cards. Every
+// arbitrage function reads the card to filter on it, so a card the backend
+// does not hold is skipped outright and the arithmetic below would never run.
+func backendFor(cards map[string]*mtgmatcher.CardObject) *mtgmatcher.Backend {
+	return &mtgmatcher.Backend{UUIDs: cards}
 }
 
 func plainCard() map[string]*mtgmatcher.CardObject {
@@ -44,7 +38,7 @@ func vendorOf(bl BuylistRecord) Vendor {
 // difference and the spread the caller acts on, the quantity the smaller side
 // allows, and the profitability index that ranks one row against another.
 func TestArbitReportsTheTrade(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
 	seller := sellerOf(InventoryRecord{
 		"card": {{Conditions: "NM", Price: 10, Quantity: 4}},
@@ -53,7 +47,7 @@ func TestArbitReportsTheTrade(t *testing.T) {
 		"card": {{Conditions: "NM", BuyPrice: 15, Quantity: 3}},
 	})
 
-	entries := Arbit(nil, vendor, seller)
+	entries := Arbit(b, nil, vendor, seller)
 	if len(entries) != 1 {
 		t.Fatalf("Arbit returned %d entries, want 1", len(entries))
 	}
@@ -80,9 +74,9 @@ func TestArbitReportsTheTrade(t *testing.T) {
 // A single copy is not multiplied by the square root of one unit, which would
 // be the same number, but the branch is what says so.
 func TestArbitDoesNotScaleASingleCopy(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Arbit(nil,
+	entries := Arbit(b, nil,
 		vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 			ScraperInfo{Name: "seller"}))
@@ -100,7 +94,7 @@ func TestArbitDoesNotScaleASingleCopy(t *testing.T) {
 // entry when the inventory entry is not NM, so a grade carried over from the
 // previous iteration would price this one against another entry's offer.
 func TestArbitPricesEachConditionAgainstItsOwn(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
 	// The played copy comes first, so a stale binding would still be held
 	// when the NM copy is reached.
@@ -117,7 +111,7 @@ func TestArbitPricesEachConditionAgainstItsOwn(t *testing.T) {
 		},
 	})
 
-	entries := Arbit(nil, vendor, seller)
+	entries := Arbit(b, nil, vendor, seller)
 	if len(entries) != 2 {
 		t.Fatalf("Arbit returned %d entries, want 2", len(entries))
 	}
@@ -132,9 +126,9 @@ func TestArbitPricesEachConditionAgainstItsOwn(t *testing.T) {
 // A condition the vendor does not buy is not sold to it at another grade's
 // price.
 func TestArbitSkipsAConditionTheVendorDoesNotBuy(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Arbit(nil,
+	entries := Arbit(b, nil,
 		vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 		sellerOf(InventoryRecord{"card": {{Conditions: "HP", Price: 1, Quantity: 1}}},
 			ScraperInfo{Name: "seller"}))
@@ -187,9 +181,9 @@ func TestArbitFilters(t *testing.T) {
 			OnlyCollectorNumberRanges: map[string][2]int{"Alpha Set": {1, 20}}}, 1},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
+			b := backendFor(plainCard())
 			vendor, seller := base()
-			if got := len(Arbit(tt.opts, vendor, seller)); got != tt.want {
+			if got := len(Arbit(b, tt.opts, vendor, seller)); got != tt.want {
 				t.Errorf("Arbit returned %d entries, want %d", got, tt.want)
 			}
 		})
@@ -199,9 +193,9 @@ func TestArbitFilters(t *testing.T) {
 // A shop that publishes no counts is not held to a quantity floor, or every
 // one of its rows would be dropped for saying nothing.
 func TestArbitKeepsAQuantitylessSeller(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Arbit(&ArbitOpts{MinQuantity: 5},
+	entries := Arbit(b, &ArbitOpts{MinQuantity: 5},
 		vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10}}},
 			ScraperInfo{Name: "seller", NoQuantityInventory: true}))
@@ -232,12 +226,12 @@ func TestArbitAppliesTheRateAndFactors(t *testing.T) {
 		}, 0}, // the ask lands on the offer: 10 * 0.5 * 3
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
+			b := backendFor(plainCard())
 			// MinDiff defaults to zero, which would drop a trade that comes
 			// out even, so ask for everything down to a loss.
 			tt.opts.MinDiff = -1000
 			tt.opts.MinSpread = -1000
-			entries := Arbit(tt.opts,
+			entries := Arbit(b, tt.opts,
 				vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 				sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 					ScraperInfo{Name: "seller"}))
@@ -265,8 +259,8 @@ func TestArbitFiltersCanSkip(t *testing.T) {
 		}},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			entries := Arbit(tt.opts,
+			b := backendFor(plainCard())
+			entries := Arbit(b, tt.opts,
 				vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 				sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 					ScraperInfo{Name: "seller"}))
@@ -280,9 +274,9 @@ func TestArbitFiltersCanSkip(t *testing.T) {
 // A card the datastore does not hold is skipped: nothing can be said about
 // what it is, so nothing is said about the trade.
 func TestArbitSkipsAnUnknownCard(t *testing.T) {
-	installCards(t, map[string]*mtgmatcher.CardObject{})
+	b := backendFor(map[string]*mtgmatcher.CardObject{})
 
-	entries := Arbit(nil,
+	entries := Arbit(b, nil,
 		vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 			ScraperInfo{Name: "seller"}))
@@ -293,9 +287,9 @@ func TestArbitSkipsAnUnknownCard(t *testing.T) {
 
 // A card only one side carries is not a trade.
 func TestArbitNeedsBothSides(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Arbit(nil,
+	entries := Arbit(b, nil,
 		vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 		sellerOf(InventoryRecord{"other": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 			ScraperInfo{Name: "seller"}))
@@ -336,8 +330,8 @@ func TestArbitCardFilters(t *testing.T) {
 			&ArbitOpts{SealedDecklist: true}, 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, map[string]*mtgmatcher.CardObject{"card": tt.card})
-			got := Arbit(tt.opts,
+			b := backendFor(map[string]*mtgmatcher.CardObject{"card": tt.card})
+			got := Arbit(b, tt.opts,
 				vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
 				sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 					ScraperInfo{Name: "seller"}))
@@ -358,8 +352,8 @@ func TestArbitSkipsAPriceOfNothing(t *testing.T) {
 		{"the vendor offers nothing", 10, 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			got := Arbit(nil,
+			b := backendFor(plainCard())
+			got := Arbit(b, nil,
 				vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: tt.buyPice}}}),
 				sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: tt.askPrice, Quantity: 1}}},
 					ScraperInfo{Name: "seller"}))
@@ -374,9 +368,9 @@ func TestArbitSkipsAPriceOfNothing(t *testing.T) {
 // that opened the card may clear it where the played offer being traded
 // against does not.
 func TestArbitRechecksTheBuyFloorPerCondition(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Arbit(&ArbitOpts{MinBuyPrice: 10},
+	entries := Arbit(b, &ArbitOpts{MinBuyPrice: 10},
 		vendorOf(BuylistRecord{"card": {
 			{Conditions: "NM", BuyPrice: 15},
 			{Conditions: "MP", BuyPrice: 5},
@@ -394,7 +388,9 @@ func TestArbitRechecksTheBuyFloorPerCondition(t *testing.T) {
 // finish it. A row that reached the caller half-filled would say nothing
 // about where its number came from.
 func TestArbitrageReturnsACompleteRow(t *testing.T) {
-	r := resolveOpts(nil)
+	// The arithmetic reads no card, so the backend it would be read from
+	// never comes up here.
+	r := resolveOpts(nil, nil)
 
 	bought := InventoryEntry{Conditions: "NM", Price: 10, Quantity: 2}
 	offer := BuylistEntry{Conditions: "NM", BuyPrice: 15, Quantity: 5}

@@ -68,7 +68,7 @@ func rowFor(t *testing.T, records [][]string, cardID string) []string {
 // An inventory has to come back from its own file as it went in, which is
 // what the nightly dumps and everything reading them depend on.
 func TestInventoryRoundTripsThroughCSV(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	want := InventoryRecord{}
 	add := func(cardID string, entry *InventoryEntry) {
@@ -83,12 +83,12 @@ func TestInventoryRoundTripsThroughCSV(t *testing.T) {
 	add("shiny", &InventoryEntry{Conditions: "NM", Price: 3.75, Quantity: 7, URL: "u3"})
 
 	var buf bytes.Buffer
-	err := WriteInventoryToCSV(want, &buf)
+	err := WriteInventoryToCSV(b, want, &buf)
 	if err != nil {
 		t.Fatalf("write: %v", err)
 	}
 
-	got, err := LoadInventoryFromCSV(&buf)
+	got, err := LoadInventoryFromCSV(b, &buf)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -100,7 +100,7 @@ func TestInventoryRoundTripsThroughCSV(t *testing.T) {
 // A market file carries the seller each price belongs to, and the loader has
 // to pick the wider header up from the file rather than being told about it.
 func TestInventoryRoundTripsThroughCSVWithItsSellers(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	want := InventoryRecord{
 		"plain": {{Conditions: "NM", Price: 1.50, Quantity: 3, URL: "u1", SellerName: "Store A", Bundle: true}},
@@ -108,12 +108,12 @@ func TestInventoryRoundTripsThroughCSVWithItsSellers(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := WriteInventoryToCSV(want, &buf)
+	err := WriteInventoryToCSV(b, want, &buf)
 	if err != nil {
 		t.Fatalf("write: %v", err)
 	}
 
-	got, err := LoadInventoryFromCSV(&buf)
+	got, err := LoadInventoryFromCSV(b, &buf)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -125,7 +125,7 @@ func TestInventoryRoundTripsThroughCSVWithItsSellers(t *testing.T) {
 // The cart header carries the two ids an order needs, which no other header
 // holds and which the loader detects the same way.
 func TestInventoryRoundTripsThroughCSVWithTheCartIds(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	want := InventoryRecord{
 		"plain": {{
@@ -135,7 +135,7 @@ func TestInventoryRoundTripsThroughCSVWithTheCartIds(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := WriteInventoryToCSV(want, &buf)
+	err := WriteInventoryToCSV(b, want, &buf)
 	if err != nil {
 		t.Fatalf("write: %v", err)
 	}
@@ -143,7 +143,7 @@ func TestInventoryRoundTripsThroughCSVWithTheCartIds(t *testing.T) {
 		t.Fatalf("an entry carrying the cart ids was written without them:\n%s", buf.String())
 	}
 
-	got, err := LoadInventoryFromCSV(&buf)
+	got, err := LoadInventoryFromCSV(b, &buf)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -156,14 +156,14 @@ func TestInventoryRoundTripsThroughCSVWithTheCartIds(t *testing.T) {
 // is the cash price times the store's credit multiplier, derivable from what
 // is kept, and a reader that took it for the buy price would overpay.
 func TestBuylistRoundTripsThroughCSVWithoutTheTradePrice(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	want := BuylistRecord{
 		"plain": {{Conditions: "NM", BuyPrice: 4.00, Quantity: 2, PriceRatio: 40.00, URL: "b1", VendorName: "Store A"}},
 	}
 
 	var buf bytes.Buffer
-	err := WriteBuylistToCSV(want, 1.3, &buf)
+	err := WriteBuylistToCSV(b, want, 1.3, &buf)
 	if err != nil {
 		t.Fatalf("write: %v", err)
 	}
@@ -171,7 +171,7 @@ func TestBuylistRoundTripsThroughCSVWithoutTheTradePrice(t *testing.T) {
 		t.Fatalf("the trade price was not written at 1.3 times the cash price:\n%s", buf.String())
 	}
 
-	got, err := LoadBuylistFromCSV(&buf)
+	got, err := LoadBuylistFromCSV(b, &buf)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -183,12 +183,12 @@ func TestBuylistRoundTripsThroughCSVWithoutTheTradePrice(t *testing.T) {
 // The price ratio is a percentage, and a file that spells it with the sign
 // reads the same as one that leaves it off, which is all this writer emits.
 func TestLoadBuylistFromCSVReadsARatioWithItsSign(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	file := strings.Join(BuylistHeader, ",") + "\n" +
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,4.00,4.00,2,40.00%,b1,Store A\n"
 
-	got, err := LoadBuylistFromCSV(strings.NewReader(file))
+	got, err := LoadBuylistFromCSV(b, strings.NewReader(file))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -199,7 +199,8 @@ func TestLoadBuylistFromCSVReadsARatioWithItsSign(t *testing.T) {
 
 // An empty file is a store that collected nothing, not a broken file.
 func TestLoadFromCSVAcceptsAnEmptyFile(t *testing.T) {
-	inv, err := LoadInventoryFromCSV(strings.NewReader(""))
+	b := backendFor(nil)
+	inv, err := LoadInventoryFromCSV(b, strings.NewReader(""))
 	if err != nil {
 		t.Errorf("inventory: %v", err)
 	}
@@ -207,7 +208,7 @@ func TestLoadFromCSVAcceptsAnEmptyFile(t *testing.T) {
 		t.Errorf("inventory = %v, want empty", inv)
 	}
 
-	bl, err := LoadBuylistFromCSV(strings.NewReader(""))
+	bl, err := LoadBuylistFromCSV(b, strings.NewReader(""))
 	if err != nil {
 		t.Errorf("buylist: %v", err)
 	}
@@ -219,16 +220,17 @@ func TestLoadFromCSVAcceptsAnEmptyFile(t *testing.T) {
 // A header that is not one this package writes is refused outright rather
 // than read column by column into whatever it happens to line up with.
 func TestLoadFromCSVRejectsAMalformedHeader(t *testing.T) {
+	b := backendFor(nil)
 	for _, header := range []string{
 		"UUID,Name,Edition",
 		"UUID,Name,Edition,Finish,Number,Rarity,Conditions,Price,Quantity,Link",
 		"Price,Quantity,UUID,Name,Edition,Finish,Number,Rarity,Conditions,URL",
 	} {
-		_, err := LoadInventoryFromCSV(strings.NewReader(header + "\n"))
+		_, err := LoadInventoryFromCSV(b, strings.NewReader(header+"\n"))
 		if err == nil {
 			t.Errorf("inventory %q: want an error, got none", header)
 		}
-		_, err = LoadBuylistFromCSV(strings.NewReader(header + "\n"))
+		_, err = LoadBuylistFromCSV(b, strings.NewReader(header+"\n"))
 		if err == nil {
 			t.Errorf("buylist %q: want an error, got none", header)
 		}
@@ -239,18 +241,18 @@ func TestLoadFromCSVRejectsAMalformedHeader(t *testing.T) {
 // bad row means the writer is broken, and a file from elsewhere, where it
 // means one row is and the rest are still worth having.
 func TestLoadInventoryFromCSVIsStrictUnlessToldOtherwise(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	file := strings.Join(InventoryHeader, ",") + "\n" +
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,not a price,1,u1\n" +
 		"shiny,Shiny Card,Alpha Set,foil,11,mythic,NM,2.50,1,u2\n"
 
-	_, err := LoadInventoryFromCSV(strings.NewReader(file))
+	_, err := LoadInventoryFromCSV(b, strings.NewReader(file))
 	if err == nil {
 		t.Error("a bad row was read without an error")
 	}
 
-	got, err := LoadInventoryFromCSV(strings.NewReader(file), false)
+	got, err := LoadInventoryFromCSV(b, strings.NewReader(file), false)
 	if err != nil {
 		t.Fatalf("lenient load: %v", err)
 	}
@@ -260,18 +262,18 @@ func TestLoadInventoryFromCSVIsStrictUnlessToldOtherwise(t *testing.T) {
 }
 
 func TestLoadBuylistFromCSVIsStrictUnlessToldOtherwise(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	file := strings.Join(BuylistHeader, ",") + "\n" +
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,not a price,0,1,40.00,b1,Store A\n" +
 		"shiny,Shiny Card,Alpha Set,foil,11,mythic,NM,2.50,2.50,1,40.00,b2,Store A\n"
 
-	_, err := LoadBuylistFromCSV(strings.NewReader(file))
+	_, err := LoadBuylistFromCSV(b, strings.NewReader(file))
 	if err == nil {
 		t.Error("a bad row was read without an error")
 	}
 
-	got, err := LoadBuylistFromCSV(strings.NewReader(file), false)
+	got, err := LoadBuylistFromCSV(b, strings.NewReader(file), false)
 	if err != nil {
 		t.Fatalf("lenient load: %v", err)
 	}
@@ -283,10 +285,10 @@ func TestLoadBuylistFromCSVIsStrictUnlessToldOtherwise(t *testing.T) {
 // An id the datastore does not hold stops a buylist row but not an inventory
 // one, which keeps reading a market file whose ids are the seller's own.
 func TestLoadFromCSVDisagreesOnAnUnknownCard(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
-	inv, err := LoadInventoryFromCSV(strings.NewReader(
-		strings.Join(InventoryHeader, ",") + "\n" +
+	inv, err := LoadInventoryFromCSV(b, strings.NewReader(
+		strings.Join(InventoryHeader, ",")+"\n"+
 			"ghost|Ghost Card|SET|1,Ghost Card,SET,nonfoil,1,rare,NM,1.00,1,u1\n"))
 	if err != nil {
 		t.Fatalf("inventory: %v", err)
@@ -295,8 +297,8 @@ func TestLoadFromCSVDisagreesOnAnUnknownCard(t *testing.T) {
 		t.Errorf("inventory = %v, want the row kept under its own id", inv)
 	}
 
-	_, err = LoadBuylistFromCSV(strings.NewReader(
-		strings.Join(BuylistHeader, ",") + "\n" +
+	_, err = LoadBuylistFromCSV(b, strings.NewReader(
+		strings.Join(BuylistHeader, ",")+"\n"+
 			"ghost,Ghost Card,SET,nonfoil,1,rare,NM,1.00,1.00,1,40.00,b1,Store A\n"))
 	if err == nil {
 		t.Error("a buylist row for an unknown card was read without an error")
@@ -305,7 +307,7 @@ func TestLoadFromCSVDisagreesOnAnUnknownCard(t *testing.T) {
 
 // The finish column is what tells four prices for the same card apart.
 func TestWriteInventoryToCSVNamesTheFinish(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	inv := InventoryRecord{}
 	for _, cardID := range []string{"plain", "shiny", "scratched", "box"} {
@@ -313,7 +315,7 @@ func TestWriteInventoryToCSVNamesTheFinish(t *testing.T) {
 	}
 
 	records := writeCSV(t, func(w *bytes.Buffer) error {
-		return WriteInventoryToCSV(inv, w)
+		return WriteInventoryToCSV(b, inv, w)
 	})
 
 	finish := slices.Index(InventoryHeader, "Finish")
@@ -330,7 +332,7 @@ func TestWriteInventoryToCSVNamesTheFinish(t *testing.T) {
 // A card the datastore lost between the scrape and the dump is dropped from
 // the file rather than failing the whole write.
 func TestWriteToCSVSkipsACardItCannotName(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	inv := InventoryRecord{
 		"plain":   {{Conditions: "NM", Price: 1, Quantity: 1}},
@@ -339,7 +341,7 @@ func TestWriteToCSVSkipsACardItCannotName(t *testing.T) {
 		"short|Card": {{Conditions: "NM", Price: 1, Quantity: 1}},
 	}
 	records := writeCSV(t, func(w *bytes.Buffer) error {
-		return WriteInventoryToCSV(inv, w)
+		return WriteInventoryToCSV(b, inv, w)
 	})
 	if len(records) != 2 {
 		t.Errorf("wrote %d rows, want the header and the one nameable card: %v", len(records), records)
@@ -350,7 +352,7 @@ func TestWriteToCSVSkipsACardItCannotName(t *testing.T) {
 		"missing": {{Conditions: "NM", BuyPrice: 1, Quantity: 1}},
 	}
 	records = writeCSV(t, func(w *bytes.Buffer) error {
-		return WriteBuylistToCSV(bl, 1, w)
+		return WriteBuylistToCSV(b, bl, 1, w)
 	})
 	if len(records) != 2 {
 		t.Errorf("wrote %d rows, want the header and the one nameable card: %v", len(records), records)
@@ -360,13 +362,13 @@ func TestWriteToCSVSkipsACardItCannotName(t *testing.T) {
 // A pipe id stands in for a card with no datastore entry, spelling the name,
 // edition and number the columns would have been filled from.
 func TestWriteInventoryToCSVReadsThePipeID(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	inv := InventoryRecord{
 		"ghost|Ghost Card|SET|42": {{Conditions: "NM", Price: 1, Quantity: 1}},
 	}
 	records := writeCSV(t, func(w *bytes.Buffer) error {
-		return WriteInventoryToCSV(inv, w)
+		return WriteInventoryToCSV(b, inv, w)
 	})
 
 	want := []string{"ghost|Ghost Card|SET|42", "Ghost Card", "SET", "42", "", ""}
@@ -398,10 +400,10 @@ func arbitEntry() ArbitEntry {
 // The arbitrage report carries both prices and every number derived from
 // them, in the order the header names.
 func TestWriteArbitrageToCSVReportsTheTrade(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	records := writeCSV(t, func(w *bytes.Buffer) error {
-		return WriteArbitrageToCSV([]ArbitEntry{arbitEntry()}, w)
+		return WriteArbitrageToCSV(b, []ArbitEntry{arbitEntry()}, w)
 	})
 	if !reflect.DeepEqual(records[0], ArbitHeader) {
 		t.Errorf("header = %v, want %v", records[0], ArbitHeader)
@@ -417,10 +419,10 @@ func TestWriteArbitrageToCSVReportsTheTrade(t *testing.T) {
 // The mismatch report is the same row against a reference price rather than
 // a buy price, so the reference is what has to land in the second column.
 func TestWriteMismatchToCSVReportsTheReferencePrice(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	records := writeCSV(t, func(w *bytes.Buffer) error {
-		return WriteMismatchToCSV([]ArbitEntry{arbitEntry()}, w)
+		return WriteMismatchToCSV(b, []ArbitEntry{arbitEntry()}, w)
 	})
 	if !reflect.DeepEqual(records[0], MismatchHeader) {
 		t.Errorf("header = %v, want %v", records[0], MismatchHeader)
@@ -436,10 +438,10 @@ func TestWriteMismatchToCSVReportsTheReferencePrice(t *testing.T) {
 // The penny report is a shopping list rather than a trade, so it is written
 // under the inventory header with nothing in the link column.
 func TestWritePennyToCSVReportsTheShelf(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	records := writeCSV(t, func(w *bytes.Buffer) error {
-		return WritePennyToCSV([]ArbitEntry{arbitEntry()}, w)
+		return WritePennyToCSV(b, []ArbitEntry{arbitEntry()}, w)
 	})
 	if !reflect.DeepEqual(records[0], InventoryHeader) {
 		t.Errorf("header = %v, want %v", records[0], InventoryHeader)
@@ -455,7 +457,7 @@ func TestWritePennyToCSVReportsTheShelf(t *testing.T) {
 // A report on a market names the seller each row came from, which is the
 // difference between a row someone can act on and one they cannot.
 func TestReportsNameTheSellerWhenThereIsOne(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	entry := arbitEntry()
 	entry.InventoryEntry.SellerName = "Store A"
@@ -465,9 +467,9 @@ func TestReportsNameTheSellerWhenThereIsOne(t *testing.T) {
 		name  string
 		write func(entries []ArbitEntry, w *bytes.Buffer) error
 	}{
-		{"arbitrage", func(e []ArbitEntry, w *bytes.Buffer) error { return WriteArbitrageToCSV(e, w) }},
-		{"mismatch", func(e []ArbitEntry, w *bytes.Buffer) error { return WriteMismatchToCSV(e, w) }},
-		{"penny", func(e []ArbitEntry, w *bytes.Buffer) error { return WritePennyToCSV(e, w) }},
+		{"arbitrage", func(e []ArbitEntry, w *bytes.Buffer) error { return WriteArbitrageToCSV(b, e, w) }},
+		{"mismatch", func(e []ArbitEntry, w *bytes.Buffer) error { return WriteMismatchToCSV(b, e, w) }},
+		{"penny", func(e []ArbitEntry, w *bytes.Buffer) error { return WritePennyToCSV(b, e, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			records := writeCSV(t, func(w *bytes.Buffer) error {
@@ -513,7 +515,7 @@ func TestHeadersShareNoArray(t *testing.T) {
 }
 
 func TestReportsLeaveTheSharedHeadersAlone(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	headers := map[string][]string{
 		"CardHeader":      slices.Clone(CardHeader),
@@ -530,9 +532,9 @@ func TestReportsLeaveTheSharedHeadersAlone(t *testing.T) {
 	entries := []ArbitEntry{entry}
 	var buf bytes.Buffer
 	for _, write := range []func([]ArbitEntry, *bytes.Buffer) error{
-		func(e []ArbitEntry, w *bytes.Buffer) error { return WriteArbitrageToCSV(e, w) },
-		func(e []ArbitEntry, w *bytes.Buffer) error { return WriteMismatchToCSV(e, w) },
-		func(e []ArbitEntry, w *bytes.Buffer) error { return WritePennyToCSV(e, w) },
+		func(e []ArbitEntry, w *bytes.Buffer) error { return WriteArbitrageToCSV(b, e, w) },
+		func(e []ArbitEntry, w *bytes.Buffer) error { return WriteMismatchToCSV(b, e, w) },
+		func(e []ArbitEntry, w *bytes.Buffer) error { return WritePennyToCSV(b, e, w) },
 	} {
 		buf.Reset()
 		err := write(entries, &buf)
@@ -556,15 +558,16 @@ func TestReportsLeaveTheSharedHeadersAlone(t *testing.T) {
 // A report with nothing in it is still a file with a header, which is what
 // tells a reader the run happened and found nothing.
 func TestReportsWriteAHeaderWithNoRows(t *testing.T) {
+	b := backendFor(nil)
 	for _, tc := range []struct {
 		name  string
 		write func(w *bytes.Buffer) error
 	}{
-		{"arbitrage", func(w *bytes.Buffer) error { return WriteArbitrageToCSV(nil, w) }},
-		{"mismatch", func(w *bytes.Buffer) error { return WriteMismatchToCSV(nil, w) }},
-		{"penny", func(w *bytes.Buffer) error { return WritePennyToCSV(nil, w) }},
-		{"inventory", func(w *bytes.Buffer) error { return WriteInventoryToCSV(InventoryRecord{}, w) }},
-		{"buylist", func(w *bytes.Buffer) error { return WriteBuylistToCSV(BuylistRecord{}, 1, w) }},
+		{"arbitrage", func(w *bytes.Buffer) error { return WriteArbitrageToCSV(b, nil, w) }},
+		{"mismatch", func(w *bytes.Buffer) error { return WriteMismatchToCSV(b, nil, w) }},
+		{"penny", func(w *bytes.Buffer) error { return WritePennyToCSV(b, nil, w) }},
+		{"inventory", func(w *bytes.Buffer) error { return WriteInventoryToCSV(b, InventoryRecord{}, w) }},
+		{"buylist", func(w *bytes.Buffer) error { return WriteBuylistToCSV(b, BuylistRecord{}, 1, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			records := writeCSV(t, tc.write)
@@ -578,16 +581,16 @@ func TestReportsWriteAHeaderWithNoRows(t *testing.T) {
 // A destination that dies takes the report down with it rather than being
 // reported as a written file that is missing most of its rows.
 func TestReportsReportAFailedDestination(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	entries := []ArbitEntry{arbitEntry(), arbitEntry(), arbitEntry()}
 	for _, tc := range []struct {
 		name  string
 		write func(w *failAfter) error
 	}{
-		{"arbitrage", func(w *failAfter) error { return WriteArbitrageToCSV(entries, w) }},
-		{"mismatch", func(w *failAfter) error { return WriteMismatchToCSV(entries, w) }},
-		{"penny", func(w *failAfter) error { return WritePennyToCSV(entries, w) }},
+		{"arbitrage", func(w *failAfter) error { return WriteArbitrageToCSV(b, entries, w) }},
+		{"mismatch", func(w *failAfter) error { return WriteMismatchToCSV(b, entries, w) }},
+		{"penny", func(w *failAfter) error { return WritePennyToCSV(b, entries, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.write(&failAfter{budget: 40})
@@ -602,7 +605,7 @@ func TestReportsReportAFailedDestination(t *testing.T) {
 // than one field being unreadable, and the csv reader reports it before any
 // of the fields are looked at.
 func TestLoadFromCSVHandlesARaggedFile(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	inventory := strings.Join(InventoryHeader, ",") + "\n" +
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM\n" +
@@ -611,23 +614,23 @@ func TestLoadFromCSVHandlesARaggedFile(t *testing.T) {
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM\n" +
 		"shiny,Shiny Card,Alpha Set,foil,11,mythic,NM,2.50,2.50,1,40.00,b2,Store A\n"
 
-	_, err := LoadInventoryFromCSV(strings.NewReader(inventory))
+	_, err := LoadInventoryFromCSV(b, strings.NewReader(inventory))
 	if err == nil {
 		t.Error("inventory: a ragged file was read without an error")
 	}
-	_, err = LoadBuylistFromCSV(strings.NewReader(buylist))
+	_, err = LoadBuylistFromCSV(b, strings.NewReader(buylist))
 	if err == nil {
 		t.Error("buylist: a ragged file was read without an error")
 	}
 
-	inv, err := LoadInventoryFromCSV(strings.NewReader(inventory), false)
+	inv, err := LoadInventoryFromCSV(b, strings.NewReader(inventory), false)
 	if err != nil {
 		t.Fatalf("inventory: %v", err)
 	}
 	if len(inv) != 1 {
 		t.Errorf("inventory = %v, want only the whole row", inv)
 	}
-	bl, err := LoadBuylistFromCSV(strings.NewReader(buylist), false)
+	bl, err := LoadBuylistFromCSV(b, strings.NewReader(buylist), false)
 	if err != nil {
 		t.Fatalf("buylist: %v", err)
 	}
@@ -639,11 +642,12 @@ func TestLoadFromCSVHandlesARaggedFile(t *testing.T) {
 // A header that is not readable as csv at all fails as a header rather than
 // as the missing columns it would otherwise look like.
 func TestLoadFromCSVRejectsAnUnreadableHeader(t *testing.T) {
-	_, err := LoadInventoryFromCSV(strings.NewReader("\"unclosed\n"))
+	b := backendFor(nil)
+	_, err := LoadInventoryFromCSV(b, strings.NewReader("\"unclosed\n"))
 	if err == nil {
 		t.Error("inventory: an unreadable header was read without an error")
 	}
-	_, err = LoadBuylistFromCSV(strings.NewReader("\"unclosed\n"))
+	_, err = LoadBuylistFromCSV(b, strings.NewReader("\"unclosed\n"))
 	if err == nil {
 		t.Error("buylist: an unreadable header was read without an error")
 	}
@@ -652,10 +656,11 @@ func TestLoadFromCSVRejectsAnUnreadableHeader(t *testing.T) {
 // A buylist header the right width but naming something else is refused on
 // the names, not on the count.
 func TestLoadBuylistFromCSVRejectsARenamedColumn(t *testing.T) {
+	b := backendFor(nil)
 	header := slices.Clone(BuylistHeader)
 	header[len(header)-1] = "Store"
 
-	_, err := LoadBuylistFromCSV(strings.NewReader(strings.Join(header, ",") + "\n"))
+	_, err := LoadBuylistFromCSV(b, strings.NewReader(strings.Join(header, ",")+"\n"))
 	if err == nil {
 		t.Error("a header naming a column it does not have was read without an error")
 	}
@@ -664,7 +669,7 @@ func TestLoadBuylistFromCSVRejectsARenamedColumn(t *testing.T) {
 // Each field the loader parses is its own reason to drop a row, and a lenient
 // read has to get past all of them to the rows that are whole.
 func TestLoadBuylistFromCSVSkipsEveryUnreadableField(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	file := strings.Join(BuylistHeader, ",") + "\n" +
 		"missing,Gone Card,Alpha Set,nonfoil,9,rare,NM,1.00,1.00,1,40.00,b0,Store A\n" +
@@ -673,7 +678,7 @@ func TestLoadBuylistFromCSVSkipsEveryUnreadableField(t *testing.T) {
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,1.00,1.00,1,a lot,b1,Store A\n" +
 		"shiny,Shiny Card,Alpha Set,foil,11,mythic,NM,2.50,2.50,1,40.00,b2,Store A\n"
 
-	got, err := LoadBuylistFromCSV(strings.NewReader(file), false)
+	got, err := LoadBuylistFromCSV(b, strings.NewReader(file), false)
 	if err != nil {
 		t.Fatalf("lenient load: %v", err)
 	}
@@ -685,19 +690,19 @@ func TestLoadBuylistFromCSVSkipsEveryUnreadableField(t *testing.T) {
 // The inventory loader reads a card the datastore does not hold only when the
 // id spells the card itself; a bare unknown id is a row it cannot place.
 func TestLoadInventoryFromCSVNeedsToPlaceTheCard(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	file := strings.Join(InventoryHeader, ",") + "\n" +
 		"missing,Gone Card,Alpha Set,nonfoil,9,rare,NM,1.00,1,u0\n" +
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,1.00,not a number,u1\n" +
 		"shiny,Shiny Card,Alpha Set,foil,11,mythic,NM,2.50,1,u2\n"
 
-	_, err := LoadInventoryFromCSV(strings.NewReader(file))
+	_, err := LoadInventoryFromCSV(b, strings.NewReader(file))
 	if err == nil {
 		t.Error("a row for an unknown card was read without an error")
 	}
 
-	got, err := LoadInventoryFromCSV(strings.NewReader(file), false)
+	got, err := LoadInventoryFromCSV(b, strings.NewReader(file), false)
 	if err != nil {
 		t.Fatalf("lenient load: %v", err)
 	}
@@ -709,16 +714,16 @@ func TestLoadInventoryFromCSVNeedsToPlaceTheCard(t *testing.T) {
 // A file holding the same row twice is a dump written twice over, not a store
 // with two of a card at one price, and a strict read says so.
 func TestLoadFromCSVRefusesARepeatedRow(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	row := "plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,1.00,1,u1\n"
-	_, err := LoadInventoryFromCSV(strings.NewReader(strings.Join(InventoryHeader, ",") + "\n" + row + row))
+	_, err := LoadInventoryFromCSV(b, strings.NewReader(strings.Join(InventoryHeader, ",")+"\n"+row+row))
 	if err == nil {
 		t.Error("inventory: a repeated row was read without an error")
 	}
 
 	row = "plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,1.00,1.00,1,40.00,b1,Store A\n"
-	_, err = LoadBuylistFromCSV(strings.NewReader(strings.Join(BuylistHeader, ",") + "\n" + row + row))
+	_, err = LoadBuylistFromCSV(b, strings.NewReader(strings.Join(BuylistHeader, ",")+"\n"+row+row))
 	if err == nil {
 		t.Error("buylist: a repeated row was read without an error")
 	}
@@ -727,7 +732,7 @@ func TestLoadFromCSVRefusesARepeatedRow(t *testing.T) {
 // A destination that was already gone fails on the header, before any price
 // is written, rather than reporting an empty file as a written one.
 func TestWriteToCSVReportsADestinationThatWasNeverThere(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	entries := []ArbitEntry{arbitEntry()}
 	for _, tc := range []struct {
@@ -735,14 +740,14 @@ func TestWriteToCSVReportsADestinationThatWasNeverThere(t *testing.T) {
 		write func(w *failAfter) error
 	}{
 		{"inventory", func(w *failAfter) error {
-			return WriteInventoryToCSV(InventoryRecord{"plain": {{Conditions: "NM", Price: 1, Quantity: 1}}}, w)
+			return WriteInventoryToCSV(b, InventoryRecord{"plain": {{Conditions: "NM", Price: 1, Quantity: 1}}}, w)
 		}},
 		{"buylist", func(w *failAfter) error {
-			return WriteBuylistToCSV(BuylistRecord{"plain": {{Conditions: "NM", BuyPrice: 1, Quantity: 1}}}, 1, w)
+			return WriteBuylistToCSV(b, BuylistRecord{"plain": {{Conditions: "NM", BuyPrice: 1, Quantity: 1}}}, 1, w)
 		}},
-		{"arbitrage", func(w *failAfter) error { return WriteArbitrageToCSV(entries, w) }},
-		{"mismatch", func(w *failAfter) error { return WriteMismatchToCSV(entries, w) }},
-		{"penny", func(w *failAfter) error { return WritePennyToCSV(entries, w) }},
+		{"arbitrage", func(w *failAfter) error { return WriteArbitrageToCSV(b, entries, w) }},
+		{"mismatch", func(w *failAfter) error { return WriteMismatchToCSV(b, entries, w) }},
+		{"penny", func(w *failAfter) error { return WritePennyToCSV(b, entries, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.write(&failAfter{})
@@ -756,13 +761,13 @@ func TestWriteToCSVReportsADestinationThatWasNeverThere(t *testing.T) {
 // The quantity and the ratio are read after the price, so a file broken in
 // one of them reaches a strict read further in than the tests above do.
 func TestLoadBuylistFromCSVStopsAtAnyUnreadableField(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	for _, row := range []string{
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,1.00,1.00,many,40.00,b1,Store A\n",
 		"plain,Plain Card,Alpha Set,nonfoil,10,rare,NM,1.00,1.00,1,a lot,b1,Store A\n",
 	} {
-		_, err := LoadBuylistFromCSV(strings.NewReader(strings.Join(BuylistHeader, ",") + "\n" + row))
+		_, err := LoadBuylistFromCSV(b, strings.NewReader(strings.Join(BuylistHeader, ",")+"\n"+row))
 		if err == nil {
 			t.Errorf("%q was read without an error", row)
 		}
@@ -772,11 +777,12 @@ func TestLoadBuylistFromCSVStopsAtAnyUnreadableField(t *testing.T) {
 // A buylist stops at the row the destination died on rather than carrying on
 // writing into a file nothing is reaching.
 func TestWriteBuylistToCSVStopsAtAFailedDestination(t *testing.T) {
+	b := backendFor(nil)
 	bl := BuylistRecord{}
 	for _, id := range []string{"a|Card A|SET|1", "b|Card B|SET|2", "c|Card C|SET|3"} {
 		bl[id] = []BuylistEntry{{Conditions: "NM", BuyPrice: 1, Quantity: 1}}
 	}
-	err := WriteBuylistToCSV(bl, 1, &failAfter{budget: 80})
+	err := WriteBuylistToCSV(b, bl, 1, &failAfter{budget: 80})
 	if err == nil {
 		t.Error("a destination that failed mid-write reported success")
 	}
@@ -785,7 +791,7 @@ func TestWriteBuylistToCSVStopsAtAFailedDestination(t *testing.T) {
 // A report row for a card the datastore no longer holds is dropped, the same
 // way the price files drop it, rather than failing the report.
 func TestReportsSkipACardTheyCannotName(t *testing.T) {
-	installCards(t, csvCards())
+	b := backendFor(csvCards())
 
 	known := arbitEntry()
 	unknown := arbitEntry()
@@ -796,14 +802,56 @@ func TestReportsSkipACardTheyCannotName(t *testing.T) {
 		name  string
 		write func(w *bytes.Buffer) error
 	}{
-		{"arbitrage", func(w *bytes.Buffer) error { return WriteArbitrageToCSV(entries, w) }},
-		{"mismatch", func(w *bytes.Buffer) error { return WriteMismatchToCSV(entries, w) }},
-		{"penny", func(w *bytes.Buffer) error { return WritePennyToCSV(entries, w) }},
+		{"arbitrage", func(w *bytes.Buffer) error { return WriteArbitrageToCSV(b, entries, w) }},
+		{"mismatch", func(w *bytes.Buffer) error { return WriteMismatchToCSV(b, entries, w) }},
+		{"penny", func(w *bytes.Buffer) error { return WritePennyToCSV(b, entries, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			records := writeCSV(t, tc.write)
 			if len(records) != 2 || records[1][0] != "plain" {
 				t.Errorf("wrote %v, want the header and the one nameable row", records)
+			}
+		})
+	}
+}
+
+// None of the seven readers or writers falls back to anything: a nil backend
+// is an error naming the function, not a resolution against nothing.
+func TestCSVNilBackend(t *testing.T) {
+	entries := []ArbitEntry{arbitEntry()}
+
+	for _, tc := range []struct {
+		name string
+		call func() error
+	}{
+		{"LoadInventoryFromCSV", func() error {
+			_, err := LoadInventoryFromCSV(nil, strings.NewReader(""))
+			return err
+		}},
+		{"LoadBuylistFromCSV", func() error {
+			_, err := LoadBuylistFromCSV(nil, strings.NewReader(""))
+			return err
+		}},
+		{"WriteInventoryToCSV", func() error {
+			return WriteInventoryToCSV(nil, InventoryRecord{}, &bytes.Buffer{})
+		}},
+		{"WriteBuylistToCSV", func() error {
+			return WriteBuylistToCSV(nil, BuylistRecord{}, 1, &bytes.Buffer{})
+		}},
+		{"WriteArbitrageToCSV", func() error {
+			return WriteArbitrageToCSV(nil, entries, &bytes.Buffer{})
+		}},
+		{"WriteMismatchToCSV", func() error {
+			return WriteMismatchToCSV(nil, entries, &bytes.Buffer{})
+		}},
+		{"WritePennyToCSV", func() error {
+			return WritePennyToCSV(nil, entries, &bytes.Buffer{})
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.call()
+			if err == nil || !strings.Contains(err.Error(), tc.name) {
+				t.Errorf("%s(nil, ...) = %v, want an error naming %s", tc.name, err, tc.name)
 			}
 		})
 	}
