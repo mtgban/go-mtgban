@@ -39,6 +39,8 @@ type Ninetyfive struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	client    *NFClient
 	game      mtgban.Game
 	supertype string
@@ -51,13 +53,17 @@ type Ninetyfive struct {
 	DisableBuylist bool
 }
 
-// NewScraper returns a scraper for one game.
-func NewScraper(game mtgban.Game) (*Ninetyfive, error) {
+// NewScraper returns a scraper for the game b was loaded for.
+func NewScraper(b *mtgmatcher.Backend) (*Ninetyfive, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	supertype, ok := nfGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
-	nf := Ninetyfive{}
+	nf := Ninetyfive{backend: b}
 	nf.inventory = mtgban.InventoryRecord{}
 	nf.buylist = mtgban.BuylistRecord{}
 	nf.client = NewNFClient()
@@ -109,7 +115,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 			var theCard *mtgmatcher.InputCard
 			switch nf.game {
 			case mtgban.GameMagic:
-				theCard, err = preprocess(allCards, key, lang, foil)
+				theCard, err = preprocess(nf.backend, allCards, key, lang, foil)
 				if err != nil {
 					continue
 				}
@@ -117,7 +123,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 				theCard = &mtgmatcher.InputCard{Name: allCards[key].CardName, Edition: allCards[key].SetName, Variation: allCards[key].CardNum, Foil: foil}
 			}
 
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := nf.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -127,7 +133,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
 					for _, probe := range alias.Probe() {
-						card, _ := mtgmatcher.GetUUID(probe)
+						card, _ := nf.backend.GetUUID(probe)
 						nf.printf("- %s", card)
 					}
 				}
@@ -167,7 +173,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 			} else if mode == modeBuylist {
 				idsToAdd := []string{cardID}
 				// Buylist for the foil version of the card is the same
-				cardFoilID, matchErr := mtgmatcher.MatchID(cardID, true)
+				cardFoilID, matchErr := nf.backend.MatchID(cardID, true)
 				if matchErr == nil && cardFoilID != cardID {
 					idsToAdd = append(idsToAdd, cardFoilID)
 				}
