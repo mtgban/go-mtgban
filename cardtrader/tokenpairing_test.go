@@ -45,6 +45,7 @@ func TestPreprocessResolvesTokenPairing(t *testing.T) {
 				TCGplayerID: 192366,
 			},
 			wantName: "Illusion // Serra the Benevolent Emblem",
+			wantSet:  "TMH1",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -59,7 +60,10 @@ func TestPreprocessResolvesTokenPairing(t *testing.T) {
 			if co.Identifiers["derivedTokenPair"] != "true" {
 				t.Errorf("blueprint %d resolved to %s (%s), want a derived token pairing", tt.bp.ID, card.ID, co.Name)
 			}
-			if tt.wantSet != "" && co.SetCode != tt.wantSet {
+			if co.Name != tt.wantName {
+				t.Errorf("blueprint %d resolved to %q, want %q", tt.bp.ID, co.Name, tt.wantName)
+			}
+			if co.SetCode != tt.wantSet {
 				t.Errorf("blueprint %d resolved to set %s, want %s", tt.bp.ID, co.SetCode, tt.wantSet)
 			}
 		})
