@@ -388,20 +388,62 @@ func unionFinishes(a, b []string) []string {
 }
 
 // TokenPairIndex maps one face's uuid to every other face a vendor has been
-// seen pairing it with, keyed by that other face's own name (matched
-// loosely - a vendor spells the same face several ways: plain,
-// "(Artist)"-suffixed, or a different set's own copy), and the derived
-// entity's own uuid the pairing resolves to. Built once against the loaded
-// datastore rather than per listing - a vendor's own catalog runs to six
-// figures, and this side only needs looking up for the small fraction
-// shaped like a two-sided token. Exported and vendor-agnostic from the
-// start: cardkingdom is the first caller, but nothing here is CK-specific.
+// seen pairing it with, keyed by that other face's own name normalized (see
+// NormalizeTokenFace), to the derived entity's own tcgplayerProductId (see
+// above). Built once against the loaded datastore rather than per listing -
+// a vendor's own catalog runs to six figures, and this side only needs
+// looking up for the small fraction shaped like a two-sided token. Shared
+// across every vendor package that resolves its own two-sided token
+// listings against these derived pairings (cardkingdom, starcitygames,
+// ...): the index itself is vendor-agnostic, keyed only by the datastore's
+// own uuids and names.
+//
+// One face commonly pairs with several different partners across a sheet -
+// that plurality is the whole reason a vendor's wording has to disambiguate
+// at all - and two of those partners can normalize to the identical key
+// (measured against today's datastore: 5,783 derived pairings touch 1,865
+// distinct faces across 5,768 (face, key) slots; 252 of those faces (13.5%)
+// carry at least one colliding slot, and 297 of the slots themselves (5.1%)
+// are actually blanked - a single face can collide on more than one key
+// across different sheets, e.g. one "Beast" pairs with two different
+// "Elemental" printings on two different sheets). A plain last-write-wins
+// map would silently drop one pairing behind the other with no signal
+// anything was lost, and a vendor listing that actually names the dropped
+// one would then resolve to the wrong physical product under the
+// survivor's id. addPairing tracks a collision per (face, key) and blanks
+// the entry rather than letting either id win, so a colliding key resolves
+// to "" - the caller's own fallback, not a guess between two real answers -
+// exactly like every other ambiguous case this index already refuses on.
 //
 // sync.OnceValue rather than a package-level initializer: GlobalDatastore
 // is populated by the running program after mtgjson is parsed, not at Go's
 // own package-init time, so the index can only be built on first use.
 var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
 	data := map[string]map[string]string{}
+	ambiguous := map[string]map[string]bool{}
+
+	addPairing := func(face, partnerName, id string) {
+		key := NormalizeTokenFace(partnerName)
+		if ambiguous[face] == nil {
+			ambiguous[face] = map[string]bool{}
+		}
+		if ambiguous[face][key] {
+			return
+		}
+		if data[face] == nil {
+			data[face] = map[string]string{}
+		}
+		if existing, found := data[face][key]; found {
+			if existing == id {
+				return
+			}
+			delete(data[face], key)
+			ambiguous[face][key] = true
+			return
+		}
+		data[face][key] = id
+	}
+
 	backend := mtgmatcher.GlobalDatastore()
 	seen := map[string]bool{}
 	for uuid, co := range backend.UUIDs {
@@ -422,15 +464,8 @@ var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
 			continue
 		}
 
-		if data[partA] == nil {
-			data[partA] = map[string]string{}
-		}
-		data[partA][NormalizeTokenFace(coB.Card.Name)] = id
-
-		if data[partB] == nil {
-			data[partB] = map[string]string{}
-		}
-		data[partB][NormalizeTokenFace(coA.Card.Name)] = id
+		addPairing(partA, coB.Card.Name, id)
+		addPairing(partB, coA.Card.Name, id)
 	}
 	return data
 })
@@ -457,7 +492,10 @@ func NormalizeTokenFace(name string) string {
 // SplitTokenPairName splits a two-sided token listing's name into its two
 // faces the way a vendor spells it - "//" for cards a vendor treats as one
 // printing with two names, "-" for a token sheet's own two names - reporting
-// whether either separator was found at all.
+// whether either separator was found at all. Tried in this order regardless
+// of vendor: a name containing "//" is checked for it first, so a vendor
+// whose own wording never uses "-" needs no per-vendor configuration to stay
+// safe from a false split.
 func SplitTokenPairName(name string) (first, second string) {
 	for _, sep := range []string{" // ", " - "} {
 		if before, after, found := strings.Cut(name, sep); found {
@@ -469,32 +507,44 @@ func SplitTokenPairName(name string) (first, second string) {
 
 // MatchTokenPairing resolves a two-sided token listing to the TCGplayer
 // product id of the physical pairing it names, given the vendor's own
-// scryfallId for one face and its own name for the listing as a whole.
-// Either alone is not enough to place it safely: the scryfallId names a
-// real printing, but that printing can pair with several different
-// partners across a sheet (above), and the name alone is not unique to one
-// set - "Soldier Token" says nothing about which Soldier. Together, the id
-// anchors one face precisely and the wording only has to pick among the few
-// pairings that exact face has, not guess a printing from a free-text name
-// on its own. Returns "" when either is missing, or when no derived
-// pairing matches both.
-func MatchTokenPairing(scryfallID, listingName string) string {
-	if scryfallID == "" {
+// externalID for one face (a Scryfall id, in every vendor this has been
+// built for so far), its own name for the listing as a whole, and whether
+// the listing is foil. Either the id or the name alone is not enough to
+// place it safely: the id names a real printing, but that printing can pair
+// with several different partners across a sheet (above), and the name
+// alone is not unique to one set - "Soldier Token" says nothing about which
+// Soldier. Together, the id anchors one face precisely and the wording only
+// has to pick among the few pairings that exact face has, not guess a
+// printing from free text alone.
+//
+// A caller asking for foil against a pairing that was never sold in foil
+// gets "" back, not the nonfoil id: the pairing's own uuid carries no
+// separate foil identity to fall back to the way a plain printing's does
+// (InputCard.Foil on a bare .ID resolves through the same identifier the
+// nonfoil request would, silently substituting the wrong finish's price
+// unless this checks first), so the caller's own fallback chain - built for
+// exactly this "requested finish doesn't exist" case on every other token
+// path - is where the refusal belongs.
+//
+// Returns "" when the id, the name, or the requested finish don't jointly
+// resolve to one derived pairing.
+func MatchTokenPairing(externalID, listingName string, foil bool) string {
+	if externalID == "" {
 		return ""
 	}
 	first, second := SplitTokenPairName(listingName)
 	if second == "" {
 		return ""
 	}
-	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, scryfallID)
+	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, externalID)
 	if uuid == "" {
 		return ""
 	}
 
-	// A vendor usually carries the scryfallId against the first half of
-	// its own listing name, with the second half naming the partner - but
-	// not always. Where the id's own real name matches the second half
-	// instead, the first half is the partner to look up.
+	// A vendor usually carries the id against the first half of its own
+	// listing name, with the second half naming the partner - but not
+	// always. Where the id's own real name matches the second half instead,
+	// the first half is the partner to look up.
 	partner := second
 	if co, err := mtgmatcher.GetUUID(uuid); err == nil {
 		anchor := NormalizeTokenFace(co.Card.Name)
@@ -502,18 +552,20 @@ func MatchTokenPairing(scryfallID, listingName string) string {
 			partner = first
 		}
 	}
-	return TokenPairIndex()[uuid][NormalizeTokenFace(partner)]
+	id := TokenPairIndex()[uuid][NormalizeTokenFace(partner)]
+	return tokenPairingFinishOK(id, foil)
 }
 
 // MatchTokenPairingBySetNumber is MatchTokenPairing's counterpart for a
-// listing a vendor never publishes a scryfallId for at all: it anchors the
-// first face by its own filing set and number instead, through the same
-// MatchInSetNumber call - and the same len()==1-or-don't-guess discipline -
-// every other sku-driven resolution already trusts. Scoped to callers that
-// have already confirmed the (setCode, number) pair is the real one a
-// token sheet is filed under; unlike a scryfallId, an unconfirmed
-// set/number pair is a guess, not an anchor.
-func MatchTokenPairingBySetNumber(setCode, number, listingName string) string {
+// listing a vendor never publishes an external id for at all: it anchors
+// the first face by its own filing set and number instead, through
+// MatchInSetNumber - and the same len()==1-or-don't-guess discipline every
+// other sku-driven resolution already trusts. Scoped to callers that have
+// already confirmed the (setCode, number) pair is the real one a token
+// sheet is filed under; unlike an external id, an unconfirmed set/number
+// pair is a guess, not an anchor. See MatchTokenPairing for why foil is
+// checked here rather than left to the caller.
+func MatchTokenPairingBySetNumber(setCode, number, listingName string, foil bool) string {
 	first, second := SplitTokenPairName(listingName)
 	if second == "" || strings.Contains(second, " // ") || strings.Contains(second, " - ") {
 		return ""
@@ -523,7 +575,52 @@ func MatchTokenPairingBySetNumber(setCode, number, listingName string) string {
 		if len(cards) != 1 {
 			continue
 		}
-		return TokenPairIndex()[cards[0].UUID][NormalizeTokenFace(second)]
+		id := TokenPairIndex()[cards[0].UUID][NormalizeTokenFace(second)]
+		if id := tokenPairingFinishOK(id, foil); id != "" {
+			return id
+		}
 	}
 	return ""
+}
+
+// tokenPairingFinishOK answers id unchanged when either the caller isn't
+// asking for foil, or the derived pairing id names was sold in foil - and ""
+// otherwise. A derived entity's uuid carries no separate foil identity a
+// bare id lookup falls back to the way a plain printing's does, so asking
+// for foil against a pairing that was never sold in one would otherwise
+// silently resolve to (and price as) the nonfoil id.
+func tokenPairingFinishOK(id string, foil bool) string {
+	if id == "" || !foil {
+		return id
+	}
+	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+	if uuid == "" {
+		return ""
+	}
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil {
+		return ""
+	}
+
+	// co.Card.Finishes is deliberately the UNION of both faces' own finish
+	// lists (unionFinishes, above), chosen so a caller asking
+	// mtgmatcher.MatchIDFinish about a finish only one face happens to
+	// carry gets an answer instead of a hard error - a fine tradeoff
+	// there, since nothing IS asked about a finish nobody claims. Here the
+	// question is the opposite: a vendor already claims this specific
+	// two-sided PRODUCT was sold in the finish. HasFinish on the union
+	// would accept that claim on the strength of either face alone, even
+	// when the OTHER face was never sold that way - exactly the silent
+	// wrong-finish substitution this check exists to prevent, just moved
+	// one layer up. Require both source faces to agree instead: not proof
+	// the combined product itself shipped in this finish, but a strictly
+	// narrower bar than the union, and consistent with every other check
+	// in this file preferring "don't know, refuse" over a guess built
+	// from a half-agreeing signal.
+	coA, errA := mtgmatcher.GetUUID(co.Identifiers["tokenPairPartA"])
+	coB, errB := mtgmatcher.GetUUID(co.Identifiers["tokenPairPartB"])
+	if errA != nil || errB != nil || !coA.Card.HasFinish("foil") || !coB.Card.HasFinish("foil") {
+		return ""
+	}
+	return id
 }

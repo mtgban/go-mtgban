@@ -364,10 +364,11 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	// A two-sided token sheet prints one physical card for a pairing
 	// mtgmatcher/magic may already carry a combined entity for - resolve
 	// that precisely, by id, before falling back to the one-face collapse
-	// below. See magic.MatchTokenPairing.
+	// below. See magic.MatchTokenPairing (shared with every other vendor
+	// package resolving its own two-sided token listings the same way).
 	if isTwoSidedToken {
-		if id := magic.MatchTokenPairing(card.ScryfallID, card.Name); id != "" {
-			return &mtgmatcher.InputCard{ID: id}, nil
+		if id := magic.MatchTokenPairing(card.ScryfallID, card.Name, isFoil); id != "" {
+			return &mtgmatcher.InputCard{ID: id, Foil: isFoil}, nil
 		}
 
 		// CK never publishes a scryfallId for a "Mystery Booster/The
@@ -382,8 +383,8 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		// derives.
 		if card.ScryfallID == "" && card.Edition == "Mystery Booster/The List" &&
 			strings.HasPrefix(setCode, "MT") && setCodeExists(setCode[1:]) {
-			if id := magic.MatchTokenPairingBySetNumber(setCode[1:], number, card.Name); id != "" {
-				return &mtgmatcher.InputCard{ID: id}, nil
+			if id := magic.MatchTokenPairingBySetNumber(setCode[1:], number, card.Name, isFoil); id != "" {
+				return &mtgmatcher.InputCard{ID: id, Foil: isFoil}, nil
 			}
 		}
 	}

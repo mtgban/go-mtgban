@@ -261,7 +261,7 @@ func TestMatchTokenPairingAnchorsEitherHalf(t *testing.T) {
 		t.Skip("Cat (C17) scryfallId not present in this datastore")
 	}
 
-	tcgID := MatchTokenPairing(scryfallID, "Cat Token - Cat Warrior Token")
+	tcgID := MatchTokenPairing(scryfallID, "Cat Token - Cat Warrior Token", false)
 	if tcgID == "" {
 		t.Fatal("MatchTokenPairing(Cat, ..Cat Warrior..) = \"\", want the derived Cat // Cat Warrior pairing")
 	}
@@ -288,8 +288,69 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 		t.Skip("Illusion // Skeleton (id 244277) not derived in this datastore")
 	}
 
-	tcgID := MatchTokenPairingBySetNumber("TAFC", "3", "Illusion Token // Skeleton Token")
+	tcgID := MatchTokenPairingBySetNumber("TAFC", "3", "Illusion Token // Skeleton Token", false)
 	if tcgID != wantTCGID {
 		t.Errorf("MatchTokenPairingBySetNumber(TAFC, 3, ..Skeleton..) = %q, want %q", tcgID, wantTCGID)
+	}
+}
+
+// TestTokenPairIndexCollision pins the fix for a real bug: a face commonly
+// pairs with several different partners across a sheet, and two of those
+// partners can normalize to the identical key (measured: 252 of 1,865
+// faces in today's datastore carry at least one such collision). "Bear"
+// pairs with four differently-numbered "Food" tokens across Throne of
+// Eldraine's own token sheets, all colliding on "food" - a plain
+// last-write-wins map would silently pick one and make the other three
+// unreachable, so a vendor listing that actually names one of the dropped
+// three would resolve to the wrong physical product under the survivor's
+// id. The fix must refuse rather than guess: TokenPairIndex itself carries
+// no entry for the colliding key, and MatchTokenPairing (the caller every
+// vendor package goes through) returns "" for it - never silently
+// answering with one of the four candidates.
+func TestTokenPairIndexCollision(t *testing.T) {
+	realDatastore(t)
+
+	bearScryfallID := "b0f09f9e-e0f9-4ed8-bfc0-5f1a3046106e"
+	bearUUID := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, bearScryfallID)
+	if bearUUID == "" {
+		t.Skip("Bear (TELD) scryfallId not present in this datastore")
+	}
+
+	idx := TokenPairIndex()
+	if id, found := idx[bearUUID]["food"]; found {
+		t.Errorf(`TokenPairIndex[Bear]["food"] = %q, want no entry (colliding key must stay unresolved, not answer with an arbitrary one of Bear's several Food partners)`, id)
+	}
+
+	if id := MatchTokenPairing(bearScryfallID, "Bear Token // Food Token", false); id != "" {
+		t.Errorf("MatchTokenPairing(Bear, ..Food..) = %q, want \"\": Bear pairs with multiple differently-numbered Food tokens, none namable from \"Food\" alone", id)
+	}
+}
+
+// TestMatchTokenPairingRequiresBothFacesInRequestedFinish pins the fix for a
+// second real bug: the derived pairing's own Finishes is deliberately the
+// UNION of both faces' independent finish lists (unionFinishes, above - a
+// fine tradeoff for its own original purpose, keeping
+// mtgmatcher.MatchIDFinish from erroring on a finish only one face happens
+// to carry). Trusting that union to answer "was this specific two-sided
+// PRODUCT sold in this finish" is a different question the union was never
+// built to answer: Boar was never sold foil on its own, its TKHM sheet
+// partner Spirit was, and the union claims foil regardless. A foil request
+// anchored on Boar's own scryfall_id must be refused, not silently answered
+// with Spirit's foil-ness - the same "don't know, refuse" discipline used
+// everywhere else two-sided token matching cannot verify a vendor's own
+// claim.
+func TestMatchTokenPairingRequiresBothFacesInRequestedFinish(t *testing.T) {
+	realDatastore(t)
+
+	boarScryfallID := "8ef6aca1-2e66-48fa-a446-6ec052b1e596"
+	if mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, boarScryfallID) == "" {
+		t.Skip("Boar (TKHM) scryfallId not present in this datastore")
+	}
+
+	if id := MatchTokenPairing(boarScryfallID, "Boar Token // Spirit Token", true); id != "" {
+		t.Errorf("MatchTokenPairing(Boar, ..Spirit.., foil=true) = %q, want \"\": Boar itself was never sold foil, only its sheet partner Spirit was", id)
+	}
+	if id := MatchTokenPairing(boarScryfallID, "Boar Token // Spirit Token", false); id == "" {
+		t.Error("MatchTokenPairing(Boar, ..Spirit.., foil=false) = \"\", want the real nonfoil pairing id")
 	}
 }
