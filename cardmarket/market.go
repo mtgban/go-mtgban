@@ -328,8 +328,11 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 	defer cancel()
 	var stopped error
 
+	total := len(items)
+	var processed int
 	walked, refused, foreign := mkm.collectPrices(ctx, items, func(ctx context.Context, exp cm.Expansion, channel chan<- responseChan) error {
-		err := mkm.walkExpansion(ctx, exp, byExpansion[exp.IDExpansion], products, candidates, channel)
+		processed++
+		err := mkm.walkExpansion(ctx, exp, byExpansion[exp.IDExpansion], products, candidates, channel, processed, total)
 		if errors.Is(err, errTooManyBounces) {
 			stopped = err
 			cancel()
@@ -390,8 +393,8 @@ func (mkm *Market) collectPrices(ctx context.Context, items []cm.Expansion, work
 // same way idmap.go's walkCatalog does for Index, swapping emitPrices'
 // read off the price guide for queryPrintings' live calls, and skipping a
 // product the offline pre-filter (candidates) leaves out.
-func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []int, products map[int]cm.CatalogProduct, candidates map[string]bool, channel chan<- responseChan) error {
-	mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
+func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []int, products map[int]cm.CatalogProduct, candidates map[string]bool, channel chan<- responseChan, index, total int) error {
+	mkm.printf("Processing %s (%d) [%d/%d]", exp.Name, exp.IDExpansion, index, total)
 	sort.Ints(ids)
 
 	results := make([]resolved, 0, len(ids))
