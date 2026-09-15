@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // plainScraper holds both halves and cannot be told to drop one, which is the
@@ -130,7 +131,7 @@ func TestRegisteredHalvesAreHonoured(t *testing.T) {
 		if !opt.OnlyVendor && !opt.OnlySeller {
 			continue
 		}
-		scraper, err := opt.Init()
+		scraper, err := opt.Init(&mtgmatcher.Backend{})
 		if err != nil {
 			// Init reads credentials for some targets, and a checkout
 			// without them still runs the rest.
