@@ -326,7 +326,7 @@ func cardtraderMarketScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := cardtrader.NewScraperMarket(game, token)
+		scraper, err := cardtrader.NewScraperMarket(b, token)
 		if err != nil {
 			return nil, err
 		}
@@ -345,7 +345,7 @@ func cardtraderSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := cardtrader.NewScraperSealed(game, token)
+		scraper, err := cardtrader.NewScraperSealed(b, token)
 		if err != nil {
 			return nil, err
 		}
