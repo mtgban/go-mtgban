@@ -144,6 +144,100 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 		return keys[i].b < keys[j].b
 	})
 
+	// idCanonicalKey resolves a tcgplayerProductId claimed by more than one
+	// pairKey to the one pairKey allowed to use it, for ids that aren't
+	// genuinely ambiguous: every one of their claimants names the identical
+	// two faces (order-independent), so this is mtgjson cataloguing one
+	// real physical pairing under more than one uuid combination - a
+	// memorabilia/oversized sibling set repeating a base set's own id
+	// (OAFR duplicating AFR's own dungeon-card ids under its own uuids: 127
+	// of 128 measured id collisions are this shape) - not two different
+	// physical objects sharing an id by coincidence or error. A genuinely
+	// ambiguous id (different name pairs among its claimants) gets no
+	// entry and stays refused by every claimant, same as before this
+	// existed.
+	//
+	// The canonical claimant is deliberately the one whose faces are NOT
+	// themselves filed under a "memorabilia"-type set (an oversized or
+	// reference sibling, never what a vendor's own scryfall_id or listing
+	// wording actually resolves to), not an arbitrary pick: TokenPairIndex
+	// only ever indexes the uuids the winning claimant itself used, so
+	// picking the memorabilia sibling here would silently leave a real
+	// vendor listing - anchored on the ordinary set's own scryfall_id or
+	// number - unable to find this pairing at all, even though a derived
+	// entity for it exists. Ties (neither or both sides memorabilia) fall
+	// back to sorted order, same as everywhere else non-determinism would
+	// otherwise creep in.
+	//
+	// "Not genuinely ambiguous" is decided by face NAME agreement alone,
+	// not by confirming the claimants are actually sibling-set uuids of
+	// each other (no general "these two sets are reprint siblings" check
+	// exists here beyond the memorabilia-preference tiebreak above). That
+	// is sound for every case measured - 127 of 128 real id collisions in
+	// today's datastore, all a memorabilia set repeating a base set's own
+	// id - but it is a real, if narrower, assumption than "these uuids
+	// are known duplicates of each other": two GENUINELY different real
+	// printings that happen to share both face names by coincidence,
+	// filed under two different non-memorabilia sets, would also read as
+	// "not ambiguous" here and get silently collapsed to one canonical
+	// pairing rather than refused. No such case has been found against
+	// real data; if one ever is, this is where it would need a sharper
+	// test than name equality (e.g. also requiring the claimant sets to
+	// share an ancestor via homeSet).
+	idCanonicalKey := map[string]pairKey{}
+	for id, claimants := range idPairs {
+		if len(claimants) <= 1 {
+			continue
+		}
+		sorted := make([]pairKey, 0, len(claimants))
+		for key := range claimants {
+			sorted = append(sorted, key)
+		}
+		sort.Slice(sorted, func(i, j int) bool {
+			if sorted[i].a != sorted[j].a {
+				return sorted[i].a < sorted[j].a
+			}
+			return sorted[i].b < sorted[j].b
+		})
+
+		var namePair [2]string
+		consistent := true
+		var best pairKey
+		bestScore := -1
+		for i, key := range sorted {
+			co1, found1 := uuids[key.a]
+			co2, found2 := uuids[key.b]
+			if !found1 || !found2 {
+				consistent = false
+				break
+			}
+			n1, n2 := co1.Card.Name, co2.Card.Name
+			if n2 < n1 {
+				n1, n2 = n2, n1
+			}
+			if i == 0 {
+				namePair = [2]string{n1, n2}
+			} else if namePair != [2]string{n1, n2} {
+				consistent = false
+				break
+			}
+			score := 0
+			if !isMemorabiliaSet(sets, co1.SetCode) {
+				score++
+			}
+			if !isMemorabiliaSet(sets, co2.SetCode) {
+				score++
+			}
+			if score > bestScore {
+				bestScore = score
+				best = key
+			}
+		}
+		if consistent {
+			idCanonicalKey[id] = best
+		}
+	}
+
 	var derived []Card
 	for _, key := range keys {
 		co1, found1 := uuids[key.a]
@@ -164,7 +258,9 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 		var usableIDs []int
 		for id := range pairIDs[key] {
 			if len(idPairs[id]) > 1 {
-				continue
+				if canon, ok := idCanonicalKey[id]; !ok || canon != key {
+					continue
+				}
 			}
 			if _, claimed := tcgIDs[id]; claimed {
 				continue
@@ -207,15 +303,22 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 // knows how to pair. This is an allowlist, not a denylist: layout is
 // upstream data mtgjson can add values to, and a denylist would let a new
 // shape through unexamined. It deliberately excludes "art_series" (already
-// dropped by skipSet) and "normal"/"flip"/"reversible_card" (the AFR
-// dungeon sheets, a numbered card rather than a token on one side - a real
-// pairing, but a different problem, left for its own follow-up). adjustTokens
-// (mtgjson.go) already rewrites every set.Tokens entry with the right Types
-// to "token" before this runs, so against today's data this rung and the
-// "already modeled" one above it are not exercised - dungeon-type pairings
-// are excluded by the multi-pair-id rung instead, since OAFR repeats AFR's
-// own ids under its own uuids. Both stay as an explicit backstop for
+// dropped by skipSet - and the only art_series tokenProducts pairings
+// found are a card paired with itself under two ids, not a genuine
+// two-sided product) and "reversible_card" (one instance found, also
+// self-paired, no vendor evidence). Both stay as an explicit backstop for
 // whatever upstream does next, not dead code to delete.
+//
+// "normal" and "flip" don't need to be here even though AFR's dungeon
+// cards (Dungeon of the Mad Mage, Lost Mine of Phandelver, Tomb of
+// Annihilation - CK and SCG both sell these paired with their own tokens)
+// carry "normal" upstream: adjustTokens (mtgjson.go) already rewrites
+// every set.Tokens entry's own layout to "token" before this runs, and a
+// set.Tokens entry is where a dungeon card lives, so this rung never
+// actually sees "normal" for them. What was really excluding them is the
+// multi-pair-id rung below, since OAFR (Forgotten Realms Oversized Cards,
+// a memorabilia sibling of AFR) repeats AFR's own dungeon-card ids under
+// its own uuids - see idCanonicalKey.
 func isTokenPairLayout(layout string) bool {
 	return layout == "token" || layout == "emblem"
 }
@@ -254,6 +357,16 @@ func tokenSetCodeOf(sets map[string]*Set, code string) string {
 		return set.TokenSetCode
 	}
 	return code
+}
+
+// isMemorabiliaSet reports whether code names a "memorabilia"-type set -
+// an oversized or reference sibling (Forgotten Realms Oversized Cards,
+// OAFR, for AFR's own dungeon cards) mtgjson catalogues under its own
+// uuids and, often, its own scryfall_id, but that a vendor's real listing
+// never actually resolves through.
+func isMemorabiliaSet(sets map[string]*Set, code string) bool {
+	set, found := sets[code]
+	return found && set.Type == "memorabilia"
 }
 
 // parentChain walks a set's ParentCode links up to the root, returning the
@@ -506,12 +619,24 @@ func stripFaceWrapping(name string) string {
 	return strings.TrimSpace(name)
 }
 
-// cleanFaceName is stripFaceWrapping plus the " Token" suffix a vendor
-// spells that the datastore's own Card.Name usually does not - true for
-// every derived pairing's own split-apart face, and for mtgjson's own
-// natively combined "X // Y" names (MatchNativeTokenPair).
+// cleanFaceName is stripFaceWrapping plus whatever type-name suffix a
+// vendor spells that the datastore's own Card.Name does not: " Token" for
+// an ordinary token (true for every derived pairing's own split-apart
+// face, and for mtgjson's own natively combined "X // Y" names,
+// MatchNativeTokenPair), " Dungeon" for a dungeon reference card (SCG's
+// own listing convention - measured against SCG's real catalog: "Dungeon
+// of the Mad Mage Dungeon", never the card's real name "Dungeon of the
+// Mad Mage" alone). Neither suffix is ever part of a real Card.Name for
+// anything this matches against, so stripping whichever one is present is
+// unconditionally safe.
 func cleanFaceName(name string) string {
-	return strings.TrimSuffix(stripFaceWrapping(name), " Token")
+	name = stripFaceWrapping(name)
+	for _, suffix := range []string{" Token", " Dungeon"} {
+		if trimmed := strings.TrimSuffix(name, suffix); trimmed != name {
+			return trimmed
+		}
+	}
+	return name
 }
 
 // SplitTokenPairName splits a two-sided token listing's name into its two

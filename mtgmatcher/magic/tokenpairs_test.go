@@ -95,6 +95,7 @@ func TestDerivedTokenPairResolvesByProductID(t *testing.T) {
 		{"cross-set pairing (AFC + AFR)", "244277", "Illusion // Skeleton", "TAFR", "3 // 6"},
 		{"multi-id pairing, first id", "200319", "Goat // Food", "TELD", "1 // 16"},
 		{"multi-id pairing, second id", "200320", "Goat // Food", "TELD", "1 // 16"},
+		{"sibling-set duplicate id (AFR/OAFR dungeon)", "242785", "Goblin // Dungeon of the Mad Mage", "TAFR", "12 // 20"},
 	} {
 		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
 		if uuid == "" {
@@ -154,6 +155,96 @@ func TestDerivedTokenPairExclusions(t *testing.T) {
 	}
 	if co.Card.Name != "Angel" || co.SetCode != "TC14" {
 		t.Errorf("id 94180 = %s|%s, want Angel|TC14", co.Card.Name, co.SetCode)
+	}
+}
+
+// TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs pins idCanonicalKey
+// directly: OAFR (Forgotten Realms Oversized Cards, a memorabilia sibling
+// of AFR with ParentCode "AFR") repeats AFR's own dungeon-card ids under
+// its own uuids, so a naive "an id claimed by more than one pairing
+// answers for neither" refusal would leave every AFR dungeon pairing
+// unresolved even though CK and SCG both sell them. All three dungeon
+// cards, each paired with both a token and with each other, must resolve -
+// and, critically, must resolve to the ordinary AFR/TAFR uuid as the
+// winning tokenPairPartA/B, not OAFR's: TokenPairIndex only ever indexes
+// whichever uuid actually won, so picking the memorabilia sibling here
+// would silently leave a real vendor listing - anchored on the ordinary
+// set's own scryfall_id, the same one CK and SCG both publish - unable to
+// find the pairing at all even though a derived entity for it exists. The
+// first pass of this fix got exactly that wrong (picked whichever uuid
+// sorted first, which happened to be OAFR's); MatchTokenPairing against
+// CK's own real scryfall_id is what actually catches it.
+func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
+	realDatastore(t)
+
+	for _, probe := range []struct {
+		desc       string
+		tcgID      string
+		name       string
+		scryfallID string
+		listing    string
+	}{
+		{"dungeon // token, id shared by AFR and OAFR's own Dungeon of the Mad Mage", "242785", "Goblin // Dungeon of the Mad Mage", "6f509dbe-6ec7-4438-ab36-e20be46c9922", "Dungeon of the Mad Mage // Goblin Token"},
+		{"dungeon // token, id shared by AFR and OAFR's own Lost Mine of Phandelver", "242783", "Skeleton // Lost Mine of Phandelver", "59b11ff8-f118-4978-87dd-509dc0c8c932", "Lost Mine of Phandelver // Skeleton Token"},
+		{"dungeon // token, id shared by AFR and OAFR's own Tomb of Annihilation", "242784", "The Atropal // Tomb of Annihilation", "70b284bd-7a8f-4b60-8238-f746bdc5b236", "Tomb of Annihilation // The Atropal"},
+	} {
+		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
+		if uuid == "" {
+			t.Skip("AFR dungeon pairing not present in this datastore, cannot verify")
+		}
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			t.Fatalf("%s: GetUUID(%s) = %v", probe.desc, uuid, err)
+		}
+		if co.Card.Name != probe.name {
+			t.Errorf("%s: id %s = %q, want %q", probe.desc, probe.tcgID, co.Card.Name, probe.name)
+		}
+		if co.SetCode != "TAFR" {
+			t.Errorf("%s: id %s resolved to set %q, want the ordinary TAFR filing, not the OAFR memorabilia sibling", probe.desc, probe.tcgID, co.SetCode)
+		}
+
+		// The real regression: a vendor's own scryfall_id for the dungeon
+		// face (always the ordinary AFR printing in practice) must find
+		// this pairing through MatchTokenPairing, the same path
+		// cardkingdom and starcitygames actually call.
+		if got := MatchTokenPairing(probe.scryfallID, probe.listing, false); got != probe.tcgID {
+			t.Errorf("%s: MatchTokenPairing(%s, %q) = %q, want %q", probe.desc, probe.scryfallID, probe.listing, got, probe.tcgID)
+		}
+	}
+
+	for _, probe := range []struct {
+		desc  string
+		tcgID string
+		name  string
+	}{
+		{"dungeon // dungeon, id shared 3 ways across AFR/OAFR combinations", "244297", "Dungeon of the Mad Mage // Lost Mine of Phandelver"},
+		{"dungeon // dungeon, id shared 3 ways across AFR/OAFR combinations", "247304", "Dungeon of the Mad Mage // Tomb of Annihilation"},
+	} {
+		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
+		if uuid == "" {
+			t.Skip("AFR dungeon pairing not present in this datastore, cannot verify")
+		}
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			t.Fatalf("%s: GetUUID(%s) = %v", probe.desc, uuid, err)
+		}
+		if co.Card.Name != probe.name {
+			t.Errorf("%s: id %s = %q, want %q", probe.desc, probe.tcgID, co.Card.Name, probe.name)
+		}
+		if co.SetCode != "TAFR" {
+			t.Errorf("%s: id %s resolved to set %q, want the ordinary TAFR filing, not the OAFR memorabilia sibling", probe.desc, probe.tcgID, co.SetCode)
+		}
+	}
+
+	// The one real collision this measurement found (A25's Fish/Kraken
+	// token pair sharing an id with the unrelated, already-modeled "Fish
+	// // Kraken" double_faced_token foil/nonfoil twins) must stay refused:
+	// its claimants don't agree on face names, so it is genuinely
+	// ambiguous, not a sibling-set duplicate.
+	if uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "162899"); uuid != "" {
+		if co, err := mtgmatcher.GetUUID(uuid); err == nil && co.Identifiers["derivedTokenPair"] == "true" {
+			t.Errorf("id 162899 resolved to a derived Fish/Kraken pairing (%s), want it to stay refused: it also names the unrelated already-modeled \"Fish // Kraken\" double_faced_token", co.Card.Name)
+		}
 	}
 }
 
