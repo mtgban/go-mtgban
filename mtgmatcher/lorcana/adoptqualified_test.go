@@ -33,7 +33,7 @@ func TestAdoptQualifiedName(t *testing.T) {
 			"Bucky - Squirrel Squeak Tutor", "73/204, Conversion w/ Ward", "289_foil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+			id, err := backend.Match(&mtgmatcher.InputCard{
 				Name: tt.name, Edition: "Rise of the Floodborn", Variation: tt.variation, Foil: true,
 			})
 			if err != nil {
