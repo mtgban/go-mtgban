@@ -18,8 +18,8 @@ var registeredGames = []mtgban.Game{
 
 func init() {
 	mtgban.Register("cardtrader", registeredGames,
-		func(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-			token, err := auth.Secret(SecretToken)
+		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+			token, err := opts.Secret(SecretToken)
 			if err != nil {
 				return nil, err
 			}
@@ -37,8 +37,8 @@ func init() {
 		})
 
 	mtgban.Register("cardtrader_sealed", registeredGames,
-		func(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-			token, err := auth.Secret(SecretToken)
+		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+			token, err := opts.Secret(SecretToken)
 			if err != nil {
 				return nil, err
 			}

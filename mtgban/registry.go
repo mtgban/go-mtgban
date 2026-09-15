@@ -10,11 +10,11 @@ import (
 )
 
 // Constructor builds a scraper against the datastore it is handed, from the
-// secrets and options its caller supplied. It is what a scraper package
-// registers and what NewScraper calls; the game is the datastore's, read
-// with GameOf, and auth is never nil (NewScraper hands over an empty one
-// for a caller that has no secrets).
-type Constructor func(b *mtgmatcher.Backend, auth Authenticator, opts Options) (Scraper, error)
+// options its caller supplied. It is what a scraper package registers and
+// what NewScraper calls; the game is the datastore's, read with GameOf, and
+// the secrets are the options', read with Options.Secret and
+// Options.OptionalSecret.
+type Constructor func(b *mtgmatcher.Backend, opts Options) (Scraper, error)
 
 type registration struct {
 	name  string
@@ -86,10 +86,9 @@ func GameOf(b *mtgmatcher.Backend) (Game, error) {
 // NewScraper builds the named scraper against the datastore, configured and
 // ready for Load. The name is the one the scraper registered ("cardmarket",
 // "tcg_market"); the game is read off the datastore, which is what the
-// scraper will match against, so the two cannot disagree. auth hands over
-// the secrets the scraper asks for, and may be nil for one that asks for
-// none.
-func NewScraper(b *mtgmatcher.Backend, name string, auth Authenticator, opts ...Option) (Scraper, error) {
+// scraper will match against, so the two cannot disagree. A scraper that
+// asks for a secret is built with WithAuthenticator; most ask for none.
+func NewScraper(b *mtgmatcher.Backend, name string, opts ...Option) (Scraper, error) {
 	if b == nil {
 		return nil, errors.New("mtgban: NewScraper needs a datastore")
 	}
@@ -111,11 +110,8 @@ func NewScraper(b *mtgmatcher.Backend, name string, auth Authenticator, opts ...
 		return nil, fmt.Errorf("%s was asked for its retail alone and its buylist "+
 			"alone at once, which leaves nothing to publish", name)
 	}
-	if auth == nil {
-		auth = MapAuthenticator{}
-	}
 
-	scraper, err := reg.build(b, auth, options)
+	scraper, err := reg.build(b, options)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", name, err)
 	}

@@ -33,24 +33,24 @@ func (registryPlain) Info() ScraperInfo          { return ScraperInfo{Name: "Pla
 
 func init() {
 	Register("registry_test", []Game{GameMagic, GamePokemon},
-		func(b *mtgmatcher.Backend, auth Authenticator, opts Options) (Scraper, error) {
-			secret, err := auth.Secret("REGISTRY_TEST_SECRET")
+		func(b *mtgmatcher.Backend, opts Options) (Scraper, error) {
+			secret, err := opts.Secret("REGISTRY_TEST_SECRET")
 			if err != nil {
 				return nil, err
 			}
 			return &registryScraper{backend: b, secret: secret, opts: opts}, nil
 		})
 	Register("registry_plain", []Game{GameMagic},
-		func(*mtgmatcher.Backend, Authenticator, Options) (Scraper, error) {
+		func(*mtgmatcher.Backend, Options) (Scraper, error) {
 			return registryPlain{}, nil
 		})
 }
 
 func TestNewScraperBuildsTheRegisteredScraper(t *testing.T) {
 	b := &mtgmatcher.Backend{Game: "magic"}
-	auth := MapAuthenticator{"REGISTRY_TEST_SECRET": "hunter2"}
 	logged := false
-	scraper, err := NewScraper(b, "registry_test", auth,
+	scraper, err := NewScraper(b, "registry_test",
+		WithAuthenticator(MapAuthenticator{"REGISTRY_TEST_SECRET": "hunter2"}),
 		WithLogCallback(func(string, ...any) { logged = true }),
 		WithMaxConcurrency(3),
 		WithAffiliate("aff"),
@@ -90,27 +90,27 @@ func TestNewScraperBuildsTheRegisteredScraper(t *testing.T) {
 
 func TestNewScraperRefusesWhatItCannotBuild(t *testing.T) {
 	magic := &mtgmatcher.Backend{Game: "magic"}
-	auth := MapAuthenticator{"REGISTRY_TEST_SECRET": "x"}
+	auth := WithAuthenticator(MapAuthenticator{"REGISTRY_TEST_SECRET": "x"})
 	cases := []struct {
 		name    string
 		backend *mtgmatcher.Backend
 		scraper string
-		auth    Authenticator
 		opts    []Option
 		want    string
 	}{
-		{"nil datastore", nil, "registry_test", auth, nil, "needs a datastore"},
-		{"unnamed game", &mtgmatcher.Backend{}, "registry_test", auth, nil, "names no game"},
-		{"unknown game", &mtgmatcher.Backend{Game: "chess"}, "registry_test", auth, nil, `"chess" is not one`},
-		{"unknown scraper", magic, "nope", auth, nil, `no scraper "nope" for Magic (registered: registry_plain, registry_test)`},
-		{"wrong game", &mtgmatcher.Backend{Game: "lorcana"}, "registry_test", auth, nil, `no scraper "registry_test" for Lorcana`},
-		{"missing secret", magic, "registry_test", nil, nil, "registry_test: missing secret: REGISTRY_TEST_SECRET"},
-		{"both halves", magic, "registry_test", auth, []Option{WithRetailOnly(), WithBuylistOnly()}, "leaves nothing to publish"},
-		{"half of a plain scraper", magic, "registry_plain", nil, []Option{WithRetailOnly()}, "asked for its retail alone, but does not implement"},
+		{"nil datastore", nil, "registry_test", []Option{auth}, "needs a datastore"},
+		{"unnamed game", &mtgmatcher.Backend{}, "registry_test", []Option{auth}, "names no game"},
+		{"unknown game", &mtgmatcher.Backend{Game: "chess"}, "registry_test", []Option{auth}, `"chess" is not one`},
+		{"unknown scraper", magic, "nope", []Option{auth}, `no scraper "nope" for Magic (registered: registry_plain, registry_test)`},
+		{"wrong game", &mtgmatcher.Backend{Game: "lorcana"}, "registry_test", []Option{auth}, `no scraper "registry_test" for Lorcana`},
+		{"no authenticator", magic, "registry_test", nil, "registry_test: missing secret: REGISTRY_TEST_SECRET"},
+		{"authenticator without the secret", magic, "registry_test", []Option{WithAuthenticator(MapAuthenticator{})}, "registry_test: missing secret: REGISTRY_TEST_SECRET"},
+		{"both halves", magic, "registry_test", []Option{auth, WithRetailOnly(), WithBuylistOnly()}, "leaves nothing to publish"},
+		{"half of a plain scraper", magic, "registry_plain", []Option{WithRetailOnly()}, "asked for its retail alone, but does not implement"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := NewScraper(tc.backend, tc.scraper, tc.auth, tc.opts...)
+			_, err := NewScraper(tc.backend, tc.scraper, tc.opts...)
 			if err == nil || !strings.Contains(err.Error(), tc.want) {
 				t.Fatalf("err = %v, want %q", err, tc.want)
 			}
@@ -120,7 +120,7 @@ func TestNewScraperRefusesWhatItCannotBuild(t *testing.T) {
 
 func TestNewScraperConfiguresOneHalf(t *testing.T) {
 	b := &mtgmatcher.Backend{Game: "pokemon"}
-	auth := MapAuthenticator{"REGISTRY_TEST_SECRET": "x"}
+	auth := WithAuthenticator(MapAuthenticator{"REGISTRY_TEST_SECRET": "x"})
 	cases := []struct {
 		name string
 		half Option
@@ -161,7 +161,7 @@ func TestRegisteredListsAGameSortedAndRegisterRefusesTwice(t *testing.T) {
 			t.Error("registering a name twice for one game did not panic")
 		}
 	}()
-	Register("registry_plain", []Game{GameMagic}, func(*mtgmatcher.Backend, Authenticator, Options) (Scraper, error) {
+	Register("registry_plain", []Game{GameMagic}, func(*mtgmatcher.Backend, Options) (Scraper, error) {
 		return registryPlain{}, nil
 	})
 }
@@ -192,13 +192,31 @@ func TestAuthenticators(t *testing.T) {
 	if _, err := m.Secret("empty"); !errors.Is(err, ErrMissingSecret) {
 		t.Errorf("empty map secret err = %v", err)
 	}
-	if got, err := OptionalSecret(m, "absent"); err != nil || got != "" {
+
+	var opts Options
+	WithAuthenticator(m).apply(&opts)
+	if opts.Authenticator == nil {
+		t.Fatal("WithAuthenticator set no authenticator")
+	}
+	if got, err := opts.Secret("a"); err != nil || got != "1" {
+		t.Errorf("options secret = %q, %v", got, err)
+	}
+	// An authenticator that lacks the secret and no authenticator at all are
+	// the same answer to the scraper asking.
+	for _, absent := range []Options{{}, {Authenticator: MapAuthenticator{}}} {
+		_, err := absent.Secret("REGISTRY_TEST_SECRET")
+		if !errors.Is(err, ErrMissingSecret) ||
+			!strings.Contains(err.Error(), "REGISTRY_TEST_SECRET") {
+			t.Errorf("secret with authenticator %v = %v", absent.Authenticator, err)
+		}
+	}
+	if got, err := opts.OptionalSecret("absent"); err != nil || got != "" {
 		t.Errorf("optional absent = %q, %v", got, err)
 	}
-	if got, err := OptionalSecret(nil, "absent"); err != nil || got != "" {
-		t.Errorf("optional with nil auth = %q, %v", got, err)
+	if got, err := (Options{}).OptionalSecret("absent"); err != nil || got != "" {
+		t.Errorf("optional with no authenticator = %q, %v", got, err)
 	}
-	if got, err := OptionalSecret(m, "a"); err != nil || got != "1" {
+	if got, err := opts.OptionalSecret("a"); err != nil || got != "1" {
 		t.Errorf("optional present = %q, %v", got, err)
 	}
 }

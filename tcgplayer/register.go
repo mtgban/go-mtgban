@@ -37,12 +37,12 @@ func WithSYPCatalog(catalog SYPCatalog) mtgban.Option {
 	return mtgban.WithResource(ResourceSYPCatalog, catalog)
 }
 
-func tcgCredentials(auth mtgban.Authenticator) (publicID, privateID string, err error) {
-	publicID, err = auth.Secret(SecretPublicKey)
+func tcgCredentials(opts mtgban.Options) (publicID, privateID string, err error) {
+	publicID, err = opts.Secret(SecretPublicKey)
 	if err != nil {
 		return "", "", err
 	}
-	privateID, err = auth.Secret(SecretPrivateKey)
+	privateID, err = opts.Secret(SecretPrivateKey)
 	if err != nil {
 		return "", "", err
 	}
@@ -51,8 +51,8 @@ func tcgCredentials(auth mtgban.Authenticator) (publicID, privateID string, err 
 
 // newTCGIndexScraper builds tcg_index: Magic is priced by its own sku-driven
 // scraper, every other game by the shared TCGGameIndex.
-func newTCGIndexScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-	publicID, privateID, err := tcgCredentials(auth)
+func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	publicID, privateID, err := tcgCredentials(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +90,8 @@ func newTCGIndexScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts m
 // newTCGMarketScraper builds tcg_market: Magic's Market scraper needs the
 // sku catalog to run, every other game's TCGGame resolves by name and
 // number alone.
-func newTCGMarketScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-	publicID, privateID, err := tcgCredentials(auth)
+func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	publicID, privateID, err := tcgCredentials(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -139,8 +139,8 @@ func newTCGMarketScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts 
 // sku catalog the same way its Market sibling does, every other game's
 // TCGGame resolves sealed products through the datastore's sealed product
 // map instead.
-func newTCGSealedScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-	publicID, privateID, err := tcgCredentials(auth)
+func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	publicID, privateID, err := tcgCredentials(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -187,8 +187,8 @@ func newTCGSealedScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts 
 // newTCGSYPListScraper builds tcg_syplist, served the same way for every
 // game it covers: the list names a sku and the catalog resolves it to a
 // product and finish the datastore knows.
-func newTCGSYPListScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-	authTicket, err := auth.Secret(SecretAuth)
+func newTCGSYPListScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	authTicket, err := opts.Secret(SecretAuth)
 	if err != nil {
 		return nil, err
 	}

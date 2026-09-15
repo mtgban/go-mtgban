@@ -11,7 +11,7 @@ func init() {
 			mtgban.GameMagic, mtgban.GameLorcana, mtgban.GamePokemon,
 			mtgban.GameFleshAndBlood,
 		},
-		func(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)
 			if err != nil {
 				return nil, err

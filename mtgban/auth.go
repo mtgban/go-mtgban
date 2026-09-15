@@ -18,7 +18,7 @@ var ErrMissingSecret = errors.New("missing secret")
 type Authenticator interface {
 	// Secret returns the named secret. One the authenticator does not hold
 	// is an error wrapping ErrMissingSecret, and the scraper asking decides
-	// whether it can do without: see OptionalSecret.
+	// whether it can do without: see Options.OptionalSecret.
 	Secret(name string) (string, error)
 }
 
@@ -48,14 +48,21 @@ func (m MapAuthenticator) Secret(name string) (string, error) {
 	return value, nil
 }
 
-// OptionalSecret asks for a secret the scraper works without: a missing one
-// comes back empty with no error, and any other failure as it was. A nil
-// authenticator holds nothing.
-func OptionalSecret(auth Authenticator, name string) (string, error) {
-	if auth == nil {
-		return "", nil
+// Secret asks the options' authenticator for a secret the scraper cannot do
+// without. Options carrying no authenticator hold nothing, and answer the
+// way one lacking the secret does, so a scraper fails the same way whether
+// its caller gave no authenticator or one without the secret.
+func (o Options) Secret(name string) (string, error) {
+	if o.Authenticator == nil {
+		return "", fmt.Errorf("%w: %s", ErrMissingSecret, name)
 	}
-	value, err := auth.Secret(name)
+	return o.Authenticator.Secret(name)
+}
+
+// OptionalSecret asks for a secret the scraper works without: a missing one
+// comes back empty with no error, and any other failure as it was.
+func (o Options) OptionalSecret(name string) (string, error) {
+	value, err := o.Secret(name)
 	if errors.Is(err, ErrMissingSecret) {
 		return "", nil
 	}

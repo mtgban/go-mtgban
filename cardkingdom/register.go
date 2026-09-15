@@ -11,7 +11,7 @@ func init() {
 	mtgban.Register("cardkingdom_sealed", []mtgban.Game{mtgban.GameMagic}, newScraperSealed)
 }
 
-func newScraper(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraper(b)
 	scraper.LogCallback = opts.LogCallback
 	scraper.Partner = opts.Affiliate
@@ -22,7 +22,7 @@ func newScraper(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Optio
 	return scraper, nil
 }
 
-func newScraperGraded(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraperGraded(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper, err := NewScraperGraded(b)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func newScraperGraded(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban
 	return scraper, nil
 }
 
-func newScraperSealed(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraperSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraperSealed(b)
 	scraper.LogCallback = opts.LogCallback
 	scraper.Partner = opts.Affiliate

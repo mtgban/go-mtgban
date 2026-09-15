@@ -50,7 +50,7 @@ constructor)` is called from a scraper package's `init`, under the names
 bantool has always enabled scrapers by (`cardmarket`, `tcg_market`,
 `sealed_ev`) and for the games each prices. A caller builds one with
 
-    scraper, err := mtgban.NewScraper(backend, "cardmarket", auth,
+    scraper, err := mtgban.NewScraper(backend, "cardmarket",
         mtgban.WithLogCallback(log.Printf),
         mtgban.WithAffiliate(partner),
         cardmarket.WithCatalog(catalog),
@@ -65,7 +65,11 @@ package wraps in a typed option and reads back with `Resource`, refusing a
 value of the wrong type at construction. `Authenticator` hands over secrets
 by name; the names are the environment variables that always carried them,
 so `EnvAuthenticator` is the plain reading and a test hands `MapAuthenticator`
-the same names. `OptionalSecret` is for a secret a scraper works without.
+the same names. It is itself an option (`WithAuthenticator`), since most
+scrapers need no secret at all: a constructor asks `Options.Secret` for one
+it cannot do without, which answers the same `ErrMissingSecret` whether the
+caller gave no authenticator or one that lacks the secret, and
+`Options.OptionalSecret` for a secret it works without.
 
 **What stays package-level, and why.** `Normalize`'s memo cache, the regex
 caches in the Gundam and Palworld rules and the `sync.OnceValue` tables are

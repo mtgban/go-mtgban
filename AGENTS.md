@@ -287,7 +287,7 @@ consumer blank-imports the games it needs, or blank-imports
 exactly one loader and hands back the `*Backend`, stamped with the game it
 was loaded as (`b.Game`). There is no global datastore: every lookup is a
 method on the backend a caller holds, a scraper is built on one
-(`mtgban.NewScraper(b, name, auth, opts...)`) and matches against it alone,
+(`mtgban.NewScraper(b, name, opts...)`) and matches against it alone,
 and a test builds the backend it needs and passes it. `RegisteredGames()`
 lists what is currently linked in. `internal/datastore.Read(game, path)` is
 `Open` over a path that may be a file, an `http(s)://` URL or a `b2://`

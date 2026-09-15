@@ -24,7 +24,7 @@ func init() {
 	mtgban.Register("coolstuffinc_sealed", sealedGames, newScraperSealed)
 }
 
-func newScraper(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper, err := NewScraper(b)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func newScraper(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Optio
 	return scraper, nil
 }
 
-func newScraperSealed(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraperSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper, err := NewScraperSealed(b)
 	if err != nil {
 		return nil, err
