@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // ExtractWCDNumber returns a World Championship collector number, which
@@ -35,6 +37,24 @@ func ExtractWCDNumber(str, prefix string, sideboard bool) string {
 	}
 
 	return ""
+}
+
+// dropSetCodes removes from a World Championship variation every field this
+// backend knows as a set code, since the listing names the set the deck's
+// card was printed from before the collector number ("2001 Tom van de Logt
+// 7ED 337") and ExtractNumber reads whatever comes first. A field ending in
+// a lowercase "a" is kept, as a collector number may be spelled that way
+// (30a).
+func dropSetCodes(b *mtgmatcher.Backend, variation string) string {
+	var kept []string
+	for field := range strings.FieldsSeq(variation) {
+		_, err := b.GetSet(field)
+		if err == nil && !strings.HasSuffix(field, "a") {
+			continue
+		}
+		kept = append(kept, field)
+	}
+	return strings.Join(kept, " ")
 }
 
 // IsDFCSameName reports whether a double-faced card carries the same name on

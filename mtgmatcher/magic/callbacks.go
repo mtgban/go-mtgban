@@ -1137,11 +1137,14 @@ func wcdNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 		// Copy this field so we can discard portions that have
 		// already been used for deduplication
 		cn := card.Number
+		// ExtractNumber reads the string it is given and nothing else, so
+		// the set the deck's card came from is dropped here instead.
+		variation := dropSetCodes(b, inCard.Variation)
 		// A listing naming only the player says nothing either way about
 		// the sideboard, and a deck can hold the card there alone - Leon
 		// Lindback's City of Brass is ll112sb and nothing else. Let the
 		// player decide it, and leave the rest to aliasing.
-		named := mtgmatcher.ExtractNumber(inCard.Variation) != ""
+		named := mtgmatcher.ExtractNumber(variation) != ""
 		if sideboard && !strings.HasSuffix(cn, "sb") {
 			return true
 		} else if !sideboard && named && strings.HasSuffix(cn, "sb") {
@@ -1159,7 +1162,7 @@ func wcdNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 		}
 		cn = strings.Replace(cn, prefix, "", 1)
 
-		num := mtgmatcher.ExtractNumber(inCard.Variation)
+		num := mtgmatcher.ExtractNumber(variation)
 		if num != "" {
 			cnn := cn
 			// Strip last character if it's a letter
