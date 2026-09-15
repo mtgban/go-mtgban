@@ -271,7 +271,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			case "V.2":
 				variation = "Prerelease"
 			default:
-				if magic.HasPromoPackPrinting(cardName) {
+				if magic.HasPromoPackPrinting(b, cardName) {
 					variation = "Promo Pack 2020"
 					edition = "Promos"
 					if cardName == "Sorcerous Spyglass" {
@@ -287,7 +287,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 		case "V.2":
 			variation = "Promo Pack"
 		default:
-			if magic.HasPromoPackPrinting(cardName) {
+			if magic.HasPromoPackPrinting(b, cardName) {
 				variation = "Promo Pack ELD"
 				edition = "Promos"
 			}
@@ -308,7 +308,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 		}
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
-		if magic.HasExtendedArtPrinting(cardName) {
+		if magic.HasExtendedArtPrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Retro Frame"
@@ -317,19 +317,19 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			case "V.3":
 				variation = "Extended Art"
 			}
-		} else if magic.HasBorderlessPrinting(cardName) {
+		} else if magic.HasBorderlessPrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Borderless"
 			case "V.2":
 				variation = "Retro Frame"
-				if magic.HasShowcasePrinting(cardName) {
+				if magic.HasShowcasePrinting(b, cardName) {
 					variation = "Showcase"
 				}
 			case "V.3":
 				variation = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasShowcasePrinting(cardName) {
+		} else if magic.HasShowcasePrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Showcase"
@@ -338,7 +338,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			case "V.3":
 				variation = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasRetroFramePrinting(cardName) {
+		} else if magic.HasRetroFramePrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Retro Frame"
@@ -409,7 +409,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 	case "Commander Legends: Extras":
 		if b.HasEtchedPrinting(cardName, "CMR") {
 			variation = "etched"
-		} else if magic.HasExtendedArtPrinting(cardName, "CMR") {
+		} else if magic.HasExtendedArtPrinting(b, cardName, "CMR") {
 			variation = "extended art"
 		}
 	case "Secret Lair Drop Series":
@@ -434,7 +434,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 				// listing that said nothing: the version tags the older
 				// sets carry are read from the image name further down, and
 				// a stamp would take them before they get there.
-				if (colon || variation == "") && magic.HasPromoPackPrinting(cardName) {
+				if (colon || variation == "") && magic.HasPromoPackPrinting(b, cardName) {
 					variation = "Promo Pack"
 				}
 			}
@@ -579,7 +579,7 @@ func promoSetBase(b *mtgmatcher.Backend, edition string) (base string, colon boo
 }
 
 func hasPromoPack(b *mtgmatcher.Backend, cardName string) bool {
-	if magic.HasPromoPackPrinting(cardName) {
+	if magic.HasPromoPackPrinting(b, cardName) {
 		return true
 	}
 	printings, err := b.Printings4Card(cardName)
