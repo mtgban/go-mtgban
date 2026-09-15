@@ -12,7 +12,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/jmcvetta/randutil"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
@@ -53,9 +52,7 @@ func run() int {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	mtgmatcher.SetGlobalDatastore(ds)
-
-	set, err := mtgmatcher.GetSet(*SetCodeOpt)
+	set, err := ds.GetSet(*SetCodeOpt)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, *SetCodeOpt, "not found")
 		return 1
@@ -158,7 +155,7 @@ func run() int {
 						return 1
 					}
 					// Validate card exists (ie in case of online-only printing)
-					co, err := mtgmatcher.GetUUID(item)
+					co, err := ds.GetUUID(item)
 					if err != nil {
 						j--
 						continue
@@ -213,8 +210,8 @@ func run() int {
 		}
 		w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 		for _, pick := range picks {
-			id, _ := mtgmatcher.MatchID(pick.CardID, pick.Finish == "foil", pick.Finish == "etched")
-			co, _ := mtgmatcher.GetUUID(id)
+			id, _ := ds.MatchID(pick.CardID, pick.Finish == "foil", pick.Finish == "etched")
+			co, _ := ds.GetUUID(id)
 			fmt.Fprintf(w, "%s\t%s|%s\n", pick.Sheet, co, co.Rarity)
 			if *CSVOutput {
 				CSVWriter.Write([]string{co.SetCode, co.Number, co.Name, fmt.Sprint(co.Foil)})

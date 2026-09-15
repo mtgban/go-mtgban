@@ -15,10 +15,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-func getListForDeck(setCode, deckName string) ([]string, error) {
+func getListForDeck(ds *mtgmatcher.Backend, setCode, deckName string) ([]string, error) {
 	var list []string
 
-	set, err := mtgmatcher.GetSet(setCode)
+	set, err := ds.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func getListForDeck(setCode, deckName string) ([]string, error) {
 
 		for _, board := range [][]mtgmatcher.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
 			for _, card := range board {
-				uuid, err := mtgmatcher.MatchID(card.UUID, card.IsFoil)
+				uuid, err := ds.MatchID(card.UUID, card.IsFoil)
 				if err != nil {
 					continue
 				}
@@ -43,10 +43,10 @@ func getListForDeck(setCode, deckName string) ([]string, error) {
 	return list, nil
 }
 
-func getListForSealed(setCode, sealedUUID string) ([]string, error) {
+func getListForSealed(ds *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, error) {
 	var list []string
 
-	set, err := mtgmatcher.GetSet(setCode)
+	set, err := ds.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -60,28 +60,28 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := mtgmatcher.MatchID(content.UUID, content.Foil)
+					uuid, err := ds.MatchID(content.UUID, content.Foil)
 					if err != nil {
 						return nil, err
 					}
 					list = append(list, uuid)
 
 				case "pack":
-					boosterList, err := mtgmatcher.BoosterGen(content.Set, content.Code)
+					boosterList, err := ds.BoosterGen(content.Set, content.Code)
 					if err != nil {
 						return nil, err
 					}
 					list = append(list, boosterList...)
 
 				case "sealed":
-					sealedList, err := getListForSealed(content.Set, content.UUID)
+					sealedList, err := getListForSealed(ds, content.Set, content.UUID)
 					if err != nil {
 						return nil, err
 					}
 					list = append(list, sealedList...)
 
 				case "deck":
-					deckList, err := getListForDeck(content.Set, content.Name)
+					deckList, err := getListForDeck(ds, content.Set, content.Name)
 					if err != nil {
 						return nil, err
 					}
@@ -90,28 +90,28 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 				case "variable":
 					for _, config := range content.Configs {
 						for _, card := range config["card"] {
-							uuid, err := mtgmatcher.MatchID(card.UUID, card.Foil)
+							uuid, err := ds.MatchID(card.UUID, card.Foil)
 							if err != nil {
 								return nil, err
 							}
 							list = append(list, uuid)
 						}
 						for _, pack := range config["pack"] {
-							boosterList, err := mtgmatcher.BoosterGen(pack.Set, pack.Code)
+							boosterList, err := ds.BoosterGen(pack.Set, pack.Code)
 							if err != nil {
 								return nil, err
 							}
 							list = append(list, boosterList...)
 						}
 						for _, sealed := range config["sealed"] {
-							sealedList, err := getListForSealed(sealed.Set, sealed.UUID)
+							sealedList, err := getListForSealed(ds, sealed.Set, sealed.UUID)
 							if err != nil {
 								return nil, err
 							}
 							list = append(list, sealedList...)
 						}
 						for _, deck := range config["deck"] {
-							deckList, err := getListForDeck(deck.Set, deck.Name)
+							deckList, err := getListForDeck(ds, deck.Set, deck.Name)
 							if err != nil {
 								return nil, err
 							}
@@ -158,13 +158,12 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	mtgmatcher.SetGlobalDatastore(ds)
 
-	os.Exit(run())
+	os.Exit(run(ds))
 }
 
-func run() int {
-	set, err := mtgmatcher.GetSet(*SetCodeOpt)
+func run(ds *mtgmatcher.Backend) int {
+	set, err := ds.GetSet(*SetCodeOpt)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, *SetCodeOpt, "not found")
 		return 1
@@ -179,7 +178,7 @@ func run() int {
 	for _, product := range set.SealedProduct {
 		var list []string
 		var err error
-		list, err = getListForSealed(set.Code, product.UUID)
+		list, err = getListForSealed(ds, set.Code, product.UUID)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, product.Name, err)
 			continue
@@ -190,7 +189,7 @@ func run() int {
 		}
 
 		for uuid := range dedup {
-			co, err := mtgmatcher.GetUUID(uuid)
+			co, err := ds.GetUUID(uuid)
 			if err != nil {
 				continue
 			}
