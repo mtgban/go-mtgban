@@ -275,7 +275,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			card = entry.foil
 		}
 		if b.Sets[card.SetCode] == nil {
-			mtgmatcher.Logger.Printf("dropping %s: its set %q is not in the datastore", card.ID, card.SetCode)
+			b.Logf("dropping %s: its set %q is not in the datastore", card.ID, card.SetCode)
 			continue
 		}
 
