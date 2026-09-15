@@ -28,15 +28,17 @@ type TOAMagic struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 
 	client *http.Client
 }
 
-// NewScraper returns a scraper.
-func NewScraper() *TOAMagic {
-	toa := TOAMagic{}
+// NewScraper returns a scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *TOAMagic {
+	toa := TOAMagic{backend: b}
 	toa.inventory = mtgban.InventoryRecord{}
 	toa.MaxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
@@ -163,7 +165,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 			return
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := toa.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -190,7 +192,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := toa.backend.GetUUID(probe)
 					toa.printf("- %s", card)
 				}
 			}
