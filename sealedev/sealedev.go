@@ -49,6 +49,7 @@ type Scraper struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
+	backend     *mtgmatcher.Backend
 	banpriceKey string
 	prices      *BANPriceResponse
 }
@@ -159,8 +160,9 @@ var evParameters = []evConfig{
 }
 
 // NewScraper returns an EV scraper, signing its price lookups with sig.
-func NewScraper(sig string) *Scraper {
+func NewScraper(b *mtgmatcher.Backend, sig string) *Scraper {
 	ss := Scraper{}
+	ss.backend = b
 	ss.inventory = mtgban.InventoryRecord{}
 	ss.buylist = mtgban.BuylistRecord{}
 	ss.banpriceKey = sig
@@ -197,7 +199,7 @@ func valueFromCache(picks []string, unit map[string]float64, probabilities []flo
 }
 
 func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
-	co, err := mtgmatcher.GetUUID(uuid)
+	co, err := ss.backend.GetUUID(uuid)
 	if err != nil {
 		return nil, []string{err.Error()}
 	}
@@ -208,7 +210,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 	var allTheErrors []string
 
 	// Enumerate the full universe of possible cards and their probabilities.
-	probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
+	probs, err := ss.backend.GetProbabilitiesForSealed(setCode, productUUID)
 	if len(probs) == 0 {
 		if err == nil {
 			err = errors.New("no probabilities found")
@@ -224,7 +226,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		probabilities[i] = probs[i].Probability
 
 		// Serialized (and unresolvable) cards never count towards the EV.
-		co, err := mtgmatcher.GetUUID(probs[i].UUID)
+		co, err := ss.backend.GetUUID(probs[i].UUID)
 		if err != nil || co.HasPromoType(magic.PromoTypeSerialized) || co.HasPromoType(magic.PromoTypeCosmicFoil) {
 			skipped[probs[i].UUID] = true
 		}
@@ -245,7 +247,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 			if skipped[pick] {
 				continue
 			}
-			cache[pick] = maxStorePrice(pick, priceSource, evParameters[i].SourceStores)
+			cache[pick] = maxStorePrice(ss.backend, pick, priceSource, evParameters[i].SourceStores)
 		}
 		unitPrices[i] = cache
 	}
@@ -260,7 +262,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		datasets[i] = append(datasets[i], valueFromCache(picks, unitPrices[i], probabilities))
 	}
 
-	if !mtgmatcher.SealedIsRandom(setCode, productUUID) {
+	if !ss.backend.SealedIsRandom(setCode, productUUID) {
 		// Fixed contents: a simulation would always draw the same cards, so its
 		// value equals the deterministic probability EV. Copy it instead of
 		// running a pointless Monte Carlo.
@@ -283,7 +285,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 			wg.Go(func() {
 				local := make([][]float64, len(evParameters))
 				for range repeatsChannel {
-					simPicks, err := mtgmatcher.GetPicksForSealed(setCode, productUUID)
+					simPicks, err := ss.backend.GetPicksForSealed(setCode, productUUID)
 					if err != nil {
 						mu.Lock()
 						if !slices.Contains(allTheErrors, err.Error()) {
@@ -344,7 +346,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 
 		if evParameters[i].TargetsBuylist {
 			var link string
-			co, err := mtgmatcher.GetUUID(productUUID)
+			co, err := ss.backend.GetUUID(productUUID)
 			if err == nil {
 				link = "/search?q=contents:" + url.QueryEscape("\""+co.Name+"\"")
 			}
@@ -397,10 +399,10 @@ func (ss *Scraper) Load(ctx context.Context) error {
 	var selected string
 
 	ss.printf("Loading products")
-	sets := mtgmatcher.GetAllSets()
+	sets := ss.backend.GetAllSets()
 	var uuids []string
 	for _, code := range sets {
-		set, _ := mtgmatcher.GetSet(code)
+		set, _ := ss.backend.GetSet(code)
 
 		switch set.Code {
 		// Skip products without Sealed or Booster information
@@ -443,7 +445,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 	}
 
 	ss.printf("Loading BAN prices")
-	prices, err := loadPrices(ctx, ss.banpriceKey, selected)
+	prices, err := loadPrices(ctx, ss.backend, ss.banpriceKey, selected)
 	if err != nil {
 		return err
 	}
@@ -457,7 +459,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 			break
 		}
 
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := ss.backend.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
