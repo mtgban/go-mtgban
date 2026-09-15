@@ -9,7 +9,7 @@ import (
 )
 
 func TestPreprocessMagic(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		display   string
@@ -57,7 +57,7 @@ func TestPreprocessMagic(t *testing.T) {
 		// says. The code's reading is the one that answers to the 2.
 		{"Spectacular Spider-Man (Borderless) (MEDIA-002) - Media Promos Foil", "media", "Media Promos", 0, "media", "002"},
 	} {
-		card, err := preprocessMagic(VSProduct{
+		card, err := preprocessMagic(b, VSProduct{
 			DisplayName: tt.display,
 			ProductData: VSProductData{
 				Set:                       jsonflex.String(tt.set),
@@ -91,7 +91,7 @@ func TestPreprocessMagicFinish(t *testing.T) {
 		{"Aether Channeler (GAME-011) - Store Championships Foil", "foil", true},
 		{"Aether Channeler (GAME-011) - Store Championships", "foil", false},
 	} {
-		card, err := preprocessMagic(VSProduct{
+		card, err := preprocessMagic(&mtgmatcher.Backend{}, VSProduct{
 			DisplayName:    tt.display,
 			SelectedFinish: tt.finish,
 		})
@@ -107,7 +107,7 @@ func TestPreprocessMagicFinish(t *testing.T) {
 // Etched is said only in the display name, in two spellings, and it rides in
 // the variation because that is the only place the matcher reads it from.
 func TestPreprocessMagicEtched(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		display   string
@@ -125,7 +125,7 @@ func TestPreprocessMagicEtched(t *testing.T) {
 		// where the listing says it does, so the word survives.
 		{"Force of Negation (MH1-009) - Modern Horizons 1 Timeshifts Etched Foil", "mh1", "Modern Horizons", 9, "9 Etched"},
 	} {
-		card, err := preprocessMagic(VSProduct{
+		card, err := preprocessMagic(b, VSProduct{
 			DisplayName: tt.display,
 			ProductData: VSProductData{
 				Set:                       jsonflex.String(tt.set),
@@ -362,7 +362,7 @@ func TestFlexibleSetField(t *testing.T) {
 // and the letter behind an Unstable variant both fall off it, and the two
 // printings then answer to one number.
 func TestPreprocessMagicSpelledNumber(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		display   string
@@ -383,7 +383,7 @@ func TestPreprocessMagicSpelledNumber(t *testing.T) {
 		product := VSProduct{DisplayName: tt.display, SelectedFinish: "Foil"}
 		product.ProductData.SetName = tt.setName
 		product.ProductData.CollectorNumberNormalized = tt.number
-		card, err := preprocessMagic(product)
+		card, err := preprocessMagic(b, product)
 		if err != nil {
 			t.Errorf("%s: %v", tt.display, err)
 			continue
@@ -397,7 +397,7 @@ func TestPreprocessMagicSpelledNumber(t *testing.T) {
 // TestPreprocessMagicWording pins the name a display name really states and
 // the wording standing beside it. Cutting at the first bracket loses both.
 func TestPreprocessMagicWording(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		display   string
@@ -428,7 +428,7 @@ func TestPreprocessMagicWording(t *testing.T) {
 		product := VSProduct{DisplayName: tt.display}
 		product.ProductData.SetName = tt.setName
 		product.ProductData.CollectorNumberNormalized = tt.number
-		card, err := preprocessMagic(product)
+		card, err := preprocessMagic(b, product)
 		if err != nil {
 			t.Errorf("%s: %v", tt.display, err)
 			continue
@@ -444,7 +444,7 @@ func TestPreprocessMagicWording(t *testing.T) {
 // with none, the prose reading of the edition aliases and the storefront's
 // own code stands as the edition, which names no set at all.
 func TestPreprocessMagicSlashedNumber(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		display   string
@@ -458,7 +458,7 @@ func TestPreprocessMagicSlashedNumber(t *testing.T) {
 	} {
 		product := VSProduct{DisplayName: tt.display}
 		product.ProductData.SetName = tt.setName
-		card, err := preprocessMagic(product)
+		card, err := preprocessMagic(b, product)
 		if err != nil {
 			t.Errorf("%s: %v", tt.display, err)
 			continue
@@ -477,7 +477,7 @@ func TestCardTable(t *testing.T) {
 			t.Errorf("%q corrects to itself", written)
 		}
 		product := VSProduct{DisplayName: written + " (EOS-040) - Edge of Eternities: Stellar Sights"}
-		card, err := preprocessMagic(product)
+		card, err := preprocessMagic(&mtgmatcher.Backend{}, product)
 		if err != nil {
 			t.Errorf("%s: %v", written, err)
 			continue
@@ -493,7 +493,7 @@ func TestCardTable(t *testing.T) {
 // the code "mh1" and the name "Modern Horizons", both of which are the parent -
 // so the display name's own tail is the only thing that does.
 func TestPreprocessMagicSubset(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		display string
@@ -520,7 +520,7 @@ func TestPreprocessMagicSubset(t *testing.T) {
 		product.ProductData.Set = jsonflex.String(tt.set)
 		product.ProductData.SetName = tt.setName
 		product.ProductData.CollectorNumberNormalized = tt.number
-		card, err := preprocessMagic(product)
+		card, err := preprocessMagic(b, product)
 		if err != nil {
 			t.Errorf("%s: %v", tt.display, err)
 			continue
