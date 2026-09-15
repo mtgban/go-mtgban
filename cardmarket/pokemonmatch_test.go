@@ -2,11 +2,13 @@ package cardmarket
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
@@ -39,11 +41,11 @@ const pokemonDatastore = `{
 // twelve Japanese promos under their ##/XY-P numbers, and a numbered product
 // is asking for one of them.
 func TestMatchProductForeignExpansion(t *testing.T) {
-	installDatastore(t, "pokemon", pokemonDatastore)
+	b := datastoreBackend(t, "pokemon", pokemonDatastore)
 
-	mkm, err := NewScraperIndex(mtgban.GamePokemon)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GamePokemon) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	for _, tt := range []struct {
 		expansion, name, number, want string
@@ -129,7 +131,7 @@ func TestNoPrintingSkipsBasicEnergy(t *testing.T) {
 		{"another game's energy still refuses", mtgban.GameYuGiOh, "Water Energy", errNoPrinting},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			mkm, err := NewScraperIndex(tt.game)
+			mkm, err := NewScraperIndex(&mtgmatcher.Backend{Game: strings.ToLower(string(tt.game))})
 			if err != nil {
 				t.Fatalf("NewScraperIndex(%v) = %v", tt.game, err)
 			}
@@ -165,10 +167,10 @@ const letteredDatastore = `{
 // prefixed spelling reaches them too. Only Alternate Art Promos was tried
 // before, so every League & Championship product refused.
 func TestMatchPokemonLettered(t *testing.T) {
-	installDatastore(t, "pokemon", letteredDatastore)
-	mkm, err := NewScraperIndex(mtgban.GamePokemon)
+	b := datastoreBackend(t, "pokemon", letteredDatastore)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GamePokemon) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 
 	for _, tt := range []struct {

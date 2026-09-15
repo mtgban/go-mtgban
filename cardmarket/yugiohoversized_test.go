@@ -5,8 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
@@ -34,10 +32,10 @@ const yugiohOversizedDatastore = `{
 // it under, and that the ordinary card of that same deck and number is not
 // what it reaches.
 func TestYugiohOversized(t *testing.T) {
-	installDatastore(t, "yugioh", yugiohOversizedDatastore)
-	mkm, err := NewScraperIndex(mtgban.GameYuGiOh)
+	b := datastoreBackend(t, "yugioh", yugiohOversizedDatastore)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameYuGiOh) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 
 	for _, tt := range []struct {
