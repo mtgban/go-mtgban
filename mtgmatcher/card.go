@@ -143,17 +143,10 @@ func IsBasicLand(name string) bool {
 // IsGenericPromo reports a promo with no more specific kind, one that
 // probably needs further analysis to categorize: it excludes every promo the
 // other predicates recognise, and tokens, then accepts the leftovers that say
-// Promo or name a store event. Token names are read from the global datastore;
-// matcher rules use Backend.IsGenericPromo to stay on their own snapshot.
-func (c *InputCard) IsGenericPromo() bool {
-	return currentBackend().IsGenericPromo(c)
-}
-
-// IsGenericPromo classifies the input's promo wording while resolving token
-// names against this backend. Rules must use this method rather than the
-// InputCard convenience method, which consults the global datastore.
+// Promo or name a store event. Token names are resolved against this backend,
+// so a rule reads the snapshot it was handed.
 func (b *Backend) IsGenericPromo(c *InputCard) bool {
-	return !c.IsBaB() && !c.IsPromoPack() && !c.IsPrerelease() && !c.IsSDCC() &&
+	return !c.IsBaB() && !b.IsPromoPack(c) && !c.IsPrerelease() && !c.IsSDCC() &&
 		!c.IsRetro() &&
 		!c.Contains("Year of the") && // tcg
 		!c.Contains("Deckmasters") && // no real promos here, just foils
@@ -172,21 +165,21 @@ func (b *Backend) IsGenericPromo(c *InputCard) bool {
 			c.Contains("Unique")) // mtgs
 }
 
-// IsPrerelease reports a prerelease printing; SCG spells it Preview.
-func (c *InputCard) IsPrerelease() bool {
-	return c.Contains("Prerelease") ||
-		c.Contains("Preview") // scg
-}
-
 // IsPromoPack reports a promo pack printing, by name, by the stamp it carries,
 // or by a collector number ending in p, which the 30th Anniversary numbers
 // reuse for something else.
-func (c *InputCard) IsPromoPack() bool {
+func (b *Backend) IsPromoPack(c *InputCard) bool {
 	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
 		Contains(c.Variation, "Planeswalker Stamp") ||
 		Contains(c.Variation, "Silver Stamped") ||
 		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
+}
+
+// IsPrerelease reports a prerelease printing; SCG spells it Preview.
+func (c *InputCard) IsPrerelease() bool {
+	return c.Contains("Prerelease") ||
+		c.Contains("Preview") // scg
 }
 
 // IsJPN reports a Japanese printing, by language or by the magazines that
