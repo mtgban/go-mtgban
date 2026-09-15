@@ -3,95 +3,101 @@
 A GitHub Actions self-hosted runner, labeled `cardmarket-market`, for the
 three `cardmarket_market` workflows too large for `ubuntu-latest`'s ~5-6h
 practical job ceiling even filtered: Magic, Pokemon and YuGiOh (see each
-workflow's own comment). Deployed as a DigitalOcean App Platform `worker`
-component - no HTTP endpoint, just a background process DO keeps running
-and restarts on crash - built from `Dockerfile` in this directory via DO's
-GitHub integration, not a separately-pushed image.
+workflow's own comment). Deployed as a DigitalOcean Droplet
+(`s5-2vcpu-6gb-30gb`, 2 vCPU, 6GB RAM, 30GB disk, $44.64/mo), provisioned
+once from `provision.sh` as cloud-init user-data - no Dockerfile, no
+managed platform, a plain persistent VM running the runner as a systemd
+service.
 
-## Why App Platform over a Droplet
+## Why a Droplet, not App Platform
 
-Sized at `basic-s` (1 shared vCPU, 2GB RAM, $20/mo). Started at `basic-xs`
-(1GB, $10/mo) on the reasoning that the scraping itself is light (Market
-walks its catalog at concurrency 1, mostly blocked on network I/O) and a
-tier above the $5 floor was cheap insurance - measured wrong: Magic's
-first real run OOM'd during `go install` alone, before its catalog ever
-reached `mtgmatcher`. Sampled `/v2/monitoring/metrics/apps/memory_percentage`
-through the crash: 8.8% baseline, 52.0% two and a half minutes into the
-build, 85.4% (~874MB of 1024MB) two minutes after that, then a sample two
-minutes later already back down to 9.9% - the process had been killed
-and its memory freed. GitHub's own "the self-hosted runner lost
-communication with the server" landed about eight minutes after that
-drop, reading as a heartbeat timeout catching an already-dead container,
-not an instant crash report.
+Started on App Platform (`.github/runner`'s earlier history), sized
+`basic-xs` then `basic-s` - both measured wrong. Magic's first real run
+OOM'd during `go install` alone on `basic-xs` (1GB); doubling to `basic-s`
+(2GB) got past the build but died mid-catalog-load instead, still
+climbing when it did (sampled `/v2/monitoring/metrics/apps/memory_percentage`
+through both crashes - see the PRs that made each change for the full
+numbers). Moved to a Droplet for two reasons neither App Platform tier
+fixed:
 
-App Platform's `worker` component is a plain long-running background
-process, the same shape a GitHub Actions runner already is, so nothing
-about the runner's own design needs to change to run here versus a
-Droplet - the tradeoff is a Droplet's registration survives a restart on
-disk, where App Platform's containers are stateless and re-register fresh
-every time. `entrypoint.sh` is written around that: it fetches a new
-registration token from the GitHub API at every start and deregisters on
-shutdown, so a redeploy or a crash never leaves a stale runner behind for
-the next start to reconcile.
+- **`deploy_on_push` killed two real runs outright.** App Platform
+  redeploys on every push to `master`, anywhere in the monorepo,
+  regardless of `source_dir` - a known, still-open DO limitation, not
+  something the app spec could work around short of disabling it
+  entirely. A Droplet has no equivalent mechanism at all: it only
+  changes when something explicitly touches it. Not a workaround - the
+  whole failure class doesn't exist here.
+- **Debugging the OOMs meant reflecting into DO's Monitoring API** with
+  ~2-minute sampling and a real blind spot right around each crash. On a
+  Droplet, `ssh` and `free -m`/`htop` watch it live, and
+  `doctl compute droplet-action resize` grows it in place if 6GB turns
+  out not to be enough either - no app-spec redeploy cycle needed to
+  find out.
+
+The registration model is simpler here too: App Platform's containers
+are stateless and get rebuilt on every deploy, so the old `entrypoint.sh`
+re-registered fresh on every start and deregistered on every stop. A
+Droplet is a persistent VM - `provision.sh` registers once at boot and
+installs the runner as a systemd service (`svc.sh`, the runner's own
+installer), which just restarts itself on crash or reboot and keeps
+using the same on-disk registration rather than needing a fresh one each
+time.
 
 ## Why a GitHub App instead of a PAT
 
-`entrypoint.sh` authenticates as a GitHub App
-(`mtgban-cardmarket-runner`, App id `4953260`, installed on
-`mtgban/go-mtgban` alone with `Administration: Read and write` and
-nothing else) rather than a personal access token. `mtgban` enforces a
-maximum PAT lifetime org-wide, so a PAT here would need a standing
-reminder to rotate before it silently expired - probably not on the next
-restart, since the running container never re-touches its credential
-between start and stop, but on some later one, possibly during a
-schedule nobody's watching closely. A GitHub App's private key carries no
-forced expiration; it's revoked or rotated only when someone actually
-means to. The key itself never calls the GitHub API directly - it signs
-a ten-minute JWT, which entrypoint.sh trades for an hour-long
-installation token right before each of the two calls that need one
-(registration, then again at deregistration, since a run can last up to
-12h and the first token would be long expired by the time the second is
-needed).
+Authenticates as a GitHub App (`mtgban-cardmarket-runner`, App id
+`4953260`, installed on `mtgban/go-mtgban` alone with
+`Administration: Read and write` and nothing else) rather than a
+personal access token. `mtgban` enforces a maximum PAT lifetime
+org-wide, so a PAT here would need a standing reminder to rotate before
+it silently expired - not on the next restart necessarily (the running
+service never re-touches its credential once registered), but on some
+later one, possibly during a schedule nobody's watching closely. A
+GitHub App's private key carries no forced expiration; it's revoked or
+rotated only when someone actually means to. The key itself never calls
+the GitHub API directly - `provision.sh` signs a ten-minute JWT with it
+once, trades that for an hour-long installation token, and uses that to
+fetch a registration token for `config.sh` - the whole dance happens
+once at boot, not on every job.
 
 ## One-time setup
 
 Already done for `mtgban-cardmarket-runner` (App id `4953260`,
-installation id `161916144`, both already in `app.yaml` - ids alone
+installation id `161916144`, both already in `provision.sh` - ids alone
 grant nothing without the private key, safe to commit). What's left:
 
-1. **Deploy the app**: `doctl apps create --spec .github/runner/app.yaml`
-   from a local copy of `app.yaml` with `GH_APP_PRIVATE_KEY_B64`'s
-   placeholder replaced by `base64 < private-key.pem | tr -d '\n')` of
-   the App's downloaded `.pem` - never commit that copy. DO's GitHub App
-   is already installed org-wide on `mtgban` (confirmed via the API
-   before writing this), so no separate authorization step is needed.
+1. **Create the Droplet**: from a local, uncommitted copy of
+   `provision.sh` with `GH_APP_PRIVATE_KEY_B64`'s placeholder replaced by
+   the same base64'd private key the App Platform deploy used
+   (`base64 < private-key.pem | tr -d '\n'` of the App's downloaded
+   `.pem` - the same App, so the same key works; no need to generate a
+   new one) -
+
+   ```
+   doctl compute droplet create cardmarket-market \
+     --region sfo3 \
+     --size s5-2vcpu-6gb-30gb \
+     --image ubuntu-24-04-x64 \
+     --ssh-keys <your SSH key fingerprint(s), comma-separated> \
+     --user-data-file <path to your local, filled-in copy of provision.sh>
+   ```
+
+   Never commit that local copy.
 2. Confirm the runner shows up at
    <https://github.com/mtgban/go-mtgban/settings/actions/runners> - idle,
-   labeled `cardmarket-market`.
-
-**`deploy_on_push` is deliberately `false`.** `source_dir` scopes the
-build context, not the deploy trigger - DO redeploys on every push to
-`master`, anywhere in the monorepo, regardless of `source_dir` (a known,
-still-open DO limitation, not something this config can work around).
-Confirmed live: an unrelated workflow-file merge redeployed this app and
-killed a Market job 13 minutes into a run expected to take hours, on a
-repo that merges many times a day. Redeploy by hand after changing
-anything in this directory:
-
-```
-doctl apps update <app-id> --spec .github/runner/app.yaml
-```
-
-using a local copy with the real `GH_APP_PRIVATE_KEY_B64` filled in, or
-`doctl apps spec get <app-id>` first to round-trip the already-set secret
-(it comes back as DO's own encrypted placeholder, safe to resubmit
-unchanged) without ever needing the real value again.
+   labeled `cardmarket-market`. Cloud-init takes a minute or two to run
+   before it appears.
 
 To rotate the private key later (only ever a deliberate choice, nothing
-forces it): generate a new one from the App's settings page, set the new
-base64'd value the same way (`doctl apps update <app-id> --spec <local
-copy>` or the dashboard's encrypted env var UI), redeploy, and revoke the
-old key once the new one is confirmed working.
+forces it): generate a new one from the App's settings page, `ssh` in,
+stop the service (`sudo ./svc.sh stop` in `/home/runner`), re-run the
+registration portion of `provision.sh` by hand with the new key, then
+`sudo ./svc.sh start` again.
+
+To resize if 6GB isn't enough either: `doctl compute droplet-action
+resize <droplet-id> --size <new-size> --resize-disk` (add
+`--resize-disk` only if the new size's disk is also larger; the runner's
+own registration survives a resize untouched, it's the same disk).
 
 ## What's still a manual decision
 
