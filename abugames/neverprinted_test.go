@@ -12,6 +12,7 @@ import (
 // tutorial card, or the same card reprinted out of a different set - and
 // carried the storefront's price there, beside the price already on it.
 func TestNeverPrinted(t *testing.T) {
+	b := &mtgmatcher.Backend{}
 	for _, test := range []struct {
 		desc string
 		card ABUCard
@@ -25,9 +26,9 @@ func TestNeverPrinted(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err == nil {
-				_, err = mtgmatcher.Match(in)
+				_, err = b.Match(in)
 			}
 			if err == nil {
 				t.Errorf("preprocess(%q) = %v, want a refusal", card.DisplayTitle, in)
