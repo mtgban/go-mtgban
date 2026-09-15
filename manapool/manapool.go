@@ -17,14 +17,16 @@ type Manapool struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 }
 
 // NewScraper returns a scraper pricing Mana Pool's singles, both what they
-// sell and what they buy.
-func NewScraper() *Manapool {
-	mp := Manapool{}
+// sell and what they buy, matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Manapool {
+	mp := Manapool{backend: b}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
 }
@@ -40,8 +42,8 @@ func (mp *Manapool) printf(format string, a ...any) {
 // editions are dropped when the datastore is built - oversize, minigames,
 // front cards, playtest - and a sheet of tokens the datastore carries no set
 // for is dropped the same way, which is what the edition answers for.
-func isUnindexed(card Product) bool {
-	_, err := mtgmatcher.GetSet(card.SetCode)
+func isUnindexed(b *mtgmatcher.Backend, card Product) bool {
+	_, err := b.GetSet(card.SetCode)
 	return err != nil
 }
 
@@ -61,16 +63,16 @@ func (mp *Manapool) Load(ctx context.Context) error {
 // price records every row of the list the store answers with.
 func (mp *Manapool) price(pricelist []Product) {
 	for _, card := range pricelist {
-		cardID, err := mtgmatcher.MatchID(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
+		cardID, err := mp.backend.MatchID(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
 		if err != nil {
-			if !isUnindexed(card) {
+			if !isUnindexed(mp.backend, card) {
 				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
 			}
 			continue
 		}
 
 		// Validate language
-		co, err := mtgmatcher.GetUUID(cardID)
+		co, err := mp.backend.GetUUID(cardID)
 		if err != nil {
 			continue
 		}
