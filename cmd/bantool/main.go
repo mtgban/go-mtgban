@@ -410,7 +410,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"magiccorner": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper, err := magiccorner.NewScraper()
+				scraper, err := magiccorner.NewScraper(b)
 				if err != nil {
 					return nil, err
 				}
