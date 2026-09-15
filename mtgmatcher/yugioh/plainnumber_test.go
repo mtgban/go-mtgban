@@ -2,8 +2,6 @@ package yugioh
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPlainNumber pins the shorthand this game's numbers reduce to. The whole
@@ -36,11 +34,11 @@ func TestPlainNumber(t *testing.T) {
 // TestPlainNumberMatchesLoader pins the rule to what the loader stored, and
 // that an ordinal already reduced has nothing left to fold.
 func TestPlainNumberMatchesLoader(t *testing.T) {
-	loadBackend(t)
+	b := loadBackend(t)
 
 	var seen, folded int
-	for _, code := range mtgmatcher.GetAllSets() {
-		set, err := mtgmatcher.GetSet(code)
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
 		if err != nil {
 			continue
 		}
