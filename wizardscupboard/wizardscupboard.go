@@ -29,12 +29,14 @@ type Wizardscupboard struct {
 	inventoryDate  time.Time
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	inventory mtgban.InventoryRecord
 }
 
-// NewScraper returns a buylist scraper.
-func NewScraper() *Wizardscupboard {
-	wc := Wizardscupboard{}
+// NewScraper returns a buylist scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Wizardscupboard {
+	wc := Wizardscupboard{backend: b}
 	wc.inventory = mtgban.InventoryRecord{}
 	wc.MaxConcurrency = defaultConcurrency
 	return &wc
@@ -165,7 +167,7 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 				return
 			}
 
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := wc.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				return
 			} else if err != nil {
@@ -179,7 +181,7 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 					if errors.As(err, &alias) {
 						probes := alias.Probe()
 						for _, probe := range probes {
-							card, _ := mtgmatcher.GetUUID(probe)
+							card, _ := wc.backend.GetUUID(probe)
 							wc.printf("- %s", card)
 						}
 					}
