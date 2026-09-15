@@ -502,7 +502,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 				if banKey == "" {
 					return nil, errors.New("missing BAN_API_KEY env var")
 				}
-				scraper := sealedev.NewScraper(banKey)
+				scraper := sealedev.NewScraper(b, banKey)
 				scraper.Affiliate = os.Getenv("TCG_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
