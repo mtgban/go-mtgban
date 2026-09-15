@@ -96,6 +96,71 @@ func tokenPairNumbers(number string) (n1, n2 string, ok bool) {
 	return "", "", false
 }
 
+// TokenPairAnchorUUIDs anchors both faces of a two-sided token blueprint
+// independently by identity, given the blueprint's own composite
+// collector_number (tokenPairNumbers) and its own claimed edition - rather
+// than the single-number-anchored-against-the-whole-name lookups Preprocess
+// itself uses above, which only resolve a pairing already known one way or
+// another (native or previously derived). Exists purely for offline
+// candidate discovery (cmd/tokenpairgen): finding two-sided listings a real
+// pairing exists for that neither MatchNativeTokenPair nor
+// MatchTokenPairingBySetNumber can find yet, because no pairing is on file
+// for it at all. Not part of Preprocess's own resolution chain - the
+// already-shipped, already-measured number-anchored fallback there is
+// left untouched.
+//
+// Which parsed number names which face is not fixed across the shapes
+// tokenPairNumbers recognizes (see its own comment), so both pairings of
+// (n1, n2) against (first, second) are tried; ok is false unless exactly
+// one of the two resolves both faces to one printing each - the same
+// "don't know, refuse" the rest of this package already applies, now
+// applied to which assignment is right rather than just whether a
+// printing exists.
+func TokenPairAnchorUUIDs(bp Blueprint) (uuidA, uuidB string, ok bool) {
+	if bp.CategoryID != CategoryMagicTokens || !strings.Contains(bp.Name, " // ") {
+		return "", "", false
+	}
+	n1, n2, parsed := tokenPairNumbers(bp.Properties.Number)
+	if !parsed {
+		return "", "", false
+	}
+	tokenSet := magic.EditionTokenSetCode(bp.Expansion.Name)
+	if tokenSet == "" {
+		return "", "", false
+	}
+	first, second := magic.SplitTokenPairName(bp.Name)
+	rawFaces := [2]string{first, second}
+
+	anchorOne := func(numbers [2]string) (string, string, bool) {
+		var uuids [2]string
+		for i, raw := range rawFaces {
+			var uuid string
+			for _, face := range []string{magic.StripFaceWrapping(raw), magic.CleanFaceName(raw)} {
+				if cards := mtgmatcher.MatchInSetNumber(face, tokenSet, numbers[i]); len(cards) == 1 {
+					uuid = cards[0].UUID
+					break
+				}
+			}
+			if uuid == "" {
+				return "", "", false
+			}
+			uuids[i] = uuid
+		}
+		return uuids[0], uuids[1], true
+	}
+
+	uA, uB, okFwd := anchorOne([2]string{n1, n2})
+	uA2, uB2, okRev := anchorOne([2]string{n2, n1})
+	switch {
+	case okFwd && !okRev:
+		return uA, uB, true
+	case okRev && !okFwd:
+		return uA2, uB2, true
+	default:
+		return "", "", false
+	}
+}
+
 // Preprocess turns a blueprint into the card description the matcher takes,
 // reporting an error for the blueprints that are not cards.
 func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {

@@ -392,6 +392,49 @@ func tokenPairSkuAnchorSet(code string) string {
 	return ""
 }
 
+// TokenPairAnchorUUIDs anchors both faces of a two-sided token listing
+// independently by identity - each face's own filing set and number, read
+// directly off the listing's own composite sku (tokenPairSkuAnchors) -
+// rather than guessing either from the vendor's own wording. Exported so a
+// regeneration tool (cmd/tokenpairgen) can walk a full catalog export
+// offline and find every such listing, using this package's own real
+// anchoring logic instead of a separate reimplementation of it; the
+// production path above (resolveProductID) uses it the identical way.
+// ok is false whenever the sku doesn't carry two such anchors, either
+// face's own set can't be resolved, or either face's own name doesn't
+// match exactly one printing in that set and number - the same
+// "don't know, refuse" the rest of this file already applies.
+func TokenPairAnchorUUIDs(p CatalogProduct) (uuidA, uuidB string, ok bool) {
+	if gameFromCatalog(p.Game) != GameMagic || !strings.Contains(p.Name, " // ") {
+		return "", "", false
+	}
+	anchors := tokenPairSkuAnchors(p.SKU)
+	if len(anchors) != 2 {
+		return "", "", false
+	}
+	first, second := magic.SplitTokenPairName(p.Name)
+	faces := [2]string{first, second}
+	var uuids [2]string
+	for i, a := range anchors {
+		set := tokenPairSkuAnchorSet(a.set)
+		if set == "" {
+			return "", "", false
+		}
+		var uuid string
+		for _, face := range []string{magic.StripFaceWrapping(faces[i]), magic.CleanFaceName(faces[i])} {
+			if cards := mtgmatcher.MatchInSetNumber(face, set, a.number); len(cards) == 1 {
+				uuid = cards[0].UUID
+				break
+			}
+		}
+		if uuid == "" {
+			return "", "", false
+		}
+		uuids[i] = uuid
+	}
+	return uuids[0], uuids[1], true
+}
+
 // lowerVariantLetter puts a variant letter into the case the datastore spells
 // it in. Star City Games writes the letter that demands the variant printing
 // either way, and the matcher reads the case, so an upper-case one asks for
@@ -862,35 +905,10 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 			// entirely - two already-known uuids can't collide with each
 			// other the way two vendor-spelled names can - via the
 			// uuid-pair-keyed magic.MatchTokenPairingByUUIDs.
-			if anchors := tokenPairSkuAnchors(p.SKU); len(anchors) == 2 {
-				first, second := magic.SplitTokenPairName(p.Name)
-				faces := [2]string{first, second}
-				var uuids [2]string
-				resolved := true
-				for i, a := range anchors {
-					set := tokenPairSkuAnchorSet(a.set)
-					if set == "" {
-						resolved = false
-						break
-					}
-					var uuid string
-					for _, face := range []string{magic.StripFaceWrapping(faces[i]), magic.CleanFaceName(faces[i])} {
-						if cards := mtgmatcher.MatchInSetNumber(face, set, a.number); len(cards) == 1 {
-							uuid = cards[0].UUID
-							break
-						}
-					}
-					if uuid == "" {
-						resolved = false
-						break
-					}
-					uuids[i] = uuid
-				}
-				if resolved {
-					if tcgID := magic.MatchTokenPairingByUUIDs(uuids[0], uuids[1], foil); tcgID != "" {
-						if id, err := mtgmatcher.MatchID(tcgID, foil, etched); err == nil {
-							return id, nil
-						}
+			if uuidA, uuidB, ok := TokenPairAnchorUUIDs(p); ok {
+				if tcgID := magic.MatchTokenPairingByUUIDs(uuidA, uuidB, foil); tcgID != "" {
+					if id, err := mtgmatcher.MatchID(tcgID, foil, etched); err == nil {
+						return id, nil
 					}
 				}
 			}
