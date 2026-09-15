@@ -25,7 +25,7 @@ workers:
       branch: master
       deploy_on_push: true
     source_dir: .github/runner
-    dockerfile_path: Dockerfile
+    dockerfile_path: .github/runner/Dockerfile
     instance_count: 1
     instance_size_slug: basic-xs
     envs:
