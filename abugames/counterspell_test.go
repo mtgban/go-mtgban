@@ -2,15 +2,13 @@ package abugames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // These Promo-shelf listings carry numbers and external IDs that agree on
 // PF24 and PURL. Neither is the English PMEI manga insert. Keep the whole
 // preprocessing path covered: dropping the MagicFest number loses its year.
 func TestCounterspellPromoListings(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		title, number, scryfall, set string
 	}{
@@ -18,25 +16,25 @@ func TestCounterspellPromoListings(t *testing.T) {
 		{"Counterspell (NYCC 2024) - FOIL", "2", "f2a7042f-a6f0-4e77-86a2-5eb0d2587363", "PURL"},
 	} {
 		t.Run(tt.title, func(t *testing.T) {
-			in, err := preprocess(&ABUCard{
+			in, err := preprocess(b, &ABUCard{
 				DisplayTitle: tt.title, SimpleTitle: "Counterspell", Edition: "Promo",
 				Number: tt.number, Language: []string{"English"},
 			})
 			if err != nil {
 				t.Fatal(err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatal(err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if co.SetCode != tt.set || co.Number != tt.number || !co.Foil {
 				t.Fatalf("got %s, want %s #%s foil", co, tt.set, tt.number)
 			}
-			want, err := mtgmatcher.MatchID(tt.scryfall, true, false)
+			want, err := b.MatchID(tt.scryfall, true, false)
 			if err != nil {
 				t.Fatal(err)
 			}
