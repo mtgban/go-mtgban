@@ -5,8 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 )
 
@@ -32,7 +30,7 @@ const onePieceDatastore = `{
 // on each other's printing. The bridge says which outright, and where it says
 // nothing the catalog still names what it can.
 func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
-	installDatastore(t, "onepiece", onePieceDatastore)
+	b := datastoreBackend(t, "onepiece", onePieceDatastore)
 
 	for _, tt := range []struct {
 		desc    string
@@ -58,9 +56,9 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			mkm, err := NewScraperIndex(mtgban.GameOnePiece)
+			mkm, err := NewScraperIndex(b)
 			if err != nil {
-				t.Fatalf("NewScraperIndex(mtgban.GameOnePiece) = %v", err)
+				t.Fatalf("NewScraperIndex(b) = %v", err)
 			}
 			mkm.TCGBridge = tt.bridge
 			mkm.priceGuide = map[int]cm.PriceGuide{tt.mkmID: {IDProduct: tt.mkmID, LowPrice: 1, TrendPrice: 2}}
