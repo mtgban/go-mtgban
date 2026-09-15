@@ -7,7 +7,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-func preprocess(allCards NFCard, key, lang string, foil bool) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, allCards NFCard, key, lang string, foil bool) (*mtgmatcher.InputCard, error) {
 	card, found := allCards[key]
 	if !found {
 		return nil, errors.New("key not found")
@@ -26,7 +26,7 @@ func preprocess(allCards NFCard, key, lang string, foil bool) (*mtgmatcher.Input
 		edition = "POR"
 		variant = card.SetName
 	default:
-		_, err := mtgmatcher.GetSet(card.SetCode)
+		_, err := b.GetSet(card.SetCode)
 		if err != nil {
 			edition = card.SetName
 		}
