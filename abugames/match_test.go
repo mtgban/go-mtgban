@@ -8,7 +8,7 @@ import (
 )
 
 func TestMatchCardIdentifiers(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, foil := range []bool{false, true} {
 		for _, tt := range []struct {
 			name      string
@@ -31,11 +31,11 @@ func TestMatchCardIdentifiers(t *testing.T) {
 				if foil {
 					card.DisplayTitle += " - FOIL"
 				}
-				in, err := preprocess(&card)
+				in, err := preprocess(b, &card)
 				if err != nil {
 					t.Fatal(err)
 				}
-				id, err := matchCard(&card, in)
+				id, err := matchCard(b, &card, in)
 				if tt.wantAlias {
 					var alias *mtgmatcher.AliasingError
 					if !errors.As(err, &alias) {
@@ -46,7 +46,7 @@ func TestMatchCardIdentifiers(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				co, err := mtgmatcher.GetUUID(id)
+				co, err := b.GetUUID(id)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -59,14 +59,14 @@ func TestMatchCardIdentifiers(t *testing.T) {
 }
 
 func TestMatchCardRejectsConflictingIDs(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	// Without a year or number the wording permits both MagicFest printings.
 	card := ABUCard{DisplayTitle: "Counterspell (MagicFest) - FOIL", Edition: "Promo", Language: []string{"English"}, ScryfallIDs: []string{"8916e24f-9c74-4b6c-9894-d60669854f35", "9cb2478c-1672-44eb-a9a1-a103fcdf3701"}}
-	in, err := preprocess(&card)
+	in, err := preprocess(b, &card)
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, err := matchCard(&card, in)
+	id, err := matchCard(b, &card, in)
 	var alias *mtgmatcher.AliasingError
 	if !errors.As(err, &alias) {
 		t.Fatalf("got %s, %v; conflicting IDs must leave ambiguity", id, err)
@@ -74,7 +74,7 @@ func TestMatchCardRejectsConflictingIDs(t *testing.T) {
 }
 
 func TestMatchCardKeepsWordingOverStaleIDs(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, tt := range []struct {
 		card        ABUCard
 		set, number string
@@ -84,15 +84,15 @@ func TestMatchCardKeepsWordingOverStaleIDs(t *testing.T) {
 		{ABUCard{DisplayTitle: "Sudden Setback (b - Black Bottle) - FOIL", Edition: "Murders at Karlov Manor", Number: "72", ScryfallIDs: []string{"0b9e5fd6-a5ea-4ae5-83f5-89ed6a658dd3"}, TCGplayerIDs: []int64{535972}}, "MKM", "72†"},
 	} {
 		t.Run(tt.card.DisplayTitle, func(t *testing.T) {
-			in, err := preprocess(&tt.card)
+			in, err := preprocess(b, &tt.card)
 			if err != nil {
 				t.Fatal(err)
 			}
-			id, err := matchCard(&tt.card, in)
+			id, err := matchCard(b, &tt.card, in)
 			if err != nil {
 				t.Fatal(err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -104,10 +104,10 @@ func TestMatchCardKeepsWordingOverStaleIDs(t *testing.T) {
 }
 
 func TestMatchCardIDsDoNotOverrideUnsupported(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	card := ABUCard{ScryfallIDs: []string{"f2a7042f-a6f0-4e77-86a2-5eb0d2587363"}}
 	in := mtgmatcher.InputCard{Name: "Counterspell", Edition: "URL/Convention Promos", Variation: "2", Foil: true, Language: "Italian"}
-	_, err := matchCard(&card, &in)
+	_, err := matchCard(b, &card, &in)
 	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 		t.Fatalf("got %v, want unsupported language", err)
 	}

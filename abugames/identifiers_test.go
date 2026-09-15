@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // The fixtures are identity fields from the full Solr audit. They pin cases
@@ -13,7 +11,7 @@ import (
 // the wrong printing. Image-checked examples include Forest B Night, Plains
 // (38), Master of Winds, Katerina, Bronzebeak Foragers and Triceraton Commander.
 func TestPrimaryIdentifiers(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	data, err := os.ReadFile("testdata/identifier_listings.json")
 	if err != nil {
 		t.Fatal(err)
@@ -30,18 +28,18 @@ func TestPrimaryIdentifiers(t *testing.T) {
 	}
 	for _, tt := range fixtures {
 		t.Run(tt.Group+" "+tt.Card.DisplayTitle, func(t *testing.T) {
-			in, err := preprocess(&tt.Card)
+			in, err := preprocess(b, &tt.Card)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if (in.ID != "") != tt.Primary {
 				t.Errorf("ID path = %t, want %t", in.ID != "", tt.Primary)
 			}
-			id, err := matchCard(&tt.Card, in)
+			id, err := matchCard(b, &tt.Card, in)
 			if err != nil {
 				t.Fatal(err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -53,25 +51,25 @@ func TestPrimaryIdentifiers(t *testing.T) {
 }
 
 func TestPrimaryIdentifierNameValidation(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	card := ABUCard{
 		DisplayTitle: "Counterspell (MagicFest) - FOIL", Edition: "Promo", Language: []string{"English"},
 		// A valid but unrelated Scryfall card must not beat the correctly named
 		// TCGplayer printing, nor make the pair appear irreconcilable.
 		ScryfallIDs: []string{"0ecea0ba-da29-45f1-b72b-50b873309483"}, TCGplayerIDs: []int64{540987},
 	}
-	in, err := preprocess(&card)
+	in, err := preprocess(b, &card)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if in.ID == "" {
 		t.Fatal("valid TCGplayer ID was not used")
 	}
-	id, err := mtgmatcher.Match(in)
+	id, err := b.Match(in)
 	if err != nil {
 		t.Fatal(err)
 	}
-	co, err := mtgmatcher.GetUUID(id)
+	co, err := b.GetUUID(id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +82,7 @@ func TestPrimaryIdentifierNameValidation(t *testing.T) {
 // Brass's Bounty IDs correct swapped text results; foil twins must be unique,
 // and adding descriptor support must not resurrect an unprinted finish.
 func TestIdentifierCoverage(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	data, err := os.ReadFile("testdata/identifier_coverage.json")
 	if err != nil {
 		t.Fatal(err)
@@ -101,7 +99,7 @@ func TestIdentifierCoverage(t *testing.T) {
 	}
 	for _, tt := range fixtures {
 		t.Run(tt.Group+" "+tt.Card.DisplayTitle, func(t *testing.T) {
-			in, err := preprocess(&tt.Card)
+			in, err := preprocess(b, &tt.Card)
 			if tt.Error != "" {
 				if err == nil || err.Error() != tt.Error {
 					t.Fatalf("error = %v, want %s", err, tt.Error)
@@ -114,7 +112,7 @@ func TestIdentifierCoverage(t *testing.T) {
 			if (in.ID != "") != tt.Primary {
 				t.Errorf("ID path = %t, want %t", in.ID != "", tt.Primary)
 			}
-			id, err := matchCard(&tt.Card, in)
+			id, err := matchCard(b, &tt.Card, in)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -126,7 +124,7 @@ func TestIdentifierCoverage(t *testing.T) {
 }
 
 func TestDescribedArtwork(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	data, err := os.ReadFile("testdata/artwork_listings.json")
 	if err != nil {
 		t.Fatal(err)
@@ -149,15 +147,15 @@ func TestDescribedArtwork(t *testing.T) {
 					card.TCGplayerIDs = nil
 					card.MultiverseIDs = nil
 				}
-				in, err := preprocess(&card)
+				in, err := preprocess(b, &card)
 				if err != nil {
 					t.Fatal(err)
 				}
-				id, err := matchCard(&card, in)
+				id, err := matchCard(b, &card, in)
 				if err != nil {
 					t.Fatal(err)
 				}
-				co, err := mtgmatcher.GetUUID(id)
+				co, err := b.GetUUID(id)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -173,7 +171,7 @@ func TestDescribedArtwork(t *testing.T) {
 // records were checked against ABU's images, including copyright misprints and
 // List stamps. The corrected families must also work without vendor IDs.
 func TestConflictingIdentifierPrintings(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	data, err := os.ReadFile("testdata/conflicting_identifiers.json")
 	if err != nil {
 		t.Fatal(err)
@@ -199,11 +197,11 @@ func TestConflictingIdentifierPrintings(t *testing.T) {
 					card.TCGplayerIDs = nil
 					card.MultiverseIDs = nil
 				}
-				in, err := preprocess(&card)
+				in, err := preprocess(b, &card)
 				if err != nil {
 					t.Fatal(err)
 				}
-				id, err := matchCard(&card, in)
+				id, err := matchCard(b, &card, in)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -218,7 +216,7 @@ func TestConflictingIdentifierPrintings(t *testing.T) {
 // Raw listings checked against printed set numbers and promo artwork. Re-run
 // without IDs so these cases exercise the text matcher as well as ID validation.
 func TestResidueListings(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	data, err := os.ReadFile("testdata/residue_listings.json")
 	if err != nil {
 		t.Fatal(err)
@@ -245,10 +243,10 @@ func TestResidueListings(t *testing.T) {
 					card.TCGplayerIDs = nil
 					card.MultiverseIDs = nil
 				}
-				in, err := preprocess(&card)
+				in, err := preprocess(b, &card)
 				id := ""
 				if err == nil {
-					id, err = matchCard(&card, in)
+					id, err = matchCard(b, &card, in)
 				}
 				if tt.Error != "" {
 					if err == nil || err.Error() != tt.Error {
