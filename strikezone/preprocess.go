@@ -30,7 +30,7 @@ func neonInkWording(variation string) string {
 // duelDeck matches the duel deck shelves as this storefront heads them.
 var duelDeck = regexp.MustCompile(`^Duel Deck (.+) VS (.+)$`)
 
-func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
 	var variation string
 
 	// Skip tokens, too many variations
@@ -46,8 +46,8 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 	// A flavor name written before the card's own ("Astral Tiran - Primeval
 	// Titan") keeps the card's own.
 	if head, tail, dashed := strings.Cut(cardName, " - "); dashed {
-		if _, err := mtgmatcher.SearchEquals(mtgmatcher.SplitVariants(tail)[0]); err == nil {
-			if _, err := mtgmatcher.SearchEquals(head); err != nil {
+		if _, err := b.SearchEquals(mtgmatcher.SplitVariants(tail)[0]); err == nil {
+			if _, err := b.SearchEquals(head); err != nil {
 				cardName = tail
 			}
 		}
@@ -56,10 +56,10 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 	// reading, the card's own name carried in the notes behind its
 	// treatment ("Astral Tiran" with "Showcase Primeval Titan"): the notes
 	// name the card, and the treatment stays a note.
-	if _, err := mtgmatcher.SearchEquals(cardName); err != nil && notes != "" {
+	if _, err := b.SearchEquals(cardName); err != nil && notes != "" {
 		for _, treatment := range []string{"Showcase ", "Borderless ", "Extended Art "} {
 			if tail, found := strings.CutPrefix(notes, treatment); found {
-				if _, err := mtgmatcher.SearchEquals(tail); err == nil {
+				if _, err := b.SearchEquals(tail); err == nil {
 					cardName, notes = tail, strings.TrimSpace(treatment)
 					break
 				}
@@ -163,7 +163,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 
 	// Repeat to catch numbers
 	if mtgmatcher.IsBasicLand(cardName) {
-		num := mtgmatcher.ExtractNumber(cardName)
+		num := b.ExtractNumber(cardName)
 		if num != "" {
 			cardName = strings.Replace(cardName, num, "", 1)
 			cardName = strings.TrimSpace(cardName)
@@ -273,14 +273,14 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		edition = "Promotional"
 		variation = "playpromo"
 	case "Promos: Standard Showdown":
-		if len(mtgmatcher.MatchInSet(cardName, "PSS1")) > 0 {
+		if len(b.MatchInSet(cardName, "PSS1")) > 0 {
 			edition = "PSS1"
 		}
 	case "Promos: Champs":
 		edition = "PCMP"
 	case "Promos: Pro Tour":
 		for _, code := range []string{"PPRO", "SLP", "LTR", "PRCQ", "PR23"} {
-			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
+			if len(b.MatchInSet(cardName, code)) > 0 {
 				edition = code
 			}
 		}
@@ -294,13 +294,13 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 			"PHPR", "PMEI", "PURL",
 			"PDTP", "PDP10", "PDP12", "PDP13", "PDP14", "PDP15",
 		} {
-			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
+			if len(b.MatchInSet(cardName, code)) > 0 {
 				edition = code
 			}
 		}
 	case "Promos: Junior Series":
 		for _, code := range []string{"PSUS"} {
-			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
+			if len(b.MatchInSet(cardName, code)) > 0 {
 				edition = code
 			}
 		}
@@ -373,7 +373,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 	// says which only where it writes something beside the name. Where the
 	// set holds several, the match that follows picks one of them for no
 	// reason and prices the others as it, so refuse instead of choosing.
-	if edition == "Secret Lair" && variation == "" && hasSeveralDrops(cardName) {
+	if edition == "Secret Lair" && variation == "" && hasSeveralDrops(b, cardName) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
@@ -390,8 +390,8 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 // drop. The suffixes a number can end on - the star of a foil twin, the phi
 // of a step-and-compleat - mark twins the wording picks, not drops of their
 // own, and PlainNumber is the number with all of them already stripped.
-func hasSeveralDrops(cardName string) bool {
-	cards := mtgmatcher.MatchInSet(cardName, "SLD")
+func hasSeveralDrops(b *mtgmatcher.Backend, cardName string) bool {
+	cards := b.MatchInSet(cardName, "SLD")
 	if len(cards) < 2 {
 		return false
 	}
