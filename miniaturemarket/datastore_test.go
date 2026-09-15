@@ -8,10 +8,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// withGameDatastore installs a game's datastore for the test, read from the
-// variable naming it, and puts back whatever stood before once it ends. The
-// test is skipped where the run carries no such file.
-func withGameDatastore(t *testing.T, game, env string) {
+// withGameDatastore reads a game's datastore for the test, from the variable
+// naming it. The test is skipped where the run carries no such file.
+func withGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {
@@ -21,9 +20,5 @@ func withGameDatastore(t *testing.T, game, env string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(b)
-	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(previous)
-	})
+	return b
 }
