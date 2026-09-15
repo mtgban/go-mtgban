@@ -31,6 +31,17 @@ games — a promo shelf holding a printing that collides with a real set's,
 told apart only by a note or bracket the code has to read — and where it
 has, and hasn't yet, been fixed.
 
+`cardmarket/README.md` is a different kind of read: not a defect class,
+but the design of `Market` (the live-listing singles scraper built
+alongside `Sealed`'s existing one) and the investigation trail behind
+it — a per-token concurrency limit measured directly rather than assumed,
+listings that turned out not to be strictly price-ascending once replayed
+against real data, and an offline pre-filter whose price snapshot is
+published one host per game, not shared, which the loader originally got
+wrong in a way that read as "nothing passed the filter" rather than "the
+fetch hit the wrong server." Read it before touching any of the three
+Cardmarket scrapers or the `resolver` they share.
+
 ## Layout
 
 ```
