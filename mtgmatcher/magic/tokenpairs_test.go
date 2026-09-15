@@ -354,3 +354,56 @@ func TestMatchTokenPairingRequiresBothFacesInRequestedFinish(t *testing.T) {
 		t.Error("MatchTokenPairing(Boar, ..Spirit.., foil=false) = \"\", want the real nonfoil pairing id")
 	}
 }
+
+// TestNormalizeTokenFaceStripsBraceWrapping pins the brace-stripping
+// generalization directly, independent of any vendor package: SCG wraps
+// every face name in its own "{curly braces}", which must come off (and
+// still leave the artist parenthetical and " Token" suffix handled
+// correctly) for its wording to compare equal against the datastore's own
+// unwrapped names. No datastore needed - pure string logic.
+func TestNormalizeTokenFaceStripsBraceWrapping(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		want string
+	}{
+		{"{Angel Token}", "angel"},
+		{"{Eldrazi Spawn Token (Briclot)}", "eldrazi spawn"},
+		{"Angel Token", "angel"}, // unaffected where a vendor never wraps
+	} {
+		if got := NormalizeTokenFace(tt.name); got != tt.want {
+			t.Errorf("NormalizeTokenFace(%q) = %q, want %q", tt.name, got, tt.want)
+		}
+	}
+}
+
+// TestMatchNativeTokenPair pins the native-combined-printing path directly,
+// independent of any vendor package: mtgjson sometimes files a two-sided
+// token sheet as one ordinary printing of its own under a combined "X // Y"
+// name (Guild Kit's "Copy // Horror" at TGK1 #1) rather than as a derived
+// pairing, and a vendor's own listing order does not always agree with
+// mtgjson's, so both face orders must resolve to the same printing.
+func TestMatchNativeTokenPair(t *testing.T) {
+	realDatastore(t)
+
+	if len(mtgmatcher.MatchInSetNumber("Copy // Horror", "TGK1", "1")) != 1 {
+		t.Skip("Copy // Horror not present at TGK1 #1 in this datastore")
+	}
+
+	for _, listing := range []string{
+		"{Copy Token} // {Horror Token}",
+		"{Horror Token} // {Copy Token}",
+	} {
+		uuid := MatchNativeTokenPair("TGK1", "1", listing)
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			t.Fatalf("MatchNativeTokenPair(TGK1, 1, %q) = %q, GetUUID: %v", listing, uuid, err)
+		}
+		if co.Card.Name != "Copy // Horror" || co.SetCode != "TGK1" || co.Number != "1" {
+			t.Errorf("MatchNativeTokenPair(TGK1, 1, %q) = %s #%s [%s], want Copy // Horror #1 [TGK1]",
+				listing, co.Card.Name, co.Number, co.SetCode)
+		}
+		if co.Identifiers["derivedTokenPair"] == "true" {
+			t.Errorf("MatchNativeTokenPair(TGK1, 1, %q) resolved to a synthetic derived pairing, want mtgjson's own native combined printing", listing)
+		}
+	}
+}
