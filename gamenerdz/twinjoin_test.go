@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
-	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 func product(sku, display, set string) GNProduct {
@@ -77,7 +76,7 @@ func TestBodyNamesOwnSet(t *testing.T) {
 // two finishes disagree about it, and is this storefront's own shelf code
 // where they do not.
 func TestReleaseHeldProducts(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	corrupt := product("MTG-RNA-249-6NUARTU9FH",
 		"Gruul Guildgate (RNA-249) - Ravnica Allegiance", "pre")
@@ -86,7 +85,7 @@ func TestReleaseHeldProducts(t *testing.T) {
 		"Chrome Mox (Borderless) (DFT-092) - Special Guests Foil", "spg")
 	shelf.BuyVariants = []GNBuyVariant{{Title: "Default Title", OfferPrice: 157.69}}
 
-	gn, err := NewScraper(mtgban.GameMagic)
+	gn, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}

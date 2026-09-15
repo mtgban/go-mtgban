@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // A listing has to name a finish the printing was sold in. This storefront
@@ -13,7 +12,7 @@ import (
 // there is - the minted one carrying a price of its own, six dollars against
 // four cents on Iconic Shield.
 func TestFinishPrinted(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	for _, tt := range []struct {
 		desc                 string
@@ -51,7 +50,7 @@ func TestFinishPrinted(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(tt.product, mtgban.GameMagic)
+			card, err := preprocess(b, tt.product, mtgban.GameMagic)
 			if err != nil {
 				t.Fatalf("preprocess: %v", err)
 			}
@@ -60,18 +59,18 @@ func TestFinishPrinted(t *testing.T) {
 				t.Errorf("asked foil=%v etched=%v, want foil=%v etched=%v",
 					foil, etched, tt.wantFoil, tt.wantEtched)
 			}
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match: %v", err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if co.SetCode != tt.wantSet || co.Number != tt.wantNum {
 				t.Errorf("resolved to %s #%s, want %s #%s", co.SetCode, co.Number, tt.wantSet, tt.wantNum)
 			}
-			if got := finishPrinted(id, foil, etched); got != tt.printed {
+			if got := finishPrinted(b, id, foil, etched); got != tt.printed {
 				t.Errorf("finishPrinted = %v, want %v (printing carries %v)", got, tt.printed, co.Finishes)
 			}
 		})
