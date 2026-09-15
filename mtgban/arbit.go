@@ -1,7 +1,6 @@
 package mtgban
 
 import (
-	"fmt"
 	"math"
 	"slices"
 	"strconv"
@@ -11,14 +10,13 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// ArbitOpts configures the datastore, filters and thresholds used by Arbit
-// and Mismatch. Zero-valued filters leave the two sides' common cards eligible.
+// ArbitOpts is the bag of optional filters and thresholds Arbit and Mismatch
+// narrow their two sides with. Every field is optional, a nil ArbitOpts
+// filters nothing, and zero-valued filters leave the two sides' common cards
+// eligible. The datastore is not one of these: it is the reports' first
+// parameter, since none of them can resolve a card without it. Custom
+// callbacks doing auxiliary lookups should use that same backend.
 type ArbitOpts struct {
-	// Backend is the immutable datastore used for this report. When nil,
-	// Arbit and Mismatch capture the global datastore once at entry. Custom
-	// callbacks doing auxiliary lookups should use the same backend.
-	Backend *mtgmatcher.Backend
-
 	// Extra factor to modify Inventory prices
 	Rate float64
 
@@ -137,18 +135,6 @@ type ArbitEntry struct {
 	Profitability float64
 }
 
-// ArbitEntry implements the Stringer interface
-func (ae ArbitEntry) String() string {
-	co, err := mtgmatcher.GetUUID(ae.CardID)
-	if err != nil {
-		return ""
-	}
-	if ae.BuylistEntry.BuyPrice != 0 {
-		return fmt.Sprintf("%s (%d): %0.2f -> %0.2f", co, ae.Quantity, ae.InventoryEntry.Price, ae.BuylistEntry.BuyPrice)
-	}
-	return fmt.Sprintf("%s (%d): %0.2f ~ %0.2f", co, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
-}
-
 // resolvedOpts holds the resolved filter and threshold values from ArbitOpts,
 // with defaults applied for nil opts.
 type resolvedOpts struct {
@@ -181,17 +167,13 @@ type resolvedOpts struct {
 	filterSelectedLanguages []string
 }
 
-func resolveOpts(opts *ArbitOpts) resolvedOpts {
+func resolveOpts(b *mtgmatcher.Backend, opts *ArbitOpts) resolvedOpts {
 	r := resolvedOpts{
 		rate:    1.0,
-		backend: mtgmatcher.GlobalDatastore(),
+		backend: b,
 	}
 	if opts == nil {
 		return r
-	}
-
-	if opts.Backend != nil {
-		r.backend = opts.Backend
 	}
 
 	if opts.MinDiff != 0 {
@@ -387,12 +369,17 @@ func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price floa
 }
 
 // Arbit reports the cards a vendor buys for more than a seller asks, the
-// trade that pays for itself. Only cards both sides carry are considered, and
-// opts filters the rest.
-func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
+// trade that pays for itself. Every card id is resolved against b, only cards
+// both sides carry are considered, and opts filters the rest.
+func Arbit(b *mtgmatcher.Backend, opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
+	// A report with no datastore has nothing to resolve against.
+	if b == nil {
+		return nil
+	}
+
 	var result []ArbitEntry
 
-	r := resolveOpts(opts)
+	r := resolveOpts(b, opts)
 
 	for cardID, blEntries := range vendor.Buylist() {
 		invEntries, found := seller.Inventory()[cardID]
@@ -469,10 +456,14 @@ var defaultGradeMap = map[string]float64{
 // reporting where probe asks less than reference for the same card. Same
 // arithmetic as Arbit, against a price the market has settled on instead of
 // against an offer to buy.
-func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
+func Mismatch(b *mtgmatcher.Backend, opts *ArbitOpts, reference, probe Seller) []ArbitEntry {
+	if b == nil {
+		return nil
+	}
+
 	var result []ArbitEntry
 
-	r := resolveOpts(opts)
+	r := resolveOpts(b, opts)
 
 	for cardID, refEntries := range reference.Inventory() {
 		invEntries, found := probe.Inventory()[cardID]
@@ -530,15 +521,18 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 
 // Pennystock reports cards priced near the floor that have somewhere to fall
 // from: rares, mythics, basic lands and promos, skipping the borders and promo
-// types that are cheap for reasons which will not change. thresholds overrides
-// the per-rarity ceilings in order, and a zero leaves that position at its
-// default.
-func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
+// types that are cheap for reasons which will not change. Every card id is
+// resolved against b. thresholds overrides the per-rarity ceilings in order,
+// and a zero leaves that position at its default.
+func Pennystock(b *mtgmatcher.Backend, seller Seller, full bool, thresholds ...float64) []ArbitEntry {
+	if b == nil {
+		return nil
+	}
+
 	var result []ArbitEntry
-	backend := mtgmatcher.GlobalDatastore()
 
 	for cardID, entries := range seller.Inventory() {
-		co, err := backend.GetUUID(cardID)
+		co, err := b.GetUUID(cardID)
 		if err != nil {
 			continue
 		}
