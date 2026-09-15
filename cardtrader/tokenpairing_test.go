@@ -47,6 +47,16 @@ func TestPreprocessResolvesTokenPairing(t *testing.T) {
 			wantName: "Illusion // Serra the Benevolent Emblem",
 			wantSet:  "TMH1",
 		},
+		{
+			desc: "neither id at all - both faces' own names, guarded by the blueprint's own claimed edition",
+			bp: func() Blueprint {
+				bp := Blueprint{ID: 46598, Name: "Cat Warrior // Beast", CategoryID: CategoryMagicTokens}
+				bp.Expansion.Name = "Commander 2018"
+				return bp
+			}(),
+			wantName: "Beast // Cat Warrior",
+			wantSet:  "TC18",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			card, err := Preprocess(&tt.bp)
@@ -67,5 +77,34 @@ func TestPreprocessResolvesTokenPairing(t *testing.T) {
 				t.Errorf("blueprint %d resolved to set %s, want %s", tt.bp.ID, co.SetCode, tt.wantSet)
 			}
 		})
+	}
+}
+
+// TestPreprocessRefusesNamePairEditionMismatch pins the safety guard on
+// magic.MatchTokenPairingByNamesAndEdition's own use here: "Bird // Myr" is
+// a real derived pairing (Modern Horizons' own token sheet), but Commander
+// 2016 - a blueprint with neither a scryfall_id nor a tcgplayer_id to
+// anchor either face by identity - never sold that exact pairing. Without
+// the edition check this would resolve to Modern Horizons' Bird // Myr
+// regardless of what the blueprint's own edition actually names; with it,
+// the disagreement must fall through to a refusal rather than namedID
+// silently resolving one bare face instead.
+func TestPreprocessRefusesNamePairEditionMismatch(t *testing.T) {
+	realDatastore(t)
+
+	bp := Blueprint{ID: 46731, Name: "Bird // Myr", CategoryID: CategoryMagicTokens}
+	bp.Expansion.Name = "Commander 2016"
+
+	card, err := Preprocess(&bp)
+	if err != nil {
+		// A hard refusal (no id, no number, no set-anchor for namedID's
+		// own name-based Match fallback either) is an acceptable outcome
+		// here too - the only unacceptable one is silently resolving to
+		// the wrong derived pairing.
+		return
+	}
+	co, err := mtgmatcher.GetUUID(card.ID)
+	if err == nil && co.Identifiers["derivedTokenPair"] == "true" {
+		t.Errorf("blueprint %d resolved to derived pairing %s [%s], want a refusal: Commander 2016 never sold Modern Horizons' Bird // Myr pairing", bp.ID, co.Name, co.SetCode)
 	}
 }
