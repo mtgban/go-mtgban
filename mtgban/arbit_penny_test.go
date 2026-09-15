@@ -47,8 +47,8 @@ func TestPennystockNamesWhatCanFall(t *testing.T) {
 			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Handout", Rarity: "common"}, Edition: "Whatever Promos"}, 0.01, true, true},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, pennyCard(tt.card))
-			got := len(Pennystock(pennySeller(tt.price, "NM"), tt.full)) > 0
+			b := backendFor(pennyCard(tt.card))
+			got := len(Pennystock(b, pennySeller(tt.price, "NM"), tt.full)) > 0
 			if got != tt.want {
 				t.Errorf("Pennystock named it = %v, want %v", got, tt.want)
 			}
@@ -76,8 +76,8 @@ func TestPennystockSkipsWhatStaysCheap(t *testing.T) {
 				PromoTypes: []string{magic.PromoTypeThickDisplay}}}},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, pennyCard(tt.card))
-			if got := Pennystock(pennySeller(0.10, "NM"), true); len(got) != 0 {
+			b := backendFor(pennyCard(tt.card))
+			if got := Pennystock(b, pennySeller(0.10, "NM"), true); len(got) != 0 {
 				t.Errorf("Pennystock named %d entries, want none", len(got))
 			}
 		})
@@ -88,10 +88,10 @@ func TestPennystockSkipsWhatStaysCheap(t *testing.T) {
 func TestPennystockSkipsAWornCopy(t *testing.T) {
 	for _, conditions := range []string{"HP", "PO"} {
 		t.Run(conditions, func(t *testing.T) {
-			installCards(t, pennyCard(&mtgmatcher.CardObject{
+			b := backendFor(pennyCard(&mtgmatcher.CardObject{
 				Card: mtgmatcher.Card{Name: "Big", Rarity: "mythic"},
 			}))
-			if got := Pennystock(pennySeller(0.10, conditions), true); len(got) != 0 {
+			if got := Pennystock(b, pennySeller(0.10, conditions), true); len(got) != 0 {
 				t.Errorf("Pennystock named %d entries, want none", len(got))
 			}
 		})
@@ -108,33 +108,43 @@ func TestPennystockThresholds(t *testing.T) {
 		})
 	}
 
-	installCards(t, mythic())
-	if got := Pennystock(pennySeller(0.50, "NM"), false); len(got) != 0 {
+	b := backendFor(mythic())
+	if got := Pennystock(b, pennySeller(0.50, "NM"), false); len(got) != 0 {
 		t.Fatal("the default ceiling named a card above it")
 	}
 
-	installCards(t, mythic())
-	if got := Pennystock(pennySeller(0.50, "NM"), false, 1.00); len(got) != 1 {
+	b = backendFor(mythic())
+	if got := Pennystock(b, pennySeller(0.50, "NM"), false, 1.00); len(got) != 1 {
 		t.Errorf("a raised ceiling named %d entries, want 1", len(got))
 	}
 
-	installCards(t, mythic())
-	if got := Pennystock(pennySeller(0.10, "NM"), false, 0); len(got) != 1 {
+	b = backendFor(mythic())
+	if got := Pennystock(b, pennySeller(0.10, "NM"), false, 0); len(got) != 1 {
 		t.Errorf("a zero ceiling did not leave the default alone: %d entries", len(got))
 	}
 
 	// Six positions exist; a seventh has nowhere to go and must not reach
 	// past the end of the slice.
-	installCards(t, mythic())
-	if got := Pennystock(pennySeller(0.10, "NM"), true, 1, 1, 1, 1, 1, 1, 1, 1); len(got) != 1 {
+	b = backendFor(mythic())
+	if got := Pennystock(b, pennySeller(0.10, "NM"), true, 1, 1, 1, 1, 1, 1, 1, 1); len(got) != 1 {
 		t.Errorf("more ceilings than positions named %d entries, want 1", len(got))
 	}
 }
 
 // A card the datastore does not hold is skipped rather than reported unnamed.
 func TestPennystockSkipsAnUnknownCard(t *testing.T) {
-	installCards(t, map[string]*mtgmatcher.CardObject{})
-	if got := Pennystock(pennySeller(0.01, "NM"), true); len(got) != 0 {
+	b := backendFor(map[string]*mtgmatcher.CardObject{})
+	if got := Pennystock(b, pennySeller(0.01, "NM"), true); len(got) != 0 {
 		t.Errorf("Pennystock named %d entries, want none", len(got))
+	}
+}
+
+// A nil backend is refused gracefully rather than nil-dereferencing on the
+// first GetUUID call - it falls back the same way a nil ArbitOpts.Backend
+// does, to whatever GlobalDatastore() is. Nothing is published in this
+// binary, so nothing resolves.
+func TestPennystockNilBackend(t *testing.T) {
+	if got := Pennystock(nil, pennySeller(0.01, "NM"), true); len(got) != 0 {
+		t.Errorf("Pennystock(nil, ...) named %d entries, want none", len(got))
 	}
 }
