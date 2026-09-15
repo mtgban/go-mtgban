@@ -23,7 +23,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 	os.Exit(m.Run())
 }
 
@@ -32,10 +31,6 @@ func TestMain(m *testing.M) {
 func realDatastore(t *testing.T) {
 	t.Helper()
 	datastoreOnce.Do(func() {
-		if len(mtgmatcher.GetAllSets()) > 0 {
-			testBackend = mtgmatcher.GlobalDatastore()
-			return
-		}
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
@@ -52,8 +47,8 @@ func realDatastore(t *testing.T) {
 			datastoreErr = err
 			return
 		}
+		backend.Logger = log.New(os.Stderr, "", 0)
 		testBackend = backend
-		mtgmatcher.SetGlobalDatastore(testBackend)
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
@@ -61,4 +56,14 @@ func realDatastore(t *testing.T) {
 	if testBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+}
+
+// testBackendOrEmpty is for the tests that degrade gracefully with no
+// datastore loaded rather than skipping: they read the empty Backend
+// currentBackend() used to fall back to, and simply find nothing to check.
+func testBackendOrEmpty() *mtgmatcher.Backend {
+	if testBackend != nil {
+		return testBackend
+	}
+	return &mtgmatcher.Backend{}
 }

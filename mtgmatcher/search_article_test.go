@@ -12,9 +12,10 @@ import (
 // leading one in a query, and the two then disagreed: the Secret Lair stored as
 // "...turtleslastronin" could not be found by "the last ronin".
 func TestSearchSealedContainsHoldsAnInteriorArticle(t *testing.T) {
+	b := testBackendOrEmpty()
 	var checked int
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -27,7 +28,7 @@ func TestSearchSealedContainsHoldsAnInteriorArticle(t *testing.T) {
 		// From the article to the end of the name, which is how someone
 		// searches for the part of a product they remember.
 		fragment := co.Name[at+1:]
-		found, err := mtgmatcher.SearchSealedContains(fragment)
+		found, err := b.SearchSealedContains(fragment)
 		if err != nil {
 			t.Errorf("%q holds %q and was not found: %v", co.Name, fragment, err)
 			continue
@@ -53,10 +54,11 @@ func TestSearchSealedContainsHoldsAnInteriorArticle(t *testing.T) {
 
 // The same for cards, which are searched the same way.
 func TestSearchContainsHoldsAnInteriorArticle(t *testing.T) {
-	uuids := mtgmatcher.GetUUIDs()
+	b := testBackendOrEmpty()
+	uuids := b.GetUUIDs()
 	var checked int
 	for i := 0; i < len(uuids) && checked < 40; i += 13 {
-		co, err := mtgmatcher.GetUUID(uuids[i])
+		co, err := b.GetUUID(uuids[i])
 		if err != nil {
 			continue
 		}
@@ -70,7 +72,7 @@ func TestSearchContainsHoldsAnInteriorArticle(t *testing.T) {
 		checked++
 
 		fragment := co.Name[at+1:]
-		found, err := mtgmatcher.SearchContains(fragment)
+		found, err := b.SearchContains(fragment)
 		if err != nil {
 			t.Errorf("%q holds %q and was not found: %v", co.Name, fragment, err)
 			continue
@@ -94,13 +96,14 @@ func TestSearchContainsHoldsAnInteriorArticle(t *testing.T) {
 
 // And a whole name still finds itself.
 func TestSearchContainsStillFindsAWholeName(t *testing.T) {
-	uuids := mtgmatcher.GetUUIDs()
+	b := testBackendOrEmpty()
+	uuids := b.GetUUIDs()
 	for i := 0; i < len(uuids); i += 997 {
-		co, err := mtgmatcher.GetUUID(uuids[i])
+		co, err := b.GetUUID(uuids[i])
 		if err != nil {
 			continue
 		}
-		found, err := mtgmatcher.SearchContains(co.Name)
+		found, err := b.SearchContains(co.Name)
 		if err != nil {
 			t.Fatalf("%q does not find itself: %v", co.Name, err)
 		}
@@ -121,13 +124,14 @@ func TestSearchContainsStillFindsAWholeName(t *testing.T) {
 // come out empty, which every name would hold.
 func TestSearchContainsKeepsAnArticleOnlyQuery(t *testing.T) {
 	realDatastore(t)
-	found, err := mtgmatcher.SearchContains("the")
+	b := testBackend
+	found, err := b.SearchContains("the")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(found) >= len(mtgmatcher.GetUUIDs()) {
+	if len(found) >= len(b.GetUUIDs()) {
 		t.Errorf("searching for %q answered with %d of the %d printings there are",
-			"the", len(found), len(mtgmatcher.GetUUIDs()))
+			"the", len(found), len(b.GetUUIDs()))
 	}
 }
 
@@ -135,10 +139,11 @@ func TestSearchContainsKeepsAnArticleOnlyQuery(t *testing.T) {
 // the" kept those spaces while a rule shielded it from the article step, so
 // this used to depend on where the cut fell.
 func TestSearchHasPrefixStillFindsAName(t *testing.T) {
-	uuids := mtgmatcher.GetUUIDs()
+	b := testBackendOrEmpty()
+	uuids := b.GetUUIDs()
 	var checked int
 	for i := 0; i < len(uuids); i += 997 {
-		co, err := mtgmatcher.GetUUID(uuids[i])
+		co, err := b.GetUUID(uuids[i])
 		if err != nil {
 			continue
 		}
@@ -148,7 +153,7 @@ func TestSearchHasPrefixStillFindsAName(t *testing.T) {
 		}
 		checked++
 
-		found, err := mtgmatcher.SearchHasPrefix(first)
+		found, err := b.SearchHasPrefix(first)
 		if err != nil {
 			t.Errorf("%q is not found by the word it starts with, %q: %v", co.Name, first, err)
 			continue
@@ -176,11 +181,12 @@ func TestSearchHasPrefixStillFindsAName(t *testing.T) {
 // name clashes with a real one does.
 func TestAClashingPlaytestNameStaysApart(t *testing.T) {
 	realDatastore(t)
-	realCard, err := mtgmatcher.SearchEquals("Glimpse the Unthinkable")
+	b := testBackend
+	realCard, err := b.SearchEquals("Glimpse the Unthinkable")
 	if err != nil {
 		t.Fatal(err)
 	}
-	playtest, err := mtgmatcher.SearchEquals("Glimpse, the Unthinkable Playtest")
+	playtest, err := b.SearchEquals("Glimpse, the Unthinkable Playtest")
 	if err != nil {
 		t.Fatalf("the playtest card is not named apart from the card it clashes with: %v", err)
 	}

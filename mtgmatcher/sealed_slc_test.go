@@ -9,26 +9,27 @@ import (
 
 // slcProduct finds a Secret Lair Countdown Kit, the one product whose deck
 // carries a chance of a foil rather than a fixed finish.
-func slcProduct(t *testing.T) string {
+func slcProduct(t *testing.T) (*mtgmatcher.Backend, string) {
 	t.Helper()
 	realDatastore(t)
-	set, err := mtgmatcher.GetSet("SLC")
+	b := testBackend
+	set, err := b.GetSet("SLC")
 	if err != nil {
 		t.Skip("no SLC in this datastore:", err)
 	}
 	for _, product := range set.SealedProduct {
-		if mtgmatcher.SealedHasDecklist("SLC", product.UUID) {
-			return product.UUID
+		if b.SealedHasDecklist("SLC", product.UUID) {
+			return b, product.UUID
 		}
 	}
 	t.Skip("no SLC product with a decklist")
-	return ""
+	return nil, ""
 }
 
-func finishes(t *testing.T, uuids []string) (foil, nonfoil int) {
+func finishes(t *testing.T, b *mtgmatcher.Backend, uuids []string) (foil, nonfoil int) {
 	t.Helper()
 	for _, uuid := range uuids {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -45,9 +46,9 @@ func finishes(t *testing.T, uuids []string) (foil, nonfoil int) {
 // twice the same. The Countdown Kit upgrades some of its cards to foil at
 // random, which is a fact about one copy rather than about the product.
 func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
-	uuid := slcProduct(t)
+	b, uuid := slcProduct(t)
 
-	first, err := mtgmatcher.GetDecklist("SLC", uuid)
+	first, err := b.GetDecklist("SLC", uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,12 +57,12 @@ func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
 	}
 
 	for i := 0; i < 5; i++ {
-		again, err := mtgmatcher.GetDecklist("SLC", uuid)
+		again, err := b.GetDecklist("SLC", uuid)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if !slices.Equal(again, first) {
-			foil, nonfoil := finishes(t, again)
+			foil, nonfoil := finishes(t, b, again)
 			t.Fatalf("call %d answered differently: %d cards (%d foil, %d nonfoil)",
 				i+2, len(again), foil, nonfoil)
 		}
@@ -71,7 +72,7 @@ func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
 	// - and the data says so. What it does not promise is the third of the
 	// deck the roll used to upgrade, so a quarter separates the two cleanly
 	// without pinning either number.
-	foil, _ := finishes(t, first)
+	foil, _ := finishes(t, b, first)
 	if foil*4 >= len(first) {
 		t.Errorf("%d of %d cards are foil, which reads as a roll rather than as the data",
 			foil, len(first))
@@ -81,15 +82,15 @@ func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
 // The chance itself is not lost: it belongs to opening a copy, which is what
 // the simulation does.
 func TestGetPicksForSealedStillRollsTheFoils(t *testing.T) {
-	uuid := slcProduct(t)
+	b, uuid := slcProduct(t)
 
 	var sawFoil bool
 	for i := 0; i < 10 && !sawFoil; i++ {
-		picks, err := mtgmatcher.GetPicksForSealed("SLC", uuid)
+		picks, err := b.GetPicksForSealed("SLC", uuid)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if foil, _ := finishes(t, picks); foil > 0 {
+		if foil, _ := finishes(t, b, picks); foil > 0 {
 			sawFoil = true
 		}
 	}
@@ -101,16 +102,16 @@ func TestGetPicksForSealedStillRollsTheFoils(t *testing.T) {
 // And the expected value reads the chance from the probabilities, where each
 // card is listed in both finishes with the odds of each.
 func TestProbabilitiesCarryBothFinishes(t *testing.T) {
-	uuid := slcProduct(t)
+	b, uuid := slcProduct(t)
 
-	probs, err := mtgmatcher.GetProbabilitiesForSealed("SLC", uuid)
+	probs, err := b.GetProbabilitiesForSealed("SLC", uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var foilOdds, nonfoilOdds int
 	for _, prob := range probs {
-		co, err := mtgmatcher.GetUUID(prob.UUID)
+		co, err := b.GetUUID(prob.UUID)
 		if err != nil {
 			continue
 		}
