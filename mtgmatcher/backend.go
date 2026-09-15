@@ -2,7 +2,6 @@ package mtgmatcher
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"maps"
 	"slices"
@@ -419,19 +418,18 @@ type Backend struct {
 // there is none. The rules a game attaches through SetRules report through
 // this too, so a datastore's diagnostics all land where its owner said.
 func (b *Backend) Logf(format string, a ...any) {
-	b.logger().Printf(format, a...)
+	if b.Logger == nil {
+		return
+	}
+	b.Logger.Printf(format, a...)
 }
 
 // Log is Logf for a message with nothing to format.
 func (b *Backend) Log(a ...any) {
-	b.logger().Println(a...)
-}
-
-func (b *Backend) logger() *log.Logger {
-	if b.Logger != nil {
-		return b.Logger
+	if b.Logger == nil {
+		return
 	}
-	return log.New(io.Discard, "", 0)
+	b.Logger.Println(a...)
 }
 
 const (
