@@ -27,13 +27,21 @@ on:
         type: string
       mkmids-cache-key:
         type: string
+      # A JSON array, same shape a job's own runs-on takes - so a caller
+      # that needs a self-hosted runner (a catalog too large to finish on
+      # ubuntu-latest's job ceiling) can name its label without every other
+      # caller needing to know self-hosted runners exist at all.
+      runs-on:
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
 
 permissions:
   contents: read
 
 jobs:
   run-bantool:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
 
     steps:
       - name: Checkout repository

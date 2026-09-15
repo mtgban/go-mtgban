@@ -1,11 +1,13 @@
 name: magic / cardmarket_market
 
-# No schedule yet: Magic's catalog needs the offline pre-filter (BAN_API_KEY)
-# to fit any budget at all, and even filtered it can run up to 12h - past
-# what run-bantool.yml's ubuntu-latest job tolerates (a 5-6h practical
-# ceiling). Dispatch this by hand to smoke-test a slice of the catalog
-# (bantool's own -TargetEdition flag) until it is routed to a self-hosted
-# runner; see the cardmarket Market scraper's own doc comment.
+# No schedule yet: even filtered (BAN_API_KEY), Magic's catalog can run up
+# to 12h, and picking a cron time that doesn't collide with the rest of the
+# bantool-cardmarket group's own schedule is a separate decision from
+# whether a runner exists to run it on at all. Routed to the self-hosted
+# cardmarket-market runner below - see .github/runner/README.md - so the
+# 12h ceiling itself is no longer the blocker; dispatch this by hand
+# (bantool's own -TargetEdition flag smoke-tests a slice of the catalog)
+# until a schedule is picked.
 on:
   workflow_dispatch: {}
   repository_dispatch:
@@ -46,4 +48,5 @@ jobs:
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
       mkmids-filepath: ${{ needs.cache-mkmids.outputs.filepath }}
       mkmids-cache-key: ${{ needs.cache-mkmids.outputs.key }}
+      runs-on: '["self-hosted", "cardmarket-market"]'
     secrets: inherit

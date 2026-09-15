@@ -1,8 +1,8 @@
 name: yugioh / cardmarket_market
 
-# No schedule yet - see bantool-cardmarket_market.yml's comment: this
-# catalog needs the same offline pre-filter and the same self-hosted
-# runner Magic and Pokemon's Market jobs are waiting on.
+# No schedule yet - see bantool-cardmarket_market.yml's comment: routed
+# to the self-hosted cardmarket-market runner, picking an actual cron time
+# is the remaining decision, same as Magic and Pokemon's Market jobs.
 on:
   workflow_dispatch: {}
   repository_dispatch:
@@ -25,4 +25,5 @@ jobs:
       game: "yugioh"
       datastore-filepath: b2://mtgban-datastore/yugioh/yugioh.json.xz
       mkmids-filepath: b2://mtgban-datastore/yugioh/cardmarket_catalog.json.xz
+      runs-on: '["self-hosted", "cardmarket-market"]'
     secrets: inherit
