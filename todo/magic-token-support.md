@@ -214,7 +214,7 @@ Angel's two different real editions depending on wording, for instance) —
 don't fold those; a name rule generalizes to future listings, an id entry
 doesn't.
 
-### PR #605 — combined entities for two-sided token sheets (open, not yet merged, `derived-token-pairs`)
+### PR #605 — combined entities for two-sided token sheets (merged, `c6c86688`)
 
 A second thread of work, distinct from the id-chase above: mtgjson carries
 a `tokenProducts`/`tokenParts` field on many token cards, never parsed
@@ -367,12 +367,212 @@ trusting `tcgplayerProductIds` or the pricing change blindly:
   and this project holds every other live-pricing change to that
   standard before trusting a row-count delta.
 
+### PR #618 — recover pairings blocked by sibling-set id reuse, plus "front faces" (merged)
+
+Asked "what about more than tokens/emblems having a card back" (CK and SCG
+both sell paired non-token, non-emblem cards too — AFR's dungeon cards).
+The real blocker wasn't a layout gap (`adjustTokens` already rewrites a
+dungeon card to layout `"token"` before `deriveTokenPairs` runs, confirmed
+by measuring the derived count before/after a layout-allowlist change: no
+change, 3094 → 3094) — it was `OAFR` (Forgotten Realms Oversized Cards, a
+`memorabilia`-type sibling set of `AFR`) duplicating AFR's own ids under
+its own uuids, so `deriveTokenPairs`' one-id-per-entity dedup refused the
+whole pairing as ambiguous the moment it saw two different uuids both
+claiming the same id.
+
+`idCanonicalKey` resolves a same-id collision as "not genuinely ambiguous"
+when every claimant names the identical two face names (sorted), and picks
+the canonical claimant preferring a non-`memorabilia`-type set
+(`isMemorabiliaSet`) — so the index keys on AFR's own uuids, the ones CK
+and SCG's `scryfall_id`s actually resolve to, not OAFR's. (First version
+picked arbitrarily by uuid sort order, landed on OAFR by chance, and
+silently kept every dungeon pairing unreachable from CK's real ids — caught
+before merge by re-running the real `cardkingdom.Preprocess()`+`Match()`
+path rather than trusting the derived-count delta alone.) Two SCG-specific
+gaps found the same way: the two-sided trigger only fired on `"Token"`,
+never `"Dungeon"` (SCG spells dungeon-card listings the same
+brace-and-suffix way as tokens, `"{X Dungeon}"`), and `cleanFaceName` never
+learned to strip `" Dungeon"` the same way it already stripped `" Token"`.
+
+Consistency is scoped to **face name**, not "same uuid after the sibling
+map" — deliberate, and now says so in the comment: safe for AFR/OAFR's 127
+memorabilia-duplicate ids, but a future collision sharing names across two
+*real*, non-sibling printings should not get silently canonicalized by the
+same rule. Also fixed in the same PR: `catalogNames` gained an entry for
+SCG's own typo ("Lost Mine of **the** Phandelver" vs the card's real "Lost
+Mine of Phandelver", no "the") that would otherwise make this exact pairing
+unreachable regardless of how well the rest of the matching works.
+
+### PR #621 — SCG composite-sku two-sided token pairings (merged)
+
+The deep-dive on SCG's remaining 5 gap categories identified from #605's
+follow-up measurement. Four were investigation-only (no code needed, see
+below); the fifth — SCG sku shapes that composite **both** faces' own
+filing set and number together (`LCI-T03_REX_T02`, fused `T03T15`, ...) —
+got a new mechanism: `tokenPairSkuAnchors` tokenizes the sku's number
+segment into each face's `(set, number)` pair, each face anchors
+independently via `mtgmatcher.MatchInSetNumber` (refusing on anything but
+exactly one match), and the two anchored uuids join through a new
+uuid-pair-keyed `magic.MatchTokenPairingByUUIDs` — sidestepping
+`TokenPairIndex`'s name-collision-blanking entirely, since two already-
+known uuids can't collide with each other the way two vendor-spelled names
+can. Measured against the real catalog through the actual
+`resolveProductID` path: **156 of 289** candidate listings now resolve, up
+from 113. Full writeup in the PR body.
+
+Two smaller gaps fixed alongside it: SCG's bare (unpaired) dungeon-card
+listings spell their own type-name suffix the same way a token listing
+does (`"Lost Mine of Phandelver Dungeon"`) — `preprocess` now strips and
+verifies it the same way the existing `" Token"` strip does; and the bare
+Undercity promo-shelf listing has no standalone printing to anchor to, only
+mtgjson's native combined `"Undercity // The Initiative"` — added to
+`promoShelfPrintings`.
+
+**The other four gap categories, investigated, no code shipped:**
+- **34 multi-id entities**: 33 confirmed genuine (Surge Foil/regular
+  duplicate SKUs for the same pairing). **The 34th is a real upstream
+  mtgjson mis-mapping, not yet reported**: `TELD`'s Goat // Food entity
+  (id `200320`) has its second `tokenParts` uuid pointing at Food **#16**
+  (`dcf079a4-9833-5527-b318-9318ef6491d8`); the card actually paired with
+  Goat on that sheet is Food **#17**
+  (`5f8204d1-ab7a-5182-b905-725704116a7b`). Needs a report to MTGJSON —
+  not filed by this pass, per the user's own standing preference to submit
+  these themselves (`[[feedback_vendor_ids_are_theirs]]`-adjacent).
+- **Cross-set `Number` field** (a derived pairing's `Number` mixes two
+  different sets' own numbering, e.g. `665` of `5,993` measured pairings):
+  confirmed cosmetic-only and structurally unreachable by anything that
+  matches by number — a derived entity is excluded from
+  `set.Cards`/`Tokens` and every name/number index by construction.
+  Documented with a comment in `buildDerivedCard`, no functional change.
+- **77-pairings-with-no-usable-id bucket**: re-measured through the real
+  production path, confirmed unchanged and correct (mtgjson already gave
+  these ids to one of their own single-faced tokens; nothing to recover).
+- **Design decisions flagged for the user, not built unilaterally:**
+  - **89 SCG composite-sku listings anchor correctly (both faces resolve
+    to exactly one printing each) but have no upstream `tokenProducts`
+    entity to point to at all** — TCGplayer's own catalog never bundled
+    that exact pairing as one product. Recovering these would need a new
+    kind of pairing entity keyed directly off the two anchored uuids
+    rather than off an upstream id, with its own pricing semantics (no
+    `tcgplayerProductId` to price from) — a real design call, not
+    attempted here.
+  - **117 "losing sibling" ids** (from #605's already-refused
+    more-than-one-pairing-claims-this-id bucket) are provably the same
+    physical product as an already-recovered pairing (127 of the
+    originally-refused ~128 were AFR/OAFR-style memorabilia duplicates,
+    now resolved by `idCanonicalKey`; the rest are a similar shape).
+    Recovering the remainder would need relaxing `TokenPairIndex`'s
+    one-id-per-entity model — also a design call, not attempted here.
+
+### PR #624 — fix the live nonfoil pricing bug the drift-controlled run found (open)
+
+The drift-controlled base → branch → base run against the real TCGplayer
+API (finally done, see below) found a real, already-merged bug: the
+`derivedBySet` sku-matching walk `ac6cf739` added (#605) compared
+`sku.Printing` against the literal `"NORMAL"` for a nonfoil combined
+entity, but the real sku catalog only ever spells a nonfoil printing
+`"NON FOIL"` (confirmed against a live-fetched copy of the catalog, and
+against this same file's own `req.Printing` checks a few lines above,
+which already use the right string for the identical field). `"NORMAL"`
+never matches, so **every nonfoil two-sided token sheet's combined entity
+has been silently pricing from zero sku rows since #605 merged** — not an
+error, since an empty match list looks identical to "priced elsewhere,"
+which is exactly why nothing caught it without a live measurement
+specifically checking for it. The foil branch's string was always right,
+so foil pricing was never affected — half the feature quietly worked, half
+quietly didn't.
+
+Live-measured impact: of 3,071 nonfoil derived entities in scope, 0 got a
+price on either of two back-to-back branch runs; all 2,922 foil entities
+priced correctly. Fixed (one string), and the sku-matching filter pulled
+out into a directly-testable `derivedSkuMatches` helper with 10 unit test
+cases, so this exact class of typo has a test that would have caught it
+rather than depending on a live-API measurement to ever notice a silently-
+empty match list again. Re-verified the fix against a fresh local copy of
+the real sku catalog: 1,500 nonfoil derived entities that matched zero
+skus under the old string now match real ones (5–35 rows each).
+
+### PR #625 — CardTrader, the third vendor (open)
+
+Recon first (read-only, no code): CardTrader sells the same two-sided
+token sheet shape (3,877 of 11,250 Magic Token-category blueprints, name
+containing `" // "`, no brace-wrapping unlike SCG). The one structurally
+new thing worth knowing going in: CardTrader's own `TCGplayerID` is
+frequently the *pairing's own* product id directly (not one face's) —
+1,286 of 1,409 TCGplayerID-bearing blueprints hit a real derived pairing
+directly via a bare `ConvertID`. Because that global id index already
+contains #605's minted entities, CardTrader's existing, **completely
+unmodified** code was already resolving ~1,300 of these correctly by
+accident, with zero token-pairing-aware code — but silently mispricing 81
+(later 46 by the time of the actual fix, catalog moves) as the wrong
+single face, and with the accidental path bypassing every foil-safety
+check.
+
+Shipped: a `magic.MatchTokenPairing`/id-direct check ahead of `namedID`
+(mirroring CK/SCG), plus a new `magic.VerifyTokenPairingFinish` — a
+variant of the existing unexported `tokenPairingFinishOK` for a caller
+(CardTrader) that has *not* already established an id names a real
+pairing some other way, the way every existing caller has by the time it
+reaches that check. Also fixed a second, deeper gap this recon didn't
+originally flag: CardTrader resolves a blueprint's identity once and
+applies foil-ness afterward per-listing via `foilPrintingID`, which finds
+a foil sibling *by name* — always a no-op for a derived pairing, since its
+combined name is deliberately excluded from every name index. Foil
+listings of an already-resolving pairing were silently keeping the
+nonfoil price. `foilPrintingID` now resolves a derived pairing's foil
+sibling by its own product id instead, correctly refusing (dropping the
+listing) rather than substituting when the pairing was never sold in foil
+at all (Card Trader lists foil products for some pairings that were only
+ever sold in one finish's worth of tokens).
+
+Live-measured: every one of 1,328 blueprints with a real derived pairing
+now resolves to it (0 wrong), up from 1,282. No sku/number fallback is
+possible for the ~62% with no usable id at all — CardTrader's Token
+category carries no collector-number field whatsoever, unlike CK/SCG.
+
+### Live drift-controlled pricing run for #605 — done, via #624 above
+
+The one item carried open since #605 merged: verified against the real
+TCGplayer API in a base → branch → base comparison (not just the local
+sku file). Found the bug fixed by #624 above. Noise floor was clean (base1
+vs base2 back-to-back: 0 cardIDs added/removed, 0 structurally large price
+deltas); branch vs branch was perfectly identical. Eldrazi Scion
+(Double Masters 2022, the commit's own example) went from absorbing all 9
+of its partners' prices on base to correctly having no price row of its
+own on branch, with its 9 pairings each pricing correctly and separately.
+One pre-existing, non-regressing gap confirmed live rather than just
+asserted: ~18 single-faced tokens sharing a TCGplayer ProductID with a
+now-excluded pairing id lost their (wrong, absorbed) price rather than
+gaining a correct one — matches #605's own documented "127 ids refused as
+claimed by more than one pairing... a future pass could recover most of
+them" limitation, not a new problem.
+
 ## What's still open
 
-Updated 2026-09-14 (evening), after landing PR #605 (three commits: mint,
-price, unrefuse — see above). The prior pass's items are compressed below
-to one line each now that they're resolved and merged; full detail is in
-the PR itself and the "What shipped" section above.
+Updated 2026-09-15, after landing PR #618 (dungeon-pairing/front-face
+recovery) and PR #621 (SCG composite-sku pairings), and opening PR #624
+(live nonfoil pricing bug fix) and PR #625 (CardTrader) — see "What
+shipped" above for all four. The prior pass's items are compressed below
+to one line each now that they're resolved; full detail is in the PRs
+themselves and the "What shipped" section above.
+
+- **PR #624 and PR #625 are open, not yet merged** — review/merge them
+  before trusting either fix in production. #624 in particular is a live
+  pricing bug already affecting every nonfoil two-sided token sheet on
+  master today.
+- **TELD Goat // Food upstream mtgjson report — needs submitting.** See
+  the PR #621 entry above for the exact wrong/right uuids. Not filed by
+  this pass.
+- **Two design decisions for the user, not built unilaterally** — see the
+  PR #621 entry above: (a) a new pairing-entity class for the 89 SCG
+  composite-sku listings with no upstream `tokenProducts` id to price
+  from; (b) relaxing `TokenPairIndex`'s one-id-per-entity model to recover
+  the remaining "losing sibling" ids.
+- **CardTrader's own remaining ~62% (no id at all, no number field either)
+  is a real, structural data gap** — not something a sku/number fallback
+  can close the way it did for CK/SCG, since Card Trader's Token-category
+  blueprints carry no collector number in the fetched data at all. Revisit
+  only if CardTrader starts publishing one.
 
 **Resolved this cycle, merged**: Gala Greeters' 10 missing languages
 (#591); `PUNK` unskipped, collision-checked safe (#592); `Ertai, the
@@ -385,13 +585,9 @@ scryfallIds) (#598). The "Front Cards" `skipSet` suffix was investigated
 and deliberately left alone (already safe via an independent
 `isUnsupported` guard; unskipping only adds ambiguity).
 
-- **Combined two-sided token entities — open, not yet merged (#605, see
-  "What shipped" above for the full writeup).** The live pricing change
-  in it (commit 2) still needs a drift-controlled live-API run before
-  trusting it; several other limitations are documented in the PR rather
-  than fixed (multi-id entities that may be mtgjson mis-mappings, 77
-  pairings with no usable id, ~128 refused ids that are mostly
-  recoverable, cosmetic cross-set numbering).
+(#605 itself is merged now — see its own entry in "What shipped" above,
+and the still-open pricing/CardTrader/multi-id items at the top of this
+section rather than here.)
 
 - **Cross-vendor name-based matching, Card Kingdom — investigated and
   fixed 2026-09-14 (#605).** One fetch of CK's own published pricelist
