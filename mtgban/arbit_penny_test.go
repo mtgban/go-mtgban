@@ -141,8 +141,7 @@ func TestPennystockSkipsAnUnknownCard(t *testing.T) {
 
 // A nil backend is refused gracefully rather than nil-dereferencing on the
 // first GetUUID call - it falls back the same way a nil ArbitOpts.Backend
-// does, to whatever GlobalDatastore() is. Nothing is published in this
-// binary, so nothing resolves.
+// does, onto an empty backend holding no card, so nothing resolves.
 func TestPennystockNilBackend(t *testing.T) {
 	if got := Pennystock(nil, pennySeller(0.01, "NM"), true); len(got) != 0 {
 		t.Errorf("Pennystock(nil, ...) named %d entries, want none", len(got))
