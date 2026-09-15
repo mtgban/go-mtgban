@@ -16,6 +16,7 @@ import (
 // sheet's own edition match won the tie unchallenged. Both are pinned here.
 func TestMatchOversized(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	for _, probe := range []struct {
 		name      string
 		edition   string
@@ -38,10 +39,10 @@ func TestMatchOversized(t *testing.T) {
 			Edition:   probe.edition,
 			Variation: probe.variation,
 		}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if probe.setCode == "" {
 			if err == nil {
-				co, _ := mtgmatcher.GetUUID(id)
+				co, _ := b.GetUUID(id)
 				t.Errorf("Match(%v) = %s (%v), want an error: no oversized printing is carried", in, id, co)
 			}
 			continue
@@ -50,7 +51,7 @@ func TestMatchOversized(t *testing.T) {
 			t.Errorf("Match(%v) = %v", in, err)
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Errorf("GetUUID(%s) = %v", id, err)
 			continue
@@ -67,6 +68,7 @@ func TestMatchOversized(t *testing.T) {
 // collector number picks among those when one of them answers to it.
 func TestMatchOversizedShelf(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	for _, probe := range []struct {
 		name      string
 		variation string
@@ -88,12 +90,12 @@ func TestMatchOversizedShelf(t *testing.T) {
 			Edition:   "Oversize Cards",
 			Variation: probe.variation,
 		}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("Match(%v) = %v", in, err)
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Errorf("GetUUID(%s) = %v", id, err)
 			continue
@@ -109,14 +111,18 @@ func TestMatchOversizedShelf(t *testing.T) {
 // built - the championship prizes - names a printing that is not carried, and
 // answering it with whichever other set printed one would price the wrong card.
 func TestMatchOversizedShelfKeepsTheSetsWeSkip(t *testing.T) {
+	// No datastore is required: the printing is never carried, loaded or
+	// not, so an empty backend proves the same refusal without needing
+	// ALLPRINTINGS5_PATH.
+	b := testBackendOrEmpty()
 	in := mtgmatcher.InputCard{
 		Name:      "Lightning Bolt",
 		Edition:   "Legacy Championship",
 		Variation: "Oversized",
 	}
-	id, err := mtgmatcher.Match(&in)
+	id, err := b.Match(&in)
 	if err == nil {
-		co, _ := mtgmatcher.GetUUID(id)
+		co, _ := b.GetUUID(id)
 		t.Errorf("Match(%v) = %s (%v), want an error: that printing is not carried", in, id, co)
 	}
 }
