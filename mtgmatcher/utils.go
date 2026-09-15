@@ -404,12 +404,6 @@ func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 	return time.Parse("2006-01-02", releaseDate)
 }
 
-// CardReleaseDate returns the release date of the card's set, from the default
-// datastore.
-func CardReleaseDate(cardID string) (time.Time, error) {
-	return currentBackend().CardReleaseDate(cardID)
-}
-
 // promoHeadings are the headings storefronts file promotional printings
 // under without saying which set issued them. They name no set in any game:
 // the heading spans every promotional printing a game has, while a set

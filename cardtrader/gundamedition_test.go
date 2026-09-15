@@ -106,9 +106,8 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 // A shelf renamed on either side moves every listing on it between those
 // groups silently, which is what this is here to catch.
 //
-// promoShelfNeedsLabel asks the same question of the global datastore; the
-// lookup is the whole of it, so this asks the loaded backend directly
-// rather than swapping what every other test in this package runs against.
+// promoShelfNeedsLabel asks the same question; the lookup is the whole of
+// it, so this asks the loaded backend directly.
 func TestGundamShelvesNameASet(t *testing.T) {
 	b := gundamBackend(t)
 
