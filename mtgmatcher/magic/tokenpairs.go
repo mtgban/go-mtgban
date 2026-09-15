@@ -974,16 +974,17 @@ func TokenPairIDByBothNames() map[[2]string]string {
 	return tokenPairIndices().byBothNames
 }
 
-// editionTokenSetCode resolves an edition name to the set code its own
+// EditionTokenSetCode resolves an edition name to the set code its own
 // tokens are filed under, walking ParentCode the way deriveTokenPairs'
-// own homeSet does at mint time (unexported, build-time only, operating on
-// a map[string]*Set rather than the loaded backend - this is that same
-// logic against the public GetSet/GetSetByName API instead, for a caller
-// outside this package with only a vendor's own edition wording to start
-// from). Returns "" when the edition doesn't resolve to a real set, or
+// own homeSet does at mint time (that version is build-time only,
+// operating on a map[string]*Set rather than the loaded backend - this is
+// the same logic against the public GetSet/GetSetByName API instead, for
+// a caller with only a vendor's own edition wording to start from - CK/SCG
+// anchor by a sku's own embedded set code instead and have never needed
+// this). Returns "" when the edition doesn't resolve to a real set, or
 // that set's own chain never reaches one with a token sheet - refuse
 // rather than guess, the same discipline as everywhere else in this file.
-func editionTokenSetCode(edition string) string {
+func EditionTokenSetCode(edition string) string {
 	set, err := mtgmatcher.GetSetByName(edition)
 	if err != nil {
 		return ""
@@ -1026,7 +1027,7 @@ func editionTokenSetCode(edition string) string {
 // derives, silently wrong, without a second check.
 //
 // listingEdition is that second check: it must independently name the
-// same set the byBothNames match resolved to (via editionTokenSetCode),
+// same set the byBothNames match resolved to (via EditionTokenSetCode),
 // or this refuses rather than trust the name pair alone. Measured against
 // Card Trader's real no-id catalog: of 970 blueprints whose two face names
 // matched exactly one derived pairing, 831 (85.6%) had their own claimed
@@ -1048,7 +1049,7 @@ func MatchTokenPairingByNamesAndEdition(listingName, listingEdition string, foil
 		return ""
 	}
 
-	wantSet := editionTokenSetCode(listingEdition)
+	wantSet := EditionTokenSetCode(listingEdition)
 	if wantSet == "" {
 		return ""
 	}
