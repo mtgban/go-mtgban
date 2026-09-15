@@ -139,6 +139,7 @@ func buildIndex(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Optio
 
 	scraper.LogCallback = opts.LogCallback
 	scraper.Affiliate = opts.Affiliate
+	scraper.TargetEdition = opts.TargetEdition
 	if opts.MaxConcurrency != 0 {
 		scraper.MaxConcurrency = opts.MaxConcurrency
 	}
@@ -184,6 +185,7 @@ func buildMarket(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.O
 
 	scraper.LogCallback = opts.LogCallback
 	scraper.Affiliate = opts.Affiliate
+	scraper.TargetEdition = opts.TargetEdition
 	scraper.BanPriceKey, err = mtgban.OptionalSecret(auth, SecretBanKey)
 	if err != nil {
 		return nil, err
@@ -222,6 +224,7 @@ func buildSealed(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.O
 
 	scraper.LogCallback = opts.LogCallback
 	scraper.Affiliate = opts.Affiliate
+	scraper.TargetEdition = opts.TargetEdition
 	if opts.MaxConcurrency != 0 {
 		scraper.MaxConcurrency = opts.MaxConcurrency
 	}

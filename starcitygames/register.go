@@ -27,6 +27,7 @@ func init() {
 			}
 			scraper.LogCallback = opts.LogCallback
 			scraper.Affiliate = opts.Affiliate
+			scraper.TargetEdition = opts.TargetEdition
 			return scraper, nil
 		})
 	mtgban.Register("starcitygames_sealed", starcitygamesGames,

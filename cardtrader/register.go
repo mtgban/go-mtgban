@@ -28,6 +28,7 @@ func init() {
 				return nil, err
 			}
 			scraper.LogCallback = opts.LogCallback
+			scraper.TargetEdition = opts.TargetEdition
 			scraper.ShareCode = opts.Affiliate
 			if opts.MaxConcurrency != 0 {
 				scraper.MaxConcurrency = opts.MaxConcurrency
@@ -46,6 +47,7 @@ func init() {
 				return nil, err
 			}
 			scraper.LogCallback = opts.LogCallback
+			scraper.TargetEdition = opts.TargetEdition
 			scraper.ShareCode = opts.Affiliate
 			if opts.MaxConcurrency != 0 {
 				scraper.MaxConcurrency = opts.MaxConcurrency
