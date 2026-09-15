@@ -9,6 +9,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // priceToUSD converts a CardTrader price to dollars, through a rate table
@@ -789,6 +790,29 @@ func foilPrintingID(cardID, name string) string {
 	if err != nil || co.Foil || co.Etched {
 		return cardID
 	}
+
+	// A derived token pairing's own combined name is deliberately excluded
+	// from every name index (see mtgmatcher/magic/tokenpairs.go's own doc
+	// comment on the type), so HasFoilPrinting below always answers false
+	// for one regardless of whether the physical product was actually
+	// ever sold in foil - silently keeping the nonfoil id, and nonfoil
+	// price, for a listing Card Trader itself flagged as foil. Resolved
+	// the same way the rest of this feature resolves a finish: by the
+	// pairing's own tcgplayerProductId plus the foil flag, not by name,
+	// and refusing (returning "") rather than guessing wrong when the
+	// pairing was never sold in that finish at all.
+	if co.Identifiers["derivedTokenPair"] == "true" {
+		verified := magic.VerifyTokenPairingFinish(co.Identifiers["tcgplayerProductId"], true)
+		if verified == "" {
+			return ""
+		}
+		foilID, err := mtgmatcher.MatchID(verified, true)
+		if err != nil {
+			return ""
+		}
+		return foilID
+	}
+
 	if !mtgmatcher.HasFoilPrinting(name) {
 		return cardID
 	}

@@ -73,6 +73,40 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	number := strings.TrimLeft(bp.Properties.Number, "0")
 	variant := ""
 
+	// A two-sided token sheet's product ("Beast // Plant") is exactly the
+	// shape namedID below silently mis-resolves: whichever single face one
+	// of the blueprint's own ids happens to name, rather than the combined
+	// pairing the name actually describes - the same "silently prices the
+	// whole two-sided product as if it were just the one face" risk
+	// documented in cardkingdom's and starcitygames's own versions of this
+	// check (see magic.MatchTokenPairing's doc comment, shared by all
+	// three). Card Trader differs from both in one way worth knowing: its
+	// own TCGplayerID is frequently the *pairing's own* product id
+	// directly, not one face's - magic.VerifyTokenPairingFinish checks
+	// that case explicitly rather than relying on namedID's fallthrough to
+	// stumble onto it by accident, which it otherwise would for a
+	// scryfallID-less blueprint (measured: true for most, not all).
+	// Foil is always false here: a blueprint has no finish of its own,
+	// multiple products of different finishes share one, so it is
+	// resolved per-product in cardtrader.go instead (see foilPrintingID's
+	// own derived-pairing handling).
+	if bp.CategoryID == CategoryMagicTokens && strings.Contains(cardName, " // ") {
+		if tcgID := magic.MatchTokenPairing(bp.ScryfallID, cardName, false); tcgID != "" {
+			if id, err := mtgmatcher.MatchID(tcgID, false); err == nil {
+				return &mtgmatcher.InputCard{
+					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
+				}, nil
+			}
+		}
+		if verified := magic.VerifyTokenPairingFinish(fmt.Sprintf("%d", bp.TCGplayerID), false); verified != "" {
+			if id, err := mtgmatcher.MatchID(verified, false); err == nil {
+				return &mtgmatcher.InputCard{
+					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
+				}, nil
+			}
+		}
+	}
+
 	// Some, but not all, have a proper id we can reuse right away, and the
 	// blueprint says which space each one lives in
 	scryfallID := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)

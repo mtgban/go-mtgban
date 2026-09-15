@@ -30,6 +30,26 @@ func TestFoilPrintingID(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// A derived token pairing's own combined name is deliberately excluded
+	// from every name index (mtgmatcher/magic/tokenpairs.go), so the plain
+	// HasFoilPrinting path below can never find one's foil sibling by name -
+	// resolved instead by the pairing's own tcgplayerProductId plus the
+	// foil flag. AFR's dungeon-card pairing sells in foil; a pairing where
+	// one face never did (Goblin // Giant Teddy Bear, TC21) is refused
+	// rather than silently kept at its nonfoil price.
+	pairedFoilCapable := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "244297")
+	if pairedFoilCapable == "" {
+		t.Fatal("datastore carries no derived pairing for TCGplayer id 244297")
+	}
+	pairedFoilCapableFoil, err := mtgmatcher.MatchID(pairedFoilCapable, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pairedNonfoilOnly := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "209922")
+	if pairedNonfoilOnly == "" {
+		t.Fatal("datastore carries no derived pairing for TCGplayer id 209922")
+	}
+
 	tests := []struct {
 		desc   string
 		cardID string
@@ -40,6 +60,8 @@ func TestFoilPrintingID(t *testing.T) {
 		{"foil printing stays put", foil, "Tainted Pact", foil},
 		{"etched printing stays put", etched, "Tainted Pact", etched},
 		{"unknown id is left alone", "not-a-uuid", "Tainted Pact", "not-a-uuid"},
+		{"a derived pairing sold in foil reaches its own foil sibling", pairedFoilCapable, "Dungeon of the Mad Mage // Lost Mine of Phandelver", pairedFoilCapableFoil},
+		{"a derived pairing never sold in foil is refused, not kept nonfoil", pairedNonfoilOnly, "Goblin // Giant Teddy Bear", ""},
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {

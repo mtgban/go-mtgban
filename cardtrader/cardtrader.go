@@ -244,6 +244,12 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// Magic only: the other games carry the finish on the input already.
 		if ct.gameID == GameMagic && product.Properties.MTGFoil {
 			cardID = foilPrintingID(cardID, theCard.Name)
+			// A derived token pairing refuses rather than substitutes the
+			// nonfoil id when the pairing was never sold in foil - the
+			// one case foilPrintingID can return "" for.
+			if cardID == "" {
+				continue
+			}
 		}
 
 		qty := product.Quantity
