@@ -525,7 +525,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 					return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 				}
 
-				scraper, err := tcgplayer.NewScraperIndex(tcgPublicID, tcgPrivateID)
+				scraper, err := tcgplayer.NewScraperIndex(b, tcgPublicID, tcgPrivateID)
 				if err != nil {
 					return nil, err
 				}
@@ -547,7 +547,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 					return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
 				}
 
-				scraper, err := tcgplayer.NewScraperMarket(tcgPublicID, tcgPrivateID)
+				scraper, err := tcgplayer.NewScraperMarket(b, tcgPublicID, tcgPrivateID)
 				if err != nil {
 					return nil, err
 				}
@@ -583,7 +583,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 					return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
 				}
 
-				scraper, err := tcgplayer.NewScraperSealed(tcgPublicID, tcgPrivateID)
+				scraper, err := tcgplayer.NewScraperSealed(b, tcgPublicID, tcgPrivateID)
 				if err != nil {
 					return nil, err
 				}
