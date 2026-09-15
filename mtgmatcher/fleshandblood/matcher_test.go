@@ -246,7 +246,7 @@ var fleshandbloodSeeds = []matchTest{
 }
 
 // testBackend is the datastore loadBackend read, for the tests to match
-// against directly; the same one is installed as the global.
+// against directly.
 var testBackend *mtgmatcher.Backend
 
 // loadBackend hands a test the datastore it read, or skips it where
@@ -272,7 +272,6 @@ func loadBackend(t *testing.T) *mtgmatcher.Backend {
 			return
 		}
 		testBackend = b
-		mtgmatcher.SetGlobalDatastore(b)
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)

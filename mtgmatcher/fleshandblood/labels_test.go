@@ -110,7 +110,6 @@ func TestLabelledNumbers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mtgmatcher.SetGlobalDatastore(b)
 	for _, tt := range []struct {
 		desc                             string
 		name, edition, variation, finish string
@@ -139,7 +138,7 @@ func TestLabelledNumbers(t *testing.T) {
 		{"and the printing wearing the number outranks it where both are sold", "Helm of Isen's Peak", "Welcome to Rathe", "WTR042", "Unlimited Edition Normal", false, "wtr042_unlimited"},
 	} {
 		in := mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.variation, Finish: tt.finish, Foil: tt.foil}
-		got, err := mtgmatcher.Match(&in)
+		got, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("%s: Match(%q, %q, %q, %q) = %v", tt.desc, tt.name, tt.edition, tt.variation, tt.finish, err)
 			continue
@@ -151,7 +150,7 @@ func TestLabelledNumbers(t *testing.T) {
 	// Two fused cards share Marlynn's pair, one per back, and a listing
 	// naming the face alone cannot say which it sells.
 	in := mtgmatcher.InputCard{Name: "Marlynn", Edition: "High Seas", Variation: "SEA083", Finish: "Non-foil"}
-	if got, err := mtgmatcher.Match(&in); err == nil {
+	if got, err := b.Match(&in); err == nil {
 		t.Errorf("Match(Marlynn, SEA083) = %q, want a refusal", got)
 	}
 }
@@ -165,7 +164,6 @@ func TestPromoFinishes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mtgmatcher.SetGlobalDatastore(b)
 	for _, tt := range []struct {
 		desc                             string
 		name, edition, variation, finish string
@@ -183,7 +181,7 @@ func TestPromoFinishes(t *testing.T) {
 		{"the Alpha shelf is the first run", "Nimble Strike (Blue)", "Welcome to Rathe - Alpha", "WTR187", "", false, "wtr187_225270_1stedition"},
 	} {
 		in := mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.variation, Finish: tt.finish, Foil: tt.foil}
-		got, err := mtgmatcher.Match(&in)
+		got, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("%s: Match(%q, %q, %q, %q) = %v", tt.desc, tt.name, tt.edition, tt.variation, tt.finish, err)
 			continue
@@ -195,7 +193,7 @@ func TestPromoFinishes(t *testing.T) {
 	// A set card is sold in several treatments, and a finish it was never
 	// sold in still names no printing.
 	in := mtgmatcher.InputCard{Name: "Nimble Strike (Blue)", Edition: "Welcome to Rathe", Variation: "WTR187", Finish: "1st Edition Cold Foil", Foil: true}
-	if got, err := mtgmatcher.Match(&in); err == nil {
+	if got, err := b.Match(&in); err == nil {
 		t.Errorf("Match(Nimble Strike (Blue), WTR187, 1st Edition Cold Foil) = %q, want a refusal", got)
 	}
 }
