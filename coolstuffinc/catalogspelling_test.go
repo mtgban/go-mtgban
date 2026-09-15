@@ -15,7 +15,7 @@ import (
 // fixes its own spelling - is a pair that should leave the table rather than
 // sit there rewriting a name that now means something.
 func TestCatalogSpelling(t *testing.T) {
-	withGameDatastore(t, "yugioh", "YUGIOH_PATH")
+	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	tests := []struct {
 		name      string
@@ -39,16 +39,16 @@ func TestCatalogSpelling(t *testing.T) {
 				t.Fatalf("catalogSpelling(%q) corrected nothing", test.name)
 			}
 			asTyped := &mtgmatcher.InputCard{Name: test.name, Edition: test.edition, Variation: test.variation}
-			if id, err := mtgmatcher.Match(asTyped); err == nil {
+			if id, err := b.Match(asTyped); err == nil {
 				t.Errorf("Match(%q) = %q, want the name to reach nothing before it is corrected",
 					test.name, id)
 			}
 			card := &mtgmatcher.InputCard{Name: spelled, Edition: test.edition, Variation: test.variation}
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", spelled, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}

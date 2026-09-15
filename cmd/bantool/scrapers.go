@@ -360,7 +360,7 @@ func cardtraderSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban
 
 func coolstuffincScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := coolstuffinc.NewScraper(game)
+		scraper, err := coolstuffinc.NewScraper(b)
 		if err != nil {
 			return nil, err
 		}
@@ -375,7 +375,7 @@ func coolstuffincScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scr
 
 func coolstuffincSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := coolstuffinc.NewScraperSealed(game)
+		scraper, err := coolstuffinc.NewScraperSealed(b)
 		if err != nil {
 			return nil, err
 		}

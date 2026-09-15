@@ -10,7 +10,7 @@ import (
 // reaches this at all. The label check behind it is defensive, for a set that
 // someday wears Full Art alone.
 func TestOnePieceRenamedTreatment(t *testing.T) {
-	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	for _, tt := range []struct {
 		desc, id, name, want string
@@ -27,7 +27,7 @@ func TestOnePieceRenamedTreatment(t *testing.T) {
 			"st21-003_615568_foil", "Sanji - 003 (Shiny Chrome)", ""},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			if got := onePieceRenamedTreatment(tt.id, tt.name); got != tt.want {
+			if got := onePieceRenamedTreatment(b, tt.id, tt.name); got != tt.want {
 				t.Errorf("onePieceRenamedTreatment(%q, %q) = %q, want %q", tt.id, tt.name, got, tt.want)
 			}
 		})

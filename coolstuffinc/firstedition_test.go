@@ -3,8 +3,6 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
@@ -18,7 +16,7 @@ import (
 // other run, so an answer not carrying the run is refused instead of being
 // published as the ordinary printing at a fraction of the price.
 func TestConditionRunReachesTheRun(t *testing.T) {
-	withGameDatastore(t, "pokemon", "POKEMON_PATH")
+	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	for _, tt := range []struct {
 		name, edition string
@@ -32,11 +30,11 @@ func TestConditionRunReachesTheRun(t *testing.T) {
 			if finishes == nil {
 				t.Fatal("the wording named no run")
 			}
-			card := pokemonListing(tt.name, tt.edition, "", false)
+			card := pokemonListing(b, tt.name, tt.edition, "", false)
 			if card == nil {
 				t.Fatal("the listing preprocessed to nothing")
 			}
-			id, err := matchRun(card, finishes)
+			id, err := matchRun(b, card, finishes)
 			if err != nil {
 				t.Fatalf("matchRun(%q) = %v", tt.name, err)
 			}
@@ -50,17 +48,17 @@ func TestConditionRunReachesTheRun(t *testing.T) {
 // TestMatchRunRefusesTheOtherRun pins the refusal: a run the card was not
 // printed in must not answer with the run it was.
 func TestMatchRunRefusesTheOtherRun(t *testing.T) {
-	withGameDatastore(t, "pokemon", "POKEMON_PATH")
+	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
 	// This card has no first-edition printing, so the wording names nothing
 	// the catalog can answer with.
-	card := pokemonListing("Pikachu V - 43/172", "SWSH08: Brilliant Stars", "", false)
+	card := pokemonListing(b, "Pikachu V - 43/172", "SWSH08: Brilliant Stars", "", false)
 	if card == nil {
 		t.Skip("the listing preprocessed to nothing")
 	}
-	id, err := matchRun(card, conditionRun("1st Edition"))
+	id, err := matchRun(b, card, conditionRun("1st Edition"))
 	if err == nil {
-		co, _ := mtgmatcher.GetUUID(id)
+		co, _ := b.GetUUID(id)
 		t.Errorf("matchRun = %q (finish %q), want a refusal", id, co.Finish)
 	}
 }
