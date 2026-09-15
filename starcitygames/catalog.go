@@ -738,7 +738,7 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 	// dungeon // dungeon pairing ever contains the literal word "Token".
 	if game == GameMagic && strings.Contains(p.Name, " // ") &&
 		(strings.Contains(p.Name, "Token") || strings.Contains(p.Name, "Dungeon")) {
-		if tcgID := magic.MatchTokenPairing(p.ScryfallID, p.Name, foil); tcgID != "" {
+		if tcgID := magic.MatchTokenPairing(b, p.ScryfallID, p.Name, foil); tcgID != "" {
 			if id, err := b.MatchID(tcgID, foil, etched); err == nil {
 				return id, nil
 			}
@@ -763,12 +763,12 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 			}
 			if _, err := b.GetSet(tokenSet); err == nil {
 				number := leadingTokenNumber(skuNumber(p.SKU))
-				if uuid := magic.MatchNativeTokenPair(tokenSet, number, p.Name); uuid != "" {
+				if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, p.Name); uuid != "" {
 					if id, err := b.MatchID(uuid, foil, etched); err == nil {
 						return id, nil
 					}
 				}
-				if tcgID := magic.MatchTokenPairingBySetNumber(tokenSet, number, p.Name, foil); tcgID != "" {
+				if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, p.Name, foil); tcgID != "" {
 					if id, err := b.MatchID(tcgID, foil, etched); err == nil {
 						return id, nil
 					}

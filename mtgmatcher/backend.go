@@ -422,6 +422,13 @@ type Backend struct {
 	// A list of deck names of Secret Lair Commander cards
 	SLDDeckNames []string
 
+	// TokenPairIndex maps one face of a two-sided token sheet to the
+	// TCGplayer product id of each pairing it was printed in, keyed by the
+	// other face's normalized name. Filed by the game's loader, and empty
+	// for a game that prints no such sheet. See mtgmatcher/magic's
+	// buildTokenPairIndex for how it is derived and what it refuses.
+	TokenPairIndex map[string]map[string]string
+
 	// Game-specific identification hooks used by Match, attached by the
 	// game's datastore loader via SetRules.
 	rules         GameRules
