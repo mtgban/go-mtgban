@@ -465,7 +465,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// Pokemon's second column is the reverse holo's, which the flag
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
-// is never reached. This is Index's own use of cardIDFoil -
+			// is never reached. This is Index's own use of cardIDFoil -
 			// resolveProduct is shared between the two scrapers (see the
 			// package doc above) - and it stays exactly as it was: Market's
 			// own path (queryPokemonPrintings, pokemonFinishPlan) resolves

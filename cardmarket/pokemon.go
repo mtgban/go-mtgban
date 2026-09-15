@@ -356,12 +356,12 @@ type pokemonFinishTarget struct {
 // uuids instead of one - confirmed live: 349 real products (EX-era holo
 // rares) carry both a Normal and a Holofoil sibling as one Cardmarket
 // product.
-func pokemonFinishPlan(cardID string) []pokemonFinishTarget {
+func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarget {
 	type cell struct{ isFirstEd, isReverseHolo bool }
 	seen := map[cell]bool{}
 	var targets []pokemonFinishTarget
-	for _, sibling := range mtgmatcher.FinishSiblings(cardID) {
-		co, err := mtgmatcher.GetUUID(sibling)
+	for _, sibling := range b.FinishSiblings(cardID) {
+		co, err := b.GetUUID(sibling)
 		if err != nil {
 			continue
 		}

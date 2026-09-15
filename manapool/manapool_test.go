@@ -76,7 +76,7 @@ func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 // card, but Mana Pool's scryfall_id for this listing is Scryfall's own id
 // for the Squirrel face alone.
 func TestPriceResolvesTokenPairing(t *testing.T) {
-	realDatastore(t)
+	b := withMagic(t)
 
 	card := Product{
 		URL:       "https://manapool.com/card/tblb/15-23/squirrel-starscape-cleric",
@@ -85,7 +85,7 @@ func TestPriceResolvesTokenPairing(t *testing.T) {
 		ScryfallID: "5a6ec62e-0e9b-4312-bfe8-cc85d76fd9e0", TcgplayerProductID: 561444,
 		LanguageID: "EN", ConditionID: "NM", FinishID: "NF", LowPrice: 35, AvailableQuantity: 1,
 	}
-	mp := NewScraper()
+	mp := NewScraper(b)
 	mp.price([]Product{card})
 
 	found := false
@@ -94,7 +94,7 @@ func TestPriceResolvesTokenPairing(t *testing.T) {
 			continue
 		}
 		found = true
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Fatalf("GetUUID(%s) = %v", id, err)
 		}
@@ -115,7 +115,7 @@ func TestPriceResolvesTokenPairing(t *testing.T) {
 // a plain Human, so it must produce no inventory entry rather than that
 // wrong one.
 func TestPriceRefusesUnresolvedTokenPairing(t *testing.T) {
-	realDatastore(t)
+	b := withMagic(t)
 
 	card := Product{
 		URL:       "https://manapool.com/card/teld/2-18/human-food",
@@ -128,15 +128,15 @@ func TestPriceRefusesUnresolvedTokenPairing(t *testing.T) {
 	// Confirm the risk is real: the plain, unguarded resolution this test
 	// exists to prevent really does succeed, silently, on the Human face
 	// alone.
-	single, err := mtgmatcher.MatchID(card.ScryfallID, false, false)
+	single, err := b.MatchID(card.ScryfallID, false, false)
 	if err != nil {
 		t.Skip("Human TELD #2 not present in this datastore")
 	}
-	if co, _ := mtgmatcher.GetUUID(single); co == nil || co.Name != "Human" {
+	if co, _ := b.GetUUID(single); co == nil || co.Name != "Human" {
 		t.Skip("scryfall_id 94057dc6... no longer names a bare Human face in this datastore")
 	}
 
-	mp := NewScraper()
+	mp := NewScraper(b)
 	mp.price([]Product{card})
 
 	for _, entries := range mp.Inventory() {
@@ -156,7 +156,7 @@ func TestPriceRefusesUnresolvedTokenPairing(t *testing.T) {
 // "X // Y", and Mana Pool's own scryfall_id for it is that entity's own
 // real id, not a lone face's.
 func TestPriceResolvesNativeCombinedPrinting(t *testing.T) {
-	realDatastore(t)
+	b := withMagic(t)
 
 	card := Product{
 		URL:       "https://manapool.com/card/totc/36/bounty-the-outsider-wanted",
@@ -165,7 +165,7 @@ func TestPriceResolvesNativeCombinedPrinting(t *testing.T) {
 		ScryfallID: "92d36a9a-c39c-41e6-9f31-4fcb5e820bd9", TcgplayerProductID: 0,
 		LanguageID: "EN", ConditionID: "NM", FinishID: "NF", LowPrice: 25, AvailableQuantity: 2,
 	}
-	mp := NewScraper()
+	mp := NewScraper(b)
 	mp.price([]Product{card})
 
 	found := false
@@ -174,7 +174,7 @@ func TestPriceResolvesNativeCombinedPrinting(t *testing.T) {
 			continue
 		}
 		found = true
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Fatalf("GetUUID(%s) = %v", id, err)
 		}

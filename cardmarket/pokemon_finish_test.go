@@ -43,19 +43,20 @@ func TestPokemonFinishCell(t *testing.T) {
 var (
 	pokemonBackendOnce sync.Once
 	pokemonBackendErr  error
+	pokemonBackend     *mtgmatcher.Backend
 )
 
 // loadPokemonBackend installs the real Pokemon datastore POKEMON_PATH
 // names, once per test binary run, for the tests below that need real
 // finish siblings rather than synthetic ones.
-func loadPokemonBackend(t *testing.T) {
+func loadPokemonBackend(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	pokemonBackendOnce.Do(func() {
 		path := os.Getenv("POKEMON_PATH")
 		if path == "" {
 			return
 		}
-		pokemonBackendErr = datastore.Load("pokemon", path)
+		pokemonBackend, pokemonBackendErr = datastore.Read("pokemon", path)
 	})
 	if pokemonBackendErr != nil {
 		t.Fatal(pokemonBackendErr)
@@ -63,6 +64,7 @@ func loadPokemonBackend(t *testing.T) {
 	if os.Getenv("POKEMON_PATH") == "" {
 		t.Skip("Need POKEMON_PATH set to run this test")
 	}
+	return pokemonBackend
 }
 
 // TestPokemonFinishPlanTeamRocket pins the case this whole fix exists for:
@@ -71,16 +73,16 @@ func loadPokemonBackend(t *testing.T) {
 // project to a cell with no reverse-holo component, and both must appear
 // as their own query target rather than one hiding behind the other.
 func TestPokemonFinishPlanTeamRocket(t *testing.T) {
-	loadPokemonBackend(t)
+	b := loadPokemonBackend(t)
 
-	cardID, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+	cardID, err := b.Match(&mtgmatcher.InputCard{
 		Name: "Dark Charizard", Edition: "Team Rocket", Variation: "4",
 	})
 	if err != nil {
 		t.Fatalf("Match: %v", err)
 	}
 
-	targets := pokemonFinishPlan(cardID)
+	targets := pokemonFinishPlan(b, cardID)
 	if len(targets) != 2 {
 		t.Fatalf("pokemonFinishPlan(%q) = %d targets, want 2: %+v", cardID, len(targets), targets)
 	}
@@ -98,7 +100,7 @@ func TestPokemonFinishPlanTeamRocket(t *testing.T) {
 		t.Errorf("Unlimited Holofoil target = %+v, want both flags false", unlimited)
 	}
 
-	firstEdID, err := mtgmatcher.MatchIDFinish(cardID, "1st Edition Holofoil")
+	firstEdID, err := b.MatchIDFinish(cardID, "1st Edition Holofoil")
 	if err != nil {
 		t.Fatalf("MatchIDFinish(1st Edition Holofoil): %v", err)
 	}

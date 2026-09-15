@@ -172,7 +172,7 @@ func TestTokenPairNumbers(t *testing.T) {
 // case: the same number-anchored resolution that already finds an
 // ordinary, id-bearing derived pairing reaches this one too.
 func TestPreprocessResolvesPairingWithNoUsableID(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	bp := Blueprint{ID: 46667, Name: "Dragon // Cat Dragon", CategoryID: CategoryMagicTokens}
 	bp.Expansion.Name = "Commander 2017"

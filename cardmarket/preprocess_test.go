@@ -5,8 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
@@ -23,7 +21,7 @@ import (
 // Preprocess/Match instead, whose own chrVariants table already carries a
 // "v.1".."v.4" key for exactly this card.
 func TestFallbackDefersOnMcmIdCollision(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	product := &cm.Product{
 		IDProduct:     272488,
@@ -32,9 +30,9 @@ func TestFallbackDefersOnMcmIdCollision(t *testing.T) {
 		ExpansionName: "Chronicles",
 	}
 
-	cardID, cardIDFoil := Fallback(product)
+	cardID, cardIDFoil := Fallback(b, product)
 	if cardID != "" || cardIDFoil != "" {
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		t.Fatalf("Fallback = (%q, %q), want (\"\", \"\") - kept %s instead of deferring to Preprocess/Match", cardID, cardIDFoil, co)
 	}
 }
@@ -46,7 +44,7 @@ func TestFallbackDefersOnMcmIdCollision(t *testing.T) {
 // must still commit to it - the ambiguity guard only defers when *nothing*
 // agrees, never merely because more than one candidate id came back.
 func TestFallbackStillTrustsANumberMatch(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	// All four BCHR arts share mcmId 272488; "114" (bare, no art-suffix
 	// letter) is what PlainNumber reduces every one of their numbers to, so
@@ -58,11 +56,11 @@ func TestFallbackStillTrustsANumberMatch(t *testing.T) {
 		ExpansionName: "Chronicles Foreign Black Border",
 	}
 
-	cardID, _ := Fallback(product)
+	cardID, _ := Fallback(b, product)
 	if cardID == "" {
 		t.Fatal("Fallback = \"\", want it to still commit to a candidate once one agrees by number")
 	}
-	co, err := mtgmatcher.GetUUID(cardID)
+	co, err := b.GetUUID(cardID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +80,8 @@ func TestFallbackStillTrustsANumberMatch(t *testing.T) {
 // the number when magic.VariantsTable has no entry for this exact
 // edition/card/variant to consult instead.
 func TestPreprocessKeepsVIndexForChronicles(t *testing.T) {
-	theCard, err := Preprocess("Urza's Mine (V.2)", "252", "Chronicles")
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, "Urza's Mine (V.2)", "252", "Chronicles")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +97,7 @@ func TestPreprocessKeepsVIndexForChronicles(t *testing.T) {
 // MOC-210 and NPH-25) - without reading which one MB2's own booster
 // actually bundles, resolution is an AliasingError instead of a match.
 func TestMysteryBooster2ReprintsResolvesToPLSTNumber(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	tests := []struct {
 		cardName string
@@ -108,16 +107,16 @@ func TestMysteryBooster2ReprintsResolvesToPLSTNumber(t *testing.T) {
 		{"Terramorphic Expanse", "JMP-78"},
 	}
 	for _, test := range tests {
-		theCard, err := Preprocess(test.cardName, "", "Mystery Booster 2: Reprints from Across Magic's History")
+		theCard, err := Preprocess(b, test.cardName, "", "Mystery Booster 2: Reprints from Across Magic's History")
 		if err != nil {
 			t.Fatalf("%s: Preprocess: %v", test.cardName, err)
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := b.Match(theCard)
 		if err != nil {
 			t.Fatalf("%s: Match: %v", test.cardName, err)
 		}
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := b.GetUUID(cardID)
 		if co.SetCode != "PLST" || co.Number != test.number {
 			t.Errorf("%s: matched %s %s, want PLST %s", test.cardName, co.SetCode, co.Number, test.number)
 		}
@@ -130,7 +129,7 @@ func TestMysteryBooster2ReprintsResolvesToPLSTNumber(t *testing.T) {
 // (114b) rather than any of the four Japanese Chronicles Foreign Black
 // Border arts mtgjson's mislinked mcmId would otherwise keep.
 func TestResolveMagicLandsCorrectChroniclesArt(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	product := &cm.Product{
 		IDProduct:     272488,
@@ -139,21 +138,21 @@ func TestResolveMagicLandsCorrectChroniclesArt(t *testing.T) {
 		ExpansionName: "Chronicles",
 	}
 
-	cardID, _ := Fallback(product)
+	cardID, _ := Fallback(b, product)
 	if cardID != "" {
 		t.Fatalf("Fallback kept %q, want it to defer", cardID)
 	}
 
-	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
+	theCard, err := Preprocess(b, product.Name, product.Number, product.ExpansionName)
 	if err != nil {
 		t.Fatalf("Preprocess: %v", err)
 	}
 
-	id, err := mtgmatcher.Match(theCard)
+	id, err := b.Match(theCard)
 	if err != nil {
 		t.Fatalf("Match: %v", err)
 	}
-	co, err := mtgmatcher.GetUUID(id)
+	co, err := b.GetUUID(id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +171,7 @@ func TestResolveMagicLandsCorrectChroniclesArt(t *testing.T) {
 // own distinct printing, not all three on whichever one FilterCards happens
 // to see first.
 func TestFourthEditionAlternateKeepsVIndex(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	tests := []struct {
 		name       string
@@ -183,18 +182,18 @@ func TestFourthEditionAlternateKeepsVIndex(t *testing.T) {
 		{"Plains (V.3)", "366alt"},
 	}
 	for _, tt := range tests {
-		theCard, err := Preprocess(tt.name, "175", "Fourth Edition: Alternate")
+		theCard, err := Preprocess(b, tt.name, "175", "Fourth Edition: Alternate")
 		if err != nil {
 			t.Fatalf("%s: Preprocess: %v", tt.name, err)
 		}
 		if theCard.Variation == "175" {
 			t.Fatalf("%s: Variation was overwritten with Cardmarket's shared number instead of kept as the (V.N) tag", tt.name)
 		}
-		id, err := mtgmatcher.Match(theCard)
+		id, err := b.Match(theCard)
 		if err != nil {
 			t.Fatalf("%s: Match: %v", tt.name, err)
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Fatal(err)
 		}

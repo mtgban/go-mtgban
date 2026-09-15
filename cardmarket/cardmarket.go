@@ -404,7 +404,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		// one here.
 		targets := []string{cardID}
 		if mkm.gameID == cm.GamePokemon {
-			for _, target := range pokemonFinishPlan(cardID) {
+			for _, target := range pokemonFinishPlan(mkm.backend, cardID) {
 				if target.isReverseHolo || target.cardID == cardID {
 					continue
 				}
