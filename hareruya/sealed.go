@@ -21,6 +21,8 @@ import (
 type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	buylistDate   time.Time
 	exchangeRate  float64
@@ -31,9 +33,9 @@ type Sealed struct {
 	client *http.Client
 }
 
-// NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *Sealed {
-	ha := Sealed{}
+// NewScraperSealed returns a sealed scraper matching against b.
+func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
+	ha := Sealed{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
@@ -158,9 +160,9 @@ func (ha *Sealed) Load(ctx context.Context) error {
 
 	var foundInventory, foundBuylist int
 
-	sets := mtgmatcher.GetAllSets()
+	sets := ha.backend.GetAllSets()
 	for _, code := range sets {
-		set, _ := mtgmatcher.GetSet(code)
+		set, _ := ha.backend.GetSet(code)
 
 		for _, sealedProduct := range set.SealedProduct {
 			haID, found := sealedProduct.Identifiers["hareruyaId"]

@@ -132,7 +132,7 @@ var editionTable = map[string]string{
 	"Journey to Nyx": "Journey into Nyx",
 }
 
-func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 	cardName := card.Name
 	edition := card.Edition
 
@@ -197,9 +197,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 	// in English, so read the name from there - but only once the published
 	// one turns out to name no card at all. The store also serves the wrong
 	// image now and then, and a name that does exist is the better witness.
-	if !namesACard(cardName) {
+	if !namesACard(b, cardName) {
 		slugName, slugVariation := imageName(extra, card.Edition)
-		if namesACard(slugName) {
+		if namesACard(b, slugName) {
 			cardName = slugName
 			if variation == "" {
 				variation = slugVariation
@@ -207,7 +207,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
-	cardName, edition, variation = internalPreprocess(cardName, edition, variation, extra)
+	cardName, edition, variation = internalPreprocess(b, cardName, edition, variation, extra)
 
 	var id string
 	switch edition {
@@ -233,7 +233,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 	}, nil
 }
 
-func internalPreprocess(cardName, edition, variation, extra string) (string, string, string) {
+func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, extra string) (string, string, string) {
 	switch edition {
 	case "Unlimited":
 		cardName = mtgmatcher.Cut(cardName, "Unlimited")[0]
@@ -271,7 +271,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			case "V.2":
 				variation = "Prerelease"
 			default:
-				if magic.HasPromoPackPrinting(cardName) {
+				if magic.HasPromoPackPrinting(b, cardName) {
 					variation = "Promo Pack 2020"
 					edition = "Promos"
 					if cardName == "Sorcerous Spyglass" {
@@ -287,7 +287,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		case "V.2":
 			variation = "Promo Pack"
 		default:
-			if magic.HasPromoPackPrinting(cardName) {
+			if magic.HasPromoPackPrinting(b, cardName) {
 				variation = "Promo Pack ELD"
 				edition = "Promos"
 			}
@@ -308,7 +308,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		}
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
-		if magic.HasExtendedArtPrinting(cardName) {
+		if magic.HasExtendedArtPrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Retro Frame"
@@ -317,19 +317,19 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			case "V.3":
 				variation = "Extended Art"
 			}
-		} else if magic.HasBorderlessPrinting(cardName) {
+		} else if magic.HasBorderlessPrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Borderless"
 			case "V.2":
 				variation = "Retro Frame"
-				if magic.HasShowcasePrinting(cardName) {
+				if magic.HasShowcasePrinting(b, cardName) {
 					variation = "Showcase"
 				}
 			case "V.3":
 				variation = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasShowcasePrinting(cardName) {
+		} else if magic.HasShowcasePrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Showcase"
@@ -338,7 +338,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			case "V.3":
 				variation = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasRetroFramePrinting(cardName) {
+		} else if magic.HasRetroFramePrinting(b, cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Retro Frame"
@@ -357,7 +357,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			// promo pack there names a printing that does not exist,
 			// leaving the set promo and the prerelease to alias.
 			variation = ""
-			if hasPromoPack(cardName) {
+			if hasPromoPack(b, cardName) {
 				variation = "Promo Pack"
 			}
 		case "Judge Gift Program", "Judge Promo":
@@ -407,9 +407,9 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		}
 		variation = strings.TrimLeft(extra[4:], "0")
 	case "Commander Legends: Extras":
-		if mtgmatcher.HasEtchedPrinting(cardName, "CMR") {
+		if b.HasEtchedPrinting(cardName, "CMR") {
 			variation = "etched"
-		} else if magic.HasExtendedArtPrinting(cardName, "CMR") {
+		} else if magic.HasExtendedArtPrinting(b, cardName, "CMR") {
 			variation = "extended art"
 		}
 	case "Secret Lair Drop Series":
@@ -418,7 +418,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		}
 	default:
 		// All the prerelease/promopack versions >= THB
-		if base, colon, promo := promoSetBase(edition); promo {
+		if base, colon, promo := promoSetBase(b, edition); promo {
 			switch variation {
 			case "V.1":
 				variation = "Promo Pack"
@@ -434,7 +434,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 				// listing that said nothing: the version tags the older
 				// sets carry are read from the image name further down, and
 				// a stamp would take them before they get there.
-				if (colon || variation == "") && magic.HasPromoPackPrinting(cardName) {
+				if (colon || variation == "") && magic.HasPromoPackPrinting(b, cardName) {
 					variation = "Promo Pack"
 				}
 			}
@@ -445,7 +445,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			// the borderless one second. Say the number instead, so the
 			// topper stops aliasing with the base printing.
 			base := strings.TrimSuffix(edition, firstPlaceSuffix)
-			numbers := firstPlaceNumbers(cardName, base)
+			numbers := firstPlaceNumbers(b, cardName, base)
 			switch {
 			case len(numbers) == 1:
 				variation = strconv.Itoa(numbers[0])
@@ -563,7 +563,7 @@ var genericVersionRe = regexp.MustCompile(`(?i)^version\s*[0-9]+$`)
 // The name is compared exactly rather than through Normalize, which drops a
 // standalone "s": "Store Championship" would otherwise reach the promo set
 // spelled "Store Championships" and take the Game Day cards with it.
-func promoSetBase(edition string) (base string, colon bool, ok bool) {
+func promoSetBase(b *mtgmatcher.Backend, edition string) (base string, colon bool, ok bool) {
 	if base, found := strings.CutSuffix(edition, ": Promos"); found {
 		return base, true, true
 	}
@@ -571,23 +571,23 @@ func promoSetBase(edition string) (base string, colon bool, ok bool) {
 	if !found {
 		return "", false, false
 	}
-	set, err := mtgmatcher.GetSetByName(base)
+	set, err := b.GetSetByName(base)
 	if err != nil || !strings.EqualFold(set.Name, base) || set.Type == "promo" {
 		return "", false, false
 	}
 	return base, false, true
 }
 
-func hasPromoPack(cardName string) bool {
-	if magic.HasPromoPackPrinting(cardName) {
+func hasPromoPack(b *mtgmatcher.Backend, cardName string) bool {
+	if magic.HasPromoPackPrinting(b, cardName) {
 		return true
 	}
-	printings, err := mtgmatcher.Printings4Card(cardName)
+	printings, err := b.Printings4Card(cardName)
 	if err != nil {
 		return false
 	}
 	for _, code := range printings {
-		for _, card := range mtgmatcher.MatchInSet(cardName, code) {
+		for _, card := range b.MatchInSet(cardName, code) {
 			if card.HasPromoType(magic.PromoTypePromoPack) {
 				return true
 			}
@@ -637,15 +637,15 @@ func imageNumber(extra string) string {
 // printings index answers for nearly every card; the few known only by a
 // flavor name reach their printing through the matcher alone, so ask it
 // second rather than call those names unknown.
-func namesACard(cardName string) bool {
+func namesACard(b *mtgmatcher.Backend, cardName string) bool {
 	if cardName == "" {
 		return false
 	}
-	_, err := mtgmatcher.Printings4Card(cardName)
+	_, err := b.Printings4Card(cardName)
 	if err == nil {
 		return true
 	}
-	_, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName})
+	_, err = b.Match(&mtgmatcher.InputCard{Name: cardName})
 	return !errors.Is(err, mtgmatcher.ErrCardDoesNotExist)
 }
 
@@ -702,13 +702,13 @@ const firstPlaceSuffix = ": First-Place"
 // foil printings in the set the edition names, lowest first. It returns
 // nothing when any of them is numbered in a way the order cannot be read
 // from.
-func firstPlaceNumbers(cardName, edition string) []int {
-	set, err := mtgmatcher.GetSetByName(edition)
+func firstPlaceNumbers(b *mtgmatcher.Backend, cardName, edition string) []int {
+	set, err := b.GetSetByName(edition)
 	if err != nil {
 		return nil
 	}
 	var numbers []int
-	for _, card := range mtgmatcher.MatchInSet(cardName, set.Code) {
+	for _, card := range b.MatchInSet(cardName, set.Code) {
 		if !card.HasPromoType(magic.PromoTypeFirstPlaceFoil) {
 			continue
 		}
@@ -736,7 +736,7 @@ func namesTheArt(edition, extra string) bool {
 // treatments of one card apart: the store publishes the same name for the
 // plain printing and every borderless or showcase sibling beside it, and
 // prices them separately.
-func preprocessBL(cardName, edition, extra string, number int) (*mtgmatcher.InputCard, error) {
+func preprocessBL(b *mtgmatcher.Backend, cardName, edition, extra string, number int) (*mtgmatcher.InputCard, error) {
 	variant := ""
 	if strings.Contains(edition, "(") {
 		vars := mtgmatcher.SplitVariants(edition)
@@ -746,7 +746,7 @@ func preprocessBL(cardName, edition, extra string, number int) (*mtgmatcher.Inpu
 		}
 	}
 
-	cardName, edition, variant = internalPreprocess(cardName, edition, variant, extra)
+	cardName, edition, variant = internalPreprocess(b, cardName, edition, variant, extra)
 
 	cn, found := cardTable[cardName]
 	if found {

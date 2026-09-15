@@ -2,12 +2,10 @@ package mtgmatcher
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"maps"
 	"slices"
 	"strings"
-	"sync/atomic"
 	"time"
 )
 
@@ -304,22 +302,22 @@ type AlternateProps struct {
 	IsFlavor       bool
 }
 
-var defaultBackend atomic.Pointer[Backend]
-
-// currentBackend pins one immutable snapshot for the caller's operation.
-// Before the first load, the empty backend preserves the lookup errors and
-// empty results the package-level API has always returned.
-func currentBackend() *Backend {
-	if b := defaultBackend.Load(); b != nil {
-		return b
-	}
-	return &Backend{}
-}
-
 // Backend is a loaded datastore: every set and printing of one game, with the
 // indexes Match needs and the game's own rules attached. Build one through a
 // game's Load, not by hand.
 type Backend struct {
+	// Game is the name Open loaded this datastore under, as the game's
+	// package registered it ("magic", "pokemon"): what a scraper built on
+	// this backend prices. A backend assembled by hand carries whatever its
+	// builder wrote here, and nothing until it does.
+	Game string
+
+	// Logger receives the matcher's diagnostics: which finish a listing
+	// named that the game does not, which candidates an id lookup found.
+	// Nil is quiet. It is the caller's to set, so two backends in one
+	// process can report to two places, or one of them to none.
+	Logger *log.Logger
+
 	// Slice of all set codes loaded
 	AllSets []string
 
@@ -410,15 +408,46 @@ type Backend struct {
 	// A list of deck names of Secret Lair Commander cards
 	SLDDeckNames []string
 
+	// TokenPairIndex maps one face of a two-sided token sheet to the
+	// TCGplayer product id of each pairing it was printed in, keyed by the
+	// other face's normalized name. Filed by the game's loader, and empty
+	// for a game that prints no such sheet. See mtgmatcher/magic's
+	// buildTokenPairIndices for how it is derived and what it refuses.
+	TokenPairIndex map[string]map[string]string
+
+	// TokenPairIDByUUIDs maps both faces' own uuids, unordered, to the same
+	// product id, for a caller that anchored each face by identity rather
+	// than by name.
+	TokenPairIDByUUIDs map[[2]string]string
+
+	// TokenPairIDByBothNames maps both faces' normalized names, unordered,
+	// to the same product id, for a caller with no identity anchor for
+	// either face.
+	TokenPairIDByBothNames map[[2]string]string
+
 	// Game-specific identification hooks used by Match, attached by the
 	// game's datastore loader via SetRules.
 	rules         GameRules
 	knownFinishes map[string]bool
 }
 
-// Logger receives the matcher's diagnostics. It discards them until
-// SetGlobalLogger says otherwise.
-var Logger = log.New(io.Discard, "", log.LstdFlags)
+// Logf reports a diagnostic to the backend's Logger, and to nowhere when
+// there is none. The rules a game attaches through SetRules report through
+// this too, so a datastore's diagnostics all land where its owner said.
+func (b *Backend) Logf(format string, a ...any) {
+	if b.Logger == nil {
+		return
+	}
+	b.Logger.Printf(format, a...)
+}
+
+// Log is Logf for a message with nothing to format.
+func (b *Backend) Log(a ...any) {
+	if b.Logger == nil {
+		return
+	}
+	b.Logger.Println(a...)
+}
 
 const (
 	suffixFoil   = "_f"
@@ -473,33 +502,6 @@ func (b *Backend) IndexSetUUIDs() {
 	for code := range b.SetUUIDs {
 		slices.Sort(b.SetUUIDs[code])
 	}
-}
-
-// SetGlobalDatastore atomically publishes a shallow copy of b. Readers already
-// using the previous snapshot finish against it. The maps, slices and card
-// pointers are shared with b and must not be mutated after publication; only
-// reassigning fields on b is independent of the installed snapshot.
-func SetGlobalDatastore(b *Backend) {
-	snapshot := *b
-	// Build on the copy so publishing a backend does not mutate the caller's
-	// value, including when several callers publish the same backend.
-	if snapshot.sealedIdx == nil {
-		snapshot.sealedIdx = snapshot.buildSealedIndex()
-	}
-	defaultBackend.Store(&snapshot)
-}
-
-// GlobalDatastore captures the current snapshot as a shallow copy. Its methods
-// keep using that snapshot even if another datastore is published meanwhile.
-// Maps, slices and card pointers remain shared and must not be modified.
-func GlobalDatastore() *Backend {
-	b := *currentBackend()
-	return &b
-}
-
-// SetGlobalLogger points the matcher's diagnostics at a logger of your own.
-func SetGlobalLogger(userLogger *log.Logger) {
-	Logger = userLogger
 }
 
 // AddName files a card name in each search index that does not already hold

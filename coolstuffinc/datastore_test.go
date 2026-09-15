@@ -24,15 +24,3 @@ func readGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
 	}
 	return b
 }
-
-// withGameDatastore installs a game's datastore for the test and puts back
-// whatever stood before once it ends.
-func withGameDatastore(t *testing.T, game, env string) {
-	t.Helper()
-	b := readGameDatastore(t, game, env)
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(b)
-	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(previous)
-	})
-}

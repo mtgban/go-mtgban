@@ -93,6 +93,8 @@ type Vegassingles struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	client *VSClient
 	game   mtgban.Game
 	line   string
@@ -105,13 +107,17 @@ type Vegassingles struct {
 	DisableBuylist bool
 }
 
-// NewScraper returns a scraper for one game.
-func NewScraper(game mtgban.Game) (*Vegassingles, error) {
+// NewScraper returns a scraper for the game b was loaded for.
+func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	line, ok := vsGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
-	vs := Vegassingles{}
+	vs := Vegassingles{backend: b}
 	vs.inventory = mtgban.InventoryRecord{}
 	vs.buylist = mtgban.BuylistRecord{}
 	vs.client = NewVSClient(line)
@@ -135,7 +141,7 @@ func (vs *Vegassingles) listed(title string) bool {
 }
 
 func (vs *Vegassingles) processProduct(product VSProduct) error {
-	theCard, err := preprocess(product, vs.game)
+	theCard, err := preprocess(vs.backend, product, vs.game)
 	if err != nil {
 		// Name the product, the way the failure below already does. A
 		// reason alone says a listing was dropped without saying which,
@@ -143,7 +149,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 		return fmt.Errorf("%s %q: %w", product.ID, product.DisplayName, err)
 	}
 
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := vs.backend.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {

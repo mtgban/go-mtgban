@@ -3,8 +3,6 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
 )
@@ -34,7 +32,7 @@ func TestSealedUntrimmedGamePrefixResolves(t *testing.T) {
 		}},
 	} {
 		t.Run(tt.game, func(t *testing.T) {
-			withGameDatastore(t, tt.datastore, tt.env)
+			b := withGameDatastore(t, tt.datastore, tt.env)
 			for _, catalogName := range tt.names {
 				product := CatalogProduct{Name: catalogName, Game: tt.game}
 				name := sealedProductName(product)
@@ -47,14 +45,14 @@ func TestSealedUntrimmedGamePrefixResolves(t *testing.T) {
 				// this game to begin with (a checkout's copy may carry only
 				// singles), and there is nothing here to assert either way.
 				bare := trimGameWords(tt.game, name)
-				stripped, err := mtgmatcher.ResolveSealed(bare)
+				stripped, err := b.ResolveSealed(bare)
 				if err != nil {
 					t.Skipf("the installed %s datastore does not carry %q", tt.game, bare)
 				}
 				// The name as the catalog spells it has to land on that same
 				// printing: the game words are extra, not part of what picked
 				// it.
-				uuid, err := mtgmatcher.ResolveSealed(name)
+				uuid, err := b.ResolveSealed(name)
 				if err != nil {
 					t.Errorf("%q: %v", name, err)
 					continue

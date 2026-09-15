@@ -136,7 +136,7 @@ var (
 
 // pokemonEditions answers the sets a Cardmarket expansion may hold and the
 // number prefix its promos need.
-func pokemonEditions(expansion string) ([]string, string) {
+func pokemonEditions(b *mtgmatcher.Backend, expansion string) ([]string, string) {
 	if alias, found := pokemonExpansions[expansion]; found {
 		return alias.sets, alias.prefix
 	}
@@ -147,7 +147,7 @@ func pokemonEditions(expansion string) ([]string, string) {
 		return []string{m[1] + " World Championship Decks"}, ""
 	}
 	if base, found := strings.CutSuffix(expansion, ": Additionals"); found {
-		if _, err := mtgmatcher.GetSetByName(base); err == nil {
+		if _, err := b.GetSetByName(base); err == nil {
 			return pokemonAdditionals, ""
 		}
 	}

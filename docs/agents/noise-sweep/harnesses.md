@@ -32,7 +32,8 @@ var zzHead = regexp.MustCompile(`(unknown variant|unknown card name|aliasing det
 func TestZZReplay(t *testing.T) {
 	path := os.Getenv("ZZ_INCIDENTS")
 	if path == "" { t.Skip("ZZ_INCIDENTS not set") }
-	if err := datastore.Load(os.Getenv("FLESHANDBLOOD_PATH")); err != nil { t.Fatal(err) }
+	b, err := datastore.Read("fleshandblood", os.Getenv("FLESHANDBLOOD_PATH"))
+	if err != nil { t.Fatal(err) }
 
 	f, err := os.Open(path); if err != nil { t.Fatal(err) }
 	defer f.Close()
@@ -49,7 +50,7 @@ func TestZZReplay(t *testing.T) {
 		seen[m[5]] = true; n++
 
 		p := CatalogProduct{Name: m[2], Set: m[3], SKU: m[5], /* … */}
-		id, err := resolveProductID(GameFleshAndBlood, p)   // the PRODUCTION path
+		id, err := resolveProductID(b, GameFleshAndBlood, p)   // the PRODUCTION path
 
 		verdict, where := "landed", ""
 		switch {
@@ -59,7 +60,7 @@ func TestZZReplay(t *testing.T) {
 			verdict, where = "refused", err.Error()
 		default:
 			landed++
-			co, _ := mtgmatcher.GetUUID(id)
+			co, _ := b.GetUUID(id)
 			where = co.Name + "|" + co.SetCode + "|" + co.Number + "|" + strings.Join(co.PromoTypes, "+") + "|" + id
 		}
 		fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%s\n", m[2], m[3], m[5], verdict, where)
@@ -97,7 +98,7 @@ in := mtgmatcher.InputCard{
 	Finish:    gameFinish(gameID, &bp, product),
 	Foil:      gameFoil(gameID, product),
 }
-id, err := mtgmatcher.Match(&in)
+id, err := b.Match(&in)
 ```
 
 Weight rows by how many log lines each blueprint accounted for — one blueprint
@@ -174,7 +175,7 @@ const labelFixture = `{
 
 b, err := Load(strings.NewReader(labelFixture))
 if err != nil { t.Fatal(err) }
-mtgmatcher.SetGlobalDatastore(b)
+// hand b to what is under test: b.Match(...), or the scraper built on it
 ```
 
 Generate the fixture rather than typing it:

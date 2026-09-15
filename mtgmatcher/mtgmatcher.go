@@ -12,19 +12,6 @@ import (
 	"strings"
 )
 
-// MatchID resolves an identifier a storefront already knows to the uuid of a
-// printing, using the default datastore. See the method.
-func MatchID(inputID string, finishes ...bool) (string, error) {
-	return currentBackend().MatchID(inputID, finishes...)
-}
-
-// MatchIDFinish resolves an id to the uuid of the printing's sibling sold in
-// the named finish, spelled however the caller's source spells it. See the
-// method.
-func MatchIDFinish(inputID, finish string) (string, error) {
-	return currentBackend().MatchIDFinish(inputID, finish)
-}
-
 // finishTwins reports whether two set-mates are one card filed as two
 // finish-split entries: the same collector number - the foil twin only adds
 // a suffix - with no primary finish sold by both, which is what tells a
@@ -124,38 +111,6 @@ func (b *Backend) FinishSiblings(inputID string) []string {
 	return siblings
 }
 
-// FinishSiblings answers every uuid the card behind the id is sold under,
-// against the default datastore. See the method.
-func FinishSiblings(inputID string) []string {
-	return currentBackend().FinishSiblings(inputID)
-}
-
-// Match resolves a storefront's description of a card to the uuid of the one
-// printing it names, using the default datastore. See the method.
-func Match(inCard *InputCard) (cardID string, err error) {
-	return currentBackend().Match(inCard)
-}
-
-// MatchInSet returns every printing in the set whose name is exactly the one
-// given, against the default datastore. A combined name is matched on its
-// first half alone.
-func MatchInSet(cardName string, setCode string) (outCards []Card) {
-	return currentBackend().MatchInSet(cardName, setCode)
-}
-
-// MatchInSetNumber returns every printing in the set with exactly this name
-// and collector number, against the default datastore.
-func MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
-	return currentBackend().MatchInSetNumber(cardName, setCode, number)
-}
-
-// MatchWithNumber returns every printing with this set code and collector
-// number, against the default datastore. The name only narrows the result and
-// may be empty.
-func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
-	return currentBackend().MatchWithNumber(cardName, setCode, number)
-}
-
 // cardObject4Id resolves whatever identifier a caller sends - one of the
 // matcher's own uuids, or an external product id - to the entry it names.
 // The maps decide what an id is: only Magic spells its uuids the way mtgjson
@@ -227,17 +182,17 @@ func (b *Backend) MatchIDFinish(inputID, finish string) (string, error) {
 		return "", ErrDatastoreEmpty
 	}
 	if b.rules.CanonicalFinish(finish) == "" {
-		Logger.Printf("Finish %q is not one this game names", finish)
+		b.Logf("Finish %q is not one this game names", finish)
 		return "", ErrCardUnnamedFinish
 	}
 	outID := b.FinishUUID(&co.Card, finish)
 	if outID == "" {
 		canonical := b.rules.CanonicalFinish(finish)
 		if !b.knownFinishes[canonical] {
-			Logger.Printf("Finish %q is not one this datastore sells", finish)
+			b.Logf("Finish %q is not one this datastore sells", finish)
 			return "", ErrCardUnnamedFinish
 		}
-		Logger.Printf("Printing %s is not sold in finish %q", co.UUID, finish)
+		b.Logf("Printing %s is not sold in finish %q", co.UUID, finish)
 		return "", ErrCardWrongFinish
 	}
 	// Validate that what we found is correct
@@ -343,7 +298,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 
 	// Look up by uuid
 	if inCard.ID != "" {
-		Logger.Printf("Performing id lookup")
+		b.Logf("Performing id lookup for %s", inCard.ID)
 		outID, err := b.matchIDFor(inCard)
 		// The wording cannot improve on a finish the printing does not
 		// carry: it would answer from the same printing, and the only
@@ -354,13 +309,13 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		}
 		if err == nil {
 			co := b.UUIDs[outID]
-			Logger.Printf("Id found")
+			b.Logf("Id found: %v", b.describe(inCard))
 
 			// Validation step
 			switch {
 			// Only the default language is supported by id
 			case inCard.Language != "" && !matchesLanguage(co.Language, inCard.Language):
-				Logger.Printf("Language validation failed, resetting card")
+				b.Log("Language validation failed, resetting card")
 				inCard.Name = co.Name
 				inCard.Edition = co.Edition
 				inCard.Variation = co.Number
@@ -373,14 +328,14 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 				return "", ErrUnsupported
 			// This runs before b.rules is known non-nil, hence the check
 			case b.rules != nil && b.rules.MissingPromoTag(b, inCard, co):
-				Logger.Println("Missing necessary tag")
+				b.Log("Missing necessary tag")
 				return "", ErrUnsupported
 			// Actually found id
 			default:
 				return outID, nil
 			}
 		}
-		Logger.Printf("Id lookup failed, attempting full match")
+		b.Log("Id lookup failed, attempting full match")
 	}
 
 	// In case id lookup failed, an no more data is present
@@ -407,7 +362,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		inCard.Foil = true
 	}
 	if ogName != inCard.Name {
-		Logger.Printf("Pre-adjusted name from '%s' to '%s' '%s'", ogName, inCard.Name, inCard.Variation)
+		b.Logf("Pre-adjusted name from '%s' to '%s' '%s'", ogName, inCard.Name, inCard.Variation)
 	}
 
 	// Skip unsupported sets
@@ -434,7 +389,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		rules.AdjustName(b, inCard)
 		if ogName != inCard.Name {
 			inCard.OriginalName = ogName
-			Logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
+			b.Logf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		}
 
 		canonicalName, found = b.CanonicalNames[Normalize(inCard.Name)]
@@ -455,10 +410,10 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	ogEdition := inCard.Edition
 	rules.AdjustEdition(b, inCard)
 	if ogName != inCard.Name {
-		Logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
+		b.Logf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 	}
 	if ogEdition != inCard.Edition {
-		Logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
+		b.Logf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
 	}
 
 	// Extra check, after any possible edition adjustment has been done
@@ -473,7 +428,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 
 	printings, err := b.Printings4Card(inCard.Name)
 	if err != nil {
-		Logger.Println("Printings error:", err)
+		b.Logf("Printings error: %v", err)
 		return "", err
 	}
 
@@ -481,14 +436,14 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// minimum common elements, using the rules defined.
 	// Given that many tokens are not supported, make sure to filter
 	// out unrelated editions.
-	Logger.Println("Processing", inCard, printings)
+	b.Logf("Processing %v %v", b.describe(inCard), printings)
 	// A name answered by the token key never passed through AdjustName, which
 	// is what would have suffixed it and asked for the filter below. Ask for
 	// it here instead, or a token carrying a single printing would be served
 	// for whatever edition the listing named.
 	if len(printings) > 1 || viaTokenKey || strings.HasSuffix(ogName, "Token") {
 		printings = rules.FilterPrintings(b, inCard, printings)
-		Logger.Println("Filtered printings:", printings)
+		b.Logf("Filtered printings: %v", printings)
 
 		// Filtering was too aggressive or wrong data fed,
 		// in either case, nothing else to be done here.
@@ -506,10 +461,10 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		cardSet[code] = b.MatchInSet(inCard.Name, code)
 	}
 
-	Logger.Println("Found these possible matches")
+	b.Log("Found these possible matches")
 	for _, dupCards := range cardSet {
 		for _, card := range dupCards {
-			Logger.Println(card.SetCode, card.Name, card.Number)
+			b.Logf("%s %s %s", card.SetCode, card.Name, card.Number)
 		}
 	}
 
@@ -517,12 +472,12 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// own this step, so even a single candidate is validated rather than used
 	// blindly (Lorcana enforces the collector number here, which the old
 	// single-card shortcut skipped, returning a wrong-numbered card).
-	Logger.Println("Now filtering...")
+	b.Log("Now filtering...")
 	outCards := rules.FilterCards(b, inCard, cardSet)
 
-	Logger.Println("Post filtering status...")
+	b.Log("Post filtering status...")
 	for _, card := range outCards {
-		Logger.Println(card.SetCode, card.Name, card.Number)
+		b.Logf("%s %s %s", card.SetCode, card.Name, card.Number)
 	}
 
 	// Final game policy runs before language filtering: Magic historically
@@ -535,8 +490,8 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		for _, card := range outCards {
 			if (inCard.Language == "" && card.Language != "English") ||
 				!matchesLanguage(card.Language, inCard.Language) {
-				Logger.Println("Dropping different language prints...")
-				Logger.Println(card.SetCode, card.Name, card.Number, card.Language)
+				b.Log("Dropping different language prints...")
+				b.Logf("%s %s %s %s", card.SetCode, card.Name, card.Number, card.Language)
 				continue
 			}
 			filteredOutCards = append(filteredOutCards, card)
@@ -548,7 +503,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	switch len(outCards) {
 	// Not found, rip
 	case 0:
-		Logger.Println("No matches...")
+		b.Log("No matches...")
 		err = ErrCardWrongVariant
 		if inCard.Variation == "" {
 			err = ErrCardMissingVariant
@@ -558,21 +513,21 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		}
 	// Victory
 	case 1:
-		Logger.Println("Found it!")
+		b.Log("Found it!")
 
 		cardID = b.output(outCards[0], inCard.Foil, inCard.IsEtched())
 
 		co := b.UUIDs[cardID]
-		Logger.Println(inCard, "->", co)
+		b.Logf("%v -> %v", b.describe(inCard), co)
 
 		// Validation step
 		if rules.MissingPromoTag(b, inCard, co) {
-			Logger.Println("...but it's invalid")
+			b.Log("...but it's invalid")
 			return "", ErrUnsupported
 		}
 	// FOR SHAME
 	default:
-		Logger.Println("Aliasing...")
+		b.Log("Aliasing...")
 		alias := NewAliasingError()
 		for i := range outCards {
 			alias.Dupes = append(alias.Dupes, b.output(outCards[i], inCard.Foil, inCard.IsEtched()))

@@ -22,6 +22,8 @@ type MTGStocks struct {
 	inventoryDate  time.Time
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	client    *STKSClient
 	inventory mtgban.InventoryRecord
 }
@@ -42,9 +44,9 @@ func (stks *MTGStocks) printf(format string, a ...any) {
 	}
 }
 
-// NewScraper returns an interests scraper.
-func NewScraper() *MTGStocks {
-	stks := MTGStocks{}
+// NewScraper returns an interests scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *MTGStocks {
+	stks := MTGStocks{backend: b}
 	stks.client = NewClient()
 	stks.inventory = mtgban.InventoryRecord{}
 	stks.MaxConcurrency = defaultConcurrency
@@ -61,7 +63,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		return nil
 	}
 
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := stks.backend.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -84,7 +86,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		if errors.As(err, &alias) {
 			probes := alias.Probe()
 			for _, probe := range probes {
-				card, _ := mtgmatcher.GetUUID(probe)
+				card, _ := stks.backend.GetUUID(probe)
 				stks.printf("- %s", card)
 			}
 		}

@@ -23,7 +23,7 @@ func TestArtCardUnsupported(t *testing.T) {
 			CardName:      "【Art Card】Plains",
 		},
 	} {
-		_, err := Preprocess(product)
+		_, err := Preprocess(&mtgmatcher.Backend{}, product)
 		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 			t.Errorf("Preprocess(%q) = %v, want ErrUnsupported", product.CardName, err)
 		}

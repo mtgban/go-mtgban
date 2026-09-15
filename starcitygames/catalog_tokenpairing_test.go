@@ -1,10 +1,6 @@
 package starcitygames
 
-import (
-	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-)
+import "testing"
 
 // TestResolveTwoSidedTokenPairing pins a two-sided token listing resolving
 // to the combined entity mtgmatcher/magic/tokenpairs.go derives for the same
@@ -15,7 +11,7 @@ import (
 // and the plain identifier lookup, either of which would otherwise resolve
 // only the one face the id happens to anchor.
 func TestResolveTwoSidedTokenPairing(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc       string
@@ -66,11 +62,11 @@ func TestResolveTwoSidedTokenPairing(t *testing.T) {
 				Finish: finish, FinishGroup: group, Language: "English",
 				ScryfallID: tt.scryfallID,
 			}
-			id, err := resolveProductID(GameMagic, p)
+			id, err := resolveProductID(b, GameMagic, p)
 			if err != nil {
 				t.Fatalf("resolveProductID(%s) = %v", tt.sku, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
@@ -95,7 +91,7 @@ func TestResolveTwoSidedTokenPairing(t *testing.T) {
 // with the datastore's own face order ("Weird // Goblin") differing from
 // SCG's own listing order ("Goblin Token} // {Weird Token").
 func TestResolveNativeTokenPair(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	p := CatalogProduct{
 		SKU: "SGL-MTG-GK1-T01-ENN", Name: "{Copy Token} // {Horror Token}",
@@ -103,11 +99,11 @@ func TestResolveNativeTokenPair(t *testing.T) {
 		Rarity: "Token", ProductType: ProductTypeSingles,
 		Finish: "Non-foil", FinishGroup: "Non-foil", Language: "English",
 	}
-	id, err := resolveProductID(GameMagic, p)
+	id, err := resolveProductID(b, GameMagic, p)
 	if err != nil {
 		t.Fatalf("resolveProductID(%s) = %v", p.SKU, err)
 	}
-	co, err := mtgmatcher.GetUUID(id)
+	co, err := b.GetUUID(id)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", id, err)
 	}
@@ -127,7 +123,7 @@ func TestResolveNativeTokenPair(t *testing.T) {
 // uses, reached here through a sku that names its filing set directly
 // rather than bundling two unrelated sets into one sku.
 func TestResolveTokenPairingBySetNumber(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	p := CatalogProduct{
 		SKU: "SGL-MTG-AFC-T03_AFR_T06-ENN", Name: "{Illusion Token} // {Skeleton Token}",
@@ -135,11 +131,11 @@ func TestResolveTokenPairingBySetNumber(t *testing.T) {
 		Rarity: "Token", ProductType: ProductTypeSingles,
 		Finish: "Non-foil", FinishGroup: "Non-foil", Language: "English",
 	}
-	id, err := resolveProductID(GameMagic, p)
+	id, err := resolveProductID(b, GameMagic, p)
 	if err != nil {
 		t.Fatalf("resolveProductID(%s) = %v", p.SKU, err)
 	}
-	co, err := mtgmatcher.GetUUID(id)
+	co, err := b.GetUUID(id)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", id, err)
 	}
@@ -159,10 +155,10 @@ func TestResolveTokenPairingBySetNumber(t *testing.T) {
 // faceA to the sku's own leading set instead). Each face is anchored
 // independently by identity via mtgmatcher.MatchInSetNumber and joined
 // through the uuid-pair-keyed magic.MatchTokenPairingByUUIDs, sidestepping
-// magic.TokenPairIndex's name-collision-blanking entirely - see
+// Backend.TokenPairIndex's name-collision-blanking entirely - see
 // tokenPairSkuAnchors and resolveProductID's own comment on this shape.
 func TestResolveCompositeSkuTokenPairing(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc     string
@@ -203,11 +199,11 @@ func TestResolveCompositeSkuTokenPairing(t *testing.T) {
 				Set: "Promo", Rarity: "Token", ProductType: ProductTypeSingles,
 				Finish: finish, FinishGroup: group, Language: "English",
 			}
-			id, err := resolveProductID(GameMagic, p)
+			id, err := resolveProductID(b, GameMagic, p)
 			if err != nil {
 				t.Fatalf("resolveProductID(%s) = %v", tt.sku, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
@@ -230,7 +226,7 @@ func TestResolveCompositeSkuTokenPairing(t *testing.T) {
 // unioned finish list. See mtgmatcher/magic/tokenpairs.go's own comment on
 // why the union is deliberately not good enough for this specific check.
 func TestResolveCompositeSkuTokenPairingRefusals(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc string
@@ -261,7 +257,7 @@ func TestResolveCompositeSkuTokenPairingRefusals(t *testing.T) {
 				Set: "Promo", Rarity: "Token", ProductType: ProductTypeSingles,
 				Finish: finish, FinishGroup: group, Language: "English",
 			}
-			if _, err := resolveProductID(GameMagic, p); err == nil {
+			if _, err := resolveProductID(b, GameMagic, p); err == nil {
 				t.Errorf("resolveProductID(%s) resolved, want a refusal", tt.sku)
 			}
 		})
@@ -281,7 +277,7 @@ func TestResolveCompositeSkuTokenPairingRefusals(t *testing.T) {
 // card carries no "the") that would otherwise make this exact pairing
 // unreachable regardless of how well the rest of the matching works.
 func TestResolveDungeonPairings(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc       string
@@ -324,11 +320,11 @@ func TestResolveDungeonPairings(t *testing.T) {
 				Finish: finish, FinishGroup: group, Language: "English",
 				ScryfallID: tt.scryfallID,
 			}
-			id, err := resolveProductID(GameMagic, p)
+			id, err := resolveProductID(b, GameMagic, p)
 			if err != nil {
 				t.Fatalf("resolveProductID(%s) = %v", tt.sku, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}

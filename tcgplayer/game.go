@@ -42,7 +42,8 @@ type TCGGame struct {
 	sealed    bool
 	sealedMap map[int][]string
 
-	client *tcgplayer.Client
+	backend *mtgmatcher.Backend
+	client  *tcgplayer.Client
 }
 
 func (tcg *TCGGame) printf(format string, a ...any) {
@@ -72,7 +73,11 @@ var tcgGames = map[mtgban.Game]int{
 
 // NewScraperGame returns a singles scraper for one game, authenticated with a
 // partner API key pair.
-func NewScraperGame(game mtgban.Game, publicID, privateID string) (*TCGGame, error) {
+func NewScraperGame(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	category, found := tcgGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -84,6 +89,7 @@ func NewScraperGame(game mtgban.Game, publicID, privateID string) (*TCGGame, err
 	}
 
 	tcg := TCGGame{}
+	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
@@ -102,8 +108,8 @@ func NewScraperGame(game mtgban.Game, publicID, privateID string) (*TCGGame, err
 // adds later is picked up rather than silently skipped. Products resolve
 // through the sealed product map by their product id, the identity the
 // datastore stamps on every sealed entry.
-func NewScraperGameSealed(game mtgban.Game, publicID, privateID string) (*TCGGame, error) {
-	tcg, err := NewScraperGame(game, publicID, privateID)
+func NewScraperGameSealed(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame, error) {
+	tcg, err := NewScraperGame(b, publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +214,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				Finish:    printing,
 				Foil:      printing != "Normal",
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := tcg.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -222,7 +228,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 					probes := alias.Probe()
 					tcg.printf("%d %s got ids: %s", sku.ProductID, cardName, probes)
 					for _, probe := range probes {
-						co, _ := mtgmatcher.GetUUID(probe)
+						co, _ := tcg.backend.GetUUID(probe)
 						tcg.printf("%s: %s", probe, co)
 					}
 				}
@@ -287,7 +293,7 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 	tcg.printf("Found %d products", totals)
 
 	if tcg.sealed {
-		tcg.sealedMap = mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+		tcg.sealedMap = tcg.backend.BuildSealedProductMap("tcgplayerProductId")
 		tcg.printf("Loaded %d sealed products", len(tcg.sealedMap))
 	}
 

@@ -2,8 +2,6 @@ package abugames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestMarkedApart pins the printing a listing reaches where a set files two
@@ -11,7 +9,7 @@ import (
 // never carries. The number names both and so names neither, and the wording
 // beside it - which is the only thing that knows - went unread.
 func TestMarkedApart(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -31,15 +29,15 @@ func TestMarkedApart(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
