@@ -40,7 +40,7 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
-func processCards(ctx context.Context, client *api.Client, channel chan<- responseChan, page int) error {
+func processCards(ctx context.Context, ds *mtgmatcher.Backend, client *api.Client, channel chan<- responseChan, page int) error {
 	products, err := client.ListAllProducts(ctx, api.CategoryMagic, []string{"Cards"}, false, page)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 			continue
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := ds.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		}
@@ -82,7 +82,7 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := ds.GetUUID(probe)
 					fmt.Fprintln(os.Stderr, "-", card)
 				}
 			}
@@ -155,7 +155,6 @@ func run() int {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	mtgmatcher.SetGlobalDatastore(ds)
 
 	ctx := context.Background()
 	editions, err := tcgplayer.EditionMap(ctx, client, api.CategoryMagic)
@@ -188,7 +187,7 @@ func run() int {
 	for i := 0; i < *ConcurrencyOpt; i++ {
 		wg.Go(func() {
 			for page := range pages {
-				err := processCards(ctx, client, channel, page)
+				err := processCards(ctx, ds, client, channel, page)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}
@@ -221,7 +220,7 @@ func run() int {
 	// Reduce the map to the needed ids
 	output := map[string]*Properties{}
 	for uuid, cards := range inventory {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := ds.GetUUID(uuid)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err, uuid)
 			continue
