@@ -28,6 +28,8 @@ type SecretDesKorrigans struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 
@@ -36,9 +38,10 @@ type SecretDesKorrigans struct {
 	client *http.Client
 }
 
-// NewScraper returns a scraper, failing if the edition list cannot be read.
-func NewScraper() (*SecretDesKorrigans, error) {
-	sdk := SecretDesKorrigans{}
+// NewScraper returns a scraper matching against b, failing if the edition
+// list cannot be read.
+func NewScraper(b *mtgmatcher.Backend) (*SecretDesKorrigans, error) {
+	sdk := SecretDesKorrigans{backend: b}
 	sdk.inventory = mtgban.InventoryRecord{}
 	sdk.MaxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
@@ -170,7 +173,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			return
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := sdk.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -197,7 +200,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := sdk.backend.GetUUID(probe)
 					sdk.printf("- %s", card)
 				}
 			}
