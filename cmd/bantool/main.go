@@ -75,7 +75,7 @@ type scraperOption struct {
 	Enabled    bool
 	OnlySeller bool
 	OnlyVendor bool
-	Init       func() (mtgban.Scraper, error)
+	Init       func(b *mtgmatcher.Backend) (mtgban.Scraper, error)
 }
 
 // scraperFlagName is the external name a target is known by: the store's own
@@ -297,7 +297,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 	},
 	mtgban.GameMagic: {
 		"abugames": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := abugames.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
@@ -307,7 +307,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"abugames_sealed": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := abugames.NewScraperSealed()
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
@@ -317,14 +317,14 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"arcanafrisia": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := arcanafrisia.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
 			},
 		},
 		"cardkingdom": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := cardkingdom.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				scraper.Partner = os.Getenv("CK_PARTNER")
@@ -333,7 +333,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"cardkingdom_graded": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper, err := cardkingdom.NewScraperGraded()
 				if err != nil {
 					return nil, err
@@ -344,7 +344,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"cardkingdom_sealed": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := cardkingdom.NewScraperSealed()
 				scraper.LogCallback = GlobalLogCallback
 				scraper.Partner = os.Getenv("CK_PARTNER")
@@ -359,7 +359,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			Init: cardmarketMarketScraper(mtgban.GameMagic),
 		},
 		"cardmarket_sealed": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				appToken, appSecret, err := cardmarketCredentials()
 				if err != nil {
 					return nil, err
@@ -392,21 +392,21 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			Init: gamenerdzScraper(mtgban.GameMagic),
 		},
 		"hareruya": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := hareruya.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
 			},
 		},
 		"hareruya_sealed": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := hareruya.NewScraperSealed()
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
 			},
 		},
 		"magiccorner": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper, err := magiccorner.NewScraper()
 				if err != nil {
 					return nil, err
@@ -419,7 +419,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"manaleak": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := manaleak.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
@@ -429,7 +429,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"manapool": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := manapool.NewScraper()
 				scraper.Partner = os.Getenv("MP_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
@@ -437,7 +437,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"manapool_index": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := manapool.NewScraperIndex()
 				scraper.Partner = os.Getenv("MP_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
@@ -445,7 +445,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"manapool_sealed": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := manapool.NewScraperSealed()
 				scraper.Partner = os.Getenv("MP_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
@@ -456,7 +456,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			Init: miniaturemarketSealedScraper(mtgban.GameMagic),
 		},
 		"mintcard": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
 				if tcgSKUPath == "" {
 					return nil, errors.New("missing MTGJSON_TCGSKU_PATH env var")
@@ -484,7 +484,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"mtgseattle": {
 			OnlySeller: true,
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := mtgseattle.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
@@ -494,7 +494,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"sealed_ev": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				banKey := os.Getenv("BAN_API_KEY")
 				if banKey == "" {
 					return nil, errors.New("missing BAN_API_KEY env var")
@@ -518,7 +518,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			Init: strikezoneScraper(mtgban.GameMagic),
 		},
 		"tcg_index": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 				tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 				if tcgPublicID == "" || tcgPrivateID == "" {
@@ -539,7 +539,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"tcg_market": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 				tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 				tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
@@ -575,7 +575,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			},
 		},
 		"tcg_sealed": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 				tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 				tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
@@ -614,7 +614,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			Init: tcgSYPScraper(mtgban.GameMagic),
 		},
 		"trollandtoad": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := trollandtoad.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
@@ -752,7 +752,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 			Init: coolstuffincSealedScraper(mtgban.GameRiftbound),
 		},
 		"merlion": {
-			Init: func() (mtgban.Scraper, error) {
+			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
 				scraper := merlion.NewScraper()
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
@@ -1363,7 +1363,7 @@ func run() int {
 			continue
 		}
 
-		scraper, err := opt.Init()
+		scraper, err := opt.Init(backend)
 		if err != nil {
 			log.Println(err)
 			return 1
