@@ -117,6 +117,28 @@ var (
 	}
 )
 
+// TreatmentLabel names the frame or border treatment a Magic printing
+// wears, in the priority a printing wearing more than one of these at once
+// resolves to: Showcase first, since a showcase printing is also extended
+// art or borderless without either being what the showcase frame is
+// called; Extended Art next, since Extended Art cannot itself be
+// borderless; then Borderless; and Retro Frame last, since any of the
+// other three can sit atop the classic 1997 frame but never the reverse.
+// "" when the printing wears none of them.
+func TreatmentLabel(co *mtgmatcher.CardObject) string {
+	switch {
+	case co.HasFrameEffect(FrameEffectShowcase):
+		return "Showcase"
+	case co.HasFrameEffect(FrameEffectExtendedArt):
+		return "Extended Art"
+	case co.BorderColor == BorderColorBorderless:
+		return "Borderless"
+	case co.FrameVersion == "1997":
+		return "Retro Frame"
+	}
+	return ""
+}
+
 var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypePrerelease,
