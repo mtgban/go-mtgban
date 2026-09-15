@@ -27,13 +27,16 @@ type Sealed struct {
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
+
+	backend *mtgmatcher.Backend
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *Sealed {
+func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	ck := Sealed{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
+	ck.backend = b
 	return &ck
 }
 
@@ -52,9 +55,9 @@ func (ck *Sealed) Load(ctx context.Context) error {
 
 	foundProduct := 0
 
-	sets := mtgmatcher.GetAllSets()
+	sets := ck.backend.GetAllSets()
 	for _, code := range sets {
-		set, _ := mtgmatcher.GetSet(code)
+		set, _ := ck.backend.GetSet(code)
 
 		// Skip products without Sealed or Booster information
 		switch set.Code {
