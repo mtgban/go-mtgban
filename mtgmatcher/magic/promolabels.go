@@ -111,6 +111,7 @@ var promoTypeLabels = map[string]string{
 	"ravnicacity":         "Ravnica City",
 	"release":             "Release / launch",
 	"resale":              "Resale",
+	"retroframe":          "Retro Frame",
 	"ripplefoil":          "Ripple foil",
 	"ruderiders":          "Rude Riders",
 	"schinesealtart":      "S-Chinese alt art",
