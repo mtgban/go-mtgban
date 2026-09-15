@@ -121,16 +121,28 @@ func TestNewScraperRefusesWhatItCannotBuild(t *testing.T) {
 func TestNewScraperConfiguresOneHalf(t *testing.T) {
 	b := &mtgmatcher.Backend{Game: "pokemon"}
 	auth := MapAuthenticator{"REGISTRY_TEST_SECRET": "x"}
-	scraper, err := NewScraper(b, "registry_test", auth, WithBuylistOnly())
-	if err != nil {
-		t.Fatal(err)
+	cases := []struct {
+		name string
+		half Option
+		want ScraperOptions
+	}{
+		{"buylist only", WithBuylistOnly(), ScraperOptions{DisableRetail: true}},
+		{"retail only", WithRetailOnly(), ScraperOptions{DisableBuylist: true}},
 	}
-	got, ok := scraper.(*registryScraper)
-	if !ok {
-		t.Fatalf("got %T", scraper)
-	}
-	if !got.config.DisableRetail || got.config.DisableBuylist {
-		t.Errorf("config = %+v", got.config)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			scraper, err := NewScraper(b, "registry_test", auth, tc.half)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, ok := scraper.(*registryScraper)
+			if !ok {
+				t.Fatalf("got %T", scraper)
+			}
+			if got.config != tc.want {
+				t.Errorf("config = %+v, want %+v", got.config, tc.want)
+			}
+		})
 	}
 }
 
