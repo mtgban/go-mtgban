@@ -13,7 +13,7 @@ import (
 // goes up under the art, so the wording named nothing and the base printing
 // answered - $1400 on one of them.
 func TestEventNamed(t *testing.T) {
-	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	tests := []struct {
 		desc       string
@@ -53,11 +53,11 @@ func TestEventNamed(t *testing.T) {
 				Variation: eventNamed(test.number + " " + nameQualifiers(test.name)),
 				Foil:      true,
 			}
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", card, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}

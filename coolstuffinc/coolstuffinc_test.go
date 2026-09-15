@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestBuylistVariation pins what the buylist tells the matcher about a
@@ -175,7 +176,7 @@ func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
 	for _, game := range []mtgban.Game{mtgban.GameMagic, mtgban.GameOnePiece, mtgban.GamePokemon, mtgban.GameYuGiOh,
 		mtgban.GameLorcana, mtgban.GameRiftbound, mtgban.GameGundam, mtgban.GamePalworld} {
 		t.Run(fmt.Sprintf("%q", game), func(t *testing.T) {
-			csi, err := NewScraper(game)
+			csi, err := NewScraper(&mtgmatcher.Backend{Game: string(game)})
 			if err != nil {
 				t.Fatalf("NewScraper(%q) = %v", game, err)
 			}
@@ -192,7 +193,7 @@ func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
 // nothing extra, because the split drops a seller whose inventory is empty.
 // Palworld is that game today.
 func TestUnfoldSkipsTheEmptyGradedSeller(t *testing.T) {
-	csi, err := NewScraper(mtgban.GamePalworld)
+	csi, err := NewScraper(&mtgmatcher.Backend{Game: string(mtgban.GamePalworld)})
 	if err != nil {
 		t.Fatalf("NewScraper(GamePalworld) = %v", err)
 	}

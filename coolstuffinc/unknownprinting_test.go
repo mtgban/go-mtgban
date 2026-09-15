@@ -58,7 +58,7 @@ func TestUnknownPrinting(t *testing.T) {
 // TestUnknownPrintingKept pins that the printing each dropped listing was
 // landing on still resolves: the drop is one listing, not the card.
 func TestUnknownPrintingKept(t *testing.T) {
-	withGameDatastore(t, "yugioh", "YUGIOH_PATH")
+	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	for _, test := range []struct {
 		name, edition, variation, wantSet, wantNumber string
@@ -75,11 +75,11 @@ func TestUnknownPrintingKept(t *testing.T) {
 				Edition:   printRunEdition(test.edition, ""),
 				Variation: strings.TrimSpace(test.variation),
 			}
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", card, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
