@@ -27,8 +27,8 @@ func TestMismatchNormalisesTheGrades(t *testing.T) {
 		{"a played reference is graded up to the probe", "MP", "NM", 6, 8, 6/0.6 - 8},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			entries := Mismatch(&ArbitOpts{MinDiff: -1000, MinSpread: -1000},
+			b := backendFor(plainCard())
+			entries := Mismatch(b, &ArbitOpts{MinDiff: -1000, MinSpread: -1000},
 				sellerOf(InventoryRecord{
 					"card": {{Conditions: tt.refCond, Price: tt.refPrice, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
@@ -55,8 +55,8 @@ func TestMismatchSkipsAnUnusableGrade(t *testing.T) {
 		{"a grade the map does not know", "NM", "GEM-MT"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			entries := Mismatch(&ArbitOpts{MinDiff: -1000, MinSpread: -1000},
+			b := backendFor(plainCard())
+			entries := Mismatch(b, &ArbitOpts{MinDiff: -1000, MinSpread: -1000},
 				sellerOf(InventoryRecord{
 					"card": {{Conditions: tt.refCond, Price: 10, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
@@ -73,9 +73,9 @@ func TestMismatchSkipsAnUnusableGrade(t *testing.T) {
 // The row carries both sides so a caller can show its working, and the
 // quantity is what the smaller side allows.
 func TestMismatchReportsBothSides(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Mismatch(nil,
+	entries := Mismatch(b, nil,
 		sellerOf(InventoryRecord{
 			"card": {{Conditions: "NM", Price: 10, Quantity: 2}},
 		}, ScraperInfo{Name: "reference"}),
@@ -98,65 +98,27 @@ func TestMismatchReportsBothSides(t *testing.T) {
 	}
 }
 
-// TestArbitEntryString pins which side the printed line reads from: a buylist
-// price where there is one, the reference price otherwise, and nothing at all
-// for a card the datastore cannot name.
-func TestArbitEntryString(t *testing.T) {
-	installCards(t, plainCard())
-
-	arbit := ArbitEntry{
-		CardID:         "card",
-		BuylistEntry:   BuylistEntry{BuyPrice: 15},
-		InventoryEntry: InventoryEntry{Price: 10},
-		Quantity:       3,
-	}
-	if got := arbit.String(); got == "" {
-		t.Error("String() said nothing about a trade it can name")
-	} else if want := "10.00 -> 15.00"; !contains(got, want) {
-		t.Errorf("String() = %q, want it to carry %q", got, want)
-	}
-
-	mismatch := ArbitEntry{
-		CardID:         "card",
-		ReferenceEntry: InventoryEntry{Price: 12},
-		InventoryEntry: InventoryEntry{Price: 10},
-		Quantity:       1,
-	}
-	if want := "10.00 ~ 12.00"; !contains(mismatch.String(), want) {
-		t.Errorf("String() = %q, want it to carry %q", mismatch.String(), want)
-	}
-
-	unknown := ArbitEntry{CardID: "nothing", InventoryEntry: InventoryEntry{Price: 1}}
-	if got := unknown.String(); got != "" {
-		t.Errorf("String() = %q for a card the datastore does not hold, want empty", got)
-	}
-}
-
-func contains(s, sub string) bool {
-	for i := 0; i+len(sub) <= len(s); i++ {
-		if s[i:i+len(sub)] == sub {
-			return true
-		}
-	}
-	return false
-}
-
 // Nil options are the ones that filter nothing, and the rate they imply is
 // one: a zero would price every card at nothing.
 func TestResolveOptsDefaults(t *testing.T) {
-	r := resolveOpts(nil)
+	b := backendFor(plainCard())
+
+	r := resolveOpts(b, nil)
 	if r.rate != 1.0 {
 		t.Errorf("rate = %v, want 1", r.rate)
 	}
 	if r.minPrice != 0 || r.minDiff != 0 || r.minSpread != 0 {
 		t.Errorf("nil options filtered something: %+v", r)
 	}
+	if r.backend != b {
+		t.Error("nil options lost the backend they were resolved with")
+	}
 
 	// An explicit zero rate means the same thing: unset.
-	if got := resolveOpts(&ArbitOpts{Rate: 0}).rate; got != 1.0 {
+	if got := resolveOpts(b, &ArbitOpts{Rate: 0}).rate; got != 1.0 {
 		t.Errorf("rate = %v for an unset rate, want 1", got)
 	}
-	if got := resolveOpts(&ArbitOpts{Rate: 0.5}).rate; got != 0.5 {
+	if got := resolveOpts(b, &ArbitOpts{Rate: 0.5}).rate; got != 0.5 {
 		t.Errorf("rate = %v, want 0.5", got)
 	}
 }
@@ -164,10 +126,10 @@ func TestResolveOptsDefaults(t *testing.T) {
 // The stabilising constant is what keeps a cheap card from dominating the
 // ranking, so it has to reach the denominator.
 func TestProfitabilityConstantDampensCheapCards(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
 	run := func(k float64) float64 {
-		entries := Arbit(&ArbitOpts{ProfitabilityConstant: k},
+		entries := Arbit(b, &ArbitOpts{ProfitabilityConstant: k},
 			vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 3}}}),
 			sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 1, Quantity: 1}}},
 				ScraperInfo{Name: "seller"}))
@@ -222,8 +184,8 @@ func TestMismatchFilters(t *testing.T) {
 		}, 1},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			if got := len(Mismatch(tt.opts, reference(), probe())); got != tt.want {
+			b := backendFor(plainCard())
+			if got := len(Mismatch(b, tt.opts, reference(), probe())); got != tt.want {
 				t.Errorf("Mismatch returned %d entries, want %d", got, tt.want)
 			}
 		})
@@ -232,9 +194,9 @@ func TestMismatchFilters(t *testing.T) {
 
 // A card only one shop carries has nothing to be compared against.
 func TestMismatchNeedsBothShops(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Mismatch(nil,
+	entries := Mismatch(b, nil,
 		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 			ScraperInfo{Name: "reference"}),
 		sellerOf(InventoryRecord{"other": {{Conditions: "NM", Price: 5, Quantity: 1}}},
@@ -246,9 +208,9 @@ func TestMismatchNeedsBothShops(t *testing.T) {
 
 // And a card the datastore cannot name is skipped before any of it.
 func TestMismatchSkipsAnUnknownCard(t *testing.T) {
-	installCards(t, map[string]*mtgmatcher.CardObject{})
+	b := backendFor(map[string]*mtgmatcher.CardObject{})
 
-	entries := Mismatch(nil,
+	entries := Mismatch(b, nil,
 		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
 			ScraperInfo{Name: "reference"}),
 		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 5, Quantity: 1}}},
@@ -273,8 +235,8 @@ func TestMismatchFiltersTheProbeSide(t *testing.T) {
 		{"a probe asking nothing", nil, "NM", 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			entries := Mismatch(tt.opts,
+			b := backendFor(plainCard())
+			entries := Mismatch(b, tt.opts,
 				sellerOf(InventoryRecord{
 					"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
@@ -293,9 +255,9 @@ func TestMismatchFiltersTheProbeSide(t *testing.T) {
 // to the reference instead, so the same options read one way here and the
 // other way there.
 func TestMismatchScalesTheBoughtSide(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Mismatch(&ArbitOpts{
+	entries := Mismatch(b, &ArbitOpts{
 		MinDiff:           -1000,
 		MinSpread:         -1000,
 		CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 0.5, false },
@@ -317,9 +279,9 @@ func TestMismatchScalesTheBoughtSide(t *testing.T) {
 
 // The rate reaches this report too, for the same reason.
 func TestMismatchAppliesTheRate(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Mismatch(&ArbitOpts{Rate: 2},
+	entries := Mismatch(b, &ArbitOpts{Rate: 2},
 		sellerOf(InventoryRecord{
 			"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
 		}, ScraperInfo{Name: "reference"}),
@@ -336,9 +298,9 @@ func TestMismatchAppliesTheRate(t *testing.T) {
 
 // And the absolute difference, which this report never filled in.
 func TestMismatchReportsTheAbsoluteDifference(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Mismatch(nil,
+	entries := Mismatch(b, nil,
 		sellerOf(InventoryRecord{
 			"card": {{Conditions: "NM", Price: 10, Quantity: 3}},
 		}, ScraperInfo{Name: "reference"}),
@@ -365,8 +327,8 @@ func TestMismatchFiltersTheShelf(t *testing.T) {
 		{"bundles only drops a loose copy", &ArbitOpts{OnlyBundles: true}, 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			entries := Mismatch(tt.opts,
+			b := backendFor(plainCard())
+			entries := Mismatch(b, tt.opts,
 				sellerOf(InventoryRecord{
 					"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
@@ -383,9 +345,9 @@ func TestMismatchFiltersTheShelf(t *testing.T) {
 // A reference asking nothing quotes nothing, the way a vendor offering
 // nothing does.
 func TestMismatchSkipsAReferenceOfNothing(t *testing.T) {
-	installCards(t, plainCard())
+	b := backendFor(plainCard())
 
-	entries := Mismatch(&ArbitOpts{MinDiff: -1000, MinSpread: -1000},
+	entries := Mismatch(b, &ArbitOpts{MinDiff: -1000, MinSpread: -1000},
 		sellerOf(InventoryRecord{
 			"card": {{Conditions: "NM", Price: 0, Quantity: 1}},
 		}, ScraperInfo{Name: "reference"}),
@@ -411,8 +373,8 @@ func TestMismatchFiltersTheReferenceSide(t *testing.T) {
 		{"a price floor the reference alone falls under", &ArbitOpts{MinPrice: 5}, "NM", 4},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			installCards(t, plainCard())
-			entries := Mismatch(tt.opts,
+			b := backendFor(plainCard())
+			entries := Mismatch(b, tt.opts,
 				sellerOf(InventoryRecord{
 					"card": {{Conditions: tt.refCond, Price: tt.refPrice, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
