@@ -293,6 +293,9 @@ func scraperResources(game mtgban.Game, key string) ([]mtgban.Option, error) {
 		}
 
 	case "cardmarket_sealed":
+		if cardmarket.SealedBridgeUseOf(game) == cardmarket.BridgeUnused {
+			break
+		}
 		bridge, err := cardtraderBridge(game)
 		if err != nil {
 			return nil, err

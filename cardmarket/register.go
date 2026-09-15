@@ -69,9 +69,7 @@ const (
 )
 
 // BridgeUseOf reports how much a game's Index and Market scrapers lean on
-// the TCGplayer bridge; see resolveProduct. Sealed's own need is not a
-// function of the game - see cardmarket_sealed's registration below - so it
-// is not read here.
+// the TCGplayer bridge; see resolveProduct.
 func BridgeUseOf(game mtgban.Game) BridgeUse {
 	switch game {
 	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
@@ -81,6 +79,18 @@ func BridgeUseOf(game mtgban.Game) BridgeUse {
 	default:
 		return BridgeUnused
 	}
+}
+
+// SealedBridgeUseOf is BridgeUseOf for the Sealed scraper, whose need is a
+// different one: it reads the bridge only to name products by their
+// TCGplayer id where the datastore's own Cardmarket ids run out, which a
+// constructor cannot see in advance for any game but Magic, whose sealed
+// map never falls back to names (see Sealed.Load).
+func SealedBridgeUseOf(game mtgban.Game) BridgeUse {
+	if game == mtgban.GameMagic {
+		return BridgeUnused
+	}
+	return BridgeRequired
 }
 
 // cardmarketGames are the games Cardmarket's Index, Market and Sealed
@@ -181,11 +191,13 @@ func buildMarket(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.O
 	return scraper, nil
 }
 
-// buildSealed is cardmarket_sealed's Constructor. Unlike Index and Market,
-// it requires the bridge for every game rather than following BridgeUseOf:
-// whether Sealed.Load ends up needing it depends on what the datastore's
-// own sealed products carry, which the constructor cannot see in advance.
+// buildSealed is cardmarket_sealed's Constructor; the bridge it needs is
+// SealedBridgeUseOf's question, not BridgeUseOf's.
 func buildSealed(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	appToken, err := auth.Secret(SecretAppToken)
 	if err != nil {
 		return nil, err
@@ -203,8 +215,8 @@ func buildSealed(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.O
 	if err != nil {
 		return nil, err
 	}
-	if len(bridge) == 0 {
-		return nil, errors.New("cardmarket_sealed needs WithBridge")
+	if len(bridge) == 0 && SealedBridgeUseOf(game) == BridgeRequired {
+		return nil, fmt.Errorf("cardmarket_sealed needs WithBridge for %s", game)
 	}
 	scraper.TCGBridge = bridge
 
