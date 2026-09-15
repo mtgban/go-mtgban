@@ -2,8 +2,6 @@ package hareruya
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestTitleTreatments pins the treatments the storefront announces in the
@@ -13,8 +11,6 @@ import (
 // printings the shop pays the most for. Each pair below is the same card
 // bought twice, once with the marker and once without.
 func TestTitleTreatments(t *testing.T) {
-	realDatastore(t)
-
 	for _, tt := range []struct {
 		desc, title, wantSet, wantNumber string
 	}{
@@ -72,15 +68,16 @@ func TestTitleTreatments(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			in, err := preprocess(tt.title)
+			b := withMagic(t)
+			in, err := preprocess(b, tt.title)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.title, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
