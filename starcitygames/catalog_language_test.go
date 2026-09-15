@@ -3,8 +3,6 @@ package starcitygames
 import (
 	"strings"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // The catalog spells two-part languages with a dash mtgjson does not use, and
@@ -34,7 +32,7 @@ func TestCatalogLanguageTag(t *testing.T) {
 // mtgjson keeps one printing for the inherently foreign sets while SCG
 // sells them in several languages, so only the matching one resolves.
 func TestResolveForeignLanguages(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	withMagic(t)
 	tests := []struct {
@@ -73,18 +71,18 @@ func TestResolveForeignLanguages(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameMagic, test.product)
+			id, err := resolveProduct(b, GameMagic, test.product)
 			if test.wantOK && err != nil {
 				t.Fatalf("resolveProduct: %v", err)
 			}
 			if !test.wantOK {
 				if err == nil {
-					co, _ := mtgmatcher.GetUUID(id)
+					co, _ := b.GetUUID(id)
 					t.Fatalf("resolved to %s (%s), expected it to be skipped", id, co)
 				}
 				return
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -102,7 +100,7 @@ func TestResolveForeignLanguages(t *testing.T) {
 // printing is meant. Dropping these lost the Dwarvish cards in The Hobbit, the
 // Phyrexian Secret Lairs and the promos printed as a gimmick in a single tongue.
 func TestResolveEnglishTagOnForeignPrinting(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, test := range []struct {
 		product          CatalogProduct
@@ -133,11 +131,11 @@ func TestResolveEnglishTagOnForeignPrinting(t *testing.T) {
 		},
 	} {
 		t.Run(test.product.SKU, func(t *testing.T) {
-			id, err := resolveProduct(GameMagic, test.product)
+			id, err := resolveProduct(b, GameMagic, test.product)
 			if err != nil {
 				t.Fatalf("resolveProduct: %v", err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}

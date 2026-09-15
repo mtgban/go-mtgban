@@ -2,14 +2,12 @@ package starcitygames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Duel Decks: Anthology reprints four earlier decks and mtgjson keeps
 // them under the original codes, which survive only in the sku.
 func TestResolveAnthologySubdeck(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 	base := CatalogProduct{
 		Name: "Forest", Set: "Duel Decks: Anthology", Language: "English",
 		CollectorNumber: "28", FinishGroup: "Non-foil",
@@ -19,19 +17,19 @@ func TestResolveAnthologySubdeck(t *testing.T) {
 	gvl := base
 	gvl.SKU = "SGL-MTG-GVL-28-ENN"
 
-	idE, err := resolveProduct(GameMagic, evg)
+	idE, err := resolveProduct(b, GameMagic, evg)
 	if err != nil {
 		t.Fatalf("EVG: %v", err)
 	}
-	idG, err := resolveProduct(GameMagic, gvl)
+	idG, err := resolveProduct(b, GameMagic, gvl)
 	if err != nil {
 		t.Fatalf("GVL: %v", err)
 	}
 	if idE == idG {
 		t.Fatalf("both sub-decks resolved to %s", idE)
 	}
-	coE, _ := mtgmatcher.GetUUID(idE)
-	coG, _ := mtgmatcher.GetUUID(idG)
+	coE, _ := b.GetUUID(idE)
+	coG, _ := b.GetUUID(idG)
 	if coE.SetCode != "EVG" {
 		t.Errorf("EVG sku resolved into %s", coE.SetCode)
 	}
