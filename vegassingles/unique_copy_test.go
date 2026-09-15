@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestUniqueCopy pins which listings name one particular card rather than a
@@ -19,7 +20,7 @@ func TestUniqueCopy(t *testing.T) {
 		"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil (Unique) 54353",
 		"Teemo - Swift Scout (Signature) (307*/298) - Unique (390545)",
 	} {
-		if _, err := preprocess(VSProduct{DisplayName: display}, mtgban.GameRiftbound); err == nil {
+		if _, err := preprocess(&mtgmatcher.Backend{}, VSProduct{DisplayName: display}, mtgban.GameRiftbound); err == nil {
 			t.Errorf("%s: read as a printing, want refused as one copy", display)
 		}
 	}
