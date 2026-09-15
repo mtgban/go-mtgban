@@ -32,13 +32,6 @@ func TestPreprocessPokemonQualifier(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// The rest of the package reads the Magic datastore TestMain loaded, and
-	// the global one is what a probe asks.
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(b)
-	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(previous)
-	})
 
 	tests := []struct {
 		displayName string
@@ -56,12 +49,12 @@ func TestPreprocessPokemonQualifier(t *testing.T) {
 			SelectedFinish: "Holofoil",
 			ProductData:    GNProductData{SetName: "SV: Scarlet & Violet Promo Cards"},
 		}
-		card, err := preprocess(product, mtgban.GamePokemon)
+		card, err := preprocess(b, product, mtgban.GamePokemon)
 		if err != nil {
 			t.Errorf("%q: unexpected error %v", tt.displayName, err)
 			continue
 		}
-		uuid, err := mtgmatcher.Match(card)
+		uuid, err := b.Match(card)
 		if err != nil {
 			t.Errorf("%q: unexpected error %v", tt.displayName, err)
 			continue
