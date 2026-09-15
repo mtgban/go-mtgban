@@ -14,6 +14,7 @@ import (
 // or that names The List outright, is unaffected either way.
 func TestMatchAltArtNotTheList(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	for _, probe := range []struct {
 		name      string
 		edition   string
@@ -36,12 +37,12 @@ func TestMatchAltArtNotTheList(t *testing.T) {
 			Variation: probe.variation,
 			Foil:      probe.foil,
 		}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("Match(%v) = %v", in, err)
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Errorf("GetUUID(%s) = %v", id, err)
 			continue

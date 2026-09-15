@@ -10,25 +10,22 @@ import (
 )
 
 var (
+	internalTestBackend   *Backend
 	internalDatastoreOnce sync.Once
 	internalDatastoreErr  error
 )
 
 // realDatastore installs the Magic datastore the first time a test inside the
-// package asks for it, reusing what the suite beside it installed where that
-// got there first.
+// package asks for it, and hands every caller in the run the same Backend.
 //
 // It reaches simplecloud directly rather than internal/datastore, which
 // decodes and so imports the package this file is part of. The decoder is
 // reached through Open, which is local, and "magic" is registered by
 // mtgmatcher/magic - imported by the external test files, which share this
 // test binary.
-func realDatastore(t *testing.T) {
+func realDatastore(t *testing.T) *Backend {
 	t.Helper()
 	internalDatastoreOnce.Do(func() {
-		if len(GetAllSets()) > 0 {
-			return
-		}
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
@@ -51,12 +48,21 @@ func realDatastore(t *testing.T) {
 			internalDatastoreErr = err
 			return
 		}
-		SetGlobalDatastore(backend)
+		internalTestBackend = backend
 	})
 	if internalDatastoreErr != nil {
 		t.Fatal(internalDatastoreErr)
 	}
-	if len(GetAllSets()) == 0 {
+	if internalTestBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return internalTestBackend
+}
+
+// RealDatastore hands the external test package the same Backend, which it
+// cannot reach for itself: realDatastore is unexported and the sync.Once
+// behind it is what keeps the two suites sharing this binary to one copy.
+func RealDatastore(t *testing.T) *Backend {
+	t.Helper()
+	return realDatastore(t)
 }
