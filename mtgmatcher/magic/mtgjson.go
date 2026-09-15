@@ -945,7 +945,11 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			if card.HasFrameEffect(FrameEffectShowcase) {
 				card.PromoTypes = append(card.PromoTypes, PromoTypeShowcase)
 			}
-			if card.FrameVersion == "1997" {
+			// The 1997 frame is also just what every card printed before
+			// 8th Edition already wears, so only file it as a promo type
+			// where it is a deliberate modern treatment, not the frame
+			// its era printed by default.
+			if card.FrameVersion == "1997" && set.ReleaseDateTime.After(PromosForEverybodyYay) {
 				card.PromoTypes = append(card.PromoTypes, PromoTypeRetroFrame)
 			}
 
