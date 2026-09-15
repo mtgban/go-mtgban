@@ -487,6 +487,9 @@ func isUnsupported(c *mtgmatcher.InputCard) bool {
 		c.Contains("Heroes of the Realm") || // HTR*
 		c.Contains("Memorabilia") ||
 		c.Contains("Front Card") || // Jumpstart
+		mtgmatcher.Contains(c.Name, "Strategy Card") || // Portal rules-teaching inserts
+		mtgmatcher.Contains(c.Name, "Card List") || // Portal's own checklist insert
+		mtgmatcher.Contains(c.Name, "Planeswalkers Part") || // Lorwyn rules-teaching inserts
 		(c.Contains("Duel Masters") && c.Contains("Not Tournament Legal")) || // scg
 		c.Contains("Sealed") ||
 		c.Contains("Un-Known Event Playtest") ||
