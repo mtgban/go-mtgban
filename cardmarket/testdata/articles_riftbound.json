@@ -1,0 +1,1982 @@
+[
+  {
+    "idArticle": 2062188726,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 4,
+    "inShoppingCart": false,
+    "condition": "MT",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 993302049,
+      "username": "MrSnoodel",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 3,
+      "sellCount": 36,
+      "soldItems": 222,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "D"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1964811332,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 9,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 258361,
+      "username": "c4gamers",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 26821,
+      "soldItems": 339020,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "GR"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1954077375,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "Swift Delivery. Trusted Protection.",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 51,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 1156493,
+      "username": "MythicVault",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 19157,
+      "soldItems": 541094,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "GR"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2069206909,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 12,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 428326,
+      "username": "latana-tr",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 15952,
+      "soldItems": 181985,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "IT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2081973731,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "box riftbound",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 7,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 892640,
+      "username": "AM-giochi",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 10168,
+      "soldItems": 90712,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "IT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2011884134,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "Fast Shipping - Never Played",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 3,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 91029,
+      "username": "cromwel",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 9544,
+      "soldItems": 40081,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "FR"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1984860209,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 5,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 1499323,
+      "username": "Umuenner",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 8605,
+      "soldItems": 81030,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "D"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2099978830,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "Booster -> Sleeve",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 3,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 992176899,
+      "username": "Crytuz",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 6695,
+      "soldItems": 95812,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "D"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1975886718,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "TIENDA FISICA Y ONLINE - VARIOS TCG",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 1,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 1570361,
+      "username": "MADAKIBA",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 6352,
+      "soldItems": 49530,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "ES"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2098127374,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 1,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 112364,
+      "username": "ROMACE",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 5524,
+      "soldItems": 66654,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "ES"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2086027252,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "+",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 30,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 991426026,
+      "username": "Die-vom-Flohmarkt",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 4842,
+      "soldItems": 64008,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "D"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2098170837,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "#c",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 158,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 992825919,
+      "username": "PanMyszaPL",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 4728,
+      "soldItems": 60331,
+      "onVacation": false,
+      "avgShippingTime": 0,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "PL"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2155760751,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 5,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 991429618,
+      "username": "RedB9",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 4277,
+      "soldItems": 45798,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "PT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2134740747,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 13,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 1921767,
+      "username": "BigShopTCG",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 4253,
+      "soldItems": 48199,
+      "onVacation": false,
+      "avgShippingTime": 2,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "FR"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1955652905,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 2,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 41722,
+      "username": "jguti001",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3861,
+      "soldItems": 35153,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "ES"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1965736363,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.03,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.03,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 2,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 991458233,
+      "username": "Trayls",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3858,
+      "soldItems": 11343,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "GB"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1995601942,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.03,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.03,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 6,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 991665006,
+      "username": "fhibib",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3738,
+      "soldItems": 24998,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "GB"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2154047066,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.03,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.03,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 2,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 992256525,
+      "username": "AJ-TCG",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3571,
+      "soldItems": 19149,
+      "onVacation": false,
+      "avgShippingTime": 2,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "GB"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1979748699,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 53,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 1953237,
+      "username": "GamesTimeSpoleto",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3436,
+      "soldItems": 28082,
+      "onVacation": false,
+      "avgShippingTime": 0,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "IT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2003130273,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 4,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 1059063,
+      "username": "Nini92",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3426,
+      "soldItems": 40065,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "D"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2040137568,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 1,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 1381383,
+      "username": "Guitoune",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3190,
+      "soldItems": 18978,
+      "onVacation": false,
+      "avgShippingTime": 2,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "FR"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2048344035,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 1,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 991394687,
+      "username": "Poppy92",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 3051,
+      "soldItems": 24013,
+      "onVacation": false,
+      "avgShippingTime": 2,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "FR"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2021606290,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 1,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 992175622,
+      "username": "PlayToWinLGS",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 2,
+      "sellCount": 2747,
+      "soldItems": 26397,
+      "onVacation": false,
+      "avgShippingTime": 2,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "PT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 1999380971,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 8,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 992267102,
+      "username": "onecardtcgstore",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 2737,
+      "soldItems": 20764,
+      "onVacation": false,
+      "avgShippingTime": 0,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "IT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2021831660,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "From Pack to Sleeve / + cards in stock",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 10,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 992806151,
+      "username": "trapcardtcg",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 2694,
+      "soldItems": 18932,
+      "onVacation": false,
+      "avgShippingTime": 0,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "PT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2003950523,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 3,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 991336861,
+      "username": "IamLuzifer",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 2520,
+      "soldItems": 36760,
+      "onVacation": false,
+      "avgShippingTime": 2,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "D"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2095347847,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 2,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 992986392,
+      "username": "Wizardtcg",
+      "isCommercial": 1,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 2515,
+      "soldItems": 18866,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "ES"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2040829667,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 1,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 821580,
+      "username": "Oliyberio",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 2247,
+      "soldItems": 16433,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "ES"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2132220947,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 2,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 41311,
+      "username": "puraskill",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 2176,
+      "soldItems": 8503,
+      "onVacation": false,
+      "avgShippingTime": 1,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "ES"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  },
+  {
+    "idArticle": 2001382105,
+    "idProduct": 845712,
+    "language": {
+      "idLanguage": 1,
+      "languageName": "English"
+    },
+    "comments": "",
+    "price": 0.02,
+    "idCurrency": 1,
+    "currencyCode": "EUR",
+    "prices": [
+      {
+        "price": 0.02,
+        "idCurrency": 1,
+        "currencyCode": "EUR"
+      },
+      {
+        "price": 0.02,
+        "idCurrency": 2,
+        "currencyCode": "GBP"
+      }
+    ],
+    "count": 17,
+    "inShoppingCart": false,
+    "condition": "NM",
+    "product": {
+      "enName": "Blazing Scorcher",
+      "locName": "Blazing Scorcher",
+      "expansion": "Origins",
+      "idExpansion": 6286,
+      "abbreviation": "OGN",
+      "nr": "001",
+      "rarity": "Common",
+      "idGame": 22,
+      "expIcon": 3
+    },
+    "seller": {
+      "idUser": 209797,
+      "username": "seimsen",
+      "isCommercial": 0,
+      "isSeller": true,
+      "reputation": 1,
+      "sellCount": 1988,
+      "soldItems": 13694,
+      "onVacation": false,
+      "avgShippingTime": 2,
+      "riskGroup": 0,
+      "lossPercentage": "0 - 2%",
+      "address": {
+        "country": "AT"
+      }
+    },
+    "isFoil": false,
+    "isFirstEd": false,
+    "isReverseHolo": false,
+    "isSigned": false,
+    "isAltered": false,
+    "links": [
+      {
+        "rel": "buy",
+        "href": "shoppingcart",
+        "method": "PUT"
+      }
+    ]
+  }
+]

@@ -1,0 +1,603 @@
+package cardmarket
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
+	cm "github.com/mtgban/go-cardmarket"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
+
+// Market prices singles from Cardmarket's own listings, live, rather than
+// from the price guide's low and trend columns: for each printing it holds
+// the cheapest price per condition from a seller not based in the UK,
+// Switzerland or a Nordic country. This is a real market price at the cost
+// of one signed call per product instead of one bulk download per game -
+// the API tolerates almost no in-flight parallelism per app token, so Load
+// walks the catalog strictly sequentially rather than pooling workers the
+// way Sealed does.
+type Market struct {
+	resolver
+
+	LogCallback mtgban.LogCallbackFunc
+	Affiliate   string
+
+	// BanPriceKey authenticates the mtgban price snapshot Load reads to
+	// restrict the games marketFilterParams covers to the cards worth a
+	// live call. Magic, Pokemon and YuGiOh need it to fit a nightly budget
+	// at all - Load refuses to run any of them without one, rather than
+	// starting a walk it cannot finish (see marketFilterRequired). Lorcana,
+	// Riftbound, Flesh and Blood and One Piece fit their own budget
+	// unfiltered too, so a missing key there is a real degradation, not a
+	// hard failure: Load falls back to running them unfiltered and logs
+	// that it did, rather than refusing to run at all over a filter that
+	// only saves call volume, not correctness, for those four.
+	BanPriceKey string
+
+	inventoryDate time.Time
+	exchangeRate  float64
+	inventory     mtgban.InventoryRecord
+
+	client *cm.Client
+
+	// bounced counts requests since the last one that came back a usable
+	// answer - a price, or a clean empty result. Load runs strictly
+	// sequentially, so this needs no lock: exactly one goroutine ever
+	// touches it.
+	bounced int
+
+	game mtgban.Game
+}
+
+func (mkm *Market) printf(format string, a ...any) {
+	if mkm.LogCallback != nil {
+		mkm.LogCallback("[MKMMarket] "+format, a...)
+	}
+}
+
+// maxBounced is how many requests in a row may fail before Load gives up on
+// the run rather than grinding through the rest of the catalog. Retry-After
+// and the client's own backoff already absorb an ordinary 429 inside one
+// call; a request that still errors after that policy is exhausted is
+// Cardmarket rejecting this token outright, not a blip one more product
+// would clear.
+const maxBounced = 20
+
+// errTooManyBounces marks a run stopped by the failsafe above.
+var errTooManyBounces = errors.New("too many consecutive failed requests")
+
+// bounce counts one failed request and reports whether the run should stop.
+func (mkm *Market) bounce() bool {
+	mkm.bounced++
+	return mkm.bounced >= maxBounced
+}
+
+// NewScraperMarket returns a live-listing scraper for one game, authenticated
+// with an app token and secret.
+func NewScraperMarket(game mtgban.Game, appToken, appSecret string) (*Market, error) {
+	id, found := mkmGames[game]
+	if !found {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
+	mkm := Market{}
+	mkm.inventory = mtgban.InventoryRecord{}
+	mkm.client = cm.NewClient(appToken, appSecret)
+	mkm.game = game
+	mkm.resolver.gameID = id
+	mkm.resolver.printf = mkm.printf
+	return &mkm, nil
+}
+
+// excludedCountries are the sellers Market drops for being based in the UK,
+// Switzerland or a Nordic country, as the alpha-2 code Cardmarket answers
+// article.Seller.Address.Country with. sellerCountry cannot ask the API to
+// exclude them server-side - confirmed exhaustively unable to carry more
+// than one bare id, let alone a negation - so this is applied to every
+// listing read back instead.
+var excludedCountries = map[string]bool{
+	"GB": true, // United Kingdom
+	"CH": true, // Switzerland
+	"NO": true, // Norway
+	"SE": true, // Sweden
+	"DK": true, // Denmark
+	"FI": true, // Finland
+	"IS": true, // Iceland
+}
+
+// mkmCondition maps Cardmarket's seven-grade condition scale onto mtgban's
+// five (MT/NM > NM, EX > SP, GD > MP, LP/PL > HP, PO > PO): five buckets
+// cannot hold seven without folding somewhere, and folding at the ends
+// leaves the three grades this scraper actually chases - NM, SP, MP -
+// each with a row of their own. In practice the article filter's own
+// minCondition floor (see queryOnePrinting) already excludes LP, PL and PO
+// server-side, so the last two rows rarely see a listing at all.
+var mkmCondition = map[string]string{
+	"MT": "NM",
+	"NM": "NM",
+	"EX": "SP",
+	"GD": "MP",
+	"LP": "HP",
+	"PL": "HP",
+	"PO": "PO",
+}
+
+// marketFinishParam names the server-side filter parameter and its
+// article-level flag for the games whose second price column is a real
+// second printing - one this scraper knows a Cardmarket signal for, server
+// or article, that actually distinguishes it. Not present for a game's
+// gameID: the resolver never hands Market a distinct cardIDFoil for it -
+// One Piece and Flesh and Blood sell each treatment as its own product, so
+// the two ids are always the same one - see queryPrintings.
+//
+// isFoil's own documentation names only Magic and Pokemon (deprecated), but
+// that is about the request-side filter, a separate question from whether
+// the response's own article.IsFoil is populated for other games. It is,
+// confirmed directly for Lorcana and Riftbound: a spread sample of thirty
+// products (fifteen each) showed products selling nothing but foil copies
+// at a clear premium (e.g. a Riftbound rare at $15-$1000, a Lorcana one at
+// $35-$1174, versus $0.02-$0.03 commons), and products mixing a handful of
+// foil listings into a mostly-plain one with the foil listings priced
+// distinctly above the plain floor - exactly the shape cardID/cardIDFoil
+// being the nonfoil/foil match of the same product predicts, not noise. The
+// request-side isFoil param may or may not narrow the result set for these
+// two (not separately verified, and not load-bearing either way - see
+// queryOnePrinting on why a filter is never trusted without the client-side
+// check below).
+var marketFinishParam = map[int]string{
+	cm.GameMagic:     "isFoil",
+	cm.GamePokemon:   "isReverseHolo",
+	cm.GameYuGiOh:    "isFirstEd",
+	cm.GameLorcana:   "isFoil",
+	cm.GameRiftbound: "isFoil",
+}
+
+// marketArticleFinish reads the flag marketFinishParam names off one
+// article, for the games marketFinishParam covers.
+func marketArticleFinish(gameID int, article *cm.Article) bool {
+	switch gameID {
+	case cm.GameMagic, cm.GameLorcana, cm.GameRiftbound:
+		return article.IsFoil
+	case cm.GamePokemon:
+		return article.IsReverseHolo
+	case cm.GameYuGiOh:
+		return article.IsFirstEd
+	}
+	return false
+}
+
+// marketLanguages maps a card's own Language field onto Cardmarket's
+// idLanguage, defaulting to English for anything without a clean match -
+// mtgban's fictional languages (Phyrexian, Quenya), the handful it carries
+// that Cardmarket's table does not (Polish), or a plain missing field. This
+// is safe to trust directly: the catalog being queried is already listing-
+// shaped, one card at a time by its own resolved uuid, so there is no
+// print-vs-listing mismatch to guard against the way there would be if a
+// language were being read off a Cardmarket response instead.
+var marketLanguages = map[string]int{
+	"":                    1, // English
+	"English":             1,
+	"French":              2,
+	"German":              3,
+	"Spanish":             4,
+	"Italian":             5,
+	"Chinese Simplified":  6,
+	"Japanese":            7,
+	"Portuguese":          8,
+	"Russian":             9,
+	"Korean":              10,
+	"Chinese Traditional": 11,
+}
+
+func marketLanguage(language string) int {
+	if id, found := marketLanguages[language]; found {
+		return id
+	}
+	return 1
+}
+
+// Load fetches everything this scraper offers. See mtgban.Scraper.
+func (mkm *Market) Load(ctx context.Context) error {
+	err := mkm.checkCatalog()
+	if err != nil {
+		return err
+	}
+
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	if err != nil {
+		return err
+	}
+	mkm.exchangeRate = rate
+
+	var candidates map[string]bool
+	if _, filtered := marketFilterParams[mkm.gameID]; filtered {
+		switch {
+		case mkm.BanPriceKey != "":
+			snap, err := loadBanSnapshot(ctx, mkm.game, mkm.BanPriceKey)
+			if err != nil {
+				return fmt.Errorf("loading the price snapshot to pre-filter this catalog: %w", err)
+			}
+			candidates = marketCandidates(mkm.gameID, snap)
+			mkm.printf("Restricting to %d of this game's uuids, from the price snapshot", len(candidates))
+		case marketFilterRequired[mkm.gameID]:
+			return fmt.Errorf("%s needs a pre-filtered candidate set to fit its scrape budget, and BanPriceKey is not set", mkm.game)
+		default:
+			mkm.printf("BanPriceKey not set - running %s unfiltered rather than pre-filtered", mkm.game)
+		}
+	}
+
+	return mkm.walkCatalog(ctx, candidates)
+}
+
+// walkCatalog prices every product of the id map, and of the product list
+// beside it, expansion by expansion - the same shape Index.walkCatalog
+// walks the catalog in, since resolving a Cardmarket product to a printing
+// is exactly the same problem for both scrapers (see resolver). What
+// differs is what happens once a product resolves: Index reads its price
+// off the published guide, this asks the product's own live listings.
+func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) error {
+	products := make(map[int]cm.CatalogProduct, len(mkm.Catalog.Data.Products))
+	for id, product := range mkm.Catalog.Data.Products {
+		products[id] = product
+	}
+	list, err := cm.DownloadProductListSingles(ctx, mkm.gameID)
+	if err != nil {
+		return err
+	}
+	var unmapped int
+	for _, entry := range list {
+		_, found := products[entry.IDProduct]
+		if found {
+			continue
+		}
+		products[entry.IDProduct] = cm.CatalogProduct{ExpansionID: entry.ExpansionID, Name: entry.Name}
+		unmapped++
+	}
+	mkm.printf("%d products of the list are not in the map and resolve by name", unmapped)
+
+	byExpansion := map[int][]int{}
+	for id, product := range products {
+		byExpansion[product.ExpansionID] = append(byExpansion[product.ExpansionID], id)
+	}
+
+	var items []cm.Expansion
+	for expansionID := range byExpansion {
+		entry := mkm.Catalog.Data.Expansions[expansionID]
+		name := entry.Name
+		if name == "" {
+			name = fmt.Sprintf("expansion %d", expansionID)
+		}
+		if mkm.TargetEdition != "" && name != mkm.TargetEdition {
+			continue
+		}
+		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].IDExpansion < items[j].IDExpansion })
+
+	// See idmap.go's walkCatalog for why the non-English programs are
+	// dropped here rather than left to the resolver.
+	switch mkm.gameID {
+	case cm.GameOnePiece, cm.GameYuGiOh:
+		kept := items[:0]
+		for _, exp := range items {
+			if strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name) {
+				continue
+			}
+			kept = append(kept, exp)
+		}
+		items = kept
+		if mkm.gameID == cm.GameOnePiece {
+			mkm.shelved = shelvedSets(items)
+		}
+	}
+
+	mkm.printf("Parsing %d expansion ids from the id map", len(items))
+
+	// A cancellable copy of ctx: the worker below cancels it the moment the
+	// failsafe trips, which is what actually stops the walk from dispatching
+	// further expansions - returning an error from one worker call would
+	// otherwise just be logged, not treated as a reason to stop.
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var stopped error
+
+	walked, refused, foreign := mkm.collectPrices(ctx, items, func(ctx context.Context, exp cm.Expansion, channel chan<- responseChan) error {
+		err := mkm.walkExpansion(ctx, exp, byExpansion[exp.IDExpansion], products, candidates, channel)
+		if errors.Is(err, errTooManyBounces) {
+			stopped = err
+			cancel()
+		}
+		return err
+	})
+	if stopped != nil {
+		return stopped
+	}
+
+	mkm.printf("Walked %d products, %d of which named no printing of ours", walked, refused)
+	if foreign > 0 {
+		mkm.printf("%d of those were products of a catalog we do not carry", foreign)
+	}
+	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
+	mkm.printf("Total number of prices found: %d", len(mkm.inventory))
+	mkm.inventoryDate = time.Now()
+	return nil
+}
+
+// collectPrices runs worker over every expansion and adds what it produces
+// straight to the inventory - unlike Index's own collectPrices, nothing is
+// held back to arbitrate between an id-resolved price and a named one,
+// because nothing here competes for one printing's one price the way the
+// price guide's columns do: every listing this scraper adds is one
+// seller's own, so two products both naming a printing ordinarily means two
+// sellers' worth of prices for it. AddStrict keeps both only while they
+// actually disagree on seller, condition or price; when two products'
+// cheapest listing for a condition lands on the very same seller at the
+// very same price - plausible when Cardmarket's own catalog has split one
+// physical product across two ids - it folds the second into the first's
+// Quantity instead of adding a second line, and only drops a listing
+// outright (ErrDuplicateEntry, silently ignored below) when the URL,
+// quantity and bundle also match exactly. Twin products are still caught
+// before ever reaching this, at the resolution step in walkExpansion, so as
+// not to query the same live listings twice.
+//
+// Sequential by construction (concurrency 1, not a configurable field):
+// the API tolerates almost no in-flight parallelism per token, so pooling
+// workers the way Sealed does would only manufacture 429s here.
+func (mkm *Market) collectPrices(ctx context.Context, items []cm.Expansion, worker func(context.Context, cm.Expansion, chan<- responseChan) error) (walked, refused, foreign int) {
+	mtgban.WorkerPool(ctx, 1, items, worker, func(result responseChan) {
+		if result.tally {
+			walked += result.walked
+			refused += result.refused
+			foreign += result.foreign
+			return
+		}
+		err := mkm.inventory.AddStrict(result.cardID, &result.entry)
+		if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
+			mkm.printf("%d - %s", result.ogID, err.Error())
+		}
+	}, mkm.printf)
+	return walked, refused, foreign
+}
+
+// walkExpansion resolves and prices every product of one expansion, the
+// same way idmap.go's walkCatalog does for Index, swapping emitPrices'
+// read off the price guide for queryPrintings' live calls, and skipping a
+// product the offline pre-filter (candidates) leaves out.
+func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []int, products map[int]cm.CatalogProduct, candidates map[string]bool, channel chan<- responseChan) error {
+	mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
+	sort.Ints(ids)
+
+	results := make([]resolved, 0, len(ids))
+	for _, id := range ids {
+		results = append(results, mkm.resolveMapped(id, products[id], exp))
+	}
+	if mkm.gameID == cm.GameFleshAndBlood {
+		mkm.disownBridged(results)
+	}
+	if same := sameProduct(mkm.gameID); same != nil {
+		twinsAmong(results, same, faceOf(mkm.gameID))
+	}
+
+	var refusedNames []string
+	named := map[string]int{}
+	var twins, foreign, refusals, skipped int
+	for i := range results {
+		r := &results[i]
+		id, mapped := r.product.IDProduct, products[r.product.IDProduct]
+		err := r.err
+		if err == nil && r.cardID != "" {
+			if candidates != nil && !candidates[r.cardID] && !candidates[r.cardIDFoil] {
+				skipped++
+			} else {
+				err = mkm.queryPrintings(ctx, channel, r.product, r.cardID, r.cardIDFoil, r.byName)
+				if errors.Is(err, errTooManyBounces) {
+					return err
+				}
+			}
+		}
+		switch {
+		case errors.Is(err, errTwin):
+			twins++
+		case errors.Is(err, errForeign):
+			foreign++
+		case errors.Is(err, errNoPrinting):
+			refusals++
+			key := fmt.Sprintf("%q (%s) in %s", mkm.refusalName(mapped.Name), mapped.Number, exp.Name)
+			if at, seen := named[key]; seen {
+				refusedNames[at] += "+"
+				continue
+			}
+			named[key] = len(refusedNames)
+			refusedNames = append(refusedNames, fmt.Sprintf("%d %s", id, key))
+		case err != nil:
+			mkm.printf("product id %d returned %s", id, err)
+		}
+	}
+
+	mkm.reportRefused(exp.Name, len(ids), refusedNames, twins, foreign)
+	if skipped > 0 {
+		mkm.printf("%s: %d of %d products skipped, outside the pre-filter's candidates", exp.Name, skipped, len(ids))
+	}
+	channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign, foreign: foreign}
+	return nil
+}
+
+// marketMaxPages caps how many pages of a product's listings queryOnePrinting
+// reads chasing NM, SP and MP: Content-Range says the true total up front,
+// so this only ever matters for a product with far more listings than any
+// real one carries.
+const marketMaxPages = 20
+
+// queryPrintings prices the printing(s) one product resolved to, from the
+// product's own live listings: cardID alone for a game that sells each
+// treatment as its own product, or when the resolver found no separate
+// printing to split cardIDFoil from it; both, queried separately, for the
+// games whose second column is a genuine second printing and whose
+// distinguishing signal this scraper actually knows - see marketFinishParam.
+// A game not in marketFinishParam at all would leave cardIDFoil unpriced
+// here rather than guessed at from an unfiltered, unverified mix of
+// listings; every game the resolver ever hands a distinct cardIDFoil for
+// (Magic, Pokemon, YuGiOh, Lorcana, Riftbound) currently has one.
+func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID, cardIDFoil string, byName bool) error {
+	err := mkm.queryOnePrinting(ctx, channel, product, cardID, byName, "")
+	if err != nil {
+		return err
+	}
+	if cardIDFoil == "" || cardIDFoil == cardID {
+		return nil
+	}
+	finish, verified := marketFinishParam[mkm.gameID]
+	if !verified {
+		mkm.printf("id %d: %s has a second printing (%s) this scraper does not price yet", product.IDProduct, cardID, cardIDFoil)
+		return nil
+	}
+	return mkm.queryOnePrinting(ctx, channel, product, cardIDFoil, byName, finish)
+}
+
+// acceptArticle reports whether one listing should replace what is
+// currently held for the printing being queried, and which of mtgban's
+// five conditions it counts as. held is the pagination loop's own record
+// of the cheapest price accepted so far per condition, across every
+// product and page scanned.
+//
+// Listings come back in a rough price order, not a strictly monotonic
+// one: replayed against a real page of results (see
+// market_replay_test.go), a heavily bulk-priced product carried runs like
+// 0.02, 0.02, 0.03, 0.03, 0.02, ... - the same handful of cent-level
+// prices repeating out of order rather than climbing. Comparing against
+// the held price instead of trusting the first acceptable listing catches
+// that without costing an extra request: the page is scanned in full
+// either way.
+//
+// verifiable says whether marketArticleFinish's flag actually means
+// something for this game (see marketFinishParam); where it does not, an
+// article is accepted regardless of finish rather than trusting a filter
+// that is documented to fail open on a game it does not apply to.
+func acceptArticle(gameID int, wantFinish, verifiable bool, article cm.Article, held map[string]float64) (string, bool) {
+	if article.Price == 0 {
+		return "", false
+	}
+	if excludedCountries[article.Seller.Address.Country] {
+		return "", false
+	}
+	if verifiable && marketArticleFinish(gameID, &article) != wantFinish {
+		return "", false
+	}
+	cond, known := mkmCondition[article.Condition]
+	if !known {
+		return "", false
+	}
+	if current, found := held[cond]; found && article.Price >= current {
+		return "", false
+	}
+	return cond, true
+}
+
+// queryOnePrinting prices one printing from one product's live listings,
+// holding the cheapest price per condition from a seller outside
+// excludedCountries (see acceptArticle on why "cheapest", not "first", is
+// the one actually held), and stopping once NM, SP and MP are all held: it
+// is fine to miss HP and PO chasing them deeper, and the article filter's
+// own minCondition floor already excludes both server-side in the common
+// case. Nothing is sent to channel until the scan itself is done, so a
+// cheaper listing for a condition found on an earlier page can still
+// replace it before anything is reported.
+//
+// finish, when set, is the server-side parameter asked for - but never
+// trusted alone: Cardmarket's filters fail open on a value or a game they
+// do not apply to, silently answering the unfiltered list rather than an
+// error, so every listing is also checked against the printing actually
+// being priced through its own article-level flag before being accepted.
+func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID string, byName bool, finish string) error {
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil {
+		return err
+	}
+
+	options := map[string]string{
+		"minCondition": "GD",
+		"minUserScore": "3",
+		"isSigned":     "false",
+		"isAltered":    "false",
+		"idLanguage":   strconv.Itoa(marketLanguage(co.Language)),
+	}
+	wantFinish := finish != ""
+	if wantFinish {
+		options[finish] = "true"
+	}
+	_, verifiable := marketFinishParam[mkm.gameID]
+
+	held := map[string]float64{}
+	entries := map[string]responseChan{}
+	for page := 0; page < marketMaxPages; page++ {
+		articles, total, capped, err := mkm.client.Articles(ctx, product.IDProduct, options, page, cm.MaxEntities)
+		if err != nil {
+			if mkm.bounce() {
+				return fmt.Errorf("%w (%d in a row, last: %v)", errTooManyBounces, mkm.bounced, err)
+			}
+			return err
+		}
+		mkm.bounced = 0
+
+		for _, article := range articles {
+			cond, ok := acceptArticle(mkm.gameID, wantFinish, verifiable, article, held)
+			if !ok {
+				continue
+			}
+
+			held[cond] = article.Price
+			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, wantFinish)
+			entries[cond] = responseChan{
+				ogID:    product.IDProduct,
+				product: product,
+				cardID:  cardID,
+				byName:  byName,
+				entry: mtgban.InventoryEntry{
+					Conditions: cond,
+					Price:      article.Price * mkm.exchangeRate,
+					Quantity:   article.Count,
+					SellerName: article.Seller.Username,
+					URL:        link,
+					OriginalID: fmt.Sprint(article.IDProduct),
+					InstanceID: fmt.Sprint(article.IDArticle),
+				},
+			}
+		}
+
+		if held["NM"] != 0 && held["SP"] != 0 && held["MP"] != 0 {
+			break
+		}
+		if len(articles) == 0 {
+			break
+		}
+		if contentRangeCovered(page+1, cm.MaxEntities, total, capped) {
+			break
+		}
+	}
+
+	for _, out := range entries {
+		channel <- out
+	}
+	return nil
+}
+
+// Inventory returns what Load collected. See mtgban.Seller.
+func (mkm *Market) Inventory() mtgban.InventoryRecord {
+	return mkm.inventory
+}
+
+// Info describes this scraper. See mtgban.Scraper.
+func (mkm *Market) Info() (info mtgban.ScraperInfo) {
+	info.Name = "Cardmarket Market"
+	info.Shorthand = "MKM"
+	info.CountryFlag = "EU"
+	info.InventoryTimestamp = &mkm.inventoryDate
+	info.Game = mkm.game
+	return
+}
