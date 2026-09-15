@@ -32,8 +32,6 @@ var testBackend *mtgmatcher.Backend
 var matchTests []MatchTest
 
 func TestMain(m *testing.M) {
-	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
-
 	testDataReader, err := os.Open(testDataFile)
 	if err != nil {
 		log.Fatalln(err)
@@ -72,6 +70,7 @@ func realDatastore(t *testing.T) {
 			datastoreErr = err
 			return
 		}
+		b.Logger = log.New(os.Stderr, "", 0)
 		testBackend = b
 		// The token-pairing helpers (MatchTokenPairing and its siblings)
 		// still read the global datastore, so it stays installed for them
@@ -176,9 +175,9 @@ func BenchmarkMatch(b *testing.B) {
 // production leaves it - discarding - so the measurement is of the
 // matching rather than of writing the matcher's narration to stderr.
 func BenchmarkMatchQuiet(b *testing.B) {
-	saved := mtgmatcher.Logger
-	mtgmatcher.SetGlobalLogger(log.New(io.Discard, "", log.LstdFlags))
-	b.Cleanup(func() { mtgmatcher.SetGlobalLogger(saved) })
+	saved := testBackend.Logger
+	testBackend.Logger = log.New(io.Discard, "", log.LstdFlags)
+	b.Cleanup(func() { testBackend.Logger = saved })
 
 	b.ReportAllocs()
 	for b.Loop() {
