@@ -21,7 +21,9 @@ type Sealed struct {
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
-	client        *tcgplayer.Client
+
+	backend *mtgmatcher.Backend
+	client  *tcgplayer.Client
 }
 
 func (tcg *Sealed) printf(format string, a ...any) {
@@ -32,13 +34,14 @@ func (tcg *Sealed) printf(format string, a ...any) {
 
 // NewScraperSealed returns a sealed scraper authenticated with a partner API
 // key pair.
-func NewScraperSealed(publicID, privateID string) (*Sealed, error) {
+func NewScraperSealed(b *mtgmatcher.Backend, publicID, privateID string) (*Sealed, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
 
 	tcg := Sealed{}
+	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
@@ -139,9 +142,9 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 	}
 
 	go func() {
-		sets := mtgmatcher.GetAllSets()
+		sets := tcg.backend.GetAllSets()
 		for _, code := range sets {
-			set, _ := mtgmatcher.GetSet(code)
+			set, _ := tcg.backend.GetSet(code)
 
 			for _, product := range set.SealedProduct {
 				uuid := product.UUID

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -29,7 +30,8 @@ type Generic struct {
 
 	productTypes []string
 
-	client *tcgplayer.Client
+	backend *mtgmatcher.Backend
+	client  *tcgplayer.Client
 }
 
 func (tcg *Generic) printf(format string, a ...any) {
@@ -44,12 +46,13 @@ func (tcg *Generic) printf(format string, a ...any) {
 
 // NewScraperGeneric returns a scraper for one category id, optionally narrowed
 // to the named product types.
-func NewScraperGeneric(publicID, privateID string, category int, productTypes ...string) (*Generic, error) {
+func NewScraperGeneric(b *mtgmatcher.Backend, publicID, privateID string, category int, productTypes ...string) (*Generic, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
 	tcg := Generic{}
+	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
