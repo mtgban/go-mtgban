@@ -5,8 +5,8 @@ import (
 )
 
 func TestValidateID(t *testing.T) {
-	realDatastore(t)
-	id := ConvertID(IDSpaceScryfall, "8916e24f-9c74-4b6c-9894-d60669854f35")
+	b := realDatastore(t)
+	id := b.ConvertID(IDSpaceScryfall, "8916e24f-9c74-4b6c-9894-d60669854f35")
 	original := InputCard{ID: id, Name: "Counterspell", Language: "English", Finish: FinishFoil}
 	for _, tt := range []struct {
 		name   string
@@ -27,7 +27,7 @@ func TestValidateID(t *testing.T) {
 			in := original
 			tt.change(&in)
 			before := in
-			got, err := ValidateID(in, IDValidationOptions{})
+			got, err := b.ValidateID(in, IDValidationOptions{})
 			if (err == nil) != tt.valid {
 				t.Fatalf("got %s %v, valid=%t", got, err, tt.valid)
 			}
@@ -39,10 +39,12 @@ func TestValidateID(t *testing.T) {
 }
 
 func TestValidatePrintingRejectsUnknownRules(t *testing.T) {
-	realDatastore(t)
-	b := GlobalDatastore()
+	orig := realDatastore(t)
+	// A shallow copy, so nulling rules below does not disturb the shared
+	// backend every other test in this package matches against.
+	b := *orig
 	b.rules = nil
-	id := ConvertID(IDSpaceScryfall, "8916e24f-9c74-4b6c-9894-d60669854f35")
+	id := b.ConvertID(IDSpaceScryfall, "8916e24f-9c74-4b6c-9894-d60669854f35")
 	if b.ValidatePrinting(InputCard{Name: "Counterspell"}, id) {
 		t.Fatal("unsupported game accepted descriptors")
 	}

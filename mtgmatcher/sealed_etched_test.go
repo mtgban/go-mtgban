@@ -3,8 +3,6 @@ package mtgmatcher_test
 import (
 	"strings"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // saysEtched reports whether a product's name says its cards are etched,
@@ -25,23 +23,24 @@ func saysEtched(name string) bool {
 // lands back on the nonfoil one.
 func TestEtchedProductHoldsEtchedCards(t *testing.T) {
 	realDatastore(t)
-	for _, code := range mtgmatcher.GetAllSets() {
-		set, err := mtgmatcher.GetSet(code)
+	b := testBackend
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
 		if err != nil {
 			continue
 		}
 		for _, product := range set.SealedProduct {
-			if !saysEtched(product.Name) || !mtgmatcher.SealedHasDecklist(code, product.UUID) {
+			if !saysEtched(product.Name) || !b.SealedHasDecklist(code, product.UUID) {
 				continue
 			}
 
-			picks, err := mtgmatcher.GetDecklist(code, product.UUID)
+			picks, err := b.GetDecklist(code, product.UUID)
 			if err != nil {
 				t.Errorf("%s %q: %v", code, product.Name, err)
 				continue
 			}
 			for _, id := range picks {
-				co, err := mtgmatcher.GetUUID(id)
+				co, err := b.GetUUID(id)
 				if err != nil {
 					t.Errorf("%s %q: pick %s does not resolve", code, product.Name, id)
 					continue
@@ -49,8 +48,8 @@ func TestEtchedProductHoldsEtchedCards(t *testing.T) {
 				// Only where the card is sold etched at all: a printing
 				// without an etched sibling keeps whatever it has.
 				var sold bool
-				for _, sibling := range mtgmatcher.FinishSiblings(id) {
-					sco, err := mtgmatcher.GetUUID(sibling)
+				for _, sibling := range b.FinishSiblings(id) {
+					sco, err := b.GetUUID(sibling)
 					if err == nil && sco.Etched {
 						sold = true
 						break
@@ -72,9 +71,10 @@ func TestEtchedProductHoldsEtchedCards(t *testing.T) {
 // with it.
 func TestEtchedProductKeepsItsFoils(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	var checked int
-	for _, code := range mtgmatcher.GetAllSets() {
-		set, err := mtgmatcher.GetSet(code)
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
 		if err != nil {
 			continue
 		}
@@ -86,12 +86,12 @@ func TestEtchedProductKeepsItsFoils(t *testing.T) {
 				if !content.Foil {
 					continue
 				}
-				id, err := mtgmatcher.MatchID(content.UUID, true, true)
+				id, err := b.MatchID(content.UUID, true, true)
 				if err != nil {
 					t.Errorf("%s %q: %s: %v", code, product.Name, content.UUID, err)
 					continue
 				}
-				co, err := mtgmatcher.GetUUID(id)
+				co, err := b.GetUUID(id)
 				if err != nil {
 					t.Errorf("%s %q: %s resolves to nothing", code, product.Name, id)
 					continue
