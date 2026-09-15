@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -65,6 +66,36 @@ func idNamesCard(co *mtgmatcher.CardObject, cardName string) bool {
 	return split && mtgmatcher.Equals(front, cardName)
 }
 
+// tokenPairNumberRes are the real shapes measured against Card Trader's
+// own collector_number for a two-sided token blueprint, tried in order:
+// a leading T/F/CT marker then both numbers ("T 05/20", "F 1/3",
+// "CT 01/01"), both numbers then a shared total and marker ("024-027/031
+// T"), and each face's own number-total-T marker separately ("05-014T /
+// 03-014T"). None of these are collector numbers standing alone the way
+// Card Kingdom's or Star City Games's skus embed one - Card Trader
+// composites both faces' own numbers into the one field it publishes,
+// which is exactly why a plain single-number anchor (the shape every
+// other vendor's fallback already handles) never applied here.
+var tokenPairNumberRes = []*regexp.Regexp{
+	regexp.MustCompile(`^(?:T|F|CT)?\s*0*(\d+)\s*/\s*0*(\d+)$`),
+	regexp.MustCompile(`^0*(\d+)-0*(\d+)/\d+\s*T$`),
+	regexp.MustCompile(`^0*(\d+)-\d+T\s*/\s*0*(\d+)-\d+T$`),
+}
+
+// tokenPairNumbers parses a two-sided token blueprint's own composite
+// collector_number into each face's own number. Returns ok=false for a
+// shape none of tokenPairNumberRes recognizes rather than guess at one -
+// refuse, don't parse a shape never measured against the real catalog.
+func tokenPairNumbers(number string) (n1, n2 string, ok bool) {
+	number = strings.TrimSpace(number)
+	for _, re := range tokenPairNumberRes {
+		if m := re.FindStringSubmatch(number); m != nil {
+			return m[1], m[2], true
+		}
+	}
+	return "", "", false
+}
+
 // Preprocess turns a blueprint into the card description the matcher takes,
 // reporting an error for the blueprints that are not cards.
 func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
@@ -121,16 +152,45 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 			}
 		}
 
-		// Neither id resolved - the ~62% of Card Trader's own two-sided
-		// token catalog that carries no scryfall_id and no tcgplayer_id
-		// at all, and (unlike Card Kingdom's or Star City Games's skus)
-		// no collector number either, so there is no identity to anchor
-		// either face by at all. magic.MatchTokenPairingByNamesAndEdition
-		// trusts both faces' own names instead, guarded by requiring the
-		// blueprint's own claimed edition to independently agree with
-		// the match - see its own doc comment for why the guard is not
-		// optional (measured: 11.6% of name-only matches against Card
-		// Trader's real catalog would otherwise be silently wrong).
+		// Neither id resolved. Card Trader's own collector_number for a
+		// two-sided token blueprint is not one face's number - it
+		// composites both (see tokenPairNumbers) - so where it parses,
+		// each face can be anchored by identity the same way Card
+		// Kingdom's and Star City Games's sku-embedded numbers already
+		// are: try the real printing mtgjson already files under one
+		// combined name (magic.MatchNativeTokenPair), then the sku-
+		// anchored derived-pairing fallback (magic.MatchTokenPairingBySetNumber,
+		// the same mechanism both other vendors' own number-anchored
+		// paths use), trying each parsed number in turn since which face
+		// the first number names is not fixed across the shapes measured.
+		if n1, n2, ok := tokenPairNumbers(bp.Properties.Number); ok {
+			if tokenSet := magic.EditionTokenSetCode(edition); tokenSet != "" {
+				for _, number := range []string{n1, n2} {
+					if uuid := magic.MatchNativeTokenPair(tokenSet, number, cardName); uuid != "" {
+						if id, err := mtgmatcher.MatchID(uuid, false); err == nil {
+							return &mtgmatcher.InputCard{
+								ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
+							}, nil
+						}
+					}
+					if tcgID := magic.MatchTokenPairingBySetNumber(tokenSet, number, cardName, false); tcgID != "" {
+						if id, err := mtgmatcher.MatchID(tcgID, false); err == nil {
+							return &mtgmatcher.InputCard{
+								ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
+							}, nil
+						}
+					}
+				}
+			}
+		}
+
+		// Still nothing - both faces' own names alone, guarded by
+		// requiring the blueprint's own claimed edition to independently
+		// agree with the match - see magic.MatchTokenPairingByNamesAndEdition's
+		// own doc comment for why the guard is not optional (measured:
+		// 11.6% of name-only matches against Card Trader's real catalog
+		// would otherwise be silently wrong). Tried last: a real number
+		// anchor above is strictly the safer bar when one parses.
 		if tcgID := magic.MatchTokenPairingByNamesAndEdition(cardName, edition, false); tcgID != "" {
 			if id, err := mtgmatcher.MatchID(tcgID, false); err == nil {
 				return &mtgmatcher.InputCard{
