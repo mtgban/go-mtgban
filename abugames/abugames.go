@@ -23,18 +23,20 @@ type ABUGames struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
-	client *ABUClient
+	client  *ABUClient
+	backend *mtgmatcher.Backend
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 }
 
 // NewScraper returns a singles scraper. ABU needs no credentials for prices.
-func NewScraper() *ABUGames {
+func NewScraper(b *mtgmatcher.Backend) *ABUGames {
 	abu := ABUGames{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
 	abu.client = NewABUClient()
+	abu.backend = b
 	abu.MaxConcurrency = defaultConcurrency
 	return &abu
 }
@@ -74,12 +76,12 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			continue
 		}
 
-		theCard, err := preprocess(&group.Doclist.Docs[0])
+		theCard, err := preprocess(abu.backend, &group.Doclist.Docs[0])
 		if err != nil {
 			continue
 		}
 
-		cardID, err := matchCard(&group.Doclist.Docs[0], theCard)
+		cardID, err := matchCard(abu.backend, &group.Doclist.Docs[0], theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -99,7 +101,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := abu.backend.GetUUID(probe)
 					abu.printf("- %s", card)
 				}
 			}
@@ -115,7 +117,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			// Sanity check, a bunch of cards are market as foil when they
 			// actually don't have a foil printing, just skip them
 			if strings.Contains(doc.DisplayTitle, "FOIL") {
-				co, err := mtgmatcher.GetUUID(cardID)
+				co, err := abu.backend.GetUUID(cardID)
 				if err != nil {
 					continue
 				}
@@ -127,7 +129,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			// Older sets tend to be rougher, so grade stricter
 			// 2003 is picked as the modern frame introduction
 			var lowerGrade bool
-			date, err := mtgmatcher.CardReleaseDate(cardID)
+			date, err := abu.backend.CardReleaseDate(cardID)
 			if err == nil && date.Year() <= 2003 {
 				lowerGrade = true
 			}
