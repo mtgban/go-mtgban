@@ -298,7 +298,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 	mtgban.GameMagic: {
 		"abugames": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := abugames.NewScraper()
+				scraper := abugames.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
 					scraper.MaxConcurrency = MaxConcurrency
@@ -308,7 +308,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"abugames_sealed": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := abugames.NewScraperSealed()
+				scraper := abugames.NewScraperSealed(b)
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
 					scraper.MaxConcurrency = MaxConcurrency

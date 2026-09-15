@@ -2,15 +2,13 @@ package abugames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestFoilFlag pins the flag this storefront writes both with its space and
 // without. Reading only the spaced form priced a foil as a nonfoil, and put
 // its price beside the nonfoil's on one uuid.
 func TestFoilFlag(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc  string
 		title string
@@ -22,14 +20,14 @@ func TestFoilFlag(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := ABUCard{DisplayTitle: test.title, Edition: "Ravnica Allegiance", Number: "261"}
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", test.title, err)
 			}
 			if in.Foil != test.want {
 				t.Errorf("preprocess(%q).Foil = %v, want %v", test.title, in.Foil, test.want)
 			}
-			if _, err := mtgmatcher.Match(in); err != nil {
+			if _, err := b.Match(in); err != nil {
 				t.Errorf("Match(%q) = %v", in, err)
 			}
 		})
