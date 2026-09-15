@@ -13,68 +13,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// resolveUUIDs answers a product from the printings its map entry lists,
-// splitting them by finish the way the guide's columns are split. Ids the
-// datastore does not carry are passed over - a double-faced card lists its
-// back face too, and the index knows only fronts. Within a finish the
-// printing whose number agrees with the product's wins, the way Fallback
-// already prefers it; a pick between printings the number cannot settle is
-// said out loud. Both ids empty means the entry decided nothing.
-func (mkm *Index) resolveUUIDs(product *cm.Product, uuids []string) (string, string) {
-	var plain, foil []string
-	var plainMatched, foilMatched bool
-	for _, uuid := range uuids {
-		co, err := mtgmatcher.GetUUID(uuid)
-		if err != nil {
-			continue
-		}
-		sameNumber := strings.EqualFold(co.PlainNumber, product.Number)
-		if co.Foil || co.Etched {
-			if sameNumber && !foilMatched {
-				foil = append([]string{uuid}, foil...)
-				foilMatched = true
-			} else {
-				foil = append(foil, uuid)
-			}
-		} else {
-			if sameNumber && !plainMatched {
-				plain = append([]string{uuid}, plain...)
-				plainMatched = true
-			} else {
-				plain = append(plain, uuid)
-			}
-		}
-	}
-
-	if len(plain) > 1 && !plainMatched {
-		mkm.printf("id %d %q lists %d plain printings and the number settles none; keeping %s",
-			product.IDProduct, product.Name, len(plain), plain[0])
-	}
-	if len(foil) > 1 && !foilMatched {
-		mkm.printf("id %d %q lists %d foil printings and the number settles none; keeping %s",
-			product.IDProduct, product.Name, len(foil), foil[0])
-	}
-
-	var cardID, cardIDFoil string
-	switch {
-	case len(plain) > 0:
-		cardID = plain[0]
-		if len(foil) > 0 {
-			cardIDFoil = foil[0]
-		} else {
-			// The entry lists no foil printing, but the datastore may
-			// still carry one, the way resolveProduct probes for it.
-			cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
-		}
-	case len(foil) > 0:
-		// A foil-only product prices through its own columns; both ids
-		// point to it, the way Fallback answers a single printing.
-		cardID = foil[0]
-		cardIDFoil = foil[0]
-	}
-	return cardID, cardIDFoil
-}
-
 // sameProduct says whether two products of a game's shelves are the same
 // card sold twice, for the games whose shelves do that; nil for the rest.
 func sameProduct(gameID int) func(a, b *cm.Product) bool {
@@ -116,60 +54,6 @@ type resolved struct {
 	cardIDFoil string
 	byName     bool
 	err        error
-}
-
-// resolveMapped answers one product of the id map. The map answers first;
-// what it left unmapped is answered from what the catalog says of it, by
-// resolveProduct, so a product the file does not know yet is matched rather
-// than lost.
-func (mkm *Index) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.Expansion) resolved {
-	product := &cm.Product{
-		IDProduct:     id,
-		Name:          mapped.Name,
-		Number:        mapped.Number,
-		ExpansionName: expansion.Name,
-		ExpansionCode: expansion.SetCode,
-	}
-	product.Expansion.IDExpansion = expansion.IDExpansion
-
-	cardID, cardIDFoil := mkm.resolveUUIDs(product, mapped.UUIDs)
-	if cardID != "" {
-		return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
-	}
-	cardID, cardIDFoil, byName, err := mkm.resolveProduct(product)
-	return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil, byName: byName, err: err}
-}
-
-// refusalName is the card a refused product names, as the report files it:
-// a Pokemon product carries its attacks and energy symbols in brackets the
-// card's name does not, and every other game's product name is the card's.
-func (mkm *Index) refusalName(name string) string {
-	if mkm.gameID == cm.GamePokemon {
-		return pokemonName(name)
-	}
-	return name
-}
-
-// checkCatalog reports whether the id map can be walked. For the games that
-// shelve whole foreign catalogs, the map says which shelves those are only
-// through the expansion codes: a map written before it carried them cannot
-// be walked safely, and the run refuses rather than price the foreign
-// printings onto the English ones.
-func (mkm *Index) checkCatalog() error {
-	if mkm.Catalog == nil {
-		return errors.New("no id map to price from")
-	}
-	switch mkm.gameID {
-	case cm.GameOnePiece, cm.GameYuGiOh:
-	default:
-		return nil
-	}
-	for _, expansion := range mkm.Catalog.Data.Expansions {
-		if expansion.Code != "" {
-			return nil
-		}
-	}
-	return errors.New("the id map carries no expansion codes to tell the foreign shelves by")
 }
 
 // walkCatalog prices every product of the id map, and of the product list
