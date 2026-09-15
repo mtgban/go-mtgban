@@ -98,44 +98,63 @@ func TestMismatchReportsBothSides(t *testing.T) {
 	}
 }
 
-// TestArbitEntryString pins which side the printed line reads from: a buylist
-// price where there is one, the reference price otherwise. String prints the
-// CardID rather than looking the card up, so it says something about every
-// entry, including one for a card no datastore holds.
+// TestArbitEntryString pins what the printed line says. An entry a report
+// produced names the card it resolved, not the id it was keyed on, and the
+// prices it reads from say which report produced it: a buylist price where
+// there is one, the reference price otherwise. An entry nobody resolved - one
+// built by hand, carrying no datastore - says the id in the card's place, and
+// an id the datastore does not hold prints nothing at all.
 func TestArbitEntryString(t *testing.T) {
-	arbit := ArbitEntry{
-		CardID:         "card",
-		BuylistEntry:   BuylistEntry{BuyPrice: 15},
-		InventoryEntry: InventoryEntry{Price: 10},
-		Quantity:       3,
+	b := backendFor(plainCard())
+	const card = "Plain Card|AAA|10|nonfoil"
+
+	arbit := Arbit(&ArbitOpts{Backend: b},
+		vendorOf(BuylistRecord{
+			"card": {{Conditions: "NM", BuyPrice: 15, Quantity: 3}},
+		}),
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 10, Quantity: 3}},
+		}, ScraperInfo{Name: "seller"}))
+	if len(arbit) != 1 {
+		t.Fatalf("Arbit returned %d entries, want 1", len(arbit))
 	}
-	if got := arbit.String(); !contains(got, "card") || !contains(got, "10.00 -> 15.00") {
-		t.Errorf("String() = %q, want it to carry the id and %q", got, "10.00 -> 15.00")
+	if got, want := arbit[0].String(), card+" (3): 10.00 -> 15.00"; got != want {
+		t.Errorf("String() = %q, want %q", got, want)
 	}
 
-	mismatch := ArbitEntry{
-		CardID:         "card",
-		ReferenceEntry: InventoryEntry{Price: 12},
-		InventoryEntry: InventoryEntry{Price: 10},
-		Quantity:       1,
+	mismatch := Mismatch(&ArbitOpts{Backend: b},
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 12, Quantity: 1}},
+		}, ScraperInfo{Name: "reference"}),
+		sellerOf(InventoryRecord{
+			"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+		}, ScraperInfo{Name: "probe"}))
+	if len(mismatch) != 1 {
+		t.Fatalf("Mismatch returned %d entries, want 1", len(mismatch))
 	}
-	if want := "10.00 ~ 12.00"; !contains(mismatch.String(), want) {
-		t.Errorf("String() = %q, want it to carry %q", mismatch.String(), want)
+	if got, want := mismatch[0].String(), card+" (1): 10.00 ~ 12.00"; got != want {
+		t.Errorf("String() = %q, want %q", got, want)
 	}
 
-	unknown := ArbitEntry{CardID: "nothing", InventoryEntry: InventoryEntry{Price: 1}}
-	if got := unknown.String(); !contains(got, "nothing") {
-		t.Errorf("String() = %q, want it to carry the id even for a card no datastore holds", got)
+	// Pennystock reports one side only, so the line it prints has no second
+	// price and no tradable quantity to name.
+	penny := Pennystock(b, pennySeller(0.01, "NM"), true)
+	if len(penny) != 1 {
+		t.Fatalf("Pennystock returned %d entries, want 1", len(penny))
 	}
-}
+	if got, want := penny[0].String(), card+" (0): 0.01 ~ 0.00"; got != want {
+		t.Errorf("String() = %q, want %q", got, want)
+	}
 
-func contains(s, sub string) bool {
-	for i := 0; i+len(sub) <= len(s); i++ {
-		if s[i:i+len(sub)] == sub {
-			return true
-		}
+	byHand := ArbitEntry{CardID: "card", InventoryEntry: InventoryEntry{Price: 1}}
+	if got, want := byHand.String(), "card (0): 1.00 ~ 0.00"; got != want {
+		t.Errorf("String() = %q, want %q", got, want)
 	}
-	return false
+
+	unknown := ArbitEntry{CardID: "nothing", InventoryEntry: InventoryEntry{Price: 1}, backend: b}
+	if got := unknown.String(); got != "" {
+		t.Errorf("String() = %q, want nothing for an id the datastore does not hold", got)
+	}
 }
 
 // Nil options are the ones that filter nothing, and the rate they imply is

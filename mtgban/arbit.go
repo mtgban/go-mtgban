@@ -137,14 +137,31 @@ type ArbitEntry struct {
 	// via ArbitOpts, defaults to 0). The sqrt(Units) term is applied only when
 	// Units > 1.
 	Profitability float64
+
+	// The backend the report resolved this card against, kept so the entry
+	// can name the card it is about. It is unexported because the entry is
+	// written out through its exported fields alone, and a datastore is not
+	// one of them.
+	backend *mtgmatcher.Backend
 }
 
 // ArbitEntry implements the Stringer interface
 func (ae ArbitEntry) String() string {
-	if ae.BuylistEntry.BuyPrice != 0 {
-		return fmt.Sprintf("%s (%d): %0.2f -> %0.2f", ae.CardID, ae.Quantity, ae.InventoryEntry.Price, ae.BuylistEntry.BuyPrice)
+	// An entry a report built names its card; one built by hand has no
+	// datastore to name it with, and says the id it was keyed on instead.
+	card := ae.CardID
+	if ae.backend != nil {
+		co, err := ae.backend.GetUUID(ae.CardID)
+		if err != nil {
+			return ""
+		}
+		card = co.String()
 	}
-	return fmt.Sprintf("%s (%d): %0.2f ~ %0.2f", ae.CardID, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
+
+	if ae.BuylistEntry.BuyPrice != 0 {
+		return fmt.Sprintf("%s (%d): %0.2f -> %0.2f", card, ae.Quantity, ae.InventoryEntry.Price, ae.BuylistEntry.BuyPrice)
+	}
+	return fmt.Sprintf("%s (%d): %0.2f ~ %0.2f", card, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
 }
 
 // resolvedOpts holds the resolved filter and threshold values from ArbitOpts,
@@ -381,6 +398,7 @@ func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price floa
 		Spread:             spread,
 		Quantity:           qty,
 		Profitability:      profitability,
+		backend:            r.backend,
 	}, true
 }
 
@@ -590,6 +608,7 @@ func Pennystock(b *mtgmatcher.Backend, seller Seller, full bool, thresholds ...f
 				result = append(result, ArbitEntry{
 					CardID:         cardID,
 					InventoryEntry: entry,
+					backend:        b,
 				})
 			}
 		}
