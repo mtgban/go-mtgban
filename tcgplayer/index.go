@@ -24,7 +24,8 @@ type Index struct {
 
 	inventory mtgban.InventoryRecord
 
-	client *tcgplayer.Client
+	backend *mtgmatcher.Backend
+	client  *tcgplayer.Client
 }
 
 var availableIndexNames = []string{
@@ -45,13 +46,14 @@ func (tcg *Index) printf(format string, a ...any) {
 
 // NewScraperIndex returns an index scraper authenticated with a partner API
 // key pair.
-func NewScraperIndex(publicID, privateID string) (*Index, error) {
+func NewScraperIndex(b *mtgmatcher.Backend, publicID, privateID string) (*Index, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
 
 	tcg := Index{}
+	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
@@ -92,7 +94,7 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 			}
 		}
 
-		cardID, err := mtgmatcher.MatchID(uuid, isFoil, isEtched)
+		cardID, err := tcg.backend.MatchID(uuid, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("(%d / %s) - %s", result.ProductID, uuid, err)
 			continue
@@ -100,7 +102,7 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 
 		// Skip impossible entries, such as listing mistakes that list a foil
 		// price for a foil-only card
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := tcg.backend.GetUUID(cardID)
 		if !co.Etched &&
 			((co.Foil && result.SubTypeName != "Foil") ||
 				(!co.Foil && result.SubTypeName != "Normal")) {
@@ -156,10 +158,10 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 // and OAFR's oversized one both carry 245106, which belongs only to the
 // oversized product). Spanning more than one set means the id is wrong on
 // at least one of them, and pricing from it would be a guess.
-func crossSetProductIDs() map[string][]string {
+func crossSetProductIDs(b *mtgmatcher.Backend) map[string][]string {
 	setsByID := map[string]map[string]bool{}
-	for _, code := range mtgmatcher.GetAllSets() {
-		set, err := mtgmatcher.GetSet(code)
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
 		if err != nil {
 			continue
 		}
@@ -232,7 +234,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 	}
 
 	go func() {
-		collisions := crossSetProductIDs()
+		collisions := crossSetProductIDs(tcg.backend)
 		for id, sets := range collisions {
 			tcg.printf("skipping id %s, claimed by more than one set: %v", id, sets)
 		}
@@ -249,10 +251,10 @@ func (tcg *Index) Load(ctx context.Context) error {
 			}
 		}
 
-		sets := mtgmatcher.GetAllSets()
+		sets := tcg.backend.GetAllSets()
 		i := 1
 		for _, code := range sets {
-			set, _ := mtgmatcher.GetSet(code)
+			set, _ := tcg.backend.GetSet(code)
 
 			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
 			i++

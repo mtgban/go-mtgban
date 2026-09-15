@@ -32,7 +32,8 @@ type Market struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	client *tcgplayer.Client
+	backend *mtgmatcher.Backend
+	client  *tcgplayer.Client
 }
 
 type marketChan struct {
@@ -83,13 +84,14 @@ func (tcg *Market) printf(format string, a ...any) {
 
 // NewScraperMarket returns a market scraper authenticated with a partner API
 // key pair.
-func NewScraperMarket(publicID, privateID string) (*Market, error) {
+func NewScraperMarket(b *mtgmatcher.Backend, publicID, privateID string) (*Market, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
 
 	tcg := Market{}
+	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.client = client
@@ -119,7 +121,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 
 		isFoil := req.Printing == "FOIL"
 		isEtched := req.Finish == "ETCHED"
-		cardID, err := mtgmatcher.MatchID(req.UUID, isFoil, isEtched)
+		cardID, err := tcg.backend.MatchID(req.UUID, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductID, req.UUID)
 			continue
@@ -127,7 +129,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 
 		// Skip impossible entries, such as listing mistakes that list a foil
 		// price for a foil-only card
-		co, _ := mtgmatcher.GetUUID(cardID)
+		co, _ := tcg.backend.GetUUID(cardID)
 		if !co.Etched &&
 			((co.Foil && req.Printing != "FOIL") ||
 				(!co.Foil && req.Printing != "NON FOIL")) {
@@ -253,13 +255,13 @@ func (tcg *Market) Load(ctx context.Context) error {
 	}
 
 	go func() {
-		sets := mtgmatcher.GetAllSets()
+		sets := tcg.backend.GetAllSets()
 		total := len(sets) - 1
 		i := 1
 
 		idsFound := map[int]struct{}{}
 		for _, code := range sets {
-			set, _ := mtgmatcher.GetSet(code)
+			set, _ := tcg.backend.GetSet(code)
 
 			switch set.Code {
 			case "4EDALT":
