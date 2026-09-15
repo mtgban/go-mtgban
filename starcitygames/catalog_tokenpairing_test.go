@@ -155,7 +155,7 @@ func TestResolveTokenPairingBySetNumber(t *testing.T) {
 // faceA to the sku's own leading set instead). Each face is anchored
 // independently by identity via mtgmatcher.MatchInSetNumber and joined
 // through the uuid-pair-keyed magic.MatchTokenPairingByUUIDs, sidestepping
-// magic.TokenPairIndex's name-collision-blanking entirely - see
+// Backend.TokenPairIndex's name-collision-blanking entirely - see
 // tokenPairSkuAnchors and resolveProductID's own comment on this shape.
 func TestResolveCompositeSkuTokenPairing(t *testing.T) {
 	b := withMagic(t)

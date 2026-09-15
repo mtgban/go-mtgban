@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -131,8 +130,8 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 	// The canonical claimant is deliberately the one whose faces are NOT
 	// themselves filed under a "memorabilia"-type set (an oversized or
 	// reference sibling, never what a vendor's own scryfall_id or listing
-	// wording actually resolves to), not an arbitrary pick: TokenPairIndex
-	// only ever indexes the uuids the winning claimant itself used, so
+	// wording actually resolves to), not an arbitrary pick: the pairing
+	// index only ever indexes the uuids the winning claimant itself used, so
 	// picking the memorabilia sibling here would silently leave a real
 	// vendor listing - anchored on the ordinary set's own scryfall_id or
 	// number - unable to find this pairing at all, even though a derived
@@ -470,16 +469,58 @@ func unionFinishes(a, b []string) []string {
 	return out
 }
 
-// TokenPairIndex maps one face's uuid to every other face a vendor has been
-// seen pairing it with, keyed by that other face's own name normalized (see
-// NormalizeTokenFace), to the derived entity's own tcgplayerProductId (see
-// above). Built once against the loaded datastore rather than per listing -
-// a vendor's own catalog runs to six figures, and this side only needs
-// looking up for the small fraction shaped like a two-sided token. Shared
-// across every vendor package that resolves its own two-sided token
-// listings against these derived pairings (cardkingdom, starcitygames,
-// ...): the index itself is vendor-agnostic, keyed only by the datastore's
-// own uuids and names.
+// tokenPairIndicesData is what one walk of the backend's own derived
+// pairings builds for every index in this file keyed off of it - byFace's
+// name-keyed shape, byUUIDPair's uuid-pair-keyed one and byBothNames' own
+// name-pair-keyed one all need the identical set of pairings, gathered
+// the identical way, so one walk builds all three rather than each
+// walking the same backend again.
+type tokenPairIndicesData struct {
+	byFace map[string]map[string]string
+
+	// byUUIDPair maps two face uuids (order-independent) directly to the
+	// derived pairing's own tcgplayerProductId, for a caller that has
+	// already anchored BOTH faces unambiguously by identity - typically
+	// via MatchInSetNumber on each face's own filing set and number, the
+	// same discipline MatchTokenPairingBySetNumber already trusts for one
+	// face - rather than by name. Unlike byFace (keyed by one face's uuid
+	// to the *other* face's own name, normalized), a genuine collision
+	// here would mean two different derived Card entities claim the
+	// identical unordered uuid pair - not expected, since deriveTokenPairs
+	// already dedupes by exactly that unordered pair on the way in, so
+	// this should never fire in practice. Blanked on one anyway, the same
+	// "don't know, refuse" discipline as byFace's own collision handling,
+	// rather than trusting that invariant silently: a last-write-wins map
+	// would otherwise let a future change to deriveTokenPairs's own dedup
+	// silently start returning an arbitrary pick between two real pairings
+	// instead of refusing.
+	byUUIDPair map[[2]string]string
+
+	// byBothNames maps two normalized face names (order-independent)
+	// directly to the derived pairing's own tcgplayerProductId, blanked on
+	// a collision the identical way byFace and byUUIDPair already are: a
+	// generic pairing name (measured against Card Trader's real catalog:
+	// "Soldier // Spirit", "Bird // Myr", "Wolf // Treasure", ...) recurs
+	// across more than one set's own token sheet, and two of those can
+	// normalize to the identical unordered name pair - the same plurality
+	// byFace's own doc comment describes for one anchored face, just on
+	// both faces here since neither is anchored by identity at all.
+	byBothNames map[[2]string]string
+}
+
+// buildTokenPairIndices walks the backend's own derived pairings once and
+// builds every index above from it. byFace maps one face's uuid to every
+// other face a vendor has been seen pairing it with, keyed by that other
+// face's own name normalized (see NormalizeTokenFace), to the derived
+// entity's own tcgplayerProductId (see above). Built once, by Load,
+// against the backend that holds the pairings rather than per listing - a
+// vendor's own catalog runs to six figures, and this side only needs
+// looking up for the small fraction shaped like a two-sided token. The
+// three land in Backend.TokenPairIndex, Backend.TokenPairIDByUUIDs and
+// Backend.TokenPairIDByBothNames, which is what every vendor package
+// resolving its own two-sided token listings reads (cardkingdom,
+// starcitygames, ...): the indices themselves are vendor-agnostic, keyed
+// only by that datastore's own uuids and names.
 //
 // One face commonly pairs with several different partners across a sheet -
 // that plurality is the whole reason a vendor's wording has to disambiguate
@@ -498,46 +539,10 @@ func unionFinishes(a, b []string) []string {
 // to "" - the caller's own fallback, not a guess between two real answers -
 // exactly like every other ambiguous case this index already refuses on.
 //
-// sync.OnceValue rather than a package-level initializer: GlobalDatastore
-// is populated by the running program after mtgjson is parsed, not at Go's
-// own package-init time, so the index can only be built on first use.
-//
-// TokenPairIndex is a thin accessor over tokenPairIndices' shared walk
-// (below), not its own separate OnceValue over GlobalDatastore - see that
-// function's own comment on why a second one was worth avoiding.
-func TokenPairIndex() map[string]map[string]string {
-	return tokenPairIndices().byFace
-}
-
-// tokenPairIndicesData is what one walk of the datastore's derived
-// pairings builds for every index in this file keyed off of it - both
-// TokenPairIndex's name-keyed shape and TokenPairIDByUUIDs' uuid-pair-keyed
-// one need the identical set of pairings, gathered the identical way, so
-// one walk builds both rather than each maintaining its own separate
-// GlobalDatastore snapshot.
-type tokenPairIndicesData struct {
-	byFace      map[string]map[string]string
-	byUUIDPair  map[[2]string]string
-	byBothNames map[[2]string]string
-}
-
-// tokenPairIndices is the single sync.OnceValue every index in this file
-// reads from, walking GlobalDatastore's derived pairings exactly once
-// rather than once per index. A second OnceValue snapshotting
-// GlobalDatastore independently (TokenPairIDByUUIDs briefly was one, on
-// its way to this file) doubles the same frozen-at-first-use lifetime
-// this index already accepts - see GlobalDatastore's own doc comment: a
-// snapshot taken once and never invalidated goes stale if the published
-// datastore is ever swapped out from under a long-running process, a
-// pre-existing limitation of every index in this file, not something this
-// consolidation fixes. Adding a second independently-frozen snapshot
-// would only double that exposure for no benefit, since both indices
-// describe the identical pairing set; consolidating to one walk keeps the
-// exposure at its current, already-accepted size instead of growing it.
-// A real fix belongs with mtgmatcher's own move off a single published
-// global (tracked separately, see PR #615) - not invented ad hoc here
-// against an API surface already being removed.
-var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
+// Built by the loader onto the Backend it describes rather than memoized
+// beside the package: two datastores in one process index different
+// pairings, and a reload mints new uuids for the same sheets.
+func buildTokenPairIndices(b *mtgmatcher.Backend) tokenPairIndicesData {
 	byFace := map[string]map[string]string{}
 	byUUIDPair := map[[2]string]string{}
 	byUUIDPairAmbiguous := map[[2]string]bool{}
@@ -567,9 +572,8 @@ var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
 		byFace[face][key] = id
 	}
 
-	backend := mtgmatcher.GlobalDatastore()
 	seen := map[string]bool{}
-	for uuid, co := range backend.UUIDs {
+	for uuid, co := range b.UUIDs {
 		if co.Identifiers["derivedTokenPair"] != "true" || seen[uuid] {
 			continue
 		}
@@ -577,8 +581,8 @@ var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
 
 		partA := co.Identifiers["tokenPairPartA"]
 		partB := co.Identifiers["tokenPairPartB"]
-		coA, errA := mtgmatcher.GetUUID(partA)
-		coB, errB := mtgmatcher.GetUUID(partB)
+		coA, errA := b.GetUUID(partA)
+		coB, errB := b.GetUUID(partB)
 		id := co.Identifiers["tcgplayerProductId"]
 		if id == "" {
 			continue
@@ -606,10 +610,10 @@ var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
 		}
 
 		if errA == nil && errB == nil {
-			a, b := NormalizeTokenFace(coA.Card.Name), NormalizeTokenFace(coB.Card.Name)
-			key := [2]string{a, b}
-			if b < a {
-				key = [2]string{b, a}
+			faceA, faceB := NormalizeTokenFace(coA.Card.Name), NormalizeTokenFace(coB.Card.Name)
+			key := [2]string{faceA, faceB}
+			if faceB < faceA {
+				key = [2]string{faceB, faceA}
 			}
 			if byBothNamesAmbiguous[key] {
 				continue
@@ -623,7 +627,7 @@ var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
 		}
 	}
 	return tokenPairIndicesData{byFace: byFace, byUUIDPair: byUUIDPair, byBothNames: byBothNames}
-})
+}
 
 // NormalizeTokenFace reduces one face's name to the form a vendor's own
 // wording and the datastore's own name compare equal by: no brace wrapping
@@ -724,7 +728,7 @@ func SplitTokenPairName(name string) (first, second string) {
 //
 // Returns "" when the id, the name, or the requested finish don't jointly
 // resolve to one derived pairing.
-func MatchTokenPairing(externalID, listingName string, foil bool) string {
+func MatchTokenPairing(b *mtgmatcher.Backend, externalID, listingName string, foil bool) string {
 	if externalID == "" {
 		return ""
 	}
@@ -732,7 +736,7 @@ func MatchTokenPairing(externalID, listingName string, foil bool) string {
 	if second == "" {
 		return ""
 	}
-	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, externalID)
+	uuid := b.ConvertID(mtgmatcher.IDSpaceScryfall, externalID)
 	if uuid == "" {
 		return ""
 	}
@@ -742,14 +746,14 @@ func MatchTokenPairing(externalID, listingName string, foil bool) string {
 	// always. Where the id's own real name matches the second half instead,
 	// the first half is the partner to look up.
 	partner := second
-	if co, err := mtgmatcher.GetUUID(uuid); err == nil {
+	if co, err := b.GetUUID(uuid); err == nil {
 		anchor := NormalizeTokenFace(co.Card.Name)
 		if NormalizeTokenFace(second) == anchor && NormalizeTokenFace(first) != anchor {
 			partner = first
 		}
 	}
-	id := TokenPairIndex()[uuid][NormalizeTokenFace(partner)]
-	return tokenPairingFinishOK(id, foil)
+	id := b.TokenPairIndex[uuid][NormalizeTokenFace(partner)]
+	return tokenPairingFinishOK(b, id, foil)
 }
 
 // MatchTokenPairingBySetNumber is MatchTokenPairing's counterpart for a
@@ -761,7 +765,7 @@ func MatchTokenPairing(externalID, listingName string, foil bool) string {
 // sheet is filed under; unlike an external id, an unconfirmed set/number
 // pair is a guess, not an anchor. See MatchTokenPairing for why foil is
 // checked here rather than left to the caller.
-func MatchTokenPairingBySetNumber(setCode, number, listingName string, foil bool) string {
+func MatchTokenPairingBySetNumber(b *mtgmatcher.Backend, setCode, number, listingName string, foil bool) string {
 	first, second := SplitTokenPairName(listingName)
 	if second == "" || strings.Contains(second, " // ") || strings.Contains(second, " - ") {
 		return ""
@@ -770,12 +774,12 @@ func MatchTokenPairingBySetNumber(setCode, number, listingName string, foil bool
 	// some carry it as part of their own real name - try both forms
 	// rather than assume either.
 	for _, face := range []string{StripFaceWrapping(first), CleanFaceName(first)} {
-		cards := mtgmatcher.MatchInSetNumber(face, setCode, number)
+		cards := b.MatchInSetNumber(face, setCode, number)
 		if len(cards) != 1 {
 			continue
 		}
-		id := TokenPairIndex()[cards[0].UUID][NormalizeTokenFace(second)]
-		if id := tokenPairingFinishOK(id, foil); id != "" {
+		id := b.TokenPairIndex[cards[0].UUID][NormalizeTokenFace(second)]
+		if id := tokenPairingFinishOK(b, id, foil); id != "" {
 			return id
 		}
 	}
@@ -796,7 +800,7 @@ func MatchTokenPairingBySetNumber(setCode, number, listingName string, foil bool
 // Weird"). Returns "" when neither order resolves to exactly one printing
 // - callers apply their own finish handling (e.g. mtgmatcher.MatchID) to
 // the uuid this returns, the same as any other set+number resolution.
-func MatchNativeTokenPair(setCode, number, listingName string) string {
+func MatchNativeTokenPair(b *mtgmatcher.Backend, setCode, number, listingName string) string {
 	first, second := SplitTokenPairName(listingName)
 	if second == "" {
 		return ""
@@ -805,9 +809,9 @@ func MatchNativeTokenPair(setCode, number, listingName string) string {
 	// ("Copy // Horror", never "Copy Token // Horror Token"), the same as
 	// a derived pairing's own split-apart faces - CleanFaceName strips it
 	// alongside the wrapping, case preserved for this exact-match lookup.
-	a, b := CleanFaceName(first), CleanFaceName(second)
-	for _, combined := range []string{a + " // " + b, b + " // " + a} {
-		out := mtgmatcher.MatchInSetNumber(combined, setCode, number)
+	faceA, faceB := CleanFaceName(first), CleanFaceName(second)
+	for _, combined := range []string{faceA + " // " + faceB, faceB + " // " + faceA} {
+		out := b.MatchInSetNumber(combined, setCode, number)
 		if len(out) == 1 {
 			return out[0].UUID
 		}
@@ -821,15 +825,15 @@ func MatchNativeTokenPair(setCode, number, listingName string) string {
 // bare id lookup falls back to the way a plain printing's does, so asking
 // for foil against a pairing that was never sold in one would otherwise
 // silently resolve to (and price as) the nonfoil id.
-func tokenPairingFinishOK(id string, foil bool) string {
+func tokenPairingFinishOK(b *mtgmatcher.Backend, id string, foil bool) string {
 	if id == "" || !foil {
 		return id
 	}
-	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+	uuid := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
 	if uuid == "" {
 		return ""
 	}
-	co, err := mtgmatcher.GetUUID(uuid)
+	co, err := b.GetUUID(uuid)
 	if err != nil {
 		return ""
 	}
@@ -849,8 +853,8 @@ func tokenPairingFinishOK(id string, foil bool) string {
 	// narrower bar than the union, and consistent with every other check
 	// in this file preferring "don't know, refuse" over a guess built
 	// from a half-agreeing signal.
-	coA, errA := mtgmatcher.GetUUID(co.Identifiers["tokenPairPartA"])
-	coB, errB := mtgmatcher.GetUUID(co.Identifiers["tokenPairPartB"])
+	coA, errA := b.GetUUID(co.Identifiers["tokenPairPartA"])
+	coB, errB := b.GetUUID(co.Identifiers["tokenPairPartB"])
 	if errA != nil || errB != nil || !coA.Card.HasFinish("foil") || !coB.Card.HasFinish("foil") {
 		return ""
 	}
@@ -868,40 +872,16 @@ func tokenPairingFinishOK(id string, foil bool) string {
 // needs the derivedTokenPair check to run regardless of the requested
 // finish, or an ordinary card's id would pass straight through unchecked
 // whenever foil is false.
-func VerifyTokenPairingFinish(id string, foil bool) string {
-	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+func VerifyTokenPairingFinish(b *mtgmatcher.Backend, id string, foil bool) string {
+	uuid := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
 	if uuid == "" {
 		return ""
 	}
-	co, err := mtgmatcher.GetUUID(uuid)
+	co, err := b.GetUUID(uuid)
 	if err != nil || co.Identifiers["derivedTokenPair"] != "true" {
 		return ""
 	}
-	return tokenPairingFinishOK(id, foil)
-}
-
-// TokenPairIDByUUIDs maps two face uuids (order-independent) directly to
-// the derived pairing's own tcgplayerProductId, for a caller that has
-// already anchored BOTH faces unambiguously by identity - typically via
-// MatchInSetNumber on each face's own filing set and number, the same
-// discipline MatchTokenPairingBySetNumber already trusts for one face -
-// rather than by name. Unlike TokenPairIndex (keyed by one face's uuid to
-// the *other* face's own name, normalized), a genuine collision here would
-// mean two different derived Card entities claim the identical unordered
-// uuid pair - not expected, since deriveTokenPairs already dedupes by
-// exactly that unordered pair on the way in, so this should never fire in
-// practice. Blanked on one anyway, the same "don't know, refuse" discipline
-// as TokenPairIndex's own collision handling, rather than trusting that
-// invariant silently: a last-write-wins map would otherwise let a future
-// change to deriveTokenPairs's own dedup silently start returning an
-// arbitrary pick between two real pairings instead of refusing.
-//
-// Built from the same single walk TokenPairIndex reads from (see
-// tokenPairIndices) rather than its own separate OnceValue over
-// GlobalDatastore - two indices describing the identical pairing set have
-// no reason to hold two independently-frozen snapshots of it.
-func TokenPairIDByUUIDs() map[[2]string]string {
-	return tokenPairIndices().byUUIDPair
+	return tokenPairingFinishOK(b, id, foil)
 }
 
 // MatchTokenPairingByUUIDs resolves a two-sided token listing given both
@@ -913,7 +893,7 @@ func TokenPairIDByUUIDs() map[[2]string]string {
 // simply has no product for - not a matching failure, a data gap one
 // level up), or when the pairing was never sold in the requested finish
 // (see tokenPairingFinishOK).
-func MatchTokenPairingByUUIDs(uuidA, uuidB string, foil bool) string {
+func MatchTokenPairingByUUIDs(b *mtgmatcher.Backend, uuidA, uuidB string, foil bool) string {
 	if uuidA == "" || uuidB == "" {
 		return ""
 	}
@@ -921,21 +901,7 @@ func MatchTokenPairingByUUIDs(uuidA, uuidB string, foil bool) string {
 	if uuidB < uuidA {
 		key = [2]string{uuidB, uuidA}
 	}
-	return tokenPairingFinishOK(TokenPairIDByUUIDs()[key], foil)
-}
-
-// TokenPairIDByBothNames maps two normalized face names (order-independent)
-// directly to the derived pairing's own tcgplayerProductId - built from the
-// same single walk every other index in this file reads from (see
-// tokenPairIndices), blanked on a collision the identical way byFace and
-// byUUIDPair already are: a generic pairing name (measured against Card
-// Trader's real catalog: "Soldier // Spirit", "Bird // Myr", "Wolf //
-// Treasure", ...) recurs across more than one set's own token sheet, and
-// two of those can normalize to the identical unordered name pair - the
-// same plurality byFace's own doc comment describes for one anchored face,
-// just on both faces here since neither is anchored by identity at all.
-func TokenPairIDByBothNames() map[[2]string]string {
-	return tokenPairIndices().byBothNames
+	return tokenPairingFinishOK(b, b.TokenPairIDByUUIDs[key], foil)
 }
 
 // EditionTokenSetCode resolves an edition name to the set code its own
@@ -948,8 +914,8 @@ func TokenPairIDByBothNames() map[[2]string]string {
 // this). Returns "" when the edition doesn't resolve to a real set, or
 // that set's own chain never reaches one with a token sheet - refuse
 // rather than guess, the same discipline as everywhere else in this file.
-func EditionTokenSetCode(edition string) string {
-	set, err := mtgmatcher.GetSetByName(edition)
+func EditionTokenSetCode(b *mtgmatcher.Backend, edition string) string {
+	set, err := b.GetSetByName(edition)
 	if err != nil {
 		return ""
 	}
@@ -957,7 +923,7 @@ func EditionTokenSetCode(edition string) string {
 	seen := map[string]bool{}
 	for !seen[code] {
 		seen[code] = true
-		s, err := mtgmatcher.GetSet(code)
+		s, err := b.GetSet(code)
 		if err != nil {
 			return ""
 		}
@@ -982,7 +948,7 @@ func EditionTokenSetCode(edition string) string {
 // Games's skus). Every other matcher in this file anchors at least one
 // face by identity before trusting a name for the other; this trusts both
 // purely from the vendor's own wording, a meaningfully weaker bar -
-// TokenPairIDByBothNames' own collision-blanking catches two DIFFERENT
+// Backend.TokenPairIDByBothNames' own collision-blanking catches two DIFFERENT
 // pairings sharing the identical two names, but not one CURRENTLY-unique
 // pairing that happens to share a generic name with a DIFFERENT real
 // pairing the datastore simply hasn't modeled (yet, or never will): a
@@ -998,30 +964,30 @@ func EditionTokenSetCode(edition string) string {
 // edition agree with the match once checked this way, and 113 (11.6%)
 // did not - a real rate of exactly the failure this check exists to
 // catch, not a theoretical one.
-func MatchTokenPairingByNamesAndEdition(listingName, listingEdition string, foil bool) string {
+func MatchTokenPairingByNamesAndEdition(b *mtgmatcher.Backend, listingName, listingEdition string, foil bool) string {
 	first, second := SplitTokenPairName(listingName)
 	if second == "" {
 		return ""
 	}
-	a, b := NormalizeTokenFace(first), NormalizeTokenFace(second)
-	key := [2]string{a, b}
-	if b < a {
-		key = [2]string{b, a}
+	faceA, faceB := NormalizeTokenFace(first), NormalizeTokenFace(second)
+	key := [2]string{faceA, faceB}
+	if faceB < faceA {
+		key = [2]string{faceB, faceA}
 	}
-	id := TokenPairIDByBothNames()[key]
+	id := b.TokenPairIDByBothNames[key]
 	if id == "" {
 		return ""
 	}
 
-	wantSet := EditionTokenSetCode(listingEdition)
+	wantSet := EditionTokenSetCode(b, listingEdition)
 	if wantSet == "" {
 		return ""
 	}
-	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
-	co, err := mtgmatcher.GetUUID(uuid)
+	uuid := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+	co, err := b.GetUUID(uuid)
 	if err != nil || !strings.EqualFold(co.SetCode, wantSet) {
 		return ""
 	}
 
-	return tokenPairingFinishOK(id, foil)
+	return tokenPairingFinishOK(b, id, foil)
 }

@@ -1420,6 +1420,11 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.CommanderKeywordMap = commanderKeywordMap
 	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 
+	tokenPairs := buildTokenPairIndices(&b)
+	b.TokenPairIndex = tokenPairs.byFace
+	b.TokenPairIDByUUIDs = tokenPairs.byUUIDPair
+	b.TokenPairIDByBothNames = tokenPairs.byBothNames
+
 	b.SetRules(Rules{})
 	b.SortSealed()
 
