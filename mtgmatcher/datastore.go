@@ -88,10 +88,10 @@ func RegisteredGames() []string {
 	return names
 }
 
-// Open loads the named game's datastore explicitly (sql.Open style) and returns
-// the Backend without installing it as the global one, with its sealed index
-// built: a loader that does not call SortSealed would otherwise leave
-// ResolveSealed rebuilding the index on every call.
+// Open loads the named game's datastore explicitly (sql.Open style) and
+// returns the Backend with its sealed index built: a loader that does not
+// call SortSealed would otherwise leave ResolveSealed rebuilding the index
+// on every call.
 func Open(name string, reader io.Reader) (*Backend, error) {
 	for _, g := range registeredGames {
 		if g.name == name {

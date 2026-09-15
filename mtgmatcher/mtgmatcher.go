@@ -12,19 +12,6 @@ import (
 	"strings"
 )
 
-// MatchID resolves an identifier a storefront already knows to the uuid of a
-// printing, using the default datastore. See the method.
-func MatchID(inputID string, finishes ...bool) (string, error) {
-	return currentBackend().MatchID(inputID, finishes...)
-}
-
-// MatchIDFinish resolves an id to the uuid of the printing's sibling sold in
-// the named finish, spelled however the caller's source spells it. See the
-// method.
-func MatchIDFinish(inputID, finish string) (string, error) {
-	return currentBackend().MatchIDFinish(inputID, finish)
-}
-
 // finishTwins reports whether two set-mates are one card filed as two
 // finish-split entries: the same collector number - the foil twin only adds
 // a suffix - with no primary finish sold by both, which is what tells a
@@ -122,38 +109,6 @@ func (b *Backend) FinishSiblings(inputID string) []string {
 		}
 	}
 	return siblings
-}
-
-// FinishSiblings answers every uuid the card behind the id is sold under,
-// against the default datastore. See the method.
-func FinishSiblings(inputID string) []string {
-	return currentBackend().FinishSiblings(inputID)
-}
-
-// Match resolves a storefront's description of a card to the uuid of the one
-// printing it names, using the default datastore. See the method.
-func Match(inCard *InputCard) (cardID string, err error) {
-	return currentBackend().Match(inCard)
-}
-
-// MatchInSet returns every printing in the set whose name is exactly the one
-// given, against the default datastore. A combined name is matched on its
-// first half alone.
-func MatchInSet(cardName string, setCode string) (outCards []Card) {
-	return currentBackend().MatchInSet(cardName, setCode)
-}
-
-// MatchInSetNumber returns every printing in the set with exactly this name
-// and collector number, against the default datastore.
-func MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
-	return currentBackend().MatchInSetNumber(cardName, setCode, number)
-}
-
-// MatchWithNumber returns every printing with this set code and collector
-// number, against the default datastore. The name only narrows the result and
-// may be empty.
-func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
-	return currentBackend().MatchWithNumber(cardName, setCode, number)
 }
 
 // cardObject4Id resolves whatever identifier a caller sends - one of the
@@ -343,7 +298,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 
 	// Look up by uuid
 	if inCard.ID != "" {
-		b.Log("Performing id lookup")
+		b.Logf("Performing id lookup for %s", inCard.ID)
 		outID, err := b.matchIDFor(inCard)
 		// The wording cannot improve on a finish the printing does not
 		// carry: it would answer from the same printing, and the only
@@ -354,7 +309,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		}
 		if err == nil {
 			co := b.UUIDs[outID]
-			b.Log("Id found")
+			b.Logf("Id found: %v", b.describe(inCard))
 
 			// Validation step
 			switch {
@@ -481,7 +436,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// minimum common elements, using the rules defined.
 	// Given that many tokens are not supported, make sure to filter
 	// out unrelated editions.
-	b.Logf("Processing %v %v", inCard, printings)
+	b.Logf("Processing %v %v", b.describe(inCard), printings)
 	// A name answered by the token key never passed through AdjustName, which
 	// is what would have suffixed it and asked for the filter below. Ask for
 	// it here instead, or a token carrying a single printing would be served
@@ -563,7 +518,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		cardID = b.output(outCards[0], inCard.Foil, inCard.IsEtched())
 
 		co := b.UUIDs[cardID]
-		b.Logf("%v -> %v", inCard, co)
+		b.Logf("%v -> %v", b.describe(inCard), co)
 
 		// Validation step
 		if rules.MissingPromoTag(b, inCard, co) {

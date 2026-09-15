@@ -11,15 +11,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// installBackend installs a backend as the global datastore for legacy tests
-// that still exercise package-level matcher wrappers.
-func installBackend(t *testing.T, b *mtgmatcher.Backend) {
-	t.Helper()
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(b)
-	t.Cleanup(func() { mtgmatcher.SetGlobalDatastore(previous) })
-}
-
 // datastoreBackend reads a datastore written inline as the game's.
 func datastoreBackend(t *testing.T, game, doc string) *mtgmatcher.Backend {
 	t.Helper()
@@ -61,6 +52,5 @@ func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	if realBackend == nil {
 		t.Skip("no ALLPRINTINGS5_PATH")
 	}
-	installBackend(t, realBackend)
 	return realBackend
 }
