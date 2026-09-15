@@ -8,51 +8,42 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // TestMain loads the datastore once for the whole package, where a run
 // carries one: most of this package reads no cards, and the games this
 // scraper is scheduled for run under jobs holding their own datastore.
 var (
-	datastoreOnce sync.Once
-	datastoreErr  error
-	datastoreOK   bool
+	datastoreOnce    sync.Once
+	datastoreErr     error
+	datastoreBackend *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// realDatastore reads the Magic datastore the first time a test asks for it,
+// and skips where the run carries none.
+func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		reader, err := datastore.Open(path)
+		backend, err := datastore.Read("magic", path)
 		if err != nil {
 			datastoreErr = err
 			return
 		}
-		backend, err := magic.Load(reader)
-		reader.Close()
-		if err != nil {
-			datastoreErr = err
-			return
-		}
-		mtgmatcher.SetGlobalDatastore(backend)
-		datastoreOK = true
+		datastoreBackend = backend
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreBackend
 }
 
 // TestBuildProductMap pins the sealed product-map fallbacks blueprint by
@@ -62,10 +53,10 @@ func realDatastore(t *testing.T) {
 // on for every other game. The fixtures are drawn from the datastore so
 // the test holds across its releases.
 func TestBuildProductMap(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
-	ctMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
-	tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+	ctMap := b.BuildSealedProductMap("cardtraderId")
+	tcgMap := b.BuildSealedProductMap("tcgplayerProductId")
 	if len(ctMap) == 0 || len(tcgMap) == 0 {
 		t.Fatal("datastore carries no sealed identifiers")
 	}
@@ -92,7 +83,7 @@ func TestBuildProductMap(t *testing.T) {
 	var resolvableName string
 	var resolvedUUID string
 	for _, uuids := range ctMap {
-		co, err := mtgmatcher.GetUUID(uuids[0])
+		co, err := b.GetUUID(uuids[0])
 		if err != nil {
 			continue
 		}
@@ -101,7 +92,7 @@ func TestBuildProductMap(t *testing.T) {
 		if mtgmatcher.SealedIsLanguageVariant(co.Name) {
 			continue
 		}
-		uuid, err := mtgmatcher.ResolveSealed(co.Name)
+		uuid, err := b.ResolveSealed(co.Name)
 		if err == nil {
 			resolvableName = co.Name
 			resolvedUUID = uuid
@@ -128,7 +119,7 @@ func TestBuildProductMap(t *testing.T) {
 		orphanID + 1: {ID: orphanID + 1, Name: resolvableName},
 	}
 
-	ct, err := NewScraperSealed(mtgban.GameMagic, "")
+	ct, err := NewScraperSealed(b, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +134,12 @@ func TestBuildProductMap(t *testing.T) {
 		t.Errorf("magic name pass fired: got %v", uuids)
 	}
 
-	ct, err = NewScraperSealed(mtgban.GamePokemon, "")
+	// The gameID gate is asked about, not the card data: a second backend
+	// over the same rows, declared Pokemon instead of Magic, turns the
+	// name pass on without needing a Pokemon datastore of its own.
+	pokemon := *b
+	pokemon.Game = "pokemon"
+	ct, err = NewScraperSealed(&pokemon, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,6 +154,7 @@ func TestBuildProductMap(t *testing.T) {
 // names both blueprints the same and shelves them apart.
 func sealedRunsBackend() *mtgmatcher.Backend {
 	backend := &mtgmatcher.Backend{
+		Game:           "fleshandblood",
 		UUIDs:          map[string]*mtgmatcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
@@ -178,11 +175,9 @@ func sealedRunsBackend() *mtgmatcher.Backend {
 // name and no TCGplayer id - so throwing it away leaves the two of them
 // answering to one name and neither of them priced.
 func TestBuildProductMapReadsExpansion(t *testing.T) {
-	useBackend(t, sealedRunsBackend())
-
 	blueprint := &Blueprint{ID: 1, Name: "Crucible of War Booster Box"}
 	blueprints := map[int]*Blueprint{1: blueprint}
-	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	ct, err := NewScraperSealed(sealedRunsBackend(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -207,10 +202,8 @@ func TestBuildProductMapReadsExpansion(t *testing.T) {
 // drop in this pass does. A count with no names behind it cannot be checked
 // against the catalog.
 func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
-	useBackend(t, sealedRunsBackend())
-
 	var logged []string
-	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	ct, err := NewScraperSealed(sealedRunsBackend(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -241,9 +234,7 @@ func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
 // category alone is not enough, because CardTrader files real sealed product
 // under its accessory categories often enough to matter.
 func TestBuildProductMapDropsAccessories(t *testing.T) {
-	useBackend(t, sealedAccessoryBackend())
-
-	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	ct, err := NewScraperSealed(sealedAccessoryBackend(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,6 +273,7 @@ func TestBuildProductMapDropsAccessories(t *testing.T) {
 // reach the box it was printed for.
 func sealedAccessoryBackend() *mtgmatcher.Backend {
 	backend := &mtgmatcher.Backend{
+		Game:           "fleshandblood",
 		UUIDs:          map[string]*mtgmatcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
@@ -302,9 +294,7 @@ func sealedAccessoryBackend() *mtgmatcher.Backend {
 // the bundle's price then lands on a single box. The longer name is the one
 // that loses: its extra word is the thing it sells.
 func TestBuildProductMapDropsSubsumed(t *testing.T) {
-	useBackend(t, sealedSubsumedBackend())
-
-	ct, err := NewScraperSealed(mtgban.GameFleshAndBlood, "")
+	ct, err := NewScraperSealed(sealedSubsumedBackend(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -355,6 +345,7 @@ func TestBuildProductMapDropsSubsumed(t *testing.T) {
 // the box at all.
 func sealedSubsumedBackend() *mtgmatcher.Backend {
 	backend := &mtgmatcher.Backend{
+		Game:           "fleshandblood",
 		UUIDs:          map[string]*mtgmatcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
@@ -373,6 +364,7 @@ func sealedSubsumedBackend() *mtgmatcher.Backend {
 // code, one of them named for the number that code carries.
 func sealedShelfCodeBackend() *mtgmatcher.Backend {
 	backend := &mtgmatcher.Backend{
+		Game:           "gundam",
 		UUIDs:          map[string]*mtgmatcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
@@ -394,8 +386,7 @@ func sealedShelfCodeBackend() *mtgmatcher.Backend {
 // product and the only candidate is dropped. The trim is guarded on the
 // shelf's own code, and keeps the number the catalog spells into the name.
 func TestBuildProductMapTrimsShelfCode(t *testing.T) {
-	useBackend(t, sealedShelfCodeBackend())
-	ct, err := NewScraperSealed(mtgban.GameGundam, "")
+	ct, err := NewScraperSealed(sealedShelfCodeBackend(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -424,16 +415,4 @@ func TestBuildProductMapTrimsShelfCode(t *testing.T) {
 			t.Errorf("%q on %q: got %v, want %v", tt.name, tt.shelf, got, tt.want)
 		}
 	}
-}
-
-// useBackend installs a backend as the global datastore for the test and
-// puts back the one that stood before, so the handful of rows a sealed test
-// builds is not what the next test matches against.
-func useBackend(t *testing.T, b *mtgmatcher.Backend) {
-	t.Helper()
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(b)
-	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(previous)
-	})
 }
