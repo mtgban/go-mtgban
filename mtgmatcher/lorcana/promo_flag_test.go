@@ -2,8 +2,6 @@ package lorcana
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestIsPromoIsSet pins that the game names its promotional printings at all.
@@ -11,11 +9,11 @@ import (
 // the game answered false - and a promo filter that matches nothing looks
 // exactly like a game with no promos in it.
 func TestIsPromoIsSet(t *testing.T) {
-	loadDatastore(t)
+	b := loadDatastore(t)
 
 	var promos, total, inPromoSet, promoSetFlagged int
-	for _, uuid := range mtgmatcher.GetUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil || co.Sealed {
 			continue
 		}
@@ -23,7 +21,7 @@ func TestIsPromoIsSet(t *testing.T) {
 		if co.IsPromo {
 			promos++
 		}
-		set, err := mtgmatcher.GetSet(co.SetCode)
+		set, err := b.GetSet(co.SetCode)
 		if err != nil || set.Type != "promo" {
 			continue
 		}
@@ -38,8 +36,8 @@ func TestIsPromoIsSet(t *testing.T) {
 	// Every rarity the game calls Promo is one, whatever else says so: a
 	// minted printing has no upstream entry to carry a field or a
 	// relationship, and its rarity is all that is left to read.
-	for _, uuid := range mtgmatcher.GetUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil || co.Sealed || co.Rarity != "promo" || co.IsPromo {
 			continue
 		}

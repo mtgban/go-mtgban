@@ -11,7 +11,7 @@ import (
 // name, so the errata printing was unreachable even spelled out exactly and
 // answered with the original standing at the same number.
 func TestQualifiedNameStaysWhole(t *testing.T) {
-	loadDatastore(t)
+	b := loadDatastore(t)
 
 	for _, tt := range []struct{ desc, name, number, want string }{
 		{"the errata printing answers to its own name",
@@ -22,7 +22,7 @@ func TestQualifiedNameStaysWhole(t *testing.T) {
 			"Bucky - Squirrel Squeak Tutor", "73/204", "289_foil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+			id, err := b.Match(&mtgmatcher.InputCard{
 				Name: tt.name, Edition: "Rise of the Floodborn", Variation: tt.number, Foil: true,
 			})
 			if err != nil {
