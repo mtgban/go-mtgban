@@ -672,12 +672,25 @@ var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
 		coA, errA := mtgmatcher.GetUUID(partA)
 		coB, errB := mtgmatcher.GetUUID(partB)
 		// A vendorVerifiedPair entity (see buildDerivedCard) carries no
-		// tcgplayerProductId at all - its own uuid is what every index
-		// below hands back instead, which tokenPairingFinishOK/MatchID
-		// both resolve directly with no id-space conversion needed.
+		// tcgplayerProductId at all - the entity's own uuid is what every
+		// index below hands back instead, which tokenPairingFinishOK/
+		// MatchID both resolve directly with no id-space conversion
+		// needed. That has to be the base (nonfoil-suffixed) uuid
+		// buildDerivedCard itself computes, not this loop's own per-
+		// iteration uuid: generateCardUUIDs visits the foil and nonfoil
+		// sibling as two separate entries (uuid and uuid+"_f"), and using
+		// whichever one this particular iteration happens to be on would
+		// make the identical physical pairing look like two different
+		// ids depending on iteration order - a real bug this file's own
+		// review caught, the same failure shape byFace's own collision
+		// handling exists to prevent, just self-inflicted.
 		id := co.Identifiers["tcgplayerProductId"]
-		if id == "" {
-			id = uuid
+		if id == "" && partA != "" && partB != "" {
+			baseLo, baseHi := partA, partB
+			if baseHi < baseLo {
+				baseLo, baseHi = baseHi, baseLo
+			}
+			id = baseLo + derivedTokenPairSuffix + baseHi
 		}
 
 		if errA == nil && errB == nil {
