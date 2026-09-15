@@ -2,8 +2,6 @@ package vegassingles
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // entombFoil is the product as the storefront answers for it, trimmed to the
@@ -38,9 +36,9 @@ func entombFoil() VSProduct {
 // is never published. Every variant here has no stock, which is the ordinary
 // case for this storefront: it is a buylist that keeps a priced catalog.
 func TestOutOfStockIsNotForSale(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
-	vs, err := NewScraper(mtgban.GameMagic)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,13 +71,13 @@ func TestOutOfStockIsNotForSale(t *testing.T) {
 // game the scraper reads, not one Heavily Played or Damaged row has stock -
 // so they are unreachable rather than filtered.
 func TestStockedRowsSurvive(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	product := entombFoil()
 	product.RetailVariantInfo[0].InventoryQuantity = 2 // Near Mint
 	product.RetailVariantInfo[3].InventoryQuantity = 1 // Heavily Played
 
-	vs, err := NewScraper(mtgban.GameMagic)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,13 +110,13 @@ func TestStockedRowsSurvive(t *testing.T) {
 // bid on both - 255 of 264 Heavily Played rows and 228 of 264 Damaged ones,
 // measured against the live feed - and only the ones bidding nothing drop out.
 func TestBuylistKeepsTheLowerConditions(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	product := entombFoil()
 	product.VariantInfo[3].OfferPrice = 149.99 // Heavily Played, bid on
 	product.VariantInfo[4].OfferPrice = 99.99  // Damaged, bid on
 
-	vs, err := NewScraper(mtgban.GameMagic)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,9 +170,9 @@ func ahriFoil() VSProduct {
 // a target for its buylist alone, so a run that only had those was a run
 // proving nothing about any shelf that ships.
 func TestRiftboundStock(t *testing.T) {
-	withRiftbound(t)
+	b := withRiftbound(t)
 
-	vs, err := NewScraper(mtgban.GameRiftbound)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +212,7 @@ func TestRiftboundStock(t *testing.T) {
 // off listings read from the storefront, so each game the scraper ships for
 // has a run that reaches the records rather than stopping at the name.
 func TestOnePieceStock(t *testing.T) {
-	withOnePiece(t)
+	b := withOnePiece(t)
 
 	product := VSProduct{
 		ID:             "onepiece-ace",
@@ -233,7 +231,7 @@ func TestOnePieceStock(t *testing.T) {
 		},
 	}
 
-	vs, err := NewScraper(mtgban.GameOnePiece)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,7 +245,7 @@ func TestOnePieceStock(t *testing.T) {
 }
 
 func TestPokemonStock(t *testing.T) {
-	withPokemon(t)
+	b := withPokemon(t)
 
 	product := VSProduct{
 		ID:          "pokemon-az",
@@ -269,7 +267,7 @@ func TestPokemonStock(t *testing.T) {
 		},
 	}
 
-	vs, err := NewScraper(mtgban.GamePokemon)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
