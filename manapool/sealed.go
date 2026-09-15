@@ -15,13 +15,15 @@ type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 }
 
-// NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *Sealed {
-	mp := Sealed{}
+// NewScraperSealed returns a sealed scraper matching against b.
+func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
+	mp := Sealed{backend: b}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
 }
@@ -43,9 +45,9 @@ func (mp *Sealed) Load(ctx context.Context) error {
 
 	var foundProduct int
 
-	sets := mtgmatcher.GetAllSets()
+	sets := mp.backend.GetAllSets()
 	for _, code := range sets {
-		set, _ := mtgmatcher.GetSet(code)
+		set, _ := mp.backend.GetSet(code)
 
 		// Skip products without Sealed or Booster information
 		switch set.Code {
