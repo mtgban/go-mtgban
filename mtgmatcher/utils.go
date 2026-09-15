@@ -181,13 +181,6 @@ func extractNumber(str string, threshold int) string {
 			continue
 		}
 
-		// Skip tags that could be confused with set codes
-		// unless it ends with "a" (ie 30A)
-		_, err := GetSet(field)
-		if err == nil && !strings.HasSuffix(field, "a") {
-			continue
-		}
-
 		num := strings.TrimLeft(field, "0")
 		val, err := strconv.Atoi(num)
 		if err == nil && val < threshold {

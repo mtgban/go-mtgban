@@ -509,18 +509,12 @@ var NumberTests = []ExtractTest{
 		Out: "332",
 	},
 	{
-		In:  "2001 Tom van de Logt 7ED 337",
-		Out: "337",
-	},
-	{
 		In:  "30a",
 		Out: "30a",
 	},
 }
 
 func TestExtractNumber(t *testing.T) {
-	realDatastore(t)
-
 	for _, probe := range NumberTests {
 		test := probe
 		t.Run(test.In, func(t *testing.T) {
