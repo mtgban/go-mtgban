@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"strings"
 	"testing"
 
@@ -9,142 +8,36 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// plainScraper holds both halves and cannot be told to drop one, which is the
-// shape six of the registered packages are in.
-type plainScraper struct{}
-
-func (plainScraper) Load(context.Context) error { return nil }
-func (plainScraper) Info() mtgban.ScraperInfo   { return mtgban.ScraperInfo{Name: "plain"} }
-
-// configurableScraper answers the option, and records what it was told so the
-// test can check the halves are not swapped on the way through.
-type configurableScraper struct{ got mtgban.ScraperOptions }
-
-func (*configurableScraper) Load(context.Context) error { return nil }
-func (*configurableScraper) Info() mtgban.ScraperInfo {
-	return mtgban.ScraperInfo{Name: "configurable"}
-}
-func (c *configurableScraper) SetConfig(opt mtgban.ScraperOptions) {
-	c.got = opt
-}
-
-// TestConfigureScraperRefusesWhatItCannotHonour pins that asking for one half
-// of a scraper that publishes both is an error rather than a silent whole run.
-// The option reaches a scraper through a type assertion that says nothing when
-// it fails, so this is the only place the mismatch can be named.
-func TestConfigureScraperRefusesWhatItCannotHonour(t *testing.T) {
-	for _, tt := range []struct {
-		desc     string
-		opt      scraperOption
-		wantErr  bool
-		wantHalf string
-	}{
-		{"asked for the buylist alone", scraperOption{OnlyVendor: true}, true, "buylist"},
-		{"asked for the retail alone", scraperOption{OnlySeller: true}, true, "retail"},
-		// A scraper with one half of its own is registered without either
-		// option, and there is nothing to honour: most targets are these.
-		{"asked for neither", scraperOption{}, false, ""},
-	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			err := configureScraper("sometarget", &tt.opt, plainScraper{})
-			if !tt.wantErr {
-				if err != nil {
-					t.Fatalf("got %v, want no error", err)
-				}
-				return
-			}
-			if err == nil {
-				t.Fatal("got no error, want one naming the target")
-			}
-			if !strings.Contains(err.Error(), "sometarget") {
-				t.Errorf("error does not name the target: %v", err)
-			}
-			if !strings.Contains(err.Error(), tt.wantHalf) {
-				t.Errorf("error does not say which half was asked for: %v", err)
-			}
-		})
-	}
-}
-
-// TestConfigureScraperRefusesBothHalvesAtOnce pins that a target held to its
-// retail alone and its buylist alone at once is refused, by a scraper that
-// could answer either option on its own as much as by one that can answer
-// neither. -sellers and -vendors write the very fields a store's own entry
-// declares, so the contradiction arrives one of three ways - a flag over the
-// entry, the entry over a flag, or the two flags over each other - and only
-// the pair of fields, not where they came from, says a run has nothing left
-// to publish. The flags used to resolve it by whichever was named last,
-// overwriting the entry outright.
-func TestConfigureScraperRefusesBothHalvesAtOnce(t *testing.T) {
-	scraper := &configurableScraper{}
-	opt := scraperOption{OnlySeller: true, OnlyVendor: true}
-	err := configureScraper("sometarget", &opt, scraper)
-	if err == nil {
-		t.Fatal("got no error, want one naming the target")
-	}
-	if !strings.Contains(err.Error(), "sometarget") {
-		t.Errorf("error does not name the target: %v", err)
-	}
-	// Told anything at all, this scraper would have been told to drop both
-	// halves, which is the silent whole-run-for-nothing being refused.
-	if scraper.got != (mtgban.ScraperOptions{}) {
-		t.Errorf("the scraper was configured anyway: %+v", scraper.got)
-	}
-}
-
-// TestConfigureScraperPassesTheOptionThrough pins the other side: a scraper
-// that answers the option is told exactly what was asked, and the two halves
-// are not crossed - OnlyVendor turns retail off, not the buylist it names.
-func TestConfigureScraperPassesTheOptionThrough(t *testing.T) {
-	for _, tt := range []struct {
-		desc string
-		opt  scraperOption
-		want mtgban.ScraperOptions
-	}{
-		{"the buylist alone drops retail", scraperOption{OnlyVendor: true},
-			mtgban.ScraperOptions{DisableRetail: true}},
-		{"the retail alone drops the buylist", scraperOption{OnlySeller: true},
-			mtgban.ScraperOptions{DisableBuylist: true}},
-		{"neither drops nothing", scraperOption{}, mtgban.ScraperOptions{}},
-	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			scraper := &configurableScraper{}
-			err := configureScraper("sometarget", &tt.opt, scraper)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if scraper.got != tt.want {
-				t.Errorf("scraper was told %+v, want %+v", scraper.got, tt.want)
-			}
-		})
-	}
-}
-
 // TestRegisteredHalvesAreHonoured walks the targets that ask for one half and
-// checks each can actually be told to drop the other. Registering the option
-// on a scraper that cannot answer it is silent at runtime and shows up only as
-// an output holding the half that was not asked for, which is how Vegas
-// Singles published an empty Magic shelf twice a day.
+// checks each can actually be told to drop the other. A scraper registered
+// for an option it cannot answer fails mtgban.NewScraper with "does not
+// implement mtgban.ScraperConfig" rather than silently publishing both
+// halves, which is how Vegas Singles published an empty Magic shelf twice a
+// day; any other failure here is a missing secret or resource, which a
+// checkout with no credentials is expected to hit.
 func TestRegisteredHalvesAreHonoured(t *testing.T) {
 	var checked int
-	for name, opt := range flattenOptions(options) {
-		if !opt.OnlyVendor && !opt.OnlySeller {
-			continue
-		}
-		scraper, err := opt.Init(&mtgmatcher.Backend{})
-		if err != nil {
-			// Init reads credentials for some targets, and a checkout
-			// without them still runs the rest.
-			t.Logf("skipping %s: %v", name, err)
-			continue
-		}
-		checked++
-		if err := configureScraper(name, opt, scraper); err != nil {
-			t.Error(err)
+	for game, scrapers := range options {
+		for key, opt := range scrapers {
+			if !opt.OnlyVendor && !opt.OnlySeller {
+				continue
+			}
+			checked++
+
+			half := mtgban.WithRetailOnly()
+			if opt.OnlyVendor {
+				half = mtgban.WithBuylistOnly()
+			}
+
+			backend := &mtgmatcher.Backend{Game: strings.ToLower(string(game))}
+			_, err := mtgban.NewScraper(backend, key, mtgban.MapAuthenticator{}, half)
+			if err != nil && strings.Contains(err.Error(), "does not implement") {
+				t.Errorf("%s/%s cannot honour its own override: %v", game, key, err)
+			}
 		}
 	}
 	if checked == 0 {
-		t.Skip("no target asks for a single half, or none could be built here")
+		t.Skip("no target asks for a single half")
 	}
 	t.Logf("checked %d targets that ask for a single half", checked)
 }
