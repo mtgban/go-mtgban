@@ -321,7 +321,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"arcanafrisia": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := arcanafrisia.NewScraper()
+				scraper := arcanafrisia.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
 			},
