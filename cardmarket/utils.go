@@ -378,43 +378,6 @@ func shelved(shelves []shelf, set *mtgmatcher.Set) bool {
 	return false
 }
 
-// disownBridged takes the bridge's answer away from a product it landed on
-// a card the same shelf sells, and prices, under another product's name,
-// and lets the name answer instead. The bridge speaks through another
-// marketplace's links, and a link tied to the neighbouring product lands
-// a card on its neighbour's printing: Cardmarket's Herald of Ravages on
-// the datastore's Herald of Rebirth, the red Lead with Heart on the
-// yellow. A spelling the datastore does not share is not that - no priced
-// product of the shelf claims the printing - and the id keeps its say
-// over it, the misspelt listing of a card the shelf also sells refused
-// included.
-func (mkm *Index) disownBridged(results []resolved) {
-	claimed := map[string]bool{}
-	for _, r := range results {
-		if r.err != nil || r.cardID == "" {
-			continue
-		}
-		name := fabBaseName(r.product.Name)
-		claimed[mtgmatcher.Normalize(name)] = true
-		claimed[mtgmatcher.Normalize(unpitched(name))] = true
-	}
-	for i, r := range results {
-		if r.err != nil || r.cardID == "" || r.byName || fabNamesPrinting(r.product, r.cardID) {
-			continue
-		}
-		co, err := mtgmatcher.GetUUID(r.cardID)
-		if err != nil || !claimed[mtgmatcher.Normalize(fabBaseName(co.Name))] {
-			continue
-		}
-		cardID := mkm.matchFab(r.product)
-		if cardID == "" {
-			results[i] = resolved{product: r.product, err: errNoPrinting}
-			continue
-		}
-		results[i] = resolved{product: r.product, cardID: cardID, cardIDFoil: cardID, byName: true}
-	}
-}
-
 // fabNumbers answers the forms a Cardmarket number is asked in: whole,
 // opening on the letters its set writes, which is how the datastore
 // writes it and the only way a fused card answers to its faces' numbers;
