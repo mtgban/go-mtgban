@@ -239,7 +239,7 @@ func (b *Backend) extractNumber(str string, threshold int) string {
 			if strings.Contains(field, "-") {
 				subfields := strings.Split(field, "-")
 				if len(subfields) == 2 {
-					parsed := ExtractNumber(subfields[1])
+					parsed := b.ExtractNumber(subfields[1])
 					if parsed != "" {
 						return subfields[0] + "-" + strings.TrimLeft(subfields[1], "0")
 					}
