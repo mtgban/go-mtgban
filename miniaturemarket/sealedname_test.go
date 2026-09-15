@@ -163,9 +163,9 @@ func TestSealedNameOtherGamesUntouched(t *testing.T) {
 // them while pricing nothing is indistinguishable from a catalog with
 // nothing in it.
 func TestResolveListing(t *testing.T) {
-	withGameDatastore(t, "lorcana", "LORCANA_PATH")
+	b := withGameDatastore(t, "lorcana", "LORCANA_PATH")
 
-	mm, err := NewScraperSealed(mtgban.GameLorcana)
+	mm, err := NewScraperSealed(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,8 +193,10 @@ func TestResolveListing(t *testing.T) {
 	}
 
 	// A Magic listing routes through the id alone, and one the datastore
-	// does not carry says so rather than vanishing.
-	magic, err := NewScraperSealed(mtgban.GameMagic)
+	// does not carry says so rather than vanishing. resolveListing never
+	// reads the backend on this path, so a bare one naming the game is
+	// enough.
+	magic, err := NewScraperSealed(&mtgmatcher.Backend{Game: "magic"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,11 +207,11 @@ func TestResolveListing(t *testing.T) {
 	// A name the resolver does answer comes back with no reason at all,
 	// read off a product the loaded datastore actually holds so the case
 	// does not depend on which build of the file is in use.
-	sealed := mtgmatcher.GetSealedUUIDs()
+	sealed := b.GetSealedUUIDs()
 	if len(sealed) == 0 {
 		t.Skip("datastore holds no sealed products")
 	}
-	co, err := mtgmatcher.GetUUID(sealed[0])
+	co, err := b.GetUUID(sealed[0])
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -284,21 +286,21 @@ func TestExtraWords(t *testing.T) {
 // forgiveness is granted only where a card accounts for the added words, and
 // the case a box is not is what that rule exists to refuse.
 func TestResolveByNamedCard(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	// A hero the storefront names by their first word only.
-	uuid, err := resolveByNamedCard("Silver Age Chapter 3 Deck - Blaze (Wizard)")
+	uuid, err := resolveByNamedCard(b, "Silver Age Chapter 3 Deck - Blaze (Wizard)")
 	if err != nil {
 		t.Fatalf("the hero's epithet was not forgiven: %v", err)
 	}
-	co, cerr := mtgmatcher.GetUUID(uuid)
+	co, cerr := b.GetUUID(uuid)
 	if cerr != nil || co.Name != "Silver Age Chapter 3 Deck - Blaze Firemind (Wizard)" {
 		t.Errorf("resolved to %v, want the Blaze Firemind deck", co)
 	}
 
 	// A case adds a word to its box, and that word is no card: forgiving it
 	// would price a case as the box inside it.
-	if _, err := resolveByNamedCard("High Seas Booster Box"); err == nil {
+	if _, err := resolveByNamedCard(b, "High Seas Booster Box"); err == nil {
 		t.Error("a box resolved onto something that says more than it does")
 	}
 }
@@ -308,9 +310,9 @@ func TestResolveByNamedCard(t *testing.T) {
 // runs after the resolver, and running it over an answer already found both
 // discarded the answer and left nothing to report the failure with.
 func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
-	mm, err := NewScraperSealed(mtgban.GameFleshAndBlood)
+	mm, err := NewScraperSealed(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,7 +320,7 @@ func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
 	if drop != "" || uuid == "" {
 		t.Fatalf("resolveListing = (%q, %q), want the booster pack", uuid, drop)
 	}
-	co, err := mtgmatcher.GetUUID(uuid)
+	co, err := b.GetUUID(uuid)
 	if err != nil || co.Name != "Usurp the Shadow Throne Booster Pack" {
 		t.Errorf("resolved to %v, want the Usurp the Shadow Throne Booster Pack", co)
 	}
@@ -333,9 +335,9 @@ func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
 // them is that the resolver refuses a candidate saying a word the listing
 // never did, and neither "Display" nor "Case" is ever listed here.
 func TestResolveGundamPremiumCollection(t *testing.T) {
-	withGameDatastore(t, "gundam", "GUNDAM_PATH")
+	b := withGameDatastore(t, "gundam", "GUNDAM_PATH")
 
-	mm, err := NewScraperSealed(mtgban.GameGundam)
+	mm, err := NewScraperSealed(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -358,7 +360,7 @@ func TestResolveGundamPremiumCollection(t *testing.T) {
 			if uuid == tt.want {
 				return
 			}
-			co, cerr := mtgmatcher.GetUUID(uuid)
+			co, cerr := b.GetUUID(uuid)
 			if cerr != nil {
 				t.Fatalf("resolveListing = (%q, %q), want %s", uuid, drop, tt.want)
 			}
