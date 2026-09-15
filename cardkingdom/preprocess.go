@@ -6,6 +6,7 @@ import (
 
 	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // This table contains all SKUs that contain incorrect codes or codes that could
@@ -50,6 +51,12 @@ var skuFixupTable = map[string]string{
 	"PPLS-074": "PLS-074★",
 	"PPLS-107": "PLS-107★",
 	"PPLS-133": "PLS-133★",
+
+	// Warhammer 40,000 surge-foil tokens: the set catalogues the foil
+	// printing of these two under a ★-suffixed duplicate of the same
+	// number, never the bare one CK's own sku names
+	"SFT40K-015": "SFT40K-015★",
+	"SFT40K-016": "SFT40K-016★",
 
 	// Duplicated ULST cards
 	"FMUST-147A": "ULST-55",
@@ -351,11 +358,40 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	isTwoSidedToken := (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
+		(strings.Contains(card.Name, "Token") || strings.HasPrefix(setCode, "T") || strings.HasPrefix(setCode, "FT"))
+
+	// A two-sided token sheet prints one physical card for a pairing
+	// mtgmatcher/magic may already carry a combined entity for - resolve
+	// that precisely, by id, before falling back to the one-face collapse
+	// below. See magic.MatchTokenPairing.
+	if isTwoSidedToken {
+		if id := magic.MatchTokenPairing(card.ScryfallID, card.Name); id != "" {
+			return &mtgmatcher.InputCard{ID: id}, nil
+		}
+
+		// CK never publishes a scryfallId for a "Mystery Booster/The
+		// List" listing that bundles two independently-numbered
+		// token-sheet entries into one retail sku (no vendor ever
+		// sells that exact ad-hoc pairing as one product, so no id
+		// exists to publish) - anchor the first face by its own sku
+		// set/number instead. setCode/number are still the raw sku's
+		// own fields here (the switch above only rewrote variation),
+		// so setCode[1:] is the same real token-filing set the
+		// "Mystery Booster/The List" case's own default arm already
+		// derives.
+		if card.ScryfallID == "" && card.Edition == "Mystery Booster/The List" &&
+			strings.HasPrefix(setCode, "MT") && setCodeExists(setCode[1:]) {
+			if id := magic.MatchTokenPairingBySetNumber(setCode[1:], number, card.Name); id != "" {
+				return &mtgmatcher.InputCard{ID: id}, nil
+			}
+		}
+	}
+
 	// Drop one side of dfc tokens, without doubling the suffix when the
 	// kept face already carries it, and leaving alone the split cards a
 	// T-prefixed set code sweeps in: the set carries those under both faces
-	if (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
-		(strings.Contains(card.Name, "Token") || strings.HasPrefix(setCode, "T") || strings.HasPrefix(setCode, "FT")) &&
+	if isTwoSidedToken &&
 		len(mtgmatcher.MatchInSetNumber(card.Name, setCode, number)) == 0 {
 		if strings.Contains(card.Name, " // ") {
 			card.Name = strings.Split(card.Name, " // ")[0]

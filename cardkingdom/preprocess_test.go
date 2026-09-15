@@ -175,6 +175,148 @@ func TestPreprocessTokens(t *testing.T) {
 	}
 }
 
+// TestPreprocessTokenPairing pins CK's own two-sided token wording resolving
+// to the combined entity mtgmatcher/magic/tokenpairs.go derives for the same
+// physical pairing, anchored by CK's own scryfall_id rather than guessed from
+// the name alone. Commander 2018 carries the Angel/Cat pairing under the same
+// scryfall_id CK ships for it.
+func TestPreprocessTokenPairing(t *testing.T) {
+	realDatastore(t)
+	theCard, err := Preprocess(cardkingdom.Product{
+		SKU:        "TC18-003",
+		ScryfallID: "6ac609aa-49d1-4330-b718-a90b0560da52",
+		Name:       "Angel Token - Cat Token",
+		Edition:    "Commander 2018",
+	})
+	if err != nil {
+		t.Fatalf("Preprocess: %v", err)
+	}
+	cardID, err := mtgmatcher.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	const want = "3695fffc-7192-528c-83c8-b9893e6c4aa1_tp_dfd98280-5bf8-5d7d-a4ed-a90b91be8734"
+	if cardID != want {
+		co, _ := mtgmatcher.GetUUID(cardID)
+		t.Errorf("Match(%v) = %s (%v), want the derived Angel // Cat pairing", theCard, cardID, co)
+	}
+}
+
+// TestPreprocessTokenPairingParenthetical pins normalizeTokenFace stripping
+// an artist parenthetical and the " Token" suffix regardless of which order
+// CK's own wording puts them in - "X Token (Artist)" needs the parenthetical
+// gone before the suffix trim can ever find it at the end of the string.
+func TestPreprocessTokenPairingParenthetical(t *testing.T) {
+	realDatastore(t)
+	theCard, err := Preprocess(cardkingdom.Product{
+		SKU:        "TPCA-002",
+		ScryfallID: "b71177f3-a7cb-4d38-b8c7-daa5b8266a19",
+		Name:       "Eldrazi Spawn Token (Briclot) - Eldrazi Token (Proce)",
+		Edition:    "Planechase Anthology",
+	})
+	if err != nil {
+		t.Fatalf("Preprocess: %v", err)
+	}
+	cardID, err := mtgmatcher.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	const want = "89c709c6-2fa7-5408-a5bf-5762b82d5477_tp_9d1ed5df-e69a-5bce-96fc-20dce8047d8a"
+	if cardID != want {
+		co, _ := mtgmatcher.GetUUID(cardID)
+		t.Errorf("Match(%v) = %s (%v), want the derived Eldrazi // Eldrazi Spawn pairing", theCard, cardID, co)
+	}
+}
+
+// TestPreprocessTokenPairingSecondHalfAnchored pins matchTokenPairing
+// recognizing CK's scryfall_id anchoring the SECOND half of its own listing
+// name rather than the first - "Cat Token - Cat Warrior Token" carries CK's
+// id against the Cat Warrior face, so the Cat half is the partner to look
+// up, not the other way the naming order would otherwise suggest.
+func TestPreprocessTokenPairingSecondHalfAnchored(t *testing.T) {
+	realDatastore(t)
+	theCard, err := Preprocess(cardkingdom.Product{
+		SKU:        "TC17-001",
+		ScryfallID: "29c4e4f2-0040-4490-b357-660d729ad9cc",
+		Name:       "Cat Token - Cat Warrior Token",
+		Edition:    "Commander 2017",
+	})
+	if err != nil {
+		t.Fatalf("Preprocess: %v", err)
+	}
+	cardID, err := mtgmatcher.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	const want = "7a13db1f-523c-5b19-80e5-d4d6f0121c6b_tp_7e5dc858-2163-5de0-95cb-f0e2933a7f7f"
+	if cardID != want {
+		co, _ := mtgmatcher.GetUUID(cardID)
+		t.Errorf("Match(%v) = %s (%v), want the derived Cat // Cat Warrior pairing", theCard, cardID, co)
+	}
+}
+
+// TestPreprocessTokenPairingBySetNumber pins matchTokenPairingBySetNumber:
+// a "Mystery Booster/The List" listing that bundles two independently
+// numbered token-sheet entries into one CK sku never carries a scryfall_id
+// (no vendor sells that exact ad-hoc pairing as one product), so the first
+// face is anchored by its own sku-derived set and number instead.
+func TestPreprocessTokenPairingBySetNumber(t *testing.T) {
+	realDatastore(t)
+	theCard, err := Preprocess(cardkingdom.Product{
+		SKU:     "MTMKC-0012",
+		Name:    "Kobolds of Kher Keep Token // Soldier Token",
+		Edition: "Mystery Booster/The List",
+	})
+	if err != nil {
+		t.Fatalf("Preprocess: %v", err)
+	}
+	cardID, err := mtgmatcher.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	const want = "6aabcac2-f43d-5895-99fc-68c948e41e34_tp_b39718f3-8bdc-5726-9b59-c690d962b222"
+	if cardID != want {
+		co, _ := mtgmatcher.GetUUID(cardID)
+		t.Errorf("Match(%v) = %s (%v), want the derived Soldier // Kobolds of Kher Keep Token pairing", theCard, cardID, co)
+	}
+}
+
+// TestPreprocessSurgeFoilStarredDuplicate pins the skuFixupTable entries
+// redirecting these two Warhammer 40,000 surge-foil skus to the ★-suffixed
+// duplicate number the token set actually catalogues as the foil printing -
+// the bare number these skus name is filed nonfoil-only.
+func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
+	realDatastore(t)
+	for _, tt := range []struct {
+		sku  string
+		name string
+		want string
+	}{
+		{"SFT40K-015", "Plaguebearer of Nurgle Token // Astartes Warrior Token", "cfce7c69-c5d6-565d-8661-efa842b3147d"},
+		{"SFT40K-016", "Spawn Token // Plaguebearer of Nurgle Token", "014c729a-bbdc-5569-afe8-7155ec517de7"},
+	} {
+		t.Run(tt.sku, func(t *testing.T) {
+			theCard, err := Preprocess(cardkingdom.Product{
+				SKU:     tt.sku,
+				Name:    tt.name,
+				Edition: "Warhammer 40,000",
+				IsFoil:  true,
+			})
+			if err != nil {
+				t.Fatalf("Preprocess: %v", err)
+			}
+			cardID, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			if cardID != tt.want {
+				co, _ := mtgmatcher.GetUUID(cardID)
+				t.Errorf("Match(%v) = %s (%v), want the ★-suffixed foil printing", theCard, cardID, co)
+			}
+		})
+	}
+}
+
 // TestPreprocessListAngelToken pins the sku fixup for the one Angel token
 // The List carries twice. Its sku names the Forgotten Realms printing and
 // its bare number reaches the Guilds of Ravnica one, which is the wrong

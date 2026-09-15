@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -384,4 +385,145 @@ func unionFinishes(a, b []string) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// TokenPairIndex maps one face's uuid to every other face a vendor has been
+// seen pairing it with, keyed by that other face's own name (matched
+// loosely - a vendor spells the same face several ways: plain,
+// "(Artist)"-suffixed, or a different set's own copy), and the derived
+// entity's own uuid the pairing resolves to. Built once against the loaded
+// datastore rather than per listing - a vendor's own catalog runs to six
+// figures, and this side only needs looking up for the small fraction
+// shaped like a two-sided token. Exported and vendor-agnostic from the
+// start: cardkingdom is the first caller, but nothing here is CK-specific.
+//
+// sync.OnceValue rather than a package-level initializer: GlobalDatastore
+// is populated by the running program after mtgjson is parsed, not at Go's
+// own package-init time, so the index can only be built on first use.
+var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
+	data := map[string]map[string]string{}
+	backend := mtgmatcher.GlobalDatastore()
+	seen := map[string]bool{}
+	for uuid, co := range backend.UUIDs {
+		if co.Identifiers["derivedTokenPair"] != "true" || seen[uuid] {
+			continue
+		}
+		seen[uuid] = true
+
+		partA := co.Identifiers["tokenPairPartA"]
+		partB := co.Identifiers["tokenPairPartB"]
+		coA, errA := mtgmatcher.GetUUID(partA)
+		coB, errB := mtgmatcher.GetUUID(partB)
+		if errA != nil || errB != nil {
+			continue
+		}
+		id := co.Identifiers["tcgplayerProductId"]
+		if id == "" {
+			continue
+		}
+
+		if data[partA] == nil {
+			data[partA] = map[string]string{}
+		}
+		data[partA][NormalizeTokenFace(coB.Card.Name)] = id
+
+		if data[partB] == nil {
+			data[partB] = map[string]string{}
+		}
+		data[partB][NormalizeTokenFace(coA.Card.Name)] = id
+	}
+	return data
+})
+
+// NormalizeTokenFace reduces one face's name to the form a vendor's own
+// wording and the datastore's own name compare equal by: no artist
+// parenthetical a vendor sometimes appends to tell two otherwise-identical
+// tokens apart, no "Token" suffix (a vendor spells it, the datastore's own
+// Card.Name from a derived pairing does not, since it is the pairing's own
+// combined name split back apart), case-folded. The parenthetical must come
+// off first - it sits after the suffix in a vendor's own wording ("X Token
+// (Artist)"), so trimming the suffix before the parenthetical leaves it
+// unable to ever match (it never finds " Token" at the end of "X Token
+// (Artist)", only of "X Token").
+func NormalizeTokenFace(name string) string {
+	name = strings.TrimSpace(name)
+	if idx := strings.Index(name, " ("); idx >= 0 {
+		name = name[:idx]
+	}
+	name = strings.TrimSuffix(strings.TrimSpace(name), " Token")
+	return strings.ToLower(strings.TrimSpace(name))
+}
+
+// SplitTokenPairName splits a two-sided token listing's name into its two
+// faces the way a vendor spells it - "//" for cards a vendor treats as one
+// printing with two names, "-" for a token sheet's own two names - reporting
+// whether either separator was found at all.
+func SplitTokenPairName(name string) (first, second string) {
+	for _, sep := range []string{" // ", " - "} {
+		if before, after, found := strings.Cut(name, sep); found {
+			return before, after
+		}
+	}
+	return name, ""
+}
+
+// MatchTokenPairing resolves a two-sided token listing to the TCGplayer
+// product id of the physical pairing it names, given the vendor's own
+// scryfallId for one face and its own name for the listing as a whole.
+// Either alone is not enough to place it safely: the scryfallId names a
+// real printing, but that printing can pair with several different
+// partners across a sheet (above), and the name alone is not unique to one
+// set - "Soldier Token" says nothing about which Soldier. Together, the id
+// anchors one face precisely and the wording only has to pick among the few
+// pairings that exact face has, not guess a printing from a free-text name
+// on its own. Returns "" when either is missing, or when no derived
+// pairing matches both.
+func MatchTokenPairing(scryfallID, listingName string) string {
+	if scryfallID == "" {
+		return ""
+	}
+	first, second := SplitTokenPairName(listingName)
+	if second == "" {
+		return ""
+	}
+	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, scryfallID)
+	if uuid == "" {
+		return ""
+	}
+
+	// A vendor usually carries the scryfallId against the first half of
+	// its own listing name, with the second half naming the partner - but
+	// not always. Where the id's own real name matches the second half
+	// instead, the first half is the partner to look up.
+	partner := second
+	if co, err := mtgmatcher.GetUUID(uuid); err == nil {
+		anchor := NormalizeTokenFace(co.Card.Name)
+		if NormalizeTokenFace(second) == anchor && NormalizeTokenFace(first) != anchor {
+			partner = first
+		}
+	}
+	return TokenPairIndex()[uuid][NormalizeTokenFace(partner)]
+}
+
+// MatchTokenPairingBySetNumber is MatchTokenPairing's counterpart for a
+// listing a vendor never publishes a scryfallId for at all: it anchors the
+// first face by its own filing set and number instead, through the same
+// MatchInSetNumber call - and the same len()==1-or-don't-guess discipline -
+// every other sku-driven resolution already trusts. Scoped to callers that
+// have already confirmed the (setCode, number) pair is the real one a
+// token sheet is filed under; unlike a scryfallId, an unconfirmed
+// set/number pair is a guess, not an anchor.
+func MatchTokenPairingBySetNumber(setCode, number, listingName string) string {
+	first, second := SplitTokenPairName(listingName)
+	if second == "" || strings.Contains(second, " // ") || strings.Contains(second, " - ") {
+		return ""
+	}
+	for _, face := range []string{first, strings.TrimSuffix(first, " Token")} {
+		cards := mtgmatcher.MatchInSetNumber(face, setCode, number)
+		if len(cards) != 1 {
+			continue
+		}
+		return TokenPairIndex()[cards[0].UUID][NormalizeTokenFace(second)]
+	}
+	return ""
 }
