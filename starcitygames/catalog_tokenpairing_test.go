@@ -151,6 +151,123 @@ func TestResolveTokenPairingBySetNumber(t *testing.T) {
 	}
 }
 
+// TestResolveCompositeSkuTokenPairing pins a two-sided token listing whose
+// sku names BOTH faces' own filing set and number directly, composited
+// together rather than bundled under one shared set the way the
+// single-anchor shape above expects (e.g. "LCI-T03_REX_T02" - faceA files
+// under LCI, faceB under the embedded REX code; "T01_LCI_T18" anchors
+// faceA to the sku's own leading set instead). Each face is anchored
+// independently by identity via mtgmatcher.MatchInSetNumber and joined
+// through the uuid-pair-keyed magic.MatchTokenPairingByUUIDs, sidestepping
+// magic.TokenPairIndex's name-collision-blanking entirely - see
+// tokenPairSkuAnchors and resolveProductID's own comment on this shape.
+func TestResolveCompositeSkuTokenPairing(t *testing.T) {
+	withMagic(t)
+
+	for _, tt := range []struct {
+		desc     string
+		sku      string
+		name     string
+		foil     bool
+		wantName string
+	}{
+		{
+			desc:     "faceA anchors to the sku's own leading code, faceB to an embedded one",
+			sku:      "SGL-MTG-LCI-T03_REX_T02-ENF",
+			name:     "{Gnome Soldier Token} // {Treasure Token} (#002)",
+			foil:     true,
+			wantName: "Treasure // Gnome Soldier",
+		},
+		{
+			desc:     "an embedded code names faceA, the leading one falls back for faceB",
+			sku:      "SGL-MTG-REX-T01_LCI_T18-ENF",
+			name:     "{Dinosaur Token} (#001) // {Treasure Token} (#018)",
+			foil:     true,
+			wantName: "Dinosaur // Treasure",
+		},
+		{
+			desc:     "both faces fuse under the sku's own leading code, no underscore",
+			sku:      "SGL-MTG-LTC-T04_LTR_T01-ENN",
+			name:     "{Human Token} // {Human Soldier Token} (#001)",
+			foil:     false,
+			wantName: "Human Soldier // Human",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			finish, group := "Non-foil", "Non-foil"
+			if tt.foil {
+				finish, group = "Foil", "Foil"
+			}
+			p := CatalogProduct{
+				SKU: tt.sku, Name: tt.name, Game: "Magic: The Gathering",
+				Set: "Promo", Rarity: "Token", ProductType: ProductTypeSingles,
+				Finish: finish, FinishGroup: group, Language: "English",
+			}
+			id, err := resolveProductID(GameMagic, p)
+			if err != nil {
+				t.Fatalf("resolveProductID(%s) = %v", tt.sku, err)
+			}
+			co, err := mtgmatcher.GetUUID(id)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", id, err)
+			}
+			if co.Identifiers["derivedTokenPair"] != "true" {
+				t.Errorf("%s resolved to %s (%s), want a derived token pairing", tt.sku, id, co.Card.Name)
+			}
+			if co.Card.Name != tt.wantName {
+				t.Errorf("%s resolved to %q, want %q", tt.sku, co.Card.Name, tt.wantName)
+			}
+		})
+	}
+}
+
+// TestResolveCompositeSkuTokenPairingRefusals pins two ways the same
+// composite-sku mechanism above correctly declines rather than guesses:
+// a genuine SCG-vs-mtgjson numbering disagreement (one face's own leading
+// number names no real printing at all), and a listing that claims a
+// finish one of its two real faces was never sold in - tokenPairingFinishOK
+// requiring both source faces to agree, not just the derived entity's own
+// unioned finish list. See mtgmatcher/magic/tokenpairs.go's own comment on
+// why the union is deliberately not good enough for this specific check.
+func TestResolveCompositeSkuTokenPairingRefusals(t *testing.T) {
+	withMagic(t)
+
+	for _, tt := range []struct {
+		desc string
+		sku  string
+		name string
+		foil bool
+	}{
+		{
+			desc: "SCG's own number disagrees with mtgjson's for this face",
+			sku:  "SGL-MTG-2X2-T03T15-ENF",
+			name: "{Aven Initiate Token} // {Boar Token}",
+			foil: true,
+		},
+		{
+			desc: "the listing claims a foil neither the datastore nor one face ever carried",
+			sku:  "SGL-MTG-PIP-T22T04-ENF",
+			name: "{Radiation Token} // {Soldier Token} (#004)",
+			foil: true,
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			finish, group := "Non-foil", "Non-foil"
+			if tt.foil {
+				finish, group = "Foil", "Foil"
+			}
+			p := CatalogProduct{
+				SKU: tt.sku, Name: tt.name, Game: "Magic: The Gathering",
+				Set: "Promo", Rarity: "Token", ProductType: ProductTypeSingles,
+				Finish: finish, FinishGroup: group, Language: "English",
+			}
+			if _, err := resolveProductID(GameMagic, p); err == nil {
+				t.Errorf("resolveProductID(%s) resolved, want a refusal", tt.sku)
+			}
+		})
+	}
+}
+
 // TestResolveDungeonPairings pins AFR's dungeon cards, a shape neither
 // face of which is a token: SCG spells its own dungeon-card listings the
 // same brace-and-suffix way it spells tokens ("{X Dungeon}" rather than

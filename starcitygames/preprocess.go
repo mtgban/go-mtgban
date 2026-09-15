@@ -650,6 +650,23 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	// SCG spells a bare dungeon-card listing the same way it spells a
+	// token's, with its own type name as a suffix ("Lost Mine of
+	// Phandelver Dungeon") rather than the card's real name alone - the
+	// same convention the two-sided pairing path already strips for the
+	// paired shape (mtgmatcher/magic/tokenpairs.go's cleanFaceName). No
+	// real Magic card name ends in the literal word "Dungeon", but the
+	// trim is still verified before committing to it, the same
+	// discipline the Token suffix above already uses, rather than
+	// trusting the guess.
+	if isToken {
+		if trimmed := strings.TrimSuffix(cardName, " Dungeon"); trimmed != cardName {
+			if _, err := mtgmatcher.SearchEquals(trimmed); err == nil {
+				cardName = trimmed
+			}
+		}
+	}
+
 	if strings.HasSuffix(edition, "(Foil)") {
 		edition = strings.TrimSuffix(edition, " (Foil)")
 		foil = true

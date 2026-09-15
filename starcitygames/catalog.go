@@ -316,6 +316,82 @@ func leadingTokenNumber(numberField string) string {
 	return strings.TrimLeft(s[:end], "0")
 }
 
+// tokenPairSkuAnchor is one face's own filing set and number, read
+// directly off a composite two-sided-token sku rather than guessed from
+// a vendor's own wording.
+type tokenPairSkuAnchor struct {
+	set, number string
+}
+
+// tokenPairSkuAnchors splits a two-sided listing's own composite sku
+// number segment into its (at most two) face anchors, in listing order.
+// A face's own set is whichever code token comes immediately before its
+// "T<digits>" number token in the segment, or the sku's own leading set
+// code (skuSetCode) when none precedes it - covering every shape
+// measured in SCG's real catalog: an explicit code before each number
+// ("AFR_T01_GRN_T02"), one shared code before both fused numbers with no
+// separator between them ("T03T15"), and a shelf-marker prefix (PWSB,
+// SECRET, ...) that never itself names a real set and is simply the
+// "nothing preceded this number" case, same as a plain "T03T15".
+func tokenPairSkuAnchors(sku string) []tokenPairSkuAnchor {
+	number := skuNumber(sku)
+	var anchors []tokenPairSkuAnchor
+	lastCode := ""
+	i := 0
+	isDigit := func(c byte) bool { return c >= '0' && c <= '9' }
+	for i < len(number) {
+		switch {
+		case number[i] == '_':
+			i++
+		case number[i] == 'T' && i+1 < len(number) && isDigit(number[i+1]):
+			j := i + 1
+			for j < len(number) && isDigit(number[j]) {
+				j++
+			}
+			code := lastCode
+			if code == "" {
+				code = skuSetCode(sku)
+			}
+			anchors = append(anchors, tokenPairSkuAnchor{code, strings.TrimLeft(number[i+1:j], "0")})
+			i = j
+		default:
+			j := i
+			for j < len(number) && number[j] != '_' && !(number[j] == 'T' && j+1 < len(number) && isDigit(number[j+1])) {
+				j++
+			}
+			if j == i {
+				j++ // a lone "T" with no following digit - part of the code run
+			}
+			lastCode = number[i:j]
+			i = j
+		}
+	}
+	return anchors
+}
+
+// tokenPairSkuAnchorSet resolves one anchor's own code to the real set it
+// names, trying the token-set prefix first (most of these skus anchor a
+// token, not the set's own cards), then the bare code, then one trailing
+// print-run/sheet digit trimmed off the code (SCG appends one to some of
+// its own shelf codes that mtgjson's own code never carries - "T40K2" and
+// "TWHO3" name the same real sets as "T40K"/"TWHO").
+func tokenPairSkuAnchorSet(code string) string {
+	for _, candidate := range []string{"T" + code, code} {
+		if _, err := mtgmatcher.GetSet(candidate); err == nil {
+			return candidate
+		}
+	}
+	if len(code) > 1 {
+		trimmed := code[:len(code)-1]
+		for _, candidate := range []string{"T" + trimmed, trimmed} {
+			if _, err := mtgmatcher.GetSet(candidate); err == nil {
+				return candidate
+			}
+		}
+	}
+	return ""
+}
+
 // lowerVariantLetter puts a variant letter into the case the datastore spells
 // it in. Star City Games writes the letter that demands the variant printing
 // either way, and the matcher reads the case, so an upper-case one asks for
@@ -774,6 +850,50 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 					}
 				}
 			}
+
+			// The sku's own number segment sometimes names BOTH faces'
+			// own filing set and number directly, composited together
+			// rather than bundled under one shared set the way the
+			// single-anchor attempt above expects ("AFR_T01_GRN_T02",
+			// "T03T15" fused under one shared code, ...). Anchoring both
+			// faces independently by identity, rather than the first
+			// face by number and the second by name, sidesteps
+			// magic.TokenPairIndex's own name-collision-blanking
+			// entirely - two already-known uuids can't collide with each
+			// other the way two vendor-spelled names can - via the
+			// uuid-pair-keyed magic.MatchTokenPairingByUUIDs.
+			if anchors := tokenPairSkuAnchors(p.SKU); len(anchors) == 2 {
+				first, second := magic.SplitTokenPairName(p.Name)
+				faces := [2]string{first, second}
+				var uuids [2]string
+				resolved := true
+				for i, a := range anchors {
+					set := tokenPairSkuAnchorSet(a.set)
+					if set == "" {
+						resolved = false
+						break
+					}
+					var uuid string
+					for _, face := range []string{magic.StripFaceWrapping(faces[i]), magic.CleanFaceName(faces[i])} {
+						if cards := mtgmatcher.MatchInSetNumber(face, set, a.number); len(cards) == 1 {
+							uuid = cards[0].UUID
+							break
+						}
+					}
+					if uuid == "" {
+						resolved = false
+						break
+					}
+					uuids[i] = uuid
+				}
+				if resolved {
+					if tcgID := magic.MatchTokenPairingByUUIDs(uuids[0], uuids[1], foil); tcgID != "" {
+						if id, err := mtgmatcher.MatchID(tcgID, foil, etched); err == nil {
+							return id, nil
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -965,6 +1085,15 @@ var promoShelfPrintings = map[string]struct{ set, number string }{
 	// carry their own identifiers and place themselves; Disdainful Stroke
 	// carries Friday Night Magic 2015's, nine years earlier.
 	"SSD_2024_002b": {"PCBB", "2"},
+
+	// Undercity has no standalone printing of its own to name at all -
+	// mtgjson only ever files it natively combined, "Undercity // The
+	// Initiative" (CLB's fixed two-sided token, TCLB #20; the paired
+	// listing this bare one is half of, "{The Initiative} //
+	// {Undercity Dungeon}", already resolves there via
+	// magic.MatchNativeTokenPair). This anchors the bare listing at the
+	// identical uuid rather than leaving it unresolved.
+	"CLB_T20": {"TCLB", "20"},
 }
 
 // idContradictsProduct reports whether the resolved printing lacks what the

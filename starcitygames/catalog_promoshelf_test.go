@@ -46,6 +46,11 @@ func TestResolvePromoShelfPrinting(t *testing.T) {
 		// Cowboy Bebop's Standard Showdown promo, whose scryfall id names
 		// the Friday Night Magic 2015 printing instead.
 		{"Cowboy Bebop's Disdainful Stroke", "SGL-MTG-PRM-SSD_2024_002b-ENF", "Disdainful Stroke", true, "3711f61d-6381-4c92-a3f5-6deed29aae47", "PCBB", "2"},
+
+		// Undercity has no standalone printing at all - only mtgjson's own
+		// natively-combined "Undercity // The Initiative" - so the bare
+		// listing has nowhere to go without this entry.
+		{"Undercity, natively combined with The Initiative", "SGL-MTG-PRM2-CLB_T20-ENN", "{Undercity Dungeon}", false, "", "TCLB", "20"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			finish, group := "Non-foil", "Non-foil"

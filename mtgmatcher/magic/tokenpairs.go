@@ -403,6 +403,12 @@ func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []
 	}
 
 	name := first.Name + " // " + second.Name
+	// For a cross-set pairing (665 of 5,993 measured, 36 distinct set-code
+	// combinations) this mixes two different sets' own numbering into one
+	// field - cosmetic only, never read for matching: a derived entity is
+	// excluded from set.Cards/Tokens and every name/number index (see the
+	// type's own comment above), so nothing indexed by Number can ever
+	// return one, by construction, regardless of what this string holds.
 	number := first.Number + " // " + second.Number
 	uuid := uuidLo + derivedTokenPairSuffix + uuidHi
 
@@ -595,18 +601,22 @@ var TokenPairIndex = sync.OnceValue(func() map[string]map[string]string {
 // trimming the suffix first leaves it unable to ever match (it never finds
 // " Token" at the end of "X Token (Artist)", only of "X Token").
 func NormalizeTokenFace(name string) string {
-	return strings.ToLower(strings.TrimSpace(cleanFaceName(name)))
+	return strings.ToLower(strings.TrimSpace(CleanFaceName(name)))
 }
 
-// stripFaceWrapping removes the cosmetic wrapping a vendor puts on a raw
+// StripFaceWrapping removes the cosmetic wrapping a vendor puts on a raw
 // face name - braces, an artist or variant parenthetical - while preserving
 // case and the " Token" suffix, for a caller that needs the datastore's own
 // properly-cased name for an exact-match lookup (MatchInSetNumber) and
 // cannot assume the suffix is absent: most token Card.Names drop it, but
 // some carry it as part of their own real name (e.g. a promotional token
 // disambiguated from a same-named nontoken card, "Kobolds of Kher Keep
-// Token"). See cleanFaceName for the form that also strips the suffix.
-func stripFaceWrapping(name string) string {
+// Token"). See CleanFaceName for the form that also strips the suffix.
+// Exported for a vendor package that needs to clean a raw face name
+// itself - e.g. to anchor each half of a two-sided listing independently
+// by its own set and number, rather than through MatchTokenPairing's own
+// name-keyed lookup.
+func StripFaceWrapping(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.TrimPrefix(name, "{")
 	if idx := strings.Index(name, "}"); idx >= 0 {
@@ -619,7 +629,7 @@ func stripFaceWrapping(name string) string {
 	return strings.TrimSpace(name)
 }
 
-// cleanFaceName is stripFaceWrapping plus whatever type-name suffix a
+// CleanFaceName is StripFaceWrapping plus whatever type-name suffix a
 // vendor spells that the datastore's own Card.Name does not: " Token" for
 // an ordinary token (true for every derived pairing's own split-apart
 // face, and for mtgjson's own natively combined "X // Y" names,
@@ -629,8 +639,8 @@ func stripFaceWrapping(name string) string {
 // Mad Mage" alone). Neither suffix is ever part of a real Card.Name for
 // anything this matches against, so stripping whichever one is present is
 // unconditionally safe.
-func cleanFaceName(name string) string {
-	name = stripFaceWrapping(name)
+func CleanFaceName(name string) string {
+	name = StripFaceWrapping(name)
 	for _, suffix := range []string{" Token", " Dungeon"} {
 		if trimmed := strings.TrimSuffix(name, suffix); trimmed != name {
 			return trimmed
@@ -723,7 +733,7 @@ func MatchTokenPairingBySetNumber(setCode, number, listingName string, foil bool
 	// Most token Card.Names drop the " Token" suffix a vendor spells, but
 	// some carry it as part of their own real name - try both forms
 	// rather than assume either.
-	for _, face := range []string{stripFaceWrapping(first), cleanFaceName(first)} {
+	for _, face := range []string{StripFaceWrapping(first), CleanFaceName(first)} {
 		cards := mtgmatcher.MatchInSetNumber(face, setCode, number)
 		if len(cards) != 1 {
 			continue
@@ -757,9 +767,9 @@ func MatchNativeTokenPair(setCode, number, listingName string) string {
 	}
 	// mtgjson's own combined name carries neither face's " Token" suffix
 	// ("Copy // Horror", never "Copy Token // Horror Token"), the same as
-	// a derived pairing's own split-apart faces - cleanFaceName strips it
+	// a derived pairing's own split-apart faces - CleanFaceName strips it
 	// alongside the wrapping, case preserved for this exact-match lookup.
-	a, b := cleanFaceName(first), cleanFaceName(second)
+	a, b := CleanFaceName(first), CleanFaceName(second)
 	for _, combined := range []string{a + " // " + b, b + " // " + a} {
 		out := mtgmatcher.MatchInSetNumber(combined, setCode, number)
 		if len(out) == 1 {
@@ -832,4 +842,62 @@ func VerifyTokenPairingFinish(id string, foil bool) string {
 		return ""
 	}
 	return tokenPairingFinishOK(id, foil)
+}
+
+// TokenPairIDByUUIDs maps two face uuids (order-independent) directly to
+// the derived pairing's own tcgplayerProductId, for a caller that has
+// already anchored BOTH faces unambiguously by identity - typically via
+// MatchInSetNumber on each face's own filing set and number, the same
+// discipline MatchTokenPairingBySetNumber already trusts for one face -
+// rather than by name. Unlike TokenPairIndex (keyed by one face's uuid to
+// the *other* face's own name, normalized, and deliberately blanked on a
+// same-normalized-name collision - see its own doc comment), two already-
+// known uuids can never collide with each other the way two vendor-
+// spelled names can, so this index needs no such refusal.
+//
+// sync.OnceValue for the same reason as TokenPairIndex: GlobalDatastore is
+// populated after mtgjson is parsed, not at Go's own package-init time.
+var TokenPairIDByUUIDs = sync.OnceValue(func() map[[2]string]string {
+	data := map[[2]string]string{}
+	backend := mtgmatcher.GlobalDatastore()
+	seen := map[string]bool{}
+	for uuid, co := range backend.UUIDs {
+		if co.Identifiers["derivedTokenPair"] != "true" || seen[uuid] {
+			continue
+		}
+		seen[uuid] = true
+
+		partA := co.Identifiers["tokenPairPartA"]
+		partB := co.Identifiers["tokenPairPartB"]
+		id := co.Identifiers["tcgplayerProductId"]
+		if partA == "" || partB == "" || id == "" {
+			continue
+		}
+		key := [2]string{partA, partB}
+		if partB < partA {
+			key = [2]string{partB, partA}
+		}
+		data[key] = id
+	}
+	return data
+})
+
+// MatchTokenPairingByUUIDs resolves a two-sided token listing given both
+// faces' own uuids, each already anchored unambiguously by identity
+// (e.g. via MatchInSetNumber on that face's own filing set and number)
+// rather than guessed from a vendor's own wording. Returns "" when no
+// derived pairing exists for this exact uuid pair (a real, verified
+// pairing this vendor sells that TCGplayer's own tokenProducts feed
+// simply has no product for - not a matching failure, a data gap one
+// level up), or when the pairing was never sold in the requested finish
+// (see tokenPairingFinishOK).
+func MatchTokenPairingByUUIDs(uuidA, uuidB string, foil bool) string {
+	if uuidA == "" || uuidB == "" {
+		return ""
+	}
+	key := [2]string{uuidA, uuidB}
+	if uuidB < uuidA {
+		key = [2]string{uuidB, uuidA}
+	}
+	return tokenPairingFinishOK(TokenPairIDByUUIDs()[key], foil)
 }
