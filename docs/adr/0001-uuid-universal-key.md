@@ -25,6 +25,17 @@
 > sniffs a format any more, and bantool names the game from the scraper it
 > runs. The text below describes the loaders as they were.
 
+> **Amendment (2026-09-15).** There is no global backend left to install into:
+> `SetGlobalDatastore` and the package-level wrappers are gone, `Open` hands
+> the `*Backend` to whoever asked for it, and every lookup is a method on it.
+> Two statements here lean on the global - "installed with
+> `SetGlobalDatastore`" in the note just above, and "The global backend holds
+> exactly one game at a time" under Decision - and describe the world as it
+> was; read them as one backend per game, held by whoever loaded it. The
+> decision is untouched: the uuid is still the universal key, and it is still
+> only meaningful against the backend that minted it. See
+> [ADR-0004](0004-localized-matcher-and-scraper-registry.md).
+
 ## Context
 
 go-mtgban ingests inventory/buylist data from ~23 stores, each with its own
