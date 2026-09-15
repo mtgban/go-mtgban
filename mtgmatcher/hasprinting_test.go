@@ -12,9 +12,9 @@ import (
 // the queried name, regardless of the bucket order the load process
 // produced.
 func TestPrintings4CardExactName(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
-	printings, err := Printings4Card("Servo")
+	printings, err := b.Printings4Card("Servo")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestPrintings4CardExactName(t *testing.T) {
 		t.Errorf("Servo printings = %v, L16 belongs to Servo // Thopter", printings)
 	}
 
-	printings, err = Printings4Card("Servo // Thopter")
+	printings, err = b.Printings4Card("Servo // Thopter")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,17 +36,17 @@ func TestPrintings4CardExactName(t *testing.T) {
 	// The Cat Warrior token and the Cat Warriors card are one letter apart
 	// and were a single bucket back when normalization dropped the plural.
 	// They hash apart now, and must still answer only for themselves.
-	printings, err = Printings4Card("Cat Warriors")
+	printings, err = b.Printings4Card("Cat Warriors")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !slices.Contains(printings, "LEG") || slices.Contains(printings, "DMU") {
 		t.Errorf("Cat Warriors printings = %v, expected LEG without DMU", printings)
 	}
-	if !currentBackend().NameIsToken("Cat Warrior") {
+	if !b.NameIsToken("Cat Warrior") {
 		t.Error("the card named exactly Cat Warrior is the DMU token")
 	}
-	if currentBackend().NameIsToken("Cat Warriors") {
+	if b.NameIsToken("Cat Warriors") {
 		t.Error("Cat Warriors is a regular card, not a token")
 	}
 }
@@ -55,9 +55,9 @@ func TestPrintings4CardExactName(t *testing.T) {
 // token table no matter the order sets are iterated during load: these
 // names used to flip classification from process to process.
 func TestIsTokenClashingNames(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, name := range []string{"Scarecrow", "Spark Elemental", "Spellgorger Weird"} {
-		if IsToken(name) {
+		if b.IsToken(name) {
 			t.Errorf("IsToken(%q) = true, but a real card carries this name", name)
 		}
 	}
@@ -66,8 +66,7 @@ func TestIsTokenClashingNames(t *testing.T) {
 // oldHasPrinting is the pre-index implementation, kept verbatim as what
 // BenchmarkHasPrintingWide measures against: for every printing of the named
 // card it scanned the whole set comparing names with Equals.
-func oldHasPrinting(name, field, value string, editions ...string) bool {
-	b := currentBackend()
+func oldHasPrinting(b *Backend, name, field, value string, editions ...string) bool {
 	if b.Sets == nil {
 		return false
 	}
@@ -137,17 +136,18 @@ func oldHasPrinting(name, field, value string, editions ...string) bool {
 // The old scans made widely printed cards pathological: every printing
 // re-scanned a full set with two normalizations per card.
 func BenchmarkHasPrintingWide(b *testing.B) {
-	if len(GetUUIDs()) == 0 {
+	back := internalTestBackend
+	if back == nil || len(back.GetUUIDs()) == 0 {
 		b.Skip("datastore not loaded")
 	}
 	b.Run("new", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			HasPrinting("Island", "finish", FinishFoil)
+			back.HasPrinting("Island", "finish", FinishFoil)
 		}
 	})
 	b.Run("old", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			oldHasPrinting("Island", "finish", FinishFoil)
+			oldHasPrinting(back, "Island", "finish", FinishFoil)
 		}
 	})
 }
@@ -164,14 +164,14 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 // than pinned to named cards, so a refresh that retires one collision and
 // introduces another still exercises the invariant.
 func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
-	realDatastore(t)
-	uuids := GetUUIDs()
+	b := realDatastore(t)
+	uuids := b.GetUUIDs()
 
 	// Group the real card names by the bucket they hash into, keeping
 	// only the buckets that hold more than one distinct name.
 	namesByBucket := map[string]map[string]bool{}
 	for _, uuid := range uuids {
-		co, err := GetUUID(uuid)
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -204,7 +204,7 @@ func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
 				// the property? Full scan, no index involved.
 				var want bool
 				for _, uuid := range uuids {
-					co, err := GetUUID(uuid)
+					co, err := b.GetUUID(uuid)
 					if err != nil || !strings.EqualFold(co.Name, name) {
 						continue
 					}
@@ -213,7 +213,7 @@ func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
 						break
 					}
 				}
-				got := HasPrinting(name, check.field, check.value)
+				got := b.HasPrinting(name, check.field, check.value)
 				compared++
 				if got != want {
 					t.Errorf("HasPrinting(%q, %s, %s) = %v, want %v: answered for a card not named that way",
@@ -243,8 +243,8 @@ func cardHasProperty(card Card, field, value string) bool {
 }
 
 func TestPrintings4CardVariantReprints(t *testing.T) {
-	realDatastore(t)
-	printings, err := Printings4Card("Ineffable Blessing")
+	b := realDatastore(t)
+	printings, err := b.Printings4Card("Ineffable Blessing")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -253,7 +253,7 @@ func TestPrintings4CardVariantReprints(t *testing.T) {
 	}
 	// Callers must not mutate a catalog card's printing list through the result.
 	printings[0] = "invalid"
-	again, err := Printings4Card("Ineffable Blessing")
+	again, err := b.Printings4Card("Ineffable Blessing")
 	if err != nil || slices.Contains(again, "invalid") {
 		t.Fatalf("lookup mutated catalog: %v %v", again, err)
 	}

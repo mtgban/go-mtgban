@@ -11,18 +11,18 @@ import (
 // to check before dereferencing: MatchID walks it for any card whose
 // finish does not match the request, which is an ordinary lookup.
 func TestMatchIDOverAbsentVariations(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	var withAbsent, unmatched int
-	for _, uuid := range GetUUIDs() {
-		co, err := GetUUID(uuid)
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil || co.Sealed {
 			continue
 		}
 
 		var absent bool
 		for _, variation := range co.Variations {
-			if _, found := currentBackend().UUIDs[variation]; !found {
+			if _, found := b.UUIDs[variation]; !found {
 				absent = true
 				break
 			}
@@ -35,7 +35,7 @@ func TestMatchIDOverAbsentVariations(t *testing.T) {
 		// Ask for each finish in turn: the ones the card does not carry
 		// are what send MatchID into the Variations walk
 		for _, finishes := range [][]bool{{false, false}, {true, false}, {false, true}} {
-			_, err = MatchID(uuid, finishes...)
+			_, err = b.MatchID(uuid, finishes...)
 			if err != nil {
 				unmatched++
 			}
