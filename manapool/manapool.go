@@ -88,7 +88,7 @@ func (mp *Manapool) price(pricelist []Product) {
 		// rather than keep the single-face result when no combined entity
 		// is on file: mtgjson's own tokenProducts feed simply has no
 		// record of every pairing a vendor sells (see mtgmatcher/magic's
-		// own verifiedNoUpstreamPairs correction), and a listing whose own
+		// own datastore pairing data), and a listing whose own
 		// name says two faces is worth more than a single-face guess would
 		// silently be wrong for is worth refusing instead.
 		co, err := mp.backend.GetUUID(cardID)
@@ -103,8 +103,8 @@ func (mp *Manapool) price(pricelist []Product) {
 			// product id (an ordinary derived pairing) - MatchID resolves
 			// either shape to the real uuid record() needs, the same way
 			// the plain path above already did.
-			if id := magic.MatchTokenPairing(card.ScryfallID, card.Name, foil); id != "" {
-				cardID, _ = mtgmatcher.MatchID(id, foil, etched)
+			if id := magic.MatchTokenPairing(mp.backend, card.ScryfallID, card.Name, foil); id != "" {
+				cardID, _ = mp.backend.MatchID(id, foil, etched)
 			}
 			if cardID == "" {
 				continue
@@ -119,7 +119,7 @@ func (mp *Manapool) price(pricelist []Product) {
 // one above.
 func (mp *Manapool) record(card Product, cardID string) {
 	// Validate language
-	co, err := mtgmatcher.GetUUID(cardID)
+	co, err := mp.backend.GetUUID(cardID)
 	if err != nil {
 		return
 	}

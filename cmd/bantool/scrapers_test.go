@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestCardmarketNeedsItsBridge pins that a Cardmarket target Cardmarket cannot
@@ -18,14 +17,13 @@ import (
 // weaker answer, not the same one: the bridge settles a product by an id both
 // catalogs carry, while a name reaches about half of what each datastore holds
 // and reaches it on a spelling. A run that quietly delivered the weaker answer
-// would be a run nobody was told about, so the failure is loud instead - Init
-// returning an error ends the run.
+// would be a run nobody was told about, so the failure is loud instead -
+// scraperResources returning an error ends the run.
 func TestCardmarketNeedsItsBridge(t *testing.T) {
-	t.Setenv("MKM_APP_TOKEN", "token")
-	t.Setenv("MKM_APP_SECRET", "secret")
 	t.Setenv("CARDTRADER_TOKEN_BEARER", "")
-	// The singles scraper reads its catalog before it asks for the bridge,
-	// so the catalog has to be there for the bridge to be what is missing.
+	// The singles and market scrapers read their catalog before they ask for
+	// the bridge, so the catalog has to be there for the bridge to be what
+	// is missing.
 	catalog := filepath.Join(t.TempDir(), "catalog.json")
 	err := os.WriteFile(catalog, []byte(`{"data":{"products":{"1":{"expansionId":1,"name":"Blue-Eyes White Dragon"}}}}`), 0o600)
 	if err != nil {
@@ -33,16 +31,16 @@ func TestCardmarketNeedsItsBridge(t *testing.T) {
 	}
 	t.Setenv("MTGJSON_MKMID_PATH", catalog)
 
-	_, err = cardmarketSealedScraper(mtgban.GamePokemon)(&mtgmatcher.Backend{Game: "pokemon"})
+	_, err = scraperResources(mtgban.GamePokemon, "cardmarket_sealed")
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
-		t.Errorf("the sealed scraper was built without a bridge: %v", err)
+		t.Errorf("sealed was built without a bridge: %v", err)
 	}
-	_, err = cardmarketBridgedIndexScraper(mtgban.GameYuGiOh)(&mtgmatcher.Backend{Game: "yugioh"})
+	_, err = scraperResources(mtgban.GameYuGiOh, "cardmarket")
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
-		t.Errorf("the singles scraper was built without a bridge: %v", err)
+		t.Errorf("singles was built without a bridge: %v", err)
 	}
-	_, err = cardmarketBridgedMarketScraper(mtgban.GameYuGiOh)(&mtgmatcher.Backend{Game: "yugioh"})
+	_, err = scraperResources(mtgban.GameYuGiOh, "cardmarket_market")
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
-		t.Errorf("the market scraper was built without a bridge: %v", err)
+		t.Errorf("market was built without a bridge: %v", err)
 	}
 }

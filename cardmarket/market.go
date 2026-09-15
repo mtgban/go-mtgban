@@ -611,7 +611,7 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 // on why this cannot be the plain cardID/cardIDFoil pair every other game
 // uses.
 func (mkm *Market) queryPokemonPrintings(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID string, byName bool) error {
-	for _, target := range pokemonFinishPlan(cardID) {
+	for _, target := range pokemonFinishPlan(mkm.backend, cardID) {
 		flags := map[string]bool{"isFirstEd": target.isFirstEd, "isReverseHolo": target.isReverseHolo}
 		if err := mkm.queryOnePrinting(ctx, channel, product, target.cardID, byName, flags); err != nil {
 			return err
@@ -634,7 +634,7 @@ func (mkm *Market) marketCandidateHit(candidates map[string]bool, cardID, cardID
 		return true
 	}
 	if mkm.gameID == cm.GamePokemon {
-		for _, target := range pokemonFinishPlan(cardID) {
+		for _, target := range pokemonFinishPlan(mkm.backend, cardID) {
 			if candidates[target.cardID] {
 				return true
 			}

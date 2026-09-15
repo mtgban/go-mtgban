@@ -81,7 +81,7 @@ func (mp *Index) Load(ctx context.Context) error {
 			// whole two-sided card as if the other half did not exist,
 			// and not every such pairing is one mtgjson's own
 			// tokenProducts feed has a record of at all.
-			if co, err := mtgmatcher.GetUUID(cardID); err == nil &&
+			if co, err := mp.backend.GetUUID(cardID); err == nil &&
 				strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
 				strings.HasPrefix(card.SetCode, "T") {
 				cardID = ""
@@ -89,8 +89,8 @@ func (mp *Index) Load(ctx context.Context) error {
 				// entity uuid or a raw TCGplayer product id - MatchID
 				// resolves either shape to the real uuid this needs, the
 				// same way the plain path above already did.
-				if id := magic.MatchTokenPairing(card.ScryfallID, card.Name, finish.foil); id != "" {
-					cardID, _ = mtgmatcher.MatchID(id, finish.foil)
+				if id := magic.MatchTokenPairing(mp.backend, card.ScryfallID, card.Name, finish.foil); id != "" {
+					cardID, _ = mp.backend.MatchID(id, finish.foil)
 				}
 				if cardID == "" {
 					continue
