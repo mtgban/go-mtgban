@@ -70,8 +70,8 @@ func b2Credentials() (id, key string) {
 	return id, key
 }
 
-// Read opens the datastore the path names and reads it as the game's,
-// handing back the backend without installing it. The game has to be
+// Read opens the datastore the path names and reads it as the game's
+// datastore, handing back the backend. The game has to be
 // registered by the binary, the way its own package's blank import does.
 func Read(game, path string) (*mtgmatcher.Backend, error) {
 	reader, err := Open(path)
@@ -80,15 +80,4 @@ func Read(game, path string) (*mtgmatcher.Backend, error) {
 	}
 	defer reader.Close()
 	return mtgmatcher.Open(game, reader)
-}
-
-// Load reads the datastore the path names as the game's and installs it as
-// the global one, for the suites that match through the package-level API.
-func Load(game, path string) error {
-	b, err := Read(game, path)
-	if err != nil {
-		return err
-	}
-	mtgmatcher.SetGlobalDatastore(b)
-	return nil
 }

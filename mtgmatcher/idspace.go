@@ -31,9 +31,3 @@ var idSpaceOrder = []string{
 func (b *Backend) ConvertID(space, inputID string) string {
 	return b.ExternalIdentifiers[space][inputID]
 }
-
-// ConvertID resolves an external identifier in one named id space against the
-// default datastore. See the method.
-func ConvertID(space, inputID string) string {
-	return currentBackend().ConvertID(space, inputID)
-}

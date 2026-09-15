@@ -1012,7 +1012,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 
 	case "Mystery Booster 2: Reprints from Across Magic's History":
 		edition = "PLST"
-		variant = mb2PLSTNumber(cardName)
+		variant = mb2PLSTNumber(b, cardName)
 
 	case "The List":
 		variant = number
@@ -1500,19 +1500,19 @@ const mb2PLSTBooster = "Mystery Booster 2 Booster Pack"
 // across a multi-hour scrape that spends nearly all of it waiting on
 // Cardmarket's own API, so caching the pool buys nothing worth the
 // extra state.
-func mb2PLSTNumber(cardName string) string {
-	for _, uuid := range mtgmatcher.GetSealedUUIDsInSet("MB2") {
-		co, err := mtgmatcher.GetUUID(uuid)
+func mb2PLSTNumber(b *mtgmatcher.Backend, cardName string) string {
+	for _, uuid := range b.GetSealedUUIDsInSet("MB2") {
+		co, err := b.GetUUID(uuid)
 		if err != nil || co.Name != mb2PLSTBooster {
 			continue
 		}
 
-		probs, err := mtgmatcher.GetProbabilitiesForSealed("MB2", uuid)
+		probs, err := b.GetProbabilitiesForSealed("MB2", uuid)
 		if err != nil {
 			return ""
 		}
 		for _, p := range probs {
-			card, err := mtgmatcher.GetUUID(p.UUID)
+			card, err := b.GetUUID(p.UUID)
 			if err == nil && card.SetCode == "PLST" && card.Name == cardName {
 				return card.Number
 			}
