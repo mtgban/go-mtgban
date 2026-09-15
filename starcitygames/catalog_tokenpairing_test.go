@@ -150,3 +150,80 @@ func TestResolveTokenPairingBySetNumber(t *testing.T) {
 		t.Errorf("%s resolved to %s [%s], want Illusion // Skeleton [TAFR]", p.SKU, co.Card.Name, co.SetCode)
 	}
 }
+
+// TestResolveDungeonPairings pins AFR's dungeon cards, a shape neither
+// face of which is a token: SCG spells its own dungeon-card listings the
+// same brace-and-suffix way it spells tokens ("{X Dungeon}" rather than
+// "{X Token}"), which the two-sided trigger and cleanFaceName both had to
+// learn about specifically, and which OAFR (Forgotten Realms Oversized
+// Cards, a memorabilia sibling of AFR) duplicates the ids of under its
+// own uuids - see mtgmatcher/magic/tokenpairs.go's idCanonicalKey. The
+// foil case (no scryfall_id at all) exercises MatchTokenPairingBySetNumber
+// rather than MatchTokenPairing; the third case pins catalogNames' own
+// fixup for a real SCG typo ("Lost Mine of THE Phandelver" - the real
+// card carries no "the") that would otherwise make this exact pairing
+// unreachable regardless of how well the rest of the matching works.
+func TestResolveDungeonPairings(t *testing.T) {
+	withMagic(t)
+
+	for _, tt := range []struct {
+		desc       string
+		sku        string
+		name       string
+		foil       bool
+		scryfallID string
+		wantName   string
+	}{
+		{
+			desc:     "dungeon // dungeon, no token on either face",
+			sku:      "SGL-MTG-AFR-T20T22-ENN",
+			name:     "{Dungeon of the Mad Mage Dungeon} // {Tomb of Annihilation Dungeon}",
+			foil:     false,
+			wantName: "Dungeon of the Mad Mage // Tomb of Annihilation",
+		},
+		{
+			desc:     "dungeon // token, no scryfall_id (foil)",
+			sku:      "SGL-MTG-AFR-T20T12-ENF",
+			name:     "{Dungeon of the Mad Mage Dungeon} // {Goblin Token}",
+			foil:     true,
+			wantName: "Goblin // Dungeon of the Mad Mage",
+		},
+		{
+			desc:     "dungeon // dungeon, SCG's own \"Lost Mine of THE Phandelver\" typo",
+			sku:      "SGL-MTG-AFR-T20T21-ENN",
+			name:     "{Dungeon of the Mad Mage Dungeon} // {Lost Mine of the Phandelver Dungeon}",
+			foil:     false,
+			wantName: "Dungeon of the Mad Mage // Lost Mine of Phandelver",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			finish, group := "Non-foil", "Non-foil"
+			if tt.foil {
+				finish, group = "Foil", "Foil"
+			}
+			p := CatalogProduct{
+				SKU: tt.sku, Name: tt.name, Game: "Magic: The Gathering",
+				Set: "Adventures in the Forgotten Realms", Rarity: "Token", ProductType: ProductTypeSingles,
+				Finish: finish, FinishGroup: group, Language: "English",
+				ScryfallID: tt.scryfallID,
+			}
+			id, err := resolveProductID(GameMagic, p)
+			if err != nil {
+				t.Fatalf("resolveProductID(%s) = %v", tt.sku, err)
+			}
+			co, err := mtgmatcher.GetUUID(id)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", id, err)
+			}
+			if co.Identifiers["derivedTokenPair"] != "true" {
+				t.Errorf("%s resolved to %s (%s), want a derived token pairing", tt.sku, id, co.Card.Name)
+			}
+			if co.Card.Name != tt.wantName || co.SetCode != "TAFR" {
+				t.Errorf("%s resolved to %s [%s], want %s [TAFR]", tt.sku, co.Card.Name, co.SetCode, tt.wantName)
+			}
+			if co.Foil != tt.foil {
+				t.Errorf("%s resolved to foil=%v, want %v", tt.sku, co.Foil, tt.foil)
+			}
+		})
+	}
+}

@@ -656,6 +656,13 @@ func isAllLetters(field string) bool {
 // says so here instead.
 var catalogNames = map[string]string{
 	"Bandana of the Blue Beyond": "Bandana of the Blue Beyonds",
+
+	// SCG's own dungeon-card listing spells "Lost Mine of Phandelver"
+	// with an extra "the" nowhere in the card's real name; without this,
+	// the pairing it names (Dungeon of the Mad Mage // Lost Mine of
+	// Phandelver) is unreachable regardless of how well cleanFaceName
+	// strips the rest of SCG's own brace-and-suffix wrapping.
+	"{Dungeon of the Mad Mage Dungeon} // {Lost Mine of the Phandelver Dungeon}": "{Dungeon of the Mad Mage Dungeon} // {Lost Mine of Phandelver Dungeon}",
 }
 
 func resolveProductID(game int, p CatalogProduct) (string, error) {
@@ -723,7 +730,14 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// MatchNativeTokenPair below does explicitly.) See
 	// magic.MatchTokenPairing, shared with cardkingdom's own version of
 	// this same problem.
-	if game == GameMagic && strings.Contains(p.Name, " // ") && strings.Contains(p.Name, "Token") {
+	//
+	// "Dungeon" alongside "Token": SCG spells its own dungeon-card
+	// listings the same way it spells tokens, wrapped and suffixed with
+	// its own type name (AFR's "{Dungeon of the Mad Mage Dungeon} //
+	// {Lost Mine of the Phandelver Dungeon}"), and neither face of a
+	// dungeon // dungeon pairing ever contains the literal word "Token".
+	if game == GameMagic && strings.Contains(p.Name, " // ") &&
+		(strings.Contains(p.Name, "Token") || strings.Contains(p.Name, "Dungeon")) {
 		if tcgID := magic.MatchTokenPairing(p.ScryfallID, p.Name, foil); tcgID != "" {
 			if id, err := mtgmatcher.MatchID(tcgID, foil, etched); err == nil {
 				return id, nil
