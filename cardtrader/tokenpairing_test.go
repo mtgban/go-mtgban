@@ -165,3 +165,37 @@ func TestTokenPairNumbers(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessResolvesVendorVerifiedPairing pins a real blueprint
+// resolving to a vendorVerifiedPair entity - a physical pairing Card
+// Trader's own composite-number anchoring already confirmed real, but
+// mtgjson's own tokenProducts feed never linked as one product, so no
+// ordinary derived pairing exists for it at all (see
+// mtgmatcher/magic/verifiedNoUpstreamPairs). No Card Trader-specific code
+// exists for this case: the same number-anchored resolution that already
+// finds an ordinary derived pairing reaches this one too.
+func TestPreprocessResolvesVendorVerifiedPairing(t *testing.T) {
+	realDatastore(t)
+
+	bp := Blueprint{ID: 46667, Name: "Dragon // Cat Dragon", CategoryID: CategoryMagicTokens}
+	bp.Expansion.Name = "Commander 2017"
+	bp.Properties.Number = "07/09"
+
+	card, err := Preprocess(&bp)
+	if err != nil {
+		t.Fatalf("Preprocess(%d) = %v", bp.ID, err)
+	}
+	co, err := mtgmatcher.GetUUID(card.ID)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", card.ID, err)
+	}
+	if co.Identifiers["derivedTokenPair"] != "true" {
+		t.Errorf("blueprint %d resolved to %s (%s), want a derived token pairing", bp.ID, card.ID, co.Name)
+	}
+	if co.Identifiers["vendorVerifiedPair"] != "true" {
+		t.Errorf("blueprint %d resolved to %s (%s), want Identifiers[vendorVerifiedPair] = true", bp.ID, card.ID, co.Name)
+	}
+	if co.SetCode != "TC17" {
+		t.Errorf("blueprint %d resolved to set %s, want TC17", bp.ID, co.SetCode)
+	}
+}

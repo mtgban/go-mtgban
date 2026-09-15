@@ -387,7 +387,10 @@ func parentChain(sets map[string]*Set, code string) []string {
 }
 
 // buildDerivedCard assembles the combined Card for one surviving pairing.
-// usableIDs is sorted ascending and non-empty.
+// usableIDs is sorted ascending and may be empty for a pairing verified by
+// vendor cross-checking rather than by an mtgjson tokenProducts id at all
+// (see verifiedNoUpstreamPairs) - Identifiers["vendorVerifiedPair"] marks
+// that case, since neither tcgplayerProductId key can be set without one.
 func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []int) Card {
 	uuidLo, uuidHi := co1.UUID, co2.UUID
 	if uuidHi < uuidLo {
@@ -418,12 +421,16 @@ func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []
 	}
 
 	identifiers := map[string]string{
-		"derivedTokenPair":    "true",
-		"tokenPairPartA":      uuidLo,
-		"tokenPairPartB":      uuidHi,
-		"tcgplayerProductId":  ids[0],
-		"tcgplayerProductIds": strings.Join(ids, ","),
-		"tokenSetCode":        home,
+		"derivedTokenPair": "true",
+		"tokenPairPartA":   uuidLo,
+		"tokenPairPartB":   uuidHi,
+		"tokenSetCode":     home,
+	}
+	if len(ids) > 0 {
+		identifiers["tcgplayerProductId"] = ids[0]
+		identifiers["tcgplayerProductIds"] = strings.Join(ids, ",")
+	} else {
+		identifiers["vendorVerifiedPair"] = "true"
 	}
 
 	images := map[string]string{}
@@ -446,6 +453,55 @@ func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []
 		Images:      images,
 		UUID:        uuid,
 	}
+}
+
+// mintVerifiedPairs mints the derived entity for every pairing in
+// verifiedNoUpstreamPairs - the same buildDerivedCard deriveTokenPairs
+// itself calls, just with no usable TCGplayer id (nil usableIDs), since
+// these were confirmed real by vendor cross-verification rather than by
+// mtgjson's own tokenProducts feed at all. alreadyDerived is the set of
+// base uuids deriveTokenPairs already minted this same load: if mtgjson's
+// own feed has since caught up with a pairing this table also names (both
+// name the identical uuid pair, so buildDerivedCard's own uuid formula
+// produces the identical uuid either way), the real, priced entity wins
+// and this skips it rather than shadowing it with a worse, unpriced one.
+// A face uuid the loaded datastore no longer carries, or a pair sharing
+// no common ancestor set, is skipped rather than guessed - the same
+// discipline deriveTokenPairs already applies to its own input.
+func mintVerifiedPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObject, alreadyDerived map[string]bool) []Card {
+	var cards []Card
+	seen := map[[2]string]bool{}
+	for _, p := range verifiedNoUpstreamPairs {
+		key := [2]string{p.a, p.b}
+		if p.b < p.a {
+			key = [2]string{p.b, p.a}
+		}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+
+		co1, found1 := uuids[p.a]
+		co2, found2 := uuids[p.b]
+		if !found1 || !found2 {
+			continue
+		}
+
+		uuidLo, uuidHi := co1.UUID, co2.UUID
+		if uuidHi < uuidLo {
+			uuidLo, uuidHi = uuidHi, uuidLo
+		}
+		if alreadyDerived[uuidLo+derivedTokenPairSuffix+uuidHi] {
+			continue
+		}
+
+		home := homeSet(sets, co1.SetCode, co2.SetCode)
+		if home == "" {
+			continue
+		}
+		cards = append(cards, buildDerivedCard(co1, co2, home, nil))
+	}
+	return cards
 }
 
 // scryfallImageURL mirrors generateImageURL, which takes this package's own
@@ -615,9 +671,13 @@ var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
 		partB := co.Identifiers["tokenPairPartB"]
 		coA, errA := mtgmatcher.GetUUID(partA)
 		coB, errB := mtgmatcher.GetUUID(partB)
+		// A vendorVerifiedPair entity (see buildDerivedCard) carries no
+		// tcgplayerProductId at all - its own uuid is what every index
+		// below hands back instead, which tokenPairingFinishOK/MatchID
+		// both resolve directly with no id-space conversion needed.
 		id := co.Identifiers["tcgplayerProductId"]
 		if id == "" {
-			continue
+			id = uuid
 		}
 
 		if errA == nil && errB == nil {
@@ -861,13 +921,26 @@ func tokenPairingFinishOK(id string, foil bool) string {
 	if id == "" || !foil {
 		return id
 	}
-	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
-	if uuid == "" {
-		return ""
-	}
+	// id is usually a tcgplayerProductId needing IDSpaceTCGplayer
+	// conversion to reach the derived entity's own uuid - but for a
+	// vendorVerifiedPair entity (no tcgplayerProductId at all, see
+	// buildDerivedCard) every caller in this file hands back the derived
+	// entity's own uuid directly instead, which GetUUID already resolves
+	// with no conversion needed. Try that first: a real tcgplayerProductId
+	// is purely numeric and never collides with this package's own
+	// "_tp_"-infixed uuid format, so there is no ambiguity between the
+	// two forms.
+	uuid := id
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
-		return ""
+		uuid = mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+		if uuid == "" {
+			return ""
+		}
+		co, err = mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			return ""
+		}
 	}
 
 	// co.Card.Finishes is deliberately the UNION of both faces' own finish
