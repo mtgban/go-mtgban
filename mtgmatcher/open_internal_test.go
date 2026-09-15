@@ -25,6 +25,9 @@ func TestOpenBuildsTheSealedIndex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if b.Game != "opentest" {
+		t.Errorf("Game = %q", b.Game)
+	}
 	if b.sealedIdx == nil {
 		t.Fatal("the sealed index was not built")
 	}
