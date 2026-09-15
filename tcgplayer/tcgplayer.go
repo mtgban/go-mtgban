@@ -187,6 +187,33 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 	return nil
 }
 
+// derivedSkuMatches reports whether sku prices the two-sided token sheet's
+// combined entity in the finish it was minted for - one of ownIDs (the
+// pairing's own product ids, distinct from the single face co's own sku
+// list is keyed by), not unopened/etched, and in the requested language or
+// English. The sku catalog spells a nonfoil printing "NON FOIL", not
+// "NORMAL" - confirmed against the real file, and against this same
+// package's own req.Printing checks a few lines up - a one-word typo here
+// silently zeroed every nonfoil two-sided token sheet's price rather than
+// erroring, since an empty sku list is indistinguishable from "priced
+// elsewhere."
+func derivedSkuMatches(sku TCGSku, ownIDs map[string]bool, wantFoil bool, wantLanguage string) bool {
+	if !ownIDs[strconv.Itoa(sku.ProductID)] {
+		return false
+	}
+	if sku.Condition == "UNOPENED" || sku.Finish == "ETCHED" {
+		return false
+	}
+	wantPrinting := "NON FOIL"
+	if wantFoil {
+		wantPrinting = "FOIL"
+	}
+	if sku.Printing != wantPrinting {
+		return false
+	}
+	return mtgmatcher.Equals(sku.Language, wantLanguage) || sku.Language == "ENGLISH"
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *Market) Load(ctx context.Context) error {
 	skusMap := tcg.SKUsData
@@ -419,22 +446,9 @@ func (tcg *Market) Load(ctx context.Context) error {
 				for _, id := range strings.Split(co.Identifiers["tcgplayerProductIds"], ",") {
 					ownIDs[id] = true
 				}
-				wantPrinting := "NORMAL"
-				if co.Foil {
-					wantPrinting = "FOIL"
-				}
 
 				for _, sku := range skus {
-					if !ownIDs[strconv.Itoa(sku.ProductID)] {
-						continue
-					}
-					if sku.Condition == "UNOPENED" || sku.Finish == "ETCHED" {
-						continue
-					}
-					if sku.Printing != wantPrinting {
-						continue
-					}
-					if !mtgmatcher.Equals(sku.Language, co.Language) && sku.Language != "ENGLISH" {
+					if !derivedSkuMatches(sku, ownIDs, co.Foil, co.Language) {
 						continue
 					}
 					_, dupe := idsFound[sku.SkuID]
