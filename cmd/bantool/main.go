@@ -504,7 +504,6 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 				}
 				scraper := sealedev.NewScraper(banKey)
 				scraper.Affiliate = os.Getenv("TCG_PARTNER")
-				scraper.BuylistAffiliate = os.Getenv("CK_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
 					scraper.MaxConcurrency = MaxConcurrency

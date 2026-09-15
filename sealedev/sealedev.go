@@ -31,12 +31,11 @@ const (
 // Scraper prices sealed product by what opening it is worth, drawing
 // its contents against singles prices rather than reading any storefront.
 type Scraper struct {
-	LogCallback      mtgban.LogCallbackFunc
-	Affiliate        string
-	BuylistAffiliate string
-	TargetEdition    string
-	TargetProduct    string
-	MaxConcurrency   int
+	LogCallback    mtgban.LogCallbackFunc
+	Affiliate      string
+	TargetEdition  string
+	TargetProduct  string
+	MaxConcurrency int
 	// Repetitions is how many openings of a random product are simulated
 	// before its average settles. NewScraper sets the default; a caller
 	// wanting a quick answer lowers it, and a test wanting a run that
