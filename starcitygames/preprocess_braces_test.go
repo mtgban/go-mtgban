@@ -32,6 +32,11 @@ func TestPreprocessBracedNonTokens(t *testing.T) {
 			hitName:  "{Golem Token}",
 			wantName: "Golem Token",
 		},
+		{
+			desc:     "a bare dungeon card strips SCG's own Dungeon suffix",
+			hitName:  "{Lost Mine of Phandelver Dungeon}",
+			wantName: "Lost Mine of Phandelver",
+		},
 	}
 
 	for _, test := range tests {
