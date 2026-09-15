@@ -423,7 +423,7 @@ func starcitygamesScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Sc
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := starcitygames.NewScraper(game, apiKey)
+		scraper, err := starcitygames.NewScraper(b, apiKey)
 		if err != nil {
 			return nil, err
 		}
@@ -439,7 +439,7 @@ func starcitygamesSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtg
 		if err != nil {
 			return nil, err
 		}
-		scraper, err := starcitygames.NewScraperSealed(game, apiKey)
+		scraper, err := starcitygames.NewScraperSealed(b, apiKey)
 		if err != nil {
 			return nil, err
 		}

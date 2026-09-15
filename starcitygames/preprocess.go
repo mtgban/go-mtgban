@@ -61,7 +61,7 @@ func languageTags(language, edition, variant, number string) (string, string, er
 
 // Special sets like collectors have an extra number as suffix
 // Handle set renames like OTC2 and LTR2
-func fixupSetCode(setCode string) string {
+func fixupSetCode(b *mtgmatcher.Backend, setCode string) string {
 	// SCG's "3rd Edition - Black Border" is mtgjson's Foreign Black Border.
 	if setCode == "3BB" {
 		return "FBB"
@@ -70,7 +70,7 @@ func fixupSetCode(setCode string) string {
 	if setCode == "DD3" {
 		return "DDD"
 	}
-	_, err := mtgmatcher.GetSet(setCode)
+	_, err := b.GetSet(setCode)
 	if err != nil && len(setCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
 		switch setCode {
 		case "4ED2":
@@ -102,10 +102,10 @@ var arenaLeagueSets = []string{"PARL", "PAL99", "PAL00", "PAL01", "PAL02", "PAL0
 // arenaLeaguePrinting returns the set code and number of the card's single
 // Arena League printing, if exactly one exists across all Arena League sets.
 // Basics (printed every year) resolve to more than one and are left alone.
-func arenaLeaguePrinting(cardName string) (code, number string, ok bool) {
+func arenaLeaguePrinting(b *mtgmatcher.Backend, cardName string) (code, number string, ok bool) {
 	count := 0
 	for _, set := range arenaLeagueSets {
-		for _, c := range mtgmatcher.MatchInSet(cardName, set) {
+		for _, c := range b.MatchInSet(cardName, set) {
 			code, number = set, c.Number
 			count++
 		}
@@ -152,14 +152,14 @@ func isPWYear(set string) bool {
 // PSPL), if exactly one exists. The SCG SKU's year/set is unreliable (some are
 // year-offset, some map to PLG/PSPL), so the unique printing is authoritative;
 // cards with none (non-WPN promos) or several are left alone.
-func playPromoPrinting(cardName string) (code, number string, ok bool) {
+func playPromoPrinting(b *mtgmatcher.Backend, cardName string) (code, number string, ok bool) {
 	type printing struct{ code, number string }
 	var all, pwYear []printing
-	for _, set := range mtgmatcher.GetAllSets() {
+	for _, set := range b.GetAllSets() {
 		if !isPlayPromoSet(set) {
 			continue
 		}
-		for _, c := range mtgmatcher.MatchInSet(cardName, set) {
+		for _, c := range b.MatchInSet(cardName, set) {
 			all = append(all, printing{set, c.Number})
 			if isPWYear(set) {
 				pwYear = append(pwYear, printing{set, c.Number})
@@ -182,8 +182,8 @@ func playPromoPrinting(cardName string) (code, number string, ok bool) {
 // cannot go through fixupSetCode: that reads the same digit as the oversized
 // shelf it means in the sku's set position, so "CMD2" comes back as OCMD,
 // while LNCH_CMD2_184 is a Commander 2011 launch party foil.
-func trimShelfDigit(code string) string {
-	_, err := mtgmatcher.GetSet(code)
+func trimShelfDigit(b *mtgmatcher.Backend, code string) string {
+	_, err := b.GetSet(code)
 	if err == nil {
 		return code
 	}
@@ -191,7 +191,7 @@ func trimShelfDigit(code string) string {
 		return code
 	}
 	trimmed := code[:len(code)-1]
-	_, err = mtgmatcher.GetSet(trimmed)
+	_, err = b.GetSet(trimmed)
 	if err != nil {
 		return code
 	}
@@ -205,22 +205,22 @@ func trimShelfDigit(code string) string {
 // in that set's promo set or, for a release promo, in the set itself. Failing
 // both, the shop has filed a tournament promo on a store shelf; that is asked
 // last, so a card with any stronger claim never reaches it.
-func playPromoTarget(cardName string, fields []string) (string, string, bool) {
-	code, number, found := playPromoPrinting(cardName)
+func playPromoTarget(b *mtgmatcher.Backend, cardName string, fields []string) (string, string, bool) {
+	code, number, found := playPromoPrinting(b, cardName)
 	if found {
 		return code, number, true
 	}
 	if len(fields) == 3 {
-		base := trimShelfDigit(fields[1])
+		base := trimShelfDigit(b, fields[1])
 		num := strings.TrimLeft(fields[2], "0")
 		for _, candidate := range []string{"P" + base, base} {
-			if len(mtgmatcher.MatchWithNumber(cardName, candidate, num)) == 0 {
+			if len(b.MatchWithNumber(cardName, candidate, num)) == 0 {
 				continue
 			}
 			return candidate, num, true
 		}
 	}
-	cards := mtgmatcher.MatchInSet(cardName, "PPRO")
+	cards := b.MatchInSet(cardName, "PPRO")
 	if len(cards) == 1 {
 		return "PPRO", cards[0].Number, true
 	}
@@ -250,13 +250,13 @@ var poolPartyDazzleFoils = map[string]string{
 // * SGL-MTG-PRM-SECRET_SLD_1095-ENN1
 // * SGL-MTG-PRM-PP_MKM_187-ENN
 // * SGL-MTG-PWSB-PCA_115-ENN1
-func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
+func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	fields := strings.Split(SKU, "-")
 	if len(fields) < 5 || len(fields[4]) < 3 {
 		return nil, fmt.Errorf("malformed SKU: %s", SKU)
 	}
 
-	setCode := fixupSetCode(fields[2])
+	setCode := fixupSetCode(b, fields[2])
 	number := strings.TrimLeft(fields[3], "0")
 	language := fields[4][:2]
 	foil := fields[4][2] != 'N'
@@ -276,7 +276,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			italian = "DRKITA"
 		}
 		if italian != "" {
-			if _, err := mtgmatcher.GetSet(italian); err == nil {
+			if _, err := b.GetSet(italian); err == nil {
 				setCode = italian
 			}
 		}
@@ -291,7 +291,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		}
 
 		fields := strings.Split(number, "_")
-		cards := mtgmatcher.MatchInSet(cardName, setCode)
+		cards := b.MatchInSet(cardName, setCode)
 		if len(cards) == 1 {
 			number = cards[0].Number
 		} else if len(fields) == 3 {
@@ -307,7 +307,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		setCode = "PLST"
 		fields := strings.Split(number, "_")
 		if len(fields) == 2 {
-			subSetCode := fixupSetCode(fields[0])
+			subSetCode := fixupSetCode(b, fields[0])
 			subNumber := fields[1]
 
 			number = subSetCode + "-" + strings.TrimLeft(subNumber, "0")
@@ -344,8 +344,8 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			}
 			setCode = fields[1]
 			number = strings.TrimLeft(fields[2], "0")
-			if len(mtgmatcher.MatchWithNumber(cardName, setCode, number)) == 0 &&
-				len(mtgmatcher.MatchWithNumber(cardName, "SLP", number)) > 0 {
+			if len(b.MatchWithNumber(cardName, setCode, number)) == 0 &&
+				len(b.MatchWithNumber(cardName, "SLP", number)) > 0 {
 				setCode = "SLP"
 			}
 		// Separate the multiple LTR Prerelease cards
@@ -364,7 +364,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			number = strings.TrimLeft(fields[2], "0")
 		case strings.HasPrefix(number, "SPT_"):
 			setCode = "PSPL"
-			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			cards := b.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
@@ -379,20 +379,20 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 				convention = "PF24"
 			}
 
-			cards := mtgmatcher.MatchInSet(cardName, convention)
+			cards := b.MatchInSet(cardName, convention)
 			if len(cards) == 1 {
 				setCode = convention
 				number = cards[0].Number
 			}
 		case strings.HasPrefix(number, "NYCC24_"):
 			setCode = "PURL"
-			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			cards := b.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
 		case strings.HasPrefix(number, "PT_"):
 			setCode = "PPRO"
-			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			cards := b.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
@@ -401,7 +401,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			if strings.HasPrefix(number, "LYLGS_2021b") {
 				setCode = "PLG21"
 			}
-			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			cards := b.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
@@ -430,7 +430,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			// alone rather than blindly forced into PLST.
 			prefix := fields[1] + "-"
 			num := strings.TrimLeft(fields[2], "0")
-			for _, c := range mtgmatcher.MatchInSet(cardName, "PLST") {
+			for _, c := range b.MatchInSet(cardName, "PLST") {
 				if !strings.HasPrefix(c.Number, prefix) {
 					continue
 				}
@@ -446,21 +446,21 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			// Arena League promo: resolve to the card's unique arenaleague
 			// printing (the base-set field in the SKU doesn't map to a fixed
 			// Arena League year).
-			if code, num, ok := arenaLeaguePrinting(cardName); ok {
+			if code, num, ok := arenaLeaguePrinting(b, cardName); ok {
 				setCode = code
 				number = num
 			} else if len(fields) > 1 {
 				// Basic lands appear in every Arena League year, so there's no
 				// unique printing; let the matcher's arena handling pick the
 				// right year from the base set (its name carries the year hint).
-				if base, err := mtgmatcher.GetSet(fields[1]); err == nil {
+				if base, err := b.GetSet(fields[1]); err == nil {
 					arena := mtgmatcher.InputCard{
 						Name:      cardName,
 						Variation: "Arena " + base.Name,
 						Foil:      foil,
 						Language:  language,
 					}
-					if id, err := mtgmatcher.Match(&arena); err == nil {
+					if id, err := b.Match(&arena); err == nil {
 						return &mtgmatcher.InputCard{ID: id, Foil: foil, Language: language}, nil
 					}
 				}
@@ -468,7 +468,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		case strings.HasPrefix(number, "EWK_") && len(fields) > 1:
 			// Eternal Weekend promo; the PEWK number is prefixed with the year.
 			setCode = "PEWK"
-			for _, c := range mtgmatcher.MatchInSet(cardName, setCode) {
+			for _, c := range b.MatchInSet(cardName, setCode) {
 				if strings.HasPrefix(c.Number, fields[1]) {
 					number = c.Number
 					break
@@ -482,7 +482,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			promo := "P" + fields[1]
 			setCode, number = fields[1], num
 			for _, candidate := range []string{num + "s", num} {
-				if len(mtgmatcher.MatchWithNumber(cardName, promo, candidate)) == 0 {
+				if len(b.MatchWithNumber(cardName, promo, candidate)) == 0 {
 					continue
 				}
 				setCode, number = promo, candidate
@@ -499,11 +499,11 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		case strings.HasPrefix(number, "15A_") && len(fields) == 3:
 			// 15th Anniversary promo.
 			setCode = "P15A"
-			if cards := mtgmatcher.MatchInSet(cardName, setCode); len(cards) == 1 {
+			if cards := b.MatchInSet(cardName, setCode); len(cards) == 1 {
 				number = cards[0].Number
 			}
 		case len(fields) > 0 && playPromoPrefixes[fields[0]]:
-			code, num, found := playPromoTarget(cardName, fields)
+			code, num, found := playPromoTarget(b, cardName, fields)
 			if found {
 				setCode = code
 				number = num
@@ -513,16 +513,16 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			// Bundle, buy-a-box or launch party promo: P<SET> #<num>. The
 			// launch promos carry the digit SCG glues on for a second shelf,
 			// which is no part of the set code.
-			setCode = "P" + trimShelfDigit(fields[1])
+			setCode = "P" + trimShelfDigit(b, fields[1])
 			number = strings.TrimLeft(fields[2], "0")
 		}
 	case "PUMA":
-		cards := mtgmatcher.MatchInSet(cardName, setCode)
+		cards := b.MatchInSet(cardName, setCode)
 		if len(cards) == 1 {
 			number = cards[0].Number
 		}
 	case "MH2":
-		cards := mtgmatcher.MatchWithNumber(cardName, "H2R", number)
+		cards := b.MatchWithNumber(cardName, "H2R", number)
 		if len(cards) == 1 {
 			setCode = "H2R"
 			number = cards[0].Number
@@ -541,7 +541,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	}
 
 	// Check if we found it and return the id
-	out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
+	out := b.MatchWithNumber(cardName, setCode, number)
 	// A printing that shows only the front of a card with an Omen or
 	// Adventure back is filed under that face's name alone, while the
 	// catalog goes on naming both faces at every number. The retry asks
@@ -551,7 +551,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	if len(out) == 0 {
 		front, _, twoFaced := strings.Cut(cardName, " // ")
 		if twoFaced {
-			out = mtgmatcher.MatchInSetNumber(front, setCode, number)
+			out = b.MatchInSetNumber(front, setCode, number)
 		}
 	}
 	if len(out) == 1 {
@@ -563,7 +563,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 				(card.HasFinish(mtgmatcher.FinishNonfoil) && foil)) {
 
 			// Let's check if there is a duplicated card somewhere, and repeat the check
-			out := mtgmatcher.MatchWithNumber(cardName, setCode, number+"★")
+			out := b.MatchWithNumber(cardName, setCode, number+"★")
 			if len(out) != 1 {
 				return &backup, errors.New("invalid number/foil combination")
 			}
@@ -583,7 +583,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			strings.Contains(SKU, "-MH1-") || strings.Contains(SKU, "-MH12-") || strings.Contains(SKU, "-MH13-") {
 			isEtched := foil && (strings.Contains(SKU, "-STA2-") || strings.Contains(SKU, "-MH23-") || strings.Contains(SKU, "-MH13-"))
 
-			card.UUID, _ = mtgmatcher.MatchID(card.UUID, foil, isEtched)
+			card.UUID, _ = b.MatchID(card.UUID, foil, isEtched)
 
 			if isEtched {
 				variant = "etched"
@@ -607,7 +607,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	return &backup, errors.New("not found")
 }
 
-func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, hit Hit) (*mtgmatcher.InputCard, error) {
 	card := hit.Variants[0]
 	edition := hit.SetName
 	language := hit.Language
@@ -645,7 +645,7 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 	// when the suffixed form is one the datastore knows.
 	isToken := strings.HasPrefix(hit.Name, "{") && strings.Contains(hit.Name, "}")
 	if isToken && !strings.Contains(cardName, "Token") {
-		if _, err := mtgmatcher.SearchEquals(cardName + " Token"); err == nil {
+		if _, err := b.SearchEquals(cardName + " Token"); err == nil {
 			cardName += " Token"
 		}
 	}
@@ -681,7 +681,7 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 	}
 
 	if canProcessSKU {
-		out, err := ProcessSKU(cardName, card.Sku)
+		out, err := ProcessSKU(b, cardName, card.Sku)
 		if err == nil {
 			return out, nil
 		}
@@ -689,7 +689,7 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 		// In case SKU processing failed, gather valid info as much as possible.
 		// A malformed SKU yields a nil card, so guard before touching it.
 		if out != nil {
-			if _, err := mtgmatcher.GetSet(out.Edition); err == nil {
+			if _, err := b.GetSet(out.Edition); err == nil {
 				edition = out.Edition
 			}
 			if _, err := strconv.Atoi(out.Variation); err == nil {
@@ -796,7 +796,7 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 			variant = strings.Replace(variant, "Fractured Room", "", 1)
 		}
 	case "Modern Horizons 2":
-		if len(mtgmatcher.MatchWithNumber(cardName, "H2R", cn)) == 1 {
+		if len(b.MatchWithNumber(cardName, "H2R", cn)) == 1 {
 			edition = "H2R"
 		}
 	}
