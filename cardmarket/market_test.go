@@ -5,18 +5,18 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func TestNewScraperMarketUnsupportedGame(t *testing.T) {
-	_, err := NewScraperMarket(mtgban.Game("NotAGame"), "token", "secret")
+	_, err := NewScraperMarket(&mtgmatcher.Backend{Game: "NotAGame"}, "token", "secret")
 	if err == nil {
 		t.Fatal("expected an error for an unsupported game")
 	}
 }
 
 func TestNewScraperMarketWiresTheResolver(t *testing.T) {
-	mkm, err := NewScraperMarket(mtgban.GameMagic, "token", "secret")
+	mkm, err := NewScraperMarket(&mtgmatcher.Backend{Game: "magic"}, "token", "secret")
 	if err != nil {
 		t.Fatal(err)
 	}
