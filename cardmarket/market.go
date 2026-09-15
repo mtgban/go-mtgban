@@ -18,11 +18,15 @@ import (
 // Market prices singles from Cardmarket's own listings, live, rather than
 // from the price guide's low and trend columns: for each printing it holds
 // the cheapest price per condition from a seller not based in the UK,
-// Switzerland or a Nordic country. This is a real market price at the cost
-// of one signed call per product instead of one bulk download per game -
-// the API tolerates almost no in-flight parallelism per app token, so Load
-// walks the catalog strictly sequentially rather than pooling workers the
-// way Sealed does.
+// Switzerland, or a Nordic country other than Denmark. This is a real
+// market price at the cost of one signed call per product instead of one
+// bulk download per game - the API tolerates almost no in-flight
+// parallelism per app token, so Load walks the catalog strictly
+// sequentially rather than pooling workers the way Sealed does.
+//
+// It also holds a second, independent cheapest-per-condition view for
+// German and Dutch Powerseller listings alone, under its own MarketNames
+// bucket - see marketPowersellerName.
 type Market struct {
 	resolver
 
@@ -96,19 +100,36 @@ func NewScraperMarket(game mtgban.Game, appToken, appSecret string) (*Market, er
 }
 
 // excludedCountries are the sellers Market drops for being based in the UK,
-// Switzerland or a Nordic country, as the alpha-2 code Cardmarket answers
-// article.Seller.Address.Country with. sellerCountry cannot ask the API to
-// exclude them server-side - confirmed exhaustively unable to carry more
-// than one bare id, let alone a negation - so this is applied to every
-// listing read back instead.
+// Switzerland, or a Nordic country other than Denmark, as the alpha-2 code
+// Cardmarket answers article.Seller.Address.Country with. sellerCountry
+// cannot ask the API to exclude them server-side - confirmed exhaustively
+// unable to carry more than one bare id, let alone a negation - so this is
+// applied to every listing read back instead.
 var excludedCountries = map[string]bool{
 	"GB": true, // United Kingdom
 	"CH": true, // Switzerland
 	"NO": true, // Norway
 	"SE": true, // Sweden
-	"DK": true, // Denmark
 	"FI": true, // Finland
 	"IS": true, // Iceland
+}
+
+// mkmPowersellerCountries names the two countries whose Powerseller
+// listings (isCommercial == 2 - confirmed directly against two real
+// accounts: 1 reads "Professional", 2 reads "Powerseller" on Cardmarket's
+// own seller pages) are also held under their own MarketNames bucket - see
+// marketPowersellerName and queryOnePrinting.
+var mkmPowersellerCountries = map[string]bool{
+	"D":  true, // Germany
+	"NL": true, // Netherlands
+}
+
+// isPowerseller reports whether an article qualifies for the
+// marketPowersellerName bucket - already past acceptArticle's own gate
+// (price, finish, condition, excludedCountries), so this only adds the
+// Powerseller-and-country check on top.
+func isPowerseller(article cm.Article) bool {
+	return article.Seller.IsCommercial == 2 && mkmPowersellerCountries[article.Seller.Address.Country]
 }
 
 // mkmCondition maps Cardmarket's seven-grade condition scale onto mtgban's
@@ -434,6 +455,32 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 // real one carries.
 const marketMaxPages = 20
 
+// marketPowersellerExtraPages is how many pages past the point the main
+// bucket's NM/SP/MP are all held queryOnePrinting keeps going, chasing at
+// least one Powerseller listing before giving up on this product entirely -
+// see shouldStopPaging. Bounded rather than open-ended: gating the stop on
+// full Powerseller completeness would mean every product with no
+// qualifying seller (most of them) pages all the way to Content-Range
+// coverage instead of stopping early, which is exactly the budget this
+// scraper is built around not spending. A few extra pages is a fixed,
+// small cost paid once per product; unbounded completeness-chasing is not.
+const marketPowersellerExtraPages = 4
+
+// shouldStopPaging decides whether queryOnePrinting's page loop can stop
+// once the main bucket's own NM/SP/MP are all held. mainSatisfiedAt is the
+// page index that first became true on, or -1 if it has not yet. Stops
+// immediately once a Powerseller listing has been found (nothing more to
+// chase), or once marketPowersellerExtraPages have been spent looking
+// without finding one - whichever comes first; the two other stopping
+// conditions in queryOnePrinting (an empty page, Content-Range coverage)
+// apply independently of this one and are not this function's concern.
+func shouldStopPaging(mainDone bool, mainSatisfiedAt, page int, foundPowerseller bool) bool {
+	if !mainDone {
+		return false
+	}
+	return foundPowerseller || page-mainSatisfiedAt >= marketPowersellerExtraPages
+}
+
 // queryPrintings prices the printing(s) one product resolved to, from the
 // product's own live listings: cardID alone for a game that sells each
 // treatment as its own product, or when the resolver found no separate
@@ -460,26 +507,22 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 	return mkm.queryOnePrinting(ctx, channel, product, cardIDFoil, byName, finish)
 }
 
-// acceptArticle reports whether one listing should replace what is
-// currently held for the printing being queried, and which of mtgban's
-// five conditions it counts as. held is the pagination loop's own record
-// of the cheapest price accepted so far per condition, across every
-// product and page scanned.
-//
-// Listings come back in a rough price order, not a strictly monotonic
-// one: replayed against a real page of results (see
-// market_replay_test.go), a heavily bulk-priced product carried runs like
-// 0.02, 0.02, 0.03, 0.03, 0.02, ... - the same handful of cent-level
-// prices repeating out of order rather than climbing. Comparing against
-// the held price instead of trusting the first acceptable listing catches
-// that without costing an extra request: the page is scanned in full
-// either way.
+// acceptArticle reports whether one listing is valid to price at all -
+// priced, from a seller outside excludedCountries, matching the finish
+// actually being queried, and a recognised condition - and which of
+// mtgban's five conditions it counts as. It does not compare against any
+// held price: that happens separately, once per bucket that holds its own
+// cheapest-so-far (see isCheaper), so a listing that is not the single
+// global cheapest can still be the cheapest one that also qualifies for a
+// narrower bucket like marketPowersellerName - sharing one held map across
+// both would silently starve the narrower one of every listing that is not
+// also the overall cheapest.
 //
 // verifiable says whether marketArticleFinish's flag actually means
 // something for this game (see marketFinishParam); where it does not, an
 // article is accepted regardless of finish rather than trusting a filter
 // that is documented to fail open on a game it does not apply to.
-func acceptArticle(gameID int, wantFinish, verifiable bool, article cm.Article, held map[string]float64) (string, bool) {
+func acceptArticle(gameID int, wantFinish, verifiable bool, article cm.Article) (string, bool) {
 	if article.Price == 0 {
 		return "", false
 	}
@@ -493,10 +536,27 @@ func acceptArticle(gameID int, wantFinish, verifiable bool, article cm.Article, 
 	if !known {
 		return "", false
 	}
-	if current, found := held[cond]; found && article.Price >= current {
-		return "", false
-	}
 	return cond, true
+}
+
+// isCheaper reports whether price is a new cheapest for cond in held -
+// either nothing is held there yet, or price genuinely beats what is.
+// held is one bucket's own record of the cheapest price accepted so far
+// per condition, across every product and page scanned; queryOnePrinting
+// keeps a separate held map per bucket precisely so this comparison never
+// crosses between them.
+//
+// Listings come back in a rough price order, not a strictly monotonic
+// one: replayed against a real page of results (see
+// market_replay_test.go), a heavily bulk-priced product carried runs like
+// 0.02, 0.02, 0.03, 0.03, 0.02, ... - the same handful of cent-level
+// prices repeating out of order rather than climbing. Comparing against
+// the held price instead of trusting the first acceptable listing catches
+// that without costing an extra request: the page is scanned in full
+// either way.
+func isCheaper(held map[string]float64, cond string, price float64) bool {
+	current, found := held[cond]
+	return !found || price < current
 }
 
 // queryOnePrinting prices one printing from one product's live listings,
@@ -535,6 +595,9 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 
 	held := map[string]float64{}
 	entries := map[string]responseChan{}
+	heldPS := map[string]float64{}
+	entriesPS := map[string]responseChan{}
+	mainSatisfiedAt := -1
 	for page := 0; page < marketMaxPages; page++ {
 		articles, total, capped, err := mkm.client.Articles(ctx, product.IDProduct, options, page, cm.MaxEntities)
 		if err != nil {
@@ -546,31 +609,63 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		mkm.bounced = 0
 
 		for _, article := range articles {
-			cond, ok := acceptArticle(mkm.gameID, wantFinish, verifiable, article, held)
+			cond, ok := acceptArticle(mkm.gameID, wantFinish, verifiable, article)
 			if !ok {
 				continue
 			}
 
-			held[cond] = article.Price
 			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, wantFinish)
-			entries[cond] = responseChan{
-				ogID:    product.IDProduct,
-				product: product,
-				cardID:  cardID,
-				byName:  byName,
-				entry: mtgban.InventoryEntry{
-					Conditions: cond,
-					Price:      article.Price * mkm.exchangeRate,
-					Quantity:   article.Count,
-					SellerName: article.Seller.Username,
-					URL:        link,
-					OriginalID: fmt.Sprint(article.IDProduct),
-					InstanceID: fmt.Sprint(article.IDArticle),
-				},
+			customFields := map[string]string{
+				"SubSellerName": article.Seller.Username,
+				"SubSellerGeo":  article.Seller.Address.Country,
+			}
+
+			if isCheaper(held, cond, article.Price) {
+				held[cond] = article.Price
+				entries[cond] = responseChan{
+					ogID:    product.IDProduct,
+					product: product,
+					cardID:  cardID,
+					byName:  byName,
+					entry: mtgban.InventoryEntry{
+						Conditions:   cond,
+						Price:        article.Price * mkm.exchangeRate,
+						Quantity:     article.Count,
+						SellerName:   marketMainName,
+						URL:          link,
+						OriginalID:   fmt.Sprint(article.IDProduct),
+						InstanceID:   fmt.Sprint(article.IDArticle),
+						CustomFields: customFields,
+					},
+				}
+			}
+
+			if isPowerseller(article) && isCheaper(heldPS, cond, article.Price) {
+				heldPS[cond] = article.Price
+				entriesPS[cond] = responseChan{
+					ogID:    product.IDProduct,
+					product: product,
+					cardID:  cardID,
+					byName:  byName,
+					entry: mtgban.InventoryEntry{
+						Conditions:   cond,
+						Price:        article.Price * mkm.exchangeRate,
+						Quantity:     article.Count,
+						SellerName:   marketPowersellerName,
+						URL:          link,
+						OriginalID:   fmt.Sprint(article.IDProduct),
+						InstanceID:   fmt.Sprint(article.IDArticle),
+						CustomFields: customFields,
+					},
+				}
 			}
 		}
 
-		if held["NM"] != 0 && held["SP"] != 0 && held["MP"] != 0 {
+		mainDone := held["NM"] != 0 && held["SP"] != 0 && held["MP"] != 0
+		if mainDone && mainSatisfiedAt == -1 {
+			mainSatisfiedAt = page
+		}
+		if shouldStopPaging(mainDone, mainSatisfiedAt, page, len(heldPS) > 0) {
 			break
 		}
 		if len(articles) == 0 {
@@ -582,6 +677,9 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 	}
 
 	for _, out := range entries {
+		channel <- out
+	}
+	for _, out := range entriesPS {
 		channel <- out
 	}
 	return nil
@@ -600,4 +698,42 @@ func (mkm *Market) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.Game = mkm.game
 	return
+}
+
+// marketMainName and marketPowersellerName are the two sub-sellers Market
+// splits its inventory into - see MarketNames. Every entry gets one of
+// these two as its SellerName, the same way cardtrader.Market's three
+// storefronts do; the article's own username moves to
+// CustomFields["SubSellerName"] instead.
+const (
+	marketMainName        = "Cardmarket Market"
+	marketPowersellerName = "Cardmarket Powersellers"
+)
+
+var marketName2Shorthand = map[string]string{
+	marketMainName:        "MKM",
+	marketPowersellerName: "MKMPS",
+}
+
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market. Every product query holds a second, independent
+// cheapest-per-condition view for marketPowersellerName alongside the main
+// one - see queryOnePrinting and shouldStopPaging. Once the main view's
+// NM/SP/MP are all held, the page loop spends up to
+// marketPowersellerExtraPages more pages specifically chasing at least one
+// Powerseller listing before giving up on this product - a bounded, paid-
+// once cost, not a guarantee that a printing with genuinely no qualifying
+// seller anywhere in its listings will ever be found; that product simply
+// contributes nothing to this bucket, same as cardtrader.Market's
+// Zero/1DR splits do for a product neither storefront carries.
+func (mkm *Market) MarketNames() []string {
+	return []string{marketMainName, marketPowersellerName}
+}
+
+// InfoForScraper describes one of the sub-scrapers named above.
+func (mkm *Market) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := mkm.Info()
+	info.Name = name
+	info.Shorthand = marketName2Shorthand[name]
+	return info
 }

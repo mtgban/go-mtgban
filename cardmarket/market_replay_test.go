@@ -41,11 +41,11 @@ func loadReplayFixture(t *testing.T) []cm.Article {
 }
 
 // TestReplayAcceptArticleAgainstRealListings replays a real page of
-// Articles() results - not a hand-built one - through acceptArticle the
-// way queryOnePrinting does, checking properties a synthetic fixture
-// cannot: whether the country and condition strings Cardmarket actually
-// sends are handled the way this package assumes they are, and whether
-// the held-cheapest logic holds up against a real, not strictly
+// Articles() results - not a hand-built one - through acceptArticle and
+// isCheaper the way queryOnePrinting does, checking properties a synthetic
+// fixture cannot: whether the country and condition strings Cardmarket
+// actually sends are handled the way this package assumes they are, and
+// whether the held-cheapest logic holds up against a real, not strictly
 // price-ordered, listing sequence.
 func TestReplayAcceptArticleAgainstRealListings(t *testing.T) {
 	articles := loadReplayFixture(t)
@@ -73,8 +73,11 @@ func TestReplayAcceptArticleAgainstRealListings(t *testing.T) {
 	held := map[string]float64{}
 	entries := map[string]cm.Article{}
 	for _, article := range articles {
-		cond, ok := acceptArticle(cm.GameRiftbound, false, false, article, held)
+		cond, ok := acceptArticle(cm.GameRiftbound, false, false, article)
 		if !ok {
+			continue
+		}
+		if !isCheaper(held, cond, article.Price) {
 			continue
 		}
 		held[cond] = article.Price
@@ -94,8 +97,8 @@ func TestReplayAcceptArticleAgainstRealListings(t *testing.T) {
 
 	// The held price must actually be the minimum over every accepted (not
 	// excluded-country) listing at that condition - the property
-	// acceptArticle's held-price comparison exists to guarantee even
-	// though the fixture's own order is not strictly ascending.
+	// isCheaper's held-price comparison exists to guarantee even though
+	// the fixture's own order is not strictly ascending.
 	var trueMin float64
 	for _, article := range articles {
 		if article.Condition != "NM" || article.Price == 0 || excludedCountries[article.Seller.Address.Country] {
@@ -111,12 +114,12 @@ func TestReplayAcceptArticleAgainstRealListings(t *testing.T) {
 }
 
 // TestReplayListingsAreNotStrictlyPriceAscending pins the finding
-// acceptArticle's held-price comparison exists for: a real page of
-// listings for a bulk-priced product is not returned in strict price
-// order. If Cardmarket ever tightens this to a true sort, this test
-// starts failing rather than the assumption silently going stale - at
-// which point the held-price comparison becomes unnecessary but not
-// wrong, so nothing needs to change urgently.
+// isCheaper's held-price comparison exists for: a real page of listings
+// for a bulk-priced product is not returned in strict price order. If
+// Cardmarket ever tightens this to a true sort, this test starts failing
+// rather than the assumption silently going stale - at which point the
+// held-price comparison becomes unnecessary but not wrong, so nothing
+// needs to change urgently.
 func TestReplayListingsAreNotStrictlyPriceAscending(t *testing.T) {
 	articles := loadReplayFixture(t)
 

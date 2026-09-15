@@ -99,6 +99,33 @@ crossing the threshold aborts the whole `Load` run rather than grinding
 through the rest of the catalog against a token Cardmarket is rejecting
 outright.
 
+**A second, Powerseller-only view.** Market implements `mtgban.Market`
+(`MarketNames`/`InfoForScraper`), the same interface `cardtrader.Market`
+uses to split into "Card Trader"/"Card Trader Zero"/"Card Trader 1DR" -
+every entry gets one of two fixed `SellerName`s, `"Cardmarket Market"` or
+`"Cardmarket Powersellers"`, with the article's own username moved to
+`CustomFields["SubSellerName"]` instead. The Powerseller bucket holds its
+own independent cheapest-per-condition view, live-restricted to German and
+Dutch sellers whose `isCommercial` reads `2` - confirmed directly against
+two real accounts on Cardmarket's own seller pages, `1` shows a
+"Professional" badge and `2` shows "Powerseller"; nothing else in the
+documented `0`/`1`/`2` scale reads as a power seller. Once the *main*
+bucket's NM/SP/MP are all held, `queryOnePrinting`'s page loop spends up to
+`marketPowersellerExtraPages` (4) more pages specifically chasing at least
+one Powerseller listing before giving up on this product - a bounded,
+paid-once fail-safe (`shouldStopPaging`), not a guarantee: gating the stop
+on full Powerseller completeness (all three conditions, not just one)
+would mean every product with no qualifying seller at all - most of them -
+pages all the way to `Content-Range` coverage instead of stopping early,
+which is exactly the budget this scraper is built around not spending. A
+product with no qualifying seller anywhere in its listings still
+contributes nothing to this bucket, the same as a product neither Zero nor
+1DR carries for Card Trader's own split. `bantool` needs no new
+registration for this:
+`UnfoldScrapers` (already called for every scraper) dumps one output file
+per `MarketNames` entry automatically, keyed by `InfoForScraper`'s own
+Shorthand (`MKM`, `MKMPS`).
+
 ## The offline pre-filter
 
 All seven games are restricted to a candidate set (`marketCandidates`)
