@@ -160,7 +160,7 @@ var tagsTable = []string{
 // storefront's unsorted Mystery Booster lots.
 const MB1ProductHash = "48ff4766-9d88-5426-800a-1613c990011b"
 
-func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, fullName, edition string) (*mtgmatcher.InputCard, error) {
 	if edition == "Bulk" || fullName == "" {
 		return nil, errors.New("bulk")
 	}
@@ -542,13 +542,13 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		}
 
 	case "Mystery Booster":
-		picks, err := mtgmatcher.GetProbabilitiesForSealed("MB1", MB1ProductHash)
+		picks, err := b.GetProbabilitiesForSealed("MB1", MB1ProductHash)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, pick := range picks {
-			co, err := mtgmatcher.GetUUID(pick.UUID)
+			co, err := b.GetUUID(pick.UUID)
 			if err != nil {
 				continue
 			}
