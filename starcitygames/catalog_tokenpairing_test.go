@@ -344,3 +344,38 @@ func TestResolveDungeonPairings(t *testing.T) {
 		})
 	}
 }
+
+// TestResolveVendorVerifiedPairing pins a real listing resolving to a
+// vendorVerifiedPair entity - a physical pairing this catalog's own
+// composite-sku anchoring already confirmed real, but that mtgjson's own
+// tokenProducts feed never linked as one product, so no ordinary derived
+// pairing exists for it at all (see mtgmatcher/magic/verifiedNoUpstreamPairs).
+// No SCG-specific code exists for this case: the same composite-sku
+// anchoring that already resolves an ordinary derived pairing reaches this
+// one too, through the same magic.MatchTokenPairingByUUIDs call.
+func TestResolveVendorVerifiedPairing(t *testing.T) {
+	withMagic(t)
+
+	p := CatalogProduct{
+		SKU: "SGL-MTG-PRM-HLVT_AVR_T01T05-ENN", Name: "{Angel Token} // {Demon Token}",
+		Game: "Magic: The Gathering", Set: "Promo", Rarity: "Token", ProductType: ProductTypeSingles,
+		Finish: "Non-foil", FinishGroup: "Non-foil", Language: "English",
+	}
+	id, err := resolveProductID(GameMagic, p)
+	if err != nil {
+		t.Fatalf("resolveProductID(%s) = %v", p.SKU, err)
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", id, err)
+	}
+	if co.Identifiers["derivedTokenPair"] != "true" {
+		t.Errorf("%s resolved to %s (%s), want a derived token pairing", p.SKU, id, co.Name)
+	}
+	if co.Identifiers["vendorVerifiedPair"] != "true" {
+		t.Errorf("%s resolved to %s (%s), want Identifiers[vendorVerifiedPair] = true", p.SKU, id, co.Name)
+	}
+	if co.SetCode != "TAVR" {
+		t.Errorf("%s resolved to set %s, want TAVR", p.SKU, co.SetCode)
+	}
+}

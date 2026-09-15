@@ -546,3 +546,66 @@ func TestTokenPairIDByBothNamesCollision(t *testing.T) {
 		t.Errorf(`TokenPairIDByBothNames[Knight,Zombie] = %q, want no entry (colliding key must stay unresolved)`, id)
 	}
 }
+
+// TestMintVerifiedPairsResolves pins a real vendorVerifiedPair entity -
+// no tcgplayerProductId at all - resolving through the same
+// MatchTokenPairingByUUIDs a caller that has already anchored both faces
+// by identity already uses for an ordinary derived pairing. Angel (TAVR)
+// and Demon (TAVR) have no mtgjson tokenProducts entry linking them (Star
+// City Games's own composite sku is the only thing that confirms this
+// pairing is real), so if buildDerivedCard's nil-usableIDs handling or
+// tokenPairingFinishOK's bare-uuid resolution ever regresses, this fails.
+func TestMintVerifiedPairsResolves(t *testing.T) {
+	realDatastore(t)
+
+	angel := testBackend.MatchInSetNumber("Angel", "TAVR", "1")
+	demon := testBackend.MatchInSetNumber("Demon", "TAVR", "5")
+	if len(angel) != 1 || len(demon) != 1 {
+		t.Skip("Angel/Demon TAVR #1/#5 not present in this datastore")
+	}
+
+	id := MatchTokenPairingByUUIDs(angel[0].UUID, demon[0].UUID, false)
+	if id == "" {
+		t.Fatal("MatchTokenPairingByUUIDs(Angel, Demon) = \"\", want the vendorVerifiedPair entity")
+	}
+	uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+	if uuid != "" {
+		t.Fatalf("id %q resolved through IDSpaceTCGplayer, want a bare uuid (no real tcgplayerProductId for a vendorVerifiedPair entity)", id)
+	}
+	co, err := testBackend.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", id, err)
+	}
+	if co.Identifiers["vendorVerifiedPair"] != "true" {
+		t.Errorf("resolved to %s, want Identifiers[vendorVerifiedPair] = true", co.Name)
+	}
+	if _, found := co.Identifiers["tcgplayerProductId"]; found {
+		t.Errorf("vendorVerifiedPair entity %s carries a tcgplayerProductId, want none", co.Name)
+	}
+}
+
+// TestVerifiedPairCollisionRefusesRatherThanGuess pins the reason
+// verifiedNoUpstreamPairs' own doc comment gives for why adding entries
+// can correctly reduce some other resolution's confidence: Final Fantasy
+// really does file its own native "Wizard // Bird" token pairing, but a
+// second, different Bird/Wizard pairing this table also confirms is real
+// shares the identical normalized name pair - a listing with neither an
+// id nor a set/number anchor, naming only "Bird // Wizard", cannot tell
+// the two apart and must refuse rather than guess.
+func TestVerifiedPairCollisionRefusesRatherThanGuess(t *testing.T) {
+	realDatastore(t)
+
+	bird := testBackend.MatchInSetNumber("Bird", "TFIN", "17")
+	wizard := testBackend.MatchInSetNumber("Wizard", "TFIN", "14")
+	if len(bird) != 1 || len(wizard) != 1 {
+		t.Skip("Bird/Wizard TFIN #17/#14 not present in this datastore")
+	}
+
+	if id := MatchTokenPairingByUUIDs(bird[0].UUID, wizard[0].UUID, false); id != "" {
+		t.Errorf("MatchTokenPairingByUUIDs(TFIN Bird, TFIN Wizard) = %q, want \"\": a face uuid already anchored by identity is unambiguous even though the generic name pair is not", id)
+	}
+
+	if id, found := TokenPairIndex()[bird[0].UUID]["wizard"]; found {
+		t.Errorf("TokenPairIndex[Bird][wizard] = %q, want no entry: TFIN's own Bird pairs with more than one real Wizard across this table plus mtgjson's own tokenProducts, and the name alone cannot tell them apart", id)
+	}
+}
