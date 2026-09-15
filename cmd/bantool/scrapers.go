@@ -451,7 +451,7 @@ func starcitygamesSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtg
 
 func strikezoneScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := strikezone.NewScraper(game)
+		scraper, err := strikezone.NewScraper(b)
 		if err != nil {
 			return nil, err
 		}

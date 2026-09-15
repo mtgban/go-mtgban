@@ -15,33 +15,34 @@ import (
 // package's suites read no cards, so a checkout without it still runs them;
 // the ones that do ask say so and skip.
 var (
-	datastoreOnce sync.Once
-	datastoreErr  error
-	datastoreOK   bool
+	datastoreOnce    sync.Once
+	datastoreErr     error
+	datastoreBackend *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// realDatastore reads the Magic datastore the first time a test asks for it,
+// and skips where the run carries none.
+func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		err := datastore.Load("magic", path)
+		backend, err := datastore.Read("magic", path)
 		if err != nil {
 			datastoreErr = err
 			return
 		}
-		datastoreOK = true
+		datastoreBackend = backend
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreBackend
 }
 
 // TestNeonInkWording pins the four Neon Ink colours to their own printings.
@@ -50,7 +51,7 @@ func realDatastore(t *testing.T) {
 // the plain printing that stands beside them, which prices a $300 card at the
 // bulk one's id.
 func TestNeonInkWording(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	tests := []struct {
 		name   string
@@ -64,16 +65,16 @@ func TestNeonInkWording(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			card, err := preprocess(test.name, "Kamigawa Neon Dynasty", "")
+			card, err := preprocess(b, test.name, "Kamigawa Neon Dynasty", "")
 			if err != nil {
 				t.Fatal(err)
 			}
 			card.Foil = true
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatal(err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
