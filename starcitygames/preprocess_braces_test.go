@@ -10,7 +10,7 @@ import (
 // they are, so the suffix invented names nothing carries - every
 // Unfinity sticker sheet resolved to nothing because of it.
 func TestPreprocessBracedNonTokens(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	tests := []struct {
 		desc     string
@@ -36,7 +36,7 @@ func TestPreprocessBracedNonTokens(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			card, err := preprocess(Hit{
+			card, err := preprocess(b, Hit{
 				Name:            test.hitName,
 				SetName:         "Unfinity",
 				Language:        "English",

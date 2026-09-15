@@ -2,8 +2,6 @@ package starcitygames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestResolvePromoShelfPrinting pins every product the Promo shelf cannot
@@ -11,7 +9,7 @@ import (
 // league ran beside, so nothing but the sku says which yearly token set they
 // belong to.
 func TestResolvePromoShelfPrinting(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc, sku, name string
@@ -58,11 +56,11 @@ func TestResolvePromoShelfPrinting(t *testing.T) {
 				Finish: finish, FinishGroup: group, Language: "English",
 				ScryfallID: tt.scryfallID,
 			}
-			id, err := resolveProduct(GameMagic, p)
+			id, err := resolveProduct(b, GameMagic, p)
 			if err != nil {
 				t.Fatalf("resolveProduct(%s) = %v", tt.sku, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
@@ -82,11 +80,11 @@ func TestResolvePromoShelfPrinting(t *testing.T) {
 // These leagues ended in 2017, so a new row means something has changed
 // upstream rather than that SCG has started selling one.
 func TestLeagueTokensTableIsExhaustive(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	mapped := map[string]bool{}
 	for _, printing := range promoShelfPrintings {
-		out := mtgmatcher.MatchWithNumber("", printing.set, printing.number)
+		out := b.MatchWithNumber("", printing.set, printing.number)
 		if len(out) != 1 {
 			t.Errorf("%s #%s names %d printings, want exactly 1", printing.set, printing.number, len(out))
 			continue
@@ -95,7 +93,7 @@ func TestLeagueTokensTableIsExhaustive(t *testing.T) {
 	}
 
 	for _, code := range []string{"L12", "L13", "L14", "L15", "L16", "L17"} {
-		set, err := mtgmatcher.GetSet(code)
+		set, err := b.GetSet(code)
 		if err != nil {
 			t.Errorf("GetSet(%s) = %v", code, err)
 			continue
@@ -103,7 +101,7 @@ func TestLeagueTokensTableIsExhaustive(t *testing.T) {
 		for _, token := range set.Tokens {
 			// The far side of a double-faced token is filed upstream but
 			// never loaded: one physical card, one reachable row.
-			if _, err := mtgmatcher.GetUUID(token.UUID); err != nil {
+			if _, err := b.GetUUID(token.UUID); err != nil {
 				continue
 			}
 			if !mapped[token.UUID] {
