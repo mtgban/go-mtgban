@@ -810,3 +810,26 @@ func tokenPairingFinishOK(id string, foil bool) string {
 	}
 	return id
 }
+
+// VerifyTokenPairingFinish is tokenPairingFinishOK for a caller that has
+// not already established id names a real derived pairing some other way.
+// Every existing caller in this file only ever reaches tokenPairingFinishOK
+// after a TokenPairIndex or uuid-pair lookup already confirmed that, so it
+// trusts a nonfoil id unconditionally (id == "" || !foil short-circuits
+// before ever checking) - correct there, wrong here: a caller with a bare,
+// unverified id (Card Trader's own tcgplayerId, which sometimes already
+// *is* a pairing's own product id with no name-splitting needed at all)
+// needs the derivedTokenPair check to run regardless of the requested
+// finish, or an ordinary card's id would pass straight through unchecked
+// whenever foil is false.
+func VerifyTokenPairingFinish(id string, foil bool) string {
+	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+	if uuid == "" {
+		return ""
+	}
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil || co.Identifiers["derivedTokenPair"] != "true" {
+		return ""
+	}
+	return tokenPairingFinishOK(id, foil)
+}
