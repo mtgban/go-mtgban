@@ -2,8 +2,6 @@ package hareruya
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPromoShelf pins the retail promo shelf's newer wordings to the
@@ -12,8 +10,6 @@ import (
 // year in its title; and a prerelease card the set numbers among its own,
 // which every set since Murders at Karlov Manor does.
 func TestPromoShelf(t *testing.T) {
-	realDatastore(t)
-
 	for _, tt := range []struct {
 		desc, jp, en, card, foil string
 		wantSet, wantNumber      string
@@ -87,18 +83,19 @@ func TestPromoShelf(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			theCard, err := Preprocess(Product{
+			b := withMagic(t)
+			theCard, err := Preprocess(b, Product{
 				ProductName: tt.jp, ProductNameEN: tt.en,
 				CardName: tt.card, FoilFlag: tt.foil,
 			})
 			if err != nil {
 				t.Fatalf("Preprocess(%q) = %v", tt.jp, err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -114,7 +111,6 @@ func TestPromoShelf(t *testing.T) {
 // that handed it out, and the Pool Party drop's dazzle foil, told from the
 // plain foil only by the marker in the foil's place.
 func TestBuylistPromoShelf(t *testing.T) {
-	realDatastore(t)
 	for _, tt := range []struct {
 		title, wantSet, wantNumber string
 	}{
@@ -128,15 +124,16 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】(2062)■ボーダーレス■《Chancla relámpagos》//《稲妻のすね当て/Lightning Greaves》[SLD] 茶", "SLD", "2062"},
 	} {
 		t.Run(tt.title, func(t *testing.T) {
-			theCard, err := preprocess(tt.title)
+			b := withMagic(t)
+			theCard, err := preprocess(b, tt.title)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.title, err)
 			}
-			cardID, err := mtgmatcher.Match(theCard)
+			cardID, err := b.Match(theCard)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", theCard, err)
 			}
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatal(err)
 			}

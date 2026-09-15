@@ -16,12 +16,12 @@ var _ mtgban.ScraperConfig = (*Vegassingles)(nil)
 // buylist alone; the retail row below would publish if the option were
 // dropped, since a grade in stock is the one shape that reaches it.
 func TestMagicPublishesOnlyTheBuylist(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	product := entombFoil()
 	product.RetailVariantInfo[0].InventoryQuantity = 2
 
-	vs, err := NewScraper(mtgban.GameMagic)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,12 +49,12 @@ func TestMagicPublishesOnlyTheBuylist(t *testing.T) {
 // TestDisablingTheBuylistLeavesTheShelf runs the option the other way, so the
 // two are not passing for each other.
 func TestDisablingTheBuylistLeavesTheShelf(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	product := entombFoil()
 	product.RetailVariantInfo[0].InventoryQuantity = 2
 
-	vs, err := NewScraper(mtgban.GameMagic)
+	vs, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}

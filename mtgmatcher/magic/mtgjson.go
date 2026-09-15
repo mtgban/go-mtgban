@@ -1374,8 +1374,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	// uuids for Identifiers["derivedTokenPair"] == "true" rather than
 	// reading a second index kept only for that - one fact, one place.
 	// See tokenpairs.go.
-	derivedCards, tokenPairs := deriveTokenPairs(ap.Data, uuids, externalIDs[mtgmatcher.IDSpaceTCGplayer])
-	mtgmatcher.Logger.Printf("%s", tokenPairs)
+	derivedCards := deriveTokenPairs(ap.Data, uuids, externalIDs[mtgmatcher.IDSpaceTCGplayer])
 	for _, card := range derivedCards {
 		edition := card.SetCode
 		if set, found := mSets[card.SetCode]; found {
@@ -1420,6 +1419,11 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 	b.CommanderKeywordMap = commanderKeywordMap
 	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
+
+	tokenPairs := buildTokenPairIndices(&b)
+	b.TokenPairIndex = tokenPairs.byFace
+	b.TokenPairIDByUUIDs = tokenPairs.byUUIDPair
+	b.TokenPairIDByBothNames = tokenPairs.byBothNames
 
 	b.SetRules(Rules{})
 	b.SortSealed()

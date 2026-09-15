@@ -40,7 +40,7 @@ var parallelPreErrata = [][]string{{"parallelpreerrata"}, {"parallel", "preerrat
 // refused as an unsupported condition and the listing dropped, though the
 // catalog carries every run they name.
 func TestConditionPrintingReachesTheRun(t *testing.T) {
-	withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	// The four rows the last runs refused, each naming a parallel whose
 	// pre-errata run the catalog files on its own.
@@ -66,11 +66,11 @@ func TestConditionPrintingReachesTheRun(t *testing.T) {
 				Edition:   test.edition,
 				Variation: eventNamed(test.number+" "+nameQualifiers(test.name)) + " " + printing,
 			}
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", card, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}

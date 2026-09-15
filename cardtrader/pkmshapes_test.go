@@ -1,6 +1,10 @@
 package cardtrader
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // TestPkmShelves pins what the listing path asks for on the Pokemon shelves
 // Card Trader spells its own way: the SV promo shelf reaches the promo set
@@ -8,13 +12,14 @@ import "testing"
 // field carries a year or an online code rather than a collector number,
 // and a marker is no card.
 func TestPkmShelves(t *testing.T) {
+	b := &mtgmatcher.Backend{}
 	bp := Blueprint{Name: "Team Rocket's Mewtwo ex", Version: "SVP 205"}
 	bp.Expansion.Name = "SV Black Star Promos"
-	if got := gameEdition(GamePokemon, &bp); got != "SV: Scarlet & Violet Promo Cards" {
+	if got := gameEdition(b, GamePokemon, &bp); got != "SV: Scarlet & Violet Promo Cards" {
 		t.Errorf("gameEdition(SV Black Star Promos) = %q", got)
 	}
 	bp.Version = "Jumbo Oversized | SVP 205"
-	if got := gameEdition(GamePokemon, &bp); got != "SV Black Star Promos" {
+	if got := gameEdition(b, GamePokemon, &bp); got != "SV Black Star Promos" {
 		t.Errorf("gameEdition(jumbo) = %q, want the shelf kept", got)
 	}
 	for _, tt := range []struct{ version, number, want string }{

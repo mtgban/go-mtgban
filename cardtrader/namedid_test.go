@@ -13,9 +13,9 @@ import (
 // "Exponential Growth" priced as Ecological Appreciation for as long as the
 // listing stood.
 func TestNamedID(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	uuid := func(space, id string) string {
-		out := mtgmatcher.ConvertID(space, id)
+		out := b.ConvertID(space, id)
 		if out == "" {
 			t.Fatalf("%s id %q resolves to nothing", space, id)
 		}
@@ -66,7 +66,7 @@ func TestNamedID(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			if got := namedID(tt.scryfallID, tt.tcgplayerID, tt.cardName); got != tt.want {
+			if got := namedID(b, tt.scryfallID, tt.tcgplayerID, tt.cardName); got != tt.want {
 				t.Errorf("namedID = %q, want %q", got, tt.want)
 			}
 		})

@@ -5,8 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -68,11 +66,11 @@ const fabPromoDatastore = `{
 // printing: both of these are "012" and "009" to Cardmarket, and the
 // programme it sells them under is the only thing telling them apart.
 func TestFabPromoProduct(t *testing.T) {
-	installDatastore(t, "fleshandblood", fabPromoDatastore)
+	b := datastoreBackend(t, "fleshandblood", fabPromoDatastore)
 
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	for _, tt := range []struct{ name, number, expansion, want string }{
 		{"Energy Potion (Cold Foil)", "012", "FAB Promos", "fab012_coldfoil"},

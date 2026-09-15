@@ -15,7 +15,7 @@ import (
 // an id the wording agrees with stays authoritative. Every product here is
 // copied verbatim from the catalog export.
 func TestCatalogWordingBeatsTwinID(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc string
@@ -77,7 +77,7 @@ func TestCatalogWordingBeatsTwinID(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameMagic, tt.p)
+			id, err := resolveProduct(b, GameMagic, tt.p)
 			if err != nil {
 				t.Fatalf("resolveProduct(%s) = %v", tt.p.SKU, err)
 			}

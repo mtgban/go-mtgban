@@ -835,7 +835,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			// Attempt a best effort match for known promotional tags if card or edition
 			// wasn't found in previous steps
 			if b.IsGenericPromo(inCard) {
-				mtgmatcher.Logger.Printf("Precise matching for promo failed, attempting best effort")
+				b.Log("Precise matching for promo failed, attempting best effort")
 				inCard.PromoWildcard = true
 			}
 		}
@@ -1847,7 +1847,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			}
 			if shouldIgnoreNumber(b, inCard, set.Name, num) {
 				checkNum = false
-				mtgmatcher.Logger.Println("Skipping number check")
+				b.Log("Skipping number check")
 			}
 			if checkNum && num != "" {
 				// The empty string will allow to test the number without any
@@ -1905,7 +1905,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					}
 
 					if number == strings.ToLower(card.Number) {
-						mtgmatcher.Logger.Println("Found match with card number", card.Number)
+						b.Log("Found match with card number", card.Number)
 						outCards = append(outCards, card)
 
 						// Card was found, skip any other suffix
@@ -2078,9 +2078,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 
 	if len(outCards) > 1 {
-		mtgmatcher.Logger.Println("Filtering status after main loop")
+		b.Log("Filtering status after main loop")
 		for _, card := range outCards {
-			mtgmatcher.Logger.Println(card.SetCode, card.Name, card.Number)
+			b.Log(card.SetCode, card.Name, card.Number)
 		}
 	}
 
@@ -2096,7 +2096,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 
 		if allSameEdition {
-			mtgmatcher.Logger.Println("allSameEdition pass needed")
+			b.Log("allSameEdition pass needed")
 			var filteredOutCards []mtgmatcher.Card
 			for _, card := range outCards {
 				set := b.Sets[card.SetCode]

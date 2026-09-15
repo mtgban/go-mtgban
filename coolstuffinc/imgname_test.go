@@ -12,7 +12,7 @@ import (
 // both under the pixel art one: the cheaper listing was priced as the dearer
 // printing.
 func TestPreprocessImageLetter(t *testing.T) {
-	withGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
 
 	for _, tt := range []struct {
 		desc    string
@@ -64,7 +64,7 @@ func TestPreprocessImageLetter(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			got, err := preprocess(tt.name, tt.edition, "", tt.imgURL)
+			got, err := preprocess(b, tt.name, tt.edition, "", tt.imgURL)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.imgURL, err)
 			}

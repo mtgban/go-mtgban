@@ -93,9 +93,10 @@ type Coolstuffinc struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	client *http.Client
-	game   mtgban.Game
-	shelf  string
+	client  *http.Client
+	game    mtgban.Game
+	shelf   string
+	backend *mtgmatcher.Backend
 }
 
 // pokemonNonHolo matches the bracket a Pokemon name states a plain printing
@@ -210,12 +211,12 @@ func onePieceShelf(shelf, name string) string {
 // Full Art printings, since their sets are the ones that use the name; and
 // the set must wear a single premium label throughout, so the one printing
 // the storefront can mean is the one the number carries.
-func onePieceRenamedTreatment(id, name string) string {
-	co, err := mtgmatcher.GetUUID(id)
+func onePieceRenamedTreatment(b *mtgmatcher.Backend, id, name string) string {
+	co, err := b.GetUUID(id)
 	if err != nil || len(co.PromoTypes) > 0 {
 		return ""
 	}
-	set, err := mtgmatcher.GetSet(co.SetCode)
+	set, err := b.GetSet(co.SetCode)
 	if err != nil {
 		return ""
 	}
@@ -239,7 +240,7 @@ func onePieceRenamedTreatment(id, name string) string {
 
 	for _, match := range nameParenthetical.FindAllStringSubmatch(name, -1) {
 		slug := mtgmatcher.PromoTypeSlug(strings.TrimSpace(match[1]))
-		if slug == "" || labels[slug] || !slices.Contains(mtgmatcher.AllPromoTypes(), slug) {
+		if slug == "" || labels[slug] || !slices.Contains(b.AllPromoTypes, slug) {
 			continue
 		}
 		return alternate
@@ -286,8 +287,12 @@ func buylistVariation(product CSIPriceEntry) string {
 	return strings.TrimSpace(strings.Join(words, " "))
 }
 
-// NewScraper returns a singles scraper for one game.
-func NewScraper(game mtgban.Game) (*Coolstuffinc, error) {
+// NewScraper returns a singles scraper for the datastore's game.
+func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	shelf, ok := csiGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -301,6 +306,7 @@ func NewScraper(game mtgban.Game) (*Coolstuffinc, error) {
 	csi.MaxConcurrency = defaultConcurrency
 	csi.game = game
 	csi.shelf = shelf
+	csi.backend = b
 	return &csi, nil
 }
 
@@ -388,17 +394,17 @@ func conditionRun(conditions string) []string {
 // matchRun resolves a listing sold as one of a card's print runs, refusing
 // an answer that does not carry it rather than pricing the run as the
 // ordinary printing.
-func matchRun(inCard *mtgmatcher.InputCard, finishes []string) (string, error) {
+func matchRun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, finishes []string) (string, error) {
 	var err error
 	for _, finish := range finishes {
 		probe := *inCard
 		probe.Finish = finish
 		var cardID string
-		cardID, err = mtgmatcher.Match(&probe)
+		cardID, err = b.Match(&probe)
 		if err != nil {
 			continue
 		}
-		co, uerr := mtgmatcher.GetUUID(cardID)
+		co, uerr := b.GetUUID(cardID)
 		if uerr != nil {
 			continue
 		}
@@ -652,7 +658,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				var theCard *mtgmatcher.InputCard
 				switch csi.game {
 				case mtgban.GameMagic:
-					c, err := preprocess(cardName, edition, notes, imgURL)
+					c, err := preprocess(csi.backend, cardName, edition, notes, imgURL)
 					if err != nil {
 						return
 					}
@@ -671,8 +677,8 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						runFinishes = shelfRun
 					}
 					variation := catalogTreatment(notes)
-					shelf = pokemonPromoShelf(cardName, shelf, rarity, isFoil, variation)
-					theCard = pokemonListing(cardName, shelf, variation, isFoil)
+					shelf = pokemonPromoShelf(csi.backend, cardName, shelf, rarity, isFoil, variation)
+					theCard = pokemonListing(csi.backend, cardName, shelf, variation, isFoil)
 				case mtgban.GameOnePiece:
 					shelf := onePieceShelf(edition, cardName)
 					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(notes), Foil: isFoil}
@@ -686,7 +692,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				case mtgban.GamePalworld:
 					theCard = &mtgmatcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
 				case mtgban.GameRiftbound:
-					shelf := riftboundShelf(edition, notes, cardName, notes, isFoil)
+					shelf := riftboundShelf(csi.backend, edition, notes, cardName, notes, isFoil)
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: shelf, Variation: notes, Foil: isFoil}
 				case mtgban.GameLorcana:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
@@ -698,9 +704,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				var cardID string
 				if runFinishes != nil {
-					cardID, err = matchRun(theCard, runFinishes)
+					cardID, err = matchRun(csi.backend, theCard, runFinishes)
 				} else {
-					cardID, err = mtgmatcher.Match(theCard)
+					cardID, err = csi.backend.Match(theCard)
 				}
 				if errors.Is(err, mtgmatcher.ErrUnsupported) {
 					return
@@ -719,7 +725,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						var alias *mtgmatcher.AliasingError
 						if errors.As(err, &alias) {
 							for _, probe := range alias.Probe() {
-								card, _ := mtgmatcher.GetUUID(probe)
+								card, _ := csi.backend.GetUUID(probe)
 								csi.printf("- %s", card)
 							}
 						}
@@ -731,13 +737,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				// requested finish.
 				if csi.game == mtgban.GameMagic {
 					if strings.Contains(cardName, "Foil-etched") {
-						co, err := mtgmatcher.GetUUID(cardID)
+						co, err := csi.backend.GetUUID(cardID)
 						if err != nil || !co.Etched {
 							return
 						}
 					}
 					if isFoil {
-						co, err := mtgmatcher.GetUUID(cardID)
+						co, err := csi.backend.GetUUID(cardID)
 						if err != nil || (!co.Etched && !co.Foil) {
 							return
 						}
@@ -926,7 +932,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		var theCard *mtgmatcher.InputCard
 		switch csi.game {
 		case mtgban.GameMagic:
-			c, err := PreprocessBuylist(product)
+			c, err := PreprocessBuylist(csi.backend, product)
 			if err != nil {
 				continue
 			}
@@ -936,11 +942,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it describing the artwork and Lorcana's changes no answer at all.
 		case mtgban.GamePokemon:
 			variation := catalogTreatment(buylistVariation(product))
-			shelf := pokemonPromoShelf(product.Name, product.ItemSet, product.RarityName, product.IsFoil == 1, variation)
-			theCard = pokemonListing(product.Name, shelf, variation, product.IsFoil == 1)
+			shelf := pokemonPromoShelf(csi.backend, product.Name, product.ItemSet, product.RarityName, product.IsFoil == 1, variation)
+			theCard = pokemonListing(csi.backend, product.Name, shelf, variation, product.IsFoil == 1)
 		case mtgban.GameRiftbound:
 			variation := buylistVariation(product)
-			shelf := riftboundShelf(product.ItemSet, product.Notes, product.Name, variation, product.IsFoil == 1)
+			shelf := riftboundShelf(csi.backend, product.ItemSet, product.Notes, product.Name, variation, product.IsFoil == 1)
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
 		// The rarity arrives in a field of its own here, where the sell
 		// listing spends the note on it, so a row whose note says nothing
@@ -970,7 +976,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := csi.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -981,7 +987,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			var alias *mtgmatcher.AliasingError
 			if errors.As(err, &alias) {
 				for _, probe := range alias.Probe() {
-					co, _ := mtgmatcher.GetUUID(probe)
+					co, _ := csi.backend.GetUUID(probe)
 					csi.printf("- %s", co)
 				}
 			}
@@ -989,7 +995,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		}
 
 		if csi.game == mtgban.GamePokemon && pokemonNonHolo.MatchString(product.Name) {
-			co, cerr := mtgmatcher.GetUUID(cardID)
+			co, cerr := csi.backend.GetUUID(cardID)
 			if cerr == nil && !co.HasFinish(mtgmatcher.FinishNonfoil) &&
 				strings.Contains(co.Rarity, "Holo") {
 				continue
@@ -997,7 +1003,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		}
 
 		if csi.game == mtgban.GameOnePiece {
-			if renamed := onePieceRenamedTreatment(cardID, product.Name); renamed != "" {
+			if renamed := onePieceRenamedTreatment(csi.backend, cardID, product.Name); renamed != "" {
 				cardID = renamed
 			}
 		}
@@ -1164,7 +1170,7 @@ func catalogTreatment(variation string) string {
 // the catalog names it by, which the number settles; and the Elite Four
 // cards of the Platinum sets are named "Alakazam 4" for the catalog's
 // "Alakazam E4".
-func pokemonListing(name, edition, variation string, foil bool) *mtgmatcher.InputCard {
+func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
 	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
 	if edition == "Celebrations" && strings.Contains(variation, "Classic Collection") {
 		card.Edition = "Celebrations: Classic Collection"
@@ -1207,8 +1213,8 @@ func pokemonListing(name, edition, variation string, foil bool) *mtgmatcher.Inpu
 	}
 	// The Team Galactic inventions are named by their invention alone
 	// where the catalog names the invention with its number.
-	if _, err := mtgmatcher.SearchEquals(card.Name); err != nil {
-		if invention := galacticInvention(card.Name); invention != "" {
+	if _, err := b.SearchEquals(card.Name); err != nil {
+		if invention := galacticInvention(b, card.Name); invention != "" {
 			card.Name = invention
 		}
 	}
@@ -1217,7 +1223,7 @@ func pokemonListing(name, edition, variation string, foil bool) *mtgmatcher.Inpu
 	// ("Magnetic Metal Energy"), so the spelled name is kept where the
 	// catalog knows it.
 	if m := typedEnergy.FindStringSubmatch(card.Name); m != nil {
-		if _, err := mtgmatcher.SearchEquals(card.Name); err != nil {
+		if _, err := b.SearchEquals(card.Name); err != nil {
 			card.Name = m[1] + " " + energyLetters[m[2]] + " Energy"
 		}
 	}
@@ -1225,7 +1231,7 @@ func pokemonListing(name, edition, variation string, foil bool) *mtgmatcher.Inpu
 		for _, sex := range []string{"Nidoran M", "Nidoran F"} {
 			probe := *card
 			probe.Name = sex
-			if _, err := mtgmatcher.Match(&probe); err == nil {
+			if _, err := b.Match(&probe); err == nil {
 				card.Name = sex
 				break
 			}
@@ -1260,9 +1266,9 @@ var (
 
 // galacticInvention names the Team Galactic invention the catalog files
 // under its number, or nothing when no invention ends in the name given.
-func galacticInvention(name string) string {
+func galacticInvention(b *mtgmatcher.Backend, name string) string {
 	found := ""
-	for _, candidate := range mtgmatcher.AllNames("canonical", false) {
+	for _, candidate := range b.Names("canonical", false) {
 		if strings.HasPrefix(candidate, "Team Galactic's Invention") && strings.HasSuffix(candidate, " "+name) {
 			if found != "" {
 				return ""
@@ -1303,7 +1309,7 @@ var (
 // shelf, with the same breadcrumb rarity "Promo" - so both sides call this
 // with their own name for the rarity field: RarityName on the buylist, the
 // scraped breadcrumb text on retail.
-func pokemonPromoShelf(name, itemSet, rarityName string, foil bool, variation string) string {
+func pokemonPromoShelf(b *mtgmatcher.Backend, name, itemSet, rarityName string, foil bool, variation string) string {
 	if rarityName != "Promo" ||
 		strings.Contains(strings.ToLower(itemSet), "promo") {
 		return itemSet
@@ -1314,7 +1320,7 @@ func pokemonPromoShelf(name, itemSet, rarityName string, foil bool, variation st
 		Variation: variation,
 		Foil:      foil,
 	}
-	_, err := mtgmatcher.Match(probe)
+	_, err := b.Match(probe)
 	if err != nil {
 		return itemSet
 	}
@@ -1337,7 +1343,7 @@ var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
 // The note only decides where the set it names holds that printing. Vendetta
 // issued no b-lettered rune of its own, so its six listings stay on the promo
 // shelf, which is where the printing they mean actually is.
-func riftboundShelf(itemSet, notes, name, variation string, foil bool) string {
+func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation string, foil bool) string {
 	if itemSet != "Promo" {
 		return itemSet
 	}
@@ -1345,7 +1351,7 @@ func riftboundShelf(itemSet, notes, name, variation string, foil bool) string {
 	if match == nil {
 		return itemSet
 	}
-	set, err := mtgmatcher.GetSet(match[1])
+	set, err := b.GetSet(match[1])
 	if err != nil {
 		return itemSet
 	}
@@ -1355,7 +1361,7 @@ func riftboundShelf(itemSet, notes, name, variation string, foil bool) string {
 		Variation: variation,
 		Foil:      foil,
 	}
-	_, err = mtgmatcher.Match(probe)
+	_, err = b.Match(probe)
 	if err != nil {
 		return itemSet
 	}

@@ -2,8 +2,6 @@ package abugames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestVariantLetter pins the printing a listing reaches when a set prints one
@@ -11,7 +9,7 @@ import (
 // Use the letter when no exact artwork description is known. Cataloged
 // descriptions take priority because ABU's letters can differ from suffixes.
 func TestVariantLetter(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -38,15 +36,15 @@ func TestVariantLetter(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}

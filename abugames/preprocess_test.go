@@ -15,33 +15,34 @@ import (
 // 2.9GB resident, and a test that loads its own holds a second one for as
 // long as the binary runs.
 var (
-	datastoreOnce sync.Once
-	datastoreErr  error
-	datastoreOK   bool
+	datastoreOnce    sync.Once
+	datastoreErr     error
+	datastoreBackend *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// realDatastore reads the Magic datastore the first time a test asks for it,
+// and skips where the run carries none.
+func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		err := datastore.Load("magic", path)
+		b, err := datastore.Read("magic", path)
 		if err != nil {
 			datastoreErr = err
 			return
 		}
-		datastoreOK = true
+		datastoreBackend = b
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreBackend
 }
 
 // TestSecretLairNumberOverStaleCardNumber guards the case where ABU's
@@ -49,7 +50,6 @@ func realDatastore(t *testing.T) {
 // numbers can be >= 1993, which the year-capped ExtractNumber can't see; a stale
 // card.Number ("1933") must not clobber the authoritative title number ("7010").
 func TestSecretLairNumberOverStaleCardNumber(t *testing.T) {
-	realDatastore(t)
 	tests := []struct {
 		name    string
 		number  string // ABU card_number
@@ -61,9 +61,10 @@ func TestSecretLairNumberOverStaleCardNumber(t *testing.T) {
 		{"empty card_number", "", "SLD", "7010"},
 	}
 
+	b := realDatastore(t)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			in, err := preprocess(&ABUCard{
+			in, err := preprocess(b, &ABUCard{
 				DisplayTitle: "Counterspell (Secret Lair 7010) - FOIL",
 				Edition:      "Secret Lair Drop",
 				Number:       tt.number,
@@ -72,11 +73,11 @@ func TestSecretLairNumberOverStaleCardNumber(t *testing.T) {
 			if err != nil {
 				t.Fatalf("preprocess: %v", err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("match (variation %q): %v", in.Variation, err)
 			}
-			co, _ := mtgmatcher.GetUUID(id)
+			co, _ := b.GetUUID(id)
 			if co.SetCode != tt.wantSet || co.Number != tt.wantNum {
 				t.Errorf("got %s #%s, want %s #%s (variation %q)", co.SetCode, co.Number, tt.wantSet, tt.wantNum, in.Variation)
 			}

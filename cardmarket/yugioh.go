@@ -145,14 +145,14 @@ var yugiohVersionVariants = map[string][]string{
 // the tag. Twenty-six of the thirty-eight oversized products have no such
 // printing at all and stay refused, which is what they are: cards we do not
 // carry.
-func yugiohOversized(name string) (string, error) {
-	uuids, err := mtgmatcher.SearchEquals(name)
+func yugiohOversized(b *mtgmatcher.Backend, name string) (string, error) {
+	uuids, err := b.SearchEquals(name)
 	if err != nil {
 		return "", errNoPrinting
 	}
 	var found string
 	for _, uuid := range uuids {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := b.GetUUID(uuid)
 		if err != nil || !slices.Contains(co.PromoTypes, "oversized") {
 			continue
 		}

@@ -11,7 +11,7 @@ import (
 // one number apiece, where only the wording says which programme handed the
 // card out.
 func TestPromoShelf(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -44,15 +44,15 @@ func TestPromoShelf(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -66,22 +66,22 @@ func TestPromoShelf(t *testing.T) {
 // TestEtchedForFoil pins the Secret Lair cards sold etched and never in plain
 // foil, which this storefront calls FOIL like any other.
 func TestEtchedForFoil(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct{ desc, title, number string }{
 		{"a basic land sold etched", "Mountain (Secret Lair 49) - FOIL", "49"},
 		{"and a spell", "Temur Sabertooth (Secret Lair) - FOIL", "308"},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := ABUCard{DisplayTitle: test.title, Edition: "Secret Lair Drop", Number: test.number}
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", test.title, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -97,11 +97,12 @@ func TestEtchedForFoil(t *testing.T) {
 // whose own title says otherwise. There is no Japanese 30th Anniversary Serra
 // Angel, so that listing answered with the English one and priced beside it.
 func TestLanguageFromTitle(t *testing.T) {
+	b := &mtgmatcher.Backend{}
 	card := ABUCard{DisplayTitle: "Serra Angel (30th Anniversary History Retro Frame JP) - FOIL",
 		Edition: "Promo", Number: "1★", Title: "Non-English - Japanese", Language: []string{"English"}}
-	in, err := preprocess(&card)
+	in, err := preprocess(b, &card)
 	if err == nil {
-		_, err = mtgmatcher.Match(in)
+		_, err = b.Match(in)
 	}
 	if err == nil {
 		t.Errorf("preprocess(%q) = %v, want a refusal", card.DisplayTitle, in)

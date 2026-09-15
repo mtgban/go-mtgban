@@ -11,11 +11,12 @@ import (
 // white and 4BB in Japanese and black, and nothing else, so this answered
 // with the black-bordered card and put its price beside that one's.
 func TestForeignWhiteBorder(t *testing.T) {
+	b := &mtgmatcher.Backend{}
 	card := ABUCard{DisplayTitle: "Sylvan Library (WB)", Edition: "4th Edition", Number: "273",
 		Title: "Non-English - Japanese - White Bordered", Language: []string{"Japanese"}}
-	in, err := preprocess(&card)
+	in, err := preprocess(b, &card)
 	if err == nil {
-		_, err = mtgmatcher.Match(in)
+		_, err = b.Match(in)
 	}
 	if err == nil {
 		t.Errorf("preprocess(%q) = %v, want a refusal", card.DisplayTitle, in)
@@ -26,7 +27,7 @@ func TestForeignWhiteBorder(t *testing.T) {
 // than a dagger. Portal drops the reminder text from its second printing and
 // files it at 69d, and reading only a dagger left both listings on 69.
 func TestNumberMarks(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc    string
 		card    ABUCard
@@ -45,15 +46,15 @@ func TestNumberMarks(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}

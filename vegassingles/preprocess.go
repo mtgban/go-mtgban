@@ -28,7 +28,7 @@ var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?$`)
 // price of its own, while the id it would resolve to is the printing's, held
 // by the ordinary listing standing beside it. Publishing the copy's price
 // under the printing's id lets a one-off set what the card is worth.
-func preprocess(product VSProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
 	if uniqueCopy.MatchString(strings.TrimSpace(product.DisplayName)) {
 		return nil, errors.New("listing is one particular copy, not the printing")
 	}
@@ -47,7 +47,7 @@ func preprocess(product VSProduct, game mtgban.Game) (*mtgmatcher.InputCard, err
 	case mtgban.GameGundam:
 		return preprocessGundam(product)
 	}
-	return preprocessMagic(product)
+	return preprocessMagic(b, product)
 }
 
 // cardTable spells the names the storefront types wrong. Each is a plain
@@ -86,19 +86,19 @@ func saysMore(spelled, stated string) bool {
 
 // resolved returns the printing a card names, and nil when it names none. It
 // matches a copy, so the matcher's own edits to the input stay in the probe.
-func resolved(card mtgmatcher.InputCard) *mtgmatcher.CardObject {
-	id, err := mtgmatcher.Match(&card)
+func resolved(b *mtgmatcher.Backend, card mtgmatcher.InputCard) *mtgmatcher.CardObject {
+	id, err := b.Match(&card)
 	if err != nil {
 		return nil
 	}
-	co, err := mtgmatcher.GetUUID(id)
+	co, err := b.GetUUID(id)
 	if err != nil {
 		return nil
 	}
 	return co
 }
 
-func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
+func preprocessMagic(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.InputCard, error) {
 	// Display name format: "Hallowed Fountain (RVR-280) - Ravnica Remastered",
 	// and with the printing's own wording standing between the two:
 	// "Acererak the Archlich (Rainbow Foil) (SLD-1784) - Secret Lair Drop".
@@ -175,7 +175,7 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	if len(groups) > 0 {
 		named := card
 		named.Variation = groups[len(groups)-1][2]
-		if saysMore(named.Variation, card.Variation) && resolved(named) != nil {
+		if saysMore(named.Variation, card.Variation) && resolved(b, named) != nil {
 			card.Variation = named.Variation
 		}
 	}
@@ -211,9 +211,9 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// Tour Promos" and named "Regional Championship Qualifiers 2023", where
 	// the 2 the listing states stands.
 	named := product.ProductData.SetName
-	if named != "" && named != edition && !namesSet(edition, named) {
-		prose, proseCo := readsAs(card, named)
-		spelled, spelledCo := readsAs(card, spelledSet(product.DisplayName))
+	if named != "" && named != edition && !namesSet(b, edition, named) {
+		prose, proseCo := readsAs(b, card, named)
+		spelled, spelledCo := readsAs(b, card, spelledSet(b, product.DisplayName))
 		switch {
 		case answersNumber(proseCo, card.Variation):
 			card = prose
@@ -242,10 +242,10 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// extended-art Iroh is a media insert the number finds on its own, and
 	// adding the words "Extended Art" walks it onto the showcase printing
 	// of the same card instead.
-	if len(qualifiers) > 0 && resolved(card) == nil {
+	if len(qualifiers) > 0 && resolved(b, card) == nil {
 		named := card
 		named.Variation = strings.TrimSpace(card.Variation + " " + strings.Join(qualifiers, " "))
-		if resolved(named) != nil {
+		if resolved(b, named) != nil {
 			card = named
 		}
 	}
@@ -261,11 +261,11 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// card. What tells them apart is the number the listing states: a
 	// subset numbers its own cards, so the number answers there and not
 	// where the listing stands, while a parent answers both.
-	if spelled := spelledSet(product.DisplayName); spelled != "" && card.Variation != "" {
-		if !answersNumber(resolved(card), card.Variation) {
+	if spelled := spelledSet(b, product.DisplayName); spelled != "" && card.Variation != "" {
+		if !answersNumber(resolved(b, card), card.Variation) {
 			probe := card
 			probe.Edition = spelled
-			if co := resolved(probe); answersNumber(co, card.Variation) {
+			if co := resolved(b, probe); answersNumber(co, card.Variation) {
 				card = probe
 			}
 		}
@@ -287,7 +287,7 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	if strings.HasSuffix(product.DisplayName, " Etched Foil") || strings.Contains(product.DisplayName, "(Foil Etched)") {
 		etched := card
 		etched.Variation = strings.TrimSpace(card.Variation + " Etched")
-		if co := resolved(etched); co != nil && co.Etched {
+		if co := resolved(b, etched); co != nil && co.Etched {
 			card = etched
 		}
 	}
@@ -324,8 +324,8 @@ func displaySet(displayName string) string {
 
 // namesSet reports whether a set code names the set an edition string spells
 // out. A code the datastore does not use names no set at all.
-func namesSet(code, edition string) bool {
-	set, err := mtgmatcher.GetSet(code)
+func namesSet(b *mtgmatcher.Backend, code, edition string) bool {
+	set, err := b.GetSet(code)
 	if err != nil {
 		return false
 	}
@@ -335,7 +335,7 @@ func namesSet(code, edition string) bool {
 // readsAs returns the card as an edition string reads it, and the printing
 // that reading lands on, or nil when it lands on none - an edition naming no
 // set included, which would otherwise be read as no edition at all.
-func readsAs(card mtgmatcher.InputCard, edition string) (mtgmatcher.InputCard, *mtgmatcher.CardObject) {
+func readsAs(b *mtgmatcher.Backend, card mtgmatcher.InputCard, edition string) (mtgmatcher.InputCard, *mtgmatcher.CardObject) {
 	if edition == "" {
 		return card, nil
 	}
@@ -347,7 +347,7 @@ func readsAs(card mtgmatcher.InputCard, edition string) (mtgmatcher.InputCard, *
 		probe := card
 		probe.Edition = edition
 		probe.Variation = card.Variation + suffix
-		co := resolved(probe)
+		co := resolved(b, probe)
 		if co != nil {
 			return probe, co
 		}
@@ -381,7 +381,7 @@ var setQualifier = regexp.MustCompile(`\s*\([^()]*\)$`)
 // exactly is taken: GetSetByName settles for the nearest set it can reach,
 // and the storefront's own headings ("Media Promos", "MagicFest Cards") all
 // reach one that way.
-func spelledSet(displayName string) string {
+func spelledSet(b *mtgmatcher.Backend, displayName string) string {
 	idx := strings.LastIndex(displayName, " - ")
 	if idx == -1 {
 		return ""
@@ -396,7 +396,7 @@ func spelledSet(displayName string) string {
 		tail = trimmed
 	}
 	tail = strings.TrimRight(strings.TrimSpace(tail), ":,-")
-	set, err := mtgmatcher.GetSetByName(tail)
+	set, err := b.GetSetByName(tail)
 	if err != nil || !mtgmatcher.Equals(set.Name, tail) {
 		return ""
 	}

@@ -111,6 +111,8 @@ type TCGSYPList struct {
 	auth        string
 	buylistDate time.Time
 	buylist     mtgban.BuylistRecord
+
+	backend *mtgmatcher.Backend
 }
 
 func (tcg *TCGSYPList) printf(format string, a ...any) {
@@ -122,13 +124,18 @@ func (tcg *TCGSYPList) printf(format string, a ...any) {
 // NewScraperSYP returns a SYP scraper for any game the list is read for. The
 // list is served against an authorization ticket alone, so this needs no API
 // credentials of its own.
-func NewScraperSYP(game mtgban.Game, auth string) (*TCGSYPList, error) {
+func NewScraperSYP(b *mtgmatcher.Backend, auth string) (*TCGSYPList, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	category, found := sypGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported SYP game %q", game)
 	}
 
 	tcg := TCGSYPList{}
+	tcg.backend = b
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.auth = auth
 	tcg.game = game
@@ -143,7 +150,7 @@ func NewScraperSYP(game mtgban.Game, auth string) (*TCGSYPList, error) {
 // Magic printings answer the plain flag alone. Ask by name, then by flag.
 func (tcg *TCGSYPList) resolve(sku SYPSku) (string, error) {
 	id := fmt.Sprint(sku.ProductID)
-	cardID, err := mtgmatcher.MatchIDFinish(id, sku.Finish)
+	cardID, err := tcg.backend.MatchIDFinish(id, sku.Finish)
 	if err == nil {
 		return cardID, nil
 	}
@@ -153,7 +160,7 @@ func (tcg *TCGSYPList) resolve(sku SYPSku) (string, error) {
 		// flag that says it, so there is nothing left to ask.
 		return "", err
 	}
-	return mtgmatcher.MatchID(id,
+	return tcg.backend.MatchID(id,
 		canonical == mtgmatcher.FinishFoil || sku.Finish == mtgmatcher.FinishEtched,
 		sku.Finish == mtgmatcher.FinishEtched)
 }

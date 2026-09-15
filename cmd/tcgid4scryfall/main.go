@@ -47,7 +47,7 @@ func processCards(ctx context.Context, ds *mtgmatcher.Backend, client *api.Clien
 	}
 
 	for _, product := range products {
-		theCard, err := tcgplayer.Preprocess(&product, Editions)
+		theCard, err := tcgplayer.Preprocess(ds, &product, Editions)
 		if err != nil {
 			continue
 		}

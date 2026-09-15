@@ -84,19 +84,19 @@ var gameday2editionTable = map[string]string{
 	"Supplant Form":            "PFRF",
 }
 
-func checkLoadedID(cardName string, productID int) []string {
+func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []string {
 	cardName = mtgmatcher.SplitVariants(cardName)[0]
 	cardName = strings.TrimSuffix(cardName, " Token")
 	testProductID := fmt.Sprint(productID)
 
-	possibleIDs, err := mtgmatcher.SearchContains(cardName)
+	possibleIDs, err := b.SearchContains(cardName)
 	if err != nil {
 		return nil
 	}
 
 	var ids []string
 	for _, possibleID := range possibleIDs {
-		co, err := mtgmatcher.GetUUID(possibleID)
+		co, err := b.GetUUID(possibleID)
 		if err != nil {
 			continue
 		}
@@ -115,11 +115,11 @@ func checkLoadedID(cardName string, productID int) []string {
 // mtgjson occasionally stamps the same mcmId on sibling variants (30A frame
 // pairs for example), so printings whose number agrees with the product's
 // take precedence over the arbitrary last one found.
-func Fallback(product *cm.Product) (string, string) {
+func Fallback(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
 	var cardID, cardIDFoil string
 
 	// First check if the product id is known
-	ids := checkLoadedID(product.Name, product.IDProduct)
+	ids := checkLoadedID(b, product.Name, product.IDProduct)
 	// These editions contain English ids, so we can't use this system
 	switch product.ExpansionName {
 	case "The Dark Italian", "Legends Italian":
@@ -127,7 +127,7 @@ func Fallback(product *cm.Product) (string, string) {
 	}
 	var numberMatched, numberMatchedFoil bool
 	for _, id := range ids {
-		co, _ := mtgmatcher.GetUUID(id)
+		co, _ := b.GetUUID(id)
 		// PlainNumber is Number stripped of the ★/†-style decorations
 		// that MKM numbers never carry
 		sameNumber := strings.EqualFold(co.PlainNumber, product.Number)
@@ -199,7 +199,7 @@ var filteredExpansionsTags = []string{
 
 // Preprocess turns Cardmarket's name, number and edition into the card
 // description the matcher takes.
-func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgmatcher.InputCard, error) {
 	var foil bool
 
 	for _, tag := range filteredExpansionsTags {
@@ -424,7 +424,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			edition = "2X2"
 			variant = "Launch"
 		default:
-			if len(mtgmatcher.MatchInSet(cardName, "PHEL")) == 1 {
+			if len(b.MatchInSet(cardName, "PHEL")) == 1 {
 				edition = "PHEL"
 			}
 		}
@@ -602,7 +602,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		case "V.3":
 			edition = "MKM Standard Showdown"
 		default:
-			if len(mtgmatcher.MatchInSet(cardName, "PCBB")) == 1 {
+			if len(b.MatchInSet(cardName, "PCBB")) == 1 {
 				edition = "PCBB"
 			}
 		}
@@ -618,7 +618,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		case "Shivan Dragon":
 			return nil, mtgmatcher.ErrUnsupported
 		default:
-			if len(mtgmatcher.MatchInSet(cardName, "PCMD")) == 1 {
+			if len(b.MatchInSet(cardName, "PCMD")) == 1 {
 				edition = "PCMD"
 			}
 		}
@@ -643,7 +643,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			for _, code := range []string{
 				"SLD", "SLP",
 			} {
-				if len(mtgmatcher.MatchInSetNumber(cardName, code, number)) == 1 {
+				if len(b.MatchInSetNumber(cardName, code, number)) == 1 {
 					edition = code
 					variant = number
 				}
@@ -783,13 +783,13 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			} {
 				// number is often wrong, so
 				num, _ := strconv.Atoi(number)
-				results := mtgmatcher.MatchInSetNumber(cardName, code, number)
+				results := b.MatchInSetNumber(cardName, code, number)
 				switch code {
 				case "PMEI", "PEWK", "PW21", "PW22", "PW23", "PW24":
-					results = mtgmatcher.MatchInSet(cardName, code)
+					results = b.MatchInSet(cardName, code)
 				default:
 					if num < 10 {
-						results = mtgmatcher.MatchInSet(cardName, code)
+						results = b.MatchInSet(cardName, code)
 					}
 				}
 				if len(results) == 1 {
@@ -918,10 +918,10 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		// All cards from these set are Prerelease
 		variant = "Prerelease"
 		// Except for Planeswalker Decks cards
-		set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
+		set, err := b.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
 		if err == nil {
 			num, _ := strconv.Atoi(number)
-			if num > set.BaseSetSize && len(mtgmatcher.MatchInSet(cardName, set.Code)) > 0 {
+			if num > set.BaseSetSize && len(b.MatchInSet(cardName, set.Code)) > 0 {
 				edition = set.Code
 				variant = number
 			}
@@ -962,7 +962,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				variant = "Promo Pack"
 			} else if variant == "V.2" {
 				variant = "Prerelease"
-			} else if magic.HasPromoPackPrinting(cardName) { // Needs to be after V.2 check
+			} else if magic.HasPromoPackPrinting(b, cardName) { // Needs to be after V.2 check
 				variant = "Promo Pack"
 			} else {
 				variant = ""
@@ -1049,7 +1049,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				variant = number + " display"
 			}
 		default:
-			for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
+			for _, card := range b.MatchInSet(cardName, "PLST") {
 				if strings.HasSuffix(card.Number, "-"+number) {
 					edition = "PLST"
 					variant = card.Number
@@ -1084,7 +1084,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			case "V.2", "V.4":
 				variant = number + " Etched"
 			}
-		} else if magic.HasExtendedArtPrinting(cardName, "MH2") {
+		} else if magic.HasExtendedArtPrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -1093,19 +1093,19 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			case "V.3":
 				variant = "Extended Art"
 			}
-		} else if magic.HasBorderlessPrinting(cardName, "MH2") {
+		} else if magic.HasBorderlessPrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Borderless"
 			case "V.2":
 				variant = "Retro Frame"
-				if magic.HasShowcasePrinting(cardName, "MH2") {
+				if magic.HasShowcasePrinting(b, cardName, "MH2") {
 					variant = "Showcase"
 				}
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasShowcasePrinting(cardName, "MH2") {
+		} else if magic.HasShowcasePrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Showcase"
@@ -1114,7 +1114,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasRetroFramePrinting(cardName, "MH2") {
+		} else if magic.HasRetroFramePrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -1142,7 +1142,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		edition = "M3C"
 		switch variant {
 		case "V.2":
-			for _, card := range mtgmatcher.MatchInSetNumber(cardName, "M3C", number) {
+			for _, card := range b.MatchInSetNumber(cardName, "M3C", number) {
 				if card.HasPromoType(magic.PromoTypeRippleFoil) {
 					variant += " ripplefoil"
 				}
@@ -1163,12 +1163,12 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 	// Skip Attraction lights, too many
 	case "Unfinity":
-		if len(mtgmatcher.MatchInSet(cardName, "UNF")) > 1 {
+		if len(b.MatchInSet(cardName, "UNF")) > 1 {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
 	case "Commander's Arsenal":
-		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
+		if len(b.MatchInSet(cardName, "OCM1")) == 1 {
 			edition = "OCM1"
 		}
 
@@ -1193,7 +1193,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		variant = number
 		if ogVariant == "V.2" {
 			variant = "Display"
-			set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
+			set, err := b.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
 			if err == nil {
 				edition = "O" + set.Code
 			}
@@ -1205,7 +1205,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		variant = number
 		if ogVariant == "V.3" {
 			variant = "Display"
-			set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
+			set, err := b.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
 			if err == nil {
 				edition = "O" + set.Code
 			}
@@ -1229,12 +1229,12 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 	case "The Lord of the Rings: Tales of Middle-earth Holiday Release":
 		variant = number
-		if len(mtgmatcher.MatchInSet(cardName, "LTC")) > 0 {
+		if len(b.MatchInSet(cardName, "LTC")) > 0 {
 			edition = "LTC"
-			if magic.HasSerializedPrinting(cardName, "LTC") {
+			if magic.HasSerializedPrinting(b, cardName, "LTC") {
 				variant = "serial"
 			}
-		} else if len(mtgmatcher.MatchInSet(cardName, "LTR")) > 0 {
+		} else if len(b.MatchInSet(cardName, "LTR")) > 0 {
 			edition = "LTR"
 			switch ogVariant {
 			case "V.2":
@@ -1284,7 +1284,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				variant += " display etched foil"
 			}
 		default:
-			if ogVariant == "V.2" && mtgmatcher.HasFoilPrinting(cardName, "40K") {
+			if ogVariant == "V.2" && b.HasFoilPrinting(cardName, "40K") {
 				variant += " surge foil"
 			}
 		}
@@ -1304,13 +1304,13 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 	default:
 		switch {
 		// Try to derive the serialized status from the various Extras sets
-		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && magic.HasSerializedPrinting(cardName, strings.TrimSuffix(edition, ": Extras")):
+		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && magic.HasSerializedPrinting(b, cardName, strings.TrimSuffix(edition, ": Extras")):
 			variant = "serial"
 
 		// Pre-search the card, if not found it's likely a sideboard variant
 		case strings.HasPrefix(edition, "Pro Tour 1996:"),
 			strings.HasPrefix(edition, "WCD "):
-			_, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+			_, err := b.Match(&mtgmatcher.InputCard{
 				Name:    cardName,
 				Edition: edition,
 			})
@@ -1327,7 +1327,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 			// Retrieve the set date because different tags mean different things
 			// depending on the epoch
-			set, err := mtgmatcher.GetSetByName(editionNoSuffix)
+			set, err := b.GetSetByName(editionNoSuffix)
 			if err != nil {
 				return nil, &PreprocessError{
 					Extra: fmt.Sprintf("%s | %s | %s", cardName, edition, variant),
@@ -1402,7 +1402,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				default:
 					if strings.Contains(cardName, "//") {
 						variant = number
-					} else if magic.HasPromoPackPrinting(cardName) {
+					} else if magic.HasPromoPackPrinting(b, cardName) {
 						variant = "Promo Pack"
 					}
 				}
@@ -1418,7 +1418,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 	// Try separating SLD and PLST cards if possible
 	if strings.Contains(ogEdition, "Secret Lair Commander Deck") {
-		for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
+		for _, card := range b.MatchInSet(cardName, "PLST") {
 			if strings.HasSuffix(card.Number, "-"+number) {
 				edition = "PLST"
 				variant = card.Number

@@ -26,31 +26,34 @@ func (f *failAfter) Write(p []byte) (int, error) {
 }
 
 func TestWriteInventoryToCSVReportsAFailedDestination(t *testing.T) {
+	b := backendFor(nil)
 	inv := InventoryRecord{}
 	for _, id := range []string{"a|Card A|SET|1", "b|Card B|SET|2", "c|Card C|SET|3"} {
 		inv[id] = []InventoryEntry{{Conditions: "NM", Price: 1, Quantity: 1}}
 	}
 
 	// enough for the header, not for everything after it
-	if err := WriteInventoryToCSV(inv, &failAfter{budget: 40}); err == nil {
+	if err := WriteInventoryToCSV(b, inv, &failAfter{budget: 40}); err == nil {
 		t.Error("a destination that failed mid-write reported success")
 	}
 }
 
 func TestWriteBuylistToCSVReportsAFailedDestination(t *testing.T) {
+	b := backendFor(nil)
 	bl := BuylistRecord{
 		"a|Card A|SET|1": []BuylistEntry{{Conditions: "NM", BuyPrice: 1, Quantity: 1}},
 	}
-	if err := WriteBuylistToCSV(bl, 1, &failAfter{budget: 40}); err == nil {
+	if err := WriteBuylistToCSV(b, bl, 1, &failAfter{budget: 40}); err == nil {
 		t.Error("a destination that failed mid-write reported success")
 	}
 }
 
 func TestWriteInventoryToCSVStillSucceeds(t *testing.T) {
+	b := backendFor(nil)
 	inv := InventoryRecord{
 		"a|Card A|SET|1": []InventoryEntry{{Conditions: "NM", Price: 1, Quantity: 1}},
 	}
-	if err := WriteInventoryToCSV(inv, &failAfter{budget: 1 << 20}); err != nil {
+	if err := WriteInventoryToCSV(b, inv, &failAfter{budget: 1 << 20}); err != nil {
 		t.Errorf("a healthy destination reported %v", err)
 	}
 }

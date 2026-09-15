@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestSealedPricedCount covers the count a run signs off with. What it priced
@@ -15,7 +16,7 @@ import (
 // would move the number with stock rather than with coverage - the reading the
 // drop tally beside it is there to prevent.
 func TestSealedPricedCount(t *testing.T) {
-	scg, err := NewScraperSealed(mtgban.GameLorcana, "")
+	scg, err := NewScraperSealed(&mtgmatcher.Backend{Game: "lorcana"}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,9 +46,9 @@ func TestSealedPricedCount(t *testing.T) {
 // coverage looked exactly like a game with nothing more to sell. Each refusal
 // now names itself and is counted under its reason.
 func TestSealedDropAccounting(t *testing.T) {
-	withLorcana(t)
+	b := withLorcana(t)
 
-	scg, err := NewScraperSealed(mtgban.GameLorcana, "")
+	scg, err := NewScraperSealed(b, "")
 	if err != nil {
 		t.Fatal(err)
 	}
