@@ -101,9 +101,10 @@ type Gamenerdz struct {
 	DisableRetail  bool
 	DisableBuylist bool
 
-	client *GNClient
-	game   mtgban.Game
-	line   string
+	client  *GNClient
+	backend *mtgmatcher.Backend
+	game    mtgban.Game
+	line    string
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -111,8 +112,12 @@ type Gamenerdz struct {
 	buylist       mtgban.BuylistRecord
 }
 
-// NewScraper returns a scraper for one game.
-func NewScraper(game mtgban.Game) (*Gamenerdz, error) {
+// NewScraper returns a scraper for the datastore's game.
+func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	line, ok := gnGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -121,6 +126,7 @@ func NewScraper(game mtgban.Game) (*Gamenerdz, error) {
 	gn.inventory = mtgban.InventoryRecord{}
 	gn.buylist = mtgban.BuylistRecord{}
 	gn.client = NewGNClient(line)
+	gn.backend = b
 	gn.game = game
 	gn.line = line
 	gn.MaxConcurrency = defaultConcurrency
@@ -228,13 +234,13 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	etched := gn.game == mtgban.GameMagic && saysEtched(product)
 	if mode == modeRetail && gn.game == mtgban.GameMagic && product.ProductData.TCGProductID != 0 {
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
-		cardID, err := mtgmatcher.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil, etched)
+		cardID, err := gn.backend.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil, etched)
 		if err == nil {
 			return cardID, nil
 		}
 	}
 
-	theCard, err := preprocess(product, gn.game)
+	theCard, err := preprocess(gn.backend, product, gn.game)
 	if err != nil {
 		// Name the product, the way the failure below already does. A
 		// reason alone says a listing was dropped without saying which,
@@ -244,7 +250,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 
 	foil := theCard.Foil
 
-	cardID, err := mtgmatcher.Match(theCard)
+	cardID, err := gn.backend.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return "", nil
 	} else if err != nil {
@@ -259,7 +265,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	// with the single printing there is - the minted one carrying a price of
 	// its own, which the buylist keeps whenever it is the higher of the two.
 	// Nothing else was printed to move it to, so let it go.
-	if gn.game == mtgban.GameMagic && !finishPrinted(cardID, foil, etched) {
+	if gn.game == mtgban.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
 		return "", nil
 	}
 	return cardID, nil
@@ -268,8 +274,8 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 // finishPrinted reports whether the printing a product resolved to was sold in
 // the finish the product names. An id the catalog cannot place says nothing
 // either way and is left alone.
-func finishPrinted(cardID string, foil, etched bool) bool {
-	co, err := mtgmatcher.GetUUID(cardID)
+func finishPrinted(b *mtgmatcher.Backend, cardID string, foil, etched bool) bool {
+	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return true
 	}

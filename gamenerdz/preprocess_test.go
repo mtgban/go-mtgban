@@ -7,6 +7,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -14,37 +15,38 @@ import (
 // TestMain loads the datastore once for the whole package: the prerelease
 // shelf is read against the catalog, so preprocessing needs one.
 var (
-	datastoreOnce sync.Once
-	datastoreErr  error
-	datastoreOK   bool
+	datastoreOnce    sync.Once
+	datastoreErr     error
+	datastoreBackend *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// realDatastore reads the Magic datastore the first time a test asks for it,
+// and skips where the run carries none.
+func realDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		err := datastore.Load("magic", path)
+		backend, err := datastore.Read("magic", path)
 		if err != nil {
 			datastoreErr = err
 			return
 		}
-		datastoreOK = true
+		datastoreBackend = backend
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreBackend == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreBackend
 }
 
 func TestPreprocess(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	tests := []struct {
 		game    mtgban.Game
 		product GNProduct
@@ -358,7 +360,7 @@ func TestPreprocess(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		card, err := preprocess(tt.product, tt.game)
+		card, err := preprocess(b, tt.product, tt.game)
 		if tt.err {
 			if err == nil {
 				t.Errorf("%s/%s: expected an error", tt.game, tt.product.DisplayName)
