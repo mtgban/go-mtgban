@@ -16,8 +16,8 @@ var starcitygamesGames = []mtgban.Game{
 
 func init() {
 	mtgban.Register("starcitygames", starcitygamesGames,
-		func(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-			apiKey, err := auth.Secret(SecretAPIKey)
+		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+			apiKey, err := opts.Secret(SecretAPIKey)
 			if err != nil {
 				return nil, err
 			}
@@ -31,8 +31,8 @@ func init() {
 			return scraper, nil
 		})
 	mtgban.Register("starcitygames_sealed", starcitygamesGames,
-		func(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-			apiKey, err := auth.Secret(SecretAPIKey)
+		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+			apiKey, err := opts.Secret(SecretAPIKey)
 			if err != nil {
 				return nil, err
 			}

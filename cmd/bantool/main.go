@@ -335,10 +335,13 @@ func scraperResources(game mtgban.Game, key string) ([]mtgban.Option, error) {
 // callback and, where set, a concurrency cap; one half if the target asked
 // for it; the partner code its key's family has always read from the
 // environment; and any catalog, sku list or bridge scraperResources loads.
-// Secrets are not read here: EnvAuthenticator answers each constructor's own
-// Secret* names directly.
+// Secrets are not read here: mtgban.EnvAuthenticator goes along as an option
+// and answers each constructor's own Secret* names directly.
 func scraperOptions(game mtgban.Game, key string, opt *scraperOption, maxConcurrency int) ([]mtgban.Option, error) {
-	opts := []mtgban.Option{mtgban.WithLogCallback(log.Printf)}
+	opts := []mtgban.Option{
+		mtgban.WithLogCallback(log.Printf),
+		mtgban.WithAuthenticator(mtgban.EnvAuthenticator{}),
+	}
 	if maxConcurrency != 0 {
 		opts = append(opts, mtgban.WithMaxConcurrency(maxConcurrency))
 	}
@@ -885,7 +888,6 @@ func run() int {
 
 	var scrapers []mtgban.Scraper
 
-	auth := mtgban.EnvAuthenticator{}
 	// Initialize the enabled scrapers
 	for key, opt := range options[game] {
 		if !opt.Enabled {
@@ -898,7 +900,7 @@ func run() int {
 			return 1
 		}
 
-		scraper, err := mtgban.NewScraper(backend, key, auth, opts...)
+		scraper, err := mtgban.NewScraper(backend, key, opts...)
 		if err != nil {
 			log.Println(err)
 			return 1

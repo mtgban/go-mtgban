@@ -9,7 +9,7 @@ func init() {
 	mtgban.Register("vegassingles", []mtgban.Game{
 		mtgban.GameMagic, mtgban.GameRiftbound, mtgban.GameOnePiece,
 		mtgban.GamePokemon, mtgban.GameGundam,
-	}, func(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+	}, func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 		scraper, err := NewScraper(b)
 		if err != nil {
 			return nil, err

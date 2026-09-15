@@ -14,9 +14,9 @@ import (
 // for an option it cannot answer fails mtgban.NewScraper with "does not
 // implement mtgban.ScraperConfig" rather than silently publishing both
 // halves, which is how Vegas Singles published an empty Magic shelf twice a
-// day. A target that needs a secret cannot be built on a checkout without
-// one, and is counted as unverified rather than as honoured; any other
-// failure is a fault of its own.
+// day. No authenticator is given, so a target that needs a secret cannot be
+// built at all and is counted as unverified rather than as honoured; any
+// other failure is a fault of its own.
 func TestRegisteredHalvesAreHonoured(t *testing.T) {
 	var checked, unverified int
 	for game, scrapers := range options {
@@ -31,7 +31,7 @@ func TestRegisteredHalvesAreHonoured(t *testing.T) {
 			}
 
 			backend := &mtgmatcher.Backend{Game: strings.ToLower(string(game))}
-			_, err := mtgban.NewScraper(backend, key, mtgban.MapAuthenticator{}, half)
+			_, err := mtgban.NewScraper(backend, key, half)
 			switch {
 			case err == nil:
 				checked++

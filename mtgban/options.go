@@ -7,6 +7,11 @@ import "fmt"
 // scraper has a use for and ignores the rest: a store with no affiliate
 // program has nowhere to put an affiliate code.
 type Options struct {
+	// Authenticator answers the secrets a scraper asks for, read through
+	// Secret and OptionalSecret. Most scrapers ask for none and a caller
+	// building one of those sets no authenticator.
+	Authenticator Authenticator
+
 	// LogCallback receives the scraper's progress messages.
 	LogCallback LogCallbackFunc
 
@@ -44,6 +49,14 @@ type optionFunc func(*Options)
 
 func (f optionFunc) apply(o *Options) {
 	f(o)
+}
+
+// WithAuthenticator hands over the secrets the scraper asks for by name. A
+// scraper that asks for none needs no authenticator.
+func WithAuthenticator(auth Authenticator) Option {
+	return optionFunc(func(o *Options) {
+		o.Authenticator = auth
+	})
 }
 
 // WithLogCallback sends the scraper's progress messages to fn.

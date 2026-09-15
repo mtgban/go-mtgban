@@ -7,7 +7,7 @@ import (
 
 func init() {
 	mtgban.Register("trollandtoad", []mtgban.Game{mtgban.GameMagic},
-		func(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.LogCallback = opts.LogCallback
 			if opts.MaxConcurrency != 0 {

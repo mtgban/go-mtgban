@@ -23,7 +23,7 @@ func init() {
 	mtgban.Register("mintcard", []mtgban.Game{mtgban.GameMagic}, newScraper)
 }
 
-func newScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	skus, err := mtgban.Resource[tcgplayer.SKUMap](opts, ResourceSKUs)
 	if err != nil {
 		return nil, err

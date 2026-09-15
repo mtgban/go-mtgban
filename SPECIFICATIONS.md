@@ -297,7 +297,7 @@ helper that loads it.
 **No global backend.** Every lookup is a method on `*Backend`; the package
 keeps no datastore of its own and no package-level logger (`b.Logger`, read
 through `b.Logf`, is the caller's to set). A scraper is built on a backend
-with `mtgban.NewScraper(b, name, auth, opts...)` and matches against that one
+with `mtgban.NewScraper(b, name, opts...)` and matches against that one
 alone; two games can be priced in one process by two backends. A backend is
 immutable once loaded: maps, slices, card pointers and rules are shared by
 everything built on it. Replacing a datastore is loading another backend and

@@ -109,7 +109,7 @@ func init() {
 
 // buildIndex is cardmarket's Constructor. It needs no credential: Index
 // prices from a published catalog and the public price guide.
-func buildIndex(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	game, err := mtgban.GameOf(b)
 	if err != nil {
 		return nil, err
@@ -147,16 +147,16 @@ func buildIndex(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Optio
 }
 
 // buildMarket is cardmarket_market's Constructor.
-func buildMarket(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	game, err := mtgban.GameOf(b)
 	if err != nil {
 		return nil, err
 	}
-	appToken, err := auth.Secret(SecretAppToken)
+	appToken, err := opts.Secret(SecretAppToken)
 	if err != nil {
 		return nil, err
 	}
-	appSecret, err := auth.Secret(SecretAppSecret)
+	appSecret, err := opts.Secret(SecretAppSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func buildMarket(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.O
 	scraper.LogCallback = opts.LogCallback
 	scraper.Affiliate = opts.Affiliate
 	scraper.TargetEdition = opts.TargetEdition
-	scraper.BanPriceKey, err = mtgban.OptionalSecret(auth, SecretBanKey)
+	scraper.BanPriceKey, err = opts.OptionalSecret(SecretBanKey)
 	if err != nil {
 		return nil, err
 	}
@@ -195,16 +195,16 @@ func buildMarket(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.O
 
 // buildSealed is cardmarket_sealed's Constructor; the bridge it needs is
 // SealedBridgeUseOf's question, not BridgeUseOf's.
-func buildSealed(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func buildSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	game, err := mtgban.GameOf(b)
 	if err != nil {
 		return nil, err
 	}
-	appToken, err := auth.Secret(SecretAppToken)
+	appToken, err := opts.Secret(SecretAppToken)
 	if err != nil {
 		return nil, err
 	}
-	appSecret, err := auth.Secret(SecretAppSecret)
+	appSecret, err := opts.Secret(SecretAppSecret)
 	if err != nil {
 		return nil, err
 	}

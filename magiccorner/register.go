@@ -7,7 +7,7 @@ import (
 
 func init() {
 	mtgban.Register("magiccorner", []mtgban.Game{mtgban.GameMagic},
-		func(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)
 			if err != nil {
 				return nil, err

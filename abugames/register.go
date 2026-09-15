@@ -10,7 +10,7 @@ func init() {
 	mtgban.Register("abugames_sealed", []mtgban.Game{mtgban.GameMagic}, newScraperSealed)
 }
 
-func newScraper(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraper(b)
 	scraper.LogCallback = opts.LogCallback
 	if opts.MaxConcurrency != 0 {
@@ -19,7 +19,7 @@ func newScraper(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Optio
 	return scraper, nil
 }
 
-func newScraperSealed(b *mtgmatcher.Backend, _ mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraperSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraperSealed(b)
 	scraper.LogCallback = opts.LogCallback
 	if opts.MaxConcurrency != 0 {

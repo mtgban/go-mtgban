@@ -13,8 +13,8 @@ func init() {
 	mtgban.Register("sealed_ev", []mtgban.Game{mtgban.GameMagic}, newScraper)
 }
 
-func newScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
-	sig, err := auth.Secret(SecretBanKey)
+func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	sig, err := opts.Secret(SecretBanKey)
 	if err != nil {
 		return nil, err
 	}
