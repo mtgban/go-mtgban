@@ -1374,15 +1374,13 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	// uuids for Identifiers["derivedTokenPair"] == "true" rather than
 	// reading a second index kept only for that - one fact, one place.
 	// See tokenpairs.go.
-	derivedCards, tokenPairs := deriveTokenPairs(ap.Data, uuids, externalIDs[mtgmatcher.IDSpaceTCGplayer])
-	mtgmatcher.Logger.Printf("%s", tokenPairs)
+	derivedCards := deriveTokenPairs(ap.Data, uuids, externalIDs[mtgmatcher.IDSpaceTCGplayer])
 
 	alreadyDerived := make(map[string]bool, len(derivedCards))
 	for _, card := range derivedCards {
 		alreadyDerived[card.UUID] = true
 	}
 	verifiedCards := mintVerifiedPairs(ap.Data, uuids, alreadyDerived)
-	mtgmatcher.Logger.Printf("verifiedNoUpstreamPairs: %d entries -> %d minted", len(verifiedNoUpstreamPairs), len(verifiedCards))
 	derivedCards = append(derivedCards, verifiedCards...)
 
 	for _, card := range derivedCards {
