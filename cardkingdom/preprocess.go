@@ -149,8 +149,8 @@ var preserveTags = []string{
 	"JPN",
 }
 
-func setCodeExists(code string) bool {
-	_, err := mtgmatcher.GetSet(code)
+func setCodeExists(b *mtgmatcher.Backend, code string) bool {
+	_, err := b.GetSet(code)
 	return err == nil
 }
 
@@ -162,14 +162,14 @@ var tokenSetPrefixes = []string{"F", "T", "FT", "SF", "RF", "CF"}
 // the datastore stands for, as the Jumpstart theme cards do: the set the
 // sheet came with is carried, the sheet itself never was, so no row of it can
 // match and none is worth reporting.
-func unindexedTokenSheet(sku string) bool {
+func unindexedTokenSheet(b *mtgmatcher.Backend, sku string) bool {
 	fields := strings.Split(sku, "-")
-	if len(fields) < 2 || setCodeExists(fields[0]) {
+	if len(fields) < 2 || setCodeExists(b, fields[0]) {
 		return false
 	}
 	for _, prefix := range tokenSetPrefixes {
 		trimmed := strings.TrimPrefix(fields[0], prefix)
-		if trimmed != fields[0] && setCodeExists(trimmed) {
+		if trimmed != fields[0] && setCodeExists(b, trimmed) {
 			return true
 		}
 	}
@@ -179,7 +179,7 @@ func unindexedTokenSheet(sku string) bool {
 // resolveEmblem answers the datastore's spelling and number for an emblem row,
 // and empty strings for anything else or for a planeswalker the named set does
 // not pin to exactly one emblem.
-func resolveEmblem(edition, cardName, cardVariation string) (string, string) {
+func resolveEmblem(b *mtgmatcher.Backend, edition, cardName, cardVariation string) (string, string) {
 	face := cardName
 	for _, separator := range []string{" // ", " - "} {
 		before, _, found := strings.Cut(face, separator)
@@ -199,7 +199,7 @@ func resolveEmblem(edition, cardName, cardVariation string) (string, string) {
 		return "", ""
 	}
 
-	set, err := mtgmatcher.GetSet(edition)
+	set, err := b.GetSet(edition)
 	if err != nil {
 		return "", ""
 	}
@@ -222,7 +222,7 @@ func resolveEmblem(edition, cardName, cardVariation string) (string, string) {
 
 // Preprocess turns a feed entry into the card description the matcher takes,
 // reporting an error for the entries that are not cards.
-func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	foilVariant := strings.Contains(card.Variation, "Foil") && !strings.Contains(card.Variation, "Non")
 	isFoil := card.IsFoil || foilVariant
 	isEtched := strings.Contains(card.Variation, "Etched")
@@ -236,15 +236,15 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	setCode := fields[0]
 
 	// Strip the initial F from set codes that do not exist
-	if isFoil && strings.HasPrefix(sku, "F") && setCodeExists(setCode[1:]) {
+	if isFoil && strings.HasPrefix(sku, "F") && setCodeExists(b, setCode[1:]) {
 		sku = sku[1:]
 	}
 	// Same for Etched and E
-	if isEtched && strings.HasPrefix(sku, "E") && setCodeExists(setCode[1:]) {
+	if isEtched && strings.HasPrefix(sku, "E") && setCodeExists(b, setCode[1:]) {
 		sku = sku[1:]
 	}
 	// ccccombo (EF is for emblem foils)
-	if isFoil && isEtched && strings.HasPrefix(sku, "FE") && setCodeExists(setCode[2:]) {
+	if isFoil && isEtched && strings.HasPrefix(sku, "FE") && setCodeExists(b, setCode[2:]) {
 		sku = sku[2:]
 	}
 
@@ -267,9 +267,9 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	variation := strings.ToLower(number)
 
 	// Validate if setCode exists, if not preserve info from the card
-	if !setCodeExists(setCode) {
-		if (len(setCode) > 3 && setCodeExists(setCode[len(setCode)-3:])) ||
-			(len(setCode) > 4 && setCodeExists(setCode[len(setCode)-4:])) {
+	if !setCodeExists(b, setCode) {
+		if (len(setCode) > 3 && setCodeExists(b, setCode[len(setCode)-3:])) ||
+			(len(setCode) > 4 && setCodeExists(b, setCode[len(setCode)-4:])) {
 			edition = card.Edition
 			variation += " " + card.Variation
 		}
@@ -299,7 +299,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 			edition = card.Edition
 		case strings.Contains(variation, "Symbol"):
 			maybeNum := setCode + "-" + strings.TrimLeft(number, "0")
-			if len(mtgmatcher.MatchInSetNumber(card.Name, "PLST", maybeNum)) == 1 {
+			if len(b.MatchInSetNumber(card.Name, "PLST", maybeNum)) == 1 {
 				edition = "PLST"
 				variation = maybeNum
 			}
@@ -346,7 +346,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	// CK writes an emblem as the bare word plus the planeswalker, either
 	// parenthesized in the name or left in the variation, while the
 	// datastore spells the whole planeswalker name into the token name
-	if name, number := resolveEmblem(edition, card.Name, card.Variation); name != "" {
+	if name, number := resolveEmblem(b, edition, card.Name, card.Variation); name != "" {
 		card.Name = name
 		variation = number
 	}
@@ -382,7 +382,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		// "Mystery Booster/The List" case's own default arm already
 		// derives.
 		if card.ScryfallID == "" && card.Edition == "Mystery Booster/The List" &&
-			strings.HasPrefix(setCode, "MT") && setCodeExists(setCode[1:]) {
+			strings.HasPrefix(setCode, "MT") && setCodeExists(b, setCode[1:]) {
 			if id := magic.MatchTokenPairingBySetNumber(setCode[1:], number, card.Name, isFoil); id != "" {
 				return &mtgmatcher.InputCard{ID: id, Foil: isFoil}, nil
 			}
@@ -393,7 +393,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	// kept face already carries it, and leaving alone the split cards a
 	// T-prefixed set code sweeps in: the set carries those under both faces
 	if isTwoSidedToken &&
-		len(mtgmatcher.MatchInSetNumber(card.Name, setCode, number)) == 0 {
+		len(b.MatchInSetNumber(card.Name, setCode, number)) == 0 {
 		if strings.Contains(card.Name, " // ") {
 			card.Name = strings.Split(card.Name, " // ")[0]
 		} else {
@@ -407,10 +407,10 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	// one, while a code it does not carry names the set the tokens are
 	// filed with once its treatment and token wrappings are stripped
 	if (strings.Contains(card.Name, "Token") || strings.Contains(card.Name, "Bounty")) &&
-		!setCodeExists(setCode) {
+		!setCodeExists(b, setCode) {
 		for _, prefix := range tokenSetPrefixes {
 			trimmed := strings.TrimPrefix(setCode, prefix)
-			if trimmed != setCode && setCodeExists(trimmed) {
+			if trimmed != setCode && setCodeExists(b, trimmed) {
 				edition = trimmed
 				break
 			}
@@ -421,7 +421,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	// sheet was never sold in, and stripping the wrapping to reach the sheet
 	// drops that promise: the row would land on the plain printing and be
 	// priced as it, right beside the plain row that belongs there
-	printing := tokenPrinting(edition, number)
+	printing := tokenPrinting(b, edition, number)
 	if isFoil && printing != nil &&
 		!printing.HasFinish("foil") && !printing.HasFinish("etched") {
 		return nil, mtgmatcher.ErrUnsupported
@@ -438,8 +438,8 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 // tokenPrinting answers the printing a token sheet files at a number, asking
 // the sheet rather than the name because a token only carries the Token
 // suffix when a real card answers to the same name.
-func tokenPrinting(code, number string) *mtgmatcher.Card {
-	set, err := mtgmatcher.GetSet(code)
+func tokenPrinting(b *mtgmatcher.Backend, code, number string) *mtgmatcher.Card {
+	set, err := b.GetSet(code)
 	if err != nil || set.Type != "token" {
 		return nil
 	}

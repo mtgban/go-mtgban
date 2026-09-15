@@ -325,7 +325,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"cardkingdom": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := cardkingdom.NewScraper()
+				scraper := cardkingdom.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				scraper.Partner = os.Getenv("CK_PARTNER")
 				scraper.PreserveOOS = true
@@ -334,7 +334,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"cardkingdom_graded": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper, err := cardkingdom.NewScraperGraded()
+				scraper, err := cardkingdom.NewScraperGraded(b)
 				if err != nil {
 					return nil, err
 				}
@@ -345,7 +345,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"cardkingdom_sealed": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := cardkingdom.NewScraperSealed()
+				scraper := cardkingdom.NewScraperSealed(b)
 				scraper.LogCallback = GlobalLogCallback
 				scraper.Partner = os.Getenv("CK_PARTNER")
 				scraper.PreserveOOS = true
