@@ -10,8 +10,7 @@
 // The identification path takes the Backend it serves and reads nothing
 // else: the filter callbacks and the promo tag functions are handed it
 // along with the card, so a Backend opened on the side is matched against
-// its own data whether or not it was installed via SetGlobalDatastore. The
-// package's exported Has*Printing helpers (wrappers.go) take a Backend for
-// the same reason - they exist for the scrapers, which hand over the one
-// they were built on.
+// its own data. The package's exported Has*Printing helpers (wrappers.go)
+// take a Backend for the same reason - they exist for the scrapers, which
+// hand over the one they were built on.
 package magic

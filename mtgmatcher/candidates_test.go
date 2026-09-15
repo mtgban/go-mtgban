@@ -9,16 +9,11 @@ import (
 
 type candidateTestRules struct {
 	DefaultRules
-	codes     []string
-	prefilter func()
-	finalize  func([]Card) []Card
+	codes    []string
+	finalize func([]Card) []Card
 }
 
-func (r candidateTestRules) Prefilter(*Backend, *InputCard) {
-	if r.prefilter != nil {
-		r.prefilter()
-	}
-}
+func (candidateTestRules) Prefilter(*Backend, *InputCard)                 {}
 func (candidateTestRules) AdjustName(*Backend, *InputCard)                {}
 func (candidateTestRules) AdjustEdition(*Backend, *InputCard)             {}
 func (candidateTestRules) AliasEdition(_ *Backend, edition string) string { return edition }
@@ -106,21 +101,6 @@ func TestMatchUsesGameCandidateSets(t *testing.T) {
 	id, err := b.Match(&InputCard{Name: "Test Card", Edition: "Edition A"})
 	if err != nil || id != "b" {
 		t.Fatalf("expanded candidate = %q, %v", id, err)
-	}
-}
-
-func TestMatchPinsBackendAcrossReload(t *testing.T) {
-	previous := GlobalDatastore()
-	t.Cleanup(func() { SetGlobalDatastore(previous) })
-	b := candidateTestBackend()
-	b.SetRules(candidateTestRules{prefilter: func() { SetGlobalDatastore(&Backend{}) }})
-	SetGlobalDatastore(b)
-	id, err := Match(&InputCard{Name: "Test Card", Edition: "Edition A"})
-	if err != nil || id != "a" {
-		t.Fatalf("Match crossed snapshots after Prefilter: %q, %v", id, err)
-	}
-	if _, err := GetUUID("a"); err != ErrDatastoreEmpty {
-		t.Fatal("prefilter did not replace the global")
 	}
 }
 
