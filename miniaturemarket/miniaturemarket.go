@@ -30,6 +30,7 @@ type Miniaturemarket struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 	productMap    map[string]string
+	backend       *mtgmatcher.Backend
 	game          mtgban.Game
 	widget        string
 }
@@ -49,8 +50,12 @@ var mmGames = map[mtgban.Game]string{
 	mtgban.GameGundam:        "019be1227c9b730eb41abadcdd09015a",
 }
 
-// NewScraperSealed returns a sealed scraper for one game.
-func NewScraperSealed(game mtgban.Game) (*Miniaturemarket, error) {
+// NewScraperSealed returns a sealed scraper for the datastore's game.
+func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	widget, ok := mmGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -59,6 +64,7 @@ func NewScraperSealed(game mtgban.Game) (*Miniaturemarket, error) {
 	mm.inventory = mtgban.InventoryRecord{}
 	mm.MaxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
+	mm.backend = b
 	mm.game = game
 	mm.widget = widget
 	return &mm, nil
@@ -197,7 +203,7 @@ func sealedWords(name string) []string {
 //
 // A tie says nothing: two products the storefront's words fit equally are two
 // products it did not choose between, and neither is the answer.
-func resolveByNamedCard(listed string) (string, error) {
+func resolveByNamedCard(b *mtgmatcher.Backend, listed string) (string, error) {
 	vendor := sealedWords(listed)
 	if len(vendor) == 0 {
 		return "", mtgmatcher.ErrUnsupported
@@ -205,13 +211,13 @@ func resolveByNamedCard(listed string) (string, error) {
 
 	var found string
 	var foundName string
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
 		extras, ok := extraWords(sealedWords(co.Name), vendor)
-		if !ok || len(extras) == 0 || !extrasNameACard(extras, sealedWords(co.Name)) {
+		if !ok || len(extras) == 0 || !extrasNameACard(b, extras, sealedWords(co.Name)) {
 			continue
 		}
 		if found != "" && foundName != co.Name {
@@ -256,8 +262,8 @@ func extraWords(candidate, vendor []string) ([]string, bool) {
 // merely exist somewhere in the datastore. Searching by substring alone would
 // answer "case" with Staircase and forgive the word that distinguishes a case
 // from the box in it.
-func extrasNameACard(extras, candidate []string) bool {
-	uuids, err := mtgmatcher.SearchContains(strings.Join(extras, " "))
+func extrasNameACard(b *mtgmatcher.Backend, extras, candidate []string) bool {
+	uuids, err := b.SearchContains(strings.Join(extras, " "))
 	if err != nil {
 		return false
 	}
@@ -266,7 +272,7 @@ func extrasNameACard(extras, candidate []string) bool {
 		inCandidate[word] = true
 	}
 	for _, uuid := range uuids {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -329,7 +335,7 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 		spellings = append(spellings, trimmed)
 	}
 
-	uuid, err := mtgmatcher.ResolveSealed(name)
+	uuid, err := mm.backend.ResolveSealed(name)
 	if err == nil {
 		return uuid, ""
 	}
@@ -339,12 +345,12 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 	// reader nothing about the name that did.
 	refusal := err
 	for _, spelling := range spellings[1:] {
-		if uuid, err = mtgmatcher.ResolveSealed(spelling); err == nil {
+		if uuid, err = mm.backend.ResolveSealed(spelling); err == nil {
 			return uuid, ""
 		}
 	}
 	for _, spelling := range spellings {
-		if uuid, err = resolveByNamedCard(spelling); err == nil {
+		if uuid, err = resolveByNamedCard(mm.backend, spelling); err == nil {
 			return uuid, ""
 		}
 	}
@@ -468,8 +474,8 @@ func (mm *Miniaturemarket) NumberOfPages(ctx context.Context) (int, error) {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mm *Miniaturemarket) Load(ctx context.Context) error {
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range mm.backend.GetSealedUUIDs() {
+		co, err := mm.backend.GetUUID(uuid)
 		if err != nil || co.Identifiers["miniaturemarketId"] == "" {
 			continue
 		}
