@@ -19,22 +19,24 @@ type Sealed struct {
 
 	productMap map[string]string
 	client     *ABUClient
+	backend    *mtgmatcher.Backend
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *Sealed {
+func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	abu := Sealed{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
 	abu.MaxConcurrency = defaultConcurrency
 	abu.client = NewABUClient()
+	abu.backend = b
 
 	abu.productMap = map[string]string{}
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}

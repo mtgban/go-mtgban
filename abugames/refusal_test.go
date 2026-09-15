@@ -10,7 +10,7 @@ import (
 // to price them against, and answering with the finish that was printed puts
 // two of the storefront's prices on one uuid.
 func TestUnprintedFinish(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc string
 		card ABUCard
@@ -24,7 +24,7 @@ func TestUnprintedFinish(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			in, err := preprocess(&card)
+			in, err := preprocess(b, &card)
 			if !errors.Is(err, errUnprintedFinish) {
 				t.Errorf("preprocess(%q) = %v, %v, want %v", card.DisplayTitle, in, err, errUnprintedFinish)
 			}
@@ -36,7 +36,7 @@ func TestUnprintedFinish(t *testing.T) {
 // printed the card in. The match falls back on the English printing, so the
 // storefront's Italian and Japanese prices land beside its English one.
 func TestForeignListing(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	for _, test := range []struct {
 		desc string
 		card ABUCard
@@ -54,7 +54,7 @@ func TestForeignListing(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			_, err := preprocess(&card)
+			_, err := preprocess(b, &card)
 			if test.want == nil {
 				if err != nil {
 					t.Errorf("preprocess(%q) = %v, want no error", card.DisplayTitle, err)
