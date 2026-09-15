@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -15,12 +14,12 @@ import (
 // is the class the wording path stopped doing and the id path, answering
 // first, kept on.
 func TestResolveProductEtchedByID(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 	// An etched printing filed beside its foil on one card is the shape
 	// that folds: one sold etched alone has nothing to fold to.
 	var etchedUUID, tcgID string
-	for _, uuid := range mtgmatcher.GetUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil || !co.Etched || !co.HasFinish(mtgmatcher.FinishFoil) {
 			continue
 		}
@@ -32,9 +31,9 @@ func TestResolveProductEtchedByID(t *testing.T) {
 	if etchedUUID == "" {
 		t.Skip("no etched printing carries a TCGplayer id")
 	}
-	co, _ := mtgmatcher.GetUUID(etchedUUID)
+	co, _ := b.GetUUID(etchedUUID)
 
-	gn, err := NewScraper(mtgban.GameMagic)
+	gn, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}

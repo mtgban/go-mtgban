@@ -390,7 +390,7 @@ func coolstuffincSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgb
 
 func gamenerdzScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := gamenerdz.NewScraper(game)
+		scraper, err := gamenerdz.NewScraper(b)
 		if err != nil {
 			return nil, err
 		}
