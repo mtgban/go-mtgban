@@ -23,6 +23,8 @@ type Manaleak struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	DisableRetail  bool
 	DisableBuylist bool
 
@@ -35,9 +37,9 @@ type Manaleak struct {
 	buylist       mtgban.BuylistRecord
 }
 
-// NewScraper returns a scraper for the storefront.
-func NewScraper() *Manaleak {
-	ml := Manaleak{}
+// NewScraper returns a scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Manaleak {
+	ml := Manaleak{backend: b}
 	ml.inventory = mtgban.InventoryRecord{}
 	ml.buylist = mtgban.BuylistRecord{}
 	ml.client = NewMLClient()
@@ -80,12 +82,12 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 	if inputID == "" {
 		space, inputID = mtgmatcher.IDSpaceMultiverse, product.MultiverseID
 	}
-	cardID, err := mtgmatcher.MatchID(mtgmatcher.ConvertID(space, inputID), foil, etched)
+	cardID, err := ml.backend.MatchID(ml.backend.ConvertID(space, inputID), foil, etched)
 	if err == nil {
 		return cardID, nil
 	}
 
-	return mtgmatcher.Match(&mtgmatcher.InputCard{
+	return ml.backend.Match(&mtgmatcher.InputCard{
 		Name:    cardName,
 		Edition: product.SetName,
 		Foil:    foil,
