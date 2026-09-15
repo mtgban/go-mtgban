@@ -223,6 +223,7 @@ const (
 	PromoTypeBorderless  = BorderColorBorderless
 	PromoTypeExtendedArt = FrameEffectExtendedArt
 	PromoTypeShowcase    = FrameEffectShowcase
+	PromoTypeRetroFrame  = "retroframe"
 
 	PromoTypeBoosterfun        = "boosterfun"
 	PromoTypeBundle            = "bundle"
@@ -943,6 +944,9 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			}
 			if card.HasFrameEffect(FrameEffectShowcase) {
 				card.PromoTypes = append(card.PromoTypes, PromoTypeShowcase)
+			}
+			if card.FrameVersion == "1997" {
+				card.PromoTypes = append(card.PromoTypes, PromoTypeRetroFrame)
 			}
 
 			// Rename DFCs into a single name
