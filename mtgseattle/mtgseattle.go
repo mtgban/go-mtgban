@@ -33,6 +33,8 @@ type MTGSeattle struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
+	backend *mtgmatcher.Backend
+
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -45,9 +47,9 @@ type MTGSeattle struct {
 	client *http.Client
 }
 
-// NewScraper returns a scraper.
-func NewScraper() *MTGSeattle {
-	ms := MTGSeattle{}
+// NewScraper returns a scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *MTGSeattle {
+	ms := MTGSeattle{backend: b}
 	ms.inventory = mtgban.InventoryRecord{}
 	ms.buylist = mtgban.BuylistRecord{}
 	ms.MaxConcurrency = defaultConcurrency
@@ -189,12 +191,12 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			}
 		}
 
-		theCard, err := preprocess(cardName, edition, variant)
+		theCard, err := preprocess(ms.backend, cardName, edition, variant)
 		if err != nil {
 			return
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := ms.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -226,7 +228,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := ms.backend.GetUUID(probe)
 					ms.printf("- %s", card)
 				}
 			}
@@ -236,7 +238,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 		// Sanity check, a bunch of EA cards are market as foil when they
 		// actually don't have a foil printing, just skip them
 		if strings.Contains(title, "Foil - Extended Art") {
-			co, err := mtgmatcher.GetUUID(cardID)
+			co, err := ms.backend.GetUUID(cardID)
 			if err != nil || !co.Foil {
 				return
 			}
@@ -265,7 +267,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 				priceRatio = price / sellPrice * 100
 			}
 
-			gradeMap := grading(cardID, price)
+			gradeMap := grading(ms.backend, cardID, price)
 			for _, grade := range mtgban.DefaultGradeTags {
 				var quantity int
 				if grade == "NM" {
@@ -407,8 +409,8 @@ func (ms *MTGSeattle) Buylist() mtgban.BuylistRecord {
 	return ms.buylist
 }
 
-func grading(cardID string, price float64) map[string]float64 {
-	co, err := mtgmatcher.GetUUID(cardID)
+func grading(b *mtgmatcher.Backend, cardID string, price float64) map[string]float64 {
+	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil
 	}

@@ -26,7 +26,7 @@ var promoTags = []string{
 	"SDCC 2019 Exclusive",
 }
 
-func preprocess(cardName, edition, variant string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgmatcher.InputCard, error) {
 	s := mtgmatcher.SplitVariants(cardName)
 	cardName = s[0]
 	if len(s) > 1 {
@@ -148,7 +148,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.InputCard, error
 			return nil, errors.New("unsupported")
 		}
 	case "Core Set 2021":
-		if strings.Contains(variant, "Alternate Art") && mtgmatcher.ExtractNumber(variant) == "" {
+		if strings.Contains(variant, "Alternate Art") && b.ExtractNumber(variant) == "" {
 			variant = "Borderless"
 		}
 	case "Adventures in the Forgotten Realms":
@@ -156,7 +156,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.InputCard, error
 			variant = "Showcase"
 		}
 	case "Secret Lair Drop Series":
-		if variant == "Borderless" && len(mtgmatcher.MatchInSet(cardName, "SLC")) > 0 {
+		if variant == "Borderless" && len(b.MatchInSet(cardName, "SLC")) > 0 {
 			edition = "SLC"
 		}
 	}

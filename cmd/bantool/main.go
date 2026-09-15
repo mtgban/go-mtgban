@@ -488,7 +488,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		"mtgseattle": {
 			OnlySeller: true,
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := mtgseattle.NewScraper()
+				scraper := mtgseattle.NewScraper(b)
 				scraper.LogCallback = GlobalLogCallback
 				if MaxConcurrency != 0 {
 					scraper.MaxConcurrency = MaxConcurrency
