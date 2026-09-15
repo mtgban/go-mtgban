@@ -13,13 +13,15 @@ import (
 type Arcanafrisia struct {
 	LogCallback mtgban.LogCallbackFunc
 
+	backend *mtgmatcher.Backend
+
 	buylistDate time.Time
 	buylist     mtgban.BuylistRecord
 }
 
-// NewScraper returns a buylist scraper.
-func NewScraper() *Arcanafrisia {
-	af := Arcanafrisia{}
+// NewScraper returns a buylist scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Arcanafrisia {
+	af := Arcanafrisia{backend: b}
 	af.buylist = mtgban.BuylistRecord{}
 	return &af
 }
@@ -44,9 +46,9 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 	af.printf("Found %d buylist entries", len(cards))
 
 	for _, card := range cards {
-		cardID, err := mtgmatcher.MatchID(card.ScryfallID, card.Finish == "foil")
+		cardID, err := af.backend.MatchID(card.ScryfallID, card.Finish == "foil")
 		if err != nil {
-			if !mtgmatcher.IsToken(card.Name) {
+			if !af.backend.IsToken(card.Name) {
 				af.printf("%v: %s %s (%s)", err, card.ScryfallID, card.Name, card.SetCode)
 			}
 			continue
