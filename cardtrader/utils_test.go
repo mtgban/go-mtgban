@@ -1,6 +1,10 @@
 package cardtrader
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // numberShapes are the collector numbers One Piece writes, and whether the
 // game's matcher reads one as a number. mtgmatcher/onepiece owns the shape
@@ -96,10 +100,11 @@ func TestGameName(t *testing.T) {
 			"Monkey.D.Luffy", "Token", "Monkey.D.Luffy"},
 	}
 
+	b := &mtgmatcher.Backend{}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			bp := Blueprint{Name: test.name, Version: test.version}
-			got := gameName(test.gameID, &bp)
+			got := gameName(b, test.gameID, &bp)
 			if got != test.want {
 				t.Errorf("gameName(%d, %q/%q) = %q, want %q",
 					test.gameID, test.name, test.version, got, test.want)

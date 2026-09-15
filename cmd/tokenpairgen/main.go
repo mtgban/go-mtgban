@@ -83,7 +83,7 @@ func scanSCG(ctx context.Context, b *mtgmatcher.Backend, apiKey string) (map[[2]
 // Properties.Number empty, the real one arriving under FixedProperties
 // instead until FormatBlueprints moves it over, the same way cardtrader.go's
 // own Load has to.
-func scanCardTrader(ctx context.Context, token string) (map[[2]string]bool, error) {
+func scanCardTrader(ctx context.Context, b *mtgmatcher.Backend, token string) (map[[2]string]bool, error) {
 	client := cardtrader.NewCTAuthClient(token)
 
 	blueprintsRaw, expansionsRaw, err := cardtrader.BlueprintsForGameID(ctx, client, cardtrader.GameMagic, "", func(format string, args ...any) {
@@ -98,7 +98,7 @@ func scanCardTrader(ctx context.Context, token string) (map[[2]string]bool, erro
 
 	found := map[[2]string]bool{}
 	for _, bp := range blueprints {
-		uuidA, uuidB, ok := cardtrader.TokenPairAnchorUUIDs(*bp)
+		uuidA, uuidB, ok := cardtrader.TokenPairAnchorUUIDs(b, *bp)
 		if !ok || uuidA == uuidB {
 			continue
 		}
@@ -146,7 +146,7 @@ func run() int {
 	}
 
 	if token := os.Getenv("CARDTRADER_TOKEN_BEARER"); token != "" {
-		found, err := scanCardTrader(ctx, token)
+		found, err := scanCardTrader(ctx, ds, token)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "cardtrader:", err)
 			return 1

@@ -2,8 +2,6 @@ package cardtrader
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPreprocessResolvesTokenPairing pins a two-sided token sheet blueprint
@@ -17,7 +15,7 @@ import (
 // that is frequently the pairing's own product id directly, with no
 // scryfall id and no name-splitting needed at all - the second case below.
 func TestPreprocessResolvesTokenPairing(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	for _, tt := range []struct {
 		desc        string
@@ -80,11 +78,11 @@ func TestPreprocessResolvesTokenPairing(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := Preprocess(&tt.bp)
+			card, err := Preprocess(b, &tt.bp)
 			if err != nil {
 				t.Fatalf("Preprocess(%d) = %v", tt.bp.ID, err)
 			}
-			co, err := mtgmatcher.GetUUID(card.ID)
+			co, err := b.GetUUID(card.ID)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", card.ID, err)
 			}
@@ -111,12 +109,12 @@ func TestPreprocessResolvesTokenPairing(t *testing.T) {
 // the disagreement must fall through to a refusal rather than namedID
 // silently resolving one bare face instead.
 func TestPreprocessRefusesNamePairEditionMismatch(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	bp := Blueprint{ID: 46731, Name: "Bird // Myr", CategoryID: CategoryMagicTokens}
 	bp.Expansion.Name = "Commander 2016"
 
-	card, err := Preprocess(&bp)
+	card, err := Preprocess(b, &bp)
 	if err != nil {
 		// A hard refusal (no id, no number, no set-anchor for namedID's
 		// own name-based Match fallback either) is an acceptable outcome
@@ -124,7 +122,7 @@ func TestPreprocessRefusesNamePairEditionMismatch(t *testing.T) {
 		// the wrong derived pairing.
 		return
 	}
-	co, err := mtgmatcher.GetUUID(card.ID)
+	co, err := b.GetUUID(card.ID)
 	if err == nil && co.Identifiers["derivedTokenPair"] == "true" {
 		t.Errorf("blueprint %d resolved to derived pairing %s [%s], want a refusal: Commander 2016 never sold Modern Horizons' Bird // Myr pairing", bp.ID, co.Name, co.SetCode)
 	}
@@ -175,17 +173,17 @@ func TestTokenPairNumbers(t *testing.T) {
 // exists for this case: the same number-anchored resolution that already
 // finds an ordinary derived pairing reaches this one too.
 func TestPreprocessResolvesVendorVerifiedPairing(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	bp := Blueprint{ID: 46667, Name: "Dragon // Cat Dragon", CategoryID: CategoryMagicTokens}
 	bp.Expansion.Name = "Commander 2017"
 	bp.Properties.Number = "07/09"
 
-	card, err := Preprocess(&bp)
+	card, err := Preprocess(b, &bp)
 	if err != nil {
 		t.Fatalf("Preprocess(%d) = %v", bp.ID, err)
 	}
-	co, err := mtgmatcher.GetUUID(card.ID)
+	co, err := b.GetUUID(card.ID)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", card.ID, err)
 	}
