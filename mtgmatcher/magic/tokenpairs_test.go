@@ -498,3 +498,51 @@ func TestMatchNativeTokenPair(t *testing.T) {
 		}
 	}
 }
+
+// TestMatchTokenPairingByNamesAndEdition pins the mechanism a listing with
+// neither an id nor a filing set/number resolves through: both faces'
+// names alone, guarded by requiring the vendor's own claimed edition to
+// independently agree with the match (see the function's own doc comment
+// for why - a generic pairing name recurs across more than one set's own
+// token sheet, and without this guard whichever one the datastore
+// currently derives would win regardless of which set the listing
+// actually names).
+func TestMatchTokenPairingByNamesAndEdition(t *testing.T) {
+	realDatastore(t)
+
+	tcgID := MatchTokenPairingByNamesAndEdition("Cat Warrior // Beast", "Commander 2018", false)
+	if tcgID == "" {
+		t.Fatal("MatchTokenPairingByNamesAndEdition(Cat Warrior // Beast, Commander 2018) = \"\", want a match")
+	}
+	uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, tcgID)
+	co, err := testBackend.GetUUID(uuid)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", uuid, err)
+	}
+	if co.SetCode != "TC18" {
+		t.Errorf("resolved to set %s, want TC18", co.SetCode)
+	}
+
+	// Bird // Myr is a real derived pairing (Modern Horizons' own token
+	// sheet), but Commander 2016 never sold that exact pairing - its own
+	// Bird // Myr partners are different tokens on TC16's own sheet. The
+	// two face names alone would resolve to Modern Horizons' pairing
+	// regardless; the edition check must catch the disagreement.
+	if got := MatchTokenPairingByNamesAndEdition("Bird // Myr", "Commander 2016", false); got != "" {
+		t.Errorf("MatchTokenPairingByNamesAndEdition(Bird // Myr, Commander 2016) = %q, want \"\": the listing's own edition disagrees with the name-only match", got)
+	}
+}
+
+// TestTokenPairIDByBothNamesCollision pins the same collision-blanking
+// discipline byFace already has, one level down: "Knight" and "Zombie"
+// pair with each other on more than one set's own token sheet, so the
+// unordered name pair alone must stay unresolved rather than answering
+// with an arbitrary one of them.
+func TestTokenPairIDByBothNamesCollision(t *testing.T) {
+	realDatastore(t)
+
+	key := [2]string{NormalizeTokenFace("Knight"), NormalizeTokenFace("Zombie")}
+	if id, found := TokenPairIDByBothNames()[key]; found {
+		t.Errorf(`TokenPairIDByBothNames[Knight,Zombie] = %q, want no entry (colliding key must stay unresolved)`, id)
+	}
+}

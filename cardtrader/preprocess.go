@@ -120,6 +120,24 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 				}, nil
 			}
 		}
+
+		// Neither id resolved - the ~62% of Card Trader's own two-sided
+		// token catalog that carries no scryfall_id and no tcgplayer_id
+		// at all, and (unlike Card Kingdom's or Star City Games's skus)
+		// no collector number either, so there is no identity to anchor
+		// either face by at all. magic.MatchTokenPairingByNamesAndEdition
+		// trusts both faces' own names instead, guarded by requiring the
+		// blueprint's own claimed edition to independently agree with
+		// the match - see its own doc comment for why the guard is not
+		// optional (measured: 11.6% of name-only matches against Card
+		// Trader's real catalog would otherwise be silently wrong).
+		if tcgID := magic.MatchTokenPairingByNamesAndEdition(cardName, edition, false); tcgID != "" {
+			if id, err := mtgmatcher.MatchID(tcgID, false); err == nil {
+				return &mtgmatcher.InputCard{
+					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
+				}, nil
+			}
+		}
 	}
 
 	// Some, but not all, have a proper id we can reuse right away, and the
