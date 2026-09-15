@@ -522,7 +522,7 @@ func tcgSealedScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scrape
 
 func vegassinglesScraper(game mtgban.Game) func(*mtgmatcher.Backend) (mtgban.Scraper, error) {
 	return func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-		scraper, err := vegassingles.NewScraper(game)
+		scraper, err := vegassingles.NewScraper(b)
 		if err != nil {
 			return nil, err
 		}
