@@ -198,3 +198,98 @@ func TestDerivedTokenPairsAreNotNameMatchable(t *testing.T) {
 		t.Errorf("len(MatchInSet(\"Treasure\", \"TCMM\")) = %d, want 1 (a derived pairing leaked in)", got)
 	}
 }
+
+// TestNormalizeTokenFace pins the pure string logic directly, independent
+// of any vendor package: the artist parenthetical must come off before the
+// " Token" suffix trim runs, or "X Token (Artist)" never has the suffix
+// found at all (it only ever finds " Token" at the very end of the
+// string). No datastore needed - this is a string transform, not a lookup.
+func TestNormalizeTokenFace(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		want string
+	}{
+		{"Angel Token", "angel"},
+		{"Angel", "angel"},
+		{"Eldrazi Spawn Token (Briclot)", "eldrazi spawn"},
+		{"Cat Warrior Token", "cat warrior"},
+		{"  Bear  Token  ", "bear"},
+	} {
+		if got := NormalizeTokenFace(tt.name); got != tt.want {
+			t.Errorf("NormalizeTokenFace(%q) = %q, want %q", tt.name, got, tt.want)
+		}
+	}
+}
+
+// TestSplitTokenPairName pins the separator-preference logic directly: "//"
+// is tried before "-", so a listing carrying both never has its faces split
+// at the wrong one. No datastore needed.
+func TestSplitTokenPairName(t *testing.T) {
+	for _, tt := range []struct {
+		name       string
+		wantFirst  string
+		wantSecond string
+	}{
+		{"Angel Token // Drake Token", "Angel Token", "Drake Token"},
+		{"Angel Token - Cat Token", "Angel Token", "Cat Token"},
+		{"Angel - Drake Token // Cat Token", "Angel - Drake Token", "Cat Token"},
+		{"Plain Card Name", "Plain Card Name", ""},
+	} {
+		first, second := SplitTokenPairName(tt.name)
+		if first != tt.wantFirst || second != tt.wantSecond {
+			t.Errorf("SplitTokenPairName(%q) = (%q, %q), want (%q, %q)",
+				tt.name, first, second, tt.wantFirst, tt.wantSecond)
+		}
+	}
+}
+
+// TestMatchTokenPairingAnchorsEitherHalf pins MatchTokenPairing's own
+// anchor-swap logic directly, independent of any vendor package's sku
+// parsing: a vendor's scryfall_id usually names the FIRST half of its own
+// listing name, but not always - "Cat Token - Cat Warrior Token" carries
+// the id against the Cat Warrior face, so the Cat half is the partner to
+// look up, the opposite of what naming order alone would suggest.
+// cardkingdom's own TestPreprocessTokenPairingSecondHalfAnchored pins the
+// same real pairing end to end through Preprocess(); this pins the
+// matcher's own behavior directly.
+func TestMatchTokenPairingAnchorsEitherHalf(t *testing.T) {
+	realDatastore(t)
+
+	const scryfallID = "29c4e4f2-0040-4490-b357-660d729ad9cc"
+	const wantUUID = "7a13db1f-523c-5b19-80e5-d4d6f0121c6b_tp_7e5dc858-2163-5de0-95cb-f0e2933a7f7f"
+	if mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, scryfallID) == "" {
+		t.Skip("Cat (C17) scryfallId not present in this datastore")
+	}
+
+	tcgID := MatchTokenPairing(scryfallID, "Cat Token - Cat Warrior Token")
+	if tcgID == "" {
+		t.Fatal("MatchTokenPairing(Cat, ..Cat Warrior..) = \"\", want the derived Cat // Cat Warrior pairing")
+	}
+	if uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, tcgID); uuid != wantUUID {
+		t.Errorf("MatchTokenPairing(Cat, ..Cat Warrior..) = %s (%s), want %s", tcgID, uuid, wantUUID)
+	}
+}
+
+// TestMatchTokenPairingBySetNumber pins the sku-anchored fallback directly,
+// independent of any vendor package: MatchTokenPairingBySetNumber anchors
+// the FIRST face by its own filing set and number (rather than a
+// scryfall_id) and tries both a suffix-kept and a suffix-stripped form of
+// that face's own name against it, since most token Card.Names drop the
+// " Token" suffix a vendor spells but the wording alone can't say whether
+// this one does. Reuses the same AFC/AFR cross-set pairing
+// TestDerivedTokenPairResolvesByProductID already pins as ground truth -
+// the derived entity's own SetCode is the pairing's home set (TAFR), but
+// Illusion, the face being anchored here, is actually filed under TAFC.
+func TestMatchTokenPairingBySetNumber(t *testing.T) {
+	realDatastore(t)
+
+	const wantTCGID = "244277"
+	if mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, wantTCGID) == "" {
+		t.Skip("Illusion // Skeleton (id 244277) not derived in this datastore")
+	}
+
+	tcgID := MatchTokenPairingBySetNumber("TAFC", "3", "Illusion Token // Skeleton Token")
+	if tcgID != wantTCGID {
+		t.Errorf("MatchTokenPairingBySetNumber(TAFC, 3, ..Skeleton..) = %q, want %q", tcgID, wantTCGID)
+	}
+}
