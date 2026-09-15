@@ -10,11 +10,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: bantool-cardmarket
-  cancel-in-progress: false
-  queue: max
-
 jobs:
   deploy:
     name: ${{ github.workflow }}
