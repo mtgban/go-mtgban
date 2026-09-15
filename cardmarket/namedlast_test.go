@@ -122,7 +122,7 @@ func TestNamedLast(t *testing.T) {
 // without the wait the printing keeps whichever price the catalog happened
 // to list first rather than the one an id vouches for.
 func TestCollectPricesDefersNamed(t *testing.T) {
-	loadFabDatastore(t)
+	b := loadFabDatastore(t)
 
 	const uuid = "mon092_237847_1stedition"
 	// The bridge knows the second of the two, so the first resolves by name.
@@ -141,9 +141,9 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 		},
 	}
 
-	mkm, err := NewScraperIndex(mtgban.GameFleshAndBlood)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GameFleshAndBlood) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	mkm.exchangeRate = 1
 	mkm.MaxConcurrency = 1

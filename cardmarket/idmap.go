@@ -31,9 +31,11 @@ func sameProduct(gameID int) func(a, b *cm.Product) bool {
 
 // faceOf answers the rule telling a product that names one face of a fused
 // printing, for the games whose shelves sell a card face by face.
-func faceOf(gameID int) func(product *cm.Product, cardID string) bool {
+func faceOf(b *mtgmatcher.Backend, gameID int) func(product *cm.Product, cardID string) bool {
 	if gameID == cm.GameFleshAndBlood {
-		return fabFaceOf
+		return func(product *cm.Product, cardID string) bool {
+			return fabFaceOf(b, product, cardID)
+		}
 	}
 	return nil
 }
@@ -120,7 +122,7 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 		}
 		items = kept
 		if mkm.gameID == cm.GameOnePiece {
-			mkm.shelved = shelvedSets(items)
+			mkm.shelved = shelvedSets(mkm.backend, items)
 		}
 	}
 
@@ -140,7 +142,7 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 				mkm.disownBridged(results)
 			}
 			if same := sameProduct(mkm.gameID); same != nil {
-				twinsAmong(results, same, faceOf(mkm.gameID))
+				twinsAmong(results, same, faceOf(mkm.backend, mkm.gameID))
 			}
 
 			// A refusal is named once per name and number: the same

@@ -201,9 +201,14 @@ func (mkm *Index) printf(format string, a ...any) {
 	}
 }
 
-// NewScraperIndex returns an index scraper for one game. It prices from the
-// published catalog and the public price guide, so it needs no credential.
-func NewScraperIndex(game mtgban.Game) (*Index, error) {
+// NewScraperIndex returns an index scraper matching against b. It prices
+// from the published catalog and the public price guide, so it needs no
+// credential.
+func NewScraperIndex(b *mtgmatcher.Backend) (*Index, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	id, found := mkmGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -213,6 +218,7 @@ func NewScraperIndex(game mtgban.Game) (*Index, error) {
 	mkm.MaxConcurrency = defaultConcurrency
 	mkm.game = game
 	mkm.gameID = id
+	mkm.resolver.backend = b
 	mkm.resolver.printf = mkm.printf
 	return &mkm, nil
 }
@@ -248,12 +254,12 @@ var nameCode = regexp.MustCompile(`\(([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\)$`)
 // matcher reaches past the edition and lands on the ordinary booster
 // printing of that number, which is a mass-printed card wearing a promo's
 // price. A refusal says less but claims nothing.
-func onePieceNumber(name, number, expansion string) string {
+func onePieceNumber(b *mtgmatcher.Backend, name, number, expansion string) string {
 	fields := nameCode.FindStringSubmatch(name)
 	if fields == nil || strings.EqualFold(fields[1], number) {
 		return number
 	}
-	if _, err := mtgmatcher.GetSetByName(expansion); err != nil {
+	if _, err := b.GetSetByName(expansion); err != nil {
 		return number
 	}
 	return fields[1]
@@ -262,10 +268,10 @@ func onePieceNumber(name, number, expansion string) string {
 // shelvedSets names, for each set of ours, the one expansion of this catalog
 // that sells it. A set no expansion names is absent, and so is an expansion
 // naming no set.
-func shelvedSets(list []cm.Expansion) map[string]string {
+func shelvedSets(b *mtgmatcher.Backend, list []cm.Expansion) map[string]string {
 	shelved := make(map[string]string, len(list))
 	for _, exp := range list {
-		set, err := mtgmatcher.GetSetByName(exp.Name)
+		set, err := b.GetSetByName(exp.Name)
 		if err != nil {
 			continue
 		}
@@ -344,7 +350,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	foilLow, foilTrend := guide.SecondPrinting(mkm.gameID)
 	foilprices := []float64{foilLow, foilTrend}
 
-	co, err := mtgmatcher.GetUUID(cardID)
+	co, err := mkm.backend.GetUUID(cardID)
 	if err != nil {
 		return err
 	}
@@ -540,13 +546,13 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 	addOne := func(result responseChan) {
 		err := add(result.cardID, &result.entry)
 		if err != nil {
-			card, cerr := mtgmatcher.GetUUID(result.cardID)
+			card, cerr := mkm.backend.GetUUID(result.cardID)
 			if cerr != nil {
 				mkm.printf("%d - %s: %s", result.ogID, cerr.Error(), result.cardID)
 				return
 			}
 			// Skip too many errors
-			if mtgmatcher.IsToken(card.Name) ||
+			if mkm.backend.IsToken(card.Name) ||
 				card.Edition == "Pro Tour Collector Set" ||
 				strings.HasPrefix(card.Edition, "World Championship Decks") {
 				return
@@ -555,7 +561,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 		}
 	}
 
-	collector := namedLast{add: addOne, twin: sameProduct(mkm.gameID), face: faceOf(mkm.gameID)}
+	collector := namedLast{add: addOne, twin: sameProduct(mkm.gameID), face: faceOf(mkm.backend, mkm.gameID)}
 
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
 

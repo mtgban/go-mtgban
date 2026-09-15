@@ -60,6 +60,10 @@ type resolver struct {
 	printf func(format string, a ...any)
 
 	gameID int
+
+	// backend is the datastore Index and Market match against, set by
+	// their constructors.
+	backend *mtgmatcher.Backend
 }
 
 func (r *resolver) logf(format string, a ...any) {
@@ -117,7 +121,7 @@ func (r *resolver) noPrinting(product *cm.Product) error {
 // elsewhere, too: where no other expansion names it nothing else is pricing
 // it, and refusing would drop the only price there is.
 func (r *resolver) offShelf(product *cm.Product, cardID string) bool {
-	co, err := mtgmatcher.GetUUID(cardID)
+	co, err := r.backend.GetUUID(cardID)
 	if err != nil || len(co.PromoTypes) > 0 {
 		return false
 	}
@@ -134,7 +138,7 @@ func (r *resolver) offShelf(product *cm.Product, cardID string) bool {
 // through matchPokemon and matchYugioh, and every other game through the
 // matcher alone; see resolveProduct.
 func (r *resolver) matchFab(product *cm.Product) string {
-	shelves := fabShelves(product)
+	shelves := fabShelves(r.backend, product)
 	if len(shelves) == 0 {
 		return ""
 	}
@@ -198,7 +202,7 @@ func (r *resolver) matchFab(product *cm.Product) string {
 			// the card's plainest printing.
 			for _, number := range numbers {
 				for _, name := range names {
-					id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+					id, err := r.backend.Match(&mtgmatcher.InputCard{
 						Name:      name,
 						Edition:   edition,
 						Variation: number,
@@ -207,7 +211,7 @@ func (r *resolver) matchFab(product *cm.Product) string {
 					if err != nil {
 						continue
 					}
-					co, cerr := mtgmatcher.GetUUID(id)
+					co, cerr := r.backend.GetUUID(id)
 					if cerr != nil || !strings.EqualFold(co.SetCode, set.Code) {
 						continue
 					}
@@ -243,12 +247,12 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 	// reliably than name/number matching, which cannot tell apart
 	// products sharing a collector number (e.g. RVR 312 vs 312z,
 	// both "312" upstream); preprocess only when no id is known.
-	cardID, cardIDFoil := Fallback(product)
+	cardID, cardIDFoil := Fallback(r.backend, product)
 	if cardID != "" {
 		return cardID, cardIDFoil, nil
 	}
 
-	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
+	theCard, err := Preprocess(r.backend, product.Name, product.Number, product.ExpansionName)
 	if err != nil {
 		_, ok := err.(*PreprocessError)
 		if ok {
@@ -257,11 +261,11 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 		return "", "", nil
 	}
 
-	cardID, err = mtgmatcher.Match(theCard)
+	cardID, err = r.backend.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return "", "", nil
 	} else if err != nil {
-		if mtgmatcher.IsToken(theCard.Name) ||
+		if r.backend.IsToken(theCard.Name) ||
 			theCard.Edition == "Pro Tour Collector Set" ||
 			strings.HasPrefix(theCard.Edition, "World Championship Decks") {
 			return "", "", nil
@@ -275,14 +279,14 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 		if errors.As(err, &alias) {
 			probes := alias.Probe()
 			for _, probe := range probes {
-				card, _ := mtgmatcher.GetUUID(probe)
+				card, _ := r.backend.GetUUID(probe)
 				r.logf("- %s", card)
 			}
 		}
 		return "", "", err
 	}
 
-	cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
+	cardIDFoil, _ = r.backend.MatchID(cardID, true)
 	return cardID, cardIDFoil, nil
 }
 
@@ -315,9 +319,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// and so knows only part of the shelf.
 		if r.gameID == cm.GameOnePiece {
 			if tcgID, found := r.TCGBridge[product.IDProduct]; found {
-				if id, idErr := mtgmatcher.MatchID(fmt.Sprint(tcgID), false); idErr == nil {
+				if id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false); idErr == nil {
 					cardID = id
-					cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
+					cardIDFoil, _ = r.backend.MatchID(cardID, true)
 					if r.offShelf(product, cardID) {
 						return "", "", false, errNoPrinting
 					}
@@ -330,7 +334,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		cardName := fields[0]
 		number := product.Number
 		if r.gameID == cm.GameOnePiece {
-			number = onePieceNumber(cardName, product.Number, product.ExpansionName)
+			number = onePieceNumber(r.backend, cardName, product.Number, product.ExpansionName)
 		}
 		// The V-index cardmarket synthesizes for same-number siblings is
 		// how One Piece tells a base art from its variants (V.1 the base,
@@ -342,7 +346,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			number = strings.TrimSpace(number + " V." + strings.TrimSuffix(fields[1], ")"))
 		}
 
-		cardID, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
+		cardID, err = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return "", "", false, nil
 		} else if err != nil && !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
@@ -361,7 +365,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				probes := alias.Probe()
 				r.logf("%s got ids: %s", cardName, probes)
 				for _, probe := range probes {
-					co, _ := mtgmatcher.GetUUID(probe)
+					co, _ := r.backend.GetUUID(probe)
 					r.logf("%s: %s", probe, co)
 				}
 			}
@@ -370,7 +374,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// A wrong-variant miss above may just mean the card has no nonfoil
 		// printing (Match validates the finish); adopt the foil id then.
 		var errFoil error
-		cardIDFoil, errFoil = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: true})
+		cardIDFoil, errFoil = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: true})
 		if cardID == "" {
 			cardID = cardIDFoil
 		}
@@ -412,10 +416,10 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// card being agreed on and the finish the one disagreement.
 		var loose string
 		if tcgID, found := r.TCGBridge[product.IDProduct]; found {
-			cardID, _ = mtgmatcher.MatchID(fmt.Sprint(tcgID), false)
+			cardID, _ = r.backend.MatchID(fmt.Sprint(tcgID), false)
 			if finish := productFinish(r.gameID, product); finish != "" && cardID != "" {
 				loose = cardID
-				cardID, _ = mtgmatcher.MatchIDFinish(fmt.Sprint(tcgID), finish)
+				cardID, _ = r.backend.MatchIDFinish(fmt.Sprint(tcgID), finish)
 			}
 		}
 		// The bridge speaks through cardtrader's blueprints and knows only
@@ -455,13 +459,13 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// was dropped for having nowhere to attach. Naming the run
 			// reaches it, and errors into an empty id for the products
 			// sold in no first edition, which the guard below drops.
-			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, "1st Edition")
+			cardIDFoil, _ = r.backend.MatchIDFinish(cardID, "1st Edition")
 		}
 		if r.gameID == cm.GamePokemon {
 			// Pokemon's second column is the reverse holo's, which the flag
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
-			// is never reached. This is Index's own use of cardIDFoil -
+// is never reached. This is Index's own use of cardIDFoil -
 			// resolveProduct is shared between the two scrapers (see the
 			// package doc above) - and it stays exactly as it was: Market's
 			// own path (queryPokemonPrintings, pokemonFinishPlan) resolves
@@ -469,7 +473,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// through this pair, and simply never reads cardIDFoil for this
 			// game, so leaving it filled here costs Market nothing while
 			// Index still depends on it.
-			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, pokemonReverseHolo)
+			cardIDFoil, _ = r.backend.MatchIDFinish(cardID, pokemonReverseHolo)
 		}
 	default:
 		return "", "", false, errors.New("unsupported game")
@@ -493,7 +497,7 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 	var plain, foil []string
 	var plainMatched, foilMatched bool
 	for _, uuid := range uuids {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := r.backend.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -533,7 +537,7 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		} else {
 			// The entry lists no foil printing, but the datastore may
 			// still carry one, the way resolveProduct probes for it.
-			cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
+			cardIDFoil, _ = r.backend.MatchID(cardID, true)
 		}
 	case len(foil) > 0:
 		// A foil-only product prices through its own columns; both ids
@@ -612,7 +616,7 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 		prefixed        bool
 	}
 	var candidates []candidate
-	editions, prefix := pokemonEditions(product.ExpansionName)
+	editions, prefix := pokemonEditions(r.backend, product.ExpansionName)
 	number := product.Number
 	if prefix != "" && number != "" {
 		number = prefix + number
@@ -633,16 +637,16 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 	}
 	carried := false
 	for _, c := range candidates {
-		set, err := mtgmatcher.GetSetByName(c.edition)
+		set, err := r.backend.GetSetByName(c.edition)
 		if err != nil {
 			continue
 		}
 		carried = true
-		id, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: name, Edition: c.edition, Variation: c.number})
+		id, err := r.backend.Match(&mtgmatcher.InputCard{Name: name, Edition: c.edition, Variation: c.number})
 		if err != nil {
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := r.backend.GetUUID(id)
 		if err != nil || !strings.EqualFold(co.SetCode, set.Code) {
 			continue
 		}
@@ -672,7 +676,7 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 	// The oversized printing is not in the shelf's set; only the name and
 	// the tag reach it. See yugiohOversized.
 	if strings.EqualFold(rarity, "Oversized") {
-		if id, err := yugiohOversized(name); err == nil {
+		if id, err := yugiohOversized(r.backend, name); err == nil {
 			return id, nil
 		}
 	}
@@ -685,7 +689,7 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 
 	carried := false
 	for _, edition := range yugiohEditions(product.ExpansionName) {
-		set, err := mtgmatcher.GetSetByName(edition)
+		set, err := r.backend.GetSetByName(edition)
 		if err != nil {
 			continue
 		}
@@ -694,7 +698,7 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 		// The European print is a set of its own where the catalog has
 		// one, numbered with the region the product writes.
 		if region == "EN" {
-			worldwide, err := mtgmatcher.GetSet(set.Code + "-EN")
+			worldwide, err := r.backend.GetSet(set.Code + "-EN")
 			if err == nil {
 				sets = []*mtgmatcher.Set{worldwide}
 			}
@@ -734,7 +738,7 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 					}
 				}
 				for _, finish := range finishes {
-					id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+					id, err := r.backend.Match(&mtgmatcher.InputCard{
 						Name:      name,
 						Edition:   set.Name,
 						Variation: variation,
@@ -743,7 +747,7 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 					if err != nil {
 						continue
 					}
-					co, err := mtgmatcher.GetUUID(id)
+					co, err := r.backend.GetUUID(id)
 					if err != nil || !strings.EqualFold(co.SetCode, set.Code) {
 						continue
 					}
@@ -821,10 +825,10 @@ func (r *resolver) disownBridged(results []resolved) {
 		claimed[mtgmatcher.Normalize(unpitched(name))] = true
 	}
 	for i, res := range results {
-		if res.err != nil || res.cardID == "" || res.byName || fabNamesPrinting(res.product, res.cardID) {
+		if res.err != nil || res.cardID == "" || res.byName || fabNamesPrinting(r.backend, res.product, res.cardID) {
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(res.cardID)
+		co, err := r.backend.GetUUID(res.cardID)
 		if err != nil || !claimed[mtgmatcher.Normalize(fabBaseName(co.Name))] {
 			continue
 		}
@@ -845,8 +849,8 @@ func (r *resolver) yugiohNumberTaken(setCode string, numbers []string, name stri
 	defer r.numbersMu.Unlock()
 	if r.numbers == nil {
 		r.numbers = map[string]map[string]string{}
-		for _, uuid := range mtgmatcher.GetUUIDs() {
-			co, err := mtgmatcher.GetUUID(uuid)
+		for _, uuid := range r.backend.GetUUIDs() {
+			co, err := r.backend.GetUUID(uuid)
 			if err != nil {
 				continue
 			}
