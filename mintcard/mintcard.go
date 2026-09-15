@@ -27,11 +27,14 @@ type MTGMintCard struct {
 	buylist   mtgban.BuylistRecord
 
 	SKUsData tcgplayer.SKUMap
+
+	backend *mtgmatcher.Backend
 }
 
 // NewScraper returns a scraper.
-func NewScraper() *MTGMintCard {
+func NewScraper(b *mtgmatcher.Backend) *MTGMintCard {
 	mint := MTGMintCard{}
+	mint.backend = b
 	mint.inventory = mtgban.InventoryRecord{}
 	mint.buylist = mtgban.BuylistRecord{}
 	return &mint
@@ -67,7 +70,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 
 	cardID, found := sku2uuid[card.TCGplayerID]
 	if !found {
-		theCard, err := preprocess(card.Name, card.Number, finish, language, edition, setCode)
+		theCard, err := preprocess(mint.backend, card.Name, card.Number, finish, language, edition, setCode)
 		if err != nil {
 			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 				mint.printf("%v", err)
@@ -75,7 +78,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			return
 		}
 
-		cardID, err = mtgmatcher.Match(theCard)
+		cardID, err = mint.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -92,7 +95,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := mint.backend.GetUUID(probe)
 					mint.printf("- %s", card)
 				}
 			}
@@ -139,7 +142,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			link += "&utm_source=" + url.QueryEscape(mint.Partner) + "&utm_medium=referral&utm_campaign=" + url.QueryEscape(mint.Partner)
 		}
 
-		gradeMap := grading(cardID, buyPrice)
+		gradeMap := grading(mint.backend, cardID, buyPrice)
 		for _, grade := range mtgban.DefaultGradeTags {
 			price := buyPrice * gradeMap[grade]
 			if price > 0 {
@@ -182,7 +185,7 @@ func (mint *MTGMintCard) Load(ctx context.Context) error {
 			}
 
 			// Convert tcg sku ids into ban ids
-			id, err := mtgmatcher.MatchID(uuid, sku.Printing == "FOIL", sku.Finish == "ETCHED")
+			id, err := mint.backend.MatchID(uuid, sku.Printing == "FOIL", sku.Finish == "ETCHED")
 			if err != nil {
 				continue
 			}
@@ -221,8 +224,8 @@ func (mint *MTGMintCard) Buylist() mtgban.BuylistRecord {
 	return mint.buylist
 }
 
-func grading(cardID string, price float64) map[string]float64 {
-	co, err := mtgmatcher.GetUUID(cardID)
+func grading(b *mtgmatcher.Backend, cardID string, price float64) map[string]float64 {
+	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil
 	}
