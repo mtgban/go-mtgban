@@ -30,11 +30,12 @@ type Graded struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 
-	client *cloudscraper.CloudScrapper
+	client  *cloudscraper.CloudScrapper
+	backend *mtgmatcher.Backend
 }
 
 // NewScraperGraded returns a graded scraper.
-func NewScraperGraded() (*Graded, error) {
+func NewScraperGraded(b *mtgmatcher.Backend) (*Graded, error) {
 	client, err := cloudscraper.Init(false, false)
 	if err != nil {
 		return nil, err
@@ -43,6 +44,7 @@ func NewScraperGraded() (*Graded, error) {
 	ck := Graded{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.client = client
+	ck.backend = b
 
 	return &ck, nil
 }
@@ -117,7 +119,7 @@ func (ck *Graded) scrapePage(session string, page int) error {
 
 		title := strings.TrimSpace(s.Find(".productTitle a").Text())
 
-		theCard, err := preprocessGraded(title)
+		theCard, err := preprocessGraded(ck.backend, title)
 		if err != nil {
 			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 				ck.printf("%s: %v", title, err)
@@ -125,7 +127,7 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			return
 		}
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := ck.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -137,7 +139,7 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
+					card, _ := ck.backend.GetUUID(probe)
 					ck.printf("- %s", card)
 				}
 			}

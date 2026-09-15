@@ -1,12 +1,17 @@
 package cardkingdom
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // TestPreprocessGradedNested pins the titles whose edition carries a
 // parenthetical of its own. Refusing them dropped 41 of the roughly 950
 // listings this storefront grades, silently, and they are the expensive end
 // of its inventory.
 func TestPreprocessGradedNested(t *testing.T) {
+	b := &mtgmatcher.Backend{}
 	for _, tt := range []struct {
 		desc    string
 		title   string
@@ -38,7 +43,7 @@ func TestPreprocessGradedNested(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			got, err := preprocessGraded(tt.title)
+			got, err := preprocessGraded(b, tt.title)
 			if err != nil {
 				t.Fatalf("preprocessGraded(%q) = %v", tt.title, err)
 			}
