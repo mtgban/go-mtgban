@@ -2,8 +2,6 @@ package palworld
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPlainNumberMatchesLoader pins the rules to the loader. PlainNumber is
@@ -11,11 +9,11 @@ import (
 // compared against, so the two spelling a number differently finds nothing
 // and raises nothing - the failure a caller reads as "no such card".
 func TestPlainNumberMatchesLoader(t *testing.T) {
-	loadBackend(t)
+	b := loadBackend(t)
 
 	var seen int
-	for _, code := range mtgmatcher.GetAllSets() {
-		set, err := mtgmatcher.GetSet(code)
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
 		if err != nil {
 			continue
 		}
