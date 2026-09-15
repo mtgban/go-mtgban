@@ -873,7 +873,7 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 	return err
 }
 
-func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) (err error) {
+func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) (err error) {
 	if len(seller.Inventory()) == 0 {
 		return fmt.Errorf("seller %s has no data", seller.Info().Shorthand)
 	}
@@ -898,7 +898,7 @@ func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath,
 	case "json":
 		err = mtgban.WriteSellerToJSON(seller, writer)
 	case "csv":
-		err = mtgban.WriteInventoryToCSV(seller.Inventory(), writer)
+		err = mtgban.WriteInventoryToCSV(backend, seller.Inventory(), writer)
 	case "ndjson":
 		err = writeSellerToNDJSON(seller, writer)
 	default:
@@ -908,7 +908,7 @@ func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath,
 	return err
 }
 
-func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) (err error) {
+func dumpVendor(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) (err error) {
 	if len(vendor.Buylist()) == 0 {
 		return fmt.Errorf("vendor %s has no data", vendor.Info().Shorthand)
 	}
@@ -933,7 +933,7 @@ func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath,
 	case "json":
 		err = mtgban.WriteVendorToJSON(vendor, writer)
 	case "csv":
-		err = mtgban.WriteBuylistToCSV(vendor.Buylist(), vendor.Info().CreditMultiplier, writer)
+		err = mtgban.WriteBuylistToCSV(backend, vendor.Buylist(), vendor.Info().CreditMultiplier, writer)
 	case "ndjson":
 		err = writeVendorToNDJSON(vendor, writer)
 	default:
@@ -1011,12 +1011,12 @@ func reportCollapsedPricings(vendors []mtgban.Vendor) {
 	}
 }
 
-func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string, meta bool) []error {
+func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string, meta bool) []error {
 	log.Println("Writing results to", outputPath)
 
 	var sellerErrs []error
 	for _, seller := range sellers {
-		err := dumpSeller(dataBucket, seller, outputPath, format)
+		err := dumpSeller(backend, dataBucket, seller, outputPath, format)
 		if err != nil {
 			log.Println(err)
 			sellerErrs = append(sellerErrs, err)
@@ -1025,7 +1025,7 @@ func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgb
 
 		if meta && format != "json" {
 			sellerMeta := mtgban.NewSellerFromInventory(nil, seller.Info())
-			err := dumpSeller(dataBucket, sellerMeta, outputPath, "json")
+			err := dumpSeller(backend, dataBucket, sellerMeta, outputPath, "json")
 			if err != nil {
 				sellerErrs = append(sellerErrs, err)
 				continue
@@ -1035,7 +1035,7 @@ func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgb
 
 	var vendorErrs []error
 	for _, vendor := range vendors {
-		err := dumpVendor(dataBucket, vendor, outputPath, format)
+		err := dumpVendor(backend, dataBucket, vendor, outputPath, format)
 		if err != nil {
 			log.Println(err)
 			vendorErrs = append(vendorErrs, err)
@@ -1044,7 +1044,7 @@ func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgb
 
 		if meta && format != "json" {
 			vendorMeta := mtgban.NewVendorFromBuylist(nil, vendor.Info())
-			err := dumpVendor(dataBucket, vendorMeta, outputPath, "json")
+			err := dumpVendor(backend, dataBucket, vendorMeta, outputPath, "json")
 			if err != nil {
 				vendorErrs = append(vendorErrs, err)
 				continue
@@ -1417,7 +1417,7 @@ func run() int {
 
 	now = time.Now()
 	// Dump the results
-	dumpErrors := dump(dataBucket, sellers, vendors, *outputPathOpt, *fileFormatOpt, *metaOpt)
+	dumpErrors := dump(backend, dataBucket, sellers, vendors, *outputPathOpt, *fileFormatOpt, *metaOpt)
 	nonFatalErrors = append(nonFatalErrors, dumpErrors...)
 
 	log.Println("uploading data took:", time.Since(now))
