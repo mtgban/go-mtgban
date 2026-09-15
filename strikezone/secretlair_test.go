@@ -12,7 +12,7 @@ import (
 // several: a listing saying nothing about which reaches one of them for no
 // reason, and every other drop is then priced as that one.
 func TestSecretLairDrop(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	// The store writes the drop inside the name it publishes, never in the
 	// condition column beside it, so that is where these say it.
@@ -29,7 +29,7 @@ func TestSecretLairDrop(t *testing.T) {
 		{"nor one whose other number is its step-and-compleat", "Plague Sliver", false},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(tt.name, "Secret Lair", "")
+			card, err := preprocess(b, tt.name, "Secret Lair", "")
 			refused := errors.Is(err, mtgmatcher.ErrUnsupported)
 			if refused != tt.wantRefused {
 				t.Fatalf("preprocess(%q) refused = %v, want %v (err %v)",
