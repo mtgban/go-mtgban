@@ -16,31 +16,27 @@ import (
 var (
 	datastoreOnce sync.Once
 	datastoreErr  error
-	datastoreOK   bool
+	datastoreB    *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// withMagic loads the Magic datastore the first time a test asks for it, and
+// skips where the run carries none.
+func withMagic(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		err := datastore.Load("magic", path)
-		if err != nil {
-			datastoreErr = err
-			return
-		}
-		datastoreOK = true
+		datastoreB, datastoreErr = datastore.Read("magic", path)
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreB == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreB
 }
 
 // TestTitleMarkers pins the three markers that say a listing is not the
@@ -48,8 +44,6 @@ func realDatastore(t *testing.T) {
 // place, and each shares its number with the printing it reprints, so
 // nothing else in the title tells them apart.
 func TestTitleMarkers(t *testing.T) {
-	realDatastore(t)
-
 	for _, tt := range []struct {
 		desc, title, wantSet, wantNumber string
 	}{
@@ -85,15 +79,16 @@ func TestTitleMarkers(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			in, err := preprocess(tt.title)
+			b := withMagic(t)
+			in, err := preprocess(b, tt.title)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.title, err)
 			}
-			id, err := mtgmatcher.Match(in)
+			id, err := b.Match(in)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", in, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}

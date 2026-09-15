@@ -64,12 +64,12 @@ var powerToughness = regexp.MustCompile(`^\d+/\d+$`)
 // it. A trailing group only counts as a series when it spells a set name
 // outright: the matcher's lookup also honors set codes and its own aliases,
 // and the storefront's promo qualifiers land on those by accident.
-func splitParens(title string) (number, series, treatment string) {
+func splitParens(b *mtgmatcher.Backend, title string) (number, series, treatment string) {
 	end := strings.Index(title, "》")
 	for _, loc := range reParens.FindAllStringSubmatchIndex(title, -1) {
 		group := title[loc[2]:loc[3]]
 		if end >= 0 && loc[0] > end {
-			set, err := mtgmatcher.GetSetByName(group)
+			set, err := b.GetSetByName(group)
 			if err == nil && mtgmatcher.Normalize(set.Name) == mtgmatcher.Normalize(group) {
 				series = group
 				continue
@@ -116,18 +116,18 @@ func splitParens(title string) (number, series, treatment string) {
 // The promo line is asked first: where it holds a prerelease printing of
 // the card, that is where the listing belongs, whatever the set holds at
 // the number.
-func prereleaseOnPromoLine(cardName, edition, number string) bool {
-	for _, card := range mtgmatcher.MatchInSet(cardName, "P"+edition) {
+func prereleaseOnPromoLine(b *mtgmatcher.Backend, cardName, edition, number string) bool {
+	for _, card := range b.MatchInSet(cardName, "P"+edition) {
 		if card.HasPromoType("prerelease") {
 			return true
 		}
 	}
-	return number == "" || len(mtgmatcher.MatchInSetNumber(cardName, edition, number)) != 1
+	return number == "" || len(b.MatchInSetNumber(cardName, edition, number)) != 1
 }
 
 // Preprocess turns a storefront product into the card description the matcher
 // takes, reporting an error for what is not a card.
-func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, error) {
 	// The art cards a set booster carries are filed in art series sets the
 	// datastore does not carry, so a row of one has no printing to reach
 	if strings.Contains(product.ProductNameEN, "【Art Card】") ||
@@ -180,7 +180,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	}
 
 	// The number is only found in the JPN line, which may name the series too
-	number, series, _ := splitParens(product.ProductName)
+	number, series, _ := splitParens(b, product.ProductName)
 	if series != "" {
 		edition = series
 	}
@@ -257,7 +257,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 			if len(fields) > 1 {
 				edition += " " + fields[1]
 			}
-		} else if strings.Contains(product.ProductNameEN, "Prerelease") && prereleaseOnPromoLine(cardName, edition, number) {
+		} else if strings.Contains(product.ProductNameEN, "Prerelease") && prereleaseOnPromoLine(b, cardName, edition, number) {
 			edition += " Prerelease"
 		}
 
@@ -297,7 +297,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 // process titles like
 // 【EN】【Foil】(168)《武器製造/Weapons Manufacturing》[EOE] 赤R
 // 【EN】【Foil】(086)■プレリリース■《虚空間渡り/Weftwalking》[EOE] 青R
-func preprocess(title string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, error) {
 	if strings.Contains(title, "Ultra Pro Puzzle") {
 		return nil, mtgmatcher.ErrUnsupported
 	}
@@ -362,7 +362,7 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	}
 
 	// (168) and (Junior Super Series)
-	number, series, promoWording := splitParens(title)
+	number, series, promoWording := splitParens(b, title)
 	if series != "" {
 		edition = series
 	}
@@ -437,7 +437,7 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		// resolve. A -P edition is not that: it names one set's promos and
 		// pins the listing among them, and the Champs textless Imperious
 		// Perfect is filed in PCMP rather than with Lorwyn's.
-		_, setErr := mtgmatcher.GetSet(fixup)
+		_, setErr := b.GetSet(fixup)
 		if promoLine && setErr == nil {
 			edition, variant = fixup, ""
 		} else {
