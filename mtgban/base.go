@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"slices"
 	"sort"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // ErrInvalidCondition is returned when an entry carries a grade that is not
@@ -38,19 +36,16 @@ func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int)
 	if found {
 		for i := range entries {
 			if strict > 2 && entry.Conditions == entries[i].Conditions && entry.SellerName == entries[i].SellerName {
-				card, _ := mtgmatcher.GetUUID(cardID)
-				return fmt.Errorf("%w: duplicate inventory key, same conditions:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, entries[i])
+				return fmt.Errorf("%w: duplicate inventory key, same conditions:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 			}
 
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price && entry.SellerName == entries[i].SellerName {
 				if strict > 1 {
-					card, _ := mtgmatcher.GetUUID(cardID)
-					return fmt.Errorf("%w: duplicate inventory key, same conditions and price:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, entries[i])
+					return fmt.Errorf("%w: duplicate inventory key, same conditions and price:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 				}
 
 				if strict > 0 && entry.URL == entries[i].URL && entry.Quantity == entries[i].Quantity && entry.Bundle == entries[i].Bundle {
-					card, _ := mtgmatcher.GetUUID(cardID)
-					return fmt.Errorf("%w: duplicate inventory key, same url, and qty:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, entries[i])
+					return fmt.Errorf("%w: duplicate inventory key, same url, and qty:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 				}
 
 				inv[cardID][i].Quantity += entry.Quantity
@@ -147,14 +142,12 @@ func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict int) erro
 	if found {
 		for i := range entries {
 			if strict > 1 && entry.Conditions == entries[i].Conditions && entry.VendorName == entries[i].VendorName {
-				card, _ := mtgmatcher.GetUUID(cardID)
-				return fmt.Errorf("%w: attempted to add a second buylist price at one grade:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, entries[i])
+				return fmt.Errorf("%w: attempted to add a second buylist price at one grade:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 			}
 
 			if entry.Quantity == entries[i].Quantity && entry.Conditions == entries[i].Conditions && entry.BuyPrice == entries[i].BuyPrice && entry.VendorName == entries[i].VendorName {
 				if strict > 0 {
-					card, _ := mtgmatcher.GetUUID(cardID)
-					return fmt.Errorf("%w: attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, entries[i])
+					return fmt.Errorf("%w: attempted to add a duplicate buylist card:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 				}
 				bl[cardID][i].Quantity += entry.Quantity
 				return nil

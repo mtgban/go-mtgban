@@ -14,9 +14,10 @@ import (
 // ArbitOpts configures the datastore, filters and thresholds used by Arbit
 // and Mismatch. Zero-valued filters leave the two sides' common cards eligible.
 type ArbitOpts struct {
-	// Backend is the immutable datastore used for this report. When nil,
-	// Arbit and Mismatch capture the global datastore once at entry. Custom
-	// callbacks doing auxiliary lookups should use the same backend.
+	// Backend is the immutable datastore used for this report - this is
+	// where a caller passes its own backend. When nil, Arbit and Mismatch
+	// capture the global datastore once at entry. Custom callbacks doing
+	// auxiliary lookups should use the same backend.
 	Backend *mtgmatcher.Backend
 
 	// Extra factor to modify Inventory prices
@@ -137,16 +138,19 @@ type ArbitEntry struct {
 	Profitability float64
 }
 
-// ArbitEntry implements the Stringer interface
+// ArbitEntry implements the Stringer interface. The entry carries no
+// datastore, so the line names the card by the id it was keyed on: a caller
+// wanting the name resolves CardID against the backend it passed into the
+// report or the CSV writers. An entry with no id says nothing at all, the
+// same empty line a miss gave when this method resolved ids itself.
 func (ae ArbitEntry) String() string {
-	co, err := mtgmatcher.GetUUID(ae.CardID)
-	if err != nil {
+	if ae.CardID == "" {
 		return ""
 	}
 	if ae.BuylistEntry.BuyPrice != 0 {
-		return fmt.Sprintf("%s (%d): %0.2f -> %0.2f", co, ae.Quantity, ae.InventoryEntry.Price, ae.BuylistEntry.BuyPrice)
+		return fmt.Sprintf("%s (%d): %0.2f -> %0.2f", ae.CardID, ae.Quantity, ae.InventoryEntry.Price, ae.BuylistEntry.BuyPrice)
 	}
-	return fmt.Sprintf("%s (%d): %0.2f ~ %0.2f", co, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
+	return fmt.Sprintf("%s (%d): %0.2f ~ %0.2f", ae.CardID, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
 }
 
 // resolvedOpts holds the resolved filter and threshold values from ArbitOpts,
@@ -532,13 +536,16 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 // from: rares, mythics, basic lands and promos, skipping the borders and promo
 // types that are cheap for reasons which will not change. thresholds overrides
 // the per-rarity ceilings in order, and a zero leaves that position at its
-// default.
-func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
+// default. A nil backend resolves the same way resolveOpts does, rather than
+// nil-dereferencing on the first lookup.
+func Pennystock(b *mtgmatcher.Backend, seller Seller, full bool, thresholds ...float64) []ArbitEntry {
+	if b == nil {
+		b = mtgmatcher.GlobalDatastore()
+	}
 	var result []ArbitEntry
-	backend := mtgmatcher.GlobalDatastore()
 
 	for cardID, entries := range seller.Inventory() {
-		co, err := backend.GetUUID(cardID)
+		co, err := b.GetUUID(cardID)
 		if err != nil {
 			continue
 		}
