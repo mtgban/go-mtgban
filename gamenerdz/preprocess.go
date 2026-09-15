@@ -13,7 +13,7 @@ import (
 // grammar its game's display names follow. The finish always comes from the
 // selectedFinish field, which names the printing in each game's own words;
 // the display name only restates it as a tail on the set.
-func preprocess(product GNProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, product GNProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
 	switch game {
 	case mtgban.GameLorcana:
 		return preprocessLorcana(product)
@@ -24,7 +24,7 @@ func preprocess(product GNProduct, game mtgban.Game) (*mtgmatcher.InputCard, err
 	case mtgban.GameFleshAndBlood:
 		return preprocessFleshAndBlood(product)
 	}
-	return preprocessMagic(product)
+	return preprocessMagic(b, product)
 }
 
 // magicCode is the set-and-number tag Magic display names carry, like
@@ -79,13 +79,13 @@ var magicOrigin = regexp.MustCompile(`\(([0-9A-Z]{2,6})\) \(LIST-`)
 //
 // The name stops at the first parenthesis: the collector number pins the
 // printing, so variant wording like (Borderless) only restates it.
-func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
+func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.InputCard, error) {
 	number, err := magicNumber(product)
 	if err != nil {
 		return nil, err
 	}
 
-	cardName := magicName(product.DisplayName)
+	cardName := magicName(b, product.DisplayName)
 	if respelled, found := magicRespellings[cardName]; found {
 		cardName = respelled
 	}
@@ -104,15 +104,15 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 	// pack's. The shelf also holds the set's own booster-fun printings,
 	// numbered past the pack's range, so the plain set answers for a
 	// number the promo set turns down.
-	case !namesASet(edition) && strings.HasPrefix(edition, "pp") && namesASet(edition[1:]):
+	case !namesASet(b, edition) && strings.HasPrefix(edition, "pp") && namesASet(b, edition[1:]):
 		promo := edition[1:]
 		packed := number
 		if !strings.ContainsAny(number, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") {
 			packed += "p"
 		}
 		edition, number = promo, packed
-		_, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: promo, Variation: packed, Foil: foil})
-		if err != nil && namesASet(promo[1:]) {
+		_, err := b.Match(&mtgmatcher.InputCard{Name: cardName, Edition: promo, Variation: packed, Foil: foil})
+		if err != nil && namesASet(b, promo[1:]) {
 			edition, number = promo[1:], strings.TrimSuffix(packed, "p")
 		}
 	// The shelf's name is the catalog's own name for a set the code does
@@ -123,14 +123,14 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 	// that names none either leaves it to the set the display name ends
 	// on ("Duress (FNM-010) - Friday Night Magic 2005 Foil"), which is
 	// where the year of a yearly shelf is written.
-	case namesASet(product.ProductData.SetName):
+	case namesASet(b, product.ProductData.SetName):
 		edition = product.ProductData.SetName
-	case !namesASet(edition) && namesASet(magicTailSet(product.DisplayName)):
+	case !namesASet(b, edition) && namesASet(b, magicTailSet(product.DisplayName)):
 		edition = magicTailSet(product.DisplayName)
 	// A yearly shelf is coded once for every year ("fnm" is the catalog's
 	// code for the first Friday Night Magic year) and the year the product
 	// is from is written only where the name ends.
-	case sameShelfAnotherYear(edition, magicTailSet(product.DisplayName)):
+	case sameShelfAnotherYear(b, edition, magicTailSet(product.DisplayName)):
 		edition = magicTailSet(product.DisplayName)
 	}
 
@@ -160,7 +160,7 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 			Variation: stamped,
 			Foil:      card.Foil,
 		}
-		_, err := mtgmatcher.Match(&probe)
+		_, err := b.Match(&probe)
 		if err == nil {
 			card.Variation = stamped
 		}
@@ -179,7 +179,7 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 	// catalog turns it down, which is what keeps a promo that is neither
 	// off a promo pack's printing.
 	shelf := product.ProductData.CatalogSet
-	if !namesASet(edition) && namesASet(shelf) {
+	if !namesASet(b, edition) && namesASet(b, shelf) {
 		for _, variation := range []string{number, strings.TrimSpace(number + " " + packStamp)} {
 			probe := mtgmatcher.InputCard{
 				Name:      cardName,
@@ -187,7 +187,7 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 				Variation: variation,
 				Foil:      card.Foil,
 			}
-			_, err := mtgmatcher.Match(&probe)
+			_, err := b.Match(&probe)
 			if err != nil {
 				continue
 			}
@@ -206,7 +206,7 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 	if saysEtched(product) {
 		probe := *card
 		probe.Variation = strings.TrimSpace(card.Variation + " " + etchedStamp)
-		_, err := mtgmatcher.Match(&probe)
+		_, err := b.Match(&probe)
 		if err == nil {
 			card.Variation = probe.Variation
 		}
@@ -217,17 +217,17 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 	// says nothing to the catalog and the wording in the name's other
 	// parentheses is what tells the printing. A number the set answers for
 	// is kept; only one it turns down gives way to the wording.
-	if !namesASet(string(product.ProductData.Set)) {
+	if !namesASet(b, string(product.ProductData.Set)) {
 		probe := *card
-		_, err := mtgmatcher.Match(&probe)
+		_, err := b.Match(&probe)
 		if err != nil {
 			wording := magicWording(product.DisplayName)
 			for _, edition := range []string{card.Edition, product.ProductData.SetName, shelf} {
-				if !namesASet(edition) {
+				if !namesASet(b, edition) {
 					continue
 				}
 				probe := mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: wording, Foil: card.Foil}
-				if _, err := mtgmatcher.Match(&probe); err == nil {
+				if _, err := b.Match(&probe); err == nil {
 					card.Edition = edition
 					card.Variation = wording
 					break
@@ -242,21 +242,21 @@ func preprocessMagic(product GNProduct) (*mtgmatcher.InputCard, error) {
 // sameShelfAnotherYear reports whether two editions name the same yearly
 // shelf in different years: the same set name once a trailing year is off
 // each, both naming a set of ours.
-func sameShelfAnotherYear(code, tail string) bool {
-	if tail == "" || !namesASet(code) || !namesASet(tail) {
+func sameShelfAnotherYear(b *mtgmatcher.Backend, code, tail string) bool {
+	if tail == "" || !namesASet(b, code) || !namesASet(b, tail) {
 		return false
 	}
-	coded, err := mtgmatcher.GetSetByName(code)
+	coded, err := b.GetSetByName(code)
 	if err != nil {
 		return false
 	}
-	named, err := mtgmatcher.GetSetByName(tail)
+	named, err := b.GetSetByName(tail)
 	if err != nil || coded.Code == named.Code {
 		return false
 	}
-	a := magicYearTail.FindStringSubmatch(coded.Name)
-	b := magicYearTail.FindStringSubmatch(named.Name)
-	return a != nil && b != nil && a[1] == b[1]
+	codedYear := magicYearTail.FindStringSubmatch(coded.Name)
+	namedYear := magicYearTail.FindStringSubmatch(named.Name)
+	return codedYear != nil && namedYear != nil && codedYear[1] == namedYear[1]
 }
 
 var magicYearTail = regexp.MustCompile(`^(.*\S)\s+(?:19|20)\d\d$`)
@@ -341,7 +341,7 @@ var magicRespellings = map[string]string{
 // write after a colon ("Ascendant Packleader: Rare #383 - Innistrad: Crimson
 // Vow"); and a flavor name written before the card's own ("Battra, Terror
 // of the City - Dirge Bat") keeps only the card's own.
-func magicName(displayName string) string {
+func magicName(b *mtgmatcher.Backend, displayName string) string {
 	name := displayName
 	if idx := strings.Index(name, " ("); idx != -1 {
 		name = name[:idx]
@@ -353,8 +353,8 @@ func magicName(displayName string) string {
 	// the head: a flavor name comes first, the card's own after the dash.
 	if idx := strings.Index(name, " - "); idx != -1 {
 		head, tail := name[:idx], name[idx+3:]
-		if _, err := mtgmatcher.SearchEquals(tail); err == nil {
-			if _, err := mtgmatcher.SearchEquals(head); err != nil {
+		if _, err := b.SearchEquals(tail); err == nil {
+			if _, err := b.SearchEquals(head); err != nil {
 				return tail
 			}
 		}
@@ -402,8 +402,8 @@ func magicNumber(product GNProduct) (string, error) {
 
 // namesASet reports whether the catalog knows an edition by this name, which
 // is how a shelf the storefront invented is told from one it shares.
-func namesASet(edition string) bool {
-	_, err := mtgmatcher.GetSetByName(edition)
+func namesASet(b *mtgmatcher.Backend, edition string) bool {
+	_, err := b.GetSetByName(edition)
 	return err == nil
 }
 
