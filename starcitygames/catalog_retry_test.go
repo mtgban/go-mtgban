@@ -9,8 +9,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -28,7 +26,7 @@ import (
 // has to end up with one card holding the pair's copies once, and with the
 // listing on record as a pair exactly once.
 func TestLoadCatalogRetryStartsClean(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sku string, nm, sp int) CatalogProduct {
 		return CatalogProduct{
@@ -82,7 +80,7 @@ func TestLoadCatalogRetryStartsClean(t *testing.T) {
 	}))
 	defer sets.Close()
 
-	scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+	scg, err := NewScraper(b, "")
 	if err != nil {
 		t.Fatal(err)
 	}

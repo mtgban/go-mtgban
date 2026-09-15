@@ -4,8 +4,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -45,7 +43,7 @@ func TestFabVariantMarked(t *testing.T) {
 // Extended Art War Machine and the ordinary rainbow foil beside it were one
 // entry with two Star City Games rows under it.
 func TestCatalogFabMarkedPrinting(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	for _, tt := range []struct {
 		desc    string
@@ -109,11 +107,11 @@ func TestCatalogFabMarkedPrinting(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameFleshAndBlood, tt.product)
+			id, err := resolveProduct(b, GameFleshAndBlood, tt.product)
 			if err != nil {
 				t.Fatalf("resolveProduct(%s) = %v", tt.product.SKU, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}

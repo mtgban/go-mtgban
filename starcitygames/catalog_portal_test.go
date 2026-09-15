@@ -2,8 +2,6 @@ package starcitygames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // The sku carries detail the product fields have lost: which of two
@@ -32,7 +30,7 @@ func TestSkuSegments(t *testing.T) {
 // with a d suffix while SCG marks it b in the sku, and the scryfall id
 // SCG sends names the first for both.
 func TestResolvePortalVariants(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	withMagic(t)
 	base := CatalogProduct{
@@ -46,19 +44,19 @@ func TestResolvePortalVariants(t *testing.T) {
 	second := base
 	second.SKU = "SGL-MTG-POR-6b-ENN"
 
-	idA, err := resolveProduct(GameMagic, first)
+	idA, err := resolveProduct(b, GameMagic, first)
 	if err != nil {
 		t.Fatalf("a: %v", err)
 	}
-	idB, err := resolveProduct(GameMagic, second)
+	idB, err := resolveProduct(b, GameMagic, second)
 	if err != nil {
 		t.Fatalf("b: %v", err)
 	}
 	if idA == idB {
 		t.Fatalf("both Portal versions resolved to %s", idA)
 	}
-	coA, _ := mtgmatcher.GetUUID(idA)
-	coB, _ := mtgmatcher.GetUUID(idB)
+	coA, _ := b.GetUUID(idA)
+	coB, _ := b.GetUUID(idB)
 	if coA.Number != "6" {
 		t.Errorf("a resolved to #%s, want #6", coA.Number)
 	}
