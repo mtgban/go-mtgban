@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // storefront answers pages of a catalog of total products laid out size to a
@@ -45,7 +45,7 @@ func (s *storefront) handler(t *testing.T) http.HandlerFunc {
 func (s *storefront) scraper(t *testing.T) (*Vegassingles, func()) {
 	t.Helper()
 	srv := httptest.NewServer(s.handler(t))
-	vs, err := NewScraper(mtgban.GameRiftbound)
+	vs, err := NewScraper(&mtgmatcher.Backend{Game: "riftbound"})
 	if err != nil {
 		t.Fatal(err)
 	}
