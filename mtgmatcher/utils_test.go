@@ -519,13 +519,13 @@ var NumberTests = []ExtractTest{
 }
 
 func TestExtractNumber(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	for _, probe := range NumberTests {
 		test := probe
 		t.Run(test.In, func(t *testing.T) {
 			t.Parallel()
-			out := ExtractNumber(test.In)
+			out := b.ExtractNumber(test.In)
 			if out != test.Out {
 				t.Errorf("FAIL %s: Expected '%s' got '%s'", test.In, test.Out, out)
 				return
@@ -536,7 +536,7 @@ func TestExtractNumber(t *testing.T) {
 }
 
 func TestAlias(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	inCard := &InputCard{
 		Name:      "Forest",
@@ -551,7 +551,7 @@ func TestAlias(t *testing.T) {
 		"41d883ae-9018-5218-887e-502b03a2b89f",
 	}
 
-	_, err := Match(inCard)
+	_, err := b.Match(inCard)
 	if err == nil {
 		t.Error("FAIL: this call is supposed to return an error")
 		return
