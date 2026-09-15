@@ -90,6 +90,21 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	// multiple products of different finishes share one, so it is
 	// resolved per-product in cardtrader.go instead (see foilPrintingID's
 	// own derived-pairing handling).
+	//
+	// Gated to CategoryMagicTokens rather than every " // " blueprint:
+	// checked against the live catalog (122,480 blueprints, 6,077 named
+	// "X // Y") that this isn't narrower than it looks. Every blueprint
+	// whose own identifiers/name actually resolve through
+	// magic.MatchTokenPairing or magic.VerifyTokenPairingFinish -
+	// dungeon-card pairings included ("Dungeon of the Mad Mage // Lost
+	// Mine of Phandelver") - was filed under CategoryMagicTokens; nothing
+	// in CategoryMagicSingles/Oversized/Sleeves/Albums/etc. resolved.
+	// CategoryMagicSingles' own 2,148 " // " blueprints are ordinary
+	// split/transform/DFC cards whose real name is "X // Y" ("Turn //
+	// Burn"), already served correctly by namedID below; the merchandise
+	// categories' hits quote a card's name as product flavor text, not
+	// cards at all. Re-check this if Card Trader ever starts selling a
+	// two-sided pairing shape outside Tokens.
 	if bp.CategoryID == CategoryMagicTokens && strings.Contains(cardName, " // ") {
 		if tcgID := magic.MatchTokenPairing(bp.ScryfallID, cardName, false); tcgID != "" {
 			if id, err := mtgmatcher.MatchID(tcgID, false); err == nil {
