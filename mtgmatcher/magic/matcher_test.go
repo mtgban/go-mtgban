@@ -52,8 +52,8 @@ var (
 	datastoreErr  error
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
+// realDatastore loads the Magic datastore into testBackend the first time a
+// test asks for it, and skips where the run carries none.
 func realDatastore(t *testing.T) {
 	t.Helper()
 	datastoreOnce.Do(func() {
@@ -73,7 +73,10 @@ func realDatastore(t *testing.T) {
 			return
 		}
 		testBackend = b
-		mtgmatcher.SetGlobalDatastore(testBackend)
+		// The token-pairing helpers (MatchTokenPairing and its siblings)
+		// still read the global datastore, so it stays installed for them
+		// while the tests themselves ask testBackend.
+		mtgmatcher.SetGlobalDatastore(b)
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
