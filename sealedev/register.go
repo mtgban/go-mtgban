@@ -23,6 +23,7 @@ func newScraper(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Op
 	scraper.LogCallback = opts.LogCallback
 	scraper.Affiliate = opts.Affiliate
 	scraper.BuylistAffiliate = opts.BuylistAffiliate
+	scraper.TargetEdition = opts.TargetEdition
 	if opts.MaxConcurrency != 0 {
 		scraper.MaxConcurrency = opts.MaxConcurrency
 	}

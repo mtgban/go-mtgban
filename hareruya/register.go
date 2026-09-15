@@ -10,6 +10,7 @@ func init() {
 		func(b *mtgmatcher.Backend, auth mtgban.Authenticator, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.LogCallback = opts.LogCallback
+			scraper.TargetEdition = opts.TargetEdition
 			return scraper, nil
 		})
 	mtgban.Register("hareruya_sealed", []mtgban.Game{mtgban.GameMagic},
