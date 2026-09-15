@@ -13,19 +13,19 @@ import (
 // printing. The ids are drawn from the datastore so the test holds across
 // its releases.
 func TestFoilPrintingID(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	// Strixhaven Mystical Archive sells one printing in all three finishes,
 	// which is what lets the flag cross between two of them.
-	plain := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "235648")
+	plain := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, "235648")
 	if plain == "" {
 		t.Fatal("datastore carries no TCGplayer id 235648")
 	}
-	foil, err := mtgmatcher.MatchID(plain, true)
+	foil, err := b.MatchID(plain, true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	etched, err := mtgmatcher.MatchID(plain, false, true)
+	etched, err := b.MatchID(plain, false, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func TestFoilPrintingID(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			got := foilPrintingID(test.cardID, test.name)
+			got := foilPrintingID(b, test.cardID, test.name)
 			if got != test.want {
 				t.Errorf("got %q, want %q", got, test.want)
 			}

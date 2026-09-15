@@ -33,6 +33,7 @@ type Market struct {
 
 	exchangeRates map[string]float64
 	client        *CTAuthClient
+	backend       *mtgmatcher.Backend
 
 	inventory mtgban.InventoryRecord
 
@@ -52,9 +53,13 @@ var name2shorthand = map[string]string{
 	"Card Trader 1DR":  "CT1DR",
 }
 
-// NewScraperMarket returns a market scraper for one game, authenticated with a
-// full API token.
-func NewScraperMarket(game mtgban.Game, token string) (*Market, error) {
+// NewScraperMarket returns a market scraper for the datastore's game,
+// authenticated with a full API token.
+func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	id, found := ctGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -63,6 +68,7 @@ func NewScraperMarket(game mtgban.Game, token string) (*Market, error) {
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
+	ct.backend = b
 	ct.game = game
 	ct.gameID = id
 	return &ct, nil
@@ -113,7 +119,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 	var theCard *mtgmatcher.InputCard
 	if ct.gameID == GameMagic {
 		var err error
-		theCard, err = Preprocess(blueprint)
+		theCard, err = Preprocess(ct.backend, blueprint)
 		if err != nil {
 			return
 		}
@@ -178,8 +184,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				number = product.Properties.Number
 			}
 			theCard = &mtgmatcher.InputCard{
-				Name:      gameName(ct.gameID, blueprint),
-				Edition:   gameEdition(ct.gameID, blueprint),
+				Name:      gameName(ct.backend, ct.gameID, blueprint),
+				Edition:   gameEdition(ct.backend, ct.gameID, blueprint),
 				Variation: gameVariation(ct.gameID, blueprint, number),
 				// A listing is one printing in one finish, and the games
 				// whose properties name it say which; the flag beside it
@@ -203,16 +209,16 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			// the product is sold in no printing of falls back to the flag,
 			// which answers with the default rather than nothing.
 			if theCard.Finish != "" {
-				cardID, _ = mtgmatcher.MatchIDFinish(fmt.Sprint(blueprint.TCGplayerID), theCard.Finish)
+				cardID, _ = ct.backend.MatchIDFinish(fmt.Sprint(blueprint.TCGplayerID), theCard.Finish)
 			}
 			if cardID == "" {
-				cardID, _ = mtgmatcher.MatchID(fmt.Sprint(blueprint.TCGplayerID), theCard.Foil)
+				cardID, _ = ct.backend.MatchID(fmt.Sprint(blueprint.TCGplayerID), theCard.Foil)
 			}
 		}
 
 		if cardID == "" {
 			var err error
-			cardID, err = mtgmatcher.Match(theCard)
+			cardID, err = ct.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -223,7 +229,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
 					for _, probe := range alias.Probe() {
-						co, _ := mtgmatcher.GetUUID(probe)
+						co, _ := ct.backend.GetUUID(probe)
 						ct.printf("- %s", co)
 					}
 				}
@@ -233,8 +239,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			// carrying no promotional label is the number having spoken
 			// alone; promoShelfNeedsLabel says when that is worth refusing,
 			// and today only Gundam ever says so.
-			if promoShelfNeedsLabel(ct.gameID, blueprint) {
-				co, err := mtgmatcher.GetUUID(cardID)
+			if promoShelfNeedsLabel(ct.backend, ct.gameID, blueprint) {
+				co, err := ct.backend.GetUUID(cardID)
 				if err != nil || len(co.PromoTypes) == 0 {
 					continue
 				}
@@ -243,7 +249,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 
 		// Magic only: the other games carry the finish on the input already.
 		if ct.gameID == GameMagic && product.Properties.MTGFoil {
-			cardID = foilPrintingID(cardID, theCard.Name)
+			cardID = foilPrintingID(ct.backend, cardID, theCard.Name)
 		}
 
 		qty := product.Quantity

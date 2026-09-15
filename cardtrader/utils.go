@@ -37,7 +37,7 @@ func priceToUSD(cents int, currency string, rates map[string]float64) (float64, 
 
 // ExportStock returns your own listings as an InventoryRecord, using the
 // Simple API token rather than the full one.
-func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blueprint) (mtgban.InventoryRecord, error) {
+func (ct *CTAuthClient) ExportStock(ctx context.Context, b *mtgmatcher.Backend, blueprints map[int]*Blueprint) (mtgban.InventoryRecord, error) {
 	products, err := ct.ProductsExport(ctx)
 	if err != nil {
 		return nil, err
@@ -55,13 +55,13 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 			continue
 		}
 
-		theCard, err := Preprocess(blueprint)
+		theCard, err := Preprocess(b, blueprint)
 		if err != nil {
 			continue
 		}
 		theCard.Foil = product.Properties.MTGFoil
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := b.Match(theCard)
 		if err != nil {
 			continue
 		}
@@ -110,20 +110,20 @@ func listingPrice(product Product) (int, string) {
 // rate table that mtgban.GetExchangeRates fills. A listing quoted in a
 // currency the table does not cover is left out rather than priced by the
 // wrong rate.
-func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates map[string]float64) mtgban.InventoryRecord {
+func ConvertProducts(b *mtgmatcher.Backend, blueprints map[int]*Blueprint, products []Product, rates map[string]float64) mtgban.InventoryRecord {
 	inventory := mtgban.InventoryRecord{}
 	for _, product := range products {
 		bp, found := blueprints[product.BlueprintID]
 		if !found {
 			continue
 		}
-		theCard, err := Preprocess(bp)
+		theCard, err := Preprocess(b, bp)
 		if err != nil {
 			continue
 		}
 		theCard.Foil = product.Properties.MTGFoil
 
-		cardID, err := mtgmatcher.Match(theCard)
+		cardID, err := b.Match(theCard)
 		if err != nil {
 			continue
 		}
@@ -434,7 +434,7 @@ func fabWording(version, number string) string {
 // as "Starter Deck 01: Heroic Beginnings", which "ST-01: Heroic Beginnings"
 // never reaches by name. Of Card Trader's 37 Gundam shelves, 4 name a set, 22
 // carry a code, and the 11 left are the promotional ones this asks about.
-func promoShelfNeedsLabel(gameID int, bp *Blueprint) bool {
+func promoShelfNeedsLabel(b *mtgmatcher.Backend, gameID int, bp *Blueprint) bool {
 	if gameID != GameGundam {
 		return false
 	}
@@ -447,7 +447,7 @@ func promoShelfNeedsLabel(gameID int, bp *Blueprint) bool {
 	if mapped {
 		return false
 	}
-	set, err := mtgmatcher.GetSetByName(bp.Expansion.Name)
+	set, err := b.GetSetByName(bp.Expansion.Name)
 	return err != nil || set == nil
 }
 
@@ -458,7 +458,7 @@ func promoShelfNeedsLabel(gameID int, bp *Blueprint) bool {
 // number that names the set, for the sealed names that open the same way.
 var codedShelf = regexp.MustCompile(`(?i)^([a-z]{1,4})-?([0-9]{1,2})\s*[:-]\s+`)
 
-func gameName(gameID int, bp *Blueprint) string {
+func gameName(b *mtgmatcher.Backend, gameID int, bp *Blueprint) string {
 	if gameID == GameYuGiOh && bp.Version == "Token" &&
 		!mtgmatcher.Contains(bp.Name, "token") {
 		return "Token: " + bp.Name
@@ -467,7 +467,7 @@ func gameName(gameID int, bp *Blueprint) string {
 		if spelled, found := fabNames[bp.Name]; found {
 			return spelled
 		}
-		if name := fabPuzzleName(bp); name != "" {
+		if name := fabPuzzleName(b, bp); name != "" {
 			return name
 		}
 	}
@@ -629,18 +629,18 @@ var fabArtCardSuffixes = []string{" Double Sided Art Card", " Doubled Sided Art 
 // Macro Puzzle Card", where the datastore keeps one printing per piece named
 // by both faces; the face finds the printing, and the piece is the version's
 // to say.
-func fabPuzzleName(bp *Blueprint) string {
+func fabPuzzleName(b *mtgmatcher.Backend, bp *Blueprint) string {
 	face := fabPuzzleFace(bp.Name)
 	if face == "" {
 		return ""
 	}
-	uuids, err := mtgmatcher.SearchContains(face)
+	uuids, err := b.SearchContains(face)
 	if err != nil {
 		return ""
 	}
 	var names []string
 	for _, uuid := range uuids {
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := b.GetUUID(uuid)
 		if err != nil || !strings.Contains(co.Name, "//") {
 			continue
 		}
@@ -784,15 +784,15 @@ func gameFinish(gameID int, bp *Blueprint, product Product) string {
 // carries a finish keeps its own id: an etched listing raises the same foil
 // flag, and the flag has one bit for a card sold in two premium finishes, so
 // answering it would walk the etched printing back onto the foil one.
-func foilPrintingID(cardID, name string) string {
-	co, err := mtgmatcher.GetUUID(cardID)
+func foilPrintingID(b *mtgmatcher.Backend, cardID, name string) string {
+	co, err := b.GetUUID(cardID)
 	if err != nil || co.Foil || co.Etched {
 		return cardID
 	}
-	if !mtgmatcher.HasFoilPrinting(name) {
+	if !b.HasFoilPrinting(name) {
 		return cardID
 	}
-	foilID, err := mtgmatcher.MatchID(cardID, true)
+	foilID, err := b.MatchID(cardID, true)
 	if err != nil {
 		return cardID
 	}
@@ -880,11 +880,11 @@ var ygoBlueprintEditions = map[int]string{
 
 // gameEdition names the set a blueprint's shelf sells, which is the shelf's
 // own name everywhere but the shelves above.
-func gameEdition(gameID int, bp *Blueprint) string {
+func gameEdition(b *mtgmatcher.Backend, gameID int, bp *Blueprint) string {
 	if gameID == GameGundam {
 		code, found := gundamShelfSets[bp.Expansion.Name]
 		if found {
-			set, err := mtgmatcher.GetSet(code)
+			set, err := b.GetSet(code)
 			if err == nil {
 				return set.Name
 			}

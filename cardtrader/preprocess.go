@@ -26,7 +26,7 @@ import (
 // third thing said about it, and the id it agrees with is the one to keep.
 // Where the name settles nothing, which is what a pair of tokens sold under
 // one blueprint looks like, the order stands and nothing changes.
-func namedID(scryfallID, tcgplayerID, cardName string) string {
+func namedID(b *mtgmatcher.Backend, scryfallID, tcgplayerID, cardName string) string {
 	if scryfallID == "" {
 		return tcgplayerID
 	}
@@ -34,11 +34,11 @@ func namedID(scryfallID, tcgplayerID, cardName string) string {
 		return scryfallID
 	}
 
-	scryfallCard, err := mtgmatcher.GetUUID(scryfallID)
+	scryfallCard, err := b.GetUUID(scryfallID)
 	if err != nil {
 		return scryfallID
 	}
-	tcgplayerCard, err := mtgmatcher.GetUUID(tcgplayerID)
+	tcgplayerCard, err := b.GetUUID(tcgplayerID)
 	if err != nil {
 		return scryfallID
 	}
@@ -67,7 +67,7 @@ func idNamesCard(co *mtgmatcher.CardObject, cardName string) bool {
 
 // Preprocess turns a blueprint into the card description the matcher takes,
 // reporting an error for the blueprints that are not cards.
-func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	cardName := bp.Name
 	edition := bp.Expansion.Name
 	number := strings.TrimLeft(bp.Properties.Number, "0")
@@ -75,9 +75,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 
 	// Some, but not all, have a proper id we can reuse right away, and the
 	// blueprint says which space each one lives in
-	scryfallID := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
-	tcgplayerID := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
-	id := namedID(scryfallID, tcgplayerID, cardName)
+	scryfallID := b.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
+	tcgplayerID := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
+	id := namedID(b, scryfallID, tcgplayerID, cardName)
 	if id != "" {
 		return &mtgmatcher.InputCard{
 			ID: id,
@@ -175,7 +175,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 		case "Everythingamajig", "Ineffable Blessing":
 			variant = strings.Fields(bp.Version)[0]
 		default:
-			if len(mtgmatcher.MatchInSetNumber(cardName, "PLST", number)) > 0 {
+			if len(b.MatchInSetNumber(cardName, "PLST", number)) > 0 {
 				variant = number
 			}
 		}
@@ -335,7 +335,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 				variant = "Promo Pack"
 				edition = "PAFR"
 			default:
-				set, err := mtgmatcher.GetSet(bp.Expansion.Code)
+				set, err := b.GetSet(bp.Expansion.Code)
 				if err != nil {
 					return nil, err
 				}
@@ -347,7 +347,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 				if setDate.After(magic.PromosForEverybodyYay) {
 					notPromoPack := false
 					num, convErr := strconv.Atoi(number)
-					parentSet, setErr := mtgmatcher.GetSet(set.ParentCode)
+					parentSet, setErr := b.GetSet(set.ParentCode)
 					if convErr == nil && setErr == nil {
 						notPromoPack = num > parentSet.BaseSetSize
 					}
