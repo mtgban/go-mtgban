@@ -39,13 +39,23 @@ func GetSealedUUIDs() []string {
 // foil and etched variants included, in sorted order. The result aliases
 // the backend index and must not be modified; callers spanning multiple
 // sets append the per-set results themselves.
+func (b *Backend) GetUUIDsInSet(code string) []string {
+	return b.SetUUIDs[strings.ToUpper(code)]
+}
+
+// GetUUIDsInSet is Backend.GetUUIDsInSet on the global datastore.
 func GetUUIDsInSet(code string) []string {
-	return currentBackend().SetUUIDs[strings.ToUpper(code)]
+	return currentBackend().GetUUIDsInSet(code)
 }
 
 // GetSealedUUIDsInSet is the sealed-product counterpart of GetUUIDsInSet.
+func (b *Backend) GetSealedUUIDsInSet(code string) []string {
+	return b.SetSealedUUIDs[strings.ToUpper(code)]
+}
+
+// GetSealedUUIDsInSet is Backend.GetSealedUUIDsInSet on the global datastore.
 func GetSealedUUIDsInSet(code string) []string {
-	return currentBackend().SetSealedUUIDs[strings.ToUpper(code)]
+	return currentBackend().GetSealedUUIDsInSet(code)
 }
 
 // GetUUID returns the card object stored for the given uuid. The object
@@ -143,11 +153,10 @@ func AllPromoTypes() []string {
 	return currentBackend().AllPromoTypes
 }
 
-// AllNames returns every card or sealed name in the default datastore, in the
-// requested form: normalized, lowercase, or canonical. An unknown form returns
-// nothing.
-func AllNames(variant string, sealed bool) []string {
-	b := currentBackend()
+// Names returns every card or sealed name in the datastore, in the requested
+// form: normalized, lowercase, or canonical. An unknown form returns nothing.
+// It is not called AllNames because that is the normalized list's own field.
+func (b *Backend) Names(variant string, sealed bool) []string {
 	switch variant {
 	case "normalized":
 		if sealed {
@@ -166,6 +175,11 @@ func AllNames(variant string, sealed bool) []string {
 		return b.AllLowerNames
 	}
 	return nil
+}
+
+// AllNames is Backend.Names on the global datastore.
+func AllNames(variant string, sealed bool) []string {
+	return currentBackend().Names(variant, sealed)
 }
 
 // SearchEquals returns the uuids of every printing whose name matches exactly,
