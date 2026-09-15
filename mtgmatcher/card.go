@@ -76,6 +76,37 @@ func (c *InputCard) String() string {
 	return fmt.Sprintf("%s [%s%s]%s", name, edition, finish, lang)
 }
 
+// cardDescription is what a diagnostic prints in place of an input card. The
+// lookup runs when the line is formatted rather than when it is written, so a
+// Match with no Logger set pays nothing for a description nobody reads.
+type cardDescription struct {
+	backend *Backend
+	card    *InputCard
+}
+
+func (d cardDescription) String() string {
+	if d.card.Name != "" {
+		return d.card.String()
+	}
+	// The same lookup Match runs, so an external id the scraper handed
+	// over describes as the printing it names, not as an unknown uuid.
+	co, err := d.backend.cardObject4Id(d.card.ID)
+	if err != nil {
+		return d.card.String()
+	}
+	named := *d.card
+	named.Name = co.Name
+	named.Edition = co.Edition
+	return named.String()
+}
+
+// describe names the card a diagnostic is about. An input that carries only
+// an id has no name for String to print, and String has no datastore to
+// resolve one from; this is the same description made where there is one.
+func (b *Backend) describe(c *InputCard) fmt.Stringer {
+	return cardDescription{b, c}
+}
+
 // AddToVariant appends a tag to the variation, keeping what is already there
 // and separating with a space.
 func (c *InputCard) AddToVariant(tag string) {

@@ -298,7 +298,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 
 	// Look up by uuid
 	if inCard.ID != "" {
-		b.Log("Performing id lookup")
+		b.Logf("Performing id lookup for %s", inCard.ID)
 		outID, err := b.matchIDFor(inCard)
 		// The wording cannot improve on a finish the printing does not
 		// carry: it would answer from the same printing, and the only
@@ -309,7 +309,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		}
 		if err == nil {
 			co := b.UUIDs[outID]
-			b.Log("Id found")
+			b.Logf("Id found: %v", b.describe(inCard))
 
 			// Validation step
 			switch {
@@ -436,7 +436,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// minimum common elements, using the rules defined.
 	// Given that many tokens are not supported, make sure to filter
 	// out unrelated editions.
-	b.Logf("Processing %v %v", inCard, printings)
+	b.Logf("Processing %v %v", b.describe(inCard), printings)
 	// A name answered by the token key never passed through AdjustName, which
 	// is what would have suffixed it and asked for the filter below. Ask for
 	// it here instead, or a token carrying a single printing would be served
@@ -518,7 +518,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		cardID = b.output(outCards[0], inCard.Foil, inCard.IsEtched())
 
 		co := b.UUIDs[cardID]
-		b.Logf("%v -> %v", inCard, co)
+		b.Logf("%v -> %v", b.describe(inCard), co)
 
 		// Validation step
 		if rules.MissingPromoTag(b, inCard, co) {
