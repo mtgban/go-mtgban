@@ -21,6 +21,7 @@ type TCGSellerInventory struct {
 	sellerKeys    []string
 	onlyDirect    bool
 	requestSize   int
+	backend       *mtgmatcher.Backend
 	client        *SellerClient
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
@@ -42,8 +43,9 @@ const (
 
 // NewScraperForSellerIDs returns a scraper over the given seller keys,
 // optionally restricted to their Direct listings.
-func NewScraperForSellerIDs(sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
+func NewScraperForSellerIDs(b *mtgmatcher.Backend, sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
+	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.sellerKeys = sellerKeys
 	tcg.onlyDirect = onlyDirect
@@ -137,7 +139,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 		}
 
 		tcgProductID := fmt.Sprint(int(result.ProductID))
-		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, tcgProductID)
+		uuid := tcg.backend.ConvertID(mtgmatcher.IDSpaceTCGplayer, tcgProductID)
 		if uuid == "" {
 			continue
 		}
@@ -145,13 +147,13 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 		for _, listing := range result.Listings {
 			isFoil := listing.Printing == "Foil"
 			isEtched := strings.Contains(result.ProductName, "Foil Etched")
-			cardID, err := mtgmatcher.MatchID(uuid, isFoil, isEtched)
+			cardID, err := tcg.backend.MatchID(uuid, isFoil, isEtched)
 			if err != nil {
 				continue
 			}
 
 			if listing.Language != "English" {
-				co, _ := mtgmatcher.GetUUID(cardID)
+				co, _ := tcg.backend.GetUUID(cardID)
 				if listing.Language != co.Language {
 					continue
 				}
