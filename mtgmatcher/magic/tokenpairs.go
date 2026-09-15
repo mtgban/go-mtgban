@@ -69,9 +69,7 @@ func newPairKey(u1, u2 string) pairKey {
 // ExternalIdentifiers[tcgplayer], read to refuse an id a real printing
 // already owns and written to file each derived entity's own ids at its
 // base sibling, the same convention every other identifier follows.
-func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObject, tcgIDs map[string]string) ([]Card, tokenPairReport) {
-	var report tokenPairReport
-
+func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObject, tcgIDs map[string]string) []Card {
 	// pairIDs collects every id seen for a pairing; idPairs collects every
 	// pairing seen for an id. An id naming more than one pairing describes
 	// two different physical objects and answers for neither - the same
@@ -102,16 +100,12 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 					if len(tp.TokenParts) != 2 {
 						continue
 					}
-					report.entries++
-
 					id := tp.Identifiers["tcgplayerProductId"]
 					u1, u2 := tp.TokenParts[0].UUID, tp.TokenParts[1].UUID
 					if id == "" || u1 == "" || u2 == "" {
-						report.faceIDOnly++
 						continue
 					}
 					if u1 == u2 {
-						report.selfPair++
 						continue
 					}
 
@@ -241,15 +235,12 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 		co1, found1 := uuids[key.a]
 		co2, found2 := uuids[key.b]
 		if !found1 || !found2 {
-			report.unresolvableUUID++
 			continue
 		}
 		if co1.Layout == "double_faced_token" || co2.Layout == "double_faced_token" {
-			report.alreadyModeled++
 			continue
 		}
 		if !isTokenPairLayout(co1.Layout) || !isTokenPairLayout(co2.Layout) {
-			report.layoutExcluded++
 			continue
 		}
 
@@ -303,11 +294,9 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 				tcgIDs[id] = card.UUID
 			}
 		}
-
-		report.derived++
 	}
 
-	return derived, report
+	return derived
 }
 
 // isTokenPairLayout reports whether a face's layout is one this loader

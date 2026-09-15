@@ -1374,8 +1374,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	// uuids for Identifiers["derivedTokenPair"] == "true" rather than
 	// reading a second index kept only for that - one fact, one place.
 	// See tokenpairs.go.
-	derivedCards, tokenPairs := deriveTokenPairs(ap.Data, uuids, externalIDs[mtgmatcher.IDSpaceTCGplayer])
-	mtgmatcher.Logger.Printf("%s", tokenPairs)
+	derivedCards := deriveTokenPairs(ap.Data, uuids, externalIDs[mtgmatcher.IDSpaceTCGplayer])
 
 	for _, card := range derivedCards {
 		edition := card.SetCode
