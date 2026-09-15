@@ -5,8 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
 
@@ -38,11 +36,11 @@ const pokemonEmitDatastore = `{
 // reverse's columns and the reverse from nothing; a promo sold holo and in
 // nothing else, whose guide carries no holo pair at all, went unpriced.
 func TestEmitPokemonColumns(t *testing.T) {
-	installDatastore(t, "pokemon", pokemonEmitDatastore)
+	b := datastoreBackend(t, "pokemon", pokemonEmitDatastore)
 
-	mkm, err := NewScraperIndex(mtgban.GamePokemon)
+	mkm, err := NewScraperIndex(b)
 	if err != nil {
-		t.Fatalf("NewScraperIndex(mtgban.GamePokemon) = %v", err)
+		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	mkm.exchangeRate = 1
 	mkm.priceGuide = map[int]cm.PriceGuide{

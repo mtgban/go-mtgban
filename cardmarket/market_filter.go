@@ -71,8 +71,7 @@ var marketFilterVendors = []string{"CK", "SCG", "CSI"}
 // is worth a live call on its own, no spread required.
 const marketCandidateThreshold = 7.0
 
-// marketCandidates computes the pre-filter's candidate set for the uuids of
-// whichever game's datastore is currently loaded (mtgmatcher.GetUUIDs()):
+// marketCandidates computes the pre-filter's candidate set for b's uuids:
 // TCG market price over $7; or an Arbit-style spread - the buylist vendor's
 // price against TCG market retail - over 20%; or a Mismatch-style spread -
 // TCG market against another retail seller's own price - over 80%. The
@@ -83,12 +82,12 @@ const marketCandidateThreshold = 7.0
 //
 // A game marketFilterParams does not cover returns nil - unfiltered, not
 // empty - which Load reads as "price every candidate this game has."
-func marketCandidates(gameID int, snap *banSnapshot) map[string]bool {
+func marketCandidates(b *mtgmatcher.Backend, gameID int, snap *banSnapshot) map[string]bool {
 	if _, filtered := marketFilterParams[gameID]; !filtered {
 		return nil
 	}
 	candidates := map[string]bool{}
-	for _, uuid := range mtgmatcher.GetUUIDs() {
+	for _, uuid := range b.GetUUIDs() {
 		if marketCandidate(gameID, uuid, snap) {
 			candidates[uuid] = true
 		}
