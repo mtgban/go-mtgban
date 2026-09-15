@@ -11,16 +11,17 @@ import (
 // is not a leak to be refused but the exact address of the printing.
 func TestMatchTokenSetEdition(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	in := mtgmatcher.InputCard{
 		Name:      "Wolf",
 		Edition:   "Innistrad: Midnight Hunt Tokens",
 		Variation: "13",
 	}
-	id, err := mtgmatcher.Match(&in)
+	id, err := b.Match(&in)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", in, err)
 	}
-	co, err := mtgmatcher.GetUUID(id)
+	co, err := b.GetUUID(id)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", id, err)
 	}
@@ -50,6 +51,7 @@ func TestParseCommanderEditionKeepsTokenSets(t *testing.T) {
 // the tokens the named one never carried.
 func TestMatchTokenSetParentPicksNamedSheet(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	for _, probe := range []struct {
 		name    string
 		edition string
@@ -69,12 +71,12 @@ func TestMatchTokenSetParentPicksNamedSheet(t *testing.T) {
 			Name:    probe.name,
 			Edition: probe.edition,
 		}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("Match(%v) = %v", in, err)
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Errorf("GetUUID(%s) = %v", id, err)
 			continue
@@ -91,6 +93,7 @@ func TestMatchTokenSetParentPicksNamedSheet(t *testing.T) {
 // left every row that named the set plainly and said token beside it refused.
 func TestMatchTokenSetVariation(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	for _, probe := range []struct {
 		name      string
 		edition   string
@@ -109,12 +112,12 @@ func TestMatchTokenSetVariation(t *testing.T) {
 			Edition:   probe.edition,
 			Variation: probe.variation,
 		}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("Match(%v) = %v", in, err)
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Errorf("GetUUID(%s) = %v", id, err)
 			continue
@@ -132,6 +135,7 @@ func TestMatchTokenSetVariation(t *testing.T) {
 // and "Rhino" the Unstable "Rhino-", whatever edition asked.
 func TestMatchTokenNameUnderTokenEdition(t *testing.T) {
 	realDatastore(t)
+	b := testBackend
 	for _, probe := range []struct {
 		name      string
 		edition   string
@@ -152,12 +156,12 @@ func TestMatchTokenNameUnderTokenEdition(t *testing.T) {
 			Edition:   probe.edition,
 			Variation: probe.variation,
 		}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if err != nil {
 			t.Errorf("Match(%v) = %v", in, err)
 			continue
 		}
-		co, err := mtgmatcher.GetUUID(id)
+		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Errorf("GetUUID(%s) = %v", id, err)
 			continue
@@ -174,6 +178,7 @@ func TestMatchTokenNameUnderTokenEdition(t *testing.T) {
 // the filter here, a token carrying a single printing was served for whatever
 // token edition a listing named.
 func TestMatchTokenNameKeepsTheEditionFilter(t *testing.T) {
+	b := testBackendOrEmpty()
 	for _, probe := range []struct {
 		name    string
 		edition string
@@ -185,9 +190,9 @@ func TestMatchTokenNameKeepsTheEditionFilter(t *testing.T) {
 		{"Rhino", "Dominaria United Tokens"},
 	} {
 		in := mtgmatcher.InputCard{Name: probe.name, Edition: probe.edition}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if err == nil {
-			co, _ := mtgmatcher.GetUUID(id)
+			co, _ := b.GetUUID(id)
 			t.Errorf("Match(%v) = %s (%v), want an error: no such token is filed there", in, id, co)
 		}
 	}
@@ -198,6 +203,7 @@ func TestMatchTokenNameKeepsTheEditionFilter(t *testing.T) {
 // card itself, and a token row must not price the card. The refusal asks for
 // a token by name, so a set that files no such token refuses too.
 func TestMatchTokenVariationNamesNoToken(t *testing.T) {
+	b := testBackendOrEmpty()
 	for _, probe := range []struct {
 		name      string
 		edition   string
@@ -212,9 +218,9 @@ func TestMatchTokenVariationNamesNoToken(t *testing.T) {
 			Edition:   probe.edition,
 			Variation: probe.variation,
 		}
-		id, err := mtgmatcher.Match(&in)
+		id, err := b.Match(&in)
 		if err == nil {
-			co, _ := mtgmatcher.GetUUID(id)
+			co, _ := b.GetUUID(id)
 			t.Errorf("Match(%v) = %s (%v), want an error: no such token is filed", in, id, co)
 		}
 	}

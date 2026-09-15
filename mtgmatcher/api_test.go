@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
@@ -15,7 +14,7 @@ func BenchmarkSearchEquals(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		mtgmatcher.SearchEquals(NameToBeFound)
+		testBackend.SearchEquals(NameToBeFound)
 	}
 }
 
@@ -29,7 +28,7 @@ func BenchmarkSearchHasPrefix(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		mtgmatcher.SearchHasPrefix(name)
+		testBackend.SearchHasPrefix(name)
 	}
 }
 
@@ -42,7 +41,7 @@ func BenchmarkSearchContains(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		mtgmatcher.SearchContains(name)
+		testBackend.SearchContains(name)
 	}
 }
 
@@ -55,13 +54,14 @@ func BenchmarkSearchRegexp(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		mtgmatcher.SearchRegexp(name)
+		testBackend.SearchRegexp(name)
 	}
 }
 
 func TestSearchRegexp(t *testing.T) {
 	realDatastore(t)
-	hashes, err := mtgmatcher.SearchRegexp("Lotus$")
+	b := testBackend
+	hashes, err := b.SearchRegexp("Lotus$")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
 		return
@@ -69,7 +69,7 @@ func TestSearchRegexp(t *testing.T) {
 
 	var found bool
 	for _, hash := range hashes {
-		co, err := mtgmatcher.GetUUID(hash)
+		co, err := b.GetUUID(hash)
 		if err != nil {
 			t.Error("FAIL: Unexpected", err)
 			return
@@ -88,7 +88,8 @@ func TestSearchRegexp(t *testing.T) {
 
 func TestSearchFlavor(t *testing.T) {
 	realDatastore(t)
-	hashes, err := mtgmatcher.SearchEquals("Stay with Me")
+	b := testBackend
+	hashes, err := b.SearchEquals("Stay with Me")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
 		return
@@ -96,7 +97,7 @@ func TestSearchFlavor(t *testing.T) {
 
 	var count int
 	for _, hash := range hashes {
-		co, err := mtgmatcher.GetUUID(hash)
+		co, err := b.GetUUID(hash)
 		if err != nil {
 			t.Error("FAIL: Unexpected", err)
 			return
@@ -114,7 +115,8 @@ func TestSearchFlavor(t *testing.T) {
 
 func TestSearchHalfName(t *testing.T) {
 	realDatastore(t)
-	hashes, err := mtgmatcher.SearchEquals("Jonathan Harker")
+	b := testBackend
+	hashes, err := b.SearchEquals("Jonathan Harker")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
 		return
@@ -122,7 +124,7 @@ func TestSearchHalfName(t *testing.T) {
 
 	var count int
 	for _, hash := range hashes {
-		co, err := mtgmatcher.GetUUID(hash)
+		co, err := b.GetUUID(hash)
 		if err != nil {
 			t.Error("FAIL: Unexpected", err)
 			return
@@ -140,7 +142,8 @@ func TestSearchHalfName(t *testing.T) {
 
 func TestPrintings(t *testing.T) {
 	realDatastore(t)
-	setCodes, _ := mtgmatcher.Printings4Card("Black Lotus")
+	b := testBackend
+	setCodes, _ := b.Printings4Card("Black Lotus")
 	if len(setCodes) != 6 {
 		t.Error("FAIL: Printings should be exactly 6 results, got " + fmt.Sprint(setCodes))
 	} else {
