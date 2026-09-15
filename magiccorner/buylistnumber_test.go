@@ -1,17 +1,13 @@
 package magiccorner
 
-import (
-	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-)
+import "testing"
 
 // TestBuylistNumber pins the number a buylist listing states outright. The
 // store publishes one name for a card and prices its treatments separately,
 // so the name alone puts every one of them on the plain printing: the three
 // Aang listings below are bought at three prices and answered with one card.
 func TestBuylistNumber(t *testing.T) {
-	realDatastore(t)
+	b := realDatastore(t)
 
 	const name = "Aang, at the Crossroads // Aang, Destined Savior"
 	tests := []struct {
@@ -27,15 +23,15 @@ func TestBuylistNumber(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			card, err := preprocessBL(name, "Avatar: The Last Airbender", test.id, test.number)
+			card, err := preprocessBL(b, name, "Avatar: The Last Airbender", test.id, test.number)
 			if err != nil {
 				t.Fatal(err)
 			}
-			id, err := mtgmatcher.Match(card)
+			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", card, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatal(err)
 			}
