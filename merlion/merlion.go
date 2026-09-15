@@ -14,13 +14,15 @@ import (
 type Merlion struct {
 	LogCallback mtgban.LogCallbackFunc
 
+	backend *mtgmatcher.Backend
+
 	buylistDate time.Time
 	buylist     mtgban.BuylistRecord
 }
 
-// NewScraper returns a buylist scraper.
-func NewScraper() *Merlion {
-	mg := Merlion{}
+// NewScraper returns a buylist scraper matching against b.
+func NewScraper(b *mtgmatcher.Backend) *Merlion {
+	mg := Merlion{backend: b}
 	mg.buylist = mtgban.BuylistRecord{}
 	return &mg
 }
@@ -57,8 +59,8 @@ func (mg *Merlion) Load(ctx context.Context) error {
 		// The feed names a printing by its TCGplayer id: ConvertID crosses
 		// into the matcher's uuids and MatchID applies the finish. So
 		// neither the name nor the edition has to survive the round trip.
-		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, card.TCGplayerID)
-		cardID, err := mtgmatcher.MatchID(uuid, card.Foil)
+		uuid := mg.backend.ConvertID(mtgmatcher.IDSpaceTCGplayer, card.TCGplayerID)
+		cardID, err := mg.backend.MatchID(uuid, card.Foil)
 		if err != nil {
 			mg.printf("%v: %s %s (%s)", err, card.TCGplayerID, card.Name, card.Edition)
 			continue
