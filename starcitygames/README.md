@@ -266,24 +266,23 @@ a different method, its own section above):
    product SCG has since added or repriced — don't reuse an old dump for a
    fresh finding.
 2. **Replay, don't guess.** Decode into `[]CatalogProduct`, call
-   `resolveProduct(game, p)` for real products, group by returned uuid.
-   Anything with more than one sku is a live collision. This is the same
-   replay used throughout this history — see any of `#572`, `#573`, `#574`,
-   `#578`, `#582` for the harness shape (a throwaway `zz_*_test.go`, never
-   committed).
+   `resolveProduct(b, game, p)` for real products against the backend the
+   test loaded, group by returned uuid. Anything with more than one sku is a
+   live collision. This is the same replay used throughout this history —
+   see any of `#572`, `#573`, `#574`, `#578`, `#582` for the harness shape (a
+   throwaway `zz_*_test.go`, never committed).
 3. **Dump the raw record, every field, before writing anything.** `python3
    -c "print(json.dumps(next(p for p in catalog if p['sku']=='...'),
    indent=1))"`. This is what caught the Aurora case having genuinely
    nothing to key on in the catalog, and separately caught that the
    MeiliSearch index *did* carry the distinguishing detail (a `subtitle`)
    the catalog omitted.
-4. **Check the datastore, not just the catalog.** `mtgmatcher.GetUUID(id)`
-   and `mtgmatcher.MatchWithNumber("", setCode, number)` (name may be
-   empty) to see every candidate row at that number, and what actually
-   distinguishes them — `PromoTypes`, `Rarity`, `Artist`, `Finishes`. A
-   field the struct exposes and the vendor's raw record also carries is
-   worth trusting; a field neither carries is not there to key on, however
-   plausible a rule sounds.
+4. **Check the datastore, not just the catalog.** `b.GetUUID(id)` and
+   `b.MatchWithNumber("", setCode, number)` (name may be empty) to see every
+   candidate row at that number, and what actually distinguishes them —
+   `PromoTypes`, `Rarity`, `Artist`, `Finishes`. A field the struct exposes
+   and the vendor's raw record also carries is worth trusting; a field
+   neither carries is not there to key on, however plausible a rule sounds.
 5. **If nothing distinguishes the rows anywhere — catalog, datastore, index,
    storefront page — that's a refusal, not a guess.** (`fabDuplicateStock`.)
    If the storefront page or the MeiliSearch index has the answer but the

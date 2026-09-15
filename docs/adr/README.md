@@ -8,8 +8,9 @@ new ADR that supersedes it rather than rewriting history.
 | ADR | Title | Status |
 |-----|-------|--------|
 | [0001](0001-uuid-universal-key.md) | The mtgmatcher UUID is the universal key | Accepted |
-| [0002](0002-global-immutable-matcher-backend.md) | Global, immutable-after-load, unsynchronized matcher backend | Superseded by ADR-0003 |
-| [0003](0003-atomic-backend-snapshots.md) | Atomically publish immutable backend snapshots | Accepted |
+| [0002](0002-global-immutable-matcher-backend.md) | Global, immutable-after-load, unsynchronized matcher backend | Superseded by ADR-0003, then ADR-0004 |
+| [0003](0003-atomic-backend-snapshots.md) | Atomically publish immutable backend snapshots | Superseded by ADR-0004 |
+| [0004](0004-localized-matcher-and-scraper-registry.md) | No global state in mtgmatcher; scrapers build on the datastore they are handed | Accepted |
 
 ## Format
 
