@@ -430,7 +430,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"manapool": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := manapool.NewScraper()
+				scraper := manapool.NewScraper(b)
 				scraper.Partner = os.Getenv("MP_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
@@ -438,7 +438,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"manapool_index": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := manapool.NewScraperIndex()
+				scraper := manapool.NewScraperIndex(b)
 				scraper.Partner = os.Getenv("MP_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil
@@ -446,7 +446,7 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		},
 		"manapool_sealed": {
 			Init: func(b *mtgmatcher.Backend) (mtgban.Scraper, error) {
-				scraper := manapool.NewScraperSealed()
+				scraper := manapool.NewScraperSealed(b)
 				scraper.Partner = os.Getenv("MP_PARTNER")
 				scraper.LogCallback = GlobalLogCallback
 				return scraper, nil

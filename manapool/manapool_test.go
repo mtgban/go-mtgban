@@ -10,6 +10,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -19,38 +20,34 @@ import (
 var (
 	datastoreOnce sync.Once
 	datastoreErr  error
-	datastoreOK   bool
+	datastoreB    *mtgmatcher.Backend
 )
 
-// realDatastore installs the Magic datastore the first time a test asks for
-// it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+// withMagic loads the Magic datastore the first time a test asks for it, and
+// skips where the run carries none.
+func withMagic(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
 		if path == "" {
 			return
 		}
-		err := datastore.Load("magic", path)
-		if err != nil {
-			datastoreErr = err
-			return
-		}
-		datastoreOK = true
+		datastoreB, datastoreErr = datastore.Read("magic", path)
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)
 	}
-	if !datastoreOK {
+	if datastoreB == nil {
 		t.Skip("Need ALLPRINTINGS5_PATH set to run this test")
 	}
+	return datastoreB
 }
 
 // TestAddCheapestKeepsTheLowerPrice pins that a printing the store files under
 // more than one product is priced once per grade, at the lower of the prices
 // it arrives with, whichever product arrives first.
 func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
-	mp := NewScraper()
+	mp := NewScraper(&mtgmatcher.Backend{})
 	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: "NM", Price: 25, URL: "first"})
 	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: "NM", Price: 15, URL: "cheaper"})
 	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: "NM", Price: 40, URL: "dearer"})
@@ -81,7 +78,7 @@ func TestReplayCapturedVariants(t *testing.T) {
 	if path == "" {
 		t.Skip("MANAPOOL_VARIANTS_PATH not set")
 	}
-	realDatastore(t)
+	b := withMagic(t)
 	f, err := os.Open(path)
 	if err != nil {
 		t.Fatal(err)
@@ -95,7 +92,7 @@ func TestReplayCapturedVariants(t *testing.T) {
 	}
 
 	var logged []string
-	mp := NewScraper()
+	mp := NewScraper(b)
 	mp.LogCallback = func(format string, a ...any) { logged = append(logged, fmt.Sprintf(format, a...)) }
 	mp.price(doc.Data)
 
