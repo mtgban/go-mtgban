@@ -465,7 +465,7 @@ func judgeLandCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *m
 }
 
 func listNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	number := mtgmatcher.ExtractNumber(inCard.Variation)
+	number := b.ExtractNumber(inCard.Variation)
 
 	// If a number is found, check that it's matching the card number
 	if number != "" {
@@ -574,7 +574,7 @@ func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 		if !inCard.Contains(code) && !inCard.Contains(setName) && EditionTable[inCard.Variation] != setName {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step
-			number := mtgmatcher.ExtractNumber(inCard.Variation)
+			number := b.ExtractNumber(inCard.Variation)
 
 			cardNumbers := strings.Split(card.Number, "-")
 			listNumbers := strings.Split(number, "-")
@@ -619,7 +619,7 @@ func lotrTripleFiltering(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		"Bilbo, Retired Burglar",
 		"Gandalf, Friend of the Shire",
 		"Wizard's Rockets":
-		num := mtgmatcher.ExtractNumber(inCard.Variation)
+		num := b.ExtractNumber(inCard.Variation)
 		if num != "" && (mtgmatcher.Contains(inCard.Edition, "Prerelease") || mtgmatcher.Contains(inCard.Edition, "Promo")) {
 			return card.SetCode != "PLTR"
 		}
@@ -1018,7 +1018,7 @@ func foilMisprint(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtg
 	}
 
 	// Get number in case there is no EA information available
-	maybeNumber := mtgmatcher.ExtractNumber(inCard.Variation)
+	maybeNumber := b.ExtractNumber(inCard.Variation)
 
 	switch card.Name {
 	case "Temple of Abandon":
@@ -1141,7 +1141,7 @@ func wcdNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 		// the sideboard, and a deck can hold the card there alone - Leon
 		// Lindback's City of Brass is ll112sb and nothing else. Let the
 		// player decide it, and leave the rest to aliasing.
-		named := mtgmatcher.ExtractNumber(inCard.Variation) != ""
+		named := b.ExtractNumber(inCard.Variation) != ""
 		if sideboard && !strings.HasSuffix(cn, "sb") {
 			return true
 		} else if !sideboard && named && strings.HasSuffix(cn, "sb") {
@@ -1159,7 +1159,7 @@ func wcdNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 		}
 		cn = strings.Replace(cn, prefix, "", 1)
 
-		num := mtgmatcher.ExtractNumber(inCard.Variation)
+		num := b.ExtractNumber(inCard.Variation)
 		if num != "" {
 			cnn := cn
 			// Strip last character if it's a letter
@@ -1214,7 +1214,7 @@ func reskinDraculaCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, car
 
 // In case there is no number information and the card may known with other names
 func reskinRenameCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if mtgmatcher.ExtractNumber(inCard.Variation) != "" || card.FlavorName == "" {
+	if b.ExtractNumber(inCard.Variation) != "" || card.FlavorName == "" {
 		return false
 	}
 	if isReskin(inCard) && !mtgmatcher.Contains(inCard.OriginalName, card.FlavorName) {

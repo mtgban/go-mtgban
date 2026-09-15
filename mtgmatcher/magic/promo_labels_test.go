@@ -2,8 +2,6 @@ package magic
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPromoTypeLabels pins that every promo type the datastore carries can be
@@ -44,7 +42,7 @@ func TestPromoTypeLabels(t *testing.T) {
 	}
 
 	// A type the list does not know still reads as something.
-	if got := mtgmatcher.PromoTypeLabel("nosuchtype"); got == "" {
+	if got := b.PromoTypeLabel("nosuchtype"); got == "" {
 		t.Error("an unknown promo type reads back as nothing")
 	}
 }

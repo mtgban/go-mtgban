@@ -322,7 +322,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 				} else if version == "2" {
 					variant = "Prerelease"
 				} else {
-					if magic.HasPromoPackPrinting(cardName) {
+					if magic.HasPromoPackPrinting(b, cardName) {
 						variant = "Promo Pack"
 						if cardName == "Sorcerous Spyglass" {
 							edition = "PXLN"
@@ -352,7 +352,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 						notPromoPack = num > parentSet.BaseSetSize
 					}
 
-					if magic.HasPromoPackPrinting(cardName) && !notPromoPack {
+					if magic.HasPromoPackPrinting(b, cardName) && !notPromoPack {
 						variant = "Promo Pack"
 					} else {
 						edition = strings.TrimSuffix(edition, " Promos")

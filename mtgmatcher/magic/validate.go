@@ -61,7 +61,7 @@ func (Rules) ValidatePrinting(b *mtgmatcher.Backend, in *mtgmatcher.InputCard, c
 		return co.HasPromoType(promoType)
 	}
 
-	number := mtgmatcher.ExtractNumberAny(variation)
+	number := b.ExtractNumberAny(variation)
 	if number != "" {
 		// A title's own number outranks IDs copied from a sibling: Plains (38)
 		// carries the IDs and card_number of #40; Secret Lair 2388 carries #41.

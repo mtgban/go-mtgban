@@ -84,8 +84,8 @@ func carriesTokens(b *mtgmatcher.Backend, edition string) bool {
 // collector number, by number when the input carries one and by guild name
 // through the variant tables otherwise. The wording is the card's own
 // edition and variation, or a bare edition and empties on the alias path.
-func ravnicaWeekend(name, edition, variation string) (string, string) {
-	num := mtgmatcher.ExtractNumber(variation)
+func ravnicaWeekend(b *mtgmatcher.Backend, name, edition, variation string) (string, string) {
+	num := b.ExtractNumber(variation)
 	if strings.HasPrefix(num, "a") {
 		return "GRN Ravnica Weekend", num
 	} else if strings.HasPrefix(num, "b") {
@@ -313,7 +313,7 @@ func setFamilyEdition(b *mtgmatcher.Backend, name, edition, cardEdition, variati
 			edition = ed
 		}
 	case contains("Ravnica Weekend"):
-		ed, vr := ravnicaWeekend(name, cardEdition, variation)
+		ed, vr := ravnicaWeekend(b, name, cardEdition, variation)
 		if ed != "" {
 			edition, variation = ed, vr
 		}
@@ -384,7 +384,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 	switch {
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
-		num := mtgmatcher.ExtractNumber(variation)
+		num := b.ExtractNumber(variation)
 		if num != "" {
 			variation = strings.Replace(variation, num+" ", "", 1)
 		}
@@ -449,7 +449,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		if found && len(b.MatchInSet(altProps.OriginalName, "SLD")) != 0 {
 			var shouldRename bool
 			cards := b.MatchInSet(altProps.OriginalName, "SLD")
-			num := mtgmatcher.ExtractNumber(inCard.Variation)
+			num := b.ExtractNumber(inCard.Variation)
 			for _, card := range cards {
 				if card.Number == num || (card.FaceFlavorName != "" && mtgmatcher.Contains(inCard.Variation, card.FaceFlavorName)) {
 					shouldRename = true
@@ -633,7 +633,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			case insert.idw != "" && inCard.Contains("IDW"):
 				edition = "IDW Comics Inserts"
 				variation = insert.idw
-			case (insert.marker != "" && mtgmatcher.ExtractNumber(variation) == insert.marker) ||
+			case (insert.marker != "" && b.ExtractNumber(variation) == insert.marker) ||
 				inCard.IsJPN() || inCard.Language == "Japanese":
 				variation = insert.number
 			default:
@@ -675,7 +675,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				variation = "Prerelease"
 			}
 		case "Tamiyo's Journal":
-			if (inCard.Variation == "" || mtgmatcher.ExtractNumber(inCard.Variation) == "265") && inCard.Foil {
+			if (inCard.Variation == "" || b.ExtractNumber(inCard.Variation) == "265") && inCard.Foil {
 				variation = "Foil"
 			}
 		case "Underworld Dreams":
@@ -703,7 +703,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "15th Anniversary Cards"
 			}
 		case "Fling":
-			if (isDCIPromo(inCard) || isWPNGateway(inCard)) && mtgmatcher.ExtractNumber(inCard.Variation) == "" {
+			if (isDCIPromo(inCard) || isWPNGateway(inCard)) && b.ExtractNumber(inCard.Variation) == "" {
 				edition = "DCI Promos"
 				if isDCIPromo(inCard) {
 					variation = "50"
@@ -712,7 +712,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				}
 			}
 		case "Sylvan Ranger":
-			if (isDCIPromo(inCard) || isWPNGateway(inCard)) && mtgmatcher.ExtractNumber(inCard.Variation) == "" {
+			if (isDCIPromo(inCard) || isWPNGateway(inCard)) && b.ExtractNumber(inCard.Variation) == "" {
 				edition = "DCI Promos"
 				if isDCIPromo(inCard) {
 					variation = "51"
@@ -747,7 +747,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "Rivals of Ixalan Promos"
 			}
 		case "Teferi, Master of Time":
-			num := mtgmatcher.ExtractNumber(variation)
+			num := b.ExtractNumber(variation)
 			_, err := strconv.Atoi(num)
 			if err == nil {
 				if inCard.IsPrerelease() {
@@ -787,7 +787,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			}
 		case "Runo Stromkirk", "Runo Stromkirk // Krothuss, Lord of the Deep":
 			if isShowcase(inCard) || mtgmatcher.Contains(inCard.Variation, "Eternal") {
-				num := mtgmatcher.ExtractNumber(inCard.Variation)
+				num := b.ExtractNumber(inCard.Variation)
 				if num == "" {
 					if mtgmatcher.Contains(inCard.Variation, "Eternal") {
 						variation = "327"
@@ -835,7 +835,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			// Attempt a best effort match for known promotional tags if card or edition
 			// wasn't found in previous steps
 			if b.IsGenericPromo(inCard) {
-				mtgmatcher.Logger.Printf("Precise matching for promo failed, attempting best effort")
+				b.Log("Precise matching for promo failed, attempting best effort")
 				inCard.PromoWildcard = true
 			}
 		}
@@ -844,7 +844,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	inCard.Variation = variation
 
 	// Adjust incorrect numbers sometimes used for Etched
-	num := mtgmatcher.ExtractNumber(inCard.Variation)
+	num := b.ExtractNumber(inCard.Variation)
 	if num != "" && strings.HasSuffix(num, "e") && b.HasEtchedPrinting(inCard.Name, inCard.Edition) {
 		fixedNum := strings.TrimSuffix(num, "e")
 		variation = strings.Replace(variation, num, fixedNum, -1)
@@ -961,7 +961,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	// would narrow every candidate away rather than pick one.
 	var oversizedNumber string
 	if inCard.Contains("Oversize") {
-		number := mtgmatcher.ExtractNumber(inCard.Variation)
+		number := b.ExtractNumber(inCard.Variation)
 		for _, setCode := range editions {
 			set, found := b.Sets[setCode]
 			if found && number != "" && setHoldsOversized(set, inCard.Name, number) {
@@ -1174,7 +1174,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			case "PLST":
 				// Check if there is an exact match in plain SLD
-				num := mtgmatcher.ExtractNumber(inCard.Variation)
+				num := b.ExtractNumber(inCard.Variation)
 				if len(b.MatchInSetNumber(inCard.Name, "SLD", num)) != 0 {
 					// If there is a match, make sure there are no other cards in PLST with the same number
 					shouldNotContinue := false
@@ -1208,7 +1208,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
 				// If these have no strict matches AND are not properly tagged, skip them
-				if len(b.MatchInSetNumber(inCard.Name, set.Code, mtgmatcher.ExtractNumber(inCard.Variation))) == 0 && !hasSecretLairTag(b, inCard, set.Code) {
+				if len(b.MatchInSetNumber(inCard.Name, set.Code, b.ExtractNumber(inCard.Variation))) == 0 && !hasSecretLairTag(b, inCard, set.Code) {
 					continue
 				}
 			case "SLD":
@@ -1237,7 +1237,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				// ExtractNumberAny so Secret Lair collector numbers above the
 				// year cap (e.g. 2406) aren't dropped and misrouted to PLST,
 				// mirroring the SLD number check further below.
-				if len(b.MatchInSetNumber(inCard.Name, "SLD", mtgmatcher.ExtractNumberAny(inCard.Variation))) == 0 && len(b.MatchInSet(inCard.Name, "PLST")) > 0 {
+				if len(b.MatchInSetNumber(inCard.Name, "SLD", b.ExtractNumberAny(inCard.Variation))) == 0 && len(b.MatchInSet(inCard.Name, "PLST")) > 0 {
 					for _, name := range b.SLDDeckNames {
 						deckNameInCard := mtgmatcher.Contains(inCard.Edition, name) || mtgmatcher.Contains(inCard.Variation, name)
 						if deckNameInCard {
@@ -1502,7 +1502,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				wellKnownTags := inCard.Contains("Divine") || inCard.Contains("Garruk") ||
 					inCard.Contains("Chandra") || inCard.Contains("Goblins")
 				if !found && !wellKnownTags {
-					num := mtgmatcher.ExtractNumber(inCard.Variation)
+					num := b.ExtractNumber(inCard.Variation)
 					if num != "" {
 						foundCards := b.MatchInSet(inCard.Name, setCode)
 						for _, card := range foundCards {
@@ -1521,7 +1521,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		case isDuelDecks(inCard):
-			variant := duelDecksVariant(inCard)
+			variant := duelDecksVariant(b, inCard)
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks") &&
 				!strings.Contains(set.Name, "Anthology"):
@@ -1840,14 +1840,14 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 			checkNum := true
 			// Lucky case, variation is just the collector number
-			num = mtgmatcher.ExtractNumber(inCard.Variation)
+			num = b.ExtractNumber(inCard.Variation)
 			// Special case for SLD, finally breaking the check against years
 			if num == "" && card.SetCode == "SLD" {
-				num = mtgmatcher.ExtractNumberAny(inCard.Variation)
+				num = b.ExtractNumberAny(inCard.Variation)
 			}
 			if shouldIgnoreNumber(b, inCard, set.Name, num) {
 				checkNum = false
-				mtgmatcher.Logger.Println("Skipping number check")
+				b.Log("Skipping number check")
 			}
 			if checkNum && num != "" {
 				// The empty string will allow to test the number without any
@@ -1905,7 +1905,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					}
 
 					if number == strings.ToLower(card.Number) {
-						mtgmatcher.Logger.Println("Found match with card number", card.Number)
+						b.Log("Found match with card number", card.Number)
 						outCards = append(outCards, card)
 
 						// Card was found, skip any other suffix
@@ -2078,9 +2078,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 
 	if len(outCards) > 1 {
-		mtgmatcher.Logger.Println("Filtering status after main loop")
+		b.Log("Filtering status after main loop")
 		for _, card := range outCards {
-			mtgmatcher.Logger.Println(card.SetCode, card.Name, card.Number)
+			b.Log(card.SetCode, card.Name, card.Number)
 		}
 	}
 
@@ -2096,7 +2096,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 
 		if allSameEdition {
-			mtgmatcher.Logger.Println("allSameEdition pass needed")
+			b.Log("allSameEdition pass needed")
 			var filteredOutCards []mtgmatcher.Card
 			for _, card := range outCards {
 				set := b.Sets[card.SetCode]
@@ -2123,7 +2123,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 	}
 
-	if len(outCards) > 1 && mtgmatcher.ExtractNumber(inCard.Variation) == "" {
+	if len(outCards) > 1 && b.ExtractNumber(inCard.Variation) == "" {
 		// Separate finishes have different collector numbers after this date
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgmatcher.Card
@@ -2353,7 +2353,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 
 	// Move the card number from name to variation
-	num := mtgmatcher.ExtractNumber(inCard.Name)
+	num := b.ExtractNumber(inCard.Name)
 	if num != "" {
 		fields := strings.Fields(inCard.Name)
 		for i, field := range fields {

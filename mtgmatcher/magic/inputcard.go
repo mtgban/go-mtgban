@@ -58,14 +58,14 @@ func arenaYear(c *mtgmatcher.InputCard, maybeYear string) string {
 
 // duelDecksVariant returns which half of a Duel Decks pairing the listing
 // names, or an empty string if it is not a Duel Decks card.
-func duelDecksVariant(c *mtgmatcher.InputCard) string {
+func duelDecksVariant(b *mtgmatcher.Backend, c *mtgmatcher.InputCard) string {
 	if !isDuelDecks(c) {
 		return ""
 	}
 
 	// Variation might contain numbers, strip them away
 	variant := c.Variation
-	num := mtgmatcher.ExtractNumber(variant)
+	num := b.ExtractNumber(variant)
 	variant = strings.TrimSpace(strings.Replace(variant, num, "", 1))
 	if len(variant) < len("Duel Deck") {
 		variant = c.Edition

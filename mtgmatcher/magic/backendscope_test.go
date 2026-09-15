@@ -7,12 +7,8 @@ import (
 )
 
 // The List's Game Day exception must search the backend whose printing is
-// being checked, even when the global has no such card (or a different one).
+// being checked, never a different one that happens to carry the answer.
 func TestListGameDayReadsTheGivenBackend(t *testing.T) {
-	previous := mtgmatcher.GlobalDatastore()
-	t.Cleanup(func() { mtgmatcher.SetGlobalDatastore(previous) })
-	mtgmatcher.SetGlobalDatastore(&mtgmatcher.Backend{})
-
 	card := mtgmatcher.Card{Name: "Test Reward", Number: "TST-1"}
 	b := &mtgmatcher.Backend{
 		Sets:   map[string]*mtgmatcher.Set{"TST": {Name: "Test Expansion"}},
@@ -23,12 +19,15 @@ func TestListGameDayReadsTheGivenBackend(t *testing.T) {
 	}
 	in := &mtgmatcher.InputCard{Name: card.Name, Variation: "Game Day"}
 	if listEditionCheck(b, in, &card) {
-		t.Fatal("Game Day printing was rejected because the global did not carry it")
+		t.Fatal("Game Day printing was rejected even though its own backend carries it")
 	}
-	mtgmatcher.SetGlobalDatastore(b)
+
+	// other carries the same Sets and UUIDs as b but no name index: the
+	// Game Day lookup must answer from the backend it is handed, not from a
+	// different backend that happens to hold the same uuid under one.
 	other := &mtgmatcher.Backend{Sets: b.Sets, UUIDs: b.UUIDs}
 	if !listEditionCheck(other, in, &card) {
-		t.Fatal("Game Day printing was admitted from the global name index")
+		t.Fatal("Game Day printing was admitted from a name index it does not carry")
 	}
 }
 
