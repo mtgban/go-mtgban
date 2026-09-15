@@ -4,14 +4,12 @@ import (
 	"slices"
 	"strings"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func TestVariants(t *testing.T) {
 	realDatastore(t)
 	for edition, table := range VariantsTable {
-		set, err := mtgmatcher.GetSetByName(edition)
+		set, err := testBackend.GetSetByName(edition)
 		if err != nil {
 			t.Errorf("FAIL: [%s] %s", edition, err.Error())
 			continue

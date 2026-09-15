@@ -65,10 +65,10 @@ func TestIsToken(t *testing.T) {
 	}
 	// And the same answers through the loaded backend, which is how Match
 	// asks: the hook is only reached once the rules are attached.
-	if !mtgmatcher.IsToken("Rules Tip Card") {
+	if !testBackend.IsToken("Rules Tip Card") {
 		t.Error("the backend does not reach the game's own token names")
 	}
-	if mtgmatcher.IsToken("Lightning Bolt") {
+	if testBackend.IsToken("Lightning Bolt") {
 		t.Error("a real card reads as a token")
 	}
 	var _ mtgmatcher.GameRules = Rules{}
@@ -92,7 +92,7 @@ func TestIsTokenDatastoreAnswersTheRest(t *testing.T) {
 		if (Rules{}).IsToken(nil, name) {
 			t.Errorf("IsToken(%q) still answers from the heuristic", name)
 		}
-		if !mtgmatcher.IsToken(name) {
+		if !testBackend.IsToken(name) {
 			t.Errorf("the datastore does not carry %q as a token", name)
 		}
 	}

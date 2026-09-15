@@ -2,8 +2,6 @@ package magic
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPlainNumberKeepsTheListNumbers pins the numbers The List is filed
@@ -45,8 +43,8 @@ func TestPlainNumberKeepsTheListNumbers(t *testing.T) {
 func TestPlainNumberMatchesLoader(t *testing.T) {
 	realDatastore(t)
 	var seen int
-	for _, code := range mtgmatcher.GetAllSets() {
-		set, err := mtgmatcher.GetSet(code)
+	for _, code := range testBackend.GetAllSets() {
+		set, err := testBackend.GetSet(code)
 		if err != nil {
 			continue
 		}

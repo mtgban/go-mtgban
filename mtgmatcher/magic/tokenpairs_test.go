@@ -97,7 +97,7 @@ func TestDerivedTokenPairResolvesByProductID(t *testing.T) {
 		{"multi-id pairing, second id", "200320", "Goat // Food", "TELD", "1 // 16"},
 		{"sibling-set duplicate id (AFR/OAFR dungeon)", "242785", "Goblin // Dungeon of the Mad Mage", "TAFR", "12 // 20"},
 	} {
-		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
+		uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
 		if uuid == "" {
 			t.Errorf("%s: ConvertID(%s) = \"\", want a derived uuid (data may have drifted - re-check the id is still a live pairing)", probe.desc, probe.tcgID)
 			continue
@@ -118,17 +118,17 @@ func TestDerivedTokenPairResolvesByProductID(t *testing.T) {
 
 	// Both ids of the multi-id pair must land on the very same uuid, not
 	// two different entities for one physical pairing.
-	u1 := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "200319")
-	u2 := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "200320")
+	u1 := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, "200319")
+	u2 := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, "200320")
 	if u1 == "" || u1 != u2 {
 		t.Errorf("ConvertID(200319) = %s, ConvertID(200320) = %s, want equal and non-empty", u1, u2)
 	}
 
-	id, err := mtgmatcher.Match(&mtgmatcher.InputCard{ID: "278823"})
+	id, err := testBackend.Match(&mtgmatcher.InputCard{ID: "278823"})
 	if err != nil {
 		t.Fatalf("Match(id=278823) = %v", err)
 	}
-	if co, _ := mtgmatcher.GetUUID(id); co.Card.Name != "Eldrazi Scion // Boar" {
+	if co, _ := testBackend.GetUUID(id); co.Card.Name != "Eldrazi Scion // Boar" {
 		t.Errorf("Match(id=278823) = %s, want Eldrazi Scion // Boar", co.Card.Name)
 	}
 }
@@ -142,11 +142,11 @@ func TestDerivedTokenPairExclusions(t *testing.T) {
 	// C14's own Angel #1 carries 94180 as its own tcgplayerProductId; a
 	// pairing that also names 94180 must lose that id entirely rather than
 	// steal it.
-	uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "94180")
+	uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, "94180")
 	if uuid == "" {
 		t.Skip("94180 not present in this datastore")
 	}
-	co, err := mtgmatcher.GetUUID(uuid)
+	co, err := testBackend.GetUUID(uuid)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", uuid, err)
 	}
@@ -257,11 +257,11 @@ func TestDerivedTokenPairsAreNotNameMatchable(t *testing.T) {
 	// Derived names are never in CanonicalNames by design (that is what
 	// this test proves), so existence there can't gate the skip; check the
 	// pairing is actually derived by asking for it by its own product id.
-	if uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "278823"); uuid == "" {
+	if uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, "278823"); uuid == "" {
 		t.Skip("Eldrazi Scion // Boar (id 278823) not derived in this datastore")
 	}
 
-	_, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+	_, err := testBackend.Match(&mtgmatcher.InputCard{
 		Name:    "Eldrazi Scion // Boar",
 		Edition: "Double Masters 2022 Tokens",
 	})
@@ -270,14 +270,14 @@ func TestDerivedTokenPairsAreNotNameMatchable(t *testing.T) {
 	}
 
 	// The ordinary single-faced token, unaffected by its own pairings.
-	id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+	id, err := testBackend.Match(&mtgmatcher.InputCard{
 		Name:    "Eldrazi Scion",
 		Edition: "Double Masters 2022 Tokens",
 	})
 	if err != nil {
 		t.Fatalf("Match(\"Eldrazi Scion\") = %v", err)
 	}
-	co, _ := mtgmatcher.GetUUID(id)
+	co, _ := testBackend.GetUUID(id)
 	if co.Card.Name != "Eldrazi Scion" || co.Identifiers["derivedTokenPair"] == "true" {
 		t.Errorf("Match(\"Eldrazi Scion\") = %s (derived=%v), want the real single-faced token",
 			co.Card.Name, co.Identifiers["derivedTokenPair"] == "true")
@@ -285,7 +285,7 @@ func TestDerivedTokenPairsAreNotNameMatchable(t *testing.T) {
 
 	// TCMM prints many Treasure // X pairings; MatchInSet must still answer
 	// with only the one real single-faced Treasure token, never any of them.
-	if got := len(mtgmatcher.MatchInSet("Treasure", "TCMM")); got != 1 {
+	if got := len(testBackend.MatchInSet("Treasure", "TCMM")); got != 1 {
 		t.Errorf("len(MatchInSet(\"Treasure\", \"TCMM\")) = %d, want 1 (a derived pairing leaked in)", got)
 	}
 }
@@ -348,7 +348,7 @@ func TestMatchTokenPairingAnchorsEitherHalf(t *testing.T) {
 
 	const scryfallID = "29c4e4f2-0040-4490-b357-660d729ad9cc"
 	const wantUUID = "7a13db1f-523c-5b19-80e5-d4d6f0121c6b_tp_7e5dc858-2163-5de0-95cb-f0e2933a7f7f"
-	if mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, scryfallID) == "" {
+	if testBackend.ConvertID(mtgmatcher.IDSpaceScryfall, scryfallID) == "" {
 		t.Skip("Cat (C17) scryfallId not present in this datastore")
 	}
 
@@ -356,7 +356,7 @@ func TestMatchTokenPairingAnchorsEitherHalf(t *testing.T) {
 	if tcgID == "" {
 		t.Fatal("MatchTokenPairing(Cat, ..Cat Warrior..) = \"\", want the derived Cat // Cat Warrior pairing")
 	}
-	if uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, tcgID); uuid != wantUUID {
+	if uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, tcgID); uuid != wantUUID {
 		t.Errorf("MatchTokenPairing(Cat, ..Cat Warrior..) = %s (%s), want %s", tcgID, uuid, wantUUID)
 	}
 }
@@ -375,7 +375,7 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 	realDatastore(t)
 
 	const wantTCGID = "244277"
-	if mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, wantTCGID) == "" {
+	if testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, wantTCGID) == "" {
 		t.Skip("Illusion // Skeleton (id 244277) not derived in this datastore")
 	}
 
@@ -402,7 +402,7 @@ func TestTokenPairIndexCollision(t *testing.T) {
 	realDatastore(t)
 
 	bearScryfallID := "b0f09f9e-e0f9-4ed8-bfc0-5f1a3046106e"
-	bearUUID := mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, bearScryfallID)
+	bearUUID := testBackend.ConvertID(mtgmatcher.IDSpaceScryfall, bearScryfallID)
 	if bearUUID == "" {
 		t.Skip("Bear (TELD) scryfallId not present in this datastore")
 	}
@@ -434,7 +434,7 @@ func TestMatchTokenPairingRequiresBothFacesInRequestedFinish(t *testing.T) {
 	realDatastore(t)
 
 	boarScryfallID := "8ef6aca1-2e66-48fa-a446-6ec052b1e596"
-	if mtgmatcher.ConvertID(mtgmatcher.IDSpaceScryfall, boarScryfallID) == "" {
+	if testBackend.ConvertID(mtgmatcher.IDSpaceScryfall, boarScryfallID) == "" {
 		t.Skip("Boar (TKHM) scryfallId not present in this datastore")
 	}
 
@@ -476,7 +476,7 @@ func TestNormalizeTokenFaceStripsBraceWrapping(t *testing.T) {
 func TestMatchNativeTokenPair(t *testing.T) {
 	realDatastore(t)
 
-	if len(mtgmatcher.MatchInSetNumber("Copy // Horror", "TGK1", "1")) != 1 {
+	if len(testBackend.MatchInSetNumber("Copy // Horror", "TGK1", "1")) != 1 {
 		t.Skip("Copy // Horror not present at TGK1 #1 in this datastore")
 	}
 
@@ -485,7 +485,7 @@ func TestMatchNativeTokenPair(t *testing.T) {
 		"{Horror Token} // {Copy Token}",
 	} {
 		uuid := MatchNativeTokenPair("TGK1", "1", listing)
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := testBackend.GetUUID(uuid)
 		if err != nil {
 			t.Fatalf("MatchNativeTokenPair(TGK1, 1, %q) = %q, GetUUID: %v", listing, uuid, err)
 		}
