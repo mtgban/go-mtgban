@@ -6,13 +6,13 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-func setCodeExists(code string) bool {
-	_, err := mtgmatcher.GetSet(code)
+func setCodeExists(b *mtgmatcher.Backend, code string) bool {
+	_, err := b.GetSet(code)
 	return err == nil
 }
 
-func nameExists(name string) bool {
-	uuids, err := mtgmatcher.SearchEquals(name)
+func nameExists(b *mtgmatcher.Backend, name string) bool {
+	uuids, err := b.SearchEquals(name)
 	return err == nil && len(uuids) > 0
 }
 
@@ -34,7 +34,7 @@ var codeTable = map[string]string{
 	"PVC": "DDE",
 }
 
-func preprocess(cardName, number, finish, langauge, edition, setCode string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, edition, setCode string) (*mtgmatcher.InputCard, error) {
 	if setCode == "FWB" {
 		return nil, mtgmatcher.ErrUnsupported
 	}
@@ -43,7 +43,7 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 	// came in and numbered from one: "Helper Card (9/9)" of Kaldheim is
 	// card 9 of SKHM. A helper card of a set the datastore files none for
 	// stays an insert below.
-	if index, found := strings.CutPrefix(cardName, "Helper Card ("); found && setCodeExists("S"+setCode) {
+	if index, found := strings.CutPrefix(cardName, "Helper Card ("); found && setCodeExists(b, "S"+setCode) {
 		number, _, _ = strings.Cut(strings.TrimSuffix(index, ")"), "/")
 		cardName = "Double-Faced Substitute Card"
 		setCode = "S" + setCode
@@ -52,7 +52,7 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 	// datastore files with the tokens, have no printing of their own here.
 	// A name the datastore carries whole is a card whatever it says:
 	// Signature Slam and Emblem of the Warmind are cards.
-	if !nameExists(cardName) && (strings.Contains(cardName, "Theme Card") ||
+	if !nameExists(b, cardName) && (strings.Contains(cardName, "Theme Card") ||
 		strings.Contains(cardName, "Helper Card") ||
 		strings.HasPrefix(cardName, "Emblem ") ||
 		strings.Contains(cardName, "Signature")) {
@@ -93,7 +93,7 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 	}
 	// A promo printed under a flavor name is listed by that name with the
 	// card's own in the first parenthetical: "Fatalism (Arcane Denial)"
-	if len(s) > 1 && !nameExists(cardName) && nameExists(s[1]) {
+	if len(s) > 1 && !nameExists(b, cardName) && nameExists(b, s[1]) {
 		cardName = s[1]
 		variant = strings.TrimSpace(strings.Join(s[2:], " "))
 	}
@@ -120,17 +120,17 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 		// The shelf holds the drops, the convention promos and the
 		// commander decks alike, and only the card says which
 		edition = setCode
-		if len(mtgmatcher.MatchInSet(cardName, "SLD")) == 0 && len(mtgmatcher.MatchInSet(cardName, "SLP")) > 0 {
+		if len(b.MatchInSet(cardName, "SLD")) == 0 && len(b.MatchInSet(cardName, "SLP")) > 0 {
 			edition = "SLP"
 		}
-		if len(mtgmatcher.MatchInSet(cardName, "SLC")) == 1 {
+		if len(b.MatchInSet(cardName, "SLC")) == 1 {
 			edition = "SLC"
-			if len(mtgmatcher.MatchInSet(cardName, "SLD")) > 0 && mtgmatcher.ExtractYear(variant) == "" {
+			if len(b.MatchInSet(cardName, "SLD")) > 0 && mtgmatcher.ExtractYear(variant) == "" {
 				edition = "SLD"
 			}
 		}
 	default:
-		if setCodeExists(setCode) {
+		if setCodeExists(b, setCode) {
 			edition = setCode
 		}
 	}
@@ -142,7 +142,7 @@ func preprocess(cardName, number, finish, langauge, edition, setCode string) (*m
 	}
 
 	number = strings.TrimLeft(number, "0")
-	if number != "" && len(mtgmatcher.MatchInSetNumber(cardName, setCode, number)) == 1 {
+	if number != "" && len(b.MatchInSetNumber(cardName, setCode, number)) == 1 {
 		variant += " " + number
 	}
 
