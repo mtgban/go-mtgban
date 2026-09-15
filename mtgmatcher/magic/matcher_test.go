@@ -72,10 +72,6 @@ func realDatastore(t *testing.T) {
 		}
 		b.Logger = log.New(os.Stderr, "", 0)
 		testBackend = b
-		// The token-pairing helpers (MatchTokenPairing and its siblings)
-		// still read the global datastore, so it stays installed for them
-		// while the tests themselves ask testBackend.
-		mtgmatcher.SetGlobalDatastore(b)
 	})
 	if datastoreErr != nil {
 		t.Fatal(datastoreErr)

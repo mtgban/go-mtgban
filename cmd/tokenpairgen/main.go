@@ -124,7 +124,6 @@ func run() int {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	mtgmatcher.SetGlobalDatastore(ds)
 
 	known := ds.TokenPairIDByUUIDs
 	all := map[[2]string]bool{}
@@ -175,8 +174,8 @@ func run() int {
 	fmt.Fprintln(os.Stderr, len(fresh), "pairs are new since the table currently loaded")
 
 	for _, k := range fresh {
-		coA, errA := mtgmatcher.GetUUID(k[0])
-		coB, errB := mtgmatcher.GetUUID(k[1])
+		coA, errA := ds.GetUUID(k[0])
+		coB, errB := ds.GetUUID(k[1])
 		nameA, nameB := k[0], k[1]
 		if errA == nil {
 			nameA = coA.Name
