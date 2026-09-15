@@ -93,7 +93,12 @@ func RegisteredGames() []string {
 func Open(name string, reader io.Reader) (*Backend, error) {
 	for _, g := range registeredGames {
 		if g.name == name {
-			return g.load(reader)
+			b, err := g.load(reader)
+			if err != nil {
+				return nil, err
+			}
+			b.Game = name
+			return b, nil
 		}
 	}
 	return nil, fmt.Errorf("mtgmatcher: unknown game %q (registered: %v)", name, RegisteredGames())

@@ -141,17 +141,31 @@ var months = []string{
 //   - a month name appearing anywhere as a single word returns an empty
 //     string, so a date or a day is never read as a number
 //   - for a rational number, only the numerator is considered
+//
+// A field that names one of the datastore's sets is skipped rather than
+// read as a number, which is why this is a method: "30A" in a Magic
+// listing is a set, and a backend with no sets loaded reads it as 30.
+func (b *Backend) ExtractNumber(str string) string {
+	return b.extractNumber(str, 1993)
+}
+
+// ExtractNumber is Backend.ExtractNumber on the global datastore.
 func ExtractNumber(str string) string {
-	return extractNumber(str, 1993)
+	return currentBackend().ExtractNumber(str)
 }
 
 // ExtractNumberAny returns the first number in the input whatever its length,
 // where ExtractNumber caps how many digits it will accept.
-func ExtractNumberAny(str string) string {
-	return extractNumber(str, math.MaxInt32)
+func (b *Backend) ExtractNumberAny(str string) string {
+	return b.extractNumber(str, math.MaxInt32)
 }
 
-func extractNumber(str string, threshold int) string {
+// ExtractNumberAny is Backend.ExtractNumberAny on the global datastore.
+func ExtractNumberAny(str string) string {
+	return currentBackend().ExtractNumberAny(str)
+}
+
+func (b *Backend) extractNumber(str string, threshold int) string {
 	fields := strings.Fields(str)
 	for _, field := range fields {
 		for _, month := range months {
@@ -183,7 +197,7 @@ func extractNumber(str string, threshold int) string {
 
 		// Skip tags that could be confused with set codes
 		// unless it ends with "a" (ie 30A)
-		_, err := GetSet(field)
+		_, err := b.GetSet(field)
 		if err == nil && !strings.HasSuffix(field, "a") {
 			continue
 		}
