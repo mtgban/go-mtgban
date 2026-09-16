@@ -137,14 +137,14 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	// cards at all. Re-check this if Card Trader ever starts selling a
 	// two-sided pairing shape outside Tokens.
 	if bp.CategoryID == CategoryMagicTokens && strings.Contains(cardName, " // ") {
-		if tcgID := magic.MatchTokenPairing(bp.ScryfallID, cardName, false); tcgID != "" {
+		if tcgID := magic.MatchTokenPairing(b, bp.ScryfallID, cardName, false); tcgID != "" {
 			if id, err := b.MatchID(tcgID, false); err == nil {
 				return &mtgmatcher.InputCard{
 					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 				}, nil
 			}
 		}
-		if verified := magic.VerifyTokenPairingFinish(fmt.Sprintf("%d", bp.TCGplayerID), false); verified != "" {
+		if verified := magic.VerifyTokenPairingFinish(b, fmt.Sprintf("%d", bp.TCGplayerID), false); verified != "" {
 			if id, err := b.MatchID(verified, false); err == nil {
 				return &mtgmatcher.InputCard{
 					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
@@ -164,16 +164,16 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		// paths use), trying each parsed number in turn since which face
 		// the first number names is not fixed across the shapes measured.
 		if n1, n2, ok := tokenPairNumbers(bp.Properties.Number); ok {
-			if tokenSet := magic.EditionTokenSetCode(edition); tokenSet != "" {
+			if tokenSet := magic.EditionTokenSetCode(b, edition); tokenSet != "" {
 				for _, number := range []string{n1, n2} {
-					if uuid := magic.MatchNativeTokenPair(tokenSet, number, cardName); uuid != "" {
+					if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, cardName); uuid != "" {
 						if id, err := b.MatchID(uuid, false); err == nil {
 							return &mtgmatcher.InputCard{
 								ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 							}, nil
 						}
 					}
-					if tcgID := magic.MatchTokenPairingBySetNumber(tokenSet, number, cardName, false); tcgID != "" {
+					if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, cardName, false); tcgID != "" {
 						if id, err := b.MatchID(tcgID, false); err == nil {
 							return &mtgmatcher.InputCard{
 								ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
@@ -191,7 +191,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		// 11.6% of name-only matches against Card Trader's real catalog
 		// would otherwise be silently wrong). Tried last: a real number
 		// anchor above is strictly the safer bar when one parses.
-		if tcgID := magic.MatchTokenPairingByNamesAndEdition(cardName, edition, false); tcgID != "" {
+		if tcgID := magic.MatchTokenPairingByNamesAndEdition(b, cardName, edition, false); tcgID != "" {
 			if id, err := b.MatchID(tcgID, false); err == nil {
 				return &mtgmatcher.InputCard{
 					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
@@ -449,7 +449,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 				} else if version == "2" {
 					variant = "Prerelease"
 				} else {
-					if magic.HasPromoPackPrinting(cardName) {
+					if magic.HasPromoPackPrinting(b, cardName) {
 						variant = "Promo Pack"
 						if cardName == "Sorcerous Spyglass" {
 							edition = "PXLN"
@@ -479,7 +479,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 						notPromoPack = num > parentSet.BaseSetSize
 					}
 
-					if magic.HasPromoPackPrinting(cardName) && !notPromoPack {
+					if magic.HasPromoPackPrinting(b, cardName) && !notPromoPack {
 						variant = "Promo Pack"
 					} else {
 						edition = strings.TrimSuffix(edition, " Promos")

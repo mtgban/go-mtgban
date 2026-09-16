@@ -990,7 +990,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 				variant = "Promo Pack"
 			} else if variant == "V.2" {
 				variant = "Prerelease"
-			} else if magic.HasPromoPackPrinting(cardName) { // Needs to be after V.2 check
+			} else if magic.HasPromoPackPrinting(b, cardName) { // Needs to be after V.2 check
 				variant = "Promo Pack"
 			} else {
 				variant = ""
@@ -1113,7 +1113,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			case "V.2", "V.4":
 				variant = number + " Etched"
 			}
-		} else if magic.HasExtendedArtPrinting(cardName, "MH2") {
+		} else if magic.HasExtendedArtPrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -1122,19 +1122,19 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			case "V.3":
 				variant = "Extended Art"
 			}
-		} else if magic.HasBorderlessPrinting(cardName, "MH2") {
+		} else if magic.HasBorderlessPrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Borderless"
 			case "V.2":
 				variant = "Retro Frame"
-				if magic.HasShowcasePrinting(cardName, "MH2") {
+				if magic.HasShowcasePrinting(b, cardName, "MH2") {
 					variant = "Showcase"
 				}
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasShowcasePrinting(cardName, "MH2") {
+		} else if magic.HasShowcasePrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Showcase"
@@ -1143,7 +1143,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if magic.HasRetroFramePrinting(cardName, "MH2") {
+		} else if magic.HasRetroFramePrinting(b, cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -1260,7 +1260,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		variant = number
 		if len(b.MatchInSet(cardName, "LTC")) > 0 {
 			edition = "LTC"
-			if magic.HasSerializedPrinting(cardName, "LTC") {
+			if magic.HasSerializedPrinting(b, cardName, "LTC") {
 				variant = "serial"
 			}
 		} else if len(b.MatchInSet(cardName, "LTR")) > 0 {
@@ -1333,7 +1333,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 	default:
 		switch {
 		// Try to derive the serialized status from the various Extras sets
-		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && magic.HasSerializedPrinting(cardName, strings.TrimSuffix(edition, ": Extras")):
+		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && magic.HasSerializedPrinting(b, cardName, strings.TrimSuffix(edition, ": Extras")):
 			variant = "serial"
 
 		// Pre-search the card, if not found it's likely a sideboard variant
@@ -1431,7 +1431,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 				default:
 					if strings.Contains(cardName, "//") {
 						variant = number
-					} else if magic.HasPromoPackPrinting(cardName) {
+					} else if magic.HasPromoPackPrinting(b, cardName) {
 						variant = "Promo Pack"
 					}
 				}

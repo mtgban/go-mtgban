@@ -166,7 +166,7 @@ func TestDerivedTokenPairExclusions(t *testing.T) {
 // unresolved even though CK and SCG both sell them. All three dungeon
 // cards, each paired with both a token and with each other, must resolve -
 // and, critically, must resolve to the ordinary AFR/TAFR uuid as the
-// winning tokenPairPartA/B, not OAFR's: TokenPairIndex only ever indexes
+// winning tokenPairPartA/B, not OAFR's: the pairing index only ever indexes
 // whichever uuid actually won, so picking the memorabilia sibling here
 // would silently leave a real vendor listing - anchored on the ordinary
 // set's own scryfall_id, the same one CK and SCG both publish - unable to
@@ -188,11 +188,11 @@ func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 		{"dungeon // token, id shared by AFR and OAFR's own Lost Mine of Phandelver", "242783", "Skeleton // Lost Mine of Phandelver", "59b11ff8-f118-4978-87dd-509dc0c8c932", "Lost Mine of Phandelver // Skeleton Token"},
 		{"dungeon // token, id shared by AFR and OAFR's own Tomb of Annihilation", "242784", "The Atropal // Tomb of Annihilation", "70b284bd-7a8f-4b60-8238-f746bdc5b236", "Tomb of Annihilation // The Atropal"},
 	} {
-		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
+		uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
 		if uuid == "" {
 			t.Skip("AFR dungeon pairing not present in this datastore, cannot verify")
 		}
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := testBackend.GetUUID(uuid)
 		if err != nil {
 			t.Fatalf("%s: GetUUID(%s) = %v", probe.desc, uuid, err)
 		}
@@ -207,7 +207,7 @@ func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 		// face (always the ordinary AFR printing in practice) must find
 		// this pairing through MatchTokenPairing, the same path
 		// cardkingdom and starcitygames actually call.
-		if got := MatchTokenPairing(probe.scryfallID, probe.listing, false); got != probe.tcgID {
+		if got := MatchTokenPairing(testBackend, probe.scryfallID, probe.listing, false); got != probe.tcgID {
 			t.Errorf("%s: MatchTokenPairing(%s, %q) = %q, want %q", probe.desc, probe.scryfallID, probe.listing, got, probe.tcgID)
 		}
 	}
@@ -220,11 +220,11 @@ func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 		{"dungeon // dungeon, id shared 3 ways across AFR/OAFR combinations", "244297", "Dungeon of the Mad Mage // Lost Mine of Phandelver"},
 		{"dungeon // dungeon, id shared 3 ways across AFR/OAFR combinations", "247304", "Dungeon of the Mad Mage // Tomb of Annihilation"},
 	} {
-		uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
+		uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
 		if uuid == "" {
 			t.Skip("AFR dungeon pairing not present in this datastore, cannot verify")
 		}
-		co, err := mtgmatcher.GetUUID(uuid)
+		co, err := testBackend.GetUUID(uuid)
 		if err != nil {
 			t.Fatalf("%s: GetUUID(%s) = %v", probe.desc, uuid, err)
 		}
@@ -241,8 +241,8 @@ func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 	// // Kraken" double_faced_token foil/nonfoil twins) must stay refused:
 	// its claimants don't agree on face names, so it is genuinely
 	// ambiguous, not a sibling-set duplicate.
-	if uuid := mtgmatcher.ConvertID(mtgmatcher.IDSpaceTCGplayer, "162899"); uuid != "" {
-		if co, err := mtgmatcher.GetUUID(uuid); err == nil && co.Identifiers["derivedTokenPair"] == "true" {
+	if uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, "162899"); uuid != "" {
+		if co, err := testBackend.GetUUID(uuid); err == nil && co.Identifiers["derivedTokenPair"] == "true" {
 			t.Errorf("id 162899 resolved to a derived Fish/Kraken pairing (%s), want it to stay refused: it also names the unrelated already-modeled \"Fish // Kraken\" double_faced_token", co.Card.Name)
 		}
 	}
@@ -352,7 +352,7 @@ func TestMatchTokenPairingAnchorsEitherHalf(t *testing.T) {
 		t.Skip("Cat (C17) scryfallId not present in this datastore")
 	}
 
-	tcgID := MatchTokenPairing(scryfallID, "Cat Token - Cat Warrior Token", false)
+	tcgID := MatchTokenPairing(testBackend, scryfallID, "Cat Token - Cat Warrior Token", false)
 	if tcgID == "" {
 		t.Fatal("MatchTokenPairing(Cat, ..Cat Warrior..) = \"\", want the derived Cat // Cat Warrior pairing")
 	}
@@ -379,7 +379,7 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 		t.Skip("Illusion // Skeleton (id 244277) not derived in this datastore")
 	}
 
-	tcgID := MatchTokenPairingBySetNumber("TAFC", "3", "Illusion Token // Skeleton Token", false)
+	tcgID := MatchTokenPairingBySetNumber(testBackend, "TAFC", "3", "Illusion Token // Skeleton Token", false)
 	if tcgID != wantTCGID {
 		t.Errorf("MatchTokenPairingBySetNumber(TAFC, 3, ..Skeleton..) = %q, want %q", tcgID, wantTCGID)
 	}
@@ -394,7 +394,7 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 // last-write-wins map would silently pick one and make the other three
 // unreachable, so a vendor listing that actually names one of the dropped
 // three would resolve to the wrong physical product under the survivor's
-// id. The fix must refuse rather than guess: TokenPairIndex itself carries
+// id. The fix must refuse rather than guess: the index itself carries
 // no entry for the colliding key, and MatchTokenPairing (the caller every
 // vendor package goes through) returns "" for it - never silently
 // answering with one of the four candidates.
@@ -407,12 +407,11 @@ func TestTokenPairIndexCollision(t *testing.T) {
 		t.Skip("Bear (TELD) scryfallId not present in this datastore")
 	}
 
-	idx := TokenPairIndex()
-	if id, found := idx[bearUUID]["food"]; found {
+	if id, found := testBackend.TokenPairIndex[bearUUID]["food"]; found {
 		t.Errorf(`TokenPairIndex[Bear]["food"] = %q, want no entry (colliding key must stay unresolved, not answer with an arbitrary one of Bear's several Food partners)`, id)
 	}
 
-	if id := MatchTokenPairing(bearScryfallID, "Bear Token // Food Token", false); id != "" {
+	if id := MatchTokenPairing(testBackend, bearScryfallID, "Bear Token // Food Token", false); id != "" {
 		t.Errorf("MatchTokenPairing(Bear, ..Food..) = %q, want \"\": Bear pairs with multiple differently-numbered Food tokens, none namable from \"Food\" alone", id)
 	}
 }
@@ -438,10 +437,10 @@ func TestMatchTokenPairingRequiresBothFacesInRequestedFinish(t *testing.T) {
 		t.Skip("Boar (TKHM) scryfallId not present in this datastore")
 	}
 
-	if id := MatchTokenPairing(boarScryfallID, "Boar Token // Spirit Token", true); id != "" {
+	if id := MatchTokenPairing(testBackend, boarScryfallID, "Boar Token // Spirit Token", true); id != "" {
 		t.Errorf("MatchTokenPairing(Boar, ..Spirit.., foil=true) = %q, want \"\": Boar itself was never sold foil, only its sheet partner Spirit was", id)
 	}
-	if id := MatchTokenPairing(boarScryfallID, "Boar Token // Spirit Token", false); id == "" {
+	if id := MatchTokenPairing(testBackend, boarScryfallID, "Boar Token // Spirit Token", false); id == "" {
 		t.Error("MatchTokenPairing(Boar, ..Spirit.., foil=false) = \"\", want the real nonfoil pairing id")
 	}
 }
@@ -484,7 +483,7 @@ func TestMatchNativeTokenPair(t *testing.T) {
 		"{Copy Token} // {Horror Token}",
 		"{Horror Token} // {Copy Token}",
 	} {
-		uuid := MatchNativeTokenPair("TGK1", "1", listing)
+		uuid := MatchNativeTokenPair(testBackend, "TGK1", "1", listing)
 		co, err := testBackend.GetUUID(uuid)
 		if err != nil {
 			t.Fatalf("MatchNativeTokenPair(TGK1, 1, %q) = %q, GetUUID: %v", listing, uuid, err)
@@ -510,7 +509,7 @@ func TestMatchNativeTokenPair(t *testing.T) {
 func TestMatchTokenPairingByNamesAndEdition(t *testing.T) {
 	realDatastore(t)
 
-	tcgID := MatchTokenPairingByNamesAndEdition("Cat Warrior // Beast", "Commander 2018", false)
+	tcgID := MatchTokenPairingByNamesAndEdition(testBackend, "Cat Warrior // Beast", "Commander 2018", false)
 	if tcgID == "" {
 		t.Fatal("MatchTokenPairingByNamesAndEdition(Cat Warrior // Beast, Commander 2018) = \"\", want a match")
 	}
@@ -528,7 +527,7 @@ func TestMatchTokenPairingByNamesAndEdition(t *testing.T) {
 	// Bird // Myr partners are different tokens on TC16's own sheet. The
 	// two face names alone would resolve to Modern Horizons' pairing
 	// regardless; the edition check must catch the disagreement.
-	if got := MatchTokenPairingByNamesAndEdition("Bird // Myr", "Commander 2016", false); got != "" {
+	if got := MatchTokenPairingByNamesAndEdition(testBackend, "Bird // Myr", "Commander 2016", false); got != "" {
 		t.Errorf("MatchTokenPairingByNamesAndEdition(Bird // Myr, Commander 2016) = %q, want \"\": the listing's own edition disagrees with the name-only match", got)
 	}
 }
@@ -542,7 +541,7 @@ func TestTokenPairIDByBothNamesCollision(t *testing.T) {
 	realDatastore(t)
 
 	key := [2]string{NormalizeTokenFace("Knight"), NormalizeTokenFace("Zombie")}
-	if id, found := TokenPairIDByBothNames()[key]; found {
+	if id, found := testBackend.TokenPairIDByBothNames[key]; found {
 		t.Errorf(`TokenPairIDByBothNames[Knight,Zombie] = %q, want no entry (colliding key must stay unresolved)`, id)
 	}
 }
@@ -564,7 +563,7 @@ func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 		t.Skip("Germ/Spirit TC16 #10/#6 not present in this datastore")
 	}
 
-	id := MatchTokenPairingByUUIDs(germ[0].UUID, spirit[0].UUID, false)
+	id := MatchTokenPairingByUUIDs(testBackend, germ[0].UUID, spirit[0].UUID, false)
 	if id == "" {
 		t.Fatal("MatchTokenPairingByUUIDs(Germ, Spirit) = \"\", want the derived pairing mtgjson's own tokenProducts entry confirms - a contested id must not drop the row it belongs to")
 	}
@@ -595,7 +594,7 @@ func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
 		t.Skip("Dinosaur TLCC #10 / Gnome TLCI #16 not present in this datastore")
 	}
 
-	id := MatchTokenPairingByUUIDs(dinosaur[0].UUID, gnome[0].UUID, false)
+	id := MatchTokenPairingByUUIDs(testBackend, dinosaur[0].UUID, gnome[0].UUID, false)
 	if id == "" {
 		t.Fatal("MatchTokenPairingByUUIDs(Dinosaur, Gnome) = \"\", want the derived pairing - homeSet has no common ancestor for TLCC/TLCI, and must fall back rather than drop the row")
 	}
