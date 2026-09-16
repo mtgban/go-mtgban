@@ -3,10 +3,12 @@ package manapool
 import (
 	"context"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // Index prices singles from Mana Pool's market valuation, what a card is
@@ -64,6 +66,33 @@ func (mp *Index) Load(ctx context.Context) error {
 					mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
 				}
 				continue
+			}
+
+			// See manapool.go's own price() for why a two-sided token
+			// sheet needs magic.MatchTokenPairing tried next, and to
+			// refuse rather than keep the plain result when it finds
+			// nothing: Mana Pool's own scryfall_id for one of these
+			// names only one of the two faces (mtgjson's own already-
+			// combined native pairings are told apart by their own Name
+			// already containing " // ", and need no override), so the
+			// plain resolution above would otherwise silently price the
+			// whole two-sided card as if the other half did not exist,
+			// and not every such pairing is one mtgjson's own
+			// tokenProducts feed has a record of at all.
+			if co, err := mtgmatcher.GetUUID(cardID); err == nil &&
+				strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
+				strings.HasPrefix(card.SetCode, "T") {
+				cardID = ""
+				// MatchTokenPairing answers either with a bare derived-
+				// entity uuid or a raw TCGplayer product id - MatchID
+				// resolves either shape to the real uuid this needs, the
+				// same way the plain path above already did.
+				if id := magic.MatchTokenPairing(card.ScryfallID, card.Name, finish.foil); id != "" {
+					cardID, _ = mtgmatcher.MatchID(id, finish.foil)
+				}
+				if cardID == "" {
+					continue
+				}
 			}
 
 			link := card.URL

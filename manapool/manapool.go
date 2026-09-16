@@ -10,6 +10,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // Manapool prices Mana Pool's catalog.
@@ -61,7 +62,10 @@ func (mp *Manapool) Load(ctx context.Context) error {
 // price records every row of the list the store answers with.
 func (mp *Manapool) price(pricelist []Product) {
 	for _, card := range pricelist {
-		cardID, err := mtgmatcher.MatchID(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
+		foil := card.FinishID == "FO"
+		etched := card.FinishID == "EF"
+
+		cardID, err := mtgmatcher.MatchID(card.ScryfallID, foil, etched)
 		if err != nil {
 			if !isUnindexed(card) {
 				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
@@ -69,61 +73,104 @@ func (mp *Manapool) price(pricelist []Product) {
 			continue
 		}
 
-		// Validate language
+		// A two-sided token sheet prints one physical card for a pairing
+		// mtgmatcher/magic may already carry a combined entity for. mtgjson
+		// already models some of these natively (one single entity of its
+		// own, its own name already "X // Y") - the plain resolution above
+		// is already correct for those, told apart by its own Name already
+		// containing " // ". For the rest, Mana Pool's own scryfall_id
+		// names Scryfall's single representative face, not a combined one,
+		// so the plain resolution above lands on that one face alone -
+		// resolve through the combined entity instead, by that same id
+		// plus the listing's own name (see magic.MatchTokenPairing, shared
+		// with cardkingdom's own version of this same problem), and refuse
+		// rather than keep the single-face result when no combined entity
+		// is on file: mtgjson's own tokenProducts feed simply has no
+		// record of every pairing a vendor sells (see mtgmatcher/magic's
+		// own verifiedNoUpstreamPairs correction), and a listing whose own
+		// name says two faces is worth more than a single-face guess would
+		// silently be wrong for is worth refusing instead.
 		co, err := mtgmatcher.GetUUID(cardID)
 		if err != nil {
 			continue
 		}
-		if mtgmatcher.LanguageTag2LanguageCode[co.Language] != strings.ToLower(card.LanguageID) {
-			continue
+		if strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
+			strings.HasPrefix(card.SetCode, "T") {
+			cardID = ""
+			// MatchTokenPairing answers either with a bare derived-entity
+			// uuid (no usable TCGplayer id at all) or a raw TCGplayer
+			// product id (an ordinary derived pairing) - MatchID resolves
+			// either shape to the real uuid record() needs, the same way
+			// the plain path above already did.
+			if id := magic.MatchTokenPairing(card.ScryfallID, card.Name, foil); id != "" {
+				cardID, _ = mtgmatcher.MatchID(id, foil, etched)
+			}
+			if cardID == "" {
+				continue
+			}
 		}
-
-		// Build URL
-		u, err := url.Parse(card.URL)
-		if err != nil {
-			mp.printf("%v", err)
-			continue
-		}
-		v := url.Values{}
-		if mp.Partner != "" {
-			v.Set("ref", mp.Partner)
-		}
-		v.Set("conditions", card.ConditionID)
-		switch card.FinishID {
-		case "EF":
-			v.Set("finish", "etched")
-		case "FO":
-			v.Set("finish", "foil")
-		case "NF":
-			v.Set("finish", "nonfoil")
-		}
-		u.RawQuery = v.Encode()
-		link := u.String()
-
-		// Match conditions
-		conds := card.ConditionID
-		switch card.ConditionID {
-		case "NM", "MP", "HP":
-		case "LP":
-			conds = "SP"
-		case "DMG":
-			conds = "PO"
-		default:
-			mp.printf("Unknown %s condition for %s (%s)", conds, card.Name, card.SetCode)
-			continue
-		}
-
-		// Convert price to float and add the 4.2% fee
-		price := float64(card.LowPrice) / 100.0 * 1.042
-
-		// Got there!
-		out := &mtgban.InventoryEntry{
-			Conditions: conds,
-			Price:      price,
-			URL:        link,
-		}
-		mp.addCheapest(cardID, out)
+		mp.record(card, cardID)
 	}
+}
+
+// record validates and prices one already-resolved row, the tail end of
+// price() shared by both the plain scryfall-id path and the token-pairing
+// one above.
+func (mp *Manapool) record(card Product, cardID string) {
+	// Validate language
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil {
+		return
+	}
+	if mtgmatcher.LanguageTag2LanguageCode[co.Language] != strings.ToLower(card.LanguageID) {
+		return
+	}
+
+	// Build URL
+	u, err := url.Parse(card.URL)
+	if err != nil {
+		mp.printf("%v", err)
+		return
+	}
+	v := url.Values{}
+	if mp.Partner != "" {
+		v.Set("ref", mp.Partner)
+	}
+	v.Set("conditions", card.ConditionID)
+	switch card.FinishID {
+	case "EF":
+		v.Set("finish", "etched")
+	case "FO":
+		v.Set("finish", "foil")
+	case "NF":
+		v.Set("finish", "nonfoil")
+	}
+	u.RawQuery = v.Encode()
+	link := u.String()
+
+	// Match conditions
+	conds := card.ConditionID
+	switch card.ConditionID {
+	case "NM", "MP", "HP":
+	case "LP":
+		conds = "SP"
+	case "DMG":
+		conds = "PO"
+	default:
+		mp.printf("Unknown %s condition for %s (%s)", conds, card.Name, card.SetCode)
+		return
+	}
+
+	// Convert price to float and add the 4.2% fee
+	price := float64(card.LowPrice) / 100.0 * 1.042
+
+	// Got there!
+	out := &mtgban.InventoryEntry{
+		Conditions: conds,
+		Price:      price,
+		URL:        link,
+	}
+	mp.addCheapest(cardID, out)
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
