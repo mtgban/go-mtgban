@@ -2152,6 +2152,34 @@ var ed4Variants = map[string]map[string]string{
 	},
 }
 
+var ed4AltVariants = map[string]map[string]string{
+	"Forest": {
+		"v.1": "376alt",
+		"v.2": "377alt",
+		"v.3": "378alt",
+	},
+	"Island": {
+		"v.1": "367alt",
+		"v.2": "368alt",
+		"v.3": "369alt",
+	},
+	"Mountain": {
+		"v.1": "373alt",
+		"v.2": "374alt",
+		"v.3": "375alt",
+	},
+	"Plains": {
+		"v.1": "364alt",
+		"v.2": "365alt",
+		"v.3": "366alt",
+	},
+	"Swamp": {
+		"v.1": "370alt",
+		"v.2": "371alt",
+		"v.3": "372alt",
+	},
+}
+
 var prwkVariants = map[string]map[string]string{
 	"Forest": {
 		"golgari":  "A06",
@@ -4383,7 +4411,7 @@ var wc02Variants = map[string]map[string]string{
 var VariantsTable = map[string]map[string]map[string]string{
 	"30th Anniversary Misc Promos":        p30mVariants,
 	"Alliances":                           allVariants,
-	"Alternate Fourth Edition":            ed4Variants,
+	"Alternate Fourth Edition":            ed4AltVariants,
 	"Anthologies":                         athVariants,
 	"Antiquities":                         atqVariants,
 	"Arena League 2001":                   pal01Variants,
