@@ -367,7 +367,7 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 	// below. See magic.MatchTokenPairing (shared with every other vendor
 	// package resolving its own two-sided token listings the same way).
 	if isTwoSidedToken {
-		if id := magic.MatchTokenPairing(card.ScryfallID, card.Name, isFoil); id != "" {
+		if id := magic.MatchTokenPairing(b, card.ScryfallID, card.Name, isFoil); id != "" {
 			return &mtgmatcher.InputCard{ID: id, Foil: isFoil}, nil
 		}
 
@@ -383,7 +383,7 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 		// derives.
 		if card.ScryfallID == "" && card.Edition == "Mystery Booster/The List" &&
 			strings.HasPrefix(setCode, "MT") && setCodeExists(b, setCode[1:]) {
-			if id := magic.MatchTokenPairingBySetNumber(setCode[1:], number, card.Name, isFoil); id != "" {
+			if id := magic.MatchTokenPairingBySetNumber(b, setCode[1:], number, card.Name, isFoil); id != "" {
 				return &mtgmatcher.InputCard{ID: id, Foil: isFoil}, nil
 			}
 		}
