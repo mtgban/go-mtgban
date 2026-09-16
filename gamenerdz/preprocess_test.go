@@ -352,27 +352,6 @@ func TestPreprocess(t *testing.T) {
 			variation: "OP04-032", foil: true,
 		},
 		{
-			game: mtgban.GameFleshAndBlood,
-			product: GNProduct{
-				DisplayName:    "Aether Sink (ARC017) Arcane Rising 1st Edition Rainbow Foil",
-				SelectedFinish: "1st Edition Rainbow Foil",
-				ProductData:    GNProductData{SetName: "Arcane Rising"},
-			},
-			name: "Aether Sink", edition: "Arcane Rising", variation: "ARC017",
-			finish: "1st Edition Rainbow Foil", foil: true,
-		},
-		{
-			// The pitch color is part of the card's name, not a variant.
-			game: mtgban.GameFleshAndBlood,
-			product: GNProduct{
-				DisplayName:    "Aether Quickening (Yellow) (FAB113) Flesh and Blood: Promo Cards Rainbow Foil",
-				SelectedFinish: "Rainbow Foil",
-				ProductData:    GNProductData{SetName: "Flesh and Blood: Promo Cards"},
-			},
-			name: "Aether Quickening (Yellow)", edition: "Flesh and Blood: Promo Cards",
-			variation: "FAB113", finish: "Rainbow Foil", foil: true,
-		},
-		{
 			game:    mtgban.GameLorcana,
 			product: GNProduct{DisplayName: "Illumineer's Trove - Sapphire and Steel"},
 			err:     true,

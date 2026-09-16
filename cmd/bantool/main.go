@@ -200,9 +200,6 @@ var options = map[mtgban.Game]map[string]*scraperOption{
 		"cardtrader_sealed": {
 			Init: cardtraderSealedScraper(mtgban.GameFleshAndBlood),
 		},
-		"gamenerdz": {
-			Init: gamenerdzScraper(mtgban.GameFleshAndBlood),
-		},
 		"miniaturemarket_sealed": {
 			Init: miniaturemarketSealedScraper(mtgban.GameFleshAndBlood),
 		},
