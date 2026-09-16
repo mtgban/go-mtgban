@@ -35,6 +35,41 @@ out not to exercise directly enough to have caught the gap on the first
 pass. Pure extraction — no logic changed, only where it's defined — verified
 by running `Index`'s full pre-existing test suite unchanged before and after.
 
+**A shared mcmId can name the wrong printing, and `Preprocess`'s own default
+could throw away the one thing that would have caught it.** Found from a
+live run: id 272488, "Urza's Mine (V.2)" under Chronicles, kept a Chronicles
+Foreign Black Border (Japanese) printing instead of one of its own four
+plain English arts. Two bugs, both real and both in code `Index` shares.
+`Fallback`'s `checkLoadedID` trusts whatever mcmId-matching id it finds last
+when none of them agrees with the product's own number - fine for genuine
+cosmetic siblings (its own doc comment's "30A frame pairs"), wrong here,
+because mtgjson stamps all four BCHR arts with 272488, the id of one of the
+four *different* CHR arts instead; the four never agree with each other on
+number, let alone the product's. Fixed by deferring to Preprocess/Match
+instead of guessing when that shape shows up. Second, separately: Chronicles
+has no dedicated case in `Preprocess`'s edition switch, so it fell to the
+generic default ("old editions keep the V.1/V.2 style for variants.go to
+resolve") - except that default overwrote `Variation` with Cardmarket's own
+Number unconditionally, discarding the "(V.2)" `magic.VariantsTable`'s
+`chrVariants` already carries a `"v.2"` key for, whenever Cardmarket's
+Number field was non-empty - which for these same-numbered siblings, it
+always is. Fixed by only taking the number when `VariantsTable` (resolved
+through `magic.EditionTable`'s alias first, the same one `AdjustEdition`
+consults later - Cardmarket's own edition spelling rarely matches the
+matcher's) has no entry for this exact edition/card/variant to consult
+instead. The same gap, found the same way, turned up one edition over:
+"Fourth Edition: Alternate"'s three-art basic lands were failing to resolve
+with "unknown variant" in the same run, for the same reason - fixed by the
+same guard, plus a real, separate bug the fix surfaced: `ed4Variants`
+itself named the bare 4ED number for a card mtgban's own loader only ever
+synthesizes with "alt" appended (`Alternate Fourth Edition` is not a real
+mtgjson set - `duplicate()` builds it from 4ED at load time), so none of
+its values ever matched the card FilterCards was checking them against.
+Pinned with a test that would have caught it directly:
+`TestEd4VariantsNumbersAreReal` checks every `ed4Variants` value against the
+loaded set's own numbers, not just that the card name exists there the way
+the existing `TestVariants` did.
+
 ## Market's design
 
 **Strictly sequential, not pooled.** Measured directly: a concurrency ladder

@@ -114,7 +114,18 @@ func checkLoadedID(cardName string, productID int) []string {
 // loaded card carries it. When only one finish exists both ids point to it.
 // mtgjson occasionally stamps the same mcmId on sibling variants (30A frame
 // pairs for example), so printings whose number agrees with the product's
-// take precedence over the arbitrary last one found.
+// take precedence over the arbitrary last one found - but when the
+// candidates themselves disagree on number and none agrees with the
+// product's own, that preference has nothing to prefer: Chronicles Foreign
+// Black Border's four Urza's Mine arts (114a-114d) all carry Cardmarket's
+// 272488, the id of one of the four *plain* Chronicles arts instead, so
+// "the arbitrary last one found" was a different Japanese-language art
+// every time, never the English one the product actually is. Below, that
+// shape - real ids found, none of them this product's number, and not all
+// the same number either - is treated the same as no id being known at
+// all, deferring to Preprocess's own name/number/variant matching (which,
+// for Chronicles, already resolves Cardmarket's "(V.2)"-style suffix
+// correctly via magic.VariantsTable).
 func Fallback(product *cm.Product) (string, string) {
 	var cardID, cardIDFoil string
 
@@ -126,32 +137,49 @@ func Fallback(product *cm.Product) (string, string) {
 		ids = nil
 	}
 	var numberMatched, numberMatchedFoil bool
+	numbers, numbersFoil := map[string]bool{}, map[string]bool{}
 	for _, id := range ids {
 		co, _ := mtgmatcher.GetUUID(id)
 		// PlainNumber is Number stripped of the ★/†-style decorations
 		// that MKM numbers never carry
 		sameNumber := strings.EqualFold(co.PlainNumber, product.Number)
+		// The raw Number, unlike PlainNumber, keeps the trailing letter an
+		// art variant carries (114a vs 114b) - exactly the distinction the
+		// ambiguity check below needs and PlainNumber is designed to erase.
 		if co.Etched {
 			switch co.SetCode {
 			// These set codes cannot be represented
 			case "STA", "MH2", "H1R":
 				ids = nil
 			}
+			numbersFoil[co.Number] = true
 			if !numberMatchedFoil {
 				cardIDFoil = co.UUID
 				numberMatchedFoil = sameNumber
 			}
 		} else if co.Foil {
+			numbersFoil[co.Number] = true
 			if !numberMatchedFoil {
 				cardIDFoil = co.UUID
 				numberMatchedFoil = sameNumber
 			}
 		} else {
+			numbers[co.Number] = true
 			if !numberMatched {
 				cardID = co.UUID
 				numberMatched = sameNumber
 			}
 		}
+	}
+	// Several different printings sharing one mcmId is only safe to guess
+	// through when they agree on number (cosmetic siblings of the same
+	// print); when they don't, and none of them is the number asked for
+	// either, keeping any one of them is not a resolution.
+	if !numberMatched && len(numbers) > 1 {
+		cardID = ""
+	}
+	if !numberMatchedFoil && len(numbersFoil) > 1 {
+		cardIDFoil = ""
 	}
 	// If we found any known ids, we trust them and skip the rest of the preprocessing
 	if ids != nil {
@@ -1409,8 +1437,26 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			}
 		default:
 			// Old editions do not have any number assigned, if so, then keep
-			// the V.1 V.2 etc style and process in variants.go
-			if number != "" {
+			// the V.1 V.2 etc style and process in variants.go - but only
+			// when variants.go actually has a table for this edition and
+			// card: otherwise the raw number is the only distinguishing
+			// tag there is. Chronicles' multi-art commons (and Alternate
+			// Fourth Edition's three-art basic lands) are exactly the case
+			// this comment already described and the code did not yet do:
+			// Cardmarket sends the very same shared number for every one of
+			// a card's "(V.N)" siblings, so unconditionally keeping it here
+			// threw away the one tag (V.2) that told them apart, before
+			// magic.VariantsTable's own per-edition table ever got a chance
+			// to resolve it. The table is keyed by the matcher's own
+			// canonical edition name, not Cardmarket's - "Fourth Edition:
+			// Alternate" only finds ed4Variants once resolved through
+			// magic.EditionTable the same way AdjustEdition resolves it
+			// later, so try that spelling too.
+			canonicalEdition := edition
+			if ed, found := magic.EditionTable[edition]; found {
+				canonicalEdition = ed
+			}
+			if _, found := magic.VariantsTable[canonicalEdition][cardName][strings.ToLower(ogVariant)]; !found && number != "" {
 				variant = number
 			}
 		}
