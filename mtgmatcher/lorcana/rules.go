@@ -531,19 +531,25 @@ func spellsOut(text, phrase string) bool {
 // carries the same number in both: "Maleficent - Monstrous Dragon" is card 5
 // of the P1 pool and card 5 of the P3 one, and the number alone cannot tell
 // the two apart. The pool can, and the storefront writes it where a set card
-// writes its set size.
+// writes its set size - which is exactly what it is. SetTotal is the
+// denominator the face prints, "P3" on a promo where a card of the set
+// prints "204", so the tier is narrowed on the card's own total rather than
+// on a promo type: the pool was never a promotion, and it used to travel in
+// PromoTypes only because nothing else carried it.
 //
 // A pool no candidate carries keeps the whole tier. The storefront's spelling
 // of a pool is its own - it prints the one the card came from, which is not
 // always the one the datastore numbered it in - and refusing a printing over
-// it would price nothing where the number alone was answering.
+// it would price nothing where the number alone was answering. A datastore
+// built before the total was published still names a promo's run, which the
+// loader reads into SetTotal, so this decides the same way over either.
 func poolTiebreak(pool string, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	if pool == "" || len(cards) <= 1 {
 		return cards
 	}
 	var pooled []mtgmatcher.Card
 	for _, card := range cards {
-		if slices.Contains(card.PromoTypes, pool) {
+		if strings.EqualFold(card.SetTotal, pool) {
 			pooled = append(pooled, card)
 		}
 	}
@@ -586,7 +592,9 @@ func extractNumber(variation string) string {
 // A Lorcana number is written over what it is one of: "87/204" for the
 // eighty-seventh of a set of two hundred and four, "5/P3" for the fifth card
 // of the third promo pool. Only a tail that is not itself a count names a
-// pool, and it is read as the token the pool's tag is stored under.
+// pool, and it is read as written: the card's SetTotal holds the same
+// denominator in the datastore's own spelling, and poolTiebreak compares the
+// two without regard to case.
 func extractPool(variation string) string {
 	for field := range strings.FieldsSeq(variation) {
 		if field[0] < '0' || field[0] > '9' {
@@ -599,7 +607,7 @@ func extractPool(variation string) string {
 		if _, err := strconv.Atoi(tail); err == nil {
 			return ""
 		}
-		return mtgmatcher.PromoTypeSlug(tail)
+		return tail
 	}
 	return ""
 }
