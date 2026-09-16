@@ -17,12 +17,12 @@ import (
 
 // Market prices singles from Cardmarket's own listings, live, rather than
 // from the price guide's low and trend columns: for each printing it holds
-// the cheapest price per condition from a seller not based in the UK,
-// Switzerland, or a Nordic country other than Denmark. This is a real
-// market price at the cost of one signed call per product instead of one
-// bulk download per game - the API tolerates almost no in-flight
-// parallelism per app token, so Load walks the catalog strictly
-// sequentially rather than pooling workers the way Sealed does.
+// the cheapest price per condition from a seller inside the European Union
+// (see excludedCountries). This is a real market price at the cost of one
+// signed call per product instead of one bulk download per game - the API
+// tolerates almost no in-flight parallelism per app token, so Load walks
+// the catalog strictly sequentially rather than pooling workers the way
+// Sealed does.
 //
 // It also holds a second, independent cheapest-per-condition view for
 // German and Dutch Powerseller listings alone, under its own MarketNames
