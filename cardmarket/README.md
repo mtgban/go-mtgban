@@ -46,6 +46,16 @@ limiter — parallelism buys nothing here and only manufactures wasted 429s —
 so `Load` walks the catalog one product at a time. `Sealed` still pools with
 `WorkerPool`; do not copy that shape into `Market`.
 
+**Every edition ends its walk with one summary line, always.** A CI run
+showed why: `"Processing Guru Lands (88) [86/760]"` followed straight by the
+next edition's own `"Processing ..."` line reads as a hang or a silent
+no-op, not as "nothing here needed a mention" - the skip/refusal lines
+`walkExpansion` already prints only appear when there is something to
+explain, so an edition with nothing skipped or refused ended in silence.
+`"<edition>: priced %d/%d products"` prints unconditionally now, counting
+every product that reached a live query and came back without error -
+unlike the other lines, this one is never gated on being non-zero.
+
 **`Content-Range`-driven early stop**, shared with `Sealed` as
 `contentRangeCovered` in `utils.go`: once the pages already fetched have
 covered everything a listing's `Content-Range` total promises, another page
