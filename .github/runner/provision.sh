@@ -126,12 +126,16 @@ mkdir -p "$RUNNER_HOME/hooks"
 cat > "$RUNNER_HOME/hooks/job-started.sh" << 'HOOKEOF'
 #!/bin/bash
 # Marks the runner busy for runner-safe-restart.sh, via ACTIONS_RUNNER_HOOK_JOB_STARTED.
-touch /run/runner-busy
+# Under the runner user's own home, not /run: this hook runs as the
+# unprivileged runner user, and /run is root:root 755 - a plain touch there
+# fails and takes the whole job down with it (confirmed live). runner-safe-
+# restart.sh itself runs as root and can read this path either way.
+touch /home/runner/.runner-busy
 HOOKEOF
 cat > "$RUNNER_HOME/hooks/job-completed.sh" << 'HOOKEOF'
 #!/bin/bash
 # Clears the busy marker, via ACTIONS_RUNNER_HOOK_JOB_COMPLETED.
-rm -f /run/runner-busy
+rm -f /home/runner/.runner-busy
 HOOKEOF
 chmod +x "$RUNNER_HOME/hooks/job-started.sh" "$RUNNER_HOME/hooks/job-completed.sh"
 chown -R runner:runner "$RUNNER_HOME/hooks"
@@ -148,10 +152,10 @@ chown -R runner:runner "$RUNNER_HOME/hooks"
 cat > /usr/local/sbin/runner-safe-restart.sh << 'SCRIPTEOF'
 #!/bin/bash
 # Restarts the GitHub Actions runner service, but only when it is not
-# mid-job (/run/runner-busy) and needrestart actually flags it as
+# mid-job (/home/runner/.runner-busy) and needrestart actually flags it as
 # running against stale, upgraded libraries.
 set -euo pipefail
-[ -e /run/runner-busy ] && exit 0
+[ -e /home/runner/.runner-busy ] && exit 0
 needrestart -b 2>/dev/null | grep -q '^NEEDRESTART-SVC: actions\.runner\.' || exit 0
 systemctl restart 'actions.runner.*'
 SCRIPTEOF
