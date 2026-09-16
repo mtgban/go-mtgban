@@ -268,7 +268,7 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 		}
 
 		r.logf("%v", err)
-		r.logf("%q", theCard)
+		r.logf("%q (%d)", theCard, product.IDProduct)
 		r.logf("%v | %v | %v ", product.Name, product.ExpansionName, product.Number)
 
 		var alias *mtgmatcher.AliasingError
