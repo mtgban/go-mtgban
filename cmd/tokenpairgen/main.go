@@ -7,11 +7,11 @@
 //
 // It reuses each vendor's own real anchoring logic -
 // starcitygames.TokenPairAnchorUUIDs, cardtrader.TokenPairAnchorUUIDs -
-// rather than reimplementing it, and only reports a pair
-// magic.TokenPairIDByUUIDs doesn't already resolve: run against a
-// datastore that already has the current table loaded (any ordinary
-// build does, since mintVerifiedPairs runs at load time), this only ever
-// prints genuinely new candidates, never ones already on file.
+// rather than reimplementing it, and only reports a pair the loaded
+// backend's own TokenPairIDByUUIDs index doesn't already resolve: run
+// against a datastore that already has the current table loaded (any
+// ordinary build does, since mintVerifiedPairs runs at load time), this
+// only ever prints genuinely new candidates, never ones already on file.
 //
 // Prints Go source for the slice literal's own entries to stdout, one
 // vendor-verified pair per line with its face names as a trailing
@@ -126,7 +126,7 @@ func run() int {
 	}
 	mtgmatcher.SetGlobalDatastore(ds)
 
-	known := magic.TokenPairIDByUUIDs()
+	known := ds.TokenPairIDByUUIDs
 	all := map[[2]string]bool{}
 
 	ctx := context.Background()
