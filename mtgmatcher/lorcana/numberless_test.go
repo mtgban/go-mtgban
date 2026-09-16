@@ -61,28 +61,3 @@ func TestNumberlessCards(t *testing.T) {
 	}
 	t.Logf("%d cards carry no number, %d carry a 0", numberless, zero)
 }
-
-// TestCollectorNumberBothSpellings pins that either datastore loads. Lorcana
-// published the number as an integer and now publishes it as the string
-// every other game writes, and the two cannot be swapped in one step: a
-// reader taking only one of them is down for as long as the other half of
-// the deploy takes.
-func TestCollectorNumberBothSpellings(t *testing.T) {
-	for _, tt := range []struct{ desc, in, want string }{
-		{"the string every other game writes", `"23"`, "23"},
-		{"the integer Lorcana published", `23`, "23"},
-		{"the card that really prints 0", `0`, "0"},
-		{"and its string spelling", `"0"`, "0"},
-		{"a number no integer could hold", `"23a"`, "23a"},
-	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			var got collectorNumber
-			if err := got.UnmarshalJSON([]byte(tt.in)); err != nil {
-				t.Fatalf("UnmarshalJSON(%s) = %v", tt.in, err)
-			}
-			if string(got) != tt.want {
-				t.Errorf("UnmarshalJSON(%s) = %q, want %q", tt.in, got, tt.want)
-			}
-		})
-	}
-}

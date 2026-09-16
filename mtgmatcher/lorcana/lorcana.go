@@ -106,7 +106,7 @@ type AllCards struct {
 		// them with none. An integer gives that the same 0 a card really
 		// printing 0/204 has, and "Bruno Madrigal - Undetected Uncle" is
 		// that card.
-		Number collectorNumber `json:"number"`
+		Number string `json:"number"`
 		// Total is the denominator the face prints after the number: the
 		// set's size on a card of the set, the run's own label on a promo
 		// ("1/P1" beside "1/204"). It is what tells the two apart, since a
@@ -239,7 +239,7 @@ func (ac *AllCards) englishCards() []int {
 		// all that separates the same-numbered art siblings ("4a" to "4e"),
 		// and the number alone would file them under one identity.
 		identity := fmt.Sprintf("%d|%d|%d|%s|%s%s",
-			el.TcgPlayerID, el.CardmarketID, el.CardTraderID, card.SetCode, string(card.Number), card.Variant)
+			el.TcgPlayerID, el.CardmarketID, el.CardTraderID, card.SetCode, card.Number, card.Variant)
 		if seen[identity] {
 			continue
 		}
@@ -304,35 +304,6 @@ func promoTypeLabel(slug string) string {
 		return label
 	}
 	return mtgmatcher.Title(slug)
-}
-
-// collectorNumber is the number as the datastore spells it, reading the
-// integer Lorcana published until it spelled the number the way the other
-// seven games do. Both spellings have to be readable at once or there is no
-// order to deploy the two halves in: a reader taking only the new spelling
-// cannot load the datastore published today, and one taking only the old
-// cannot load the datastore published tomorrow, so whichever went first
-// would be down until the other followed.
-//
-// It can go once no datastore anyone loads carries the old spelling - the
-// bucket's, and whatever a developer has on disk.
-type collectorNumber string
-
-func (n *collectorNumber) UnmarshalJSON(b []byte) error {
-	if len(b) > 0 && b[0] == '"' {
-		var written string
-		if err := json.Unmarshal(b, &written); err != nil {
-			return err
-		}
-		*n = collectorNumber(written)
-		return nil
-	}
-	var published int
-	if err := json.Unmarshal(b, &published); err != nil {
-		return err
-	}
-	*n = collectorNumber(strconv.Itoa(published))
-	return nil
 }
 
 // printedTotal is the denominator the card's face prints after its number.
@@ -548,7 +519,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			Name:     card.FullName,
 			SetCode:  card.SetCode,
 			Finishes: finishes,
-			Number:   string(card.Number) + card.Variant,
+			Number:   card.Number + card.Variant,
 			Images:   card.Images,
 
 			// The datastore is English-only. Core Match's language filter
@@ -569,7 +540,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			IsPromo:    promoPrintings[card.ID] || card.PromoSourceCategory != "" || promoSet || rarity == "promo",
 			PromoTypes: slugTags(card.PromoTypes),
 
-			PlainNumber: Rules{}.PlainNumber(string(card.Number) + card.Variant),
+			PlainNumber: Rules{}.PlainNumber(card.Number + card.Variant),
 
 			// The face's own denominator, which for Lorcana is not always
 			// a size: a promo prints its run where a card of the set
