@@ -497,6 +497,7 @@ func isUnsupported(c *mtgmatcher.InputCard) bool {
 		mtgmatcher.Contains(c.Name, "Helper Card") || // Double-Faced Helper Card, M19's planeswalker deck insert
 		mtgmatcher.Contains(c.Name, "Punch Card") || // hole-punch checklist inserts, Amonkhet block onward
 		mtgmatcher.Contains(c.Name, "Jumpstart Pack Summary Card") || // Jumpstart's deck-summary insert
+		mtgmatcher.Contains(c.Name, "Theme Card") || // Theme Booster/deck checklist inserts, no real card carries this substring either
 		c.Name == "Red Mana Counter" || // Cardmarket's own "Tokens for MTG" gaming accessory, not a card
 		(c.Contains("Duel Masters") && c.Contains("Not Tournament Legal")) || // scg
 		c.Contains("Sealed") ||
