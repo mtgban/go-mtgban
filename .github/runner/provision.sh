@@ -90,7 +90,32 @@ cd "$RUNNER_HOME"
 # an in-flight job with no warning. list-only stops that outright -
 # packages still update on schedule, the runner just never gets bounced
 # by needrestart itself.
-sed -i "s/^#\$nrconf{restart} = 'i';/\$nrconf{restart} = 'l';/" /etc/needrestart/needrestart.conf
+#
+# A conf.d drop-in, not an in-place sed: needrestart.conf's shipped
+# default line varies by package version, so a sed matching one exact
+# spelling can silently no-op on a host whose file never matched it -
+# looking idempotent while never actually applying. A drop-in is written
+# fresh every run regardless of what the base file says, and needrestart's
+# own conf.d loader (it sorts and evals every conf.d/*.conf after the main
+# file) guarantees it's the value actually in effect, not just the value
+# this file happens to contain.
+mkdir -p /etc/needrestart/conf.d
+cat > /etc/needrestart/conf.d/cardmarket-market-list-only.conf << 'EOF'
+# Installed by go-mtgban's .github/runner/provision.sh - see there for why.
+$nrconf{restart} = 'l';
+EOF
+
+# Verified against needrestart's own config chain, not just this file's own
+# content - a typo or a conf.d file sorting after this one and overriding
+# it back would otherwise pass silently. This evals needrestart.conf
+# itself rather than asking the needrestart binary directly, so it relies
+# on that file's own conf.d-loading loop; a future package version that
+# moved conf.d loading into the binary instead would need this rechecked.
+NEEDRESTART_EFFECTIVE=$(perl -e 'our %nrconf; do q(/etc/needrestart/needrestart.conf); print $nrconf{restart} // ""')
+if [ "$NEEDRESTART_EFFECTIVE" != "l" ]; then
+    echo "needrestart's effective restart mode is '${NEEDRESTART_EFFECTIVE:-<unset>}', not 'l'" >&2
+    exit 1
+fi
 
 # So the runner still picks up patched libraries eventually (list-only
 # alone would leave it running stale ones indefinitely), job hooks mark
