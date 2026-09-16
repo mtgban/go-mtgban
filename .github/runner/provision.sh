@@ -122,16 +122,26 @@ fi
 # a busy file for the length of each job - the only thing runner-safe-
 # restart.timer (below) needs to know to restart safely only between
 # jobs, never during one.
+# One source of truth for the marker path, expanded into both heredocs
+# below rather than hardcoded twice - it must stay a literal in the
+# deployed files either way, since the hooks and the restart script run
+# standalone, long after this variable is gone.
+BUSY_MARKER="$RUNNER_HOME/.runner-busy"
+
 mkdir -p "$RUNNER_HOME/hooks"
-cat > "$RUNNER_HOME/hooks/job-started.sh" << 'HOOKEOF'
+cat > "$RUNNER_HOME/hooks/job-started.sh" << HOOKEOF
 #!/bin/bash
 # Marks the runner busy for runner-safe-restart.sh, via ACTIONS_RUNNER_HOOK_JOB_STARTED.
-touch /run/runner-busy
+# Under the runner user's own home, not /run: this hook runs as the
+# unprivileged runner user, and /run is root:root 755 - a plain touch there
+# fails and takes the whole job down with it (confirmed live). runner-safe-
+# restart.sh itself runs as root and can read this path either way.
+touch $BUSY_MARKER
 HOOKEOF
-cat > "$RUNNER_HOME/hooks/job-completed.sh" << 'HOOKEOF'
+cat > "$RUNNER_HOME/hooks/job-completed.sh" << HOOKEOF
 #!/bin/bash
 # Clears the busy marker, via ACTIONS_RUNNER_HOOK_JOB_COMPLETED.
-rm -f /run/runner-busy
+rm -f $BUSY_MARKER
 HOOKEOF
 chmod +x "$RUNNER_HOME/hooks/job-started.sh" "$RUNNER_HOME/hooks/job-completed.sh"
 chown -R runner:runner "$RUNNER_HOME/hooks"
@@ -145,13 +155,13 @@ chown -R runner:runner "$RUNNER_HOME/hooks"
     echo "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=$RUNNER_HOME/hooks/job-completed.sh"
 } >> "$RUNNER_HOME/.env"
 
-cat > /usr/local/sbin/runner-safe-restart.sh << 'SCRIPTEOF'
+cat > /usr/local/sbin/runner-safe-restart.sh << SCRIPTEOF
 #!/bin/bash
 # Restarts the GitHub Actions runner service, but only when it is not
-# mid-job (/run/runner-busy) and needrestart actually flags it as
-# running against stale, upgraded libraries.
+# mid-job ($BUSY_MARKER) and needrestart actually flags it as running
+# against stale, upgraded libraries.
 set -euo pipefail
-[ -e /run/runner-busy ] && exit 0
+[ -e $BUSY_MARKER ] && exit 0
 needrestart -b 2>/dev/null | grep -q '^NEEDRESTART-SVC: actions\.runner\.' || exit 0
 systemctl restart 'actions.runner.*'
 SCRIPTEOF
