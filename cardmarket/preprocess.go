@@ -1012,6 +1012,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 	case "Mystery Booster 2: Reprints from Across Magic's History":
 		edition = "PLST"
+		variant = mb2PLSTNumber(cardName)
 
 	case "The List":
 		variant = number
@@ -1484,4 +1485,39 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		Variation: variant,
 		Foil:      foil,
 	}, nil
+}
+
+// mb2PLSTBooster is the Mystery Booster 2 sealed product mb2PLSTNumber
+// reads booster contents from.
+const mb2PLSTBooster = "Mystery Booster 2 Booster Pack"
+
+// mb2PLSTNumber answers which PLST printing Mystery Booster 2's own
+// booster bundles for cardName, read directly off the booster's sheet
+// contents instead of guessed or hardcoded - MTGJSON already names it
+// unambiguously (verified against the live datastore: 1452 PLST-sourced
+// names in the pool, none colliding with a second PLST number for the
+// same name). Not memoized: this runs at most a few hundred times
+// across a multi-hour scrape that spends nearly all of it waiting on
+// Cardmarket's own API, so caching the pool buys nothing worth the
+// extra state.
+func mb2PLSTNumber(cardName string) string {
+	for _, uuid := range mtgmatcher.GetSealedUUIDsInSet("MB2") {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil || co.Name != mb2PLSTBooster {
+			continue
+		}
+
+		probs, err := mtgmatcher.GetProbabilitiesForSealed("MB2", uuid)
+		if err != nil {
+			return ""
+		}
+		for _, p := range probs {
+			card, err := mtgmatcher.GetUUID(p.UUID)
+			if err == nil && card.SetCode == "PLST" && card.Name == cardName {
+				return card.Number
+			}
+		}
+		return ""
+	}
+	return ""
 }

@@ -91,6 +91,39 @@ func TestPreprocessKeepsVIndexForChronicles(t *testing.T) {
 	}
 }
 
+// TestMysteryBooster2ReprintsResolvesToPLSTNumber pins mb2PLSTNumber against
+// the live MTGJSON datastore: "Mystery Booster 2: Reprints from Across
+// Magic's History" products carry no number of their own, and the same card
+// name can print at more than one PLST number (Suture Priest at both
+// MOC-210 and NPH-25) - without reading which one MB2's own booster
+// actually bundles, resolution is an AliasingError instead of a match.
+func TestMysteryBooster2ReprintsResolvesToPLSTNumber(t *testing.T) {
+	realDatastore(t)
+
+	tests := []struct {
+		cardName string
+		number   string
+	}{
+		{"Suture Priest", "NPH-25"},
+		{"Terramorphic Expanse", "JMP-78"},
+	}
+	for _, test := range tests {
+		theCard, err := Preprocess(test.cardName, "", "Mystery Booster 2: Reprints from Across Magic's History")
+		if err != nil {
+			t.Fatalf("%s: Preprocess: %v", test.cardName, err)
+		}
+
+		cardID, err := mtgmatcher.Match(theCard)
+		if err != nil {
+			t.Fatalf("%s: Match: %v", test.cardName, err)
+		}
+		co, _ := mtgmatcher.GetUUID(cardID)
+		if co.SetCode != "PLST" || co.Number != test.number {
+			t.Errorf("%s: matched %s %s, want PLST %s", test.cardName, co.SetCode, co.Number, test.number)
+		}
+	}
+}
+
 // TestResolveMagicLandsCorrectChroniclesArt replays Fallback and Preprocess
 // together the way resolveMagic calls them, and confirms the fix actually
 // lands product 272488 on the English printing Cardmarket sells it as
