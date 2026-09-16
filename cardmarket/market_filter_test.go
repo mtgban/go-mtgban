@@ -143,31 +143,25 @@ func TestBanPriceValue(t *testing.T) {
 
 func TestSnapshotFirstAvailable(t *testing.T) {
 	snap := &banSnapshot{
-		Retail: map[string]map[string]*banPrice{
-			"has-ck":     {"CK": {Regular: 10}, "CSI": {Regular: 20}},
+		Buylist: map[string]map[string]*banPrice{
+			"has-ck":     {"CK": {Regular: 8}, "CSI": {Regular: 20}},
 			"only-csi":   {"CSI": {Regular: 5}},
 			"zero-price": {"CK": {Regular: 0}, "CSI": {Regular: 3}},
-		},
-		Buylist: map[string]map[string]*banPrice{
-			"has-ck": {"CK": {Regular: 8}},
 		},
 	}
 	order := []string{"CK", "SCG", "CSI"}
 
-	if got := snap.firstRetail("has-ck", order); got != 10 {
-		t.Errorf("firstRetail(has-ck) = %v, want 10 (CK first)", got)
-	}
-	if got := snap.firstRetail("only-csi", order); got != 5 {
-		t.Errorf("firstRetail(only-csi) = %v, want 5 (falls through to CSI)", got)
-	}
-	if got := snap.firstRetail("zero-price", order); got != 3 {
-		t.Errorf("firstRetail(zero-price) = %v, want 3 (a zero CK price is not available)", got)
-	}
-	if got := snap.firstRetail("missing", order); got != 0 {
-		t.Errorf("firstRetail(missing) = %v, want 0", got)
-	}
 	if got := snap.firstBuylist("has-ck", order); got != 8 {
-		t.Errorf("firstBuylist(has-ck) = %v, want 8", got)
+		t.Errorf("firstBuylist(has-ck) = %v, want 8 (CK first)", got)
+	}
+	if got := snap.firstBuylist("only-csi", order); got != 5 {
+		t.Errorf("firstBuylist(only-csi) = %v, want 5 (falls through to CSI)", got)
+	}
+	if got := snap.firstBuylist("zero-price", order); got != 3 {
+		t.Errorf("firstBuylist(zero-price) = %v, want 3 (a zero CK price is not available)", got)
+	}
+	if got := snap.firstBuylist("missing", order); got != 0 {
+		t.Errorf("firstBuylist(missing) = %v, want 0", got)
 	}
 }
 
@@ -190,10 +184,10 @@ func TestMarketCandidatesThresholds(t *testing.T) {
 	}
 	defer func() { marketFilterParams = saved }()
 
-	retail := func(tcg float64, other map[string]float64) map[string]*banPrice {
-		m := map[string]*banPrice{"TCGMarket": {Regular: tcg}}
-		for source, price := range other {
-			m[source] = &banPrice{Regular: price}
+	retail := func(mkm float64, tcg float64) map[string]*banPrice {
+		m := map[string]*banPrice{"MKMTrend": {Regular: mkm}}
+		if tcg != 0 {
+			m["TCGMarket"] = &banPrice{Regular: tcg}
 		}
 		return m
 	}
@@ -208,16 +202,16 @@ func TestMarketCandidatesThresholds(t *testing.T) {
 	}{
 		{
 			name: "flat price over the $7 threshold is a candidate on its own",
-			snap: &banSnapshot{Retail: map[string]map[string]*banPrice{"u": retail(7.01, nil)}},
+			snap: &banSnapshot{Retail: map[string]map[string]*banPrice{"u": retail(7.01, 0)}},
 			want: true,
 		},
 		{
 			name: "flat price at exactly $7 is not (strictly greater)",
-			snap: &banSnapshot{Retail: map[string]map[string]*banPrice{"u": retail(7.00, nil)}},
+			snap: &banSnapshot{Retail: map[string]map[string]*banPrice{"u": retail(7.00, 0)}},
 			want: false,
 		},
 		{
-			name: "no TCG market price at all is never a candidate",
+			name: "no Cardmarket trend price at all is never a candidate",
 			snap: &banSnapshot{
 				Retail:  map[string]map[string]*banPrice{"u": {}},
 				Buylist: map[string]map[string]*banPrice{"u": buylist("CK", 100)},
@@ -226,60 +220,60 @@ func TestMarketCandidatesThresholds(t *testing.T) {
 		},
 		{
 			name: "an arbit spread over 20% with enough absolute gap and floor is a candidate",
-			// tcg=4, buylist=5: spread=25%, diff=$1 - fails the $2 min diff
+			// mkm=4, buylist=5: spread=25%, diff=$1 - fails the $2 min diff
 			snap: &banSnapshot{
-				Retail:  map[string]map[string]*banPrice{"u": retail(4, nil)},
+				Retail:  map[string]map[string]*banPrice{"u": retail(4, 0)},
 				Buylist: map[string]map[string]*banPrice{"u": buylist("CK", 5)},
 			},
 			want: false,
 		},
 		{
 			name: "an arbit spread clearing both the percentage and the absolute gap",
-			// tcg=4, buylist=6.5: spread=62.5%, diff=$2.5 - both clear
+			// mkm=4, buylist=6.5: spread=62.5%, diff=$2.5 - both clear
 			snap: &banSnapshot{
-				Retail:  map[string]map[string]*banPrice{"u": retail(4, nil)},
+				Retail:  map[string]map[string]*banPrice{"u": retail(4, 0)},
 				Buylist: map[string]map[string]*banPrice{"u": buylist("CK", 6.5)},
 			},
 			want: true,
 		},
 		{
 			name: "an arbit spread below the game's price floor is dropped even if the spread is huge",
-			// tcg=1 (below the $3 floor), buylist=10: spread=900%
+			// mkm=1 (below the $3 floor), buylist=10: spread=900%
 			snap: &banSnapshot{
-				Retail:  map[string]map[string]*banPrice{"u": retail(1, nil)},
+				Retail:  map[string]map[string]*banPrice{"u": retail(1, 0)},
 				Buylist: map[string]map[string]*banPrice{"u": buylist("CK", 10)},
 			},
 			want: false,
 		},
 		{
 			name: "the buylist vendor fallback reaches CSI when CK and SCG have nothing",
-			// tcg=4, CSI buylist=6.5: same numbers as the clearing case above
+			// mkm=4, CSI buylist=6.5: same numbers as the clearing case above
 			snap: &banSnapshot{
-				Retail:  map[string]map[string]*banPrice{"u": retail(4, nil)},
+				Retail:  map[string]map[string]*banPrice{"u": retail(4, 0)},
 				Buylist: map[string]map[string]*banPrice{"u": buylist("CSI", 6.5)},
 			},
 			want: true,
 		},
 		{
-			name: "a mismatch spread over 80% against another retail seller is a candidate",
-			// tcg=6, other retail (CK)=3 (at the floor): spread=100%, diff=$3
+			name: "a mismatch spread over 80% against TCG market is a candidate",
+			// mkm=6, tcg=3 (at the floor): spread=100%, diff=$3
 			snap: &banSnapshot{
-				Retail: map[string]map[string]*banPrice{"u": retail(6, map[string]float64{"CK": 3})},
+				Retail: map[string]map[string]*banPrice{"u": retail(6, 3)},
 			},
 			want: true,
 		},
 		{
-			name: "a mismatch spread guarded by the floor on the other seller's side",
-			// tcg=4, other retail (CK)=0.5 (below the $3 floor): spread would be 600%
+			name: "a mismatch spread guarded by the floor on TCG market's side",
+			// mkm=4, tcg=0.5 (below the $3 floor): spread would be 600%
 			snap: &banSnapshot{
-				Retail: map[string]map[string]*banPrice{"u": retail(4, map[string]float64{"CK": 0.5})},
+				Retail: map[string]map[string]*banPrice{"u": retail(4, 0.5)},
 			},
 			want: false,
 		},
 		{
 			name: "neither leg clears is not a candidate",
 			snap: &banSnapshot{
-				Retail:  map[string]map[string]*banPrice{"u": retail(3.5, map[string]float64{"CK": 3.2})},
+				Retail:  map[string]map[string]*banPrice{"u": retail(3.5, 3.2)},
 				Buylist: map[string]map[string]*banPrice{"u": buylist("CK", 3.6)},
 			},
 			want: false,

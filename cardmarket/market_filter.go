@@ -60,25 +60,30 @@ var marketFilterRequired = map[int]bool{
 	cm.GameYuGiOh:  true,
 }
 
-// marketFilterVendors is the buylist and retail vendor both legs of the
-// pre-filter read from, first available. Card Kingdom's own data is
-// Magic-only in mtgban's feed; Star City Games' and CSI's both cover
-// every game marketFilterParams does, CSI more completely - measured
-// directly against each game's own snapshot, not assumed from Magic's.
+// marketFilterVendors is the buylist vendor the Arbit leg reads from, first
+// available. Card Kingdom's own data is Magic-only in mtgban's feed; Star
+// City Games' and CSI's both cover every game marketFilterParams does, CSI
+// more completely - measured directly against each game's own snapshot,
+// not assumed from Magic's.
 var marketFilterVendors = []string{"CK", "SCG", "CSI"}
 
-// marketCandidateThreshold is the flat TCG market price above which a card
-// is worth a live call on its own, no spread required.
+// marketCandidateThreshold is the flat Cardmarket trend price above which a
+// card is worth a live call on its own, no spread required.
 const marketCandidateThreshold = 7.0
 
 // marketCandidates computes the pre-filter's candidate set for the uuids of
 // whichever game's datastore is currently loaded (mtgmatcher.GetUUIDs()):
-// TCG market price over $7; or an Arbit-style spread - the buylist vendor's
-// price against TCG market retail - over 20%; or a Mismatch-style spread -
-// TCG market against another retail seller's own price - over 80%. The
-// second and third legs are both guarded by the game's price floor and
-// minimum absolute difference (see marketFilterParams), on the side of the
-// spread that is not TCG market, since an unguarded percentage spread is
+// Cardmarket's own trend price over $7; or an Arbit-style spread - a US
+// buylist vendor's price against that same trend price - over 20%; or a
+// Mismatch-style spread - Cardmarket's trend against TCG market retail -
+// over 80%. What decides whether a live call is worth spending is whether
+// Cardmarket's own guide price looks likely to be stale or wrong, so
+// Cardmarket's trend price anchors every leg, not TCG market - a card
+// where TCG and a US buylist disagree wildly says nothing about whether
+// Cardmarket's own listings are worth polling. The second and third legs
+// are both guarded by the game's price floor and minimum absolute
+// difference (see marketFilterParams), on the side of the spread that is
+// not Cardmarket's trend, since an unguarded percentage spread is
 // dominated by cent-level noise on bulk cards.
 //
 // A game marketFilterParams does not cover returns nil - unfiltered, not
@@ -104,24 +109,24 @@ func marketCandidate(gameID int, uuid string, snap *banSnapshot) bool {
 	if !filtered {
 		return true
 	}
-	tcg := snap.retail(uuid, "TCGMarket")
-	if tcg == 0 {
+	mkm := snap.retail(uuid, "MKMTrend")
+	if mkm == 0 {
 		return false
 	}
-	if tcg > marketCandidateThreshold {
+	if mkm > marketCandidateThreshold {
 		return true
 	}
-	if tcg >= params.floor {
+	if mkm >= params.floor {
 		if bl := snap.firstBuylist(uuid, marketFilterVendors); bl != 0 {
-			diff := bl - tcg
-			if diff >= params.minDiff && 100*diff/tcg > 20 {
+			diff := bl - mkm
+			if diff >= params.minDiff && 100*diff/mkm > 20 {
 				return true
 			}
 		}
 	}
-	if other := snap.firstRetail(uuid, marketFilterVendors); other != 0 && other >= params.floor {
-		diff := tcg - other
-		if diff >= params.minDiff && 100*diff/other > 80 {
+	if tcg := snap.retail(uuid, "TCGMarket"); tcg != 0 && tcg >= params.floor {
+		diff := mkm - tcg
+		if diff >= params.minDiff && 100*diff/tcg > 80 {
 			return true
 		}
 	}
@@ -184,15 +189,6 @@ type banSnapshot struct {
 
 func (snap *banSnapshot) retail(uuid, source string) float64 {
 	return snap.Retail[uuid][source].value()
-}
-
-func (snap *banSnapshot) firstRetail(uuid string, sources []string) float64 {
-	for _, source := range sources {
-		if v := snap.retail(uuid, source); v != 0 {
-			return v
-		}
-	}
-	return 0
 }
 
 func (snap *banSnapshot) firstBuylist(uuid string, sources []string) float64 {
