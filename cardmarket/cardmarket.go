@@ -380,7 +380,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// second pair to the printing beside it; one on the second side is
 	// priced by the second pair alone.
 	if perTreatment || !second {
-		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, false)
+		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{})
 
 		// The first pair's target(s): cardID alone for every other game,
 		// but for Pokemon the guide's low/trend blend every listing of the
@@ -431,7 +431,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		}
 
 		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
-			link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
+			link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{Foil: true})
 
 			// An empty foil id means the card has no foil printing (Match
 			// errored on the foil probe), so residual foil prices in the
@@ -460,7 +460,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 			}
 		}
 	} else {
-		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
+		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{Foil: true})
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 {

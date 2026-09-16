@@ -150,7 +150,11 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 				continue
 			}
 
-			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, article.IsFoil)
+			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{
+				Foil:        article.IsFoil,
+				FirstEd:     article.IsFirstEd,
+				ReverseHolo: article.IsReverseHolo,
+			})
 			out := responseChan{
 				cardID: uuid,
 				entry: mtgban.InventoryEntry{
