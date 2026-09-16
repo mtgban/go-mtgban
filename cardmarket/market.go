@@ -415,7 +415,7 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 
 	var refusedNames []string
 	named := map[string]int{}
-	var twins, foreign, refusals, skipped int
+	var twins, foreign, refusals, skipped, priced int
 	for i := range results {
 		r := &results[i]
 		id, mapped := r.product.IDProduct, products[r.product.IDProduct]
@@ -427,6 +427,9 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 				err = mkm.queryPrintings(ctx, channel, r.product, r.cardID, r.cardIDFoil, r.byName)
 				if errors.Is(err, errTooManyBounces) {
 					return err
+				}
+				if err == nil {
+					priced++
 				}
 			}
 		}
@@ -453,6 +456,12 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 	if skipped > 0 {
 		mkm.printf("%s: %d of %d products skipped, outside the pre-filter's candidates", exp.Name, skipped, len(ids))
 	}
+	// Unconditional, unlike the lines above: those only appear when there is
+	// something to explain, so an edition with nothing skipped or refused
+	// used to end its walk in silence - indistinguishable in the log from
+	// one that priced nothing at all. This is the one line every edition
+	// gets, so "Processing X" is always followed by what happened to it.
+	mkm.printf("%s: priced %d/%d products", exp.Name, priced, len(ids))
 	channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign, foreign: foreign}
 	return nil
 }
