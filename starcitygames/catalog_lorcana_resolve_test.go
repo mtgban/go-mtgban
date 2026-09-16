@@ -1,6 +1,7 @@
 package starcitygames
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -10,12 +11,10 @@ import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 )
 
-// withGameDatastore installs another game's datastore for the duration of a
-// test and puts back what stood before, since the package-level matcher
-// holds a single datastore and most tests in this package are Magic ones.
-// The test is skipped where that game's datastore is not configured, which
-// is how the shared `go test ./...` run sees it.
-func withGameDatastore(t *testing.T, game, env string) {
+// withGameDatastore loads another game's datastore for a test, skipped where
+// that game's datastore is not configured, which is how the shared
+// `go test ./...` run sees it.
+func withGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {
@@ -25,16 +24,13 @@ func withGameDatastore(t *testing.T, game, env string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	previous := mtgmatcher.GlobalDatastore()
-	mtgmatcher.SetGlobalDatastore(b)
-	t.Cleanup(func() {
-		mtgmatcher.SetGlobalDatastore(previous)
-	})
+	b.Logger = log.New(os.Stderr, "", 0)
+	return b
 }
 
-func withLorcana(t *testing.T) {
+func withLorcana(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
-	withGameDatastore(t, "lorcana", "LORCANA_PATH")
+	return withGameDatastore(t, "lorcana", "LORCANA_PATH")
 }
 
 // requireSibling skips a case whose premise the installed datastore does not
@@ -42,9 +38,9 @@ func withLorcana(t *testing.T) {
 // Lorcana file a checkout carries may predate them; against such a copy the
 // marker has nothing to reach and the refusal is the rule working rather than
 // the rule broken, so there is nothing here to assert either way.
-func requireSibling(t *testing.T, name string) {
+func requireSibling(t *testing.T, b *mtgmatcher.Backend, name string) {
 	t.Helper()
-	uuids, err := mtgmatcher.SearchEquals(name)
+	uuids, err := b.SearchEquals(name)
 	if err != nil || len(uuids) == 0 {
 		t.Skipf("the installed Lorcana datastore does not carry %q", name)
 	}
@@ -57,7 +53,7 @@ func requireSibling(t *testing.T, name string) {
 // base card, whose price it is not - the errata printings sell for twenty
 // times the common they were reprinting.
 func TestResolveLorcanaMarkedPrinting(t *testing.T) {
-	withLorcana(t)
+	b := withLorcana(t)
 
 	for _, tt := range []struct {
 		name                                string
@@ -141,9 +137,9 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.needs != "" {
-				requireSibling(t, tt.needs)
+				requireSibling(t, b, tt.needs)
 			}
-			id, err := resolveProduct(GameLorcana, tt.product)
+			id, err := resolveProduct(b, GameLorcana, tt.product)
 			if tt.wantErr != "" {
 				if err == nil || err.Error() != tt.wantErr {
 					t.Fatalf("got id %q err %v, want error %q", id, err, tt.wantErr)
@@ -153,7 +149,7 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 			if err != nil {
 				t.Fatalf("resolveProduct: %v", err)
 			}
-			co, cerr := mtgmatcher.GetUUID(id)
+			co, cerr := b.GetUUID(id)
 			if cerr != nil {
 				t.Fatalf("GetUUID(%q): %v", id, cerr)
 			}
@@ -200,12 +196,12 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 		},
 	} {
 		t.Run("marked and plain stay apart: "+tt.marked.SKU, func(t *testing.T) {
-			requireSibling(t, tt.needs)
-			plainID, err := resolveProduct(GameLorcana, tt.plain)
+			requireSibling(t, b, tt.needs)
+			plainID, err := resolveProduct(b, GameLorcana, tt.plain)
 			if err != nil {
 				t.Fatalf("plain: %v", err)
 			}
-			markedID, err := resolveProduct(GameLorcana, tt.marked)
+			markedID, err := resolveProduct(b, GameLorcana, tt.marked)
 			if err != nil {
 				t.Fatalf("marked: %v", err)
 			}
@@ -221,7 +217,7 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 // than part of the number, and reading it as one left the card with no number
 // at all, so every printing of the name aliased.
 func TestResolveLorcanaPromoSeries(t *testing.T) {
-	withLorcana(t)
+	b := withLorcana(t)
 
 	for _, tt := range []struct {
 		sku, name, finish, number, wantSet, wantNum string
@@ -237,14 +233,14 @@ func TestResolveLorcanaPromoSeries(t *testing.T) {
 			if tt.finish == "Non-foil" {
 				group = "Non-foil"
 			}
-			id, err := resolveProduct(GameLorcana, CatalogProduct{
+			id, err := resolveProduct(b, GameLorcana, CatalogProduct{
 				SKU: tt.sku, Name: tt.name, Set: "Promotional Cards",
 				CollectorNumber: tt.number, Finish: tt.finish, FinishGroup: group,
 			})
 			if err != nil {
 				t.Fatalf("resolveProduct: %v", err)
 			}
-			co, cerr := mtgmatcher.GetUUID(id)
+			co, cerr := b.GetUUID(id)
 			if cerr != nil {
 				t.Fatalf("GetUUID(%q): %v", id, cerr)
 			}
@@ -260,7 +256,7 @@ func TestResolveLorcanaPromoSeries(t *testing.T) {
 // standard, so the two skus landed on one uuid and one price overwrote the
 // other; the catalog's own name for it is what separates them.
 func TestResolveLorcanaRainbowFoil(t *testing.T) {
-	withLorcana(t)
+	b := withLorcana(t)
 
 	for _, tt := range []struct {
 		name, sku, cardName, set, number, standard string
@@ -269,14 +265,14 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 		{"a rainbow beside a set's own foil", "SGL-LOR-010-020-ENA", "Simba - King in the Making", "Whispers in the Well", "020", "Whisper Foil"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			rainbow, err := resolveProduct(GameLorcana, CatalogProduct{
+			rainbow, err := resolveProduct(b, GameLorcana, CatalogProduct{
 				SKU: tt.sku, Name: tt.cardName, Set: tt.set, CollectorNumber: tt.number,
 				Finish: "Rainbow Foil", FinishGroup: "Alt Foil",
 			})
 			if err != nil {
 				t.Fatalf("rainbow: %v", err)
 			}
-			co, cerr := mtgmatcher.GetUUID(rainbow)
+			co, cerr := b.GetUUID(rainbow)
 			if cerr != nil {
 				t.Fatalf("GetUUID(%q): %v", rainbow, cerr)
 			}
@@ -288,7 +284,7 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 				t.Errorf("rainbow foil resolved to the %q printing, want holofoil", co.Finish)
 			}
 
-			standard, err := resolveProduct(GameLorcana, CatalogProduct{
+			standard, err := resolveProduct(b, GameLorcana, CatalogProduct{
 				SKU: tt.sku, Name: tt.cardName, Set: tt.set, CollectorNumber: tt.number,
 				Finish: tt.standard, FinishGroup: "Foil",
 			})
@@ -306,7 +302,7 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 	// Checked against the printing's own finishes rather than by naming one,
 	// because that single foil is itself sold as a Holofoil - the finish a
 	// two-foil card's treatment wears.
-	id, err := resolveProduct(GameLorcana, CatalogProduct{
+	id, err := resolveProduct(b, GameLorcana, CatalogProduct{
 		SKU: "SGL-LOR-010b-242-ENA", Name: "Hades - Looking for a Deal",
 		Set: "Whispers in the Well", CollectorNumber: "242",
 		Finish: "Rainbow Foil", FinishGroup: "Alt Foil",
@@ -314,7 +310,7 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 	if err != nil {
 		t.Fatalf("foil-only printing: %v", err)
 	}
-	co, cerr := mtgmatcher.GetUUID(id)
+	co, cerr := b.GetUUID(id)
 	if cerr != nil {
 		t.Fatalf("foil-only printing: GetUUID(%q): %v", id, cerr)
 	}

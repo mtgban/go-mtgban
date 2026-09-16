@@ -2,8 +2,6 @@ package starcitygames
 
 import (
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestResolveProductEtched covers the finish only the catalog's finish name
@@ -13,7 +11,7 @@ import (
 // already owns, and the two would fight over it. The products are the ones the
 // catalog sends, ids and all, since which path resolves them is the point.
 func TestResolveProductEtched(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		product              CatalogProduct
@@ -57,11 +55,11 @@ func TestResolveProductEtched(t *testing.T) {
 		},
 	} {
 		t.Run(tt.product.SKU, func(t *testing.T) {
-			id, err := resolveProductID(GameMagic, tt.product)
+			id, err := resolveProductID(b, GameMagic, tt.product)
 			if err != nil {
 				t.Fatalf("resolveProductID: %v", err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID: %v", err)
 			}

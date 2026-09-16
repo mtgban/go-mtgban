@@ -3,7 +3,7 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
@@ -21,7 +21,7 @@ import (
 // The quantities are the ones the catalog carried on 2026-08-24: eleven Near
 // Mint and five Played under the plain sku, seven and two under the second.
 func TestSecondBucketMerges(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sku string, nm, sp int) CatalogProduct {
 		return CatalogProduct{
@@ -46,7 +46,7 @@ func TestSecondBucketMerges(t *testing.T) {
 		{"the marked record first", []CatalogProduct{marked, plain}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+			scg, err := NewScraper(b, "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -83,7 +83,7 @@ func TestSecondBucketMerges(t *testing.T) {
 // the rest of it: every record is about to arrive a second time, and a first
 // arrival must not be taken for a second one.
 func TestStreamRetryForgetsBuckets(t *testing.T) {
-	scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+	scg, err := NewScraper(&mtgmatcher.Backend{Game: "fleshandblood"}, "")
 	if err != nil {
 		t.Fatal(err)
 	}

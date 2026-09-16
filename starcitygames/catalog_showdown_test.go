@@ -11,7 +11,7 @@ import (
 // promos were being priced as somebody else's printing. Fixtures are copied
 // from the export verbatim, shared identifiers and all.
 func TestShowdownAndStoreChampionship(t *testing.T) {
-	withMagic(t)
+	b := withMagic(t)
 
 	for _, tt := range []struct {
 		desc                string
@@ -81,7 +81,7 @@ func TestShowdownAndStoreChampionship(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameMagic, tt.p)
+			id, err := resolveProduct(b, GameMagic, tt.p)
 			if tt.wantRefused {
 				if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 					t.Fatalf("resolveProduct(%s) = (%q, %v), want ErrUnsupported", tt.p.SKU, id, err)
@@ -91,7 +91,7 @@ func TestShowdownAndStoreChampionship(t *testing.T) {
 			if err != nil {
 				t.Fatalf("resolveProduct(%s) = %v", tt.p.SKU, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}

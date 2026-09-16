@@ -55,7 +55,7 @@ func TestFabTreatments(t *testing.T) {
 // pitch-labelled base finds the extended art, a misspelt name and a
 // misspelt number reach the printing, and an insert is no card.
 func TestCatalogFabShapes(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sku, name, set, finish, group string) CatalogProduct {
 		return CatalogProduct{
@@ -79,7 +79,7 @@ func TestCatalogFabShapes(t *testing.T) {
 		{"misspelt number", product("SGL-FAB-APS-056-ENR", "Attention Grabbers", "Armory Deck: Pleiades", "Rainbow Foil", "Foil"), "aps006_653806_rainbowfoil"},
 		{"lettered marvels", product("SGL-FAB-MPG2-112b-ENC", "Seismic Surge", "Mastery Pack Guardian", "Cold Foil", "Alt Foil"), "mpg112_647746_coldfoil"},
 	} {
-		got, err := resolveProduct(GameFleshAndBlood, tt.p)
+		got, err := resolveProduct(b, GameFleshAndBlood, tt.p)
 		if err != nil {
 			t.Errorf("%s: resolveProduct(%s) = %v", tt.desc, tt.p.SKU, err)
 			continue
@@ -91,10 +91,10 @@ func TestCatalogFabShapes(t *testing.T) {
 	// A set card's finish keeps its say: the datastore sells no rainbow
 	// Hyper Driver (Red), and the listing is refused rather than priced
 	// as the cold foil.
-	if got, err := resolveProduct(GameFleshAndBlood, product("SGL-FAB-DYN-110-ENR", "Hyper Driver (Red)", "Dynasty", "Rainbow Foil", "Foil")); err == nil {
+	if got, err := resolveProduct(b, GameFleshAndBlood, product("SGL-FAB-DYN-110-ENR", "Hyper Driver (Red)", "Dynasty", "Rainbow Foil", "Foil")); err == nil {
 		t.Errorf("resolveProduct(DYN-110 Rainbow Foil) = %q, want a refusal", got)
 	}
-	_, err := resolveProduct(GameFleshAndBlood, product("SGL-FAB-ROS-ART_000a-ENC", "Binder Label", "Rosetta", "Cold Foil", "Alt Foil"))
+	_, err := resolveProduct(b, GameFleshAndBlood, product("SGL-FAB-ROS-ART_000a-ENC", "Binder Label", "Rosetta", "Cold Foil", "Alt Foil"))
 	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 		t.Errorf("resolveProduct(Binder Label) = %v, want ErrUnsupported", err)
 	}
