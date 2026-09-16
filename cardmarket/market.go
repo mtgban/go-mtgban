@@ -677,19 +677,11 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 				continue
 			}
 
-			// BuildURL only ever writes isFoil - a game whose finish flags
-			// are named otherwise (Pokemon, YuGiOh) gets a link that still
-			// resolves to the right product, just not deep-linked to the
-			// exact finish. A real fix needs go-cardmarket's own signature
-			// to change, tracked separately from this fix.
-			foilish := false
-			for _, want := range flags {
-				if want {
-					foilish = true
-					break
-				}
-			}
-			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, foilish)
+			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{
+				Foil:        article.IsFoil,
+				FirstEd:     article.IsFirstEd,
+				ReverseHolo: article.IsReverseHolo,
+			})
 			customFields := map[string]string{
 				"SubSellerName": article.Seller.Username,
 				"SubSellerGeo":  article.Seller.Address.Country,
