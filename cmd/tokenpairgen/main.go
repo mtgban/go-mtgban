@@ -60,11 +60,11 @@ func orderPair(a, b string) (string, string) {
 
 // scanSCG streams the full SCG catalog and returns every candidate pair its
 // own sku anchors both faces of, keyed by ordered uuid pair.
-func scanSCG(ctx context.Context, apiKey string) (map[[2]string]bool, error) {
+func scanSCG(ctx context.Context, b *mtgmatcher.Backend, apiKey string) (map[[2]string]bool, error) {
 	scg := starcitygames.NewSCGClient(apiKey)
 	found := map[[2]string]bool{}
 	err := scg.StreamCatalog(ctx, func() { found = map[[2]string]bool{} }, func(p starcitygames.CatalogProduct) error {
-		uuidA, uuidB, ok := starcitygames.TokenPairAnchorUUIDs(p)
+		uuidA, uuidB, ok := starcitygames.TokenPairAnchorUUIDs(b, p)
 		if !ok || uuidA == uuidB {
 			return nil
 		}
@@ -132,7 +132,7 @@ func run() int {
 	ctx := context.Background()
 
 	if apiKey := os.Getenv("SCG_API_KEY"); apiKey != "" {
-		found, err := scanSCG(ctx, apiKey)
+		found, err := scanSCG(ctx, ds, apiKey)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "scg:", err)
 			return 1

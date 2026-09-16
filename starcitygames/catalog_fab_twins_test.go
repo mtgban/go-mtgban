@@ -13,7 +13,7 @@ import (
 // renamed foreign printing landing on the English card whose name it
 // borrows. Fixtures are copied from the export verbatim.
 func TestResolveFleshAndBloodMarvelTwins(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	for _, tt := range []struct {
 		desc                  string
@@ -67,11 +67,11 @@ func TestResolveFleshAndBloodMarvelTwins(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameFleshAndBlood, tt.p)
+			id, err := resolveProduct(b, GameFleshAndBlood, tt.p)
 			if err != nil {
 				t.Fatalf("resolveProduct(%s) = %v", tt.p.SKU, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
@@ -94,9 +94,9 @@ func TestResolveFleshAndBloodMarvelTwins(t *testing.T) {
 // may still predate that: against such a copy fabCreditedTwin has nothing to
 // match either uuid's Artist against and correctly leaves both alone, which
 // is not this test's premise to assert against.
-func requireCredit(t *testing.T, uuid string) {
+func requireCredit(t *testing.T, b *mtgmatcher.Backend, uuid string) {
 	t.Helper()
-	co, err := mtgmatcher.GetUUID(uuid)
+	co, err := b.GetUUID(uuid)
 	if err != nil || co.Artist == "" {
 		t.Skipf("the installed Flesh and Blood datastore does not carry an artist for %s yet", uuid)
 	}
@@ -109,8 +109,8 @@ func requireCredit(t *testing.T, uuid string) {
 // this product - says which sku is which. Fixtures are copied from the
 // export verbatim.
 func TestResolveFleshAndBloodCreditedTwins(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
-	requireCredit(t, "ros008_565391_coldfoil")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	requireCredit(t, b, "ros008_565391_coldfoil")
 
 	for _, tt := range []struct {
 		desc       string
@@ -141,11 +141,11 @@ func TestResolveFleshAndBloodCreditedTwins(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := resolveProduct(GameFleshAndBlood, tt.p)
+			id, err := resolveProduct(b, GameFleshAndBlood, tt.p)
 			if err != nil {
 				t.Fatalf("resolveProduct(%s) = %v", tt.p.SKU, err)
 			}
-			co, err := mtgmatcher.GetUUID(id)
+			co, err := b.GetUUID(id)
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
@@ -156,14 +156,14 @@ func TestResolveFleshAndBloodCreditedTwins(t *testing.T) {
 	}
 
 	t.Run("the pair lands on two different uuids", func(t *testing.T) {
-		idA, errA := resolveProduct(GameFleshAndBlood, CatalogProduct{
+		idA, errA := resolveProduct(b, GameFleshAndBlood, CatalogProduct{
 			SKU: "SGL-FAB-ROS2-008a-ENC", Name: "Aurora",
 			Game: "Flesh and Blood", Set: "Rosetta", Rarity: "Marvel",
 			Finish: "Cold Foil", FinishGroup: "Alt Foil",
 			Language: "English", CollectorNumber: "008",
 			ProductType: ProductTypeSingles,
 		})
-		idB, errB := resolveProduct(GameFleshAndBlood, CatalogProduct{
+		idB, errB := resolveProduct(b, GameFleshAndBlood, CatalogProduct{
 			SKU: "SGL-FAB-ROS2-008b-ENC", Name: "Aurora",
 			Game: "Flesh and Blood", Set: "Rosetta", Rarity: "Marvel",
 			Finish: "Cold Foil", FinishGroup: "Alt Foil",
@@ -185,7 +185,7 @@ func TestResolveFleshAndBloodCreditedTwins(t *testing.T) {
 // says which is the card's price - so both are unsupported rather than
 // letting whichever streams first win.
 func TestFleshAndBloodDuplicateStockRefused(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	for _, sku := range []string{"SGL-FAB-ROS-027a-ENN", "SGL-FAB-ROS-027b-ENN"} {
 		t.Run(sku, func(t *testing.T) {
@@ -196,7 +196,7 @@ func TestFleshAndBloodDuplicateStockRefused(t *testing.T) {
 				Language: "English", CollectorNumber: "027",
 				ProductType: ProductTypeSingles,
 			}
-			_, err := resolveProduct(GameFleshAndBlood, p)
+			_, err := resolveProduct(b, GameFleshAndBlood, p)
 			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 				t.Errorf("resolveProduct(%s) = %v, want ErrUnsupported", sku, err)
 			}
