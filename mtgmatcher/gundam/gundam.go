@@ -125,7 +125,39 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 			return nil, errors.New("not a Gundam datastore")
 		}
 	}
+	payload.foldSetCodes()
 	return payload.newBackend(), nil
+}
+
+// foldSetCodes upper-cases every set code the datastore spells, before
+// anything is keyed by one. A set code is a case-insensitive token to every
+// reader of it - GetSet, GetUUIDsInSet and GetSealedUUIDsInSet all fold the
+// caller's spelling up before the lookup - so a key that is not already
+// folded can never be found, whatever the caller writes.
+//
+// TCGplayer abbreviates one Gundam group in mixed case ("GD01_b", Edition
+// Beta), the only such abbreviation in the category, and the builder
+// carried the case through into the code. The set was listed by GetAllSets
+// and worn by its 83 cards, and answered nothing: its search filter came
+// back empty and every link into it was dead.
+//
+// The cards and the sealed products are folded with it, because the
+// backend keys by the code they carry as well as by the map's own.
+func (payload *Datastore) foldSetCodes() {
+	for code, set := range payload.Sets {
+		folded := strings.ToUpper(code)
+		if folded == code {
+			continue
+		}
+		delete(payload.Sets, code)
+		payload.Sets[folded] = set
+	}
+	for i := range payload.Cards {
+		payload.Cards[i].SetCode = strings.ToUpper(payload.Cards[i].SetCode)
+	}
+	for i := range payload.Sealed {
+		payload.Sealed[i].SetCode = strings.ToUpper(payload.Sealed[i].SetCode)
+	}
 }
 
 // setIsPromotional reports whether a set hands out promotional printings.
