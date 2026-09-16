@@ -4,8 +4,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
-
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -120,7 +118,7 @@ func TestBuylistPrice(t *testing.T) {
 // TestCatalogDropsBulkBuyPrice drives the scraper itself, to show the rate is
 // dropped from the buylist without costing the card its retail listing.
 func TestCatalogDropsBulkBuyPrice(t *testing.T) {
-	withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sellList string) CatalogProduct {
 		return CatalogProduct{
@@ -147,7 +145,7 @@ func TestCatalogDropsBulkBuyPrice(t *testing.T) {
 		{"as is a real one", "4.00", 1, 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			scg, err := NewScraper(mtgban.GameFleshAndBlood, "")
+			scg, err := NewScraper(b, "")
 			if err != nil {
 				t.Fatal(err)
 			}

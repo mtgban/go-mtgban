@@ -28,6 +28,7 @@ type Sealed struct {
 	setIDs     map[string]int
 	dropped    map[string]int
 	client     *SCGClient
+	backend    *mtgmatcher.Backend
 	game       mtgban.Game
 	gameID     int
 }
@@ -58,7 +59,11 @@ func (scg *Sealed) drop(reason string) {
 
 // NewScraperSealed returns a sealed scraper for one game, using the given API
 // key.
-func NewScraperSealed(game mtgban.Game, apiKey string) (*Sealed, error) {
+func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	gameID, ok := scgGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -67,6 +72,7 @@ func NewScraperSealed(game mtgban.Game, apiKey string) (*Sealed, error) {
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient(apiKey)
+	scg.backend = b
 	scg.game = game
 	scg.gameID = gameID
 	return &scg, nil
@@ -80,10 +86,10 @@ func (scg *Sealed) printf(format string, a ...any) {
 
 // buildProductMap indexes the sealed products by their SCG id (the catalog SKU)
 // so a catalog product can be resolved to its mtgban uuid directly.
-func buildProductMap() map[string]string {
+func buildProductMap(b *mtgmatcher.Backend) map[string]string {
 	out := map[string]string{}
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -181,7 +187,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 		// it is keyed by sku and never asks the resolver, so its whole
 		// unlisted catalog would be named here for nothing.
 		name := sealedProductName(p)
-		resolved, err := mtgmatcher.ResolveSealed(name)
+		resolved, err := scg.backend.ResolveSealed(name)
 		if err != nil {
 			scg.printf("%q (sku=%s): %s", name, p.SKU, err)
 			scg.drop(err.Error())
@@ -196,7 +202,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	// Sealed products carry no catalog set, so match the set off the product
 	// name; fall back to retail if nothing matches.
 	buyURL := link
-	ids := setIDsForProduct(scg.setIDs, p.Name, p.SKU)
+	ids := setIDsForProduct(scg.backend, scg.setIDs, p.Name, p.SKU)
 	if len(ids) > 0 {
 		buyURL = SCGBuylistURL(scg.gameID, p.Name, p.Language, ids)
 	}
@@ -239,7 +245,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 // Load streams the single catalog export (authenticated with the API key) and
 // fills the sealed inventory and buylist in one pass.
 func (scg *Sealed) Load(ctx context.Context) error {
-	scg.productMap = buildProductMap()
+	scg.productMap = buildProductMap(scg.backend)
 
 	setIDs, err := scg.client.SetIDs(ctx, scg.gameID)
 	if err != nil {

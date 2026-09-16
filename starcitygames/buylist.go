@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -90,7 +92,7 @@ func (scg *SCGClient) SetIDs(ctx context.Context, game int) (map[string]int, err
 // by the catalog set name (fuzzily), and when that is empty or unknown -- as it
 // is for sealed and a few uncategorized singles -- by the set code carried in
 // the SKU (SGL-<brand>-<set>-...), tried raw then normalized.
-func setIDsForProduct(setIDs map[string]int, setName, sku string) []int {
+func setIDsForProduct(b *mtgmatcher.Backend, setIDs map[string]int, setName, sku string) []int {
 	if ids := matchSetIDs(setIDs, setName); len(ids) > 0 {
 		return ids
 	}
@@ -99,7 +101,7 @@ func setIDsForProduct(setIDs map[string]int, setName, sku string) []int {
 		if id, ok := setIDs[fields[2]]; ok {
 			return []int{id}
 		}
-		if id, ok := setIDs[fixupSetCode(fields[2])]; ok {
+		if id, ok := setIDs[fixupSetCode(b, fields[2])]; ok {
 			return []int{id}
 		}
 	}
