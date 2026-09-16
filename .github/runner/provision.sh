@@ -22,7 +22,7 @@ GH_APP_PRIVATE_KEY_B64="REPLACE_ME"
 RUNNER_VERSION="2.337.0"
 
 apt-get update
-apt-get install -y --no-install-recommends curl ca-certificates git jq tar openssl
+apt-get install -y --no-install-recommends curl ca-certificates git jq tar openssl needrestart
 
 id -u runner &>/dev/null || useradd -m -s /bin/bash runner
 
@@ -122,20 +122,45 @@ fi
 # a busy file for the length of each job - the only thing runner-safe-
 # restart.timer (below) needs to know to restart safely only between
 # jobs, never during one.
+#
+# The marker lives under /run/runner, not $RUNNER_HOME: /run is tmpfs,
+# so a genuine reboot or power loss wipes it the same way the original
+# /run/runner-busy always did, even for a job that died without ever
+# running ACTIONS_RUNNER_HOOK_JOB_COMPLETED. A marker parked on disk
+# under $RUNNER_HOME would instead outlive that crash indefinitely and
+# permanently stop runner-safe-restart.sh's `[ -e $BUSY_MARKER ] && exit
+# 0` from ever restarting the runner again - the opposite of what the
+# marker is for. (A runner process that dies without also taking the
+# whole Droplet down is a separate, still-open gap either way: nothing
+# here restarts a dead runner process, so a stuck marker doesn't matter
+# until something does.)
+#
+# /run itself is root:root 0755, which is what forced the marker onto
+# $RUNNER_HOME to begin with (the hooks run as the unprivileged runner
+# user). A tmpfiles.d entry recreates /run/runner, owned by runner, on
+# every boot; applied once here too so this same boot has it before the
+# runner takes its first job.
+mkdir -p /etc/tmpfiles.d
+cat > /etc/tmpfiles.d/cardmarket-market-runner.conf << 'EOF'
+d /run/runner 0750 runner runner - -
+EOF
+systemd-tmpfiles --create /etc/tmpfiles.d/cardmarket-market-runner.conf
+
 # One source of truth for the marker path, expanded into both heredocs
 # below rather than hardcoded twice - it must stay a literal in the
 # deployed files either way, since the hooks and the restart script run
 # standalone, long after this variable is gone.
-BUSY_MARKER="$RUNNER_HOME/.runner-busy"
+BUSY_MARKER="/run/runner/busy"
 
 mkdir -p "$RUNNER_HOME/hooks"
 cat > "$RUNNER_HOME/hooks/job-started.sh" << HOOKEOF
 #!/bin/bash
 # Marks the runner busy for runner-safe-restart.sh, via ACTIONS_RUNNER_HOOK_JOB_STARTED.
-# Under the runner user's own home, not /run: this hook runs as the
-# unprivileged runner user, and /run is root:root 755 - a plain touch there
-# fails and takes the whole job down with it (confirmed live). runner-safe-
-# restart.sh itself runs as root and can read this path either way.
+# Under /run/runner, not /run itself: /run is root:root 755, so a plain
+# touch there fails and takes the whole job down with it (confirmed
+# live in #649). /run/runner is a tmpfiles.d-owned directory the
+# unprivileged runner user can write into, and being tmpfs it is wiped
+# clean by a reboot the same way the marker itself needs to be.
 touch $BUSY_MARKER
 HOOKEOF
 cat > "$RUNNER_HOME/hooks/job-completed.sh" << HOOKEOF
@@ -150,6 +175,11 @@ chown -R runner:runner "$RUNNER_HOME/hooks"
 # service (runsvc.sh -> RunnerService.js) loads this file into its own
 # environment at every start, which is the documented way to hand a
 # self-hosted runner env vars a systemd unit has no other route for.
+#
+# Idempotent against a second provision.sh run on an already-provisioned
+# Droplet: drop any existing lines for these two keys first so a re-run
+# replaces them instead of appending duplicates.
+sed -i '/^ACTIONS_RUNNER_HOOK_JOB_STARTED=/d;/^ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/d' "$RUNNER_HOME/.env"
 {
     echo "ACTIONS_RUNNER_HOOK_JOB_STARTED=$RUNNER_HOME/hooks/job-started.sh"
     echo "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=$RUNNER_HOME/hooks/job-completed.sh"
