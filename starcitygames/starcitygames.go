@@ -34,10 +34,11 @@ type Starcitygames struct {
 	// for, so the pair folds together in either stream order.
 	buckets map[string]struct{}
 
-	setIDs map[string]int
-	client *SCGClient
-	game   mtgban.Game
-	gameID int
+	setIDs  map[string]int
+	client  *SCGClient
+	backend *mtgmatcher.Backend
+	game    mtgban.Game
+	gameID  int
 
 	// bulkRated counts the buylist figures dropped as a bulk tier's rate.
 	// It is logged rather than used: the rates are SCG's and can change
@@ -47,7 +48,11 @@ type Starcitygames struct {
 }
 
 // NewScraper returns a singles scraper for one game, using the given API key.
-func NewScraper(game mtgban.Game, apiKey string) (*Starcitygames, error) {
+func NewScraper(b *mtgmatcher.Backend, apiKey string) (*Starcitygames, error) {
+	game, err := mtgban.GameOf(b)
+	if err != nil {
+		return nil, err
+	}
 	gameID, ok := scgGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -55,6 +60,7 @@ func NewScraper(game mtgban.Game, apiKey string) (*Starcitygames, error) {
 	scg := Starcitygames{}
 	scg.reset()
 	scg.client = NewSCGClient(apiKey)
+	scg.backend = b
 	scg.game = game
 	scg.gameID = gameID
 	return &scg, nil
@@ -102,7 +108,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		return
 	}
 
-	cardID, err := resolveProduct(scg.gameID, p)
+	cardID, err := resolveProduct(scg.backend, scg.gameID, p)
 	if err != nil {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
@@ -116,7 +122,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		var alias *mtgmatcher.AliasingError
 		if errors.As(err, &alias) {
 			for _, probe := range alias.Probe() {
-				co, _ := mtgmatcher.GetUUID(probe)
+				co, _ := scg.backend.GetUUID(probe)
 				scg.printf("- %s", co)
 			}
 		}
@@ -128,7 +134,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 	// The buylist link points at the sell-your-cards page for this printing,
 	// not the retail page; fall back to retail if the set can't be matched.
 	buyURL := link
-	ids := setIDsForProduct(scg.setIDs, p.Set, p.SKU)
+	ids := setIDsForProduct(scg.backend, scg.setIDs, p.Set, p.SKU)
 	if len(ids) > 0 {
 		buyURL = SCGBuylistURL(scg.gameID, p.Name, p.Language, ids)
 	}
