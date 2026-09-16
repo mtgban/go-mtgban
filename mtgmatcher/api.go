@@ -693,8 +693,33 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 	return currentBackend().BoosterGen(setCode, boosterType)
 }
 
-// GetPicksForDeck returns the uuids a preconstructed deck contains.
-func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
+// foreignUUID returns uuid's own printing in language, if that language's
+// uuid (from foreignData[]) is one this datastore actually has loaded. A
+// deck is shared verbatim by every product that references it by name, so
+// its own uuids are always the default-language ones; this only ever
+// substitutes a printing this datastore already stocks under its own uuid,
+// rather than inventing one that was never minted.
+func (b *Backend) foreignUUID(uuid, language string) string {
+	co, err := b.cardObject4Id(uuid)
+	if err != nil {
+		return ""
+	}
+	for _, fd := range co.ForeignData {
+		if fd.Language != language {
+			continue
+		}
+		if _, found := b.UUIDs[fd.UUID]; found {
+			return fd.UUID
+		}
+		return ""
+	}
+	return ""
+}
+
+// GetPicksForDeck returns the uuids a preconstructed deck contains. language
+// is the enclosing sealed product's own language, if any (e.g. a Japanese
+// reprint of an English-authored deck) - see foreignUUID.
+func (b *Backend) GetPicksForDeck(setCode, deckName, language string) ([]string, error) {
 	var picks []string
 
 	set, err := b.GetSet(setCode)
@@ -717,7 +742,14 @@ func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			deck.Tokens,
 		} {
 			for _, card := range board {
-				uuid, err := b.MatchID(card.UUID, card.IsFoil, card.IsEtched)
+				cardUUID := card.UUID
+				if language != "" {
+					if foreign := b.foreignUUID(cardUUID, language); foreign != "" {
+						cardUUID = foreign
+					}
+				}
+
+				uuid, err := b.MatchID(cardUUID, card.IsFoil, card.IsEtched)
 				if err != nil {
 					// XXX: Tokens are not fully loaded so don't error out if one is missing
 					if i == 6 {
@@ -799,7 +831,7 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
-					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name)
+					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name, product.Language)
 					if err != nil {
 						return nil, err
 					}
@@ -863,7 +895,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
-					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name)
+					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name, product.Language)
 					if err != nil {
 						return nil, err
 					}
@@ -928,7 +960,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 						}
 					}
 					for _, deck := range config["deck"] {
-						deckPicks, err := b.GetPicksForDeck(deck.Set, deck.Name)
+						deckPicks, err := b.GetPicksForDeck(deck.Set, deck.Name, product.Language)
 						if err != nil {
 							return nil, err
 						}
@@ -1191,7 +1223,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 					}
 					probs = append(probs, sealedProbabilities...)
 				case "deck":
-					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name)
+					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name, product.Language)
 					if err != nil {
 						return nil, err
 					}
@@ -1262,7 +1294,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 							variableProbs = append(variableProbs, sealedProbabilities...)
 						}
 						for _, deck := range config["deck"] {
-							deckPicks, err := b.GetPicksForDeck(deck.Set, deck.Name)
+							deckPicks, err := b.GetPicksForDeck(deck.Set, deck.Name, product.Language)
 							if err != nil {
 								return nil, err
 							}
