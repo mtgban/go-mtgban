@@ -570,8 +570,9 @@ func (mkm *Market) marketCandidateHit(candidates map[string]bool, cardID, cardID
 }
 
 // acceptArticle reports whether one listing is valid to price at all -
-// priced, from a seller outside excludedCountries, matching every finish
-// flag actually being queried, and a recognised condition - and which of
+// priced, from a seller who is not on vacation and outside
+// excludedCountries, matching every finish flag actually being queried,
+// and a recognised condition - and which of
 // mtgban's five conditions it counts as. It does not compare against any
 // held price: that happens separately, once per bucket that holds its own
 // cheapest-so-far (see isCheaper), so a listing that is not the single
@@ -588,6 +589,9 @@ func (mkm *Market) marketCandidateHit(candidates map[string]bool, cardID, cardID
 // on a game or value it does not apply to.
 func acceptArticle(flags map[string]bool, article cm.Article) (string, bool) {
 	if article.Price == 0 {
+		return "", false
+	}
+	if article.Seller.OnVacation {
 		return "", false
 	}
 	if excludedCountries[article.Seller.Address.Country] {
