@@ -166,15 +166,14 @@ func TestTokenPairNumbers(t *testing.T) {
 	}
 }
 
-// TestPreprocessResolvesVendorVerifiedPairing pins a real blueprint
-// resolving to a vendorVerifiedPair entity - a physical pairing Card
-// Trader's own composite-number anchoring already confirmed real, but
-// mtgjson's own tokenProducts feed never linked as one product, so no
-// ordinary derived pairing exists for it at all (see
-// mtgmatcher/magic/verifiedNoUpstreamPairs). No Card Trader-specific code
-// exists for this case: the same number-anchored resolution that already
-// finds an ordinary derived pairing reaches this one too.
-func TestPreprocessResolvesVendorVerifiedPairing(t *testing.T) {
+// TestPreprocessResolvesPairingWithNoUsableID pins a real blueprint
+// resolving to a derived pairing that mtgjson's own tokenProducts entry
+// names but that carries no usable TCGplayer id (every id it names is
+// already claimed by some other, unrelated card - see deriveTokenPairs's
+// own comment on usableIDs). No Card Trader-specific code exists for this
+// case: the same number-anchored resolution that already finds an
+// ordinary, id-bearing derived pairing reaches this one too.
+func TestPreprocessResolvesPairingWithNoUsableID(t *testing.T) {
 	realDatastore(t)
 
 	bp := Blueprint{ID: 46667, Name: "Dragon // Cat Dragon", CategoryID: CategoryMagicTokens}
@@ -192,8 +191,8 @@ func TestPreprocessResolvesVendorVerifiedPairing(t *testing.T) {
 	if co.Identifiers["derivedTokenPair"] != "true" {
 		t.Errorf("blueprint %d resolved to %s (%s), want a derived token pairing", bp.ID, card.ID, co.Name)
 	}
-	if co.Identifiers["vendorVerifiedPair"] != "true" {
-		t.Errorf("blueprint %d resolved to %s (%s), want Identifiers[vendorVerifiedPair] = true", bp.ID, card.ID, co.Name)
+	if _, found := co.Identifiers["tcgplayerProductId"]; found {
+		t.Errorf("blueprint %d resolved to %s (%s), want no tcgplayerProductId", bp.ID, card.ID, co.Name)
 	}
 	if co.SetCode != "TC17" {
 		t.Errorf("blueprint %d resolved to set %s, want TC17", bp.ID, co.SetCode)

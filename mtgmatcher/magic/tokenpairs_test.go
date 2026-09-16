@@ -547,95 +547,63 @@ func TestTokenPairIDByBothNamesCollision(t *testing.T) {
 	}
 }
 
-// TestMintVerifiedPairsResolves pins a real vendorVerifiedPair entity -
-// no tcgplayerProductId at all - resolving through the same
-// MatchTokenPairingByUUIDs a caller that has already anchored both faces
-// by identity already uses for an ordinary derived pairing. Angel (TAVR)
-// and Demon (TAVR) have no mtgjson tokenProducts entry linking them (Star
-// City Games's own composite sku is the only thing that confirms this
-// pairing is real), so if buildDerivedCard's nil-usableIDs handling or
-// tokenPairingFinishOK's bare-uuid resolution ever regresses, this fails.
-func TestMintVerifiedPairsResolves(t *testing.T) {
+// TestDeriveTokenPairsMintsWithNoUsableID pins a real bug: mtgjson's own
+// tokenProducts entry links Germ (TC16 #10) and Spirit (TC16 #6) under
+// tcgplayerProductId 125098, but that id is also independently claimed by
+// an unrelated card elsewhere in the datastore, so deriveTokenPairs's own
+// "don't let one id price two different things" guard correctly refuses
+// to hand it to this pairing. The bug was in what happened next: rather
+// than still minting the pairing itself - which this tokenProducts entry
+// already confirms is real, id or no id - the loop dropped the whole row.
+func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 	realDatastore(t)
 
-	angel := testBackend.MatchInSetNumber("Angel", "TAVR", "1")
-	demon := testBackend.MatchInSetNumber("Demon", "TAVR", "5")
-	if len(angel) != 1 || len(demon) != 1 {
-		t.Skip("Angel/Demon TAVR #1/#5 not present in this datastore")
+	germ := testBackend.MatchInSetNumber("Germ", "TC16", "10")
+	spirit := testBackend.MatchInSetNumber("Spirit", "TC16", "6")
+	if len(germ) != 1 || len(spirit) != 1 {
+		t.Skip("Germ/Spirit TC16 #10/#6 not present in this datastore")
 	}
 
-	id := MatchTokenPairingByUUIDs(angel[0].UUID, demon[0].UUID, false)
+	id := MatchTokenPairingByUUIDs(germ[0].UUID, spirit[0].UUID, false)
 	if id == "" {
-		t.Fatal("MatchTokenPairingByUUIDs(Angel, Demon) = \"\", want the vendorVerifiedPair entity")
-	}
-	uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
-	if uuid != "" {
-		t.Fatalf("id %q resolved through IDSpaceTCGplayer, want a bare uuid (no real tcgplayerProductId for a vendorVerifiedPair entity)", id)
+		t.Fatal("MatchTokenPairingByUUIDs(Germ, Spirit) = \"\", want the derived pairing mtgjson's own tokenProducts entry confirms - a contested id must not drop the row it belongs to")
 	}
 	co, err := testBackend.GetUUID(id)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", id, err)
 	}
-	if co.Identifiers["vendorVerifiedPair"] != "true" {
-		t.Errorf("resolved to %s, want Identifiers[vendorVerifiedPair] = true", co.Name)
-	}
 	if _, found := co.Identifiers["tcgplayerProductId"]; found {
-		t.Errorf("vendorVerifiedPair entity %s carries a tcgplayerProductId, want none", co.Name)
+		t.Errorf("resolved to %s with a tcgplayerProductId, want none: id 125098 is claimed by another card, so this pairing must mint without one", co.Name)
 	}
 }
 
-// TestVerifiedPairCollisionRefusesRatherThanGuess pins the reason
-// verifiedNoUpstreamPairs' own doc comment gives for why adding entries
-// can correctly reduce some other resolution's confidence: Final Fantasy
-// really does file its own native "Wizard // Bird" token pairing, but a
-// second, different Bird/Wizard pairing this table also confirms is real
-// shares the identical normalized name pair - a listing with neither an
-// id nor a set/number anchor, naming only "Bird // Wizard", cannot tell
-// the two apart and must refuse rather than guess.
-func TestVerifiedPairCollisionRefusesRatherThanGuess(t *testing.T) {
+// TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops pins the other half
+// of the same bug: homeSet requires the two faces' sets to share an
+// mtgjson parent-set ancestor, which an ordinary same-sheet pairing always
+// has but a genuinely cross-set reprint (Dinosaur, from The Lost Caverns
+// of Ixalan Commander's own token sheet, paired with Gnome on The Lost
+// Caverns of Ixalan's own) need not. Before the fix, homeSet returning ""
+// dropped the row entirely rather than falling back to a deterministic
+// set (whichever face's uuid sorts first - cosmetic only, see
+// buildDerivedCard's own comment on the field).
+func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
 	realDatastore(t)
 
-	bird := testBackend.MatchInSetNumber("Bird", "TFIN", "17")
-	// TFIN's own real derived pairing's own Wizard partner.
-	realWizard := testBackend.MatchInSetNumber("Wizard", "TFIN", "15")
-	// This table's own, different Wizard this same Bird also verifiably
-	// pairs with - two real, distinct physical products.
-	verifiedWizard := testBackend.MatchInSetNumber("Wizard", "TFIN", "14")
-	if len(bird) != 1 || len(realWizard) != 1 || len(verifiedWizard) != 1 {
-		t.Skip("Bird/Wizard TFIN #17/#15/#14 not present in this datastore")
-	}
-	if realWizard[0].UUID == verifiedWizard[0].UUID {
-		t.Skip("TFIN's own Wizard and this table's verified Wizard are the same printing in this datastore - the collision this test pins no longer exists")
+	dinosaur := testBackend.MatchInSetNumber("Dinosaur", "TLCC", "10")
+	gnome := testBackend.MatchInSetNumber("Gnome", "TLCI", "16")
+	if len(dinosaur) != 1 || len(gnome) != 1 {
+		t.Skip("Dinosaur TLCC #10 / Gnome TLCI #16 not present in this datastore")
 	}
 
-	// Both faces already anchored by identity (not by name) is
-	// unambiguous even between two colliding uuid pairs: a caller with
-	// both uuids in hand already knows which physical pairing it means,
-	// so it isn't asking the name-keyed indices anything at all.
-	if id := MatchTokenPairingByUUIDs(bird[0].UUID, realWizard[0].UUID, false); id == "" {
-		t.Error("MatchTokenPairingByUUIDs(TFIN Bird, TFIN's own Wizard) = \"\", want a match: this exact uuid pair is unambiguous regardless of what else Bird's name collides with")
+	id := MatchTokenPairingByUUIDs(dinosaur[0].UUID, gnome[0].UUID, false)
+	if id == "" {
+		t.Fatal("MatchTokenPairingByUUIDs(Dinosaur, Gnome) = \"\", want the derived pairing - homeSet has no common ancestor for TLCC/TLCI, and must fall back rather than drop the row")
 	}
-	if id := MatchTokenPairingByUUIDs(bird[0].UUID, verifiedWizard[0].UUID, false); id == "" {
-		t.Error("MatchTokenPairingByUUIDs(TFIN Bird, this table's verified Wizard) = \"\", want a match: this exact uuid pair is unambiguous too")
+	co, err := testBackend.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", id, err)
 	}
-
-	// The real pin: a caller with only Bird anchored and the bare name
-	// "Wizard" to go on (TokenPairIndex/byFace, what
-	// MatchTokenPairingBySetNumber actually asks) cannot tell TFIN's own
-	// Wizard from this table's different one, and must refuse rather
-	// than pick either arbitrarily.
-	if id, found := TokenPairIndex()[bird[0].UUID]["wizard"]; found {
-		t.Errorf("TokenPairIndex[Bird][wizard] = %q, want no entry: TFIN's own Bird pairs with more than one real Wizard across this table plus mtgjson's own tokenProducts, and the name alone cannot tell them apart", id)
-	}
-
-	// The same collision, for a caller with neither face anchored at all
-	// (TokenPairIDByBothNames, what MatchTokenPairingByNamesAndEdition
-	// asks before its own edition check ever runs).
-	key := [2]string{NormalizeTokenFace("Bird"), NormalizeTokenFace("Wizard")}
-	if key[1] < key[0] {
-		key = [2]string{key[1], key[0]}
-	}
-	if id, found := TokenPairIDByBothNames()[key]; found {
-		t.Errorf("TokenPairIDByBothNames[Bird,Wizard] = %q, want no entry", id)
+	if co.SetCode != "TLCI" {
+		t.Errorf("resolved to SetCode %q, want the homeSet fallback (whichever face's uuid sorts first, TLCI here)", co.SetCode)
 	}
 }

@@ -392,19 +392,15 @@ func tokenPairSkuAnchorSet(code string) string {
 	return ""
 }
 
-// TokenPairAnchorUUIDs anchors both faces of a two-sided token listing
+// tokenPairAnchorUUIDs anchors both faces of a two-sided token listing
 // independently by identity - each face's own filing set and number, read
 // directly off the listing's own composite sku (tokenPairSkuAnchors) -
-// rather than guessing either from the vendor's own wording. Exported so a
-// regeneration tool (cmd/tokenpairgen) can walk a full catalog export
-// offline and find every such listing, using this package's own real
-// anchoring logic instead of a separate reimplementation of it; the
-// production path above (resolveProductID) uses it the identical way.
-// ok is false whenever the sku doesn't carry two such anchors, either
-// face's own set can't be resolved, or either face's own name doesn't
-// match exactly one printing in that set and number - the same
-// "don't know, refuse" the rest of this file already applies.
-func TokenPairAnchorUUIDs(p CatalogProduct) (uuidA, uuidB string, ok bool) {
+// rather than guessing either from the vendor's own wording. ok is false
+// whenever the sku doesn't carry two such anchors, either face's own set
+// can't be resolved, or either face's own name doesn't match exactly one
+// printing in that set and number - the same "don't know, refuse" the
+// rest of this file already applies.
+func tokenPairAnchorUUIDs(p CatalogProduct) (uuidA, uuidB string, ok bool) {
 	if gameFromCatalog(p.Game) != GameMagic || !strings.Contains(p.Name, " // ") {
 		return "", "", false
 	}
@@ -905,7 +901,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 			// entirely - two already-known uuids can't collide with each
 			// other the way two vendor-spelled names can - via the
 			// uuid-pair-keyed magic.MatchTokenPairingByUUIDs.
-			if uuidA, uuidB, ok := TokenPairAnchorUUIDs(p); ok {
+			if uuidA, uuidB, ok := tokenPairAnchorUUIDs(p); ok {
 				if tcgID := magic.MatchTokenPairingByUUIDs(uuidA, uuidB, foil); tcgID != "" {
 					if id, err := mtgmatcher.MatchID(tcgID, foil, etched); err == nil {
 						return id, nil
