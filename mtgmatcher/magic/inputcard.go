@@ -490,6 +490,14 @@ func isUnsupported(c *mtgmatcher.InputCard) bool {
 		mtgmatcher.Contains(c.Name, "Strategy Card") || // Portal rules-teaching inserts
 		mtgmatcher.Contains(c.Name, "Card List") || // Portal's own checklist insert
 		mtgmatcher.Contains(c.Name, "Planeswalkers Part") || // Lorwyn rules-teaching inserts
+		// Helper Card, Punch Card and Jumpstart Pack Summary Card: no real
+		// card Name/FaceName carries any of these three substrings - checked
+		// directly against the loaded backend, not assumed safe from the
+		// insert's own wording alone.
+		mtgmatcher.Contains(c.Name, "Helper Card") || // Double-Faced Helper Card, M19's planeswalker deck insert
+		mtgmatcher.Contains(c.Name, "Punch Card") || // hole-punch checklist inserts, Amonkhet block onward
+		mtgmatcher.Contains(c.Name, "Jumpstart Pack Summary Card") || // Jumpstart's deck-summary insert
+		c.Name == "Red Mana Counter" || // Cardmarket's own "Tokens for MTG" gaming accessory, not a card
 		(c.Contains("Duel Masters") && c.Contains("Not Tournament Legal")) || // scg
 		c.Contains("Sealed") ||
 		c.Contains("Un-Known Event Playtest") ||
