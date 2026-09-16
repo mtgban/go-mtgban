@@ -111,4 +111,48 @@ func (b *Backend) SetRules(r GameRules) {
 			b.knownFinishes[key] = true
 		}
 	}
+
+	// Read foil-ness off the printings rather than off the names. A game
+	// that keys a printing by its print run and treatment together sells
+	// "1steditionnormal" beside "1steditioncoldfoil", and no spelling rule
+	// tells those apart - the printing does, and has all along.
+	b.foilFinishes = map[string]bool{}
+	for _, co := range b.UUIDs {
+		if co.Sealed || co.Finish == "" {
+			continue
+		}
+		if co.Foil || co.Etched {
+			b.foilFinishes[co.Finish] = true
+		}
+	}
+	// An alias is a spelling of the finish it names, so it answers the same.
+	for _, co := range b.UUIDs {
+		for name, key := range co.FinishAliases {
+			if b.foilFinishes[key] {
+				b.foilFinishes[name] = true
+			}
+		}
+	}
+}
+
+// IsFoilFinish reports whether a finish is one of the card's foils.
+//
+// The answer comes from the printings the datastore holds, so a game naming
+// its own finishes - Lorcana's "rainbowpillars", Flesh and Blood's
+// "1steditioncoldfoil" - is answered without anyone writing its vocabulary
+// down twice. A name the datastore does not sell falls back to the finishes
+// every game shares, which is what an empty Backend can still answer.
+func (b *Backend) IsFoilFinish(name string) bool {
+	canonical := NormalizeFinish(name)
+	if b != nil && b.foilFinishes[canonical] {
+		return true
+	}
+	if b != nil && b.knownFinishes[canonical] {
+		return false
+	}
+	switch CanonicalFinish(canonical) {
+	case FinishFoil:
+		return true
+	}
+	return canonical == FinishEtched
 }

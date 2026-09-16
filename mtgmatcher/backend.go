@@ -429,6 +429,15 @@ type Backend struct {
 	// game's datastore loader via SetRules.
 	rules         GameRules
 	knownFinishes map[string]bool
+
+	// foilFinishes says, for each finish name this datastore sells, whether
+	// the printings carrying it are foils. Every printing already answers
+	// that for itself through Foil and Etched; this is the same answer keyed
+	// by the name, for a caller holding a finish rather than a printing -
+	// which is every caller pairing a product's finishes against anything.
+	// A name answers one way or the other and never both: no finish in the
+	// nine datastores is foil on one printing and plain on another.
+	foilFinishes map[string]bool
 }
 
 // Logger receives the matcher's diagnostics. It discards them until

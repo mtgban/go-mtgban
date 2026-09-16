@@ -49,3 +49,9 @@ func CanonicalFinish(name string) string {
 	}
 	return ""
 }
+
+// IsFoilFinish reports whether a finish is one of a card's foils, asking the
+// datastore in use. See Backend.IsFoilFinish.
+func IsFoilFinish(name string) bool {
+	return currentBackend().IsFoilFinish(name)
+}
