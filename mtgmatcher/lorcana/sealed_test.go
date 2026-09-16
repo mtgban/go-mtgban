@@ -24,7 +24,7 @@ const sealedFixture = `{
 			"fullName": "Fixture Mouse - Brave Tailor",
 			"name": "Fixture Mouse",
 			"setCode": "1",
-			"number": 1,
+			"number": "1",
 			"rarity": "Common",
 			"foilTypes": ["None", "Silver"],
 			"externalLinks": {"tcgPlayerId": 100001}
