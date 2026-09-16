@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -19,14 +20,7 @@ import (
 // disagree silently, since a uuid nobody stored resolves to nothing rather
 // than erroring.
 func TestPublishedPrintingIDsWin(t *testing.T) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		t.Skip("LORCANA_PATH not set; skipping Lorcana matcher suite")
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+	data := readDatastore(t)
 
 	stamped, want := stampPrintingIDs(t, data)
 	b, err := Load(bytes.NewReader(stamped))
@@ -67,6 +61,29 @@ func TestPublishedPrintingIDsWin(t *testing.T) {
 	if got != twoFinish.FoilUUIDs[mtgmatcher.FinishNonfoil] {
 		t.Errorf("Match(%v) = %s, want %s", in, got, twoFinish.FoilUUIDs[mtgmatcher.FinishNonfoil])
 	}
+}
+
+// readDatastore hands a test the datastore's own bytes, from wherever
+// LORCANA_PATH points - a file, a URL, or the bucket the production
+// datastores are published to. These tests stamp the document and read it
+// back, so they need the file loadDatastore would have decoded rather than
+// the backend it answers with.
+func readDatastore(t *testing.T) []byte {
+	t.Helper()
+	path := os.Getenv("LORCANA_PATH")
+	if path == "" {
+		t.Skip("LORCANA_PATH not set; skipping Lorcana matcher suite")
+	}
+	reader, err := datastore.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reader.Close()
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
 }
 
 // stampPrintingIDs renames the uuid of every printing a card carries, to one
@@ -147,14 +164,7 @@ func restamp(t *testing.T, data []byte, name func(id int, finish string) string)
 // nothing ever asks for, stranding the uuid it names - silently, since a
 // uuid nobody stored resolves to nothing rather than erroring.
 func TestPrintingIDsNamedTheVendorsWay(t *testing.T) {
-	path := os.Getenv("LORCANA_PATH")
-	if path == "" {
-		t.Skip("LORCANA_PATH not set; skipping Lorcana matcher suite")
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+	data := readDatastore(t)
 
 	stamped, want := stampVendorPrintingIDs(t, data)
 	b, err := Load(bytes.NewReader(stamped))
