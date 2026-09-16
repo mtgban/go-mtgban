@@ -102,6 +102,11 @@ func TestAcceptArticle(t *testing.T) {
 			wantOK:  false,
 		},
 		{
+			name:    "a seller on vacation is dropped",
+			article: cm.Article{Price: 5, Condition: "NM", Seller: cm.ArticleSeller{OnVacation: true}},
+			wantOK:  false,
+		},
+		{
 			name:    "an unrecognised condition string is dropped rather than guessed at",
 			article: cm.Article{Price: 5, Condition: "XX"},
 			wantOK:  false,
