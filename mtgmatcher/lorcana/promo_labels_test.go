@@ -36,10 +36,15 @@ func TestPromoTypeLabels(t *testing.T) {
 	if got := b.PromoTypeLabel("organizedplay"); got != "Organized Play" {
 		t.Errorf("PromoTypeLabel(%q) = %q, want %q", "organizedplay", got, "Organized Play")
 	}
-	// An initialism the datastore still spells with capitals of its own is
-	// shown as written rather than title-cased into "Pd1".
-	if got := b.PromoTypeLabel("pd1"); got != "PD1" {
-		t.Errorf("PromoTypeLabel(%q) = %q, want %q", "pd1", got, "PD1")
+	// A numbering pool is not a promotion and is not declared as one. It
+	// is the denominator the card prints - "5/PD1" the way a set card is
+	// "87/204" - and it lives in SetTotal, where poolTiebreak reads it.
+	// It used to be appended to PromoTypes for want of anywhere else, and
+	// "pd1" was a tag a query could be written in.
+	for _, pool := range []string{"p1", "p2", "p3", "p4", "c1", "c2", "cc1", "pd1", "dis"} {
+		if slices.Contains(b.AllPromoTypes, pool) {
+			t.Errorf("%q is declared a promo type; it is a numbering pool", pool)
+		}
 	}
 	// An unknown token still reads as something rather than empty.
 	if got := b.PromoTypeLabel("nosuchtag"); got == "" {

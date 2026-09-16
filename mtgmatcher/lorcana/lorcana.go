@@ -131,7 +131,11 @@ type AllCards struct {
 		// nothing is a card with no promotion.
 		PromoTypes []string `json:"promoTypes,omitempty"`
 		// PromoGrouping is the pool a promotional printing was numbered
-		// within, which storefronts write behind its number.
+		// within. It is the denominator under another name - a promo is
+		// numbered "5/P3" the way a card of the set is "5/204" - and a
+		// datastore publishing Total says the same thing there. It is read
+		// only where Total is absent, so an older build's promos stay
+		// tellable apart.
 		PromoGrouping    string `json:"promoGrouping,omitempty"`
 		Variant          string `json:"variant,omitempty"`
 		VariantIDs       []int  `json:"variantIds,omitempty"`
@@ -288,54 +292,25 @@ var promoTypeLabels = map[string]string{
 
 // promoTypeLabel is the words a token is shown as, from the table above
 // where a title-caser cannot work them out.
-func promoTypeLabel(slug, published string) string {
+func promoTypeLabel(slug string) string {
 	if label, found := promoTypeLabels[slug]; found {
 		return label
-	}
-	// A tag that arrives with capitals of its own is shown as it is
-	// written: the promo pool is published as "PD1" rather than slugged,
-	// and a title-caser would only make it "Pd1".
-	if published != strings.ToLower(published) {
-		return published
 	}
 	return mtgmatcher.Title(slug)
 }
 
-// promoTags names what tells a promotional printing from the ordinary one of
-// the same name. Lorcana writes none of this into the name - not one of its
-// card names carries a parenthesis - so the tags come from the fields the
-// datastore keeps them in.
-//
-// The builder publishes the labels now, so where it does they are what this
-// returns: read off the same fields but read better, and carrying the foil
-// treatment besides. A datastore built before it published them is read the
-// old way, off the two fields it kept them in.
-//
-// The pool is added either way, because the builder leaves it out. It is
-// right to: a numbering pool is not a promotion. But it is also the only
-// thing that tells two promos of one card apart when they also share a
-// number - the datastore numbers each pool from one, so "Maleficent -
-// Monstrous Dragon" is card 5 of both the P1 pool and the P3 one - and
-// poolTiebreak reads it back off PromoTypes. Storefronts print it where a set
-// card writes its set size, "5/P3" against "87/204".
-func promoTags(published []string, grouping string) []string {
-	// The labels are the builder's, and nothing is worked out from the
-	// fields it read them off. It is the half that can see whether a varnish
-	// belongs to a rarity or to a printing, so a card it gave no label is a
-	// card with no promotion - not one to derive labels for, which is how
-	// HighGloss and "Promo" kept coming back after being dropped on purpose.
-	tags := published
-	if grouping == "" {
-		return tags
+// printedTotal is the denominator the card's face prints after its number.
+// A datastore that publishes it says so in total; one built before it did
+// still wrote a promo's in promoGrouping, which is the same fact under
+// another name - "5/P3" is numbered the way "5/204" is - and is read there
+// so an older build's promos stay tellable apart. A card of the set has no
+// grouping to fall back on and needs none: what shares its number is a
+// promo, and the promo is the one that moved.
+func printedTotal(total, grouping string) string {
+	if total != "" {
+		return total
 	}
-	for _, tag := range tags {
-		if strings.EqualFold(tag, grouping) {
-			return tags
-		}
-	}
-	// The published list belongs to the card, so the pool goes onto a copy
-	// of it rather than onto whatever the slice still has room for.
-	return append(slices.Clone(tags), grouping)
+	return grouping
 }
 
 // adoptPrintings fills the three older shapes from the printings array, so
@@ -446,13 +421,19 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.FullName
 		}
-		for _, tag := range promoTags(card.PromoTypes, card.PromoGrouping) {
+		// The labels are the builder's, and nothing is worked out from
+		// the fields it read them off. It is the half that can see whether
+		// a varnish belongs to a rarity or to a printing, so a card it
+		// gave no label is a card with no promotion - not one to derive
+		// labels for, which is how HighGloss and "Promo" kept coming back
+		// after being dropped on purpose.
+		for _, tag := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(tag)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
 			}
 			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(slug, tag)
+				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
 			}
 		}
 		b.AddName(card.FullName)
@@ -550,7 +531,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 			Printings:  printingsByName[mtgmatcher.Normalize(card.FullName)],
 			IsPromo:    promoPrintings[card.ID] || card.PromoSourceCategory != "" || promoSet || rarity == "promo",
-			PromoTypes: slugTags(promoTags(card.PromoTypes, card.PromoGrouping)),
+			PromoTypes: slugTags(card.PromoTypes),
 
 			PlainNumber: Rules{}.PlainNumber(fmt.Sprintf("%d%s", card.Number, card.Variant)),
 
@@ -558,7 +539,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			// a size: a promo prints its run where a card of the set
 			// prints the set's size, and the number alone named two cards
 			// on 155 of the game's (set, number) pairs without it.
-			SetTotal: card.Total,
+			SetTotal: printedTotal(card.Total, card.PromoGrouping),
 		}
 		// Register the uuid each finish prices. Where the datastore names
 		// them - which it does in TCGplayer's own words, the vocabulary
