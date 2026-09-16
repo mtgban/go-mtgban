@@ -112,6 +112,15 @@ func (b *Backend) SetRules(r GameRules) {
 		}
 	}
 
+	// A game printing no runs says so by leaving the split alone: its
+	// finish is the treatment entire. Filled here rather than in six
+	// loaders that would all write the same line.
+	for _, co := range b.UUIDs {
+		if co.Finish != "" && co.Treatment == "" && co.PrintRun == "" {
+			co.Treatment = co.Finish
+		}
+	}
+
 	// Read foil-ness off the printings rather than off the names. A game
 	// that keys a printing by its print run and treatment together sells
 	// "1steditionnormal" beside "1steditioncoldfoil", and no spelling rule

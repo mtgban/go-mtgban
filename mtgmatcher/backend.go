@@ -232,6 +232,25 @@ type Card struct {
 	// entries carry no finish.
 	Finish string
 
+	// Treatment and PrintRun are Finish split into the two things a game
+	// welds into it. A treatment is how the card is printed - normal,
+	// coldfoil, rainbowfoil, holofoil, etched; a print run is which
+	// printing of the set it belongs to - 1stedition, unlimited, limited.
+	//
+	// Flesh and Blood and Pokemon sell the same treatment in more than one
+	// run and name the pair as one word, which is why 8 and 7 finish names
+	// stand for 3 and 4 treatments. Yu-Gi-Oh sells one treatment in three
+	// runs and names only the run, so its finishes are all PrintRun with an
+	// empty Treatment. A game printing no runs leaves PrintRun empty and
+	// Treatment equal to Finish.
+	//
+	// Finish stays the whole name: it is the FoilUUIDs key, and it is what
+	// tells two printings apart that the Foil flag cannot - a 1st Edition
+	// plain card and an Unlimited plain card share a treatment and are not
+	// the same printing.
+	Treatment string
+	PrintRun  string
+
 	// A list of URLs containing the image of the card
 	// At a minimum "full" and "thumbnail" versions should be provided
 	Images map[string]string

@@ -413,6 +413,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// aliased by the sibling runs
 			co.UUID = entry.ID
 			co.Finish = canonicalFinish(entry.Finish)
+			// Yu-Gi-Oh sells one treatment in three runs and names only the
+			// run, so every finish it has is a print run with no treatment
+			// beside it.
+			co.PrintRun = co.Finish
 			if card.Variant != "" {
 				qualifiers[entry.ID] = card.Variant
 			}

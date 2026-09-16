@@ -40,6 +40,18 @@ const (
 	treatmentColdFoil    = "coldfoil"
 )
 
+// splitFinish takes a finish name back apart into the two axes it was built
+// from. The print runs are the only prefixes a name carries, and the longest
+// is tried first so "unlimitededition" is not read as a bare treatment.
+func splitFinish(finish string) (printRun, treatment string) {
+	for _, edition := range []string{editionUnlimited, edition1st} {
+		if edition != editionBare && strings.HasPrefix(finish, edition) {
+			return edition, strings.TrimPrefix(finish, edition)
+		}
+	}
+	return editionBare, finish
+}
+
 // Datastore is the cmd/fleshandblood output: sets keyed by code, one card
 // entry per priced printing, and the sealed products.
 type Datastore struct {
@@ -597,6 +609,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// aliased by the sibling printings
 			co.UUID = entry.ID
 			co.Finish = finish
+			co.PrintRun, co.Treatment = splitFinish(finish)
 			b.UUIDs[entry.ID] = &co
 			b.AllUUIDs = append(b.AllUUIDs, entry.ID)
 			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], entry.ID)

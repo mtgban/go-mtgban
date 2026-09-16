@@ -49,6 +49,18 @@ const (
 	finishUnlimitedHolo   = "unlimitedholofoil"
 )
 
+// splitFinish takes a finish name back apart into its print run and its
+// treatment. A run sold in one treatment names only the run, which leaves the
+// treatment empty - the card is the plain printing of that run.
+func splitFinish(finish string) (printRun, treatment string) {
+	for _, run := range []string{finish1stEdition, finishUnlimited} {
+		if strings.HasPrefix(finish, run) {
+			return run, strings.TrimPrefix(finish, run)
+		}
+	}
+	return "", finish
+}
+
 // setTypePromo is what the builder types a set that hands its cards out.
 const setTypePromo = "promo"
 
@@ -504,6 +516,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// aliased by the sibling printings
 			co.UUID = entry.ID
 			co.Finish = canonicalFinish(entry.Finish)
+			co.PrintRun, co.Treatment = splitFinish(co.Finish)
 			// Every holo treatment is a foil, and the flag is what a caller
 			// with no finish vocabulary reads: leaving it false filed every
 			// holo printing in the game as a plain one.
