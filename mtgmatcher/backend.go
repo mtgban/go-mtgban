@@ -200,6 +200,11 @@ type Card struct {
 	// all, which is most promos, and that emptiness is meaningful: a
 	// bare-numbered promo is a different printing from its totalled
 	// reprint, so nothing may fill it in from Set.BaseSetSize.
+	//
+	// It is not always a size. Lorcana numbers a set's promos from 1
+	// alongside the set's own cards and prints the run where the size
+	// would go, so "1/P1" sits beside "1/204" and this holds "P1": the
+	// denominator the face prints, whatever the face prints there.
 	SetTotal string
 
 	// FoilUUIDs holds one entry per finish the printing is sold in, mapping

@@ -100,20 +100,25 @@ type AllCards struct {
 		Lore             int               `json:"lore,omitempty"`
 		Name             string            `json:"name"`
 		Number           int               `json:"number"`
-		Rarity           string            `json:"rarity"`
-		SetCode          string            `json:"setCode"`
-		SimpleName       string            `json:"simpleName"`
-		Story            string            `json:"story"`
-		Strength         int               `json:"strength,omitempty"`
-		Subtypes         []string          `json:"subtypes,omitempty"`
-		Type             string            `json:"type"`
-		Version          string            `json:"version,omitempty"`
-		Willpower        int               `json:"willpower,omitempty"`
-		KeywordAbilities []string          `json:"keywordAbilities,omitempty"`
-		PromoIDs         []int             `json:"promoIds,omitempty"`
-		Errata           []string          `json:"errata,omitempty"`
-		Clarifications   []string          `json:"clarifications,omitempty"`
-		Effects          []string          `json:"effects,omitempty"`
+		// Total is the denominator the face prints after the number: the
+		// set's size on a card of the set, the run's own label on a promo
+		// ("1/P1" beside "1/204"). It is what tells the two apart, since a
+		// set's promos are numbered from 1 alongside its own cards.
+		Total            string   `json:"total"`
+		Rarity           string   `json:"rarity"`
+		SetCode          string   `json:"setCode"`
+		SimpleName       string   `json:"simpleName"`
+		Story            string   `json:"story"`
+		Strength         int      `json:"strength,omitempty"`
+		Subtypes         []string `json:"subtypes,omitempty"`
+		Type             string   `json:"type"`
+		Version          string   `json:"version,omitempty"`
+		Willpower        int      `json:"willpower,omitempty"`
+		KeywordAbilities []string `json:"keywordAbilities,omitempty"`
+		PromoIDs         []int    `json:"promoIds,omitempty"`
+		Errata           []string `json:"errata,omitempty"`
+		Clarifications   []string `json:"clarifications,omitempty"`
+		Effects          []string `json:"effects,omitempty"`
 		// Where a promotional printing was handed out, read for whether
 		// there was a promotion at all rather than for what it was called.
 		PromoSourceCategory string `json:"promoSourceCategory,omitempty"`
@@ -548,6 +553,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			PromoTypes: slugTags(promoTags(card.PromoTypes, card.PromoGrouping)),
 
 			PlainNumber: Rules{}.PlainNumber(fmt.Sprintf("%d%s", card.Number, card.Variant)),
+
+			// The face's own denominator, which for Lorcana is not always
+			// a size: a promo prints its run where a card of the set
+			// prints the set's size, and the number alone named two cards
+			// on 155 of the game's (set, number) pairs without it.
+			SetTotal: card.Total,
 		}
 		// Register the uuid each finish prices. Where the datastore names
 		// them - which it does in TCGplayer's own words, the vocabulary
