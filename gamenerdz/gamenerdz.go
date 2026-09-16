@@ -68,24 +68,26 @@ func grade(displayName string) string {
 
 // The games this scraper covers, as the storefront names its product lines.
 // YuGiOh and Riftbound are lines the store knows but holds nothing of today,
-// so they are not wired up.
+// so they are not wired up. Flesh and Blood was wired up until the store
+// retired its buylist for it: the feed still answers and still looks like
+// data, but the links it hands back no longer work, which makes every
+// listing inactionable, so the game is gone rather than kept for a retail
+// side alone.
 const (
-	GameMagic         = "Magic: the Gathering"
-	GameLorcana       = "Lorcana"
-	GamePokemon       = "Pokemon"
-	GameOnePiece      = "One Piece"
-	GameFleshAndBlood = "Flesh And Blood"
+	GameMagic    = "Magic: the Gathering"
+	GameLorcana  = "Lorcana"
+	GamePokemon  = "Pokemon"
+	GameOnePiece = "One Piece"
 )
 
 // gnGames is what NewScraper is built through: it names the product line a
 // game is sold under, and a game named nowhere here is not one Game Nerdz is
 // read for. The lines themselves stay public, since NewGNClient takes one.
 var gnGames = map[mtgban.Game]string{
-	mtgban.GameMagic:         GameMagic,
-	mtgban.GameLorcana:       GameLorcana,
-	mtgban.GamePokemon:       GamePokemon,
-	mtgban.GameOnePiece:      GameOnePiece,
-	mtgban.GameFleshAndBlood: GameFleshAndBlood,
+	mtgban.GameMagic:    GameMagic,
+	mtgban.GameLorcana:  GameLorcana,
+	mtgban.GamePokemon:  GamePokemon,
+	mtgban.GameOnePiece: GameOnePiece,
 }
 
 // Gamenerdz prices Game Nerdz's stock of one game. The storefront's two

@@ -21,8 +21,6 @@ func preprocess(product GNProduct, game mtgban.Game) (*mtgmatcher.InputCard, err
 		return preprocessPokemon(product)
 	case mtgban.GameOnePiece:
 		return preprocessOnePiece(product)
-	case mtgban.GameFleshAndBlood:
-		return preprocessFleshAndBlood(product)
 	}
 	return preprocessMagic(product)
 }
@@ -625,31 +623,5 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 		Edition:   product.ProductData.SetName,
 		Variation: code,
 		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
-	}, nil
-}
-
-// fabCode is the number tag Flesh and Blood display names carry, like
-// "(ARC017)" or "(FAB113)", after the pitch-color parenthetical that is part
-// of the card's name.
-var fabCode = regexp.MustCompile(`\(([0-9A-Z]{2,5}\d{3}[a-z]?)\)`)
-
-// A Flesh and Blood display name reads
-//
-//	Aether Sink (ARC017) Arcane Rising 1st Edition Rainbow Foil
-//
-// The selected finish is already the datastore's own vocabulary, the print
-// run crossed with the treatment, so it passes through whole.
-func preprocessFleshAndBlood(product GNProduct) (*mtgmatcher.InputCard, error) {
-	loc := fabCode.FindStringSubmatchIndex(product.DisplayName)
-	if loc == nil {
-		return nil, errors.New("no card number in display name")
-	}
-
-	return &mtgmatcher.InputCard{
-		Name:      strings.TrimSpace(product.DisplayName[:loc[0]]),
-		Edition:   product.ProductData.SetName,
-		Variation: product.DisplayName[loc[2]:loc[3]],
-		Finish:    product.SelectedFinish,
-		Foil:      strings.Contains(product.SelectedFinish, "Foil"),
 	}, nil
 }
