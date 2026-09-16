@@ -18,25 +18,25 @@ const englishData = `{
   "cards": [
     {
       "id": 100, "name": "Dalmatian Puppy", "fullName": "Dalmatian Puppy - Tail Wagger",
-      "setCode": "1", "number": 4, "variant": "a", "rarity": "Common", "type": "Character",
+      "setCode": "1", "number": "4", "variant": "a", "rarity": "Common", "type": "Character",
       "color": "Amber", "story": "101 Dalmatians", "foilTypes": ["None", "Silver"],
       "externalLinks": {"tcgPlayerId": 500, "cardmarketId": 600, "cardTraderId": 700}
     },
     {
       "id": 101, "name": "Dalmatian Puppy", "fullName": "Dalmatian Puppy - Tail Wagger",
-      "setCode": "1", "number": 4, "variant": "b", "rarity": "Common", "type": "Character",
+      "setCode": "1", "number": "4", "variant": "b", "rarity": "Common", "type": "Character",
       "color": "Amber", "story": "101 Dalmatians", "foilTypes": ["None", "Silver"],
       "externalLinks": {"tcgPlayerId": 500, "cardmarketId": 600, "cardTraderId": 700}
     },
     {
       "id": 200, "name": "Moana", "fullName": "Moana - Adventurer of Land and Sea",
-      "setCode": "1", "number": 26, "rarity": "Rare", "type": "Character",
+      "setCode": "1", "number": "26", "rarity": "Rare", "type": "Character",
       "color": "Amber", "story": "Moana", "foilTypes": ["None", "Silver"],
       "externalLinks": {"tcgPlayerId": 900, "cardmarketId": 901, "cardTraderId": 902}
     },
     {
       "id": 201, "name": "Vaiana", "fullName": "Vaiana - Adventurer of Land and Sea",
-      "setCode": "1", "number": 26, "rarity": "Rare", "type": "Character",
+      "setCode": "1", "number": "26", "rarity": "Rare", "type": "Character",
       "color": "Amber", "story": "Moana", "foilTypes": ["None", "Silver"],
       "externalLinks": {"tcgPlayerId": 900, "cardmarketId": 901, "cardTraderId": 902}
     }

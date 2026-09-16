@@ -17,13 +17,13 @@ const extraIDsData = `{
   "cards": [
     {
       "id": 100, "name": "Louie", "fullName": "Louie - One Cool Duck",
-      "setCode": "1", "number": 1, "rarity": "Common", "type": "Character",
+      "setCode": "1", "number": "1", "rarity": "Common", "type": "Character",
       "color": "Amber", "story": "DuckTales", "foilTypes": ["None", "Silver"],
       "externalLinks": {"tcgPlayerId": 631349, "tcgPlayerExtraIds": [633427]}
     },
     {
       "id": 200, "name": "Dewey", "fullName": "Dewey - Lovable Showoff",
-      "setCode": "1", "number": 2, "rarity": "Common", "type": "Character",
+      "setCode": "1", "number": "2", "rarity": "Common", "type": "Character",
       "color": "Amber", "story": "DuckTales", "foilTypes": ["None", "Silver"],
       "externalLinks": {"tcgPlayerId": 631350}
     }
