@@ -99,8 +99,8 @@ func NewScraperMarket(game mtgban.Game, appToken, appSecret string) (*Market, er
 	return &mkm, nil
 }
 
-// excludedCountries are the sellers Market drops for being based in the UK,
-// Switzerland, or a Nordic country other than Denmark, as the alpha-2 code
+// excludedCountries are the sellers Market drops for being based outside of
+// the European Union and having too high shipping costs, as the alpha-2 code
 // Cardmarket answers article.Seller.Address.Country with. sellerCountry
 // cannot ask the API to exclude them server-side - confirmed exhaustively
 // unable to carry more than one bare id, let alone a negation - so this is
@@ -109,8 +109,6 @@ var excludedCountries = map[string]bool{
 	"GB": true, // United Kingdom
 	"CH": true, // Switzerland
 	"NO": true, // Norway
-	"SE": true, // Sweden
-	"FI": true, // Finland
 	"IS": true, // Iceland
 }
 
