@@ -404,3 +404,48 @@ func TestShouldStopPaging(t *testing.T) {
 		})
 	}
 }
+
+// TestResolveExpansionEntry pins the fallback that fills a gap in
+// mkm.Catalog (MTGJSON's own CardmarketIdentifiers.json export, currently
+// missing 88 of Magic's real expansions) from Cardmarket's live API
+// instead of falling through to the unresolvable "expansion <id>"
+// placeholder.
+func TestResolveExpansionEntry(t *testing.T) {
+	live := map[int]cm.Expansion{
+		6493: {IDExpansion: 6493, Name: "Commander: Teenage Mutant Ninja Turtles: Extras", SetCode: "XTMC"},
+	}
+
+	tests := []struct {
+		name        string
+		entry       cm.CatalogExpansion
+		expansionID int
+		want        cm.CatalogExpansion
+	}{
+		{
+			name:        "an entry Catalog already names is left alone, live is not consulted",
+			entry:       cm.CatalogExpansion{Name: "Magic 2011", Code: "M11"},
+			expansionID: 1197,
+			want:        cm.CatalogExpansion{Name: "Magic 2011", Code: "M11"},
+		},
+		{
+			name:        "a gap live covers is substituted with the real name and code",
+			entry:       cm.CatalogExpansion{},
+			expansionID: 6493,
+			want:        cm.CatalogExpansion{Name: "Commander: Teenage Mutant Ninja Turtles: Extras", Code: "XTMC"},
+		},
+		{
+			name:        "a gap live does not cover either is left empty, for the caller's own placeholder",
+			entry:       cm.CatalogExpansion{},
+			expansionID: 9999999,
+			want:        cm.CatalogExpansion{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := resolveExpansionEntry(tt.entry, tt.expansionID, live)
+			if got != tt.want {
+				t.Errorf("resolveExpansionEntry(%+v, %d, live) = %+v, want %+v", tt.entry, tt.expansionID, got, tt.want)
+			}
+		})
+	}
+}
