@@ -363,6 +363,16 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	perTreatment := mkm.gameID == cm.GameFleshAndBlood || mkm.gameID == cm.GameOnePiece
 	second := co.Finish != mtgmatcher.FinishNonfoil
 	if mkm.gameID == cm.GamePokemon {
+		// TODO(mtgban/go-mtgban#641): this is reverse-holo-only,
+		// the same blindness Market's own resolveProduct had until it was
+		// fixed to cross both of Pokemon's finish axes (see
+		// pokemonFinishPlan) - a 1st Edition printing here still reads as
+		// "not the second column" and gets priced from the guide's first
+		// pair regardless of print run. The price guide has no 1st-Edition
+		// column at all, unlike Market's per-listing live query, so the fix
+		// here is different: picking which uuid anchors a blended guide
+		// price, not splitting a request. Scoped as its own follow-up, not
+		// fixed in the same change as Market's.
 		second = co.Finish == mtgmatcher.NormalizeFinish(pokemonReverseHolo)
 	}
 

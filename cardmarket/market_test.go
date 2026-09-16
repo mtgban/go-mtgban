@@ -79,13 +79,11 @@ func TestAcceptArticle(t *testing.T) {
 	ukSeller.Seller.Address.Country = "GB"
 
 	tests := []struct {
-		name       string
-		gameID     int
-		wantFinish bool
-		verifiable bool
-		article    cm.Article
-		wantOK     bool
-		wantCond   string
+		name     string
+		flags    map[string]bool
+		article  cm.Article
+		wantOK   bool
+		wantCond string
 	}{
 		{
 			name:     "an ordinary NM listing is accepted",
@@ -109,36 +107,42 @@ func TestAcceptArticle(t *testing.T) {
 			wantOK:  false,
 		},
 		{
-			name:       "a verifiable game rejects a listing whose own flag disagrees with what was asked for",
-			gameID:     cm.GameMagic,
-			wantFinish: true,
-			verifiable: true,
-			article:    cm.Article{Price: 5, Condition: "NM", IsFoil: false},
-			wantOK:     false,
+			name:    "a listing whose own flag disagrees with what was asked for is rejected",
+			flags:   map[string]bool{"isFoil": true},
+			article: cm.Article{Price: 5, Condition: "NM", IsFoil: false},
+			wantOK:  false,
 		},
 		{
-			name:       "a verifiable game accepts a listing whose own flag agrees",
-			gameID:     cm.GameMagic,
-			wantFinish: true,
-			verifiable: true,
-			article:    cm.Article{Price: 5, Condition: "NM", IsFoil: true},
-			wantOK:     true,
-			wantCond:   "NM",
+			name:     "a listing whose own flag agrees is accepted",
+			flags:    map[string]bool{"isFoil": true},
+			article:  cm.Article{Price: 5, Condition: "NM", IsFoil: true},
+			wantOK:   true,
+			wantCond: "NM",
 		},
 		{
-			name:       "an unverifiable game accepts regardless of the article's own flag - the filter fails open, so nothing here can be trusted to narrow it either way",
-			gameID:     cm.GameFleshAndBlood,
-			wantFinish: true,
-			verifiable: false,
-			article:    cm.Article{Price: 5, Condition: "NM", IsFoil: false},
-			wantOK:     true,
-			wantCond:   "NM",
+			name:     "no flags to verify accepts regardless of the article's own - the filter fails open on a game or value it does not apply to, so nothing here can be trusted to narrow it either way",
+			article:  cm.Article{Price: 5, Condition: "NM", IsFoil: false},
+			wantOK:   true,
+			wantCond: "NM",
+		},
+		{
+			name:     "Pokemon's two flags are both verified independently",
+			flags:    map[string]bool{"isFirstEd": true, "isReverseHolo": false},
+			article:  cm.Article{Price: 5, Condition: "NM", IsFirstEd: true, IsReverseHolo: false},
+			wantOK:   true,
+			wantCond: "NM",
+		},
+		{
+			name:    "Pokemon rejects a listing that agrees on one axis but not the other",
+			flags:   map[string]bool{"isFirstEd": true, "isReverseHolo": false},
+			article: cm.Article{Price: 5, Condition: "NM", IsFirstEd: true, IsReverseHolo: true},
+			wantOK:  false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cond, ok := acceptArticle(tt.gameID, tt.wantFinish, tt.verifiable, tt.article)
+			cond, ok := acceptArticle(tt.flags, tt.article)
 			if ok != tt.wantOK {
 				t.Fatalf("ok = %v, want %v", ok, tt.wantOK)
 			}
@@ -203,7 +207,7 @@ func TestPowersellerBucketIsIndependentOfMain(t *testing.T) {
 	heldPS := map[string]float64{}
 
 	for _, article := range []cm.Article{cheapFrenchPrivate, pricierGermanPowerseller} {
-		cond, ok := acceptArticle(cm.GameMagic, false, false, article)
+		cond, ok := acceptArticle(nil, article)
 		if !ok {
 			t.Fatalf("acceptArticle rejected a listing that should have been accepted: %+v", article)
 		}
@@ -225,41 +229,35 @@ func TestPowersellerBucketIsIndependentOfMain(t *testing.T) {
 	}
 }
 
-func TestMarketArticleFinish(t *testing.T) {
+// TestArticleFlagValue pins which article field each of the three
+// Cardmarket finish parameters reads.
+func TestArticleFlagValue(t *testing.T) {
 	magic := cm.Article{IsFoil: true}
-	pokemon := cm.Article{IsReverseHolo: true}
-	yugioh := cm.Article{IsFirstEd: true}
-	lorcana := cm.Article{IsFoil: true}
-	riftbound := cm.Article{IsFoil: true}
+	firstEd := cm.Article{IsFirstEd: true}
+	reverseHolo := cm.Article{IsReverseHolo: true}
 
-	if !marketArticleFinish(cm.GameMagic, &magic) {
-		t.Error("Magic should read IsFoil")
+	if !articleFlagValue("isFoil", &magic) {
+		t.Error("isFoil should read IsFoil")
 	}
-	if !marketArticleFinish(cm.GamePokemon, &pokemon) {
-		t.Error("Pokemon should read IsReverseHolo")
+	if !articleFlagValue("isFirstEd", &firstEd) {
+		t.Error("isFirstEd should read IsFirstEd")
 	}
-	if !marketArticleFinish(cm.GameYuGiOh, &yugioh) {
-		t.Error("YuGiOh should read IsFirstEd")
+	if !articleFlagValue("isReverseHolo", &reverseHolo) {
+		t.Error("isReverseHolo should read IsReverseHolo")
 	}
-	if !marketArticleFinish(cm.GameLorcana, &lorcana) {
-		t.Error("Lorcana should read IsFoil")
-	}
-	if !marketArticleFinish(cm.GameRiftbound, &riftbound) {
-		t.Error("Riftbound should read IsFoil")
-	}
-	if marketArticleFinish(cm.GameFleshAndBlood, &magic) {
-		t.Error("a game with no known signal should never report a finish")
+	if articleFlagValue("noSuchParam", &magic) {
+		t.Error("an unknown parameter should never report a flag")
 	}
 }
 
-// TestMarketFinishParamCoverage pins which games have a verified finish
-// signal - see marketFinishParam's own comment on how Lorcana and
-// Riftbound's was confirmed (article.IsFoil, live-sampled, not just the
-// request-side filter's documentation).
+// TestMarketFinishParamCoverage pins which games have a verified,
+// single-axis finish signal - see marketFinishParam's own comment on how
+// Lorcana and Riftbound's was confirmed (article.IsFoil, live-sampled, not
+// just the request-side filter's documentation) and on why Pokemon is not
+// here at all (queryPokemonPrintings, pokemonFinishPlan).
 func TestMarketFinishParamCoverage(t *testing.T) {
 	want := map[int]string{
 		cm.GameMagic:     "isFoil",
-		cm.GamePokemon:   "isReverseHolo",
 		cm.GameYuGiOh:    "isFirstEd",
 		cm.GameLorcana:   "isFoil",
 		cm.GameRiftbound: "isFoil",

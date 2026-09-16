@@ -151,11 +151,15 @@ var mkmCondition = map[string]string{
 
 // marketFinishParam names the server-side filter parameter and its
 // article-level flag for the games whose second price column is a real
-// second printing - one this scraper knows a Cardmarket signal for, server
-// or article, that actually distinguishes it. Not present for a game's
-// gameID: the resolver never hands Market a distinct cardIDFoil for it -
-// One Piece and Flesh and Blood sell each treatment as its own product, so
-// the two ids are always the same one - see queryPrintings.
+// second printing, single-axis - one param fully describes the alternate
+// printing. Not present for a game's gameID: either the resolver never hands
+// Market a distinct cardIDFoil for it (One Piece and Flesh and Blood sell
+// each treatment as its own product, so the two ids are always the same
+// one - see queryPrintings), or the game crosses more than one axis and is
+// handled on its own (Pokemon - see queryPokemonPrintings and
+// pokemonFinishPlan; Cardmarket exposes isFirstEd and isReverseHolo as
+// independent flags, and a single param cannot name a query that needs
+// both).
 //
 // isFoil's own documentation names only Magic and Pokemon (deprecated), but
 // that is about the request-side filter, a separate question from whether
@@ -173,22 +177,23 @@ var mkmCondition = map[string]string{
 // check below).
 var marketFinishParam = map[int]string{
 	cm.GameMagic:     "isFoil",
-	cm.GamePokemon:   "isReverseHolo",
 	cm.GameYuGiOh:    "isFirstEd",
 	cm.GameLorcana:   "isFoil",
 	cm.GameRiftbound: "isFoil",
 }
 
-// marketArticleFinish reads the flag marketFinishParam names off one
-// article, for the games marketFinishParam covers.
-func marketArticleFinish(gameID int, article *cm.Article) bool {
-	switch gameID {
-	case cm.GameMagic, cm.GameLorcana, cm.GameRiftbound:
+// articleFlagValue reads one article's own boolean for a Cardmarket finish
+// parameter - a fixed, game-agnostic name (there are only three: isFoil,
+// isFirstEd, isReverseHolo), unlike marketFinishParam's per-game single
+// choice of which one applies at all.
+func articleFlagValue(param string, article *cm.Article) bool {
+	switch param {
+	case "isFoil":
 		return article.IsFoil
-	case cm.GamePokemon:
-		return article.IsReverseHolo
-	case cm.GameYuGiOh:
+	case "isFirstEd":
 		return article.IsFirstEd
+	case "isReverseHolo":
+		return article.IsReverseHolo
 	}
 	return false
 }
@@ -416,7 +421,7 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 		id, mapped := r.product.IDProduct, products[r.product.IDProduct]
 		err := r.err
 		if err == nil && r.cardID != "" {
-			if candidates != nil && !candidates[r.cardID] && !candidates[r.cardIDFoil] {
+			if !mkm.marketCandidateHit(candidates, r.cardID, r.cardIDFoil) {
 				skipped++
 			} else {
 				err = mkm.queryPrintings(ctx, channel, r.product, r.cardID, r.cardIDFoil, r.byName)
@@ -493,26 +498,73 @@ func shouldStopPaging(mainDone bool, mainSatisfiedAt, page int, foundPowerseller
 // A game not in marketFinishParam at all would leave cardIDFoil unpriced
 // here rather than guessed at from an unfiltered, unverified mix of
 // listings; every game the resolver ever hands a distinct cardIDFoil for
-// (Magic, Pokemon, YuGiOh, Lorcana, Riftbound) currently has one.
+// (Magic, YuGiOh, Lorcana, Riftbound) currently has one. Pokemon crosses
+// two axes rather than one and is handled entirely on its own - see
+// queryPokemonPrintings.
 func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID, cardIDFoil string, byName bool) error {
-	err := mkm.queryOnePrinting(ctx, channel, product, cardID, byName, "")
+	if mkm.gameID == cm.GamePokemon {
+		return mkm.queryPokemonPrintings(ctx, channel, product, cardID, byName)
+	}
+
+	finish, verified := marketFinishParam[mkm.gameID]
+	var baseFlags map[string]bool
+	if verified {
+		baseFlags = map[string]bool{finish: false}
+	}
+	err := mkm.queryOnePrinting(ctx, channel, product, cardID, byName, baseFlags)
 	if err != nil {
 		return err
 	}
 	if cardIDFoil == "" || cardIDFoil == cardID {
 		return nil
 	}
-	finish, verified := marketFinishParam[mkm.gameID]
 	if !verified {
 		mkm.printf("id %d: %s has a second printing (%s) this scraper does not price yet", product.IDProduct, cardID, cardIDFoil)
 		return nil
 	}
-	return mkm.queryOnePrinting(ctx, channel, product, cardIDFoil, byName, finish)
+	return mkm.queryOnePrinting(ctx, channel, product, cardIDFoil, byName, map[string]bool{finish: true})
+}
+
+// queryPokemonPrintings prices every printing pokemonFinishPlan resolved for
+// cardID, one live query per occupied Cardmarket cell - see pokemonFinishPlan
+// on why this cannot be the plain cardID/cardIDFoil pair every other game
+// uses.
+func (mkm *Market) queryPokemonPrintings(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID string, byName bool) error {
+	for _, target := range pokemonFinishPlan(cardID) {
+		flags := map[string]bool{"isFirstEd": target.isFirstEd, "isReverseHolo": target.isReverseHolo}
+		if err := mkm.queryOnePrinting(ctx, channel, product, target.cardID, byName, flags); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// marketCandidateHit reports whether any of a product's priceable uuids
+// clears the pre-filter. Every other game resolves to at most the plain
+// cardID/cardIDFoil pair, but Pokemon can resolve to more (see
+// pokemonFinishPlan), so its own full finish plan is asked rather than just
+// the two - a candidate hiding behind a third or fourth uuid must not read
+// as skipped.
+func (mkm *Market) marketCandidateHit(candidates map[string]bool, cardID, cardIDFoil string) bool {
+	if candidates == nil {
+		return true
+	}
+	if candidates[cardID] || candidates[cardIDFoil] {
+		return true
+	}
+	if mkm.gameID == cm.GamePokemon {
+		for _, target := range pokemonFinishPlan(cardID) {
+			if candidates[target.cardID] {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // acceptArticle reports whether one listing is valid to price at all -
-// priced, from a seller outside excludedCountries, matching the finish
-// actually being queried, and a recognised condition - and which of
+// priced, from a seller outside excludedCountries, matching every finish
+// flag actually being queried, and a recognised condition - and which of
 // mtgban's five conditions it counts as. It does not compare against any
 // held price: that happens separately, once per bucket that holds its own
 // cheapest-so-far (see isCheaper), so a listing that is not the single
@@ -521,19 +573,23 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 // both would silently starve the narrower one of every listing that is not
 // also the overall cheapest.
 //
-// verifiable says whether marketArticleFinish's flag actually means
-// something for this game (see marketFinishParam); where it does not, an
-// article is accepted regardless of finish rather than trusting a filter
-// that is documented to fail open on a game it does not apply to.
-func acceptArticle(gameID int, wantFinish, verifiable bool, article cm.Article) (string, bool) {
+// flags names, for each Cardmarket parameter this query cares about, the
+// value every accepted article's own flag must equal - a game with no
+// finish signal to verify (or a request with none, like Pokemon's own
+// (false, false) cell) passes an empty or nil map, which accepts regardless
+// of finish rather than trusting a filter that is documented to fail open
+// on a game or value it does not apply to.
+func acceptArticle(flags map[string]bool, article cm.Article) (string, bool) {
 	if article.Price == 0 {
 		return "", false
 	}
 	if excludedCountries[article.Seller.Address.Country] {
 		return "", false
 	}
-	if verifiable && marketArticleFinish(gameID, &article) != wantFinish {
-		return "", false
+	for param, want := range flags {
+		if articleFlagValue(param, &article) != want {
+			return "", false
+		}
 	}
 	cond, known := mkmCondition[article.Condition]
 	if !known {
@@ -572,12 +628,16 @@ func isCheaper(held map[string]float64, cond string, price float64) bool {
 // cheaper listing for a condition found on an earlier page can still
 // replace it before anything is reported.
 //
-// finish, when set, is the server-side parameter asked for - but never
-// trusted alone: Cardmarket's filters fail open on a value or a game they
-// do not apply to, silently answering the unfiltered list rather than an
-// error, so every listing is also checked against the printing actually
-// being priced through its own article-level flag before being accepted.
-func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID string, byName bool, finish string) error {
+// flags, for each Cardmarket parameter set true, is also sent to the
+// server as a request-side filter - but never trusted alone: Cardmarket's
+// filters fail open on a value or a game they do not apply to, silently
+// answering the unfiltered list rather than an error, so every listing is
+// also checked against the printing actually being priced through its own
+// article-level flags before being accepted (see acceptArticle). A flag set
+// false is never sent - Cardmarket's own behavior for an explicit false was
+// never tested, only omitting the parameter - and is still verified
+// accept-side.
+func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID string, byName bool, flags map[string]bool) error {
 	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
 		return err
@@ -590,11 +650,11 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		"isAltered":    "false",
 		"idLanguage":   strconv.Itoa(marketLanguage(co.Language)),
 	}
-	wantFinish := finish != ""
-	if wantFinish {
-		options[finish] = "true"
+	for param, want := range flags {
+		if want {
+			options[param] = "true"
+		}
 	}
-	_, verifiable := marketFinishParam[mkm.gameID]
 
 	held := map[string]float64{}
 	entries := map[string]responseChan{}
@@ -612,12 +672,24 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		mkm.bounced = 0
 
 		for _, article := range articles {
-			cond, ok := acceptArticle(mkm.gameID, wantFinish, verifiable, article)
+			cond, ok := acceptArticle(flags, article)
 			if !ok {
 				continue
 			}
 
-			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, wantFinish)
+			// BuildURL only ever writes isFoil - a game whose finish flags
+			// are named otherwise (Pokemon, YuGiOh) gets a link that still
+			// resolves to the right product, just not deep-linked to the
+			// exact finish. A real fix needs go-cardmarket's own signature
+			// to change, tracked separately from this fix.
+			foilish := false
+			for _, want := range flags {
+				if want {
+					foilish = true
+					break
+				}
+			}
+			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, foilish)
 			customFields := map[string]string{
 				"SubSellerName": article.Seller.Username,
 				"SubSellerGeo":  article.Seller.Address.Country,

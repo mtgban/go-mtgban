@@ -73,7 +73,7 @@ func TestReplayAcceptArticleAgainstRealListings(t *testing.T) {
 	held := map[string]float64{}
 	entries := map[string]cm.Article{}
 	for _, article := range articles {
-		cond, ok := acceptArticle(cm.GameRiftbound, false, false, article)
+		cond, ok := acceptArticle(nil, article)
 		if !ok {
 			continue
 		}
