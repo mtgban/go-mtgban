@@ -277,15 +277,17 @@ func TestMarketFinishParamCoverage(t *testing.T) {
 	}
 }
 
-// TestDenmarkIsNotExcluded pins that Denmark stays a fine country - the
-// other four Nordic ones (Norway, Sweden, Finland, Iceland) and the UK and
-// Switzerland are still excluded, but Denmark on its own is not one of
-// them.
+// TestDenmarkIsNotExcluded pins excludedCountries to EU membership, not
+// Nordic-ness: Sweden and Finland are EU members and are not excluded,
+// same as Denmark; Norway and Iceland are EEA/EFTA, not EU, and stay
+// excluded alongside the UK and Switzerland.
 func TestDenmarkIsNotExcluded(t *testing.T) {
-	if excludedCountries["DK"] {
-		t.Error("Denmark should not be excluded")
+	for _, cc := range []string{"DK", "SE", "FI"} {
+		if excludedCountries[cc] {
+			t.Errorf("%s is an EU member and should not be excluded", cc)
+		}
 	}
-	for _, cc := range []string{"GB", "CH", "NO", "SE", "FI", "IS"} {
+	for _, cc := range []string{"GB", "CH", "NO", "IS"} {
 		if !excludedCountries[cc] {
 			t.Errorf("%s should still be excluded", cc)
 		}
