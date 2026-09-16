@@ -12,36 +12,36 @@ import (
 
 // HasExtendedArtPrinting reports whether the card was ever printed with
 // extended art, narrowed to the given editions when any are named.
-func HasExtendedArtPrinting(name string, editions ...string) bool {
-	return mtgmatcher.HasPrinting(name, "frame_effect", FrameEffectExtendedArt, editions...)
+func HasExtendedArtPrinting(b *mtgmatcher.Backend, name string, editions ...string) bool {
+	return b.HasPrinting(name, "frame_effect", FrameEffectExtendedArt, editions...)
 }
 
 // HasBorderlessPrinting reports whether the card was ever printed borderless,
 // narrowed to the given editions when any are named.
-func HasBorderlessPrinting(name string, editions ...string) bool {
-	return mtgmatcher.HasPrinting(name, "border_color", BorderColorBorderless, editions...)
+func HasBorderlessPrinting(b *mtgmatcher.Backend, name string, editions ...string) bool {
+	return b.HasPrinting(name, "border_color", BorderColorBorderless, editions...)
 }
 
 // HasShowcasePrinting reports whether the card was ever printed in a showcase
 // frame, narrowed to the given editions when any are named.
-func HasShowcasePrinting(name string, editions ...string) bool {
-	return mtgmatcher.HasPrinting(name, "frame_effect", FrameEffectShowcase, editions...)
+func HasShowcasePrinting(b *mtgmatcher.Backend, name string, editions ...string) bool {
+	return b.HasPrinting(name, "frame_effect", FrameEffectShowcase, editions...)
 }
 
 // HasPromoPackPrinting reports whether the card ever had a promo pack
 // printing, narrowed to the given editions when any are named.
-func HasPromoPackPrinting(name string, editions ...string) bool {
-	return mtgmatcher.HasPrinting(name, "promo_type", PromoTypePromoPack, editions...)
+func HasPromoPackPrinting(b *mtgmatcher.Backend, name string, editions ...string) bool {
+	return b.HasPrinting(name, "promo_type", PromoTypePromoPack, editions...)
 }
 
 // HasSerializedPrinting reports whether the card ever had a serialized
 // printing, narrowed to the given editions when any are named.
-func HasSerializedPrinting(name string, editions ...string) bool {
-	return mtgmatcher.HasPrinting(name, "promo_type", PromoTypeSerialized, editions...)
+func HasSerializedPrinting(b *mtgmatcher.Backend, name string, editions ...string) bool {
+	return b.HasPrinting(name, "promo_type", PromoTypeSerialized, editions...)
 }
 
 // HasRetroFramePrinting reports whether the card was ever printed in the retro
 // frame, narrowed to the given editions when any are named.
-func HasRetroFramePrinting(name string, editions ...string) bool {
-	return mtgmatcher.HasPrinting(name, "frame_version", "1997", editions...)
+func HasRetroFramePrinting(b *mtgmatcher.Backend, name string, editions ...string) bool {
+	return b.HasPrinting(name, "frame_version", "1997", editions...)
 }
