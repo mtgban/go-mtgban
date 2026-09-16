@@ -461,7 +461,14 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// Pokemon's second column is the reverse holo's, which the flag
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
-			// is never reached.
+			// is never reached. This is Index's own use of cardIDFoil -
+			// resolveProduct is shared between the two scrapers (see the
+			// package doc above) - and it stays exactly as it was: Market's
+			// own path (queryPokemonPrintings, pokemonFinishPlan) resolves
+			// cardID's whole finish set fresh from the matcher instead of
+			// through this pair, and simply never reads cardIDFoil for this
+			// game, so leaving it filled here costs Market nothing while
+			// Index still depends on it.
 			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, pokemonReverseHolo)
 		}
 	default:

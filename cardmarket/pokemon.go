@@ -313,3 +313,65 @@ var pokemonLettered = regexp.MustCompile(`^[A-Za-z]*\d+[a-z]$`)
 // Guardians Rising - while the datastore files it with the programme that
 // handed it out, and the two programmes number their cards the same way.
 var pokemonLetteredSets = []string{"Alternate Art Promos", "League & Championship Cards"}
+
+// pokemonFinishCell reports the (isFirstEd, isReverseHolo) Cardmarket query
+// cell a Pokemon finish name projects onto. Cardmarket exposes only these
+// two article-level flags for the game; holo-ness on its own has no flag at
+// all, so several of the matcher's own finish names collapse onto the same
+// cell - Normal, Holofoil, Unlimited and Unlimited Holofoil all read
+// (false, false), confirmed live: Cardmarket sells an EX-era holo rare's
+// plain and holofoil printings as one product, told apart only by which
+// physical card is in hand, never a flag on the listing. The matcher's own
+// vocabulary carries no finish crossing both axes at once, matching what
+// was found live: zero real products carry both a 1st Edition and a Reverse
+// Holofoil finish, so (true, true) is never produced here.
+func pokemonFinishCell(finish string) (isFirstEd, isReverseHolo bool) {
+	switch mtgmatcher.NormalizeFinish(finish) {
+	case "reverseholofoil":
+		return false, true
+	case "1stedition", "1steditionholofoil":
+		return true, false
+	}
+	return false, false
+}
+
+// pokemonFinishTarget is one Cardmarket query Market will make for a
+// Pokemon product: the uuid to file the result under, and the flags to ask
+// for and verify.
+type pokemonFinishTarget struct {
+	cardID        string
+	isFirstEd     bool
+	isReverseHolo bool
+}
+
+// pokemonFinishPlan groups cardID's own finish siblings (mtgmatcher.
+// FinishSiblings, which already carries the game's whole vocabulary and
+// handles finish twins) by the Cardmarket cell each projects onto (see
+// pokemonFinishCell), keeping one anchor uuid per occupied cell - the first
+// FinishSiblings returns for that cell, which is already ordered base
+// finish first, then the game's own vocabulary alphabetically. Any other
+// sibling sharing that cell is a real, distinct printing this scraper
+// cannot separately price: Cardmarket's own flags cannot tell it from the
+// anchor, so querying it again would file the same listings under two
+// uuids instead of one - confirmed live: 349 real products (EX-era holo
+// rares) carry both a Normal and a Holofoil sibling as one Cardmarket
+// product.
+func pokemonFinishPlan(cardID string) []pokemonFinishTarget {
+	type cell struct{ isFirstEd, isReverseHolo bool }
+	seen := map[cell]bool{}
+	var targets []pokemonFinishTarget
+	for _, sibling := range mtgmatcher.FinishSiblings(cardID) {
+		co, err := mtgmatcher.GetUUID(sibling)
+		if err != nil {
+			continue
+		}
+		isFirstEd, isReverseHolo := pokemonFinishCell(co.Finish)
+		c := cell{isFirstEd, isReverseHolo}
+		if seen[c] {
+			continue
+		}
+		seen[c] = true
+		targets = append(targets, pokemonFinishTarget{cardID: sibling, isFirstEd: isFirstEd, isReverseHolo: isReverseHolo})
+	}
+	return targets
+}
