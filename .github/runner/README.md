@@ -118,12 +118,20 @@ libraries (list-only alone would leave it running stale ones
 indefinitely), the runner's own `ACTIONS_RUNNER_HOOK_JOB_STARTED`/
 `_JOB_COMPLETED` hooks (`~runner/hooks/`, wired through `~runner/.env`,
 the documented way to hand a self-hosted runner env vars a systemd unit
-has no other route for) mark `/home/runner/.runner-busy` for the length of
-each job - under the runner user's own home, since the hooks run as that
-unprivileged user and `/run` itself is root-owned - and an hourly
-`runner-safe-restart.timer` restarts the runner only
+has no other route for) mark `/run/runner/busy` for the length of each
+job, and an hourly `runner-safe-restart.timer` restarts the runner only
 when that marker is absent *and* `needrestart -b` actually flags it -
 never mid-job, but never stale forever either.
+
+`/run/runner` rather than `/run` itself (root-owned, so the unprivileged
+hooks can't write there directly) or somewhere under `$RUNNER_HOME`
+(survives a reboot, which the marker must not): a `tmpfiles.d` entry
+recreates that one directory, owned by `runner`, on every boot, so a
+genuine reboot or power loss wipes the marker the same way it would
+have if `ACTIONS_RUNNER_HOOK_JOB_COMPLETED` had run cleanly. A runner
+process that crashes without also taking the whole Droplet down is a
+separate, still-open gap - nothing here restarts a dead runner process,
+so a stuck marker doesn't matter until something does.
 
 ## What's still a manual decision
 
