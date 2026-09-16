@@ -38,17 +38,15 @@ type tokenPairReport struct {
 	unresolvableUUID int // a face's uuid is not (or no longer) in this datastore
 	alreadyModeled   int // one face is itself layout "double_faced_token"
 	layoutExcluded   int // a face's layout is not token or emblem
-	noUsableID       int // every id naming this pair is ambiguous or already claimed
-	noCommonAncestor int // the two faces' sets share no ancestor
 	derived          int // entities actually minted
 }
 
 func (r tokenPairReport) String() string {
 	return fmt.Sprintf(
 		"tokenProducts pairs: %d entries -> %d derived (excluded: %d faceId-only, %d self-pair, "+
-			"%d unresolvable uuid, %d already modeled, %d layout, %d no usable id, %d no common ancestor)",
+			"%d unresolvable uuid, %d already modeled, %d layout)",
 		r.entries, r.derived, r.faceIDOnly, r.selfPair, r.unresolvableUUID,
-		r.alreadyModeled, r.layoutExcluded, r.noUsableID, r.noCommonAncestor)
+		r.alreadyModeled, r.layoutExcluded)
 }
 
 // pairKey identifies a physical pairing by its two uuids, always ordered
@@ -255,6 +253,16 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 			continue
 		}
 
+		// mtgjson's own tokenProducts entry for this key is what confirms
+		// the pairing itself is real - a usable external id is a bonus on
+		// top of that, not a precondition for it. An id this pairing's
+		// own tokenProducts entry names can still fail every check below
+		// (claimed by some other, unrelated card already, or the only
+		// candidate left after idCanonicalKey resolves a genuine
+		// cross-set id collision in another key's favor); none of that
+		// makes the pairing itself any less real, so usableIDs being
+		// empty only means buildDerivedCard gets no id, never that this
+		// loop should drop the row.
 		var usableIDs []int
 		for id := range pairIDs[key] {
 			if len(idPairs[id]) > 1 {
@@ -271,16 +279,19 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObj
 			}
 			usableIDs = append(usableIDs, n)
 		}
-		if len(usableIDs) == 0 {
-			report.noUsableID++
-			continue
-		}
 		sort.Ints(usableIDs)
 
+		// Same reasoning for home: a shared ancestor set is the ordinary
+		// case, but mtgjson's own tokenProducts entry already confirms
+		// this exact pairing is real even when the two faces come from
+		// otherwise-unrelated sets (a reprint sheet mixing an older
+		// token's design onto a newer set's own card). Falling back to
+		// the first face's own set keeps that confirmed pairing instead
+		// of dropping it over a field buildDerivedCard's own comment
+		// already documents as cosmetic.
 		home := homeSet(sets, co1.SetCode, co2.SetCode)
 		if home == "" {
-			report.noCommonAncestor++
-			continue
+			home = tokenSetCodeOf(sets, co1.SetCode)
 		}
 
 		card := buildDerivedCard(co1, co2, home, usableIDs)
@@ -387,10 +398,12 @@ func parentChain(sets map[string]*Set, code string) []string {
 }
 
 // buildDerivedCard assembles the combined Card for one surviving pairing.
-// usableIDs is sorted ascending and may be empty for a pairing verified by
-// vendor cross-checking rather than by an mtgjson tokenProducts id at all
-// (see verifiedNoUpstreamPairs) - Identifiers["vendorVerifiedPair"] marks
-// that case, since neither tcgplayerProductId key can be set without one.
+// usableIDs is sorted ascending and may be empty: mtgjson's own tokenParts
+// entry is what confirms the pairing itself is real, and a usable
+// TCGplayer id is a bonus on top of that a pairing can lack even though
+// deriveTokenPairs's own tokenProducts entry for it is genuine (the id is
+// already claimed by some unrelated card, or lost a same-id collision to
+// another pairing - see deriveTokenPairs's own comment on usableIDs).
 func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []int) Card {
 	uuidLo, uuidHi := co1.UUID, co2.UUID
 	if uuidHi < uuidLo {
@@ -429,8 +442,6 @@ func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []
 	if len(ids) > 0 {
 		identifiers["tcgplayerProductId"] = ids[0]
 		identifiers["tcgplayerProductIds"] = strings.Join(ids, ",")
-	} else {
-		identifiers["vendorVerifiedPair"] = "true"
 	}
 
 	images := map[string]string{}
@@ -453,55 +464,6 @@ func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []
 		Images:      images,
 		UUID:        uuid,
 	}
-}
-
-// mintVerifiedPairs mints the derived entity for every pairing in
-// verifiedNoUpstreamPairs - the same buildDerivedCard deriveTokenPairs
-// itself calls, just with no usable TCGplayer id (nil usableIDs), since
-// these were confirmed real by vendor cross-verification rather than by
-// mtgjson's own tokenProducts feed at all. alreadyDerived is the set of
-// base uuids deriveTokenPairs already minted this same load: if mtgjson's
-// own feed has since caught up with a pairing this table also names (both
-// name the identical uuid pair, so buildDerivedCard's own uuid formula
-// produces the identical uuid either way), the real, priced entity wins
-// and this skips it rather than shadowing it with a worse, unpriced one.
-// A face uuid the loaded datastore no longer carries, or a pair sharing
-// no common ancestor set, is skipped rather than guessed - the same
-// discipline deriveTokenPairs already applies to its own input.
-func mintVerifiedPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObject, alreadyDerived map[string]bool) []Card {
-	var cards []Card
-	seen := map[[2]string]bool{}
-	for _, p := range verifiedNoUpstreamPairs {
-		key := [2]string{p.a, p.b}
-		if p.b < p.a {
-			key = [2]string{p.b, p.a}
-		}
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-
-		co1, found1 := uuids[p.a]
-		co2, found2 := uuids[p.b]
-		if !found1 || !found2 {
-			continue
-		}
-
-		uuidLo, uuidHi := co1.UUID, co2.UUID
-		if uuidHi < uuidLo {
-			uuidLo, uuidHi = uuidHi, uuidLo
-		}
-		if alreadyDerived[uuidLo+derivedTokenPairSuffix+uuidHi] {
-			continue
-		}
-
-		home := homeSet(sets, co1.SetCode, co2.SetCode)
-		if home == "" {
-			continue
-		}
-		cards = append(cards, buildDerivedCard(co1, co2, home, nil))
-	}
-	return cards
 }
 
 // scryfallImageURL mirrors generateImageURL, which takes this package's own
@@ -671,8 +633,9 @@ var tokenPairIndices = sync.OnceValue(func() tokenPairIndicesData {
 		partB := co.Identifiers["tokenPairPartB"]
 		coA, errA := mtgmatcher.GetUUID(partA)
 		coB, errB := mtgmatcher.GetUUID(partB)
-		// A vendorVerifiedPair entity (see buildDerivedCard) carries no
-		// tcgplayerProductId at all - the entity's own uuid is what every
+		// A derived entity with no usable TCGplayer id (see
+		// buildDerivedCard) carries no tcgplayerProductId at all - the
+		// entity's own uuid is what every
 		// index below hands back instead, which tokenPairingFinishOK/
 		// MatchID both resolve directly with no id-space conversion
 		// needed. That has to be the base (nonfoil-suffixed) uuid
@@ -936,8 +899,8 @@ func tokenPairingFinishOK(id string, foil bool) string {
 	}
 	// id is usually a tcgplayerProductId needing IDSpaceTCGplayer
 	// conversion to reach the derived entity's own uuid - but for a
-	// vendorVerifiedPair entity (no tcgplayerProductId at all, see
-	// buildDerivedCard) every caller in this file hands back the derived
+	// pairing with no usable TCGplayer id at all (see buildDerivedCard)
+	// every caller in this file hands back the derived
 	// entity's own uuid directly instead, which GetUUID already resolves
 	// with no conversion needed. Try that first: a real tcgplayerProductId
 	// is purely numeric and never collides with this package's own
