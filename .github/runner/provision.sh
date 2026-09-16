@@ -80,5 +80,79 @@ cd "$HOME" && ./config.sh \
     --replace'
 
 cd "$RUNNER_HOME"
+
+# Ubuntu's unattended-upgrades installs security updates daily regardless
+# of whether a job is running - fine on its own, dpkg replacing files on
+# disk does not touch an already-running process. The problem is
+# needrestart's default policy of auto-restarting services it thinks are
+# using now-stale libraries: it silently killed a 6h Magic run mid-flight
+# this way once, restarting the runner service (twice) right underneath
+# an in-flight job with no warning. list-only stops that outright -
+# packages still update on schedule, the runner just never gets bounced
+# by needrestart itself.
+sed -i "s/^#\$nrconf{restart} = 'i';/\$nrconf{restart} = 'l';/" /etc/needrestart/needrestart.conf
+
+# So the runner still picks up patched libraries eventually (list-only
+# alone would leave it running stale ones indefinitely), job hooks mark
+# a busy file for the length of each job - the only thing runner-safe-
+# restart.timer (below) needs to know to restart safely only between
+# jobs, never during one.
+mkdir -p "$RUNNER_HOME/hooks"
+cat > "$RUNNER_HOME/hooks/job-started.sh" << 'HOOKEOF'
+#!/bin/bash
+# Marks the runner busy for runner-safe-restart.sh, via ACTIONS_RUNNER_HOOK_JOB_STARTED.
+touch /run/runner-busy
+HOOKEOF
+cat > "$RUNNER_HOME/hooks/job-completed.sh" << 'HOOKEOF'
+#!/bin/bash
+# Clears the busy marker, via ACTIONS_RUNNER_HOOK_JOB_COMPLETED.
+rm -f /run/runner-busy
+HOOKEOF
+chmod +x "$RUNNER_HOME/hooks/job-started.sh" "$RUNNER_HOME/hooks/job-completed.sh"
+chown -R runner:runner "$RUNNER_HOME/hooks"
+
+# config.sh above already wrote a .env with LANG=C.UTF-8 - the runner
+# service (runsvc.sh -> RunnerService.js) loads this file into its own
+# environment at every start, which is the documented way to hand a
+# self-hosted runner env vars a systemd unit has no other route for.
+{
+    echo "ACTIONS_RUNNER_HOOK_JOB_STARTED=$RUNNER_HOME/hooks/job-started.sh"
+    echo "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=$RUNNER_HOME/hooks/job-completed.sh"
+} >> "$RUNNER_HOME/.env"
+
+cat > /usr/local/sbin/runner-safe-restart.sh << 'SCRIPTEOF'
+#!/bin/bash
+# Restarts the GitHub Actions runner service, but only when it is not
+# mid-job (/run/runner-busy) and needrestart actually flags it as
+# running against stale, upgraded libraries.
+set -euo pipefail
+[ -e /run/runner-busy ] && exit 0
+needrestart -b 2>/dev/null | grep -q '^NEEDRESTART-SVC: actions\.runner\.' || exit 0
+systemctl restart 'actions.runner.*'
+SCRIPTEOF
+chmod +x /usr/local/sbin/runner-safe-restart.sh
+
+cat > /etc/systemd/system/runner-safe-restart.service << 'UNITEOF'
+[Unit]
+Description=Restart the GitHub Actions runner if needrestart flags it, only when idle
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/runner-safe-restart.sh
+UNITEOF
+cat > /etc/systemd/system/runner-safe-restart.timer << 'TIMEREOF'
+[Unit]
+Description=Periodic check for runner-safe-restart.service
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+TIMEREOF
+systemctl daemon-reload
+systemctl enable --now runner-safe-restart.timer
+
 ./svc.sh install runner
 ./svc.sh start

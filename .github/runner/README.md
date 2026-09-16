@@ -99,6 +99,30 @@ resize <droplet-id> --size <new-size> --resize-disk` (add
 `--resize-disk` only if the new size's disk is also larger; the runner's
 own registration survives a resize untouched, it's the same disk).
 
+## Unattended upgrades don't kill an in-flight job
+
+Ubuntu's `unattended-upgrades` installs security updates daily regardless
+of whether a job is running - harmless on its own, dpkg replacing a file
+on disk doesn't touch an already-running process. The real risk is
+`needrestart`'s default policy of auto-restarting services it thinks are
+using now-stale libraries: it silently killed a 6h Magic run mid-flight
+this way once, bouncing the runner service (twice) right underneath an
+in-flight job with no warning, logged only as `##[error]The runner has
+received a shutdown signal`.
+
+`provision.sh` now sets `needrestart` to list-only
+(`$nrconf{restart} = 'l'`) so it never auto-restarts anything - packages
+still update on schedule, the runner just doesn't get bounced by
+needrestart itself. So the runner still eventually picks up patched
+libraries (list-only alone would leave it running stale ones
+indefinitely), the runner's own `ACTIONS_RUNNER_HOOK_JOB_STARTED`/
+`_JOB_COMPLETED` hooks (`~runner/hooks/`, wired through `~runner/.env`,
+the documented way to hand a self-hosted runner env vars a systemd unit
+has no other route for) mark `/run/runner-busy` for the length of each
+job, and an hourly `runner-safe-restart.timer` restarts the runner only
+when that marker is absent *and* `needrestart -b` actually flags it -
+never mid-job, but never stale forever either.
+
 ## What's still a manual decision
 
 Magic, Pokemon and YuGiOh's `cardmarket_market` workflows are routed to
