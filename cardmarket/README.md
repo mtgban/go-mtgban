@@ -94,9 +94,10 @@ unlike the other lines, this one is never gated on being non-zero.
 **`Content-Range`-driven early stop**, shared with `Sealed` as
 `contentRangeCovered` in `utils.go`: once the pages already fetched have
 covered everything a listing's `Content-Range` total promises, another page
-can only come back empty. Excluded when Cardmarket's own response is
-`capped` (past its 1000-result ceiling, the real total is unknowable) —
-worth another page to check rather than assumed covered.
+can only come back empty. A `capped` response reports Cardmarket's 1000-result
+ceiling rather than the real total; the API rejects a request starting at 1000,
+so the ceiling is still the stopping point and listings beyond it cannot be
+recovered by pagination.
 
 **Server-side filters are never trusted alone.** `isFoil`, `isReverseHolo`,
 `isFirstEd` are documented to fail open on a game or value they don't apply

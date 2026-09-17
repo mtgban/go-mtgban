@@ -402,10 +402,10 @@ func fabNumbers(prefix, number string) []string {
 
 // contentRangeCovered reports whether pagesFetched pages of pageSize
 // listings each have already covered everything Content-Range's total
-// promises - another page beyond this one can only come back empty. capped
-// means Cardmarket stopped counting at its own 1000-result ceiling, so the
-// real total past that point is unknowable and worth another page to check
-// rather than assumed covered.
+// promises - another page beyond this one can only come back empty. A capped
+// total is Cardmarket's 1000-result ceiling: the real total past that point is
+// unknowable, but the API rejects a page starting at 1000, so the reported
+// ceiling is still the stopping point.
 func contentRangeCovered(pagesFetched, pageSize, total int, capped bool) bool {
-	return total != 0 && !capped && pagesFetched*pageSize >= total
+	return total != 0 && pagesFetched*pageSize >= total
 }

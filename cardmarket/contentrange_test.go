@@ -15,7 +15,8 @@ func TestContentRangeCovered(t *testing.T) {
 		{"exactly the total is covered", 2, 10, 20, false, true},
 		{"past the total is covered", 2, 10, 15, false, true},
 		{"an unknown total (0, header missing or unparseable) is never covered", 5, 10, 0, false, false},
-		{"a capped total is never treated as covered, however many pages", 100, 10, 1000, true, false},
+		{"a capped total is not covered before the API ceiling", 99, 10, 1000, true, false},
+		{"a capped total is covered at the API ceiling", 100, 10, 1000, true, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
