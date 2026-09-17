@@ -11,6 +11,9 @@ func init() {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback
 			scraper.targetEdition = opts.TargetEdition
+			if opts.MaxConcurrency != 0 {
+				scraper.maxConcurrency = opts.MaxConcurrency
+			}
 			return scraper, nil
 		})
 	mtgban.Register("hareruya_sealed", []mtgban.Game{mtgban.GameMagic},

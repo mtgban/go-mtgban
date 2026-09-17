@@ -35,6 +35,9 @@ const (
 	// ResourceBridge names the Cardmarket-id to TCGplayer-id bridge; see
 	// BridgeUse.
 	ResourceBridge = "cardmarket.bridge"
+
+	// ResourceTargetProduct names the optional single sealed product filter.
+	ResourceTargetProduct = "cardmarket.target_product"
 )
 
 // WithCatalog hands Index or Market the published id-map catalog it
@@ -48,6 +51,11 @@ func WithCatalog(catalog *cm.Catalog) mtgban.Option {
 // marketplaces. See BridgeUse for which games need one.
 func WithBridge(bridge map[int]int) mtgban.Option {
 	return mtgban.WithResource(ResourceBridge, bridge)
+}
+
+// WithTargetProduct limits the Sealed scraper to one product name or UUID.
+func WithTargetProduct(product string) mtgban.Option {
+	return mtgban.WithResource(ResourceTargetProduct, product)
 }
 
 // BridgeUse says how much a game's Index and Market scraper leans on the
@@ -224,6 +232,11 @@ func buildSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, er
 	scraper.logCallback = opts.LogCallback
 	scraper.affiliate = opts.Affiliate
 	scraper.targetEdition = opts.TargetEdition
+	targetProduct, err := mtgban.Resource[string](opts, ResourceTargetProduct)
+	if err != nil {
+		return nil, err
+	}
+	scraper.targetProduct = targetProduct
 	if opts.MaxConcurrency != 0 {
 		scraper.maxConcurrency = opts.MaxConcurrency
 	}
