@@ -90,7 +90,7 @@ func TestLoadCatalogRetryStartsClean(t *testing.T) {
 	scg.client = &client
 
 	var reported []string
-	scg.LogCallback = func(format string, a ...any) {
+	scg.logCallback = func(format string, a ...any) {
 		reported = append(reported, fmt.Sprintf(format, a...))
 	}
 

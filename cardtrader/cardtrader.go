@@ -20,16 +20,16 @@ const (
 // Market prices singles from Card Trader, splitting the result into
 // the storefronts they sell under: the marketplace itself, Zero, and 1DR.
 type Market struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	MaxConcurrency int
-	ShareCode      string
+	maxConcurrency int
+	shareCode      string
 
 	// Only retrieve data from a single edition
-	TargetEdition string
+	targetEdition string
 
 	// Keep same-conditions entries
-	KeepDuplicates bool
+	keepDuplicates bool
 
 	exchangeRates map[string]float64
 	client        *CTAuthClient
@@ -66,7 +66,7 @@ func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
 	}
 	ct := Market{}
 	ct.inventory = mtgban.InventoryRecord{}
-	ct.MaxConcurrency = defaultConcurrency
+	ct.maxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
 	ct.backend = b
 	ct.game = game
@@ -75,8 +75,8 @@ func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
 }
 
 func (ct *Market) printf(format string, a ...any) {
-	if ct.LogCallback != nil {
-		ct.LogCallback("[CT] "+format, a...)
+	if ct.logCallback != nil {
+		ct.logCallback("[CT] "+format, a...)
 	}
 }
 
@@ -264,8 +264,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 
 		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintID)
-		if ct.ShareCode != "" {
-			link += "?share_code=" + ct.ShareCode
+		if ct.shareCode != "" {
+			link += "?share_code=" + ct.shareCode
 		}
 
 		price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRates)
@@ -332,10 +332,10 @@ func (ct *Market) Load(ctx context.Context) error {
 	}
 	ct.exchangeRates = rates
 
-	if ct.TargetEdition != "" {
-		ct.printf("-> only targeting edition %s", ct.TargetEdition)
+	if ct.targetEdition != "" {
+		ct.printf("-> only targeting edition %s", ct.targetEdition)
 	}
-	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, ct.client, ct.gameID, ct.targetEdition, ct.printf)
 	if err != nil {
 		return err
 	}
@@ -355,7 +355,7 @@ func (ct *Market) Load(ctx context.Context) error {
 		expItems = append(expItems, expItem{id, name})
 	}
 
-	mtgban.WorkerPool(ctx, ct.MaxConcurrency, expItems,
+	mtgban.WorkerPool(ctx, ct.maxConcurrency, expItems,
 		func(ctx context.Context, item expItem, results chan<- resultChan) error {
 			ct.printf("Processing %s [%d]", item.name, item.id)
 			return ct.processExpansion(ctx, results, item.id)
@@ -370,12 +370,12 @@ func (ct *Market) Load(ctx context.Context) error {
 					break
 				}
 			}
-			if skip && !ct.KeepDuplicates {
+			if skip && !ct.keepDuplicates {
 				return
 			}
 
 			var err error
-			if ct.KeepDuplicates {
+			if ct.keepDuplicates {
 				err = ct.inventory.AddRelaxed(result.cardID, result.invEntry)
 			} else {
 				err = ct.inventory.Add(result.cardID, result.invEntry)

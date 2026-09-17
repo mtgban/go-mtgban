@@ -28,9 +28,9 @@ var gradingMap = map[string]float64{
 // Cardsphere prices what Cardsphere's members offer to pay, which is a set of
 // standing offers rather than a storefront's buylist.
 type Cardsphere struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	buylistDate    time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -43,14 +43,14 @@ type Cardsphere struct {
 func NewScraper(b *mtgmatcher.Backend, token string) *Cardsphere {
 	cs := Cardsphere{backend: b}
 	cs.buylist = mtgban.BuylistRecord{}
-	cs.MaxConcurrency = defaultConcurrency
+	cs.maxConcurrency = defaultConcurrency
 	cs.client = NewClient(token)
 	return &cs
 }
 
 func (cs *Cardsphere) printf(format string, a ...any) {
-	if cs.LogCallback != nil {
-		cs.LogCallback("[CS] "+format, a...)
+	if cs.logCallback != nil {
+		cs.logCallback("[CS] "+format, a...)
 	}
 }
 
@@ -162,7 +162,7 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 	}
 
 	lastTime := time.Now()
-	mtgban.WorkerPool(ctx, cs.MaxConcurrency, offsets,
+	mtgban.WorkerPool(ctx, cs.maxConcurrency, offsets,
 		func(ctx context.Context, offset int, results chan<- responseChan) error {
 			err := cs.processPage(ctx, results, offset)
 			if err != nil {

@@ -18,10 +18,10 @@ import (
 // Riftbound, ...); Magic has its own SKU-driven scrapers. tcgGames below maps
 // each game to the category it is served from.
 type TCGGame struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	Affiliate      string
-	MaxConcurrency int
+	affiliate      string
+	maxConcurrency int
 
 	inventory mtgban.InventoryRecord
 
@@ -47,12 +47,12 @@ type TCGGame struct {
 }
 
 func (tcg *TCGGame) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
+	if tcg.logCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Equal(tcg.productTypes, tcgplayer.SinglesProductTypes(tcg.category)) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
-		tcg.LogCallback(tag+format, a...)
+		tcg.logCallback(tag+format, a...)
 	}
 }
 
@@ -92,7 +92,7 @@ func NewScraperGame(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame
 	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
-	tcg.MaxConcurrency = defaultConcurrency
+	tcg.maxConcurrency = defaultConcurrency
 
 	tcg.category = category
 	tcg.game = game
@@ -186,7 +186,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 						Conditions: "NM",
 						Price:      price,
 						Quantity:   1,
-						URL:        GenerateProductURL(sku.ProductID, "", tcg.Affiliate, "", "", false),
+						URL:        GenerateProductURL(sku.ProductID, "", tcg.affiliate, "", "", false),
 						OriginalID: fmt.Sprint(sku.ProductID),
 						InstanceID: fmt.Sprint(sku.SKUID),
 					},
@@ -237,7 +237,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 
 			condition := SKUConditionMap[sku.ConditionID]
 
-			link := GenerateProductURL(sku.ProductID, printing, tcg.Affiliate, condition, "", false)
+			link := GenerateProductURL(sku.ProductID, printing, tcg.affiliate, condition, "", false)
 
 			out := genericChan{
 				key: cardID,
@@ -302,7 +302,7 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 		pageNums = append(pageNums, i)
 	}
 
-	mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, tcg.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, channel chan<- genericChan) error {
 			return tcg.processPage(ctx, channel, page)
 		},

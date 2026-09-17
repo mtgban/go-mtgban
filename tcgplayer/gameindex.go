@@ -18,10 +18,10 @@ import (
 // same single-game categories through the matcher's name + collector number +
 // finish identification.
 type TCGGameIndex struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	Affiliate      string
-	MaxConcurrency int
+	affiliate      string
+	maxConcurrency int
 
 	inventory mtgban.InventoryRecord
 
@@ -39,12 +39,12 @@ type TCGGameIndex struct {
 }
 
 func (tcg *TCGGameIndex) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
+	if tcg.logCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Equal(tcg.productTypes, tcgplayer.SinglesProductTypes(tcg.category)) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
-		tcg.LogCallback(tag+format, a...)
+		tcg.logCallback(tag+format, a...)
 	}
 }
 
@@ -69,7 +69,7 @@ func NewScraperGameIndex(b *mtgmatcher.Backend, publicID, privateID string) (*TC
 	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
-	tcg.MaxConcurrency = defaultConcurrency
+	tcg.maxConcurrency = defaultConcurrency
 
 	tcg.category = category
 	tcg.game = game
@@ -149,7 +149,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 			}
 
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
+			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.affiliate, "", "", isDirect)
 
 			out := genericChan{
 				key: cardID,
@@ -197,7 +197,7 @@ func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 		pageNums = append(pageNums, i)
 	}
 
-	mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, tcg.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, channel chan<- genericChan) error {
 			return tcg.processPage(ctx, channel, page)
 		},

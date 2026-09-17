@@ -27,11 +27,11 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = opts.LogCallback
-			scraper.TargetEdition = opts.TargetEdition
-			scraper.ShareCode = opts.Affiliate
+			scraper.logCallback = opts.LogCallback
+			scraper.targetEdition = opts.TargetEdition
+			scraper.shareCode = opts.Affiliate
 			if opts.MaxConcurrency != 0 {
-				scraper.MaxConcurrency = opts.MaxConcurrency
+				scraper.maxConcurrency = opts.MaxConcurrency
 			}
 			return scraper, nil
 		})
@@ -46,11 +46,11 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = opts.LogCallback
-			scraper.TargetEdition = opts.TargetEdition
-			scraper.ShareCode = opts.Affiliate
+			scraper.logCallback = opts.LogCallback
+			scraper.targetEdition = opts.TargetEdition
+			scraper.shareCode = opts.Affiliate
 			if opts.MaxConcurrency != 0 {
-				scraper.MaxConcurrency = opts.MaxConcurrency
+				scraper.maxConcurrency = opts.MaxConcurrency
 			}
 			return scraper, nil
 		})

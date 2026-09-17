@@ -25,9 +25,9 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = opts.LogCallback
-			scraper.Affiliate = opts.Affiliate
-			scraper.TargetEdition = opts.TargetEdition
+			scraper.logCallback = opts.LogCallback
+			scraper.affiliate = opts.Affiliate
+			scraper.targetEdition = opts.TargetEdition
 			return scraper, nil
 		})
 	mtgban.Register("starcitygames_sealed", starcitygamesGames,
@@ -40,8 +40,8 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = opts.LogCallback
-			scraper.Affiliate = opts.Affiliate
+			scraper.logCallback = opts.LogCallback
+			scraper.affiliate = opts.Affiliate
 			return scraper, nil
 		})
 }

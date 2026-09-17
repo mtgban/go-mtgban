@@ -15,11 +15,11 @@ import (
 
 // Sealed prices SCG's sealed product.
 type Sealed struct {
-	LogCallback   mtgban.LogCallbackFunc
+	logCallback   mtgban.LogCallbackFunc
 	inventoryDate time.Time
 	buylistDate   time.Time
 
-	Affiliate string
+	affiliate string
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -79,8 +79,8 @@ func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
 }
 
 func (scg *Sealed) printf(format string, a ...any) {
-	if scg.LogCallback != nil {
-		scg.LogCallback("[SCGSealed] "+format, a...)
+	if scg.logCallback != nil {
+		scg.logCallback("[SCGSealed] "+format, a...)
 	}
 }
 
@@ -196,7 +196,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 		uuid = resolved
 	}
 
-	link := SCGProductURL(p.URL, "", scg.Affiliate)
+	link := SCGProductURL(p.URL, "", scg.affiliate)
 
 	// The buylist link points at the sell-your-cards page for this product.
 	// Sealed products carry no catalog set, so match the set off the product
@@ -216,7 +216,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 				Quantity:   v.Qty,
 				OriginalID: p.SKU,
 				InstanceID: v.SKU,
-				URL:        SCGProductURL(p.URL, v.SKU, scg.Affiliate),
+				URL:        SCGProductURL(p.URL, v.SKU, scg.affiliate),
 			}
 			if err := scg.inventory.Add(uuid, entry); err != nil {
 				scg.printf("%s", err.Error())

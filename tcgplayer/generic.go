@@ -15,10 +15,10 @@ import (
 // Generic prices any partner API category by number, for the games
 // and product types that have no scraper of their own.
 type Generic struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	Affiliate      string
-	MaxConcurrency int
+	affiliate      string
+	maxConcurrency int
 
 	inventory mtgban.InventoryRecord
 
@@ -35,12 +35,12 @@ type Generic struct {
 }
 
 func (tcg *Generic) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
+	if tcg.logCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Equal(tcg.productTypes, tcgplayer.SinglesProductTypes(tcg.category)) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
-		tcg.LogCallback(tag+format, a...)
+		tcg.logCallback(tag+format, a...)
 	}
 }
 
@@ -55,7 +55,7 @@ func NewScraperGeneric(b *mtgmatcher.Backend, publicID, privateID string, catego
 	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
-	tcg.MaxConcurrency = defaultConcurrency
+	tcg.maxConcurrency = defaultConcurrency
 	tcg.category = category
 
 	tcg.productTypes = productTypes
@@ -114,7 +114,7 @@ func (tcg *Generic) processPage(ctx context.Context, channel chan<- genericChan,
 			}
 
 			isDirect := names[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
+			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.affiliate, "", "", isDirect)
 
 			out := genericChan{
 				key: strings.Join(keys, "|"),
@@ -163,7 +163,7 @@ func (tcg *Generic) Load(ctx context.Context) error {
 		pageNums = append(pageNums, i)
 	}
 
-	mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, tcg.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, channel chan<- genericChan) error {
 			return tcg.processPage(ctx, channel, page)
 		},

@@ -178,7 +178,7 @@ func TestResolveProductBridgeFinish(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
-	mkm.TCGBridge = map[int]int{1: 577711, 2: 453353, 3: 275840}
+	mkm.tcgBridge = map[int]int{1: 577711, 2: 453353, 3: 275840}
 	for _, tt := range []struct {
 		product cm.Product
 		want    string

@@ -25,9 +25,9 @@ const (
 
 // Wizardscupboard prices what Wizard's Cupboard buys.
 type Wizardscupboard struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -38,13 +38,13 @@ type Wizardscupboard struct {
 func NewScraper(b *mtgmatcher.Backend) *Wizardscupboard {
 	wc := Wizardscupboard{backend: b}
 	wc.inventory = mtgban.InventoryRecord{}
-	wc.MaxConcurrency = defaultConcurrency
+	wc.maxConcurrency = defaultConcurrency
 	return &wc
 }
 
 func (wc *Wizardscupboard) printf(format string, a ...any) {
-	if wc.LogCallback != nil {
-		wc.LogCallback("[WC] "+format, a...)
+	if wc.logCallback != nil {
+		wc.logCallback("[WC] "+format, a...)
 	}
 }
 
@@ -113,7 +113,7 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: wc.MaxConcurrency,
+		Parallelism: wc.maxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {

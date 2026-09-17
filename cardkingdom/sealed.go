@@ -18,9 +18,9 @@ const (
 
 // Sealed prices Card Kingdom's sealed product.
 type Sealed struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
-	PreserveOOS bool
+	logCallback mtgban.LogCallbackFunc
+	partner     string
+	preserveOOS bool
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -41,8 +41,8 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 }
 
 func (ck *Sealed) printf(format string, a ...any) {
-	if ck.LogCallback != nil {
-		ck.LogCallback("[CKSealed] "+format, a...)
+	if ck.logCallback != nil {
+		ck.logCallback("[CKSealed] "+format, a...)
 	}
 }
 
@@ -100,12 +100,12 @@ func (ck *Sealed) Load(ctx context.Context) error {
 
 				u.Path = "mtg" + "/" + edition + "/" + basename
 
-				if ck.Partner != "" {
+				if ck.partner != "" {
 					q := u.Query()
-					q.Set("partner", ck.Partner)
-					q.Set("utm_source", ck.Partner)
+					q.Set("partner", ck.partner)
+					q.Set("utm_source", ck.partner)
 					q.Set("utm_medium", "affiliate")
-					q.Set("utm_campaign", ck.Partner)
+					q.Set("utm_campaign", ck.partner)
 					u.RawQuery = q.Encode()
 				}
 				link := u.String()
@@ -121,7 +121,7 @@ func (ck *Sealed) Load(ctx context.Context) error {
 					if err != nil {
 						ck.printf("%v", err)
 					}
-				} else if ck.PreserveOOS {
+				} else if ck.preserveOOS {
 					// Only save URL information
 					out := &mtgban.InventoryEntry{
 						URL: link,
@@ -146,11 +146,11 @@ func (ck *Sealed) Load(ctx context.Context) error {
 					q.Set("filter[name]", sealed.Name)
 					q.Set("filter[edition]", "")
 					q.Set("filter[subtype]", "all")
-					if ck.Partner != "" {
-						q.Set("partner", ck.Partner)
-						q.Set("utm_source", ck.Partner)
+					if ck.partner != "" {
+						q.Set("partner", ck.partner)
+						q.Set("utm_source", ck.partner)
 						q.Set("utm_medium", "affiliate")
-						q.Set("utm_campaign", ck.Partner)
+						q.Set("utm_campaign", ck.partner)
 					}
 					u.RawQuery = q.Encode()
 

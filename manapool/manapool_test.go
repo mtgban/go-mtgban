@@ -215,7 +215,7 @@ func TestReplayCapturedVariants(t *testing.T) {
 
 	var logged []string
 	mp := NewScraper(b)
-	mp.LogCallback = func(format string, a ...any) { logged = append(logged, fmt.Sprintf(format, a...)) }
+	mp.logCallback = func(format string, a ...any) { logged = append(logged, fmt.Sprintf(format, a...)) }
 	mp.price(doc.Data)
 
 	var dupes int

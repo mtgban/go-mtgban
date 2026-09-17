@@ -18,9 +18,9 @@ const (
 // MTGStocks reads MTGStocks' interests, the cards whose price moved, rather
 // than a storefront's stock.
 type MTGStocks struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -39,8 +39,8 @@ type responseChan struct {
 }
 
 func (stks *MTGStocks) printf(format string, a ...any) {
-	if stks.LogCallback != nil {
-		stks.LogCallback("[STKS] "+format, a...)
+	if stks.logCallback != nil {
+		stks.logCallback("[STKS] "+format, a...)
 	}
 }
 
@@ -49,7 +49,7 @@ func NewScraper(b *mtgmatcher.Backend) *MTGStocks {
 	stks := MTGStocks{backend: b}
 	stks.client = NewClient()
 	stks.inventory = mtgban.InventoryRecord{}
-	stks.MaxConcurrency = defaultConcurrency
+	stks.maxConcurrency = defaultConcurrency
 	return &stks
 }
 
@@ -149,7 +149,7 @@ func (stks *MTGStocks) Load(ctx context.Context) error {
 		items = append(items, requestChan{name: "Market", interest: interest})
 	}
 
-	mtgban.WorkerPool(ctx, stks.MaxConcurrency, items,
+	mtgban.WorkerPool(ctx, stks.maxConcurrency, items,
 		func(_ context.Context, page requestChan, channel chan<- responseChan) error {
 			return stks.processEntry(channel, page)
 		},

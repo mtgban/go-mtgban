@@ -98,13 +98,13 @@ func productFinish(productName string) string {
 // TCGSYPList reads TCGplayer's Store Your Products, the list of cards they
 // can host for you and sell on Direct.
 type TCGSYPList struct {
-	LogCallback mtgban.LogCallbackFunc
-	Affiliate   string
+	logCallback mtgban.LogCallbackFunc
+	affiliate   string
 
 	// Catalog names the product and finish behind each sku the list refers
 	// to. Without it there is nothing to resolve against: the list says a
 	// sku id, the datastore knows product ids.
-	Catalog SYPCatalog
+	catalog SYPCatalog
 
 	game        mtgban.Game
 	category    int
@@ -116,8 +116,8 @@ type TCGSYPList struct {
 }
 
 func (tcg *TCGSYPList) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
-		tcg.LogCallback("[TCGSYPList] "+format, a...)
+	if tcg.logCallback != nil {
+		tcg.logCallback("[TCGSYPList] "+format, a...)
 	}
 }
 
@@ -167,10 +167,10 @@ func (tcg *TCGSYPList) resolve(sku SYPSku) (string, error) {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGSYPList) Load(ctx context.Context) error {
-	if tcg.Catalog == nil {
+	if tcg.catalog == nil {
 		return errors.New("catalog not loaded")
 	}
-	tcg.printf("Found %d near mint skus in the catalog", len(tcg.Catalog))
+	tcg.printf("Found %d near mint skus in the catalog", len(tcg.catalog))
 
 	sypList, err := LoadSYP(ctx, tcg.category, tcg.auth)
 	if err != nil {
@@ -181,7 +181,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	for _, syp := range sypList {
 		// The list names a sku, the catalog names its product, and the
 		// datastore stamps that product id on the printing it belongs to.
-		sku, found := tcg.Catalog[syp.SkuID]
+		sku, found := tcg.catalog[syp.SkuID]
 		if !found {
 			continue
 		}
@@ -198,7 +198,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 		entry := mtgban.BuylistEntry{
 			BuyPrice:   syp.MarketPrice,
 			Quantity:   syp.MaxQty,
-			URL:        GenerateProductURL(sku.ProductID, printing, tcg.Affiliate, "", "English", true),
+			URL:        GenerateProductURL(sku.ProductID, printing, tcg.affiliate, "", "English", true),
 			OriginalID: fmt.Sprint(sku.ProductID),
 			InstanceID: fmt.Sprint(syp.SkuID),
 		}

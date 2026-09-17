@@ -90,8 +90,8 @@ func buildProductSlug(displayName string) string {
 
 // Vegassingles prices Vegas Singles' stock of one game.
 type Vegassingles struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -103,8 +103,8 @@ type Vegassingles struct {
 	buylistDate    time.Time
 	inventory      mtgban.InventoryRecord
 	buylist        mtgban.BuylistRecord
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 }
 
 // NewScraper returns a scraper for the game b was loaded for.
@@ -123,13 +123,13 @@ func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
 	vs.client = NewVSClient(line)
 	vs.game = game
 	vs.line = line
-	vs.MaxConcurrency = defaultConcurrency
+	vs.maxConcurrency = defaultConcurrency
 	return &vs, nil
 }
 
 func (vs *Vegassingles) printf(format string, a ...any) {
-	if vs.LogCallback != nil {
-		vs.LogCallback("[VS] "+format, a...)
+	if vs.logCallback != nil {
+		vs.logCallback("[VS] "+format, a...)
 	}
 }
 
@@ -174,7 +174,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	// record keeps the one it has and drops the new one, which is the right
 	// answer; reporting each as an error only buried the run's real ones
 	// under a thousand lines of it.
-	if !vs.DisableBuylist {
+	if !vs.disableBuylist {
 		for _, variant := range product.VariantInfo {
 			if variant.OfferPrice == 0 {
 				continue
@@ -210,7 +210,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	}
 
 	// Process retail variants (from variant_info)
-	if !vs.DisableRetail {
+	if !vs.disableRetail {
 		for _, variant := range product.RetailVariantInfo {
 			// A condition the store holds none of is not on sale whatever number
 			// hangs off it: Add() treats a zero quantity as unsaid and writes 1,
@@ -353,7 +353,7 @@ func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint 
 		}
 	}
 
-	mtgban.WorkerPool(ctx, vs.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, vs.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- pageResult) error {
 			products, err := vs.client.getPage(ctx, page, sortDir, rarity)
 			if err != nil {
@@ -402,8 +402,8 @@ type pageResult struct {
 // walk that reaches it; what turning the other off saves is publishing a
 // shelf the store does not keep.
 func (vs *Vegassingles) SetConfig(opt mtgban.ScraperOptions) {
-	vs.DisableRetail = opt.DisableRetail
-	vs.DisableBuylist = opt.DisableBuylist
+	vs.disableRetail = opt.DisableRetail
+	vs.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.

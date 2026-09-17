@@ -70,16 +70,16 @@ var skipSuffixes = []string{
 // Strikezone prices Strike Zone's singles, both what they sell and what they
 // buy.
 type Strikezone struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	buylistDate    time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	backend *mtgmatcher.Backend
 	game    mtgban.Game
@@ -99,7 +99,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
 	sz := Strikezone{}
 	sz.inventory = mtgban.InventoryRecord{}
 	sz.buylist = mtgban.BuylistRecord{}
-	sz.MaxConcurrency = defaultConcurrency
+	sz.maxConcurrency = defaultConcurrency
 	sz.backend = b
 	sz.game = game
 	sz.shelf = shelf
@@ -107,8 +107,8 @@ func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
 }
 
 func (sz *Strikezone) printf(format string, a ...any) {
-	if sz.LogCallback != nil {
-		sz.LogCallback("[SZ] "+format, a...)
+	if sz.logCallback != nil {
+		sz.logCallback("[SZ] "+format, a...)
 	}
 }
 
@@ -287,7 +287,7 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: sz.MaxConcurrency,
+		Parallelism: sz.maxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -385,22 +385,22 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (sz *Strikezone) SetConfig(opt mtgban.ScraperOptions) {
-	sz.DisableRetail = opt.DisableRetail
-	sz.DisableBuylist = opt.DisableBuylist
+	sz.disableRetail = opt.DisableRetail
+	sz.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (sz *Strikezone) Load(ctx context.Context) error {
 	var errs []error
 
-	if !sz.DisableRetail {
+	if !sz.disableRetail {
 		err := sz.scrape(ctx, modeRetail)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !sz.DisableBuylist {
+	if !sz.disableBuylist {
 		err := sz.scrape(ctx, modeBuylist)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))

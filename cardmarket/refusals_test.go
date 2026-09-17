@@ -135,7 +135,7 @@ func TestReportRefused(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			var sink logSink
-			mkm := &Index{LogCallback: sink.callback}
+			mkm := &Index{logCallback: sink.callback}
 			mkm.resolver.printf = mkm.printf
 			mkm.reportRefused("Terminal World", tt.total, tt.refused, tt.twins, tt.foreign)
 

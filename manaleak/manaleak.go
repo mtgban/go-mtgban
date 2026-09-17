@@ -20,13 +20,13 @@ const (
 // they buy. The storefront quotes pounds; every price is converted to
 // dollars at the day's rate.
 type Manaleak struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	client *MLClient
 	rate   float64
@@ -43,20 +43,20 @@ func NewScraper(b *mtgmatcher.Backend) *Manaleak {
 	ml.inventory = mtgban.InventoryRecord{}
 	ml.buylist = mtgban.BuylistRecord{}
 	ml.client = NewMLClient()
-	ml.MaxConcurrency = defaultConcurrency
+	ml.maxConcurrency = defaultConcurrency
 	return &ml
 }
 
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (ml *Manaleak) SetConfig(opt mtgban.ScraperOptions) {
-	ml.DisableRetail = opt.DisableRetail
-	ml.DisableBuylist = opt.DisableBuylist
+	ml.disableRetail = opt.DisableRetail
+	ml.disableBuylist = opt.DisableBuylist
 }
 
 func (ml *Manaleak) printf(format string, a ...any) {
-	if ml.LogCallback != nil {
-		ml.LogCallback("[ML] "+format, a...)
+	if ml.logCallback != nil {
+		ml.logCallback("[ML] "+format, a...)
 	}
 }
 
@@ -180,7 +180,7 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 		pageNums = append(pageNums, page)
 	}
 
-	mtgban.WorkerPool(ctx, ml.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, ml.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- []MLProduct) error {
 			products, _, err := ml.client.GetPage(ctx, base, page)
 			if err != nil {
@@ -210,7 +210,7 @@ func (ml *Manaleak) Load(ctx context.Context) error {
 
 	var errs []error
 
-	if !ml.DisableRetail {
+	if !ml.disableRetail {
 		err := ml.scrape(ctx, modeRetail)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
@@ -219,7 +219,7 @@ func (ml *Manaleak) Load(ctx context.Context) error {
 		}
 	}
 
-	if !ml.DisableBuylist {
+	if !ml.disableBuylist {
 		err := ml.scrape(ctx, modeBuylist)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))

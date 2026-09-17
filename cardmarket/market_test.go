@@ -408,7 +408,7 @@ func TestShouldStopPaging(t *testing.T) {
 }
 
 // TestResolveExpansionEntry pins the fallback that fills a gap in
-// mkm.Catalog (MTGJSON's own CardmarketIdentifiers.json export, currently
+// mkm.catalog (MTGJSON's own CardmarketIdentifiers.json export, currently
 // missing 88 of Magic's real expansions) from Cardmarket's live API
 // instead of falling through to the unresolvable "expansion <id>"
 // placeholder.

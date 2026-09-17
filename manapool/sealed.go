@@ -12,8 +12,8 @@ import (
 
 // Sealed prices Mana Pool's sealed product.
 type Sealed struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
+	partner     string
 
 	backend *mtgmatcher.Backend
 
@@ -29,8 +29,8 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 }
 
 func (mp *Sealed) printf(format string, a ...any) {
-	if mp.LogCallback != nil {
-		mp.LogCallback("[MPSealed] "+format, a...)
+	if mp.logCallback != nil {
+		mp.logCallback("[MPSealed] "+format, a...)
 	}
 }
 
@@ -80,8 +80,8 @@ func (mp *Sealed) Load(ctx context.Context) error {
 					continue
 				}
 				v := url.Values{}
-				if mp.Partner != "" {
-					v.Set("ref", mp.Partner)
+				if mp.partner != "" {
+					v.Set("ref", mp.partner)
 				}
 				u.RawQuery = v.Encode()
 

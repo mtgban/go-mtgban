@@ -30,8 +30,8 @@ import (
 type Market struct {
 	resolver
 
-	LogCallback mtgban.LogCallbackFunc
-	Affiliate   string
+	logCallback mtgban.LogCallbackFunc
+	affiliate   string
 
 	// BanPriceKey authenticates the mtgban price snapshot Load reads to
 	// restrict the games marketFilterParams covers to the cards worth a
@@ -43,7 +43,7 @@ type Market struct {
 	// hard failure: Load falls back to running them unfiltered and logs
 	// that it did, rather than refusing to run at all over a filter that
 	// only saves call volume, not correctness, for those four.
-	BanPriceKey string
+	banPriceKey string
 
 	inventoryDate time.Time
 	exchangeRate  float64
@@ -69,8 +69,8 @@ type Market struct {
 }
 
 func (mkm *Market) printf(format string, a ...any) {
-	if mkm.LogCallback != nil {
-		mkm.LogCallback("[MKMMarket] "+format, a...)
+	if mkm.logCallback != nil {
+		mkm.logCallback("[MKMMarket] "+format, a...)
 	}
 }
 
@@ -261,8 +261,8 @@ func (mkm *Market) Load(ctx context.Context) error {
 	var candidates map[string]bool
 	if _, filtered := marketFilterParams[mkm.gameID]; filtered {
 		switch {
-		case mkm.BanPriceKey != "":
-			snap, err := loadBanSnapshot(ctx, mkm.game, mkm.BanPriceKey)
+		case mkm.banPriceKey != "":
+			snap, err := loadBanSnapshot(ctx, mkm.game, mkm.banPriceKey)
 			if err != nil {
 				return fmt.Errorf("loading the price snapshot to pre-filter this catalog: %w", err)
 			}
@@ -279,7 +279,7 @@ func (mkm *Market) Load(ctx context.Context) error {
 }
 
 // liveExpansions answers every expansion Cardmarket's live API currently
-// has for this game, to fill a gap in mkm.Catalog: mkm.Catalog is built
+// has for this game, to fill a gap in mkm.catalog: mkm.catalog is built
 // from MTGJSON's own CardmarketIdentifiers.json export, which is
 // currently missing 88 of Magic's 761 real expansions (mostly
 // individually-Cardmarket-ID'd Secret Lair drops MTGJSON never mapped,
@@ -337,8 +337,8 @@ func resolveExpansionEntry(entry cm.CatalogExpansion, expansionID int, live map[
 // differs is what happens once a product resolves: Index reads its price
 // off the published guide, this asks the product's own live listings.
 func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) error {
-	products := make(map[int]cm.CatalogProduct, len(mkm.Catalog.Data.Products))
-	for id, product := range mkm.Catalog.Data.Products {
+	products := make(map[int]cm.CatalogProduct, len(mkm.catalog.Data.Products))
+	for id, product := range mkm.catalog.Data.Products {
 		products[id] = product
 	}
 	list, err := cm.DownloadProductListSingles(ctx, mkm.gameID)
@@ -363,7 +363,7 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 
 	var items []cm.Expansion
 	for expansionID := range byExpansion {
-		entry := mkm.Catalog.Data.Expansions[expansionID]
+		entry := mkm.catalog.Data.Expansions[expansionID]
 		if entry.Name == "" {
 			entry = resolveExpansionEntry(entry, expansionID, mkm.liveExpansions(ctx))
 		}
@@ -371,7 +371,7 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 		if name == "" {
 			name = fmt.Sprintf("expansion %d", expansionID)
 		}
-		if mkm.TargetEdition != "" && name != mkm.TargetEdition {
+		if mkm.targetEdition != "" && name != mkm.targetEdition {
 			continue
 		}
 		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})
@@ -762,7 +762,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 				continue
 			}
 
-			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{
+			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{
 				Foil:        article.IsFoil,
 				FirstEd:     article.IsFirstEd,
 				ReverseHolo: article.IsReverseHolo,

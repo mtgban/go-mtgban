@@ -20,14 +20,14 @@ const (
 // Magiccorner prices Magic Corner's singles, both what they sell and what they
 // buy.
 type Magiccorner struct {
-	VerboseLog     bool
-	LogCallback    mtgban.LogCallbackFunc
+	verboseLog     bool
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	buylistDate    time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	exchangeRate float64
 
@@ -52,7 +52,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Magiccorner, error) {
 	mc.buylist = mtgban.BuylistRecord{}
 	mc.client = NewMCClient()
 	mc.backend = b
-	mc.MaxConcurrency = defaultConcurrency
+	mc.maxConcurrency = defaultConcurrency
 	return &mc, nil
 }
 
@@ -63,8 +63,8 @@ type resultChan struct {
 }
 
 func (mc *Magiccorner) printf(format string, a ...any) {
-	if mc.LogCallback != nil {
-		mc.LogCallback("[MC] "+format, a...)
+	if mc.logCallback != nil {
+		mc.logCallback("[MC] "+format, a...)
 	}
 }
 
@@ -96,7 +96,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 	duplicate := map[int]bool{}
 
 	for _, card := range cards {
-		if !printed && mc.VerboseLog {
+		if !printed && mc.verboseLog {
 			mc.printf("Processing id %d - %s (%s, code: %s)", edition.ID, edition.Name, card.Extra, card.Code)
 			printed = true
 		}
@@ -104,7 +104,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 		for i, v := range card.Variants {
 			// Skip duplicate cards
 			if duplicate[v.ID] {
-				if mc.VerboseLog {
+				if mc.verboseLog {
 					mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Edition, v.Foil)
 				}
 				continue
@@ -210,7 +210,7 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 		return err
 	}
 
-	mtgban.WorkerPool(ctx, mc.MaxConcurrency, editionList,
+	mtgban.WorkerPool(ctx, mc.maxConcurrency, editionList,
 		func(ctx context.Context, edition MCEdition, results chan<- resultChan) error {
 			return mc.processEntry(ctx, results, edition)
 		},
@@ -231,8 +231,8 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (mc *Magiccorner) SetConfig(opt mtgban.ScraperOptions) {
-	mc.DisableRetail = opt.DisableRetail
-	mc.DisableBuylist = opt.DisableBuylist
+	mc.disableRetail = opt.DisableRetail
+	mc.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -248,14 +248,14 @@ func (mc *Magiccorner) Load(ctx context.Context) error {
 	}
 	mc.exchangeRate = rate
 
-	if !mc.DisableRetail {
+	if !mc.disableRetail {
 		err := mc.scrape(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !mc.DisableBuylist {
+	if !mc.disableBuylist {
 		err := mc.scrapeBL(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
@@ -380,7 +380,7 @@ func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
 	}
 	mc.printf("Found %d editions", len(editions))
 
-	mtgban.WorkerPool(ctx, mc.MaxConcurrency, editions,
+	mtgban.WorkerPool(ctx, mc.maxConcurrency, editions,
 		func(ctx context.Context, edition MCExpansion, results chan<- resultChan) error {
 			return mc.parseBL(ctx, results, edition)
 		},

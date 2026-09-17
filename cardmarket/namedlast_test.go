@@ -146,8 +146,8 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	mkm.exchangeRate = 1
-	mkm.MaxConcurrency = 1
-	mkm.TCGBridge = map[int]int{999001: 237847}
+	mkm.maxConcurrency = 1
+	mkm.tcgBridge = map[int]int{999001: 237847}
 	mkm.priceGuide = map[int]cm.PriceGuide{
 		602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
 		999001: {IDProduct: 999001, LowPrice: 1, TrendPrice: 2},

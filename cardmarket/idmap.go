@@ -66,8 +66,8 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 	// not - several thousand for Magic - are priced from what the catalog
 	// says of them, with the one thing the list never carries left empty:
 	// their collector number.
-	products := make(map[int]cm.CatalogProduct, len(mkm.Catalog.Data.Products))
-	for id, product := range mkm.Catalog.Data.Products {
+	products := make(map[int]cm.CatalogProduct, len(mkm.catalog.Data.Products))
+	for id, product := range mkm.catalog.Data.Products {
 		products[id] = product
 	}
 	list, err := cm.DownloadProductListSingles(ctx, mkm.gameID)
@@ -92,12 +92,12 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 
 	var items []cm.Expansion
 	for expansionID := range byExpansion {
-		entry := mkm.Catalog.Data.Expansions[expansionID]
+		entry := mkm.catalog.Data.Expansions[expansionID]
 		name := entry.Name
 		if name == "" {
 			name = fmt.Sprintf("expansion %d", expansionID)
 		}
-		if mkm.TargetEdition != "" && name != mkm.TargetEdition {
+		if mkm.targetEdition != "" && name != mkm.targetEdition {
 			continue
 		}
 		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})

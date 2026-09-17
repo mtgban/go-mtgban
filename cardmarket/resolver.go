@@ -21,7 +21,7 @@ import (
 // product's own live listings.
 //
 // Embedded anonymously, not held by reference: a scraper's own field access
-// (mkm.TCGBridge = ...) and its own calls (mkm.resolveProduct(...)) both
+// (mkm.tcgBridge = ...) and its own calls (mkm.resolveProduct(...)) both
 // promote through unchanged, so this extraction changed no call site in
 // Index - only where the fields and methods are defined.
 type resolver struct {
@@ -33,16 +33,16 @@ type resolver struct {
 	// version index of its own. bantool builds it from cardtrader's
 	// blueprints, the one source linking the two marketplaces; the scraper
 	// itself stays vendor-pure and receives it as plain data.
-	TCGBridge map[int]int
+	tcgBridge map[int]int
 
 	// TargetEdition optionally restricts resolution to a single edition.
-	TargetEdition string
+	targetEdition string
 
 	// Catalog is the published id-map catalog a scraper may resolve from
 	// before falling back to name/number matching. bantool loads it from
 	// MTGJSON_MKMID_PATH; nil is a resolver with no id map at all, which
 	// checkCatalog refuses to walk when the game needs one to walk safely.
-	Catalog *cm.Catalog
+	catalog *cm.Catalog
 
 	// numbers indexes a set's collector numbers by the card they name,
 	// built on first use; see yugiohNumberTaken.
@@ -318,7 +318,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// names below. The bridge speaks through cardtrader's blueprints
 		// and so knows only part of the shelf.
 		if r.gameID == cm.GameOnePiece {
-			if tcgID, found := r.TCGBridge[product.IDProduct]; found {
+			if tcgID, found := r.tcgBridge[product.IDProduct]; found {
 				if id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false); idErr == nil {
 					cardID = id
 					cardIDFoil, _ = r.backend.MatchID(cardID, true)
@@ -415,7 +415,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// when nothing carries it does the id's own printing stand, the
 		// card being agreed on and the finish the one disagreement.
 		var loose string
-		if tcgID, found := r.TCGBridge[product.IDProduct]; found {
+		if tcgID, found := r.tcgBridge[product.IDProduct]; found {
 			cardID, _ = r.backend.MatchID(fmt.Sprint(tcgID), false)
 			if finish := productFinish(r.gameID, product); finish != "" && cardID != "" {
 				loose = cardID
@@ -586,7 +586,7 @@ func (r *resolver) refusalName(name string) string {
 // be walked safely, and the run refuses rather than price the foreign
 // printings onto the English ones.
 func (r *resolver) checkCatalog() error {
-	if r.Catalog == nil {
+	if r.catalog == nil {
 		return errors.New("no id map to price from")
 	}
 	switch r.gameID {
@@ -594,7 +594,7 @@ func (r *resolver) checkCatalog() error {
 	default:
 		return nil
 	}
-	for _, expansion := range r.Catalog.Data.Expansions {
+	for _, expansion := range r.catalog.Data.Expansions {
 		if expansion.Code != "" {
 			return nil
 		}

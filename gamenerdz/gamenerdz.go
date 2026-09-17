@@ -95,11 +95,11 @@ var gnGames = map[mtgban.Game]string{
 // subset of the other - the store buys cards it does not retail and retails
 // cards it does not buy - so retail and buylist are each their own crawl.
 type Gamenerdz struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	client  *GNClient
 	backend *mtgmatcher.Backend
@@ -129,20 +129,20 @@ func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
 	gn.backend = b
 	gn.game = game
 	gn.line = line
-	gn.MaxConcurrency = defaultConcurrency
+	gn.maxConcurrency = defaultConcurrency
 	return &gn, nil
 }
 
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (gn *Gamenerdz) SetConfig(opt mtgban.ScraperOptions) {
-	gn.DisableRetail = opt.DisableRetail
-	gn.DisableBuylist = opt.DisableBuylist
+	gn.disableRetail = opt.DisableRetail
+	gn.disableBuylist = opt.DisableBuylist
 }
 
 func (gn *Gamenerdz) printf(format string, a ...any) {
-	if gn.LogCallback != nil {
-		gn.LogCallback("[GN] "+format, a...)
+	if gn.logCallback != nil {
+		gn.logCallback("[GN] "+format, a...)
 	}
 }
 
@@ -527,7 +527,7 @@ func (gn *Gamenerdz) crawl(ctx context.Context, mode, sortDir string, filters ma
 			pageNums = append(pageNums, page)
 		}
 
-		mtgban.WorkerPool(ctx, gn.MaxConcurrency, pageNums,
+		mtgban.WorkerPool(ctx, gn.maxConcurrency, pageNums,
 			func(ctx context.Context, page int, results chan<- pageResult) error {
 				products, err := gn.client.getPage(ctx, mode, page, sortDir, filters)
 				if err != nil {
@@ -556,7 +556,7 @@ type pageResult struct {
 func (gn *Gamenerdz) Load(ctx context.Context) error {
 	var errs []error
 
-	if !gn.DisableRetail {
+	if !gn.disableRetail {
 		err := gn.scrape(ctx, modeRetail)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
@@ -565,7 +565,7 @@ func (gn *Gamenerdz) Load(ctx context.Context) error {
 		}
 	}
 
-	if !gn.DisableBuylist {
+	if !gn.disableBuylist {
 		err := gn.scrape(ctx, modeBuylist)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))

@@ -12,7 +12,7 @@ import (
 
 // Merlion prices what Merlion Games buys.
 type Merlion struct {
-	LogCallback mtgban.LogCallbackFunc
+	logCallback mtgban.LogCallbackFunc
 
 	backend *mtgmatcher.Backend
 
@@ -28,8 +28,8 @@ func NewScraper(b *mtgmatcher.Backend) *Merlion {
 }
 
 func (mg *Merlion) printf(format string, a ...any) {
-	if mg.LogCallback != nil {
-		mg.LogCallback("[MG] "+format, a...)
+	if mg.logCallback != nil {
+		mg.logCallback("[MG] "+format, a...)
 	}
 }
 

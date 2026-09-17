@@ -22,12 +22,12 @@ import (
 // result into the sub-sellers their pricing endpoint reports and the buylist
 // they publish alongside it.
 type Market struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	buylistDate    time.Time
-	Affiliate      string
-	MaxConcurrency int
-	SKUsData       SKUMap
+	affiliate      string
+	maxConcurrency int
+	skusData       SKUMap
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -77,8 +77,8 @@ var skuConditions = map[string]string{
 }
 
 func (tcg *Market) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
-		tcg.LogCallback("[TCGMkt] "+format, a...)
+	if tcg.logCallback != nil {
+		tcg.logCallback("[TCGMkt] "+format, a...)
 	}
 }
 
@@ -95,7 +95,7 @@ func NewScraperMarket(b *mtgmatcher.Backend, publicID, privateID string) (*Marke
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.client = client
-	tcg.MaxConcurrency = defaultConcurrency
+	tcg.maxConcurrency = defaultConcurrency
 	return &tcg, nil
 }
 
@@ -152,7 +152,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 		}
 		for i := range availableMarketNames {
 			isDirect := i == 1
-			link := GenerateProductURL(req.ProductID, printing, tcg.Affiliate, cond, req.Language, isDirect)
+			link := GenerateProductURL(req.ProductID, printing, tcg.affiliate, cond, req.Language, isDirect)
 
 			out := responseChan{
 				cardID: cardID,
@@ -218,7 +218,7 @@ func derivedSkuMatches(sku TCGSku, ownIDs map[string]bool, wantFoil bool, wantLa
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *Market) Load(ctx context.Context) error {
-	skusMap := tcg.SKUsData
+	skusMap := tcg.skusData
 	if skusMap == nil {
 		return errors.New("sku map not loaded")
 	}
@@ -254,7 +254,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < tcg.MaxConcurrency; i++ {
+	for i := 0; i < tcg.maxConcurrency; i++ {
 		wg.Go(func() {
 			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)
 

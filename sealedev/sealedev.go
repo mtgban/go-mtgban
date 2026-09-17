@@ -31,16 +31,16 @@ const (
 // Scraper prices sealed product by what opening it is worth, drawing
 // its contents against singles prices rather than reading any storefront.
 type Scraper struct {
-	LogCallback    mtgban.LogCallbackFunc
-	Affiliate      string
-	TargetEdition  string
-	TargetProduct  string
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	affiliate      string
+	targetEdition  string
+	targetProduct  string
+	maxConcurrency int
 	// Repetitions is how many openings of a random product are simulated
 	// before its average settles. NewScraper sets the default; a caller
 	// wanting a quick answer lowers it, and a test wanting a run that
 	// cannot finish raises it.
-	Repetitions int
+	repetitions int
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -165,14 +165,14 @@ func NewScraper(b *mtgmatcher.Backend, sig string) *Scraper {
 	ss.inventory = mtgban.InventoryRecord{}
 	ss.buylist = mtgban.BuylistRecord{}
 	ss.banpriceKey = sig
-	ss.MaxConcurrency = defaultConcurrency
-	ss.Repetitions = defaultRepetitions
+	ss.maxConcurrency = defaultConcurrency
+	ss.repetitions = defaultRepetitions
 	return &ss
 }
 
 func (ss *Scraper) printf(format string, a ...any) {
-	if ss.LogCallback != nil {
-		ss.LogCallback("[SS] "+format, a...)
+	if ss.logCallback != nil {
+		ss.logCallback("[SS] "+format, a...)
 	}
 }
 
@@ -273,14 +273,14 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		}
 	} else {
 		// Random contents: Monte Carlo the simulation parameters.
-		repeats := ss.Repetitions
+		repeats := ss.repetitions
 
 		var mu sync.Mutex
 		var wg sync.WaitGroup
 		repeatsChannel := make(chan int)
-		locals := make([][][]float64, ss.MaxConcurrency)
+		locals := make([][][]float64, ss.maxConcurrency)
 
-		for w := 0; w < ss.MaxConcurrency; w++ {
+		for w := 0; w < ss.maxConcurrency; w++ {
 			wg.Go(func() {
 				local := make([][]float64, len(evParameters))
 				for range repeatsChannel {
@@ -359,7 +359,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 			tcgID, _ := strconv.Atoi(co.Identifiers["tcgplayerProductId"])
 			if tcgID != 0 {
 				isDirect := slices.Contains(evParameters[i].SourceStores, "TCGDirectNet")
-				link = tcgplayer.GenerateProductURL(tcgID, "", ss.Affiliate, "", "", isDirect)
+				link = tcgplayer.GenerateProductURL(tcgID, "", ss.affiliate, "", "", isDirect)
 			}
 
 			res.invEntry = &mtgban.InventoryEntry{
@@ -409,7 +409,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 			continue
 		default:
 			// Skip filtered editions if set
-			if ss.TargetEdition != "" && !strings.EqualFold(set.Code, ss.TargetEdition) && !strings.EqualFold(set.Name, ss.TargetEdition) {
+			if ss.targetEdition != "" && !strings.EqualFold(set.Code, ss.targetEdition) && !strings.EqualFold(set.Name, ss.targetEdition) {
 				continue
 			}
 		}
@@ -426,7 +426,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 			}
 
 			// Skip filtered products if set
-			if ss.TargetProduct != "" && product.Name != ss.TargetProduct && product.UUID != ss.TargetProduct {
+			if ss.targetProduct != "" && product.Name != ss.targetProduct && product.UUID != ss.targetProduct {
 				continue
 			}
 
@@ -434,7 +434,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 		}
 
 		// Keep track of what was selected to reduce price calls
-		if ss.TargetEdition != "" {
+		if ss.targetEdition != "" {
 			selected = "/" + set.Code
 		}
 	}

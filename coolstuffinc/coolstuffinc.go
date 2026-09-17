@@ -74,21 +74,21 @@ var name2shorthand = map[string]string{
 // Coolstuffinc prices Cool Stuff Inc's singles, both what they sell and what
 // they buy.
 type Coolstuffinc struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
+	partner     string
 
 	// If set to true scrape will include all entries without a nonfoil NM price
 	// but will be almost twice as slow
-	IncludeOOS bool
+	includeOOS bool
 
 	inventoryDate  time.Time
 	buylistDate    time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
-	TargetEdition string
+	targetEdition string
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -303,7 +303,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	csi.client = client.StandardClient()
-	csi.MaxConcurrency = defaultConcurrency
+	csi.maxConcurrency = defaultConcurrency
 	csi.game = game
 	csi.shelf = shelf
 	csi.backend = b
@@ -317,8 +317,8 @@ type responseChan struct {
 }
 
 func (csi *Coolstuffinc) printf(format string, a ...any) {
-	if csi.LogCallback != nil {
-		csi.LogCallback("[CSI] "+format, a...)
+	if csi.logCallback != nil {
+		csi.logCallback("[CSI] "+format, a...)
 	}
 }
 
@@ -504,7 +504,7 @@ func bundledCopies(bundleStr string) int {
 }
 
 func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- responseChan, itemName string, rarities []string) error {
-	skipOOS := !csi.IncludeOOS
+	skipOOS := !csi.includeOOS
 	switch itemName {
 	case "Alpha", "Beta", "Unlimited Edition":
 		skipOOS = false
@@ -651,8 +651,8 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				}
 
 				link := "https://www.coolstuffinc.com/p/" + pid
-				if csi.Partner != "" {
-					link += "?utm_referrer=" + csi.Partner
+				if csi.partner != "" {
+					link += "?utm_referrer=" + csi.partner
 				}
 
 				var theCard *mtgmatcher.InputCard
@@ -828,10 +828,10 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 
 	start := time.Now()
 
-	if csi.TargetEdition != "" {
+	if csi.targetEdition != "" {
 		filtered := itemNames[:0]
 		for _, item := range itemNames {
-			if item == csi.TargetEdition {
+			if item == csi.targetEdition {
 				filtered = append(filtered, item)
 			}
 		}
@@ -844,7 +844,7 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	// first again, not a second seller, and adding it would only be
 	// refused as the duplicate it is.
 	seen := map[string]bool{}
-	mtgban.WorkerPool(ctx, csi.MaxConcurrency, itemNames,
+	mtgban.WorkerPool(ctx, csi.maxConcurrency, itemNames,
 		func(ctx context.Context, itemName string, results chan<- responseChan) error {
 			csi.printf("Processing %s", itemName)
 			return csi.processSearch(ctx, results, itemName, rarities)
@@ -910,7 +910,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		}
 
 		// Filter by set if needed
-		if csi.TargetEdition != "" && product.ItemSet != csi.TargetEdition {
+		if csi.targetEdition != "" && product.ItemSet != csi.targetEdition {
 			continue
 		}
 
@@ -1057,22 +1057,22 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (csi *Coolstuffinc) SetConfig(opt mtgban.ScraperOptions) {
-	csi.DisableRetail = opt.DisableRetail
-	csi.DisableBuylist = opt.DisableBuylist
+	csi.disableRetail = opt.DisableRetail
+	csi.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (csi *Coolstuffinc) Load(ctx context.Context) error {
 	var errs []error
 
-	if !csi.DisableRetail {
+	if !csi.disableRetail {
 		err := csi.scrape(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !csi.DisableBuylist {
+	if !csi.disableBuylist {
 		err := csi.parseBL(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
