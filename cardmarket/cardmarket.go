@@ -158,10 +158,10 @@ func productBefore(a, b *cm.Product) bool {
 type Index struct {
 	resolver
 
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	Affiliate      string
-	MaxConcurrency int
+	affiliate      string
+	maxConcurrency int
 	exchangeRate   float64
 
 	inventory mtgban.InventoryRecord
@@ -196,8 +196,8 @@ var mkmGames = map[mtgban.Game]int{
 }
 
 func (mkm *Index) printf(format string, a ...any) {
-	if mkm.LogCallback != nil {
-		mkm.LogCallback("[MKMIndex] "+format, a...)
+	if mkm.logCallback != nil {
+		mkm.logCallback("[MKMIndex] "+format, a...)
 	}
 }
 
@@ -215,7 +215,7 @@ func NewScraperIndex(b *mtgmatcher.Backend) (*Index, error) {
 	}
 	mkm := Index{}
 	mkm.inventory = mtgban.InventoryRecord{}
-	mkm.MaxConcurrency = defaultConcurrency
+	mkm.maxConcurrency = defaultConcurrency
 	mkm.game = game
 	mkm.gameID = id
 	mkm.resolver.backend = b
@@ -386,7 +386,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// second pair to the printing beside it; one on the second side is
 	// priced by the second pair alone.
 	if perTreatment || !second {
-		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{})
+		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{})
 
 		// The first pair's target(s): cardID alone for every other game,
 		// but for Pokemon the guide's low/trend blend every listing of the
@@ -437,7 +437,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		}
 
 		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
-			link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{Foil: true})
+			link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{Foil: true})
 
 			// An empty foil id means the card has no foil printing (Match
 			// errored on the foil probe), so residual foil prices in the
@@ -466,7 +466,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 			}
 		}
 	} else {
-		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{Foil: true})
+		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{Foil: true})
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 {
@@ -563,7 +563,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 
 	collector := namedLast{add: addOne, twin: sameProduct(mkm.gameID), face: faceOf(mkm.backend, mkm.gameID)}
 
-	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
+	mtgban.WorkerPool(ctx, mkm.maxConcurrency, items, worker, collector.collect, mkm.printf)
 
 	added, _ := collector.flush()
 	mkm.printf("Adding %d prices whose printing was named", added)

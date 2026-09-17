@@ -17,8 +17,8 @@ import (
 // MTGMintCard prices MTG Mint Card's singles, both what they sell and what
 // they buy.
 type MTGMintCard struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
+	partner     string
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -26,7 +26,7 @@ type MTGMintCard struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	SKUsData tcgplayer.SKUMap
+	skusData tcgplayer.SKUMap
 
 	backend *mtgmatcher.Backend
 }
@@ -41,8 +41,8 @@ func NewScraper(b *mtgmatcher.Backend) *MTGMintCard {
 }
 
 func (mint *MTGMintCard) printf(format string, a ...any) {
-	if mint.LogCallback != nil {
-		mint.LogCallback("[MMC] "+format, a...)
+	if mint.logCallback != nil {
+		mint.logCallback("[MMC] "+format, a...)
 	}
 }
 
@@ -64,8 +64,8 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 	}
 
 	link := "https://www.mtgmintcard.com/index.php?main_page=product_info&products_id=" + card.ID
-	if mint.Partner != "" {
-		link += "&utm_source=" + url.QueryEscape(mint.Partner) + "&utm_medium=referral&utm_campaign=" + url.QueryEscape(mint.Partner)
+	if mint.partner != "" {
+		link += "&utm_source=" + url.QueryEscape(mint.partner) + "&utm_medium=referral&utm_campaign=" + url.QueryEscape(mint.partner)
 	}
 
 	cardID, found := sku2uuid[card.TCGplayerID]
@@ -138,8 +138,8 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 		}
 
 		link := "https://www.mtgmintcard.com/buylist?action=advanced_search&ed=" + editionID + "&mo_1=1&mo_2=1&card_name=" + url.QueryEscape(card.Name)
-		if mint.Partner != "" {
-			link += "&utm_source=" + url.QueryEscape(mint.Partner) + "&utm_medium=referral&utm_campaign=" + url.QueryEscape(mint.Partner)
+		if mint.partner != "" {
+			link += "&utm_source=" + url.QueryEscape(mint.partner) + "&utm_medium=referral&utm_campaign=" + url.QueryEscape(mint.partner)
 		}
 
 		gradeMap := grading(mint.backend, cardID, buyPrice)
@@ -177,7 +177,7 @@ func (mint *MTGMintCard) Load(ctx context.Context) error {
 
 	mint.printf("Converting TCGSKU into reusable format")
 	sku2uuid := map[int]string{}
-	for uuid, skus := range mint.SKUsData {
+	for uuid, skus := range mint.skusData {
 		for _, sku := range skus {
 			// Skip non-English printings
 			if sku.Language != "ENGLISH" {

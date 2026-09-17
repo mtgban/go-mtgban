@@ -14,9 +14,9 @@ import (
 // TCGSellerInventory prices the inventory of named sellers, read from the
 // storefront's search API rather than from the partner API.
 type TCGSellerInventory struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
-	Affiliate      string
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
+	affiliate      string
 
 	sellerKeys    []string
 	onlyDirect    bool
@@ -28,8 +28,8 @@ type TCGSellerInventory struct {
 }
 
 func (tcg *TCGSellerInventory) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
-		tcg.LogCallback("["+tcg.Info().Shorthand+"] "+format, a...)
+	if tcg.logCallback != nil {
+		tcg.logCallback("["+tcg.Info().Shorthand+"] "+format, a...)
 	}
 }
 
@@ -51,7 +51,7 @@ func NewScraperForSellerIDs(b *mtgmatcher.Backend, sellerKeys []string, onlyDire
 	tcg.onlyDirect = onlyDirect
 
 	tcg.client = NewSellerClient()
-	tcg.MaxConcurrency = defaultSellerInventoryConcurrency
+	tcg.maxConcurrency = defaultSellerInventoryConcurrency
 
 	return &tcg
 }
@@ -177,7 +177,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				customFields["directInventory"] = fmt.Sprint(int(listing.DirectInventory))
 			}
 
-			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.Affiliate, listing.Condition, listing.Language, isDirect)
+			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.affiliate, listing.Condition, listing.Language, isDirect)
 
 			out := responseChan{
 				cardID: cardID,
@@ -226,7 +226,7 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 			pageNums = append(pageNums, i)
 		}
 
-		mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+		mtgban.WorkerPool(ctx, tcg.maxConcurrency, pageNums,
 			func(ctx context.Context, page int, results chan<- responseChan) error {
 				tcg.printf("processing page %d/%d", page, ret.TotalResults/tcg.requestSize)
 				return tcg.processEntry(ctx, results, page)
@@ -237,7 +237,7 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	} else {
 		tcg.printf("Using per-edition scraping, this might take a while")
 
-		mtgban.WorkerPool(ctx, tcg.MaxConcurrency, ret.Pair,
+		mtgban.WorkerPool(ctx, tcg.maxConcurrency, ret.Pair,
 			func(ctx context.Context, pair setCountPair, results chan<- responseChan) error {
 				tcg.printf("processing edition %d/%d (%s)", pair.Idx+1, len(ret.Pair), pair.Name)
 				return tcg.processEdition(ctx, results, pair.Name, pair.Count)

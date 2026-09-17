@@ -36,8 +36,8 @@ var nfGames = map[mtgban.Game]string{
 
 // Ninetyfive prices 95mtg's stock.
 type Ninetyfive struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -47,10 +47,10 @@ type Ninetyfive struct {
 
 	inventoryDate  time.Time
 	inventory      mtgban.InventoryRecord
-	DisableRetail  bool
+	disableRetail  bool
 	buylistDate    time.Time
 	buylist        mtgban.BuylistRecord
-	DisableBuylist bool
+	disableBuylist bool
 }
 
 // NewScraper returns a scraper for the game b was loaded for.
@@ -67,15 +67,15 @@ func NewScraper(b *mtgmatcher.Backend) (*Ninetyfive, error) {
 	nf.inventory = mtgban.InventoryRecord{}
 	nf.buylist = mtgban.BuylistRecord{}
 	nf.client = NewNFClient()
-	nf.MaxConcurrency = defaultConcurrency
+	nf.maxConcurrency = defaultConcurrency
 	nf.game = game
 	nf.supertype = supertype
 	return &nf, nil
 }
 
 func (nf *Ninetyfive) printf(format string, a ...any) {
-	if nf.LogCallback != nil {
-		nf.LogCallback("[95] "+format, a...)
+	if nf.logCallback != nil {
+		nf.logCallback("[95] "+format, a...)
 	}
 }
 
@@ -219,7 +219,7 @@ func (nf *Ninetyfive) getAllCards(ctx context.Context) (NFCard, error) {
 	}
 
 	allCards := NFCard{}
-	mtgban.WorkerPool(ctx, nf.MaxConcurrency, list[1:],
+	mtgban.WorkerPool(ctx, nf.maxConcurrency, list[1:],
 		func(ctx context.Context, page string, results chan<- NFCard) error {
 			cards, err := nf.client.getCards(ctx, page)
 			if err != nil {
@@ -261,22 +261,22 @@ func (nf *Ninetyfive) scrape(ctx context.Context, mode string) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (nf *Ninetyfive) SetConfig(opt mtgban.ScraperOptions) {
-	nf.DisableRetail = opt.DisableRetail
-	nf.DisableBuylist = opt.DisableBuylist
+	nf.disableRetail = opt.DisableRetail
+	nf.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (nf *Ninetyfive) Load(ctx context.Context) error {
 	var errs []error
 
-	if !nf.DisableRetail {
+	if !nf.disableRetail {
 		err := nf.scrape(ctx, modeRetail)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !nf.DisableBuylist {
+	if !nf.disableBuylist {
 		err := nf.scrape(ctx, modeBuylist)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))

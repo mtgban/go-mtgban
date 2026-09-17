@@ -60,7 +60,7 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 			if err != nil {
 				t.Fatalf("NewScraperIndex(b) = %v", err)
 			}
-			mkm.TCGBridge = tt.bridge
+			mkm.tcgBridge = tt.bridge
 			mkm.priceGuide = map[int]cm.PriceGuide{tt.mkmID: {IDProduct: tt.mkmID, LowPrice: 1, TrendPrice: 2}}
 			product := cm.Product{
 				IDProduct:     tt.mkmID,

@@ -14,8 +14,8 @@ import (
 // Index prices singles from Mana Pool's market valuation, what a card is
 // reckoned to be worth rather than the cheapest copy anyone has listed.
 type Index struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
+	partner     string
 
 	backend *mtgmatcher.Backend
 
@@ -31,8 +31,8 @@ func NewScraperIndex(b *mtgmatcher.Backend) *Index {
 }
 
 func (mp *Index) printf(format string, a ...any) {
-	if mp.LogCallback != nil {
-		mp.LogCallback("[MPIndex] "+format, a...)
+	if mp.logCallback != nil {
+		mp.logCallback("[MPIndex] "+format, a...)
 	}
 }
 
@@ -98,14 +98,14 @@ func (mp *Index) Load(ctx context.Context) error {
 			}
 
 			link := card.URL
-			if mp.Partner != "" {
+			if mp.partner != "" {
 				u, err := url.Parse(card.URL)
 				if err != nil {
 					mp.printf("%v", err)
 					continue
 				}
 				v := url.Values{}
-				v.Set("ref", mp.Partner)
+				v.Set("ref", mp.partner)
 				u.RawQuery = v.Encode()
 				link = u.String()
 			}

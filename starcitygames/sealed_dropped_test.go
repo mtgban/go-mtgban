@@ -53,7 +53,7 @@ func TestSealedDropAccounting(t *testing.T) {
 		t.Fatal(err)
 	}
 	var logs []string
-	scg.LogCallback = func(format string, a ...any) { logs = append(logs, fmt.Sprintf(format, a...)) }
+	scg.logCallback = func(format string, a ...any) { logs = append(logs, fmt.Sprintf(format, a...)) }
 	scg.productMap = map[string]string{}
 
 	// A gift set the datastore does not carry, a Japanese box, and a product

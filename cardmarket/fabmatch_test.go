@@ -179,7 +179,7 @@ func TestProcessProductByName(t *testing.T) {
 				t.Fatalf("NewScraperIndex(b) = %v", err)
 			}
 			mkm.exchangeRate = 1
-			mkm.TCGBridge = tt.bridge
+			mkm.tcgBridge = tt.bridge
 			mkm.priceGuide = map[int]cm.PriceGuide{
 				602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
 			}

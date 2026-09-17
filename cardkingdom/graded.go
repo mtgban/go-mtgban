@@ -24,8 +24,8 @@ const (
 // Graded prices the cards Card Kingdom lists with a professional
 // grade, which they sell apart from their ungraded stock.
 type Graded struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
+	partner     string
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -50,8 +50,8 @@ func NewScraperGraded(b *mtgmatcher.Backend) (*Graded, error) {
 }
 
 func (ck *Graded) printf(format string, a ...any) {
-	if ck.LogCallback != nil {
-		ck.LogCallback("[CKGraded] "+format, a...)
+	if ck.logCallback != nil {
+		ck.logCallback("[CKGraded] "+format, a...)
 	}
 }
 
@@ -103,12 +103,12 @@ func (ck *Graded) scrapePage(session string, page int) error {
 	}
 
 	u, _ := url.Parse("https://www.cardkingdom.com/")
-	if ck.Partner != "" {
+	if ck.partner != "" {
 		q := u.Query()
-		q.Set("partner", ck.Partner)
-		q.Set("utm_source", ck.Partner)
+		q.Set("partner", ck.partner)
+		q.Set("utm_source", ck.partner)
 		q.Set("utm_medium", "affiliate")
-		q.Set("utm_campaign", ck.Partner)
+		q.Set("utm_campaign", ck.partner)
 		u.RawQuery = q.Encode()
 	}
 

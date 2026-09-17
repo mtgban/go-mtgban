@@ -21,21 +21,21 @@ import (
 // Sealed prices sealed product from Cardmarket's marketplace,
 // reading the listings themselves rather than a price guide.
 type Sealed struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
-	Affiliate      string
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
+	affiliate      string
 
 	// Optional field to select a single edition to go through
-	TargetEdition string
+	targetEdition string
 	// Optional field to select a single product name to go through
-	TargetProduct string
+	targetProduct string
 
 	// TCGBridge maps a Cardmarket product id to the TCGplayer id of the
 	// same sealed product, for datastores that do not catalog cardmarket's
 	// own ids (riftbound, lorcana). bantool builds it from cardtrader's
 	// blueprints, the one source linking the two marketplaces; the scraper
 	// itself stays vendor-pure and receives it as plain data.
-	TCGBridge map[int]int
+	tcgBridge map[int]int
 
 	inventoryDate time.Time
 	exchangeRate  float64
@@ -52,8 +52,8 @@ type Sealed struct {
 }
 
 func (mkm *Sealed) printf(format string, a ...any) {
-	if mkm.LogCallback != nil {
-		mkm.LogCallback("[MKMSealed] "+format, a...)
+	if mkm.logCallback != nil {
+		mkm.logCallback("[MKMSealed] "+format, a...)
 	}
 }
 
@@ -71,7 +71,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, appToken, appSecret string) (*Seale
 	mkm := Sealed{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = cm.NewClient(appToken, appSecret)
-	mkm.MaxConcurrency = defaultConcurrency
+	mkm.maxConcurrency = defaultConcurrency
 	mkm.game = game
 	mkm.gameID = id
 	mkm.backend = b
@@ -158,7 +158,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 				continue
 			}
 
-			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, cm.Finish{
+			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{
 				Foil:        article.IsFoil,
 				FirstEd:     article.IsFirstEd,
 				ReverseHolo: article.IsReverseHolo,
@@ -220,9 +220,9 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	// collide too readily to be trusted on their own, which is the same
 	// reason the CardTrader sealed scraper stops its name pass there.
 	nameFallback := len(productMap) == 0 && mkm.gameID != cm.GameMagic
-	if nameFallback && len(mkm.TCGBridge) > 0 {
+	if nameFallback && len(mkm.tcgBridge) > 0 {
 		tcgMap := mkm.backend.BuildSealedProductMap("tcgplayerProductId")
-		for mkmID, tcgID := range mkm.TCGBridge {
+		for mkmID, tcgID := range mkm.tcgBridge {
 			uuids, found := tcgMap[tcgID]
 			if !found {
 				continue
@@ -258,7 +258,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	named := map[string][]int{}
 	names := map[int]string{}
 	for _, product := range productList {
-		if mkm.TargetProduct != "" && mkm.TargetProduct != product.Name {
+		if mkm.targetProduct != "" && mkm.targetProduct != product.Name {
 			continue
 		}
 		if nameFallback {
@@ -329,14 +329,14 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	}
 	mkm.printf("Mapped %d mkm products to sealed products", len(productIDs))
 
-	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, productIDs,
+	mtgban.WorkerPool(ctx, mkm.maxConcurrency, productIDs,
 		func(ctx context.Context, idProduct int, channel chan<- responseChan) error {
 			uuids := productMap[idProduct]
 			co, err := mkm.backend.GetUUID(uuids[0])
 			if err != nil {
 				return nil
 			}
-			if mkm.TargetEdition != "" && mkm.TargetEdition != co.Edition && mkm.TargetEdition != co.SetCode {
+			if mkm.targetEdition != "" && mkm.targetEdition != co.Edition && mkm.targetEdition != co.SetCode {
 				return nil
 			}
 

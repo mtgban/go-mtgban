@@ -29,11 +29,11 @@ func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 	if err != nil {
 		return nil, err
 	}
-	scraper.LogCallback = opts.LogCallback
-	scraper.TargetEdition = opts.TargetEdition
-	scraper.Partner = opts.Affiliate
+	scraper.logCallback = opts.LogCallback
+	scraper.targetEdition = opts.TargetEdition
+	scraper.partner = opts.Affiliate
 	if opts.MaxConcurrency != 0 {
-		scraper.MaxConcurrency = opts.MaxConcurrency
+		scraper.maxConcurrency = opts.MaxConcurrency
 	}
 	return scraper, nil
 }
@@ -43,10 +43,10 @@ func newScraperSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scrape
 	if err != nil {
 		return nil, err
 	}
-	scraper.LogCallback = opts.LogCallback
-	scraper.Partner = opts.Affiliate
+	scraper.logCallback = opts.LogCallback
+	scraper.partner = opts.Affiliate
 	if opts.MaxConcurrency != 0 {
-		scraper.MaxConcurrency = opts.MaxConcurrency
+		scraper.maxConcurrency = opts.MaxConcurrency
 	}
 	return scraper, nil
 }

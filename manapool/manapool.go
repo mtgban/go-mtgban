@@ -15,8 +15,8 @@ import (
 
 // Manapool prices Mana Pool's catalog.
 type Manapool struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
+	partner     string
 
 	backend *mtgmatcher.Backend
 
@@ -33,8 +33,8 @@ func NewScraper(b *mtgmatcher.Backend) *Manapool {
 }
 
 func (mp *Manapool) printf(format string, a ...any) {
-	if mp.LogCallback != nil {
-		mp.LogCallback("[MP] "+format, a...)
+	if mp.logCallback != nil {
+		mp.logCallback("[MP] "+format, a...)
 	}
 }
 
@@ -134,8 +134,8 @@ func (mp *Manapool) record(card Product, cardID string) {
 		return
 	}
 	v := url.Values{}
-	if mp.Partner != "" {
-		v.Set("ref", mp.Partner)
+	if mp.partner != "" {
+		v.Set("ref", mp.partner)
 	}
 	v.Set("conditions", card.ConditionID)
 	switch card.FinishID {

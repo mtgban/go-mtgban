@@ -15,12 +15,12 @@ import (
 // Sealed prices sealed product from Card Trader, under the same
 // storefronts as the singles.
 type Sealed struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
-	ShareCode      string
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
+	shareCode      string
 
 	// Only retrieve data from a single edition
-	TargetEdition string
+	targetEdition string
 
 	exchangeRates map[string]float64
 	client        *CTAuthClient
@@ -52,7 +52,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 	ct := Sealed{}
 	ct.inventory = mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
-	ct.MaxConcurrency = 2
+	ct.maxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
 	ct.backend = b
 	ct.game = game
@@ -61,8 +61,8 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 }
 
 func (ct *Sealed) printf(format string, a ...any) {
-	if ct.LogCallback != nil {
-		ct.LogCallback("[CTSealed] "+format, a...)
+	if ct.logCallback != nil {
+		ct.logCallback("[CTSealed] "+format, a...)
 	}
 }
 
@@ -105,8 +105,8 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 			}
 
 			link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintID)
-			if ct.ShareCode != "" {
-				link += "?share_code=" + ct.ShareCode
+			if ct.shareCode != "" {
+				link += "?share_code=" + ct.shareCode
 			}
 
 			price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRates)
@@ -362,10 +362,10 @@ func (ct *Sealed) Load(ctx context.Context) error {
 	}
 	ct.exchangeRates = rates
 
-	if ct.TargetEdition != "" {
-		ct.printf("-> only targeting edition %s", ct.TargetEdition)
+	if ct.targetEdition != "" {
+		ct.printf("-> only targeting edition %s", ct.targetEdition)
 	}
-	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, ct.client, ct.gameID, ct.targetEdition, ct.printf)
 	if err != nil {
 		return err
 	}
@@ -386,7 +386,7 @@ func (ct *Sealed) Load(ctx context.Context) error {
 		expItems = append(expItems, expItem{id, name})
 	}
 
-	mtgban.WorkerPool(ctx, ct.MaxConcurrency, expItems,
+	mtgban.WorkerPool(ctx, ct.maxConcurrency, expItems,
 		func(ctx context.Context, item expItem, results chan<- resultChan) error {
 			ct.printf("Processing %s [%d]", item.name, item.id)
 			return ct.processEntry(ctx, results, item.id, item.name, productMap)

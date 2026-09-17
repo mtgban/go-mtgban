@@ -25,8 +25,8 @@ const (
 
 // TOAMagic prices Tales of Adventure's stock.
 type TOAMagic struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -40,7 +40,7 @@ type TOAMagic struct {
 func NewScraper(b *mtgmatcher.Backend) *TOAMagic {
 	toa := TOAMagic{backend: b}
 	toa.inventory = mtgban.InventoryRecord{}
-	toa.MaxConcurrency = defaultConcurrency
+	toa.maxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	toa.client = client.StandardClient()
@@ -53,8 +53,8 @@ type responseChan struct {
 }
 
 func (toa *TOAMagic) printf(format string, a ...any) {
-	if toa.LogCallback != nil {
-		toa.LogCallback("[TOA] "+format, a...)
+	if toa.logCallback != nil {
+		toa.logCallback("[TOA] "+format, a...)
 	}
 }
 
@@ -259,7 +259,7 @@ func (toa *TOAMagic) Load(ctx context.Context) error {
 		items[i] = item{links[i], titles[i]}
 	}
 
-	mtgban.WorkerPool(ctx, toa.MaxConcurrency, items,
+	mtgban.WorkerPool(ctx, toa.maxConcurrency, items,
 		func(ctx context.Context, it item, results chan<- responseChan) error {
 			toa.printf("Processing %s", it.title)
 			return toa.processProduct(ctx, results, it.link)

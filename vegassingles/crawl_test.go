@@ -54,7 +54,7 @@ func (s *storefront) scraper(t *testing.T) (*Vegassingles, func()) {
 	vs.client = &client
 	// One page at a time, so the pages a crawl walks are the pages it needed
 	// rather than whatever a fan-out happened to reach first.
-	vs.MaxConcurrency = 1
+	vs.maxConcurrency = 1
 	return vs, srv.Close
 }
 
@@ -110,7 +110,7 @@ func TestCrawlSurvivesAFailedTailPage(t *testing.T) {
 	// one, which is not what this is about; keep what the crawl says about
 	// the pages themselves.
 	var reported []string
-	vs.LogCallback = func(format string, a ...any) {
+	vs.logCallback = func(format string, a ...any) {
 		line := fmt.Sprintf(format, a...)
 		if strings.Contains(line, "process error") {
 			return

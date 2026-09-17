@@ -126,7 +126,7 @@ func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 	if catalog == nil {
 		return nil, errors.New("cardmarket needs WithCatalog")
 	}
-	scraper.Catalog = catalog
+	scraper.catalog = catalog
 
 	bridge, err := mtgban.Resource[map[int]int](opts, ResourceBridge)
 	if err != nil {
@@ -135,13 +135,13 @@ func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 	if len(bridge) == 0 && BridgeUseOf(game) == BridgeRequired {
 		return nil, fmt.Errorf("cardmarket needs WithBridge for %s", game)
 	}
-	scraper.TCGBridge = bridge
+	scraper.tcgBridge = bridge
 
-	scraper.LogCallback = opts.LogCallback
-	scraper.Affiliate = opts.Affiliate
-	scraper.TargetEdition = opts.TargetEdition
+	scraper.logCallback = opts.LogCallback
+	scraper.affiliate = opts.Affiliate
+	scraper.targetEdition = opts.TargetEdition
 	if opts.MaxConcurrency != 0 {
-		scraper.MaxConcurrency = opts.MaxConcurrency
+		scraper.maxConcurrency = opts.MaxConcurrency
 	}
 	return scraper, nil
 }
@@ -172,7 +172,7 @@ func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, er
 	if catalog == nil {
 		return nil, errors.New("cardmarket_market needs WithCatalog")
 	}
-	scraper.Catalog = catalog
+	scraper.catalog = catalog
 
 	bridge, err := mtgban.Resource[map[int]int](opts, ResourceBridge)
 	if err != nil {
@@ -181,14 +181,14 @@ func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, er
 	if len(bridge) == 0 && BridgeUseOf(game) == BridgeRequired {
 		return nil, fmt.Errorf("cardmarket_market needs WithBridge for %s", game)
 	}
-	scraper.TCGBridge = bridge
+	scraper.tcgBridge = bridge
 
-	scraper.LogCallback = opts.LogCallback
-	scraper.Affiliate = opts.Affiliate
-	scraper.TargetEdition = opts.TargetEdition
+	scraper.logCallback = opts.LogCallback
+	scraper.affiliate = opts.Affiliate
+	scraper.targetEdition = opts.TargetEdition
 	// Market prices without it, so a caller that holds no BAN key still
 	// gets a working scraper.
-	scraper.BanPriceKey, _ = opts.Secret(SecretBanKey)
+	scraper.banPriceKey, _ = opts.Secret(SecretBanKey)
 	return scraper, nil
 }
 
@@ -219,13 +219,13 @@ func buildSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, er
 	if len(bridge) == 0 && SealedBridgeUseOf(game) == BridgeRequired {
 		return nil, fmt.Errorf("cardmarket_sealed needs WithBridge for %s", game)
 	}
-	scraper.TCGBridge = bridge
+	scraper.tcgBridge = bridge
 
-	scraper.LogCallback = opts.LogCallback
-	scraper.Affiliate = opts.Affiliate
-	scraper.TargetEdition = opts.TargetEdition
+	scraper.logCallback = opts.LogCallback
+	scraper.affiliate = opts.Affiliate
+	scraper.targetEdition = opts.TargetEdition
 	if opts.MaxConcurrency != 0 {
-		scraper.MaxConcurrency = opts.MaxConcurrency
+		scraper.maxConcurrency = opts.MaxConcurrency
 	}
 	return scraper, nil
 }

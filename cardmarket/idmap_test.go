@@ -149,7 +149,7 @@ func TestCheckCatalog(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s: NewScraperIndex(%v) = %v", tt.name, tt.game, err)
 		}
-		mkm.Catalog = tt.catalog
+		mkm.catalog = tt.catalog
 		err = mkm.checkCatalog()
 		if (err == nil) != tt.usable {
 			t.Errorf("%s: checkCatalog() = %v, want usable %v", tt.name, err, tt.usable)

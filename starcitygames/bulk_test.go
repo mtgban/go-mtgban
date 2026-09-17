@@ -149,7 +149,7 @@ func TestCatalogDropsBulkBuyPrice(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			scg.LogCallback = nil
+			scg.logCallback = nil
 			scg.processProduct(product(tt.sellList))
 
 			if got := len(scg.inventory); got != 1 {

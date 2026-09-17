@@ -29,9 +29,9 @@ const (
 // Trollandtoad prices Troll and Toad's Magic singles, both what they sell and
 // what they buy.
 type Trollandtoad struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -42,7 +42,7 @@ type Trollandtoad struct {
 func NewScraper(b *mtgmatcher.Backend) *Trollandtoad {
 	tnt := Trollandtoad{backend: b}
 	tnt.inventory = mtgban.InventoryRecord{}
-	tnt.MaxConcurrency = defaultConcurrency
+	tnt.maxConcurrency = defaultConcurrency
 	return &tnt
 }
 
@@ -52,8 +52,8 @@ type responseChan struct {
 }
 
 func (tnt *Trollandtoad) printf(format string, a ...any) {
-	if tnt.LogCallback != nil {
-		tnt.LogCallback("[TNT] "+format, a...)
+	if tnt.logCallback != nil {
+		tnt.logCallback("[TNT] "+format, a...)
 	}
 }
 
@@ -75,7 +75,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 2 * time.Second,
-		Parallelism: tnt.MaxConcurrency,
+		Parallelism: tnt.maxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -180,7 +180,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 	})
 
 	q, _ := queue.New(
-		tnt.MaxConcurrency,
+		tnt.maxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 

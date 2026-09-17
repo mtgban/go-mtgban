@@ -111,7 +111,7 @@ func TestRunEVValuesAProduct(t *testing.T) {
 	uuid, setCode := sealedProduct(t, b, true)
 
 	ss := NewScraper(b, "")
-	ss.Repetitions = 10
+	ss.repetitions = 10
 	ss.prices = pricedAt(t, b, setCode, uuid, 1)
 
 	results, errs := ss.runEV(context.Background(), uuid)
@@ -162,7 +162,7 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 	uuid, setCode := sealedProduct(t, b, false)
 
 	ss := NewScraper(b, "")
-	ss.Repetitions = 10
+	ss.repetitions = 10
 	ss.prices = pricedAt(t, b, setCode, uuid, 1)
 
 	results, _ := ss.runEV(context.Background(), uuid)
@@ -210,7 +210,7 @@ func TestRunEVReportsAProductItCannotOpen(t *testing.T) {
 	b := realDatastore(t)
 
 	ss := NewScraper(b, "")
-	ss.Repetitions = 10
+	ss.repetitions = 10
 	ss.prices = &BANPriceResponse{
 		Retail:  map[string]map[string]*BanPrice{},
 		Buylist: map[string]map[string]*BanPrice{},
@@ -232,7 +232,7 @@ func TestRunEVDropsAProductWorthNothing(t *testing.T) {
 	uuid, _ := sealedProduct(t, b, true)
 
 	ss := NewScraper(b, "")
-	ss.Repetitions = 10
+	ss.repetitions = 10
 	ss.prices = &BANPriceResponse{
 		Retail:  map[string]map[string]*BanPrice{},
 		Buylist: map[string]map[string]*BanPrice{},
@@ -256,7 +256,7 @@ func TestRunEVStopsWhenCancelled(t *testing.T) {
 	// that it returns rather than finishing the openings asked for - which
 	// are made more than a run could ever finish, so that returning at all
 	// is the cancellation and nothing else.
-	ss.Repetitions = 1 << 30
+	ss.repetitions = 1 << 30
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -326,7 +326,7 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 	}
 
 	ss := NewScraper(b, "")
-	ss.Repetitions = 10
+	ss.repetitions = 10
 	ss.prices = r
 
 	results, _ := ss.runEV(context.Background(), uuid)
@@ -377,7 +377,7 @@ func TestInventoryAndBuylistAreWhatWasLoaded(t *testing.T) {
 	// rather than writing somewhere nobody asked for.
 	ss.printf("nothing is listening")
 	var heard string
-	ss.LogCallback = func(format string, a ...any) { heard = format }
+	ss.logCallback = func(format string, a ...any) { heard = format }
 	ss.printf("something is")
 	if heard == "" {
 		t.Error("printf said nothing to a caller that was listening")

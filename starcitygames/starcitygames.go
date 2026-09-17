@@ -19,13 +19,13 @@ import (
 
 // Starcitygames prices SCG's singles, both what they sell and what they buy.
 type Starcitygames struct {
-	LogCallback   mtgban.LogCallbackFunc
+	logCallback   mtgban.LogCallbackFunc
 	inventoryDate time.Time
 	buylistDate   time.Time
 
-	Affiliate string
+	affiliate string
 
-	TargetEdition string
+	targetEdition string
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -77,8 +77,8 @@ func (scg *Starcitygames) reset() {
 }
 
 func (scg *Starcitygames) printf(format string, a ...any) {
-	if scg.LogCallback != nil {
-		scg.LogCallback("[SCG] "+format, a...)
+	if scg.logCallback != nil {
+		scg.logCallback("[SCG] "+format, a...)
 	}
 }
 
@@ -104,7 +104,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 	if gameFromCatalog(p.Game) != scg.gameID {
 		return
 	}
-	if scg.TargetEdition != "" && scg.TargetEdition != p.Set {
+	if scg.targetEdition != "" && scg.targetEdition != p.Set {
 		return
 	}
 
@@ -129,7 +129,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		return
 	}
 
-	link := SCGProductURL(p.URL, "", scg.Affiliate)
+	link := SCGProductURL(p.URL, "", scg.affiliate)
 
 	// The buylist link points at the sell-your-cards page for this printing,
 	// not the retail page; fall back to retail if the set can't be matched.
@@ -184,7 +184,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				Quantity:   v.Qty,
 				OriginalID: p.SKU,
 				InstanceID: v.SKU,
-				URL:        SCGProductURL(p.URL, v.SKU, scg.Affiliate),
+				URL:        SCGProductURL(p.URL, v.SKU, scg.affiliate),
 			}
 			if condition == "NM" {
 				entry.CustomFields = customFields

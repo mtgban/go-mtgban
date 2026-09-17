@@ -67,10 +67,10 @@ func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scra
 		if err != nil {
 			return nil, err
 		}
-		scraper.LogCallback = opts.LogCallback
-		scraper.Affiliate = opts.Affiliate
+		scraper.logCallback = opts.LogCallback
+		scraper.affiliate = opts.Affiliate
 		if opts.MaxConcurrency != 0 {
-			scraper.MaxConcurrency = opts.MaxConcurrency
+			scraper.maxConcurrency = opts.MaxConcurrency
 		}
 		return scraper, nil
 	}
@@ -79,10 +79,10 @@ func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scra
 	if err != nil {
 		return nil, err
 	}
-	scraper.LogCallback = opts.LogCallback
-	scraper.Affiliate = opts.Affiliate
+	scraper.logCallback = opts.LogCallback
+	scraper.affiliate = opts.Affiliate
 	if opts.MaxConcurrency != 0 {
-		scraper.MaxConcurrency = opts.MaxConcurrency
+		scraper.maxConcurrency = opts.MaxConcurrency
 	}
 	return scraper, nil
 }
@@ -114,11 +114,11 @@ func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 		if err != nil {
 			return nil, err
 		}
-		scraper.SKUsData = skus
-		scraper.LogCallback = opts.LogCallback
-		scraper.Affiliate = opts.Affiliate
+		scraper.skusData = skus
+		scraper.logCallback = opts.LogCallback
+		scraper.affiliate = opts.Affiliate
 		if opts.MaxConcurrency != 0 {
-			scraper.MaxConcurrency = opts.MaxConcurrency
+			scraper.maxConcurrency = opts.MaxConcurrency
 		}
 		return scraper, nil
 	}
@@ -127,10 +127,10 @@ func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 	if err != nil {
 		return nil, err
 	}
-	scraper.LogCallback = opts.LogCallback
-	scraper.Affiliate = opts.Affiliate
+	scraper.logCallback = opts.LogCallback
+	scraper.affiliate = opts.Affiliate
 	if opts.MaxConcurrency != 0 {
-		scraper.MaxConcurrency = opts.MaxConcurrency
+		scraper.maxConcurrency = opts.MaxConcurrency
 	}
 	return scraper, nil
 }
@@ -163,11 +163,11 @@ func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 		if err != nil {
 			return nil, err
 		}
-		scraper.SKUsData = skus
-		scraper.LogCallback = opts.LogCallback
-		scraper.Affiliate = opts.Affiliate
+		scraper.skusData = skus
+		scraper.logCallback = opts.LogCallback
+		scraper.affiliate = opts.Affiliate
 		if opts.MaxConcurrency != 0 {
-			scraper.MaxConcurrency = opts.MaxConcurrency
+			scraper.maxConcurrency = opts.MaxConcurrency
 		}
 		return scraper, nil
 	}
@@ -176,10 +176,10 @@ func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 	if err != nil {
 		return nil, err
 	}
-	scraper.LogCallback = opts.LogCallback
-	scraper.Affiliate = opts.Affiliate
+	scraper.logCallback = opts.LogCallback
+	scraper.affiliate = opts.Affiliate
 	if opts.MaxConcurrency != 0 {
-		scraper.MaxConcurrency = opts.MaxConcurrency
+		scraper.maxConcurrency = opts.MaxConcurrency
 	}
 	return scraper, nil
 }
@@ -204,9 +204,9 @@ func newTCGSYPListScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Sc
 	if err != nil {
 		return nil, err
 	}
-	scraper.Catalog = catalog
-	scraper.LogCallback = opts.LogCallback
-	scraper.Affiliate = opts.Affiliate
+	scraper.catalog = catalog
+	scraper.logCallback = opts.LogCallback
+	scraper.affiliate = opts.Affiliate
 	return scraper, nil
 }
 

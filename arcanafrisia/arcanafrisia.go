@@ -11,7 +11,7 @@ import (
 
 // Arcanafrisia prices what Arcana Frisia buys; they publish no sale prices.
 type Arcanafrisia struct {
-	LogCallback mtgban.LogCallbackFunc
+	logCallback mtgban.LogCallbackFunc
 
 	backend *mtgmatcher.Backend
 
@@ -27,8 +27,8 @@ func NewScraper(b *mtgmatcher.Backend) *Arcanafrisia {
 }
 
 func (af *Arcanafrisia) printf(format string, a ...any) {
-	if af.LogCallback != nil {
-		af.LogCallback("[AF] "+format, a...)
+	if af.logCallback != nil {
+		af.logCallback("[AF] "+format, a...)
 	}
 }
 

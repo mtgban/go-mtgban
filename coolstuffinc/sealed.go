@@ -21,20 +21,20 @@ import (
 
 // Sealed prices Cool Stuff Inc's sealed product.
 type Sealed struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
+	partner     string
 
 	inventoryDate  time.Time
 	buylistDate    time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	productMap map[string]string
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	client  *http.Client
 	game    mtgban.Game
@@ -58,7 +58,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	csi.client = client.StandardClient()
-	csi.MaxConcurrency = defaultConcurrency
+	csi.maxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
 	if game == mtgban.GameMagic {
@@ -81,8 +81,8 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 }
 
 func (csi *Sealed) printf(format string, a ...any) {
-	if csi.LogCallback != nil {
-		csi.LogCallback("[CSISealed] "+format, a...)
+	if csi.logCallback != nil {
+		csi.logCallback("[CSISealed] "+format, a...)
 	}
 }
 
@@ -180,8 +180,8 @@ func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- respons
 		}
 
 		link := "https://coolstuffinc.com" + path
-		if csi.Partner != "" {
-			link += "?utm_referrer=" + csi.Partner
+		if csi.partner != "" {
+			link += "?utm_referrer=" + csi.partner
 		}
 
 		out := responseChan{
@@ -211,7 +211,7 @@ func (csi *Sealed) scrape(ctx context.Context) error {
 		pageNums[i] = i + 1
 	}
 
-	mtgban.WorkerPool(ctx, csi.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, csi.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- responseChan) error {
 			return csi.processSealedPage(ctx, results, page)
 		},
@@ -306,8 +306,8 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (csi *Sealed) SetConfig(opt mtgban.ScraperOptions) {
-	csi.DisableRetail = opt.DisableRetail
-	csi.DisableBuylist = opt.DisableBuylist
+	csi.disableRetail = opt.DisableRetail
+	csi.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -318,12 +318,12 @@ func (csi *Sealed) Load(ctx context.Context) error {
 	// card ones.
 	if csi.game != mtgban.GameMagic {
 		var errs []error
-		if !csi.DisableRetail {
+		if !csi.disableRetail {
 			if err := csi.scrapeBysets(ctx); err != nil {
 				errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 			}
 		}
-		if !csi.DisableBuylist {
+		if !csi.disableBuylist {
 			if err := csi.parseBL(ctx); err != nil {
 				errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
 			}
@@ -333,14 +333,14 @@ func (csi *Sealed) Load(ctx context.Context) error {
 
 	var errs []error
 
-	if !csi.DisableRetail {
+	if !csi.disableRetail {
 		err := csi.scrape(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !csi.DisableBuylist {
+	if !csi.disableBuylist {
 		err := csi.parseBL(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
@@ -366,7 +366,7 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 	// The queries overlap ("Booster Box" answers booster and box both);
 	// the first sighting of a product wins
 	seen := map[string]bool{}
-	mtgban.WorkerPool(ctx, csi.MaxConcurrency, queries,
+	mtgban.WorkerPool(ctx, csi.maxConcurrency, queries,
 		func(ctx context.Context, query string, channel chan<- responseChan) error {
 			err := csi.processSealedSearch(ctx, channel, query)
 			if err != nil {
@@ -516,8 +516,8 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 
 			pid, _ := s.Find(`span[class="rating-display "]`).Attr("data-pid")
 			link := "https://www.coolstuffinc.com/p/" + pid
-			if csi.Partner != "" {
-				link += "?utm_referrer=" + csi.Partner
+			if csi.partner != "" {
+				link += "?utm_referrer=" + csi.partner
 			}
 
 			// The stock state is schema markup on the row; the row's

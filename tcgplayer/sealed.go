@@ -14,10 +14,10 @@ import (
 
 // Sealed prices Magic sealed product from the partner API.
 type Sealed struct {
-	LogCallback    mtgban.LogCallbackFunc
-	Affiliate      string
-	MaxConcurrency int
-	SKUsData       SKUMap
+	logCallback    mtgban.LogCallbackFunc
+	affiliate      string
+	maxConcurrency int
+	skusData       SKUMap
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
@@ -27,8 +27,8 @@ type Sealed struct {
 }
 
 func (tcg *Sealed) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
-		tcg.LogCallback("[TCGSealed] "+format, a...)
+	if tcg.logCallback != nil {
+		tcg.logCallback("[TCGSealed] "+format, a...)
 	}
 }
 
@@ -44,7 +44,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, publicID, privateID string) (*Seale
 	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
-	tcg.MaxConcurrency = defaultConcurrency
+	tcg.maxConcurrency = defaultConcurrency
 	return &tcg, nil
 }
 
@@ -74,7 +74,7 @@ func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseCh
 			}
 		}
 
-		link := GenerateProductURL(productID, "", tcg.Affiliate, "", "", false)
+		link := GenerateProductURL(productID, "", tcg.affiliate, "", "", false)
 
 		out := responseChan{
 			cardID: uuid,
@@ -96,7 +96,7 @@ func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseCh
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *Sealed) Load(ctx context.Context) error {
-	skusMap := tcg.SKUsData
+	skusMap := tcg.skusData
 	if skusMap == nil {
 		return errors.New("sku map not loaded")
 	}
@@ -106,7 +106,7 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < tcg.MaxConcurrency; i++ {
+	for i := 0; i < tcg.maxConcurrency; i++ {
 		wg.Go(func() {
 			idsFound := map[int]struct{}{}
 			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)

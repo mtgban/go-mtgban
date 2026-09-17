@@ -18,10 +18,10 @@ const (
 
 // ABUGames prices ABU Games' singles, both what they sell and what they buy.
 type ABUGames struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	buylistDate    time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	client  *ABUClient
 	backend *mtgmatcher.Backend
@@ -37,7 +37,7 @@ func NewScraper(b *mtgmatcher.Backend) *ABUGames {
 	abu.buylist = mtgban.BuylistRecord{}
 	abu.client = NewABUClient()
 	abu.backend = b
-	abu.MaxConcurrency = defaultConcurrency
+	abu.maxConcurrency = defaultConcurrency
 	return &abu
 }
 
@@ -50,8 +50,8 @@ type resultChan struct {
 }
 
 func (abu *ABUGames) printf(format string, a ...any) {
-	if abu.LogCallback != nil {
-		abu.LogCallback("[ABU] "+format, a...)
+	if abu.logCallback != nil {
+		abu.logCallback("[ABU] "+format, a...)
 	}
 }
 
@@ -297,7 +297,7 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 		pageNums = append(pageNums, i)
 	}
 
-	mtgban.WorkerPool(ctx, abu.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, abu.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- resultChan) error {
 			abu.printf("Processing page %d/%d", page/maxEntryPerRequest, count/maxEntryPerRequest)
 			err := abu.processEntry(ctx, normalQuery, results, page)

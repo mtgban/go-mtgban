@@ -40,8 +40,8 @@ var tntGames = map[mtgban.Game]string{
 // Generic prices the singles of any game Troll and Toad carries,
 // by the department number they file it under.
 type Generic struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -51,8 +51,8 @@ type Generic struct {
 	inventoryDate time.Time
 	buylistDate   time.Time
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	game mtgban.Game
 	dept string
@@ -74,13 +74,13 @@ func NewGenericScraper(b *mtgmatcher.Backend) (*Generic, error) {
 	tnt.game = game
 	tnt.dept = dept
 
-	tnt.MaxConcurrency = defaultConcurrency
+	tnt.maxConcurrency = defaultConcurrency
 	return &tnt, nil
 }
 
 func (tnt *Generic) printf(format string, a ...any) {
-	if tnt.LogCallback != nil {
-		tnt.LogCallback("[TNT] "+format, a...)
+	if tnt.logCallback != nil {
+		tnt.logCallback("[TNT] "+format, a...)
 	}
 }
 
@@ -102,7 +102,7 @@ func (tnt *Generic) parsePages(ctx context.Context, link string, lastPage int) e
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 2 * time.Second,
-		Parallelism: tnt.MaxConcurrency,
+		Parallelism: tnt.maxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -209,7 +209,7 @@ func (tnt *Generic) parsePages(ctx context.Context, link string, lastPage int) e
 	})
 
 	q, _ := queue.New(
-		tnt.MaxConcurrency,
+		tnt.maxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 
@@ -434,22 +434,22 @@ func (tnt *Generic) scrapeBuylist(ctx context.Context) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (tnt *Generic) SetConfig(opt mtgban.ScraperOptions) {
-	tnt.DisableRetail = opt.DisableRetail
-	tnt.DisableBuylist = opt.DisableBuylist
+	tnt.disableRetail = opt.DisableRetail
+	tnt.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tnt *Generic) Load(ctx context.Context) error {
 	var errs []error
 
-	if !tnt.DisableRetail {
+	if !tnt.disableRetail {
 		err := tnt.scrape(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !tnt.DisableBuylist {
+	if !tnt.disableBuylist {
 		err := tnt.scrapeBuylist(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))

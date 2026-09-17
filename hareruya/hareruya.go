@@ -31,8 +31,8 @@ const (
 
 // Hareruya prices Hareruya's singles.
 type Hareruya struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -40,13 +40,13 @@ type Hareruya struct {
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
-	DisableRetail bool
+	disableRetail bool
 
 	buylist        mtgban.BuylistRecord
 	buylistDate    time.Time
-	DisableBuylist bool
+	disableBuylist bool
 
-	TargetEdition string
+	targetEdition string
 
 	client *http.Client
 }
@@ -56,7 +56,7 @@ func NewScraper(b *mtgmatcher.Backend) *Hareruya {
 	ha := Hareruya{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
-	ha.MaxConcurrency = defaultConcurrency
+	ha.maxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	ha.client = client.StandardClient()
@@ -74,8 +74,8 @@ type responseChan struct {
 }
 
 func (ha *Hareruya) printf(format string, a ...any) {
-	if ha.LogCallback != nil {
-		ha.LogCallback("[HA] "+format, a...)
+	if ha.logCallback != nil {
+		ha.logCallback("[HA] "+format, a...)
 	}
 }
 
@@ -578,10 +578,10 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 
 	// Pre-filter items if a target edition is set
 	items := cardSets
-	if ha.TargetEdition != "" {
+	if ha.targetEdition != "" {
 		items = nil
 		for _, cs := range cardSets {
-			if cs == ha.TargetEdition {
+			if cs == ha.targetEdition {
 				items = append(items, cs)
 			}
 		}
@@ -636,7 +636,7 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 		}
 	}
 
-	mtgban.WorkerPool(ctx, ha.MaxConcurrency, items,
+	mtgban.WorkerPool(ctx, ha.maxConcurrency, items,
 		func(ctx context.Context, cardSet string, results chan<- responseChan) error {
 			ha.printf("Processing card set %s", cardSet)
 			if mode == modeInventory {
@@ -662,22 +662,22 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (ha *Hareruya) SetConfig(opt mtgban.ScraperOptions) {
-	ha.DisableRetail = opt.DisableRetail
-	ha.DisableBuylist = opt.DisableBuylist
+	ha.disableRetail = opt.DisableRetail
+	ha.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ha *Hareruya) Load(ctx context.Context) error {
 	var errs []error
 
-	if !ha.DisableRetail {
+	if !ha.disableRetail {
 		err := ha.scrape(ctx, modeInventory)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !ha.DisableBuylist {
+	if !ha.disableBuylist {
 		err := ha.scrape(ctx, modeBuylist)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))

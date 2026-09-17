@@ -16,9 +16,9 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = opts.LogCallback
+			scraper.logCallback = opts.LogCallback
 			if opts.MaxConcurrency != 0 {
-				scraper.MaxConcurrency = opts.MaxConcurrency
+				scraper.maxConcurrency = opts.MaxConcurrency
 			}
 			return scraper, nil
 		})

@@ -17,10 +17,10 @@ import (
 // Index prices Magic singles from the partner API's price guide, the
 // low and market numbers rather than any one seller's listing.
 type Index struct {
-	LogCallback    mtgban.LogCallbackFunc
+	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	Affiliate      string
-	MaxConcurrency int
+	affiliate      string
+	maxConcurrency int
 
 	inventory mtgban.InventoryRecord
 
@@ -39,8 +39,8 @@ type indexChan struct {
 }
 
 func (tcg *Index) printf(format string, a ...any) {
-	if tcg.LogCallback != nil {
-		tcg.LogCallback("[TCGIndex] "+format, a...)
+	if tcg.logCallback != nil {
+		tcg.logCallback("[TCGIndex] "+format, a...)
 	}
 }
 
@@ -56,7 +56,7 @@ func NewScraperIndex(b *mtgmatcher.Backend, publicID, privateID string) (*Index,
 	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
-	tcg.MaxConcurrency = defaultConcurrency
+	tcg.maxConcurrency = defaultConcurrency
 	return &tcg, nil
 }
 
@@ -128,7 +128,7 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 			}
 
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", lang, isDirect)
+			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.affiliate, "", lang, isDirect)
 
 			out := responseChan{
 				cardID: cardID,
@@ -198,7 +198,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < tcg.MaxConcurrency; i++ {
+	for i := 0; i < tcg.maxConcurrency; i++ {
 		wg.Go(func() {
 			dupes := map[string]struct{}{}
 			buffer := make([]indexChan, 0, tcgplayer.MaxIDsInRequest)

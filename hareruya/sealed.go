@@ -19,7 +19,7 @@ import (
 
 // Sealed prices Hareruya's sealed product.
 type Sealed struct {
-	LogCallback mtgban.LogCallbackFunc
+	logCallback mtgban.LogCallbackFunc
 
 	backend *mtgmatcher.Backend
 
@@ -45,8 +45,8 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 }
 
 func (ha *Sealed) printf(format string, a ...any) {
-	if ha.LogCallback != nil {
-		ha.LogCallback("[HASealed] "+format, a...)
+	if ha.logCallback != nil {
+		ha.logCallback("[HASealed] "+format, a...)
 	}
 }
 

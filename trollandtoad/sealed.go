@@ -20,13 +20,12 @@ import (
 
 // Sealed prices Troll and Toad's sealed product.
 type Sealed struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	logCallback mtgban.LogCallbackFunc
 
 	backend *mtgmatcher.Backend
 
 	inventoryDate  time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	productMap map[string]string
 
@@ -44,7 +43,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	tnt.client = client.StandardClient()
-	tnt.MaxConcurrency = defaultConcurrency
+	tnt.maxConcurrency = defaultConcurrency
 
 	tnt.productMap = map[string]string{}
 	for _, uuid := range b.GetSealedUUIDs() {
@@ -62,8 +61,8 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 }
 
 func (tnt *Sealed) printf(format string, a ...any) {
-	if tnt.LogCallback != nil {
-		tnt.LogCallback("[TNTSealed] "+format, a...)
+	if tnt.logCallback != nil {
+		tnt.logCallback("[TNTSealed] "+format, a...)
 	}
 }
 
@@ -85,7 +84,7 @@ func (tnt *Sealed) parsePages(ctx context.Context, link string, lastPage int) er
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 2 * time.Second,
-		Parallelism: tnt.MaxConcurrency,
+		Parallelism: tnt.maxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -142,7 +141,7 @@ func (tnt *Sealed) parsePages(ctx context.Context, link string, lastPage int) er
 	})
 
 	q, _ := queue.New(
-		tnt.MaxConcurrency,
+		tnt.maxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 

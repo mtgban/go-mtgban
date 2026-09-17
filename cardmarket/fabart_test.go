@@ -63,8 +63,8 @@ func TestGemPackTreatments(t *testing.T) {
 		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 	mkm.exchangeRate = 1
-	mkm.MaxConcurrency = 1
-	mkm.TCGBridge = map[int]int{810664: 616347, 810195: 616347}
+	mkm.maxConcurrency = 1
+	mkm.tcgBridge = map[int]int{810664: 616347, 810195: 616347}
 	mkm.priceGuide = map[int]cm.PriceGuide{
 		810664: {IDProduct: 810664, LowPrice: 1, TrendPrice: 2},
 		810195: {IDProduct: 810195, LowPrice: 9, TrendPrice: 10},

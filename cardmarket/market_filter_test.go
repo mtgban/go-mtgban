@@ -65,7 +65,7 @@ func TestMarketFilterParamsCoverage(t *testing.T) {
 // whose own catalogs don't fit a nightly budget unfiltered (see
 // marketFilterParams) - against the other four, which clear their own
 // budget unfiltered too and only lose call-volume savings, not the ability
-// to run, when the key is missing (see Load and Market.BanPriceKey).
+// to run, when the key is missing (see Load and Market.banPriceKey).
 func TestMarketFilterRequiredCoverage(t *testing.T) {
 	want := map[int]bool{
 		cm.GameMagic:   true,

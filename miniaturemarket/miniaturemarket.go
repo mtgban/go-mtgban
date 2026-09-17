@@ -23,9 +23,9 @@ import (
 // Miniaturemarket prices Miniature Market's sealed product; they carry no
 // singles.
 type Miniaturemarket struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
-	Affiliate      string
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
+	affiliate      string
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -62,7 +62,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
 	}
 	mm := Miniaturemarket{}
 	mm.inventory = mtgban.InventoryRecord{}
-	mm.MaxConcurrency = defaultConcurrency
+	mm.maxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
 	mm.backend = b
 	mm.game = game
@@ -374,8 +374,8 @@ type respChan struct {
 }
 
 func (mm *Miniaturemarket) printf(format string, a ...any) {
-	if mm.LogCallback != nil {
-		mm.LogCallback("[MMSealed] "+format, a...)
+	if mm.logCallback != nil {
+		mm.logCallback("[MMSealed] "+format, a...)
 	}
 }
 
@@ -414,8 +414,8 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 		}
 
 		link, _ := s.Find(`a.product-name`).Attr("href")
-		if mm.Affiliate != "" {
-			link += "?utm_source=" + mm.Affiliate + "&utm_medium=feed&utm_campaign=mtg_singles"
+		if mm.affiliate != "" {
+			link += "?utm_source=" + mm.affiliate + "&utm_medium=feed&utm_campaign=mtg_singles"
 		}
 
 		priceStr := s.Find(`.product-price`).Text()
@@ -503,7 +503,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	// The consumer runs on one goroutine, so the tally needs no locking.
 	var listed, priced int
 	dropped := map[string]int{}
-	mtgban.WorkerPool(ctx, mm.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, mm.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- respChan) error {
 			return mm.processPage(ctx, results, page)
 		},

@@ -11,11 +11,11 @@ import (
 
 // Sealed prices ABU Games' sealed product.
 type Sealed struct {
-	LogCallback mtgban.LogCallbackFunc
+	logCallback mtgban.LogCallbackFunc
 
 	inventoryDate  time.Time
 	buylistDate    time.Time
-	MaxConcurrency int
+	maxConcurrency int
 
 	productMap map[string]string
 	client     *ABUClient
@@ -30,7 +30,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	abu := Sealed{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
-	abu.MaxConcurrency = defaultConcurrency
+	abu.maxConcurrency = defaultConcurrency
 	abu.client = NewABUClient()
 	abu.backend = b
 
@@ -50,8 +50,8 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 }
 
 func (abu *Sealed) printf(format string, a ...any) {
-	if abu.LogCallback != nil {
-		abu.LogCallback("[ABUSealed] "+format, a...)
+	if abu.logCallback != nil {
+		abu.logCallback("[ABUSealed] "+format, a...)
 	}
 }
 
@@ -148,7 +148,7 @@ func (abu *Sealed) Load(ctx context.Context) error {
 		pageNums = append(pageNums, i)
 	}
 
-	mtgban.WorkerPool(ctx, abu.MaxConcurrency, pageNums,
+	mtgban.WorkerPool(ctx, abu.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- resultChan) error {
 			return abu.processEntry(ctx, results, page)
 		},

@@ -51,7 +51,7 @@ func TestSecondBucketMerges(t *testing.T) {
 				t.Fatal(err)
 			}
 			var logs int
-			scg.LogCallback = func(format string, a ...any) { logs++ }
+			scg.logCallback = func(format string, a ...any) { logs++ }
 			for _, p := range tt.order {
 				scg.processProduct(p)
 			}

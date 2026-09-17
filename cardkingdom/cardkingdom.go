@@ -19,9 +19,9 @@ import (
 // Cardkingdom prices Card Kingdom's singles, both what they sell and what they
 // buy.
 type Cardkingdom struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
-	PreserveOOS bool
+	logCallback mtgban.LogCallbackFunc
+	partner     string
+	preserveOOS bool
 
 	localPath     string
 	inventoryDate time.Time
@@ -54,8 +54,8 @@ func NewScraper(b *mtgmatcher.Backend) *Cardkingdom {
 }
 
 func (ck *Cardkingdom) printf(format string, a ...any) {
-	if ck.LogCallback != nil {
-		ck.LogCallback("[CK] "+format, a...)
+	if ck.logCallback != nil {
+		ck.logCallback("[CK] "+format, a...)
 	}
 }
 
@@ -114,12 +114,12 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 		u, _ := url.Parse("https://www.cardkingdom.com/")
 
 		u.Path = card.URL
-		if ck.Partner != "" {
+		if ck.partner != "" {
 			q := u.Query()
-			q.Set("partner", ck.Partner)
-			q.Set("utm_source", ck.Partner)
+			q.Set("partner", ck.partner)
+			q.Set("utm_source", ck.partner)
 			q.Set("utm_medium", "affiliate")
-			q.Set("utm_campaign", ck.Partner)
+			q.Set("utm_campaign", ck.partner)
 			u.RawQuery = q.Encode()
 		}
 		link := u.String()
@@ -162,7 +162,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 				}
 				err = ck.inventory.AddUnique(cardID, out)
 			}
-		} else if ck.PreserveOOS {
+		} else if ck.preserveOOS {
 			// Only save URL information
 			out := &mtgban.InventoryEntry{
 				URL: link,
@@ -195,11 +195,11 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			if len(urlPaths) > 2 {
 				q.Set("filter[edition]", urlPaths[1])
 			}
-			if ck.Partner != "" {
-				q.Set("partner", ck.Partner)
-				q.Set("utm_source", ck.Partner)
+			if ck.partner != "" {
+				q.Set("partner", ck.partner)
+				q.Set("utm_source", ck.partner)
 				q.Set("utm_medium", "affiliate")
-				q.Set("utm_campaign", ck.Partner)
+				q.Set("utm_campaign", ck.partner)
 			}
 			u.RawQuery = q.Encode()
 
@@ -240,7 +240,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					ck.printf("%v", err)
 				}
 			}
-		} else if ck.PreserveOOS {
+		} else if ck.preserveOOS {
 			for i, grade := range mtgban.DefaultGradeTags {
 				buyPrice := card.PriceBuy * retailPrices[i] / retailPrices[0]
 
@@ -289,7 +289,7 @@ var name2shorthand = map[string]string{
 // TraderNames names the sub-vendors this trader splits into. See
 // mtgban.Trader.
 func (ck *Cardkingdom) TraderNames() []string {
-	if !ck.PreserveOOS {
+	if !ck.preserveOOS {
 		return availableTraderNames[:1]
 	}
 	return availableTraderNames

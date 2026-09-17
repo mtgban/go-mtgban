@@ -16,10 +16,10 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = opts.LogCallback
-			scraper.Affiliate = opts.Affiliate
+			scraper.logCallback = opts.LogCallback
+			scraper.affiliate = opts.Affiliate
 			if opts.MaxConcurrency != 0 {
-				scraper.MaxConcurrency = opts.MaxConcurrency
+				scraper.maxConcurrency = opts.MaxConcurrency
 			}
 			return scraper, nil
 		})

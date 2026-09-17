@@ -30,8 +30,8 @@ const (
 // MTGSeattle prices MTGSeattle's singles, both what they sell and what they
 // buy.
 type MTGSeattle struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -41,8 +41,8 @@ type MTGSeattle struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	DisableRetail  bool
-	DisableBuylist bool
+	disableRetail  bool
+	disableBuylist bool
 
 	client *http.Client
 }
@@ -52,7 +52,7 @@ func NewScraper(b *mtgmatcher.Backend) *MTGSeattle {
 	ms := MTGSeattle{backend: b}
 	ms.inventory = mtgban.InventoryRecord{}
 	ms.buylist = mtgban.BuylistRecord{}
-	ms.MaxConcurrency = defaultConcurrency
+	ms.maxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	ms.client = client.StandardClient()
@@ -66,8 +66,8 @@ type responseChan struct {
 }
 
 func (ms *MTGSeattle) printf(format string, a ...any) {
-	if ms.LogCallback != nil {
-		ms.LogCallback("[MS] "+format, a...)
+	if ms.logCallback != nil {
+		ms.logCallback("[MS] "+format, a...)
 	}
 }
 
@@ -343,7 +343,7 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 		items[i] = item{links[i], titles[i]}
 	}
 
-	mtgban.WorkerPool(ctx, ms.MaxConcurrency, items,
+	mtgban.WorkerPool(ctx, ms.maxConcurrency, items,
 		func(ctx context.Context, it item, results chan<- responseChan) error {
 			ms.printf("Processing %s", it.title)
 			return ms.processProduct(ctx, results, it.link, mode)
@@ -374,22 +374,22 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
 func (ms *MTGSeattle) SetConfig(opt mtgban.ScraperOptions) {
-	ms.DisableRetail = opt.DisableRetail
-	ms.DisableBuylist = opt.DisableBuylist
+	ms.disableRetail = opt.DisableRetail
+	ms.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ms *MTGSeattle) Load(ctx context.Context) error {
 	var errs []error
 
-	if !ms.DisableRetail {
+	if !ms.disableRetail {
 		err := ms.scrape(ctx, modeInventory)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
 		}
 	}
 
-	if !ms.DisableBuylist {
+	if !ms.disableBuylist {
 		err := ms.scrape(ctx, modeBuylist)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))

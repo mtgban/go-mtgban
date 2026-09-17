@@ -25,8 +25,8 @@ const (
 
 // SecretDesKorrigans prices Le Secret des Korrigans' stock.
 type SecretDesKorrigans struct {
-	LogCallback    mtgban.LogCallbackFunc
-	MaxConcurrency int
+	logCallback    mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	backend *mtgmatcher.Backend
 
@@ -43,7 +43,7 @@ type SecretDesKorrigans struct {
 func NewScraper(b *mtgmatcher.Backend) (*SecretDesKorrigans, error) {
 	sdk := SecretDesKorrigans{backend: b}
 	sdk.inventory = mtgban.InventoryRecord{}
-	sdk.MaxConcurrency = defaultConcurrency
+	sdk.maxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	sdk.client = client.StandardClient()
@@ -56,8 +56,8 @@ type responseChan struct {
 }
 
 func (sdk *SecretDesKorrigans) printf(format string, a ...any) {
-	if sdk.LogCallback != nil {
-		sdk.LogCallback("[SDK] "+format, a...)
+	if sdk.logCallback != nil {
+		sdk.logCallback("[SDK] "+format, a...)
 	}
 }
 
@@ -273,7 +273,7 @@ func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 		items[i] = item{links[i], titles[i]}
 	}
 
-	mtgban.WorkerPool(ctx, sdk.MaxConcurrency, items,
+	mtgban.WorkerPool(ctx, sdk.maxConcurrency, items,
 		func(ctx context.Context, it item, results chan<- responseChan) error {
 			sdk.printf("Processing %s", it.title)
 			return sdk.processProduct(ctx, results, it.link)

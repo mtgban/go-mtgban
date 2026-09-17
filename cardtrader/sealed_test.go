@@ -207,7 +207,7 @@ func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ct.LogCallback = func(format string, a ...any) {
+	ct.logCallback = func(format string, a ...any) {
 		logged = append(logged, fmt.Sprintf(format, a...))
 	}
 	ct.buildProductMap(map[int]*Blueprint{
