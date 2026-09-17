@@ -40,6 +40,16 @@ func TestPkmShelves(t *testing.T) {
 		t.Error("a VSTAR Marker is no card")
 	}
 	if unsupportedBlueprint(GameYuGiOh, &marker) || unsupportedBlueprint(GamePokemon, &bp) {
-		t.Error("only the Pokemon inserts are unsupported")
+		t.Error("the Pokemon insert table matched the wrong game or blueprint")
+	}
+}
+
+func TestLorcanaInserts(t *testing.T) {
+	filler := Blueprint{Name: "Discard Filler Card"}
+	if !unsupportedBlueprint(GameLorcana, &filler) {
+		t.Error("Discard Filler Card should be unsupported for Lorcana")
+	}
+	if unsupportedBlueprint(GamePokemon, &filler) || unsupportedBlueprint(GameOnePiece, &filler) {
+		t.Error("Discard Filler Card should only be unsupported for Lorcana")
 	}
 }

@@ -942,6 +942,12 @@ var pkmInserts = map[string]bool{
 	"VSTAR Marker": true,
 }
 
+// lorcanaInserts are products Card Trader sells as Lorcana singles that are
+// not cards.
+var lorcanaInserts = map[string]bool{
+	"Discard Filler Card": true,
+}
+
 // pkmLeagueShelf is the shelf whose number field carries the card's year
 // or its online code rather than a collector number: the league energies
 // are unnumbered, and "2006" or "KUF-7XB-05C" names nothing the catalog
@@ -955,5 +961,12 @@ var pkmCollectorNumberRe = regexp.MustCompile(`^[A-Za-z]{0,4}[0-9]{1,3}[a-z]?(?:
 
 // unsupportedBlueprint reports a blueprint no datastore carries a card for.
 func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
-	return gameID == GamePokemon && pkmInserts[bp.Name]
+	switch gameID {
+	case GamePokemon:
+		return pkmInserts[bp.Name]
+	case GameLorcana:
+		return lorcanaInserts[bp.Name]
+	default:
+		return false
+	}
 }
