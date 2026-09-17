@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"context"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -448,4 +449,32 @@ func TestResolveExpansionEntry(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestLiveExpansionsMemoizesWithoutRetrying pins the failure-mode contract
+// banreviewer's review on this fix asked for: the live call is attempted
+// at most once per Load, its outcome - success or failure - reused for
+// every later gap rather than retried. mkm.client is left nil in both
+// cases; if liveExpansions ever attempted a real call instead of trusting
+// liveExpansionsTried, dereferencing it would panic, so a clean run here
+// is itself proof no network call was attempted.
+func TestLiveExpansionsMemoizesWithoutRetrying(t *testing.T) {
+	t.Run("a cached success is returned without touching client", func(t *testing.T) {
+		mkm := &Market{
+			liveExpansionsTried: true,
+			liveExpansionsCache: map[int]cm.Expansion{6493: {IDExpansion: 6493, Name: "cached"}},
+		}
+		got := mkm.liveExpansions(context.Background())
+		if got[6493].Name != "cached" {
+			t.Errorf("liveExpansions() = %+v, want the cached map returned as-is", got)
+		}
+	})
+
+	t.Run("a remembered failure is not retried", func(t *testing.T) {
+		mkm := &Market{liveExpansionsTried: true}
+		got := mkm.liveExpansions(context.Background())
+		if got != nil {
+			t.Errorf("liveExpansions() = %+v, want nil - a prior failure should not be retried this run", got)
+		}
+	})
 }
