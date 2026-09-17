@@ -121,7 +121,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 			entities = cm.MaxEntities
 		}
 
-		articles, total, capped, err := mkm.client.Articles(ctx, idProduct, cm.DefaultArticleFilter(true), page, entities)
+		articles, total, _, err := mkm.client.Articles(ctx, idProduct, cm.DefaultArticleFilter(true), page, entities)
 		if err != nil {
 			return err
 		}
@@ -191,7 +191,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 
 		// Content-Range says the listing's true total up front; once this
 		// page has covered it, another page can only come back empty.
-		if contentRangeCovered(page, entities, total, capped) {
+		if contentRangeCovered(page, entities, total) {
 			break
 		}
 	}

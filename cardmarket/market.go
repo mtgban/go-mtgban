@@ -747,7 +747,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 	entriesPS := map[string]responseChan{}
 	mainSatisfiedAt := -1
 	for page := 0; page < marketMaxPages; page++ {
-		articles, total, capped, err := mkm.client.Articles(ctx, product.IDProduct, options, page, cm.MaxEntities)
+		articles, total, _, err := mkm.client.Articles(ctx, product.IDProduct, options, page, cm.MaxEntities)
 		if err != nil {
 			if mkm.bounce() {
 				return fmt.Errorf("%w (%d in a row, last: %v)", errTooManyBounces, mkm.bounced, err)
@@ -823,7 +823,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		if len(articles) == 0 {
 			break
 		}
-		if contentRangeCovered(page+1, cm.MaxEntities, total, capped) {
+		if contentRangeCovered(page+1, cm.MaxEntities, total) {
 			break
 		}
 	}
