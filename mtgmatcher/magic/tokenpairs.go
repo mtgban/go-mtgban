@@ -27,27 +27,6 @@ import (
 // purpose. See deriveTokenPairs for the full exclusion ladder.
 const derivedTokenPairSuffix = "_tp_"
 
-// tokenPairReport tallies why a tokenProducts pairing did or did not
-// produce a derived entity, logged once so a fresh datastore's shape is
-// visible without re-deriving these counts from scratch.
-type tokenPairReport struct {
-	entries          int // tokenProducts entries with exactly 2 tokenParts
-	faceIDOnly       int // a face mtgjson never catalogued as its own card
-	selfPair         int // both faces are the same uuid
-	unresolvableUUID int // a face's uuid is not (or no longer) in this datastore
-	alreadyModeled   int // one face is itself layout "double_faced_token"
-	layoutExcluded   int // a face's layout is not token or emblem
-	derived          int // entities actually minted
-}
-
-func (r tokenPairReport) String() string {
-	return fmt.Sprintf(
-		"tokenProducts pairs: %d entries -> %d derived (excluded: %d faceId-only, %d self-pair, "+
-			"%d unresolvable uuid, %d already modeled, %d layout)",
-		r.entries, r.derived, r.faceIDOnly, r.selfPair, r.unresolvableUUID,
-		r.alreadyModeled, r.layoutExcluded)
-}
-
 // pairKey identifies a physical pairing by its two uuids, always ordered
 // a < b so the same pairing hashes the same way regardless of which face's
 // tokenProducts entry it was read from.
