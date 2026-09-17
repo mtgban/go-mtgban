@@ -4,10 +4,13 @@ A GitHub Actions self-hosted runner, labeled `cardmarket-market`, for the
 three `cardmarket_market` workflows too large for `ubuntu-latest`'s ~5-6h
 practical job ceiling even filtered: Magic, Pokemon and YuGiOh (see each
 workflow's own comment). Deployed as a DigitalOcean Droplet
-(`s5-2vcpu-6gb-30gb`, 2 vCPU, 6GB RAM, 30GB disk, $44.64/mo), provisioned
+(`s5-2vcpu-4gb-30gb`, 2 vCPU, 4GB RAM, 30GB disk, $38.63/mo), provisioned
 once from `provision.sh` as cloud-init user-data - no Dockerfile, no
 managed platform, a plain persistent VM running the runner as a systemd
-service.
+service. Started at 6GB, downsized once Magic's first full run (the
+largest of the three games) measured a peak of 2.9GB across its entire
+~11h runtime, essentially flat the whole way and never touching swap -
+see "Sizing", below.
 
 ## Why a Droplet, not App Platform
 
@@ -30,9 +33,9 @@ fixed:
 - **Debugging the OOMs meant reflecting into DO's Monitoring API** with
   ~2-minute sampling and a real blind spot right around each crash. On a
   Droplet, `ssh` and `free -m`/`htop` watch it live, and
-  `doctl compute droplet-action resize` grows it in place if 6GB turns
-  out not to be enough either - no app-spec redeploy cycle needed to
-  find out.
+  `doctl compute droplet-action resize` grows or shrinks it in place as
+  real usage data warrants - no app-spec redeploy cycle needed to find
+  out either way.
 
 The registration model is simpler here too: App Platform's containers
 are stateless and get rebuilt on every deploy, so the old `entrypoint.sh`
@@ -75,8 +78,8 @@ grant nothing without the private key, safe to commit). What's left:
 
    ```
    doctl compute droplet create cardmarket-market \
-     --region sfo3 \
-     --size s5-2vcpu-6gb-30gb \
+     --region atl1 \
+     --size s5-2vcpu-4gb-30gb \
      --image ubuntu-24-04-x64 \
      --ssh-keys <your SSH key fingerprint(s), comma-separated> \
      --user-data-file <path to your local, filled-in copy of provision.sh>
@@ -94,10 +97,26 @@ stop the service (`sudo ./svc.sh stop` in `/home/runner`), re-run the
 registration portion of `provision.sh` by hand with the new key, then
 `sudo ./svc.sh start` again.
 
-To resize if 6GB isn't enough either: `doctl compute droplet-action
-resize <droplet-id> --size <new-size> --resize-disk` (add
+## Sizing
+
+Started at `s5-2vcpu-6gb-30gb`, sized from the App Platform OOMs above
+with no better data available yet. Downsized to `s5-2vcpu-4gb-30gb`
+(2026-09-17) once Magic's first full `cardmarket_market` run - the
+largest of the three games this runner carries, both in catalog size and
+in how much of it survives the offline pre-filter - gave a real number
+to size against instead: peak 2.9GB of 6GB (49%), essentially flat
+across the entire ~11h run, swap never touched. Pokemon and YuGiOh are
+both smaller than Magic's own filtered candidate set, so they are
+expected to peak lower still - watch their first live runs to confirm
+rather than assuming.
+
+To resize again as real usage data changes: `doctl compute
+droplet-action resize <droplet-id> --size <new-size> --resize-disk` (add
 `--resize-disk` only if the new size's disk is also larger; the runner's
-own registration survives a resize untouched, it's the same disk).
+own registration survives a resize untouched, it's the same disk). The
+droplet must be powered off first (`doctl compute droplet-action
+power-off <droplet-id> --wait`, then `power-on` after) - the runner
+service picks back up on its own, no re-registration needed.
 
 ## Unattended upgrades don't kill an in-flight job
 
