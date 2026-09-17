@@ -19,6 +19,14 @@ var sealedGames = []mtgban.Game{
 	mtgban.GamePokemon, mtgban.GameYuGiOh,
 }
 
+// ResourceIncludeOOS names the optional out-of-stock listing input.
+const ResourceIncludeOOS = "coolstuffinc.include_oos"
+
+// WithIncludeOOS includes listings without a nonfoil NM price.
+func WithIncludeOOS() mtgban.Option {
+	return mtgban.WithResource(ResourceIncludeOOS, true)
+}
+
 func init() {
 	mtgban.Register("coolstuffinc", singlesGames, newScraper)
 	mtgban.Register("coolstuffinc_sealed", sealedGames, newScraperSealed)
@@ -32,6 +40,11 @@ func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 	scraper.logCallback = opts.LogCallback
 	scraper.targetEdition = opts.TargetEdition
 	scraper.partner = opts.Affiliate
+	includeOOS, err := mtgban.Resource[bool](opts, ResourceIncludeOOS)
+	if err != nil {
+		return nil, err
+	}
+	scraper.includeOOS = includeOOS
 	if opts.MaxConcurrency != 0 {
 		scraper.maxConcurrency = opts.MaxConcurrency
 	}
