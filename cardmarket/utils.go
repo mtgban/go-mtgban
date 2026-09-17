@@ -406,6 +406,6 @@ func fabNumbers(prefix, number string) []string {
 // total is Cardmarket's 1000-result ceiling: the real total past that point is
 // unknowable, but the API rejects a page starting at 1000, so the reported
 // ceiling is still the stopping point.
-func contentRangeCovered(pagesFetched, pageSize, total int, capped bool) bool {
+func contentRangeCovered(pagesFetched, pageSize, total int) bool {
 	return total != 0 && pagesFetched*pageSize >= total
 }
