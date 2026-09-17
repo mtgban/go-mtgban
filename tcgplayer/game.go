@@ -193,6 +193,9 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				}
 				continue
 			}
+			if isUnsupportedProduct(&product) {
+				continue
+			}
 
 			cardName := product.Name
 			number := RawProductNumber(&product)
