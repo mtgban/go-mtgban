@@ -246,8 +246,8 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 		if len(variants) > 1 {
 			variant = variants[1]
 		}
-	case "SLD":
-		if strings.Contains(product.ProductNameEN, "SLD Commander Deck") {
+	case "SLD", "SLD Commander Deck":
+		if edition == "SLD Commander Deck" || strings.Contains(product.ProductNameEN, "SLD Commander Deck") {
 			edition = "PLST"
 		}
 	default:
