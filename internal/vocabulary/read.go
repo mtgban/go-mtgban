@@ -276,7 +276,7 @@ func ReadLoaded(game, path string) (Backend, error) {
 		Labels:   map[string]string{},
 	}
 	for _, token := range b.AllPromoTypes {
-		loaded.Labels[token] = b.PromoTypeLabels[token]
+		loaded.Labels[token] = b.PromoTypeLabel(token)
 	}
 	for _, uuid := range b.AllUUIDs {
 		co, err := b.GetUUID(uuid)
