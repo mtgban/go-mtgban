@@ -1,12 +1,14 @@
 name: pokemon / cardmarket_market
 
-# No schedule yet - see bantool-cardmarket_market.yml's comment: routed
-# to the self-hosted cardmarket-market runner, picking an actual cron time
-# is the remaining decision, same as Magic and YuGiOh's Market jobs.
+# The full run measured 3h12 on the cardmarket-market runner. It follows
+# Magic's measured 10h50 slot, with the shared concurrency group below
+# providing a second guard against overlap if either run overruns.
 on:
   workflow_dispatch: {}
   repository_dispatch:
     types: [cardmarket_market_pokemon]
+  schedule:
+    - cron: "35 0 * * *"
 
 permissions:
   contents: read

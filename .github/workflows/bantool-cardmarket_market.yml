@@ -1,17 +1,16 @@
 name: magic / cardmarket_market
 
-# No schedule yet: even filtered (BAN_API_KEY), Magic's catalog can run up
-# to 12h, and picking a cron time that doesn't collide with the rest of the
-# bantool-cardmarket group's own schedule is a separate decision from
-# whether a runner exists to run it on at all. Routed to the self-hosted
-# cardmarket-market runner below - see .github/runner/README.md - so the
-# 12h ceiling itself is no longer the blocker; dispatch this by hand
-# (bantool's own -TargetEdition flag smoke-tests a slice of the catalog)
-# until a schedule is picked.
+# The full run measured 10h50 on the cardmarket-market runner. This slot
+# follows the four shorter Market jobs already scheduled at 07:10, 08:25,
+# 09:40 and 10:55 UTC; all five share the concurrency group below, so a
+# slow run queues the next one instead of starting a second catalog walk;
+# the later Pokemon and YuGiOh jobs use the same group too.
 on:
   workflow_dispatch: {}
   repository_dispatch:
     types: [cardmarket_market]
+  schedule:
+    - cron: "10 12 * * *"
 
 permissions:
   contents: read
