@@ -294,6 +294,7 @@ const (
 	PromoTypeSChineseAltArt    = "schinesealtart"
 	PromoTypeScroll            = "scroll"
 	PromoTypeSilverScroll      = "silverscroll"
+	PromoTypeSLDBonus          = "sldbonus"
 	PromoTypeSerialized        = "serialized"
 	PromoTypeSilverFoil        = "silverfoil"
 	PromoTypeSingularityFoil   = "singularityfoil"
