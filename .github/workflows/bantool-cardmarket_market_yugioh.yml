@@ -1,12 +1,15 @@
 name: yugioh / cardmarket_market
 
-# No schedule yet - see bantool-cardmarket_market.yml's comment: routed
-# to the self-hosted cardmarket-market runner, picking an actual cron time
-# is the remaining decision, same as Magic and Pokemon's Market jobs.
+# The full run measured 1h10 on the cardmarket-market runner. This starts
+# after Pokemon's measured 3h12 slot and after the 03:14 UTC go-cardmarket
+# catalog dump's normal ~1h20 run, leaving the next Market jobs at 07:10
+# UTC clear as well.
 on:
   workflow_dispatch: {}
   repository_dispatch:
     types: [cardmarket_market_yugioh]
+  schedule:
+    - cron: "0 5 * * *"
 
 permissions:
   contents: read
