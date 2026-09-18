@@ -25,7 +25,8 @@ type TCGGameIndex struct {
 
 	inventory mtgban.InventoryRecord
 
-	editions map[int]tcgplayer.Group
+	editions  map[int]tcgplayer.Group
+	printings map[int]string
 
 	category            int
 	categoryName        string
@@ -74,12 +75,13 @@ func NewScraperGameIndex(b *mtgmatcher.Backend, publicID, privateID string) (*TC
 	tcg.category = category
 	tcg.game = game
 	tcg.productTypes = tcgplayer.SinglesProductTypes(category)
+	tcg.printings = map[int]string{}
 
 	return &tcg, nil
 }
 
 func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, false, page)
+	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, true, page)
 	if err != nil {
 		return err
 	}
@@ -111,15 +113,16 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 
 		cardName := productMap[result.ProductID].Name
 		number := RawProductNumber(&product)
+		printing := tcg.productPrinting(&product, result.SubTypeName)
 		theCard := &mtgmatcher.InputCard{
 			// See TCGGame.processPage: the product id and the finish beside
 			// it identify the sku, the text fields are the fallback.
 			ID:        fmt.Sprint(result.ProductID),
 			Name:      cardName,
 			Edition:   tcg.editions[product.GroupID].Name,
-			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
-			Finish:    result.SubTypeName,
-			Foil:      result.SubTypeName != "Normal",
+			Variation: strings.TrimSpace(number + " " + printing),
+			Finish:    printing,
+			Foil:      printing != "Normal",
 		}
 		cardID, err := tcg.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -152,7 +155,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 			}
 
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.affiliate, "", "", isDirect)
+			link := GenerateProductURL(result.ProductID, printing, tcg.affiliate, "", "", isDirect)
 
 			out := genericChan{
 				key: cardID,
@@ -173,6 +176,30 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 	return nil
 }
 
+// productPrinting uses the catalog's SKU printing when a product has one
+// unambiguous finish. The product-price endpoint sometimes reports a stale
+// SubTypeName (for example, Gundam product 659325 is cataloged as Holofoil
+// but its price row says Normal); an unambiguous SKU is stronger evidence.
+// Products sold in multiple finishes retain the endpoint's subtype because it
+// is the only field that can distinguish the price row.
+func (tcg *TCGGameIndex) productPrinting(product *tcgplayer.Product, reported string) string {
+	printing := ""
+	for _, sku := range product.Skus {
+		name := tcg.printings[sku.PrintingID]
+		if name == "" {
+			continue
+		}
+		if printing != "" && printing != name {
+			return reported
+		}
+		printing = name
+	}
+	if printing != "" {
+		return printing
+	}
+	return reported
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 	// Initialize data for debug logs
@@ -188,6 +215,15 @@ func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 	}
 	tcg.editions = editions
 	tcg.printf("Found %d editions", len(editions))
+
+	printings, err := tcg.client.ListCategoryPrintings(ctx, tcg.category)
+	if err != nil {
+		return err
+	}
+	for _, printing := range printings {
+		tcg.printings[printing.PrintingID] = printing.Name
+	}
+	tcg.printf("Found %d printings for category %d", len(printings), tcg.category)
 
 	totals, err := tcg.client.TotalProducts(ctx, tcg.category, []string{"Cards"})
 	if err != nil {
