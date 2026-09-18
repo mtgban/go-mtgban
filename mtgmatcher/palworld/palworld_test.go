@@ -122,6 +122,8 @@ func TestRarityTailSplit(t *testing.T) {
 		{"ETD01-001TSR", "ETD01-001", "TSR"},
 		{"EBP01-002SP", "EBP01-002", "SP"},
 		{"EBP01-001SSP", "EBP01-001", "SSP"},
+		{"EPR-008-S", "EPR-008", "S"},
+		{"EBP02-003-SSP", "EBP02-003", "SSP"},
 		{"EPR-004", "EPR-004", ""},
 		{"", "", ""},
 	} {

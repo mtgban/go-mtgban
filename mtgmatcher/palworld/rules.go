@@ -18,13 +18,16 @@ import (
 type Rules struct{ mtgmatcher.DefaultRules }
 
 // fullNumberRe matches the game's collector number shapes, the rarity tail
-// included: "EBP01-001", "ETD01-001TSR", "EPR-004". Every number the
-// datastore carries matches it.
-var fullNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[A-Za-z]*$`)
+// included: "EBP01-001", "ETD01-001TSR", "EPR-004", and the newer
+// hyphenated tails such as "EPR-008-S". Every number the datastore carries
+// matches it.
+var fullNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+(?:-?[A-Za-z]+)?$`)
 
 // numberTailRe splits a collector number into the run's number and the
-// rarity code it ends in, the tail empty for a plain printing.
-var numberTailRe = regexp.MustCompile(`^([A-Za-z]+[0-9]*-[0-9]+)([A-Za-z]*)$`)
+// rarity code it ends in, the tail empty for a plain printing. The separator
+// before a tail is optional because the catalog uses both "001SSP" and
+// "008-S".
+var numberTailRe = regexp.MustCompile(`^([A-Za-z]+[0-9]*-[0-9]+)(?:-?([A-Za-z]+))?$`)
 
 // trailingCodeRe matches the collector number a storefront writes behind a
 // name in parentheses of its own ("Grizzbolt - Rumbling Tank (ETD01-001)").
@@ -166,15 +169,14 @@ func (Rules) CanonicalFinish(name string) string {
 const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // PlainNumber implements mtgmatcher.GameRules. The letters behind a number
-// name the treatment rather than number it - EBP01-001OSR and EBP01-001SSP
-// are the Jormuntide Ignis that EBP01-001 is - so the number they carry is
-// the plain one. Every one of the 89 stands beside its base number.
+// name the treatment rather than number it - EBP01-001OSR, EBP01-001SSP and
+// EPR-008-S are the cards whose base number is the part before the tail - so
+// the number they carry is the plain one.
 func (Rules) PlainNumber(number string) string {
-	plain := strings.TrimRight(number, plainNumberTail)
-	if plain == "" {
-		return number
+	if plain, _ := splitNumber(number); plain != "" {
+		return plain
 	}
-	return plain
+	return strings.TrimRight(number, plainNumberTail)
 }
 
 // FilterCards narrows candidates by edition and collector number. The
