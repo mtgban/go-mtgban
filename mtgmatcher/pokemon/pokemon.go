@@ -74,9 +74,9 @@ type DatastoreSet struct {
 	// Type is "promo" on the sets that hand their cards out rather than
 	// sell them in packs, and empty on every other.
 	Type string `json:"type,omitempty"`
-	// Symbol is the URL of the mark this set's cards print, as tcgdex
-	// serves it. Absent on the sets tcgdex holds no symbol for, which are
-	// the McDonald's collections and most of the promo drawers.
+	// Symbol is the opaque URL of the mark this set's cards print, when the
+	// datastore builder has one. Its source and URL shape are not part of the
+	// loader contract; absent means the set has no published symbol.
 	Symbol string `json:"symbol,omitempty"`
 }
 
