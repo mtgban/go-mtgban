@@ -281,6 +281,15 @@ func describingPromoTypes(promoTypes []string, number string) []string {
 func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
+	// Keep the semantic name of the Vendetta T04 recruit stable when the
+	// gallery omits its faction qualifier. The same card is named Recruit
+	// (NX) in Origins, and callers use that qualifier to distinguish it from
+	// the DE and ZN recruits. This is a published-name correction, not a
+	// datastore-generator concern.
+	for i := range gallery.Cards.Items {
+		gallery.Cards.Items[i].Name = canonicalGalleryName(gallery.Cards.Items[i])
+	}
+
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
@@ -535,6 +544,14 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	b.SetRules(Rules{})
 
 	return &b
+}
+
+func canonicalGalleryName(card GalleryCard) string {
+	if card.Set.Value.ID == "VEN" && card.CollectorNumber == 4 &&
+		mtgmatcher.Equals(card.Name, "Recruit") {
+		return "Recruit (NX)"
+	}
+	return card.Name
 }
 
 var riftboundRarityMap = map[string]int{
