@@ -179,11 +179,22 @@ func promoOnlyName(b *mtgmatcher.Backend, name string) bool {
 // list them champion-first ("Kai'Sa - Daughter of the Void"), so an unknown
 // name containing " - " retries as its title segment; the collector number
 // and finish still validate the outcome downstream. Failing that, a prefix
-// fallback covers feeds that truncate a "Champion, Title" name: scan for
-// cards whose name has the input as a prefix and let the number and finish
-// narrow them, adopting the name only when exactly one survives.
+// fallback covers feeds that truncate a "Champion, Title" name: first try
+// the current gallery's champion base, then scan for cards whose name has the
+// input as a prefix and let the number and finish narrow them, adopting the
+// name only when exactly one survives.
 func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
+		return
+	}
+
+	// The gallery shortened several champion cards from "Champion, Title" to
+	// just the champion name. Storefronts still publish the older qualified
+	// spelling, so use the base name when it is canonical and has a printing
+	// matching the listing's number. Edition and finish remain the authority
+	// for choosing among that champion's printings below.
+	if fixed := qualifiedBaseName(b, inCard.Name, inCard.Variation); fixed != "" {
+		inCard.Name = fixed
 		return
 	}
 
@@ -226,6 +237,34 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if match != "" {
 		inCard.Name = match
 	}
+}
+
+// qualifiedBaseName maps a storefront's old "Champion, Title" spelling to a
+// current gallery name when the champion itself is canonical. Requiring the
+// number to occur under that base name prevents an unrelated comma-separated
+// name from being silently reinterpreted as a champion listing.
+func qualifiedBaseName(b *mtgmatcher.Backend, name, variation string) string {
+	base, title, found := strings.Cut(name, ", ")
+	if !found || title == "" {
+		return ""
+	}
+
+	canonical, found := b.CanonicalNames[mtgmatcher.Normalize(base)]
+	if !found {
+		return ""
+	}
+
+	number := extractNumber(variation)
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(canonical)] {
+		co, err := b.GetUUID(uuid)
+		if err != nil || co.Sealed {
+			continue
+		}
+		if number == "" || strings.EqualFold(number, co.Number) {
+			return canonical
+		}
+	}
+	return ""
 }
 
 // AdjustEdition normalizes scraper edition strings toward the gallery set
