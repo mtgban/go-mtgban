@@ -23,7 +23,6 @@ type Cardkingdom struct {
 	partner     string
 	preserveOOS bool
 
-	localPath     string
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -31,17 +30,6 @@ type Cardkingdom struct {
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
-}
-
-// NewScraperLocal returns a singles scraper reading the feed from a file
-// instead of the network.
-func NewScraperLocal(b *mtgmatcher.Backend, localPath string) *Cardkingdom {
-	ck := Cardkingdom{}
-	ck.inventory = mtgban.InventoryRecord{}
-	ck.buylist = mtgban.BuylistRecord{}
-	ck.localPath = localPath
-	ck.backend = b
-	return &ck
 }
 
 // NewScraper returns a singles scraper reading Card Kingdom's published feed.
@@ -61,11 +49,7 @@ func (ck *Cardkingdom) printf(format string, a ...any) {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ck *Cardkingdom) Load(ctx context.Context) error {
-	link := ck.localPath
-	if link == "" {
-		link = cardkingdom.PricelistURL
-	}
-	pricelist, _, err := cardkingdom.Pricelist(ctx, nil, link)
+	pricelist, _, err := cardkingdom.Pricelist(ctx, nil, cardkingdom.PricelistURL)
 	if err != nil {
 		return err
 	}
