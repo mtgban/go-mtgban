@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
@@ -78,13 +77,4 @@ func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
 	}
 
 	return rate, nil
-}
-
-// DateEqual reports whether two times fall on the same calendar day, in
-// whatever location each carries. Prices are dated by the day they were
-// collected, so the clock time is noise.
-func DateEqual(date1, date2 time.Time) bool {
-	y1, m1, d1 := date1.Date()
-	y2, m2, d2 := date2.Date()
-	return y1 == y2 && m1 == m2 && d1 == d2
 }
