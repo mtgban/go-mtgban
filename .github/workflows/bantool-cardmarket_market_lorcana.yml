@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardmarket_market_lorcana]
   schedule:
-    - cron: "10 7 * * *"
+    - cron: "0 7 * * *"
 
 permissions:
   contents: read

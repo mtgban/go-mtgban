@@ -8,7 +8,7 @@ on:
   repository_dispatch:
     types: [cardmarket_market_pokemon]
   schedule:
-    - cron: "35 0 * * *"
+    - cron: "20 14 * * *"
 
 permissions:
   contents: read

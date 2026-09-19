@@ -9,7 +9,7 @@ on:
   repository_dispatch:
     types: [cardmarket_market_yugioh]
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "10 12 * * *"
 
 permissions:
   contents: read
