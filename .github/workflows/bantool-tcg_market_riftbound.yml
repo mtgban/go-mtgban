@@ -22,5 +22,6 @@ jobs:
     with:
       target: tcg_market_riftbound
       game: "riftbound"
+      affiliate: ${{ vars.TCG_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/riftbound/riftbound.json.xz
     secrets: inherit

@@ -6,6 +6,11 @@ on:
       target:
         required: true
         type: string
+      affiliate:
+        description: Partner code for this scraper's target (empty = none)
+        required: false
+        type: string
+        default: ""
       game:
         required: true
         type: string
@@ -94,13 +99,7 @@ jobs:
       - name: Run bantool
         id: run_bantool
         env:
-          CK_PARTNER: "${{ vars.CK_PARTNER }}"
-          CSI_PARTNER: "${{ vars.CSI_PARTNER }}"
-          CT_PARTNER: "${{ vars.CT_PARTNER }}"
-          MINT_PARTNER: "${{ vars.MINT_PARTNER }}"
-          MP_PARTNER: "${{ vars.MP_PARTNER }}"
-          SCG_PARTNER: "${{ vars.SCG_PARTNER }}"
-          TCG_PARTNER: "${{ vars.TCG_PARTNER }}"
+          AFFILIATE: "${{ inputs.affiliate }}"
           MAX_CONCURRENCY: "${{ vars.MAX_CONCURRENCY }}"
 
           MTGJSON_TCGSKU_PATH: "${{ inputs.skus-filepath }}"

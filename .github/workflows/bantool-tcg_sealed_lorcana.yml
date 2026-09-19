@@ -22,5 +22,6 @@ jobs:
     with:
       target: tcg_sealed_lorcana
       game: "lorcana"
+      affiliate: ${{ vars.TCG_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/lorcana/lorcana.json.xz
     secrets: inherit

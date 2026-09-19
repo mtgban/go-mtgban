@@ -22,5 +22,6 @@ jobs:
     with:
       target: cardmarket_sealed_yugioh
       game: "yugioh"
+      affiliate: ${{ vars.MKM_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/yugioh/yugioh.json.xz
     secrets: inherit

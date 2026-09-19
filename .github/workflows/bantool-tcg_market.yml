@@ -38,6 +38,7 @@ jobs:
     with:
       target: tcg_market
       game: "magic"
+      affiliate: ${{ vars.TCG_PARTNER }}
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
       skus-filepath: ${{ needs.cache-skus.outputs.filepath }}
