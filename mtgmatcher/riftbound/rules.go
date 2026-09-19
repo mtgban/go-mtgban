@@ -29,6 +29,24 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !promoOnlyName(b, inCard.Name) || targetsPromo {
 			return
 		}
+		// The current gallery shortened several main-set names to the
+		// champion alone, while the promo records still carry the old
+		// qualified spelling. When that promo spelling is canonical, an
+		// ordinary listing must be aimed at the main-set name before the
+		// promo gate can exclude the promotional sibling.
+		if fixed := qualifiedBaseName(b, inCard.Name, inCard.Variation); fixed != "" {
+			if extractNumber(inCard.Variation) == "" {
+				if number := qualifiedNameNumber(b, inCard.Name); number != "" {
+					if inCard.Variation == "" {
+						inCard.Variation = number
+					} else {
+						inCard.Variation = number + " " + inCard.Variation
+					}
+				}
+			}
+			inCard.Name = fixed
+			return
+		}
 	}
 	if strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
@@ -239,32 +257,65 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// qualifiedBaseName maps a storefront's old "Champion, Title" spelling to a
-// current gallery name when the champion itself is canonical. Requiring the
-// number to occur under that base name prevents an unrelated comma-separated
-// name from being silently reinterpreted as a champion listing.
+// qualifiedBaseName maps a storefront's old qualified spelling ("Champion,
+// Title" or "Champion - Title") to a current gallery name when the champion
+// itself is canonical. Requiring the number to occur under that base name
+// prevents an unrelated qualified name from being silently reinterpreted as a
+// champion listing.
 func qualifiedBaseName(b *mtgmatcher.Backend, name, variation string) string {
-	base, title, found := strings.Cut(name, ", ")
-	if !found || title == "" {
-		return ""
-	}
+	for _, separator := range []string{", ", " - "} {
+		// Dashes are valid in real Riftbound names. Only consider the
+		// storefront dash spelling when this exact name is already known to
+		// be promo-only; the ordinary AdjustName fallback must not reinterpret
+		// an unknown dashed card as a qualified champion name.
+		if separator == " - " && !promoOnlyName(b, name) {
+			continue
+		}
+		base, title, found := strings.Cut(name, separator)
+		if !found || title == "" {
+			continue
+		}
 
-	canonical, found := b.CanonicalNames[mtgmatcher.Normalize(base)]
-	if !found {
-		return ""
-	}
+		canonical, found := b.CanonicalNames[mtgmatcher.Normalize(base)]
+		if !found {
+			continue
+		}
 
-	number := extractNumber(variation)
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(canonical)] {
+		number := extractNumber(variation)
+		for _, uuid := range b.Hashes[mtgmatcher.Normalize(canonical)] {
+			co, err := b.GetUUID(uuid)
+			if err != nil || co.Sealed {
+				continue
+			}
+			if number == "" || strings.EqualFold(number, co.Number) {
+				return canonical
+			}
+		}
+	}
+	return ""
+}
+
+// qualifiedNameNumber returns the one collector number carried by a
+// promo-only qualified name, or "" when that name covers more than one
+// number. The number is useful when the current gallery shortened the main
+// name and the storefront omitted the number: the qualified promo spelling
+// is then the only evidence tying it back to the main printing.
+func qualifiedNameNumber(b *mtgmatcher.Backend, name string) string {
+	var number string
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
 		co, err := b.GetUUID(uuid)
 		if err != nil || co.Sealed {
 			continue
 		}
-		if number == "" || strings.EqualFold(number, co.Number) {
-			return canonical
+		if number == "" {
+			number = co.Number
+			continue
+		}
+		if !strings.EqualFold(number, co.Number) {
+			return ""
 		}
 	}
-	return ""
+	return number
 }
 
 // AdjustEdition normalizes scraper edition strings toward the gallery set
