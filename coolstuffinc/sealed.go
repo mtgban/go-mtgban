@@ -94,6 +94,7 @@ func (csi *Sealed) numOfPages(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	req.Header.Set("User-Agent", "curl/8.6.0")
 	resp, err := csi.client.Do(req)
 	if err != nil {
 		return 0, err
@@ -143,6 +144,7 @@ func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- respons
 	if err != nil {
 		return err
 	}
+	req.Header.Set("User-Agent", "curl/8.6.0")
 	resp, err := csi.client.Do(req)
 	if err != nil {
 		return err
@@ -480,6 +482,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 			if err != nil {
 				return err
 			}
+			req.Header.Set("User-Agent", "curl/8.6.0")
 			resp, err := csi.client.Do(req)
 			if err != nil {
 				return err
