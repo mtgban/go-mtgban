@@ -1,5 +1,4 @@
-// Package trollandtoad scrapes Troll and Toad, for singles and sealed
-// product.
+// Package trollandtoad scrapes Troll and Toad Magic singles.
 package trollandtoad
 
 import (
