@@ -31,6 +31,7 @@ jobs:
     with:
       target: coolstuffinc_sealed
       game: "magic"
+      affiliate: ${{ vars.CSI_PARTNER }}
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
     secrets: inherit

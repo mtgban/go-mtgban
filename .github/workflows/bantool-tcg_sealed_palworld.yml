@@ -22,5 +22,6 @@ jobs:
     with:
       target: tcg_sealed_palworld
       game: "palworld"
+      affiliate: ${{ vars.TCG_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/palworld/palworld.json.xz
     secrets: inherit

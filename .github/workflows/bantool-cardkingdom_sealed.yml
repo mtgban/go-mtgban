@@ -26,6 +26,7 @@ jobs:
     with:
       target: cardkingdom_sealed
       game: "magic"
+      affiliate: ${{ vars.CK_PARTNER }}
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
     secrets: inherit
