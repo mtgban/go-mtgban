@@ -127,7 +127,7 @@ value it was handed. The vendor's spellings stay exported — each package's API
 helpers take one — but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
 cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket, ninetyfive,
 starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
-trollandtoad's `generic.go`, and vegassingles. The behavior flags are `MetadataOnly` (index
+and vegassingles. The behavior flags are `MetadataOnly` (index
 prices only, no conditions or quantities), `NoQuantityInventory`,
 `SealedMode`, `CreditMultiplier`
 (store-credit ratio), `Family` (price-coalescing group), plus
@@ -938,7 +938,6 @@ Italian), `abugames` (Solr, MINT-aware grading, `InfoForScraper`), `mtgseattle`
 `toamagic` (Spanish), `miniaturemarket` (sealed-only).
 
 **Legacy cohort — `gocolly` + hand-rolled goroutines, predate WorkerPool:**
-`trollandtoad` (plus a `generic.go` Lorcana scraper and sealed),
 `wizardscupboard`, `strikezone`. These are the remaining standardization gap;
 migrating them to `WorkerPool` would make operational behavior uniform.
 
