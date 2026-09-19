@@ -95,3 +95,35 @@ func TestMagicFinalizesWorldChampionshipCandidates(t *testing.T) {
 		}
 	}
 }
+
+func TestCandidateSetsRejectsPrintingInAnotherSet(t *testing.T) {
+	b := &mtgmatcher.Backend{Sets: map[string]*mtgmatcher.Set{
+		"OLD":   {Code: "OLD", Name: "Old Set", Type: "expansion"},
+		"POLD":  {Code: "POLD", Name: "Old Set Promos", Type: "promo"},
+		"DRAFT": {Code: "DRAFT", Name: "Draft Set", Type: "draft_innovation"},
+		"NEW":   {Code: "NEW", Name: "New Set", Type: "commander"},
+		"TOKEN": {Code: "TOKEN", Name: "New Set Tokens", Type: "token"},
+	}}
+	for _, tt := range []struct {
+		name            string
+		in              mtgmatcher.InputCard
+		printings, want []string
+	}{
+		{"missing reprint", mtgmatcher.InputCard{Edition: "NEW"}, []string{"OLD"}, nil},
+		{"missing reprint with promo sibling", mtgmatcher.InputCard{Edition: "NEW"}, []string{"OLD", "POLD"}, nil},
+		{"draft reprint", mtgmatcher.InputCard{Edition: "NEW"}, []string{"DRAFT"}, nil},
+		{"correct edition", mtgmatcher.InputCard{Edition: "OLD"}, []string{"OLD"}, []string{"OLD"}},
+		{"catalog gains reprint", mtgmatcher.InputCard{Edition: "New Set"}, []string{"OLD", "NEW"}, []string{"NEW"}},
+		{"unknown shelf", mtgmatcher.InputCard{Edition: "Vendor Shelf"}, []string{"OLD"}, []string{"OLD"}},
+		{"promo wildcard", mtgmatcher.InputCard{Edition: "NEW", PromoWildcard: true}, []string{"OLD"}, []string{"OLD"}},
+		{"promo sibling", mtgmatcher.InputCard{Edition: "NEW", Variation: "Prerelease"}, []string{"OLD"}, []string{"OLD"}},
+		{"token sheet", mtgmatcher.InputCard{Edition: "NEW"}, []string{"TOKEN"}, []string{"TOKEN"}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := (Rules{}).CandidateSets(b, &tt.in, tt.printings)
+			if !slices.Equal(got, tt.want) {
+				t.Fatalf("candidates = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

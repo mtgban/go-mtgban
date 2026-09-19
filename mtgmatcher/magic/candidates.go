@@ -11,7 +11,6 @@ import (
 // depends on which candidates the earlier pass admitted.
 func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, printings []string) []string {
 	var codes []string
-	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
 		codes = append(codes, printings[0])
 	} else if !inCard.PromoWildcard && !inCard.IsSecretLair() {
@@ -89,6 +88,24 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 		codes = append(codes, printings...)
 	}
 
+	// Ordinary printings cannot stand in for a missing reprint in an explicitly
+	// named set. Keep the broader selection for promos, tokens and special sets.
+	if !inCard.PromoWildcard && !inCard.IsSecretLair() && !isMysteryList(inCard) &&
+		!inCard.IsPrerelease() && !b.IsPromoPack(inCard) && !inCard.IsBundle() && !inCard.IsBaB() {
+		if set, err := b.GetSetByName(inCard.Edition); err == nil && ordinarySet(set) {
+			otherSets := len(codes) > 0
+			for _, code := range codes {
+				candidate := b.Sets[code]
+				if candidate == nil || (!ordinarySet(candidate) && candidate.Type != "promo") || mtgmatcher.Equals(set.Name, candidate.Name) {
+					otherSets = false
+					break
+				}
+			}
+			if otherSets {
+				return nil
+			}
+		}
+	}
 	return codes
 }
 
@@ -99,4 +116,8 @@ func (Rules) FinalizeCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputC
 		return cards[:1]
 	}
 	return cards
+}
+
+func ordinarySet(set *mtgmatcher.Set) bool {
+	return set != nil && (set.Type == "expansion" || set.Type == "core" || set.Type == "commander" || set.Type == "draft_innovation")
 }
