@@ -22,5 +22,6 @@ jobs:
     with:
       target: tcg_sealed_fleshandblood
       game: "fleshandblood"
+      affiliate: ${{ vars.TCG_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz
     secrets: inherit

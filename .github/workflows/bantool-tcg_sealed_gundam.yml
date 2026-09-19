@@ -22,5 +22,6 @@ jobs:
     with:
       target: tcg_sealed_gundam
       game: "gundam"
+      affiliate: ${{ vars.TCG_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/gundam/gundam.json.xz
     secrets: inherit

@@ -22,6 +22,7 @@ jobs:
     with:
       target: cardmarket_market_lorcana
       game: "lorcana"
+      affiliate: ${{ vars.MKM_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/lorcana/lorcana.json.xz
       mkmids-filepath: b2://mtgban-datastore/lorcana/cardmarket_catalog.json.xz
     secrets: inherit

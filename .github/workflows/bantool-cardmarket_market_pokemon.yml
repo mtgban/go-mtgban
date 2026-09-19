@@ -25,6 +25,7 @@ jobs:
     with:
       target: cardmarket_market_pokemon
       game: "pokemon"
+      affiliate: ${{ vars.MKM_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
       mkmids-filepath: b2://mtgban-datastore/pokemon/cardmarket_catalog.json.xz
       runs-on: '["self-hosted", "cardmarket-market"]'

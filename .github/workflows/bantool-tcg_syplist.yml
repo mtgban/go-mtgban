@@ -31,6 +31,7 @@ jobs:
     with:
       target: tcg_syplist
       game: "magic"
+      affiliate: ${{ vars.TCG_PARTNER }}
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
     secrets: inherit

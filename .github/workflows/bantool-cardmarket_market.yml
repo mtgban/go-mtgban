@@ -39,6 +39,7 @@ jobs:
     with:
       target: cardmarket_market
       game: "magic"
+      affiliate: ${{ vars.MKM_PARTNER }}
       datastore-filepath: ${{ vars.DATASTORE_MAGIC }}
       mkmids-filepath: ${{ vars.MKMIDS_MAGIC }}
       runs-on: '["self-hosted", "cardmarket-market"]'

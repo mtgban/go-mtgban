@@ -349,8 +349,8 @@ func (envAuthenticator) Secret(name string) (string, error) {
 // scraperOptions turns the flags and environment bantool reads into the
 // options the key's own registered constructor understands: always the log
 // callback and, where set, a concurrency cap; one half if the target asked
-// for it; the partner code its key's family has always read from the
-// environment; and any catalog, sku list or bridge scraperResources loads.
+// for it; AFFILIATE when the caller set it (CI passes one partner per
+// target); and any catalog, sku list or bridge scraperResources loads.
 // Secrets are not read here either: envAuthenticator goes along as an
 // option and answers each constructor's own Secret* names directly.
 func scraperOptions(game mtgban.Game, key string, opt *scraperOption, maxConcurrency int) ([]mtgban.Option, error) {
@@ -368,27 +368,8 @@ func scraperOptions(game mtgban.Game, key string, opt *scraperOption, maxConcurr
 		opts = append(opts, mtgban.WithBuylistOnly())
 	}
 
-	switch {
-	case strings.HasPrefix(key, "cardmarket"):
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("MKM_PARTNER")))
-	case strings.HasPrefix(key, "tcg_"):
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("TCG_PARTNER")))
-	case strings.HasPrefix(key, "cardkingdom"):
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("CK_PARTNER")))
-	case strings.HasPrefix(key, "coolstuffinc"):
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("CSI_PARTNER")))
-	case strings.HasPrefix(key, "cardtrader"):
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("CT_PARTNER")))
-	case strings.HasPrefix(key, "manapool"):
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("MP_PARTNER")))
-	case key == "miniaturemarket_sealed":
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("MM_PARTNER")))
-	case key == "mintcard":
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("MINT_PARTNER")))
-	case strings.HasPrefix(key, "starcitygames"):
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("SCG_PARTNER")))
-	case key == "sealed_ev":
-		opts = append(opts, mtgban.WithAffiliate(os.Getenv("TCG_PARTNER")))
+	if v := os.Getenv("AFFILIATE"); v != "" {
+		opts = append(opts, mtgban.WithAffiliate(v))
 	}
 
 	resources, err := scraperResources(game, key)

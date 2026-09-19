@@ -22,5 +22,6 @@ jobs:
     with:
       target: cardmarket_sealed_pokemon
       game: "pokemon"
+      affiliate: ${{ vars.MKM_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
     secrets: inherit

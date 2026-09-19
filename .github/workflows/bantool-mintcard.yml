@@ -33,6 +33,7 @@ jobs:
     with:
       target: mintcard
       game: "magic"
+      affiliate: ${{ vars.MINT_PARTNER }}
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
       skus-filepath: ${{ needs.cache-skus.outputs.filepath }}
