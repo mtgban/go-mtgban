@@ -1,12 +1,9 @@
 package abugames
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 
@@ -90,8 +87,7 @@ const (
 
 // ABUClient reads ABU's own catalog API.
 type ABUClient struct {
-	client        *http.Client
-	authorization string
+	client *http.Client
 }
 
 // NewABUClient returns a client for the public catalog.
@@ -103,38 +99,11 @@ func NewABUClient() *ABUClient {
 	return &abu
 }
 
-// NewABUClientWithBearer returns a client authenticated as a user, for the
-// cart operations the public catalog does not expose.
-func NewABUClientWithBearer(token string) *ABUClient {
-	abu := NewABUClient()
-	abu.authorization = token
-	return abu
-}
-
-// Get performs a GET carrying whatever credentials the client holds.
+// Get performs a GET against the catalog.
 func (abu *ABUClient) Get(ctx context.Context, url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, err
-	}
-
-	if abu.authorization != "" {
-		req.Header.Set("Authorization", "Bearer "+abu.authorization)
-	}
-
-	return abu.client.Do(req)
-}
-
-// Post performs a POST carrying whatever credentials the client holds.
-func (abu *ABUClient) Post(ctx context.Context, url, contentType string, reader io.Reader) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, reader)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", contentType)
-	if abu.authorization != "" {
-		req.Header.Set("Authorization", "Bearer "+abu.authorization)
 	}
 
 	return abu.client.Do(req)
@@ -243,76 +212,4 @@ func (abu *ABUClient) GetSealedProduct(ctx context.Context, pageStart int) (*ABU
 	u.RawQuery = q.Encode()
 
 	return abu.sendSealedRequest(ctx, u.String())
-}
-
-// CartRequest is one add-to-cart call.
-type CartRequest struct {
-	ItemID   string `json:"item_id"`
-	Quantity int    `json:"quantity"`
-	// Ignored on buylist
-	Call string `json:"call,omitempty"`
-}
-
-// CartResponse is what the cart endpoints answer with.
-type CartResponse struct {
-	BuyList string `json:"buyList"`
-	NqData  struct {
-		Maxqty int `json:"maxqty"`
-	} `json:"nqData"`
-	ConditionRowID int `json:"condition_row_id"`
-	Resp           struct {
-		Exception any   `json:"exception"`
-		Headers   []any `json:"headers"`
-		Original  any   `json:"original"`
-	} `json:"resp"`
-
-	Message    string `json:"message"`
-	Code       string `json:"code"`
-	StatusCode int    `json:"status_code"`
-}
-
-const (
-	abuInventoryAddURL = "https://api.abugames.com/cart/item"
-	abuBuylistAddURL   = "https://api.abugames.com/buy-list-cart/item"
-)
-
-// SetCartInventory sets how many of a card to buy from ABU.
-func (abu *ABUClient) SetCartInventory(ctx context.Context, abuID string, qty int) (*CartResponse, error) {
-	return abu.setCart(ctx, abuInventoryAddURL, abuID, qty)
-}
-
-// SetCartBuylist sets how many of a card to sell to ABU.
-func (abu *ABUClient) SetCartBuylist(ctx context.Context, abuID string, qty int) (*CartResponse, error) {
-	return abu.setCart(ctx, abuBuylistAddURL, abuID, qty)
-}
-
-func (abu *ABUClient) setCart(ctx context.Context, link, abuID string, qty int) (*CartResponse, error) {
-	payload := CartRequest{
-		ItemID:   abuID,
-		Quantity: qty,
-		Call:     "add",
-	}
-
-	reqBody, err := json.Marshal(&payload)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := abu.Post(ctx, link, "application/json", bytes.NewReader(reqBody))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var response CartResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(response.Message) > 0 {
-		return nil, errors.New(response.Message)
-	}
-
-	return &response, nil
 }
