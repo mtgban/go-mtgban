@@ -197,6 +197,15 @@ func valueFromCache(picks []string, unit map[string]float64, probabilities []flo
 	return total
 }
 
+// skipFromEV identifies cards that have no usable sealed-product EV. The
+// price cache is shared by deterministic and simulated values, so this keeps
+// both paths from assigning value to cards whose pull rate is not published.
+func skipFromEV(co *mtgmatcher.CardObject, err error) bool {
+	return err != nil || co.HasPromoType(magic.PromoTypeSerialized) ||
+		co.HasPromoType(magic.PromoTypeCosmicFoil) ||
+		co.HasPromoType(magic.PromoTypeSLDBonus)
+}
+
 func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
 	co, err := ss.backend.GetUUID(uuid)
 	if err != nil {
@@ -224,9 +233,9 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		picks[i] = probs[i].UUID
 		probabilities[i] = probs[i].Probability
 
-		// Serialized (and unresolvable) cards never count towards the EV.
+		// Cards with no usable published pull rate never count towards the EV.
 		co, err := ss.backend.GetUUID(probs[i].UUID)
-		if err != nil || co.HasPromoType(magic.PromoTypeSerialized) || co.HasPromoType(magic.PromoTypeCosmicFoil) {
+		if skipFromEV(co, err) {
 			skipped[probs[i].UUID] = true
 		}
 	}

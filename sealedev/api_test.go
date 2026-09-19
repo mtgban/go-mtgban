@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // installCards builds a backend behind GetUUID for one test. Every price
@@ -16,6 +17,30 @@ func installCards(t *testing.T, cards map[string]*mtgmatcher.CardObject) *mtgmat
 
 func priced(conditions map[string]float64) *BanPrice {
 	return &BanPrice{Conditions: conditions}
+}
+
+func TestSkipFromEVIncludesCardsWithoutPublishedPullRates(t *testing.T) {
+	for _, promoType := range []string{
+		magic.PromoTypeSerialized,
+		magic.PromoTypeCosmicFoil,
+		magic.PromoTypeSLDBonus,
+	} {
+		t.Run(promoType, func(t *testing.T) {
+			co := &mtgmatcher.CardObject{Card: mtgmatcher.Card{
+				PromoTypes: []string{promoType},
+			}}
+			if !skipFromEV(co, nil) {
+				t.Errorf("skipFromEV did not exclude promo type %q", promoType)
+			}
+		})
+	}
+
+	if !skipFromEV(nil, mtgmatcher.ErrCardUnknownID) {
+		t.Error("skipFromEV did not exclude an unresolvable card")
+	}
+	if skipFromEV(&mtgmatcher.CardObject{}, nil) {
+		t.Error("skipFromEV excluded an ordinary card")
+	}
 }
 
 // TestGetPriceReadsTheFinishBeingQuoted pins which condition key answers for
