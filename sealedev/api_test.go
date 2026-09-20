@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // installCards builds a backend behind GetUUID for one test. Every price
@@ -16,6 +17,36 @@ func installCards(t *testing.T, cards map[string]*mtgmatcher.CardObject) *mtgmat
 
 func priced(conditions map[string]float64) *BanPrice {
 	return &BanPrice{Conditions: conditions}
+}
+
+func TestSkipFromEV(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		promoType   string
+		probability float64
+		wantSkip    bool
+	}{
+		{name: "serialized", promoType: magic.PromoTypeSerialized, probability: 1, wantSkip: true},
+		{name: "cosmic foil", promoType: magic.PromoTypeCosmicFoil, probability: 1, wantSkip: true},
+		{name: "bonus without fixed distribution", promoType: magic.PromoTypeSLDBonus, probability: 0.5, wantSkip: true},
+		{name: "bonus with fixed distribution", promoType: magic.PromoTypeSLDBonus, probability: 1, wantSkip: false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			co := &mtgmatcher.CardObject{Card: mtgmatcher.Card{
+				PromoTypes: []string{test.promoType},
+			}}
+			if got := skipFromEV(co, nil, test.probability); got != test.wantSkip {
+				t.Errorf("skipFromEV() = %v, want %v", got, test.wantSkip)
+			}
+		})
+	}
+
+	if !skipFromEV(nil, mtgmatcher.ErrCardUnknownID, 1) {
+		t.Error("skipFromEV did not exclude an unresolvable card")
+	}
+	if skipFromEV(&mtgmatcher.CardObject{}, nil, 1) {
+		t.Error("skipFromEV excluded an ordinary card")
+	}
 }
 
 // TestGetPriceReadsTheFinishBeingQuoted pins which condition key answers for

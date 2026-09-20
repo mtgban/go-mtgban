@@ -3,6 +3,8 @@ package sealedev
 import (
 	"context"
 	"os"
+	"reflect"
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -10,6 +12,7 @@ import (
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
@@ -101,6 +104,76 @@ func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price f
 		}
 	}
 	return r
+}
+
+func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend) (string, string, string) {
+	t.Helper()
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
+		if err != nil || b.SealedIsRandom(co.SetCode, uuid) {
+			continue
+		}
+		probs, err := b.GetProbabilitiesForSealed(co.SetCode, uuid)
+		if err != nil {
+			continue
+		}
+		for _, prob := range probs {
+			card, err := b.GetUUID(prob.UUID)
+			if err == nil && card.HasPromoType(magic.PromoTypeSLDBonus) && prob.Probability < 1 {
+				return uuid, co.SetCode, prob.UUID
+			}
+		}
+	}
+	t.Skip("no fixed sealed product with a non-guaranteed SLD bonus")
+	return "", "", ""
+}
+
+func resultPrices(results []result) []float64 {
+	prices := make([]float64, 0, len(results))
+	for _, result := range results {
+		switch {
+		case result.invEntry != nil:
+			prices = append(prices, result.invEntry.Price)
+		case result.buyEntry != nil:
+			prices = append(prices, result.buyEntry.BuyPrice)
+		}
+	}
+	sort.Float64s(prices)
+	return prices
+}
+
+// TestRunEVSkipsUnfixedSLDBonusFromPriceCache proves the skip survives the
+// entire run: making a non-fixed bonus absurdly expensive must not alter
+// any EV result because that UUID never enters the unit-price cache.
+func TestRunEVSkipsUnfixedSLDBonusFromPriceCache(t *testing.T) {
+	b := realDatastore(t)
+	productUUID, setCode, bonusUUID := sldBonusProduct(t, b)
+
+	base := pricedAt(t, b, setCode, productUUID, 1)
+	high := pricedAt(t, b, setCode, productUUID, 1)
+	for _, parameter := range evParameters {
+		for _, store := range parameter.SourceStores {
+			high.setRetail(b, bonusUUID, store, 1000)
+			high.setBuylist(b, bonusUUID, store, 1000)
+		}
+	}
+
+	ss := NewScraper(b, "")
+	ss.repetitions = 1
+	ss.prices = base
+	want, errs := ss.runEV(context.Background(), productUUID)
+	if len(errs) != 0 {
+		t.Fatalf("baseline runEV reported %v", errs)
+	}
+
+	ss.prices = high
+	got, errs := ss.runEV(context.Background(), productUUID)
+	if len(errs) != 0 {
+		t.Fatalf("high-bonus runEV reported %v", errs)
+	}
+	if !reflect.DeepEqual(resultPrices(got), resultPrices(want)) {
+		t.Fatalf("non-guaranteed bonus changed EV results: base=%v high=%v", resultPrices(want), resultPrices(got))
+	}
 }
 
 // TestRunEVValuesAProduct pins that a product with contents and prices comes
