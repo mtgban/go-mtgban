@@ -248,14 +248,42 @@ func LoadBuylistEditions(ctx context.Context, shelf string) (map[string]string, 
 	return edition2id, nil
 }
 
-// SearchResult is one hit from the storefront's search.
+// SearchResult is the first page of a search.
 type SearchResult struct {
-	PageID string
-	Data   []byte
+	// NextLink is the href the storefront's own next-page control
+	// carries, empty on the page the results end on. It is followed as
+	// it stands: the storefront joins the page number to the saved
+	// query with an "&" where a "?" belongs, and rebuilding the link
+	// from its parts is a second guess at a spelling the page already
+	// gives.
+	NextLink string
+	Data     []byte
 }
 
-// Search resolves an item name to its id and returns the first page of
-// results, narrowed to the given rarity tiers.
+// searchNextLink reads the href of a results page's next-page control.
+func searchNextLink(doc *goquery.Document) string {
+	next, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
+	return next
+}
+
+// fetchSearchPage follows one of those links and parses the page it
+// answers with.
+func fetchSearchPage(ctx context.Context, client *http.Client, link string) (*goquery.Document, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return goquery.NewDocumentFromReader(resp.Body)
+}
+
+// Search returns the first page of an item name's results, narrowed to
+// the given rarity tiers, and the link to the page after it.
 func Search(ctx context.Context, shelf, itemName string, skipOOS bool, rarities []string) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", "")
@@ -290,7 +318,8 @@ func Search(ctx context.Context, shelf, itemName string, skipOOS bool, rarities 
 	v.Set("f[ItemSet][]", itemName)
 	v.Set("s", shelf)
 	v.Set("page", "1")
-	v.Set("resultsPerPage", "50")
+	// 25 and 50 are the only values the search takes, and it serves 25 either way
+	v.Set("resultsPerPage", "25")
 	v.Set("submit", "Search")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, csiSearchURL, strings.NewReader(v.Encode()))
@@ -316,16 +345,8 @@ func Search(ctx context.Context, shelf, itemName string, skipOOS bool, rarities 
 		return nil, err
 	}
 
-	nextLink, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
-	u, err := url.Parse(nextLink)
-	if err != nil {
-		return nil, err
-	}
-
-	clean := strings.Split(strings.TrimPrefix(u.Path, "/sq/"), "&")[0]
-
 	return &SearchResult{
-		PageID: clean,
-		Data:   data,
+		NextLink: searchNextLink(doc),
+		Data:     data,
 	}, nil
 }

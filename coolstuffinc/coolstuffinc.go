@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"html"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -527,32 +526,17 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 		return err
 	}
 
-	// result.PageId may be empty if the results have only one page
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(result.Data))
+	if err != nil {
+		return fmt.Errorf("page 1: %w", err)
+	}
+
+	// An empty next link is the last page, and the only thing that says
+	// so: a search whose rows divide evenly into pages ends on a full one
+	// and asking past the end answers that page over again.
+	next := result.NextLink
+
 	for page := 1; ; page++ {
-		data := result.Data
-
-		if page > 1 {
-			link := "https://www.coolstuffinc.com/sq/" + result.PageID + "?page=" + fmt.Sprint(page)
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
-			if err != nil {
-				return err
-			}
-			resp, err := csi.client.Do(req)
-			if err != nil {
-				return err
-			}
-			data, err = io.ReadAll(resp.Body)
-			resp.Body.Close()
-			if err != nil {
-				return err
-			}
-		}
-
-		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
-		if err != nil {
-			return fmt.Errorf("page %d: %w", page, err)
-		}
-
 		doc.Find(`div[class="row product-search-row main-container"]`).Each(func(i int, s *goquery.Selection) {
 			// The storefront escapes its names twice, so the decode the
 			// parser already did leaves the entity still written out:
@@ -783,10 +767,15 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 			})
 		})
 
-		next, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
 		if next == "" {
 			break
 		}
+
+		doc, err = fetchSearchPage(ctx, csi.client, next)
+		if err != nil {
+			return fmt.Errorf("page %d: %w", page+1, err)
+		}
+		next = searchNextLink(doc)
 	}
 
 	return nil

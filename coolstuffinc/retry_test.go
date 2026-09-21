@@ -53,8 +53,8 @@ func TestSearchSurvivesTransientFailures(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Search() after %d attempts: %v", attempts, err)
 			}
-			if result.PageID != "12345" {
-				t.Errorf("PageID = %q, want %q", result.PageID, "12345")
+			if result.NextLink != "/sq/12345&page=2" {
+				t.Errorf("NextLink = %q, want %q", result.NextLink, "/sq/12345&page=2")
 			}
 			if attempts != 3 {
 				t.Errorf("served %d attempts, want 3", attempts)
