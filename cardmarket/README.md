@@ -70,6 +70,30 @@ Pinned with a test that would have caught it directly:
 loaded set's own numbers, not just that the card name exists there the way
 the existing `TestVariants` did.
 
+**A single, confident, wrong candidate isn't ambiguity - it's just wrong,**
+and the number-disagreement guard above only ever fires on more than one
+candidate. Found live on `/arbit`: World Championship Decks products (sold
+one per player/year, Cardmarket edition `"WCD <year>: <player>"`) had
+mtgjson's mcmId linking several of them onto a printing with nothing to do
+with the deck at all - id 249617, "Phyrexian Processor (V.2)" under
+`WCD 2000: Janosch Kühn`, onto The Brothers' War Retro Artifacts' foil
+printing; id 249533, "Duress (V.2)" under `WCD 2001: Antoine Ruel`, onto a
+starred Seventh Edition Duress - both real, both `/arbit`-visible fake
+spreads (a cheap old WCD listing priced as an unrelated, pricier card),
+neither ambiguous in Fallback's own terms, since there was only ever the
+one id. `Fallback` now also checks a WCD product's lone candidate against
+what a WCD printing actually looks like (set codes `WC97`-`WC04`, every one
+"memorabilia"): not one, and it defers the same way an ambiguous one does.
+A sweep of every WCD product in MTGJSON's own `CardmarketIdentifiers.json`
+(931 products, 32 expansions) found 23 more candidates with this exact
+shape - spot-checked live, all confirmed genuine - so this is systematic on
+mtgjson's side, not a one-off; worth filing upstream. Landing on the
+correct *card* doesn't yet mean landing on the correct main-deck-vs-
+sideboard variant when a name appears as both under one player's deck
+(observed: both examples above land on the maindeck printing once deferred,
+not the sideboard one their own "(V.2)" suggests) - a separate, smaller,
+open gap in the existing WCD sideboard detection, not addressed here.
+
 ## Market's design
 
 **The List's foil printings are never priced.** It reprints a card under

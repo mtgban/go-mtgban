@@ -181,6 +181,32 @@ func Fallback(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
 	if !numberMatchedFoil && len(numbersFoil) > 1 {
 		cardIDFoil = ""
 	}
+	// World Championship Decks products are sold one per player/year
+	// ("WCD <year>: <player>"), and mtgjson's own mcmId links have drifted
+	// for several of them onto an unrelated printing entirely - confirmed
+	// live: id 249617, "Phyrexian Processor (V.2)" under WCD 2000: Janosch
+	// Kühn, lands on The Brothers' War Retro Artifacts' foil printing
+	// instead; id 249533, "Duress (V.2)" under WCD 2001: Antoine Ruel,
+	// lands on a starred Seventh Edition Duress. Both are a single,
+	// confident, wrong candidate - the ambiguity check above cannot see
+	// this, since there was only ever one id to begin with. A WCD product
+	// whose only candidate is not itself a WCD printing (set codes
+	// WC97-WC04, all "memorabilia") is exactly that: defer instead,
+	// the same way an ambiguous candidate does, to Preprocess's own
+	// name/edition matching (including its "... Sideboard" retry) rather
+	// than keep a plainly implausible answer.
+	if strings.HasPrefix(product.ExpansionName, "WCD ") {
+		if cardID != "" {
+			if co, err := b.GetUUID(cardID); err == nil && !strings.HasPrefix(co.SetCode, "WC") {
+				cardID = ""
+			}
+		}
+		if cardIDFoil != "" {
+			if co, err := b.GetUUID(cardIDFoil); err == nil && !strings.HasPrefix(co.SetCode, "WC") {
+				cardIDFoil = ""
+			}
+		}
+	}
 	// If we found any known ids, we trust them and skip the rest of the preprocessing
 	if ids != nil {
 		// Make sure both ids are set to something
