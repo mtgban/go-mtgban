@@ -740,7 +740,12 @@ func EditionTokenSetCode(b *mtgmatcher.Backend, edition string) string {
 	if err != nil {
 		return ""
 	}
-	code := set.Code
+	return SetTokenSetCode(b, set.Code)
+}
+
+// SetTokenSetCode is EditionTokenSetCode for a caller that already has a
+// set code (a vendor's own product code) rather than only edition wording.
+func SetTokenSetCode(b *mtgmatcher.Backend, code string) string {
 	seen := map[string]bool{}
 	for !seen[code] {
 		seen[code] = true
