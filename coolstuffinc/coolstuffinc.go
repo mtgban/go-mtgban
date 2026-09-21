@@ -1182,6 +1182,28 @@ func catalogTreatment(variation string) string {
 	return csiTreatments.Replace(variation)
 }
 
+// numberedListing reads a listing name apart from the collector number this
+// storefront glues onto it, answering the name alone and what it took, or the
+// name whole and nothing where the storefront named the card by itself.
+//
+// Only a tail opening on a number is taken, since the storefront also hangs
+// plain wording off a dash ("Ancient Mew - Movie Promo") and the catalog
+// spells some cards with one of its own. What is taken is set aside rather
+// than thrown away: the printing is written in parentheses behind the number
+// ("16/111 (Reverse Foil)") and neither side's foil column says so, which the
+// matcher reads off the name it is handed.
+func numberedListing(name string) (string, string) {
+	head, tail, found := strings.Cut(name, " - ")
+	if !found {
+		return name, ""
+	}
+	number, _, _ := strings.Cut(tail, " ")
+	if !buylistNumberWord.MatchString(number) {
+		return name, ""
+	}
+	return head, tail
+}
+
 // pokemonListing reads a Pokemon listing the way the catalog names it. The
 // Classic Collection reprints are sold under Celebrations with the
 // collection in the note; the special energies are named "Special Metal
@@ -1192,6 +1214,7 @@ func catalogTreatment(variation string) string {
 // cards of the Platinum sets are named "Alakazam 4" for the catalog's
 // "Alakazam E4".
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
+	name, numbered := numberedListing(name)
 	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
 	if edition == "Celebrations" && strings.Contains(variation, "Classic Collection") {
 		card.Edition = "Celebrations: Classic Collection"
@@ -1257,6 +1280,9 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 				break
 			}
 		}
+	}
+	if numbered != "" {
+		card.Name += " - " + numbered
 	}
 	return card
 }
