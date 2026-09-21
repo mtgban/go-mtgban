@@ -966,6 +966,13 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			variation := buylistVariation(product)
 			shelf := riftboundShelf(csi.backend, product.ItemSet, product.Notes, product.Name, variation, product.IsFoil == 1)
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
+			_, err := csi.backend.Match(theCard)
+			if err != nil {
+				fromSKU := riftboundSKUCard(csi.backend, product.Image, product.IsFoil == 1)
+				if fromSKU != nil {
+					theCard = fromSKU
+				}
+			}
 		// The rarity arrives in a field of its own here, where the sell
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
@@ -1437,6 +1444,14 @@ var (
 	riftboundImageTCG  = regexp.MustCompile(`[0-9]{5,}`)
 	riftboundImageTail = regexp.MustCompile(`(?i)(?:ovr|alt)?[_.]*(?:v[0-9]+)?$`)
 
+	// riftboundImageSig matches the tail the storefront hangs on a
+	// signature printing's sku, which the catalog numbers with a star
+	// instead ("SFD224SIG" for 224*). It is read rather than dropped:
+	// the same set files an overnumbered printing of the same card at
+	// that number without a star, so dropping it answers the wrong
+	// printing at the wrong price rather than nothing.
+	riftboundImageSig = regexp.MustCompile(`(?i)SIG$`)
+
 	// The image pads its numbers to three digits where the catalog does
 	// not ("VEN021" for 21, "UNLT01" for T1). PlainNumber reduces the
 	// codes the catalog publishes and leaves a bare padded number as it
@@ -1464,7 +1479,16 @@ func riftboundImageCard(b *mtgmatcher.Backend, imgURL string, foil bool) *mtgmat
 	if match == nil {
 		return nil
 	}
-	stem := match[1]
+	return riftboundSKUCard(b, match[1], foil)
+}
+
+// riftboundSKUCard answers the card one of the storefront's skus names.
+// The sale listings carry it inside an image url and the buylist feed
+// hands it over bare, in an Image field of its own.
+func riftboundSKUCard(b *mtgmatcher.Backend, stem string, foil bool) *mtgmatcher.InputCard {
+	if stem == "" {
+		return nil
+	}
 
 	// A run of five digits or more is a TCGplayer product id rather than
 	// a collector number, which runs to three. The catalog carries those
@@ -1501,11 +1525,18 @@ func riftboundImageCard(b *mtgmatcher.Backend, imgURL string, foil bool) *mtgmat
 		if index < 0 {
 			continue
 		}
-		number := riftboundImageTail.ReplaceAllString(upper[index+len(code):], "")
+		number := upper[index+len(code):]
+		var signature string
+		if riftboundImageSig.MatchString(number) {
+			number = riftboundImageSig.ReplaceAllString(number, "")
+			signature = "*"
+		}
+		number = riftboundImageTail.ReplaceAllString(number, "")
 		number = strings.Trim(number, "-_.")
 		if number == "" {
 			continue
 		}
+		number += signature
 		card := riftboundCardAt(b, code, number, foil)
 		if card != nil {
 			return card

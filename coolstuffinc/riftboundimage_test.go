@@ -42,6 +42,10 @@ func TestRiftboundImageCardNamesThePrinting(t *testing.T) {
 		{"a bare TCGplayer id", "Origins/full/m653158.jpg", false, "ogs-023-024"},
 		// The extension is the storefront's to change.
 		{"a shouted extension", "Vendetta/full/VEN021.JPG", true, "ven-021-166_foil"},
+		// The signature suffix is a number, not noise: the same set
+		// files an overnumbered printing of the same card at 224
+		// without the star, at another price entirely.
+		{"a signature printing", "Spiritforged/full/SFD224SIG.jpg", true, "sfd-224-star-221_foil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			card := riftboundImageCard(b, base+tt.img, tt.foil)
