@@ -72,6 +72,9 @@ func TestPreprocessResolvesTokenPairingMissingSpace(t *testing.T) {
 	if co.Identifiers["derivedTokenPair"] != "true" {
 		t.Errorf("resolved to %q, want a derived token pairing", co.Name)
 	}
+	if co.Name != "Soldier // Spirit" {
+		t.Errorf("resolved to %q, want \"Soldier // Spirit\"", co.Name)
+	}
 }
 
 // TestPreprocessRefusesTokenPairingWithNoMTGJSONLink pins the reverse:
@@ -103,5 +106,32 @@ func TestPreprocessIgnoresSingleFacedToken(t *testing.T) {
 	}
 	if out.Name != "Zombie Token" {
 		t.Errorf("resolved name %q, want \"Zombie Token\": the token-pair gate must not have fired", out.Name)
+	}
+}
+
+// TestPreprocessTokenPairNeedsTheTokenSetWalk pins that resolving against
+// the raw parent code Mint Card's own catalog gives genuinely depends on
+// magic.SetTokenSetCode's own walk to the token sheet: mtgjson's loader
+// moves a set's tokens out of its own Cards entirely once it has a
+// distinct token set code, so a plain MatchInSetNumber against the parent
+// ("C16") alone - what preprocessTokenPair would do without that walk -
+// finds nothing, even though the pairing itself resolves.
+func TestPreprocessTokenPairNeedsTheTokenSetWalk(t *testing.T) {
+	b := realDatastore(t)
+
+	if cards := b.MatchInSetNumber("Bird", "C16", "2"); len(cards) != 0 {
+		t.Fatalf("MatchInSetNumber(Bird, C16, 2) = %d cards, want 0: this pin needs the parent code alone to miss", len(cards))
+	}
+
+	out, err := preprocess(b, "Bird Token (2/21) // Saproling Token (16/21)", "", "", "English", "Commander 2016", "C16")
+	if err != nil {
+		t.Fatalf("preprocess() = %v, want the SetTokenSetCode walk to still find it", err)
+	}
+	co, err := b.GetUUID(out.ID)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", out.ID, err)
+	}
+	if co.Identifiers["derivedTokenPair"] != "true" {
+		t.Errorf("resolved to %q, want a derived token pairing", co.Name)
 	}
 }
