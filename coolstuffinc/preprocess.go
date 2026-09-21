@@ -657,6 +657,9 @@ func preprocessTokenPairBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtg
 	isFoil := card.IsFoil == 1
 
 	tokenSet := magic.EditionTokenSetCode(b, card.ItemSet)
+	if tokenSet == "" && card.Code != "" {
+		tokenSet = magic.SetTokenSetCode(b, card.Code)
+	}
 	if tokenSet == "" {
 		tokenSet = card.Code
 	}
