@@ -1676,6 +1676,7 @@ func catalogColor(name string) string {
 var csiSpellings = map[string]string{
 	"Belial - Marqis of Darkness":   "Belial - Marquis of Darkness",
 	"Compulsory Evactuation Device": "Compulsory Evacuation Device",
+	"Doube-Edged Sword Technique":   "Double-Edged Sword Technique",
 	"Fearl Imp":                     "Feral Imp",
 	"Homumculus the Alchemic Being": "Homunculus the Alchemic Being",
 	"Miracle Jurrassic Egg":         "Miracle Jurassic Egg",
