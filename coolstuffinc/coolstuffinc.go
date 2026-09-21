@@ -1667,6 +1667,11 @@ func catalogColor(name string) string {
 // pair. Left as typed they look up nothing at all and the listing goes
 // unpriced.
 //
+// One pair is not a slip: the storefront writes the Greek letter Konami
+// prints on the card where the catalog writes the word for it. The catalog
+// is what has to be asked, so it is corrected here alongside the typos
+// rather than argued with.
+//
 // The pairs are spelled out rather than found by nearest match. A catalog
 // tells its numbered siblings apart by a single character - "Armed Dragon
 // LV3" against LV5, "Harpie Lady 1" against 2 - and 255 pairs of names
@@ -1678,6 +1683,7 @@ var csiSpellings = map[string]string{
 	"Compulsory Evactuation Device": "Compulsory Evacuation Device",
 	"Doube-Edged Sword Technique":   "Double-Edged Sword Technique",
 	"Fearl Imp":                     "Feral Imp",
+	"Fiendish Engine Ω":             "Fiendish Engine Omega",
 	"Homumculus the Alchemic Being": "Homunculus the Alchemic Being",
 	"Miracle Jurrassic Egg":         "Miracle Jurassic Egg",
 	"Perfect Synch - A-Un":          "Perfect Sync - A-Un",
