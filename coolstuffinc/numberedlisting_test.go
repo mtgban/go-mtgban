@@ -31,6 +31,7 @@ func TestNumberedListingReachesTheNameRules(t *testing.T) {
 		{"Sprigattito - MEP061", "ME Promos", "MEP061", "061_709975_holofoil"},
 		// A Team Galactic invention, sold under the invention alone.
 		{"SP Radar - 96/111", "Platinum Rising Rivals", "96", "96-111_89809"},
+		{"Poke Turn - 118/127", "Platinum Base Set", "118", "118-127_89807"},
 		// Nidoran, sold without the sex the catalog names it by.
 		{"Nidoran - 57/101", "Ex Dragon Frontiers", "57", "57-101_87731"},
 	} {

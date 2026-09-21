@@ -1313,7 +1313,6 @@ var pokemonNumberSets = map[string]string{
 // catalog's own.
 var pokemonRespellings = map[string]string{
 	"Galatic HQ":      "Galactic HQ",
-	"Poke Turn":       "Poké Turn",
 	"Sprigattito":     "Sprigatito",
 	"Unit Energy GFW": "Unit Energy GRW",
 }
