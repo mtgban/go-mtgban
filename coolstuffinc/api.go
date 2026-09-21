@@ -82,6 +82,11 @@ type CSIPriceEntry struct {
 	// token pairing needs, since its own name alone is never enough. See
 	// preprocessTokenPairBuylist.
 	Code string `json:"Code"`
+	// Image is the storefront's own sku for the product - "SFD224SIG",
+	// the same name the sale listings carry inside an image url. It
+	// names the set and the collector number where the product name
+	// names neither. See riftboundSKUCard.
+	Image string `json:"Image"`
 }
 
 // GetBuylist returns what Cool Stuff Inc is buying on one storefront shelf.
