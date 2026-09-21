@@ -327,6 +327,14 @@ func preprocessTokenPair(b *mtgmatcher.Backend, product Product) (*mtgmatcher.In
 	setCode := ""
 	if m := reBrackets.FindStringSubmatch(product.ProductName); len(m) > 1 {
 		setCode = m[1]
+		// As the ordinary path above does: the Japanese line's own
+		// bracket group is occasionally non-Latin, and the English one
+		// carries the real code where it is.
+		if reJapanese.MatchString(setCode) {
+			if m := reBrackets.FindStringSubmatch(product.ProductNameEN); len(m) > 1 {
+				setCode = m[1]
+			}
+		}
 		if base, suffix, found := strings.Cut(setCode, "-"); found {
 			setCode = dashSuffix(base, suffix)
 		}
