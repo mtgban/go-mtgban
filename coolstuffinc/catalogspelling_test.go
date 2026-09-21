@@ -24,6 +24,7 @@ func TestCatalogSpelling(t *testing.T) {
 	}{
 		{"Belial - Marqis of Darkness", "Structure Deck Gates of the Underworld", "Common"},
 		{"Compulsory Evactuation Device", "Rarity Collection 5", "Stamped Version - Ultra Rare Ultra Rare"},
+		{"Doube-Edged Sword Technique", "Structure Deck Samurai Warlords", "Common"},
 		{"Fearl Imp", "Dark Beginning 1", "Common"},
 		{"Homumculus the Alchemic Being", "Rise of Destiny", "Common"},
 		{"Miracle Jurrassic Egg", "Structure Deck Dinosaurs Rage", "Common"},
