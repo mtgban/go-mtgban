@@ -181,8 +181,15 @@ func TestPromoTags(t *testing.T) {
 // TestFinishSelection pins how a listing's own wording reaches a printing.
 // The wording names axes rather than a printing, so the entry that answers
 // is the one naming everything asked for and the least beside it: "1st
-// Edition" reaches the 1st Edition Holofoil on a card sold in no other
-// first-edition printing.
+// Edition" reaches the 1st Edition Holofoil where the card is sold in that
+// run and in another.
+//
+// The crossing is read on "Base Set (Shadowless)", which is where the
+// catalog files the run: one product sold as both 1st Edition Holofoil and
+// Unlimited Holofoil. It was read on "Base Set" until 2026-09-21, on an
+// entry that existed because the catalog hung the run's skus on the
+// unlimited product as well - the datastore stopped publishing it, and the
+// shelf beside it prices the same two printings for real.
 func TestFinishSelection(t *testing.T) {
 	b := loadBackend(t)
 
@@ -192,11 +199,11 @@ func TestFinishSelection(t *testing.T) {
 		wantSuffx string
 	}{
 		{"bare number keeps the default", mtgmatcher.InputCard{
-			Name: "Alakazam", Edition: "Base Set", Variation: "001/102"}, "_holo"},
+			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102"}, "_unlholo"},
 		{"the finish field names the crossing", mtgmatcher.InputCard{
-			Name: "Alakazam", Edition: "Base Set", Variation: "001/102", Finish: "1st Edition Holofoil"}, "_1eholo"},
+			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102", Finish: "1st Edition Holofoil"}, "_1eholo"},
 		{"the wording names the run alone", mtgmatcher.InputCard{
-			Name: "Alakazam", Edition: "Base Set", Variation: "001/102 1st Edition"}, "_1eholo"},
+			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102 1st Edition"}, "_1eholo"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in := tt.in
@@ -223,6 +230,8 @@ func finishForSuffix(suffix string) string {
 		return "Holofoil"
 	case "_1eholo":
 		return "1st Edition Holofoil"
+	case "_unlholo":
+		return "Unlimited Holofoil"
 	case "_reverse":
 		return "Reverse Holofoil"
 	}

@@ -15,6 +15,13 @@ import (
 // the plain run of a card printed in holo answers with the holo of the
 // other run, so an answer not carrying the run is refused instead of being
 // published as the ordinary printing at a fraction of the price.
+//
+// Both rows name a set that carries its runs as finishes of itself. Base
+// Set does not - its runs are filed as "Base Set (Shadowless)" - and the
+// Alakazam row read "Base Set" until 2026-09-21, answering only because the
+// catalog hung the run's skus on the unlimited product too. That entry is
+// no longer published, and the shelf named here is where the run has always
+// been priced.
 func TestConditionRunReachesTheRun(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
@@ -22,7 +29,7 @@ func TestConditionRunReachesTheRun(t *testing.T) {
 		name, edition string
 		wantID        string
 	}{
-		{"Alakazam - 1/102", "Base Set", "001-102_42346_1steditionholofoil"},
+		{"Alakazam - 1/102", "Base Set (Shadowless)", "001-102_106996_1steditionholofoil"},
 		{"Lapras - 10/62", "Fossil", "10-62_44419_1steditionholofoil"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
