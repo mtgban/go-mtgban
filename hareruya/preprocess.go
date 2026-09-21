@@ -7,6 +7,7 @@ import (
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 var reParens = regexp.MustCompile(`\(([^)]+)\)`)
@@ -142,6 +143,18 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 		strings.Contains(product.ProductName, "Ultra Pro Puzzle") ||
 		strings.Contains(strings.ToLower(product.CardName), "test print") {
 		return nil, mtgmatcher.ErrUnsupported
+	}
+
+	// A two-sided token sheet's own card_name ("Cat Token/Soldier Token")
+	// is not one the ordinary pipeline below was ever built to read - it
+	// would search for one card literally named that. Unlike the "/" this
+	// same field can carry for an ordinary card's dual Japanese/English
+	// spelling (see the buylist's own preprocess, which picks a language
+	// rather than splits a pairing), a token listing's two names are both
+	// English and both real face names, which is what the "Token" gate
+	// below tells apart.
+	if strings.Contains(product.CardName, "Token") && strings.Contains(product.CardName, "/") {
+		return preprocessTokenPair(b, product)
 	}
 
 	cardName := product.CardName
@@ -292,6 +305,73 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 		Foil:      foil,
 		Language:  language,
 	}, nil
+}
+
+// preprocessTokenPair resolves a two-sided token listing to the combined
+// entity mtgmatcher/magic derives for it, anchored by the set code and
+// collector numbers the storefront's own product_name already carries -
+// "(005/006)《Cat+Soldier Token》[C18]" names Cat as C18's own token #5 and
+// Soldier as its #6, confirmed against real listings to agree with
+// mtgjson's own token numbering exactly. Unlike Cardmarket's own catalog
+// ordinal, this is a real anchor; unlike Cool Stuff Inc's own feed, the set
+// code sits beside the number in the same field rather than in one of its
+// own.
+func preprocessTokenPair(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, error) {
+	faces := strings.SplitN(product.CardName, "/", 2)
+	if len(faces) != 2 {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+	listingName := faces[0] + " // " + faces[1]
+	foil := product.FoilFlag == "1"
+
+	setCode := ""
+	if m := reBrackets.FindStringSubmatch(product.ProductName); len(m) > 1 {
+		setCode = m[1]
+		if base, suffix, found := strings.Cut(setCode, "-"); found {
+			setCode = dashSuffix(base, suffix)
+		}
+	}
+	if setCode != "" {
+		if tokenSet := magic.SetTokenSetCode(b, setCode); tokenSet != "" {
+			setCode = tokenSet
+		}
+		number, _, _ := splitParens(b, product.ProductName)
+		for _, n := range hareruyaTokenPairNumbers(number) {
+			if uuid := magic.MatchNativeTokenPair(b, setCode, n, listingName); uuid != "" {
+				if id, err := b.MatchID(uuid, foil); err == nil {
+					return &mtgmatcher.InputCard{ID: id}, nil
+				}
+			}
+			if tcgID := magic.MatchTokenPairingBySetNumber(b, setCode, n, listingName, foil); tcgID != "" {
+				if id, err := b.MatchID(tcgID, foil); err == nil {
+					return &mtgmatcher.InputCard{ID: id}, nil
+				}
+			}
+		}
+	}
+
+	return nil, mtgmatcher.ErrUnsupported
+}
+
+// hareruyaTokenPairNumbers splits the storefront's own compound number
+// ("005/006") into the two faces' own numbers, trying each in turn since
+// which half names the listing's first face is not fixed across sheets. A
+// bare number is tried as-is.
+func hareruyaTokenPairNumbers(number string) []string {
+	before, after, found := strings.Cut(number, "/")
+	if !found {
+		if n := strings.TrimLeft(strings.TrimSpace(number), "0"); n != "" {
+			return []string{n}
+		}
+		return nil
+	}
+	var out []string
+	for _, n := range []string{before, after} {
+		if n := strings.TrimLeft(strings.TrimSpace(n), "0"); n != "" {
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 // process titles like
