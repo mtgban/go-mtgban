@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -300,9 +299,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
 	csi := Coolstuffinc{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	csi.client = client.StandardClient()
+	csi.client = newCSIHTTPClient()
 	csi.maxConcurrency = defaultConcurrency
 	csi.game = game
 	csi.shelf = shelf
