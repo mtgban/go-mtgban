@@ -466,8 +466,18 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 	}
 	next := result.NextLink
 
+	// A shelf that ends on its first page is already read; one that does
+	// not is read again from the top at the larger page size.
+	if next != "" {
+		wide, wideNext := widenSearchPage(ctx, csi.client, next)
+		if wide != nil {
+			doc = wide
+			next = wideNext
+		}
+	}
+
 	for page := 1; ; page++ {
-		rows := doc.Find(`div[class="row product-search-row main-container"]`)
+		rows := doc.Find(searchRowSelector)
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
 			if csi.game == mtgban.GameYuGiOh {
