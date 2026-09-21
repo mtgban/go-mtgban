@@ -57,6 +57,9 @@ func TestPreprocessBuylistResolvesCompoundNumberPairing(t *testing.T) {
 	if co.Identifiers["derivedTokenPair"] != "true" {
 		t.Errorf("resolved to %q, want a derived token pairing", co.Name)
 	}
+	if co.Name != "Beast // Elf Druid" {
+		t.Errorf("resolved to %q, want \"Beast // Elf Druid\"", co.Name)
+	}
 }
 
 // TestPreprocessBuylistRefusesUnresolvedTokenPairing pins the reverse:
@@ -83,7 +86,7 @@ func TestPreprocessBuylistRefusesUnresolvedTokenPairing(t *testing.T) {
 // token whose own name happens to carry " - " (CSI's own way of telling
 // two same-name token variants apart, e.g. Core Set 2021's two different
 // Cat tokens) is never routed through the two-sided pairing path: the
-// trigger requires " // ", not just a hyphen, and preprocessBuylistTokenPair
+// trigger requires " // ", not just a hyphen, and preprocessTokenPairBuylist
 // would refuse this name outright since it never splits on " - " without a
 // leading "(Token)" name on both sides.
 func TestPreprocessBuylistIgnoresSingleFaceTokenDash(t *testing.T) {
