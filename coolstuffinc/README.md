@@ -330,9 +330,14 @@ from the shelf collision this section is about.
   those apart would answer the base card for a parallel. A rarity code
   nobody here has heard of is left glued to the number rather than
   guessed at.
-- **Lorcana**: no known collision shape yet. Both feeds pass name, edition
-  and the raw note/number straight through to `mtgmatcher.Match` with no
-  translation at all.
+- **Lorcana**: `lorcana.go`, one file, one problem — a storefront
+  misspelling (`lorcanaSpellings`, exact-keyed for the reason
+  `csiSpellings` gives, and the more so here: a name is a character and a
+  title joined by a dash, the title is the whole of what tells one
+  printing of a character from another, and Rise of the Floodborn sells
+  three Basils at consecutive numbers 138-140). No collision shape is
+  known otherwise — both feeds still pass edition and the raw
+  note/number straight through to `mtgmatcher.Match` untranslated.
 
 ## Known gaps
 

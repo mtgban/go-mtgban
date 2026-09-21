@@ -714,7 +714,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						}
 					}
 				case mtgban.GameLorcana:
-					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(cardName), Edition: edition, Variation: notes, Foil: isFoil}
 				}
 
 				if printing != "" {
@@ -1008,7 +1008,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		case mtgban.GamePalworld:
 			theCard = &mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(product.Number), Foil: product.IsFoil == 1}
 		case mtgban.GameLorcana:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(product.Name), Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		}
 
 		var cardID string
