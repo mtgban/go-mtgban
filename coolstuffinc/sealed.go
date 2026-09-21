@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -55,9 +54,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 	csi := Sealed{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	csi.client = client.StandardClient()
+	csi.client = newCSIHTTPClient()
 	csi.maxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
@@ -94,7 +91,6 @@ func (csi *Sealed) numOfPages(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	req.Header.Set("User-Agent", "curl/8.6.0")
 	resp, err := csi.client.Do(req)
 	if err != nil {
 		return 0, err
@@ -144,7 +140,6 @@ func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- respons
 	if err != nil {
 		return err
 	}
-	req.Header.Set("User-Agent", "curl/8.6.0")
 	resp, err := csi.client.Do(req)
 	if err != nil {
 		return err
@@ -434,7 +429,6 @@ func searchSealed(ctx context.Context, shelf, query string) (*SearchResult, erro
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	resp, err := csiClient.Do(req)
 	if err != nil {
@@ -482,7 +476,6 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 			if err != nil {
 				return err
 			}
-			req.Header.Set("User-Agent", "curl/8.6.0")
 			resp, err := csi.client.Do(req)
 			if err != nil {
 				return err

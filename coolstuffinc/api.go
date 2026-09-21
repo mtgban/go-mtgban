@@ -34,10 +34,35 @@ var csiSearchURL = "https://www.coolstuffinc.com/sq/"
 // for hundreds of editions at a time.
 var csiClient = newCSIHTTPClient()
 
+// csiUserAgent is what the storefront is asked as. Go's default agent is
+// answered with the bare site chrome in place of the page asked for - no
+// search results, no facets, no next link - under a 200 and with no error
+// anywhere, so only the missing rows say that anything went wrong. The
+// header therefore sits on the transport rather than on each request,
+// where a call site that forgot it has now cost this scraper its sealed
+// pages once and its whole singles inventory a second time.
+const csiUserAgent = "curl/8.6.0"
+
+// userAgentTransport stamps the agent on every request that does not name
+// one of its own, retries included.
+type userAgentTransport struct {
+	base http.RoundTripper
+}
+
+func (t userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if req.Header.Get("User-Agent") == "" {
+		req = req.Clone(req.Context())
+		req.Header.Set("User-Agent", csiUserAgent)
+	}
+	return t.base.RoundTrip(req)
+}
+
 func newCSIHTTPClient() *http.Client {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
-	return client.StandardClient()
+	standard := client.StandardClient()
+	standard.Transport = userAgentTransport{base: standard.Transport}
+	return standard
 }
 
 // CSIPriceEntry is one card in the buylist feed.
@@ -274,7 +299,6 @@ func Search(ctx context.Context, shelf, itemName string, skipOOS bool, rarities 
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	resp, err := csiClient.Do(req)
 	if err != nil {
