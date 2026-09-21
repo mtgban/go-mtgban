@@ -77,6 +77,11 @@ type CSIPriceEntry struct {
 	RarityName  string `json:"RarityName"`
 	IsFoil      int    `json:"isFoil"`
 	CreditPrice string `json:"CreditPrice"`
+	// Code is the set's own 3-4 letter code, published alongside ItemSet's
+	// storefront name but otherwise unused here - the anchor a two-sided
+	// token pairing needs, since its own name alone is never enough. See
+	// preprocessTokenPairBuylist.
+	Code string `json:"Code"`
 }
 
 // GetBuylist returns what Cool Stuff Inc is buying on one storefront shelf.
