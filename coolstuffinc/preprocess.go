@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -483,6 +484,17 @@ func card2promo(cardName, variant string) (string, string) {
 // PreprocessBuylist is Preprocess for the buylist feed, which describes a card
 // differently from the sale catalog.
 func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
+	// A two-sided token sheet prints one physical card for a pairing the
+	// ordinary per-card pipeline below was never built for: a name like
+	// "Soldier (Token) // Beast (Token)" carries no external id to route
+	// through the way ManaPool's scryfall_id does, so it needs its own
+	// anchor before that pipeline mangles it, and refuses outright rather
+	// than fall into whatever single-face guess the rest of this function
+	// would otherwise make of one half of the name.
+	if strings.Contains(card.Name, "(Token)") && strings.Contains(card.Name, " // ") {
+		return preprocessTokenPairBuylist(b, card)
+	}
+
 	num := strings.TrimLeft(card.Number, "0")
 	cleanVar := cleanVariant(card.Notes)
 	edition := card.ItemSet
@@ -631,6 +643,68 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
+}
+
+// preprocessTokenPairBuylist resolves a two-sided token buylist row to the
+// combined entity mtgmatcher/magic derives for it, anchored by the row's
+// own set code and collector number - CSI publishes both (Code and Number)
+// alongside the storefront's edition wording, unlike ManaPool's own single
+// scryfall_id shape. A row this precise with no combined entity on file
+// (no mtgjson tokenProducts record at all - not every real pairing has
+// one) is refused rather than left for the rest of PreprocessBuylist to
+// mistake for a single face.
+func preprocessTokenPairBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
+	isFoil := card.IsFoil == 1
+
+	tokenSet := magic.EditionTokenSetCode(b, card.ItemSet)
+	if tokenSet == "" {
+		tokenSet = card.Code
+	}
+	if tokenSet != "" {
+		for _, number := range csiTokenPairNumbers(card.Number) {
+			if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, card.Name); uuid != "" {
+				if id, err := b.MatchID(uuid, isFoil); err == nil {
+					return &mtgmatcher.InputCard{ID: id}, nil
+				}
+			}
+			if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, card.Name, isFoil); tcgID != "" {
+				if id, err := b.MatchID(tcgID, isFoil); err == nil {
+					return &mtgmatcher.InputCard{ID: id}, nil
+				}
+			}
+		}
+	}
+
+	if pairID := magic.MatchTokenPairingByNamesAndEdition(b, card.Name, card.ItemSet, isFoil); pairID != "" {
+		if id, err := b.MatchID(pairID, isFoil); err == nil {
+			return &mtgmatcher.InputCard{ID: id}, nil
+		}
+	}
+
+	return nil, mtgmatcher.ErrUnsupported
+}
+
+// csiTokenPairNumbers returns the collector numbers worth anchoring a two-
+// sided token's first face against, in the order CSI's own Number field
+// gives them: a compound "020/021" one per face, trusting which half names
+// which face at face value since which one is first is not fixed across
+// editions; a bare "003" (a boxed set's own singles-shaped numbering) tried
+// as-is.
+func csiTokenPairNumbers(number string) []string {
+	before, after, found := strings.Cut(number, "/")
+	if !found {
+		if n := strings.TrimLeft(strings.TrimSpace(number), "0"); n != "" {
+			return []string{n}
+		}
+		return nil
+	}
+	var out []string
+	for _, n := range []string{before, after} {
+		if n := strings.TrimLeft(strings.TrimSpace(n), "0"); n != "" {
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 // magicShelfFixups reads the shapes this storefront gives a few classes of
