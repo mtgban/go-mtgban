@@ -63,20 +63,9 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-          # A self-hosted runner is a persistent VM: its Go module cache
-          # is already warm on disk from the previous job, and every file
-          # in it is read-only, the way `go mod download` leaves them.
-          # Restoring setup-go's own tar-based cache on top of that fails
-          # to overwrite what is already there ("Cannot open: File
-          # exists") - harmless (setup-go logs it as a warning and moves
-          # on, and the pre-existing files are already correct), but it
-          # wastes a ~400MB download and extraction attempt on every run
-          # for zero benefit. ubuntu-latest starts a fresh VM every job,
-          # so the cache is genuinely useful there and stays on.
-          #
-          # fromJSON so this is array membership against runs-on's actual
-          # labels (the same parse the job's own runs-on above uses), not
-          # a substring test against the raw JSON text.
+          # Self-hosted's Go module cache is already warm and read-only on
+          # disk from the previous job, so restoring setup-go's own cache
+          # on top of it fails to overwrite anything there.
           cache: ${{ !contains(fromJSON(inputs.runs-on), 'self-hosted') }}
 
       - name: Show Go version
