@@ -26,6 +26,7 @@ func TestCatalogSpelling(t *testing.T) {
 		{"Compulsory Evactuation Device", "Rarity Collection 5", "Stamped Version - Ultra Rare Ultra Rare"},
 		{"Doube-Edged Sword Technique", "Structure Deck Samurai Warlords", "Common"},
 		{"Fearl Imp", "Dark Beginning 1", "Common"},
+		{"Fiendish Engine Ω", "Legendary Collection 4", "Common"},
 		{"Homumculus the Alchemic Being", "Rise of Destiny", "Common"},
 		{"Miracle Jurrassic Egg", "Structure Deck Dinosaurs Rage", "Common"},
 		{"Perfect Synch - A-Un", "Phantom Rage", "Super Rare"},
