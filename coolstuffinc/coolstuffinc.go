@@ -688,6 +688,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					theCard = pokemonListing(csi.backend, cardName, shelf, variation, isFoil)
 				case mtgban.GameOnePiece:
 					shelf := onePieceShelf(edition, cardName)
+					donName, donDescription, isDon := onePieceDonName(cardName)
+					if isDon {
+						theCard = &mtgmatcher.InputCard{Name: donName, Edition: shelf, Variation: donDescription, Foil: isFoil}
+						break
+					}
 					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(notes), Foil: isFoil}
 				case mtgban.GameGundam:
 					name, variation := gundamCard(cardName, gundamNumber(notes))
@@ -982,6 +987,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			}
 			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(product.Name)), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case mtgban.GameOnePiece:
+			donName, donDescription, isDon := onePieceDonName(product.Name)
+			if isDon {
+				theCard = &mtgmatcher.InputCard{Name: donName, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: donDescription, Foil: product.IsFoil == 1}
+				break
+			}
 			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(product.Name), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
 		// Gundam prints the same card at the same number in three sets, so
 		// the shelf has to narrow and the storefront's own code prefix stops
@@ -1434,6 +1444,28 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 		return itemSet
 	}
 	return set.Name
+}
+
+// onePieceDonHead matches the wrapping the storefront hangs in front of
+// a DON!! card's description, numbered or not.
+var onePieceDonHead = regexp.MustCompile(`(?i)^DON!!\s*(?:\([0-9]+\))?\s*-?\s*`)
+
+// onePieceDonName answers a DON!! listing the way the catalog files it,
+// and reports whether the listing is one at all.
+//
+// The catalog names all 238 of the game's DON!! cards "DON!! Card" and
+// tells them apart by promo type alone - the character, the artwork,
+// the border - which the matcher already reads out of a listing's own
+// wording. The storefront writes those same words into the product name
+// and publishes no collector number for a DON!! at all, so the name
+// reaches nothing and the wording never gets as far as the rules that
+// would have read it. Hand over the name the catalog uses and leave the
+// description where a description belongs.
+func onePieceDonName(name string) (string, string, bool) {
+	if !strings.HasPrefix(strings.ToUpper(name), "DON!!") {
+		return "", "", false
+	}
+	return "DON!! Card", onePieceDonHead.ReplaceAllString(name, ""), true
 }
 
 // riftboundImageStem reads the file name off a product image, whatever
