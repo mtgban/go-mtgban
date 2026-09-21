@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -58,5 +59,54 @@ func TestCatalogSpelling(t *testing.T) {
 				t.Errorf("Match(%q) = %q, want %q", spelled, co.Name, spelled)
 			}
 		})
+	}
+}
+
+// TestCatalogSpellingBracketed covers the listings that hang the printing
+// they mean behind the name, where the name in front of the bracket is typed
+// the same wrong way. The correction has to reach the head of the line, and
+// has to leave alone a head no pair in the table names - including the head
+// of a card the catalog really does write with a bracket.
+func TestCatalogSpellingBracketed(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			"Compulsory Evactuation Device (Stamped Version Ultra Rare)",
+			"Compulsory Evacuation Device (Stamped Version Ultra Rare)",
+		},
+		{"Raigeki (No Stamp Ultimate Rare)", "Raigeki (No Stamp Ultimate Rare)"},
+		{"Number 39: Utopia (Astral Language)", "Number 39: Utopia (Astral Language)"},
+		{"Compulsory Evacuation Device", "Compulsory Evacuation Device"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := catalogSpelling(test.name); got != test.want {
+				t.Errorf("catalogSpelling(%q) = %q, want %q", test.name, got, test.want)
+			}
+		})
+	}
+}
+
+// TestCatalogSpellingHeads states what lets the correction read a head: no
+// name the catalog carries begins with a pair the table corrects, so a head
+// that matches one is the typo and never the opening of a longer name.
+func TestCatalogSpellingHeads(t *testing.T) {
+	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
+
+	for typed := range csiSpellings {
+		for _, code := range b.GetAllSets() {
+			set, err := b.GetSet(code)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, card := range set.Cards {
+				if strings.HasPrefix(card.Name, typed) {
+					t.Errorf("%q begins %q in %s, so the table may not read a head",
+						typed, card.Name, code)
+				}
+			}
+		}
 	}
 }

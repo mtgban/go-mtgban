@@ -1694,11 +1694,27 @@ var csiSpellings = map[string]string{
 
 // catalogSpelling spells a Yu-Gi-Oh name the way the catalog does, where this
 // storefront has typed it wrong.
+//
+// A set that files one card under several printings gets the printing hung
+// behind the name in brackets, and the name in front of it is typed the same
+// wrong way as on the listings that carry no bracket. The correction reaches
+// the head of the line for that reason, leaving the bracket to the matcher,
+// which reads it into the variation either way. No name in the catalog begins
+// with any key in the table, so a head that matches one is the typo and never
+// the opening of a longer card name.
 func catalogSpelling(name string) string {
 	if spelled, found := csiSpellings[name]; found {
 		return spelled
 	}
-	return name
+	head, printing, bracketed := strings.Cut(name, " (")
+	if !bracketed {
+		return name
+	}
+	spelled, found := csiSpellings[head]
+	if !found {
+		return name
+	}
+	return spelled + " (" + printing
 }
 
 var csiRarities = map[string]string{
