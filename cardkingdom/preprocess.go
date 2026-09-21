@@ -266,6 +266,24 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 	edition := setCode
 	variation := strings.ToLower(number)
 
+	// CK titles a punch card after the set it came in, "Hour of Devastation
+	// Punch Card", while the datastore files it as Punchcard on that set's
+	// token sheet, so the title reaches no printing on its own. The sku's
+	// own number is CK's index rather than the card's ("001X" against the
+	// sheet's 18), and the scryfall id the row publishes cannot stand in
+	// for either: Lorwyn Eclipsed's punch card carries the Treefolk
+	// token's id, two more carry one the datastore does not know and three
+	// carry none at all. Asking the sheet for the name it files is the
+	// only anchor that answers for all of them, and a sheet holding no
+	// punch card refuses the row quietly - there is no printing for it to
+	// reach, and nothing the log can add.
+	if strings.HasSuffix(card.Name, " Punch Card") {
+		if !sheetHolds(b, setCode, punchcardName) {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+		card.Name = punchcardName
+	}
+
 	// Validate if setCode exists, if not preserve info from the card
 	if !setCodeExists(b, setCode) {
 		if (len(setCode) > 3 && setCodeExists(b, setCode[len(setCode)-3:])) ||
@@ -433,6 +451,25 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 		Variation: variation,
 		Foil:      isFoil,
 	}, nil
+}
+
+// punchcardName is the name the datastore files a punch card under, one word
+// where every vendor selling one writes two.
+const punchcardName = "Punchcard"
+
+// sheetHolds reports whether the set files a printing under exactly this
+// name.
+func sheetHolds(b *mtgmatcher.Backend, code, name string) bool {
+	set, err := b.GetSet(code)
+	if err != nil {
+		return false
+	}
+	for _, printing := range set.Cards {
+		if printing.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 // tokenPrinting answers the printing a token sheet files at a number, asking
