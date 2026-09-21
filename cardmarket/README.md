@@ -72,6 +72,12 @@ the existing `TestVariants` did.
 
 ## Market's design
 
+**The List's foil printings are never priced.** It reprints a card under
+whatever treatment its original printing had, and sellers list its foil
+copies under the wrong finish often enough that pricing them is noise
+rather than a real signal (`isPLSTFoil`, checked in `queryPrintings` before
+the foil-slot query ever fires).
+
 **Strictly sequential, not pooled.** Measured directly: a concurrency ladder
 (1→24 workers) plateaus at ~1.4 successful calls/sec regardless of worker
 count, with the excess coming back as 429s, while 20 fully sequential
