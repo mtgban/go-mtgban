@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -36,6 +37,10 @@ func TestOnePieceDonNameReachesTheCard(t *testing.T) {
 		{"an unnumbered gold", "DON!! - Nami (GOLD)", "EB03 - Heroines Edition", true, "don_677559_foil"},
 		// The double packs label theirs by the pair and the volume.
 		{"a double pack", "DON!! - Katakuri (Double Pack Vol. 7)", "OP11 - A Fist Of Divine Speed", true, "don_636745_foil"},
+		// The storefront names four characters in full where the
+		// catalog names them by the promo type's own wording.
+		{"a renamed character", "DON!! (04) - Edward Newgate", "PRB01 - Premium Booster", true, "don_593828_foil"},
+		{"a renamed character, gold", "DON!! (16) - Charlotte Linlin (GOLD)", "PRB01 - Premium Booster", true, "don_587954_foil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			name, description, isDon := onePieceDonName(tt.name)
@@ -50,13 +55,55 @@ func TestOnePieceDonNameReachesTheCard(t *testing.T) {
 			}
 			id, err := b.Match(card)
 			if err != nil {
-				t.Fatalf("Match(%v) = %v", card, err)
+				renamed := onePieceDonRenamed(description)
+				if renamed == "" {
+					t.Fatalf("Match(%v) = %v", card, err)
+				}
+				card.Variation = renamed
+				id, err = b.Match(card)
+				if err != nil {
+					t.Fatalf("Match(%v) = %v", card, err)
+				}
 			}
 			if id != tt.wantID {
 				co, _ := b.GetUUID(id)
 				t.Errorf("Match(%v) = %q (%s), want %q", card, id, co, tt.wantID)
 			}
 		})
+	}
+}
+
+// TestOnePieceDonRenamedIsASecondAttempt pins that the character
+// rename is read as a fallback and not as a correction. The first
+// anniversary's DON!! carries the storefront's own spelling in its
+// promo type - "monkeydluffy1st" - so rewriting every listing would
+// lose the cards whose catalog wording the listing already matched.
+func TestOnePieceDonRenamedIsASecondAttempt(t *testing.T) {
+	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+
+	// The wording the catalog keeps in full must answer on its own,
+	// before any rename is reached.
+	_, description, isDon := onePieceDonName("DON!! - Monkey.D.Luffy (1st Anniversary DON!! Card Pack)")
+	if !isDon {
+		t.Fatal("onePieceDonName did not read a DON!! listing")
+	}
+	id, err := b.Match(&mtgmatcher.InputCard{
+		Name: "DON!! Card", Edition: "Promo", Variation: description, Foil: true,
+	})
+	if err != nil {
+		t.Fatalf("the anniversary DON!! no longer answers its own wording: %v", err)
+	}
+	co, _ := b.GetUUID(id)
+	if !strings.Contains(strings.Join(co.PromoTypes, "+"), "monkeydluffy") {
+		t.Errorf("answered %q (%v), want the card whose promo type spells the name in full", id, co.PromoTypes)
+	}
+
+	// And a rename is only offered where one of the four applies.
+	if got := onePieceDonRenamed("Uta"); got != "" {
+		t.Errorf("onePieceDonRenamed(Uta) = %q, want none", got)
+	}
+	if got := onePieceDonRenamed("Edward Newgate"); got != "Whitebeard" {
+		t.Errorf("onePieceDonRenamed(Edward Newgate) = %q, want %q", got, "Whitebeard")
 	}
 }
 

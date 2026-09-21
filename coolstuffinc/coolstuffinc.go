@@ -691,6 +691,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					donName, donDescription, isDon := onePieceDonName(cardName)
 					if isDon {
 						theCard = &mtgmatcher.InputCard{Name: donName, Edition: shelf, Variation: donDescription, Foil: isFoil}
+						_, err := csi.backend.Match(theCard)
+						if err != nil {
+							renamed := onePieceDonRenamed(donDescription)
+							if renamed != "" {
+								theCard = &mtgmatcher.InputCard{Name: donName, Edition: shelf, Variation: renamed, Foil: isFoil}
+							}
+						}
 						break
 					}
 					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(notes), Foil: isFoil}
@@ -989,7 +996,16 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		case mtgban.GameOnePiece:
 			donName, donDescription, isDon := onePieceDonName(product.Name)
 			if isDon {
-				theCard = &mtgmatcher.InputCard{Name: donName, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: donDescription, Foil: product.IsFoil == 1}
+				donShelf := onePieceShelf(product.ItemSet, product.Name)
+				donFoil := product.IsFoil == 1
+				theCard = &mtgmatcher.InputCard{Name: donName, Edition: donShelf, Variation: donDescription, Foil: donFoil}
+				_, err := csi.backend.Match(theCard)
+				if err != nil {
+					renamed := onePieceDonRenamed(donDescription)
+					if renamed != "" {
+						theCard = &mtgmatcher.InputCard{Name: donName, Edition: donShelf, Variation: renamed, Foil: donFoil}
+					}
+				}
 				break
 			}
 			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(product.Name), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
@@ -1450,6 +1466,27 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 // a DON!! card's description, numbered or not.
 var onePieceDonHead = regexp.MustCompile(`(?i)^DON!!\s*(?:\([0-9]+\))?\s*-?\s*`)
 
+// onePieceDonCharacters spells the four characters this storefront
+// names in full where the catalog names them by the name the promo type
+// carries. They are not misspellings and not this storefront's
+// invention - both names are the character's - so a listing saying
+// "Edward Newgate" is describing the card the catalog files under
+// "whitebeard", and neither wording reaches the other on its own.
+//
+// Read as a second attempt, never as a correction. Some promo types
+// carry the full name themselves - the first anniversary's DON!! is
+// "monkeydluffy1st" - so rewriting every listing would lose the cards
+// whose catalog wording the storefront already matched. Only the four
+// the storefront actually differs on are here, and a character the
+// catalog spells differently again stays refused: every DON!! in a set
+// shares a name and a number, so a guess buys another card.
+var onePieceDonCharacters = strings.NewReplacer(
+	"Edward Newgate", "Whitebeard",
+	"Charlotte Linlin", "Big Mom",
+	"Monkey.D.Luffy", "Luffy",
+	"Portgas.D.Ace", "Ace",
+)
+
 // onePieceDonName answers a DON!! listing the way the catalog files it,
 // and reports whether the listing is one at all.
 //
@@ -1466,6 +1503,17 @@ func onePieceDonName(name string) (string, string, bool) {
 		return "", "", false
 	}
 	return "DON!! Card", onePieceDonHead.ReplaceAllString(name, ""), true
+}
+
+// onePieceDonRenamed answers the same description with the characters
+// the catalog names differently swapped in, and an empty string when it
+// names none of them.
+func onePieceDonRenamed(description string) string {
+	renamed := onePieceDonCharacters.Replace(description)
+	if renamed == description {
+		return ""
+	}
+	return renamed
 }
 
 // riftboundImageStem reads the file name off a product image, whatever
