@@ -73,7 +73,16 @@ jobs:
           # wastes a ~400MB download and extraction attempt on every run
           # for zero benefit. ubuntu-latest starts a fresh VM every job,
           # so the cache is genuinely useful there and stays on.
-          cache: ${{ !contains(inputs.runs-on, 'self-hosted') }}
+          #
+          # fromJSON so this checks array membership against runs-on's
+          # actual labels, the same way the job's own runs-on above reads
+          # it, rather than a substring test against the raw JSON text -
+          # equivalent for every caller today, but not accidentally true
+          # of a label that merely contains these letters somewhere else.
+          # Keys off the literal "self-hosted" label by the org's current
+          # convention; a future persistent runner that dropped that
+          # label would need this reconsidered.
+          cache: ${{ !contains(fromJSON(inputs.runs-on), 'self-hosted') }}
 
       - name: Show Go version
         run: go version
