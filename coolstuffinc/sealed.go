@@ -421,7 +421,7 @@ func searchSealed(ctx context.Context, shelf, query string) (*SearchResult, erro
 	v.Set("f[ItemSet][]", "")
 	v.Set("s", shelf)
 	v.Set("page", "1")
-	v.Set("resultsPerPage", "50")
+	v.Set("resultsPerPage", "25")
 	v.Set("submit", "Search")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, csiSearchURL, strings.NewReader(v.Encode()))
@@ -445,16 +445,9 @@ func searchSealed(ctx context.Context, shelf, query string) (*SearchResult, erro
 		return nil, err
 	}
 
-	nextLink, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
-	u, err := url.Parse(nextLink)
-	if err != nil {
-		return nil, err
-	}
-	clean := strings.Split(strings.TrimPrefix(u.Path, "/sq/"), "&")[0]
-
 	return &SearchResult{
-		PageID: clean,
-		Data:   data,
+		NextLink: searchNextLink(doc),
+		Data:     data,
 	}, nil
 }
 
@@ -467,31 +460,13 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		return err
 	}
 
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(result.Data))
+	if err != nil {
+		return fmt.Errorf("page 1: %w", err)
+	}
+	next := result.NextLink
+
 	for page := 1; ; page++ {
-		data := result.Data
-
-		if page > 1 {
-			link := "https://www.coolstuffinc.com/sq/" + result.PageID + "?page=" + fmt.Sprint(page)
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
-			if err != nil {
-				return err
-			}
-			resp, err := csi.client.Do(req)
-			if err != nil {
-				return err
-			}
-			data, err = io.ReadAll(resp.Body)
-			resp.Body.Close()
-			if err != nil {
-				return err
-			}
-		}
-
-		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
-		if err != nil {
-			return fmt.Errorf("page %d: %w", page, err)
-		}
-
 		rows := doc.Find(`div[class="row product-search-row main-container"]`)
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
@@ -560,11 +535,15 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 			}
 		})
 
-		// A short page is the last one; asking past it returns the same
-		// page over again rather than an empty one
-		if rows.Length() < 25 || result.PageID == "" {
+		if next == "" {
 			break
 		}
+
+		doc, err = fetchSearchPage(ctx, csi.client, next)
+		if err != nil {
+			return fmt.Errorf("page %d: %w", page+1, err)
+		}
+		next = searchNextLink(doc)
 	}
 
 	return nil
