@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -260,6 +261,44 @@ type SearchResult struct {
 	Data     []byte
 }
 
+// searchRowSelector picks the product rows out of a results page.
+const searchRowSelector = `div[class="row product-search-row main-container"]`
+
+// searchPageParam matches the page number in one of those links.
+var searchPageParam = regexp.MustCompile(`([?&])page=\d+`)
+
+// widenSearchPage reads a search's first page again at the larger page
+// the storefront serves, and answers the page and the link after it.
+//
+// The search POST answers 25 rows however many it is asked for, but the
+// links it writes honour 50 and carry the size into the links after
+// them, so a walk that asks once keeps it to the end: a 541-row shelf
+// costs 12 requests rather than 22. The page number has to go back to 1
+// with it, because page 2 of a 50-row page is rows 51-100 - following
+// the storefront's own "page=2" at the larger size steps over rows
+// 26-50 without a word - so the first page is read a second time, which
+// is what the rest of the walk is halved for.
+//
+// A widened page that answers no rows is the storefront declining the
+// size, not the shelf ending: the link being widened is the one it
+// wrote to say there is more. It answers nothing then, and the caller
+// walks the shelf as the storefront linked it.
+func widenSearchPage(ctx context.Context, client *http.Client, link string) (*goquery.Document, string) {
+	wide := searchPageParam.ReplaceAllString(link, "${1}resultsPerPage=50&page=1")
+	// A link carrying no page number is one this cannot move back to the
+	// first page, and following it unchanged would read the second page
+	// as though it were the first and lose everything before it. The
+	// walk keeps its own first page instead.
+	if wide == link {
+		return nil, ""
+	}
+	doc, err := fetchSearchPage(ctx, client, wide)
+	if err != nil || doc.Find(searchRowSelector).Length() == 0 {
+		return nil, ""
+	}
+	return doc, searchNextLink(doc)
+}
+
 // searchNextLink reads the href of a results page's next-page control.
 func searchNextLink(doc *goquery.Document) string {
 	next, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
@@ -278,6 +317,15 @@ func fetchSearchPage(ctx context.Context, client *http.Client, link string) (*go
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	// Whatever the storefront answers a refusal with parses as a page
+	// holding no rows and linking nowhere, which reads as the shelf
+	// ending rather than as the error it is - the same shape that cost
+	// this scraper its whole inventory once already. Say so instead: the
+	// worker pool logs the shelf and carries on with the others.
+	if resp.StatusCode/100 != 2 {
+		return nil, fmt.Errorf("unexpected %d status code for %s", resp.StatusCode, link)
+	}
 
 	return goquery.NewDocumentFromReader(resp.Body)
 }

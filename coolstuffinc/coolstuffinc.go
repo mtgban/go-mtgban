@@ -536,8 +536,18 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 	// and asking past the end answers that page over again.
 	next := result.NextLink
 
+	// A shelf that ends on its first page is already read; one that does
+	// not is read again from the top at the larger page size.
+	if next != "" {
+		wide, wideNext := widenSearchPage(ctx, csi.client, next)
+		if wide != nil {
+			doc = wide
+			next = wideNext
+		}
+	}
+
 	for page := 1; ; page++ {
-		doc.Find(`div[class="row product-search-row main-container"]`).Each(func(i int, s *goquery.Selection) {
+		doc.Find(searchRowSelector).Each(func(i int, s *goquery.Selection) {
 			// The storefront escapes its names twice, so the decode the
 			// parser already did leaves the entity still written out:
 			// "Fiendish Engine &#937;" is the Omega the datastore spells.
