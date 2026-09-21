@@ -1,9 +1,11 @@
 package mintcard
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func setCodeExists(b *mtgmatcher.Backend, code string) bool {
@@ -62,7 +64,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		setCode = fixup
 	}
 	if strings.Count(cardName, "Token") > 1 {
-		return nil, mtgmatcher.ErrUnsupported
+		return preprocessTokenPair(b, cardName, finish, setCode)
 	}
 	if strings.Contains(cardName, "Complete") && strings.Contains(cardName, "Set") {
 		return nil, mtgmatcher.ErrUnsupported
@@ -153,4 +155,57 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		Foil:      foil,
 		Language:  langauge,
 	}, nil
+}
+
+// tokenPairNumber matches the per-face number a two-sided token's own name
+// carries beside it. Most sets spell it "Bird Token (2/21) // Saproling
+// Token (16/21)" - Bird is C16's own token #2, Saproling its #16, the
+// denominator its sheet's own token count and no part of either real
+// number - but some ("Elephant Token (006) // Insect Token (007)", DFT)
+// give the number bare, zero-padded, with no denominator at all. Both
+// forms confirmed against real listings to agree with mtgjson's own token
+// numbering exactly.
+var tokenPairNumber = regexp.MustCompile(`\((\d+)(?:/\d+)?\)`)
+
+// missingSpaceBeforeParen matches some catalog rows (measured: Commander
+// 2014/2015) writing the number's own parenthetical straight against
+// "Token" with no space - "Spirit Token(22/24)" - which
+// magic.StripFaceWrapping (shared with every other vendor's own token-pair
+// anchor) only trims starting at " (", so it would otherwise leave the
+// parenthetical attached and never reduce the face down to "Spirit".
+var missingSpaceBeforeParen = regexp.MustCompile(`(\S)(\(\d+(?:/\d+)?\))`)
+
+// preprocessTokenPair resolves a two-sided token listing - one whose own
+// name carries "Token" twice, sku2uuid's own TCGplayer sku lookup already
+// having found nothing for it - to the combined entity mtgmatcher/magic
+// derives for it, anchored by the catalog's own set code (setCode is
+// already the datastore's own code here, unlike the wording other vendors
+// give an edition) and each face's own number.
+func preprocessTokenPair(b *mtgmatcher.Backend, cardName, finish, setCode string) (*mtgmatcher.InputCard, error) {
+	foil := strings.Contains(finish, "Foil")
+	cardName = missingSpaceBeforeParen.ReplaceAllString(cardName, "$1 $2")
+
+	tokenSet := setCode
+	if resolved := magic.SetTokenSetCode(b, setCode); resolved != "" {
+		tokenSet = resolved
+	}
+
+	for _, m := range tokenPairNumber.FindAllStringSubmatch(cardName, -1) {
+		number := strings.TrimLeft(m[1], "0")
+		if number == "" {
+			continue
+		}
+		if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, cardName); uuid != "" {
+			if id, err := b.MatchID(uuid, foil); err == nil {
+				return &mtgmatcher.InputCard{ID: id}, nil
+			}
+		}
+		if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, cardName, foil); tcgID != "" {
+			if id, err := b.MatchID(tcgID, foil); err == nil {
+				return &mtgmatcher.InputCard{ID: id}, nil
+			}
+		}
+	}
+
+	return nil, mtgmatcher.ErrUnsupported
 }
