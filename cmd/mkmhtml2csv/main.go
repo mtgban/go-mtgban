@@ -228,8 +228,9 @@ func processEntries(backend *mtgmatcher.Backend, entries []cardEntry, w *csv.Wri
 			cardName := slugToName(entry.CardSlug)
 			setName := strings.ReplaceAll(entry.SetSlug, "-", " ")
 
-			// Use SplitVariants to separate name from variant info
-			// e.g. "Demonic Tutor V 2" → name="Demonic Tutor", variant="V 2"
+			// SplitVariants splits on a parenthetical, not on the "-V1"
+			// suffix Cardmarket spells a variant with - slugToName has
+			// already stripped that one.
 			variation := cond
 			vars := mtgmatcher.SplitVariants(cardName)
 			if len(vars) > 1 {
@@ -258,7 +259,21 @@ func processEntries(backend *mtgmatcher.Backend, entries []cardEntry, w *csv.Wri
 			}
 		}
 
-		co, _ := backend.GetUUID(cardID)
+		// A uuid Match just handed back should resolve, but a miss here
+		// would nil-deref the fields below.
+		co, err := backend.GetUUID(cardID)
+		if err != nil {
+			log.Printf("GetUUID(%s) failed for %s/%s: %v",
+				cardID, entry.SetSlug, entry.CardSlug, err)
+			unmatched++
+
+			w.Write([]string{
+				"", entry.CardSlug, "", "",
+				cond, foilStr, entry.Qty, priceUSD,
+				entry.McmID, entry.ArticleID, entry.SetSlug, entry.CardSlug,
+			})
+			continue
+		}
 		matched++
 
 		w.Write([]string{
