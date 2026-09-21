@@ -9,6 +9,7 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // resolver is the Cardmarket-id -> mtgban-uuid resolution Index and Market
@@ -249,6 +250,27 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 	// both "312" upstream); preprocess only when no id is known.
 	cardID, cardIDFoil := Fallback(r.backend, product)
 	if cardID != "" {
+		return cardID, cardIDFoil, nil
+	}
+
+	// A two-sided token sheet's own product name ("Bird Token (W 1/1) //
+	// Spirit Token (W 1/1)") is not one Preprocess/Match below was ever
+	// built to read. Cardmarket's own product Number ("T 2/6") is a
+	// catalog ordinal, not a collector number, so unlike Cool Stuff Inc's
+	// own feed there is no set+number anchor available here - both faces'
+	// own names plus the product's edition (magic.MatchTokenPairingByNamesAndEdition,
+	// already refusing rather than guessing whenever a name repeats across
+	// several same-named tokens in one edition) is the only anchor this
+	// vendor's own data gives. Resolved or not, this listing is done here:
+	// falling into Preprocess/Match below would only refuse it again, more
+	// noisily.
+	if strings.Contains(product.Name, "Token") && strings.Contains(product.Name, " // ") {
+		if pairID := magic.MatchTokenPairingByNamesAndEdition(r.backend, product.Name, product.ExpansionName, false); pairID != "" {
+			cardID, _ = r.backend.MatchID(pairID, false)
+		}
+		if pairIDFoil := magic.MatchTokenPairingByNamesAndEdition(r.backend, product.Name, product.ExpansionName, true); pairIDFoil != "" {
+			cardIDFoil, _ = r.backend.MatchID(pairIDFoil, true)
+		}
 		return cardID, cardIDFoil, nil
 	}
 
