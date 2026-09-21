@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -199,6 +200,57 @@ func TestFourthEditionAlternateKeepsVIndex(t *testing.T) {
 		}
 		if co.Number != tt.wantNumber {
 			t.Errorf("%s: Match landed on %s, want number %s", tt.name, co, tt.wantNumber)
+		}
+	}
+}
+
+// TestFallbackDefersOnImplausibleWCDCandidate pins a live-confirmed mtgjson
+// linking mistake, a single-candidate variant of the same class of bug as
+// TestFallbackDefersOnMcmIdCollision above: id 249617, "Phyrexian Processor
+// (V.2)" under Cardmarket's "WCD 2000: Janosch Kühn", carries mtgjson's
+// mcmId 249617 - but on a completely unrelated printing, The Brothers' War
+// Retro Artifacts' foil Phyrexian Processor, not any of the real World
+// Championship Decks printings (set codes WC97-WC04). id 249533, "Duress
+// (V.2)" under "WCD 2001: Antoine Ruel", carries the same shape onto a
+// starred Seventh Edition Duress. Neither is an ambiguous multi-candidate
+// case the existing number-disagreement guard would catch - there was only
+// ever the one candidate, and it simply names the wrong card. Fallback now
+// also distrusts a WCD product's lone candidate when that candidate is not
+// itself a WC-family printing, deferring to Preprocess/Match instead (which
+// already resolves these by name/edition).
+func TestFallbackDefersOnImplausibleWCDCandidate(t *testing.T) {
+	b := realDatastore(t)
+
+	tests := []struct {
+		id      int
+		name    string
+		edition string
+	}{
+		{249617, "Phyrexian Processor (V.2)", "WCD 2000: Janosch Kühn"},
+		{249533, "Duress (V.2)", "WCD 2001: Antoine Ruel"},
+	}
+	for _, tt := range tests {
+		product := &cm.Product{IDProduct: tt.id, Name: tt.name, ExpansionName: tt.edition}
+		cardID, cardIDFoil := Fallback(b, product)
+		if cardID != "" || cardIDFoil != "" {
+			co, _ := b.GetUUID(cardID)
+			t.Errorf("%d: Fallback = (%q, %q), want (\"\", \"\") - kept %s, not a World Championship Decks printing", tt.id, cardID, cardIDFoil, co)
+		}
+
+		theCard, err := Preprocess(b, product.Name, product.Number, product.ExpansionName)
+		if err != nil {
+			t.Fatalf("%d: Preprocess: %v", tt.id, err)
+		}
+		id, err := b.Match(theCard)
+		if err != nil {
+			t.Fatalf("%d: Match: %v", tt.id, err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.HasPrefix(co.SetCode, "WC") {
+			t.Errorf("%d: Match landed on %s, want a World Championship Decks printing", tt.id, co)
 		}
 	}
 }
