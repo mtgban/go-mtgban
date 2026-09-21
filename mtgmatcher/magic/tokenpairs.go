@@ -590,7 +590,7 @@ func MatchTokenPairingBySetNumber(b *mtgmatcher.Backend, setCode, number, listin
 	// some carry it as part of their own real name - try both forms
 	// rather than assume either.
 	for _, face := range []string{StripFaceWrapping(first), CleanFaceName(first)} {
-		cards := b.MatchInSetNumber(face, setCode, number)
+		cards := matchNumberedFace(b, face, setCode, number)
 		if len(cards) != 1 {
 			continue
 		}
@@ -616,12 +616,58 @@ func MatchNativeTokenPair(b *mtgmatcher.Backend, setCode, number, listingName st
 	// alongside the wrapping, case preserved for this exact-match lookup.
 	faceA, faceB := CleanFaceName(first), CleanFaceName(second)
 	for _, combined := range []string{faceA + " // " + faceB, faceB + " // " + faceA} {
-		out := b.MatchInSetNumber(combined, setCode, number)
+		out := matchNumberedFace(b, combined, setCode, number)
 		if len(out) == 1 {
 			return out[0].UUID
 		}
 	}
 	return ""
+}
+
+// matchNumberedFace is Backend.MatchInSetNumber, widened to also search
+// set.Tokens. The loader already merges a token-type set's own Tokens into
+// its Cards (so an ordinary set+number search already sees most token
+// printings without this), but a token name that collides with a real
+// card elsewhere in the game - a small, known set (Shapeshifter, Ninja,
+// Ornithopter, Storm Crow, Faerie Dragon, Kobolds of Kher Keep; see
+// project todo/magic-token-support.md) - is suffixed " Token" in that
+// merged Cards copy to stay unambiguous, while its own Tokens entry keeps
+// the plain name every caller here actually searches for (StripFaceWrapping/
+// CleanFaceName never re-add the suffix). Cards alone therefore silently
+// misses exactly these names; Tokens alone would miss ordinary ones for
+// sets whose own tokenSetCode split off before this merge ever ran. A uuid
+// appearing in both slices (the common case) is deduplicated rather than
+// double-counted into a false ambiguity.
+//
+// A reversible token card's two faces are each their own mtgjson entry,
+// same combined name and number, different uuid - and the loader indexes
+// only one side into b.UUIDs, the one Match resolves to. The other is a
+// real set.Tokens entry that GetUUID cannot see, not a genuine second
+// printing, so it is excluded here the same way rather than read as an
+// ambiguous pair.
+func matchNumberedFace(b *mtgmatcher.Backend, cardName, setCode, number string) []mtgmatcher.Card {
+	set, found := b.Sets[setCode]
+	if !found {
+		return nil
+	}
+	seen := map[string]bool{}
+	var out []mtgmatcher.Card
+	for _, group := range [2][]mtgmatcher.Card{set.Cards, set.Tokens} {
+		for _, card := range group {
+			if card.Name != cardName || card.Number != number {
+				continue
+			}
+			if card.UUID == "" || seen[card.UUID] {
+				continue
+			}
+			if _, indexed := b.UUIDs[card.UUID]; !indexed {
+				continue
+			}
+			seen[card.UUID] = true
+			out = append(out, card)
+		}
+	}
+	return out
 }
 
 // tokenPairingFinishOK returns id, or "" when foil was requested but the

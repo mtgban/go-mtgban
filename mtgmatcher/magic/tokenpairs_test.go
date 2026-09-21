@@ -385,6 +385,40 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 	}
 }
 
+// TestMatchTokenPairingBySetNumberFindsContestedName pins matchNumberedFace's
+// own reason for existing: the loader already merges a token-type set's own
+// Tokens into its Cards, so TAFC above resolves through Cards alone and
+// this fix is invisible there - but "Shapeshifter" collides with a real
+// card elsewhere in the game (one of a small, known set - Ninja,
+// Ornithopter, Storm Crow, Faerie Dragon, Kobolds of Kher Keep are the
+// others), so the merged Cards copy is suffixed "Shapeshifter Token" to
+// stay unambiguous while its own Tokens entry keeps the plain name.
+// A listing spelling the suffix itself ("Shapeshifter Token // ...", the
+// shape TestMatchTokenPairingBySetNumber above uses) tries "Shapeshifter
+// Token" as StripFaceWrapping's own unstripped first attempt and hits the
+// Cards copy directly, fix or no fix - the shape that actually needs
+// Tokens is a parenthesized one ("Shapeshifter (Token) // ...", the real
+// shape Cool Stuff Inc's own buylist sends, PID 262248): both
+// StripFaceWrapping and CleanFaceName strip the parenthetical down to the
+// plain "Shapeshifter", which Cards alone (MatchInSetNumber) never has.
+func TestMatchTokenPairingBySetNumberFindsContestedName(t *testing.T) {
+	realDatastore(t)
+
+	const wantTCGID = "173808"
+	if testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, wantTCGID) == "" {
+		t.Skip("Shapeshifter // Zombie (id 173808) not derived in this datastore")
+	}
+
+	if cards := testBackend.MatchInSetNumber("Shapeshifter", "TC18", "2"); len(cards) != 0 {
+		t.Fatalf("MatchInSetNumber(Shapeshifter, TC18, 2) = %d cards, want 0: this pin needs Cards alone to still miss it", len(cards))
+	}
+
+	tcgID := MatchTokenPairingBySetNumber(testBackend, "TC18", "2", "Shapeshifter (Token) // Zombie (Token)", false)
+	if tcgID != wantTCGID {
+		t.Errorf("MatchTokenPairingBySetNumber(TC18, 2, ..Zombie..) = %q, want %q", tcgID, wantTCGID)
+	}
+}
+
 // TestTokenPairIndexCollision pins the fix for a real bug: a face commonly
 // pairs with several different partners across a sheet, and two of those
 // partners can normalize to the identical key (measured: 252 of 1,865
