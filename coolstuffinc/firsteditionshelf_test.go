@@ -19,7 +19,11 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 	}{
 		{"Lapras - 10/62", "1st Edition Fossil", "10-62_44419_1steditionholofoil"},
 		{"Vileplume - 15/64", "1st Edition Jungle", "15-64_45126_1steditionholofoil"},
-		{"Alakazam - 1/102", "1st Edition Base Set", "001-102_42346_1steditionholofoil"},
+		// Base Set's run is a set of its own, and both its finishes have to
+		// be reached there: the holo run had one card filed under the
+		// shelf's own set, and the plain run had none at all.
+		{"Alakazam - 1/102", "1st Edition Base Set", "001-102_106996_1steditionholofoil"},
+		{"Abra - 43/102", "1st Edition Base Set", "043-102_107040_1stedition"},
 	} {
 		t.Run(tt.edition+" "+tt.name, func(t *testing.T) {
 			shelf, run := firstEditionShelf(tt.edition)
@@ -48,10 +52,11 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 func TestFirstEditionShelfRefusesTheOtherRun(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
-	// Base Set carries one first-edition row, Alakazam; the rest of the set
-	// has none, so this names a run the catalog cannot answer with.
+	// Machamp is the one Base Set card with no shadowless printing - its
+	// first-edition stamp sits on a shadowed card - so the run names nothing
+	// the catalog can answer with.
 	shelf, run := firstEditionShelf("1st Edition Base Set")
-	card := pokemonListing(b, "Venusaur - 15/102", shelf, "", false)
+	card := pokemonListing(b, "Machamp - 8/102", shelf, "", false)
 	if card == nil {
 		t.Skip("the listing preprocessed to nothing")
 	}
@@ -67,5 +72,23 @@ func TestFirstEditionShelfLeavesOtherShelves(t *testing.T) {
 	shelf, run := firstEditionShelf("Fossil")
 	if shelf != "Fossil" || run != nil {
 		t.Errorf("firstEditionShelf(Fossil) = %q, %v; want it untouched", shelf, run)
+	}
+}
+
+// TestFirstEditionShelfNamesTheRunSet pins which set a run shelf sells. Every
+// shelf but one names the set beside it; Base Set's runs are filed as "Base
+// Set (Shadowless)", and asking the shelf's own set for them answered with
+// the shadowed unlimited printing at the first edition's price.
+func TestFirstEditionShelfNamesTheRunSet(t *testing.T) {
+	for _, tt := range []struct{ edition, want string }{
+		{"1st Edition Base Set", "Base Set (Shadowless)"},
+		{"1st Edition Fossil", "Fossil"},
+		{"1st Edition Team Rocket", "Team Rocket"},
+		{"Base Set", "Base Set"},
+	} {
+		shelf, _ := firstEditionShelf(tt.edition)
+		if shelf != tt.want {
+			t.Errorf("firstEditionShelf(%q) = %q, want %q", tt.edition, shelf, tt.want)
+		}
 	}
 }
