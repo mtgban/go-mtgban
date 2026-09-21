@@ -366,7 +366,23 @@ func firstEditionShelf(edition string) (string, []string) {
 	if trimmed == edition {
 		return edition, nil
 	}
+	// Base Set is the one shelf whose run the catalog files as a set of its
+	// own rather than a finish of the set beside it: the first-edition and
+	// shadowless printings are "Base Set (Shadowless)", and "Base Set" holds
+	// only the shadowed unlimited run. Naming the shelf's own set asks for a
+	// run that set has one card of, so every other row fell through to the
+	// unlimited printing and was published at the first edition's price.
+	if set, found := runShelfEditions[trimmed]; found {
+		trimmed = set
+	}
 	return trimmed, conditionRuns["1st Edition"]
+}
+
+// runShelfEditions name the set a print-run shelf sells where the catalog
+// files the run apart from the shelf's own set. Fossil, Jungle, Team Rocket,
+// the Gyms and the Neos all carry theirs as a finish and are left alone.
+var runShelfEditions = map[string]string{
+	"Base Set": "Base Set (Shadowless)",
 }
 
 // conditionRuns are the print runs this storefront names where a condition
@@ -930,6 +946,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		link := u.String()
 
 		var theCard *mtgmatcher.InputCard
+		var runFinishes []string
 		switch csi.game {
 		case mtgban.GameMagic:
 			c, err := PreprocessBuylist(csi.backend, product)
@@ -941,9 +958,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// finish and prize track, a Yu-Gi-Oh rarity - where One Piece spends
 		// it describing the artwork and Lorcana's changes no answer at all.
 		case mtgban.GamePokemon:
-			variation := catalogTreatment(buylistVariation(product))
-			shelf := pokemonPromoShelf(csi.backend, product.Name, product.ItemSet, product.RarityName, product.IsFoil == 1, variation)
-			theCard = pokemonListing(csi.backend, product.Name, shelf, variation, product.IsFoil == 1)
+			theCard, runFinishes = pokemonBuylistCard(csi.backend, product)
 		case mtgban.GameRiftbound:
 			variation := buylistVariation(product)
 			shelf := riftboundShelf(csi.backend, product.ItemSet, product.Notes, product.Name, variation, product.IsFoil == 1)
@@ -976,7 +991,13 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		}
 
-		cardID, err := csi.backend.Match(theCard)
+		var cardID string
+		var err error
+		if runFinishes != nil {
+			cardID, err = matchRun(csi.backend, theCard, runFinishes)
+		} else {
+			cardID, err = csi.backend.Match(theCard)
+		}
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -1238,6 +1259,18 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 		}
 	}
 	return card
+}
+
+// pokemonBuylistCard reads a buylist row the way a sell listing is read, the
+// print run included. The run rides in the shelf's title on both sides of the
+// storefront, and only the sell listings were reading it: a buy row arrived
+// with its shelf spelled whole, matched the set of that name, and was
+// published against the unlimited printing at the first edition's price.
+func pokemonBuylistCard(b *mtgmatcher.Backend, product CSIPriceEntry) (*mtgmatcher.InputCard, []string) {
+	variation := catalogTreatment(buylistVariation(product))
+	shelf, run := firstEditionShelf(product.ItemSet)
+	shelf = pokemonPromoShelf(b, product.Name, shelf, product.RarityName, product.IsFoil == 1, variation)
+	return pokemonListing(b, product.Name, shelf, variation, product.IsFoil == 1), run
 }
 
 // pokemonNumberSets are the sets a number's prefix names outright.
