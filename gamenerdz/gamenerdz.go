@@ -24,9 +24,13 @@ const (
 // conditionMap spells the condition a buylist variant's title names. The
 // storefront's offers hang off one untitled variant per product today, and
 // an untitled variant names none: the grade is written into the display
-// name instead, and the empty entry is what says to read it there. A titled
-// variant spells its own, the way the platform's other stores already do.
+// name instead, and the empty entry is what says to read it there. The
+// platform writes that untitled variant two ways - the placeholder title it
+// fills in, and a title of null or none at all - and both are the same
+// offer. A titled variant spells its own, the way the platform's other
+// stores already do.
 var conditionMap = map[string]string{
+	"":                  "",
 	"Default Title":     "",
 	"Near Mint":         "NM",
 	"Lightly Played":    "SP",
