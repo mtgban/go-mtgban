@@ -358,6 +358,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"AER": starterDeckCheck,
 
 	"DD2": japaneseCheck,
+	"SOA": japaneseCheck,
 	"STA": japaneseCheck,
 	"WAR": japaneseCheck,
 
