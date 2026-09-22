@@ -4,7 +4,6 @@ import (
 	"maps"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"unicode"
 
@@ -369,7 +368,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	if bare == number {
 		bare = ""
 	}
-	pool := extractPool(inCard.Variation)
+	total := extractTotal(inCard.Variation)
 
 	var out, wrongFinish, bareOut, bareWrongFinish, chaseOut, chaseWrongFinish []mtgmatcher.Card
 	chased := false
@@ -476,7 +475,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 	for _, tier := range tiers {
 		if len(tier) > 0 {
-			return poolTiebreak(pool, tier)
+			return totalTiebreak(total, tier)
 		}
 	}
 	return nil
@@ -524,39 +523,46 @@ func spellsOut(text, phrase string) bool {
 	return false
 }
 
-// poolTiebreak narrows a tier to the printings numbered within the pool the
-// storefront wrote behind the number.
+// totalTiebreak narrows a tier to the printings whose face prints the
+// denominator the storefront wrote behind the number.
 //
 // The datastore numbers each promo pool from one, so a card promoted twice
 // carries the same number in both: "Maleficent - Monstrous Dragon" is card 5
 // of the P1 pool and card 5 of the P3 one, and the number alone cannot tell
-// the two apart. The pool can, and the storefront writes it where a set card
-// writes its set size - which is exactly what it is. SetTotal is the
+// the two apart. The denominator can, and the storefront writes it where a
+// set card writes its set size - which is exactly what it is. SetTotal is the
 // denominator the face prints, "P3" on a promo where a card of the set
 // prints "204", so the tier is narrowed on the card's own total rather than
 // on a promo type: the pool was never a promotion, and it used to travel in
 // PromoTypes only because nothing else carried it.
 //
-// A pool no candidate carries keeps the whole tier. The storefront's spelling
-// of a pool is its own - it prints the one the card came from, which is not
-// always the one the datastore numbered it in - and refusing a printing over
-// it would price nothing where the number alone was answering. A datastore
-// built before the total was published still names a promo's run, which the
-// loader reads into SetTotal, so this decides the same way over either.
-func poolTiebreak(pool string, cards []mtgmatcher.Card) []mtgmatcher.Card {
-	if pool == "" || len(cards) <= 1 {
+// A count separates the same way a pool does, and for the same reason: a set
+// card and a promo of it stand at one number and print different totals under
+// it. Cool Stuff Inc buys Fabled's "Stitch - Rock Star" at "3/204", where the
+// set's Super Rare prints 204 and the Disney Parks printing beside it prints
+// DIS, and the two answered together as an aliasing until the count was read.
+//
+// A total no candidate carries keeps the whole tier. The storefront's
+// spelling of a total is its own - it prints the one the card came from,
+// which is not always the one the datastore numbered it in - and refusing a
+// printing over it would price nothing where the number alone was answering.
+// A datastore built before the total was published still names a promo's run,
+// which the loader reads into SetTotal, so this decides the same way over
+// either.
+func totalTiebreak(total string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if total == "" || len(cards) <= 1 {
 		return cards
 	}
-	var pooled []mtgmatcher.Card
+	var totalled []mtgmatcher.Card
 	for _, card := range cards {
-		if strings.EqualFold(card.SetTotal, pool) {
-			pooled = append(pooled, card)
+		if strings.EqualFold(card.SetTotal, total) {
+			totalled = append(totalled, card)
 		}
 	}
-	if len(pooled) == 0 {
+	if len(totalled) == 0 {
 		return cards
 	}
-	return pooled
+	return totalled
 }
 
 // numberField answers the field of a variation the collector number is
@@ -607,24 +613,21 @@ func extractNumber(variation string) string {
 	return trimmed
 }
 
-// extractPool pulls the promo pool out of the number a storefront wrote.
+// extractTotal pulls the denominator out of the number a storefront wrote.
 //
 // A Lorcana number is written over what it is one of: "87/204" for the
 // eighty-seventh of a set of two hundred and four, "5/P3" for the fifth card
-// of the third promo pool. Only a tail that is not itself a count names a
-// pool, and it is read as written: the card's SetTotal holds the same
-// denominator in the datastore's own spelling, and poolTiebreak compares the
-// two without regard to case.
-func extractPool(variation string) string {
+// of the third promo pool. Either tail says the same thing about the printing
+// and is read as written: the card's SetTotal holds the same denominator in
+// the datastore's own spelling, and totalTiebreak compares the two without
+// regard to case.
+func extractTotal(variation string) string {
 	field := numberField(variation)
 	if field == "" {
 		return ""
 	}
 	_, tail, found := strings.Cut(strings.TrimRight(field, ","), "/")
-	if !found || tail == "" {
-		return ""
-	}
-	if _, err := strconv.Atoi(tail); err == nil {
+	if !found {
 		return ""
 	}
 	return tail
