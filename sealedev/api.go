@@ -196,9 +196,19 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 		response.Buylist = map[string]map[string]*BanPrice{}
 	}
 
+	// Measured over the whole snapshot before any of it is written back, so
+	// that an estimate filed under Cardmarket's own name never becomes what
+	// the next card is measured against. Only the writing folds into the
+	// pass below.
+	mkm := fitMKMCalibration(b, &response)
+
 	// Adjust Direct/CT0 estimates and prune bulk in a single pass over the catalog.
 	uuids := b.GetUUIDs()
 	for _, uuid := range uuids {
+		// Price what Cardmarket never polled, ahead of the prune below so
+		// the estimate is held to the same bulk threshold as a real price.
+		mkm.fill(b, &response, uuid)
+
 		tcgLow := response.getRetail(b, uuid, "TCGLow")
 		tcgMarket := response.getRetail(b, uuid, "TCGMarket")
 		directNet := response.getBuylist(b, uuid, "TCGDirectNet")
