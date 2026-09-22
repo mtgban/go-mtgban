@@ -21,7 +21,9 @@ func TestExtractPool(t *testing.T) {
 		{"a bare number says nothing about a run", "87", ""},
 		{"nor does a number with an empty tail", "87/", ""},
 		{"the run survives a trailing comma", "5/P3, Foil", "P3"},
-		{"only the first digit-leading field counts", "Enchanted 5/P3", "P3"},
+		{"only the field the number is written in counts", "Enchanted 5/P3", "P3"},
+		{"which is not the digit a storefront's prose leads with",
+			"Chapter 1 version - 5/P3", "P3"},
 		{"a wording with no number at all", "Alternate Art", ""},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
