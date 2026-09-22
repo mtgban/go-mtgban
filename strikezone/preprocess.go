@@ -449,8 +449,16 @@ func namesAbsentTreatment(variation string, co *mtgmatcher.CardObject) bool {
 // of these it stocks, so silence beside a card the set also prints untextured
 // names that other printing, and the textured one is only what the wording
 // reached for want of anywhere else to land.
+//
+// A number the wording carries names the printing as plainly as the word
+// itself would, so it stands aside there the same way: the store has not
+// been seen writing one for these listings, but a number matching the
+// answer's own is a claim, not the silence this guard exists to catch.
 func wearsUnnamedTextured(b *mtgmatcher.Backend, variation string, co *mtgmatcher.CardObject) bool {
 	if !co.HasPromoType(magic.PromoTypeTextured) || mtgmatcher.Contains(variation, "Textured") {
+		return false
+	}
+	if number := mtgmatcher.ExtractNumber(variation); number != "" && number == co.Number {
 		return false
 	}
 	return slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card mtgmatcher.Card) bool {

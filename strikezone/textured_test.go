@@ -47,6 +47,16 @@ func TestUnnamedTextured(t *testing.T) {
 			notes: "Near Mint Foil English", wantNumber: "",
 		},
 		{
+			desc: "Niko sells the same three",
+			name: "Niko, Light of Hope (Showcase)", edition: "Duskmourn: House of Horror",
+			notes: "Near Mint Foil English", wantNumber: "",
+		},
+		{
+			desc: "a number matching the textured printing names it as plainly as the word",
+			name: "Kaito, Bane of Nightmares (Showcase) (409)", edition: "Duskmourn: House of Horror",
+			notes: "Near Mint Foil English", wantNumber: "409",
+		},
+		{
 			desc: "silence over a printing wearing nothing is not a claim",
 			name: "Valgavoth, Terror Eater", edition: "Duskmourn: House of Horror",
 			notes: "Near Mint Foil English", wantNumber: "120",
