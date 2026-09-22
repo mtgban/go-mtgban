@@ -360,10 +360,13 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		}
 		// The V-index cardmarket synthesizes for same-number siblings is
 		// how One Piece tells a base art from its variants (V.1 the base,
-		// the rest its alternates), and says nothing for the finish-driven
-		// games; hand it to the matcher's own rules either way. The foil
-		// probes are inert for One Piece too - both flags resolve to the
-		// same printing.
+		// the rest its alternates); hand it to the matcher's own rules
+		// either way. Lorcana reads it too, but only as a last-resort
+		// tiebreak among same-named Special printings a bare number cannot
+		// separate - a promo Ravensburger reprints wave to wave, each wave
+		// its own locally-numbered pool - so it is otherwise inert. The
+		// foil probes are inert for One Piece too - both flags resolve to
+		// the same printing.
 		if len(fields) > 1 {
 			number = strings.TrimSpace(number + " V." + strings.TrimSuffix(fields[1], ")"))
 		}

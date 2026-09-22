@@ -6116,6 +6116,26 @@
         "uuid": "1188_holofoil"
     },
     {
+        "description": "promo wave disambiguated by Cardmarket's own (V.2) wording",
+        "input": {
+            "name": "Maleficent - Monstrous Dragon",
+            "variant": "5 V.2",
+            "edition": "Promos Year 3",
+            "foil": true
+        },
+        "uuid": "2183_holofoil"
+    },
+    {
+        "description": "promo wave's first listing carries no (V.N) wording at all",
+        "input": {
+            "name": "Maleficent - Monstrous Dragon",
+            "variant": "5",
+            "edition": "Promos Year 1",
+            "foil": true
+        },
+        "uuid": "663_holofoil"
+    },
+    {
         "description": "storefront-prefixed edition still narrows",
         "input": {
             "name": "Let It Go",
