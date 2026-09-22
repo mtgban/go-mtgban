@@ -148,6 +148,25 @@ var evParameters = []evConfig{
 		Simulation:   true,
 	},
 
+	// Cardmarket. The cards its market scraper never polled are priced from
+	// the published guide instead; see mkm.go for what that is worth, and
+	// for the games it is not worth enough in.
+	{
+		Name:         "Cardmarket EV",
+		Shorthand:    "MKMEV",
+		StatsFunc:    passthroughFirst,
+		SourceStores: []string{"MKM"},
+	},
+	{
+		Name:      "Cardmarket Sim",
+		Shorthand: "MKMSim",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.Median(values)
+		},
+		SourceStores: []string{"MKM"},
+		Simulation:   true,
+	},
+
 	// Custom buylist
 	{
 		Name:           "TCG Direct SYP (net) EV",

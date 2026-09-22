@@ -945,7 +945,14 @@ migrating them to `WorkerPool` would make operational behavior uniform.
 `sealedev` builds sealed-EV "scrapers" from mtgmatcher probabilities or
 5,000-run booster simulations priced against the MTGBAN API, emitting EV
 entries with dispersion stats (std-dev/IQR), `Family="EV"`, `SealedMode`, and
-`MetadataOnly` toggled per sub-scraper.
+`MetadataOnly` toggled per sub-scraper. Two of its sources are estimated
+rather than read: TCG Direct (net) where the buylist is missing, and
+Cardmarket for the ~86% of the catalog its market scraper never polls, which
+`sealedev/mkm.go` scales from the published guide's Trend column using a
+calibration fitted from the same snapshot being priced. That fit is per game
+and not portable — Magic's multiplier runs 0.43-1.24 across the price range
+where Yu-Gi-Oh's runs 2.2-3.7 — and Pokemon and Yu-Gi-Oh do not estimate well
+enough to publish, for reasons upstream of the scaling.
 
 **Not templates.** Some directories in a working tree are untracked WIP and
 are not part of the committed module — `synthetic/` (a *computed* buylist with
