@@ -483,6 +483,23 @@ var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]
 // "Nidoran F" and "Nidoran M".
 var pokemonGenders = strings.NewReplacer("♀", "F", "♂", "M")
 
+// pokemonRespellings pairs the names this storefront misspells in a display
+// name with the catalog's own, each read off the body the retail feed carries
+// beside the name: the body names the card as TCGplayer sells it and carries
+// that product id, and both agree with the catalog wherever the display name
+// does not. The buylist feed carries neither, and sells the same products
+// under the same wrong names, so the correction is a table rather than a
+// second reading of the body.
+var pokemonRespellings = map[string]string{
+	"Arver's Toedscool":      "Arven's Toedscool",
+	"Defiant Band":           "Defiance Band",
+	"Electro Generator":      "Electric Generator",
+	"Feebass":                "Feebas",
+	"Marnie's Marpeko":       "Marnie's Morpeko",
+	"Oinkalogne ex":          "Oinkologne ex",
+	"Team Rocket's Nidorand": "Team Rocket's Nidoran M",
+}
+
 // A Pokemon display name reads
 //
 //	Abra 65/130 - Base Set 2 Reverse Holofoil
@@ -560,8 +577,13 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 		finish = ""
 	}
 
+	cardName := strings.TrimSuffix(strings.TrimSpace(name), " -")
+	if respelled, found := pokemonRespellings[cardName]; found {
+		cardName = respelled
+	}
+
 	card := &mtgmatcher.InputCard{
-		Name:      pokemonGenders.Replace(strings.TrimSuffix(strings.TrimSpace(name), " -")),
+		Name:      pokemonGenders.Replace(cardName),
 		Edition:   product.ProductData.SetName,
 		Variation: number,
 		Finish:    finish,
