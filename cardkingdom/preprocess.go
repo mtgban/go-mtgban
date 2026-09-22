@@ -141,6 +141,15 @@ var skuFixupTable = map[string]string{
 	"CFSLD-IFIYW-10": "SLD-IFIYW-10",
 }
 
+// This table contains the names CK misspells, keyed by the sku the listing
+// carries once skuFixupTable has had its say, and mapped to the name the set
+// files the printing under. A misspelling is the vendor's own, so it is keyed
+// literally rather than reached for by resemblance.
+var nameFixupTable = map[string]string{
+	// Edgar, Moonlit Sovereign
+	"FRA-0257": "Edgar, Moonlit Sovereign",
+}
+
 // List of tags that need to be preserved in one way or another
 var preserveTags = []string{
 	"Display",
@@ -252,6 +261,11 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 	fixup, found := skuFixupTable[sku]
 	if found {
 		sku = fixup
+	}
+
+	fixedName, found := nameFixupTable[sku]
+	if found {
+		card.Name = fixedName
 	}
 
 	// Update the fields if needed
