@@ -4,7 +4,9 @@ import (
 	"maps"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -475,7 +477,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 	for _, tier := range tiers {
 		if len(tier) > 0 {
-			return totalTiebreak(total, tier)
+			return promoOrdinalTiebreak(b, inCard, totalTiebreak(total, tier))
 		}
 	}
 	return nil
@@ -563,6 +565,114 @@ func totalTiebreak(total string, cards []mtgmatcher.Card) []mtgmatcher.Card {
 		return cards
 	}
 	return totalled
+}
+
+// extractOrdinal reads the position Cardmarket's own "(V.N)" wording claims
+// among same-named, same-numbered siblings, which Core Match has already
+// split off the name and appended to Variation by the time this runs. A
+// storefront that names no position at all returns 0, which is Cardmarket's
+// own way of saying the first - it never suffixes the wave it lists first.
+func extractOrdinal(variation string) int {
+	for field := range strings.FieldsSeq(variation) {
+		tail, found := strings.CutPrefix(field, "V.")
+		if !found {
+			continue
+		}
+		n, err := strconv.Atoi(tail)
+		if err != nil || n < 1 {
+			continue
+		}
+		return n
+	}
+	return 0
+}
+
+// promoOrdinalTiebreak narrows same-named, same-numbered siblings left tied
+// once totalTiebreak has had its say, using the position Cardmarket's own
+// "(V.N)" wording claims. Cardmarket sends a bare number, no denominator, so
+// totalTiebreak is always a no-op for it: "Maleficent - Monstrous Dragon",
+// card 5 of the P1 pool and card 5 of the P3 one per totalTiebreak's own
+// example, is exactly the tie a Cardmarket listing reaches with nothing left
+// to read off Number - Cardmarket is the one side still holding the answer,
+// in the wording rather than in Number.
+//
+// The tie is trusted only where every candidate is Special: that is the
+// rarity Lorcana's own promo waves carry, and nothing about a Cardmarket
+// wave count is a claim about a tie some other cause produced - the number
+// and name already decided everywhere else, so this never overrides a claim
+// the datastore itself could make. Candidates are sorted by the release date
+// of the set housing each printing, not always a set named for the promo
+// itself but the closest thing every wave publishes, and the wording's own
+// count indexes into that order the way it indexed into Cardmarket's own
+// listing order.
+//
+// An unsuffixed wording only counts as Cardmarket's own "V.1" where nothing
+// else in it claims a denominator - a storefront naming a pool of its own,
+// recognized or not, has made its own claim about the tie, and a total
+// totalTiebreak could not place must not be overridden by a wave count read
+// into the silence around it - and where the edition itself says which
+// promo wave this is. Silence alone is not a claim any storefront's bare
+// number could not equally send, so it is read as Cardmarket's own "V.1"
+// only where the edition confirms the shape: mentionsPromoWave is what
+// keeps a same-numbered tie at some other storefront, that happens to land
+// on this same pair of Special printings, from being guessed at instead of
+// refused.
+func promoOrdinalTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) <= 1 {
+		return cards
+	}
+	for _, card := range cards {
+		if !strings.EqualFold(card.Rarity, "special") {
+			return cards
+		}
+	}
+	ordinal := extractOrdinal(inCard.Variation)
+	if ordinal == 0 {
+		// An unsuffixed wording only counts as Cardmarket's own "V.1" where
+		// the edition itself says which promo wave it is: any storefront
+		// can send a bare number, but only Cardmarket's "Promos Year N"
+		// heading is a claim this tiebreak has verified means what it
+		// answers with. Elsewhere, silence stays silence.
+		if extractTotal(inCard.Variation) != "" || !mentionsPromoWave(inCard.Edition) {
+			return cards
+		}
+		ordinal = 1
+	}
+	if ordinal > len(cards) {
+		return cards
+	}
+	sorted := slices.Clone(cards)
+	slices.SortFunc(sorted, func(a, c mtgmatcher.Card) int {
+		ta, tc := setReleaseDate(b, a.SetCode), setReleaseDate(b, c.SetCode)
+		if !ta.Equal(tc) {
+			if ta.Before(tc) {
+				return -1
+			}
+			return 1
+		}
+		return strings.Compare(a.SetCode, c.SetCode)
+	})
+	return []mtgmatcher.Card{sorted[ordinal-1]}
+}
+
+// setReleaseDate is the zero time for a code the datastore does not carry,
+// which sorts first rather than panicking - a candidate FilterCards already
+// pulled from cardSet is never actually missing.
+func setReleaseDate(b *mtgmatcher.Backend, code string) time.Time {
+	set := b.Sets[code]
+	if set == nil {
+		return time.Time{}
+	}
+	return set.ReleaseDateTime
+}
+
+// mentionsPromoWave reports whether an edition names a Cardmarket yearly
+// promo heading - "Promos Year 1", "Promos Year 3" - the one shape
+// promoOrdinalTiebreak has verified an unsuffixed wording still means
+// Cardmarket's own "V.1" over. Any other edition, known or not, decides
+// nothing here.
+func mentionsPromoWave(edition string) bool {
+	return strings.Contains(strings.ToLower(edition), "promos year")
 }
 
 // numberField answers the field of a variation the collector number is

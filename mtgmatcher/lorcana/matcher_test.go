@@ -208,6 +208,22 @@ var lorcanaSeeds = []matchTest{
 		Desc: "negative: same name and number across sets aliases",
 		In:   mtgmatcher.InputCard{Name: "Let It Go", Variation: "163"},
 	},
+	// A Special printing Ravensburger reprints wave to wave carries the same
+	// name and, by coincidence rather than design, sometimes the same local
+	// number in each wave's own promo pool - "Maleficent - Monstrous Dragon"
+	// is card 5 of Promos Year 1 and card 5 of Promos Year 3. Cardmarket
+	// sends a bare number, no denominator, so only its own "(V.N)" wording -
+	// appended to Variation by Core Match - tells the two apart, and
+	// Cardmarket writes it on every wave but the first.
+	{
+		Desc: "promo wave disambiguated by Cardmarket's own (V.2) wording",
+		In:   mtgmatcher.InputCard{Name: "Maleficent - Monstrous Dragon", Variation: "5 V.2", Edition: "Promos Year 3", Foil: true},
+	},
+	{
+		// The wave Cardmarket never suffixes - its own way of saying "V.1".
+		Desc: "promo wave's first listing carries no (V.N) wording at all",
+		In:   mtgmatcher.InputCard{Name: "Maleficent - Monstrous Dragon", Variation: "5", Edition: "Promos Year 1", Foil: true},
+	},
 	// Edition narrowing: the Match skeleton restricts candidates to the sets
 	// matching a supplied edition; without one (or with one that resolves to
 	// no set name) the number-driven contract above is unchanged.
