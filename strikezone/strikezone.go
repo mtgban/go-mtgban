@@ -198,7 +198,8 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 	if sz.game == mtgban.GameMagic {
 		co, coErr := sz.backend.GetUUID(cardID)
-		if coErr == nil && namesAbsentTreatment(theCard.Variation, co) {
+		if coErr == nil && (namesAbsentTreatment(theCard.Variation, co) ||
+			wearsUnnamedTextured(sz.backend, theCard.Variation, co)) {
 			return nil
 		}
 	}
