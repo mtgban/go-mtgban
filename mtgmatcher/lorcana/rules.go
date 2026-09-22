@@ -559,22 +559,42 @@ func poolTiebreak(pool string, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	return pooled
 }
 
-// extractNumber pulls the collector number out of the scraper-supplied
-// Variation. Core Match may append parenthetical chunks split off the input
-// name ("205 Enchanted", or just "Enchanted" when no number was supplied),
-// so only the first digit-leading field counts. The number is the part
-// before '/' with leading zeros stripped — except a number the zeros are
-// the whole of stays "0", with any letter it carries, so the genuine
-// 0-numbered promo stays reachable.
-func extractNumber(variation string) string {
-	number := ""
+// numberField answers the field of a variation the collector number is
+// written in.
+//
+// A Lorcana number is written over what it is one of, and a field written
+// that way is the number wherever the variation holds one. Only where none
+// does is the first digit-leading field all that is left to read, which is
+// what Core Match leaves behind when it appends parenthetical chunks split
+// off the input name ("205 Enchanted", or just "Enchanted" when no number
+// was supplied).
+//
+// The two are not the same field wherever a storefront writes prose in front
+// of the number, and prose carries digits: Cool Stuff Inc sells The First
+// Chapter's Donald Duck as "Chapter 1 version - 177/204", where the leading
+// field numbers the chapter and the card is 177.
+func numberField(variation string) string {
+	var first string
 	for field := range strings.FieldsSeq(variation) {
-		if field[0] >= '0' && field[0] <= '9' {
-			number = field
-			break
+		if field[0] < '0' || field[0] > '9' {
+			continue
+		}
+		if strings.Contains(field, "/") {
+			return field
+		}
+		if first == "" {
+			first = field
 		}
 	}
-	number = strings.Split(number, "/")[0]
+	return first
+}
+
+// extractNumber pulls the collector number out of the scraper-supplied
+// Variation. The number is the part before '/' with leading zeros stripped —
+// except a number the zeros are the whole of stays "0", with any letter it
+// carries, so the genuine 0-numbered promo stays reachable.
+func extractNumber(variation string) string {
+	number := strings.Split(numberField(variation), "/")[0]
 	trimmed := strings.TrimLeft(number, "0")
 	// TrimLeft stops at the first non-zero character of any kind, so a result
 	// that is empty or no longer leads with a digit means the zeros were the
@@ -596,20 +616,18 @@ func extractNumber(variation string) string {
 // denominator in the datastore's own spelling, and poolTiebreak compares the
 // two without regard to case.
 func extractPool(variation string) string {
-	for field := range strings.FieldsSeq(variation) {
-		if field[0] < '0' || field[0] > '9' {
-			continue
-		}
-		_, tail, found := strings.Cut(strings.TrimRight(field, ","), "/")
-		if !found || tail == "" {
-			return ""
-		}
-		if _, err := strconv.Atoi(tail); err == nil {
-			return ""
-		}
-		return tail
+	field := numberField(variation)
+	if field == "" {
+		return ""
 	}
-	return ""
+	_, tail, found := strings.Cut(strings.TrimRight(field, ","), "/")
+	if !found || tail == "" {
+		return ""
+	}
+	if _, err := strconv.Atoi(tail); err == nil {
+		return ""
+	}
+	return tail
 }
 
 // selectFinish maps the foil a listing names onto the uuid of the printing
