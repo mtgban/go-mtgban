@@ -143,11 +143,15 @@ product's own name.
 
 ## Known gaps
 
-- **Magic only**, and the constraint is `banAPIURL` rather than anything
-  structural: each game's prices are published on its own subdomain, so
-  another game needs that URL parameterised before anything else is worth
-  doing. `mkm.go`'s calibration is already per-game and would follow on its
-  own; the accuracy notes there say which games would survive the move.
+- **Magic only, gated in two places.** `register.go` files this under
+  `[]mtgban.Game{mtgban.GameMagic}`, and `lookup(game, name)` is how a
+  scraper is found, so nothing can build a `sealed_ev` for another game in
+  the first place; `banAPIURL` then hardcodes `www.mtgban.com`, which serves
+  Magic's prices alone — each game's are published on its own subdomain, the
+  way `cardmarket`'s `banHost` composes them. Another game needs both
+  changed, the registration before the URL. `mkm.go`'s calibration is
+  already per-game and would follow on its own; the accuracy notes there say
+  which games would survive the move.
 - **`maxStorePrice` takes the highest price across a source's stores**, which
   matters only for `Singles Buylist (est.)` — the one entry naming more than
   one store (`CK`, `SCG`). Every other source names exactly one, so the max
