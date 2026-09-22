@@ -42,6 +42,17 @@ wrong in a way that read as "nothing passed the filter" rather than "the
 fetch hit the wrong server." Read it before touching any of the three
 Cardmarket scrapers or the `resolver` they share.
 
+`sealedev/README.md` covers the one "scraper" with no site behind it: it
+prices sealed product by what opening it is worth, against the MTGBAN price
+API rather than a storefront. Read it before changing anything an EV reads,
+because two of its price sources are *estimated* rather than quoted — TCG
+Direct (net) where the buylist has no number or an implausible one, and
+Cardmarket for the ~86% of the catalog its market scraper never polls — so
+an EV can move between runs without any price having moved. It also names
+what silently never counts toward a total (serialized, cosmic foil,
+unfixed Secret Lair bonuses, anything under the bulk threshold) and why
+that floor is deliberately the same for every source.
+
 ## Layout
 
 ```
