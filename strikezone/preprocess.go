@@ -2,6 +2,7 @@ package strikezone
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -441,4 +442,18 @@ func namesAbsentTreatment(variation string, co *mtgmatcher.CardObject) bool {
 		}
 	}
 	return false
+}
+
+// wearsUnnamedTextured reports whether the answer is a textured printing the
+// listing never called textured. The store spells the word out on every one
+// of these it stocks, so silence beside a card the set also prints untextured
+// names that other printing, and the textured one is only what the wording
+// reached for want of anywhere else to land.
+func wearsUnnamedTextured(b *mtgmatcher.Backend, variation string, co *mtgmatcher.CardObject) bool {
+	if !co.HasPromoType(magic.PromoTypeTextured) || mtgmatcher.Contains(variation, "Textured") {
+		return false
+	}
+	return slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card mtgmatcher.Card) bool {
+		return !card.HasPromoType(magic.PromoTypeTextured)
+	})
 }
