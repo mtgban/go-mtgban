@@ -755,8 +755,12 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		return err
 	}
 
+	// Read once and used twice on purpose: the listings are filtered to
+	// the language this printing is in, so the link beside the price has
+	// to prefer the same one. Bound here, the two cannot drift.
+	language := marketLanguage(co.Language)
 	options := maps.Clone(defaultArticleFilter)
-	options["idLanguage"] = strconv.Itoa(int(marketLanguage(co.Language)))
+	options["idLanguage"] = strconv.Itoa(int(language))
 	for param, want := range flags {
 		if want {
 			options[param] = "true"
@@ -790,7 +794,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 				ReverseHolo: onlyIf(article.IsReverseHolo),
 				Signed:      cm.None,
 				Altered:     cm.None,
-				Language:    cm.LanguageEnglish,
+				Language:    language,
 				Affiliate:   mkm.affiliate,
 			})
 			customFields := map[string]string{
