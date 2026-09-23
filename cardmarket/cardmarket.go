@@ -415,6 +415,8 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// priced by the second pair alone.
 	if perTreatment || !second {
 		link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
+			Signed:    cm.None,
+			Altered:   cm.None,
 			Language:  cm.LanguageEnglish,
 			Affiliate: mkm.affiliate,
 		})
@@ -470,6 +472,8 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
 			link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
 				Foil:      cm.Only,
+				Signed:    cm.None,
+				Altered:   cm.None,
 				Language:  cm.LanguageEnglish,
 				Affiliate: mkm.affiliate,
 			})
@@ -503,6 +507,8 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	} else {
 		link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
 			Foil:      cm.Only,
+			Signed:    cm.None,
+			Altered:   cm.None,
 			Language:  cm.LanguageEnglish,
 			Affiliate: mkm.affiliate,
 		})

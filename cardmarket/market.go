@@ -788,6 +788,8 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 				Foil:        onlyIf(article.IsFoil),
 				FirstEd:     onlyIf(article.IsFirstEd),
 				ReverseHolo: onlyIf(article.IsReverseHolo),
+				Signed:      cm.None,
+				Altered:     cm.None,
 				Language:    cm.LanguageEnglish,
 				Affiliate:   mkm.affiliate,
 			})
