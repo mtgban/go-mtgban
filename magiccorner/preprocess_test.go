@@ -71,6 +71,51 @@ func TestInternalPreprocessVersionTag(t *testing.T) {
 	}
 }
 
+// Magic Corner's generic "Promo" shelf sells this card under two different
+// physical listings and never tags either one with the "(V.N)" suffix its
+// own DCI Promo shelf puts on the same listing, leaving the matcher a bare
+// name shared by half a dozen printings - it lands on the Secret Lair Promo
+// pair every time. The image name is the only place either listing still
+// says which one it is.
+func TestInternalPreprocessUginPromoShelf(t *testing.T) {
+	tests := []struct {
+		desc          string
+		extra         string
+		wantEdition   string
+		wantVariation string
+	}{
+		{
+			desc:          "the MagicFest 2025 foil, shared with the DCI Promo (V.2) listing",
+			extra:         "ugin-the-spirit-dragon-v2_823824",
+			wantEdition:   "MagicFest 2025",
+			wantVariation: "6",
+		},
+		{
+			desc:          "the Ugin's Fate nonfoil, named in Italian with no version at all",
+			extra:         "ugin-lo-spirito-drago_271991",
+			wantEdition:   "Ugin's Fate",
+			wantVariation: "1",
+		},
+		{
+			desc:          "no image to read leaves the shelf as ambiguous as it arrived",
+			extra:         "noimage",
+			wantEdition:   "Promo",
+			wantVariation: "",
+		},
+	}
+
+	b := &mtgmatcher.Backend{}
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			_, gotEdition, gotVariation := internalPreprocess(b, "Ugin, the Spirit Dragon", "Promo", "", tt.extra)
+			if gotEdition != tt.wantEdition || gotVariation != tt.wantVariation {
+				t.Errorf("internalPreprocess() = edition %q, variation %q, want %q, %q",
+					gotEdition, gotVariation, tt.wantEdition, tt.wantVariation)
+			}
+		})
+	}
+}
+
 // The Ravnica guildgates are told apart by the number in their image name,
 // and the tag steps aside only where a number is actually there to read.
 func TestNamesTheArt(t *testing.T) {

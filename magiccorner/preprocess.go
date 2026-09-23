@@ -377,6 +377,20 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			switch cardName {
 			case "Sword of Dungeons & Dragons":
 				edition = "H17"
+			case "Ugin, the Spirit Dragon":
+				// This shelf never carries the "(V.N)" suffix the store's
+				// own DCI Promo shelf puts on the exact same listing, so
+				// the matcher is left with a bare name shared by half a
+				// dozen printings and lands on the Secret Lair Promo pair
+				// every time. The image name still carries the version
+				// the wording drops.
+				if slugName, slugVersion := imageName(extra, edition); slugName != "" {
+					if slugVersion == "V.2" {
+						edition, variation = "MagicFest 2025", "6"
+					} else {
+						edition, variation = "Ugin's Fate", "1"
+					}
+				}
 			}
 		}
 	// Use the number from extra if present, or keep the current version
