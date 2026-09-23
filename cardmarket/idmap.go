@@ -15,7 +15,7 @@ import (
 
 // sameProduct says whether two products of a game's shelves are the same
 // card sold twice, for the games whose shelves do that; nil for the rest.
-func sameProduct(gameID int) func(a, b *cm.Product) bool {
+func sameProduct(gameID cm.Game) func(a, b *cm.Product) bool {
 	switch gameID {
 	case cm.GamePokemon:
 		return pokemonSameProduct
@@ -31,7 +31,7 @@ func sameProduct(gameID int) func(a, b *cm.Product) bool {
 
 // faceOf answers the rule telling a product that names one face of a fused
 // printing, for the games whose shelves sell a card face by face.
-func faceOf(b *mtgmatcher.Backend, gameID int) func(product *cm.Product, cardID string) bool {
+func faceOf(b *mtgmatcher.Backend, gameID cm.Game) func(product *cm.Product, cardID string) bool {
 	if gameID == cm.GameFleshAndBlood {
 		return func(product *cm.Product, cardID string) bool {
 			return fabFaceOf(b, product, cardID)

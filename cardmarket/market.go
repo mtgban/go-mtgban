@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"sort"
 	"strconv"
 	"strings"
@@ -150,14 +151,14 @@ func isPowerseller(article cm.Article) bool {
 // each with a row of their own. In practice the article filter's own
 // minCondition floor (see queryOnePrinting) already excludes LP, PL and PO
 // server-side, so the last two rows rarely see a listing at all.
-var mkmCondition = map[string]string{
-	"MT": "NM",
-	"NM": "NM",
-	"EX": "SP",
-	"GD": "MP",
-	"LP": "HP",
-	"PL": "HP",
-	"PO": "PO",
+var mkmCondition = map[cm.Condition]string{
+	cm.ConditionMint:        "NM",
+	cm.ConditionNearMint:    "NM",
+	cm.ConditionExcellent:   "SP",
+	cm.ConditionGood:        "MP",
+	cm.ConditionLightPlayed: "HP",
+	cm.ConditionPlayed:      "HP",
+	cm.ConditionPoor:        "PO",
 }
 
 // marketFinishParam names the server-side filter parameter and its
@@ -186,7 +187,7 @@ var mkmCondition = map[string]string{
 // two (not separately verified, and not load-bearing either way - see
 // queryOnePrinting on why a filter is never trusted without the client-side
 // check below).
-var marketFinishParam = map[int]string{
+var marketFinishParam = map[cm.Game]string{
 	cm.GameMagic:     "isFoil",
 	cm.GameYuGiOh:    "isFirstEd",
 	cm.GameLorcana:   "isFoil",
@@ -209,7 +210,16 @@ func articleFlagValue(param string, article *cm.Article) bool {
 	return false
 }
 
-// marketLanguages maps a card's own Language field onto Cardmarket's
+// marketLanguages holds the two languages the datastore and the marketplace
+// do not spell the same way. They agree on the other nine, so those are
+// cm.LanguageFromName's business rather than a table's; these two differ
+// only in word order, which no case-insensitive lookup will bridge.
+var marketLanguages = map[string]cm.Language{
+	"Chinese Simplified":  cm.LanguageSimplifiedChinese,
+	"Chinese Traditional": cm.LanguageTraditionalChinese,
+}
+
+// marketLanguage maps a card's own Language field onto Cardmarket's
 // idLanguage, defaulting to English for anything without a clean match -
 // mtgban's fictional languages (Phyrexian, Quenya), the handful it carries
 // that Cardmarket's table does not (Polish), or a plain missing field. This
@@ -217,26 +227,17 @@ func articleFlagValue(param string, article *cm.Article) bool {
 // shaped, one card at a time by its own resolved uuid, so there is no
 // print-vs-listing mismatch to guard against the way there would be if a
 // language were being read off a Cardmarket response instead.
-var marketLanguages = map[string]int{
-	"":                    1, // English
-	"English":             1,
-	"French":              2,
-	"German":              3,
-	"Spanish":             4,
-	"Italian":             5,
-	"Chinese Simplified":  6,
-	"Japanese":            7,
-	"Portuguese":          8,
-	"Russian":             9,
-	"Korean":              10,
-	"Chinese Traditional": 11,
-}
-
-func marketLanguage(language string) int {
+//
+// TestMarketLanguage pins every language the delegation covers, so a rename
+// on the library's side fails a test rather than quietly pricing in English.
+func marketLanguage(language string) cm.Language {
 	if id, found := marketLanguages[language]; found {
 		return id
 	}
-	return 1
+	if id := cm.LanguageFromName(language); id != 0 {
+		return id
+	}
+	return cm.LanguageEnglish
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -754,13 +755,8 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		return err
 	}
 
-	options := map[string]string{
-		"minCondition": "GD",
-		"minUserScore": "3",
-		"isSigned":     "false",
-		"isAltered":    "false",
-		"idLanguage":   strconv.Itoa(marketLanguage(co.Language)),
-	}
+	options := maps.Clone(defaultArticleFilter)
+	options["idLanguage"] = strconv.Itoa(int(marketLanguage(co.Language)))
 	for param, want := range flags {
 		if want {
 			options[param] = "true"
@@ -788,10 +784,12 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 				continue
 			}
 
-			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{
-				Foil:        article.IsFoil,
-				FirstEd:     article.IsFirstEd,
-				ReverseHolo: article.IsReverseHolo,
+			link := cm.BuildURL(mkm.gameID, article.IDProduct, cm.URLOption{
+				Foil:        onlyIf(article.IsFoil),
+				FirstEd:     onlyIf(article.IsFirstEd),
+				ReverseHolo: onlyIf(article.IsReverseHolo),
+				Language:    cm.LanguageEnglish,
+				Affiliate:   mkm.affiliate,
 			})
 			customFields := map[string]string{
 				"SubSellerName": article.Seller.Username,

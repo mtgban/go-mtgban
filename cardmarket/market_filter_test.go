@@ -41,7 +41,7 @@ func TestBanHost(t *testing.T) {
 // wherever it can be measured, not only where the catalog would
 // otherwise miss its budget.
 func TestMarketFilterParamsCoverage(t *testing.T) {
-	want := map[int]bool{
+	want := map[cm.Game]bool{
 		cm.GameMagic:         true,
 		cm.GamePokemon:       true,
 		cm.GameYuGiOh:        true,
@@ -67,7 +67,7 @@ func TestMarketFilterParamsCoverage(t *testing.T) {
 // budget unfiltered too and only lose call-volume savings, not the ability
 // to run, when the key is missing (see Load and Market.banPriceKey).
 func TestMarketFilterRequiredCoverage(t *testing.T) {
-	want := map[int]bool{
+	want := map[cm.Game]bool{
 		cm.GameMagic:   true,
 		cm.GamePokemon: true,
 		cm.GameYuGiOh:  true,
@@ -189,12 +189,13 @@ func TestSnapshotFirstAvailable(t *testing.T) {
 // resolves them to a card, only reads them back out of the snapshot.
 func TestMarketCandidatesThresholds(t *testing.T) {
 	// Magic's params: $3 floor, $2 minimum absolute difference.
-	gameID := 1 // stand-in; marketFilterParams is keyed by cm.GameMagic in
-	// production, but the test below swaps the table for one keyed the
-	// same way so the arithmetic is exercised without depending on
-	// go-cardmarket's own constant values.
+	var gameID cm.Game = 1 // stand-in; marketFilterParams is keyed by
+	// cm.GameMagic in production, but the test below swaps the table for
+	// one keyed the same way so the arithmetic is exercised without
+	// depending on go-cardmarket's own constant values. The type is the
+	// library's now; the number deliberately still is not.
 	saved := marketFilterParams
-	marketFilterParams = map[int]struct {
+	marketFilterParams = map[cm.Game]struct {
 		floor   float64
 		minDiff float64
 	}{

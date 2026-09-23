@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -185,7 +186,7 @@ var name2shorthand = map[string]string{
 
 // mkmGames is the only way into these scrapers: a game names its Cardmarket
 // id here or it is not one this package is read for.
-var mkmGames = map[mtgban.Game]int{
+var mkmGames = map[mtgban.Game]cm.Game{
 	mtgban.GameMagic:         cm.GameMagic,
 	mtgban.GameLorcana:       cm.GameLorcana,
 	mtgban.GameRiftbound:     cm.GameRiftbound,
@@ -193,6 +194,33 @@ var mkmGames = map[mtgban.Game]int{
 	mtgban.GameYuGiOh:        cm.GameYuGiOh,
 	mtgban.GameFleshAndBlood: cm.GameFleshAndBlood,
 	mtgban.GamePokemon:       cm.GamePokemon,
+}
+
+// defaultArticleFilter is the filter a price is read through: played or
+// better, from a seller with a record, neither signed nor altered, and in
+// English. Anything looser prices a card off a listing nobody would buy.
+//
+// Read and never written - Articles copies it into the query string and
+// keeps nothing - so a caller reading English listings hands it over as it
+// stands. One wanting another language clones it and overrides that key,
+// which is the only key anyone has ever wanted to change.
+var defaultArticleFilter = map[string]string{
+	"minCondition": string(cm.ConditionGood),
+	"minUserScore": strconv.Itoa(int(cm.UserScoreGood)),
+	"isSigned":     "false",
+	"isAltered":    "false",
+	"idLanguage":   strconv.Itoa(int(cm.LanguageEnglish)),
+}
+
+// onlyIf narrows a link to the listings carrying a flag the article carries,
+// and leaves the listings alone where it does not. A false flag is not the
+// same as "show me the ones without it": that is cm.None, and saying so is a
+// decision rather than a translation of an article's own boolean.
+func onlyIf(flag bool) cm.Filter {
+	if flag {
+		return cm.Only
+	}
+	return cm.Any
 }
 
 func (mkm *Index) printf(format string, a ...any) {
@@ -311,7 +339,7 @@ func otherPrintRun(number, full string) bool {
 
 // productFinish names the printing a product is, for the catalogs that sell
 // each printing as its own product rather than as a column beside the card.
-func productFinish(gameID int, product *cm.Product) string {
+func productFinish(gameID cm.Game, product *cm.Product) string {
 	if gameID == cm.GameFleshAndBlood {
 		return fabFinish(product.ExpansionName, product.Name)
 	}
@@ -386,7 +414,10 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// second pair to the printing beside it; one on the second side is
 	// priced by the second pair alone.
 	if perTreatment || !second {
-		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{})
+		link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
+			Language:  cm.LanguageEnglish,
+			Affiliate: mkm.affiliate,
+		})
 
 		// The first pair's target(s): cardID alone for every other game,
 		// but for Pokemon the guide's low/trend blend every listing of the
@@ -437,7 +468,11 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		}
 
 		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
-			link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{Foil: true})
+			link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
+				Foil:      cm.Only,
+				Language:  cm.LanguageEnglish,
+				Affiliate: mkm.affiliate,
+			})
 
 			// An empty foil id means the card has no foil printing (Match
 			// errored on the foil probe), so residual foil prices in the
@@ -466,7 +501,11 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 			}
 		}
 	} else {
-		link := cm.BuildURL(product.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{Foil: true})
+		link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
+			Foil:      cm.Only,
+			Language:  cm.LanguageEnglish,
+			Affiliate: mkm.affiliate,
+		})
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 {
