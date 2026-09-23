@@ -37,6 +37,37 @@ func TestQualifiedBaseNameFollowsCurrentGallery(t *testing.T) {
 	}
 }
 
+// TestQualifiedBaseNameRetriesUnhashedDashedName covers a dash-joined name
+// that names no card at all - not even a wrong one. promoOnlyName already
+// answers false for an empty bucket, so before this the same "not
+// promo-only" test that gates the promo case also blocked this one,
+// skipping the split whenever nothing was hashed under the compound name.
+// A collector number is what earns the retry: it is the only thing tying
+// an unrecognized dashed name back to a real champion's own printing.
+func TestQualifiedBaseNameRetriesUnhashedDashedName(t *testing.T) {
+	const baseUUID = "ogn-009-298"
+	b := &mtgmatcher.Backend{
+		CanonicalNames: map[string]string{
+			mtgmatcher.Normalize("Champion"): "Champion",
+		},
+		Hashes: map[string][]string{
+			mtgmatcher.Normalize("Champion"): {baseUUID},
+		},
+		UUIDs: map[string]*mtgmatcher.CardObject{
+			baseUUID: {Card: mtgmatcher.Card{Name: "Champion", Number: "9"}},
+		},
+	}
+
+	if got := qualifiedBaseName(b, "Champion - Title", "9"); got != "Champion" {
+		t.Fatalf("qualifiedBaseName(%q) = %q, want %q", "Champion - Title", got, "Champion")
+	}
+
+	// No number to anchor the retry: the old behavior stands, unmatched.
+	if got := qualifiedBaseName(b, "Champion - Title", ""); got != "" {
+		t.Fatalf("qualifiedBaseName with no number = %q, want \"\"", got)
+	}
+}
+
 func TestPrefilterReaimsPromoQualifiedCurrentName(t *testing.T) {
 	for _, tt := range []struct {
 		name string
@@ -156,6 +187,61 @@ func TestPrefilterLeavesUnknownDashedNameAlone(t *testing.T) {
 	(Rules{}).Prefilter(b, &in)
 	if in.Name != "Dark Child - Starter" || in.Variation != "66" {
 		t.Fatalf("Prefilter changed dashed input to name=%q variation=%q", in.Name, in.Variation)
+	}
+}
+
+// TestPrefilterRetriesWhenDirectMatchConflictsWithEdition covers a name that
+// is not promo-only - so the ordinary promo-qualified-name retry never
+// triggers - but whose direct canonical match still names the wrong card: a
+// storefront's "Champion - Title" spelling normalizes the same as an
+// unrelated "Champion, Title" name that happens to be real (Ivern's "Green
+// Father" against Secret Garden's "Ivern, Green Father" is the live case).
+// The edition is the tiebreaker: a direct match with no printing in the
+// stated edition is the signal to retry as the bare title instead.
+func TestPrefilterRetriesWhenDirectMatchConflictsWithEdition(t *testing.T) {
+	const (
+		wrongUUID = "wrong"
+		rightUUID = "right"
+	)
+	b := &mtgmatcher.Backend{
+		CanonicalNames: map[string]string{
+			mtgmatcher.Normalize("Champion, Title"): "Champion, Title",
+			mtgmatcher.Normalize("Title"):           "Title",
+		},
+		Hashes: map[string][]string{
+			mtgmatcher.Normalize("Champion, Title"): {wrongUUID},
+			mtgmatcher.Normalize("Title"):           {rightUUID},
+		},
+		UUIDs: map[string]*mtgmatcher.CardObject{
+			wrongUUID: {Card: mtgmatcher.Card{Name: "Champion, Title", SetCode: "OPP", Number: "9"}},
+			rightUUID: {Card: mtgmatcher.Card{Name: "Title", SetCode: "UNL", Number: "9"}},
+		},
+		Sets: map[string]*mtgmatcher.Set{
+			"OPP": {Code: "OPP"},
+			"UNL": {Code: "UNL"},
+		},
+	}
+
+	// The direct match ("Champion, Title") has no printing in the stated
+	// edition (UNL); retry as the bare title, which does.
+	in := mtgmatcher.InputCard{Name: "Champion - Title", Variation: "9", Edition: "UNL"}
+	(Rules{}).Prefilter(b, &in)
+	if in.Name != "Title" {
+		t.Fatalf("Prefilter kept the edition-conflicting direct match, got %q, want %q", in.Name, "Title")
+	}
+
+	// The direct match's own edition is left alone: no retry, no rename.
+	in = mtgmatcher.InputCard{Name: "Champion - Title", Variation: "9", Edition: "OPP"}
+	(Rules{}).Prefilter(b, &in)
+	if in.Name != "Champion - Title" {
+		t.Fatalf("Prefilter changed a non-conflicting direct match to %q", in.Name)
+	}
+
+	// No edition at all proves no conflict; the direct match stands.
+	in = mtgmatcher.InputCard{Name: "Champion - Title", Variation: "9"}
+	(Rules{}).Prefilter(b, &in)
+	if in.Name != "Champion - Title" {
+		t.Fatalf("Prefilter changed an edition-less input to %q", in.Name)
 	}
 }
 
