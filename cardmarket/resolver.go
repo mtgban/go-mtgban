@@ -60,7 +60,7 @@ type resolver struct {
 	// live scraper needs none.
 	printf func(format string, a ...any)
 
-	gameID int
+	gameID cm.Game
 
 	// backend is the datastore Index and Market match against, set by
 	// their constructors.

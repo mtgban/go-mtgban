@@ -45,7 +45,7 @@ type Sealed struct {
 	client *cm.Client
 
 	game   mtgban.Game
-	gameID int
+	gameID cm.Game
 
 	// backend is the datastore this scraper matches against.
 	backend *mtgmatcher.Backend
@@ -121,7 +121,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 			entities = cm.MaxEntities
 		}
 
-		articles, total, _, err := mkm.client.Articles(ctx, idProduct, cm.DefaultArticleFilter(true), page, entities)
+		articles, total, _, err := mkm.client.Articles(ctx, idProduct, defaultArticleFilter, page, entities)
 		if err != nil {
 			return err
 		}
@@ -158,10 +158,12 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 				continue
 			}
 
-			link := cm.BuildURL(article.IDProduct, mkm.gameID, mkm.affiliate, cm.Finish{
-				Foil:        article.IsFoil,
-				FirstEd:     article.IsFirstEd,
-				ReverseHolo: article.IsReverseHolo,
+			link := cm.BuildURL(mkm.gameID, article.IDProduct, cm.URLOption{
+				Foil:        onlyIf(article.IsFoil),
+				FirstEd:     onlyIf(article.IsFirstEd),
+				ReverseHolo: onlyIf(article.IsReverseHolo),
+				Language:    cm.LanguageEnglish,
+				Affiliate:   mkm.affiliate,
 			})
 			out := responseChan{
 				cardID: uuid,
@@ -515,7 +517,7 @@ type sealedRename struct {
 //
 // A rename is keyed by game because a marketplace's word for one game's
 // product says nothing about another's.
-var sealedRenames = map[int][]sealedRename{
+var sealedRenames = map[cm.Game][]sealedRename{
 	cm.GameOnePiece: {
 		{regexp.MustCompile(`(?i)^the best\b`), "Premium Booster"},
 	},
@@ -523,7 +525,7 @@ var sealedRenames = map[int][]sealedRename{
 
 // sealedRenamed returns the name with the marketplace's own word for the
 // product replaced by the datastore's, and whether any applied.
-func sealedRenamed(gameID int, name string) (string, bool) {
+func sealedRenamed(gameID cm.Game, name string) (string, bool) {
 	for _, rename := range sealedRenames[gameID] {
 		if rename.vendor.MatchString(name) {
 			return rename.vendor.ReplaceAllString(name, rename.product), true

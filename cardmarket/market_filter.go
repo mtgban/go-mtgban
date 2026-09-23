@@ -34,7 +34,7 @@ import (
 // spread against cent-level noise on bulk cards, where a $0.02 vs $0.10
 // listing reads as an "80% spread" that means nothing; every other game
 // has enough budget headroom that a floor alone is enough.
-var marketFilterParams = map[int]struct {
+var marketFilterParams = map[cm.Game]struct {
 	floor   float64
 	minDiff float64
 }{
@@ -54,7 +54,7 @@ var marketFilterParams = map[int]struct {
 // games in marketFilterParams fit their budget either way, so a missing key
 // there costs call volume, not correctness, and Load runs them unfiltered
 // instead of refusing.
-var marketFilterRequired = map[int]bool{
+var marketFilterRequired = map[cm.Game]bool{
 	cm.GameMagic:   true,
 	cm.GamePokemon: true,
 	cm.GameYuGiOh:  true,
@@ -87,7 +87,7 @@ const marketCandidateThreshold = 7.0
 //
 // A game marketFilterParams does not cover returns nil - unfiltered, not
 // empty - which Load reads as "price every candidate this game has."
-func marketCandidates(b *mtgmatcher.Backend, gameID int, snap *banSnapshot) map[string]bool {
+func marketCandidates(b *mtgmatcher.Backend, gameID cm.Game, snap *banSnapshot) map[string]bool {
 	if _, filtered := marketFilterParams[gameID]; !filtered {
 		return nil
 	}
@@ -103,7 +103,7 @@ func marketCandidates(b *mtgmatcher.Backend, gameID int, snap *banSnapshot) map[
 // marketCandidate applies the filter described on marketCandidates to one
 // uuid, split out so the arithmetic can be pinned directly against a
 // synthetic snapshot without needing a loaded datastore behind it.
-func marketCandidate(gameID int, uuid string, snap *banSnapshot) bool {
+func marketCandidate(gameID cm.Game, uuid string, snap *banSnapshot) bool {
 	params, filtered := marketFilterParams[gameID]
 	if !filtered {
 		return true

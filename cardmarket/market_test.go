@@ -33,13 +33,30 @@ func TestNewScraperMarketWiresTheResolver(t *testing.T) {
 func TestMarketLanguage(t *testing.T) {
 	tests := []struct {
 		language string
-		want     int
+		// The raw numbers rather than the cm.Language constants: the
+		// library pins those against its own documentation, and this
+		// wants to notice if a bump ever moves one underneath us.
+		want cm.Language
 	}{
-		{"", 1},
+		// Every language the datastore carries that Cardmarket also
+		// does. Nine of these reach cm.LanguageFromName rather than
+		// the table, so a rename on the library's side has to fail
+		// here instead of quietly pricing the card in English.
 		{"English", 1},
+		{"French", 2},
+		{"German", 3},
+		{"Spanish", 4},
+		{"Italian", 5},
 		{"Japanese", 7},
+		{"Portuguese", 8},
+		{"Russian", 9},
+		{"Korean", 10},
+		// The two the table exists for: same languages, other word order.
 		{"Chinese Simplified", 6},
 		{"Chinese Traditional", 11},
+		// No clean match is English: a missing field, mtgban's fictional
+		// languages, and the ones Cardmarket's table does not carry.
+		{"", 1},
 		{"Phyrexian", 1},
 		{"Quenya", 1},
 		{"Polish", 1},
@@ -59,7 +76,7 @@ func TestMkmConditionMapping(t *testing.T) {
 	// five, and the three this scraper actually chases - NM, SP, MP - must
 	// each own a distinct row rather than folding into one another: that
 	// is the whole reason the early-stop rule can tell them apart.
-	want := map[string]string{
+	want := map[cm.Condition]string{
 		"MT": "NM", "NM": "NM",
 		"EX": "SP",
 		"GD": "MP",
@@ -263,7 +280,7 @@ func TestArticleFlagValue(t *testing.T) {
 // just the request-side filter's documentation) and on why Pokemon is not
 // here at all (queryPokemonPrintings, pokemonFinishPlan).
 func TestMarketFinishParamCoverage(t *testing.T) {
-	want := map[int]string{
+	want := map[cm.Game]string{
 		cm.GameMagic:     "isFoil",
 		cm.GameYuGiOh:    "isFirstEd",
 		cm.GameLorcana:   "isFoil",

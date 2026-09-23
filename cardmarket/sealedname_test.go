@@ -85,7 +85,7 @@ func TestSealedSaysSameWords(t *testing.T) {
 // it only answers for the game it belongs to.
 func TestSealedRenamed(t *testing.T) {
 	for _, tt := range []struct {
-		gameID int
+		gameID cm.Game
 		name   string
 		want   string
 	}{
