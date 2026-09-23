@@ -370,8 +370,7 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    `DisableRetail`/`DisableBuylist`, inventory/buylist plus timestamps) and
    keep the `*mtgmatcher.Backend` the constructor was handed in an unexported
    field — follow `starcitygames` for an API-backed store or `mtgseattle` for
-   an HTML-scraped one. Not `ninetyfive`: ADR-0004 records it as converted
-   but deliberately unregistered, a store retired from bantool work.
+   an HTML-scraped one.
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
 4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
    constructor)` — `name` is the external flag the store has always been

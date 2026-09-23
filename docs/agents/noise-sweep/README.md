@@ -201,7 +201,6 @@ the `project-datastore-gaps` memory so datastore-gen work can be batched.
 - Vendor ids are theirs: a wrong authoritative id is the vendor's bug, not
   something to steer around with a heuristic.
 - Game Nerdz: one crawl per session, buylist only; prefer replaying a capture.
-- Skip the 95gamecenter (`ninetyfive`) scraper.
 - `tcgdirectnet` and `syp` are wrong at the source. Their spreads and ratios
   cannot be fixed here — exclude them from any ranking rather than chasing them.
 - No arbitrary caps: fix the real termination condition instead.
