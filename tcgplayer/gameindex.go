@@ -125,6 +125,18 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
+			// A row quoting a market price and nothing else is a pricing-side
+			// relic: the catalog has split or retired the printing its subtype
+			// names, and the surviving printing is priced by its own row
+			// alongside this one. Refusing it is right - the stale number can
+			// be many times the real price - but complaining every run is
+			// noise, so only the finish is let through quietly. Any other
+			// failure on such a row still speaks up.
+			marketOnly := result.LowPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0
+			if marketOnly && errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
+				continue
+			}
+
 			// Name the card, not just the price row: a product id alone
 			// says nothing about which product failed to match.
 			tcg.printf("%v for %q (product %d)", err, theCard, result.ProductID)
