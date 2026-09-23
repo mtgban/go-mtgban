@@ -125,7 +125,7 @@ from: a multi-game scraper takes an `mtgban.Game`, converts it to the vendor's
 own naming through one unexported map, and sets `Game` back from the typed
 value it was handed. The vendor's spellings stay exported — each package's API
 helpers take one — but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
-cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket, ninetyfive,
+cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket,
 starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
 and vegassingles. The behavior flags are `MetadataOnly` (index
 prices only, no conditions or quantities), `NoQuantityInventory`,
@@ -933,7 +933,7 @@ onto SCG's numeric game ids), `coolstuffinc` (seven of the eight non-Magic
 games — every one but Flesh and Blood — `CreditMultiplier 1.25`),
 `hareruya` (JPY, **bespoke 403 → 5-min backoff**), `magiccorner` (EUR,
 Italian), `abugames` (Solr, MINT-aware grading, `InfoForScraper`), `mtgseattle`
-(`CreditMultiplier 1.33`), `ninetyfive`, `mintcard` (rides TCG SKUs,
+(`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
 `CreditMultiplier 1.1`), `vegassingles`, `secretdeskorrigans` (CAD, French),
 `toamagic` (Spanish), `miniaturemarket` (sealed-only).
 
@@ -957,8 +957,8 @@ enough to publish, for reasons upstream of the scaling.
 are not part of the committed module — `synthetic/` (a *computed* buylist with
 no site behind it, synthesizing prices from TCG/CK/SCG, `MetadataOnly`) and
 `mvpsportsandgames/`, whose non-conforming `Inventory() (record, error)` does
-**not** satisfy `mtgban.Seller`. For new work, copy `ninetyfive` (API) or
-`mtgseattle` (HTML) — never the legacy colly trio or an untracked orphan.
+**not** satisfy `mtgban.Seller`. For new work, copy `starcitygames` (API) or
+`mtgseattle` (HTML) — never the legacy colly cohort or an untracked orphan.
 
 ---
 
