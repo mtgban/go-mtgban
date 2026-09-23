@@ -64,4 +64,12 @@ func TestYgoShelves(t *testing.T) {
 	if got := gameEdition(b, GameYuGiOh, &bp); got != "Metal Raiders" {
 		t.Errorf("gameEdition(Metal Raiders) = %q", got)
 	}
+	// The blueprint Card Trader actually sells writes the copyright line
+	// where the rarity would go; spelling it out is what lets the matcher
+	// pick MRD-008's original-artwork half over its new-art twin.
+	bp = Blueprint{ID: 77934, Name: "Harpie Lady", Version: "©1996"}
+	bp.Expansion.Name = "Metal Raiders"
+	if got := gameVariation(GameYuGiOh, &bp, "008"); got != "008 Original Artwork" {
+		t.Errorf("gameVariation(Harpie Lady MRD-008) = %q, want the artwork spelled out", got)
+	}
 }
