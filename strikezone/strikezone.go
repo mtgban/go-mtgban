@@ -5,12 +5,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/gocolly/colly/v2"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -84,6 +87,7 @@ type Strikezone struct {
 	backend *mtgmatcher.Backend
 	game    mtgban.Game
 	shelf   string
+	client  *http.Client
 }
 
 // NewScraper returns a scraper for the datastore's game.
@@ -103,6 +107,9 @@ func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
 	sz.backend = b
 	sz.game = game
 	sz.shelf = shelf
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	sz.client = client.StandardClient()
 	return &sz, nil
 }
 
@@ -118,16 +125,87 @@ type respChan struct {
 	bl     *mtgban.BuylistEntry
 }
 
-func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly.HTMLElement, edition string) error {
+func (sz *Strikezone) getDoc(ctx context.Context, link string) (*goquery.Document, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := sz.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("GET %s: %s", link, resp.Status)
+	}
+	return goquery.NewDocumentFromReader(resp.Body)
+}
+
+func absoluteURL(base, href string) string {
+	ref, err := url.Parse(href)
+	if err != nil {
+		return ""
+	}
+	if ref.IsAbs() {
+		return ref.String()
+	}
+	b, err := url.Parse(base)
+	if err != nil {
+		return ""
+	}
+	return b.ResolveReference(ref).String()
+}
+
+func (sz *Strikezone) keepLink(link, mode string) bool {
+	basePath := "/Category/"
+	if mode == modeBuylist {
+		basePath = "/BuyList/"
+	}
+	if !strings.Contains(link, basePath) {
+		return false
+	}
+	for _, suffix := range skipSuffixes {
+		if strings.HasSuffix(link, suffix) {
+			return false
+		}
+	}
+	return true
+}
+
+func (sz *Strikezone) childLinks(doc *goquery.Document, pageURL, mode string) []string {
+	var links []string
+	seen := map[string]struct{}{}
+	doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
+		href, ok := s.Attr("href")
+		if !ok {
+			return
+		}
+		abs := absoluteURL(pageURL, href)
+		if abs == "" || !sz.keepLink(abs, mode) {
+			return
+		}
+		if u, err := url.Parse(abs); err != nil || u.Host != "shop.strikezoneonline.com" {
+			return
+		}
+		if _, dup := seen[abs]; dup {
+			return
+		}
+		seen[abs] = struct{}{}
+		links = append(links, abs)
+	})
+	return links
+}
+
+func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goquery.Selection, edition string) error {
 	var cardName, pathURL, notes, cond, qty, price string
 
-	cardName = el.ChildText("td:nth-child(1)")
+	cardName = strings.TrimSpace(el.Find("td:nth-child(1)").Text())
 	if cardName == "" || cardName == "Name" {
 		// No error as empty page may not have anything to process
 		return nil
 	}
 
-	pathURL = el.ChildAttr("a", "href")
+	pathURL, _ = el.Find("a").Attr("href")
 
 	// The columns and card construction differ per game; the match and error
 	// handling below are shared.
@@ -135,15 +213,15 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	switch sz.game {
 	case mtgban.GameMagic:
 		if mode == modeRetail {
-			notes = el.ChildText("td:nth-child(4)")
-			cond = el.ChildText("td:nth-child(5)")
-			qty = el.ChildText("td:nth-child(6)")
-			price = el.ChildText("td:nth-child(7)")
+			notes = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
+			cond = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
+			qty = strings.TrimSpace(el.Find("td:nth-child(6)").Text())
+			price = strings.TrimSpace(el.Find("td:nth-child(7)").Text())
 		} else if mode == modeBuylist {
-			notes = el.ChildText("td:nth-child(4)")
+			notes = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
 			cond = notes
-			qty = el.ChildText("td:nth-child(5)")
-			price = el.ChildText("td:nth-child(6)")
+			qty = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
+			price = strings.TrimSpace(el.Find("td:nth-child(6)").Text())
 		}
 
 		c, err := preprocess(sz.backend, cardName, edition, notes)
@@ -152,18 +230,18 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		}
 		theCard = c
 	case mtgban.GameLorcana:
-		notes = el.ChildText("td:nth-child(2)")
-		cond = el.ChildText("td:nth-child(4)")
-		qty = el.ChildText("td:nth-child(5)")
-		price = el.ChildText("td:nth-child(6)")
+		notes = strings.TrimSpace(el.Find("td:nth-child(2)").Text())
+		cond = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
+		qty = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
+		price = strings.TrimSpace(el.Find("td:nth-child(6)").Text())
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
 		theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: foil}
 	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
-		number := el.ChildText("td:nth-child(2)")
-		cond = el.ChildText("td:nth-child(4)")
-		qty = el.ChildText("td:nth-child(5)")
-		price = el.ChildText("td:nth-child(6)")
+		number := strings.TrimSpace(el.Find("td:nth-child(2)").Text())
+		cond = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
+		qty = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
+		price = strings.TrimSpace(el.Find("td:nth-child(6)").Text())
 
 		c, err := preprocessDetails(sz.game, cardName, edition, number, cond)
 		if err != nil {
@@ -270,76 +348,53 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	return nil
 }
 
+func (sz *Strikezone) parseRows(doc *goquery.Document, pageURL, mode string, channel chan<- respChan) {
+	edition := strings.TrimSpace(doc.Find("h1").First().Text())
+	edition = strings.TrimSuffix(edition, " Buy Lists")
+	edition = strings.TrimPrefix(edition, "Singles ")
+
+	sz.printf("Parsing %s", edition)
+
+	// Only the Magic categories render the denser rtti table; every
+	// other game lists retail and buylist alike in the generic one.
+	tableRowName := "table.rtti tr"
+	if mode == modeBuylist || sz.game != mtgban.GameMagic {
+		tableRowName = "table.ItemTable tr"
+	}
+
+	doc.Find(tableRowName).Each(func(_ int, el *goquery.Selection) {
+		err := sz.processRow(mode, channel, el, edition)
+		if err != nil {
+			cardName := strings.TrimSpace(el.Find("td:nth-child(1)").Text())
+			sz.printf("cannot process %s %s (%s): %s", mode, cardName, edition, err.Error())
+			sz.printf("-> %s", pageURL)
+		}
+	})
+}
+
+// processPage fetches one category page, emits its rows, then walks any
+// deeper category links the same way mtgseattle recurses into subcategories.
+func (sz *Strikezone) processPage(ctx context.Context, channel chan<- respChan, pageURL, mode string, visited *sync.Map) error {
+	if _, loaded := visited.LoadOrStore(pageURL, true); loaded {
+		return nil
+	}
+
+	doc, err := sz.getDoc(ctx, pageURL)
+	if err != nil {
+		return err
+	}
+
+	sz.parseRows(doc, pageURL, mode, channel)
+
+	for _, child := range sz.childLinks(doc, pageURL, mode) {
+		if err := sz.processPage(ctx, channel, child, mode, visited); err != nil {
+			sz.printf("%v", err)
+		}
+	}
+	return nil
+}
+
 func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
-	channel := make(chan respChan)
-
-	c := colly.NewCollector(
-		colly.AllowedDomains("shop.strikezoneonline.com"),
-
-		// Cache responses to prevent multiple download of pages
-		// even if the collector is restarted - daily
-		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
-
-		colly.Async(true),
-
-		colly.StdlibContext(ctx),
-	)
-
-	c.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		RandomDelay: 1 * time.Second,
-		Parallelism: sz.maxConcurrency,
-	})
-
-	c.OnRequest(func(r *colly.Request) {
-		//sz.printf("Visiting %s", r.URL.String())
-	})
-
-	// Callback for links on scraped pages (edition names)
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-
-		basePath := "/Category/"
-		if mode == modeBuylist {
-			basePath = "/BuyList/"
-		}
-
-		if !strings.Contains(link, basePath) {
-			return
-		}
-		for _, suffix := range skipSuffixes {
-			if strings.HasSuffix(link, suffix) {
-				return
-			}
-		}
-		c.Visit(e.Request.AbsoluteURL(link))
-	})
-
-	// Callback for when a scraped page contains a form element
-	c.OnHTML("body", func(e *colly.HTMLElement) {
-		edition := e.ChildText("h1")
-		edition = strings.TrimSuffix(edition, " Buy Lists")
-		edition = strings.TrimPrefix(edition, "Singles ")
-
-		sz.printf("Parsing %s", edition)
-
-		// Only the Magic categories render the denser rtti table; every
-		// other game lists retail and buylist alike in the generic one.
-		tableRowName := "table.rtti tr"
-		if mode == modeBuylist || sz.game != mtgban.GameMagic {
-			tableRowName = "table.ItemTable tr"
-		}
-
-		e.ForEach(tableRowName, func(_ int, el *colly.HTMLElement) {
-			err := sz.processRow(mode, channel, el, edition)
-			if err != nil {
-				cardName := el.ChildText("td:nth-child(1)")
-				sz.printf("cannot process %s %s (%s): %s", mode, cardName, edition, err.Error())
-				sz.printf("-> %s", e.Request.URL)
-			}
-		})
-	})
-
 	var link string
 	if mode == modeRetail {
 		link = fmt.Sprintf(szInventoryURL, sz.shelf)
@@ -352,14 +407,16 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		link = fmt.Sprintf(szBuylistURL, sz.shelf)
 	}
 	sz.printf("Visiting %s", link)
-	c.Visit(link)
 
-	go func() {
-		c.Wait()
-		close(channel)
-	}()
+	doc, err := sz.getDoc(ctx, link)
+	if err != nil {
+		return err
+	}
 
-	for resp := range channel {
+	links := sz.childLinks(doc, link, mode)
+	sz.printf("Found %d categories", len(links))
+
+	consume := func(resp respChan) {
 		if resp.inv != nil {
 			err := sz.inventory.Add(resp.cardID, resp.inv)
 			if err != nil {
@@ -373,6 +430,33 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 			}
 		}
 	}
+
+	// Hub rows first (the entry URL was scraped for rows as well as links).
+	hubCh := make(chan respChan)
+	var hubWG sync.WaitGroup
+	hubWG.Add(1)
+	go func() {
+		defer hubWG.Done()
+		for resp := range hubCh {
+			consume(resp)
+		}
+	}()
+	sz.parseRows(doc, link, mode, hubCh)
+	close(hubCh)
+	hubWG.Wait()
+
+	visited := &sync.Map{}
+	// The hub is already loaded; keep workers from fetching it again when a
+	// child page links back.
+	visited.Store(link, true)
+
+	mtgban.WorkerPool(ctx, sz.maxConcurrency, links,
+		func(ctx context.Context, page string, results chan<- respChan) error {
+			return sz.processPage(ctx, results, page, mode, visited)
+		},
+		consume,
+		sz.printf,
+	)
 
 	if mode == modeRetail {
 		sz.inventoryDate = time.Now()

@@ -435,10 +435,6 @@ game with the TCGplayer category serving it. Adding a game there is one table
 entry plus the bantool options and workflows. Magic is deliberately absent from
 that map: it is identified by SKU and has its own scrapers.
 
-**Do not copy as templates:** `strikezone` still uses `gocolly` with
-hand-rolled concurrency; it predates `WorkerPool` and should be migrated,
-not imitated.
-
 ## Gotchas
 
 - A `Backend` is immutable once loaded: its maps, slices, cards and rules

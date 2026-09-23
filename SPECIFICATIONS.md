@@ -937,10 +937,6 @@ Italian), `abugames` (Solr, MINT-aware grading, `InfoForScraper`), `mtgseattle`
 `CreditMultiplier 1.1`), `vegassingles`, `secretdeskorrigans` (CAD, French),
 `toamagic` (Spanish), `miniaturemarket` (sealed-only).
 
-**Legacy cohort — `gocolly` + hand-rolled goroutines, predate WorkerPool:**
-`strikezone`. This is the remaining standardization gap; migrating it to
-`WorkerPool` would make operational behavior uniform.
-
 `sealedev` builds sealed-EV "scrapers" from mtgmatcher probabilities or
 5,000-run booster simulations priced against the MTGBAN API, emitting EV
 entries with dispersion stats (std-dev/IQR), `Family="EV"`, `SealedMode`, and
@@ -958,7 +954,7 @@ are not part of the committed module — `synthetic/` (a *computed* buylist with
 no site behind it, synthesizing prices from TCG/CK/SCG, `MetadataOnly`) and
 `mvpsportsandgames/`, whose non-conforming `Inventory() (record, error)` does
 **not** satisfy `mtgban.Seller`. For new work, copy `starcitygames` (API) or
-`mtgseattle` (HTML) — never the legacy colly cohort or an untracked orphan.
+`mtgseattle` (HTML) — never an untracked orphan.
 
 ---
 
@@ -1038,7 +1034,7 @@ targets, Magic's included, run twice daily under a `queue: max` concurrency
 group regardless of game, and other scrapers use their own schedule. No
 Makefile or Docker — plain `go build` per `cmd/` subdirectory.
 
-**Key dependencies**: goquery/colly (HTML), retryablehttp + cleanhttp
+**Key dependencies**: goquery (HTML), retryablehttp + cleanhttp
 (HTTP), simplecloud (storage abstraction), go-ndjson, weightedrand (boosters),
 montanaflynn/stats (EV), golang.org/x/text (normalization), uarand (UA
 rotation), plus the in-house `go-cardkingdom` and `go-tcgplayer` clients.
@@ -1075,8 +1071,7 @@ rotation), plus the in-house `go-cardkingdom` and `go-tcgplayer` clients.
    Id-path validation/reset, non-strict CSV loading, `ErrUnsupported` as a
    silent-skip channel distinct from real errors.
 7. **Injected logging + bounded worker pools** — uniform operational
-   behavior; the WorkerPool migration of the legacy colly trio is the
-   remaining standardization gap.
+   behavior across scrapers via `WorkerPool` and injected log callbacks.
 8. **No global, no publication** — loaders build independent backends and
    hand them to callers directly; there is nothing ambient to swap and
    nothing to publish. Several related operations capture a backend
