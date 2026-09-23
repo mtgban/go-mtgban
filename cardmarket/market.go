@@ -618,10 +618,6 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 	if verified {
 		baseFlags = map[string]bool{finish: marketFoilOnly(mkm.backend, cardID, cardIDFoil)}
 	}
-	// A foil-only card resolves cardID to the same uuid as cardIDFoil below.
-	if isPLSTFoil(mkm.backend, cardID) {
-		return nil
-	}
 	err := mkm.queryOnePrinting(ctx, channel, product, cardID, byName, baseFlags)
 	if err != nil {
 		return err
@@ -633,19 +629,7 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 		mkm.printf("id %d: %s has a second printing (%s) this scraper does not price yet", product.IDProduct, cardID, cardIDFoil)
 		return nil
 	}
-	if isPLSTFoil(mkm.backend, cardIDFoil) {
-		return nil
-	}
 	return mkm.queryOnePrinting(ctx, channel, product, cardIDFoil, byName, map[string]bool{finish: true})
-}
-
-// isPLSTFoil reports whether cardID is a foil printing from The List: it
-// reprints a card under whatever treatment its original printing had, and
-// sellers list its foil copies under the wrong finish often enough that
-// pricing them isn't worth the noise.
-func isPLSTFoil(b *mtgmatcher.Backend, cardID string) bool {
-	co, err := b.GetUUID(cardID)
-	return err == nil && co.SetCode == "PLST" && co.Foil
 }
 
 // queryPokemonPrintings prices every printing pokemonFinishPlan resolved for

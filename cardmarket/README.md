@@ -96,12 +96,6 @@ open gap in the existing WCD sideboard detection, not addressed here.
 
 ## Market's design
 
-**The List's foil printings are never priced.** It reprints a card under
-whatever treatment its original printing had, and sellers list its foil
-copies under the wrong finish often enough that pricing them is noise
-rather than a real signal (`isPLSTFoil`, checked in `queryPrintings` before
-the foil-slot query ever fires).
-
 **A printing sold foil-only is queried as a foil.** Such a printing answers
 both of a product's id slots with one uuid, and `queryPrintings` returns
 after the first query for exactly that reason - so the plain-listing query
