@@ -222,6 +222,11 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
+				// Preprocess already tried the full token-pairing gauntlet;
+				// what's left is mtgjson never publishing a combined uuid.
+				if isTwoSidedTokenBlueprint(blueprint, theCard.Name) {
+					continue
+				}
 				ct.printf("%v", err)
 				ct.printf("%q", theCard)
 				ct.printf("%d %+v", bpID, blueprint)

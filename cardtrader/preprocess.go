@@ -96,6 +96,12 @@ func tokenPairNumbers(number string) (n1, n2 string, ok bool) {
 	return "", "", false
 }
 
+// isTwoSidedTokenBlueprint reports whether a blueprint names a two-sided
+// Magic token pairing the way Card Trader's own Tokens category does.
+func isTwoSidedTokenBlueprint(bp *Blueprint, cardName string) bool {
+	return bp.CategoryID == CategoryMagicTokens && strings.Contains(cardName, " // ")
+}
+
 // Preprocess turns a blueprint into the card description the matcher takes,
 // reporting an error for the blueprints that are not cards.
 func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, error) {
@@ -136,7 +142,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	// categories' hits quote a card's name as product flavor text, not
 	// cards at all. Re-check this if Card Trader ever starts selling a
 	// two-sided pairing shape outside Tokens.
-	if bp.CategoryID == CategoryMagicTokens && strings.Contains(cardName, " // ") {
+	if isTwoSidedTokenBlueprint(bp, cardName) {
 		if tcgID := magic.MatchTokenPairing(b, bp.ScryfallID, cardName, false); tcgID != "" {
 			if id, err := b.MatchID(tcgID, false); err == nil {
 				return &mtgmatcher.InputCard{
