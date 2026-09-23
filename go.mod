@@ -10,7 +10,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff
 	github.com/joho/godotenv v1.5.1
-	github.com/scizorman/go-ndjson v0.0.0-20200902005011-1d92486df71e
 	golang.org/x/text v0.41.0
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/api v0.294.0 // indirect
