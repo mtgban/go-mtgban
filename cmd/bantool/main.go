@@ -7,6 +7,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -24,7 +25,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
-	"github.com/scizorman/go-ndjson"
 
 	_ "github.com/joho/godotenv/autoload"
 
@@ -390,46 +390,34 @@ type buylistElement struct {
 
 func writeSellerToNDJSON(seller mtgban.Seller, w io.Writer) error {
 	inventory := seller.Inventory()
-
-	var inventoryFlat []inventoryElement
+	enc := json.NewEncoder(w)
 	for uuid, entries := range inventory {
 		for _, entry := range entries {
-			inventoryFlat = append(inventoryFlat, inventoryElement{
+			if err := enc.Encode(inventoryElement{
 				UUID:           uuid,
 				InventoryEntry: entry,
-			})
+			}); err != nil {
+				return err
+			}
 		}
 	}
-
-	output, err := ndjson.Marshal(inventoryFlat)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(output)
-	return err
+	return nil
 }
 
 func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 	buylist := vendor.Buylist()
-
-	var buylistFlat []buylistElement
+	enc := json.NewEncoder(w)
 	for uuid, entries := range buylist {
 		for _, entry := range entries {
-			buylistFlat = append(buylistFlat, buylistElement{
+			if err := enc.Encode(buylistElement{
 				UUID:         uuid,
 				BuylistEntry: entry,
-			})
+			}); err != nil {
+				return err
+			}
 		}
 	}
-
-	output, err := ndjson.Marshal(buylistFlat)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(output)
-	return err
+	return nil
 }
 
 func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) (err error) {
