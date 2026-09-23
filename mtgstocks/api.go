@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/corpix/uarand"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -59,12 +58,13 @@ const (
 	stksAverageURL = "https://api.mtgstocks.com/interests/average"
 	stksMarketURL  = "https://api.mtgstocks.com/interests/market"
 	stksSetsURL    = "https://api.mtgstocks.com/card_sets"
+
+	stksUserAgent = "curl/8.5.0"
 )
 
 // STKSClient reads the MTGStocks API.
 type STKSClient struct {
 	client *retryablehttp.Client
-	ua     string
 }
 
 // NewClient returns a client.
@@ -76,8 +76,6 @@ func NewClient() *STKSClient {
 	stks.client.RetryWaitMax = 10 * time.Second
 	stks.client.RetryMax = 10
 	stks.client.CheckRetry = customCheckRetry
-	stks.client.PrepareRetry = customPrepareRetry
-	stks.ua = uarand.GetRandom()
 	return &stks
 }
 
@@ -112,12 +110,6 @@ func customCheckRetry(ctx context.Context, resp *http.Response, err error) (bool
 	return false, nil
 }
 
-// Change user agent before another retry
-func customPrepareRetry(req *http.Request) error {
-	req.Header.Set("User-Agent", uarand.GetRandom())
-	return nil
-}
-
 // AverageInterests returns the movers measured against the average price.
 func (s *STKSClient) AverageInterests(ctx context.Context, foil bool) ([]StocksInterest, error) {
 	out, err := s.query(ctx, stksAverageURL, foil)
@@ -147,7 +139,7 @@ func (s *STKSClient) query(ctx context.Context, link string, foil bool) (*Intere
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", s.ua)
+	req.Header.Set("User-Agent", stksUserAgent)
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Referer", "https://www.mtgstocks.com/")
 	req.Header.Set("Origin", "https://www.mtgstocks.com")
