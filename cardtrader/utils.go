@@ -315,6 +315,16 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		if bp.Version == "Token" {
 			return number
 		}
+		// A handful of blueprints carry the copyright line printed at a
+		// physical card's bottom instead of a rarity: Harpie Lady MRD-008
+		// is filed twice, once original-artwork and once new-art, sharing
+		// a name, number and rarity, and "©1996" is the only word Card
+		// Trader ever writes for either of them. Spelling out the artwork
+		// it names lets the matcher's own wording tiers pick the printing
+		// the rarity cannot.
+		if wording, found := ygoVersionWording[bp.Version]; found {
+			return number + " " + wording
+		}
 	case GameFleshAndBlood:
 		// A blueprint's version crosses the treatment with the wording
 		// that picks between same-numbered printings, "Extended Art |
@@ -565,6 +575,14 @@ func ygoNumber(bp *Blueprint, number string) string {
 // count drifts further down the deck. The rarity is all the listing says.
 var ygoUnnumberedShelves = map[string]bool{
 	"2-Player Starter Deck Yuya & Declan": true,
+}
+
+// ygoVersionWording spells the printing a blueprint's copyright-line Version
+// names, keyed literally since the line is the catalog's own words for it.
+// "©1996" is the only wording Card Trader ever gives Harpie Lady MRD-008's
+// original-artwork half; its new-art twin never comes up in the feed.
+var ygoVersionWording = map[string]string{
+	"©1996": "Original Artwork",
 }
 
 // fabNames spells the Flesh and Blood names Card Trader misspells.
