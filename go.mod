@@ -8,7 +8,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/text v0.41.0
 	golang.org/x/time v0.15.0 // indirect
