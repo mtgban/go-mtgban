@@ -102,6 +102,17 @@ copies under the wrong finish often enough that pricing them is noise
 rather than a real signal (`isPLSTFoil`, checked in `queryPrintings` before
 the foil-slot query ever fires).
 
+**A printing sold foil-only is queried as a foil.** Such a printing answers
+both of a product's id slots with one uuid, and `queryPrintings` returns
+after the first query for exactly that reason - so the plain-listing query
+is the only one it ever makes, and `acceptArticle` then rejects every
+listing the product has. `marketFoilOnly` picks the flag off the printing
+itself instead. Lorcana's Enchanted cards are the bulk of these: 366 of its
+611 pre-filter candidates are foil-only, and only 35 of them carried a
+Market price before this, EUR 67k of trend value unpriced. Etched counts as
+foil - the datastore keeps it as its own finish with `Foil` false, while
+Cardmarket has no etched at all and files those listings under `isFoil`.
+
 **Strictly sequential, not pooled.** Measured directly: a concurrency ladder
 (1→24 workers) plateaus at ~1.4 successful calls/sec regardless of worker
 count, with the excess coming back as 429s, while 20 fully sequential

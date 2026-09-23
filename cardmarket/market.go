@@ -570,6 +570,32 @@ func shouldStopPaging(mainDone bool, mainSatisfiedAt, page int, foundPowerseller
 	return foundPowerseller || page-mainSatisfiedAt >= marketPowersellerExtraPages
 }
 
+// marketFoilOnly reports whether a product's two ids name one printing sold
+// in a foil alone, which the first query has to ask for as a foil rather
+// than as a plain card.
+//
+// A printing with both finishes answers the two ids apart, and its plain
+// listings are the ones the first query wants. One sold foil alone answers
+// both ids with itself, and the query below returns right after the first
+// one for exactly that reason - so asking that product for its non-foil
+// listings is the only question it is ever asked, and acceptArticle holds
+// every article to the flags being queried, so every listing it has is
+// thrown away and the printing prices at nothing. Lorcana's Enchanted cards
+// are the largest group of these; Cardmarket's own catalog was priced at
+// EUR 67k of them unpriced when this was found.
+//
+// Etched counts as foil here: the datastore keeps it as a finish of its own
+// with Foil false, and Cardmarket has no etched at all - it files those
+// listings under isFoil like any other foil, confirmed against the live
+// Articles of four etched-only products.
+func marketFoilOnly(b *mtgmatcher.Backend, cardID, cardIDFoil string) bool {
+	if cardIDFoil != "" && cardIDFoil != cardID {
+		return false
+	}
+	co, err := b.GetUUID(cardID)
+	return err == nil && (co.Foil || co.Etched)
+}
+
 // queryPrintings prices the printing(s) one product resolved to, from the
 // product's own live listings: cardID alone for a game that sells each
 // treatment as its own product, or when the resolver found no separate
@@ -590,7 +616,7 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 	finish, verified := marketFinishParam[mkm.gameID]
 	var baseFlags map[string]bool
 	if verified {
-		baseFlags = map[string]bool{finish: false}
+		baseFlags = map[string]bool{finish: marketFoilOnly(mkm.backend, cardID, cardIDFoil)}
 	}
 	// A foil-only card resolves cardID to the same uuid as cardIDFoil below.
 	if isPLSTFoil(mkm.backend, cardID) {
