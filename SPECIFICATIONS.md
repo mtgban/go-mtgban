@@ -938,8 +938,8 @@ Italian), `abugames` (Solr, MINT-aware grading, `InfoForScraper`), `mtgseattle`
 `toamagic` (Spanish), `miniaturemarket` (sealed-only).
 
 **Legacy cohort — `gocolly` + hand-rolled goroutines, predate WorkerPool:**
-`wizardscupboard`, `strikezone`. These are the remaining standardization gap;
-migrating them to `WorkerPool` would make operational behavior uniform.
+`strikezone`. This is the remaining standardization gap; migrating it to
+`WorkerPool` would make operational behavior uniform.
 
 `sealedev` builds sealed-EV "scrapers" from mtgmatcher probabilities or
 5,000-run booster simulations priced against the MTGBAN API, emitting EV

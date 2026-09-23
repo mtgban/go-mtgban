@@ -95,16 +95,16 @@ reading credentials from the environment, loading catalogs and SKU lists
 from paths, building the cardtrader bridge and deciding whether a failure to
 build it is fatal (`cardmarket.BridgeUse`).
 
-**Six scrapers convert but stay unregistered.** `cardsphere`, `mtgstocks`,
-`ninetyfive`, `secretdeskorrigans`, `toamagic` and `wizardscupboard` all
-took a `*Backend` first like every other package, but none gets a
-`register.go`: none of the six had a bantool target before this series
-either, and registering one now would demand a `bantool-<store>.yml` and a
-`game` input for a target that has never been scheduled and has nothing to
-schedule it. They are library-only on purpose, not half-migrated:
+**Five scrapers convert but stay unregistered.** `cardsphere`, `mtgstocks`,
+`ninetyfive`, `secretdeskorrigans` and `toamagic` all took a `*Backend`
+first like every other package, but none gets a `register.go`: none of the
+five had a bantool target before this series either, and registering one
+now would demand a `bantool-<store>.yml` and a `game` input for a target
+that has never been scheduled and has nothing to schedule it. They are
+library-only on purpose, not half-migrated:
 `TestEveryTargetIsScheduledByItsOwnWorkflow` checks that a registered
 target has a workflow, never that every scraper package must register
-one, so leaving these six out asks nothing of it. `ninetyfive` is further
+one, so leaving these five out asks nothing of it. `ninetyfive` is further
 than merely never having run under bantool — it is a store the maintainer
 has retired from bantool work outright.
 
