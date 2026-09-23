@@ -11,7 +11,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/jmcvetta/randutil"
+	"github.com/mroth/weightedrand/v2"
+
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
@@ -74,25 +75,17 @@ func run() int {
 
 	for i := 0; i < *NumberOfBoosters; i++ {
 		// Pick a rarity distribution as defined in Contents at random using their weight
-		var choices []randutil.Choice
+		var choices []weightedrand.Choice[map[string]int, int]
 		for _, booster := range set.Booster[*BoosterTypeOpt].Boosters {
-			choices = append(choices, randutil.Choice{
-				Weight: booster.Weight,
-				Item:   booster.Contents,
-			})
+			choices = append(choices, weightedrand.NewChoice(booster.Contents, booster.Weight))
 		}
-		choice, err := randutil.WeightedChoice(choices)
+		sheetChooser, err := weightedrand.NewChooser(choices...)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Fprintf(os.Stderr, "%v\n", choice.Item)
-
-		contents, ok := choice.Item.(map[string]int)
-		if !ok {
-			fmt.Fprintf(os.Stderr, "booster contents are %T, not a sheet table\n", choice.Item)
-			return 1
-		}
+		contents := sheetChooser.Pick()
+		fmt.Fprintf(os.Stderr, "%v\n", contents)
 
 		var picks []Pick
 		// For each sheet, pick a card at random using the weight
@@ -132,28 +125,21 @@ func run() int {
 					balanced = map[string]bool{}
 				}
 
-				// Move sheet data into randutil data type
-				var cardChoices []randutil.Choice
+				// Move sheet data into weightedrand choices
+				var cardChoices []weightedrand.Choice[string, int]
 				for cardID, weight := range sheet.Cards {
-					cardChoices = append(cardChoices, randutil.Choice{
-						Weight: weight,
-						Item:   cardID,
-					})
+					cardChoices = append(cardChoices, weightedrand.NewChoice(cardID, weight))
+				}
+				cardChooser, err := weightedrand.NewChooser(cardChoices...)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err)
+					return 1
 				}
 
 				// Pick a card uuid as many times as defined by its frequency
 				// Note that it's ok to pick the same card from the same sheet multiple times
 				for j := 0; j < frequency; j++ {
-					choice, err := randutil.WeightedChoice(cardChoices)
-					if err != nil {
-						fmt.Fprintln(os.Stderr, err)
-						return 1
-					}
-					item, ok := choice.Item.(string)
-					if !ok {
-						fmt.Fprintf(os.Stderr, "sheet card is %T, not a uuid\n", choice.Item)
-						return 1
-					}
+					item := cardChooser.Pick()
 					// Validate card exists (ie in case of online-only printing)
 					co, err := ds.GetUUID(item)
 					if err != nil {

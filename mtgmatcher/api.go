@@ -525,7 +525,7 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 				}
 			}
 
-			// Move sheet data into randutil data type
+			// Move sheet data into weightedrand choices
 			var cardChoices []weightedrand.Choice[string, int]
 			for cardID, weight := range sheet.Cards {
 				cardChoices = append(cardChoices, weightedrand.NewChoice(cardID, weight))
