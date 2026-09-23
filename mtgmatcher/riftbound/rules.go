@@ -26,7 +26,8 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// main printings for everyone else.
 	targetsPromo := editionIsPromo(b, inCard.Edition)
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
-		if !promoOnlyName(b, inCard.Name) || targetsPromo {
+		if (!promoOnlyName(b, inCard.Name) || targetsPromo) &&
+			!editionConflictsName(b, inCard.Name, inCard.Edition) {
 			return
 		}
 		// The current gallery shortened several main-set names to the
@@ -70,9 +71,15 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// legend name ("Teemo - Swift Scout" is a promo entry while the Origins
 	// card is "Swift Scout"): re-aim at the gallery name here, or the
 	// canonical lookup would stop at the promo, whose printings the promo
-	// gate in FilterCards then rightly refuses.
+	// gate in FilterCards then rightly refuses. The same retry also covers
+	// a direct match that isn't promo-only but still conflicts with the
+	// stated edition (see editionConflictsName) - a small organized-play or
+	// special-release card can share a storefront's dash spelling of an
+	// unrelated main-set card's epithet-only name without either side being
+	// a promo.
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found &&
-		promoOnlyName(b, inCard.Name) && !targetsPromo {
+		((promoOnlyName(b, inCard.Name) && !targetsPromo) ||
+			editionConflictsName(b, inCard.Name, inCard.Edition)) {
 		if fixed := legendName(b, inCard.Name, targetsPromo); fixed != "" {
 			inCard.Name = fixed
 		}
@@ -192,6 +199,40 @@ func promoOnlyName(b *mtgmatcher.Backend, name string) bool {
 	return true
 }
 
+// editionConflictsName reports whether the storefront's edition names a real
+// set that this name's own printings never appear in. Most storefront
+// dashes and commas are genuinely part of the name ("Dark Child - Starter"),
+// but the gallery has also, separately, reused a comma-joined champion
+// spelling ("Ivern, Green Father") for an unrelated card in a small
+// organized-play or special-release set, while the storefront's own dash
+// spelling of that same text names a main-set card filed under its epithet
+// alone ("Green Father"). Nothing about the name says which is meant; the
+// edition does. A listing whose stated edition holds none of the direct
+// match's own printings is the signal that the direct match is the wrong
+// one, and it is safe to keep looking rather than trust it — an edition
+// that does not resolve to a set at all proves nothing either way, so it
+// does not count as a conflict.
+//
+// This only disqualifies the direct match; it does not itself vouch for
+// whatever legendName or qualifiedBaseName retries with next. A retry
+// candidate that also lacks a printing in the stated edition is left to
+// the ordinary downstream number/edition filtering to refuse, the same as
+// any other wrong candidate — not silently accepted for having merely
+// passed this check.
+func editionConflictsName(b *mtgmatcher.Backend, name, edition string) bool {
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return false
+	}
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, err := b.GetUUID(uuid)
+		if err == nil && co.SetCode == set.Code {
+			return false
+		}
+	}
+	return true
+}
+
 // AdjustName reconciles storefront name shapes with the gallery's. Legend
 // cards are exported title-only ("Daughter of the Void") while storefronts
 // list them champion-first ("Kai'Sa - Daughter of the Void"), so an unknown
@@ -263,12 +304,20 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // prevents an unrelated qualified name from being silently reinterpreted as a
 // champion listing.
 func qualifiedBaseName(b *mtgmatcher.Backend, name, variation string) string {
+	number := extractNumber(variation)
 	for _, separator := range []string{", ", " - "} {
-		// Dashes are valid in real Riftbound names. Only consider the
-		// storefront dash spelling when this exact name is already known to
-		// be promo-only; the ordinary AdjustName fallback must not reinterpret
-		// an unknown dashed card as a qualified champion name.
-		if separator == " - " && !promoOnlyName(b, name) {
+		// Dashes are valid in real Riftbound names, so the storefront dash
+		// spelling is only ever considered in two cases: this exact name is
+		// already known to be promo-only, or it names no card at all - the
+		// current gallery's own vocabulary says nothing either way - and the
+		// listing carries a collector number, so the number-must-occur-under-
+		// base check below is what ties it to the champion rather than the
+		// wording alone. Either way, a name the datastore already resolves
+		// to a real, non-promotional card (a genuine dashed name like "Dark
+		// Child - Starter") is left for the ordinary AdjustName fallback to
+		// handle, never reinterpreted here.
+		if separator == " - " && !promoOnlyName(b, name) &&
+			!(number != "" && len(b.Hashes[mtgmatcher.Normalize(name)]) == 0) {
 			continue
 		}
 		base, title, found := strings.Cut(name, separator)
@@ -281,7 +330,6 @@ func qualifiedBaseName(b *mtgmatcher.Backend, name, variation string) string {
 			continue
 		}
 
-		number := extractNumber(variation)
 		for _, uuid := range b.Hashes[mtgmatcher.Normalize(canonical)] {
 			co, err := b.GetUUID(uuid)
 			if err != nil || co.Sealed {
