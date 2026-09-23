@@ -432,6 +432,14 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"G14": judgeLandCheck,
 	"P23": judgeLandCheck,
+
+	// mtgjson tags neither promoTypes nor frameEffects on Reality Fracture's
+	// booster-fun duplicates, but it does set isAlternative correctly on
+	// them (unlike CMR's own alternates, they even overlap the "base" set's
+	// own number range), so the same check CMR already relies on applies
+	// unchanged.
+	"FRA": variantInCommanderDeck,
+	"FRC": variantInCommanderDeck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
