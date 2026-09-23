@@ -121,6 +121,21 @@ func TestParseBanSnapshotBodyLevelErrors(t *testing.T) {
 	}
 }
 
+// TestBanPriceDecodesEtched pins the wire key itself, not just the field:
+// the snapshot answers an etched printing under "etched", a third key beside
+// "regular" and "foil", and reading only the first two made every etched
+// price decode as zero - which marketCandidate refuses as "not priced".
+func TestBanPriceDecodesEtched(t *testing.T) {
+	const body = `{"retail":{"u":{"MKMTrend":{"etched":11.95}}},"buylist":{}}`
+	snap, err := parseBanSnapshot([]byte(body), mtgban.GameMagic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := snap.retail("u", "MKMTrend"); got != 11.95 {
+		t.Errorf("retail() = %v, want 11.95", got)
+	}
+}
+
 func TestBanPriceValue(t *testing.T) {
 	tests := []struct {
 		name string
@@ -130,8 +145,10 @@ func TestBanPriceValue(t *testing.T) {
 		{"nil is zero", nil, 0},
 		{"a plain uuid reads regular", &banPrice{Regular: 1.5}, 1.5},
 		{"a foil uuid reads foil", &banPrice{Foil: 2.5}, 2.5},
+		{"an etched printing reads etched", &banPrice{Etched: 3.5}, 3.5},
 		{"regular wins when somehow both are set", &banPrice{Regular: 1, Foil: 2}, 1},
-		{"neither set is zero", &banPrice{}, 0},
+		{"foil wins over etched when somehow both are set", &banPrice{Foil: 2, Etched: 3}, 2},
+		{"none set is zero", &banPrice{}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -150,20 +150,29 @@ func banHost(game mtgban.Game) string {
 
 // banPrice is one store's price for one uuid, as the mtgban price API
 // answers it on the wire: "regular" for a plain uuid, "foil" for a
-// "_f"-suffixed one. This is not sealedev's own BANPriceResponse shape (a
-// "conditions" map keyed by grade) - that struct decodes nothing back
-// against a live fetch of this same endpoint, verified directly rather than
-// assumed; whatever query mode it was written for, it is not this one.
+// "_f"-suffixed one, and "etched" for an etched printing, which is a key
+// of its own rather than a kind of foil. This is not sealedev's own
+// BANPriceResponse shape (a "conditions" map keyed by grade) - that struct
+// decodes nothing back against a live fetch of this same endpoint, verified
+// directly rather than assumed; whatever query mode it was written for, it
+// is not this one.
 type banPrice struct {
 	Regular float64 `json:"regular"`
 	Foil    float64 `json:"foil"`
+	Etched  float64 `json:"etched"`
 }
 
-// value reads the price the wire actually populated. The API answers a
-// plain uuid's price under "regular" and an "_f"-suffixed uuid's under
-// "foil" - never both for the same uuid - so Regular winning when both are
-// somehow set is a defensive tiebreak, not a real choice: every caller here
-// looks a plain uuid up, so it is the field that should be populated.
+// value reads the price the wire actually populated. The API answers one
+// uuid under exactly one of the three keys - "regular" for a plain uuid,
+// "foil" for an "_f"-suffixed one, "etched" for an etched printing - so the
+// order below is a defensive tiebreak rather than a real choice.
+//
+// Etched was missing here until it was measured: 1,195 of Magic's 151,959
+// MKMTrend-priced uuids answer under "etched" alone, and every one of them
+// read as zero, which marketCandidate takes as "this game's snapshot does
+// not price it" and refuses outright. 346 of those clear the flat threshold
+// on their own, so the pre-filter was dropping them before any spread was
+// even considered.
 func (p *banPrice) value() float64 {
 	if p == nil {
 		return 0
@@ -171,7 +180,10 @@ func (p *banPrice) value() float64 {
 	if p.Regular != 0 {
 		return p.Regular
 	}
-	return p.Foil
+	if p.Foil != 0 {
+		return p.Foil
+	}
+	return p.Etched
 }
 
 // banSnapshot is the mtgban price API's response, trimmed to the fields
