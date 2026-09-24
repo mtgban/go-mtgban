@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -723,6 +724,36 @@ func fabNumber(bp *Blueprint, number string) string {
 		}
 	}
 	return number
+}
+
+// fabDoubleSidedFace reports whether a Flesh and Blood collector number
+// names no printing of its own, existing in the backend only as a face of
+// at least two double-sided pairings and never standalone. See the commit
+// for why a number that also carries a printing of its own (Spectral
+// Shield's MST158-A/-B) is excluded.
+func fabDoubleSidedFace(b *mtgmatcher.Backend, number string) bool {
+	if number == "" || strings.Contains(number, "//") {
+		return false
+	}
+	pairs := map[string]bool{}
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		front, back, split := strings.Cut(co.Number, "//")
+		if !split {
+			rest, found := strings.CutPrefix(co.Number, number)
+			if found && (rest == "" || !unicode.IsDigit(rune(rest[0]))) {
+				return false
+			}
+			continue
+		}
+		if front == number || back == number {
+			pairs[co.Number] = true
+		}
+	}
+	return len(pairs) >= 2
 }
 
 // fabPuzzleRe matches the name Card Trader gives a piece of a puzzle art
