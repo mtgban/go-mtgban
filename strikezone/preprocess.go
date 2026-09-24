@@ -60,9 +60,9 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	}
 	cardName = strings.ReplaceAll(cardName, " / ", " // ")
 	// A flavor name written before the card's own ("Astral Tiran - Primeval
-	// Titan") keeps the card's own.
+	// Titan") keeps the card's own. Ikoria's Godzilla names are read below.
 	var droppedFlavor bool
-	if head, tail, dashed := strings.Cut(cardName, " - "); dashed {
+	if head, tail, dashed := strings.Cut(cardName, " - "); dashed && edition != "Ikoria: Lair of Behemoths" {
 		if _, err := b.SearchEquals(mtgmatcher.SplitVariants(tail)[0]); err == nil {
 			if _, err := b.SearchEquals(head); err != nil && !isFlavorOf(b, head, tail) {
 				cardName = tail
