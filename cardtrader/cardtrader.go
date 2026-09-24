@@ -137,6 +137,8 @@ var tcgIDOverrides = map[int]int{
 	171625: 252517, // Charizard, Gold Metal, Celebrations
 	171624: 252516, // Pikachu, Gold Metal, Celebrations
 	314342: 616824, // Greninja ex, Metal Card, Twilight Masquerade
+	// Lorcana: none sent for the one errata reprint TCGplayer sells.
+	311912: 597095, // Bucky - Squirrel Squeak Tutor, Errata Version
 }
 
 // tcgplayerID answers the TCGplayer id a blueprint's own listings should
