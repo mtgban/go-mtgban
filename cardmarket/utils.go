@@ -53,10 +53,6 @@ var fabDeckRe = regexp.MustCompile(`^(.+?) - (.+?) (Blitz|Hero) Deck$`)
 // "Historic", and orders the other way round again.
 var fabHistoryPackRe = regexp.MustCompile(`^History Pack (\d+) - (.+?) Blitz Deck$`)
 
-// fabArchivePackRe matches the Archive packs, whose class is all the datastore
-// keeps of the name.
-var fabArchivePackRe = regexp.MustCompile(`^Archive Mastery Pack - (.+)$`)
-
 // fabArmoryRe matches the Armory decks, which Cardmarket files under the line
 // that issued them where the datastore names the hero alone - except for the
 // Legends line, which the datastore keeps in the name.
@@ -102,9 +98,6 @@ func fabEdition(expansion string) (setName, numberPrefix string) {
 	}
 	if m := fabHistoryPackRe.FindStringSubmatch(expansion); m != nil {
 		return "Historic Pack " + m[1] + " Blitz Deck: " + m[2], ""
-	}
-	if m := fabArchivePackRe.FindStringSubmatch(expansion); m != nil {
-		return "Mastery Pack " + m[1], ""
 	}
 	if m := fabArmoryRe.FindStringSubmatch(expansion); m != nil {
 		if m[1] == "Legends" {

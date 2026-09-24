@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -111,19 +110,16 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 	// the European multi-language print of a set, which is a catalog of its
 	// own for the same reason. One Piece's duplicate shelves resolve through
 	// the shelved table; see offShelf.
-	switch mkm.gameID {
-	case cm.GameOnePiece, cm.GameYuGiOh:
-		kept := items[:0]
-		for _, exp := range items {
-			if strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name) {
-				continue
-			}
-			kept = append(kept, exp)
+	kept := items[:0]
+	for _, exp := range items {
+		if foreignExpansion(mkm.gameID, exp) {
+			continue
 		}
-		items = kept
-		if mkm.gameID == cm.GameOnePiece {
-			mkm.shelved = shelvedSets(mkm.backend, items)
-		}
+		kept = append(kept, exp)
+	}
+	items = kept
+	if mkm.gameID == cm.GameOnePiece {
+		mkm.shelved = shelvedSets(mkm.backend, items)
 	}
 
 	mkm.printf("Parsing %d expansion ids from the id map", len(items))

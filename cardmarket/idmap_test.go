@@ -142,6 +142,8 @@ func TestCheckCatalog(t *testing.T) {
 		{"one piece coded", mtgban.GameOnePiece, coded, true},
 		{"one piece bare", mtgban.GameOnePiece, bare, false},
 		{"yugioh bare", mtgban.GameYuGiOh, bare, false},
+		{"fab coded", mtgban.GameFleshAndBlood, coded, true},
+		{"fab bare", mtgban.GameFleshAndBlood, bare, false},
 		{"magic bare", mtgban.GameMagic, bare, true},
 		{"magic none", mtgban.GameMagic, nil, false},
 	} {
