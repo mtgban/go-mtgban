@@ -54,6 +54,9 @@ func TestPalworldListing(t *testing.T) {
 		{"Chillet - Dragon Whisperer (RR)", "Dawn of Palpagos", "EBP01-025RR", "ebp01-025_713917_foil"},
 		{"Jormuntide - Surging Sea Serpent (R)", "Dawn of Palpagos", "EBP01-027R", "ebp01-027_713923_foil"},
 		{"Fuak - Manic Wave Ripper (PR Card Pack Vol. 1)", "Promo", "EPR-004 PR ", "epr-004_714396_foil"},
+		{"Cattiva - Prototype", "Souls & Misc.", "Prototype", "716343"},
+		{"Soul - Prototype", "Souls & Misc.", "Prototype", "716360"},
+		{"Soul - Chillet (Demo Caravan Promo)", "Promo", "ESOUL-000 PR Blue Long Creature in Pool Ring", "esoul-003_714403_foil"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			asTyped := mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.notes}

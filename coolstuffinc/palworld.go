@@ -33,6 +33,14 @@ var palworldBaseRarities = map[string]bool{
 	"U":   true,
 }
 
+// palworldNoteFixes corrects a Notes field this storefront has typed with
+// the wrong collector number for one listing: Chillet's Demo Caravan Promo
+// carries "ESOUL-000", a real but different, non-foil Soul promo, where the
+// listing itself sells foil and CSI's own product image is ESOUL003.
+var palworldNoteFixes = strings.NewReplacer(
+	"ESOUL-000 PR Blue Long Creature in Pool Ring", "ESOUL-003 PR",
+)
+
 // palworldNotes writes a note's collector number and the rarity code this
 // storefront sometimes glues to it back apart.
 //
@@ -45,6 +53,7 @@ var palworldBaseRarities = map[string]bool{
 // palworld_rarity, and TCGplayer, which the catalog takes its identity
 // from, only ever suffixes the parallel tiers.
 func palworldNotes(notes string) string {
+	notes = palworldNoteFixes.Replace(notes)
 	fields := strings.Fields(notes)
 	for i, field := range fields {
 		m := palworldNumberTail.FindStringSubmatch(field)
@@ -69,10 +78,25 @@ func palworldNotes(notes string) string {
 // gives.
 var palworldSpellings = strings.NewReplacer(
 	"Fuak - Manic Wave Ripper", "Fuack - Manic Wave Ripper",
+	// The catalog names every Soul promo "Soul" alone and, where it names
+	// the Pal at all, carries it as a variant of that card rather than
+	// part of the name; Chillet's is the one listing this storefront
+	// names epithet-style.
+	"Soul - Chillet (Demo Caravan Promo)", "Soul (Demo Caravan Promo)",
 )
 
+// palworldPrototypeSuffix is the tail this storefront appends to the
+// Prototype cards it files on its "Souls & Misc." shelf - the same shelf
+// also carries a plain "Soul (TD)" listing with no suffix. The catalog
+// holds the fifteen Prototype printings unnumbered, under their bare
+// names, in one set of their own - so the suffix names nothing the
+// catalog also names and has to come off before the name can be looked
+// up.
+const palworldPrototypeSuffix = " - Prototype"
+
 // palworldName spells a Palworld card the way the catalog does, where this
-// storefront has typed it wrong.
+// storefront has typed it wrong or decorated it with wording of its own.
 func palworldName(name string) string {
-	return palworldSpellings.Replace(name)
+	name = palworldSpellings.Replace(name)
+	return strings.TrimSuffix(name, palworldPrototypeSuffix)
 }
