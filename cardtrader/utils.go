@@ -321,6 +321,9 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 			return bp.Version
 		}
 	}
+	if gameID == GameGundam {
+		number = gundamNumber(bp, number)
+	}
 	if bp.Version == "" || number == "" {
 		return number
 	}
@@ -978,6 +981,25 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 // narrows nothing and the number aliases onto the original printing.
 var gundamShelfSets = map[string]string{
 	"Reprints": "SC01",
+}
+
+// gundamBlueprintNumbers are the collector numbers Card Trader gets wrong on
+// two Reprints-shelf blueprints, keyed by the blueprint since the number it
+// wrote is a real card's number from an unrelated set, not an SC01 one:
+// Aile Strike Gundam wears GD03's own GD03-072, and Davao wears ST05's own
+// Isaribi at ST05-015.
+var gundamBlueprintNumbers = map[int]string{
+	400427: "ST04-001",
+	400433: "ST08-015",
+}
+
+// gundamNumber spells a Gundam blueprint's collector number the way the
+// card wears it, where Card Trader wrote another set's number instead.
+func gundamNumber(bp *Blueprint, number string) string {
+	if spelled, found := gundamBlueprintNumbers[bp.ID]; found {
+		return spelled
+	}
+	return number
 }
 
 // ygoBlueprintEditions are the sets Card Trader shelves a promo under the
