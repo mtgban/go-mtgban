@@ -120,6 +120,7 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 	items = kept
 	if mkm.gameID == cm.GameOnePiece {
 		mkm.shelved = shelvedSets(mkm.backend, items)
+		mkm.claimByID(byExpansion, products, items)
 	}
 
 	mkm.printf("Parsing %d expansion ids from the id map", len(items))
@@ -139,6 +140,9 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 			}
 			if same := sameProduct(mkm.gameID); same != nil {
 				twinsAmong(results, same, faceOf(mkm.backend, mkm.gameID))
+			}
+			if mkm.gameID == cm.GameOnePiece {
+				mkm.giveWay(results)
 			}
 
 			// A refusal is named once per name and number: the same

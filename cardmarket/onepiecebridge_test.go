@@ -88,6 +88,42 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 	}
 }
 
+// TestOnePieceGiveWayRefusesWordingTwin pins giveWay: a product the bridge
+// names outright holds its printing, and a second product reaching the same
+// printing by wording alone gives way to it rather than publishing a second
+// price for a card the datastore does not carry twice.
+func TestOnePieceGiveWayRefusesWordingTwin(t *testing.T) {
+	b := datastoreBackend(t, "onepiece", onePieceDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	mkm.tcgBridge = map[int]int{100: 527875}
+
+	exp := cm.Expansion{IDExpansion: 1, Name: "Awakening of the New Era"}
+	products := map[int]cm.CatalogProduct{
+		100: {ExpansionID: 1, Name: "Trafalgar Law (OP05-069)", Number: "OP05-069"},
+		101: {ExpansionID: 1, Name: "Trafalgar Law (OP05-069)", Number: "OP05-069"},
+	}
+	byExpansion := map[int][]int{1: {100, 101}}
+	items := []cm.Expansion{exp}
+
+	mkm.resolver.claimByID(byExpansion, products, items)
+	results := []resolved{
+		mkm.resolver.resolveMapped(100, products[100], exp),
+		mkm.resolver.resolveMapped(101, products[101], exp),
+	}
+	mkm.resolver.giveWay(results)
+
+	if results[0].err != nil || results[0].cardID != "op05-069_527875_foil" {
+		t.Errorf("bridged product 100 = (%q, %v), want (%q, nil)", results[0].cardID, results[0].err, "op05-069_527875_foil")
+	}
+	if !errors.Is(results[1].err, errTwin) {
+		t.Errorf("unbridged product 101 = %v, want errTwin", results[1].err)
+	}
+}
+
 // onePieceReprintDatastore holds a reprint set that keeps a card under its
 // original starter-deck number rather than the base set's, for pinning the
 // Reprints/Demo Decks wrong-variant refusal.

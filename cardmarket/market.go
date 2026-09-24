@@ -390,6 +390,7 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 	items = kept
 	if mkm.gameID == cm.GameOnePiece {
 		mkm.shelved = shelvedSets(mkm.backend, items)
+		mkm.claimByID(byExpansion, products, items)
 	}
 
 	mkm.printf("Parsing %d expansion ids from the id map", len(items))
@@ -480,6 +481,9 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 	}
 	if same := sameProduct(mkm.gameID); same != nil {
 		twinsAmong(results, same, faceOf(mkm.backend, mkm.gameID))
+	}
+	if mkm.gameID == cm.GameOnePiece {
+		mkm.giveWay(results)
 	}
 
 	var refusedNames []string
