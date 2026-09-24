@@ -16,6 +16,7 @@
 package fleshandblood
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -101,6 +102,11 @@ type DatastoreCard struct {
 	// nothing promoted a card for being the second drawing of it - so it
 	// rides with the tags on the card without being declared as one.
 	Watermark string `json:"watermark,omitempty"`
+
+	// Language is what the printing is printed in, where that is not
+	// English: the Japanese and Korean exclusives TCGplayer sells in no
+	// English sku. Empty means English, which is what every other entry is.
+	Language string `json:"language,omitempty"`
 
 	Image         string `json:"image"`
 	ExternalLinks struct {
@@ -489,7 +495,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"full":      card.Image,
 				"thumbnail": card.Image,
 			},
-			Language:   "English",
+			Language:   cmp.Or(card.Language, "English"),
 			Rarity:     card.Rarity,
 			Colors:     mtgmatcher.SplitColors(card.Color),
 			PromoTypes: promoTypes,
