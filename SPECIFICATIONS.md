@@ -674,13 +674,17 @@ disambiguates within sets, consulting in order:
    `MultiPromosTable`); the `EditionTable` aliases are still core-level
    (`mtgmatcher/editions.go`);
 2. `ExtractNumber` with its suffix semantics;
-3. promo-type validation through the `promoTypeElements` table (each entry:
+3. for a Secret Lair listing naming neither a number nor a flavor name, the
+   card's own unflavored printing when there is exactly one (a number and
+   its ★ foil) — ahead of the passes below, which would otherwise veto it
+   for a treatment or a finish the listing never mentioned;
+4. promo-type validation through the `promoTypeElements` table (each entry:
    tag strings, an optional `TagFunc`, an activation date, wildcard
    eligibility);
-4. per-set `simpleFilterCallbacks` / `complexFilterCallbacks` /
+5. per-set `simpleFilterCallbacks` / `complexFilterCallbacks` /
    `numberFilterCallbacks` (`mtgmatcher/magic/callbacks.go`, ~1,200 lines)
    for sets whose disambiguation needs real code;
-5. per-set promo dedup via core's `MultiPromosTable`, then finish/frame
+6. per-set promo dedup via core's `MultiPromosTable`, then finish/frame
    separation — etched (gated on `SeparateFinishCollectorNumberDate`),
    borderless, extended art (gated on `PromosForEverybodyYay`) and showcase —
    each pass discarding its result rather than the candidates when it would
