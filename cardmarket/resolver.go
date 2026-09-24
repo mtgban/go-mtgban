@@ -564,6 +564,12 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		if err != nil {
 			continue
 		}
+		// See plausiblePrinting: a Magic WCD or Oversized product's map
+		// entry can carry an id mtgjson has wrongly linked, the same
+		// drift Fallback's own mcmId route guards against.
+		if r.gameID == cm.GameMagic && !plausiblePrinting(r.backend, product.ExpansionName, uuid) {
+			continue
+		}
 		sameNumber := strings.EqualFold(co.PlainNumber, product.Number)
 		if co.Foil || co.Etched {
 			if sameNumber && !foilMatched {
