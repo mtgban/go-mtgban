@@ -21,15 +21,15 @@ const fabDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {"MON": {"name": "Monarch", "releaseDate": "2021-04-30"}, "WTR": {"name": "Welcome to Rathe", "releaseDate": "2019-10-11"}},
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 237847}, "fabId": "MON092", "finish": "1st Edition Normal", "id": "mon092_237847_1stedition", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 237847}, "fabId": "MON092", "finish": "1st Edition Rainbow Foil", "id": "mon092_237847_1steditionrainbowfoil", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 237847}, "fabId": "MON092", "finish": "Unlimited Edition Normal", "id": "mon092_237847_unlimited", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 237847}, "fabId": "MON092", "finish": "Unlimited Edition Rainbow Foil", "id": "mon092_237847_unlimitededitionrainbowfoil", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 251042}, "fabId": "MON002", "finish": "Unlimited Edition Normal", "id": "mon002-mon221_251042_unlimited", "name": "Prism // Ravenous Meataxe", "number": "MON002//MON221", "rarity": "Token", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 225309}, "fabId": "WTR215", "finish": "1st Edition Normal", "id": "wtr215_225309_1stedition", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"},
-  {"externalLinks": {"tcgPlayerId": 225309}, "fabId": "WTR215", "finish": "1st Edition Rainbow Foil", "id": "wtr215_225309_1steditionrainbowfoil", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"},
-  {"externalLinks": {"tcgPlayerId": 225309}, "fabId": "WTR215", "finish": "Unlimited Edition Normal", "id": "wtr215_225309_unlimited", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"},
-  {"externalLinks": {"tcgPlayerId": 225309}, "fabId": "WTR215", "finish": "Unlimited Edition Rainbow Foil", "id": "wtr215_225309_unlimitededitionrainbowfoil", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"}
+  {"externalLinks": {"fabId": "MON092", "tcgPlayerId": 237847}, "finish": "1st Edition Normal", "id": "mon092_237847_1stedition", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON092", "tcgPlayerId": 237847}, "finish": "1st Edition Rainbow Foil", "id": "mon092_237847_1steditionrainbowfoil", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON092", "tcgPlayerId": 237847}, "finish": "Unlimited Edition Normal", "id": "mon092_237847_unlimited", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON092", "tcgPlayerId": 237847}, "finish": "Unlimited Edition Rainbow Foil", "id": "mon092_237847_unlimitededitionrainbowfoil", "name": "Prismatic Shield (Red)", "number": "MON092", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON002", "tcgPlayerId": 251042}, "finish": "Unlimited Edition Normal", "id": "mon002-mon221_251042_unlimited", "name": "Prism // Ravenous Meataxe", "number": "MON002//MON221", "rarity": "Token", "setCode": "MON"},
+  {"externalLinks": {"fabId": "WTR215", "tcgPlayerId": 225309}, "finish": "1st Edition Normal", "id": "wtr215_225309_1stedition", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"},
+  {"externalLinks": {"fabId": "WTR215", "tcgPlayerId": 225309}, "finish": "1st Edition Rainbow Foil", "id": "wtr215_225309_1steditionrainbowfoil", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"},
+  {"externalLinks": {"fabId": "WTR215", "tcgPlayerId": 225309}, "finish": "Unlimited Edition Normal", "id": "wtr215_225309_unlimited", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"},
+  {"externalLinks": {"fabId": "WTR215", "tcgPlayerId": 225309}, "finish": "Unlimited Edition Rainbow Foil", "id": "wtr215_225309_unlimitededitionrainbowfoil", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"}
  ]
 }}`
 
@@ -118,15 +118,15 @@ const fabSpellingDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {"MON": {"name": "Monarch", "releaseDate": "2021-04-30"}, "BOL": {"name": "Blitz Deck: Monarch - Boltyn", "releaseDate": "2021-05-14"}, "ADR": {"name": "Armory Deck: Rhinar", "releaseDate": "2025-11-14"}, "HVY": {"name": "Heavy Hitters", "releaseDate": "2024-02-02"}},
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "1st Edition Normal", "id": "mon039_237741_1stedition", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "1st Edition Rainbow Foil", "id": "mon039_237741_1steditionrainbowfoil", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "Unlimited Edition Normal", "id": "mon039_237741_unlimited", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "Unlimited Edition Rainbow Foil", "id": "mon039_237741_unlimitededitionrainbowfoil", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 237742}, "fabId": "MON040", "finish": "1st Edition Normal", "id": "mon040_237742_1stedition", "name": "Valiant Thrust (Yellow)", "number": "MON040", "rarity": "Rare", "setCode": "MON"},
-  {"externalLinks": {"tcgPlayerId": 238398}, "fabId": "BOL017", "finish": "Normal", "id": "bol017_238398", "name": "Valiant Thrust", "number": "BOL017", "rarity": "Rare", "setCode": "BOL"},
-  {"externalLinks": {"tcgPlayerId": 533460}, "fabId": "HVY023", "finish": "Normal", "id": "hvy023_533460", "name": "Rawhide Rumble (Red)", "number": "HVY023", "rarity": "Rare", "setCode": "HVY"},
-  {"externalLinks": {"tcgPlayerId": 533460}, "fabId": "HVY023", "finish": "Rainbow Foil", "id": "hvy023_533460_rainbowfoil", "name": "Rawhide Rumble (Red)", "number": "HVY023", "rarity": "Rare", "setCode": "HVY"},
-  {"externalLinks": {"tcgPlayerId": 533461}, "fabId": "HVY024", "finish": "Normal", "id": "hvy024_533461", "name": "Rawhide Rumble (Yellow)", "number": "HVY024", "rarity": "Rare", "setCode": "HVY"},
+  {"externalLinks": {"fabId": "MON039", "tcgPlayerId": 237741}, "finish": "1st Edition Normal", "id": "mon039_237741_1stedition", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON039", "tcgPlayerId": 237741}, "finish": "1st Edition Rainbow Foil", "id": "mon039_237741_1steditionrainbowfoil", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON039", "tcgPlayerId": 237741}, "finish": "Unlimited Edition Normal", "id": "mon039_237741_unlimited", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON039", "tcgPlayerId": 237741}, "finish": "Unlimited Edition Rainbow Foil", "id": "mon039_237741_unlimitededitionrainbowfoil", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "MON040", "tcgPlayerId": 237742}, "finish": "1st Edition Normal", "id": "mon040_237742_1stedition", "name": "Valiant Thrust (Yellow)", "number": "MON040", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"fabId": "BOL017", "tcgPlayerId": 238398}, "finish": "Normal", "id": "bol017_238398", "name": "Valiant Thrust", "number": "BOL017", "rarity": "Rare", "setCode": "BOL"},
+  {"externalLinks": {"fabId": "HVY023", "tcgPlayerId": 533460}, "finish": "Normal", "id": "hvy023_533460", "name": "Rawhide Rumble (Red)", "number": "HVY023", "rarity": "Rare", "setCode": "HVY"},
+  {"externalLinks": {"fabId": "HVY023", "tcgPlayerId": 533460}, "finish": "Rainbow Foil", "id": "hvy023_533460_rainbowfoil", "name": "Rawhide Rumble (Red)", "number": "HVY023", "rarity": "Rare", "setCode": "HVY"},
+  {"externalLinks": {"fabId": "HVY024", "tcgPlayerId": 533461}, "finish": "Normal", "id": "hvy024_533461", "name": "Rawhide Rumble (Yellow)", "number": "HVY024", "rarity": "Rare", "setCode": "HVY"},
   {"externalLinks": {"tcgPlayerId": 663031}, "finish": "Normal", "id": "arr012_663031", "name": "Rawhide Rumble", "number": "ARR012", "rarity": "Rare", "setCode": "ADR"}
  ]
 }}`
