@@ -769,6 +769,18 @@ func numberSet(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, edition stri
 	if mtgmatcher.Normalize(edition) == "" {
 		return nil
 	}
+	// A letter-tailed number that only one set prints this name under is
+	// read verbatim before the prefix inference below gets a say: Konami's
+	// own misprint reissues carry the base card's prefix plus a tail letter
+	// ("EOJ-EN004K" beside "EOJ-EN004"), and reading the prefix alone sends
+	// the reissue to the base set's edition, which then drops the reissue's
+	// own row before FilterCards' verbatim-number rule can keep it.
+	for _, field := range strings.Fields(inCard.Variation) {
+		set := verbatimSet(b, inCard.Name, field)
+		if set != nil {
+			return set
+		}
+	}
 	for _, field := range strings.Fields(inCard.Variation) {
 		set := fieldSet(b, field)
 		if set == nil {
@@ -1656,4 +1668,38 @@ func digitRun(tail string) string {
 		return r < '0' || r > '9'
 	})
 	return tail[idx+1:]
+}
+
+// letterTailRe matches a full collector number carrying a letter after its
+// digits, the shape Konami's misprint reissues and cardtrader's rarity
+// suffixes both wear: "EOJ-EN004K", "RA01-EN019qsec".
+var letterTailRe = regexp.MustCompile(`[0-9][A-Za-z]+$`)
+
+// verbatimSet is the one set printing name under exactly this collector
+// number, read before numberSet's own prefix inference gets a say - and
+// only for a letter-tailed number, since without that limit a number two
+// sets share names neither of them (see numberSet).
+func verbatimSet(b *mtgmatcher.Backend, name, number string) *mtgmatcher.Set {
+	if !fullNumberRe.MatchString(number) || !letterTailRe.MatchString(number) {
+		return nil
+	}
+	code := ""
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || !strings.EqualFold(co.Number, number) {
+			continue
+		}
+		if code != "" && code != co.SetCode {
+			return nil
+		}
+		code = co.SetCode
+	}
+	if code == "" {
+		return nil
+	}
+	set, err := b.GetSet(code)
+	if err != nil {
+		return nil
+	}
+	return set
 }

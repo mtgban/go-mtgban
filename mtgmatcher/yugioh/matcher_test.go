@@ -294,6 +294,13 @@ var yugiohSeeds = []matchTest{
 		Desc: "Darkfall respells to the name its own set prints",
 		In:   mtgmatcher.InputCard{Name: "Darkfall", Edition: "Starstrike Blast", Variation: "080 Common"},
 	},
+	// The K misprint reissue carries EOJ's own prefix plus a tail letter;
+	// read as a prefix it would answer with the base card's EOJ edition
+	// instead of the Redemption Replacement row the K actually names.
+	{
+		Desc: "a letter-tailed misprint number is read verbatim over its prefix",
+		In:   mtgmatcher.InputCard{Name: "Destiny Hero - Dreadmaster", Edition: "Misprints", Variation: "EOJ-EN004K"},
+	},
 }
 
 // testBackend is the datastore TestMain read, for the tests to match
