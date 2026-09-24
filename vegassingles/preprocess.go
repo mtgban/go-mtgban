@@ -713,6 +713,38 @@ var pokemonNumberFixes = map[pokemonNumberFix]string{
 	{"SV: White Flare", "Zebstrika", "112/086"}:                     "115/086",
 	{"SV: White Flare", "Zoroark", "141/086"}:                       "143/086",
 	{"SV: White Flare", "Zweilous", "143/086"}:                      "147/086",
+	{"SV: White Flare", "Boldore", "126/086"}:                       "128/086",
+	{"SV: Black Bolt", "Braviary", "157/086"}:                       "155/086",
+	{"SV: Black Bolt", "Excadrill ex", "171/086"}:                   "168/086",
+	{"SV: Black Bolt", "Genesect ex", "172/086"}:                    "169/086",
+	{"SV: White Flare", "Jellicent ex", "170/086"}:                  "168/086",
+	{"SV: Black Bolt", "Klang", "147/086"}:                          "140/086",
+	{"SV: White Flare", "Hilda", "166/086"}:                         "164/086",
+	{"SV: White Flare", "Hilda", "173/086"}:                         "171/086",
+	{"SV: White Flare", "Hydreigon ex", "171/086"}:                  "169/086",
+	{"SV: Black Bolt", "Klink", "146/086"}:                          "139/086",
+	{"SV: White Flare", "Lampent", "101/086"}:                       "102/086",
+	{"SV: White Flare", "Litwick", "100/086"}:                       "101/086",
+	{"SV: Black Bolt", "Meloetta ex", "170/086"}:                    "167/086",
+	{"SV: White Flare", "Oshawott", "102/086"}:                      "105/086",
+	{"SV: Black Bolt", "Rufflet", "156/086"}:                        "154/086",
+	{"SV: Black Bolt", "Serperior ex", "167/086"}:                   "164/086",
+	{"SV: Black Bolt", "Zekrom ex", "174/086"}:                      "172/086",
+}
+
+// pokemonShelfFix keys a listing shelved under one twin set's own name by
+// that set and the card's name.
+type pokemonShelfFix struct{ set, name string }
+
+// pokemonShelfFixes redirects listings this storefront shelves under the
+// wrong twin set, before pokemonNumberFixes looks up the number.
+var pokemonShelfFixes = map[pokemonShelfFix]string{
+	{"SV: White Flare", "Braviary"}: "SV: Black Bolt",
+	{"SV: White Flare", "Klang"}:    "SV: Black Bolt",
+	{"SV: White Flare", "Klink"}:    "SV: Black Bolt",
+	{"SV: White Flare", "Rufflet"}:  "SV: Black Bolt",
+	{"SV: Black Bolt", "Litwick"}:   "SV: White Flare",
+	{"SV: Black Bolt", "Lampent"}:   "SV: White Flare",
 }
 
 func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
@@ -728,6 +760,9 @@ func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 
 	name := strings.TrimSpace(product.DisplayName[:loc[0]])
 	edition := product.ProductData.SetName
+	if shelf, found := pokemonShelfFixes[pokemonShelfFix{edition, name}]; found {
+		edition = shelf
+	}
 	number := product.DisplayName[loc[2]:loc[3]]
 	if fixed, found := pokemonNumberFixes[pokemonNumberFix{edition, name, number}]; found {
 		number = fixed
