@@ -252,12 +252,14 @@ func fabSameProduct(a, b *cm.Product) bool {
 // fabSameCard reports whether two card names, wording already off them,
 // name one card: the same name, or one the unpitched spelling of the
 // other, which is how the older listings and the token-sized reprints
-// write a card the set sells pitched.
+// write a card the set sells pitched. mtgmatcher.Equals folds accents and
+// apostrophes as well as case: Cardmarket's own "Jarl Vetreiði" against the
+// datastore's "Jarl Vetreidi", "Bolt'n' Shot" against "Bolt'n Shot".
 func fabSameCard(nameA, nameB string) bool {
-	if strings.EqualFold(nameA, nameB) {
+	if mtgmatcher.Equals(nameA, nameB) {
 		return true
 	}
-	return strings.EqualFold(unpitched(nameA), nameB) || strings.EqualFold(nameA, unpitched(nameB))
+	return mtgmatcher.Equals(unpitched(nameA), nameB) || mtgmatcher.Equals(nameA, unpitched(nameB))
 }
 
 // fabPitchTail matches the pitch parenthetical ending a name.
