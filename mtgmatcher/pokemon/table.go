@@ -103,6 +103,16 @@ var editionAliases = map[string]string{
 	// Card Trader's league shelf, which the catalog files with the
 	// championship cards.
 	"League Promos": "League & Championship Cards",
+
+	// Five Cool Stuff Inc card shelves that name an era but not the set
+	// within it, each replayed against the printings that resolve through
+	// their TCGplayer id, which do name the set: MEW, SVI, SM01, SWSH01 and
+	// PR-1407.
+	"SV 151":             "SV: Scarlet & Violet 151",
+	"Scarlet and Violet": "SV01: Scarlet & Violet Base Set",
+	"Sun & Moon":         "SM Base Set",
+	"Sword and Shield":   "SWSH01: Sword & Shield Base Set",
+	"BW Promos":          "Black and White Promos",
 }
 
 // normalizedEditionAliases indexes the table the way an edition arrives, so
@@ -134,6 +144,17 @@ var nameRespellings = map[string]string{
 	"Dark Exeggcutor": "Dark Exeggutor",
 	"Drowsee":         "Drowzee",
 	"Team Galactic's Invention G-107 Technical Mach. G": "Team Galactic's Invention G-107 Technical Machine G",
+
+	// SM Lost Thunder 174-177 letter the Fairy Charm tools by the type they
+	// guard against, and TCGplayer's own letter for Dragon is "O" - not the
+	// "N" Cool Stuff Inc writes, or the word tcgdex and Game Nerdz spell it
+	// out as. The other four are the same tool named the ordinary way.
+	"Fairy Charm N":         "Fairy Charm O",
+	"Fairy Charm Dragon":    "Fairy Charm O",
+	"Fairy Charm Grass":     "Fairy Charm G",
+	"Fairy Charm Psychic":   "Fairy Charm P",
+	"Fairy Charm Fighting":  "Fairy Charm F",
+	"Fairy Charm Lightning": "Fairy Charm L",
 }
 
 // normalizedRespellings indexes that table the way a name arrives, so the
@@ -180,3 +201,15 @@ var normalizedPooledEditions = sync.OnceValue(func() map[string][]string {
 	}
 	return pools
 })
+
+// energyYearSets maps the copyright year a basic energy's wording carries
+// onto the set the catalog actually filed that year's unnumbered printing
+// under. Hidden Fates and Champion's Path each pack one energy and TCGplayer
+// never listed either as its own product: the 2019 ones are the "SM - Team
+// Up" energies and the 2020 ones the "SWSH01" energies, named by the year
+// alone because the shelf they were really packed in carries no product of
+// its own.
+var energyYearSets = map[string]string{
+	"2019": "SM - Team Up",
+	"2020": "SWSH01: Sword & Shield Base Set",
+}
