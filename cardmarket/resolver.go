@@ -484,6 +484,13 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if product.Rarity == "Oversized" {
 			number = strings.TrimSpace(number + " Oversized")
 		}
+		// Store Tournament Promos and Winner Cards drop the event their
+		// own shelf names; the datastore labels the printing with it.
+		if r.gameID == cm.GameOnePiece {
+			if label, found := onePieceShelfLabels[product.ExpansionName]; found {
+				number = strings.TrimSpace(number + " " + label)
+			}
+		}
 
 		cardID, err = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
