@@ -49,8 +49,7 @@ type GalleryBlade struct {
 
 	// Sealed is not part of the official payload; the datastore builder
 	// appends the sealed products the TCGplayer catalog files outside the
-	// singles type, in the card items' own vocabulary. A datastore built
-	// before this was recorded simply loads without sealed products.
+	// singles type, and mints a set for a group sold only sealed.
 	Sealed struct {
 		Items []GallerySealed `json:"items"`
 	} `json:"sealed"`
@@ -60,19 +59,13 @@ type GalleryBlade struct {
 // bundle. It has no collector number, no finish and no gallery entry - the
 // TCGplayer product id is its whole identity.
 type GallerySealed struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Set  struct {
-		Value struct {
-			ID    string `json:"id"`
-			Label string `json:"label"`
-		} `json:"value"`
-	} `json:"set"`
-	CardImage struct {
-		URL string `json:"url"`
-	} `json:"cardImage"`
-	TCGplayerProductID int    `json:"tcgplayerProductId"`
-	ReleaseDate        string `json:"releaseDate,omitempty"`
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	SetCode       string `json:"setCode"`
+	Image         string `json:"image"`
+	ExternalLinks struct {
+		TcgPlayerID int `json:"tcgPlayerId"`
+	} `json:"externalLinks"`
 }
 
 // GallerySet is one set as the gallery publishes it.
@@ -280,22 +273,6 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			BaseSetSize:     set.BaseSetSize,
 			Type:            set.Type,
 			ReleaseDate:     set.ReleaseDate,
-			ReleaseDateTime: releaseDateTime,
-		}
-	}
-	// A sealed product can belong to a group the gallery has no set for
-	// (an accessories-only group, a set sold before its cards are
-	// published); give it a set to hang off
-	for _, product := range gallery.Sealed.Items {
-		if b.Sets[product.Set.Value.ID] != nil {
-			continue
-		}
-		b.AllSets = append(b.AllSets, product.Set.Value.ID)
-		releaseDateTime, _ := time.Parse("2006-01-02", product.ReleaseDate)
-		b.Sets[product.Set.Value.ID] = &mtgmatcher.Set{
-			Name:            product.Set.Value.Label,
-			Code:            product.Set.Value.ID,
-			ReleaseDate:     product.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
 		}
 	}
@@ -515,7 +492,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	// Sealed products live in the sealed namespace throughout; AddSealed
 	// is what files them there.
 	for _, product := range gallery.Sealed.Items {
-		b.AddSealed(product.ID, product.Name, product.Set.Value.ID, product.CardImage.URL, product.TCGplayerProductID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
 	b.SortSealed()
 
