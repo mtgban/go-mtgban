@@ -257,6 +257,26 @@ func (r *resolver) yugiohOtherCard(product *cm.Product, cardID string) bool {
 	return true
 }
 
+// yugiohOtherNumber reports whether the bridged printing is numbered for
+// another printing of the card: a special edition, box topper or European
+// print that CardTrader links to the set's base row. Only the digits count,
+// and the EN infix a European number ("EN086", "E001") needs; Cardmarket
+// writes "SP02" where the datastore writes "ENS02".
+func (r *resolver) yugiohOtherNumber(product *cm.Product, cardID string) bool {
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	tail, rowTail := numberTail.FindString(product.Number), numberTail.FindString(co.Number)
+	if tail == "" || rowTail == "" {
+		return false
+	}
+	if !strings.EqualFold(strings.TrimLeft(tail, "0"), strings.TrimLeft(rowTail, "0")) {
+		return true
+	}
+	return strings.HasPrefix(numberPrefix(product.Number), "E") && !strings.HasPrefix(numberPrefix(co.Number), "EN")
+}
+
 // yugiohWorded answers the printing the product's name and rarity reach,
 // when the rarity names it and not the bridged printing.
 func (r *resolver) yugiohWorded(product *cm.Product, cardID string) string {

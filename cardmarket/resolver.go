@@ -509,10 +509,10 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				cardID, _ = r.backend.MatchIDFinish(fmt.Sprint(tcgID), finish)
 			}
 		}
-		// CardTrader's tcg id can name a sibling rarity or another card;
-		// distrust it.
+		// CardTrader's tcg id can name a sibling rarity, another card or
+		// another printing's number; distrust it.
 		if r.gameID == cm.GameYuGiOh && cardID != "" {
-			if r.yugiohOtherCard(product, cardID) {
+			if r.yugiohOtherCard(product, cardID) || r.yugiohOtherNumber(product, cardID) {
 				cardID = ""
 			} else {
 				id := r.yugiohWorded(product, cardID)

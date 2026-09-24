@@ -108,6 +108,21 @@ and Oversized shelves the same way (mtgjson links two Oversized products,
 21364 and 21387, onto an ordinary-sized 30th Anniversary Edition printing
 instead of an oversized one).
 
+**The Yu-Gi-Oh bridge is held to the product's number.** CardTrader links
+a set's Special Editions ("S01"), box toppers (LC05, LC06) and European
+prints ("EN001") to the TCGplayer id of the set's base row, and the product
+numbered for that row gave way to them as a twin. `yugiohOtherNumber` sends
+such a product to the name path when the digits disagree, or when a
+European number lands on a row without the EN infix; the other letters are
+notation ("SP02" is the datastore's "ENS02"). `offShelf` was measured
+instead and rejected: it would refuse 178 bridged products, 109 of them
+Legendary Collection Kaiba Mega Pack cards the datastore files under LC06.
+Replaying the 2026-09-24 Index, 121 uuids gain a price, 124 are repriced
+by the product numbered for them, and the (uuid, column) slots two
+products claim fall from 22 to 6. Two lose their price: the MP24 Kaiba
+token, whose TCGplayer number reads EN02 for EN052, and MRL-103, which was
+priced by the MRL-E130 misprint.
+
 ## Market's design
 
 **A printing sold foil-only is queried as a foil.** Such a printing answers
@@ -310,6 +325,15 @@ carries it.
   Unlimited. `mkmGames` covers exactly the games `mtgmatcher/games` blank-
   imports; adding any of these needs the full "Adding a game" checklist in
   `AGENTS.md` first; this package is the last, not the first, step.
+- **Yu-Gi-Oh's version index does not name the print run.** `yugiohRun`
+  reads V.2 and up as 1st Edition, and `matchYugioh` asks for that run
+  first. Cardmarket keeps the run as a flag on each listing instead: in the
+  2026-09-24 Market dump, 373 of 470 V.2+ products and 171 of 289 V.1
+  products hold both flagged and unflagged listings, and Gate Guardian's
+  V.1 and V.2 (MRD-000) each sell 1st Edition near 150 and Unlimited near
+  30. So the bridge stays on the default run, and the two products one
+  blueprint links to MRD-000 (and to MRD-097) stay twins. Whether
+  `matchYugioh` should stop asking for the run is open.
 
 ## Environment
 
