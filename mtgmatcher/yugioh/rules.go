@@ -922,6 +922,10 @@ var foreignNumberRe = regexp.MustCompile(`^([A-Za-z0-9]+)-([A-Za-z]{2})[0-9]`)
 // a rule, so it yields to the datastore whenever the number is one this
 // datastore actually carries.
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	// A shelf naming no set of its own, see unsupportedEditions.
+	if normalizedUnsupportedEditions()[mtgmatcher.Normalize(inCard.Edition)] {
+		return true
+	}
 	// The character art cards are the storefront's own product rather than
 	// a printing: they carry no collector number and the catalog has no row
 	// for them, so they are skipped rather than reported missing every run.
