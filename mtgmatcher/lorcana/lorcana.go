@@ -188,28 +188,16 @@ type AllCards struct {
 // Load reads a LorcanaJSON data file from r and returns the parsed
 // structure or an error.
 //
-// It reads either shape: the document itself, or the document wrapped in
-// a {"meta":...,"data":...} envelope, in which case "data" holds the
-// payload.
+// It reads the {"meta":...,"data":...} envelope the builders publish, where
+// "data" holds the payload; a bare document reads as empty and is refused.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
-	raw, err := io.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
 	var envelope struct {
-		Data json.RawMessage `json:"data"`
+		Data AllCards `json:"data"`
 	}
-	if err := json.Unmarshal(raw, &envelope); err != nil {
+	if err := json.NewDecoder(r).Decode(&envelope); err != nil {
 		return nil, err
 	}
-	if envelope.Data != nil {
-		raw = envelope.Data
-	}
-
-	var payload AllCards
-	if err := json.Unmarshal(raw, &payload); err != nil {
-		return nil, err
-	}
+	payload := envelope.Data
 	if len(payload.Cards) == 0 || len(payload.Sets) == 0 {
 		return nil, errors.New("empty LorcanaJSON file")
 	}

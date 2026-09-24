@@ -12,6 +12,7 @@ package datastore
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 
@@ -25,27 +26,22 @@ import (
 const concurrentDownloads = 20
 
 // Payload reads a datastore and hands back the document a decoder should
-// see: the value of "data" where the file is the {"meta":...,"data":...}
-// envelope the builders publish, and the file itself where it is not.
+// see: the value of "data" in the {"meta":...,"data":...} envelope the
+// builders publish. A file that is not one is an error.
 //
 // Loaders unwrap this for themselves. It is here for the suites that read a
-// published datastore without going through one - they decode the document's
-// own top level, and would see an empty payload the day the envelope lands.
+// published datastore without going through one.
 func Payload(r io.Reader) ([]byte, error) {
-	raw, err := io.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
 	var envelope struct {
 		Data json.RawMessage `json:"data"`
 	}
-	if err := json.Unmarshal(raw, &envelope); err != nil {
+	if err := json.NewDecoder(r).Decode(&envelope); err != nil {
 		return nil, err
 	}
-	if envelope.Data != nil {
-		return envelope.Data, nil
+	if envelope.Data == nil {
+		return nil, errors.New("not a meta/data envelope")
 	}
-	return raw, nil
+	return envelope.Data, nil
 }
 
 // Open returns a reader over the datastore the path names. The caller
