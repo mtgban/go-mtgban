@@ -42,16 +42,39 @@ type MLProduct struct {
 	// the file name says which era it is.
 	TCGProductID string
 	MultiverseID string
+
+	// AmbiguousID marks a TCGProductID read off a filename that carries
+	// neither era's own marker, so match() confirms the name agrees before
+	// trusting it.
+	AmbiguousID bool
 }
 
-// cardImage is the path card images carry, "/mtg/<set>/<id>_200w-..." for the
-// TCGplayer-id era and "/mtg/<set>/<id>.full-..." for the multiverse-id one.
-// A row whose image matches neither is not a single at all - the brand page
-// also lists the sealed product and the repacks.
-var cardImage = regexp.MustCompile(`/mtg/[^/]+/(\d+)(_200w|\.full)`)
+// cardImage matches a card image path: "<folder>/<id>_200w-..." (TCGplayer
+// id), "<folder>/<id>.full-..." (multiverse id), or the bare
+// "<folder>/<id>-WxH..." form, which names neither era (see AmbiguousID).
+// <folder> is "mtg/<set>/" or "mtg<set>/" glued into one path segment.
+var cardImage = regexp.MustCompile(`/mtg[^/]*/(?:[^/]+/)?(\d+)(_200w|\.full|-\d+x\d+\.\w+)`)
 
 // showingTotal is the listing's own count of everything it paginates.
 var showingTotal = regexp.MustCompile(`Showing \d+ to \d+ of (\d+)`)
+
+// readImage classifies src against cardImage and fills the id field it
+// names.
+func (p *MLProduct) readImage(src string) {
+	m := cardImage.FindStringSubmatch(src)
+	if m == nil {
+		return
+	}
+	switch m[2] {
+	case "_200w":
+		p.TCGProductID = m[1]
+	case ".full":
+		p.MultiverseID = m[1]
+	default:
+		p.TCGProductID = m[1]
+		p.AmbiguousID = true
+	}
+}
 
 // MLClient reads the Manaleak storefront.
 type MLClient struct {
@@ -132,13 +155,7 @@ func parseListing(doc *goquery.Document) []MLProduct {
 		product.OutOfStock = row.HasClass("outofstock")
 
 		src, _ := row.Find(".image img").First().Attr("data-src")
-		if m := cardImage.FindStringSubmatch(src); m != nil {
-			if m[2] == "_200w" {
-				product.TCGProductID = m[1]
-			} else {
-				product.MultiverseID = m[1]
-			}
-		}
+		product.readImage(src)
 
 		products = append(products, product)
 	})

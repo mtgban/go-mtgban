@@ -83,7 +83,7 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 		space, inputID = mtgmatcher.IDSpaceMultiverse, product.MultiverseID
 	}
 	cardID, err := ml.backend.MatchID(ml.backend.ConvertID(space, inputID), foil, etched)
-	if err == nil {
+	if err == nil && (!product.AmbiguousID || ml.nameAgrees(cardID, cardName)) {
 		return cardID, nil
 	}
 
@@ -94,16 +94,26 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 	})
 }
 
-func (ml *Manaleak) processProduct(mode string, product MLProduct) {
-	// The brand page lists the sealed product and the repacks beside the
-	// singles; only a row wearing a card image is one.
-	if product.TCGProductID == "" && product.MultiverseID == "" {
-		return
+// nameAgrees reports whether cardID is the card cardName names, used to
+// confirm an AmbiguousID guess before trusting it.
+func (ml *Manaleak) nameAgrees(cardID, cardName string) bool {
+	co, err := ml.backend.GetUUID(cardID)
+	if err != nil {
+		return false
 	}
+	return mtgmatcher.Equals(co.Name, cardName)
+}
+
+func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 	if product.Price == 0 {
 		return
 	}
 	if mode == modeRetail && product.OutOfStock {
+		return
+	}
+	// The brand page lists the sealed product and the repacks beside the
+	// singles; only a row wearing a card image id is one.
+	if product.TCGProductID == "" && product.MultiverseID == "" {
 		return
 	}
 
