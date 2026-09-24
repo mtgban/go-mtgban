@@ -146,6 +146,12 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 	if !found {
 		return
 	}
+	// A blueprint whose own game_id disagrees with the scraper's is a
+	// vendor catalog error, not a card this game ever sees: Card Trader
+	// files a couple of Pokemon blueprints under a Magic expansion.
+	if blueprint.GameID != ct.gameID {
+		return
+	}
 
 	var theCard *mtgmatcher.InputCard
 	if ct.gameID == GameMagic {
