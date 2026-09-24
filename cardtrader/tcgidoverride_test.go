@@ -21,8 +21,8 @@ func TestTCGplayerIDOverrides(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			if got := tcgplayerID(tt.bp); got != tt.want {
-				t.Errorf("tcgplayerID(%d) = %d, want %d", tt.bp.ID, got, tt.want)
+			if got := tt.bp.TCGplayerProductID(); got != tt.want {
+				t.Errorf("TCGplayerProductID(%d) = %d, want %d", tt.bp.ID, got, tt.want)
 			}
 		})
 	}
