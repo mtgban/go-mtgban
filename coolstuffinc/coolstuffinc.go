@@ -1793,7 +1793,13 @@ func onePieceDonRenamed(description string) string {
 var (
 	riftboundImageStem = regexp.MustCompile(`(?i)/([^/]+)\.(?:jpe?g|png|webp|avif)$`)
 	riftboundImageTCG  = regexp.MustCompile(`[0-9]{5,}`)
+
 	riftboundImageTail = regexp.MustCompile(`(?i)(?:ovr|alt)?[_.]*(?:v[0-9]+)?$`)
+
+	// riftboundImagePrintIndex strips a tally a sku tacks onto its own
+	// number - "148_2" for Anivia. Anchored so it never eats a number
+	// that is only ever "_<digits>" itself.
+	riftboundImagePrintIndex = regexp.MustCompile(`^([0-9]+)_[0-9]+$`)
 
 	// riftboundImageSig matches the tail the storefront hangs on a
 	// signature printing's sku, which the catalog numbers with a star
@@ -1883,6 +1889,10 @@ func riftboundSKUCard(b *mtgmatcher.Backend, stem string, foil bool) *mtgmatcher
 			signature = "*"
 		}
 		number = riftboundImageTail.ReplaceAllString(number, "")
+		m := riftboundImagePrintIndex.FindStringSubmatch(number)
+		if m != nil {
+			number = m[1]
+		}
 		number = strings.Trim(number, "-_.")
 		if number == "" {
 			continue

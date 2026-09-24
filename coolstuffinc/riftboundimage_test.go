@@ -46,6 +46,13 @@ func TestRiftboundImageCardNamesThePrinting(t *testing.T) {
 		// files an overnumbered printing of the same card at 224
 		// without the star, at another price entirely.
 		{"a signature printing", "Spiritforged/full/SFD224SIG.jpg", true, "sfd-224-star-221_foil"},
+		// A print index repeats the card's own number with a tally tacked
+		// on - the sku names one card sold under two images, not two cards.
+		{"a print index", "Origins/full/OGN148_2.jpg", true, "ogn-148-298_foil"},
+		// An underscore between the code and the number is not a print
+		// index: the whole "_148" has to survive rather than being read
+		// as a tally tacked onto an empty number.
+		{"a code separated by an underscore", "Origins/full/OGN_148.jpg", true, "ogn-148-298_foil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			card := riftboundImageCard(b, base+tt.img, tt.foil)
