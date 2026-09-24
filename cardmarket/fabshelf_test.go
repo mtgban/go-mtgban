@@ -81,7 +81,53 @@ func TestFabShelves(t *testing.T) {
 		{"Nowhere Deck", "NOPE", nil},
 	} {
 		var got []string
-		for _, sh := range fabShelves(b, &cm.Product{ExpansionName: tt.expansion, ExpansionCode: tt.code}) {
+		for _, sh := range fabShelves(b, &cm.Product{ExpansionName: tt.expansion, ExpansionCode: tt.code}, fabDeckSetIndex(b)) {
+			got = append(got, sh.set.Code)
+		}
+		if strings.Join(got, ",") != strings.Join(tt.want, ",") {
+			t.Errorf("fabShelves(%q, %s) = %v, want %v", tt.expansion, tt.code, got, tt.want)
+		}
+	}
+}
+
+// fabDeckPrefixDatastore is the published datastore's Silver Age rows,
+// trimmed to the fields these tests read: Azalea's Chapter 1 hero card
+// and her Chapter 2 supporting cards share her deck's own SAZ prefix,
+// neither chapter named SAZ; Chapter 3 opens Lyath Goldmane's deck on SLY
+// alone.
+const fabDeckPrefixDatastore = `{
+ "game": "fleshandblood",
+ "sets": {
+  "SAC1": {"name": "Silver Age Chapter 1", "releaseDate": "2026-02-13"},
+  "SAC2": {"name": "Silver Age Chapter 2", "releaseDate": "2026-02-13"},
+  "SAC3": {"name": "Silver Age Chapter 3", "releaseDate": "2026-06-05"}
+ },
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 664855}, "finish": "Normal", "id": "saz001_664855", "name": "Azalea", "number": "SAZ001", "rarity": "Rare", "setCode": "SAC1"},
+  {"externalLinks": {"fabId": "SAZ010", "tcgPlayerId": 676549}, "fabId": "SAZ010", "finish": "Normal", "id": "saz010_676549", "name": "Bolt'n Shot", "number": "SAZ010", "rarity": "Rare", "setCode": "SAC2"},
+  {"externalLinks": {"tcgPlayerId": 695834}, "finish": "Normal", "id": "sly010_695834", "name": "Stand Strong", "number": "SLY010", "rarity": "Common", "setCode": "SAC3"}
+ ]
+}`
+
+// TestFabShelvesDeckPrefix pins the fallback fabShelves takes when a Silver
+// Age deck's own code names no set of ours: every set whose numbers open on
+// that code. Azalea's SAZ answers with both the chapter that introduced her
+// and the one that shipped the rest of her deck; Lyath's SLY answers with
+// the one chapter that opens on it; a code no set's numbers carry answers
+// with none.
+func TestFabShelvesDeckPrefix(t *testing.T) {
+	b := datastoreBackend(t, "fleshandblood", fabDeckPrefixDatastore)
+	deckSets := fabDeckSetIndex(b)
+	for _, tt := range []struct {
+		expansion, code string
+		want            []string
+	}{
+		{"Silver Age Deck - Azalea", "SAZ", []string{"SAC1", "SAC2"}},
+		{"Silver Age Deck - Lyath Goldmane", "SLY", []string{"SAC3"}},
+		{"Silver Age Deck - Nobody", "NOPE", nil},
+	} {
+		var got []string
+		for _, sh := range fabShelves(b, &cm.Product{ExpansionName: tt.expansion, ExpansionCode: tt.code}, deckSets) {
 			got = append(got, sh.set.Code)
 		}
 		if strings.Join(got, ",") != strings.Join(tt.want, ",") {

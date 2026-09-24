@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"regexp"
+	"sort"
 	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -335,8 +336,11 @@ type shelf struct {
 // for itself. A promo programme is asked of its own set before the one set
 // every programme was once filed in, and an expansion no name places is
 // asked of the set wearing its code, which is how the Silver Age decks and
-// the Slingshot promos are filed.
-func fabShelves(b *mtgmatcher.Backend, product *cm.Product) []shelf {
+// the Slingshot promos are filed - or, where no set answers to the code
+// either, of every set deckSets says opens its numbers on it: the Silver
+// Age decks the datastore keeps inside their chapter's umbrella set, the
+// code surviving only as the number's own prefix.
+func fabShelves(b *mtgmatcher.Backend, product *cm.Product, deckSets map[string][]*mtgmatcher.Set) []shelf {
 	printRun, edition := fabPrintRun(product.ExpansionName)
 	var shelves []shelf
 	if prefix, promo := fabPromoPrefixes[edition]; promo {
@@ -362,11 +366,48 @@ func fabShelves(b *mtgmatcher.Backend, product *cm.Product) []shelf {
 	}
 	if product.ExpansionCode != "" {
 		coded, cerr := b.GetSet(product.ExpansionCode)
-		if cerr == nil && !shelved(shelves, coded) {
+		switch {
+		case cerr == nil && !shelved(shelves, coded):
 			shelves = append(shelves, shelf{set: coded, edition: coded.Name, printRun: printRun})
+		case cerr != nil && len(shelves) == 0:
+			code := strings.ToUpper(product.ExpansionCode)
+			for _, coded := range deckSets[code] {
+				if !shelved(shelves, coded) {
+					shelves = append(shelves, shelf{set: coded, numberPrefix: code, printRun: printRun})
+				}
+			}
 		}
 	}
 	return shelves
+}
+
+// fabDeckSetIndex answers, for every collector-number prefix any set opens
+// numbers on, the set or sets that do: the reverse of fabSetPrefix, over the
+// whole datastore rather than one set. A prefix answers to more than one set
+// where a deck's opening card ships in the chapter that introduced it and
+// the rest of the deck in a later chapter's box, both keeping the deck's own
+// code as their numbers' prefix.
+func fabDeckSetIndex(b *mtgmatcher.Backend) map[string][]*mtgmatcher.Set {
+	index := map[string][]*mtgmatcher.Set{}
+	for _, set := range b.Sets {
+		seen := map[string]bool{}
+		for _, card := range set.Cards {
+			fields := fabNumberPrefix.FindStringSubmatch(card.Number)
+			if fields == nil {
+				continue
+			}
+			prefix := strings.ToUpper(fields[1])
+			if seen[prefix] {
+				continue
+			}
+			seen[prefix] = true
+			index[prefix] = append(index[prefix], set)
+		}
+	}
+	for _, sets := range index {
+		sort.Slice(sets, func(i, j int) bool { return sets[i].Code < sets[j].Code })
+	}
+	return index
 }
 
 func shelved(shelves []shelf, set *mtgmatcher.Set) bool {
