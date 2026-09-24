@@ -568,9 +568,10 @@ func shouldStopPaging(mainDone bool, mainSatisfiedAt, page int, foundPowerseller
 	return foundPowerseller || page-mainSatisfiedAt >= marketPowersellerExtraPages
 }
 
-// marketFoilOnly reports whether a product's two ids name one printing sold
-// in a foil alone, which the first query has to ask for as a foil rather
-// than as a plain card.
+// marketLoneFlag reports the value of param the first query asks for: false
+// when a product's two ids name two printings, and otherwise the one
+// printing's own - a foil sold in a foil alone, a Yu-Gi-Oh card made only
+// in 1st Edition.
 //
 // A printing with both finishes answers the two ids apart, and its plain
 // listings are the ones the first query wants. One sold foil alone answers
@@ -586,12 +587,25 @@ func shouldStopPaging(mainDone bool, mainSatisfiedAt, page int, foundPowerseller
 // with Foil false, and Cardmarket has no etched at all - it files those
 // listings under isFoil like any other foil, confirmed against the live
 // Articles of four etched-only products.
-func marketFoilOnly(b *mtgmatcher.Backend, cardID, cardIDFoil string) bool {
+//
+// A 1st Edition printing asks for its flag too, rather than any listing:
+// the unflagged copies of an older set are the Unlimited run the datastore
+// does not carry, and are priced below it - see the README.
+func marketLoneFlag(b *mtgmatcher.Backend, param, cardID, cardIDFoil string) bool {
 	if cardIDFoil != "" && cardIDFoil != cardID {
 		return false
 	}
 	co, err := b.GetUUID(cardID)
-	return err == nil && (co.Foil || co.Etched)
+	if err != nil {
+		return false
+	}
+	switch param {
+	case "isFoil":
+		return co.Foil || co.Etched
+	case "isFirstEd":
+		return mtgmatcher.NormalizeFinish(co.Finish) == "1stedition"
+	}
+	return false
 }
 
 // queryPrintings prices the printing(s) one product resolved to, from the
@@ -614,7 +628,7 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 	finish, verified := marketFinishParam[mkm.gameID]
 	var baseFlags map[string]bool
 	if verified {
-		baseFlags = map[string]bool{finish: marketFoilOnly(mkm.backend, cardID, cardIDFoil)}
+		baseFlags = map[string]bool{finish: marketLoneFlag(mkm.backend, finish, cardID, cardIDFoil)}
 	}
 	err := mkm.queryOnePrinting(ctx, channel, product, cardID, byName, baseFlags)
 	if err != nil {

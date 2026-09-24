@@ -114,12 +114,32 @@ instead of an oversized one).
 both of a product's id slots with one uuid, and `queryPrintings` returns
 after the first query for exactly that reason - so the plain-listing query
 is the only one it ever makes, and `acceptArticle` then rejects every
-listing the product has. `marketFoilOnly` picks the flag off the printing
+listing the product has. `marketLoneFlag` picks the flag off the printing
 itself instead. Lorcana's Enchanted cards are the bulk of these: 366 of its
 611 pre-filter candidates are foil-only, and only 35 of them carried a
 Market price before this, EUR 67k of trend value unpriced. Etched counts as
 foil - the datastore keeps it as its own finish with `Foil` false, while
 Cardmarket has no etched at all and files those listings under `isFoil`.
+
+**A Yu-Gi-Oh printing made only in 1st Edition is queried as one.** It is
+the same shape on `isFirstEd`: the resolver's 1st Edition id is the card's
+own id, so the first query was the only one, asked for unflagged listings,
+and filed them under the `_1stedition` uuid - 230 uuids in the 2026-09-24
+dump. Asking for any flag instead was measured and rejected, against the
+live English listings of 14 of those products:
+
+| Set | Card | Flagged | Unflagged | Cheapest NM flagged / unflagged |
+|---|---|---|---|---|
+| MFC | Dark Paladin | 14 | 3 | 375 / 280 |
+| ABPF | Battle Fader | 27 | 22 | 70 / 30 |
+| TAEV | Rainbow Dragon | 21 | 33 | 499.99 / 199.99 |
+| DP11, LC5D, MP15, HSRD, DUSA, BLLR, SHVA, AC18, HISU, DESO | ten cards | 490 | 74 | at or below in 9 of 10 |
+| Misc. promo | Dance Princess of the Ice Barrier | 0 | 4 | - / 19.99 |
+
+On the modern 1st-Edition-only sets 87% of listings carry the flag, and
+the strict query's cheapest is rarely beaten. On the older sets the
+unflagged copies are the Unlimited run, 25-60% below the 1st Edition price.
+The one promo nobody flags goes unpriced.
 
 **Strictly sequential, not pooled.** Measured directly: a concurrency ladder
 (1→24 workers) plateaus at ~1.4 successful calls/sec regardless of worker

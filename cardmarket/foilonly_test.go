@@ -9,11 +9,12 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
 
 // foilOnlyDatastore carries two printings of one Lorcana set: a card sold
 // both plain and foiled, and an Enchanted sold in a holofoil alone. The
-// second is the shape marketFoilOnly exists for - Cardmarket sells it as one
+// second is the shape marketLoneFlag exists for - Cardmarket sells it as one
 // product, so it resolves to a single id in both of a product's slots.
 const foilOnlyDatastore = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
@@ -56,8 +57,32 @@ func TestMarketFoilOnly(t *testing.T) {
 		{"a plain id with no foil twin stays a plain query", "1", "", false},
 		{"an unknown id asks for nothing in particular", "nope", "nope", false},
 	} {
-		if got := marketFoilOnly(b, tt.cardID, tt.cardIDFoil); got != tt.want {
-			t.Errorf("%s: marketFoilOnly(%q, %q) = %v, want %v",
+		if got := marketLoneFlag(b, "isFoil", tt.cardID, tt.cardIDFoil); got != tt.want {
+			t.Errorf("%s: marketLoneFlag(%q, %q) = %v, want %v",
+				tt.name, tt.cardID, tt.cardIDFoil, got, tt.want)
+		}
+	}
+}
+
+// TestMarketFirstEdOnly pins the same for Yu-Gi-Oh's print runs: a printing
+// made only in 1st Edition answers both ids with itself and asks for its 1st
+// Edition listings, where a card printed in both runs asks for its
+// Unlimited ones first.
+func TestMarketFirstEdOnly(t *testing.T) {
+	b := datastoreBackend(t, "yugioh", ygoDatastore)
+
+	for _, tt := range []struct {
+		name               string
+		cardID, cardIDFoil string
+		want               bool
+	}{
+		{"a card in both runs asks for its Unlimited listings", "dcr-005_22823_unlimited", "dcr-005_22823_1stedition", false},
+		{"a 1st Edition only printing asks for its 1st Edition listings", "sgx1-end19_266282_1stedition", "sgx1-end19_266282_1stedition", true},
+		{"a product resolved to the 1st Edition run asks for that run", "dcr-005_22823_1stedition", "dcr-005_22823_1stedition", true},
+		{"a Limited printing carries no 1st Edition flag", "sece-ens14_96145_limited", "", false},
+	} {
+		if got := marketLoneFlag(b, "isFirstEd", tt.cardID, tt.cardIDFoil); got != tt.want {
+			t.Errorf("%s: marketLoneFlag(%q, %q) = %v, want %v",
 				tt.name, tt.cardID, tt.cardIDFoil, got, tt.want)
 		}
 	}
