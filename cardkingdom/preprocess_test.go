@@ -426,6 +426,70 @@ func TestPreprocessSplitCard(t *testing.T) {
 	}
 }
 
+// TestPreprocessTexturedFoilSplitCard pins the "TF" textured-foil prefix
+// being unwrapped before token-sheet status is decided: the wrapped code
+// "TFOTP" still starts with the token prefix "T", and without the unwrap a
+// split card's textured foil reads as a two-faced token sheet and loses its
+// second name entirely.
+func TestPreprocessTexturedFoilSplitCard(t *testing.T) {
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
+		SKU:        "TFOTP-0075",
+		ScryfallID: "301f6df1-1b97-4a63-8043-8b97147b200b",
+		Name:       "Crime // Punishment",
+		Variation:  "0075 - Textured Foil",
+		Edition:    "Outlaws of Thunder Junction Breaking News",
+		IsFoil:     true,
+	})
+	if err != nil {
+		t.Fatalf("Preprocess: %v", err)
+	}
+	if theCard.Name != "Crime // Punishment" {
+		t.Errorf("Preprocess name = %q, want the whole split card", theCard.Name)
+	}
+	cardID, err := b.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	const want = "94f58721-0540-530a-a179-bb7240b5b2e3"
+	if cardID != want {
+		co, _ := b.GetUUID(cardID)
+		t.Errorf("Match(%v) = %s (%v), want the OTP textured foil printing", theCard, cardID, co)
+	}
+}
+
+// TestMatchPrereleaseSKU pins matchPrereleaseSKU rescuing a PREL sku Match
+// denies as unsupported: CK titles Force of Nature "Prerelease Foil" but the
+// row it sells is the Release promo, which the prerelease tag on the
+// request refuses. A non-PREL sku, or a PREL sku whose id resolves to a
+// printing that is not a Release promo, must still refuse.
+func TestMatchPrereleaseSKU(t *testing.T) {
+	b := realDatastore(t)
+	t.Run("a PREL sku rescues to its Release promo", func(t *testing.T) {
+		cardID, err := matchPrereleaseSKU(b, "PREL-005", "4638a30d-48e9-42cb-bf5f-001b4259391c", true)
+		if err != nil {
+			t.Fatalf("matchPrereleaseSKU: %v", err)
+		}
+		const want = "1e5da536-89b0-5682-8ac2-c48ccd4853e6"
+		if cardID != want {
+			co, _ := b.GetUUID(cardID)
+			t.Errorf("matchPrereleaseSKU = %s (%v), want the P9ED release promo", cardID, co)
+		}
+	})
+	t.Run("a non-PREL sku is refused", func(t *testing.T) {
+		_, err := matchPrereleaseSKU(b, "PLST-005", "4638a30d-48e9-42cb-bf5f-001b4259391c", true)
+		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			t.Errorf("matchPrereleaseSKU = %v, want ErrUnsupported", err)
+		}
+	})
+	t.Run("a PREL sku whose id is not a Release promo is refused", func(t *testing.T) {
+		_, err := matchPrereleaseSKU(b, "PREL-999", "72449552-aa2c-4ae3-846f-df523c5e6078", false)
+		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			t.Errorf("matchPrereleaseSKU = %v, want ErrUnsupported", err)
+		}
+	})
+}
+
 func TestPreprocessTokenFoilRefused(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {

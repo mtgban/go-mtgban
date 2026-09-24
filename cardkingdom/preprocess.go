@@ -390,8 +390,19 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 		}
 	}
 
+	// Unwrap a "TF" (textured foil) prefix before reading the "T" token-sheet
+	// check below, or a split card's textured foil misreads as a token sheet.
+	tokenSetCode := setCode
+	trimmed := strings.TrimPrefix(setCode, "TF")
+	if trimmed != setCode {
+		set, err := b.GetSet(trimmed)
+		if err == nil && set.Type != "token" {
+			tokenSetCode = trimmed
+		}
+	}
+
 	isTwoSidedToken := (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
-		(strings.Contains(card.Name, "Token") || strings.HasPrefix(setCode, "T") || strings.HasPrefix(setCode, "FT"))
+		(strings.Contains(card.Name, "Token") || strings.HasPrefix(tokenSetCode, "T") || strings.HasPrefix(tokenSetCode, "FT"))
 
 	// A two-sided token sheet prints one physical card for a pairing
 	// mtgmatcher/magic may already carry a combined entity for - resolve
@@ -465,6 +476,23 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 		Variation: variation,
 		Foil:      isFoil,
 	}, nil
+}
+
+// matchPrereleaseSKU rescues a PREL sku Match refused: CK titles it
+// Prerelease, but the id it publishes may name a Release promo instead.
+func matchPrereleaseSKU(b *mtgmatcher.Backend, sku, scryfallID string, foil bool) (string, error) {
+	if !strings.HasPrefix(sku, "PREL-") {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	id, err := b.MatchID(scryfallID, foil, false)
+	if err != nil {
+		return "", err
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || !co.HasPromoType(magic.PromoTypeRelease) {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	return id, nil
 }
 
 // punchcardName is the name the datastore files a punch card under, one word
