@@ -494,7 +494,7 @@ func conditionPrinting(conditions string) string {
 // beside it costs. None of those is a condition and none of their prices is
 // the card's, so such a row is published as its own seller rather than
 // beside the ordinary copies.
-var gradedMarkers = []string{"BGS", "PSA", "Non-Foil", "Unique", "Shadowless", "No Set Symbol"}
+var gradedMarkers = []string{"BGS", "PSA", "CGC", "TAG", "Non-Foil", "Unique", "Shadowless", "No Set Symbol"}
 
 // isGraded reports whether the condition wording names one of those rather
 // than a condition. A wording it does not know is refused by the condition
@@ -1304,6 +1304,9 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	if reprint {
 		card.Variation = ""
 	}
+	if name == "Vivillon" {
+		numbered = pokemonVivillonColors.Replace(numbered)
+	}
 	m = goldStar.FindStringSubmatch(name)
 	if m != nil {
 		card.Name = m[1] + " Star"
@@ -1366,6 +1369,9 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 		for _, sex := range []string{"Nidoran M", "Nidoran F"} {
 			probe := *card
 			probe.Name = sex
+			if numbered != "" {
+				probe.Name += " - " + numbered
+			}
 			if _, err := b.Match(&probe); err == nil {
 				card.Name = sex
 				break
@@ -1403,9 +1409,10 @@ var pokemonNumberSets = map[string]string{
 // pokemonRespellings pairs the names this storefront misspells with the
 // catalog's own.
 var pokemonRespellings = map[string]string{
-	"Galatic HQ":      "Galactic HQ",
-	"Sprigattito":     "Sprigatito",
-	"Unit Energy GFW": "Unit Energy GRW",
+	"Galatic HQ":                   "Galactic HQ",
+	"Sprigattito":                  "Sprigatito",
+	"Unit Energy GFW":              "Unit Energy GRW",
+	"Delta Species Rainbow Energy": "Delta Rainbow Energy",
 }
 
 var (
@@ -1435,14 +1442,15 @@ func galacticInvention(b *mtgmatcher.Backend, name string) string {
 var energyLetters = map[string]string{
 	"Grass": "G", "Fire": "R", "Water": "W", "Lightning": "L", "Psychic": "P",
 	"Fighting": "F", "Darkness": "D", "Metal": "M", "Fairy": "Y", "Dragon": "N",
+	"Colorless": "C",
 }
 
 var (
-	typedEnergy    = regexp.MustCompile(`^(\w+) (Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy|Dragon) Energy$`)
+	typedEnergy    = regexp.MustCompile(`^(\w+) (Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy|Dragon|Colorless) Energy$`)
 	prefixedNumber = regexp.MustCompile(`\b(MEE|SVE|MEP|SVP|SWSH|SM)(\d{3})\b`)
 	classicNumber  = regexp.MustCompile(`Classic Collection (\d+)`)
 	specialEnergy  = regexp.MustCompile(`^Special ((?:Metal|Darkness) Energy)$`)
-	eliteFour      = regexp.MustCompile(`^(.+) 4$`)
+	eliteFour      = regexp.MustCompile(`^(.+) 4( LV\.X)?$`)
 
 	// goldStar matches a Gold Star the way this storefront names it, "Mew *
 	// (Star)" for the catalog's "Mew Star" - $1,800 of buylist refusals on
@@ -1454,6 +1462,15 @@ var (
 	// own index ("Unown A - A/28"), where the catalog names every one of
 	// them "Unown" and numbers it by the letter alone.
 	unownListing = regexp.MustCompile(`^Unown ([A-Z!?]) - ([A-Z!?])/(\d+)$`)
+)
+
+// pokemonVivillonColors spells the two Vivillon colours this storefront
+// shortens where the catalog's own promo label is longer than the colour
+// alone - "(Pink)" for "(Meadow Pink)", the only thing that tells the XY
+// 17/146 Pink Pattern apart from the identically-numbered Orange one.
+var pokemonVivillonColors = strings.NewReplacer(
+	"(Pink)", "(Meadow Pink)",
+	"(Orange)", "(High Plains Orange)",
 )
 
 // basicEnergyName matches this storefront's "<Type> Energy" and a treatment
