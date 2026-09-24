@@ -55,3 +55,42 @@ func TestPokemonNumberFix(t *testing.T) {
 		})
 	}
 }
+
+// TestPokemonShelfFix pins the redirect for cards shelved under their
+// twin set's own name, in both directions, plus an unredirected control.
+func TestPokemonShelfFix(t *testing.T) {
+	for _, tt := range []struct {
+		desc, display, setName, wantEdition, wantNumber string
+	}{
+		{
+			desc:    "a card shelved under its twin's own name is redirected",
+			display: "Klang 147/086  - Holofoil SV White Flare - Illustration Rare",
+			setName: "SV: White Flare", wantEdition: "SV: Black Bolt", wantNumber: "140/086",
+		},
+		{
+			desc:    "the redirect runs the other way for the twin's own cards",
+			display: "Litwick 100/086  - Holofoil SV Black Bolt - Illustration Rare",
+			setName: "SV: Black Bolt", wantEdition: "SV: White Flare", wantNumber: "101/086",
+		},
+		{
+			desc:    "a card shelved where it actually prints is untouched",
+			display: "Throh 128/086  - Holofoil SV Black Bolt - Illustration Rare",
+			setName: "SV: Black Bolt", wantEdition: "SV: Black Bolt", wantNumber: "128/086",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			product := VSProduct{
+				DisplayName: tt.display,
+				ProductData: VSProductData{SetName: tt.setName},
+			}
+			card, err := preprocessPokemon(product)
+			if err != nil {
+				t.Fatalf("preprocessPokemon(%q) = %v", tt.display, err)
+			}
+			if card.Edition != tt.wantEdition || card.Variation != tt.wantNumber {
+				t.Errorf("preprocessPokemon(%q) = %q %q, want %q %q",
+					tt.display, card.Edition, card.Variation, tt.wantEdition, tt.wantNumber)
+			}
+		})
+	}
+}
