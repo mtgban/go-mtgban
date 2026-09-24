@@ -169,18 +169,17 @@ catalog's 11,849 indexed cards (2026-09-23), grouped by shelf and name:
 
 A product whose rarity no sibling at its number shares sells both runs -
 Battle Fader's V.2 Ultimate Rare lists 27 flagged and 22 unflagged English
-copies - so `yugiohRarityIndex` sends it to the default run and Market gets
-the Unlimited/1st Edition pair. 98 products moved, 29 of them among the 30
-lone `_1stedition` uuids with an `_unlimited` sibling in the 2026-09-24
-18:06 dump.
+copies. Reading its index as a run left 98 such products on a lone 1st
+Edition, 29 of them among the 30 lone `_1stedition` uuids with an
+`_unlimited` sibling in the 2026-09-24 18:06 dump.
 
-The same-rarity shape still reads V.2+ as 1st Edition, and live listings
-do not bear that out either. Three such cards, one page of English listings
-each: Duelist Pack: Kaiba Blue-Eyes V.1 21/34 flagged, V.2 0/11 ("American
-Version"); Metal Raiders Black Skull Dragon V.1 13/48, V.2 10/41, V.3 0/7
-(the MRD-EN018 reprint); Cannon Soldier V.1 12/55, V.2 3/40, V.3 0/5. There
-the index separates regional prints, which 351 products still resolve as a
-lone 1st Edition, all on the oldest shelves.
+The same-rarity shape does not name a run either. Three such cards, one page
+of English listings each: Duelist Pack: Kaiba Blue-Eyes V.1 21/34 flagged,
+V.2 0/11 ("American Version"); Metal Raiders Black Skull Dragon V.1 13/48,
+V.2 10/41, V.3 0/7 (the MRD-EN018 reprint); Cannon Soldier V.1 12/55, V.2
+3/40, V.3 0/5. There the index separates regional prints. So `matchYugioh`
+asks for no run, and every product lands on the card's default run, as the
+bridge does.
 
 **Strictly sequential, not pooled.** Measured directly: a concurrency ladder
 (1→24 workers) plateaus at ~1.4 successful calls/sec regardless of worker
@@ -351,15 +350,14 @@ carries it.
   Unlimited. `mkmGames` covers exactly the games `mtgmatcher/games` blank-
   imports; adding any of these needs the full "Adding a game" checklist in
   `AGENTS.md` first; this package is the last, not the first, step.
-- **Yu-Gi-Oh's version index does not name the print run.** `yugiohRun`
-  reads V.2 and up as 1st Edition, and `matchYugioh` asks for that run
-  first. Cardmarket keeps the run as a flag on each listing instead: in the
-  2026-09-24 Market dump, 373 of 470 V.2+ products and 171 of 289 V.1
-  products hold both flagged and unflagged listings, and Gate Guardian's
-  V.1 and V.2 (MRD-000) each sell 1st Edition near 150 and Unlimited near
-  30. So the bridge stays on the default run, and the two products one
-  blueprint links to MRD-000 (and to MRD-097) stay twins. Whether
-  `matchYugioh` should stop asking for the run is open.
+- **Index cannot price Yu-Gi-Oh's 1st Edition apart.** Cardmarket keeps
+  the run as a flag on each listing, not as a product, and the guide has no
+  1st Edition column. In the 2026-09-24 Market dump, 373 of 470 V.2+
+  products and 171 of 289 V.1 products hold both flagged and unflagged
+  listings, and Gate Guardian's V.1 and V.2 (MRD-000) each sell 1st Edition
+  near 150 and Unlimited near 30. So a product lands on the card's default
+  run whether the bridge or the name names it, and V.1/V.2 products of one
+  printing are twins. Market prices the runs apart by the listing flag.
 
 ## Environment
 

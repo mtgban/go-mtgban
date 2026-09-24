@@ -121,7 +121,7 @@ func TestYugiohBridgeDistrustsSiblingRarity(t *testing.T) {
 			mkmID:     579753,
 			bridgeTCG: 579753,
 			name:      "Griggle (V.2 - Common)", number: "016", expansion: "Magic Ruler",
-			want: "mrl-016_22052_1stedition",
+			want: "mrl-016_22052_unlimited",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

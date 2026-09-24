@@ -6,71 +6,6 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 )
 
-// TestYugiohRun pins how the index Cardmarket appends to a Yu-Gi-Oh product
-// name is read. A set printed twice sells both runs under one name, one
-// collector number and one rarity, so the index is the only thing left; it is
-// read the way the catalog's prices bear out most often, and a set that reads
-// the other way round is named in the override beside it.
-func TestYugiohRun(t *testing.T) {
-	for _, tt := range []struct {
-		desc, name, expansion, want string
-	}{
-		{
-			"the first index is the run a set keeps in print",
-			"Blue-Eyes White Dragon (V.1 - Super Rare)", "Duelist Pack: Kaiba", "Unlimited",
-		},
-		{
-			"the one after it is the scarcer first edition",
-			"Blue-Eyes White Dragon (V.2 - Super Rare)", "Duelist Pack: Kaiba", "1st Edition",
-		},
-		{
-			"and so is every one beyond that",
-			"Suijin (V.3 - Super Rare)", "Metal Raiders", "1st Edition",
-		},
-		{
-			"a product carrying no index says nothing about its run",
-			"Blue-Eyes White Dragon", "Duelist Pack: Kaiba", "",
-		},
-		{
-			"an index the name spells without a rarity beside it is not one",
-			"Blue-Eyes White Dragon (V.2)", "Duelist Pack: Kaiba", "",
-		},
-	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			product := &cm.Product{Name: tt.name, ExpansionName: tt.expansion}
-			if got := yugiohRun(product); got != tt.want {
-				t.Errorf("yugiohRun(%q) = %q, want %q", tt.name, got, tt.want)
-			}
-		})
-	}
-}
-
-// TestYugiohRunOverride pins that a set reading the other way round is
-// corrected by naming it, which is the whole point of the table: the index
-// means something different from one set to the next, and the prices are what
-// say which sets those are.
-func TestYugiohRunOverride(t *testing.T) {
-	const set = "Swapped Set"
-	yugiohFirstAtIndexOne[set] = true
-	defer delete(yugiohFirstAtIndexOne, set)
-
-	for _, tt := range []struct{ name, want string }{
-		{"Card (V.1 - Rare)", "1st Edition"},
-		{"Card (V.2 - Rare)", "Unlimited"},
-	} {
-		product := &cm.Product{Name: tt.name, ExpansionName: set}
-		if got := yugiohRun(product); got != tt.want {
-			t.Errorf("with the override, yugiohRun(%q) = %q, want %q", tt.name, got, tt.want)
-		}
-	}
-
-	// A set nobody named keeps reading the default way.
-	product := &cm.Product{Name: "Card (V.1 - Rare)", ExpansionName: "Ordinary Set"}
-	if got := yugiohRun(product); got != "Unlimited" {
-		t.Errorf("an unnamed set read as %q, want Unlimited", got)
-	}
-}
-
 // battleFaderDatastore is Battle Fader's four rows in Absolute Powerforce,
 // copied verbatim from the published datastore: an Ultra Rare and an
 // Ultimate Rare at one number, each printed in both runs.
@@ -85,11 +20,11 @@ const battleFaderDatastore = `{"data": {
  ]
 }}`
 
-// TestYugiohRarityIndex pins that an index counting rarities names no run.
+// TestYugiohIndexNamesNoRun pins that the version index names no run.
 // Cardmarket sells Battle Fader as V.1 Ultra Rare and V.2 Ultimate Rare,
 // each product listing both runs, so V.2 has to resolve to the default run
 // and hand Market the pair rather than a lone 1st Edition.
-func TestYugiohRarityIndex(t *testing.T) {
+func TestYugiohIndexNamesNoRun(t *testing.T) {
 	b := datastoreBackend(t, "yugioh", battleFaderDatastore)
 	exp := cm.Expansion{IDExpansion: 1187, Name: "Absolute Powerforce", SetCode: "ABPF"}
 
@@ -101,8 +36,8 @@ func TestYugiohRarityIndex(t *testing.T) {
 			"Ultra Rare", "abpf-en006_58454_unlimited", "abpf-en006_58454_1stedition",
 		},
 		{
-			"a second product of the same rarity is still read as a run",
-			"Ultimate Rare", "abpf-en006_58454_1stedition", "abpf-en006_58454_1stedition",
+			"a second product of the same rarity lands there too",
+			"Ultimate Rare", "abpf-en006_58454_unlimited", "abpf-en006_58454_1stedition",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

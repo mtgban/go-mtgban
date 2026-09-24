@@ -58,11 +58,6 @@ type resolver struct {
 	fabDeckSets   map[string][]*mtgmatcher.Set
 	fabDeckSetsMu sync.Mutex
 
-	// yugiohPrints counts the catalog's Yu-Gi-Oh products per shelf, card,
-	// number and rarity, built on first use; see yugiohRarityIndex.
-	yugiohPrints   map[yugiohPrint]int
-	yugiohPrintsMu sync.Mutex
-
 	// shelved names, for each set of ours, the expansion of this run that
 	// sells it; see offShelf. A scraper's Load fills it once the
 	// expansions are known, via shelvedSets.
@@ -803,10 +798,6 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 		region = numberPrefix(product.Number)
 	}
 	tail := numberTail.FindString(product.Number)
-	finishes := []string{yugiohRun(product), "Unlimited", ""}
-	if r.yugiohRarityIndex(product) {
-		finishes = finishes[1:]
-	}
 
 	carried := false
 	for _, edition := range yugiohEditions(product.ExpansionName) {
@@ -858,25 +849,24 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 						variation = strings.TrimSpace(variation + " " + labels[index-1])
 					}
 				}
-				for _, finish := range finishes {
-					id, err := r.backend.Match(&mtgmatcher.InputCard{
-						Name:      name,
-						Edition:   set.Name,
-						Variation: variation,
-						Finish:    finish,
-					})
-					if err != nil {
-						continue
-					}
-					co, err := r.backend.GetUUID(id)
-					if err != nil || !strings.EqualFold(co.SetCode, set.Code) {
-						continue
-					}
-					if number != "" && otherPrintRun(product.Number, co.Number) {
-						continue
-					}
-					return id, nil
+				// The run is a flag on each Cardmarket listing, not a
+				// product of its own, so the card's default run answers.
+				id, err := r.backend.Match(&mtgmatcher.InputCard{
+					Name:      name,
+					Edition:   set.Name,
+					Variation: variation,
+				})
+				if err != nil {
+					continue
 				}
+				co, err := r.backend.GetUUID(id)
+				if err != nil || !strings.EqualFold(co.SetCode, set.Code) {
+					continue
+				}
+				if number != "" && otherPrintRun(product.Number, co.Number) {
+					continue
+				}
+				return id, nil
 			}
 		}
 	}
