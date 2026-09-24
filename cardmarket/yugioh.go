@@ -188,6 +188,47 @@ func yugiohOversized(b *mtgmatcher.Backend, name string) (string, error) {
 	return found, nil
 }
 
+// yugiohIndexPrints names the print each version index sells on the oldest
+// shelves, which Cardmarket splits one product per regional print: "E" the
+// European, "" the North American, "A" the Asian English and "EN" the
+// worldwide reprint. The catalog writes most of their numbers bare; see
+// yugiohPrintNumber.
+//
+// Seller comments and the numbering give the order: Magic Ruler's first
+// version runs to the European 130, its second stops at the North American
+// 103. Duelist Pack: Kaiba and Yugi split the same way but number both
+// prints alike, which is one row of ours.
+var yugiohIndexPrints = map[string][]string{
+	"Legend of Blue Eyes White Dragon": {"E", "", "A", "EN"},
+	"Metal Raiders":                    {"E", "", "EN"},
+	"Magic Ruler":                      {"E", ""},
+	"Pharaoh's Servant":                {"E", "", "EN"},
+	"Labyrinth of Nightmare":           {"E", "", "EN"},
+	"Starter Deck: Yugi":               {"E", "", "A"},
+}
+
+// yugiohPrintNumber answers the product with the region prefix its version
+// index stands for written onto a bare number, so the European print is not
+// taken for the North American row the bridge links it to, and a reprint
+// the catalog numbered bare still reaches its own set.
+func yugiohPrintNumber(product *cm.Product) (*cm.Product, error) {
+	prints := yugiohIndexPrints[product.ExpansionName]
+	if prints == nil {
+		return product, nil
+	}
+	index := cm.ProductVersion(product)
+	// A product with no index is one the split left behind, with no listings.
+	if index < 1 {
+		return nil, errTwin
+	}
+	if index > len(prints) || prints[index-1] == "" || product.Number == "" || numberPrefix(product.Number) != "" {
+		return product, nil
+	}
+	prefixed := *product
+	prefixed.Number = prints[index-1] + product.Number
+	return &prefixed, nil
+}
+
 // yugiohOtherCard reports whether the bridged printing is of a card the
 // product's name is not, under any name Konami gave it.
 func (r *resolver) yugiohOtherCard(product *cm.Product, cardID string) bool {

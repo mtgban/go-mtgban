@@ -27,7 +27,7 @@ func TestEmitYugiohColumns(t *testing.T) {
 	}
 	products := []cm.Product{
 		// Unlimited, with a first edition beside it
-		{IDProduct: 1, Name: "Tri-Horned Dragon (V.1 - Secret Rare)", Number: "000", ExpansionName: "Legend of Blue Eyes White Dragon"},
+		{IDProduct: 1, Name: "Tri-Horned Dragon (V.2 - Secret Rare)", Number: "000", ExpansionName: "Legend of Blue Eyes White Dragon"},
 		// Printed in a first edition and nothing else
 		{IDProduct: 3, Name: "Topologic Bomber Dragon", Number: "065", ExpansionName: "2018 Mega-Tin Mega Pack"},
 		// Printed unlimited and nothing else
