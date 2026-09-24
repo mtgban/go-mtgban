@@ -61,3 +61,39 @@ func TestLorcanaSpelling(t *testing.T) {
 		})
 	}
 }
+
+// TestLorcanaVariationRainbowFoil pins "Rainbow Foil" to the catalog's own
+// name for the finish, "Rainbow Pillars" - a Starter Deck Exclusive's
+// rainbow foil otherwise names no finish the matcher knows and lands on the
+// set's ordinary cold foil instead, at a fraction of its price.
+func TestLorcanaVariationRainbowFoil(t *testing.T) {
+	b := readGameDatastore(t, "lorcana", "LORCANA_PATH")
+
+	card := &mtgmatcher.InputCard{
+		Name:      "Ariel - Singing Mermaid",
+		Edition:   "Fabled",
+		Variation: lorcanaVariation("15/204, Rainbow Foil Starter Deck Exclusive"),
+		Foil:      true,
+	}
+	id, err := b.Match(card)
+	if err != nil {
+		t.Fatalf("Match(%q) = %v", card, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.Finish != "holofoil" {
+		t.Errorf("Match(%q) finish = %q, want holofoil (Rainbow Pillars)", card, co.Finish)
+	}
+
+	// The raw wording, unrewritten, lands on the plain cold foil instead.
+	plain := &mtgmatcher.InputCard{Name: card.Name, Edition: card.Edition, Variation: "15/204, Rainbow Foil Starter Deck Exclusive", Foil: true}
+	plainID, err := b.Match(plain)
+	if err != nil {
+		t.Fatalf("Match(%q) = %v", plain, err)
+	}
+	if plainID == id {
+		t.Error("unrewritten wording already reached the rainbow pillars uuid; the fixture no longer demonstrates the bug")
+	}
+}

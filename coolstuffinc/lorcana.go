@@ -1,5 +1,7 @@
 package coolstuffinc
 
+import "strings"
+
 // lorcanaSpellings corrects the Lorcana names this storefront misspells.
 // Each key is a name no set in the game has and each value is the card it
 // means; left as typed they look up nothing at all and the listing goes
@@ -27,4 +29,12 @@ func lorcanaSpelling(name string) string {
 		return spelled
 	}
 	return name
+}
+
+// lorcanaVariation spells "Rainbow Foil" the way the catalog names the
+// finish, "Rainbow Pillars" - a Starter Deck Exclusive's rainbow foil
+// otherwise names no finish the matcher knows and lands on the set's
+// ordinary cold foil instead.
+func lorcanaVariation(variation string) string {
+	return strings.ReplaceAll(variation, "Rainbow Foil", "Rainbow Pillars")
 }
