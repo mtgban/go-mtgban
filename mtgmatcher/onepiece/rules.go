@@ -1340,6 +1340,25 @@ func errataRun(text string) string {
 	return ""
 }
 
+// errataArt reads the art cardtrader letters a corrected printing's number
+// with: an "a" among the letters after the digits is the alternate art
+// ("OP01-070ae", "OP01-016βa"), and letters without one are the plain
+// printing ("OP01-070e"). found is false for a number carrying no Latin
+// letter, which says nothing about the art.
+func errataArt(number string) (alternate, found bool) {
+	_, tail := splitNumber(number)
+	for _, r := range strings.TrimLeft(tail, "0123456789") {
+		if r > unicode.MaxASCII || !unicode.IsLetter(r) {
+			continue
+		}
+		found = true
+		if unicode.ToLower(r) == 'a' {
+			alternate = true
+		}
+	}
+	return alternate, found
+}
+
 // errataSkipped are the words every corrected printing's label shares - the
 // correction itself and the run it names - which say nothing about which of
 // them a listing means.
@@ -1367,14 +1386,17 @@ func errataTreatment(label string) string {
 // and answers with the single printing where the two axes the shelf tells
 // them apart by leave one.
 //
-// The axes are the run and the treatment, and only the first of them can be
-// read off the collector number. Cardtrader letters the number for the art
-// as well, but not in one direction: OP01-051ae is the alternate art where
-// OP01-070ae is the plain printing and OP01-070e the alternate one, and
-// OP01-025a is plain despite its letter. The version text says which every
-// time, so it is what gets read - and the treatment is compared as the
-// catalog's own words, never built out of them, because the catalog files
-// one number's alternate art as a Box Topper and another's as a Demo Deck.
+// The axes are the run and the treatment, and cardtrader letters both into
+// the collector number: the Greek letter names the run, and an "a" marks the
+// alternate art (OP01-070ae, OP01-025a, OP01-016βa) where a number lettered
+// without one is plain (OP01-070e). The letters are read before the version
+// text, which says "Alternate Art" over OP01-070e's plain art and nothing
+// over OP01-070ae's or OP01-025a's alternate one. A number with no letter
+// leaves the text to say it, and OP01-003's alternate art has neither, so
+// cardtrader resolves that one by its Cardmarket id. The treatment is
+// compared as the catalog's own words, never built out of them, because the
+// catalog files one number's alternate art as a Box Topper and another's as
+// a Demo Deck.
 //
 // Nothing here fires unless the wording says the correction and some
 // printing of the number wears it, and the second half of that is what
@@ -1435,8 +1457,12 @@ func errataNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidate
 
 	// Otherwise the listing has only said whether it is the base art or not,
 	// and one printing of the run wears a treatment while the other does
-	// not, so that is enough to tell them apart.
+	// not, so that is enough to tell them apart. The number's letters say it
+	// before the words do.
 	treated := wantsUnnamedVariant(inCard)
+	if alternate, found := errataArt(extractNumber(inCard.Variation)); found {
+		treated = alternate
+	}
 	var picked []mtgmatcher.Card
 	for _, card := range sameRun {
 		if (errataTreatment(promoLabel(b, card)) != "") == treated {

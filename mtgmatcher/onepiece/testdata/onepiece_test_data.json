@@ -180,6 +180,15 @@
         "uuid": "op05-020_530899"
     },
     {
+        "description": "a letter tail without the art letter is plain whatever the text says",
+        "input": {
+            "name": "Dracule Mihawk",
+            "variant": "OP01-070e Alternate Art | Pre-Errata Card | Missing Text \"Up to\"",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-070_ct244687_foil"
+    },
+    {
         "description": "a number with a slash in it is asked for whole",
         "input": {
             "name": "Monkey.D.Luffy",
@@ -349,15 +358,6 @@
             "edition": "500 Years into the Future Pre-Release Cards"
         },
         "uuid": "op07-006_552056"
-    },
-    {
-        "description": "and the alternate art at that number carries none",
-        "input": {
-            "name": "Dracule Mihawk",
-            "variant": "OP01-070e Alternate Art | Pre-Errata Card | Missing Text \"Up to\"",
-            "edition": "Pre-Errata Cards"
-        },
-        "uuid": "op01-070_ct244687_foil"
     },
     {
         "description": "and the catalog's own crossed label answers the same wording",
@@ -755,7 +755,7 @@
         "uuid": "p-115_686458_foil"
     },
     {
-        "description": "the letter tail does not say which art: the plain one carries it",
+        "description": "the letter tail names the alternate art the version text leaves out",
         "input": {
             "name": "Dracule Mihawk",
             "variant": "OP01-070ae Pre-Errata Card | Missing Text \"Up to\"",
