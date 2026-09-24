@@ -63,6 +63,39 @@ func TestPromoShelf(t *testing.T) {
 	}
 }
 
+// TestFNMPromoPackNamedEdition pins the AFR/KHM-era promo packs, which keep
+// the main set's own number and edition rather than a separate promo-only
+// set - unlike the Promo-Pack cards from other sets already pinned above.
+func TestFNMPromoPackNamedEdition(t *testing.T) {
+	b := realDatastore(t)
+	for _, test := range []struct {
+		desc, title, edition, number, wantSet string
+	}{
+		{"AFR's own promo pack number", "Power Word Kill (FNM Promo Pack)",
+			"Adventures in the Forgotten Realms", "400", "AFR"},
+		{"and KHM's", "Usher of the Fallen (FNM Promo Pack)", "Kaldheim", "401", "KHM"},
+	} {
+		t.Run(test.desc, func(t *testing.T) {
+			card := ABUCard{DisplayTitle: test.title, Edition: test.edition, Number: test.number}
+			in, err := preprocess(b, &card)
+			if err != nil {
+				t.Fatalf("preprocess(%q) = %v", test.title, err)
+			}
+			id, err := b.Match(in)
+			if err != nil {
+				t.Fatalf("Match(%q) = %v", in, err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != test.wantSet || co.Number != test.number || !co.HasPromoType("promopack") {
+				t.Errorf("Match(%q) = %s|%s, want a %s|%s promopack printing", in, co.SetCode, co.Number, test.wantSet, test.number)
+			}
+		})
+	}
+}
+
 // TestEtchedForFoil pins the Secret Lair cards sold etched and never in plain
 // foil, which this storefront calls FOIL like any other.
 func TestEtchedForFoil(t *testing.T) {
