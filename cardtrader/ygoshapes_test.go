@@ -73,3 +73,15 @@ func TestYgoShelves(t *testing.T) {
 		t.Errorf("gameVariation(Harpie Lady MRD-008) = %q, want the artwork spelled out", got)
 	}
 }
+
+// TestYgoInserts pins the insert Card Trader sells as a Yu-Gi-Oh single that
+// is not a card, the same way Lorcana's own filler card is skipped.
+func TestYgoInserts(t *testing.T) {
+	filler := Blueprint{Name: "Rainbow Front Filler Card"}
+	if !unsupportedBlueprint(GameYuGiOh, &filler) {
+		t.Error("Rainbow Front Filler Card should be unsupported for Yu-Gi-Oh")
+	}
+	if unsupportedBlueprint(GamePokemon, &filler) || unsupportedBlueprint(GameOnePiece, &filler) {
+		t.Error("Rainbow Front Filler Card should only be unsupported for Yu-Gi-Oh")
+	}
+}
