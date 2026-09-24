@@ -15,9 +15,10 @@ card once, in one language, and refuses every other on purpose.
 | FBB | French, German, Italian | French | Italian |
 | 4BB | Chinese Traditional, Japanese, Korean, Portuguese (Brazil), Spanish | Spanish | Japanese |
 
-- The override is the `switch set.Code` in `mtgmatcher/magic/mtgjson.go`
-  (`case "FBB"`, `case "4BB"`): US storefronts mostly sell Italian FBB and
-  Japanese 4BB.
+- The override is `forcedLanguages` in `mtgmatcher/magic/table.go`, applied
+  in the per-set loop of `mtgjson.go`: US storefronts mostly sell Italian
+  FBB and Japanese 4BB. A card takes the language only if it was printed in
+  it (FBB's Forest #306a exists in German alone).
 - The refusals are pinned: Cool Stuff Inc refuses the other languages in
   `preprocess()` (#610), and SCG's `TestResolveProductForeignSets` asserts
   German FBB and Korean / Chinese Traditional 4BB stay unmatched.
@@ -59,9 +60,43 @@ card once, in one language, and refuses every other on purpose.
 - `duplicateCards` finds a copy's printed name and Scryfall id by exact
   `foreignData.Language`. mtgjson says "Portuguese (Brazil)"; core's tag is
   "Portuguese" (`mtgmatcher/table.go`), so the lookup would miss.
-- The base images already show the wrong language: FBB shows the French
-  printing and 4BB the Spanish one, because the loader forces `Language`
-  but not `originalScryfallId`. Tracked as its own follow-up.
+- The base cards show their forced language's image since #769, but the
+  name the site quotes beside the flag is still mtgjson's `flavorName`,
+  which for these sets holds its own printing's name ("Animation de mur",
+  "Poción de alabastro"). Flavor and printed names are indexed for matching,
+  so changing them needs a replay of its own.
+- Scryfall never scanned many of these printings and serves a stamped
+  English placeholder instead. Measured when #769 landed: 24 cards gave up a
+  real French or Spanish scan for an Italian or Japanese placeholder, and
+  mtgjson carries no scan status to avoid it.
+
+## Why `mtgjsonId` stays mtgjson's card uuid
+
+A card sold in a language other than mtgjson's own takes that language's
+image through `originalScryfallId`: every FBB and 4BB card, and the language
+copies (LEGITA, DRKITA, the SLD and PURL Japanese ones). Its
+`Identifiers["mtgjsonId"]` still holds mtgjson's card: the French FBB or
+Spanish 4BB printing, or the English card a copy was made from. The uuid
+mtgjson 5.3 gives the language itself, `foreignData[].uuid`, is not decoded
+at all: the loader's `ForeignData` struct has no field for it.
+
+It stays that way because every reader of the key means mtgjson's card:
+
+- `tcgplayer.go` looks TCGplayer's skus up by it, and mtgjson files the skus
+  of every language under the card. Swapping it would cost FBB and 4BB
+  their TCGplayer prices (TCG Market priced 168 and 249 of them on
+  2026-09-24).
+- The loader files it in `IDSpaceMTGJSON`, the index a vendor's mtgjson
+  uuid is resolved through.
+- The site's price API returns it in its `mtgjson` id mode, where a
+  consumer would look it up in AllPrintings' card list, which holds no
+  foreign uuids.
+
+To address it later: decode `foreignData[].uuid`, keep it under a key of its
+own beside `originalScryfallId` (say `originalMtgjsonId`), file it in
+`IDSpaceMTGJSON` too so a vendor sending it resolves, and decide per reader
+which of the two it wants. Mind the shared `Identifiers` map above before
+writing anything per-language into it.
 
 ## What to measure before merging
 
