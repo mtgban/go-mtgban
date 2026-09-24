@@ -316,6 +316,80 @@ var onepieceSeeds = []matchTest{
 			Variation: `ST03-014 1st Print Errata Card | "Return 1 Character"`,
 			Edition:   "ST03 - The Seven Warlords of The Sea"},
 	},
+	{
+		Desc: "cardmarket V.1 on a Premium Booster shelf means the plain Reprint",
+		In:   mtgmatcher.InputCard{Name: "Arlong", Variation: "OP06-023 V.1", Edition: "The Best"},
+	},
+	{
+		Desc: "negative: a Premium Booster V.1 refuses where no Reprint row exists",
+		In:   mtgmatcher.InputCard{Name: "Trafalgar Law", Variation: "OP01-047 V.1", Edition: "The Best"},
+	},
+	{
+		Desc: "cardmarket V.1 on a Premium Booster shelf also means an untagged row",
+		In:   mtgmatcher.InputCard{Name: "Koby", Variation: "PRB02-001 V.1", Edition: "The Best Vol.2"},
+	},
+	{
+		Desc: "TCGplayer files the Learn Together non-foil under Premium Booster Vol. 2",
+		In:   mtgmatcher.InputCard{Name: "Roronoa Zoro", Variation: "OP06-118 Non-Foil", Edition: "Learn Together Deck Set"},
+	},
+	{
+		Desc: "the Learn Together fold applies to its second numbered card too",
+		In:   mtgmatcher.InputCard{Name: "Basil Hawkins", Variation: "OP10-109 Non-Foil", Edition: "Learn Together Deck Set"},
+	},
+	{
+		Desc: "a PRB-coded bracket narrows the edition even where the code holds two printings",
+		In: mtgmatcher.InputCard{Name: "Baby 5 - 034 (PRB01 Alternate Art)",
+			Variation: "OP05-034 PRB01 Alternate Art",
+			Edition:   "OP05 - Awakening of the New Era", Foil: true},
+	},
+	{
+		Desc: "a bare Alternate Art wording keeps the plain treatment over a crossed one",
+		In: mtgmatcher.InputCard{Name: "Sabo - 120 (Alternate Art)",
+			Variation: "OP13-120 Alternate Art",
+			Edition:   "OP13 - Carrying On His Will", Foil: true},
+	},
+	{
+		Desc: "a Store Championship's Participation Pack tag does not stand for a Regional's",
+		In: mtgmatcher.InputCard{Name: "Sanji - 102 (Offline Regional Participation Pack 2024 Vol. 1)",
+			Variation: "OP03-102 Offline Regionals 24 Stamp Fire Kick",
+			Edition:   "OP03 - Pillars of Strength", Foil: true},
+	},
+	{
+		Desc: "the wording's own words break a tie between two families sharing a place",
+		In: mtgmatcher.InputCard{Name: "Brannew - 089 (Offline Regional Participation Pack 2024 Vol. 1)",
+			Variation: "OP03-089 Offline Regional Participation Pack 2024 Vol. 1",
+			Edition:   "OP03 - Pillars of Strength", Foil: true},
+	},
+	{
+		Desc: "a bracket's Starter Deck NN reads as the code it names",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy - 001 (Starter Deck 31)",
+			Variation: "ST21-001 Starter Deck 31",
+			Edition:   "ST21 - Starter Deck: Gear5", Foil: true},
+	},
+	{
+		Desc: "the shelf's own unspaced marker still narrows without a bracket",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy - 001",
+			Variation: "ST21-001 Red Background Left Hand Open",
+			Edition:   "ST21 - Starter Deck: Gear5", Foil: true},
+	},
+	{
+		Desc: "a bracket naming the Learn Together Deck Set outright finds its own row",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy - 001 (Learn Together Deck Set)",
+			Variation: "ST21-001 Hat Floating Behind Learn Together Deck Set",
+			Edition:   "ST21 - Starter Deck: Gear5", Foil: true},
+	},
+	{
+		Desc: "the catalog's own word for a textured run answers a wording naming it",
+		In: mtgmatcher.InputCard{Name: "Blast Breath - 016 (PRB01 Textured Art)",
+			Variation: "ST04-016 PRB01 Textured Art",
+			Edition:   "ST04 - Starter Deck: Animal Kingdom Pirates", Foil: true},
+	},
+	{
+		Desc: "negative: no plain row still lists the candidates it aliased",
+		In: mtgmatcher.InputCard{Name: "Leo (057) (Alternate Art Promo)",
+			Variation: "OP10-057 Standing on Woman 057 Alternate Art Promo",
+			Edition:   "OP10 - Royal Blood", Foil: true},
+	},
 }
 
 // testBackend is the datastore TestMain read, for the tests to match

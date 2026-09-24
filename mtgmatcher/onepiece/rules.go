@@ -309,6 +309,25 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		edition = coded
 		named = true
 	}
+
+	// TCGplayer files two Learn Together Deck Set cards under the Premium
+	// Booster Vol. 2 reprint block instead: see foldedPrintings.
+	set, err := b.GetSetByName(edition)
+	if err == nil {
+		folded, ok := foldedPrintings[set.Code]
+		if ok {
+			number := inputNumber(b, inCard)
+			code, ok := folded[number]
+			if ok {
+				target, err := b.GetSet(code)
+				if err == nil {
+					edition = target.Name
+					named = true
+					inCard.Foil = false
+				}
+			}
+		}
+	}
 	inCard.Edition = edition
 
 	// PromoWildcard is the flag Match already reads to skip edition
@@ -321,10 +340,23 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	}
 }
 
+// editionAliases maps a storefront's shelf spelling onto the set name the
+// datastore files it under, keyed by the normalized input. Only spellings
+// canonicalEdition's word-for-word scoring cannot resolve belong here.
+var editionAliases = map[string]string{
+	// Cool Stuff Inc drops the space in "Gear 5", so canonicalEdition never
+	// scores this far enough to read the leading ST21 code.
+	"st21starterdeckgear5": "Starter Deck EX: Gear 5",
+}
+
 // AliasEdition spells an edition string toward a set name using the string
 // alone. See mtgmatcher.GameRules.
 func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
 	edition = strings.TrimSpace(edition)
+	norm := mtgmatcher.Normalize(edition)
+	if alias, found := editionAliases[norm]; found {
+		return alias
+	}
 	for _, prefix := range []string{"One Piece Card Game", "One Piece TCG", "One Piece"} {
 		if strings.HasPrefix(edition, prefix) {
 			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
@@ -613,6 +645,23 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 		candidates = append(candidates, card)
 	}
+
+	// A Premium Booster volume's V.1 is the plain row: untagged where the
+	// volume prints one, "reprint"-tagged where it prints that instead of
+	// an unlabelled row. No volume prints both, so keeping either is safe.
+	if numbered(b, inCard.Name) && positionalIndex(inCard.Variation) == 1 {
+		set, ok := singlePremiumBoosterSet(b, inCard.Edition)
+		if ok {
+			var plain []mtgmatcher.Card
+			for _, card := range candidates {
+				if card.SetCode == set.Code && (len(card.PromoTypes) == 0 || slices.Contains(card.PromoTypes, "reprint")) {
+					plain = append(plain, card)
+				}
+			}
+			return plain
+		}
+	}
+
 	if len(candidates) <= 1 {
 		return candidates
 	}
@@ -693,6 +742,14 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			narrowed := editionTiebreak(b, inCard, variants)
 			if picked := variantAtIndex(inCard, editionTiebreak(b, inCard, base), narrowed); picked != nil {
 				return picked
+			}
+			// A bare unnamed-variant word crosses several labels at one
+			// number; the plain one alone is what it asked for.
+			if len(narrowed) > 1 && wantsUnnamedVariant(inCard) {
+				picked := plainUnnamedVariant(narrowed)
+				if picked != nil {
+					return picked
+				}
 			}
 			return narrowed
 		}
@@ -1597,11 +1654,27 @@ func placeChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 			}
 		}
 	}
-	// Two events can award the same place at one number - an online regional
-	// beside the offline one - and then the place has not said which, so
-	// this says nothing rather than guessing between them.
-	if len(kept) != 1 {
+	if len(kept) == 0 {
 		return nil
+	}
+	// Two events can share a place at one number; break the tie by whichever
+	// family the wording's other words name more of, unique winner only.
+	if len(kept) > 1 {
+		best := kept[0]
+		bestNamed := tagsNamed(wording, best)
+		unique := true
+		for _, card := range kept[1:] {
+			named := tagsNamed(wording, card)
+			if named > bestNamed {
+				best, bestNamed, unique = card, named, true
+			} else if named == bestNamed {
+				unique = false
+			}
+		}
+		if !unique {
+			return nil
+		}
+		kept = []mtgmatcher.Card{best}
 	}
 	// The place is the only question the wording can be answering where
 	// its other words name nothing better. "CS 2024 Participation" names
@@ -1639,10 +1712,17 @@ func tagsNamed(wording string, card mtgmatcher.Card) int {
 // it means, and the place inside it is that product's name rather than a
 // question of its own; the tiering reads the label, and the place is left
 // to the wordings that say it on its own.
+//
+// The tag naming that label is not enough by itself: a Store Championship's
+// own "Participation Pack" tag also names the word an unrelated family's
+// participant printing is asked for by. See otherTagsDescribed.
 func placeLabelled(b *mtgmatcher.Backend, wording, place string, candidates []mtgmatcher.Card) bool {
 	for _, card := range candidates {
 		for _, promoType := range card.PromoTypes {
 			if slices.Contains(promoPlaces, promoType) || !mtgmatcher.SlugDescribes(wording, promoType) {
+				continue
+			}
+			if !otherTagsDescribed(wording, card, promoType) {
 				continue
 			}
 			for word := range strings.FieldsSeq(b.PromoTypeLabel(promoType)) {
@@ -1653,6 +1733,25 @@ func placeLabelled(b *mtgmatcher.Backend, wording, place string, candidates []mt
 		}
 	}
 	return false
+}
+
+// otherTagsDescribed reports whether a wording describes every tag of a
+// card besides the one already being checked and the place tags, which
+// carry no words of their own to spell out. The wording is read with the
+// card's own mark joined back up first, the same way tierByVariant reads
+// it: a label split across two ends, "CS 25-26 Finalist Card Set 2", is one
+// tag's slug, "25262", which nothing but the mark rejoins.
+func otherTagsDescribed(wording string, card mtgmatcher.Card, skip string) bool {
+	wording = markWording(wording, []mtgmatcher.Card{card})
+	for _, promoType := range card.PromoTypes {
+		if promoType == skip || slices.Contains(promoPlaces, promoType) {
+			continue
+		}
+		if !mtgmatcher.SlugDescribes(wording, promoType) {
+			return false
+		}
+	}
+	return true
 }
 
 // mangaWord is what every storefront calls the printings drawn as manga
@@ -1744,19 +1843,60 @@ func mangaChosen(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates
 	return best
 }
 
+// premiumBoosterPrefix is the words every Premium Booster set's name opens
+// with; what follows is that volume's own marker.
+const premiumBoosterPrefix = "Premium Booster "
+
+// singlePremiumBoosterSet answers the one Premium Booster set an edition
+// names by its own marker, and false where it names none or more than one.
+//
+// The marker, not the whole set name, is what an unresolved edition spells
+// in full: Cardmarket writes "The Best" for Vol. 1's shelf and "The Best
+// Vol.2" for Vol. 2's, and "The Best" alone is contained in both names
+// equally, so a whole-name or Contains match cannot tell them apart. Both
+// forms are matched because AdjustEdition already resolves an unambiguous
+// marker, like Vol. 2's, to the whole name before this runs.
+func singlePremiumBoosterSet(b *mtgmatcher.Backend, edition string) (*mtgmatcher.Set, bool) {
+	if edition == "" {
+		return nil, false
+	}
+	var found *mtgmatcher.Set
+	for _, set := range b.Sets {
+		marker, isPremiumBooster := strings.CutPrefix(set.Name, premiumBoosterPrefix)
+		if !isPremiumBooster {
+			continue
+		}
+		if !mtgmatcher.Equals(marker, edition) && !mtgmatcher.Equals(set.Name, edition) {
+			continue
+		}
+		if found != nil {
+			return nil, false
+		}
+		found = set
+	}
+	return found, found != nil
+}
+
 // variationSetCodeRe matches the set code a storefront writes inside the
 // variation, ahead of the treatment it names.
-var variationSetCodeRe = regexp.MustCompile(`^(?:OP|EB|ST|PRB)[0-9]{2}$`)
+var variationSetCodeRe = regexp.MustCompile(`^(?:OP|EB|ST|PRB|LT)[0-9]{2}$`)
 
-// codedSetNamed returns the set a variation names by its code, where exactly
-// one printing of this card's number is filed in it.
+// starterDeckRunRe reads "Starter Deck NN" as the "STnn" code it names.
+var starterDeckRunRe = regexp.MustCompile(`(?i)starter\s+deck\s+([0-9]{1,2})\b`)
+
+// learnTogetherRe reads TCGplayer's own name for LT-01 as the "LT01" code
+// no storefront actually prints on the card.
+var learnTogetherRe = regexp.MustCompile(`(?i)learn\s+together\s+deck\s+set`)
+
+// codedSetNamed returns the set a variation names by its code.
 //
-// The uniqueness is the whole guard, and it is what keeps this off the
-// wordings that already answer. A storefront writes "PRB01 Alternate Art" as
-// readily as it writes "OP08 Treasure Rare", and the first names a set
-// holding five printings of that number - the wording picks between them and
-// this must not. Only a code naming one printing has said which card the
-// listing is, and only then is the edition worth overruling.
+// A code naming one printing of this card's number has said which card the
+// listing is outright, and the edition is worth overruling. A Premium
+// Booster code is worth overruling even where it names several: PRB-01
+// always holds an Alternate Art beside a plain Reprint at one number, and
+// demanding uniqueness there deleted both rows before the tiering below
+// could read "PRB01 Alternate Art" and choose between them. Every other
+// code still demands uniqueness.
 //
 // The code is matched as a prefix of the set's own, because a set's code
 // carries what the storefront leaves off: "OP15" is written for the cards
@@ -1766,8 +1906,16 @@ func codedSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, edition 
 	if number == "" || inCard.Variation == "" {
 		return ""
 	}
+	variation := starterDeckRunRe.ReplaceAllStringFunc(inCard.Variation, func(run string) string {
+		digits := starterDeckRunRe.FindStringSubmatch(run)[1]
+		if len(digits) == 1 {
+			digits = "0" + digits
+		}
+		return "ST" + digits
+	})
+	variation = learnTogetherRe.ReplaceAllString(variation, "LT01")
 	var name string
-	for field := range strings.FieldsSeq(inCard.Variation) {
+	for field := range strings.FieldsSeq(variation) {
 		code := strings.ToUpper(field)
 		if !variationSetCodeRe.MatchString(code) {
 			continue
@@ -1793,12 +1941,14 @@ func codedSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, edition 
 		if !ok || set.Name == edition {
 			continue
 		}
-		// Two printings in the named set leave the wording to choose.
+		// Two printings in the named set leave the wording to choose, which
+		// is safe only for the family that always holds several: every
+		// other coded set still demands the code alone settle it.
 		seen := map[string]bool{}
 		for _, card := range found {
 			seen[card.UUID] = true
 		}
-		if len(seen) != 1 {
+		if len(seen) != 1 && !strings.HasPrefix(code, "PRB") {
 			return ""
 		}
 		if name != "" && name != set.Name {
@@ -1893,6 +2043,15 @@ var setVocabulary = map[string]map[string]string{
 	"PRB-02": {"manga": "Alternate Art"},
 }
 
+// foldedPrintings names, for a set whose cards TCGplayer sells under
+// another set's product, the set that product is really filed in, keyed by
+// set code since GetSet is by code. TCGplayer's own description on the
+// Premium Booster Vol. 2 products (656132, 656164) says each was
+// "originally reprinted from the Learn Together Deck Set".
+var foldedPrintings = map[string]map[string]string{
+	"LT-01": {"OP06-118": "PRB-02", "OP10-109": "PRB-02"},
+}
+
 // setVocabularyNames reports whether a set's own word for a treatment is what
 // the wording says, and this printing wears the label that word names.
 func setVocabularyNames(wording, setCode string, promoTypes []string) bool {
@@ -1919,6 +2078,7 @@ func setVocabularyNames(wording, setCode string, promoTypes []string) bool {
 var catalogVocabulary = map[string]string{
 	"manga":         "Super Alternate Art",
 	"treasure rare": "TR",
+	"textured art":  "Textured Foil",
 }
 
 // catalogWording adds the catalog's spelling for every storefront word the
@@ -2390,6 +2550,22 @@ func wantsUnnamedVariant(inCard *mtgmatcher.InputCard) bool {
 		}
 	}
 	return false
+}
+
+// plainUnnamedVariant narrows to the single candidate whose only tag is the
+// plain treatment ("alternateart" or "parallel") a bare unnamed-variant
+// wording asks for, nil where none or several answer.
+func plainUnnamedVariant(cards []mtgmatcher.Card) []mtgmatcher.Card {
+	var plain []mtgmatcher.Card
+	for _, card := range cards {
+		if len(card.PromoTypes) == 1 && (card.PromoTypes[0] == "alternateart" || card.PromoTypes[0] == "parallel") {
+			plain = append(plain, card)
+		}
+	}
+	if len(plain) != 1 {
+		return nil
+	}
+	return plain
 }
 
 // inputNumber is extractNumber with the card being asked about in hand: the
