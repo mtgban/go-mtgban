@@ -23,10 +23,10 @@ const pokemonDatastore = `{"data": {
  "game": "pokemon",
  "sets": {"JU": {"abbreviation": "JU", "name": "Jungle", "releaseDate": "1999-06-16"}, "PR-1451": {"abbreviation": "PR", "name": "XY Promos", "releaseDate": "2013-12-16", "type": "promo"}},
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "1st Edition", "id": "39-64_45142_1stedition", "name": "Marowak", "number": "39/64", "rarity": "Uncommon", "setCode": "JU"},
-  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "Unlimited", "id": "39-64_45142_unlimited", "name": "Marowak", "number": "39/64", "rarity": "Uncommon", "setCode": "JU"},
+  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "1st Edition", "id": "39-64_45142_1stedition", "name": "Marowak", "number": "39", "rarity": "Uncommon", "setCode": "JU", "total": "64"},
+  {"externalLinks": {"tcgPlayerId": 45142}, "finish": "Unlimited", "id": "39-64_45142_unlimited", "name": "Marowak", "number": "39", "rarity": "Uncommon", "setCode": "JU", "total": "64"},
   {"externalLinks": {"tcgPlayerId": 114004}, "finish": "Holofoil", "id": "xy95_114004_holofoil", "name": "Pikachu", "number": "XY95", "rarity": "Promo", "setCode": "PR-1451"},
-  {"externalLinks": {"tcgPlayerId": 268261}, "finish": "Normal", "id": "98-xy-p_268261", "name": "Mega Tokyo's Pikachu", "number": "98/XY-P", "rarity": "Promo", "setCode": "PR-1451"}
+  {"externalLinks": {"tcgPlayerId": 268261}, "finish": "Normal", "id": "98-xy-p_268261", "name": "Mega Tokyo's Pikachu", "number": "98", "rarity": "Promo", "setCode": "PR-1451", "total": "XY-P"}
  ]
 }}`
 
