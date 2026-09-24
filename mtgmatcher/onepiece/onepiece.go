@@ -130,7 +130,8 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 		return nil, errors.New("not a One Piece datastore")
 	}
 	for _, card := range payload.Cards {
-		if card.ID == "" || card.Name == "" || card.Number == "" || card.Finish == "" {
+		// No number is a card the catalog files with none, not a wrong file.
+		if card.ID == "" || card.Name == "" || card.Finish == "" {
 			return nil, errors.New("not a One Piece datastore")
 		}
 	}
