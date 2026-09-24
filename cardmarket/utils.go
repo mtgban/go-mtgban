@@ -352,6 +352,13 @@ func fabRenamed(product *cm.Product) {
 	}
 }
 
+// lorcanaFaces are the Cardmarket Lorcana products selling one face of a
+// double-sided card another product sells whole; they are skipped.
+var lorcanaFaces = map[int]bool{
+	789460: true, // "A Dark Realm", the back of 789458 "The Encounter // A Dark Realm"
+	789462: true, // "Infinite Wrath", the back of 789461 "The Lair // Infinite Wrath"
+}
+
 // fabShelves names the sets a Cardmarket Flesh and Blood product may be
 // filed in, in the order they are asked. Cardmarket sells each print run
 // as its own expansion ("Monarch - First"), a name no set of ours carries:
