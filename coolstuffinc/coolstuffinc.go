@@ -1272,6 +1272,7 @@ func numberedListing(name string) (string, string) {
 // "Alakazam E4".
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
 	name, numbered := numberedListing(name)
+	name = strings.TrimSpace(nonStampedName.ReplaceAllString(name, ""))
 	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
 	m := basicEnergyName.FindStringSubmatch(name)
 	if m != nil {
@@ -1410,6 +1411,10 @@ var pokemonRespellings = map[string]string{
 var (
 	plainWords = regexp.MustCompile(`(?i)\bNon-?Stamped(?: Version)?\b|\bIllus\. [^,]+,`)
 	stamped    = regexp.MustCompile(`(?i)\bStamp(?:ed)?\b`)
+
+	// nonStampedName matches the same bracket as plainWords where it sits
+	// in the name's own head instead - "Psyduck (Non-Stamped) - SM199".
+	nonStampedName = regexp.MustCompile(`(?i)\s*\(Non-?Stamped\)`)
 )
 
 // galacticInvention names the Team Galactic invention the catalog files
