@@ -204,7 +204,7 @@ const fabSealedDatastore = `{"data": {
   "WTR": {"name": "Welcome to Rathe", "releaseDate": "2019-10-11"}
  },
  "cards": [
-  {"externalLinks": {"tcgPlayerId": 261310}, "fabId": "EVR000", "finish": "1st Edition Cold Foil", "id": "evr000_261310_1steditioncoldfoil", "name": "Grandeur of Valahai", "number": "EVR000", "rarity": "Fabled", "setCode": "EVR"}
+  {"externalLinks": {"fabId": "EVR000", "tcgPlayerId": 261310}, "finish": "1st Edition Cold Foil", "id": "evr000_261310_1steditioncoldfoil", "name": "Grandeur of Valahai", "number": "EVR000", "rarity": "Fabled", "setCode": "EVR"}
  ],
  "sealed": [
   {"externalLinks": {"tcgPlayerId": 224725}, "id": "cru-224725", "name": "Crucible of War Booster Pack [1st Edition]", "releaseDate": "2020-08-28", "setCode": "CRU"},

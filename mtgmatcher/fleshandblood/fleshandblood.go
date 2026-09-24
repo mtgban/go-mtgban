@@ -102,18 +102,12 @@ type DatastoreCard struct {
 	// rides with the tags on the card without being declared as one.
 	Watermark string `json:"watermark,omitempty"`
 
-	// FabID is the official Legend Story Studios card identifier,
-	// annotated where the builder could align the two sources.
-	FabID string `json:"fabId,omitempty"`
-
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
 
-		// The Legend Story Studios card identifier, in the place every other identifier
-		// lives. The datastore writes it here and flat on the entry both,
-		// and the flat field above is what this falls back to for a
-		// datastore built before it moved.
+		// FabID is the official Legend Story Studios card identifier,
+		// annotated where the builder could align the two sources.
 		FabID string `json:"fabId,omitempty"`
 	} `json:"externalLinks"`
 }
@@ -559,8 +553,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 		if id := card.ExternalLinks.FabID; id != "" {
 			identifiers["fabId"] = id
-		} else if card.FabID != "" {
-			identifiers["fabId"] = card.FabID
 		}
 		// A printing with neither keeps the nil map it had, so nothing is
 		// stamped with an empty string for want of a value.
@@ -675,9 +667,6 @@ func (card *DatastoreCard) productKey() string {
 	}
 	if id := card.ExternalLinks.FabID; id != "" {
 		return id
-	}
-	if card.FabID != "" {
-		return card.FabID
 	}
 	return card.ID
 }
