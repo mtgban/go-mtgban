@@ -66,6 +66,22 @@ func idNamesCard(co *mtgmatcher.CardObject, cardName string) bool {
 	return split && mtgmatcher.Equals(front, cardName)
 }
 
+// plstNumber returns the unique PLST collector number for cardName that
+// ends in "-"+number, the shape every reprint on The List carries, or ""
+// when no printing does or more than one does.
+func plstNumber(b *mtgmatcher.Backend, cardName, number string) string {
+	found := ""
+	for _, card := range b.MatchInSet(cardName, "PLST") {
+		if strings.HasSuffix(card.Number, "-"+number) {
+			if found != "" {
+				return ""
+			}
+			found = card.Number
+		}
+	}
+	return found
+}
+
 // tokenPairNumberRes are the real shapes measured against Card Trader's
 // own collector_number for a two-sided token blueprint, tried in order:
 // a leading T/F/CT marker then both numbers ("T 05/20", "F 1/3",
@@ -217,13 +233,31 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	tcgplayerID := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
 	id := namedID(b, scryfallID, tcgplayerID, cardName)
 	if id != "" {
+		idEdition, idVariation := edition, bp.Version
+
+		// Override the shelf wording once the id names a real promo, so
+		// MissingPromoTag's re-check below doesn't veto it.
+		co, err := b.GetUUID(id)
+		if err == nil && len(co.PromoTypes) > 0 {
+			probe := mtgmatcher.InputCard{Edition: idEdition, Variation: idVariation}
+			vetoed := (probe.IsPrerelease() && !co.HasPromoType(magic.PromoTypePrerelease)) ||
+				(b.IsPromoPack(&probe) && !co.HasPromoType(magic.PromoTypePromoPack))
+			if vetoed {
+				idEdition = co.Edition
+				idVariation = ""
+				if strings.Contains(bp.Version, "Etched") {
+					idVariation = "Etched"
+				}
+			}
+		}
+
 		return &mtgmatcher.InputCard{
 			ID: id,
 			// Not needed, but helps debugging
 			Name:    cardName,
-			Edition: edition,
+			Edition: idEdition,
 			// Needed to detect etched finish
-			Variation: bp.Version,
+			Variation: idVariation,
 		}, nil
 	}
 
@@ -308,6 +342,11 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		if cardName == "Wilt-Leaf Cavaliers" {
 			edition = "DCI"
 		}
+	case "Store Championships":
+		if bp.Version == "Japan Standard Cup" {
+			edition = bp.Version
+			variant = number
+		}
 	case "The List":
 		switch cardName {
 		case "Everythingamajig", "Ineffable Blessing":
@@ -315,6 +354,11 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		default:
 			if len(b.MatchInSetNumber(cardName, "PLST", number)) > 0 {
 				variant = number
+			} else {
+				n := plstNumber(b, cardName, number)
+				if n != "" {
+					variant = n
+				}
 			}
 		}
 	case "Mystery Booster: Convention Edition Playtest Cards":
@@ -341,7 +385,21 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 			}
 		}
 	default:
-		if strings.HasPrefix(edition, "Secret Lair") {
+		if strings.HasPrefix(edition, "Secret Lair Commander Deck") {
+			// The cards themselves are ordinary SLD or The List printings.
+			if len(b.MatchInSetNumber(cardName, "SLD", number)) > 0 {
+				edition = "Secret Lair Drop"
+				variant = number
+			} else {
+				n := plstNumber(b, cardName, number)
+				if n != "" {
+					edition = "The List"
+					variant = n
+				} else {
+					variant = number
+				}
+			}
+		} else if strings.HasPrefix(edition, "Secret Lair") {
 			variant = number
 		} else if strings.HasSuffix(edition, "Collectors") {
 			variant = number
@@ -473,7 +531,9 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 				variant = "Promo Pack"
 				edition = "PAFR"
 			default:
-				set, err := b.GetSet(bp.Expansion.Code)
+				// Expansion.Code is always blank; MTGJSON names promo sets
+				// "<Set> Promos", the wording Card Trader shelves them under.
+				set, err := b.GetSetByName(bp.Expansion.Name)
 				if err != nil {
 					return nil, err
 				}
@@ -490,10 +550,15 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 						notPromoPack = num > parentSet.BaseSetSize
 					}
 
-					if magic.HasPromoPackPrinting(b, cardName) && !notPromoPack {
+					switch {
+					case magic.HasPromoPackPrinting(b, cardName) && !notPromoPack:
 						variant = "Promo Pack"
-					} else {
+					case notPromoPack && bp.ScryfallID == "" && bp.TCGplayerID == 0:
+						// Only guess the base edition when the vendor gave
+						// no id to distrust; an unresolved id stays refused.
 						edition = strings.TrimSuffix(edition, " Promos")
+					default:
+						return nil, fmt.Errorf("unknown edition %q for %q", edition, cardName)
 					}
 				} else {
 					switch edition {
