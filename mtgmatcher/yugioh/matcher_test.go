@@ -176,11 +176,32 @@ var yugiohSeeds = []matchTest{
 		Desc: "a tier named in part picks the one printing that says all of it",
 		In:   mtgmatcher.InputCard{Name: "Slifer the Sky Dragon", Edition: "King's Court", Variation: "KICO-EN063 Ultra Rare"},
 	},
-	// BPT numbers two tins, 2002 and 2003, and a number opening on it says
-	// which card but not which tin.
+	// Cool Stuff Inc files every promo shelf it cannot otherwise place under
+	// one catch-all "Promo" heading - a tin, a Legendary Collection, a
+	// Quarter Century Rare reprint - naming no set of its own. Restricted to
+	// it, the search used to reach only the sets whose own name happens to
+	// contain the word "Promo", which BPT-1341 does not; dropped, the
+	// number is free to answer on its own.
+	{
+		Desc: "a heading naming no set of its own is dropped for the number to answer",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician", Edition: "Promo", Variation: "BPT001 BPT-001 Secret Rare"},
+	},
+	// LC01 (Legendary Collection 1) and its 25th Anniversary reprint spell
+	// this number and rarity identically, but the reprint's own copy is
+	// tagged "25th Anniversary Edition" and the original's is not - so a
+	// bare "Ultra Rare", naming no tag, still means the untagged original
+	// once the heading is out of the way.
+	{
+		Desc: "a bare rarity still means the plain printing over a tagged reprint",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Edition: "Promo", Variation: "LC01-EN004 Ultra Rare"},
+	},
+	// A print-run twin reissued under its original's exact number and
+	// rarity, tagged neither way - only the copyright date on the card
+	// tells the two apart, which is the scraper's to read and not a
+	// number's to guess.
 	{
 		Desc: "negative: a number two sets share names neither of them",
-		In:   mtgmatcher.InputCard{Name: "Dark Magician", Edition: "Promo", Variation: "BPT001 BPT-001 Secret Rare"},
+		In:   mtgmatcher.InputCard{Name: "Honest", Edition: "Promo", Variation: "LODT-EN001 Secret Rare"},
 	},
 	// Konami numbers a printing by the language it was printed in, and this
 	// datastore is mostly the English catalog - so a foreign number is a
