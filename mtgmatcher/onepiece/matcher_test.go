@@ -501,6 +501,23 @@ func TestOnepieceSealed(t *testing.T) {
 	}
 }
 
+// filedWithNoNumber reports whether every printing of a name is filed with
+// no number at all, as opposed to under a code such as DON!!'s.
+func filedWithNoNumber(b *mtgmatcher.Backend, name string) bool {
+	var printings int
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed {
+			continue
+		}
+		if co.Number != "" {
+			return false
+		}
+		printings++
+	}
+	return printings > 0
+}
+
 // TestOnepieceNumbered pins the datastore invariant the DON!! rules rest
 // on: the resource card is the one name in the game whose every printing is
 // filed under a code rather than a number, so a storefront's number field
@@ -508,6 +525,11 @@ func TestOnepieceSealed(t *testing.T) {
 // numbered printing is not that case, and Monkey.D.Luffy is the proof: a
 // handful of his event printings wear "LEADER" while the rest wear real
 // numbers, and those still have to be told apart by number.
+//
+// A card the catalog files with no number at all is the other way to have
+// none to compare - the Flame-Flame Fruit Trophy Card is one - and the rule
+// is right to ignore a storefront's number for it too. A new name filed
+// under a code of its own still trips this, because its number is not empty.
 func TestOnepieceNumbered(t *testing.T) {
 	b := loadBackend(t)
 
@@ -516,7 +538,7 @@ func TestOnepieceNumbered(t *testing.T) {
 	// qualified name reaching a "LEADER" printing has no number to compare
 	// either.
 	for _, name := range b.CanonicalNames {
-		want := !strings.HasPrefix(name, "DON!! Card")
+		want := !strings.HasPrefix(name, "DON!! Card") && !filedWithNoNumber(b, name)
 		if got := numbered(b, name); got != want {
 			t.Errorf("numbered(%q) = %v, want %v", name, got, want)
 		}
