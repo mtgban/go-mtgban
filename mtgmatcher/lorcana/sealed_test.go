@@ -26,7 +26,7 @@ const sealedFixture = `{"data": {
 			"setCode": "1",
 			"number": "1",
 			"rarity": "Common",
-			"foilTypes": ["None", "Silver"],
+			"printings": [{"finish": "Cold Foil", "id": "101_silver"}, {"finish": "Normal", "id": "101"}],
 			"externalLinks": {"tcgPlayerId": 100001}
 		}
 	],

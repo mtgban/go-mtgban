@@ -7,22 +7,8 @@ import "testing"
 // cards and prints the run in place of the size, so "1/P1" sits beside
 // "1/204" and the number alone names both. 155 of the game's (set, number)
 // pairs named two cards for exactly that reason.
-//
-// The datastore carries it; a build that predates the field leaves every
-// card without one, and this skips rather than failing over a stale file.
 func TestSetTotal(t *testing.T) {
 	b := loadDatastore(t)
-
-	// A build predating the field leaves a card of the set without a
-	// total. Its promos still have one, read back off promoGrouping, so
-	// the promos are the wrong thing to ask.
-	base, err := b.GetUUID("1")
-	if err != nil {
-		t.Skipf("uuid 1 is not in this datastore: %s", err)
-	}
-	if base.SetTotal == "" {
-		t.Skip("LORCANA_PATH predates the total field; rebuild the datastore")
-	}
 
 	// Set 1 number 1 is five cards, and the total is the whole of what
 	// tells them apart - two of them share a name as well as a number.

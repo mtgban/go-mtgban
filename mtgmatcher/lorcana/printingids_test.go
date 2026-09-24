@@ -12,13 +12,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestPublishedPrintingIDsWin pins that the datastore's own uuids are used
-// where it publishes them, rather than being spelled from the foil type
-// here. 3,200 of this game's uuids are reached by spelling a foil type
-// through canonicalFinish, and a uuid is what a price is keyed on: if this
-// package spelled one and the builder published another, the two would
-// disagree silently, since a uuid nobody stored resolves to nothing rather
-// than erroring.
+// TestPublishedPrintingIDsWin pins that the datastore's own uuids are the
+// ones stored. A uuid is what a price is keyed on: if this package spelled
+// one and the builder published another, the two would disagree silently,
+// since a uuid nobody stored resolves to nothing rather than erroring.
 func TestPublishedPrintingIDsWin(t *testing.T) {
 	data := readDatastore(t)
 
@@ -86,8 +83,8 @@ func readDatastore(t *testing.T) []byte {
 	return data
 }
 
-// stampPrintingIDs renames the uuid of every printing a card carries, to one
-// the spelling below could not arrive at, and answers the uuids it wrote.
+// stampPrintingIDs renames the uuid of every printing a card carries to one
+// no spelling could arrive at, and answers the uuids it wrote.
 func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 	t.Helper()
 	want := map[string]bool{}
@@ -99,11 +96,8 @@ func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 	return out, want
 }
 
-// restamp rewrites every printing's uuid, in whichever shape the datastore
-// publishes them: printings[] carries a finish and its uuid together, and
-// printingIds is the map a datastore published before it. Both are stamped
-// so this pins the invariant against either, and nothing here has to know
-// which one it was handed.
+// restamp rewrites the uuid of every printing a card's printings[] carries,
+// naming each through name.
 func restamp(t *testing.T, data []byte, name func(id int, finish string) string) []byte {
 	t.Helper()
 	payload, err := datastore.Payload(bytes.NewReader(data))
@@ -127,26 +121,20 @@ func restamp(t *testing.T, data []byte, name func(id int, finish string) string)
 		if !ok {
 			t.Fatalf("a card id is %T, not a number", row["id"])
 		}
-		if printings, listed := row["printings"].([]any); listed {
-			for _, raw := range printings {
-				printing, ok := raw.(map[string]any)
-				if !ok {
-					t.Fatalf("a printing is %T, not an object", raw)
-				}
-				finish, ok := printing["finish"].(string)
-				if !ok || finish == "" {
-					t.Fatalf("a printing of card %d names no finish", int(id))
-				}
-				printing["id"] = name(int(id), finish)
+		printings, listed := row["printings"].([]any)
+		if !listed {
+			continue
+		}
+		for _, raw := range printings {
+			printing, ok := raw.(map[string]any)
+			if !ok {
+				t.Fatalf("a printing is %T, not an object", raw)
 			}
-			continue
-		}
-		ids, listed := row["printingIds"].(map[string]any)
-		if !listed || len(ids) == 0 {
-			continue
-		}
-		for finish := range ids {
-			ids[finish] = name(int(id), finish)
+			finish, ok := printing["finish"].(string)
+			if !ok || finish == "" {
+				t.Fatalf("a printing of card %d names no finish", int(id))
+			}
+			printing["id"] = name(int(id), finish)
 		}
 	}
 	doc["cards"] = rows
