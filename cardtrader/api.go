@@ -312,7 +312,11 @@ type Product struct {
 	Description string `json:"description"`
 	OnVacation  bool   `json:"on_vacation"`
 	Bundle      bool   `json:"bundle"`
-	Properties  struct {
+	// A graded (slabbed) listing prices the grading company's assessment
+	// of a specific copy, not the raw NM/SP condition the rest of this
+	// struct assumes every listing is.
+	Graded     bool `json:"graded"`
+	Properties struct {
 		Condition string `json:"condition"`
 		Number    string `json:"collector_number"`
 		Altered   bool   `json:"altered"`
