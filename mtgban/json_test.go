@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -67,7 +66,7 @@ func TestReadSellerFromJSONRoundTrip(t *testing.T) {
 		t.Fatalf("read: %v", err)
 	}
 	got := seller.Inventory()
-	if !reflect.DeepEqual(got, want) {
+	if !sameInventory(got, want) {
 		t.Errorf("inventory did not round-trip:\n got %v\nwant %v", got, want)
 	}
 	if seller.Info().Shorthand != "TS" {
@@ -88,7 +87,7 @@ func TestReadVendorFromJSONRoundTrip(t *testing.T) {
 		t.Fatalf("read: %v", err)
 	}
 	got := vendor.Buylist()
-	if !reflect.DeepEqual(got, want) {
+	if !sameBuylist(got, want) {
 		t.Errorf("buylist did not round-trip:\n got %v\nwant %v", got, want)
 	}
 }
@@ -111,7 +110,7 @@ func TestReadFromJSONBothSidesPresent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read seller: %v", err)
 	}
-	if !reflect.DeepEqual(seller.Inventory(), inv) {
+	if !sameInventory(seller.Inventory(), inv) {
 		t.Error("seller side did not round-trip from a both-sided dump")
 	}
 
@@ -119,7 +118,7 @@ func TestReadFromJSONBothSidesPresent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read vendor: %v", err)
 	}
-	if !reflect.DeepEqual(vendor.Buylist(), bl) {
+	if !sameBuylist(vendor.Buylist(), bl) {
 		t.Error("vendor side did not round-trip from a both-sided dump")
 	}
 }
@@ -187,7 +186,7 @@ func TestWriteScraperToJSONWritesBothSides(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read seller: %v", err)
 	}
-	if !reflect.DeepEqual(seller.Inventory(), scraper.inventory) {
+	if !sameInventory(seller.Inventory(), scraper.inventory) {
 		t.Error("the inventory side did not round-trip")
 	}
 
@@ -195,7 +194,7 @@ func TestWriteScraperToJSONWritesBothSides(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read vendor: %v", err)
 	}
-	if !reflect.DeepEqual(vendor.Buylist(), scraper.buylist) {
+	if !sameBuylist(vendor.Buylist(), scraper.buylist) {
 		t.Error("the buylist side did not round-trip")
 	}
 }
