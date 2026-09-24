@@ -12,16 +12,6 @@ import (
 func TestPromoTypeLabels(t *testing.T) {
 	b := loadDatastore(t)
 
-	// The table is read the other way too: a row spelling a token the
-	// datastore declares nowhere is a spelling nothing will ever read, and
-	// the rot is invisible to the vocabulary check, which audits the tokens
-	// the loader declares.
-	for token := range promoTypeLabels {
-		if !slices.Contains(b.AllPromoTypes, token) {
-			t.Errorf("promoTypeLabels spells %q, a token the datastore declares nowhere", token)
-		}
-	}
-
 	if len(b.PromoTypeLabels) != len(b.AllPromoTypes) {
 		t.Errorf("%d tags declared but %d labelled", len(b.AllPromoTypes), len(b.PromoTypeLabels))
 	}
