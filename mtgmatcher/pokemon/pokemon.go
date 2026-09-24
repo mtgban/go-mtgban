@@ -369,6 +369,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			types = []string{card.Type}
 		}
 
+		promoTypes := promoTypeSlugs(card)
 		convertedCard := mtgmatcher.Card{
 			UUID:    card.ID,
 			Name:    card.Name,
@@ -393,9 +394,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			OriginalReleaseDate: card.OriginalReleaseDate,
 
 			Types:      types,
-			PromoTypes: promoTypeSlugs(card),
+			PromoTypes: promoTypes,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
+
+			// The catalog labels its oversized printings "Single Oversized Promo".
+			IsOversized: slices.Contains(promoTypes, "singleoversizedpromo"),
 
 			PlainNumber: Rules{}.PlainNumber(card.Number),
 			SetTotal:    card.Total,

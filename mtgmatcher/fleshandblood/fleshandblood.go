@@ -497,6 +497,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 			Artist:     card.Artist,
 
+			IsOversized: slices.Contains(promoTypes, "oversized"),
+
 			PlainNumber: Rules{}.PlainNumber(card.Number),
 		}
 		convertedCard.FoilUUIDs = foilUUIDs

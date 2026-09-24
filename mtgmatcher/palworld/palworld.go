@@ -298,6 +298,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    setIsPromotional(b.Sets[card.SetCode]),
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
+			IsOversized: slices.Contains(promoTypes, "oversized"),
+
 			// The rarity code the number ends in is part of the number the
 			// card is sold under, not a decoration laid over a plainer one,
 			// so the plain number a search matches is the number itself.
