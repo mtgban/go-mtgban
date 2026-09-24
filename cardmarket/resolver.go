@@ -490,6 +490,11 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			if label, found := onePieceShelfLabels[product.ExpansionName]; found {
 				number = strings.TrimSpace(number + " " + label)
 			}
+			// These DON!! products spell apart from the datastore's own
+			// label; carry each by id instead of by its product wording.
+			if don, found := onePieceDons[product.IDProduct]; found {
+				cardName, edition, number = "DON!!", cmp.Or(don.edition, edition), don.label
+			}
 		}
 
 		cardID, err = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: number, Foil: false})
