@@ -94,6 +94,16 @@ sideboard variant when a name appears as both under one player's deck
 not the sideboard one their own "(V.2)" suggests) - a separate, smaller,
 open gap in the existing WCD sideboard detection, not addressed here.
 
+The same drift reaches a product through the id map too: `resolveMapped`
+answers from the map's own uuids before `Fallback`'s mcmId route ever runs,
+so a map entry carrying one of these same wrong links used to price
+straight through it untouched. The check above is now `plausiblePrinting`,
+called from both `Fallback` and `resolveUUIDs`. It covers the Pro Tour
+Collector Set's `"Pro Tour 1996: <player>"` shelves, which only sell `PTC`,
+and Oversized shelves the same way (mtgjson links two Oversized products,
+21364 and 21387, onto an ordinary-sized 30th Anniversary Edition printing
+instead of an oversized one).
+
 ## Market's design
 
 **A printing sold foil-only is queried as a foil.** Such a printing answers

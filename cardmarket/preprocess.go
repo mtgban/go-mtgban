@@ -181,31 +181,18 @@ func Fallback(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
 	if !numberMatchedFoil && len(numbersFoil) > 1 {
 		cardIDFoil = ""
 	}
-	// World Championship Decks products are sold one per player/year
-	// ("WCD <year>: <player>"), and mtgjson's own mcmId links have drifted
-	// for several of them onto an unrelated printing entirely - confirmed
-	// live: id 249617, "Phyrexian Processor (V.2)" under WCD 2000: Janosch
-	// Kühn, lands on The Brothers' War Retro Artifacts' foil printing
-	// instead; id 249533, "Duress (V.2)" under WCD 2001: Antoine Ruel,
-	// lands on a starred Seventh Edition Duress. Both are a single,
-	// confident, wrong candidate - the ambiguity check above cannot see
-	// this, since there was only ever one id to begin with. A WCD product
-	// whose only candidate is not itself a WCD printing (set codes
-	// WC97-WC04, all "memorabilia") is exactly that: defer instead,
+	// World Championship Decks and Oversized products name a shelf mtgjson's
+	// own id links have drifted off of for several cards - see
+	// plausiblePrinting. The ambiguity check above cannot see this, since
+	// there was only ever one candidate id to begin with; deferring instead,
 	// the same way an ambiguous candidate does, to Preprocess's own
-	// name/edition matching (including its "... Sideboard" retry) rather
-	// than keep a plainly implausible answer.
-	if strings.HasPrefix(product.ExpansionName, "WCD ") {
-		if cardID != "" {
-			if co, err := b.GetUUID(cardID); err == nil && !strings.HasPrefix(co.SetCode, "WC") {
-				cardID = ""
-			}
-		}
-		if cardIDFoil != "" {
-			if co, err := b.GetUUID(cardIDFoil); err == nil && !strings.HasPrefix(co.SetCode, "WC") {
-				cardIDFoil = ""
-			}
-		}
+	// name/edition matching (including its "... Sideboard" retry) is what
+	// catches it.
+	if !plausiblePrinting(b, product.ExpansionName, cardID) {
+		cardID = ""
+	}
+	if !plausiblePrinting(b, product.ExpansionName, cardIDFoil) {
+		cardIDFoil = ""
 	}
 	// If we found any known ids, we trust them and skip the rest of the preprocessing
 	if ids != nil {
@@ -219,6 +206,30 @@ func Fallback(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
 		return cardID, cardIDFoil
 	}
 	return "", ""
+}
+
+// plausiblePrinting reports whether cardID is a plausible printing for a
+// product of expansionName - true for an empty id or an expansion this
+// check does not constrain: a WCD shelf only ever sells a WC97-WC04
+// printing, a Pro Tour 1996 shelf a PTC one, an Oversized shelf an
+// oversized one, and mtgjson's own id links have drifted for real products.
+func plausiblePrinting(b *mtgmatcher.Backend, expansionName, cardID string) bool {
+	if cardID == "" {
+		return true
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		return true
+	}
+	switch {
+	case strings.HasPrefix(expansionName, "WCD "):
+		return strings.HasPrefix(co.SetCode, "WC")
+	case strings.HasPrefix(expansionName, "Pro Tour 1996: "):
+		return co.SetCode == "PTC"
+	case strings.HasPrefix(expansionName, "Oversized"):
+		return co.IsOversized
+	}
+	return true
 }
 
 // filteredExpansionsTags name the shelves nothing the name route should
