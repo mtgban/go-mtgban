@@ -322,6 +322,11 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 	if gameID == GameGundam {
 		number = gundamNumber(bp, number)
 	}
+	// Only the category tells a Lorcana oversized card from the set's own at
+	// its number, and a card with no oversized printing is then unsupported.
+	if gameID == GameLorcana && bp.CategoryID == CategoryLorcanaOversized {
+		return strings.TrimSpace(number + " Oversized")
+	}
 	if bp.Version == "" || number == "" {
 		return number
 	}
