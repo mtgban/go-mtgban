@@ -293,11 +293,17 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
-				// Skip errors from lands, "misc" promos, and tokens
+				// Skip errors from lands, "misc" promos, tokens, emblem
+				// tokens (the shelf's own "紋章(<planeswalker>)" wording,
+				// not the bare word real cards carry too), and the insert
+				// cards a set ships instructions or a helper on (補助カード).
 				if mtgmatcher.IsBasicLand(theCard.Name) ||
 					strings.Contains(theCard.Edition, "The List") || // lots at set 280
 					strings.Contains(theCard.Edition, "Mystery Booster") || // lots at set 280
-					strings.Contains(product.ProductName, "Token") {
+					strings.Contains(product.ProductName, "Token") ||
+					strings.Contains(product.ProductName, "紋章(") ||
+					strings.Contains(product.ProductName, "紋章（") ||
+					strings.Contains(product.ProductName, "補助カード") {
 					continue
 				}
 				ha.printf("%v at set %s (page %d)", err, cardSet, i)
