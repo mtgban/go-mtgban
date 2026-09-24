@@ -45,7 +45,7 @@ func TestFinishNamedTiebreak(t *testing.T) {
 	}{
 		{
 			"the wording says which of the two printings at this number it is",
-			"Basil Hawkins", "OP10-109 Non-Foil", "Learn Together Deck Set", "ST-36",
+			"Basil Hawkins", "OP10-109 Non-Foil", "Learn Together Deck Set", "PRB-02",
 		},
 		{
 			"the same number saying nothing stays refused",

@@ -1,5 +1,14 @@
 [
     {
+        "description": "TCGplayer files the Learn Together non-foil under Premium Booster Vol. 2",
+        "input": {
+            "name": "Roronoa Zoro",
+            "variant": "OP06-118 Non-Foil",
+            "edition": "Learn Together Deck Set"
+        },
+        "uuid": "op06-118_656164"
+    },
+    {
         "description": "a DON!! number field spelling the set code does not narrow",
         "input": {
             "name": "Don!! Card (33) (Buggy)",
@@ -19,6 +28,36 @@
         "uuid": "don_689811_foil"
     },
     {
+        "description": "a PRB-coded bracket narrows the edition even where the code holds two printings",
+        "input": {
+            "name": "Baby 5 - 034 (PRB01 Alternate Art)",
+            "variant": "OP05-034 PRB01 Alternate Art",
+            "edition": "OP05 - Awakening of the New Era",
+            "foil": true
+        },
+        "uuid": "op05-034_593437_foil"
+    },
+    {
+        "description": "a Store Championship's Participation Pack tag does not stand for a Regional's",
+        "input": {
+            "name": "Sanji - 102 (Offline Regional Participation Pack 2024 Vol. 1)",
+            "variant": "OP03-102 Offline Regionals 24 Stamp Fire Kick",
+            "edition": "OP03 - Pillars of Strength",
+            "foil": true
+        },
+        "uuid": "op03-102_539189_foil"
+    },
+    {
+        "description": "a bare Alternate Art wording keeps the plain treatment over a crossed one",
+        "input": {
+            "name": "Sabo - 120 (Alternate Art)",
+            "variant": "OP13-120 Alternate Art",
+            "edition": "OP13 - Carrying On His Will",
+            "foil": true
+        },
+        "uuid": "op13-120_657413_foil"
+    },
+    {
         "description": "a bare number does not let another set's label unpin the edition",
         "input": {
             "name": "Monkey.D.Luffy",
@@ -27,6 +66,26 @@
             "foil": true
         },
         "uuid": "op13-118_657402_foil"
+    },
+    {
+        "description": "a bracket naming the Learn Together Deck Set outright finds its own row",
+        "input": {
+            "name": "Monkey.D.Luffy - 001 (Learn Together Deck Set)",
+            "variant": "ST21-001 Hat Floating Behind Learn Together Deck Set",
+            "edition": "ST21 - Starter Deck: Gear5",
+            "foil": true
+        },
+        "uuid": "st21-001_656655_foil"
+    },
+    {
+        "description": "a bracket's Starter Deck NN reads as the code it names",
+        "input": {
+            "name": "Monkey.D.Luffy - 001 (Starter Deck 31)",
+            "variant": "ST21-001 Starter Deck 31",
+            "edition": "ST21 - Starter Deck: Gear5",
+            "foil": true
+        },
+        "uuid": "st21-001_706313_foil"
     },
     {
         "description": "a code naming a set of many printings leaves the wording to choose",
@@ -344,6 +403,24 @@
         "uuid": "op01-084_454615"
     },
     {
+        "description": "cardmarket V.1 on a Premium Booster shelf also means an untagged row",
+        "input": {
+            "name": "Koby",
+            "variant": "PRB02-001 V.1",
+            "edition": "The Best Vol.2"
+        },
+        "uuid": "prb02-001_653428_foil"
+    },
+    {
+        "description": "cardmarket V.1 on a Premium Booster shelf means the plain Reprint",
+        "input": {
+            "name": "Arlong",
+            "variant": "OP06-023 V.1",
+            "edition": "The Best"
+        },
+        "uuid": "op06-023_ct310301_foil"
+    },
+    {
         "description": "cardmarket V.2 demands the variant",
         "input": {
             "name": "Mr.2.Bon.Kurei (Bentham) (OP01-084) (V.2)"
@@ -417,6 +494,7 @@
             "edition": "PRB01 - Premium Booster",
             "foil": true
         },
+        "uuid": "",
         "error": "aliasing detected"
     },
     {
@@ -425,6 +503,7 @@
             "name": "DON!! (Kumamoto 2026 Chopper)",
             "edition": "One Piece Products"
         },
+        "uuid": "",
         "error": "aliasing detected"
     },
     {
@@ -435,7 +514,18 @@
             "edition": "OP14 - Azure Sea's Seven",
             "foil": true
         },
+        "uuid": "",
         "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a Premium Booster V.1 refuses where no Reprint row exists",
+        "input": {
+            "name": "Trafalgar Law",
+            "variant": "OP01-047 V.1",
+            "edition": "The Best"
+        },
+        "uuid": "",
+        "error": "unknown variant"
     },
     {
         "description": "negative: a bare tail a single name wears is still not a code",
@@ -444,6 +534,7 @@
             "variant": "122",
             "edition": "Promo"
         },
+        "uuid": "",
         "error": "unknown card name"
     },
     {
@@ -454,6 +545,7 @@
             "edition": "EB03 - Heroines Edition",
             "foil": true
         },
+        "uuid": "",
         "error": "unknown card name"
     },
     {
@@ -483,6 +575,7 @@
             "variant": "V.3",
             "edition": "The Best Vol.2"
         },
+        "uuid": "",
         "error": "aliasing detected"
     },
     {
@@ -493,6 +586,7 @@
             "edition": "OP15 - Adventure On Kami's Island",
             "foil": true
         },
+        "uuid": "",
         "error": "aliasing detected"
     },
     {
@@ -515,6 +609,17 @@
         "error": "unknown variant"
     },
     {
+        "description": "negative: no plain row still lists the candidates it aliased",
+        "input": {
+            "name": "Leo (057) (Alternate Art Promo)",
+            "variant": "OP10-057 Standing on Woman 057 Alternate Art Promo",
+            "edition": "OP10 - Royal Blood",
+            "foil": true
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
         "description": "negative: one word of an art sentence does not name a label",
         "input": {
             "name": "Don!! Card (25) (Monkey.D.Luffy) (Gold Foil)",
@@ -522,6 +627,7 @@
             "edition": "PRB01 - Premium Booster",
             "foil": true
         },
+        "uuid": "",
         "error": "aliasing detected"
     },
     {
@@ -593,6 +699,15 @@
         "uuid": "op01-084_454615"
     },
     {
+        "description": "the Learn Together fold applies to its second numbered card too",
+        "input": {
+            "name": "Basil Hawkins",
+            "variant": "OP10-109 Non-Foil",
+            "edition": "Learn Together Deck Set"
+        },
+        "uuid": "op10-109_656132"
+    },
+    {
         "description": "the alternate art the catalog files as a box topper",
         "input": {
             "name": "Alvida",
@@ -609,6 +724,16 @@
             "edition": "Pre-Errata Cards"
         },
         "uuid": "op01-047_ct277403_foil"
+    },
+    {
+        "description": "the catalog's own word for a textured run answers a wording naming it",
+        "input": {
+            "name": "Blast Breath - 016 (PRB01 Textured Art)",
+            "variant": "ST04-016 PRB01 Textured Art",
+            "edition": "ST04 - Starter Deck: Animal Kingdom Pirates",
+            "foil": true
+        },
+        "uuid": "st04-016_593902_foil"
     },
     {
         "description": "the finish tells apart the event printings a wording named at once",
@@ -710,6 +835,16 @@
         "uuid": "op03-002_499880"
     },
     {
+        "description": "the shelf's own unspaced marker still narrows without a bracket",
+        "input": {
+            "name": "Monkey.D.Luffy - 001",
+            "variant": "ST21-001 Red Background Left Hand Open",
+            "edition": "ST21 - Starter Deck: Gear5",
+            "foil": true
+        },
+        "uuid": "st21-001_615564_foil"
+    },
+    {
         "description": "the shout alone names the card the datastore calls DON!! Card",
         "input": {
             "name": "DON!!",
@@ -725,6 +860,16 @@
             "edition": "ST03 - The Seven Warlords of The Sea"
         },
         "uuid": "st03-014_288288"
+    },
+    {
+        "description": "the wording's own words break a tie between two families sharing a place",
+        "input": {
+            "name": "Brannew - 089 (Offline Regional Participation Pack 2024 Vol. 1)",
+            "variant": "OP03-089 Offline Regional Participation Pack 2024 Vol. 1",
+            "edition": "OP03 - Pillars of Strength",
+            "foil": true
+        },
+        "uuid": "op03-089_539183_foil"
     },
     {
         "description": "two letters swapped round yield to the number as well",
