@@ -115,6 +115,15 @@
         "uuid": "sbcb-en070_227965_1stedition"
     },
     {
+        "description": "a letter-tailed misprint number is read verbatim over its prefix",
+        "input": {
+            "name": "Destiny Hero - Dreadmaster",
+            "variant": "EOJ-EN004K",
+            "edition": "Misprints"
+        },
+        "uuid": "eoj-en004k_246234_unlimited"
+    },
+    {
         "description": "a numbered name reads the same with or without its mark",
         "input": {
             "name": "Sasuke Samurai 2",
