@@ -148,35 +148,13 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 // setTypePromo is what the builder types a set that hands its cards out.
 const setTypePromo = "promo"
 
-// promoTypesOf reads a printing's labels, preferring the list the builder
-// distills them into. A datastore built before that list was recorded
-// carries only the joined spelling, which stays one tag rather than being
-// split on spaces: several labels are two words long ("Duel Terminal"), and
-// splitting would declare halves of them that name nothing.
-//
-// Whether to fall back is asked of the datastore and not of the card. A
-// datastore that labels anything labels everything it meant to, so a card
-// without a list has no labels rather than an unread one - and reading its
-// variant back would put on exactly what the builder took off. The colours
-// are why that matters here: an ink is published as the ink it is, and a
-// printing wearing nothing else has no promo types at all, which is what
-// lets the wording reach it through the ink instead of through a tag that
-// says the same thing twice.
-func promoTypesOf(card *DatastoreCard, labelled bool) []string {
-	if len(card.PromoTypes) > 0 {
-		return card.PromoTypes
-	}
-	if labelled || card.Variant == "" {
-		return nil
-	}
-	return []string{card.Variant}
-}
-
-// promoTypeSlugs is promoTypesOf as the tokens a query can carry, which is
-// what a card stores: a search splits its words apart before a filter sees
-// them, so a tag only survives the trip as one.
-func promoTypeSlugs(card *DatastoreCard, labelled bool) []string {
-	labels := promoTypesOf(card, labelled)
+// promoTypeSlugs is a printing's promo types as the tokens a query can carry,
+// which is what a card stores: a search splits its words apart before a
+// filter sees them, so a tag only survives the trip as one. A printing that
+// publishes none has none; its variant is the prose they were distilled out
+// of, and reading it back would put on what the builder took off.
+func promoTypeSlugs(card *DatastoreCard) []string {
+	labels := card.PromoTypes
 	if len(labels) == 0 {
 		return nil
 	}
@@ -213,16 +191,6 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
-
-	// Whether this datastore labels its printings at all, asked once: see
-	// promoTypesOf.
-	var labelled bool
-	for _, card := range payload.Cards {
-		if len(card.PromoTypes) > 0 {
-			labelled = true
-			break
-		}
-	}
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
@@ -265,7 +233,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		for _, promoType := range promoTypesOf(&card, labelled) {
+		for _, promoType := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
@@ -320,7 +288,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		promoTypes := promoTypeSlugs(card, labelled)
+		promoTypes := promoTypeSlugs(card)
 
 		var colors []string
 		if card.Attribute != "" {
