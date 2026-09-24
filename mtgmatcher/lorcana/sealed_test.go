@@ -11,7 +11,7 @@ import (
 // sealedFixture is a minimal datastore carrying one card and two sealed
 // products: one in the card's own set, one in a promotional group whose
 // set entry the builder mints. It pins the loader's side of the
-// lorcana-datastore contract without needing a real datastore file.
+// datastore-gen contract without needing a real datastore file.
 const sealedFixture = `{"data": {
 	"metadata": {"formatVersion": "2.0.0", "language": "en"},
 	"sets": {

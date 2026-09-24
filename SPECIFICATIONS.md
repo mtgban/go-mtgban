@@ -363,11 +363,10 @@ error.
 
 **Riftbound in particular.** The datastore is the official card-gallery
 payload served by the Riftbound site, enriched by
-`github.com/mtgban/riftbound-datastore`, which stamps every printing with its
+`github.com/mtgban/datastore-gen`, which stamps every printing with its
 TCGplayer product id and appends the promotional printings the gallery does
 not carry; that repository publishes a ready-made file daily to a private
-bucket. The plain gallery payload loads too, only without external identifiers
-or promo sets. Two consequences show up in the rules: the datastore builder
+bucket. Two consequences show up in the rules: the datastore builder
 marks the sets it appends with `Type == "promo"`, and Riftbound's `FilterCards`
 refuses those printings unless the input edition itself resolves to a promo set
 (promos reuse the main sets' collector numbers, so they would otherwise alias
@@ -859,10 +858,9 @@ covering a specific fix) without one.
 `cache-file.yml` against a public URL (`vars.DATASTORE_MAGIC`). Every other
 game, `cache-lorcana` included — Lorcana moved off its own former public URL
 alongside this doc's other stale claims — pulls its `.json.xz` from the
-private `mtgban-datastore` B2 bucket (built by that game's own
-`*-datastore` publisher, `github.com/mtgban/riftbound-datastore` for
-Riftbound and `datastore-gen` for the rest) and caches it under a key built
-from the object's own metadata, since B2 serves no HTTP etag. The test step
+private `mtgban-datastore` B2 bucket (built by `datastore-gen`) and caches
+it under a key built from the object's own metadata, since B2 serves no HTTP
+etag. The test step
 then exports all nine `<GAME>_PATH` variables before running
 `go test ./... -v`, so the data-backed suites actually execute in CI rather
 than skipping into a falsely green run.
