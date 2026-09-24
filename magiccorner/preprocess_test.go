@@ -221,6 +221,57 @@ func TestImageName(t *testing.T) {
 	}
 }
 
+// TestImageProductID pins the guards the image-carried id is resolved
+// under, on rows copied verbatim from the datastore: same-name collapse,
+// cross-set image reuse, a Phyrexian-language hit let through, and a
+// same-set jpn twin resolving to the English printing.
+func TestImageProductID(t *testing.T) {
+	b := realDatastore(t)
+
+	t.Run("the id picks the treatment an ambiguous wording could not", func(t *testing.T) {
+		got := imageProductID(b, "Dominaria United", "/x/ertai-resurrected_672617.jpg", "Ertai Resurrected", "Dominaria United", "", false)
+		if got == "" {
+			t.Fatal("imageProductID returned no id, want DMU 298")
+		}
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "DMU" || co.Number != "298" {
+			t.Errorf("imageProductID resolved to %v, want DMU 298", co)
+		}
+	})
+
+	t.Run("a cross-set id is refused, deferring to the wording", func(t *testing.T) {
+		got := imageProductID(b, "Secret Lair Drop Series", "/x/ertai-resurrected_672617.jpg", "Ertai Resurrected", "Secret Lair Drop Series", "", false)
+		if got != "" {
+			co, _ := b.GetUUID(got)
+			t.Errorf("imageProductID = %v, want \"\" - the id names DMU 298, not a Secret Lair printing", co)
+		}
+	})
+
+	t.Run("a Phyrexian-language hit is accepted for an English listing", func(t *testing.T) {
+		got := imageProductID(b, "Phyrexia: All Will Be One: Extras",
+			"/x/phyrexia-all-will-be-one-extras-jace-the-perfected-mind-v5-692910.jpg",
+			"Jace, the Perfected Mind", "Phyrexia: All Will Be One: Extras", "V.5", true)
+		if got == "" {
+			t.Fatal("imageProductID returned no id, want ONE 429")
+		}
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "ONE" || co.Number != "429" || co.Language != "Phyrexian" {
+			t.Errorf("imageProductID resolved to %v, want ONE 429 Phyrexian", co)
+		}
+	})
+
+	t.Run("a same-set jpn twin resolves to the English printing", func(t *testing.T) {
+		got := imageProductID(b, "Secret Lair Drop Series", "/x/the-royal-scions_791211.jpg", "The Royal Scions", "Secret Lair Drop Series", "", false)
+		if got == "" {
+			t.Fatal("imageProductID returned no id, want SLD 1600")
+		}
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "SLD" || co.Number != "1600" || co.Language != "English" {
+			t.Errorf("imageProductID resolved to %v, want SLD 1600 English", co)
+		}
+	})
+}
+
 // A name holding an apostrophe sometimes arrives quoted the way a database
 // quotes it.
 func TestUnquote(t *testing.T) {
