@@ -83,18 +83,12 @@ type DatastoreCard struct {
 	// product sold both ways.
 	Finish string `json:"finish"`
 
-	// BandaiID is the official card list's _pN printing id, annotated where
-	// the builder could align the two sources unambiguously.
-	BandaiID string `json:"bandaiId,omitempty"`
-
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
 
-		// The official card list's printing id, in the place every other identifier
-		// lives. The datastore writes it here and flat on the entry both,
-		// and the flat field above is what this falls back to for a
-		// datastore built before it moved.
+		// BandaiID is the official card list's _pN printing id, annotated
+		// where the builder could align the two sources unambiguously.
 		BandaiID string `json:"bandaiId,omitempty"`
 	} `json:"externalLinks"`
 }
@@ -377,8 +371,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 		if id := card.ExternalLinks.BandaiID; id != "" {
 			identifiers["bandaiId"] = id
-		} else if card.BandaiID != "" {
-			identifiers["bandaiId"] = card.BandaiID
 		}
 		// A printing with neither keeps the nil map it had, so nothing is
 		// stamped with an empty string for want of a value.
