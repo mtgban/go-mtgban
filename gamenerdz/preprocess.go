@@ -434,22 +434,34 @@ func nameSaysFoil(displayName string) bool {
 	return strings.HasSuffix(shelf, "Foil")
 }
 
-// lorcanaNumber is the collector group Lorcana display names carry, like
-// "(17/204)": the printing's own number over the set size the matcher does
-// not need.
-var lorcanaNumber = regexp.MustCompile(`\((\d+[a-z]?)/\d+\)`)
+// lorcanaNumber is the collector group Lorcana display names carry: the
+// printing's own number over the set size the matcher does not need, like
+// "(17/204)". A promo number's own side of that fraction is not always
+// plain digits over digits - "(17/P3)" is the promo set's own number,
+// "(54//204)" doubles the slash, and a shelf that publishes no set size at
+// all just writes the number alone, "(4)".
+var lorcanaNumber = regexp.MustCompile(`\((\d+[a-z]?)(?:/+[A-Z]?\d+)?\)`)
 
 // A Lorcana display name reads
 //
 //	4*Town - Hottest Band of the Year (17/204) - Attack of the Vine
 //
 // The dash is part of the card's own name-and-subtitle, so the name only
-// stops at the number's parenthesis.
+// stops at the number's parenthesis - the last one before the shelf, since
+// a promo card's own wording sometimes brackets a qualifier of its own
+// ahead of the number ("Minnie Mouse - Pirate Lookout (Disney Cruise
+// Promo) (17/P3) - Disney Lorcana Promo Cards").
 func preprocessLorcana(product GNProduct) (*mtgmatcher.InputCard, error) {
-	loc := lorcanaNumber.FindStringSubmatchIndex(product.DisplayName)
-	if loc == nil {
+	head := product.DisplayName
+	idx := strings.LastIndex(head, " - ")
+	if idx != -1 {
+		head = head[:idx]
+	}
+	locs := lorcanaNumber.FindAllStringSubmatchIndex(head, -1)
+	if locs == nil {
 		return nil, errors.New("no collector number in display name")
 	}
+	loc := locs[len(locs)-1]
 
 	finish := product.SelectedFinish
 	if strings.EqualFold(finish, "Normal") {

@@ -241,6 +241,41 @@ func TestPreprocess(t *testing.T) {
 			finish: "Cold Foil", foil: true,
 		},
 		{
+			// A promo shelf that publishes no set size writes the number
+			// alone.
+			game: mtgban.GameLorcana,
+			product: GNProduct{
+				DisplayName:    "Bruno Madrigal - Undetected Uncle (4) - D23 Promos Holofoil",
+				SelectedFinish: "Holofoil",
+				ProductData:    GNProductData{SetName: "D23 Promos"},
+			},
+			name: "Bruno Madrigal - Undetected Uncle", edition: "D23 Promos",
+			variation: "4", finish: "Holofoil", foil: true,
+		},
+		{
+			// A promo card's own wording brackets a qualifier ahead of the
+			// number, and the number's denominator is the promo set's own
+			// number rather than a plain total.
+			game: mtgban.GameLorcana,
+			product: GNProduct{
+				DisplayName:    "Minnie Mouse - Pirate Lookout (Disney Cruise Promo) (17/P3) - Disney Lorcana Promo Cards Holofoil",
+				SelectedFinish: "Holofoil",
+				ProductData:    GNProductData{SetName: "Disney Lorcana Promo Cards"},
+			},
+			name: "Minnie Mouse - Pirate Lookout (Disney Cruise Promo)", edition: "Disney Lorcana Promo Cards",
+			variation: "17", finish: "Holofoil", foil: true,
+		},
+		{
+			// A doubled slash ahead of the set size.
+			game: mtgban.GameLorcana,
+			product: GNProduct{
+				DisplayName:    "Rafiki - Mystical Fighter (54//204) - Into the Inklands",
+				SelectedFinish: "Normal",
+				ProductData:    GNProductData{SetName: "Into the Inklands"},
+			},
+			name: "Rafiki - Mystical Fighter", edition: "Into the Inklands", variation: "54",
+		},
+		{
 			game: mtgban.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Abra 65/130 - Base Set 2",
