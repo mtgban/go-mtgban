@@ -196,7 +196,34 @@ func (sz *Strikezone) childLinks(doc *goquery.Document, pageURL, mode string) []
 	return links
 }
 
-func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goquery.Selection, edition string) error {
+// magicFoilSiblings scans a Magic shelf page for card names carrying both a
+// Normal and a Foil row, the shape a genuine second listing leaves behind.
+func magicFoilSiblings(doc *goquery.Document, tableRowName string) map[string]bool {
+	seen := map[string][2]bool{}
+	doc.Find(tableRowName).Each(func(_ int, el *goquery.Selection) {
+		name := strings.TrimSpace(el.Find("td:nth-child(1)").Text())
+		if name == "" || name == "Name" {
+			return
+		}
+		notes := strings.TrimSpace(el.Find("td:nth-child(4)").Text())
+		pair := seen[name]
+		if strings.Contains(strings.ToLower(notes), "foil") {
+			pair[1] = true
+		} else {
+			pair[0] = true
+		}
+		seen[name] = pair
+	})
+	both := map[string]bool{}
+	for name, pair := range seen {
+		if pair[0] && pair[1] {
+			both[name] = true
+		}
+	}
+	return both
+}
+
+func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goquery.Selection, edition string, foilSiblings map[string]bool) error {
 	var cardName, pathURL, notes, cond, qty, price string
 
 	cardName = strings.TrimSpace(el.Find("td:nth-child(1)").Text())
@@ -253,6 +280,15 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	}
 
 	cardID, err := sz.backend.Match(theCard)
+	if sz.game == mtgban.GameMagic {
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
+			id := resolvePremiumFoilTiebreak(sz.backend, theCard.Variation, alias.Probe())
+			if id != "" {
+				cardID, err = id, nil
+			}
+		}
+	}
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -277,7 +313,8 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	if sz.game == mtgban.GameMagic {
 		co, coErr := sz.backend.GetUUID(cardID)
 		if coErr == nil && (namesAbsentTreatment(theCard.Variation, co) ||
-			wearsUnnamedTextured(sz.backend, theCard.Variation, co)) {
+			wearsUnnamedTextured(sz.backend, theCard.Variation, co) ||
+			!finishPrinted(sz.backend, co, theCard.Foil, theCard.Variation, foilSiblings[cardName])) {
 			return nil
 		}
 	}
@@ -362,8 +399,13 @@ func (sz *Strikezone) parseRows(doc *goquery.Document, pageURL, mode string, cha
 		tableRowName = "table.ItemTable tr"
 	}
 
+	var foilSiblings map[string]bool
+	if sz.game == mtgban.GameMagic {
+		foilSiblings = magicFoilSiblings(doc, tableRowName)
+	}
+
 	doc.Find(tableRowName).Each(func(_ int, el *goquery.Selection) {
-		err := sz.processRow(mode, channel, el, edition)
+		err := sz.processRow(mode, channel, el, edition, foilSiblings)
 		if err != nil {
 			cardName := strings.TrimSpace(el.Find("td:nth-child(1)").Text())
 			sz.printf("cannot process %s %s (%s): %s", mode, cardName, edition, err.Error())

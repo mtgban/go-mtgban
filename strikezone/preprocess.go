@@ -31,11 +31,26 @@ func neonInkWording(variation string) string {
 // duelDeck matches the duel deck shelves as this storefront heads them.
 var duelDeck = regexp.MustCompile(`^Duel Deck (.+) VS (.+)$`)
 
+// fromCuteToBrutePathways are the ten pathways of Secret Lair Commander:
+// From Cute to Brute, each reprinted on PLST but colliding by bare name
+// with a foil-only Secret Lair Ultimate printing.
+var fromCuteToBrutePathways = []string{
+	"Barkchannel Pathway", "Blightstep Pathway", "Branchloft Pathway",
+	"Brightclimb Pathway", "Clearwater Pathway", "Cragcrown Pathway",
+	"Darkbore Pathway", "Hengegate Pathway", "Needleverge Pathway",
+	"Riverglide Pathway",
+}
+
 func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
 	var variation string
 
 	// Skip tokens, too many variations
 	if strings.Contains(cardName, "Token") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+	// A signed copy prices the signature, not the printing, and the
+	// datastore carries no separate row for one.
+	if strings.Contains(cardName, "(Autographed)") {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
@@ -280,23 +295,32 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	case "Promos: Champs":
 		edition = "PCMP"
 	case "Promos: Pro Tour":
+		// A plain Pro Tour listing keeps PPRO unless the wording names an
+		// RCQ series (Snapcaster Mage sits in both PPRO and PR23).
+		rcq := mtgmatcher.Contains(variation, "Regional Championship") || mtgmatcher.Contains(variation, "RCQ")
 		for _, code := range []string{"PPRO", "SLP", "LTR", "PRCQ", "PR23"} {
-			if len(b.MatchInSet(cardName, code)) > 0 {
-				edition = code
+			if len(b.MatchInSet(cardName, code)) == 0 {
+				continue
 			}
+			if edition == "PPRO" && (code == "PRCQ" || code == "PR23") && !rcq {
+				continue
+			}
+			edition = code
 		}
-		// The Secret Lair sets are only considered when the listing spells the
-		// drop out, and this category never does, so say it on its behalf
+		// This category never spells out the Secret Lair drop, so say Play.
 		if edition == "SLP" {
 			variation = strings.TrimSpace(variation + " Play")
 		}
 	case "Promos: Media":
-		for _, code := range []string{
-			"PHPR", "PMEI", "PURL",
-			"PDTP", "PDP10", "PDP12", "PDP13", "PDP14", "PDP15",
-		} {
-			if len(b.MatchInSet(cardName, code)) > 0 {
-				edition = code
+		// SDCC wording resolves through the core SDCC rule instead.
+		if !mtgmatcher.Contains(variation, "SDCC") {
+			for _, code := range []string{
+				"PHPR", "PMEI", "PURL",
+				"PDTP", "PDP10", "PDP12", "PDP13", "PDP14", "PDP15",
+			} {
+				if len(b.MatchInSet(cardName, code)) > 0 {
+					edition = code
+				}
 			}
 		}
 	case "Promos: Junior Series":
@@ -330,11 +354,26 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		case "Orb of Dragonkind":
 			edition = "PLG21"
 			variation = "J" + strings.TrimLeft(variation, "0")
+		case "Cavern of Souls":
+			edition = "LCI"
+			variation = "410b"
 		}
+	case "Promos: Magicfest":
+		// Only the etched Arcane Signet needs steering; PF25 has no etched
+		// printing of its own, but its other rows land there unaided.
+		if cardName == "Arcane Signet" && mtgmatcher.Contains(variation, "Etched") {
+			edition = "P30M"
+		}
+	case "Duel of the Planeswalkers":
+		edition = "Duels of the Planeswalkers"
 	case "Hours of Devestation":
 		edition = "HOU"
 	case "Secret Lair Commander: Heads I Win":
 		edition = "Secret Lair Commander: Heads I Win, Tails You Lose"
+	case "Secret Lair Commander: From Cute to Brute":
+		if slices.Contains(fromCuteToBrutePathways, cardName) {
+			edition = "PLST"
+		}
 	case "Battlebond":
 		if strings.HasSuffix(cardName, "Alternate Art") {
 			cardName = strings.TrimSuffix(cardName, " Alternate Art")
@@ -464,4 +503,78 @@ func wearsUnnamedTextured(b *mtgmatcher.Backend, variation string, co *mtgmatche
 	return slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card mtgmatcher.Card) bool {
 		return !card.HasPromoType(magic.PromoTypeTextured)
 	})
+}
+
+// premiumFoilTreatments are the foil-only treatments this storefront always
+// spells out; resolvePremiumFoilTiebreak drops a candidate wearing one the
+// variation is silent about.
+var premiumFoilTreatments = []struct {
+	promoType string
+	tag       string
+}{
+	{magic.PromoTypeSurgeFoil, "Surge"},
+	{magic.PromoTypeTextured, "Textured"},
+	{magic.PromoTypeRaisedFoil, "Raised"},
+	{magic.PromoTypeManaFoil, "Mana Foil"},
+	{magic.PromoTypeFractureFoil, "Fracture"},
+	{magic.PromoTypeHaloFoil, "Halo"},
+	{magic.PromoTypeGalaxyFoil, "Galaxy"},
+	{magic.PromoTypeHeadliner, "Headliner"},
+	{magic.PromoTypeNeonInk, "Neon"},
+	{magic.PromoTypeFirstPlaceFoil, "First Place"},
+	{magic.PromoTypeStepAndCompleat, "Compleat"},
+}
+
+// resolvePremiumFoilTiebreak narrows an ambiguous match down to the one
+// candidate this listing's wording actually names, dropping every candidate
+// that wears a premium foil treatment the variation is silent about. It
+// returns "" when the survivors don't reduce to exactly one, leaving the
+// original error in place.
+func resolvePremiumFoilTiebreak(b *mtgmatcher.Backend, variation string, probe []string) string {
+	var keep []string
+	for _, id := range probe {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			return ""
+		}
+		silent := false
+		for _, treatment := range premiumFoilTreatments {
+			if co.HasPromoType(treatment.promoType) && !mtgmatcher.Contains(variation, treatment.tag) {
+				silent = true
+				break
+			}
+		}
+		if !silent {
+			keep = append(keep, id)
+		}
+	}
+	if len(keep) == 1 {
+		return keep[0]
+	}
+	return ""
+}
+
+// finishPrinted reports whether the printing a Magic listing resolved to was
+// sold in the finish the listing named, mirroring gamenerdz's guard of the
+// same name. A mismatch only means a wrong card when the landed set holds
+// another printing of the name in the requested finish, or a sibling row on
+// this shelf already prices it there; otherwise the printing is the only one
+// this name and set ever had, so dropping it would lose its only price.
+func finishPrinted(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, foil bool, variation string, hasFoilSibling bool) bool {
+	requested := mtgmatcher.FinishNonfoil
+	switch {
+	case mtgmatcher.Contains(variation, "Etched"):
+		requested = mtgmatcher.FinishEtched
+	case foil:
+		requested = mtgmatcher.FinishFoil
+	}
+	if co.HasFinish(requested) {
+		return true
+	}
+	if slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card mtgmatcher.Card) bool {
+		return card.HasFinish(requested)
+	}) {
+		return false
+	}
+	return !hasFoilSibling
 }
