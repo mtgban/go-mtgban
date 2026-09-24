@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"errors"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -119,6 +120,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
+	input := basicLandListing(b, cardName, edition, isFoil, imgName)
+	if input != nil {
+		return input, nil
+	}
+
 	if len(imgName) > 4 {
 		for i := range 2 {
 			maybeSet := strings.ToUpper(imgName[:i+3])
@@ -233,6 +239,107 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		Foil:      isFoil,
 		Language:  language,
 	}, nil
+}
+
+// basicLandLetter matches a shelf-lettered basic land ("Island A",
+// "Snow-Covered Forest C") or a plain one ("Mountain"): CSI sells every art
+// of a basic under the same card name, telling the printings apart only by
+// a trailing letter or by the product image.
+var basicLandLetter = regexp.MustCompile(`^((?:Snow-Covered )?(?:Plains|Island|Swamp|Mountain|Forest|Wastes))(?:\s+([A-Z]))?$`)
+
+// basicLandListing resolves a lettered or letterless basic land listing to
+// the printing its image names, deferring to the ordinary pipeline first
+// and only stepping in where that already fails. Candidates are gathered
+// under both foil states to require the same single number either way.
+func basicLandListing(b *mtgmatcher.Backend, cardName, edition string, isFoil bool, imgName string) *mtgmatcher.InputCard {
+	m := basicLandLetter.FindStringSubmatch(cardName)
+	if m == nil {
+		return nil
+	}
+	base := m[1]
+
+	already := &mtgmatcher.InputCard{Name: cardName, Edition: edition, Foil: isFoil}
+	_, err := b.Match(already)
+	if err == nil {
+		return nil
+	}
+
+	setCode := ""
+	var digits string
+	var match string
+	for _, foil := range [...]bool{false, true} {
+		probe := &mtgmatcher.InputCard{Name: base, Edition: edition, Foil: foil}
+		_, err := b.Match(probe)
+		var alias *mtgmatcher.AliasingError
+		if !errors.As(err, &alias) {
+			return nil
+		}
+		var nums []string
+		for _, id := range alias.Probe() {
+			co, err := b.GetUUID(id)
+			if err != nil {
+				continue
+			}
+			setCode = co.SetCode
+			nums = append(nums, co.Number)
+		}
+		if digits == "" {
+			digits = basicLandStemNumber(imgName, setCode, base)
+			if digits == "" {
+				return nil
+			}
+		}
+		found, matches, lettered := "", 0, false
+		for _, n := range nums {
+			trimmed := strings.TrimLeft(n, "0")
+			if trimmed == digits {
+				found = n
+				matches++
+				continue
+			}
+			// A letter-suffixed sibling on the same digits ("255a" next to
+			// "255") means the stem alone can't tell the printings apart.
+			bare := strings.TrimRight(trimmed, letters)
+			if bare != trimmed && bare == digits {
+				lettered = true
+			}
+		}
+		if matches != 1 || lettered || (match != "" && found != match) {
+			return nil
+		}
+		match = found
+	}
+	return &mtgmatcher.InputCard{Name: base, Variation: match, Edition: edition, Foil: isFoil}
+}
+
+// basicLandStemNumber pulls a collector number out of a basic land image
+// filename stem ("M13234", "forest1", or "265" alone), trimming a set code
+// or the basic's name off the front and refusing anything left over that
+// isn't itself a number.
+func basicLandStemNumber(imgName, setCode, base string) string {
+	stem := strings.ToLower(strings.TrimSuffix(path.Base(imgName), filepath.Ext(imgName)))
+	fields := strings.Fields(strings.ToLower(base))
+	word := fields[len(fields)-1]
+	switch {
+	case setCode != "" && strings.HasPrefix(stem, strings.ToLower(setCode)):
+		stem = stem[len(setCode):]
+	case strings.HasPrefix(stem, word):
+		stem = stem[len(word):]
+	case leadingDigits(stem) != "":
+		// left as-is
+	default:
+		return ""
+	}
+	digits := leadingDigits(stem)
+	return strings.TrimLeft(digits, "0")
+}
+
+func leadingDigits(s string) string {
+	i := 0
+	for i < len(s) && s[i] >= '0' && s[i] <= '9' {
+		i++
+	}
+	return s[:i]
 }
 
 func cleanVariant(variant string) string {
@@ -545,6 +652,14 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	// Skip tokens with the same names as cards
 	if strings.Contains(variant, "Emblem") && !b.IsToken(cardName) {
 		return nil, mtgmatcher.ErrUnsupported
+	}
+
+	// Coldsnap Theme Deck basics are deliberately refused below rather
+	// than resolved, so this is tried everywhere else first.
+	if edition != "Coldsnap Theme Deck" {
+		if input := basicLandListing(b, cardName, edition, isFoil, card.Image); input != nil {
+			return input, nil
+		}
 	}
 
 	switch edition {
