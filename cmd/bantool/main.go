@@ -146,7 +146,8 @@ func runGame(options map[mtgban.Game]map[string]*scraperOption) (mtgban.Game, er
 
 // cardtraderBridge maps every Cardmarket product id to the TCGplayer id of
 // the same product, read off cardtrader's blueprints - the one source
-// linking the two marketplaces' ids. The blueprints cover singles and
+// linking the two marketplaces' ids - with the corrections that package
+// keeps for the ids it sends wrong or not at all. The blueprints cover singles and
 // sealed alike, so the same bridge serves both cardmarket scrapers; they
 // receive it as plain data, and the composition of the two vendors happens
 // here and nowhere else.
@@ -164,11 +165,12 @@ func cardtraderBridge(game mtgban.Game) (map[int]int, error) {
 
 	bridge := map[int]int{}
 	for _, bp := range blueprints {
-		if bp.TCGplayerID == 0 {
+		tcgID := bp.TCGplayerProductID()
+		if tcgID == 0 {
 			continue
 		}
 		for _, mkmID := range bp.CardMarketIDs {
-			bridge[mkmID] = bp.TCGplayerID
+			bridge[mkmID] = tcgID
 		}
 	}
 	log.Printf("bridge: %d cardmarket ids linked to a tcgplayer id", len(bridge))

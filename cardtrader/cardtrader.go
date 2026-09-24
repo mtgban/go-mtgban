@@ -141,9 +141,10 @@ var tcgIDOverrides = map[int]int{
 	311912: 597095, // Bucky - Squirrel Squeak Tutor, Errata Version
 }
 
-// tcgplayerID answers the TCGplayer id a blueprint's own listings should
-// resolve against, substituting tcgIDOverrides' correction where one exists.
-func tcgplayerID(bp *Blueprint) int {
+// TCGplayerProductID answers the TCGplayer id a blueprint's listings resolve
+// against: its own TCGplayerID, or tcgIDOverrides' correction where Card
+// Trader's is wrong or missing.
+func (bp *Blueprint) TCGplayerProductID() int {
 	if id, found := tcgIDOverrides[bp.ID]; found {
 		return id
 	}
@@ -258,7 +259,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		var cardID string
 		if ct.gameID != GameMagic {
 			var ids []string
-			if tcgID := tcgplayerID(blueprint); tcgID != 0 {
+			if tcgID := blueprint.TCGplayerProductID(); tcgID != 0 {
 				ids = append(ids, fmt.Sprint(tcgID))
 			}
 			for _, mkmID := range blueprint.CardMarketIDs {

@@ -1240,7 +1240,7 @@ func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
 		return pkmInserts[bp.Name] || pkmJapaneseShelves[bp.Expansion.Name]
 	case GameLorcana:
 		// The shelf's one printing the datastore carries has a TCGplayer id.
-		return lorcanaInserts[bp.Name] || (bp.Expansion.Name == lorcanaErrataShelf && tcgplayerID(bp) == 0)
+		return lorcanaInserts[bp.Name] || (bp.Expansion.Name == lorcanaErrataShelf && bp.TCGplayerProductID() == 0)
 	case GameYuGiOh:
 		return ygoInserts[bp.Name]
 	default:
