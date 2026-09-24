@@ -267,7 +267,7 @@ const opDatastore = `{"data": {
   "PRB-02": {"name": "Premium Booster -The Best- Vol. 2", "releaseDate": "2025-10-03"}
  },
  "cards": [
-  {"color": "Red", "externalLinks": {"bandaiId": "OP01-024_p3", "tcgPlayerId": 586178}, "finish": "Foil", "id": "op01-024_586178_foil", "name": "Monkey.D.Luffy", "number": "OP01-024", "rarity": "SR", "setCode": "PRB-01", "type": "Character", "variant": "Alternate Art"}
+  {"color": "Red", "externalLinks": {"bandaiId": "OP01-024_p3", "tcgPlayerId": 586178}, "finish": "Foil", "id": "op01-024_586178_foil", "name": "Monkey.D.Luffy", "number": "OP01-024", "promoTypes": ["Alternate Art"], "rarity": "SR", "setCode": "PRB-01", "type": "Character", "variant": "Alternate Art"}
  ],
  "sealed": [
   {"externalLinks": {"tcgPlayerId": 545398}, "id": "prb-01-545398", "name": "Premium Booster - Booster Pack", "releaseDate": "2024-11-08", "setCode": "PRB-01"},

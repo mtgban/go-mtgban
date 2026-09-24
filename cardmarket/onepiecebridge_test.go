@@ -18,8 +18,8 @@ const onePieceDatastore = `{"data": {
  "sets": {"OP05": {"name": "Awakening of the New Era", "releaseDate": "2023-11-25"}},
  "cards": [
   {"externalLinks": {"tcgPlayerId": 527875}, "finish": "Foil", "id": "op05-069_527875_foil", "name": "Trafalgar Law", "number": "OP05-069", "rarity": "SR", "setCode": "OP05"},
-  {"externalLinks": {"tcgPlayerId": 527662}, "finish": "Foil", "id": "op05-069_527662_foil", "name": "Trafalgar Law", "number": "OP05-069", "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art"},
-  {"externalLinks": {"tcgPlayerId": 527019}, "finish": "Foil", "id": "op05-069_527019_foil", "name": "Trafalgar Law", "number": "OP05-069", "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art Manga"}
+  {"externalLinks": {"tcgPlayerId": 527662}, "finish": "Foil", "id": "op05-069_527662_foil", "name": "Trafalgar Law", "number": "OP05-069", "promoTypes": ["Alternate Art"], "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art"},
+  {"externalLinks": {"tcgPlayerId": 527019}, "finish": "Foil", "id": "op05-069_527019_foil", "name": "Trafalgar Law", "number": "OP05-069", "promoTypes": ["Alternate Art Manga"], "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art Manga"}
  ]
 }}`
 

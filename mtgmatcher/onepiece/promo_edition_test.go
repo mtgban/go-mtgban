@@ -26,13 +26,13 @@ const promoEditionFixture = `{"data": {
 	"cards": [
 		{"id": "op09-050_596981", "name": "Nami", "number": "OP09-050", "setCode": "OP09", "rarity": "R", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 596981}},
 		{"id": "op09-050_596981_foil", "name": "Nami", "number": "OP09-050", "setCode": "OP09", "rarity": "R", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 596981}},
-		{"id": "op09-050_597214", "name": "Nami", "number": "OP09-050", "setCode": "OP09", "rarity": "R", "finish": "Normal", "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 597214}},
-		{"id": "op09-050_619216_foil", "name": "Nami", "number": "OP09-050", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Championship 25 26 Regionals Season 1", "image": "x", "externalLinks": {"tcgPlayerId": 619216}},
+		{"id": "op09-050_597214", "name": "Nami", "number": "OP09-050", "setCode": "OP09", "rarity": "R", "finish": "Normal", "promoTypes": ["Alternate Art"], "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 597214}},
+		{"id": "op09-050_619216_foil", "name": "Nami", "number": "OP09-050", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["Championship 25 26 Regionals Season 1"], "variant": "Championship 25 26 Regionals Season 1", "image": "x", "externalLinks": {"tcgPlayerId": 619216}},
 		{"id": "op09-051_596982", "name": "Roronoa Zoro", "number": "OP09-051", "setCode": "OP09", "rarity": "R", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 596982}},
 		{"id": "op09-051_596982_foil", "name": "Roronoa Zoro", "number": "OP09-051", "setCode": "OP09", "rarity": "R", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 596982}},
-		{"id": "op09-051_619217_foil", "name": "Roronoa Zoro", "number": "OP09-051", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Gold Foil Winner Pack", "image": "x", "externalLinks": {"tcgPlayerId": 619217}},
+		{"id": "op09-051_619217_foil", "name": "Roronoa Zoro", "number": "OP09-051", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["Gold Foil Winner Pack"], "variant": "Gold Foil Winner Pack", "image": "x", "externalLinks": {"tcgPlayerId": 619217}},
 		{"id": "op09-052_596983", "name": "Sanji", "number": "OP09-052", "setCode": "OP09", "rarity": "R", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 596983}},
-		{"id": "op09-052_619218", "name": "Sanji", "number": "OP09-052", "setCode": "PRB-02", "rarity": "R", "finish": "Normal", "variant": "Best Selection Vol. 6 Reprint", "image": "x", "externalLinks": {"tcgPlayerId": 619218}}
+		{"id": "op09-052_619218", "name": "Sanji", "number": "OP09-052", "setCode": "PRB-02", "rarity": "R", "finish": "Normal", "promoTypes": ["Best Selection Vol. 6 Reprint"], "variant": "Best Selection Vol. 6 Reprint", "image": "x", "externalLinks": {"tcgPlayerId": 619218}}
 	]
 }}`
 
