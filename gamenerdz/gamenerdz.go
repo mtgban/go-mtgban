@@ -273,6 +273,11 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	if gn.game == mtgban.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
 		return "", nil
 	}
+	// A "(N)" promo number names its printing without saying its finish, so
+	// a plain listing can land on a printing that was only ever made foil.
+	if gn.game == mtgban.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
+		return "", nil
+	}
 	return cardID, nil
 }
 
