@@ -240,28 +240,7 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
-// upperCodes spells every set code the way the rest of the library expects
-// to find one. Set codes are upper case everywhere - MTGJSON writes Magic's
-// that way and the other catalogs follow - and GetSet upper-cases what it is
-// asked for before the lookup, so a lower-cased key is one nothing can
-// reach.
-func (payload *Datastore) upperCodes() {
-	sets := make(map[string]DatastoreSet, len(payload.Sets))
-	for code, set := range payload.Sets {
-		sets[strings.ToUpper(code)] = set
-	}
-	payload.Sets = sets
-	for i := range payload.Cards {
-		payload.Cards[i].SetCode = strings.ToUpper(payload.Cards[i].SetCode)
-	}
-	for i := range payload.Sealed {
-		payload.Sealed[i].SetCode = strings.ToUpper(payload.Sealed[i].SetCode)
-	}
-}
-
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
-	payload.upperCodes()
-
 	var b mtgmatcher.Backend
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
