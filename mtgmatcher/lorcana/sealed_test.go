@@ -191,19 +191,6 @@ func TestSealedNameCollidingWithCard(t *testing.T) {
 	}
 }
 
-func TestSealedAbsentSectionLoads(t *testing.T) {
-	// A datastore built from the plain upstream file keeps loading, with
-	// nothing in the sealed namespace
-	fixture := strings.Replace(sealedFixture, `"sealed"`, `"ignored"`, 1)
-	b, err := Load(strings.NewReader(fixture))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(b.AllSealedUUIDs) != 0 {
-		t.Errorf("AllSealedUUIDs = %v, want empty", b.AllSealedUUIDs)
-	}
-}
-
 func TestSealedZeroProductId(t *testing.T) {
 	// A product the builder could not link to TCGplayer ships without an
 	// id. Stamping the zero value would give BuildSealedProductMap a

@@ -14,16 +14,6 @@ import (
 func TestNumberlessCards(t *testing.T) {
 	b := loadDatastore(t)
 
-	// A build that predates the number leaving those cards still has them
-	// on 0, and says so by carrying no total either.
-	base, err := b.GetUUID("1")
-	if err != nil {
-		t.Skipf("uuid 1 is not in this datastore: %s", err)
-	}
-	if base.SetTotal == "" {
-		t.Skip("LORCANA_PATH predates the numberless products; rebuild the datastore")
-	}
-
 	var numberless, zero int
 	var zeroNames []string
 	// By card rather than by printing: a card sold in two finishes wears
