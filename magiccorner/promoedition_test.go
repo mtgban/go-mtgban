@@ -78,3 +78,47 @@ func TestPromoSetBase(t *testing.T) {
 		})
 	}
 }
+
+// TestPromoVersionMapping pins which "(V.N)" tag lands on the prerelease
+// card and which on the promo pack card - the store numbers them the
+// opposite way a first reading suggests, on every one of 27 shelves checked.
+func TestPromoVersionMapping(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		version, want string
+	}{
+		{"V.1", "Prerelease"},
+		{"V.2", "Promo Pack"},
+	} {
+		t.Run(tt.version, func(t *testing.T) {
+			_, _, got := internalPreprocess(b, "Ertai Resurrected", "Dominaria United Promos", tt.version, "")
+			if got != tt.want {
+				t.Errorf("internalPreprocess(..., %q) variation = %q, want %q", tt.version, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestPromoVersionMappingFallsBackToBundle pins the per-card, not
+// per-shelf, fallback: Innistrad: Crimson Vow has promo packs for other
+// cards (PVOW 5p), just not for Sigarda's Summons.
+func TestPromoVersionMappingFallsBackToBundle(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		desc, name, edition, wantEdition string
+	}{
+		{"Modern Horizons 3", "Powerbalance", "Modern Horizons 3: Promos", "Modern Horizons 3"},
+		{"Modern Horizons 2", "Yusri, Fortune's Flame", "Modern Horizons 2: Promos", "Modern Horizons 2"},
+		{"Innistrad: Crimson Vow", "Sigarda's Summons", "Innistrad: Crimson Vow: Promos", "Innistrad: Crimson Vow"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			_, gotEdition, gotVariation := internalPreprocess(b, tt.name, tt.edition, "V.2", "")
+			if gotVariation != "Bundle" || gotEdition != tt.wantEdition {
+				t.Errorf("internalPreprocess(%q, %q, V.2) = (%q, %q), want (%q, Bundle)",
+					tt.name, tt.edition, gotEdition, gotVariation, tt.wantEdition)
+			}
+		})
+	}
+}
