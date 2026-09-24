@@ -155,6 +155,12 @@ func TestPreprocessDetails(t *testing.T) {
 			outName: "Hexagore, the Death Hydra (Golden)", outVariation: "FAB186", outFoil: true,
 		},
 		{
+			game: mtgban.GameFleshAndBlood, name: "Aurora (Marvel) (Alternate Art)", edition: "Rosetta",
+			number: "008A", details: "Near Mint Cold Foil 1st Edition English",
+			outName: "Aurora (Marvel)", outVariation: "008 Alternate Art",
+			outFinish: "Cold Foil", outFoil: true,
+		},
+		{
 			game: mtgban.GameYuGiOh, name: "Dark Magician", edition: "Yugi Reloaded",
 			number: "001", details: "Near Mint Normal Unlimited English",
 			outName: "Dark Magician", outVariation: "001",

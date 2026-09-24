@@ -103,6 +103,9 @@ var (
 	fabGluedHead  = regexp.MustCompile(`^-\s*([A-Z]{2,4}\d{3,4})`)
 	fabNumberSpan = regexp.MustCompile(`\s+-\s+[A-Z]{2,4}\d{3,4}\b`)
 	fabGluedPair  = regexp.MustCompile(`^([A-Z]{2,4}\d{3,4})([A-Z]{2,4}\d{3,4})$`)
+	// fabAlternateArtNumber matches the number an alternate-art printing
+	// letters with a trailing "A": "008A" for Rosetta's ROS008.
+	fabAlternateArtNumber = regexp.MustCompile(`^(\d{3})A$`)
 )
 
 // fabNumberRespellings are the numbers the storefront misspells, and the
@@ -127,6 +130,13 @@ func fabListing(cardName, number string) (string, string) {
 	}
 	if fields := fabGluedHead.FindStringSubmatch(cardName); fields != nil {
 		return strings.TrimSpace(cardName[len(fields[0]):]), fields[1]
+	}
+	altArt := fabAlternateArtNumber.FindStringSubmatch(number)
+	if altArt != nil && mtgmatcher.Contains(cardName, "Alternate Art") {
+		// The shelf names the set; the wording stays as a variation
+		// instead of a second copy of the name.
+		cardName = strings.TrimSpace(strings.Replace(cardName, "(Alternate Art)", "", 1))
+		number = altArt[1] + " Alternate Art"
 	}
 	// A double-sided promo's two numbers are written as one word
 	if fields := fabGluedPair.FindStringSubmatch(number); fields != nil {
