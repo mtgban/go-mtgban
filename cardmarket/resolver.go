@@ -383,6 +383,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			return "", "", false, err
 		}
 	case cm.GameLorcana, cm.GameRiftbound, cm.GameOnePiece:
+		if r.gameID == cm.GameLorcana && lorcanaFaces[product.IDProduct] {
+			return "", "", false, nil
+		}
 		// The bridge answers first, naming one printing where the
 		// catalog's own V-index or wording cannot. One Piece takes it
 		// outright; Riftbound only where the name still agrees.
