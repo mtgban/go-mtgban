@@ -70,6 +70,15 @@
         "uuid": "dl18-en002_94895_unlimited"
     },
     {
+        "description": "a decorated qualifier still lets the rarity narrow behind it",
+        "input": {
+            "name": "Eldlich the Golden Lord [Alt Art]",
+            "variant": "Sitting Down - Ultimate Rare",
+            "edition": "25th Anniversary Rarity Collection"
+        },
+        "uuid": "ra01-en019_525022_1stedition"
+    },
+    {
         "description": "a field center flips onto the phrase order the catalog files",
         "input": {
             "name": "Ash Blossom \u0026 Joyous Spring Field Center Token",
