@@ -52,6 +52,7 @@ var promoTypeLabels = map[string]string{
 	"sandiegocomiccon":       "San Diego Comic-Con",
 	"serialnumbered":         "Serial Numbered",
 	"sp":                     "SP",
+	"specialboosterbundle":   "Special Booster Bundle",
 	"starterdeckbattleevent": "Starter Deck Battle Event",
 	"storetournament":        "Store Tournament",
 	"storetrialevent":        "Store Trial Event",

@@ -196,6 +196,7 @@ var promoTypeLabels = map[string]string{
 	"tinselholo":                            "Tinsel Holo",
 	"top16":                                 "Top 16",
 	"top32":                                 "Top 32",
+	"top4":                                  "Top 4",
 	"top8":                                  "Top 8",
 	"toysrus":                               "Toys \"R\" Us",
 	"trainerschallengeset":                  "Trainer's Challenge Set",

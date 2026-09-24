@@ -43,6 +43,7 @@ var promoTypeLabels = map[string]string{
 	"burstofdestiny":         "Burst of Destiny",
 	"burstprotocol":          "Burst Protocol",
 	"chaosneosmisprint":      "Chaos Neos Misprint",
+	"crocsexclusive":         "Crocs Exclusive",
 	"datereprint":            "Date Reprint",
 	"dawnofmajesty":          "Dawn of Majesty",
 	"dimensionforce":         "Dimension Force",
