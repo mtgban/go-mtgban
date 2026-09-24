@@ -3,6 +3,8 @@ package cardmarket
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -85,7 +87,8 @@ func (r *resolver) logf(format string, a ...any) {
 var errNoPrinting = errors.New("named no printing of ours")
 
 // errTwin marks a product named and numbered like another of its expansion,
-// which the catalog does not say which variant of the card it is.
+// or like a printing already priced through a different shelf, either way
+// leaving the catalog silent on which variant of the card it is.
 var errTwin = errors.New("twin of another product")
 
 // errForeign marks a product of a catalog the datastore does not carry.
@@ -861,7 +864,49 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 	if !carried || region != "" {
 		return "", errForeign
 	}
+	if strings.HasPrefix(product.ExpansionName, "OTS Tournament Pack") && r.yugiohPastEnd(product.ExpansionName, tail) {
+		return "", errForeign
+	}
+	if r.yugiohEuropean(name, tail) {
+		return "", errTwin
+	}
 	return "", errNoPrinting
+}
+
+// yugiohPlainSuffix matches the plain digits a set's own collector number
+// ends on, after any "EN" region infix, for comparing against a tail
+// Cardmarket writes with no infix of its own.
+var yugiohPlainSuffix = regexp.MustCompile(`-(?:EN)?(\d+)$`)
+
+// yugiohPastEnd reports whether an OTS Tournament Pack's number tail runs
+// past the last one any set carrying its expansion prints - the Portuguese
+// packs' extra numbers. Scoped to OTS so a number a set merely lacks stays a
+// refusal elsewhere (Gouki Re-Match in TestMatchYugiohShelves).
+func (r *resolver) yugiohPastEnd(expansion, tail string) bool {
+	n, err := strconv.Atoi(tail)
+	if err != nil {
+		return false
+	}
+	numbers := r.yugiohNumbers()
+	var sets int
+	for _, edition := range yugiohEditions(expansion) {
+		set, err := r.backend.GetSetByName(edition)
+		if err != nil {
+			continue
+		}
+		sets++
+		for number := range numbers[set.Code] {
+			m := yugiohPlainSuffix.FindStringSubmatch(number)
+			if m == nil {
+				continue
+			}
+			last, _ := strconv.Atoi(m[1])
+			if last >= n {
+				return false
+			}
+		}
+	}
+	return sets > 0
 }
 
 // yugiohInfixed answers the printing numbered like the product, with the
@@ -896,6 +941,28 @@ func (r *resolver) yugiohInfixed(product *cm.Product, name, rarity, region, tail
 		}
 	}
 	return ""
+}
+
+// yugiohEuropean reports whether the card has a European print at this
+// number - "MRL-E129" for tail "129" - that a shelf of ours already prices.
+// Cardmarket's "Spell Ruler" catalog carries Magic Ruler's own numbers,
+// #104-129, as if they were Spell Ruler's; the row is real, just filed
+// under Magic Ruler's shelf instead of the one the product sits on.
+func (r *resolver) yugiohEuropean(name, tail string) bool {
+	if tail == "" {
+		return false
+	}
+	uuids, err := r.backend.SearchEquals(name)
+	if err != nil {
+		return false
+	}
+	for _, uuid := range uuids {
+		co, err := r.backend.GetUUID(uuid)
+		if err == nil && strings.HasSuffix(strings.ToUpper(co.Number), "-E"+strings.ToUpper(tail)) {
+			return true
+		}
+	}
+	return false
 }
 
 // reportRefused says what an expansion refused and counts it into the run's
@@ -974,10 +1041,10 @@ func (r *resolver) disownBridged(results []resolved) {
 	}
 }
 
-// yugiohNumberTaken reports whether one of the numbers names a card of the
-// set other than the one named. The index is built once, over the whole
-// datastore, the first time a number is contradicted.
-func (r *resolver) yugiohNumberTaken(setCode string, numbers []string, name string) bool {
+// yugiohNumbers indexes every set's collector numbers by the card each
+// names, built once over the whole datastore on first use under a mutex;
+// the map itself is never written again, so callers read it lock-free.
+func (r *resolver) yugiohNumbers() map[string]map[string]string {
 	r.numbersMu.Lock()
 	defer r.numbersMu.Unlock()
 	if r.numbers == nil {
@@ -995,7 +1062,13 @@ func (r *resolver) yugiohNumberTaken(setCode string, numbers []string, name stri
 			index[strings.ToUpper(co.Number)] = mtgmatcher.Normalize(co.Name)
 		}
 	}
-	index := r.numbers[setCode]
+	return r.numbers
+}
+
+// yugiohNumberTaken reports whether one of the numbers names a card of the
+// set other than the one named.
+func (r *resolver) yugiohNumberTaken(setCode string, numbers []string, name string) bool {
+	index := r.yugiohNumbers()[setCode]
 	for _, number := range numbers {
 		holder, held := index[strings.ToUpper(number)]
 		if held && holder != mtgmatcher.Normalize(name) {
