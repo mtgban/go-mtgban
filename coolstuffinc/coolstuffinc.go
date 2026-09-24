@@ -954,6 +954,17 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 	}
 	csi.printf("Found %d products", len(products))
 
+	// Some Magic PIDs get a placeholder isFoil=1 row at a flat price beside
+	// their real nonfoil row; nonfoilPID feeds magicPhantomFoilTwin below.
+	nonfoilPID := map[string]bool{}
+	if csi.game == mtgban.GameMagic {
+		for _, product := range products {
+			if product.IsFoil == 0 {
+				nonfoilPID[product.PID] = true
+			}
+		}
+	}
+
 	for _, product := range products {
 		if product.RarityName == "Box" {
 			continue
@@ -1070,6 +1081,13 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			continue
 		}
 
+		if csi.game == mtgban.GameMagic {
+			co, cerr := csi.backend.GetUUID(cardID)
+			if cerr == nil && magicPhantomFoilTwin(co, product.IsFoil, nonfoilPID[product.PID]) {
+				continue
+			}
+		}
+
 		if csi.game == mtgban.GamePokemon && pokemonNonHolo.MatchString(product.Name) {
 			co, cerr := csi.backend.GetUUID(cardID)
 			if cerr == nil && !co.HasFinish(mtgmatcher.FinishNonfoil) &&
@@ -1128,6 +1146,12 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 	csi.buylistDate = time.Now()
 
 	return nil
+}
+
+// magicPhantomFoilTwin reports whether a Magic buylist row is CSI's flat-
+// priced isFoil=1 placeholder for a printing that has no real foil finish.
+func magicPhantomFoilTwin(co *mtgmatcher.CardObject, isFoil int, hasNonfoilRow bool) bool {
+	return isFoil == 1 && hasNonfoilRow && !co.Foil && !co.Etched
 }
 
 // SetConfig applies options after the scraper was built. See
