@@ -796,10 +796,24 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// number: the Antiquity Pack art cards and the armory decks'
 		// counters carry none, and the storefront's number for them is
 		// its own.
-		if number != "" && card.Number != "" && !numberMatches(number, card.Number) {
+		//
+		// A printing TCGplayer numbered apart from its Legend Story
+		// Studios id is reachable by that id too - SCG's sku follows the
+		// fabId where the catalog numbers it differently. A pair carries
+		// no single id to compare, and an id that is only the number's
+		// own label stem (both halves of MST158's lettered pair carry
+		// fabId "MST158") would fold the halves onto each other, so both
+		// are excluded.
+		fabID := card.Identifiers["fabId"]
+		if strings.Contains(card.Number, "/") || strings.EqualFold(fabID, labelStem(card.Number)) {
+			fabID = ""
+		}
+		if number != "" && card.Number != "" && !numberMatches(number, card.Number) &&
+			(fabID == "" || !numberMatchesOn(number, fabID, false)) {
 			continue
 		}
-		numbered := number == "" || card.Number == "" || numberMatchesOn(number, card.Number, false)
+		numbered := number == "" || card.Number == "" || numberMatchesOn(number, card.Number, false) ||
+			(fabID != "" && numberMatchesOn(number, fabID, false))
 		// An input naming a print run or a treatment re-keys the copy's
 		// FoilUUIDs so the flag-driven resolution downstream lands on that
 		// printing's entry. Both slots move together: a printing spans one
