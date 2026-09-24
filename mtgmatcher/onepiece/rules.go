@@ -2573,9 +2573,31 @@ func plainUnnamedVariant(cards []mtgmatcher.Card) []mtgmatcher.Card {
 // wear collector numbers it could be one of, and the words it spent on a
 // label are not the number.
 func inputNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
-	number := extractNumber(unlabelled(b, inCard.Name, inCard.Variation))
+	wording := unlabelled(b, inCard.Name, inCard.Variation)
+	if number := slashedNumber(b, inCard.Name, wording); number != "" {
+		return number
+	}
+	number := extractNumber(wording)
 	if number == "" || numbered(b, inCard.Name) {
 		return number
+	}
+	return ""
+}
+
+// slashedNumber is a word of the wording that is, slash and all, the number
+// a printing of the name wears: the crew certificate's "1/1000" is its
+// number, not card 1 of a thousand, which is how extractNumber reads it.
+func slashedNumber(b *mtgmatcher.Backend, name, wording string) string {
+	for _, field := range strings.Fields(wording) {
+		if !strings.Contains(field, "/") {
+			continue
+		}
+		for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+			co, found := b.UUIDs[uuid]
+			if found && !co.Sealed && strings.EqualFold(co.Number, field) {
+				return field
+			}
+		}
 	}
 	return ""
 }

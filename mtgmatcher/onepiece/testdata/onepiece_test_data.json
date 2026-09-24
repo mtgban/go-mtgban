@@ -180,6 +180,15 @@
         "uuid": "op05-020_530899"
     },
     {
+        "description": "a number with a slash in it is asked for whole",
+        "input": {
+            "name": "Monkey.D.Luffy",
+            "variant": "1/1000 Certificate of our crew Oversized",
+            "edition": "One Piece Promotion Cards"
+        },
+        "uuid": "1-1000_695310"
+    },
+    {
         "description": "a positional V.1 keeps the plain half of a DON!! pair",
         "input": {
             "name": "DON!! (PRB02 - Boa Hancock)",
