@@ -1096,14 +1096,16 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 // card with such a printing, and a storefront files a jumbo under the
 // ordinary card's set, where the number alone answers with the ordinary
 // card. A card can be printed oversized more than once, so with no number,
-// or no oversized printing at it, the list comes back empty and core
-// refuses the listing. See mtgmatcher.GameRules.
+// or no oversized printing at it wearing the placement the wording names
+// ("Winner"), the list comes back empty and core refuses the listing. See
+// mtgmatcher.GameRules.
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
 	if !inCard.Contains("Oversize") {
 		return editions
 	}
 	numbers := extractNumbers(inCard.Variation)
-	held := printingOversized(b, inCard.Name, numbers, editions)
+	named := placementsNamed(b, labelWording(inCard.Variation))
+	held := printingOversized(b, inCard.Name, numbers, named, editions)
 	// A letter hung off the number is dropped the way filterCandidates
 	// drops it, only where the number as written reaches nothing.
 	if len(held) == 0 {
@@ -1113,14 +1115,15 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				bare = append(bare, trimmed)
 			}
 		}
-		held = printingOversized(b, inCard.Name, bare, editions)
+		held = printingOversized(b, inCard.Name, bare, named, editions)
 	}
 	return held
 }
 
 // printingOversized returns the editions holding an oversized printing of
-// the card at one of the numbers.
-func printingOversized(b *mtgmatcher.Backend, name string, numbers, editions []string) []string {
+// the card at one of the numbers, wearing one of the named placements when
+// there are any.
+func printingOversized(b *mtgmatcher.Backend, name string, numbers, named, editions []string) []string {
 	var held []string
 	for _, code := range editions {
 		set, found := b.Sets[code]
@@ -1129,7 +1132,8 @@ func printingOversized(b *mtgmatcher.Backend, name string, numbers, editions []s
 		}
 		for i := range set.Cards {
 			card := &set.Cards[i]
-			if card.IsOversized && mtgmatcher.Equals(card.Name, name) && numbersMatchCard(b, numbers, card) {
+			if card.IsOversized && mtgmatcher.Equals(card.Name, name) && numbersMatchCard(b, numbers, card) &&
+				(len(named) == 0 || wearsAny([]mtgmatcher.Card{*card}, named)) {
 				held = append(held, code)
 				break
 			}
