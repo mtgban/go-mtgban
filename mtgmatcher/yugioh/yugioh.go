@@ -101,6 +101,7 @@ type DatastoreCard struct {
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
+		KonamiID    int `json:"konamiId"`
 	} `json:"externalLinks"`
 }
 
@@ -388,14 +389,22 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
 
+		if card.ExternalLinks.TcgPlayerID != 0 || card.ExternalLinks.KonamiID != 0 {
+			convertedCard.Identifiers = map[string]string{}
+		}
 		if card.ExternalLinks.TcgPlayerID != 0 {
 			pid := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
-			convertedCard.Identifiers = map[string]string{
-				"tcgplayerProductId": pid,
-			}
+			convertedCard.Identifiers["tcgplayerProductId"] = pid
 			// The product id names the product, not one of its runs, so it
 			// points at the same default entry the flags resolve to.
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = card.ID
+		}
+		if card.ExternalLinks.KonamiID != 0 {
+			// Konami's own id, which ties a rename together (Darkfall/Dark
+			// Trap Hole) across sets nameRespellings cannot: not indexed
+			// through ExternalIdentifiers, since nothing looks it up by
+			// itself the way a vendor id is looked up.
+			convertedCard.Identifiers["konamiId"] = fmt.Sprint(card.ExternalLinks.KonamiID)
 		}
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
