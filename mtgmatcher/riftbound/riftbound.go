@@ -383,6 +383,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 		number := numberFromPublicCode(card.PublicCode)
 
+		promoTypes := slugPromoTypes(signedPromoTypes(card.PromoTypes, number))
 		convertedCard := mtgmatcher.Card{
 			UUID: card.ID,
 
@@ -412,7 +413,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			Types:      types,
 			Subtypes:   card.Tags.Tags,
-			PromoTypes: slugPromoTypes(signedPromoTypes(card.PromoTypes, number)),
+			PromoTypes: promoTypes,
+
+			IsOversized: slices.Contains(promoTypes, "oversized"),
 
 			Printings: printingsByName[mtgmatcher.Normalize(card.Name)],
 

@@ -287,6 +287,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    setIsPromotional(b.Sets[card.SetCode]),
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
+			IsOversized: slices.Contains(promoTypes, "oversized"),
+
 			// The collector number carries no decoration of its own, so the
 			// plain number a search matches is the number itself.
 			PlainNumber: Rules{}.PlainNumber(card.Number),

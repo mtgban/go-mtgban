@@ -331,6 +331,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
+			IsOversized: slices.Contains(promoTypes, "oversized"),
+
 			PlainNumber: Rules{}.PlainNumber(card.Number),
 		}
 		// Register the uuid each run prices under the name the game's rules

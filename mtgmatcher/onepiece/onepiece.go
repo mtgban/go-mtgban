@@ -343,6 +343,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Rarity:              card.Rarity,
 			Types:               []string{card.Type},
 			PromoTypes:          promoTypes,
+			IsOversized:         slices.Contains(promoTypes, "oversized"),
 			Watermark:           card.Watermark,
 			OriginalReleaseDate: card.OriginalReleaseDate,
 			IsPromo:             setIsPromotional(b.Sets[card.SetCode]),
