@@ -484,6 +484,15 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			return "", "", false, err
 		}
 
+		// A starter deck's exclusive foil is a V.N at its card's own number,
+		// filed by the datastore as that card's Holofoil.
+		if r.gameID == cm.GameLorcana && len(fields) > 1 && strings.TrimSuffix(fields[1], ")") != "1" {
+			holo, holoErr := r.backend.MatchIDFinish(cardID, "Holofoil")
+			if holoErr == nil && holo != cardID && holo != cardIDFoil {
+				cardID, cardIDFoil = holo, holo
+			}
+		}
+
 		// One Piece is the catalog that files one card onto shelf after
 		// shelf; see offShelf.
 		if r.gameID == cm.GameOnePiece && r.offShelf(product, cardID) {
