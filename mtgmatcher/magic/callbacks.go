@@ -311,6 +311,23 @@ var promoTypeElements = []promoTypeElement{
 		Tags:          []string{"Neon Ink Yellow"},
 		OnlyWhenNamed: true,
 	},
+	{
+		// Claim-only: providers routinely say only "Showcase" and stay
+		// silent about the Japan-exclusive variant.
+		PromoType:     PromoTypeJapanShowcase,
+		Tags:          []string{"Japan Showcase"},
+		OnlyWhenNamed: true,
+	},
+	{
+		// Claim-only, and "Rainbow" alone: "Double Rainbow Foil" also
+		// contains it, so exclude that or every doublerainbow candidate
+		// gets vetoed too.
+		PromoType: PromoTypeRainbowFoil,
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+			return inCard.Contains("Rainbow") && !inCard.Contains("Double Rainbow")
+		},
+		OnlyWhenNamed: true,
+	},
 	borderlessTreatment,
 	extendedArtTreatment,
 	showcaseTreatment,
