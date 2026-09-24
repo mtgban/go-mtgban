@@ -41,18 +41,19 @@ var conditionMap = map[string]string{
 
 // gradeTag is the grade this storefront writes at the end of a display name
 // when it lists a copy that is not near mint: "Legions Foil(MP)", "Revised
-// Edition (MP)".
-var gradeTag = regexp.MustCompile(`\(([A-Z]{1,2})\)$`)
+// Edition (MP)", "Base Holofoil (DMG)".
+var gradeTag = regexp.MustCompile(`\(([A-Z]{1,3})\)$`)
 
 // gradeMap spells those grades as the conditions mtgban keeps. It is a
 // closed list on purpose: a name ending in some other bracketed capitals is
 // a name, not a grade.
 var gradeMap = map[string]string{
-	"NM": "NM",
-	"LP": "SP",
-	"MP": "MP",
-	"HP": "HP",
-	"D":  "PO",
+	"NM":  "NM",
+	"LP":  "SP",
+	"MP":  "MP",
+	"HP":  "HP",
+	"D":   "PO",
+	"DMG": "PO",
 }
 
 // grade reads the grade a display name ends in. A name ending in none, or
