@@ -83,6 +83,17 @@ func TestPreprocessDetails(t *testing.T) {
 			outName: "Bidoof", outVariation: "GG029 1st Edition",
 		},
 		{
+			// The two promo shelves prefix a bare number the same way.
+			game: mtgban.GamePokemon, name: "Boss's Orders (Full Art)", edition: "Promos Sword and Shield",
+			number: "251", details: "Near Mint Normal 1st Edition English",
+			outName: "Boss's Orders (Full Art)", outVariation: "SWSH251 1st Edition",
+		},
+		{
+			game: mtgban.GamePokemon, name: "Raikou GX", edition: "Promos Sun and Moon",
+			number: "121", details: "Near Mint Normal 1st Edition English",
+			outName: "Raikou GX", outVariation: "SM121 1st Edition",
+		},
+		{
 			game: mtgban.GamePokemon, name: "Mewtwo", edition: "Legendary Collection",
 			number: "010", details: "Light Play Normal Unlimited Chinese",
 			err: errForeignListing,

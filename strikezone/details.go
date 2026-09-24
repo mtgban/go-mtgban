@@ -2,8 +2,10 @@ package strikezone
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -68,6 +70,18 @@ func parseDetails(details string) (treatment, run, language string) {
 }
 
 var errForeignListing = errors.New("not an English listing")
+
+// pokemonEditionRespellings corrects the vendor's own shelf spellings the
+// pokemon editionAliases table does not cover, so GetSetByName resolves to
+// the one set the wording means instead of falling through to a full-catalog
+// search that also catches a namesake on an unrelated set.
+var pokemonEditionRespellings = map[string]string{
+	"Neo Revelations":                 "Neo Revelation",
+	"Sun and Moon":                    "SM Base Set",
+	"Mega Evolution Phantasmal Flame": "ME02: Phantasmal Flames",
+	"Sword and Shield Astral RadianceTrainers Gallery": "SWSH10: Astral Radiance Trainer Gallery",
+	"Sword and Shield Silver Tempest Trainers Gallery": "SWSH12: Silver Tempest Trainer Gallery",
+}
 
 // fabRunSets are the sets printed in runs, and the only ones the datastore
 // crosses a run with a treatment for: every set since Everfest was printed
@@ -174,6 +188,30 @@ func preprocessDetails(game mtgban.Game, cardName, edition, number, details stri
 
 	switch game {
 	case mtgban.GamePokemon:
+		// The matcher deliberately does not respell this one, so it is the
+		// scraper's to fix on the one shelf the store lists it under.
+		if cardName == "Imposter Professor Oak" && edition == "Base Set Unlimited" {
+			cardName = "Impostor Professor Oak"
+		}
+		if respelled, found := pokemonEditionRespellings[edition]; found {
+			edition = respelled
+		}
+		// The two promo shelves prefix a bare digit run by series - "SWSH"
+		// for a Sword & Shield promo, "SM" for a Sun & Moon one - the same
+		// shape as the Gallery prefix below.
+		switch edition {
+		case "Promos Sword and Shield":
+			n, err := strconv.Atoi(number)
+			if err == nil {
+				number = fmt.Sprintf("SWSH%03d", n)
+			}
+		case "Promos Sun and Moon":
+			n, err := strconv.Atoi(number)
+			if err == nil {
+				number = fmt.Sprintf("SM%02d", n)
+			}
+		}
+
 		// The gallery subsets number their cards with a prefix the bare
 		// Number column drops: GG29 where the row says 029.
 		if strings.Contains(edition, "Gallery") {
