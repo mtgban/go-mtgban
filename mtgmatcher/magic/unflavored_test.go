@@ -43,3 +43,32 @@ func TestUnflavoredPrinting(t *testing.T) {
 		t.Errorf("Windfall (Rainbow Foil) landed on %s", co)
 	}
 }
+
+// A Secret Lair listing naming a flavor name is the printing sold under it,
+// even one wearing a treatment the card's own printing lacks.
+func TestFlavoredPrinting(t *testing.T) {
+	realDatastore(t)
+
+	for _, tc := range []struct {
+		name, variation string
+		foil            bool
+		want            string
+	}{
+		{"Optimus Prime", "", false, "1081"},
+		{"Optimus Prime", "", true, "1081"},
+		{"Darksteel Colossus", "Optimus Prime", true, "1081"},
+		{"Megatron", "", false, "1079"},
+		{"Indominus Rex", "Rainbow Foil", true, "1391★"},
+		{"Chaos Theory", "Rainbow Foil", true, "741★"},
+	} {
+		id, err := testBackend.Match(&mtgmatcher.InputCard{Name: tc.name, Variation: tc.variation, Edition: "Secret Lair", Foil: tc.foil})
+		if err != nil {
+			t.Errorf("%s (%s) foil=%v: %v", tc.name, tc.variation, tc.foil, err)
+			continue
+		}
+		co, _ := testBackend.GetUUID(id)
+		if co.Number != tc.want || co.Foil != tc.foil {
+			t.Errorf("%s (%s) foil=%v: got %s, want %s", tc.name, tc.variation, tc.foil, co, tc.want)
+		}
+	}
+}

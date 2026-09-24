@@ -1829,10 +1829,8 @@ func unflavoredPrinting(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) [
 			plain = append(plain, card)
 			continue
 		}
-		for _, flavor := range []string{card.FlavorName, card.FaceFlavorName} {
-			if flavor != "" && (inCard.Contains(flavor) || mtgmatcher.Contains(inCard.OriginalName, flavor)) {
-				return cards
-			}
+		if namesFlavor(inCard, card) {
+			return cards
 		}
 	}
 	if len(plain) == 0 {
@@ -1845,6 +1843,37 @@ func unflavoredPrinting(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) [
 		}
 	}
 	return plain
+}
+
+// flavoredPrinting narrows a Secret Lair listing naming a flavor name to the
+// printings sold under it, and leaves the candidates alone when it names none
+// of theirs. The flavor name claims every treatment its printing wears, so the
+// promo types must not veto one the listing only left unspelled.
+func flavoredPrinting(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if !sameSet(cards) || cards[0].SetCode != "SLD" {
+		return cards
+	}
+	var named []mtgmatcher.Card
+	for _, card := range cards {
+		if namesFlavor(inCard, card) {
+			named = append(named, card)
+		}
+	}
+	if len(named) == 0 {
+		return cards
+	}
+	return named
+}
+
+// namesFlavor reports whether the listing names the flavor the printing is
+// sold under, in its wording or in the name it arrived with.
+func namesFlavor(inCard *mtgmatcher.InputCard, card mtgmatcher.Card) bool {
+	for _, flavor := range []string{card.FlavorName, card.FaceFlavorName} {
+		if flavor != "" && (inCard.Contains(flavor) || mtgmatcher.Contains(inCard.OriginalName, flavor)) {
+			return true
+		}
+	}
+	return false
 }
 
 // FilterCards narrows the printings within those sets to the one the input
@@ -1979,7 +2008,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 
 	// Before the promo types and foilCheck, which veto the plain printing
-	// for a treatment or a finish the listing never mentioned
+	// for a treatment or a finish the listing never mentioned, and the
+	// flavored one for a treatment its flavor name already claimed
+	if len(outCards) > 1 {
+		outCards = flavoredPrinting(inCard, outCards)
+	}
 	if len(outCards) > 1 {
 		outCards = unflavoredPrinting(inCard, outCards)
 	}
