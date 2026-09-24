@@ -18,5 +18,13 @@ func bridgeNamesCard(b *mtgmatcher.Backend, product *cm.Product, cardID string) 
 		return false
 	}
 	name, _, _ := strings.Cut(product.Name, " (V.")
-	return mtgmatcher.CloseName(co.Name, name)
+	if mtgmatcher.CloseName(co.Name, name) {
+		return true
+	}
+	// A promo's name carries what sets it apart, "(JP Exclusive)" and the like.
+	bare, decorated := strings.CutSuffix(co.Name, ")")
+	if i := strings.LastIndex(bare, " ("); decorated && i > 0 {
+		return mtgmatcher.CloseName(bare[:i], name)
+	}
+	return false
 }

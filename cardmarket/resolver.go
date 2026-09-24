@@ -391,21 +391,19 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		}
 		// The bridge answers first, naming one printing where the
 		// catalog's own V-index or wording cannot. One Piece takes it
-		// outright; Riftbound only where the name still agrees.
-		if r.gameID == cm.GameOnePiece || r.gameID == cm.GameRiftbound {
-			if tcgID, found := r.tcgBridge[product.IDProduct]; found {
-				id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false)
-				if idErr == nil && r.gameID == cm.GameRiftbound && !bridgeNamesCard(r.backend, product, id) {
-					idErr = errNoPrinting
+		// outright; Riftbound and Lorcana only where the name still agrees.
+		if tcgID, found := r.tcgBridge[product.IDProduct]; found {
+			id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false)
+			if idErr == nil && r.gameID != cm.GameOnePiece && !bridgeNamesCard(r.backend, product, id) {
+				idErr = errNoPrinting
+			}
+			if idErr == nil {
+				cardID = id
+				cardIDFoil, _ = r.backend.MatchID(cardID, true)
+				if r.offShelf(product, cardID) {
+					return "", "", false, errNoPrinting
 				}
-				if idErr == nil {
-					cardID = id
-					cardIDFoil, _ = r.backend.MatchID(cardID, true)
-					if r.offShelf(product, cardID) {
-						return "", "", false, errNoPrinting
-					}
-					break
-				}
+				break
 			}
 		}
 
