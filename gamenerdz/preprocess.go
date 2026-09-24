@@ -607,8 +607,11 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 var pokemonQualifier = regexp.MustCompile(`^\s*((?:\([^)]*\)\s*)+)`)
 
 // onePieceCode is the card code One Piece display names carry, like
-// "(OP12-042)" or "(ST25-001)", which names the printing on its own.
-var onePieceCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
+// "(OP12-042)" or "(ST25-001)", which names the printing on its own. A few
+// listings pad the code with a trailing space before the parenthesis
+// ("(P-101 )"), and the Extra Booster dash packs write it bare off the
+// name's own dash instead of wrapping it at all ("Koala - OP05-006").
+var onePieceCode = regexp.MustCompile(`\(?\b([A-Z]+\d*-\d+[a-z]?)\s*\)?`)
 
 // A One Piece display name reads
 //
@@ -630,6 +633,10 @@ var onePieceCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
 var squareDecorations = strings.NewReplacer("[", "(", "]", ")")
 
 func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
+	if strings.HasPrefix(product.DisplayName, "DON!! Card") {
+		return preprocessOnePieceDon(product), nil
+	}
+
 	locs := onePieceCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if locs == nil {
 		return nil, errors.New("no card code in display name")
@@ -637,7 +644,14 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 	loc := locs[len(locs)-1]
 
 	code := product.DisplayName[loc[2]:loc[3]]
-	cardName := strings.ReplaceAll(product.DisplayName[:loc[0]], "("+code+")", "")
+	cardName := strings.TrimSuffix(strings.TrimSpace(product.DisplayName[:loc[0]]), " -")
+	cardName = strings.ReplaceAll(cardName, "("+code+")", "")
+	// Bracketed wording trailing the code joins the name too - the dash
+	// packs write theirs there instead of before it, "Koala - OP05-006
+	// (Dash Pack)".
+	for _, wording := range bracketed.FindAllString(product.DisplayName[loc[1]:], -1) {
+		cardName += " " + wording
+	}
 	cardName = squareDecorations.Replace(cardName)
 
 	return &mtgmatcher.InputCard{
@@ -646,4 +660,39 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 		Variation: code,
 		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
 	}, nil
+}
+
+// onePieceDonWording is the parenthetical wording a DON!! listing's head
+// carries between "DON!! Card" and the shelf: the character, the border,
+// the pack it came double-packed in.
+var onePieceDonWording = regexp.MustCompile(`\(([^)]*)\)`)
+
+// preprocessOnePieceDon answers a DON!! listing the way the catalog files
+// it, mirroring coolstuffinc's own onePieceDonName: every DON!! card is
+// named "DON!! Card" and told apart by promo type wording bracketed between
+// the name and the shelf's double space. Two listings carry that wording as
+// part of the card's own name after a "//" instead ("DON!! Card // Green
+// Compass"), which the catalog names literally and this keeps whole.
+func preprocessOnePieceDon(product GNProduct) *mtgmatcher.InputCard {
+	head, _, _ := strings.Cut(product.DisplayName, "  ")
+
+	if strings.Contains(head, " // ") {
+		return &mtgmatcher.InputCard{
+			Name:    strings.TrimSpace(head),
+			Edition: product.ProductData.SetName,
+			Foil:    strings.EqualFold(product.SelectedFinish, "foil"),
+		}
+	}
+
+	var words []string
+	for _, m := range onePieceDonWording.FindAllStringSubmatch(head, -1) {
+		words = append(words, m[1])
+	}
+
+	return &mtgmatcher.InputCard{
+		Name:      "DON!! Card",
+		Edition:   product.ProductData.SetName,
+		Variation: strings.Join(words, " "),
+		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
+	}
 }
