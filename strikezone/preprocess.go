@@ -64,7 +64,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	var droppedFlavor bool
 	if head, tail, dashed := strings.Cut(cardName, " - "); dashed {
 		if _, err := b.SearchEquals(mtgmatcher.SplitVariants(tail)[0]); err == nil {
-			if _, err := b.SearchEquals(head); err != nil {
+			if _, err := b.SearchEquals(head); err != nil && !isFlavorOf(b, head, tail) {
 				cardName = tail
 				droppedFlavor = true
 			}
@@ -427,6 +427,15 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		Foil:      isFoil,
 		Language:  language,
 	}, nil
+}
+
+// isFlavorOf reports whether the catalog sells the card heading tail under
+// the flavor name head. The search indexes a reversible card's flavor only
+// doubled ("Optimus Prime // Optimus Prime"), but Match reads the bare one
+// off the whole name, as it does every other flavor name.
+func isFlavorOf(b *mtgmatcher.Backend, head, tail string) bool {
+	alt, found := b.AlternateProps[head]
+	return found && alt.IsFlavor && mtgmatcher.Equals(alt.OriginalName, mtgmatcher.SplitVariants(tail)[0])
 }
 
 // hasSeveralDrops reports whether the set files a card under more than one
