@@ -2,6 +2,7 @@ package vegassingles
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -28,13 +29,16 @@ var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?$`)
 // price of its own, while the id it would resolve to is the printing's, held
 // by the ordinary listing standing beside it. Publishing the copy's price
 // under the printing's id lets a one-off set what the card is worth.
+//
+// Both refusals here are deliberate, so they wrap ErrUnsupported: the caller
+// reads that and drops the listing without logging it as a failure.
 func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
 	if uniqueCopy.MatchString(strings.TrimSpace(product.DisplayName)) {
-		return nil, errors.New("listing is one particular copy, not the printing")
+		return nil, fmt.Errorf("%w: listing is one particular copy, not the printing", mtgmatcher.ErrUnsupported)
 	}
 
 	if displaySet(product.DisplayName) == oversizeHeading {
-		return nil, errors.New("listing is an oversize display card, not a single")
+		return nil, fmt.Errorf("%w: listing is an oversize display card, not a single", mtgmatcher.ErrUnsupported)
 	}
 
 	switch game {
