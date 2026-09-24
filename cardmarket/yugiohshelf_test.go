@@ -106,6 +106,52 @@ func TestMatchYugiohInfixedPromos(t *testing.T) {
 	}
 }
 
+// yugiohEuropeanDatastore is the published datastore cut down to an OTS
+// Tournament Pack 9 card and the number just past where its English pack
+// ends, and Spell Ruler's last SRL number beside the Magic Ruler European
+// print of the number that follows it.
+const yugiohEuropeanDatastore = `{"data": {
+ "game": "yugioh",
+ "sets": {
+  "OP09": {"abbreviation": "OP09", "name": "OTS Tournament Pack 9", "releaseDate": "2018-12-08"},
+  "SRL": {"abbreviation": "SRL", "name": "Spell Ruler", "releaseDate": "2002-09-16"},
+  "MRL": {"abbreviation": "MRL", "name": "Magic Ruler", "releaseDate": "2002-09-16"}
+ },
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 181765}, "finish": "Unlimited", "id": "op09-en008_181765_unlimited", "name": "Card Destruction", "number": "OP09-EN008", "rarity": "Super Rare", "setCode": "OP09"},
+  {"externalLinks": {"tcgPlayerId": 181783}, "finish": "Unlimited", "id": "op09-en026_181783_unlimited", "name": "Token: Mecha Phantom Beast - Dracossack", "number": "OP09-EN026", "rarity": "Super Rare", "setCode": "OP09"},
+  {"externalLinks": {"tcgPlayerId": 120691}, "finish": "Unlimited", "id": "srl-103_120691_unlimited", "name": "Serpent Night Dragon", "number": "SRL-103", "rarity": "Secret Rare", "setCode": "SRL"},
+  {"externalLinks": {"tcgPlayerId": 229417}, "finish": "Unlimited", "id": "mrl-e129_229417_unlimited", "name": "Pot of Greed", "number": "MRL-E129", "rarity": "Rare", "setCode": "MRL"}
+ ]
+}}`
+
+// TestMatchYugiohEuropeanPrints pins the OTS Tournament Pack rule that
+// tells the Portuguese packs' extra numbers apart from a real gap, and the
+// Spell Ruler rule that tells its European renumbering apart from one.
+func TestMatchYugiohEuropeanPrints(t *testing.T) {
+	b := datastoreBackend(t, "yugioh", yugiohEuropeanDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	for _, tt := range []struct {
+		expansion, name, number, want string
+		err                           error
+	}{
+		{"OTS Tournament Pack 9", "Card Destruction", "008", "op09-en008_181765_unlimited", nil},
+		{"OTS Tournament Pack 9", "Scrap Chimera", "028", "", errForeign},
+		{"Spell Ruler", "Pot of Greed (V.1 - Rare)", "129", "", errTwin},
+		{"Spell Ruler", "Beaver Warrior (V.1 - Common)", "103", "", errNoPrinting},
+	} {
+		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion}
+		got, err := mkm.matchYugioh(&product)
+		if got != tt.want || !errors.Is(err, tt.err) {
+			t.Errorf("%q in %q (%s) = %q, %v; want %q, %v", tt.name, tt.expansion, tt.number, got, err, tt.want, tt.err)
+		}
+	}
+}
+
 func TestYugiohSameProduct(t *testing.T) {
 	for _, tt := range []struct {
 		a, b cm.Product
