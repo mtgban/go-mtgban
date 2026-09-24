@@ -18,6 +18,16 @@ var reJapanese = regexp.MustCompile(`[\p{Hiragana}\p{Katakana}\p{Han}]`)
 var reCardName = regexp.MustCompile(`《([^》]+)》`)
 var reThick = regexp.MustCompile(`【([^】]+)】`)
 
+// rePLSTCode matches a "The List" reprint's own set-and-number after a slash.
+var rePLSTCode = regexp.MustCompile(`^[A-Z0-9]{2,5}-\d+$`)
+
+// reTrailingNumber reads a collector number the English product line states
+// alone, right after the bracketed set tag.
+var reTrailingNumber = regexp.MustCompile(`\]\((\d+)\)`)
+
+// reYearEdition matches the year a MagicFest promo states as "YYYY年版".
+var reYearEdition = regexp.MustCompile(`^(\d{4})年版$`)
+
 // dashSuffix reads the tag the storefront appends to a set code. "-RT" names
 // the timeshifted reprints, which are a set of their own and numbered as one.
 // Every other tag describes the frame or the booster a card came out of,
@@ -75,19 +85,33 @@ func splitParens(b *mtgmatcher.Backend, title string) (number, series, treatment
 				series = group
 				continue
 			}
+			// The Spotlight Series shelf is a set of its own that
+			// GetSetByName does not know by this name.
+			if group == "スポットライトシリーズプロモ" {
+				series = "Spotlight Series"
+				continue
+			}
 		}
 		if number == "" {
 			// A slash separates two spellings of one promo code, and the
 			// first is the one the catalog files - except where both sides
 			// are numbers, which is a power and toughness rather than a
 			// code, and the only thing telling one variant of an Unstable
-			// card from another.
+			// card from another, and except where the second side spells a
+			// The List reprint's own number, which is the one the catalog
+			// files under.
 			number = group
 			if !powerToughness.MatchString(group) {
-				// The padding is a collector number's, and a power is not
-				// one: stripping a leading zero off "0/4" leaves "/4",
-				// which names nothing and drops the listing.
-				number = strings.TrimLeft(strings.Split(group, "/")[0], "0")
+				before, after, found := strings.Cut(group, "/")
+				if found && rePLSTCode.MatchString(after) {
+					code, num, _ := strings.Cut(after, "-")
+					number = code + "-" + strings.TrimLeft(num, "0")
+				} else {
+					// The padding is a collector number's, and a power is
+					// not one: stripping a leading zero off "0/4" leaves
+					// "/4", which names nothing and drops the listing.
+					number = strings.TrimLeft(before, "0")
+				}
 			}
 			continue
 		}
@@ -196,6 +220,33 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 	number, series, _ := splitParens(b, product.ProductName)
 	if series != "" {
 		edition = series
+	}
+	// Fires on any retail listing splitParens found no number for; today's
+	// capture only exercises it on Guild Kit basics, whose own number is
+	// stated in the English line, right after the bracketed set tag.
+	if number == "" {
+		m := reTrailingNumber.FindStringSubmatch(product.ProductNameEN)
+		if m != nil {
+			number = m[1]
+		}
+	}
+	// The APAC lands share a name, a set tag and a finish across all three
+	// printings, and artist plus name is still ambiguous for Ron Spears'
+	// two Swamps (APAC2 and APAC3). Only the storefront's own APAC1/2/3
+	// index, which splitParens read as the number, tells every one apart.
+	if edition == "APACランド" {
+		if n, found := apacLandNumbers[number][cardName]; found {
+			number = n
+		}
+	}
+	// A MagicFest basic states no number of its own, only the year it was
+	// handed out, and that is the only thing separating one year's printing
+	// from the next.
+	if edition == "MagicFest" {
+		m := reYearEdition.FindStringSubmatch(number)
+		if m != nil {
+			number = m[1]
+		}
 	}
 	if number != "" {
 		if variant != "" {
@@ -629,6 +680,15 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	}, nil
 }
 
+// apacLandNumbers gives each Asia Pacific Land Program printing's own
+// number, keyed by the storefront's own APAC1/2/3 shelf index and the
+// card's color.
+var apacLandNumbers = map[string]map[string]string{
+	"APAC1": {"Forest": "1", "Island": "2", "Mountain": "3", "Plains": "4", "Swamp": "5"},
+	"APAC2": {"Forest": "6", "Island": "7", "Mountain": "8", "Plains": "9", "Swamp": "10"},
+	"APAC3": {"Forest": "11", "Island": "12", "Mountain": "13", "Plains": "14", "Swamp": "15"},
+}
+
 var cardTable = map[string]string{
 	// The Secret Lair flavor name the title puts ahead of the card's own
 	"Chancla relámpagos":                 "Lightning Greaves",
@@ -682,6 +742,7 @@ var editionTable = map[string]string{
 	"2018年版ジャッジ褒賞":        "2018 Judge Rewards",
 	"2020年版":              "2020 Edition",
 	"30周年記念":              "30th Anniversary",
+	"APACランド":             "Asia Pacific Land Program",
 	"BOOKプロモ":             "Book Promo",
 	"BOXプロモ":              "Box Promo",
 	"CardZプロモ":            "CardZ Promo",
@@ -689,6 +750,7 @@ var editionTable = map[string]string{
 	"DCIマーク":              "DCI Promo",
 	"Etched Foil 30周年プロモ": "P30M etched frame",
 	"GPプロモ":               "Grand Prix Promos",
+	"Guru Lnad":           "Guru Land",
 	"MCQプロモ":              "MCQ Promo",
 	"Nationalプロモ":         "National Promos",
 	"PWシンボル付き再版":          "Mystery Booster/The List",
@@ -717,14 +779,13 @@ var editionTable = map[string]string{
 	"ジャッジ褒賞":              "Judge Rewards",
 	"基本セット系プロモ":           "Promo",
 	"発売記念":                "Release",
-	"スポットライトシリーズプロモ":      "Spotlight Series Promo",
 	"ダブルレインボウ・Foil":       doubleRainbow,
 	"テキストボックスレス ゲームデー":    "PCMP",
 	"テキストレス Magic Fest":   "Textless Magic Fest",
 	"テキストレス 褒賞プログラム":      "Textless Player Rewards",
 	"テキストレス":              "Textless",
 	"テストプリント":             "Test Print",
-	"ヒストリープロモ":            " 30th Anniversary",
+	"ヒストリープロモ":            " 30th Anniversary History",
 	"ファイレクシア語 その他プロモ":     "Phyrexian Other Promos",
 	"ファイレクシア語 ジャッジ褒賞":     "Phyrexian Judge Reward",
 	"フルアート 1":             "Full Art 1",
@@ -735,32 +796,32 @@ var editionTable = map[string]string{
 	"ボーダーレス Premier Play": "Borderless Premier Play",
 	"ボーダーレス その他イベント記念":    "Borderless Other Event Commemoration",
 	"ボーダーレス その他イベント記念系":   "Borderless Other Event",
-	"ボーダーレス スポットライトシリーズプロモ": "Borderless Spotlight Series Promo",
-	"ボーダーレス マーベル・レジェンドプロモ":  "LMAR",
-	"ボーダーレス 褒賞プロモ":          "Borderless Player Rewards",
-	"ボーダーレス":                "Borderless",
-	"ボーダーレスショーダウン":          "Borderless Showdown",
-	"マジックリーグ":               "Year of the Tiger 2022",
-	"メディア系プロモ":              "Media Promo",
-	"リセールプロモ":               "Resale Promo",
-	"午年プロモ":                 "Year of the Horse 2026",
-	"卯年プロモ":                 "Year of the Rabbit 2023",
-	"大判カード":                 "Oversize",
-	"対戦キット":                 "Clash Pack",
-	"巳年プロモ":                 "Year of the Snake 2025",
-	"拡張アート MagicConプロモ":     "Extended Art MagicCon Promo",
-	"拡張アート その他プロモ":          "Extended Art Other Promos",
-	"拡張アート":                 "Extended Art",
-	"新枠 2008年版ジャッジ褒賞":       "Mordern Frame 2008 Judge Rewards",
-	"旧枠 2000年版ジャッジ褒賞":       "Retro Frame 2000 Judge Rewards",
-	"旧枠 ジャッジ褒賞":             "Retro Frame Judge Rewards",
-	"旧枠 その他プロモ":             "Retro Frame Other Promos",
-	"旧枠 ヒストリープロモ":           "Retro Frame 30th Anniversary",
-	"旧枠 褒賞プログラム":            "Old Frame Rewards Program",
-	"旧枠":                    "Retro Frame",
-	"絵違いVer.":               "Alternate Art",
-	"褒賞プログラム":               "Rewards Program",
-	"辰年プロモ":                 "Year of the Dragon 2024",
+	"ボーダーレス マーベル・レジェンドプロモ": "Borderless Marvel Legends Promo",
+	"ボーダーレス 褒賞プロモ":         "Borderless Player Rewards",
+	"ボーダーレス":               "Borderless",
+	"ボーダーレスショーダウン":         "Borderless Showdown",
+	"マジックリーグ":              "Year of the Tiger 2022",
+	"メディア系プロモ":             "Media Promo",
+	"リセールプロモ":              "Resale Promo",
+	"旧正月プロモ":               "Lunar New Year",
+	"午年プロモ":                "Year of the Horse 2026",
+	"卯年プロモ":                "Year of the Rabbit 2023",
+	"大判カード":                "Oversize",
+	"対戦キット":                "Clash Pack",
+	"巳年プロモ":                "Year of the Snake 2025",
+	"拡張アート MagicConプロモ":    "Extended Art MagicCon Promo",
+	"拡張アート その他プロモ":         "Extended Art Other Promos",
+	"拡張アート":                "Extended Art",
+	"新枠 2008年版ジャッジ褒賞":      "Mordern Frame 2008 Judge Rewards",
+	"旧枠 2000年版ジャッジ褒賞":      "Retro Frame 2000 Judge Rewards",
+	"旧枠 ジャッジ褒賞":            "Retro Frame Judge Rewards",
+	"旧枠 その他プロモ":            "Retro Frame Other Promos",
+	"旧枠 ヒストリープロモ":          "Retro Frame 30th Anniversary History",
+	"旧枠 褒賞プログラム":           "Old Frame Rewards Program",
+	"旧枠":                   "Retro Frame",
+	"絵違いVer.":              "Alternate Art",
+	"褒賞プログラム":              "Rewards Program",
+	"辰年プロモ":                "Year of the Dragon 2024",
 
 	"S&C・Foil":             "Step-and-Compleat Foil",
 	"Secret Lair Showdown": "SLP",
@@ -1122,31 +1183,16 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Serra Angel": {
 			"Borderless Player Rewards": {Edition: "PW24", Variant: "1"},
 		},
-	},
-	"Spotlight Series Promo": {
-		"Day of Black Sun": {
-			"スポットライトシリーズプロモ": {
-				Edition: "PSPL",
-				Variant: "7",
-			},
+		"Ultima": {
+			"ボーダーレス スタンダード・ショーダウン": {Edition: "PSS5", Variant: "1"},
 		},
-		"Get Lost": {
-			"Borderless スポットライトシリーズプロモ": {
-				Edition: "PSPL",
-				Variant: "5",
-			},
+		"Zack Fair": {
+			"ボーダーレス その他プロモ": {Edition: "PMEI", Variant: "2026-3"},
 		},
-		"Cloud, Midgar Mercenary": {
-			"Borderless スポットライトシリーズプロモ": {
-				Edition: "PPRO",
-				Variant: "2025-1",
-			},
-		},
-		"Terror of the Peaks": {
-			"スポットライトシリーズプロモ": {
-				Edition: "PSPL",
-				Variant: "1",
-			},
+		// The buylist reads a double-faced card's own name off the first
+		// face only.
+		"Peter Parker": {
+			"Extended Art Other Promos": {Edition: "PMEI", Variant: "2025-22"},
 		},
 	},
 	"Commander Play": {
@@ -1190,6 +1236,11 @@ var promoMap = map[string]map[string]map[string]struct {
 	"MagicFest": {
 		"Lightning Bolt": {
 			"": {
+				Edition: "PF19",
+				Variant: "1",
+			},
+			// This printing carries no promo type to disambiguate on.
+			"Textless": {
 				Edition: "PF19",
 				Variant: "1",
 			},
