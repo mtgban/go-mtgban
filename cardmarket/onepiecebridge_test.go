@@ -122,3 +122,49 @@ func TestOnePieceReprintWrongVariantIsSilent(t *testing.T) {
 		t.Errorf("processProduct(765980) = %v, want errNoPrinting", err)
 	}
 }
+
+// onePieceEventDatastore holds a Winner Pack copy the promo set labels with
+// the event Cardmarket's Winner Cards shelf carries only in its own name.
+const onePieceEventDatastore = `{"data": {
+ "game": "onepiece",
+ "sets": {"OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-09-30"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 708453}, "finish": "Foil", "id": "op14-087_708453_foil", "name": "Miss.Valentine (Mikita)", "number": "OP14-087", "promoTypes": ["winnerpack"], "rarity": "R", "setCode": "OP-PR", "variant": "Winner Pack 2026 Vol. 3"}
+ ]
+}}`
+
+// TestOnePieceEventLabelReachesThePrinting pins that a Winner Cards product
+// reaches its Winner Pack copy once the shelf's own event label is appended
+// to its number, which the product's own wording never carries.
+func TestOnePieceEventLabelReachesThePrinting(t *testing.T) {
+	b := datastoreBackend(t, "onepiece", onePieceEventDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	mkm.priceGuide = map[int]cm.PriceGuide{896411: {IDProduct: 896411, LowPrice: 1, TrendPrice: 2}}
+	product := cm.Product{
+		IDProduct:     896411,
+		Name:          "Miss.Valentine(Mikita) (OP14-087)",
+		Number:        "OP14-087",
+		ExpansionName: "Winner Cards",
+	}
+	channel := make(chan responseChan, 8)
+	err = mkm.processProduct(channel, &product)
+	if err != nil {
+		t.Fatalf("processProduct(896411) = %v", err)
+	}
+	close(channel)
+	var got string
+	for res := range channel {
+		if res.cardID != "" {
+			got = res.cardID
+			break
+		}
+	}
+	want := "op14-087_708453_foil"
+	if got != want {
+		t.Errorf("processProduct(896411) named %q, want %q", got, want)
+	}
+}
