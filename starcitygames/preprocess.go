@@ -477,7 +477,7 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 		case strings.HasPrefix(number, "PRE_") && len(fields) == 3:
 			// Prerelease promo. A modern promo set numbers it <num>s and an
 			// old one plainly <num>; where the promo set has neither, the
-			// main set carries the prerelease reprint itself (e.g. LCI #188).
+			// main set carries the prerelease reprint itself (e.g. MKM #430).
 			num := strings.TrimLeft(fields[2], "0")
 			promo := "P" + fields[1]
 			setCode, number = fields[1], num
