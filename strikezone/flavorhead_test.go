@@ -4,7 +4,8 @@ import "testing"
 
 // TestFlavorHead pins which "Head - Card" listings keep their head. A flavor
 // name the catalog sells the card under reaches Match whole, even where the
-// search does not index it, and a head nothing knows leaves the card's own.
+// search does not index it, as does a Godzilla name on the Ikoria shelf; a
+// head nothing knows leaves the card's own.
 func TestFlavorHead(t *testing.T) {
 	b := realDatastore(t)
 
@@ -21,6 +22,11 @@ func TestFlavorHead(t *testing.T) {
 			desc: "and one printed on a single face",
 			name: "Mimir's Ancient Wisdom - Teferi's Ageless Insight", edition: "Secret Lair", notes: "Near Mint Foil English",
 			wantSet: "SLD", wantNumber: "2214",
+		},
+		{
+			desc: "Ikoria's Godzilla names reach the Ikoria branch",
+			name: "Battra Terror of the City - Dirge Bat", edition: "Ikoria: Lair of Behemoths", notes: "Normal",
+			wantSet: "IKO", wantNumber: "386",
 		},
 		{
 			desc: "a head nothing knows leaves the card's own",
