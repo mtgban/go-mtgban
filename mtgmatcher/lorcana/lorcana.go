@@ -6,6 +6,7 @@
 package lorcana
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -135,6 +136,10 @@ type AllCards struct {
 		MoveCost         int      `json:"moveCost,omitempty"`
 		NonPromoID       int      `json:"nonPromoId,omitempty"`
 		IsExternalReveal bool     `json:"isExternalReveal,omitempty"`
+
+		// Language is the builder's, not upstream's: it is written on the
+		// exclusives TCGplayer prices in no English sku. Empty means English.
+		Language string `json:"language,omitempty"`
 
 		ExternalLinks struct {
 			TcgPlayerID int `json:"tcgPlayerId"`
@@ -472,12 +477,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			Number:  card.Number + card.Variant,
 			Images:  card.Images,
 
-			// The datastore is English-only. Core Match's language filter
-			// drops any candidate whose Language differs from English when
-			// several survive filtering, so leaving this empty would turn
-			// every legitimate multi-candidate result (aliasing) into a
-			// bogus wrong-variant error.
-			Language: "English",
+			// English unless the printing says otherwise: core's filter drops
+			// a candidate that is not English whenever two survive, empty ones
+			// included.
+			Language: cmp.Or(card.Language, "English"),
 
 			Colors: colors,
 			Rarity: rarity,
