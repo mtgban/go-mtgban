@@ -144,8 +144,9 @@ type AllCards struct {
 		ExternalLinks struct {
 			TcgPlayerID int `json:"tcgPlayerId"`
 
-			// CardmarketID and CardTraderId are read only to tell a
-			// regionally renamed repeat of a card from a card of its own.
+			// CardmarketID is indexed where it names one card alone.
+			// CardTraderID is read only to tell a regionally renamed repeat
+			// of a card from a card of its own.
 			CardmarketID int `json:"cardmarketId"`
 			CardTraderID int `json:"cardTraderId"`
 
@@ -324,7 +325,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
+	b.ExternalIdentifiers = map[string]map[string]string{
+		mtgmatcher.IDSpaceTCGplayer:  {},
+		mtgmatcher.IDSpaceCardmarket: {},
+	}
 	b.SetSealedUUIDs = map[string][]string{}
 
 	cards := ac.englishCards()
@@ -429,11 +433,17 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 		claimants[pid][cardID] = true
 	}
+	// Cardmarket ids are counted apart, being another vendor's integers:
+	// Moana and Vaiana both claim 801862.
+	cardmarketClaims := map[int]int{}
 	for _, i := range cards {
 		card := ac.Cards[i]
 		claim(card.ExternalLinks.TcgPlayerID, card.ID)
 		for _, extra := range card.ExternalLinks.TcgPlayerExtraIDs {
 			claim(extra, card.ID)
+		}
+		if card.ExternalLinks.CardmarketID != 0 {
+			cardmarketClaims[card.ExternalLinks.CardmarketID]++
 		}
 	}
 
@@ -616,6 +626,16 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 			if len(claimants[card.ExternalLinks.TcgPlayerID]) == 1 {
 				b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][fmt.Sprint(card.ExternalLinks.TcgPlayerID)] = convertedCard.UUID
+			}
+		}
+		if card.ExternalLinks.CardmarketID != 0 {
+			mcmID := fmt.Sprint(card.ExternalLinks.CardmarketID)
+			if convertedCard.Identifiers == nil {
+				convertedCard.Identifiers = map[string]string{}
+			}
+			convertedCard.Identifiers["mcmId"] = mcmID
+			if cardmarketClaims[card.ExternalLinks.CardmarketID] == 1 {
+				b.ExternalIdentifiers[mtgmatcher.IDSpaceCardmarket][mcmID] = convertedCard.UUID
 			}
 		}
 
