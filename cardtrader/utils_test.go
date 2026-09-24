@@ -32,8 +32,9 @@ func TestCollectorNumberShapes(t *testing.T) {
 
 // TestGameVariation pins the gate: the Version names the printing only for
 // One Piece, Riftbound and Yu-Gi-Oh, and only behind a number - a readable
-// one for One Piece - since its wording is full of the years and volume
-// numbers that would answer as a collector number in its place.
+// one for One Piece, unless the number is a placeholder with no digit at all
+// - since its wording is full of the years and volume numbers that would
+// answer as a collector number in its place.
 func TestGameVariation(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -44,8 +45,8 @@ func TestGameVariation(t *testing.T) {
 	}{
 		{"one piece appends the version", GameOnePiece, "OP16 Release Event", "P-135", "P-135 OP16 Release Event"},
 		{"a letter-tailed number takes it too", GameOnePiece, "Winner Pack 2026 Vol.3", "OP01-001a", "OP01-001a Winner Pack 2026 Vol.3"},
-		{"an unreadable number keeps the version out", GameOnePiece, "Winner Pack 2026 Vol.3", "OP07-047P2", "OP07-047P2"},
-		{"so does a number with no digits to read", GameOnePiece, "Premium Card Collection", "P-L", "P-L"},
+		{"an unreadable number with a digit keeps the version out", GameOnePiece, "Winner Pack 2026 Vol.3", "OP07-047P2", "OP07-047P2"},
+		{"a placeholder number with no digit gives the version instead", GameOnePiece, "Premium Card Collection", "P-L", "Premium Card Collection"},
 		{"an empty version leaves the number alone", GameOnePiece, "", "OP01-001", "OP01-001"},
 		{"lorcana keeps its own number", GameLorcana, "Enchanted", "OP01-001", "OP01-001"},
 		{"riftbound appends the version too", GameRiftbound, "Summoner Skirmish | Champion", "058c", "058c Summoner Skirmish | Champion"},
