@@ -1193,16 +1193,17 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			variant = "Foil Etched"
 		}
 
+	case "Commander: Magic: The Gathering - FINAL FANTASY: Collector's Edition":
+		// The core edition aliasing collapses this shelf's own name to
+		// "Commander: Magic: The Gathering", which names no set and
+		// aliases its numbers across FIC and three unrelated commander
+		// sets sharing them; naming FIC directly here bypasses that.
+		edition = "FIC"
+		variant = number
+
 	case "Commander: Modern Horizons 3: Extras":
 		edition = "M3C"
-		switch variant {
-		case "V.2":
-			for _, card := range b.MatchInSetNumber(cardName, "M3C", number) {
-				if card.HasPromoType(magic.PromoTypeRippleFoil) {
-					variant += " ripplefoil"
-				}
-			}
-		}
+		variant = number
 
 	case "Mystical Archive":
 		switch variant {
@@ -1288,6 +1289,8 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			edition = "LTC"
 			if magic.HasSerializedPrinting(b, cardName, "LTC") {
 				variant = "serial"
+			} else if ogVariant == "V.2" {
+				variant += " silverfoil"
 			}
 		} else if len(b.MatchInSet(cardName, "LTR")) > 0 {
 			edition = "LTR"

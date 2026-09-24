@@ -3,6 +3,8 @@ package cardmarket
 import (
 	"testing"
 
+	cm "github.com/mtgban/go-cardmarket"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 )
 
@@ -54,6 +56,40 @@ func TestMarketFoilOnly(t *testing.T) {
 		if got := marketFoilOnly(b, tt.cardID, tt.cardIDFoil); got != tt.want {
 			t.Errorf("%s: marketFoilOnly(%q, %q) = %v, want %v",
 				tt.name, tt.cardID, tt.cardIDFoil, got, tt.want)
+		}
+	}
+}
+
+// TestFoilOnlyShelf pins the closed set of shelves whose guide entry prices
+// the shown treatment's foil alone - verbatim product names from the shelves
+// the README documents, plus the edge cases the closed table is built
+// around: M3C Extras' own "(V.1)" printing is not foil-only, and the
+// Holiday Release name is shared by LTC's foil-only silverfoil box topper
+// and LTR's own (also foil-only) showcase cards. LTR is left off the table
+// not because it sells both finishes - Boromir (V.2) below is foil-only
+// same as LTC's box topper - but because Preprocess already resolves its
+// "(V.2)" rows onto their foil printing by variant, before foilOnlyShelf is
+// ever asked, so an entry here would be a no-op for all 181 of them.
+func TestFoilOnlyShelf(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		product cm.Product
+		setCode string
+		want    bool
+	}{
+		{"FIC Collector's Edition", cm.Product{Name: "Summon: Esper Valigarmanda", ExpansionName: "Commander: Magic: The Gathering - FINAL FANTASY: Collector's Edition"}, "FIC", true},
+		{"MSC Collector's Edition", cm.Product{Name: "Iron Man, Armored Avenger", ExpansionName: "Commander: Marvel Super Heroes: Collector's Edition"}, "MSC", true},
+		{"TMC Extras", cm.Product{Name: "Baxter, Fly in the Ointment", ExpansionName: "Commander: Teenage Mutant Ninja Turtles: Extras"}, "TMC", true},
+		{"M3C Extras with no (V.N) suffix", cm.Product{Name: "Drowner of Hope", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", true},
+		{"M3C Extras (V.2)", cm.Product{Name: "Localized Destruction (V.2)", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", true},
+		{"M3C Extras (V.1) is the ordinary nonfoil printing", cm.Product{Name: "Sunken Palace (V.1)", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", false},
+		{"LTC Holiday Release (V.2) is the silverfoil box topper", cm.Product{Name: "Kenrith, the Returned King (V.2)", ExpansionName: "The Lord of the Rings: Tales of Middle-earth Holiday Release"}, "LTC", true},
+		{"LTR Holiday Release (V.2) already resolved to foil by Preprocess", cm.Product{Name: "Boromir, Warden of the Tower (V.2)", ExpansionName: "The Lord of the Rings: Tales of Middle-earth Holiday Release"}, "LTR", false},
+		{"LTC Holiday Release (V.1) is the ordinary printing", cm.Product{Name: "Kenrith, the Returned King (V.1)", ExpansionName: "The Lord of the Rings: Tales of Middle-earth Holiday Release"}, "LTC", false},
+		{"an unrelated shelf", cm.Product{Name: "Lightning Bolt", ExpansionName: "Modern Horizons 2"}, "MH2", false},
+	} {
+		if got := foilOnlyShelf(&tt.product, tt.setCode); got != tt.want {
+			t.Errorf("%s: foilOnlyShelf(%+v, %q) = %v, want %v", tt.name, tt.product, tt.setCode, got, tt.want)
 		}
 	}
 }
