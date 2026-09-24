@@ -203,6 +203,13 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: a number two sets share names neither of them",
 		In:   mtgmatcher.InputCard{Name: "Honest", Edition: "Promo", Variation: "LODT-EN001 Secret Rare"},
 	},
+	// Moja sells plainly at RGBT-EN084, but Cool Stuff Inc also files the
+	// Duelist Pack Collection Tin reprint, numbered RGBT-ENPP4, under
+	// "Raging Battle" beside it - a set that never printed that number.
+	{
+		Desc: "a named edition without the number is dropped for the number to answer",
+		In:   mtgmatcher.InputCard{Name: "Moja", Edition: "Raging Battle", Variation: "RGBT-ENPP4 Ultra Rare Ultra Rare"},
+	},
 	// Konami numbers a printing by the language it was printed in, and this
 	// datastore is mostly the English catalog - so a foreign number is a
 	// sign of a printing it has no row for. A sign and not a rule: the

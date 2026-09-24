@@ -368,6 +368,21 @@ func editionCarries(set *mtgmatcher.Set, name, number string) bool {
 	return carries(set, name, number, numberMatches)
 }
 
+// editionHoldsNumber is editionCarries widened by the same loose volume-index
+// reading FilterCards itself relaxes into within a named edition ("5-001"
+// for DL5-EN001): a caller deciding whether to keep trusting the edition has
+// to honor it too, or a listing that only resolves through it loses the
+// edition that reading depends on.
+func editionHoldsNumber(set *mtgmatcher.Set, name, number string) bool {
+	if editionCarries(set, name, number) {
+		return true
+	}
+	if loosePrefixNumber(number) {
+		return carries(set, name, number, loosePrefixMatches)
+	}
+	return false
+}
+
 // editionTokenAt answers the one token the set prints under the number, or
 // nothing when the number names none — or several, which no storefront
 // wording tells apart.
@@ -503,13 +518,16 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		if edition == named {
 			edition = siblingSetRarity(b, inCard, named)
 		}
+		if edition == named {
+			edition = droppedIfNumberless(b, inCard, named)
+		}
 		inCard.Edition = edition
 		spellNumber(b, inCard)
 		return
 	}
 	edition = trimEditionDecorations(edition)
 	if named, found := namedSet(b, edition); found {
-		edition = named
+		edition = droppedIfNumberless(b, inCard, named)
 	} else if set := numberSet(b, inCard, edition); set != nil {
 		edition = set.Name
 	} else if isPromoHeading(edition) {
@@ -525,6 +543,24 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	}
 	inCard.Edition = edition
 	spellNumber(b, inCard)
+}
+
+// droppedIfNumberless answers the named set, unless the wording's own
+// collector number is one that set does not carry - "Moja" sells plainly at
+// RGBT-EN084, but Cool Stuff Inc also files its Duelist Pack Collection Tin
+// reprint, numbered RGBT-ENPP4, under "Raging Battle" beside it, and RGBT
+// never printed that number. Restricting the search to the named set then
+// finds nothing; dropping the edition instead lets the number's own set
+// answer. Both AdjustEdition branches reach a named set this way - directly,
+// or after trimEditionDecorations - and a number contradicting it is the same
+// tell either way.
+func droppedIfNumberless(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named string) string {
+	set := b.NormalizedSets[mtgmatcher.Normalize(named)]
+	number := extractNumber(inCard.Variation)
+	if number != "" && (set == nil || !editionHoldsNumber(set, inCard.Name, number)) {
+		return ""
+	}
+	return named
 }
 
 // isPromoHeading reports whether an edition is Cool Stuff Inc's catch-all

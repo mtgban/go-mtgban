@@ -151,6 +151,15 @@
         "uuid": "eoj-en004k_246234_unlimited"
     },
     {
+        "description": "a named edition without the number is dropped for the number to answer",
+        "input": {
+            "name": "Moja",
+            "variant": "RGBT-ENPP4 Ultra Rare Ultra Rare",
+            "edition": "Raging Battle"
+        },
+        "uuid": "rgbt-enpp4_80162_limited"
+    },
+    {
         "description": "a numbered name reads the same with or without its mark",
         "input": {
             "name": "Sasuke Samurai 2",
