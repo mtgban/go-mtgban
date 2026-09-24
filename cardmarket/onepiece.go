@@ -64,3 +64,41 @@ func offCode(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
 	co, err := b.GetUUID(cardID)
 	return err == nil && !strings.EqualFold(co.Number, fields[1])
 }
+
+// claimByID fills claimed with the printings the walk's products are
+// answered with by id, before any product is named by its wording.
+func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) {
+	r.claimed = map[string]bool{}
+	for _, exp := range items {
+		for _, id := range byExpansion[exp.IDExpansion] {
+			product := &cm.Product{IDProduct: id, Name: products[id].Name, ExpansionName: exp.Name}
+			cardID, err := r.onePieceByID(product)
+			if err != nil || cardID == "" {
+				continue
+			}
+			r.claimed[cardID] = true
+			foilID, err := r.backend.MatchID(cardID, true)
+			if err == nil {
+				r.claimed[foilID] = true
+			}
+		}
+	}
+}
+
+// giveWay refuses a One Piece product whose wording landed on a printing
+// another product is answered with by id. Cardmarket sells the treasure
+// rares, winner copies and event stamps the datastore does not carry beside
+// the printing they reprint, and the wording reaches that printing for all
+// of them, publishing a second price for it.
+func (r *resolver) giveWay(results []resolved) {
+	for i, res := range results {
+		if res.err != nil || !r.claimed[res.cardID] {
+			continue
+		}
+		id, err := r.onePieceByID(res.product)
+		if err == nil && id != "" {
+			continue
+		}
+		results[i] = resolved{product: res.product, err: errTwin}
+	}
+}

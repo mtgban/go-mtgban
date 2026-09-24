@@ -64,6 +64,10 @@ type resolver struct {
 	// expansions are known, via shelvedSets.
 	shelved map[string]string
 
+	// claimed holds the One Piece printings some product of the run is
+	// answered with by id; see claimByID.
+	claimed map[string]bool
+
 	// printf logs through the owning scraper's own prefix. Left nil, calls
 	// through it are no-ops - a resolver built for a test rather than a
 	// live scraper needs none.
