@@ -228,6 +228,21 @@ var lorcanaSeeds = []matchTest{
 	// matching a supplied edition; without one (or with one that resolves to
 	// no set name) the number-driven contract above is unchanged.
 	{
+		// AdjustName's prefix fallback: "Flotsam" prefixes both The First
+		// Chapter's 43 and Ursula's Return's own 43, and the edition is what
+		// narrows the tier to one.
+		Desc: "truncated name narrowed to one set by the edition",
+		In:   mtgmatcher.InputCard{Name: "Flotsam", Variation: "43/204", Edition: "The First Chapter"},
+	},
+	{
+		// Fabled reprints five different Mickeys. A tier holder must be
+		// tracked per (name, set) rather than per name alone, or the first
+		// set seen for one of the five silently wins the edition filter and
+		// narrows a genuine five-way tie down to a wrong single answer.
+		Desc: "negative: a name reprinted across several candidates in one edition stays ambiguous",
+		In:   mtgmatcher.InputCard{Name: "Mickey Mouse", Edition: "Fabled"},
+	},
+	{
 		Desc: "edition disambiguates a name and number shared across sets",
 		In:   mtgmatcher.InputCard{Name: "Let It Go", Variation: "163", Edition: "The First Chapter"},
 	},

@@ -112,11 +112,40 @@ func statesQualifier(wording, qualifier string) bool {
 	return false
 }
 
+// nameHit is one (name, set) pair an AdjustName tier holds. A reprinted name
+// carries one hit per set it survives in, rather than one hit overall, so
+// narrowing a tier down to an edition's set can never lose a set the name is
+// genuinely also printed under.
+type nameHit struct {
+	name    string
+	setCode string
+}
+
+// addHit appends a (name, set) pair not already in hits.
+func addHit(hits []nameHit, name, setCode string) []nameHit {
+	if slices.ContainsFunc(hits, func(h nameHit) bool { return h.name == name && h.setCode == setCode }) {
+		return hits
+	}
+	return append(hits, nameHit{name, setCode})
+}
+
+// distinctNames returns the names hits holds, each once.
+func distinctNames(hits []nameHit) []string {
+	var names []string
+	for _, h := range hits {
+		if !slices.Contains(names, h.name) {
+			names = append(names, h.name)
+		}
+	}
+	return names
+}
+
 // AdjustName provides a prefix fallback: scraper feeds sometimes truncate the
 // "Character - Title" name. When the exact name is unknown, scan for cards
 // whose name has the input as a prefix and let the collector number and finish
-// narrow them; adopt the name only when exactly one survives. If several
-// distinct names survive, the input stays unresolved and Match reports an
+// narrow them; adopt the name only when exactly one survives, or - failing
+// that - when the edition names the one set among them. If several distinct
+// names still survive, the input stays unresolved and Match reports an
 // unknown name (without a single name there is nothing to hand the pipeline).
 func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
@@ -130,7 +159,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		uuids = nil
 	}
 
-	var fits, wrongFinish []string
+	var fits, wrongFinish []nameHit
 	for _, uuid := range uuids {
 		co, err := b.GetUUID(uuid)
 		if err != nil {
@@ -151,26 +180,30 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			continue
 		}
 		if !inCard.Foil && !co.HasFinish(mtgmatcher.FinishNonfoil) {
-			if !slices.Contains(wrongFinish, co.Name) {
-				wrongFinish = append(wrongFinish, co.Name)
-			}
+			wrongFinish = addHit(wrongFinish, co.Name, co.SetCode)
 			continue
 		}
-		if !slices.Contains(fits, co.Name) {
-			fits = append(fits, co.Name)
-		}
+		fits = addHit(fits, co.Name, co.SetCode)
 	}
 	// The first tier holding anything decides, the shape FilterCards uses:
 	// the names set aside only ever answer where the plain finish had
-	// nothing to offer. Several names in that tier are genuinely ambiguous
-	// and stay unresolved rather than falling through to a tie broken by
-	// finish, which would answer with a name the tier itself often holds.
-	for _, tier := range [][]string{fits, wrongFinish} {
+	// nothing to offer.
+	setCode := soleSet(b, inCard.Edition)
+	for _, tier := range [][]nameHit{fits, wrongFinish} {
 		if len(tier) == 0 {
 			continue
 		}
-		if len(tier) == 1 {
-			inCard.Name = tier[0]
+		// A multi-name tier is narrowed to the edition's sole set, the same
+		// way FilterCards reads it; naming none or several leaves the tier
+		// exactly as ambiguous as before.
+		names := distinctNames(tier)
+		if len(names) > 1 && setCode != "" {
+			names = distinctNames(slices.DeleteFunc(slices.Clone(tier), func(h nameHit) bool {
+				return h.setCode != setCode
+			}))
+		}
+		if len(names) == 1 {
+			inCard.Name = names[0]
 		}
 		return
 	}
