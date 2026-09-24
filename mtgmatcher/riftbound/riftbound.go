@@ -1,10 +1,9 @@
 // Package riftbound loads a Riftbound (League of Legends TCG) datastore.
 //
 // The datastore is the official card-gallery payload, enriched by
-// github.com/mtgban/riftbound-datastore with the TCGplayer product id of
-// every printing and with the promotional printings the gallery does not
-// carry; that repository publishes a ready-made file daily. The plain
-// gallery payload loads too, only without identifiers or promo sets.
+// github.com/mtgban/datastore-gen with the TCGplayer product id of every
+// printing and with the promotional printings the gallery does not carry;
+// that repository publishes a ready-made file daily.
 package riftbound
 
 import (
@@ -83,7 +82,7 @@ type GallerySet struct {
 	CollectorNumberMax int    `json:"collectorNumberMax"`
 
 	// Type is not part of the official payload; the datastore builder
-	// (github.com/mtgban/riftbound-datastore) marks the promotional sets it
+	// (github.com/mtgban/datastore-gen) marks the promotional sets it
 	// appends with "promo", which gates how their printings match (see
 	// rules.go).
 	Type string `json:"type,omitempty"`
@@ -129,7 +128,7 @@ type GalleryCard struct {
 	} `json:"tags"`
 
 	// TCGplayerProductID is not part of the official payload; the datastore
-	// builder (github.com/mtgban/riftbound-datastore) stamps each card with
+	// builder (github.com/mtgban/datastore-gen) stamps each card with
 	// the TCGplayer product id it maps to, feeding the external identifier
 	// index.
 	TCGplayerProductID int `json:"tcgplayerProductId,omitempty"`

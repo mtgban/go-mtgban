@@ -81,7 +81,7 @@ jobs:
       game: "magic"
     secrets: inherit
 
-  # Lorcana is built by github.com/mtgban/lorcana-datastore and published
+  # Lorcana is built by github.com/mtgban/datastore-gen and published
   # straight to the private bucket, like Riftbound below.
   cache-lorcana:
     runs-on: ubuntu-latest
@@ -121,7 +121,7 @@ jobs:
           xz -d "${{ steps.get_key.outputs.filepath }}.xz"
 
   # Riftbound has no public URL for cache-file.yml to curl: the file is built
-  # by github.com/mtgban/riftbound-datastore and published straight to the
+  # by github.com/mtgban/datastore-gen and published straight to the
   # private bucket, so it is pulled from there and then cached under the same
   # key/filepath contract the other datastores use.
   cache-riftbound:

@@ -543,7 +543,7 @@ func TestRiftboundIdentifiers(t *testing.T) {
 		}
 	}
 	if n == 0 {
-		t.Fatal("no tcgplayer identifiers loaded; rebuild the datastore with github.com/mtgban/riftbound-datastore")
+		t.Fatal("no tcgplayer identifiers loaded; rebuild the datastore with github.com/mtgban/datastore-gen")
 	}
 	t.Logf("%d printings are reachable by tcgplayer product id", n)
 }

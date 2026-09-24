@@ -1,7 +1,7 @@
 // Package lorcana loads a Lorcana datastore.
 //
 // The datastore is LorcanaJSON's allCards payload, enriched by
-// github.com/mtgban/lorcana-datastore with sealed product and the
+// github.com/mtgban/datastore-gen with sealed product and the
 // TCGplayer product ids the plain payload does not carry.
 package lorcana
 
@@ -148,17 +148,15 @@ type AllCards struct {
 			// to this same printing, which upstream does not carry: TCGplayer
 			// sometimes sells a card's foil under its own product id, and a
 			// feed keyed on that id has nothing to match against otherwise.
-			// Populated by lorcana-datastore; absent from the upstream
-			// file, where it simply stays empty.
+			// Populated by datastore-gen; absent from the upstream file.
 			TcgPlayerExtraIDs []int `json:"tcgPlayerExtraIds,omitempty"`
 		} `json:"externalLinks"`
 	} `json:"cards"`
 
-	// Sealed is not part of the upstream file; lorcana-datastore appends
-	// every sealed product the TCGplayer catalog files outside the singles
-	// type, minting a set entry for the groups upstream has no set for. A
-	// datastore built from the plain upstream file simply loads without
-	// sealed products.
+	// Sealed is not part of the upstream file; datastore-gen appends every
+	// sealed product the TCGplayer catalog files outside the singles type,
+	// minting a set entry for the groups upstream has no set for. A
+	// datastore without it loads with no sealed products.
 	Sealed []struct {
 		ID            string `json:"id"`
 		Name          string `json:"name"`
