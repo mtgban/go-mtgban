@@ -296,24 +296,10 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 	}
 
 	switch cardName {
-	case "Magic Guru",
-		// The AFR dungeon token sheet's own two fused names: the loader
-		// carries each dungeon as its own token-layout row (TAFR/OAFR),
-		// but never fused as one "A // B" row under either of these
-		// names, confirmed by search rather than assumed absent.
-		"Dungeon of the Mad Mage // Lost Mine of Phandelver",
+	// The AFR dungeon sheets are carried only as TAFR token pairings,
+	// reached by id; no name route finds them, so refuse them quietly.
+	case "Dungeon of the Mad Mage // Lost Mine of Phandelver",
 		"Dungeon of the Mad Mage // Tomb of Annihilation":
-		return nil, mtgmatcher.ErrUnsupported
-	}
-
-	switch {
-	case strings.HasPrefix(cardName, "Secret Lair Countdown Kit:"),
-		strings.HasPrefix(cardName, "Ravnica: Clue Edition Front Card:"),
-		strings.HasPrefix(cardName, "Virtual Ticket to "):
-		// Verified non-cards: the Countdown Kit's own face cards, the
-		// Clue Edition's front_card-layout rows (dropped by the Magic
-		// loader by design), and Cardmarket's own marketplace ticket
-		// product.
 		return nil, mtgmatcher.ErrUnsupported
 	}
 

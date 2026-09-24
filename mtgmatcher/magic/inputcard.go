@@ -502,6 +502,10 @@ func isUnsupported(c *mtgmatcher.InputCard) bool {
 		mtgmatcher.Contains(c.Name, "Jumpstart Pack Summary Card") || // Jumpstart's deck-summary insert
 		mtgmatcher.Contains(c.Name, "Theme Card") || // Theme Booster/deck checklist inserts, no real card carries this substring either
 		c.Name == "Red Mana Counter" || // Cardmarket's own "Tokens for MTG" gaming accessory, not a card
+		c.Name == "Magic Guru" || // Guru program promo sold by Cardmarket and Hareruya, no card carries it
+		strings.HasPrefix(c.Name, "Secret Lair Countdown Kit:") || // the kit's lettered face cards
+		strings.HasPrefix(c.Name, "Ravnica: Clue Edition Front Card:") || // front_card layout, dropped by the loader
+		strings.HasPrefix(c.Name, "Virtual Ticket to ") || // Magic 30's virtual event ticket
 		(c.Contains("Duel Masters") && c.Contains("Not Tournament Legal")) || // scg
 		c.Contains("Sealed") ||
 		c.Contains("Un-Known Event Playtest") ||
