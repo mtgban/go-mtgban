@@ -51,6 +51,10 @@ var EditionTable = map[string]string{
 
 	"Marvel Legends Foil":           "Marvel Legends Series Inserts",
 	"Marvel Universe Eternal-Legal": "Marvel Universe",
+	"Marvel Source Material Cards":  "Marvel Universe",
+
+	"Marvel Super Heroes Eternal Legal Cards":          "Marvel Super Heroes Commander",
+	"Marvel Super Heroes Eternal Legal Cards Variants": "Marvel Super Heroes Commander",
 
 	"Marvel's Spider-Man: Eternal-Legal": "Marvel's Spider-Man Eternal",
 
