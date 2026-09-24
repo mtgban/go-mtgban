@@ -122,6 +122,15 @@ var cardTable = map[string]string{
 	"Sejiri Shelter Sejiri Glacier":                        "Sejiri Shelter // Sejiri Glacier",
 	"Silundi Vision Silundi Isle":                          "Silundi Vision // Silundi Isle",
 	"Turntimber Symbyosis / Turntimber, Serpentine Wood":   "Turntimber Symbiosis // Turntimber, Serpentine Wood",
+	// An "Extended Art" prefix is stripped after the " / " -> " // " pass
+	// above already ran, so the second lookup sees the typo with the split
+	// this package uses rather than the vendor's own.
+	"Turntimber Symbyosis // Turntimber, Serpentine Wood": "Turntimber Symbiosis // Turntimber, Serpentine Wood",
+	"Spiked Corridor / Tortured Pit":                      "Spiked Corridor // Torture Pit",
+
+	// The vendor's own product number, wrong or not the card's own.
+	"Thanos, the Mad Titan (Borderless) (0367)":                 "Thanos, the Mad Titan (Borderless) (376)",
+	"Smaug the Magnificent (247) (Gold Headliner) (Borderless)": "Smaug the Magnificent (Gold Headliner)",
 
 	// Funny cards
 	"(Untitled Card": "_____",
@@ -148,6 +157,11 @@ var card2setTable = map[string]string{
 	"Elvish Lyrist (FNM)":             "Junior Super Series",
 
 	"Tempered Steel (Full Art Textless)": "Scars of Mirrodin Promos",
+
+	// Future Sight frame promos the store files under its Secret Lair
+	// shelf, which never says the drop the way hasSeveralDrops needs.
+	"The First Sliver (Future Sight) (003)": "PF25",
+	"The Ur-Dragon (003) (Future Sight)":    "PF25",
 }
 
 // These cards don't have any variant, we know they are Promotional Cards,
