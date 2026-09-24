@@ -189,6 +189,17 @@ var nameRespellings = [][2]string{
 	{"Meteor Black Dragon", "Meteor B. Dragon"},
 	{"Earthbound Immortal Revival", "Earthbound Revival"},
 	{"Darkfall", "Dark Trap Hole"},
+	{"Sky Scout", "Harpie's Brother"},
+	{"Vampire Baby", "Red-Moon Baby"},
+	{"Dark Scorpion - Cliff the Trap Remover", "Cliff the Trap Remover"},
+	{"After the Struggle", "After Genocide"},
+	{"Amazoness Archer", "Amazon Archer"},
+	{"Darklord Marie", "Marie the Fallen One"},
+	{"Counter Gem", "Crystal Counter"},
+	{"Trial of Nightmare", "Trial of Hell"},
+	{"Slime Toad", "Frog The Jam"},
+	{"Cipher Soldier", "Kinetic Soldier"},
+	{"Armityle the Chaos Phantasm", "Armityle the Chaos Phantom"},
 	{"Roar of the Earthbound Immortal", "Roar of the Earthbound"},
 	// The catalog files the Rise of Destiny printing under the name
 	// without its prefix.
