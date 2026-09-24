@@ -136,6 +136,7 @@ var tcgIDOverrides = map[int]int{
 	332883: 545663, // Lugia ex, Jumbo Oversized, TCG Classic deck
 	171625: 252517, // Charizard, Gold Metal, Celebrations
 	171624: 252516, // Pikachu, Gold Metal, Celebrations
+	314342: 616824, // Greninja ex, Metal Card, Twilight Masquerade
 }
 
 // tcgplayerID answers the TCGplayer id a blueprint's own listings should
