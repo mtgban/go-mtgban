@@ -7,8 +7,9 @@ import (
 // TestPromoShelf pins the retail promo shelf's newer wordings to the
 // printings they name: the Wizards Play Network and Standard Showdown
 // promos of 2025 and 2026, filed by year; a judge foil told apart by the
-// year in its title; and a prerelease card the set numbers among its own,
-// which every set since Murders at Karlov Manor does.
+// year in its title; a prerelease card the set numbers among its own,
+// which every set since Murders at Karlov Manor does; and the Spotlight
+// Series shelf, which names a set of its own rather than a per-card row.
 func TestPromoShelf(t *testing.T) {
 	for _, tt := range []struct {
 		desc, jp, en, card, foil string
@@ -81,6 +82,27 @@ func TestPromoShelf(t *testing.T) {
 			card: "Imperious Perfect", foil: "0",
 			wantSet: "PCMP", wantNumber: "9",
 		},
+		{
+			desc: "the Spotlight Series shelf resolves by treatment, not a per-card row",
+			jp:   "■ボーダーレス■《ミッドガルの傭兵、クラウド/Cloud, Midgar Mercenary》(スポットライトシリーズプロモ)[流星マーク] 白",
+			en:   "■Borderless■《Cloud, Midgar Mercenary》[Spotlight Series Promo]",
+			card: "Cloud, Midgar Mercenary", foil: "0",
+			wantSet: "PSPL", wantNumber: "4",
+		},
+		{
+			desc: "and so does a second card on the same shelf, a different treatment",
+			jp:   "■拡張アート■《暗闇のなぞなぞ勝負/Riddles in the Dark》(スポットライトシリーズプロモ)[流星マーク] 青",
+			en:   "■Extended Art■《Riddles in the Dark》[Spotlight Series Promo]",
+			card: "Riddles in the Dark", foil: "0",
+			wantSet: "PSPL", wantNumber: "12",
+		},
+		{
+			desc: "a MagicFest Lightning Bolt names no promo type of its own, so the bare shelf tag is pinned by hand",
+			jp:   "■テキストレス■《稲妻/Lightning Bolt》[MagicFest] 赤",
+			en:   "■Textless■《Lightning Bolt》[MagicFest]",
+			card: "Lightning Bolt", foil: "0",
+			wantSet: "PF19", wantNumber: "1",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := withMagic(t)
@@ -109,7 +131,11 @@ func TestPromoShelf(t *testing.T) {
 // TestBuylistPromoShelf pins the buylist's spellings of the same shelf,
 // which names it by its shooting-star mark and the card by the program
 // that handed it out, and the Pool Party drop's dazzle foil, told from the
-// plain foil only by the marker in the foil's place.
+// plain foil only by the marker in the foil's place. It also pins the
+// shooting-star listings whose series names no shelf a per-card row
+// already answers: the Spotlight Series and 30th Anniversary History
+// promos, and four cards whose treatment and series were reaching the
+// wrong printing untranslated together.
 func TestBuylistPromoShelf(t *testing.T) {
 	for _, tt := range []struct {
 		title, wantSet, wantNumber string
@@ -122,12 +148,104 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】(SCD-288)《太陽の指輪/Sol Ring》[SLD] 茶R", "SLD", "IFIYW-5"},
 		{"【EN】【Foil】(2062)■ボーダーレス■《Chancla relámpagos》//《稲妻のすね当て/Lightning Greaves》[SLD] 茶", "SLD", "2062★"},
 		{"【EN】(2062)■ボーダーレス■《Chancla relámpagos》//《稲妻のすね当て/Lightning Greaves》[SLD] 茶", "SLD", "2062"},
+		// Spotlight Series: no per-card row, resolved by treatment alone.
+		{"【EN】【Foil】■ボーダーレス■《ミッドガルの傭兵、クラウド/Cloud, Midgar Mercenary》(スポットライトシリーズプロモ)[流星マーク] 白", "PSPL", "4"},
+		{"【EN】【Foil】■拡張アート■《暗闇のなぞなぞ勝負/Riddles in the Dark》(スポットライトシリーズプロモ)[流星マーク] 青", "PSPL", "12"},
+		{"【EN】■ボーダーレス■《失せろ/Get Lost》(スポットライトシリーズプロモ)[流星マーク] 白", "PSPL", "5"},
+		{"【EN】《峰の恐怖/Terror of the Peaks》(スポットライトシリーズプロモ)[流星マーク] 赤", "PSPL", "1"},
+		{"【EN】【Foil】《黒い太陽の日/Day of Black Sun》(スポットライトシリーズプロモ)[流星マーク] 黒", "PSPL", "7"},
+		// 30th Anniversary History: the retro-framed and the plain printing.
+		{"【EN】【Foil】■旧枠■《セラの天使/Serra Angel》(ヒストリープロモ)[流星マーク] 白", "P30H", "1★"},
+		{"【EN】【Foil】《セラの天使/Serra Angel》(ヒストリープロモ)[流星マーク] 白", "P30H", "1"},
+		// Four cards whose treatment and shelf, run together untranslated,
+		// reached the wrong printing (FIN 38/45, JMP 25, SPM 208); Sethron
+		// resolves via a new editionTable row, the rest via promoMap.
+		{"【EN】【Foil】■ボーダーレス■《古代魔法「アルテマ」/Ultima》(スタンダード・ショーダウン)[流星マーク] 白", "PSS5", "1"},
+		{"【EN】【Foil】《ハールーンの将軍、セスロン/Sethron, Hurloon General》(旧正月プロモ)[流星マーク] 赤", "PL21", "1★"},
+		{"【EN】【Foil】■ボーダーレス■《ザックス・フェア/Zack Fair》(その他プロモ)[流星マーク] 白", "PMEI", "2026-3"},
+		{"【EN】■拡張アート■《ピーター・パーカー/Peter Parker》/《アメイジング・スパイダーマン/Amazing Spider-Man》(その他プロモ)[流星マーク] 白R", "PMEI", "2025-22"},
+		// The Marvel Legends compound entry named a set code as a bare
+		// word, which only ever reaches the wrong printing as a variant;
+		// spelling it out resolves the shelf's own set directly.
+		{"【EN】【Foil】■ボーダーレス■《スタークによる改良、アイアン・スパイダー/Iron Spider, Stark Upgrade》(マーベル・レジェンドプロモ)[流星マーク] 茶", "LMAR", "4"},
+		{"【EN】【Foil】■ボーダーレス■《恐ろしき癒し手、アンチヴェノム/Anti-Venom, Horrifying Healer》(マーベル・レジェンドプロモ)[流星マーク] 白", "LMAR", "1"},
+		{"【EN】【Foil】■ボーダーレス■《スペクタキュラー・スパイダーマン/Spectacular Spider-Man》(マーベル・レジェンドプロモ)[流星マーク] 白", "LMAR", "2"},
 	} {
 		t.Run(tt.title, func(t *testing.T) {
 			b := withMagic(t)
 			theCard, err := preprocess(b, tt.title)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.title, err)
+			}
+			cardID, err := b.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%q) = %v", theCard, err)
+			}
+			co, err := b.GetUUID(cardID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != tt.wantSet || co.Number != tt.wantNumber {
+				t.Errorf("Match(%q) = %s %s, want %s %s", theCard, co.SetCode, co.Number, tt.wantSet, tt.wantNumber)
+			}
+		})
+	}
+}
+
+// TestRetailEnglishLineWording pins the retail wording the English line
+// alone carries: a Guild Kit basic's own number, an APAC land's own shelf
+// index (artist plus name is still ambiguous for Ron Spears' two Swamps),
+// a MagicFest basic's year, and a The List reprint's own number, read off
+// the second half of the slash code hareruya prints for it.
+func TestRetailEnglishLineWording(t *testing.T) {
+	for _, tt := range []struct {
+		desc, jp, en, card, foil string
+		wantSet, wantNumber      string
+	}{
+		{
+			desc: "a Guild Kit basic's number is only in the English line",
+			jp:   "《森/Forest》[GK2-RG] 土地",
+			en:   "《Forest》[GK2-RG](106)",
+			card: "Forest", foil: "0",
+			wantSet: "GK2", wantNumber: "106",
+		},
+		{
+			desc: "an APAC land is told apart by the storefront's own shelf index",
+			jp:   "(APAC3)《平地/Plains》(Illus.Rebecca Guay)[APACランド] 土地",
+			en:   "APAC3  《Plains》  Illus.Rebecca Guay",
+			card: "Plains", foil: "0",
+			wantSet: "PALP", wantNumber: "14",
+		},
+		{
+			desc: "a second APAC land, another shelf index and color",
+			jp:   "(APAC1)《山/Mountain》(Illus.Heather Hudson)[APACランド] 土地",
+			en:   "APAC1  《Mountain》 Illus.Heather Hudson",
+			card: "Mountain", foil: "0",
+			wantSet: "PALP", wantNumber: "3",
+		},
+		{
+			desc: "a MagicFest basic's year is the only number it carries",
+			jp:   "【Foil】《島/Island》(2019年版)[MagicFest] 土地",
+			en:   "【Foil】《Island》2019ver [Magic Fest]",
+			card: "Island", foil: "1",
+			wantSet: "PF19", wantNumber: "3",
+		},
+		{
+			desc: "a The List reprint's own number is past the slash",
+			jp:   "(EvK/DDO-020)《ルーンの母/Mother of Runes》[PWシンボル付き再版] 白U",
+			en:   "(EvK/DDO-020)《Mother of Runes》[MB1]",
+			card: "Mother of Runes", foil: "0",
+			wantSet: "PLST", wantNumber: "DDO-20",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			b := withMagic(t)
+			theCard, err := Preprocess(b, Product{
+				ProductName: tt.jp, ProductNameEN: tt.en,
+				CardName: tt.card, FoilFlag: tt.foil,
+			})
+			if err != nil {
+				t.Fatalf("Preprocess(%q) = %v", tt.jp, err)
 			}
 			cardID, err := b.Match(theCard)
 			if err != nil {
