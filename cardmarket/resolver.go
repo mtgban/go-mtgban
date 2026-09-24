@@ -509,6 +509,18 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				cardID, _ = r.backend.MatchIDFinish(fmt.Sprint(tcgID), finish)
 			}
 		}
+		// CardTrader's tcg id can name a sibling rarity or another card;
+		// distrust it.
+		if r.gameID == cm.GameYuGiOh && cardID != "" {
+			if r.yugiohOtherCard(product, cardID) {
+				cardID = ""
+			} else {
+				id := r.yugiohWorded(product, cardID)
+				if id != "" {
+					cardID, byName = id, true
+				}
+			}
+		}
 		// The bridge speaks through cardtrader's blueprints and knows only
 		// part of the catalog - half of Yu-Gi-Oh's, a third of Flesh and
 		// Blood's - and what it leaves out is ordinary cards. They can be
