@@ -387,8 +387,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			// The catalog labels its oversized printings "Single Oversized Promo".
-			IsOversized: slices.Contains(promoTypes, "singleoversizedpromo"),
+			// Jumbo Cards holds the catalog's oversized printings, and the
+			// "Single Oversized Promo" label marks one wherever it is filed.
+			IsOversized: card.SetCode == jumboSetCode || slices.Contains(promoTypes, "singleoversizedpromo"),
 
 			PlainNumber: Rules{}.PlainNumber(card.Number),
 			SetTotal:    card.Total,
