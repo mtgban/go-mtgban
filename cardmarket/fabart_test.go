@@ -15,7 +15,7 @@ import (
 // treatments where Cardmarket sells two products; and Twinning Blade, whose
 // extended art the datastore keeps in a row of its own with a TCGplayer id
 // of its own.
-const fabArtDatastore = `{
+const fabArtDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {"GEM": {"name": "GEM Pack 1", "releaseDate": "2025-02-01"}, "CRU": {"name": "Crucible of War", "releaseDate": "2020-08-28"}},
  "cards": [
@@ -27,7 +27,7 @@ const fabArtDatastore = `{
   {"externalLinks": {"tcgPlayerId": 225982}, "fabId": "CRU082", "finish": "Unlimited Edition Rainbow Foil", "id": "cru082_225982_unlimitededitionrainbowfoil", "name": "Twinning Blade", "number": "CRU082", "rarity": "Majestic", "setCode": "CRU"},
   {"externalLinks": {"tcgPlayerId": 225983}, "fabId": "CRU082", "finish": "1st Edition Rainbow Foil", "id": "cru082_225983_1steditionrainbowfoil", "name": "Twinning Blade", "number": "CRU082", "promoTypes": ["extended art"], "rarity": "Majestic", "setCode": "CRU", "variant": "Extended Art"}
  ]
-}`
+}}`
 
 // TestGemPackTreatments pins the two printings a GEM Pack number is sold in
 // against the two products Cardmarket sells them as.

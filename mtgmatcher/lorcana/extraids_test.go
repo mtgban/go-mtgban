@@ -11,7 +11,7 @@ import (
 // emits. Card 100 is sold by TCGplayer as two products, the nonfoil under the
 // id upstream publishes and the foil under its own; card 200 carries no extra
 // ids, as every card in the upstream file does.
-const extraIDsData = `{
+const extraIDsData = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {"1": {"name": "The First Chapter", "type": "expansion", "releaseDate": "2023-09-01"}},
   "cards": [
@@ -28,7 +28,7 @@ const extraIDsData = `{
       "externalLinks": {"tcgPlayerId": 631350}
     }
   ]
-}`
+}}`
 
 func TestLorcanaExtraProductIds(t *testing.T) {
 	b, err := Load(strings.NewReader(extraIDsData))

@@ -19,7 +19,7 @@ import (
 // XY95 Pikachu of XY Promos, the set whose own name is the Japanese XY promo
 // expansion's. Three rows rather than the whole file keeps the answers below
 // facts about data the test states.
-const pokemonDatastore = `{
+const pokemonDatastore = `{"data": {
  "game": "pokemon",
  "sets": {"JU": {"abbreviation": "JU", "name": "Jungle", "releaseDate": "1999-06-16"}, "PR-1451": {"abbreviation": "PR", "name": "XY Promos", "releaseDate": "2013-12-16", "type": "promo"}},
  "cards": [
@@ -28,7 +28,7 @@ const pokemonDatastore = `{
   {"externalLinks": {"tcgPlayerId": 114004}, "finish": "Holofoil", "id": "xy95_114004_holofoil", "name": "Pikachu", "number": "XY95", "rarity": "Promo", "setCode": "PR-1451"},
   {"externalLinks": {"tcgPlayerId": 268261}, "finish": "Normal", "id": "98-xy-p_268261", "name": "Mega Tokyo's Pikachu", "number": "98/XY-P", "rarity": "Promo", "setCode": "PR-1451"}
  ]
-}`
+}}`
 
 // TestMatchProductForeignExpansion pins that the name fallback refuses the
 // Cardmarket expansions that are non-English catalogs wearing an English
@@ -148,7 +148,7 @@ func TestNoPrintingSkipsBasicEnergy(t *testing.T) {
 // alternate art, and Cardmarket shelves each under the set it reprints -
 // "Guardians Rising", "XY Black Star Promos" - rather than the programme
 // that gave it out.
-const letteredDatastore = `{
+const letteredDatastore = `{"data": {
  "game": "pokemon",
  "sets": {
   "SM02": {"abbreviation": "SM02", "baseSetSize": 145, "name": "SM - Guardians Rising", "releaseDate": "2017-05-05"},
@@ -160,7 +160,7 @@ const letteredDatastore = `{
   {"externalLinks": {"tcgPlayerId": 185137}, "finish": "Reverse Holofoil", "id": "125a-145_185137_reverseholofoil", "name": "Field Blower", "number": "125a", "originalName": "Field Blower - 125a/145 (Pokemon League)", "promoTypes": ["pokemon league"], "rarity": "Promo", "setCode": "PR-1539", "total": "145", "type": "Item", "variant": "Pokemon League"},
   {"externalLinks": {"tcgPlayerId": 148345}, "finish": "Holofoil", "id": "xy198a_148345_holofoil", "name": "M Camerupt EX", "number": "XY198a", "originalName": "M Camerupt EX - XY198a", "rarity": "Promo", "setCode": "PR-1938", "type": "Fire"}
  ]
-}`
+}}`
 
 // TestMatchPokemonLettered pins that a number with a letter hung off it
 // reaches both programmes that number their cards that way, and that the

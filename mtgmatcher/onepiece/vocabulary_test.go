@@ -12,7 +12,7 @@ import (
 // at once - the case the fallback has to leave alone.
 //
 // The collector numbers, product ids and labels are the catalog's.
-const vocabularyFixture = `{
+const vocabularyFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP13": {"name": "Carrying On His Will", "releaseDate": "2025-11-21"},
@@ -33,7 +33,7 @@ const vocabularyFixture = `{
 		{"id": "op09-078_597018_foil", "name": "Gum-Gum Giant", "number": "OP09-078", "setCode": "OP09", "rarity": "R", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 597018}},
 		{"id": "op09-078_653835_foil", "name": "Gum-Gum Giant", "number": "OP09-078", "setCode": "PRB-02", "rarity": "R", "finish": "Foil", "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 653835}}
 	]
-}`
+}}`
 
 // TestCatalogVocabulary pins the words a storefront uses for a treatment the
 // catalog files under another name, and the one number that carries both

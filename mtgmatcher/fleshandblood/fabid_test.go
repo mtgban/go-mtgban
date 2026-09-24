@@ -11,7 +11,7 @@ import (
 // TCGplayer numbers apart from its Legend Story Studios id (Star Fall/
 // Spider's Bite share ARA002 between them), and a lettered pair sharing one
 // fabId (Spectral Shield MST158-A/-B).
-const fabIDFixture = `{
+const fabIDFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"ARA": {"name": "Blitz Deck: Rosetta - Aurora", "releaseDate": "2024-09-20"},
@@ -24,7 +24,7 @@ const fabIDFixture = `{
 		{"artist": "Asur Misoa", "externalLinks": {"fabId": "MST158", "tcgPlayerId": 552843}, "fabId": "MST158", "finish": "Normal", "id": "mst158-a_552843", "image": "https://tcgplayer-cdn.tcgplayer.com/product/552843_400w.jpg", "name": "Spectral Shield", "number": "MST158-A", "rarity": "Common", "setCode": "MST", "variant": "158-A"},
 		{"artist": "Asur Misoa", "externalLinks": {"fabId": "MST158", "tcgPlayerId": 552844}, "fabId": "MST158", "finish": "Normal", "id": "mst158-b_552844", "image": "https://tcgplayer-cdn.tcgplayer.com/product/552844_400w.jpg", "name": "Spectral Shield", "number": "MST158-B", "rarity": "Token", "setCode": "MST", "variant": "158-B"}
 	]
-}`
+}}`
 
 // TestFabIDAlternateNumber pins a Legend Story Studios id read as an
 // alternate collector number: reachable where the catalog numbered the

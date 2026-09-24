@@ -20,7 +20,7 @@ import (
 // Heralds; the red and yellow Lead with Heart; the High Seas and Super
 // Slam heroes the datastore files once under both faces; and the promos
 // and the Silver Age deck card filed in sets of their own.
-const fabShelfDatastore = `{
+const fabShelfDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {
   "DYN": {"name": "Dynasty", "releaseDate": "2022-11-11"},
@@ -56,7 +56,7 @@ const fabShelfDatastore = `{
   {"externalLinks": {"fabId": "HER069"}, "fabId": "HER069", "finish": "Cold Foil", "id": "her069_coldfoil", "name": "Prism, Sculptor of Arc Light", "number": "HER069", "rarity": "Promo", "setCode": "HER"},
   {"externalLinks": {"fabId": "SAR033"}, "fabId": "SAR033", "finish": "Normal", "id": "sar033", "name": "Graphene Chelicera", "number": "SAR033", "rarity": "Basic", "setCode": "SAR"}
  ]
-}`
+}}`
 
 func loadFabShelfDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
@@ -95,7 +95,7 @@ func TestFabShelves(t *testing.T) {
 // and her Chapter 2 supporting cards share her deck's own SAZ prefix,
 // neither chapter named SAZ; Chapter 3 opens Lyath Goldmane's deck on SLY
 // alone.
-const fabDeckPrefixDatastore = `{
+const fabDeckPrefixDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {
   "SAC1": {"name": "Silver Age Chapter 1", "releaseDate": "2026-02-13"},
@@ -107,7 +107,7 @@ const fabDeckPrefixDatastore = `{
   {"externalLinks": {"fabId": "SAZ010", "tcgPlayerId": 676549}, "fabId": "SAZ010", "finish": "Normal", "id": "saz010_676549", "name": "Bolt'n Shot", "number": "SAZ010", "rarity": "Rare", "setCode": "SAC2"},
   {"externalLinks": {"tcgPlayerId": 695834}, "finish": "Normal", "id": "sly010_695834", "name": "Stand Strong", "number": "SLY010", "rarity": "Common", "setCode": "SAC3"}
  ]
-}`
+}}`
 
 // TestFabShelvesDeckPrefix pins the fallback fabShelves takes when a Silver
 // Age deck's own code names no set of ours: every set whose numbers open on

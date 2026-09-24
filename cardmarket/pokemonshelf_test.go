@@ -13,7 +13,7 @@ import (
 // printings these tests turn on, every row copied from it: the SM04 Pikachu
 // of SM Promos, whose number the storefront writes without its programme,
 // and the Rowlet of SM Base Set, a set the storefront names "Sun & Moon".
-const pokemonShelfDatastore = `{
+const pokemonShelfDatastore = `{"data": {
  "game": "pokemon",
  "sets": {"SMP": {"abbreviation": "SMP", "name": "SM Promos", "releaseDate": "2016-11-18", "type": "promo"}, "SM01": {"abbreviation": "SM01", "name": "SM Base Set", "releaseDate": "2017-02-03"}},
  "cards": [
@@ -21,7 +21,7 @@ const pokemonShelfDatastore = `{
   {"externalLinks": {"tcgPlayerId": 126880}, "finish": "Normal", "id": "9-149_126880", "name": "Rowlet", "number": "9", "rarity": "Common", "setCode": "SM01"},
   {"externalLinks": {"tcgPlayerId": 126880}, "finish": "Reverse Holofoil", "id": "9-149_126880_reverseholofoil", "name": "Rowlet", "number": "9", "rarity": "Common", "setCode": "SM01"}
  ]
-}`
+}}`
 
 // TestMatchPokemonShelves pins that the name path reaches the sets the
 // storefront names its own way, with the programme put back on a promo's

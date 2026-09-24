@@ -150,7 +150,7 @@ func restamp(t *testing.T, data []byte, name func(id int, finish string) string)
 		}
 	}
 	doc["cards"] = rows
-	out, err := json.Marshal(doc)
+	out, err := json.Marshal(map[string]any{"data": doc})
 	if err != nil {
 		t.Fatal(err)
 	}

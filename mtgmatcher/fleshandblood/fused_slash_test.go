@@ -11,7 +11,7 @@ import (
 // card's pair in. Frostbite and Teklovossen are filed with a single slash,
 // Spectral Shield with two, and the standalone Ash beside DRO002 is the
 // printing a face number must keep reaching on its own.
-const fusedSlashFixture = `{
+const fusedSlashFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"UPR": {"name": "Uprising", "releaseDate": "2022-10-14"},
@@ -26,7 +26,7 @@ const fusedSlashFixture = `{
 		{"id": "dro002-dro003_276817", "name": "Ash // Aether Ashwing", "number": "DRO002/DRO003", "setCode": "DRO", "rarity": "Token", "finish": "Normal", "image": "x"},
 		{"id": "dro002_704533", "name": "Ash", "number": "DRO002", "setCode": "DRO", "rarity": "Token", "finish": "Normal", "image": "x"}
 	]
-}`
+}}`
 
 // TestFusedFaceSingleSlash pins that a face number reaches its fused
 // printing whichever separator the catalog wrote the pair with. numberMatches

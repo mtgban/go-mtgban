@@ -13,7 +13,7 @@ import (
 // card the value box holds and as the ordinary card of the deck it is
 // numbered for, and Dark Magician as an oversized card whose set is a
 // collector box of its own.
-const yugiohOversizedDatastore = `{
+const yugiohOversizedDatastore = `{"data": {
  "game": "yugioh",
  "sets": {
   "SDMM": {"abbreviation": "SDMM", "name": "Structure Deck: Machina Mayhem", "releaseDate": "2010-03-09"},
@@ -25,7 +25,7 @@ const yugiohOversizedDatastore = `{
   {"attribute": "EARTH", "externalLinks": {"konamiId": 5556499, "tcgPlayerId": 181002}, "finish": "Limited", "id": "sdmm-en001_181002_limited", "name": "Machina Fortress", "number": "SDMM-EN001", "promoTypes": ["oversized", "machine madness"], "rarity": "Promo", "setCode": "VBX", "type": "Effect Monster", "variant": "Oversized Machine Madness"},
   {"attribute": "EARTH", "externalLinks": {"konamiId": 5556499, "tcgPlayerId": 34641}, "finish": "1st Edition", "id": "sdmm-en001_34641_1stedition", "name": "Machina Fortress", "number": "SDMM-EN001", "rarity": "Ultra Rare", "setCode": "SDMM", "type": "Effect Monster"}
  ]
-}`
+}}`
 
 // TestYugiohOversized pins that an oversized product reaches the printing the
 // datastore files in the box it came in, not the deck the marketplace shelves

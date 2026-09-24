@@ -12,7 +12,7 @@ import (
 // one card these tests turn on, the three rows copied verbatim: Winner's
 // Pack sells Ghost Ogre & Snow Rabbit three times over, under one number and
 // one rarity, told apart only by the programme's stamp.
-const yugiohVersionDatastore = `{
+const yugiohVersionDatastore = `{"data": {
  "game": "yugioh",
  "sets": {
   "WI26": {"abbreviation": "WI26", "name": "Winner's Pack 2026-2027", "releaseDate": "2026-07-15"}
@@ -22,7 +22,7 @@ const yugiohVersionDatastore = `{
   {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 710112}, "finish": "Unlimited", "id": "wi26-en001_710112_unlimited", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["regional qualifier stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "Regional Qualifier Stamp"},
   {"attribute": "LIGHT", "externalLinks": {"konamiId": 59438930, "tcgPlayerId": 710152}, "finish": "Unlimited", "id": "wi26-en001_710152_unlimited", "name": "Ghost Ogre & Snow Rabbit", "number": "WI26-EN001", "promoTypes": ["judge stamp"], "rarity": "Ultra Rare", "setCode": "WI26", "type": "Tuner/Effect Monster", "variant": "Judge Stamp"}
  ]
-}`
+}}`
 
 // TestYugiohVersionVariants pins that each of a shelf's version indices
 // reaches its own printing and no other. The three products carry the same

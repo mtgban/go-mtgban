@@ -15,7 +15,7 @@ import (
 // names are what the vendor's own product body calls these cards, and the
 // TCGplayer id each row carries is the one the body carries beside the
 // misspelt display name.
-const respellingDatastore = `{
+const respellingDatastore = `{"data": {
  "game": "pokemon",
  "sets": {
   "DRI": {"abbreviation": "DRI", "baseSetSize": 182, "name": "SV10: Destined Rivals", "releaseDate": "2025-05-30"},
@@ -32,7 +32,7 @@ const respellingDatastore = `{
   {"externalLinks": {"tcgPlayerId": 488074}, "finish": "Normal", "id": "169-198_488074", "name": "Defiance Band", "number": "169", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Tool"},
   {"externalLinks": {"tcgPlayerId": 488075}, "finish": "Normal", "id": "170-198_488075", "name": "Electric Generator", "number": "170", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Item"}
  ]
-}`
+}}`
 
 // TestPreprocessPokemonRespelling pins that a name this storefront spells
 // wrong reaches the printing its own body names, and that the spelling the

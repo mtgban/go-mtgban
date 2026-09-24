@@ -12,7 +12,7 @@ import (
 // of it; ST17-004 is the same shape around a treatment word. P-101 is what
 // must keep refusing: a set's promotion cards are told apart by nothing the
 // wording says.
-const labelOverlapFixture = `{
+const labelOverlapFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-12-02"}
@@ -25,7 +25,7 @@ const labelOverlapFixture = `{
 		{"id": "p-101_700001", "name": "Tony Tony.Chopper", "number": "P-101", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "variant": "Promotion Card Set 2025 Vol. 1", "image": "x", "externalLinks": {"tcgPlayerId": 700001}},
 		{"id": "p-101_700002_foil", "name": "Tony Tony.Chopper", "number": "P-101", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Store Tournament 2025 Vol. 4", "image": "x", "externalLinks": {"tcgPlayerId": 700002}}
 	]
-}`
+}}`
 
 // TestLabelOverlapOnNumberedCards pins the partial-label scoring the numbered
 // path now falls through to: the catalog prefixes an event label with the

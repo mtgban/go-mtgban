@@ -19,7 +19,7 @@ import (
 // The collector numbers, rarities and print run are the catalog's; the set
 // names are the fixture's own, since only the codes the numbers open with are
 // load-bearing here.
-const catchAllFixture = `{
+const catchAllFixture = `{"data": {
 	"game": "yugioh",
 	"sets": {
 		"LART": {"name": "Legendary Collection Art Cards", "releaseDate": "2021-09-24"},
@@ -37,7 +37,7 @@ const catchAllFixture = `{
 		{"id": "lob-001_21792_1stedition", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB", "rarity": "Ultra Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 21792}},
 		{"id": "lob-001_21793_unlimited", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB2", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 21793}}
 	]
-}`
+}}`
 
 func catchAllBackend(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()

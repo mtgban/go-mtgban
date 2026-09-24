@@ -13,7 +13,7 @@ import (
 // own set holding Dash I/O at HER156, the Local Game Store programme's
 // holding Bloodrot Pox at LGS125, and the FAB programme's set, which is what
 // the bare word "Promos" names.
-const promoShelfFixture = `{
+const promoShelfFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"FAB": {"name": "Promos", "releaseDate": ""},
@@ -31,7 +31,7 @@ const promoShelfFixture = `{
 		{"externalLinks": {"fabId": "FAB172", "tcgPlayerId": 537819}, "fabId": "FAB172", "finish": "Rainbow Foil", "id": "fab172_537819_rainbowfoil", "name": "Meganetic Protocol", "number": "FAB172", "rarity": "Promo", "setCode": "PR"},
 		{"externalLinks": {"fabId": "EVO001", "tcgPlayerId": 518564}, "fabId": "EVO001", "finish": "Normal", "id": "evo001_518564", "name": "Dash I/O", "number": "EVO001", "rarity": "Legendary", "setCode": "EVO"}
 	]
-}`
+}}`
 
 // TestPromoShelf pins that a promo listing lands on the set holding its
 // number whatever promo shelf the storefront named: the programme's own set

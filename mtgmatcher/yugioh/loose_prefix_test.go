@@ -14,7 +14,7 @@ import (
 // carries the very same digit. The Duelist League volume cardtrader calls
 // "1-E002" does not exist in the first league at all, so nothing but the
 // edition stands between that listing and the Master Collection card.
-const loosePrefixFixture = `{
+const loosePrefixFixture = `{"data": {
 	"game": "yugioh",
 	"sets": {
 		"DL1":  {"name": "Duelist League Series 1 participation cards", "releaseDate": "2010-09-01", "type": "promo"},
@@ -28,7 +28,7 @@ const loosePrefixFixture = `{
 		{"id": "mc1-en002_25375_limited", "name": "Barrel Dragon", "number": "MC1-EN002", "setCode": "MC1", "rarity": "Secret Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 25375}},
 		{"id": "yr05-en001_38640_limited", "name": "Alector, Sovereign of Birds", "number": "YR05-EN001", "setCode": "G358", "rarity": "Ultra Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 38640}}
 	]
-}`
+}}`
 
 // TestLoosePrefixNeedsItsEdition pins both halves of the rule: a volume index
 // written where the set code belongs reaches its printing inside the set the

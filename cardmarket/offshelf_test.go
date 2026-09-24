@@ -17,7 +17,7 @@ import (
 // OP12-046 is a booster card the Kuzan deck reprints, which the datastore
 // does not carry - though it does carry the deck's reprint of OP12-047,
 // which is how a deck's shelf is supposed to reach a card.
-const offShelfDatastore = `{
+const offShelfDatastore = `{"data": {
  "game": "onepiece",
  "sets": {
   "OP02": {"name": "Paramount War", "releaseDate": "2023-03-10"},
@@ -38,7 +38,7 @@ const offShelfDatastore = `{
   {"color": "Blue", "externalLinks": {"tcgPlayerId": 643782}, "finish": "Foil", "id": "op12-047_643782_foil", "name": "Sengoku", "number": "OP12-047", "rarity": "R", "setCode": "OP12", "type": "Character"},
   {"color": "Blue", "externalLinks": {"tcgPlayerId": 706331}, "finish": "Normal", "id": "op12-047_706331", "name": "Sengoku", "number": "OP12-047", "rarity": "R", "setCode": "ST-33", "type": "Character"}
  ]
-}`
+}}`
 
 // opShelves are the expansions of the cut-down catalog, the ones the two
 // products above sit on and the ones already pricing what they reached.

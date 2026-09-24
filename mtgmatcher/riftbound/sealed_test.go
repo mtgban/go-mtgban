@@ -12,7 +12,7 @@ import (
 // products: one in the card's own set, one in a group the gallery has no
 // set for. It pins the loader's side of the builder contract without
 // needing a real datastore file.
-const sealedFixture = `{
+const sealedFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
@@ -47,7 +47,7 @@ const sealedFixture = `{
 			}
 		]}
 	}]}}
-}`
+}}`
 
 func loadSealedFixture(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()

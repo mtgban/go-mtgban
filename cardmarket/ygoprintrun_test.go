@@ -15,7 +15,7 @@ import (
 // Burning Abyss, which Secrets of Eternity carries at both its own number
 // and the special edition's; and Damage Condenser, whose number opens on a
 // deck letter the datastore writes after the region infix.
-const ygoDatastore = `{
+const ygoDatastore = `{"data": {
  "game": "yugioh",
  "sets": {
   "DCR": {"name": "Dark Crisis", "releaseDate": "2007-10-12"},
@@ -30,7 +30,7 @@ const ygoDatastore = `{
   {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 96145}, "finish": "Limited", "id": "sece-ens14_96145_limited", "name": "Good & Evil in the Burning Abyss", "number": "SECE-ENS14", "promoTypes": ["se"], "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell", "variant": "SE"},
   {"attribute": "TRAP", "externalLinks": {"tcgPlayerId": 266282}, "finish": "1st Edition", "id": "sgx1-end19_266282_1stedition", "name": "Damage Condenser", "number": "SGX1-END19", "rarity": "Common", "setCode": "G2970", "type": "Normal Trap"}
  ]
-}`
+}}`
 
 // TestMatchProductPrintRunPrefix pins which of the print runs Cardmarket
 // sells an old Yu-Gi-Oh set in the name fallback answers for.

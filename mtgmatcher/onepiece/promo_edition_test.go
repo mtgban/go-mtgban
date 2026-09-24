@@ -16,7 +16,7 @@ import (
 // hands nothing out.
 //
 // The collector numbers, product ids and event name are the catalog's.
-const promoEditionFixture = `{
+const promoEditionFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP09":   {"name": "Emperors in the New World", "releaseDate": "2024-12-27"},
@@ -34,7 +34,7 @@ const promoEditionFixture = `{
 		{"id": "op09-052_596983", "name": "Sanji", "number": "OP09-052", "setCode": "OP09", "rarity": "R", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 596983}},
 		{"id": "op09-052_619218", "name": "Sanji", "number": "OP09-052", "setCode": "PRB-02", "rarity": "R", "finish": "Normal", "variant": "Best Selection Vol. 6 Reprint", "image": "x", "externalLinks": {"tcgPlayerId": 619218}}
 	]
-}`
+}}`
 
 func promoEditionBackend(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
@@ -252,7 +252,7 @@ func TestSlugsRunOfShortenings(t *testing.T) {
 // label so nothing but the set name tells the two apart.
 //
 // The collector numbers, product ids and set names are the catalog's.
-const eventSetFixture = `{
+const eventSetFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"ST-01":     {"name": "Starter Deck 1: Straw Hat Crew", "releaseDate": "2022-12-02"},
@@ -262,7 +262,7 @@ const eventSetFixture = `{
 		{"id": "st01-001_288228_foil", "name": "Monkey.D.Luffy", "number": "ST01-001", "setCode": "ST-01", "rarity": "L", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 288228}},
 		{"id": "st01-001_412113_foil", "name": "Monkey.D.Luffy", "number": "ST01-001", "setCode": "ST-01-PRE", "rarity": "L", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 412113}}
 	]
-}`
+}}`
 
 // TestEventSetNamedByWording pins the reading of an event set a storefront
 // names across two fields: the event on the card and the base set in the

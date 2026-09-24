@@ -11,14 +11,14 @@ import (
 // qualifierFixture sells one number twice, once plain and once under a
 // qualifier the catalog wrote into the product name; the second file sells
 // the same uuids with no qualifier at all.
-const qualifierFixture = `{
+const qualifierFixture = `{"data": {
 	"game": "yugioh",
 	"sets": {"RA04": {"name": "Quarter Century Bonanza", "releaseDate": "2025-11-21"}},
 	"cards": [
 		{"id": "ra04-en106_1_unlimited", "name": "Dark Magician", "number": "RA04-EN106", "setCode": "RA04", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 1}},
 		{"id": "ra04-en106_2_unlimited", "name": "Dark Magician", "number": "RA04-EN106", "setCode": "RA04", "rarity": "Ultra Rare", "finish": "Unlimited", "variant": "Arkana", "image": "x", "externalLinks": {"tcgPlayerId": 2}}
 	]
-}`
+}}`
 
 // TestQualifiersAreTheBackends pins that a printing's qualifier is the
 // backend's that loaded it: a second backend loaded from a file selling the
