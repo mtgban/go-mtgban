@@ -25,16 +25,16 @@ const variantTiebreakFixture = `{"data": {
 	},
 	"cards": [
 		{"id": "op05-119_527024_foil", "name": "Monkey.D.Luffy", "number": "OP05-119", "setCode": "OP05", "rarity": "SEC", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 527024}},
-		{"id": "op05-119_596915_foil", "name": "Monkey.D.Luffy", "number": "OP05-119", "setCode": "OP09", "rarity": "SEC", "finish": "Foil", "variant": "Wanted Poster", "image": "x", "externalLinks": {"tcgPlayerId": 596915}},
-		{"id": "op05-119_632503_foil", "name": "Monkey.D.Luffy", "number": "OP05-119", "setCode": "OP11", "rarity": "SEC", "finish": "Foil", "variant": "SP", "image": "x", "externalLinks": {"tcgPlayerId": 632503}},
+		{"id": "op05-119_596915_foil", "name": "Monkey.D.Luffy", "number": "OP05-119", "setCode": "OP09", "rarity": "SEC", "finish": "Foil", "promoTypes": ["Wanted Poster"], "variant": "Wanted Poster", "image": "x", "externalLinks": {"tcgPlayerId": 596915}},
+		{"id": "op05-119_632503_foil", "name": "Monkey.D.Luffy", "number": "OP05-119", "setCode": "OP11", "rarity": "SEC", "finish": "Foil", "promoTypes": ["SP"], "variant": "SP", "image": "x", "externalLinks": {"tcgPlayerId": 632503}},
 		{"id": "op13-091_657366_foil", "name": "St. Marcus Mars", "number": "OP13-091", "setCode": "OP13", "rarity": "SR", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 657366}},
-		{"id": "op13-091_657367_foil", "name": "St. Marcus Mars", "number": "OP13-091", "setCode": "OP13", "rarity": "SR", "finish": "Foil", "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 657367}},
-		{"id": "op13-091_657368_foil", "name": "St. Marcus Mars", "number": "OP13-091", "setCode": "OP13", "rarity": "SR", "finish": "Foil", "variant": "Parallel", "image": "x", "externalLinks": {"tcgPlayerId": 657368}},
+		{"id": "op13-091_657367_foil", "name": "St. Marcus Mars", "number": "OP13-091", "setCode": "OP13", "rarity": "SR", "finish": "Foil", "promoTypes": ["Alternate Art"], "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 657367}},
+		{"id": "op13-091_657368_foil", "name": "St. Marcus Mars", "number": "OP13-091", "setCode": "OP13", "rarity": "SR", "finish": "Foil", "promoTypes": ["Parallel"], "variant": "Parallel", "image": "x", "externalLinks": {"tcgPlayerId": 657368}},
 		{"id": "st01-012_288241_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "ST-01", "rarity": "SR", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 288241}},
-		{"id": "st01-012_527027_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "OP05", "rarity": "SR", "finish": "Foil", "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 527027}},
-		{"id": "st01-012_529850_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "OP05", "rarity": "SR", "finish": "Foil", "variant": "Alternate Art Gold-Stamped Signature", "image": "x", "externalLinks": {"tcgPlayerId": 529850}},
+		{"id": "st01-012_527027_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "OP05", "rarity": "SR", "finish": "Foil", "promoTypes": ["Alternate Art"], "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 527027}},
+		{"id": "st01-012_529850_foil", "name": "Monkey.D.Luffy", "number": "ST01-012", "setCode": "OP05", "rarity": "SR", "finish": "Foil", "promoTypes": ["Alternate Art Gold-Stamped Signature"], "variant": "Alternate Art Gold-Stamped Signature", "image": "x", "externalLinks": {"tcgPlayerId": 529850}},
 		{"id": "p-041_531486", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 531486}},
-		{"id": "p-041_532752_foil", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Bandai Card Games Fest 23-24 World Tour", "image": "x", "externalLinks": {"tcgPlayerId": 532752}}
+		{"id": "p-041_532752_foil", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["Bandai Card Games Fest 23-24 World Tour"], "variant": "Bandai Card Games Fest 23-24 World Tour", "image": "x", "externalLinks": {"tcgPlayerId": 532752}}
 	]
 }}`
 

@@ -23,7 +23,7 @@ const numberedNameFixture = `{"data": {
 	"cards": [
 		{"id": "op01-001_500001", "name": "Monkey.D.Luffy", "number": "OP01-001", "setCode": "OP01", "rarity": "L", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 500001}},
 		{"id": "p-110_712742", "name": "Monkey.D.Luffy (4th Anniversary)", "number": "P-110", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 712742}},
-		{"id": "p-110_712743_foil", "name": "Monkey.D.Luffy (4th Anniversary)", "number": "P-110", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Winner", "image": "x", "externalLinks": {"tcgPlayerId": 712743}},
+		{"id": "p-110_712743_foil", "name": "Monkey.D.Luffy (4th Anniversary)", "number": "P-110", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["Winner"], "variant": "Winner", "image": "x", "externalLinks": {"tcgPlayerId": 712743}},
 		{"id": "p-138_712800", "name": "Monkey.D.Luffy (5th Anniversary)", "number": "P-138", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 712800}},
 		{"id": "p-138_712801", "name": "Roronoa Zoro (5th Anniversary)", "number": "P-138", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 712801}}
 	]

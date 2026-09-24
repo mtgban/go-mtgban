@@ -18,12 +18,12 @@ const labelOverlapFixture = `{"data": {
 		"OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-12-02"}
 	},
 	"cards": [
-		{"id": "p-135_697483", "name": "Monkey.D.Luffy", "number": "P-135", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "variant": "OP16 Release Event", "image": "x", "externalLinks": {"tcgPlayerId": 697483}},
-		{"id": "p-135_697484_foil", "name": "Monkey.D.Luffy", "number": "P-135", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "OP16 Release Event Winner", "image": "x", "externalLinks": {"tcgPlayerId": 697484}},
-		{"id": "st17-004_623069_foil", "name": "Boa Hancock", "number": "ST17-004", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Illustration Box Vol.1 Textured", "image": "x", "externalLinks": {"tcgPlayerId": 623069}},
-		{"id": "st17-004_712035_foil", "name": "Boa Hancock", "number": "ST17-004", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Dash Pack 2025", "image": "x", "externalLinks": {"tcgPlayerId": 712035}},
-		{"id": "p-101_700001", "name": "Tony Tony.Chopper", "number": "P-101", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "variant": "Promotion Card Set 2025 Vol. 1", "image": "x", "externalLinks": {"tcgPlayerId": 700001}},
-		{"id": "p-101_700002_foil", "name": "Tony Tony.Chopper", "number": "P-101", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Store Tournament 2025 Vol. 4", "image": "x", "externalLinks": {"tcgPlayerId": 700002}}
+		{"id": "p-135_697483", "name": "Monkey.D.Luffy", "number": "P-135", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "promoTypes": ["OP16 Release Event"], "variant": "OP16 Release Event", "image": "x", "externalLinks": {"tcgPlayerId": 697483}},
+		{"id": "p-135_697484_foil", "name": "Monkey.D.Luffy", "number": "P-135", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["OP16 Release Event Winner"], "variant": "OP16 Release Event Winner", "image": "x", "externalLinks": {"tcgPlayerId": 697484}},
+		{"id": "st17-004_623069_foil", "name": "Boa Hancock", "number": "ST17-004", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["Illustration Box Vol.1 Textured"], "variant": "Illustration Box Vol.1 Textured", "image": "x", "externalLinks": {"tcgPlayerId": 623069}},
+		{"id": "st17-004_712035_foil", "name": "Boa Hancock", "number": "ST17-004", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["Dash Pack 2025"], "variant": "Dash Pack 2025", "image": "x", "externalLinks": {"tcgPlayerId": 712035}},
+		{"id": "p-101_700001", "name": "Tony Tony.Chopper", "number": "P-101", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "promoTypes": ["Promotion Card Set 2025 Vol. 1"], "variant": "Promotion Card Set 2025 Vol. 1", "image": "x", "externalLinks": {"tcgPlayerId": 700001}},
+		{"id": "p-101_700002_foil", "name": "Tony Tony.Chopper", "number": "P-101", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "promoTypes": ["Store Tournament 2025 Vol. 4"], "variant": "Store Tournament 2025 Vol. 4", "image": "x", "externalLinks": {"tcgPlayerId": 700002}}
 	]
 }}`
 

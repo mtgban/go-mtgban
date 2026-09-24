@@ -190,8 +190,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	sort.Strings(b.AllSets)
 	b.IndexSets()
 
-	marked := datastoreMarks(payload.Cards)
-
 	printingsByName := map[string][]string{}
 	for _, card := range payload.Cards {
 		n := mtgmatcher.Normalize(card.Name)
@@ -227,7 +225,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		for _, promoType := range promoTypeValues(&card, marked) {
+		for _, promoType := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
@@ -284,7 +282,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		var promoTypes []string
-		for _, promoType := range promoTypeValues(card, marked) {
+		for _, promoType := range card.PromoTypes {
 			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(promoType))
 		}
 		// The mark rides with the tags on the card, though it is never

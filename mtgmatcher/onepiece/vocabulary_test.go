@@ -23,15 +23,15 @@ const vocabularyFixture = `{"data": {
 	},
 	"cards": [
 		{"id": "op13-118_657400_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 657400}},
-		{"id": "op13-118_657401_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "image": "x", "variant": "Red Super Alternate Art", "externalLinks": {"tcgPlayerId": 657401}},
-		{"id": "op13-118_657402_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "variant": "Super Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 657402}},
-		{"id": "op13-118_657403_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "variant": "Parallel", "image": "x", "externalLinks": {"tcgPlayerId": 657403}},
+		{"id": "op13-118_657401_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "image": "x", "promoTypes": ["Red Super Alternate Art"], "variant": "Red Super Alternate Art", "externalLinks": {"tcgPlayerId": 657401}},
+		{"id": "op13-118_657402_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "promoTypes": ["Super Alternate Art"], "variant": "Super Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 657402}},
+		{"id": "op13-118_657403_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "promoTypes": ["Parallel"], "variant": "Parallel", "image": "x", "externalLinks": {"tcgPlayerId": 657403}},
 		{"id": "op16-011_695995_foil", "name": "Vista", "number": "OP16-011", "setCode": "OP16", "rarity": "SR", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 695995}},
-		{"id": "op16-011_695996_foil", "name": "Vista", "number": "OP16-011", "setCode": "OP16", "rarity": "SR", "finish": "Foil", "variant": "TR", "image": "x", "externalLinks": {"tcgPlayerId": 695996}},
-		{"id": "op17-062_700001_foil", "name": "Kaido", "number": "OP17-062", "setCode": "OP17", "rarity": "SR", "finish": "Foil", "variant": "Manga", "image": "x", "externalLinks": {"tcgPlayerId": 700001}},
-		{"id": "op17-062_700002_foil", "name": "Kaido", "number": "OP17-062", "setCode": "OP17", "rarity": "SR", "finish": "Foil", "variant": "Super Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 700002}},
+		{"id": "op16-011_695996_foil", "name": "Vista", "number": "OP16-011", "setCode": "OP16", "rarity": "SR", "finish": "Foil", "promoTypes": ["TR"], "variant": "TR", "image": "x", "externalLinks": {"tcgPlayerId": 695996}},
+		{"id": "op17-062_700001_foil", "name": "Kaido", "number": "OP17-062", "setCode": "OP17", "rarity": "SR", "finish": "Foil", "promoTypes": ["Manga"], "variant": "Manga", "image": "x", "externalLinks": {"tcgPlayerId": 700001}},
+		{"id": "op17-062_700002_foil", "name": "Kaido", "number": "OP17-062", "setCode": "OP17", "rarity": "SR", "finish": "Foil", "promoTypes": ["Super Alternate Art"], "variant": "Super Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 700002}},
 		{"id": "op09-078_597018_foil", "name": "Gum-Gum Giant", "number": "OP09-078", "setCode": "OP09", "rarity": "R", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 597018}},
-		{"id": "op09-078_653835_foil", "name": "Gum-Gum Giant", "number": "OP09-078", "setCode": "PRB-02", "rarity": "R", "finish": "Foil", "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 653835}}
+		{"id": "op09-078_653835_foil", "name": "Gum-Gum Giant", "number": "OP09-078", "setCode": "PRB-02", "rarity": "R", "finish": "Foil", "promoTypes": ["Alternate Art"], "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 653835}}
 	]
 }}`
 
