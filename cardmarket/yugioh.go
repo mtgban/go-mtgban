@@ -315,3 +315,34 @@ func rarityNames(worded, rarity string) bool {
 	}
 	return true
 }
+
+// yugiohPrint is what tells a Yu-Gi-Oh card's products apart on one shelf
+// besides the version index.
+type yugiohPrint struct {
+	expansion            int
+	name, number, rarity string
+}
+
+func yugiohPrintOf(expansion int, name, number, rarity string) yugiohPrint {
+	return yugiohPrint{expansion, mtgmatcher.Normalize(versionTail.ReplaceAllString(name, "")), number, rarity}
+}
+
+// yugiohRarityIndex reports whether a product's version index counts
+// rarities rather than runs: no other product of the card on its shelf has
+// its number and rarity. Such a product sells both runs (Battle Fader is V.1
+// Ultra Rare and V.2 Ultimate Rare), so the index names neither.
+func (r *resolver) yugiohRarityIndex(product *cm.Product) bool {
+	if r.catalog == nil || cm.ProductVersion(product) == 0 {
+		return false
+	}
+	r.yugiohPrintsMu.Lock()
+	if r.yugiohPrints == nil {
+		r.yugiohPrints = map[yugiohPrint]int{}
+		for _, p := range r.catalog.Data.Products {
+			r.yugiohPrints[yugiohPrintOf(p.ExpansionID, p.Name, p.Number, p.Rarity)]++
+		}
+	}
+	prints := r.yugiohPrints
+	r.yugiohPrintsMu.Unlock()
+	return prints[yugiohPrintOf(product.Expansion.IDExpansion, product.Name, product.Number, product.Rarity)] == 1
+}

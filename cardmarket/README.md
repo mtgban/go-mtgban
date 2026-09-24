@@ -156,6 +156,32 @@ the strict query's cheapest is rarely beaten. On the older sets the
 unflagged copies are the Unlimited run, 25-60% below the 1st Edition price.
 The one promo nobody flags goes unpriced.
 
+**A Yu-Gi-Oh version index mostly counts rarities, not runs.** Of the
+catalog's 11,849 indexed cards (2026-09-23), grouped by shelf and name:
+
+| Shape | Cards |
+|---|---|
+| every version a different rarity | 8,852 |
+| every version the same rarity | 948 |
+| some rarities repeat | 316 |
+| versions at different numbers | 1,601 |
+| one version only | 132 |
+
+A product whose rarity no sibling at its number shares sells both runs -
+Battle Fader's V.2 Ultimate Rare lists 27 flagged and 22 unflagged English
+copies - so `yugiohRarityIndex` sends it to the default run and Market gets
+the Unlimited/1st Edition pair. 98 products moved, 29 of them among the 30
+lone `_1stedition` uuids with an `_unlimited` sibling in the 2026-09-24
+18:06 dump.
+
+The same-rarity shape still reads V.2+ as 1st Edition, and live listings
+do not bear that out either. Three such cards, one page of English listings
+each: Duelist Pack: Kaiba Blue-Eyes V.1 21/34 flagged, V.2 0/11 ("American
+Version"); Metal Raiders Black Skull Dragon V.1 13/48, V.2 10/41, V.3 0/7
+(the MRD-EN018 reprint); Cannon Soldier V.1 12/55, V.2 3/40, V.3 0/5. There
+the index separates regional prints, which 351 products still resolve as a
+lone 1st Edition, all on the oldest shelves.
+
 **Strictly sequential, not pooled.** Measured directly: a concurrency ladder
 (1→24 workers) plateaus at ~1.4 successful calls/sec regardless of worker
 count, with the excess coming back as 429s, while 20 fully sequential
