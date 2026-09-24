@@ -288,6 +288,12 @@ var yugiohSeeds = []matchTest{
 		Desc: "an invisible formatting mark is not part of the name",
 		In:   mtgmatcher.InputCard{Name: "Pendulum Encore\u200e", Variation: "Common", Edition: "Blazing Vortex"},
 	},
+	// Konami renamed this card; the catalog still files Starstrike Blast's
+	// printing under the name it was printed with.
+	{
+		Desc: "Darkfall respells to the name its own set prints",
+		In:   mtgmatcher.InputCard{Name: "Darkfall", Edition: "Starstrike Blast", Variation: "080 Common"},
+	},
 }
 
 // testBackend is the datastore TestMain read, for the tests to match
