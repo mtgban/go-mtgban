@@ -211,14 +211,6 @@ var pooledEditions = map[string][]string{
 		"Speed Duel Decks: Destiny Masters",
 		"Speed Duel Decks: Duelists of Tomorrow",
 	},
-	// The two half-decks the catalog files the 2-Player Starter Deck as,
-	// Yuya's Saber Force and Declan's Dark Legion. The commons both decks
-	// hold are two printings of one card in one box, and a listing naming
-	// the box alone stays refused between them.
-	"2-Player Starter Deck Yuya & Declan": {
-		"Starter Deck: Saber Force",
-		"Starter Deck: Dark Legion",
-	},
 }
 
 // normalizedPooledEditions indexes the pooled names the same way.
@@ -228,6 +220,22 @@ var normalizedPooledEditions = sync.OnceValue(func() map[string][]string {
 		pools[mtgmatcher.Normalize(name)] = sets
 	}
 	return pools
+})
+
+// unsupportedEditions names a storefront shelf that answers for no set of
+// its own: "2-Player Starter Deck Yuya & Declan" prints only in Cardmarket's
+// YS15, which TCGplayer never listed - see TestPooledEditionYuyaDeclan.
+var unsupportedEditions = map[string]bool{
+	"2-Player Starter Deck Yuya & Declan": true,
+}
+
+// normalizedUnsupportedEditions indexes unsupportedEditions the same way.
+var normalizedUnsupportedEditions = sync.OnceValue(func() map[string]bool {
+	editions := make(map[string]bool, len(unsupportedEditions))
+	for name := range unsupportedEditions {
+		editions[mtgmatcher.Normalize(name)] = true
+	}
+	return editions
 })
 
 // normalizedEditionAliases indexes the table the way an edition arrives, so

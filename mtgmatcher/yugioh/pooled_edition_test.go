@@ -53,47 +53,26 @@ func TestPooledEdition(t *testing.T) {
 	}
 }
 
-// TestPooledEditionYuyaDeclan pins the 2-Player Starter Deck, which the
-// catalog files as Yuya's Saber Force and Declan's Dark Legion: a card one
-// deck prints reaches that deck, and a common both decks print is two
-// printings of one card in one box, which a listing naming the box alone
-// cannot pick between.
+// TestPooledEditionYuyaDeclan pins that the 2-Player Starter Deck Yuya &
+// Declan is refused outright now rather than folded onto Saber Force and
+// Dark Legion. The shelf is a real Europe/Oceania product (Cardmarket's
+// YS15, TCGplayer never listed it) with its own two 21-card halves, and the
+// datastore this loader builds from - TCGplayer's own catalog - has no row
+// for either one; the fold used to land every name on whichever of the two
+// unrelated decks happened to also print it, at that deck's own number and
+// rarity. See unsupportedEditions.
 func TestPooledEditionYuyaDeclan(t *testing.T) {
 	b := loadBackend(t)
-	for _, tt := range []struct {
-		desc    string
-		in      mtgmatcher.InputCard
-		wantSet string
-		wantNum string
-	}{
-		{
-			desc:    "a card Declan's deck prints",
-			in:      mtgmatcher.InputCard{Name: "Fabled Ashenveil", Edition: "2-Player Starter Deck Yuya & Declan", Variation: "Common"},
-			wantSet: "YS15-ENL", wantNum: "YS15-ENL09",
-		},
-		{
-			desc:    "a card Yuya's deck prints",
-			in:      mtgmatcher.InputCard{Name: "The Calculator", Edition: "2-Player Starter Deck Yuya & Declan", Variation: "Common"},
-			wantSet: "YS15-ENF", wantNum: "YS15-ENF12",
-		},
+	for _, name := range []string{
+		"Fabled Ashenveil",       // Declan's deck (Dark Legion) prints this
+		"The Calculator",         // Yuya's deck (Saber Force) prints this
+		"Mystical Space Typhoon", // both decks print this
+		"Ancient Dragon",         // neither English deck prints this; the fold
+		"Bright Star Dragon",     // used to land it on Galactic Overlord instead
 	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			in := tt.in
-			id, err := b.Match(&in)
-			if err != nil {
-				t.Fatalf("Match(%v) = %v", tt.in, err)
-			}
-			co, err := b.GetUUID(id)
-			if err != nil {
-				t.Fatalf("GetUUID(%s) = %v", id, err)
-			}
-			if co.SetCode != tt.wantSet || co.Number != tt.wantNum {
-				t.Errorf("Match(%v) = %s|%s, want %s|%s", tt.in, co.SetCode, co.Number, tt.wantSet, tt.wantNum)
-			}
-		})
-	}
-	in := mtgmatcher.InputCard{Name: "Mystical Space Typhoon", Edition: "2-Player Starter Deck Yuya & Declan", Variation: "Common"}
-	if id, err := b.Match(&in); err == nil {
-		t.Errorf("Match(a common both decks print) = %q, want a refusal", id)
+		in := mtgmatcher.InputCard{Name: name, Edition: "2-Player Starter Deck Yuya & Declan", Variation: "Common"}
+		if id, err := b.Match(&in); err != mtgmatcher.ErrUnsupported {
+			t.Errorf("Match(%q) = (%q, %v), want %v", name, id, err, mtgmatcher.ErrUnsupported)
+		}
 	}
 }
