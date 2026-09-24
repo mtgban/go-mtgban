@@ -320,6 +320,20 @@ whole file.
 `b.GetUUID`, `b.GetSetByName`, ...); there are no package-level functions
 of the same name, and no backend the package keeps for you.
 
+The eight non-Magic loaders share one shape, and a new or changed loader
+keeps it:
+- `Load` reads only the `{"meta":…,"data":…}` envelope. It refuses
+  anything else, and any card missing its id or name, as "not a <Game>
+  datastore". A card with no printing is skipped, not refused.
+- Cards are read by the names every datastore publishes: `setCode`,
+  `number`, `image`, `externalLinks.tcgPlayerId`, `baseSetSize`, and
+  `language` and `watermark` where the game has them. Lorcana's `images` is
+  the one upstream field read instead, for a thumbnail the common `image`
+  lacks.
+- `IsOversized` comes from the game's oversized promo type. `Language` is
+  `cmp.Or(card.Language, "English")`, since core's filter drops a
+  non-English candidate. `AllSets` is sorted before `IndexSets`.
+
 ### Tables before code
 
 New-set and new-promo support is almost always **data**, not logic:
