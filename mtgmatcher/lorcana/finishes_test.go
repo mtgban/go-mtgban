@@ -98,7 +98,7 @@ func TestFinishPromotion(t *testing.T) {
 func TestVendorFinishNames(t *testing.T) {
 	b := loadDatastore(t)
 
-	var withSubType, specialOnly, plainFoil int
+	var treatmentAndFoil, treatmentOnly, foilOnly, noFoil int
 	counted := map[string]bool{}
 	for uuid, co := range b.UUIDs {
 		if co.Sealed {
@@ -107,18 +107,16 @@ func TestVendorFinishNames(t *testing.T) {
 
 		nonfoil := co.FoilUUIDs[mtgmatcher.FinishNonfoil]
 		foil := co.FoilUUIDs[mtgmatcher.FinishFoil]
-		var subType, foilFinish string
+		var subType string
 		for key := range co.FoilUUIDs {
 			if key != mtgmatcher.FinishNonfoil && key != mtgmatcher.FinishFoil {
 				subType = key
 			}
 		}
 		if foil != "" {
-			foilCo, err := b.GetUUID(foil)
-			if err != nil {
+			if _, err := b.GetUUID(foil); err != nil {
 				t.Fatalf("%s: foil sibling %s is not in the datastore", uuid, foil)
 			}
-			foilFinish = foilCo.Finish
 		}
 
 		// Every sibling answers the same, whichever one the caller sends
@@ -140,24 +138,26 @@ func TestVendorFinishNames(t *testing.T) {
 		}
 
 		got, err := b.MatchIDFinish(uuid, "Holofoil")
-		kind := ""
+		var kind *int
 		switch {
 		case subType != "":
-			kind = "subtype"
+			// A printing sold only in its treatment keys that one foil
+			// under both names, and one sold beside it keeps the two apart.
+			kind = &treatmentAndFoil
+			if foil == co.FoilUUIDs[subType] {
+				kind = &treatmentOnly
+			}
 			if err != nil || got != co.FoilUUIDs[subType] {
 				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want %q",
 					uuid, "Holofoil", got, err, co.FoilUUIDs[subType])
 			}
 		case foil != "":
-			kind = "special"
-			if foilFinish == standardFoil {
-				kind = "plain"
-			}
+			kind = &foilOnly
 			if err != nil || got != foil {
 				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want %q", uuid, "Holofoil", got, err, foil)
 			}
 		default:
-			kind = "nofoil"
+			kind = &noFoil
 			if !errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
 				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want the finish refused", uuid, "Holofoil", got, err)
 			}
@@ -166,20 +166,14 @@ func TestVendorFinishNames(t *testing.T) {
 			continue
 		}
 		counted[nonfoil+"|"+foil] = true
-		switch kind {
-		case "subtype":
-			withSubType++
-		case "special":
-			specialOnly++
-		default:
-			plainFoil++
-		}
+		*kind++
 	}
-	if withSubType == 0 || specialOnly == 0 || plainFoil == 0 {
-		t.Fatalf("datastore covers only part of the table: %d sub-typed, %d special-only, %d plain",
-			withSubType, specialOnly, plainFoil)
+	if treatmentAndFoil == 0 || treatmentOnly == 0 || foilOnly == 0 || noFoil == 0 {
+		t.Fatalf("datastore covers only part of the table: %d with a treatment beside the standard foil, %d with only a treatment, %d with only the standard foil, %d with no foil",
+			treatmentAndFoil, treatmentOnly, foilOnly, noFoil)
 	}
-	t.Logf("%d sub-typed, %d special-foil-only, %d plain-foil printings", withSubType, specialOnly, plainFoil)
+	t.Logf("%d printings with a treatment beside the standard foil, %d with only a treatment, %d with only the standard foil, %d with no foil",
+		treatmentAndFoil, treatmentOnly, foilOnly, noFoil)
 }
 
 // coarseFoilPair reports whether two keys sharing a uuid are the bare foil
