@@ -1808,6 +1808,45 @@ func sameSet(cards []mtgmatcher.Card) bool {
 	return true
 }
 
+// unflavoredPrinting narrows a Secret Lair listing naming neither a
+// collector number nor a flavor name to the one printing sold under the
+// card's own name, and leaves the candidates alone when there is not one.
+func unflavoredPrinting(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if !sameSet(cards) || cards[0].SetCode != "SLD" || isReskin(inCard) {
+		return cards
+	}
+	num := mtgmatcher.ExtractNumber(inCard.Variation)
+	if num == "" {
+		num = mtgmatcher.ExtractNumberAny(inCard.Variation)
+	}
+	if num != "" {
+		return cards
+	}
+
+	var plain []mtgmatcher.Card
+	for _, card := range cards {
+		if card.FlavorName == "" {
+			plain = append(plain, card)
+			continue
+		}
+		for _, flavor := range []string{card.FlavorName, card.FaceFlavorName} {
+			if flavor != "" && (inCard.Contains(flavor) || mtgmatcher.Contains(inCard.OriginalName, flavor)) {
+				return cards
+			}
+		}
+	}
+	if len(plain) == 0 {
+		return cards
+	}
+	// A number and its ★ foil are one printing
+	for _, card := range plain[1:] {
+		if card.PlainNumber != plain[0].PlainNumber {
+			return cards
+		}
+	}
+	return plain
+}
+
 // FilterCards narrows the printings within those sets to the one the input
 // describes. See mtgmatcher.GameRules.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) (outCards []mtgmatcher.Card) {
@@ -1937,6 +1976,12 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 			outCards = append(outCards, card)
 		}
+	}
+
+	// Before the promo types and foilCheck, which veto the plain printing
+	// for a treatment or a finish the listing never mentioned
+	if len(outCards) > 1 {
+		outCards = unflavoredPrinting(inCard, outCards)
 	}
 
 	// Sort through the array of promo types
