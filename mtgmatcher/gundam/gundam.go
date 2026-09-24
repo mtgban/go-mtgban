@@ -62,9 +62,6 @@ type DatastoreCard struct {
 	// builder keeps the card's subject out of them - which part of a
 	// multi-part token this is - and that is what tells two printings apart
 	// when their promotions are identical.
-	//
-	// A datastore carrying none is read from the variant, as every one was
-	// before the builder published them apart.
 	PromoTypes []string `json:"promoTypes,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, "Normal" or
@@ -145,15 +142,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 
-	// Whether this datastore publishes promo types at all. A card without
-	// them is then a card with none.
-	var labelled bool
-	for i := range payload.Cards {
-		if len(payload.Cards[i].PromoTypes) > 0 {
-			labelled = true
-			break
-		}
-	}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
 	b.SetSealedUUIDs = map[string][]string{}
@@ -195,12 +183,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		// A printing wears one token per promotion where the builder
-		// publishes them apart, and its whole variant read as one where it
-		// does not. Each reads back as itself: pairing a token with the
-		// joined variant would show "finalist" as "World Championship
-		// Regionals 26-27 Season 2 Finalist".
-		for _, label := range promoLabelsOf(&card, labelled) {
+		// A printing wears one token per promotion, and each reads back as
+		// itself: pairing a token with the joined variant would show
+		// "finalist" as "World Championship Regionals 26-27 Season 2
+		// Finalist".
+		for _, label := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(label)
 			if slug == "" {
 				continue
@@ -261,7 +248,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		var promoTypes []string
-		for _, label := range promoLabelsOf(card, labelled) {
+		for _, label := range card.PromoTypes {
 			if slug := mtgmatcher.PromoTypeSlug(label); slug != "" {
 				promoTypes = append(promoTypes, slug)
 			}
@@ -434,22 +421,4 @@ func (card *DatastoreCard) productKey() string {
 		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 	}
 	return card.ID
-}
-
-// promoLabelsOf names the promotions a printing carries, in the words they
-// are written in.
-func promoLabelsOf(card *DatastoreCard, labelled bool) []string {
-	if len(card.PromoTypes) > 0 {
-		return card.PromoTypes
-	}
-	// The fallback is for a datastore that publishes no labels at all, not
-	// for a card the builder deliberately gave none. Leaving it per-card put
-	// back everything the builder drops - the subject a printing depicts,
-	// the numbering it carries - through the very gap that says they were
-	// dropped: 35 tokens over 40 cards, "2ndform", "earthalliance" and
-	// "005006" among them.
-	if !labelled && card.Variant != "" {
-		return []string{card.Variant}
-	}
-	return nil
 }
