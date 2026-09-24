@@ -139,6 +139,17 @@ func (r *resolver) offShelf(product *cm.Product, cardID string) bool {
 	return found && !strings.EqualFold(shelf, product.ExpansionName)
 }
 
+// ownedElsewhere reports whether the datastore records cardID's printing
+// under a Cardmarket product other than this one.
+func (r *resolver) ownedElsewhere(product *cm.Product, cardID string) bool {
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	mcmID := co.Identifiers["mcmId"]
+	return mcmID != "" && mcmID != fmt.Sprint(product.IDProduct)
+}
+
 // matchFab resolves a Flesh and Blood product the bridge does not know,
 // from what the catalog says of it. The edition has to name a set of ours
 // and the answer has to be in it: Cardmarket carries whole catalogs the
@@ -389,7 +400,16 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GameLorcana && lorcanaFaces[product.IDProduct] {
 			return "", "", false, nil
 		}
-		// The bridge answers first, naming one printing where the
+		// A product the datastore records by id is that printing: the
+		// pre-errata One Piece cards no TCGplayer product sells, or a
+		// Lorcana card Cardmarket names its own way.
+		uuid := r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, fmt.Sprint(product.IDProduct))
+		if uuid != "" {
+			cardID = uuid
+			cardIDFoil, _ = r.backend.MatchID(cardID, true)
+			break
+		}
+		// The bridge answers next, naming one printing where the
 		// catalog's own V-index or wording cannot. One Piece takes it
 		// outright; Riftbound and Lorcana only where the name still agrees.
 		if tcgID, found := r.tcgBridge[product.IDProduct]; found {
@@ -496,6 +516,11 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// One Piece is the catalog that files one card onto shelf after
 		// shelf; see offShelf.
 		if r.gameID == cm.GameOnePiece && r.offShelf(product, cardID) {
+			return "", "", false, errNoPrinting
+		}
+		// A pre-errata printing the datastore records under a sibling
+		// product is that sibling's, whatever the name reaches.
+		if r.gameID == cm.GameOnePiece && r.ownedElsewhere(product, cardID) {
 			return "", "", false, errNoPrinting
 		}
 	case cm.GameYuGiOh, cm.GameFleshAndBlood, cm.GamePokemon:

@@ -123,6 +123,17 @@ products claim fall from 22 to 6. Two lose their price: the MP24 Kaiba
 token, whose TCGplayer number reads EN02 for EN052, and MRL-103, which was
 priced by the MRL-E130 misprint.
 
+**The datastore's own Cardmarket id answers before the bridge.** One Piece,
+Lorcana and Pokemon publish `cardmarketId`, and the loaders file it under
+`mtgmatcher.IDSpaceCardmarket`. The One Piece ones are the hand-carried
+pre-errata and reprint printings, which no TCGplayer product sells, so no
+bridge can reach them. Before the id route, 6 of those 26 were priced by
+their own product, 3 by a sibling's and 17 not at all. Now all 26 are
+priced by their own. A One Piece name that reaches a printing another product's id
+owns is refused (`ownedElsewhere`). Pokemon's arm does not consult the id: its
+70 stamped promos already resolve by name. CardTrader reads the same space
+through each blueprint's `card_market_ids`.
+
 ## Market's design
 
 **A printing sold foil-only is queried as a foil.** Such a printing answers
