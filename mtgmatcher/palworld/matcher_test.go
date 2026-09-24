@@ -73,6 +73,18 @@ var palworldSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Suzaku - Hellfire Wings", Variation: "EBP01-002SP"},
 	},
 	{
+		// The catalog holds this name in its own Prototype set only, so
+		// "Prototype" answers it even with no number at all.
+		Desc: "a wording naming no number, saying Prototype instead",
+		In:   mtgmatcher.InputCard{Name: "Cattiva", Variation: "Prototype"},
+	},
+	{
+		// This name also has a numbered TD01 printing; "Prototype" is what
+		// tells the two apart when neither carries a number.
+		Desc: "Prototype picks the Prototype set over a same-named TD01 card",
+		In:   mtgmatcher.InputCard{Name: "Soul", Variation: "Prototype"},
+	},
+	{
 		Desc: "negative: a number belonging to no set of this game",
 		In:   mtgmatcher.InputCard{Name: "Grizzbolt - Rumbling Tank", Variation: "ZZ99-999"},
 	},

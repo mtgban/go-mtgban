@@ -179,6 +179,13 @@ func (Rules) PlainNumber(number string) string {
 	return strings.TrimRight(number, plainNumberTail)
 }
 
+// palworldPrototypeSet is the set code for the catalog's fifteen bare-named
+// Prototype cards. Five of those names - Primitive Furnace, Mounted Machine
+// Gun, Pump-Action Shotgun, Single-Shot Rifle and Soul - also exist,
+// numbered, in BP01 or TD01, so a wording naming no number needs the set
+// settled explicitly rather than by name alone.
+const palworldPrototypeSet = "PW-PC"
+
 // FilterCards narrows candidates by edition and collector number. The
 // number's tail is the rarity's code and the whole of what tells a parallel
 // from the card it parallels, so the run's number narrows first and the
@@ -209,6 +216,12 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 
 	if number == "" {
+		// A wording naming no number but saying "Prototype" settles the
+		// set outright, deciding the five of these names that also exist,
+		// numbered, elsewhere.
+		if saysWord(inCard.Variation, "Prototype") {
+			return withSet(candidates, palworldPrototypeSet)
+		}
 		return candidates
 	}
 
@@ -249,6 +262,17 @@ func withTail(cards []mtgmatcher.Card, tail string) []mtgmatcher.Card {
 	var out []mtgmatcher.Card
 	for _, card := range cards {
 		if _, cardTail := splitNumber(card.Number); strings.EqualFold(cardTail, tail) {
+			out = append(out, card)
+		}
+	}
+	return out
+}
+
+// withSet keeps the candidates printed in the given set.
+func withSet(cards []mtgmatcher.Card, setCode string) []mtgmatcher.Card {
+	var out []mtgmatcher.Card
+	for _, card := range cards {
+		if card.SetCode == setCode {
 			out = append(out, card)
 		}
 	}
