@@ -130,9 +130,11 @@ pre-errata and reprint printings, which no TCGplayer product sells, so no
 bridge can reach them. Before the id route, 6 of those 26 were priced by
 their own product, 3 by a sibling's and 17 not at all. Now all 26 are
 priced by their own. A One Piece name that reaches a printing another product's id
-owns is refused (`ownedElsewhere`). Pokemon's arm does not consult the id: its
-70 stamped promos already resolve by name. CardTrader reads the same space
-through each blueprint's `card_market_ids`.
+owns is refused (`ownedElsewhere`), and so is a product on the pre-errata shelf
+that reaches a printing the datastore does not tag pre-errata (`notPreErrata`).
+Pokemon's arm does not consult the id: its 70 stamped promos already resolve by
+name. CardTrader reads the same space through each blueprint's
+`card_market_ids`.
 
 ## Market's design
 

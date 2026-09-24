@@ -150,6 +150,27 @@ func (r *resolver) ownedElsewhere(product *cm.Product, cardID string) bool {
 	return mcmID != "" && mcmID != fmt.Sprint(product.IDProduct)
 }
 
+// notPreErrata reports whether a product on One Piece's shelf of pre-errata
+// printings answered with a printing the datastore does not tag pre-errata.
+// Where it carries none at the number, the name reaches the card the set's
+// own shelf sells, which offShelf passes when labelled: 2 V.2s of "Romance
+// Dawn (Pre-Errata)" were landing on Box Toppers.
+func (r *resolver) notPreErrata(product *cm.Product, cardID string) bool {
+	if r.gameID != cm.GameOnePiece || !strings.Contains(strings.ToLower(product.ExpansionName), "errata") {
+		return false
+	}
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	for _, promoType := range co.PromoTypes {
+		if strings.Contains(promoType, "errata") {
+			return false
+		}
+	}
+	return true
+}
+
 // matchFab resolves a Flesh and Blood product the bridge does not know,
 // from what the catalog says of it. The edition has to name a set of ours
 // and the answer has to be in it: Cardmarket carries whole catalogs the
@@ -427,7 +448,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 					co.Identifiers["tcgplayerProductId"] != fmt.Sprint(tcgID) {
 					cardID = cardIDFoil
 				}
-				if r.offShelf(product, cardID) {
+				if r.offShelf(product, cardID) || r.notPreErrata(product, cardID) {
 					return "", "", false, errNoPrinting
 				}
 				break
@@ -521,6 +542,11 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// A pre-errata printing the datastore records under a sibling
 		// product is that sibling's, whatever the name reaches.
 		if r.gameID == cm.GameOnePiece && r.ownedElsewhere(product, cardID) {
+			return "", "", false, errNoPrinting
+		}
+		// A product on the pre-errata shelf lands on a pre-errata printing
+		// or not at all; see notPreErrata.
+		if r.notPreErrata(product, cardID) {
 			return "", "", false, errNoPrinting
 		}
 	case cm.GameYuGiOh, cm.GameFleshAndBlood, cm.GamePokemon:
