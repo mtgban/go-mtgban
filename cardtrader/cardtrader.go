@@ -166,7 +166,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		switch {
 		case product.Quantity < 1,
 			product.OnVacation,
-			product.Properties.Altered:
+			product.Properties.Altered,
+			product.Graded:
 			continue
 		case mtgmatcher.Contains(product.Description, "ita"),
 			mtgmatcher.Contains(product.Description, "mix"):
