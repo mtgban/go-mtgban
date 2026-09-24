@@ -42,42 +42,57 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // a name instead of distilling it into a label of its own.
 var qualifiedNameRe = regexp.MustCompile(`\s*\(([^()]*)\)$`)
 
-// adoptQualifiedName adopts the catalog's decorated spelling of a name the
-// storefront wrote bare, where the wording says which decoration it means.
-//
-// Candidates are gathered by name, so a listing writing the bare name can
-// never reach a printing the catalog files with its qualifier inside it. The
-// Errata Version of Bucky, Squirrel Squeak Tutor stands at the same number as
-// the original, and Cool Stuff Inc sells both under one name, telling them
-// apart in a note - "3-Cost Errata, Foil No Ward" against "2-Cost w/ Ward".
-// The errata row answered with the original and was served as its price.
-//
-// The qualifier is what licenses the swap, and three things keep it narrow.
-// The number must be written, so the set and the printing are named rather
-// than guessed. The wording must state a word of the qualifier, so a listing
-// silent about it keeps the bare name the catalog also holds at that number.
-// And two decorated siblings state nothing between them, so they refuse
-// instead of choosing.
+// promoPoolSet is the code the catalog carries every otherwise-unbound
+// promotional printing under, whatever heading a storefront files it under
+// instead. Cardmarket's "Promos Year N" and "Lorcana Challenge Promos Year
+// N", and Cool Stuff Inc's plain "Promo", all name no set of their own; the
+// printings they cover still have to live somewhere, and this is where.
+const promoPoolSet = "DLPC"
+
+// adoptQualifiedName adopts the catalog's decorated spelling of a name a
+// storefront wrote bare, when a collector number is given and exactly one
+// decorated candidate answers it: with a named set, one whose wording states
+// a word of the decoration; with no set (a promo heading), any one candidate
+// in the DLPC pool. Two decorated siblings, or a plain printing already at
+// that number, refuse rather than guess.
 func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	number := extractNumber(inCard.Variation)
 	if number == "" {
 		return
 	}
 	set, err := b.GetSetByName(inCard.Edition)
-	if err != nil || set == nil {
+	if err == nil && set != nil {
+		adoptFromSet(set, inCard, number, true)
 		return
 	}
+	pool, err := b.GetSet(promoPoolSet)
+	if err == nil && pool != nil {
+		adoptFromSet(pool, inCard, number, false)
+	}
+}
 
+// adoptFromSet performs the scan and the swap for adoptQualifiedName, over
+// whichever set the caller resolved the edition to. requireWording is the
+// named-set gate, off for the pool search that has no wording to gate on.
+func adoptFromSet(set *mtgmatcher.Set, inCard *mtgmatcher.InputCard, number string, requireWording bool) {
 	wording := strings.ToLower(inCard.Variation)
 	var adopt string
 	for i := range set.Cards {
 		card := &set.Cards[i]
-		match := qualifiedNameRe.FindStringSubmatchIndex(card.Name)
-		if match == nil || card.Number != number ||
-			!mtgmatcher.Equals(card.Name[:match[0]], inCard.Name) {
+		if card.Number != number {
 			continue
 		}
-		if !statesQualifier(wording, card.Name[match[2]:match[3]]) {
+		match := qualifiedNameRe.FindStringSubmatchIndex(card.Name)
+		if match == nil {
+			if !requireWording && mtgmatcher.Equals(card.Name, inCard.Name) {
+				return
+			}
+			continue
+		}
+		if !mtgmatcher.Equals(card.Name[:match[0]], inCard.Name) {
+			continue
+		}
+		if requireWording && !statesQualifier(wording, card.Name[match[2]:match[3]]) {
 			continue
 		}
 		if adopt != "" && !mtgmatcher.Equals(adopt, card.Name) {
