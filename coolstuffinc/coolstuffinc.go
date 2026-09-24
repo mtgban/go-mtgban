@@ -1229,6 +1229,8 @@ var sealedTiers = map[string]bool{
 var csiTreatments = strings.NewReplacer(
 	"Master Ball Foil", "Master Ball Pattern",
 	"Poke Ball Foil", "Poke Ball Pattern",
+	"Shatterfoil", "Cracked Ice Holo",
+	"Cosmo Holo", "Cosmos Holo",
 )
 
 // catalogTreatment answers the catalog's wording for a treatment the
@@ -1271,6 +1273,14 @@ func numberedListing(name string) (string, string) {
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
 	name, numbered := numberedListing(name)
 	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
+	m := basicEnergyName.FindStringSubmatch(name)
+	if m != nil {
+		bracket := strings.Trim(m[2], "()")
+		fixed := pokemonBasicEnergy(b, m[1], bracket, edition, numbered, variation, foil)
+		if fixed != nil {
+			return fixed
+		}
+	}
 	if (pokemonNonHolo.MatchString(name) || pokemonNonHolo.MatchString(numbered)) &&
 		!strings.Contains(strings.ToLower(edition), "promo") {
 		strippedName := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(name, ""))
@@ -1414,6 +1424,97 @@ var (
 	specialEnergy  = regexp.MustCompile(`^Special ((?:Metal|Darkness) Energy)$`)
 	eliteFour      = regexp.MustCompile(`^(.+) 4$`)
 )
+
+// basicEnergyName matches this storefront's "<Type> Energy" and a treatment
+// bracket it carries of its own ("(Cosmo Holo)"), apart from the number
+// tail's. pokemonBasicEnergy gates the rename on the listing's own number.
+var basicEnergyName = regexp.MustCompile(`^(Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy) Energy(?:\s+(\(.+\)))?$`)
+
+// pokemonBasicEnergy answers a bare "<Type> Energy" listing the way the
+// catalog spells its Scarlet & Violet / Mega Evolution era printings, read
+// off the SVE/MEE-shaped product number glued onto the tail.
+func pokemonBasicEnergy(b *mtgmatcher.Backend, energyType, bracket, edition, numbered, variation string, foil bool) *mtgmatcher.InputCard {
+	name := "Basic " + energyType + " Energy"
+	bracket = catalogTreatment(bracket)
+
+	build := func(fromVariation bool, numberedTail string) *mtgmatcher.InputCard {
+		card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: bracket, Foil: foil}
+		if fromVariation {
+			card.Variation = strings.TrimSpace(bracket + " " + numberedTail)
+		} else if numberedTail != "" {
+			card.Name += " - " + numberedTail
+		}
+		return card
+	}
+
+	tail, fromVariation := csiTreatments.Replace(numbered), false
+	pm := prefixedNumber.FindStringSubmatch(tail)
+	if pm == nil {
+		tail, fromVariation = csiTreatments.Replace(variation), true
+		pm = prefixedNumber.FindStringSubmatch(tail)
+	}
+	if pm == nil {
+		// A plain rename needs the tail's own number to say which
+		// printing is meant, on the shelf's own set: the same gate
+		// the on-shelf and SVE/MEE probes below both apply.
+		num := mtgmatcher.ExtractNumber(numbered)
+		if num == "" {
+			return nil
+		}
+		shelf, err := b.GetSetByName(edition)
+		if err != nil {
+			return nil
+		}
+		plain := build(false, numbered)
+		plain.Variation = strings.TrimSpace(bracket + " " + variation)
+		id, err := b.Match(plain)
+		if err != nil {
+			return nil
+		}
+		co, err := b.GetUUID(id)
+		if err != nil || co.SetCode != shelf.Code || strings.TrimLeft(co.Number, "0") != num {
+			return nil
+		}
+		return plain
+	}
+
+	shelf, shelfErr := b.GetSetByName(edition)
+
+	bare := strings.TrimLeft(pm[2], "0")
+	if bare == "" {
+		bare = "0"
+	}
+	onShelf := build(fromVariation, strings.TrimSpace(strings.Replace(tail, pm[0], bare, 1)))
+	if shelfErr == nil {
+		id, err := b.Match(onShelf)
+		if err == nil {
+			co, err := b.GetUUID(id)
+			if err == nil && co.SetCode == shelf.Code {
+				return onShelf
+			}
+		}
+	}
+
+	set, found := pokemonNumberSets[pm[1]]
+	if !found {
+		return nil
+	}
+	target, err := b.GetSetByName(set)
+	if err != nil {
+		return nil
+	}
+	redirected := build(fromVariation, strings.TrimSpace(strings.Replace(tail, pm[0], pm[2], 1)))
+	redirected.Edition = set
+	id, err := b.Match(redirected)
+	if err != nil {
+		return nil
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || co.SetCode != target.Code {
+		return nil
+	}
+	return redirected
+}
 
 // pokemonPromoShelf answers the shelf a Pokemon listing belongs to, which is
 // the one it arrived on unless the catalog files the card as a promo.
