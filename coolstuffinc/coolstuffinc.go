@@ -157,6 +157,17 @@ var buylistNumberWord = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,
 
 var buylistReprintNote = regexp.MustCompile(`(?i)\breprints?\b`)
 
+// jpArtWordingRe matches "Japanese Art"/"Artwork"/"Art Style", which
+// mtgmatcher's language filter otherwise reads as a request for a
+// Japanese-language card. Leaves "Japanese Letters in Art" alone.
+var jpArtWordingRe = regexp.MustCompile(`(?i)Japanese Art(?:work|\s+Style)?`)
+
+// jpArtWording rewrites the wording jpArtWordingRe matches to "JP Art", the
+// catalog's own name for the treatment.
+func jpArtWording(s string) string {
+	return jpArtWordingRe.ReplaceAllString(s, "JP Art")
+}
+
 // onePieceEvents spells a One Piece event the way the catalog names it, for
 // the names this storefront gives it instead. They are its own: the catalog
 // sells the card in "BANDAI Card Games Fest 25-26" and it goes up here as
@@ -696,7 +707,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					if unknownPrinting(cardName, edition) {
 						return
 					}
-					theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(cardName)), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(cardName))), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(jpArtWording(notes) + " " + catalogRarity(rarity)), Foil: isFoil}
 				case mtgban.GamePokemon:
 					shelf, shelfRun := firstEditionShelf(edition)
 					if shelfRun != nil {
@@ -719,7 +730,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						}
 						break
 					}
-					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(notes), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(jpArtWording(notes)), Foil: isFoil}
 				case mtgban.GameGundam:
 					name, variation := gundamCard(csi.backend, cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity)), Foil: isFoil}
@@ -1022,7 +1033,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			if unknownPrinting(product.Name, product.ItemSet) {
 				continue
 			}
-			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(product.Name)), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(product.Name))), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(jpArtWording(buylistVariation(product)) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case mtgban.GameOnePiece:
 			donName, donDescription, isDon := onePieceDonName(product.Name)
 			if isDon {
@@ -1038,7 +1049,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				}
 				break
 			}
-			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(product.Name), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(jpArtWording(product.Name)), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(jpArtWording(product.Name)))), Foil: product.IsFoil == 1}
 		// Gundam prints the same card at the same number in three sets, so
 		// the shelf has to narrow and the storefront's own code prefix stops
 		// it naming one; the wording it hangs behind the name is what tells
