@@ -156,6 +156,12 @@ func shouldIgnoreNumber(b *mtgmatcher.Backend, c *mtgmatcher.InputCard, setName,
 	if num != "" && strings.Contains(setName, num) && mtgmatcher.ExtractYear(setName) == "" {
 		return true
 	}
+	// Same for the number a storefront's own name for the set adds, as the
+	// "1" of "Modern Horizons 1 Buy-a-Box"
+	retronym := setName + " " + num
+	if num != "" && EditionTable[retronym] == setName && mtgmatcher.Contains(c.Variation, retronym) {
+		return true
+	}
 
 	return false
 
