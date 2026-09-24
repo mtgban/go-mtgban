@@ -232,6 +232,11 @@ as a new baseline.
 ## Conventions
 
 - **gofmt always.** CI enforces it; `gofmt -l .` must print nothing.
+- **No `reflect`**, tests included: revive's `imports-blocklist` rejects the
+  import. Compare with `slices`/`maps` or a comparison written for the type,
+  and ask questions about types through `go/types` (see
+  `cardmarket/register_test.go`). The reasons are mtgban-website's
+  `docs/adr/0002-no-reflect.md`.
 - **No global loggers.** Each scraper takes a
   `LogCallback mtgban.LogCallbackFunc` and logs through a tagged `printf`
   helper (`[TAG] `-prefixed). The matcher logs through the `Logger` on the
