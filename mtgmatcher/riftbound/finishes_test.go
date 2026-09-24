@@ -7,105 +7,73 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestCardFinishes pins the two spellings a datastore reaches here in and
-// the fallback under both. The gallery says nothing about finish, so a
-// datastore built before the builder recorded it has to keep loading as it
-// always did - every card sold in both - rather than losing every printing
-// to an empty finish list.
+// TestCardFinishes pins how the finishes a card is sold in are read off its
+// printings: TCGplayer's own names are placed, a name TCGplayer adds later
+// arrives as its own finish, and one finish named twice is stored once.
 func TestCardFinishes(t *testing.T) {
+	type printing = struct {
+		Finish string `json:"finish"`
+		ID     string `json:"id"`
+	}
 	both := []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
 
 	tests := []struct {
-		name string
-		card GalleryCard
-		want []string
+		name      string
+		printings []printing
+		want      []string
 	}{
 		{
-			name: "a datastore without the field falls back to both",
-			card: GalleryCard{},
-			want: both,
+			name: "a card with no printing has no finish",
+			want: nil,
 		},
 		{
-			name: "foil only is kept as foil only",
-			card: GalleryCard{Finishes: []string{mtgmatcher.FinishFoil}},
-			want: []string{mtgmatcher.FinishFoil},
+			name:      "foil only is kept as foil only",
+			printings: []printing{{"Foil", "x_foil"}},
+			want:      []string{mtgmatcher.FinishFoil},
 		},
 		{
-			name: "nonfoil only is kept as nonfoil only",
-			card: GalleryCard{Finishes: []string{mtgmatcher.FinishNonfoil}},
-			want: []string{mtgmatcher.FinishNonfoil},
+			name:      "nonfoil only is kept as nonfoil only",
+			printings: []printing{{"Normal", "x"}},
+			want:      []string{mtgmatcher.FinishNonfoil},
 		},
 		{
-			name: "both are kept in the order given",
-			card: GalleryCard{Finishes: both},
-			want: both,
-		},
-		{
-			// What the builder publishes now: the printing name TCGplayer
-			// prices the sku under, not the matcher's own spelling.
-			name: "TCGplayer's own names are placed",
-			card: GalleryCard{Finishes: []string{"Normal", "Foil"}},
-			want: both,
+			name:      "TCGplayer's own names are placed, in the order given",
+			printings: []printing{{"Normal", "x"}, {"Foil", "x_foil"}},
+			want:      both,
 		},
 		{
 			// The reason the vocabulary is open rather than a list kept
 			// here: the printings under a TCGplayer category are the
 			// vendor's to add, and a third one has to arrive as data.
-			name: "a printing TCGplayer adds later arrives as its own finish",
-			card: GalleryCard{Finishes: []string{"Normal", "Holofoil"}},
-			want: []string{mtgmatcher.FinishNonfoil, "holofoil"},
+			name:      "a printing TCGplayer adds later arrives as its own finish",
+			printings: []printing{{"Normal", "x"}, {"Holofoil", "x_holofoil"}},
+			want:      []string{mtgmatcher.FinishNonfoil, "holofoil"},
 		},
 		{
-			name: "a name is placed however it is spelled",
-			card: GalleryCard{Finishes: []string{"Cold Foil"}},
-			want: []string{"coldfoil"},
+			name:      "a name is placed however it is spelled",
+			printings: []printing{{"Cold Foil", "x_coldfoil"}},
+			want:      []string{"coldfoil"},
 		},
 		{
 			// Both spellings of one finish name one printing, and a card
 			// listing each would otherwise be stored twice.
-			name: "one finish named twice is stored once",
-			card: GalleryCard{Finishes: []string{"Normal", mtgmatcher.FinishNonfoil}},
-			want: []string{mtgmatcher.FinishNonfoil},
+			name:      "one finish named twice is stored once",
+			printings: []printing{{"Normal", "x"}, {mtgmatcher.FinishNonfoil, "y"}},
+			want:      []string{mtgmatcher.FinishNonfoil},
+		},
+		{
+			name:      "a printing published without a uuid is left out",
+			printings: []printing{{"Normal", ""}, {"Foil", "x_foil"}},
+			want:      []string{mtgmatcher.FinishFoil},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := cardFinishes(test.card)
+			got := cardFinishes(GalleryCard{Printings: test.printings})
 			if !slices.Equal(got, test.want) {
-				t.Errorf("cardFinishes(%v) = %v, want %v", test.card.Finishes, got, test.want)
+				t.Errorf("cardFinishes(%v) = %v, want %v", test.printings, got, test.want)
 			}
 		})
-	}
-}
-
-// TestCanonicalFinish pins that Riftbound places TCGplayer's printing names
-// and the matcher's own spelling on the same finish, and hands back anything
-// else rather than refusing it - a printing the vendor adds to the category
-// must reach a uuid without a release of this package.
-func TestCanonicalFinish(t *testing.T) {
-	tests := []struct {
-		in   string
-		want string
-	}{
-		// TCGplayer's whole vocabulary for the category today
-		{"Normal", mtgmatcher.FinishNonfoil},
-		{"Foil", mtgmatcher.FinishFoil},
-		// The spelling the datastores built before that carry
-		{"nonfoil", mtgmatcher.FinishNonfoil},
-		{"foil", mtgmatcher.FinishFoil},
-		// However a storefront writes it
-		{"NON-FOIL", mtgmatcher.FinishNonfoil},
-		{"normal", mtgmatcher.FinishNonfoil},
-		// A printing name the category does not have yet
-		{"Holofoil", "holofoil"},
-		{"Cold Foil", "coldfoil"},
-		{"", ""},
-	}
-
-	for _, test := range tests {
-		if got := (Rules{}).CanonicalFinish(test.in); got != test.want {
-			t.Errorf("CanonicalFinish(%q) = %q, want %q", test.in, got, test.want)
-		}
 	}
 }

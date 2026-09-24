@@ -27,7 +27,7 @@ const sealedFixture = `{"data": {
 				"set": {"value": {"id": "OGN", "label": "Origins"}},
 				"rarity": {"value": {"id": "common"}},
 				"tcgplayerProductId": 100001,
-				"finishes": ["nonfoil"]
+				"printings": [{"finish": "Normal", "id": "ogn-001_nonfoil"}]
 			}
 		]},
 		"sealed": {"items": [
@@ -175,10 +175,7 @@ func TestSealedNameCollidingWithCard(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match = %v, want the card", err)
 	}
-	// The fixture above publishes no printings array, so this is the uuid
-	// printingUUID falls back to spelling - what a datastore built before
-	// cmd/riftbound named them carries, and the only thing still exercising
-	// that path now the published file has moved on.
+	// The uuid the fixture publishes for the card's one printing.
 	if uuid != "ogn-001_nonfoil" {
 		t.Errorf("Match = %q, want %q", uuid, "ogn-001_nonfoil")
 	}

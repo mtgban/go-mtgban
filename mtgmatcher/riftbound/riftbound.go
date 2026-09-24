@@ -134,33 +134,16 @@ type GalleryCard struct {
 	// index.
 	TCGplayerProductID int `json:"tcgplayerProductId,omitempty"`
 
-	// Finishes is likewise stamped by the builder, from the printings the
-	// TCGplayer catalog lists for that product, named as TCGplayer names
-	// them ("Normal", "Foil"). The gallery says nothing about finish, so a
-	// datastore built before this was recorded leaves it empty and every
-	// card falls back to being sold in both.
-	Finishes []string `json:"finishes,omitempty"`
-
-	// Printings is what a card's printings are, one entry each: the finish
-	// TCGplayer prices it under and the uuid it is quoted by. It replaces
-	// the printingIds map and the finishes list both, which were the same
-	// set of printings said twice - one naming them, the other naming what
-	// each is called. A datastore published before it carries neither and
-	// is read from the two above.
+	// Printings is what a card's printings are, one entry each, stamped by
+	// the builder from the TCGplayer catalog since the gallery says nothing
+	// about finish: the finish TCGplayer prices it under ("Normal", "Foil")
+	// and the uuid it is quoted by. The uuid is the builder's to publish
+	// rather than this package's to spell, since a uuid is what a price is
+	// keyed on and a moved one resolves to nothing rather than erroring.
 	Printings []struct {
 		Finish string `json:"finish"`
 		ID     string `json:"id"`
 	} `json:"printings,omitempty"`
-
-	// PrintingIDs is the uuid each finish prices, keyed by the finish as
-	// TCGplayer prices it and published by the builder rather than spelled
-	// here. A uuid is what a price is keyed on, and
-	// spelling one from a finish name means a change to how this package
-	// spells finishes moves identity that lives outside it - silently,
-	// since a moved uuid resolves to nothing rather than erroring. A
-	// datastore that carries none is spelled from below, as every one was
-	// before the builder began publishing them.
-	PrintingIDs map[string]string `json:"printingIds,omitempty"`
 
 	// PromoTypes carries the parenthetical qualifiers the builder strips
 	// from a promotional printing's TCGplayer name ("Sett - The Boss
@@ -378,6 +361,11 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		if b.Sets[setCode] == nil {
 			continue
 		}
+		// A card published with no printing has no uuid to price.
+		finishes := cardFinishes(card)
+		if len(finishes) == 0 {
+			continue
+		}
 
 		var types []string
 		for _, cardType := range card.CardType.Type {
@@ -395,7 +383,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			Name:     card.Name,
 			SetCode:  setCode,
-			Finishes: cardFinishes(card),
+			Finishes: finishes,
 			Number:   number,
 			Images: map[string]string{
 				"full":      card.CardImage.URL,
@@ -550,9 +538,7 @@ var riftboundRarityMap = map[string]int{
 	"showcase": 5,
 }
 
-// printingUUID is the uuid a finish prices: the one the datastore
-// publishes, and where it publishes none the finish spelled into the card's
-// id, which is how every uuid here was reached before.
+// printingUUID is the uuid the datastore publishes for a finish.
 func printingUUID(card GalleryCard, finish string) string {
 	// Keyed by the datastore's own spelling, which is TCGplayer's, so the
 	// key is placed the same way the finish it answers for was.
@@ -561,46 +547,23 @@ func printingUUID(card GalleryCard, finish string) string {
 			return printing.ID
 		}
 	}
-	for name, uuid := range card.PrintingIDs {
-		if uuid != "" && (Rules{}).CanonicalFinish(name) == finish {
-			return uuid
-		}
-	}
-	return card.ID + "_" + finish
+	return ""
 }
 
-// cardFinishes returns the finishes a printing is sold in. The gallery says
-// nothing about finish, so the builder stamps what the TCGplayer catalog
-// lists for the product it maps to; most of the game is sold in one finish
-// only, promotional printings being foil and starter cards plain.
-//
-// A datastore built before that was recorded says nothing, and the honest
-// answer there is both: it is the assumption the whole game was loaded under
-// until now, and narrowing on no evidence would strand real printings.
+// cardFinishes returns the finishes a printing is sold in, placed through
+// CanonicalFinish from the TCGplayer names its printings carry - which also
+// places a printing TCGplayer adds later without being taught it first. Most
+// of the game is sold in one finish only, promotional printings being foil
+// and starter cards plain. A printing published without a uuid has none to
+// price and is left out.
 func cardFinishes(card GalleryCard) []string {
-	// The printings array names them where the datastore publishes it; the
-	// list beside it is what one published before it carried.
-	named := card.Finishes
-	if len(card.Printings) > 0 {
-		named = make([]string, 0, len(card.Printings))
-		for _, printing := range card.Printings {
-			named = append(named, printing.Finish)
-		}
-	}
 	var out []string
-	for _, finish := range named {
-		// The datastore names a finish the way TCGplayer prices it
-		// ("Normal", "Foil"); the ones built before it did name it the way
-		// this package spells it. CanonicalFinish places both, and places a
-		// printing TCGplayer adds later without being taught it first.
-		finish = (Rules{}).CanonicalFinish(finish)
-		if finish == "" || slices.Contains(out, finish) {
+	for _, printing := range card.Printings {
+		finish := (Rules{}).CanonicalFinish(printing.Finish)
+		if printing.ID == "" || finish == "" || slices.Contains(out, finish) {
 			continue
 		}
 		out = append(out, finish)
-	}
-	if len(out) == 0 {
-		return []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
 	}
 	return out
 }
