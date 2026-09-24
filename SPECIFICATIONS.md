@@ -695,6 +695,12 @@ This three-tier design — **data tables first, generic number/promo logic
 second, per-set code last** — is the Magic package's core maintenance pattern:
 most new-set support lands as table entries, not code.
 
+One narrow language case runs just ahead of stage 3: a listing naming the
+Phyrexian language keeps only the Phyrexian-language printings when there are
+any, since stage 3 and the passes after it read such a printing's flavor name
+(the card's own, in Phyrexian script), showcase frame and dual finish as things
+the listing left unsaid.
+
 **The other seven** need far less of that, and share a common shape: each
 game's `Rules` type embeds `mtgmatcher.DefaultRules` and overrides only the
 hooks its own catalog forces. `FilterPrintings`, `FinalizeCandidates`,
