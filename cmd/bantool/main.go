@@ -195,6 +195,7 @@ func targets() map[mtgban.Game]map[string]*scraperOption {
 	all[mtgban.GameMagic]["vegassingles"].OnlyVendor = true
 	all[mtgban.GameMagic]["mtgseattle"].OnlySeller = true
 	all[mtgban.GameYuGiOh]["coolstuffinc_sealed"].OnlySeller = true
+	all[mtgban.GameLorcana]["coolstuffinc_sealed"].OnlySeller = true
 
 	return all
 }
