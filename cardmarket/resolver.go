@@ -852,10 +852,50 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 			}
 		}
 	}
+	if carried && region != "" && tail != "" {
+		id := r.yugiohInfixed(product, name, rarity, region, tail)
+		if id != "" {
+			return id, nil
+		}
+	}
 	if !carried || region != "" {
 		return "", errForeign
 	}
 	return "", errNoPrinting
+}
+
+// yugiohInfixed answers the printing numbered like the product, with the
+// "EN" region infix the datastore writes and Cardmarket leaves out -
+// "RDS-ENSE1" for a product numbered "SE1".
+func (r *resolver) yugiohInfixed(product *cm.Product, name, rarity, region, tail string) string {
+	var bases []string
+	base, _, dashed := strings.Cut(product.Number, "-")
+	if dashed {
+		bases = append(bases, base)
+	} else {
+		editions := append([]string{}, yugiohEditions(product.ExpansionName)...)
+		for _, edition := range append(editions, product.ExpansionCode) {
+			set, err := r.backend.GetSetByName(edition)
+			if err == nil {
+				bases = append(bases, strings.TrimSuffix(set.Code, "-EN"))
+			}
+		}
+	}
+	for _, base := range bases {
+		number := base + "-EN" + region + tail
+		id, err := r.backend.Match(&mtgmatcher.InputCard{
+			Name:      name,
+			Variation: strings.TrimSpace(number + " " + rarity),
+		})
+		if err != nil {
+			continue
+		}
+		co, err := r.backend.GetUUID(id)
+		if err == nil && strings.EqualFold(co.Number, number) {
+			return id
+		}
+	}
+	return ""
 }
 
 // reportRefused says what an expansion refused and counts it into the run's
