@@ -682,6 +682,7 @@ var ygoVersionWording = map[string]string{
 // fabNames spells the Flesh and Blood names Card Trader misspells.
 var fabNames = map[string]string{
 	"Kassai of the Golden Sands": "Kassai of the Golden Sand",
+	"In the Palm of Your Hands":  "In the Palm of Your Hand",
 }
 
 // fabCodes spells the set codes Card Trader misspells in its collector
@@ -704,6 +705,10 @@ var fabBlueprintNumbers = map[int]string{
 	215189: "WTR030",
 	215190: "WTR031",
 	158167: "CHN009",
+	// The Nuu blitz deck's Fang Strike and Slither carry the parent set's
+	// numbers instead of the blitz deck's own.
+	289007: "NUU028",
+	289009: "NUU029",
 }
 
 // fabNumber spells a Flesh and Blood blueprint's collector number the way the
@@ -728,7 +733,9 @@ var fabPuzzleRe = regexp.MustCompile(`^"(.+)" Macro Puzzle Card$`)
 // the back of the Treasure Island puzzle is "Chart the High Seas" to it and
 // "High Seas Map" to the datastore.
 var fabPuzzleFaces = map[string]string{
-	"Chart the High Seas": "High Seas Map",
+	"Chart the High Seas":           "High Seas Map",
+	"Kano, Dracai of Aether":        "Kano, Draci of Aether",
+	"Taipanis, Dracai of Judgement": "Taipanis Draca of Judgement",
 }
 
 // fabArtCardSuffixes are the tails the datastore hangs on a double-sided art
