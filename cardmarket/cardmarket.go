@@ -3,6 +3,7 @@
 package cardmarket
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -299,7 +300,7 @@ func onePieceNumber(b *mtgmatcher.Backend, name, number, expansion string) strin
 func shelvedSets(b *mtgmatcher.Backend, list []cm.Expansion) map[string]string {
 	shelved := make(map[string]string, len(list))
 	for _, exp := range list {
-		set, err := b.GetSetByName(exp.Name)
+		set, err := b.GetSetByName(cmp.Or(onePieceShelves[exp.Name], exp.Name))
 		if err != nil {
 			continue
 		}
