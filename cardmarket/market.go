@@ -488,7 +488,7 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 
 	var refusedNames []string
 	named := map[string]int{}
-	var twins, foreign, refusals, skipped, priced int
+	var twins, foreign, refusals, skipped, priced, matchErrs int
 	for i := range results {
 		r := &results[i]
 		id, mapped := r.product.IDProduct, products[r.product.IDProduct]
@@ -521,6 +521,7 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 			named[key] = len(refusedNames)
 			refusedNames = append(refusedNames, fmt.Sprintf("%d %s", id, key))
 		case err != nil:
+			matchErrs++
 			mkm.printf("product id %d returned %s", id, err)
 		}
 	}
@@ -535,7 +536,7 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 	// one that priced nothing at all. This is the one line every edition
 	// gets, so "Processing X" is always followed by what happened to it.
 	mkm.printf("%s: priced %d/%d products", exp.Name, priced, len(ids))
-	channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign, foreign: foreign}
+	channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign + matchErrs, foreign: foreign}
 	return nil
 }
 
