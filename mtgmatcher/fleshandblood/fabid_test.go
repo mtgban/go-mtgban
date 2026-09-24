@@ -21,8 +21,8 @@ const fabIDFixture = `{"data": {
 	"cards": [
 		{"artist": "Ramza Ardyputra", "externalLinks": {"fabId": "AUA002", "tcgPlayerId": 577175}, "fabId": "AUA002", "finish": "Normal", "id": "ara002_577175", "image": "https://tcgplayer-cdn.tcgplayer.com/product/577175_400w.jpg", "name": "Star Fall", "number": "ARA002", "rarity": "Common", "setCode": "ARA"},
 		{"artist": "Marcus Reyno", "externalLinks": {"fabId": "ARA002", "tcgPlayerId": 489117}, "fabId": "ARA002", "finish": "Normal", "id": "ara002_489117", "image": "https://tcgplayer-cdn.tcgplayer.com/product/489117_400w.jpg", "name": "Spider's Bite", "number": "ARA002", "rarity": "Common", "setCode": "BDOA"},
-		{"artist": "Asur Misoa", "externalLinks": {"fabId": "MST158", "tcgPlayerId": 552843}, "fabId": "MST158", "finish": "Normal", "id": "mst158-a_552843", "image": "https://tcgplayer-cdn.tcgplayer.com/product/552843_400w.jpg", "name": "Spectral Shield", "number": "MST158-A", "rarity": "Common", "setCode": "MST", "variant": "158-A"},
-		{"artist": "Asur Misoa", "externalLinks": {"fabId": "MST158", "tcgPlayerId": 552844}, "fabId": "MST158", "finish": "Normal", "id": "mst158-b_552844", "image": "https://tcgplayer-cdn.tcgplayer.com/product/552844_400w.jpg", "name": "Spectral Shield", "number": "MST158-B", "rarity": "Token", "setCode": "MST", "variant": "158-B"}
+		{"artist": "Asur Misoa", "externalLinks": {"fabId": "MST158", "tcgPlayerId": 552843}, "fabId": "MST158", "finish": "Normal", "id": "mst158-a_552843", "image": "https://tcgplayer-cdn.tcgplayer.com/product/552843_400w.jpg", "name": "Spectral Shield", "number": "MST158-A", "promoTypes": ["158-A"], "rarity": "Common", "setCode": "MST", "variant": "158-A"},
+		{"artist": "Asur Misoa", "externalLinks": {"fabId": "MST158", "tcgPlayerId": 552844}, "fabId": "MST158", "finish": "Normal", "id": "mst158-b_552844", "image": "https://tcgplayer-cdn.tcgplayer.com/product/552844_400w.jpg", "name": "Spectral Shield", "number": "MST158-B", "promoTypes": ["158-B"], "rarity": "Token", "setCode": "MST", "variant": "158-B"}
 	]
 }}`
 
