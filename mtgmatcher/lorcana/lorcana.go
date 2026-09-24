@@ -36,13 +36,10 @@ type AllCards struct {
 		Type           string `json:"type"`
 		Number         int    `json:"number"`
 		Name           string `json:"name"`
-		// CardCounts is upstream's own tally of the set. Base is the
-		// numbered run a card prints its number out of - the 204 of
-		// "12/204" - with the enchanted and promo printings counted
-		// separately, above it.
-		CardCounts struct {
-			Base int `json:"base"`
-		} `json:"cardCounts"`
+		// BaseSetSize is the numbered run a card prints its number out of,
+		// the 204 of "12/204": upstream's cardCounts.base under the name
+		// every datastore gives it.
+		BaseSetSize int `json:"baseSetSize"`
 	} `json:"sets"`
 	Cards []struct {
 		Abilities []struct {
@@ -345,7 +342,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			ReleaseDate:     set.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
 			Type:            set.Type,
-			BaseSetSize:     set.CardCounts.Base,
+			BaseSetSize:     set.BaseSetSize,
 		}
 	}
 	sort.Strings(b.AllSets)

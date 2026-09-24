@@ -247,14 +247,14 @@ func TestPrefilterRetriesWhenDirectMatchConflictsWithEdition(t *testing.T) {
 
 func TestCanonicalGalleryNameRestoresVendettaRecruitQualifier(t *testing.T) {
 	card := GalleryCard{}
-	card.Set.Value.ID = "VEN"
-	card.CollectorNumber = 4
+	card.SetCode = "VEN"
+	card.Number = "T04"
 	card.Name = "Recruit"
 	if got := canonicalGalleryName(card); got != "Recruit (NX)" {
 		t.Fatalf("canonicalGalleryName() = %q, want Recruit (NX)", got)
 	}
 
-	card.Set.Value.ID = "OGN"
+	card.SetCode = "OGN"
 	if got := canonicalGalleryName(card); got != "Recruit" {
 		t.Fatalf("canonicalGalleryName() changed non-Vendetta card to %q", got)
 	}

@@ -14,27 +14,25 @@ const thirdFinishFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
-			{"id": "OGN", "name": "Origins", "collectorNumberMax": 298, "releaseDate": "2025-10-31"}
+			{"id": "OGN", "name": "Origins", "baseSetSize": 298, "releaseDate": "2025-10-31"}
 		]},
 		"cards": {"items": [
 			{
 				"id": "ogn-001",
-				"collectorNumber": 1,
 				"name": "Fixture Blade",
-				"publicCode": "OGN-001/298",
-				"set": {"value": {"id": "OGN", "label": "Origins"}},
+				"number": "001",
+				"setCode": "OGN",
 				"rarity": {"value": {"id": "rare"}},
-				"tcgplayerProductId": 100,
+				"externalLinks": {"tcgPlayerId": 100},
 				"printings": [{"finish": "Normal", "id": "ogn-001"}, {"finish": "Foil", "id": "ogn-001_f"}]
 			},
 			{
 				"id": "ogn-002",
-				"collectorNumber": 2,
 				"name": "Fixture Cannon",
-				"publicCode": "OGN-002/298",
-				"set": {"value": {"id": "OGN", "label": "Origins"}},
+				"number": "002",
+				"setCode": "OGN",
 				"rarity": {"value": {"id": "epic"}},
-				"tcgplayerProductId": 200,
+				"externalLinks": {"tcgPlayerId": 200},
 				"printings": [{"finish": "Prismatic Foil", "id": "ogn-002_prismatic"}]
 			}
 		]}

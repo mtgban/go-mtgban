@@ -77,9 +77,12 @@ type GallerySealed struct {
 
 // GallerySet is one set as the gallery publishes it.
 type GallerySet struct {
-	ID                 string `json:"id"`
-	Name               string `json:"name"`
-	CollectorNumberMax int    `json:"collectorNumberMax"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+
+	// BaseSetSize is the size of the numbered run, the gallery's
+	// collectorNumberMax under the name every datastore gives it.
+	BaseSetSize int `json:"baseSetSize"`
 
 	// Type is not part of the official payload; the datastore builder
 	// (github.com/mtgban/datastore-gen) marks the promotional sets it
@@ -94,17 +97,19 @@ type GallerySet struct {
 
 // GalleryCard is one printing as the gallery publishes it.
 type GalleryCard struct {
-	ID              string `json:"id"`
-	CollectorNumber int    `json:"collectorNumber"`
-	Name            string `json:"name"`
-	PublicCode      string `json:"publicCode"`
-	Orientation     string `json:"orientation"`
-	Set             struct {
-		Value struct {
-			ID    string `json:"id"`
-			Label string `json:"label"`
-		} `json:"value"`
-	} `json:"set"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+
+	// SetCode, Number, Image and ExternalLinks are the gallery's set,
+	// publicCode, cardImage and the builder's TCGplayer id, under the names
+	// every other datastore uses; the builder publishes both spellings.
+	SetCode       string `json:"setCode"`
+	Number        string `json:"number"`
+	Image         string `json:"image"`
+	ExternalLinks struct {
+		TcgPlayerID int `json:"tcgPlayerId"`
+	} `json:"externalLinks"`
+
 	CardType struct {
 		Type []struct {
 			ID string `json:"id"`
@@ -120,18 +125,9 @@ type GalleryCard struct {
 			ID string `json:"id"`
 		} `json:"values"`
 	} `json:"domain"`
-	CardImage struct {
-		URL string `json:"url"`
-	} `json:"cardImage"`
 	Tags struct {
 		Tags []string `json:"tags"`
 	} `json:"tags"`
-
-	// TCGplayerProductID is not part of the official payload; the datastore
-	// builder (github.com/mtgban/datastore-gen) stamps each card with
-	// the TCGplayer product id it maps to, feeding the external identifier
-	// index.
-	TCGplayerProductID int `json:"tcgplayerProductId,omitempty"`
 
 	// Printings is what a card's printings are, one entry each, stamped by
 	// the builder from the TCGplayer catalog since the gallery says nothing
@@ -281,7 +277,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		b.Sets[set.ID] = &mtgmatcher.Set{
 			Name:            set.Name,
 			Code:            set.ID,
-			BaseSetSize:     set.CollectorNumberMax,
+			BaseSetSize:     set.BaseSetSize,
 			Type:            set.Type,
 			ReleaseDate:     set.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
@@ -314,8 +310,8 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	printingsByName := map[string][]string{}
 	for _, card := range gallery.Cards.Items {
 		n := mtgmatcher.Normalize(card.Name)
-		if !slices.Contains(printingsByName[n], card.Set.Value.ID) {
-			printingsByName[n] = append(printingsByName[n], card.Set.Value.ID)
+		if !slices.Contains(printingsByName[n], card.SetCode) {
+			printingsByName[n] = append(printingsByName[n], card.SetCode)
 		}
 	}
 
@@ -333,7 +329,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		number := numberFromPublicCode(card.PublicCode)
+		number := collectorNumber(card.Number)
 		for _, promoType := range describingPromoTypes(signedPromoTypes(card.PromoTypes, number), number) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !slices.Contains(b.AllPromoTypes, slug) {
@@ -362,7 +358,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 	// Load all cards and store them in their relative sets
 	for _, card := range gallery.Cards.Items {
-		setCode := card.Set.Value.ID
+		setCode := card.SetCode
 		if b.Sets[setCode] == nil {
 			continue
 		}
@@ -381,7 +377,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			colors = append(colors, domain.ID)
 		}
 
-		number := numberFromPublicCode(card.PublicCode)
+		number := collectorNumber(card.Number)
 
 		promoTypes := slugPromoTypes(signedPromoTypes(card.PromoTypes, number))
 		convertedCard := mtgmatcher.Card{
@@ -392,8 +388,8 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			Finishes: finishes,
 			Number:   number,
 			Images: map[string]string{
-				"full":      card.CardImage.URL,
-				"thumbnail": card.CardImage.URL,
+				"full":      card.Image,
+				"thumbnail": card.Image,
 			},
 
 			// The datastore is English-only. Core Match's language filter
@@ -428,8 +424,8 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			convertedCard.FoilUUIDs[finish] = printingUUID(card, finish)
 		}
 
-		if card.TCGplayerProductID != 0 {
-			pid := fmt.Sprint(card.TCGplayerProductID)
+		if card.ExternalLinks.TcgPlayerID != 0 {
+			pid := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
 			convertedCard.Identifiers = map[string]string{
 				"tcgplayerProductId": pid,
 			}
@@ -531,7 +527,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 }
 
 func canonicalGalleryName(card GalleryCard) string {
-	if card.Set.Value.ID == "VEN" && card.CollectorNumber == 4 &&
+	if card.SetCode == "VEN" && card.Number == "T04" &&
 		mtgmatcher.Equals(card.Name, "Recruit") {
 		return "Recruit (NX)"
 	}
@@ -576,18 +572,13 @@ func cardFinishes(card GalleryCard) []string {
 	return out
 }
 
-// numberFromPublicCode extracts the collector number from a card's public
-// code: what follows the set prefix, without the "/total" tail, canonicalized
-// ("OGN-066a/298" -> "66a", "UNL-T01" -> "T1", "SFD-227*/221" -> "227*").
-// The letter suffixes and prefixes are real: variants share their base card's
-// numeric collectorNumber and are told apart only here.
-func numberFromPublicCode(publicCode string) string {
-	code := publicCode
-	if idx := strings.IndexByte(code, '-'); idx >= 0 {
-		code = code[idx+1:]
-	}
-	code = strings.Split(code, "/")[0]
-	return canonicalNumber(code)
+// collectorNumber canonicalizes the number a card is published under,
+// the first of a two-faced token's pair ("066a" -> "66a", "T02//T03" ->
+// "T2", "227*" -> "227*"). The letters are real: variants share their base
+// card's digits and are told apart only by them.
+func collectorNumber(number string) string {
+	number, _, _ = strings.Cut(number, "/")
+	return canonicalNumber(number)
 }
 
 // canonicalNumber strips leading zeros from the digit run of a collector

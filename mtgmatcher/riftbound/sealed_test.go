@@ -16,17 +16,16 @@ const sealedFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
-			{"id": "OGN", "name": "Origins", "collectorNumberMax": 298}
+			{"id": "OGN", "name": "Origins", "baseSetSize": 298}
 		]},
 		"cards": {"items": [
 			{
 				"id": "ogn-001",
-				"collectorNumber": 1,
 				"name": "Fixture Card",
-				"publicCode": "OGN-001/298",
-				"set": {"value": {"id": "OGN", "label": "Origins"}},
+				"number": "001",
+				"setCode": "OGN",
 				"rarity": {"value": {"id": "common"}},
-				"tcgplayerProductId": 100001,
+				"externalLinks": {"tcgPlayerId": 100001},
 				"printings": [{"finish": "Normal", "id": "ogn-001_nonfoil"}]
 			}
 		]},

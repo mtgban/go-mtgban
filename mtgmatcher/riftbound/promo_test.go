@@ -15,73 +15,66 @@ const promoFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
-			{"id": "OGN", "name": "Origins", "collectorNumberMax": 298, "releaseDate": "2025-10-31"},
+			{"id": "OGN", "name": "Origins", "baseSetSize": 298, "releaseDate": "2025-10-31"},
 			{"id": "OPP", "name": "Riftbound Organized Play Promotional Cards", "type": "promo", "releaseDate": "2025-10-31"}
 		]},
 		"cards": {"items": [
 			{
 				"id": "ogn-139",
-				"collectorNumber": 139,
 				"name": "Fixture Blade",
-				"publicCode": "OGN-139/298",
-				"set": {"value": {"id": "OGN", "label": "Origins"}},
+				"number": "139",
+				"setCode": "OGN",
 				"rarity": {"value": {"id": "rare"}},
 				"printings": [{"finish": "Foil", "id": "ogn-139_foil"}]
 			},
 			{
 				"id": "opp-901",
-				"collectorNumber": 139,
 				"name": "Fixture Blade",
-				"publicCode": "OPP-139/298",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "139",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["champion"],
 				"printings": [{"finish": "Foil", "id": "opp-901_foil"}]
 			},
 			{
 				"id": "opp-902",
-				"collectorNumber": 139,
 				"name": "Fixture Blade",
-				"publicCode": "OPP-139/298",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "139",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["top 8"],
 				"printings": [{"finish": "Foil", "id": "opp-902_foil"}]
 			},
 			{
 				"id": "ogn-183",
-				"collectorNumber": 183,
 				"name": "Fixture Deck",
-				"publicCode": "OGN-183/298",
-				"set": {"value": {"id": "OGN", "label": "Origins"}},
+				"number": "183",
+				"setCode": "OGN",
 				"rarity": {"value": {"id": "rare"}},
 				"printings": [{"finish": "Foil", "id": "ogn-183_foil"}]
 			},
 			{
 				"id": "opp-903",
-				"collectorNumber": 183,
 				"name": "Fixture Deck",
-				"publicCode": "OPP-183/298",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "183",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["prize wall"],
 				"printings": [{"finish": "Foil", "id": "opp-903_foil"}]
 			},
 			{
 				"id": "opp-904",
-				"collectorNumber": 251,
 				"name": "Fixture Cannon",
-				"publicCode": "OPP-251/298",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "251",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "promo"}},
 				"printings": [{"finish": "Foil", "id": "opp-904_foil"}]
 			},
 			{
 				"id": "opp-905",
-				"collectorNumber": 251,
 				"name": "Fixture Cannon",
-				"publicCode": "OPP-251b/298",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "251b",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["metal", "best of"],
 				"printings": [{"finish": "Foil", "id": "opp-905_foil"}]
@@ -90,8 +83,8 @@ const promoFixture = `{"data": {
 				"id": "opp-906",
 				"name": "Fixture Wolf",
 				"number": "T1A001",
-				"publicCode": "OPP-T1A001/005",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "T1A001",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "showcase"}},
 				"promoTypes": ["t1worldschampion", "playerbundle"],
 				"printings": [{"finish": "Foil", "id": "opp-906_foil"}]
@@ -100,8 +93,8 @@ const promoFixture = `{"data": {
 				"id": "opp-907",
 				"name": "Fixture Wolf",
 				"number": "T1S001",
-				"publicCode": "OPP-T1S001/005",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "T1S001",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "showcase"}},
 				"promoTypes": ["t1worldschampion", "signatureeditionbundle"],
 				"printings": [{"finish": "Foil", "id": "opp-907_foil"}]
@@ -110,8 +103,8 @@ const promoFixture = `{"data": {
 				"id": "opp-908",
 				"name": "Fixture Wolf",
 				"number": "T1S001",
-				"publicCode": "OPP-T1S001/005",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "T1S001",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "showcase"}},
 				"promoTypes": ["t1worldschampion", "signatureeditionbundle", "serialnumbered"],
 				"printings": [{"finish": "Foil", "id": "opp-908_foil"}]
