@@ -246,11 +246,23 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// printing outright instead of inferring it. It is worth trying
 		// first: for Lorcana it resolves cards the name and number cannot,
 		// and for the Riftbound promos it lands on the promo printing where
-		// the edition alone leaves the base one. Magic keeps its own
-		// preprocessing, and a blueprint without an id falls through.
+		// the edition alone leaves the base one. A blueprint no TCGplayer
+		// product sells can still name the Cardmarket one a printing was
+		// minted from. Magic keeps its own preprocessing, and a blueprint
+		// with neither id falls through.
 		var cardID string
 		if ct.gameID != GameMagic {
+			var ids []string
 			if tcgID := tcgplayerID(blueprint); tcgID != 0 {
+				ids = append(ids, fmt.Sprint(tcgID))
+			}
+			for _, mkmID := range blueprint.CardMarketIDs {
+				uuid := ct.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, fmt.Sprint(mkmID))
+				if uuid != "" {
+					ids = append(ids, uuid)
+				}
+			}
+			for _, id := range ids {
 				// A named finish reaches the sibling the flag cannot: the
 				// flag has one bit and lands on the product's foil default,
 				// where the name says which of its treatments the listing
@@ -258,10 +270,13 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				// back to the flag, which answers with the default rather
 				// than nothing.
 				if theCard.Finish != "" {
-					cardID, _ = ct.backend.MatchIDFinish(fmt.Sprint(tcgID), theCard.Finish)
+					cardID, _ = ct.backend.MatchIDFinish(id, theCard.Finish)
 				}
 				if cardID == "" {
-					cardID, _ = ct.backend.MatchID(fmt.Sprint(tcgID), theCard.Foil)
+					cardID, _ = ct.backend.MatchID(id, theCard.Foil)
+				}
+				if cardID != "" {
+					break
 				}
 			}
 		}
