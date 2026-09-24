@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,16 +27,14 @@ type Index struct {
 
 	backend *mtgmatcher.Backend
 	client  *tcgplayer.Client
+
+	// printings maps a product id and the subtype of its price rows to
+	// the printing that product sells in that finish.
+	printings map[string]map[string]string
 }
 
 var availableIndexNames = []string{
 	"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
-}
-
-type indexChan struct {
-	TCGProductID string
-	UUID         string
-	Etched       bool
 }
 
 func (tcg *Index) printf(format string, a ...any) {
@@ -60,10 +59,10 @@ func NewScraperIndex(b *mtgmatcher.Backend, publicID, privateID string) (*Index,
 	return &tcg, nil
 }
 
-func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan, reqs []indexChan) error {
+func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan, reqs []string) error {
 	var ids []int
-	for i := range reqs {
-		id, err := strconv.Atoi(reqs[i].TCGProductID)
+	for _, req := range reqs {
+		id, err := strconv.Atoi(req)
 		if err != nil {
 			continue
 		}
@@ -81,33 +80,11 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 			continue
 		}
 
-		productID := fmt.Sprint(result.ProductID)
-
-		uuid := ""
-		isFoil := result.SubTypeName == "Foil"
-		isEtched := false
-		for _, req := range reqs {
-			if req.TCGProductID == productID {
-				uuid = req.UUID
-				isEtched = req.Etched
-				break
-			}
-		}
-
-		cardID, err := tcg.backend.MatchID(uuid, isFoil, isEtched)
-		if err != nil {
-			tcg.printf("(%d / %s) - %s", result.ProductID, uuid, err)
+		cardID, found := tcg.printings[fmt.Sprint(result.ProductID)][result.SubTypeName]
+		if !found {
 			continue
 		}
-
-		// Skip impossible entries, such as listing mistakes that list a foil
-		// price for a foil-only card
 		co, _ := tcg.backend.GetUUID(cardID)
-		if !co.Etched &&
-			((co.Foil && result.SubTypeName != "Foil") ||
-				(!co.Foil && result.SubTypeName != "Normal")) {
-			continue
-		}
 
 		// These are sorted as in availableIndexNames
 		prices := []float64{
@@ -192,26 +169,92 @@ func crossSetProductIDs(b *mtgmatcher.Backend) map[string][]string {
 	return collisions
 }
 
+// productPrintings maps each product id, and the subtype its price rows
+// carry, to the printing the datastore says that product sells in that
+// finish: "Normal" for nonfoil, "Foil" for foil, and for etched on an etched
+// product. A product claimed by more than one card keeps the first, the same
+// way requesting each id once always did.
+func productPrintings(b *mtgmatcher.Backend, collisions map[string][]string) map[string]map[string]string {
+	printings := map[string]map[string]string{}
+	add := func(id, subtype, cardID string) {
+		if id == "" || cardID == "" || collisions[id] != nil {
+			return
+		}
+		if printings[id] == nil {
+			printings[id] = map[string]string{}
+		}
+		if _, found := printings[id][subtype]; !found {
+			printings[id][subtype] = cardID
+		}
+	}
+
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
+		if err != nil {
+			continue
+		}
+		byNumber := map[string]*mtgmatcher.CardObject{}
+		for _, card := range set.Cards {
+			co, found := b.UUIDs[card.UUID]
+			if !found {
+				continue
+			}
+			byNumber[co.Number+"|"+co.Language] = co
+			id := co.Identifiers["tcgplayerProductId"]
+			etchedID := co.Identifiers["tcgplayerEtchedProductId"]
+			if etchedID == "" {
+				etchedID = id
+			}
+			add(id, "Normal", co.FoilUUIDs[mtgmatcher.FinishNonfoil])
+			add(id, "Foil", co.FoilUUIDs[mtgmatcher.FinishFoil])
+			add(etchedID, "Foil", co.FoilUUIDs[mtgmatcher.FinishEtched])
+		}
+
+		// A star printing with no product of its own is the other finish
+		// of its base card's product (FRF 65★ is the foil of 95037).
+		for _, co := range byNumber {
+			base, found := byNumber[strings.TrimSuffix(co.Number, "★")+"|"+co.Language]
+			if !found || base == co || co.Identifiers["tcgplayerProductId"] != "" {
+				continue
+			}
+			id := base.Identifiers["tcgplayerProductId"]
+			add(id, "Normal", co.FoilUUIDs[mtgmatcher.FinishNonfoil])
+			add(id, "Foil", co.FoilUUIDs[mtgmatcher.FinishFoil])
+		}
+	}
+
+	// A two-sided token sheet's combined entity is in no set's card list
+	// (see mtgmatcher/magic/tokenpairs.go), one object per finish.
+	for uuid, co := range b.UUIDs {
+		if co.Identifiers["derivedTokenPair"] != "true" {
+			continue
+		}
+		subtype := "Normal"
+		if co.Foil || co.Etched {
+			subtype = "Foil"
+		}
+		add(co.Identifiers["tcgplayerProductId"], subtype, uuid)
+	}
+	return printings
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *Index) Load(ctx context.Context) error {
-	pages := make(chan indexChan)
+	collisions := crossSetProductIDs(tcg.backend)
+	for id, sets := range collisions {
+		tcg.printf("skipping id %s, claimed by more than one set: %v", id, sets)
+	}
+	tcg.printings = productPrintings(tcg.backend, collisions)
+
+	pages := make(chan string)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < tcg.maxConcurrency; i++ {
 		wg.Go(func() {
-			dupes := map[string]struct{}{}
-			buffer := make([]indexChan, 0, tcgplayer.MaxIDsInRequest)
+			buffer := make([]string, 0, tcgplayer.MaxIDsInRequest)
 
 			for page := range pages {
-				// Skip dupes
-				_, found := dupes[page.TCGProductID]
-				if found {
-					continue
-				}
-				dupes[page.TCGProductID] = struct{}{}
-
-				// Add our pair to the buffer
 				buffer = append(buffer, page)
 
 				// When buffer is full, process its contents and empty it
@@ -234,68 +277,8 @@ func (tcg *Index) Load(ctx context.Context) error {
 	}
 
 	go func() {
-		collisions := crossSetProductIDs(tcg.backend)
-		for id, sets := range collisions {
-			tcg.printf("skipping id %s, claimed by more than one set: %v", id, sets)
-		}
-
-		// Bucketed once, not per set: a two-sided token sheet's combined
-		// entity (mtgmatcher/magic/tokenpairs.go) carries no id conflict of
-		// its own to check - it is never in set.Cards, so crossSetProductIDs
-		// never even sees it - but it is priced from its own set-scoped walk
-		// below all the same, same as every other id here.
-		derivedBySet := map[string][]*mtgmatcher.CardObject{}
-		for _, co := range tcg.backend.UUIDs {
-			if co.Identifiers["derivedTokenPair"] == "true" {
-				derivedBySet[co.SetCode] = append(derivedBySet[co.SetCode], co)
-			}
-		}
-
-		sets := tcg.backend.GetAllSets()
-		i := 1
-		for _, code := range sets {
-			set, _ := tcg.backend.GetSet(code)
-
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
-			i++
-
-			for _, card := range set.Cards {
-				tcgID, found := card.Identifiers["tcgplayerProductId"]
-				if found && collisions[tcgID] == nil {
-					pages <- indexChan{
-						TCGProductID: tcgID,
-						UUID:         card.UUID,
-					}
-				}
-
-				// Sometimes etched-only cards have two tcgIds by mistake, skip one
-				tcgEtchedID, found := card.Identifiers["tcgplayerEtchedProductId"]
-				if found && tcgEtchedID != tcgID && collisions[tcgEtchedID] == nil {
-					pages <- indexChan{
-						TCGProductID: tcgEtchedID,
-						UUID:         card.UUID,
-						Etched:       true,
-					}
-				}
-			}
-
-			// A two-sided token sheet's combined entity is not in set.Cards
-			// (see mtgmatcher/magic/tokenpairs.go), so the walk above never
-			// reaches it; price it by its own id here instead. That id is
-			// never one crossSetProductIDs would flag - a derived entity's
-			// own tcgplayerProductId is never claimed by anything else, by
-			// construction - the check is kept for the same reason every
-			// other id above is checked against it: one rule, no exception
-			// carved out for this one path.
-			for _, co := range derivedBySet[code] {
-				tcgID := co.Identifiers["tcgplayerProductId"]
-				if tcgID != "" && collisions[tcgID] == nil {
-					pages <- indexChan{
-						TCGProductID: tcgID,
-						UUID:         co.UUID,
-					}
-				}
-			}
+		for id := range tcg.printings {
+			pages <- id
 		}
 		close(pages)
 
