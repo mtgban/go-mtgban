@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -20,8 +21,9 @@ import (
 const (
 	defaultConcurrency = 8
 
-	inventoryURL = "https://www.mtgseattle.com/catalog/magic_singles/8"
-	buylistURL   = "https://www.mtgseattle.com/buylist"
+	baseURL      = "https://www.mtgseattle.com"
+	inventoryURL = baseURL + "/catalog/magic_singles/8"
+	buylistURL   = baseURL + "/buylist"
 
 	modeInventory = "inventory"
 	modeBuylist   = "buylist"
@@ -71,8 +73,24 @@ func (ms *MTGSeattle) printf(format string, a ...any) {
 	}
 }
 
+// buildProductURL sets layout=false on product, merging it into any
+// query string the href already carries instead of appending a second "?".
+func buildProductURL(product string) (string, error) {
+	u, err := url.Parse(baseURL + product)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	q.Set("layout", "false")
+	u.RawQuery = q.Encode()
+	return u.String(), nil
+}
+
 func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- responseChan, product, mode string) error {
-	link := "https://www.mtgseattle.com" + product + "?layout=false"
+	link, err := buildProductURL(product)
+	if err != nil {
+		return err
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return err
@@ -251,7 +269,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 					Price:      price,
 					Conditions: conditions,
 					Quantity:   qty,
-					URL:        "https://www.mtgseattle.com" + link,
+					URL:        baseURL + link,
 				},
 			}
 			channel <- out
@@ -282,7 +300,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 						BuyPrice:   price * factor,
 						PriceRatio: priceRatio,
 						Quantity:   quantity,
-						URL:        "https://www.mtgseattle.com" + link,
+						URL:        baseURL + link,
 					},
 				}
 				channel <- out
