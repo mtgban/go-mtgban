@@ -1402,6 +1402,11 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 // with its shelf spelled whole, matched the set of that name, and was
 // published against the unlimited printing at the first edition's price.
 func pokemonBuylistCard(b *mtgmatcher.Backend, product CSIPriceEntry) (*mtgmatcher.InputCard, []string) {
+	// CSI's "0" placeholder for an unnumbered year energy otherwise reads
+	// as a number word of its own at the head of the variation.
+	if product.Number == "0" {
+		product.Number = ""
+	}
 	variation := catalogTreatment(buylistVariation(product))
 	shelf, run := firstEditionShelf(product.ItemSet)
 	shelf = pokemonPromoShelf(b, product.Name, shelf, product.RarityName, product.IsFoil == 1, variation)
