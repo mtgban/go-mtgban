@@ -3,7 +3,6 @@ package mtgban
 import (
 	"bytes"
 	"encoding/csv"
-	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -92,7 +91,7 @@ func TestInventoryRoundTripsThroughCSV(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if !reflect.DeepEqual(got, want) {
+	if !sameInventory(got, want) {
 		t.Errorf("loaded %v, want %v", got, want)
 	}
 }
@@ -117,7 +116,7 @@ func TestInventoryRoundTripsThroughCSVWithItsSellers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if !reflect.DeepEqual(got, want) {
+	if !sameInventory(got, want) {
 		t.Errorf("loaded %v, want %v", got, want)
 	}
 }
@@ -147,7 +146,7 @@ func TestInventoryRoundTripsThroughCSVWithTheCartIds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if !reflect.DeepEqual(got, want) {
+	if !sameInventory(got, want) {
 		t.Errorf("loaded %v, want %v", got, want)
 	}
 }
@@ -175,7 +174,7 @@ func TestBuylistRoundTripsThroughCSVWithoutTheTradePrice(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if !reflect.DeepEqual(got, want) {
+	if !sameBuylist(got, want) {
 		t.Errorf("loaded %v, want %v", got, want)
 	}
 }
@@ -373,7 +372,7 @@ func TestWriteInventoryToCSVReadsThePipeID(t *testing.T) {
 
 	want := []string{"ghost|Ghost Card|SET|42", "Ghost Card", "SET", "42", "", ""}
 	got := records[1][:len(want)]
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("card columns = %v, want %v", got, want)
 	}
 }
@@ -405,13 +404,13 @@ func TestWriteArbitrageToCSVReportsTheTrade(t *testing.T) {
 	records := writeCSV(t, func(w *bytes.Buffer) error {
 		return WriteArbitrageToCSV(b, []ArbitEntry{arbitEntry()}, w)
 	})
-	if !reflect.DeepEqual(records[0], ArbitHeader) {
+	if !slices.Equal(records[0], ArbitHeader) {
 		t.Errorf("header = %v, want %v", records[0], ArbitHeader)
 	}
 
 	want := []string{"NM", "4", "10.00", "15.00", "5.00", "50.00", "15.00", "1.23", "sell-link", "buy-link"}
 	got := records[1][len(CardHeader):]
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("row = %v, want %v", got, want)
 	}
 }
@@ -424,13 +423,13 @@ func TestWriteMismatchToCSVReportsTheReferencePrice(t *testing.T) {
 	records := writeCSV(t, func(w *bytes.Buffer) error {
 		return WriteMismatchToCSV(b, []ArbitEntry{arbitEntry()}, w)
 	})
-	if !reflect.DeepEqual(records[0], MismatchHeader) {
+	if !slices.Equal(records[0], MismatchHeader) {
 		t.Errorf("header = %v, want %v", records[0], MismatchHeader)
 	}
 
 	want := []string{"NM", "10.00", "12.00", "5.00", "50.00"}
 	got := records[1][len(CardHeader):]
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("row = %v, want %v", got, want)
 	}
 }
@@ -443,13 +442,13 @@ func TestWritePennyToCSVReportsTheShelf(t *testing.T) {
 	records := writeCSV(t, func(w *bytes.Buffer) error {
 		return WritePennyToCSV(b, []ArbitEntry{arbitEntry()}, w)
 	})
-	if !reflect.DeepEqual(records[0], InventoryHeader) {
+	if !slices.Equal(records[0], InventoryHeader) {
 		t.Errorf("header = %v, want %v", records[0], InventoryHeader)
 	}
 
 	want := []string{"NM", "10.00", "4", ""}
 	got := records[1][len(CardHeader):]
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("row = %v, want %v", got, want)
 	}
 }
@@ -549,7 +548,7 @@ func TestReportsLeaveTheSharedHeadersAlone(t *testing.T) {
 		"BuylistHeader": BuylistHeader, "ArbitHeader": ArbitHeader,
 		"MismatchHeader": MismatchHeader,
 	} {
-		if !reflect.DeepEqual(want, headers[name]) {
+		if !slices.Equal(want, headers[name]) {
 			t.Errorf("%s = %v, want %v", name, want, headers[name])
 		}
 	}

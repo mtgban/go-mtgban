@@ -2,7 +2,6 @@ package mtgban
 
 import (
 	"math"
-	"reflect"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -398,10 +397,10 @@ func TestArbitrageReturnsACompleteRow(t *testing.T) {
 	if !ok {
 		t.Fatal("arbitrage refused a trade that clears every threshold")
 	}
-	if !reflect.DeepEqual(row.BuylistEntry, offer) {
+	if !sameBuylistEntry(row.BuylistEntry, offer) {
 		t.Errorf("BuylistEntry = %+v, want the offer it was made against", row.BuylistEntry)
 	}
-	if !reflect.DeepEqual(row.ReferenceEntry, InventoryEntry{}) {
+	if !sameInventoryEntry(row.ReferenceEntry, InventoryEntry{}) {
 		t.Errorf("a buylist row carries a reference entry: %+v", row.ReferenceEntry)
 	}
 
@@ -410,10 +409,10 @@ func TestArbitrageReturnsACompleteRow(t *testing.T) {
 	if !ok {
 		t.Fatal("arbitrage refused a comparison that clears every threshold")
 	}
-	if !reflect.DeepEqual(row.ReferenceEntry, shelf) {
+	if !sameInventoryEntry(row.ReferenceEntry, shelf) {
 		t.Errorf("ReferenceEntry = %+v, want the shelf it was compared against", row.ReferenceEntry)
 	}
-	if !reflect.DeepEqual(row.BuylistEntry, BuylistEntry{}) {
+	if !sameBuylistEntry(row.BuylistEntry, BuylistEntry{}) {
 		t.Errorf("a shelf row carries a buylist entry: %+v", row.BuylistEntry)
 	}
 

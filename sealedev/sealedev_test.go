@@ -3,7 +3,7 @@ package sealedev
 import (
 	"context"
 	"os"
-	"reflect"
+	"slices"
 	"sort"
 	"sync"
 	"testing"
@@ -171,7 +171,7 @@ func TestRunEVSkipsUnfixedSLDBonusFromPriceCache(t *testing.T) {
 	if len(errs) != 0 {
 		t.Fatalf("high-bonus runEV reported %v", errs)
 	}
-	if !reflect.DeepEqual(resultPrices(got), resultPrices(want)) {
+	if !slices.Equal(resultPrices(got), resultPrices(want)) {
 		t.Fatalf("non-guaranteed bonus changed EV results: base=%v high=%v", resultPrices(want), resultPrices(got))
 	}
 }

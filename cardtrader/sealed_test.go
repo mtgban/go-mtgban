@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"fmt"
 	"os"
-	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -70,7 +70,7 @@ func TestBuildProductMap(t *testing.T) {
 		break
 	}
 	for id, uuids := range tcgMap {
-		if !reflect.DeepEqual(uuids, ctUUIDs) {
+		if !slices.Equal(uuids, ctUUIDs) {
 			tcgID, tcgUUIDs = id, uuids
 			break
 		}
@@ -124,10 +124,10 @@ func TestBuildProductMap(t *testing.T) {
 		t.Fatal(err)
 	}
 	productMap := ct.buildProductMap(blueprints)
-	if !reflect.DeepEqual(productMap[ctID], ctUUIDs) {
+	if !slices.Equal(productMap[ctID], ctUUIDs) {
 		t.Errorf("answered blueprint overridden: got %v, want %v", productMap[ctID], ctUUIDs)
 	}
-	if !reflect.DeepEqual(productMap[orphanID], tcgUUIDs) {
+	if !slices.Equal(productMap[orphanID], tcgUUIDs) {
 		t.Errorf("bridge did not fire: got %v, want %v", productMap[orphanID], tcgUUIDs)
 	}
 	if uuids, found := productMap[orphanID+1]; found {
@@ -144,7 +144,7 @@ func TestBuildProductMap(t *testing.T) {
 		t.Fatal(err)
 	}
 	productMap = ct.buildProductMap(blueprints)
-	if !reflect.DeepEqual(productMap[orphanID+1], []string{resolvedUUID}) {
+	if !slices.Equal(productMap[orphanID+1], []string{resolvedUUID}) {
 		t.Errorf("name pass did not fire: got %v, want %v", productMap[orphanID+1], []string{resolvedUUID})
 	}
 }
@@ -187,12 +187,14 @@ func TestBuildProductMapReadsExpansion(t *testing.T) {
 	}
 
 	blueprint.Expansion.Name = "Crucible of War - Unlimited"
-	if got := ct.buildProductMap(blueprints)[1]; !reflect.DeepEqual(got, []string{"cru-unl"}) {
+	got := ct.buildProductMap(blueprints)[1]
+	if !slices.Equal(got, []string{"cru-unl"}) {
 		t.Errorf("shelved under the unlimited run: got %v, want [cru-unl]", got)
 	}
 
 	blueprint.Expansion.Name = "Crucible of War - First"
-	if got := ct.buildProductMap(blueprints)[1]; !reflect.DeepEqual(got, []string{"cru-1e"}) {
+	got = ct.buildProductMap(blueprints)[1]
+	if !slices.Equal(got, []string{"cru-1e"}) {
 		t.Errorf("shelved under the first run: got %v, want [cru-1e]", got)
 	}
 }
@@ -303,7 +305,8 @@ func TestBuildProductMapDropsSubsumed(t *testing.T) {
 	alone := ct.buildProductMap(map[int]*Blueprint{
 		2: {ID: 2, Name: "Crucible of War Booster Box Bundle"},
 	})
-	if got := alone[2]; !reflect.DeepEqual(got, []string{"cru-box"}) {
+	got := alone[2]
+	if !slices.Equal(got, []string{"cru-box"}) {
 		t.Fatalf("the only name reaching the product was dropped: got %v", got)
 	}
 
@@ -311,7 +314,8 @@ func TestBuildProductMapDropsSubsumed(t *testing.T) {
 		1: {ID: 1, Name: "Crucible of War Booster Box"},
 		2: {ID: 2, Name: "Crucible of War Booster Box Bundle"},
 	})
-	if got := productMap[1]; !reflect.DeepEqual(got, []string{"cru-box"}) {
+	got = productMap[1]
+	if !slices.Equal(got, []string{"cru-box"}) {
 		t.Errorf("the name that says the product lost it: got %v, want [cru-box]", got)
 	}
 	if uuids, found := productMap[2]; found {
@@ -411,7 +415,7 @@ func TestBuildProductMapTrimsShelfCode(t *testing.T) {
 		blueprint := &Blueprint{ID: 1, Name: tt.name}
 		blueprint.Expansion.Name = tt.shelf
 		got := ct.buildProductMap(map[int]*Blueprint{1: blueprint})[1]
-		if !reflect.DeepEqual(got, tt.want) {
+		if !slices.Equal(got, tt.want) {
 			t.Errorf("%q on %q: got %v, want %v", tt.name, tt.shelf, got, tt.want)
 		}
 	}
