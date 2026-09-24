@@ -768,7 +768,7 @@ func canonicalFinish(name string) string {
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 
-	var candidates, exact []mtgmatcher.Card
+	var candidates, exact, unsold []mtgmatcher.Card
 	seen := map[string]bool{}
 	named := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
@@ -831,6 +831,14 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// runs a product answers by a bare treatment name are aliased
 		// onto their own entry before this asks.
 		if uuid == "" && inCard.Finish != "" {
+			// A product sold in one printing is one card, whatever finish
+			// the storefront writes beside it: a deck's hero is filed
+			// plain where it was printed in rainbow foil. Whether that
+			// number is otherwise alone in the backend is checked once,
+			// below, rather than per candidate.
+			if numbered && singlePrinting(&card) {
+				unsold = append(unsold, card)
+			}
 			continue
 		}
 		if uuid != "" {
@@ -845,6 +853,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if numbered {
 			exact = append(exact, card)
 		}
+	}
+	if len(candidates) == 0 && len(unsold) == 1 && aloneAt(b, number) {
+		return unsold
 	}
 	// A printing wearing the number outranks one wearing it under a
 	// label: the Unlimited "Helm of Isen's Peak" is WTR042 beside the
@@ -866,6 +877,28 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		candidates = pitched
 	}
 	return finishTwins(inCard, named, labelTier(inCard, number, candidates))
+}
+
+// aloneAt reports whether number identifies exactly one non-sealed printing
+// in the whole backend, whatever card or set it belongs to.
+func aloneAt(b *mtgmatcher.Backend, number string) bool {
+	var rows int
+	for _, co := range b.UUIDs {
+		if !co.Sealed && co.Number != "" && numberMatches(number, co.Number) {
+			rows++
+		}
+	}
+	return rows == 1
+}
+
+// singlePrinting reports whether card was sold in one printing: its finish
+// siblings, if any, all price the same uuid.
+func singlePrinting(card *mtgmatcher.Card) bool {
+	uuids := map[string]bool{}
+	for _, uuid := range card.FoilUUIDs {
+		uuids[uuid] = true
+	}
+	return len(uuids) == 1
 }
 
 // finishTwins settles a tie between printings that the finish tells apart.
