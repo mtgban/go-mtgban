@@ -876,6 +876,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				for _, foreignData := range card.ForeignData {
 					if foreignData.Language == language {
 						card.Language = language
+						// mtgjsonId stays mtgjson's card, which TCGplayer skus and the
+						// id index key on: see todo/foreign-black-border-languages.md
 						card.Identifiers["originalScryfallId"] = foreignData.Identifiers["scryfallId"]
 					}
 				}
