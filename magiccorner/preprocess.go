@@ -43,6 +43,14 @@ var cardTable = map[string]string{
 	"Sword of Heart and Home": "Sword of Hearth and Home",
 	"Allosaurus Sheperd":      "Allosaurus Shepherd",
 	"Brazen Bucaneers":        "Brazen Buccaneers",
+
+	"Bedhead Bestie":                    "Bedhead Beastie",
+	"Duggan, Private Detectiva":         "Duggan, Private Detective",
+	"The Cyper-Controller":              "The Cyber-Controller",
+	"Lotho, Corrupt Shirrif":            "Lotho, Corrupt Shirriff",
+	"Spellscorn Covern // Take It Back": "Spellscorn Coven // Take It Back",
+	"Fear, Fires, Foes!":                "Fear, Fire, Foes!",
+	"Cut Shot":                          "Cut Short",
 }
 
 var editionTable = map[string]string{
