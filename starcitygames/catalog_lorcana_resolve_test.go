@@ -251,6 +251,41 @@ func TestResolveLorcanaPromoSeries(t *testing.T) {
 	}
 }
 
+// TestResolveLorcanaPromoTotal covers the collision a bare number cannot
+// settle on its own: "Maleficent - Monstrous Dragon" is card 5 of both the
+// P1 and the P3 promo pool, so the pool a sku's own prefix names has to reach
+// the datastore as the total the card's face prints, or the two alias.
+func TestResolveLorcanaPromoTotal(t *testing.T) {
+	b := withLorcana(t)
+
+	p01, err := resolveProduct(b, GameLorcana, CatalogProduct{
+		SKU: "SGL-LOR-PRM-P01_005-ENK", Name: "Maleficent - Monstrous Dragon",
+		Set: "Promotional Cards", CollectorNumber: "005",
+		Finish: "Miscellaneous Foil", FinishGroup: "Alt Foil",
+	})
+	if err != nil {
+		t.Fatalf("P01: %v", err)
+	}
+	p03, err := resolveProduct(b, GameLorcana, CatalogProduct{
+		SKU: "SGL-LOR-PRM-P03_005-ENK", Name: "Maleficent - Monstrous Dragon",
+		Set: "Promotional Cards", CollectorNumber: "005",
+		Finish: "Miscellaneous Foil", FinishGroup: "Alt Foil",
+	})
+	if err != nil {
+		t.Fatalf("P03: %v", err)
+	}
+	if p01 == p03 {
+		t.Errorf("both pools resolved to %s", p01)
+	}
+	co, cerr := b.GetUUID(p03)
+	if cerr != nil {
+		t.Fatalf("GetUUID(%q): %v", p03, cerr)
+	}
+	if co.SetTotal != "P3" {
+		t.Errorf("P03 resolved to a %s printing, want one printing P3", co.SetTotal)
+	}
+}
+
 // TestResolveLorcanaRainbowFoil covers the one treatment a Lorcana printing is
 // sold in beside its standard foil. The foil flag alone always picked the
 // standard, so the two skus landed on one uuid and one price overwrote the
