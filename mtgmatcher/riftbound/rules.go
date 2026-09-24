@@ -1,6 +1,8 @@
 package riftbound
 
 import (
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -348,6 +350,10 @@ func qualifiedBaseName(b *mtgmatcher.Backend, name, variation string) string {
 // number. The number is useful when the current gallery shortened the main
 // name and the storefront omitted the number: the qualified promo spelling
 // is then the only evidence tying it back to the main printing.
+//
+// Numbers compare through stripNumberLetter's reduction rather than as
+// written, so a lettered organized-play sibling still agrees with the rest
+// of the name's plain printings (see the commit message).
 func qualifiedNameNumber(b *mtgmatcher.Backend, name string) string {
 	var number string
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
@@ -355,11 +361,16 @@ func qualifiedNameNumber(b *mtgmatcher.Backend, name string) string {
 		if err != nil || co.Sealed {
 			continue
 		}
+		plain := co.Number
+		stripped := stripNumberLetter(plain)
+		if stripped != "" {
+			plain = stripped
+		}
 		if number == "" {
-			number = co.Number
+			number = plain
 			continue
 		}
-		if !strings.EqualFold(number, co.Number) {
+		if !strings.EqualFold(number, plain) {
 			return ""
 		}
 	}
@@ -556,6 +567,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 	}
 
+	out = promoOrdinalTiebreak(out, inCard.Variation)
+
 	// Sibling promos share one clean name - and, for the organized-play
 	// cards, even the main set's collector number - so the number alone
 	// can leave several candidates. They rank in tiers:
@@ -603,6 +616,53 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 	tier = preferBasePrinting(b, inCard, number, promoOrigin(b, inCard.Variation, tier))
 	return preferListedFinish(inCard, tier)
+}
+
+// promoOrdinalTiebreak breaks a same-numbered organized-play pair that
+// differs only by the champion promo type, using the position Cardmarket's
+// own "V.N" wording claims - the one storefront that ever sends it, glued
+// onto the number by its resolver ("051 V.1 - Rare"). V.1 is the
+// non-champion row and V.2 the champion one on all six such pairs today (see
+// the commit message); anything else - no "V.N" at all, or more than one
+// card on either side - is left for the tiers below to settle.
+func promoOrdinalTiebreak(cards []mtgmatcher.Card, variation string) []mtgmatcher.Card {
+	ordinal := extractOrdinal(variation)
+	if ordinal != 1 && ordinal != 2 {
+		return cards
+	}
+	var champion, other mtgmatcher.Card
+	var champCount, otherCount int
+	for _, card := range cards {
+		if slices.Contains(card.PromoTypes, "champion") {
+			champion, champCount = card, champCount+1
+		} else {
+			other, otherCount = card, otherCount+1
+		}
+	}
+	if champCount != 1 || otherCount != 1 {
+		return cards
+	}
+	if ordinal == 2 {
+		return []mtgmatcher.Card{champion}
+	}
+	return []mtgmatcher.Card{other}
+}
+
+// extractOrdinal reads the position a "V.N" field of the variation claims,
+// 0 when none is there. Only Cardmarket's resolver ever writes one.
+func extractOrdinal(variation string) int {
+	for field := range strings.FieldsSeq(variation) {
+		tail, found := strings.CutPrefix(field, "V.")
+		if !found {
+			continue
+		}
+		n, err := strconv.Atoi(tail)
+		if err != nil || n < 1 {
+			continue
+		}
+		return n
+	}
+	return 0
 }
 
 // promoOrigin narrows a tier of promotional printings to the ones issued
