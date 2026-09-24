@@ -115,8 +115,9 @@ func init() {
 	mtgban.Register("cardmarket_sealed", cardmarketGames, buildSealed)
 }
 
-// buildIndex is cardmarket's Constructor. It needs no credential: Index
-// prices from a published catalog and the public price guide.
+// buildIndex is cardmarket's Constructor. It reads no credential: Index
+// prices from a published catalog and the public price guide, and makes no
+// authenticated call; see TestIndexMakesNoAuthenticatedCall.
 func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	game, err := mtgban.GameOf(b)
 	if err != nil {
