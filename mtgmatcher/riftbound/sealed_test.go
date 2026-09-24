@@ -9,14 +9,15 @@ import (
 )
 
 // sealedFixture is a minimal datastore carrying one card and two sealed
-// products: one in the card's own set, one in a group the gallery has no
-// set for. It pins the loader's side of the builder contract without
-// needing a real datastore file.
+// products: one in the card's own set, one in a set the builder mints for a
+// group sold only sealed. It pins the loader's side of the builder contract
+// without needing a real datastore file.
 const sealedFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
-			{"id": "OGN", "name": "Origins", "baseSetSize": 298}
+			{"id": "OGN", "name": "Origins", "baseSetSize": 298},
+			{"id": "ACC", "name": "Accessories"}
 		]},
 		"cards": {"items": [
 			{
@@ -33,16 +34,16 @@ const sealedFixture = `{"data": {
 			{
 				"id": "ogn-600001",
 				"name": "Origins Booster Box",
-				"set": {"value": {"id": "OGN", "label": "Origins"}},
-				"cardImage": {"url": "https://example.com/box.jpg"},
-				"tcgplayerProductId": 600001
+				"setCode": "OGN",
+				"image": "https://example.com/box.jpg",
+				"externalLinks": {"tcgPlayerId": 600001}
 			},
 			{
 				"id": "acc-600002",
 				"name": "Playmat Bundle",
-				"set": {"value": {"id": "ACC", "label": "Accessories"}},
-				"cardImage": {"url": "https://example.com/mat.jpg"},
-				"tcgplayerProductId": 600002
+				"setCode": "ACC",
+				"image": "https://example.com/mat.jpg",
+				"externalLinks": {"tcgPlayerId": 600002}
 			}
 		]}
 	}]}}
@@ -104,10 +105,10 @@ func TestSealedSetBuckets(t *testing.T) {
 		t.Errorf("Sets[OGN].SealedProduct has %d entries, want 1", got)
 	}
 
-	// The accessories group exists only through its sealed product
+	// The accessories set holds no card, only its sealed product
 	set, found := b.Sets["ACC"]
 	if !found {
-		t.Fatal("sealed-only set ACC not created")
+		t.Fatal("sealed-only set ACC not loaded")
 	}
 	if set.Name != "Accessories" {
 		t.Errorf("ACC name = %q, want %q", set.Name, "Accessories")
@@ -193,7 +194,7 @@ func TestSealedZeroProductId(t *testing.T) {
 	// id. Stamping the zero value would give BuildSealedProductMap a
 	// shared key 0 for every unlinked storefront listing to funnel onto.
 	fixture := strings.Replace(sealedFixture,
-		`"tcgplayerProductId": 600002`, `"tcgplayerProductId": 0`, 1)
+		`"externalLinks": {"tcgPlayerId": 600002}`, `"externalLinks": {"tcgPlayerId": 0}`, 1)
 	b, err := Load(strings.NewReader(fixture))
 	if err != nil {
 		t.Fatal(err)
