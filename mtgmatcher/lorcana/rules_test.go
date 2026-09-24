@@ -23,6 +23,10 @@ func TestIsUnsupportedShadowsDefault(t *testing.T) {
 		{"Azurite Sea Insert", true},
 		// and the puzzle pieces the datastore does carry, which do not
 		{"Mickey Mouse - Brave Little Tailor Puzzle Insert (Top Left)", true},
+		// Cardmarket's discard-pile markers, and the real card they must spare
+		{`White "Discard" Card`, true},
+		{`Enchanted ""Discard"" Card`, true},
+		{"Discarded Armor", false},
 	} {
 		got := Rules{}.IsUnsupported(nil, &mtgmatcher.InputCard{Name: tt.name})
 		if got != tt.want {

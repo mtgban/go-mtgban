@@ -302,10 +302,17 @@ func trimEdition(edition string) string {
 // suffix is what reads them all without naming each set. No printing the
 // datastore carries ends there: the puzzle inserts it does carry spell which
 // piece they are after it, "Puzzle Insert (Top Left)".
+//
+// The discard-pile markers sold as singles ("White "Discard" Card", the
+// misquoted "Enchanted ""Discard"" Card") are read the same way, by the
+// quoted "Discard" their name always ends on: a suffix rather than a
+// Contains, so the real card "Discarded Armor" keeps matching.
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 	return strings.Contains(inCard.Name, "Puzzle Insert") ||
 		strings.HasSuffix(inCard.Name, "Insert") ||
-		strings.HasPrefix(inCard.Name, "Disney Cruise Promos")
+		strings.HasPrefix(inCard.Name, "Disney Cruise Promos") ||
+		strings.HasSuffix(inCard.Name, `"Discard" Card`) ||
+		strings.HasSuffix(inCard.Name, `""Discard"" Card`)
 }
 
 // CanonicalFinish owns Lorcana's finish vocabulary. Lorcana's finish names
