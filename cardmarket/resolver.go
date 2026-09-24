@@ -308,8 +308,46 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 		return "", "", err
 	}
 
-	cardIDFoil, _ = r.backend.MatchID(cardID, true)
+	co, cerr := r.backend.GetUUID(cardID)
+	switch {
+	case cerr != nil:
+		cardIDFoil, _ = r.backend.MatchID(cardID, true)
+	case co.Etched:
+		// No separate guide column for etched; keep it off the plain
+		// foil sibling MatchID(cardID, true) would otherwise pick.
+		cardIDFoil = cardID
+	case foilOnlyShelf(product, co.SetCode):
+		// The guide duplicates one price into both columns; redirect
+		// both ids onto the foil twin actually sold.
+		fid, ferr := r.backend.MatchID(cardID, true)
+		if ferr == nil && fid != "" {
+			cardID = fid
+		}
+		cardIDFoil = cardID
+	default:
+		cardIDFoil, _ = r.backend.MatchID(cardID, true)
+	}
 	return cardID, cardIDFoil, nil
+}
+
+// foilOnlyShelf reports whether product's shelf sells only the foil shown,
+// at a number an ordinary nonfoil printing also carries. setCode tells the
+// Holiday Release shelf's two sets apart: LTC's box topper is foil-only,
+// LTR's is not, though Cardmarket sells both under one expansion name.
+// Closed on purpose: widening it would misprice a shelf that legitimately
+// sells both finishes.
+func foilOnlyShelf(product *cm.Product, setCode string) bool {
+	switch product.ExpansionName {
+	case "Commander: Magic: The Gathering - FINAL FANTASY: Collector's Edition",
+		"Commander: Marvel Super Heroes: Collector's Edition",
+		"Commander: Teenage Mutant Ninja Turtles: Extras":
+		return true
+	case "Commander: Modern Horizons 3: Extras":
+		return !strings.HasSuffix(product.Name, "(V.1)")
+	case "The Lord of the Rings: Tales of Middle-earth Holiday Release":
+		return setCode == "LTC" && strings.HasSuffix(product.Name, "(V.2)")
+	}
+	return false
 }
 
 // resolveProduct answers a product with the printings its two price columns
