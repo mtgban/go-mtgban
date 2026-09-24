@@ -110,6 +110,37 @@ var langMap = map[string]string{
 	"zh-tw": "Chinese",
 }
 
+// tcgIDOverrides corrects a blueprint's own TCGplayerID where it names a
+// sibling card, or supplies one Card Trader sends none for at all. See the
+// commit for why this is a closed table rather than a general rule.
+var tcgIDOverrides = map[int]int{
+	// Flesh and Blood: the id names the other half of a printed pair.
+	334431: 633285, // Saltwater Swell (Yellow), SEA142
+	334432: 633284, // Saltwater Swell (Blue), SEA143
+	334549: 633634, // Saltwater Swell (Yellow), Lost Treasure | Cold Foil
+	334550: 633633, // Saltwater Swell (Blue), Lost Treasure | Cold Foil
+	295093: 557937, // Take Flight (Red), Armory Deck: Boltyn
+	295089: 557943, // Engulfing Light (Red), Armory Deck: Boltyn
+	// Pokemon: same shape, a Poké Ball Pattern reverse holo pair.
+	343417: 642431, // Rufflet, 077/086
+	343418: 642432, // Braviary, 078/086
+	357942: 685999, // Judge, Professor Program Stamp | 167/182
+	// One Piece DON!! promos: no id sent at all.
+	391163: 692132, // Bandai Fest | Elbaph
+	374929: 711010, // 3rd Anniversary Set | English Version
+	406330: 680489, // 3rd Anniversary Set Japan
+	290971: 544805, // Pop Art (3D Text)
+}
+
+// tcgplayerID answers the TCGplayer id a blueprint's own listings should
+// resolve against, substituting tcgIDOverrides' correction where one exists.
+func tcgplayerID(bp *Blueprint) int {
+	if id, found := tcgIDOverrides[bp.ID]; found {
+		return id
+	}
+	return bp.TCGplayerID
+}
+
 func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products []Product) {
 	blueprint, found := ct.blueprints[bpID]
 	if !found {
@@ -202,17 +233,20 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// the edition alone leaves the base one. Magic keeps its own
 		// preprocessing, and a blueprint without an id falls through.
 		var cardID string
-		if ct.gameID != GameMagic && blueprint.TCGplayerID != 0 {
-			// A named finish reaches the sibling the flag cannot: the flag
-			// has one bit and lands on the product's foil default, where the
-			// name says which of its treatments the listing prices. A name
-			// the product is sold in no printing of falls back to the flag,
-			// which answers with the default rather than nothing.
-			if theCard.Finish != "" {
-				cardID, _ = ct.backend.MatchIDFinish(fmt.Sprint(blueprint.TCGplayerID), theCard.Finish)
-			}
-			if cardID == "" {
-				cardID, _ = ct.backend.MatchID(fmt.Sprint(blueprint.TCGplayerID), theCard.Foil)
+		if ct.gameID != GameMagic {
+			if tcgID := tcgplayerID(blueprint); tcgID != 0 {
+				// A named finish reaches the sibling the flag cannot: the
+				// flag has one bit and lands on the product's foil default,
+				// where the name says which of its treatments the listing
+				// prices. A name the product is sold in no printing of falls
+				// back to the flag, which answers with the default rather
+				// than nothing.
+				if theCard.Finish != "" {
+					cardID, _ = ct.backend.MatchIDFinish(fmt.Sprint(tcgID), theCard.Finish)
+				}
+				if cardID == "" {
+					cardID, _ = ct.backend.MatchID(fmt.Sprint(tcgID), theCard.Foil)
+				}
 			}
 		}
 
