@@ -2,6 +2,7 @@ package mintcard
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -82,6 +83,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 	variant := ""
 	if len(s) > 1 {
 		variant = strings.Join(s[1:], " ")
+	}
+	// Phyrexian printings are filed as English, the language named only
+	// in the card's own name: "Plains (267) (Phyrexian)"
+	if langauge == "English" && slices.Contains(s[1:], "Phyrexian") {
+		langauge = "Phyrexian"
 	}
 	variant = strings.Replace(variant, "HP", "", -1)
 	variant = strings.Replace(variant, "MP", "", -1)
