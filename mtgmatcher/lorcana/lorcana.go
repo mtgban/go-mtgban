@@ -183,7 +183,13 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	}
 	payload := envelope.Data
 	if len(payload.Cards) == 0 || len(payload.Sets) == 0 {
-		return nil, errors.New("empty LorcanaJSON file")
+		return nil, errors.New("not a Lorcana datastore")
+	}
+	for _, card := range payload.Cards {
+		// No printing is a card with nothing to price, not a wrong file.
+		if card.ID == 0 || card.FullName == "" {
+			return nil, errors.New("not a Lorcana datastore")
+		}
 	}
 	payload.adoptPrintings()
 	return payload.newBackend(), nil

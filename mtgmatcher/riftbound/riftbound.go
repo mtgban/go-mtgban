@@ -172,9 +172,15 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 		if len(blade.Sets.Items) == 0 || len(blade.Cards.Items) == 0 {
 			break
 		}
+		for _, card := range blade.Cards.Items {
+			// No printing is a card with nothing to price, not a wrong file.
+			if card.ID == "" || card.Name == "" {
+				return nil, errors.New("not a Riftbound datastore")
+			}
+		}
 		return blade.newBackend(), nil
 	}
-	return nil, errors.New("not a Riftbound card-gallery payload")
+	return nil, errors.New("not a Riftbound datastore")
 }
 
 // qualifiedName spells a printing the way a storefront selling it does, the
