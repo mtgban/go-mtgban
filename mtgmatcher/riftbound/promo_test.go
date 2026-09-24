@@ -26,7 +26,7 @@ const promoFixture = `{"data": {
 				"publicCode": "OGN-139/298",
 				"set": {"value": {"id": "OGN", "label": "Origins"}},
 				"rarity": {"value": {"id": "rare"}},
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "ogn-139_foil"}]
 			},
 			{
 				"id": "opp-901",
@@ -36,7 +36,7 @@ const promoFixture = `{"data": {
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["champion"],
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-901_foil"}]
 			},
 			{
 				"id": "opp-902",
@@ -46,7 +46,7 @@ const promoFixture = `{"data": {
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["top 8"],
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-902_foil"}]
 			},
 			{
 				"id": "ogn-183",
@@ -55,7 +55,7 @@ const promoFixture = `{"data": {
 				"publicCode": "OGN-183/298",
 				"set": {"value": {"id": "OGN", "label": "Origins"}},
 				"rarity": {"value": {"id": "rare"}},
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "ogn-183_foil"}]
 			},
 			{
 				"id": "opp-903",
@@ -65,7 +65,7 @@ const promoFixture = `{"data": {
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["prize wall"],
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-903_foil"}]
 			},
 			{
 				"id": "opp-904",
@@ -74,7 +74,7 @@ const promoFixture = `{"data": {
 				"publicCode": "OPP-251/298",
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "promo"}},
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-904_foil"}]
 			},
 			{
 				"id": "opp-905",
@@ -84,7 +84,7 @@ const promoFixture = `{"data": {
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "promo"}},
 				"promoTypes": ["metal", "best of"],
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-905_foil"}]
 			},
 			{
 				"id": "opp-906",
@@ -94,7 +94,7 @@ const promoFixture = `{"data": {
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "showcase"}},
 				"promoTypes": ["t1worldschampion", "playerbundle"],
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-906_foil"}]
 			},
 			{
 				"id": "opp-907",
@@ -104,7 +104,7 @@ const promoFixture = `{"data": {
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "showcase"}},
 				"promoTypes": ["t1worldschampion", "signatureeditionbundle"],
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-907_foil"}]
 			},
 			{
 				"id": "opp-908",
@@ -114,7 +114,7 @@ const promoFixture = `{"data": {
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "showcase"}},
 				"promoTypes": ["t1worldschampion", "signatureeditionbundle", "serialnumbered"],
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-908_foil"}]
 			}
 		]}
 	}]}}

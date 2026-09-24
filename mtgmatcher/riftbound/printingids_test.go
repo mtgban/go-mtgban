@@ -10,11 +10,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestPublishedPrintingIDsWin pins that the datastore's own uuids are used
-// where it publishes them, rather than being spelled from the finish name
-// here. A uuid is what a price is keyed on: if this package spelled one and
-// the builder published another, the two would disagree silently, since a
-// uuid nobody stored resolves to nothing rather than erroring.
+// TestPublishedPrintingIDsWin pins that the datastore's own uuids are the
+// ones stored. A uuid is what a price is keyed on: if this package spelled
+// one and the builder published another, the two would disagree silently,
+// since a uuid nobody stored resolves to nothing rather than erroring.
 func TestPublishedPrintingIDsWin(t *testing.T) {
 	path := os.Getenv("RIFTBOUND_PATH")
 	if path == "" {
@@ -67,12 +66,8 @@ func TestPublishedPrintingIDsWin(t *testing.T) {
 	}
 }
 
-// stampPrintingIDs renames the uuid of every printing a gallery row carries,
-// to one the spelling below could not arrive at, and answers the uuids it
-// wrote. It stamps whichever shape the datastore publishes - printings[]
-// carries a finish and its uuid together, and printingIds is the map a
-// datastore published before it - so the invariant is pinned against both
-// rather than against the one on its way out.
+// stampPrintingIDs renames the uuid of every printing a gallery row carries
+// to one no spelling could arrive at, and answers the uuids it wrote.
 func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 	t.Helper()
 	payload, err := datastore.Payload(bytes.NewReader(data))
@@ -118,42 +113,23 @@ func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 			if !ok {
 				t.Fatalf("a card id is %T, not a string", row["id"])
 			}
-			if printings, listed := row["printings"].([]any); listed {
-				for _, raw := range printings {
-					printing, ok := raw.(map[string]any)
-					if !ok {
-						t.Fatalf("a printing is %T, not an object", raw)
-					}
-					finish, ok := printing["finish"].(string)
-					if !ok || finish == "" {
-						t.Fatalf("a printing of card %s names no finish", id)
-					}
-					uuid := "published-" + id + "-" + finish
-					printing["id"] = uuid
-					want[uuid] = true
-				}
+			printings, listed := row["printings"].([]any)
+			if !listed {
 				continue
 			}
-			// Only the finishes the row is sold in are stored, so only
-			// those are expected: stamping a uuid for a finish the card
-			// has no printing of would be asking for one that should not
-			// exist.
-			sold := []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
-			if listed, ok := row["finishes"].([]any); ok && len(listed) > 0 {
-				sold = nil
-				for _, raw := range listed {
-					if name, ok := raw.(string); ok {
-						sold = append(sold, name)
-					}
+			for _, raw := range printings {
+				printing, ok := raw.(map[string]any)
+				if !ok {
+					t.Fatalf("a printing is %T, not an object", raw)
 				}
-			}
-			ids := map[string]any{}
-			for _, finish := range sold {
+				finish, ok := printing["finish"].(string)
+				if !ok || finish == "" {
+					t.Fatalf("a printing of card %s names no finish", id)
+				}
 				uuid := "published-" + id + "-" + finish
-				ids[finish] = uuid
+				printing["id"] = uuid
 				want[uuid] = true
 			}
-			row["printingIds"] = ids
 		}
 	}
 	out, err := json.Marshal(map[string]any{"data": doc})

@@ -25,7 +25,7 @@ const numberFixture = `{"data": {
 				"publicCode": "OGN-066a/298",
 				"set": {"value": {"id": "OGN", "label": "Origins"}},
 				"rarity": {"value": {"id": "rare"}},
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "ogn-66a_foil"}]
 			},
 			{
 				"id": "sfd-227",
@@ -34,7 +34,7 @@ const numberFixture = `{"data": {
 				"publicCode": "SFD-227*/221",
 				"set": {"value": {"id": "SFD", "label": "Spiritforged"}},
 				"rarity": {"value": {"id": "epic"}},
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "sfd-227_foil"}]
 			},
 			{
 				"id": "opp-r2b",
@@ -43,7 +43,7 @@ const numberFixture = `{"data": {
 				"publicCode": "OPP-R2b/221",
 				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
 				"rarity": {"value": {"id": "common"}},
-				"finishes": ["foil"]
+				"printings": [{"finish": "Foil", "id": "opp-r2b_foil"}]
 			}
 		]}
 	}]}}
