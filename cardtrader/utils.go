@@ -390,6 +390,13 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		// Holo"), and the label the promo sets tell their reprints apart by.
 		// The matcher reads its numbers from the back, so the Version's
 		// full number is asked before the decorated blueprint field.
+		if spelled, found := pkmBlueprintVersions[bp.ID]; found {
+			return number + " " + spelled
+		}
+		if spelled, found := pkmBlueprintNumbers[bp.ID]; found {
+			number = spelled
+		}
+		return strings.TrimSpace(number + " " + pkmShelfVersion(bp))
 	default:
 		return number
 	}
@@ -519,6 +526,16 @@ func gameName(b *mtgmatcher.Backend, gameID int, bp *Blueprint) string {
 		}
 		if spelled, found := ygoNames[bp.Name]; found {
 			return spelled
+		}
+	}
+	if gameID == GamePokemon {
+		if spelled, found := pkmNames[bp.Name]; found {
+			return spelled
+		}
+		if bp.Expansion.Name == pkmProfessorProgramShelf {
+			if energy, found := strings.CutPrefix(bp.Name, "Basic "); found && strings.HasSuffix(energy, " Energy") {
+				return energy
+			}
 		}
 	}
 	return bp.Name
@@ -1082,13 +1099,84 @@ func gameEdition(b *mtgmatcher.Backend, gameID int, bp *Blueprint) string {
 // file jumbos under the same words; Card Trader says "Jumbo" in the
 // version, and a jumbo keeps the shelf's own name.
 var pkmShelfEditions = map[string]string{
-	"SV Black Star Promos": "SV: Scarlet & Violet Promo Cards",
+	"SV Black Star Promos":   "SV: Scarlet & Violet Promo Cards",
+	pkmProfessorProgramShelf: "Professor Program Promos",
+}
+
+// pkmProfessorProgramShelf is the shelf Card Trader heads by the promo
+// program's own name, where the catalog spells the set "Professor Program
+// Promos". Every version on the shelf also leads with "Professor Program
+// Stamp", which no catalog row carries as a promo type; pkmShelfVersion
+// strips it before the wording reaches the matcher.
+const pkmProfessorProgramShelf = "Professor Program"
+
+// pkmHolidayCalendarShelf is the shelf whose version names the stamp Card
+// Trader itself prints on these cards ("Holiday Snowflake Stamp") where the
+// catalog's own promo label is "Holiday Calendar".
+const pkmHolidayCalendarShelf = "Holiday Calendar"
+
+// pkmShelfVersion spells a Pokemon blueprint's version the way the catalog
+// does, on the shelves where Card Trader's own wording never matches a row.
+func pkmShelfVersion(bp *Blueprint) string {
+	version := bp.Version
+	switch bp.Expansion.Name {
+	case pkmProfessorProgramShelf:
+		if rest, found := strings.CutPrefix(version, "Professor Program Stamp"); found {
+			version = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(rest), "|"))
+		}
+	case pkmHolidayCalendarShelf:
+		version = strings.Replace(version, "Holiday Snowflake Stamp", "Holiday Calendar", 1)
+	}
+	return version
+}
+
+// pkmBlueprintNumbers are the Pokemon blueprints whose number Card Trader
+// writes bare where the catalog wears the shelf's own SWSH prefix.
+var pkmBlueprintNumbers = map[int]string{
+	127065: "SWSH002",
+	127087: "SWSH020",
+}
+
+// pkmBlueprintVersions are the Pokemon blueprints whose version carries a
+// set total that does not match the printed card - Card Trader wrote a
+// different set's total instead of this card's own.
+var pkmBlueprintVersions = map[int]string{
+	357920: "Destined Rivals Stamp | 031/182",
+	357923: "Destined Rivals Stamp | 208/182",
+	357913: "Destined Rivals Stamp | 229/182",
+	354633: "Cosmos Holo 026/094",
+	364952: "Cosmos Holo | 079/086",
+}
+
+// pkmNames spells the Pokemon names Card Trader misspells.
+var pkmNames = map[string]string{
+	"Psichic Energy": "Psychic Energy",
+}
+
+// pkmJapaneseShelves are Card Trader Pokemon shelves that sell only
+// Japanese product, even where a seller marks a copy "en": no TCGplayer id
+// on any of them is in the English catalog.
+var pkmJapaneseShelves = map[string]bool{
+	"Ruler of the Black Flame":                    true,
+	"Night Wanderer":                              true,
+	"Shiny Treasure ex":                           true,
+	"Battle Partners":                             true,
+	"Red Collection":                              true,
+	"White Collection":                            true,
+	"Towering Perfection":                         true,
+	"Battle Strength Decks":                       true,
+	"Scarlet & Violet Promos":                     true,
+	"Lost Link":                                   true,
+	"M Audino EX Mega Battle Deck":                true,
+	"Mythical & Legendary Dream Shine Collection": true,
+	"Shaymin LV. X COLLECTION PACK":               true,
 }
 
 // pkmInserts are the products Card Trader sells as Pokemon singles that are
 // not cards.
 var pkmInserts = map[string]bool{
-	"VSTAR Marker": true,
+	"VSTAR Marker":      true,
+	"Blank Filler Card": true,
 }
 
 // lorcanaInserts are products Card Trader sells as Lorcana singles that are
@@ -1112,7 +1200,7 @@ var pkmCollectorNumberRe = regexp.MustCompile(`^[A-Za-z]{0,4}[0-9]{1,3}[a-z]?(?:
 func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
 	switch gameID {
 	case GamePokemon:
-		return pkmInserts[bp.Name]
+		return pkmInserts[bp.Name] || pkmJapaneseShelves[bp.Expansion.Name]
 	case GameLorcana:
 		return lorcanaInserts[bp.Name]
 	case GameYuGiOh:
