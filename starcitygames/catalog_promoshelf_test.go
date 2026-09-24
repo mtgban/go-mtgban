@@ -49,6 +49,10 @@ func TestResolvePromoShelfPrinting(t *testing.T) {
 		// natively-combined "Undercity // The Initiative" - so the bare
 		// listing has nowhere to go without this entry.
 		{"Undercity, natively combined with The Initiative", "SGL-MTG-PRM2-CLB_T20-ENN", "{Undercity Dungeon}", false, "", "TCLB", "20"},
+
+		// A con-exclusive Counterspell whose scryfall id names the
+		// URL/Convention Promos printing instead of MagicFest 2026's own.
+		{"MagicFest 2026's Counterspell", "SGL-MTG-PRM-FEST_2026_002-ENF", "Counterspell", true, "f2a7042f-a6f0-4e77-86a2-5eb0d2587363", "PF26", "5"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			finish, group := "Non-foil", "Non-foil"
