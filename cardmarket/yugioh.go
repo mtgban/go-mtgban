@@ -3,7 +3,6 @@ package cardmarket
 import (
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -189,49 +188,6 @@ func yugiohOversized(b *mtgmatcher.Backend, name string) (string, error) {
 	return found, nil
 }
 
-// yugiohRunIndex captures the index Cardmarket appends to a Yu-Gi-Oh product
-// name when one card is sold as several products.
-var yugiohRunIndex = regexp.MustCompile(` \(V\.(\d+) - `)
-
-// yugiohFirstAtIndexOne names the sets whose index counts the other way
-// round. Cardmarket synthesizes the index per set and what it counts differs
-// from one to the next - a rarity here, a print run there - so no reading of
-// it is right everywhere. The default below is the one the catalog bears out
-// most often; a set whose prices say its runs are swapped belongs here, and
-// the entry is all it takes to correct it.
-var yugiohFirstAtIndexOne = map[string]bool{}
-
-// yugiohRun names the print run a product's index stands for, or nothing
-// when it carries no index.
-//
-// A set printed twice sells both runs under one name, and nothing else the
-// catalog says tells them apart: the collector number is the same, the
-// rarity is the same, and the shelf is the same. Only the index is left, and
-// it is read here rather than trusted - the first edition is the scarcer run
-// and the dearer one, which is how a set that reads the wrong way round is
-// found and added above.
-//
-// Measured over the run's collisions, the higher index is the dearer product
-// 924 times against 388, so it is the first edition by default.
-func yugiohRun(product *cm.Product) string {
-	fields := yugiohRunIndex.FindStringSubmatch(product.Name)
-	if fields == nil {
-		return ""
-	}
-	index, err := strconv.Atoi(fields[1])
-	if err != nil || index < 1 {
-		return ""
-	}
-	first := index > 1
-	if yugiohFirstAtIndexOne[product.ExpansionName] {
-		first = index == 1
-	}
-	if first {
-		return "1st Edition"
-	}
-	return "Unlimited"
-}
-
 // yugiohOtherCard reports whether the bridged printing is of a card the
 // product's name is not, under any name Konami gave it.
 func (r *resolver) yugiohOtherCard(product *cm.Product, cardID string) bool {
@@ -314,35 +270,4 @@ func rarityNames(worded, rarity string) bool {
 		}
 	}
 	return true
-}
-
-// yugiohPrint is what tells a Yu-Gi-Oh card's products apart on one shelf
-// besides the version index.
-type yugiohPrint struct {
-	expansion            int
-	name, number, rarity string
-}
-
-func yugiohPrintOf(expansion int, name, number, rarity string) yugiohPrint {
-	return yugiohPrint{expansion, mtgmatcher.Normalize(versionTail.ReplaceAllString(name, "")), number, rarity}
-}
-
-// yugiohRarityIndex reports whether a product's version index counts
-// rarities rather than runs: no other product of the card on its shelf has
-// its number and rarity. Such a product sells both runs (Battle Fader is V.1
-// Ultra Rare and V.2 Ultimate Rare), so the index names neither.
-func (r *resolver) yugiohRarityIndex(product *cm.Product) bool {
-	if r.catalog == nil || cm.ProductVersion(product) == 0 {
-		return false
-	}
-	r.yugiohPrintsMu.Lock()
-	if r.yugiohPrints == nil {
-		r.yugiohPrints = map[yugiohPrint]int{}
-		for _, p := range r.catalog.Data.Products {
-			r.yugiohPrints[yugiohPrintOf(p.ExpansionID, p.Name, p.Number, p.Rarity)]++
-		}
-	}
-	prints := r.yugiohPrints
-	r.yugiohPrintsMu.Unlock()
-	return prints[yugiohPrintOf(product.Expansion.IDExpansion, product.Name, product.Number, product.Rarity)] == 1
 }

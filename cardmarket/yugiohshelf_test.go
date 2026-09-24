@@ -48,7 +48,7 @@ func TestMatchYugiohShelves(t *testing.T) {
 		err                           error
 	}{
 		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.1 - Secret Rare)", "000", "lob-000_22538_unlimited", nil},
-		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.2 - Secret Rare)", "000", "lob-000_22538_1stedition", nil},
+		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.2 - Secret Rare)", "000", "lob-000_22538_unlimited", nil},
 		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.4 - Secret Rare)", "EN000", "lob-en000_1", nil},
 		{"Legend of Blue Eyes White Dragon", "Tri-Horned Dragon (V.3 - Secret Rare)", "A000", "", errForeign},
 		{"2018 Mega-Tin Mega Pack", "Topologic Bomber Dragon", "065", "mp18-en065_1", nil},
