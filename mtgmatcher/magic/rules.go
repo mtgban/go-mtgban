@@ -813,14 +813,17 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			if isShowcase(inCard) && !inCard.IsPrerelease() {
 				variation += " Prerelease"
 			}
-		// There are three Prerelease editions across two editions
+		// HOC reprints these borderless with no Prerelease tag of its
+		// own, so skip the rewrite on that edition.
 		case "Delighted Halfling",
 			"Lobelia Sackville-Baggins",
 			"Frodo Baggins",
 			"Bilbo, Retired Burglar",
 			"Gandalf, Friend of the Shire",
 			"Wizard's Rockets":
-			if isBorderless(inCard) && !inCard.IsPrerelease() {
+			hoc, hocErr := b.GetSet("HOC")
+			if isBorderless(inCard) && !inCard.IsPrerelease() &&
+				!(hocErr == nil && edition == hoc.Name) {
 				variation += " Prerelease"
 			}
 		case "Arcbound Ravager":
