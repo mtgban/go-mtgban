@@ -267,6 +267,25 @@ var parallelTail = regexp.MustCompile(`^([A-Za-z]+[0-9]*-[0-9]+)[a-zA-Z]+$`)
 
 var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z\x{03b1}\x{03b2}]*$`)
 
+// opBlueprintNumbers are the collector numbers Card Trader gets wrong on a
+// handful of ROUND1 promo blueprints, keyed by the blueprint since the
+// number it wrote is itself a real card's number, just not this one's.
+var opBlueprintNumbers = map[int]string{
+	399332: "OP09-068",
+	399334: "ST21-011",
+	399335: "OP11-056",
+	399336: "ST29-005",
+}
+
+// opNumber spells a One Piece blueprint's collector number the way the card
+// wears it, where Card Trader wrote its own instead.
+func opNumber(bp *Blueprint, number string) string {
+	if spelled, found := opBlueprintNumbers[bp.ID]; found {
+		return spelled
+	}
+	return number
+}
+
 // gameVariation spells the printing a blueprint names. One Piece, Riftbound
 // and Yu-Gi-Oh all file several printings under one collector number, so the
 // number alone aliases them; the blueprint's Version carries the very wording
@@ -293,14 +312,23 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 	if gameID == GamePokemon && bp.Expansion.Name == pkmLeagueShelf && !pkmCollectorNumberRe.MatchString(number) {
 		return bp.Version
 	}
+	if gameID == GameOnePiece {
+		number = opNumber(bp, number)
+		// A leader or DON!! blueprint's number is a placeholder rather than
+		// a real collector number, so the Version answers in its place.
+		if bp.Version != "" && !collectorNumberRe.MatchString(number) &&
+			(!strings.ContainsAny(number, "0123456789") || bp.Name == "DON!!") {
+			return bp.Version
+		}
+	}
 	if bp.Version == "" || number == "" {
 		return number
 	}
 	switch gameID {
 	case GameOnePiece:
-		// One Piece numbers come in shapes the matcher cannot read - "P-L",
-		// "OP07-047P2" - and behind one of those the version's own digits
-		// answer in their place.
+		// A number that still fails collectorNumberRe here carries a digit
+		// but not in a shape the matcher can read - "OP07-047P2" - so the
+		// Version is dropped rather than guessed onto it.
 		if !collectorNumberRe.MatchString(number) {
 			return number
 		}
@@ -920,6 +948,19 @@ var ygoBlueprintEditions = map[int]string{
 	81236: "Sneak Preview Series 3",
 }
 
+// opBlueprintEditions are the One Piece blueprints Card Trader shelves under
+// an edition the card's own wording cannot reach otherwise: ST-17's reprints
+// of two ST-03 cards carry TCGplayer ids the catalog has since dropped, so
+// they need the parent starter spelled out the way their shelf-mates already
+// land it; Radical Beam!!'s Version is "Demo Deck", which the matcher does
+// not read as wording for OP-DD, and its shelf, "One Piece Promos", names no
+// set to fall back on either.
+var opBlueprintEditions = map[int]string{
+	305520: "Starter Deck 3: The Seven Warlords of The Sea",
+	305524: "Starter Deck 3: The Seven Warlords of The Sea",
+	377503: "One Piece Demo Deck Cards",
+}
+
 // gameEdition names the set a blueprint's shelf sells, which is the shelf's
 // own name everywhere but the shelves above.
 func gameEdition(b *mtgmatcher.Backend, gameID int, bp *Blueprint) string {
@@ -930,6 +971,18 @@ func gameEdition(b *mtgmatcher.Backend, gameID int, bp *Blueprint) string {
 			if err == nil {
 				return set.Name
 			}
+		}
+	}
+	if gameID == GameOnePiece {
+		if edition, found := opBlueprintEditions[bp.ID]; found {
+			return edition
+		}
+		// DON!! cards on the general promos shelf carry no number the
+		// matcher can read (see the placeholder-number branch in
+		// gameVariation), so the edition is the only thing left to narrow
+		// them - and "One Piece Promos" itself names no set.
+		if bp.Name == "DON!!" && bp.Expansion.Name == "One Piece Promos" {
+			return "One Piece Promotion Cards"
 		}
 	}
 	if gameID == GameYuGiOh {
