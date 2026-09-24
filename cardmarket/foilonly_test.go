@@ -15,7 +15,7 @@ import (
 // both plain and foiled, and an Enchanted sold in a holofoil alone. The
 // second is the shape marketFoilOnly exists for - Cardmarket sells it as one
 // product, so it resolves to a single id in both of a product's slots.
-const foilOnlyDatastore = `{
+const foilOnlyDatastore = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {"13": {"name": "Attack of the Vine!", "type": "expansion", "releaseDate": "2026-08-14"}},
   "cards": [
@@ -32,7 +32,7 @@ const foilOnlyDatastore = `{
       "externalLinks": {"cardmarketId": 897451}
     }
   ]
-}`
+}}`
 
 // TestMarketFoilOnly pins which finish a product's first query asks for. The
 // plain printing is asked for as a plain card and its foil twin separately;

@@ -15,7 +15,7 @@ import (
 // verbatim from it. The whole number is here rather than the one row each
 // product wants, so the wording the storefront brackets still has to pick
 // between the printings that share it.
-const untitledVariantDatastore = `{
+const untitledVariantDatastore = `{"data": {
  "game": "onepiece",
  "sets": {
   "OP01": {"name": "Romance Dawn", "releaseDate": "2022-12-02"},
@@ -38,7 +38,7 @@ const untitledVariantDatastore = `{
   {"color": "Yellow", "externalLinks": {"tcgPlayerId": 693122}, "finish": "Normal", "id": "op10-111_693122", "name": "Monkey.D.Luffy", "number": "OP10-111", "originalReleaseDate": "2026-01-01", "promoTypes": ["welcomepack"], "rarity": "R", "setCode": "OP-PR", "type": "Character", "variant": "Welcome Pack 2026 Vol. 1", "watermark": "vol. 1"},
   {"color": "Yellow", "externalLinks": {"tcgPlayerId": 706359}, "finish": "Normal", "id": "op10-111_706359", "name": "Monkey.D.Luffy", "number": "OP10-111", "rarity": "R", "setCode": "ST-36", "type": "Character"}
  ]
-}`
+}}`
 
 // The two products below are the storefront's own buylist records, less the
 // keys the scraper does not read. Neither offer carries a variant title:

@@ -10,7 +10,7 @@ import (
 // tailFixture holds two cards sold in three rarities apiece, the parallel
 // tiers numbered apart from the card they parallel, every row the
 // datastore's.
-const tailFixture = `{
+const tailFixture = `{"data": {
 	"game": "palworld",
 	"sets": {
 		"BP01": {"name": "BP01: Dawn of Palpagos", "releaseDate": "2026-07-30"},
@@ -24,7 +24,7 @@ const tailFixture = `{
 		{"color": "Red", "externalLinks": {"tcgPlayerId": 713802}, "finish": "Foil", "id": "etd01-001tsp_713802_foil", "image": "x", "name": "Grizzbolt - Rumbling Tank", "number": "ETD01-001TSP", "rarity": "Trial Deck Super Parallel", "setCode": "TD01", "type": "Pal"},
 		{"color": "Red", "externalLinks": {"tcgPlayerId": 713803}, "finish": "Foil", "id": "etd01-001tsr_713803_foil", "image": "x", "name": "Grizzbolt - Rumbling Tank", "number": "ETD01-001TSR", "rarity": "Trial Deck Super Deck Rare", "setCode": "TD01", "type": "Pal"}
 	]
-}`
+}}`
 
 // TestTailSaidLongest pins that a rarity spelled inside a longer one is not
 // the one named: "Over Super Rare" says "Super Rare" and "Trial Deck Super

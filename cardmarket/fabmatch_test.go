@@ -17,7 +17,7 @@ import (
 // datastore carries in the unlimited one alone; and Sink Below (Red), for
 // the run Welcome to Rathe spells Alpha. Nine rows rather than the whole
 // file keeps the answers below facts about data the test states.
-const fabDatastore = `{
+const fabDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {"MON": {"name": "Monarch", "releaseDate": "2021-04-30"}, "WTR": {"name": "Welcome to Rathe", "releaseDate": "2019-10-11"}},
  "cards": [
@@ -31,7 +31,7 @@ const fabDatastore = `{
   {"externalLinks": {"tcgPlayerId": 225309}, "fabId": "WTR215", "finish": "Unlimited Edition Normal", "id": "wtr215_225309_unlimited", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"},
   {"externalLinks": {"tcgPlayerId": 225309}, "fabId": "WTR215", "finish": "Unlimited Edition Rainbow Foil", "id": "wtr215_225309_unlimitededitionrainbowfoil", "name": "Sink Below (Red)", "number": "WTR215", "rarity": "Common", "setCode": "WTR"}
  ]
-}`
+}}`
 
 // loadFabDatastore reads the cut-down datastore the matcher answers from.
 func loadFabDatastore(t *testing.T) *mtgmatcher.Backend {
@@ -114,7 +114,7 @@ func TestFabSameCardAccent(t *testing.T) {
 // in Heavy Hitters. Whichever spelling a name lookup lands on, the other
 // set's printing is only reachable if the treatment tail came off - or, in
 // the bare set, only if it did not.
-const fabSpellingDatastore = `{
+const fabSpellingDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {"MON": {"name": "Monarch", "releaseDate": "2021-04-30"}, "BOL": {"name": "Blitz Deck: Monarch - Boltyn", "releaseDate": "2021-05-14"}, "ADR": {"name": "Armory Deck: Rhinar", "releaseDate": "2025-11-14"}, "HVY": {"name": "Heavy Hitters", "releaseDate": "2024-02-02"}},
  "cards": [
@@ -129,7 +129,7 @@ const fabSpellingDatastore = `{
   {"externalLinks": {"tcgPlayerId": 533461}, "fabId": "HVY024", "finish": "Normal", "id": "hvy024_533461", "name": "Rawhide Rumble (Yellow)", "number": "HVY024", "rarity": "Rare", "setCode": "HVY"},
   {"externalLinks": {"tcgPlayerId": 663031}, "finish": "Normal", "id": "arr012_663031", "name": "Rawhide Rumble", "number": "ARR012", "rarity": "Rare", "setCode": "ADR"}
  ]
-}`
+}}`
 
 // TestMatchProductTreatmentTail pins how the name fallback sees through the
 // treatment parenthetical Cardmarket decorates every Flesh and Blood product

@@ -13,7 +13,7 @@ import (
 // sold as a base art and two alternates, which is the shape the catalog
 // cannot tell apart. Each carries its own TCGplayer id, which is what the
 // bridge names them by.
-const onePieceDatastore = `{
+const onePieceDatastore = `{"data": {
  "game": "onepiece",
  "sets": {"OP05": {"name": "Awakening of the New Era", "releaseDate": "2023-11-25"}},
  "cards": [
@@ -21,7 +21,7 @@ const onePieceDatastore = `{
   {"externalLinks": {"tcgPlayerId": 527662}, "finish": "Foil", "id": "op05-069_527662_foil", "name": "Trafalgar Law", "number": "OP05-069", "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art"},
   {"externalLinks": {"tcgPlayerId": 527019}, "finish": "Foil", "id": "op05-069_527019_foil", "name": "Trafalgar Law", "number": "OP05-069", "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art Manga"}
  ]
-}`
+}}`
 
 // TestOnePieceBridgeNamesThePrinting pins that the bridge names the printing
 // where the catalog only counts. Cardmarket sells the three arts as three

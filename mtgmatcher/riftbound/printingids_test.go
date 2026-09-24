@@ -156,7 +156,7 @@ func stampPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]bool) {
 			row["printingIds"] = ids
 		}
 	}
-	out, err := json.Marshal(doc)
+	out, err := json.Marshal(map[string]any{"data": doc})
 	if err != nil {
 		t.Fatal(err)
 	}

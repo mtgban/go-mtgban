@@ -10,7 +10,7 @@ import (
 // thirdFinishFixture sells one printing in a finish that is neither plain
 // nor foil, named the way TCGplayer would price it, beside a card sold both
 // ways.
-const thirdFinishFixture = `{
+const thirdFinishFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
@@ -39,7 +39,7 @@ const thirdFinishFixture = `{
 			}
 		]}
 	}]}}
-}`
+}}`
 
 // TestThirdFinish pins the loader half of CanonicalFinish placing a finish
 // it was not taught: a printing sold in a treatment alone is a foil to the

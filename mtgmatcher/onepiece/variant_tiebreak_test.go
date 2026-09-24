@@ -13,7 +13,7 @@ import (
 // belongs to, and a label the wording shortens beside the set it names.
 //
 // The collector numbers, product ids and labels are the catalog's.
-const variantTiebreakFixture = `{
+const variantTiebreakFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP05": {"name": "Awakening of the New Era", "releaseDate": "2023-09-08"},
@@ -36,7 +36,7 @@ const variantTiebreakFixture = `{
 		{"id": "p-041_531486", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 531486}},
 		{"id": "p-041_532752_foil", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Foil", "variant": "Bandai Card Games Fest 23-24 World Tour", "image": "x", "externalLinks": {"tcgPlayerId": 532752}}
 	]
-}`
+}}`
 
 // TestVariantTiebreaks pins the two ties a label-naming wording leaves. Both
 // answered with an aliasing error, which drops the listing: the shelf tie

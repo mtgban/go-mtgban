@@ -14,7 +14,7 @@ import (
 // whose plain copy the catalog files at the marvel rarity beside the marvel
 // itself. Ash and the Invoke are the pairs a label already tells apart.
 // Every row is the datastore's.
-const finishTwinsFixture = `{
+const finishTwinsFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"ROS": {"name": "Rosetta", "releaseDate": "2024-09-27"},
@@ -36,7 +36,7 @@ const finishTwinsFixture = `{
 		{"externalLinks": {"fabId": "OMN203", "tcgPlayerId": 682858}, "fabId": "OMN203", "finish": "Cold Foil", "id": "omn203_682858_coldfoil", "image": "x", "name": "Lightning Flow", "number": "OMN203", "rarity": "Basic", "setCode": "UPR", "variant": "C", "watermark": "c"},
 		{"externalLinks": {"fabId": "OMN203", "tcgPlayerId": 682884}, "fabId": "OMN203", "finish": "Cold Foil", "id": "omn203_682884_coldfoil", "image": "x", "name": "Lightning Flow", "number": "OMN203", "rarity": "Basic", "setCode": "UPR", "variant": "A", "watermark": "a"}
 	]
-}`
+}}`
 
 // TestFinishTwins pins that a product's finish twins are told apart by the
 // finish: the one the wording names, else the one the flag says. Each pair

@@ -52,14 +52,14 @@ func TestFabEdition(t *testing.T) {
 // from the published datastore: one numbered by the FAB programme and one by
 // HER, which is the whole reason the programme has to be put back before the
 // number means anything.
-const fabPromoDatastore = `{
+const fabPromoDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {"PR": {"name": "Flesh and Blood: Promo Cards", "releaseDate": "2019-10-11"}},
  "cards": [
   {"externalLinks": {"tcgPlayerId": 604800}, "finish": "Cold Foil", "id": "fab012_coldfoil", "name": "Energy Potion", "number": "FAB012", "rarity": "Promo", "setCode": "PR"},
   {"externalLinks": {"tcgPlayerId": 604846}, "finish": "Cold Foil", "id": "her009_coldfoil", "name": "Dash, Inventor Extraordinaire", "number": "HER009", "rarity": "Promo", "setCode": "PR"}
  ]
-}`
+}}`
 
 // TestFabPromoProduct walks a promo product the whole way, because the
 // translation is only worth anything if the number it hands back reaches the

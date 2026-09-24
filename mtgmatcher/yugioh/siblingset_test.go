@@ -12,7 +12,7 @@ import (
 // which edition a printing belongs to.
 //
 // The set codes, collector numbers and rarities are the catalog's.
-const siblingSetFixture = `{
+const siblingSetFixture = `{"data": {
 	"game": "yugioh",
 	"sets": {
 		"MVP1":     {"name": "The Dark Side of Dimensions Movie Pack", "releaseDate": "2017-03-10"},
@@ -25,7 +25,7 @@ const siblingSetFixture = `{
 		{"id": "mvp1-engv3_unlimited", "name": "Dark Magician", "number": "MVP1-ENGV3", "setCode": "MVP1-ENG", "rarity": "Gold Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 126695}},
 		{"id": "mvp1-ens54_unlimited", "name": "Dark Magician", "number": "MVP1-ENS54", "setCode": "MVP1-ENS", "rarity": "Secret Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 207865}}
 	]
-}`
+}}`
 
 // TestSiblingSetNamed pins the edition a number names when the shelf names
 // the family. A storefront sells every edition under the family's name and

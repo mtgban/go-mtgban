@@ -12,7 +12,7 @@ import (
 // (Hyper Driver), and a pitch cycle whose members sit on consecutive numbers
 // (Impenetrable Belief), where the number and the storefront's own name
 // disagree.
-const dashQualifierFixture = `{
+const dashQualifierFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"ARC": {"name": "Arcane Rising", "releaseDate": "2020-06-05"},
@@ -26,7 +26,7 @@ const dashQualifierFixture = `{
 		{"id": "mon076_237818_unlimited", "name": "Impenetrable Belief (Yellow)", "number": "MON076", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"},
 		{"id": "mon077_237819_unlimited", "name": "Impenetrable Belief (Blue)", "number": "MON077", "setCode": "MON", "rarity": "Common", "finish": "Normal", "image": "x"}
 	]
-}`
+}}`
 
 // TestDashSpelledQualifier pins that a pitch qualifier written with a dash
 // answers exactly as the parenthesised spelling of the same listing does.

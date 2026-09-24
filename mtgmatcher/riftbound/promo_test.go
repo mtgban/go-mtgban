@@ -11,7 +11,7 @@ import (
 // names exercises: sibling variants share one name - and, for organized
 // play, the main set's collector number - and are told apart by promo
 // types against the storefront's own wording.
-const promoFixture = `{
+const promoFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
@@ -118,7 +118,7 @@ const promoFixture = `{
 			}
 		]}
 	}]}}
-}`
+}}`
 
 func TestPromoTypeSelection(t *testing.T) {
 	b, err := Load(strings.NewReader(promoFixture))

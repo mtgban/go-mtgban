@@ -14,7 +14,7 @@ import (
 // so the lookup succeeds and the number then finds nothing. P-138 is the
 // control: two names share it, so the number says nothing about which was
 // meant.
-const numberedNameFixture = `{
+const numberedNameFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP01":  {"name": "Romance Dawn", "releaseDate": "2022-12-02"},
@@ -27,7 +27,7 @@ const numberedNameFixture = `{
 		{"id": "p-138_712800", "name": "Monkey.D.Luffy (5th Anniversary)", "number": "P-138", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 712800}},
 		{"id": "p-138_712801", "name": "Roronoa Zoro (5th Anniversary)", "number": "P-138", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 712801}}
 	]
-}`
+}}`
 
 // TestNumberedNameAdopted pins that a canonical name with no printing at the
 // input's number takes the catalog's decorated spelling of the card the

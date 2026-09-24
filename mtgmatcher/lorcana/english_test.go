@@ -12,7 +12,7 @@ import (
 // share every storefront id: cardmarket and cardtrader routinely sell one
 // product per printing regardless of art. Cards 200 and 201 are the regionally
 // renamed repeat of a single card, which is what the fold exists for.
-const englishData = `{
+const englishData = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {"1": {"name": "The First Chapter", "type": "expansion", "releaseDate": "2023-09-01"}},
   "cards": [
@@ -41,7 +41,7 @@ const englishData = `{
       "externalLinks": {"tcgPlayerId": 900, "cardmarketId": 901, "cardTraderId": 902}
     }
   ]
-}`
+}}`
 
 // TestEnglishCardsKeepsArtSiblings pins that the identity behind the fold is
 // the printed collector number, letter included: two arts of one number are

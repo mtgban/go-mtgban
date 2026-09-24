@@ -14,7 +14,7 @@ import (
 // case: SECE-ENS03 shares its digits with SECE-EN013's neighbour, so a
 // wording naming no number is answered by whichever printing the tiering
 // reaches first.
-const letteredNumberFixture = `{
+const letteredNumberFixture = `{"data": {
 	"game": "yugioh",
 	"sets": {
 		"LDK2": {"name": "Legendary Decks II", "releaseDate": "2016-10-07"},
@@ -28,7 +28,7 @@ const letteredNumberFixture = `{
 		{"id": "sece-en013_100013_1stedition", "name": "Infernoid Antra", "number": "SECE-EN013", "setCode": "SECE", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100013}},
 		{"id": "sece-ens03_100003_1stedition", "name": "Infernoid Antra", "number": "SECE-ENS03", "setCode": "SECE", "rarity": "Super Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100003}}
 	]
-}`
+}}`
 
 // TestLetterLedNumberRead pins that a bare letter-led collector number is
 // read as a number. Left unread, the deck letter never reaches the filter:

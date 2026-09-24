@@ -15,14 +15,14 @@ import (
 // name, set, number and finish, told apart by nothing but the wording the
 // storefront brackets. Two rows rather than the whole file keeps the answer
 // below a fact about data the test states.
-const snorlaxDatastore = `{
+const snorlaxDatastore = `{"data": {
  "game": "pokemon",
  "sets": {"SVP": {"abbreviation": "SVP", "name": "SV: Scarlet & Violet Promo Cards", "releaseDate": "2023-03-31", "type": "promo"}},
  "cards": [
   {"externalLinks": {"tcgPlayerId": 517175}, "finish": "Holofoil", "id": "051_517175_holofoil", "name": "Snorlax", "number": "051", "rarity": "Promo", "setCode": "SVP", "type": "Colorless"},
   {"externalLinks": {"tcgPlayerId": 517270}, "finish": "Holofoil", "id": "051_517270_holofoil", "name": "Snorlax", "number": "051", "promoTypes": ["pokemon center exclusive"], "rarity": "Promo", "setCode": "SVP", "type": "Colorless", "variant": "Pokemon Center Exclusive"}
  ]
-}`
+}}`
 
 // TestPreprocessPokemonQualifier pins that the wording behind the number
 // reaches the printing it names. The storefront sells these two at $15.31

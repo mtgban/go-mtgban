@@ -16,7 +16,7 @@ import (
 // ENC12 are one number to it and nothing tells them apart. SBC1 is the same
 // shape rescued by exactness - a storefront that writes the full number has
 // said which deck letter it means, and only the shorthand is left guessing.
-const qualifiedNameFixture = `{
+const qualifiedNameFixture = `{"data": {
 	"game": "yugioh",
 	"sets": {
 		"LC02":  {"name": "Legendary Collection 2: Mega Pack", "releaseDate": "2012-10-02"},
@@ -39,7 +39,7 @@ const qualifiedNameFixture = `{
 		{"id": "sbc1-eng01_512387_1stedition", "name": "Dark Magician", "number": "SBC1-ENG01", "setCode": "SBC1", "rarity": "Secret Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512387}},
 		{"id": "sbc1-eng10_512388_1stedition", "name": "Dark Magician", "number": "SBC1-ENG10", "setCode": "SBC1", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 512388}}
 	]
-}`
+}}`
 
 // TestQualifiedNameAdoptedByNumber pins that a name the catalog keeps its
 // qualifier inside is reachable from the bare name a storefront writes, and

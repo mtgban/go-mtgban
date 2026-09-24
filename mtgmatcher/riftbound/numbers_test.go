@@ -9,7 +9,7 @@ import (
 // a padded number with a variant letter, a starred printing, and a promo
 // track whose numbers carry a letter prefix and no numeric identity of
 // their own.
-const numberFixture = `{
+const numberFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
@@ -47,7 +47,7 @@ const numberFixture = `{
 			}
 		]}
 	}]}}
-}`
+}}`
 
 // TestCollectorNumbers pins that a printing keeps the number it is sold
 // under. PlainNumber is what a plain-number search matches, so it may

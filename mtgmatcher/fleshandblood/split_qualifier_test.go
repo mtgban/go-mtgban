@@ -10,7 +10,7 @@ import (
 // splitQualifierFixture holds the two shapes a feed makes when it takes the
 // parenthetical off a name before the lookup: a pitch color the catalog
 // files no number beside, and a marvel whose number wears its label.
-const splitQualifierFixture = `{
+const splitQualifierFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"TH": {"name": "The Hunted", "releaseDate": "2025-06-06"},
@@ -24,7 +24,7 @@ const splitQualifierFixture = `{
 		{"id": "ros002-mv_564555_coldfoil", "name": "Florian (Marvel)", "number": "ROS002-MV", "setCode": "ROS", "rarity": "Marvel", "finish": "Cold Foil", "image": "x"},
 		{"id": "flr001_577202_rainbowfoil", "name": "Florian", "number": "FLR001", "setCode": "FLR", "rarity": "Rare", "finish": "Rainbow Foil", "image": "x"}
 	]
-}`
+}}`
 
 // TestSplitOffQualifier pins that a listing whose qualifier was split into
 // the wording answers exactly as the same listing spelled whole does.

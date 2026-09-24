@@ -10,7 +10,7 @@ import (
 // finishNamesData sells one card under two of TCGplayer's names for the
 // standard foil, one under the plain finish alone and one foil alone, in
 // the printings shape the builder publishes.
-const finishNamesData = `{
+const finishNamesData = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {
     "1": {"name": "The First Chapter", "type": "expansion", "releaseDate": "2023-09-01"},
@@ -39,7 +39,7 @@ const finishNamesData = `{
       "externalLinks": {"tcgPlayerId": 631351}
     }
   ]
-}`
+}}`
 
 // TestFinishNames pins that two of TCGplayer's names for one finish place
 // on it once, the first by name, whatever order the file lists them in.

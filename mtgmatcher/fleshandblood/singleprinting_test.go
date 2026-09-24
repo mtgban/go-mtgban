@@ -13,7 +13,7 @@ import (
 // everywhere else), and a product sold in two finishes at a number that is
 // otherwise alone in the backend (Hyper Driver (Red) DYN110, Normal and
 // Cold Foil).
-const singlePrintingFixture = `{
+const singlePrintingFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"TCC": {"name": "Round the Table: TCCxLSS", "releaseDate": "2023-09-29"},
@@ -28,7 +28,7 @@ const singlePrintingFixture = `{
 		{"artist": "Asur Misoa", "externalLinks": {"fabId": "AUA001", "tcgPlayerId": 577174}, "fabId": "AUA001", "finish": "Rainbow Foil", "id": "ara001_577174_rainbowfoil", "image": "https://tcgplayer-cdn.tcgplayer.com/product/577174_400w.jpg", "name": "Aurora", "number": "ARA001", "rarity": "Rare", "setCode": "ARA"},
 		{"artist": "Tomasz Jedruszek", "externalLinks": {"fabId": "ARA001", "tcgPlayerId": 489116}, "fabId": "ARA001", "finish": "Normal", "id": "ara001_489116", "image": "https://tcgplayer-cdn.tcgplayer.com/product/489116_400w.jpg", "name": "Arakni, Solitary Confinement", "number": "ARA001", "rarity": "Common", "setCode": "BDOA"}
 	]
-}`
+}}`
 
 // TestSinglePrintingRainbowFinish pins the single-printing fallback: a hero
 // sold in one printing lands on it whatever finish the storefront names.

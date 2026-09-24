@@ -17,7 +17,7 @@ import (
 //
 // The two runs carry the product id they are two runs of, the way every
 // entry the real datastore publishes does: it is what pairs them.
-const yugiohShelfDatastore = `{
+const yugiohShelfDatastore = `{"data": {
  "game": "yugioh",
  "sets": {
   "LOB": {"abbreviation": "LOB", "name": "The Legend of Blue Eyes White Dragon", "releaseDate": "2002-03-08"},
@@ -30,7 +30,7 @@ const yugiohShelfDatastore = `{
   {"finish": "Unlimited", "id": "lob-en000_1", "name": "Tri-Horned Dragon", "number": "LOB-EN000", "rarity": "Secret Rare", "setCode": "LOB-EN"},
   {"finish": "1st Edition", "id": "mp18-en065_1", "name": "Topologic Bomber Dragon", "number": "MP18-EN065", "rarity": "Prismatic Secret Rare", "setCode": "MP18"}
  ]
-}`
+}}`
 
 // TestMatchYugiohShelves pins that the name path reaches the sets the
 // storefront names its own way, reads the run off the version index, puts

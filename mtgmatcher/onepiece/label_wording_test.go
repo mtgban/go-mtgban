@@ -13,7 +13,7 @@ import (
 // a place, the P-069 Koala sold in the 25-26 championship's sets, and the
 // 3rd Anniversary Tournament pack's leader card beside the numbered card
 // packed with it. Every row is the datastore's.
-const labelWordingFixture = `{
+const labelWordingFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-12-02"},
@@ -42,7 +42,7 @@ const labelWordingFixture = `{
 		{"id": "st13-003_543605_foil", "name": "Monkey.D.Luffy", "number": "ST13-003", "setCode": "ST-13", "rarity": "L", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 543605}},
 		{"id": "st13-003_600711_foil", "name": "Monkey.D.Luffy", "number": "ST13-003", "setCode": "OP-PR", "rarity": "L", "finish": "Foil", "variant": "2nd Anniversary Tournament", "promoTypes": ["anniversarytournament"], "watermark": "2nd", "image": "x", "externalLinks": {"tcgPlayerId": 600711}}
 	]
-}`
+}}`
 
 // TestLabelWording pins the listings whose wording carries a place, a mark
 // or a number inside a label. Each answered with another printing of the

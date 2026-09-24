@@ -20,7 +20,7 @@ import (
 // number contradicts, the marvel of Nebula Duality the datastore indexes
 // under its label as well, the Heavy Hitters token a listing flags as a
 // first edition, and the Alpha run of Nimble Strike.
-const labelFixture = `{
+const labelFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {
 		"DTD": {"name": "Dusk till Dawn", "releaseDate": "2023-07-14"},
@@ -100,7 +100,7 @@ const labelFixture = `{
 		{"externalLinks": {"fabId": "WTR187", "tcgPlayerId": 225270}, "fabId": "WTR187", "finish": "Unlimited Edition Rainbow Foil", "id": "wtr187_225270_unlimitededitionrainbowfoil", "image": "https://tcgplayer-cdn.tcgplayer.com/product/225270_400w.jpg", "name": "Nimble Strike (Blue)", "number": "WTR187", "rarity": "Common", "setCode": "WTR"},
 		{"externalLinks": {"fabId": "FAB412"}, "fabId": "FAB412", "finish": "Normal", "id": "fab412", "image": "https://legendstory-production-s3-public.s3.amazonaws.com/media/cards/large/FAB412-GF.webp", "name": "Dynastic Diadem", "number": "FAB412", "rarity": "Promo", "setCode": "FAB"}
 	]
-}`
+}}`
 
 // TestLabelledNumbers pins how a number the catalog wrote under a label, a
 // letter, a pitch or not at all still reaches the printing a storefront

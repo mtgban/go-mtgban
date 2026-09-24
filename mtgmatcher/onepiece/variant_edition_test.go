@@ -22,7 +22,7 @@ import (
 // last word sits behind it and no truncation of that name ever reaches the
 // base name with it - which is the word a storefront decorating the base
 // name reaches for first.
-const variantFixture = `{
+const variantFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP01":      {"name": "Romance Dawn", "releaseDate": "2022-12-02"},
@@ -64,7 +64,7 @@ const variantFixture = `{
 		{"id": "op03-002_base", "name": "Adio", "number": "OP03-002", "setCode": "OP03", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op03-002_pre", "name": "Adio", "number": "OP03-002", "setCode": "OP03 PRE", "rarity": "C", "finish": "Normal", "image": "x"}
 	]
-}`
+}}`
 
 func variantBackend(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()

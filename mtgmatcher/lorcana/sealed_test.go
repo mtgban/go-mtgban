@@ -12,7 +12,7 @@ import (
 // products: one in the card's own set, one in a promotional group whose
 // set entry the builder mints. It pins the loader's side of the
 // lorcana-datastore contract without needing a real datastore file.
-const sealedFixture = `{
+const sealedFixture = `{"data": {
 	"metadata": {"formatVersion": "2.0.0", "language": "en"},
 	"sets": {
 		"1": {"name": "The First Chapter", "releaseDate": "2023-08-18", "type": "expansion", "number": 1},
@@ -48,7 +48,7 @@ const sealedFixture = `{
 			"externalLinks": {"tcgPlayerId": 600002}
 		}
 	]
-}`
+}}`
 
 func loadSealedFixture(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()

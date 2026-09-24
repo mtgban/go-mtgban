@@ -17,7 +17,7 @@ import (
 // Unlimited Holofoil beside 1st Edition Holofoil - the print-run axis, no
 // reverse holo involved at all (mtgban/go-mtgban#641; matches Team
 // Rocket's real #4/#84572 checked live against Cardmarket).
-const pokemonEmitDatastore = `{
+const pokemonEmitDatastore = `{"data": {
  "game": "pokemon",
  "sets": {"SMP": {"abbreviation": "SMP", "name": "SM Promos", "releaseDate": "2016-11-18", "type": "promo"}, "SM01": {"abbreviation": "SM01", "name": "SM Base Set", "releaseDate": "2017-02-03"}, "SI": {"abbreviation": "SI", "name": "Southern Islands", "releaseDate": "2001-07-31"}, "TR": {"abbreviation": "TR", "name": "Team Rocket", "releaseDate": "2000-04-24"}},
  "cards": [
@@ -30,7 +30,7 @@ const pokemonEmitDatastore = `{
   {"externalLinks": {"tcgPlayerId": 84572}, "finish": "Unlimited Holofoil", "id": "04-82_84572_unlimitedholofoil", "name": "Charizard", "number": "4", "rarity": "Holo Rare", "setCode": "TR"},
   {"externalLinks": {"tcgPlayerId": 84572}, "finish": "1st Edition Holofoil", "id": "04-82_84572_1steditionholofoil", "name": "Charizard", "number": "4", "rarity": "Holo Rare", "setCode": "TR"}
  ]
-}`
+}}`
 
 // TestEmitPokemonColumns pins where a Pokemon product's two pairs of columns
 // land: the product's own on its printing, holo or plain, and the guide's

@@ -134,7 +134,7 @@ func TestSealedIsForeignPrinting(t *testing.T) {
 // rows these tests turn on, each copied verbatim from it. Hidden Arsenal is
 // held in one print run, Hidden Arsenal 2's booster pack in both and its
 // booster box in one - which is every case a run-silent name can be in.
-const ygohDatastore = `{
+const ygohDatastore = `{"data": {
  "game": "yugioh",
  "sets": {
   "HA01": {"name": "Hidden Arsenal", "releaseDate": "2009-11-10"},
@@ -149,7 +149,7 @@ const ygohDatastore = `{
   {"externalLinks": {"tcgPlayerId": 216871}, "id": "ha02-216871", "name": "Hidden Arsenal 2 - Booster Pack [Unlimited Edition]", "releaseDate": "2010-07-20", "setCode": "HA02"},
   {"externalLinks": {"tcgPlayerId": 57233}, "id": "ha02-57233", "name": "Hidden Arsenal 2 - Booster Box [1st Edition]", "releaseDate": "2010-07-20", "setCode": "HA02"}
  ]
-}`
+}}`
 
 // TestResolveSealedNameRunSilent pins what a run-silent Cardmarket name
 // answers with. Cardmarket never writes a print run into a Yu-Gi-Oh! name
@@ -196,7 +196,7 @@ func TestResolveSealedNameRunSilent(t *testing.T) {
 // the booster packs of two sets, verbatim: Crucible of War, which the
 // datastore holds in both print runs, and Everfest, which it holds in the
 // first alone.
-const fabSealedDatastore = `{
+const fabSealedDatastore = `{"data": {
  "game": "fleshandblood",
  "sets": {
   "CRU": {"name": "Crucible of War", "releaseDate": "2020-08-28"},
@@ -213,7 +213,7 @@ const fabSealedDatastore = `{
   {"externalLinks": {"tcgPlayerId": 224713}, "id": "wtr-224713", "name": "Welcome to Rathe Booster Pack [1st Edition]", "releaseDate": "2019-10-11", "setCode": "WTR"},
   {"externalLinks": {"tcgPlayerId": 224728}, "id": "wtr-224728", "name": "Welcome to Rathe Booster Pack [Unlimited Edition]", "releaseDate": "2019-10-11", "setCode": "WTR"}
  ]
-}`
+}}`
 
 // TestResolveSealedNameNamedRun pins the run a Cardmarket name spells out
 // reaching the run the datastore brackets. The suffix has to come off before
@@ -260,7 +260,7 @@ func TestResolveSealedNameNamedRun(t *testing.T) {
 // understood: "best" is a word some set says, so the resolver holds nothing
 // against a candidate for it - and still reaches none, because no candidate
 // says "premium" the way the vendor would have to.
-const opDatastore = `{
+const opDatastore = `{"data": {
  "game": "onepiece",
  "sets": {
   "PRB-01": {"name": "Premium Booster -The Best-", "releaseDate": "2024-11-08"},
@@ -275,7 +275,7 @@ const opDatastore = `{
   {"externalLinks": {"tcgPlayerId": 622980}, "id": "prb-01-622980", "name": "Premium Booster - Sleeved Booster Pack", "releaseDate": "2024-11-08", "setCode": "PRB-01"},
   {"externalLinks": {"tcgPlayerId": 628451}, "id": "prb-02-628451", "name": "Premium Booster Vol. 2 - Booster Pack", "releaseDate": "2025-10-03", "setCode": "PRB-02"}
  ]
-}`
+}}`
 
 // TestResolveSealedNameRenamed pins the marketplace's name reaching the
 // datastore's product.

@@ -9,7 +9,7 @@ import (
 
 // qualifiedFixture holds a number sold plain and under an event label, and
 // a number sold in two rarities, every row the datastore's.
-const qualifiedFixture = `{
+const qualifiedFixture = `{"data": {
 	"game": "gundam",
 	"sets": {
 		"GCG-PR": {"name": "Gundam Promotional Cards", "releaseDate": "2025-03-01", "type": "promo"},
@@ -21,7 +21,7 @@ const qualifiedFixture = `{
 		{"color": "Blue", "externalLinks": {"tcgPlayerId": 616528}, "finish": "Holofoil", "id": "st01-001_616528_holofoil", "image": "x", "name": "Gundam", "number": "ST01-001", "rarity": "Legend Rare", "setCode": "GD01-b", "type": "Unit"},
 		{"color": "Blue", "externalLinks": {"tcgPlayerId": 616531}, "finish": "Holofoil", "id": "st01-001_616531_holofoil", "image": "x", "name": "Gundam", "number": "ST01-001", "rarity": "LR+", "setCode": "GD01-b", "type": "Unit"}
 	]
-}`
+}}`
 
 // TestQualifiedNameReachesItsPrinting pins that a storefront writing the
 // catalog's qualifier into the name reaches the printing it qualifies: the
