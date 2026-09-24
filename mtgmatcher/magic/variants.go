@@ -2169,26 +2169,41 @@ var ed4Variants = map[string]map[string]string{
 
 var ed4AltVariants = map[string]map[string]string{
 	"Forest": {
+		"a":   "376alt",
+		"b":   "377alt",
+		"c":   "378alt",
 		"v.1": "376alt",
 		"v.2": "377alt",
 		"v.3": "378alt",
 	},
 	"Island": {
+		"a":   "367alt",
+		"b":   "368alt",
+		"c":   "369alt",
 		"v.1": "367alt",
 		"v.2": "368alt",
 		"v.3": "369alt",
 	},
 	"Mountain": {
+		"a":   "373alt",
+		"b":   "374alt",
+		"c":   "375alt",
 		"v.1": "373alt",
 		"v.2": "374alt",
 		"v.3": "375alt",
 	},
 	"Plains": {
+		"a":   "364alt",
+		"b":   "365alt",
+		"c":   "366alt",
 		"v.1": "364alt",
 		"v.2": "365alt",
 		"v.3": "366alt",
 	},
 	"Swamp": {
+		"a":   "370alt",
+		"b":   "371alt",
+		"c":   "372alt",
 		"v.1": "370alt",
 		"v.2": "371alt",
 		"v.3": "372alt",
