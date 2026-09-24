@@ -508,16 +508,17 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	case ((mtgmatcher.Contains(inCard.Edition, "Core") && mtgmatcher.Contains(inCard.Edition, "2019")) || b.IsGenericPromo(inCard)) && len(b.MatchInSet(inCard.Name, "G18")) == 1:
 		edition = b.Sets["G18"].Name
 
-	// Adjust edition for non-English sets
-	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && mtgmatcher.Contains(inCard.Variation, "Italian"):
+	// Adjust edition for non-English sets, by the language the listing is
+	// in, which Match has already read off its wording
+	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && inCard.Language == "Italian":
 		edition += " Italian"
-	case inCard.Edition == "Renaissance" && mtgmatcher.Contains(inCard.Variation, "Italian"):
+	case inCard.Edition == "Renaissance" && inCard.Language == "Italian" && len(b.MatchInSet(inCard.Name, "RIN")) != 0:
 		edition = "Rinascimento"
 		// This set has lots of variants, strip away any excess data
 		variation = strings.ToLower(inCard.Variation)
 		variation = strings.Replace(variation, "italian", "", 1)
 		variation = strings.TrimSpace(variation)
-	case strings.Contains(inCard.Edition, "Chronicles") && (inCard.Contains("Japanese") || inCard.Contains("FBB")):
+	case strings.Contains(inCard.Edition, "Chronicles") && (inCard.Language == "Japanese" || inCard.Contains("FBB")):
 		edition = "Chronicles Foreign Black Border"
 		// This set has lots of variants, strip away any excess data
 		variation = strings.ToLower(inCard.Variation)
