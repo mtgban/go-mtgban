@@ -18,6 +18,7 @@ func TestForeignShelf(t *testing.T) {
 		{"Metal Raiders (Japanese)", true},
 		{"Metal Raiders (Korean)", true},
 		{"Metal Raiders (PMT)", true},
+		{"Spell Ruler (SDM)", true},
 		{"Metal Raiders", false},
 		{"Metal Raiders (25th Anniversary Edition)", false},
 		{"Legend of Blue Eyes White Dragon (25th Anniversary Edition)", false},
