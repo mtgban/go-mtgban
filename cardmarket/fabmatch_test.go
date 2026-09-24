@@ -87,6 +87,26 @@ func TestMatchProductPrintRun(t *testing.T) {
 	}
 }
 
+// TestFabSameCardAccent pins that fabSameCard takes a name and the accent-
+// or apostrophe-folded spelling Normalize gives it for the same card.
+// EqualFold alone told Cardmarket's "Jarl Vetreiði" from the datastore's
+// "Jarl Vetreidi" apart, and "Bolt'n' Shot (Red)" from "Bolt'n Shot (Red)",
+// which disowned a bridge answer that already named the right printing.
+func TestFabSameCardAccent(t *testing.T) {
+	for _, tt := range []struct {
+		a, b string
+		want bool
+	}{
+		{"Jarl Vetreiði", "Jarl Vetreidi", true},
+		{"Bolt'n' Shot (Red)", "Bolt'n Shot (Red)", true},
+		{"Jarl Vetreiði", "Lexi Livewire", false},
+	} {
+		if got := fabSameCard(tt.a, tt.b); got != tt.want {
+			t.Errorf("fabSameCard(%q, %q) = %v, want %v", tt.a, tt.b, got, tt.want)
+		}
+	}
+}
+
 // fabSpellingDatastore is the published datastore cut down to two cards
 // whose sets spell the qualifier both ways, every row copied verbatim from
 // it: Valiant Thrust, pitch-qualified in Monarch and bare in the Boltyn
