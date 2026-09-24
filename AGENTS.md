@@ -486,6 +486,10 @@ that map: it is identified by SKU and has its own scrapers.
 
 - **No `Co-Authored-By` lines** in commit messages.
 - **Wrap commit subject and body at 80 columns.**
+- **Keep the subject short, case by case, and the body to a few lines**:
+  the why and the number that proves it. An investigation or table that
+  runs longer goes in a file under `docs/`, committed with the change, and
+  the body points at it. Comments stay two or three lines the same way.
 - Commit messages follow the existing `area: imperative summary` style, e.g.
   `mtgmatcher: dedup hashes via per-norm membership set`. Game sub-packages
   use their full path as the area, e.g. `mtgmatcher/riftbound: ...`.
