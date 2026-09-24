@@ -432,17 +432,17 @@
     {
         "description": "cardmarket V.2 demands the variant",
         "input": {
-            "name": "Mr.2.Bon.Kurei (Bentham) (OP01-084) (V.2)"
+            "name": "Mr.2.Bon.Kurei (Bentham) (OP14-091) (V.2)"
         },
-        "uuid": "op01-084_510707_foil"
+        "uuid": "op14-091_670640_foil"
     },
     {
         "description": "cardtrader letter tail demands a variant",
         "input": {
             "name": "Mr.2.Bon.Kurei (Bentham)",
-            "variant": "OP01-084a"
+            "variant": "OP14-091a"
         },
-        "uuid": "op01-084_510707_foil"
+        "uuid": "op14-091_670640_foil"
     },
     {
         "description": "clean name with the full collector number",
