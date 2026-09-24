@@ -354,6 +354,70 @@ func TestPreprocess(t *testing.T) {
 			variation: "OP04-032", foil: true,
 		},
 		{
+			// A DON!! listing carries no card code at all - the catalog
+			// files every one as "DON!! Card" and tells them apart by the
+			// wording between the name and the shelf's double space.
+			game: mtgban.GameOnePiece,
+			product: GNProduct{
+				DisplayName:    "DON!! Card (Ace)  Premium Booster -The Best- Foil",
+				SelectedFinish: "Foil",
+				ProductData:    GNProductData{SetName: "Premium Booster -The Best-"},
+			},
+			name: "DON!! Card", edition: "Premium Booster -The Best-", variation: "Ace", foil: true,
+		},
+		{
+			// A set's own DON!! carries no wording at all.
+			game: mtgban.GameOnePiece,
+			product: GNProduct{
+				DisplayName: "DON!! Card  Paramount War",
+				ProductData: GNProductData{SetName: "Paramount War"},
+			},
+			name: "DON!! Card", edition: "Paramount War", variation: "",
+		},
+		{
+			// Two DON!! qualifiers stack in their own parens.
+			game: mtgban.GameOnePiece,
+			product: GNProduct{
+				DisplayName:    "DON!! Card (2Y) (Double Pack Set Vol. 8)  Legacy of the Master Foil",
+				SelectedFinish: "Foil",
+				ProductData:    GNProductData{SetName: "Legacy of the Master"},
+			},
+			name: "DON!! Card", edition: "Legacy of the Master", variation: "2Y Double Pack Set Vol. 8", foil: true,
+		},
+		{
+			// Two DON!! listings carry a "//" as part of the card's own
+			// name, which the catalog files literally.
+			game: mtgban.GameOnePiece,
+			product: GNProduct{
+				DisplayName: "DON!! Card // Green Compass  Starter Deck 1: Straw Hat Crew",
+				ProductData: GNProductData{SetName: "Starter Deck 1: Straw Hat Crew"},
+			},
+			name: "DON!! Card // Green Compass", edition: "Starter Deck 1: Straw Hat Crew", variation: "",
+		},
+		{
+			// A code padded with a trailing space before the parenthesis.
+			game: mtgban.GameOnePiece,
+			product: GNProduct{
+				DisplayName: "Tony Tony.Chopper (Store Tournament 2025 Vol. 4) (P-101 ) One Piece Promotion Cards",
+				ProductData: GNProductData{SetName: "One Piece Promotion Cards"},
+			},
+			name: "Tony Tony.Chopper (Store Tournament 2025 Vol. 4)", edition: "One Piece Promotion Cards",
+			variation: "P-101",
+		},
+		{
+			// The Extra Booster dash packs write the code bare off the
+			// name's own dash, with the variant wording trailing it rather
+			// than leading it.
+			game: mtgban.GameOnePiece,
+			product: GNProduct{
+				DisplayName:    "Koala - OP05-006 (Dash Pack) Extra Booster: One Piece Heroines Edition Foil",
+				SelectedFinish: "Foil",
+				ProductData:    GNProductData{SetName: "Extra Booster: One Piece Heroines Edition"},
+			},
+			name: "Koala (Dash Pack)", edition: "Extra Booster: One Piece Heroines Edition",
+			variation: "OP05-006", foil: true,
+		},
+		{
 			game:    mtgban.GameLorcana,
 			product: GNProduct{DisplayName: "Illumineer's Trove - Sapphire and Steel"},
 			err:     true,
