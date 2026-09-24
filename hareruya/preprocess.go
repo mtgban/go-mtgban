@@ -230,15 +230,6 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 			number = m[1]
 		}
 	}
-	// The APAC lands share a name, a set tag and a finish across all three
-	// printings, and artist plus name is still ambiguous for Ron Spears'
-	// two Swamps (APAC2 and APAC3). Only the storefront's own APAC1/2/3
-	// index, which splitParens read as the number, tells every one apart.
-	if edition == "APACランド" {
-		if n, found := apacLandNumbers[number][cardName]; found {
-			number = n
-		}
-	}
 	// A MagicFest basic states no number of its own, only the year it was
 	// handed out, and that is the only thing separating one year's printing
 	// from the next.
@@ -678,15 +669,6 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		Edition:   edition,
 		Foil:      foil,
 	}, nil
-}
-
-// apacLandNumbers gives each Asia Pacific Land Program printing's own
-// number, keyed by the storefront's own APAC1/2/3 shelf index and the
-// card's color.
-var apacLandNumbers = map[string]map[string]string{
-	"APAC1": {"Forest": "1", "Island": "2", "Mountain": "3", "Plains": "4", "Swamp": "5"},
-	"APAC2": {"Forest": "6", "Island": "7", "Mountain": "8", "Plains": "9", "Swamp": "10"},
-	"APAC3": {"Forest": "11", "Island": "12", "Mountain": "13", "Plains": "14", "Swamp": "15"},
 }
 
 var cardTable = map[string]string{
