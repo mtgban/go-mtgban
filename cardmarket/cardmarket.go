@@ -350,8 +350,15 @@ func productFinish(gameID cm.Game, product *cm.Product) string {
 // shelves that set's non-English printings apart from the English ones. They
 // are separate catalogs of the same cards, and the datastore carries only the
 // English ones, so a price from one of these shelves would land on a printing
-// it is not.
-var foreignShelves = []string{"(Japanese)", "(Korean)", "(PMT)"}
+// it is not. The three-letter codes are the European language prints of the
+// oldest Yu-Gi-Oh sets: "Starter Deck: Kaiba (DDK)" numbers its cards F036
+// and C039.
+var foreignShelves = []string{
+	"(Japanese)", "(Korean)", "(PMT)",
+	"(LDB)", "(LDD)", "(LDC)", "(LDI)", "(SDF)", "(SDP)", "(MDM)", "(SDH)", "(SDM)",
+	"(BIJ)", "(DDJ)", "(DIJ)", "(MIJ)", "(BIK)", "(DDK)", "(DIK)", "(MIK)",
+	"(BIP)", "(DDP)", "(DIP)", "(MIP)", "(BIY)", "(DDY)", "(DIY)", "(MIY)",
+}
 
 // foreignShelf reports whether an expansion name wears one of those tails.
 func foreignShelf(name string) bool {
