@@ -858,6 +858,14 @@ func gameFoil(gameID int, product Product) bool {
 	return false
 }
 
+// lorcanaStarterFoils are the versions Card Trader gives a Lorcana starter
+// deck's exclusive foil: its own words on the set's shelf, and "Rainbow Foil"
+// on the promo shelves it files some of them on instead.
+var lorcanaStarterFoils = map[string]bool{
+	"Starter Deck Exclusive Foil": true,
+	"Rainbow Foil":                true,
+}
+
 // unlimitedShelf matches the Card Trader shelves that sell the unlimited run
 // of a set, which it names apart from the first one ("Monarch - Unlimited"
 // beside "Monarch - First").

@@ -337,6 +337,16 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			}
 		}
 
+		// A starter deck's exclusive foil is its card's Holofoil, and only
+		// the version says a blueprint is one.
+		if ct.gameID == GameLorcana && lorcanaStarterFoils[blueprint.Version] {
+			holo, err := ct.backend.MatchIDFinish(cardID, "Holofoil")
+			if err != nil {
+				continue
+			}
+			cardID = holo
+		}
+
 		// Magic only: the other games carry the finish on the input already.
 		if ct.gameID == GameMagic && product.Properties.MTGFoil {
 			cardID = foilPrintingID(ct.backend, cardID, theCard.Name)
