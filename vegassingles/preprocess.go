@@ -535,6 +535,10 @@ func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// the plain printing and priced as it.
 	all := bandaiCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if all == nil {
+		card := donCard(product)
+		if card != nil {
+			return card, nil
+		}
 		return nil, errors.New("no card code in display name")
 	}
 	loc := all[len(all)-1]
@@ -545,6 +549,32 @@ func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
 		Variation: product.DisplayName[loc[2]:loc[3]],
 		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
 	}, nil
+}
+
+// donParens strips the parentheses DON!! wording wraps each qualifier in,
+// leaving the words to be re-split on whitespace.
+var donParens = strings.NewReplacer("(", "", ")", "")
+
+// donCard reads the DON!! resource card, which carries no bandai code: the
+// wording before the shelf stands in for it instead.
+func donCard(product VSProduct) *mtgmatcher.InputCard {
+	if !strings.HasPrefix(product.DisplayName, "DON!! Card") {
+		return nil
+	}
+	head := product.DisplayName
+	before, _, found := strings.Cut(head, " - ")
+	if found {
+		head = before
+	}
+	head = strings.TrimPrefix(head, "DON!! Card")
+	head = donParens.Replace(head)
+
+	return &mtgmatcher.InputCard{
+		Name:      "DON!! Card",
+		Edition:   product.ProductData.SetName,
+		Variation: strings.TrimSpace(head),
+		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
+	}
 }
 
 // pokemonNumber is the collector number Pokemon display names carry inline,

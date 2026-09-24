@@ -239,6 +239,55 @@ func TestPreprocessOnePiece(t *testing.T) {
 	}
 }
 
+// TestPreprocessOnePieceDon pins the DON!! resource card, which carries no
+// bandai code at all: the catalog names every printing "DON!! Card" and
+// tells them apart by promo type, so the wording ahead of the shelf is what
+// stands in for the code.
+func TestPreprocessOnePieceDon(t *testing.T) {
+	for _, tt := range []struct {
+		display   string
+		edition   string
+		variation string
+		foil      bool
+	}{
+		{"DON!! Card (Ace) - Premium Booster -The Best- Foil", "Premium Booster -The Best-", "Ace", true},
+		{"DON!! Card (Yamato) - Premium Booster -The Best-", "Premium Booster -The Best-", "Yamato", false},
+		{"DON!! Card (Blackbeard) (Double Pack Set Vol. 6) - Emperors in the New World Foil",
+			"Emperors in the New World", "Blackbeard Double Pack Set Vol. 6", true},
+	} {
+		product := VSProduct{
+			DisplayName:    tt.display,
+			SelectedFinish: map[bool]string{true: "foil", false: "normal"}[tt.foil],
+			ProductData:    VSProductData{SetName: tt.edition},
+		}
+		card, err := preprocessOnePiece(product)
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if card.Name != "DON!! Card" || card.Edition != tt.edition ||
+			card.Variation != tt.variation || card.Foil != tt.foil {
+			t.Errorf("%s:\n got  %q %q %q foil=%v\n want %q %q %q foil=%v", tt.display,
+				card.Name, card.Edition, card.Variation, card.Foil,
+				"DON!! Card", tt.edition, tt.variation, tt.foil)
+		}
+	}
+
+	// OP17 holds several DON rows tagged only Alternate Art + Gold; this
+	// listing names none of them, so Match() is left to refuse it.
+	product := VSProduct{
+		DisplayName:    "DON!! Card (Alternate Art) (Gold) - The World's Strongest Warriors Foil",
+		SelectedFinish: "foil",
+		ProductData:    VSProductData{SetName: "The World's Strongest Warriors"},
+	}
+	card, err := preprocessOnePiece(product)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	if card.Variation != "Alternate Art Gold" {
+		t.Errorf("got variation %q, want %q", card.Variation, "Alternate Art Gold")
+	}
+}
+
 func TestPreprocessGundam(t *testing.T) {
 	for _, tt := range []struct {
 		display   string
