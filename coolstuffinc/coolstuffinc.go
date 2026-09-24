@@ -1303,6 +1303,15 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	if reprint {
 		card.Variation = ""
 	}
+	m = goldStar.FindStringSubmatch(name)
+	if m != nil {
+		card.Name = m[1] + " Star"
+	}
+	m = unownListing.FindStringSubmatch(name)
+	if m != nil {
+		card.Name = "Unown"
+		card.Variation = m[2] + "/" + m[3]
+	}
 	if m := specialEnergy.FindStringSubmatch(name); m != nil {
 		card.Name = m[1]
 		card.Variation = strings.TrimSpace("Special " + card.Variation)
@@ -1429,6 +1438,17 @@ var (
 	classicNumber  = regexp.MustCompile(`Classic Collection (\d+)`)
 	specialEnergy  = regexp.MustCompile(`^Special ((?:Metal|Darkness) Energy)$`)
 	eliteFour      = regexp.MustCompile(`^(.+) 4$`)
+
+	// goldStar matches a Gold Star the way this storefront names it, "Mew *
+	// (Star)" for the catalog's "Mew Star" - $1,800 of buylist refusals on
+	// Ex Dragon Frontiers' Mew alone.
+	goldStar = regexp.MustCompile(`^(.+) \* \(Star\)$`)
+
+	// unownListing matches an EX Unseen Forces Unown the way this
+	// storefront names it, the letter written into both the name and its
+	// own index ("Unown A - A/28"), where the catalog names every one of
+	// them "Unown" and numbers it by the letter alone.
+	unownListing = regexp.MustCompile(`^Unown ([A-Z!?]) - ([A-Z!?])/(\d+)$`)
 )
 
 // basicEnergyName matches this storefront's "<Type> Energy" and a treatment
