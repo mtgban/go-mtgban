@@ -88,9 +88,6 @@ type DatastoreCard struct {
 	// on. Slugging the joined string instead makes one token of a whole
 	// phrase, and "Super Pre-Release Participant" then reads back as neither
 	// of the two labels it names.
-	//
-	// An entry carrying none is read from the variant, which is where every
-	// label came from before the builders published them apart.
 	PromoTypes []string `json:"promoTypes,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, "Normal" or
@@ -203,9 +200,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		// A printing wears one label per promo type where the builder
-		// publishes them, and its whole variant read as one where it does
-		// not. Each label has to read back as itself, so a slug is paired
+		// A printing wears one label per promo type, and each has to read
+		// back as itself, so a slug is paired
 		// with the words it was made from rather than with the joined
 		// variant: "participant" would otherwise be shown as "Super
 		// Pre-Release Participant".
