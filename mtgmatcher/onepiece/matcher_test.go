@@ -46,13 +46,15 @@ var onepieceSeeds = []matchTest{
 		Desc: "cardmarket V.1 keeps the base printing",
 		In:   mtgmatcher.InputCard{Name: "Mr.2.Bon.Kurei (Bentham) (OP01-084) (V.1)"},
 	},
+	// A number printing one variant: OP01-084 also prints a pre-errata
+	// Mr.2 beside its promo, so "some variant" is two there.
 	{
 		Desc: "cardmarket V.2 demands the variant",
-		In:   mtgmatcher.InputCard{Name: "Mr.2.Bon.Kurei (Bentham) (OP01-084) (V.2)"},
+		In:   mtgmatcher.InputCard{Name: "Mr.2.Bon.Kurei (Bentham) (OP14-091) (V.2)"},
 	},
 	{
 		Desc: "cardtrader letter tail demands a variant",
-		In:   mtgmatcher.InputCard{Name: "Mr.2.Bon.Kurei (Bentham)", Variation: "OP01-084a"},
+		In:   mtgmatcher.InputCard{Name: "Mr.2.Bon.Kurei (Bentham)", Variation: "OP14-091a"},
 	},
 	{
 		Desc: "bare tail number narrows within the edition",
