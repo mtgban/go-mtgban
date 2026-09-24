@@ -1808,6 +1808,27 @@ func sameSet(cards []mtgmatcher.Card) bool {
 	return true
 }
 
+// phyrexianPrinting narrows a listing naming the Phyrexian language to the
+// printings in it, and leaves the candidates alone when there are none. The
+// stages after it would veto such a printing for its flavor name, which is
+// only the card's own in Phyrexian script, or for a showcase frame and a
+// dual finish the listing never had to spell out.
+func phyrexianPrinting(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if !isPhyrexian(inCard) {
+		return cards
+	}
+	var phyrexian []mtgmatcher.Card
+	for _, card := range cards {
+		if card.Language == LanguagePhyrexian {
+			phyrexian = append(phyrexian, card)
+		}
+	}
+	if len(phyrexian) == 0 {
+		return cards
+	}
+	return phyrexian
+}
+
 // unflavoredPrinting narrows a Secret Lair listing naming neither a
 // collector number nor a flavor name to the one printing sold under the
 // card's own name, and leaves the candidates alone when there is not one.
@@ -2007,9 +2028,13 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 	}
 
-	// Before the promo types and foilCheck, which veto the plain printing
-	// for a treatment or a finish the listing never mentioned, and the
-	// flavored one for a treatment its flavor name already claimed
+	// Before the promo types and foilCheck, which veto the Phyrexian and the
+	// plain printing for a treatment or a finish the listing never
+	// mentioned, and the flavored one for a treatment its flavor name
+	// already claimed
+	if len(outCards) > 1 {
+		outCards = phyrexianPrinting(inCard, outCards)
+	}
 	if len(outCards) > 1 {
 		outCards = flavoredPrinting(inCard, outCards)
 	}
