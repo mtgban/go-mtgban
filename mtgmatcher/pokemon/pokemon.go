@@ -90,11 +90,14 @@ type DatastoreCard struct {
 	Rarity  string `json:"rarity"`
 	Type    string `json:"type"`
 
-	// Total is the set size the card is printed with, the denominator of
-	// the "082/167" on the card face, which is what tells a reprint from its
-	// original: Cascoon is 44/130 in Diamond & Pearl and 44/127 in Platinum.
-	// A card whose face prints no total at all - which is most promos - has
-	// none, the absence being as much a fact as the number.
+	// Total is what the card face prints after the number's first slash:
+	// nearly always the set size, the 167 of "082/167", which is what tells
+	// a reprint from its original - Cascoon is 44/130 in Diamond & Pearl
+	// and 44/127 in Platinum. A few faces print something else there, such
+	// as a promo code ("S-P" of "226/S-P") or the rest of a LEGEND pair's
+	// number ("102&100/102" of "099/102&100/102"). A card whose face prints
+	// no total at all - which is most promos - has none, the absence being
+	// as much a fact as the number.
 	Total string `json:"total,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, one crossing of

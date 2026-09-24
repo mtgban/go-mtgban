@@ -45,8 +45,19 @@ var dashedNumberRe = regexp.MustCompile(`^\d{1,3}-\d{1,3}$`)
 
 // numberTailRe matches a collector number standing alone, which is the shape
 // the storefronts writing one into the name leave behind once the name is
-// split off it.
-var numberTailRe = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+)?$`)
+// split off it. A LEGEND pair's joined number is one number.
+var numberTailRe = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+)?(?:[&+]\d+/\d+)?$`)
+
+// pairedNumberRe matches the number the catalog gives a LEGEND pair printed
+// as one card, both halves' numbers joined: "99/102 & 100/102", "101/102 +
+// 102/102".
+var pairedNumberRe = regexp.MustCompile(`\b(\d+/\d+)\s*([&+])\s*(\d+/\d+)\b`)
+
+// joinPairedNumbers spells a pair's number as the one token the datastore
+// keeps it as, "99/102&100/102", so it is not read as the two halves.
+func joinPairedNumbers(s string) string {
+	return pairedNumberRe.ReplaceAllString(s, "$1$2$3")
+}
 
 // Prefilter splits off the decorations storefronts write into the name: the
 // parentheticals TCGplayer adds ("Pikachu (Cosmos Holo)", "Charizard
@@ -56,7 +67,7 @@ var numberTailRe = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+
 // parenthetical of their own, or the World Championship reprints named for
 // the number they reprint - from being taken apart.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	inCard.Variation = withoutNegatedStamp(inCard.Variation)
+	inCard.Variation = joinPairedNumbers(withoutNegatedStamp(inCard.Variation))
 
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
@@ -240,6 +251,7 @@ func splitDecorations(b *mtgmatcher.Backend, raw string) (string, []string) {
 			if dashedNumberRe.MatchString(segment) {
 				segment = strings.Replace(segment, "-", "/", 1)
 			}
+			segment = joinPairedNumbers(segment)
 			if !numberTailRe.MatchString(segment) {
 				continue
 			}
@@ -766,6 +778,19 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if named := placementsNamed(b, labelWording(inCard.Variation)); len(named) > 0 && !wearsAny(candidates, named) {
 			return nil
 		}
+	}
+
+	// A wording spelling a LEGEND pair's number prices the one card printed
+	// with both halves' numbers, and a survivor printing one of them alone is
+	// a half the edition or the name let through: refuse rather than price it.
+	if len(candidates) > 0 && pairedNumberRe.MatchString(inCard.Variation) {
+		var pairs []mtgmatcher.Card
+		for _, card := range candidates {
+			if pairedNumberRe.MatchString(printedFace(&card)) {
+				pairs = append(pairs, card)
+			}
+		}
+		candidates = pairs
 	}
 
 	// The five CSI shelves editionAliases narrows to one specific set also
