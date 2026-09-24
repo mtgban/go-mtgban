@@ -10,7 +10,8 @@ import (
 // TestOversizedListingHeldToTheJumbo pins what a listing saying oversized is
 // held to: the Jumbo Cards printing at its number, past the ordinary card of
 // the set its shelf names and past a pooled shelf, and nothing at all when
-// the catalog has no jumbo at that number or the listing carries none.
+// the catalog has no jumbo at that number, none wearing the placement the
+// listing names, or the listing carries no number.
 func TestOversizedListingHeldToTheJumbo(t *testing.T) {
 	b := loadBackend(t)
 
@@ -27,6 +28,8 @@ func TestOversizedListingHeldToTheJumbo(t *testing.T) {
 			Name: "Darkrai & Cresselia Legend", Edition: "Jumbo Cards", Variation: "099Z Single Oversized Promo"}, "099-102-100-102_211448_holofoil"},
 		{"no jumbo at the number", mtgmatcher.InputCard{
 			Name: "Raging Bolt ex", Edition: "SV Black Star Promos", Variation: "145 Jumbo Oversized | 145"}, ""},
+		{"a placement no jumbo wears", mtgmatcher.InputCard{
+			Name: "Metal Energy", Edition: "SM Black Star Promos", Variation: "043 Jumbo Oversized | 094 Winner"}, ""},
 		{"no number to tell two jumbos apart", mtgmatcher.InputCard{
 			Name: "Pikachu", Edition: "XY Promos", Variation: "XY-P Jumbo Oversized | XY-P"}, ""},
 	} {
