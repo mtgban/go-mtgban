@@ -84,6 +84,13 @@ var gameday2editionTable = map[string]string{
 	"Supplant Form":            "PFRF",
 }
 
+// cardNameTypos corrects a vendor misspelling of a card's own name, keyed
+// literally - never by edit distance, which would risk re-aliasing an
+// unrelated card of a similar name.
+var cardNameTypos = map[string]string{
+	"Silvergil Douser": "Silvergill Douser",
+}
+
 func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []string {
 	cardName = mtgmatcher.SplitVariants(cardName)[0]
 	cardName = strings.TrimSuffix(cardName, " Token")
@@ -284,8 +291,29 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 	number = strings.TrimLeft(number, "0")
 	number = strings.TrimSpace(number)
 
+	if fixed, found := cardNameTypos[cardName]; found {
+		cardName = fixed
+	}
+
 	switch cardName {
-	case "Magic Guru":
+	case "Magic Guru",
+		// The AFR dungeon token sheet's own two fused names: the loader
+		// carries each dungeon as its own token-layout row (TAFR/OAFR),
+		// but never fused as one "A // B" row under either of these
+		// names, confirmed by search rather than assumed absent.
+		"Dungeon of the Mad Mage // Lost Mine of Phandelver",
+		"Dungeon of the Mad Mage // Tomb of Annihilation":
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
+	switch {
+	case strings.HasPrefix(cardName, "Secret Lair Countdown Kit:"),
+		strings.HasPrefix(cardName, "Ravnica: Clue Edition Front Card:"),
+		strings.HasPrefix(cardName, "Virtual Ticket to "):
+		// Verified non-cards: the Countdown Kit's own face cards, the
+		// Clue Edition's front_card-layout rows (dropped by the Magic
+		// loader by design), and Cardmarket's own marketplace ticket
+		// product.
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
