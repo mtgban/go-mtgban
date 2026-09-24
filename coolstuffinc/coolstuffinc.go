@@ -101,7 +101,8 @@ type Coolstuffinc struct {
 // with. The storefront sells a card printed in both finishes as two products
 // telling them apart by that bracket alone - the note is empty and the foil
 // flag is off on both - and read as the holo, a $2.00 Team Aqua's Kyogre was
-// served as the $80.00 one's price.
+// served as the $80.00 one's price. The bracket's own case varies
+// ("(NON-HOLO)" on Black & White prints), so the match has to as well.
 //
 // The rarity is what says whether the plain printing was ever made. A holo
 // rare is sold holo and nothing else, so a bracket asking for its plain
@@ -109,7 +110,25 @@ type Coolstuffinc struct {
 // rare is the opposite: the catalog holding no nonfoil for it is the catalog
 // missing a printing rather than the storefront inventing one, and refusing
 // those would drop 25 real listings to catch nothing.
-var pokemonNonHolo = regexp.MustCompile(`\(Non-?\s?Holo\)`)
+var pokemonNonHolo = regexp.MustCompile(`(?i)\(Non-?\s?Holo\)`)
+
+// pokemonNonHoloDeckExclusive answers whether the catalog's Deck Exclusives
+// shelf carries the plain printing a "(Non-Holo)" bracket asks for, taken
+// only when the probe lands on PR-1840's own nonfoil at the listing's own
+// number.
+func pokemonNonHoloDeckExclusive(b *mtgmatcher.Backend, name, numbered string, foil bool) bool {
+	num := mtgmatcher.ExtractNumber(numbered)
+	if num == "" {
+		return false
+	}
+	id, err := b.Match(&mtgmatcher.InputCard{Name: name + " - " + numbered, Edition: "Deck Exclusives", Foil: foil})
+	if err != nil {
+		return false
+	}
+	co, err := b.GetUUID(id)
+	return err == nil && co.SetCode == "PR-1840" && co.Finish == mtgmatcher.FinishNonfoil &&
+		strings.TrimLeft(co.Number, "0") == num
+}
 
 // nameParenthetical matches a qualifier a buylist name carries in brackets,
 // like "(Parallel)" or "(Alternate Art)".
@@ -1252,6 +1271,16 @@ func numberedListing(name string) (string, string) {
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
 	name, numbered := numberedListing(name)
 	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
+	if (pokemonNonHolo.MatchString(name) || pokemonNonHolo.MatchString(numbered)) &&
+		!strings.Contains(strings.ToLower(edition), "promo") {
+		strippedName := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(name, ""))
+		strippedNumbered := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(numbered, ""))
+		if pokemonNonHoloDeckExclusive(b, strippedName, strippedNumbered, foil) {
+			card.Name = strippedName
+			card.Edition = "Deck Exclusives"
+			numbered = strippedNumbered
+		}
+	}
 	if edition == "Celebrations" && strings.Contains(variation, "Classic Collection") {
 		card.Edition = "Celebrations: Classic Collection"
 		if m := classicNumber.FindStringSubmatch(variation); m != nil {
