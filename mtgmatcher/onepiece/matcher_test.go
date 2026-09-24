@@ -291,13 +291,13 @@ var onepieceSeeds = []matchTest{
 			Edition:   "Pre-Errata Cards"},
 	},
 	{
-		Desc: "the letter tail does not say which art: the plain one carries it",
+		Desc: "the letter tail names the alternate art the version text leaves out",
 		In: mtgmatcher.InputCard{Name: "Dracule Mihawk",
 			Variation: `OP01-070ae Pre-Errata Card | Missing Text "Up to"`,
 			Edition:   "Pre-Errata Cards"},
 	},
 	{
-		Desc: "and the alternate art at that number carries none",
+		Desc: "a letter tail without the art letter is plain whatever the text says",
 		In: mtgmatcher.InputCard{Name: "Dracule Mihawk",
 			Variation: `OP01-070e Alternate Art | Pre-Errata Card | Missing Text "Up to"`,
 			Edition:   "Pre-Errata Cards"},
