@@ -1510,6 +1510,7 @@ var fabNames = map[string]string{
 // on the card and everywhere but this sku.
 var fabNumberRespellings = map[string]string{
 	"APS056": "APS006",
+	"1HK01":  "1HK012",
 }
 
 // fabWordings are the labels the datastore tells the printings of one
