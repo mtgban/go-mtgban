@@ -232,6 +232,10 @@ func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.Inp
 		edition = lutName
 	}
 
+	if id == "" {
+		id = imageProductID(b, card.Edition, card.Extra, cardName, edition, variation, isFoil)
+	}
+
 	return &mtgmatcher.InputCard{
 		ID:        id,
 		Name:      cardName,
@@ -239,6 +243,114 @@ func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.Inp
 		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
+}
+
+// mcmImageIDRe matches the Cardmarket product id an Extras or Promos shelf's
+// image name carries as its trailing number.
+var mcmImageIDRe = regexp.MustCompile(`[-_](\d{5,7})(?:-\d+)?\.jpg$`)
+
+// imageProductID resolves an Extras/Promos image's Cardmarket product id to
+// a uuid, accepted only under the wording's own language and set - this
+// store also reuses one image across unrelated products in another set.
+func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edition, variation string, isFoil bool) string {
+	switch rawEdition {
+	// These shelves' images are named after the English printing, not the
+	// Italian-only one actually on sale.
+	case "Rinascimento", "Revised EU FBB", "L'Oscurità", "Leggende":
+		return ""
+	}
+	if cardName == "" {
+		return ""
+	}
+	// A basic land's SearchContains span is hundreds of printings wide and
+	// its ordinal disambiguation is unverified; deferred rather than folded
+	// in here.
+	capitalized := strings.ToUpper(cardName[:1]) + cardName[1:]
+	if mtgmatcher.IsBasicLand(capitalized) {
+		return ""
+	}
+
+	m := mcmImageIDRe.FindStringSubmatch(imagePath)
+	if m == nil {
+		return ""
+	}
+
+	language := "English"
+	if rawEdition == warSparkJapaneseEdition {
+		language = "Japanese"
+	}
+
+	ids, err := b.SearchContains(cardName)
+	if err != nil {
+		return ""
+	}
+	var hit *mtgmatcher.CardObject
+	for _, candidate := range ids {
+		co, err := b.GetUUID(candidate)
+		if err != nil || co.Identifiers["mcmId"] != m[1] {
+			continue
+		}
+		// The store sells Phyrexian printings on the English shelf, so
+		// those hits are accepted too. This check, not the twin rule
+		// below, keeps a Japanese twin out: PlainNumber drops "jpn".
+		if co.Language != language && co.Language != magic.LanguagePhyrexian {
+			continue
+		}
+		if hit == nil {
+			hit = co
+			continue
+		}
+		if co.SetCode != hit.SetCode || co.PlainNumber != hit.PlainNumber {
+			// The id names more than a foil/star twin under this card
+			// name - not trustworthy enough to pick one over the wording.
+			return ""
+		}
+	}
+	if hit == nil {
+		return ""
+	}
+
+	// A snapshot ahead of Match, which is free to mutate the card it is
+	// handed: the promo-tag check below has to see what the wording itself
+	// claimed, not what Match rewrote it to while landing.
+	claimed := mtgmatcher.InputCard{Variation: variation, Edition: edition}
+
+	wording := &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: variation, Foil: isFoil}
+	wordingID, wordingErr := b.Match(wording)
+	sameSet := false
+	if wordingErr == nil {
+		co, err := b.GetUUID(wordingID)
+		if err == nil {
+			sameSet = co.SetCode == hit.SetCode
+		}
+	} else {
+		var alias *mtgmatcher.AliasingError
+		if errors.As(wordingErr, &alias) {
+			for _, probe := range alias.Probe() {
+				co, err := b.GetUUID(probe)
+				if err == nil && co.SetCode == hit.SetCode {
+					sameSet = true
+					break
+				}
+			}
+		}
+	}
+	if !sameSet {
+		return ""
+	}
+
+	// Match applies this same promo-tag check once ID is set and drops the
+	// listing outright on a mismatch, so failing here defers to the
+	// wording instead of turning an already-landed row into a silent loss.
+	if (magic.Rules{}).MissingPromoTag(b, &claimed, hit) {
+		return ""
+	}
+
+	resolved, err := b.MatchID(hit.UUID, isFoil)
+	if err != nil {
+		return ""
+	}
+	return resolved
 }
 
 func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, extra string) (string, string, string) {
@@ -255,7 +367,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 		if variation != "" {
 			variation = extra
 		}
-	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
+	case warSparkJapaneseEdition:
 		variation = "Japanese"
 		edition = "War of the Spark"
 		if variation == "Version 2" {
@@ -726,6 +838,10 @@ func unquote(cardName string) string {
 // firstPlaceSuffix is how the store names the box topper edition that sits
 // beside a set.
 const firstPlaceSuffix = ": First-Place"
+
+// warSparkJapaneseEdition is the one shelf whose listings are Japanese
+// rather than English.
+const warSparkJapaneseEdition = "War of the Spark: Japanese Alternate-Art Planeswalkers"
 
 // firstPlaceNumbers returns the collector numbers of the card's first-place
 // foil printings in the set the edition names, lowest first. It returns
