@@ -56,6 +56,8 @@ var numberTailRe = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+
 // parenthetical of their own, or the World Championship reprints named for
 // the number they reprint - from being taken apart.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	inCard.Variation = withoutNegatedStamp(inCard.Variation)
+
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
@@ -95,10 +97,38 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 	inCard.Name = name
 	for _, tag := range tags {
+		tag = withoutNegatedStamp(tag)
 		if tag != "" {
 			inCard.AddToVariant(tag)
 		}
 	}
+	// A name the catalog corrects is keyed on the bare spelling, which a
+	// dash-numbered listing only becomes once splitDecorations has taken the
+	// number off it: "Dark Exeggcutor - 33/105" fails the lookup above
+	// wearing its tail and only matches once the tail is gone.
+	carried, found := normalizedRespellings()[mtgmatcher.Normalize(inCard.Name)]
+	if found {
+		inCard.Name = carried
+	}
+}
+
+// negatedStampRe matches a listing's own denial that a card wears a stamp -
+// "Non-Stamped", "Unstamped", "Not Stamped", and a denial naming which one
+// it lacks, "No Detective Pikachu Stamp" - so that demandsStamp and the
+// label tiering never read the denial as the demand: without stripping it,
+// a Cool Stuff Inc "Psyduck (Non-Stamped)" prices the stamped SM199 under
+// the plain one's listing.
+var negatedStampRe = regexp.MustCompile(`(?i)\bnon-?stamped\b|\bunstamped\b|\bnot stamped\b|\bno(?:\s+\S+){0,4}\s+stamps?\b`)
+
+// withoutNegatedStamp drops a stamp denial from a wording, both where a
+// storefront writes it into the variation and where it is peeled off the
+// name as a decoration.
+func withoutNegatedStamp(wording string) string {
+	stripped := negatedStampRe.ReplaceAllString(wording, "")
+	if stripped == wording {
+		return wording
+	}
+	return strings.Join(strings.Fields(stripped), " ")
 }
 
 // levelTailRe matches the level a storefront glues onto a Diamond &
@@ -351,7 +381,77 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	}
 	inCard.Edition = edition
 
+	adjustEnergyYear(b, inCard)
+
 	widenQualifiedName(b, inCard)
+}
+
+// basicEnergyRe matches a bare basic energy name, the shape TCGplayer prices
+// every printing of one under regardless of the game era.
+var basicEnergyRe = regexp.MustCompile(`(?i)^(?:Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy) Energy$`)
+
+// adjustEnergyYear redirects a basic energy's edition to the set the catalog
+// actually filed that copyright year's unnumbered printing under, for a
+// shelf that packs the energy but sells no product of its own for it:
+// Hidden Fates and Champion's Path each hand out one, filed under "SM - Team
+// Up" and "SWSH01" instead. It runs only where the named edition holds no
+// card of the name at all, so a shelf that really sells the energy - the
+// League & Championship Cards run - is never touched.
+func adjustEnergyYear(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	if !basicEnergyRe.MatchString(inCard.Name) || len(extractNumbers(inCard.Variation)) > 0 {
+		return
+	}
+	if editionHasName(b, inCard.Edition, inCard.Name) {
+		return
+	}
+	set, found := energyYearSets[energyYear(b, inCard)]
+	if !found {
+		return
+	}
+	inCard.Edition = set
+	inCard.Variation = stripEnergyYearWording(inCard.Variation)
+}
+
+// editionHasName reports whether the set an edition names carries some
+// printing of the name.
+func editionHasName(b *mtgmatcher.Backend, edition, name string) bool {
+	code := editionSetCode(b, edition)
+	if code == "" {
+		return false
+	}
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		if co, found := b.UUIDs[uuid]; found && co.SetCode == code {
+			return true
+		}
+	}
+	return false
+}
+
+// energyYear reads the copyright year a basic energy's wording carries, or
+// the release year of the shelf its edition names where the wording carries
+// none.
+func energyYear(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
+	m := yearRe.FindStringSubmatch(inCard.Variation)
+	if m != nil {
+		return m[1]
+	}
+	set, found := b.Sets[editionSetCode(b, inCard.Edition)]
+	if found && len(set.ReleaseDate) >= 4 {
+		return set.ReleaseDate[:4]
+	}
+	return ""
+}
+
+// energyYearWordingRe matches what stripEnergyYearWording removes from a
+// basic energy's variation once adjustEnergyYear has redirected its edition:
+// the bare or copyright-marked year that named it, and the run wording that
+// is redundant with the foil flag once the printing is unambiguous.
+var energyYearWordingRe = regexp.MustCompile(`(?i)©?(?:19|20)[0-9]{2}|reverse holo(?:foil)?|reverse foil`)
+
+// stripEnergyYearWording removes the wording energyYearWordingRe matches.
+func stripEnergyYearWording(variation string) string {
+	stripped := strings.ReplaceAll(energyYearWordingRe.ReplaceAllString(variation, ""), "|", " ")
+	return strings.Join(strings.Fields(stripped), " ")
 }
 
 // worldsShelfRe matches the shelf every World Championship deck was filed
@@ -667,7 +767,66 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			return nil
 		}
 	}
+
+	// The five CSI shelves editionAliases narrows to one specific set also
+	// hold listings of that number from a different, unnamed set - a Deck
+	// Exclusives or Black and White Promos twin selling the treatment the
+	// resolved set does not. This runs for every listing that resolves to
+	// one of those five sets, whichever vendor named it or aliased onto it -
+	// Card Trader's own "BW Black Star Promos" among them - so a candidate
+	// sold in only one finish class is left alone regardless of what the
+	// wording asks for, per Card.Finishes' own contract: only a candidate
+	// actually sold in more than one class is narrowed, and refused when
+	// the narrowed set can't supply the class the wording names.
+	if len(candidates) > 0 && shelfFinishChecked[inCard.Edition] {
+		switch {
+		case describesPlain(inCard.Variation):
+			var plain []mtgmatcher.Card
+			for _, card := range candidates {
+				if slices.Contains(card.Finishes, mtgmatcher.FinishNonfoil) {
+					plain = append(plain, card)
+				}
+			}
+			if len(plain) == 0 {
+				return nil
+			}
+			candidates = plain
+		case describesHolo(inCard.Variation) && !mtgmatcher.SlugDescribes(inCard.Variation, "cosmosholo"):
+			var holo []mtgmatcher.Card
+			for _, card := range candidates {
+				if len(card.Finishes) < 2 || card.FoilUUIDs[finishHolofoil] != "" {
+					holo = append(holo, card)
+				}
+			}
+			if len(holo) == 0 {
+				return nil
+			}
+			candidates = holo
+		}
+	}
 	return candidates
+}
+
+// shelfFinishChecked names the sets editionAliases resolves a CSI era-only
+// shelf to, each also holding listings of that number from a different,
+// unnamed set. The plain/holo guard above runs for every listing that
+// resolves to one of these five sets, not only Cool Stuff Inc's own
+// shelves: Card Trader's "BW Black Star Promos" aliases onto the same
+// "Black and White Promos" set and reaches it too.
+var shelfFinishChecked = map[string]bool{
+	"SV: Scarlet & Violet 151":        true,
+	"SV01: Scarlet & Violet Base Set": true,
+	"SM Base Set":                     true,
+	"SWSH01: Sword & Shield Base Set": true,
+	"Black and White Promos":          true,
+}
+
+// describesHolo reports whether the wording names a true Holofoil copy by
+// itself, as opposed to the Reverse Holofoil a shared number can carry
+// instead, or the plain copy describesPlain already reads.
+func describesHolo(variation string) bool {
+	v := strings.ToLower(variation)
+	return strings.Contains(v, "holo") && !strings.Contains(v, "reverse") && !describesPlain(variation)
 }
 
 // placements are the labels that tell the copies of one promo apart by
@@ -892,7 +1051,78 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	if marked := tierByMark(wording, candidates); len(marked) > 0 {
 		candidates = marked
 	}
-	return tierByLabel(b, wording, candidates)
+	candidates = tierByLabel(b, wording, candidates)
+	// A wording naming a bare year - the league energies' only way of
+	// saying which year's row they price, since every year's copy of one
+	// shares its name, number and label - narrows by it last, among
+	// whatever the label and mark tiers above left standing.
+	candidates = tierByYear(inCard, wording, candidates)
+	// TCGplayer sells a handful of stamped promos twice, once at their own
+	// size and once as an oversized Jumbo Card, with nothing but the size
+	// to tell the two apart; a wording that never says so means the
+	// ordinary one.
+	return excludeJumbo(wording, candidates)
+}
+
+// jumboSetCode is the set the Jumbo Cards oversized reprints are filed
+// under.
+const jumboSetCode = "PR-1528"
+
+// excludeJumbo drops the Jumbo Cards printings among the candidates when a
+// non-jumbo alternative remains and the wording never says the copy is the
+// oversized one. A promo sold only as a Jumbo has no alternative to keep,
+// and is left alone.
+func excludeJumbo(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	if mtgmatcher.SlugDescribes(wording, "jumbo") || mtgmatcher.SlugDescribes(wording, "oversize") || mtgmatcher.SlugDescribes(wording, "oversized") {
+		return candidates
+	}
+	var kept []mtgmatcher.Card
+	var hasJumbo bool
+	for _, card := range candidates {
+		if card.SetCode == jumboSetCode {
+			hasJumbo = true
+			continue
+		}
+		kept = append(kept, card)
+	}
+	if !hasJumbo || len(kept) == 0 {
+		return candidates
+	}
+	return kept
+}
+
+// tierByYear narrows candidates sharing a number and label by the bare year
+// the wording carries, the league energies' only way of saying which year's
+// copy they price - the catalog gives every year's copy the same name,
+// number and label, and only their release date tells them apart. It reads
+// Card.OriginalReleaseDate rather than the set's own release date: PR-1539
+// "League & Championship Cards" is dated 2016 and would agree with none of
+// them.
+func tierByYear(inCard *mtgmatcher.InputCard, wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(candidates) <= 1 {
+		return candidates
+	}
+	sold := mtgmatcher.FinishNonfoil
+	if !describesPlain(wording) && (strings.Contains(wording, "holo") || inCard.Foil) {
+		sold = mtgmatcher.FinishFoil
+	}
+	var byYear []mtgmatcher.Card
+	for field := range strings.FieldsSeq(wording) {
+		if !bareYearRe.MatchString(field) {
+			continue
+		}
+		year := strings.TrimPrefix(field, "©")
+		for _, card := range candidates {
+			if slices.Contains(card.Finishes, sold) && strings.HasPrefix(card.OriginalReleaseDate, year) {
+				byYear = append(byYear, card)
+			}
+		}
+		break
+	}
+	if len(byYear) > 0 {
+		return byYear
+	}
+	return candidates
 }
 
 // wearingStamp keeps the candidates wearing a stamp label.
@@ -1533,6 +1763,13 @@ func extractNumbers(variation string) []string {
 		if bareYearRe.MatchString(field) {
 			continue
 		}
+		// Card Trader's own code for a league energy, three dashed groups
+		// of three ("FFE-9JT-SUX"), is not a number either: read as one, it
+		// hands filterByNumber the number "FFE" and every candidate the
+		// year alone would have reached is lost.
+		if dashedCodeRe.MatchString(field) {
+			continue
+		}
 		if m := letterNumberRe.FindStringSubmatch(field); m != nil {
 			numbers = append(numbers, m[1])
 			continue
@@ -1553,9 +1790,16 @@ func extractNumbers(variation string) []string {
 // beside a name is a label ("Unown (Z)") and reads as one.
 var letterNumberRe = regexp.MustCompile(`^([A-Z]{1,5}|[!?])/\d+$`)
 
-// bareYearRe matches a field that is nothing but a year, which no collector
-// number is a digit short of.
-var bareYearRe = regexp.MustCompile(`^(?:19|20)[0-9]{2}$`)
+// bareYearRe matches a field that is nothing but a year, optionally marked
+// with the copyright sign Card Trader's Champion's Path energies carry it
+// behind ("©2020"); no collector number is a digit short of one.
+var bareYearRe = regexp.MustCompile(`^©?(?:19|20)[0-9]{2}$`)
+
+// dashedCodeRe matches Card Trader's own tracking code for a league energy,
+// three dashed groups of three ("LX4-T8B-BH1", "SPN-3D2-6AM"): no card of
+// ours is numbered that way, but its first group alone is a number shape
+// fullNumberRe would otherwise read as the card's.
+var dashedCodeRe = regexp.MustCompile(`(?i)^[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}$`)
 
 // numberMatches compares a storefront's collector number against the
 // catalog's, which carries the set total the storefront usually drops
