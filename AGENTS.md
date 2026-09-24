@@ -520,3 +520,11 @@ that map: it is identified by SKU and has its own scrapers.
   replaying a vendor's feed through the production path rather than
   hand-built `Match()` calls, classifying each shape into scraper table /
   matcher rule / datastore gap, and the report format the work is graded by.
+- **Aligning the datastore loaders, or changing what a datastore
+  publishes**: read `docs/agents/loader-cleanup/README.md` before starting.
+  It covers:
+  - auditing what the datastores publish against what the loaders read;
+  - proving a refactor changes no backend, with the harness beside it;
+  - proving a matching change on the scrapers' own paths;
+  - the order a field change needs across datastore-gen, this repo and the
+    site.
