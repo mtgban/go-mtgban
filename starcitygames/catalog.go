@@ -1425,13 +1425,13 @@ func lorcanaMainSetTotal(b *mtgmatcher.Backend, edition string) string {
 // has two foils for the flag to choose between, and the flag always picks the
 // standard - so the second foil's sku and the standard's landed on one uuid,
 // and a $16.78 buylist competed with a $12.56 one on the same card. That
-// second foil is the datastore's RainbowPillars throughout, which the catalog
-// names Rainbow Foil, and naming it is what separates the two skus. A printing
-// not sold in it is unaffected: the name reaches no uuid and the flag decides
-// as before.
+// second foil is the Rainbow Pillars printing TCGplayer prices as Holofoil,
+// which the catalog names Rainbow Foil, and naming it is what separates the
+// two skus. A printing not sold in it is unaffected: the name reaches no uuid
+// and the flag decides as before.
 func lorcanaFinish(finish string) string {
 	if finish == "Rainbow Foil" {
-		return "RainbowPillars"
+		return "Holofoil"
 	}
 	return ""
 }

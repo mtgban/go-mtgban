@@ -31,10 +31,9 @@ func lorcanaSpelling(name string) string {
 	return name
 }
 
-// lorcanaVariation spells "Rainbow Foil" the way the catalog names the
-// finish, "Rainbow Pillars" - a Starter Deck Exclusive's rainbow foil
-// otherwise names no finish the matcher knows and lands on the set's
-// ordinary cold foil instead.
+// lorcanaVariation spells "Rainbow Foil" the way TCGplayer names the printing
+// it is, "Holofoil" - a Starter Deck Exclusive's rainbow foil otherwise names
+// no finish the matcher knows and lands on the set's ordinary cold foil.
 func lorcanaVariation(variation string) string {
-	return strings.ReplaceAll(variation, "Rainbow Foil", "Rainbow Pillars")
+	return strings.ReplaceAll(variation, "Rainbow Foil", "Holofoil")
 }

@@ -49,7 +49,7 @@ func TestLorcanaNumber(t *testing.T) {
 // datastore would recognize.
 func TestLorcanaFinish(t *testing.T) {
 	for _, tt := range []struct{ finish, want string }{
-		{"Rainbow Foil", "RainbowPillars"},
+		{"Rainbow Foil", "Holofoil"},
 		{"Foil", ""},
 		{"Non-foil", ""},
 		{"Inkwash Foil", ""},
