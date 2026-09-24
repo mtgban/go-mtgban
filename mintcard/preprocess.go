@@ -54,11 +54,13 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 	// The inserts a booster carries beside its cards, and the emblems the
 	// datastore files with the tokens, have no printing of their own here.
 	// A name the datastore carries whole is a card whatever it says:
-	// Signature Slam and Emblem of the Warmind are cards.
+	// Signature Slam and Emblem of the Warmind are cards, and so is any
+	// Signature Spellbook - a real set, not an insert - despite carrying
+	// the same word.
 	if !nameExists(b, cardName) && (strings.Contains(cardName, "Theme Card") ||
 		strings.Contains(cardName, "Helper Card") ||
 		strings.HasPrefix(cardName, "Emblem ") ||
-		strings.Contains(cardName, "Signature")) {
+		(strings.Contains(cardName, "Signature") && !strings.Contains(cardName, "Signature Spellbook"))) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 	if fixup, found := codeTable[setCode]; found {
@@ -100,8 +102,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		cardName = fixup
 	}
 	// A promo printed under a flavor name is listed by that name with the
-	// card's own in the first parenthetical: "Fatalism (Arcane Denial)"
-	if len(s) > 1 && !nameExists(b, cardName) && nameExists(b, s[1]) {
+	// card's own in the first parenthetical: "Fatalism (Arcane Denial)".
+	// A token's own parenthetical instead names the set it comes from
+	// ("Goblin Soldier Token (Apocalypse)"), and that set can itself be a
+	// card name - the swap is not this listing's card, so leave it alone.
+	if len(s) > 1 && !strings.HasSuffix(cardName, "Token") && !nameExists(b, cardName) && nameExists(b, s[1]) {
 		cardName = s[1]
 		variant = strings.TrimSpace(strings.Join(s[2:], " "))
 	}
@@ -152,6 +157,19 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 	number = strings.TrimLeft(number, "0")
 	if number != "" && len(b.MatchInSetNumber(cardName, setCode, number)) == 1 {
 		variant += " " + number
+	}
+
+	// The feed tags every English-shelf listing "English", including a
+	// few prints that are not - a Phyrexian one is already caught above
+	// by its own parenthetical, but an Arabic or Sanskrit prerelease
+	// names the language only in its variant text ("Odyssey Prerelease
+	// Arabic"), and JMP's Swamp 58 does not name it at all. Passing ""
+	// leaves the rest of Match's own candidate narrowing - by variant
+	// text, number, or (once only one survives) English-only - to do the
+	// same job an explicit "English" would, so a listing that already
+	// lands keeps landing on the same printing.
+	if langauge == "English" {
+		langauge = ""
 	}
 
 	return &mtgmatcher.InputCard{

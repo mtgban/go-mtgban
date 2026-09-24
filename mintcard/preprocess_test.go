@@ -98,3 +98,63 @@ func TestPreprocessShelves(t *testing.T) {
 		}
 	}
 }
+
+// TestPreprocessLanguage pins that the feed's blanket Language "English" is
+// dropped before it reaches mtgmatcher: an Arabic prerelease foil shelved
+// under that tag, with no language of its own beside "English" to pass,
+// would otherwise demand an English candidate and refuse.
+func TestPreprocessLanguage(t *testing.T) {
+	b := realDatastore(t)
+	theCard, err := preprocess(b, "Stone-Tongue Basilisk (Odyssey Prerelease)(Arabic)", "", "Foil Prerelease", "English", "Odyssey", "ODY")
+	if err != nil {
+		t.Fatalf("preprocess() = %v", err)
+	}
+	cardID, err := b.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%q) = %v", theCard, err)
+	}
+	co, _ := b.GetUUID(cardID)
+	if co.SetCode != "PODY" || co.Number != "276" || !co.Foil {
+		t.Errorf("Match(%q) = %s %s foil=%v, want PODY 276 foil", theCard, co.SetCode, co.Number, co.Foil)
+	}
+}
+
+// TestPreprocessSignatureSpellbook pins that a Signature Spellbook card, a
+// real set, escapes the insert guard the word "Signature" otherwise trips.
+func TestPreprocessSignatureSpellbook(t *testing.T) {
+	b := realDatastore(t)
+	theCard, err := preprocess(b, "Brainstorm (Signature Spellbook: Jace)", "", "Regular", "English", "Mystery Booster/The List", "MYS")
+	if err != nil {
+		t.Fatalf("preprocess() = %v", err)
+	}
+	cardID, err := b.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%q) = %v", theCard, err)
+	}
+	co, _ := b.GetUUID(cardID)
+	if co.SetCode != "PLST" || co.Number != "SS1-3" {
+		t.Errorf("Match(%q) = %s %s, want PLST SS1-3", theCard, co.SetCode, co.Number)
+	}
+}
+
+// TestPreprocessTokenFlavorSwap pins that a token's own parenthetical names
+// the set it comes from, not a flavor: "Goblin Soldier Token (Apocalypse)"
+// keeps its own name rather than swapping to Apocalypse, also a card.
+func TestPreprocessTokenFlavorSwap(t *testing.T) {
+	b := realDatastore(t)
+	theCard, err := preprocess(b, "Goblin Soldier Token (Apocalypse) (Player Rewards)", "", "Regular", "English", "Promo: Magic Player Rewards", "PMPR")
+	if err != nil {
+		t.Fatalf("preprocess() = %v", err)
+	}
+	if theCard.Name != "Goblin Soldier Token" {
+		t.Errorf("preprocess() name = %q, want %q", theCard.Name, "Goblin Soldier Token")
+	}
+	cardID, err := b.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%q) = %v", theCard, err)
+	}
+	co, _ := b.GetUUID(cardID)
+	if co.SetCode != "MPR" || co.Number != "6" {
+		t.Errorf("Match(%q) = %s %s, want MPR 6", theCard, co.SetCode, co.Number)
+	}
+}
