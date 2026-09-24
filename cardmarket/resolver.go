@@ -145,14 +145,21 @@ func (r *resolver) offShelf(product *cm.Product, cardID string) bool {
 }
 
 // ownedElsewhere reports whether the datastore records cardID's printing
-// under a Cardmarket product other than this one.
+// under a Cardmarket product other than this one, as the printing or the
+// foil that product's own id prices. A Lorcana card's id covers every
+// finish, and a finish another product sells apart is not the id's.
 func (r *resolver) ownedElsewhere(product *cm.Product, cardID string) bool {
 	co, err := r.backend.GetUUID(cardID)
 	if err != nil {
 		return false
 	}
 	mcmID := co.Identifiers["mcmId"]
-	return mcmID != "" && mcmID != fmt.Sprint(product.IDProduct)
+	if mcmID == "" || mcmID == fmt.Sprint(product.IDProduct) {
+		return false
+	}
+	owner := r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, mcmID)
+	ownerFoil, _ := r.backend.MatchID(owner, true)
+	return owner != "" && (cardID == owner || cardID == ownerFoil)
 }
 
 // notPreErrata reports whether a product on One Piece's shelf of pre-errata
@@ -586,6 +593,11 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// or not at all; see notPreErrata.
 		if r.notPreErrata(product, cardID) {
 			return "", "", false, errNoPrinting
+		}
+		// Lorcana's are misprints and pre-errata prints the datastore has
+		// no printing of apart from the card's own.
+		if r.gameID == cm.GameLorcana && r.ownedElsewhere(product, cardID) {
+			return "", "", false, nil
 		}
 	case cm.GameYuGiOh, cm.GameFleshAndBlood, cm.GamePokemon:
 		// Same-name products abound in these catalogs - and Yu-Gi-Oh and
