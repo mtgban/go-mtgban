@@ -511,6 +511,9 @@ func gameName(b *mtgmatcher.Backend, gameID int, bp *Blueprint) string {
 		}
 	}
 	if gameID == GameYuGiOh {
+		if spelled, found := ygoBlueprintNames[bp.ID]; found {
+			return spelled
+		}
 		if spelled, found := ygoNames[bp.Name]; found {
 			return spelled
 		}
@@ -537,6 +540,24 @@ var ygoNames = map[string]string{
 	"Neymar Jr":                   "Token: NEYMAR JR",
 }
 
+// ygoBlueprintNames are the Yu-Gi-Oh names a blueprint's own Name field
+// cannot spell, keyed by the blueprint since the printed name differs from
+// the one Card Trader gives it: the McDonald's promo prints "Frog The Jam"
+// where the blueprint says "Slime Toad", Konami's own rename of the same
+// Normal Monster (both share konamiId 68638985), and the two Speed Duel:
+// Scars of Battle skill cards print "(Skill Card)" after their name.
+var ygoBlueprintNames = map[int]string{
+	81560: "Frog The Jam",
+	80276: "Double Evolution Pill (Skill Card)",
+	80277: "Heavy Metal Raiders (Skill Card)",
+}
+
+// ygoInserts are products Card Trader sells as Yu-Gi-Oh singles that are not
+// cards.
+var ygoInserts = map[string]bool{
+	"Rainbow Front Filler Card": true,
+}
+
 // ygoBlueprintNumbers are the collector numbers Card Trader writes as an
 // index of its own where the card wears another set's code, keyed by the
 // blueprint since the index names another card of the shelf: the Raging
@@ -560,6 +581,31 @@ var ygoBlueprintNumbers = map[int]string{
 	// card once.
 	79602: "DP09-EN022",
 	82918: "DP05-EN002",
+	// Three Sneak Preview Series 3 promos filed under Card Trader's own
+	// running index (001) on the booster each previewed - Gladiator's
+	// Assault, Strike of Neos and Tactical Evolution - instead of their
+	// own SP1 number.
+	77618: "GLAS-ENSP1",
+	82012: "STON-ENSP1",
+	83641: "TAEV-ENSP1",
+	// Video game promos filed under the shelf's own running count: Knight's
+	// Title's two rarities both wear ROD-EN002, Blue-Eyes White Dragon's
+	// Power of Chaos and Dark Duel Stories promos, and Duel Monsters GX Tag
+	// Force's Red-Eyes Wyvern.
+	75158: "ROD-EN002",
+	75161: "ROD-EN002",
+	73798: "PCK-001",
+	81032: "DDS-001",
+	78246: "GX06-EN002",
+	// The R manga's own promo, Gorz.
+	70002: "YR01-EN003",
+	// Sengenjin's World Championship Series promo.
+	78176: "WCS-EN403",
+	// The McDonald's promo (a Normal Monster, not a skill card) and the two
+	// Speed Duel: Scars of Battle skill cards.
+	81560: "MP1-004",
+	80276: "SBSC-ENS05",
+	80277: "SBSC-ENS01",
 }
 
 // ygoShelfNumberRe matches the numbers Card Trader writes on the shelves
@@ -946,6 +992,16 @@ var ygoBlueprintEditions = map[int]string{
 	70128: "Duelist Pack Collection Tin",
 	70125: "Duelist Pack Collection Tin",
 	81236: "Sneak Preview Series 3",
+	77618: "Sneak Preview Series 3",
+	82012: "Sneak Preview Series 3",
+	83641: "Sneak Preview Series 3",
+	75158: "Yu-Gi-Oh! Video Game Promotional Cards",
+	75161: "Yu-Gi-Oh! Video Game Promotional Cards",
+	73798: "Yu-Gi-Oh! Video Game Promotional Cards",
+	81032: "Yu-Gi-Oh! Video Game Promotional Cards",
+	78246: "Yu-Gi-Oh! GX Tag Force Promotional Cards",
+	70002: "Yu-Gi-Oh! R Manga Promo (YR01)",
+	78176: "World Championship Series",
 }
 
 // opBlueprintEditions are the One Piece blueprints Card Trader shelves under
@@ -1037,6 +1093,8 @@ func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
 		return pkmInserts[bp.Name]
 	case GameLorcana:
 		return lorcanaInserts[bp.Name]
+	case GameYuGiOh:
+		return ygoInserts[bp.Name]
 	default:
 		return false
 	}
