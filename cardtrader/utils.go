@@ -1212,6 +1212,11 @@ var lorcanaInserts = map[string]bool{
 	"Discard Filler Card": true,
 }
 
+// lorcanaErrataShelf is where Card Trader sells Lorcana's misprints and
+// pre-errata runs. TCGplayer sells none apart from the card, so the datastore
+// has no printing of them, and their names reach a row another blueprint owns.
+const lorcanaErrataShelf = "Errata Cards"
+
 // pkmLeagueShelf is the shelf whose number field carries the card's year
 // or its online code rather than a collector number: the league energies
 // are unnumbered, and "2006" or "KUF-7XB-05C" names nothing the catalog
@@ -1229,7 +1234,8 @@ func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
 	case GamePokemon:
 		return pkmInserts[bp.Name] || pkmJapaneseShelves[bp.Expansion.Name]
 	case GameLorcana:
-		return lorcanaInserts[bp.Name]
+		// The shelf's one printing the datastore carries has a TCGplayer id.
+		return lorcanaInserts[bp.Name] || (bp.Expansion.Name == lorcanaErrataShelf && tcgplayerID(bp) == 0)
 	case GameYuGiOh:
 		return ygoInserts[bp.Name]
 	default:
