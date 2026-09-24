@@ -142,7 +142,9 @@ func (vs *Vegassingles) listed(title string) bool {
 
 func (vs *Vegassingles) processProduct(product VSProduct) error {
 	theCard, err := preprocess(vs.backend, product, vs.game)
-	if err != nil {
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return nil
+	} else if err != nil {
 		// Name the product, the way the failure below already does. A
 		// reason alone says a listing was dropped without saying which,
 		// and a bucket nobody can read is a bucket nobody empties
