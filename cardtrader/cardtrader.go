@@ -153,10 +153,10 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		return
 	}
 
-	var theCard *mtgmatcher.InputCard
+	var blueprintCard *mtgmatcher.InputCard
 	if ct.gameID == GameMagic {
 		var err error
-		theCard, err = Preprocess(ct.backend, blueprint)
+		blueprintCard, err = Preprocess(ct.backend, blueprint)
 		if err != nil {
 			return
 		}
@@ -191,10 +191,15 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 
 		// Build the per-game input card; the match and error handling below are
-		// shared. Magic reuses the blueprint-derived theCard (applying the
+		// shared. Magic copies the blueprint-derived card (applying the
 		// product language), Lorcana builds one from the product's number.
+		var theCard *mtgmatcher.InputCard
 		switch ct.gameID {
 		case GameMagic:
+			// Match rewrites the card it is given, so each listing is
+			// matched on its own copy of the blueprint's
+			card := *blueprintCard
+			theCard = &card
 			lang := product.Properties.MTGLanguage
 			if lang != "" {
 				lang, found = langMap[strings.ToLower(lang)]
