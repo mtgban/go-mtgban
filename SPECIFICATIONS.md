@@ -339,7 +339,10 @@ retains only the language maps (`LanguageCode2LanguageTag` and its inverse).
   SLX/TBTH/TMC tweaks) fix upstream MTGJSON gaps.
 - `tcgplayerAlternativeFoilProductId` cards are split into a second foil card
   with a `_f` UUID and `★` number suffix; some sets are duplicated
-  (LEGITA/DRKITA/4EDALT and SLD/PURL JPN language dupes).
+  (LEGITA/DRKITA/4EDALT and SLD/PURL JPN language dupes). Every copy's UUID
+  carries its tag (`_ita`, `_alt`, `_jpn`); only a copy filed in its
+  original's set carries it on the number too, and a copy in the original's
+  language loses a tie to it (`FinalizeCandidates`).
 - Same-name double-faced cards collapse to one name, flagged via
   `Identifiers["isDFCSameName"]`. Scryfall image URLs and `ReleaseDateTime`
   are precomputed. `SourceProducts[finish]` is filtered through

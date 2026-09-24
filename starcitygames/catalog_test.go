@@ -21,8 +21,8 @@ func TestResolveProductForeignSets(t *testing.T) {
 	}{
 		{"Mishra's Factory", "SGL-MTG-4BB-361-JAN", "Japanese", "361", "4BB", "361"},
 		{"Vesuvan Doppelganger", "SGL-MTG-3BB-88-ITN", "Italian", "88", "FBB", "88"},
-		{"Caverns of Despair", "SGL-MTG-LEG-136-ITN", "Italian", "136", "LEGITA", "136ita"},
-		{"Season of the Witch", "SGL-MTG-DRK-52-ITN", "Italian", "52", "DRKITA", "52ita"},
+		{"Caverns of Despair", "SGL-MTG-LEG-136-ITN", "Italian", "136", "LEGITA", "136"},
+		{"Season of the Witch", "SGL-MTG-DRK-52-ITN", "Italian", "52", "DRKITA", "52"},
 	}
 	for _, tt := range a1 {
 		t.Run(tt.name, func(t *testing.T) {

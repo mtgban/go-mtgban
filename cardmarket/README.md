@@ -70,7 +70,9 @@ its values ever matched the card FilterCards was checking them against.
 Pinned with a test that would have caught it directly:
 `TestEd4VariantsNumbersAreReal` checks every `ed4Variants` value against the
 loaded set's own numbers, not just that the card name exists there the way
-the existing `TestVariants` did.
+the existing `TestVariants` did. The loader has since stopped appending
+"alt" to a copy filed under a set of its own, so the Alternate Fourth
+Edition now shares `ed4Variants` with the other two editions.
 
 **A single, confident, wrong candidate isn't ambiguity - it's just wrong,**
 and the number-disagreement guard above only ever fires on more than one

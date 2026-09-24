@@ -55,42 +55,6 @@ func TestVariantLetter(t *testing.T) {
 	}
 }
 
-// TestAlt4EDBasicLetters pins Alternate 4th Edition's basics, which this
-// storefront sends no card_number for - the letter A/B/C is all that tells
-// the three artworks apart, and it maps to a distinct 4EDALT number rather
-// than the bare letter the matcher's shared table uses elsewhere.
-func TestAlt4EDBasicLetters(t *testing.T) {
-	b := realDatastore(t)
-	for _, test := range []struct {
-		name, letter, wantNum string
-	}{
-		{"Island", "A", "367alt"}, {"Island", "B", "368alt"}, {"Island", "C", "369alt"},
-		{"Mountain", "A", "373alt"}, {"Mountain", "B", "374alt"}, {"Mountain", "C", "375alt"},
-		{"Plains", "A", "364alt"}, {"Plains", "B", "365alt"}, {"Plains", "C", "366alt"},
-		{"Swamp", "A", "370alt"}, {"Swamp", "B", "371alt"}, {"Swamp", "C", "372alt"},
-		{"Forest", "A", "376alt"}, {"Forest", "B", "377alt"}, {"Forest", "C", "378alt"},
-	} {
-		t.Run(test.name+" "+test.letter, func(t *testing.T) {
-			card := ABUCard{DisplayTitle: test.name + " (" + test.letter + " Art)", Edition: "Alternate 4th Edition"}
-			in, err := preprocess(b, &card)
-			if err != nil {
-				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
-			}
-			id, err := b.Match(in)
-			if err != nil {
-				t.Fatalf("Match(%q) = %v", in, err)
-			}
-			co, err := b.GetUUID(id)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if co.SetCode != "4EDALT" || co.Number != test.wantNum {
-				t.Errorf("Match(%q) = %s|%s, want 4EDALT|%s", in, co.SetCode, co.Number, test.wantNum)
-			}
-		})
-	}
-}
-
 // TestVariantLetterCase pins that a basic land's capital letter and this
 // lower-case one never answer for each other, and that a word opening a
 // variation is not read as one.

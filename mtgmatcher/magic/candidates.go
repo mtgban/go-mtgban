@@ -93,10 +93,36 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 }
 
 // FinalizeCandidates preserves the historical choice of the first World
-// Championship printing, before the pipeline checks its language.
+// Championship printing, and prefers a printing over a copy of it minted in
+// the same language, before the pipeline checks its language.
 func (Rules) FinalizeCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	if len(cards) > 1 && inCard.IsWorldChamp() {
 		return cards[:1]
 	}
+	if len(cards) > 1 {
+		cards = originalOverCopy(cards)
+	}
 	return cards
+}
+
+// originalOverCopy drops a copy minted from another candidate in the same
+// language, which only a listing naming the copy's set tells apart from the
+// original; the other language copies are left to the language check.
+func originalOverCopy(cards []mtgmatcher.Card) []mtgmatcher.Card {
+	languages := map[string]string{}
+	for _, card := range cards {
+		languages[card.UUID] = card.Language
+	}
+	var out []mtgmatcher.Card
+	for _, card := range cards {
+		base, tag, found := strings.Cut(card.UUID, "_")
+		if found && langs[strings.ToUpper(tag)] != "" {
+			language, isCopy := languages[base]
+			if isCopy && language == card.Language {
+				continue
+			}
+		}
+		out = append(out, card)
+	}
+	return out
 }
