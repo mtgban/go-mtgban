@@ -12,16 +12,6 @@ import "testing"
 func TestSetSymbol(t *testing.T) {
 	b := loadBackend(t)
 
-	var carried int
-	for _, set := range b.Sets {
-		if set.Symbol != "" {
-			carried++
-		}
-	}
-	if carried == 0 {
-		t.Skip("this datastore predates the published set symbol")
-	}
-
 	for _, tt := range []struct {
 		code string
 		want string

@@ -149,16 +149,6 @@ func TestPrintedFace(t *testing.T) {
 func TestBaseSetSize(t *testing.T) {
 	b := loadBackend(t)
 
-	var sized int
-	for _, set := range b.Sets {
-		if set.BaseSetSize > 0 {
-			sized++
-		}
-	}
-	if sized == 0 {
-		t.Skip("this datastore predates the published set size")
-	}
-
 	for _, tt := range []struct {
 		code string
 		want int
