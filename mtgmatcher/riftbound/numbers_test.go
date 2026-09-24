@@ -13,35 +13,32 @@ const numberFixture = `{"data": {
 	"pageProps": {"page": {"blades": [{
 		"type": "riftboundCardGallery",
 		"sets": {"items": [
-			{"id": "OGN", "name": "Origins", "collectorNumberMax": 298, "releaseDate": "2025-10-31"},
-			{"id": "SFD", "name": "Spiritforged", "collectorNumberMax": 221, "releaseDate": "2026-03-27"},
+			{"id": "OGN", "name": "Origins", "baseSetSize": 298, "releaseDate": "2025-10-31"},
+			{"id": "SFD", "name": "Spiritforged", "baseSetSize": 221, "releaseDate": "2026-03-27"},
 			{"id": "OPP", "name": "Riftbound Organized Play Promotional Cards", "type": "promo", "releaseDate": "2025-10-31"}
 		]},
 		"cards": {"items": [
 			{
 				"id": "ogn-66a",
-				"collectorNumber": 66,
 				"name": "Fixture Blade",
-				"publicCode": "OGN-066a/298",
-				"set": {"value": {"id": "OGN", "label": "Origins"}},
+				"number": "066a",
+				"setCode": "OGN",
 				"rarity": {"value": {"id": "rare"}},
 				"printings": [{"finish": "Foil", "id": "ogn-66a_foil"}]
 			},
 			{
 				"id": "sfd-227",
-				"collectorNumber": 227,
 				"name": "Fixture Cannon",
-				"publicCode": "SFD-227*/221",
-				"set": {"value": {"id": "SFD", "label": "Spiritforged"}},
+				"number": "227*",
+				"setCode": "SFD",
 				"rarity": {"value": {"id": "epic"}},
 				"printings": [{"finish": "Foil", "id": "sfd-227_foil"}]
 			},
 			{
 				"id": "opp-r2b",
-				"collectorNumber": 0,
 				"name": "Fixture Rune",
-				"publicCode": "OPP-R2b/221",
-				"set": {"value": {"id": "OPP", "label": "Riftbound Organized Play Promotional Cards"}},
+				"number": "R2b",
+				"setCode": "OPP",
 				"rarity": {"value": {"id": "common"}},
 				"printings": [{"finish": "Foil", "id": "opp-r2b_foil"}]
 			}
