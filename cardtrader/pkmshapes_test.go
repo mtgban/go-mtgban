@@ -105,4 +105,14 @@ func TestLorcanaInserts(t *testing.T) {
 	if unsupportedBlueprint(GamePokemon, &filler) || unsupportedBlueprint(GameOnePiece, &filler) {
 		t.Error("Discard Filler Card should only be unsupported for Lorcana")
 	}
+	misprint := Blueprint{ID: 345630, Name: "Ariel - Spectacular Singer", Version: `MISPRINT | Artist name "Michael Cookie Niewiadomy"`}
+	misprint.Expansion.Name = "Errata Cards"
+	if !unsupportedBlueprint(GameLorcana, &misprint) {
+		t.Error("a misprint on the errata shelf should be unsupported")
+	}
+	errata := Blueprint{ID: 311912, Name: "Bucky - Squirrel Squeak Tutor"}
+	errata.Expansion.Name = "Errata Cards"
+	if unsupportedBlueprint(GameLorcana, &errata) {
+		t.Error("the Bucky errata reprint has a TCGplayer id and should be supported")
+	}
 }
