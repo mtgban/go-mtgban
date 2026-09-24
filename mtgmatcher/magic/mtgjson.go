@@ -870,6 +870,17 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				continue
 			}
 
+			// Only a card printed in the set's language takes it, and its image
+			language, found := forcedLanguages[set.Code]
+			if found {
+				for _, foreignData := range card.ForeignData {
+					if foreignData.Language == language {
+						card.Language = language
+						card.Identifiers["originalScryfallId"] = foreignData.Identifiers["scryfallId"]
+					}
+				}
+			}
+
 			card.Images = map[string]string{}
 			card.Images["full"] = generateImageURL(card, "normal")
 			card.Images["thumbnail"] = generateImageURL(card, "small")
@@ -877,11 +888,6 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 			// Custom modifications or skips
 			switch set.Code {
-			// Override non-English Language
-			case "FBB":
-				card.Language = "Italian"
-			case "4BB":
-				card.Language = "Japanese"
 			// Missing variant tags
 			case "PALP":
 				card.FlavorText = missingPALPtags[card.Number]

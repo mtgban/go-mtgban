@@ -36,6 +36,12 @@ var missingPALPtags = map[string]string{
 	"15": "Indonesia",
 }
 
+// The language a foreign-only set is sold in, of the several it was printed in
+var forcedLanguages = map[string]string{
+	"FBB": "Italian",
+	"4BB": "Japanese",
+}
+
 // List of numbers in SLD that need to be decoupled
 var sldJPNLangDupes = []string{
 	// Special Guests Yoji Shinkawa
