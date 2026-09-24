@@ -59,6 +59,10 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Mr.2.Bon.Kurei (Bentham)", Variation: "084", Edition: "Romance Dawn"},
 	},
 	{
+		Desc: "a number with a slash in it is asked for whole",
+		In:   mtgmatcher.InputCard{Name: "Monkey.D.Luffy", Variation: "1/1000 Certificate of our crew Oversized", Edition: "One Piece Promotion Cards"},
+	},
+	{
 		Desc: "tcgplayer product id resolves through the identifier index",
 		In:   mtgmatcher.InputCard{ID: "454615"},
 	},
