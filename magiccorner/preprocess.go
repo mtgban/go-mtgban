@@ -435,9 +435,16 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 		if base, colon, promo := promoSetBase(b, edition); promo {
 			switch variation {
 			case "V.1":
-				variation = "Promo Pack"
-			case "V.2":
 				variation = "Prerelease"
+			case "V.2":
+				// A card without its own promo-pack printing on this shelf
+				// was never bundled that way; V.2 there names the bundle
+				// promo instead, same as V.3 always does.
+				variation = "Promo Pack"
+				if !hasPromoPack(b, cardName) {
+					variation = "Bundle"
+					edition = base
+				}
 			case "V.3":
 				variation = "Bundle"
 				edition = base
