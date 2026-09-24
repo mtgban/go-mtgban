@@ -274,6 +274,7 @@ const (
 	PromoTypeHeadliner         = "headliner"
 	PromoTypeIntroPack         = "intropack"
 	PromoTypeInvisibleInk      = "invisibleink"
+	PromoTypeJapanShowcase     = "japanshowcase"
 	PromoTypeJudgeGift         = "judgegift"
 	PromoTypeManaFoil          = "manafoil"
 	PromoTypeNeonInk           = "neonink"
