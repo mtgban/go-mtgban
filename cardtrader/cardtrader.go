@@ -130,6 +130,8 @@ var tcgIDOverrides = map[int]int{
 	374929: 711010, // 3rd Anniversary Set | English Version
 	406330: 680489, // 3rd Anniversary Set Japan
 	290971: 544805, // Pop Art (3D Text)
+	// Pokemon: none sent either.
+	340672: 211449, // Palkia & Dialga LEGEND, Jumbo Oversized
 }
 
 // tcgplayerID answers the TCGplayer id a blueprint's own listings should
