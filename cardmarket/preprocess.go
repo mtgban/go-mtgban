@@ -1505,11 +1505,29 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 
 	// Try separating SLD and PLST cards if possible
 	if strings.Contains(ogEdition, "Secret Lair Commander Deck") {
+		matched := false
 		for _, card := range b.MatchInSet(cardName, "PLST") {
 			if strings.HasSuffix(card.Number, "-"+number) {
 				edition = "PLST"
 				variant = card.Number
+				matched = true
 				break
+			}
+		}
+
+		// The id map carries no collector number for several of these
+		// decks, so the loop above never has one to key off; mtgjson's
+		// own deck list still names the exact printing, by the deck the
+		// shelf's own suffix names and the card by number where the
+		// product carries one, else by name where the deck lists it once.
+		if !matched {
+			id := sldCommanderDeckCard(b, ogEdition, cardName, number)
+			if id != "" {
+				co, err := b.GetUUID(id)
+				if err == nil {
+					edition = co.SetCode
+					variant = co.Number
+				}
 			}
 		}
 
@@ -1525,6 +1543,67 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		Variation: variant,
 		Foil:      foil,
 	}, nil
+}
+
+// sldCommanderDeckCard answers, for a Secret Lair Commander Deck reprint
+// whose PLST number the id map does not carry, the printing MTGJSON's own
+// deck list names for cardName - by the product's own number where the
+// deck reprints that name under more than one printing, else by name.
+func sldCommanderDeckCard(b *mtgmatcher.Backend, expansionName, cardName, number string) string {
+	sld, err := b.GetSet("SLD")
+	if err != nil {
+		return ""
+	}
+	want := strings.TrimPrefix(expansionName, "Secret Lair Commander Deck: ")
+	deck := ""
+	for _, d := range sld.Decks {
+		if d.Name == want {
+			deck = d.Name
+			break
+		}
+	}
+	if deck == "" {
+		var candidates []string
+		for _, d := range sld.Decks {
+			if strings.HasPrefix(d.Name, want) && !strings.Contains(d.Name, "Foil Edition") {
+				candidates = append(candidates, d.Name)
+			}
+		}
+		if len(candidates) == 1 {
+			deck = candidates[0]
+		}
+	}
+	if deck == "" {
+		return ""
+	}
+	picks, err := b.GetPicksForDeck("SLD", deck)
+	if err != nil {
+		return ""
+	}
+
+	// GetPicksForDeck lists one entry per physical copy, not per distinct
+	// printing (a deck's basic lands repeat the same uuid many times over),
+	// so named is deduped by uuid before its length says how many distinct
+	// printings cardName actually has in this deck.
+	var named []string
+	seen := map[string]bool{}
+	for _, id := range picks {
+		co, err := b.GetUUID(id)
+		if err != nil || co.Name != cardName {
+			continue
+		}
+		if number != "" && co.Number == number {
+			return id
+		}
+		if !seen[id] {
+			seen[id] = true
+			named = append(named, id)
+		}
+	}
+	if len(named) == 1 {
+		return named[0]
+	}
+	return ""
 }
 
 // mb2PLSTBooster is the Mystery Booster 2 sealed product mb2PLSTNumber

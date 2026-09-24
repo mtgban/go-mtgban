@@ -254,3 +254,80 @@ func TestFallbackDefersOnImplausibleWCDCandidate(t *testing.T) {
 		}
 	}
 }
+
+// TestSLDCommanderDeckCardDisambiguatesByNumber pins sldCommanderDeckCard's
+// disambiguation rule: a deck that reprints one name under more than one
+// distinct printing - four Shapeshifter Tokens (SLD 1906-1909) in
+// "Everyone's Invited!", four Plains (SLD 1348-1351) in "Angels: They're
+// Just Like Us but Cooler" - must not pick the board's first one merely
+// because the name matched. A product number that agrees with one of them
+// settles it; without one, and with more than one distinct printing under
+// that name, the caller's own route decides instead. A name the deck lists
+// under only one printing still resolves without a number, whether the
+// deck holds one copy of it (Sol Ring) or several (the ten-copy Plains of
+// "Raining Cats and Dogs" - GetPicksForDeck lists one entry per physical
+// copy, not per printing, so the count itself must not read as ambiguity).
+func TestSLDCommanderDeckCardDisambiguatesByNumber(t *testing.T) {
+	b := realDatastore(t)
+
+	tests := []struct {
+		name       string
+		expansion  string
+		cardName   string
+		number     string
+		wantSet    string
+		wantNumber string
+	}{
+		{
+			"a numbered token settles on its own printing, not the board's first",
+			"Secret Lair Commander Deck: Everyone's Invited!",
+			"Shapeshifter Token", "1907", "SLD", "1907",
+		},
+		{
+			"the same token with no number is ambiguous and refuses",
+			"Secret Lair Commander Deck: Everyone's Invited!",
+			"Shapeshifter Token", "", "", "",
+		},
+		{
+			"a numbered basic land settles on its own printing, not the board's first",
+			"Secret Lair Commander Deck: Angels: They're Just Like Us but Cooler",
+			"Plains", "1350", "SLD", "1350",
+		},
+		{
+			"the same basic land with no number is ambiguous and refuses",
+			"Secret Lair Commander Deck: Angels: They're Just Like Us but Cooler",
+			"Plains", "", "", "",
+		},
+		{
+			"a name the deck lists once still resolves without a number",
+			"Secret Lair Commander Deck: Everyone's Invited!",
+			"Sol Ring", "", "SLD", "1905",
+		},
+		{
+			"a basic land printed once but held as ten copies is not ambiguous",
+			"Secret Lair Commander Deck: Raining Cats and Dogs",
+			"Plains", "", "SLD", "1513",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			id := sldCommanderDeckCard(b, tt.expansion, tt.cardName, tt.number)
+			if id == "" {
+				if tt.wantSet != "" {
+					t.Fatalf("sldCommanderDeckCard(%q, %q) = \"\", want %s %s", tt.cardName, tt.number, tt.wantSet, tt.wantNumber)
+				}
+				return
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tt.wantSet == "" {
+				t.Fatalf("sldCommanderDeckCard(%q, %q) = %s, want \"\" (ambiguous)", tt.cardName, tt.number, co)
+			}
+			if co.SetCode != tt.wantSet || co.Number != tt.wantNumber {
+				t.Errorf("sldCommanderDeckCard(%q, %q) = %s, want %s %s", tt.cardName, tt.number, co, tt.wantSet, tt.wantNumber)
+			}
+		})
+	}
+}
