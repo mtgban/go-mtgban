@@ -145,6 +145,8 @@ func (r *resolver) offShelf(product *cm.Product, cardID string) bool {
 // through matchPokemon and matchYugioh, and every other game through the
 // matcher alone; see resolveProduct.
 func (r *resolver) matchFab(product *cm.Product) string {
+	fabRenamed(product)
+
 	r.fabDeckSetsMu.Lock()
 	if r.fabDeckSets == nil {
 		r.fabDeckSets = fabDeckSetIndex(r.backend)

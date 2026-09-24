@@ -328,6 +328,27 @@ type shelf struct {
 	printRun     string
 }
 
+// fabRenames corrects a Cardmarket Flesh and Blood product whose own name
+// misnames the card, keyed by the vendor's own product id since the error
+// recurs under no name or number this datastore could key on instead.
+// Each value keeps the product's own treatment tail, e.g. "(Cold Foil
+// Golden)", so fabFinish still reads it off the corrected name.
+var fabRenames = map[int]string{
+	822630: "Kabuto of Imperial Authority (Cold Foil Golden)", // "Imperial Kabuto (Cold Foil Golden)", FAB292
+	905276: "Otherworldly Sins (Red) (Marvel)",                // "Otherwordly Sins (Red) (Marvel)", JDG090
+}
+
+// fabRenamed overwrites a Cardmarket Flesh and Blood product's name with
+// the one fabRenames corrects it to, so every step downstream - the
+// shelf, the treatment, the matcher's name hash - reads the card's real
+// name rather than the vendor's bad one. Called from matchFab, before
+// anything else sees the product.
+func fabRenamed(product *cm.Product) {
+	if name, found := fabRenames[product.IDProduct]; found {
+		product.Name = name
+	}
+}
+
 // fabShelves names the sets a Cardmarket Flesh and Blood product may be
 // filed in, in the order they are asked. Cardmarket sells each print run
 // as its own expansion ("Monarch - First"), a name no set of ours carries:
