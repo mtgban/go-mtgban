@@ -526,6 +526,25 @@ var onlineCodes = map[string]string{
 	"TPR": "Tempest Remastered",
 }
 
+// namesSourceSet reports whether the variation names the set a PLST
+// candidate was reprinted from, up to a colon subtitle and the
+// singular/plural "Duel Deck(s)" split.
+func namesSourceSet(variation, setName string) bool {
+	v := strings.Join(strings.Fields(strings.ToLower(strings.ReplaceAll(variation, ".", ""))), " ")
+	if strings.HasPrefix(v, "duel deck:") || strings.HasPrefix(v, "duel deck ") {
+		v = "duel decks" + v[len("duel deck"):]
+	}
+	if v == "" {
+		return false
+	}
+	n := strings.Join(strings.Fields(strings.ToLower(strings.ReplaceAll(setName, ".", ""))), " ")
+	if v == n {
+		return true
+	}
+	pre, _, found := strings.Cut(n, ":")
+	return found && pre == v
+}
+
 func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	var setName string
 
@@ -589,7 +608,9 @@ func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 			setName = strings.TrimPrefix(setName, "Duel Decks: ")
 		}
 
-		if !inCard.Contains(code) && !inCard.Contains(setName) && EditionTable[inCard.Variation] != setName {
+		if !inCard.Contains(code) && !inCard.Contains(setName) &&
+			!namesSourceSet(inCard.Variation, setName) &&
+			EditionTable[inCard.Variation] != setName {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step
 			number := mtgmatcher.ExtractNumber(inCard.Variation)
