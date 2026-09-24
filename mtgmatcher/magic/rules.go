@@ -2367,11 +2367,20 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			inCard.Name += " Token"
 		}
 	case "Shapeshifter":
+		// An edition named by set code (4ED/5ED/ATQ) or by a spelling none
+		// of the words below cover (Renaissance) is asked for a real,
+		// non-token Shapeshifter first.
+		var realCards []mtgmatcher.Card
+		set, err := b.GetSetByName(inCard.Edition)
+		if err == nil {
+			realCards = b.MatchInSet(inCard.Name, set.Code)
+		}
 		if !(inCard.Contains("Edition") ||
 			inCard.Contains("Foreign") ||
 			inCard.Contains("Antiquities") ||
 			inCard.Contains("Reinassance") ||
-			inCard.Contains("Rinascimento")) {
+			inCard.Contains("Rinascimento")) &&
+			len(realCards) == 0 {
 			inCard.Name += " Token"
 		}
 	}
