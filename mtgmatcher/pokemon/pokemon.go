@@ -184,31 +184,6 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	return payload.newBackend(), nil
 }
 
-// promoTypesOf reads a printing's labels, preferring the list the builder
-// distills them into. A datastore built before that list was recorded
-// carries only the joined spelling, which stays one label rather than being
-// split on spaces: plenty of labels are several words long ("Cosmos Holo",
-// "Pokemon Center Exclusive"), and splitting would leave pieces that name
-// nothing.
-//
-// Whether to fall back on that spelling is asked of the datastore and not of
-// the card. A datastore that marks anything has been through the whole of
-// this - its inks, its languages, its dates and the sets a promo reprints
-// are published as fields of their own - so a card of it with no labels has
-// none, and reading its variant back would put on exactly what the builder
-// took off. That was not a hypothetical: the variant said "Italian" beside
-// a language of the same, "2017" beside a set already dated to 2017, and
-// "Red" for a shiny its collector number already tells apart.
-func promoTypesOf(card *DatastoreCard, marked bool) []string {
-	if len(card.PromoTypes) > 0 {
-		return card.PromoTypes
-	}
-	if marked || card.Variant == "" {
-		return nil
-	}
-	return []string{card.Variant}
-}
-
 // describingPromoTypes keeps the labels worth declaring as tags: the ones a
 // printing's own finish does not already say. The catalog qualifies a name
 // with the treatment it is sold in often enough ("(Cosmos Holo)") that
@@ -216,10 +191,10 @@ func promoTypesOf(card *DatastoreCard, marked bool) []string {
 // the full list either way, which the matcher still reads to tell sibling
 // printings apart; only the declaration is filtered, the same terms
 // Riftbound carries its number-restating labels on.
-func describingPromoTypes(card *DatastoreCard, marked bool) []string {
+func describingPromoTypes(card *DatastoreCard) []string {
 	sold := canonicalFinish(card.Finish)
 	var out []string
-	for _, promoType := range promoTypesOf(card, marked) {
+	for _, promoType := range card.PromoTypes {
 		if label := canonicalFinish(promoType); label != "" && strings.Contains(sold, label) {
 			continue
 		}
@@ -228,11 +203,13 @@ func describingPromoTypes(card *DatastoreCard, marked bool) []string {
 	return out
 }
 
-// promoTypeSlugs is promoTypesOf as the tokens a query can carry, which is
-// what a card stores: a search splits its words apart before a filter sees
-// them, so a tag only survives the trip as one.
-func promoTypeSlugs(card *DatastoreCard, marked bool) []string {
-	labels := promoTypesOf(card, marked)
+// promoTypeSlugs is a printing's promo types as the tokens a query can carry,
+// which is what a card stores: a search splits its words apart before a
+// filter sees them, so a tag only survives the trip as one. A printing that
+// publishes none has none; its variant is the prose they were distilled out
+// of, and reading it back would put on what the builder took off.
+func promoTypeSlugs(card *DatastoreCard) []string {
+	labels := card.PromoTypes
 	if len(labels) == 0 {
 		return nil
 	}
@@ -283,15 +260,6 @@ func (payload *Datastore) upperCodes() {
 }
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
-	// Whether this datastore marks its printings at all, asked once: see
-	// promoTypesOf.
-	var marked bool
-	for i := range payload.Cards {
-		if payload.Cards[i].Watermark != "" {
-			marked = true
-			break
-		}
-	}
 	payload.upperCodes()
 
 	var b mtgmatcher.Backend
@@ -341,7 +309,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		for _, promoType := range describingPromoTypes(card, marked) {
+		for _, promoType := range describingPromoTypes(card) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !seenPromoType[slug] {
 				seenPromoType[slug] = true
@@ -425,7 +393,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			OriginalReleaseDate: card.OriginalReleaseDate,
 
 			Types:      types,
-			PromoTypes: promoTypeSlugs(card, marked),
+			PromoTypes: promoTypeSlugs(card),
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
