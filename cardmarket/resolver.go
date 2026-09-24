@@ -383,19 +383,16 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			return "", "", false, err
 		}
 	case cm.GameLorcana, cm.GameRiftbound, cm.GameOnePiece:
-		// One Piece sells one card under several printings that share a
-		// collector number - the alternate arts a V-index stands in for,
-		// and the promo shelves that reprint a booster card at its own
-		// number - and the catalog says which only by an index whose
-		// order is its own. The bridge says it outright: cardtrader links
-		// the product to a TCGplayer id, and the id names one printing.
-		//
-		// It answers first, and what it does not know the catalog still
-		// names below. The bridge speaks through cardtrader's blueprints
-		// and so knows only part of the shelf.
-		if r.gameID == cm.GameOnePiece {
+		// The bridge answers first, naming one printing where the
+		// catalog's own V-index or wording cannot. One Piece takes it
+		// outright; Riftbound only where the name still agrees.
+		if r.gameID == cm.GameOnePiece || r.gameID == cm.GameRiftbound {
 			if tcgID, found := r.tcgBridge[product.IDProduct]; found {
-				if id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false); idErr == nil {
+				id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false)
+				if idErr == nil && r.gameID == cm.GameRiftbound && !bridgeNamesCard(r.backend, product, id) {
+					idErr = errNoPrinting
+				}
+				if idErr == nil {
 					cardID = id
 					cardIDFoil, _ = r.backend.MatchID(cardID, true)
 					if r.offShelf(product, cardID) {

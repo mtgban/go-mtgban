@@ -82,7 +82,7 @@ func BridgeUseOf(game mtgban.Game) BridgeUse {
 	switch game {
 	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
 		return BridgeRequired
-	case mtgban.GameOnePiece:
+	case mtgban.GameOnePiece, mtgban.GameRiftbound:
 		return BridgeHelps
 	default:
 		return BridgeUnused
