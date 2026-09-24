@@ -164,3 +164,50 @@ func TestYugiohBridgeDistrustsSiblingRarity(t *testing.T) {
 		})
 	}
 }
+
+// TestYugiohBridgeNumber pins that a bridged row numbered other than the
+// product gives way to the name path. CardTrader links each product below
+// to the TCGplayer id of its set's base row, which shares only the name.
+func TestYugiohBridgeNumber(t *testing.T) {
+	b := loadYugiohBackend(t)
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	for _, tt := range []struct {
+		desc                    string
+		mkmID, bridgeTCG        int
+		name, number, expansion string
+		want                    string
+	}{
+		{
+			"the special edition lands on its own row",
+			272444, 95519, "Superheavy Samurai Flutist (V.2 - Super Rare)", "S01", "Secrets of Eternity",
+			"sece-ens01_96288_limited",
+		},
+		{
+			"the base product keeps the row the bridge names",
+			271724, 95519, "Superheavy Samurai Flutist (V.1 - Super Rare)", "007", "Secrets of Eternity",
+			"sece-en007_95519_unlimited",
+		},
+		{
+			"the European print lands on the Worldwide English row",
+			245153, 120674, "Nimble Momonga (V.3 - Rare)", "EN086", "Spell Ruler",
+			"srl-en086_478906_unlimited",
+		},
+		{
+			"the box topper lands on its own row, not the mega pack's",
+			269852, 93934, "Black Rose Dragon", "004", "Legendary Collection 5D's",
+			"lc05-en004_93832_limited",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			mkm.tcgBridge = map[int]int{tt.mkmID: tt.bridgeTCG}
+			product := &cm.Product{IDProduct: tt.mkmID, Name: tt.name, Number: tt.number, ExpansionName: tt.expansion}
+			got, _, _, err := mkm.resolveProduct(product)
+			if err != nil || got != tt.want {
+				t.Errorf("resolveProduct(%q #%s) = %q, %v; want %q", tt.name, tt.number, got, err, tt.want)
+			}
+		})
+	}
+}
