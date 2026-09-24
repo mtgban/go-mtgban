@@ -100,17 +100,7 @@ func ReadPublished(path string) (Published, error) {
 	stated := Published{Words: map[string]string{}}
 	for _, card := range cards {
 		wordsSaid(card, stated.Words)
-		if _, marked := card["watermark"]; marked {
-			stated.Marked = true
-		}
 		walk(card, &stated)
-	}
-	if !stated.Marked {
-		for _, card := range cards {
-			if variant, prose := card["variant"].(string); prose {
-				stated.Facts = append(stated.Facts, mtgmatcher.PromoTypeSlug(variant))
-			}
-		}
 	}
 	stated.Tokens, stated.Facts = sorted(stated.Tokens), sorted(stated.Facts)
 	return stated, nil
