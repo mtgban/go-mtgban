@@ -1979,8 +1979,6 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					possibleSuffixes = append(possibleSuffixes, SuffixSpecial)
 				case inCard.IsJPN():
 					possibleSuffixes = append(possibleSuffixes, "jpn")
-				case inCard.Edition == "Alternate Fourth Edition":
-					possibleSuffixes = append(possibleSuffixes, "alt")
 				}
 
 				for _, numSuffix := range possibleSuffixes {

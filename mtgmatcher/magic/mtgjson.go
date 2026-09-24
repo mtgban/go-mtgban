@@ -741,10 +741,10 @@ func plainNumber(number string) string {
 		number = number[:i]
 	}
 	// The letters a number ends in name the printing rather than number it:
-	// the s of a prerelease, the p of a promo pack, the alt of the alternate
-	// fourth edition. They go the way the marks do, so the two printings of
-	// one card agree on the number they print - 139s and 139★s are both the
-	// 139 of Tenth Edition. A number that is letters alone is a number.
+	// the s of a prerelease, the p of a promo pack, the jpn of a Japanese
+	// copy. They go the way the marks do, so the two printings of one card
+	// agree on the number they print - 139s and 139★s are both the 139 of
+	// Tenth Edition. A number that is letters alone is a number.
 	plain := strings.TrimRight(number, plainNumberTail)
 	if plain == "" {
 		return number
@@ -1806,12 +1806,14 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 		dupeCard := sets[code].Cards[i]
 		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
 		dupeCard.Language = langs[tag]
-		dupeCard.Number += strings.ToLower(tag)
 
-		// Set a new code and edition name if we're duplicating a whole set
+		// A whole-set copy is told apart by its own code, one filed next to
+		// its original only by the tag behind its number
 		_, found := sets[code+tag]
 		if found {
 			dupeCard.SetCode = code + tag
+		} else {
+			dupeCard.Number += strings.ToLower(tag)
 		}
 
 		// Retrieve Printed data if available

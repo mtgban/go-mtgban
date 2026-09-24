@@ -50,7 +50,7 @@ func TestTitleMarkers(t *testing.T) {
 		{
 			desc:    "the alternate printing is announced where the finish goes",
 			title:   "【アルターネイト版】《兜/Helm of Chatzuk》[4ED] 白R",
-			wantSet: "4EDALT", wantNumber: "324alt",
+			wantSet: "4EDALT", wantNumber: "324",
 		},
 		{
 			desc:    "and the printing it is an alternate of keeps its own set",

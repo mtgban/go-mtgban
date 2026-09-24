@@ -39,16 +39,8 @@ func TestVariants(t *testing.T) {
 
 // TestEd4VariantsNumbersAreReal pins what TestVariants above does not check:
 // that a VariantsTable entry's value is an actual card.Number in the set it
-// is registered for, not just that the card name exists there. A prior
-// version of this fix pointed "Alternate Fourth Edition" at ed4Variants with
-// its values rewritten to carry the "alt" suffix the loader's synthesized
-// set actually needs - but ed4Variants is also VariantsTable's entry for
-// "Fourth Edition" and "Fourth Edition Foreign Black Border", two real
-// mtgjson sets whose own cards carry the bare number, not "alt"; rewriting
-// the shared map fixed the one edition needing "alt" by breaking the two
-// that do not. Each of the three editions is checked here against the table
-// it is actually registered under, so a fix for one cannot silently corrupt
-// another sharing the same card list ever again.
+// is registered for, not just that the card name exists there. The three
+// editions share ed4Variants, so each is checked against its own numbers.
 func TestEd4VariantsNumbersAreReal(t *testing.T) {
 	realDatastore(t)
 
@@ -58,7 +50,7 @@ func TestEd4VariantsNumbersAreReal(t *testing.T) {
 	}{
 		{"Fourth Edition", ed4Variants},
 		{"Fourth Edition Foreign Black Border", ed4Variants},
-		{"Alternate Fourth Edition", ed4AltVariants},
+		{"Alternate Fourth Edition", ed4Variants},
 	}
 	for _, tt := range tests {
 		set, err := testBackend.GetSetByName(tt.edition)

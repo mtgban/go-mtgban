@@ -178,9 +178,9 @@ func TestFourthEditionAlternateKeepsVIndex(t *testing.T) {
 		name       string
 		wantNumber string
 	}{
-		{"Plains (V.1)", "364alt"},
-		{"Plains (V.2)", "365alt"},
-		{"Plains (V.3)", "366alt"},
+		{"Plains (V.1)", "364"},
+		{"Plains (V.2)", "365"},
+		{"Plains (V.3)", "366"},
 	}
 	for _, tt := range tests {
 		theCard, err := Preprocess(b, tt.name, "175", "Fourth Edition: Alternate")
