@@ -38,18 +38,13 @@ func TestYgoNumber(t *testing.T) {
 }
 
 // TestYgoShelves pins what the listing path asks for on the shelves Card
-// Trader spells its own way: a misspelt name, a shelf whose numbers are its
-// own count, and a promo shelved under the booster it came with.
+// Trader spells its own way: a misspelt name and a promo shelved under the
+// booster it came with.
 func TestYgoShelves(t *testing.T) {
 	b := &mtgmatcher.Backend{}
 	bp := Blueprint{Name: "Cyber Repair ant", Version: "Ultra Rare"}
 	if got := gameName(b, GameYuGiOh, &bp); got != "Cyber Repair Plant" {
 		t.Errorf("gameName = %q, want the catalog's spelling", got)
-	}
-	bp = Blueprint{Name: "Fabled Ashenveil", Version: "Common"}
-	bp.Expansion.Name = "2-Player Starter Deck Yuya & Declan"
-	if got := gameVariation(GameYuGiOh, &bp, "007"); got != "Common" {
-		t.Errorf("gameVariation(Yuya & Declan) = %q, want the rarity alone", got)
 	}
 	bp = Blueprint{ID: 70125, Name: "Level Retuner", Version: "Super Rare"}
 	bp.Expansion.Name = "Raging Battle"

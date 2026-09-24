@@ -305,9 +305,6 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		}
 	}
 	if gameID == GameYuGiOh {
-		if ygoUnnumberedShelves[bp.Expansion.Name] {
-			return bp.Version
-		}
 		number = ygoNumber(bp, number)
 	}
 	if gameID == GamePokemon && bp.Expansion.Name == pkmLeagueShelf && !pkmCollectorNumberRe.MatchString(number) {
@@ -662,14 +659,6 @@ func ygoNumber(bp *Blueprint, number string) string {
 		return fmt.Sprintf("YR%02s-%s%s", m[1], infix, m[3])
 	}
 	return number
-}
-
-// ygoUnnumberedShelves are the shelves whose collector numbers are Card
-// Trader's own running count rather than the cards': the 2-Player Starter
-// Deck numbers Fabled Ashenveil 007 where the card is YS15-ENL09, and the
-// count drifts further down the deck. The rarity is all the listing says.
-var ygoUnnumberedShelves = map[string]bool{
-	"2-Player Starter Deck Yuya & Declan": true,
 }
 
 // ygoVersionWording spells the printing a blueprint's copyright-line Version
