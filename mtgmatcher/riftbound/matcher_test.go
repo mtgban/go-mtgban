@@ -166,6 +166,11 @@ var riftboundSeeds = []matchTest{
 		Desc: "shortened gallery champion resolves",
 		In:   mtgmatcher.InputCard{Name: "Master Yi - Meditative", Variation: "4"},
 	},
+	// CoolStuffInc's "Teemo - Scout" carries no number (see commit message).
+	{
+		Desc: "a qualified name's own lettered sibling still yields its number",
+		In:   mtgmatcher.InputCard{Name: "Teemo - Scout", Edition: "Origins", Foil: true},
+	},
 	{
 		Desc: "starter legend resolves through its storefront name",
 		In:   mtgmatcher.InputCard{Name: "Lux - Lady of Luminosity (Starter)", Variation: "21"},
@@ -284,6 +289,19 @@ var riftboundSeeds = []matchTest{
 		// must leave the listing unmatched rather than hand it the plain 178.
 		Desc: "negative: a stamp the gallery does not carry keeps its miss",
 		In:   mtgmatcher.InputCard{Name: "Poppy - Defender of the Meek", Variation: "178b Summoner Skirmish | Champion", Edition: "Promos", Foil: true},
+	},
+	// Cardmarket's own "V.N" ordinal (see commit message).
+	{
+		Desc: "cardmarket ordinal V.1 reaches the non-champion stamp of a pair",
+		In:   mtgmatcher.InputCard{Name: "Guardian Angel", Edition: "Spiritforged: Promos", Variation: "051 V.1 - Rare", Foil: true},
+	},
+	{
+		Desc: "cardmarket ordinal V.2 reaches the champion stamp of a pair",
+		In:   mtgmatcher.InputCard{Name: "Guardian Angel", Edition: "Spiritforged: Promos", Variation: "051 V.2 - Rare", Foil: true},
+	},
+	{
+		Desc: "cardmarket ordinal V.2 outranks the plain OPP tier",
+		In:   mtgmatcher.InputCard{Name: "Rengar, Trophy Hunter", Edition: "Unleashed: Promos", Variation: "120 V.2 - Epic", Foil: true},
 	},
 	{
 		// The datastore carries the rune alternate arts since 2026-08-18;

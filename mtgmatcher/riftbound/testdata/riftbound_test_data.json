@@ -38,6 +38,15 @@
         "uuid": "opp-662894_foil"
     },
     {
+        "description": "a qualified name's own lettered sibling still yields its number",
+        "input": {
+            "name": "Teemo - Scout",
+            "edition": "Origins",
+            "foil": true
+        },
+        "uuid": "ogn-197-298_foil"
+    },
+    {
         "description": "a wording naming a product takes the set the product is filed in",
         "input": {
             "name": "Heimerdinger - Inventor",
@@ -84,6 +93,36 @@
             "variant": "246"
         },
         "uuid": "ogn-246-298_foil"
+    },
+    {
+        "description": "cardmarket ordinal V.1 reaches the non-champion stamp of a pair",
+        "input": {
+            "name": "Guardian Angel",
+            "variant": "051 V.1 - Rare",
+            "edition": "Spiritforged: Promos",
+            "foil": true
+        },
+        "uuid": "opp-685261_foil"
+    },
+    {
+        "description": "cardmarket ordinal V.2 outranks the plain OPP tier",
+        "input": {
+            "name": "Rengar, Trophy Hunter",
+            "variant": "120 V.2 - Epic",
+            "edition": "Unleashed: Promos",
+            "foil": true
+        },
+        "uuid": "opp-696824_foil"
+    },
+    {
+        "description": "cardmarket ordinal V.2 reaches the champion stamp of a pair",
+        "input": {
+            "name": "Guardian Angel",
+            "variant": "051 V.2 - Rare",
+            "edition": "Spiritforged: Promos",
+            "foil": true
+        },
+        "uuid": "opp-685263_foil"
     },
     {
         "description": "champion-first name reaches the promo when the edition says so",
