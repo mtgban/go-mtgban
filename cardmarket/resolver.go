@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"regexp"
@@ -458,8 +459,13 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
 		number := product.Number
+		edition := product.ExpansionName
 		if r.gameID == cm.GameOnePiece {
-			number = onePieceNumber(r.backend, cardName, product.Number, product.ExpansionName)
+			// Alias the shelf before picking the number: onePieceNumber
+			// only trusts the name's own code on a shelf naming a set of
+			// ours, and Reprints/Demo Decks only do that once aliased.
+			edition = cmp.Or(onePieceShelves[edition], edition)
+			number = onePieceNumber(r.backend, cardName, product.Number, edition)
 		}
 		// The V-index cardmarket synthesizes for same-number siblings is
 		// how One Piece tells a base art from its variants (V.1 the base,
@@ -479,7 +485,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			number = strings.TrimSpace(number + " Oversized")
 		}
 
-		cardID, err = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
+		cardID, err = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return "", "", false, nil
 		} else if err != nil && !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
@@ -507,7 +513,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// A wrong-variant miss above may just mean the card has no nonfoil
 		// printing (Match validates the finish); adopt the foil id then.
 		var errFoil error
-		cardIDFoil, errFoil = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: true})
+		cardIDFoil, errFoil = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: number, Foil: true})
 		if cardID == "" {
 			cardID = cardIDFoil
 		}
@@ -517,6 +523,12 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// probe's error may carry the more informative verdict
 			if errFoil != nil {
 				err = errFoil
+			}
+			// Reprints/Demo Decks renumber or drop the card outright, so
+			// a wrong-variant miss there names no printing of ours.
+			_, shelved := onePieceShelves[product.ExpansionName]
+			if r.gameID == cm.GameOnePiece && shelved && errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
+				return "", "", false, errNoPrinting
 			}
 			if r.gameID != cm.GameOnePiece {
 				r.logf("%v", err)

@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"errors"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -84,5 +85,40 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 				t.Errorf("processProduct(%q) named %q, want %q", tt.product, got, tt.want)
 			}
 		})
+	}
+}
+
+// onePieceReprintDatastore holds a reprint set that keeps a card under its
+// original starter-deck number rather than the base set's, for pinning the
+// Reprints/Demo Decks wrong-variant refusal.
+const onePieceReprintDatastore = `{"data": {
+ "game": "onepiece",
+ "sets": {"OP-RP": {"name": "Revision Pack Cards", "releaseDate": "2023-01-01"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 451393}, "finish": "Foil", "id": "st01-001_451393_foil", "name": "Monkey.D.Luffy", "number": "ST01-001", "rarity": "L", "setCode": "OP-RP"}
+ ]
+}}`
+
+// TestOnePieceReprintWrongVariantIsSilent pins that a Reprints product named
+// with the base set's own number, which the reprint set does not carry at
+// that number, refuses silently instead of surfacing a matcher error.
+func TestOnePieceReprintWrongVariantIsSilent(t *testing.T) {
+	b := datastoreBackend(t, "onepiece", onePieceReprintDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	mkm.priceGuide = map[int]cm.PriceGuide{765980: {IDProduct: 765980, LowPrice: 1, TrendPrice: 2}}
+	product := cm.Product{
+		IDProduct:     765980,
+		Name:          "Monkey.D.Luffy (OP02-041)",
+		Number:        "OP02-041",
+		ExpansionName: "Reprints",
+	}
+	channel := make(chan responseChan, 8)
+	err = mkm.processProduct(channel, &product)
+	if !errors.Is(err, errNoPrinting) {
+		t.Errorf("processProduct(765980) = %v, want errNoPrinting", err)
 	}
 }
