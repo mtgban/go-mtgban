@@ -132,6 +132,8 @@ var tcgIDOverrides = map[int]int{
 	290971: 544805, // Pop Art (3D Text)
 	// Pokemon: none sent either.
 	340672: 211449, // Palkia & Dialga LEGEND, Jumbo Oversized
+	242584: 250252, // Mewtwo V-UNION, Jumbo Oversized
+	332883: 545663, // Lugia ex, Jumbo Oversized, TCG Classic deck
 }
 
 // tcgplayerID answers the TCGplayer id a blueprint's own listings should
