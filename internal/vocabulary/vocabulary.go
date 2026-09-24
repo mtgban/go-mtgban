@@ -57,14 +57,6 @@ type Published struct {
 	// the catalog never writes in words has none, and nothing is said
 	// about it.
 	Words map[string]string
-
-	// Marked says whether this datastore publishes the mark saying which
-	// copy of a number a printing is. A datastore that does has had the
-	// subjects and the artwork letters taken out of the variant, so a token
-	// derived from the variant is one it never stated; a datastore that
-	// does not is one a loader still falls back on the variant for, which
-	// is what every loader here is written to do.
-	Marked bool
 }
 
 // Problems are every way a loader's vocabulary departs from the
