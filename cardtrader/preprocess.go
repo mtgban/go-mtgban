@@ -96,10 +96,15 @@ func tokenPairNumbers(number string) (n1, n2 string, ok bool) {
 	return "", "", false
 }
 
+// ctPairSeparatorRe matches the "//" between a two-sided pairing's faces,
+// tolerating Card Trader's own inconsistent spacing around it ("Hero //
+// Hero", but also "Thopter //Dog" on blueprint 276925).
+var ctPairSeparatorRe = regexp.MustCompile(`\S\s*//\s*\S`)
+
 // isTwoSidedTokenBlueprint reports whether a blueprint names a two-sided
 // Magic token pairing the way Card Trader's own Tokens category does.
 func isTwoSidedTokenBlueprint(bp *Blueprint, cardName string) bool {
-	return bp.CategoryID == CategoryMagicTokens && strings.Contains(cardName, " // ")
+	return bp.CategoryID == CategoryMagicTokens && ctPairSeparatorRe.MatchString(cardName)
 }
 
 // Preprocess turns a blueprint into the card description the matcher takes,

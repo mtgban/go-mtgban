@@ -264,7 +264,10 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			} else if err != nil {
 				// Preprocess already tried the full token-pairing gauntlet;
 				// what's left is mtgjson never publishing a combined uuid.
-				if isTwoSidedTokenBlueprint(blueprint, theCard.Name) {
+				// Checked against blueprint.Name, which Match never
+				// mutates (see the commit for why theCard's own copy is
+				// not safe to read here).
+				if isTwoSidedTokenBlueprint(blueprint, blueprint.Name) {
 					continue
 				}
 				ct.printf("%v", err)

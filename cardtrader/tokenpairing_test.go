@@ -1,6 +1,7 @@
 package cardtrader
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -194,5 +195,93 @@ func TestPreprocessResolvesPairingWithNoUsableID(t *testing.T) {
 	}
 	if co.SetCode != "TC17" {
 		t.Errorf("blueprint %d resolved to set %s, want TC17", bp.ID, co.SetCode)
+	}
+}
+
+// TestIsTwoSidedTokenBlueprintSpacing pins the separator match against Card
+// Trader's own inconsistent spacing around "//": blueprint 276925 ("Thopter
+// //Dog") lost its silencing when the check moved from theCard's own
+// Match-normalized Name to the blueprint's raw one, since the raw vendor
+// text carries no space after the slashes.
+func TestIsTwoSidedTokenBlueprintSpacing(t *testing.T) {
+	tests := []struct {
+		desc string
+		bp   *Blueprint
+		name string
+		want bool
+	}{
+		{"normal spacing", &Blueprint{CategoryID: CategoryMagicTokens}, "Hero // Hero", true},
+		{"no space after the slashes, blueprint 276925", &Blueprint{CategoryID: CategoryMagicTokens}, "Thopter //Dog", true},
+		{"no separator at all", &Blueprint{CategoryID: CategoryMagicTokens}, "Solo Token", false},
+		{"separator present but outside Tokens", &Blueprint{CategoryID: CategoryMagicSingles}, "Turn // Burn", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			if got := isTwoSidedTokenBlueprint(tt.bp, tt.name); got != tt.want {
+				t.Errorf("isTwoSidedTokenBlueprint(%q) = %v, want %v", tt.name, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestProcessProductsSilencesForeignTokenPairing pins the token-pairing
+// silence check against the blueprint's own name rather than theCard's.
+// theCard is built once per blueprint by Preprocess and reused across every
+// product in the call, and Match mutates its Name while validating a
+// foreign-language listing's id-path language - resetting it to the single
+// face the id names, "Hero", where the blueprint itself still says "Hero //
+// Hero". An English listing lands first here, on the same shared theCard a
+// following Spanish listing of the same real derived pairing then reaches
+// with a Name Match has already touched: exactly the order a live run sees
+// it in, and the shape that silently stopped firing the check on theCard's
+// own Name.
+func TestProcessProductsSilencesForeignTokenPairing(t *testing.T) {
+	b := realDatastore(t)
+
+	bp := &Blueprint{
+		ID:          341108,
+		Name:        "Hero // Hero",
+		GameID:      GameMagic,
+		CategoryID:  CategoryMagicTokens,
+		TCGplayerID: 638098,
+	}
+	bp.Expansion.Name = "FINAL FANTASY"
+	bp.Properties.Number = "T 2/7"
+
+	var logged []string
+	ct := &Market{
+		backend:    b,
+		gameID:     GameMagic,
+		blueprints: map[int]*Blueprint{bp.ID: bp},
+		logCallback: func(format string, a ...any) {
+			logged = append(logged, fmt.Sprintf(format, a...))
+		},
+	}
+
+	newProduct := func(lang string) Product {
+		var p Product
+		p.BlueprintID = bp.ID
+		p.Quantity = 1
+		p.Price.Cents = 100
+		p.Price.Currency = "USD"
+		p.Properties.Condition = "Near Mint"
+		p.Properties.Number = bp.Properties.Number
+		p.Properties.MTGLanguage = lang
+		return p
+	}
+
+	ch := make(chan resultChan, 2)
+	ct.processProducts(ch, bp.ID, []Product{newProduct("en"), newProduct("es")})
+	close(ch)
+
+	var landed int
+	for range ch {
+		landed++
+	}
+	if landed != 1 {
+		t.Errorf("landed %d products, want 1 (the English listing only)", landed)
+	}
+	if len(logged) != 0 {
+		t.Errorf("logged %v for the Spanish listing, want silence: a foreign listing of a real derived pairing has no supported printing to land on, the same as the pairing's own English refusal case", logged)
 	}
 }
