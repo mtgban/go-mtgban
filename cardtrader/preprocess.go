@@ -12,6 +12,16 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// reprintedPrereleaseShelves are the prerelease shelves Card Trader also files
+// the set's reprint slots under, though no prerelease copy of those was ever
+// printed. Only the promo set named here says which cards the shelf really
+// holds.
+var reprintedPrereleaseShelves = map[string]string{
+	"Modern Horizons 2 Prerelease":    "PMH2",
+	"Modern Horizons 3 Prerelease":    "PMH3",
+	"March of the Machine Prerelease": "PMOM",
+}
+
 // namedID picks between the two ids a blueprint carries, preferring the
 // scryfall one as before and only weighing the name where the vendor's own
 // ids contradict each other.
@@ -128,6 +138,10 @@ func isTwoSidedTokenBlueprint(bp *Blueprint, cardName string) bool {
 func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	cardName := bp.Name
 	edition := bp.Expansion.Name
+	if code, found := reprintedPrereleaseShelves[edition]; found &&
+		!b.HasPrinting(cardName, "promo_type", magic.PromoTypePrerelease, code) {
+		return nil, errors.New("pass")
+	}
 	number := strings.TrimLeft(bp.Properties.Number, "0")
 	variant := ""
 

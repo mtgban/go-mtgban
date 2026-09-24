@@ -180,3 +180,38 @@ func TestPreprocessPromoShelves(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessReprintedPrereleaseShelf pins that a reprint slot Card Trader
+// files on a prerelease shelf is dropped, while the shelf's real prerelease
+// cards still land on their promo set.
+func TestPreprocessReprintedPrereleaseShelf(t *testing.T) {
+	b := realDatastore(t)
+
+	cursed := &Blueprint{ID: 290480, Name: "Cursed Mirror", CategoryID: CategoryMagicSingles, TCGplayerID: 554278}
+	cursed.Expansion.Name = "Modern Horizons 3 Prerelease"
+	cursed.Properties.Number = "279"
+	_, err := Preprocess(b, cursed)
+	if err == nil {
+		t.Error("Preprocess kept a prerelease blueprint no prerelease printing exists for")
+	}
+
+	devourer := &Blueprint{ID: 290392, Name: "Devourer of Destiny", CategoryID: CategoryMagicSingles}
+	devourer.Expansion.Name = "Modern Horizons 3 Prerelease"
+	devourer.Properties.Number = "002"
+	in, err := Preprocess(b, devourer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	in.Foil = true
+	id, err := b.Match(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.SetCode != "PMH3" || co.Number != "2s" {
+		t.Errorf("landed on %s %s, want PMH3 2s", co.SetCode, co.Number)
+	}
+}
