@@ -205,6 +205,7 @@ var yugiohIndexPrints = map[string][]string{
 	"Pharaoh's Servant":                {"E", "", "EN"},
 	"Labyrinth of Nightmare":           {"E", "", "EN"},
 	"Starter Deck: Yugi":               {"E", "", "A"},
+	"Starter Deck: Kaiba":              {"E", "", "A"},
 }
 
 // yugiohPrintNumber answers the product with the region prefix its version

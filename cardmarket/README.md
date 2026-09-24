@@ -181,14 +181,15 @@ V.2 10/41, V.3 0/7 (the MRD-EN018 reprint); Cannon Soldier V.1 12/55, V.2
 asks for no run, and every product lands on the card's default run, as the
 bridge does.
 
-**On the six oldest shelves the index names a regional print.** Cardmarket
-split LOB, MRD, MRL, PSV, LON and SDY into one product per print in 2021:
-European first, North American second, then the Asian English and
+**On the seven oldest shelves the index names a regional print.** Cardmarket
+split LOB, MRD, MRL, PSV, LON, SDY and SDK into one product per print in
+2021: European first, North American second, then the Asian English and
 worldwide reprints (`yugiohIndexPrints`). The European numbering shows it
-where it differs - Magic Ruler's V.1 runs to 130, LOB's and SDY's renumber -
-and the comments show the rest. One page of English listings each,
-2026-09-24; "US" counts comments naming an American print, "EU" a European
-or E-numbered one:
+where it differs - Magic Ruler's V.1 runs to 130, LOB's, SDY's and SDK's
+renumber (SDK's V.1 matches the datastore's number on 1 of 46 cards, V.2 on
+49 of 50) - and the comments show the rest. One page of English listings
+each, 2026-09-24; "US" counts comments naming an American print, "EU" a
+European or E-numbered one:
 
 | Card | V.1 US / EU / listings | V.2 US / EU / listings |
 |---|---|---|
