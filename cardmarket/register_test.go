@@ -1,7 +1,9 @@
 package cardmarket
 
 import (
-	"reflect"
+	"go/importer"
+	"go/token"
+	"go/types"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -30,26 +32,48 @@ func TestIndexMakesNoAuthenticatedCall(t *testing.T) {
 	if len(asked) > 0 {
 		t.Errorf("Index asked for %v", asked)
 	}
-	if path := clientPath(reflect.TypeOf(Index{}), "Index", map[reflect.Type]bool{}); path != "" {
+
+	// The fields are read by the type checker, not at run time. Market
+	// holds a client, which shows the walk can still see one.
+	pkg, err := importer.ForCompiler(token.NewFileSet(), "source", nil).Import("github.com/mtgban/go-mtgban/cardmarket")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if clientPath(pkg.Scope().Lookup("Market").Type(), "Market", map[types.Type]bool{}) == "" {
+		t.Fatal("the walk no longer finds the client Market holds")
+	}
+	path := clientPath(pkg.Scope().Lookup("Index").Type(), "Index", map[types.Type]bool{})
+	if path != "" {
 		t.Errorf("Index holds a Cardmarket client at %s", path)
 	}
 }
 
 // clientPath names the first field under t that holds a Cardmarket client.
-func clientPath(t reflect.Type, path string, seen map[reflect.Type]bool) string {
-	for t.Kind() == reflect.Pointer || t.Kind() == reflect.Slice || t.Kind() == reflect.Array || t.Kind() == reflect.Map {
-		t = t.Elem()
+func clientPath(t types.Type, path string, seen map[types.Type]bool) string {
+	// Pointers, slices, arrays, maps and channels hold what their Elem is.
+	for {
+		container, ok := t.(interface{ Elem() types.Type })
+		if !ok {
+			break
+		}
+		t = container.Elem()
 	}
-	if t == reflect.TypeOf(cm.Client{}) {
+	named, ok := t.(*types.Named)
+	if ok && named.Obj().Pkg() != nil && named.Obj().Pkg().Path() == "github.com/mtgban/go-cardmarket" && named.Obj().Name() == "Client" {
 		return path
 	}
-	if t.Kind() != reflect.Struct || seen[t] {
+	if seen[t] {
 		return ""
 	}
 	seen[t] = true
-	for i := range t.NumField() {
-		field := t.Field(i)
-		if found := clientPath(field.Type, path+"."+field.Name, seen); found != "" {
+	fields, ok := t.Underlying().(*types.Struct)
+	if !ok {
+		return ""
+	}
+	for i := range fields.NumFields() {
+		field := fields.Field(i)
+		found := clientPath(field.Type(), path+"."+field.Name(), seen)
+		if found != "" {
 			return found
 		}
 	}
