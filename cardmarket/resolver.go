@@ -50,6 +50,12 @@ type resolver struct {
 	numbers   map[string]map[string]string
 	numbersMu sync.Mutex
 
+	// fabDeckSets indexes a Flesh and Blood set's collector-number prefix
+	// onto every set that opens numbers on it, built on first use; see
+	// fabShelves and fabDeckSetIndex.
+	fabDeckSets   map[string][]*mtgmatcher.Set
+	fabDeckSetsMu sync.Mutex
+
 	// shelved names, for each set of ours, the expansion of this run that
 	// sells it; see offShelf. A scraper's Load fills it once the
 	// expansions are known, via shelvedSets.
@@ -139,7 +145,14 @@ func (r *resolver) offShelf(product *cm.Product, cardID string) bool {
 // through matchPokemon and matchYugioh, and every other game through the
 // matcher alone; see resolveProduct.
 func (r *resolver) matchFab(product *cm.Product) string {
-	shelves := fabShelves(r.backend, product)
+	r.fabDeckSetsMu.Lock()
+	if r.fabDeckSets == nil {
+		r.fabDeckSets = fabDeckSetIndex(r.backend)
+	}
+	deckSets := r.fabDeckSets
+	r.fabDeckSetsMu.Unlock()
+
+	shelves := fabShelves(r.backend, product, deckSets)
 	if len(shelves) == 0 {
 		return ""
 	}
