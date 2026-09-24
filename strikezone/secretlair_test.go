@@ -26,7 +26,7 @@ func TestSecretLairDrop(t *testing.T) {
 		{"any wording at all names the drop", "Kodama's Reach (2294 Reskin)", false},
 		{"a name standing at one drop needs none", "Sliver Hive", false},
 		{"nor does one whose other drop has a flavor name", "Dictate of Erebos", false},
-		{"unless a flavor name was cut off the listing", "Mimir's Ancient Wisdom - Teferi's Ageless Insight", true},
+		{"unless a flavor name nothing knows was cut off the listing", "Mimir's Ancient Wisdum - Teferi's Ageless Insight", true},
 		{"nor does a drop whose other number is its foil twin", "Aether Vial", false},
 		{"nor one whose other number is its step-and-compleat", "Plague Sliver", false},
 	} {
