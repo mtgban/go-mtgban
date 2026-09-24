@@ -507,6 +507,12 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GamePokemon && pokemonCodeCard(product.Name) {
 			return "", "", false, nil
 		}
+		if r.gameID == cm.GameYuGiOh {
+			product, err = yugiohPrintNumber(product)
+			if err != nil {
+				return "", "", false, err
+			}
+		}
 		// The id names the card, and the product's own wording names the
 		// printing: Cardmarket sells each Flesh and Blood treatment as its
 		// own product and each print run as its own expansion, and the
