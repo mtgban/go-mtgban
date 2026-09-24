@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // gundamShelfCode is the set code this storefront opens a Gundam shelf with,
@@ -30,9 +32,10 @@ var gundamNameCode = regexp.MustCompile(`\s*\(([A-Z]+[0-9]*-[0-9]+[a-z]?)\)\s*`)
 // typo is a typo of one product, and matching it by shape would answer for
 // the cards it is a near-miss of.
 var gundamNames = map[string]string{
-	"Adbul's Maganac":                  "Abdul's Maganac",
-	"Tiffa Adill & Freedom":            "Tiffa Adill & Freeden",
-	`Prototype Asshimar TR-3 "Keharr"`: `Prototype Asshimar TR-3 "Kehaar"`,
+	"Adbul's Maganac":                                                   "Abdul's Maganac",
+	"Tiffa Adill & Freedom":                                             "Tiffa Adill & Freeden",
+	`Prototype Asshimar TR-3 "Keharr"`:                                  `Prototype Asshimar TR-3 "Kehaar"`,
+	"Elan Ceres (Enchanted Person Number 5)":                            "Elan Ceres (Enhanced Person Number 5)",
 	"AI-Saachez's AEU Enact Custom Moralia Development Experiment Type": "Al-Saachez's AEU Enact Custom Moralia Development Experiment Type",
 }
 
@@ -97,7 +100,7 @@ func gundamNumberSpelling(number, name string) string {
 // the brackets alone, and taking the last one asks for a card the catalog
 // does not have. The number is written between the two, so it says which is
 // which.
-func gundamCard(name, number string) (string, string) {
+func gundamCard(b *mtgmatcher.Backend, name, number string) (string, string) {
 	written := name
 	variation := gundamNumberSpelling(number, written)
 	loc := gundamNameCode.FindStringSubmatchIndex(name)
@@ -107,12 +110,15 @@ func gundamCard(name, number string) (string, string) {
 		if variation == "" {
 			variation = gundamNumberSpelling(name[loc[2]:loc[3]], written)
 		}
+		num := variation
+		cardName := gundamName(strings.TrimSpace(name[:loc[0]]))
 		for _, wording := range gundamQualifier.FindAllStringSubmatch(name[loc[1]:], -1) {
-			variation = strings.TrimSpace(variation + " " + wording[1])
+			variation = strings.TrimSpace(variation + " " + gundamWording(b, cardName, num, wording[1]))
 		}
-		name = strings.TrimSpace(name[:loc[0]])
+		name = cardName
+	} else {
+		name = gundamName(name)
 	}
-	name = gundamName(name)
 	// The token shelf names the art the token wears where the catalog names
 	// the token, and the number is what says which it is.
 	if strings.HasPrefix(variation, "T-") {
@@ -120,6 +126,53 @@ func gundamCard(name, number string) (string, string) {
 		name = gundamTokenName(name)
 	}
 	return strings.TrimSpace(name), strings.TrimSpace(variation)
+}
+
+// gundamWCSCode is the World Championship's own code, which the season
+// changes ("WCS26-27") where the label behind it - "Participation Pack",
+// "Regional Championship" - does not.
+var gundamWCSCode = regexp.MustCompile(`^WCS[0-9-]*`)
+
+// gundamWording spells a storefront's own code for a promo run the way the
+// catalog's label reads, so the wording match in FilterCards can reach the
+// printing it names.
+func gundamWording(b *mtgmatcher.Backend, name, number, wording string) string {
+	switch {
+	case wording == "PB01":
+		label := gundamPremiumBandai(b, name, number)
+		if label != "" {
+			return label
+		}
+	case gundamWCSCode.MatchString(wording):
+		return gundamWCSCode.ReplaceAllString(wording, "World Championship")
+	}
+	return wording
+}
+
+// gundamPremiumBandaiTypes are the two products CSI shelves under its own
+// "PB01" run code: the Premium Card Collection insert and the Premium
+// Accessory Set. A number carries at most one of the two.
+var gundamPremiumBandaiTypes = []string{"premiumcardcollection", "premiumaccessory"}
+
+// gundamPremiumBandai spells "PB01" as whichever of the two the catalog
+// files at this number, or "" where neither does.
+func gundamPremiumBandai(b *mtgmatcher.Backend, name, number string) string {
+	uuids, err := b.SearchEquals(name)
+	if err != nil {
+		return ""
+	}
+	for _, uuid := range uuids {
+		co, err := b.GetUUID(uuid)
+		if err != nil || !strings.EqualFold(co.Number, number) {
+			continue
+		}
+		for _, promoType := range gundamPremiumBandaiTypes {
+			if co.HasPromoType(promoType) {
+				return b.PromoTypeLabel(promoType)
+			}
+		}
+	}
+	return ""
 }
 
 // gundamTokenQualifier is the parenthetical a token's own name ends in,

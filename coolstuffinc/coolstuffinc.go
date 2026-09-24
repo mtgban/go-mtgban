@@ -702,7 +702,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					}
 					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(notes), Foil: isFoil}
 				case mtgban.GameGundam:
-					name, variation := gundamCard(cardName, gundamNumber(notes))
+					name, variation := gundamCard(csi.backend, cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity)), Foil: isFoil}
 				// Palworld numbers a parallel apart from the card it
 				// parallels, so the note names one printing on its own -
@@ -1014,7 +1014,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it naming one; the wording it hangs behind the name is what tells
 		// the parallel runs apart.
 		case mtgban.GameGundam:
-			name, variation := gundamCard(product.Name, product.Number)
+			name, variation := gundamCard(csi.backend, product.Name, product.Number)
 			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName)), Foil: product.IsFoil == 1}
 		// Palworld numbers a parallel apart from the card it parallels, the
 		// rarity riding in the number's own tail, so the plain reading names

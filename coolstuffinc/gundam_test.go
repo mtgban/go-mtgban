@@ -1,6 +1,10 @@
 package coolstuffinc
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 func TestGundamShelf(t *testing.T) {
 	for _, tt := range []struct{ in, want string }{
@@ -43,8 +47,11 @@ func TestGundamCard(t *testing.T) {
 		{"A Show of Resolve (GD01-100)", "", "A Show of Resolve", "GD01-100"},
 		{"Battle of Aces (GD01-111) (Alt-Art +)", "", "Battle of Aces", "GD01-111 Alt-Art +"},
 		{"Aile Strike Gundam (T-008)", "", "Aile Strike Gundam", "T-008 Token"},
+		// The World Championship code carries the season, the label behind
+		// it does not.
+		{"Improved Technique (GD03-109) (WCS26-27 Participation Pack Vol.1)", "GD03-109", "Improved Technique", "GD03-109 World Championship Participation Pack Vol.1"},
 	} {
-		gotName, gotVariation := gundamCard(tt.name, tt.number)
+		gotName, gotVariation := gundamCard(nil, tt.name, tt.number)
 		if gotName != tt.wantName || gotVariation != tt.want {
 			t.Errorf("gundamCard(%q, %q)\n got  %q %q\n want %q %q",
 				tt.name, tt.number, gotName, gotVariation, tt.wantName, tt.want)
@@ -52,10 +59,47 @@ func TestGundamCard(t *testing.T) {
 	}
 }
 
+// TestGundamCardPremiumBandai pins the "(PB01)" guard against both products
+// CSI shelves under that one run code: the Premium Card Collection insert,
+// GCG-PR st01-001_670590_holofoil, and the Premium Accessory Set, which
+// also covers the Resource promo shelf, rp-024_681970_holofoil. The
+// Resource case still lands on the same id either way - its promo number is
+// its own and never shares a candidate - but the wording is read now too.
+func TestGundamCardPremiumBandai(t *testing.T) {
+	b := readGameDatastore(t, "gundam", "GUNDAM_PATH")
+
+	name, variation := gundamCard(b, "Gundam (ST01-001) (PB01)", "ST01-001")
+	if name != "Gundam" || variation != "ST01-001 Premium Card Collection" {
+		t.Errorf("gundamCard(collection) = %q, %q", name, variation)
+	}
+	id, err := b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Gundam Promotional Cards", Variation: variation, Foil: true})
+	if err != nil || id != "st01-001_670590_holofoil" {
+		t.Errorf("Match(collection) = %q, %v, want st01-001_670590_holofoil", id, err)
+	}
+
+	name, variation = gundamCard(b, "A Show of Resolve (GD01-100) (Alt-Art +) (PB01) (Two People)", "GD01-100")
+	if name != "A Show of Resolve" || variation != "GD01-100 Alt-Art + Premium Accessory Two People" {
+		t.Errorf("gundamCard(accessory) = %q, %q", name, variation)
+	}
+	id, err = b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Gundam Promotional Cards", Variation: variation, Foil: true})
+	if err != nil || id != "gd01-100_653365_holofoil" {
+		t.Errorf("Match(accessory) = %q, %v, want gd01-100_653365_holofoil", id, err)
+	}
+
+	name, variation = gundamCard(b, "Resource (RP-024) (PB01)", "RP-024")
+	if name != "Resource" || variation != "RP-024 Premium Accessory" {
+		t.Errorf("gundamCard(resource) = %q, %q", name, variation)
+	}
+	id, err = b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Promotional Resource Tokens", Variation: variation, Foil: true})
+	if err != nil || id != "rp-024_681970_holofoil" {
+		t.Errorf("Match(resource) = %q, %v, want rp-024_681970_holofoil", id, err)
+	}
+}
+
 func TestGundamName(t *testing.T) {
 	for _, tt := range []struct{ in, want string }{
-		// The four names this storefront types its own way, one letter or
-		// one word off the catalog.
+		// Names this storefront types its own way, one letter or one word
+		// off the catalog.
 		{"Adbul's Maganac", "Abdul's Maganac"},
 		{"Tiffa Adill & Freedom", "Tiffa Adill & Freeden"},
 		// A glyph the storefront names in brackets and the catalog reads
