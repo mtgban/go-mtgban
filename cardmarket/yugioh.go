@@ -302,6 +302,36 @@ func (r *resolver) yugiohWorded(product *cm.Product, cardID string) string {
 	return id
 }
 
+// yugiohShelfSet answers the printing the name reaches in the set the
+// product's shelf is named for, when the bridge put the card in a set not
+// named after the shelf: CardTrader links the 25th Anniversary Sanga of the
+// Thunder to the Worldwide English row, which shares its number. A set named
+// after the shelf, a 2020 date reprint or the movie pack's gold edition, is
+// filed there on purpose and keeps the bridge.
+func (r *resolver) yugiohShelfSet(product *cm.Product, cardID string) string {
+	shelf, err := r.backend.GetSetByName(product.ExpansionName)
+	if err != nil {
+		return ""
+	}
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil || co.SetCode == shelf.Code {
+		return ""
+	}
+	set, err := r.backend.GetSet(co.SetCode)
+	if err != nil || strings.HasPrefix(set.Name, shelf.Name) {
+		return ""
+	}
+	id, err := r.matchYugioh(product)
+	if err != nil || id == "" {
+		return ""
+	}
+	named, err := r.backend.GetUUID(id)
+	if err != nil || named.SetCode != shelf.Code {
+		return ""
+	}
+	return id
+}
+
 // rarityNames reports whether every word of the storefront's rarity is a
 // word of the datastore's, which may decorate it ("Prismatic Collector's").
 func rarityNames(worded, rarity string) bool {

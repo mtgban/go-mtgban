@@ -200,6 +200,16 @@ func TestYugiohBridgeNumber(t *testing.T) {
 			269852, 93934, "Black Rose Dragon", "004", "Legendary Collection 5D's",
 			"lc05-en004_93832_limited",
 		},
+		{
+			"the 25th Anniversary print lands in its shelf's set, not the Worldwide row",
+			706925, 476362, "Sanga of the Thunder", "025", "Metal Raiders (25th Anniversary Edition)",
+			"mrd-en025_486264_unlimited",
+		},
+		{
+			"a date reprint filed on its set's shelf keeps the bridge",
+			782047, 562176, "Guardian of Order (V.2 - Secret Rare)", "000", "Light of Destruction",
+			"lodt-en000_562176_unlimited",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			mkm.tcgBridge = map[int]int{tt.mkmID: tt.bridgeTCG}
