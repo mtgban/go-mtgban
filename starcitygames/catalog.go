@@ -789,6 +789,33 @@ var catalogNames = map[string]string{
 	"Sky Cruiser": "Sky Crusier",
 }
 
+// prereleaseMissing reports whether a PRE_<set>_<number> sku names a card
+// with no prerelease copy: the promo set holds no printing of it, and the
+// set's own row at that number is not the prerelease one.
+func prereleaseMissing(b *mtgmatcher.Backend, cardName, number string) bool {
+	fields := strings.Split(number, "_")
+	if len(fields) != 3 || fields[0] != "PRE" {
+		return false
+	}
+	if promo, found := b.Sets["P"+fields[1]]; found {
+		for _, card := range promo.Cards {
+			if mtgmatcher.Contains(card.Name, cardName) {
+				return false
+			}
+		}
+	}
+	cards := b.MatchWithNumber(cardName, fields[1], strings.TrimLeft(fields[2], "0"))
+	if len(cards) == 0 {
+		return false
+	}
+	for _, card := range cards {
+		if card.HasPromoType(magic.PromoTypePrerelease) {
+			return false
+		}
+	}
+	return true
+}
+
 func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string, error) {
 	// Duel Masters crossover promos are catalogued under Magic but aren't Magic
 	// cards, so there's nothing to match; discard them.
@@ -798,6 +825,12 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 
 	if spelled, found := catalogNames[p.Name]; found {
 		p.Name = spelled
+	}
+
+	// Star City Games lists prerelease skus for cards that were never given
+	// a prerelease printing, and there is nothing for those to price.
+	if game == GameMagic && prereleaseMissing(b, p.Name, skuNumber(p.SKU)) {
+		return "", mtgmatcher.ErrUnsupported
 	}
 
 	foil := catalogFoil(p)

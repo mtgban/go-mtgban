@@ -119,3 +119,29 @@ func TestLeagueTokensTableIsExhaustive(t *testing.T) {
 		}
 	}
 }
+
+// TestPrereleaseMissing pins which PRE_ skus name no prerelease printing:
+// the Lost Caverns of Ixalan double-faced cards have none anywhere, while a
+// prerelease filed in the set itself, one the promo set numbers with a star,
+// and one Star City Games spells without its accent all exist.
+func TestPrereleaseMissing(t *testing.T) {
+	b := withMagic(t)
+
+	tests := []struct {
+		name, number string
+		want         bool
+	}{
+		{"Ojer Taq, Deepest Foundation // Temple of Civilization", "PRE_LCI_026", true},
+		{"Melek, Reforged Researcher", "PRE_MKM_430", false},
+		{"Helm of Kaldra", "PRE_5DN_131", false},
+		{"Eomer, Marshal of Rohan", "PRE_LTR_120", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := prereleaseMissing(b, tt.name, tt.number)
+			if got != tt.want {
+				t.Errorf("prereleaseMissing(%q, %q) = %v, want %v", tt.name, tt.number, got, tt.want)
+			}
+		})
+	}
+}
