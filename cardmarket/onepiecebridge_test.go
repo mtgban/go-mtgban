@@ -168,3 +168,105 @@ func TestOnePieceEventLabelReachesThePrinting(t *testing.T) {
 		t.Errorf("processProduct(896411) named %q, want %q", got, want)
 	}
 }
+
+// onePieceOffCodeDatastore adds a second printing at a different number
+// beside the base OP05-069 art, to pin offCode's guard.
+const onePieceOffCodeDatastore = `{"data": {
+ "game": "onepiece",
+ "sets": {"OP05": {"name": "Awakening of the New Era", "releaseDate": "2023-11-25"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 527875}, "finish": "Foil", "id": "op05-069_527875_foil", "name": "Trafalgar Law", "number": "OP05-069", "rarity": "SR", "setCode": "OP05"},
+  {"externalLinks": {"tcgPlayerId": 599999}, "finish": "Foil", "id": "op05-070_599999_foil", "name": "Someone Else", "number": "OP05-070", "rarity": "SR", "setCode": "OP05"}
+ ]
+}}`
+
+// TestOnePieceOffCodeFallsToWording pins offCode: a bridge link is another
+// marketplace's, and one whose printing's number disagrees with the code
+// the product's own name carries must not be trusted - the product falls to
+// the wording path instead.
+func TestOnePieceOffCodeFallsToWording(t *testing.T) {
+	b := datastoreBackend(t, "onepiece", onePieceOffCodeDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	// The bridge points at OP05-070, but the name carries OP05-069.
+	mkm.tcgBridge = map[int]int{200: 599999}
+	mkm.priceGuide = map[int]cm.PriceGuide{200: {IDProduct: 200, LowPrice: 1, TrendPrice: 2}}
+	product := cm.Product{
+		IDProduct:     200,
+		Name:          "Trafalgar Law (OP05-069)",
+		Number:        "OP05-069",
+		ExpansionName: "Awakening of the New Era",
+	}
+	channel := make(chan responseChan, 8)
+	err = mkm.processProduct(channel, &product)
+	if err != nil {
+		t.Fatalf("processProduct(%q) = %v", product.Name, err)
+	}
+	close(channel)
+	var got string
+	for res := range channel {
+		if res.cardID != "" {
+			got = res.cardID
+			break
+		}
+	}
+	want := "op05-069_527875_foil"
+	if got != want {
+		t.Errorf("processProduct(%q) named %q, want %q", product.Name, got, want)
+	}
+}
+
+// onePieceShelfCodeDatastore is a synthetic Demo Decks printing pair, to pin
+// the off-code fallback against an aliased shelf: the product's own Number
+// field carries another product's code, while its name still carries the
+// right one. It makes no claim about any real Cardmarket product's data.
+const onePieceShelfCodeDatastore = `{"data": {
+ "game": "onepiece",
+ "sets": {"OP-DD": {"name": "One Piece Demo Deck Cards", "releaseDate": "2022-07-08"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 602795}, "finish": "Normal", "id": "op01-013_602795", "name": "Sanji", "number": "OP01-013", "rarity": "R", "setCode": "OP-DD"},
+  {"externalLinks": {"tcgPlayerId": 599999}, "finish": "Normal", "id": "op01-999_599999", "name": "Someone Else", "number": "OP01-999", "rarity": "R", "setCode": "OP-DD"}
+ ]
+}}`
+
+// TestOnePieceShelfCodeFallsToWording pins that a Demo Decks product whose
+// bridge is off-code still lands, on the wording path, off the code its own
+// name carries rather than the wrong number Cardmarket filed it under. The
+// product id and its data are synthetic.
+func TestOnePieceShelfCodeFallsToWording(t *testing.T) {
+	b := datastoreBackend(t, "onepiece", onePieceShelfCodeDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	// The bridge points at a printing the name's own code disagrees with.
+	mkm.tcgBridge = map[int]int{900001: 599999}
+	mkm.priceGuide = map[int]cm.PriceGuide{900001: {IDProduct: 900001, LowPrice: 1, TrendPrice: 2}}
+	product := cm.Product{
+		IDProduct:     900001,
+		Name:          "Sanji (OP01-013)",
+		Number:        "ST13-016",
+		ExpansionName: "Demo Decks",
+	}
+	channel := make(chan responseChan, 8)
+	err = mkm.processProduct(channel, &product)
+	if err != nil {
+		t.Fatalf("processProduct(%q) = %v", product.Name, err)
+	}
+	close(channel)
+	var got string
+	for res := range channel {
+		if res.cardID != "" {
+			got = res.cardID
+			break
+		}
+	}
+	want := "op01-013_602795"
+	if got != want {
+		t.Errorf("processProduct(%q) named %q, want %q", product.Name, got, want)
+	}
+}
