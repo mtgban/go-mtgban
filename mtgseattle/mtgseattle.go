@@ -19,7 +19,9 @@ import (
 )
 
 const (
-	defaultConcurrency = 8
+	// The site throttles concurrent traffic (see NewScraper's client
+	// setup), so this stays low rather than at the other scrapers' 8.
+	defaultConcurrency = 2
 
 	baseURL      = "https://www.mtgseattle.com"
 	inventoryURL = baseURL + "/catalog/magic_singles/8"
@@ -57,8 +59,29 @@ func NewScraper(b *mtgmatcher.Backend) *MTGSeattle {
 	ms.maxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	// The site appears to throttle rather than reject outright, so
+	// retry slower and longer instead of giving up in seconds.
+	client.Backoff = retryablehttp.RateLimitLinearJitterBackoff
+	client.RetryWaitMin = 2 * time.Second
+	client.RetryWaitMax = 10 * time.Second
+	client.RetryMax = 20
+	client.ErrorHandler = retryErrorHandler
 	ms.client = client.StandardClient()
 	return &ms
+}
+
+// retryErrorHandler reports the last HTTP status once retries are
+// exhausted; retryablehttp's own message omits it.
+func retryErrorHandler(resp *http.Response, err error, numTries int) (*http.Response, error) {
+	status := "no response"
+	if resp != nil {
+		status = resp.Status
+		resp.Body.Close()
+	}
+	if err != nil {
+		return nil, fmt.Errorf("giving up after %d attempt(s), last status %s: %w", numTries, status, err)
+	}
+	return nil, fmt.Errorf("giving up after %d attempt(s), last status %s", numTries, status)
 }
 
 type responseChan struct {
