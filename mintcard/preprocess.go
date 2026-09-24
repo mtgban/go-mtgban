@@ -28,8 +28,9 @@ var nameTable = map[string]string{
 }
 
 var name2edition = map[string]string{
-	"Serra Angel":  "PWOS",
-	"Fiendish Duo": "PKHM",
+	"Serra Angel":    "PWOS",
+	"Fiendish Duo":   "PKHM",
+	"Lightning Bolt": "PW26",
 }
 
 // codeTable maps the set codes the storefront invents onto the datastore's
