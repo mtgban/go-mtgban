@@ -1150,39 +1150,47 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 	}
 
 	// A wording that spells a sibling's own qualifier whole has named that
-	// product, and no word of it is read as a piece of a rarity: 26LP-EN001
-	// sells "Monster Reborn (Emblazoned)", the Starlight Rare, beside
-	// "Monster Reborn (Emblazoned Secret Rare)", and "Emblazoned" spells the
-	// first one's qualifier whole and only part of the second one's rarity.
-	// Read as a rarity narrowed by one word it went to the second. The
-	// qualifier itself is the variant tier's to answer, after the number's
-	// suffix below has had its say - "RA03-EN123qsec B" is the letter B at
-	// the rarity the suffix names.
-	if len(qualifierNamed(words, candidates, qualifiers)) > 0 {
+	// product, and no word of the qualifier is read as a piece of a rarity
+	// (26LP-EN001's "Monster Reborn (Emblazoned)" beside "...(Emblazoned
+	// Secret Rare)"). The rest of the wording may still name a rarity
+	// outright, though: the Rarity Collections sell every tier of a number
+	// decorated ("Alt Art"), so the qualifier alone does not say which of
+	// the tiers sharing it is meant. Only the qualifier's own words are
+	// dropped before asking; nothing left over falls back to the number's
+	// suffix, same as an unqualified wording without one.
+	matched := matchedQualifiers(words, candidates, qualifiers)
+	if len(matched) > 0 {
+		rest := withoutQualifierWords(words, matched)
+		if out, found := rarityFilter(rest, candidates); found {
+			return out
+		}
 		return suffixNarrowed(candidates, number)
 	}
 
-	if decorated, found := decoratedRarity(words, candidates); found {
-		var out []mtgmatcher.Card
-		for _, card := range candidates {
-			if strings.EqualFold(card.Rarity, decorated) {
-				out = append(out, card)
-			}
-		}
-		return out
-	}
-
-	if narrowed, found := narrowedRarity(words, candidates); found {
-		var out []mtgmatcher.Card
-		for _, card := range candidates {
-			if strings.EqualFold(card.Rarity, narrowed) {
-				out = append(out, card)
-			}
-		}
+	if out, found := rarityFilter(words, candidates); found {
 		return out
 	}
 
 	return suffixNarrowed(candidates, number)
+}
+
+// rarityFilter narrows the candidates to the one rarity decoratedRarity or
+// narrowedRarity names in the wording, or reports false where neither does.
+func rarityFilter(words []string, candidates []mtgmatcher.Card) ([]mtgmatcher.Card, bool) {
+	rarity, found := decoratedRarity(words, candidates)
+	if !found {
+		rarity, found = narrowedRarity(words, candidates)
+	}
+	if !found {
+		return nil, false
+	}
+	var out []mtgmatcher.Card
+	for _, card := range candidates {
+		if strings.EqualFold(card.Rarity, rarity) {
+			out = append(out, card)
+		}
+	}
+	return out, true
 }
 
 // suffixNarrowed keeps the candidates at the rarity the collector number's
@@ -1391,12 +1399,10 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 	return candidates
 }
 
-// qualifierNamed keeps the candidates whose qualifier the wording spells
-// whole, and of those the ones saying the most: "Alternate Art Blue" spells
-// "Blue" as well, and a wording saying all three words means the alternate
-// art. Nothing is kept where the wording spells none, so the tiers around
-// it still have their say.
-func qualifierNamed(words []string, candidates []mtgmatcher.Card, qualifiers map[string]string) []mtgmatcher.Card {
+// matchedQualifiers names the printings' own qualifiers the wording spells
+// whole, most specific first: "Alternate Art Blue" spells "Blue" as well,
+// and a wording saying all three words means only the longer qualifier.
+func matchedQualifiers(words []string, candidates []mtgmatcher.Card, qualifiers map[string]string) map[string]bool {
 	named := map[string]bool{}
 	for _, card := range candidates {
 		if qualifier := strings.ToLower(qualifierOf(qualifiers, card.UUID)); qualifier != "" && allWordsIn(words, qualifier) {
@@ -1411,6 +1417,32 @@ func qualifierNamed(words []string, candidates []mtgmatcher.Card, qualifiers map
 			}
 		}
 	}
+	return named
+}
+
+// withoutQualifierWords drops a matched qualifier's own words out of a
+// wording, so what is left can still be asked whether it names a rarity.
+func withoutQualifierWords(words []string, matched map[string]bool) []string {
+	drop := map[string]bool{}
+	for qualifier := range matched {
+		for _, word := range strings.Fields(qualifier) {
+			drop[word] = true
+		}
+	}
+	var rest []string
+	for _, word := range words {
+		if !drop[word] {
+			rest = append(rest, word)
+		}
+	}
+	return rest
+}
+
+// qualifierNamed keeps the candidates whose qualifier the wording spells
+// whole, and of those the ones saying the most. Nothing is kept where the
+// wording spells none, so the tiers around it still have their say.
+func qualifierNamed(words []string, candidates []mtgmatcher.Card, qualifiers map[string]string) []mtgmatcher.Card {
+	named := matchedQualifiers(words, candidates, qualifiers)
 	var out []mtgmatcher.Card
 	for _, card := range candidates {
 		if named[strings.ToLower(qualifierOf(qualifiers, card.UUID))] {

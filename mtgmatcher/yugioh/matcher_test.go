@@ -301,6 +301,14 @@ var yugiohSeeds = []matchTest{
 		Desc: "a letter-tailed misprint number is read verbatim over its prefix",
 		In:   mtgmatcher.InputCard{Name: "Destiny Hero - Dreadmaster", Edition: "Misprints", Variation: "EOJ-EN004K"},
 	},
+	// The Rarity Collections sell every tier of a number decorated ("Alt
+	// Art"), so the qualifier being named settles nothing about which of
+	// the seven rarities sharing it is meant - the rarity still has its
+	// own say once the qualifier's own words are out of the way.
+	{
+		Desc: "a decorated qualifier still lets the rarity narrow behind it",
+		In:   mtgmatcher.InputCard{Name: "Eldlich the Golden Lord [Alt Art]", Edition: "25th Anniversary Rarity Collection", Variation: "Sitting Down - Ultimate Rare"},
+	},
 }
 
 // testBackend is the datastore TestMain read, for the tests to match
