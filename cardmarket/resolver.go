@@ -244,7 +244,7 @@ func (r *resolver) matchFab(product *cm.Product) string {
 					// is handed out by several of them, so an answer that
 					// did not come back with the number asked for is
 					// another programme's.
-					if numberPrefix != "" && !sameFabNumber(co.Number, numberPrefix+product.Number) {
+					if numberPrefix != "" && !sameFabFace(co.Number, numberPrefix+product.Number) {
 						continue
 					}
 					return id

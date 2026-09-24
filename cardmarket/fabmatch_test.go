@@ -39,6 +39,40 @@ func loadFabDatastore(t *testing.T) *mtgmatcher.Backend {
 	return datastoreBackend(t, "fleshandblood", fabDatastore)
 }
 
+// fabFusedDatastore carries the one row TestMatchFusedFace turns on, copied
+// verbatim from the published datastore: the Judge Promos fused card whose
+// number is whole only as JDG058//JDG059, sold by Cardmarket as two products
+// naming one face each.
+const fabFusedDatastore = `{"data": {
+ "game": "fleshandblood",
+ "sets": {"PR": {"name": "Flesh and Blood: Promo Cards", "releaseDate": "2019-10-11"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 701473}, "finish": "Normal", "id": "jdg058-jdg059_701473", "name": "Peace - JDG058 // War", "number": "JDG058//JDG059", "rarity": "Promo", "setCode": "PR", "variant": "JDG059"}
+ ]
+}}`
+
+// TestMatchFusedFace pins Cardmarket 862198, "War // Peace (Regular)" #059
+// in Judge Promos: the matcher already answers the fused id for it, but the
+// programme-number guard compared the whole fused number against the single
+// face asked for and refused it.
+func TestMatchFusedFace(t *testing.T) {
+	b := datastoreBackend(t, "fleshandblood", fabFusedDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	product := cm.Product{
+		Name:          "War // Peace (Regular)",
+		Number:        "059",
+		ExpansionName: "Judge Promos",
+	}
+	want := "jdg058-jdg059_701473"
+	if got := mkm.matchFab(&product); got != want {
+		t.Errorf("matchFab(%q, %q) = %q, want %q", product.ExpansionName, product.Name, got, want)
+	}
+}
+
 // TestMatchProductPrintRun pins what the name fallback answers for a
 // Cardmarket expansion that names a print run. Two things have to hold at
 // once: the set has to be looked up under the name left when the run suffix

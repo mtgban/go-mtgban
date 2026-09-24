@@ -82,6 +82,16 @@ func sameFabNumber(a, b string) bool {
 	return strings.EqualFold(ma[1], mb[1]) && ma[2] == mb[2] && strings.EqualFold(ma[3], mb[3])
 }
 
+// sameFabFace reports whether a number, or one face of a fused card's
+// number, names the printing asked for.
+func sameFabFace(number, asked string) bool {
+	if sameFabNumber(number, asked) {
+		return true
+	}
+	front, back, fused := strings.Cut(number, "//")
+	return fused && !strings.Contains(asked, "//") && (sameFabNumber(front, asked) || sameFabNumber(back, asked))
+}
+
 // fabEdition names the set of ours a Cardmarket expansion is, and the prefix
 // its collector numbers need to be read with.
 //
