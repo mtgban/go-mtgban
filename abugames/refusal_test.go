@@ -3,6 +3,8 @@ package abugames
 import (
 	"errors"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestUnprintedFinish pins the listings this storefront prices in a finish
@@ -27,6 +29,65 @@ func TestUnprintedFinish(t *testing.T) {
 			in, err := preprocess(b, &card)
 			if !errors.Is(err, errUnprintedFinish) {
 				t.Errorf("preprocess(%q) = %v, %v, want %v", card.DisplayTitle, in, err, errUnprintedFinish)
+			}
+		})
+	}
+}
+
+// TestNeoJapaneseOnlyBasics pins Kamigawa: Neon Dynasty's full-art basics,
+// 293 through 302, which this storefront tags English though the catalog
+// prints them only in Japanese.
+func TestNeoJapaneseOnlyBasics(t *testing.T) {
+	b := realDatastore(t)
+	for _, test := range []struct {
+		name, number string
+	}{
+		{"Plains", "293"}, {"Plains", "294"},
+		{"Island", "295"}, {"Island", "296"},
+		{"Swamp", "297"}, {"Swamp", "298"},
+		{"Mountain", "299"}, {"Mountain", "300"},
+		{"Forest", "301"}, {"Forest", "302"},
+	} {
+		t.Run(test.name+" "+test.number, func(t *testing.T) {
+			card := ABUCard{DisplayTitle: test.name + " (" + test.number + ")",
+				Edition: "Kamigawa: Neon Dynasty", Number: test.number, Language: []string{"English"}}
+			in, err := preprocess(b, &card)
+			if err != nil {
+				t.Fatalf("preprocess(%q) = %v", card.DisplayTitle, err)
+			}
+			id, err := b.Match(in)
+			if err != nil {
+				t.Fatalf("Match(%q) = %v", in, err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "NEO" || co.Number != test.number {
+				t.Errorf("Match(%q) = %s|%s, want NEO|%s", in, co.SetCode, co.Number, test.number)
+			}
+		})
+	}
+}
+
+// TestPrereleaseWildcardEscape pins the two Lost Caverns of Ixalan
+// double-faced prerelease promos PLCI does not hold. Left alone, a
+// Prerelease shelf naming a set the backend carries wildcards past it and
+// lands on 2017 Ixalan's own same-named prerelease instead of refusing.
+func TestPrereleaseWildcardEscape(t *testing.T) {
+	b := realDatastore(t)
+	for _, test := range []struct {
+		desc, title, number string
+	}{
+		{"Growing Rites of Itlimoc", "Growing Rites of Itlimoc / Itlimoc, Cradle of the Sun (Prerelease) - FOIL", "188s"},
+		{"Treasure Map", "Treasure Map / Treasure Cove (Prerelease) - FOIL", "267s"},
+	} {
+		t.Run(test.desc, func(t *testing.T) {
+			card := ABUCard{DisplayTitle: test.title, Edition: "The Lost Caverns of Ixalan Promos",
+				Number: test.number, Language: []string{"English"}}
+			in, err := preprocess(b, &card)
+			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+				t.Errorf("preprocess(%q) = %v, %v, want %v", test.title, in, err, mtgmatcher.ErrUnsupported)
 			}
 		})
 	}

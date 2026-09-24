@@ -29,8 +29,12 @@ var cardTable = map[string]string{
 	"Zilortha, Strength Incarnated":       "Zilortha, Strength Incarnate",
 	"Makindi Siderunner":                  "Makindi Sliderunner",
 	"Anti-Venom, Horrifying Hero":         "Anti-Venom, Horrifying Healer",
+	"Singularity Rapture":                 "Singularity Rupture",
 
 	"The Emperor of Palamecia /The Lord Master of Hell": "The Emperor of Palamecia",
+
+	// The title runs the treatment into the name with no separator.
+	"Kenrith, the Returned King Buy-A-Box": "Kenrith, the Returned King",
 
 	// Funny cards
 	"No Name":                         "_____",
@@ -150,6 +154,88 @@ func promoSet(b *mtgmatcher.Backend, name, edition, variation string) string {
 		return found
 	}
 	return ""
+}
+
+// frontFace answers the name a split card's front face is filed under,
+// where the listing still carries the title's own single "/" and both faces.
+func frontFace(name string) string {
+	index := strings.Index(name, " / ")
+	if index >= 0 {
+		return name[:index]
+	}
+	return name
+}
+
+// namesPromopack reports a number this edition's own promo pack prints
+// under. Some promo packs keep the main set's own number instead of a
+// separate promo-only set - AFR sends Power Word Kill's promo pack to #400,
+// not the plain card's #114 - so a listing wearing that number and edition
+// already names the exact printing.
+func namesPromopack(b *mtgmatcher.Backend, name, edition, number string) bool {
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return false
+	}
+	name = frontFace(name)
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if card.Name == name && card.Number == number && slices.Contains(card.PromoTypes, "promopack") {
+			return true
+		}
+	}
+	return false
+}
+
+// escapesFamily reports a "Prerelease" lookup landing on a printing outside
+// the named set's family (its parent, or a set it is itself the parent of)
+// instead of refusing outright. A set that stays in family, or holds no
+// candidate at all, is left alone.
+func escapesFamily(b *mtgmatcher.Backend, set *mtgmatcher.Set, name string) bool {
+	related := func(code string) bool {
+		if code == set.Code || code == set.ParentCode {
+			return true
+		}
+		other, err := b.GetSet(code)
+		return err == nil && other.ParentCode == set.Code
+	}
+	probe := mtgmatcher.InputCard{Name: name, Edition: set.Name, Variation: "Prerelease"}
+	id, err := b.Match(&probe)
+	if err == nil {
+		co, err := b.GetUUID(id)
+		return err == nil && !related(co.SetCode)
+	}
+	var alias *mtgmatcher.AliasingError
+	if errors.As(err, &alias) {
+		for _, candidate := range alias.Probe() {
+			co, err := b.GetUUID(candidate)
+			if err == nil && !related(co.SetCode) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// onlyForeignPrinting reports an edition filing a number in a language that
+// never included English, scoped to the exact number so a number the set
+// also prints in English still refuses.
+func onlyForeignPrinting(b *mtgmatcher.Backend, name, edition, number string) bool {
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return false
+	}
+	var foreign bool
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if card.Name != name || card.Number != number {
+			continue
+		}
+		if card.Language == "English" {
+			return false
+		}
+		foreign = true
+	}
+	return foreign
 }
 
 // numberCorroborates reports a storefront number that agrees with the one a
@@ -352,8 +438,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	case "Silent Submersible (Promo Pack)",
 		"Silent Submersible (Promo Pack) - FOIL",
 		"Hymn to Tourach (B - Mark Justice - 1996)",
-		"Skyclave Shade (Extended Art)",
-		"Mountain (6th Edition 343 - Mark Le Pine - 1999)":
+		"Skyclave Shade (Extended Art)":
 		return nil, errors.New("untracked card")
 	}
 	switch card.ID {
@@ -364,10 +449,19 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 
 	// The flag is written with the space and without it, "- FOIL" beside
 	// "-FOIL", and reading only the spaced form priced a foil as a nonfoil.
+	// Read it from the words after the card's own name: a name that is
+	// itself "Lavinia, Foil to Conspiracy" must not trip it.
 	title := strings.ToLower(card.DisplayTitle)
-	isFoil := strings.Contains(title, " foil") ||
-		strings.Contains(title, "-foil") ||
-		strings.Contains(title, " - fol") // SS3 Pyroblast
+	suffix := title
+	simple := strings.ToLower(card.SimpleTitle)
+	if simple != "" {
+		if cut, ok := strings.CutPrefix(title, simple); ok {
+			suffix = cut
+		}
+	}
+	isFoil := strings.Contains(suffix, " foil") ||
+		strings.Contains(suffix, "-foil") ||
+		strings.Contains(suffix, " - fol") // SS3 Pyroblast
 
 	edition := card.Edition
 	title = card.DisplayTitle
@@ -448,13 +542,27 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 			}
 		}
 		if isPromo {
-			// Handle promo cards appearing in multiple editions
-			// like Sorcerous Spyglass
-			if strings.Contains(variation, "Promo Pack") || strings.Contains(variation, "Prerelease") {
+			switch {
+			case strings.Contains(variation, "Promo Pack") && namesPromopack(b, cardName, card.Edition, card.Number):
+				// The shelf's own set holds this promo pack printing;
+				// nothing to reset.
+			case strings.Contains(variation, "Prerelease"):
+				set, setErr := b.GetSetByName(card.Edition)
+				if setErr == nil && escapesFamily(b, set, cardName) {
+					return nil, mtgmatcher.ErrUnsupported
+				}
+				// Handle promo cards appearing in multiple editions
+				// like Sorcerous Spyglass
 				variation += " " + edition
+				edition = "Promo"
+			case strings.Contains(variation, "Promo Pack"):
+				variation += " " + edition
+				edition = "Promo"
+			default:
+				// Reset edition, and trust mtgmatcher to find it by
+				// its variation
+				edition = "Promo"
 			}
-			// Reset edition, and trust mtgmatcher to find it by its variation
-			edition = "Promo"
 		}
 	}
 
@@ -675,6 +783,8 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 		variation = strings.Replace(variation, "Phillippines", "Philippines", 1)
 	} else if strings.Contains(variation, "Extented") {
 		variation = strings.Replace(variation, "Extented", "Extended", 1)
+	} else if strings.Contains(variation, "CMDR Party") {
+		variation = strings.Replace(variation, "CMDR Party", "Commander Party", 1)
 	}
 
 	// This storefront calls the black-bordered Fourth Edition BB, where the
@@ -700,6 +810,19 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	if spelled := mtgmatcher.ExtractNumberAny(variation); spelled != "" &&
 		spelled != card.Number && sharesNumber(spelled, card.Number) {
 		variation = strings.Replace(variation, spelled, card.Number, 1)
+	}
+
+	// The wording names an Extended Art treatment; trust the vendor's own
+	// card_number over a conflicting number spelled in the title, once that
+	// spelled number names a real printing rather than a stray year.
+	if strings.Contains(variation, "Extended Art") {
+		spelled := mtgmatcher.ExtractNumberAny(variation)
+		if spelled != "" && card.Number != "" && spelled != card.Number {
+			set, err := b.GetSetByName(edition)
+			if err == nil && len(b.MatchInSetNumber(frontFace(cardName), set.Code, spelled)) > 0 {
+				variation = strings.Replace(variation, spelled, card.Number, 1)
+			}
+		}
 	}
 
 	// Resolve a cataloged artwork description before adding the vendor's
@@ -910,6 +1033,8 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 		if printing == nil || printing.Language != lang {
 			return nil, errForeignListing
 		}
+	} else if lang == "English" && onlyForeignPrinting(b, cardName, edition, card.Number) {
+		lang = ""
 	}
 
 	return &mtgmatcher.InputCard{
