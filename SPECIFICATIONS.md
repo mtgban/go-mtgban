@@ -378,12 +378,13 @@ TCGplayer lists Riftbound singles as Normal and Foil.
 (code → `*Set`); `NormalizedSets` (normalized set name → `*Set`); `UUIDs`
 (UUID → `*CardObject`); `CanonicalNames` (normalized → canonical); `Tokens`;
 `Hashes` (normalized name → UUID list); `ExternalIdentifiers` (Scryfall/TCG/
-etched id → UUID); `AlternateProps` (flavor names); the sorted name and
-sealed-name arrays backing prefix/contains/regexp search; `SetUUIDs` and
-`SetSealedUUIDs` (per-set sorted UUID buckets); `AllPromoTypes`,
-`SLDDeckNames`, `CommanderKeywordMap`; the partitioned `AllUUIDs`/
-`AllSealedUUIDs`; and the unexported `rules GameRules` that a loader attaches
-with `SetRules`.
+etched id → UUID, and the Cardmarket ids One Piece, Lorcana and Pokemon
+publish, reachable only through `ConvertID`); `AlternateProps` (flavor
+names); the sorted name and sealed-name arrays backing prefix/contains/regexp
+search; `SetUUIDs` and `SetSealedUUIDs` (per-set sorted UUID buckets);
+`AllPromoTypes`, `SLDDeckNames`, `CommanderKeywordMap`; the partitioned
+`AllUUIDs`/`AllSealedUUIDs`; and the unexported `rules GameRules` that a
+loader attaches with `SetRules`.
 
 Three of those deserve their own note:
 

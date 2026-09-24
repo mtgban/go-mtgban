@@ -145,6 +145,10 @@ type DatastoreCard struct {
 		// TcgdexID is the tcgdex identifier, annotated where the builder
 		// could align the two sources.
 		TcgdexID string `json:"tcgdexId,omitempty"`
+
+		// CardmarketID is the Cardmarket product a stamped promo was minted
+		// from, the only product selling it.
+		CardmarketID int `json:"cardmarketId,omitempty"`
 	} `json:"externalLinks"`
 }
 
@@ -250,7 +254,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
+	b.ExternalIdentifiers = map[string]map[string]string{
+		mtgmatcher.IDSpaceTCGplayer:  {},
+		mtgmatcher.IDSpaceCardmarket: {},
+	}
 	b.SetSealedUUIDs = map[string][]string{}
 
 	b.Sets = map[string]*mtgmatcher.Set{}
@@ -418,7 +425,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if id := card.ExternalLinks.TcgdexID; id != "" {
 			identifiers["tcgdexId"] = id
 		}
-		// A printing with neither keeps the nil map it had, so nothing is
+		if card.ExternalLinks.CardmarketID != 0 {
+			mcmID := fmt.Sprint(card.ExternalLinks.CardmarketID)
+			identifiers["mcmId"] = mcmID
+			b.ExternalIdentifiers[mtgmatcher.IDSpaceCardmarket][mcmID] = card.ID
+		}
+		// A printing with none keeps the nil map it had, so nothing is
 		// stamped with an empty string for want of a value.
 		if len(identifiers) > 0 {
 			convertedCard.Identifiers = identifiers
