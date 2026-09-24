@@ -134,6 +134,8 @@ var tcgIDOverrides = map[int]int{
 	340672: 211449, // Palkia & Dialga LEGEND, Jumbo Oversized
 	242584: 250252, // Mewtwo V-UNION, Jumbo Oversized
 	332883: 545663, // Lugia ex, Jumbo Oversized, TCG Classic deck
+	171625: 252517, // Charizard, Gold Metal, Celebrations
+	171624: 252516, // Pikachu, Gold Metal, Celebrations
 }
 
 // tcgplayerID answers the TCGplayer id a blueprint's own listings should
