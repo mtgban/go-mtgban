@@ -35,3 +35,34 @@ func TestMultiverseIdentifiers(t *testing.T) {
 		t.Errorf("bare 29728: %s", err)
 	}
 }
+
+// A split card's non-'a' face carries its own multiverseId in mtgjson,
+// dropped along with the rest of that face's duplicated data; it has to be
+// filed under the 'a' face's uuid instead of disappearing outright.
+func TestMultiverseIdentifiersSplitFaceB(t *testing.T) {
+	realDatastore(t)
+	for _, tc := range []struct {
+		multiverseID string
+		name         string
+		setCode      string
+	}{
+		{"20580", "Assault // Battery", "INV"},
+		{"26691", "Night // Day", "APC"},
+		{"27168", "Order // Chaos", "APC"},
+	} {
+		uuid := testBackend.ConvertID(mtgmatcher.IDSpaceMultiverse, tc.multiverseID)
+		if uuid == "" {
+			t.Errorf("multiverse id %s (face b of %s) did not resolve", tc.multiverseID, tc.name)
+			continue
+		}
+		co, err := testBackend.GetUUID(uuid)
+		if err != nil {
+			t.Errorf("multiverse id %s: %v", tc.multiverseID, err)
+			continue
+		}
+		if co.Name != tc.name || co.SetCode != tc.setCode {
+			t.Errorf("multiverse id %s resolved to %s (%s), want %s (%s)",
+				tc.multiverseID, co.Name, co.SetCode, tc.name, tc.setCode)
+		}
+	}
+}
