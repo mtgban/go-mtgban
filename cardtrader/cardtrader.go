@@ -270,6 +270,20 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				if isTwoSidedTokenBlueprint(blueprint, blueprint.Name) {
 					continue
 				}
+				// A Flesh and Blood face with no printing of its own has
+				// nothing to land on (see the commit). Skipped when the
+				// blueprint's own name already spells both faces: that
+				// case is uniquely identifiable, so any refusal is a real
+				// bug elsewhere rather than this shape's dead end.
+				if ct.gameID == GameFleshAndBlood && !strings.Contains(blueprint.Name, " // ") {
+					number := blueprint.Properties.Number
+					if number == "" {
+						number = product.Properties.Number
+					}
+					if fabDoubleSidedFace(ct.backend, fabNumber(blueprint, number)) {
+						continue
+					}
+				}
 				ct.printf("%v", err)
 				ct.printf("%q", theCard)
 				ct.printf("%d %+v", bpID, blueprint)
