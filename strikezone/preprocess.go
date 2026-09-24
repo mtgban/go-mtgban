@@ -61,10 +61,12 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	cardName = strings.ReplaceAll(cardName, " / ", " // ")
 	// A flavor name written before the card's own ("Astral Tiran - Primeval
 	// Titan") keeps the card's own.
+	var droppedFlavor bool
 	if head, tail, dashed := strings.Cut(cardName, " - "); dashed {
 		if _, err := b.SearchEquals(mtgmatcher.SplitVariants(tail)[0]); err == nil {
 			if _, err := b.SearchEquals(head); err != nil {
 				cardName = tail
+				droppedFlavor = true
 			}
 		}
 	}
@@ -77,6 +79,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			if tail, found := strings.CutPrefix(notes, treatment); found {
 				if _, err := b.SearchEquals(tail); err == nil {
 					cardName, notes = tail, strings.TrimSpace(treatment)
+					droppedFlavor = true
 					break
 				}
 			}
@@ -413,7 +416,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	// says which only where it writes something beside the name. Where the
 	// set holds several, the match that follows picks one of them for no
 	// reason and prices the others as it, so refuse instead of choosing.
-	if edition == "Secret Lair" && variation == "" && hasSeveralDrops(b, cardName) {
+	if edition == "Secret Lair" && variation == "" && hasSeveralDrops(b, cardName, droppedFlavor) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
@@ -430,8 +433,21 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 // drop. The suffixes a number can end on - the star of a foil twin, the phi
 // of a step-and-compleat - mark twins the wording picks, not drops of their
 // own, and PlainNumber is the number with all of them already stripped.
-func hasSeveralDrops(b *mtgmatcher.Backend, cardName string) bool {
+//
+// A flavor-named drop does not count beside the card's own, which the matcher
+// lands a listing naming no flavor on - unless preprocess cut one off the
+// name (droppedFlavor), which the match then never sees.
+func hasSeveralDrops(b *mtgmatcher.Backend, cardName string, droppedFlavor bool) bool {
 	cards := b.MatchInSet(cardName, "SLD")
+	var unflavored []mtgmatcher.Card
+	for _, card := range cards {
+		if card.FlavorName == "" {
+			unflavored = append(unflavored, card)
+		}
+	}
+	if len(unflavored) > 0 && !droppedFlavor {
+		cards = unflavored
+	}
 	if len(cards) < 2 {
 		return false
 	}
