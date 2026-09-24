@@ -64,6 +64,23 @@ var nameTable = map[string]string{
 	"Gepanzerter Wasserwanderer":             "Plated Seastrider",
 	"Camminatore di Phyrexia":                "Phyrexian Walker",
 	"Odric, Lunarch Marshall":                "Odric, Lunarch Marshal",
+	"Alesha, Whos Smiles at Death":           "Alesha, Who Smiles at Death",
+	"Pertified Hamlet":                       "Petrified Hamlet",
+	"Zuri, Warrior of Wakana":                "Zuri, Warrior of Wakanda",
+}
+
+// buylistLanguage reads a foreign-language marker out of a buylist row's
+// name or notes, Japan Showcase and Ghostfire treatments included: MTGJSON
+// files those as ordinary English rows, so the language check below refuses
+// them the same as any other print with no localized row on file.
+func buylistLanguage(name, notes string) string {
+	switch {
+	case strings.Contains(name, "Japanese") || strings.Contains(notes, "Japanese"):
+		return "Japanese"
+	case strings.Contains(name, "- Spanish") || strings.Contains(notes, "Spanish"):
+		return "Spanish"
+	}
+	return ""
 }
 
 func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
@@ -543,6 +560,13 @@ func card2promo(cardName, variant string) (string, string) {
 	case "Sol Ring":
 		if variant == "Commander Promo" {
 			edition = "PF19"
+		} else if mtgmatcher.Equals(variant, "Love Your Local Game Store promo") {
+			edition = "PLG22"
+			variant = "1"
+		}
+	case "Arcane Signet":
+		if variant == "Festival Magic Con" {
+			return "P30M", "1F"
 		}
 	case "Sakura-Tribe Elder":
 		if variant == "Textless Victor Adame Minguez art" {
@@ -588,9 +612,56 @@ func card2promo(cardName, variant string) (string, string) {
 	return edition, variant
 }
 
+// buylistNumberFixes corrects a Number field the vendor got wrong on a
+// specific product; its own Image sku disagrees with Number on 268 other
+// products for an unrelated reason, so this is a keyed table, not a rule.
+var buylistNumberFixes = map[string]string{
+	"343896": "675", // Lightning Bolt (Hadoken): SLD x Street Fighter
+	"306846": "315", // Horizon Stone: Commander Legends extended art
+	"391205": "244", // Ratonhnhake:ton (Foil-Etched): Assassin's Creed
+}
+
+// buylistImageNumber retries a card whose Number field named no printing
+// with the set and number its own Image sku carries, when that names
+// exactly one printing. The candidate is confirmed through Match itself,
+// language included - though Match clamps a mismatched foil request
+// rather than reject it, so a landed candidate is not proof of finish.
+func buylistImageNumber(b *mtgmatcher.Backend, cardName string, isFoil bool, language, image string) *mtgmatcher.InputCard {
+	stem := strings.ToUpper(image)
+	for _, n := range [...]int{3, 4} {
+		if len(stem) <= n {
+			continue
+		}
+		setCode := stem[:n]
+		num := strings.TrimLeft(stem[n:], "_0")
+		if num == "" {
+			continue
+		}
+		nums := []string{num}
+		bare := strings.TrimRight(num, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+		if bare != num && bare != "" {
+			nums = append(nums, bare)
+		}
+		for _, num := range nums {
+			if len(b.MatchInSetNumber(cardName, setCode, num)) != 1 {
+				continue
+			}
+			candidate := &mtgmatcher.InputCard{Name: cardName, Variation: num, Edition: setCode, Foil: isFoil, Language: language}
+			_, err := b.Match(candidate)
+			if err == nil {
+				return candidate
+			}
+		}
+	}
+	return nil
+}
+
 // PreprocessBuylist is Preprocess for the buylist feed, which describes a card
 // differently from the sale catalog.
 func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
+	if fix, ok := buylistNumberFixes[card.PID]; ok {
+		card.Number = fix
+	}
 	// A two-sided token sheet prints one physical card for a pairing the
 	// ordinary per-card pipeline below was never built for: a name like
 	// "Soldier (Token) // Beast (Token)" carries no external id to route
@@ -601,6 +672,8 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	if strings.Contains(card.Name, "(Token)") && strings.Contains(card.Name, " // ") {
 		return preprocessTokenPairBuylist(b, card)
 	}
+
+	language := buylistLanguage(card.Name, card.Notes)
 
 	num := strings.TrimLeft(card.Number, "0")
 	cleanVar := cleanVariant(card.Notes)
@@ -652,14 +725,6 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	// Skip tokens with the same names as cards
 	if strings.Contains(variant, "Emblem") && !b.IsToken(cardName) {
 		return nil, mtgmatcher.ErrUnsupported
-	}
-
-	// Coldsnap Theme Deck basics are deliberately refused below rather
-	// than resolved, so this is tried everywhere else first.
-	if edition != "Coldsnap Theme Deck" {
-		if input := basicLandListing(b, cardName, edition, isFoil, card.Image); input != nil {
-			return input, nil
-		}
 	}
 
 	switch edition {
@@ -720,9 +785,12 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		case "Ravnica Weekend Promo":
 			edition = variant
 			variant = num
-		case "Stained Glass Art":
+		case "Stained Glass Art", "Secret Lair Bonus Cards":
 			edition = "SLD"
 			variant = num
+		case "Japan Planeswalker Series Summer 2025 Promo":
+			edition = "PWCS"
+			variant = ""
 		case "Junior Super Series Promo",
 			"Junior Super Series Promo Carl Critchlow art":
 			edition = "PSUS"
@@ -742,9 +810,12 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		}
 	}
 
-	// Add previously removed/ignored tags
+	// Add previously removed/ignored tags, reading the tag word itself out
+	// of altVariant too (Secret Lair spells "Foil-Etched" in the name's own
+	// parenthetical), without folding all of altVariant into variant.
+	tagSource := strings.ToLower(cleanVar + " " + altVariant)
 	for _, tag := range preserveTags {
-		if strings.Contains(strings.ToLower(cleanVar), tag) && !strings.Contains(strings.ToLower(variant), tag) {
+		if strings.Contains(tagSource, tag) && !strings.Contains(strings.ToLower(variant), tag) {
 			if variant != "" {
 				variant += " "
 			}
@@ -752,12 +823,34 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		}
 	}
 
-	return &mtgmatcher.InputCard{
+	// Added last, so Secret Lair's own case above doesn't discard it:
+	// IsJPN reads the word from the variation, not from Language.
+	if language == "Japanese" && !strings.Contains(strings.ToLower(variant), "japanese") {
+		if variant != "" {
+			variant += " "
+		}
+		variant += "Japanese"
+	}
+
+	final := &mtgmatcher.InputCard{
+		Language:  language,
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
 		Foil:      isFoil,
-	}, nil
+	}
+
+	// A bad Number retries against the Image sku, except when Oversize
+	// failed: the retry rebuilds Variation from the image and drops it.
+	probe := *final
+	_, err = b.Match(&probe)
+	if err != nil && !(errors.Is(err, mtgmatcher.ErrUnsupported) && mtgmatcher.Contains(final.Variation, "Oversize")) {
+		retry := buylistImageNumber(b, cardName, isFoil, language, card.Image)
+		if retry != nil {
+			return retry, nil
+		}
+	}
+	return final, nil
 }
 
 // preprocessTokenPairBuylist resolves a two-sided token buylist row to the
