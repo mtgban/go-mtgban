@@ -224,6 +224,20 @@ var lorcanaSeeds = []matchTest{
 		Desc: "promo wave's first listing carries no (V.N) wording at all",
 		In:   mtgmatcher.InputCard{Name: "Maleficent - Monstrous Dragon", Variation: "5", Edition: "Promos Year 1", Foil: true},
 	},
+	// An edition naming no set of its own - Cardmarket's yearly promo
+	// headings, Cool Stuff Inc's plain "Promo" - is read against the DLPC
+	// promo pool: a bare name unique to one number there is adopted, the
+	// way a named set's own qualifier wording would license it.
+	{
+		Desc: "bare name unique at its number in the promo pool adopts the decoration",
+		In:   mtgmatcher.InputCard{Name: "Snow White - Unexpected Houseguest", Variation: "41", Edition: "Promos Year 1"},
+	},
+	{
+		// The pool holds two decorated siblings at 25 (CS Exclusive, JP
+		// Exclusive) and Cardmarket sends no wording to tell them apart.
+		Desc: "negative: two decorated siblings in the promo pool refuse",
+		In:   mtgmatcher.InputCard{Name: "Mickey Mouse - True Friend", Variation: "25", Edition: "Promos Year 1"},
+	},
 	// Edition narrowing: the Match skeleton restricts candidates to the sets
 	// matching a supplied edition; without one (or with one that resolves to
 	// no set name) the number-driven contract above is unchanged.

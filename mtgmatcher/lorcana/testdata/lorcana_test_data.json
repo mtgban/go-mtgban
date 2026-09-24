@@ -5829,6 +5829,15 @@
         "uuid": "1951_foil"
     },
     {
+        "description": "bare name unique at its number in the promo pool adopts the decoration",
+        "input": {
+            "name": "Snow White - Unexpected Houseguest",
+            "variant": "41",
+            "edition": "Promos Year 1"
+        },
+        "uuid": "m-626546_foil"
+    },
+    {
         "description": "case variant: base spelling reaches the enchanted printing",
         "input": {
             "name": "Cruella De Vil - Miserable as Usual",
@@ -6033,6 +6042,15 @@
         "input": {
             "name": "A Whole New World",
             "variant": "000B"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: two decorated siblings in the promo pool refuse",
+        "input": {
+            "name": "Mickey Mouse - True Friend",
+            "variant": "25",
+            "edition": "Promos Year 1"
         },
         "error": "unknown variant"
     },
