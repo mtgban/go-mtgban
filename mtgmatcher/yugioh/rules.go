@@ -512,9 +512,29 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = named
 	} else if set := numberSet(b, inCard, edition); set != nil {
 		edition = set.Name
+	} else if isPromoHeading(edition) {
+		// Cool Stuff Inc's catch-all "Promo" shelf answers for no set of its
+		// own, so once the number has failed to place it in one, the
+		// heading itself has nothing left to say - and left standing it can
+		// still wrongly restrict CandidateSets to some unrelated set whose
+		// own name happens to contain the word "Promo".
+		number := extractNumber(inCard.Variation)
+		if number != "" {
+			edition = ""
+		}
 	}
 	inCard.Edition = edition
 	spellNumber(b, inCard)
+}
+
+// isPromoHeading reports whether an edition is Cool Stuff Inc's catch-all
+// "Promo" shelf, the one heading seen in practice that answers for no set
+// at all rather than merely spelling a real one incompletely - dropping an
+// edition CardTrader spells short ("Legendary Collection" for "...1") would
+// remove the one thing keeping an unrelated same-tail-digit printing from
+// aliasing in beside it, so the check stays this narrow on purpose.
+func isPromoHeading(edition string) bool {
+	return mtgmatcher.Normalize(edition) == mtgmatcher.Normalize("Promo")
 }
 
 // AliasEdition spells an edition string toward a set name using the string

@@ -34,6 +34,15 @@
         "uuid": "ac11-de021_251903_limited"
     },
     {
+        "description": "a bare rarity still means the plain printing over a tagged reprint",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LC01-EN004 Ultra Rare",
+            "edition": "Promo"
+        },
+        "uuid": "lc01-en004_79082_limited"
+    },
+    {
         "description": "a bare tail is spelled out by the set it names",
         "input": {
             "name": "Different Dimension Gate",
@@ -96,6 +105,15 @@
             "finish": "Foil"
         },
         "uuid": "tp1-017_22708_unlimited"
+    },
+    {
+        "description": "a heading naming no set of its own is dropped for the number to answer",
+        "input": {
+            "name": "Dark Magician",
+            "variant": "BPT001 BPT-001 Secret Rare",
+            "edition": "Promo"
+        },
+        "uuid": "bpt-001_22794_limited"
     },
     {
         "description": "a league written without its padding still names its set",
@@ -339,12 +357,12 @@
     {
         "description": "negative: a number two sets share names neither of them",
         "input": {
-            "name": "Dark Magician",
-            "variant": "BPT001 BPT-001 Secret Rare",
+            "name": "Honest",
+            "variant": "LODT-EN001 Secret Rare",
             "edition": "Promo"
         },
         "uuid": "",
-        "error": "unknown variant"
+        "error": "aliasing detected"
     },
     {
         "description": "negative: a printing numbered in another language is not ours",
