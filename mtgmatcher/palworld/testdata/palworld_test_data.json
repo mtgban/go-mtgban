@@ -1,5 +1,13 @@
 [
     {
+        "description": "Prototype picks the Prototype set over a same-named TD01 card",
+        "input": {
+            "name": "Soul",
+            "variant": "Prototype"
+        },
+        "uuid": "716360"
+    },
+    {
         "description": "a number answers without an edition",
         "input": {
             "name": "Suzaku - Hellfire Wings",
@@ -14,6 +22,14 @@
             "variant": "EBP01-001SSP"
         },
         "uuid": "ebp01-001ssp_713881_foil"
+    },
+    {
+        "description": "a wording naming no number, saying Prototype instead",
+        "input": {
+            "name": "Cattiva",
+            "variant": "Prototype"
+        },
+        "uuid": "716343"
     },
     {
         "description": "and its super parallel",
