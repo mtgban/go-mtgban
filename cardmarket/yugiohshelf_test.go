@@ -63,6 +63,49 @@ func TestMatchYugiohShelves(t *testing.T) {
 	}
 }
 
+// yugiohInfixDatastore is the published datastore cut down to two
+// region-prefixed promos, each filed in a set other than the one its
+// expansion names: Rise of Destiny's special edition and a Sneak Preview
+// print of a Force of the Breaker card.
+const yugiohInfixDatastore = `{"data": {
+ "game": "yugioh",
+ "sets": {
+  "RDS": {"abbreviation": "RDS", "name": "Rise of Destiny", "releaseDate": "2004-12-03"},
+  "RDS-275": {"abbreviation": "RDS-275", "name": "Rise of Destiny Special Edition", "releaseDate": "2005-02-01"},
+  "FOTB": {"abbreviation": "FOTB", "name": "Force of the Breaker", "releaseDate": "2007-05-16"},
+  "G284": {"abbreviation": "G284", "name": "Sneak Preview Series 3", "releaseDate": "2006-02-28"}
+ },
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 23472}, "finish": "Limited", "id": "rds-ense1_23472_limited", "name": "Diffusion Wave-Motion", "number": "RDS-ENSE1", "rarity": "Ultra Rare", "setCode": "RDS-275"},
+  {"externalLinks": {"tcgPlayerId": 26592}, "finish": "Limited", "id": "fotb-ensp1_26592_limited", "name": "Volcanic Rocket", "number": "FOTB-ENSP1", "rarity": "Super Rare", "setCode": "G284"}
+ ]
+}}`
+
+// TestMatchYugiohInfixedPromos pins the region-infix retry that reaches a
+// promo the datastore numbers "EN"+region+tail, in whichever set of the
+// shelf actually carries the row.
+func TestMatchYugiohInfixedPromos(t *testing.T) {
+	b := datastoreBackend(t, "yugioh", yugiohInfixDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	for _, tt := range []struct {
+		expansion, name, number, want string
+		err                           error
+	}{
+		{"Rise of Destiny", "Diffusion Wave-Motion", "SE1", "rds-ense1_23472_limited", nil},
+		{"Force of the Breaker", "Volcanic Rocket (V.2 - Super Rare)", "SP1", "fotb-ensp1_26592_limited", nil},
+	} {
+		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion}
+		got, err := mkm.matchYugioh(&product)
+		if got != tt.want || !errors.Is(err, tt.err) {
+			t.Errorf("%q in %q (%s) = %q, %v; want %q, %v", tt.name, tt.expansion, tt.number, got, err, tt.want, tt.err)
+		}
+	}
+}
+
 func TestYugiohSameProduct(t *testing.T) {
 	for _, tt := range []struct {
 		a, b cm.Product
