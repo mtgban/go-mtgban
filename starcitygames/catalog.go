@@ -1117,6 +1117,20 @@ var promoShelfPrintings = map[string]struct{ set, number string }{
 	// magic.MatchNativeTokenPair). This anchors the bare listing at the
 	// identical uuid rather than leaving it unresolved.
 	"CLB_T20": {"TCLB", "20"},
+
+	// Nine more shelves carry another printing's identifier, or none at all
+	// and spell their printing only in the sku. No guard general enough to
+	// catch the id collisions without also catching a correct id elsewhere
+	// was found, so this is closed rather than derived.
+	"LYLGS_2022_001": {"PLG22", "1"},
+	"FEST_2026_002":  {"PF26", "5"},
+	"LNY_2024_005":   {"PL24", "5"},
+	"MFCMD_2025_001": {"PF25", "10"},
+	"PP_SOI_242":     {"PSOI", "242p"},
+	"PLYR_ROE2_004":  {"P10", "4" + magic.SuffixSpecial},
+	"RC_LTR_301":     {"LTR", "301"},
+	"GBUN_MSH_432":   {"MSH", "432"},
+	"DD3_048":        {"PLST", "GVL-48"},
 }
 
 // idContradictsProduct reports whether the resolved printing lacks what the
