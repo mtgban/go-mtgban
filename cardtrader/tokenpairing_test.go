@@ -226,15 +226,11 @@ func TestIsTwoSidedTokenBlueprintSpacing(t *testing.T) {
 
 // TestProcessProductsSilencesForeignTokenPairing pins the token-pairing
 // silence check against the blueprint's own name rather than theCard's.
-// theCard is built once per blueprint by Preprocess and reused across every
-// product in the call, and Match mutates its Name while validating a
-// foreign-language listing's id-path language - resetting it to the single
-// face the id names, "Hero", where the blueprint itself still says "Hero //
-// Hero". An English listing lands first here, on the same shared theCard a
-// following Spanish listing of the same real derived pairing then reaches
-// with a Name Match has already touched: exactly the order a live run sees
-// it in, and the shape that silently stopped firing the check on theCard's
-// own Name.
+// Match mutates theCard's Name while validating a foreign-language listing's
+// id-path language - resetting it to the single face the id names, "Hero",
+// where the blueprint itself still says "Hero // Hero". An English listing
+// lands first here and a Spanish listing of the same real derived pairing
+// follows, the order a live run sees them in.
 func TestProcessProductsSilencesForeignTokenPairing(t *testing.T) {
 	b := realDatastore(t)
 
