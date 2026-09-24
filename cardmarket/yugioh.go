@@ -209,3 +209,67 @@ func yugiohRun(product *cm.Product) string {
 	}
 	return "Unlimited"
 }
+
+// yugiohOtherCard reports whether the bridged printing is of a card the
+// product's name is not, under any name Konami gave it.
+func (r *resolver) yugiohOtherCard(product *cm.Product, cardID string) bool {
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	name := versionTail.ReplaceAllString(product.Name, "")
+	konamiID := co.Identifiers["konamiId"]
+	if konamiID == "" || mtgmatcher.Equals(co.Name, name) {
+		return false
+	}
+	uuids, err := r.backend.SearchEquals(name)
+	if err != nil {
+		return false
+	}
+	for _, uuid := range uuids {
+		named, err := r.backend.GetUUID(uuid)
+		if err == nil && named.Identifiers["konamiId"] == konamiID {
+			return false
+		}
+	}
+	return true
+}
+
+// yugiohWorded answers the printing the product's name and rarity reach,
+// when the rarity names it and not the bridged printing.
+func (r *resolver) yugiohWorded(product *cm.Product, cardID string) string {
+	fields := rarityTail.FindStringSubmatch(product.Name)
+	if fields == nil {
+		return ""
+	}
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil || rarityNames(fields[1], co.Rarity) {
+		return ""
+	}
+	id, err := r.matchYugioh(product)
+	if err != nil || id == "" || id == cardID {
+		return ""
+	}
+	alt, err := r.backend.GetUUID(id)
+	if err != nil || !rarityNames(fields[1], alt.Rarity) {
+		return ""
+	}
+	// Keep the bridged run, which the columns are laid out by.
+	run, err := r.backend.MatchIDFinish(id, co.Finish)
+	if err == nil {
+		id = run
+	}
+	return id
+}
+
+// rarityNames reports whether every word of the storefront's rarity is a
+// word of the datastore's, which may decorate it ("Prismatic Collector's").
+func rarityNames(worded, rarity string) bool {
+	words := strings.Fields(strings.ToLower(strings.ReplaceAll(rarity, "'", "")))
+	for _, word := range strings.Fields(strings.ToLower(strings.ReplaceAll(worded, "'", ""))) {
+		if !slices.Contains(words, word) {
+			return false
+		}
+	}
+	return true
+}
