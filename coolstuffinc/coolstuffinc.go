@@ -1304,9 +1304,10 @@ func numberedListing(name string) (string, string) {
 // Energy" where the catalog names the energy and labels it special; the
 // Base Set Professor Oak is spelled "Imposter" the way Base Set 2 prints
 // it, though Base Set printed "Impostor"; Nidoran is named without the sex
-// the catalog names it by, which the number settles; and the Elite Four
+// the catalog names it by, which the number settles; the Elite Four
 // cards of the Platinum sets are named "Alakazam 4" for the catalog's
-// "Alakazam E4".
+// "Alakazam E4"; and the metal cards are named for the metal, "Metal Mew ex"
+// for the catalog's Mew ex labelled a metal card.
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
 	name, numbered := numberedListing(name)
 	name = strings.TrimSpace(nonStampedName.ReplaceAllString(name, ""))
@@ -1368,6 +1369,19 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	if m := specialEnergy.FindStringSubmatch(name); m != nil {
 		card.Name = m[1]
 		card.Variation = strings.TrimSpace("Special " + card.Variation)
+	}
+	// Only where the whole name is no card and the rest is one: "Metal
+	// Energy" is a card, and so is none of "Energy (Secret Rare)".
+	m = metalCardName.FindStringSubmatch(card.Name)
+	if m != nil {
+		_, whole := b.SearchEquals(card.Name)
+		_, rest := b.SearchEquals(m[1])
+		if whole != nil && rest == nil {
+			card.Name = m[1]
+			if !mtgmatcher.SlugDescribes(card.Variation, "metalcard") {
+				card.Variation = strings.TrimSpace(card.Variation + " Metal Card")
+			}
+		}
 	}
 	if name == "Imposter Professor Oak" && strings.HasPrefix(edition, "Base Set") && !strings.HasPrefix(edition, "Base Set 2") {
 		card.Name = "Impostor Professor Oak"
@@ -1516,6 +1530,11 @@ var (
 	// own index ("Unown A - A/28"), where the catalog names every one of
 	// them "Unown" and numbers it by the letter alone.
 	unownListing = regexp.MustCompile(`^Unown ([A-Z!?]) - ([A-Z!?])/(\d+)$`)
+
+	// metalCardName matches an Ultra-Premium Collection metal card the way
+	// this storefront names it, for the metal and the set it copies ("Metal
+	// Mew ex", "Metal Base Set Charizard"), where the catalog names the card.
+	metalCardName = regexp.MustCompile(`^Metal (?:Base Set )?(.+)$`)
 )
 
 // pokemonVivillonColors spells the two Vivillon colours this storefront
