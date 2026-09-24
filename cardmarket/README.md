@@ -17,9 +17,11 @@ modeled at all — see "Known gaps").
   for singles, per printing rather than per product — the newest of the
   three, and the one most of this document is about.
 
-All three need `MKM_APP_TOKEN`/`MKM_APP_SECRET` except `Index`, which is
-public. `Market` additionally needs `BAN_API_KEY` (see "The offline
-pre-filter").
+`Sealed` and `Market` need `MKM_APP_TOKEN`/`MKM_APP_SECRET`. `Index` is
+public and makes no authenticated call, even when the credentials are set:
+that is a golden, pinned by `TestIndexMakesNoAuthenticatedCall`, and a gap
+in the published id map is never filled from the API. `Market`
+additionally needs `BAN_API_KEY` (see "The offline pre-filter").
 
 ## The shared resolver
 
