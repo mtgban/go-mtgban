@@ -596,10 +596,12 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 				mkm.printf("%d - %s: %s", result.ogID, cerr.Error(), result.cardID)
 				return
 			}
-			// Skip too many errors
+			// PLST also prints as Mystery Booster/2 - a second landing
+			// on a uuid AddStrict already holds is not an error here.
 			if mkm.backend.IsToken(card.Name) ||
 				card.Edition == "Pro Tour Collector Set" ||
-				strings.HasPrefix(card.Edition, "World Championship Decks") {
+				strings.HasPrefix(card.Edition, "World Championship Decks") ||
+				card.SetCode == "PLST" {
 				return
 			}
 			mkm.printf("%d - %s", result.ogID, err.Error())

@@ -149,7 +149,7 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 			// card sold as several products refuses as one card.
 			var refused []string
 			named := map[string]int{}
-			var twins, foreign, refusals int
+			var twins, foreign, refusals, matchErrs int
 			for i := range results {
 				r := &results[i]
 				id, mapped := r.product.IDProduct, products[r.product.IDProduct]
@@ -172,12 +172,13 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 					named[key] = len(refused)
 					refused = append(refused, fmt.Sprintf("%d %s", id, key))
 				case err != nil:
+					matchErrs++
 					mkm.printf("product id %d returned %s", id, err)
 				}
 			}
 
 			mkm.reportRefused(exp.Name, len(ids), refused, twins, foreign)
-			channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign, foreign: foreign}
+			channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign + matchErrs, foreign: foreign}
 			return nil
 		})
 
