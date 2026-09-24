@@ -87,7 +87,13 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 
 		cardID, err := ck.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
+			id, rerr := matchPrereleaseSKU(ck.backend, card.SKU, card.ScryfallID, theCard.Foil)
+			if rerr == nil {
+				cardID, err = id, nil
+			}
+			if err != nil {
+				continue
+			}
 		} else if err != nil {
 			ogErr := err
 			cardID, err = ck.backend.MatchID(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
