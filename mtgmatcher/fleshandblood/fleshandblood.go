@@ -493,6 +493,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Rarity:     card.Rarity,
 			Colors:     mtgmatcher.SplitColors(card.Color),
 			PromoTypes: promoTypes,
+			Watermark:  card.Watermark,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 			Artist:     card.Artist,
