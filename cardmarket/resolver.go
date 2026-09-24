@@ -421,6 +421,11 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if len(fields) > 1 {
 			number = strings.TrimSpace(number + " V." + strings.TrimSuffix(fields[1], ")"))
 		}
+		// Only the rarity tells an oversized card from the set's own at its
+		// number; a card with no oversized printing is then unsupported.
+		if product.Rarity == "Oversized" {
+			number = strings.TrimSpace(number + " Oversized")
+		}
 
 		cardID, err = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -648,6 +653,7 @@ func (r *resolver) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.
 		IDProduct:     id,
 		Name:          mapped.Name,
 		Number:        mapped.Number,
+		Rarity:        mapped.Rarity,
 		ExpansionName: expansion.Name,
 		ExpansionCode: expansion.SetCode,
 	}
