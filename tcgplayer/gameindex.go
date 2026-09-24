@@ -110,16 +110,12 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 		}
 
 		cardName := productMap[result.ProductID].Name
-		number := RawProductNumber(&product)
+		// See TCGGame.processPage: the product id and the finish identify
+		// the price row.
 		theCard := &mtgmatcher.InputCard{
-			// See TCGGame.processPage: the product id and the finish beside
-			// it identify the sku, the text fields are the fallback.
-			ID:        fmt.Sprint(result.ProductID),
-			Name:      cardName,
-			Edition:   tcg.editions[product.GroupID].Name,
-			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
-			Finish:    result.SubTypeName,
-			Foil:      result.SubTypeName != "Normal",
+			ID:     fmt.Sprint(result.ProductID),
+			Finish: result.SubTypeName,
+			Foil:   result.SubTypeName != "Normal",
 		}
 		cardID, err := tcg.backend.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -139,7 +135,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 
 			// Name the card, not just the price row: a product id alone
 			// says nothing about which product failed to match.
-			tcg.printf("%v for %q (product %d)", err, theCard, result.ProductID)
+			tcg.printf("%v for %q %s (product %d)", err, cardName, result.SubTypeName, result.ProductID)
 			tcg.printf("%+v", result)
 
 			var alias *mtgmatcher.AliasingError

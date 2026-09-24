@@ -198,24 +198,15 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			}
 
 			cardName := product.Name
-			number := RawProductNumber(&product)
-			// A sku is a printing in one finish, and the printing name is
-			// what TCGplayer calls that finish. It rides in Finish for the
-			// id path and in the variation for the wording path, which is
-			// all a datastore without the product id leaves to answer with.
+			// A sku is a printing in one finish, and every game datastore
+			// stamps the product id on the printing it names: the id and
+			// the finish identify the sku, and a product the datastore does
+			// not carry is reported rather than guessed from its wording.
 			printing := tcg.printings[sku.PrintingID]
 			theCard := &mtgmatcher.InputCard{
-				// Every game datastore stamps the TCGplayer product id on
-				// the printing it names, so the id plus the finish beside it
-				// identify the sku outright; Match tries them first and falls
-				// back to the fields below whenever the datastore does not
-				// carry the id.
-				ID:        fmt.Sprint(sku.ProductID),
-				Name:      cardName,
-				Edition:   tcg.editions[product.GroupID].Name,
-				Variation: strings.TrimSpace(number + " " + printing),
-				Finish:    printing,
-				Foil:      printing != "Normal",
+				ID:     fmt.Sprint(sku.ProductID),
+				Finish: printing,
+				Foil:   printing != "Normal",
 			}
 			cardID, err := tcg.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -223,7 +214,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			} else if err != nil {
 				// Name the card, not just the price row: a sku id alone
 				// says nothing about which product failed to match.
-				tcg.printf("%v for %q (product %d)", err, theCard, sku.ProductID)
+				tcg.printf("%v for %q %s (product %d)", err, cardName, printing, sku.ProductID)
 				tcg.printf("%+v", result)
 
 				var alias *mtgmatcher.AliasingError
