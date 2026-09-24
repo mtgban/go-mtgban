@@ -16,7 +16,7 @@ const qualifierFixture = `{"data": {
 	"sets": {"RA04": {"name": "Quarter Century Bonanza", "releaseDate": "2025-11-21"}},
 	"cards": [
 		{"id": "ra04-en106_1_unlimited", "name": "Dark Magician", "number": "RA04-EN106", "setCode": "RA04", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 1}},
-		{"id": "ra04-en106_2_unlimited", "name": "Dark Magician", "number": "RA04-EN106", "setCode": "RA04", "rarity": "Ultra Rare", "finish": "Unlimited", "variant": "Arkana", "image": "x", "externalLinks": {"tcgPlayerId": 2}}
+		{"id": "ra04-en106_2_unlimited", "name": "Dark Magician", "number": "RA04-EN106", "setCode": "RA04", "rarity": "Ultra Rare", "finish": "Unlimited", "promoTypes": ["Arkana"], "variant": "Arkana", "image": "x", "externalLinks": {"tcgPlayerId": 2}}
 	]
 }}`
 
@@ -29,7 +29,7 @@ func TestQualifiersAreTheBackends(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	plain, err := Load(strings.NewReader(strings.ReplaceAll(qualifierFixture, `"variant": "Arkana", `, "")))
+	plain, err := Load(strings.NewReader(strings.ReplaceAll(qualifierFixture, `"promoTypes": ["Arkana"], "variant": "Arkana", `, "")))
 	if err != nil {
 		t.Fatal(err)
 	}
