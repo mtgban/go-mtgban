@@ -333,6 +333,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			BaseSetSize:     set.CardCounts.Base,
 		}
 	}
+	sort.Strings(b.AllSets)
 	b.IndexSets()
 
 	// Which printings are promotional, which no single field says. Upstream
