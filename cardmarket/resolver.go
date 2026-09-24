@@ -529,11 +529,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		}
 		cardIDFoil = cardID
 		if r.gameID == cm.GameYuGiOh {
-			// Yu-Gi-Oh's second column is the first edition's, which is a
-			// print run rather than a foil, so the flag cannot name it -
-			// both flags answer with the unlimited printing and the column
-			// was dropped for having nowhere to attach. Naming the run
-			// reaches it, and errors into an empty id for the products
+			// Yu-Gi-Oh's second printing is the first edition, a print run
+			// rather than a foil, so the flag cannot name it. Naming the
+			// run reaches it, and errors into an empty id for the products
 			// sold in no first edition, which the guard below drops.
 			cardIDFoil, _ = r.backend.MatchIDFinish(cardID, "1st Edition")
 		}
