@@ -39,6 +39,27 @@ var szGames = map[mtgban.Game]string{
 	mtgban.GameFleshAndBlood: GameFleshAndBlood,
 }
 
+// lorcanaNameTable resolves a bare name this storefront lists without its
+// subtitle: Ursula's own row is the epithet-less "Ursula", which only the
+// First Chapter's "Ursula - Power Hungry" answers.
+var lorcanaNameTable = map[string]string{
+	"Ursula": "Ursula - Power Hungry",
+}
+
+// lorcanaListing turns the storefront's own naming into the matcher's: a
+// trailing " - Enchanted" carries the number that already disambiguates it,
+// so dropping the suffix is enough, and a name lorcanaNameTable covers is
+// resolved to the one the catalog files.
+func lorcanaListing(cardName string) string {
+	if name, found := strings.CutSuffix(cardName, " - Enchanted"); found {
+		cardName = name
+	}
+	if name, found := lorcanaNameTable[cardName]; found {
+		cardName = name
+	}
+	return cardName
+}
+
 const (
 	defaultConcurrency = 8
 
@@ -263,7 +284,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		price = strings.TrimSpace(el.Find("td:nth-child(6)").Text())
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
-		theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: foil}
+		theCard = &mtgmatcher.InputCard{Name: lorcanaListing(cardName), Edition: edition, Variation: notes, Foil: foil}
 	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
 		number := strings.TrimSpace(el.Find("td:nth-child(2)").Text())
 		cond = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
