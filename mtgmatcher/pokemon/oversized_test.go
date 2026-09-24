@@ -1,0 +1,47 @@
+package pokemon
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
+
+// TestOversizedListingHeldToTheJumbo pins what a listing saying oversized is
+// held to: the Jumbo Cards printing at its number, past the ordinary card of
+// the set its shelf names and past a pooled shelf, and nothing at all when
+// the catalog has no jumbo at that number or the listing carries none.
+func TestOversizedListingHeldToTheJumbo(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"the jumbo, not the ordinary card", mtgmatcher.InputCard{
+			Name: "Koraidon ex", Edition: "Scarlet & Violet", Variation: "125 Jumbo Oversized | 125"}, "125-198_475654_holofoil"},
+		{"past a pooled shelf", mtgmatcher.InputCard{
+			Name: "Salamence ex", Edition: "Theme Deck & Blisters Exclusives", Variation: "114 Jumbo Oversized | 114/159"}, "114-159_662000_holofoil"},
+		{"a letter hung off the number", mtgmatcher.InputCard{
+			Name: "Darkrai & Cresselia Legend", Edition: "Jumbo Cards", Variation: "099Z Single Oversized Promo"}, "099-102-100-102_211448_holofoil"},
+		{"no jumbo at the number", mtgmatcher.InputCard{
+			Name: "Raging Bolt ex", Edition: "SV Black Star Promos", Variation: "145 Jumbo Oversized | 145"}, ""},
+		{"no number to tell two jumbos apart", mtgmatcher.InputCard{
+			Name: "Pikachu", Edition: "XY Promos", Variation: "XY-P Jumbo Oversized | XY-P"}, ""},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			got, err := b.Match(&in)
+			if tt.want == "" {
+				if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+					t.Errorf("Match(%+v) = %q, %v, want %v", tt.in, got, err, mtgmatcher.ErrUnsupported)
+				}
+				return
+			}
+			if err != nil || got != tt.want {
+				t.Errorf("Match(%+v) = %q, %v, want %s", tt.in, got, err, tt.want)
+			}
+		})
+	}
+}

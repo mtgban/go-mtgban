@@ -48,19 +48,22 @@ func TestNameTailsTheCatalogWrites(t *testing.T) {
 	}
 }
 
-// TestLegendPairNeverAnswersAHalf pins the refusal: a pair's number names
-// the one card printed with both halves' numbers, and the storefronts shelve
-// that card under Triumphant, where the edition admits the halves alone.
+// TestLegendPairNeverAnswersAHalf pins what a pair's number reaches: it
+// names the one card printed with both halves' numbers, and the storefronts
+// shelve that card under Triumphant, where the edition admits the halves
+// alone. A listing saying oversized reaches the jumbo past the edition, and
+// one that does not is refused.
 func TestLegendPairNeverAnswersAHalf(t *testing.T) {
 	b := loadBackend(t)
 
 	in := mtgmatcher.InputCard{
 		Name: "Darkrai & Cresselia Legend - 99/102 & 100/102", Variation: "Single Oversized Promo", Edition: "Triumphant"}
-	got, err := b.Match(&in)
-	if err == nil {
-		t.Fatalf("Match(%+v) = %s, want a refusal", in, got)
+	if got, err := b.Match(&in); err != nil || got != "099-102-100-102_211448_holofoil" {
+		t.Errorf("Match(%+v) = %q, %v, want the jumbo", in, got, err)
 	}
-	if !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
-		t.Errorf("Match(%+v) = %v, want %v", in, err, mtgmatcher.ErrCardWrongVariant)
+
+	in = mtgmatcher.InputCard{Name: "Darkrai & Cresselia Legend - 99/102 & 100/102", Edition: "Triumphant"}
+	if got, err := b.Match(&in); !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
+		t.Errorf("Match(%+v) = %q, %v, want %v", in, got, err, mtgmatcher.ErrCardWrongVariant)
 	}
 }

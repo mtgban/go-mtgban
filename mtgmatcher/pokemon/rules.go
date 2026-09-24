@@ -912,8 +912,10 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	// A pooled storefront name restricts the candidates to its pair of
 	// sets outright: the edition kept the name, so nothing upstream could
 	// narrow, and falling through past the pool would price a card the
-	// pool does not carry as some same-numbered printing elsewhere.
-	if pool, found := normalizedPooledEditions()[mtgmatcher.Normalize(inCard.Edition)]; found {
+	// pool does not carry as some same-numbered printing elsewhere. A
+	// listing saying oversized is already held to its oversized printing,
+	// which no pool carries.
+	if pool, found := normalizedPooledEditions()[mtgmatcher.Normalize(inCard.Edition)]; found && !inCard.Contains("Oversize") {
 		pooled := map[string][]mtgmatcher.Card{}
 		for _, name := range pool {
 			if set, ok := b.NormalizedSets[mtgmatcher.Normalize(name)]; ok {
@@ -1087,6 +1089,53 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	// to tell the two apart; a wording that never says so means the
 	// ordinary one.
 	return excludeJumbo(wording, candidates)
+}
+
+// FilterPrintings holds a listing that says oversized to the sets printing
+// the card oversized at its number. Core lets the word through only for a
+// card with such a printing, and a storefront files a jumbo under the
+// ordinary card's set, where the number alone answers with the ordinary
+// card. A card can be printed oversized more than once, so with no number,
+// or no oversized printing at it, the list comes back empty and core
+// refuses the listing. See mtgmatcher.GameRules.
+func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
+	if !inCard.Contains("Oversize") {
+		return editions
+	}
+	numbers := extractNumbers(inCard.Variation)
+	held := printingOversized(b, inCard.Name, numbers, editions)
+	// A letter hung off the number is dropped the way filterCandidates
+	// drops it, only where the number as written reaches nothing.
+	if len(held) == 0 {
+		var bare []string
+		for _, number := range numbers {
+			if trimmed := strings.TrimRight(number, plainNumberTail); trimmed != "" && trimmed != number {
+				bare = append(bare, trimmed)
+			}
+		}
+		held = printingOversized(b, inCard.Name, bare, editions)
+	}
+	return held
+}
+
+// printingOversized returns the editions holding an oversized printing of
+// the card at one of the numbers.
+func printingOversized(b *mtgmatcher.Backend, name string, numbers, editions []string) []string {
+	var held []string
+	for _, code := range editions {
+		set, found := b.Sets[code]
+		if !found {
+			continue
+		}
+		for i := range set.Cards {
+			card := &set.Cards[i]
+			if card.IsOversized && mtgmatcher.Equals(card.Name, name) && numbersMatchCard(b, numbers, card) {
+				held = append(held, code)
+				break
+			}
+		}
+	}
+	return held
 }
 
 // jumboSetCode is the set the Jumbo Cards oversized reprints are filed
