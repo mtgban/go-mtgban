@@ -331,11 +331,12 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 }
 
 // foilOnlyShelf reports whether product's shelf sells only the foil shown,
-// at a number an ordinary nonfoil printing also carries. setCode tells the
-// Holiday Release shelf's two sets apart: LTC's box topper is foil-only,
-// LTR's is not, though Cardmarket sells both under one expansion name.
-// Closed on purpose: widening it would misprice a shelf that legitimately
-// sells both finishes.
+// at a number an ordinary nonfoil printing also carries. setCode holds the
+// Holiday Release rule to the two sets whose "(V.2)" is the silverfoil of
+// its "(V.1)": LTC's box topper and LTR's scroll showcase. Modern Horizons 3
+// Extras' "(V.3)" onwards are sold in both finishes or at a number of their
+// own. Closed on purpose: widening it would misprice a shelf that
+// legitimately sells both finishes.
 func foilOnlyShelf(product *cm.Product, setCode string) bool {
 	switch product.ExpansionName {
 	case "Commander: Magic: The Gathering - FINAL FANTASY: Collector's Edition",
@@ -343,9 +344,9 @@ func foilOnlyShelf(product *cm.Product, setCode string) bool {
 		"Commander: Teenage Mutant Ninja Turtles: Extras":
 		return true
 	case "Commander: Modern Horizons 3: Extras":
-		return !strings.HasSuffix(product.Name, "(V.1)")
+		return strings.HasSuffix(product.Name, "(V.2)") || !strings.Contains(product.Name, "(V.")
 	case "The Lord of the Rings: Tales of Middle-earth Holiday Release":
-		return setCode == "LTC" && strings.HasSuffix(product.Name, "(V.2)")
+		return (setCode == "LTC" || setCode == "LTR") && strings.HasSuffix(product.Name, "(V.2)")
 	}
 	return false
 }
@@ -613,6 +614,17 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		// point to it, the way Fallback answers a single printing.
 		cardID = foil[0]
 		cardIDFoil = foil[0]
+	}
+
+	// The map names the printing, not the finish sold; redirect a
+	// foil-only shelf's product the way resolveMagic does.
+	co, err := r.backend.GetUUID(cardID)
+	if err == nil && !co.Etched && foilOnlyShelf(product, co.SetCode) {
+		fid, ferr := r.backend.MatchID(cardID, true)
+		if ferr == nil && fid != "" {
+			cardID = fid
+		}
+		cardIDFoil = cardID
 	}
 	return cardID, cardIDFoil
 }
