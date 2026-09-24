@@ -686,7 +686,7 @@ func (r *resolver) checkCatalog() error {
 		return errors.New("no id map to price from")
 	}
 	switch r.gameID {
-	case cm.GameOnePiece, cm.GameYuGiOh:
+	case cm.GameOnePiece, cm.GameYuGiOh, cm.GameFleshAndBlood:
 	default:
 		return nil
 	}

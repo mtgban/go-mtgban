@@ -30,7 +30,6 @@ func TestFabEdition(t *testing.T) {
 		{"Welcome to Rathe - Bravo, Showstopper Hero Deck", "Hero Deck: Bravo", ""},
 		{"Welcome to Rathe - Dorinthea Ironsong Hero Deck", "Hero Deck: Dorinthea", ""},
 		{"History Pack 1 - Dash Blitz Deck", "Historic Pack 1 Blitz Deck: Dash", ""},
-		{"Archive Mastery Pack - Guardian", "Mastery Pack Guardian", ""},
 		{"Armory Deck Origins: Jarl Vetreidi", "Armory Deck: Jarl Vetreidi", ""},
 		{"Armory Deck Legends: Prism, Sculptor of Arc Light", "Armory Deck: Legends Prism", ""},
 		{"Ira Welcome Deck", "Welcome Deck: Ira", ""},

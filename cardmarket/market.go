@@ -7,7 +7,6 @@ import (
 	"maps"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -381,19 +380,16 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 
 	// See idmap.go's walkCatalog for why the non-English programs are
 	// dropped here rather than left to the resolver.
-	switch mkm.gameID {
-	case cm.GameOnePiece, cm.GameYuGiOh:
-		kept := items[:0]
-		for _, exp := range items {
-			if strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name) {
-				continue
-			}
-			kept = append(kept, exp)
+	kept := items[:0]
+	for _, exp := range items {
+		if foreignExpansion(mkm.gameID, exp) {
+			continue
 		}
-		items = kept
-		if mkm.gameID == cm.GameOnePiece {
-			mkm.shelved = shelvedSets(mkm.backend, items)
-		}
+		kept = append(kept, exp)
+	}
+	items = kept
+	if mkm.gameID == cm.GameOnePiece {
+		mkm.shelved = shelvedSets(mkm.backend, items)
 	}
 
 	mkm.printf("Parsing %d expansion ids from the id map", len(items))

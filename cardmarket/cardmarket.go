@@ -363,6 +363,25 @@ func foreignShelf(name string) bool {
 	return false
 }
 
+// fabForeignPrograms are the Flesh and Blood expansions LSS printed in no
+// English edition: the DE/ES/FR/IT Black Label History Packs and the JA
+// Archive packs.
+var fabForeignPrograms = map[string]bool{
+	"1HP-BL": true, "2HP-BL": true, "RAP": true, "MAP": true, "GAP": true,
+}
+
+// foreignExpansion reports whether an expansion is a non-English catalog the
+// datastore does not carry, which the walks drop before resolving.
+func foreignExpansion(gameID cm.Game, exp cm.Expansion) bool {
+	switch gameID {
+	case cm.GameOnePiece, cm.GameYuGiOh:
+		return strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name)
+	case cm.GameFleshAndBlood:
+		return fabForeignPrograms[exp.SetCode]
+	}
+	return false
+}
+
 // emitPrices lands a product's guide prices on the printings resolved for
 // it, the plain columns on one and the foil columns on the other, in the
 // games that split them.
