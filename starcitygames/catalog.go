@@ -1314,6 +1314,71 @@ func numberDigits(number string) string {
 	return strings.TrimLeft(number[:end], "0")
 }
 
+// lorcanaTotal returns the denominator a Lorcana product's number is one of,
+// in the spelling the datastore's own SetTotal carries - the piece
+// lorcanaNumber leaves out. A promo sku names its pool before the underscore
+// lorcanaNumber cuts on; a main-set sku carries no pool, and its total comes
+// from lorcanaMainSetTotal rather than the datastore's BaseSetSize, which
+// runs past what Fabled and Into the Inklands print on their own cards.
+func lorcanaTotal(b *mtgmatcher.Backend, p CatalogProduct) string {
+	raw := skuNumber(p.SKU)
+	idx := strings.LastIndexByte(raw, '_')
+	if idx < 0 {
+		return lorcanaMainSetTotal(b, p.Set)
+	}
+	series, tail := raw[:idx], raw[idx+1:]
+	if tail == "" || tail[0] < '0' || tail[0] > '9' {
+		return ""
+	}
+	digits := numberDigits(p.CollectorNumber)
+	if digits != "" && digits != numberDigits(tail) {
+		return ""
+	}
+	return lorcanaSeriesTotal(series)
+}
+
+// lorcanaSeriesTotal drops the zero-padding Star City Games hangs off a
+// single-digit promo pool ("P01", "C02") that the datastore's own SetTotal
+// never carries ("P1", "C2"). A pool with no digits to pad in the first place
+// - "D23", "PD1" - is returned as given.
+func lorcanaSeriesTotal(series string) string {
+	if len(series) < 2 {
+		return series
+	}
+	head, digits := series[:1], series[1:]
+	if head != "P" && head != "C" {
+		return series
+	}
+	for _, r := range digits {
+		if r < '0' || r > '9' {
+			return series
+		}
+	}
+	return head + strings.TrimLeft(digits, "0")
+}
+
+// lorcanaMainSetTotal returns the SetTotal printed on the named edition's
+// own cards, read off the first one whose SetTotal is plain digits.
+func lorcanaMainSetTotal(b *mtgmatcher.Backend, edition string) string {
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return ""
+	}
+	for _, card := range set.Cards {
+		digits := card.SetTotal != ""
+		for _, r := range card.SetTotal {
+			if r < '0' || r > '9' {
+				digits = false
+				break
+			}
+		}
+		if digits {
+			return card.SetTotal
+		}
+	}
+	return ""
+}
+
 // lorcanaFinish names a Lorcana treatment the way the datastore names it, and
 // answers "" for the ones that need no naming.
 //
@@ -1364,10 +1429,15 @@ func lorcanaMarker(number string) string {
 // folding it in corrupts the price of a card that is carried.
 func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string, error) {
 	number := lorcanaNumber(p)
+	variation := number
+	total := lorcanaTotal(b, p)
+	if total != "" {
+		variation = number + "/" + total
+	}
 	id, err := b.Match(&mtgmatcher.InputCard{
 		Name:      p.Name,
 		Edition:   p.Set,
-		Variation: number,
+		Variation: variation,
 		Foil:      foil,
 		Finish:    lorcanaFinish(p.Finish),
 	})
