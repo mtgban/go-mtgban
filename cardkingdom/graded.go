@@ -56,8 +56,11 @@ func (ck *Graded) printf(format string, a ...any) {
 }
 
 func (ck *Graded) totalPages() (string, int, error) {
+	// name_asc, not price_desc: a graded title carries the cert number, so
+	// it sorts uniquely, while price ties have no stable order across page
+	// requests and repeat or skip listings at page boundaries.
 	cookieMap := map[string]string{
-		"Cookie": "limit=100; sortBy=price_desc; viewType=listShowCart listShowDetails;",
+		"Cookie": "limit=100; sortBy=name_asc; viewType=listShowCart listShowDetails;",
 	}
 	res, err := ck.client.Get(gradedURL, cookieMap, http.MethodGet)
 	if err != nil {
@@ -90,7 +93,7 @@ func (ck *Graded) totalPages() (string, int, error) {
 
 func (ck *Graded) scrapePage(session string, page int) error {
 	cookieMap := map[string]string{
-		"Cookie": "limit=100; sortBy=price_desc; viewType=listShowCart listShowDetails; laravel_session=" + session + ";",
+		"Cookie": "limit=100; sortBy=name_asc; viewType=listShowCart listShowDetails; laravel_session=" + session + ";",
 	}
 	res, err := ck.client.Get(gradedURL+"?page="+fmt.Sprint(page), cookieMap, http.MethodGet)
 	if err != nil {
@@ -127,7 +130,7 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			return
 		}
 
-		cardID, err := ck.backend.Match(theCard)
+		cardID, err := matchGraded(ck.backend, theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {

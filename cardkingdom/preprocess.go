@@ -558,12 +558,19 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 	edition = strings.TrimSuffix(edition, " Foil")
 	variant = strings.TrimSuffix(variant, " Foil")
 
+	// "X Eternal-Legal" is CK's own name for the datastore's "X Eternal"
+	// (SPE, HOC, TLE); Replace, not TrimSuffix, since a tag can still
+	// trail it ("The Hobbit Eternal-Legal Borderless Foil").
+	edition = strings.Replace(edition, " Eternal-Legal", " Eternal", 1)
+
 	// Hack to remove 9.5-style scores
 	variant = strings.Replace(variant, ".", "", -1)
 	num := mtgmatcher.ExtractNumber(variant)
 	if num != "" {
 		variant = strings.Replace(variant, num, "", -1)
 	}
+	// Pristine is a CGC grade tier, not a printing detail.
+	variant = strings.Replace(variant, "Pristine", "", -1)
 	variant = strings.TrimSpace(variant)
 
 	if renamed, found := gradedEditions[edition]; found {
@@ -588,10 +595,20 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 	} {
 		if strings.HasSuffix(edition, tag) {
 			edition = strings.TrimSuffix(edition, " "+tag)
-			if variant != "" {
-				variant += " "
+			moved := tag
+			// "Breaking New" is this storefront's own typo for Breaking News.
+			switch tag {
+			case "Breaking New":
+				edition, moved = "Breaking News", ""
+			case "Breaking News Showcase":
+				edition, moved = "Breaking News", "Showcase"
 			}
-			variant += tag
+			if moved != "" {
+				if variant != "" {
+					variant += " "
+				}
+				variant += moved
+			}
 		}
 	}
 
@@ -601,6 +618,21 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 		Variation: variant,
 		Foil:      isFoil,
 	}, nil
+}
+
+// matchGraded retries an unknown "Secret Lair" edition against the
+// storefront's own Secret Lair Countdown shelf before giving up.
+func matchGraded(b *mtgmatcher.Backend, theCard *mtgmatcher.InputCard) (string, error) {
+	cardID, err := b.Match(theCard)
+	if errors.Is(err, mtgmatcher.ErrCardNotInEdition) && theCard.Edition == "Secret Lair" {
+		retry := *theCard
+		retry.Edition = "Secret Lair Countdown"
+		id, rerr := b.Match(&retry)
+		if rerr == nil {
+			return id, nil
+		}
+	}
+	return cardID, err
 }
 
 // gradedEditions spells an edition this storefront abbreviates the way the
@@ -616,7 +648,9 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 // abbreviation. So the edition is named outright, which is how every other
 // spelling this storefront uses is handled.
 var gradedEditions = map[string]string{
-	"TMNT Source Material Cards": "Teenage Mutant Ninja Turtles Source Material",
+	"TMNT Source Material Cards":         "Teenage Mutant Ninja Turtles Source Material",
+	"Avatar Suki of the Kyoshi Warriors": "Avatar: The Last Airbender Eternal",
+	"Promotional RPTQ Promo":             "Pro Tour Promos",
 }
 
 var supportedScores = []string{
