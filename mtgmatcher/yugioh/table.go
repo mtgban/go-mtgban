@@ -188,6 +188,7 @@ var nameRespellings = [][2]string{
 	{"Black Dragon's Chick", "Red-Eyes B. Chick"},
 	{"Meteor Black Dragon", "Meteor B. Dragon"},
 	{"Earthbound Immortal Revival", "Earthbound Revival"},
+	{"Darkfall", "Dark Trap Hole"},
 	{"Roar of the Earthbound Immortal", "Roar of the Earthbound"},
 	// The catalog files the Rise of Destiny printing under the name
 	// without its prefix.

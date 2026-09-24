@@ -8,6 +8,15 @@
         "uuid": "lob-001_21792_1stedition"
     },
     {
+        "description": "Darkfall respells to the name its own set prints",
+        "input": {
+            "name": "Darkfall",
+            "variant": "080 Common",
+            "edition": "Starstrike Blast"
+        },
+        "uuid": "stbl-en080_38614_unlimited"
+    },
+    {
         "description": "a German printing is reached by the name it is printed under",
         "input": {
             "name": "Junk Synchron - \"Gerumpelsynchronisierer\"",
