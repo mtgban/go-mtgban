@@ -1,7 +1,9 @@
 package palworld
 
 import (
+	"cmp"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -95,21 +97,26 @@ func TestNumbersAreUnique(t *testing.T) {
 	b := loadBackend(t)
 
 	seen := map[string]string{}
+	named := map[string]string{}
 	for _, co := range b.UUIDs {
 		if co.Sealed || co.Number == "" {
 			continue
 		}
 		key := co.SetCode + "|" + co.Number
+		words := strings.Join(append([]string{co.Name, co.Rarity}, co.PromoTypes...), "|")
 		// The finishes of one product fold onto the product: the uuid of
 		// its plain printing where it has one, the foil's otherwise.
 		printing := co.FoilUUIDs[mtgmatcher.FinishNonfoil]
 		if printing == "" {
 			printing = co.FoilUUIDs[mtgmatcher.FinishFoil]
 		}
-		if other, found := seen[key]; found && other != printing {
+		// Alike in every word a listing names is a card TCGplayer lists
+		// twice, which the datastore publishes; anything else is two cards.
+		if other, found := seen[key]; found && other != printing && named[key] != words {
 			t.Errorf("%s is carried by both %s and %s", key, other, printing)
 		}
 		seen[key] = printing
+		named[key] = words
 	}
 }
 
@@ -184,6 +191,33 @@ func TestTailReachesItsParallel(t *testing.T) {
 	}
 }
 
+// doubleListed is every name, set and number two different products answer
+// to: a card TCGplayer lists twice, which the datastore publishes rather than
+// refuse the whole game over. TestNumbersAreUnique still refuses two cards
+// that differ at one number.
+func doubleListed(b *mtgmatcher.Backend) map[string]bool {
+	products := map[string]map[string]bool{}
+	for uuid, co := range b.UUIDs {
+		if co.Sealed || co.Number == "" {
+			continue
+		}
+		// A product's finishes fold onto one printing, as their shared map names it.
+		product := cmp.Or(co.FoilUUIDs[mtgmatcher.FinishNonfoil], co.FoilUUIDs[mtgmatcher.FinishFoil], uuid)
+		words := co.Name + "|" + co.SetCode + "|" + co.Number
+		if products[words] == nil {
+			products[words] = map[string]bool{}
+		}
+		products[words][product] = true
+	}
+	twice := map[string]bool{}
+	for words, of := range products {
+		if len(of) > 1 {
+			twice[words] = true
+		}
+	}
+	return twice
+}
+
 // TestNumberReachesItsPrinting replays every printing under its own name,
 // edition and collector number. Anything that fails to come back is a
 // printing no storefront writing the catalog's own words could reach.
@@ -192,8 +226,14 @@ func TestNumberReachesItsPrinting(t *testing.T) {
 
 	var probes, hits int
 	misses := map[string]int{}
+	listedTwice := doubleListed(b)
 	for _, co := range b.UUIDs {
 		if co.Sealed || co.Number == "" {
+			continue
+		}
+		// Two products alike in every word probed are a card TCGplayer
+		// lists twice; no wording can name one of them, so neither is asked.
+		if listedTwice[co.Name+"|"+co.SetCode+"|"+co.Number] {
 			continue
 		}
 		set := b.Sets[co.SetCode]

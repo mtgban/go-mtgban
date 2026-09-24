@@ -1,8 +1,10 @@
 package gundam
 
 import (
+	"cmp"
 	"os"
 	"slices"
+	"strings"
 	"sync"
 	"testing"
 
@@ -186,6 +188,37 @@ func TestRarityTellsParallelsApart(t *testing.T) {
 	}
 }
 
+// probeWords is what TestNumberReachesItsPrinting names a printing by.
+func probeWords(co *mtgmatcher.CardObject) string {
+	return strings.Join(append([]string{co.Name, co.SetCode, co.Number, co.Rarity}, co.PromoTypes...), "|")
+}
+
+// doubleListed is every probe two different products answer to: a card
+// TCGplayer lists twice, which the datastore publishes rather than refuse
+// the whole game over.
+func doubleListed(b *mtgmatcher.Backend) map[string]bool {
+	products := map[string]map[string]bool{}
+	for uuid, co := range b.UUIDs {
+		if co.Sealed || co.Number == "" {
+			continue
+		}
+		// A product's finishes fold onto one printing, as their shared map names it.
+		product := cmp.Or(co.FoilUUIDs[mtgmatcher.FinishNonfoil], co.FoilUUIDs[mtgmatcher.FinishFoil], uuid)
+		words := probeWords(co)
+		if products[words] == nil {
+			products[words] = map[string]bool{}
+		}
+		products[words][product] = true
+	}
+	twice := map[string]bool{}
+	for words, of := range products {
+		if len(of) > 1 {
+			twice[words] = true
+		}
+	}
+	return twice
+}
+
 // TestNumberReachesItsPrinting replays every printing under its own name,
 // edition and collector number. Where the number is shared the rarity is
 // added, which is the whole of what tells those printings apart; anything
@@ -196,8 +229,14 @@ func TestNumberReachesItsPrinting(t *testing.T) {
 
 	var probes, hits int
 	misses := map[string]int{}
+	listedTwice := doubleListed(b)
 	for _, co := range b.UUIDs {
 		if co.Sealed || co.Number == "" {
+			continue
+		}
+		// Two products alike in every word probed are a card TCGplayer
+		// lists twice; no wording can name one of them, so neither is asked.
+		if listedTwice[probeWords(co)] {
 			continue
 		}
 		set := b.Sets[co.SetCode]
