@@ -569,8 +569,8 @@ The pipeline:
    through to full matching; a token id in a non-default language returns
    `ErrUnsupported`; and `rules.MissingPromoTag` rejects prerelease /
    promo-pack / serialized claims the resolved card does not carry (upstream
-   tags lag releases). This runs before the rules are known non-nil, so the
-   hook call is guarded.
+   tags lag releases), and for Pokemon a metal-card claim. This runs before
+   the rules are known non-nil, so the hook call is guarded.
 3. **Name surgery** — `rules.Prefilter`. Magic's version handles the
    Binderpos `Name [Edition]` syntax (resolving the bracket as a set name,
    falling back to variation, with the TCG `PP`-prefix promo-pack quirk),
@@ -615,6 +615,12 @@ The pipeline:
    generic promo wording names no exact edition, `*Promos` shelves join loose
    edition matches before the fallback to all printings. This prevents an
    unresolved promo edition from resolving straight to an ordinary printing.
+
+   Pokemon's `FilterPrintings` holds a listing saying oversized to the sets
+   printing the card oversized at its number, and one naming a metal card to
+   the sets holding its metal printing. TCGplayer files both on shelves (Jumbo
+   Cards, Miscellaneous Cards & Products) that the card's own set, which is
+   what a storefront writes, never reaches.
 
    Magic owns its historical three passes in `magic/candidates.go`: exact
    edition matches can enroll the `P<code>` promo sibling (or the base set in
@@ -706,15 +712,19 @@ the listing left unsaid.
 
 **The other seven** need far less of that, and share a common shape: each
 game's `Rules` type embeds `mtgmatcher.DefaultRules` and overrides only the
-hooks its own catalog forces. `FilterPrintings`, `FinalizeCandidates`,
-`MissingPromoTag` and `IsToken` fall through to `DefaultRules` — a genuine
-no-op — for all seven; none of them override `IsSpecificUnsupported` either.
-A couple override one hook further where their catalog has a real, narrow
-case to handle: Lorcana and Yu-Gi-Oh give `IsUnsupported` real logic (Lorcana
-drops puzzle-insert and cruise-promo products; Yu-Gi-Oh drops the storefront's
-own character-art cards, which carry no collector number and no catalog row),
-and Pokemon overrides `CandidateSets` to fold `*Promos` shelves into the loose
-pass before falling back to every printing. The real, shared work across all
+hooks its own catalog forces. `FinalizeCandidates` and `IsToken` fall
+through to `DefaultRules` — a genuine no-op — for all of them, and
+`FilterPrintings` and `MissingPromoTag` for all but Pokemon; none of them
+override `IsSpecificUnsupported` either. A couple override one hook further
+where their catalog has a real, narrow case to handle: Lorcana and Yu-Gi-Oh
+give `IsUnsupported` real logic (Lorcana drops puzzle-insert and cruise-promo
+products; Yu-Gi-Oh drops the storefront's own character-art cards, which
+carry no collector number and no catalog row), and Pokemon overrides
+`CandidateSets` to fold `*Promos` shelves into the loose pass before falling
+back to every printing. Pokemon also holds oversized and metal-card listings
+to those printings in `FilterPrintings` (§2.4, stage 7), and refuses in
+`MissingPromoTag` a metal-card listing that answered with a card that is not
+one. The real, shared work across all
 seven is name + collector number + finish narrowing in `FilterCards`, with
 the edition breaking ties when it resolves. The interesting details are the
 ones each game's own data forces: Lorcana honors the name hash rather than

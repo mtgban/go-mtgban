@@ -358,9 +358,10 @@ ordering notes in `SPECIFICATIONS.md`, before editing any stage.
 Every non-Magic game needs far less of this, and shares the shape: each
 embeds `mtgmatcher.DefaultRules` (`Rules struct{ DefaultRules }`) and
 overrides only what it actually needs different. All eight rely on
-`DefaultRules` — a real no-op — for
-`FilterPrintings`, `FinalizeCandidates`, `MissingPromoTag` and `IsToken`, and
-all eight implement their own `Prefilter`, `AdjustName`, `AdjustEdition`,
+`DefaultRules` — a real no-op — for `FinalizeCandidates` and `IsToken`, and
+all but Pokemon for `FilterPrintings` and `MissingPromoTag`, which Pokemon
+uses to hold oversized and metal-card listings to those printings. All eight
+implement their own `Prefilter`, `AdjustName`, `AdjustEdition`,
 `AliasEdition`, `FilterCards`, `CanonicalFinish` and `PlainNumber`, which is
 where a game's actual vocabulary — its editions, its number shapes, its
 finish names — lives. A few games additionally override one hook for a

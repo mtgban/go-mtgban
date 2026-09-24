@@ -724,6 +724,14 @@ func (r Rules) setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 // that order. A bare input facing several labels keeps them all and surfaces
 // as an aliasing error rather than a guess.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
+	// A wording naming a metal card is answered by the metal printing before
+	// its numbers are read one at a time: "205 151 Metal Card" is Mew ex 205,
+	// and 151 is both the set's name and a Mew ex of its own.
+	if mtgmatcher.SlugDescribes(inCard.Variation, "metalcard") {
+		if metal := metalCandidates(b, extractNumbers(inCard.Variation), cardSet); len(metal) > 0 {
+			return metal
+		}
+	}
 	candidates := filterCandidates(b, inCard, cardSet)
 
 	// A wording naming a stamp or a misprint prices a physical variant the
@@ -1097,9 +1105,15 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 // ordinary card's set, where the number alone answers with the ordinary
 // card. A card can be printed oversized more than once, so with no number,
 // or no oversized printing at it wearing the placement the wording names
-// ("Winner"), the list comes back empty and core refuses the listing. See
-// mtgmatcher.GameRules.
+// ("Winner"), the list comes back empty and core refuses the listing. A
+// listing naming a metal card is held to its metal printing instead; see
+// printingMetal. See mtgmatcher.GameRules.
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
+	// Asked first: Card Trader calls its metal cards "Oversized Thick Card",
+	// and none of them is the jumbo that word otherwise means.
+	if mtgmatcher.SlugDescribes(inCard.Variation, "metalcard") {
+		return printingMetal(b, inCard.Name, extractNumbers(inCard.Variation), editions)
+	}
 	if !inCard.Contains("Oversize") {
 		return editions
 	}
@@ -1140,6 +1154,73 @@ func printingOversized(b *mtgmatcher.Backend, name string, numbers, named, editi
 		}
 	}
 	return held
+}
+
+// printingMetal returns the editions holding the card's metal printing, at
+// one of the numbers when the wording gives any. TCGplayer files the metal
+// cards on its miscellaneous shelf, which a storefront writing the card's own
+// set never reaches: "Greninja ex / Twilight Masquerade / 106 Metal Card"
+// answered with the ordinary 106. With no metal printing to hold to, the
+// editions stand, and MissingPromoTag refuses the plain card they answer with.
+func printingMetal(b *mtgmatcher.Backend, name string, numbers, editions []string) []string {
+	var held []string
+	for _, code := range editions {
+		set, found := b.Sets[code]
+		if !found {
+			continue
+		}
+		for i := range set.Cards {
+			card := &set.Cards[i]
+			if mtgmatcher.Equals(card.Name, name) && metalAt(b, numbers, card) {
+				held = append(held, code)
+				break
+			}
+		}
+	}
+	if len(held) == 0 {
+		return editions
+	}
+	return held
+}
+
+// metalAt reports whether the card is a metal printing at one of the
+// numbers, or at all when the wording gives none. A letter hung off a number
+// is dropped the way filterCandidates drops it; no metal card is lettered.
+func metalAt(b *mtgmatcher.Backend, numbers []string, card *mtgmatcher.Card) bool {
+	if !card.HasPromoType("metalcard") {
+		return false
+	}
+	if len(numbers) == 0 {
+		return true
+	}
+	for _, number := range numbers {
+		trimmed := strings.TrimRight(number, plainNumberTail)
+		if numberMatchesCard(b, number, card) || (trimmed != "" && numberMatchesCard(b, trimmed, card)) {
+			return true
+		}
+	}
+	return false
+}
+
+// metalCandidates returns the metal printings among the candidates, at one of
+// the numbers when the wording gives any, in set code order.
+func metalCandidates(b *mtgmatcher.Backend, numbers []string, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
+	var metal []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		for i := range cardSet[code] {
+			if metalAt(b, numbers, &cardSet[code][i]) {
+				metal = append(metal, cardSet[code][i])
+			}
+		}
+	}
+	return metal
+}
+
+// MissingPromoTag refuses a listing naming a metal card that answered with a
+// printing that is not one: that metal card is not carried, and the plain
+// card is not what the listing sells. See mtgmatcher.GameRules.
+func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
+	return mtgmatcher.SlugDescribes(inCard.Variation, "metalcard") && !co.HasPromoType("metalcard")
 }
 
 // jumboSetCode is the set the Jumbo Cards oversized reprints are filed
