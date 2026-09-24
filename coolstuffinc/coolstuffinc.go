@@ -1291,11 +1291,17 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 			numbered = strippedNumbered
 		}
 	}
-	if edition == "Celebrations" && strings.Contains(variation, "Classic Collection") {
+	if edition == "Celebrations" && (strings.Contains(variation, "Classic Collection") || strings.Contains(numbered, "Classic Collection")) {
 		card.Edition = "Celebrations: Classic Collection"
 		if m := classicNumber.FindStringSubmatch(variation); m != nil {
 			card.Variation = m[1]
 		}
+	}
+	// A reprint note ("25th Anniversary Stamp Base Set Reprint") reaches
+	// retail's variation whole; clear it before "Stamp" reads as a demand.
+	reprint := buylistReprintNote.MatchString(variation)
+	if reprint {
+		card.Variation = ""
 	}
 	if m := specialEnergy.FindStringSubmatch(name); m != nil {
 		card.Name = m[1]
@@ -1327,7 +1333,7 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	// words come off, and a stamp names a promo shelf the catalog files
 	// apart from the set the listing arrived on.
 	card.Variation = strings.TrimSpace(plainWords.ReplaceAllString(card.Variation, " "))
-	if stamped.MatchString(card.Variation) {
+	if !reprint && stamped.MatchString(card.Variation) {
 		card.Edition = "Promo"
 	}
 	// The Team Galactic inventions are named by their invention alone
