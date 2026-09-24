@@ -830,6 +830,18 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		allCards := set.Cards
 		tokensStart := len(allCards)
 
+		// A multi-face card's non-'a' face carries its own multiverseId,
+		// dropped along with the rest of that face below; index it here
+		// so it can be filed under the 'a' face that survives.
+		sideBMultiverseIDs := map[string]string{}
+		for _, c := range set.Cards {
+			if c.Side != "" && c.Side != "a" {
+				if id := c.Identifiers["multiverseId"]; id != "" {
+					sideBMultiverseIDs[c.Number] = id
+				}
+			}
+		}
+
 		// Append tokens to the list of considered cards. A token named the
 		// same way as a real card is carried as "<name> Token", the shape
 		// the hand-renamed clashes already used, so the plain name keeps
@@ -1047,6 +1059,9 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			// not need that level of detail, so just skip any extra side.
 			if card.Side != "" && card.Side != "a" {
 				continue
+			}
+			if id, found := sideBMultiverseIDs[card.Number]; found && card.Identifiers["multiverseId"] != id {
+				card.Identifiers["multiverseIdBSide"] = id
 			}
 
 			// Filter out unneeded printings
@@ -1279,6 +1294,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			{"tcgplayerProductId", mtgmatcher.IDSpaceTCGplayer, baseUUID},
 			{"tcgplayerEtchedProductId", mtgmatcher.IDSpaceTCGplayer, etchedUUID},
 			{"multiverseId", mtgmatcher.IDSpaceMultiverse, baseUUID},
+			{"multiverseIdBSide", mtgmatcher.IDSpaceMultiverse, baseUUID},
 		} {
 			id, found := card.Identifiers[filing.tag]
 			if !found {
