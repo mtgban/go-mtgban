@@ -57,17 +57,14 @@ type AllCards struct {
 		Colors      []string `json:"colors"`
 		Cost        int      `json:"cost"`
 		FlavorText  string   `json:"flavorText,omitempty"`
-		FoilTypes   []string `json:"foilTypes,omitempty"`
 
 		// PrintingIDs is the uuid each finish prices, keyed by the finish
 		// as TCGplayer prices it ("Normal", "Cold Foil", "Holofoil") and
-		// published by the builder rather than spelled here. A uuid is what a price is
-		// keyed on, and 3,200 of this game's are reached by spelling a
-		// foil type through canonicalFinish - so a change to that
-		// normalization moves identity that lives outside this package,
-		// silently, since a moved uuid resolves to nothing rather than
-		// erroring. A datastore that carries none is spelled from below.
-		PrintingIDs map[string]string `json:"printingIds,omitempty"`
+		// published by the builder rather than spelled here: a uuid is what
+		// a price is keyed on, and a spelling of this package's would move
+		// identity that lives outside it, silently, since a moved uuid
+		// resolves to nothing rather than erroring.
+		PrintingIDs map[string]string `json:"-"`
 
 		// FinishAliases are the other spellings that reach a printing:
 		// upstream's own name for a foil ("silver", "rainbowpillars")
@@ -75,16 +72,12 @@ type AllCards struct {
 		// names it. A storefront naming
 		// the treatment is naming a printing, and without these it would
 		// land on the standard foil instead of the one it asked for.
-		FinishAliases map[string]string `json:"finishAliases,omitempty"`
+		FinishAliases map[string]string `json:"-"`
 
 		// Printings is what a card's printings are, one entry each: the
 		// finish TCGplayer prices it under, the uuid it is quoted by, and
-		// the treatments that printing is the printing of.
-		//
-		// It replaces the three above, which said the same things about a
-		// card in three places and left every reader to join them by finish
-		// name. A datastore published before it carries none, and is read
-		// the old way.
+		// the treatments that printing is the printing of. adoptPrintings
+		// reads the two maps above off it.
 		Printings []struct {
 			Finish     string   `json:"finish"`
 			ID         string   `json:"id"`
@@ -136,19 +129,12 @@ type AllCards struct {
 		// keeps in a field of its own and this package reads as a finish.
 		// None of that is worked out again here: a card it labelled with
 		// nothing is a card with no promotion.
-		PromoTypes []string `json:"promoTypes,omitempty"`
-		// PromoGrouping is the pool a promotional printing was numbered
-		// within. It is the denominator under another name - a promo is
-		// numbered "5/P3" the way a card of the set is "5/204" - and a
-		// datastore publishing Total says the same thing there. It is read
-		// only where Total is absent, so an older build's promos stay
-		// tellable apart.
-		PromoGrouping    string `json:"promoGrouping,omitempty"`
-		Variant          string `json:"variant,omitempty"`
-		VariantIDs       []int  `json:"variantIds,omitempty"`
-		MoveCost         int    `json:"moveCost,omitempty"`
-		NonPromoID       int    `json:"nonPromoId,omitempty"`
-		IsExternalReveal bool   `json:"isExternalReveal,omitempty"`
+		PromoTypes       []string `json:"promoTypes,omitempty"`
+		Variant          string   `json:"variant,omitempty"`
+		VariantIDs       []int    `json:"variantIds,omitempty"`
+		MoveCost         int      `json:"moveCost,omitempty"`
+		NonPromoID       int      `json:"nonPromoId,omitempty"`
+		IsExternalReveal bool     `json:"isExternalReveal,omitempty"`
 
 		ExternalLinks struct {
 			TcgPlayerID int `json:"tcgPlayerId"`
@@ -294,24 +280,9 @@ func promoTypeLabel(slug string) string {
 	return mtgmatcher.Title(slug)
 }
 
-// printedTotal is the denominator the card's face prints after its number.
-// A datastore that publishes it says so in total; one built before it did
-// still wrote a promo's in promoGrouping, which is the same fact under
-// another name - "5/P3" is numbered the way "5/204" is - and is read there
-// so an older build's promos stay tellable apart. A card of the set has no
-// grouping to fall back on and needs none: what shares its number is a
-// promo, and the promo is the one that moved.
-func printedTotal(total, grouping string) string {
-	if total != "" {
-		return total
-	}
-	return grouping
-}
-
-// adoptPrintings fills the three older shapes from the printings array, so
-// the rest of this package asks the same questions of either datastore. It is
-// the whole of the compatibility: nothing downstream knows which one it is
-// reading.
+// adoptPrintings reads a card's printings into the maps the rest of this
+// package asks: the uuid each finish prices, and the treatments that reach a
+// finish.
 //
 // The treatments are put back on the card as well as kept against their
 // printing. A Card here is the card, not one of its printings - a query for
@@ -320,14 +291,9 @@ func printedTotal(total, grouping string) string {
 func (ac *AllCards) adoptPrintings() {
 	for i := range ac.Cards {
 		card := &ac.Cards[i]
-		if len(card.Printings) == 0 {
-			continue
-		}
-		card.FoilTypes = make([]string, 0, len(card.Printings))
 		card.PrintingIDs = make(map[string]string, len(card.Printings))
 		aliases := map[string]string{}
 		for _, printing := range card.Printings {
-			card.FoilTypes = append(card.FoilTypes, printing.Finish)
 			card.PrintingIDs[printing.Finish] = printing.ID
 			for _, treatment := range printing.PromoTypes {
 				aliases[treatment] = printing.Finish
@@ -464,19 +430,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	// Load all cards and store them in their relative sets
 	for _, i := range cards {
 		card := ac.Cards[i]
-		// Normalize Lorcana's many foil-type names (Silver, Satin, Magma, …) to
-		// the matcher's finish constants: "None" is nonfoil, everything else is
-		// foil, so output() can select the right (foil) uuid downstream. Which
-		// foil each of them is stays on the uuid carrying it, below.
-		finishes := make([]string, len(card.FoilTypes))
-		for i, finish := range card.FoilTypes {
-			finishes[i] = mtgmatcher.FinishFoil
-			if canonicalFinish(finish) == mtgmatcher.FinishNonfoil {
-				finishes[i] = mtgmatcher.FinishNonfoil
-			}
-		}
-		if len(finishes) == 0 {
-			finishes = append(finishes, mtgmatcher.FinishNonfoil)
+		// A card published with no printing has no uuid to price.
+		if len(card.Printings) == 0 {
+			continue
 		}
 
 		// Ensure no spaces are present for ease of future comparisons
@@ -506,11 +462,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		convertedCard := mtgmatcher.Card{
 			UUID: cardUUID(card.ID),
 
-			Name:     card.FullName,
-			SetCode:  card.SetCode,
-			Finishes: finishes,
-			Number:   card.Number + card.Variant,
-			Images:   card.Images,
+			Name:    card.FullName,
+			SetCode: card.SetCode,
+			Number:  card.Number + card.Variant,
+			Images:  card.Images,
 
 			// The datastore is English-only. Core Match's language filter
 			// drops any candidate whose Language differs from English when
@@ -539,12 +494,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			// a size: a promo prints its run where a card of the set
 			// prints the set's size, and the number alone named two cards
 			// on 155 of the game's (set, number) pairs without it.
-			SetTotal: printedTotal(card.Total, card.PromoGrouping),
+			SetTotal: card.Total,
 		}
-		// Register the uuid each finish prices. Where the datastore names
-		// them - which it does in TCGplayer's own words, the vocabulary
-		// prices arrive in - they are read; where it does not, they are
-		// spelled from the foil type as they were before it did.
+		// Register the uuid each finish prices, which the datastore names in
+		// TCGplayer's own words - the vocabulary prices arrive in.
 		finishUUIDs := map[string]string{}
 		finishAliases := map[string]string{}
 		type perFinish struct {
@@ -553,114 +506,61 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			name string
 		}
 		var stored []perFinish
-		baseUUID := convertedCard.UUID
-		if len(card.PrintingIDs) > 0 {
-			// The names are walked in order, and the first to reach a
-			// finish keeps it: two of TCGplayer's names place on one finish
-			// here - "Foil" and "Cold Foil" are both the standard foil -
-			// and a map walked as it comes would hand the finish to
-			// whichever came out last, a different uuid on every load.
-			for _, name := range slices.Sorted(maps.Keys(card.PrintingIDs)) {
-				// The datastore names a finish the way TCGplayer prices
-				// it; this package spells finishes its own way, and
-				// canonicalFinish is the one crossing between them.
-				finish := canonicalFinish(name)
-				if _, placed := finishUUIDs[finish]; placed {
-					continue
-				}
-				uuid := card.PrintingIDs[name]
-				finishUUIDs[finish] = uuid
-				stored = append(stored, perFinish{uuid, finish != mtgmatcher.FinishNonfoil, finish})
+		// The names are walked in order, and the first to reach a
+		// finish keeps it: two of TCGplayer's names place on one finish
+		// here - "Foil" and "Cold Foil" are both the standard foil -
+		// and a map walked as it comes would hand the finish to
+		// whichever came out last, a different uuid on every load.
+		for _, name := range slices.Sorted(maps.Keys(card.PrintingIDs)) {
+			// The datastore names a finish the way TCGplayer prices
+			// it; this package spells finishes its own way, and
+			// canonicalFinish is the one crossing between them.
+			finish := canonicalFinish(name)
+			if _, placed := finishUUIDs[finish]; placed {
+				continue
 			}
-			// The CardObjects below are registered in this order, so
-			// AllUUIDs and the name hashes come out the same on every load.
-			sort.Slice(stored, func(i, j int) bool { return stored[i].name < stored[j].name })
-			// A bare foil flag has to reach a printing, and the coarse key
-			// it resolves through is one a card sold only in a treatment
-			// has no printing of its own for, so the treatment answers it
-			// - which is what the caller meant, there being nothing else
-			// foil about the card. Pokemon files the same key the same
-			// way. The named form is not answered by it: FinishUUID
-			// refuses a key whose printing is sold in another finish, so a
-			// caller pricing a Cold Foil sku this card does not have is
-			// told so.
-			if _, found := finishUUIDs[mtgmatcher.FinishFoil]; !found {
-				if uuid, found := finishUUIDs[finishHolofoil]; found {
-					finishUUIDs[mtgmatcher.FinishFoil] = uuid
-				}
+			uuid := card.PrintingIDs[name]
+			finishUUIDs[finish] = uuid
+			stored = append(stored, perFinish{uuid, finish != mtgmatcher.FinishNonfoil, finish})
+		}
+		// The CardObjects below are registered in this order, so
+		// AllUUIDs and the name hashes come out the same on every load.
+		sort.Slice(stored, func(i, j int) bool { return stored[i].name < stored[j].name })
+		// A bare foil flag has to reach a printing, and the coarse key
+		// it resolves through is one a card sold only in a treatment
+		// has no printing of its own for, so the treatment answers it
+		// - which is what the caller meant, there being nothing else
+		// foil about the card. Pokemon files the same key the same
+		// way. The named form is not answered by it: FinishUUID
+		// refuses a key whose printing is sold in another finish, so a
+		// caller pricing a Cold Foil sku this card does not have is
+		// told so.
+		if _, found := finishUUIDs[mtgmatcher.FinishFoil]; !found {
+			if uuid, found := finishUUIDs[finishHolofoil]; found {
+				finishUUIDs[mtgmatcher.FinishFoil] = uuid
 			}
-			// Finishes is the coarse pair output() reads, not the names
-			// above: a card sold in a treatment is sold foil.
-			var coarse []string
-			for _, s := range stored {
-				name := mtgmatcher.FinishNonfoil
-				if s.foil {
-					name = mtgmatcher.FinishFoil
-				}
-				if !slices.Contains(coarse, name) {
-					coarse = append(coarse, name)
-				}
+		}
+		// Finishes is the coarse pair output() reads, not the names
+		// above: a card sold in a treatment is sold foil.
+		var coarse []string
+		for _, s := range stored {
+			name := mtgmatcher.FinishNonfoil
+			if s.foil {
+				name = mtgmatcher.FinishFoil
 			}
-			sort.Strings(coarse)
-			convertedCard.Finishes = coarse
-			for name, finish := range card.FinishAliases {
-				// Both halves are the datastore's words: the spelling a
-				// storefront reaches the printing by, against the finish
-				// TCGplayer sells it under.
-				finish = canonicalFinish(finish)
-				if _, sold := finishUUIDs[finish]; sold {
-					finishAliases[canonicalFinish(name)] = finish
-				}
+			if !slices.Contains(coarse, name) {
+				coarse = append(coarse, name)
 			}
-		} else {
-			foilSeen := false
-			for i, finish := range finishes {
-				// The foil type this position was read from, which is the key
-				// the builder publishes a uuid under. A card upstream lists
-				// none is the plain printing alone and has no key to look up.
-				var foilType string
-				if i < len(card.FoilTypes) {
-					foilType = card.FoilTypes[i]
-				}
-				if finish != mtgmatcher.FinishFoil {
-					uuid := baseUUID
-					finishUUIDs[mtgmatcher.FinishNonfoil] = uuid
-					stored = append(stored, perFinish{uuid, false, mtgmatcher.FinishNonfoil})
-					continue
-				}
-
-				// The exported foil type as the vocabulary spells it ("silver",
-				// "rainbowpillars", …). Nonfoil above uses the matcher's own
-				// constant instead of the export's "None" placeholder.
-				finishName := canonicalFinish(foilType)
-
-				uuid := baseUUID + "_" + finishName
-				// The printing's first foil answers the plain foil flag; the
-				// sub-types past it are keyed by their own name, which is what
-				// keeps a flag from reaching a treatment nobody asked for.
-				key := mtgmatcher.FinishFoil
-				if foilSeen {
-					key = finishName
-				}
-				foilSeen = true
-				finishUUIDs[key] = uuid
-				stored = append(stored, perFinish{uuid, true, finishName})
-
-				// The standard foil is keyed under the shared constant whatever
-				// the printing's foil type is called, so its own name is
-				// registered as a spelling that reaches it.
-				if finishName != key {
-					finishAliases[finishName] = key
-				}
-				// TCGplayer prices a Lorcana printing in up to four printings:
-				// Normal, Foil and Cold Foil for the silver foil almost every
-				// card is foiled in, and Holofoil for the treatment past it.
-				// Which uuid that names is the printing's own business: the
-				// sub-type where there is one, since the foil types are visited
-				// in exported order and it wins over the standard foil.
-				if finishName != standardFoil {
-					finishAliases[finishHolofoil] = key
-				}
+		}
+		sort.Strings(coarse)
+		convertedCard.Finishes = coarse
+		for name, finish := range card.FinishAliases {
+			// Both halves are the datastore's words: the spelling a
+			// storefront reaches the printing by, against the finish
+			// TCGplayer sells it under.
+			finish = canonicalFinish(finish)
+			if _, sold := finishUUIDs[finish]; sold {
+				finishAliases[canonicalFinish(name)] = finish
 			}
 		}
 		convertedCard.FoilUUIDs = finishUUIDs
@@ -683,9 +583,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// plain silver, so reading the name as "a treatment past the silver"
 		// refuses the only sku those products have.
 		//
-		// Only where the finishes were spelled from foil types. A datastore
-		// naming them in TCGplayer's words sells Holofoil as a finish of its
-		// own, and aliasing the name onto the standard foil would answer a
+		// Only where the printing sells no Holofoil of its own: where it
+		// does, aliasing the name onto the standard foil would answer a
 		// caller pricing the treatment with the sku beside it.
 		if _, named := finishUUIDs[finishHolofoil]; !named {
 			if _, found := finishAliases[finishHolofoil]; !found {

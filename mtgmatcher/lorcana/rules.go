@@ -603,9 +603,6 @@ func spellsOut(text, phrase string) bool {
 // spelling of a total is its own - it prints the one the card came from,
 // which is not always the one the datastore numbered it in - and refusing a
 // printing over it would price nothing where the number alone was answering.
-// A datastore built before the total was published still names a promo's run,
-// which the loader reads into SetTotal, so this decides the same way over
-// either.
 func totalTiebreak(total string, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	if total == "" || len(cards) <= 1 {
 		return cards

@@ -22,13 +22,13 @@ const foilOnlyDatastore = `{"data": {
     {
       "id": 1, "name": "Meilin Lee", "fullName": "Meilin Lee - Popular Red Panda",
       "setCode": "13", "number": "125", "rarity": "Legendary", "type": "Character",
-      "color": "Amber", "story": "Turning Red", "foilTypes": ["None", "Cold Foil"],
+      "color": "Amber", "story": "Turning Red", "printings": [{"finish": "Cold Foil", "id": "1_foil"}, {"finish": "Normal", "id": "1"}],
       "externalLinks": {"cardmarketId": 897323}
     },
     {
       "id": 2, "name": "Meilin Lee", "fullName": "Meilin Lee - Popular Red Panda",
       "setCode": "13", "number": "240", "rarity": "Enchanted", "type": "Character",
-      "color": "Amber", "story": "Turning Red", "foilTypes": ["Holofoil"],
+      "color": "Amber", "story": "Turning Red", "printings": [{"finish": "Holofoil", "id": "2_holofoil"}],
       "externalLinks": {"cardmarketId": 897451}
     }
   ]
