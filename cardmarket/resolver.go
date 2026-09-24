@@ -58,6 +58,11 @@ type resolver struct {
 	fabDeckSets   map[string][]*mtgmatcher.Set
 	fabDeckSetsMu sync.Mutex
 
+	// yugiohPrints counts the catalog's Yu-Gi-Oh products per shelf, card,
+	// number and rarity, built on first use; see yugiohRarityIndex.
+	yugiohPrints   map[yugiohPrint]int
+	yugiohPrintsMu sync.Mutex
+
 	// shelved names, for each set of ours, the expansion of this run that
 	// sells it; see offShelf. A scraper's Load fills it once the
 	// expansions are known, via shelvedSets.
@@ -801,6 +806,9 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 	}
 	tail := numberTail.FindString(product.Number)
 	finishes := []string{yugiohRun(product), "Unlimited", ""}
+	if r.yugiohRarityIndex(product) {
+		finishes = finishes[1:]
+	}
 
 	carried := false
 	for _, edition := range yugiohEditions(product.ExpansionName) {
