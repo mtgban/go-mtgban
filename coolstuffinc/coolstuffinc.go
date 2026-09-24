@@ -1282,8 +1282,8 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 			return fixed
 		}
 	}
-	if (pokemonNonHolo.MatchString(name) || pokemonNonHolo.MatchString(numbered)) &&
-		!strings.Contains(strings.ToLower(edition), "promo") {
+	nonHolo := pokemonNonHolo.MatchString(name) || pokemonNonHolo.MatchString(numbered)
+	if nonHolo && !strings.Contains(strings.ToLower(edition), "promo") {
 		strippedName := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(name, ""))
 		strippedNumbered := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(numbered, ""))
 		if pokemonNonHoloDeckExclusive(b, strippedName, strippedNumbered, foil) {
@@ -1306,6 +1306,18 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	}
 	if name == "Vivillon" {
 		numbered = pokemonVivillonColors.Replace(numbered)
+	}
+	// A "(Non-Holo)" listing is never a holo pull, so it is never this
+	// redirect's business even when its note also carries one of
+	// pokemonDeckHoloNotes' markers.
+	redirected := ""
+	if !nonHolo {
+		redirected = pokemonDeckHoloRedirect(b, name, numbered, variation)
+	}
+	if redirected != "" {
+		card.Edition = redirected
+		card.Variation = "Cracked Ice Holo"
+		card.Foil = true
 	}
 	m = goldStar.FindStringSubmatch(name)
 	if m != nil {
@@ -1472,6 +1484,45 @@ var pokemonVivillonColors = strings.NewReplacer(
 	"(Pink)", "(Meadow Pink)",
 	"(Orange)", "(High Plains Orange)",
 )
+
+// pokemonDeckHoloNotes names the edition a print-run note belongs to, and
+// the set code the redirect has to land on to be trusted.
+var pokemonDeckHoloNotes = []struct {
+	marker, edition, wantSet string
+}{
+	{"Theme Deck", "Deck Exclusives", "PR-1840"},
+	{"EX Battle Stadium", "EX Battle Stadium", "BST"},
+	{"Prism Holo", "Miscellaneous Cards & Products", "MCAP"},
+}
+
+// pokemonDeckHoloRedirect answers the edition for a pokemonDeckHoloNotes
+// marker whose probe - asking for the "Cracked Ice Holo" label so a
+// cracked-ice twin outranks the plain printing of the same number - lands
+// on that marker's own set code, or "" otherwise.
+func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes string) string {
+	for _, r := range pokemonDeckHoloNotes {
+		if !strings.Contains(notes, r.marker) && !strings.Contains(numbered, r.marker) {
+			continue
+		}
+		tail := strings.TrimSpace(strings.Replace(numbered, r.marker, "", 1))
+		tail = strings.TrimSpace(strings.TrimSuffix(tail, "-"))
+		probeName := name
+		if tail != "" {
+			probeName += " - " + tail
+		}
+		probe := &mtgmatcher.InputCard{Name: probeName, Edition: r.edition, Variation: "Cracked Ice Holo", Foil: true}
+		id, err := b.Match(probe)
+		if err != nil {
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err != nil || co.SetCode != r.wantSet {
+			continue
+		}
+		return r.edition
+	}
+	return ""
+}
 
 // basicEnergyName matches this storefront's "<Type> Energy" and a treatment
 // bracket it carries of its own ("(Cosmo Holo)"), apart from the number
