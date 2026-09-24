@@ -745,11 +745,6 @@ var lorcanaRarityMap = map[string]int{
 	"special":   9,
 }
 
-// standardFoil is LorcanaJSON's name for the cold foil almost every Lorcana
-// card is foiled in (2717 of the 3242 printings in the datastore at the time
-// of writing); every other foil type is a treatment on top of it.
-const standardFoil = "silver"
-
 // finishHolofoil is the third name TCGplayer prices a Lorcana printing
 // under, beside Normal and Cold Foil: the one it prices any treatment past
 // the standard foil under, and the one a datastore naming its finishes
