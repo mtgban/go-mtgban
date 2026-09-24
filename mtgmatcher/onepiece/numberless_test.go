@@ -10,7 +10,7 @@ import (
 // numberlessFixture carries a card the catalog files with no number beside
 // one it numbers. The trophy card is the builder's own entry for product
 // 719668, which carries no Number and no CardType, verbatim.
-const numberlessFixture = `{
+const numberlessFixture = `{"data": {
 	"game": "onepiece",
 	"sets": {
 		"OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-12-02", "type": "promo"}
@@ -19,7 +19,7 @@ const numberlessFixture = `{
 		{"id": "p-041_531486", "name": "Monkey.D.Luffy", "number": "P-041", "setCode": "OP-PR", "rarity": "PR", "finish": "Normal", "image": "x", "externalLinks": {"tcgPlayerId": 531486}},
 		{"color": "", "externalLinks": {"tcgPlayerId": 719668}, "finish": "Foil", "id": "719668_foil", "image": "https://tcgplayer-cdn.tcgplayer.com/product/719668_400w.jpg", "name": "Flame-Flame Fruit Trophy Card", "promoTypes": ["flameflamefruitcoliseum"], "rarity": "None", "setCode": "OP-PR", "type": "", "variant": "Flame-Flame Fruit Coliseum"}
 	]
-}`
+}}`
 
 // TestLoadReadsANumberlessCard: one card with no number is a card, not a
 // wrong file. Refusing it refused the whole datastore, every card with it.
