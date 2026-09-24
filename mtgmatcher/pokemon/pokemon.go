@@ -91,9 +91,10 @@ type DatastoreCard struct {
 	Type    string `json:"type"`
 
 	// Total is the set size the card is printed with, the denominator of
-	// the "082/167" on the card face. Older datastores spell it into
-	// Number instead; either way the loader keeps the card's own part and
-	// the total apart.
+	// the "082/167" on the card face, which is what tells a reprint from its
+	// original: Cascoon is 44/130 in Diamond & Pearl and 44/127 in Platinum.
+	// A card whose face prints no total at all - which is most promos - has
+	// none, the absence being as much a fact as the number.
 	Total string `json:"total,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, one crossing of
@@ -134,18 +135,12 @@ type DatastoreCard struct {
 	// mark is the whole of what tells one from its siblings.
 	Watermark string `json:"watermark,omitempty"`
 
-	// TcgdexID is the tcgdex identifier, annotated where the builder could
-	// align the two sources.
-	TcgdexID string `json:"tcgdexId,omitempty"`
-
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
 
-		// The tcgdex identifier, in the place every other identifier
-		// lives. The datastore writes it here and flat on the entry both,
-		// and the flat field above is what this falls back to for a
-		// datastore built before it moved.
+		// TcgdexID is the tcgdex identifier, annotated where the builder
+		// could align the two sources.
 		TcgdexID string `json:"tcgdexId,omitempty"`
 	} `json:"externalLinks"`
 }
@@ -415,7 +410,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// nonfoil query with its holo, and output() folds a
 			// storefront's unreliable flag onto the class it does sell.
 			Finishes: soldFinishes(group),
-			Number:   ownNumber(card),
+			Number:   card.Number,
 			Images: map[string]string{
 				"full":      card.Image,
 				"thumbnail": card.Image,
@@ -434,8 +429,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			PlainNumber: Rules{}.PlainNumber(ownNumber(card)),
-			SetTotal:    setTotal(card),
+			PlainNumber: Rules{}.PlainNumber(card.Number),
+			SetTotal:    card.Total,
 		}
 
 		// Register the uuid each printing prices under the name the game's
@@ -468,8 +463,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 		if id := card.ExternalLinks.TcgdexID; id != "" {
 			identifiers["tcgdexId"] = id
-		} else if card.TcgdexID != "" {
-			identifiers["tcgdexId"] = card.TcgdexID
 		}
 		// A printing with neither keeps the nil map it had, so nothing is
 		// stamped with an empty string for want of a value.
@@ -596,9 +589,6 @@ func (card *DatastoreCard) productKey() string {
 	if id := card.ExternalLinks.TcgdexID; id != "" {
 		return id
 	}
-	if card.TcgdexID != "" {
-		return card.TcgdexID
-	}
 	return card.ID
 }
 
@@ -613,15 +603,6 @@ func productKeyOf(identifiers map[string]string, uuid string) string {
 		return id
 	}
 	return uuid
-}
-
-// ownNumber is the card's part of the collector number alone: the "082" of
-// the "082/167" printed on the card, the set total being the set's fact
-// rather than the card's. An older datastore writes the whole face into
-// Number, so the split happens here rather than trusting either shape.
-func ownNumber(card *DatastoreCard) string {
-	number, _, _ := strings.Cut(card.Number, "/")
-	return number
 }
 
 // plainNumber is the collector number as a person writes it, which for this
@@ -665,16 +646,3 @@ func plainNumber(number string) string {
 // plainNumberTail are the letters a printing is spelled with behind a
 // number, the same tail Magic and Lorcana drop.
 const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-// setTotal is the set size the card's face prints beside its number, the
-// "167" of "082/167", which is what tells a reprint from its original:
-// Cascoon is 44/130 in Diamond & Pearl and 44/127 in Platinum. An older
-// datastore spells the total into Number, a newer one keeps it in Total,
-// and a card whose face prints no total at all - which is most promos -
-// answers with nothing, the absence being as much a fact as the number.
-func setTotal(card *DatastoreCard) string {
-	if _, total, found := strings.Cut(card.Number, "/"); found {
-		return total
-	}
-	return card.Total
-}
