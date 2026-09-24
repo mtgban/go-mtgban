@@ -271,6 +271,12 @@ var lorcanaSeeds = []matchTest{
 		Desc: "the promotion behind the lot still names a real card",
 		In:   mtgmatcher.InputCard{Name: "Mickey Mouse - True Friend (Disney Cruise Promo)", Variation: "10 Holofoil", Edition: "Disney Lorcana Promo Cards", Foil: true},
 	},
+	// Core refuses wording that says oversize unless a printing of the name
+	// is flagged IsOversized; verbatim from Cool Stuff Inc's retail feed.
+	{
+		Desc: "oversized Illumineer's Quest battleground is licensed by its oversized printing",
+		In:   mtgmatcher.InputCard{Name: "The Encounter // A Dark Realm - Battleground (Oversized)", Variation: "Oversized Easy and Medium Battleground Card from Deep Trouble", Edition: "Illumineer's Quest - Deep Trouble"},
+	},
 }
 
 func TestLorcanaMatch(t *testing.T) {

@@ -6045,6 +6045,15 @@
         "error": "unknown variant"
     },
     {
+        "description": "oversized Illumineer's Quest battleground is licensed by its oversized printing",
+        "input": {
+            "name": "The Encounter // A Dark Realm - Battleground (Oversized)",
+            "variant": "Oversized Easy and Medium Battleground Card from Deep Trouble",
+            "edition": "Illumineer's Quest - Deep Trouble"
+        },
+        "uuid": "m-552744"
+    },
+    {
         "description": "parenthetical suffix does not poison the collector number",
         "input": {
             "name": "Hades - King of Olympus (Enchanted)",

@@ -511,6 +511,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			promoSet = set.Type == "promo"
 		}
 
+		promoTypes := slugTags(card.PromoTypes)
+
 		// Prepare the card and add it to the main array
 		// Since cards are already sorted (by number/id), the order here is preserved
 		convertedCard := mtgmatcher.Card{
@@ -538,7 +540,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 			Printings:  printingsByName[mtgmatcher.Normalize(card.FullName)],
 			IsPromo:    promoPrintings[card.ID] || card.PromoSourceCategory != "" || promoSet || rarity == "promo",
-			PromoTypes: slugTags(card.PromoTypes),
+			PromoTypes: promoTypes,
+
+			// IsOversized mirrors core's own "oversized" promoType.
+			IsOversized: slices.Contains(promoTypes, "oversized"),
 
 			PlainNumber: Rules{}.PlainNumber(card.Number + card.Variant),
 
