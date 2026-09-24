@@ -414,6 +414,9 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// printing of its own to the guide - which is how the holos were priced
 	// from the reverse's columns and the reverses from nothing.
 	perTreatment := mkm.gameID == cm.GameFleshAndBlood || mkm.gameID == cm.GameOnePiece
+	// Yu-Gi-Oh's second pair is a lone trend-foil that has stopped moving
+	// and is not the 1st Edition's price, so only the product's own is read.
+	onePair := perTreatment || mkm.gameID == cm.GameYuGiOh
 	second := co.Finish != mtgmatcher.FinishNonfoil
 	if mkm.gameID == cm.GamePokemon {
 		// This is reverse-holo-only - the same blindness Market's own
@@ -432,7 +435,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// A printing on the first side takes the first pair and hands the
 	// second pair to the printing beside it; one on the second side is
 	// priced by the second pair alone.
-	if perTreatment || !second {
+	if onePair || !second {
 		link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
 			Signed:    cm.None,
 			Altered:   cm.None,
@@ -488,7 +491,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 			}
 		}
 
-		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
+		if !onePair && (foilprices[0] != 0 || foilprices[1] != 0) {
 			link := cm.BuildURL(mkm.gameID, product.IDProduct, cm.URLOption{
 				Foil:      cm.Only,
 				Signed:    cm.None,
