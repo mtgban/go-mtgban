@@ -1,9 +1,12 @@
 package cardmarket
 
 import (
+	"fmt"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 )
@@ -63,13 +66,9 @@ func TestMarketFoilOnly(t *testing.T) {
 // TestFoilOnlyShelf pins the closed set of shelves whose guide entry prices
 // the shown treatment's foil alone - verbatim product names from the shelves
 // the README documents, plus the edge cases the closed table is built
-// around: M3C Extras' own "(V.1)" printing is not foil-only, and the
-// Holiday Release name is shared by LTC's foil-only silverfoil box topper
-// and LTR's own (also foil-only) showcase cards. LTR is left off the table
-// not because it sells both finishes - Boromir (V.2) below is foil-only
-// same as LTC's box topper - but because Preprocess already resolves its
-// "(V.2)" rows onto their foil printing by variant, before foilOnlyShelf is
-// ever asked, so an entry here would be a no-op for all 181 of them.
+// around: M3C Extras' "(V.1)" and "(V.3)" printings are not foil-only, and
+// the Holiday Release name is shared by LTC's silverfoil box topper and
+// LTR's silverfoil showcase, both foil-only in "(V.2)".
 func TestFoilOnlyShelf(t *testing.T) {
 	for _, tt := range []struct {
 		name    string
@@ -83,8 +82,9 @@ func TestFoilOnlyShelf(t *testing.T) {
 		{"M3C Extras with no (V.N) suffix", cm.Product{Name: "Drowner of Hope", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", true},
 		{"M3C Extras (V.2)", cm.Product{Name: "Localized Destruction (V.2)", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", true},
 		{"M3C Extras (V.1) is the ordinary nonfoil printing", cm.Product{Name: "Sunken Palace (V.1)", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", false},
+		{"M3C Extras (V.3) is an extended art sold in both finishes", cm.Product{Name: "Coram, the Undertaker (V.3)", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", false},
 		{"LTC Holiday Release (V.2) is the silverfoil box topper", cm.Product{Name: "Kenrith, the Returned King (V.2)", ExpansionName: "The Lord of the Rings: Tales of Middle-earth Holiday Release"}, "LTC", true},
-		{"LTR Holiday Release (V.2) already resolved to foil by Preprocess", cm.Product{Name: "Boromir, Warden of the Tower (V.2)", ExpansionName: "The Lord of the Rings: Tales of Middle-earth Holiday Release"}, "LTR", false},
+		{"LTR Holiday Release (V.2) is the silverfoil showcase", cm.Product{Name: "Boromir, Warden of the Tower (V.2)", ExpansionName: "The Lord of the Rings: Tales of Middle-earth Holiday Release"}, "LTR", true},
 		{"LTC Holiday Release (V.1) is the ordinary printing", cm.Product{Name: "Kenrith, the Returned King (V.1)", ExpansionName: "The Lord of the Rings: Tales of Middle-earth Holiday Release"}, "LTC", false},
 		{"an unrelated shelf", cm.Product{Name: "Lightning Bolt", ExpansionName: "Modern Horizons 2"}, "MH2", false},
 	} {
@@ -92,4 +92,53 @@ func TestFoilOnlyShelf(t *testing.T) {
 			t.Errorf("%s: foilOnlyShelf(%+v, %q) = %v, want %v", tt.name, tt.product, tt.setCode, got, tt.want)
 		}
 	}
+}
+
+// TestResolveUUIDsFoilOnlyShelf replays id-map rows of the foil-only shelves
+// through resolveUUIDs, which answers them before resolveMagic is asked.
+// Each foil-only row lands on the foil it sells; the rows beside it that are
+// not foil-only keep the printing the map names.
+func TestResolveUUIDsFoilOnlyShelf(t *testing.T) {
+	b := realDatastore(t)
+	r := &resolver{backend: b, gameID: cm.GameMagic}
+
+	const holiday = "The Lord of the Rings: Tales of Middle-earth Holiday Release"
+	const m3c = "Commander: Modern Horizons 3: Extras"
+	for _, tt := range []struct {
+		id                  int
+		name, number, shelf string
+		uuid                string
+		wantCard, wantFoil  string
+	}{
+		{737046, "Champions of Minas Tirith (V.2)", "412", holiday, "98cba698-44ab-5e8a-8b53-0b3ce52055ae", "LTC 412 foil", "LTC 412 foil"},
+		{737499, "Boromir, Warden of the Tower (V.2)", "455", holiday, "95dbc038-e376-5baa-ac6e-13ad4f876e2b", "LTR 455 foil", "LTR 455 foil"},
+		{774790, "Talon Gates of Madara (V.2)", "82", m3c, "9d648f31-1b88-5276-a9e9-597a81e68b3e", "M3C 82★ foil", "M3C 82★ foil"},
+		{738041, "Eagle of Deliverance (V.2)", "829", holiday, "ab52a745-6c92-5260-9555-79e3a725ac9c", "LTR 829 nonfoil", "LTR 829 nonfoil"},
+		{771323, "Coram, the Undertaker (V.3)", "27", m3c, "18a9a4b6-6953-5cc3-a1db-194ca5ecaf08", "M3C 27 nonfoil", "M3C 27 foil"},
+		{772487, "Azlask, the Swelling Scourge (V.2)", "17", m3c, "12d79207-f3e8-5ef8-b736-b4f979cc1c42", "M3C 17 etched", "M3C 17 etched"},
+	} {
+		product := &cm.Product{IDProduct: tt.id, Name: tt.name, Number: tt.number, ExpansionName: tt.shelf}
+		cardID, cardIDFoil := r.resolveUUIDs(product, []string{tt.uuid})
+		if got := describePrinting(b, cardID); got != tt.wantCard {
+			t.Errorf("%d %q: card = %s, want %s", tt.id, tt.name, got, tt.wantCard)
+		}
+		if got := describePrinting(b, cardIDFoil); got != tt.wantFoil {
+			t.Errorf("%d %q: foil card = %s, want %s", tt.id, tt.name, got, tt.wantFoil)
+		}
+	}
+}
+
+func describePrinting(b *mtgmatcher.Backend, id string) string {
+	co, err := b.GetUUID(id)
+	if err != nil {
+		return fmt.Sprintf("%q (%v)", id, err)
+	}
+	finish := "nonfoil"
+	switch {
+	case co.Etched:
+		finish = "etched"
+	case co.Foil:
+		finish = "foil"
+	}
+	return co.SetCode + " " + co.Number + " " + finish
 }
