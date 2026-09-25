@@ -158,7 +158,7 @@ func IsBasicLand(name string) bool {
 // Promo or name a store event. Token names are resolved against this backend,
 // so a rule reads the snapshot it was handed.
 func (b *Backend) IsGenericPromo(c *InputCard) bool {
-	return !c.IsBaB() && !b.IsPromoPack(c) && !c.IsPrerelease() && !c.IsSDCC() &&
+	return !c.IsBaB() && !c.IsPromoPack() && !c.IsPrerelease() && !c.IsSDCC() &&
 		!c.IsRetro() &&
 		!c.Contains("Year of the") && // tcg
 		!c.Contains("Deckmasters") && // no real promos here, just foils
@@ -180,7 +180,7 @@ func (b *Backend) IsGenericPromo(c *InputCard) bool {
 // IsPromoPack reports a promo pack printing, by name, by the stamp it carries,
 // or by a collector number ending in p, which the 30th Anniversary numbers
 // reuse for something else.
-func (b *Backend) IsPromoPack(c *InputCard) bool {
+func (c *InputCard) IsPromoPack() bool {
 	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
 		Contains(c.Variation, "Planeswalker Stamp") ||

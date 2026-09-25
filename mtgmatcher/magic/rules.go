@@ -763,14 +763,14 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			if err == nil {
 				if inCard.IsPrerelease() {
 					variation = num + "s"
-				} else if b.IsPromoPack(inCard) {
+				} else if inCard.IsPromoPack() {
 					variation = num + "p"
 				}
 			}
 			if num == "" {
 				if inCard.IsPrerelease() {
 					variation = "75s"
-				} else if b.IsPromoPack(inCard) {
+				} else if inCard.IsPromoPack() {
 					variation = "75p"
 				} else if isBorderless(inCard) {
 					variation = "281"
@@ -1062,7 +1062,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case b.IsPromoPack(inCard):
+		case inCard.IsPromoPack():
 			switch set.Name {
 			case "Dragon's Maze Promos", // due to Plains
 				"Grand Prix Promos":
@@ -1792,7 +1792,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 // carries the tag too.
 func missingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
 	return (inCard.IsPrerelease() && !co.HasPromoType(PromoTypePrerelease)) ||
-		(b.IsPromoPack(inCard) && !co.HasPromoType(PromoTypePromoPack)) ||
+		(inCard.IsPromoPack() && !co.HasPromoType(PromoTypePromoPack)) ||
 		(isSerialized(inCard) && !co.HasPromoType(PromoTypeSerialized))
 }
 
@@ -1969,7 +1969,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 				switch {
 				case inCard.IsPrerelease():
 					possibleSuffixes = append(possibleSuffixes, "s")
-				case b.IsPromoPack(inCard):
+				case inCard.IsPromoPack():
 					possibleSuffixes = append(possibleSuffixes, "p")
 				case isChineseAltArt(inCard):
 					possibleSuffixes = append(possibleSuffixes, "s", SuffixSpecial+"s", SuffixVariant+"s")
@@ -2190,7 +2190,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 	// Check if there are multiple printings for Prerelease and Promo Pack cards
 	// Sometimes these contain the ParentCode or the parent edition name in the field
-	if len(outCards) > 1 && (inCard.IsPrerelease() || b.IsPromoPack(inCard)) {
+	if len(outCards) > 1 && (inCard.IsPrerelease() || inCard.IsPromoPack()) {
 		allSameEdition := true
 		for _, card := range outCards {
 			if card.Name != outCards[0].Name || !strings.HasPrefix(card.SetCode, "P") {
