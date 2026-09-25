@@ -560,3 +560,8 @@ that map: it is identified by SKU and has its own scrapers.
   - proving a matching change on the scrapers' own paths;
   - the order a field change needs across datastore-gen, this repo and the
     site.
+- **Auditing a game's whole Cardmarket catalog**: read
+  `docs/agents/cardmarket-census/README.md` before starting. It walks every
+  product the way `Index.walkCatalog` does, grades each landing against the
+  datastore's Cardmarket ids, CardTrader's links and the published dumps, and
+  lists the shapes found so far with the layer that fixed each.
