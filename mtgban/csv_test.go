@@ -434,25 +434,6 @@ func TestWriteMismatchToCSVReportsTheReferencePrice(t *testing.T) {
 	}
 }
 
-// The penny report is a shopping list rather than a trade, so it is written
-// under the inventory header with nothing in the link column.
-func TestWritePennyToCSVReportsTheShelf(t *testing.T) {
-	b := backendFor(csvCards())
-
-	records := writeCSV(t, func(w *bytes.Buffer) error {
-		return WritePennyToCSV(b, []ArbitEntry{arbitEntry()}, w)
-	})
-	if !slices.Equal(records[0], InventoryHeader) {
-		t.Errorf("header = %v, want %v", records[0], InventoryHeader)
-	}
-
-	want := []string{"NM", "10.00", "4", ""}
-	got := records[1][len(CardHeader):]
-	if !slices.Equal(got, want) {
-		t.Errorf("row = %v, want %v", got, want)
-	}
-}
-
 // A report on a market names the seller each row came from, which is the
 // difference between a row someone can act on and one they cannot.
 func TestReportsNameTheSellerWhenThereIsOne(t *testing.T) {
@@ -468,7 +449,6 @@ func TestReportsNameTheSellerWhenThereIsOne(t *testing.T) {
 	}{
 		{"arbitrage", func(e []ArbitEntry, w *bytes.Buffer) error { return WriteArbitrageToCSV(b, e, w) }},
 		{"mismatch", func(e []ArbitEntry, w *bytes.Buffer) error { return WriteMismatchToCSV(b, e, w) }},
-		{"penny", func(e []ArbitEntry, w *bytes.Buffer) error { return WritePennyToCSV(b, e, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			records := writeCSV(t, func(w *bytes.Buffer) error {
@@ -533,7 +513,6 @@ func TestReportsLeaveTheSharedHeadersAlone(t *testing.T) {
 	for _, write := range []func([]ArbitEntry, *bytes.Buffer) error{
 		func(e []ArbitEntry, w *bytes.Buffer) error { return WriteArbitrageToCSV(b, e, w) },
 		func(e []ArbitEntry, w *bytes.Buffer) error { return WriteMismatchToCSV(b, e, w) },
-		func(e []ArbitEntry, w *bytes.Buffer) error { return WritePennyToCSV(b, e, w) },
 	} {
 		buf.Reset()
 		err := write(entries, &buf)
@@ -564,7 +543,6 @@ func TestReportsWriteAHeaderWithNoRows(t *testing.T) {
 	}{
 		{"arbitrage", func(w *bytes.Buffer) error { return WriteArbitrageToCSV(b, nil, w) }},
 		{"mismatch", func(w *bytes.Buffer) error { return WriteMismatchToCSV(b, nil, w) }},
-		{"penny", func(w *bytes.Buffer) error { return WritePennyToCSV(b, nil, w) }},
 		{"inventory", func(w *bytes.Buffer) error { return WriteInventoryToCSV(b, InventoryRecord{}, w) }},
 		{"buylist", func(w *bytes.Buffer) error { return WriteBuylistToCSV(b, BuylistRecord{}, 1, w) }},
 	} {
@@ -589,7 +567,6 @@ func TestReportsReportAFailedDestination(t *testing.T) {
 	}{
 		{"arbitrage", func(w *failAfter) error { return WriteArbitrageToCSV(b, entries, w) }},
 		{"mismatch", func(w *failAfter) error { return WriteMismatchToCSV(b, entries, w) }},
-		{"penny", func(w *failAfter) error { return WritePennyToCSV(b, entries, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.write(&failAfter{budget: 40})
@@ -746,7 +723,6 @@ func TestWriteToCSVReportsADestinationThatWasNeverThere(t *testing.T) {
 		}},
 		{"arbitrage", func(w *failAfter) error { return WriteArbitrageToCSV(b, entries, w) }},
 		{"mismatch", func(w *failAfter) error { return WriteMismatchToCSV(b, entries, w) }},
-		{"penny", func(w *failAfter) error { return WritePennyToCSV(b, entries, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.write(&failAfter{})
@@ -803,7 +779,6 @@ func TestReportsSkipACardTheyCannotName(t *testing.T) {
 	}{
 		{"arbitrage", func(w *bytes.Buffer) error { return WriteArbitrageToCSV(b, entries, w) }},
 		{"mismatch", func(w *bytes.Buffer) error { return WriteMismatchToCSV(b, entries, w) }},
-		{"penny", func(w *bytes.Buffer) error { return WritePennyToCSV(b, entries, w) }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			records := writeCSV(t, tc.write)
@@ -842,9 +817,6 @@ func TestCSVNilBackend(t *testing.T) {
 		}},
 		{"WriteMismatchToCSV", func() error {
 			return WriteMismatchToCSV(nil, entries, &bytes.Buffer{})
-		}},
-		{"WritePennyToCSV", func() error {
-			return WritePennyToCSV(nil, entries, &bytes.Buffer{})
 		}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

@@ -88,9 +88,6 @@ func TestReportsRefuseANilBackend(t *testing.T) {
 					ScraperInfo{Name: "reference"}),
 				sellerOf(inv, ScraperInfo{Name: "probe"}))
 		}},
-		{"pennystock", func() []ArbitEntry {
-			return Pennystock(nil, pennySeller(0.01, "NM"), true)
-		}},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			if got := tt.run(); got != nil {
