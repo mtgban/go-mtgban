@@ -61,6 +61,14 @@ func splitDecorations(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
+	// The catalog joins two DON!! cards to their label with " // " ("DON!!
+	// Card // Green Compass"), which a datastore naming the card alone files
+	// as the variant.
+	head, label, joined := strings.Cut(inCard.Name, " // ")
+	if joined {
+		inCard.Name = head
+		inCard.AddToVariant(label)
+	}
 	split := splitDashNumber(inCard)
 	// A card whose own name ends in a parenthetical wears two of them once
 	// the storefront writes the number behind it, and the split below cannot
