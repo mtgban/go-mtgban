@@ -105,6 +105,41 @@ func TestDefaultPrinting(t *testing.T) {
 	}
 }
 
+// TestNamedFinish pins what a listing naming a run, a treatment or both is
+// answered with: the plainest printing sold in every axis named, and nothing
+// where the printing is sold in no such finish - one treatment never answers
+// for another.
+func TestNamedFinish(t *testing.T) {
+	wotc := []string{"1stedition", "1steditionholofoil", "unlimited", "unlimitedholofoil"}
+	fab := []string{"nonfoil", "rainbowfoil", "1steditionrainbowfoil", "unlimitededitionrainbowfoil"}
+	for _, test := range []struct {
+		finishes             []string
+		run, treatment, want string
+	}{
+		{[]string{"nonfoil", "reverseholofoil", "holofoil"}, "", "Holofoil", "holofoil"},
+		{[]string{"nonfoil", "reverseholofoil", "holofoil"}, "", "Reverse Holofoil", "reverseholofoil"},
+		{[]string{"nonfoil", "reverseholofoil"}, "", "Holofoil", ""},
+		{wotc, Run1stEdition, "", "1stedition"},
+		{wotc, Run1stEdition, "Holofoil", "1steditionholofoil"},
+		{wotc, "", "Holofoil", "unlimitedholofoil"},
+		{[]string{"1steditionholofoil", "unlimitedholofoil"}, Run1stEdition, "", "1steditionholofoil"},
+		{fab, "", "Rainbow Foil", "rainbowfoil"},
+		{fab, Run1stEdition, "Rainbow Foil", "1steditionrainbowfoil"},
+		{fab, "", "Normal", "nonfoil"},
+		{fab, RunUnlimited, "Cold Foil", ""},
+		{[]string{"nonfoil", "foil", "1stedition", "unlimited", "limited"}, RunLimited, "", "limited"},
+		{[]string{"prismaticfoil"}, "", "Prismatic Foil", ""},
+	} {
+		printings := map[string]bool{}
+		for _, finish := range test.finishes {
+			printings[finish] = true
+		}
+		if got := NamedFinish(printings, test.run, test.treatment); got != test.want {
+			t.Errorf("NamedFinish(%q, %q, %q) = %q, want %q", test.finishes, test.run, test.treatment, got, test.want)
+		}
+	}
+}
+
 func TestPrintingFinish(t *testing.T) {
 	for _, tt := range []struct{ run, treatment, want string }{
 		{"1st Edition", "Rainbow Foil", "1st Edition Rainbow Foil"},

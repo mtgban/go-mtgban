@@ -1090,38 +1090,29 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // it; here it tells the marvel from a plain copy the catalog also files at
 // the marvel rarity, which the tiering cannot.
 func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
-	var edition, treatment string
+	var run, treatment string
 	for word := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
 		switch word {
 		case "1st", "first", "alpha":
 			// cardtrader's alpha print run sells as TCGplayer's 1st Edition
-			edition = edition1st
+			run = mtgmatcher.Run1stEdition
 		case "unlimited":
-			edition = editionUnlimited
+			run = mtgmatcher.RunUnlimited
 		case "rainbow":
-			treatment = treatmentRainbowFoil
+			treatment = "Rainbow Foil"
 		case "cold", "marvel":
-			treatment = treatmentColdFoil
+			treatment = "Cold Foil"
 		case "normal":
-			treatment = treatmentNormal
+			treatment = "Normal"
 		}
 	}
-	if edition == "" && treatment == "" {
+	if run == "" && treatment == "" {
 		return ""
 	}
 	if treatment == "" {
-		treatment = treatmentNormal
+		treatment = "Normal"
 	}
-	editions := []string{edition}
-	if edition == "" {
-		editions = []string{editionBare, editionUnlimited, edition1st}
-	}
-	for _, prefix := range editions {
-		if key := mtgmatcher.FinishSlug(prefix + treatment); card.FoilUUIDs[key] != "" {
-			return key
-		}
-	}
-	return ""
+	return mtgmatcher.NamedFinish(card.FoilUUIDs, run, treatment)
 }
 
 // extractNumber pulls the collector number out of the scraper-supplied

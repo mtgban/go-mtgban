@@ -1578,24 +1578,24 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // "Limited". A wording naming no run, or a run the product was not priced
 // in, keeps the flag-driven default.
 func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
-	var key string
+	var run string
 	for word := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
 		switch word {
 		case "1st", "first":
-			key = finish1stEdition
+			run = mtgmatcher.Run1stEdition
 		case "unlimited":
-			key = finishUnlimited
+			run = mtgmatcher.RunUnlimited
 		case "limited":
-			key = finishLimited
+			run = mtgmatcher.RunLimited
 		default:
 			continue
 		}
 		break
 	}
-	if _, found := card.FoilUUIDs[key]; !found {
+	if run == "" {
 		return ""
 	}
-	return key
+	return mtgmatcher.NamedFinish(card.FoilUUIDs, run, "")
 }
 
 // extractNumber pulls the collector number out of the scraper-supplied
