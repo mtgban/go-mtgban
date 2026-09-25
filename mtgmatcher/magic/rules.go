@@ -1172,8 +1172,16 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		// Both kinds need to be checked in the same place as there is
 		// a lot of overlap in the product and naming across stores
 		case isMysteryList(inCard) || inCard.IsSecretLair():
+			// Mystery Booster Commander Edition is named in full, so that
+			// wording keeps it alone, and nothing else reaches it. Revisit
+			// once it ships: MB2's foil-only Oracle of the Alpha has an MBC
+			// twin told apart by finish alone, unloaded while it has none.
+			if inCard.Contains("Mystery Booster Commander") != (set.Code == "MBC") {
+				continue
+			}
 			noSymbol := inCard.Contains("No") && inCard.Contains("Symbol")
 			switch set.Code {
+			case "MBC":
 			case "CMB1":
 				if noSymbol || strings.Contains(inCard.Variation, "V.2") {
 					continue
