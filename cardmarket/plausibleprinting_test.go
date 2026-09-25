@@ -78,3 +78,34 @@ func TestResolveUUIDsDefersOnImplausibleOversized(t *testing.T) {
 		})
 	}
 }
+
+// TestResolveUUIDsFollowsTheProductNumber pins numberedPrinting: mtgjson
+// links Double Masters 2022's Consecrated Sphinx #345 and #427 each to the
+// other's Cardmarket product, and the product's own number, which CardTrader
+// agrees with, names the printing. The ids and entries are the map's own.
+func TestResolveUUIDsFollowsTheProductNumber(t *testing.T) {
+	b := realDatastore(t)
+	r := &resolver{backend: b, gameID: cm.GameMagic}
+
+	for _, tt := range []struct {
+		product          cm.Product
+		uuids            []string
+		wantID, wantFoil string
+	}{
+		{
+			cm.Product{IDProduct: 664915, Name: "Consecrated Sphinx (V.1)", Number: "345", ExpansionName: "Double Masters 2022: Extras"},
+			[]string{"bf3e52bb-4017-5760-8db6-838ee858421d"},
+			"106eb1f8-1452-55cd-8bfb-7db43bc5a3ce", "106eb1f8-1452-55cd-8bfb-7db43bc5a3ce_f",
+		},
+		{
+			cm.Product{IDProduct: 664250, Name: "Consecrated Sphinx (V.2)", Number: "427", ExpansionName: "Double Masters 2022: Extras"},
+			[]string{"106eb1f8-1452-55cd-8bfb-7db43bc5a3ce"},
+			"bf3e52bb-4017-5760-8db6-838ee858421d", "bf3e52bb-4017-5760-8db6-838ee858421d",
+		},
+	} {
+		cardID, cardIDFoil := r.resolveUUIDs(&tt.product, tt.uuids)
+		if cardID != tt.wantID || cardIDFoil != tt.wantFoil {
+			t.Errorf("%d #%s: resolveUUIDs = (%q, %q), want (%q, %q)", tt.product.IDProduct, tt.product.Number, cardID, cardIDFoil, tt.wantID, tt.wantFoil)
+		}
+	}
+}

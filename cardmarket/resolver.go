@@ -725,6 +725,12 @@ const pokemonReverseHolo = "Reverse Holofoil"
 // already prefers it; a pick between printings the number cannot settle is
 // said out loud. Both ids empty means the entry decided nothing.
 func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, string) {
+	if r.gameID == cm.GameMagic {
+		id := r.numberedPrinting(product, uuids)
+		if id != "" {
+			uuids = []string{id}
+		}
+	}
 	var plain, foil []string
 	var plainMatched, foilMatched bool
 	for _, uuid := range uuids {
@@ -794,6 +800,40 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		cardIDFoil = cardID
 	}
 	return cardID, cardIDFoil
+}
+
+// numberedPrinting answers the printing of the mapped card at the product's
+// own number, where the map lists none at it and the set carries one: mtgjson
+// crosses the ids of two printings of a card now and then, 2X2's #345 and
+// #427 each linked to the other's product.
+func (r *resolver) numberedPrinting(product *cm.Product, uuids []string) string {
+	if product.Number == "" {
+		return ""
+	}
+	var mapped *mtgmatcher.CardObject
+	for _, uuid := range uuids {
+		co, err := r.backend.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		if strings.EqualFold(co.PlainNumber, product.Number) {
+			return ""
+		}
+		mapped = co
+	}
+	if mapped == nil {
+		return ""
+	}
+	set, err := r.backend.GetSet(mapped.SetCode)
+	if err != nil {
+		return ""
+	}
+	for _, card := range set.Cards {
+		if card.Name == mapped.Name && strings.EqualFold(card.Number, product.Number) {
+			return card.UUID
+		}
+	}
+	return ""
 }
 
 // resolveMapped answers one product of the id map. The map answers first;
