@@ -33,9 +33,9 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 				// In case it's a well known promo, consider the promo sets (or vice
 				// versa for promo sets) in order to let filtering take care of them
 				// JPN cards are skipped because they are well set usually
-				if !IsJPN(inCard) && (inCard.IsPrerelease() || inCard.IsPromoPack() ||
+				if !IsJPN(inCard) && (IsPrerelease(inCard) || IsPromoPack(inCard) ||
 					(isBundle(inCard) && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
-					(inCard.IsBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
+					(isBaB(inCard) && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
 					setName := b.Sets[setCode].Name
 					if !strings.HasSuffix(setName, "Promos") {
 						setCode = "P" + setCode
@@ -70,10 +70,10 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 
 				if mtgmatcher.Contains(set.Name, inCard.Edition) ||
 					// If a card is promotional, only consider promotional sets
-					(b.IsGenericPromo(inCard) && strings.HasSuffix(set.Name, "Promos")) ||
+					(isGenericPromo(b, inCard) && strings.HasSuffix(set.Name, "Promos")) ||
 					// If it is Bundle or BaB, also consider base sets if recent enough
 					(isBundle(inCard) && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
-					(inCard.IsBaB() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {
+					(isBaB(inCard) && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {
 					b.Log("Found a possible match with", inCard.Edition, setCode)
 					codes = append(codes, setCode)
 				}

@@ -304,7 +304,7 @@ supersedes the global publication of ADR-0002 and ADR-0003.
 
 **Backend as a type.** `Open()` returns an independent `*Backend`. Magic's
 identification callbacks search that backend, including The List's Game Day
-exception and the token lookup in `Backend.IsGenericPromo`; its exported
+exception and the token lookup in its generic-promo check; its exported
 `Has*Printing` helpers take the backend first. A process serving several
 games keeps one backend per game and asks each.
 
@@ -473,11 +473,10 @@ vocabulary also remain in that game package.
 exported because the per-game rules packages set and read them across the
 package boundary: `BeyondBaseSet` and `OriginalName` are internal matcher
 state (`json:"-"`), while `PromoWildcard` is part of the serialized input
-(`json:"PromoWildcard,omitempty"`). It carries seven exported `Is*()` predicates
-(`IsPrerelease()`, `IsPromoPack()`, `IsFoil()`, `IsEtched()`, …) built on
-normalized comparisons: the finish checks, and the promo checks behind
-`Backend.IsGenericPromo`, which Magic and Pokemon both read. Wording only
-Magic reads lives in `mtgmatcher/magic/inputcard.go` as functions.
+(`json:"PromoWildcard,omitempty"`). It carries two exported `Is*()` predicates,
+`IsFoil()` and `IsEtched()`, built on normalized comparisons. The promo wording
+a game reads lives in that game's package, Magic's in
+`mtgmatcher/magic/inputcard.go`.
 
 `(b *Backend) MatchID(inputID string, finishes ...bool)`: `finishes[0]` = foil,
 `finishes[1]` = etched. The id is split at the first `_` only to *validate*
