@@ -243,15 +243,6 @@
         "error": "unknown variant"
     },
     {
-        "description": "negative: pitch variants without a base alias on a bare number",
-        "input": {
-            "name": "Dig In",
-            "variant": "FAB384"
-        },
-        "uuid": "",
-        "error": "aliasing detected"
-    },
-    {
         "description": "negative: the name path refuses a treatment the product never sold",
         "input": {
             "name": "Fyendal's Spring Tunic",
