@@ -492,6 +492,11 @@ func listNumberCompare(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card
 		listNumbers := strings.Split(number, "-")
 		cardNumber := cardNumbers[len(cardNumbers)-1]
 		listNumber := listNumbers[len(listNumbers)-1]
+		// A misprint's listing leaves its number's dagger off, and
+		// misprintCheck picks between the copies
+		if inCard.Contains("Misprint") {
+			cardNumber = strings.TrimSuffix(cardNumber, SuffixVariant)
+		}
 		if cardNumber == listNumber {
 			return false
 		}
@@ -580,7 +585,8 @@ func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 
 	switch inCard.Name {
 	case "Phantom Centaur",
-		"Arcane Teachings":
+		"Arcane Teachings",
+		"Grizzly Fate":
 		return misprintCheck(b, inCard, card)
 	// Cards with same numeric part need special treatment because the chunk below trips the later check
 	case "Laboratory Maniac",
