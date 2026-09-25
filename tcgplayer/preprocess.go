@@ -362,6 +362,8 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 				case "Junior Super Series":
 					edition = "PJSE"
 				}
+				// Left in, the variant is read as PSUS's own name
+				variant = ""
 			case "Royal Assassin":
 			default:
 				if len(b.MatchInSet(cardName, "PSUS")) == 1 {
