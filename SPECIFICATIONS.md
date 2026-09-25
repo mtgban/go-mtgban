@@ -677,8 +677,8 @@ disambiguates within sets, consulting in order:
 1. the hand-curated `VariantsTable` — which moved into the game package with
    the rules that read it (`mtgmatcher/magic/variants.go`, ~4,650 lines of
    pure data: set → card → variant tag → collector number, alongside
-   `MultiPromosTable`); the `EditionTable` aliases are still core-level
-   (`mtgmatcher/editions.go`);
+   `MultiPromosTable`); the `EditionTable` aliases moved with it
+   (`mtgmatcher/magic/editions.go`);
 2. `ExtractNumber` with its suffix semantics;
 3. for a Secret Lair listing naming a flavor name, the printings sold under
    it; naming neither a number nor a flavor name, the card's own unflavored
@@ -1035,13 +1035,17 @@ embeds live credentials.
   over the mtgmatcher sealed API.
 - **tcgid4scryfall** — TCGplayer id → Scryfall id mapping export.
 
-**CI** (`.github/workflows/`). `ci.yml` provisions all nine datastores (§2.7)
-and then gates on three steps in order: **Check formatting** (fails on any
-`gofmt -l` output), **Vet** (`go vet ./...`), and `go test ./... -v`. There
-are well past a hundred `bantool-<target>.yml` files, one per scraper target
-— including the per-game variants such as `bantool-cardmarket_lorcana.yml`
-and `bantool-tcg_market_riftbound.yml` — each triggered by cron plus
-`workflow_dispatch`/`repository_dispatch`, and each delegating to the reusable
+**CI** (`.github/workflows/`). `ci.yml` runs a datastore-free style job on its
+own — **Check formatting** (`gofmt -s -l .`), **Vet** (`go vet ./...`),
+`go test -race ./...`, **revive** and **staticcheck** — alongside nine
+per-game jobs that each restore their own datastore from cache (§2.7);
+Magic's job runs `go test ./... -v` over the whole tree, and the other eight
+each run their `mtgmatcher/<game>` suite plus the scraper packages that read
+that game's datastore. There are well past a hundred `bantool-<target>.yml`
+files, one per scraper target — including the per-game variants such as
+`bantool-cardmarket_lorcana.yml` and `bantool-tcg_market_riftbound.yml` —
+each triggered by cron plus `workflow_dispatch`/`repository_dispatch`, and
+each delegating to the reusable
 `run-bantool.yml` with `target`, `game` and `datastore-filepath` inputs.
 `run-bantool.yml` uploads to `b2://mtgban-dumps/<game>/<target>` and then pings
 a signed `http://<game>.mtgban.com/api/load/<target>` URL so the server reloads

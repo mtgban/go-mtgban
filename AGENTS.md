@@ -60,8 +60,7 @@ mtgban/                    interfaces (Scraper/Seller/Vendor), records,
                            Arbit/Mismatch, CSV I/O, WorkerPool
 mtgmatcher/                game-agnostic core: Backend, b.Match/b.MatchID,
                            the GameRules seam, the game registry, the
-                           search API, the shared EditionTable/
-                           VariantsTable, and the Magic replay suite
+                           search API, and the Magic replay suite
 mtgmatcher/magic/          Magic rules, MTGJSON loader, promo/frame vocabulary
 mtgmatcher/lorcana/        Lorcana rules, loader, replay corpus
 mtgmatcher/riftbound/      Riftbound rules, loader, replay corpus
@@ -95,17 +94,19 @@ itself.
 
 ```sh
 go build ./...              # must stay green
-gofmt -l .                  # must print nothing
+gofmt -s -l .               # must print nothing
 go vet ./...
+go run github.com/mgechev/revive@v1.13.0 -set_exit_status -config .revive.toml ./...
+go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
 go test ./... -v
 ```
 
-Run all four before committing. CI (`.github/workflows/ci.yml`) runs the last
-three — there is no separate build step, but vet and test compile the whole
-module anyway — and the formatting check is a hard gate: the job lists the
-offending files and exits non-zero, so a stray unformatted file fails the
-build rather than merely drawing a review comment. The tree is gofmt-clean
-today; keep it that way.
+Run all six before committing. CI (`.github/workflows/ci.yml`) runs every one
+but the build, plus a datastore-free `go test -race ./...` — vet and test
+compile the whole module anyway — and the formatting check is a hard gate:
+the job lists the offending files and exits non-zero, so a stray unformatted
+file fails the build rather than merely drawing a review comment. The tree is
+gofmt-clean today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
 in `mtgban/`, in `mtgmatcher/` and every one of its nine `mtgmatcher/<game>`
@@ -231,7 +232,7 @@ as a new baseline.
 
 ## Conventions
 
-- **gofmt always.** CI enforces it; `gofmt -l .` must print nothing.
+- **gofmt always.** CI enforces it; `gofmt -s -l .` must print nothing.
 - **No `reflect`**, tests included: revive's `imports-blocklist` rejects the
   import. Compare with `slices`/`maps` or a comparison written for the type,
   and ask questions about types through `go/types` (see
@@ -340,8 +341,9 @@ keeps it:
 
 New-set and new-promo support is almost always **data**, not logic:
 
-- edition name aliases → `mtgmatcher/editions.go` (`EditionTable`), still
-  core-level and shared;
+- edition name aliases → `mtgmatcher/magic/editions.go` (`EditionTable`) for
+  Magic; One Piece, Pokemon and Yu-Gi-Oh keep their own `editionAliases`,
+  Riftbound its `storefrontEditions`;
 - card↔number disambiguation → `mtgmatcher/magic/variants.go`
   (`VariantsTable`), which scrapers reach as `magic.VariantsTable`;
 - Magic promo detection rules → `mtgmatcher/magic/callbacks.go`
