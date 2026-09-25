@@ -11,7 +11,7 @@ import (
 // straight onto every ordinary printing sharing the collector number. Exact
 // editions still win; in the loose pass, promo shelves join edition matches.
 func (r Rules) CandidateSets(b *mtgmatcher.Backend, in *mtgmatcher.InputCard, editions []string) []string {
-	if len(editions) <= 1 || in.PromoWildcard || !b.IsGenericPromo(in) {
+	if len(editions) <= 1 || in.PromoWildcard || !isGenericPromo(in) {
 		return r.DefaultRules.CandidateSets(b, in, editions)
 	}
 	var exact, loose []string
@@ -31,4 +31,14 @@ func (r Rules) CandidateSets(b *mtgmatcher.Backend, in *mtgmatcher.InputCard, ed
 		return loose
 	}
 	return editions
+}
+
+// isGenericPromo reports a promo listing with no more specific kind: it says
+// Promo, League or Miscellaneous, and is not a prerelease or Comic-Con stamp.
+func isGenericPromo(in *mtgmatcher.InputCard) bool {
+	return !in.Contains("Prerelease") &&
+		!in.Contains("SDCC") && !in.Contains("San Diego Comic-Con") &&
+		(mtgmatcher.Contains(in.Variation, "Promo") ||
+			in.Contains("League") ||
+			in.Contains("Miscellaneous"))
 }
