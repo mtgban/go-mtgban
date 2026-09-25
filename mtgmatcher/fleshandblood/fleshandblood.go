@@ -248,13 +248,14 @@ func describingVariant(variant, finish, number string) string {
 	if restatesNumber(variant, number) {
 		return ""
 	}
-	label := mtgmatcher.NormalizeFinish(variant)
+	label := mtgmatcher.PromoTypeSlug(variant)
 	if label == "" {
 		return ""
 	}
 	sold, _ := mtgmatcher.FinishOf(mtgmatcher.FinishSlug(finish))
-	for _, axis := range []string{sold.Run, mtgmatcher.TCGplayerFinish(sold.Treatment)} {
-		if axis != "" && bareAxis(label) == bareAxis(mtgmatcher.NormalizeFinish(axis)) {
+	treatment, _ := mtgmatcher.FinishOf(sold.Treatment)
+	for _, axis := range []string{sold.Run, treatment.TCGplayer} {
+		if axis != "" && bareAxis(label) == bareAxis(mtgmatcher.PromoTypeSlug(axis)) {
 			return ""
 		}
 	}

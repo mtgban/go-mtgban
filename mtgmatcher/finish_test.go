@@ -2,27 +2,6 @@ package mtgmatcher
 
 import "testing"
 
-func TestNormalizeFinish(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"Cold Foil", "coldfoil"},
-		{"cold-foil", "coldfoil"},
-		{"RainbowPillars", "rainbowpillars"},
-		{"FreeForm1", "freeform1"},
-		{"", ""},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			if got := NormalizeFinish(test.name); got != test.want {
-				t.Errorf("NormalizeFinish(%q) = %q, want %q", test.name, got, test.want)
-			}
-		})
-	}
-}
-
 // TestFinishSlug pins the one spelling every finish is keyed and asked for by.
 // A printing TCGplayer adds later is named rather than refused, and a
 // storefront's own words ("Holo", "Foil Etched") name nothing: they are its
@@ -31,6 +10,7 @@ func TestFinishSlug(t *testing.T) {
 	for _, test := range []struct{ name, want string }{
 		{"Normal", FinishNonfoil},
 		{"non-foil", FinishNonfoil},
+		{"cold-foil", "coldfoil"},
 		{"Foil", FinishFoil},
 		{"Etched", FinishEtched},
 		{"Cold Foil", "coldfoil"},
@@ -46,15 +26,13 @@ func TestFinishSlug(t *testing.T) {
 	}
 }
 
-// TestFinishTable pins that every row reads back through FinishSlug from both
-// its TCGplayer name and its label, and that its treatment is a row of its own
-// with no run and the same foilness.
+// TestFinishTable pins that every row reads back through FinishSlug from its
+// TCGplayer name, and that its treatment is a row of its own with no run and
+// the same foilness.
 func TestFinishTable(t *testing.T) {
 	for _, finish := range Finishes {
-		for _, name := range []string{finish.TCGplayer, finish.Label} {
-			if got := FinishSlug(name); got != finish.Slug {
-				t.Errorf("FinishSlug(%q) = %q, want %q", name, got, finish.Slug)
-			}
+		if got := FinishSlug(finish.TCGplayer); got != finish.Slug {
+			t.Errorf("FinishSlug(%q) = %q, want %q", finish.TCGplayer, got, finish.Slug)
 		}
 		treatment, found := FinishOf(finish.Treatment)
 		if !found || treatment.Run != "" {

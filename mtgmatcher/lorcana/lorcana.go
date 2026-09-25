@@ -303,7 +303,7 @@ func (ac *AllCards) adoptPrintings() {
 		for _, printing := range card.Printings {
 			card.PrintingIDs[printing.Finish] = printing.ID
 			for _, treatment := range printing.PromoTypes {
-				ac.treatments[printing.ID] = append(ac.treatments[printing.ID], mtgmatcher.NormalizeFinish(treatment))
+				ac.treatments[printing.ID] = append(ac.treatments[printing.ID], mtgmatcher.PromoTypeSlug(treatment))
 				if !slices.Contains(card.PromoTypes, treatment) {
 					card.PromoTypes = append(card.PromoTypes, treatment)
 				}

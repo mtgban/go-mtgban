@@ -790,7 +790,7 @@ func selectFinish(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtg
 
 	// One wording can hold two of the names and map iteration is random, so
 	// they are visited in sorted order.
-	variation := mtgmatcher.NormalizeFinish(inCard.Variation)
+	variation := mtgmatcher.PromoTypeSlug(inCard.Variation)
 	for _, finish := range slices.Sorted(maps.Keys(card.FoilUUIDs)) {
 		if finish == mtgmatcher.FinishNonfoil || finish == mtgmatcher.FinishFoil {
 			continue

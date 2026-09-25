@@ -13,27 +13,28 @@ uuid in the same spelling, but a consumer must not rely on it.
 `mtgmatcher.Finishes` holds every printing TCGplayer's catalogs define for
 the eight datastore games, checked against the catalog dumps on 2026-09-25.
 
-| slug | TCGplayer | label | run | treatment | foil |
-|---|---|---|---|---|---|
-| `nonfoil` | Normal | Normal | – | `nonfoil` | no |
-| `foil` | Foil | Foil | – | `foil` | yes |
-| `holofoil` | Holofoil | Holofoil | – | `holofoil` | yes |
-| `reverseholofoil` | Reverse Holofoil | Reverse Holofoil | – | `reverseholofoil` | yes |
-| `coldfoil` | Cold Foil | Cold Foil | – | `coldfoil` | yes |
-| `rainbowfoil` | Rainbow Foil | Rainbow Foil | – | `rainbowfoil` | yes |
-| `1stedition` | 1st Edition | 1st Edition | 1st Edition | `nonfoil` | no |
-| `unlimited` | Unlimited | Unlimited | Unlimited | `nonfoil` | no |
-| `limited` | Limited | Limited | Limited | `nonfoil` | no |
-| `1steditionholofoil` | 1st Edition Holofoil | same | 1st Edition | `holofoil` | yes |
-| `unlimitedholofoil` | Unlimited Holofoil | same | Unlimited | `holofoil` | yes |
-| `1steditionnormal` | 1st Edition Normal | same | 1st Edition | `nonfoil` | no |
-| `1steditionrainbowfoil` | 1st Edition Rainbow Foil | same | 1st Edition | `rainbowfoil` | yes |
-| `1steditioncoldfoil` | 1st Edition Cold Foil | same | 1st Edition | `coldfoil` | yes |
-| `unlimitededitionnormal` | Unlimited Edition Normal | same | Unlimited | `nonfoil` | no |
-| `unlimitededitionrainbowfoil` | Unlimited Edition Rainbow Foil | same | Unlimited | `rainbowfoil` | yes |
+| slug | TCGplayer | run | treatment | foil |
+|---|---|---|---|---|
+| `nonfoil` | Normal | – | `nonfoil` | no |
+| `foil` | Foil | – | `foil` | yes |
+| `holofoil` | Holofoil | – | `holofoil` | yes |
+| `reverseholofoil` | Reverse Holofoil | – | `reverseholofoil` | yes |
+| `coldfoil` | Cold Foil | – | `coldfoil` | yes |
+| `rainbowfoil` | Rainbow Foil | – | `rainbowfoil` | yes |
+| `1stedition` | 1st Edition | 1st Edition | `nonfoil` | no |
+| `unlimited` | Unlimited | Unlimited | `nonfoil` | no |
+| `limited` | Limited | Limited | `nonfoil` | no |
+| `1steditionholofoil` | 1st Edition Holofoil | 1st Edition | `holofoil` | yes |
+| `unlimitedholofoil` | Unlimited Holofoil | Unlimited | `holofoil` | yes |
+| `1steditionnormal` | 1st Edition Normal | 1st Edition | `nonfoil` | no |
+| `1steditionrainbowfoil` | 1st Edition Rainbow Foil | 1st Edition | `rainbowfoil` | yes |
+| `1steditioncoldfoil` | 1st Edition Cold Foil | 1st Edition | `coldfoil` | yes |
+| `unlimitededitionnormal` | Unlimited Edition Normal | Unlimited | `nonfoil` | no |
+| `unlimitededitionrainbowfoil` | Unlimited Edition Rainbow Foil | Unlimited | `rainbowfoil` | yes |
 
-Both names read back through `FinishSlug`, so a label has to keep its slug's
-words. A printing TCGplayer adds later loads under its own name and is taken
+Each TCGplayer name reads back through `FinishSlug` to its slug, which is
+how "Normal" becomes `nonfoil`: from its row, not from a spelling of its
+own. A printing TCGplayer adds later loads under its own name and is taken
 for a foil; `TestPublishedFinishesHaveARow` reports it until it has a row.
 
 ## What answers a finish name
