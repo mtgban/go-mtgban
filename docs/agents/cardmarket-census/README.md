@@ -105,7 +105,9 @@ The shapes met so far, and where each was fixed:
 
 Leave these alone; each was checked and is correct or undecidable:
 
-- YGO European V.1 prints refused as foreign on the oldest shelves.
+- YGO European V.1 prints refused as foreign only where the datastore has
+  no European row at that number; datastore-gen's European first-print
+  mint adds rows on each of the seven oldest shelves.
 - CardTrader linking the product that predates Cardmarket's 2021 split.
 - Pokemon Prize Pack series selling one printing several times.
 - Magic's ★ foil twins, and Cardmarket's own numbering on FBB and promos.
