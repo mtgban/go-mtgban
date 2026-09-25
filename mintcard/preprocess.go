@@ -119,7 +119,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 			edition = fixup
 		}
 	case "PMF":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			edition = "PF19"
 		}
 	case "STA":

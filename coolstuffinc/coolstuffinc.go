@@ -21,6 +21,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -769,7 +770,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				} else if err != nil {
 					switch {
 					// Ignore expected misses
-					case mtgmatcher.IsBasicLand(theCard.Name),
+					case magic.IsBasicLand(theCard.Name),
 						notes == "" && strings.Contains(edition, "The List"),
 						strings.Contains(notes, "Preorder"):
 					default:

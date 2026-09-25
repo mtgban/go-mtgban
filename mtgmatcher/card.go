@@ -128,29 +128,6 @@ func (c *InputCard) AddToVariant(tag string) {
 // The vendor abbreviations in the clauses name the storefront whose wording
 // forced that clause: each is a real listing someone published.
 
-// IsBasicLand reports whether the name may represent a basic land.
-func IsBasicLand(name string) bool {
-	switch {
-	case strings.Contains(name, "Bear") && !strings.Contains(name, "Beard"), // G
-		strings.Contains(name, "Mosquito"),                                     // B
-		strings.Contains(name, "Stronghold"), strings.Contains(name, "Bandit"), // R
-		strings.Contains(name, "Yeti"), strings.Contains(name, "Titan"), // R
-		strings.Contains(name, "Valley"), strings.Contains(name, "Goat"), // R
-		strings.Contains(name, "Fish"), strings.Contains(name, "Sanctuary"), // U
-		strings.Contains(name, "Wak-Wak"): // U
-	case strings.HasPrefix(name, "Plains"),
-		strings.HasPrefix(name, "Island"),
-		strings.HasPrefix(name, "Swamp"),
-		strings.HasPrefix(name, "Mountain"),
-		strings.HasPrefix(name, "Forest"),
-		strings.HasPrefix(name, "Wastes"):
-		return true
-	case HasPrefix(name, "Snow-Covered"):
-		return true
-	}
-	return false
-}
-
 // IsGenericPromo reports a promo with no more specific kind, one that
 // probably needs further analysis to categorize: it excludes every promo the
 // other predicates recognise, and tokens, then accepts the leftovers that say

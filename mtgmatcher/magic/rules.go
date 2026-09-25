@@ -139,7 +139,7 @@ func ravnicaGuildKit(b *mtgmatcher.Backend, name, edition, variation string) str
 		return "RNA Guild Kit"
 	}
 
-	if isBasicLand(name) {
+	if isExactBasicLand(name) {
 		return "Guild Kit"
 	}
 	if len(b.MatchInSet(name, "GK1")) > 0 {
@@ -619,7 +619,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = maybeEdition
 
 	// Oilslick lands may not have the bundle tag attached to them
-	case isBasicLand(inCard.Name) && isOilSlick(inCard) && !isBundle(inCard):
+	case isExactBasicLand(inCard.Name) && isOilSlick(inCard) && !isBundle(inCard):
 		variation += " Bundle"
 
 	// Many providers don't tag these promos correctly
@@ -1463,7 +1463,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 
 		case isMagicFest(inCard):
 			// Some providers use GP2018 instead of MF2019
-			if maybeYear == "2018" && isBasicLand(inCard.Name) {
+			if maybeYear == "2018" && isExactBasicLand(inCard.Name) {
 				maybeYear = "2019"
 			}
 			switch {
@@ -1595,12 +1595,12 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case isBasicLand(inCard.Name) && strings.Contains(inCard.Variation, "APAC"):
+		case isExactBasicLand(inCard.Name) && strings.Contains(inCard.Variation, "APAC"):
 			if set.Name != "Asia Pacific Land Program" {
 				continue
 			}
 
-		case isBasicLand(inCard.Name) && mtgmatcher.Contains(inCard.Variation, "EURO"):
+		case isExactBasicLand(inCard.Name) && mtgmatcher.Contains(inCard.Variation, "EURO"):
 			if set.Name != "European Land Program" {
 				continue
 			}
@@ -2494,7 +2494,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 
 	// Move any single letter variation from name to beginning variation
-	if mtgmatcher.IsBasicLand(inCard.Name) {
+	if IsBasicLand(inCard.Name) {
 		fields := strings.Fields(inCard.Name)
 		if len(fields) > 1 {
 			_, err := strconv.Atoi(strings.TrimPrefix(fields[1], "0"))
@@ -2638,9 +2638,32 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// isBasicLand is the strict, exact-name basic-land check, distinct from the
-// loose mtgmatcher.IsBasicLand the scrapers ask about raw listing names.
-func isBasicLand(name string) bool {
+// IsBasicLand reports whether the name may represent a basic land.
+func IsBasicLand(name string) bool {
+	switch {
+	case strings.Contains(name, "Bear") && !strings.Contains(name, "Beard"), // G
+		strings.Contains(name, "Mosquito"),                                     // B
+		strings.Contains(name, "Stronghold"), strings.Contains(name, "Bandit"), // R
+		strings.Contains(name, "Yeti"), strings.Contains(name, "Titan"), // R
+		strings.Contains(name, "Valley"), strings.Contains(name, "Goat"), // R
+		strings.Contains(name, "Fish"), strings.Contains(name, "Sanctuary"), // U
+		strings.Contains(name, "Wak-Wak"): // U
+	case strings.HasPrefix(name, "Plains"),
+		strings.HasPrefix(name, "Island"),
+		strings.HasPrefix(name, "Swamp"),
+		strings.HasPrefix(name, "Mountain"),
+		strings.HasPrefix(name, "Forest"),
+		strings.HasPrefix(name, "Wastes"):
+		return true
+	case mtgmatcher.HasPrefix(name, "Snow-Covered"):
+		return true
+	}
+	return false
+}
+
+// isExactBasicLand is the strict, exact-name basic-land check, distinct
+// from the loose IsBasicLand the scrapers ask about raw listing names.
+func isExactBasicLand(name string) bool {
 	switch name {
 	case "Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes":
 		return true

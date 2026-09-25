@@ -15,6 +15,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-retryablehttp"
@@ -195,7 +196,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return true
 		} else if err != nil {
-			if mtgmatcher.IsBasicLand(theCard.Name) {
+			if magic.IsBasicLand(theCard.Name) {
 				return true
 			}
 			ha.printf("%v in cardSet %s at page %d", err, cardSet, page)
@@ -297,7 +298,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				// tokens (the shelf's own "紋章(<planeswalker>)" wording,
 				// not the bare word real cards carry too), and the insert
 				// cards a set ships instructions or a helper on (補助カード).
-				if mtgmatcher.IsBasicLand(theCard.Name) ||
+				if magic.IsBasicLand(theCard.Name) ||
 					strings.Contains(theCard.Edition, "The List") || // lots at set 280
 					strings.Contains(theCard.Edition, "Mystery Booster") || // lots at set 280
 					strings.Contains(product.ProductName, "Token") ||

@@ -13,6 +13,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-retryablehttp"
@@ -242,7 +243,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			return
 		} else if err != nil {
 			// Skip reporting an error for known failures (invalid variant number)
-			if mtgmatcher.IsBasicLand(cardName) {
+			if magic.IsBasicLand(cardName) {
 				switch edition {
 				case "5th Edition",
 					"Collectors Edition",

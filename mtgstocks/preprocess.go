@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 var cardTable = map[string]string{
@@ -129,7 +130,7 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.InputCard, err
 			edition = "Rise of the Eldrazi Promos"
 		}
 	case "Launch Party & Release Event Promos":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
 		}
 	case "Judge Promos":

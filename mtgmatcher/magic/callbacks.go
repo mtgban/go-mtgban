@@ -854,7 +854,7 @@ func deckmastersVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, car
 			numberSuffix = "a"
 		}
 		// Reset for lands
-		if isBasicLand(inCard.Name) {
+		if isExactBasicLand(inCard.Name) {
 			numberSuffix = ""
 		}
 	}
@@ -1290,7 +1290,7 @@ func reskinRenameCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card
 
 func misprintCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// These cards are allowed to have the star at the end
-	if (isBasicLand(inCard.Name) && isJudge(inCard)) || inCard.IsPrerelease() {
+	if (isExactBasicLand(inCard.Name) && isJudge(inCard)) || inCard.IsPrerelease() {
 		return false
 	}
 

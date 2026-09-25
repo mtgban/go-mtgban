@@ -170,7 +170,7 @@ func shouldIgnoreNumber(b *mtgmatcher.Backend, c *mtgmatcher.InputCard, setName,
 // isPremiereShop reports a Magic Premiere Shop basic land. It compares the raw
 // strings because the folded form is too short to be safe.
 func isPremiereShop(c *mtgmatcher.InputCard) bool {
-	return isBasicLand(c.Name) &&
+	return isExactBasicLand(c.Name) &&
 		// XXX: do not use c.Contains here
 		(strings.Contains(c.Variation, "MPS") ||
 			strings.Contains(c.Variation, "Premier") || // csi
@@ -273,7 +273,7 @@ func isChineseAltArt(c *mtgmatcher.InputCard) bool {
 // isBasicFullArt reports a full art basic land, refusing the negations that
 // storefronts write in the same field.
 func isBasicFullArt(c *mtgmatcher.InputCard) bool {
-	return isBasicLand(c.Name) &&
+	return isExactBasicLand(c.Name) &&
 		(mtgmatcher.Contains(c.Variation, "full art") ||
 			c.Variation == "FA") && // csi
 		!mtgmatcher.Contains(c.Variation, "non") &&
@@ -282,7 +282,7 @@ func isBasicFullArt(c *mtgmatcher.InputCard) bool {
 
 // isBasicNonFullArt reports a basic land explicitly marked as not full art.
 func isBasicNonFullArt(c *mtgmatcher.InputCard) bool {
-	return isBasicLand(c.Name) &&
+	return isExactBasicLand(c.Name) &&
 		mtgmatcher.Contains(c.Variation, "non-full art") ||
 		mtgmatcher.Contains(c.Variation, "Intro") || // abu
 		mtgmatcher.Contains(c.Variation, "NOT the full art") // csi
@@ -466,7 +466,7 @@ func isReskin(c *mtgmatcher.InputCard) bool {
 		mtgmatcher.Contains(c.Variation, "Dracula") ||
 		mtgmatcher.Contains(c.Variation, "Godzilla")) &&
 		// Needed to distinguish the SLD godzilla lands
-		!isBasicLand(c.Name)
+		!isExactBasicLand(c.Name)
 }
 
 // isGenericAltArt reports alternate art, matching Alternative as well as Alt.

@@ -403,7 +403,7 @@ var artworkLetterRe = regexp.MustCompile(`^([A-F])\b`)
 // bare letter is as likely to be the start of a word the wording spends on
 // something else.
 func artworkLetter(cardName, variation string) string {
-	if !mtgmatcher.IsBasicLand(cardName) {
+	if !magic.IsBasicLand(cardName) {
 		return ""
 	}
 	match := artworkLetterRe.FindStringSubmatch(variation)
@@ -604,7 +604,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 
 	switch edition {
 	case "":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			card.Edition = "GK2"
 		} else {
 			return nil, errors.New("missing edition")
@@ -681,7 +681,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 				variation = "119"
 			}
 			edition = "Secret Lair Drop"
-		} else if mtgmatcher.IsBasicLand(cardName) && strings.Contains(variation, "Full-Text") {
+		} else if magic.IsBasicLand(cardName) && strings.Contains(variation, "Full-Text") {
 			edition = "SLD"
 			variation = strings.TrimPrefix(variation, "Full-Text ")
 		} else if strings.Contains(variation, "Play Promo") {
@@ -743,7 +743,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 			cardName = "Trial and Error "
 		}
 	case "Summer Magic / Edgar":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			return nil, errors.New("unsupported")
 		}
 	case "Streets of New Capenna Commander":
