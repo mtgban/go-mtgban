@@ -1702,7 +1702,7 @@ func fabPrintRun(set, finish string) (string, string) {
 	if finish == "" || finish == "Non-foil" {
 		finish = "Normal"
 	}
-	return set, run + " " + finish
+	return set, mtgmatcher.PrintingFinish(run, finish)
 }
 
 // catalogCondition maps a catalog condition string to an mtgban grade.

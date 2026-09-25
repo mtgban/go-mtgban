@@ -895,7 +895,7 @@ func gameFinish(gameID int, bp *Blueprint, product Product) string {
 			treatment = "Normal"
 		}
 		if product.Properties.FirstEdition {
-			return "1st Edition " + treatment
+			return mtgmatcher.PrintingFinish("1st Edition", treatment)
 		}
 		if treatment == "Normal" {
 			// The flag only says "not first", which names a printing
@@ -903,7 +903,7 @@ func gameFinish(gameID int, bp *Blueprint, product Product) string {
 			// it does not - and Card Trader shelves the runs apart, so
 			// the shelf is what can say the run outright.
 			if bp != nil && unlimitedShelf.MatchString(bp.Expansion.Name) {
-				return "Unlimited Edition " + treatment
+				return mtgmatcher.PrintingFinish("Unlimited Edition", treatment)
 			}
 			return ""
 		}

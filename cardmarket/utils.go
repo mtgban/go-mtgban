@@ -190,7 +190,7 @@ func fabFinish(expansion, name string) string {
 
 	switch {
 	case run != "" && treatment != "":
-		return run + " " + treatment
+		return mtgmatcher.PrintingFinish(run, treatment)
 	case treatment != "":
 		return treatment
 	}
