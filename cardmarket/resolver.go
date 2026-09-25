@@ -68,6 +68,10 @@ type resolver struct {
 	// answered with by id; see claimByID.
 	claimed map[string]bool
 
+	// foilVersions holds the One Piece products the bridge answers with
+	// the foil of their printing; see foilVersions.
+	foilVersions map[int]bool
+
 	// printf logs through the owning scraper's own prefix. Left nil, calls
 	// through it are no-ops - a resolver built for a test rather than a
 	// live scraper needs none.
