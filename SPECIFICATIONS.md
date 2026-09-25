@@ -1,7 +1,7 @@
 # go-mtgban — Architecture & Development Specification
 
 **Module**: `github.com/mtgban/go-mtgban` (Go 1.25)
-**License**: dual AGPLv3 + commercial (see [COPYING.md](COPYING.md))
+**License**: dual AGPLv3 + commercial (see [LICENSING.md](LICENSING.md))
 
 go-mtgban is a trading-card market-data platform: it scrapes retail
 inventories and buylists from a couple of dozen card stores and marketplaces,
