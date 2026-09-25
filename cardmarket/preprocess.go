@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -220,6 +221,8 @@ func Fallback(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
 // check does not constrain: a WCD shelf only ever sells a WC97-WC04
 // printing, a Pro Tour 1996 shelf a PTC one, an Oversized shelf an
 // oversized one, and mtgjson's own id links have drifted for real products.
+// A Simplified Chinese alternate art is sold only on its own shelf, though
+// mtgjson links it to the English card's product too.
 func plausiblePrinting(b *mtgmatcher.Backend, expansionName, cardID string) bool {
 	if cardID == "" {
 		return true
@@ -227,6 +230,9 @@ func plausiblePrinting(b *mtgmatcher.Backend, expansionName, cardID string) bool
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return true
+	}
+	if slices.Contains(co.PromoTypes, magic.PromoTypeSChineseAltArt) {
+		return expansionName == "Simplified Chinese Alternate Art Cards"
 	}
 	switch {
 	case strings.HasPrefix(expansionName, "WCD "):

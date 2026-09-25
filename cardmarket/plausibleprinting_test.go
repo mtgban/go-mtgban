@@ -31,6 +31,8 @@ func TestPlausiblePrintingDefersOnImplausibleWCD(t *testing.T) {
 		{"a Pro Tour 1996 product whose candidate is its own PTC printing", "Pro Tour 1996: Mark Justice", "693c127a-d748-5fc8-9b6e-94c3448a7ac3", true},
 		{"an Oversized product whose only candidate is an ordinary-sized printing", "Oversized 6x9 Promos", "bf14fe40-3e5c-5790-bb75-4c8221c04883", false},
 		{"an expansion neither guard constrains", "Judge Rewards Promos", "bf14fe40-3e5c-5790-bb75-4c8221c04883", true},
+		{"a Portal product whose candidate is the Simplified Chinese alternate art", "Portal", "e019addd-eaf5-5aa7-865c-3c2c9a76f6e3", false},
+		{"the alternate art's own shelf", "Simplified Chinese Alternate Art Cards", "e019addd-eaf5-5aa7-865c-3c2c9a76f6e3", true},
 		{"an empty id decides nothing either way", "WCD 2000: Janosch Kühn", "", true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
