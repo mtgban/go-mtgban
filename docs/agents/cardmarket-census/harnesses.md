@@ -111,6 +111,8 @@ import (
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
 func TestZZCensusWalk(t *testing.T) {
@@ -266,6 +268,8 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
 func TestZZCensusBackend(t *testing.T) {
