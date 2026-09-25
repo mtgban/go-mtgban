@@ -260,11 +260,11 @@ func describingVariant(variant, finish, number string) string {
 	if restatesNumber(variant, number) {
 		return ""
 	}
-	label := canonicalFinish(variant)
+	label := mtgmatcher.NormalizeFinish(variant)
 	if label == "" {
 		return ""
 	}
-	sold := canonicalFinish(finish)
+	sold := mtgmatcher.NormalizeFinish(finish)
 	for _, slug := range []string{
 		edition1st, editionUnlimited,
 		treatmentNormal, treatmentRainbowFoil, treatmentColdFoil,
@@ -391,13 +391,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, key := range productOrder {
 		group := products[key]
+		printings := map[string]*DatastoreCard{}
+		for _, entry := range group {
+			printings[mtgmatcher.FinishSlug(entry.Finish)] = entry
+		}
 
-		// The flag-driven defaults are the plainest entry of each foilness
-		// class, preferring the bare print run, then Unlimited, then 1st
-		// Edition — and Rainbow Foil over Cold Foil for the foil slot.
-		nonfoil := pickFinish(group, runsFor(treatmentNormal)...)
-		foil := pickFinish(group, append(
-			runsFor(treatmentRainbowFoil), runsFor(treatmentColdFoil)...)...)
+		// The printings the bare nonfoil and foil flags answer with.
+		nonfoil, _ := mtgmatcher.DefaultPrinting(printings, false)
+		foil, _ := mtgmatcher.DefaultPrinting(printings, true)
 
 		// The product id and the set-level card follow the nonfoil default
 		// where one exists, exactly as riftbound points a product at its
@@ -442,47 +443,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			finishes = append(finishes, mtgmatcher.FinishFoil)
 			foilUUIDs[mtgmatcher.FinishFoil] = foil.ID
 		}
-		for _, entry := range group {
-			foilUUIDs[canonicalFinish(entry.Finish)] = entry.ID
-		}
-
-		// A source that names the treatment alone - cardtrader files the
-		// print run on the expansion and leaves the listing with "Cold
-		// Foil" - means whichever run this product was sold in, so the
-		// bare name is registered as a spelling reaching the plainest one
-		// it has. Only where the product has no bare printing of its own:
-		// an alias is a spelling, and must never shadow a real entry.
-		finishAliases := map[string]string{}
-		var runs bool
-		for _, treatment := range []string{treatmentNormal, treatmentRainbowFoil, treatmentColdFoil} {
-			if _, sold := foilUUIDs[treatment]; sold {
-				continue
-			}
-			for _, edition := range []string{editionUnlimited, edition1st} {
-				if _, found := foilUUIDs[edition+treatment]; found {
-					finishAliases[treatment] = edition + treatment
-					runs = true
-					break
-				}
-			}
-		}
-		// The converse: a product sold in no run at all answers a run a
-		// storefront names anyway with the treatment. Card Trader's
-		// listings raise a first-edition flag on the Heavy Hitters tokens
-		// and the Hero promos, and neither set was ever printed in runs, so
-		// the flag says nothing the treatment has not.
-		if !runs {
-			for _, treatment := range []string{treatmentNormal, treatmentRainbowFoil, treatmentColdFoil} {
-				if _, sold := foilUUIDs[treatment]; !sold {
-					continue
-				}
-				for _, edition := range []string{editionUnlimited, edition1st} {
-					if _, found := foilUUIDs[edition+treatment]; found {
-						continue
-					}
-					finishAliases[edition+treatment] = treatment
-				}
-			}
+		// Beside the flags, each printing under its own name
+		for finish, entry := range printings {
+			foilUUIDs[finish] = entry.ID
 		}
 
 		convertedCard := mtgmatcher.Card{
@@ -509,9 +472,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			PlainNumber: Rules{}.PlainNumber(card.Number),
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
-		if len(finishAliases) > 0 {
-			convertedCard.FinishAliases = finishAliases
-		}
 
 		// Each identifier is guarded on its own. The product id and the
 		// upstream id are separate facts about a printing, and gathering
@@ -540,11 +500,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			qualified = mtgmatcher.Normalize(name)
 		}
 		for _, entry := range group {
-			finish := canonicalFinish(entry.Finish)
+			finish := mtgmatcher.FinishSlug(entry.Finish)
 			co := mtgmatcher.CardObject{
 				Card:    convertedCard,
 				Edition: b.Sets[card.SetCode].Name,
-				Foil:    !strings.HasSuffix(finish, treatmentNormal),
+				Foil:    mtgmatcher.IsFoilFinish(finish),
 			}
 			// co is fresh on every iteration, so the stored pointer is not
 			// aliased by the sibling printings
@@ -599,29 +559,6 @@ var fleshandbloodRarityMap = map[string]int{
 	"Gold":         10,
 	"Pirate Booty": 11,
 	"Promo":        12,
-}
-
-// runsFor names one treatment across the print runs, plainest first, the
-// order the flag-driven defaults are chosen in.
-func runsFor(treatment string) []string {
-	return []string{
-		editionBare + treatment,
-		editionUnlimited + treatment,
-		edition1st + treatment,
-	}
-}
-
-// pickFinish returns the group's first entry of the first printing present,
-// in the given preference order, or nil when none of them is.
-func pickFinish(group []*DatastoreCard, finishes ...string) *DatastoreCard {
-	for _, finish := range finishes {
-		for _, entry := range group {
-			if canonicalFinish(entry.Finish) == finish {
-				return entry
-			}
-		}
-	}
-	return nil
 }
 
 // productKey names the product an entry is a printing of, read off what the

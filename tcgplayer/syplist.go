@@ -154,8 +154,8 @@ func (tcg *TCGSYPList) resolve(sku SYPSku) (string, error) {
 	if err == nil {
 		return cardID, nil
 	}
-	canonical := mtgmatcher.CanonicalFinish(sku.Finish)
-	if canonical == "" && sku.Finish != mtgmatcher.FinishEtched {
+	canonical := mtgmatcher.FinishSlug(sku.Finish)
+	if canonical != mtgmatcher.FinishNonfoil && canonical != mtgmatcher.FinishFoil && sku.Finish != mtgmatcher.FinishEtched {
 		// A finish only the game names, and it did not answer: there is no
 		// flag that says it, so there is nothing left to ask.
 		return "", err

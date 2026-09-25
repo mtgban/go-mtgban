@@ -28,8 +28,8 @@ type InputCard struct {
 	Foil bool `json:"foil,omitempty"`
 
 	// The finish being priced, spelled the way the source spells it
-	// ("Normal", "Cold Foil", "Holofoil", …): the game's rules place the
-	// name (GameRules.CanonicalFinish), so a caller pricing one printing in
+	// ("Normal", "Cold Foil", "Holofoil", …) and read through FinishSlug, so
+	// a caller pricing one printing in
 	// one finish can name the finish instead of choosing between the two the
 	// Foil flag has a bit for. It refines the flag rather than replacing it,
 	// and saying nothing leaves the flag to answer alone.

@@ -280,10 +280,16 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	qualifiers := map[string]string{}
 	for _, key := range productOrder {
 		group := products[key]
+		printings := map[string]*DatastoreCard{}
+		for _, entry := range group {
+			printings[mtgmatcher.FinishSlug(entry.Finish)] = entry
+		}
 		// The run both flag values resolve to: a run is not foilness, so a
 		// vendor's foil flag must neither strand a match nor select a run.
-		// Unlimited is the widest run, 1st Edition and Limited follow.
-		card := pickRun(group, finishUnlimited, finish1stEdition, finishLimited)
+		card, found := mtgmatcher.DefaultPrinting(printings, false)
+		if !found {
+			card = group[0]
+		}
 		if b.Sets[card.SetCode] == nil {
 			continue
 		}
@@ -342,8 +348,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			mtgmatcher.FinishNonfoil: card.ID,
 			mtgmatcher.FinishFoil:    card.ID,
 		}
-		for _, entry := range group {
-			foilUUIDs[canonicalFinish(entry.Finish)] = entry.ID
+		for finish, entry := range printings {
+			foilUUIDs[finish] = entry.ID
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
 
@@ -379,7 +385,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// co is fresh on every iteration, so the stored pointer is not
 			// aliased by the sibling runs
 			co.UUID = entry.ID
-			co.Finish = canonicalFinish(entry.Finish)
+			co.Finish = mtgmatcher.FinishSlug(entry.Finish)
 			if card.Variant != "" {
 				qualifiers[entry.ID] = card.Variant
 			}
@@ -422,19 +428,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.SetRules(Rules{qualifiers: qualifiers})
 
 	return &b
-}
-
-// pickRun returns the group's first entry of the first print run present,
-// in the given preference order, falling back to the group's first entry.
-func pickRun(group []*DatastoreCard, finishes ...string) *DatastoreCard {
-	for _, finish := range finishes {
-		for _, entry := range group {
-			if canonicalFinish(entry.Finish) == finish {
-				return entry
-			}
-		}
-	}
-	return group[0]
 }
 
 // productKey names the product an entry is a printing of, read off what the

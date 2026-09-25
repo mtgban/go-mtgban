@@ -62,17 +62,6 @@ type GameRules interface {
 	// datastore's own token list is checked before this is asked, so a game
 	// with nothing to add answers false.
 	IsToken(b *Backend, name string) bool
-	// CanonicalFinish spells a finish name the way this game names it: its
-	// own name for every finish it has, the vendor aliases that reach them,
-	// and CanonicalFinish (the package function) for the finishes every game
-	// shares. The game owns this vocabulary - it is the one place a source's
-	// spelling turns into the name the loaders key Card.FoilUUIDs and stamp
-	// CardObject.Finish with, and the one place a new vendor spelling is
-	// added. A name the game cannot place yields "", so a caller pricing it
-	// is told rather than handed another finish's uuid; a game whose finish
-	// names are data rather than a fixed list may instead hand back the
-	// normalized name and let the lookup fail.
-	CanonicalFinish(name string) string
 	// PlainNumber reduces a collector number to the one a person writes,
 	// which is the number the loader stores as Card.PlainNumber: Magic
 	// drops the mark and the letters that name a printing, Pokemon the zeros
@@ -98,16 +87,12 @@ func (b *Backend) SetRules(r GameRules) {
 
 	// The finishes this datastore actually sells, which is what tells a
 	// vendor spelling nobody has taught the game yet from a name that names
-	// a real finish this one printing is not sold in. A game whose rules
-	// place any name (Lorcana's foil types are data and a new one arrives
-	// every set) has no other way to say "I have never heard of this".
+	// a real finish this one printing is not sold in. A game keying finishes
+	// by the catalog's own names places any name, so it has no other way to
+	// say "I have never heard of this".
 	b.knownFinishes = map[string]bool{}
 	for _, co := range b.UUIDs {
 		for key := range co.FoilUUIDs {
-			b.knownFinishes[key] = true
-		}
-		for name, key := range co.FinishAliases {
-			b.knownFinishes[name] = true
 			b.knownFinishes[key] = true
 		}
 	}

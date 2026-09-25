@@ -181,7 +181,7 @@ func stampVendorPrintingIDs(t *testing.T, data []byte) ([]byte, map[string]strin
 	t.Helper()
 	want := map[string]string{}
 	out := restamp(t, data, func(id int, printing string) string {
-		finish := canonicalFinish(printing)
+		finish := mtgmatcher.FinishSlug(printing)
 		// One finish named twice is one printing, stored once.
 		uuid := fmt.Sprintf("vendor-%d-%s", id, finish)
 		want[uuid] = finish

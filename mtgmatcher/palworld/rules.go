@@ -149,22 +149,6 @@ func endsInPromo(edition string) bool {
 		strings.HasSuffix(lower, "promo cards")
 }
 
-// CanonicalFinish adds nothing to the shared vocabulary: this game sells a
-// printing plain or foil, and the catalog already spells those the way the
-// matcher does.
-//
-// The vocabulary is open past that. TCGplayer adds a printing to a category
-// when it likes and the builder carries it under its own name rather than
-// dropping it, so a name neither vocabulary places is normalized and handed
-// back - it reaches a uuid only if the printing's own finishes hold one, and
-// a list kept here would refuse a real priced printing the day one arrives.
-func (Rules) CanonicalFinish(name string) string {
-	if finish := mtgmatcher.CanonicalFinish(name); finish != "" {
-		return finish
-	}
-	return mtgmatcher.NormalizeFinish(name)
-}
-
 // plainNumberTail are the treatment codes a number is suffixed with.
 const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

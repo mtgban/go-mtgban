@@ -15,11 +15,11 @@ func TestQualifiedNameStaysWhole(t *testing.T) {
 
 	for _, tt := range []struct{ desc, name, number, want string }{
 		{"the errata printing answers to its own name",
-			"Bucky - Squirrel Squeak Tutor (Errata Version)", "73/204", "m-597095_foil"},
+			"Bucky - Squirrel Squeak Tutor (Errata Version)", "73/204", "m-597095_coldfoil"},
 		{"and so does the other one",
-			"Elsa - Gloves Off (Errata Version)", "39/204", "m-618771_foil"},
+			"Elsa - Gloves Off (Errata Version)", "39/204", "m-618771_coldfoil"},
 		{"while the bare name still reaches the original",
-			"Bucky - Squirrel Squeak Tutor", "73/204", "289_foil"},
+			"Bucky - Squirrel Squeak Tutor", "73/204", "289_coldfoil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			id, err := b.Match(&mtgmatcher.InputCard{

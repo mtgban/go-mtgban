@@ -36,17 +36,12 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// The printings the catalog prices, as the game's rules spell them. The
-// plain ones are the shared vocabulary's (Normal is nonfoil, Holofoil is the
-// foil every other treatment is measured against); the rest are this game's
-// own, and the crossings name both axes so neither is lost.
+// The finish names a listing's own wording picks a printing by (selectFinish),
+// each one axis of the crossings TCGplayer prices.
 const (
-	finishHolofoil        = "holofoil"
-	finishReverseHolofoil = "reverseholofoil"
-	finish1stEdition      = "1stedition"
-	finishUnlimited       = "unlimited"
-	finish1stEditionHolo  = "1steditionholofoil"
-	finishUnlimitedHolo   = "unlimitedholofoil"
+	finishHolofoil   = "holofoil"
+	finish1stEdition = "1stedition"
+	finishUnlimited  = "unlimited"
 )
 
 // setTypePromo is what the builder types a set that hands its cards out.
@@ -199,10 +194,10 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 // printings apart; only the declaration is filtered, the same terms
 // Riftbound carries its number-restating labels on.
 func describingPromoTypes(card *DatastoreCard) []string {
-	sold := canonicalFinish(card.Finish)
+	sold := mtgmatcher.FinishSlug(card.Finish)
 	var out []string
 	for _, promoType := range card.PromoTypes {
-		if label := canonicalFinish(promoType); label != "" && strings.Contains(sold, label) {
+		if label := mtgmatcher.FinishSlug(promoType); label != "" && strings.Contains(sold, label) {
 			continue
 		}
 		out = append(out, promoType)
@@ -344,11 +339,18 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, key := range productOrder {
 		group := products[key]
+		printings := map[string]*DatastoreCard{}
+		for _, entry := range group {
+			printings[mtgmatcher.FinishSlug(entry.Finish)] = entry
+		}
 		// The printing both flag values resolve to. A plain printing is
 		// what a storefront means when it says nothing, so the nonfoil
 		// flag prefers Normal and the foil flag prefers Holofoil, each
 		// falling back through the print runs that carry its foilness.
-		card := pickPrinting(group, mtgmatcher.FinishNonfoil, finishUnlimited, finish1stEdition)
+		card, found := mtgmatcher.DefaultPrinting(printings, false)
+		if !found {
+			card = group[0]
+		}
 		if b.Sets[card.SetCode] == nil {
 			continue
 		}
@@ -399,14 +401,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		// rules give it, beside the flag-driven defaults, so an input
 		// naming a treatment reaches the exact crossing it names.
 		foilUUIDs := map[string]string{}
-		if plain := pickFinish(group, mtgmatcher.FinishNonfoil, finishUnlimited, finish1stEdition); plain != nil {
+		if plain, found := mtgmatcher.DefaultPrinting(printings, false); found {
 			foilUUIDs[mtgmatcher.FinishNonfoil] = plain.ID
 		}
-		if foil := pickFinish(group, finishHolofoil, finishUnlimitedHolo, finish1stEditionHolo, finishReverseHolofoil); foil != nil {
+		if foil, found := mtgmatcher.DefaultPrinting(printings, true); found {
 			foilUUIDs[mtgmatcher.FinishFoil] = foil.ID
 		}
-		for _, entry := range group {
-			foilUUIDs[canonicalFinish(entry.Finish)] = entry.ID
+		for finish, entry := range printings {
+			foilUUIDs[finish] = entry.ID
 		}
 		convertedCard.FoilUUIDs = foilUUIDs
 
@@ -451,11 +453,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// co is fresh on every iteration, so the stored pointer is not
 			// aliased by the sibling printings
 			co.UUID = entry.ID
-			co.Finish = canonicalFinish(entry.Finish)
+			co.Finish = mtgmatcher.FinishSlug(entry.Finish)
 			// Every holo treatment is a foil, and the flag is what a caller
 			// with no finish vocabulary reads: leaving it false filed every
 			// holo printing in the game as a plain one.
-			co.Foil = isFoilFinish(co.Finish)
+			co.Foil = mtgmatcher.IsFoilFinish(co.Finish)
 			b.UUIDs[entry.ID] = &co
 			b.AllUUIDs = append(b.AllUUIDs, entry.ID)
 			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], entry.ID)
@@ -500,7 +502,7 @@ func soldFinishes(group []*DatastoreCard) []string {
 	var out []string
 	for _, entry := range group {
 		finish := mtgmatcher.FinishNonfoil
-		if isFoilFinish(canonicalFinish(entry.Finish)) {
+		if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(entry.Finish)) {
 			finish = mtgmatcher.FinishFoil
 		}
 		if !slices.Contains(out, finish) {
@@ -509,35 +511,6 @@ func soldFinishes(group []*DatastoreCard) []string {
 	}
 	sort.Strings(out)
 	return out
-}
-
-// isFoilFinish reports whether a canonical finish name is one of the foil
-// treatments. Every crossing names its treatment, so the test is the same
-// for the plain holo and for the ones that also name a print run.
-func isFoilFinish(finish string) bool {
-	return strings.Contains(finish, "holofoil") || finish == mtgmatcher.FinishFoil
-}
-
-// pickFinish returns the group's first entry of the first finish present,
-// in the given preference order, or nil when the group has none of them.
-func pickFinish(group []*DatastoreCard, finishes ...string) *DatastoreCard {
-	for _, finish := range finishes {
-		for _, entry := range group {
-			if canonicalFinish(entry.Finish) == finish {
-				return entry
-			}
-		}
-	}
-	return nil
-}
-
-// pickPrinting is pickFinish with the group's first entry as a fallback,
-// for the card the matcher reads the shared fields off.
-func pickPrinting(group []*DatastoreCard, finishes ...string) *DatastoreCard {
-	if entry := pickFinish(group, finishes...); entry != nil {
-		return entry
-	}
-	return group[0]
 }
 
 // productKey names the product an entry is a printing of, read off what the

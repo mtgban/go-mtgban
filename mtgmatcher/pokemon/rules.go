@@ -1860,53 +1860,10 @@ func hasAllTokens(words, tokens []string) bool {
 	return true
 }
 
-// CanonicalFinish places the crossings of the two axes the catalog prices.
-// The plain printings belong to the shared vocabulary — "Normal" is nonfoil
-// everywhere TCGplayer writes it — and the treatments past it are this
-// game's own, spelled with both axes so neither the run nor the treatment is
-// lost.
-//
-// The vocabulary is open past that. TCGplayer adds a printing to a category
-// when it likes and the builder carries it under its own name rather than
-// dropping it, so a name neither vocabulary places is normalized and handed
-// back - it reaches a uuid only if the printing's own finishes hold one, and
-// a list kept here would refuse a real priced printing the day one arrives.
-func (Rules) CanonicalFinish(name string) string {
-	return canonicalFinish(name)
-}
-
 // PlainNumber implements mtgmatcher.GameRules. The catalog pads an ordinal
 // out to three digits, and a person writes card 1 as "1", not "001".
 func (Rules) PlainNumber(number string) string {
 	return plainNumber(number)
-}
-
-func canonicalFinish(name string) string {
-	normalized := mtgmatcher.NormalizeFinish(name)
-	switch normalized {
-	case finishHolofoil, finishReverseHolofoil,
-		finish1stEdition, finishUnlimited,
-		finish1stEditionHolo, finishUnlimitedHolo:
-		return normalized
-	}
-	// "Reverse Holo" and "1st Edition Holo" are how storefronts abbreviate
-	// two of them, and the abbreviation names no other printing.
-	switch normalized {
-	case "reverseholo":
-		return finishReverseHolofoil
-	case "holo":
-		return finishHolofoil
-	case "1steditionholo":
-		return finish1stEditionHolo
-	case "unlimitedholo":
-		return finishUnlimitedHolo
-	}
-	if finish := mtgmatcher.CanonicalFinish(normalized); finish != "" {
-		return finish
-	}
-	// A printing the catalog has grown past the crossings above: handed
-	// back as itself, so the printing's own finishes decide.
-	return normalized
 }
 
 // extractNumbers pulls the collector numbers out of a storefront's variation

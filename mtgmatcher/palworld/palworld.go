@@ -245,7 +245,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			products[key] = entry
 			productOrder = append(productOrder, key)
 		}
-		if (Rules{}).CanonicalFinish(card.Finish) == mtgmatcher.FinishFoil {
+		if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(card.Finish)) {
 			entry.foil = card
 		} else {
 			entry.normal = card

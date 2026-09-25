@@ -52,7 +52,8 @@ func loadBackend(t *testing.T) *mtgmatcher.Backend {
 // TestFinishIdentity pins the invariant the per-printing entries exist for:
 // one uuid per finish, and no uuid answering for two. A product sold both
 // plain and holofoil is two price points, and folding them together would
-// file one price under the other's uuid.
+// file one price under the other's uuid. The flag defaults are not finishes:
+// the bare foil flag reaching the holofoil is what they are for.
 func TestFinishIdentity(t *testing.T) {
 	b := loadBackend(t)
 
@@ -68,6 +69,9 @@ func TestFinishIdentity(t *testing.T) {
 			t.Errorf("%s is stored under finish %q, which resolves to %q", uuid, co.Finish, got)
 		}
 		for finish, other := range co.FoilUUIDs {
+			if finish == mtgmatcher.FinishNonfoil || finish == mtgmatcher.FinishFoil {
+				continue
+			}
 			if finish != co.Finish && other == uuid {
 				t.Errorf("%s answers for both %q and %q", uuid, co.Finish, finish)
 			}
@@ -87,31 +91,6 @@ func TestPlainNumberIsPlain(t *testing.T) {
 		}
 		if len(co.PlainNumber) > len(co.Number) {
 			t.Errorf("%s: PlainNumber %q is wider than Number %q", uuid, co.PlainNumber, co.Number)
-		}
-	}
-}
-
-// TestHolofoilIsTheFoil pins the game's own finish name. The catalog calls a
-// stamped printing "Holofoil", which the shared vocabulary does not place:
-// left to it, every holofoil entry would load with no finish at all.
-func TestHolofoilIsTheFoil(t *testing.T) {
-	for _, tt := range []struct {
-		in, want string
-	}{
-		{"Holofoil", mtgmatcher.FinishFoil},
-		{"holofoil", mtgmatcher.FinishFoil},
-		{"Holo", mtgmatcher.FinishFoil},
-		{"Foil", mtgmatcher.FinishFoil},
-		{"Normal", mtgmatcher.FinishNonfoil},
-		// A printing another game sells is named rather than refused: the
-		// vocabulary is open so that one TCGplayer adds to this category
-		// reaches a uuid without a release. Naming it is not selling it -
-		// MatchIDFinish refuses a finish the datastore does not carry,
-		// which is where a caller learns this game has no such printing.
-		{"Cold Foil", "coldfoil"},
-	} {
-		if got := (Rules{}).CanonicalFinish(tt.in); got != tt.want {
-			t.Errorf("CanonicalFinish(%q) = %q, want %q", tt.in, got, tt.want)
 		}
 	}
 }

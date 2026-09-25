@@ -75,9 +75,15 @@ var lorcanaSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
 	},
 	{
-		// Satin is a finish this game sells and this printing does not, so
+		// Holofoil is a finish this game sells and this printing does not, so
 		// the contradiction stands rather than answering with a sibling.
 		Desc: "negative: a finish the printing is not sold in",
+		In:   mtgmatcher.InputCard{ID: "494102", Name: "Ariel - On Human Legs", Edition: "The First Chapter", Variation: "1/204", Finish: "Holofoil", Foil: true},
+	},
+	{
+		// A treatment is the card's promo type, not a finish, so as a finish
+		// it is a name the game does not know, and the wording answers.
+		Desc: "a treatment sent as the finish falls through to the wording",
 		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Satin", Foil: true},
 	},
 	{

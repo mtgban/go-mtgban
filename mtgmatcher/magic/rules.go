@@ -1786,17 +1786,6 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		(isSerialized(inCard) && !co.HasPromoType(PromoTypeSerialized))
 }
 
-// CanonicalFinish adds the etched foil to the shared vocabulary. Only
-// mtgjson prints one, and the spellings are the ones the Magic feeds write
-// it with, so the name is Magic's to place rather than every game's.
-func (Rules) CanonicalFinish(name string) string {
-	switch mtgmatcher.NormalizeFinish(name) {
-	case "etched", "foiletched", "etchedfoil":
-		return mtgmatcher.FinishEtched
-	}
-	return mtgmatcher.CanonicalFinish(name)
-}
-
 // PlainNumber implements mtgmatcher.GameRules.
 func (Rules) PlainNumber(number string) string {
 	return plainNumber(number)

@@ -7,9 +7,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// finishNamesData sells one card under two of TCGplayer's names for the
-// standard foil, one under the plain finish alone and one foil alone, in
-// the printings shape the builder publishes.
+// finishNamesData sells one card under three of TCGplayer's names, one under
+// the plain finish alone and one foil alone, in the printings shape the
+// builder publishes.
 const finishNamesData = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {
@@ -41,8 +41,9 @@ const finishNamesData = `{"data": {
   ]
 }}`
 
-// TestFinishNames pins that two of TCGplayer's names for one finish place
-// on it once, the first by name, whatever order the file lists them in.
+// TestFinishNames pins that every name TCGplayer prices a printing under is a
+// finish of its own, keyed by that name: a card sold as Foil and as Cold Foil
+// keeps both, and the bare foil flag reaches the one named Foil.
 func TestFinishNames(t *testing.T) {
 	b, err := Load(strings.NewReader(finishNamesData))
 	if err != nil {
@@ -52,11 +53,17 @@ func TestFinishNames(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := co.FoilUUIDs[mtgmatcher.FinishFoil]; got != "100_foil" {
-		t.Errorf("the standard foil is %q, want the first name's uuid 100_foil", got)
-	}
-	if _, err := b.GetUUID("100_other"); err == nil {
-		t.Error("the second name's uuid was stored beside the first's")
+	for key, want := range map[string]string{
+		mtgmatcher.FinishNonfoil: "100",
+		mtgmatcher.FinishFoil:    "100_other",
+		"coldfoil":               "100_foil",
+	} {
+		if got := co.FoilUUIDs[key]; got != want {
+			t.Errorf("FoilUUIDs[%q] = %q, want %q", key, got, want)
+		}
+		if _, err := b.GetUUID(want); err != nil {
+			t.Errorf("%s is not stored: %v", want, err)
+		}
 	}
 	got, err := b.Match(&mtgmatcher.InputCard{Name: "Louie - One Cool Duck", Edition: "The First Chapter", Variation: "1"})
 	if err != nil || got != "100" {

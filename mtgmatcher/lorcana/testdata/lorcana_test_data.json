@@ -55,7 +55,7 @@
             "variant": "112",
             "foil": true
         },
-        "uuid": "1311_foil"
+        "uuid": "1311_coldfoil"
     },
     {
         "description": "Aladdin - On the Edge of Adventure #211 foil",
@@ -73,7 +73,7 @@
             "variant": "197",
             "foil": true
         },
-        "uuid": "1630_foil"
+        "uuid": "1630_coldfoil"
     },
     {
         "description": "Alan-a-Dale - Loyal Bard #7",
@@ -124,7 +124,7 @@
             "variant": "58",
             "foil": true
         },
-        "uuid": "2773_foil"
+        "uuid": "2773_coldfoil"
     },
     {
         "description": "Amber Coil #41 foil",
@@ -133,7 +133,7 @@
             "variant": "41",
             "foil": true
         },
-        "uuid": "1474_foil"
+        "uuid": "1474_coldfoil"
     },
     {
         "description": "Amos Slade - Tenacious Tracker #180 foil",
@@ -142,7 +142,7 @@
             "variant": "180",
             "foil": true
         },
-        "uuid": "2643_foil"
+        "uuid": "2643_coldfoil"
     },
     {
         "description": "Angel - Experiment 624 #191",
@@ -159,7 +159,7 @@
             "variant": "174",
             "foil": true
         },
-        "uuid": "2889_foil"
+        "uuid": "2889_coldfoil"
     },
     {
         "description": "Anna - Diplomatic Queen #85",
@@ -184,7 +184,7 @@
             "variant": "139",
             "foil": true
         },
-        "uuid": "2328_foil"
+        "uuid": "2328_coldfoil"
     },
     {
         "description": "Anna - True-Hearted #138",
@@ -201,7 +201,7 @@
             "variant": "5",
             "foil": true
         },
-        "uuid": "1669_foil"
+        "uuid": "1669_coldfoil"
     },
     {
         "description": "Archimedes - Exasperated Owl #39 foil",
@@ -210,7 +210,7 @@
             "variant": "39",
             "foil": true
         },
-        "uuid": "995_foil"
+        "uuid": "995_coldfoil"
     },
     {
         "description": "Ares - God of War #104",
@@ -243,7 +243,7 @@
             "variant": "15/204 Cold Foil",
             "foil": true
         },
-        "uuid": "1951_foil"
+        "uuid": "1951_coldfoil"
     },
     {
         "description": "Ariel - Singing Mermaid #15 holofoil selects the sub-type",
@@ -278,7 +278,7 @@
             "variant": "2",
             "foil": true
         },
-        "uuid": "2_foil"
+        "uuid": "2_coldfoil"
     },
     {
         "description": "Arthur - Determined Squire #168",
@@ -295,7 +295,7 @@
             "variant": "69",
             "foil": true
         },
-        "uuid": "285_foil"
+        "uuid": "285_coldfoil"
     },
     {
         "description": "Atlantean Crystal #180",
@@ -344,7 +344,7 @@
             "variant": "195",
             "foil": true
         },
-        "uuid": "886_foil"
+        "uuid": "886_coldfoil"
     },
     {
         "description": "Bad-Anon - Villain Support Center #203 foil",
@@ -353,7 +353,7 @@
             "variant": "203",
             "foil": true
         },
-        "uuid": "1159_foil"
+        "uuid": "1159_coldfoil"
     },
     {
         "description": "Baloo - Carefree Bear #85 foil",
@@ -362,7 +362,7 @@
             "variant": "85",
             "foil": true
         },
-        "uuid": "2274_foil"
+        "uuid": "2274_coldfoil"
     },
     {
         "description": "Baloo - Ol' Iron Paws #142 foil",
@@ -371,7 +371,7 @@
             "variant": "142",
             "foil": true
         },
-        "uuid": "1575_foil"
+        "uuid": "1575_coldfoil"
     },
     {
         "description": "Bambi - Prince of the Forest #57",
@@ -396,7 +396,7 @@
             "variant": "138",
             "foil": true
         },
-        "uuid": "354_foil"
+        "uuid": "354_coldfoil"
     },
     {
         "description": "Basil - Practiced Detective #153 foil",
@@ -405,7 +405,7 @@
             "variant": "153",
             "foil": true
         },
-        "uuid": "1109_foil"
+        "uuid": "1109_coldfoil"
     },
     {
         "description": "Basil's Magnifying Glass #166",
@@ -422,7 +422,7 @@
             "variant": "104",
             "foil": true
         },
-        "uuid": "1537_foil"
+        "uuid": "1537_coldfoil"
     },
     {
         "description": "Baymax's Charging Station #180",
@@ -448,7 +448,7 @@
             "variant": "132",
             "foil": true
         },
-        "uuid": "1565_foil"
+        "uuid": "1565_coldfoil"
     },
     {
         "description": "Beast - Gracious Prince #4",
@@ -473,7 +473,7 @@
             "variant": "173",
             "foil": true
         },
-        "uuid": "389_foil"
+        "uuid": "389_coldfoil"
     },
     {
         "description": "Beast's Mirror #201 foil",
@@ -482,7 +482,7 @@
             "variant": "201",
             "foil": true
         },
-        "uuid": "201_foil"
+        "uuid": "201_coldfoil"
     },
     {
         "description": "Belle - Accomplished Mystic #36",
@@ -523,7 +523,7 @@
             "variant": "179",
             "foil": true
         },
-        "uuid": "1843_foil"
+        "uuid": "1843_coldfoil"
     },
     {
         "description": "Bend to My Will #93",
@@ -630,7 +630,7 @@
             "variant": "51",
             "foil": true
         },
-        "uuid": "1715_foil"
+        "uuid": "1715_coldfoil"
     },
     {
         "description": "Bruno's Return #26 foil",
@@ -639,7 +639,7 @@
             "variant": "26",
             "foil": true
         },
-        "uuid": "717_foil"
+        "uuid": "717_coldfoil"
     },
     {
         "description": "Bucky - Squirrel Squeak Tutor #73",
@@ -656,7 +656,7 @@
             "variant": "91",
             "foil": true
         },
-        "uuid": "2806_foil"
+        "uuid": "2806_coldfoil"
     },
     {
         "description": "Calhoun - Battle-Tested #36 foil",
@@ -665,7 +665,7 @@
             "variant": "36",
             "foil": true
         },
-        "uuid": "1469_foil"
+        "uuid": "1469_coldfoil"
     },
     {
         "description": "Camilo Madrigal - Center Stage #75 foil",
@@ -674,7 +674,7 @@
             "variant": "75",
             "foil": true
         },
-        "uuid": "1739_foil"
+        "uuid": "1739_coldfoil"
     },
     {
         "description": "Candlehead - Dedicated Racer #17",
@@ -691,7 +691,7 @@
             "variant": "192",
             "foil": true
         },
-        "uuid": "1391_foil"
+        "uuid": "1391_coldfoil"
     },
     {
         "description": "Captain Hook - Devious Duelist #3",
@@ -749,7 +749,7 @@
             "variant": "138",
             "foil": true
         },
-        "uuid": "1094_foil"
+        "uuid": "1094_coldfoil"
     },
     {
         "description": "Chef Louis - In Over His Head #140 foil",
@@ -758,7 +758,7 @@
             "variant": "140",
             "foil": true
         },
-        "uuid": "2329_foil"
+        "uuid": "2329_coldfoil"
     },
     {
         "description": "Chernabog - Unnatural Force #77",
@@ -791,7 +791,7 @@
             "variant": "18",
             "foil": true
         },
-        "uuid": "1682_foil"
+        "uuid": "1682_coldfoil"
     },
     {
         "description": "Chief Tui - Proud of Motunui #171 foil",
@@ -800,7 +800,7 @@
             "variant": "171",
             "foil": true
         },
-        "uuid": "607_foil"
+        "uuid": "607_coldfoil"
     },
     {
         "description": "Chien-Po - Snow Warrior #74 foil",
@@ -809,7 +809,7 @@
             "variant": "74",
             "foil": true
         },
-        "uuid": "2537_foil"
+        "uuid": "2537_coldfoil"
     },
     {
         "description": "Chip - Ranger Leader #12",
@@ -842,7 +842,7 @@
             "variant": "3",
             "foil": true
         },
-        "uuid": "3_foil"
+        "uuid": "3_coldfoil"
     },
     {
         "description": "Cinderella - Resourceful Traveler #155 foil",
@@ -851,7 +851,7 @@
             "variant": "155",
             "foil": true
         },
-        "uuid": "2870_foil"
+        "uuid": "2870_coldfoil"
     },
     {
         "description": "Circle of Life #225 foil",
@@ -885,7 +885,7 @@
             "variant": "188",
             "foil": true
         },
-        "uuid": "1387_foil"
+        "uuid": "1387_coldfoil"
     },
     {
         "description": "Cogsworth - Climbing Clock #130",
@@ -910,7 +910,7 @@
             "variant": "62",
             "foil": true
         },
-        "uuid": "2525_foil"
+        "uuid": "2525_coldfoil"
     },
     {
         "description": "Copper - Champion of the Forest #84 foil",
@@ -919,7 +919,7 @@
             "variant": "84",
             "foil": true
         },
-        "uuid": "2547_foil"
+        "uuid": "2547_coldfoil"
     },
     {
         "description": "Cri-Kee - Good Luck Charm #142 foil",
@@ -928,7 +928,7 @@
             "variant": "142",
             "foil": true
         },
-        "uuid": "2331_foil"
+        "uuid": "2331_coldfoil"
     },
     {
         "description": "Cruella De Vil - Fashionable Cruiser #144 foil",
@@ -937,7 +937,7 @@
             "variant": "144",
             "foil": true
         },
-        "uuid": "360_foil"
+        "uuid": "360_coldfoil"
     },
     {
         "description": "Cruella De Vil - Perfectly Wretched #145 foil",
@@ -946,7 +946,7 @@
             "variant": "145",
             "foil": true
         },
-        "uuid": "361_foil"
+        "uuid": "361_coldfoil"
     },
     {
         "description": "Cursed Merfolk - Ursula's Handiwork #7 foil",
@@ -955,7 +955,7 @@
             "variant": "7",
             "foil": true
         },
-        "uuid": "2185_foil"
+        "uuid": "2185_coldfoil"
     },
     {
         "description": "Cy-Bug - Invasive Enemy #127 foil",
@@ -964,7 +964,7 @@
             "variant": "127",
             "foil": true
         },
-        "uuid": "1560_foil"
+        "uuid": "1560_coldfoil"
     },
     {
         "description": "Daisy Duck - Lovely Lady #6",
@@ -1005,7 +1005,7 @@
             "variant": "7",
             "foil": true
         },
-        "uuid": "1206_foil"
+        "uuid": "1206_coldfoil"
     },
     {
         "description": "Dalmatian Puppy - Tail Wagger #4a foil",
@@ -1014,7 +1014,7 @@
             "variant": "4a",
             "foil": true
         },
-        "uuid": "436_foil"
+        "uuid": "436_coldfoil"
     },
     {
         "description": "Dalmatian Puppy - Tail Wagger #4e foil",
@@ -1023,7 +1023,7 @@
             "variant": "4e",
             "foil": true
         },
-        "uuid": "440_foil"
+        "uuid": "440_coldfoil"
     },
     {
         "description": "Darkwing Duck - Crime Fighter #174",
@@ -1056,7 +1056,7 @@
             "variant": "8",
             "foil": true
         },
-        "uuid": "1207_foil"
+        "uuid": "1207_coldfoil"
     },
     {
         "description": "Dawson - Basil's Assistant #77 foil",
@@ -1065,7 +1065,7 @@
             "variant": "77",
             "foil": true
         },
-        "uuid": "1276_foil"
+        "uuid": "1276_coldfoil"
     },
     {
         "description": "Della Duck - Unstoppable Mom #106",
@@ -1082,7 +1082,7 @@
             "variant": "55",
             "foil": true
         },
-        "uuid": "2244_foil"
+        "uuid": "2244_coldfoil"
     },
     {
         "description": "Destructive Misstep #19",
@@ -1099,7 +1099,7 @@
             "variant": "152",
             "foil": true
         },
-        "uuid": "1585_foil"
+        "uuid": "1585_coldfoil"
     },
     {
         "description": "Diablo - Devoted Herald #70 foil",
@@ -1108,7 +1108,7 @@
             "variant": "70",
             "foil": true
         },
-        "uuid": "761_foil"
+        "uuid": "761_coldfoil"
     },
     {
         "description": "Diablo - Spiteful Raven #66 foil",
@@ -1117,7 +1117,7 @@
             "variant": "66",
             "foil": true
         },
-        "uuid": "1499_foil"
+        "uuid": "1499_coldfoil"
     },
     {
         "description": "Dig a Little Deeper #166 foil",
@@ -1126,7 +1126,7 @@
             "variant": "166",
             "foil": true
         },
-        "uuid": "2102_foil"
+        "uuid": "2102_coldfoil"
     },
     {
         "description": "Dinner Bell #135 foil",
@@ -1135,7 +1135,7 @@
             "variant": "135",
             "foil": true
         },
-        "uuid": "2071_foil"
+        "uuid": "2071_coldfoil"
     },
     {
         "description": "Do It Again! #94",
@@ -1161,7 +1161,7 @@
             "variant": "51",
             "foil": true
         },
-        "uuid": "1987_foil"
+        "uuid": "1987_coldfoil"
     },
     {
         "description": "Don Karnage - Prince of Pirates #71 foil",
@@ -1170,7 +1170,7 @@
             "variant": "71",
             "foil": true
         },
-        "uuid": "507_foil"
+        "uuid": "507_coldfoil"
     },
     {
         "description": "Donald Duck - Boisterous Fowl #108",
@@ -1187,7 +1187,7 @@
             "variant": "122",
             "foil": true
         },
-        "uuid": "1078_foil"
+        "uuid": "1078_coldfoil"
     },
     {
         "description": "Donald Duck - Flustered Sorcerer #209 foil",
@@ -1205,7 +1205,7 @@
             "variant": "172",
             "foil": true
         },
-        "uuid": "2361_foil"
+        "uuid": "2361_coldfoil"
     },
     {
         "description": "Donald Duck - Nephew Fred #105",
@@ -1230,7 +1230,7 @@
             "variant": "83",
             "foil": true
         },
-        "uuid": "2019_foil"
+        "uuid": "2019_coldfoil"
     },
     {
         "description": "Dopey - Knight Apprentice #181 foil",
@@ -1239,7 +1239,7 @@
             "variant": "181",
             "foil": true
         },
-        "uuid": "1137_foil"
+        "uuid": "1137_coldfoil"
     },
     {
         "description": "Dr. Calico - Green-Eyed Man #181 foil",
@@ -1248,7 +1248,7 @@
             "variant": "181",
             "foil": true
         },
-        "uuid": "1614_foil"
+        "uuid": "1614_coldfoil"
     },
     {
         "description": "Dr. Facilier - Fortune Teller #79 foil",
@@ -1257,7 +1257,7 @@
             "variant": "79",
             "foil": true
         },
-        "uuid": "295_foil"
+        "uuid": "295_coldfoil"
     },
     {
         "description": "Dr. Hamsterviel - Infamous Scientist #186 foil",
@@ -1266,7 +1266,7 @@
             "variant": "186",
             "foil": true
         },
-        "uuid": "2649_foil"
+        "uuid": "2649_coldfoil"
     },
     {
         "description": "Dragon Gem #33",
@@ -1307,7 +1307,7 @@
             "variant": "41",
             "foil": true
         },
-        "uuid": "997_foil"
+        "uuid": "997_coldfoil"
     },
     {
         "description": "Edna Mode - Fashion Designer #54",
@@ -1324,7 +1324,7 @@
             "variant": "45",
             "foil": true
         },
-        "uuid": "2508_foil"
+        "uuid": "2508_coldfoil"
     },
     {
         "description": "Eli La Bouff - Big Daddy #179 foil",
@@ -1333,7 +1333,7 @@
             "variant": "179",
             "foil": true
         },
-        "uuid": "395_foil"
+        "uuid": "395_coldfoil"
     },
     {
         "description": "Elisa Maza - Transformed Gargoyle #112 foil",
@@ -1342,7 +1342,7 @@
             "variant": "112",
             "foil": true
         },
-        "uuid": "2575_foil"
+        "uuid": "2575_coldfoil"
     },
     {
         "description": "Elsa - Exploring the Unknown #45 foil",
@@ -1351,7 +1351,7 @@
             "variant": "45",
             "foil": true
         },
-        "uuid": "2234_foil"
+        "uuid": "2234_coldfoil"
     },
     {
         "description": "Elsa - Ice Artisan #123",
@@ -1384,7 +1384,7 @@
             "variant": "42",
             "foil": true
         },
-        "uuid": "733_foil"
+        "uuid": "733_coldfoil"
     },
     {
         "description": "Elsa's Ice Palace - Place of Solitude #7 foil",
@@ -1402,7 +1402,7 @@
             "variant": "80",
             "foil": true
         },
-        "uuid": "296_foil"
+        "uuid": "296_coldfoil"
     },
     {
         "description": "Entangling Magic #20",
@@ -1419,7 +1419,7 @@
             "variant": "82",
             "foil": true
         },
-        "uuid": "1746_foil"
+        "uuid": "1746_coldfoil"
     },
     {
         "description": "Fa Zhou - Honorable Warrior #110 foil",
@@ -1428,7 +1428,7 @@
             "variant": "110",
             "foil": true
         },
-        "uuid": "2573_foil"
+        "uuid": "2573_coldfoil"
     },
     {
         "description": "Fairy Godmother - Magical Benefactor #192 foil",
@@ -1446,7 +1446,7 @@
             "variant": "68",
             "foil": true
         },
-        "uuid": "1267_foil"
+        "uuid": "1267_coldfoil"
     },
     {
         "description": "Fan the Flames #131 foil",
@@ -1455,7 +1455,7 @@
             "variant": "131",
             "foil": true
         },
-        "uuid": "131_foil"
+        "uuid": "131_coldfoil"
     },
     {
         "description": "Fantastical and Magical #79",
@@ -1496,7 +1496,7 @@
             "variant": "60",
             "foil": true
         },
-        "uuid": "1016_foil"
+        "uuid": "1016_coldfoil"
     },
     {
         "description": "Firefly Swarm #130 foil",
@@ -1505,7 +1505,7 @@
             "variant": "130",
             "foil": true
         },
-        "uuid": "2845_foil"
+        "uuid": "2845_coldfoil"
     },
     {
         "description": "Fix-It Felix, Jr. - Niceland Steward #12 foil",
@@ -1514,7 +1514,7 @@
             "variant": "12",
             "foil": true
         },
-        "uuid": "968_foil"
+        "uuid": "968_coldfoil"
     },
     {
         "description": "Flintheart Glomgold - Lone Cheater #140 foil",
@@ -1523,7 +1523,7 @@
             "variant": "140",
             "foil": true
         },
-        "uuid": "576_foil"
+        "uuid": "576_coldfoil"
     },
     {
         "description": "Flora - Strong-Willed Fairy #141 foil",
@@ -1532,7 +1532,7 @@
             "variant": "141",
             "foil": true
         },
-        "uuid": "2856_foil"
+        "uuid": "2856_coldfoil"
     },
     {
         "description": "Flotsam - Slippery as an Eel #71",
@@ -1549,7 +1549,7 @@
             "variant": "144",
             "foil": true
         },
-        "uuid": "835_foil"
+        "uuid": "835_coldfoil"
     },
     {
         "description": "Flynn Rider - Breaking and Entering #102 foil",
@@ -1558,7 +1558,7 @@
             "variant": "102",
             "foil": true
         },
-        "uuid": "1766_foil"
+        "uuid": "1766_coldfoil"
     },
     {
         "description": "Flynn Rider - His Own Biggest Fan #82 foil",
@@ -1567,7 +1567,7 @@
             "variant": "82",
             "foil": true
         },
-        "uuid": "298_foil"
+        "uuid": "298_coldfoil"
     },
     {
         "description": "Force of a Great Typhoon #128 foil",
@@ -1576,7 +1576,7 @@
             "variant": "128",
             "foil": true
         },
-        "uuid": "2591_foil"
+        "uuid": "2591_coldfoil"
     },
     {
         "description": "Four Dozen Eggs #164",
@@ -1593,7 +1593,7 @@
             "variant": "168",
             "foil": true
         },
-        "uuid": "1601_foil"
+        "uuid": "1601_coldfoil"
     },
     {
         "description": "Freeze #63 foil",
@@ -1602,7 +1602,7 @@
             "variant": "63",
             "foil": true
         },
-        "uuid": "63_foil"
+        "uuid": "63_coldfoil"
     },
     {
         "description": "Friend Owl - Cantankerous Neighbor #144",
@@ -1619,7 +1619,7 @@
             "variant": "46",
             "foil": true
         },
-        "uuid": "2761_foil"
+        "uuid": "2761_coldfoil"
     },
     {
         "description": "Gadget Hackwrench - Creative Thinker #139",
@@ -1692,7 +1692,7 @@
             "variant": "13",
             "foil": true
         },
-        "uuid": "1677_foil"
+        "uuid": "1677_coldfoil"
     },
     {
         "description": "Genie - Investigative Mind #146 foil",
@@ -1701,7 +1701,7 @@
             "variant": "146",
             "foil": true
         },
-        "uuid": "2335_foil"
+        "uuid": "2335_coldfoil"
     },
     {
         "description": "Genie - Of the Lamp #76 foil",
@@ -1710,7 +1710,7 @@
             "variant": "76",
             "foil": true
         },
-        "uuid": "2012_foil"
+        "uuid": "2012_coldfoil"
     },
     {
         "description": "Genie - Satisfied Dragon #189 foil",
@@ -1719,7 +1719,7 @@
             "variant": "189",
             "foil": true
         },
-        "uuid": "1853_foil"
+        "uuid": "1853_coldfoil"
     },
     {
         "description": "Genie - Wish Fulfilled #53",
@@ -1744,7 +1744,7 @@
             "variant": "189",
             "foil": true
         },
-        "uuid": "2652_foil"
+        "uuid": "2652_coldfoil"
     },
     {
         "description": "Glean #163 foil",
@@ -1753,7 +1753,7 @@
             "variant": "163",
             "foil": true
         },
-        "uuid": "854_foil"
+        "uuid": "854_coldfoil"
     },
     {
         "description": "Go Go Tomago - Darting Dynamo #73 foil",
@@ -1762,7 +1762,7 @@
             "variant": "73",
             "foil": true
         },
-        "uuid": "1272_foil"
+        "uuid": "1272_coldfoil"
     },
     {
         "description": "Golden Harp - Enchanter of the Land #11 foil",
@@ -1771,7 +1771,7 @@
             "variant": "11",
             "foil": true
         },
-        "uuid": "702_foil"
+        "uuid": "702_coldfoil"
     },
     {
         "description": "Good Job! #27",
@@ -1788,7 +1788,7 @@
             "variant": "91",
             "foil": true
         },
-        "uuid": "2280_foil"
+        "uuid": "2280_coldfoil"
     },
     {
         "description": "Goofy - Galumphing Gumshoe #223 foil",
@@ -1806,7 +1806,7 @@
             "variant": "223",
             "foil": true
         },
-        "uuid": "1933_foil"
+        "uuid": "1933_coldfoil"
     },
     {
         "description": "Goofy - Marley's Clumsy Spirit #120",
@@ -1848,7 +1848,7 @@
             "variant": "143",
             "foil": true
         },
-        "uuid": "579_foil"
+        "uuid": "579_coldfoil"
     },
     {
         "description": "Grand Duke - Advisor to the King #9",
@@ -1873,7 +1873,7 @@
             "variant": "86",
             "foil": true
         },
-        "uuid": "1519_foil"
+        "uuid": "1519_coldfoil"
     },
     {
         "description": "Grumpy - Skeptical Knight #186 foil",
@@ -1882,7 +1882,7 @@
             "variant": "186",
             "foil": true
         },
-        "uuid": "1142_foil"
+        "uuid": "1142_coldfoil"
     },
     {
         "description": "Gurgi - Apple Lover #10 foil",
@@ -1891,7 +1891,7 @@
             "variant": "10",
             "foil": true
         },
-        "uuid": "2199_foil"
+        "uuid": "2199_coldfoil"
     },
     {
         "description": "Gyro Gearloose - Eccentric Inventor #123 foil",
@@ -1900,7 +1900,7 @@
             "variant": "123",
             "foil": true
         },
-        "uuid": "1787_foil"
+        "uuid": "1787_coldfoil"
     },
     {
         "description": "Hades - Fast Talker #52 foil",
@@ -1909,7 +1909,7 @@
             "variant": "52",
             "foil": true
         },
-        "uuid": "1485_foil"
+        "uuid": "1485_coldfoil"
     },
     {
         "description": "Hades - King of Olympus #205 foil",
@@ -1975,7 +1975,7 @@
             "variant": "132",
             "foil": true
         },
-        "uuid": "132_foil"
+        "uuid": "132_coldfoil"
     },
     {
         "description": "Heal What Has Been Hurt #26 foil",
@@ -1984,7 +1984,7 @@
             "variant": "26",
             "foil": true
         },
-        "uuid": "462_foil"
+        "uuid": "462_coldfoil"
     },
     {
         "description": "Healing Touch #26 foil",
@@ -1993,7 +1993,7 @@
             "variant": "26",
             "foil": true
         },
-        "uuid": "982_foil"
+        "uuid": "982_coldfoil"
     },
     {
         "description": "Heathcliff - Stoic Butler #78 foil",
@@ -2002,7 +2002,7 @@
             "variant": "78",
             "foil": true
         },
-        "uuid": "1277_foil"
+        "uuid": "1277_coldfoil"
     },
     {
         "description": "HeiHei - Bumbling Rooster #75",
@@ -2027,7 +2027,7 @@
             "variant": "185",
             "foil": true
         },
-        "uuid": "1618_foil"
+        "uuid": "1618_coldfoil"
     },
     {
         "description": "Helga Sinclair - Right-Hand Woman #175 foil",
@@ -2036,7 +2036,7 @@
             "variant": "175",
             "foil": true
         },
-        "uuid": "611_foil"
+        "uuid": "611_coldfoil"
     },
     {
         "description": "Hen Wen - Prophetic Pig #138 foil",
@@ -2045,7 +2045,7 @@
             "variant": "138",
             "foil": true
         },
-        "uuid": "2327_foil"
+        "uuid": "2327_coldfoil"
     },
     {
         "description": "Hercules - Beloved Hero #180 foil",
@@ -2054,7 +2054,7 @@
             "variant": "180",
             "foil": true
         },
-        "uuid": "871_foil"
+        "uuid": "871_coldfoil"
     },
     {
         "description": "Hercules - Divine Hero #181 foil",
@@ -2063,7 +2063,7 @@
             "variant": "181",
             "foil": true
         },
-        "uuid": "397_foil"
+        "uuid": "397_coldfoil"
     },
     {
         "description": "Hercules - Spectral Demigod #117 foil",
@@ -2072,7 +2072,7 @@
             "variant": "117",
             "foil": true
         },
-        "uuid": "2580_foil"
+        "uuid": "2580_coldfoil"
     },
     {
         "description": "Hercules - Young Rescuer #123",
@@ -2097,7 +2097,7 @@
             "variant": "163",
             "foil": true
         },
-        "uuid": "1119_foil"
+        "uuid": "1119_coldfoil"
     },
     {
         "description": "Hiro Hamada - Armor Designer #24A",
@@ -2130,7 +2130,7 @@
             "variant": "111",
             "foil": true
         },
-        "uuid": "1775_foil"
+        "uuid": "1775_coldfoil"
     },
     {
         "description": "Horace - No-Good Scoundrel #79 foil",
@@ -2139,7 +2139,7 @@
             "variant": "79",
             "foil": true
         },
-        "uuid": "79_foil"
+        "uuid": "79_coldfoil"
     },
     {
         "description": "Huey - Reliable Leader #3",
@@ -2228,7 +2228,7 @@
             "variant": "201",
             "foil": true
         },
-        "uuid": "2664_foil"
+        "uuid": "2664_coldfoil"
     },
     {
         "description": "Inkrunner #169",
@@ -2261,7 +2261,7 @@
             "variant": "153",
             "foil": true
         },
-        "uuid": "2868_foil"
+        "uuid": "2868_coldfoil"
     },
     {
         "description": "It Means No Worries #208 foil",
@@ -2295,7 +2295,7 @@
             "variant": "51",
             "foil": true
         },
-        "uuid": "1484_foil"
+        "uuid": "1484_coldfoil"
     },
     {
         "description": "Jafar - Striking Illusionist #208 foil",
@@ -2313,7 +2313,7 @@
             "variant": "150",
             "foil": true
         },
-        "uuid": "366_foil"
+        "uuid": "366_coldfoil"
     },
     {
         "description": "Jasmine - Ephemeral Princess #9",
@@ -2346,7 +2346,7 @@
             "variant": "171",
             "foil": true
         },
-        "uuid": "1835_foil"
+        "uuid": "1835_coldfoil"
     },
     {
         "description": "Jessie - Lively Cowgirl #20",
@@ -2371,7 +2371,7 @@
             "variant": "25",
             "foil": true
         },
-        "uuid": "1224_foil"
+        "uuid": "1224_coldfoil"
     },
     {
         "description": "Jim Hawkins - Thrill Seeker #110 foil",
@@ -2380,7 +2380,7 @@
             "variant": "110",
             "foil": true
         },
-        "uuid": "546_foil"
+        "uuid": "546_coldfoil"
     },
     {
         "description": "Jingle Joe - Sid's Toy #111",
@@ -2413,7 +2413,7 @@
             "variant": "148",
             "foil": true
         },
-        "uuid": "839_foil"
+        "uuid": "839_coldfoil"
     },
     {
         "description": "John Smith - Undaunted Protector #193 foil",
@@ -2422,7 +2422,7 @@
             "variant": "193",
             "foil": true
         },
-        "uuid": "2656_foil"
+        "uuid": "2656_coldfoil"
     },
     {
         "description": "Joshua Sweet - The Doctor #5",
@@ -2439,7 +2439,7 @@
             "variant": "152",
             "foil": true
         },
-        "uuid": "368_foil"
+        "uuid": "368_coldfoil"
     },
     {
         "description": "Judy Hopps - Uncovering Clues #156",
@@ -2456,7 +2456,7 @@
             "variant": "18",
             "foil": true
         },
-        "uuid": "1954_foil"
+        "uuid": "1954_coldfoil"
     },
     {
         "description": "Jumba Jookiba - Renegade Scientist #83 foil",
@@ -2465,7 +2465,7 @@
             "variant": "83",
             "foil": true
         },
-        "uuid": "83_foil"
+        "uuid": "83_coldfoil"
     },
     {
         "description": "Kaa - Hypnotizing Python #21 foil",
@@ -2474,7 +2474,7 @@
             "variant": "21",
             "foil": true
         },
-        "uuid": "1685_foil"
+        "uuid": "1685_coldfoil"
     },
     {
         "description": "Kakamora - Boarding Party #104",
@@ -2532,7 +2532,7 @@
             "variant": "7",
             "foil": true
         },
-        "uuid": "443_foil"
+        "uuid": "443_coldfoil"
     },
     {
         "description": "King Candy - Sugar Rush Nightmare #23 foil",
@@ -2541,7 +2541,7 @@
             "variant": "23",
             "foil": true
         },
-        "uuid": "1687_foil"
+        "uuid": "1687_coldfoil"
     },
     {
         "description": "King Louie - Jungle VIP #12",
@@ -2566,7 +2566,7 @@
             "variant": "77",
             "foil": true
         },
-        "uuid": "513_foil"
+        "uuid": "513_coldfoil"
     },
     {
         "description": "Kristoff - Icy Explorer #51 foil",
@@ -2575,7 +2575,7 @@
             "variant": "51",
             "foil": true
         },
-        "uuid": "2514_foil"
+        "uuid": "2514_coldfoil"
     },
     {
         "description": "Kristoff - Reindeer Keeper #2 foil",
@@ -2584,7 +2584,7 @@
             "variant": "2",
             "foil": true
         },
-        "uuid": "1181_foil"
+        "uuid": "1181_coldfoil"
     },
     {
         "description": "Kronk - Laid Back #63",
@@ -2610,7 +2610,7 @@
             "variant": "69",
             "foil": true
         },
-        "uuid": "2005_foil"
+        "uuid": "2005_coldfoil"
     },
     {
         "description": "Kuzco - Wanted Llama #45 foil",
@@ -2619,7 +2619,7 @@
             "variant": "45",
             "foil": true
         },
-        "uuid": "261_foil"
+        "uuid": "261_coldfoil"
     },
     {
         "description": "Lady - Decisive Dog #33",
@@ -2644,7 +2644,7 @@
             "variant": "111",
             "foil": true
         },
-        "uuid": "327_foil"
+        "uuid": "327_coldfoil"
     },
     {
         "description": "Lantern #32",
@@ -2661,7 +2661,7 @@
             "variant": "29",
             "foil": true
         },
-        "uuid": "245_foil"
+        "uuid": "245_coldfoil"
     },
     {
         "description": "Launchpad - Hideout Defender #172 foil",
@@ -2670,7 +2670,7 @@
             "variant": "172",
             "foil": true
         },
-        "uuid": "2635_foil"
+        "uuid": "2635_coldfoil"
     },
     {
         "description": "LeFou - Bumbler #8 foil",
@@ -2679,7 +2679,7 @@
             "variant": "8",
             "foil": true
         },
-        "uuid": "8_foil"
+        "uuid": "8_coldfoil"
     },
     {
         "description": "LeFou - Opportunistic Flunky #181 foil",
@@ -2688,7 +2688,7 @@
             "variant": "181",
             "foil": true
         },
-        "uuid": "872_foil"
+        "uuid": "872_coldfoil"
     },
     {
         "description": "Lena Sabrewing - Pure Energy #49 foil",
@@ -2697,7 +2697,7 @@
             "variant": "49",
             "foil": true
         },
-        "uuid": "1713_foil"
+        "uuid": "1713_coldfoil"
     },
     {
         "description": "Let It Go #2 foil",
@@ -2731,7 +2731,7 @@
             "variant": "175",
             "foil": true
         },
-        "uuid": "2638_foil"
+        "uuid": "2638_coldfoil"
     },
     {
         "description": "Like a Bird in the Sky #131",
@@ -2748,7 +2748,7 @@
             "variant": "137",
             "foil": true
         },
-        "uuid": "1801_foil"
+        "uuid": "1801_coldfoil"
     },
     {
         "description": "Lilo - Junior Cake Decorator #8 foil",
@@ -2757,7 +2757,7 @@
             "variant": "8",
             "foil": true
         },
-        "uuid": "964_foil"
+        "uuid": "964_coldfoil"
     },
     {
         "description": "Ling - Imperial Soldier #183",
@@ -2799,7 +2799,7 @@
             "variant": "78",
             "foil": true
         },
-        "uuid": "2793_foil"
+        "uuid": "2793_coldfoil"
     },
     {
         "description": "Lost in the Woods #29 foil",
@@ -2808,7 +2808,7 @@
             "variant": "29",
             "foil": true
         },
-        "uuid": "720_foil"
+        "uuid": "720_coldfoil"
     },
     {
         "description": "Louis - Endearing Alligator #95 foil",
@@ -2817,7 +2817,7 @@
             "variant": "95",
             "foil": true
         },
-        "uuid": "1759_foil"
+        "uuid": "1759_coldfoil"
     },
     {
         "description": "Lucky Dime #165 foil",
@@ -2826,7 +2826,7 @@
             "variant": "165",
             "foil": true
         },
-        "uuid": "601_foil"
+        "uuid": "601_coldfoil"
     },
     {
         "description": "Luisa Madrigal - Entertaining Muscle #45",
@@ -2867,7 +2867,7 @@
             "variant": "78",
             "foil": true
         },
-        "uuid": "514_foil"
+        "uuid": "514_coldfoil"
     },
     {
         "description": "Mad Hatter - Eccentric Host #59 foil",
@@ -2876,7 +2876,7 @@
             "variant": "59",
             "foil": true
         },
-        "uuid": "1258_foil"
+        "uuid": "1258_coldfoil"
     },
     {
         "description": "Mad Hatter's Teapot #66",
@@ -2902,7 +2902,7 @@
             "variant": "49",
             "foil": true
         },
-        "uuid": "265_foil"
+        "uuid": "265_coldfoil"
     },
     {
         "description": "Madame Medusa - Deceiving Partner #47 foil",
@@ -2911,7 +2911,7 @@
             "variant": "47",
             "foil": true
         },
-        "uuid": "1711_foil"
+        "uuid": "1711_coldfoil"
     },
     {
         "description": "Magic Broom - Brigade Commander #186 foil",
@@ -2920,7 +2920,7 @@
             "variant": "186",
             "foil": true
         },
-        "uuid": "877_foil"
+        "uuid": "877_coldfoil"
     },
     {
         "description": "Magic Broom - Industrial Model #188 foil",
@@ -2929,7 +2929,7 @@
             "variant": "188",
             "foil": true
         },
-        "uuid": "404_foil"
+        "uuid": "404_coldfoil"
     },
     {
         "description": "Magic Carpet - Amazing Flier #51 foil",
@@ -2938,7 +2938,7 @@
             "variant": "51",
             "foil": true
         },
-        "uuid": "1250_foil"
+        "uuid": "1250_coldfoil"
     },
     {
         "description": "Magic Mirror #65 foil",
@@ -2947,7 +2947,7 @@
             "variant": "65",
             "foil": true
         },
-        "uuid": "2001_foil"
+        "uuid": "2001_coldfoil"
     },
     {
         "description": "Magica De Spell - Cruel Sorceress #53 foil",
@@ -2956,7 +2956,7 @@
             "variant": "53",
             "foil": true
         },
-        "uuid": "1009_foil"
+        "uuid": "1009_coldfoil"
     },
     {
         "description": "Magica De Spell - The Midas Touch #49",
@@ -3013,7 +3013,7 @@
             "variant": "54",
             "foil": true
         },
-        "uuid": "1010_foil"
+        "uuid": "1010_coldfoil"
     },
     {
         "description": "Malicious, Mean, and Scary #97 foil",
@@ -3022,7 +3022,7 @@
             "variant": "97",
             "foil": true
         },
-        "uuid": "2286_foil"
+        "uuid": "2286_coldfoil"
     },
     {
         "description": "Mama Odie - Voice of Wisdom #52 foil",
@@ -3031,7 +3031,7 @@
             "variant": "52",
             "foil": true
         },
-        "uuid": "488_foil"
+        "uuid": "488_coldfoil"
     },
     {
         "description": "March Hare - Hare-Brained Eccentric #91 foil",
@@ -3040,7 +3040,7 @@
             "variant": "91",
             "foil": true
         },
-        "uuid": "1755_foil"
+        "uuid": "1755_coldfoil"
     },
     {
         "description": "Markowski - Space Trooper #113 foil",
@@ -3049,7 +3049,7 @@
             "variant": "113",
             "foil": true
         },
-        "uuid": "1312_foil"
+        "uuid": "1312_coldfoil"
     },
     {
         "description": "Mattias - Arendelle General #155 foil",
@@ -3058,7 +3058,7 @@
             "variant": "155",
             "foil": true
         },
-        "uuid": "1588_foil"
+        "uuid": "1588_coldfoil"
     },
     {
         "description": "Maui - Hero to All #114",
@@ -3075,7 +3075,7 @@
             "variant": "110",
             "foil": true
         },
-        "uuid": "1774_foil"
+        "uuid": "1774_coldfoil"
     },
     {
         "description": "Maui's Place of Exile - Hidden Island #202 foil",
@@ -3084,7 +3084,7 @@
             "variant": "202",
             "foil": true
         },
-        "uuid": "638_foil"
+        "uuid": "638_coldfoil"
     },
     {
         "description": "Maurice's Machine #151 foil",
@@ -3093,7 +3093,7 @@
             "variant": "151",
             "foil": true
         },
-        "uuid": "1584_foil"
+        "uuid": "1584_coldfoil"
     },
     {
         "description": "Max Goof - Rebellious Teen #75",
@@ -3126,7 +3126,7 @@
             "variant": "46",
             "foil": true
         },
-        "uuid": "2509_foil"
+        "uuid": "2509_coldfoil"
     },
     {
         "description": "Megara - Part of the Plan #54 foil",
@@ -3135,7 +3135,7 @@
             "variant": "54",
             "foil": true
         },
-        "uuid": "1718_foil"
+        "uuid": "1718_coldfoil"
     },
     {
         "description": "Merida - Defiant Daughter #69 foil",
@@ -3144,7 +3144,7 @@
             "variant": "69",
             "foil": true
         },
-        "uuid": "2784_foil"
+        "uuid": "2784_coldfoil"
     },
     {
         "description": "Merida's Bow #101 foil",
@@ -3153,7 +3153,7 @@
             "variant": "101",
             "foil": true
         },
-        "uuid": "2816_foil"
+        "uuid": "2816_coldfoil"
     },
     {
         "description": "Merlin - Crab #50",
@@ -3194,7 +3194,7 @@
             "variant": "23",
             "foil": true
         },
-        "uuid": "2212_foil"
+        "uuid": "2212_coldfoil"
     },
     {
         "description": "Mickey Mouse - Brave Little Prince #111 foil",
@@ -3203,7 +3203,7 @@
             "variant": "111",
             "foil": true
         },
-        "uuid": "2047_foil"
+        "uuid": "2047_coldfoil"
     },
     {
         "description": "Mickey Mouse - Detective #160",
@@ -3220,7 +3220,7 @@
             "variant": "52",
             "foil": true
         },
-        "uuid": "2767_foil"
+        "uuid": "2767_coldfoil"
     },
     {
         "description": "Mickey Mouse - Inspirational Warrior #200",
@@ -3237,7 +3237,7 @@
             "variant": "186",
             "foil": true
         },
-        "uuid": "186_foil"
+        "uuid": "186_coldfoil"
     },
     {
         "description": "Mickey Mouse - Pirate Captain #18 foil",
@@ -3255,7 +3255,7 @@
             "variant": "181",
             "foil": true
         },
-        "uuid": "617_foil"
+        "uuid": "617_coldfoil"
     },
     {
         "description": "Mickey Mouse - Steamboat Pilot #80 foil",
@@ -3264,7 +3264,7 @@
             "variant": "80",
             "foil": true
         },
-        "uuid": "2016_foil"
+        "uuid": "2016_coldfoil"
     },
     {
         "description": "Mickey Mouse - True Friend #13",
@@ -3297,7 +3297,7 @@
             "variant": "115",
             "foil": true
         },
-        "uuid": "551_foil"
+        "uuid": "551_coldfoil"
     },
     {
         "description": "Minnie Mouse - Beloved Princess #13 foil",
@@ -3306,7 +3306,7 @@
             "variant": "13",
             "foil": true
         },
-        "uuid": "13_foil"
+        "uuid": "13_coldfoil"
     },
     {
         "description": "Minnie Mouse - Drum Major #15",
@@ -3347,7 +3347,7 @@
             "variant": "5",
             "foil": true
         },
-        "uuid": "1941_foil"
+        "uuid": "1941_coldfoil"
     },
     {
         "description": "Minnie Mouse - Zipping Around #115 foil",
@@ -3356,7 +3356,7 @@
             "variant": "115",
             "foil": true
         },
-        "uuid": "331_foil"
+        "uuid": "331_coldfoil"
     },
     {
         "description": "Mirabel Madrigal - Hopeful Dreamer #13",
@@ -3373,7 +3373,7 @@
             "variant": "142",
             "foil": true
         },
-        "uuid": "2857_foil"
+        "uuid": "2857_coldfoil"
     },
     {
         "description": "Miss Bianca - Unwavering Agent #195",
@@ -3390,7 +3390,7 @@
             "variant": "116",
             "foil": true
         },
-        "uuid": "552_foil"
+        "uuid": "552_coldfoil"
     },
     {
         "description": "Moana - Island Explorer #134",
@@ -3431,7 +3431,7 @@
             "variant": "35",
             "foil": true
         },
-        "uuid": "2750_foil"
+        "uuid": "2750_coldfoil"
     },
     {
         "description": "Morty Fieldmouse - Tiny Tim #157",
@@ -3457,7 +3457,7 @@
             "variant": "92",
             "foil": true
         },
-        "uuid": "1048_foil"
+        "uuid": "1048_coldfoil"
     },
     {
         "description": "Mother Knows Best #99 foil",
@@ -3466,7 +3466,7 @@
             "variant": "99",
             "foil": true
         },
-        "uuid": "2035_foil"
+        "uuid": "2035_coldfoil"
     },
     {
         "description": "Mouse Armor #203 foil",
@@ -3475,7 +3475,7 @@
             "variant": "203",
             "foil": true
         },
-        "uuid": "419_foil"
+        "uuid": "419_coldfoil"
     },
     {
         "description": "Mr. Incredible - Bob Parr #104 foil",
@@ -3484,7 +3484,7 @@
             "variant": "104",
             "foil": true
         },
-        "uuid": "2819_foil"
+        "uuid": "2819_coldfoil"
     },
     {
         "description": "Mr. Litwak - Arcade Owner #24 foil",
@@ -3493,7 +3493,7 @@
             "variant": "24",
             "foil": true
         },
-        "uuid": "1223_foil"
+        "uuid": "1223_coldfoil"
     },
     {
         "description": "Mr. Smee - Loyal First Mate #15 foil",
@@ -3502,7 +3502,7 @@
             "variant": "15",
             "foil": true
         },
-        "uuid": "15_foil"
+        "uuid": "15_coldfoil"
     },
     {
         "description": "Mrs. Beakley - Former S.H.U.S.H. Agent #11 foil",
@@ -3511,7 +3511,7 @@
             "variant": "11",
             "foil": true
         },
-        "uuid": "2200_foil"
+        "uuid": "2200_coldfoil"
     },
     {
         "description": "Mrs. Judson - Housekeeper #153 foil",
@@ -3520,7 +3520,7 @@
             "variant": "153",
             "foil": true
         },
-        "uuid": "369_foil"
+        "uuid": "369_coldfoil"
     },
     {
         "description": "Mufasa - Betrayed Leader #14 foil",
@@ -3529,7 +3529,7 @@
             "variant": "14",
             "foil": true
         },
-        "uuid": "230_foil"
+        "uuid": "230_coldfoil"
     },
     {
         "description": "Mufasa - Respected King #196 foil",
@@ -3538,7 +3538,7 @@
             "variant": "196",
             "foil": true
         },
-        "uuid": "1629_foil"
+        "uuid": "1629_coldfoil"
     },
     {
         "description": "Mulan - Charging Ahead #3 foil",
@@ -3556,7 +3556,7 @@
             "variant": "114",
             "foil": true
         },
-        "uuid": "805_foil"
+        "uuid": "805_coldfoil"
     },
     {
         "description": "Mulan - Free Spirit #10 foil",
@@ -3565,7 +3565,7 @@
             "variant": "10",
             "foil": true
         },
-        "uuid": "1946_foil"
+        "uuid": "1946_coldfoil"
     },
     {
         "description": "Mulan - Injured Soldier #116 foil",
@@ -3574,7 +3574,7 @@
             "variant": "116",
             "foil": true
         },
-        "uuid": "807_foil"
+        "uuid": "807_coldfoil"
     },
     {
         "description": "Mulan - Resourceful Recruit #69",
@@ -3591,7 +3591,7 @@
             "variant": "177",
             "foil": true
         },
-        "uuid": "1376_foil"
+        "uuid": "1376_coldfoil"
     },
     {
         "description": "Mushu - Majestic Dragon #137 foil",
@@ -3600,7 +3600,7 @@
             "variant": "137",
             "foil": true
         },
-        "uuid": "1570_foil"
+        "uuid": "1570_coldfoil"
     },
     {
         "description": "Mushu's Rocket #134 foil",
@@ -3609,7 +3609,7 @@
             "variant": "134",
             "foil": true
         },
-        "uuid": "2323_foil"
+        "uuid": "2323_coldfoil"
     },
     {
         "description": "Mystical Tree - Mama Odie's Home #69 foil",
@@ -3618,7 +3618,7 @@
             "variant": "69",
             "foil": true
         },
-        "uuid": "1268_foil"
+        "uuid": "1268_coldfoil"
     },
     {
         "description": "Nala - Romping in the Snow #35",
@@ -3644,7 +3644,7 @@
             "variant": "53",
             "foil": true
         },
-        "uuid": "2242_foil"
+        "uuid": "2242_coldfoil"
     },
     {
         "description": "Nani - No Worries #184 foil",
@@ -3653,7 +3653,7 @@
             "variant": "184",
             "foil": true
         },
-        "uuid": "2647_foil"
+        "uuid": "2647_coldfoil"
     },
     {
         "description": "Nani's Payback #127 foil",
@@ -3662,7 +3662,7 @@
             "variant": "127",
             "foil": true
         },
-        "uuid": "2590_foil"
+        "uuid": "2590_coldfoil"
     },
     {
         "description": "Nearly Indestructible #200 foil",
@@ -3671,7 +3671,7 @@
             "variant": "200",
             "foil": true
         },
-        "uuid": "2663_foil"
+        "uuid": "2663_coldfoil"
     },
     {
         "description": "Nessus - River Guardian #118",
@@ -3688,7 +3688,7 @@
             "variant": "48",
             "foil": true
         },
-        "uuid": "2237_foil"
+        "uuid": "2237_coldfoil"
     },
     {
         "description": "Nick Wilde - Soggy Fox #148",
@@ -3721,7 +3721,7 @@
             "variant": "32",
             "foil": true
         },
-        "uuid": "2495_foil"
+        "uuid": "2495_coldfoil"
     },
     {
         "description": "Olaf - Happy Passenger #50",
@@ -3762,7 +3762,7 @@
             "variant": "27",
             "foil": true
         },
-        "uuid": "2216_foil"
+        "uuid": "2216_coldfoil"
     },
     {
         "description": "Out of Order #148",
@@ -3803,7 +3803,7 @@
             "variant": "82",
             "foil": true
         },
-        "uuid": "773_foil"
+        "uuid": "773_coldfoil"
     },
     {
         "description": "Pascal - Inquisitive Pet #151 foil",
@@ -3812,7 +3812,7 @@
             "variant": "151",
             "foil": true
         },
-        "uuid": "842_foil"
+        "uuid": "842_coldfoil"
     },
     {
         "description": "Pawpsicle #169",
@@ -3837,7 +3837,7 @@
             "variant": "106",
             "foil": true
         },
-        "uuid": "2821_foil"
+        "uuid": "2821_coldfoil"
     },
     {
         "description": "Pepa Madrigal - Calm Before the Storm #56 foil",
@@ -3846,7 +3846,7 @@
             "variant": "56",
             "foil": true
         },
-        "uuid": "2771_foil"
+        "uuid": "2771_coldfoil"
     },
     {
         "description": "Percy - Pupsicle #27 foil",
@@ -3855,7 +3855,7 @@
             "variant": "27",
             "foil": true
         },
-        "uuid": "2490_foil"
+        "uuid": "2490_coldfoil"
     },
     {
         "description": "Perdita - Playful Mother #2",
@@ -3872,7 +3872,7 @@
             "variant": "32",
             "foil": true
         },
-        "uuid": "1465_foil"
+        "uuid": "1465_coldfoil"
     },
     {
         "description": "Pete - Freebooter #122",
@@ -3922,7 +3922,7 @@
             "variant": "135",
             "foil": true
         },
-        "uuid": "351_foil"
+        "uuid": "351_coldfoil"
     },
     {
         "description": "Philoctetes - No-Nonsense Instructor #190 foil",
@@ -3931,7 +3931,7 @@
             "variant": "190",
             "foil": true
         },
-        "uuid": "881_foil"
+        "uuid": "881_coldfoil"
     },
     {
         "description": "Piglet - Cocoa Maker #147 foil",
@@ -3940,7 +3940,7 @@
             "variant": "147",
             "foil": true
         },
-        "uuid": "2610_foil"
+        "uuid": "2610_coldfoil"
     },
     {
         "description": "Piglet - Sturdy Swordsman #221 foil",
@@ -3966,7 +3966,7 @@
             "variant": "102",
             "foil": true
         },
-        "uuid": "2817_foil"
+        "uuid": "2817_coldfoil"
     },
     {
         "description": "Pleakley - Scientific Expert #144 foil",
@@ -3975,7 +3975,7 @@
             "variant": "144",
             "foil": true
         },
-        "uuid": "1343_foil"
+        "uuid": "1343_coldfoil"
     },
     {
         "description": "Pluto - Determined Defender #17 foil",
@@ -3984,7 +3984,7 @@
             "variant": "17",
             "foil": true
         },
-        "uuid": "453_foil"
+        "uuid": "453_coldfoil"
     },
     {
         "description": "Pluto - Mickey's Clever Friend #152 foil",
@@ -3993,7 +3993,7 @@
             "variant": "152",
             "foil": true
         },
-        "uuid": "588_foil"
+        "uuid": "588_coldfoil"
     },
     {
         "description": "Pluto - Tried and True #28",
@@ -4018,7 +4018,7 @@
             "variant": "58",
             "foil": true
         },
-        "uuid": "1722_foil"
+        "uuid": "1722_coldfoil"
     },
     {
         "description": "Pongo - Determined Father #2 foil",
@@ -4027,7 +4027,7 @@
             "variant": "2",
             "foil": true
         },
-        "uuid": "1938_foil"
+        "uuid": "1938_coldfoil"
     },
     {
         "description": "Poor Unfortunate Souls #61",
@@ -4061,7 +4061,7 @@
             "variant": "34",
             "foil": true
         },
-        "uuid": "990_foil"
+        "uuid": "990_coldfoil"
     },
     {
         "description": "Prince Charming - Protector of the Realm #189",
@@ -4086,7 +4086,7 @@
             "variant": "22",
             "foil": true
         },
-        "uuid": "713_foil"
+        "uuid": "713_coldfoil"
     },
     {
         "description": "Prince John - Opportunistic Briber #141",
@@ -4111,7 +4111,7 @@
             "variant": "3",
             "foil": true
         },
-        "uuid": "959_foil"
+        "uuid": "959_coldfoil"
     },
     {
         "description": "Prince Phillip - Royal Explorer #83 foil",
@@ -4120,7 +4120,7 @@
             "variant": "83",
             "foil": true
         },
-        "uuid": "1282_foil"
+        "uuid": "1282_coldfoil"
     },
     {
         "description": "Prince Phillip - Warden of the Woods #72 foil",
@@ -4129,7 +4129,7 @@
             "variant": "72",
             "foil": true
         },
-        "uuid": "2008_foil"
+        "uuid": "2008_coldfoil"
     },
     {
         "description": "Pua - Disgruntled Pig #59 foil",
@@ -4138,7 +4138,7 @@
             "variant": "59",
             "foil": true
         },
-        "uuid": "2522_foil"
+        "uuid": "2522_coldfoil"
     },
     {
         "description": "Pull the Lever! #80",
@@ -4164,7 +4164,7 @@
             "variant": "122",
             "foil": true
         },
-        "uuid": "2837_foil"
+        "uuid": "2837_coldfoil"
     },
     {
         "description": "Queen of Hearts - Quick-Tempered #90",
@@ -4197,7 +4197,7 @@
             "variant": "41",
             "foil": true
         },
-        "uuid": "2504_foil"
+        "uuid": "2504_coldfoil"
     },
     {
         "description": "Rafiki - Mysterious Sage #54",
@@ -4222,7 +4222,7 @@
             "variant": "6",
             "foil": true
         },
-        "uuid": "2195_foil"
+        "uuid": "2195_coldfoil"
     },
     {
         "description": "Rama - Vigilant Father #109 foil",
@@ -4231,7 +4231,7 @@
             "variant": "109",
             "foil": true
         },
-        "uuid": "2298_foil"
+        "uuid": "2298_coldfoil"
     },
     {
         "description": "Ransack #199 foil",
@@ -4240,7 +4240,7 @@
             "variant": "199",
             "foil": true
         },
-        "uuid": "199_foil"
+        "uuid": "199_coldfoil"
     },
     {
         "description": "Rapunzel - Gifted Artist #19",
@@ -4266,7 +4266,7 @@
             "variant": "20",
             "foil": true
         },
-        "uuid": "236_foil"
+        "uuid": "236_coldfoil"
     },
     {
         "description": "Ratigan - Criminal Mastermind #91 foil",
@@ -4275,7 +4275,7 @@
             "variant": "91",
             "foil": true
         },
-        "uuid": "307_foil"
+        "uuid": "307_coldfoil"
     },
     {
         "description": "Ratigan - Raging Rat #113",
@@ -4301,7 +4301,7 @@
             "variant": "186",
             "foil": true
         },
-        "uuid": "1619_foil"
+        "uuid": "1619_coldfoil"
     },
     {
         "description": "Raya - Kumandran Rider #107 foil",
@@ -4310,7 +4310,7 @@
             "variant": "107",
             "foil": true
         },
-        "uuid": "1306_foil"
+        "uuid": "1306_coldfoil"
     },
     {
         "description": "Razoul - Menacing Guard #189",
@@ -4327,7 +4327,7 @@
             "variant": "30",
             "foil": true
         },
-        "uuid": "2219_foil"
+        "uuid": "2219_coldfoil"
     },
     {
         "description": "Repair #162 foil",
@@ -4336,7 +4336,7 @@
             "variant": "162",
             "foil": true
         },
-        "uuid": "598_foil"
+        "uuid": "598_coldfoil"
     },
     {
         "description": "Restoring Atlantis #222 foil",
@@ -4354,7 +4354,7 @@
             "variant": "64",
             "foil": true
         },
-        "uuid": "1020_foil"
+        "uuid": "1020_coldfoil"
     },
     {
         "description": "Rex - Protective Dinosaur #206 foil",
@@ -4372,7 +4372,7 @@
             "variant": "64",
             "foil": true
         },
-        "uuid": "2779_foil"
+        "uuid": "2779_coldfoil"
     },
     {
         "description": "Robin Hood - Archery Contestant #77",
@@ -4389,7 +4389,7 @@
             "variant": "193",
             "foil": true
         },
-        "uuid": "409_foil"
+        "uuid": "409_coldfoil"
     },
     {
         "description": "Robin Hood - Daydreamer #70 foil",
@@ -4398,7 +4398,7 @@
             "variant": "70",
             "foil": true
         },
-        "uuid": "2006_foil"
+        "uuid": "2006_coldfoil"
     },
     {
         "description": "Robin Hood - Eye for Detail #170 foil",
@@ -4407,7 +4407,7 @@
             "variant": "170",
             "foil": true
         },
-        "uuid": "1603_foil"
+        "uuid": "1603_coldfoil"
     },
     {
         "description": "Robin Hood - Unrivaled Archer #157",
@@ -4424,7 +4424,7 @@
             "variant": "5",
             "foil": true
         },
-        "uuid": "1438_foil"
+        "uuid": "1438_coldfoil"
     },
     {
         "description": "Roo - Little Helper #137 foil",
@@ -4433,7 +4433,7 @@
             "variant": "137",
             "foil": true
         },
-        "uuid": "2600_foil"
+        "uuid": "2600_coldfoil"
     },
     {
         "description": "Rose Lantern #67 foil",
@@ -4442,7 +4442,7 @@
             "variant": "67",
             "foil": true
         },
-        "uuid": "2003_foil"
+        "uuid": "2003_coldfoil"
     },
     {
         "description": "Royal Tantrum #161",
@@ -4459,7 +4459,7 @@
             "variant": "174",
             "foil": true
         },
-        "uuid": "1130_foil"
+        "uuid": "1130_coldfoil"
     },
     {
         "description": "Sabotage #96 foil",
@@ -4468,7 +4468,7 @@
             "variant": "96",
             "foil": true
         },
-        "uuid": "2811_foil"
+        "uuid": "2811_coldfoil"
     },
     {
         "description": "Salvage Operation #165 foil",
@@ -4477,7 +4477,7 @@
             "variant": "165",
             "foil": true
         },
-        "uuid": "2880_foil"
+        "uuid": "2880_coldfoil"
     },
     {
         "description": "Sarabi - Protecting the Pride #12 foil",
@@ -4486,7 +4486,7 @@
             "variant": "12",
             "foil": true
         },
-        "uuid": "2475_foil"
+        "uuid": "2475_coldfoil"
     },
     {
         "description": "Scar - Fiery Usurper #122",
@@ -4511,7 +4511,7 @@
             "variant": "93",
             "foil": true
         },
-        "uuid": "1049_foil"
+        "uuid": "1049_coldfoil"
     },
     {
         "description": "Scrooge McDuck - Afficionado of Antiquities #140 foil",
@@ -4520,7 +4520,7 @@
             "variant": "140",
             "foil": true
         },
-        "uuid": "1096_foil"
+        "uuid": "1096_coldfoil"
     },
     {
         "description": "Scrooge McDuck - Miserly Ebenezer #160 foil",
@@ -4529,7 +4529,7 @@
             "variant": "160",
             "foil": true
         },
-        "uuid": "2623_foil"
+        "uuid": "2623_coldfoil"
     },
     {
         "description": "Scrooge McDuck - Richest Duck in the World #154",
@@ -4546,7 +4546,7 @@
             "variant": "39",
             "foil": true
         },
-        "uuid": "955_foil"
+        "uuid": "955_coldfoil"
     },
     {
         "description": "Scroop - Odious Mutineer #82 foil",
@@ -4555,7 +4555,7 @@
             "variant": "82",
             "foil": true
         },
-        "uuid": "1038_foil"
+        "uuid": "1038_coldfoil"
     },
     {
         "description": "Search for Clues #26 foil",
@@ -4564,7 +4564,7 @@
             "variant": "26",
             "foil": true
         },
-        "uuid": "2215_foil"
+        "uuid": "2215_coldfoil"
     },
     {
         "description": "Second Star to the Right #61",
@@ -4589,7 +4589,7 @@
             "variant": "40",
             "foil": true
         },
-        "uuid": "1704_foil"
+        "uuid": "1704_coldfoil"
     },
     {
         "description": "Shenzi - Scar's Accomplice #70 foil",
@@ -4598,7 +4598,7 @@
             "variant": "70",
             "foil": true
         },
-        "uuid": "1026_foil"
+        "uuid": "1026_coldfoil"
     },
     {
         "description": "Shere Khan - Infamous Tiger #92 foil",
@@ -4607,7 +4607,7 @@
             "variant": "92",
             "foil": true
         },
-        "uuid": "1525_foil"
+        "uuid": "1525_coldfoil"
     },
     {
         "description": "Sheriff of Nottingham - Bushel Britches #145",
@@ -4632,7 +4632,7 @@
             "variant": "30",
             "foil": true
         },
-        "uuid": "721_foil"
+        "uuid": "721_coldfoil"
     },
     {
         "description": "Simba - Fighting Prince #192 foil",
@@ -4641,7 +4641,7 @@
             "variant": "192",
             "foil": true
         },
-        "uuid": "628_foil"
+        "uuid": "628_coldfoil"
     },
     {
         "description": "Simba - Lost Prince #173 foil",
@@ -4650,7 +4650,7 @@
             "variant": "173",
             "foil": true
         },
-        "uuid": "1129_foil"
+        "uuid": "1129_coldfoil"
     },
     {
         "description": "Simba - Protective Cub #20 foil",
@@ -4659,7 +4659,7 @@
             "variant": "20",
             "foil": true
         },
-        "uuid": "20_foil"
+        "uuid": "20_coldfoil"
     },
     {
         "description": "Simba - Scrappy Cub #105",
@@ -4700,7 +4700,7 @@
             "variant": "39",
             "foil": true
         },
-        "uuid": "1238_foil"
+        "uuid": "1238_coldfoil"
     },
     {
         "description": "Skull Rock - Isolated Fortress #136 foil",
@@ -4709,7 +4709,7 @@
             "variant": "136",
             "foil": true
         },
-        "uuid": "1335_foil"
+        "uuid": "1335_coldfoil"
     },
     {
         "description": "Sleepy Hollow - The Bridge #136 foil",
@@ -4718,7 +4718,7 @@
             "variant": "136",
             "foil": true
         },
-        "uuid": "2325_foil"
+        "uuid": "2325_coldfoil"
     },
     {
         "description": "Smash #198 foil",
@@ -4727,7 +4727,7 @@
             "variant": "198",
             "foil": true
         },
-        "uuid": "2134_foil"
+        "uuid": "2134_coldfoil"
     },
     {
         "description": "Sneezy - Very Allergic #22 foil",
@@ -4736,7 +4736,7 @@
             "variant": "22",
             "foil": true
         },
-        "uuid": "238_foil"
+        "uuid": "238_coldfoil"
     },
     {
         "description": "Snow White - Fairest in the Land #33 foil",
@@ -4745,7 +4745,7 @@
             "variant": "33",
             "foil": true
         },
-        "uuid": "1466_foil"
+        "uuid": "1466_coldfoil"
     },
     {
         "description": "Snow White - Well Wisher #25",
@@ -4771,7 +4771,7 @@
             "variant": "147",
             "foil": true
         },
-        "uuid": "1346_foil"
+        "uuid": "1346_coldfoil"
     },
     {
         "description": "Spooky Sight #165 foil",
@@ -4780,7 +4780,7 @@
             "variant": "165",
             "foil": true
         },
-        "uuid": "2354_foil"
+        "uuid": "2354_coldfoil"
     },
     {
         "description": "Stampede #96",
@@ -4797,7 +4797,7 @@
             "variant": "191",
             "foil": true
         },
-        "uuid": "191_foil"
+        "uuid": "191_coldfoil"
     },
     {
         "description": "Steel Coil #203 foil",
@@ -4806,7 +4806,7 @@
             "variant": "203",
             "foil": true
         },
-        "uuid": "1636_foil"
+        "uuid": "1636_coldfoil"
     },
     {
         "description": "Stitch - Alien Buccaneer #8 foil",
@@ -4833,7 +4833,7 @@
             "variant": "24",
             "foil": true
         },
-        "uuid": "1960_foil"
+        "uuid": "1960_coldfoil"
     },
     {
         "description": "Stitch - High Badness Level #35 foil",
@@ -4842,7 +4842,7 @@
             "variant": "35",
             "foil": true
         },
-        "uuid": "2713_foil"
+        "uuid": "2713_coldfoil"
     },
     {
         "description": "Stitch - New Dog #22 foil",
@@ -4851,7 +4851,7 @@
             "variant": "22",
             "foil": true
         },
-        "uuid": "22_foil"
+        "uuid": "22_coldfoil"
     },
     {
         "description": "Stitch - Team Underdog #171 foil",
@@ -4860,7 +4860,7 @@
             "variant": "171",
             "foil": true
         },
-        "uuid": "1127_foil"
+        "uuid": "1127_coldfoil"
     },
     {
         "description": "Stratos - Tornado Titan #55",
@@ -4877,7 +4877,7 @@
             "variant": "96",
             "foil": true
         },
-        "uuid": "532_foil"
+        "uuid": "532_coldfoil"
     },
     {
         "description": "Sudden Scare #219 foil",
@@ -4936,7 +4936,7 @@
             "variant": "114",
             "foil": true
         },
-        "uuid": "1070_foil"
+        "uuid": "1070_coldfoil"
     },
     {
         "description": "Tamatoa - Happy as a Clam #162",
@@ -4985,7 +4985,7 @@
             "variant": "99",
             "foil": true
         },
-        "uuid": "99_foil"
+        "uuid": "99_coldfoil"
     },
     {
         "description": "The Carpenter - Dinner Companion #44",
@@ -5060,7 +5060,7 @@
             "variant": "125",
             "foil": true
         },
-        "uuid": "2840_foil"
+        "uuid": "2840_coldfoil"
     },
     {
         "description": "The Mob Song #198",
@@ -5117,7 +5117,7 @@
             "variant": "57",
             "foil": true
         },
-        "uuid": "493_foil"
+        "uuid": "493_coldfoil"
     },
     {
         "description": "The Queen - Mirror Seeker #219 foil",
@@ -5135,7 +5135,7 @@
             "variant": "56",
             "foil": true
         },
-        "uuid": "56_foil"
+        "uuid": "56_coldfoil"
     },
     {
         "description": "The Sorcerer's Hat #210 foil",
@@ -5153,7 +5153,7 @@
             "variant": "151",
             "foil": true
         },
-        "uuid": "2340_foil"
+        "uuid": "2340_coldfoil"
     },
     {
         "description": "The Sword of Hercules #240 foil",
@@ -5188,7 +5188,7 @@
             "variant": "40",
             "foil": true
         },
-        "uuid": "1239_foil"
+        "uuid": "1239_coldfoil"
     },
     {
         "description": "Thievery #128 foil",
@@ -5197,7 +5197,7 @@
             "variant": "128",
             "foil": true
         },
-        "uuid": "1327_foil"
+        "uuid": "1327_coldfoil"
     },
     {
         "description": "Thomas O'Malley - Feline Charmer #88 foil",
@@ -5206,7 +5206,7 @@
             "variant": "88",
             "foil": true
         },
-        "uuid": "1521_foil"
+        "uuid": "1521_coldfoil"
     },
     {
         "description": "Tiana - Celebrating Princess #196",
@@ -5247,7 +5247,7 @@
             "variant": "127",
             "foil": true
         },
-        "uuid": "343_foil"
+        "uuid": "343_coldfoil"
     },
     {
         "description": "Timon - Snowball Swiper #16 foil",
@@ -5256,7 +5256,7 @@
             "variant": "16",
             "foil": true
         },
-        "uuid": "2479_foil"
+        "uuid": "2479_coldfoil"
     },
     {
         "description": "Tinker Bell - Fast Flier #43 foil",
@@ -5265,7 +5265,7 @@
             "variant": "43",
             "foil": true
         },
-        "uuid": "1242_foil"
+        "uuid": "1242_coldfoil"
     },
     {
         "description": "Tinker Bell - Giant Fairy #193",
@@ -5282,7 +5282,7 @@
             "variant": "93",
             "foil": true
         },
-        "uuid": "93_foil"
+        "uuid": "93_coldfoil"
     },
     {
         "description": "Tinker Bell - Snowflake Collector #48 foil",
@@ -5291,7 +5291,7 @@
             "variant": "48",
             "foil": true
         },
-        "uuid": "2511_foil"
+        "uuid": "2511_coldfoil"
     },
     {
         "description": "Tinker Bell - Very Clever Fairy #157 foil",
@@ -5300,7 +5300,7 @@
             "variant": "157",
             "foil": true
         },
-        "uuid": "593_foil"
+        "uuid": "593_coldfoil"
     },
     {
         "description": "Toby - Dogged Companion #131 foil",
@@ -5309,7 +5309,7 @@
             "variant": "131",
             "foil": true
         },
-        "uuid": "1564_foil"
+        "uuid": "1564_coldfoil"
     },
     {
         "description": "Tod - Nimble Fox #72",
@@ -5334,7 +5334,7 @@
             "variant": "201",
             "foil": true
         },
-        "uuid": "1400_foil"
+        "uuid": "1400_coldfoil"
     },
     {
         "description": "Tramp - Enterprising Dog #110 foil",
@@ -5343,7 +5343,7 @@
             "variant": "110",
             "foil": true
         },
-        "uuid": "1543_foil"
+        "uuid": "1543_coldfoil"
     },
     {
         "description": "Transport Pod #100",
@@ -5360,7 +5360,7 @@
             "variant": "203",
             "foil": true
         },
-        "uuid": "1402_foil"
+        "uuid": "1402_coldfoil"
     },
     {
         "description": "Triton - Champion of Atlantica #158",
@@ -5385,7 +5385,7 @@
             "variant": "95",
             "foil": true
         },
-        "uuid": "2284_foil"
+        "uuid": "2284_coldfoil"
     },
     {
         "description": "Tuk Tuk - Big Buddy #184",
@@ -5418,7 +5418,7 @@
             "variant": "73",
             "foil": true
         },
-        "uuid": "1029_foil"
+        "uuid": "1029_coldfoil"
     },
     {
         "description": "Undermine #117 foil",
@@ -5427,7 +5427,7 @@
             "variant": "117",
             "foil": true
         },
-        "uuid": "1781_foil"
+        "uuid": "1781_coldfoil"
     },
     {
         "description": "Ursula - Deceiver of All #212 foil",
@@ -5445,7 +5445,7 @@
             "variant": "59",
             "foil": true
         },
-        "uuid": "59_foil"
+        "uuid": "59_coldfoil"
     },
     {
         "description": "Ursula - Sea Witch Queen #58",
@@ -5511,7 +5511,7 @@
             "variant": "55",
             "foil": true
         },
-        "uuid": "2970_foil"
+        "uuid": "2970_coldfoil"
     },
     {
         "description": "Vision Slab #100 foil",
@@ -5520,7 +5520,7 @@
             "variant": "100",
             "foil": true
         },
-        "uuid": "791_foil"
+        "uuid": "791_coldfoil"
     },
     {
         "description": "Vixey - Forest Friend #86 foil",
@@ -5529,7 +5529,7 @@
             "variant": "86",
             "foil": true
         },
-        "uuid": "2549_foil"
+        "uuid": "2549_coldfoil"
     },
     {
         "description": "Walk the Plank! #118 foil",
@@ -5538,7 +5538,7 @@
             "variant": "118",
             "foil": true
         },
-        "uuid": "1782_foil"
+        "uuid": "1782_coldfoil"
     },
     {
         "description": "We Could Be Immortals #162",
@@ -5563,7 +5563,7 @@
             "variant": "9",
             "foil": true
         },
-        "uuid": "2198_foil"
+        "uuid": "2198_coldfoil"
     },
     {
         "description": "Weight Set #204",
@@ -5588,7 +5588,7 @@
             "variant": "197",
             "foil": true
         },
-        "uuid": "1153_foil"
+        "uuid": "1153_coldfoil"
     },
     {
         "description": "White Rabbit - Late Again #89 foil",
@@ -5597,7 +5597,7 @@
             "variant": "89",
             "foil": true
         },
-        "uuid": "2552_foil"
+        "uuid": "2552_coldfoil"
     },
     {
         "description": "Who's With Me? #131 foil",
@@ -5606,7 +5606,7 @@
             "variant": "131",
             "foil": true
         },
-        "uuid": "1087_foil"
+        "uuid": "1087_coldfoil"
     },
     {
         "description": "Wildcat's Wrench #31 foil",
@@ -5615,7 +5615,7 @@
             "variant": "31",
             "foil": true
         },
-        "uuid": "467_foil"
+        "uuid": "467_coldfoil"
     },
     {
         "description": "Wind-Up Frog - Sid's Toy #112",
@@ -5666,7 +5666,7 @@
             "variant": "31",
             "foil": true
         },
-        "uuid": "247_foil"
+        "uuid": "247_coldfoil"
     },
     {
         "description": "Wreck-It Ralph - Demolition Dude #104",
@@ -5683,7 +5683,7 @@
             "variant": "103",
             "foil": true
         },
-        "uuid": "2566_foil"
+        "uuid": "2566_coldfoil"
     },
     {
         "description": "Yelana - Northuldra Leader #55",
@@ -5708,7 +5708,7 @@
             "variant": "97",
             "foil": true
         },
-        "uuid": "1296_foil"
+        "uuid": "1296_coldfoil"
     },
     {
         "description": "You're Welcome #96",
@@ -5725,7 +5725,7 @@
             "variant": "180",
             "foil": true
         },
-        "uuid": "2895_foil"
+        "uuid": "2895_coldfoil"
     },
     {
         "description": "Yzma - Conniving Chemist #56 foil",
@@ -5734,7 +5734,7 @@
             "variant": "56",
             "foil": true
         },
-        "uuid": "1255_foil"
+        "uuid": "1255_coldfoil"
     },
     {
         "description": "Yzma - Transformed Kitten #59 foil",
@@ -5743,7 +5743,7 @@
             "variant": "59",
             "foil": true
         },
-        "uuid": "1492_foil"
+        "uuid": "1492_coldfoil"
     },
     {
         "description": "Zazu - Steward of the Pride Lands #93 foil",
@@ -5752,7 +5752,7 @@
             "variant": "93",
             "foil": true
         },
-        "uuid": "529_foil"
+        "uuid": "529_coldfoil"
     },
     {
         "description": "Zeus - Missing His Spark #193",
@@ -5818,6 +5818,18 @@
         "uuid": "1951"
     },
     {
+        "description": "a treatment sent as the finish falls through to the wording",
+        "input": {
+            "id": "647652",
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204",
+            "edition": "Fabled",
+            "foil": true,
+            "finish": "Satin"
+        },
+        "uuid": "1951_coldfoil"
+    },
+    {
         "description": "an id sent without a finish answers with the flag's foil",
         "input": {
             "id": "647652",
@@ -5826,7 +5838,7 @@
             "edition": "Fabled",
             "foil": true
         },
-        "uuid": "1951_foil"
+        "uuid": "1951_coldfoil"
     },
     {
         "description": "bare name unique at its number in the promo pool adopts the decoration",
@@ -5835,7 +5847,7 @@
             "variant": "41",
             "edition": "Promos Year 1"
         },
-        "uuid": "m-626546_foil"
+        "uuid": "m-626546_coldfoil"
     },
     {
         "description": "case variant: base spelling reaches the enchanted printing",
@@ -5918,12 +5930,12 @@
     {
         "description": "negative: a finish the printing is not sold in",
         "input": {
-            "id": "647652",
-            "name": "Ariel - Singing Mermaid",
-            "variant": "15/204",
-            "edition": "Fabled",
+            "id": "494102",
+            "name": "Ariel - On Human Legs",
+            "variant": "1/204",
+            "edition": "The First Chapter",
             "foil": true,
-            "finish": "Satin"
+            "finish": "Holofoil"
         },
         "error": "unknown finish"
     },
@@ -6137,7 +6149,7 @@
             "foil": true,
             "finish": "Cold Foil"
         },
-        "uuid": "1951_foil"
+        "uuid": "1951_coldfoil"
     },
     {
         "description": "product id two cards claim falls back to the name",

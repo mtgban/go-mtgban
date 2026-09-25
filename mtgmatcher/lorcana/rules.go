@@ -16,7 +16,14 @@ import (
 // aliases, variant tables, or promo types: a card is identified by name +
 // collector number + foil. So most hooks are no-ops and the real work is the
 // number disambiguation in FilterCards (foil is honored downstream by output).
-type Rules struct{ mtgmatcher.DefaultRules }
+type Rules struct {
+	mtgmatcher.DefaultRules
+
+	// treatments are the promo types each printing carries, by uuid: the
+	// Rainbow Pillars of a card sold in it beside its cold foil is one
+	// printing, and a listing naming it names that printing.
+	treatments map[string][]string
+}
 
 // Prefilter splits a trailing parenthetical variant off the name before the
 // canonical-name lookup. Unlike Magic it leaves " - " intact, since Lorcana
@@ -363,18 +370,6 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		strings.HasSuffix(inCard.Name, `""Discard"" Card`)
 }
 
-// CanonicalFinish owns Lorcana's finish vocabulary. Lorcana's finish names
-// are data rather than a fixed list - LorcanaJSON gives every printing the
-// foil types it is sold in, and new ones keep arriving (Silver, Satin, Magma,
-// FreeForm1, RainbowPillars, …) - so an unrecognized name is normalized and
-// handed back rather than refused, and the lookup against the printing's own
-// finishes is what decides. The named cases are the spellings that are not a
-// foil type: LorcanaJSON's placeholder for a plain printing, and the name
-// TCGplayer prices the standard foil under.
-func (Rules) CanonicalFinish(name string) string {
-	return canonicalFinish(name)
-}
-
 // plainNumberTail are the letters a variant is spelled with behind a number.
 const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -388,23 +383,6 @@ func (Rules) PlainNumber(number string) string {
 	return plain
 }
 
-func canonicalFinish(name string) string {
-	normalized := mtgmatcher.NormalizeFinish(name)
-	switch normalized {
-	case "none":
-		return mtgmatcher.FinishNonfoil
-	// Every Lorcana foil is a cold foil, whichever foil type the printing
-	// is sold in, so the name names the printing's standard foil rather
-	// than a type of its own
-	case "coldfoil":
-		return mtgmatcher.FinishFoil
-	}
-	if finish := mtgmatcher.CanonicalFinish(name); finish != "" {
-		return finish
-	}
-	return normalized
-}
-
 // FilterCards narrows candidates by edition, collector number, and finish:
 // candidates come from the name hash rather than the edition-keyed cardSet
 // values, so case-variant spellings that normalize to the same canonical name
@@ -414,7 +392,7 @@ func canonicalFinish(name string) string {
 // edition when one was supplied and resolves — falling back to every printing
 // otherwise — so honoring them disambiguates a name+number shared across sets
 // ("Let It Go" #163) while a missing or unrecognized edition changes nothing.
-func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
+func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 	// A letter hung off the end of the number may be the storefront's own
 	// promo-series marker - Strikezone numbers its promos "010B", "003C" -
@@ -481,7 +459,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// A listing naming a foil sub-type re-keys the copy's FoilUUIDs so
 		// the flag-driven resolution downstream lands on that sub-type's uuid
 		// instead of the primary foil's.
-		if uuid := selectFinish(b, inCard, &card); uuid != "" {
+		if uuid := selectFinish(b, inCard, &card, r.treatments); uuid != "" {
 			foilUUIDs := maps.Clone(card.FoilUUIDs)
 			foilUUIDs[mtgmatcher.FinishFoil] = uuid
 			card.FoilUUIDs = foilUUIDs
@@ -799,11 +777,10 @@ func extractTotal(variation string) string {
 // sold in it, so a sub-typed printing resolves to its own uuid instead of
 // folding onto the primary foil. The caller's own finish answers first; a
 // storefront that sends none still spells the sub-type in its wording, and
-// the names to look for there are the ones the printing carries - its stored
-// finishes and the vendor spellings the loader registered beside them, which
-// is where "Holofoil means this printing's special treatment" lives. Anything
-// else, a nonfoil included, keeps the flag-driven resolution.
-func selectFinish(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
+// the names to look for there are the finishes the printing is sold in, then
+// the treatments its printings carry. Anything else, a nonfoil included,
+// keeps the flag-driven resolution.
+func selectFinish(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card, treatments map[string][]string) string {
 	if inCard.Finish != "" {
 		uuid := b.FinishUUID(card, inCard.Finish)
 		if uuid != "" && uuid != card.FoilUUIDs[mtgmatcher.FinishNonfoil] {
@@ -812,8 +789,7 @@ func selectFinish(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtg
 	}
 
 	// One wording can hold two of the names and map iteration is random, so
-	// both sets are visited in sorted order, the printing's own finishes
-	// before the spellings that only reach them.
+	// they are visited in sorted order.
 	variation := mtgmatcher.NormalizeFinish(inCard.Variation)
 	for _, finish := range slices.Sorted(maps.Keys(card.FoilUUIDs)) {
 		if finish == mtgmatcher.FinishNonfoil || finish == mtgmatcher.FinishFoil {
@@ -823,9 +799,11 @@ func selectFinish(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtg
 			return card.FoilUUIDs[finish]
 		}
 	}
-	for _, alias := range slices.Sorted(maps.Keys(card.FinishAliases)) {
-		if strings.Contains(variation, alias) {
-			return card.FoilUUIDs[card.FinishAliases[alias]]
+	for _, uuid := range slices.Compact(slices.Sorted(maps.Values(card.FoilUUIDs))) {
+		for _, treatment := range treatments[uuid] {
+			if strings.Contains(variation, treatment) {
+				return uuid
+			}
 		}
 	}
 	return ""
