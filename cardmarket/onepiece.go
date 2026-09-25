@@ -35,6 +35,17 @@ var onePieceDons = map[int]struct{ edition, label string }{
 	906864: {"One Piece Promotion Cards", "English Version 3rd Anniversary Set Ace, Luffy, Sabo"},
 }
 
+// onePieceFrench holds the products Cardmarket shelves among the English
+// cards that were printed in French alone: the Première Édition starter
+// leaders, the French 1st Anniversary Pack and the French-exclusive Treasure
+// Rares. Their wording reaches the English printing at the same number.
+var onePieceFrench = map[int]bool{
+	818082: true, 818083: true, 818084: true, 818085: true, 818086: true, 818087: true,
+	818088: true, 818089: true, 818090: true, 818091: true, 818092: true, 818093: true,
+	878040: true, 878041: true, 878042: true, 878043: true, 878044: true, 878045: true, 878046: true,
+	814438: true, 817152: true, 830578: true, 843043: true, 859007: true, 868221: true, 880301: true,
+}
+
 // onePieceByID answers a One Piece product from the bridge's TCGplayer id,
 // naming its printing outright. An empty id under a nil error leaves the
 // product to its wording.
