@@ -39,10 +39,17 @@ func TestMainDoesNotParseADatastore(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() {
-			if d.Name() == ".git" || d.Name() == "testdata" {
+		// Skip what the go tool itself skips for ./... - a dot- or
+		// underscore-prefixed name, or testdata - so a stray checkout under
+		// e.g. .claude/worktrees never reaches this walk.
+		name := d.Name()
+		if strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || name == "testdata" {
+			if d.IsDir() {
 				return filepath.SkipDir
 			}
+			return nil
+		}
+		if d.IsDir() {
 			return nil
 		}
 		if !strings.HasSuffix(path, "_test.go") {
