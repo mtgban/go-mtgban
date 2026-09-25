@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // identifiedCard reads IDs before text matching. An ID must name the card in
@@ -40,7 +41,7 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 		if lang == "" {
 			lang = "English"
 		}
-		if in.IsJPN() && lang != "Japanese" {
+		if magic.IsJPN(&in) && lang != "Japanese" {
 			return
 		}
 		finish := mtgmatcher.FinishNonfoil

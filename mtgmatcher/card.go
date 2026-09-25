@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"unicode"
 )
 
 // InputCard is a card as a storefront described it: a name plus whatever
@@ -194,16 +193,6 @@ func (c *InputCard) IsPrerelease() bool {
 		c.Contains("Preview") // scg
 }
 
-// IsJPN reports a Japanese printing, by language or by the magazines that
-// carried them, Gotta and Dengeki.
-func (c *InputCard) IsJPN() bool {
-	return strings.Contains(c.Variation, "JPN") ||
-		strings.Contains(c.Variation, "JP") ||
-		c.Contains("Japanese") ||
-		Contains(c.Variation, "Gotta") ||
-		Contains(c.Variation, "Dengeki")
-}
-
 // IsBaB reports a buy-a-box promo, by name, by TCGplayer's BABP or
 // Strikezone's BIBB, or by Box Promos where it is not an Xbox tie-in or a gift
 // box.
@@ -214,11 +203,6 @@ func (c *InputCard) IsBaB() bool {
 		(c.Contains("Box Promos") && // ha+sz
 			!c.Contains("Xbox") && // ck+abu
 			!c.Contains("Gift")) // csi
-}
-
-// IsBundle reports a bundle promo.
-func (c *InputCard) IsBundle() bool {
-	return c.Contains("Bundle")
 }
 
 // IsFoil reports a foil printing from the variation, refusing Non-Foil and
@@ -243,83 +227,6 @@ func (c *InputCard) IsSDCC() bool {
 // IsRetro reports a retro frame printing.
 func (c *InputCard) IsRetro() bool {
 	return c.Contains("Retro")
-}
-
-// IsWorldChamp reports a World Championship or Pro Tour deck card, from the
-// edition alone.
-func (c *InputCard) IsWorldChamp() bool {
-	return Contains(c.Edition, "Pro Tour Collect") ||
-		Contains(c.Edition, "Pro Tour 1996") ||
-		Contains(c.Edition, "World Championship") ||
-		Contains(c.Edition, "Championship Deck") ||
-		Contains(c.Edition, "WCD")
-}
-
-// ParseWorldChampPrefix returns the deck code for the player named in the
-// text, and whether the card was in their sideboard.
-func ParseWorldChampPrefix(variation string) (string, bool) {
-	players := map[string]string{
-		"Aeo Paquette":         "ap",
-		"Alex Borteh":          "ab",
-		"Antoine Ruel":         "ar",
-		"Ben Rubin":            "br",
-		"Bertrand Lestree":     "bl",
-		"Brian Hacker":         "bh",
-		"Brian Kibler":         "bk",
-		"Brian Selden":         "bs",
-		"Brian Seldon":         "bs",
-		"Carlos Romao":         "cr",
-		"Daniel Zink":          "dz",
-		"Dave Humpherys":       "dh",
-		"Eric Tam":             "et",
-		"Gabriel Nassif":       "gn",
-		"George Baxter":        "gb",
-		"Jakub Slemr":          "js",
-		"Jan Tomcani":          "jt",
-		"Janosch Kuhn":         "jk",
-		"Janosch Kuehn":        "jk",
-		"Jon Finkel":           "jf",
-		"Julien Nuijten":       "jn",
-		"Kai Budde":            "kb",
-		"Leon Lindback":        "ll",
-		"Manuel Bevand":        "mb",
-		"Mark Justice":         "mj",
-		"Mark Le Pine":         "mlp",
-		"Matt Linde":           "ml",
-		"Michael Locanto":      "ml",
-		"Michael Loconto":      "ml",
-		"Nicolas Labarre":      "nl",
-		"Paul McCabe":          "pm",
-		"Peer Kroger":          "pk",
-		"Preston Poulter":      "pp",
-		"Randy Buehler":        "rb",
-		"Raphael Levy":         "rl",
-		"Shawn Regnier":        "shr",
-		"Shawn Hammer Regnier": "shr",
-		"Sim Han How":          "shh",
-		"Svend Geertsen":       "sg",
-		"Tom van de Logt":      "tvdl",
-		"Wolfgang Eder":        "we",
-	}
-
-	// We cannot use HasPrefix for the second check due to mlp/ml aliasing
-	variation = strings.ToLower(variation)
-	idx := strings.IndexFunc(variation, func(c rune) bool {
-		return unicode.IsDigit(c)
-	})
-	// Iterate over the player list and check if their name or their initials are present
-	for player, tag := range players {
-		if Contains(variation, player) || (idx > -1 && variation[:idx] == tag) {
-			sb := strings.Contains(variation, "sb") || strings.Contains(variation, "sideboard")
-			return tag, sb
-		}
-	}
-	return "", false
-}
-
-// IsSecretLair reports a Secret Lair printing, by name or by set code.
-func (c *InputCard) IsSecretLair() bool {
-	return c.Contains("Secret Lair") || strings.Contains(c.Edition, "SLD")
 }
 
 // Contains reports whether either the edition or the variation contains the
@@ -355,103 +262,6 @@ func (b *Backend) PlainNumber(number string) string {
 		return number
 	}
 	return b.rules.PlainNumber(number)
-}
-
-// ParseCommanderEdition returns the Commander edition the text names, or an
-// empty string when it names none.
-func (b *Backend) ParseCommanderEdition(edition, variant string) string {
-	if !strings.Contains(edition, "Commander") {
-		return ""
-	}
-
-	// An edition already naming a carried token set is exact: parsing it
-	// down to the commander set it stems from would lose the tokens
-	if strings.Contains(strings.ToLower(edition), "token") {
-		_, found := b.NormalizedSets[Normalize(edition)]
-		if found {
-			return ""
-		}
-	}
-
-	// Append a custom display tag to avoid including the main set during filtering
-	if strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") ||
-		strings.Contains(variant, "Display") || strings.Contains(variant, "Thick") {
-		return edition + " Display"
-	}
-
-	// Legends series
-	if strings.Contains(edition, "Legends") {
-		if edition == "Commander Legends" {
-			return "Commander Legends"
-		} else if strings.Contains(edition, "Baldur's Gate") {
-			edition = "Commander Legends: Battle for Baldur's Gate"
-			return edition
-		}
-	}
-	// Double Strixhaven
-	if strings.Contains(edition, "Strixhaven") {
-		if strings.Contains(edition, "Secret") {
-			return "Secrets of Strixhaven Commander"
-		}
-		return "Commander 2021"
-	}
-
-	// Well-known extra tags
-	perSetCommander := map[string]string{
-		"Launch":  "Commander 2011 Launch Party",
-		"Arsenal": "Commander's Arsenal",
-		"Ikoria":  "Commander 2020",
-		"Starter": "Starter Commander Decks",
-	}
-	for key, ed := range perSetCommander {
-		if strings.Contains(edition, key) {
-			return ed
-		}
-	}
-	for key, ed := range b.CommanderKeywordMap {
-		if strings.Contains(strings.ToLower(edition), strings.ToLower(key)) {
-			// Bundle promos retain the commander set and its collector numbers.
-			if strings.Contains(edition, "Promo") || (strings.Contains(variant, "Promo") && !Contains(variant, "Bundle")) {
-				ed += " Promos"
-			}
-			return ed
-		}
-	}
-
-	// Collection series
-	if strings.Contains(edition, "Collection") {
-		for _, color := range []string{"Green", "Black"} {
-			if strings.Contains(edition, color) {
-				return "Commander Collection: " + color
-			}
-		}
-	}
-
-	// Check Anthology, but decouple from volume 2
-	if strings.Contains(edition, "Anthology") {
-		for _, tag := range []string{"2018", "II", "Vol"} {
-			if strings.Contains(edition, tag) {
-				return "Commander Anthology Volume II"
-			}
-		}
-		return "Commander Anthology"
-	}
-
-	// Is there a year available?
-	year := ExtractYear(edition)
-	if year != "" {
-		return "Commander " + year
-	}
-
-	// Special fallbacks
-	switch edition {
-	case "Commander",
-		"Commander Decks",
-		"Commander Singles":
-		return "Commander 2011"
-	}
-
-	return ""
 }
 
 func (b *Backend) output(card Card, flags ...bool) string {

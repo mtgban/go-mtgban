@@ -63,19 +63,6 @@ func (err *AliasingError) Probe() []string {
 	return err.Dupes
 }
 
-// Cards whose names are long enough or odd enough to break naive parsing, kept
-// here so tests and callers can reach for them by name.
-const (
-	LongestCardEver = "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
-	NightmareCard   = "The Ultimate Nightmare of Wizards of the Coast® Customer Service"
-)
-
-// GRNGuilds are the guilds printed in Guilds of Ravnica.
-var GRNGuilds = []string{"Boros", "Dimir", "Golgari", "Izzet", "Selesnya"}
-
-// ARNGuilds are the guilds printed in Ravnica Allegiance.
-var ARNGuilds = []string{"Azorius", "Gruul", "Orzhov", "Rakdos", "Simic"}
-
 // Regexp for SplitVariants, an optional space and a parenthesis
 var re = regexp.MustCompile(` ?\(`)
 

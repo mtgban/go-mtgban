@@ -102,12 +102,12 @@ func ravnicaWeekend(name, edition, variation string) (string, string) {
 		return "RNA Ravnica Weekend", num
 	}
 
-	for _, guild := range mtgmatcher.GRNGuilds {
+	for _, guild := range grnGuilds {
 		if mtgmatcher.Contains(edition, guild) || mtgmatcher.Contains(variation, guild) {
 			return "GRN Ravnica Weekend", prwkVariants[name][strings.ToLower(guild)]
 		}
 	}
-	for _, guild := range mtgmatcher.ARNGuilds {
+	for _, guild := range arnGuilds {
 		if mtgmatcher.Contains(edition, guild) || mtgmatcher.Contains(variation, guild) {
 			return "RNA Ravnica Weekend", prw2Variants[name][strings.ToLower(guild)]
 		}
@@ -132,10 +132,10 @@ func ravnicaGuildKit(b *mtgmatcher.Backend, name, edition, variation string) str
 		return "RNA Guild Kit"
 	}
 
-	if slices.ContainsFunc(mtgmatcher.GRNGuilds, contains) {
+	if slices.ContainsFunc(grnGuilds, contains) {
 		return "GRN Guild Kit"
 	}
-	if slices.ContainsFunc(mtgmatcher.ARNGuilds, contains) {
+	if slices.ContainsFunc(arnGuilds, contains) {
 		return "RNA Guild Kit"
 	}
 
@@ -318,7 +318,7 @@ func setFamilyEdition(b *mtgmatcher.Backend, name, edition, cardEdition, variati
 	case strings.Contains(edition, "Commander") &&
 		(!contains("Oversize") || contains("Plane") || contains("Phenomenon")) &&
 		!contains("Party"):
-		ed := b.ParseCommanderEdition(edition, variation)
+		ed := parseCommanderEdition(b, edition, variation)
 		if ed != "" {
 			edition = ed
 		}
@@ -452,7 +452,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = b.Sets["PCMP"].Name
 
 	// Secret Lair {Ultimate,Drop}
-	case inCard.IsSecretLair():
+	case isSecretLair(inCard):
 		// Check if there are also FlavorNames associated to this card
 		// It might happen that a non-FlavorName is requested, so check number too
 		altProps, found := b.AlternateProps[inCard.Name]
@@ -619,7 +619,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = maybeEdition
 
 	// Oilslick lands may not have the bundle tag attached to them
-	case isBasicLand(inCard.Name) && isOilSlick(inCard) && !inCard.IsBundle():
+	case isBasicLand(inCard.Name) && isOilSlick(inCard) && !isBundle(inCard):
 		variation += " Bundle"
 
 	// Many providers don't tag these promos correctly
@@ -645,7 +645,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "IDW Comics Inserts"
 				variation = insert.idw
 			case (insert.marker != "" && mtgmatcher.ExtractNumber(variation) == insert.marker) ||
-				inCard.IsJPN() || inCard.Language == "Japanese":
+				IsJPN(inCard) || inCard.Language == "Japanese":
 				variation = insert.number
 			default:
 				// The reprint is the only English printing under this
@@ -996,7 +996,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		switch {
 		// If the edition matches, use it as is
 		// except for two "catch all" sometimes overlapping sets
-		case mtgmatcher.Equals(inCard.Edition, set.Name) && !isMysteryList(inCard) && !inCard.IsSecretLair():
+		case mtgmatcher.Equals(inCard.Edition, set.Name) && !isMysteryList(inCard) && !isSecretLair(inCard):
 			// pass-through
 
 		// The set a token sheet came with names it as surely as the sheet
@@ -1118,7 +1118,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsBundle():
+		case isBundle(inCard):
 			skip := true
 			foundCards := b.MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
@@ -1171,7 +1171,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		// This needs to be above any possible printing type below
 		// Both kinds need to be checked in the same place as there is
 		// a lot of overlap in the product and naming across stores
-		case isMysteryList(inCard) || inCard.IsSecretLair():
+		case isMysteryList(inCard) || isSecretLair(inCard):
 			// Mystery Booster Commander Edition is named in full, so that
 			// wording keeps it alone, and nothing else reaches it. Revisit
 			// once it ships: MB2's foil-only Oracle of the Alpha has an MBC
@@ -1216,7 +1216,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 						continue
 					}
 				}
-				if inCard.IsSecretLair() {
+				if isSecretLair(inCard) {
 					skip := true
 					for _, name := range b.SLDDeckNames {
 						if mtgmatcher.Contains(inCard.Edition, name) || mtgmatcher.Contains(inCard.Variation, name) {
@@ -1320,8 +1320,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 			switch {
-			case !inCard.IsJPN() && (set.Name == "IDW Comics Inserts" || set.Name == "HarperPrism Book Promos"):
-			case !inCard.IsJPN() && strings.HasPrefix(set.Name, "Duels of the Planeswalkers "+maybeYear):
+			case !IsJPN(inCard) && (set.Name == "IDW Comics Inserts" || set.Name == "HarperPrism Book Promos"):
+			case !IsJPN(inCard) && strings.HasPrefix(set.Name, "Duels of the Planeswalkers "+maybeYear):
 			default:
 				switch set.Code {
 				case "PURL", "JP1", "DLGM":
@@ -1339,17 +1339,17 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 						continue
 					}
 				case "P9ED":
-					if inCard.IsJPN() {
+					if IsJPN(inCard) {
 						continue
 					}
 				case "PMEI":
 					// This is the only card present in IDW and Media Inserts
 					// so make sure it is properly tagged
-					if inCard.Name == "Duress" && !inCard.IsJPN() {
+					if inCard.Name == "Duress" && !IsJPN(inCard) {
 						continue
 					}
 					// This could be mixed in P9ED Russian
-					if inCard.Name == "Shivan Dragon" && !inCard.IsJPN() {
+					if inCard.Name == "Shivan Dragon" && !IsJPN(inCard) {
 						continue
 					}
 				default:
@@ -1436,13 +1436,13 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.IsWorldChamp():
+		case isWorldChamp(inCard):
 			switch {
 			case (maybeYear == "1996" || maybeYear == "") && set.Name == "Pro Tour Collector Set":
 			case maybeYear != "" && strings.HasPrefix(set.Name, "World Championship Decks "+maybeYear):
 			case maybeYear == "" && strings.HasPrefix(set.Name, "World Championship Decks"):
 				skip := true
-				num, _ := mtgmatcher.ParseWorldChampPrefix(inCard.Variation)
+				num, _ := parseWorldChampPrefix(inCard.Variation)
 				foundCards := b.MatchInSet(inCard.Name, set.Code)
 				if num == "" || len(foundCards) == 1 {
 					skip = false
@@ -1571,7 +1571,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 
 		case isPremiereShop(inCard):
 			if maybeYear == "" {
-				guilds := append(mtgmatcher.GRNGuilds, mtgmatcher.ARNGuilds...)
+				guilds := append(grnGuilds, arnGuilds...)
 				for _, guild := range guilds {
 					if strings.Contains(inCard.Variation, guild) {
 						maybeYear = "2005"
@@ -1677,7 +1677,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			switch set.Code {
 			case "P30A", "P30H", "P30M":
 			case "P30T":
-				if inCard.IsRetro() || !inCard.IsJPN() {
+				if inCard.IsRetro() || !IsJPN(inCard) {
 					continue
 				}
 			default:
@@ -1985,7 +1985,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 					possibleSuffixes = append(possibleSuffixes, "z")
 				case isJudge(inCard) || isResale(inCard):
 					possibleSuffixes = append(possibleSuffixes, SuffixSpecial)
-				case inCard.IsJPN():
+				case IsJPN(inCard):
 					possibleSuffixes = append(possibleSuffixes, "jpn")
 				}
 
@@ -2527,7 +2527,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 	// Rename reskinned dual faced cards, only keep one side and keep the
 	// flavor name, to make the following lookup in AlternateProps work
-	if inCard.IsSecretLair() {
+	if isSecretLair(inCard) {
 		if strings.Contains(inCard.Name, "Hawkins National") {
 			inCard.Name = "Hawkins National Laboratory"
 		} else if strings.Contains(inCard.Name, "Plains") && strings.Contains(inCard.Name, "Battlefield Forge") {
@@ -2582,11 +2582,11 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			return
 		}
 		if mtgmatcher.HasPrefix(inCard.Name, "Our Market Research") {
-			inCard.Name = mtgmatcher.LongestCardEver
+			inCard.Name = LongestCardEver
 			return
 		}
 		if mtgmatcher.HasPrefix(inCard.Name, "The Ultimate Nightmare") {
-			inCard.Name = mtgmatcher.NightmareCard
+			inCard.Name = NightmareCard
 			return
 		}
 		if mtgmatcher.Contains(inCard.Name, "Surgeon") && mtgmatcher.Contains(inCard.Name, "Commander") {

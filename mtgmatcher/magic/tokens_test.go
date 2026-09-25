@@ -129,3 +129,18 @@ func TestNarrowedIsTokenReachesRealCards(t *testing.T) {
 		})
 	}
 }
+
+// TestParseCommanderEditionKeepsTokenSets pins the guard that stops a
+// carried token set's own name being parsed down to the commander set it
+// stems from, which would lose the tokens filed under it.
+func TestParseCommanderEditionKeepsTokenSets(t *testing.T) {
+	realDatastore(t)
+	for _, edition := range []string{
+		"Commander 2019 Tokens",
+		"March of the Machine Commander Tokens",
+	} {
+		if got := parseCommanderEdition(testBackend, edition, ""); got != "" {
+			t.Errorf("parseCommanderEdition(%q) = %q, want it left alone", edition, got)
+		}
+	}
+}

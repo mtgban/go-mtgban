@@ -473,10 +473,11 @@ vocabulary also remain in that game package.
 exported because the per-game rules packages set and read them across the
 package boundary: `BeyondBaseSet` and `OriginalName` are internal matcher
 state (`json:"-"`), while `PromoWildcard` is part of the serialized input
-(`json:"PromoWildcard,omitempty"`). It carries 49 exported `Is*()` predicates
-(`IsPrerelease()`, `IsPromoPack()`, `IsBundle()`, `IsSecretLair()`,
-`IsWorldChamp()`, `IsSerialized()`, …) built on normalized comparisons; these
-are the vocabulary the rules packages filter with.
+(`json:"PromoWildcard,omitempty"`). It carries seven exported `Is*()` predicates
+(`IsPrerelease()`, `IsPromoPack()`, `IsFoil()`, `IsEtched()`, …) built on
+normalized comparisons: the finish checks, and the promo checks behind
+`Backend.IsGenericPromo`, which Magic and Pokemon both read. Wording only
+Magic reads lives in `mtgmatcher/magic/inputcard.go` as functions.
 
 `(b *Backend) MatchID(inputID string, finishes ...bool)`: `finishes[0]` = foil,
 `finishes[1]` = etched. The id is split at the first `_` only to *validate*

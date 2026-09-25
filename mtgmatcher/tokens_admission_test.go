@@ -30,21 +30,6 @@ func TestMatchTokenSetEdition(t *testing.T) {
 	}
 }
 
-// TestParseCommanderEditionKeepsTokenSets pins the guard that stops a
-// carried token set's own name being parsed down to the commander set it
-// stems from, which would lose the tokens filed under it.
-func TestParseCommanderEditionKeepsTokenSets(t *testing.T) {
-	realDatastore(t)
-	for _, edition := range []string{
-		"Commander 2019 Tokens",
-		"March of the Machine Commander Tokens",
-	} {
-		if got := testBackend.ParseCommanderEdition(edition, ""); got != "" {
-			t.Errorf("ParseCommanderEdition(%q) = %q, want it left alone", edition, got)
-		}
-	}
-}
-
 // TestMatchTokenSetParentPicksNamedSheet pins how a parent set's name is
 // read when the set printed more than one token sheet: the sheet it names as
 // its own answers first, and a sheet it merely stems from answers only for

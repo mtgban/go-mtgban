@@ -38,7 +38,7 @@ var cardTable = map[string]string{
 
 	// Funny cards
 	"No Name":                         "_____",
-	"Absolute Longest Card Name Ever": mtgmatcher.LongestCardEver,
+	"Absolute Longest Card Name Ever": magic.LongestCardEver,
 }
 
 var promoTags = []string{

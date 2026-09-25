@@ -14,7 +14,7 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
 		codes = append(codes, printings[0])
-	} else if !inCard.PromoWildcard && !inCard.IsSecretLair() {
+	} else if !inCard.PromoWildcard && !isSecretLair(inCard) {
 		// If multiple printing, try filtering to the closest name
 		// described by the inCard.Edition.
 		// This is skipped if we're in the wildcard Promo mode, as we
@@ -33,8 +33,8 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 				// In case it's a well known promo, consider the promo sets (or vice
 				// versa for promo sets) in order to let filtering take care of them
 				// JPN cards are skipped because they are well set usually
-				if !inCard.IsJPN() && (inCard.IsPrerelease() || inCard.IsPromoPack() ||
-					(inCard.IsBundle() && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
+				if !IsJPN(inCard) && (inCard.IsPrerelease() || inCard.IsPromoPack() ||
+					(isBundle(inCard) && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
 					(inCard.IsBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
 					setName := b.Sets[setCode].Name
 					if !strings.HasSuffix(setName, "Promos") {
@@ -64,7 +64,7 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 				set := b.Sets[setCode]
 
 				// Skip heuristics for WCD as short version would catch a lot
-				if inCard.IsWorldChamp() {
+				if isWorldChamp(inCard) {
 					break
 				}
 
@@ -72,7 +72,7 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 					// If a card is promotional, only consider promotional sets
 					(b.IsGenericPromo(inCard) && strings.HasSuffix(set.Name, "Promos")) ||
 					// If it is Bundle or BaB, also consider base sets if recent enough
-					(inCard.IsBundle() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
+					(isBundle(inCard) && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
 					(inCard.IsBaB() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {
 					b.Log("Found a possible match with", inCard.Edition, setCode)
 					codes = append(codes, setCode)
@@ -96,7 +96,7 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 // Championship printing, and prefers a printing over a copy of it minted in
 // the same language, before the pipeline checks its language.
 func (Rules) FinalizeCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
-	if len(cards) > 1 && inCard.IsWorldChamp() {
+	if len(cards) > 1 && isWorldChamp(inCard) {
 		return cards[:1]
 	}
 	if len(cards) > 1 {
