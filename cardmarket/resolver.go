@@ -437,6 +437,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GameLorcana && lorcanaFaces[product.IDProduct] {
 			return "", "", false, nil
 		}
+		if r.gameID == cm.GameOnePiece && onePieceFrench[product.IDProduct] {
+			return "", "", false, errForeign
+		}
 		// A product the datastore records by id is that printing: the
 		// pre-errata One Piece cards no TCGplayer product sells, or a
 		// Lorcana card Cardmarket names its own way.
