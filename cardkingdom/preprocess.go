@@ -354,6 +354,11 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 			variation = number
 		default:
 			variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
+			// A trailing P marks CK's promo copy, which PLST files under the
+			// promo set's own code wherever it holds a row for it
+			if strings.HasSuffix(sku, "P") && len(b.MatchInSetNumber(card.Name, "PLST", "P"+variation)) == 1 {
+				variation = "P" + variation
+			}
 		}
 	case "Streets of New Capenna Variants":
 		if card.Name == "Gala Greeters" {

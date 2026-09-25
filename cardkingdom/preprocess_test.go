@@ -104,6 +104,57 @@ func TestPreprocess(t *testing.T) {
 	}
 }
 
+// TestPreprocessListPromo pins CK's trailing P on a List sku: the promo copy
+// reaches its own P-prefixed PLST row, and stays on the plain row where PLST
+// holds no promo row for it.
+func TestPreprocessListPromo(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc    string
+		product cardkingdom.Product
+		number  string
+	}{
+		{
+			desc: "a Game Day copy reaches its own PLST row",
+			product: cardkingdom.Product{
+				SKU:       "MBFZ-050P",
+				Name:      "Stasis Snare",
+				Variation: "Game Day Promo",
+				Edition:   "Mystery Booster/The List",
+			},
+			number: "PBFZ-50",
+		},
+		{
+			desc: "a promo copy PLST files no row for stays on the plain one",
+			product: cardkingdom.Product{
+				SKU:       "MHOU-083P",
+				Name:      "Abrade",
+				Variation: "Game Day Promo",
+				Edition:   "Mystery Booster/The List",
+			},
+			number: "HOU-83",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			theCard, err := Preprocess(b, tt.product)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cardID, err := b.Match(theCard)
+			if err != nil {
+				t.Fatal(err)
+			}
+			co, err := b.GetUUID(cardID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "PLST" || co.Number != tt.number {
+				t.Errorf("%s landed on %s #%s, want PLST #%s", tt.product.SKU, co.SetCode, co.Number, tt.number)
+			}
+		})
+	}
+}
+
 // TestPreprocessTokens pins the two token paths a silent revert would take
 // back to the old behavior: the double-faced split must not double the
 // " Token" suffix the kept face already carries, and a sku code the
