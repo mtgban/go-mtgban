@@ -410,17 +410,15 @@ Three of those deserve their own note:
 printing; a card that exists in several finishes registers each one
 explicitly in `Card.FoilUUIDs`, a finish → UUID map the loaders populate.
 Magic keeps the historical suffixes there (`_f` for foil, `_e` for etched, and
-split foil printings also carry `★`/`†` number suffixes); Riftbound spells the
-finish out on every uuid, so a card yields `<id>_nonfoil` and `<id>_foil` and
-no printing owns the bare gallery id; Lorcana keeps the base UUID and
-`_f` for the primary pair, then gives every additional foil sub-type its own
-name-derived UUID (`_rainbowpillars`, …) so none is lost — derived from the
-sub-type *name* rather than its position, so it stays stable across data
-updates that reorder foil types. `Card.Finish` records the verbatim,
-lowercased finish name of the specific stored UUID, which is what keeps two
-entries apart when the `Foil` boolean alone cannot. The base UUID still denotes
-the most basic finish. These suffixed UUIDs are first-class — resolve them only
-via `GetUUID`/`ExternalUUID`.
+split foil printings also carry `★`/`†` number suffixes). The datastore games
+key every finish by the name TCGplayer prices it under (`FinishSlug`:
+`nonfoil`, `coldfoil`, `1steditionholofoil`), read off the finish the entry
+publishes and never off its uuid; `nonfoil` and `foil` also name the printings
+a caller's bare flags answer with. `Card.Finish` records that name for the
+specific stored UUID, which is what keeps two entries apart when the `Foil`
+boolean alone cannot. `mtgmatcher.Finishes` is the table of those names, their
+labels, print runs and foilness; `docs/finishes.md` has the rules around it.
+These UUIDs are first-class — resolve them only via `GetUUID`/`ExternalUUID`.
 
 **Data model.** `Card`, `CardObject`, `Set` and `SealedProduct` are core types
 declared in `mtgmatcher/backend.go`; the MTGJSON-shaped `AllPrintings`
@@ -531,19 +529,18 @@ type GameRules interface {
     IsSpecificUnsupported(b *Backend, inCard *InputCard) bool
     MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
     IsToken(b *Backend, name string) bool
-    CanonicalFinish(name string) string
     PlainNumber(number string) string
 }
 ```
 
-Four methods were added after this pipeline first shipped, as more games
+Three methods were added after this pipeline first shipped, as more games
 exposed vocabulary the original ten hooks had nowhere to put: `AliasEdition`
 spells an edition string the way the datastore names its set, card-free,
 for `GetSetByName`'s last resort; `IsToken` names a token by wording alone,
 for a game whose checklists and rules tips describe one without a token
-type of its own; `CanonicalFinish` and `PlainNumber` (described above,
-under "Data model") let a game own its finish vocabulary and its
-collector-number shorthand the same way it already owned edition names.
+type of its own; `PlainNumber` (described above, under "Data model") names
+a game's collector-number shorthand. Finish names are no game's hook: every
+one is read through `FinishSlug`.
 
 Two contracts matter when implementing it. **Hooks receive the `InputCard` by
 pointer and may mutate it**; mutations persist for the rest of the pipeline

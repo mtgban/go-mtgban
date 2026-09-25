@@ -259,11 +259,11 @@ as a new baseline.
 ### GameRules
 
 `Match()` is one pipeline shared by every game. The steps that differ per game
-are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`, 14
+are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`, 13
 methods in all: `Prefilter`, `AdjustName`, `AdjustEdition`, `AliasEdition`,
 `FilterPrintings`, `CandidateSets`, `FinalizeCandidates`, `FilterCards`,
-`IsUnsupported`, `IsSpecificUnsupported`, `MissingPromoTag`, `IsToken`,
-`CanonicalFinish`, and `PlainNumber` (read `rules.go` itself — each method
+`IsUnsupported`, `IsSpecificUnsupported`, `MissingPromoTag`, `IsToken`, and
+`PlainNumber` (read `rules.go` itself — each method
 carries a paragraph explaining what it owns and why). A game's loader
 attaches its implementation with `Backend.SetRules` when it builds the
 `Backend`; a `Backend` that never got rules returns `ErrDatastoreEmpty` from
@@ -362,9 +362,11 @@ overrides only what it actually needs different. All eight rely on
 all but Pokemon for `FilterPrintings` and `MissingPromoTag`, which Pokemon
 uses to hold oversized and metal-card listings to those printings. All eight
 implement their own `Prefilter`, `AdjustName`, `AdjustEdition`,
-`AliasEdition`, `FilterCards`, `CanonicalFinish` and `PlainNumber`, which is
-where a game's actual vocabulary — its editions, its number shapes, its
-finish names — lives. A few games additionally override one hook for a
+`AliasEdition`, `FilterCards` and `PlainNumber`, which is where a game's
+actual vocabulary — its editions and its number shapes — lives. Finishes are
+not a game's to name: every one is read through `mtgmatcher.FinishSlug`, as
+TCGplayer prices it, and `mtgmatcher.Finishes` is the table of those names
+(`docs/finishes.md`). A few games additionally override one hook for a
 narrow, real check: Lorcana and Yu-Gi-Oh override `IsUnsupported` (Lorcana
 drops puzzle-insert and cruise-promo products; Yu-Gi-Oh drops storefront
 character-art cards that carry no collector number), and Pokemon overrides
