@@ -26,6 +26,7 @@ var onePieceShelfLabels = map[string]string{
 // onePieceDons spells, by product id, the DON!! cards whose product name
 // reads apart from the datastore's label.
 var onePieceDons = map[int]struct{ edition, label string }{
+	768199: {"", "One Piece Film RED Promo"},
 	873734: {"", "Nico Robin"},
 	873735: {"", "Nico Robin Gold"},
 	873738: {"", "Boa Hancock"},
