@@ -326,7 +326,7 @@ var pokemonLetteredSets = []string{"Alternate Art Promos", "League & Championshi
 // was found live: zero real products carry both a 1st Edition and a Reverse
 // Holofoil finish, so (true, true) is never produced here.
 func pokemonFinishCell(finish string) (isFirstEd, isReverseHolo bool) {
-	switch mtgmatcher.NormalizeFinish(finish) {
+	switch mtgmatcher.FinishSlug(finish) {
 	case "reverseholofoil":
 		return false, true
 	case "1stedition", "1steditionholofoil":
