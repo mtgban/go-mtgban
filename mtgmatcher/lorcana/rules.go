@@ -373,9 +373,10 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // PlainNumber implements mtgmatcher.GameRules. The letter behind the number
-// names the variant, and the number it varies is the number the card prints.
+// names the variant, and the number it varies is the number the card prints;
+// the ★ marks the loader's twin for a foil sold as a product of its own.
 func (Rules) PlainNumber(number string) string {
-	plain := strings.TrimRight(number, plainNumberTail)
+	plain := strings.TrimRight(strings.TrimSuffix(number, "★"), plainNumberTail)
 	if plain == "" {
 		return number
 	}
@@ -433,7 +434,7 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
 		}
-		exact := number == "" || number == card.Number
+		exact := number == "" || number == card.Number || number == card.PlainNumber
 		bareFits := !exact && bare != "" && bare == card.Number
 		// A named chase tier is a claim about the printing, and it holds
 		// wherever the number does not: a storefront that writes one down
