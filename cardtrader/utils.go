@@ -1059,6 +1059,46 @@ func gundamNumber(bp *Blueprint, number string) string {
 	return number
 }
 
+// palworldShelfSets are the sets Card Trader's Palworld shelves hold.
+var palworldShelfSets = map[string]string{
+	"Dawn of Palpagos":              "BP01",
+	"Legends Awaken":                "BP02",
+	"Dawn of Palpagos Red・Blue":     "TD01",
+	"Dawn of Palpagos Green・Purple": "TD02",
+}
+
+// palworldNumber answers a card's own number where Card Trader filed another
+// set's in its place: 65 trial-deck blueprints carry EBP01-001SSP. The run is
+// the card's on the blueprint's shelf, and a "Special Rare" version picks its
+// one parallel; two parallels leave the number as it came, to be refused.
+func palworldNumber(b *mtgmatcher.Backend, bp *Blueprint, number string) string {
+	set, found := palworldShelfSets[bp.Expansion.Name]
+	if !found {
+		return number
+	}
+	code, _, _ := strings.Cut(number, "-")
+	parallel := strings.Contains(bp.Version, "Special Rare")
+	var picked []string
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(bp.Name)] {
+		co, err := b.GetUUID(uuid)
+		if err != nil || co.Sealed || co.SetCode != set || co.Number == "" {
+			continue
+		}
+		// A number from the shelf's own run is the card's, or a slip this
+		// cannot correct.
+		if strings.HasPrefix(co.Number, code+"-") {
+			return number
+		}
+		if (co.Number != co.PlainNumber) == parallel {
+			picked = append(picked, co.Number)
+		}
+	}
+	if len(picked) != 1 {
+		return number
+	}
+	return picked[0]
+}
+
 // ygoBlueprintEditions are the sets Card Trader shelves a promo under the
 // booster it was released with, keyed by the blueprint: the Raging Battle
 // tin promos RGBT-ENPP1 through RGBT-ENPP6 are filed under "Raging Battle",

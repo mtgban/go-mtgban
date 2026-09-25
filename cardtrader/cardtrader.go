@@ -243,6 +243,9 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			if number == "" {
 				number = product.Properties.Number
 			}
+			if ct.gameID == GamePalworld {
+				number = palworldNumber(ct.backend, blueprint, number)
+			}
 			theCard = &mtgmatcher.InputCard{
 				Name:      gameName(ct.backend, ct.gameID, blueprint),
 				Edition:   gameEdition(ct.backend, ct.gameID, blueprint),
