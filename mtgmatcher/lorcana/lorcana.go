@@ -253,26 +253,32 @@ func slugTags(tags []string) []string {
 // ("d23"), so listing those would only be a second place to keep them in
 // step with the first.
 var promoTypeLabels = map[string]string{
+	"alternateart": "Alternate Art",
 	"calendarwave": "Calendar Wave",
 	// The two exclusives are a language's, and the card says which in a
 	// field of its own: "Chinese (S)" and "Japanese". The initials are what
 	// TCGplayer prints in the product name, and they are not worth showing
 	// a reader who has not seen the shelf they came off.
-	"csexclusive":       "Simplified Chinese Exclusive",
-	"disney100":         "Disney 100",
-	"disneycruise":      "Disney Cruise",
-	"disneyparksstores": "Disney Parks & Stores",
-	"freeform":          "Free Form",
-	"illumineersquest":  "Illumineer's Quest",
-	"jpexclusive":       "Japanese Exclusive",
-	"magicalplaces":     "Magical Places",
-	"mattehotfoil":      "Matte Hot Foil",
-	"organizedplay":     "Organized Play",
-	"rainbowhotfoil":    "Rainbow Hot Foil",
-	"rainbowpillars":    "Rainbow Pillars",
-	"seawave":           "Sea Wave",
-	"serialnumbered":    "Serialized",
-	"verticalwave":      "Vertical Wave",
+	"csexclusive":             "Simplified Chinese Exclusive",
+	"disney100":               "Disney 100",
+	"disneycruise":            "Disney Cruise",
+	"disneyparksstores":       "Disney Parks & Stores",
+	"extendedart":             "Extended Art",
+	"freeform":                "Free Form",
+	"giftbox":                 "Gift Box",
+	"illumineersquest":        "Illumineer's Quest",
+	"jpexclusive":             "Japanese Exclusive",
+	"magicalplaces":           "Magical Places",
+	"mattehotfoil":            "Matte Hot Foil",
+	"organizedplay":           "Organized Play",
+	"rainbowhotfoil":          "Rainbow Hot Foil",
+	"rainbowpillars":          "Rainbow Pillars",
+	"seawave":                 "Sea Wave",
+	"serialnumbered":          "Serialized",
+	"stitchcollectorsgiftset": "Stitch Collector's Gift Set",
+	"storechampionship":       "Store Championship",
+	"top128":                  "Top 128",
+	"verticalwave":            "Vertical Wave",
 }
 
 // promoTypeLabel is the words a token is shown as, from the table above

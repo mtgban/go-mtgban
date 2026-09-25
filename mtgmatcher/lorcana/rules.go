@@ -253,11 +253,10 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // and is sometimes another card's, so without the closeness test a stray
 // number would rename a card into whatever it pointed at.
 //
-// A number is not an identifier on its own even inside a set: the promo pools
-// are filed under the set code of the set they were handed out alongside and
-// numbered from one within the pool, so the first set holds three cards
-// numbered 2. Closeness is what tells them apart, and demanding it pick one
-// is what keeps a stray number from reaching the other two.
+// A number is not an identifier on its own even inside a set: a promo shelf
+// numbers each of its runs from one, so Disney Lorcana Promo Cards holds seven
+// cards numbered 2. Closeness is what tells them apart, and demanding it pick
+// one is what keeps a stray number from reaching the others.
 func nameAtNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number string) string {
 	if number == "" {
 		return ""
