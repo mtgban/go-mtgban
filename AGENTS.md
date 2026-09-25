@@ -254,6 +254,12 @@ as a new baseline.
 - **Concurrency = `mtgban.WorkerPool`.** New fetch code uses it; do not
   hand-roll goroutine/channel pools. Cancelling the context stops dispatch but
   lets in-flight workers finish.
+- **No call folded into an `if`'s init-statement**, tests included: assign
+  first, then test — `id := f(x)` then `if id != ""`, and `err := f()` then
+  `if err != nil`. A bare comma-ok map lookup, `if v, ok := m[k]; ok`, is the
+  only form that stays combined; a comma-ok with an added condition splits
+  too. This is for new code — older code still folds calls, and that is not
+  a sweep target.
 
 ## mtgmatcher: the game seam
 
