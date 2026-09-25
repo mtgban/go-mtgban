@@ -659,7 +659,11 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 			variant = num
 		}
 	case "The List Reprints":
-		variant = number + " " + variant
+		// A number with a dash is garbled ("7-Jun"), and the qualifier
+		// names those printings on its own
+		if !strings.Contains(number, "-") {
+			variant = number + " " + variant
+		}
 		if variant == "50 Full Art" {
 			variant = "Game Day"
 		}
