@@ -1399,6 +1399,11 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && magic.HasSerializedPrinting(b, cardName, strings.TrimSuffix(edition, ": Extras")):
 			variant = "serial"
 
+		// A WCD version is one of the deck's printings of the name, main or
+		// sideboard, and only an id tells which: by name all land on one.
+		case strings.HasPrefix(edition, "WCD ") && strings.HasPrefix(variant, "V."):
+			return nil, mtgmatcher.ErrUnsupported
+
 		// Pre-search the card, if not found it's likely a sideboard variant
 		case strings.HasPrefix(edition, "Pro Tour 1996:"),
 			strings.HasPrefix(edition, "WCD "):

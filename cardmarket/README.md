@@ -91,12 +91,11 @@ what a WCD printing actually looks like (set codes `WC97`-`WC04`, every one
 A sweep of every WCD product in MTGJSON's own `CardmarketIdentifiers.json`
 (931 products, 32 expansions) found 23 more candidates with this exact
 shape - spot-checked live, all confirmed genuine - so this is systematic on
-mtgjson's side, not a one-off; worth filing upstream. Landing on the
-correct *card* doesn't yet mean landing on the correct main-deck-vs-
-sideboard variant when a name appears as both under one player's deck
-(observed: both examples above land on the maindeck printing once deferred,
-not the sideboard one their own "(V.2)" suggests) - a separate, smaller,
-open gap in the existing WCD sideboard detection, not addressed here.
+mtgjson's side, not a one-off; worth filing upstream. Once deferred, a WCD
+"(V.N)" product is refused rather than matched by name: the name lands
+every version of a card on one printing (both examples above on the main
+deck's, not the sideboard one their "(V.2)" names; Sim Han How's eight
+Forests on shh328), and only an id tells a deck's printings apart.
 
 The same drift reaches a product through the id map too: `resolveMapped`
 answers from the map's own uuids before `Fallback`'s mcmId route ever runs,

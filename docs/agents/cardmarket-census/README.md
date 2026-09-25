@@ -100,6 +100,7 @@ The shapes met so far, and where each was fixed:
 | CardTrader's TCGplayer id names a sibling | YGO 25YC Blue-Eyes stamps; One Piece Dash Pack O-Nami | `tcgIDOverrides` (#858, #860) |
 | Cardmarket's number names another card | FaB Heartbeat of Candlehold #270 | `fabRenumbers` (#862) |
 | MTGJSON links a printing to the wrong product | Chinese alt arts under English Portal; 2X2's crossed #345/#427 | `plausiblePrinting`, `numberedPrinting` (#865, #866) |
+| versions only an id tells apart, matched by name | Sim Han How's eight WCD Forests all on shh328 | `Preprocess` refuses a WCD version |
 | a row exists, only an id can reach it | One Piece tournament promos CardTrader names but cannot link | datastore-gen publishes `cardmarketId` (§6) |
 | the vendor sells a row the datastore lacks | FaB TNP019 pitches numbered alike | datastore-gen (§6) |
 

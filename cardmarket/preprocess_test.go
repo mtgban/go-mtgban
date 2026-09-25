@@ -1,7 +1,6 @@
 package cardmarket
 
 import (
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -216,8 +215,9 @@ func TestFourthEditionAlternateKeepsVIndex(t *testing.T) {
 // case the existing number-disagreement guard would catch - there was only
 // ever the one candidate, and it simply names the wrong card. Fallback now
 // also distrusts a WCD product's lone candidate when that candidate is not
-// itself a WC-family printing, deferring to Preprocess/Match instead (which
-// already resolves these by name/edition).
+// itself a WC-family printing. Preprocess then refuses both, as it does any
+// WCD version (TestPreprocessRefusesAWCDVersion): each is the sideboard copy
+// of a card the deck also holds main, which the name cannot tell apart.
 func TestFallbackDefersOnImplausibleWCDCandidate(t *testing.T) {
 	b := realDatastore(t)
 
@@ -235,22 +235,6 @@ func TestFallbackDefersOnImplausibleWCDCandidate(t *testing.T) {
 		if cardID != "" || cardIDFoil != "" {
 			co, _ := b.GetUUID(cardID)
 			t.Errorf("%d: Fallback = (%q, %q), want (\"\", \"\") - kept %s, not a World Championship Decks printing", tt.id, cardID, cardIDFoil, co)
-		}
-
-		theCard, err := Preprocess(b, product.Name, product.Number, product.ExpansionName)
-		if err != nil {
-			t.Fatalf("%d: Preprocess: %v", tt.id, err)
-		}
-		id, err := b.Match(theCard)
-		if err != nil {
-			t.Fatalf("%d: Match: %v", tt.id, err)
-		}
-		co, err := b.GetUUID(id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !strings.HasPrefix(co.SetCode, "WC") {
-			t.Errorf("%d: Match landed on %s, want a World Championship Decks printing", tt.id, co)
 		}
 	}
 }
