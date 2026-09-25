@@ -67,7 +67,7 @@ type AllCards struct {
 		// Printings is what a card's printings are, one entry each: the
 		// finish TCGplayer prices it under, the uuid it is quoted by, and
 		// the treatments that printing is the printing of. adoptPrintings
-		// reads the two maps above off it.
+		// reads PrintingIDs, above, and the treatments off it.
 		Printings []struct {
 			Finish     string   `json:"finish"`
 			ID         string   `json:"id"`
