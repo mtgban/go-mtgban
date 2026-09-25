@@ -853,10 +853,10 @@ func (r *resolver) numberedPrinting(product *cm.Product, uuids []string) string 
 	return ""
 }
 
-// resolveMapped answers one product of the id map. The map answers first;
-// what it left unmapped is answered from what the catalog says of it, by
-// resolveProduct, so a product the file does not know yet is matched rather
-// than lost.
+// resolveMapped answers one product of the id map. versionPrintings answers
+// first, since it corrects the map, then the map itself; what it left
+// unmapped is answered from what the catalog says of it, by resolveProduct,
+// so a product the file does not know yet is matched rather than lost.
 func (r *resolver) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.Expansion) resolved {
 	product := &cm.Product{
 		IDProduct:     id,
@@ -867,6 +867,14 @@ func (r *resolver) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.
 		ExpansionCode: expansion.SetCode,
 	}
 	product.Expansion.IDExpansion = expansion.IDExpansion
+
+	if r.gameID == cm.GameMagic {
+		cardID := versionPrinting(r.backend, product)
+		if cardID != "" {
+			cardIDFoil, _ := r.backend.MatchID(cardID, true)
+			return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
+		}
+	}
 
 	cardID, cardIDFoil := r.resolveUUIDs(product, mapped.UUIDs)
 	if cardID != "" {
