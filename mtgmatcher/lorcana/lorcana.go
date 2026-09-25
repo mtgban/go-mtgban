@@ -442,46 +442,61 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	}
 
 	// A foil TCGplayer sells as a product of its own is a printing of its
-	// own, the Panorama beside the plain art: its printings become a ★ twin.
+	// own, the Panorama beside the plain art: each such product becomes a ★
+	// twin, the first on the published uuids and the rest on suffixed ones.
 	loaded := ac.Cards[:0:0]
 	for _, i := range cards {
 		card := ac.Cards[i]
-		plain, twin := card, card
-		plain.Printings, twin.Printings = nil, nil
+		plain := card
+		plain.Printings = nil
+		foils := card.Printings[:0:0]
 		for _, printing := range card.Printings {
 			if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(printing.Finish)) {
-				twin.Printings = append(twin.Printings, printing)
+				foils = append(foils, printing)
 			} else {
 				plain.Printings = append(plain.Printings, printing)
 			}
 		}
 		extras := card.ExternalLinks.TcgPlayerExtraIDs
-		if len(extras) != 1 || len(plain.Printings) == 0 || len(twin.Printings) == 0 {
+		if len(extras) == 0 || len(plain.Printings) == 0 || len(foils) == 0 {
 			loaded = append(loaded, card)
 			continue
 		}
-		plain.PrintingIDs, twin.PrintingIDs = map[string]string{}, map[string]string{}
+		plain.PrintingIDs = map[string]string{}
 		for _, printing := range plain.Printings {
 			plain.PrintingIDs[printing.Finish] = printing.ID
 		}
-		for _, printing := range twin.Printings {
-			twin.PrintingIDs[printing.Finish] = printing.ID
-		}
 		plain.ExternalLinks.TcgPlayerExtraIDs = nil
-		twin.ExternalLinks.TcgPlayerExtraIDs = nil
-		twin.ExternalLinks.TcgPlayerID = extras[0]
-		twin.ExternalLinks.CardmarketID = 0
-		twin.ExternalLinks.CardTraderID = 0
-		twin.Variant += "★"
-		// Upstream's fullFoil is the Panorama's own art, borderless where full
-		// is framed. It has no foil thumbnail, so fullFoil serves as both.
-		twin.Images = maps.Clone(card.Images)
-		foilImage := twin.Images["fullFoil"]
-		if foilImage != "" {
-			twin.Images["full"] = foilImage
-			twin.Images["thumbnail"] = foilImage
+		loaded = append(loaded, plain)
+		for n, extra := range extras {
+			twin := card
+			twin.Printings = slices.Clone(foils)
+			twin.PrintingIDs = map[string]string{}
+			for j := range twin.Printings {
+				if n > 0 {
+					id := twin.Printings[j].ID + "_" + strconv.Itoa(extra)
+					if treatments, found := ac.treatments[twin.Printings[j].ID]; found {
+						ac.treatments[id] = treatments
+					}
+					twin.Printings[j].ID = id
+				}
+				twin.PrintingIDs[twin.Printings[j].Finish] = twin.Printings[j].ID
+			}
+			twin.ExternalLinks.TcgPlayerID = extra
+			twin.ExternalLinks.TcgPlayerExtraIDs = nil
+			twin.ExternalLinks.CardmarketID = 0
+			twin.ExternalLinks.CardTraderID = 0
+			twin.Variant += "★"
+			// Upstream's fullFoil is the Panorama's own art, borderless where full
+			// is framed. It has no foil thumbnail, so fullFoil serves as both.
+			twin.Images = maps.Clone(card.Images)
+			foilImage := twin.Images["fullFoil"]
+			if foilImage != "" {
+				twin.Images["full"] = foilImage
+				twin.Images["thumbnail"] = foilImage
+			}
+			loaded = append(loaded, twin)
 		}
-		loaded = append(loaded, plain, twin)
 	}
 
 	// Load all cards and store them in their relative sets

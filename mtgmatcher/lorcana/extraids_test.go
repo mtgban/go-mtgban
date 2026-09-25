@@ -109,3 +109,38 @@ func TestLorcanaExtraProductIdsAbsent(t *testing.T) {
 		t.Errorf("MatchID on the split-foil product = %v, want %v", err, mtgmatcher.ErrCardUnknownID)
 	}
 }
+
+// TestLorcanaExtraProductIdsSeveral pins a card TCGplayer sells two foil
+// products for: each is a ★ twin of its own, the second on the foil's uuid
+// suffixed with its product id, and neither reaches the plain card.
+func TestLorcanaExtraProductIdsSeveral(t *testing.T) {
+	several := strings.Replace(extraIDsData, `"tcgPlayerExtraIds": [633427]`, `"tcgPlayerExtraIds": [633427, 633428]`, 1)
+	b, err := Load(strings.NewReader(several))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		id   string
+		foil bool
+		want string
+	}{
+		{"631349", true, "100"},
+		{"633427", false, "100_silver"},
+		{"633428", false, "100_silver_633428"},
+	} {
+		got, err := b.MatchID(tc.id, tc.foil)
+		if err != nil || got != tc.want {
+			t.Errorf("MatchID(%q, %v) = (%q, %v), want %q", tc.id, tc.foil, got, err, tc.want)
+		}
+	}
+	co, err := b.GetUUID("100_silver_633428")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.Number != "1★" || co.Identifiers["tcgplayerProductId"] != "633428" {
+		t.Errorf("second twin = number %q, product %q, want 1★ and 633428", co.Number, co.Identifiers["tcgplayerProductId"])
+	}
+	if n := len(b.GetUUIDs()); n != 5 {
+		t.Errorf("got %d uuids, want 5", n)
+	}
+}
