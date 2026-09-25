@@ -195,6 +195,7 @@ var mkmGames = map[mtgban.Game]cm.Game{
 	mtgban.GameYuGiOh:        cm.GameYuGiOh,
 	mtgban.GameFleshAndBlood: cm.GameFleshAndBlood,
 	mtgban.GamePokemon:       cm.GamePokemon,
+	mtgban.GameGundam:        cm.GameGundam,
 }
 
 // defaultArticleFilter is the filter a price is read through: played or

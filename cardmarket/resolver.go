@@ -433,7 +433,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if err != nil || cardID == "" {
 			return "", "", false, err
 		}
-	case cm.GameLorcana, cm.GameRiftbound, cm.GameOnePiece:
+	case cm.GameLorcana, cm.GameRiftbound, cm.GameOnePiece, cm.GameGundam:
 		if r.gameID == cm.GameLorcana && lorcanaFaces[product.IDProduct] {
 			return "", "", false, nil
 		}
@@ -464,7 +464,14 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			}
 		} else if tcgID, found := r.tcgBridge[product.IDProduct]; found {
 			id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false)
-			if idErr == nil && !bridgeNamesCard(r.backend, product, id) {
+			agrees := idErr == nil && bridgeNamesCard(r.backend, product, id)
+			if r.gameID == cm.GameGundam {
+				// A Gundam product writes the card's own number into its
+				// name, which says more than a name the two catalogs spell
+				// apart ("Tallgeese Ⅲ", a token without "Token").
+				agrees = idErr == nil && !offCode(r.backend, product, id)
+			}
+			if idErr == nil && !agrees {
 				idErr = errNoPrinting
 			}
 			if idErr == nil {
@@ -504,6 +511,14 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// number; a card with no oversized printing is then unsupported.
 		if product.Rarity == "Oversized" {
 			number = strings.TrimSpace(number + " Oversized")
+		}
+		// A Gundam parallel shares its base card's number, and only the
+		// rarity, spelled the catalog's way, tells the two apart.
+		if r.gameID == cm.GameGundam {
+			number = strings.TrimSpace(number + " " + gundamRarity(product.Rarity))
+			if label, found := gundamLabels[product.IDProduct]; found {
+				number = strings.TrimSpace(number + " " + label)
+			}
 		}
 		// Store Tournament Promos and Winner Cards drop the event their
 		// own shelf names; the datastore labels the printing with it.

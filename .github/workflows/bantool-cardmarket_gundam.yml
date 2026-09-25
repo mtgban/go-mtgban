@@ -1,0 +1,23 @@
+name: gundam / cardmarket
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [cardmarket_gundam]
+  schedule:
+    - cron: "29 9,21 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: cardmarket_gundam
+      game: "gundam"
+      affiliate: ${{ vars.MKM_PARTNER }}
+      datastore-filepath: b2://mtgban-datastore/gundam/gundam.json.xz
+      mkmids-filepath: b2://mtgban-datastore/gundam/cardmarket_catalog.json.xz
+    secrets: inherit
