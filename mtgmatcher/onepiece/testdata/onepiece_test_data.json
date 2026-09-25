@@ -857,9 +857,9 @@
         "description": "the shout alone names the card the datastore calls DON!! Card",
         "input": {
             "name": "DON!!",
-            "edition": "OP01 - Romance Dawn"
+            "edition": "ST10 - Ultra Deck: The Three Captains"
         },
-        "uuid": "don_456059_foil"
+        "uuid": "don_527633_foil"
     },
     {
         "description": "the word's other sense keeps the base printing it names",
