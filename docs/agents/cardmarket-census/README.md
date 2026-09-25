@@ -14,8 +14,9 @@ prints. A census also catches the silent faults, which print nothing.
 `harnesses.md` holds the Go probes, `census.sh` fetches and walks, and
 `grade.py` reports. Read this whole document first.
 
-Seven games are on Cardmarket: Magic, Lorcana, Riftbound, One Piece,
-Yu-Gi-Oh, Flesh and Blood and Pokemon. Gundam and Palworld are not.
+Eight games are on Cardmarket: Magic, Lorcana, Riftbound, One Piece,
+Yu-Gi-Oh, Flesh and Blood, Pokemon and Gundam. Palworld is not: its
+downloads stop at game 25, Sorcery, and CardTrader prices Palworld instead.
 
 ## 1. Sync, and work in your own worktree
 
