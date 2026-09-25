@@ -34,6 +34,7 @@ import (
 // landings carried numbers too, so nothing passes.
 var pokemonForeignExpansions = map[string]bool{
 	"Advent of Arceus":                       false,
+	"BW Promos":                              false,
 	"Great Detective Pikachu":                false,
 	"Magma Gang VS Aqua Gang: Double Crisis": false,
 	"Mystery of the Fossils":                 false,
