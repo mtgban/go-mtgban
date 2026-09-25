@@ -283,7 +283,7 @@ func (r *resolver) matchFab(product *cm.Product) string {
 					// only is answered with that run whichever was asked
 					// for, and the other run's expansion sells the very
 					// same card.
-					if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
+					if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.FinishSlug(printRun)) {
 						continue
 					}
 					// A promo's number is only whole with its programme,

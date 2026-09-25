@@ -417,7 +417,8 @@ publishes and never off its uuid; `nonfoil` and `foil` also name the printings
 a caller's bare flags answer with. `Card.Finish` records that name for the
 specific stored UUID, which is what keeps two entries apart when the `Foil`
 boolean alone cannot. `mtgmatcher.Finishes` is the table of those names, their
-labels, print runs and foilness; `docs/finishes.md` has the rules around it.
+TCGplayer spellings, print runs and foilness; `docs/finishes.md` has the rules
+around it.
 These UUIDs are first-class — resolve them only via `GetUUID`/`ExternalUUID`.
 
 **Data model.** `Card`, `CardObject`, `Set` and `SealedProduct` are core types

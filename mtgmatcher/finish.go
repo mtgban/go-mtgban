@@ -20,29 +20,17 @@ const (
 	FinishEtched = "etched"
 )
 
-// NormalizeFinish spells a finish name the way finish names are spelled here,
-// dropping the separators and the case a vendor writes it with, so "Cold
-// Foil", "cold foil" and "COLD-FOIL" are one name.
-func NormalizeFinish(name string) string {
-	var out strings.Builder
-	for _, r := range strings.ToLower(name) {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
-			out.WriteRune(r)
-		}
-	}
-	return out.String()
-}
-
 // FinishSlug is the name every finish is keyed and asked for by: the name
-// TCGplayer prices the printing under, without case or separators, and
-// FinishNonfoil for the plain one TCGplayer calls "Normal". The datastore
-// ends the printing's id in the same spelling, but this reads the finish the
-// entry publishes, never the id. A name TCGplayer adds later is keyed by its
-// own spelling before Finishes has a row for it.
+// TCGplayer prices the printing under, without case or separators, or its
+// row's slug where the two differ, which makes the plain "Normal"
+// FinishNonfoil. The datastore ends the printing's id in the same spelling,
+// but this reads the finish the entry publishes, never the id. A name
+// TCGplayer adds later is keyed by its own spelling before Finishes has a
+// row for it.
 func FinishSlug(name string) string {
-	slug := NormalizeFinish(name)
-	if slug == "normal" {
-		return FinishNonfoil
+	slug := PromoTypeSlug(name)
+	if finish, found := finishesByName[slug]; found {
+		return finish.Slug
 	}
 	return slug
 }
@@ -65,9 +53,6 @@ type Finish struct {
 	Slug string
 	// TCGplayer is the printing's name in the catalog.
 	TCGplayer string
-	// Label spells the printing for a reader. It keeps the slug's words, so
-	// FinishSlug reads a label back as it reads a TCGplayer name.
-	Label string
 	// Run is the print run the name opens with, "" for a set printed once.
 	Run string
 	// Treatment is the slug of the same printing with its run taken off.
@@ -82,28 +67,38 @@ type Finish struct {
 // bare flag prefers them (DefaultPrinting): Rainbow Foil over Cold Foil, Cold
 // Foil over Holofoil, Holofoil over Reverse Holofoil.
 var Finishes = []Finish{
-	{"nonfoil", "Normal", "Normal", "", "nonfoil", false},
-	{"foil", "Foil", "Foil", "", "foil", true},
-	{"rainbowfoil", "Rainbow Foil", "Rainbow Foil", "", "rainbowfoil", true},
-	{"coldfoil", "Cold Foil", "Cold Foil", "", "coldfoil", true},
-	{"holofoil", "Holofoil", "Holofoil", "", "holofoil", true},
-	{"reverseholofoil", "Reverse Holofoil", "Reverse Holofoil", "", "reverseholofoil", true},
-	{"1stedition", "1st Edition", "1st Edition", Run1stEdition, "nonfoil", false},
-	{"unlimited", "Unlimited", "Unlimited", RunUnlimited, "nonfoil", false},
-	{"limited", "Limited", "Limited", RunLimited, "nonfoil", false},
-	{"1steditionholofoil", "1st Edition Holofoil", "1st Edition Holofoil", Run1stEdition, "holofoil", true},
-	{"unlimitedholofoil", "Unlimited Holofoil", "Unlimited Holofoil", RunUnlimited, "holofoil", true},
-	{"1steditionnormal", "1st Edition Normal", "1st Edition Normal", Run1stEdition, "nonfoil", false},
-	{"1steditionrainbowfoil", "1st Edition Rainbow Foil", "1st Edition Rainbow Foil", Run1stEdition, "rainbowfoil", true},
-	{"1steditioncoldfoil", "1st Edition Cold Foil", "1st Edition Cold Foil", Run1stEdition, "coldfoil", true},
-	{"unlimitededitionnormal", "Unlimited Edition Normal", "Unlimited Edition Normal", RunUnlimited, "nonfoil", false},
-	{"unlimitededitionrainbowfoil", "Unlimited Edition Rainbow Foil", "Unlimited Edition Rainbow Foil", RunUnlimited, "rainbowfoil", true},
+	{"nonfoil", "Normal", "", "nonfoil", false},
+	{"foil", "Foil", "", "foil", true},
+	{"rainbowfoil", "Rainbow Foil", "", "rainbowfoil", true},
+	{"coldfoil", "Cold Foil", "", "coldfoil", true},
+	{"holofoil", "Holofoil", "", "holofoil", true},
+	{"reverseholofoil", "Reverse Holofoil", "", "reverseholofoil", true},
+	{"1stedition", "1st Edition", Run1stEdition, "nonfoil", false},
+	{"unlimited", "Unlimited", RunUnlimited, "nonfoil", false},
+	{"limited", "Limited", RunLimited, "nonfoil", false},
+	{"1steditionholofoil", "1st Edition Holofoil", Run1stEdition, "holofoil", true},
+	{"unlimitedholofoil", "Unlimited Holofoil", RunUnlimited, "holofoil", true},
+	{"1steditionnormal", "1st Edition Normal", Run1stEdition, "nonfoil", false},
+	{"1steditionrainbowfoil", "1st Edition Rainbow Foil", Run1stEdition, "rainbowfoil", true},
+	{"1steditioncoldfoil", "1st Edition Cold Foil", Run1stEdition, "coldfoil", true},
+	{"unlimitededitionnormal", "Unlimited Edition Normal", RunUnlimited, "nonfoil", false},
+	{"unlimitededitionrainbowfoil", "Unlimited Edition Rainbow Foil", RunUnlimited, "rainbowfoil", true},
 }
 
 var finishesBySlug = func() map[string]Finish {
 	out := make(map[string]Finish, len(Finishes))
 	for _, finish := range Finishes {
 		out[finish.Slug] = finish
+	}
+	return out
+}()
+
+// finishesByName finds a row by its TCGplayer name, spelled as FinishSlug
+// folds it.
+var finishesByName = func() map[string]Finish {
+	out := make(map[string]Finish, len(Finishes))
+	for _, finish := range Finishes {
+		out[PromoTypeSlug(finish.TCGplayer)] = finish
 	}
 	return out
 }()
@@ -168,18 +163,6 @@ var treatmentRank = func() map[string]int {
 func FinishOf(slug string) (Finish, bool) {
 	finish, found := finishesBySlug[slug]
 	return finish, found
-}
-
-// TCGplayerFinish is the name TCGplayer prices a finish under, "" for a slug
-// the table has no row for.
-func TCGplayerFinish(slug string) string {
-	return finishesBySlug[slug].TCGplayer
-}
-
-// FinishLabel spells a finish for a reader, "" for a slug the table has no
-// row for.
-func FinishLabel(slug string) string {
-	return finishesBySlug[slug].Label
 }
 
 // IsFoilFinish reports whether a storefront calls the finish a foil. A
