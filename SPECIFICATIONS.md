@@ -1040,12 +1040,12 @@ own — **Check formatting** (`gofmt -s -l .`), **Vet** (`go vet ./...`),
 `go test -race ./...`, **revive** and **staticcheck** — alongside nine
 per-game jobs that each restore their own datastore from cache (§2.7);
 Magic's job runs `go test ./... -v` over the whole tree, and the other eight
-each run their `mtgmatcher/<game>` suite plus the scraper packages that read
-that game's datastore. There are well past a hundred `bantool-<target>.yml`
-files, one per scraper target — including the per-game variants such as
-`bantool-cardmarket_lorcana.yml` and `bantool-tcg_market_riftbound.yml` —
-each triggered by cron plus `workflow_dispatch`/`repository_dispatch`, and
-each delegating to the reusable
+each run a scoped list: their `mtgmatcher/<game>` suite, a few scraper
+packages and `internal/vocabulary`. There are well past a hundred
+`bantool-<target>.yml` files, one per scraper target — including the per-game
+variants such as `bantool-cardmarket_lorcana.yml` and
+`bantool-tcg_market_riftbound.yml` — each triggered by cron plus
+`workflow_dispatch`/`repository_dispatch`, and each delegating to the reusable
 `run-bantool.yml` with `target`, `game` and `datastore-filepath` inputs.
 `run-bantool.yml` uploads to `b2://mtgban-dumps/<game>/<target>` and then pings
 a signed `http://<game>.mtgban.com/api/load/<target>` URL so the server reloads
