@@ -70,18 +70,16 @@ with `mtgmatcher.RegisterGame` from its `register.go` is its datastore loader;
 the uuid scheme comes along with it, because the loader is what mints the
 uuids.)*
 
-A uuid identifies a **(printing, finish) pair**, not merely a printing, and
-each game encodes the finish in its own way. Magic and Lorcana let the nonfoil
-printing keep the bare id and suffix the others — `_f` for foil, `_e` for
-etched, both declared in `mtgmatcher/backend.go` — with Lorcana minting one
-extra name-derived suffix per foil sub-type, which is why its replay corpus
-expects `1951_f` for Ariel - Singing Mermaid's primary foil and
-`1951_rainbowpillars` for the same card's Rainbow Pillars treatment. Riftbound
-instead spells every finish out (`ogn-066-298_nonfoil`, `ogn-066-298_foil`), so
-no printing owns the bare gallery id; a newer scheme, and the clearer one,
-since it leaves nothing implicit.
-The suffix convention is part of the key's definition, but loaders do not leave
-resolution to string surgery: each `Card` carries a `FoilUUIDs` map from finish
+A uuid identifies a **(printing, finish) pair**, not merely a printing. Magic
+lets the nonfoil printing keep mtgjson's bare id and suffixes the others — `_f`
+for foil, `_e` for etched, both declared in `mtgmatcher/backend.go`. Every
+datastore game takes its uuids as datastore-gen publishes them: one per
+printing TCGplayer prices, ending in that printing's name, as Ariel - Singing
+Mermaid's `1951`, `1951_coldfoil` and `1951_holofoil` do. A loader reads the
+finish off the entry's `finish` field, never off the uuid (`docs/finishes.md`),
+so for these games the suffix is the builder's spelling, not the key's
+definition.
+Loaders do not leave resolution to string surgery: each `Card` carries a `FoilUUIDs` map from finish
 name to the uuid that carries it, and `Backend.output()` (`mtgmatcher/card.go`)
 pulls the requested finish out of that map, falling back to the suffix rules
 only for cards built without one. Registering finishes explicitly is what lets
