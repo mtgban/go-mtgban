@@ -22,7 +22,8 @@ const lorcanaPanoramaDatastore = `{"data": {
 
 // TestLorcanaPanoramaFoil pins that a blueprint sold as the Panorama foil's
 // own TCGplayer product lands on the foil whatever its listing's flag, while
-// the plain card's blueprint keeps the flag's say.
+// a foil claim on the plain card's blueprint, which sells no foil, goes
+// unpriced.
 func TestLorcanaPanoramaFoil(t *testing.T) {
 	b, err := mtgmatcher.Open("lorcana", strings.NewReader(lorcanaPanoramaDatastore))
 	if err != nil {
@@ -36,7 +37,7 @@ func TestLorcanaPanoramaFoil(t *testing.T) {
 		want        string
 	}{
 		{334319, 631351, "", false, "1667"},
-		{334319, 631351, "", true, "1667_foil"},
+		{334319, 631351, "", true, ""},
 		{332000, 633429, "Panorama", false, "1667_foil"},
 		{332000, 633429, "Panorama", true, "1667_foil"},
 	} {

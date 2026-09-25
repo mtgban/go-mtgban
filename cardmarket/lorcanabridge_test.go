@@ -68,10 +68,10 @@ func TestLorcanaBridge(t *testing.T) {
 			want:    "1939",
 		},
 		{
-			desc: "the plain card keeps its foil beside it",
+			desc: "the plain art sells no foil to price",
 			id:   885615, tcgID: 692014, expansion: "Wilds Unknown",
 			product: cm.CatalogProduct{Name: "Snow White - Merry as the Morning (V.1)", Number: "37", Rarity: "Legendary", Version: 1},
-			want:    "2752", wantFoil: "2752_foil",
+			want:    "2752", wantFoil: "2752",
 		},
 		{
 			desc: "the foil sold apart is the foil alone",

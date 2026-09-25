@@ -441,9 +441,43 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// Load all cards and store them in their relative sets
+	// A foil TCGplayer sells as a product of its own is a printing of its
+	// own, the Panorama beside the plain art: its printings become a ★ twin.
+	loaded := ac.Cards[:0:0]
 	for _, i := range cards {
 		card := ac.Cards[i]
+		plain, twin := card, card
+		plain.Printings, twin.Printings = nil, nil
+		for _, printing := range card.Printings {
+			if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(printing.Finish)) {
+				twin.Printings = append(twin.Printings, printing)
+			} else {
+				plain.Printings = append(plain.Printings, printing)
+			}
+		}
+		extras := card.ExternalLinks.TcgPlayerExtraIDs
+		if len(extras) != 1 || len(plain.Printings) == 0 || len(twin.Printings) == 0 {
+			loaded = append(loaded, card)
+			continue
+		}
+		plain.PrintingIDs, twin.PrintingIDs = map[string]string{}, map[string]string{}
+		for _, printing := range plain.Printings {
+			plain.PrintingIDs[printing.Finish] = printing.ID
+		}
+		for _, printing := range twin.Printings {
+			twin.PrintingIDs[printing.Finish] = printing.ID
+		}
+		plain.ExternalLinks.TcgPlayerExtraIDs = nil
+		twin.ExternalLinks.TcgPlayerExtraIDs = nil
+		twin.ExternalLinks.TcgPlayerID = extras[0]
+		twin.ExternalLinks.CardmarketID = 0
+		twin.ExternalLinks.CardTraderID = 0
+		twin.Variant += "★"
+		loaded = append(loaded, plain, twin)
+	}
+
+	// Load all cards and store them in their relative sets
+	for _, card := range loaded {
 		// A card published with no printing has no uuid to price.
 		if len(card.Printings) == 0 {
 			continue

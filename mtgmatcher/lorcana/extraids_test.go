@@ -8,9 +8,9 @@ import (
 )
 
 // extraIDsData is a two-card cut of the datastore shape cmd/lorcanadatastore
-// emits. Card 100 is sold by TCGplayer as two products, the nonfoil under the
-// id upstream publishes and the foil under its own; card 200 carries no extra
-// ids, as every card in the upstream file does.
+// emits. Card 100 is sold by TCGplayer as two products, the plain art under
+// the id upstream publishes and the Panorama foil under its own; card 200
+// carries no extra ids, as every card in the upstream file does.
 const extraIDsData = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {"1": {"name": "The First Chapter", "type": "expansion", "releaseDate": "2023-09-01"}},
@@ -36,17 +36,16 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// The extra id reaches the card, and the requested finish still decides
-	// which uuid comes back: the point is to reach the foil printing that the
-	// separate product is selling.
+	// The extra id is the ★ twin's own product and reaches its foil alone;
+	// the main product sells no foil, so a foil flag on it reaches the plain.
 	for _, tc := range []struct {
 		id   string
 		foil bool
 		want string
 	}{
 		{"631349", false, "100"},
-		{"631349", true, "100_silver"},
-		{"633427", false, "100"},
+		{"631349", true, "100"},
+		{"633427", false, "100_silver"},
 		{"633427", true, "100_silver"},
 		{"631350", true, "200_silver"},
 	} {
@@ -60,8 +59,8 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 		}
 	}
 
-	// No CardObject is registered for an extra id, so the uuid space is
-	// exactly what the upstream file produces.
+	// The twin keeps the foil's uuid, so the uuid space is exactly what the
+	// upstream file produces.
 	if n := len(b.GetUUIDs()); n != 4 {
 		t.Errorf("got %d uuids, want 4", n)
 	}
