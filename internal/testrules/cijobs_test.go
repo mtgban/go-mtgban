@@ -39,11 +39,11 @@ func TestEveryGatedSuiteRunsUnderItsDatastore(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		// Skip what the go tool itself skips for ./... - a dot- or
-		// underscore-prefixed name, or testdata - so a stray checkout under
-		// e.g. .claude/worktrees never reaches this walk.
+		// Skip what the go tool itself skips below the root for ./... - a
+		// dot- or underscore-prefixed name, or testdata - so a stray checkout
+		// under e.g. .claude/worktrees never reaches this walk.
 		name := d.Name()
-		if strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || name == "testdata" {
+		if path != root && (strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || name == "testdata") {
 			if d.IsDir() {
 				return filepath.SkipDir
 			}
