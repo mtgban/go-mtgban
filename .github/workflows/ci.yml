@@ -462,7 +462,7 @@ jobs:
         env:
           LORCANA_PATH: "${{ github.workspace }}/${{ needs.cache-lorcana.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/lorcana/... ./starcitygames/... ./miniaturemarket/... ./internal/vocabulary/... -v
+          go test ./mtgmatcher/lorcana/... ./starcitygames/... ./miniaturemarket/... ./coolstuffinc/... ./gamenerdz/... ./internal/vocabulary/... -v
 
   test-riftbound:
     needs: cache-riftbound
@@ -497,7 +497,7 @@ jobs:
         env:
           RIFTBOUND_PATH: "${{ github.workspace }}/${{ needs.cache-riftbound.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/riftbound/... ./vegassingles/... ./starcitygames/... ./internal/vocabulary/... -v
+          go test ./mtgmatcher/riftbound/... ./vegassingles/... ./starcitygames/... ./coolstuffinc/... ./cardmarket/... ./internal/vocabulary/... -v
 
   test-gundam:
     needs: cache-gundam
@@ -532,7 +532,7 @@ jobs:
         env:
           GUNDAM_PATH: "${{ github.workspace }}/${{ needs.cache-gundam.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/gundam/... ./cardtrader/... ./miniaturemarket/... ./internal/vocabulary/... -v
+          go test ./mtgmatcher/gundam/... ./cardtrader/... ./miniaturemarket/... ./coolstuffinc/... ./internal/vocabulary/... -v
 
   test-palworld:
     needs: cache-palworld
