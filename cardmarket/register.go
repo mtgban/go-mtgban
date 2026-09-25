@@ -82,7 +82,7 @@ func BridgeUseOf(game mtgban.Game) BridgeUse {
 	switch game {
 	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
 		return BridgeRequired
-	case mtgban.GameOnePiece, mtgban.GameRiftbound, mtgban.GameLorcana:
+	case mtgban.GameOnePiece, mtgban.GameRiftbound, mtgban.GameLorcana, mtgban.GameGundam:
 		return BridgeHelps
 	default:
 		return BridgeUnused
@@ -102,11 +102,11 @@ func SealedBridgeUseOf(game mtgban.Game) BridgeUse {
 }
 
 // cardmarketGames are the games Cardmarket's Index, Market and Sealed
-// scrapers price - the same seven mkmGames names.
+// scrapers price - the same eight mkmGames names.
 var cardmarketGames = []mtgban.Game{
 	mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameRiftbound,
 	mtgban.GameOnePiece, mtgban.GamePokemon, mtgban.GameYuGiOh,
-	mtgban.GameFleshAndBlood,
+	mtgban.GameFleshAndBlood, mtgban.GameGundam,
 }
 
 func init() {
