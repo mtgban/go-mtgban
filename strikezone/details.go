@@ -280,7 +280,7 @@ func preprocessDetails(game mtgban.Game, cardName, edition, number, details stri
 			if run == "Unlimited" {
 				run = "Unlimited Edition"
 			}
-			finish = run + " " + finish
+			finish = mtgmatcher.PrintingFinish(run, finish)
 		}
 		return &mtgmatcher.InputCard{
 			Name:      cardName,
