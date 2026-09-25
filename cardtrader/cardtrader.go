@@ -281,15 +281,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 					cardID, _ = ct.backend.MatchIDFinish(id, theCard.Finish)
 				}
 				if cardID == "" {
-					foil := theCard.Foil
-					// Lorcana files a foil TCGplayer sells as a product of its
-					// own under the plain card's row, and that product sells
-					// nothing else, whatever the flag says.
-					if ct.gameID == GameLorcana {
-						co, err := ct.backend.GetUUID(ct.backend.ConvertID(mtgmatcher.IDSpaceTCGplayer, id))
-						foil = foil || (err == nil && co.Identifiers["tcgplayerProductId"] != id)
-					}
-					cardID, _ = ct.backend.MatchID(id, foil)
+					cardID, _ = ct.backend.MatchID(id, theCard.Foil)
 				}
 				if cardID != "" {
 					break
