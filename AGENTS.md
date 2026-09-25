@@ -504,6 +504,12 @@ that map: it is identified by SKU and has its own scrapers.
 - Foil and etched flags coming from scrapers are often wrong. `output()`
   clamps them against the printing's real finishes — trust the matcher, not
   the input.
+- A scraper probe (a retry or shelf redirect that calls `b.Match` on
+  rewritten wording) must check where it landed, not only `err == nil`: an
+  edition naming no set that holds the card widens to every printing, and
+  Magic's `FilterCards` passes a lone candidate without reading its number.
+  Compare the landed `SetCode` and `Number` with what the probe asked for,
+  as `coolstuffinc`'s `pokemonNonHoloDeckExclusive` does.
 - `Normalize()` has deliberate *protection* entries that map a string to
   itself (`"waste land"`, `"vs"`). Changing the replacer table can silently
   re-alias unrelated cards; run the full matcher suite after any edit there.
