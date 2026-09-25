@@ -15,8 +15,10 @@ import (
 // GetSetByName resolves them onto the English set: "Mystery of the Fossils"
 // is Japan's Fossil, "Pokémon Jungle" trims down to Jungle, and "XY Promos"
 // is the very name the datastore gives the English promos Cardmarket sells
-// as "XY Black Star Promos". Without the gate their singles price English
-// printings from another market's stock - 115 wrong landings when measured.
+// as "XY Black Star Promos"; "BW Promos" is likewise Japan's BW-P, the
+// English shelf being "BW Black Star Promos". Without the gate their singles
+// price English printings from another market's stock - 115 wrong landings
+// when measured.
 // The list is Cardmarket's own naming, which is why it lives here and not
 // in the matcher: other storefronts mean the English set by some of these
 // spellings.
