@@ -127,6 +127,51 @@ const yugiohEuropeanDatastore = `{"data": {
 
 // TestMatchYugiohEuropeanPrints pins the OTS Tournament Pack rule that
 // tells the Portuguese packs' extra numbers apart from a real gap, and the
+// yugiohShelfCodeDatastore is the published datastore cut down to promos
+// filed in catch-all sets, images left out: numbered by the program their
+// Cardmarket shelf is named after, filed under VDP or MISC.
+const yugiohShelfCodeDatastore = `{"data": {
+ "game": "yugioh",
+ "sets": {
+  "VDP": {"name": "Yu-Gi-Oh! Video Game Promotional Cards", "releaseDate": "2002-03-19", "type": "promo"},
+  "MISC": {"name": "Miscellaneous Promotional Cards", "releaseDate": "2020-09-22", "type": "promo"}
+ },
+ "cards": [
+  {"attribute": "LIGHT", "externalLinks": {"konamiId": 89631139, "tcgPlayerId": 22940}, "finish": "Unlimited", "id": "dds-001_22940_unlimited", "name": "Blue-Eyes White Dragon", "number": "DDS-001", "promoTypes": ["videogame"], "rarity": "Prismatic Secret Rare", "setCode": "VDP", "type": "Normal Monster", "variant": "Dark Duel Stories"},
+  {"attribute": "FIRE", "externalLinks": {"konamiId": 16751086, "tcgPlayerId": 80164}, "finish": "Unlimited", "id": "tf04-en001_80164_unlimited", "name": "Warm Worm", "number": "TF04-EN001", "promoTypes": ["videogame"], "rarity": "Ultra Rare", "setCode": "VDP", "type": "Effect Monster", "variant": "5D's Tag Force 4"},
+  {"attribute": "TRAP", "externalLinks": {"konamiId": 69599136, "tcgPlayerId": 228593}, "finish": "Limited", "id": "optp-en001_228593_limited", "name": "Floodgate Trap Hole", "number": "OPTP-EN001", "rarity": "Super Rare", "setCode": "MISC", "type": "Normal Trap"},
+  {"attribute": "TRAP", "externalLinks": {"konamiId": 126218, "tcgPlayerId": 236745}, "finish": "Unlimited", "id": "tsc-e003_236745_unlimited", "name": "Skull Dice", "number": "TSC-E003", "rarity": "Prismatic Secret Rare", "setCode": "VDP", "type": "Normal Trap"}
+ ]
+}}`
+
+// TestMatchYugiohShelfCode pins that a shelf naming no set of ours still
+// reaches its promos by its own code, and that a version whose rarity the
+// row does not carry stays out. The products are the catalog's own.
+func TestMatchYugiohShelfCode(t *testing.T) {
+	b := datastoreBackend(t, "yugioh", yugiohShelfCodeDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	for _, tt := range []struct {
+		expansion, code, name, number, want string
+		err                                 error
+	}{
+		{"Dark Duel Stories", "DDS", "Blue-Eyes White Dragon", "001", "dds-001_22940_unlimited", nil},
+		{"The Sacred Cards", "TSC", "Skull Dice", "E003", "tsc-e003_236745_unlimited", nil},
+		{"Speed Duel: Trials of the Pharaoh Promos", "OPTP", "Floodgate Trap Hole", "001", "optp-en001_228593_limited", nil},
+		{"5D's Tag Force 4 Promotional Cards", "TF04", "Warm Worm (V.1 - Ultra Rare)", "001", "tf04-en001_80164_unlimited", nil},
+		{"5D's Tag Force 4 Promotional Cards", "TF04", "Warm Worm (V.2 - Super Rare)", "001", "", errForeign},
+	} {
+		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion, ExpansionCode: tt.code}
+		got, err := mkm.matchYugioh(&product)
+		if got != tt.want || !errors.Is(err, tt.err) {
+			t.Errorf("%q in %q (%s) = %q, %v; want %q, %v", tt.name, tt.expansion, tt.number, got, err, tt.want, tt.err)
+		}
+	}
+}
+
 // Spell Ruler rule that tells its European renumbering apart from one.
 func TestMatchYugiohEuropeanPrints(t *testing.T) {
 	b := datastoreBackend(t, "yugioh", yugiohEuropeanDatastore)

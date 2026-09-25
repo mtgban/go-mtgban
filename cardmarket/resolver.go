@@ -1012,6 +1012,12 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 			return id, nil
 		}
 	}
+	if !carried {
+		id := r.yugiohShelfCode(product, name, rarity, region)
+		if id != "" {
+			return id, nil
+		}
+	}
 	if !carried || region != "" {
 		return "", errForeign
 	}
@@ -1090,6 +1096,36 @@ func (r *resolver) yugiohInfixed(product *cm.Product, name, rarity, region, tail
 		if err == nil && strings.EqualFold(co.Number, number) {
 			return id
 		}
+	}
+	return ""
+}
+
+// yugiohShelfCode answers a product on a shelf that names no set of ours by
+// the number the shelf's own code prefixes. The catalog files the video game
+// and event promos under catch-all sets (DDS-001 and FMR-001 in VDP), so the
+// shelf finds no set while the number still names the printing.
+func (r *resolver) yugiohShelfCode(product *cm.Product, name, rarity, region string) string {
+	if product.ExpansionCode == "" || product.Number == "" {
+		return ""
+	}
+	numbers := []string{product.ExpansionCode + "-" + product.Number}
+	if region == "" {
+		numbers = append(numbers, product.ExpansionCode+"-EN"+product.Number)
+	}
+	for _, number := range numbers {
+		id, err := r.backend.Match(&mtgmatcher.InputCard{Name: name, Variation: number})
+		if err != nil {
+			continue
+		}
+		co, err := r.backend.GetUUID(id)
+		if err != nil || !strings.EqualFold(co.Number, number) {
+			continue
+		}
+		// A version names its rarity where the shelf sells the card in two.
+		if rarity != "" && !strings.Contains(strings.ToLower(co.Rarity), strings.ToLower(rarity)) {
+			continue
+		}
+		return id
 	}
 	return ""
 }
