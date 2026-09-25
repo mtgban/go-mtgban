@@ -53,6 +53,17 @@ what silently never counts toward a total (serialized, cosmic foil,
 unfixed Secret Lair bonuses, anything under the bulk threshold) and why
 that floor is deliberately the same for every source.
 
+A third case tempers "fix it in `mtgmatcher`" without contradicting it: a
+shared matcher rule reaches every vendor and every printing of its class,
+so size the fix to the evidence behind it. When one vendor's evidence would
+justify a rule that moves far more landings than that evidence covers, put
+a guard in that vendor's scraper instead. A fix made for one vendor must
+not move TCGplayer, Star City Games, Card Kingdom or Cool Stuff Inc
+landings unless each move is a named correction — those four packages'
+tests passing is not that proof, since their fixtures need not reach
+the changed path; a count in the datastore of what the rule would
+touch does (#716).
+
 ## Layout
 
 ```
