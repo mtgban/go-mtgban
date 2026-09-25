@@ -55,7 +55,7 @@ func TestChaseRarity(t *testing.T) {
 		{
 			desc:    "the alternate art of a promo names no tier the card is filed under",
 			in:      mtgmatcher.InputCard{Name: "Maui - Demigod (Alternate Art)", Edition: "Disney 100 Promos", Variation: "23", Foil: true},
-			wantSet: "1", wantNum: "23", wantRar: "special",
+			wantSet: "D100", wantNum: "23", wantRar: "special",
 		},
 		{
 			desc:    "a tier spelled out rather than nicknamed",

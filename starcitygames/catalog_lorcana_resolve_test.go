@@ -222,11 +222,11 @@ func TestResolveLorcanaPromoSeries(t *testing.T) {
 	for _, tt := range []struct {
 		sku, name, finish, number, wantSet, wantNum string
 	}{
-		{"SGL-LOR-PRM-P3_031-ENC", "Beast - Snowfield Troublemaker", "Foil", "P3_031", "11", "31"},
-		{"SGL-LOR-PRM-P3_033-ENN", "Tinker Bell - Snowflake Collector", "Non-foil", "P3_033", "11", "33"},
-		{"SGL-LOR-PRM-P3_034-ENK", "Tinker Bell - Snowflake Collector", "Inkwash Foil", "P3_034", "11", "34"},
-		{"SGL-LOR-PRM-P02_025-ENA", "Lilo - Escape Artist", "Glimmer Foil", "P02_025", "6", "25"},
-		{"SGL-LOR-PRM-P03_036-ENA", "Scrooge McDuck - S.H.U.S.H. Agent", "Glimmer Foil", "P03_036", "10", "36"},
+		{"SGL-LOR-PRM-P3_031-ENC", "Beast - Snowfield Troublemaker", "Foil", "P3_031", "DLPC", "31"},
+		{"SGL-LOR-PRM-P3_033-ENN", "Tinker Bell - Snowflake Collector", "Non-foil", "P3_033", "DLPC", "33"},
+		{"SGL-LOR-PRM-P3_034-ENK", "Tinker Bell - Snowflake Collector", "Inkwash Foil", "P3_034", "DLPC", "34"},
+		{"SGL-LOR-PRM-P02_025-ENA", "Lilo - Escape Artist", "Glimmer Foil", "P02_025", "DLPC", "25"},
+		{"SGL-LOR-PRM-P03_036-ENA", "Scrooge McDuck - S.H.U.S.H. Agent", "Glimmer Foil", "P03_036", "DLPC", "36"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
 			group := "Alt Foil"
