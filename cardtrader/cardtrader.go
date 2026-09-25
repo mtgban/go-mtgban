@@ -130,6 +130,8 @@ var tcgIDOverrides = map[int]int{
 	374929: 711010, // 3rd Anniversary Set | English Version
 	406330: 680489, // 3rd Anniversary Set Japan
 	290971: 544805, // Pop Art (3D Text)
+	406254: 715681, // Double Pack Set Vol. 12 Shanks, labeled Gol.D.Roger
+	406255: 715682, // Double Pack Set Vol. 12 Rocks.D.Xebec
 	// Pokemon: none sent either.
 	340672: 211449, // Palkia & Dialga LEGEND, Jumbo Oversized
 	242584: 250252, // Mewtwo V-UNION, Jumbo Oversized
