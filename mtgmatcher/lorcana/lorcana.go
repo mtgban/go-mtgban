@@ -473,6 +473,14 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		twin.ExternalLinks.CardmarketID = 0
 		twin.ExternalLinks.CardTraderID = 0
 		twin.Variant += "★"
+		// Upstream's fullFoil is the Panorama's own art, borderless where full
+		// is framed. It has no foil thumbnail, so fullFoil serves as both.
+		twin.Images = maps.Clone(card.Images)
+		foilImage := twin.Images["fullFoil"]
+		if foilImage != "" {
+			twin.Images["full"] = foilImage
+			twin.Images["thumbnail"] = foilImage
+		}
 		loaded = append(loaded, plain, twin)
 	}
 
