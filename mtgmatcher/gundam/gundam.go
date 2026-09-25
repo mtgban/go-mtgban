@@ -228,9 +228,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			products[key] = entry
 			productOrder = append(productOrder, key)
 		}
-		// The catalog's own spelling of the finish goes through the game's
-		// vocabulary rather than being compared as written.
-		if (Rules{}).CanonicalFinish(card.Finish) == mtgmatcher.FinishFoil {
+		if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(card.Finish)) {
 			entry.foil = card
 		} else {
 			entry.normal = card
@@ -267,6 +265,13 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if entry.foil != nil {
 			finishes = append(finishes, mtgmatcher.FinishFoil)
 			foilUUIDs[mtgmatcher.FinishFoil] = entry.foil.ID
+		}
+		// Beside the flags, each printing under its own name: "holofoil"
+		sold := slices.DeleteFunc([]*DatastoreCard{entry.normal, entry.foil}, func(c *DatastoreCard) bool {
+			return c == nil
+		})
+		for _, printing := range sold {
+			foilUUIDs[mtgmatcher.FinishSlug(printing.Finish)] = printing.ID
 		}
 
 		convertedCard := mtgmatcher.Card{
@@ -309,15 +314,16 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
-		for _, finish := range finishes {
+		for _, printing := range sold {
+			finish := mtgmatcher.FinishSlug(printing.Finish)
 			co := mtgmatcher.CardObject{
 				Card:    convertedCard,
 				Edition: b.Sets[card.SetCode].Name,
-				Foil:    finish == mtgmatcher.FinishFoil,
+				Foil:    mtgmatcher.IsFoilFinish(finish),
 			}
 			// co is fresh on every iteration, so the stored pointer is not
 			// aliased by the other finish.
-			co.UUID = foilUUIDs[finish]
+			co.UUID = printing.ID
 			co.Finish = finish
 			b.UUIDs[co.UUID] = &co
 			b.AllUUIDs = append(b.AllUUIDs, co.UUID)

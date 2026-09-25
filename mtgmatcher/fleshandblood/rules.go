@@ -734,29 +734,9 @@ func aliasEdition(edition string) (string, string) {
 	return edition, ""
 }
 
-// CanonicalFinish owns Flesh and Blood's finish vocabulary, which is the
-// print run crossed with the treatment, as the catalog prices them ("Cold
-// Foil", "1st Edition Rainbow Foil"). The combinations are data rather than
-// a fixed list - a new treatment arrives with a set - so a name is
-// normalized and handed back, and the lookup against the printing's own
-// combinations is what decides. Nothing is special-cased: the game's own
-// names normalize to themselves, and the shared names normalize onto the
-// flag slots they already mean, so a source with a bare foilness reaches
-// the same printing the flag would. The bare treatments stay finishes of
-// their own rather than folding into the shared pair - a product sold in
-// both a bare and a 1st Edition Normal keeps them apart - and a printing
-// missing the bare one registers the alias that reaches its own.
-func (Rules) CanonicalFinish(name string) string {
-	return canonicalFinish(name)
-}
-
 // PlainNumber implements mtgmatcher.GameRules. A number carries its set code and pads the ordinal behind it, where a person writes the ordinal alone: 1HP085 is card 85.
 func (Rules) PlainNumber(number string) string {
 	return mtgmatcher.PlainOrdinal(number)
-}
-
-func canonicalFinish(name string) string {
-	return mtgmatcher.NormalizeFinish(name)
 }
 
 // FilterCards narrows candidates by edition, collector number and variant.
@@ -1137,8 +1117,8 @@ func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
 		editions = []string{editionBare, editionUnlimited, edition1st}
 	}
 	for _, prefix := range editions {
-		if _, found := card.FoilUUIDs[prefix+treatment]; found {
-			return prefix + treatment
+		if key := mtgmatcher.FinishSlug(prefix + treatment); card.FoilUUIDs[key] != "" {
+			return key
 		}
 	}
 	return ""

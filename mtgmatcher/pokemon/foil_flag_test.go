@@ -2,6 +2,8 @@ package pokemon
 
 import (
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestFoilFlagAgreesWithFinish pins that the flag and the finish name say the
@@ -22,7 +24,7 @@ func TestFoilFlagAgreesWithFinish(t *testing.T) {
 		if co.Foil {
 			foil++
 		}
-		if co.Foil != isFoilFinish(co.Finish) {
+		if co.Foil != mtgmatcher.IsFoilFinish(co.Finish) {
 			if disagree < 5 {
 				t.Errorf("%s is %q with Foil=%v", uuid, co.Finish, co.Foil)
 			}

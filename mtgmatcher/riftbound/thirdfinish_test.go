@@ -39,7 +39,7 @@ const thirdFinishFixture = `{"data": {
 	}]}}
 }}`
 
-// TestThirdFinish pins the loader half of CanonicalFinish placing a finish
+// TestThirdFinish pins the loader half of FinishSlug placing a finish
 // it was not taught: a printing sold in a treatment alone is a foil to the
 // flag, its product id reaches it, and a card sold plain and foil is one
 // candidate to Match however its uuids are spelled.

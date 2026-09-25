@@ -1033,30 +1033,9 @@ func namedSet(b *mtgmatcher.Backend, edition string) (string, bool) {
 	return "", false
 }
 
-// CanonicalFinish owns Yu-Gi-Oh's finish vocabulary, which is the print runs
-// the catalog prices and nothing else. The runs are data rather than a fixed
-// list - the datastore is the TCGplayer category, which is free to name a
-// fourth - so a name is normalized and handed back, and the lookup against
-// the printing's own runs is what decides. The shared names are the one
-// refusal: the rarity is Yu-Gi-Oh's treatment and no product is sold as a
-// foil, so nonfoil and foil name the flag slots the loader points at the
-// default run rather than a finish anybody sells, and placing one would
-// answer a bare foil flag with a print run it never asked for.
-func (Rules) CanonicalFinish(name string) string {
-	return canonicalFinish(name)
-}
-
 // PlainNumber implements mtgmatcher.GameRules. A number carries its set code, then the language its print run was published in, then a padded ordinal, where a person writes the ordinal alone: LOB-EN001 is card 1.
 func (Rules) PlainNumber(number string) string {
 	return mtgmatcher.PlainOrdinal(number)
-}
-
-func canonicalFinish(name string) string {
-	normalized := mtgmatcher.NormalizeFinish(name)
-	if mtgmatcher.CanonicalFinish(normalized) != "" {
-		return ""
-	}
-	return normalized
 }
 
 // FilterCards narrows candidates by edition, collector number, rarity and

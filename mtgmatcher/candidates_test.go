@@ -17,7 +17,6 @@ func (candidateTestRules) Prefilter(*Backend, *InputCard)                 {}
 func (candidateTestRules) AdjustName(*Backend, *InputCard)                {}
 func (candidateTestRules) AdjustEdition(*Backend, *InputCard)             {}
 func (candidateTestRules) AliasEdition(_ *Backend, edition string) string { return edition }
-func (candidateTestRules) CanonicalFinish(name string) string             { return CanonicalFinish(name) }
 func (candidateTestRules) PlainNumber(number string) string               { return number }
 func (r candidateTestRules) CandidateSets(b *Backend, in *InputCard, editions []string) []string {
 	if r.codes != nil {

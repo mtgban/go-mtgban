@@ -415,26 +415,6 @@ func endsInPromo(edition string) bool {
 		strings.HasSuffix(lower, "promotional cards")
 }
 
-// CanonicalFinish names the one finish this game has of its own. The catalog
-// calls a stamped printing "Holofoil", which is this game's standard foil
-// and its only one, so it and the vendor spellings of it reach FinishFoil.
-//
-// The vocabulary is open past that. TCGplayer adds a printing to a category
-// when it likes and the builder carries it under its own name rather than
-// dropping it, so a name neither vocabulary places is normalized and handed
-// back - it reaches a uuid only if the printing's own finishes hold one, and
-// a list kept here would refuse a real priced printing the day one arrives.
-func (Rules) CanonicalFinish(name string) string {
-	switch mtgmatcher.NormalizeFinish(name) {
-	case "holofoil", "holo", "holographic":
-		return mtgmatcher.FinishFoil
-	}
-	if finish := mtgmatcher.CanonicalFinish(name); finish != "" {
-		return finish
-	}
-	return mtgmatcher.NormalizeFinish(name)
-}
-
 // PlainNumber implements mtgmatcher.GameRules. A number carries its set code and pads the ordinal behind it, where a person writes the ordinal alone: GD01-001 is card 1.
 func (Rules) PlainNumber(number string) string {
 	return mtgmatcher.PlainOrdinal(number)

@@ -86,37 +86,6 @@ func TestFinishIdentity(t *testing.T) {
 	}
 }
 
-// TestFinishVocabulary pins the names the game places, both axes and their
-// crossings, plus the abbreviations storefronts write them with. A name the
-// game cannot place has to stay unplaced rather than borrow another
-// finish's uuid.
-func TestFinishVocabulary(t *testing.T) {
-	for _, tt := range []struct {
-		name string
-		want string
-	}{
-		{"Normal", mtgmatcher.FinishNonfoil},
-		{"Holofoil", finishHolofoil},
-		{"holo", finishHolofoil},
-		{"Reverse Holofoil", finishReverseHolofoil},
-		{"Reverse Holo", finishReverseHolofoil},
-		{"1st Edition", finish1stEdition},
-		{"1st Edition Holofoil", finish1stEditionHolo},
-		{"Unlimited", finishUnlimited},
-		{"Unlimited Holofoil", finishUnlimitedHolo},
-		// Printings other games sell, named rather than refused: the
-		// vocabulary is open so one TCGplayer adds to this category
-		// reaches a uuid without a release. Naming is not selling -
-		// MatchIDFinish refuses a finish this datastore does not carry.
-		{"Cold Foil", "coldfoil"},
-		{"Rainbow Pillars", "rainbowpillars"},
-	} {
-		if got := canonicalFinish(tt.name); got != tt.want {
-			t.Errorf("canonicalFinish(%q) = %q, want %q", tt.name, got, tt.want)
-		}
-	}
-}
-
 // TestPromoFlag pins what "is:promo" answers with. Two things say a set is
 // promotional and they cover different ground: TCGplayer names most of them,
 // and the league, championship and blister groups hand their cards out
@@ -194,16 +163,16 @@ func TestFinishSelection(t *testing.T) {
 	b := loadBackend(t)
 
 	for _, tt := range []struct {
-		desc      string
-		in        mtgmatcher.InputCard
-		wantSuffx string
+		desc string
+		in   mtgmatcher.InputCard
+		want string
 	}{
 		{"bare number keeps the default", mtgmatcher.InputCard{
-			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102"}, "_unlholo"},
+			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102"}, "unlimitedholofoil"},
 		{"the finish field names the crossing", mtgmatcher.InputCard{
-			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102", Finish: "1st Edition Holofoil"}, "_1eholo"},
+			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102", Finish: "1st Edition Holofoil"}, "1steditionholofoil"},
 		{"the wording names the run alone", mtgmatcher.InputCard{
-			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102 1st Edition"}, "_1eholo"},
+			Name: "Alakazam", Edition: "Base Set (Shadowless)", Variation: "001/102 1st Edition"}, "1steditionholofoil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in := tt.in
@@ -215,27 +184,11 @@ func TestFinishSelection(t *testing.T) {
 			if !found {
 				t.Fatalf("Match returned unknown uuid %s", id)
 			}
-			if want := canonicalFinish(finishForSuffix(tt.wantSuffx)); co.Finish != want {
-				t.Errorf("Match(%v) = %s (finish %q), want finish %q", tt.in, id, co.Finish, want)
+			if co.Finish != tt.want {
+				t.Errorf("Match(%v) = %s (finish %q), want finish %q", tt.in, id, co.Finish, tt.want)
 			}
 		})
 	}
-}
-
-// finishForSuffix names the printing an id suffix stands for, so the table
-// above can read the way the builder's ids do.
-func finishForSuffix(suffix string) string {
-	switch suffix {
-	case "_holo":
-		return "Holofoil"
-	case "_1eholo":
-		return "1st Edition Holofoil"
-	case "_unlholo":
-		return "Unlimited Holofoil"
-	case "_reverse":
-		return "Reverse Holofoil"
-	}
-	return "Normal"
 }
 
 // Known spellings need not all occur in every datastore snapshot. Validate

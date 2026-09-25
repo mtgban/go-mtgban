@@ -206,33 +206,23 @@ type Card struct {
 	SetTotal string
 
 	// FoilUUIDs holds one entry per finish the printing is sold in, mapping
-	// it to the uuid that carries it: every finish has a uuid of its own and
-	// no uuid answers for two. The three shared finishes are keyed by their
-	// constant, since output() resolves the caller's flags to one of them
-	// and pulls the uuid from here (the standard foil stays under
-	// FinishFoil whatever the printing calls it); a finish past them -
-	// Lorcana's "rainbowpillars" - is keyed by the game's canonical name
-	// for it, the same name CardObject.Finish carries. Loaders populate it; a Card
-	// without it falls back to the suffix rules.
+	// it to the uuid that carries it, keyed by the name CardObject.Finish
+	// carries: FinishSlug of TCGplayer's name for a datastore game, and
+	// mtgjson's for Magic. Beside them, FinishNonfoil and FinishFoil are the
+	// printings a caller's bare flags answer with, where the printing is not
+	// sold under those names itself - Gundam's foil is its Holofoil - since
+	// output() resolves the flags to one of them and pulls the uuid from
+	// here. Loaders populate it; a Card without it falls back to the suffix
+	// rules.
 	FoilUUIDs map[string]string
 
-	// FinishAliases maps a finish name onto the FoilUUIDs key answering for
-	// it on this printing, for the names whose meaning is the printing's own
-	// business rather than the game's: Lorcana keys a printing's standard
-	// foil under FinishFoil whatever its foil type is called, so the loader
-	// registers that type's own name here, along with the name TCGplayer
-	// prices the printing's special treatment under. Aliases are spellings,
-	// never finishes - they add no uuid and hide none.
-	FinishAliases map[string]string
-
-	// Finish is the canonical name of the finish this specific entry
-	// carries, as the game's rules spell it (GameRules.CanonicalFinish):
-	// FinishNonfoil, FinishFoil and FinishEtched where the game has no name
-	// of its own, and the game's own name where it has one - Lorcana's
-	// "silver" or "rainbowpillars". It is set per stored uuid, not on the
-	// set-level card, which represents every finish, and it is what makes
-	// two entries the Foil flag cannot tell apart distinguishable. Sealed
-	// entries carry no finish.
+	// Finish is the name of the finish this specific entry carries, spelled
+	// by FinishSlug: of the name TCGplayer prices it under for a datastore
+	// game - "coldfoil",
+	// "1steditionholofoil" - and FinishNonfoil, FinishFoil and FinishEtched
+	// for Magic. It is set per stored uuid, not on the set-level card, which
+	// represents every finish, and it is what makes two entries the Foil flag
+	// cannot tell apart distinguishable. Sealed entries carry no finish.
 	Finish string
 
 	// A list of URLs containing the image of the card

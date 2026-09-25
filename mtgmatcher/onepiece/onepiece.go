@@ -271,7 +271,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 		// The catalog's own spelling of the finish goes through the game's
 		// vocabulary rather than being compared as written
-		if (Rules{}).CanonicalFinish(card.Finish) == mtgmatcher.FinishFoil {
+		if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(card.Finish)) {
 			entry.foil = card
 		} else {
 			entry.normal = card

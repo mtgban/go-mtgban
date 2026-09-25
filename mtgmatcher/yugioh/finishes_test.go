@@ -1,7 +1,6 @@
 package yugioh
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -69,15 +68,16 @@ func TestPrintRunUUIDs(t *testing.T) {
 				}
 			}
 
-			if len(card.FinishAliases) > 0 {
-				t.Errorf("%s: the runs are spelled as the datastore carries them, got aliases %v",
-					card.UUID, card.FinishAliases)
-			}
-			for _, name := range []string{"Nonfoil", "Foil", "Normal"} {
-				got, err := b.MatchIDFinish(card.UUID, name)
-				if !errors.Is(err, mtgmatcher.ErrCardUnnamedFinish) {
-					t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want the shared name refused",
-						card.UUID, name, got, err)
+			// The shared names name no run and answer as the flags do
+			for _, shared := range [][2]string{
+				{"Nonfoil", mtgmatcher.FinishNonfoil},
+				{"Normal", mtgmatcher.FinishNonfoil},
+				{"Foil", mtgmatcher.FinishFoil},
+			} {
+				got, err := b.MatchIDFinish(card.UUID, shared[0])
+				if want := card.FoilUUIDs[shared[1]]; err != nil || got != want {
+					t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want the %s slot's %q",
+						card.UUID, shared[0], got, err, shared[1], want)
 				}
 			}
 		}
@@ -97,29 +97,4 @@ func TestPrintRunUUIDs(t *testing.T) {
 		t.Fatalf("datastore carries no print runs: %d printings, %d runs", printings, runs)
 	}
 	t.Logf("%d printings, %d print runs, %d orphaned entries", printings, runs, orphans)
-}
-
-// TestCanonicalFinish pins the vocabulary the loader keys FoilUUIDs with:
-// the print runs pass through normalized, and the names every game shares
-// are refused rather than placed.
-func TestCanonicalFinish(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"1st Edition", finish1stEdition},
-		{"1stEdition", finish1stEdition},
-		{"Unlimited", finishUnlimited},
-		{"Limited", finishLimited},
-		{"Nonfoil", ""},
-		{"Foil", ""},
-		{"foil", ""},
-		{"Normal", ""},
-		{"", ""},
-	}
-	for _, test := range tests {
-		if got := (Rules{}).CanonicalFinish(test.name); got != test.want {
-			t.Errorf("CanonicalFinish(%q) = %q, want %q", test.name, got, test.want)
-		}
-	}
 }

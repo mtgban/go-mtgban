@@ -138,21 +138,20 @@ func (b *Backend) cardObject4Id(inputID string) (*CardObject, error) {
 
 // FinishUUID resolves a finish name, spelled the way any source spells it, to
 // the uuid of the printing's sibling sold in it, and "" when the printing is
-// not sold in it at all. The name goes through the game's vocabulary
-// (GameRules.CanonicalFinish) and then through the printing's own aliases, so
-// a vendor's spelling reaches the same uuid its canonical name does.
+// not sold in it at all. The name is read through FinishSlug, and a finish
+// the printing is sold in under another print run answers for it (otherRun).
 func (b *Backend) FinishUUID(card *Card, finish string) string {
 	if b.rules == nil {
 		return ""
 	}
-	canonical := b.rules.CanonicalFinish(finish)
+	canonical := FinishSlug(finish)
 	if canonical == "" {
 		return ""
 	}
-	if alias, found := card.FinishAliases[canonical]; found {
-		canonical = alias
+	if uuid, found := card.FoilUUIDs[canonical]; found {
+		return uuid
 	}
-	return card.FoilUUIDs[canonical]
+	return b.otherRun(card, canonical)
 }
 
 // MatchIDFinish answers an id with the uuid of the printing's sibling sold in
@@ -181,13 +180,13 @@ func (b *Backend) MatchIDFinish(inputID, finish string) (string, error) {
 	if b.rules == nil {
 		return "", ErrDatastoreEmpty
 	}
-	if b.rules.CanonicalFinish(finish) == "" {
+	if FinishSlug(finish) == "" {
 		b.Logf("Finish %q is not one this game names", finish)
 		return "", ErrCardUnnamedFinish
 	}
 	outID := b.FinishUUID(&co.Card, finish)
 	if outID == "" {
-		canonical := b.rules.CanonicalFinish(finish)
+		canonical := FinishSlug(finish)
 		if !b.knownFinishes[canonical] {
 			b.Logf("Finish %q is not one this datastore sells", finish)
 			return "", ErrCardUnnamedFinish

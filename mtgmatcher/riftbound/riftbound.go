@@ -426,16 +426,14 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		// Store a CardObject per finish uuid, over the finishes the printing
 		// is actually sold in rather than both: a card sold in one finish
 		// has no uuid for the other, and reaching for it would file a
-		// CardObject under the empty string. Every finish but the plain one
-		// is a foil to the flag, the way Lorcana reads its treatments:
-		// CanonicalFinish places a printing TCGplayer adds later, and one
-		// sold in a treatment alone is not sold plain.
+		// CardObject under the empty string. The finish table says which
+		// ones a storefront's foil flag means.
 		for _, finish := range convertedCard.Finishes {
 			s := struct {
 				uuid string
 				foil bool
 				name string
-			}{convertedCard.FoilUUIDs[finish], finish != mtgmatcher.FinishNonfoil, finish}
+			}{convertedCard.FoilUUIDs[finish], mtgmatcher.IsFoilFinish(finish), finish}
 			if _, found := b.UUIDs[s.uuid]; found {
 				continue
 			}
@@ -524,7 +522,7 @@ func printingUUID(card GalleryCard, finish string) string {
 	// Keyed by the datastore's own spelling, which is TCGplayer's, so the
 	// key is placed the same way the finish it answers for was.
 	for _, printing := range card.Printings {
-		if printing.ID != "" && (Rules{}).CanonicalFinish(printing.Finish) == finish {
+		if printing.ID != "" && mtgmatcher.FinishSlug(printing.Finish) == finish {
 			return printing.ID
 		}
 	}
@@ -532,7 +530,7 @@ func printingUUID(card GalleryCard, finish string) string {
 }
 
 // cardFinishes returns the finishes a printing is sold in, placed through
-// CanonicalFinish from the TCGplayer names its printings carry - which also
+// FinishSlug from the TCGplayer names its printings carry - which also
 // places a printing TCGplayer adds later without being taught it first. Most
 // of the game is sold in one finish only, promotional printings being foil
 // and starter cards plain. A printing published without a uuid has none to
@@ -540,7 +538,7 @@ func printingUUID(card GalleryCard, finish string) string {
 func cardFinishes(card GalleryCard) []string {
 	var out []string
 	for _, printing := range card.Printings {
-		finish := (Rules{}).CanonicalFinish(printing.Finish)
+		finish := mtgmatcher.FinishSlug(printing.Finish)
 		if printing.ID == "" || finish == "" || slices.Contains(out, finish) {
 			continue
 		}
