@@ -550,6 +550,19 @@ func namesSourceSet(variation, setName string) bool {
 	return found && pre == v
 }
 
+// namesOtherListSet reports whether the listing names, by its code, the set
+// of another List printing of the card.
+func namesOtherListSet(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+	fields := strings.Fields(inCard.Variation)
+	for _, other := range b.MatchInSet(inCard.Name, "PLST") {
+		code, _, found := strings.Cut(other.Number, "-")
+		if found && other.Number != card.Number && slices.Contains(fields, code) {
+			return true
+		}
+	}
+	return false
+}
+
 func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	var setName string
 
@@ -625,8 +638,10 @@ func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 			listNumbers := strings.Split(number, "-")
 			cardNumber := cardNumbers[len(cardNumbers)-1]
 			listNumber := listNumbers[len(listNumbers)-1]
-			// All promos have the same number, so trust the filtering above
-			if cardNumber == listNumber && !strings.HasSuffix(setName, "Promos") {
+			// All promos have the same number, so trust the filtering above,
+			// unless the listing names the other List printing sharing it
+			if cardNumber == listNumber && !strings.HasSuffix(setName, "Promos") &&
+				!namesOtherListSet(b, inCard, card) {
 				return false
 			}
 
