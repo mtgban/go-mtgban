@@ -28,7 +28,7 @@ func TestIsUnsupportedShadowsDefault(t *testing.T) {
 		{`Enchanted ""Discard"" Card`, true},
 		{"Discarded Armor", false},
 	} {
-		got := Rules{}.IsUnsupported(nil, &mtgmatcher.InputCard{Name: tt.name})
+		got := Rules{}.IsUnsupported(nil, &mtgmatcher.InputCard{Name: tt.name}, nil, mtgmatcher.StageWording)
 		if got != tt.want {
 			t.Errorf("IsUnsupported(%q) = %v, want %v", tt.name, got, tt.want)
 		}

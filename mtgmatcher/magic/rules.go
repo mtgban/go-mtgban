@@ -13,15 +13,25 @@ import (
 // candidate edition selection and the World Championship ambiguity policy.
 type Rules struct{}
 
-// IsUnsupported reports the listings Magic has no printing for. See
-// mtgmatcher.GameRules.
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return isUnsupported(inCard)
+// IsUnsupported reports the listings Magic has no printing for: a class of
+// product by its wording, a card unsupported in one edition once that
+// edition is known, and a promo the resolved printing does not carry yet.
+// See mtgmatcher.GameRules.
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject, stage mtgmatcher.Stage) bool {
+	switch stage {
+	case mtgmatcher.StageWording:
+		return isUnsupported(inCard)
+	case mtgmatcher.StageEdition:
+		return unsupportedInEdition(b, inCard)
+	case mtgmatcher.StageAnswer:
+		return missingPromoTag(b, inCard, co)
+	}
+	return false
 }
 
-// IsSpecificUnsupported reports the named cards unsupported in one edition
-// rather than as a class. See mtgmatcher.GameRules.
-func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+// unsupportedInEdition reports the named cards unsupported in one edition
+// rather than as a class.
+func unsupportedInEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 	// A word saying token in an edition or a variation used to name a custom
 	// set that had leaked this far, because no token was carried and nothing
 	// spelling one could match. It lived in the core switch and answered for
@@ -1777,10 +1787,10 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	return
 }
 
-// MissingPromoTag names the promo types that take the longest to appear
+// missingPromoTag names the promo types that take the longest to appear
 // upstream. An input tagged with one is unsupported until the resolved card
 // carries the tag too.
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
+func missingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
 	return (inCard.IsPrerelease() && !co.HasPromoType(PromoTypePrerelease)) ||
 		(b.IsPromoPack(inCard) && !co.HasPromoType(PromoTypePromoPack)) ||
 		(isSerialized(inCard) && !co.HasPromoType(PromoTypeSerialized))

@@ -1,5 +1,20 @@
 package mtgmatcher
 
+// Stage names the point of Match at which GameRules.IsUnsupported is asked.
+type Stage int
+
+const (
+	// StageWording is before the name lookup: the storefront's own name,
+	// edition and variation, once Prefilter has run.
+	StageWording Stage = iota
+	// StageEdition is after AdjustEdition: the canonical name and the
+	// edition the game resolved.
+	StageEdition
+	// StageAnswer is the one printing resolved, by id or by wording. A
+	// listing claiming a promo the printing does not carry is refused here.
+	StageAnswer
+)
+
 // GameRules abstracts the game-specific steps of the Match pipeline so that a
 // datastore loaded for a non-Magic game can supply its own card-identification
 // logic. Magic implements these hooks in the mtgmatcher/magic sub-package and
@@ -45,17 +60,12 @@ type GameRules interface {
 	// producing deterministic output ordering when more than one candidate
 	// survives, since the result feeds user-visible aliasing diagnostics.
 	FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card
-	// IsUnsupported reports whether the input card belongs to an unsupported
-	// set, checked before name resolution.
-	IsUnsupported(b *Backend, inCard *InputCard) bool
-	// IsSpecificUnsupported reports whether the input card is a specific
-	// unsupported card, checked after edition resolution.
-	IsSpecificUnsupported(b *Backend, inCard *InputCard) bool
-	// MissingPromoTag reports whether the input claims a promo treatment the
-	// resolved card does not carry; a claimed-but-absent tag means the card
-	// is unsupported rather than mismatched. Games without tagged promos
-	// return false.
-	MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
+	// IsUnsupported reports whether the input names something the game has
+	// no printing for, which Match answers with ErrUnsupported so a caller
+	// skips it in silence. It is asked at every Stage, since each sees
+	// different text; co is the resolved printing at StageAnswer and nil
+	// before it.
+	IsUnsupported(b *Backend, inCard *InputCard, co *CardObject, stage Stage) bool
 	// IsToken reports whether a name is one this game knows as a token
 	// without its carrying a token type of its own - the rules tips, the
 	// checklists, the storefront spellings that only ever name a token. The

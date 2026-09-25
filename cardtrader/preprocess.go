@@ -250,7 +250,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		idEdition, idVariation := edition, bp.Version
 
 		// Override the shelf wording once the id names a real promo, so
-		// MissingPromoTag's re-check below doesn't veto it.
+		// Match's promo-tag check on the answer doesn't veto it.
 		co, err := b.GetUUID(id)
 		if err == nil && len(co.PromoTypes) > 0 {
 			probe := mtgmatcher.InputCard{Edition: idEdition, Variation: idVariation}

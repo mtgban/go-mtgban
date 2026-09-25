@@ -1157,7 +1157,7 @@ func printingOversized(b *mtgmatcher.Backend, name string, numbers, named, editi
 // cards on its miscellaneous shelf, which a storefront writing the card's own
 // set never reaches: "Greninja ex / Twilight Masquerade / 106 Metal Card"
 // answered with the ordinary 106. With no metal printing to hold to, the
-// editions stand, and MissingPromoTag refuses the plain card they answer with.
+// editions stand, and IsUnsupported refuses the plain card they answer with.
 func printingMetal(b *mtgmatcher.Backend, name string, numbers, editions []string) []string {
 	var held []string
 	for _, code := range editions {
@@ -1212,11 +1212,11 @@ func metalCandidates(b *mtgmatcher.Backend, numbers []string, cardSet map[string
 	return metal
 }
 
-// MissingPromoTag refuses a listing naming a metal card that answered with a
+// IsUnsupported refuses a listing naming a metal card that answered with a
 // printing that is not one: that metal card is not carried, and the plain
 // card is not what the listing sells. See mtgmatcher.GameRules.
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
-	return mtgmatcher.SlugDescribes(inCard.Variation, "metalcard") && !co.HasPromoType("metalcard")
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject, stage mtgmatcher.Stage) bool {
+	return stage == mtgmatcher.StageAnswer && mtgmatcher.SlugDescribes(inCard.Variation, "metalcard") && !co.HasPromoType("metalcard")
 }
 
 // jumboSetCode is the set the Jumbo Cards oversized reprints are filed
