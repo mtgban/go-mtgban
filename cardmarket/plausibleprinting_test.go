@@ -30,6 +30,8 @@ func TestPlausiblePrintingDefersOnImplausibleWCD(t *testing.T) {
 		{"a Pro Tour 1996 product whose only candidate is a Brothers' War printing", "Pro Tour 1996: Mark Justice", "a1a10730-b01e-5b6f-a9a4-1ae999729ef4", false},
 		{"a Pro Tour 1996 product whose candidate is its own PTC printing", "Pro Tour 1996: Mark Justice", "693c127a-d748-5fc8-9b6e-94c3448a7ac3", true},
 		{"an Oversized product whose only candidate is an ordinary-sized printing", "Oversized 6x9 Promos", "bf14fe40-3e5c-5790-bb75-4c8221c04883", false},
+		{"a Foreign Black Bordered product whose only candidate is Final Fantasy's Plains", "Foreign Black Bordered", "920b17b6-beb9-510d-982a-01941cd2420d", false},
+		{"a Foreign Black Bordered product whose candidate is its own FBB printing", "Foreign Black Bordered", "046f7759-47f4-5a8a-9627-ccb953da9394", true},
 		{"an expansion neither guard constrains", "Judge Rewards Promos", "bf14fe40-3e5c-5790-bb75-4c8221c04883", true},
 		{"a Portal product whose candidate is the Simplified Chinese alternate art", "Portal", "e019addd-eaf5-5aa7-865c-3c2c9a76f6e3", false},
 		{"the alternate art's own shelf", "Simplified Chinese Alternate Art Cards", "e019addd-eaf5-5aa7-865c-3c2c9a76f6e3", true},
