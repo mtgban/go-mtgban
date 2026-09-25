@@ -827,7 +827,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		case describesHolo(inCard.Variation) && !mtgmatcher.SlugDescribes(inCard.Variation, "cosmosholo"):
 			var holo []mtgmatcher.Card
 			for _, card := range candidates {
-				if len(card.Finishes) < 2 || card.FoilUUIDs[finishHolofoil] != "" {
+				if len(card.Finishes) < 2 || mtgmatcher.NamedFinish(card.FoilUUIDs, "", "Holofoil") != "" {
 					holo = append(holo, card)
 				}
 			}
@@ -894,19 +894,15 @@ func wearsAny(candidates []mtgmatcher.Card, labels []string) bool {
 }
 
 // wearsCosmosOrHolo reports whether the printing can be the Cosmos Holo a
-// wording names: it wears a cosmos label, or it sells some holo entry.
+// wording names: it wears a cosmos label, or it is sold in a foil, every one
+// of which the game prints is a holo.
 func wearsCosmosOrHolo(card *mtgmatcher.Card) bool {
 	for _, promoType := range card.PromoTypes {
 		if strings.Contains(promoType, "cosmos") {
 			return true
 		}
 	}
-	for key := range card.FoilUUIDs {
-		if strings.Contains(key, "holo") {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(card.Finishes, mtgmatcher.FinishFoil)
 }
 
 // demandsStamp reports whether the wording names a stamped or misprinted
@@ -1789,8 +1785,8 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // Holo", "1st Edition") resolves to that entry instead of the default one.
 //
 // The wording names axes rather than a printing: it can say a run, a
-// treatment, or both, and the printing that answers is the stored one naming
-// everything the wording asked for and the least beside it. That is what
+// treatment, or both, and the printing that answers is the plainest one sold
+// in everything the wording asked for (mtgmatcher.NamedFinish). That is what
 // lets "1st Edition" reach the 1st Edition Holofoil on a card sold in no
 // other first-edition printing, while still preferring the plain 1st Edition
 // on a card that has one.
@@ -1801,44 +1797,23 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
 	words := strings.Fields(strings.ToLower(inCard.Variation))
 
-	var wanted []string
-	if hasAllTokens(words, []string{"reverse"}) {
-		wanted = append(wanted, "reverse")
-	}
+	var run, treatment string
 	if hasAllTokens(words, []string{"1st"}) || hasAllTokens(words, []string{"first"}) {
-		wanted = append(wanted, finish1stEdition)
+		run = mtgmatcher.Run1stEdition
 	}
 	if hasAllTokens(words, []string{"unlimited"}) {
-		wanted = append(wanted, finishUnlimited)
+		run = mtgmatcher.RunUnlimited
 	}
 	if hasAllTokens(words, []string{"holo"}) {
-		wanted = append(wanted, finishHolofoil)
+		treatment = "Holofoil"
 	}
-	if len(wanted) == 0 {
+	if hasAllTokens(words, []string{"reverse"}) {
+		treatment = "Reverse Holofoil"
+	}
+	if run == "" && treatment == "" {
 		return ""
 	}
-
-	best := ""
-	for key := range card.FoilUUIDs {
-		// The shared slots are the defaults this is trying to move off.
-		if key == mtgmatcher.FinishNonfoil || key == mtgmatcher.FinishFoil {
-			continue
-		}
-		named := true
-		for _, axis := range wanted {
-			if !strings.Contains(key, axis) {
-				named = false
-				break
-			}
-		}
-		if !named {
-			continue
-		}
-		if best == "" || len(key) < len(best) {
-			best = key
-		}
-	}
-	return best
+	return mtgmatcher.NamedFinish(card.FoilUUIDs, run, treatment)
 }
 
 // hasAllTokens reports whether every token is carried by some word of the

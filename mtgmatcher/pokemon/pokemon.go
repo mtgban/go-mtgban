@@ -36,14 +36,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// The finish names a listing's own wording picks a printing by (selectFinish),
-// each one axis of the crossings TCGplayer prices.
-const (
-	finishHolofoil   = "holofoil"
-	finish1stEdition = "1stedition"
-	finishUnlimited  = "unlimited"
-)
-
 // setTypePromo is what the builder types a set that hands its cards out.
 const setTypePromo = "promo"
 

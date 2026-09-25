@@ -29,18 +29,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// The two axes a finish name is built from, as the game's rules spell them:
-// a print run - the bare one carries no name at all - and a treatment.
-const (
-	editionBare      = ""
-	edition1st       = "1stedition"
-	editionUnlimited = "unlimitededition"
-
-	treatmentNormal      = "normal"
-	treatmentRainbowFoil = "rainbowfoil"
-	treatmentColdFoil    = "coldfoil"
-)
-
 // Datastore is the cmd/fleshandblood output: sets keyed by code, one card
 // entry per priced printing, and the sealed products.
 type Datastore struct {
@@ -251,8 +239,8 @@ func describingPromoTypes(card *DatastoreCard) []string {
 // catalog names a Cold Foil promo "... (Cold Foil)" and prices it as a Cold
 // Foil, and a 1st Edition rainbow arrives labelled "Rainbow" - since as a
 // tag they describe nothing the printing does not already spell. The label
-// is weighed against the finish's own slugs with the trailing "Foil" and
-// "Edition" optional rather than by containment, so the one-letter labels an
+// is weighed against the finish's run and treatment, as Finishes spells them,
+// with the trailing "Foil" and "Edition" optional rather than by containment, so the one-letter labels an
 // art variant carries ("C" beside a Cold Foil) are not read as an
 // abbreviation of one. The card keeps the label either way: FilterCards
 // tiers the candidates by it, and only the declaration is filtered.
@@ -264,20 +252,19 @@ func describingVariant(variant, finish, number string) string {
 	if label == "" {
 		return ""
 	}
-	sold := mtgmatcher.NormalizeFinish(finish)
-	for _, slug := range []string{
-		edition1st, editionUnlimited,
-		treatmentNormal, treatmentRainbowFoil, treatmentColdFoil,
-	} {
-		if !strings.Contains(sold, slug) {
-			continue
-		}
-		bare := strings.TrimSuffix(strings.TrimSuffix(slug, "foil"), "edition")
-		if label == slug || label == bare {
+	sold, _ := mtgmatcher.FinishOf(mtgmatcher.FinishSlug(finish))
+	for _, axis := range []string{sold.Run, mtgmatcher.TCGplayerFinish(sold.Treatment)} {
+		if axis != "" && bareAxis(label) == bareAxis(mtgmatcher.NormalizeFinish(axis)) {
 			return ""
 		}
 	}
 	return variant
+}
+
+// bareAxis spells a print run or a treatment without the word a label may
+// leave off it: "1st" for 1st Edition, "cold" for Cold Foil.
+func bareAxis(name string) string {
+	return strings.TrimSuffix(strings.TrimSuffix(name, "foil"), "edition")
 }
 
 // qualifiedName spells a printing the way TCGplayer names the product, the

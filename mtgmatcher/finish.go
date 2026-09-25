@@ -118,6 +118,18 @@ func DefaultPrinting[T any](printings map[string]T, foil bool) (T, bool) {
 	return printing, found && finish != ""
 }
 
+// NamedFinish is the finish, of a product's printings keyed by finish, that a
+// listing asks for by naming its print run, its treatment or both, each as
+// TCGplayer spells it ("1st Edition", "Cold Foil"): the plainest sold in every
+// axis named, "" where none is. A finish the table has no row for names none.
+func NamedFinish[T any](printings map[string]T, run, treatment string) string {
+	return plainest(printings, func(slug string) bool {
+		finish, found := finishesBySlug[slug]
+		return found && (run == "" || finish.Run == run) &&
+			(treatment == "" || finish.Treatment == FinishSlug(treatment))
+	})
+}
+
 // plainest is the finish of the printings that keep accepts which Finishes
 // ranks first: the treatment it lists first, in its plainest run - none, then
 // Unlimited, 1st Edition, Limited. A finish the table has no row for comes

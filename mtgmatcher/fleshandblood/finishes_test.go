@@ -92,3 +92,27 @@ func TestPrintingUUIDs(t *testing.T) {
 	}
 	t.Logf("%d products, %d printings, %d orphaned entries", products, printings, orphans)
 }
+
+// TestDescribingVariant pins which labels restate the finish a printing is
+// sold in, run or treatment, with "Edition" and "Foil" optional, and that a
+// label merely sharing a letter with one is kept.
+func TestDescribingVariant(t *testing.T) {
+	for _, test := range []struct{ label, finish, want string }{
+		{"Rainbow", "1st Edition Rainbow Foil", ""},
+		{"Cold Foil", "Cold Foil", ""},
+		{"Normal", "Normal", ""},
+		{"1st Edition", "1st Edition Cold Foil", ""},
+		{"1st", "1st Edition Normal", ""},
+		{"Unlimited Edition", "Unlimited Edition Rainbow Foil", ""},
+		{"Unlimited", "Unlimited Edition Normal", ""},
+		{"C", "Cold Foil", "C"},
+		{"Marvel", "Cold Foil", "Marvel"},
+		{"Rainbow", "Cold Foil", "Rainbow"},
+		{"1st Edition", "Unlimited Edition Normal", "1st Edition"},
+		{"Foil", "Rainbow Foil", "Foil"},
+	} {
+		if got := describingVariant(test.label, test.finish, "WTR001"); got != test.want {
+			t.Errorf("describingVariant(%q, %q) = %q, want %q", test.label, test.finish, got, test.want)
+		}
+	}
+}

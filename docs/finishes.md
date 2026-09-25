@@ -61,6 +61,12 @@ Anything else is refused: a storefront's own spelling ("Reverse Holo",
 a shelf's run and a treatment goes through `PrintingFinish`, which drops the
 run where TCGplayer prices no such printing ("Unlimited Edition Cold Foil").
 
+That is the finish a caller names. A listing naming its printing only in its
+wording ("1st Edition Holo", CardTrader's "Alpha") is read by its game for a
+run and a treatment, each in TCGplayer's words, and `NamedFinish` answers the
+plainest printing sold in both. One treatment never answers for another there
+either: "Holo" does not reach a Reverse Holofoil.
+
 Lorcana's treatments (Satin, Rainbow Pillars) are promo types, not finishes:
 a listing naming one in its wording reaches the printing that carries it,
 and one sending it as the finish falls through to the wording.

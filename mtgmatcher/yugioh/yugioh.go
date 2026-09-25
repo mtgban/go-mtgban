@@ -25,13 +25,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// The print runs the catalog prices, as the game's rules spell them.
-const (
-	finish1stEdition = "1stedition"
-	finishUnlimited  = "unlimited"
-	finishLimited    = "limited"
-)
-
 // Datastore is the builder output: sets keyed by code, one card entry per
 // priced print run, and the sealed products.
 type Datastore struct {
