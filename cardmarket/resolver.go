@@ -463,13 +463,6 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			if idErr == nil {
 				cardID = id
 				cardIDFoil, _ = r.backend.MatchID(cardID, true)
-				// Lorcana files a foil TCGplayer sells apart under the plain
-				// card's row, and a product linked to it sells the foil alone.
-				co, coErr := r.backend.GetUUID(cardID)
-				if r.gameID == cm.GameLorcana && coErr == nil && cardIDFoil != "" &&
-					co.Identifiers["tcgplayerProductId"] != fmt.Sprint(tcgID) {
-					cardID = cardIDFoil
-				}
 				if r.offShelf(product, cardID) || r.notPreErrata(product, cardID) {
 					return "", "", false, errNoPrinting
 				}
