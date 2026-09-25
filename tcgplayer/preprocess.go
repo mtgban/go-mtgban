@@ -54,6 +54,7 @@ var productOverrides = map[int]struct{ Edition, Number string }{
 
 	// A catch-all promo shelf's own Number counts a position on that
 	// shelf, not the printing's collector number
+	589737: {"PURL", "2"},       // Counterspell
 	638515: {"PMEI", "2025-26"}, // Zidane, Tantalus Thief
 	693062: {"PW26", "16"},      // Wood Elves
 	693063: {"PURL", "2026-1"},  // Tom, Bert, and William
