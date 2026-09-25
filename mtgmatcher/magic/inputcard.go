@@ -9,7 +9,7 @@ import (
 
 // The functions here are InputCard vocabulary that magic alone reads,
 // migrating out of the core card type one method at a time - each was an
-// exported method with this file's caller as its only user.
+// exported method that only Magic code called.
 
 // arenaYear returns the year of an Arena league printing, deducing it from the
 // artist or set named in the variation when the listing gives no year.
@@ -82,9 +82,9 @@ func duelDecksVariant(c *mtgmatcher.InputCard) string {
 // worldChampPrefix returns the World Championship deck code for this listing,
 // looking in the variation first and falling back to the edition.
 func worldChampPrefix(c *mtgmatcher.InputCard) (string, bool) {
-	prefix, sideboard := mtgmatcher.ParseWorldChampPrefix(c.Variation)
+	prefix, sideboard := parseWorldChampPrefix(c.Variation)
 	if prefix == "" {
-		return mtgmatcher.ParseWorldChampPrefix(c.Edition)
+		return parseWorldChampPrefix(c.Edition)
 	}
 	return prefix, sideboard
 }
@@ -135,7 +135,7 @@ func playerRewardsYear(c *mtgmatcher.InputCard, maybeYear string) string {
 // that belongs to a different printing of the same set.
 func shouldIgnoreNumber(b *mtgmatcher.Backend, c *mtgmatcher.InputCard, setName, num string) bool {
 	// No misprints or WCD
-	if c.Contains("Misprint") || c.IsWorldChamp() {
+	if c.Contains("Misprint") || isWorldChamp(c) {
 		return true
 	}
 
@@ -413,7 +413,7 @@ func hasSecretLairTag(b *mtgmatcher.Backend, c *mtgmatcher.InputCard, code strin
 		tag = c.Contains("Showdown") || c.Contains("Prize") || c.Contains("Finish") || c.Contains("Play")
 	}
 
-	return c.IsSecretLair() && tag
+	return isSecretLair(c) && tag
 }
 
 // isIDWMagazineBook reports a promo that came with print media: comics,
@@ -544,4 +544,34 @@ func isSpecificUnsupported(c *mtgmatcher.InputCard) bool {
 		}
 	}
 	return false
+}
+
+// IsJPN reports a Japanese printing, by language or by the magazines that
+// carried them, Gotta and Dengeki.
+func IsJPN(c *mtgmatcher.InputCard) bool {
+	return strings.Contains(c.Variation, "JPN") ||
+		strings.Contains(c.Variation, "JP") ||
+		c.Contains("Japanese") ||
+		mtgmatcher.Contains(c.Variation, "Gotta") ||
+		mtgmatcher.Contains(c.Variation, "Dengeki")
+}
+
+// isBundle reports a bundle promo.
+func isBundle(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Bundle")
+}
+
+// isWorldChamp reports a World Championship or Pro Tour deck card, from the
+// edition alone.
+func isWorldChamp(c *mtgmatcher.InputCard) bool {
+	return mtgmatcher.Contains(c.Edition, "Pro Tour Collect") ||
+		mtgmatcher.Contains(c.Edition, "Pro Tour 1996") ||
+		mtgmatcher.Contains(c.Edition, "World Championship") ||
+		mtgmatcher.Contains(c.Edition, "Championship Deck") ||
+		mtgmatcher.Contains(c.Edition, "WCD")
+}
+
+// isSecretLair reports a Secret Lair printing, by name or by set code.
+func isSecretLair(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Secret Lair") || strings.Contains(c.Edition, "SLD")
 }

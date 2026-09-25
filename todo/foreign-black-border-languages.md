@@ -40,7 +40,7 @@ card once, in one language, and refuses every other on purpose.
    ZHT, SPA and POR for 4BB. Pick them once: the uuid tag is persisted by
    every consumer.
 4. `FilterCards` appends "jpn" to the number when the listing is Japanese
-   (`case inCard.IsJPN()`). Replace that branch with a lookup from the
+   (`case IsJPN(inCard)`). Replace that branch with a lookup from the
    listing's language to its tag, the inverse of `langs`.
 5. Widen `originalOverCopy` (`candidates.go`). Today it drops a copy only
    when it shares its original's language (the 4EDALT case); make a copy

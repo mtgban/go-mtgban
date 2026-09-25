@@ -166,7 +166,7 @@ var promoTypeElements = []promoTypeElement{
 			// A lot of providers don't tag SLD cards as Galaxy, but just foil
 			// (same for RainbowFoil), so this check essentially makes the test
 			// pass, and let filtering continue elsewhere
-			if inCard.IsSecretLair() &&
+			if isSecretLair(inCard) &&
 				b.HasPrinting(inCard.Name, "promo_type", PromoTypeGalaxyFoil, "SLD") {
 				// The only card which *also* has RainbowFoil, so the check would fail for Galaxy
 				if inCard.Name == "Command Tower" {
@@ -934,9 +934,9 @@ func starterDeckCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 
 // Japanese Planeswalkers
 func japaneseCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	if (inCard.IsJPN() || isGenericAltArt(inCard)) && card.Language != LanguageJapanese {
+	if (IsJPN(inCard) || isGenericAltArt(inCard)) && card.Language != LanguageJapanese {
 		return true
-	} else if !inCard.IsJPN() && !isGenericAltArt(inCard) && card.Language == LanguageJapanese {
+	} else if !IsJPN(inCard) && !isGenericAltArt(inCard) && card.Language == LanguageJapanese {
 		return true
 	}
 	return false
@@ -1064,7 +1064,7 @@ func retroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // This edition has retro-only promotional cards, but most
 // providers only tag the promo type, instead of the frame
 func babOrBuyaboxRetroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	return retroCheckInternal(inCard.IsBundle() || inCard.IsBaB(), card.FrameVersion)
+	return retroCheckInternal(isBundle(inCard) || inCard.IsBaB(), card.FrameVersion)
 }
 
 func releaseRetroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
@@ -1373,7 +1373,7 @@ func duplicateBasicLands(inCard *mtgmatcher.InputCard) []string {
 }
 
 func duplicateJPNPlaneswalkers(inCard *mtgmatcher.InputCard) []string {
-	if inCard.IsJPN() {
+	if IsJPN(inCard) {
 		return []string{SuffixSpecial, "s" + SuffixSpecial}
 	}
 	return nil

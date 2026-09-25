@@ -130,3 +130,16 @@ var mtgColorNameMap = map[string]string{
 	"R": "red",
 	"G": "green",
 }
+
+// Cards whose names are long enough or odd enough to break naive parsing, kept
+// here so tests and callers can reach for them by name.
+const (
+	LongestCardEver = "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
+	NightmareCard   = "The Ultimate Nightmare of Wizards of the Coast® Customer Service"
+)
+
+// grnGuilds are the guilds printed in Guilds of Ravnica.
+var grnGuilds = []string{"Boros", "Dimir", "Golgari", "Izzet", "Selesnya"}
+
+// arnGuilds are the guilds printed in Ravnica Allegiance.
+var arnGuilds = []string{"Azorius", "Gruul", "Orzhov", "Rakdos", "Simic"}
