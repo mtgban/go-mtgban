@@ -196,12 +196,9 @@ rescaled copy of itself. A pair whose grade is missing from the map or is
 at zero. The result carries `ReferenceEntry` instead of `BuylistEntry`, and
 `NoQuantityInventory` bypasses the qty gate here too.
 
-`Pennystock(b, seller, full, thresholds...)` flags cheap mythics (≤ $0.12 by
-default) and, in `full` mode, rares / full-art-or-foil basics / foils /
-promos under per-category thresholds, excluding gold/silver/white borders,
-funny sets, thick-display promos, and HP/PO copies. This is the one place
-`mtgban` reaches into a game-specific vocabulary: it imports
-`mtgmatcher/magic` for `PromoTypeThickDisplay`.
+`mtgban` imports no game package. `Pennystock`, the one report that did,
+applied Magic's rarities, borders and promo types, and moved to its only
+caller, autocart.
 
 ### 1.4 Concurrency, serialization, utilities
 
@@ -311,7 +308,7 @@ exception and the token lookup in `Backend.IsGenericPromo`; its exported
 `Has*Printing` helpers take the backend first. A process serving several
 games keeps one backend per game and asks each.
 
-`Arbit`, `Mismatch`, `Pennystock` and the CSV readers and writers take the
+`Arbit`, `Mismatch` and the CSV readers and writers take the
 backend as their first parameter; `ArbitOpts` carries optional filters and
 nothing else, and a nil backend gives a nil report. Custom callbacks doing
 auxiliary lookups use the same backend, and so does a caller naming the card
@@ -842,7 +839,7 @@ asymmetry:
 
 | Layer | Targets | Test type | Needs dataset? | Today |
 |-------|---------|-----------|----------------|-------|
-| **Money path** (top risk) | `Arbit`, `Mismatch`, `Pennystock`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No** — runs in CI | none beyond `Add*` |
+| **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No** — runs in CI | none beyond `Add*` |
 | **Matcher** (data integrity) | `Match`/`MatchID`, normalization, variants/editions, sealed API | data-backed regression replay | **Yes** — one per game | replay + unit |
 | **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 7 of 27 |
 

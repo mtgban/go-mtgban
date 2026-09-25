@@ -4,10 +4,8 @@ import (
 	"math"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // ArbitOpts is the bag of optional filters and thresholds Arbit and Mismatch
@@ -516,82 +514,6 @@ func Mismatch(b *mtgmatcher.Backend, opts *ArbitOpts, reference, probe Seller) [
 					continue
 				}
 				result = append(result, res)
-			}
-		}
-	}
-
-	return result
-}
-
-// Pennystock reports cards priced near the floor that have somewhere to fall
-// from: rares, mythics, basic lands and promos, skipping the borders and promo
-// types that are cheap for reasons which will not change. Every card id is
-// resolved against b. thresholds overrides the per-rarity ceilings in order,
-// and a zero leaves that position at its default.
-func Pennystock(b *mtgmatcher.Backend, seller Seller, full bool, thresholds ...float64) []ArbitEntry {
-	if b == nil {
-		return nil
-	}
-
-	var result []ArbitEntry
-
-	for cardID, entries := range seller.Inventory() {
-		co, err := b.GetUUID(cardID)
-		if err != nil {
-			continue
-		}
-
-		isRare := co.Card.Rarity == "rare"
-		isMythic := co.Card.Rarity == "mythic"
-		isLand := mtgmatcher.IsBasicLand(co.Name)
-		isPromo := co.Card.IsPromo || strings.HasSuffix(co.Edition, "Promos")
-		if !isRare && !isMythic && !isLand && !isPromo {
-			continue
-		}
-
-		// Silver is to catch ULST, IsFunny to catch anything after Unfinity
-		switch co.BorderColor {
-		case "gold", "silver", "white":
-			continue
-		}
-		if co.IsFunny || co.HasPromoType(magic.PromoTypeThickDisplay) {
-			continue
-		}
-
-		priceThreshold := []float64{0.12, 0.02, 0.05, 0.02, 0.01, 0.02}
-		for i := range thresholds {
-			// The last index this slice holds is len-1, so the equal case
-			// is one past the end rather than the final entry
-			if i >= len(priceThreshold) {
-				break
-			}
-			if thresholds[i] == 0 {
-				continue
-			}
-
-			priceThreshold[i] = thresholds[i]
-		}
-
-		for _, entry := range entries {
-			if entry.Conditions == "PO" || entry.Conditions == "HP" {
-				continue
-			}
-
-			isFoil := co.Foil || co.Etched
-			var pennyMythic, pennyRare, pennyLand, pennyFoil, pennyPromo bool
-			pennyMythic = isMythic && !isFoil && entry.Price <= priceThreshold[0]
-			if full {
-				pennyRare = isRare && ((!isFoil && entry.Price <= priceThreshold[1]) || (co.Foil && entry.Price <= priceThreshold[2]))
-				pennyLand = isLand && ((!isFoil && co.Card.IsFullArt) || isFoil) && entry.Price <= priceThreshold[3]
-				pennyFoil = isFoil && !isPromo && !isLand && entry.Price <= priceThreshold[4]
-				pennyPromo = isPromo && entry.Price <= priceThreshold[5]
-			}
-
-			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
-				result = append(result, ArbitEntry{
-					CardID:         cardID,
-					InventoryEntry: entry,
-				})
 			}
 		}
 	}
