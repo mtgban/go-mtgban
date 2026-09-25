@@ -440,7 +440,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 
 	// XLN Treasure Chest
-	case inCard.IsBaB() && len(b.MatchInSet(inCard.Name, "PXTC")) != 0:
+	case isBaB(inCard) && len(b.MatchInSet(inCard.Name, "PXTC")) != 0:
 		edition = b.Sets["PXTC"].Name
 
 	// BFZ Standard Series
@@ -495,7 +495,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
 	// Promo handling, but they are not set as such in scryfall
-	case (b.IsGenericPromo(inCard) || isGenericAltArt(inCard)) && len(b.MatchInSet(inCard.Name, "PLS")) == 2:
+	case (isGenericPromo(b, inCard) || isGenericAltArt(inCard)) && len(b.MatchInSet(inCard.Name, "PLS")) == 2:
 		edition = "PLS"
 		variation = "Alternate Art"
 
@@ -515,7 +515,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 	// The first Gift Pack often get folded in the main Core Set 2019 or in the
 	// related Promos set, so use a lax way to detected the original expansion
-	case ((mtgmatcher.Contains(inCard.Edition, "Core") && mtgmatcher.Contains(inCard.Edition, "2019")) || b.IsGenericPromo(inCard)) && len(b.MatchInSet(inCard.Name, "G18")) == 1:
+	case ((mtgmatcher.Contains(inCard.Edition, "Core") && mtgmatcher.Contains(inCard.Edition, "2019")) || isGenericPromo(b, inCard)) && len(b.MatchInSet(inCard.Name, "G18")) == 1:
 		edition = b.Sets["G18"].Name
 
 	// Adjust edition for non-English sets, by the language the listing is
@@ -553,19 +553,19 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 
 	// Clash pack promos
-	case (inCard.Contains("Clash") || b.IsGenericPromo(inCard)) && len(b.MatchInSet(inCard.Name, "CP1")) == 1:
+	case (inCard.Contains("Clash") || isGenericPromo(b, inCard)) && len(b.MatchInSet(inCard.Name, "CP1")) == 1:
 		edition = b.Sets["CP1"].Name
-	case (inCard.Contains("Clash") || b.IsGenericPromo(inCard)) && len(b.MatchInSet(inCard.Name, "CP2")) == 1:
+	case (inCard.Contains("Clash") || isGenericPromo(b, inCard)) && len(b.MatchInSet(inCard.Name, "CP2")) == 1:
 		edition = b.Sets["CP2"].Name
-	case (inCard.Contains("Clash") || b.IsGenericPromo(inCard)) && len(b.MatchInSet(inCard.Name, "CP3")) == 1:
+	case (inCard.Contains("Clash") || isGenericPromo(b, inCard)) && len(b.MatchInSet(inCard.Name, "CP3")) == 1:
 		edition = b.Sets["CP3"].Name
 
 	// Challenger decks promos
-	case (inCard.Contains("Challenger Decks") || b.IsGenericPromo(inCard)) && len(b.MatchInSet(inCard.Name, "Q06")) != 0:
+	case (inCard.Contains("Challenger Decks") || isGenericPromo(b, inCard)) && len(b.MatchInSet(inCard.Name, "Q06")) != 0:
 		edition = b.Sets["Q06"].Name
 
 	// Open the Helvault oversized cards
-	case (inCard.Contains("Oversize") || inCard.Contains("Helvault Promo") || inCard.IsPrerelease()) && len(b.MatchInSet(inCard.Name, "PHEL")) == 1:
+	case (inCard.Contains("Oversize") || inCard.Contains("Helvault Promo") || IsPrerelease(inCard)) && len(b.MatchInSet(inCard.Name, "PHEL")) == 1:
 		edition = b.Sets["PHEL"].Name
 		variation = ""
 
@@ -584,15 +584,15 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 
 	// Lunar Year Promos
-	case (b.IsGenericPromo(inCard) || inCard.Contains("Lunar")) && len(b.MatchInSet(inCard.Name, "PL21")) == 1:
+	case (isGenericPromo(b, inCard) || inCard.Contains("Lunar")) && len(b.MatchInSet(inCard.Name, "PL21")) == 1:
 		edition = b.Sets["PL21"].Name
 
 	// Love Your LGS 2021, often confused with WPN
-	case (isWPNGateway(inCard) || b.IsGenericPromo(inCard)) && inCard.Contains("Retro Frame") && len(b.MatchInSet(inCard.Name, "PLG21")) == 1:
+	case (isWPNGateway(inCard) || isGenericPromo(b, inCard)) && inCard.Contains("Retro Frame") && len(b.MatchInSet(inCard.Name, "PLG21")) == 1:
 		edition = b.Sets["PLG21"].Name
 
 	// WPN 2021
-	case inCard.Name != "Mind Stone" && b.IsGenericPromo(inCard) && len(b.MatchInSet(inCard.Name, "PW21")) == 1:
+	case inCard.Name != "Mind Stone" && isGenericPromo(b, inCard) && len(b.MatchInSet(inCard.Name, "PW21")) == 1:
 		edition = b.Sets["PW21"].Name
 
 	// Unfinity Sticker Sheets
@@ -656,11 +656,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 		switch inCard.Name {
 		case "Rhox":
-			if isGenericAltArt(inCard) || b.IsGenericPromo(inCard) {
+			if isGenericAltArt(inCard) || isGenericPromo(b, inCard) {
 				edition = "Starter 2000"
 			}
 		case "Balduvian Horde":
-			if isJudge(inCard) || b.IsGenericPromo(inCard) || isDCIPromo(inCard) {
+			if isJudge(inCard) || isGenericPromo(b, inCard) || isDCIPromo(inCard) {
 				edition = "World Championship Promos"
 			}
 		case "Disenchant":
@@ -673,7 +673,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		case "Ass Whuppin'",
 			"Rukh Egg",
 			"Scholar of the Lost Trove":
-			if inCard.IsPrerelease() {
+			if IsPrerelease(inCard) {
 				variation = "Release"
 				edition = "Release Events"
 			}
@@ -698,7 +698,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "Miscellaneous Book Promos"
 			}
 		case "Serra Angel":
-			if isDCIPromo(inCard) || inCard.IsBaB() {
+			if isDCIPromo(inCard) || isBaB(inCard) {
 				edition = "Wizards of the Coast Online Store"
 			}
 		case "Incinerate", "Counterspell":
@@ -710,7 +710,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "Tenth Edition Promos"
 			}
 		case "Kamahl, Pit Fighter", "Char":
-			if isDCIPromo(inCard) || inCard.Contains("15th Anniversary") || b.IsGenericPromo(inCard) {
+			if isDCIPromo(inCard) || inCard.Contains("15th Anniversary") || isGenericPromo(b, inCard) {
 				edition = "15th Anniversary Cards"
 			}
 		case "Fling":
@@ -732,11 +732,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				}
 			}
 		case "Naya Sojourners":
-			if b.IsGenericPromo(inCard) {
+			if isGenericPromo(b, inCard) {
 				edition = "DCI Promos"
 			}
 		case "Hall of Triumph":
-			if b.IsGenericPromo(inCard) {
+			if isGenericPromo(b, inCard) {
 				edition = "Journey into Nyx Promos"
 			}
 		case "Reliquary Tower":
@@ -746,31 +746,31 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "Love Your LGS 2020"
 			}
 		case "Bolas's Citadel":
-			if b.IsGenericPromo(inCard) {
+			if isGenericPromo(b, inCard) {
 				edition = "War of the Spark Promos"
 			}
 		case "Llanowar Elves":
-			if b.IsGenericPromo(inCard) {
+			if isGenericPromo(b, inCard) {
 				edition = "Dominaria Promos"
 			}
 		case "Evolving Wilds":
-			if b.IsGenericPromo(inCard) {
+			if isGenericPromo(b, inCard) {
 				edition = "Rivals of Ixalan Promos"
 			}
 		case "Teferi, Master of Time":
 			num := mtgmatcher.ExtractNumber(variation)
 			_, err := strconv.Atoi(num)
 			if err == nil {
-				if inCard.IsPrerelease() {
+				if IsPrerelease(inCard) {
 					variation = num + "s"
-				} else if inCard.IsPromoPack() {
+				} else if IsPromoPack(inCard) {
 					variation = num + "p"
 				}
 			}
 			if num == "" {
-				if inCard.IsPrerelease() {
+				if IsPrerelease(inCard) {
 					variation = "75s"
-				} else if inCard.IsPromoPack() {
+				} else if IsPromoPack(inCard) {
 					variation = "75p"
 				} else if isBorderless(inCard) {
 					variation = "281"
@@ -812,16 +812,16 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "Secret Lair Drop"
 			}
 		case "Magister of Worth":
-			if inCard.IsBaB() {
+			if isBaB(inCard) {
 				variation = "Launch"
 			}
 		case "Hangarback Walker":
-			if isReskin(inCard) || b.IsGenericPromo(inCard) || strings.Contains(inCard.Edition, "LGS") {
+			if isReskin(inCard) || isGenericPromo(b, inCard) || strings.Contains(inCard.Edition, "LGS") {
 				edition = "Love Your LGS 2020"
 			}
 		// Sometimes these cards are not marked as prerelease because they are showcase
 		case "Goro-Goro and Satoru", "Katilda and Lier", "Slimefoot and Squee":
-			if isShowcase(inCard) && !inCard.IsPrerelease() {
+			if isShowcase(inCard) && !IsPrerelease(inCard) {
 				variation += " Prerelease"
 			}
 		// HOC reprints these borderless with no Prerelease tag of its
@@ -833,7 +833,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			"Gandalf, Friend of the Shire",
 			"Wizard's Rockets":
 			hoc, hocErr := b.GetSet("HOC")
-			if isBorderless(inCard) && !inCard.IsPrerelease() &&
+			if isBorderless(inCard) && !IsPrerelease(inCard) &&
 				!(hocErr == nil && edition == hoc.Name) {
 				variation += " Prerelease"
 			}
@@ -848,7 +848,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		default:
 			// Attempt a best effort match for known promotional tags if card or edition
 			// wasn't found in previous steps
-			if b.IsGenericPromo(inCard) {
+			if isGenericPromo(b, inCard) {
 				b.Log("Precise matching for promo failed, attempting best effort")
 				inCard.PromoWildcard = true
 			}
@@ -1028,7 +1028,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsPrerelease():
+		case IsPrerelease(inCard):
 			switch set.Name {
 			// Sets that could be marked as prerelease, but they aren't really
 			case "M15 Prerelease Challenge",
@@ -1062,7 +1062,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.IsPromoPack():
+		case IsPromoPack(inCard):
 			switch set.Name {
 			case "Dragon's Maze Promos", // due to Plains
 				"Grand Prix Promos":
@@ -1105,7 +1105,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsBaB():
+		case isBaB(inCard):
 			skip := true
 			foundCards := b.MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
@@ -1484,7 +1484,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 
-		case inCard.IsSDCC():
+		case isSDCC(inCard):
 			switch {
 			case strings.HasPrefix(set.Name, "San Diego Comic-Con "+maybeYear):
 			default:
@@ -1609,7 +1609,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			strings.Contains(inCard.Edition, "Core 20") ||
 			strings.Contains(inCard.Edition, "Magic 20"):
 			switch {
-			case !b.IsGenericPromo(inCard) && strings.HasSuffix(set.Name, "Promos"):
+			case !isGenericPromo(b, inCard) && strings.HasSuffix(set.Name, "Promos"):
 				continue
 			case strings.HasPrefix(set.Name, "Core Set "+maybeYear):
 			case strings.HasPrefix(set.Name, "Magic "+maybeYear):
@@ -1677,7 +1677,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			switch set.Code {
 			case "P30A", "P30H", "P30M":
 			case "P30T":
-				if inCard.IsRetro() || !IsJPN(inCard) {
+				if isRetro(inCard) || !IsJPN(inCard) {
 					continue
 				}
 			default:
@@ -1799,8 +1799,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 // upstream. An input tagged with one is unsupported until the resolved card
 // carries the tag too.
 func missingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
-	return (inCard.IsPrerelease() && !co.HasPromoType(PromoTypePrerelease)) ||
-		(inCard.IsPromoPack() && !co.HasPromoType(PromoTypePromoPack)) ||
+	return (IsPrerelease(inCard) && !co.HasPromoType(PromoTypePrerelease)) ||
+		(IsPromoPack(inCard) && !co.HasPromoType(PromoTypePromoPack)) ||
 		(isSerialized(inCard) && !co.HasPromoType(PromoTypeSerialized))
 }
 
@@ -1975,9 +1975,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 				// Add any possible extra suffixes if we know what we're dealing with
 				switch {
-				case inCard.IsPrerelease():
+				case IsPrerelease(inCard):
 					possibleSuffixes = append(possibleSuffixes, "s")
-				case inCard.IsPromoPack():
+				case IsPromoPack(inCard):
 					possibleSuffixes = append(possibleSuffixes, "p")
 				case isChineseAltArt(inCard):
 					possibleSuffixes = append(possibleSuffixes, "s", SuffixSpecial+"s", SuffixVariant+"s")
@@ -2198,7 +2198,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 	// Check if there are multiple printings for Prerelease and Promo Pack cards
 	// Sometimes these contain the ParentCode or the parent edition name in the field
-	if len(outCards) > 1 && (inCard.IsPrerelease() || inCard.IsPromoPack()) {
+	if len(outCards) > 1 && (IsPrerelease(inCard) || IsPromoPack(inCard)) {
 		allSameEdition := true
 		for _, card := range outCards {
 			if card.Name != outCards[0].Name || !strings.HasPrefix(card.SetCode, "P") {

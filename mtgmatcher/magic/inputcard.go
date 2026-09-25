@@ -575,3 +575,68 @@ func isWorldChamp(c *mtgmatcher.InputCard) bool {
 func isSecretLair(c *mtgmatcher.InputCard) bool {
 	return c.Contains("Secret Lair") || strings.Contains(c.Edition, "SLD")
 }
+
+// IsPromoPack reports a promo pack printing, by name, by the stamp it carries,
+// or by a collector number ending in p, which the 30th Anniversary numbers
+// reuse for something else.
+func IsPromoPack(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Promo Pack") ||
+		c.Variation == "Dark Frame Promo" ||
+		mtgmatcher.Contains(c.Variation, "Planeswalker Stamp") ||
+		mtgmatcher.Contains(c.Variation, "Silver Stamped") ||
+		(strings.HasSuffix(mtgmatcher.ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
+}
+
+// IsPrerelease reports a prerelease printing; SCG spells it Preview.
+func IsPrerelease(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Prerelease") ||
+		c.Contains("Preview") // scg
+}
+
+// isBaB reports a buy-a-box promo, by name, by TCGplayer's BABP or
+// Strikezone's BIBB, or by Box Promos where it is not an Xbox tie-in or a gift
+// box.
+func isBaB(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Buy a Box") ||
+		strings.Contains(c.Variation, "BABP") || // tcg collection
+		strings.Contains(c.Variation, "BIBB") || // sz
+		(c.Contains("Box Promos") && // ha+sz
+			!c.Contains("Xbox") && // ck+abu
+			!c.Contains("Gift")) // csi
+}
+
+// isSDCC reports a San Diego Comic-Con promo.
+func isSDCC(c *mtgmatcher.InputCard) bool {
+	return c.Contains("SDCC") ||
+		c.Contains("San Diego Comic-Con")
+}
+
+// isRetro reports a retro frame printing.
+func isRetro(c *mtgmatcher.InputCard) bool {
+	return c.Contains("Retro")
+}
+
+// isGenericPromo reports a promo with no more specific kind, one that
+// probably needs further analysis to categorize: it excludes every promo the
+// other predicates recognise, and tokens, then accepts the leftovers that say
+// Promo or name a store event. Token names are resolved against this backend,
+// so a rule reads the snapshot it was handed.
+func isGenericPromo(b *mtgmatcher.Backend, c *mtgmatcher.InputCard) bool {
+	return !isBaB(c) && !IsPromoPack(c) && !IsPrerelease(c) && !isSDCC(c) &&
+		!isRetro(c) &&
+		!c.Contains("Year of the") && // tcg
+		!c.Contains("Deckmasters") && // no real promos here, just foils
+		!c.Contains("Token") && !b.IsToken(c.Name) &&
+		(mtgmatcher.Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
+			c.Contains("Gift Box") || // ck+scg
+			(c.Contains("Promo") && c.Contains("Intro Pack")) || // scg
+			c.Contains("League") ||
+			c.Contains("Play Draft") || // scg
+			c.Contains("Miscellaneous") ||
+			c.Contains("Open House") || // tcg
+			(c.Contains("Other") && !c.Contains("Brother")) ||
+			c.Contains("Planeswalker Event") || // tcg
+			c.Contains("Planeswalker Weekend") || // scg
+			c.Contains("Store Challenge") || // scg
+			c.Contains("Unique")) // mtgs
+}

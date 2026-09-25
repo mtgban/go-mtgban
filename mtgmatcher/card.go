@@ -128,60 +128,6 @@ func (c *InputCard) AddToVariant(tag string) {
 // The vendor abbreviations in the clauses name the storefront whose wording
 // forced that clause: each is a real listing someone published.
 
-// IsGenericPromo reports a promo with no more specific kind, one that
-// probably needs further analysis to categorize: it excludes every promo the
-// other predicates recognise, and tokens, then accepts the leftovers that say
-// Promo or name a store event. Token names are resolved against this backend,
-// so a rule reads the snapshot it was handed.
-func (b *Backend) IsGenericPromo(c *InputCard) bool {
-	return !c.IsBaB() && !c.IsPromoPack() && !c.IsPrerelease() && !c.IsSDCC() &&
-		!c.IsRetro() &&
-		!c.Contains("Year of the") && // tcg
-		!c.Contains("Deckmasters") && // no real promos here, just foils
-		!c.Contains("Token") && !b.IsToken(c.Name) &&
-		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
-			c.Contains("Gift Box") || // ck+scg
-			(c.Contains("Promo") && c.Contains("Intro Pack")) || // scg
-			c.Contains("League") ||
-			c.Contains("Play Draft") || // scg
-			c.Contains("Miscellaneous") ||
-			c.Contains("Open House") || // tcg
-			(c.Contains("Other") && !c.Contains("Brother")) ||
-			c.Contains("Planeswalker Event") || // tcg
-			c.Contains("Planeswalker Weekend") || // scg
-			c.Contains("Store Challenge") || // scg
-			c.Contains("Unique")) // mtgs
-}
-
-// IsPromoPack reports a promo pack printing, by name, by the stamp it carries,
-// or by a collector number ending in p, which the 30th Anniversary numbers
-// reuse for something else.
-func (c *InputCard) IsPromoPack() bool {
-	return c.Contains("Promo Pack") ||
-		c.Variation == "Dark Frame Promo" ||
-		Contains(c.Variation, "Planeswalker Stamp") ||
-		Contains(c.Variation, "Silver Stamped") ||
-		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
-}
-
-// IsPrerelease reports a prerelease printing; SCG spells it Preview.
-func (c *InputCard) IsPrerelease() bool {
-	return c.Contains("Prerelease") ||
-		c.Contains("Preview") // scg
-}
-
-// IsBaB reports a buy-a-box promo, by name, by TCGplayer's BABP or
-// Strikezone's BIBB, or by Box Promos where it is not an Xbox tie-in or a gift
-// box.
-func (c *InputCard) IsBaB() bool {
-	return c.Contains("Buy a Box") ||
-		strings.Contains(c.Variation, "BABP") || // tcg collection
-		strings.Contains(c.Variation, "BIBB") || // sz
-		(c.Contains("Box Promos") && // ha+sz
-			!c.Contains("Xbox") && // ck+abu
-			!c.Contains("Gift")) // csi
-}
-
 // IsFoil reports a foil printing from the variation, refusing Non-Foil and
 // leaving etched to IsEtched.
 func (c *InputCard) IsFoil() bool {
@@ -193,17 +139,6 @@ func (c *InputCard) IsFoil() bool {
 func (c *InputCard) IsEtched() bool {
 	// Note this can't be just "etch" because it would catch the "sketch" cards
 	return Contains(c.Variation, "Etched")
-}
-
-// IsSDCC reports a San Diego Comic-Con promo.
-func (c *InputCard) IsSDCC() bool {
-	return c.Contains("SDCC") ||
-		c.Contains("San Diego Comic-Con")
-}
-
-// IsRetro reports a retro frame printing.
-func (c *InputCard) IsRetro() bool {
-	return c.Contains("Retro")
 }
 
 // Contains reports whether either the edition or the variation contains the

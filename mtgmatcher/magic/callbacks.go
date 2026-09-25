@@ -129,7 +129,7 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypePromoPack,
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsPromoPack()
+			return IsPromoPack(inCard)
 		},
 	},
 	{
@@ -143,7 +143,7 @@ var promoTypeElements = []promoTypeElement{
 		// After ZNR buy-a-box is also present in main set
 		ValidDate: BuyABoxNotUniqueDate,
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-			return inCard.IsBaB() || isRelease(inCard)
+			return isBaB(inCard) || isRelease(inCard)
 		},
 		CanBeWild: true,
 	},
@@ -880,9 +880,9 @@ func launchPromoInSet(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 	anyAlternative := card.IsAlternative ||
 		card.BorderColor == BorderColorBorderless ||
 		card.HasFrameEffect(FrameEffectExtendedArt)
-	if (isRelease(inCard) || inCard.IsBaB()) && !anyAlternative {
+	if (isRelease(inCard) || isBaB(inCard)) && !anyAlternative {
 		return true
-	} else if !(isRelease(inCard) || inCard.IsBaB()) && anyAlternative && !card.HasPromoType(PromoTypeBoosterfun) {
+	} else if !(isRelease(inCard) || isBaB(inCard)) && anyAlternative && !card.HasPromoType(PromoTypeBoosterfun) {
 		return true
 	}
 	return false
@@ -1058,17 +1058,17 @@ func retroCheckInternal(isRetro bool, cardFrameVersion string) bool {
 }
 
 func retroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	return retroCheckInternal(inCard.IsRetro() || inCard.BeyondBaseSet, card.FrameVersion)
+	return retroCheckInternal(isRetro(inCard) || inCard.BeyondBaseSet, card.FrameVersion)
 }
 
 // This edition has retro-only promotional cards, but most
 // providers only tag the promo type, instead of the frame
 func babOrBuyaboxRetroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	return retroCheckInternal(isBundle(inCard) || inCard.IsBaB(), card.FrameVersion)
+	return retroCheckInternal(isBundle(inCard) || isBaB(inCard), card.FrameVersion)
 }
 
 func releaseRetroCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	return retroCheckInternal(inCard.IsRetro() || isRelease(inCard), card.FrameVersion)
+	return retroCheckInternal(isRetro(inCard) || isRelease(inCard), card.FrameVersion)
 }
 
 // Foil cards which exist *only* as misprints
@@ -1290,7 +1290,7 @@ func reskinRenameCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card
 
 func misprintCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	// These cards are allowed to have the star at the end
-	if (isExactBasicLand(inCard.Name) && isJudge(inCard)) || inCard.IsPrerelease() {
+	if (isExactBasicLand(inCard.Name) && isJudge(inCard)) || IsPrerelease(inCard) {
 		return false
 	}
 
@@ -1307,7 +1307,7 @@ func misprintCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mt
 }
 
 func draftweekendCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
-	releaseOrDraft := inCard.Contains("Draft Weekend") || (inCard.Contains("Release") && !inCard.IsPrerelease())
+	releaseOrDraft := inCard.Contains("Draft Weekend") || (inCard.Contains("Release") && !IsPrerelease(inCard))
 	if releaseOrDraft && !card.HasPromoType(PromoTypeDraftWeekend) {
 		return true
 	} else if !releaseOrDraft && card.HasPromoType(PromoTypeDraftWeekend) {

@@ -254,8 +254,8 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		co, err := b.GetUUID(id)
 		if err == nil && len(co.PromoTypes) > 0 {
 			probe := mtgmatcher.InputCard{Edition: idEdition, Variation: idVariation}
-			vetoed := (probe.IsPrerelease() && !co.HasPromoType(magic.PromoTypePrerelease)) ||
-				(probe.IsPromoPack() && !co.HasPromoType(magic.PromoTypePromoPack))
+			vetoed := (magic.IsPrerelease(&probe) && !co.HasPromoType(magic.PromoTypePrerelease)) ||
+				(magic.IsPromoPack(&probe) && !co.HasPromoType(magic.PromoTypePromoPack))
 			if vetoed {
 				idEdition = co.Edition
 				idVariation = ""
