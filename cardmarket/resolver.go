@@ -831,6 +831,8 @@ func (r *resolver) numberedPrinting(product *cm.Product, uuids []string) string 
 		if err != nil {
 			continue
 		}
+		// Plain here and exact below: Cardmarket numbers ZEN's 230a Plains
+		// "230", and 485 such products are mapped right to a lettered twin.
 		if strings.EqualFold(co.PlainNumber, product.Number) {
 			return ""
 		}
