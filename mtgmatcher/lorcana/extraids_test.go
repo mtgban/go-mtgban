@@ -11,7 +11,8 @@ import (
 // emits. Card 100 is sold by TCGplayer as two products, the plain art under
 // the id upstream publishes and the Panorama foil under its own, whose image
 // upstream publishes as fullFoil; card 200 carries no extra ids, as every card
-// in the upstream file does.
+// in the upstream file does. Cardmarket sells card 100's two arts as its V.1
+// and V.2.
 const extraIDsData = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {"1": {"name": "The First Chapter", "type": "expansion", "releaseDate": "2023-09-01"}},
@@ -21,7 +22,7 @@ const extraIDsData = `{"data": {
       "setCode": "1", "number": "1", "rarity": "Common", "type": "Character",
       "color": "Amber", "story": "DuckTales", "printings": [{"finish": "Cold Foil", "id": "100_silver"}, {"finish": "Normal", "id": "100"}],
       "images": {"full": "framed.jpg", "fullFoil": "panorama.jpg", "thumbnail": "framed_thumb.jpg"},
-      "externalLinks": {"tcgPlayerId": 631349, "tcgPlayerExtraIds": [633427]}
+      "externalLinks": {"tcgPlayerId": 631349, "tcgPlayerExtraIds": [633427], "cardmarketId": 826334, "cardmarketExtraIds": [826335]}
     },
     {
       "id": 200, "name": "Dewey", "fullName": "Dewey - Lovable Showoff",
@@ -98,6 +99,7 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 // does today.
 func TestLorcanaExtraProductIdsAbsent(t *testing.T) {
 	upstream := strings.Replace(extraIDsData, `, "tcgPlayerExtraIds": [633427]`, "", 1)
+	upstream = strings.Replace(upstream, `, "cardmarketExtraIds": [826335]`, "", 1)
 	b, err := Load(strings.NewReader(upstream))
 	if err != nil {
 		t.Fatal(err)
@@ -142,5 +144,40 @@ func TestLorcanaExtraProductIdsSeveral(t *testing.T) {
 	}
 	if n := len(b.GetUUIDs()); n != 5 {
 		t.Errorf("got %d uuids, want 5", n)
+	}
+}
+
+// TestLorcanaTwinCardmarketID pins where the Panorama's Cardmarket product
+// goes: onto the ★ twin, never the plain card, which keeps the row's own V.1.
+// It is indexed only where no other card claims it. A file without the field
+// leaves the twin with none, as before, and so does a card with two extra
+// products, where nothing says which twin the one Cardmarket id is.
+func TestLorcanaTwinCardmarketID(t *testing.T) {
+	for _, tc := range []struct {
+		desc, data   string
+		wantV2, twin string
+	}{
+		{"published", extraIDsData, "100_silver", "826335"},
+		{"claimed twice", strings.Replace(extraIDsData, `"externalLinks": {"tcgPlayerId": 631350}`,
+			`"externalLinks": {"tcgPlayerId": 631350, "cardmarketId": 826335}`, 1), "", "826335"},
+		{"absent", strings.Replace(extraIDsData, `, "cardmarketExtraIds": [826335]`, "", 1), "", ""},
+		{"two extra products", strings.Replace(extraIDsData, `[633427]`, `[633427, 633428]`, 1), "", ""},
+	} {
+		b, err := Load(strings.NewReader(tc.data))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := b.ConvertID(mtgmatcher.IDSpaceCardmarket, "826334"); got != "100" {
+			t.Errorf("%s: ConvertID(826334) = %q, want the plain card 100", tc.desc, got)
+		}
+		if got := b.ConvertID(mtgmatcher.IDSpaceCardmarket, "826335"); got != tc.wantV2 {
+			t.Errorf("%s: ConvertID(826335) = %q, want %q", tc.desc, got, tc.wantV2)
+		}
+		plain, _ := b.GetUUID("100")
+		twin, _ := b.GetUUID("100_silver")
+		if plain.Identifiers["mcmId"] != "826334" || twin.Identifiers["mcmId"] != tc.twin {
+			t.Errorf("%s: mcmId plain %q, twin %q; want 826334 and %q",
+				tc.desc, plain.Identifiers["mcmId"], twin.Identifiers["mcmId"], tc.twin)
+		}
 	}
 }

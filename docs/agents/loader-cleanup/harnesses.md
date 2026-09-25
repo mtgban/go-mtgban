@@ -220,7 +220,8 @@ AGENTS.md "How to verify a change" says. Save the upstream once:
 - Riftbound: `curl -sSL` the playriftbound.com gallery page for its
   `buildId`, then the data URL, passed with `-gallery`.
 - Lorcana: `lorcanajson.org/files/current/en/allCards.json`, passed with
-  `-lorcana`.
+  `-lorcana`, and `b2://mtgban-datastore/lorcana/cardmarket_catalog.json.xz`,
+  passed with `-cardmarket-catalog`.
 
 Then load both builds here with `P` (section B) and replay them (C to E)
 before calling the change safe for today's loader.

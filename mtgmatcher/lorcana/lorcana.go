@@ -145,6 +145,10 @@ type AllCards struct {
 			// feed keyed on that id has nothing to match against otherwise.
 			// Populated by datastore-gen; absent from the upstream file.
 			TcgPlayerExtraIDs []int `json:"tcgPlayerExtraIds,omitempty"`
+			// CardmarketExtraIDs is the same foil's Cardmarket product (the
+			// Panorama's V.2), which the ★ twin takes as its own Cardmarket
+			// id. Populated by datastore-gen.
+			CardmarketExtraIDs []int `json:"cardmarketExtraIds,omitempty"`
 		} `json:"externalLinks"`
 	} `json:"cards"`
 
@@ -439,6 +443,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		if card.ExternalLinks.CardmarketID != 0 {
 			cardmarketClaims[card.ExternalLinks.CardmarketID]++
 		}
+		for _, extra := range card.ExternalLinks.CardmarketExtraIDs {
+			cardmarketClaims[extra]++
+		}
 	}
 
 	// A foil TCGplayer sells as a product of its own is a printing of its
@@ -484,7 +491,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 			twin.ExternalLinks.TcgPlayerID = extra
 			twin.ExternalLinks.TcgPlayerExtraIDs = nil
+			// The row's own Cardmarket id is the plain art's (the V.1); the
+			// Panorama's is published beside a single extra product.
 			twin.ExternalLinks.CardmarketID = 0
+			if len(extras) == 1 && len(card.ExternalLinks.CardmarketExtraIDs) == 1 {
+				twin.ExternalLinks.CardmarketID = card.ExternalLinks.CardmarketExtraIDs[0]
+			}
 			twin.ExternalLinks.CardTraderID = 0
 			twin.Variant += "★"
 			// Upstream's fullFoil is the Panorama's own art, borderless where full
