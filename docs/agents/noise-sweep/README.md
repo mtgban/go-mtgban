@@ -78,7 +78,11 @@ the wrong targets — neither is where the value is:
   the remaining misses are mostly products no catalog carries. Leave sealed
   targets parked unless asked for them specifically.
 
-Only a couple of games in flight at once.
+Only a couple of games in flight at once. That limit is for fixes, not the
+survey. Before picking a target or fixing anything, present the whole
+inventory, categorized by symptom: causes marked unverified until replayed,
+exclusions and uninspected sources listed, raw refusal lines kept apart from
+distinct listings. An inventory-only request stops there.
 
 ### 2. Replay the corpus through the *production path*
 
@@ -121,27 +125,42 @@ work; see `harnesses.md`.
 | Vendor's number is its own index, not the card's | scraper, keyed by blueprint/sku id when the index names another card |
 | Treatment / finish / print-run semantics | matcher rules |
 | Vendor sells a non-card (marker, insert, binder label) | scraper → `ErrUnsupported` |
+| Vendor sells a printing that was never made | scraper → skip (`ErrUnsupported`), class `unmade`, after a census of the whole shelf or edition; replay the full catalog so only the bogus rows move (#750, #756) |
 | One vendor product covers two printings | leave refused, record it |
 | No row exists at all | datastore gap — record, do not paper over |
 
 Datastore gaps are the last resort, not the first explanation. A missing row
 says nothing about what was printed: check the vendor's own SKUs first.
 
+A skip, silence or refusal rule fires on every row it matches, not just the
+shape it was written for: run its predicate over the whole capture and check
+each hit against the loaded backend. "Emblem" caught Heraldic Banner and
+Emblem of the Warmind twice (mintcard #476, hareruya #737).
+
 ### 5. Fix, then re-measure both directions
 
 Re-run the replay (did it land?) **and** a regression corpus for a vendor that
 already works (did anything move?). Grade per listing — gained / lost / moved —
-never on recall alone. Record the mapping line (formula in step 2,
-harnesses.md §G) at the base sha and at the tip, over the same N. The
-Cardmarket walk harness is the standing regression corpus for Flesh and
-Blood; build the equivalent before touching shared matcher code for any
-other game.
+never on recall alone, and read the gains: a new landing can be a new misprice.
+A row that goes refused→skipped counts as lost, not landed, unless the backend
+holds no printing it could land on. For the `BridgeHelps` games (One Piece,
+Riftbound, Lorcana) bantool also runs when the CardTrader bridge fails to load,
+so replay with the bridge and again without it: the bridge resolves by id first
+and hid 23 One Piece products a name-route change broke. Record the mapping
+line (formula in step 2, harnesses.md §G) at the base sha and at the tip, over
+the same N. The Cardmarket walk harness is the standing regression corpus for
+Flesh and Blood; build the equivalent before touching shared matcher code for
+any other game.
 
 ### 6. Pin each rule with a test
 
 Inline fixture of datastore rows copied **verbatim** from the real datastore,
 in the matcher package; table tests in the scraper package. A rule with no test
 is a rule the next datastore release silently breaks.
+
+Revert the rule alone and re-run its test: the test must fail. A test that
+still passes, or that calls a copy of the code it means to check, pins
+nothing.
 
 ### 7. Gate, commit, PR
 
@@ -198,10 +217,13 @@ Romance Dawn (Pre-Errata): 39 of 78 products have no row   [rows-absent, 39 line
 
 Classify each as set-absent / rows-absent / finish-absent / numbering-absent /
 name-wrong / product-not-a-card, and give a line count so the work can be
-ranked. **Verify absence against the loaded backend before listing anything** —
-a gap census run in 2026-09-07 had 26 of 59 candidates refuted on a second
-look, mostly rows filed under another name, another set code, or with the
-distinguishing detail in `variant`/`promoTypes` instead of `name`.
+ranked. **Before listing a gap, have a separate pass try to refute it**
+against the loaded backend: another spelling, another set code (promo and
+sibling sets too), the detail in `variant`/`promoTypes`/finish, the number
+with a prefix or suffix, another language, and the vendor's own id
+(`b.MatchID`, or `b.ConvertID(mtgmatcher.IDSpaceCardmarket, id)`). It refuted
+26 of 59 claimed gaps on 2026-09-07 and 16 of 22, in whole or part, on
+2026-09-24.
 
 Land both in `~/src/claude-scratchpad/ci-sweep/STATUS.md` (PR, harness path,
 before/after, a `Residue:` line per leftover shape) and put the verified gaps in
