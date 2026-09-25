@@ -341,14 +341,24 @@ var fabRenames = map[int]string{
 	905276: "Otherworldly Sins (Red) (Marvel)",                // "Otherwordly Sins (Red) (Marvel)", JDG090
 }
 
-// fabRenamed overwrites a Cardmarket Flesh and Blood product's name with
-// the one fabRenames corrects it to, so every step downstream - the
-// shelf, the treatment, the matcher's name hash - reads the card's real
-// name rather than the vendor's bad one. Called from matchFab, before
-// anything else sees the product.
+// fabRenumbers corrects a Cardmarket Flesh and Blood product whose own
+// number names another card, the same way fabRenames corrects a name.
+var fabRenumbers = map[int]string{
+	794820: "269", // Heartbeat of Candlehold (Extended Art Rainbow Foil), "270" is Sigil of Brilliance
+	875169: "062", // The Librarian, Magister of History (Marvel), "072" is Cap of Quick Thinking
+}
+
+// fabRenamed overwrites a Cardmarket Flesh and Blood product's name and
+// number with the ones fabRenames and fabRenumbers correct them to, so
+// every step downstream - the shelf, the treatment, the matcher's name
+// hash - reads the card's real name rather than the vendor's bad one.
+// Called from matchFab, before anything else sees the product.
 func fabRenamed(product *cm.Product) {
 	if name, found := fabRenames[product.IDProduct]; found {
 		product.Name = name
+	}
+	if number, found := fabRenumbers[product.IDProduct]; found {
+		product.Number = number
 	}
 }
 
