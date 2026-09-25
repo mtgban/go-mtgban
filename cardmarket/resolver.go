@@ -511,6 +511,16 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			}
 		}
 
+		if r.gameID == cm.GameRiftbound {
+			if shelf, found := riftboundShelves[product.ExpansionName]; found {
+				label := shelf.label
+				if strings.HasSuffix(product.Number, "*") {
+					label = shelf.starLabel
+				}
+				edition, number = shelf.edition, strings.TrimSpace(number+" "+label)
+			}
+		}
+
 		cardID, err = r.backend.Match(&mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return "", "", false, nil
