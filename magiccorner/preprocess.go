@@ -266,7 +266,7 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	// its ordinal disambiguation is unverified; deferred rather than folded
 	// in here.
 	capitalized := strings.ToUpper(cardName[:1]) + cardName[1:]
-	if mtgmatcher.IsBasicLand(capitalized) {
+	if magic.IsBasicLand(capitalized) {
 		return ""
 	}
 
@@ -590,7 +590,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			switch {
 			case len(numbers) == 1:
 				variation = strconv.Itoa(numbers[0])
-			case len(numbers) == 2 && !mtgmatcher.IsBasicLand(cardName):
+			case len(numbers) == 2 && !magic.IsBasicLand(cardName):
 				switch variation {
 				case "V.1":
 					variation = strconv.Itoa(numbers[0])
@@ -650,7 +650,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			variation = "Promo Pack"
 		// Full-art Zendikar lands
 		case edition == "Zendikar":
-			if mtgmatcher.IsBasicLand(cardName) {
+			if magic.IsBasicLand(cardName) {
 				s := strings.Fields(cardName)
 				if len(s) > 1 {
 					cardName = s[0]
@@ -660,7 +660,7 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 		default:
 			// Try using the number, except the set code can randomly be
 			// 2 or 3 characters.
-			if mtgmatcher.IsBasicLand(cardName) {
+			if magic.IsBasicLand(cardName) {
 				for _, lengthToDrop := range []int{2, 3} {
 					if len(extra) > lengthToDrop {
 						internalNumber := strings.TrimLeft(extra[lengthToDrop:], "0")

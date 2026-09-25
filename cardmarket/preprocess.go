@@ -337,7 +337,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		// Drop variant and number
 		variant = ""
 
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
@@ -434,7 +434,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 				variant = "Reminder Text"
 			}
 		default:
-			if variant == "V.1" && !mtgmatcher.IsBasicLand(cardName) {
+			if variant == "V.1" && !magic.IsBasicLand(cardName) {
 				variant = "Reminder Text"
 			}
 		}
@@ -445,7 +445,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		}
 
 	case "Fourth Edition: Black Bordered":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
@@ -463,7 +463,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			vars = strings.Split(number, "-")
 			variant = vars[0]
 		}
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			if variant == "V.1" {
 				edition = "J14"
 				variant = ""
@@ -932,7 +932,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			variant = number[2:]
 			if cardName == "Tranquil Thicket" {
 				variant = "26"
-			} else if mtgmatcher.IsBasicLand(cardName) {
+			} else if magic.IsBasicLand(cardName) {
 				switch number[:2] {
 				case "10", "20":
 					edition = "EVG"
@@ -1046,7 +1046,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		case "Nicol Bolas, Dragon-God":
 			variant = "Promo Pack"
 		default:
-			if variant == "V.1" || mtgmatcher.IsBasicLand(cardName) {
+			if variant == "V.1" || magic.IsBasicLand(cardName) {
 				variant = "Promo Pack"
 			} else if variant == "V.2" {
 				variant = "Prerelease"
@@ -1166,7 +1166,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			switch variant {
 			case "V.1", "V.3":
 				variant = number
@@ -1273,7 +1273,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		"Commander 2019",
 		"Commander: Ikoria":
 		variant = number
-		if ogVariant == "V.2" && !mtgmatcher.IsBasicLand(cardName) {
+		if ogVariant == "V.2" && !magic.IsBasicLand(cardName) {
 			variant = "oversized"
 		}
 
@@ -1339,7 +1339,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 
 	case "Murders at Karlov Manor":
 		variant = number
-		if !mtgmatcher.IsBasicLand(cardName) {
+		if !magic.IsBasicLand(cardName) {
 			if ogVariant == "V.1" {
 				variant = "a"
 			} else if ogVariant == "V.2" {
@@ -1555,7 +1555,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		}
 
 		// Detect thick display commander from these sets
-		if !mtgmatcher.IsBasicLand(cardName) && ogVariant == "V.2" {
+		if !magic.IsBasicLand(cardName) && ogVariant == "V.2" {
 			variant += " Thick"
 		}
 	}

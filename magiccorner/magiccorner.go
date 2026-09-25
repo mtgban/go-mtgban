@@ -162,7 +162,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				// The basic lands need custom handling for each edition if they
 				// aren't found with other methods, ignore errors until they are
 				// added to the variants table.
-				if mtgmatcher.IsBasicLand(card.Name) {
+				if magic.IsBasicLand(card.Name) {
 					continue
 				}
 				var alias *mtgmatcher.AliasingError

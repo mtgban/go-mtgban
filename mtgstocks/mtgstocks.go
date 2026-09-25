@@ -9,6 +9,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -74,7 +75,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 			"World Championship Decks":
 			return nil
 		default:
-			if mtgmatcher.IsBasicLand(theCard.Name) {
+			if magic.IsBasicLand(theCard.Name) {
 				return nil
 			}
 		}

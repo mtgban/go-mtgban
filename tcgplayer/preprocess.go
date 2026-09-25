@@ -502,7 +502,7 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 		}
 	case "Battle for Zendikar",
 		"Oath of the Gatewatch":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			if cardName == "Wastes" && variant == "" {
 				variant = "183a"
 			} else if !strings.HasSuffix(product.CleanName, "Full Art") {
@@ -568,7 +568,7 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 			}
 		}
 	case "Launch Party & Release Event Promos":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
 		}
 		switch cardName {

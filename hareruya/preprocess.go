@@ -289,7 +289,7 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 			variant = number + "a"
 		}
 	case "Judge Foil":
-		if mtgmatcher.IsBasicLand(cardName) && strings.Contains(product.ProductNameEN, "Jacinto") {
+		if magic.IsBasicLand(cardName) && strings.Contains(product.ProductNameEN, "Jacinto") {
 			edition = "P23"
 			variant = ""
 		}

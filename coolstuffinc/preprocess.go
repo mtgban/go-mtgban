@@ -729,12 +729,12 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 
 	switch edition {
 	case "Coldsnap Theme Deck":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 	case "Zendikar", "Battle for Zendikar", "Oath of the Gatewatch":
 		// Strip the extra letter from the name
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			cardName = strings.Fields(cardName)[0]
 		}
 	case "Unstable":

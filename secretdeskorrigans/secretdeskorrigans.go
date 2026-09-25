@@ -12,6 +12,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-retryablehttp"
@@ -187,7 +188,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 				"Portal",
 				"Portal Second Age",
 				"Tempest":
-				if mtgmatcher.IsBasicLand(cardName) {
+				if magic.IsBasicLand(cardName) {
 					return
 				}
 			}

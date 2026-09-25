@@ -129,7 +129,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		cardName = strings.TrimSuffix(cardName, " Ultimate Edition")
 		edition = "Secret Lair: Ultimate Edition"
 	// Found at end, move it to edition
-	case strings.HasSuffix(cardName, "Godzilla") && mtgmatcher.IsBasicLand(cardName):
+	case strings.HasSuffix(cardName, "Godzilla") && magic.IsBasicLand(cardName):
 		cardName = strings.TrimSuffix(cardName, " Godzilla")
 		edition = "SLD"
 	// Found at beginning, just drop it
@@ -140,7 +140,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	case strings.Contains(cardName, "APAC") || strings.Contains(cardName, "EURO"):
 		variants := mtgmatcher.SplitVariants(cardName)
 		cardName = variants[0]
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			edition = "European Land Program"
 			if strings.Contains(cardName, "APAC") {
 				edition = "Asia Pacific Land Program"
@@ -181,7 +181,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	variation = neonInkWording(variation)
 
 	// Repeat to catch numbers
-	if mtgmatcher.IsBasicLand(cardName) {
+	if magic.IsBasicLand(cardName) {
 		num := mtgmatcher.ExtractNumber(cardName)
 		if num != "" {
 			cardName = strings.Replace(cardName, num, "", 1)
@@ -349,7 +349,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			edition = "PWOS"
 		}
 	case "Promos: Launch Party and Release Event":
-		if mtgmatcher.IsBasicLand(cardName) {
+		if magic.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
 		}
 	case "Promos: WPN and Gateway":

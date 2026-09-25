@@ -65,7 +65,7 @@ func processCards(ctx context.Context, ds *mtgmatcher.Backend, client *api.Clien
 			}
 			if !*VerboseOpt &&
 				(strings.HasPrefix(theCard.Edition, "Promo Pack") ||
-					mtgmatcher.IsBasicLand(theCard.Name) ||
+					magic.IsBasicLand(theCard.Name) ||
 					strings.Contains(strings.ToLower(theCard.Variation), "serial") ||
 					strings.Contains(theCard.Variation, "Thick Stock") ||
 					theCard.Edition == "Secret Lair Drop" ||
