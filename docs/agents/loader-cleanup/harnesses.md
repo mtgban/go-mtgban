@@ -160,6 +160,9 @@ func TestZZReplay(t *testing.T) {
 
 `ZZ_GAME=<game> ZZ_DIR=<dir> ZZ_OUT=<file> go test -count=1 -run '^TestZZReplay$' ./cardmarket/`
 on each side, then `diff`. Gundam and Palworld have no Cardmarket index.
+This replay skips the bridge and the game passes (`claimByID`, `giveWay`,
+`disownBridged`); to grade products rather than diff loaders, use the walk in
+`../cardmarket-census/`.
 
 ## D. Star City Games catalog replay (`starcitygames/zz_scg_replay_test.go`)
 
