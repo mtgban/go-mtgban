@@ -867,10 +867,11 @@ game, `cache-lorcana` included — Lorcana moved off its own former public URL
 alongside this doc's other stale claims — pulls its `.json.xz` from the
 private `mtgban-datastore` B2 bucket (built by `datastore-gen`) and caches
 it under a key built from the object's own metadata, since B2 serves no HTTP
-etag. The test step
-then exports all nine `<GAME>_PATH` variables before running
-`go test ./... -v`, so the data-backed suites actually execute in CI rather
-than skipping into a falsely green run.
+etag. Each `test-<game>` job then exports only its own game's `<GAME>_PATH`:
+`test-magic` runs `go test ./... -v` over the whole tree, and the other eight
+run a scoped list: their `mtgmatcher/<game>` suite, a few scraper packages
+and `internal/vocabulary`. A data-backed suite outside its game's list skips
+green in every job.
 
 ---
 
