@@ -43,7 +43,7 @@ func (r *resolver) onePieceByID(product *cm.Product) (string, error) {
 	if !found {
 		return "", nil
 	}
-	id, err := r.backend.MatchID(fmt.Sprint(tcgID), false)
+	id, err := r.backend.MatchID(fmt.Sprint(tcgID), r.foilVersions[product.IDProduct])
 	if err != nil || offCode(r.backend, product, id) {
 		return "", nil
 	}
@@ -69,6 +69,7 @@ func offCode(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
 // answered with by id, before any product is named by its wording.
 func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) {
 	r.claimed = map[string]bool{}
+	r.foilVersions = foilVersions(r.tcgBridge, byExpansion, products, items)
 	for _, exp := range items {
 		for _, id := range byExpansion[exp.IDExpansion] {
 			product := &cm.Product{IDProduct: id, Name: products[id].Name, ExpansionName: exp.Name}
@@ -83,6 +84,34 @@ func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.Cata
 			}
 		}
 	}
+}
+
+// foilVersions names the products the bridge links to the same TCGplayer
+// product as a lower version on their shelf. CardTrader keeps one blueprint
+// for both finishes of a The Best DON!!, where Cardmarket sells the foil as
+// the card's V.2.
+func foilVersions(bridge map[int]int, byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) map[int]bool {
+	foils := map[int]bool{}
+	for _, exp := range items {
+		lowest := map[int]int{}
+		for _, id := range byExpansion[exp.IDExpansion] {
+			tcgID, found := bridge[id]
+			if !found {
+				continue
+			}
+			low, seen := lowest[tcgID]
+			if !seen || products[id].Version < low {
+				lowest[tcgID] = products[id].Version
+			}
+		}
+		for _, id := range byExpansion[exp.IDExpansion] {
+			tcgID, found := bridge[id]
+			if found && products[id].Version > lowest[tcgID] {
+				foils[id] = true
+			}
+		}
+	}
+	return foils
 }
 
 // giveWay refuses a One Piece product whose wording landed on a printing
