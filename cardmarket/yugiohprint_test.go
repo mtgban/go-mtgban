@@ -5,7 +5,27 @@ import (
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
+
+// yugiohEuropeanPrint answers the uuid of the row numbered exactly number
+// in setName, or "" where the datastore has no row at that number - so a
+// case can hold on either shape of the datastore.
+func yugiohEuropeanPrint(t *testing.T, b *mtgmatcher.Backend, setName, number string) string {
+	t.Helper()
+	set, err := b.GetSetByName(setName)
+	if err != nil {
+		t.Fatalf("GetSetByName(%q) = %v", setName, err)
+	}
+	for _, uuid := range b.GetUUIDsInSet(set.Code) {
+		co, err := b.GetUUID(uuid)
+		if err == nil && co.Number == number {
+			return uuid
+		}
+	}
+	return ""
+}
 
 // TestYugiohIndexPrints pins what the version index names on the shelves
 // Cardmarket split into one product per regional print: a print, never a
@@ -16,6 +36,16 @@ func TestYugiohIndexPrints(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
+
+	// Once datastore-gen mints the card's own European first print, the
+	// resolver gives up the CardTrader bridge to the North American row for
+	// its own numbered printing instead; hold either outcome.
+	europeanWant, europeanErr := "", errForeign
+	uuid := yugiohEuropeanPrint(t, b, "Magic Ruler", "MRL-E047")
+	if uuid != "" {
+		europeanWant, europeanErr = uuid, nil
+	}
+
 	for _, tt := range []struct {
 		desc                    string
 		mkmID, bridgeTCG        int
@@ -31,7 +61,7 @@ func TestYugiohIndexPrints(t *testing.T) {
 		{
 			desc:  "the European print gives the bridged North American row up",
 			mkmID: 104729, bridgeTCG: 22255, name: "Mystical Space Typhoon (V.1 - Ultra Rare)", number: "047", expansion: "Magic Ruler",
-			wantErr: errForeign,
+			want: europeanWant, wantErr: europeanErr,
 		},
 		{
 			desc:  "the European print keeps a row of its own",
