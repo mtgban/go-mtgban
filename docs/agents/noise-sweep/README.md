@@ -93,9 +93,16 @@ Write the harness as a `zz_*_test.go` file, copy it into the package, run it,
 then delete it — never commit it. Keep the source in the durable scratchpad so
 the next session can re-run it. Templates: `harnesses.md`.
 
-Output one TSV row per distinct listing: input fields, verdict
-(`landed`/`refused`/`skipped`), and where it landed. That file is the baseline
-every later measurement is diffed against.
+Output one TSV row per listing attempt, header `side key verdict class where`.
+`key` is the vendor's own unit: product id x finish x language, never
+condition. `verdict`: landed / twin (a real card left unpriced because a
+sibling product holds its printing) / refused / silent (a real card dropped
+with no log line) / skipped. `class`: card, or why the row is out of scope
+(token, sealed, noncard, foreign, unreleased, unmade, nostock). **Mapping %** =
+landed / (landed + twin + refused + silent) over class=card keys, taking the
+best verdict per key and counting a skipped card as silent (`harnesses.md`
+§G). If a fix moves rows out of scope, recompute Before on the After scope.
+This file is the baseline every later measurement is diffed against.
 
 ### 3. Probe the datastore before writing any rule
 
@@ -124,9 +131,11 @@ says nothing about what was printed: check the vendor's own SKUs first.
 
 Re-run the replay (did it land?) **and** a regression corpus for a vendor that
 already works (did anything move?). Grade per listing — gained / lost / moved —
-never on recall alone. The Cardmarket walk harness is the standing regression
-corpus for Flesh and Blood; build the equivalent before touching shared matcher
-code for any other game.
+never on recall alone. Record the mapping line (formula in step 2,
+harnesses.md §G) at the base sha and at the tip, over the same N. The
+Cardmarket walk harness is the standing regression corpus for Flesh and
+Blood; build the equivalent before touching shared matcher code for any
+other game.
 
 ### 6. Pin each rule with a test
 
@@ -164,18 +173,20 @@ dump (`b2://mtgban-dumps`) when the question is what customers actually saw.
 Two deliverables, every time. Neither is optional and neither is a paragraph of
 prose: the reader is deciding what to work on next.
 
-**a. Results — per game and per scraper, before and after.** One row per
-target, so the improvement is legible without re-reading the work:
+**a. Results — mapping % first, one row per target.** N is the same on both
+sides; After is measured at the merged tip, by a replay or the first
+post-merge CI tally — a projection is not an After, and unmerged work gets
+none:
 
-| Game | Scraper | Before | After | Landed | Skipped | Left |
-|---|---|---|---|---|---|---|
-| Flesh and Blood | starcitygames | 158 | 40 | 116 | 2 | 40 |
-| Yu-Gi-Oh | cardtrader | 1,029 | 328 | 701 | 0 | 328 |
+| Game | Target | N | Before | After | +Landed | Moved | Left (why) | Basis |
+|---|---|---|---|---|---|---|---|---|
+| Flesh and Blood | cardmarket (+market) | 16,926 products | 99.24% | 99.25% | +1 | 0 | 127: 87 twins, 40 refused | replay base→tip |
 
-Roll it up per game as well as per scraper, and say what the numbers are
-counting (refusal lines, spread candidates, ratio flags — they are not
-comparable). Every "left" figure gets a one-line reason, and if a target
-regressed anywhere, say so before the wins.
+Moved counts wrong landings corrected; turning one into a refusal lowers the
+rate. Roll up per game as "k of n targets ≥ 99%, worst target", never a mean
+of percentages; raw refusal lines go in a separate noise table. Every "left"
+figure gets a one-line reason, and if a target regressed anywhere, say so
+before the wins.
 
 **b. Gaps — per game, with example listings.** Everything the datastore does
 not carry, quoted as the vendor wrote it plus the row that ought to exist:

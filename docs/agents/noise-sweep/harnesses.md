@@ -38,6 +38,7 @@ func TestZZReplay(t *testing.T) {
 	f, err := os.Open(path); if err != nil { t.Fatal(err) }
 	defer f.Close()
 	out, _ := os.Create(os.Getenv("ZZ_OUT")); defer out.Close()
+	fmt.Fprintln(out, "side\tkey\tverdict\tclass\twhere")
 
 	seen := map[string]bool{}
 	var n, landed, skipped int
@@ -46,8 +47,10 @@ func TestZZReplay(t *testing.T) {
 		var rec struct{ Head string `json:"head"` }
 		if err := json.Unmarshal(sc.Bytes(), &rec); err != nil { t.Fatal(err) }
 		m := zzHead.FindStringSubmatch(rec.Head)
-		if m == nil || seen[m[5]] { continue }   // dedupe on the sku/id
-		seen[m[5]] = true; n++
+		if m == nil { continue }
+		key := m[5] // the sku is this catalog's own product id; fold in finish/language where the head carries them
+		if seen[key] { continue }
+		seen[key] = true; n++
 
 		p := CatalogProduct{Name: m[2], Set: m[3], SKU: m[5], /* … */}
 		id, err := resolveProductID(b, GameFleshAndBlood, p)   // the PRODUCTION path
@@ -63,9 +66,9 @@ func TestZZReplay(t *testing.T) {
 			co, _ := b.GetUUID(id)
 			where = co.Name + "|" + co.SetCode + "|" + co.Number + "|" + strings.Join(co.PromoTypes, "+") + "|" + id
 		}
-		fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%s\n", m[2], m[3], m[5], verdict, where)
+		fmt.Fprintf(out, "\t%s\t%s\tcard\t%s\n", key, verdict, where) // non-card skips: set class by hand
 	}
-	t.Logf("replayed %d distinct: %d land, %d skipped, %d refused", n, landed, skipped, n-landed-skipped)
+	t.Logf("replayed %d keys: %d land, %d skipped, %d refused", n, landed, skipped, n-landed-skipped)
 }
 ```
 
@@ -215,3 +218,34 @@ for d in set(old) & set(new):
 
 Magic's goldens must stay byte-identical — if a change forces a Magic regen,
 the change is wrong.
+
+## G. Mapping %
+
+Reads the `side key verdict class` TSV from step 2 and prints, per file and
+side, N and mapping % (`landed / (landed + twin + refused + silent)`, class
+`card` only). Rows sharing a key collapse to their best verdict; `x-<class>`
+counts are tallied but excluded from N, and never printed.
+
+```python
+#!/usr/bin/env python3
+import csv, sys, collections
+
+RANK = {'landed': 0, 'twin': 1, 'refused': 2, 'silent': 3, 'skipped': 4}
+
+for path in sys.argv[1:]:
+    best = {}
+    for r in csv.DictReader(open(path), delimiter='\t', quoting=csv.QUOTE_NONE):
+        k = (r.get('side', ''), r['key'])
+        if k not in best or RANK[r['verdict']] < RANK[best[k]['verdict']]:
+            best[k] = r
+    by = collections.defaultdict(collections.Counter)
+    for (side, _), r in best.items():
+        v = r['verdict'] if r['verdict'] != 'skipped' else 'silent'
+        by[side][v if r['class'] == 'card' else 'x-' + r['class']] += 1
+    if len(by) > 1:
+        by['all'] = sum(by.values(), collections.Counter())
+    for side, c in sorted(by.items()):
+        n = c['landed'] + c['twin'] + c['refused'] + c['silent']
+        pct = 100.0 * c['landed'] / n if n else 0.0
+        print('%s\t%s\tN=%d\t%.3f%%' % (path, side, n, pct))
+```
