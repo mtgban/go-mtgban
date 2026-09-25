@@ -2,7 +2,7 @@
 
 Copies of the harnesses that worked, generalised. Drop into the scraper's
 package as `zz_*_test.go`, run, then delete the copy — the source of truth
-lives in `~/src/claude-scratchpad/ci-sweep/<tag>/`.
+lives in `~/src/claude-scratchpad/ci-sweep/<date>/<tag>/`.
 
 Datastore env vars: `ALLPRINTINGS5_PATH`, `FLESHANDBLOOD_PATH`, `YUGIOH_PATH`,
 `POKEMON_PATH`, `ONEPIECE_PATH`, `LORCANA_PATH`, `RIFTBOUND_PATH`,
@@ -69,7 +69,7 @@ func TestZZReplay(t *testing.T) {
 }
 ```
 
-Run and clean up in one go:
+Run and clean up in one go (`D=~/src/claude-scratchpad/ci-sweep/<date>`):
 
 ```bash
 cp $D/<tag>/zz_replay_test.go <pkg>/ && \
@@ -81,36 +81,43 @@ rm <pkg>/zz_replay_test.go
 ## B. CardTrader replay (blueprint-driven)
 
 CardTrader's incident carries the raw blueprint in `ctx[1]`. Parse it back into
-a `Blueprint`, then run the four game-specific readers the listing loop uses.
-A listing's finish is not in the log, so sweep the plausible finishes and count
-a line as landed if **any** of them lands.
+a `Blueprint` and replay it through `processProducts`, the listing loop
+itself. It tries the blueprint's TCGplayer and Cardmarket ids before `Match`,
+and it applies filters that a hand-built `Match` skips. A listing's finish is
+not in the log, so send one synthetic listing per plausible finish, and count
+the line as landed if any of them lands.
 
 ```go
 var zzBP = regexp.MustCompile(`&\{ID:(\d+) Name:(.*?) Version:(.*?) GameID:\d+ CategoryID:(\d+) ExpansionID:(\d+) ScryfallID:\S* TCGplayerID:(\d+) CardMarketIDs:\[(.*?)\] Expansion:\{Name:(.*?) Code:(.*?)\} Properties:\{Number:(.*?) Language:(.*?)\}`)
 
 // …per blueprint, per plausible finish:
-var product Product
-product.Properties.FabFoilNew = treatment      // or PokemonReverse / FirstEdition …
-in := mtgmatcher.InputCard{
-	Name:      gameName(gameID, &bp),
-	Edition:   gameEdition(gameID, &bp),
-	Variation: gameVariation(gameID, &bp, bp.Properties.Number),
-	Finish:    gameFinish(gameID, &bp, product),
-	Foil:      gameFoil(gameID, product),
-}
-id, err := b.Match(&in)
+bp.GameID = GameFleshAndBlood // processProducts drops any other GameID silently
+ct := &Market{backend: b, gameID: GameFleshAndBlood, blueprints: map[int]*Blueprint{bp.ID: &bp},
+	logCallback: func(f string, a ...any) { logged = append(logged, fmt.Sprintf(f, a...)) }}
+var p Product
+p.ID, p.BlueprintID, p.Quantity = i, bp.ID, 1
+p.Price = CTPrice{Cents: 100, Currency: "USD"} // any other currency is dropped without exchangeRates
+p.Properties.FabLanguage = "en"                // the game's own field; anything else is skipped
+p.Properties.FabFoilNew = treatment            // or PokemonReverse / FirstEdition …
+ch := make(chan resultChan, 1)
+ct.processProducts(ch, bp.ID, []Product{p}); close(ch)
 ```
+
+A listing with no result on `ch` was refused if `logCallback` printed
+something, and skipped otherwise. `cardtrader/cardmarketid_test.go` is a
+minimal working example.
 
 Weight rows by how many log lines each blueprint accounted for — one blueprint
 can be 28 lines, and fixing it is worth more than 28 singletons.
 
 ## C. Datastore probes
 
-Python over the game JSON (top level: `cards` list, `sets` dict code→{name}):
+Python over the game JSON (`{"meta":…,"data":{game, sets, cards, sealed}}`;
+`sets` is a dict code→{name}):
 
 ```python
 import json, sys
-d = json.load(open(sys.argv[1])); cards = d["cards"]; sets = d["sets"]
+d = json.load(open(sys.argv[1]))["data"]; cards = d["cards"]; sets = d["sets"]
 def show(title, pred, limit=30):
     rows = [c for c in cards if pred(c)]
     print("==", title, len(rows))
@@ -127,7 +134,7 @@ A reusable Go probe (built once from a temp `cmd/zzX` dir in a worktree)
 supports `set:CODE`, `name:SUBSTR`, `setname:NAME`, `sets:` — worth building
 when you will probe a game more than a handful of times.
 
-Magic is 942MB: stream it or grep it, do not `json.load` it.
+Magic is ~1 GB: stream it or grep it, do not `json.load` it.
 
 ## D. Regression diff (per listing, never recall)
 
@@ -163,15 +170,15 @@ Copy the rows **verbatim** out of the real datastore so the test states what the
 data actually looks like, then load them as a backend:
 
 ```go
-const labelFixture = `{
+const labelFixture = `{"data": {
   "game": "fleshandblood",
-  "sets": {"ROS": {"name": "Rosetta", "releaseDate": "2025-04-25"}},
+  "sets": {"ROS": {"name": "Rosetta", "releaseDate": "2024-09-20"}},
   "cards": [
-    {"externalLinks": {"fabId": "ROS001"}, "fabId": "ROS001", "finish": "Normal",
+    {"externalLinks": {"fabId": "ROS001", "tcgPlayerId": 561243}, "finish": "Normal",
      "id": "ros001_561243", "name": "Florian, Rotwood Harbinger", "number": "ROS001",
      "rarity": "Majestic", "setCode": "ROS"}
   ]
-}`
+}}`
 
 b, err := Load(strings.NewReader(labelFixture))
 if err != nil { t.Fatal(err) }
@@ -181,9 +188,11 @@ if err != nil { t.Fatal(err) }
 Generate the fixture rather than typing it:
 
 ```python
-ids = ["ros001_561243", "ros001-mv_561247_cold"]
-rows = {c["id"]: c for c in json.load(open(path))["cards"] if c["id"] in ids}
-sets = {rows[i]["setCode"]: d["sets"][rows[i]["setCode"]] for i in ids}
+ids = ["ros001_561243", "ros001-mv_561247_coldfoil"]
+d = json.load(open(path))["data"]
+rows = [c for c in d["cards"] if c["id"] in ids]
+sets = {c["setCode"]: d["sets"][c["setCode"]] for c in rows}
+print(json.dumps({"data": {"game": d["game"], "sets": sets, "cards": rows}}, indent=2))
 ```
 
 Include the negative case: the listing that must still refuse.
@@ -192,7 +201,7 @@ Include the negative case: the listing that must still refuse.
 
 `mtgmatcher/<game>/testdata/<game>_test_data.json` holds baked
 `{description, input, uuid, error}` cases; regenerate with
-`go test -run TestXMatch ./mtgmatcher/<game>/ -update-<game>`. It refuses to
+`go test ./mtgmatcher/<game>/ -update-<game>`. It refuses to
 flip a case between success and error unless the description carries a
 `negative:` prefix — when a flip is genuinely intended, edit that entry by hand
 first, and diff the regenerated file case-by-case before committing:
