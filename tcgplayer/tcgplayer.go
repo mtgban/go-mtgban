@@ -344,7 +344,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 							continue
 						}
 
-						printing := "NORMAL"
+						printing := "NON FOIL"
 						if sku.PrintingID == 2 {
 							printing = "FOIL"
 						}
