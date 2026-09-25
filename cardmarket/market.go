@@ -607,7 +607,7 @@ func marketLoneFlag(b *mtgmatcher.Backend, param, cardID, cardIDFoil string) boo
 	case "isFoil":
 		return co.Foil || co.Etched
 	case "isFirstEd":
-		return mtgmatcher.NormalizeFinish(co.Finish) == "1stedition"
+		return co.Finish == mtgmatcher.FinishSlug(mtgmatcher.Run1stEdition)
 	}
 	return false
 }

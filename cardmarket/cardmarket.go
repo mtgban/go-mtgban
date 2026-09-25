@@ -437,7 +437,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		// same blended first-pair price under every uuid this product's
 		// "not reverse holo" side actually resolves to, not splitting this
 		// check itself into a third case.
-		second = co.Finish == mtgmatcher.NormalizeFinish(pokemonReverseHolo)
+		second = co.Finish == mtgmatcher.FinishSlug(pokemonReverseHolo)
 	}
 
 	// A printing on the first side takes the first pair and hands the
