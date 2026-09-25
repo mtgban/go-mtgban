@@ -139,6 +139,9 @@ var tcgIDOverrides = map[int]int{
 	171625: 252517, // Charizard, Gold Metal, Celebrations
 	171624: 252516, // Pikachu, Gold Metal, Celebrations
 	314342: 616824, // Greninja ex, Metal Card, Twilight Masquerade
+	// Yu-Gi-Oh: the qualifier copy named the YCS one, which has none.
+	341992: 679562, // Blue-Eyes White Dragon, 25YC-ENP01 World Championship Qualifier
+	346315: 637082, // Blue-Eyes White Dragon, 25YC-ENP01 YCS Stamp
 	// Lorcana: none sent for the one errata reprint TCGplayer sells.
 	311912: 597095, // Bucky - Squirrel Squeak Tutor, Errata Version
 }
