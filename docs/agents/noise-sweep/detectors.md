@@ -25,7 +25,8 @@ columns as bid and ask.
 
 ## Capturing
 
-Needs `MTGBAN_SIG` from `~/src/go-mtgban/.env` (source it, never print it).
+Needs `BAN_SIG` (named `MTGBAN_SIG` before 2026-09) from `~/src/go-mtgban/.env`
+(source it, never print it).
 
 **Check the key has not expired before you fetch anything.** An expired
 signature does not fail: every page answers **HTTP 200** with a normal-sized
@@ -40,7 +41,7 @@ timestamp, so this is answerable offline, without spending a request:
 set -a; . ~/src/go-mtgban/.env; set +a
 python3 -c "
 import os, base64, urllib.parse, datetime
-s = urllib.parse.unquote(os.environ['MTGBAN_SIG'])
+s = urllib.parse.unquote(os.environ['BAN_SIG'])
 s += '=' * (-len(s) % 4)
 exp = int(urllib.parse.parse_qs(base64.b64decode(s).decode())['Expires'][0])
 t = datetime.datetime.fromtimestamp(exp, datetime.timezone.utc)
@@ -60,9 +61,9 @@ and `www.mtgban.com` are the same host**.
 
 ```bash
 set -a; . ~/src/go-mtgban/.env; set +a
-# hosts: www (== magic), lorcana, onepiece, pokemon, yugioh, fleshandblood, riftbound
+# hosts: www (== magic), lorcana, onepiece, pokemon, yugioh, fleshandblood, riftbound, gundam, palworld
 curl -sL -m 240 --get \
-  --data-urlencode "sig=$MTGBAN_SIG" \
+  --data-urlencode "sig=$BAN_SIG" \
   --data-urlencode "source=$src" \
   --data-urlencode "sort=spread" \
   "https://$host.mtgban.com/$page" -o "raw/$game-$page-$src.html"
@@ -128,7 +129,7 @@ bantool already reports it — no capture needed. `mtgban.SuspectPricings`
 
 ```
 [SCRAPER] 12 cards are bought at 90% or more of their asking price
-[SCRAPER] - 96% buy $10.00 ask $10.40 <buyURL> <retailURL>
+[SCRAPER] - 96% buy $10.00 ask $10.40 NM Name|SET|NUM|finish
 ```
 
 Grep a run log for `bought at`, or compute the same thing offline from the
@@ -173,17 +174,25 @@ Then, in order:
 
 ## The stronger sibling: the one-store-two-prices census
 
-Do not wait for the ratio report. Census a single vendor's feed directly for
-**two entries on one card id at one grade**. `mtgban/base.go`'s `add` sorts the
-higher price first, so whenever two of a shop's products fold onto one id the
-dearer one silently prices the other's card (`AddUnique` documents exactly
-this; almost no scraper calls it).
+bantool already prints the 2x-and-over buylist subset for every vendor
+(`mtgban.CollapsedPricings`), each card followed by both listing URLs:
+
+```
+[SZ] 27 cards are bought at several prices at one grade
+[SZ] - 14.0x 2 prices, $14.00 against $1.00 NM Chaos Warp|SLD|823|foil
+```
+
+Grep the CI logs first; a full census (any gap) is still worth running per
+vendor, for **two entries on one card id at one grade**. `mtgban/base.go`'s
+`add` sorts the higher price first, so whenever two of a shop's products fold
+onto one id the dearer one silently prices the other's card (`AddUnique`
+documents exactly this; almost no scraper calls it).
 
 It needs one vendor and no cross-vendor join, and every hit is either a matcher
 bug or a printing the catalog cannot hold. Hareruya 2026-09-02: 39 colliding
 cards over 23,996 NM rows found **12 matcher bugs**, all shipped in PR #364;
-collisions went 39 → 4. Strike Zone has the identical structure and has still
-never been run.
+collisions went 39 → 4. Strike Zone's buylist reported 27 on 2026-09-23; its
+full census is unrun.
 
 **Classify before fixing.** For each collision, dump *every* printing the
 catalog holds of that name. Most collisions are not bugs — Hareruya's 33

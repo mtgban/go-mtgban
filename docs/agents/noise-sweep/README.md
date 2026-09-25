@@ -20,11 +20,12 @@ card, at the wrong card's price — and they are where the money is.
 
 1. **Refusal lines** (`unknown card name`, `unknown variant`, `aliasing
    detected`, `duplicate entry`) in a CI run. The listing went unpriced.
-   Corpus: `~/src/claude-scratchpad/ci-sweep/incidents/`.
+   Corpus: `~/src/claude-scratchpad/ci-sweep/<YYYY-MM-DD>/incidents/`, one
+   directory per sweep.
 2. **Cross-vendor spread** on the published site: capture `/arbit`, `/reverse`
    and `/global` per game and look for prices that are too far apart. A shop
    never really sells at $1.50 what another buys at $1,000 — a spread that
-   extreme usually means two printings folded onto one id. Check `MTGBAN_SIG`
+   extreme usually means two printings folded onto one id. Check `BAN_SIG`
    has not expired *before* capturing — it decodes offline and an expired one
    answers HTTP 200 with an Unauthorized body, so the capture looks fine and
    parses to nothing (`detectors.md`).
@@ -47,27 +48,32 @@ Mechanics for both in `detectors.md`.
 datastore's mtime and size — it can be regenerated mid-session, and a
 measurement taken on either side of that is not comparable.
 
-Work in your own worktree (`git worktree add <scratchpad>/wk-<tag> -b <branch> origin/master`),
-never the shared checkout. Source credentials with
-`set -a; . ~/src/go-mtgban/.env; set +a` and never print their values.
+Work in your own worktree, never the shared checkout:
+
+```
+git worktree add ~/src/claude-scratchpad/worktrees/go-mtgban/<tag> -b <branch> origin/master
+```
+
+Source credentials with `set -a; . ~/src/go-mtgban/.env; set +a` and never
+print their values.
 
 ### 1. Rank the targets
 
 Pull the last run of each GitHub Action, extract every refusal line, and count
 per `game × scraper`. Work the noisiest first. Keep the ranking in
-`~/src/claude-scratchpad/ci-sweep/ranked.txt` and the per-target corpora in
-`incidents/<game>--<scraper>.jsonl` (one JSON object per line:
-`{"tag","kind","head","ctx":[...]}`).
+`~/src/claude-scratchpad/ci-sweep/<date>/ranked_raw.txt` and the per-target
+corpora in `<date>/incidents/<game>--<scraper>.jsonl` (one JSON object per
+line: `{"tag","kind","head","ctx":[...]}`).
 
 **Discount two classes before you read the ranking**, or they will send you at
-the wrong targets — both are top of the raw list and neither is where the value
-is:
+the wrong targets — neither is where the value is:
 
-- **Magic tokens.** They dominate the count (tcg_market ~12.9k lines, manapool
-  ~5.5k) and they are all one upstream shape: mtgjson files each face of a
-  double-faced token as its own row, so many sellable products collapse onto one
-  uuid. That is datastore work, not scraper work — do not write scraper-side
-  token dedupe or DFC pricing. Subtract them and re-rank.
+- **Magic tokens.** They dominated the count before the token work (tcg_market
+  ~12.9k lines on 2026-09-10, 382 on 2026-09-24) and they are all one upstream
+  shape: mtgjson files each face of a double-faced token as its own row, so
+  many sellable products collapse onto one uuid. That is datastore work, not
+  scraper work — do not write scraper-side token dedupe or DFC pricing.
+  Subtract them and re-rank.
 - **Sealed, in every game.** Coverage tops out around 84-91% by construction and
   the remaining misses are mostly products no catalog carries. Leave sealed
   targets parked unless asked for them specifically.
@@ -78,9 +84,10 @@ Only a couple of games in flight at once.
 
 This is the step that makes the difference. Do **not** call `mtgmatcher.Match`
 directly with hand-built inputs — replay the run's own log through the same
-function the scraper calls (`resolveProduct` / `resolveProductID`, or
-`gameName`+`gameEdition`+`gameVariation`+`gameFinish` → `Match`), because the
-scraper's preprocessing is usually where the fix belongs.
+function the scraper calls (`resolveProduct` / `resolveProductID` for Star
+City, `(*Market).processProducts` for CardTrader, which tries the blueprint's
+ids before `Match`), because the scraper's preprocessing is usually where the
+fix belongs.
 
 Write the harness as a `zz_*_test.go` file, copy it into the package, run it,
 then delete it — never commit it. Keep the source in the durable scratchpad so
@@ -130,9 +137,15 @@ is a rule the next datastore release silently breaks.
 ### 7. Gate, commit, PR
 
 ```bash
-go build ./... && gofmt -s -l . | grep -v '^cmd/' ; go vet ./... \
-  && revive -set_exit_status -config .revive.toml ./... && go test -count=1 ./...
+GO125=$(GOTOOLCHAIN=go1.25.0 go env GOROOT)   # go.mod's toolchain, as CI
+go build ./... && go vet ./... && ! "$GO125/bin/gofmt" -s -l . | grep . \
+  && go run github.com/mgechev/revive@v1.13.0 -set_exit_status -config .revive.toml ./... \
+  && GOTOOLCHAIN=go1.25.0 go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./... \
+  && go test -count=1 ./...
 ```
+
+This mirrors ci.yml's `style` job, which also runs `go test -race ./...` with
+no datastore set, so a new test that reads one must skip without it.
 
 Commit matcher and scraper **separately**, subject and body wrapped at 80
 columns, the *why* in the message rather than in comments. Open the PR against
