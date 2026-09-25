@@ -9,8 +9,9 @@ import (
 
 // extraIDsData is a two-card cut of the datastore shape cmd/lorcanadatastore
 // emits. Card 100 is sold by TCGplayer as two products, the plain art under
-// the id upstream publishes and the Panorama foil under its own; card 200
-// carries no extra ids, as every card in the upstream file does.
+// the id upstream publishes and the Panorama foil under its own, whose image
+// upstream publishes as fullFoil; card 200 carries no extra ids, as every card
+// in the upstream file does.
 const extraIDsData = `{"data": {
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {"1": {"name": "The First Chapter", "type": "expansion", "releaseDate": "2023-09-01"}},
@@ -19,6 +20,7 @@ const extraIDsData = `{"data": {
       "id": 100, "name": "Louie", "fullName": "Louie - One Cool Duck",
       "setCode": "1", "number": "1", "rarity": "Common", "type": "Character",
       "color": "Amber", "story": "DuckTales", "printings": [{"finish": "Cold Foil", "id": "100_silver"}, {"finish": "Normal", "id": "100"}],
+      "images": {"full": "framed.jpg", "fullFoil": "panorama.jpg", "thumbnail": "framed_thumb.jpg"},
       "externalLinks": {"tcgPlayerId": 631349, "tcgPlayerExtraIds": [633427]}
     },
     {
@@ -66,6 +68,23 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 	}
 	if _, err := b.GetUUID(""); err == nil {
 		t.Error(`GetUUID("") resolved to a card`)
+	}
+
+	// The twin shows the Panorama's own art; the plain card keeps upstream's
+	// images untouched.
+	for _, tc := range []struct {
+		uuid, full, thumbnail string
+	}{
+		{"100", "framed.jpg", "framed_thumb.jpg"},
+		{"100_silver", "panorama.jpg", "panorama.jpg"},
+	} {
+		co, err := b.GetUUID(tc.uuid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.Images["full"] != tc.full || co.Images["thumbnail"] != tc.thumbnail {
+			t.Errorf("%s images = %v, want full %q and thumbnail %q", tc.uuid, co.Images, tc.full, tc.thumbnail)
+		}
 	}
 
 	// An id absent from both maps must still be unknown.

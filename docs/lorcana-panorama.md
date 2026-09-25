@@ -34,6 +34,16 @@ uuid (`2752_coldfoil`) is the Panorama, and its TCGplayer product is listed in
 
 Every uuid stays where it was.
 
+The twin shows the Panorama's own art. LorcanaJSON publishes it as
+`images.fullFoil`, on exactly these 30 cards. It is borderless where `full`
+keeps the frame. The twin gets a copy of the map with `full` and `thumbnail`
+both set to `fullFoil`. The plain card keeps upstream's map unchanged.
+
+`fullFoil` fills `thumbnail` too because upstream has no foil thumbnail, and
+the regular one is the framed art. It is 1468×2048 where a thumbnail is
+367×512, but the site renders most pages from the thumbnail with no fallback
+to `full` (`uuid2card`), so an empty key would show nothing.
+
 The regular art is then sold in no foil. The vendors do list a few regular
 foils: LorcanaJSON gives the card `foilTypes: Silver`, and CardTrader carries
 foil listings on the regular blueprints. TCGplayer sells none, and the
@@ -75,3 +85,16 @@ On the website:
 - TCGplayer links for the twin now go to the Panorama's own product.
 - The twin carries no Cardmarket id, because the datastore does not know the
   V.2's, so its Cardmarket link is a name search.
+- The twin's image, full size and thumbnail, is the Panorama's.
+
+## Measured when the twin got its image
+
+Inputs, 2026-09-25: go-mtgban `e446d4f77` and datastore `lorcana.json`
+2026-09-25 v1.
+
+- **backend**: 6,157 card uuids, the same set on both sides. With `Images`
+  masked (`ZZ_MASK_IMAGES`), every fixture and all eight published backends
+  dump identically. Unmasked, 30 CardObjects move: the 30 twins, in `full`
+  and `thumbnail` only. Every plain card keeps upstream's map.
+- **TCGplayer names**: 3,484 replayed, identical. Nothing in go-mtgban
+  reads `Images`, so no other scraper path can move.

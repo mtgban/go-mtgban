@@ -34,6 +34,7 @@ MASKS = {
     "ZZ_MASK_OVERSIZED": ("co.IsOversized = false", "c.IsOversized = false"),
     "ZZ_MASK_LANGUAGE": ('co.Language = ""', 'c.Language = ""'),
     "ZZ_MASK_WATERMARK": ('co.Watermark = ""', 'c.Watermark = ""'),
+    "ZZ_MASK_IMAGES": ("co.Images = nil", "c.Images = nil"),
 }
 
 
