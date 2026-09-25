@@ -296,6 +296,14 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				}
 			}
 		}
+		// A foil claim on a Lorcana card sold in no foil names a printing
+		// we do not carry: its Panorama is priced from its own blueprint.
+		if ct.gameID == GameLorcana && theCard.Foil && cardID != "" {
+			co, err := ct.backend.GetUUID(cardID)
+			if err == nil && !co.Foil {
+				continue
+			}
+		}
 
 		if cardID == "" {
 			var err error
