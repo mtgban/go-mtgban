@@ -28,7 +28,9 @@ uuid (`2752_coldfoil`) is the Panorama, and its TCGplayer product is listed in
 
 - **The plain card** keeps the Normal printing, the main product and the
   Cardmarket id (the V.1).
-- **A ★ twin** takes the foil printing and the extra product. It is numbered
+- **A ★ twin** takes the foil printing, the extra product and the Panorama's
+  own Cardmarket id (the V.2), which datastore-gen publishes in
+  `cardmarketExtraIds` (datastore-gen#110). It is numbered
   `37★`, and `PlainNumber` strips the ★ so a listing numbered 37 still
   reaches it.
 
@@ -83,8 +85,9 @@ replays show.
 On the website:
 
 - TCGplayer links for the twin now go to the Panorama's own product.
-- The twin carries no Cardmarket id, because the datastore does not know the
-  V.2's, so its Cardmarket link is a name search.
+- The twin's Cardmarket link goes to the V.2 once the datastore carries
+  `cardmarketExtraIds`. Before that the twin had no Cardmarket id, and its
+  link was a name search.
 - The twin's image, full size and thumbnail, is the Panorama's.
 
 ## Measured when the twin got its image
