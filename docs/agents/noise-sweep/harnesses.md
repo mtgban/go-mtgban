@@ -64,7 +64,7 @@ func TestZZReplay(t *testing.T) {
 		default:
 			landed++
 			co, _ := b.GetUUID(id)
-			where = co.Name + "|" + co.SetCode + "|" + co.Number + "|" + strings.Join(co.PromoTypes, "+") + "|" + id
+			where = co.Name + "|" + co.SetCode + "|" + co.Number + "|" + co.Finish + "|" + co.Language + "|" + strings.Join(co.PromoTypes, "+") + "|" + id
 		}
 		fmt.Fprintf(out, "\t%s\t%s\tcard\t%s\n", key, verdict, where) // non-card skips: set class by hand
 	}
@@ -145,7 +145,7 @@ Any shared matcher change needs a corpus that already works, walked before and
 after, diffed per listing.
 
 ```python
-# walkdiff.py before.jsonl after.jsonl [limit]
+# walkdiff.py before.jsonl after.jsonl
 import json, sys, collections
 def load(p):
     return {r["id"]: r for r in (json.loads(l) for l in open(p))}
@@ -161,11 +161,29 @@ for k in a.keys() | b.keys():
     gained += kind == "gained"; lost += kind == "lost"; moved += kind == "moved"
 print("gained", gained, "lost", lost, "moved", moved)
 for kind in ("lost", "moved", "gained"):
-    for e in ex[kind][:25]: print(kind, *e, sep="\t")
+    for e in ex[kind]: print(kind, *e, sep="\t")
 ```
 
-`lost` and `moved` are the numbers that matter. `moved` is only acceptable when
-every move is a correction you can name.
+Grade all three. `moved` is only acceptable when every move is a correction
+you can name, and a gain is not a win until read: a listing that used to
+refuse and now lands on a sibling (another set or language, a foil-only
+printing for a nonfoil listing, the Hyper Rare) is a misprice lost/moved
+cannot show. Read every gain beside its wording.
+
+If a change only alters which `InputCard` fields the scraper passes (#739
+dropped the wording for the product id), no second checkout is needed. Match
+both shapes per listing in one run, and build the id-only card first, because
+`Match` mutates its input:
+
+```go
+byID := &mtgmatcher.InputCard{ID: in.ID, Finish: in.Finish, Foil: in.Foil}
+full, err := b.Match(in)
+idOnly, idErr := b.Match(byID) // bucket same/moved/lost/gained, split by b.ConvertID(space, in.ID) != ""
+```
+
+A `lost` row is not automatically a regression. #739's six were the wording
+path's guesses that the id did not support (Usopp 719663 priced at $1,999 on
+another product's printing).
 
 ## E. Pinning a rule with an inline fixture
 
