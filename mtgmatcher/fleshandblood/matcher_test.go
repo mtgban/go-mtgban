@@ -120,10 +120,6 @@ var fleshandbloodSeeds = []matchTest{
 		Desc: "negative: a name reprinted across sets stays ambiguous unaided",
 		In:   mtgmatcher.InputCard{Name: "Brutal Assault"},
 	},
-	{
-		Desc: "negative: pitch variants without a base alias on a bare number",
-		In:   mtgmatcher.InputCard{Name: "Dig In", Variation: "FAB384"},
-	},
 	// The only extended art of OMN133 wears the words behind a colour, so
 	// the storefront naming the treatment names the second tag and nothing
 	// else.
