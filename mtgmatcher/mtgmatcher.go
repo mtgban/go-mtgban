@@ -326,7 +326,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 			case inCard.Language != "" && co.Layout == "token":
 				return "", ErrUnsupported
 			// This runs before b.rules is known non-nil, hence the check
-			case b.rules != nil && b.rules.MissingPromoTag(b, inCard, co):
+			case b.rules != nil && b.rules.IsUnsupported(b, inCard, co, StageAnswer):
 				b.Log("Missing necessary tag")
 				return "", ErrUnsupported
 			// Actually found id
@@ -365,7 +365,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	}
 
 	// Skip unsupported sets
-	if rules.IsUnsupported(b, inCard) {
+	if rules.IsUnsupported(b, inCard, nil, StageWording) {
 		return "", ErrUnsupported
 	}
 
@@ -421,7 +421,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	case inCard.Contains("Oversize") && !b.hasOversizedPrinting(inCard.Name):
 		return "", ErrUnsupported
 	// For any specific missing card
-	case rules.IsSpecificUnsupported(b, inCard):
+	case rules.IsUnsupported(b, inCard, nil, StageEdition):
 		return "", ErrUnsupported
 	}
 
@@ -520,7 +520,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		b.Logf("%v -> %v", b.describe(inCard), co)
 
 		// Validation step
-		if rules.MissingPromoTag(b, inCard, co) {
+		if rules.IsUnsupported(b, inCard, co, StageAnswer) {
 			b.Log("...but it's invalid")
 			return "", ErrUnsupported
 		}

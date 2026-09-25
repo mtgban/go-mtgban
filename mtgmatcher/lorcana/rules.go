@@ -362,12 +362,12 @@ func trimEdition(edition string) string {
 // misquoted "Enchanted ""Discard"" Card") are read the same way, by the
 // quoted "Discard" their name always ends on: a suffix rather than a
 // Contains, so the real card "Discarded Armor" keeps matching.
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return strings.Contains(inCard.Name, "Puzzle Insert") ||
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject, stage mtgmatcher.Stage) bool {
+	return stage == mtgmatcher.StageWording && (strings.Contains(inCard.Name, "Puzzle Insert") ||
 		strings.HasSuffix(inCard.Name, "Insert") ||
 		strings.HasPrefix(inCard.Name, "Disney Cruise Promos") ||
 		strings.HasSuffix(inCard.Name, `"Discard" Card`) ||
-		strings.HasSuffix(inCard.Name, `""Discard"" Card`)
+		strings.HasSuffix(inCard.Name, `""Discard"" Card`))
 }
 
 // plainNumberTail are the letters a variant is spelled with behind a number.

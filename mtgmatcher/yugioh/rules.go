@@ -921,7 +921,10 @@ var foreignNumberRe = regexp.MustCompile(`^([A-Za-z0-9]+)-([A-Za-z]{2})[0-9]`)
 // language and the datastore has only the English row. It is a sign and not
 // a rule, so it yields to the datastore whenever the number is one this
 // datastore actually carries.
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject, stage mtgmatcher.Stage) bool {
+	if stage != mtgmatcher.StageWording {
+		return false
+	}
 	// A shelf naming no set of its own, see unsupportedEditions.
 	if normalizedUnsupportedEditions()[mtgmatcher.Normalize(inCard.Edition)] {
 		return true

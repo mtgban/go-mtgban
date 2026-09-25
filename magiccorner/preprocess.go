@@ -342,7 +342,7 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	// Match applies this same promo-tag check once ID is set and drops the
 	// listing outright on a mismatch, so failing here defers to the
 	// wording instead of turning an already-landed row into a silent loss.
-	if (magic.Rules{}).MissingPromoTag(b, &claimed, hit) {
+	if (magic.Rules{}).IsUnsupported(b, &claimed, hit, mtgmatcher.StageAnswer) {
 		return ""
 	}
 

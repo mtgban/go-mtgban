@@ -525,9 +525,7 @@ type GameRules interface {
     CandidateSets(b *Backend, inCard *InputCard, editions []string) []string
     FinalizeCandidates(b *Backend, inCard *InputCard, cards []Card) []Card
     FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card
-    IsUnsupported(b *Backend, inCard *InputCard) bool
-    IsSpecificUnsupported(b *Backend, inCard *InputCard) bool
-    MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
+    IsUnsupported(b *Backend, inCard *InputCard, co *CardObject, stage Stage) bool
     IsToken(b *Backend, name string) bool
     PlainNumber(number string) string
 }
@@ -564,10 +562,11 @@ The pipeline:
 2. **Id fast path** — if `Id` is set, `b.MatchID()`; the hit is *validated*.
    A wrong language resets the input to the resolved card's fields and falls
    through to full matching; a token id in a non-default language returns
-   `ErrUnsupported`; and `rules.MissingPromoTag` rejects prerelease /
-   promo-pack / serialized claims the resolved card does not carry (upstream
-   tags lag releases), and for Pokemon a metal-card claim. This runs before
-   the rules are known non-nil, so the hook call is guarded.
+   `ErrUnsupported`; and `rules.IsUnsupported` at `StageAnswer` rejects
+   prerelease / promo-pack / serialized claims the resolved card does not
+   carry (upstream tags lag releases), and for Pokemon a metal-card claim.
+   This runs before the rules are known non-nil, so the hook call is
+   guarded.
 3. **Name surgery** — `rules.Prefilter`. Magic's version handles the
    Binderpos `Name [Edition]` syntax (resolving the bracket as a set name,
    falling back to variation, with the TCG `PP`-prefix promo-pack quirk),
@@ -579,8 +578,8 @@ The pipeline:
    printings keep their storefront names verbatim. Core re-checks the foil
    flag afterwards, in case the prefilter moved a finish hint into the
    variant.
-4. **Unsupported gate** — `rules.IsUnsupported`, checked before name
-   resolution.
+4. **Unsupported gate** — `rules.IsUnsupported` at `StageWording`, checked
+   before name resolution on the storefront's own wording.
 5. **Canonicalization** — `CanonicalNames[Normalize(name)]`; on miss,
    `rules.AdjustName` (Magic: typo/token/number fixups and flavor-name
    resolution via `AlternateProps`; Lorcana and Riftbound: a prefix fallback
@@ -595,8 +594,9 @@ The pipeline:
    per-card fixups. Lorcana and Riftbound instead trim the storefront noise
    ("Disney Lorcana: …", "Riftbound: League of Legends …", a trailing
    "Singles"). Core then applies its own hard `ErrUnsupported` gates for
-   custom token sets and most oversize cards, and consults
-   `rules.IsSpecificUnsupported`.
+   custom token sets and most oversize cards, and asks `rules.IsUnsupported`
+   again at `StageEdition`, now with the canonical name and adjusted
+   edition.
 7. **Set selection** — `Printings4Card()`, then `rules.FilterPrintings` when
    more than one printing survives *or* the original name ended in "Token"
    (single-printing token names still need filtering). An empty result is
@@ -640,7 +640,7 @@ The pipeline:
    historical ordering even when the first candidate is in another language.
 9. **Verdict** — 0 cards: `ErrCardWrongVariant` (or `ErrCardMissingVariant`
    if no variation was given, `ErrUnsupported` if a language was involved);
-   1 card: `output()` plus a final `rules.MissingPromoTag` validation;
+   1 card: `output()` plus a final `rules.IsUnsupported` at `StageAnswer`;
    2+: `AliasingError`, whose `Probe()` returns all candidate UUIDs —
    consumers log these as data-quality alarms (and, like `mtgban-website`,
    may pick the newest printing from `Probe()`).
@@ -711,17 +711,16 @@ the listing left unsaid.
 game's `Rules` type embeds `mtgmatcher.DefaultRules` and overrides only the
 hooks its own catalog forces. `FinalizeCandidates` and `IsToken` fall
 through to `DefaultRules` — a genuine no-op — for all of them, and
-`FilterPrintings` and `MissingPromoTag` for all but Pokemon; none of them
-override `IsSpecificUnsupported` either. A couple override one hook further
+`FilterPrintings` for all but Pokemon. A couple override one hook further
 where their catalog has a real, narrow case to handle: Lorcana and Yu-Gi-Oh
-give `IsUnsupported` real logic (Lorcana drops puzzle-insert and cruise-promo
-products; Yu-Gi-Oh drops the storefront's own character-art cards, which
-carry no collector number and no catalog row), and Pokemon overrides
-`CandidateSets` to fold `*Promos` shelves into the loose pass before falling
-back to every printing. Pokemon also holds oversized and metal-card listings
-to those printings in `FilterPrintings` (§2.4, stage 7), and refuses in
-`MissingPromoTag` a metal-card listing that answered with a card that is not
-one. The real, shared work across all
+give `IsUnsupported` real logic at `StageWording` (Lorcana drops
+puzzle-insert and cruise-promo products; Yu-Gi-Oh drops the storefront's own
+character-art cards, which carry no collector number and no catalog row), and
+Pokemon overrides `CandidateSets` to fold `*Promos` shelves into the loose
+pass before falling back to every printing. Pokemon also holds oversized and
+metal-card listings to those printings in `FilterPrintings` (§2.4, stage 7),
+and refuses in `IsUnsupported` at `StageAnswer` a metal-card listing that
+answered with a card that is not one. The real, shared work across all
 seven is name + collector number + finish narrowing in `FilterCards`, with
 the edition breaking ties when it resolves. The interesting details are the
 ones each game's own data forces: Lorcana honors the name hash rather than

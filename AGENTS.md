@@ -259,12 +259,14 @@ as a new baseline.
 ### GameRules
 
 `Match()` is one pipeline shared by every game. The steps that differ per game
-are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`, 13
+are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`, 11
 methods in all: `Prefilter`, `AdjustName`, `AdjustEdition`, `AliasEdition`,
 `FilterPrintings`, `CandidateSets`, `FinalizeCandidates`, `FilterCards`,
-`IsUnsupported`, `IsSpecificUnsupported`, `MissingPromoTag`, `IsToken`, and
-`PlainNumber` (read `rules.go` itself — each method
-carries a paragraph explaining what it owns and why). A game's loader
+`IsUnsupported`, `IsToken`, and `PlainNumber` (read `rules.go` itself — each
+method carries a paragraph explaining what it owns and why). `IsUnsupported`
+is asked at three `Stage`s, each seeing different text: the storefront's
+wording, the canonical name and edition, and the resolved printing. A game's
+loader
 attaches its implementation with `Backend.SetRules` when it builds the
 `Backend`; a `Backend` that never got rules returns `ErrDatastoreEmpty` from
 `Match` rather than panicking.
@@ -359,18 +361,20 @@ Every non-Magic game needs far less of this, and shares the shape: each
 embeds `mtgmatcher.DefaultRules` (`Rules struct{ DefaultRules }`) and
 overrides only what it actually needs different. All eight rely on
 `DefaultRules` — a real no-op — for `FinalizeCandidates` and `IsToken`, and
-all but Pokemon for `FilterPrintings` and `MissingPromoTag`, which Pokemon
-uses to hold oversized and metal-card listings to those printings. All eight
+all but Pokemon for `FilterPrintings`, which Pokemon uses to hold oversized
+and metal-card listings to those printings. All eight
 implement their own `Prefilter`, `AdjustName`, `AdjustEdition`,
 `AliasEdition`, `FilterCards` and `PlainNumber`, which is where a game's
 actual vocabulary — its editions and its number shapes — lives. Finishes are
 not a game's to name: every one is read through `mtgmatcher.FinishSlug`, as
 TCGplayer prices it, and `mtgmatcher.Finishes` is the table of those names
 (`docs/finishes.md`). A few games additionally override one hook for a
-narrow, real check: Lorcana and Yu-Gi-Oh override `IsUnsupported` (Lorcana
-drops puzzle-insert and cruise-promo products; Yu-Gi-Oh drops storefront
-character-art cards that carry no collector number), and Pokemon overrides
-`CandidateSets` to fold `*Promos` shelves into its loose-edition pass. The
+narrow, real check: Lorcana and Yu-Gi-Oh override `IsUnsupported` at the
+wording stage (Lorcana drops puzzle-insert and cruise-promo products;
+Yu-Gi-Oh drops storefront character-art cards that carry no collector
+number), Pokemon at the answer stage (a metal-card listing that answered
+with a plain printing), and Pokemon overrides `CandidateSets` to fold
+`*Promos` shelves into its loose-edition pass. The
 real, shared work across all eight is edition and number normalization in
 `Prefilter`/`AdjustName`/`AdjustEdition`/`AliasEdition` and the
 number-and-finish disambiguation in `FilterCards`.

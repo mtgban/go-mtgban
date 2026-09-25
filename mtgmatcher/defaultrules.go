@@ -7,7 +7,7 @@ package mtgmatcher
 //	type Rules struct{ mtgmatcher.DefaultRules }
 //
 // The answers are the ones that change nothing: every candidate edition
-// survives, nothing is unsupported, and no promo tag is missing. A game that
+// survives and nothing is unsupported at any stage. A game that
 // means any of those has to say so itself, which is the point - a hook
 // nobody wrote is a hook nobody has to read.
 //
@@ -19,30 +19,17 @@ func (DefaultRules) FilterPrintings(b *Backend, inCard *InputCard, editions []st
 	return editions
 }
 
-// IsUnsupported reports that no input belongs to an unsupported set, which
-// is the answer for a game whose catalog holds nothing it cannot sell. A
-// game that files something else under its card products - Lorcana's
+// IsUnsupported reports that nothing is unsupported at any stage, which is
+// the answer for a game whose catalog holds nothing it cannot sell. A game
+// that files something else under its card products - Lorcana's
 // puzzle-piece inserts and multi-card lots - says so itself.
-func (DefaultRules) IsUnsupported(b *Backend, inCard *InputCard) bool {
+func (DefaultRules) IsUnsupported(b *Backend, inCard *InputCard, co *CardObject, stage Stage) bool {
 	return false
 }
 
 // IsToken reports that the game knows no token names beyond the ones its
 // datastore already lists.
 func (DefaultRules) IsToken(b *Backend, name string) bool {
-	return false
-}
-
-// IsSpecificUnsupported reports that no single card is unsupported on its
-// own account.
-func (DefaultRules) IsSpecificUnsupported(b *Backend, inCard *InputCard) bool {
-	return false
-}
-
-// MissingPromoTag reports that no input claims a promo treatment its card
-// does not carry, which is the answer for a game whose promos are not
-// tagged.
-func (DefaultRules) MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool {
 	return false
 }
 
