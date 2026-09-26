@@ -72,7 +72,7 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 
 		cond, err := afCondition(card.Condition)
 		if err != nil {
-			af.printf("Unknown condition %q for %s (%s)", card.Condition, card.Name, card.SetCode)
+			af.printf("unsupported %s condition", card.Condition)
 			continue
 		}
 

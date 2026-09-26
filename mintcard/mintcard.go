@@ -49,7 +49,7 @@ func (mint *MTGMintCard) printf(format string, a ...any) {
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
 	cond, err := mtgban.ParseCondition(condition)
 	if err != nil {
-		mint.printf("Unknown condition tag %s", condition)
+		mint.printf("unsupported %s condition", condition)
 		return
 	}
 	if strings.Contains(card.Name, "(HP)") {

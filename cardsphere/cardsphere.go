@@ -121,7 +121,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 				case 10:
 					conditions = mtgban.HP
 				default:
-					cs.printf("Unsupported %s condition for %s", cond, foundID)
+					cs.printf("unsupported %d condition", cond)
 					continue
 				}
 

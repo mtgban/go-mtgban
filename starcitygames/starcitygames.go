@@ -169,7 +169,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 	for _, v := range p.Variants {
 		condition, err := catalogCondition(v.Condition)
 		if err != nil {
-			scg.printf("%v for %q", err, p.Name)
+			scg.printf("unsupported %s condition", v.Condition)
 			continue
 		}
 

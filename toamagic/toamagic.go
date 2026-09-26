@@ -147,7 +147,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 		}
 		conditions, err := mtgban.ParseCondition(cond)
 		if err != nil {
-			toa.printf("Unsupported %s condition for %s", cond, title)
+			toa.printf("unsupported %s condition", cond)
 			return
 		}
 

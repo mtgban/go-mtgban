@@ -605,7 +605,9 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	if mode == modeInventory {
 		consume = func(record responseChan) {
 			err := ha.inventory.Add(record.cardID, record.invEntry)
-			if err != nil {
+			if errors.Is(err, mtgban.ErrInvalidCondition) {
+				ha.printf("unsupported %s condition", record.invEntry.Conditions)
+			} else if err != nil {
 				ha.printf("%s", err.Error())
 			}
 		}
@@ -644,7 +646,9 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 			} else {
 				err = ha.buylist.Add(record.cardID, record.buyEntry)
 			}
-			if err != nil {
+			if errors.Is(err, mtgban.ErrInvalidCondition) {
+				ha.printf("unsupported %s condition", record.buyEntry.Conditions)
+			} else if err != nil {
 				ha.printf("%s", err.Error())
 			}
 		}

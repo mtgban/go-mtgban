@@ -663,7 +663,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				grade, err := mtgban.ParseCondition(strings.TrimPrefix(conditions, "Foil "))
 				if err != nil {
-					csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
+					csi.printf("unsupported %s condition", conditions)
 					return
 				}
 				if strings.Contains(cardName, "Signed by") {
