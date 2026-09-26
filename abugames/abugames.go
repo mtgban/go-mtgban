@@ -158,24 +158,24 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			u.RawQuery = v.Encode()
 
 			if doc.SellQuantity > 0 && doc.SellPrice > 0 {
-				var cond string
+				var cond mtgban.Condition
 				switch doc.Condition {
 				case "MINT":
-					cond = "NM"
+					cond = mtgban.NM
 				case "NM":
-					cond = "SP"
+					cond = mtgban.SP
 					if !hasMintGrade4Retail {
-						cond = "NM"
+						cond = mtgban.NM
 					}
 				case "PLD":
-					cond = "MP"
+					cond = mtgban.MP
 					if !lowerGrade && !hasMintGrade4Retail && !theCard.Foil {
-						cond = "SP"
+						cond = mtgban.SP
 					}
 				case "HP":
-					cond = "HP"
+					cond = mtgban.HP
 					if !lowerGrade && !hasMintGrade4Retail && !theCard.Foil {
-						cond = "MP"
+						cond = mtgban.MP
 					}
 				default:
 					abu.printf("Unknown '%s' condition", doc.Condition)
@@ -200,20 +200,20 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			}
 
 			if doc.BuyQuantity > 0 && doc.BuyPrice > 0 {
-				var cond string
+				var cond mtgban.Condition
 				switch doc.Condition {
 				case "MINT":
 					// Skipped since it's impossible to map correctly
 				case "NM":
-					cond = "NM"
+					cond = mtgban.NM
 				case "PLD":
 					// Stricter grading for foils
-					cond = "MP"
+					cond = mtgban.MP
 					if !theCard.Foil {
-						cond = "SP"
+						cond = mtgban.SP
 					}
 				case "HP":
-					cond = "HP"
+					cond = mtgban.HP
 				default:
 					abu.printf("Unknown '%s' condition", doc.Condition)
 					continue

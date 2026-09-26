@@ -47,7 +47,7 @@ Scraper        Load(ctx) error; Info() ScraperInfo
 
 MultiScraper   InfoForScraper(name) ScraperInfo + Scraper
 Carter         Activate(ctx, user, pass) error; Add(ctx, InventoryEntry) error
-GenericEntry   Pricing() float64; Condition() string; Qty() int
+GenericEntry   Pricing() float64; Condition() Condition; Qty() int
 ScraperConfig  SetConfig(ScraperOptions)   // DisableRetail / DisableBuylist
 ```
 
@@ -78,16 +78,16 @@ UUID. The key is a string by convention; the `Add*` path does **not**
 type-check it against the backend (sealed scrapers, for instance, insert the
 product UUID directly without calling `Match()` — see §3).
 
-- `InventoryEntry`: `Quantity`, `Conditions`, `Price` (USD), `URL`,
-  `SellerName`, `Bundle` (part of a direct-shipping hub), `OriginalId`
-  (store product id), `InstanceId` (SKU), `CustomFields map[string]string`,
-  `ExtraValues map[string]float64`.
+- `InventoryEntry`: `Quantity`, `Conditions` (a `Condition`, named by `NM`
+  through `PO`), `Price` (USD), `URL`, `SellerName`, `Bundle` (part of a
+  direct-shipping hub), `OriginalId` (store product id), `InstanceId` (SKU),
+  `CustomFields map[string]string`, `ExtraValues map[string]float64`.
 - `BuylistEntry`: swaps `Price` for `BuyPrice` + `PriceRatio` (buy/sell
   ratio, a desirability signal) and `SellerName` for `VendorName`.
 
 **Insertion semantics** (`add()` in `mtgban/base.go`) — the de-dup engine
 every scraper relies on. Defaults are applied first, and the two sides differ:
-both default an empty condition to `"NM"`, but only the inventory side
+both default an empty condition to `NM`, but only the inventory side
 defaults a zero quantity to `1`. A buylist entry with quantity `0` keeps that
 value, which `Arbit` reads as "unlimited". Conditions outside
 `FullGradeTags = [NM SP MP HP PO]` are rejected with `ErrInvalidCondition`.

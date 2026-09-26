@@ -68,7 +68,7 @@ func LoadSYPCatalog(reader io.Reader) (SYPCatalog, error) {
 		// again for every sku of every one.
 		finish := productFinish(product.Name)
 		for _, sku := range product.Skus {
-			if sku.LanguageID != skuLanguageEnglish || SKUConditionMap[sku.ConditionID] != "NM" {
+			if sku.LanguageID != skuLanguageEnglish || SKUConditionMap[sku.ConditionID] != mtgban.NM {
 				continue
 			}
 			name := printings[sku.PrintingID]

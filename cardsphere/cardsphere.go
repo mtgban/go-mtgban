@@ -18,11 +18,11 @@ const (
 	csMaxOffset        = 10000
 )
 
-var gradingMap = map[string]float64{
-	"NM": 1,
-	"SP": 0.9,
-	"MP": 0.75,
-	"HP": 0.6,
+var gradingMap = map[mtgban.Condition]float64{
+	mtgban.NM: 1,
+	mtgban.SP: 0.9,
+	mtgban.MP: 0.75,
+	mtgban.HP: 0.6,
 }
 
 // Cardsphere prices what Cardsphere's members offer to pay, which is a set of
@@ -110,16 +110,16 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 			}
 
 			for _, cond := range offer.Conditions {
-				conditions := ""
+				var conditions mtgban.Condition
 				switch cond {
 				case 40:
-					conditions = "NM"
+					conditions = mtgban.NM
 				case 30:
-					conditions = "SP"
+					conditions = mtgban.SP
 				case 20:
-					conditions = "MP"
+					conditions = mtgban.MP
 				case 10:
-					conditions = "HP"
+					conditions = mtgban.HP
 				default:
 					cs.printf("Unsupported %s condition for %s", cond, foundID)
 					continue

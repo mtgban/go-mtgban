@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-cardkingdom"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -690,49 +691,49 @@ var supportedScores = []string{
 	"PSA", "BGS", "CGC",
 }
 
-var gradeMap = map[string]map[string]string{
+var gradeMap = map[string]map[string]mtgban.Condition{
 	"PSA": {
-		"10": "NM",
-		"9":  "NM",
-		"8":  "NM",
-		"7":  "NM",
-		"6":  "SP",
-		"5":  "SP",
-		"4":  "MP",
-		"3":  "MP",
-		"2":  "HP",
-		"1":  "HP",
+		"10": mtgban.NM,
+		"9":  mtgban.NM,
+		"8":  mtgban.NM,
+		"7":  mtgban.NM,
+		"6":  mtgban.SP,
+		"5":  mtgban.SP,
+		"4":  mtgban.MP,
+		"3":  mtgban.MP,
+		"2":  mtgban.HP,
+		"1":  mtgban.HP,
 	},
 	"BGS": {
-		"10": "NM",
-		"9":  "NM",
-		"8":  "SP",
-		"7":  "SP",
-		"6":  "MP",
-		"5":  "MP",
-		"4":  "MP",
-		"3":  "HP",
-		"2":  "HP",
-		"1":  "PO",
+		"10": mtgban.NM,
+		"9":  mtgban.NM,
+		"8":  mtgban.SP,
+		"7":  mtgban.SP,
+		"6":  mtgban.MP,
+		"5":  mtgban.MP,
+		"4":  mtgban.MP,
+		"3":  mtgban.HP,
+		"2":  mtgban.HP,
+		"1":  mtgban.PO,
 	},
 	"CGC": {
-		"Pristine":          "NM",
-		"Pristine 10":       "NM",
-		"10":                "NM",
-		"9":                 "NM",
-		"8":                 "NM",
-		"7":                 "SP",
-		"6":                 "SP",
-		"5":                 "MP",
-		"4":                 "MP",
-		"3":                 "HP",
-		"2":                 "HP",
-		"1":                 "PO",
-		"Authentic Altered": "PO",
+		"Pristine":          mtgban.NM,
+		"Pristine 10":       mtgban.NM,
+		"10":                mtgban.NM,
+		"9":                 mtgban.NM,
+		"8":                 mtgban.NM,
+		"7":                 mtgban.SP,
+		"6":                 mtgban.SP,
+		"5":                 mtgban.MP,
+		"4":                 mtgban.MP,
+		"3":                 mtgban.HP,
+		"2":                 mtgban.HP,
+		"1":                 mtgban.PO,
+		"Authentic Altered": mtgban.PO,
 	},
 }
 
-func parseGradedCondition(title string) string {
+func parseGradedCondition(title string) mtgban.Condition {
 	var grade string
 	var score string
 	for _, score = range supportedScores {

@@ -16,7 +16,7 @@ func TestDuplicateBuylistReportNamesTheCollision(t *testing.T) {
 	for _, grade := range []string{"NM", "SP", "MP", "HP", "PO"} {
 		entry := BuylistEntry{
 			Quantity:   1,
-			Conditions: grade,
+			Conditions: Condition(grade),
 			BuyPrice:   10,
 			URL:        "https://example.com/" + grade,
 			VendorName: "BANNED",
@@ -28,7 +28,7 @@ func TestDuplicateBuylistReportNamesTheCollision(t *testing.T) {
 
 	again := BuylistEntry{
 		Quantity:   1,
-		Conditions: "NM",
+		Conditions: NM,
 		BuyPrice:   10,
 		URL:        "https://example.com/NM",
 		VendorName: "BANNED",

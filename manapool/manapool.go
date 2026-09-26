@@ -150,15 +150,20 @@ func (mp *Manapool) record(card Product, cardID string) {
 	link := u.String()
 
 	// Match conditions
-	conds := card.ConditionID
+	var grade mtgban.Condition
 	switch card.ConditionID {
-	case "NM", "MP", "HP":
+	case "NM":
+		grade = mtgban.NM
 	case "LP":
-		conds = "SP"
+		grade = mtgban.SP
+	case "MP":
+		grade = mtgban.MP
+	case "HP":
+		grade = mtgban.HP
 	case "DMG":
-		conds = "PO"
+		grade = mtgban.PO
 	default:
-		mp.printf("Unknown %s condition for %s (%s)", conds, card.Name, card.SetCode)
+		mp.printf("Unknown %s condition for %s (%s)", card.ConditionID, card.Name, card.SetCode)
 		return
 	}
 
@@ -167,7 +172,7 @@ func (mp *Manapool) record(card Product, cardID string) {
 
 	// Got there!
 	out := &mtgban.InventoryEntry{
-		Conditions: conds,
+		Conditions: grade,
 		Price:      price,
 		URL:        link,
 	}

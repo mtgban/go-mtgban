@@ -76,12 +76,12 @@ func TestMkmConditionMapping(t *testing.T) {
 	// five, and the three this scraper actually chases - NM, SP, MP - must
 	// each own a distinct row rather than folding into one another: that
 	// is the whole reason the early-stop rule can tell them apart.
-	want := map[cm.Condition]string{
-		"MT": "NM", "NM": "NM",
-		"EX": "SP",
-		"GD": "MP",
-		"LP": "HP", "PL": "HP",
-		"PO": "PO",
+	want := map[cm.Condition]mtgban.Condition{
+		"MT": mtgban.NM, "NM": mtgban.NM,
+		"EX": mtgban.SP,
+		"GD": mtgban.MP,
+		"LP": mtgban.HP, "PL": mtgban.HP,
+		"PO": mtgban.PO,
 	}
 	if len(mkmCondition) != len(want) {
 		t.Fatalf("mkmCondition has %d rows, want %d", len(mkmCondition), len(want))
@@ -102,13 +102,13 @@ func TestAcceptArticle(t *testing.T) {
 		flags    map[string]bool
 		article  cm.Article
 		wantOK   bool
-		wantCond string
+		wantCond mtgban.Condition
 	}{
 		{
 			name:     "an ordinary NM listing is accepted",
 			article:  cm.Article{Price: 5, Condition: "NM"},
 			wantOK:   true,
-			wantCond: "NM",
+			wantCond: mtgban.NM,
 		},
 		{
 			name:    "a zero price is not a real listing",
@@ -141,20 +141,20 @@ func TestAcceptArticle(t *testing.T) {
 			flags:    map[string]bool{"isFoil": true},
 			article:  cm.Article{Price: 5, Condition: "NM", IsFoil: true},
 			wantOK:   true,
-			wantCond: "NM",
+			wantCond: mtgban.NM,
 		},
 		{
 			name:     "no flags to verify accepts regardless of the article's own - the filter fails open on a game or value it does not apply to, so nothing here can be trusted to narrow it either way",
 			article:  cm.Article{Price: 5, Condition: "NM", IsFoil: false},
 			wantOK:   true,
-			wantCond: "NM",
+			wantCond: mtgban.NM,
 		},
 		{
 			name:     "Pokemon's two flags are both verified independently",
 			flags:    map[string]bool{"isFirstEd": true, "isReverseHolo": false},
 			article:  cm.Article{Price: 5, Condition: "NM", IsFirstEd: true, IsReverseHolo: false},
 			wantOK:   true,
-			wantCond: "NM",
+			wantCond: mtgban.NM,
 		},
 		{
 			name:    "Pokemon rejects a listing that agrees on one axis but not the other",
@@ -184,16 +184,16 @@ func TestAcceptArticle(t *testing.T) {
 func TestIsCheaper(t *testing.T) {
 	tests := []struct {
 		name  string
-		held  map[string]float64
-		cond  string
+		held  map[mtgban.Condition]float64
+		cond  mtgban.Condition
 		price float64
 		want  bool
 	}{
-		{"nothing held yet is always cheaper", map[string]float64{}, "NM", 5, true},
-		{"strictly cheaper than what is held", map[string]float64{"NM": 5}, "NM", 3, true},
-		{"equal to what is held is not cheaper - no reason to replace it", map[string]float64{"NM": 5}, "NM", 5, false},
-		{"more expensive than what is held is not cheaper", map[string]float64{"NM": 5}, "NM", 9, false},
-		{"a different condition being held does not block this one", map[string]float64{"SP": 1}, "NM", 100, true},
+		{"nothing held yet is always cheaper", map[mtgban.Condition]float64{}, mtgban.NM, 5, true},
+		{"strictly cheaper than what is held", map[mtgban.Condition]float64{mtgban.NM: 5}, mtgban.NM, 3, true},
+		{"equal to what is held is not cheaper - no reason to replace it", map[mtgban.Condition]float64{mtgban.NM: 5}, mtgban.NM, 5, false},
+		{"more expensive than what is held is not cheaper", map[mtgban.Condition]float64{mtgban.NM: 5}, mtgban.NM, 9, false},
+		{"a different condition being held does not block this one", map[mtgban.Condition]float64{mtgban.SP: 1}, mtgban.NM, 100, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -227,8 +227,8 @@ func TestPowersellerBucketIsIndependentOfMain(t *testing.T) {
 	pricierGermanPowerseller.Seller.Address.Country = "D"
 	pricierGermanPowerseller.Seller.IsCommercial = 2
 
-	held := map[string]float64{}
-	heldPS := map[string]float64{}
+	held := map[mtgban.Condition]float64{}
+	heldPS := map[mtgban.Condition]float64{}
 
 	for _, article := range []cm.Article{cheapFrenchPrivate, pricierGermanPowerseller} {
 		cond, ok := acceptArticle(nil, article)
@@ -243,13 +243,13 @@ func TestPowersellerBucketIsIndependentOfMain(t *testing.T) {
 		}
 	}
 
-	if held["NM"] != 1 {
-		t.Errorf("main bucket NM = %v, want 1 (the cheap French private listing)", held["NM"])
+	if held[mtgban.NM] != 1 {
+		t.Errorf("main bucket NM = %v, want 1 (the cheap French private listing)", held[mtgban.NM])
 	}
-	if heldPS["NM"] != 5 {
+	if heldPS[mtgban.NM] != 5 {
 		t.Errorf("Powerseller bucket NM = %v, want 5 (the German Powerseller listing) - "+
 			"got the bug back if this is 0: the Powerseller bucket only fills when its own "+
-			"listing also happens to be the single global cheapest", heldPS["NM"])
+			"listing also happens to be the single global cheapest", heldPS[mtgban.NM])
 	}
 }
 

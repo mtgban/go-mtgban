@@ -21,7 +21,7 @@ func filed(expansion, id int) *cm.Product {
 // one printing.
 func entry(price float64, ogID int) mtgban.InventoryEntry {
 	return mtgban.InventoryEntry{
-		Conditions: "NM",
+		Conditions: mtgban.NM,
 		Price:      price,
 		Quantity:   1,
 		SellerName: availableIndexNames[0],

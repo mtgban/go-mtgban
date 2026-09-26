@@ -60,12 +60,12 @@ var listedConditions = map[mtgban.Game][]string{
 	mtgban.GameGundam:    {"Near Mint"},
 }
 
-var conditionMap = map[string]string{
-	"Near Mint":         "NM",
-	"Lightly Played":    "SP",
-	"Moderately Played": "MP",
-	"Heavily Played":    "HP",
-	"Damaged":           "PO",
+var conditionMap = map[string]mtgban.Condition{
+	"Near Mint":         mtgban.NM,
+	"Lightly Played":    mtgban.SP,
+	"Moderately Played": mtgban.MP,
+	"Heavily Played":    mtgban.HP,
+	"Damaged":           mtgban.PO,
 }
 
 // reSlugSeparator matches every run the storefront's product paths write as

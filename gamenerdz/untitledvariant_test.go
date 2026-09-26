@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
@@ -97,11 +98,11 @@ func TestProcessUntitledBuyVariant(t *testing.T) {
 	tests := []struct {
 		raw   string
 		uuid  string
-		cond  string
+		cond  mtgban.Condition
 		price float64
 	}{
-		{nullTitleProduct, "op01-078_516555_foil", "NM", 668.9},
-		{noTitleProduct, "op10-111_693122", "NM", 13.62},
+		{nullTitleProduct, "op01-078_516555_foil", mtgban.NM, 668.9},
+		{noTitleProduct, "op10-111_693122", mtgban.NM, 13.62},
 		{unknownTitleProduct, "", "", 0},
 	}
 	for _, tt := range tests {

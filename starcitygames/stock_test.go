@@ -45,10 +45,10 @@ func TestStockFold(t *testing.T) {
 		buylist:   mtgban.BuylistRecord{},
 	}
 	inv := func(qty int, url string) *mtgban.InventoryEntry {
-		return &mtgban.InventoryEntry{Conditions: "NM", Price: 1.5, Quantity: qty, URL: url}
+		return &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 1.5, Quantity: qty, URL: url}
 	}
 	buy := func(qty int) *mtgban.BuylistEntry {
-		return &mtgban.BuylistEntry{Conditions: "NM", BuyPrice: 1.0, Quantity: qty}
+		return &mtgban.BuylistEntry{Conditions: mtgban.NM, BuyPrice: 1.0, Quantity: qty}
 	}
 
 	if err := scg.addInventoryStock(false, "id", inv(3, "a")); err != nil {

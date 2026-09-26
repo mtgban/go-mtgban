@@ -16,10 +16,10 @@ func TestCollapsedPricings(t *testing.T) {
 			desc: "four products on one id name the card",
 			buylist: BuylistRecord{
 				"neonink": {
-					{Conditions: "NM", BuyPrice: 300, VendorName: "Strike Zone"},
-					{Conditions: "NM", BuyPrice: 40, VendorName: "Strike Zone"},
-					{Conditions: "NM", BuyPrice: 18, VendorName: "Strike Zone"},
-					{Conditions: "NM", BuyPrice: 17, VendorName: "Strike Zone"},
+					{Conditions: NM, BuyPrice: 300, VendorName: "Strike Zone"},
+					{Conditions: NM, BuyPrice: 40, VendorName: "Strike Zone"},
+					{Conditions: NM, BuyPrice: 18, VendorName: "Strike Zone"},
+					{Conditions: NM, BuyPrice: 17, VendorName: "Strike Zone"},
 				},
 			},
 			want: []string{"neonink"},
@@ -28,9 +28,9 @@ func TestCollapsedPricings(t *testing.T) {
 			desc: "one price at one grade is a shop doing its job",
 			buylist: BuylistRecord{
 				"ordinary": {
-					{Conditions: "NM", BuyPrice: 10, VendorName: "Strike Zone"},
-					{Conditions: "SP", BuyPrice: 8, VendorName: "Strike Zone"},
-					{Conditions: "MP", BuyPrice: 5, VendorName: "Strike Zone"},
+					{Conditions: NM, BuyPrice: 10, VendorName: "Strike Zone"},
+					{Conditions: SP, BuyPrice: 8, VendorName: "Strike Zone"},
+					{Conditions: MP, BuyPrice: 5, VendorName: "Strike Zone"},
 				},
 			},
 		},
@@ -41,8 +41,8 @@ func TestCollapsedPricings(t *testing.T) {
 			desc: "cash beside store credit is two vendors, not two products",
 			buylist: BuylistRecord{
 				"credit": {
-					{Conditions: "NM", BuyPrice: 10, VendorName: "ABU Games (credit)"},
-					{Conditions: "NM", BuyPrice: 4, VendorName: "ABU Games"},
+					{Conditions: NM, BuyPrice: 10, VendorName: "ABU Games (credit)"},
+					{Conditions: NM, BuyPrice: 4, VendorName: "ABU Games"},
 				},
 			},
 		},
@@ -50,8 +50,8 @@ func TestCollapsedPricings(t *testing.T) {
 			desc: "a quantity tier moves a price honestly and stays quiet",
 			buylist: BuylistRecord{
 				"tiered": {
-					{Conditions: "NM", BuyPrice: 5.50, Quantity: 4, VendorName: "Card Kingdom"},
-					{Conditions: "NM", BuyPrice: 5, Quantity: 20, VendorName: "Card Kingdom"},
+					{Conditions: NM, BuyPrice: 5.50, Quantity: 4, VendorName: "Card Kingdom"},
+					{Conditions: NM, BuyPrice: 5, Quantity: 20, VendorName: "Card Kingdom"},
 				},
 			},
 		},
@@ -59,9 +59,9 @@ func TestCollapsedPricings(t *testing.T) {
 			desc: "a grade with a second price is named on its own",
 			buylist: BuylistRecord{
 				"onegrade": {
-					{Conditions: "NM", BuyPrice: 9, VendorName: "Hareruya"},
-					{Conditions: "SP", BuyPrice: 120, VendorName: "Hareruya"},
-					{Conditions: "SP", BuyPrice: 6, VendorName: "Hareruya"},
+					{Conditions: NM, BuyPrice: 9, VendorName: "Hareruya"},
+					{Conditions: SP, BuyPrice: 120, VendorName: "Hareruya"},
+					{Conditions: SP, BuyPrice: 6, VendorName: "Hareruya"},
 				},
 			},
 			want: []string{"onegrade"},
@@ -70,8 +70,8 @@ func TestCollapsedPricings(t *testing.T) {
 			desc: "a price of zero says nothing to compare against",
 			buylist: BuylistRecord{
 				"zeroed": {
-					{Conditions: "NM", BuyPrice: 40, VendorName: "Magic Corner"},
-					{Conditions: "NM", BuyPrice: 0, VendorName: "Magic Corner"},
+					{Conditions: NM, BuyPrice: 40, VendorName: "Magic Corner"},
+					{Conditions: NM, BuyPrice: 0, VendorName: "Magic Corner"},
 				},
 			},
 		},
@@ -96,9 +96,9 @@ func TestCollapsedPricings(t *testing.T) {
 func TestCollapsedPricingsReport(t *testing.T) {
 	buylist := BuylistRecord{
 		"neonink": {
-			{Conditions: "NM", BuyPrice: 300, VendorName: "Strike Zone", URL: "high"},
-			{Conditions: "NM", BuyPrice: 40, VendorName: "Strike Zone", URL: "middle"},
-			{Conditions: "NM", BuyPrice: 17, VendorName: "Strike Zone", URL: "low"},
+			{Conditions: NM, BuyPrice: 300, VendorName: "Strike Zone", URL: "high"},
+			{Conditions: NM, BuyPrice: 40, VendorName: "Strike Zone", URL: "middle"},
+			{Conditions: NM, BuyPrice: 17, VendorName: "Strike Zone", URL: "low"},
 		},
 	}
 	got := CollapsedPricings(buylist, CollapsedRatioThreshold)
@@ -124,8 +124,8 @@ func TestCollapsedPricingsReport(t *testing.T) {
 // price per printing: Add keeps a second price because the two entries differ
 // in exactly the field that is the symptom.
 func TestAddUnique(t *testing.T) {
-	first := BuylistEntry{Conditions: "NM", BuyPrice: 17, VendorName: "Strike Zone"}
-	second := BuylistEntry{Conditions: "NM", BuyPrice: 300, VendorName: "Strike Zone"}
+	first := BuylistEntry{Conditions: NM, BuyPrice: 17, VendorName: "Strike Zone"}
+	second := BuylistEntry{Conditions: NM, BuyPrice: 300, VendorName: "Strike Zone"}
 
 	kept := BuylistRecord{}
 	if err := kept.Add("neonink", &first); err != nil {
@@ -151,11 +151,11 @@ func TestAddUnique(t *testing.T) {
 	}
 
 	// Another grade is another price, and another vendor is another shop.
-	graded := BuylistEntry{Conditions: "SP", BuyPrice: 12, VendorName: "Strike Zone"}
+	graded := BuylistEntry{Conditions: SP, BuyPrice: 12, VendorName: "Strike Zone"}
 	if err := refused.AddUnique("neonink", &graded); err != nil {
 		t.Errorf("AddUnique refused another grade: %v", err)
 	}
-	credit := BuylistEntry{Conditions: "NM", BuyPrice: 21, VendorName: "Strike Zone (credit)"}
+	credit := BuylistEntry{Conditions: NM, BuyPrice: 21, VendorName: "Strike Zone (credit)"}
 	if err := refused.AddUnique("neonink", &credit); err != nil {
 		t.Errorf("AddUnique refused another vendor: %v", err)
 	}

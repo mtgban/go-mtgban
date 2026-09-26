@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -27,7 +28,7 @@ const (
 // GenerateProductURL builds the storefront link for a product, narrowed to a
 // printing, condition and language, and carrying an affiliate tag when one is
 // given.
-func GenerateProductURL(productID int, printing, affiliate, condition, language string, isDirect bool) string {
+func GenerateProductURL(productID int, printing, affiliate string, condition mtgban.Condition, language string, isDirect bool) string {
 	u, err := url.Parse(BaseProductURL + fmt.Sprint(productID))
 	if err != nil {
 		return ""
@@ -40,11 +41,10 @@ func GenerateProductURL(productID int, printing, affiliate, condition, language 
 	if condition != "" {
 		for full, short := range conditionMap {
 			if short == condition {
-				condition = full
+				v.Set("Condition", full)
 				break
 			}
 		}
-		v.Set("Condition", condition)
 	}
 	if language != "" {
 		language = mtgmatcher.Title(language)
@@ -260,16 +260,16 @@ const (
 
 // ListingData is one live listing of a product, with the quantity behind it.
 type ListingData struct {
-	ProductID       int     `json:"product_id"`
-	SkuID           int     `json:"sku_id"`
-	Quantity        int     `json:"quantity"`
-	SellerKey       string  `json:"seller_key"`
-	Price           float64 `json:"price"`
-	DirectInventory int     `json:"direct_inventory"`
-	ConditionFull   string  `json:"condition_full"`
-	Condition       string  `json:"condition"`
-	Printing        string  `json:"printing"`
-	Foil            bool    `json:"foil"`
+	ProductID       int              `json:"product_id"`
+	SkuID           int              `json:"sku_id"`
+	Quantity        int              `json:"quantity"`
+	SellerKey       string           `json:"seller_key"`
+	Price           float64          `json:"price"`
+	DirectInventory int              `json:"direct_inventory"`
+	ConditionFull   string           `json:"condition_full"`
+	Condition       mtgban.Condition `json:"condition"`
+	Printing        string           `json:"printing"`
+	Foil            bool             `json:"foil"`
 }
 
 // GetDirectQtysForProductID returns the live listings for a product, optionally

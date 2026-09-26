@@ -110,7 +110,7 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 			out := responseChan{
 				cardID: cardID,
 				entry: mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					Price:      prices[i],
 					Quantity:   1,
 					URL:        link,

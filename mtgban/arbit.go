@@ -47,7 +47,7 @@ type ArbitOpts struct {
 	OnlyReserveList bool
 
 	// List of conditions to ignore
-	Conditions []string
+	Conditions []Condition
 
 	// List of rarities to ignore
 	Rarities []string
@@ -152,7 +152,7 @@ type resolvedOpts struct {
 	filterRLOnly           bool
 	filterDecksOnly        bool
 	filterBundle           bool
-	filterConditions       []string
+	filterConditions       []Condition
 	filterRarities         []string
 	filterEditions         []string
 	filterSelectedEditions []string
@@ -418,7 +418,7 @@ func Arbit(b *mtgmatcher.Backend, opts *ArbitOpts, vendor Vendor, seller Seller)
 			blEntry := nmEntry
 
 			// When invEntry is not NM, we need to account for conditions
-			if invEntry.Conditions != "NM" {
+			if invEntry.Conditions != NM {
 				i := 0
 				for i = range blEntries {
 					if blEntries[i].Conditions == invEntry.Conditions {
@@ -450,8 +450,8 @@ func Arbit(b *mtgmatcher.Backend, opts *ArbitOpts, vendor Vendor, seller Seller)
 }
 
 // A generic grading map that estimates common deductions
-var defaultGradeMap = map[string]float64{
-	"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4, "PO": 0,
+var defaultGradeMap = map[Condition]float64{
+	NM: 1, SP: 0.8, MP: 0.6, HP: 0.4, PO: 0,
 }
 
 // Mismatch compares two sellers rather than the two sides of one book,

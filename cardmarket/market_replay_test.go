@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // replayFixturePath is the checked-in default: the first 30 of 100 real
@@ -70,8 +71,8 @@ func TestReplayAcceptArticleAgainstRealListings(t *testing.T) {
 		t.Fatal("fixture carries no German (\"D\") listing - this test cannot tell a bare country code apart from being wrongly excluded")
 	}
 
-	held := map[string]float64{}
-	entries := map[string]cm.Article{}
+	held := map[mtgban.Condition]float64{}
+	entries := map[mtgban.Condition]cm.Article{}
 	for _, article := range articles {
 		cond, ok := acceptArticle(nil, article)
 		if !ok {
@@ -84,7 +85,7 @@ func TestReplayAcceptArticleAgainstRealListings(t *testing.T) {
 		entries[cond] = article
 	}
 
-	nm, found := entries["NM"]
+	nm, found := entries[mtgban.NM]
 	if !found {
 		t.Fatal("no NM price held from a 100-listing page")
 	}

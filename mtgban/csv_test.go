@@ -77,9 +77,9 @@ func TestInventoryRoundTripsThroughCSV(t *testing.T) {
 			t.Fatalf("add %s: %v", cardID, err)
 		}
 	}
-	add("plain", &InventoryEntry{Conditions: "NM", Price: 10.50, Quantity: 2, URL: "u1"})
-	add("plain", &InventoryEntry{Conditions: "SP", Price: 8.25, Quantity: 1, URL: "u2"})
-	add("shiny", &InventoryEntry{Conditions: "NM", Price: 3.75, Quantity: 7, URL: "u3"})
+	add("plain", &InventoryEntry{Conditions: NM, Price: 10.50, Quantity: 2, URL: "u1"})
+	add("plain", &InventoryEntry{Conditions: SP, Price: 8.25, Quantity: 1, URL: "u2"})
+	add("shiny", &InventoryEntry{Conditions: NM, Price: 3.75, Quantity: 7, URL: "u3"})
 
 	var buf bytes.Buffer
 	err := WriteInventoryToCSV(b, want, &buf)
@@ -102,8 +102,8 @@ func TestInventoryRoundTripsThroughCSVWithItsSellers(t *testing.T) {
 	b := backendFor(csvCards())
 
 	want := InventoryRecord{
-		"plain": {{Conditions: "NM", Price: 1.50, Quantity: 3, URL: "u1", SellerName: "Store A", Bundle: true}},
-		"shiny": {{Conditions: "NM", Price: 2.50, Quantity: 1, URL: "u2", SellerName: "Store B"}},
+		"plain": {{Conditions: NM, Price: 1.50, Quantity: 3, URL: "u1", SellerName: "Store A", Bundle: true}},
+		"shiny": {{Conditions: NM, Price: 2.50, Quantity: 1, URL: "u2", SellerName: "Store B"}},
 	}
 
 	var buf bytes.Buffer
@@ -128,7 +128,7 @@ func TestInventoryRoundTripsThroughCSVWithTheCartIds(t *testing.T) {
 
 	want := InventoryRecord{
 		"plain": {{
-			Conditions: "NM", Price: 1.50, Quantity: 3, URL: "u1",
+			Conditions: NM, Price: 1.50, Quantity: 3, URL: "u1",
 			SellerName: "Store A", OriginalID: "prod-1", InstanceID: "sku-1",
 		}},
 	}
@@ -158,7 +158,7 @@ func TestBuylistRoundTripsThroughCSVWithoutTheTradePrice(t *testing.T) {
 	b := backendFor(csvCards())
 
 	want := BuylistRecord{
-		"plain": {{Conditions: "NM", BuyPrice: 4.00, Quantity: 2, PriceRatio: 40.00, URL: "b1", VendorName: "Store A"}},
+		"plain": {{Conditions: NM, BuyPrice: 4.00, Quantity: 2, PriceRatio: 40.00, URL: "b1", VendorName: "Store A"}},
 	}
 
 	var buf bytes.Buffer
@@ -310,7 +310,7 @@ func TestWriteInventoryToCSVNamesTheFinish(t *testing.T) {
 
 	inv := InventoryRecord{}
 	for _, cardID := range []string{"plain", "shiny", "scratched", "box"} {
-		inv[cardID] = []InventoryEntry{{Conditions: "NM", Price: 1, Quantity: 1}}
+		inv[cardID] = []InventoryEntry{{Conditions: NM, Price: 1, Quantity: 1}}
 	}
 
 	records := writeCSV(t, func(w *bytes.Buffer) error {
@@ -334,10 +334,10 @@ func TestWriteToCSVSkipsACardItCannotName(t *testing.T) {
 	b := backendFor(csvCards())
 
 	inv := InventoryRecord{
-		"plain":   {{Conditions: "NM", Price: 1, Quantity: 1}},
-		"missing": {{Conditions: "NM", Price: 1, Quantity: 1}},
+		"plain":   {{Conditions: NM, Price: 1, Quantity: 1}},
+		"missing": {{Conditions: NM, Price: 1, Quantity: 1}},
 		// A pipe id has to carry all four fields to be written
-		"short|Card": {{Conditions: "NM", Price: 1, Quantity: 1}},
+		"short|Card": {{Conditions: NM, Price: 1, Quantity: 1}},
 	}
 	records := writeCSV(t, func(w *bytes.Buffer) error {
 		return WriteInventoryToCSV(b, inv, w)
@@ -347,8 +347,8 @@ func TestWriteToCSVSkipsACardItCannotName(t *testing.T) {
 	}
 
 	bl := BuylistRecord{
-		"plain":   {{Conditions: "NM", BuyPrice: 1, Quantity: 1}},
-		"missing": {{Conditions: "NM", BuyPrice: 1, Quantity: 1}},
+		"plain":   {{Conditions: NM, BuyPrice: 1, Quantity: 1}},
+		"missing": {{Conditions: NM, BuyPrice: 1, Quantity: 1}},
 	}
 	records = writeCSV(t, func(w *bytes.Buffer) error {
 		return WriteBuylistToCSV(b, bl, 1, w)
@@ -364,7 +364,7 @@ func TestWriteInventoryToCSVReadsThePipeID(t *testing.T) {
 	b := backendFor(csvCards())
 
 	inv := InventoryRecord{
-		"ghost|Ghost Card|SET|42": {{Conditions: "NM", Price: 1, Quantity: 1}},
+		"ghost|Ghost Card|SET|42": {{Conditions: NM, Price: 1, Quantity: 1}},
 	}
 	records := writeCSV(t, func(w *bytes.Buffer) error {
 		return WriteInventoryToCSV(b, inv, w)
@@ -381,13 +381,13 @@ func arbitEntry() ArbitEntry {
 	return ArbitEntry{
 		CardID: "plain",
 		InventoryEntry: InventoryEntry{
-			Conditions: "NM", Price: 10.00, Quantity: 4, URL: "sell-link",
+			Conditions: NM, Price: 10.00, Quantity: 4, URL: "sell-link",
 		},
 		BuylistEntry: BuylistEntry{
-			Conditions: "NM", BuyPrice: 15.00, Quantity: 3, URL: "buy-link",
+			Conditions: NM, BuyPrice: 15.00, Quantity: 3, URL: "buy-link",
 		},
 		ReferenceEntry: InventoryEntry{
-			Conditions: "NM", Price: 12.00, Quantity: 1, URL: "ref-link",
+			Conditions: NM, Price: 12.00, Quantity: 1, URL: "ref-link",
 		},
 		Difference:         5.00,
 		Spread:             50.00,
@@ -716,10 +716,10 @@ func TestWriteToCSVReportsADestinationThatWasNeverThere(t *testing.T) {
 		write func(w *failAfter) error
 	}{
 		{"inventory", func(w *failAfter) error {
-			return WriteInventoryToCSV(b, InventoryRecord{"plain": {{Conditions: "NM", Price: 1, Quantity: 1}}}, w)
+			return WriteInventoryToCSV(b, InventoryRecord{"plain": {{Conditions: NM, Price: 1, Quantity: 1}}}, w)
 		}},
 		{"buylist", func(w *failAfter) error {
-			return WriteBuylistToCSV(b, BuylistRecord{"plain": {{Conditions: "NM", BuyPrice: 1, Quantity: 1}}}, 1, w)
+			return WriteBuylistToCSV(b, BuylistRecord{"plain": {{Conditions: NM, BuyPrice: 1, Quantity: 1}}}, 1, w)
 		}},
 		{"arbitrage", func(w *failAfter) error { return WriteArbitrageToCSV(b, entries, w) }},
 		{"mismatch", func(w *failAfter) error { return WriteMismatchToCSV(b, entries, w) }},
@@ -755,7 +755,7 @@ func TestWriteBuylistToCSVStopsAtAFailedDestination(t *testing.T) {
 	b := backendFor(nil)
 	bl := BuylistRecord{}
 	for _, id := range []string{"a|Card A|SET|1", "b|Card B|SET|2", "c|Card C|SET|3"} {
-		bl[id] = []BuylistEntry{{Conditions: "NM", BuyPrice: 1, Quantity: 1}}
+		bl[id] = []BuylistEntry{{Conditions: NM, BuyPrice: 1, Quantity: 1}}
 	}
 	err := WriteBuylistToCSV(b, bl, 1, &failAfter{budget: 80})
 	if err == nil {
