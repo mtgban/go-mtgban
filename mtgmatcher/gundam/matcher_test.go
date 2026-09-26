@@ -110,14 +110,14 @@ var gundamSeeds = []matchTest{
 	{
 		// A token is named for the art it wears; the word is what reaches
 		// the token rather than the unit card sharing the name. The set
-		// still has to be said - the base set and its beta edition both
-		// print this token at this number.
+		// still has to be said - another set prints this token at this
+		// number too.
 		Desc: "the token word reaches the token",
-		In:   mtgmatcher.InputCard{Name: "Gundam", Edition: "Newtype Rising", Variation: "T-001 Token"},
+		In:   mtgmatcher.InputCard{Name: "Gundam", Edition: "Edition Beta", Variation: "T-001 Token"},
 	},
 	{
-		// The base set and its beta edition print the same token at the
-		// same number, so a token named without its set names two.
+		// Two sets print the same token at the same number, so a token
+		// named without its set names two.
 		Desc: "negative: a token named without its set",
 		In:   mtgmatcher.InputCard{Name: "Gundam", Variation: "T-001 Token"},
 	},
