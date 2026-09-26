@@ -257,6 +257,9 @@ var versionPrintings = map[int]struct{ set, number string }{
 	272488: {"BCHR", "114b"}, // Urza's Mine (V.2), map lists four
 	272502: {"BCHR", "115b"}, // Urza's Power Plant (V.2), map lists four
 	272552: {"BCHR", "116a"}, // Urza's Tower (V.1), map lists four
+
+	// Secret Lair Drop Series: Secretversary 2021
+	687581: {"PLST", "CMR-395"}, // Counterspell (V.2), Scryfall
 }
 
 // versionPrinting answers the printing versionPrintings names for a Magic

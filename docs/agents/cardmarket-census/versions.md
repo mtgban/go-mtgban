@@ -36,6 +36,7 @@ The tag after each row's name says what placed it:
 | CardTrader | CardTrader's collector number, which no other product's row contests |
 | left over | the one row of its group left once the other versions are placed |
 | map lists two, four | the map files the product on several printings. CardTrader and the sibling priced on the other one agree which is this product's |
+| Scryfall | the map does not carry the product, and Scryfall's own `cardmarket_id` names its printing |
 
 The images settled 35 disputes: 33 went CardTrader's way and two went
 Scryfall's (Antoine Ruel's Island V.4 is ar335, Mark Le Pine's Mountain
