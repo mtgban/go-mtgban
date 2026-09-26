@@ -12,14 +12,16 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// uniqueCopy is the marker vegas.singles ends a display name with when the
-// listing is one particular card rather than the printing: the word Unique,
-// with or without parentheses, and then that copy's own id.
+// uniqueCopy is the marker vegas.singles puts in a display name when the
+// listing is one particular card rather than the printing: the word Unique
+// ending the name with that copy's own id, with or without parentheses and
+// at times with "(Copy)" after it, or opening a bracket that says what sets
+// the copy apart, "(Unique- Miscut Corner)".
 //
-// The id is what makes the marker safe to read. Magic has a set named
-// "Unique and Miscellaneous Promos", so every product in it says the word;
-// none of them ends it with a number.
-var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?$`)
+// The id and the bracket are what make the marker safe to read. Magic has a
+// set named "Unique and Miscellaneous Promos", so every product in it says
+// the word; none of them follows it with a number or brackets it.
+var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?(?:\s*\(Copy\))?$|\(Unique\s*-`)
 
 // preprocess turns a storefront product into the matcher's input, in the
 // grammar its game's display names follow.

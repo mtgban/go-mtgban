@@ -9,10 +9,10 @@ import (
 )
 
 // TestUniqueCopy pins which listings name one particular card rather than a
-// printing. The storefront writes the copy's own id behind the word, and that
-// id is the whole discriminator: Magic has a set called "Unique and
-// Miscellaneous Promos", so every product in it says the word and none of
-// them may be refused for it.
+// printing. The storefront writes the copy's own id behind the word, or opens
+// a bracket with it, and that is the whole discriminator: Magic has a set
+// called "Unique and Miscellaneous Promos", so every product in it says the
+// word and none of them may be refused for it.
 //
 // The refusal wraps ErrUnsupported, which is what lets processProduct drop
 // the listing without logging it beside the run's real failures.
@@ -23,6 +23,8 @@ func TestUniqueCopy(t *testing.T) {
 		"Kha'Zix - Voidreaver (Signature) (236*/219) - Unleashed Foil Unique (93094)",
 		"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil (Unique) 54353",
 		"Teemo - Swift Scout (Signature) (307*/298) - Unique (390545)",
+		"Yasuo - Windrider (Signature) (235*/221) - Spiritforged Foil Unique (58724) (Copy)",
+		"Gengar VMAX (Unique- Miscut Corner) (Alternate Art Secret) 271/264  - Holofoil SWSH08 Fusion Strike - Secret Rare",
 	} {
 		_, err := preprocess(&mtgmatcher.Backend{}, VSProduct{DisplayName: display}, mtgban.GameRiftbound)
 		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
