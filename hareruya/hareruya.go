@@ -337,7 +337,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 					cardID: cardID,
 					invEntry: &mtgban.InventoryEntry{
 						Price:      price,
-						Conditions: mtgban.Condition(cond),
+						Conditions: cond,
 						Quantity:   qty,
 						URL:        link,
 						OriginalID: product.Product,
@@ -380,8 +380,18 @@ func listingsFor(product Product, lazyData []LazyResult) []Row {
 // Row is one line of the storefront's table, before it becomes a listing.
 type Row struct {
 	Quantity  int
-	Condition string
+	Condition mtgban.Condition
 	Price     float64
+}
+
+// haCondition maps Hareruya's condition text to our grade. A graded slab -
+// naming PSA, CGC or BGS - is NM; everything else is read through
+// ParseCondition.
+func haCondition(s string) (mtgban.Condition, error) {
+	if strings.Contains(s, "PSA") || strings.Contains(s, "CGC") || strings.Contains(s, "BGS") {
+		return mtgban.NM, nil
+	}
+	return mtgban.ParseCondition(s)
 }
 
 // LazyResult carries a page of rows and the error that ended the walk, so a
@@ -482,23 +492,21 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 			if reAltered.MatchString(condition) {
 				break
 			}
-			if strings.Contains(condition, "PSA") ||
-				strings.Contains(condition, "CGC") ||
-				strings.Contains(condition, "BGS") {
-				condition = "NM"
-			}
-			if condition == "Poor" {
-				condition = "PO"
-			}
 
 			qty, err := strconv.Atoi(fields[1])
 			if err != nil || qty == 0 {
 				break
 			}
 
+			grade, err := haCondition(condition)
+			if err != nil {
+				ha.printf("unsupported %s condition", condition)
+				break
+			}
+
 			result.Rows = append(result.Rows, Row{
 				Price:     price,
-				Condition: condition,
+				Condition: grade,
 				Quantity:  qty,
 			})
 			//lint:ignore SA4004 the single iteration is the point
@@ -523,9 +531,15 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				return
 			}
 
+			grade, err := haCondition(condition)
+			if err != nil {
+				ha.printf("unsupported %s condition", condition)
+				return
+			}
+
 			result.Rows = append(result.Rows, Row{
 				Price:     price,
-				Condition: condition,
+				Condition: grade,
 				Quantity:  qty,
 			})
 		})
@@ -605,9 +619,7 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	if mode == modeInventory {
 		consume = func(record responseChan) {
 			err := ha.inventory.Add(record.cardID, record.invEntry)
-			if errors.Is(err, mtgban.ErrInvalidCondition) {
-				ha.printf("unsupported %s condition", record.invEntry.Conditions)
-			} else if err != nil {
+			if err != nil {
 				ha.printf("%s", err.Error())
 			}
 		}
@@ -646,9 +658,7 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 			} else {
 				err = ha.buylist.Add(record.cardID, record.buyEntry)
 			}
-			if errors.Is(err, mtgban.ErrInvalidCondition) {
-				ha.printf("unsupported %s condition", record.buyEntry.Conditions)
-			} else if err != nil {
+			if err != nil {
 				ha.printf("%s", err.Error())
 			}
 		}
