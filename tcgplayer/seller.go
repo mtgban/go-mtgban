@@ -153,7 +153,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 
 			cond, err := mtgban.ParseCondition(listing.Condition)
 			if err != nil {
-				return fmt.Errorf("condition not found: %s", listing.Condition)
+				return fmt.Errorf("unsupported %s condition", listing.Condition)
 			}
 
 			if listing.Price == 0 || listing.Quantity == 0 {

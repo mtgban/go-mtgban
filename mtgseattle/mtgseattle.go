@@ -216,7 +216,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			}
 			grade, err := mtgban.ParseCondition(cond)
 			if err != nil {
-				ms.printf("Unsupported %s condition for %s", cond, title)
+				ms.printf("unsupported %s condition", cond)
 				return
 			}
 			conditions = grade

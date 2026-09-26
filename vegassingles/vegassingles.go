@@ -180,7 +180,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 
 			cond, err := mtgban.ParseCondition(variant.Title)
 			if err != nil {
-				vs.printf("unknown condition: %s", variant.Title)
+				vs.printf("unsupported %s condition", variant.Title)
 				continue
 			}
 
@@ -215,6 +215,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 
 			cond, err := mtgban.ParseCondition(variant.Title)
 			if err != nil {
+				vs.printf("unsupported %s condition", variant.Title)
 				continue
 			}
 

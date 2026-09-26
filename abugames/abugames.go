@@ -159,7 +159,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			if doc.SellQuantity > 0 && doc.SellPrice > 0 {
 				cond, err := abuRetailCondition(doc.Condition, hasMintGrade4Retail, lowerGrade, theCard.Foil)
 				if err != nil {
-					abu.printf("Unknown '%s' condition", doc.Condition)
+					abu.printf("unsupported %s condition", doc.Condition)
 					continue
 				}
 
@@ -186,7 +186,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 				if doc.Condition != "MINT" {
 					grade, err := abuBuylistCondition(doc.Condition, theCard.Foil)
 					if err != nil {
-						abu.printf("Unknown '%s' condition", doc.Condition)
+						abu.printf("unsupported %s condition", doc.Condition)
 						continue
 					}
 					cond = grade

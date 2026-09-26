@@ -152,7 +152,7 @@ func (mp *Manapool) record(card Product, cardID string) {
 	// Match conditions
 	grade, err := mtgban.ParseCondition(card.ConditionID)
 	if err != nil {
-		mp.printf("Unknown %s condition for %s (%s)", card.ConditionID, card.Name, card.SetCode)
+		mp.printf("unsupported %s condition", card.ConditionID)
 		return
 	}
 

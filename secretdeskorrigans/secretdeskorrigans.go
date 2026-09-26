@@ -153,7 +153,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 		}
 		conditions, err := mtgban.ParseCondition(cond)
 		if err != nil {
-			sdk.printf("Unsupported %s condition for %s", cond, title)
+			sdk.printf("unsupported %s condition", cond)
 			return
 		}
 

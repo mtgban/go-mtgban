@@ -128,8 +128,8 @@ func TestProcessUntitledBuyVariant(t *testing.T) {
 			if len(gn.Buylist()) != 0 {
 				t.Errorf("%s: recorded %v; want nothing", product.ID, gn.Buylist())
 			}
-			if len(logs) != 1 || !strings.Contains(logs[0], "unknown condition") {
-				t.Errorf("%s: logged %v; want an unknown condition", product.ID, logs)
+			if len(logs) != 1 || logs[0] != "[GN] unsupported %s condition" {
+				t.Errorf("%s: logged %v; want an unsupported condition", product.ID, logs)
 			}
 			continue
 		}

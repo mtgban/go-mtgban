@@ -130,7 +130,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 
 		cond, err := mtgban.ParseCondition(req.Condition)
 		if err != nil {
-			tcg.printf("unknown condition %s for %d", req.Condition, req.SkuID)
+			tcg.printf("unsupported %s condition", req.Condition)
 			continue
 		}
 

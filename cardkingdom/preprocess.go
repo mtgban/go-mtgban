@@ -733,7 +733,10 @@ var gradeMap = map[string]map[string]mtgban.Condition{
 	},
 }
 
-func parseGradedCondition(title string) mtgban.Condition {
+// parseGradedCondition reads the grade off a graded listing's title, and
+// alongside it the grader-plus-score text a caller can name a refusal by
+// ("PSA 11"), empty when the title names no known grader at all.
+func parseGradedCondition(title string) (mtgban.Condition, string) {
 	var grade string
 	var score string
 	for _, score = range supportedScores {
@@ -746,7 +749,7 @@ func parseGradedCondition(title string) mtgban.Condition {
 	}
 
 	if grade == "" {
-		return ""
+		return "", ""
 	}
 
 	grade = strings.Split(grade, ")")[0]
@@ -754,13 +757,15 @@ func parseGradedCondition(title string) mtgban.Condition {
 	grade = strings.TrimSuffix(grade, " Quad ++")
 	grade = strings.TrimSuffix(grade, " Quad++")
 
+	slab := score + " " + grade
+
 	// A grade the table does not cover has no condition, and must not fall
 	// through to the zero value: an empty condition is silently promoted to
 	// NM when the entry is added
 	condition, found := gradeMap[score][grade]
 	if !found {
-		return ""
+		return "", slab
 	}
 
-	return condition
+	return condition, slab
 }

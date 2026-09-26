@@ -153,9 +153,9 @@ behind its url.
   sub-seller via `MarketNames`/`availableMarketNames` rather than pricing
   it as a normal NM copy), and sometimes a **skip signal** ("Asian" —
   `isSkippedCondition`, since the one Evolving Wilds sold that way carries
-  no language, set or number to resolve against). A grading service or
-  print run this table doesn't know about is refused with a logged
-  "Unsupported condition", not silently dropped as if it matched NM.
+  no language, set or number to resolve against). A grading service or print
+  run this table doesn't know about is refused with a logged "unsupported
+  <text> condition", not silently dropped as if it matched NM.
 - **Graded/unique copies are a second seller, not a second condition.**
   `gradedMarkers`, `isGraded`, `AddRelaxed` (so a genuine finish collision —
   a Foil-etched card's Near Mint and Near Mint Foil rows — doesn't refuse

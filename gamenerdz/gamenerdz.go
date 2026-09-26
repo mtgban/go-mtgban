@@ -176,7 +176,7 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 
 			cond, found := conditionMap[variant.Title]
 			if !found {
-				gn.printf("unknown condition: %s", variant.Title)
+				gn.printf("unsupported %s condition", variant.Title)
 				continue
 			}
 			if cond == "" {

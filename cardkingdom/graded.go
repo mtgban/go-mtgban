@@ -165,9 +165,13 @@ func (ck *Graded) scrapePage(session string, page int) error {
 		// Product ID from hidden input
 		id, _ := s.Find("input.product_id").Attr("value")
 
-		conditions := parseGradedCondition(title)
+		conditions, slab := parseGradedCondition(title)
 		if conditions == "" {
-			ck.printf("unmapped grade in %q", title)
+			text := slab
+			if text == "" {
+				text = title
+			}
+			ck.printf("unsupported %s condition", text)
 			return
 		}
 

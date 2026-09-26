@@ -138,7 +138,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 
 			grade, err := mtgban.ParseCondition(v.Condition)
 			if err != nil {
-				mc.printf("Unknown '%s' condition", v.Condition)
+				mc.printf("unsupported %s condition", v.Condition)
 				continue
 			}
 
