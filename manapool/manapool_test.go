@@ -48,23 +48,23 @@ func withMagic(t *testing.T) *mtgmatcher.Backend {
 // it arrives with, whichever product arrives first.
 func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 	mp := NewScraper(&mtgmatcher.Backend{})
-	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: "NM", Price: 25, URL: "first"})
-	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: "NM", Price: 15, URL: "cheaper"})
-	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: "NM", Price: 40, URL: "dearer"})
-	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: "SP", Price: 9, URL: "other-grade"})
+	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 25, URL: "first"})
+	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 15, URL: "cheaper"})
+	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 40, URL: "dearer"})
+	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.SP, Price: 9, URL: "other-grade"})
 
-	got := map[string]mtgban.InventoryEntry{}
+	got := map[mtgban.Condition]mtgban.InventoryEntry{}
 	for _, e := range mp.Inventory()["card"] {
 		got[e.Conditions] = e
 	}
 	if len(got) != 2 {
 		t.Fatalf("published %d grades, want NM and SP: %+v", len(got), got)
 	}
-	if got["NM"].Price != 15 || got["NM"].URL != "cheaper" {
-		t.Errorf("NM is %.0f from %q, want 15 from the cheaper product", got["NM"].Price, got["NM"].URL)
+	if got[mtgban.NM].Price != 15 || got[mtgban.NM].URL != "cheaper" {
+		t.Errorf("NM is %.0f from %q, want 15 from the cheaper product", got[mtgban.NM].Price, got[mtgban.NM].URL)
 	}
-	if got["SP"].Price != 9 {
-		t.Errorf("SP is %.0f, want 9", got["SP"].Price)
+	if got[mtgban.SP].Price != 9 {
+		t.Errorf("SP is %.0f, want 9", got[mtgban.SP].Price)
 	}
 }
 

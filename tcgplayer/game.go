@@ -183,7 +183,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				channel <- genericChan{
 					key: uuids[0],
 					entry: mtgban.InventoryEntry{
-						Conditions: "NM",
+						Conditions: mtgban.NM,
 						Price:      price,
 						Quantity:   1,
 						URL:        GenerateProductURL(sku.ProductID, "", tcg.affiliate, "", "", false),

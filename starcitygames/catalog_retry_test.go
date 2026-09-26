@@ -9,6 +9,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
@@ -116,7 +117,7 @@ func TestLoadCatalogRetryStartsClean(t *testing.T) {
 		t.Fatalf("got %d priced cards, want the pair's one: %v", len(scg.inventory), reported)
 	}
 	for _, entries := range scg.inventory {
-		wantQty := map[string]int{"NM": 18, "SP": 7}
+		wantQty := map[mtgban.Condition]int{mtgban.NM: 18, mtgban.SP: 7}
 		if len(entries) != len(wantQty) {
 			t.Fatalf("got %d entries, want one per grade: %v", len(entries), entries)
 		}

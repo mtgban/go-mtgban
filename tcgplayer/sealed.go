@@ -79,7 +79,7 @@ func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseCh
 		out := responseChan{
 			cardID: uuid,
 			entry: mtgban.InventoryEntry{
-				Conditions: "NM",
+				Conditions: mtgban.NM,
 				Price:      result.LowestListingPrice,
 				Quantity:   1,
 				URL:        link,

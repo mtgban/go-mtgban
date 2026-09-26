@@ -68,12 +68,12 @@ var name2shorthand = map[string]string{
 	"TCGplayer Direct": "TCGDirect",
 }
 
-var skuConditions = map[string]string{
-	"NEAR MINT":         "NM",
-	"LIGHTLY PLAYED":    "SP",
-	"MODERATELY PLAYED": "MP",
-	"HEAVILY PLAYED":    "HP",
-	"DAMAGED":           "PO",
+var skuConditions = map[string]mtgban.Condition{
+	"NEAR MINT":         mtgban.NM,
+	"LIGHTLY PLAYED":    mtgban.SP,
+	"MODERATELY PLAYED": mtgban.MP,
+	"HEAVILY PLAYED":    mtgban.HP,
+	"DAMAGED":           mtgban.PO,
 }
 
 func (tcg *Market) printf(format string, a ...any) {

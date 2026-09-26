@@ -30,9 +30,9 @@ func testInventory(t *testing.T) InventoryRecord {
 			t.Fatalf("add %s: %v", cardID, err)
 		}
 	}
-	add("uuid-a", &InventoryEntry{Conditions: "NM", Price: 10.5, Quantity: 2, URL: "u1"})
-	add("uuid-a", &InventoryEntry{Conditions: "SP", Price: 8, Quantity: 1, URL: "u2"})
-	add("uuid-b", &InventoryEntry{Conditions: "NM", Price: 3.25, Quantity: 7, URL: "u3"})
+	add("uuid-a", &InventoryEntry{Conditions: NM, Price: 10.5, Quantity: 2, URL: "u1"})
+	add("uuid-a", &InventoryEntry{Conditions: SP, Price: 8, Quantity: 1, URL: "u2"})
+	add("uuid-b", &InventoryEntry{Conditions: NM, Price: 3.25, Quantity: 7, URL: "u3"})
 	return inv
 }
 
@@ -45,8 +45,8 @@ func testBuylist(t *testing.T) BuylistRecord {
 			t.Fatalf("add %s: %v", cardID, err)
 		}
 	}
-	add("uuid-a", &BuylistEntry{Conditions: "NM", BuyPrice: 5, Quantity: 4, URL: "b1"})
-	add("uuid-c", &BuylistEntry{Conditions: "NM", BuyPrice: 1.75, Quantity: 9, URL: "b2"})
+	add("uuid-a", &BuylistEntry{Conditions: NM, BuyPrice: 5, Quantity: 4, URL: "b1"})
+	add("uuid-c", &BuylistEntry{Conditions: NM, BuyPrice: 1.75, Quantity: 9, URL: "b2"})
 	return bl
 }
 

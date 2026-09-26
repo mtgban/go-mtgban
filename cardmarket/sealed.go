@@ -170,7 +170,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 			out := responseChan{
 				cardID: uuid,
 				entry: mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					Price:      article.Price * mkm.exchangeRate,
 					Quantity:   article.Count,
 					SellerName: article.Seller.Username,

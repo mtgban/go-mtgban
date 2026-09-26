@@ -128,7 +128,7 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 
 	if mode == modeRetail {
 		err = ml.inventory.Add(cardID, &mtgban.InventoryEntry{
-			Conditions: "NM",
+			Conditions: mtgban.NM,
 			Price:      product.Price * ml.rate,
 			Quantity:   1,
 			URL:        product.URL,
@@ -137,7 +137,7 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 		var sellPrice, priceRatio float64
 		invCards := ml.inventory[cardID]
 		for _, invCard := range invCards {
-			if invCard.Conditions == "NM" {
+			if invCard.Conditions == mtgban.NM {
 				sellPrice = invCard.Price
 				break
 			}
@@ -147,7 +147,7 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 		}
 
 		err = ml.buylist.Add(cardID, &mtgban.BuylistEntry{
-			Conditions: "NM",
+			Conditions: mtgban.NM,
 			BuyPrice:   product.Price * ml.rate,
 			PriceRatio: priceRatio,
 			URL:        product.URL,

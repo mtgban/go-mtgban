@@ -22,7 +22,7 @@ var ErrDuplicateEntry = errors.New("duplicate entry")
 func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int) error {
 	// Safe defaults
 	if entry.Conditions == "" {
-		entry.Conditions = "NM"
+		entry.Conditions = NM
 	}
 	if entry.Quantity == 0 {
 		entry.Quantity = 1
@@ -131,7 +131,7 @@ func (bl BuylistRecord) AddUnique(cardID string, entry *BuylistEntry) error {
 
 func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict int) error {
 	if entry.Conditions == "" {
-		entry.Conditions = "NM"
+		entry.Conditions = NM
 	}
 
 	if !slices.Contains(FullGradeTags, entry.Conditions) {

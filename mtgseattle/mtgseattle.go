@@ -208,18 +208,18 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			price *= 0.95
 		}
 
-		conditions := ""
+		var conditions mtgban.Condition
 		if mode == modeInventory {
 			cond := strings.Split(condLang, ", ")[0]
 			switch cond {
 			case "NM-Mint":
-				conditions = "NM"
+				conditions = mtgban.NM
 			case "Light Play":
-				conditions = "SP"
+				conditions = mtgban.SP
 			case "Moderate Play":
-				conditions = "MP"
+				conditions = mtgban.MP
 			case "Heavy Play":
-				conditions = "HP"
+				conditions = mtgban.HP
 			case "Graded":
 				return
 			default:
@@ -312,7 +312,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			gradeMap := grading(ms.backend, cardID, price)
 			for _, grade := range mtgban.DefaultGradeTags {
 				var quantity int
-				if grade == "NM" {
+				if grade == mtgban.NM {
 					quantity = qty
 				}
 
@@ -451,7 +451,7 @@ func (ms *MTGSeattle) Buylist() mtgban.BuylistRecord {
 	return ms.buylist
 }
 
-func grading(b *mtgmatcher.Backend, cardID string, price float64) map[string]float64 {
+func grading(b *mtgmatcher.Backend, cardID string, price float64) map[mtgban.Condition]float64 {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil
@@ -459,49 +459,49 @@ func grading(b *mtgmatcher.Backend, cardID string, price float64) map[string]flo
 
 	if co.Foil {
 		if price >= 50 {
-			return map[string]float64{
-				"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
+			return map[mtgban.Condition]float64{
+				mtgban.NM: 1, mtgban.SP: 0.8, mtgban.MP: 0.6, mtgban.HP: 0.4,
 			}
 		}
 		if price >= 5 {
-			return map[string]float64{
-				"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
+			return map[mtgban.Condition]float64{
+				mtgban.NM: 1, mtgban.SP: 0.75, mtgban.MP: 0.5, mtgban.HP: 0.3,
 			}
 		}
-		return map[string]float64{
-			"NM": 1, "SP": 0.7, "MP": 0.4, "HP": 0.25,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.7, mtgban.MP: 0.4, mtgban.HP: 0.25,
 		}
 	}
 
 	switch co.SetCode {
 	case "LEA", "LEB", "2ED":
 		if price >= 50 {
-			return map[string]float64{
-				"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
+			return map[mtgban.Condition]float64{
+				mtgban.NM: 1, mtgban.SP: 0.8, mtgban.MP: 0.6, mtgban.HP: 0.4,
 			}
 		}
 		if price >= 5 {
-			return map[string]float64{
-				"NM": 1, "SP": 0.75, "MP": 0.55, "HP": 0.35,
+			return map[mtgban.Condition]float64{
+				mtgban.NM: 1, mtgban.SP: 0.75, mtgban.MP: 0.55, mtgban.HP: 0.35,
 			}
 		}
-		return map[string]float64{
-			"NM": 1, "SP": 0.7, "MP": 0.5, "HP": 0.3,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.7, mtgban.MP: 0.5, mtgban.HP: 0.3,
 		}
 	}
 
 	if price >= 50 {
-		return map[string]float64{
-			"NM": 1, "SP": 0.85, "MP": 0.75, "HP": 0.65,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.85, mtgban.MP: 0.75, mtgban.HP: 0.65,
 		}
 	}
 	if price >= 5 {
-		return map[string]float64{
-			"NM": 1, "SP": 0.80, "MP": 0.7, "HP": 0.6,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.80, mtgban.MP: 0.7, mtgban.HP: 0.6,
 		}
 	}
-	return map[string]float64{
-		"NM": 1, "SP": 0.75, "MP": 0.6, "HP": 0.5,
+	return map[mtgban.Condition]float64{
+		mtgban.NM: 1, mtgban.SP: 0.75, mtgban.MP: 0.6, mtgban.HP: 0.5,
 	}
 }
 

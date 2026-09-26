@@ -193,7 +193,7 @@ func (ha *Sealed) Load(ctx context.Context) error {
 				link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
 
 				out := &mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					Price:      price * ha.exchangeRate,
 					URL:        link,
 					OriginalID: product.Product,
@@ -214,7 +214,7 @@ func (ha *Sealed) Load(ctx context.Context) error {
 				}
 
 				out := &mtgban.BuylistEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					BuyPrice:   buyPrice * ha.exchangeRate,
 					PriceRatio: priceRatio,
 					URL:        "https://www.hareruyamtg.com/ja/purchase/detail/" + haID,

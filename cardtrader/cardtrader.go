@@ -85,15 +85,15 @@ type resultChan struct {
 	invEntry *mtgban.InventoryEntry
 }
 
-var condMap = map[string]string{
-	"":                  "NM",
-	"Mint":              "NM",
-	"Near Mint":         "NM",
-	"Slightly Played":   "SP",
-	"Moderately Played": "MP",
-	"Played":            "HP",
-	"Heavily Played":    "HP",
-	"Poor":              "PO",
+var condMap = map[string]mtgban.Condition{
+	"":                  mtgban.NM,
+	"Mint":              mtgban.NM,
+	"Near Mint":         mtgban.NM,
+	"Slightly Played":   mtgban.SP,
+	"Moderately Played": mtgban.MP,
+	"Played":            mtgban.HP,
+	"Heavily Played":    mtgban.HP,
+	"Poor":              mtgban.PO,
 }
 
 var langMap = map[string]string{

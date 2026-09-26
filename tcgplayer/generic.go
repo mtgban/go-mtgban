@@ -119,7 +119,7 @@ func (tcg *Generic) processPage(ctx context.Context, channel chan<- genericChan,
 			out := genericChan{
 				key: strings.Join(keys, "|"),
 				entry: mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					Price:      prices[i],
 					Quantity:   1,
 					URL:        link,

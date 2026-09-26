@@ -13,6 +13,7 @@ import (
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
@@ -135,12 +136,12 @@ func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[i
 
 // SKUConditionMap maps the condition ids the APIs use to the grades the
 // records are keyed by.
-var SKUConditionMap = map[int]string{
-	1: "NM",
-	2: "SP",
-	3: "MP",
-	4: "HP",
-	5: "PO",
+var SKUConditionMap = map[int]mtgban.Condition{
+	1: mtgban.NM,
+	2: mtgban.SP,
+	3: mtgban.MP,
+	4: mtgban.HP,
+	5: mtgban.PO,
 }
 
 // SKUConditionUnopened is the condition sealed products are sold under,
