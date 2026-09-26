@@ -28,8 +28,8 @@ func (s *bothSides) Info() ScraperInfo {
 	}
 }
 
-func entry() *InventoryEntry  { return &InventoryEntry{Conditions: "NM", Price: 1, Quantity: 1} }
-func bidEntry() *BuylistEntry { return &BuylistEntry{Conditions: "NM", BuyPrice: 1} }
+func entry() *InventoryEntry  { return &InventoryEntry{Conditions: NM, Price: 1, Quantity: 1} }
+func bidEntry() *BuylistEntry { return &BuylistEntry{Conditions: NM, BuyPrice: 1} }
 
 // TestUnfoldReadsTheRecords pins that a side holding nothing is not unfolded.
 // What a scraper implements says what it is able to do, not what the store

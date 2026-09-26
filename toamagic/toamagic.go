@@ -140,23 +140,13 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 			return
 		}
 
-		conditions := ""
 		cond := strings.Split(condLang, ", ")[0]
 		cond = strings.TrimPrefix(cond, "Website Exclusive ")
-		switch cond {
-		case "NM-Mint", "NM":
-			conditions = "NM"
-		case "Light Play", "LP":
-			conditions = "SP"
-		case "Moderate Play":
-			conditions = "MP"
-		case "Heavy Play":
-			conditions = "HP"
-		case "Damaged":
-			conditions = "PO"
-		case "Graded":
+		if cond == "Graded" {
 			return
-		default:
+		}
+		conditions, err := mtgban.ParseCondition(cond)
+		if err != nil {
 			toa.printf("Unsupported %s condition for %s", cond, title)
 			return
 		}

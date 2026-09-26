@@ -661,17 +661,22 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					relaxed = true
 				}
 
-				switch conditions {
-				case "Near Mint", "Foil Near Mint":
-					conditions = "NM"
-				case "Played", "Foil Played":
-					conditions = "MP"
+				matchCond := strings.TrimPrefix(conditions, "Foil ")
+
+				var grade mtgban.Condition
+				switch matchCond {
+				case "Played":
+					grade = mtgban.MP
 				default:
-					csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
-					return
+					parsed, err := mtgban.ParseCondition(matchCond)
+					if err != nil {
+						csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
+						return
+					}
+					grade = parsed
 				}
 				if strings.Contains(cardName, "Signed by") {
-					conditions = "HP"
+					grade = mtgban.HP
 				}
 
 				priceStr := se.Find(`b[itemprop="price"]`).Text()
@@ -810,7 +815,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				out := responseChan{
 					cardID: cardID,
 					invEntry: &mtgban.InventoryEntry{
-						Conditions: conditions,
+						Conditions: grade,
 						Price:      price,
 						Quantity:   qty,
 						URL:        link,
@@ -945,7 +950,7 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 // is filed at NM.
 func offerSeen(seen map[string]bool, record responseChan) bool {
 	entry := record.invEntry
-	key := strings.Join([]string{entry.URL, record.cardID, entry.Conditions, entry.SellerName}, "\x00")
+	key := strings.Join([]string{entry.URL, record.cardID, string(entry.Conditions), entry.SellerName}, "\x00")
 	if seen[key] {
 		return true
 	}

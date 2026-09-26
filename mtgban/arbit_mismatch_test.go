@@ -14,17 +14,17 @@ import (
 func TestMismatchNormalisesTheGrades(t *testing.T) {
 	for _, tt := range []struct {
 		desc                 string
-		refCond, probeCond   string
+		refCond, probeCond   Condition
 		refPrice, probePrice float64
 		wantDifference       float64
 	}{
-		{"two NM copies compare as they are", "NM", "NM", 10, 6, 4},
+		{"two NM copies compare as they are", NM, NM, 10, 6, 4},
 		// The reference is NM, the probe is played: the NM price is brought
 		// down to the played grade before the two are compared.
-		{"an NM reference is graded down to the probe", "NM", "MP", 10, 5, 10*0.6 - 5},
+		{"an NM reference is graded down to the probe", NM, MP, 10, 5, 10*0.6 - 5},
 		// The reference is played, the probe is NM: undoing the reference's
 		// own grade is what stops it being compared against itself rescaled.
-		{"a played reference is graded up to the probe", "MP", "NM", 6, 8, 6/0.6 - 8},
+		{"a played reference is graded up to the probe", MP, NM, 6, 8, 6/0.6 - 8},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := backendFor(plainCard())
@@ -49,10 +49,13 @@ func TestMismatchNormalisesTheGrades(t *testing.T) {
 // know cannot be scaled at all: either way the pair is dropped rather than
 // reported at an invented spread.
 func TestMismatchSkipsAnUnusableGrade(t *testing.T) {
-	for _, tt := range []struct{ desc, refCond, probeCond string }{
-		{"a poor reference is worth zero", "PO", "NM"},
-		{"a poor probe is too", "NM", "PO"},
-		{"a grade the map does not know", "NM", "GEM-MT"},
+	for _, tt := range []struct {
+		desc               string
+		refCond, probeCond Condition
+	}{
+		{"a poor reference is worth zero", PO, NM},
+		{"a poor probe is too", NM, PO},
+		{"a grade the map does not know", NM, "GEM-MT"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := backendFor(plainCard())
@@ -77,10 +80,10 @@ func TestMismatchReportsBothSides(t *testing.T) {
 
 	entries := Mismatch(b, nil,
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 10, Quantity: 2}},
+			"card": {{Conditions: NM, Price: 10, Quantity: 2}},
 		}, ScraperInfo{Name: "reference"}),
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 4, Quantity: 5}},
+			"card": {{Conditions: NM, Price: 4, Quantity: 5}},
 		}, ScraperInfo{Name: "probe"}))
 	if len(entries) != 1 {
 		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
@@ -130,8 +133,8 @@ func TestProfitabilityConstantDampensCheapCards(t *testing.T) {
 
 	run := func(k float64) float64 {
 		entries := Arbit(b, &ArbitOpts{ProfitabilityConstant: k},
-			vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 3}}}),
-			sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 1, Quantity: 1}}},
+			vendorOf(BuylistRecord{"card": {{Conditions: NM, BuyPrice: 3}}}),
+			sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: 1, Quantity: 1}}},
 				ScraperInfo{Name: "seller"}))
 		if len(entries) != 1 {
 			t.Fatalf("Arbit returned %d entries, want 1", len(entries))
@@ -153,12 +156,12 @@ func TestProfitabilityConstantDampensCheapCards(t *testing.T) {
 func TestMismatchFilters(t *testing.T) {
 	reference := func() Seller {
 		return sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 10, Quantity: 2}},
+			"card": {{Conditions: NM, Price: 10, Quantity: 2}},
 		}, ScraperInfo{Name: "reference"})
 	}
 	probe := func() Seller {
 		return sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 5, Quantity: 2}},
+			"card": {{Conditions: NM, Price: 5, Quantity: 2}},
 		}, ScraperInfo{Name: "probe"})
 	}
 
@@ -168,7 +171,7 @@ func TestMismatchFilters(t *testing.T) {
 		want int
 	}{
 		{"no options keeps the pair", &ArbitOpts{}, 1},
-		{"an ignored condition drops it", &ArbitOpts{Conditions: []string{"NM"}}, 0},
+		{"an ignored condition drops it", &ArbitOpts{Conditions: []Condition{NM}}, 0},
 		{"a price floor above both drops it", &ArbitOpts{MinPrice: 11}, 0},
 		{"a quantity floor above the stock drops it", &ArbitOpts{MinQuantity: 3}, 0},
 		{"a difference floor above the gap drops it", &ArbitOpts{MinDiff: 6}, 0},
@@ -197,9 +200,9 @@ func TestMismatchNeedsBothShops(t *testing.T) {
 	b := backendFor(plainCard())
 
 	entries := Mismatch(b, nil,
-		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
+		sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: 10, Quantity: 1}}},
 			ScraperInfo{Name: "reference"}),
-		sellerOf(InventoryRecord{"other": {{Conditions: "NM", Price: 5, Quantity: 1}}},
+		sellerOf(InventoryRecord{"other": {{Conditions: NM, Price: 5, Quantity: 1}}},
 			ScraperInfo{Name: "probe"}))
 	if len(entries) != 0 {
 		t.Errorf("Mismatch returned %d entries, want none", len(entries))
@@ -211,9 +214,9 @@ func TestMismatchSkipsAnUnknownCard(t *testing.T) {
 	b := backendFor(map[string]*mtgmatcher.CardObject{})
 
 	entries := Mismatch(b, nil,
-		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}},
+		sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: 10, Quantity: 1}}},
 			ScraperInfo{Name: "reference"}),
-		sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 5, Quantity: 1}}},
+		sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: 5, Quantity: 1}}},
 			ScraperInfo{Name: "probe"}))
 	if len(entries) != 0 {
 		t.Errorf("Mismatch returned %d entries, want none", len(entries))
@@ -227,18 +230,18 @@ func TestMismatchFiltersTheProbeSide(t *testing.T) {
 	for _, tt := range []struct {
 		desc       string
 		opts       *ArbitOpts
-		probeCond  string
+		probeCond  Condition
 		probePrice float64
 	}{
-		{"a condition ignored only on the probe", &ArbitOpts{Conditions: []string{"SP"}}, "SP", 5},
-		{"a price floor the probe alone falls under", &ArbitOpts{MinPrice: 5}, "NM", 1},
-		{"a probe asking nothing", nil, "NM", 0},
+		{"a condition ignored only on the probe", &ArbitOpts{Conditions: []Condition{SP}}, SP, 5},
+		{"a price floor the probe alone falls under", &ArbitOpts{MinPrice: 5}, NM, 1},
+		{"a probe asking nothing", nil, NM, 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := backendFor(plainCard())
 			entries := Mismatch(b, tt.opts,
 				sellerOf(InventoryRecord{
-					"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+					"card": {{Conditions: NM, Price: 10, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
 				sellerOf(InventoryRecord{
 					"card": {{Conditions: tt.probeCond, Price: tt.probePrice, Quantity: 1}},
@@ -263,10 +266,10 @@ func TestMismatchScalesTheBoughtSide(t *testing.T) {
 		CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 0.5, false },
 	},
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+			"card": {{Conditions: NM, Price: 10, Quantity: 1}},
 		}, ScraperInfo{Name: "reference"}),
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 6, Quantity: 1}},
+			"card": {{Conditions: NM, Price: 6, Quantity: 1}},
 		}, ScraperInfo{Name: "probe"}))
 	if len(entries) != 1 {
 		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
@@ -283,10 +286,10 @@ func TestMismatchAppliesTheRate(t *testing.T) {
 
 	entries := Mismatch(b, &ArbitOpts{Rate: 2},
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+			"card": {{Conditions: NM, Price: 10, Quantity: 1}},
 		}, ScraperInfo{Name: "reference"}),
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 3, Quantity: 1}},
+			"card": {{Conditions: NM, Price: 3, Quantity: 1}},
 		}, ScraperInfo{Name: "probe"}))
 	if len(entries) != 1 {
 		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
@@ -302,10 +305,10 @@ func TestMismatchReportsTheAbsoluteDifference(t *testing.T) {
 
 	entries := Mismatch(b, nil,
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 10, Quantity: 3}},
+			"card": {{Conditions: NM, Price: 10, Quantity: 3}},
 		}, ScraperInfo{Name: "reference"}),
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 6, Quantity: 3}},
+			"card": {{Conditions: NM, Price: 6, Quantity: 3}},
 		}, ScraperInfo{Name: "probe"}))
 	if len(entries) != 1 {
 		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
@@ -330,10 +333,10 @@ func TestMismatchFiltersTheShelf(t *testing.T) {
 			b := backendFor(plainCard())
 			entries := Mismatch(b, tt.opts,
 				sellerOf(InventoryRecord{
-					"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+					"card": {{Conditions: NM, Price: 10, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
 				sellerOf(InventoryRecord{
-					"card": {{Conditions: "NM", Price: 5, Quantity: 1, SellerName: "shop"}},
+					"card": {{Conditions: NM, Price: 5, Quantity: 1, SellerName: "shop"}},
 				}, ScraperInfo{Name: "probe"}))
 			if len(entries) != tt.want {
 				t.Errorf("Mismatch returned %d entries, want %d", len(entries), tt.want)
@@ -349,10 +352,10 @@ func TestMismatchSkipsAReferenceOfNothing(t *testing.T) {
 
 	entries := Mismatch(b, &ArbitOpts{MinDiff: -1000, MinSpread: -1000},
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 0, Quantity: 1}},
+			"card": {{Conditions: NM, Price: 0, Quantity: 1}},
 		}, ScraperInfo{Name: "reference"}),
 		sellerOf(InventoryRecord{
-			"card": {{Conditions: "NM", Price: 5, Quantity: 1}},
+			"card": {{Conditions: NM, Price: 5, Quantity: 1}},
 		}, ScraperInfo{Name: "probe"}))
 	if len(entries) != 0 {
 		t.Errorf("Mismatch returned %d entries, want none", len(entries))
@@ -366,11 +369,11 @@ func TestMismatchFiltersTheReferenceSide(t *testing.T) {
 	for _, tt := range []struct {
 		desc     string
 		opts     *ArbitOpts
-		refCond  string
+		refCond  Condition
 		refPrice float64
 	}{
-		{"a condition ignored only on the reference", &ArbitOpts{Conditions: []string{"SP"}}, "SP", 20},
-		{"a price floor the reference alone falls under", &ArbitOpts{MinPrice: 5}, "NM", 4},
+		{"a condition ignored only on the reference", &ArbitOpts{Conditions: []Condition{SP}}, SP, 20},
+		{"a price floor the reference alone falls under", &ArbitOpts{MinPrice: 5}, NM, 4},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := backendFor(plainCard())
@@ -379,7 +382,7 @@ func TestMismatchFiltersTheReferenceSide(t *testing.T) {
 					"card": {{Conditions: tt.refCond, Price: tt.refPrice, Quantity: 1}},
 				}, ScraperInfo{Name: "reference"}),
 				sellerOf(InventoryRecord{
-					"card": {{Conditions: "NM", Price: 10, Quantity: 1}},
+					"card": {{Conditions: NM, Price: 10, Quantity: 1}},
 				}, ScraperInfo{Name: "probe"}))
 			if len(entries) != 0 {
 				t.Errorf("Mismatch returned %d entries, want none", len(entries))

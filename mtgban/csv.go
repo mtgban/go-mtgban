@@ -87,7 +87,7 @@ func record2entry(b *mtgmatcher.Backend, record []string) (*InventoryEntry, erro
 	}
 
 	return &InventoryEntry{
-		Conditions: conditions,
+		Conditions: Condition(conditions),
 		Price:      price,
 		Quantity:   qty,
 		URL:        URL,
@@ -277,7 +277,7 @@ func LoadBuylistFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (Buyl
 		}
 
 		entry := &BuylistEntry{
-			Conditions: cond,
+			Conditions: Condition(cond),
 			BuyPrice:   buyPrice,
 			Quantity:   qty,
 			PriceRatio: priceRatio,
@@ -369,7 +369,7 @@ func WriteInventoryToCSV(b *mtgmatcher.Backend, inventory InventoryRecord, w io.
 		}
 		for _, entry := range entries {
 			record := append(cardHeader,
-				entry.Conditions,
+				string(entry.Conditions),
 				fmt.Sprintf("%0.2f", entry.Price),
 				fmt.Sprint(entry.Quantity),
 				entry.URL,
@@ -425,7 +425,7 @@ func WriteBuylistToCSV(b *mtgmatcher.Backend, buylist BuylistRecord, creditMulip
 			}
 
 			record = append(record,
-				entry.Conditions,
+				string(entry.Conditions),
 				fmt.Sprintf("%0.2f", entry.BuyPrice),
 				fmt.Sprintf("%0.2f", entry.BuyPrice*creditMuliplier),
 				fmt.Sprint(entry.Quantity),
@@ -477,7 +477,7 @@ func WriteArbitrageToCSV(b *mtgmatcher.Backend, arbitrage []ArbitEntry, w io.Wri
 		}
 
 		record = append(record,
-			inv.Conditions,
+			string(inv.Conditions),
 			fmt.Sprintf("%d", inv.Quantity),
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", bl.BuyPrice),
@@ -540,7 +540,7 @@ func WriteMismatchToCSV(b *mtgmatcher.Backend, mismatch []ArbitEntry, w io.Write
 		}
 
 		record = append(record,
-			inv.Conditions,
+			string(inv.Conditions),
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", ref.Price),
 			fmt.Sprintf("%0.2f", entry.Difference),

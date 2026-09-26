@@ -332,7 +332,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 					cardID: cardID,
 					invEntry: &mtgban.InventoryEntry{
 						Price:      price,
-						Conditions: cond,
+						Conditions: mtgban.Condition(cond),
 						Quantity:   qty,
 						URL:        link,
 						OriginalID: product.Product,

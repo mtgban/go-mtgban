@@ -75,8 +75,8 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, b *mtgmatcher.Backend, 
 
 		quantity := product.Quantity
 
-		condition, found := condMap[product.Properties.Condition]
-		if !found {
+		condition, err := ctCondition(product.Properties.Condition)
+		if err != nil {
 			continue
 		}
 
@@ -138,8 +138,8 @@ func ConvertProducts(b *mtgmatcher.Backend, blueprints map[int]*Blueprint, produ
 
 		quantity := product.Quantity
 
-		conds, found := condMap[product.Properties.Condition]
-		if !found {
+		conds, err := ctCondition(product.Properties.Condition)
+		if err != nil {
 			continue
 		}
 

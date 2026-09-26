@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -24,10 +25,20 @@ const (
 	PartnerProductURL = "https://partner.tcgplayer.com/c/%s/1830156/21018"
 )
 
+// conditionNames spells our grade the way TCGplayer's storefront names it in
+// its own product-link query parameter.
+var conditionNames = map[mtgban.Condition]string{
+	mtgban.NM: "Near Mint",
+	mtgban.SP: "Lightly Played",
+	mtgban.MP: "Moderately Played",
+	mtgban.HP: "Heavily Played",
+	mtgban.PO: "Damaged",
+}
+
 // GenerateProductURL builds the storefront link for a product, narrowed to a
 // printing, condition and language, and carrying an affiliate tag when one is
 // given.
-func GenerateProductURL(productID int, printing, affiliate, condition, language string, isDirect bool) string {
+func GenerateProductURL(productID int, printing, affiliate string, condition mtgban.Condition, language string, isDirect bool) string {
 	u, err := url.Parse(BaseProductURL + fmt.Sprint(productID))
 	if err != nil {
 		return ""
@@ -37,14 +48,8 @@ func GenerateProductURL(productID int, printing, affiliate, condition, language 
 	if printing != "" {
 		v.Set("Printing", printing)
 	}
-	if condition != "" {
-		for full, short := range conditionMap {
-			if short == condition {
-				condition = full
-				break
-			}
-		}
-		v.Set("Condition", condition)
+	if name, found := conditionNames[condition]; found {
+		v.Set("Condition", name)
 	}
 	if language != "" {
 		language = mtgmatcher.Title(language)
@@ -260,16 +265,16 @@ const (
 
 // ListingData is one live listing of a product, with the quantity behind it.
 type ListingData struct {
-	ProductID       int     `json:"product_id"`
-	SkuID           int     `json:"sku_id"`
-	Quantity        int     `json:"quantity"`
-	SellerKey       string  `json:"seller_key"`
-	Price           float64 `json:"price"`
-	DirectInventory int     `json:"direct_inventory"`
-	ConditionFull   string  `json:"condition_full"`
-	Condition       string  `json:"condition"`
-	Printing        string  `json:"printing"`
-	Foil            bool    `json:"foil"`
+	ProductID       int              `json:"product_id"`
+	SkuID           int              `json:"sku_id"`
+	Quantity        int              `json:"quantity"`
+	SellerKey       string           `json:"seller_key"`
+	Price           float64          `json:"price"`
+	DirectInventory int              `json:"direct_inventory"`
+	ConditionFull   string           `json:"condition_full"`
+	Condition       mtgban.Condition `json:"condition"`
+	Printing        string           `json:"printing"`
+	Foil            bool             `json:"foil"`
 }
 
 // GetDirectQtysForProductID returns the live listings for a product, optionally
@@ -289,6 +294,7 @@ func GetDirectQtysForProductID(ctx context.Context, productID int, onlyDirect bo
 				continue
 			}
 
+			cond, _ := mtgban.ParseCondition(listing.Condition)
 			result = append(result, ListingData{
 				ProductID:       productID,
 				SkuID:           int(listing.ProductConditionID),
@@ -297,7 +303,7 @@ func GetDirectQtysForProductID(ctx context.Context, productID int, onlyDirect bo
 				Price:           listing.Price,
 				DirectInventory: int(listing.DirectInventory),
 				ConditionFull:   listing.Condition,
-				Condition:       conditionMap[listing.Condition],
+				Condition:       cond,
 				Printing:        listing.Printing,
 				Foil:            listing.Printing != "Normal",
 			})

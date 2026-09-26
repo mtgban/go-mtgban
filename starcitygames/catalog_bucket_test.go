@@ -3,6 +3,7 @@ package starcitygames
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -66,7 +67,7 @@ func TestSecondBucketMerges(t *testing.T) {
 				if len(entries) != 2 {
 					t.Fatalf("got %d entries, want one per grade: %v", len(entries), entries)
 				}
-				want := map[string]int{"NM": 18, "SP": 7}
+				want := map[mtgban.Condition]int{mtgban.NM: 18, mtgban.SP: 7}
 				for _, entry := range entries {
 					if entry.Quantity != want[entry.Conditions] {
 						t.Errorf("%s holds %d copies, want %d", entry.Conditions, entry.Quantity, want[entry.Conditions])

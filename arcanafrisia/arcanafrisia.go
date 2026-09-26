@@ -54,11 +54,12 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 			continue
 		}
 
-		// Map the store's grades onto the ones used internally
-		cond := map[string]string{
-			"NM": "NM",
-			"EX": "SP",
-			"GD": "MP",
+		// The store grades on Cardmarket's scale, where LP is below GD, so it
+		// keeps its own table.
+		cond := map[string]mtgban.Condition{
+			"NM": mtgban.NM,
+			"EX": mtgban.SP,
+			"GD": mtgban.MP,
 		}[card.Condition]
 		if cond == "" {
 			af.printf("Unknown condition %q for %s (%s)", card.Condition, card.Name, card.SetCode)

@@ -150,14 +150,14 @@ func isPowerseller(article cm.Article) bool {
 // each with a row of their own. In practice the article filter's own
 // minCondition floor (see queryOnePrinting) already excludes LP, PL and PO
 // server-side, so the last two rows rarely see a listing at all.
-var mkmCondition = map[cm.Condition]string{
-	cm.ConditionMint:        "NM",
-	cm.ConditionNearMint:    "NM",
-	cm.ConditionExcellent:   "SP",
-	cm.ConditionGood:        "MP",
-	cm.ConditionLightPlayed: "HP",
-	cm.ConditionPlayed:      "HP",
-	cm.ConditionPoor:        "PO",
+var mkmCondition = map[cm.Condition]mtgban.Condition{
+	cm.ConditionMint:        mtgban.NM,
+	cm.ConditionNearMint:    mtgban.NM,
+	cm.ConditionExcellent:   mtgban.SP,
+	cm.ConditionGood:        mtgban.MP,
+	cm.ConditionLightPlayed: mtgban.HP,
+	cm.ConditionPlayed:      mtgban.HP,
+	cm.ConditionPoor:        mtgban.PO,
 }
 
 // marketFinishParam names the server-side filter parameter and its
@@ -703,7 +703,7 @@ func (mkm *Market) marketCandidateHit(candidates map[string]bool, cardID, cardID
 // (false, false) cell) passes an empty or nil map, which accepts regardless
 // of finish rather than trusting a filter that is documented to fail open
 // on a game or value it does not apply to.
-func acceptArticle(flags map[string]bool, article cm.Article) (string, bool) {
+func acceptArticle(flags map[string]bool, article cm.Article) (mtgban.Condition, bool) {
 	if article.Price == 0 {
 		return "", false
 	}
@@ -740,7 +740,7 @@ func acceptArticle(flags map[string]bool, article cm.Article) (string, bool) {
 // the held price instead of trusting the first acceptable listing catches
 // that without costing an extra request: the page is scanned in full
 // either way.
-func isCheaper(held map[string]float64, cond string, price float64) bool {
+func isCheaper(held map[mtgban.Condition]float64, cond mtgban.Condition, price float64) bool {
 	current, found := held[cond]
 	return !found || price < current
 }
@@ -782,10 +782,10 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		}
 	}
 
-	held := map[string]float64{}
-	entries := map[string]responseChan{}
-	heldPS := map[string]float64{}
-	entriesPS := map[string]responseChan{}
+	held := map[mtgban.Condition]float64{}
+	entries := map[mtgban.Condition]responseChan{}
+	heldPS := map[mtgban.Condition]float64{}
+	entriesPS := map[mtgban.Condition]responseChan{}
 	mainSatisfiedAt := -1
 	for page := 0; page < marketMaxPages; page++ {
 		articles, total, _, err := mkm.client.Articles(ctx, product.IDProduct, options, page, cm.MaxEntities)
@@ -858,7 +858,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 			}
 		}
 
-		mainDone := held["NM"] != 0 && held["SP"] != 0 && held["MP"] != 0
+		mainDone := held[mtgban.NM] != 0 && held[mtgban.SP] != 0 && held[mtgban.MP] != 0
 		if mainDone && mainSatisfiedAt == -1 {
 			mainSatisfiedAt = page
 		}

@@ -536,7 +536,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 			channel <- responseChan{
 				cardID: uuid,
 				invEntry: &mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					Price:      price,
 					Quantity:   qty,
 					URL:        link,

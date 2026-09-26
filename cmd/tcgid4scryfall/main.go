@@ -100,7 +100,7 @@ func processCards(ctx context.Context, ds *mtgmatcher.Backend, client *api.Clien
 		out := responseChan{
 			cardID: cardID,
 			entry: mtgban.InventoryEntry{
-				Conditions:   "NM",
+				Conditions:   mtgban.NM,
 				Price:        1,
 				Quantity:     1,
 				SellerName:   "tcg",

@@ -37,9 +37,9 @@ func (mg *Merlion) printf(format string, a ...any) {
 // discount off it, so the feed's price is the Near Mint one and the rest of
 // the ladder comes from these factors. A grade left out is one they do not
 // buy at all.
-var gradeFactors = map[string]float64{
-	"NM": 1,
-	"SP": 0.8,
+var gradeFactors = map[mtgban.Condition]float64{
+	mtgban.NM: 1,
+	mtgban.SP: 0.8,
 }
 
 // Played copies are only worth quoting on the expensive printings; below this
@@ -79,14 +79,14 @@ func (mg *Merlion) Load(ctx context.Context) error {
 			if !found {
 				continue
 			}
-			if grade != "NM" && card.BuyPrice <= playedPriceFloor {
+			if grade != mtgban.NM && card.BuyPrice <= playedPriceFloor {
 				continue
 			}
 
 			// The feed counts how many copies they want, not how many per
 			// grade, so only the quoted grade carries the number.
 			var quantity int
-			if grade == "NM" {
+			if grade == mtgban.NM {
 				quantity = card.Quantity
 			}
 

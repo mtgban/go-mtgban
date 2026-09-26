@@ -350,15 +350,16 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		return err
 	}
 
+	var grade mtgban.Condition
 	switch {
 	case strings.Contains(cond, "Mint"):
-		cond = "NM"
+		grade = mtgban.NM
 	case strings.Contains(cond, "Light"):
-		cond = "SP"
+		grade = mtgban.SP
 	case strings.Contains(cond, "Medium"):
-		cond = "MP"
+		grade = mtgban.MP
 	case strings.Contains(cond, "Heavy"):
-		cond = "HP"
+		grade = mtgban.HP
 	default:
 		return fmt.Errorf("unsupported %s condition", cond)
 	}
@@ -367,7 +368,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		channel <- respChan{
 			cardID: cardID,
 			inv: &mtgban.InventoryEntry{
-				Conditions: cond,
+				Conditions: grade,
 				Price:      cardPrice,
 				Quantity:   quantity,
 				URL:        "http://shop.strikezoneonline.com" + pathURL,
@@ -378,7 +379,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 
 		invCards := sz.inventory[cardID]
 		for _, invCard := range invCards {
-			if invCard.Conditions == "NM" {
+			if invCard.Conditions == mtgban.NM {
 				sellPrice = invCard.Price
 				break
 			}
@@ -395,7 +396,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		channel <- respChan{
 			cardID: cardID,
 			bl: &mtgban.BuylistEntry{
-				Conditions: cond,
+				Conditions: grade,
 				BuyPrice:   cardPrice,
 				Quantity:   quantity,
 				PriceRatio: priceRatio,

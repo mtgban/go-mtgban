@@ -68,14 +68,6 @@ var name2shorthand = map[string]string{
 	"TCGplayer Direct": "TCGDirect",
 }
 
-var skuConditions = map[string]string{
-	"NEAR MINT":         "NM",
-	"LIGHTLY PLAYED":    "SP",
-	"MODERATELY PLAYED": "MP",
-	"HEAVILY PLAYED":    "HP",
-	"DAMAGED":           "PO",
-}
-
 func (tcg *Market) printf(format string, a ...any) {
 	if tcg.logCallback != nil {
 		tcg.logCallback("[TCGMkt] "+format, a...)
@@ -136,8 +128,8 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 			continue
 		}
 
-		cond, found := skuConditions[req.Condition]
-		if !found {
+		cond, err := mtgban.ParseCondition(req.Condition)
+		if err != nil {
 			tcg.printf("unknown condition %s for %d", req.Condition, req.SkuID)
 			continue
 		}

@@ -92,14 +92,6 @@ func (tcg *TCGSellerInventory) totalItems(ctx context.Context) (*itemsRecap, err
 	return &ret, nil
 }
 
-var conditionMap = map[string]string{
-	"Near Mint":         "NM",
-	"Lightly Played":    "SP",
-	"Moderately Played": "MP",
-	"Heavily Played":    "HP",
-	"Damaged":           "PO",
-}
-
 func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- responseChan, page int) error {
 	for _, finish := range []string{"Normal", "Foil"} {
 		response, err := tcg.client.InventoryForSeller(ctx, tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
@@ -159,8 +151,8 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				}
 			}
 
-			cond, found := conditionMap[listing.Condition]
-			if !found {
+			cond, err := mtgban.ParseCondition(listing.Condition)
+			if err != nil {
 				return fmt.Errorf("condition not found: %s", listing.Condition)
 			}
 
@@ -177,7 +169,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				customFields["directInventory"] = fmt.Sprint(int(listing.DirectInventory))
 			}
 
-			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.affiliate, listing.Condition, listing.Language, isDirect)
+			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.affiliate, cond, listing.Language, isDirect)
 
 			out := responseChan{
 				cardID: cardID,

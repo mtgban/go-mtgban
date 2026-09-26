@@ -85,15 +85,18 @@ type resultChan struct {
 	invEntry *mtgban.InventoryEntry
 }
 
-var condMap = map[string]string{
-	"":                  "NM",
-	"Mint":              "NM",
-	"Near Mint":         "NM",
-	"Slightly Played":   "SP",
-	"Moderately Played": "MP",
-	"Played":            "HP",
-	"Heavily Played":    "HP",
-	"Poor":              "PO",
+// ctCondition maps Card Trader's condition to our grade. A listing naming
+// none is taken as near mint, and "Played", Card Trader's grade between
+// Moderately and Heavily Played, folds into HP.
+func ctCondition(s string) (mtgban.Condition, error) {
+	switch s {
+	case "":
+		return mtgban.NM, nil
+	case "Played":
+		return mtgban.HP, nil
+	default:
+		return mtgban.ParseCondition(s)
+	}
 }
 
 var langMap = map[string]string{
@@ -201,8 +204,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			cond = "Poor"
 		}
 
-		conditions, found := condMap[cond]
-		if !found {
+		conditions, err := ctCondition(cond)
+		if err != nil {
 			ct.printf("unsupported %s condition", cond)
 			continue
 		}

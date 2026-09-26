@@ -8,9 +8,9 @@ import (
 	"sort"
 )
 
-// ErrInvalidCondition is returned when an entry carries a grade that is not
-// one of FullGradeTags. An empty grade is not invalid: it is filled in as NM
-// before the check.
+// ErrInvalidCondition is returned when an entry carries a grade outside
+// FullGradeTags, or by ParseCondition for unrecognized text, "" included; Add
+// instead fills an empty grade in as NM before that check.
 var ErrInvalidCondition = errors.New("invalid condition")
 
 // ErrDuplicateEntry reports an entry the record already holds, identical in
@@ -22,7 +22,7 @@ var ErrDuplicateEntry = errors.New("duplicate entry")
 func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int) error {
 	// Safe defaults
 	if entry.Conditions == "" {
-		entry.Conditions = "NM"
+		entry.Conditions = NM
 	}
 	if entry.Quantity == 0 {
 		entry.Quantity = 1
@@ -131,7 +131,7 @@ func (bl BuylistRecord) AddUnique(cardID string, entry *BuylistEntry) error {
 
 func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict int) error {
 	if entry.Conditions == "" {
-		entry.Conditions = "NM"
+		entry.Conditions = NM
 	}
 
 	if !slices.Contains(FullGradeTags, entry.Conditions) {

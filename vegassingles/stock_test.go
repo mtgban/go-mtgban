@@ -2,6 +2,8 @@ package vegassingles
 
 import (
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // entombFoil is the product as the storefront answers for it, trimmed to the
@@ -85,16 +87,16 @@ func TestStockedRowsSurvive(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got := map[string]float64{}
+	got := map[mtgban.Condition]float64{}
 	for _, entries := range vs.Inventory() {
 		for _, entry := range entries {
 			got[entry.Conditions] = entry.Price
-			if entry.Conditions == "NM" && entry.Quantity != 2 {
+			if entry.Conditions == mtgban.NM && entry.Quantity != 2 {
 				t.Errorf("NM published x%d, want x2", entry.Quantity)
 			}
 		}
 	}
-	want := map[string]float64{"NM": 599.99, "HP": 0.5}
+	want := map[mtgban.Condition]float64{mtgban.NM: 599.99, mtgban.HP: 0.5}
 	if len(got) != len(want) {
 		t.Fatalf("published %v, want exactly the two stocked grades", got)
 	}
@@ -124,8 +126,8 @@ func TestBuylistKeepsTheLowerConditions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := map[string]float64{"NM": 299.99, "SP": 254.99, "MP": 209.99, "HP": 149.99, "PO": 99.99}
-	got := map[string]float64{}
+	want := map[mtgban.Condition]float64{mtgban.NM: 299.99, mtgban.SP: 254.99, mtgban.MP: 209.99, mtgban.HP: 149.99, mtgban.PO: 99.99}
+	got := map[mtgban.Condition]float64{}
 	for _, entries := range vs.Buylist() {
 		for _, entry := range entries {
 			got[entry.Conditions] = entry.BuyPrice
@@ -180,7 +182,7 @@ func TestRiftboundStock(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got := map[string]float64{}
+	got := map[mtgban.Condition]float64{}
 	for _, entries := range vs.Inventory() {
 		for _, entry := range entries {
 			got[entry.Conditions] = entry.Price
@@ -188,7 +190,7 @@ func TestRiftboundStock(t *testing.T) {
 	}
 	// The shelf holds every grade the store stocks, whatever the line is
 	// bought in: the grades are a buylist setting and reach nothing here.
-	want := map[string]float64{"NM": 8, "SP": 6.8}
+	want := map[mtgban.Condition]float64{mtgban.NM: 8, mtgban.SP: 6.8}
 	if len(got) != len(want) {
 		t.Fatalf("published %v, want the two grades on the shelf", got)
 	}
@@ -241,7 +243,7 @@ func TestOnePieceStock(t *testing.T) {
 	// One Piece is the line bought in a second grade, and the bid on the
 	// one with no stock is still worth reading: the store buys what it does
 	// not sell, wherever the line is bought in the grade at all.
-	assertOnlyStocked(t, vs, map[string]float64{"NM": 28}, 2)
+	assertOnlyStocked(t, vs, map[mtgban.Condition]float64{mtgban.NM: 28}, 2)
 }
 
 func TestPokemonStock(t *testing.T) {
@@ -276,14 +278,14 @@ func TestPokemonStock(t *testing.T) {
 	}
 	// Pokemon is bought in Near Mint alone like Riftbound, so the two bids
 	// below it go; the shelf holds what it holds either way.
-	assertOnlyStocked(t, vs, map[string]float64{"NM": 27}, 1)
+	assertOnlyStocked(t, vs, map[mtgban.Condition]float64{mtgban.NM: 27}, 1)
 }
 
 // assertOnlyStocked checks that the inventory holds exactly the grades on the
 // shelf at the prices asked for them, and that the buylist is untouched.
-func assertOnlyStocked(t *testing.T, vs *Vegassingles, want map[string]float64, bids int) {
+func assertOnlyStocked(t *testing.T, vs *Vegassingles, want map[mtgban.Condition]float64, bids int) {
 	t.Helper()
-	got := map[string]float64{}
+	got := map[mtgban.Condition]float64{}
 	for _, entries := range vs.Inventory() {
 		for _, entry := range entries {
 			got[entry.Conditions] = entry.Price

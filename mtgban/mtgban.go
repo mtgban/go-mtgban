@@ -4,6 +4,8 @@ package mtgban
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -11,7 +13,7 @@ import (
 // that code reading prices need not know which side of the book it holds.
 type GenericEntry interface {
 	Pricing() float64
-	Condition() string
+	Condition() Condition
 	Qty() int
 }
 
@@ -22,7 +24,7 @@ type InventoryEntry struct {
 
 	// The grade of the current entry
 	// Only supported values are listed in FullGradeTags
-	Conditions string `json:"conditions"`
+	Conditions Condition `json:"conditions"`
 
 	// The price of this entry, in USD
 	Price float64 `json:"price"`
@@ -59,7 +61,7 @@ func (ie InventoryEntry) Pricing() float64 {
 }
 
 // Condition returns the grade. See GenericEntry.
-func (ie InventoryEntry) Condition() string {
+func (ie InventoryEntry) Condition() Condition {
 	return ie.Conditions
 }
 
@@ -76,7 +78,7 @@ type BuylistEntry struct {
 	// The grade of the current entry
 	// Only supported values are listed in FullGradeTags
 	// If empty it is considered "NM".
-	Conditions string `json:"conditions"`
+	Conditions Condition `json:"conditions"`
 
 	// The price at which this entry is bought, in USD
 	BuyPrice float64 `json:"buy_price"`
@@ -110,7 +112,7 @@ func (be BuylistEntry) Pricing() float64 {
 }
 
 // Condition returns the grade. See GenericEntry.
-func (be BuylistEntry) Condition() string {
+func (be BuylistEntry) Condition() Condition {
 	return be.Conditions
 }
 
@@ -195,15 +197,73 @@ type ScraperInfo struct {
 	Game Game `json:"game"`
 }
 
+// Condition is the grade of an entry, spelled as the records and the dumps
+// carry it.
+type Condition string
+
+// The grades an entry can carry, best first.
+const (
+	NM Condition = "NM"
+	SP Condition = "SP"
+	MP Condition = "MP"
+	HP Condition = "HP"
+	PO Condition = "PO"
+)
+
 // DefaultGradeTags are the conditions most scrapers report.
-var DefaultGradeTags = []string{
-	"NM", "SP", "MP", "HP",
+var DefaultGradeTags = []Condition{
+	NM, SP, MP, HP,
 }
 
 // FullGradeTags are every condition the records accept, the graded ones
 // included.
-var FullGradeTags = []string{
-	"NM", "SP", "MP", "HP", "PO",
+var FullGradeTags = []Condition{
+	NM, SP, MP, HP, PO,
+}
+
+// conditionWords are the grade words stores share, lowercase, with "lp" read
+// on the US scale. A word whose grade depends on the store, such as "played"
+// or Cardmarket's scale, is the scraper's to map before calling ParseCondition.
+var conditionWords = map[string]Condition{
+	"nm":        NM,
+	"near mint": NM,
+	"mint":      NM,
+	"nm-mint":   NM,
+	"nm/m":      NM,
+
+	"sp":              SP,
+	"lp":              SP,
+	"ex":              SP,
+	"slightly played": SP,
+	"lightly played":  SP,
+	"light play":      SP,
+
+	"mp":                MP,
+	"gd":                MP,
+	"moderately played": MP,
+	"moderate play":     MP,
+
+	"hp":             HP,
+	"heavily played": HP,
+	"heavy play":     HP,
+
+	"po":      PO,
+	"d":       PO,
+	"dmg":     PO,
+	"damaged": PO,
+	"poor":    PO,
+}
+
+// ParseCondition reads a grade in the spellings stores share, ignoring case
+// and surrounding space. Words whose grade depends on the store, such as
+// "Played", are the scraper's to map before calling it. Any other text
+// returns "" and an error wrapping ErrInvalidCondition.
+func ParseCondition(s string) (Condition, error) {
+	grade, found := conditionWords[strings.ToLower(strings.TrimSpace(s))]
+	if !found {
+		return "", fmt.Errorf("%w: %q", ErrInvalidCondition, s)
+	}
+	return grade, nil
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement

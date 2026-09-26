@@ -47,20 +47,22 @@ func (mint *MTGMintCard) printf(format string, a ...any) {
 }
 
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
-	cond := map[string]string{
-		"Mint": "NM",
-		"SP":   "SP",
-		"Used": "MP",
-	}[condition]
-	if cond == "" {
-		mint.printf("Unknown condition tag %s", condition)
-		return
+	var cond mtgban.Condition
+	if condition == "Used" {
+		cond = mtgban.MP
+	} else {
+		grade, err := mtgban.ParseCondition(condition)
+		if err != nil {
+			mint.printf("Unknown condition tag %s", condition)
+			return
+		}
+		cond = grade
 	}
 	if strings.Contains(card.Name, "(HP)") {
-		cond = "HP"
+		cond = mtgban.HP
 	}
 	if strings.Contains(card.Name, "(DMG)") || strings.Contains(card.Name, "(Damaged)") {
-		cond = "PO"
+		cond = mtgban.PO
 	}
 
 	link := "https://www.mtgmintcard.com/index.php?main_page=product_info&products_id=" + card.ID
@@ -278,42 +280,42 @@ func (mint *MTGMintCard) Buylist() mtgban.BuylistRecord {
 	return mint.buylist
 }
 
-func grading(b *mtgmatcher.Backend, cardID string, price float64) map[string]float64 {
+func grading(b *mtgmatcher.Backend, cardID string, price float64) map[mtgban.Condition]float64 {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil
 	}
 
 	if co.Foil {
-		return map[string]float64{
-			"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.75, mtgban.MP: 0.5, mtgban.HP: 0.3,
 		}
 	}
 
 	switch co.SetCode {
 	case "LEA", "LEB", "2ED", "3ED":
-		return map[string]float64{
-			"NM": 1,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1,
 		}
 	}
 
 	if price >= 30.25 {
-		return map[string]float64{
-			"NM": 1, "SP": 0.85, "MP": 0.75, "HP": 0.65,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.85, mtgban.MP: 0.75, mtgban.HP: 0.65,
 		}
 	}
 	if price >= 10.25 {
-		return map[string]float64{
-			"NM": 1, "SP": 0.80, "MP": 0.7, "HP": 0.6,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.80, mtgban.MP: 0.7, mtgban.HP: 0.6,
 		}
 	}
 	if price >= 0.25 {
-		return map[string]float64{
-			"NM": 1, "SP": 0.75, "MP": 0.6, "HP": 0.35,
+		return map[mtgban.Condition]float64{
+			mtgban.NM: 1, mtgban.SP: 0.75, mtgban.MP: 0.6, mtgban.HP: 0.35,
 		}
 	}
-	return map[string]float64{
-		"NM": 1, "SP": 0.5, "MP": 0.5,
+	return map[mtgban.Condition]float64{
+		mtgban.NM: 1, mtgban.SP: 0.5, mtgban.MP: 0.5,
 	}
 }
 
