@@ -164,7 +164,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[string]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
+	b.ExternalIdentifiers = map[mtgmatcher.IDSpace]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
 	b.SetSealedUUIDs = map[string][]string{}
 
 	b.Sets = map[string]*mtgmatcher.Set{}

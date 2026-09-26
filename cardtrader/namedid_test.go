@@ -14,7 +14,7 @@ import (
 // listing stood.
 func TestNamedID(t *testing.T) {
 	b := realDatastore(t)
-	uuid := func(space, id string) string {
+	uuid := func(space mtgmatcher.IDSpace, id string) string {
 		out := b.ConvertID(space, id)
 		if out == "" {
 			t.Fatalf("%s id %q resolves to nothing", space, id)

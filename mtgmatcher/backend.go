@@ -384,7 +384,7 @@ type Backend struct {
 	// for a shared identifier is the printing's base sibling: the nonfoil,
 	// or the foil where no nonfoil was sold, or the etched where nothing
 	// else was.
-	ExternalIdentifiers map[string]map[string]string
+	ExternalIdentifiers map[IDSpace]map[string]string
 
 	// A list of keywords mapped to the full Commander set name
 	CommanderKeywordMap map[string]string
