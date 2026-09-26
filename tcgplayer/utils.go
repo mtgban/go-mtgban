@@ -25,6 +25,16 @@ const (
 	PartnerProductURL = "https://partner.tcgplayer.com/c/%s/1830156/21018"
 )
 
+// conditionNames spells our grade the way TCGplayer's storefront names it in
+// its own product-link query parameter.
+var conditionNames = map[mtgban.Condition]string{
+	mtgban.NM: "Near Mint",
+	mtgban.SP: "Lightly Played",
+	mtgban.MP: "Moderately Played",
+	mtgban.HP: "Heavily Played",
+	mtgban.PO: "Damaged",
+}
+
 // GenerateProductURL builds the storefront link for a product, narrowed to a
 // printing, condition and language, and carrying an affiliate tag when one is
 // given.
@@ -38,13 +48,8 @@ func GenerateProductURL(productID int, printing, affiliate string, condition mtg
 	if printing != "" {
 		v.Set("Printing", printing)
 	}
-	if condition != "" {
-		for full, short := range conditionMap {
-			if short == condition {
-				v.Set("Condition", full)
-				break
-			}
-		}
+	if name, found := conditionNames[condition]; found {
+		v.Set("Condition", name)
 	}
 	if language != "" {
 		language = mtgmatcher.Title(language)
@@ -289,6 +294,7 @@ func GetDirectQtysForProductID(ctx context.Context, productID int, onlyDirect bo
 				continue
 			}
 
+			cond, _ := mtgban.ParseCondition(listing.Condition)
 			result = append(result, ListingData{
 				ProductID:       productID,
 				SkuID:           int(listing.ProductConditionID),
@@ -297,7 +303,7 @@ func GetDirectQtysForProductID(ctx context.Context, productID int, onlyDirect bo
 				Price:           listing.Price,
 				DirectInventory: int(listing.DirectInventory),
 				ConditionFull:   listing.Condition,
-				Condition:       conditionMap[listing.Condition],
+				Condition:       cond,
 				Printing:        listing.Printing,
 				Foil:            listing.Printing != "Normal",
 			})

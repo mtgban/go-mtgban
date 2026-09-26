@@ -47,14 +47,16 @@ func (mint *MTGMintCard) printf(format string, a ...any) {
 }
 
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
-	cond := map[string]mtgban.Condition{
-		"Mint": mtgban.NM,
-		"SP":   mtgban.SP,
-		"Used": mtgban.MP,
-	}[condition]
-	if cond == "" {
-		mint.printf("Unknown condition tag %s", condition)
-		return
+	var cond mtgban.Condition
+	if condition == "Used" {
+		cond = mtgban.MP
+	} else {
+		grade, err := mtgban.ParseCondition(condition)
+		if err != nil {
+			mint.printf("Unknown condition tag %s", condition)
+			return
+		}
+		cond = grade
 	}
 	if strings.Contains(card.Name, "(HP)") {
 		cond = mtgban.HP

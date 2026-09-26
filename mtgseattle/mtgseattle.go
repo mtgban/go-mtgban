@@ -211,21 +211,15 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 		var conditions mtgban.Condition
 		if mode == modeInventory {
 			cond := strings.Split(condLang, ", ")[0]
-			switch cond {
-			case "NM-Mint":
-				conditions = mtgban.NM
-			case "Light Play":
-				conditions = mtgban.SP
-			case "Moderate Play":
-				conditions = mtgban.MP
-			case "Heavy Play":
-				conditions = mtgban.HP
-			case "Graded":
+			if cond == "Graded" {
 				return
-			default:
+			}
+			grade, err := mtgban.ParseCondition(cond)
+			if err != nil {
 				ms.printf("Unsupported %s condition for %s", cond, title)
 				return
 			}
+			conditions = grade
 		} else if mode == modeBuylist {
 			// Early exit to avoid catching sealed and similar
 			if condLang != "NM-Mint, English" {

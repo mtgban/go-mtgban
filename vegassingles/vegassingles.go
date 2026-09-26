@@ -60,14 +60,6 @@ var listedConditions = map[mtgban.Game][]string{
 	mtgban.GameGundam:    {"Near Mint"},
 }
 
-var conditionMap = map[string]mtgban.Condition{
-	"Near Mint":         mtgban.NM,
-	"Lightly Played":    mtgban.SP,
-	"Moderately Played": mtgban.MP,
-	"Heavily Played":    mtgban.HP,
-	"Damaged":           mtgban.PO,
-}
-
 // reSlugSeparator matches every run the storefront's product paths write as
 // a single dash.
 var reSlugSeparator = regexp.MustCompile(`[^a-z0-9]+`)
@@ -186,8 +178,8 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 				continue
 			}
 
-			cond, found := conditionMap[variant.Title]
-			if !found {
+			cond, err := mtgban.ParseCondition(variant.Title)
+			if err != nil {
 				vs.printf("unknown condition: %s", variant.Title)
 				continue
 			}
@@ -221,8 +213,8 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 				continue
 			}
 
-			cond, found := conditionMap[variant.Title]
-			if !found {
+			cond, err := mtgban.ParseCondition(variant.Title)
+			if err != nil {
 				continue
 			}
 

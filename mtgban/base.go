@@ -8,9 +8,9 @@ import (
 	"sort"
 )
 
-// ErrInvalidCondition is returned when an entry carries a grade that is not
-// one of FullGradeTags. An empty grade is not invalid: it is filled in as NM
-// before the check.
+// ErrInvalidCondition is returned when an entry carries a grade outside
+// FullGradeTags, or by ParseCondition for unrecognized text, "" included; Add
+// instead fills an empty grade in as NM before that check.
 var ErrInvalidCondition = errors.New("invalid condition")
 
 // ErrDuplicateEntry reports an entry the record already holds, identical in

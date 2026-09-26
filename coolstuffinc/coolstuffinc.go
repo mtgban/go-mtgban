@@ -661,15 +661,19 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					relaxed = true
 				}
 
+				matchCond := strings.TrimPrefix(conditions, "Foil ")
+
 				var grade mtgban.Condition
-				switch conditions {
-				case "Near Mint", "Foil Near Mint":
-					grade = mtgban.NM
-				case "Played", "Foil Played":
+				switch matchCond {
+				case "Played":
 					grade = mtgban.MP
 				default:
-					csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
-					return
+					parsed, err := mtgban.ParseCondition(matchCond)
+					if err != nil {
+						csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
+						return
+					}
+					grade = parsed
 				}
 				if strings.Contains(cardName, "Signed by") {
 					grade = mtgban.HP

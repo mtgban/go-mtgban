@@ -146,23 +146,13 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			return
 		}
 
-		var conditions mtgban.Condition
 		cond := strings.Split(condLang, ", ")[0]
 		cond = strings.TrimPrefix(cond, "Website Exclusive ")
-		switch cond {
-		case "NM-Mint", "NM":
-			conditions = mtgban.NM
-		case "Light Play", "LP":
-			conditions = mtgban.SP
-		case "Moderate Play":
-			conditions = mtgban.MP
-		case "Heavy Play":
-			conditions = mtgban.HP
-		case "Damaged":
-			conditions = mtgban.PO
-		case "Graded":
+		if cond == "Graded" {
 			return
-		default:
+		}
+		conditions, err := mtgban.ParseCondition(cond)
+		if err != nil {
 			sdk.printf("Unsupported %s condition for %s", cond, title)
 			return
 		}
