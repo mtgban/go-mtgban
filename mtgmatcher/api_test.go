@@ -4,8 +4,43 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
+
+// TestNamesForms pins the list each form answers with, of cards and of
+// sealed products.
+func TestNamesForms(t *testing.T) {
+	b := &mtgmatcher.Backend{
+		AllNames:           []string{"n"},
+		AllLowerNames:      []string{"l"},
+		AllCanonicalNames:  []string{"c"},
+		AllSealed:          []string{"sn"},
+		AllLowerSealed:     []string{"sl"},
+		AllCanonicalSealed: []string{"sc"},
+	}
+	for _, tt := range []struct {
+		form   mtgmatcher.NameForm
+		sealed bool
+		want   string
+	}{
+		{mtgmatcher.NameFormNormalized, false, "n"},
+		{mtgmatcher.NameFormLowercase, false, "l"},
+		{mtgmatcher.NameFormCanonical, false, "c"},
+		{mtgmatcher.NameFormNormalized, true, "sn"},
+		{mtgmatcher.NameFormLowercase, true, "sl"},
+		{mtgmatcher.NameFormCanonical, true, "sc"},
+	} {
+		got := b.Names(tt.form, tt.sealed)
+		if len(got) != 1 || got[0] != tt.want {
+			t.Errorf("Names(%d, %v) = %v, want [%s]", tt.form, tt.sealed, got, tt.want)
+		}
+	}
+	got := b.Names(mtgmatcher.NameForm(9), false)
+	if got != nil {
+		t.Errorf("Names of an unknown form = %v, want nothing", got)
+	}
+}
 
 func BenchmarkSearchEquals(b *testing.B) {
 	if NameToBeFound == "" {
