@@ -3,8 +3,9 @@
 `cardmarket/versions.go` holds `versionPrintings`, which names the printing
 sold by Magic products the id map gets wrong. Each is a "(V.N)" version of a
 card on a World Championship Deck, Pro Tour 1996, Chronicles: Japanese or
-Arabian Nights shelf. MTGJSON's map, which copies Scryfall's
-`cardmarket_id`, links each one to one of three things:
+Arabian Nights shelf, save one (see Secretversary 2021 below). MTGJSON's
+map, which copies Scryfall's `cardmarket_id`, links each one to one of three
+things:
 - no printing on its own shelf;
 - a sibling version's printing;
 - several printings at once.
@@ -36,6 +37,7 @@ The tag after each row's name says what placed it:
 | CardTrader | CardTrader's collector number, which no other product's row contests |
 | left over | the one row of its group left once the other versions are placed |
 | map lists two, four | the map files the product on several printings. CardTrader and the sibling priced on the other one agree which is this product's |
+| Scryfall | the map does not carry the product, and Scryfall's own `cardmarket_id` names its printing |
 
 The images settled 35 disputes: 33 went CardTrader's way and two went
 Scryfall's (Antoine Ruel's Island V.4 is ar335, Mark Le Pine's Mountain
@@ -43,6 +45,16 @@ V.1 is mlp343). A CardTrader row is therefore very likely right. Before
 changing a row, check Cardmarket's image at
 `https://product-images.s3.cardmarket.com/1/<shelf code>/<id>/<id>.jpg`.
 The shelf code is WCD9 to WCD37 in Cardmarket's expansion-id order.
+
+## Secretversary 2021
+
+Cardmarket shelves the Heads I Win, Tails You Lose commander deck's
+reprints under Secretversary 2021, and most are The List's printings. The
+shelf's second Counterspell, 687581, is PLST CMR-395. The map does not
+carry it, and AllPrintings 5.3.0+20260925 linked no printing to it by
+`mcmId` (5.3.0+20260926 does). With no id and no number, Market's name
+route priced it onto SLD SCTLR, a playtest card trading near €600 against
+its €2.58.
 
 ## Keeping the table
 
