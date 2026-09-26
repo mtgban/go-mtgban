@@ -4,6 +4,8 @@ package mtgban
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -217,6 +219,56 @@ var DefaultGradeTags = []Condition{
 // included.
 var FullGradeTags = []Condition{
 	NM, SP, MP, HP, PO,
+}
+
+// conditionWords are the grade words stores share, lowercase, with "lp" read
+// on the US scale. A word read differently per store - CardTrader's or SCG's
+// own "Played", or Cardmarket's scale - is the scraper's to map first.
+var conditionWords = map[string]Condition{
+	"nm":        NM,
+	"near mint": NM,
+	"mint":      NM,
+	"nm-mint":   NM,
+	"nm/m":      NM,
+
+	"sp":              SP,
+	"lp":              SP,
+	"ex":              SP,
+	"slightly played": SP,
+	"lightly played":  SP,
+	"light play":      SP,
+	"very fine":       SP,
+
+	"mp":                MP,
+	"gd":                MP,
+	"moderately played": MP,
+	"moderate play":     MP,
+	"medium play":       MP,
+	"used":              MP,
+	"played":            MP,
+	"fine":              MP,
+
+	"hp":             HP,
+	"heavily played": HP,
+	"heavy play":     HP,
+
+	"po":      PO,
+	"d":       PO,
+	"dmg":     PO,
+	"damaged": PO,
+	"poor":    PO,
+}
+
+// ParseCondition reads a grade in the spellings stores share, ignoring case
+// and space. A store-specific reading, like CardTrader's "Played", is the
+// scraper's to map first; anything else returns "" and an error wrapping
+// ErrInvalidCondition.
+func ParseCondition(s string) (Condition, error) {
+	grade, found := conditionWords[strings.ToLower(strings.TrimSpace(s))]
+	if !found {
+		return "", fmt.Errorf("%w: %q", ErrInvalidCondition, s)
+	}
+	return grade, nil
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement

@@ -136,19 +136,8 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				continue
 			}
 
-			var grade mtgban.Condition
-			switch v.Condition {
-			case "NM/M":
-				grade = mtgban.NM
-			case "SP":
-				grade = mtgban.SP
-			case "HP":
-				grade = mtgban.HP
-			case "GD":
-				grade = mtgban.MP
-			case "D":
-				grade = mtgban.PO
-			default:
+			grade, err := mtgban.ParseCondition(v.Condition)
+			if err != nil {
 				mc.printf("Unknown '%s' condition", v.Condition)
 				continue
 			}
