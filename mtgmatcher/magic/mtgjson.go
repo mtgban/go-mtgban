@@ -47,12 +47,13 @@ type Booster struct {
 
 // SealedContent is one component of a sealed product, as mtgjson publishes it.
 type SealedContent struct {
-	Code  string `json:"code"`
-	Count int    `json:"count"`
-	Foil  bool   `json:"foil"`
-	Name  string `json:"name"`
-	Set   string `json:"set"`
-	UUID  string `json:"uuid"`
+	Code   string `json:"code"`
+	Count  int    `json:"count"`
+	Etched bool   `json:"etched"`
+	Foil   bool   `json:"foil"`
+	Name   string `json:"name"`
+	Set    string `json:"set"`
+	UUID   string `json:"uuid"`
 
 	// For variable_config
 	Chance int `json:"chance"`
@@ -1607,10 +1608,10 @@ func sealedWithinSealed(product SealedProduct) []string {
 	return list
 }
 
-// Check whether the sealed product directly contains the given card. "Directly"
-// means via a card/deck/pack entry at the top level (or inside a variable
-// config) — not reachable only through a nested sealed sub-product. Finish is
-// not checked here; we trust MTGJSON's per-finish SourceProducts bucketing.
+// Check whether the sealed product directly contains the given card with
+// the requested finish. "Directly" means via a card/deck/pack entry at the
+// top level (or inside a variable config) — not reachable only through a
+// nested sealed sub-product.
 func isBaseSealed(sets map[string]*Set, products map[string]*SealedProduct, productUUID, cardUUID, finish string) bool {
 	product, found := products[productUUID]
 	if !found {
@@ -1631,11 +1632,13 @@ func contentsContainCard(sets map[string]*Set, contents map[string][]SealedConte
 					if finish == "" {
 						return true
 					}
-					if wantFoil || wantEtched {
-						if item.Foil {
-							return true
-						}
-					} else if !item.Foil {
+					if wantEtched && item.Etched {
+						return true
+					}
+					if wantFoil && item.Foil {
+						return true
+					}
+					if !wantFoil && !wantEtched && !item.Foil && !item.Etched {
 						return true
 					}
 				}
