@@ -47,12 +47,8 @@ func (mint *MTGMintCard) printf(format string, a ...any) {
 }
 
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
-	cond := map[string]mtgban.Condition{
-		"Mint": mtgban.NM,
-		"SP":   mtgban.SP,
-		"Used": mtgban.MP,
-	}[condition]
-	if cond == "" {
+	cond, err := mtgban.ParseCondition(condition)
+	if err != nil {
 		mint.printf("Unknown condition tag %s", condition)
 		return
 	}
@@ -103,7 +99,6 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 		}
 	}
 
-	var err error
 	var sellPrice float64
 	if card.Price != "" && card.Quantity > 0 {
 		sellPrice, err = strconv.ParseFloat(card.Price, 64)

@@ -54,7 +54,8 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 			continue
 		}
 
-		// Map the store's grades onto the ones used internally
+		// The store grades on Cardmarket's scale, where LP is below GD, so it
+		// keeps its own table.
 		cond := map[string]mtgban.Condition{
 			"NM": mtgban.NM,
 			"EX": mtgban.SP,
