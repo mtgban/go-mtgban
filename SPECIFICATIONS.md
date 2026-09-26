@@ -737,7 +737,7 @@ Lookups: `GetUUID`, `GetSet`, `GetSetByName`, `GetAllSets`, `GetUUIDs`/
 `GetSealedUUIDs`, the per-set `GetUUIDsInSet`/`GetSealedUUIDsInSet` (backed by
 the `SetUUIDs`/`SetSealedUUIDs` buckets — the result aliases the index and must
 not be modified), `Printings4Card`, `CardReleaseDate`, `ExternalUUID`,
-`AllPromoTypes`, `Names(variant, sealed)` and `NameIsToken`.
+`AllPromoTypes`, `Names(form NameForm, sealed)` and `NameIsToken`.
 
 Search: `SearchEquals`/`SearchHasPrefix`/`SearchContains`/`SearchRegexp` over
 the sorted name arrays, with `SearchSealedEquals`/`SearchSealedContains` for

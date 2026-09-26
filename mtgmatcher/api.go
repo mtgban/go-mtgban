@@ -106,22 +106,35 @@ func (b *Backend) GetSetByName(edition string) (*Set, error) {
 	return nil, ErrCardNotInEdition
 }
 
-// Names returns every card or sealed name in the datastore, in the requested
-// form: normalized, lowercase, or canonical. An unknown form returns nothing.
-// It is not called AllNames because that is the normalized list's own field.
-func (b *Backend) Names(variant string, sealed bool) []string {
-	switch variant {
-	case "normalized":
+// NameForm is the spelling Names lists the datastore's names in.
+type NameForm int
+
+const (
+	// NameFormNormalized is each name as Normalize spells it, the keys of
+	// Hashes.
+	NameFormNormalized NameForm = iota
+	// NameFormLowercase is each name as printed, in lower case.
+	NameFormLowercase
+	// NameFormCanonical is each name as printed.
+	NameFormCanonical
+)
+
+// Names returns every card or sealed name in the datastore, spelled in the
+// given form. A form outside the three returns nothing. It is not called
+// AllNames because that is the normalized list's own field.
+func (b *Backend) Names(form NameForm, sealed bool) []string {
+	switch form {
+	case NameFormNormalized:
 		if sealed {
 			return b.AllSealed
 		}
 		return b.AllNames
-	case "canonical":
+	case NameFormCanonical:
 		if sealed {
 			return b.AllCanonicalSealed
 		}
 		return b.AllCanonicalNames
-	case "lowercase":
+	case NameFormLowercase:
 		if sealed {
 			return b.AllLowerSealed
 		}

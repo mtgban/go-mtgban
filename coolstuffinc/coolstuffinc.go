@@ -1497,7 +1497,7 @@ var (
 // under its number, or nothing when no invention ends in the name given.
 func galacticInvention(b *mtgmatcher.Backend, name string) string {
 	found := ""
-	for _, candidate := range b.Names("canonical", false) {
+	for _, candidate := range b.Names(mtgmatcher.NameFormCanonical, false) {
 		if strings.HasPrefix(candidate, "Team Galactic's Invention") && strings.HasSuffix(candidate, " "+name) {
 			if found != "" {
 				return ""
