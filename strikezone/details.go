@@ -22,6 +22,8 @@ var (
 		"Light Play",
 		"Medium Play",
 		"Heavy Play",
+		"Very Fine",
+		"Fine",
 	}
 	detailRuns = []string{
 		"1st Edition",
@@ -42,8 +44,8 @@ var (
 
 // parseDetails splits a Details wording into the treatment standing between
 // the condition and the print run, the run itself, and the closing language.
-// The condition stays out of the answer: the caller matches it from the whole
-// wording, where the shared grading switch already reads it.
+// The condition stays out of the answer: the caller matches it from the same
+// detailConditions prefix, through szCondition.
 func parseDetails(details string) (treatment, run, language string) {
 	rest := strings.TrimSpace(details)
 	for _, cond := range detailConditions {

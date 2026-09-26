@@ -3,6 +3,7 @@ package arcanafrisia
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -32,6 +33,21 @@ func (af *Arcanafrisia) printf(format string, a ...any) {
 	}
 }
 
+// afCondition maps the store's grades onto our own; it grades on
+// Cardmarket's scale, where LP is below GD, so it keeps its own table.
+func afCondition(s string) (mtgban.Condition, error) {
+	switch s {
+	case "NM":
+		return mtgban.NM, nil
+	case "EX":
+		return mtgban.SP, nil
+	case "GD":
+		return mtgban.MP, nil
+	default:
+		return "", fmt.Errorf("unknown condition %q", s)
+	}
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (af *Arcanafrisia) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
@@ -54,14 +70,8 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 			continue
 		}
 
-		// The store grades on Cardmarket's scale, where LP is below GD, so it
-		// keeps its own table.
-		cond := map[string]mtgban.Condition{
-			"NM": mtgban.NM,
-			"EX": mtgban.SP,
-			"GD": mtgban.MP,
-		}[card.Condition]
-		if cond == "" {
+		cond, err := afCondition(card.Condition)
+		if err != nil {
 			af.printf("Unknown condition %q for %s (%s)", card.Condition, card.Name, card.SetCode)
 			continue
 		}

@@ -244,6 +244,17 @@ func magicFoilSiblings(doc *goquery.Document, tableRowName string) map[string]bo
 	return both
 }
 
+// szCondition reads the grade Strike Zone's Details wording opens with, one
+// of detailConditions, through the shared word table.
+func szCondition(details string) (mtgban.Condition, error) {
+	for _, cond := range detailConditions {
+		if strings.HasPrefix(details, cond) {
+			return mtgban.ParseCondition(cond)
+		}
+	}
+	return "", fmt.Errorf("unsupported %s condition", details)
+}
+
 func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goquery.Selection, edition string, foilSiblings map[string]bool) error {
 	var cardName, pathURL, notes, cond, qty, price string
 
@@ -350,18 +361,9 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		return err
 	}
 
-	var grade mtgban.Condition
-	switch {
-	case strings.Contains(cond, "Mint"):
-		grade = mtgban.NM
-	case strings.Contains(cond, "Light"):
-		grade = mtgban.SP
-	case strings.Contains(cond, "Medium"):
-		grade = mtgban.MP
-	case strings.Contains(cond, "Heavy"):
-		grade = mtgban.HP
-	default:
-		return fmt.Errorf("unsupported %s condition", cond)
+	grade, err := szCondition(cond)
+	if err != nil {
+		return err
 	}
 
 	if mode == modeRetail {

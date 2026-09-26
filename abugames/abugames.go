@@ -4,6 +4,7 @@ package abugames
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -62,9 +63,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 	}
 
 	for _, group := range product.Grouped.ProductID.Groups {
-		// When MINT is found, handle conditions as a standard 4-grade
-		// Otherwise use the same approach used for starcitygames (stricter grading for foils)
-		// This only applies for Retail, the condition is skipped on buylists
+		// hasMintGrade4Retail feeds abuRetailCondition; buylist ignores it.
 		var hasMintGrade4Retail bool
 		for _, doc := range group.Doclist.Docs {
 			if doc.Condition == "MINT" && (doc.SellQuantity > 0 || doc.SubSellQuantity > 0) && doc.SellPrice > 0 {
@@ -158,26 +157,8 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			u.RawQuery = v.Encode()
 
 			if doc.SellQuantity > 0 && doc.SellPrice > 0 {
-				var cond mtgban.Condition
-				switch doc.Condition {
-				case "MINT":
-					cond = mtgban.NM
-				case "NM":
-					cond = mtgban.SP
-					if !hasMintGrade4Retail {
-						cond = mtgban.NM
-					}
-				case "PLD":
-					cond = mtgban.MP
-					if !lowerGrade && !hasMintGrade4Retail && !theCard.Foil {
-						cond = mtgban.SP
-					}
-				case "HP":
-					cond = mtgban.HP
-					if !lowerGrade && !hasMintGrade4Retail && !theCard.Foil {
-						cond = mtgban.MP
-					}
-				default:
+				cond, err := abuRetailCondition(doc.Condition, hasMintGrade4Retail, lowerGrade, theCard.Foil)
+				if err != nil {
 					abu.printf("Unknown '%s' condition", doc.Condition)
 					continue
 				}
@@ -200,23 +181,15 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			}
 
 			if doc.BuyQuantity > 0 && doc.BuyPrice > 0 {
+				// MINT is skipped: it cannot be mapped correctly.
 				var cond mtgban.Condition
-				switch doc.Condition {
-				case "MINT":
-					// Skipped since it's impossible to map correctly
-				case "NM":
-					cond = mtgban.NM
-				case "PLD":
-					// Stricter grading for foils
-					cond = mtgban.MP
-					if !theCard.Foil {
-						cond = mtgban.SP
+				if doc.Condition != "MINT" {
+					grade, err := abuBuylistCondition(doc.Condition, theCard.Foil)
+					if err != nil {
+						abu.printf("Unknown '%s' condition", doc.Condition)
+						continue
 					}
-				case "HP":
-					cond = mtgban.HP
-				default:
-					abu.printf("Unknown '%s' condition", doc.Condition)
-					continue
+					cond = grade
 				}
 
 				if cond != "" {
@@ -267,6 +240,52 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 	}
 
 	return nil
+}
+
+// abuRetailCondition maps ABU's condition to our grade for a sale listing.
+// A group with a MINT copy on sale is a four-step scale, NM read as SP;
+// otherwise PLD and HP read a grade up unless lowerGrade or foil is set.
+func abuRetailCondition(condition string, hasMintGrade4Retail, lowerGrade, foil bool) (mtgban.Condition, error) {
+	switch condition {
+	case "MINT":
+		return mtgban.NM, nil
+	case "NM":
+		if hasMintGrade4Retail {
+			return mtgban.SP, nil
+		}
+		return mtgban.NM, nil
+	case "PLD":
+		if !lowerGrade && !hasMintGrade4Retail && !foil {
+			return mtgban.SP, nil
+		}
+		return mtgban.MP, nil
+	case "HP":
+		if !lowerGrade && !hasMintGrade4Retail && !foil {
+			return mtgban.MP, nil
+		}
+		return mtgban.HP, nil
+	default:
+		return "", fmt.Errorf("unsupported condition %q", condition)
+	}
+}
+
+// abuBuylistCondition maps ABU's condition to our grade for a buy listing.
+// MINT is not a case here: it is skipped before this is called.
+func abuBuylistCondition(condition string, foil bool) (mtgban.Condition, error) {
+	switch condition {
+	case "NM":
+		return mtgban.NM, nil
+	case "PLD":
+		// Stricter grading for foils
+		if !foil {
+			return mtgban.SP, nil
+		}
+		return mtgban.MP, nil
+	case "HP":
+		return mtgban.HP, nil
+	default:
+		return "", fmt.Errorf("unsupported condition %q", condition)
+	}
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
