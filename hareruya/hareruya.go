@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -29,6 +30,10 @@ const (
 
 	buylistURL = "https://www.hareruyamtg.com/ja/purchase/search?"
 )
+
+// reAltered finds the note a storefront grade carries for a copy someone
+// signed or inked, in English or Japanese ("MP Signed", "BGS8 サイン9点").
+var reAltered = regexp.MustCompile(`Singed|Signed|Inked|サイン`)
 
 // Hareruya prices Hareruya's singles.
 type Hareruya struct {
@@ -473,6 +478,10 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 			}
 
 			condition := strings.TrimRight(strings.TrimSuffix(fields[0], " Stock"), "-+")
+			// Ahead of the slab rule, which rewrites the label, note and all, to NM.
+			if reAltered.MatchString(condition) {
+				break
+			}
 			if strings.Contains(condition, "PSA") ||
 				strings.Contains(condition, "CGC") ||
 				strings.Contains(condition, "BGS") {
@@ -480,11 +489,6 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 			}
 			if condition == "Poor" {
 				condition = "PO"
-			}
-			if strings.Contains(condition, "Singed") ||
-				strings.Contains(condition, "Signed") ||
-				strings.Contains(condition, "Inked") {
-				break
 			}
 
 			qty, err := strconv.Atoi(fields[1])
@@ -515,6 +519,9 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 			}
 
 			condition := strings.TrimSpace(se.Find("strong").Text())
+			if reAltered.MatchString(condition) {
+				return
+			}
 
 			result.Rows = append(result.Rows, Row{
 				Price:     price,
