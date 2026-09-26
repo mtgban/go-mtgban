@@ -9,14 +9,14 @@ import (
 func TestAddRelaxed(t *testing.T) {
 	entryNM := InventoryEntry{
 		Quantity:   5,
-		Conditions: "NM",
+		Conditions: NM,
 		Price:      20.0,
 		URL:        "https://mtgban.com",
 		SellerName: "BANNED",
 	}
 	entrySP := InventoryEntry{
 		Quantity:   4,
-		Conditions: "SP",
+		Conditions: SP,
 		Price:      10.0,
 		URL:        "https://mtgban.com",
 		SellerName: "BANNED",
@@ -98,14 +98,14 @@ func TestAddRelaxed(t *testing.T) {
 func TestAdd(t *testing.T) {
 	entryNM := InventoryEntry{
 		Quantity:   5,
-		Conditions: "NM",
+		Conditions: NM,
 		Price:      20.0,
 		URL:        "https://mtgban.com",
 		SellerName: "BANNED",
 	}
 	entrySP := InventoryEntry{
 		Quantity:   4,
-		Conditions: "SP",
+		Conditions: SP,
 		Price:      10.0,
 		URL:        "https://mtgban.com",
 		SellerName: "BANNED",
@@ -171,14 +171,14 @@ func TestAdd(t *testing.T) {
 func TestAddStrict(t *testing.T) {
 	entryNM := InventoryEntry{
 		Quantity:   5,
-		Conditions: "NM",
+		Conditions: NM,
 		Price:      20.0,
 		URL:        "https://mtgban.com",
 		SellerName: "BANNED",
 	}
 	entrySP := InventoryEntry{
 		Quantity:   4,
-		Conditions: "SP",
+		Conditions: SP,
 		Price:      10.0,
 		URL:        "https://mtgban.com",
 		SellerName: "BANNED",
@@ -244,28 +244,28 @@ func TestSort(t *testing.T) {
 	testEntries := []InventoryEntry{
 		{
 			Quantity:   5,
-			Conditions: "NM",
+			Conditions: NM,
 			Price:      20.0,
 			URL:        "https://mtgban.com",
 			SellerName: "BANNED",
 		},
 		{
 			Quantity:   4,
-			Conditions: "SP",
+			Conditions: SP,
 			Price:      8.0,
 			URL:        "https://mtgban.com",
 			SellerName: "BANNED",
 		},
 		{
 			Quantity:   4,
-			Conditions: "SP",
+			Conditions: SP,
 			Price:      10.0,
 			URL:        "https://mtgban.com",
 			SellerName: "BANNED",
 		},
 		{
 			Quantity:   1,
-			Conditions: "SP",
+			Conditions: SP,
 			Price:      10.0,
 			URL:        "https://mtgban.com",
 			SellerName: "BANNED_TWO",
@@ -276,7 +276,7 @@ func TestSort(t *testing.T) {
 		testEntries[i], testEntries[j] = testEntries[j], testEntries[i]
 	})
 
-	expectedCond := []string{"NM", "SP", "SP", "SP"}
+	expectedCond := []Condition{NM, SP, SP, SP}
 	expectedPrice := []float64{20.0, 8.0, 10.0, 10.0}
 	expectedQty := []int{5, 4, 4, 1}
 
@@ -322,7 +322,7 @@ func TestSort(t *testing.T) {
 func TestDuplicateEntryIsRecognisable(t *testing.T) {
 	t.Run("buylist", func(t *testing.T) {
 		bl := BuylistRecord{}
-		entry := &BuylistEntry{Conditions: "NM", BuyPrice: 4.34}
+		entry := &BuylistEntry{Conditions: NM, BuyPrice: 4.34}
 		if err := bl.Add("id", entry); err != nil {
 			t.Fatalf("first add: %v", err)
 		}
@@ -337,10 +337,10 @@ func TestDuplicateEntryIsRecognisable(t *testing.T) {
 
 	t.Run("a differing price is not a duplicate", func(t *testing.T) {
 		bl := BuylistRecord{}
-		if err := bl.Add("id", &BuylistEntry{Conditions: "NM", BuyPrice: 4.34}); err != nil {
+		if err := bl.Add("id", &BuylistEntry{Conditions: NM, BuyPrice: 4.34}); err != nil {
 			t.Fatalf("first add: %v", err)
 		}
-		if err := bl.Add("id", &BuylistEntry{Conditions: "NM", BuyPrice: 9.99}); err != nil {
+		if err := bl.Add("id", &BuylistEntry{Conditions: NM, BuyPrice: 9.99}); err != nil {
 			t.Errorf("a second price was refused: %v", err)
 		}
 		if len(bl["id"]) != 2 {
@@ -350,7 +350,7 @@ func TestDuplicateEntryIsRecognisable(t *testing.T) {
 
 	t.Run("inventory", func(t *testing.T) {
 		inv := InventoryRecord{}
-		entry := &InventoryEntry{Conditions: "NM", Price: 4.34, Quantity: 3, URL: "u"}
+		entry := &InventoryEntry{Conditions: NM, Price: 4.34, Quantity: 3, URL: "u"}
 		if err := inv.Add("id", entry); err != nil {
 			t.Fatalf("first add: %v", err)
 		}

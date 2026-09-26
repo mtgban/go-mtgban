@@ -186,7 +186,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				InstanceID: v.SKU,
 				URL:        SCGProductURL(p.URL, v.SKU, scg.affiliate),
 			}
-			if condition == "NM" {
+			if condition == mtgban.NM {
 				entry.CustomFields = customFields
 			}
 			if err := scg.addInventoryStock(second, cardID, entry); err != nil && !ignore {
@@ -206,7 +206,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 			}
 
 			var blFields map[string]string
-			if condition == "NM" {
+			if condition == mtgban.NM {
 				blFields = customFields
 			}
 

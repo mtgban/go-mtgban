@@ -161,7 +161,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					OriginalID: strconv.Itoa(card.ID),
 					InstanceID: card.SKU,
 				}
-				if cond != "NM" {
+				if cond != mtgban.NM {
 					out.CustomFields = map[string]string{
 						"RetailPrice": fmt.Sprint(card.PriceRetail),
 					}
@@ -232,7 +232,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					VendorName: availableTraderNames[0],
 				}
 				// Add the line entry as needed by the csv import
-				if grade == "NM" {
+				if grade == mtgban.NM {
 					out.CustomFields = map[string]string{
 						"CKTitle":   cardName,
 						"CKEdition": card.Edition,

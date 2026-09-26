@@ -146,20 +146,20 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			return
 		}
 
-		conditions := ""
+		var conditions mtgban.Condition
 		cond := strings.Split(condLang, ", ")[0]
 		cond = strings.TrimPrefix(cond, "Website Exclusive ")
 		switch cond {
 		case "NM-Mint", "NM":
-			conditions = "NM"
+			conditions = mtgban.NM
 		case "Light Play", "LP":
-			conditions = "SP"
+			conditions = mtgban.SP
 		case "Moderate Play":
-			conditions = "MP"
+			conditions = mtgban.MP
 		case "Heavy Play":
-			conditions = "HP"
+			conditions = mtgban.HP
 		case "Damaged":
-			conditions = "PO"
+			conditions = mtgban.PO
 		case "Graded":
 			return
 		default:

@@ -488,7 +488,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 					cardID:  id,
 					byName:  byName,
 					entry: mtgban.InventoryEntry{
-						Conditions: "NM",
+						Conditions: mtgban.NM,
 						Price:      prices[i] * mkm.exchangeRate,
 						URL:        link,
 						SellerName: availableIndexNames[i],
@@ -523,7 +523,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 						cardID:  cardIDFoil,
 						byName:  byName,
 						entry: mtgban.InventoryEntry{
-							Conditions: "NM",
+							Conditions: mtgban.NM,
 							Price:      foilprices[i] * mkm.exchangeRate,
 							URL:        link,
 							SellerName: availableIndexNames[i],
@@ -554,7 +554,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 				cardID:  cardID,
 				byName:  byName,
 				entry: mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					Price:      foilprices[i] * mkm.exchangeRate,
 					URL:        link,
 					SellerName: availableIndexNames[i],

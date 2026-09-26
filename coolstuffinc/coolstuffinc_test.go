@@ -198,7 +198,7 @@ func TestUnfoldSkipsTheEmptyGradedSeller(t *testing.T) {
 		t.Fatalf("NewScraper(GamePalworld) = %v", err)
 	}
 	csi.inventory["some-uuid"] = []mtgban.InventoryEntry{{
-		Conditions: "NM",
+		Conditions: mtgban.NM,
 		Price:      1,
 		Quantity:   1,
 		SellerName: "Cool Stuff Inc",

@@ -127,7 +127,7 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 			channel <- resultChan{
 				cardID: uuid,
 				invEntry: &mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: mtgban.NM,
 					Price:      price,
 					Quantity:   product.Quantity,
 					URL:        link,

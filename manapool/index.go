@@ -114,7 +114,7 @@ func (mp *Index) Load(ctx context.Context) error {
 			// than an offer to sell one, so it carries neither the buyer fee
 			// the listings do nor a quantity.
 			out := &mtgban.InventoryEntry{
-				Conditions: "NM",
+				Conditions: mtgban.NM,
 				Price:      float64(finish.cents) / 100.0,
 				URL:        link,
 			}

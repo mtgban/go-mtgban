@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/RomainMichau/cloudscraper_go/cloudscraper"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // CookieClient drives the storefront as a signed-in user, for the cart
@@ -111,11 +112,11 @@ type CartResponse struct {
 	NeedsCartMergeNotification bool   `json:"needs_cart_merge_notification"`
 }
 
-var condMap = map[string]string{
-	"NM": "NM",
-	"SP": "EX",
-	"MP": "VG",
-	"HP": "G",
+var condMap = map[mtgban.Condition]string{
+	mtgban.NM: "NM",
+	mtgban.SP: "EX",
+	mtgban.MP: "VG",
+	mtgban.HP: "G",
 }
 
 const (
@@ -128,13 +129,13 @@ const (
 
 // SetCartInventory sets how many of a card in one condition to buy from Card
 // Kingdom.
-func (ck *CookieClient) SetCartInventory(ctx context.Context, ckID, cond string, qty int) (*CartResponse, error) {
+func (ck *CookieClient) SetCartInventory(ctx context.Context, ckID string, cond mtgban.Condition, qty int) (*CartResponse, error) {
 	return ck.setCart(ctx, ckInventoryAddURL, ckID, cond, qty)
 }
 
 // SetCartBuylist sets how many of a card to sell to Card Kingdom.
 func (ck *CookieClient) SetCartBuylist(ctx context.Context, ckID string, qty int) (*CartResponse, error) {
-	return ck.setCart(ctx, ckBuylistAddURL, ckID, "NM", qty)
+	return ck.setCart(ctx, ckBuylistAddURL, ckID, mtgban.NM, qty)
 }
 
 // EmptyCartInventory clears the buying cart.
@@ -164,15 +165,15 @@ func (ck *CookieClient) emptyCart(ctx context.Context, link, cartToken string) e
 	return nil
 }
 
-func (ck *CookieClient) setCart(ctx context.Context, link, ckID, cond string, qty int) (*CartResponse, error) {
+func (ck *CookieClient) setCart(ctx context.Context, link, ckID string, cond mtgban.Condition, qty int) (*CartResponse, error) {
 	style, found := condMap[cond]
-	if found {
-		cond = style
+	if !found {
+		style = string(cond)
 	}
 
 	payload := CartRequest{
 		ProductID: ckID,
-		Style:     cond,
+		Style:     style,
 		Quantity:  qty,
 	}
 

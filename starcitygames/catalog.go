@@ -12,6 +12,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -1706,14 +1707,14 @@ func fabPrintRun(set, finish string) (string, string) {
 }
 
 // catalogCondition maps a catalog condition string to an mtgban grade.
-func catalogCondition(condition string) (string, error) {
+func catalogCondition(condition string) (mtgban.Condition, error) {
 	switch condition {
 	case "Near Mint":
-		return "NM", nil
+		return mtgban.NM, nil
 	case "Played":
-		return "SP", nil
+		return mtgban.SP, nil
 	case "Heavily Played":
-		return "HP", nil
+		return mtgban.HP, nil
 	default:
 		return "", fmt.Errorf("unknown condition %q", condition)
 	}

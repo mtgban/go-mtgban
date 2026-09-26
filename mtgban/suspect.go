@@ -15,7 +15,7 @@ const SuspectRatioThreshold = 90.0
 // together to be the same printing.
 type SuspectPricing struct {
 	CardID     string
-	Conditions string
+	Conditions Condition
 
 	BuyPrice float64
 	Price    float64
@@ -83,7 +83,7 @@ func SuspectPricings(inv InventoryRecord, bl BuylistRecord, threshold float64) [
 
 // bestBuy answers the most a seller pays for a card at one grade, which is the
 // figure a listing is judged against.
-func bestBuy(entries []BuylistEntry, condition string) (float64, string) {
+func bestBuy(entries []BuylistEntry, condition Condition) (float64, string) {
 	var price float64
 	var link string
 	for _, entry := range entries {
@@ -96,7 +96,7 @@ func bestBuy(entries []BuylistEntry, condition string) (float64, string) {
 }
 
 // lowestAsk answers the least a seller charges for a card at one grade.
-func lowestAsk(entries []InventoryEntry, condition string) (float64, string) {
+func lowestAsk(entries []InventoryEntry, condition Condition) (float64, string) {
 	var price float64
 	var link string
 	for _, entry := range entries {
@@ -122,7 +122,7 @@ const CollapsedRatioThreshold = 2.0
 // same grade.
 type CollapsedPricing struct {
 	CardID     string
-	Conditions string
+	Conditions Condition
 	VendorName string
 
 	// High and Low are the most and the least the vendor pays at this
@@ -165,7 +165,7 @@ func CollapsedPricings(bl BuylistRecord, threshold float64) []CollapsedPricing {
 		// a record holds several vendors, and a shop quoting cash beside
 		// store credit publishes them under names of their own.
 		type key struct {
-			condition string
+			condition Condition
 			vendor    string
 		}
 		grouped := map[key][]BuylistEntry{}

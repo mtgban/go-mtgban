@@ -71,7 +71,7 @@ func TestArbitUsesTheBackendPassedIn(t *testing.T) {
 // names nothing rather than nil-dereferencing on the first lookup. The
 // options are not a way around it: they filter, they do not resolve.
 func TestReportsRefuseANilBackend(t *testing.T) {
-	inv := InventoryRecord{"card": {{Conditions: "NM", Price: 10, Quantity: 1}}}
+	inv := InventoryRecord{"card": {{Conditions: NM, Price: 10, Quantity: 1}}}
 
 	for _, tt := range []struct {
 		desc string
@@ -79,12 +79,12 @@ func TestReportsRefuseANilBackend(t *testing.T) {
 	}{
 		{"arbit", func() []ArbitEntry {
 			return Arbit(nil, nil,
-				vendorOf(BuylistRecord{"card": {{Conditions: "NM", BuyPrice: 15}}}),
+				vendorOf(BuylistRecord{"card": {{Conditions: NM, BuyPrice: 15}}}),
 				sellerOf(inv, ScraperInfo{Name: "seller"}))
 		}},
 		{"mismatch", func() []ArbitEntry {
 			return Mismatch(nil, nil,
-				sellerOf(InventoryRecord{"card": {{Conditions: "NM", Price: 20, Quantity: 1}}},
+				sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: 20, Quantity: 1}}},
 					ScraperInfo{Name: "reference"}),
 				sellerOf(inv, ScraperInfo{Name: "probe"}))
 		}},

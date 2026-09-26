@@ -92,12 +92,12 @@ func (tcg *TCGSellerInventory) totalItems(ctx context.Context) (*itemsRecap, err
 	return &ret, nil
 }
 
-var conditionMap = map[string]string{
-	"Near Mint":         "NM",
-	"Lightly Played":    "SP",
-	"Moderately Played": "MP",
-	"Heavily Played":    "HP",
-	"Damaged":           "PO",
+var conditionMap = map[string]mtgban.Condition{
+	"Near Mint":         mtgban.NM,
+	"Lightly Played":    mtgban.SP,
+	"Moderately Played": mtgban.MP,
+	"Heavily Played":    mtgban.HP,
+	"Damaged":           mtgban.PO,
 }
 
 func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- responseChan, page int) error {
@@ -177,7 +177,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				customFields["directInventory"] = fmt.Sprint(int(listing.DirectInventory))
 			}
 
-			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.affiliate, listing.Condition, listing.Language, isDirect)
+			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.affiliate, cond, listing.Language, isDirect)
 
 			out := responseChan{
 				cardID: cardID,

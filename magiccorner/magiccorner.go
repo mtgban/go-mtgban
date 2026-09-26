@@ -136,17 +136,20 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				continue
 			}
 
-			cond := v.Condition
-			switch cond {
+			var grade mtgban.Condition
+			switch v.Condition {
 			case "NM/M":
-				cond = "NM"
-			case "SP", "HP":
+				grade = mtgban.NM
+			case "SP":
+				grade = mtgban.SP
+			case "HP":
+				grade = mtgban.HP
 			case "GD":
-				cond = "MP"
+				grade = mtgban.MP
 			case "D":
-				cond = "PO"
+				grade = mtgban.PO
 			default:
-				mc.printf("Unknown '%s' condition", cond)
+				mc.printf("Unknown '%s' condition", v.Condition)
 				continue
 			}
 
@@ -187,7 +190,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 			channel <- resultChan{
 				cardID: cardID,
 				invEntry: &mtgban.InventoryEntry{
-					Conditions: cond,
+					Conditions: grade,
 					Price:      v.Price * mc.exchangeRate,
 					Quantity:   v.Quantity,
 					URL:        "https://www.magiccorner.it" + card.URL,
@@ -329,8 +332,8 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 
 			link := fmt.Sprintf("https://www.cardgamecorner.com/it/buylist?q=%s&game=magic", url.QueryEscape(product.ModelEn))
 
-			gradeMap := map[string]float64{
-				"NM": 1, "SP": 0.77, "MP": 0, "HP": 0.36,
+			gradeMap := map[mtgban.Condition]float64{
+				mtgban.NM: 1, mtgban.SP: 0.77, mtgban.MP: 0, mtgban.HP: 0.36,
 			}
 			for _, grade := range mtgban.DefaultGradeTags {
 				factor := gradeMap[grade]
@@ -339,7 +342,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 				}
 
 				var quantity int
-				if grade == "NM" {
+				if grade == mtgban.NM {
 					quantity = qty
 				}
 

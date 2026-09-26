@@ -50,25 +50,25 @@ func TestOnePieceSpelling(t *testing.T) {
 func TestOfferSeen(t *testing.T) {
 	seen := map[string]bool{}
 	const url = "https://www.coolstuffinc.com/p/433402"
-	offer := func(cardID, conditions, seller string) responseChan {
+	offer := func(cardID string, conditions mtgban.Condition, seller string) responseChan {
 		return responseChan{cardID: cardID, invEntry: &mtgban.InventoryEntry{URL: url, Conditions: conditions, SellerName: seller, Quantity: 20}}
 	}
-	nm := offer("plain", "NM", availableMarketNames[0])
+	nm := offer("plain", mtgban.NM, availableMarketNames[0])
 	if offerSeen(seen, nm) {
 		t.Error("the first offer is new")
 	}
 	if !offerSeen(seen, nm) {
 		t.Error("the same offer off another shelf is seen")
 	}
-	if offerSeen(seen, offer("plain", "SP", availableMarketNames[0])) {
+	if offerSeen(seen, offer("plain", mtgban.SP, availableMarketNames[0])) {
 		t.Error("another condition is another offer")
 	}
 	// The row's foil is filed at NM too, on the foil printing.
-	if offerSeen(seen, offer("plain_foil", "NM", availableMarketNames[0])) {
+	if offerSeen(seen, offer("plain_foil", mtgban.NM, availableMarketNames[0])) {
 		t.Error("the foil beside the plain copy is another offer")
 	}
 	// So is a graded copy, on the same printing, from the other seller.
-	if offerSeen(seen, offer("plain", "NM", availableMarketNames[1])) {
+	if offerSeen(seen, offer("plain", mtgban.NM, availableMarketNames[1])) {
 		t.Error("a graded copy beside the plain one is another offer")
 	}
 }

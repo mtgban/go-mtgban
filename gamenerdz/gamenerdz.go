@@ -29,14 +29,14 @@ const (
 // fills in, and a title of null or none at all - and both are the same
 // offer. A titled variant spells its own, the way the platform's other
 // stores already do.
-var conditionMap = map[string]string{
+var conditionMap = map[string]mtgban.Condition{
 	"":                  "",
 	"Default Title":     "",
-	"Near Mint":         "NM",
-	"Lightly Played":    "SP",
-	"Moderately Played": "MP",
-	"Heavily Played":    "HP",
-	"Damaged":           "PO",
+	"Near Mint":         mtgban.NM,
+	"Lightly Played":    mtgban.SP,
+	"Moderately Played": mtgban.MP,
+	"Heavily Played":    mtgban.HP,
+	"Damaged":           mtgban.PO,
 }
 
 // gradeTag is the grade this storefront writes at the end of a display name
@@ -47,26 +47,26 @@ var gradeTag = regexp.MustCompile(`\(([A-Z]{1,3})\)$`)
 // gradeMap spells those grades as the conditions mtgban keeps. It is a
 // closed list on purpose: a name ending in some other bracketed capitals is
 // a name, not a grade.
-var gradeMap = map[string]string{
-	"NM":  "NM",
-	"LP":  "SP",
-	"MP":  "MP",
-	"HP":  "HP",
-	"D":   "PO",
-	"DMG": "PO",
+var gradeMap = map[string]mtgban.Condition{
+	"NM":  mtgban.NM,
+	"LP":  mtgban.SP,
+	"MP":  mtgban.MP,
+	"HP":  mtgban.HP,
+	"D":   mtgban.PO,
+	"DMG": mtgban.PO,
 }
 
 // grade reads the grade a display name ends in. A name ending in none, or
 // in bracketed capitals that are not one, is the near mint this storefront
 // leaves unwritten.
-func grade(displayName string) string {
+func grade(displayName string) mtgban.Condition {
 	match := gradeTag.FindStringSubmatch(displayName)
 	if match == nil {
-		return "NM"
+		return mtgban.NM
 	}
 	cond, found := gradeMap[match[1]]
 	if !found {
-		return "NM"
+		return mtgban.NM
 	}
 	return cond
 }

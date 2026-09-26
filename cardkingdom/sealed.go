@@ -112,7 +112,7 @@ func (ck *Sealed) Load(ctx context.Context) error {
 
 				if sealed.QtyRetail > 0 && sealed.PriceRetail > 0 {
 					out := &mtgban.InventoryEntry{
-						Conditions: "NM",
+						Conditions: mtgban.NM,
 						Price:      sealed.PriceRetail,
 						Quantity:   sealed.QtyRetail,
 						URL:        link,
