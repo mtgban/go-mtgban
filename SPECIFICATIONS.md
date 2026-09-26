@@ -374,9 +374,9 @@ TCGplayer lists Riftbound singles as Normal and Foil.
 **Indexes on `Backend`** (`mtgmatcher/backend.go`): `AllSets` and `Sets`
 (code → `*Set`); `NormalizedSets` (normalized set name → `*Set`); `UUIDs`
 (UUID → `*CardObject`); `CanonicalNames` (normalized → canonical); `Tokens`;
-`Hashes` (normalized name → UUID list); `ExternalIdentifiers` (Scryfall/TCG/
-etched id → UUID, and the Cardmarket ids One Piece, Lorcana and Pokemon
-publish, reachable only through `ConvertID`); `AlternateProps` (flavor
+`Hashes` (normalized name → UUID list); `ExternalIdentifiers` (per
+`IDSpace`: Scryfall/TCG/etched id → UUID, and the Cardmarket ids One Piece,
+Lorcana and Pokemon publish, reachable only through `ConvertID`); `AlternateProps` (flavor
 names); the sorted name and sealed-name arrays backing prefix/contains/regexp
 search; `SetUUIDs` and `SetSealedUUIDs` (per-set sorted UUID buckets);
 `AllPromoTypes`, `SLDDeckNames`, `CommanderKeywordMap`; the partitioned

@@ -1266,7 +1266,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	var names, fullNames, lowerNames []string
 	var sealed, fullSealed, lowerSealed []string
 	var promoTypes []string
-	externalIDs := map[string]map[string]string{
+	externalIDs := map[mtgmatcher.IDSpace]map[string]string{
 		mtgmatcher.IDSpaceMTGJSON:    {},
 		mtgmatcher.IDSpaceScryfall:   {},
 		mtgmatcher.IDSpaceTCGplayer:  {},
@@ -1294,7 +1294,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 		for _, filing := range []struct {
 			tag    string
-			space  string
+			space  mtgmatcher.IDSpace
 			target string
 		}{
 			{"mtgjsonId", mtgmatcher.IDSpaceMTGJSON, baseUUID},

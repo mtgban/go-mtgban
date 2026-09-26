@@ -15,7 +15,7 @@ import (
 func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCard) *mtgmatcher.InputCard {
 	var found string
 	conflict := false
-	consider := func(space, external string) {
+	consider := func(space mtgmatcher.IDSpace, external string) {
 		base := b.ConvertID(space, external)
 		if base == "" {
 			return

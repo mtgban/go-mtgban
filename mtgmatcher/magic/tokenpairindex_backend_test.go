@@ -31,7 +31,7 @@ func fixtureBackendWithPairing(partnerUUID, partnerName, tcgID string) *mtgmatch
 				},
 			}},
 		},
-		ExternalIdentifiers: map[string]map[string]string{
+		ExternalIdentifiers: map[mtgmatcher.IDSpace]map[string]string{
 			mtgmatcher.IDSpaceScryfall: {"bear-scryfall": bearUUID},
 		},
 	}
