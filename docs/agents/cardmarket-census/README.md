@@ -42,7 +42,7 @@ It reads `.env` (`ENV_FILE`) and writes under `$OUT/<game>`, by default
 | id map | `b2://mtgban-datastore/<game>/cardmarket_catalog.json.xz`; Magic: MTGJSON's `CardmarketIdentifiers.json.xz` (the workflows' `MKMIDS_MAGIC`) |
 | product list, price guide | Cardmarket's own downloads, as `Index.Load` fetches them |
 | CardTrader blueprints and the bridge | `cardtrader.BlueprintsForGame`, the bridge built as bantool's `cardtraderBridge` builds it |
-| published dumps | `b2://mtgban-dumps/<game>/{tcg_index,cardmarket,cardtrader}_<game>/retail/`; Magic has no `_<game>` suffix |
+| published dumps | `b2://mtgban-dumps/<game>/{tcg_index,cardmarket,cardtrader}/retail/`, for every game |
 
 The walk applies what `walkCatalog` does, bridge and game passes included
 (`harnesses.md`). Magic walks without the bridge, because bantool passes
