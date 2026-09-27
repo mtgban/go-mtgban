@@ -54,10 +54,8 @@ fi
 
 cd "$D/dumps"
 export B2_APPLICATION_KEY_ID=$B2_APPLICATION_KEY_ID_DUMPS B2_APPLICATION_KEY=$B2_APPLICATION_APP_KEY_DUMPS
-suffix=_$game
-[ "$game" = magic ] && suffix=
-for f in "tcg_index$suffix/retail/TCGMarket" "cardmarket$suffix/retail/MKMTrend" \
-         "cardmarket$suffix/retail/MKMLow" "cardtrader$suffix/retail/CT"; do
+for f in "tcg_index/retail/TCGMarket" "cardmarket/retail/MKMTrend" \
+         "cardmarket/retail/MKMLow" "cardtrader/retail/CT"; do
   [ -e "$(basename "$f").json" ] || fetch "b2://mtgban-dumps/$game/$f.json.xz" "$(basename "$f").json" \
     || echo "nothing published at $f"
 done

@@ -422,19 +422,19 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    an HTML-scraped one.
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
 4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
-   constructor)` — `name` is the external flag the store has always been
-   known by, the store's own name alone under `mtgmatcher.GameMagic` and
-   `<store>_<game>` under every other game (`coolstuffinc_pokemon`,
-   `cardtrader_gundam`, `starcitygames_sealed_lorcana`), and `games` is
-   every game the scraper prices. Blank-import the package in
-   `cmd/bantool/main.go`: `targets()` walks `mtgmatcher.AllGames` ×
-   `mtgban.Registered(game)` to build the flag table, so a registered
-   scraper needs no entry written there by hand, only the import. Add one
-   `bantool-<store>_<game>.yml` workflow per target —
+   constructor)`: `name` is the bare registry key the store has always
+   been known by (`coolstuffinc_sealed`, `starcitygames_sealed`), the same
+   spelling under every game, and `games` is every game the scraper prices.
+   Blank-import the package in `cmd/bantool/main.go`: `targets()` walks
+   `mtgmatcher.AllGames` × `mtgban.Registered(game)` to build the option
+   table, so a registered scraper needs no entry written there by hand,
+   only the import, and is immediately selectable as `-game <game> -store
+   name`. Add one `bantool-<game>-<store>.yml` workflow per target,
+   dispatched on `<game>-<store>` and `<game>-all`;
    `cmd/bantool/workflows_test.go`'s
    `TestEveryTargetIsScheduledByItsOwnWorkflow` fails the build if a
-   registered target has no workflow scheduling it, or a workflow names a
-   target that is not registered.
+   registered target has no workflow scheduling it, a workflow names a
+   target that is not registered, or a file's dispatch types are wrong.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` — every scraper sets
    `Game` explicitly now, `mtgmatcher.GameMagic` included; nothing reads as Magic
@@ -473,9 +473,10 @@ A game is named in `mtgmatcher` first and reaches the scrapers from there:
    used to translate a vendor id back into a game are gone.
 4. Per scraper that should run it: add the game to that store's own
    `register.go` (its `mtgban.Register` games list) alongside the map entry
-   from step 3, and add a `bantool-<store>_<game>.yml` workflow. Nothing is
+   from step 3, and add a `bantool-<game>-<store>.yml` workflow. Nothing is
    written in `cmd/bantool/main.go` itself — `targets()` derives the entry
-   from the registry.
+   from the registry, and it is reachable at `-game <game> -store <store>`
+   as soon as the registration lands.
 5. Wire the game's datastore into `.github/workflows/ci.yml` — a cache job and
    a `test-<game>` job — and add its path variable to
    `internal/vocabulary/read.go`'s `Games`, keyed by that constant.

@@ -1000,21 +1000,19 @@ embeds live credentials.
   non-Magic games besides). The table is a
   `map[mtgmatcher.Game]map[string]*scraperOption`: the game is the outer key and
   the store's own name the inner one, so a target's game is which sub-map
-  holds it rather than something re-derived from its name at runtime.
-  `scraperFlagName(game, name)` composes the external name the two make — the
-  store's name alone under `mtgmatcher.GameMagic`, `<store>_<game>` under every
-  other game — and `flattenOptions` builds the by-name view that flag
-  registration, the `-scrapers`/`-sellers`/`-vendors` lookups and the build
-  loop all read, sharing pointers with the nested map so enabling a target by
-  its flag name enables the entry `runGame` sees. It panics if two games claim
-  one external name, which is the collision a single flat literal used to
-  catch at compile time. A target and the `game` input of the workflow
-  scheduling it are pinned against each other by
-  `cmd/bantool/workflows_test.go`. Selection via a target's own bare flag
-  (`-tcg_market`, which is what `run-bantool.yml` invokes) or
-  `-scrapers`/`-sellers`/`-vendors`; the latter two also hold a target to one
-  half of its data, and a target whose entry already answers for the other
-  half alone is refused rather than overwritten. `-format` json/csv/ndjson
+  holds it rather than something composed into or re-derived from its name
+  at runtime. A required `-game` selects the sub-map; `-store` (plus
+  `-sellers`/`-vendors` for a single-half run) takes a comma list of the
+  bare names that sub-map holds, so a store is never told which game it
+  belongs to twice. `resolveGame` and `enableStore` refuse an unknown game
+  or store up front, listing what is actually registered, rather than
+  leaving `mtgban.NewScraper` to fail deeper in. A target whose entry
+  already answers for one half alone is refused rather than overwritten
+  when `-sellers`/`-vendors` names it too. A target and the `game` input of
+  the workflow scheduling it are pinned against each other by
+  `cmd/bantool/workflows_test.go`, one `bantool-<game>-<store>.yml` file per
+  target (`-store tcg_market`, which is what `run-bantool.yml` invokes).
+  `-format` json/csv/ndjson
   (each also with an `.xz` variant); output through
   `github.com/mtgban/simplecloud` to local/B2/GCS/S3/HTTP; optional HMAC
   signing (`BAN_SECRET`); all credentials via env vars (godotenv autoload).
@@ -1043,13 +1041,16 @@ per-game jobs that each restore their own datastore from cache (§2.7);
 Magic's job runs `go test ./... -v` over the whole tree, and the other eight
 each run a scoped list: their `mtgmatcher/<game>` suite, a few scraper
 packages and `internal/vocabulary`. There are well past a hundred
-`bantool-<target>.yml` files, one per scraper target — including the per-game
-variants such as `bantool-cardmarket_lorcana.yml` and
-`bantool-tcg_market_riftbound.yml` — each triggered by cron plus
+`bantool-<game>-<store>.yml` files, one per scraper target, such as
+`bantool-lorcana-cardmarket.yml` and `bantool-riftbound-tcg_market.yml`,
+each triggered by cron plus
 `workflow_dispatch`/`repository_dispatch`, and each delegating to the reusable
-`run-bantool.yml` with `target`, `game` and `datastore-filepath` inputs.
-`run-bantool.yml` uploads to `b2://mtgban-dumps/<game>/<target>` and then pings
-a signed `http://<game>.mtgban.com/api/load/<target>` URL so the server reloads
+`run-bantool.yml` with `store`, `game` and `datastore-filepath` inputs.
+A dispatch of `<game>-<store>` reruns one store, the type the site sends,
+and `<game>-all` runs every store of that game in one call, e.g. `gh api
+repos/mtgban/go-mtgban/dispatches -f event_type=lorcana-all`.
+`run-bantool.yml` uploads to `b2://mtgban-dumps/<game>/<store>` and then pings
+a signed `http://<game>.mtgban.com/api/load/<store>` URL so the server reloads
 the fresh snapshot. Magic targets prepend a `cache-datastore` job and pass a
 cached local path; every other game's targets skip caching entirely and pass
 a `b2://` path that bantool reads directly (which is why they need the
@@ -1115,12 +1116,14 @@ quirks. Add a `register.go` whose `init()` calls `mtgban.Register(name,
 games, constructor)` under the key name bantool has always used for the
 target and every game the scraper prices, then blank-import the package in
 `cmd/bantool/main.go` — `targets()` walks `mtgmatcher.AllGames` ×
-`mtgban.Registered(game)`, so a registered scraper appears in the flag
-table with no entry to write by hand. Add the matching GitHub Actions
-workflow: `cmd/bantool/workflows_test.go`'s
+`mtgban.Registered(game)`, so a registered scraper is immediately a valid
+`-store` value for its games, with no entry to write by hand. Add the
+matching GitHub Actions workflow: `cmd/bantool/workflows_test.go`'s
 `TestEveryTargetIsScheduledByItsOwnWorkflow` enforces the pairing in both
-directions, failing the build if a registered target has no workflow
-scheduling it, or a workflow names a target that is not registered. Set the
+directions, failing the build if a registered target has no
+`bantool-<game>-<store>.yml` workflow scheduling it, or a workflow names a
+target that is not registered. It also checks that each file's
+`repository_dispatch` types are exactly `<game>-<store>, <game>-all`. Set the
 right `ScraperInfo` flags (`MetadataOnly`, `NoQuantityInventory`,
 `SealedMode`, `CreditMultiplier`, `Family`, `Game`). The hard part is always
 preprocessing — which is why mtgmatcher's typed errors, variant tables, and
