@@ -17,9 +17,9 @@ import (
 // sypGames are the categories Store Your Products is read for, one line per
 // game. Magic is absent from tcgGames because its singles are priced through
 // scrapers of their own, but its SYP list is served the same way.
-var sypGames = map[mtgban.Game]int{
-	mtgban.GameMagic:   tcgplayer.CategoryMagic,
-	mtgban.GamePokemon: tcgplayer.CategoryPokemon,
+var sypGames = map[mtgmatcher.Game]int{
+	mtgmatcher.GameMagic:   tcgplayer.CategoryMagic,
+	mtgmatcher.GamePokemon: tcgplayer.CategoryPokemon,
 }
 
 // skuLanguageEnglish is the language id every English sku carries; Direct
@@ -106,7 +106,7 @@ type TCGSYPList struct {
 	// sku id, the datastore knows product ids.
 	catalog SYPCatalog
 
-	game        mtgban.Game
+	game        mtgmatcher.Game
 	category    int
 	auth        string
 	buylistDate time.Time

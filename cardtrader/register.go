@@ -12,15 +12,15 @@ const SecretToken = "CARDTRADER_TOKEN_BEARER"
 
 // sealedGames are the games ctGames answers for that bantool schedules a
 // Card Trader sealed run under.
-var sealedGames = []mtgban.Game{
-	mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameRiftbound,
-	mtgban.GameOnePiece, mtgban.GamePokemon, mtgban.GameYuGiOh,
-	mtgban.GameFleshAndBlood, mtgban.GameGundam,
+var sealedGames = []mtgmatcher.Game{
+	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound,
+	mtgmatcher.GameOnePiece, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
+	mtgmatcher.GameFleshAndBlood, mtgmatcher.GameGundam,
 }
 
 // registeredGames are the games of a singles run: Palworld as well, whose
 // sealed product NewScraperSealed refuses.
-var registeredGames = append(slices.Clone(sealedGames), mtgban.GamePalworld)
+var registeredGames = append(slices.Clone(sealedGames), mtgmatcher.GamePalworld)
 
 func init() {
 	mtgban.Register("cardtrader", registeredGames,

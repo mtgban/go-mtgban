@@ -5,7 +5,6 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -16,16 +15,16 @@ import (
 // getting back a real 200 with none of Pokemon's own uuids in it.
 func TestBanHost(t *testing.T) {
 	tests := []struct {
-		game mtgban.Game
+		game mtgmatcher.Game
 		want string
 	}{
-		{mtgban.GameMagic, "magic"},
-		{mtgban.GamePokemon, "pokemon"},
-		{mtgban.GameYuGiOh, "yugioh"},
-		{mtgban.GameFleshAndBlood, "fleshandblood"},
-		{mtgban.GameOnePiece, "onepiece"},
-		{mtgban.GameLorcana, "lorcana"},
-		{mtgban.GameRiftbound, "riftbound"},
+		{mtgmatcher.GameMagic, "magic"},
+		{mtgmatcher.GamePokemon, "pokemon"},
+		{mtgmatcher.GameYuGiOh, "yugioh"},
+		{mtgmatcher.GameFleshAndBlood, "fleshandblood"},
+		{mtgmatcher.GameOnePiece, "onepiece"},
+		{mtgmatcher.GameLorcana, "lorcana"},
+		{mtgmatcher.GameRiftbound, "riftbound"},
 	}
 	for _, tt := range tests {
 		if got := banHost(tt.game); got != tt.want {
@@ -113,7 +112,7 @@ func TestParseBanSnapshotBodyLevelErrors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := parseBanSnapshot([]byte(tt.body), mtgban.GamePokemon)
+			_, err := parseBanSnapshot([]byte(tt.body), mtgmatcher.GamePokemon)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseBanSnapshot() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -127,7 +126,7 @@ func TestParseBanSnapshotBodyLevelErrors(t *testing.T) {
 // price decode as zero - which marketCandidate refuses as "not priced".
 func TestBanPriceDecodesEtched(t *testing.T) {
 	const body = `{"retail":{"u":{"MKMTrend":{"etched":11.95}}},"buylist":{}}`
-	snap, err := parseBanSnapshot([]byte(body), mtgban.GameMagic)
+	snap, err := parseBanSnapshot([]byte(body), mtgmatcher.GameMagic)
 	if err != nil {
 		t.Fatal(err)
 	}

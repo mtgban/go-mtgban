@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -81,19 +80,19 @@ func TestCrawlAsksForStock(t *testing.T) {
 func TestListedConditions(t *testing.T) {
 	for _, tt := range []struct {
 		desc  string
-		game  mtgban.Game
+		game  mtgmatcher.Game
 		title string
 		want  bool
 	}{
-		{"riftbound deals in near mint", mtgban.GameRiftbound, "Near Mint", true},
-		{"and in nothing below it", mtgban.GameRiftbound, "Lightly Played", false},
-		{"pokemon the same", mtgban.GamePokemon, "Moderately Played", false},
-		{"one piece takes lightly played too", mtgban.GameOnePiece, "Lightly Played", true},
-		{"but stops there", mtgban.GameOnePiece, "Moderately Played", false},
-		{"a line configured nowhere deals in them all", mtgban.GameMagic, "Damaged", true},
+		{"riftbound deals in near mint", mtgmatcher.GameRiftbound, "Near Mint", true},
+		{"and in nothing below it", mtgmatcher.GameRiftbound, "Lightly Played", false},
+		{"pokemon the same", mtgmatcher.GamePokemon, "Moderately Played", false},
+		{"one piece takes lightly played too", mtgmatcher.GameOnePiece, "Lightly Played", true},
+		{"but stops there", mtgmatcher.GameOnePiece, "Moderately Played", false},
+		{"a line configured nowhere deals in them all", mtgmatcher.GameMagic, "Damaged", true},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			vs, err := NewScraper(&mtgmatcher.Backend{Game: string(tt.game)})
+			vs, err := NewScraper(&mtgmatcher.Backend{Game: tt.game})
 			if err != nil {
 				t.Fatal(err)
 			}

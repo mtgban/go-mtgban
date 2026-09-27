@@ -2,12 +2,10 @@ package cardmarket
 
 import (
 	"os"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -135,19 +133,19 @@ func TestCheckCatalog(t *testing.T) {
 
 	for _, tt := range []struct {
 		name    string
-		game    mtgban.Game
+		game    mtgmatcher.Game
 		catalog *cm.Catalog
 		usable  bool
 	}{
-		{"one piece coded", mtgban.GameOnePiece, coded, true},
-		{"one piece bare", mtgban.GameOnePiece, bare, false},
-		{"yugioh bare", mtgban.GameYuGiOh, bare, false},
-		{"fab coded", mtgban.GameFleshAndBlood, coded, true},
-		{"fab bare", mtgban.GameFleshAndBlood, bare, false},
-		{"magic bare", mtgban.GameMagic, bare, true},
-		{"magic none", mtgban.GameMagic, nil, false},
+		{"one piece coded", mtgmatcher.GameOnePiece, coded, true},
+		{"one piece bare", mtgmatcher.GameOnePiece, bare, false},
+		{"yugioh bare", mtgmatcher.GameYuGiOh, bare, false},
+		{"fab coded", mtgmatcher.GameFleshAndBlood, coded, true},
+		{"fab bare", mtgmatcher.GameFleshAndBlood, bare, false},
+		{"magic bare", mtgmatcher.GameMagic, bare, true},
+		{"magic none", mtgmatcher.GameMagic, nil, false},
 	} {
-		mkm, err := NewScraperIndex(&mtgmatcher.Backend{Game: strings.ToLower(string(tt.game))})
+		mkm, err := NewScraperIndex(&mtgmatcher.Backend{Game: tt.game})
 		if err != nil {
 			t.Fatalf("%s: NewScraperIndex(%v) = %v", tt.name, tt.game, err)
 		}

@@ -17,7 +17,7 @@ type Constructor func(b *mtgmatcher.Backend, opts Options) (Scraper, error)
 
 type registration struct {
 	name  string
-	games []Game
+	games []mtgmatcher.Game
 	build Constructor
 }
 
@@ -27,7 +27,7 @@ var registeredScrapers []registration
 // it prices, in the style of database/sql's Register. A scraper package
 // calls it from init, so importing the package is what puts its scrapers
 // within NewScraper's reach. Registering a name twice for one game panics.
-func Register(name string, games []Game, build Constructor) {
+func Register(name string, games []mtgmatcher.Game, build Constructor) {
 	if build == nil {
 		panic("mtgban: Register constructor is nil for " + name)
 	}
@@ -46,7 +46,7 @@ func Register(name string, games []Game, build Constructor) {
 	})
 }
 
-func lookup(game Game, name string) (registration, bool) {
+func lookup(game mtgmatcher.Game, name string) (registration, bool) {
 	for _, reg := range registeredScrapers {
 		if reg.name == name && slices.Contains(reg.games, game) {
 			return reg, true
@@ -56,7 +56,7 @@ func lookup(game Game, name string) (registration, bool) {
 }
 
 // Registered lists the names registered for a game, sorted.
-func Registered(game Game) []string {
+func Registered(game mtgmatcher.Game) []string {
 	var names []string
 	for _, reg := range registeredScrapers {
 		if slices.Contains(reg.games, game) {
@@ -67,19 +67,16 @@ func Registered(game Game) []string {
 	return names
 }
 
-// GameOf names the game a datastore was loaded for. mtgmatcher spells the
-// name its loader registered in lowercase ("magic") and Game capitalizes it,
-// so the two are compared without case.
-func GameOf(b *mtgmatcher.Backend) (Game, error) {
+// GameOf returns the game a datastore was loaded for, refusing a datastore
+// that names no game or one mtgban does not price.
+func GameOf(b *mtgmatcher.Backend) (mtgmatcher.Game, error) {
 	if b.Game == "" {
 		return "", errors.New("mtgban: the datastore names no game")
 	}
-	for _, game := range AllGames {
-		if strings.EqualFold(string(game), b.Game) {
-			return game, nil
-		}
+	if !slices.Contains(mtgmatcher.AllGames, b.Game) {
+		return "", fmt.Errorf("mtgban: the datastore's game %q is not one mtgban prices", b.Game)
 	}
-	return "", fmt.Errorf("mtgban: the datastore's game %q is not one mtgban prices", b.Game)
+	return b.Game, nil
 }
 
 // NewScraper builds the named scraper against the datastore, configured and

@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
@@ -67,7 +66,7 @@ func TestPreprocessPokemonRespelling(t *testing.T) {
 			SelectedFinish: tt.finish,
 			ProductData:    GNProductData{SetName: tt.setName},
 		}
-		card, err := preprocess(b, product, mtgban.GamePokemon)
+		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
 		if err != nil {
 			t.Errorf("%q: unexpected error %v", tt.displayName, err)
 			continue

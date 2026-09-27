@@ -32,7 +32,7 @@ type TCGGame struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
-	game                mtgban.Game
+	game                mtgmatcher.Game
 
 	productTypes []string
 
@@ -60,15 +60,15 @@ func (tcg *TCGGame) printf(format string, a ...any) {
 // TCGplayer category carrying it. Magic is deliberately absent: it is
 // identified by SKU and has its own scrapers. Supporting one more game is one
 // entry here, provided the matcher has a datastore for it.
-var tcgGames = map[mtgban.Game]int{
-	mtgban.GameLorcana:       tcgplayer.CategoryLorcana,
-	mtgban.GameRiftbound:     tcgplayer.CategoryRiftbound,
-	mtgban.GameOnePiece:      tcgplayer.CategoryOnePiece,
-	mtgban.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
-	mtgban.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
-	mtgban.GamePokemon:       tcgplayer.CategoryPokemon,
-	mtgban.GameGundam:        tcgplayer.CategoryGundam,
-	mtgban.GamePalworld:      tcgplayer.CategoryPalworld,
+var tcgGames = map[mtgmatcher.Game]int{
+	mtgmatcher.GameLorcana:       tcgplayer.CategoryLorcana,
+	mtgmatcher.GameRiftbound:     tcgplayer.CategoryRiftbound,
+	mtgmatcher.GameOnePiece:      tcgplayer.CategoryOnePiece,
+	mtgmatcher.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
+	mtgmatcher.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
+	mtgmatcher.GamePokemon:       tcgplayer.CategoryPokemon,
+	mtgmatcher.GameGundam:        tcgplayer.CategoryGundam,
+	mtgmatcher.GamePalworld:      tcgplayer.CategoryPalworld,
 }
 
 // NewScraperGame returns a singles scraper for one game, authenticated with a

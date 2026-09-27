@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -48,7 +47,7 @@ func realDatastore(t *testing.T) *mtgmatcher.Backend {
 func TestPreprocess(t *testing.T) {
 	b := realDatastore(t)
 	tests := []struct {
-		game    mtgban.Game
+		game    mtgmatcher.Game
 		product GNProduct
 
 		name      string
@@ -63,7 +62,7 @@ func TestPreprocess(t *testing.T) {
 			// wording is one of the two ways this storefront spells it,
 			// and the only one on a Modern Horizons 2 retro frame, whose
 			// number carries all three finishes at once.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Aeromoeba (Retro Frame) (Foil Etched) (MH2-389) - Modern Horizons 2 Foil",
 				SelectedFinish: "foil",
@@ -76,7 +75,7 @@ func TestPreprocess(t *testing.T) {
 		},
 		{
 			// The other way is the segment the sku carries.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Aeromoeba (MH2-389) - Modern Horizons 2 Etched Foil",
 				SelectedFinish: "foil",
@@ -93,7 +92,7 @@ func TestPreprocess(t *testing.T) {
 			// Foil" on ordinary foils too, and every product that claims
 			// it there and nowhere else is a second listing of a foil
 			// sibling at the same price.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Arid Mesa - Modern Horizons 2 Etched Foil",
 				SelectedFinish: "foil",
@@ -108,7 +107,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// A card whose only finish is etched answers by number alone
 			// and must not be moved off it.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Abbot of Keral Keep (2X2-446) - Double Masters 2022 Etched Foil",
 				SelectedFinish: "foil",
@@ -124,7 +123,7 @@ func TestPreprocess(t *testing.T) {
 			// A prerelease stamp, filed under the pseudo-set with the
 			// card's own number: naming the stamp reaches the printing
 			// the shelf means, whatever set that printing belongs to.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Avatar of Hope (PRE-003) - Prophecy Promos Foil",
 				SelectedFinish: "foil",
@@ -140,7 +139,7 @@ func TestPreprocess(t *testing.T) {
 			// which names no set; the shelf's name is the catalog's own
 			// name for it, and a number with no promo-pack letter still
 			// means the pack, since prereleases shelve elsewhere.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName: "Purphoros, Bronze-Blooded (PPTHB-150) - Theros Beyond Death Promos: (enchantment)",
 				ProductData: GNProductData{Set: "ppthb", CatalogSet: "Theros Beyond Death Promos"},
@@ -154,7 +153,7 @@ func TestPreprocess(t *testing.T) {
 			// different fields, and only the second one names a set: this
 			// product is shelved under "Promo Pack: Theros Beyond Death",
 			// which the catalog knows nothing by.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName: "Archon of Sun's Grace (PPTHB-003) - Theros Beyond Death Promos",
 				ProductData: GNProductData{
@@ -170,7 +169,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// The same shelf, where the number already carries the letter
 			// the catalog files the pack under: it answers as it is.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName: "Atris, Oracle of Half-Truths (PPTHB-209P) - Theros Beyond Death Promos",
 				ProductData: GNProductData{Set: "ppthb", CatalogSet: "Theros Beyond Death Promos"},
@@ -183,7 +182,7 @@ func TestPreprocess(t *testing.T) {
 			// An ordinary card the storefront shelved as a stamp by
 			// mistake. No stamped printing to reach, so the reading it
 			// already had stands.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName: "Culling Scales (MRD-160) - Mirrodin",
 				ProductData: GNProductData{Set: "pre", SetName: "Prerelease Cards"},
@@ -193,7 +192,7 @@ func TestPreprocess(t *testing.T) {
 			variation: "160",
 		},
 		{
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Teferi, Time Raveler (PPELD-221P) - War of the Spark",
 				SelectedFinish: "nonfoil",
@@ -204,7 +203,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// The name stops at the first parenthesis, and the number tag is
 			// the last one, past the bare display number the name also shows.
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Aang, Air Nomad (0265) (TLE-265) - Avatar: The Last Airbender: Eternal Decks Foil",
 				SelectedFinish: "foil",
@@ -213,7 +212,7 @@ func TestPreprocess(t *testing.T) {
 			name: "Aang, Air Nomad", edition: "TLE", variation: "265", foil: true,
 		},
 		{
-			game: mtgban.GameMagic,
+			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Aang's Shelter - Teferi's Protection (Borderless) (TLE-007) - Avatar",
 				SelectedFinish: "nonfoil",
@@ -222,7 +221,7 @@ func TestPreprocess(t *testing.T) {
 			name: "Aang's Shelter - Teferi's Protection", edition: "TLE", variation: "007",
 		},
 		{
-			game: mtgban.GameLorcana,
+			game: mtgmatcher.GameLorcana,
 			product: GNProduct{
 				DisplayName:    "4*Town - Hottest Band of the Year (17/204) - Attack of the Vine",
 				SelectedFinish: "Normal",
@@ -231,7 +230,7 @@ func TestPreprocess(t *testing.T) {
 			name: "4*Town - Hottest Band of the Year", edition: "Attack of the Vine", variation: "17",
 		},
 		{
-			game: mtgban.GameLorcana,
+			game: mtgmatcher.GameLorcana,
 			product: GNProduct{
 				DisplayName:    "99 Puppies (24/204) - Into the Inklands Cold Foil",
 				SelectedFinish: "Cold Foil",
@@ -243,7 +242,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// A promo shelf that publishes no set size writes the number
 			// alone.
-			game: mtgban.GameLorcana,
+			game: mtgmatcher.GameLorcana,
 			product: GNProduct{
 				DisplayName:    "Bruno Madrigal - Undetected Uncle (4) - D23 Promos Holofoil",
 				SelectedFinish: "Holofoil",
@@ -256,7 +255,7 @@ func TestPreprocess(t *testing.T) {
 			// A promo card's own wording brackets a qualifier ahead of the
 			// number, and the number's denominator is the promo set's own
 			// number rather than a plain total.
-			game: mtgban.GameLorcana,
+			game: mtgmatcher.GameLorcana,
 			product: GNProduct{
 				DisplayName:    "Minnie Mouse - Pirate Lookout (Disney Cruise Promo) (17/P3) - Disney Lorcana Promo Cards Holofoil",
 				SelectedFinish: "Holofoil",
@@ -267,7 +266,7 @@ func TestPreprocess(t *testing.T) {
 		},
 		{
 			// A doubled slash ahead of the set size.
-			game: mtgban.GameLorcana,
+			game: mtgmatcher.GameLorcana,
 			product: GNProduct{
 				DisplayName:    "Rafiki - Mystical Fighter (54//204) - Into the Inklands",
 				SelectedFinish: "Normal",
@@ -276,7 +275,7 @@ func TestPreprocess(t *testing.T) {
 			name: "Rafiki - Mystical Fighter", edition: "Into the Inklands", variation: "54",
 		},
 		{
-			game: mtgban.GamePokemon,
+			game: mtgmatcher.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Abra 65/130 - Base Set 2",
 				SelectedFinish: "Normal",
@@ -285,7 +284,7 @@ func TestPreprocess(t *testing.T) {
 			name: "Abra", edition: "Base Set 2", variation: "65/130",
 		},
 		{
-			game: mtgban.GamePokemon,
+			game: mtgmatcher.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Abra 63 - SV Scarlet and Violet 151 Reverse Holofoil",
 				SelectedFinish: "Reverse Holofoil",
@@ -298,7 +297,7 @@ func TestPreprocess(t *testing.T) {
 			// A card whose own name ends in something number-shaped. The
 			// number written over the set's size is the collector number,
 			// and the suffix in front of it belongs to the name.
-			game: mtgban.GamePokemon,
+			game: mtgmatcher.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Alakazam E4 38/111 - Rising Rivals",
 				SelectedFinish: "Normal",
@@ -307,7 +306,7 @@ func TestPreprocess(t *testing.T) {
 			name: "Alakazam E4", edition: "Rising Rivals", variation: "38/111",
 		},
 		{
-			game: mtgban.GamePokemon,
+			game: mtgmatcher.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Energy Removal 2 80/109 - Ruby  Sapphire",
 				SelectedFinish: "Normal",
@@ -319,7 +318,7 @@ func TestPreprocess(t *testing.T) {
 			// The catalog's own number repeated behind the printed one, and
 			// the wording between them. The name ends at the printed number
 			// whether or not a dash of its own opens the description.
-			game: mtgban.GamePokemon,
+			game: mtgmatcher.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Dragonite 149/165 (Cosmos Holo) 149 - Miscellaneous Cards  Products Holofoil",
 				SelectedFinish: "Holofoil",
@@ -330,7 +329,7 @@ func TestPreprocess(t *testing.T) {
 		},
 		{
 			// A shelf whose numbers are letters.
-			game: mtgban.GamePokemon,
+			game: mtgmatcher.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Unown Z/115 - Unseen Forces Holofoil",
 				SelectedFinish: "Holofoil",
@@ -342,7 +341,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// The symbol this storefront prints where the catalog writes
 			// the letter.
-			game: mtgban.GamePokemon,
+			game: mtgmatcher.GamePokemon,
 			product: GNProduct{
 				DisplayName:    "Nidoran ♀ 81/144 - Skyridge",
 				SelectedFinish: "Normal",
@@ -355,7 +354,7 @@ func TestPreprocess(t *testing.T) {
 			// qualifier gets parentheses. Left as it is the matcher reads no
 			// place at all and answers with the printing awarded none, which
 			// at this number is a $4 card standing against a $558 one.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName: "Monkey.D.Luffy (Offline Regional 2024 Vol. 2) [Finalist] (P-041) One Piece Promotion Cards",
 				ProductData: GNProductData{SetName: "One Piece Promotion Cards"},
@@ -367,7 +366,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// Variant wording before the code stays in the name for the
 			// matcher to read.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName:    "Ama no Murakumo Sword (Jolly Roger Foil) (OP06-056) Premium Booster -The Best-",
 				SelectedFinish: "Foil",
@@ -379,7 +378,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// The Premium Booster listings write the code twice, around the
 			// variant wording; the earlier copy is shed, the wording stays.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName:    "Baby 5 (OP04-032) (Jolly Roger Foil) (OP04-032) Premium Booster -The Best- Foil",
 				SelectedFinish: "Foil",
@@ -392,7 +391,7 @@ func TestPreprocess(t *testing.T) {
 			// A DON!! listing carries no card code at all - the catalog
 			// files every one as "DON!! Card" and tells them apart by the
 			// wording between the name and the shelf's double space.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName:    "DON!! Card (Ace)  Premium Booster -The Best- Foil",
 				SelectedFinish: "Foil",
@@ -402,7 +401,7 @@ func TestPreprocess(t *testing.T) {
 		},
 		{
 			// A set's own DON!! carries no wording at all.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName: "DON!! Card  Paramount War",
 				ProductData: GNProductData{SetName: "Paramount War"},
@@ -411,7 +410,7 @@ func TestPreprocess(t *testing.T) {
 		},
 		{
 			// Two DON!! qualifiers stack in their own parens.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName:    "DON!! Card (2Y) (Double Pack Set Vol. 8)  Legacy of the Master Foil",
 				SelectedFinish: "Foil",
@@ -422,7 +421,7 @@ func TestPreprocess(t *testing.T) {
 		{
 			// Two DON!! listings carry a "//" as part of the card's own
 			// name, which the catalog files literally.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName: "DON!! Card // Green Compass  Starter Deck 1: Straw Hat Crew",
 				ProductData: GNProductData{SetName: "Starter Deck 1: Straw Hat Crew"},
@@ -431,7 +430,7 @@ func TestPreprocess(t *testing.T) {
 		},
 		{
 			// A code padded with a trailing space before the parenthesis.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName: "Tony Tony.Chopper (Store Tournament 2025 Vol. 4) (P-101 ) One Piece Promotion Cards",
 				ProductData: GNProductData{SetName: "One Piece Promotion Cards"},
@@ -443,7 +442,7 @@ func TestPreprocess(t *testing.T) {
 			// The Extra Booster dash packs write the code bare off the
 			// name's own dash, with the variant wording trailing it rather
 			// than leading it.
-			game: mtgban.GameOnePiece,
+			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{
 				DisplayName:    "Koala - OP05-006 (Dash Pack) Extra Booster: One Piece Heroines Edition Foil",
 				SelectedFinish: "Foil",
@@ -453,7 +452,7 @@ func TestPreprocess(t *testing.T) {
 			variation: "OP05-006", foil: true,
 		},
 		{
-			game:    mtgban.GameLorcana,
+			game:    mtgmatcher.GameLorcana,
 			product: GNProduct{DisplayName: "Illumineer's Trove - Sapphire and Steel"},
 			err:     true,
 		},

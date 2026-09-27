@@ -79,15 +79,12 @@ type scraperOption struct {
 // scraperFlagName is the external name a target is known by: the store's own
 // name for Magic, and store+"_"+game for every other game - the name every
 // workflow and -scrapers/-sellers/-vendors caller already uses. It is the one
-// place that composes the two; nowhere else needs to. mtgmatcher registers
-// its loaders and bantool names its flags in lowercase, where mtgban.Game
-// spells every constant capitalized, so lowercasing it is the one conversion
-// this needs.
-func scraperFlagName(game mtgban.Game, name string) string {
-	if game == mtgban.GameMagic {
+// place that composes the two; nowhere else needs to.
+func scraperFlagName(game mtgmatcher.Game, name string) string {
+	if game == mtgmatcher.GameMagic {
 		return name
 	}
-	return name + "_" + strings.ToLower(string(game))
+	return name + "_" + string(game)
 }
 
 // flattenOptions indexes every game's scrapers under the name each is enabled
@@ -102,7 +99,7 @@ func scraperFlagName(game mtgban.Game, name string) string {
 // pointer a random map iteration happened to write last - for a run that
 // refuses to start at all, which is the failure worth having for a registry
 // nothing else checks.
-func flattenOptions(options map[mtgban.Game]map[string]*scraperOption) map[string]*scraperOption {
+func flattenOptions(options map[mtgmatcher.Game]map[string]*scraperOption) map[string]*scraperOption {
 	flat := make(map[string]*scraperOption)
 	for game, scrapers := range options {
 		for name, opt := range scrapers {
@@ -120,8 +117,8 @@ func flattenOptions(options map[mtgban.Game]map[string]*scraperOption) map[strin
 // runGame names the one game the enabled scrapers price. A run loads one
 // datastore and opens it by that name rather than trying every game's
 // loader on it, so enabling scrapers of two games is refused up front.
-func runGame(options map[mtgban.Game]map[string]*scraperOption) (mtgban.Game, error) {
-	var games []mtgban.Game
+func runGame(options map[mtgmatcher.Game]map[string]*scraperOption) (mtgmatcher.Game, error) {
+	var games []mtgmatcher.Game
 	for game, scrapers := range options {
 		for _, opt := range scrapers {
 			if opt.Enabled {
@@ -138,7 +135,7 @@ func runGame(options map[mtgban.Game]map[string]*scraperOption) (mtgban.Game, er
 	}
 	names := make([]string, len(games))
 	for i, game := range games {
-		names[i] = strings.ToLower(string(game))
+		names[i] = string(game)
 	}
 	slices.Sort(names)
 	return "", fmt.Errorf("the enabled scrapers price %s, and a run loads one datastore", strings.Join(names, " and "))
@@ -151,7 +148,7 @@ func runGame(options map[mtgban.Game]map[string]*scraperOption) (mtgban.Game, er
 // sealed alike, so the same bridge serves both cardmarket scrapers; they
 // receive it as plain data, and the composition of the two vendors happens
 // here and nowhere else.
-func cardtraderBridge(game mtgban.Game) (map[int]int, error) {
+func cardtraderBridge(game mtgmatcher.Game) (map[int]int, error) {
 	ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 	if ctTokenBearer == "" {
 		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
@@ -182,9 +179,9 @@ func cardtraderBridge(game mtgban.Game) (map[int]int, error) {
 // halves; three targets across the whole registry do not answer for one of
 // them, and are marked here rather than left for a run to find out the hard
 // way.
-func targets() map[mtgban.Game]map[string]*scraperOption {
-	all := make(map[mtgban.Game]map[string]*scraperOption)
-	for _, game := range mtgban.AllGames {
+func targets() map[mtgmatcher.Game]map[string]*scraperOption {
+	all := make(map[mtgmatcher.Game]map[string]*scraperOption)
+	for _, game := range mtgmatcher.AllGames {
 		scrapers := make(map[string]*scraperOption)
 		for _, name := range mtgban.Registered(game) {
 			scrapers[name] = &scraperOption{}
@@ -194,10 +191,10 @@ func targets() map[mtgban.Game]map[string]*scraperOption {
 
 	// The store keeps no Magic singles shelf - not one variant in 960 sampled
 	// had stock - so only the half it does answer for is asked here.
-	all[mtgban.GameMagic]["vegassingles"].OnlyVendor = true
-	all[mtgban.GameMagic]["mtgseattle"].OnlySeller = true
-	all[mtgban.GameYuGiOh]["coolstuffinc_sealed"].OnlySeller = true
-	all[mtgban.GameLorcana]["coolstuffinc_sealed"].OnlySeller = true
+	all[mtgmatcher.GameMagic]["vegassingles"].OnlyVendor = true
+	all[mtgmatcher.GameMagic]["mtgseattle"].OnlySeller = true
+	all[mtgmatcher.GameYuGiOh]["coolstuffinc_sealed"].OnlySeller = true
+	all[mtgmatcher.GameLorcana]["coolstuffinc_sealed"].OnlySeller = true
 
 	return all
 }
@@ -262,7 +259,7 @@ func tcgSYPCatalog() (tcgplayer.SYPCatalog, error) {
 // beyond its own secrets and flags, and wraps each as the typed
 // mtgban.Option its package exports. Loading stays bantool's job; the
 // constructor a key registered receives loaded data only.
-func scraperResources(game mtgban.Game, key string) ([]mtgban.Option, error) {
+func scraperResources(game mtgmatcher.Game, key string) ([]mtgban.Option, error) {
 	var opts []mtgban.Option
 
 	switch key {
@@ -305,7 +302,7 @@ func scraperResources(game mtgban.Game, key string) ([]mtgban.Option, error) {
 		opts = append(opts, cardmarket.WithBridge(bridge))
 
 	case "tcg_market", "tcg_sealed":
-		if game != mtgban.GameMagic {
+		if game != mtgmatcher.GameMagic {
 			break
 		}
 		skus, err := tcgSKUs()
@@ -355,7 +352,7 @@ func (envAuthenticator) Secret(name string) (string, error) {
 // target); and any catalog, sku list or bridge scraperResources loads.
 // Secrets are not read here either: envAuthenticator goes along as an
 // option and answers each constructor's own Secret* names directly.
-func scraperOptions(game mtgban.Game, key string, opt *scraperOption, maxConcurrency int) ([]mtgban.Option, error) {
+func scraperOptions(game mtgmatcher.Game, key string, opt *scraperOption, maxConcurrency int) ([]mtgban.Option, error) {
 	opts := []mtgban.Option{
 		mtgban.WithLogCallback(log.Printf),
 		mtgban.WithAuthenticator(envAuthenticator{}),
@@ -864,12 +861,12 @@ func run() int {
 	defer datastoreReader.Close()
 
 	now := time.Now()
-	backend, err := mtgmatcher.Open(strings.ToLower(string(game)), datastoreReader)
+	backend, err := mtgmatcher.Open(game, datastoreReader)
 	if err != nil {
 		log.Println(err)
 		return 1
 	}
-	log.Printf("loading datastore took: %v (%s)", time.Since(now), strings.ToLower(string(game)))
+	log.Printf("loading datastore took: %v (%s)", time.Since(now), game)
 
 	var scrapers []mtgban.Scraper
 

@@ -31,12 +31,12 @@ const (
 // szGames is what NewScraper is built through: it names the storefront
 // category a game is filed under, and a game named nowhere here is not one
 // Strike Zone is read for.
-var szGames = map[mtgban.Game]string{
-	mtgban.GameMagic:         GameMagic,
-	mtgban.GameLorcana:       GameLorcana,
-	mtgban.GamePokemon:       GamePokemon,
-	mtgban.GameYuGiOh:        GameYuGiOh,
-	mtgban.GameFleshAndBlood: GameFleshAndBlood,
+var szGames = map[mtgmatcher.Game]string{
+	mtgmatcher.GameMagic:         GameMagic,
+	mtgmatcher.GameLorcana:       GameLorcana,
+	mtgmatcher.GamePokemon:       GamePokemon,
+	mtgmatcher.GameYuGiOh:        GameYuGiOh,
+	mtgmatcher.GameFleshAndBlood: GameFleshAndBlood,
 }
 
 // lorcanaNameTable resolves a bare name this storefront lists without its
@@ -106,7 +106,7 @@ type Strikezone struct {
 	disableBuylist bool
 
 	backend *mtgmatcher.Backend
-	game    mtgban.Game
+	game    mtgmatcher.Game
 	shelf   string
 	client  *http.Client
 }
@@ -270,7 +270,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	// handling below are shared.
 	var theCard *mtgmatcher.InputCard
 	switch sz.game {
-	case mtgban.GameMagic:
+	case mtgmatcher.GameMagic:
 		if mode == modeRetail {
 			notes = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
 			cond = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
@@ -288,7 +288,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 			return nil
 		}
 		theCard = c
-	case mtgban.GameLorcana:
+	case mtgmatcher.GameLorcana:
 		notes = strings.TrimSpace(el.Find("td:nth-child(2)").Text())
 		cond = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
 		qty = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
@@ -296,7 +296,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
 		theCard = &mtgmatcher.InputCard{Name: lorcanaListing(cardName), Edition: edition, Variation: notes, Foil: foil}
-	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
+	case mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh, mtgmatcher.GameFleshAndBlood:
 		number := strings.TrimSpace(el.Find("td:nth-child(2)").Text())
 		cond = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
 		qty = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
@@ -312,7 +312,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	}
 
 	cardID, err := sz.backend.Match(theCard)
-	if sz.game == mtgban.GameMagic {
+	if sz.game == mtgmatcher.GameMagic {
 		var alias *mtgmatcher.AliasingError
 		if errors.As(err, &alias) {
 			id := resolvePremiumFoilTiebreak(sz.backend, theCard.Variation, alias.Probe())
@@ -342,7 +342,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		return err
 	}
 
-	if sz.game == mtgban.GameMagic {
+	if sz.game == mtgmatcher.GameMagic {
 		co, coErr := sz.backend.GetUUID(cardID)
 		if coErr == nil && (namesAbsentTreatment(theCard.Variation, co) ||
 			wearsUnnamedTextured(sz.backend, theCard.Variation, co) ||
@@ -419,12 +419,12 @@ func (sz *Strikezone) parseRows(doc *goquery.Document, pageURL, mode string, cha
 	// Only the Magic categories render the denser rtti table; every
 	// other game lists retail and buylist alike in the generic one.
 	tableRowName := "table.rtti tr"
-	if mode == modeBuylist || sz.game != mtgban.GameMagic {
+	if mode == modeBuylist || sz.game != mtgmatcher.GameMagic {
 		tableRowName = "table.ItemTable tr"
 	}
 
 	var foilSiblings map[string]bool
-	if sz.game == mtgban.GameMagic {
+	if sz.game == mtgmatcher.GameMagic {
 		foilSiblings = magicFoilSiblings(doc, tableRowName)
 	}
 
@@ -466,7 +466,7 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		link = fmt.Sprintf(szInventoryURL, sz.shelf)
 		// The storefront files the Flesh and Blood singles under a bare
 		// name no other game shares, instead of its own prefixed one.
-		if sz.game == mtgban.GameFleshAndBlood {
+		if sz.game == mtgmatcher.GameFleshAndBlood {
 			link = "http://shop.strikezoneonline.com/Category/Singles.html"
 		}
 	} else if mode == modeBuylist {

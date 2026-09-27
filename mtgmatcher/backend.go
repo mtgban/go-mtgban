@@ -305,7 +305,7 @@ type Backend struct {
 	// package registered it ("magic", "pokemon"): what a scraper built on
 	// this backend prices. A backend assembled by hand carries whatever its
 	// builder wrote here, and nothing until it does.
-	Game string
+	Game Game
 
 	// Logger receives the matcher's diagnostics: which finish a listing
 	// named that the game does not, which candidates an id lookup found.

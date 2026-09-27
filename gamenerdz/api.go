@@ -112,7 +112,7 @@ type GNClient struct {
 }
 
 // NewGNClient returns a client for one product line, in the storefront's own
-// spelling - what gnGames translates an mtgban.Game into, and what
+// spelling - what gnGames translates an mtgmatcher.Game into, and what
 // NewScraper hands down.
 func NewGNClient(productLine string) *GNClient {
 	gn := GNClient{}

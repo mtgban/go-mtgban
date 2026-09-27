@@ -31,7 +31,7 @@ type Miniaturemarket struct {
 	inventory     mtgban.InventoryRecord
 	productMap    map[string]string
 	backend       *mtgmatcher.Backend
-	game          mtgban.Game
+	game          mtgmatcher.Game
 	widget        string
 }
 
@@ -41,13 +41,13 @@ type Miniaturemarket struct {
 // which serves the paginated product listing the scraper walks; unlike the
 // other storefronts there is no separate shelf name to expose, since the
 // widget id is the only thing a request ever carries.
-var mmGames = map[mtgban.Game]string{
-	mtgban.GameMagic:         "be53d253d6bc3258a8160556dda3e9b2",
-	mtgban.GameLorcana:       "4e0223a87610176ef0d24ef6d2dcde3a",
-	mtgban.GameRiftbound:     "019be122ca9779e5af00a663d064f775",
-	mtgban.GameOnePiece:      "f7ac67a9aa8d255282de7d11391e1b69",
-	mtgban.GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
-	mtgban.GameGundam:        "019be1227c9b730eb41abadcdd09015a",
+var mmGames = map[mtgmatcher.Game]string{
+	mtgmatcher.GameMagic:         "be53d253d6bc3258a8160556dda3e9b2",
+	mtgmatcher.GameLorcana:       "4e0223a87610176ef0d24ef6d2dcde3a",
+	mtgmatcher.GameRiftbound:     "019be122ca9779e5af00a663d064f775",
+	mtgmatcher.GameOnePiece:      "f7ac67a9aa8d255282de7d11391e1b69",
+	mtgmatcher.GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
+	mtgmatcher.GameGundam:        "019be1227c9b730eb41abadcdd09015a",
 }
 
 // NewScraperSealed returns a sealed scraper for the datastore's game.
@@ -109,8 +109,8 @@ var fabDeckSet = regexp.MustCompile(`\s+Deck - Set of \d+`)
 // prefix and parentheticals only decorate, and the bracket code either
 // carries the deck number the canon leads with, or restates a set the rest
 // of the name already spells.
-func sealedName(game mtgban.Game, name string) string {
-	if game == mtgban.GameFleshAndBlood {
+func sealedName(game mtgmatcher.Game, name string) string {
+	if game == mtgmatcher.GameFleshAndBlood {
 		name = strings.TrimPrefix(name, "Flesh & Blood TCG: ")
 		name = fabPackCount.ReplaceAllString(name, "")
 		// The canon spells an unlimited printing as a bracketed edition at
@@ -132,7 +132,7 @@ func sealedName(game mtgban.Game, name string) string {
 		}
 		return strings.TrimSpace(name)
 	}
-	if game == mtgban.GameGundam {
+	if game == mtgmatcher.GameGundam {
 		name = strings.TrimPrefix(name, "GUNDAM Card Game: ")
 		name = gundamDecorations.ReplaceAllString(name, "")
 
@@ -159,7 +159,7 @@ func sealedName(game mtgban.Game, name string) string {
 		return strings.TrimSpace(name)
 	}
 
-	if game != mtgban.GameOnePiece {
+	if game != mtgmatcher.GameOnePiece {
 		return name
 	}
 
@@ -312,7 +312,7 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 	if uuid, found := mm.productMap[id]; found {
 		return uuid, ""
 	}
-	if mm.game == mtgban.GameMagic {
+	if mm.game == mtgmatcher.GameMagic {
 		return "", "no datastore id"
 	}
 	name := strings.TrimSpace(sealedName(mm.game, listed))
@@ -482,7 +482,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
 	}
 	mm.printf("Loaded %d sealed products", len(mm.productMap))
-	if mm.game != mtgban.GameMagic {
+	if mm.game != mtgmatcher.GameMagic {
 		mm.printf("Resolving %s products by name", mm.game)
 	}
 

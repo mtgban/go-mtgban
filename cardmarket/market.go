@@ -65,7 +65,7 @@ type Market struct {
 	// touches it.
 	bounced int
 
-	game mtgban.Game
+	game mtgmatcher.Game
 }
 
 func (mkm *Market) printf(format string, a ...any) {

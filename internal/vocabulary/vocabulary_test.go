@@ -167,7 +167,7 @@ func TestLoadersReadWhatIsPublished(t *testing.T) {
 		if path == "" {
 			continue
 		}
-		t.Run(game, func(t *testing.T) {
+		t.Run(string(game), func(t *testing.T) {
 			stated, err := ReadPublished(path)
 			switch {
 			case errors.Is(err, os.ErrNotExist):

@@ -116,12 +116,13 @@ both. Pin this in `base_test.go` before touching the add path.
 
 `ScraperInfo` carries identity (`Name`, `Shorthand`, `CountryFlag`, and
 `Game`) plus behavior flags consumed by the analysis layer. `Game` is of type
-`mtgban.Game`, a named string whose values are the constants `mtgban.GameMagic`,
-`GameLorcana`, `GameRiftbound` and the rest (`mtgban.AllGames` lists all nine).
+`mtgmatcher.Game`, the game's own lowercase name, the one its datastore loader
+registers under: the constants `mtgmatcher.GameMagic`, `GameLorcana`,
+`GameRiftbound` and the rest (`mtgmatcher.AllGames` lists all nine).
 Every scraper sets `Game` explicitly, `GameMagic` included: the zero value
 names no real game, so an unset field is a bug to fix rather than a reading
 of Magic. Giving it a type of its own is what settles which naming a scraper is *built*
-from: a multi-game scraper takes an `mtgban.Game`, converts it to the vendor's
+from: a multi-game scraper takes an `mtgmatcher.Game`, converts it to the vendor's
 own naming through one unexported map, and sets `Game` back from the typed
 value it was handed. The vendor's spellings stay exported — each package's API
 helpers take one — but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
@@ -910,8 +911,8 @@ row.
 | Package | Service & auth | Notes |
 |---|---|---|
 | `tcgplayer` | OAuth via `go-tcgplayer` + cookie-authed marketplace APIs | Largest: Market/Index/Sealed/SYP-list/per-seller scrapers, plus the table-driven single-game pair (see below); SKU map keyed by UUID; TCG Direct modeled as a Vendor with net-after-fees pricing |
-| `cardmarket` | OAuth 1.0 HMAC-SHA1 (gentle retry) | `CardMarketIndex` is a **Market** (`MarketNames → MKM Low/Trend`, `MetadataOnly`, `Family="MKM"`); EUR→USD; all eight non-Magic games, each built from an `mtgban.Game` and mapped to Cardmarket's id inside the package; `CardMarketSealed` separate |
-| `cardtrader` | Bearer token | `CardtraderMarket` (**Market**, 3 seller tiers, `Family="CT"`, `CountryFlag="EU"`); all eight non-Magic games, each built from an `mtgban.Game` and mapped to Card Trader's id inside the package; `CardtraderSealed` mirror; bulk upload + cart APIs |
+| `cardmarket` | OAuth 1.0 HMAC-SHA1 (gentle retry) | `CardMarketIndex` is a **Market** (`MarketNames → MKM Low/Trend`, `MetadataOnly`, `Family="MKM"`); EUR→USD; all eight non-Magic games, each built from an `mtgmatcher.Game` and mapped to Cardmarket's id inside the package; `CardMarketSealed` separate |
+| `cardtrader` | Bearer token | `CardtraderMarket` (**Market**, 3 seller tiers, `Family="CT"`, `CountryFlag="EU"`); all eight non-Magic games, each built from an `mtgmatcher.Game` and mapped to Card Trader's id inside the package; `CardtraderSealed` mirror; bulk upload + cart APIs |
 | `cardkingdom` | Public pricelist via `go-cardkingdom` (file/URL-fed, no own client) | Full 4-condition buylist with price ratios; `CreditMultiplier 1.3`; singles + `sealed.go` + `graded.go` are three scrapers |
 | `manapool` | Public JSON API | Exactly two scrapers: `Manapool` (aggregate, `MatchID` by Scryfall id, `NoQuantityInventory`) and `ManapoolSealed` |
 | `arcanafrisia` | Public buylist endpoint | Buylist-only EU vendor, shorthand `AF`; matches by Scryfall id and maps the store's NM/EX/GD grades onto NM/SP/MP |
@@ -923,15 +924,15 @@ row.
 table:
 
 ```go
-var tcgGames = map[mtgban.Game]int{
-    mtgban.GameLorcana:       tcgplayer.CategoryLorcana,
-    mtgban.GameRiftbound:     tcgplayer.CategoryRiftbound,
-    mtgban.GameOnePiece:      tcgplayer.CategoryOnePiece,
-    mtgban.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
-    mtgban.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
-    mtgban.GamePokemon:       tcgplayer.CategoryPokemon,
-    mtgban.GameGundam:        tcgplayer.CategoryGundam,
-    mtgban.GamePalworld:      tcgplayer.CategoryPalworld,
+var tcgGames = map[mtgmatcher.Game]int{
+    mtgmatcher.GameLorcana:       tcgplayer.CategoryLorcana,
+    mtgmatcher.GameRiftbound:     tcgplayer.CategoryRiftbound,
+    mtgmatcher.GameOnePiece:      tcgplayer.CategoryOnePiece,
+    mtgmatcher.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
+    mtgmatcher.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
+    mtgmatcher.GamePokemon:       tcgplayer.CategoryPokemon,
+    mtgmatcher.GameGundam:        tcgplayer.CategoryGundam,
+    mtgmatcher.GamePalworld:      tcgplayer.CategoryPalworld,
 }
 ```
 
@@ -988,18 +989,18 @@ embeds live credentials.
 
 - **bantool** — a table of `scraperOption{flags}`, one per target, derived
   from the scraper registry rather than written out by hand: `targets()` in
-  `cmd/bantool/main.go` walks `mtgban.AllGames` × `mtgban.Registered(game)`,
+  `cmd/bantool/main.go` walks `mtgmatcher.AllGames` × `mtgban.Registered(game)`,
   each scraper package having filed its own keys with `mtgban`'s registry
   from `init`, so bantool builds no scrapers of its own and an entry is a
   name and its flags and nothing else. It runs well past a hundred targets
   once every scraper's own per-game and `_sealed` variants are counted (14
   `*_riftbound` targets, 14 `*_lorcana` ones, and the rest of the eight
   non-Magic games besides). The table is a
-  `map[mtgban.Game]map[string]*scraperOption`: the game is the outer key and
+  `map[mtgmatcher.Game]map[string]*scraperOption`: the game is the outer key and
   the store's own name the inner one, so a target's game is which sub-map
   holds it rather than something re-derived from its name at runtime.
   `scraperFlagName(game, name)` composes the external name the two make — the
-  store's name alone under `mtgban.GameMagic`, `<store>_<game>` under every
+  store's name alone under `mtgmatcher.GameMagic`, `<store>_<game>` under every
   other game — and `flattenOptions` builds the by-name view that flag
   registration, the `-scrapers`/`-sellers`/`-vendors` lookups and the build
   loop all read, sharing pointers with the nested map so enabling a target by
@@ -1111,7 +1112,7 @@ holding the `*mtgmatcher.Backend` it is built on; implement `Seller` and/or
 quirks. Add a `register.go` whose `init()` calls `mtgban.Register(name,
 games, constructor)` under the key name bantool has always used for the
 target and every game the scraper prices, then blank-import the package in
-`cmd/bantool/main.go` — `targets()` walks `mtgban.AllGames` ×
+`cmd/bantool/main.go` — `targets()` walks `mtgmatcher.AllGames` ×
 `mtgban.Registered(game)`, so a registered scraper appears in the flag
 table with no entry to write by hand. Add the matching GitHub Actions
 workflow: `cmd/bantool/workflows_test.go`'s
@@ -1150,12 +1151,12 @@ grep every game package for the sibling field it is meant to travel with
 too, or add a shared setter every loader calls (`IndexSets`,
 `IndexSetUUIDs`) rather than trusting nine separate hand-written loops to
 stay in sync. Add the game to `mtgmatcher/games`, add a `Game` constant in
-`mtgban` and list it in `mtgban.AllGames`, and make `Load` reject inputs it
+`mtgmatcher/game.go` and list it in `mtgmatcher.AllGames`, and make `Load` reject inputs it
 does not recognize so auto-detection can move past it. Existing storefronts
 often come cheaply: a TCGplayer category is one entry in `tcgplayer`'s
 `tcgGames`, and cardmarket / cardtrader / coolstuffinc / starcitygames each
 need one constant naming the storefront's own spelling plus one line in their
-`map[mtgban.Game]<vendor value>`. See the *Adding a game* checklist in
+`map[mtgmatcher.Game]<vendor value>`. See the *Adding a game* checklist in
 `AGENTS.md` for the bantool options, workflows and CI jobs that go with it.
 
 ---

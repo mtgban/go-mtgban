@@ -281,6 +281,6 @@ func (toa *TOAMagic) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Tales of Adventure"
 	info.Shorthand = "TOA"
 	info.InventoryTimestamp = &toa.inventoryDate
-	info.Game = mtgban.GameMagic
+	info.Game = mtgmatcher.GameMagic
 	return
 }

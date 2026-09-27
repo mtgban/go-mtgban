@@ -385,8 +385,8 @@ func TestInfoForScraper(t *testing.T) {
 		if info.Shorthand != tt.wantShorthand {
 			t.Errorf("InfoForScraper(%q).Shorthand = %q, want %q", tt.name, info.Shorthand, tt.wantShorthand)
 		}
-		if info.Game != mtgban.GameMagic {
-			t.Errorf("InfoForScraper(%q).Game = %q, want %q", tt.name, info.Game, mtgban.GameMagic)
+		if info.Game != mtgmatcher.GameMagic {
+			t.Errorf("InfoForScraper(%q).Game = %q, want %q", tt.name, info.Game, mtgmatcher.GameMagic)
 		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -256,7 +257,7 @@ func dateSaid(published string) []string {
 }
 
 // ReadLoaded reads what a loader made of the same file.
-func ReadLoaded(game, path string) (Backend, error) {
+func ReadLoaded(game mtgmatcher.Game, path string) (Backend, error) {
 	b, err := datastore.Read(game, path)
 	if err != nil {
 		return Backend{}, err
@@ -282,27 +283,28 @@ func ReadLoaded(game, path string) (Backend, error) {
 // Games are the games built by the datastore generator, keyed by the
 // variable naming where each one's file is. Magic is not among them: its
 // datastore is MTGJSON's and its promo types are MTGJSON's too.
-var Games = map[string]string{
-	"fleshandblood": "FLESHANDBLOOD_PATH",
-	"gundam":        "GUNDAM_PATH",
-	"lorcana":       "LORCANA_PATH",
-	"onepiece":      "ONEPIECE_PATH",
-	"palworld":      "PALWORLD_PATH",
-	"pokemon":       "POKEMON_PATH",
-	"riftbound":     "RIFTBOUND_PATH",
-	"yugioh":        "YUGIOH_PATH",
+var Games = map[mtgmatcher.Game]string{
+	mtgmatcher.GameFleshAndBlood: "FLESHANDBLOOD_PATH",
+	mtgmatcher.GameGundam:        "GUNDAM_PATH",
+	mtgmatcher.GameLorcana:       "LORCANA_PATH",
+	mtgmatcher.GameOnePiece:      "ONEPIECE_PATH",
+	mtgmatcher.GamePalworld:      "PALWORLD_PATH",
+	mtgmatcher.GamePokemon:       "POKEMON_PATH",
+	mtgmatcher.GameRiftbound:     "RIFTBOUND_PATH",
+	mtgmatcher.GameYuGiOh:        "YUGIOH_PATH",
 }
 
 // GameNames are the games in a settled order, for a test to run through.
-func GameNames() []string {
-	names := make([]string, 0, len(Games))
+func GameNames() []mtgmatcher.Game {
+	names := make([]mtgmatcher.Game, 0, len(Games))
 	for game := range Games {
 		names = append(names, game)
 	}
-	return sorted(names)
+	slices.Sort(names)
+	return names
 }
 
 // PathOf is where a game's datastore is, empty where the run carries none.
-func PathOf(game string) string {
+func PathOf(game mtgmatcher.Game) string {
 	return strings.TrimSpace(os.Getenv(Games[game]))
 }

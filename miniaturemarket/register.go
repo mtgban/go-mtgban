@@ -7,9 +7,9 @@ import (
 
 func init() {
 	mtgban.Register("miniaturemarket_sealed",
-		[]mtgban.Game{
-			mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameRiftbound,
-			mtgban.GameOnePiece, mtgban.GameFleshAndBlood, mtgban.GameGundam,
+		[]mtgmatcher.Game{
+			mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound,
+			mtgmatcher.GameOnePiece, mtgmatcher.GameFleshAndBlood, mtgmatcher.GameGundam,
 		},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraperSealed(b)

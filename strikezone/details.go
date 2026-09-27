@@ -9,7 +9,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -161,7 +160,7 @@ func fabListing(cardName, number string) (string, string) {
 // printing's default when a finish names nothing - so the stamp costs the
 // modern rows nothing and tells the WotC-era Pokemon printings apart, where
 // the same wording flips between "1st Edition" and "Unlimited" row by row.
-func preprocessDetails(game mtgban.Game, cardName, edition, number, details string) (*mtgmatcher.InputCard, error) {
+func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details string) (*mtgmatcher.InputCard, error) {
 	treatment, run, language := parseDetails(details)
 	if language != "" && language != "English" {
 		return nil, errForeignListing
@@ -199,7 +198,7 @@ func preprocessDetails(game mtgban.Game, cardName, edition, number, details stri
 	}
 
 	switch game {
-	case mtgban.GamePokemon:
+	case mtgmatcher.GamePokemon:
 		// The matcher deliberately does not respell this one, so it is the
 		// scraper's to fix on the one shelf the store lists it under.
 		if cardName == "Imposter Professor Oak" && edition == "Base Set Unlimited" {
@@ -264,7 +263,7 @@ func preprocessDetails(game mtgban.Game, cardName, edition, number, details stri
 			Variation: variation,
 			Finish:    finish,
 		}, nil
-	case mtgban.GameFleshAndBlood:
+	case mtgmatcher.GameFleshAndBlood:
 		cardName, number = fabListing(cardName, number)
 		// The datastore crosses the run with the treatment, so the two
 		// runs of a card are two printings: "1st Edition Cold Foil". The
@@ -291,7 +290,7 @@ func preprocessDetails(game mtgban.Game, cardName, edition, number, details stri
 			Finish:    finish,
 			Foil:      strings.Contains(treatment, "Foil"),
 		}, nil
-	case mtgban.GameYuGiOh:
+	case mtgmatcher.GameYuGiOh:
 		return &mtgmatcher.InputCard{
 			Name:      cardName,
 			Edition:   edition,

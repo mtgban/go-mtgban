@@ -293,6 +293,6 @@ func (sdk *SecretDesKorrigans) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Le Secret des Korrigans"
 	info.Shorthand = "SK"
 	info.InventoryTimestamp = &sdk.inventoryDate
-	info.Game = mtgban.GameMagic
+	info.Game = mtgmatcher.GameMagic
 	return
 }

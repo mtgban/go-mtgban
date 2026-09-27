@@ -51,7 +51,7 @@ func withMagic(t *testing.T) *mtgmatcher.Backend {
 // rest of this package's tests are Magic ones. The test is skipped where
 // that game's datastore is not configured, which is how the shared
 // `go test ./...` run sees it.
-func withGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
+func withGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {

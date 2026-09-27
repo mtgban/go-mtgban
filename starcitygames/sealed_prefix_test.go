@@ -3,6 +3,8 @@ package starcitygames
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
 )
@@ -19,8 +21,10 @@ import (
 // stocking them.
 func TestSealedUntrimmedGamePrefixResolves(t *testing.T) {
 	for _, tt := range []struct {
-		game, datastore, env string
-		names                []string
+		game      string
+		datastore mtgmatcher.Game
+		env       string
+		names     []string
 	}{
 		{"Riftbound", "riftbound", "RIFTBOUND_PATH", []string{
 			"Riftbound: League of Legends TCG - Origins Booster Box",

@@ -30,7 +30,7 @@ type TCGGameIndex struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
-	game                mtgban.Game
+	game                mtgmatcher.Game
 
 	productTypes []string
 

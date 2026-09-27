@@ -39,7 +39,7 @@ type Market struct {
 
 	blueprints map[int]*Blueprint
 
-	game   mtgban.Game
+	game   mtgmatcher.Game
 	gameID int
 }
 

@@ -10,8 +10,8 @@ import (
 const SecretAPIKey = "SCG_API_KEY"
 
 // starcitygamesGames are the games Star City Games' catalog covers.
-var starcitygamesGames = []mtgban.Game{
-	mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameRiftbound, mtgban.GameFleshAndBlood,
+var starcitygamesGames = []mtgmatcher.Game{
+	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameFleshAndBlood,
 }
 
 func init() {

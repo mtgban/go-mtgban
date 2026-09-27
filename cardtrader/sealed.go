@@ -29,7 +29,7 @@ type Sealed struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 
-	game   mtgban.Game
+	game   mtgmatcher.Game
 	gameID int
 }
 
@@ -46,7 +46,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 	// Palworld is the one game the shared table carries that this side has
 	// never been built for, so it is refused here rather than left out of
 	// the table the market scraper reads too.
-	if !found || game == mtgban.GamePalworld {
+	if !found || game == mtgmatcher.GamePalworld {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
 	ct := Sealed{}

@@ -6,9 +6,9 @@ import (
 )
 
 func init() {
-	mtgban.Register("vegassingles", []mtgban.Game{
-		mtgban.GameMagic, mtgban.GameRiftbound, mtgban.GameOnePiece,
-		mtgban.GamePokemon, mtgban.GameGundam,
+	mtgban.Register("vegassingles", []mtgmatcher.Game{
+		mtgmatcher.GameMagic, mtgmatcher.GameRiftbound, mtgmatcher.GameOnePiece,
+		mtgmatcher.GamePokemon, mtgmatcher.GameGundam,
 	}, func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 		scraper, err := NewScraper(b)
 		if err != nil {

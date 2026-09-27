@@ -349,8 +349,8 @@ from the shelf collision this section is about.
   shape" functions for having no such gap.
 - `GameDragonBallSuper` (`"dbs"`) and `GameStarWarsUnlimited` (`"swu"`) are
   shelf-name constants CSI itself uses, sitting unwired in this file —
-  `mtgban.Game` has no constant for either game yet (`mtgban/mtgban.go`),
-  so `csiGames` can't map them. Whoever adds either game to `mtgban`
+  `mtgmatcher.Game` has no constant for either game yet (`mtgmatcher/game.go`),
+  so `csiGames` can't map them. Whoever adds either game to `mtgmatcher`
   should check back here; the shelf name is already known.
 - Sealed is wired in `cmd/bantool` for six of the eight singles-wired
   games — Gundam and Palworld have no `coolstuffinc_sealed_*` scraper

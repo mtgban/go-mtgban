@@ -117,6 +117,6 @@ func (mp *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mp.inventoryDate
 	info.SealedMode = true
 	info.NoQuantityInventory = true
-	info.Game = mtgban.GameMagic
+	info.Game = mtgmatcher.GameMagic
 	return
 }

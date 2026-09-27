@@ -29,7 +29,7 @@ type Sealed struct {
 	dropped    map[string]int
 	client     *SCGClient
 	backend    *mtgmatcher.Backend
-	game       mtgban.Game
+	game       mtgmatcher.Game
 	gameID     int
 }
 
@@ -168,7 +168,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	// lorcana) resolve by name instead, English only, unique or nothing.
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
-		if scg.game == mtgban.GameMagic {
+		if scg.game == mtgmatcher.GameMagic {
 			scg.drop("sku the datastore does not carry")
 			return
 		}

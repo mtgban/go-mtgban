@@ -316,6 +316,6 @@ func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ck.inventoryDate
 	info.BuylistTimestamp = &ck.buylistDate
 	info.CreditMultiplier = 1.3
-	info.Game = mtgban.GameMagic
+	info.Game = mtgmatcher.GameMagic
 	return
 }

@@ -37,7 +37,7 @@ type Starcitygames struct {
 	setIDs  map[string]int
 	client  *SCGClient
 	backend *mtgmatcher.Backend
-	game    mtgban.Game
+	game    mtgmatcher.Game
 	gameID  int
 
 	// bulkRated counts the buylist figures dropped as a bulk tier's rate.

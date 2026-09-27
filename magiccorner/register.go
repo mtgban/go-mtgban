@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	mtgban.Register("magiccorner", []mtgban.Game{mtgban.GameMagic},
+	mtgban.Register("magiccorner", []mtgmatcher.Game{mtgmatcher.GameMagic},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)
 			if err != nil {

@@ -12,7 +12,7 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -56,16 +56,16 @@ const (
 // here is not one we are read for. The numbers above stay public: they are
 // this catalog's own vocabulary, and they cover games mtgban has no Game for
 // at all.
-var ctGames = map[mtgban.Game]int{
-	mtgban.GameMagic:         GameMagic,
-	mtgban.GameYuGiOh:        GameYuGiOh,
-	mtgban.GamePokemon:       GamePokemon,
-	mtgban.GameFleshAndBlood: GameFleshAndBlood,
-	mtgban.GameOnePiece:      GameOnePiece,
-	mtgban.GameLorcana:       GameLorcana,
-	mtgban.GameRiftbound:     GameRiftbound,
-	mtgban.GameGundam:        GameGundam,
-	mtgban.GamePalworld:      GamePalworld,
+var ctGames = map[mtgmatcher.Game]int{
+	mtgmatcher.GameMagic:         GameMagic,
+	mtgmatcher.GameYuGiOh:        GameYuGiOh,
+	mtgmatcher.GamePokemon:       GamePokemon,
+	mtgmatcher.GameFleshAndBlood: GameFleshAndBlood,
+	mtgmatcher.GameOnePiece:      GameOnePiece,
+	mtgmatcher.GameLorcana:       GameLorcana,
+	mtgmatcher.GameRiftbound:     GameRiftbound,
+	mtgmatcher.GameGundam:        GameGundam,
+	mtgmatcher.GamePalworld:      GamePalworld,
 }
 
 // The catalog categories. Card Trader splits every game into product types of

@@ -3,7 +3,7 @@ package strikezone
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPreprocessDetailsLabels pins what comes off a Pokemon row's name. The
@@ -62,7 +62,7 @@ func TestPreprocessDetailsLabels(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			got, err := preprocessDetails(mtgban.GamePokemon, tt.cardName, tt.edition, tt.number, details)
+			got, err := preprocessDetails(mtgmatcher.GamePokemon, tt.cardName, tt.edition, tt.number, details)
 			if err != nil {
 				t.Fatal(err)
 			}
