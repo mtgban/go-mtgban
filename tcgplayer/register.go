@@ -57,10 +57,7 @@ func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scra
 		return nil, err
 	}
 
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 
 	if game == mtgmatcher.GameMagic {
 		scraper, err := NewScraperIndex(b, publicID, privateID)
@@ -96,10 +93,7 @@ func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 		return nil, err
 	}
 
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 
 	if game == mtgmatcher.GameMagic {
 		skus, err := mtgban.Resource[SKUMap](opts, ResourceSKUs)
@@ -145,10 +139,7 @@ func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 		return nil, err
 	}
 
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 
 	if game == mtgmatcher.GameMagic {
 		skus, err := mtgban.Resource[SKUMap](opts, ResourceSKUs)

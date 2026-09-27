@@ -8,34 +8,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestBanHost pins the subdomain a game's own price snapshot is fetched
-// from - confirmed live that mtgban publishes one snapshot per game
-// subdomain, not one shared snapshot, after querying www.mtgban.com (the
-// host sealedev's own Magic-only loader hardcodes) for Pokemon and
-// getting back a real 200 with none of Pokemon's own uuids in it.
-func TestBanHost(t *testing.T) {
-	tests := []struct {
-		game mtgmatcher.Game
-		want string
-	}{
-		{mtgmatcher.GameMagic, "magic"},
-		{mtgmatcher.GamePokemon, "pokemon"},
-		{mtgmatcher.GameYuGiOh, "yugioh"},
-		{mtgmatcher.GameFleshAndBlood, "fleshandblood"},
-		{mtgmatcher.GameOnePiece, "onepiece"},
-		{mtgmatcher.GameLorcana, "lorcana"},
-		{mtgmatcher.GameRiftbound, "riftbound"},
-	}
-	for _, tt := range tests {
-		if got := banHost(tt.game); got != tt.want {
-			t.Errorf("banHost(%s) = %q, want %q", tt.game, got, tt.want)
-		}
-	}
-}
-
 // TestMarketFilterParamsCoverage pins which games are filtered: measured
 // live against each game's own snapshot (once the wrong-host bug was
-// found and fixed - see banHost), every non-Magic game clears this
+// found and fixed - see banAPIURL), every non-Magic game clears this
 // filter on only 9-26% of its own priced uuids, so it is worth applying
 // wherever it can be measured, not only where the catalog would
 // otherwise miss its budget.

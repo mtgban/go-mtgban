@@ -88,7 +88,6 @@ type Vegassingles struct {
 	backend *mtgmatcher.Backend
 
 	client *VSClient
-	game   mtgmatcher.Game
 	line   string
 
 	inventoryDate  time.Time
@@ -101,10 +100,7 @@ type Vegassingles struct {
 
 // NewScraper returns a scraper for the game b was loaded for.
 func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	line, ok := vsGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -113,7 +109,6 @@ func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
 	vs.inventory = mtgban.InventoryRecord{}
 	vs.buylist = mtgban.BuylistRecord{}
 	vs.client = NewVSClient(line)
-	vs.game = game
 	vs.line = line
 	vs.maxConcurrency = defaultConcurrency
 	return &vs, nil
@@ -128,12 +123,12 @@ func (vs *Vegassingles) printf(format string, a ...any) {
 // listed reports whether the store buys the condition in the product line
 // this scraper reads.
 func (vs *Vegassingles) listed(title string) bool {
-	conditions, found := listedConditions[vs.game]
+	conditions, found := listedConditions[vs.backend.Game]
 	return !found || slices.Contains(conditions, title)
 }
 
 func (vs *Vegassingles) processProduct(product VSProduct) error {
-	theCard, err := preprocess(vs.backend, product, vs.game)
+	theCard, err := preprocess(vs.backend, product, vs.backend.Game)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -422,6 +417,6 @@ func (vs *Vegassingles) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "VS"
 	info.InventoryTimestamp = &vs.inventoryDate
 	info.BuylistTimestamp = &vs.buylistDate
-	info.Game = vs.game
+	info.Game = vs.backend.Game
 	return
 }

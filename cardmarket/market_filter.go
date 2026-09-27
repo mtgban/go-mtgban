@@ -16,7 +16,7 @@ import (
 // marketFilterParams are the offline pre-filter's thresholds, one row per
 // game it applies to. Magic, Pokemon and YuGiOh need it to fit a nightly
 // scrape budget at all; measured against each game's own price snapshot
-// (see banHost - a game earlier missing from this table simply because
+// (see banAPIURL - a game earlier missing from this table simply because
 // the snapshot was fetched from the wrong host reads as "nothing passed
 // the filter," not as "unfiltered"), Lorcana, Riftbound, Flesh and Blood
 // and One Piece all fit their budget unfiltered too, but only clear this
@@ -139,12 +139,6 @@ func marketCandidate(gameID cm.Game, uuid string, snap *banSnapshot) bool {
 // error, just nothing that game's own uuids are keyed under.
 const banAPIURL = "https://%s.mtgban.com/api/mtgban/all.json?tag=tags&conds=true&sig=%s"
 
-// banHost is the subdomain a game's own price snapshot is published
-// under: the game's own name, as every workflow and bucket path spells it.
-func banHost(game mtgmatcher.Game) string {
-	return string(game)
-}
-
 // banPrice is one store's price for one uuid, as the mtgban price API
 // answers it on the wire: "regular" for a plain uuid, "foil" for a
 // "_f"-suffixed one, and "etched" for an etched printing, which is a key
@@ -212,7 +206,7 @@ func (snap *banSnapshot) firstBuylist(uuid string, sources []string) float64 {
 // pre-filter reads. sig authenticates it - bantool reads it from the
 // BAN_API_KEY env var, the same key sealedev's own price loader uses.
 func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string) (*banSnapshot, error) {
-	link := fmt.Sprintf(banAPIURL, banHost(game), sig)
+	link := fmt.Sprintf(banAPIURL, game, sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err

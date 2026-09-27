@@ -106,7 +106,6 @@ type TCGSYPList struct {
 	// sku id, the datastore knows product ids.
 	catalog SYPCatalog
 
-	game        mtgmatcher.Game
 	category    int
 	auth        string
 	buylistDate time.Time
@@ -125,10 +124,7 @@ func (tcg *TCGSYPList) printf(format string, a ...any) {
 // list is served against an authorization ticket alone, so this needs no API
 // credentials of its own.
 func NewScraperSYP(b *mtgmatcher.Backend, auth string) (*TCGSYPList, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	category, found := sypGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported SYP game %q", game)
@@ -138,7 +134,6 @@ func NewScraperSYP(b *mtgmatcher.Backend, auth string) (*TCGSYPList, error) {
 	tcg.backend = b
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.auth = auth
-	tcg.game = game
 	tcg.category = category
 
 	return &tcg, nil
@@ -225,6 +220,6 @@ func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {
 	info.BuylistTimestamp = &tcg.buylistDate
 	info.MetadataOnly = true
 	info.QuantityPriority = true
-	info.Game = tcg.game
+	info.Game = tcg.backend.Game
 	return
 }

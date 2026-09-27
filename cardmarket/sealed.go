@@ -44,7 +44,6 @@ type Sealed struct {
 
 	client *cm.Client
 
-	game   mtgmatcher.Game
 	gameID cm.Game
 
 	// backend is the datastore this scraper matches against.
@@ -60,10 +59,7 @@ func (mkm *Sealed) printf(format string, a ...any) {
 // NewScraperSealed returns a sealed scraper matching against b,
 // authenticated with an app token and secret.
 func NewScraperSealed(b *mtgmatcher.Backend, appToken, appSecret string) (*Sealed, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	id, found := mkmGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -72,7 +68,6 @@ func NewScraperSealed(b *mtgmatcher.Backend, appToken, appSecret string) (*Seale
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = cm.NewClient(appToken, appSecret)
 	mkm.maxConcurrency = defaultConcurrency
-	mkm.game = game
 	mkm.gameID = id
 	mkm.backend = b
 	return &mkm, nil
@@ -384,7 +379,7 @@ func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.SealedMode = true
-	info.Game = mkm.game
+	info.Game = mkm.backend.Game
 	return
 }
 

@@ -30,7 +30,6 @@ type TCGGameIndex struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
-	game                mtgmatcher.Game
 
 	productTypes []string
 
@@ -51,10 +50,7 @@ func (tcg *TCGGameIndex) printf(format string, a ...any) {
 // NewScraperGameIndex returns an index scraper for one game, authenticated
 // with a partner API key pair.
 func NewScraperGameIndex(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGameIndex, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	category, found := tcgGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -72,7 +68,6 @@ func NewScraperGameIndex(b *mtgmatcher.Backend, publicID, privateID string) (*TC
 	tcg.maxConcurrency = defaultConcurrency
 
 	tcg.category = category
-	tcg.game = game
 	tcg.productTypes = tcgplayer.SinglesProductTypes(category)
 
 	return &tcg, nil
@@ -252,7 +247,7 @@ func (tcg *TCGGameIndex) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
-	info.Game = tcg.game
+	info.Game = tcg.backend.Game
 	info.Family = "TCG"
 	return
 }

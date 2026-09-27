@@ -37,7 +37,6 @@ type Starcitygames struct {
 	setIDs  map[string]int
 	client  *SCGClient
 	backend *mtgmatcher.Backend
-	game    mtgmatcher.Game
 	gameID  int
 
 	// bulkRated counts the buylist figures dropped as a bulk tier's rate.
@@ -49,10 +48,7 @@ type Starcitygames struct {
 
 // NewScraper returns a singles scraper for one game, using the given API key.
 func NewScraper(b *mtgmatcher.Backend, apiKey string) (*Starcitygames, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	gameID, ok := scgGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -61,7 +57,6 @@ func NewScraper(b *mtgmatcher.Backend, apiKey string) (*Starcitygames, error) {
 	scg.reset()
 	scg.client = NewSCGClient(apiKey)
 	scg.backend = b
-	scg.game = game
 	scg.gameID = gameID
 	return &scg, nil
 }
@@ -320,6 +315,6 @@ func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.CreditMultiplier = 1.3
-	info.Game = scg.game
+	info.Game = scg.backend.Game
 	return
 }

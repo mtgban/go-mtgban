@@ -40,10 +40,7 @@ type Magiccorner struct {
 // NewScraper returns a scraper against the datastore, failing if the
 // datastore is not Magic's or the edition list cannot be read.
 func NewScraper(b *mtgmatcher.Backend) (*Magiccorner, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	if game != mtgmatcher.GameMagic {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
