@@ -39,7 +39,6 @@ type Market struct {
 
 	blueprints map[int]*Blueprint
 
-	game   mtgmatcher.Game
 	gameID int
 }
 
@@ -56,10 +55,7 @@ var name2shorthand = map[string]string{
 // NewScraperMarket returns a market scraper for the datastore's game,
 // authenticated with a full API token.
 func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	id, found := ctGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -69,7 +65,6 @@ func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
 	ct.maxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
 	ct.backend = b
-	ct.game = game
 	ct.gameID = id
 	return &ct, nil
 }
@@ -542,6 +537,6 @@ func (ct *Market) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.Family = "CT"
-	info.Game = ct.game
+	info.Game = ct.backend.Game
 	return
 }

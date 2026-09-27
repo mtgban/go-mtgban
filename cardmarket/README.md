@@ -354,7 +354,7 @@ exactly how Pokemon and YuGiOh's candidate sets went silently empty during
 development — `marketCandidates` built a real, non-nil, *empty* map, and
 `walkCatalog` read that as "skip everything," so `Market` would have priced
 **zero** cards for either game had it actually run. Fixed by building the
-snapshot URL per game (`banHost`), and it also corrected the candidate counts
+snapshot URL per game (`banAPIURL`), and it also corrected the candidate counts
 measured earlier against the wrong host: Pokemon dropped from an estimated
 14,012 candidates to a measured 11,247; YuGiOh from 8,170 to 6,085.
 

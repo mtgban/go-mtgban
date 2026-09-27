@@ -29,17 +29,13 @@ type Sealed struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 
-	game   mtgmatcher.Game
 	gameID int
 }
 
 // NewScraperSealed returns a sealed scraper for the datastore's game,
 // authenticated with a full API token.
 func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	id, found := ctGames[game]
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
@@ -55,7 +51,6 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 	ct.maxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
 	ct.backend = b
-	ct.game = game
 	ct.gameID = id
 	return &ct, nil
 }
@@ -450,6 +445,6 @@ func (ct *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.SealedMode = true
-	info.Game = ct.game
+	info.Game = ct.backend.Game
 	return
 }

@@ -31,7 +31,6 @@ type Miniaturemarket struct {
 	inventory     mtgban.InventoryRecord
 	productMap    map[string]string
 	backend       *mtgmatcher.Backend
-	game          mtgmatcher.Game
 	widget        string
 }
 
@@ -52,10 +51,7 @@ var mmGames = map[mtgmatcher.Game]string{
 
 // NewScraperSealed returns a sealed scraper for the datastore's game.
 func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	widget, ok := mmGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -65,7 +61,6 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
 	mm.maxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
 	mm.backend = b
-	mm.game = game
 	mm.widget = widget
 	return &mm, nil
 }
@@ -312,10 +307,10 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 	if uuid, found := mm.productMap[id]; found {
 		return uuid, ""
 	}
-	if mm.game == mtgmatcher.GameMagic {
+	if mm.backend.Game == mtgmatcher.GameMagic {
 		return "", "no datastore id"
 	}
-	name := strings.TrimSpace(sealedName(mm.game, listed))
+	name := strings.TrimSpace(sealedName(mm.backend.Game, listed))
 	if name == "" {
 		return "", "unnamed listing"
 	}
@@ -482,8 +477,8 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
 	}
 	mm.printf("Loaded %d sealed products", len(mm.productMap))
-	if mm.game != mtgmatcher.GameMagic {
-		mm.printf("Resolving %s products by name", mm.game)
+	if mm.backend.Game != mtgmatcher.GameMagic {
+		mm.printf("Resolving %s products by name", mm.backend.Game)
 	}
 
 	totalPages, err := mm.NumberOfPages(ctx)
@@ -551,6 +546,6 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mm.inventoryDate
 	info.SealedMode = true
 	info.NoQuantityInventory = true
-	info.Game = mm.game
+	info.Game = mm.backend.Game
 	return
 }

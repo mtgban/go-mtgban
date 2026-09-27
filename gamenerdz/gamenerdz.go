@@ -108,7 +108,6 @@ type Gamenerdz struct {
 
 	client  *GNClient
 	backend *mtgmatcher.Backend
-	game    mtgmatcher.Game
 	line    string
 
 	inventoryDate time.Time
@@ -119,10 +118,7 @@ type Gamenerdz struct {
 
 // NewScraper returns a scraper for the datastore's game.
 func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	line, ok := gnGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -132,7 +128,6 @@ func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
 	gn.buylist = mtgban.BuylistRecord{}
 	gn.client = NewGNClient(line)
 	gn.backend = b
-	gn.game = game
 	gn.line = line
 	gn.maxConcurrency = defaultConcurrency
 	return &gn, nil
@@ -236,8 +231,8 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 // what that reading is measured against. An empty id under a nil error is
 // a product the catalog does not carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
-	etched := gn.game == mtgmatcher.GameMagic && saysEtched(product)
-	if mode == modeRetail && gn.game == mtgmatcher.GameMagic && product.ProductData.TCGProductID != 0 {
+	etched := gn.backend.Game == mtgmatcher.GameMagic && saysEtched(product)
+	if mode == modeRetail && gn.backend.Game == mtgmatcher.GameMagic && product.ProductData.TCGProductID != 0 {
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 		cardID, err := gn.backend.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil, etched)
 		if err == nil {
@@ -245,7 +240,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		}
 	}
 
-	theCard, err := preprocess(gn.backend, product, gn.game)
+	theCard, err := preprocess(gn.backend, product, gn.backend.Game)
 	if err != nil {
 		// Name the product, the way the failure below already does. A
 		// reason alone says a listing was dropped without saying which,
@@ -270,12 +265,12 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	// with the single printing there is - the minted one carrying a price of
 	// its own, which the buylist keeps whenever it is the higher of the two.
 	// Nothing else was printed to move it to, so let it go.
-	if gn.game == mtgmatcher.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
+	if gn.backend.Game == mtgmatcher.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
 		return "", nil
 	}
 	// A "(N)" promo number names its printing without saying its finish, so
 	// a plain listing can land on a printing that was only ever made foil.
-	if gn.game == mtgmatcher.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
+	if gn.backend.Game == mtgmatcher.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
 		return "", nil
 	}
 	return cardID, nil
@@ -511,7 +506,7 @@ func (gn *Gamenerdz) crawl(ctx context.Context, mode, sortDir string, filters ma
 			if product.SelectedFinish != "" {
 				state.finishes[product.SelectedFinish] = true
 			}
-			if gn.game == mtgmatcher.GameMagic {
+			if gn.backend.Game == mtgmatcher.GameMagic {
 				family := skuFamily(product)
 				if family != "" {
 					if state.bodies[family] == nil {
@@ -606,6 +601,6 @@ func (gn *Gamenerdz) Info() (info mtgban.ScraperInfo) {
 	// The storefront quotes its buylist in cash and pays 25% over it in
 	// store credit, a ratio its own feed restates on every offer.
 	info.CreditMultiplier = 1.25
-	info.Game = gn.game
+	info.Game = gn.backend.Game
 	return
 }

@@ -51,8 +51,7 @@ func TestUniqueCopy(t *testing.T) {
 func TestProcessProductSkipsUniqueCopyQuietly(t *testing.T) {
 	var logged []string
 	vs := &Vegassingles{
-		backend:     &mtgmatcher.Backend{},
-		game:        mtgmatcher.GameRiftbound,
+		backend:     &mtgmatcher.Backend{Game: mtgmatcher.GameRiftbound},
 		logCallback: func(format string, a ...any) { logged = append(logged, format) },
 	}
 

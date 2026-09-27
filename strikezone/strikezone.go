@@ -106,17 +106,13 @@ type Strikezone struct {
 	disableBuylist bool
 
 	backend *mtgmatcher.Backend
-	game    mtgmatcher.Game
 	shelf   string
 	client  *http.Client
 }
 
 // NewScraper returns a scraper for the datastore's game.
 func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	shelf, ok := szGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -126,7 +122,6 @@ func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
 	sz.buylist = mtgban.BuylistRecord{}
 	sz.maxConcurrency = defaultConcurrency
 	sz.backend = b
-	sz.game = game
 	sz.shelf = shelf
 	client := retryablehttp.NewClient()
 	client.Logger = nil
@@ -269,7 +264,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	// The columns and card construction differ per game; the match and error
 	// handling below are shared.
 	var theCard *mtgmatcher.InputCard
-	switch sz.game {
+	switch sz.backend.Game {
 	case mtgmatcher.GameMagic:
 		if mode == modeRetail {
 			notes = strings.TrimSpace(el.Find("td:nth-child(4)").Text())
@@ -302,7 +297,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		qty = strings.TrimSpace(el.Find("td:nth-child(5)").Text())
 		price = strings.TrimSpace(el.Find("td:nth-child(6)").Text())
 
-		c, err := preprocessDetails(sz.game, cardName, edition, number, cond)
+		c, err := preprocessDetails(sz.backend.Game, cardName, edition, number, cond)
 		if err != nil {
 			return nil
 		}
@@ -312,7 +307,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	}
 
 	cardID, err := sz.backend.Match(theCard)
-	if sz.game == mtgmatcher.GameMagic {
+	if sz.backend.Game == mtgmatcher.GameMagic {
 		var alias *mtgmatcher.AliasingError
 		if errors.As(err, &alias) {
 			id := resolvePremiumFoilTiebreak(sz.backend, theCard.Variation, alias.Probe())
@@ -342,7 +337,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		return err
 	}
 
-	if sz.game == mtgmatcher.GameMagic {
+	if sz.backend.Game == mtgmatcher.GameMagic {
 		co, coErr := sz.backend.GetUUID(cardID)
 		if coErr == nil && (namesAbsentTreatment(theCard.Variation, co) ||
 			wearsUnnamedTextured(sz.backend, theCard.Variation, co) ||
@@ -419,12 +414,12 @@ func (sz *Strikezone) parseRows(doc *goquery.Document, pageURL, mode string, cha
 	// Only the Magic categories render the denser rtti table; every
 	// other game lists retail and buylist alike in the generic one.
 	tableRowName := "table.rtti tr"
-	if mode == modeBuylist || sz.game != mtgmatcher.GameMagic {
+	if mode == modeBuylist || sz.backend.Game != mtgmatcher.GameMagic {
 		tableRowName = "table.ItemTable tr"
 	}
 
 	var foilSiblings map[string]bool
-	if sz.game == mtgmatcher.GameMagic {
+	if sz.backend.Game == mtgmatcher.GameMagic {
 		foilSiblings = magicFoilSiblings(doc, tableRowName)
 	}
 
@@ -466,7 +461,7 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		link = fmt.Sprintf(szInventoryURL, sz.shelf)
 		// The storefront files the Flesh and Blood singles under a bare
 		// name no other game shares, instead of its own prefixed one.
-		if sz.game == mtgmatcher.GameFleshAndBlood {
+		if sz.backend.Game == mtgmatcher.GameFleshAndBlood {
 			link = "http://shop.strikezoneonline.com/Category/Singles.html"
 		}
 	} else if mode == modeBuylist {
@@ -577,6 +572,6 @@ func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "SZ"
 	info.InventoryTimestamp = &sz.inventoryDate
 	info.BuylistTimestamp = &sz.buylistDate
-	info.Game = sz.game
+	info.Game = sz.backend.Game
 	return
 }

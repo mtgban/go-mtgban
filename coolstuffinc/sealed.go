@@ -36,17 +36,13 @@ type Sealed struct {
 	disableBuylist bool
 
 	client  *http.Client
-	game    mtgmatcher.Game
 	shelf   string
 	backend *mtgmatcher.Backend
 }
 
 // NewScraperSealed returns a sealed scraper for the datastore's game.
 func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	shelf, ok := csiGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -71,7 +67,6 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 			csi.productMap[id] = co.UUID
 		}
 	}
-	csi.game = game
 	csi.shelf = shelf
 	csi.backend = b
 	return &csi, nil
@@ -252,7 +247,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 		// skipping the language variants the datastores never carry.
 		uuid, found := csi.productMap[product.PID]
 		if !found {
-			if csi.game == mtgmatcher.GameMagic {
+			if csi.backend.Game == mtgmatcher.GameMagic {
 				continue
 			}
 			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
@@ -313,7 +308,7 @@ func (csi *Sealed) Load(ctx context.Context) error {
 	// other games ride the same set-facet search the singles use, with
 	// the sealed-name resolver telling the sealed rows apart from the
 	// card ones.
-	if csi.game != mtgmatcher.GameMagic {
+	if csi.backend.Game != mtgmatcher.GameMagic {
 		var errs []error
 		if !csi.disableRetail {
 			if err := csi.scrapeBysets(ctx); err != nil {
@@ -480,7 +475,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		rows := doc.Find(searchRowSelector)
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
-			if csi.game == mtgmatcher.GameYuGiOh {
+			if csi.backend.Game == mtgmatcher.GameYuGiOh {
 				// The storefront leads its yugioh sealed listings with the
 				// game's own name, which the canonical names never carry.
 				productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")
@@ -573,7 +568,7 @@ func (csi *Sealed) Buylist() mtgban.BuylistRecord {
 func (csi *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSISealed"
-	info.Game = csi.game
+	info.Game = csi.backend.Game
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
 	info.SealedMode = true

@@ -172,8 +172,6 @@ type Index struct {
 	// id they belong to: a run asks for one product's prices tens of
 	// thousands of times, once per product in the catalog.
 	priceGuide map[int]cm.PriceGuide
-
-	game mtgmatcher.Game
 }
 
 var availableIndexNames = []string{
@@ -235,10 +233,7 @@ func (mkm *Index) printf(format string, a ...any) {
 // from the published catalog and the public price guide, so it needs no
 // credential.
 func NewScraperIndex(b *mtgmatcher.Backend) (*Index, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	id, found := mkmGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -246,7 +241,6 @@ func NewScraperIndex(b *mtgmatcher.Backend) (*Index, error) {
 	mkm := Index{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.maxConcurrency = defaultConcurrency
-	mkm.game = game
 	mkm.gameID = id
 	mkm.resolver.backend = b
 	mkm.resolver.printf = mkm.printf
@@ -678,6 +672,6 @@ func (mkm *Index) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.MetadataOnly = true
 	info.Family = "MKM"
-	info.Game = mkm.game
+	info.Game = mkm.backend.Game
 	return
 }

@@ -122,9 +122,9 @@ registers under: the constants `mtgmatcher.GameMagic`, `GameLorcana`,
 Every scraper sets `Game` explicitly, `GameMagic` included: the zero value
 names no real game, so an unset field is a bug to fix rather than a reading
 of Magic. Giving it a type of its own is what settles which naming a scraper is *built*
-from: a multi-game scraper takes an `mtgmatcher.Game`, converts it to the vendor's
-own naming through one unexported map, and sets `Game` back from the typed
-value it was handed. The vendor's spellings stay exported — each package's API
+from: a multi-game scraper reads `b.Game` off its datastore, converts it to the
+vendor's own naming through one unexported map, and reports `Game` back from
+the backend. The vendor's spellings stay exported — each package's API
 helpers take one — but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
 cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket,
 starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
@@ -899,7 +899,7 @@ entry points: every scraper's free-text path runs through the same `Match`
 pipeline on the backend it was built on, so a matching improvement lands
 for all of them at once and no scraper carries a private shortcut, and no
 scraper can be told one game while matching against another's datastore —
-`mtgban.GameOf(b)` is the one source of truth for which game a backend
+`b.Game` is the one source of truth for which game a backend
 prices. On `ErrUnsupported` silently `continue`; on `AliasingError` log and
 `Probe()`; on other errors log with context (many scrapers suppress
 known-noisy editions first); then insert with `Add*`. `PriceRatio` is

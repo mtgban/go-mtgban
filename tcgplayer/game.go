@@ -32,7 +32,6 @@ type TCGGame struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
-	game                mtgmatcher.Game
 
 	productTypes []string
 
@@ -74,10 +73,7 @@ var tcgGames = map[mtgmatcher.Game]int{
 // NewScraperGame returns a singles scraper for one game, authenticated with a
 // partner API key pair.
 func NewScraperGame(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	category, found := tcgGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -95,7 +91,6 @@ func NewScraperGame(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame
 	tcg.maxConcurrency = defaultConcurrency
 
 	tcg.category = category
-	tcg.game = game
 	tcg.productTypes = tcgplayer.SinglesProductTypes(category)
 
 	tcg.printings = map[int]string{}
@@ -325,7 +320,7 @@ func (tcg *TCGGame) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TCGPlayer"
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.NoQuantityInventory = true
-	info.Game = tcg.game
+	info.Game = tcg.backend.Game
 	if tcg.sealed {
 		info.Shorthand = "TCGSealed"
 		info.SealedMode = true

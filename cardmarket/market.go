@@ -64,8 +64,6 @@ type Market struct {
 	// sequentially, so this needs no lock: exactly one goroutine ever
 	// touches it.
 	bounced int
-
-	game mtgmatcher.Game
 }
 
 func (mkm *Market) printf(format string, a ...any) {
@@ -94,10 +92,7 @@ func (mkm *Market) bounce() bool {
 // NewScraperMarket returns a live-listing scraper matching against b,
 // authenticated with an app token and secret.
 func NewScraperMarket(b *mtgmatcher.Backend, appToken, appSecret string) (*Market, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	id, found := mkmGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -105,7 +100,6 @@ func NewScraperMarket(b *mtgmatcher.Backend, appToken, appSecret string) (*Marke
 	mkm := Market{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = cm.NewClient(appToken, appSecret)
-	mkm.game = game
 	mkm.resolver.backend = b
 	mkm.resolver.gameID = id
 	mkm.resolver.printf = mkm.printf
@@ -262,16 +256,16 @@ func (mkm *Market) Load(ctx context.Context) error {
 	if _, filtered := marketFilterParams[mkm.gameID]; filtered {
 		switch {
 		case mkm.banPriceKey != "":
-			snap, err := loadBanSnapshot(ctx, mkm.game, mkm.banPriceKey)
+			snap, err := loadBanSnapshot(ctx, mkm.backend.Game, mkm.banPriceKey)
 			if err != nil {
 				return fmt.Errorf("loading the price snapshot to pre-filter this catalog: %w", err)
 			}
 			candidates = marketCandidates(mkm.backend, mkm.gameID, snap)
 			mkm.printf("Restricting to %d of this game's uuids, from the price snapshot", len(candidates))
 		case marketFilterRequired[mkm.gameID]:
-			return fmt.Errorf("%s needs a pre-filtered candidate set to fit its scrape budget, and BanPriceKey is not set", mkm.game)
+			return fmt.Errorf("%s needs a pre-filtered candidate set to fit its scrape budget, and BanPriceKey is not set", mkm.backend.Game)
 		default:
-			mkm.printf("BanPriceKey not set - running %s unfiltered rather than pre-filtered", mkm.game)
+			mkm.printf("BanPriceKey not set - running %s unfiltered rather than pre-filtered", mkm.backend.Game)
 		}
 	}
 
@@ -893,7 +887,7 @@ func (mkm *Market) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "MKM"
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mkm.inventoryDate
-	info.Game = mkm.game
+	info.Game = mkm.backend.Game
 	return
 }
 

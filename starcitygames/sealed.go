@@ -29,7 +29,6 @@ type Sealed struct {
 	dropped    map[string]int
 	client     *SCGClient
 	backend    *mtgmatcher.Backend
-	game       mtgmatcher.Game
 	gameID     int
 }
 
@@ -60,10 +59,7 @@ func (scg *Sealed) drop(reason string) {
 // NewScraperSealed returns a sealed scraper for one game, using the given API
 // key.
 func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	gameID, ok := scgGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -73,7 +69,6 @@ func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient(apiKey)
 	scg.backend = b
-	scg.game = game
 	scg.gameID = gameID
 	return &scg, nil
 }
@@ -168,7 +163,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	// lorcana) resolve by name instead, English only, unique or nothing.
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
-		if scg.game == mtgmatcher.GameMagic {
+		if scg.backend.Game == mtgmatcher.GameMagic {
 			scg.drop("sku the datastore does not carry")
 			return
 		}
@@ -303,6 +298,6 @@ func (scg *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.SealedMode = true
-	info.Game = scg.game
+	info.Game = scg.backend.Game
 	return
 }

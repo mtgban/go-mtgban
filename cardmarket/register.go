@@ -119,10 +119,7 @@ func init() {
 // prices from a published catalog and the public price guide, and makes no
 // authenticated call; see TestIndexMakesNoAuthenticatedCall.
 func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	scraper, err := NewScraperIndex(b)
 	if err != nil {
 		return nil, err
@@ -157,10 +154,7 @@ func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 
 // buildMarket is cardmarket_market's Constructor.
 func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	appToken, err := opts.Secret(SecretAppToken)
 	if err != nil {
 		return nil, err
@@ -204,10 +198,7 @@ func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, er
 // buildSealed is cardmarket_sealed's Constructor; the bridge it needs is
 // SealedBridgeUseOf's question, not BridgeUseOf's.
 func buildSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	appToken, err := opts.Secret(SecretAppToken)
 	if err != nil {
 		return nil, err

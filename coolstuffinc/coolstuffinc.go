@@ -93,7 +93,6 @@ type Coolstuffinc struct {
 	buylist   mtgban.BuylistRecord
 
 	client  *http.Client
-	game    mtgmatcher.Game
 	shelf   string
 	backend *mtgmatcher.Backend
 }
@@ -318,10 +317,7 @@ func buylistVariation(product CSIPriceEntry) string {
 
 // NewScraper returns a singles scraper for the datastore's game.
 func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
-	game, err := mtgban.GameOf(b)
-	if err != nil {
-		return nil, err
-	}
+	game := b.Game
 	shelf, ok := csiGames[game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", game)
@@ -331,7 +327,6 @@ func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
 	csi.buylist = mtgban.BuylistRecord{}
 	csi.client = newCSIHTTPClient()
 	csi.maxConcurrency = defaultConcurrency
-	csi.game = game
 	csi.shelf = shelf
 	csi.backend = b
 	return &csi, nil
@@ -690,7 +685,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				}
 
 				var theCard *mtgmatcher.InputCard
-				switch csi.game {
+				switch csi.backend.Game {
 				case mtgmatcher.GameMagic:
 					c, err := preprocess(csi.backend, cardName, edition, notes, imgURL)
 					if err != nil {
@@ -788,7 +783,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				// Magic-only finish sanity check: skip cards that do not have the
 				// requested finish.
-				if csi.game == mtgmatcher.GameMagic {
+				if csi.backend.Game == mtgmatcher.GameMagic {
 					if strings.Contains(cardName, "Foil-etched") {
 						co, err := csi.backend.GetUUID(cardID)
 						if err != nil || !co.Etched {
@@ -965,7 +960,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 	// Some Magic PIDs get a placeholder isFoil=1 row at a flat price beside
 	// their real nonfoil row; nonfoilPID feeds magicPhantomFoilTwin below.
 	nonfoilPID := map[string]bool{}
-	if csi.game == mtgmatcher.GameMagic {
+	if csi.backend.Game == mtgmatcher.GameMagic {
 		for _, product := range products {
 			if product.IsFoil == 0 {
 				nonfoilPID[product.PID] = true
@@ -1000,7 +995,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 
 		var theCard *mtgmatcher.InputCard
 		var runFinishes []string
-		switch csi.game {
+		switch csi.backend.Game {
 		case mtgmatcher.GameMagic:
 			c, err := PreprocessBuylist(csi.backend, product)
 			if err != nil {
@@ -1091,14 +1086,14 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			continue
 		}
 
-		if csi.game == mtgmatcher.GameMagic {
+		if csi.backend.Game == mtgmatcher.GameMagic {
 			co, cerr := csi.backend.GetUUID(cardID)
 			if cerr == nil && magicPhantomFoilTwin(co, product.IsFoil, nonfoilPID[product.PID]) {
 				continue
 			}
 		}
 
-		if csi.game == mtgmatcher.GamePokemon && pokemonNonHolo.MatchString(product.Name) {
+		if csi.backend.Game == mtgmatcher.GamePokemon && pokemonNonHolo.MatchString(product.Name) {
 			co, cerr := csi.backend.GetUUID(cardID)
 			if cerr == nil && !co.HasFinish(mtgmatcher.FinishNonfoil) &&
 				strings.Contains(co.Rarity, "Holo") {
@@ -1106,7 +1101,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			}
 		}
 
-		if csi.game == mtgmatcher.GameOnePiece {
+		if csi.backend.Game == mtgmatcher.GameOnePiece {
 			if renamed := onePieceRenamedTreatment(csi.backend, cardID, product.Name); renamed != "" {
 				cardID = renamed
 			}
@@ -1223,7 +1218,7 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
 	info.CreditMultiplier = 1.25
-	info.Game = csi.game
+	info.Game = csi.backend.Game
 	return
 }
 

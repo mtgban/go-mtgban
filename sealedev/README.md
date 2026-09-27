@@ -148,7 +148,7 @@ product's own name.
   scraper is found, so nothing can build a `sealed_ev` for another game in
   the first place; `banAPIURL` then hardcodes `www.mtgban.com`, which serves
   Magic's prices alone — each game's are published on its own subdomain, the
-  way `cardmarket`'s `banHost` composes them. Another game needs both
+  way `cardmarket`'s `banAPIURL` spells them. Another game needs both
   changed, the registration before the URL. `mkm.go`'s calibration is
   already per-game and would follow on its own; the accuracy notes there say
   which games would survive the move.

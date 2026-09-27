@@ -437,18 +437,18 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    by default.
 6. The constructor takes the datastore first and nothing naming a game:
    `NewScraper(b *mtgmatcher.Backend, ...) (*T, error)`. A scraper that prices
-   more than one game reads which one with `mtgban.GameOf(b)`, so it cannot be
+   more than one game reads which one from `b.Game`, so it cannot be
    told one game and matched against another's datastore. The vendor's own
    naming for its games — slugs, catalog ids, department numbers — stays
    exported, because the package's own API helpers take one (`Search`,
    `SCGBuylistURL`, `NewGNClient`); what a caller no longer needs it for is
    building a scraper. One `map[mtgmatcher.Game]<vendor value>` per package sits
    between the two and both converts and validates, and a game the map does
-   not hold is refused at the constructor — as is a datastore that names no
-   game at all, which `GameOf` rejects before the map is asked, rather than
-   anything silently defaulting to Magic. Store the typed game on the struct
-   so `Info()` reads `info.Game = x.game` rather than switching a vendor value
-   back into one; keep every read that drives a run on the vendor value.
+   not hold is refused at the constructor, a datastore that names no game
+   included, rather than anything silently defaulting to Magic. `Info()`
+   reads the game back off the backend, `info.Game = x.backend.Game`, rather
+   than switching a vendor value back into one; keep every read that drives
+   a run on the vendor value.
 
 ### Adding a game
 

@@ -99,7 +99,8 @@ func TestNewScraperRefusesWhatItCannotBuild(t *testing.T) {
 	}{
 		{"nil datastore", nil, "registry_test", []Option{auth}, "needs a datastore"},
 		{"unnamed game", &mtgmatcher.Backend{}, "registry_test", []Option{auth}, "names no game"},
-		{"unknown game", &mtgmatcher.Backend{Game: "chess"}, "registry_test", []Option{auth}, `"chess" is not one`},
+		{"unknown game", &mtgmatcher.Backend{Game: "chess"}, "registry_test", []Option{auth}, `no scraper "registry_test" for chess`},
+		{"capitalized game", &mtgmatcher.Backend{Game: "Magic"}, "registry_test", []Option{auth}, `no scraper "registry_test" for Magic`},
 		{"unknown scraper", magic, "nope", []Option{auth}, `no scraper "nope" for magic (registered: registry_plain, registry_test)`},
 		{"wrong game", &mtgmatcher.Backend{Game: "lorcana"}, "registry_test", []Option{auth}, `no scraper "registry_test" for lorcana`},
 		{"no authenticator", magic, "registry_test", nil, "registry_test: missing secret: REGISTRY_TEST_SECRET"},
@@ -163,21 +164,6 @@ func TestRegisteredListsAGameSortedAndRegisterRefusesTwice(t *testing.T) {
 	Register("registry_plain", []mtgmatcher.Game{mtgmatcher.GameMagic}, func(*mtgmatcher.Backend, Options) (Scraper, error) {
 		return registryPlain{}, nil
 	})
-}
-
-// TestGameOfReadsTheDatastoresGame pins GameOf handing back the name the
-// datastore was opened under, and refusing any other spelling of it.
-func TestGameOfReadsTheDatastoresGame(t *testing.T) {
-	for _, game := range mtgmatcher.AllGames {
-		got, err := GameOf(&mtgmatcher.Backend{Game: game})
-		if err != nil || got != game {
-			t.Errorf("GameOf(%q) = %v, %v", game, got, err)
-		}
-	}
-	_, err := GameOf(&mtgmatcher.Backend{Game: "Magic"})
-	if err == nil {
-		t.Error(`GameOf("Magic") answered; only the registered spelling is a game`)
-	}
 }
 
 func TestAuthenticators(t *testing.T) {

@@ -103,7 +103,6 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -133,10 +132,7 @@ func TestZZCensusWalk(t *testing.T) {
 	}
 	// bantool passes the bridge only where the game uses one; Magic walks
 	// without it.
-	g, err := mtgban.GameOf(b)
-	if err != nil {
-		t.Fatal(err)
-	}
+	g := b.Game
 	if BridgeUseOf(g) != BridgeUnused {
 		raw, err := os.ReadFile(filepath.Join(dir, game+"-bridge.json"))
 		if err != nil {

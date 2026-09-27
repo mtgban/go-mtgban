@@ -11,8 +11,8 @@ import (
 
 // Constructor builds a scraper against the datastore it is handed, from the
 // options its caller supplied. It is what a scraper package registers and
-// what NewScraper calls; the game is the datastore's, read with GameOf, and
-// the secrets are the options', read with Options.Secret.
+// what NewScraper calls; the game is the datastore's own, b.Game, and the
+// secrets are the options', read with Options.Secret.
 type Constructor func(b *mtgmatcher.Backend, opts Options) (Scraper, error)
 
 type registration struct {
@@ -67,18 +67,6 @@ func Registered(game mtgmatcher.Game) []string {
 	return names
 }
 
-// GameOf returns the game a datastore was loaded for, refusing a datastore
-// that names no game or one mtgban does not price.
-func GameOf(b *mtgmatcher.Backend) (mtgmatcher.Game, error) {
-	if b.Game == "" {
-		return "", errors.New("mtgban: the datastore names no game")
-	}
-	if !slices.Contains(mtgmatcher.AllGames, b.Game) {
-		return "", fmt.Errorf("mtgban: the datastore's game %q is not one mtgban prices", b.Game)
-	}
-	return b.Game, nil
-}
-
 // NewScraper builds the named scraper against the datastore, configured and
 // ready for Load. The name is the one the scraper registered ("cardmarket",
 // "tcg_market"); the game is read off the datastore, which is what the
@@ -88,9 +76,9 @@ func NewScraper(b *mtgmatcher.Backend, name string, opts ...Option) (Scraper, er
 	if b == nil {
 		return nil, errors.New("mtgban: NewScraper needs a datastore")
 	}
-	game, err := GameOf(b)
-	if err != nil {
-		return nil, err
+	game := b.Game
+	if game == "" {
+		return nil, errors.New("mtgban: the datastore names no game")
 	}
 	reg, found := lookup(game, name)
 	if !found {
