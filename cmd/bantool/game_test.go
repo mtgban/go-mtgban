@@ -1,107 +1,120 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestRunGame pins that a run names one game or refuses: one datastore is
-// loaded, so scrapers of two games cannot share a run.
-func TestRunGame(t *testing.T) {
-	enabled := func(targets map[mtgmatcher.Game][]string) map[mtgmatcher.Game]map[string]*scraperOption {
-		out := map[mtgmatcher.Game]map[string]*scraperOption{
-			mtgmatcher.GameYuGiOh: {"cardmarket": {}},
-		}
-		for game, names := range targets {
-			if out[game] == nil {
-				out[game] = map[string]*scraperOption{}
-			}
-			for _, name := range names {
-				out[game][name] = &scraperOption{Enabled: true}
-			}
-		}
-		return out
+func testOptions() map[mtgmatcher.Game]map[string]*scraperOption {
+	return map[mtgmatcher.Game]map[string]*scraperOption{
+		mtgmatcher.GameMagic:   {"cardmarket": {}, "starcitygames": {}},
+		mtgmatcher.GameLorcana: {"cardmarket": {}, "cardtrader": {}},
 	}
+}
+
+// TestResolveGame pins -game's validation: empty, unknown, and a match
+// returning exactly the game the caller asked for.
+func TestResolveGame(t *testing.T) {
+	options := testOptions()
 	for _, tt := range []struct {
 		desc    string
-		options map[mtgmatcher.Game]map[string]*scraperOption
+		name    string
 		want    mtgmatcher.Game
-		wantErr bool
+		wantErr string
 	}{
-		{"one game", enabled(map[mtgmatcher.Game][]string{
-			mtgmatcher.GamePokemon: {"cardmarket", "tcg_syplist"},
-		}), mtgmatcher.GamePokemon, false},
-		{"magic by default", enabled(map[mtgmatcher.Game][]string{
-			mtgmatcher.GameMagic: {"cardmarket", "cardmarket_sealed"},
-		}), mtgmatcher.GameMagic, false},
-		{"nothing enabled", enabled(nil), "", true},
-		{"two games", enabled(map[mtgmatcher.Game][]string{
-			mtgmatcher.GamePokemon: {"cardmarket"},
-			mtgmatcher.GameMagic:   {"cardmarket"},
-		}), "", true},
+		{"registered", "lorcana", mtgmatcher.GameLorcana, ""},
+		{"empty", "", "", "no -game given"},
+		{"unknown", "nosuch", "", `unknown game "nosuch"`},
 	} {
-		got, err := runGame(tt.options)
-		if (err != nil) != tt.wantErr || got != tt.want {
-			t.Errorf("%s: runGame() = %q, %v; want %q, error %v", tt.desc, got, err, tt.want, tt.wantErr)
+		got, err := resolveGame(options, tt.name)
+		if got != tt.want {
+			t.Errorf("%s: resolveGame() = %q, want %q", tt.desc, got, tt.want)
+		}
+		switch {
+		case tt.wantErr == "" && err != nil:
+			t.Errorf("%s: resolveGame() error = %v, want nil", tt.desc, err)
+		case tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)):
+			t.Errorf("%s: resolveGame() error = %v, want it to contain %q", tt.desc, err, tt.wantErr)
 		}
 	}
 }
 
-// TestScraperFlagName pins the naming a target is enabled by: the store's own
-// name for Magic, and store+"_"+game for every other game, whatever else the
-// store's own name is suffixed with.
-func TestScraperFlagName(t *testing.T) {
-	for _, tt := range []struct {
-		game mtgmatcher.Game
-		name string
-		want string
-	}{
-		{mtgmatcher.GameMagic, "cardmarket", "cardmarket"},
-		{mtgmatcher.GameMagic, "cardmarket_sealed", "cardmarket_sealed"},
-		{mtgmatcher.GameMagic, "tcg_index", "tcg_index"},
-		{mtgmatcher.GameMagic, "sealed_ev", "sealed_ev"},
-		{mtgmatcher.GameMagic, "cardkingdom_graded", "cardkingdom_graded"},
-		{mtgmatcher.GamePokemon, "cardmarket", "cardmarket_pokemon"},
-		{mtgmatcher.GamePokemon, "cardmarket_sealed", "cardmarket_sealed_pokemon"},
-		{mtgmatcher.GameLorcana, "starcitygames_sealed", "starcitygames_sealed_lorcana"},
-		{mtgmatcher.GameFleshAndBlood, "tcg_market", "tcg_market_fleshandblood"},
-		{mtgmatcher.GameYuGiOh, "cardtrader", "cardtrader_yugioh"},
-	} {
-		if got := scraperFlagName(tt.game, tt.name); got != tt.want {
-			t.Errorf("scraperFlagName(%q, %q) = %q, want %q", tt.game, tt.name, got, tt.want)
+// TestEnableStores pins how -store, -sellers and -vendors turn on a game's
+// scrapers: -store alone enables both halves, -sellers/-vendors pin one,
+// and naming the same store through two of the three leaves both standing
+// rather than one clearing what the other set.
+func TestEnableStores(t *testing.T) {
+	t.Run("store enables both halves", func(t *testing.T) {
+		scrapers := map[string]*scraperOption{"cardmarket": {}}
+		err := enableStores(scrapers, mtgmatcher.GameLorcana, "cardmarket", "", "")
+		if err != nil {
+			t.Fatal(err)
 		}
-	}
-}
-
-// TestFlattenOptionsSharesPointers pins that the flat view is the same
-// registry seen from outside: enabling a target by its flag name is what
-// runGame later reads off the nested map.
-func TestFlattenOptionsSharesPointers(t *testing.T) {
-	nested := map[mtgmatcher.Game]map[string]*scraperOption{
-		mtgmatcher.GameLorcana: {"cardtrader": {}},
-	}
-	flat := flattenOptions(nested)
-	if flat["cardtrader_lorcana"] == nil {
-		t.Fatalf("flattenOptions() = %v, want a cardtrader_lorcana entry", flat)
-	}
-	flat["cardtrader_lorcana"].Enabled = true
-	if !nested[mtgmatcher.GameLorcana]["cardtrader"].Enabled {
-		t.Error("enabling a target through the flat view left the nested one disabled")
-	}
-}
-
-// TestFlattenOptionsRefusesCollision pins that two games claiming one flag
-// name stop the run rather than silently dropping whichever entry a random
-// map iteration wrote first.
-func TestFlattenOptionsRefusesCollision(t *testing.T) {
-	defer func() {
-		if recover() == nil {
-			t.Error("flattenOptions() accepted one name registered under two games")
+		opt := scrapers["cardmarket"]
+		if !opt.Enabled || opt.OnlySeller || opt.OnlyVendor {
+			t.Errorf("got %+v, want enabled with neither half pinned", opt)
 		}
-	}()
-	flattenOptions(map[mtgmatcher.Game]map[string]*scraperOption{
-		mtgmatcher.GameMagic:   {"cardmarket_lorcana": {}},
-		mtgmatcher.GameLorcana: {"cardmarket": {}},
+	})
+
+	t.Run("sellers pins retail", func(t *testing.T) {
+		scrapers := map[string]*scraperOption{"cardmarket": {}}
+		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "cardmarket", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		opt := scrapers["cardmarket"]
+		if !opt.Enabled || !opt.OnlySeller || opt.OnlyVendor {
+			t.Errorf("got %+v, want OnlySeller", opt)
+		}
+	})
+
+	t.Run("vendors pins buylist", func(t *testing.T) {
+		scrapers := map[string]*scraperOption{"cardmarket": {}}
+		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "", "cardmarket")
+		if err != nil {
+			t.Fatal(err)
+		}
+		opt := scrapers["cardmarket"]
+		if !opt.Enabled || !opt.OnlyVendor || opt.OnlySeller {
+			t.Errorf("got %+v, want OnlyVendor", opt)
+		}
+	})
+
+	t.Run("store and vendors on the same name leave both standing", func(t *testing.T) {
+		scrapers := map[string]*scraperOption{"cardmarket": {}}
+		err := enableStores(scrapers, mtgmatcher.GameLorcana, "cardmarket", "", "cardmarket")
+		if err != nil {
+			t.Fatal(err)
+		}
+		opt := scrapers["cardmarket"]
+		if !opt.Enabled || !opt.OnlyVendor {
+			t.Errorf("got %+v, want enabled and OnlyVendor", opt)
+		}
+	})
+
+	t.Run("unknown store lists what is registered", func(t *testing.T) {
+		scrapers := map[string]*scraperOption{"cardmarket": {}, "cardtrader": {}}
+		err := enableStores(scrapers, mtgmatcher.GameLorcana, "nosuch", "", "")
+		if err == nil || !strings.Contains(err.Error(), "cardmarket") || !strings.Contains(err.Error(), "cardtrader") {
+			t.Errorf("enableStores() error = %v, want it to name the registered stores", err)
+		}
+	})
+
+	t.Run("unknown seller is refused before it is enabled", func(t *testing.T) {
+		scrapers := map[string]*scraperOption{"cardmarket": {}}
+		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "nosuch", "")
+		if err == nil {
+			t.Error("enableStores() = nil, want an error naming the unregistered seller")
+		}
+	})
+
+	t.Run("nothing given is refused", func(t *testing.T) {
+		scrapers := map[string]*scraperOption{"cardmarket": {}}
+		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "", "")
+		if err == nil {
+			t.Error("enableStores() = nil, want an error naming no store given")
+		}
 	})
 }
