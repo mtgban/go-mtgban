@@ -258,6 +258,10 @@ as a new baseline.
   validate conditions against `FullGradeTags`, merge duplicates, and keep each
   slice sorted. `Arbit` depends on that sort leaving the NM entry at
   `entries[0]`. `AddUnique` is the strictest gate and **ignores price**.
+- **Grades go through `mtgban.ParseCondition`.** It reads the spellings
+  stores share; a word a store reads its own way (CardTrader's "Played",
+  Cardmarket's scale) is mapped first, in that scraper's `<tag>Condition`
+  helper. A refusal logs `printf("unsupported %s condition", text)`.
 - **`ErrUnsupported` is a silent-skip signal**, not a failure. In a scraper's
   preprocess loop: skip `ErrUnsupported`, but log `AliasingError` (call
   `.Probe()` to dump the candidates) and every other error as a data-quality

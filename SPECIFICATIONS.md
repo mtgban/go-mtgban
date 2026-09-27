@@ -85,6 +85,9 @@ product UUID directly without calling `Match()` — see §3).
 - `BuylistEntry`: swaps `Price` for `BuyPrice` + `PriceRatio` (buy/sell
   ratio, a desirability signal) and `SellerName` for `VendorName`.
 
+A scraper reads a store's grade text with `ParseCondition`, which knows the
+spellings stores share and returns `ErrInvalidCondition` for anything else.
+
 **Insertion semantics** (`add()` in `mtgban/base.go`) — the de-dup engine
 every scraper relies on. Defaults are applied first, and the two sides differ:
 both default an empty condition to `NM`, but only the inventory side
