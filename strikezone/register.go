@@ -7,9 +7,9 @@ import (
 
 func init() {
 	mtgban.Register("strikezone",
-		[]mtgban.Game{
-			mtgban.GameMagic, mtgban.GameLorcana, mtgban.GamePokemon,
-			mtgban.GameFleshAndBlood,
+		[]mtgmatcher.Game{
+			mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GamePokemon,
+			mtgmatcher.GameFleshAndBlood,
 		},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)

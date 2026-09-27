@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -34,7 +33,7 @@ var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?(?:\s*\(Copy\))
 //
 // Both refusals here are deliberate, so they wrap ErrUnsupported: the caller
 // reads that and drops the listing without logging it as a failure.
-func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgban.Game) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgmatcher.Game) (*mtgmatcher.InputCard, error) {
 	if uniqueCopy.MatchString(strings.TrimSpace(product.DisplayName)) {
 		return nil, fmt.Errorf("%w: listing is one particular copy, not the printing", mtgmatcher.ErrUnsupported)
 	}
@@ -44,13 +43,13 @@ func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgban.Game) (*mt
 	}
 
 	switch game {
-	case mtgban.GameRiftbound:
+	case mtgmatcher.GameRiftbound:
 		return preprocessRiftbound(product)
-	case mtgban.GameOnePiece:
+	case mtgmatcher.GameOnePiece:
 		return preprocessOnePiece(product)
-	case mtgban.GamePokemon:
+	case mtgmatcher.GamePokemon:
 		return preprocessPokemon(product)
-	case mtgban.GameGundam:
+	case mtgmatcher.GameGundam:
 		return preprocessGundam(product)
 	}
 	return preprocessMagic(b, product)

@@ -6,9 +6,9 @@ import (
 )
 
 func init() {
-	mtgban.Register("cardkingdom", []mtgban.Game{mtgban.GameMagic}, newScraper)
-	mtgban.Register("cardkingdom_graded", []mtgban.Game{mtgban.GameMagic}, newScraperGraded)
-	mtgban.Register("cardkingdom_sealed", []mtgban.Game{mtgban.GameMagic}, newScraperSealed)
+	mtgban.Register("cardkingdom", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraper)
+	mtgban.Register("cardkingdom_graded", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraperGraded)
+	mtgban.Register("cardkingdom_sealed", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraperSealed)
 }
 
 func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {

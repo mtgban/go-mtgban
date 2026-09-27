@@ -176,7 +176,7 @@ func ConvertProducts(b *mtgmatcher.Backend, blueprints map[int]*Blueprint, produ
 // the lot. A non-empty targetEdition narrows the fetch to that expansion
 // by name or code; logf, when given, reports the skips. The expansions
 // are returned too, since callers key edition names off them.
-func BlueprintsForGame(ctx context.Context, client *CTAuthClient, game mtgban.Game, targetEdition string, logf func(string, ...any)) ([]Blueprint, []Expansion, error) {
+func BlueprintsForGame(ctx context.Context, client *CTAuthClient, game mtgmatcher.Game, targetEdition string, logf func(string, ...any)) ([]Blueprint, []Expansion, error) {
 	gameID, found := ctGames[game]
 	if !found {
 		return nil, nil, fmt.Errorf("unsupported game %q", game)

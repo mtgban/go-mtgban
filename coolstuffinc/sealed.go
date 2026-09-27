@@ -36,7 +36,7 @@ type Sealed struct {
 	disableBuylist bool
 
 	client  *http.Client
-	game    mtgban.Game
+	game    mtgmatcher.Game
 	shelf   string
 	backend *mtgmatcher.Backend
 }
@@ -58,7 +58,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 	csi.maxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
-	if game == mtgban.GameMagic {
+	if game == mtgmatcher.GameMagic {
 		for _, uuid := range b.GetSealedUUIDs() {
 			co, err := b.GetUUID(uuid)
 			if err != nil {
@@ -252,7 +252,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 		// skipping the language variants the datastores never carry.
 		uuid, found := csi.productMap[product.PID]
 		if !found {
-			if csi.game == mtgban.GameMagic {
+			if csi.game == mtgmatcher.GameMagic {
 				continue
 			}
 			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
@@ -313,7 +313,7 @@ func (csi *Sealed) Load(ctx context.Context) error {
 	// other games ride the same set-facet search the singles use, with
 	// the sealed-name resolver telling the sealed rows apart from the
 	// card ones.
-	if csi.game != mtgban.GameMagic {
+	if csi.game != mtgmatcher.GameMagic {
 		var errs []error
 		if !csi.disableRetail {
 			if err := csi.scrapeBysets(ctx); err != nil {
@@ -480,7 +480,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		rows := doc.Find(searchRowSelector)
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
-			if csi.game == mtgban.GameYuGiOh {
+			if csi.game == mtgmatcher.GameYuGiOh {
 				// The storefront leads its yugioh sealed listings with the
 				// game's own name, which the canonical names never carry.
 				productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")

@@ -62,7 +62,7 @@ func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scra
 		return nil, err
 	}
 
-	if game == mtgban.GameMagic {
+	if game == mtgmatcher.GameMagic {
 		scraper, err := NewScraperIndex(b, publicID, privateID)
 		if err != nil {
 			return nil, err
@@ -101,7 +101,7 @@ func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 		return nil, err
 	}
 
-	if game == mtgban.GameMagic {
+	if game == mtgmatcher.GameMagic {
 		skus, err := mtgban.Resource[SKUMap](opts, ResourceSKUs)
 		if err != nil {
 			return nil, err
@@ -150,7 +150,7 @@ func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 		return nil, err
 	}
 
-	if game == mtgban.GameMagic {
+	if game == mtgmatcher.GameMagic {
 		skus, err := mtgban.Resource[SKUMap](opts, ResourceSKUs)
 		if err != nil {
 			return nil, err
@@ -211,8 +211,8 @@ func newTCGSYPListScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Sc
 }
 
 func init() {
-	mtgban.Register("tcg_index", mtgban.AllGames, newTCGIndexScraper)
-	mtgban.Register("tcg_market", mtgban.AllGames, newTCGMarketScraper)
-	mtgban.Register("tcg_sealed", mtgban.AllGames, newTCGSealedScraper)
-	mtgban.Register("tcg_syplist", []mtgban.Game{mtgban.GameMagic, mtgban.GamePokemon}, newTCGSYPListScraper)
+	mtgban.Register("tcg_index", mtgmatcher.AllGames, newTCGIndexScraper)
+	mtgban.Register("tcg_market", mtgmatcher.AllGames, newTCGMarketScraper)
+	mtgban.Register("tcg_sealed", mtgmatcher.AllGames, newTCGSealedScraper)
+	mtgban.Register("tcg_syplist", []mtgmatcher.Game{mtgmatcher.GameMagic, mtgmatcher.GamePokemon}, newTCGSYPListScraper)
 }

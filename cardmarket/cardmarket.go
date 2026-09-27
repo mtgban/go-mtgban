@@ -173,7 +173,7 @@ type Index struct {
 	// thousands of times, once per product in the catalog.
 	priceGuide map[int]cm.PriceGuide
 
-	game mtgban.Game
+	game mtgmatcher.Game
 }
 
 var availableIndexNames = []string{
@@ -187,15 +187,15 @@ var name2shorthand = map[string]string{
 
 // mkmGames is the only way into these scrapers: a game names its Cardmarket
 // id here or it is not one this package is read for.
-var mkmGames = map[mtgban.Game]cm.Game{
-	mtgban.GameMagic:         cm.GameMagic,
-	mtgban.GameLorcana:       cm.GameLorcana,
-	mtgban.GameRiftbound:     cm.GameRiftbound,
-	mtgban.GameOnePiece:      cm.GameOnePiece,
-	mtgban.GameYuGiOh:        cm.GameYuGiOh,
-	mtgban.GameFleshAndBlood: cm.GameFleshAndBlood,
-	mtgban.GamePokemon:       cm.GamePokemon,
-	mtgban.GameGundam:        cm.GameGundam,
+var mkmGames = map[mtgmatcher.Game]cm.Game{
+	mtgmatcher.GameMagic:         cm.GameMagic,
+	mtgmatcher.GameLorcana:       cm.GameLorcana,
+	mtgmatcher.GameRiftbound:     cm.GameRiftbound,
+	mtgmatcher.GameOnePiece:      cm.GameOnePiece,
+	mtgmatcher.GameYuGiOh:        cm.GameYuGiOh,
+	mtgmatcher.GameFleshAndBlood: cm.GameFleshAndBlood,
+	mtgmatcher.GamePokemon:       cm.GamePokemon,
+	mtgmatcher.GameGundam:        cm.GameGundam,
 }
 
 // defaultArticleFilter is the filter a price is read through: played or

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -26,7 +25,7 @@ func TestUniqueCopy(t *testing.T) {
 		"Yasuo - Windrider (Signature) (235*/221) - Spiritforged Foil Unique (58724) (Copy)",
 		"Gengar VMAX (Unique- Miscut Corner) (Alternate Art Secret) 271/264  - Holofoil SWSH08 Fusion Strike - Secret Rare",
 	} {
-		_, err := preprocess(&mtgmatcher.Backend{}, VSProduct{DisplayName: display}, mtgban.GameRiftbound)
+		_, err := preprocess(&mtgmatcher.Backend{}, VSProduct{DisplayName: display}, mtgmatcher.GameRiftbound)
 		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 			t.Errorf("%s: preprocess() = %v, want a refusal wrapping ErrUnsupported", display, err)
 		}
@@ -53,7 +52,7 @@ func TestProcessProductSkipsUniqueCopyQuietly(t *testing.T) {
 	var logged []string
 	vs := &Vegassingles{
 		backend:     &mtgmatcher.Backend{},
-		game:        mtgban.GameRiftbound,
+		game:        mtgmatcher.GameRiftbound,
 		logCallback: func(format string, a ...any) { logged = append(logged, format) },
 	}
 

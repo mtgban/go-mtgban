@@ -25,13 +25,12 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/cardtrader"
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func TestZZCensusFetch(t *testing.T) {
@@ -39,12 +38,7 @@ func TestZZCensusFetch(t *testing.T) {
 	if game == "" {
 		t.Skip()
 	}
-	var g mtgban.Game
-	for _, x := range mtgban.AllGames {
-		if strings.EqualFold(string(x), game) {
-			g = x
-		}
-	}
+	g := mtgmatcher.Game(game)
 	ctx := context.Background()
 	write := func(name string, v any) {
 		raw, err := json.Marshal(v)

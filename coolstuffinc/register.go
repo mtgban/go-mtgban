@@ -6,17 +6,17 @@ import (
 )
 
 // singlesGames are the games "coolstuffinc" registers for.
-var singlesGames = []mtgban.Game{
-	mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameRiftbound, mtgban.GameOnePiece,
-	mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameGundam, mtgban.GamePalworld,
+var singlesGames = []mtgmatcher.Game{
+	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameOnePiece,
+	mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh, mtgmatcher.GameGundam, mtgmatcher.GamePalworld,
 }
 
 // sealedGames are the games "coolstuffinc_sealed" registers for: every
 // singles game but Gundam and Palworld, which this storefront sells no
 // sealed product of.
-var sealedGames = []mtgban.Game{
-	mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameRiftbound, mtgban.GameOnePiece,
-	mtgban.GamePokemon, mtgban.GameYuGiOh,
+var sealedGames = []mtgmatcher.Game{
+	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameOnePiece,
+	mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
 }
 
 // ResourceIncludeOOS names the optional out-of-stock listing input.

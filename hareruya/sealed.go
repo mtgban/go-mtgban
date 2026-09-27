@@ -257,6 +257,6 @@ func (ha *Sealed) Info() (info mtgban.ScraperInfo) {
 	// The unisearch API only exposes an unreliable aggregate stock count, so
 	// per-item quantity is not reported.
 	info.NoQuantityInventory = true
-	info.Game = mtgban.GameMagic
+	info.Game = mtgmatcher.GameMagic
 	return
 }

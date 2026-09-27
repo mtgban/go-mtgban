@@ -7,9 +7,9 @@ import (
 
 func init() {
 	mtgban.Register("gamenerdz",
-		[]mtgban.Game{
-			mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameOnePiece,
-			mtgban.GamePokemon,
+		[]mtgmatcher.Game{
+			mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameOnePiece,
+			mtgmatcher.GamePokemon,
 		},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)

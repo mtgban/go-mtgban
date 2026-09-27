@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // GenericEntry is the part an inventory and a buylist entry have in common, so
@@ -121,43 +123,6 @@ func (be BuylistEntry) Qty() int {
 	return be.Quantity
 }
 
-// Game is one of the games mtgban prices, and the only naming a scraper is
-// built from. A vendor numbers or spells its own games however it likes, and
-// that naming stays inside the vendor's package: it converts at its edge, so
-// a caller wiring a scraper up names the game once, here.
-//
-// The values are the wire format ScraperInfo.Game is published as; changing
-// one changes every dump and every consumer reading them.
-type Game string
-
-// The games a scraper can price, as carried in ScraperInfo.Game.
-const (
-	GameMagic         Game = "Magic"
-	GameLorcana       Game = "Lorcana"
-	GameRiftbound     Game = "Riftbound"
-	GameOnePiece      Game = "OnePiece"
-	GameYuGiOh        Game = "YuGiOh"
-	GameFleshAndBlood Game = "FleshAndBlood"
-	GamePokemon       Game = "Pokemon"
-	GameGundam        Game = "Gundam"
-	GamePalworld      Game = "Palworld"
-)
-
-// AllGames is every game above, in a settled order: the official list, for a
-// caller that has to run through all of them rather than name one. A game
-// added to the constants belongs here too.
-var AllGames = []Game{
-	GameMagic,
-	GameLorcana,
-	GameRiftbound,
-	GameOnePiece,
-	GameYuGiOh,
-	GameFleshAndBlood,
-	GamePokemon,
-	GameGundam,
-	GamePalworld,
-}
-
 // ScraperInfo contains
 type ScraperInfo struct {
 	// Full name of the store
@@ -194,7 +159,7 @@ type ScraperInfo struct {
 	Family string `json:"family,omitempty"`
 
 	// Which game the scraper belongs to
-	Game Game `json:"game"`
+	Game mtgmatcher.Game `json:"game"`
 }
 
 // Condition is the grade of an entry, spelled as the records and the dumps

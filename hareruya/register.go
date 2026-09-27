@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	mtgban.Register("hareruya", []mtgban.Game{mtgban.GameMagic},
+	mtgban.Register("hareruya", []mtgmatcher.Game{mtgmatcher.GameMagic},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback
@@ -16,7 +16,7 @@ func init() {
 			}
 			return scraper, nil
 		})
-	mtgban.Register("hareruya_sealed", []mtgban.Game{mtgban.GameMagic},
+	mtgban.Register("hareruya_sealed", []mtgmatcher.Game{mtgmatcher.GameMagic},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraperSealed(b)
 			scraper.logCallback = opts.LogCallback

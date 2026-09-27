@@ -12,7 +12,7 @@ import (
 // for a test to ask directly, or skips the test where the run carries none:
 // this storefront's tests cover five games, and each runs under the job
 // holding its own game's file.
-func readGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
+func readGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {

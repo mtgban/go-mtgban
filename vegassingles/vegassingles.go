@@ -35,12 +35,12 @@ const (
 // vsGames is what NewScraper is built through: it names the product line a
 // game is sold under, and a game named nowhere here is not one Vegas Singles
 // is read for. The lines themselves stay public, since NewVSClient takes one.
-var vsGames = map[mtgban.Game]string{
-	mtgban.GameMagic:     GameMagic,
-	mtgban.GameRiftbound: GameRiftbound,
-	mtgban.GameOnePiece:  GameOnePiece,
-	mtgban.GamePokemon:   GamePokemon,
-	mtgban.GameGundam:    GameGundam,
+var vsGames = map[mtgmatcher.Game]string{
+	mtgmatcher.GameMagic:     GameMagic,
+	mtgmatcher.GameRiftbound: GameRiftbound,
+	mtgmatcher.GameOnePiece:  GameOnePiece,
+	mtgmatcher.GamePokemon:   GamePokemon,
+	mtgmatcher.GameGundam:    GameGundam,
 }
 
 // listedConditions names the conditions the store buys, per game. The
@@ -53,11 +53,11 @@ var vsGames = map[mtgban.Game]string{
 // It is a buylist setting and reaches nothing else: what the store sells
 // is whatever it has on the shelf, in whatever grade it graded it, and the
 // stock count beside each retail listing is what says so.
-var listedConditions = map[mtgban.Game][]string{
-	mtgban.GameRiftbound: {"Near Mint"},
-	mtgban.GamePokemon:   {"Near Mint"},
-	mtgban.GameOnePiece:  {"Near Mint", "Lightly Played"},
-	mtgban.GameGundam:    {"Near Mint"},
+var listedConditions = map[mtgmatcher.Game][]string{
+	mtgmatcher.GameRiftbound: {"Near Mint"},
+	mtgmatcher.GamePokemon:   {"Near Mint"},
+	mtgmatcher.GameOnePiece:  {"Near Mint", "Lightly Played"},
+	mtgmatcher.GameGundam:    {"Near Mint"},
 }
 
 // reSlugSeparator matches every run the storefront's product paths write as
@@ -88,7 +88,7 @@ type Vegassingles struct {
 	backend *mtgmatcher.Backend
 
 	client *VSClient
-	game   mtgban.Game
+	game   mtgmatcher.Game
 	line   string
 
 	inventoryDate  time.Time

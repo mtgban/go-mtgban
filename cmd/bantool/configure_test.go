@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -30,7 +29,7 @@ func TestRegisteredHalvesAreHonoured(t *testing.T) {
 				half = mtgban.WithBuylistOnly()
 			}
 
-			backend := &mtgmatcher.Backend{Game: strings.ToLower(string(game))}
+			backend := &mtgmatcher.Backend{Game: game}
 			_, err := mtgban.NewScraper(backend, key, half)
 			switch {
 			case err == nil:

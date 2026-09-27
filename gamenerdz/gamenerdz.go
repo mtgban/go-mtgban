@@ -88,11 +88,11 @@ const (
 // gnGames is what NewScraper is built through: it names the product line a
 // game is sold under, and a game named nowhere here is not one Game Nerdz is
 // read for. The lines themselves stay public, since NewGNClient takes one.
-var gnGames = map[mtgban.Game]string{
-	mtgban.GameMagic:    GameMagic,
-	mtgban.GameLorcana:  GameLorcana,
-	mtgban.GamePokemon:  GamePokemon,
-	mtgban.GameOnePiece: GameOnePiece,
+var gnGames = map[mtgmatcher.Game]string{
+	mtgmatcher.GameMagic:    GameMagic,
+	mtgmatcher.GameLorcana:  GameLorcana,
+	mtgmatcher.GamePokemon:  GamePokemon,
+	mtgmatcher.GameOnePiece: GameOnePiece,
 }
 
 // Gamenerdz prices Game Nerdz's stock of one game. The storefront's two
@@ -108,7 +108,7 @@ type Gamenerdz struct {
 
 	client  *GNClient
 	backend *mtgmatcher.Backend
-	game    mtgban.Game
+	game    mtgmatcher.Game
 	line    string
 
 	inventoryDate time.Time
@@ -236,8 +236,8 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 // what that reading is measured against. An empty id under a nil error is
 // a product the catalog does not carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
-	etched := gn.game == mtgban.GameMagic && saysEtched(product)
-	if mode == modeRetail && gn.game == mtgban.GameMagic && product.ProductData.TCGProductID != 0 {
+	etched := gn.game == mtgmatcher.GameMagic && saysEtched(product)
+	if mode == modeRetail && gn.game == mtgmatcher.GameMagic && product.ProductData.TCGProductID != 0 {
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 		cardID, err := gn.backend.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil, etched)
 		if err == nil {
@@ -270,12 +270,12 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	// with the single printing there is - the minted one carrying a price of
 	// its own, which the buylist keeps whenever it is the higher of the two.
 	// Nothing else was printed to move it to, so let it go.
-	if gn.game == mtgban.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
+	if gn.game == mtgmatcher.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
 		return "", nil
 	}
 	// A "(N)" promo number names its printing without saying its finish, so
 	// a plain listing can land on a printing that was only ever made foil.
-	if gn.game == mtgban.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
+	if gn.game == mtgmatcher.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
 		return "", nil
 	}
 	return cardID, nil
@@ -511,7 +511,7 @@ func (gn *Gamenerdz) crawl(ctx context.Context, mode, sortDir string, filters ma
 			if product.SelectedFinish != "" {
 				state.finishes[product.SelectedFinish] = true
 			}
-			if gn.game == mtgban.GameMagic {
+			if gn.game == mtgmatcher.GameMagic {
 				family := skuFamily(product)
 				if family != "" {
 					if state.bodies[family] == nil {

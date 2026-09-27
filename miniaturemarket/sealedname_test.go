@@ -3,7 +3,6 @@ package miniaturemarket
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -42,7 +41,7 @@ func TestSealedNameOnePiece(t *testing.T) {
 			"Heroines Gift Collection",
 		},
 	} {
-		got := sealedName(mtgban.GameOnePiece, tt.in)
+		got := sealedName(mtgmatcher.GameOnePiece, tt.in)
 		if got != tt.want {
 			t.Errorf("%q:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
@@ -93,7 +92,7 @@ func TestSealedNameGundam(t *testing.T) {
 			"Gundam Assemble Premium Collection - Mobile Suit Gundam GQuuuuuuX [PC02A]",
 		},
 	} {
-		if got := sealedName(mtgban.GameGundam, tt.in); got != tt.want {
+		if got := sealedName(mtgmatcher.GameGundam, tt.in); got != tt.want {
 			t.Errorf("%s:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
 	}
@@ -143,7 +142,7 @@ func TestSealedNameFleshAndBlood(t *testing.T) {
 			"Usurp the Shadow Throne Booster Pack (Preorder)",
 		},
 	} {
-		got := sealedName(mtgban.GameFleshAndBlood, tt.in)
+		got := sealedName(mtgmatcher.GameFleshAndBlood, tt.in)
 		if got != tt.want {
 			t.Errorf("%q:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
@@ -153,7 +152,7 @@ func TestSealedNameFleshAndBlood(t *testing.T) {
 // The other games' names already read like their canon: nothing moves.
 func TestSealedNameOtherGamesUntouched(t *testing.T) {
 	name := "Riftbound: League of Legends TCG - Origins Booster Box (Preorder)"
-	if got := sealedName(mtgban.GameRiftbound, name); got != name {
+	if got := sealedName(mtgmatcher.GameRiftbound, name); got != name {
 		t.Errorf("riftbound name rewritten: %q", got)
 	}
 }

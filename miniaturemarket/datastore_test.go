@@ -10,7 +10,7 @@ import (
 
 // withGameDatastore reads a game's datastore for the test, from the variable
 // naming it. The test is skipped where the run carries no such file.
-func withGameDatastore(t *testing.T, game, env string) *mtgmatcher.Backend {
+func withGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {

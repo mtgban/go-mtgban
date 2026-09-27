@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	mtgban.Register("mtgseattle", []mtgban.Game{mtgban.GameMagic},
+	mtgban.Register("mtgseattle", []mtgmatcher.Game{mtgmatcher.GameMagic},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback

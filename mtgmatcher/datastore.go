@@ -55,7 +55,7 @@ func SplitColors(color string) []string {
 }
 
 type registeredGame struct {
-	name string
+	name Game
 	load GameLoader
 }
 
@@ -66,7 +66,7 @@ var registeredGames []registeredGame
 // mtgmatcher/lorcana) call this from their init(); a consumer activates a game
 // with a blank import, e.g. import _ "github.com/mtgban/go-mtgban/mtgmatcher/magic".
 // It panics on a duplicate name or a nil loader.
-func RegisterGame(name string, load GameLoader) {
+func RegisterGame(name Game, load GameLoader) {
 	if load == nil {
 		panic("mtgmatcher: RegisterGame loader is nil for " + name)
 	}
@@ -80,8 +80,8 @@ func RegisterGame(name string, load GameLoader) {
 
 // RegisteredGames returns the names of the registered games in registration
 // order.
-func RegisteredGames() []string {
-	names := make([]string, len(registeredGames))
+func RegisteredGames() []Game {
+	names := make([]Game, len(registeredGames))
 	for i, g := range registeredGames {
 		names[i] = g.name
 	}
@@ -92,7 +92,7 @@ func RegisteredGames() []string {
 // returns the Backend with its sealed index built: a loader that does not
 // call SortSealed would otherwise leave ResolveSealed rebuilding the index
 // on every call.
-func Open(name string, reader io.Reader) (*Backend, error) {
+func Open(name Game, reader io.Reader) (*Backend, error) {
 	for _, g := range registeredGames {
 		if g.name == name {
 			b, err := g.load(reader)

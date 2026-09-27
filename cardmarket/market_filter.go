@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -142,10 +140,9 @@ func marketCandidate(gameID cm.Game, uuid string, snap *banSnapshot) bool {
 const banAPIURL = "https://%s.mtgban.com/api/mtgban/all.json?tag=tags&conds=true&sig=%s"
 
 // banHost is the subdomain a game's own price snapshot is published
-// under, lowercase, matching the game input every workflow and bucket
-// path already spells it with.
-func banHost(game mtgban.Game) string {
-	return strings.ToLower(string(game))
+// under: the game's own name, as every workflow and bucket path spells it.
+func banHost(game mtgmatcher.Game) string {
+	return string(game)
 }
 
 // banPrice is one store's price for one uuid, as the mtgban price API
@@ -214,7 +211,7 @@ func (snap *banSnapshot) firstBuylist(uuid string, sources []string) float64 {
 // loadBanSnapshot fetches game's own price snapshot, the one the offline
 // pre-filter reads. sig authenticates it - bantool reads it from the
 // BAN_API_KEY env var, the same key sealedev's own price loader uses.
-func loadBanSnapshot(ctx context.Context, game mtgban.Game, sig string) (*banSnapshot, error) {
+func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string) (*banSnapshot, error) {
 	link := fmt.Sprintf(banAPIURL, banHost(game), sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -247,7 +244,7 @@ func loadBanSnapshot(ctx context.Context, game mtgban.Game, sig string) (*banSna
 // published. Trusting either as "an empty result, nothing passed the
 // filter" is the same silent-failure shape the empty-body-on-error bug in
 // go-cardmarket's own get() was.
-func parseBanSnapshot(data []byte, game mtgban.Game) (*banSnapshot, error) {
+func parseBanSnapshot(data []byte, game mtgmatcher.Game) (*banSnapshot, error) {
 	var snap banSnapshot
 	if err := json.Unmarshal(data, &snap); err != nil {
 		return nil, err

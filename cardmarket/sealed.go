@@ -44,7 +44,7 @@ type Sealed struct {
 
 	client *cm.Client
 
-	game   mtgban.Game
+	game   mtgmatcher.Game
 	gameID cm.Game
 
 	// backend is the datastore this scraper matches against.

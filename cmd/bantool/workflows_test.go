@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"testing"
 )
 
@@ -51,7 +50,7 @@ func TestEveryTargetIsScheduledByItsOwnWorkflow(t *testing.T) {
 		for game, scrapers := range options {
 			for name := range scrapers {
 				if scraperFlagName(game, name) == target {
-					return strings.ToLower(string(game))
+					return string(game)
 				}
 			}
 		}

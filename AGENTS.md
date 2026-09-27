@@ -419,11 +419,11 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
 3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
 4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
    constructor)` — `name` is the external flag the store has always been
-   known by, the store's own name alone under `mtgban.GameMagic` and
+   known by, the store's own name alone under `mtgmatcher.GameMagic` and
    `<store>_<game>` under every other game (`coolstuffinc_pokemon`,
    `cardtrader_gundam`, `starcitygames_sealed_lorcana`), and `games` is
    every game the scraper prices. Blank-import the package in
-   `cmd/bantool/main.go`: `targets()` walks `mtgban.AllGames` ×
+   `cmd/bantool/main.go`: `targets()` walks `mtgmatcher.AllGames` ×
    `mtgban.Registered(game)` to build the flag table, so a registered
    scraper needs no entry written there by hand, only the import. Add one
    `bantool-<store>_<game>.yml` workflow per target —
@@ -433,7 +433,7 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    target that is not registered.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` — every scraper sets
-   `Game` explicitly now, `mtgban.GameMagic` included; nothing reads as Magic
+   `Game` explicitly now, `mtgmatcher.GameMagic` included; nothing reads as Magic
    by default.
 6. The constructor takes the datastore first and nothing naming a game:
    `NewScraper(b *mtgmatcher.Backend, ...) (*T, error)`. A scraper that prices
@@ -442,7 +442,7 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    naming for its games — slugs, catalog ids, department numbers — stays
    exported, because the package's own API helpers take one (`Search`,
    `SCGBuylistURL`, `NewGNClient`); what a caller no longer needs it for is
-   building a scraper. One `map[mtgban.Game]<vendor value>` per package sits
+   building a scraper. One `map[mtgmatcher.Game]<vendor value>` per package sits
    between the two and both converts and validates, and a game the map does
    not hold is refused at the constructor — as is a datastore that names no
    game at all, which `GameOf` rejects before the map is asked, rather than
@@ -452,15 +452,17 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
 
 ### Adding a game
 
-A game is added in `mtgban` first and reaches the scrapers from there:
+A game is named in `mtgmatcher` first and reaches the scrapers from there:
 
-1. Add the `mtgban.Game` constant in `mtgban/mtgban.go` and list it in
-   `mtgban.AllGames`. Both are pinned by `mtgban/game_test.go`, which also
-   pins the string it is published as — that value is a wire format, carried
-   in every dump, so pick it once and do not rename it later.
+1. Add the `mtgmatcher.Game` constant in `mtgmatcher/game.go` and list it in
+   `mtgmatcher.AllGames`. Its value is the game's own lowercase name, the one
+   its loader registers under and the one flags, workflows, bucket paths and
+   every dump spell it with. `mtgmatcher/game_test.go` pins it and checks
+   every constant has a loader behind it, so pick it once and do not rename
+   it later.
 2. Register the matcher side: a loader, a `GameRules` implementation and a
-   `register.go` under `mtgmatcher/<game>/`, plus the blank import in
-   `mtgmatcher/games/games.go`.
+   `register.go` under `mtgmatcher/<game>/` calling `RegisterGame` with the
+   constant from step 1, plus the blank import in `mtgmatcher/games/games.go`.
 3. Per storefront that carries it: one constant naming the vendor's own
    spelling beside that package's existing ones, and one line in its
    `<recv>Games` map. Nothing else in the scraper changes — the switches that
@@ -472,7 +474,7 @@ A game is added in `mtgban` first and reaches the scrapers from there:
    from the registry.
 5. Wire the game's datastore into `.github/workflows/ci.yml` — a cache job and
    a `test-<game>` job — and add its path variable to
-   `internal/vocabulary/read.go`'s `Games`.
+   `internal/vocabulary/read.go`'s `Games`, keyed by that constant.
 
 For TCGplayer specifically, the per-game scrapers `TCGGame` and `TCGGameIndex`
 are built from the `tcgplayer` package's `tcgGames` map, which associates a

@@ -18,7 +18,7 @@ func WithTargetProduct(product string) mtgban.Option {
 }
 
 func init() {
-	mtgban.Register("sealed_ev", []mtgban.Game{mtgban.GameMagic}, newScraper)
+	mtgban.Register("sealed_ev", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraper)
 }
 
 func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {

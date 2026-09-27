@@ -3,7 +3,6 @@ package vegassingles
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -22,7 +21,7 @@ func TestOversizeHeading(t *testing.T) {
 		product := VSProduct{DisplayName: display}
 		product.ProductData.Set = "over"
 		product.ProductData.SetName = "Oversize Cards"
-		if _, err := preprocess(&mtgmatcher.Backend{}, product, mtgban.GameMagic); err == nil {
+		if _, err := preprocess(&mtgmatcher.Backend{}, product, mtgmatcher.GameMagic); err == nil {
 			t.Errorf("%s: read as a single, want refused as a display card", display)
 		}
 	}
@@ -36,7 +35,7 @@ func TestOversizeHeading(t *testing.T) {
 		product := VSProduct{DisplayName: display}
 		product.ProductData.Set = "over"
 		product.ProductData.SetName = "Oversize Cards"
-		if _, err := preprocess(&mtgmatcher.Backend{}, product, mtgban.GameMagic); err != nil {
+		if _, err := preprocess(&mtgmatcher.Backend{}, product, mtgmatcher.GameMagic); err != nil {
 			t.Errorf("%s: refused as a display card, want read as a single (%v)", display, err)
 		}
 	}

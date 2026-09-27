@@ -44,7 +44,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Magiccorner, error) {
 	if err != nil {
 		return nil, err
 	}
-	if game != mtgban.GameMagic {
+	if game != mtgmatcher.GameMagic {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
 	mc := Magiccorner{}
@@ -397,6 +397,6 @@ func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mc.inventoryDate
 	info.BuylistTimestamp = &mc.buylistDate
-	info.Game = mtgban.GameMagic
+	info.Game = mtgmatcher.GameMagic
 	return
 }

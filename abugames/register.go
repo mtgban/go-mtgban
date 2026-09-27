@@ -6,8 +6,8 @@ import (
 )
 
 func init() {
-	mtgban.Register("abugames", []mtgban.Game{mtgban.GameMagic}, newScraper)
-	mtgban.Register("abugames_sealed", []mtgban.Game{mtgban.GameMagic}, newScraperSealed)
+	mtgban.Register("abugames", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraper)
+	mtgban.Register("abugames_sealed", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraperSealed)
 }
 
 func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {

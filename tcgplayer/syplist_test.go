@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
@@ -14,25 +13,25 @@ import (
 // number here reads someone else's SYP list rather than failing.
 func TestNewScraperSYPGames(t *testing.T) {
 	for _, tt := range []struct {
-		game     mtgban.Game
+		game     mtgmatcher.Game
 		category int
 		wantErr  bool
 	}{
 		// Magic is the zero value of the game field, so it is also what an
 		// unset game asks for - that is the one name this map must hold.
-		{game: mtgban.GameMagic, category: tcgplayer.CategoryMagic},
-		{game: mtgban.GamePokemon, category: tcgplayer.CategoryPokemon},
+		{game: mtgmatcher.GameMagic, category: tcgplayer.CategoryMagic},
+		{game: mtgmatcher.GamePokemon, category: tcgplayer.CategoryPokemon},
 		// A game the list is not read for is refused rather than fetching a
 		// category whose rows nothing can resolve.
-		{game: mtgban.GameLorcana, wantErr: true},
-		{game: mtgban.GameOnePiece, wantErr: true},
+		{game: mtgmatcher.GameLorcana, wantErr: true},
+		{game: mtgmatcher.GameOnePiece, wantErr: true},
 	} {
 		name := string(tt.game)
-		if tt.game == mtgban.GameMagic {
+		if tt.game == mtgmatcher.GameMagic {
 			name = "Magic"
 		}
 		t.Run(name, func(t *testing.T) {
-			b := &mtgmatcher.Backend{Game: string(tt.game)}
+			b := &mtgmatcher.Backend{Game: tt.game}
 			scraper, err := NewScraperSYP(b, "auth")
 			if tt.wantErr {
 				if err == nil {

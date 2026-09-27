@@ -3,15 +3,15 @@ package main
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestRunGame pins that a run names one game or refuses: one datastore is
 // loaded, so scrapers of two games cannot share a run.
 func TestRunGame(t *testing.T) {
-	enabled := func(targets map[mtgban.Game][]string) map[mtgban.Game]map[string]*scraperOption {
-		out := map[mtgban.Game]map[string]*scraperOption{
-			mtgban.GameYuGiOh: {"cardmarket": {}},
+	enabled := func(targets map[mtgmatcher.Game][]string) map[mtgmatcher.Game]map[string]*scraperOption {
+		out := map[mtgmatcher.Game]map[string]*scraperOption{
+			mtgmatcher.GameYuGiOh: {"cardmarket": {}},
 		}
 		for game, names := range targets {
 			if out[game] == nil {
@@ -25,20 +25,20 @@ func TestRunGame(t *testing.T) {
 	}
 	for _, tt := range []struct {
 		desc    string
-		options map[mtgban.Game]map[string]*scraperOption
-		want    mtgban.Game
+		options map[mtgmatcher.Game]map[string]*scraperOption
+		want    mtgmatcher.Game
 		wantErr bool
 	}{
-		{"one game", enabled(map[mtgban.Game][]string{
-			mtgban.GamePokemon: {"cardmarket", "tcg_syplist"},
-		}), mtgban.GamePokemon, false},
-		{"magic by default", enabled(map[mtgban.Game][]string{
-			mtgban.GameMagic: {"cardmarket", "cardmarket_sealed"},
-		}), mtgban.GameMagic, false},
+		{"one game", enabled(map[mtgmatcher.Game][]string{
+			mtgmatcher.GamePokemon: {"cardmarket", "tcg_syplist"},
+		}), mtgmatcher.GamePokemon, false},
+		{"magic by default", enabled(map[mtgmatcher.Game][]string{
+			mtgmatcher.GameMagic: {"cardmarket", "cardmarket_sealed"},
+		}), mtgmatcher.GameMagic, false},
 		{"nothing enabled", enabled(nil), "", true},
-		{"two games", enabled(map[mtgban.Game][]string{
-			mtgban.GamePokemon: {"cardmarket"},
-			mtgban.GameMagic:   {"cardmarket"},
+		{"two games", enabled(map[mtgmatcher.Game][]string{
+			mtgmatcher.GamePokemon: {"cardmarket"},
+			mtgmatcher.GameMagic:   {"cardmarket"},
 		}), "", true},
 	} {
 		got, err := runGame(tt.options)
@@ -53,20 +53,20 @@ func TestRunGame(t *testing.T) {
 // store's own name is suffixed with.
 func TestScraperFlagName(t *testing.T) {
 	for _, tt := range []struct {
-		game mtgban.Game
+		game mtgmatcher.Game
 		name string
 		want string
 	}{
-		{mtgban.GameMagic, "cardmarket", "cardmarket"},
-		{mtgban.GameMagic, "cardmarket_sealed", "cardmarket_sealed"},
-		{mtgban.GameMagic, "tcg_index", "tcg_index"},
-		{mtgban.GameMagic, "sealed_ev", "sealed_ev"},
-		{mtgban.GameMagic, "cardkingdom_graded", "cardkingdom_graded"},
-		{mtgban.GamePokemon, "cardmarket", "cardmarket_pokemon"},
-		{mtgban.GamePokemon, "cardmarket_sealed", "cardmarket_sealed_pokemon"},
-		{mtgban.GameLorcana, "starcitygames_sealed", "starcitygames_sealed_lorcana"},
-		{mtgban.GameFleshAndBlood, "tcg_market", "tcg_market_fleshandblood"},
-		{mtgban.GameYuGiOh, "cardtrader", "cardtrader_yugioh"},
+		{mtgmatcher.GameMagic, "cardmarket", "cardmarket"},
+		{mtgmatcher.GameMagic, "cardmarket_sealed", "cardmarket_sealed"},
+		{mtgmatcher.GameMagic, "tcg_index", "tcg_index"},
+		{mtgmatcher.GameMagic, "sealed_ev", "sealed_ev"},
+		{mtgmatcher.GameMagic, "cardkingdom_graded", "cardkingdom_graded"},
+		{mtgmatcher.GamePokemon, "cardmarket", "cardmarket_pokemon"},
+		{mtgmatcher.GamePokemon, "cardmarket_sealed", "cardmarket_sealed_pokemon"},
+		{mtgmatcher.GameLorcana, "starcitygames_sealed", "starcitygames_sealed_lorcana"},
+		{mtgmatcher.GameFleshAndBlood, "tcg_market", "tcg_market_fleshandblood"},
+		{mtgmatcher.GameYuGiOh, "cardtrader", "cardtrader_yugioh"},
 	} {
 		if got := scraperFlagName(tt.game, tt.name); got != tt.want {
 			t.Errorf("scraperFlagName(%q, %q) = %q, want %q", tt.game, tt.name, got, tt.want)
@@ -78,15 +78,15 @@ func TestScraperFlagName(t *testing.T) {
 // registry seen from outside: enabling a target by its flag name is what
 // runGame later reads off the nested map.
 func TestFlattenOptionsSharesPointers(t *testing.T) {
-	nested := map[mtgban.Game]map[string]*scraperOption{
-		mtgban.GameLorcana: {"cardtrader": {}},
+	nested := map[mtgmatcher.Game]map[string]*scraperOption{
+		mtgmatcher.GameLorcana: {"cardtrader": {}},
 	}
 	flat := flattenOptions(nested)
 	if flat["cardtrader_lorcana"] == nil {
 		t.Fatalf("flattenOptions() = %v, want a cardtrader_lorcana entry", flat)
 	}
 	flat["cardtrader_lorcana"].Enabled = true
-	if !nested[mtgban.GameLorcana]["cardtrader"].Enabled {
+	if !nested[mtgmatcher.GameLorcana]["cardtrader"].Enabled {
 		t.Error("enabling a target through the flat view left the nested one disabled")
 	}
 }
@@ -100,8 +100,8 @@ func TestFlattenOptionsRefusesCollision(t *testing.T) {
 			t.Error("flattenOptions() accepted one name registered under two games")
 		}
 	}()
-	flattenOptions(map[mtgban.Game]map[string]*scraperOption{
-		mtgban.GameMagic:   {"cardmarket_lorcana": {}},
-		mtgban.GameLorcana: {"cardmarket": {}},
+	flattenOptions(map[mtgmatcher.Game]map[string]*scraperOption{
+		mtgmatcher.GameMagic:   {"cardmarket_lorcana": {}},
+		mtgmatcher.GameLorcana: {"cardmarket": {}},
 	})
 }

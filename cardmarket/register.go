@@ -78,11 +78,11 @@ const (
 
 // BridgeUseOf reports how much a game's Index and Market scrapers lean on
 // the TCGplayer bridge; see resolveProduct.
-func BridgeUseOf(game mtgban.Game) BridgeUse {
+func BridgeUseOf(game mtgmatcher.Game) BridgeUse {
 	switch game {
-	case mtgban.GamePokemon, mtgban.GameYuGiOh, mtgban.GameFleshAndBlood:
+	case mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh, mtgmatcher.GameFleshAndBlood:
 		return BridgeRequired
-	case mtgban.GameOnePiece, mtgban.GameRiftbound, mtgban.GameLorcana, mtgban.GameGundam:
+	case mtgmatcher.GameOnePiece, mtgmatcher.GameRiftbound, mtgmatcher.GameLorcana, mtgmatcher.GameGundam:
 		return BridgeHelps
 	default:
 		return BridgeUnused
@@ -94,8 +94,8 @@ func BridgeUseOf(game mtgban.Game) BridgeUse {
 // TCGplayer id where the datastore's own Cardmarket ids run out, which a
 // constructor cannot see in advance for any game but Magic, whose sealed
 // map never falls back to names (see Sealed.Load).
-func SealedBridgeUseOf(game mtgban.Game) BridgeUse {
-	if game == mtgban.GameMagic {
+func SealedBridgeUseOf(game mtgmatcher.Game) BridgeUse {
+	if game == mtgmatcher.GameMagic {
 		return BridgeUnused
 	}
 	return BridgeRequired
@@ -103,10 +103,10 @@ func SealedBridgeUseOf(game mtgban.Game) BridgeUse {
 
 // cardmarketGames are the games Cardmarket's Index, Market and Sealed
 // scrapers price - the same eight mkmGames names.
-var cardmarketGames = []mtgban.Game{
-	mtgban.GameMagic, mtgban.GameLorcana, mtgban.GameRiftbound,
-	mtgban.GameOnePiece, mtgban.GamePokemon, mtgban.GameYuGiOh,
-	mtgban.GameFleshAndBlood, mtgban.GameGundam,
+var cardmarketGames = []mtgmatcher.Game{
+	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound,
+	mtgmatcher.GameOnePiece, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
+	mtgmatcher.GameFleshAndBlood, mtgmatcher.GameGundam,
 }
 
 func init() {

@@ -104,6 +104,6 @@ func (af *Arcanafrisia) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "AF"
 	info.CountryFlag = "EU"
 	info.BuylistTimestamp = &af.buylistDate
-	info.Game = mtgban.GameMagic
+	info.Game = mtgmatcher.GameMagic
 	return
 }

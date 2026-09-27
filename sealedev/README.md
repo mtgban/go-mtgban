@@ -5,7 +5,7 @@ storefront. There is no site behind this scraper: it asks `mtgmatcher` what a
 product can contain and with what probability, prices those contents against
 the MTGBAN price API, and publishes the total. Registered as `sealed_ev`, for
 Magic alone — `banAPIURL` hardcodes `www.mtgban.com`, which serves Magic's
-prices and nothing else, and `register.go` names `mtgban.GameMagic` as the
+prices and nothing else, and `register.go` names `mtgmatcher.GameMagic` as the
 only game it answers for.
 
 It needs `BAN_API_KEY` (`SecretBanKey`), and nothing else. One API call
@@ -144,7 +144,7 @@ product's own name.
 ## Known gaps
 
 - **Magic only, gated in two places.** `register.go` files this under
-  `[]mtgban.Game{mtgban.GameMagic}`, and `lookup(game, name)` is how a
+  `[]mtgmatcher.Game{mtgmatcher.GameMagic}`, and `lookup(game, name)` is how a
   scraper is found, so nothing can build a `sealed_ev` for another game in
   the first place; `banAPIURL` then hardcodes `www.mtgban.com`, which serves
   Magic's prices alone — each game's are published on its own subdomain, the

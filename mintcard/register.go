@@ -20,7 +20,7 @@ func WithSKUs(skus tcgplayer.SKUMap) mtgban.Option {
 }
 
 func init() {
-	mtgban.Register("mintcard", []mtgban.Game{mtgban.GameMagic}, newScraper)
+	mtgban.Register("mintcard", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraper)
 }
 
 func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
