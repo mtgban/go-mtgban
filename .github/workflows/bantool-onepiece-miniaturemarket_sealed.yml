@@ -1,0 +1,26 @@
+name: onepiece / miniaturemarket_sealed
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [onepiece-miniaturemarket_sealed, onepiece-all]
+  schedule:
+    - cron: "58 2,14 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-miniaturemarket
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      store: miniaturemarket_sealed
+      game: "onepiece"
+      datastore-filepath: b2://mtgban-datastore/onepiece/onepiece.json.xz
+    secrets: inherit
