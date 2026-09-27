@@ -76,69 +76,85 @@ type scraperOption struct {
 	OnlyVendor bool
 }
 
-// scraperFlagName is the external name a target is known by: the store's own
-// name for Magic, and store+"_"+game for every other game - the name every
-// workflow and -scrapers/-sellers/-vendors caller already uses. It is the one
-// place that composes the two; nowhere else needs to.
-func scraperFlagName(game mtgmatcher.Game, name string) string {
-	if game == mtgmatcher.GameMagic {
-		return name
+// resolveGame validates -game against the option table, naming the games
+// actually registered when it does not match. An empty name is the "no
+// -game given" case, since flag.String defaults it to "".
+func resolveGame(options map[mtgmatcher.Game]map[string]*scraperOption, name string) (mtgmatcher.Game, error) {
+	game := mtgmatcher.Game(name)
+	if _, ok := options[game]; ok {
+		return game, nil
 	}
-	return name + "_" + string(game)
+
+	games := make([]string, 0, len(options))
+	for g := range options {
+		games = append(games, string(g))
+	}
+	slices.Sort(games)
+
+	if name == "" {
+		return "", fmt.Errorf("no -game given (registered: %s)", strings.Join(games, ", "))
+	}
+	return "", fmt.Errorf("unknown game %q (registered: %s)", name, strings.Join(games, ", "))
 }
 
-// flattenOptions indexes every game's scrapers under the name each is enabled
-// by, for the callers that just want "the target named X": flag registration
-// and the -scrapers/-sellers/-vendors lookups. The pointers are shared with
-// options, so enabling an entry here enables the same one runGame sees.
-//
-// Two entries landing on the same name is no longer a compile error the way a
-// duplicate key in one flat literal was: the game and the store are two
-// separate keys now, and nothing but this name stops them from colliding
-// across games. Panicking here trades a scraper silently dropped - whichever
-// pointer a random map iteration happened to write last - for a run that
-// refuses to start at all, which is the failure worth having for a registry
-// nothing else checks.
-func flattenOptions(options map[mtgmatcher.Game]map[string]*scraperOption) map[string]*scraperOption {
-	flat := make(map[string]*scraperOption)
-	for game, scrapers := range options {
-		for name, opt := range scrapers {
-			key := scraperFlagName(game, name)
-			_, exists := flat[key]
-			if exists {
-				panic(fmt.Sprintf("bantool: %q is registered under more than one game", key))
-			}
-			flat[key] = opt
-		}
+// enableStore turns on the named store within one game's scrapers, or
+// reports why it could not. -store, -sellers and -vendors all take bare
+// registry keys now that -game says which sub-map they reach into, so an
+// unknown name is caught here rather than at mtgban.NewScraper.
+func enableStore(scrapers map[string]*scraperOption, game mtgmatcher.Game, name string) (*scraperOption, error) {
+	opt, ok := scrapers[name]
+	if ok {
+		opt.Enabled = true
+		return opt, nil
 	}
-	return flat
-}
 
-// runGame names the one game the enabled scrapers price. A run loads one
-// datastore and opens it by that name rather than trying every game's
-// loader on it, so enabling scrapers of two games is refused up front.
-func runGame(options map[mtgmatcher.Game]map[string]*scraperOption) (mtgmatcher.Game, error) {
-	var games []mtgmatcher.Game
-	for game, scrapers := range options {
-		for _, opt := range scrapers {
-			if opt.Enabled {
-				games = append(games, game)
-				break
-			}
-		}
-	}
-	switch len(games) {
-	case 0:
-		return "", errors.New("no scraper configured, run with -h for a list of commands")
-	case 1:
-		return games[0], nil
-	}
-	names := make([]string, len(games))
-	for i, game := range games {
-		names[i] = string(game)
+	names := make([]string, 0, len(scrapers))
+	for n := range scrapers {
+		names = append(names, n)
 	}
 	slices.Sort(names)
-	return "", fmt.Errorf("the enabled scrapers price %s, and a run loads one datastore", strings.Join(names, " and "))
+	return nil, fmt.Errorf("store %q is not registered for %s (registered: %s)",
+		name, game, strings.Join(names, ", "))
+}
+
+// enableStores applies -store, -sellers and -vendors to one game's
+// scrapers. At least one of the three must name something, or a run has
+// nothing to do.
+func enableStores(scrapers map[string]*scraperOption, game mtgmatcher.Game, store, sellers, vendors string) error {
+	if store == "" && sellers == "" && vendors == "" {
+		return errors.New("no store given, run with -h for a list of commands")
+	}
+
+	if store != "" {
+		for name := range strings.SplitSeq(store, ",") {
+			_, err := enableStore(scrapers, game, name)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// Clearing the other half here would overwrite what the entry itself
+	// says about the store rather than meet it; both are left standing, and
+	// mtgban.NewScraper refuses the pair that cannot hold.
+	if sellers != "" {
+		for name := range strings.SplitSeq(sellers, ",") {
+			opt, err := enableStore(scrapers, game, name)
+			if err != nil {
+				return err
+			}
+			opt.OnlySeller = true
+		}
+	}
+	if vendors != "" {
+		for name := range strings.SplitSeq(vendors, ",") {
+			opt, err := enableStore(scrapers, game, name)
+			if err != nil {
+				return err
+			}
+			opt.OnlyVendor = true
+		}
+	}
+	return nil
 }
 
 // cardtraderBridge maps every Cardmarket product id to the TCGplayer id of
@@ -756,22 +772,14 @@ func run() int {
 	maxConcurrency, _ := strconv.Atoi(os.Getenv("MAX_CONCURRENCY"))
 	log.Println("Workers running with", maxConcurrency, "parallel threads")
 
-	flatOptions := flattenOptions(options)
-
-	for key, val := range flatOptions {
-		label := key
-		if label != "" {
-			label = strings.ToUpper(label[:1]) + label[1:]
-		}
-		flag.BoolVar(&val.Enabled, key, false, "Enable "+label)
-	}
+	gameOpt := flag.String("game", "", "Game to run (required unless -sign or -v)")
+	storeOpt := flag.String("store", "", "Comma-separated list of stores to enable, within -game")
 
 	datastoreOpt := flag.String("datastore", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
 
-	scrapersOpt := flag.String("scrapers", "", "Comma-separated list of scrapers to enable")
-	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable")
-	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable")
+	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable, within -game")
+	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable, within -game")
 
 	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv/ndjson)")
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
@@ -802,6 +810,17 @@ func run() int {
 		return 1
 	}
 
+	game, err := resolveGame(options, *gameOpt)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+	err = enableStores(options[game], game, *storeOpt, *sellersOpt, *vendorsOpt)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+
 	if *outputPathOpt == "" {
 		log.Println("Missing output-path argument")
 		return 1
@@ -826,45 +845,6 @@ func run() int {
 	}
 
 	datastoreBucket, err := initializeBucket(*datastoreOpt, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-
-	// Enable Scrapers or Sellers/Vendors
-	scraps := strings.SplitSeq(*scrapersOpt, ",")
-	for name := range scraps {
-		if flatOptions[name] != nil {
-			flatOptions[name].Enabled = true
-		}
-	}
-	// Clearing the other half here would overwrite what the entry itself
-	// says about the store rather than meet it; both are left standing, and
-	// mtgban.NewScraper refuses the pair that cannot hold.
-	if *sellersOpt != "" {
-		sells := strings.SplitSeq(*sellersOpt, ",")
-		for name := range sells {
-			if flatOptions[name] == nil {
-				log.Println("Seller", name, "not found")
-				return 1
-			}
-			flatOptions[name].Enabled = true
-			flatOptions[name].OnlySeller = true
-		}
-	}
-	if *vendorsOpt != "" {
-		vends := strings.SplitSeq(*vendorsOpt, ",")
-		for name := range vends {
-			if flatOptions[name] == nil {
-				log.Println("Vendor", name, "not found")
-				return 1
-			}
-			flatOptions[name].Enabled = true
-			flatOptions[name].OnlyVendor = true
-		}
-	}
-
-	game, err := runGame(options)
 	if err != nil {
 		log.Println(err)
 		return 1
