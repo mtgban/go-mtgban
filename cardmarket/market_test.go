@@ -2,6 +2,11 @@ package cardmarket
 
 import (
 	"context"
+	"maps"
+	"net/url"
+	"slices"
+	"strconv"
+	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -340,6 +345,33 @@ func TestIsPowerseller(t *testing.T) {
 				t.Errorf("isPowerseller() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestPowersellerLink pins the link beside a Powerseller price to the
+// sellers that bucket holds, where the main bucket's link names no seller.
+// The countries expected are read off mkmPowersellerCountries, the table
+// isPowerseller checks, so the link has to follow any change to it.
+// Compared whole: a parsed query reads back a spelling the storefront
+// ignores as happily as one it reads.
+func TestPowersellerLink(t *testing.T) {
+	opt := cm.URLOption{Foil: cm.Only, Signed: cm.None, Altered: cm.None, Language: cm.LanguageEnglish}
+	const page = "https://www.cardmarket.com/en/Magic/Products" +
+		"?idProduct=250689&isAltered=N&isFoil=Y&isSigned=N&language=1"
+
+	main := cm.BuildURL(cm.GameMagic, 250689, opt)
+	if main != page {
+		t.Errorf("main link = %s\nwant %s", main, page)
+	}
+
+	var ids []string
+	for _, country := range slices.Sorted(maps.Values(mkmPowersellerCountries)) {
+		ids = append(ids, strconv.Itoa(int(country)))
+	}
+	powerseller := cm.BuildURL(cm.GameMagic, 250689, withPowersellers(opt))
+	want := page + "&sellerCountry=" + url.QueryEscape(strings.Join(ids, ",")) + "&sellerType=2"
+	if powerseller != want {
+		t.Errorf("powerseller link = %s\nwant %s", powerseller, want)
 	}
 }
 

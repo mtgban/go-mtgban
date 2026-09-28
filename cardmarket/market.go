@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"slices"
 	"sort"
 	"strconv"
 	"time"
@@ -123,10 +124,13 @@ var excludedCountries = map[string]bool{
 // listings (isCommercial == 2 - confirmed directly against two real
 // accounts: 1 reads "Professional", 2 reads "Powerseller" on Cardmarket's
 // own seller pages) are also held under their own MarketNames bucket - see
-// marketPowersellerName and queryOnePrinting.
-var mkmPowersellerCountries = map[string]bool{
-	"D":  true, // Germany
-	"NL": true, // Netherlands
+// marketPowersellerName and queryOnePrinting. Keyed by the code an article
+// answers its seller's country with, valued by the id a storefront link
+// narrows to it by, so the bucket and its links cannot name different
+// countries.
+var mkmPowersellerCountries = map[string]cm.Country{
+	"D":  cm.CountryGermany,
+	"NL": cm.CountryNetherlands,
 }
 
 // isPowerseller reports whether an article qualifies for the
@@ -134,7 +138,17 @@ var mkmPowersellerCountries = map[string]bool{
 // (price, finish, condition, excludedCountries), so this only adds the
 // Powerseller-and-country check on top.
 func isPowerseller(article cm.Article) bool {
-	return article.Seller.IsCommercial == 2 && mkmPowersellerCountries[article.Seller.Address.Country]
+	_, found := mkmPowersellerCountries[article.Seller.Address.Country]
+	return article.Seller.IsCommercial == 2 && found
+}
+
+// withPowersellers narrows a link to the sellers marketPowersellerName
+// holds, so the link beside one of its prices opens on them rather than on
+// a cheaper seller the bucket turned away.
+func withPowersellers(opt cm.URLOption) cm.URLOption {
+	opt.SellerTypes = []cm.UserType{cm.UserTypePowerseller}
+	opt.SellerCountries = slices.Collect(maps.Values(mkmPowersellerCountries))
+	return opt
 }
 
 // mkmCondition maps Cardmarket's seven-grade condition scale onto mtgban's
@@ -797,7 +811,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 				continue
 			}
 
-			link := cm.BuildURL(mkm.gameID, article.IDProduct, cm.URLOption{
+			opt := cm.URLOption{
 				Foil:        onlyIf(article.IsFoil),
 				FirstEd:     onlyIf(article.IsFirstEd),
 				ReverseHolo: onlyIf(article.IsReverseHolo),
@@ -805,7 +819,8 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 				Altered:     cm.None,
 				Language:    language,
 				Affiliate:   mkm.affiliate,
-			})
+			}
+			link := cm.BuildURL(mkm.gameID, article.IDProduct, opt)
 			customFields := map[string]string{
 				"SubSellerName": article.Seller.Username,
 				"SubSellerGeo":  article.Seller.Address.Country,
@@ -843,7 +858,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 						Price:        article.Price * mkm.exchangeRate,
 						Quantity:     article.Count,
 						SellerName:   marketPowersellerName,
-						URL:          link,
+						URL:          cm.BuildURL(mkm.gameID, article.IDProduct, withPowersellers(opt)),
 						OriginalID:   fmt.Sprint(article.IDProduct),
 						InstanceID:   fmt.Sprint(article.IDArticle),
 						CustomFields: customFields,
