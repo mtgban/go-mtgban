@@ -36,6 +36,27 @@ func TestPlainNumberKeepsTheListNumbers(t *testing.T) {
 	}
 }
 
+func TestPlainNumberDropsNumericPadding(t *testing.T) {
+	for _, tt := range []struct {
+		number, want string
+	}{
+		{"071", "71"},
+		{"001", "1"},
+		{"000", "0"},
+		{"071★", "71"},
+		{"071a", "71"},
+		{"M19-001", "M19-001"},
+		{"ARB-1", "ARB-1"},
+	} {
+		t.Run(tt.number, func(t *testing.T) {
+			got := plainNumber(tt.number)
+			if got != tt.want {
+				t.Errorf("plainNumber(%q) = %q, want %q", tt.number, got, tt.want)
+			}
+		})
+	}
+}
+
 // TestPlainNumberMatchesLoader pins the rules to the loader. PlainNumber is
 // what folds a number a person typed, and the card carries what it is
 // compared against, so the two spelling a number differently finds nothing

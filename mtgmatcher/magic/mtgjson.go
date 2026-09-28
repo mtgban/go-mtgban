@@ -736,7 +736,8 @@ var numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + strings.ToLo
 // behind it: "265†a" is the a of five Tamiyo's Journals and the plain number
 // of every one of them is 265. Trimming from the right reached only the marks
 // standing last, so a dozen numbers spelled "139★s" or "265†a" kept theirs
-// and answered to no search for the number they print.
+// and answered to no search for the number they print. Numeric numbers also
+// lose catalog padding, so "071" and "71" share the same plain number.
 func plainNumber(number string) string {
 	if i := strings.IndexAny(number, numberDecorations); i >= 0 {
 		number = number[:i]
@@ -749,6 +750,10 @@ func plainNumber(number string) string {
 	plain := strings.TrimRight(number, plainNumberTail)
 	if plain == "" {
 		return number
+	}
+	plain = strings.TrimLeft(plain, "0")
+	if plain == "" {
+		return "0"
 	}
 	return plain
 }
