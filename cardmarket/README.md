@@ -325,6 +325,12 @@ registration for this:
 per `MarketNames` entry automatically, keyed by `InfoForScraper`'s own
 Shorthand (`MKM`, `MKMPS`).
 
+The Powerseller bucket's links narrow the same way,
+`sellerCountry=7%2C23&sellerType=2`, so they open on the sellers the price was
+drawn from rather than on a cheaper one the bucket turned away. The bucket
+and its links both read `mkmPowersellerCountries`, so they cannot name
+different countries.
+
 ## The offline pre-filter
 
 All seven games are restricted to a candidate set (`marketCandidates`)
