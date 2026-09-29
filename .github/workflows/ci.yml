@@ -73,6 +73,16 @@ jobs:
       - name: Staticcheck
         run: go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
 
+      # cmd/ckodds is a module of its own, which ./... above stops at.
+      - name: cmd/ckodds
+        working-directory: cmd/ckodds
+        run: |
+          go vet ./...
+          go test -race ./...
+          go run github.com/mgechev/revive@v1.13.0 \
+            -set_exit_status -config ../../.revive.toml ./...
+          go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
+
   cache-datastore:
     uses: ./.github/workflows/cache-file.yml
     with:
