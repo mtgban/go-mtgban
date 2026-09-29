@@ -691,48 +691,6 @@ var supportedScores = []string{
 	"PSA", "BGS", "CGC",
 }
 
-var gradeMap = map[string]map[string]mtgban.Condition{
-	"PSA": {
-		"10": mtgban.NM,
-		"9":  mtgban.NM,
-		"8":  mtgban.NM,
-		"7":  mtgban.NM,
-		"6":  mtgban.SP,
-		"5":  mtgban.SP,
-		"4":  mtgban.MP,
-		"3":  mtgban.MP,
-		"2":  mtgban.HP,
-		"1":  mtgban.HP,
-	},
-	"BGS": {
-		"10": mtgban.NM,
-		"9":  mtgban.NM,
-		"8":  mtgban.SP,
-		"7":  mtgban.SP,
-		"6":  mtgban.MP,
-		"5":  mtgban.MP,
-		"4":  mtgban.MP,
-		"3":  mtgban.HP,
-		"2":  mtgban.HP,
-		"1":  mtgban.PO,
-	},
-	"CGC": {
-		"Pristine":          mtgban.NM,
-		"Pristine 10":       mtgban.NM,
-		"10":                mtgban.NM,
-		"9":                 mtgban.NM,
-		"8":                 mtgban.NM,
-		"7":                 mtgban.SP,
-		"6":                 mtgban.SP,
-		"5":                 mtgban.MP,
-		"4":                 mtgban.MP,
-		"3":                 mtgban.HP,
-		"2":                 mtgban.HP,
-		"1":                 mtgban.PO,
-		"Authentic Altered": mtgban.PO,
-	},
-}
-
 // parseGradedCondition reads the grade off a graded listing's title, and
 // alongside it the grader-plus-score text a caller can name a refusal by
 // ("PSA 11"), empty when the title names no known grader at all.
@@ -762,7 +720,7 @@ func parseGradedCondition(title string) (mtgban.Condition, string) {
 	// A grade the table does not cover has no condition, and must not fall
 	// through to the zero value: an empty condition is silently promoted to
 	// NM when the entry is added
-	condition, found := gradeMap[score][grade]
+	condition, found := mtgban.SlabCondition(score, grade)
 	if !found {
 		return "", slab
 	}
