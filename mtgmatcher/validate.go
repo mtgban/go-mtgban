@@ -3,7 +3,7 @@ package mtgmatcher
 import "strings"
 
 // IDValidationOptions controls whether a known identifier may reach a finish
-// filed as a separate printing. Ordinary MatchIDFinish stays within one printing.
+// filed as a separate printing. MatchIDFinish of a uuid stays within one printing.
 type IDValidationOptions struct {
 	AllowFinishSiblings bool
 }

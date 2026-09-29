@@ -72,6 +72,64 @@ Lorcana's treatments (Satin, Rainbow Pillars) are promo types, not finishes:
 a listing naming one in its wording reaches the printing that carries it,
 and one sending it as the finish falls through to the wording.
 
+## A product id answers for its product
+
+A uuid names one printing, and `MatchIDFinish` answers it from that
+printing's own finishes, as above. A vendor's id names a product, which can
+hold more than one printing, so it is answered from the whole product:
+
+- A finish the printing the id files at is not sold in comes from a set-mate
+  sold under the same product: one carrying the same id and no other id of
+  that kind. 7th to 10th Edition file a card's foil as a printing of its own,
+  numbered with a star, and TCGplayer sells the two as one product: 3040 is
+  Raise Dead #157 as Normal and #157★ as Foil, whichever of the two the id
+  files at. Aether Revolt's Alley Strangler shares 126455 with its starter
+  deck printing #52†, and only #52 is sold in foil.
+- A star foil carrying no id of that kind is its card's product's foil, as
+  `tcg_index` files it: 95037 Foil is Fate Reforged's Crux of Fate #65★. An
+  etched star twin is not, being sold under an etched product of its own.
+- An id filed at an etched printing answers Foil with it: TCGplayer sells an
+  etched foil as a product of its own under the printing Foil, so 233370 Foil
+  is Swords to Plowshares' etched #10, and 233369 Foil its plain foil.
+
+A set-mate carrying another id of the kind has a product of its own and is
+never reached: the surge foil the loader files apart from Meteor Golem
+carries the card's `tcgplayerAlternativeFoilProductId`, and 698282, the
+surge foil's product, still sells no Normal. Where two set-mates would answer
+differently the finish is refused; no datastore row reaches that today.
+
+### Measured when product ids landed
+
+With go-mtgban df3c4efc8 as the base and allprintings5.json 5.3.0+20260927:
+
+- Every English near-mint sku in MTGJSON's TcgplayerSkus 5.3.0+20260905,
+  keyed by product and printing as a listing is, and graded against the uuid
+  MTGJSON files it under in the sku's own finish (145,872 keys of cards):
+
+  | | right | wrong | refused |
+  |---|---|---|---|
+  | `Match` with the printing as the finish, before | 143,444 | 287 | 2,141 |
+  | the same, after | 145,847 | 3 | 22 |
+  | the SYP scraper's name-then-flags lookup, before | 145,847 | 3 | 22 |
+  | the same, after | 145,850 | 0 | 22 |
+  | `tcg_index`'s product map, unchanged | 145,850 | 0 | 22 |
+
+  The 287 were etched products answered with the plain foil (Strixhaven
+  Mystical Archive 126, Modern Horizons 2 113, Modern Horizons 1 Timeshifts
+  40, Secret Lair 8), and the 2,119 "unknown finish" refusals the star foils,
+  the etched products and Alley Strangler's foil. The 3 left are Secret Lair
+  #159 to #161: Scryfall gives each
+  card its etched twin's product id and MTGJSON copies it, so the id files at
+  the card. The 22 are ids the datastore carries no printing for. SYP's 3
+  were the flags' twin: 7th Edition's Chinese alt-arts #157★s and #161s,
+  and Alley Strangler #52†.
+- Every MTGJSON, Scryfall and TCGplayer id on the Magic datastore asked for
+  each finish and both flags, and every id through `ConvertID` (2.32M
+  answers): 4,552 refusals now land, 284 etched products move from the plain
+  foil to the etched one, nothing that landed is refused, and no flag or
+  `ConvertID` answer moved. The eight datastore games published 2026-09-28
+  answer every id and finish as before.
+
 ## Measured when this landed
 
 On the datastores published 2026-09-24 and 25, frozen for the comparison, with
