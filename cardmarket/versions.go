@@ -62,18 +62,16 @@ var versionPrintings = map[int]struct{ set, number string }{
 	242135: {"WC97", "jk433"},  // Plains (V.3), CardTrader
 
 	// WCD 1997: Paul McCabe
-	250101: {"WC97", "pm78sb"}, // Pyrokinesis (V.2), CardTrader
-	250104: {"WC97", "pm434"},  // Island (V.1), swap
-	250106: {"WC97", "pm436"},  // Island (V.3), image
-	250108: {"WC97", "pm442"},  // Mountain (V.1), swap
-	250110: {"WC97", "pm444"},  // Mountain (V.3), image
-	250111: {"WC97", "pm445"},  // Mountain (V.4), CardTrader
+	250104: {"WC97", "pm434"}, // Island (V.1), swap
+	250106: {"WC97", "pm436"}, // Island (V.3), image
+	250108: {"WC97", "pm442"}, // Mountain (V.1), swap
+	250110: {"WC97", "pm444"}, // Mountain (V.3), image
+	250111: {"WC97", "pm445"}, // Mountain (V.4), CardTrader
 
 	// WCD 1997: Svend Geertsen
 	250070: {"WC97", "sg341"},   // Whirling Dervish (V.1), sideboard
 	250071: {"WC97", "sg341sb"}, // Whirling Dervish (V.2), sideboard
 	250073: {"WC97", "sg123sb"}, // Uktabi Orangutan (V.2), CardTrader
-	250078: {"WC97", "sg85sb"},  // Bounty of the Hunt (V.2), CardTrader
 	250080: {"WC97", "sg446"},   // Forest (V.1), swap
 	250082: {"WC97", "sg448"},   // Forest (V.3), image
 
@@ -83,7 +81,6 @@ var versionPrintings = map[int]struct{ set, number string }{
 
 	// WCD 1998: Brian Hacker
 	249872: {"WC98", "bh7bsb"}, // Aura of Silence (V.2), CardTrader
-	249876: {"WC98", "bh16sb"}, // Disenchant (V.2), CardTrader
 	249878: {"WC98", "bh331"},  // Plains (V.1), swap
 	249881: {"WC98", "bh334"},  // Plains (V.4), image
 
@@ -123,7 +120,6 @@ var versionPrintings = map[int]struct{ set, number string }{
 	249608: {"WC00", "jk134sb"}, // Masticore (V.2), sideboard
 	249611: {"WC00", "jk220"},   // Creeping Mold (V.1), sideboard
 	249612: {"WC00", "jk220sb"}, // Creeping Mold (V.2), sideboard
-	249617: {"WC00", "jk306sb"}, // Phyrexian Processor (V.2), CardTrader
 
 	// WCD 2000: Jon Finkel
 	249585: {"WC00", "jf302sb"}, // Mishra's Helix (V.2), CardTrader
@@ -137,14 +133,12 @@ var versionPrintings = map[int]struct{ set, number string }{
 	250142: {"WC01", "jt349a"},  // Forest (V.6), CardTrader
 
 	// WCD 2001: Antoine Ruel
-	249523: {"WC01", "ar67"},    // Counterspell (V.1), swap
-	249533: {"WC01", "ar131sb"}, // Duress (V.2), CardTrader
-	250137: {"WC01", "ar338"},   // Island (V.5), image
-	250140: {"WC01", "ar334"},   // Island (V.8), left over
-	316302: {"WC01", "ar69"},    // Counterspell (V.2), image
+	249523: {"WC01", "ar67"},  // Counterspell (V.1), swap
+	250137: {"WC01", "ar338"}, // Island (V.5), image
+	250140: {"WC01", "ar334"}, // Island (V.8), left over
+	316302: {"WC01", "ar69"},  // Counterspell (V.2), image
 
 	// WCD 2001: Alex Borteh
-	249506: {"WC01", "ab69"},   // Counterspell (V.1), CardTrader
 	249512: {"WC01", "ab338"},  // Island (V.4), CardTrader
 	250127: {"WC01", "ab336"},  // Island (V.6), image
 	250129: {"WC01", "ab338a"}, // Island (V.8), CardTrader
@@ -195,7 +189,6 @@ var versionPrintings = map[int]struct{ set, number string }{
 
 	// WCD 2002: Carlos Romao
 	249351: {"WC02", "cr57sb"}, // Fact or Fiction (V.2), CardTrader
-	249360: {"WC02", "cr336"},  // Island (V.4), left over
 	249364: {"WC02", "cr340"},  // Swamp (V.1), swap
 	249365: {"WC02", "cr341"},  // Swamp (V.2), image
 	250057: {"WC02", "cr332"},  // Island (V.7), swap

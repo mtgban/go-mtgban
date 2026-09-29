@@ -94,9 +94,9 @@ shape - spot-checked live, all confirmed genuine - so this is systematic on
 mtgjson's side, not a one-off; worth filing upstream. Deferring to the name
 route was not enough either: by name every "(V.N)" version of a card lands
 on one printing (both examples above on the main deck's, not the sideboard
-one their "(V.2)" names). `versionPrintings` now names those products'
-printings by product id; `docs/agents/cardmarket-census/versions.md` has
-where each row comes from.
+one their "(V.2)" names). `versionPrintings` names by product id the
+printings of the versions the id map does not place;
+`docs/agents/cardmarket-census/versions.md` has where each row comes from.
 
 The same drift reaches a product through the id map too: `resolveMapped`
 answers from the map's own uuids before `Fallback`'s mcmId route ever runs,
