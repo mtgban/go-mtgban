@@ -1199,9 +1199,7 @@ func (r *resolver) yugiohShelfCode(product *cm.Product, name, rarity, region str
 // number - "MRL-E129" for tail "129" - that a shelf of ours already prices.
 // Cardmarket's "Spell Ruler" catalog carries Magic Ruler's own European
 // numbers as if they were Spell Ruler's; the row is real, just filed under
-// Magic Ruler's shelf instead of the one the product sits on. Before
-// datastore-gen's European first-print mint we held rows only for
-// MRL-E104 to E130; the mint adds MRL-E000 to E103.
+// Magic Ruler's shelf instead of the one the product sits on.
 func (r *resolver) yugiohEuropean(name, tail string) bool {
 	if tail == "" {
 		return false

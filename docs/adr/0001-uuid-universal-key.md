@@ -125,7 +125,7 @@ back to `ExternalIdentifiers`, so a scraper that has a clean product id can
 hand it over verbatim and still land on the canonical key.
 
 On the scraper side, the only multi-game knowledge that exists is a lookup
-table: `tcgGames` (`tcgplayer/game.go`) maps an `mtgban.Game` to the TCGplayer
+table: `tcgGames` (`tcgplayer/game.go`) maps an `mtgmatcher.Game` to the TCGplayer
 category serving it, and both generic TCGplayer scrapers — `TCGGame` and
 `TCGGameIndex` — refuse to be constructed for a game absent from it. Magic
 is deliberately absent: it is identified by SKU and has its own scrapers. The
@@ -151,8 +151,8 @@ game there is one table entry plus a matcher datastore.
   likewise contained: a loader, a `GameRules` implementation and a
   `register.go`. No identity logic moves into a scraper and nothing downstream
   changes at all, because everything downstream keys on the uuid and never
-  inspects it; the scraper-side cost is one `mtgban.Game` constant (alongside
-  `GameLorcana` and `GameRiftbound`, and listed in `mtgban.AllGames`) and, for
+  inspects it; the scraper-side cost is one `mtgmatcher.Game` constant (alongside
+  `GameLorcana` and `GameRiftbound`, and listed in `mtgmatcher.AllGames`) and, for
   TCGplayer coverage, one `tcgGames` entry.
 - **Harder:** `mtgmatcher` is a large, central, data-heavy package and the
   single point of failure for correctness — hence its per-game regression

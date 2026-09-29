@@ -1,12 +1,12 @@
 # cardmarket
 
-Prices Cardmarket across the seven games it and `mtgban` both carry — Magic,
-Lorcana, Riftbound, One Piece, Yu-Gi-Oh, Flesh and Blood, Pokemon — via three
-scrapers built on `github.com/mtgban/go-cardmarket`, the signed API client.
-Gundam and Palworld are absent on purpose: Cardmarket itself does not sell
-either (`mkmGames` names the seven it does, and `go-cardmarket`'s own `Game*`
-constants list nineteen games total, twelve of which `mtgban` has never
-modeled at all — see "Known gaps").
+Prices Cardmarket across the eight games it and `mtgban` both carry: Magic,
+Lorcana, Riftbound, One Piece, Yu-Gi-Oh, Flesh and Blood, Pokemon and
+Gundam, via three scrapers built on `github.com/mtgban/go-cardmarket`, the
+signed API client. Palworld is absent on purpose: Cardmarket itself does not
+sell it (`mkmGames` names the eight it does, and `go-cardmarket`'s own
+`Game*` constants list twenty-two games total, fourteen of which `mtgban`
+has never modeled at all; see "Known gaps").
 
 - **`Index`** (`cardmarket.go`, `idmap.go`) reads Cardmarket's published price
   guide: one bulk download per game, no credential, the low and trend columns
@@ -333,7 +333,7 @@ different countries.
 
 ## The offline pre-filter
 
-All seven games are restricted to a candidate set (`marketCandidates`)
+Every game but Gundam is restricted to a candidate set (`marketCandidates`)
 computed from a snapshot
 of `mtgban`'s own published prices, before `Market` ever queries Cardmarket
 live: a card priced over $7, or an Arbit-style spread against a buylist
@@ -393,11 +393,11 @@ carries it.
   `ubuntu-latest` job tolerates (a 5-6h practical ceiling). They're wired as
   `workflow_dispatch`-only in `.github/workflows/bantool-cardmarket_market*`
   until routed to a self-hosted runner.
-- **Twelve of `go-cardmarket`'s nineteen `Game*` constants have no `mtgban`
-  equivalent** — World of Warcraft, The Spoils, Force of Will, Cardfight!!
-  Vanguard, Final Fantasy, Weiss Schwarz, Dragoborne, My Little Pony, Dragon
-  Ball Super, Star Wars Destiny, Digimon, Battle Spirits Saga, Star Wars
-  Unlimited. `mkmGames` covers exactly the games `mtgmatcher/games` blank-
+- **Fourteen of `go-cardmarket`'s twenty-two `Game*` constants have no
+  `mtgban` equivalent**: World of Warcraft, The Spoils, Force of Will,
+  Cardfight!! Vanguard, Final Fantasy, Weiss Schwarz, Dragoborne, My Little
+  Pony, Dragon Ball Super, Star Wars Destiny, Digimon, Battle Spirits Saga,
+  Star Wars Unlimited and Cyberpunk. `mkmGames` covers exactly the games `mtgmatcher/games` blank-
   imports; adding any of these needs the full "Adding a game" checklist in
   `AGENTS.md` first; this package is the last, not the first, step.
 - **Index cannot price Yu-Gi-Oh's 1st Edition apart.** Cardmarket keeps
