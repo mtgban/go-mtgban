@@ -165,8 +165,15 @@ func (b *Backend) FinishUUID(card *Card, finish string) string {
 // sku prices under one uuid, which is the whole point of a uuid per finish.
 // It reports a datastore that does not carry a printing the vendor sells,
 // where the flag form would have quietly clamped the price onto the finish it
-// does carry. Unlike the flag form it answers with the printing's own
-// siblings only, not with a foil Magic files as a printing of its own.
+// does carry.
+//
+// One of the matcher's own uuids names a printing and answers from its
+// siblings alone. A vendor's id names a product, which can hold more than
+// one printing: a finish the printing it files at is not sold in comes from a
+// set-mate sold under the same product (soldUnder), and a product filed at an
+// etched printing answers foil with it, since TCGplayer sells an etched foil
+// as a product of its own and calls it Foil. Unlike the flag form it never
+// reaches a twin the product does not hold.
 func (b *Backend) MatchIDFinish(inputID, finish string) (string, error) {
 	co, err := b.cardObject4Id(inputID)
 	if err != nil {
@@ -180,13 +187,22 @@ func (b *Backend) MatchIDFinish(inputID, finish string) (string, error) {
 	if b.rules == nil {
 		return "", ErrDatastoreEmpty
 	}
-	if FinishSlug(finish) == "" {
+	canonical := FinishSlug(finish)
+	if canonical == "" {
 		b.Logf("Finish %q is not one this game names", finish)
 		return "", ErrCardUnnamedFinish
 	}
-	outID := b.FinishUUID(&co.Card, finish)
+	var outID string
+	tags := b.idTags(&co.Card, inputID)
+	if len(tags) > 0 && co.Etched && canonical == FinishFoil {
+		outID = co.UUID
+	} else {
+		outID = b.FinishUUID(&co.Card, finish)
+	}
+	if outID == "" && len(tags) > 0 {
+		outID = b.productSibling(co, inputID, tags, finish)
+	}
 	if outID == "" {
-		canonical := FinishSlug(finish)
 		if !b.knownFinishes[canonical] {
 			b.Logf("Finish %q is not one this datastore sells", finish)
 			return "", ErrCardUnnamedFinish
@@ -201,11 +217,74 @@ func (b *Backend) MatchIDFinish(inputID, finish string) (string, error) {
 	return outID, nil
 }
 
+// idTags names the identifiers a printing carries a vendor's id under, and
+// none for one of the matcher's own uuids, which names the printing alone.
+func (b *Backend) idTags(card *Card, inputID string) []string {
+	_, isUUID := b.UUIDs[inputID]
+	if isUUID {
+		return nil
+	}
+	var tags []string
+	for tag, id := range card.Identifiers {
+		if id == inputID {
+			tags = append(tags, tag)
+		}
+	}
+	return tags
+}
+
+// productSibling answers a finish from the set-mates of a printing sold under
+// the product a vendor's id names, and "" where none is sold in it or two
+// different printings are.
+func (b *Backend) productSibling(co *CardObject, inputID string, tags []string, finish string) string {
+	var answer string
+	for _, variation := range co.Variations {
+		altCo, found := b.UUIDs[variation]
+		if !found || !soldUnder(co, altCo, inputID, tags) {
+			continue
+		}
+		outID := b.FinishUUID(&altCo.Card, finish)
+		if outID == "" {
+			continue
+		}
+		if answer != "" && answer != outID {
+			return ""
+		}
+		answer = outID
+	}
+	return answer
+}
+
+// soldUnder reports whether a set-mate is sold under the vendor's id the
+// printing carries under tags: the set-mate carries it too, and no other id
+// of those kinds, or it is the printing's foil twin numbered with a star and
+// carries none of them, a foil sold under its card's product (FRF 65★ under
+// #65's). A misprint the catalog stars shares a finish with its card, which
+// finishTwins rules out.
+func soldUnder(co, altCo *CardObject, inputID string, tags []string) bool {
+	carries := false
+	for _, tag := range tags {
+		id := altCo.Identifiers[tag]
+		if id == "" {
+			continue
+		}
+		if id != inputID {
+			return false
+		}
+		carries = true
+	}
+	if carries {
+		return true
+	}
+	return altCo.Foil && altCo.Number == co.Number+"★" && finishTwins(co, altCo)
+}
+
 // matchIDFor answers an id the way the caller asked about it. The two forms
-// differ in reach, not just in spelling: the flags may land on a foil Magic
-// files as a printing of its own, while a named finish stays among the
-// printing's own siblings, which is what lets it be loud about a finish the
-// printing is not sold in.
+// differ in reach, not just in spelling: the flags may land on any foil Magic
+// files as a printing of its own, while a named finish reaches only the
+// printings the id itself names - a uuid's own, or those a vendor's product
+// is sold as (MatchIDFinish) - which is what lets it be loud about a finish
+// none of them is sold in.
 func (b *Backend) matchIDFor(inCard *InputCard) (string, error) {
 	if inCard.Finish != "" {
 		return b.MatchIDFinish(inCard.ID, inCard.Finish)
