@@ -104,9 +104,7 @@ so a map entry carrying one of these same wrong links used to price
 straight through it untouched. The check above is now `plausiblePrinting`,
 called from both `Fallback` and `resolveUUIDs`. It covers the Pro Tour
 Collector Set's `"Pro Tour 1996: <player>"` shelves, which only sell `PTC`,
-and Oversized shelves the same way (mtgjson links two Oversized products,
-21364 and 21387, onto an ordinary-sized 30th Anniversary Edition printing
-instead of an oversized one).
+and Oversized shelves, which only sell an oversized printing.
 
 **The Yu-Gi-Oh bridge is held to the product's number.** CardTrader links
 a set's Special Editions ("S01"), box toppers (LC05, LC06) and European
