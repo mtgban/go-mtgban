@@ -27,6 +27,8 @@ func TestListingsFor(t *testing.T) {
 		{ProductID: "111", ProductClass: "2", Rows: rows(5)},
 		{ProductID: "222", ProductClass: "", Rows: rows(7)},
 		{ProductID: "333", ProductClass: "1", Rows: rows(11)},
+		{ProductID: "555", ProductClass: "2", Rows: rows(13)},
+		{ProductID: "555", ProductClass: "", Rows: rows(17)},
 	}
 
 	for _, tt := range []struct {
@@ -55,6 +57,16 @@ func TestListingsFor(t *testing.T) {
 			want:    0,
 		},
 		{
+			desc:    "a slab's lot takes its own block and not the plain lot's",
+			product: Product{Product: "555", ProductClass: "2"},
+			want:    13,
+		},
+		{
+			desc:    "and the plain lot takes the block that names none",
+			product: Product{Product: "555", ProductClass: "1"},
+			want:    17,
+		},
+		{
 			desc:    "a lot the storefront did not answer for gets nothing",
 			product: Product{Product: "333", ProductClass: "9"},
 			want:    0,
@@ -76,10 +88,12 @@ func TestListingsFor(t *testing.T) {
 		{Product: "111", ProductClass: "2"},
 		{Product: "222", ProductClass: "1"},
 		{Product: "333", ProductClass: "1"},
+		{Product: "555", ProductClass: "1"},
+		{Product: "555", ProductClass: "2"},
 	} {
 		all += total(listingsFor(p, lazy))
 	}
-	if want := 2 + 3 + 5 + 7 + 11; all != want {
+	if want := 2 + 3 + 5 + 7 + 11 + 13 + 17; all != want {
 		t.Errorf("the page totals %d, want %d", all, want)
 	}
 }

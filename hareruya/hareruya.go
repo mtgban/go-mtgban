@@ -361,20 +361,26 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 // conditions has several lots, so pairing on the product alone gives every
 // lot of it every other lot's rows.
 func listingsFor(product Product, lazyData []LazyResult) []Row {
-	var rows []Row
+	// A block leaves its lot unnamed where the product has one lot, and also
+	// for the plain lot beside a slab's; it answers only a lot no block names.
+	var own, unnamed []Row
+	var named bool
 	for _, lazy := range lazyData {
 		if lazy.ProductID != product.Product {
 			continue
 		}
-		// A block says which lot it is only where the product has more
-		// than one; asking for the class outright would drop every
-		// product that has just the one.
-		if lazy.ProductClass != "" && lazy.ProductClass != product.ProductClass {
-			continue
+		switch lazy.ProductClass {
+		case product.ProductClass:
+			named = true
+			own = append(own, lazy.Rows...)
+		case "":
+			unnamed = append(unnamed, lazy.Rows...)
 		}
-		rows = append(rows, lazy.Rows...)
 	}
-	return rows
+	if named {
+		return own
+	}
+	return unnamed
 }
 
 // Row is one line of the storefront's table, before it becomes a listing.
