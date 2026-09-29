@@ -480,7 +480,8 @@ func isSkippedCondition(conditions string) bool {
 // variation and lets the matcher pick it, and the offer is priced as the
 // stock it is.
 var conditionPrintings = map[string]string{
-	"PRE-ERRATA": "Pre-Errata",
+	"PRE-ERRATA":     "Pre-Errata",
+	"Pokemon Center": "Pokemon Center",
 }
 
 // conditionPrinting reads the printing a row names in its condition column,
@@ -647,12 +648,14 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				isFoil := strings.HasPrefix(conditions, "Foil")
 
 				slabGrade, slabbed := slabCondition(conditions)
+				// Read ahead of the graded rule, which drops the wording: a
+				// slab names its printing too ("PSA 9 Pokemon Center").
+				printing := conditionPrinting(conditions)
 				if isGraded(conditions) {
 					conditions = "Near Mint"
 					graded = true
 				}
 
-				printing := conditionPrinting(conditions)
 				if printing != "" {
 					conditions = "Near Mint"
 				}
