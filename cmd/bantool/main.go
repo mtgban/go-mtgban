@@ -420,6 +420,17 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 	return nil
 }
 
+// abortWrite discards an unfinished dump rather than publishing it, as
+// simplecloud does internally: Abort where the writer can, and Close, which
+// commits whatever was written, where it cannot.
+func abortWrite(w io.WriteCloser) error {
+	aborter, ok := w.(simplecloud.Aborter)
+	if ok {
+		return aborter.Abort()
+	}
+	return w.Close()
+}
+
 func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) (err error) {
 	if len(seller.Inventory()) == 0 {
 		return fmt.Errorf("seller %s has no data", seller.Info().Shorthand)
@@ -432,13 +443,15 @@ func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sell
 	if err != nil {
 		return err
 	}
-	// Close is where a buffered cloud writer commits the upload, so it
-	// reports whether anything was durably written at all
+	// On the cloud backends Close is what publishes, so only a clean encode
+	// may reach it: an error or a panic aborts, keeping the last good dump
+	var complete bool
 	defer func() {
-		cerr := writer.Close()
-		if err == nil {
-			err = cerr
+		if !complete {
+			err = errors.Join(err, abortWrite(writer))
+			return
 		}
+		err = writer.Close()
 	}()
 
 	switch strings.Split(format, ".")[0] {
@@ -452,6 +465,7 @@ func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sell
 		err = errors.New("invalid format")
 	}
 
+	complete = err == nil
 	return err
 }
 
@@ -467,13 +481,15 @@ func dumpVendor(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, vend
 	if err != nil {
 		return err
 	}
-	// Close is where a buffered cloud writer commits the upload, so it
-	// reports whether anything was durably written at all
+	// On the cloud backends Close is what publishes, so only a clean encode
+	// may reach it: an error or a panic aborts, keeping the last good dump
+	var complete bool
 	defer func() {
-		cerr := writer.Close()
-		if err == nil {
-			err = cerr
+		if !complete {
+			err = errors.Join(err, abortWrite(writer))
+			return
 		}
+		err = writer.Close()
 	}()
 
 	switch strings.Split(format, ".")[0] {
@@ -487,6 +503,7 @@ func dumpVendor(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, vend
 		err = errors.New("invalid format")
 	}
 
+	complete = err == nil
 	return err
 }
 
