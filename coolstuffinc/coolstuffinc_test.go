@@ -166,6 +166,32 @@ func TestIsGraded(t *testing.T) {
 	}
 }
 
+// TestSlabCondition pins that a slab grades by its score, read off the
+// storefront's own rows, and that every other graded wording does not.
+func TestSlabCondition(t *testing.T) {
+	for _, tt := range []struct {
+		fullRow string
+		want    mtgban.Condition
+		slabbed bool
+	}{
+		{"1 PSA 10 \u00a0PSA 10\u00a0$299.99Add to Cart", mtgban.NM, true},
+		{"1 BGS 8.5 \u00a0BGS 8.5\u00a0$149.99Add to Cart", mtgban.SP, true},
+		{"1 BGS 9.5 \u00a0BGS 9.5\u00a0Was $349.99 Sale $314.99Add to Cart", mtgban.NM, true},
+		{"1 CGC 8.5 \u00a0CGC 8.5\u00a0$24.99Add to Cart", mtgban.NM, true},
+		{"1 PSA 9 Pokemon Center \u00a0PSA 9 Pokemon Center\u00a0$299.99Add to Cart", mtgban.NM, true},
+		{"1 TAG 10 \u00a0TAG 10\u00a0$99.99Add to Cart", "", false},
+		{"1 Unique See image for details. $59.99Add to Cart", "", false},
+		{"1 Near Mint $9.99Add to Cart", "", false},
+	} {
+		t.Run(tt.fullRow, func(t *testing.T) {
+			got, slabbed := slabCondition(offerCondition(tt.fullRow, "1", ""))
+			if got != tt.want || slabbed != tt.slabbed {
+				t.Errorf("slabCondition(%q) = %q, %v; want %q, %v", tt.fullRow, got, slabbed, tt.want, tt.slabbed)
+			}
+		})
+	}
+}
+
 // TestMarketNamesCarryTheGradedSeller pins that every game can publish a
 // graded price. The scraper files one under its own seller whatever the game,
 // but the name used to be offered for Magic alone, so everywhere else the
