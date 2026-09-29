@@ -236,6 +236,56 @@ func ParseCondition(s string) (Condition, error) {
 	return grade, nil
 }
 
+// SlabCondition reads a grading service's score on a slab as a grade, PSA 9
+// as NM; a half point reads as the whole point below it.
+func SlabCondition(grader, score string) (Condition, bool) {
+	score, _, _ = strings.Cut(score, ".")
+	grade, found := slabGrades[grader][score]
+	return grade, found
+}
+
+var slabGrades = map[string]map[string]Condition{
+	"PSA": {
+		"10": NM,
+		"9":  NM,
+		"8":  NM,
+		"7":  NM,
+		"6":  SP,
+		"5":  SP,
+		"4":  MP,
+		"3":  MP,
+		"2":  HP,
+		"1":  HP,
+	},
+	"BGS": {
+		"10": NM,
+		"9":  NM,
+		"8":  SP,
+		"7":  SP,
+		"6":  MP,
+		"5":  MP,
+		"4":  MP,
+		"3":  HP,
+		"2":  HP,
+		"1":  PO,
+	},
+	"CGC": {
+		"Pristine":          NM,
+		"Pristine 10":       NM,
+		"10":                NM,
+		"9":                 NM,
+		"8":                 NM,
+		"7":                 SP,
+		"6":                 SP,
+		"5":                 MP,
+		"4":                 MP,
+		"3":                 HP,
+		"2":                 HP,
+		"1":                 PO,
+		"Authentic Altered": PO,
+	},
+}
+
 // Scraper is the interface both Sellers and Vendors need to implement
 type Scraper interface {
 	// Load the scraper with data according to the configuration
