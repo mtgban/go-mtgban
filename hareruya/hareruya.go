@@ -35,6 +35,9 @@ const (
 // signed or inked, in English or Japanese ("MP Signed", "BGS8 サイン9点").
 var reAltered = regexp.MustCompile(`Singed|Signed|Inked|サイン`)
 
+// reSlab reads a graded slab's label, grader and score ("BGS8.5").
+var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC)\s*(\S+)$`)
+
 // Hareruya prices Hareruya's singles.
 type Hareruya struct {
 	logCallback    mtgban.LogCallbackFunc
@@ -342,7 +345,11 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 						URL:        link,
 						OriginalID: product.Product,
 						InstanceID: product.ProductClass,
+						SellerName: availableMarketNames[0],
 					},
+				}
+				if row.Graded {
+					out.invEntry.SellerName = availableMarketNames[1]
 				}
 
 				select {
@@ -388,16 +395,23 @@ type Row struct {
 	Quantity  int
 	Condition mtgban.Condition
 	Price     float64
+	// Graded marks a copy in a grading service's slab.
+	Graded bool
 }
 
-// haCondition maps Hareruya's condition text to our grade. A graded slab -
-// naming PSA, CGC or BGS - is NM; everything else is read through
-// ParseCondition.
-func haCondition(s string) (mtgban.Condition, error) {
-	if strings.Contains(s, "PSA") || strings.Contains(s, "CGC") || strings.Contains(s, "BGS") {
-		return mtgban.NM, nil
+// haCondition maps Hareruya's condition text to our grade, and reports
+// whether it names a graded slab, which grades by its score.
+func haCondition(s string) (mtgban.Condition, bool, error) {
+	match := reSlab.FindStringSubmatch(s)
+	if match == nil {
+		grade, err := mtgban.ParseCondition(s)
+		return grade, false, err
 	}
-	return mtgban.ParseCondition(s)
+	grade, found := mtgban.SlabCondition(match[1], match[2])
+	if !found {
+		return "", true, fmt.Errorf("%w: %q", mtgban.ErrInvalidCondition, s)
+	}
+	return grade, true, nil
 }
 
 // LazyResult carries a page of rows and the error that ended the walk, so a
@@ -494,7 +508,6 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 			}
 
 			condition := strings.TrimRight(strings.TrimSuffix(fields[0], " Stock"), "-+")
-			// Ahead of the slab rule, which rewrites the label, note and all, to NM.
 			if reAltered.MatchString(condition) {
 				break
 			}
@@ -504,7 +517,7 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				break
 			}
 
-			grade, err := haCondition(condition)
+			grade, graded, err := haCondition(condition)
 			if err != nil {
 				ha.printf("unsupported %s condition", condition)
 				break
@@ -514,6 +527,7 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				Price:     price,
 				Condition: grade,
 				Quantity:  qty,
+				Graded:    graded,
 			})
 			//lint:ignore SA4004 the single iteration is the point
 			break
@@ -537,7 +551,7 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				return
 			}
 
-			grade, err := haCondition(condition)
+			grade, graded, err := haCondition(condition)
 			if err != nil {
 				ha.printf("unsupported %s condition", condition)
 				return
@@ -547,6 +561,7 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				Price:     price,
 				Condition: grade,
 				Quantity:  qty,
+				Graded:    graded,
 			})
 		})
 
@@ -729,6 +744,32 @@ func (ha *Hareruya) Inventory() mtgban.InventoryRecord {
 // Buylist returns what Load collected. See mtgban.Vendor.
 func (ha *Hareruya) Buylist() mtgban.BuylistRecord {
 	return ha.buylist
+}
+
+// availableMarketNames are the sub-sellers: the storefront's copies, and
+// those it sells in a grading service's slab.
+var availableMarketNames = []string{
+	"Hareruya",
+	"Hareruya Graded",
+}
+
+var name2shorthand = map[string]string{
+	"Hareruya":        "HA",
+	"Hareruya Graded": "HAGraded",
+}
+
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
+func (ha *Hareruya) MarketNames() []string {
+	return availableMarketNames
+}
+
+// InfoForScraper describes one of the sub-scrapers named above.
+func (ha *Hareruya) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := ha.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
 }
 
 // Info describes this scraper. See mtgban.Scraper.
