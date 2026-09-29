@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -204,21 +205,14 @@ func TestFourthEditionAlternateKeepsVIndex(t *testing.T) {
 	}
 }
 
-// TestFallbackDefersOnImplausibleWCDCandidate pins a live-confirmed mtgjson
-// linking mistake, a single-candidate variant of the same class of bug as
-// TestFallbackDefersOnMcmIdCollision above: id 249617, "Phyrexian Processor
-// (V.2)" under Cardmarket's "WCD 2000: Janosch Kühn", carries mtgjson's
-// mcmId 249617 - but on a completely unrelated printing, The Brothers' War
-// Retro Artifacts' foil Phyrexian Processor, not any of the real World
-// Championship Decks printings (set codes WC97-WC04). id 249533, "Duress
-// (V.2)" under "WCD 2001: Antoine Ruel", carries the same shape onto a
-// starred Seventh Edition Duress. Neither is an ambiguous multi-candidate
-// case the existing number-disagreement guard would catch - there was only
-// ever the one candidate, and it simply names the wrong card. Fallback now
-// also distrusts a WCD product's lone candidate when that candidate is not
-// itself a WC-family printing, deferring to Preprocess/Match instead (which
-// already resolves these by name/edition).
-func TestFallbackDefersOnImplausibleWCDCandidate(t *testing.T) {
+// TestFallbackKeepsWCDProductsOnWCDPrintings pins what plausiblePrinting
+// promises Fallback: a World Championship Decks product lands on a WC97-WC04
+// printing or on nothing, whichever printing mtgjson links its id to, and the
+// name route it defers to lands on one. Both products' ids have been linked
+// to unrelated printings before (a Brothers' War Retro Artifacts foil, a
+// starred Seventh Edition Duress); plausiblePrinting's own test pins the
+// rejection on fixed uuids.
+func TestFallbackKeepsWCDProductsOnWCDPrintings(t *testing.T) {
 	b := realDatastore(t)
 
 	tests := []struct {
@@ -232,9 +226,17 @@ func TestFallbackDefersOnImplausibleWCDCandidate(t *testing.T) {
 	for _, tt := range tests {
 		product := &cm.Product{IDProduct: tt.id, Name: tt.name, ExpansionName: tt.edition}
 		cardID, cardIDFoil := Fallback(b, product)
-		if cardID != "" || cardIDFoil != "" {
-			co, _ := b.GetUUID(cardID)
-			t.Errorf("%d: Fallback = (%q, %q), want (\"\", \"\") - kept %s, not a World Championship Decks printing", tt.id, cardID, cardIDFoil, co)
+		for _, id := range slices.Compact([]string{cardID, cardIDFoil}) {
+			if id == "" {
+				continue
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !strings.HasPrefix(co.SetCode, "WC") {
+				t.Errorf("%d: Fallback kept %s, want a World Championship Decks printing or none", tt.id, co)
+			}
 		}
 
 		theCard, err := Preprocess(b, product.Name, product.Number, product.ExpansionName)
