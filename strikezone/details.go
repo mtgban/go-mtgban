@@ -18,6 +18,7 @@ import (
 var (
 	detailConditions = []string{
 		"Near Mint",
+		"Mint",
 		"Light Play",
 		"Medium Play",
 		"Heavy Play",
