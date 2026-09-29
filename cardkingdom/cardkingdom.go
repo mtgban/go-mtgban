@@ -250,11 +250,14 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			for i, grade := range mtgban.DefaultGradeTags {
 				buyPrice := card.PriceBuy * retailPrices[i] / retailPrices[0]
 
-				// Only save URL information
+				// The price CK lists while not buying, and the product it
+				// lists it for
 				out := &mtgban.BuylistEntry{
 					BuyPrice:   buyPrice,
 					Conditions: grade,
 					VendorName: availableTraderNames[1],
+					OriginalID: strconv.Itoa(card.ID),
+					InstanceID: card.SKU,
 				}
 				err = ck.buylist.Add(cardID, out)
 				if err != nil && !skipErrors {
