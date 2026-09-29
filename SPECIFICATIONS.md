@@ -80,7 +80,7 @@ product UUID directly without calling `Match()` — see §3).
 
 - `InventoryEntry`: `Quantity`, `Conditions` (a `Condition`, named by `NM`
   through `PO`), `Price` (USD), `URL`, `SellerName`, `Bundle` (part of a
-  direct-shipping hub), `OriginalId` (store product id), `InstanceId` (SKU),
+  direct-shipping hub), `OriginalID` (store product id), `InstanceID` (SKU),
   `CustomFields map[string]string`, `ExtraValues map[string]float64`.
 - `BuylistEntry`: swaps `Price` for `BuyPrice` + `PriceRatio` (buy/sell
   ratio, a desirability signal) and `SellerName` for `VendorName`.
@@ -200,9 +200,8 @@ rescaled copy of itself. A pair whose grade is missing from the map or is
 at zero. The result carries `ReferenceEntry` instead of `BuylistEntry`, and
 `NoQuantityInventory` bypasses the qty gate here too.
 
-`mtgban` imports no game package. `Pennystock`, the one report that did,
-applied Magic's rarities, borders and promo types, and moved to its only
-caller, autocart.
+`mtgban` imports no game package; a report that reads one game's rarities,
+borders or promo types lives with its caller.
 
 ### 1.4 Concurrency, serialization, utilities
 
@@ -260,8 +259,8 @@ drivers (`mtgmatcher/datastore.go`):
 ```go
 type GameLoader func(io.Reader) (*Backend, error)
 
-func RegisterGame(name string, load GameLoader)  // panics on nil or duplicate
-func RegisteredGames() []string                  // registration order
+func RegisterGame(name Game, load GameLoader)  // panics on nil or duplicate
+func RegisteredGames() []Game                  // registration order
 ```
 
 Each game package has a `register.go` whose `init()` calls `RegisterGame`,
@@ -282,7 +281,7 @@ game and its transitive dependencies into the binary.
 **Loading.** The caller names the game:
 
 ```go
-func Open(name string, reader io.Reader) (*Backend, error)
+func Open(name Game, reader io.Reader) (*Backend, error)
 ```
 
 `Open` loads exactly the named game and returns the `Backend`, stamped with

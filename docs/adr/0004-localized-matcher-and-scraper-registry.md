@@ -44,7 +44,7 @@ favour of `Backend.IsGenericPromo`.
 
 **A scraper holds the backend it was built on.** Every constructor takes
 `b *mtgmatcher.Backend` first and no longer takes a game: the game is the
-datastore's, read with `mtgban.GameOf`, so a scraper cannot be told one game
+datastore's, read off `b.Game`, so a scraper cannot be told one game
 and matched against another. Free functions that matched take the backend as
 a parameter. No package holds a backend in a variable.
 

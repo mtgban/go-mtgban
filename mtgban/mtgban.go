@@ -225,7 +225,7 @@ var conditionWords = map[string]Condition{
 }
 
 // ParseCondition reads a grade in the spellings stores share, ignoring case
-// and space. A store-specific reading, like CardTrader's "Played", is the
+// and surrounding space. A store-specific reading, like CardTrader's "Played", is the
 // scraper's to map first; anything else returns "" and an error wrapping
 // ErrInvalidCondition.
 func ParseCondition(s string) (Condition, error) {
