@@ -10,11 +10,14 @@ import (
 	"github.com/mtgban/go-mtgban/internal/vocabulary"
 )
 
+// pathOfCall finds a call to vocabulary.PathOf.
+var pathOfCall = regexp.MustCompile(`\bPathOf\(`)
+
 // ciJob reads a job's one datastore variable and the go test line under it.
 var ciJob = regexp.MustCompile(`(?m)^\s+([A-Z]+_PATH): .*\n\s+run: \|\n\s+go test (.*) -v$`)
 
 // TestEveryGatedSuiteRunsUnderItsDatastore fails a package that reads a
-// game's datastore variable when the ci.yml job exporting it does not run
+// game's datastore variable, by name or through vocabulary.PathOf, when the ci.yml job exporting it does not run
 // that package - otherwise the gated test just skips there forever with CI
 // green. Every vocabulary.Games variable must also have matched ciJob, since
 // a differently-shaped job would otherwise drop out of jobs silently and
@@ -60,8 +63,11 @@ func TestEveryGatedSuiteRunsUnderItsDatastore(t *testing.T) {
 			return err
 		}
 		pkg, _ := filepath.Rel(root, filepath.Dir(path))
+		// PathOf reads whichever game's variable it is asked for, so a
+		// suite calling it reads every one.
+		readsAll := pathOfCall.Match(body)
 		for env, patterns := range jobs {
-			if !strings.Contains(string(body), `"`+env+`"`) {
+			if !readsAll && !strings.Contains(string(body), `"`+env+`"`) {
 				continue
 			}
 			covered := false
