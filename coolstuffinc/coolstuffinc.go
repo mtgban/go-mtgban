@@ -62,12 +62,13 @@ var csiGames = map[mtgmatcher.Game]string{
 var deductions = []float64{1, 1, 0.75}
 
 var availableMarketNames = []string{
-	"Cool Stuff Inc", "Cool Stuff Inc (unique)",
+	"Cool Stuff Inc", "Cool Stuff Inc (unique)", "Cool Stuff Inc Graded",
 }
 
 var name2shorthand = map[string]string{
 	"Cool Stuff Inc":          "CSI",
 	"Cool Stuff Inc (unique)": "CSIUnique",
+	"Cool Stuff Inc Graded":   "CSIGraded",
 }
 
 // Coolstuffinc prices Cool Stuff Inc's singles, both what they sell and what
@@ -515,6 +516,20 @@ func isGraded(conditions string) bool {
 	return false
 }
 
+// reSlab reads a slab's grader and score off the condition wording
+// ("PSA 10  PSA 10 ").
+var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC) (\d+(?:\.\d+)?)\b`)
+
+// slabCondition grades a slab by its score, and reports false for any other
+// wording, or a score the grade table does not hold.
+func slabCondition(conditions string) (mtgban.Condition, bool) {
+	match := reSlab.FindStringSubmatch(strings.TrimPrefix(conditions, "Foil "))
+	if match == nil {
+		return "", false
+	}
+	return mtgban.SlabCondition(match[1], match[2])
+}
+
 // bundleRe matches the wording of the bundle promotion, whatever count it
 // gives away: "Buy 1 get 3 free!" sells four copies for the listed price.
 var bundleRe = regexp.MustCompile(`^Buy 1 get (\d+) free!$`)
@@ -631,6 +646,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				isFoil := strings.HasPrefix(conditions, "Foil")
 
+				slabGrade, slabbed := slabCondition(conditions)
 				if isGraded(conditions) {
 					conditions = "Near Mint"
 					graded = true
@@ -811,7 +827,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					relaxed: relaxed || graded,
 				}
 
-				if graded {
+				if slabbed {
+					out.invEntry.Conditions = slabGrade
+					out.invEntry.SellerName = availableMarketNames[2]
+				} else if graded {
 					out.invEntry.SellerName = availableMarketNames[1]
 				}
 				results <- out
