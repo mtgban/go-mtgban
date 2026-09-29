@@ -11,11 +11,9 @@ import (
 // TestPlausiblePrintingDefersOnImplausibleWCD pins plausiblePrinting's own
 // rule directly: a World Championship Deck expansion only ever sells a
 // WC97-WC04 memorabilia printing, a Pro Tour 1996 one a PTC printing, and
-// an Oversized shelf only ever sells an oversized one. mtgjson's own id links have drifted for real cards onto an
-// unrelated printing of neither shape - 249617 to The Brothers' War Retro
-// Artifacts' foil Phyrexian Processor instead of a WCD one, 21364 to the
-// ordinary-sized 30th Anniversary Edition Nether Shadow instead of an
-// oversized one - so this is not a synthetic shape.
+// an Oversized shelf only ever sells an oversized one. mtgjson links 249423,
+// Rushing River (V.2) under WCD 2002: Raphael Levy, to The List's PLS-30
+// rather than a WC02 printing, so this is not a synthetic shape.
 func TestPlausiblePrintingDefersOnImplausibleWCD(t *testing.T) {
 	b := realDatastore(t)
 
@@ -47,10 +45,10 @@ func TestPlausiblePrintingDefersOnImplausibleWCD(t *testing.T) {
 
 // TestResolveUUIDsDefersOnImplausibleOversized pins the map route this guard
 // closes: resolveMapped answers from resolveUUIDs before Fallback's own mcmId
-// check ever runs, so a map entry naming the same implausible uuid used to
-// price straight through it. 21364 and 21387 are the id map's real entries
-// for two Oversized 6x9 Promos products, each carrying exactly the wrong,
-// ordinary-sized 30th Anniversary Edition printing mtgjson links them to.
+// check ever runs, so without the guard a map entry naming an implausible
+// uuid would price straight through it. 21364 and 21387 are two Oversized
+// 6x9 Promos products, each handed the ordinary-sized 30th Anniversary
+// Edition printing of its card in place of the oversized one the map links.
 func TestResolveUUIDsDefersOnImplausibleOversized(t *testing.T) {
 	b := realDatastore(t)
 	r := &resolver{backend: b, gameID: cm.GameMagic}
@@ -61,12 +59,12 @@ func TestResolveUUIDsDefersOnImplausibleOversized(t *testing.T) {
 		uuids   []string
 	}{
 		{
-			"21364 Nether Shadow's only map uuid is the ordinary 30A printing",
+			"21364 Nether Shadow handed the ordinary 30A printing",
 			cm.Product{IDProduct: 21364, Name: "Nether Shadow (V.2)", ExpansionName: "Oversized 6x9 Promos"},
 			[]string{"bf14fe40-3e5c-5790-bb75-4c8221c04883"},
 		},
 		{
-			"21387 Swords to Plowshares' only map uuid is the ordinary 30A printing",
+			"21387 Swords to Plowshares handed the ordinary 30A printing",
 			cm.Product{IDProduct: 21387, Name: "Swords to Plowshares (V.2)", ExpansionName: "Oversized 6x9 Promos"},
 			[]string{"e411a1e9-bc7a-58bb-b436-b0b45b37f27a"},
 		},
