@@ -113,7 +113,7 @@ func TestZZCensusWalk(t *testing.T) {
 	if game == "" {
 		t.Skip()
 	}
-	b, err := datastore.Read(game, filepath.Join(dir, game+"-datastore.json"))
+	b, err := datastore.Read(mtgmatcher.Game(game), filepath.Join(dir, game+"-datastore.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -258,6 +258,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
@@ -267,7 +268,7 @@ func TestZZCensusBackend(t *testing.T) {
 	if game == "" {
 		t.Skip()
 	}
-	b, err := datastore.Read(game, filepath.Join(dir, game+"-datastore.json"))
+	b, err := datastore.Read(mtgmatcher.Game(game), filepath.Join(dir, game+"-datastore.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
