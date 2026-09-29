@@ -163,6 +163,7 @@ func TestMatchYugiohShelfCode(t *testing.T) {
 		{"Speed Duel: Trials of the Pharaoh Promos", "OPTP", "Floodgate Trap Hole", "001", "optp-en001_228593_limited", nil},
 		{"5D's Tag Force 4 Promotional Cards", "TF04", "Warm Worm (V.1 - Ultra Rare)", "001", "tf04-en001_80164_unlimited", nil},
 		{"5D's Tag Force 4 Promotional Cards", "TF04", "Warm Worm (V.2 - Super Rare)", "001", "", errForeign},
+		{"5D's Tag Force 4 Promotional Cards", "TF04", "Warm Worm (V.3 - Rare)", "001", "", errForeign},
 	} {
 		product := cm.Product{Name: tt.name, Number: tt.number, ExpansionName: tt.expansion, ExpansionCode: tt.code}
 		got, err := mkm.matchYugioh(&product)
