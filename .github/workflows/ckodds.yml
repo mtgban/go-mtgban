@@ -53,4 +53,4 @@ jobs:
           B2_APPLICATION_KEY_DATASTORE: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
         run: |
           ckodds -datastore ${{ needs.cache-datastore.outputs.filepath }} \
-                 -output b2://mtgban-datastore/magic/ck-odds.json.xz
+                 -output b2://mtgban-datastore/magic/ck-odds-v2.json.xz

@@ -3,7 +3,6 @@ package main
 import (
 	"math"
 	"slices"
-	"sort"
 	"time"
 )
 
@@ -13,63 +12,161 @@ type snapshot struct {
 	Buy    float64 // CK's buy price, listed even while it is not buying
 	Buying int32   // copies CK buys
 	Stock  int32   // copies CK sells, across conditions
+	Retail float64 // CK's NM retail
+	Market float64 // TCG Market of the printing and finish; 0 when unknown
 }
 
-// product is one CK product's history and the category it is measured in.
+// product is one CK product's history and what the rules read about its card.
 type product struct {
-	ID       string
-	Foil     bool
-	Category string // baseCategory's
-	Released string
-	Days     []snapshot // by day
+	ID    string
+	Foil  bool
+	TCGID int64
+	Card  attrs
+	Days  []snapshot // by day; only the days the newspaper has
 }
 
 // The measurement, as ADR-0004 of mtgban-website has it.
 const (
-	minBuy        = 1.0  // the rules apply where CK buys at $1 or more
-	p90Window     = 90   // days before the day, which the P90 also counts
-	p90MinDays    = 30   // buying days the P90 needs
-	outcomeDays   = 14   // CK's price this many days on
-	move          = 0.05 // up or down by this much
-	buyoutFrom    = 3    // a buyout halves a stock of at least this
-	cutRatio      = 0.8  // a cut is a price this share of last week's or less
-	reopenHorizon = 30   // a paused day needs this many days after it
-	minProducts   = 300  // a cell on fewer products is left out
-	minCardDays   = 3000 // and on fewer card-days
+	minBuy      = 3.0  // the rules apply where CK pays $3 or more
+	halvedFrom  = 3    // a halving is of a stock of at least this
+	marketRise  = 1.10 // TCG Market up this much in a week is a wait
+	premiumSell = 2.0  // CK's retail at this many times TCG Market is a sell
+	newSetFrom  = 28   // a set newSetFrom to newSetTo days past its
+	newSetTo    = 55   // release is a sell
+	reprintDays = 60   // so is a reprint released this many days ago or less
+	highDays    = 90   // a new high beats every price CK paid in these days
+	weekFrom    = 5    // "a week later" is the last snapshot 5 to 7 days on
+	weekTo      = 7
+	monthFrom   = 28 // "a month later", 28 to 30 days on
+	monthTo     = 30
+	backDays    = 30 // a pause's chance of CK buying again within these
+	maxGap      = 2  // a pause reopening or starting after a longer gap is left out
 )
 
-// pauseBuckets are the pause lengths the site shows, the longest first.
-var pauseBuckets = []int{30, 14, 7, 3, 0}
+// buckets are the bands of CK's retail the odds are quoted by, from the steps
+// of its price ladder; a card CK pays $3 for retails at $5 or more.
+var buckets = []band{{"5-10", 10}, {"10-20", 20}, {"20-50", 50}, {"50-100", 100}, {"100-200", 200}, {"200+", math.Inf(1)}}
 
-type oddsKey struct{ Category, Finish, Rule string }
-
-type pauseKey struct {
-	Category string
-	MinDays  int
+// band is a bucket's name and the retail it holds up to, not included.
+type band struct {
+	Name  string
+	Below float64
 }
 
-// cell counts the card-days of one table cell, the ones that moved each
-// way (for pauses, came back within 7 and 30 days), and its products.
+// pauseAges are the pause lengths the odds are quoted by, the longest first.
+var pauseAges = []int{30, 14, 7, 3, 0}
+
+func bucketOf(retail float64) string {
+	for _, b := range buckets {
+		if retail < b.Below {
+			return b.Name
+		}
+	}
+	return buckets[len(buckets)-1].Name
+}
+
+// signals are ADR-0004's inputs on one card-day.
+type signals struct {
+	Halved     bool // stock at half or less of yesterday's, from halvedFrom or more
+	SoldOut    bool // out of stock today, in stock yesterday
+	MarketRose bool // TCG Market up marketRise or more over the week
+	NewSet     bool // the set newSetFrom to newSetTo days past its release
+	Reprinted  bool // a reprint of reprintSetTypes released reprintDays ago or less
+	Premium    bool // retail premiumSell times TCG Market or more
+	NewHigh    bool // above every price CK paid in the last highDays days
+}
+
+// verdict is the card-day's state: wait wins over sell; "" is neutral.
+func (s signals) verdict() string {
+	switch {
+	case s.Halved || s.SoldOut || s.MarketRose:
+		return "wait"
+	case s.NewSet || s.Reprinted || s.Premium || s.NewHigh:
+		return "sell"
+	}
+	return ""
+}
+
+type cellKey struct{ Group, Finish, Bucket, Verdict string }
+
+// cell counts the card-days of one table cell, and those with CK's price a
+// week and a month later known, split by CK paying more or less (a pause is
+// less); and its printings.
 type cell struct {
-	Days, Up, Down, Products int
+	Days                            int
+	WeekDays, WeekMore, WeekLess    int
+	MonthDays, MonthMore, MonthLess int
+	Printings                       int
+}
+
+type pauseKey struct {
+	Finish  string
+	MinDays int
+}
+
+// pauseCell counts the paused days of one cell and its pauses, those CK
+// bought again within backDays after, and the price it came back at over the
+// price it listed that day.
+type pauseCell struct {
+	Days, Back, Pauses int
+	Ratios             []float64
 }
 
 // tally collects every product's card-days into the tables' cells.
 type tally struct {
 	start  time.Time // day 0
 	last   int32     // the newest day read
-	odds   map[oddsKey]*cell
-	pauses map[pauseKey]*cell
+	cells  map[cellKey]*cell
+	pauses map[pauseKey]*pauseCell
 }
 
 func newTally(start time.Time, last int32) *tally {
-	return &tally{start: start, last: last, odds: map[oddsKey]*cell{}, pauses: map[pauseKey]*cell{}}
+	return &tally{start: start, last: last, cells: map[cellKey]*cell{}, pauses: map[pauseKey]*pauseCell{}}
 }
 
-// p90 is the P90 of sorted as Postgres' percentile_disc has it, which is how
-// the site computes CK's P90: the first value at or past the 90th percentile.
-func p90(sorted []float64) float64 {
-	return sorted[int(math.Ceil(0.9*float64(len(sorted))))-1]
+// paid is what CK pays at a snapshot: nothing while it is not buying.
+func paid(s *snapshot) float64 {
+	if s.Buying > 0 {
+		return s.Buy
+	}
+	return 0
+}
+
+// days is a product's snapshots by day, from its first, nil where missing.
+type days struct {
+	first int32
+	at    []int32
+	snaps []snapshot
+}
+
+func newDays(p *product, last int32) days {
+	d := days{first: p.Days[0].Day, snaps: p.Days}
+	d.at = make([]int32, int(last-d.first)+1)
+	for i := range d.at {
+		d.at[i] = -1
+	}
+	for i, s := range p.Days {
+		d.at[s.Day-d.first] = int32(i)
+	}
+	return d
+}
+
+func (d days) on(day int32) *snapshot {
+	if day < d.first || int(day-d.first) >= len(d.at) || d.at[day-d.first] < 0 {
+		return nil
+	}
+	return &d.snaps[d.at[day-d.first]]
+}
+
+// latest is the last snapshot from day+from to day+to, or nil.
+func (d days) latest(day, from, to int32) *snapshot {
+	for x := day + to; x >= day+from; x-- {
+		s := d.on(x)
+		if s != nil {
+			return s
+		}
+	}
+	return nil
 }
 
 // add measures one product's card-days and pauses.
@@ -81,185 +178,187 @@ func (t *tally) add(p *product) {
 	if p.Foil {
 		finish = "foil"
 	}
-
-	// A dense panel from the first day seen: a missing day carries the last
-	// snapshot, as the backtest did.
-	first := p.Days[0].Day
-	n := int(t.last-first) + 1
-	observed := make([]bool, n)
-	buy := make([]float64, n)
-	buying := make([]int32, n)
-	stock := make([]int32, n)
-	for _, s := range p.Days {
-		observed[s.Day-first] = true
+	group := "cohort"
+	if p.Card.Exception {
+		group = "exceptions"
 	}
-	next := 0
-	for i := range n {
-		if next < len(p.Days) && int(p.Days[next].Day-first) == i {
-			buy[i], buying[i], stock[i] = p.Days[next].Buy, p.Days[next].Buying, p.Days[next].Stock
-			next++
-		} else if i > 0 {
-			buy[i], buying[i], stock[i] = buy[i-1], buying[i-1], stock[i-1]
-		}
-	}
+	d := newDays(p, t.last)
 
-	touched := map[oddsKey]bool{}
-	count := func(key oddsKey, up, down bool) {
-		c := t.odds[key]
+	touched := map[cellKey]bool{}
+	count := func(key cellKey, buy float64, week, month *snapshot) {
+		c := t.cells[key]
 		if c == nil {
 			c = &cell{}
-			t.odds[key] = c
+			t.cells[key] = c
 		}
 		c.Days++
-		if up {
-			c.Up++
+		if week != nil {
+			c.WeekDays++
+			if paid(week) > buy {
+				c.WeekMore++
+			} else if paid(week) < buy {
+				c.WeekLess++
+			}
 		}
-		if down {
-			c.Down++
+		if month != nil {
+			c.MonthDays++
+			if paid(month) > buy {
+				c.MonthMore++
+			} else if paid(month) < buy {
+				c.MonthLess++
+			}
 		}
 		touched[key] = true
 	}
 
-	// The buying days of the last 91, sorted, for the P90 and the high.
-	var window []float64
-	inWindow := make([]bool, n)
-	for i := range n {
-		if i > p90Window && inWindow[i-p90Window-1] {
-			window = remove(window, buy[i-p90Window-1])
+	// high holds the prices CK paid in the window before the day, as a
+	// deque of falling prices, for the new high.
+	type paidOn struct {
+		day int32
+		buy float64
+	}
+	var high []paidOn
+	for i := range p.Days {
+		s := &p.Days[i]
+		for len(high) > 0 && high[0].day < s.Day-highDays {
+			high = high[1:]
 		}
-		prevHigh := math.NaN()
-		if len(window) > 0 {
-			prevHigh = window[len(window)-1]
+		priorHigh := 0.0
+		if len(high) > 0 {
+			priorHigh = high[0].buy
 		}
-		if observed[i] && buying[i] > 0 && buy[i] > 0 {
-			window = insert(window, buy[i])
-			inWindow[i] = true
+		if s.Buying > 0 && s.Buy > 0 {
+			for len(high) > 0 && high[len(high)-1].buy <= s.Buy {
+				high = high[:len(high)-1]
+			}
+			high = append(high, paidOn{s.Day, s.Buy})
 		}
 
-		if !observed[i] || buying[i] == 0 || buy[i] < minBuy || len(window) < p90MinDays || i+outcomeDays >= n {
+		if s.Buying == 0 || s.Buy < minBuy || s.Retail <= 0 || s.Day+weekTo > t.last {
 			continue
 		}
-		yesterday, weekAgo := int32(-1), 0.0
-		if i >= 1 {
-			yesterday = stock[i-1]
+		day := t.start.AddDate(0, 0, int(s.Day))
+		var sig signals
+		if prev := d.on(s.Day - 1); prev != nil {
+			sig.Halved = prev.Stock >= halvedFrom && s.Stock*2 <= prev.Stock
+			sig.SoldOut = s.Stock == 0 && prev.Stock > 0
 		}
-		if i >= 7 {
-			weekAgo = buy[i-7]
+		if weekAgo := d.on(s.Day - 7); weekAgo != nil && weekAgo.Market > 0 && s.Market > 0 {
+			sig.MarketRose = s.Market >= marketRise*weekAgo.Market
 		}
-		rule := ruleOf(buy[i], p90(window), stock[i], yesterday, weekAgo)
-		later := i + outcomeDays
-		up := buying[later] > 0 && buy[later] >= buy[i]*(1+move)
-		down := buying[later] == 0 || buy[later] <= buy[i]*(1-move)
+		if !p.Card.SetReleased.IsZero() {
+			age := int(day.Sub(p.Card.SetReleased).Hours() / 24)
+			sig.NewSet = age >= newSetFrom && age <= newSetTo
+		}
+		if r := p.Card.latestReprint(day); !r.IsZero() {
+			sig.Reprinted = day.Sub(r) <= reprintDays*24*time.Hour
+		}
+		sig.Premium = s.Market > 0 && s.Retail >= premiumSell*s.Market
+		sig.NewHigh = priorHigh > 0 && s.Buy > priorHigh
 
-		day := t.start.AddDate(0, 0, int(first)+i)
-		for _, category := range []string{"all", categoryOn(p.Category, p.Released, day)} {
-			count(oddsKey{category, "", "typical"}, up, down)
-			count(oddsKey{category, finish, "typical"}, up, down)
-			if rule != "" {
-				count(oddsKey{category, "", rule}, up, down)
+		week := d.latest(s.Day, weekFrom, weekTo)
+		var month *snapshot
+		if s.Day+monthTo <= t.last {
+			month = d.latest(s.Day, monthFrom, monthTo)
+		}
+		verdict := sig.verdict()
+		for _, bucket := range []string{bucketOf(s.Retail), "all"} {
+			count(cellKey{group, finish, bucket, "typical"}, s.Buy, week, month)
+			if verdict != "" {
+				count(cellKey{group, finish, bucket, verdict}, s.Buy, week, month)
 			}
-			if rule == "outofstock" {
-				count(oddsKey{category, finish, rule}, up, down)
-			}
-			if !math.IsNaN(prevHigh) && buy[i] > prevHigh {
-				count(oddsKey{category, "", "newhigh"}, up, down)
+			if sig.NewHigh {
+				count(cellKey{group, finish, bucket, "newhigh"}, s.Buy, week, month)
 			}
 		}
 	}
 	for key := range touched {
-		t.odds[key].Products++
+		t.cells[key].Printings++
 	}
 
-	t.addPauses(p)
+	t.addPauses(p, finish)
 }
 
 // addPauses measures the product's pauses: runs of snapshots with CK not
-// buying after one where it bought at $1 or more, and on every paused day
-// with a month after it, whether CK bought again within 7 and 30 days.
-func (t *tally) addPauses(p *product) {
-	touched := map[pauseKey]bool{}
+// buying after one where it paid minBuy or more. On each paused day with
+// backDays after it: whether CK bought again within them, and the price it
+// came back at over the one it listed that day. A pause that starts or ends
+// more than maxGap days after the snapshot before is left out, its timing
+// unknown; a gap inside it is not, or the pauses that last would be the ones
+// left out.
+func (t *tally) addPauses(p *product, finish string) {
 	for k := 1; k < len(p.Days); k++ {
 		prev, s := p.Days[k-1], p.Days[k]
 		if s.Buying > 0 || prev.Buying == 0 || prev.Buy < minBuy {
 			continue
 		}
-		start := s.Day
-		end := k
+		gapped := s.Day-prev.Day > maxGap
+		end := k + 1
 		for end < len(p.Days) && p.Days[end].Buying == 0 {
 			end++
 		}
-		resumed := int32(-1)
+		var back *snapshot
 		if end < len(p.Days) {
-			resumed = p.Days[end].Day
+			back = &p.Days[end]
+			gapped = gapped || back.Day-p.Days[end-1].Day > maxGap
 		}
-		for _, d := range p.Days[k:end] {
-			if d.Day+reopenHorizon > t.last {
-				break
-			}
-			paused := int(d.Day - start)
-			bucket := 0
-			for _, b := range pauseBuckets {
-				if paused >= b {
-					bucket = b
+		if !gapped {
+			keys := map[pauseKey]bool{}
+			for _, d := range p.Days[k:end] {
+				if d.Day+backDays > t.last {
 					break
 				}
-			}
-			week := resumed >= 0 && resumed <= d.Day+7
-			month := resumed >= 0 && resumed <= d.Day+reopenHorizon
-			day := t.start.AddDate(0, 0, int(d.Day))
-			for _, category := range []string{"all", categoryOn(p.Category, p.Released, day)} {
-				key := pauseKey{category, bucket}
+				age := int(d.Day - s.Day)
+				minDays := 0
+				for _, a := range pauseAges {
+					if age >= a {
+						minDays = a
+						break
+					}
+				}
+				key := pauseKey{finish, minDays}
 				c := t.pauses[key]
 				if c == nil {
-					c = &cell{}
+					c = &pauseCell{}
 					t.pauses[key] = c
 				}
 				c.Days++
-				if week {
-					c.Up++
+				if back != nil && back.Day <= d.Day+backDays {
+					c.Back++
+					if d.Buy > 0 {
+						c.Ratios = append(c.Ratios, back.Buy/d.Buy)
+					}
 				}
-				if month {
-					c.Down++
-				}
-				touched[key] = true
+				keys[key] = true
+			}
+			for key := range keys {
+				t.pauses[key].Pauses++
 			}
 		}
 		k = end
 	}
-	for key := range touched {
-		t.pauses[key].Products++
+}
+
+// deciles are the 10th to the 90th percentiles of values, nearest rank,
+// rounded to cents of a ratio.
+func deciles(values []float64) []float64 {
+	if len(values) == 0 {
+		return nil
 	}
-}
-
-// ruleOf is the rule of ADR-0004 a card-day meets, in its order, or "":
-// CK's price and P90, its stock today and yesterday (-1 unknown), and its
-// price a week ago (0 unknown).
-func ruleOf(buy, good float64, stock, yesterday int32, weekAgo float64) string {
-	switch {
-	case yesterday >= buyoutFrom && stock*2 <= yesterday:
-		return "buyout"
-	case stock == 0 && buy <= good:
-		return "outofstock"
-	case weekAgo > 0 && buy <= weekAgo*cutRatio:
-		return "cut"
-	case stock > 0 && buy > good:
-		return "sell"
+	sorted := slices.Clone(values)
+	slices.Sort(sorted)
+	out := make([]float64, 9)
+	for i := range out {
+		rank := int(math.Ceil(float64(i+1)/10*float64(len(sorted)))) - 1
+		out[i] = math.Round(sorted[rank]*100) / 100
 	}
-	return ""
+	return out
 }
 
-// insert and remove keep a sorted slice sorted.
-func insert(sorted []float64, v float64) []float64 {
-	i := sort.SearchFloat64s(sorted, v)
-	return slices.Insert(sorted, i, v)
-}
-
-func remove(sorted []float64, v float64) []float64 {
-	i := sort.SearchFloat64s(sorted, v)
-	return slices.Delete(sorted, i, i+1)
-}
-
-// percent is part of whole in whole points, rounded.
+// percent is part of whole in whole points, rounded; 0 of nothing.
 func percent(part, whole int) int {
+	if whole == 0 {
+		return 0
+	}
 	return int(math.Round(100 * float64(part) / float64(whole)))
 }
