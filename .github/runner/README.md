@@ -152,11 +152,10 @@ process that crashes without also taking the whole Droplet down is a
 separate, still-open gap - nothing here restarts a dead runner process,
 so a stuck marker doesn't matter until something does.
 
-## What's still a manual decision
+## Which workflows run here
 
 Magic, Pokemon and YuGiOh's `cardmarket_market` workflows are routed to
-this runner (`runs-on: '["self-hosted", "cardmarket-market"]'`) but still
-`workflow_dispatch`-only - the runner removes the job-ceiling blocker, but
-picking actual cron times that don't collide with the rest of the
-`bantool-cardmarket` concurrency group's own schedule is a separate,
-deliberate decision, not made here.
+this runner (`runs-on: '["self-hosted", "cardmarket-market"]'`) and run
+daily. Each workflow's own comment gives its measured run time and why its
+slot was picked, and the `bantool-cardmarket` concurrency group they share
+with the other Cardmarket runs keeps them from overlapping.

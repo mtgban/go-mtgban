@@ -386,11 +386,6 @@ carries it.
 
 ## Known gaps
 
-- **Magic, Pokemon and YuGiOh's workflows carry no schedule yet.** Even
-  filtered, all three can run up to 12h — past what a GitHub-hosted
-  `ubuntu-latest` job tolerates (a 5-6h practical ceiling). They're wired as
-  `workflow_dispatch`-only in `.github/workflows/bantool-cardmarket_market*`
-  until routed to a self-hosted runner.
 - **Fourteen of `go-cardmarket`'s twenty-two `Game*` constants have no
   `mtgban` equivalent**: World of Warcraft, The Spoils, Force of Will,
   Cardfight!! Vanguard, Final Fantasy, Weiss Schwarz, Dragoborne, My Little
