@@ -768,7 +768,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 					// This set data cannot be represented in mtgjson data without
 					// breaking the output format, instead hack things here
 					if content.Set == "slc" {
-						for i := 0; i < len(deckPicks)-1; i++ {
+						for i := range deckPicks {
 							n := rand.Intn(10)
 							if n < 3 {
 								uuidFoil, err := b.MatchID(deckPicks[i], true)
