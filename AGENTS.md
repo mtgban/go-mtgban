@@ -435,6 +435,7 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    `TestEveryTargetIsScheduledByItsOwnWorkflow` fails the build if a
    registered target has no workflow scheduling it, a workflow names a
    target that is not registered, or a file's dispatch types are wrong.
+   `.github/workflows/README.md` says what to copy and change.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` — every scraper sets
    `Game` explicitly now, `mtgmatcher.GameMagic` included; nothing reads as Magic
@@ -473,7 +474,8 @@ A game is named in `mtgmatcher` first and reaches the scrapers from there:
    used to translate a vendor id back into a game are gone.
 4. Per scraper that should run it: add the game to that store's own
    `register.go` (its `mtgban.Register` games list) alongside the map entry
-   from step 3, and add a `bantool-<game>-<store>.yml` workflow. Nothing is
+   from step 3, and add a `bantool-<game>-<store>.yml` workflow
+   (`.github/workflows/README.md`). Nothing is
    written in `cmd/bantool/main.go` itself — `targets()` derives the entry
    from the registry, and it is reachable at `-game <game> -store <store>`
    as soon as the registration lands.
