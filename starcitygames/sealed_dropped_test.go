@@ -60,11 +60,11 @@ func TestSealedDropAccounting(t *testing.T) {
 	// of another game entirely, which is not this run's to account for.
 	scg.processProduct(CatalogProduct{
 		SKU: "SLD-LOR-BXS-011-EN", Name: "Lorcana: Winterspell - Scrooge McDuck Gift Set",
-		Game: "Lorcana", ProductType: ProductTypeSealed, Language: "English",
+		Game: "Disney Lorcana", ProductType: ProductTypeSealed, Language: "English",
 	})
 	scg.processProduct(CatalogProduct{
 		SKU: "SLD-LOR-BBX-011-JP", Name: "Lorcana: Winterspell Booster Box",
-		Game: "Lorcana", ProductType: ProductTypeSealed, Language: "Japanese",
+		Game: "Disney Lorcana", ProductType: ProductTypeSealed, Language: "Japanese",
 	})
 	scg.processProduct(CatalogProduct{
 		SKU: "SLD-MTG-BBX-FDN-EN", Name: "Magic: The Gathering - Foundations Booster Box",

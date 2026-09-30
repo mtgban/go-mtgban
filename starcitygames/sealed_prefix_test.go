@@ -30,7 +30,7 @@ func TestSealedUntrimmedGamePrefixResolves(t *testing.T) {
 			"Riftbound: League of Legends TCG - Origins Booster Box",
 			"Riftbound: League of Legends TCG - Spiritforged Booster Box",
 		}},
-		{"Lorcana", "lorcana", "LORCANA_PATH", []string{
+		{"Disney Lorcana", "lorcana", "LORCANA_PATH", []string{
 			"Lorcana: The First Chapter Booster Box",
 			"Lorcana: Into the Inklands Booster Box",
 		}},
@@ -77,7 +77,7 @@ func trimGameWords(game, name string) string {
 	switch game {
 	case "Riftbound":
 		return name[len("Riftbound: League of Legends TCG - "):]
-	case "Lorcana":
+	case "Disney Lorcana":
 		return name[len("Lorcana: "):]
 	}
 	return name
