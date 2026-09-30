@@ -1049,6 +1049,7 @@ each triggered by cron plus
 A dispatch of `<game>-<store>` reruns one store, the type the site sends,
 and `<game>-all` runs every store of that game in one call, e.g. `gh api
 repos/mtgban/go-mtgban/dispatches -f event_type=lorcana-all`.
+`.github/workflows/README.md` describes the workflows in full.
 `run-bantool.yml` uploads to `b2://mtgban-dumps/<game>/<store>` and then pings
 a signed `http://<game>.mtgban.com/api/load/<store>` URL so the server reloads
 the fresh snapshot. Magic targets prepend a `cache-datastore` job and pass a
