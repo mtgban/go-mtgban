@@ -126,3 +126,32 @@ func TestProbabilitiesCarryBothFinishes(t *testing.T) {
 		t.Errorf("the odds are gone: %d cards at 0.3 foil, %d at 0.7 nonfoil", foilOdds, nonfoilOdds)
 	}
 }
+
+// The roll spares only the bonus card, which the product lists apart from the
+// deck, so enough copies show every printing the probabilities give a chance.
+func TestGetPicksForSealedDrawsWhatTheProbabilitiesList(t *testing.T) {
+	b, uuid := slcProduct(t)
+
+	probs, err := b.GetProbabilitiesForSealed("SLC", uuid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]bool{}
+	for i := 0; i < 100; i++ {
+		picks, err := b.GetPicksForSealed("SLC", uuid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, pick := range picks {
+			seen[pick] = true
+		}
+	}
+
+	for _, prob := range probs {
+		if prob.Probability > 0 && !seen[prob.UUID] {
+			co, _ := b.GetUUID(prob.UUID)
+			t.Errorf("%s #%s (foil %v) has a %.1f chance but never came up",
+				co.Name, co.Number, co.Foil, prob.Probability)
+		}
+	}
+}
