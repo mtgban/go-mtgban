@@ -19,7 +19,7 @@ func TestGameFromCatalog(t *testing.T) {
 	}{
 		{"Magic: The Gathering", GameMagic},
 		{"Flesh and Blood", GameFleshAndBlood},
-		{"Lorcana", GameLorcana},
+		{"Disney Lorcana", GameLorcana},
 		{"Riftbound: League of Legends TCG", GameRiftbound},
 		{"Riftbound", GameRiftbound},
 		// Shapes the catalog does not use, kept to show the mapping is exact

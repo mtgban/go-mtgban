@@ -27,7 +27,7 @@ func TestSealedProductName(t *testing.T) {
 		// the spellings the catalog carries, not what the trim would want.
 		{"Riftbound", "Riftbound: League of Legends TCG - Origins Booster Box",
 			"Riftbound: League of Legends TCG - Origins Booster Box"},
-		{"Lorcana", "Lorcana: Rise of the Floodborn Booster Box",
+		{"Disney Lorcana", "Lorcana: Rise of the Floodborn Booster Box",
 			"Lorcana: Rise of the Floodborn Booster Box"},
 		// The dash inside a product's own name is not the game prefix.
 		{"Flesh and Blood",
