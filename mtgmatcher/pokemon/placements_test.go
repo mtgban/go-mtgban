@@ -64,15 +64,14 @@ func TestLabelsBeforeMarks(t *testing.T) {
 }
 
 // TestPlacementNoSurvivorWears pins the refusal: a wording naming a
-// placement prices a copy the plain printing is not, and where the copies
-// the number reaches wear none of it the plain one used to answer. The
-// catalog numbers this staff card 177 in its number field and 171 in its
-// name, so the number reaches the plain card alone.
+// placement prices a copy the plain printing is not, so where the copies
+// the number reaches wear none of it the plain one must not answer. The
+// main set sells this card only plain.
 func TestPlacementNoSurvivorWears(t *testing.T) {
 	b := loadBackend(t)
 
 	in := mtgmatcher.InputCard{
-		Name: "Professor Turo's Scenario - 171/182 [Staff]", Edition: "League & Championship Cards", Variation: "177/182 Regional Championships"}
+		Name: "Professor Turo's Scenario - 171/182", Edition: "SV04: Paradox Rift", Variation: "171/182 Staff"}
 	got, err := b.Match(&in)
 	if err == nil {
 		t.Fatalf("Match(%+v) = %s, want a refusal", in, got)
