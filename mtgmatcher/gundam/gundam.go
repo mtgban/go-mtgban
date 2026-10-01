@@ -268,8 +268,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	return b
 }
 
-// gundamRarityMap orders the rarities the catalog spells for this game, so a
-// set lists them commonest first. The "+" suffixes mark the parallel runs of
+// gundamRarityMap ranks the rarities the catalog spells for this game, and a
+// set lists them highest rank first. The "+" suffixes mark the parallel runs of
 // a rarity, which sit above the plain one and below the rarity over it.
 var gundamRarityMap = map[string]int{
 	"Common":      1,
