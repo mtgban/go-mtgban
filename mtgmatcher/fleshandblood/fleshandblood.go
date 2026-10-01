@@ -317,20 +317,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, card := range payload.Cards {
 		b.AddCanonicalName(card.Name)
+		// Labelled by the slug, not by what the datastore spelled: the words
+		// are on their way out of it, and a token reaching its label the same
+		// way either side of that lets the two halves land in any order.
 		for _, promoType := range describingPromoTypes(&card) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
-			if !slices.Contains(b.AllPromoTypes, slug) {
-				b.AllPromoTypes = append(b.AllPromoTypes, slug)
-			}
-			// Looked up by the slug, not by what the datastore spelled:
-			// the words are on their way out of it, and a token reaching
-			// its label the same way either side of that is what lets the
-			// two halves land in any order. First spelling seen wins - the
-			// catalog writes a few of these two ways, and one token can
-			// only read back as one.
-			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
-			}
+			b.AddPromoType(slug, promoTypeLabel(slug))
 		}
 		if qualified := qualifiedName(&card, printingsByName); qualified != "" {
 			b.AddName(qualified)

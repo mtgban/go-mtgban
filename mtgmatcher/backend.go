@@ -391,6 +391,8 @@ type Backend struct {
 
 	// A list of promo types as exported by mtgjson
 	AllPromoTypes []string
+	// What AddPromoType has filed in AllPromoTypes already.
+	seenPromoTypes map[string]bool
 
 	// Map of a promo type to the words it was made from, for the games that
 	// slug a qualifier the storefront wrote in full ("premiumcardcollection
@@ -547,4 +549,27 @@ func (b *Backend) AddCanonicalName(name string) {
 		b.CanonicalNames[n] = name
 	}
 	b.AddName(name)
+}
+
+// AddPromoType files a promotion a printing carries: its token (PromoTypeSlug)
+// in AllPromoTypes once, and the words it reads back as in PromoTypeLabels.
+// The first label filed for a token keeps it, since a catalog writes some
+// promotions two ways and one token can only read back as one.
+//
+// An empty token names no promotion and files nothing. An empty label files
+// none, and PromoTypeLabel then title-cases the token.
+func (b *Backend) AddPromoType(slug, label string) {
+	if slug == "" {
+		return
+	}
+	if b.seenPromoTypes == nil {
+		b.seenPromoTypes = map[string]bool{}
+	}
+	if !b.seenPromoTypes[slug] {
+		b.seenPromoTypes[slug] = true
+		b.AllPromoTypes = append(b.AllPromoTypes, slug)
+	}
+	if label != "" && b.PromoTypeLabels[slug] == "" {
+		b.PromoTypeLabels[slug] = label
+	}
 }
