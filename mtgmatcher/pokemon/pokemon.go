@@ -261,26 +261,13 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// The promo types dedupe through a map rather than slices.Contains:
-	// this datastore carries forty thousand entries.
-	seenPromoType := map[string]bool{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
 		b.AddCanonicalName(card.Name)
+		// The builder folds a qualifier to lower case on the way in, so the
+		// words are title-cased back and the game's own suffixes looked up.
 		for _, promoType := range describingPromoTypes(card) {
-			slug := mtgmatcher.PromoTypeSlug(promoType)
-			if !seenPromoType[slug] {
-				seenPromoType[slug] = true
-				b.AllPromoTypes = append(b.AllPromoTypes, slug)
-			}
-			// The builder folds a qualifier to lower case on the way in,
-			// so the words are title-cased back and the game's own
-			// suffixes looked up. First spelling seen wins: the catalog
-			// writes a few of these two ways, and one token can only read
-			// back as one.
-			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(promoType)
-			}
+			b.AddPromoType(mtgmatcher.PromoTypeSlug(promoType), promoTypeLabel(promoType))
 		}
 		if qualified := qualifiedName(card, printingsByName); qualified != "" {
 			b.AddName(qualified)

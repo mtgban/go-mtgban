@@ -172,18 +172,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		// Finalist".
 		for _, label := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(label)
-			if slug == "" {
-				continue
-			}
-			if !slices.Contains(b.AllPromoTypes, slug) {
-				b.AllPromoTypes = append(b.AllPromoTypes, slug)
-			}
-			// First spelling seen wins: the catalog writes a couple of
-			// these events two ways, and one token can only read back as
-			// one.
-			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
-			}
+			b.AddPromoType(slug, promoTypeLabel(slug))
 		}
 		b.AddName(qualified)
 	}

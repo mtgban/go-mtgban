@@ -380,12 +380,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// after being dropped on purpose.
 		for _, tag := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(tag)
-			if !slices.Contains(b.AllPromoTypes, slug) {
-				b.AllPromoTypes = append(b.AllPromoTypes, slug)
-			}
-			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
-			}
+			b.AddPromoType(slug, promoTypeLabel(slug))
 		}
 	}
 	sort.Strings(b.AllPromoTypes)

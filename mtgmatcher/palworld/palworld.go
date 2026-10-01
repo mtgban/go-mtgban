@@ -189,24 +189,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 		// A printing wears one label per promo type, and each has to read
-		// back as itself, so a slug is paired
-		// with the words it was made from rather than with the joined
-		// variant: "participant" would otherwise be shown as "Super
-		// Pre-Release Participant".
+		// back as itself, so a slug is paired with the words it was made
+		// from rather than with the joined variant: "participant" would
+		// otherwise be shown as "Super Pre-Release Participant".
 		for _, label := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(label)
-			if slug == "" {
-				continue
-			}
-			if !slices.Contains(b.AllPromoTypes, slug) {
-				b.AllPromoTypes = append(b.AllPromoTypes, slug)
-			}
-			// First spelling seen wins: the catalog writes a couple of
-			// these events two ways, and one token can only read back as
-			// one.
-			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
-			}
+			b.AddPromoType(slug, promoTypeLabel(slug))
 		}
 		b.AddName(qualified)
 	}

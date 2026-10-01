@@ -290,17 +290,12 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	for _, card := range gallery.Cards.Items {
 		b.AddCanonicalName(card.Name)
 		number := collectorNumber(card.Number)
+		// The builder folds a qualifier to lower case on the way in, so the
+		// spelling is looked up rather than guessed - title-casing would
+		// render "GG EZ" as "Gg Ez".
 		for _, promoType := range describingPromoTypes(signedPromoTypes(card.PromoTypes, number), number) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
-			if !slices.Contains(b.AllPromoTypes, slug) {
-				b.AllPromoTypes = append(b.AllPromoTypes, slug)
-			}
-			// The builder folds a qualifier to lower case on the way in, so
-			// the spelling is looked up rather than guessed - title-casing
-			// would render "GG EZ" as "Gg Ez".
-			if label := promoTypeLabels[slug]; label != "" && b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = label
-			}
+			b.AddPromoType(slug, promoTypeLabels[slug])
 		}
 		if product := productName(card.Name, card.PromoTypes); product != "" {
 			b.AddName(product)

@@ -208,18 +208,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, card := range payload.Cards {
 		b.AddCanonicalName(card.Name)
+		// The builder folds a qualifier to lower case on the way in, so the
+		// words are title-cased back and the acronyms looked up.
 		for _, promoType := range card.PromoTypes {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
-			if !slices.Contains(b.AllPromoTypes, slug) {
-				b.AllPromoTypes = append(b.AllPromoTypes, slug)
-			}
-			// The builder folds a qualifier to lower case on the way in,
-			// so the words are title-cased back and the acronyms looked
-			// up. First spelling seen wins: the catalog writes a few of
-			// these two ways, and one token can only read back as one.
-			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
-			}
+			b.AddPromoType(slug, promoTypeLabel(slug))
 		}
 		if qualified := qualifiedName(&card, printingsByName); qualified != "" {
 			b.AddName(qualified)
