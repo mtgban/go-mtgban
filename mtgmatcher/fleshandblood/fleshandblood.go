@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"sort"
 	"strings"
 	"time"
 
@@ -455,17 +454,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	for code := range b.Sets {
-		var rarities []string
-		for _, card := range b.Sets[code].Cards {
-			if !slices.Contains(rarities, card.Rarity) {
-				rarities = append(rarities, card.Rarity)
-			}
-		}
-		sort.Slice(rarities, func(i, j int) bool {
-			return fleshandbloodRarityMap[rarities[i]] > fleshandbloodRarityMap[rarities[j]]
-		})
-		b.Sets[code].Rarities = rarities
+	for _, set := range b.Sets {
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, fleshandbloodRarityMap)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed

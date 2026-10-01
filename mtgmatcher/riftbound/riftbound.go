@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"sort"
 	"strings"
 	"time"
 
@@ -399,29 +398,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	}
 
 	// Update any remaining details on Sets after Cards loading
-	for code := range b.Sets {
-		var rarities, colors []string
-		for _, card := range b.Sets[code].Cards {
-			if !slices.Contains(rarities, card.Rarity) {
-				rarities = append(rarities, card.Rarity)
-			}
-			for _, color := range card.Colors {
-				if !slices.Contains(colors, color) {
-					colors = append(colors, color)
-				}
-			}
-			if len(card.Colors) > 1 && !slices.Contains(colors, "multicolor") {
-				colors = append(colors, "multicolor")
-			}
-		}
-
-		sort.Slice(rarities, func(i, j int) bool {
-			return riftboundRarityMap[rarities[i]] > riftboundRarityMap[rarities[j]]
-		})
-		b.Sets[code].Rarities = rarities
-
-		sort.Strings(colors)
-		b.Sets[code].Colors = colors
+	for _, set := range b.Sets {
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, riftboundRarityMap)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards)
 	}
 
 	// Load sealed products. They live in the sealed namespace throughout:

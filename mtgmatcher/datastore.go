@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"fmt"
 	"io"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -90,6 +91,44 @@ func SplitColors(color string) []string {
 		fields[i] = strings.TrimSpace(fields[i])
 	}
 	return fields
+}
+
+// RaritiesOf lists the rarities of a set's cards once each, the way the set
+// lists them: highest rank first by the game's rank, where a rarity the rank
+// leaves out ranks 0, or alphabetically for a game passing no rank.
+func RaritiesOf(cards []Card, rank map[string]int) []string {
+	var rarities []string
+	for _, card := range cards {
+		if !slices.Contains(rarities, card.Rarity) {
+			rarities = append(rarities, card.Rarity)
+		}
+	}
+	if rank == nil {
+		sort.Strings(rarities)
+		return rarities
+	}
+	sort.Slice(rarities, func(i, j int) bool {
+		return rank[rarities[i]] > rank[rarities[j]]
+	})
+	return rarities
+}
+
+// ColorsOf lists the colours of a set's cards once each, sorted, with
+// "multicolor" among them where a card carries more than one.
+func ColorsOf(cards []Card) []string {
+	var colors []string
+	for _, card := range cards {
+		for _, color := range card.Colors {
+			if !slices.Contains(colors, color) {
+				colors = append(colors, color)
+			}
+		}
+		if len(card.Colors) > 1 && !slices.Contains(colors, "multicolor") {
+			colors = append(colors, "multicolor")
+		}
+	}
+	sort.Strings(colors)
+	return colors
 }
 
 type registeredGame struct {

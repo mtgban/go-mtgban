@@ -651,7 +651,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 	// Update any remaining details on Sets after Cards loading
 	for code := range b.Sets {
-		var rarities, colors []string
+		var colors []string
 		b.Sets[code].IsFoilOnly = true
 		b.Sets[code].IsNonFoilOnly = true
 		for _, card := range b.Sets[code].Cards {
@@ -660,10 +660,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 			if card.HasFinish(mtgmatcher.FinishFoil) {
 				b.Sets[code].IsNonFoilOnly = false
-			}
-
-			if !slices.Contains(rarities, card.Rarity) {
-				rarities = append(rarities, card.Rarity)
 			}
 
 			for _, color := range card.Colors {
@@ -679,10 +675,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 		}
 
-		sort.Slice(rarities, func(i, j int) bool {
-			return lorcanaRarityMap[rarities[i]] > lorcanaRarityMap[rarities[j]]
-		})
-		b.Sets[code].Rarities = rarities
+		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, lorcanaRarityMap)
 
 		sort.Strings(colors)
 		b.Sets[code].Colors = colors
