@@ -65,6 +65,7 @@ func NewScraper(b *mtgmatcher.Backend) *MTGSeattle {
 		mtgban.WithHTTPRetryWait(2*time.Second, 10*time.Second),
 		mtgban.WithHTTPRetries(20),
 		mtgban.WithHTTPErrorHandler(retryErrorHandler),
+		mtgban.WithHTTPLogCallback(ms.printf),
 	)
 	return &ms
 }

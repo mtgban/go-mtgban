@@ -126,7 +126,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
 	gn := Gamenerdz{}
 	gn.inventory = mtgban.InventoryRecord{}
 	gn.buylist = mtgban.BuylistRecord{}
-	gn.client = NewGNClient(line)
+	gn.client = NewGNClient(line, mtgban.WithHTTPLogCallback(gn.printf))
 	gn.backend = b
 	gn.line = line
 	gn.maxConcurrency = defaultConcurrency

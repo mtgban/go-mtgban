@@ -37,7 +37,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	ha := Sealed{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
-	ha.client = mtgban.NewHTTPClient()
+	ha.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(ha.printf))
 	return &ha
 }
 
@@ -136,7 +136,7 @@ func (ha *Sealed) buylistPrices(ctx context.Context) (map[string]float64, error)
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ha *Sealed) Load(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "JPY")
+	rate, err := mtgban.GetExchangeRate(ctx, "JPY", mtgban.WithHTTPLogCallback(ha.printf))
 	if err != nil {
 		return err
 	}

@@ -31,7 +31,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
 	abu.maxConcurrency = defaultConcurrency
-	abu.client = NewABUClient()
+	abu.client = NewABUClient(mtgban.WithHTTPLogCallback(abu.printf))
 	abu.backend = b
 
 	abu.productMap = map[string]string{}

@@ -259,7 +259,7 @@ func (mkm *Market) Load(ctx context.Context) error {
 	mkm.liveExpansionsCache = nil
 	mkm.liveExpansionsTried = false
 
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR", mtgban.WithHTTPLogCallback(mkm.printf))
 	if err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func (mkm *Market) Load(ctx context.Context) error {
 	if _, filtered := marketFilterParams[mkm.gameID]; filtered {
 		switch {
 		case mkm.banPriceKey != "":
-			snap, err := loadBanSnapshot(ctx, mkm.backend.Game, mkm.banPriceKey)
+			snap, err := loadBanSnapshot(ctx, mkm.backend.Game, mkm.banPriceKey, mtgban.WithHTTPLogCallback(mkm.printf))
 			if err != nil {
 				return fmt.Errorf("loading the price snapshot to pre-filter this catalog: %w", err)
 			}

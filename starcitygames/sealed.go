@@ -67,7 +67,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
 	scg := Sealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient(apiKey)
+	scg.client = NewSCGClient(apiKey, mtgban.WithHTTPLogCallback(scg.printf))
 	scg.backend = b
 	scg.gameID = gameID
 	return &scg, nil

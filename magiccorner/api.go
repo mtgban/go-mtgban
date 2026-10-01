@@ -79,10 +79,10 @@ type MCClient struct {
 	client *http.Client
 }
 
-// NewMCClient returns a client.
-func NewMCClient() *MCClient {
+// NewMCClient returns a client; opts configure its HTTP client.
+func NewMCClient(opts ...mtgban.HTTPOption) *MCClient {
 	mc := MCClient{}
-	mc.client = mtgban.NewHTTPClient()
+	mc.client = mtgban.NewHTTPClient(opts...)
 	return &mc
 }
 

@@ -49,10 +49,11 @@ type MintClient struct {
 	token  string
 }
 
-// NewMintClient returns a client, failing if the session cannot be opened.
-func NewMintClient(ctx context.Context) (*MintClient, error) {
+// NewMintClient returns a client, failing if the session cannot be opened;
+// opts configure its HTTP client.
+func NewMintClient(ctx context.Context, opts ...mtgban.HTTPOption) (*MintClient, error) {
 	mint := MintClient{}
-	mint.client = mtgban.NewHTTPClient()
+	mint.client = mtgban.NewHTTPClient(opts...)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", mintPricelistURL, http.NoBody)
 	if err != nil {

@@ -49,7 +49,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 	ct.inventory = mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
 	ct.maxConcurrency = 2
-	ct.client = NewCTAuthClient(token)
+	ct.client = NewCTAuthClient(token, mtgban.WithHTTPLogCallback(ct.printf))
 	ct.backend = b
 	ct.gameID = id
 	return &ct, nil
@@ -351,7 +351,7 @@ func (ct *Sealed) pruneSubsumed(blueprints map[int]*Blueprint, productMap map[in
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ct *Sealed) Load(ctx context.Context) error {
-	rates, err := mtgban.GetExchangeRates(ctx)
+	rates, err := mtgban.GetExchangeRates(ctx, mtgban.WithHTTPLogCallback(ct.printf))
 	if err != nil {
 		return err
 	}

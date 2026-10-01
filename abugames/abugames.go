@@ -36,7 +36,7 @@ func NewScraper(b *mtgmatcher.Backend) *ABUGames {
 	abu := ABUGames{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
-	abu.client = NewABUClient()
+	abu.client = NewABUClient(mtgban.WithHTTPLogCallback(abu.printf))
 	abu.backend = b
 	abu.maxConcurrency = defaultConcurrency
 	return &abu

@@ -28,13 +28,15 @@ const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@
 // A currency quoted at zero is left out rather than kept as an infinity: it
 // converts nothing, and a caller reading a missing entry refuses the price
 // where one read as a number would invent it.
-func GetExchangeRates(ctx context.Context) (map[string]float64, error) {
+//
+// opts configure the client the feed is fetched with.
+func GetExchangeRates(ctx context.Context, opts ...HTTPOption) (map[string]float64, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, exchangeRateURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := NewHTTPClient().Do(req)
+	resp, err := NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +64,9 @@ func GetExchangeRates(ctx context.Context) (map[string]float64, error) {
 }
 
 // GetExchangeRate returns the rate that converts the given currency to USD:
-// multiply a price by it to get dollars.
-func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
-	rates, err := GetExchangeRates(ctx)
+// multiply a price by it to get dollars. opts are as for GetExchangeRates.
+func GetExchangeRate(ctx context.Context, currency string, opts ...HTTPOption) (float64, error) {
+	rates, err := GetExchangeRates(ctx, opts...)
 	if err != nil {
 		return 0, err
 	}

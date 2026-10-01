@@ -47,7 +47,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Magiccorner, error) {
 	mc := Magiccorner{}
 	mc.inventory = mtgban.InventoryRecord{}
 	mc.buylist = mtgban.BuylistRecord{}
-	mc.client = NewMCClient()
+	mc.client = NewMCClient(mtgban.WithHTTPLogCallback(mc.printf))
 	mc.backend = b
 	mc.maxConcurrency = defaultConcurrency
 	return &mc, nil
@@ -231,7 +231,7 @@ func (mc *Magiccorner) Load(ctx context.Context) error {
 	// Both sides price in euro, so the rate has to be in place before either
 	// runs: fetched from the retail path alone it stayed zero whenever retail
 	// was disabled, and every buy price came out at zero with it
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR", mtgban.WithHTTPLogCallback(mc.printf))
 	if err != nil {
 		return err
 	}

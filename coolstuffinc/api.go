@@ -32,7 +32,8 @@ var csiSearchURL = "https://www.coolstuffinc.com/sq/"
 // once discards all of it silently. A client built per call cannot pool
 // anything either, and the one it was built from disables keep-alives, so
 // each request paid for a fresh handshake against a storefront being asked
-// for hundreds of editions at a time.
+// for hundreds of editions at a time. It serves the exported helpers; a
+// scraper passes its own client, which logs its retries.
 var csiClient = newCSIHTTPClient()
 
 // csiUserAgent is what the storefront is asked as. Go's default agent is
@@ -58,10 +59,11 @@ func (t userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error)
 	return t.base.RoundTrip(req)
 }
 
-func newCSIHTTPClient() *http.Client {
-	return mtgban.NewHTTPClient(mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
+func newCSIHTTPClient(opts ...mtgban.HTTPOption) *http.Client {
+	agent := mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
 		return userAgentTransport{base: rt}
-	}))
+	})
+	return mtgban.NewHTTPClient(append([]mtgban.HTTPOption{agent}, opts...)...)
 }
 
 // CSIPriceEntry is one card in the buylist feed.
@@ -89,6 +91,10 @@ type CSIPriceEntry struct {
 
 // GetBuylist returns what Cool Stuff Inc is buying on one storefront shelf.
 func GetBuylist(ctx context.Context, shelf string) ([]CSIPriceEntry, error) {
+	return getBuylist(ctx, csiClient, shelf)
+}
+
+func getBuylist(ctx context.Context, client *http.Client, shelf string) ([]CSIPriceEntry, error) {
 	link := fmt.Sprintf(csiBuylistURL, shelf)
 
 	// The sell list is a large uncompressed download that occasionally
@@ -97,7 +103,7 @@ func GetBuylist(ctx context.Context, shelf string) ([]CSIPriceEntry, error) {
 	var err error
 	for attempt := 1; attempt <= attempts; attempt++ {
 		var entries []CSIPriceEntry
-		entries, err = fetchBuylist(ctx, link)
+		entries, err = fetchBuylist(ctx, client, link)
 		if err == nil {
 			return entries, nil
 		}
@@ -116,8 +122,8 @@ func GetBuylist(ctx context.Context, shelf string) ([]CSIPriceEntry, error) {
 	return nil, err
 }
 
-func fetchBuylist(ctx context.Context, link string) ([]CSIPriceEntry, error) {
-	data, err := fetchWhole(ctx, link)
+func fetchBuylist(ctx context.Context, client *http.Client, link string) ([]CSIPriceEntry, error) {
+	data, err := fetchWhole(ctx, client, link)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +151,7 @@ func fetchBuylist(ctx context.Context, link string) ([]CSIPriceEntry, error) {
 // bytes still missing. The loop ends when the body is whole or when a pass
 // got no further than the one before, rather than after a set number of
 // tries.
-func fetchWhole(ctx context.Context, link string) ([]byte, error) {
+func fetchWhole(ctx context.Context, client *http.Client, link string) ([]byte, error) {
 	var body []byte
 	longest := 0
 	for {
@@ -163,7 +169,7 @@ func fetchWhole(ctx context.Context, link string) ([]byte, error) {
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-", len(body)))
 		}
 
-		resp, err := csiClient.Do(req)
+		resp, err := client.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -219,12 +225,16 @@ func fetchWhole(ctx context.Context, link string) ([]byte, error) {
 // LoadBuylistEditions returns the edition-to-id map the storefront links are
 // built from.
 func LoadBuylistEditions(ctx context.Context, shelf string) (map[string]string, error) {
+	return loadBuylistEditions(ctx, csiClient, shelf)
+}
+
+func loadBuylistEditions(ctx context.Context, client *http.Client, shelf string) (map[string]string, error) {
 	link := csiBuylistLink + shelf
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := csiClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -341,6 +351,10 @@ func fetchSearchPage(ctx context.Context, client *http.Client, link string) (*go
 // Search returns the first page of an item name's results, narrowed to
 // the given rarity tiers, and the link to the page after it.
 func Search(ctx context.Context, shelf, itemName string, skipOOS bool, rarities []string) (*SearchResult, error) {
+	return search(ctx, csiClient, shelf, itemName, skipOOS, rarities)
+}
+
+func search(ctx context.Context, client *http.Client, shelf, itemName string, skipOOS bool, rarities []string) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", "")
 	v.Set("f[Artist][]", "")
@@ -385,7 +399,7 @@ func Search(ctx context.Context, shelf, itemName string, skipOOS bool, rarities 
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 
-	resp, err := csiClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

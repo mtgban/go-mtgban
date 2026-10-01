@@ -113,10 +113,10 @@ type GNClient struct {
 
 // NewGNClient returns a client for one product line, in the storefront's own
 // spelling - what gnGames translates an mtgmatcher.Game into, and what
-// NewScraper hands down.
-func NewGNClient(productLine string) *GNClient {
+// NewScraper hands down. opts configure its HTTP client.
+func NewGNClient(productLine string, opts ...mtgban.HTTPOption) *GNClient {
 	gn := GNClient{}
-	gn.client = mtgban.NewHTTPClient()
+	gn.client = mtgban.NewHTTPClient(opts...)
 	gn.productLine = productLine
 	gn.baseURL = baseURL
 	return &gn

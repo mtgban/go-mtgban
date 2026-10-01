@@ -50,12 +50,12 @@ func afCondition(s string) (mtgban.Condition, error) {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (af *Arcanafrisia) Load(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR", mtgban.WithHTTPLogCallback(af.printf))
 	if err != nil {
 		return err
 	}
 
-	cards, err := GetBuylist(ctx)
+	cards, err := GetBuylist(ctx, mtgban.WithHTTPLogCallback(af.printf))
 	if err != nil {
 		return err
 	}

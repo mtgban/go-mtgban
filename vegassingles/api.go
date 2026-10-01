@@ -87,10 +87,10 @@ type VSClient struct {
 
 // NewVSClient returns a client for one product line, in the storefront's own
 // spelling - what vsGames translates an mtgmatcher.Game into, and what
-// NewScraper hands down.
-func NewVSClient(productLine string) *VSClient {
+// NewScraper hands down. opts configure its HTTP client.
+func NewVSClient(productLine string, opts ...mtgban.HTTPOption) *VSClient {
 	vs := VSClient{}
-	vs.client = mtgban.NewHTTPClient()
+	vs.client = mtgban.NewHTTPClient(opts...)
 	vs.productLine = productLine
 	vs.baseURL = baseURL
 	return &vs

@@ -42,7 +42,7 @@ func NewScraper(b *mtgmatcher.Backend) *Manaleak {
 	ml := Manaleak{backend: b}
 	ml.inventory = mtgban.InventoryRecord{}
 	ml.buylist = mtgban.BuylistRecord{}
-	ml.client = NewMLClient()
+	ml.client = NewMLClient(mtgban.WithHTTPLogCallback(ml.printf))
 	ml.maxConcurrency = defaultConcurrency
 	return &ml
 }
@@ -212,7 +212,7 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ml *Manaleak) Load(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "GBP")
+	rate, err := mtgban.GetExchangeRate(ctx, "GBP", mtgban.WithHTTPLogCallback(ml.printf))
 	if err != nil {
 		return err
 	}

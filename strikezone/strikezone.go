@@ -122,7 +122,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
 	sz.maxConcurrency = defaultConcurrency
 	sz.backend = b
 	sz.shelf = shelf
-	sz.client = mtgban.NewHTTPClient()
+	sz.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(sz.printf))
 	return &sz, nil
 }
 

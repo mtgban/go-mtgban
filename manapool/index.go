@@ -38,7 +38,7 @@ func (mp *Index) printf(format string, a ...any) {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Index) Load(ctx context.Context) error {
-	singles, err := GetSinglesList(ctx)
+	singles, err := GetSinglesList(ctx, mtgban.WithHTTPLogCallback(mp.printf))
 	if err != nil {
 		return err
 	}

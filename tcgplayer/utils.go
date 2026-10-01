@@ -137,14 +137,15 @@ type TCGSYP struct {
 	MaxQty      int
 }
 
-// LoadSYP downloads the Store Your Products list as a CSV.
-func LoadSYP(ctx context.Context, category int, auth string) ([]TCGSYP, error) {
-	return loadSYPFrom(ctx, SYPCSVURL, category, auth)
+// LoadSYP downloads the Store Your Products list as a CSV; opts configure the
+// HTTP client it is fetched with.
+func LoadSYP(ctx context.Context, category int, auth string, opts ...mtgban.HTTPOption) ([]TCGSYP, error) {
+	return loadSYPFrom(ctx, SYPCSVURL, category, auth, opts...)
 }
 
 // loadSYPFrom is LoadSYP against any address, so the store's answers can be
 // stood in for.
-func loadSYPFrom(ctx context.Context, address string, category int, auth string) ([]TCGSYP, error) {
+func loadSYPFrom(ctx context.Context, address string, category int, auth string, opts ...mtgban.HTTPOption) ([]TCGSYP, error) {
 	u, err := url.Parse(address)
 	if err != nil {
 		return nil, err
@@ -162,7 +163,7 @@ func loadSYPFrom(ctx context.Context, address string, category int, auth string)
 	}
 	req.Header.Set("Cookie", "TCGAuthTicket_Production="+auth)
 
-	resp, err := mtgban.NewHTTPClient().Do(req)
+	resp, err := mtgban.NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -566,7 +566,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 		return err
 	}
 
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR", mtgban.WithHTTPLogCallback(mkm.printf))
 	if err != nil {
 		return err
 	}

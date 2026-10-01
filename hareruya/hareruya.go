@@ -65,7 +65,7 @@ func NewScraper(b *mtgmatcher.Backend) *Hareruya {
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	ha.maxConcurrency = defaultConcurrency
-	ha.client = mtgban.NewHTTPClient()
+	ha.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(ha.printf))
 	return &ha
 }
 
@@ -609,7 +609,7 @@ func (ha *Hareruya) getCardSets(ctx context.Context) ([]string, error) {
 }
 
 func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "JPY")
+	rate, err := mtgban.GetExchangeRate(ctx, "JPY", mtgban.WithHTTPLogCallback(ha.printf))
 	if err != nil {
 		return err
 	}

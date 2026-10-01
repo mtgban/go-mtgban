@@ -229,8 +229,8 @@ writer with a multiplier argument** (all others are `(b, data, w)`); the param
 is spelled `creditMuliplier` (missing "t") in source, and it computes the
 Trade Price column as `BuyPrice × creditMuliplier`.
 
-`mtgban/utils.go` supplies `GetExchangeRates(ctx)` and
-`GetExchangeRate(ctx, currency)` (fawazahmed0 currency CDN,
+`mtgban/utils.go` supplies `GetExchangeRates(ctx, opts...)` and
+`GetExchangeRate(ctx, currency, opts...)` (fawazahmed0 currency CDN,
 `@latest`/unpinned), which return the **reciprocal**, i.e. a
 *multiply-to-USD* factor, not the raw quoted rate.
 
@@ -891,7 +891,9 @@ pools. Of the clients, only the unregistered cardsphere and mtgstocks set
 `preprocess.go` translates store naming into `InputCard` + `b.Match()`,
 skipping `ErrUnsupported`, logging `AliasingError`s; results inserted via
 the `Add*` family. Every scraper has a tagged `printf` helper
-(`x.logCallback("[TAG] "+format, a...)`). File
+(`x.logCallback("[TAG] "+format, a...)`), and a `mtgban.NewHTTPClient` it
+fetches through reports its retries there
+(`mtgban.WithHTTPLogCallback(x.printf)`). File
 convention: `<store>.go` / `api.go` / `preprocess.go` / optional `sealed.go`
 (a *separate* scraper struct with its own `SealedMode` `Info`, holding the
 same `b`).

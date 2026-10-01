@@ -167,7 +167,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	}
 	tcg.printf("Found %d near mint skus in the catalog", len(tcg.catalog))
 
-	sypList, err := LoadSYP(ctx, tcg.category, tcg.auth)
+	sypList, err := LoadSYP(ctx, tcg.category, tcg.auth, mtgban.WithHTTPLogCallback(tcg.printf))
 	if err != nil {
 		return err
 	}

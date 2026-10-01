@@ -157,13 +157,13 @@ func getCT0fees(price float64) float64 {
 	return 0.64
 }
 
-func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string) (*BANPriceResponse, error) {
+func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string, opts ...mtgban.HTTPOption) (*BANPriceResponse, error) {
 	link := fmt.Sprintf(banAPIURL, selected, sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := mtgban.NewHTTPClient().Do(req)
+	resp, err := mtgban.NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -2,9 +2,15 @@ package coolstuffinc
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"sync/atomic"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestSearchSurvivesTransientFailures pins that a search whose first
@@ -60,5 +66,52 @@ func TestSearchSurvivesTransientFailures(t *testing.T) {
 				t.Errorf("served %d attempts, want 3", attempts)
 			}
 		})
+	}
+}
+
+// TestRetriesReachTheScraperLog pins that a retried request is reported once,
+// through the log callback the scraper is registered with, tagged and without
+// its query, and that a request answered first time reports nothing.
+func TestRetriesReachTheScraperLog(t *testing.T) {
+	var served atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if served.Add(1) == 1 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		fmt.Fprint(w, "<html></html>")
+	}))
+	defer srv.Close()
+
+	saved := csiSearchURL
+	csiSearchURL = srv.URL + "/sq/?sig=secret"
+	defer func() { csiSearchURL = saved }()
+
+	var logged []string
+	scraper, err := mtgban.NewScraper(&mtgmatcher.Backend{Game: mtgmatcher.GameMagic}, "coolstuffinc",
+		mtgban.WithLogCallback(func(format string, a ...any) {
+			logged = append(logged, fmt.Sprintf(format, a...))
+		}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	csi, ok := scraper.(*Coolstuffinc)
+	if !ok {
+		t.Fatalf("built a %T", scraper)
+	}
+
+	// The first search is retried once, the second is answered first time.
+	for range 2 {
+		err = csi.processSearch(context.Background(), make(chan responseChan), "Coldsnap", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if served.Load() != 3 {
+		t.Errorf("served %d requests, want 3", served.Load())
+	}
+	want := "[CSI] POST " + srv.URL + "/sq/: retry 1 of "
+	if len(logged) != 1 || !strings.HasPrefix(logged[0], want) || strings.Contains(logged[0], "secret") {
+		t.Errorf("logged %q, want one line starting %q", logged, want)
 	}
 }

@@ -50,7 +50,7 @@ func isUnindexed(b *mtgmatcher.Backend, card Product) bool {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Manapool) Load(ctx context.Context) error {
-	pricelist, err := GetPriceList(ctx)
+	pricelist, err := GetPriceList(ctx, mtgban.WithHTTPLogCallback(mp.printf))
 	if err != nil {
 		return err
 	}

@@ -55,7 +55,7 @@ func NewScraper(b *mtgmatcher.Backend, apiKey string) (*Starcitygames, error) {
 	}
 	scg := Starcitygames{}
 	scg.reset()
-	scg.client = NewSCGClient(apiKey)
+	scg.client = NewSCGClient(apiKey, mtgban.WithHTTPLogCallback(scg.printf))
 	scg.backend = b
 	scg.gameID = gameID
 	return &scg, nil

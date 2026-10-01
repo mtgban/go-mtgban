@@ -49,7 +49,7 @@ const playedPriceFloor = 100
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mg *Merlion) Load(ctx context.Context) error {
-	cards, err := DownloadBuylistCSV(ctx)
+	cards, err := DownloadBuylistCSV(ctx, mtgban.WithHTTPLogCallback(mg.printf))
 	if err != nil {
 		return err
 	}

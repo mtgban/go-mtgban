@@ -36,7 +36,7 @@ func (mp *Sealed) printf(format string, a ...any) {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Sealed) Load(ctx context.Context) error {
-	pricelist, err := GetSealedList(ctx)
+	pricelist, err := GetSealedList(ctx, mtgban.WithHTTPLogCallback(mp.printf))
 	if err != nil {
 		return err
 	}

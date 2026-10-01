@@ -169,7 +169,7 @@ func cardtraderBridge(game mtgmatcher.Game) (map[int]int, error) {
 	if ctTokenBearer == "" {
 		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 	}
-	client := cardtrader.NewCTAuthClient(ctTokenBearer)
+	client := cardtrader.NewCTAuthClient(ctTokenBearer, mtgban.WithHTTPLogCallback(log.Printf))
 
 	blueprints, _, err := cardtrader.BlueprintsForGame(context.Background(), client, game, "", log.Printf)
 	if err != nil {

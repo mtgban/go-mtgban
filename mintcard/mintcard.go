@@ -160,7 +160,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mint *MTGMintCard) Load(ctx context.Context) error {
 	mint.printf("Loading MTGMintCard data")
-	mintClient, err := NewMintClient(ctx)
+	mintClient, err := NewMintClient(ctx, mtgban.WithHTTPLogCallback(mint.printf))
 	if err != nil {
 		return err
 	}

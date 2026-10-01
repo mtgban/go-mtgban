@@ -50,7 +50,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 	csi := Sealed{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	csi.client = newCSIHTTPClient()
+	csi.client = newCSIHTTPClient(mtgban.WithHTTPLogCallback(csi.printf))
 	csi.maxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
@@ -222,7 +222,7 @@ func (csi *Sealed) scrape(ctx context.Context) error {
 }
 
 func (csi *Sealed) parseBL(ctx context.Context) error {
-	products, err := GetBuylist(ctx, csi.shelf)
+	products, err := getBuylist(ctx, csi.client, csi.shelf)
 	if err != nil {
 		return err
 	}
@@ -389,7 +389,7 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 // facets, which sealed products have none of and would be filtered out
 // by. The name route rather than the set facet: lorcana sealed carries
 // no ItemSet at all, where riftbound's does.
-func searchSealed(ctx context.Context, shelf, query string) (*SearchResult, error) {
+func searchSealed(ctx context.Context, client *http.Client, shelf, query string) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", query)
 	v.Set("f[Artist][]", "")
@@ -425,7 +425,7 @@ func searchSealed(ctx context.Context, shelf, query string) (*SearchResult, erro
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 
-	resp, err := csiClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +450,7 @@ func searchSealed(ctx context.Context, shelf, query string) (*SearchResult, erro
 // row the sealed-name resolver recognizes. English only: language-variant
 // names are skipped before resolution.
 func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) error {
-	result, err := searchSealed(ctx, csi.shelf, query)
+	result, err := searchSealed(ctx, csi.client, csi.shelf, query)
 	if err != nil {
 		return err
 	}

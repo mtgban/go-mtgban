@@ -47,28 +47,31 @@ const (
 	singlesURL  = "https://manapool.com/api/v1/prices/singles"
 )
 
-// GetPriceList downloads the singles price list in one call.
-func GetPriceList(ctx context.Context) ([]Product, error) {
-	return getList(ctx, manapoolURL)
+// GetPriceList downloads the singles price list in one call; opts configure
+// the HTTP client it is fetched with.
+func GetPriceList(ctx context.Context, opts ...mtgban.HTTPOption) ([]Product, error) {
+	return getList(ctx, manapoolURL, opts...)
 }
 
-// GetSealedList downloads the sealed price list in one call.
-func GetSealedList(ctx context.Context) ([]Product, error) {
-	return getList(ctx, sealedURL)
+// GetSealedList downloads the sealed price list in one call; opts are as for
+// GetPriceList.
+func GetSealedList(ctx context.Context, opts ...mtgban.HTTPOption) ([]Product, error) {
+	return getList(ctx, sealedURL, opts...)
 }
 
-// GetSinglesList downloads the singles price list in one call.
-func GetSinglesList(ctx context.Context) ([]Product, error) {
-	return getList(ctx, singlesURL)
+// GetSinglesList downloads the singles price list in one call; opts are as
+// for GetPriceList.
+func GetSinglesList(ctx context.Context, opts ...mtgban.HTTPOption) ([]Product, error) {
+	return getList(ctx, singlesURL, opts...)
 }
 
-func getList(ctx context.Context, link string) ([]Product, error) {
+func getList(ctx context.Context, link string, opts ...mtgban.HTTPOption) ([]Product, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := mtgban.NewHTTPClient().Do(req)
+	resp, err := mtgban.NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}

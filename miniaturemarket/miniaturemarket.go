@@ -61,7 +61,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
 	mm.maxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
 	mm.backend = b
-	mm.client = mtgban.NewHTTPClient()
+	mm.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(mm.printf))
 	mm.widget = widget
 	return &mm, nil
 }

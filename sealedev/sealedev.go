@@ -472,7 +472,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 	}
 
 	ss.printf("Loading BAN prices")
-	prices, err := loadPrices(ctx, ss.backend, ss.banpriceKey, selected)
+	prices, err := loadPrices(ctx, ss.backend, ss.banpriceKey, selected, mtgban.WithHTTPLogCallback(ss.printf))
 	if err != nil {
 		return err
 	}

@@ -63,7 +63,7 @@ func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
 	ct := Market{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.maxConcurrency = defaultConcurrency
-	ct.client = NewCTAuthClient(token)
+	ct.client = NewCTAuthClient(token, mtgban.WithHTTPLogCallback(ct.printf))
 	ct.backend = b
 	ct.gameID = id
 	return &ct, nil
@@ -445,7 +445,7 @@ func (ct *Market) processExpansion(ctx context.Context, channel chan<- resultCha
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ct *Market) Load(ctx context.Context) error {
-	rates, err := mtgban.GetExchangeRates(ctx)
+	rates, err := mtgban.GetExchangeRates(ctx, mtgban.WithHTTPLogCallback(ct.printf))
 	if err != nil {
 		return err
 	}

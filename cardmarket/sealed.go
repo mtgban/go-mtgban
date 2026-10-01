@@ -200,7 +200,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mkm *Sealed) Load(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR", mtgban.WithHTTPLogCallback(mkm.printf))
 	if err != nil {
 		return err
 	}

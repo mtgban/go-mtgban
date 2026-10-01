@@ -171,7 +171,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
 	csi := Coolstuffinc{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	csi.client = newCSIHTTPClient()
+	csi.client = newCSIHTTPClient(mtgban.WithHTTPLogCallback(csi.printf))
 	csi.maxConcurrency = defaultConcurrency
 	csi.shelf = shelf
 	csi.backend = b
@@ -408,7 +408,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 	case "Alpha", "Beta", "Unlimited Edition":
 		skipOOS = false
 	}
-	result, err := Search(ctx, csi.shelf, itemName, skipOOS, rarities)
+	result, err := search(ctx, csi.client, csi.shelf, itemName, skipOOS, rarities)
 	if err != nil {
 		return err
 	}
@@ -812,13 +812,13 @@ func offerSeen(seen map[string]bool, record responseChan) bool {
 }
 
 func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
-	edition2id, err := LoadBuylistEditions(ctx, csi.shelf)
+	edition2id, err := loadBuylistEditions(ctx, csi.client, csi.shelf)
 	if err != nil {
 		return err
 	}
 	csi.printf("Loaded %d editions", len(edition2id))
 
-	products, err := GetBuylist(ctx, csi.shelf)
+	products, err := getBuylist(ctx, csi.client, csi.shelf)
 	if err != nil {
 		return err
 	}

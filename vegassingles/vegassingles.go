@@ -108,7 +108,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
 	vs := Vegassingles{backend: b}
 	vs.inventory = mtgban.InventoryRecord{}
 	vs.buylist = mtgban.BuylistRecord{}
-	vs.client = NewVSClient(line)
+	vs.client = NewVSClient(line, mtgban.WithHTTPLogCallback(vs.printf))
 	vs.line = line
 	vs.maxConcurrency = defaultConcurrency
 	return &vs, nil
