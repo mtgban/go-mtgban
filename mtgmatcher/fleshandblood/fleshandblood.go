@@ -431,6 +431,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, fleshandbloodRarityMap)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed
