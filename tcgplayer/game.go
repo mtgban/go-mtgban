@@ -113,9 +113,12 @@ func NewScraperGameSealed(b *mtgmatcher.Backend, publicID, privateID string) (*T
 	return tcg, nil
 }
 
-func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
+func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan, page, total int) error {
 	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, true, page)
 	if err != nil {
+		return err
+	}
+	if err := checkPage(products, page, total); err != nil {
 		return err
 	}
 
@@ -286,14 +289,9 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 		tcg.printf("Loaded %d sealed products", len(tcg.sealedMap))
 	}
 
-	pageNums := make([]int, 0, totals/tcgplayer.MaxItemsInResponse+1)
-	for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
-		pageNums = append(pageNums, i)
-	}
-
-	mtgban.WorkerPool(ctx, tcg.maxConcurrency, pageNums,
+	err = loadPages(ctx, tcg.maxConcurrency, totals,
 		func(ctx context.Context, page int, channel chan<- genericChan) error {
-			return tcg.processPage(ctx, channel, page)
+			return tcg.processPage(ctx, channel, page, totals)
 		},
 		func(result genericChan) {
 			err := tcg.inventory.Add(result.key, &result.entry)
@@ -303,6 +301,9 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 		},
 		tcg.printf,
 	)
+	if err != nil {
+		return err
+	}
 
 	tcg.inventoryDate = time.Now()
 

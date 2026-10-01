@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -124,6 +125,43 @@ func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[i
 		results[group.GroupID] = group
 	}
 	return results, nil
+}
+
+// checkPage reports a product page holding other than its share of total,
+// which the API answers without an error of its own: a short page is
+// products the scrape never sees.
+func checkPage(products []tcgplayer.Product, page, total int) error {
+	if want := min(tcgplayer.MaxItemsInResponse, total-page); len(products) != want {
+		return fmt.Errorf("page at offset %d holds %d products, want %d of %d", page, len(products), want, total)
+	}
+	return nil
+}
+
+// loadPages hands every page offset of total to process across concurrency
+// workers and fails when any page did. WorkerPool only logs a worker's
+// error, which would leave an inventory missing whole pages looking loaded.
+func loadPages(ctx context.Context, concurrency, total int, process func(context.Context, int, chan<- genericChan) error, consume func(genericChan), logf func(string, ...any)) error {
+	pageNums := make([]int, 0, total/tcgplayer.MaxItemsInResponse+1)
+	for i := 0; i < total; i += tcgplayer.MaxItemsInResponse {
+		pageNums = append(pageNums, i)
+	}
+
+	var failed atomic.Int64
+	mtgban.WorkerPool(ctx, concurrency, pageNums,
+		func(ctx context.Context, page int, channel chan<- genericChan) error {
+			err := process(ctx, page, channel)
+			if err != nil {
+				failed.Add(1)
+			}
+			return err
+		},
+		consume,
+		logf,
+	)
+	if n := failed.Load(); n > 0 {
+		return fmt.Errorf("%d of %d pages failed or came back short, so the inventory is incomplete", n, len(pageNums))
+	}
+	return nil
 }
 
 // SKUConditionMap maps the condition ids the APIs use to the grades the
