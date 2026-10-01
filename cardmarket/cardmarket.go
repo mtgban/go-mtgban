@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -199,17 +198,14 @@ var mkmGames = map[mtgmatcher.Game]cm.Game{
 // defaultArticleFilter is the filter a price is read through: played or
 // better, from a seller with a record, neither signed nor altered, and in
 // English. Anything looser prices a card off a listing nobody would buy.
-//
-// Read and never written - Articles copies it into the query string and
-// keeps nothing - so a caller reading English listings hands it over as it
-// stands. One wanting another language clones it and overrides that key,
-// which is the only key anyone has ever wanted to change.
-var defaultArticleFilter = map[string]string{
-	"minCondition": string(cm.ConditionGood),
-	"minUserScore": strconv.Itoa(int(cm.UserScoreGood)),
-	"isSigned":     "false",
-	"isAltered":    "false",
-	"idLanguage":   strconv.Itoa(int(cm.LanguageEnglish)),
+// It is a value, so a caller wanting another language copies it and sets
+// Language.
+var defaultArticleFilter = cm.ArticleQuery{
+	MinCondition: cm.ConditionGood,
+	MinUserScore: cm.UserScoreGood,
+	Language:     cm.LanguageEnglish,
+	Signed:       cm.None,
+	Altered:      cm.None,
 }
 
 // onlyIf narrows a link to the listings carrying a flag the article carries,
