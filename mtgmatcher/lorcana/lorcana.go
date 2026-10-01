@@ -650,25 +650,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][fmt.Sprint(extra)] = convertedCard.UUID
 		}
 
-		// Store a CardObject per finish uuid.
 		for _, s := range stored {
-			// A genuinely duplicated finish (the same sub-type listed twice)
-			// would collide; store each uuid at most once.
-			if _, found := b.UUIDs[s.uuid]; found {
-				continue
-			}
-			co := mtgmatcher.CardObject{
-				Card:    convertedCard,
-				Edition: b.Sets[card.SetCode].Name,
-				Foil:    s.foil,
-			}
-			// co is fresh on every iteration, so the stored pointer is not
-			// aliased by later finishes
-			co.UUID = s.uuid
-			co.Finish = s.name
-			b.UUIDs[s.uuid] = &co
-			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
-			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], s.uuid)
+			b.AddPrinting(&convertedCard, s.uuid, s.name, card.FullName)
 		}
 	}
 

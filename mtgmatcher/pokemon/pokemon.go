@@ -398,29 +398,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
-		var qualified string
-		if name := qualifiedName(card, printingsByName); name != "" {
-			qualified = mtgmatcher.Normalize(name)
-		}
+		qualified := qualifiedName(card, printingsByName)
 		for _, entry := range group {
-			co := mtgmatcher.CardObject{
-				Card:    convertedCard,
-				Edition: b.Sets[card.SetCode].Name,
-			}
-			// co is fresh on every iteration, so the stored pointer is not
-			// aliased by the sibling printings
-			co.UUID = entry.ID
-			co.Finish = mtgmatcher.FinishSlug(entry.Finish)
-			// Every holo treatment is a foil, and the flag is what a caller
-			// with no finish vocabulary reads: leaving it false filed every
-			// holo printing in the game as a plain one.
-			co.Foil = mtgmatcher.IsFoilFinish(co.Finish)
-			b.UUIDs[entry.ID] = &co
-			b.AllUUIDs = append(b.AllUUIDs, entry.ID)
-			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], entry.ID)
-			if qualified != "" {
-				b.Hashes[qualified] = append(b.Hashes[qualified], entry.ID)
-			}
+			b.AddPrinting(&convertedCard, entry.ID, mtgmatcher.FinishSlug(entry.Finish), card.Name, qualified)
 		}
 	}
 

@@ -396,36 +396,11 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[setCode].Cards = append(b.Sets[setCode].Cards, convertedCard)
 
-		// Store a CardObject per finish uuid, over the finishes the printing
-		// is actually sold in rather than both: a card sold in one finish
-		// has no uuid for the other, and reaching for it would file a
-		// CardObject under the empty string. The finish table says which
-		// ones a storefront's foil flag means.
+		// One CardObject per finish the printing is actually sold in rather
+		// than both: a card sold in one finish has no uuid for the other,
+		// and reaching for it would file a CardObject under the empty string.
 		for _, finish := range convertedCard.Finishes {
-			s := struct {
-				uuid string
-				foil bool
-				name string
-			}{convertedCard.FoilUUIDs[finish], mtgmatcher.IsFoilFinish(finish), finish}
-			if _, found := b.UUIDs[s.uuid]; found {
-				continue
-			}
-			co := mtgmatcher.CardObject{
-				Card:    convertedCard,
-				Edition: b.Sets[setCode].Name,
-				Foil:    s.foil,
-			}
-			// co is fresh on every iteration, so the stored pointer is not
-			// aliased by later finishes
-			co.UUID = s.uuid
-			co.Finish = s.name
-			b.UUIDs[s.uuid] = &co
-			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
-			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], s.uuid)
-			if product := productName(card.Name, card.PromoTypes); product != "" {
-				pn := mtgmatcher.Normalize(product)
-				b.Hashes[pn] = append(b.Hashes[pn], s.uuid)
-			}
+			b.AddPrinting(&convertedCard, convertedCard.FoilUUIDs[finish], finish, card.Name, productName(card.Name, card.PromoTypes))
 		}
 	}
 

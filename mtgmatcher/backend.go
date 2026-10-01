@@ -573,3 +573,33 @@ func (b *Backend) AddPromoType(slug, label string) {
 		b.PromoTypeLabels[slug] = label
 	}
 }
+
+// AddPrinting files one printing of a card a datastore game sells: the
+// CardObject its uuid resolves to, a copy of card sold in finish (a
+// FinishSlug) and foil as IsFoilFinish says that finish is. The uuid joins
+// AllUUIDs and the hash bucket of each name given, normalized: the card's own
+// and any spelling naming this printing, an empty one skipped. The card's set
+// must already be filed, since the edition is its name.
+//
+// A uuid already filed keeps what it holds, as AddSealed has it.
+func (b *Backend) AddPrinting(card *Card, uuid, finish string, names ...string) {
+	if _, found := b.UUIDs[uuid]; found {
+		return
+	}
+	co := &CardObject{
+		Card:    *card,
+		Edition: b.Sets[card.SetCode].Name,
+		Foil:    IsFoilFinish(finish),
+	}
+	co.UUID = uuid
+	co.Finish = finish
+	b.UUIDs[uuid] = co
+	b.AllUUIDs = append(b.AllUUIDs, uuid)
+	for _, name := range names {
+		if name == "" {
+			continue
+		}
+		n := Normalize(name)
+		b.Hashes[n] = append(b.Hashes[n], uuid)
+	}
+}
