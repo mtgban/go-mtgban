@@ -682,6 +682,11 @@ func deckFoilTenths(deckSet string) int {
 	return 0
 }
 
+// sealedKinds are the kinds of entry a walk reads from a product's contents,
+// in the order it reads them, so the same product answers the same way every
+// time. "other" lists what holds no card and is never read.
+var sealedKinds = []string{"card", "pack", "deck", "sealed", "variable"}
+
 // GetDecklist returns the uuids of the fixed decks a sealed product contains,
 // for the products whose contents are known rather than drawn.
 //
@@ -708,10 +713,7 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 		}
 		etched := productNamesEtched(product.Name)
 
-		// The contents are keyed by kind, and a map walks its keys in no
-		// order; the three kinds a decklist reads are walked as written,
-		// so the same product answers the same list every time.
-		for _, kind := range []string{"card", "deck", "sealed"} {
+		for _, kind := range sealedKinds {
 			for _, content := range product.Contents[kind] {
 				switch kind {
 				case "card":
@@ -757,9 +759,9 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 		}
 		etched := productNamesEtched(product.Name)
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
+		for _, kind := range sealedKinds {
+			for _, content := range product.Contents[kind] {
+				switch kind {
 				case "card":
 					uuid, err := b.MatchID(content.UUID, content.Foil, etched)
 					if err != nil {
@@ -879,9 +881,9 @@ func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
 			return true
 		}
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
+		for _, kind := range sealedKinds {
+			for _, content := range product.Contents[kind] {
+				switch kind {
 				case "card":
 				case "pack":
 					return true
@@ -895,7 +897,6 @@ func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
 					}
 				case "variable":
 					return true
-				case "other":
 				}
 			}
 		}
@@ -918,9 +919,9 @@ func (b *Backend) SealedCardUnit(setCode, sealedUUID string) int {
 			continue
 		}
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
+		for _, kind := range sealedKinds {
+			for _, content := range product.Contents[kind] {
+				switch kind {
 				case "card":
 					result++
 				case "pack",
@@ -950,9 +951,9 @@ func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {
 			continue
 		}
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
+		for _, kind := range sealedKinds {
+			for _, content := range product.Contents[kind] {
+				switch kind {
 				case "sealed":
 					if b.SealedHasDecklist(content.Set, content.UUID) {
 						return true
@@ -1064,9 +1065,9 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 		}
 		etched := productNamesEtched(product.Name)
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
+		for _, kind := range sealedKinds {
+			for _, content := range product.Contents[kind] {
+				switch kind {
 				case "card":
 					uuid, err := b.MatchID(content.UUID, content.Foil, etched)
 					if err != nil {
