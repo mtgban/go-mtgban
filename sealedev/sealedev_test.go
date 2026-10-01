@@ -2,9 +2,8 @@ package sealedev
 
 import (
 	"context"
+	"maps"
 	"os"
-	"slices"
-	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -74,7 +73,7 @@ func sealedProduct(t *testing.T, b *mtgmatcher.Backend, wantRandom bool) (string
 			return uuid, co.SetCode
 		}
 	}
-	t.Skipf("no sealed product with random=%v in this datastore", wantRandom)
+	t.Fatalf("no sealed product with random=%v in this datastore", wantRandom)
 	return "", ""
 }
 
@@ -106,11 +105,13 @@ func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price f
 	return r
 }
 
+// sldBonusProduct finds a product listing an SLD bonus at a chance below 1.
+// Only a product drawn at random lists one.
 func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend) (string, string, string) {
 	t.Helper()
 	for _, uuid := range b.GetSealedUUIDs() {
 		co, err := b.GetUUID(uuid)
-		if err != nil || b.SealedIsRandom(co.SetCode, uuid) {
+		if err != nil {
 			continue
 		}
 		probs, err := b.GetProbabilitiesForSealed(co.SetCode, uuid)
@@ -124,21 +125,23 @@ func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend) (string, string, strin
 			}
 		}
 	}
-	t.Skip("no fixed sealed product with a non-guaranteed SLD bonus")
+	t.Fatal("no sealed product lists an SLD bonus at a chance below 1")
 	return "", "", ""
 }
 
-func resultPrices(results []result) []float64 {
-	prices := make([]float64, 0, len(results))
+// weightedPrices answers each probability-weighted parameter's price by name.
+// The simulated ones draw a random opening each run and cannot be compared.
+func weightedPrices(results []result) map[string]float64 {
+	simulated := map[string]bool{}
+	for _, parameter := range evParameters {
+		simulated[parameter.Name] = parameter.Simulation
+	}
+	prices := map[string]float64{}
 	for _, result := range results {
-		switch {
-		case result.invEntry != nil:
-			prices = append(prices, result.invEntry.Price)
-		case result.buyEntry != nil:
-			prices = append(prices, result.buyEntry.BuyPrice)
+		if result.invEntry != nil && !simulated[result.invEntry.SellerName] {
+			prices[result.invEntry.SellerName] = result.invEntry.Price
 		}
 	}
-	sort.Float64s(prices)
 	return prices
 }
 
@@ -171,8 +174,11 @@ func TestRunEVSkipsUnfixedSLDBonusFromPriceCache(t *testing.T) {
 	if len(errs) != 0 {
 		t.Fatalf("high-bonus runEV reported %v", errs)
 	}
-	if !slices.Equal(resultPrices(got), resultPrices(want)) {
-		t.Fatalf("non-guaranteed bonus changed EV results: base=%v high=%v", resultPrices(want), resultPrices(got))
+	if len(weightedPrices(want)) == 0 {
+		t.Fatal("no probability-weighted parameter valued the product")
+	}
+	if !maps.Equal(weightedPrices(got), weightedPrices(want)) {
+		t.Fatalf("non-guaranteed bonus changed EV results: base=%v high=%v", weightedPrices(want), weightedPrices(got))
 	}
 }
 
@@ -273,7 +279,7 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 		}
 	}
 	if checked == 0 {
-		t.Skip("no simulated measure shares a store with a deterministic one")
+		t.Fatal("no simulated measure shares a store with a deterministic one")
 	}
 }
 
