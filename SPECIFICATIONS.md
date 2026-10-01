@@ -987,7 +987,7 @@ no site behind it, synthesizing prices from TCG/CK/SCG, `MetadataOnly`) and
 ## 4. Tooling — `cmd/` and CI
 
 Committed tools: **bantool** (the production orchestrator), **boosterGen**,
-**boosterList**, **ckodds**, **manapoolOrders**, and **tcgid4scryfall**
+**boosterList**, **manapoolOrders**, and **tcgid4scryfall**
 (TCG id → Scryfall id export). A long tail of further tools exists only as
 untracked working-tree WIP (`manapoolSeller`, `mkmhtml2csv`, `mp2ckbl`,
 `amazonsearch`, `omnitool-3g`, `autocart`, and the `ck*`/`ct*`/`mkm*` family);
@@ -1032,9 +1032,6 @@ embeds live credentials.
   `opts.TargetEdition`, `opts.MaxConcurrency`, `opts.Secret`) and sets the
   scraper's unexported fields from it, `scraper.logCallback = opts.LogCallback`
   alone being 37 assignments across the 20 `register.go` files.
-- **ckodds**: odds of Card Kingdom's next buylist move after each state the
-  site marks on a card, measured from CK's daily price history; a module of
-  its own, run daily by `ckodds.yml`.
 - **manapoolOrders** — Mana Pool buyer-order CSV dumps.
 - **boosterGen / boosterList** — booster simulation and sealed introspection
   over the mtgmatcher sealed API.
