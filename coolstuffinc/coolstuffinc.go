@@ -1153,7 +1153,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				PriceRatio: priceRatio,
 				URL:        link,
 				CustomFields: map[string]string{
-					"originalProduct": fmt.Sprintf("%q", product),
+					"originalProduct": fmt.Sprintf("%+v", product),
 				},
 			}
 
