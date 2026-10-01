@@ -78,6 +78,28 @@ func ProductKeyOf(identifiers map[string]string, uuid string) string {
 	return uuid
 }
 
+// GroupProducts gathers the entries of a datastore that sells each printing
+// as an entry of its own into the products they are printings of, by the key
+// each entry names its product with, read off what it publishes (see the note
+// at the top of this file). Products come in the order each first appears,
+// and each keeps its entries in the datastore's order.
+func GroupProducts[T any](entries []T, key func(*T) string) [][]*T {
+	var products [][]*T
+	at := map[string]int{}
+	for i := range entries {
+		entry := &entries[i]
+		k := key(entry)
+		n, found := at[k]
+		if !found {
+			n = len(products)
+			at[k] = n
+			products = append(products, nil)
+		}
+		products[n] = append(products[n], entry)
+	}
+	return products
+}
+
 // SplitColors turns the colour value a Bandai-shaped catalog publishes into
 // its components, "Red/Green" and "Red; Green" alike.
 func SplitColors(color string) []string {

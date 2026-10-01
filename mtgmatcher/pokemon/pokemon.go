@@ -277,19 +277,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// wants it once, with FoilUUIDs naming the uuid each printing prices.
 	// Which entries are one product is read off the identifiers they
 	// publish, never off the shape of their ids.
-	var productOrder []string
-	products := map[string][]*DatastoreCard{}
-	for i := range payload.Cards {
-		card := &payload.Cards[i]
-		key := card.productKey()
-		if _, found := products[key]; !found {
-			productOrder = append(productOrder, key)
-		}
-		products[key] = append(products[key], card)
-	}
-
-	for _, key := range productOrder {
-		group := products[key]
+	for _, group := range mtgmatcher.GroupProducts(payload.Cards, (*DatastoreCard).productKey) {
 		printings := map[string]*DatastoreCard{}
 		for _, entry := range group {
 			printings[mtgmatcher.FinishSlug(entry.Finish)] = entry
