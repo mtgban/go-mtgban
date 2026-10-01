@@ -545,62 +545,25 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			// on 155 of the game's (set, number) pairs without it.
 			SetTotal: card.Total,
 		}
-		// Register the uuid each finish prices, keyed by the name TCGplayer
-		// prices it under, which is the name the datastore gives it.
-		finishUUIDs := map[string]string{}
-		type perFinish struct {
-			uuid string
-			foil bool
-			name string
-		}
-		var stored []perFinish
-		// Walked in order so the first of two names folding to one key
-		// keeps it on every load.
+		// The uuid each finish prices, keyed by the name TCGplayer prices it
+		// under, which is the name the datastore gives it. Walked in order so
+		// the first of two names folding to one key keeps it on every load.
+		printings := map[string]string{}
 		for _, name := range slices.Sorted(maps.Keys(card.PrintingIDs)) {
 			finish := mtgmatcher.FinishSlug(name)
-			if _, placed := finishUUIDs[finish]; placed {
-				continue
-			}
-			uuid := card.PrintingIDs[name]
-			finishUUIDs[finish] = uuid
-			stored = append(stored, perFinish{uuid, mtgmatcher.IsFoilFinish(finish), finish})
-		}
-		// The CardObjects below are registered in this order, so
-		// AllUUIDs and the name hashes come out the same on every load.
-		sort.Slice(stored, func(i, j int) bool { return stored[i].name < stored[j].name })
-		// A bare foil flag answers with the standard foil, or with the
-		// treatment on a card sold only in one.
-		if _, found := finishUUIDs[mtgmatcher.FinishFoil]; !found {
-			if uuid, found := mtgmatcher.DefaultPrinting(finishUUIDs, true); found {
-				finishUUIDs[mtgmatcher.FinishFoil] = uuid
+			if _, placed := printings[finish]; !placed {
+				printings[finish] = card.PrintingIDs[name]
 			}
 		}
-		// Finishes is the coarse pair output() reads, not the names
-		// above: a card sold in a treatment is sold foil.
-		var coarse []string
-		for _, s := range stored {
-			name := mtgmatcher.FinishNonfoil
-			if s.foil {
-				name = mtgmatcher.FinishFoil
-			}
-			if !slices.Contains(coarse, name) {
-				coarse = append(coarse, name)
-			}
-		}
-		sort.Strings(coarse)
-		convertedCard.Finishes = coarse
-		convertedCard.FoilUUIDs = finishUUIDs
+		convertedCard.Finishes, convertedCard.FoilUUIDs = mtgmatcher.SoldFinishes(printings)
 		// The printing is identified by the entry a bare flag resolves to,
 		// which is its nonfoil where it has one and its first foil where it
 		// does not. A foil-only printing no longer holds the bare uuid, so
 		// naming it here is what keeps the set listing and the identifier
 		// index pointing at a card that exists.
-		// Read it off the map rather than the order the finishes were
-		// listed in: a printing that lists a foil first would otherwise be
-		// identified by that foil while carrying a nonfoil.
-		if uuid, found := finishUUIDs[mtgmatcher.FinishNonfoil]; found {
+		if uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]; found {
 			convertedCard.UUID = uuid
-		} else if uuid, found := finishUUIDs[mtgmatcher.FinishFoil]; found {
+		} else if uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]; found {
 			convertedCard.UUID = uuid
 		}
 
@@ -646,8 +609,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][fmt.Sprint(extra)] = convertedCard.UUID
 		}
 
-		for _, s := range stored {
-			b.AddPrinting(&convertedCard, s.uuid, s.name, card.FullName)
+		// Filed in order, so AllUUIDs and the name hashes come out the same
+		// on every load.
+		for _, finish := range slices.Sorted(maps.Keys(printings)) {
+			b.AddPrinting(&convertedCard, printings[finish], finish, card.FullName)
 		}
 	}
 
