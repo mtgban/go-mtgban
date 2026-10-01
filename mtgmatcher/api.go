@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"math/rand"
 	"regexp"
 	"slices"
@@ -966,9 +967,12 @@ func (b *Backend) SealedBoosterProbabilities(setCode, boosterType string) ([]Pro
 		return nil, fmt.Errorf("booster '%s' not found", boosterType)
 	}
 
+	// Sheets are read in order, so a card on several sheets sums to the same
+	// bits on every call.
 	tmp := map[string]float64{}
 	for _, booster := range boosterConfig.Boosters {
-		for sheetName, count := range booster.Contents {
+		for _, sheetName := range slices.Sorted(maps.Keys(booster.Contents)) {
+			count := booster.Contents[sheetName]
 			probs, err := b.SealedSheetProbabilities(setCode, boosterType, sheetName)
 			if err != nil {
 				return nil, err
@@ -984,10 +988,10 @@ func (b *Backend) SealedBoosterProbabilities(setCode, boosterType string) ([]Pro
 
 	// Normalize booster weight with the provided totals
 	var probabilities []ProductProbabilities
-	for uuid, probability := range tmp {
+	for _, uuid := range slices.Sorted(maps.Keys(tmp)) {
 		probabilities = append(probabilities, ProductProbabilities{
 			UUID:        uuid,
-			Probability: probability / float64(boosterConfig.BoostersTotalWeight),
+			Probability: tmp[uuid] / float64(boosterConfig.BoostersTotalWeight),
 		})
 	}
 	return probabilities, nil
