@@ -65,7 +65,8 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 	if link == "" {
 		link = cardkingdom.PricelistURL
 	}
-	pricelist, err := cardkingdom.Pricelist(ctx, nil, link)
+	client := mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(ck.printf))
+	pricelist, err := cardkingdom.Pricelist(ctx, client, link)
 	if err != nil {
 		return err
 	}
