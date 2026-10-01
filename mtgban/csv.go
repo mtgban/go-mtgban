@@ -83,7 +83,6 @@ func record2entry(b *mtgmatcher.Backend, record []string) (*InventoryEntry, erro
 	instanceID := ""
 	if len(record) > index {
 		instanceID = record[index]
-		index++
 	}
 
 	return &InventoryEntry{
@@ -273,7 +272,6 @@ func LoadBuylistFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (Buyl
 		vendorName := ""
 		if len(record) > index {
 			vendorName = record[index]
-			index++
 		}
 
 		entry := &BuylistEntry{
