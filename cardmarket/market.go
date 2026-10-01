@@ -7,7 +7,6 @@ import (
 	"maps"
 	"slices"
 	"sort"
-	"strconv"
 	"time"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -782,11 +781,19 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 	// the language this printing is in, so the link beside the price has
 	// to prefer the same one. Bound here, the two cannot drift.
 	language := marketLanguage(co.Language)
-	options := maps.Clone(defaultArticleFilter)
-	options["idLanguage"] = strconv.Itoa(int(language))
+	query := defaultArticleFilter
+	query.Language = language
 	for param, want := range flags {
-		if want {
-			options[param] = "true"
+		if !want {
+			continue
+		}
+		switch param {
+		case "isFoil":
+			query.Foil = cm.Only
+		case "isFirstEd":
+			query.FirstEd = cm.Only
+		case "isReverseHolo":
+			query.ReverseHolo = cm.Only
 		}
 	}
 
@@ -796,7 +803,7 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 	entriesPS := map[mtgban.Condition]responseChan{}
 	mainSatisfiedAt := -1
 	for page := 0; page < marketMaxPages; page++ {
-		articles, total, _, err := mkm.client.Articles(ctx, product.IDProduct, options, page, cm.MaxEntities)
+		articles, total, _, err := mkm.client.Articles(ctx, product.IDProduct, query, page, cm.MaxEntities)
 		if err != nil {
 			if mkm.bounce() {
 				return fmt.Errorf("%w (%d in a row, last: %v)", errTooManyBounces, mkm.bounced, err)
