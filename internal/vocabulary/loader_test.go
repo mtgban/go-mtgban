@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"maps"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
@@ -49,6 +50,72 @@ func TestLoaderContracts(t *testing.T) {
 	}
 	if loaded == 0 {
 		t.Skip("no game datastore is named in this run")
+	}
+}
+
+// TestLoadersRefuse holds every loader but Magic's to refusing a file that is
+// not its game's datastore: a payload outside the envelope, and one missing
+// any of what the loader checks for. Each payload loads as written, so a
+// refusal is its defect's.
+func TestLoadersRefuse(t *testing.T) {
+	const card = `{"id":"a","name":"A","setCode":"S","finish":"Normal"}`
+	flat := func(game mtgmatcher.Game) string {
+		return `{"game":"` + string(game) + `","sets":{"S":{"name":"S"}},"cards":[` + card + `]}`
+	}
+	flatDefects := func(game mtgmatcher.Game) [][2]string {
+		return [][2]string{
+			{`"game":"` + string(game) + `"`, `"game":"magic"`},
+			{`{"S":{"name":"S"}}`, `{}`},
+			{card, ``},
+			{`"id":"a"`, `"id":""`},
+			{`"name":"A"`, `"name":""`},
+			{`"finish":"Normal"`, `"finish":""`},
+		}
+	}
+	lorcanaCard := `{"id":1,"fullName":"A","setCode":"S"}`
+	riftboundCard := `{"id":"a","name":"A","setCode":"S"}`
+	type row struct {
+		payload string
+		defects [][2]string
+	}
+	rows := map[mtgmatcher.Game]row{
+		mtgmatcher.GameLorcana: {
+			`{"sets":{"S":{"name":"S"}},"cards":[` + lorcanaCard + `]}`,
+			[][2]string{{`{"S":{"name":"S"}}`, `{}`}, {lorcanaCard, ``}, {`"id":1`, `"id":0`}, {`"fullName":"A"`, `"fullName":""`}},
+		},
+		mtgmatcher.GameRiftbound: {
+			`{"pageProps":{"page":{"blades":[{"type":"riftboundCardGallery","sets":{"items":[{"id":"S","name":"S"}]},"cards":{"items":[` + riftboundCard + `]}}]}}}`,
+			[][2]string{{`"riftboundCardGallery"`, `"masthead"`}, {`{"id":"S","name":"S"}`, ``}, {riftboundCard, ``}, {`"id":"a"`, `"id":""`}, {`"name":"A"`, `"name":""`}},
+		},
+	}
+	for _, game := range []mtgmatcher.Game{mtgmatcher.GameOnePiece, mtgmatcher.GameYuGiOh, mtgmatcher.GameFleshAndBlood, mtgmatcher.GamePokemon, mtgmatcher.GameGundam, mtgmatcher.GamePalworld} {
+		rows[game] = row{flat(game), flatDefects(game)}
+	}
+	for _, game := range mtgmatcher.AllGames {
+		if game == mtgmatcher.GameMagic {
+			continue
+		}
+		t.Run(string(game), func(t *testing.T) {
+			row, found := rows[game]
+			if !found {
+				t.Fatalf("no payload for %s", game)
+			}
+			_, err := mtgmatcher.Open(game, strings.NewReader(`{"meta":{},"data":`+row.payload+`}`))
+			if err != nil {
+				t.Fatalf("the payload as written is refused: %v", err)
+			}
+			_, err = mtgmatcher.Open(game, strings.NewReader(row.payload))
+			if err == nil {
+				t.Error("a payload outside the envelope loads")
+			}
+			for _, defect := range row.defects {
+				payload := strings.Replace(row.payload, defect[0], defect[1], 1)
+				_, err = mtgmatcher.Open(game, strings.NewReader(`{"meta":{},"data":`+payload+`}`))
+				if err == nil {
+					t.Errorf("loads with %s replaced by [%s]", defect[0], defect[1])
+				}
+			}
+		})
 	}
 }
 

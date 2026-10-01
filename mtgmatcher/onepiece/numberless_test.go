@@ -62,17 +62,3 @@ func TestLoadReadsANumberlessCard(t *testing.T) {
 		})
 	}
 }
-
-// TestLoadStillRefusesAWrongFile: the number was the one optional field. A
-// card with no id, name or finish is still not a One Piece datastore.
-func TestLoadStillRefusesAWrongFile(t *testing.T) {
-	for _, field := range []string{`"id": "719668_foil", `, `"name": "Flame-Flame Fruit Trophy Card", `, `"finish": "Foil", `} {
-		broken := strings.Replace(numberlessFixture, field, "", 1)
-		if broken == numberlessFixture {
-			t.Fatalf("fixture does not carry %s", field)
-		}
-		if _, err := Load(strings.NewReader(broken)); err == nil {
-			t.Errorf("Load accepted a card without %s", strings.TrimSuffix(field, ", "))
-		}
-	}
-}
