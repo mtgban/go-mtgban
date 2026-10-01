@@ -352,22 +352,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
 		for _, finish := range finishes {
-			co := mtgmatcher.CardObject{
-				Card:    convertedCard,
-				Edition: b.Sets[card.SetCode].Name,
-				Foil:    finish == mtgmatcher.FinishFoil,
-			}
-			// co is fresh on every iteration, so the stored pointer is not
-			// aliased by the other finish
-			co.UUID = foilUUIDs[finish]
-			co.Finish = finish
-			b.UUIDs[co.UUID] = &co
-			b.AllUUIDs = append(b.AllUUIDs, co.UUID)
-			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], co.UUID)
-			if qualified := qualifiedName(card); qualified != "" {
-				qn := mtgmatcher.Normalize(qualified)
-				b.Hashes[qn] = append(b.Hashes[qn], co.UUID)
-			}
+			b.AddPrinting(&convertedCard, foilUUIDs[finish], finish, card.Name, qualifiedName(card))
 		}
 	}
 
