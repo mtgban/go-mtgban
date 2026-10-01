@@ -772,13 +772,20 @@ Sealed products are modeled end-to-end:
 - `BoosterGen(set, boosterType)` performs MTGJSON-rule weighted sheet draws
   (`weightedrand`), honoring `BalanceColors` (an approximation citing
   magic-search-engine) and per-sheet `AllowDuplicates`; its single hard-fail
-  is `maxRerollThreshold = 50` ("reroll threshold reached"). The `slc` Secret
-  Lair random-foil ~30% behavior is a hardcoded special case.
+  is `maxRerollThreshold = 50` ("reroll threshold reached").
 - `GetPicksForSealed` recursively expands product contents
-  (card/pack/deck/sealed/variable), and `GetPicksForDeck` does the same for a
-  named deck. `GetDecklist`/`SealedHasDecklist` distinguish fixed-content
-  products, `SealedIsRandom` flags random ones, and `SealedCardUnit` reports
-  how many cards a product yields.
+  (card/pack/deck/sealed/variable), opening the config a variable entry
+  draws with the same code as the product, and `GetPicksForDeck` does the
+  same for a named deck. `GetDecklist`/`SealedHasDecklist` distinguish
+  fixed-content products, `SealedIsRandom` flags random ones, and
+  `SealedCardUnit` reports how many cards a product yields. These and
+  `GetProbabilitiesForSealed` read a product's contents kind by kind in one
+  fixed order (`sealedKinds`), and the Magic data's special cases each have
+  one named place: the Countdown Kit decks' three-in-ten foil roll
+  (`deckFoilTenths`), the sample pack a product may fail to open
+  (`optionalSealed`), the deck tokens the datastore does not hold
+  (`GetPicksForDeck`), and the listing id a Secret Lair foil drop shares
+  (`secretLairFoilID`).
 - `GetProbabilitiesForSealed`, `SealedBoosterProbabilities` and
   `SealedSheetProbabilities` compute exact per-card pull probabilities — the
   inputs to `sealedev`'s EV computation.
