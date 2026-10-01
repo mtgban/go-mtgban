@@ -54,13 +54,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Check IP
         run: echo "Runner IP - $(curl https://api.ipify.org 2> /dev/null)"
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           # Self-hosted's Go module cache is already warm and read-only on
@@ -73,7 +73,7 @@ jobs:
 
       - if: ${{ inputs.datastore-cache-key }}
         name: Cache Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ inputs.datastore-cache-key }}
@@ -81,7 +81,7 @@ jobs:
 
       - if: ${{ inputs.skus-cache-key }}
         name: Cache Skus
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ inputs.skus-cache-key }}
@@ -89,7 +89,7 @@ jobs:
 
       - if: ${{ inputs.mkmids-cache-key }}
         name: Cache Cardmarket id map
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ inputs.mkmids-cache-key }}

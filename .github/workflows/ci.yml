@@ -31,10 +31,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
@@ -125,7 +125,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -166,7 +166,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -203,7 +203,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -240,7 +240,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -277,7 +277,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -314,7 +314,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -351,7 +351,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -393,7 +393,7 @@ jobs:
 
       - name: Cache path
         id: cache_file
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "datastore/"
           key: ${{ steps.get_key.outputs.key }}
@@ -411,15 +411,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Magic Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-datastore.outputs.key }}
@@ -452,15 +452,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Lorcana Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-lorcana.outputs.key }}
@@ -487,15 +487,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Riftbound Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-riftbound.outputs.key }}
@@ -522,15 +522,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Gundam Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-gundam.outputs.key }}
@@ -557,15 +557,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Palworld Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-palworld.outputs.key }}
@@ -592,15 +592,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache One Piece Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-onepiece.outputs.key }}
@@ -627,15 +627,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Yu-Gi-Oh Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-yugioh.outputs.key }}
@@ -662,15 +662,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Flesh and Blood Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-fleshandblood.outputs.key }}
@@ -697,15 +697,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - name: Cache Pokemon Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-pokemon.outputs.key }}
