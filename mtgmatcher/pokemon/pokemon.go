@@ -29,7 +29,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"sort"
 	"strings"
 	"time"
 
@@ -303,6 +302,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		promoTypes := promoTypeSlugs(card)
+		finishes, foilUUIDs := mtgmatcher.SoldFinishes(uuids)
 		convertedCard := mtgmatcher.Card{
 			UUID:    card.ID,
 			Name:    card.Name,
@@ -311,7 +311,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// are registered: a card printed holo-only must not answer a
 			// nonfoil query with its holo, and output() folds a
 			// storefront's unreliable flag onto the class it does sell.
-			Finishes: soldFinishes(group),
+			Finishes: finishes,
 			Number:   card.Number,
 			Images: map[string]string{
 				"full":      card.Image,
@@ -340,9 +340,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 
 		// Each printing under its own finish, so an input naming a treatment
-		// reaches the exact crossing it names; Finishes above lists the
-		// flags alphabetically.
-		_, convertedCard.FoilUUIDs = mtgmatcher.SoldFinishes(uuids)
+		// reaches the exact crossing it names.
+		convertedCard.FoilUUIDs = foilUUIDs
 
 		// Each identifier is guarded on its own. The product id and the
 		// upstream id are separate facts about a printing, and gathering
@@ -394,24 +393,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Complete(NewRules(b))
 
 	return b
-}
-
-// soldFinishes reports the foilness classes a product is actually sold in,
-// so the flag-driven lookup cannot hand back a printing the product does not
-// have. A card sold only as Holofoil is foil and nothing else.
-func soldFinishes(group []*DatastoreCard) []string {
-	var out []string
-	for _, entry := range group {
-		finish := mtgmatcher.FinishNonfoil
-		if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(entry.Finish)) {
-			finish = mtgmatcher.FinishFoil
-		}
-		if !slices.Contains(out, finish) {
-			out = append(out, finish)
-		}
-	}
-	sort.Strings(out)
-	return out
 }
 
 // productKey names the product an entry is a printing of, read off what the
