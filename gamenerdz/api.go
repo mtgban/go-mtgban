@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -116,9 +116,7 @@ type GNClient struct {
 // NewScraper hands down.
 func NewGNClient(productLine string) *GNClient {
 	gn := GNClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	gn.client = client.StandardClient()
+	gn.client = mtgban.NewHTTPClient()
 	gn.productLine = productLine
 	gn.baseURL = baseURL
 	return &gn

@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -32,6 +31,7 @@ type Miniaturemarket struct {
 	productMap    map[string]string
 	backend       *mtgmatcher.Backend
 	widget        string
+	client        *http.Client
 }
 
 // mmGames is what NewScraperSealed is built through, and a game named
@@ -61,6 +61,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
 	mm.maxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
 	mm.backend = b
+	mm.client = mtgban.NewHTTPClient()
 	mm.widget = widget
 	return &mm, nil
 }
@@ -387,7 +388,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 	if err != nil {
 		return err
 	}
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mm.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -439,7 +440,7 @@ func (mm *Miniaturemarket) NumberOfPages(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mm.client.Do(req)
 	if err != nil {
 		return 0, err
 	}

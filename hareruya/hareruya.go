@@ -19,7 +19,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -66,9 +65,7 @@ func NewScraper(b *mtgmatcher.Backend) *Hareruya {
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	ha.maxConcurrency = defaultConcurrency
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	ha.client = client.StandardClient()
+	ha.client = mtgban.NewHTTPClient()
 	return &ha
 }
 

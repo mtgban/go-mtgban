@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -123,9 +122,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
 	sz.maxConcurrency = defaultConcurrency
 	sz.backend = b
 	sz.shelf = shelf
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	sz.client = client.StandardClient()
+	sz.client = mtgban.NewHTTPClient()
 	return &sz, nil
 }
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // Card is one entry of the price list, carrying both sides of the book.
@@ -52,7 +52,7 @@ type MintClient struct {
 // NewMintClient returns a client, failing if the session cannot be opened.
 func NewMintClient(ctx context.Context) (*MintClient, error) {
 	mint := MintClient{}
-	mint.client = cleanhttp.DefaultClient()
+	mint.client = mtgban.NewHTTPClient()
 
 	req, err := http.NewRequestWithContext(ctx, "POST", mintPricelistURL, http.NoBody)
 	if err != nil {

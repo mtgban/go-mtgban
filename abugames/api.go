@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // ABUCard is one card as ABU's catalog describes it.
@@ -97,9 +97,7 @@ type ABUClient struct {
 // NewABUClient returns a client for the public catalog.
 func NewABUClient() *ABUClient {
 	abu := ABUClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	abu.client = client.StandardClient()
+	abu.client = mtgban.NewHTTPClient()
 	return &abu
 }
 

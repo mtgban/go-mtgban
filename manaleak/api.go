@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -84,9 +84,7 @@ type MLClient struct {
 // NewMLClient returns a client for the storefront.
 func NewMLClient() *MLClient {
 	ml := MLClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	ml.client = client.StandardClient()
+	ml.client = mtgban.NewHTTPClient()
 	return &ml
 }
 

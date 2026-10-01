@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
@@ -163,7 +163,7 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 	if err != nil {
 		return nil, err
 	}
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.NewHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

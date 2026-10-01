@@ -14,7 +14,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 // Sealed prices Hareruya's sealed product.
@@ -38,9 +37,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	ha := Sealed{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	ha.client = client.StandardClient()
+	ha.client = mtgban.NewHTTPClient()
 	return &ha
 }
 
