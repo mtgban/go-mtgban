@@ -26,16 +26,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: cmd/ckodds/go.mod
           cache-dependency-path: cmd/ckodds/go.sum
 
       - name: Cache Datastore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: "datastore/"
           key: ${{ needs.cache-datastore.outputs.key }}
