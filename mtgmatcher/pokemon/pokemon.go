@@ -279,8 +279,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// publish, never off the shape of their ids.
 	for _, group := range mtgmatcher.GroupProducts(payload.Cards, (*DatastoreCard).productKey) {
 		printings := map[string]*DatastoreCard{}
+		uuids := map[string]string{}
 		for _, entry := range group {
-			printings[mtgmatcher.FinishSlug(entry.Finish)] = entry
+			finish := mtgmatcher.FinishSlug(entry.Finish)
+			printings[finish] = entry
+			uuids[finish] = entry.ID
 		}
 		// The printing both flag values resolve to. A plain printing is
 		// what a storefront means when it says nothing, so the nonfoil
@@ -336,20 +339,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			SetTotal:    card.Total,
 		}
 
-		// Register the uuid each printing prices under the name the game's
-		// rules give it, beside the flag-driven defaults, so an input
-		// naming a treatment reaches the exact crossing it names.
-		foilUUIDs := map[string]string{}
-		if plain, found := mtgmatcher.DefaultPrinting(printings, false); found {
-			foilUUIDs[mtgmatcher.FinishNonfoil] = plain.ID
-		}
-		if foil, found := mtgmatcher.DefaultPrinting(printings, true); found {
-			foilUUIDs[mtgmatcher.FinishFoil] = foil.ID
-		}
-		for finish, entry := range printings {
-			foilUUIDs[finish] = entry.ID
-		}
-		convertedCard.FoilUUIDs = foilUUIDs
+		// Each printing under its own finish, so an input naming a treatment
+		// reaches the exact crossing it names; Finishes above lists the
+		// flags alphabetically.
+		_, convertedCard.FoilUUIDs = mtgmatcher.SoldFinishes(uuids)
 
 		// Each identifier is guarded on its own. The product id and the
 		// upstream id are separate facts about a printing, and gathering
