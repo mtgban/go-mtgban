@@ -216,27 +216,16 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	// The name-qualifiers the catalog sells a printing under, by uuid, for
+	// the rules to read; see Rules.
+	qualifiers := map[string]string{}
+
 	// Group sibling entries back into their product: a product priced in
 	// several print runs is the same card several times, and the matcher
 	// wants it once, with FoilUUIDs naming the uuid each run prices. Which
 	// entries are one product is read off the identifiers they publish,
 	// never off the shape of their ids.
-	var productOrder []string
-	products := map[string][]*DatastoreCard{}
-	for i := range payload.Cards {
-		card := &payload.Cards[i]
-		key := card.productKey()
-		if _, found := products[key]; !found {
-			productOrder = append(productOrder, key)
-		}
-		products[key] = append(products[key], card)
-	}
-
-	// The name-qualifiers the catalog sells a printing under, by uuid, for
-	// the rules to read; see Rules.
-	qualifiers := map[string]string{}
-	for _, key := range productOrder {
-		group := products[key]
+	for _, group := range mtgmatcher.GroupProducts(payload.Cards, (*DatastoreCard).productKey) {
 		printings := map[string]*DatastoreCard{}
 		for _, entry := range group {
 			printings[mtgmatcher.FinishSlug(entry.Finish)] = entry
