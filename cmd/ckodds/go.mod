@@ -67,7 +67,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/mroth/weightedrand/v2 v2.1.0 // indirect
-	github.com/mtgban/go-cardkingdom v0.1.0 // indirect
+	github.com/mtgban/go-cardkingdom v0.2.0 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.8.2 // indirect
