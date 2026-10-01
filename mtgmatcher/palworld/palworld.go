@@ -171,8 +171,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			ReleaseDateTime: releaseDateTime,
 		}
 	}
-	sort.Strings(b.AllSets)
-	b.IndexSets()
 
 	printingsByName := map[string][]string{}
 	for _, card := range payload.Cards {
@@ -198,10 +196,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 		b.AddName(qualified)
 	}
-	sort.Strings(b.AllPromoTypes)
-	sort.Strings(b.AllNames)
-	sort.Strings(b.AllCanonicalNames)
-	sort.Strings(b.AllLowerNames)
 
 	// Group sibling entries back into their product. No product of this game
 	// is sold both ways today, but the datastore is shaped to carry one, so
@@ -324,11 +318,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	for _, product := range payload.Sealed {
 		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
-	b.SortSealed()
-
-	b.IndexSetUUIDs()
-
-	b.SetRules(Rules{})
+	b.Complete(Rules{})
 
 	return b
 }
