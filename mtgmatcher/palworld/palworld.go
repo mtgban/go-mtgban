@@ -284,8 +284,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	return b
 }
 
-// palworldRarityMap orders the rarities the catalog spells for this game, so
-// a set lists them commonest first. The trial-deck rarities run beside the
+// palworldRarityMap ranks the rarities the catalog spells for this game, and
+// a set lists them highest rank first. The trial-deck rarities run beside the
 // booster ones rather than under them: a deck's cards are its own run.
 var palworldRarityMap = map[string]int{
 	"Trial Deck":                 1,
