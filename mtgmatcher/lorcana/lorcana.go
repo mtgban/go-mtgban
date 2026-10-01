@@ -494,7 +494,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 		var colors []string
 		for _, color := range ogColors {
-			colors = append(colors, strings.ToLower(color))
+			if color != "" {
+				colors = append(colors, strings.ToLower(color))
+			}
 		}
 
 		// A set wholly of promos says so once, rather than every card in it
@@ -663,8 +665,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 
 			for _, color := range card.Colors {
-				if !slices.Contains(colors, lorcanaColorNameMap[color]) {
-					colors = append(colors, lorcanaColorNameMap[color])
+				if !slices.Contains(colors, color) {
+					colors = append(colors, color)
 				}
 			}
 			if len(card.Colors) == 0 && !slices.Contains(colors, "colorless") {
@@ -727,14 +729,6 @@ var lorcanaRarityMap = map[string]int{
 	"enchanted": 7,
 	"iconic":    8,
 	"special":   9,
-}
-
-var lorcanaColorNameMap = map[string]string{
-	"W": "white",
-	"U": "blue",
-	"B": "black",
-	"R": "red",
-	"G": "green",
 }
 
 // cardUUID spells a card's id as the uuid everything downstream addresses
