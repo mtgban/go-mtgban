@@ -3,10 +3,7 @@
 version: 2
 updates:
   - package-ecosystem: gomod
-    # cmd/ckodds is a module of its own, built against this one.
-    directories:
-      - /
-      - /cmd/ckodds
+    directory: /
     schedule:
       interval: weekly
     # A release has a week to be yanked before it is proposed; our own
