@@ -165,10 +165,10 @@ nothing.
 ### 7. Gate, commit, PR
 
 ```bash
-GO125=$(GOTOOLCHAIN=go1.25.0 go env GOROOT)   # go.mod's toolchain, as CI
-go build ./... && go vet ./... && ! "$GO125/bin/gofmt" -s -l . | grep . \
+export GOTOOLCHAIN=$(go mod edit -json | jq -r .Toolchain)   # as CI
+go build ./... && go vet ./... && ! "$(go env GOROOT)/bin/gofmt" -s -l . | grep . \
   && go run github.com/mgechev/revive@v1.13.0 -set_exit_status -config .revive.toml ./... \
-  && GOTOOLCHAIN=go1.25.0 go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./... \
+  && go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./... \
   && go test -count=1 ./...
 ```
 

@@ -2,7 +2,9 @@
 // go-mtgban's; it builds against the go-mtgban it sits in.
 module github.com/mtgban/go-mtgban/cmd/ckodds
 
-go 1.25.0
+go 1.26.0
+
+toolchain go1.26.8
 
 require (
 	github.com/lib/pq v1.10.9
