@@ -113,9 +113,6 @@ go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
 go test ./... -v
 ```
 
-`cmd/ckodds` is a module of its own, which `./...` stops at: run vet, the
-tests, revive and staticcheck inside it too, as CI's style job does.
-
 Run all six before committing. CI (`.github/workflows/ci.yml`) runs every one
 but the build, plus a datastore-free `go test -race ./...` — vet and test
 compile the whole module anyway — and the formatting check is a hard gate:
