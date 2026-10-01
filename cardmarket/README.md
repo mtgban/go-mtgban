@@ -408,7 +408,7 @@ carries it.
   `Sealed` and `Market`, not by `Index`.
 - `BAN_API_KEY` — authenticates the offline pre-filter's snapshot fetch; the
   same key `sealedev`'s own loader uses. Wired unconditionally for every
-  `Market` scraper in `cmd/bantool/scrapers.go`. An unset key never surfaces
+  `Market` scraper in `cardmarket/register.go`. An unset key never surfaces
   at construction, only at `Load` time, and only for Magic, Pokemon and
   YuGiOh (`marketFilterRequired`) — the three whose catalogs don't fit a
   nightly budget unfiltered, so `Load` refuses to run them without it. The
