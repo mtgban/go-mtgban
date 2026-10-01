@@ -105,7 +105,13 @@ func zzEncode(b *mtgmatcher.Backend) []byte {{
 	b.Logger, b.TokenPairIDByUUIDs, b.TokenPairIDByBothNames = nil, nil, nil
 {masks}	b.AllSets = append([]string(nil), b.AllSets...)
 	sort.Strings(b.AllSets)
-	out, err := json.MarshalIndent(b, "", " ")
+	// A map keyed by an array is refused even when nil, so the token pair
+	// maps are shadowed by fields that encode to nothing.
+	out, err := json.MarshalIndent(struct {{
+		*mtgmatcher.Backend
+		TokenPairIDByUUIDs     *struct{{}} `json:",omitempty"`
+		TokenPairIDByBothNames *struct{{}} `json:",omitempty"`
+	}}{{Backend: b}}, "", " ")
 	if err != nil {{
 		panic(err)
 	}}
@@ -117,7 +123,11 @@ func TestZZDump(t *testing.T) {{
 	if dir == "" {{
 		t.Skip()
 	}}
-	for _, d := range []struct{{ name, game, doc string }}{{
+	for _, d := range []struct{{
+		name string
+		game mtgmatcher.Game
+		doc  string
+	}}{{
 {docs}	}} {{
 		b, err := mtgmatcher.Open(d.game, strings.NewReader(d.doc))
 		if err != nil {{
