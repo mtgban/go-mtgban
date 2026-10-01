@@ -9,7 +9,6 @@ Most files here are bantool workflows, one per store a game prices:
 | `run-bantool.yml` | Reusable: runs one store and publishes its dumps (below). |
 | `cache-file.yml` | Reusable: downloads a file (Magic's datastore, TCGplayer SKUs, Cardmarket ids) and caches it for a run. |
 | `ci.yml` | Build, vet, lint and the test suites. |
-| `ckodds.yml` | The Card Kingdom odds the site's tooltips quote, published beside the datastore. |
 | `hostile-review-wake.yml` | Wakes the hostile review on PR activity. |
 
 ## A store's workflow
