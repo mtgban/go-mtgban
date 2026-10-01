@@ -217,27 +217,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			}
 		}
 
-		// Only the finishes a product is actually sold in are registered:
-		// output() folds a storefront's unreliable foil flag onto the sold
-		// finish when there is one, and routes it to the right sibling when
-		// there are two.
-		var finishes []string
-		foilUUIDs := map[string]string{}
-		if entry.normal != nil {
-			finishes = append(finishes, mtgmatcher.FinishNonfoil)
-			foilUUIDs[mtgmatcher.FinishNonfoil] = entry.normal.ID
-		}
-		if entry.foil != nil {
-			finishes = append(finishes, mtgmatcher.FinishFoil)
-			foilUUIDs[mtgmatcher.FinishFoil] = entry.foil.ID
-		}
-		// Beside the flags, each printing under its own name: "holofoil"
 		sold := slices.DeleteFunc([]*DatastoreCard{entry.normal, entry.foil}, func(c *DatastoreCard) bool {
 			return c == nil
 		})
+		printings := map[string]string{}
 		for _, printing := range sold {
-			foilUUIDs[mtgmatcher.FinishSlug(printing.Finish)] = printing.ID
+			printings[mtgmatcher.FinishSlug(printing.Finish)] = printing.ID
 		}
+		finishes, foilUUIDs := mtgmatcher.SoldFinishes(printings)
 
 		convertedCard := mtgmatcher.Card{
 			UUID:     card.ID,

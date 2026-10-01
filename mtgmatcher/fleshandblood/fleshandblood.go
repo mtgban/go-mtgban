@@ -333,8 +333,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// publish, never off the shape of their ids.
 	for _, group := range mtgmatcher.GroupProducts(payload.Cards, (*DatastoreCard).productKey) {
 		printings := map[string]*DatastoreCard{}
+		uuids := map[string]string{}
 		for _, entry := range group {
-			printings[mtgmatcher.FinishSlug(entry.Finish)] = entry
+			finish := mtgmatcher.FinishSlug(entry.Finish)
+			printings[finish] = entry
+			uuids[finish] = entry.ID
 		}
 
 		// The printings the bare nonfoil and foil flags answer with.
@@ -370,24 +373,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(quoted))
 		}
 
-		// Only the foilness classes the product is actually sold in are
-		// registered: output() folds a storefront's unreliable foil flag
-		// onto the sold class, and the finish the input names re-keys onto
-		// the specific printing.
-		var finishes []string
-		foilUUIDs := map[string]string{}
-		if nonfoil != nil {
-			finishes = append(finishes, mtgmatcher.FinishNonfoil)
-			foilUUIDs[mtgmatcher.FinishNonfoil] = nonfoil.ID
-		}
-		if foil != nil {
-			finishes = append(finishes, mtgmatcher.FinishFoil)
-			foilUUIDs[mtgmatcher.FinishFoil] = foil.ID
-		}
-		// Beside the flags, each printing under its own name
-		for finish, entry := range printings {
-			foilUUIDs[finish] = entry.ID
-		}
+		finishes, foilUUIDs := mtgmatcher.SoldFinishes(uuids)
 
 		convertedCard := mtgmatcher.Card{
 			UUID:     card.ID,

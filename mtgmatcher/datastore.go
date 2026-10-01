@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"fmt"
 	"io"
+	"maps"
 	"slices"
 	"sort"
 	"strings"
@@ -98,6 +99,26 @@ func GroupProducts[T any](entries []T, key func(*T) string) [][]*T {
 		products[n] = append(products[n], entry)
 	}
 	return products
+}
+
+// SoldFinishes reads the printings a product is sold as, the uuid of each
+// keyed by its finish (FinishSlug), into the Card fields saying so. finishes
+// are the flags a storefront can raise for it, nonfoil then foil, each only
+// where a printing of that foilness is sold, since output() folds an
+// unreliable flag onto a class the product does sell. foilUUIDs holds every
+// printing's uuid under its own finish, and each flag's under the printing
+// DefaultPrinting answers it with.
+func SoldFinishes(printings map[string]string) (finishes []string, foilUUIDs map[string]string) {
+	foilUUIDs = map[string]string{}
+	for _, flag := range []string{FinishNonfoil, FinishFoil} {
+		uuid, found := DefaultPrinting(printings, flag == FinishFoil)
+		if found {
+			finishes = append(finishes, flag)
+			foilUUIDs[flag] = uuid
+		}
+	}
+	maps.Copy(foilUUIDs, printings)
+	return finishes, foilUUIDs
 }
 
 // SplitColors turns the colour value a Bandai-shaped catalog publishes into
