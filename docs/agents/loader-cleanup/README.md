@@ -38,7 +38,7 @@ A loader's struct lists what the loader reads, not what the builder writes.
   first and check the two runs match: Lorcana's `AllSets` once came out in
   map order.
 - Gate each commit on its own, in a temporary worktree:
-  - build, vet, gofmt (1.25), revive and staticcheck;
+  - build, vet, gofmt (go.mod's toolchain), revive and staticcheck;
   - the affected packages' tests;
   - the dump, diffed against the previous commit's.
 
