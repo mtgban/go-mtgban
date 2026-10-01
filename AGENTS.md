@@ -222,14 +222,14 @@ always been, rather than `-update-magic`. Every other game follows
 `-update-<game>` exactly.
 
 Regenerate only after an *intentional* matching change, and read the
-resulting diff line by line. All seven non-Magic regenerators carry two
-extra safety nets Magic's lacks: they refuse to flip a case between success
-and error (a verdict-class flip fails the test and leaves the golden file
-untouched), and they re-insert their own hand-authored seed cases — each
-package has its own `<game>Seeds`, e.g. `lorcanaSeeds`, `riftboundSeeds` —
-which pin the contract edges the sampled corpus cannot reach. The Magic
-regenerator has neither guard; it silently rewrites the expected uuid of any
-case that now resolves differently and trusts you to read the diff.
+resulting diff line by line. Every regenerator refuses to flip a case
+between success and error: a verdict-class flip fails the test and leaves
+the golden file untouched. The seven non-Magic ones also re-insert their own
+hand-authored seed cases (each package has its own `<game>Seeds`, e.g.
+`lorcanaSeeds`, `riftboundSeeds`), which pin the contract edges the sampled
+corpus cannot reach; Magic's corpus is curated by hand and has none. The
+Magic regenerator still rewrites the expected uuid of any case that now
+resolves to a different card, and trusts you to read that diff.
 
 **The Magic corpus is an invariant, not a scoreboard.** Making the matcher
 game-agnostic was meant to preserve pre-refactor Magic behavior exactly,
