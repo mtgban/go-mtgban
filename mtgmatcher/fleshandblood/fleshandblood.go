@@ -299,6 +299,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		b.Sets[code] = &mtgmatcher.Set{
 			Name:            set.Name,
 			Code:            code,
+			Type:            set.Type,
 			ReleaseDate:     set.ReleaseDate,
 			ReleaseDateTime: releaseDateTime,
 		}
