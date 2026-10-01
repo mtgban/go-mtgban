@@ -73,6 +73,12 @@ jobs:
       - name: Staticcheck
         run: go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
 
+      # The standard library ships with the toolchain, which Dependabot's
+      # go.mod updates do not cover. Not pinned: the verdict follows the
+      # vulnerability database, which moves whichever release reads it.
+      - name: Govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
       # cmd/ckodds is a module of its own, which ./... above stops at.
       - name: cmd/ckodds
         working-directory: cmd/ckodds
@@ -82,6 +88,7 @@ jobs:
           go run github.com/mgechev/revive@v1.13.0 \
             -set_exit_status -config ../../.revive.toml ./...
           go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
+          go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
   cache-datastore:
     uses: ./.github/workflows/cache-file.yml
