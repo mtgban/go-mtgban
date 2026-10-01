@@ -391,8 +391,6 @@ type Backend struct {
 
 	// A list of promo types as exported by mtgjson
 	AllPromoTypes []string
-	// What AddPromoType has filed in AllPromoTypes already.
-	seenPromoTypes map[string]bool
 
 	// Map of a promo type to the words it was made from, for the games that
 	// slug a qualifier the storefront wrote in full ("premiumcardcollection
@@ -562,11 +560,7 @@ func (b *Backend) AddPromoType(slug, label string) {
 	if slug == "" {
 		return
 	}
-	if b.seenPromoTypes == nil {
-		b.seenPromoTypes = map[string]bool{}
-	}
-	if !b.seenPromoTypes[slug] {
-		b.seenPromoTypes[slug] = true
+	if !slices.Contains(b.AllPromoTypes, slug) {
 		b.AllPromoTypes = append(b.AllPromoTypes, slug)
 	}
 	if label != "" && b.PromoTypeLabels[slug] == "" {
