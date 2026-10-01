@@ -6,7 +6,7 @@ toolchain go1.26.8
 
 require (
 	cloud.google.com/go/storage v1.69.0 // indirect
-	github.com/PuerkitoBio/goquery v1.10.3
+	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.7.8
@@ -18,7 +18,7 @@ require (
 
 require (
 	github.com/RomainMichau/cloudscraper_go v0.4.2
-	github.com/montanaflynn/stats v0.7.1
+	github.com/montanaflynn/stats v0.12.7
 	github.com/mroth/weightedrand/v2 v2.1.0
 	github.com/mtgban/go-cardkingdom v0.2.0
 	github.com/mtgban/go-tcgplayer v0.1.3
@@ -40,7 +40,7 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.62.0 // indirect
 	github.com/RomainMichau/CycleTLS/cycletls v1.0.30-compatible // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
-	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/andybalholm/cascadia v1.3.4 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.47.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.33.6 // indirect
