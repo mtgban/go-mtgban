@@ -65,7 +65,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 	if link == "" {
 		link = cardkingdom.PricelistURL
 	}
-	pricelist, _, err := cardkingdom.Pricelist(ctx, nil, link)
+	pricelist, err := cardkingdom.Pricelist(ctx, nil, link)
 	if err != nil {
 		return err
 	}
