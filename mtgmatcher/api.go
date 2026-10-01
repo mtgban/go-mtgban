@@ -894,39 +894,6 @@ func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
 	return false
 }
 
-// SealedCardUnit returns how many cards the product holds in total.
-func (b *Backend) SealedCardUnit(setCode, sealedUUID string) int {
-	var result int
-
-	set, err := b.GetSet(setCode)
-	if err != nil {
-		return 0
-	}
-
-	for _, product := range set.SealedProduct {
-		if sealedUUID != product.UUID {
-			continue
-		}
-
-		for _, kind := range sealedKinds {
-			for _, content := range product.Contents[kind] {
-				switch kind {
-				case "card":
-					result++
-				case "pack",
-					"deck":
-					result += product.CardCount
-				case "sealed":
-					result += b.SealedCardUnit(content.Set, content.UUID) * content.Count
-				case "variable":
-				}
-			}
-		}
-	}
-
-	return result
-}
-
 // SealedHasDecklist reports whether the product contains a fixed deck whose
 // contents are known.
 func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {

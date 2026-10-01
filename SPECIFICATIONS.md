@@ -777,8 +777,7 @@ Sealed products are modeled end-to-end:
   (card/pack/deck/sealed/variable), opening the config a variable entry
   draws with the same code as the product, and `GetPicksForDeck` does the
   same for a named deck. `GetDecklist`/`SealedHasDecklist` distinguish
-  fixed-content products, `SealedIsRandom` flags random ones, and
-  `SealedCardUnit` reports how many cards a product yields. These and
+  fixed-content products, and `SealedIsRandom` flags random ones. These and
   `GetProbabilitiesForSealed` read a product's contents kind by kind in one
   fixed order (`sealedKinds`), and the Magic data's special cases each have
   one named place: the Countdown Kit decks' three-in-ten foil roll
