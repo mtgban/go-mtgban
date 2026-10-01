@@ -610,28 +610,36 @@ func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			continue
 		}
 
-		for i, board := range [][]DeckCard{
+		for _, board := range [][]DeckCard{
 			deck.Commander,
 			deck.DisplayCommander,
 			deck.MainBoard,
 			deck.Planes,
 			deck.Schemes,
 			deck.SideBoard,
-			deck.Tokens,
 		} {
 			for _, card := range board {
 				uuid, err := b.MatchID(card.UUID, card.IsFoil, card.IsEtched)
 				if err != nil {
-					// XXX: Tokens are not fully loaded so don't error out if one is missing
-					if i == 6 {
-						continue
-					}
 					return nil, err
 				}
 
-				for i := 0; i < card.Count; i++ {
+				for range card.Count {
 					picks = append(picks, uuid)
 				}
+			}
+		}
+
+		// The datastore does not hold every token a deck lists, and a token
+		// it lacks is left out rather than failing the deck.
+		for _, card := range deck.Tokens {
+			uuid, err := b.MatchID(card.UUID, card.IsFoil, card.IsEtched)
+			if err != nil {
+				continue
+			}
+
+			for range card.Count {
+				picks = append(picks, uuid)
 			}
 		}
 	}
@@ -655,6 +663,23 @@ func productNamesEtched(name string) bool {
 		}
 	}
 	return false
+}
+
+// optionalSealed reports whether a nested product that cannot be opened is
+// left out of the product holding it rather than failing it: a sample pack
+// barely moves the value and would hide everything else.
+func optionalSealed(name string) bool {
+	return strings.Contains(name, "Sample Pack")
+}
+
+// deckFoilTenths returns how many cards in ten of a deck from the set come
+// foil in an opened copy, a roll mtgjson has no field for: three in ten for
+// the Secret Lair Countdown Kits.
+func deckFoilTenths(deckSet string) int {
+	if deckSet == "slc" {
+		return 3
+	}
+	return 0
 }
 
 // GetDecklist returns the uuids of the fixed decks a sealed product contains,
@@ -751,9 +776,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 					for i := 0; i < content.Count; i++ {
 						sealedPicks, err := b.GetPicksForSealed(content.Set, content.UUID)
 						if err != nil {
-							// Ignore errors from this type of product as it doesn't
-							// change ev much, and hides relevant results
-							if strings.Contains(content.Name, "Sample Pack") {
+							if optionalSealed(content.Name) {
 								continue
 							}
 							return nil, err
@@ -766,12 +789,11 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 						return nil, err
 					}
 
-					// This set data cannot be represented in mtgjson data without
-					// breaking the output format, instead hack things here
-					if content.Set == "slc" {
+					tenths := deckFoilTenths(content.Set)
+					if tenths > 0 {
 						for i := range deckPicks {
 							n := rand.Intn(10)
-							if n < 3 {
+							if n < tenths {
 								uuidFoil, err := b.MatchID(deckPicks[i], true)
 								if err != nil {
 									continue
@@ -868,9 +890,7 @@ func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
 						return true
 					}
 				case "deck":
-					// This set data cannot be represented in mtgjson data without
-					// breaking the output format, instead hack things here
-					if content.Set == "slc" {
+					if deckFoilTenths(content.Set) > 0 {
 						return true
 					}
 				case "variable":
@@ -1065,9 +1085,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 				case "sealed":
 					sealedProbabilities, err := b.GetProbabilitiesForSealed(content.Set, content.UUID)
 					if err != nil {
-						// Ignore errors from this type of product as it doesn't
-						// change ev much, and hides relevant results
-						if strings.Contains(content.Name, "Sample Pack") {
+						if optionalSealed(content.Name) {
 							continue
 						}
 						return nil, err
@@ -1081,13 +1099,12 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 					if err != nil {
 						return nil, err
 					}
+					tenths := deckFoilTenths(content.Set)
 					for _, uuid := range deckPicks {
-						// This set data cannot be represented in mtgjson data without
-						// breaking the output format, instead hack things here
-						if content.Set == "slc" {
+						if tenths > 0 {
 							probNF := ProductProbabilities{
 								UUID:        uuid,
-								Probability: 0.7,
+								Probability: float64(10-tenths) / 10,
 							}
 							probs = append(probs, probNF)
 
@@ -1097,7 +1114,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 							}
 							probF := ProductProbabilities{
 								UUID:        uuidFoil,
-								Probability: 0.3,
+								Probability: float64(tenths) / 10,
 							}
 							probs = append(probs, probF)
 						} else {
@@ -1187,29 +1204,8 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 			continue
 		}
 		id := co.Identifiers[idName]
-
-		// Some products do not carry an id because they are already assigned
-		// For specific cases, look for them since we have the canonical number
-		if id == "" && co.SetCode == "SLD" && strings.HasSuffix(co.Name, " Foil") {
-			name := co.Name
-
-			// This list of tags represents products with separate entries, but
-			// with the same listing. For example, there is no Textured because
-			// there isn't any drop containing non-Textured foil versions of the cards
-			for _, tag := range []string{"Foil", "Rainbow", "Galaxy", "Confetti"} {
-				name = strings.TrimSuffix(name, tag)
-				name = strings.TrimSpace(name)
-
-				uuids, err := b.SearchSealedEquals(name)
-				if err != nil {
-					continue
-				}
-				subco, found := b.UUIDs[uuids[0]]
-				if !found {
-					continue
-				}
-				id = subco.Identifiers[idName]
-			}
+		if id == "" {
+			id = b.secretLairFoilID(co, idName)
 		}
 
 		idNum, err := strconv.Atoi(id)
@@ -1226,6 +1222,37 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 		})
 	}
 	return productMap
+}
+
+// secretLairFoilTags are the words a Secret Lair foil drop adds to the name
+// of the drop whose listing it shares. Textured is absent: no drop sells
+// those cards in another foil.
+var secretLairFoilTags = []string{"Foil", "Rainbow", "Galaxy", "Confetti"}
+
+// secretLairFoilID returns the identifier a Secret Lair foil drop carrying
+// none shares with the drop its name extends, or "" for any other product.
+func (b *Backend) secretLairFoilID(co *CardObject, idName string) string {
+	if co.SetCode != "SLD" || !strings.HasSuffix(co.Name, " Foil") {
+		return ""
+	}
+
+	var id string
+	name := co.Name
+	for _, tag := range secretLairFoilTags {
+		name = strings.TrimSuffix(name, tag)
+		name = strings.TrimSpace(name)
+
+		uuids, err := b.SearchSealedEquals(name)
+		if err != nil {
+			continue
+		}
+		subco, found := b.UUIDs[uuids[0]]
+		if !found {
+			continue
+		}
+		id = subco.Identifiers[idName]
+	}
+	return id
 }
 
 // PromoTypeSlug renders a promo type as the single token that identifies it:
