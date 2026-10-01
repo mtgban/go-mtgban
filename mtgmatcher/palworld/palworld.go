@@ -183,11 +183,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	for _, card := range payload.Cards {
-		n := mtgmatcher.Normalize(card.Name)
-		if b.CanonicalNames[n] == "" {
-			b.CanonicalNames[n] = card.Name
-		}
-		b.AddName(card.Name)
+		b.AddCanonicalName(card.Name)
 		qualified := qualifiedName(&card)
 		if qualified == "" {
 			continue
