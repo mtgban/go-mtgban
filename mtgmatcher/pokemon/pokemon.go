@@ -398,15 +398,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	for code := range b.Sets {
-		var rarities []string
-		for _, card := range b.Sets[code].Cards {
-			if !slices.Contains(rarities, card.Rarity) {
-				rarities = append(rarities, card.Rarity)
-			}
-		}
-		sort.Strings(rarities)
-		b.Sets[code].Rarities = rarities
+	for _, set := range b.Sets {
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, nil)
 	}
 
 	// Sealed products live in the sealed namespace throughout - uuids in

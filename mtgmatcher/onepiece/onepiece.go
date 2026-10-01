@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"sort"
 	"strings"
 	"time"
 
@@ -350,27 +349,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	for code := range b.Sets {
-		var rarities, colors []string
-		for _, card := range b.Sets[code].Cards {
-			if !slices.Contains(rarities, card.Rarity) {
-				rarities = append(rarities, card.Rarity)
-			}
-			for _, color := range card.Colors {
-				if !slices.Contains(colors, color) {
-					colors = append(colors, color)
-				}
-			}
-			if len(card.Colors) > 1 && !slices.Contains(colors, "multicolor") {
-				colors = append(colors, "multicolor")
-			}
-		}
-		sort.Slice(rarities, func(i, j int) bool {
-			return onepieceRarityMap[rarities[i]] > onepieceRarityMap[rarities[j]]
-		})
-		b.Sets[code].Rarities = rarities
-		sort.Strings(colors)
-		b.Sets[code].Colors = colors
+	for _, set := range b.Sets {
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, onepieceRarityMap)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed
