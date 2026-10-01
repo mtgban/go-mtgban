@@ -306,10 +306,15 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 		// A card published with no printing has no uuid to price.
-		finishes := cardFinishes(card)
-		if len(finishes) == 0 {
+		sold := cardFinishes(card)
+		if len(sold) == 0 {
 			continue
 		}
+		printings := map[string]string{}
+		for _, finish := range sold {
+			printings[finish] = printingUUID(card, finish)
+		}
+		finishes, foilUUIDs := mtgmatcher.SoldFinishes(printings)
 
 		var types []string
 		for _, cardType := range card.CardType.Type {
@@ -360,12 +365,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			PlainNumber: Rules{}.PlainNumber(number),
 		}
-		// Register the uuid each finish resolves to, spelling the finish out
-		// in the uuid itself, so output()/Match resolve to them.
-		convertedCard.FoilUUIDs = map[string]string{}
-		for _, finish := range convertedCard.Finishes {
-			convertedCard.FoilUUIDs[finish] = printingUUID(card, finish)
-		}
+		convertedCard.FoilUUIDs = foilUUIDs
 
 		if card.ExternalLinks.TcgPlayerID != 0 {
 			pid := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
@@ -373,16 +373,12 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 				"tcgplayerProductId": pid,
 			}
 			// The product id names the printing, not one of its finishes, so
-			// it points at the plain one where that exists, at the foil when
-			// the card is only sold foil, and at whatever finish it is sold
-			// in when that is a treatment alone. MatchID re-resolves the
-			// finish from the caller's own flag either way.
+			// it points at the one the plain flag answers with, and at the
+			// foil flag's on a card sold in no plain finish. MatchID
+			// re-resolves the finish from the caller's own flag either way.
 			uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]
 			if !found {
-				uuid, found = convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]
-			}
-			if !found && len(convertedCard.Finishes) > 0 {
-				uuid = convertedCard.FoilUUIDs[convertedCard.Finishes[0]]
+				uuid = convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]
 			}
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = uuid
 		}
@@ -392,8 +388,8 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		// One CardObject per finish the printing is actually sold in rather
 		// than both: a card sold in one finish has no uuid for the other,
 		// and reaching for it would file a CardObject under the empty string.
-		for _, finish := range convertedCard.Finishes {
-			b.AddPrinting(&convertedCard, convertedCard.FoilUUIDs[finish], finish, card.Name, productName(card.Name, card.PromoTypes))
+		for _, finish := range sold {
+			b.AddPrinting(&convertedCard, printings[finish], finish, card.Name, productName(card.Name, card.PromoTypes))
 		}
 	}
 
