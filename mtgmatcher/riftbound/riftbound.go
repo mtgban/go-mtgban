@@ -315,6 +315,12 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			printings[finish] = printingUUID(card, finish)
 		}
 		finishes, foilUUIDs := mtgmatcher.SoldFinishes(printings)
+		// The card is the printing the plain flag answers with, and the foil
+		// flag's on a card sold in no plain finish.
+		uuid, found := foilUUIDs[mtgmatcher.FinishNonfoil]
+		if !found {
+			uuid = foilUUIDs[mtgmatcher.FinishFoil]
+		}
 
 		var types []string
 		for _, cardType := range card.CardType.Type {
@@ -329,7 +335,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 		promoTypes := slugPromoTypes(signedPromoTypes(card.PromoTypes, number))
 		convertedCard := mtgmatcher.Card{
-			UUID: card.ID,
+			UUID: uuid,
 
 			Name:     card.Name,
 			SetCode:  setCode,
@@ -373,13 +379,8 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 				"tcgplayerProductId": pid,
 			}
 			// The product id names the printing, not one of its finishes, so
-			// it points at the one the plain flag answers with, and at the
-			// foil flag's on a card sold in no plain finish. MatchID
-			// re-resolves the finish from the caller's own flag either way.
-			uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]
-			if !found {
-				uuid = convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]
-			}
+			// it points at the card's own uuid. MatchID re-resolves the
+			// finish from the caller's own flag either way.
 			b.ExternalIdentifiers[mtgmatcher.IDSpaceTCGplayer][pid] = uuid
 		}
 
