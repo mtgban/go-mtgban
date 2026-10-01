@@ -369,20 +369,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// Each list holds distinct values of its own kind. AllNames holds the
-	// normalized name, and the case-variant pairs below normalize to one
-	// string, so appending once per distinct spelling put that entry in the
-	// list twice; searchFunc adds a matching entry's whole hash bucket, so
-	// a search returned every printing of such a name once per spelling.
 	for _, i := range cards {
 		card := ac.Cards[i]
-		// First-seen wins: two Lorcana cards whose names differ only in case
-		// ("as"/"As") normalize equal, so last-wins would let a query for one
-		// resolve to the other. Keep the first to make the mapping stable.
-		n := mtgmatcher.Normalize(card.FullName)
-		if b.CanonicalNames[n] == "" {
-			b.CanonicalNames[n] = card.FullName
-		}
+		b.AddCanonicalName(card.FullName)
 		// The labels are the builder's, and nothing is worked out from
 		// the fields it read them off. It is the half that can see whether
 		// a varnish belongs to a rarity or to a printing, so a card it
@@ -398,7 +387,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 				b.PromoTypeLabels[slug] = promoTypeLabel(slug)
 			}
 		}
-		b.AddName(card.FullName)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)

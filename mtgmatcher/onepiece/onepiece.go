@@ -194,29 +194,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// Each list holds distinct values of its own kind. Two spellings can
-	// normalize to one string - "Teemo, Scout" and "Teemo - Scout" both
-	// become "teemocout" - and AllNames holds the normalized form, so
-	// appending once per distinct spelling put one entry in twice.
-	// searchFunc adds a matching entry's whole hash bucket, so every card
-	// of that name came back from a search once per spelling.
-	// AllNames holds the normalized name and AllLowerNames the lowercased
-	// one, and either can fold two spellings into one string - the epithets
-	// differ in punctuation and in case. Appending once per distinct
-	// spelling put that entry in twice, and searchFunc adds a matching
-	// entry's whole hash bucket, so a search returned every printing of
-	// such a name once per spelling.
 	for _, card := range payload.Cards {
-		n := mtgmatcher.Normalize(card.Name)
-		if b.CanonicalNames[n] == "" {
-			b.CanonicalNames[n] = card.Name
-		}
-		b.AddName(card.Name)
-		// The qualified spelling is searchable but never canonical: it names
-		// one printing where the bare name names the character, and Match
-		// reads CanonicalNames to decide whether a name needs its
-		// parentheticals split off. Leaving it out of that map keeps the
-		// matcher reading them exactly as it does today.
+		b.AddCanonicalName(card.Name)
 		qualified := qualifiedName(&card)
 		if qualified == "" {
 			continue

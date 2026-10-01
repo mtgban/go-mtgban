@@ -161,15 +161,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	for _, card := range payload.Cards {
-		n := mtgmatcher.Normalize(card.Name)
-		if b.CanonicalNames[n] == "" {
-			b.CanonicalNames[n] = card.Name
-		}
-		b.AddName(card.Name)
-		// The qualified spelling is searchable but never canonical: it names
-		// one printing where the bare name names the suit, and Match reads
-		// CanonicalNames to decide whether a name needs its parentheticals
-		// split off.
+		b.AddCanonicalName(card.Name)
 		qualified := qualifiedName(&card)
 		if qualified == "" {
 			continue

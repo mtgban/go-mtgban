@@ -531,3 +531,20 @@ func (b *Backend) AddName(name string) {
 		b.AllCanonicalNames = append(b.AllCanonicalNames, name)
 	}
 }
+
+// AddCanonicalName files a card's own name: in the search indexes through
+// AddName, and in CanonicalNames as the spelling its normalized form answers
+// with, unless an earlier card's spelling already does. Two names can
+// normalize alike ("As" and "as"), and the first one filed keeps the key.
+//
+// A spelling naming one printing rather than the card, the name with the
+// qualifier a storefront sells it under, goes through AddName alone: it is
+// searchable but never canonical, since Match reads CanonicalNames to decide
+// whether a name keeps its parentheticals.
+func (b *Backend) AddCanonicalName(name string) {
+	n := Normalize(name)
+	if b.CanonicalNames[n] == "" {
+		b.CanonicalNames[n] = name
+	}
+	b.AddName(name)
+}

@@ -284,20 +284,11 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// Load all card names. First-seen wins, mirroring the Lorcana loader.
-	//
-	// AllNames holds the normalized name, and 29 pairs of Riftbound names
-	// normalize to one string - the promos spell an epithet off a dash
-	// where the main sets use a comma, so "Teemo - Scout" and "Teemo,
-	// Scout" both become "teemocout". Appending once per distinct spelling
-	// put that entry in the list twice, and searchFunc adds a matching
-	// entry's whole hash bucket, so a search returned every printing of
-	// such a name once per spelling.
+	// Load all card names. 29 pairs of them normalize to one string - the
+	// promos spell an epithet off a dash where the main sets use a comma,
+	// so "Teemo - Scout" and "Teemo, Scout" both become "teemocout".
 	for _, card := range gallery.Cards.Items {
-		n := mtgmatcher.Normalize(card.Name)
-		if b.CanonicalNames[n] == "" {
-			b.CanonicalNames[n] = card.Name
-		}
+		b.AddCanonicalName(card.Name)
 		number := collectorNumber(card.Number)
 		for _, promoType := range describingPromoTypes(signedPromoTypes(card.PromoTypes, number), number) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
@@ -311,14 +302,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 				b.PromoTypeLabels[slug] = label
 			}
 		}
-		// The catalog's own spelling is searchable but never canonical: it
-		// names one printing where the bare name names the card, and Match
-		// reads CanonicalNames to decide whether a name keeps its
-		// parentheticals.
 		if product := productName(card.Name, card.PromoTypes); product != "" {
 			b.AddName(product)
 		}
-		b.AddName(card.Name)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)

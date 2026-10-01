@@ -261,19 +261,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// The name indexes dedupe through maps rather than slices.Contains:
-	// this datastore carries forty thousand entries. Each list holds
-	// distinct values of its own kind, and two spellings can normalize or
-	// lowercase to one string, so each is deduped on what it actually
-	// holds: searchFunc adds a matching entry's whole hash bucket, and a
-	// key stored twice returns that bucket twice.
+	// The promo types dedupe through a map rather than slices.Contains:
+	// this datastore carries forty thousand entries.
 	seenPromoType := map[string]bool{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
-		n := mtgmatcher.Normalize(card.Name)
-		if b.CanonicalNames[n] == "" {
-			b.CanonicalNames[n] = card.Name
-		}
+		b.AddCanonicalName(card.Name)
 		for _, promoType := range describingPromoTypes(card) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !seenPromoType[slug] {
@@ -289,13 +282,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				b.PromoTypeLabels[slug] = promoTypeLabel(promoType)
 			}
 		}
-		// Searchable but never canonical: the qualified spelling names one
-		// printing where the bare name names the card, and Match reads
-		// CanonicalNames to decide whether a name keeps its parentheticals.
 		if qualified := qualifiedName(card, printingsByName); qualified != "" {
 			b.AddName(qualified)
 		}
-		b.AddName(card.Name)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)
