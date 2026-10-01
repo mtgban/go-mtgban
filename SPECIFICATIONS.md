@@ -1043,7 +1043,9 @@ own — **Check formatting** (`gofmt -s -l .`), **Vet** (`go vet ./...`),
 per-game jobs that each restore their own datastore from cache (§2.7);
 Magic's job runs `go test ./... -v` over the whole tree, and the other eight
 each run a scoped list: their `mtgmatcher/<game>` suite, a few scraper
-packages and `internal/vocabulary`. There are well past a hundred
+packages and `internal/vocabulary`. Nightly, `race-magic` reruns the whole
+tree under `-race` with the Magic datastore, one package at a time, and writes
+each package's coverage to the run's summary. There are well past a hundred
 `bantool-<game>-<store>.yml` files, one per scraper target, such as
 `bantool-lorcana-cardmarket.yml` and `bantool-riftbound-tcg_market.yml`,
 each triggered by cron plus

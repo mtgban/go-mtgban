@@ -433,6 +433,73 @@ jobs:
           xz -dc ${{ needs.cache-datastore.outputs.filepath }} > datastore/allprintings5.json
           go test ./... -v
 
+  # The scrapers fan out over goroutines sharing one backend, and only a run
+  # holding a datastore reaches those paths under the race detector. With
+  # AllPrintings loaded it is over ten times slower, so it runs nightly. It
+  # stays out of mtgban-ci's needs: a push skips it, and mtgban-ci fails a
+  # skipped need.
+  race-magic:
+    needs: cache-datastore
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install golang
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: Cache Magic Datastore
+        uses: actions/cache/restore@v6
+        with:
+          path: "datastore/"
+          key: ${{ needs.cache-datastore.outputs.key }}
+          fail-on-cache-miss: true
+
+      - name: Datastore fingerprint
+        run: |
+          sha256sum ${{ needs.cache-datastore.outputs.filepath }}
+          ls -l datastore/
+
+      # One package at a time: a test binary holding AllPrintings under -race
+      # takes 8 to 11GB, and the runner has 16GB. The default 10m -timeout is
+      # shorter than coolstuffinc, which parses the datastore once per test.
+      - name: Test with the race detector
+        env:
+          ALLPRINTINGS5_PATH: "${{ github.workspace }}/datastore/allprintings5.json"
+        run: |
+          set -o pipefail
+          xz -dc ${{ needs.cache-datastore.outputs.filepath }} > datastore/allprintings5.json
+          go test -race -p 1 -timeout 2h -coverprofile=coverage.out ./... | tee race.out
+
+      # A package's figure counts only what its own tests reach.
+      - name: Coverage summary
+        if: ${{ !cancelled() && hashFiles('coverage.out') != '' }}
+        run: |
+          {
+            echo "| Package | Coverage |"
+            echo "|---|---|"
+            awk -F '\t' '/\tcoverage: / {
+              sub(/^github\.com\/mtgban\/go-mtgban\//, "", $2)
+              sub(/^coverage: /, "", $NF)
+              sub(/ of statements$/, "", $NF)
+              print "| " $2 " | " $NF " |"
+            }' race.out
+            echo
+            go tool cover -func=coverage.out | tail -n 1 | awk '{print "Total: " $NF}'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage profile
+        if: ${{ !cancelled() && hashFiles('coverage.out') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage.out
+
   # The scraper packages listed beside a game's matcher are the ones whose
   # catalogs span several games and keep every game's tests together: only
   # the job holding that game's datastore can run them, and the Magic job

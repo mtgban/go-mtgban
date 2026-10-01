@@ -113,12 +113,12 @@ go run honnef.co/go/tools/cmd/staticcheck@2026.2.1 ./...
 go test ./... -v
 ```
 
-Run all six before committing. CI (`.github/workflows/ci.yml`) runs every one
-but the build, plus a datastore-free `go test -race ./...` — vet and test
-compile the whole module anyway — and the formatting check is a hard gate:
-the job lists the offending files and exits non-zero, so a stray unformatted
-file fails the build rather than merely drawing a review comment. The tree is
-gofmt-clean today; keep it that way.
+Run all six before committing. CI (`.github/workflows/ci.yml`) runs every
+one, plus a datastore-free `go test -race ./...` and, nightly, the whole tree
+under `-race` with the Magic datastore, reporting coverage. The formatting
+check is a hard gate: the job lists the offending files and exits non-zero,
+so a stray unformatted file fails the build rather than merely drawing a
+review comment. The tree is gofmt-clean today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
 in `mtgban/`, in `mtgmatcher/` and every one of its nine `mtgmatcher/<game>`
