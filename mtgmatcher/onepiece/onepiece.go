@@ -206,36 +206,23 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// Group sibling entries back into their product: a dual-printing
 	// product's Normal and Foil entries are the same card twice, and the
 	// matcher wants it once, with FoilUUIDs naming the uuid each finish
-	// prices. The foil sibling's id is the bare id plus "_foil".
-	type product struct {
-		normal *DatastoreCard
-		foil   *DatastoreCard
-	}
-	var productOrder []string
-	products := map[string]*product{}
-	for i := range payload.Cards {
-		card := &payload.Cards[i]
-		key := card.productKey()
-		entry, found := products[key]
+	// prices.
+	for _, group := range mtgmatcher.GroupProducts(payload.Cards, (*DatastoreCard).productKey) {
+		printings := map[string]*DatastoreCard{}
+		uuids := map[string]string{}
+		for _, entry := range group {
+			finish := mtgmatcher.FinishSlug(entry.Finish)
+			printings[finish] = entry
+			uuids[finish] = entry.ID
+		}
+		// The set-level card and the product id follow the plain printing
+		// where one is sold, and the foil where it is not.
+		card, found := mtgmatcher.DefaultPrinting(printings, false)
 		if !found {
-			entry = &product{}
-			products[key] = entry
-			productOrder = append(productOrder, key)
+			card, found = mtgmatcher.DefaultPrinting(printings, true)
 		}
-		// The catalog's own spelling of the finish goes through the game's
-		// vocabulary rather than being compared as written
-		if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(card.Finish)) {
-			entry.foil = card
-		} else {
-			entry.normal = card
-		}
-	}
-
-	for _, key := range productOrder {
-		entry := products[key]
-		card := entry.normal
-		if card == nil {
-			card = entry.foil
+		if !found {
+			card = group[0]
 		}
 		if b.Sets[card.SetCode] == nil {
 			continue
@@ -273,20 +260,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(when))
 		}
 
-		// Only the finishes a product is actually sold in are registered:
-		// output() folds a storefront's unreliable foil flag onto the sold
-		// finish when there is one, and routes it to the right sibling when
-		// there are two.
-		var finishes []string
-		foilUUIDs := map[string]string{}
-		if entry.normal != nil {
-			finishes = append(finishes, mtgmatcher.FinishNonfoil)
-			foilUUIDs[mtgmatcher.FinishNonfoil] = entry.normal.ID
-		}
-		if entry.foil != nil {
-			finishes = append(finishes, mtgmatcher.FinishFoil)
-			foilUUIDs[mtgmatcher.FinishFoil] = entry.foil.ID
-		}
+		finishes, foilUUIDs := mtgmatcher.SoldFinishes(uuids)
 
 		convertedCard := mtgmatcher.Card{
 			UUID:     card.ID,
@@ -344,8 +318,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
-		for _, finish := range finishes {
-			b.AddPrinting(&convertedCard, foilUUIDs[finish], finish, card.Name, qualifiedName(card))
+		for _, entry := range group {
+			b.AddPrinting(&convertedCard, entry.ID, mtgmatcher.FinishSlug(entry.Finish), card.Name, qualifiedName(card))
 		}
 	}
 

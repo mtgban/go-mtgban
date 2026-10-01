@@ -178,33 +178,22 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// product's Normal and Holofoil entries are the same card twice, and the
 	// matcher wants it once, with FoilUUIDs naming the uuid each finish
 	// prices.
-	type product struct {
-		normal *DatastoreCard
-		foil   *DatastoreCard
-	}
-	var productOrder []string
-	products := map[string]*product{}
-	for i := range payload.Cards {
-		card := &payload.Cards[i]
-		key := card.productKey()
-		entry, found := products[key]
+	for _, group := range mtgmatcher.GroupProducts(payload.Cards, (*DatastoreCard).productKey) {
+		printings := map[string]*DatastoreCard{}
+		uuids := map[string]string{}
+		for _, entry := range group {
+			finish := mtgmatcher.FinishSlug(entry.Finish)
+			printings[finish] = entry
+			uuids[finish] = entry.ID
+		}
+		// The set-level card and the product id follow the plain printing
+		// where one is sold, and the foil where it is not.
+		card, found := mtgmatcher.DefaultPrinting(printings, false)
 		if !found {
-			entry = &product{}
-			products[key] = entry
-			productOrder = append(productOrder, key)
+			card, found = mtgmatcher.DefaultPrinting(printings, true)
 		}
-		if mtgmatcher.IsFoilFinish(mtgmatcher.FinishSlug(card.Finish)) {
-			entry.foil = card
-		} else {
-			entry.normal = card
-		}
-	}
-
-	for _, key := range productOrder {
-		entry := products[key]
-		card := entry.normal
-		if card == nil {
-			card = entry.foil
+		if !found {
+			card = group[0]
 		}
 		if b.Sets[card.SetCode] == nil {
 			continue
@@ -217,14 +206,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			}
 		}
 
-		sold := slices.DeleteFunc([]*DatastoreCard{entry.normal, entry.foil}, func(c *DatastoreCard) bool {
-			return c == nil
-		})
-		printings := map[string]string{}
-		for _, printing := range sold {
-			printings[mtgmatcher.FinishSlug(printing.Finish)] = printing.ID
-		}
-		finishes, foilUUIDs := mtgmatcher.SoldFinishes(printings)
+		finishes, foilUUIDs := mtgmatcher.SoldFinishes(uuids)
 
 		convertedCard := mtgmatcher.Card{
 			UUID:     card.ID,
@@ -266,8 +248,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
-		for _, printing := range sold {
-			b.AddPrinting(&convertedCard, printing.ID, mtgmatcher.FinishSlug(printing.Finish), card.Name, qualifiedName(card))
+		for _, entry := range group {
+			b.AddPrinting(&convertedCard, entry.ID, mtgmatcher.FinishSlug(entry.Finish), card.Name, qualifiedName(card))
 		}
 	}
 
