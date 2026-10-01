@@ -317,22 +317,11 @@ func (ac *AllCards) adoptPrintings() {
 }
 
 func (ac *AllCards) newBackend() *mtgmatcher.Backend {
-	var b mtgmatcher.Backend
-
-	b.UUIDs = map[string]*mtgmatcher.CardObject{}
-	b.Hashes = map[string][]string{}
-	b.PromoTypeLabels = map[string]string{}
-	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[mtgmatcher.IDSpace]map[string]string{
-		mtgmatcher.IDSpaceTCGplayer:  {},
-		mtgmatcher.IDSpaceCardmarket: {},
-	}
-	b.SetSealedUUIDs = map[string][]string{}
+	b := mtgmatcher.NewBackend(mtgmatcher.IDSpaceTCGplayer, mtgmatcher.IDSpaceCardmarket)
 
 	cards := ac.englishCards()
 
 	// Load all sets first
-	b.Sets = map[string]*mtgmatcher.Set{}
 	for code, set := range ac.Sets {
 		b.AllSets = append(b.AllSets, code)
 
@@ -775,7 +764,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 	b.SetRules(Rules{treatments: ac.treatments})
 
-	return &b
+	return b
 }
 
 // lorcanaRarityMap ranks the rarities so a set can list them in a stable

@@ -244,8 +244,6 @@ func describingPromoTypes(promoTypes []string, number string) []string {
 }
 
 func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
-	var b mtgmatcher.Backend
-
 	// Keep the semantic name of the Vendetta T04 recruit stable when the
 	// gallery omits its faction qualifier. The same card is named Recruit
 	// (NX) in Origins, and callers use that qualifier to distinguish it from
@@ -255,15 +253,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		gallery.Cards.Items[i].Name = canonicalGalleryName(gallery.Cards.Items[i])
 	}
 
-	b.UUIDs = map[string]*mtgmatcher.CardObject{}
-	b.Hashes = map[string][]string{}
-	b.PromoTypeLabels = map[string]string{}
-	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[mtgmatcher.IDSpace]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
-	b.SetSealedUUIDs = map[string][]string{}
+	b := mtgmatcher.NewBackend(mtgmatcher.IDSpaceTCGplayer)
 
 	// Load all sets first
-	b.Sets = map[string]*mtgmatcher.Set{}
 	for _, set := range gallery.Sets.Items {
 		b.AllSets = append(b.AllSets, set.ID)
 		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
@@ -498,7 +490,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 	b.SetRules(Rules{})
 
-	return &b
+	return b
 }
 
 func canonicalGalleryName(card GalleryCard) string {
