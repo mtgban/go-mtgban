@@ -348,13 +348,15 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	}
 }
 
-// editionAliases maps a storefront's shelf spelling onto the set name the
-// datastore files it under, keyed by the normalized input. Only spellings
-// canonicalEdition's word-for-word scoring cannot resolve belong here.
+// editionAliases maps a storefront's shelf spelling onto the code of the set
+// the datastore files it under, keyed by the normalized input; the set's
+// name is read off the datastore, since TCGplayer renames sets and keeps
+// their codes. Only spellings canonicalEdition's word-for-word scoring
+// cannot resolve belong here.
 var editionAliases = map[string]string{
 	// Cool Stuff Inc drops the space in "Gear 5", so canonicalEdition never
 	// scores this far enough to read the leading ST21 code.
-	"st21starterdeckgear5": "Starter Deck EX: Gear 5",
+	"st21starterdeckgear5": "ST-21",
 }
 
 // AliasEdition spells an edition string toward a set name using the string
@@ -362,8 +364,10 @@ var editionAliases = map[string]string{
 func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
 	edition = strings.TrimSpace(edition)
 	norm := mtgmatcher.Normalize(edition)
-	if alias, found := editionAliases[norm]; found {
-		return alias
+	if code, found := editionAliases[norm]; found {
+		if set, err := b.GetSet(code); err == nil {
+			return set.Name
+		}
 	}
 	for _, prefix := range []string{"One Piece Card Game", "One Piece TCG", "One Piece"} {
 		if strings.HasPrefix(edition, prefix) {
@@ -423,7 +427,9 @@ func eventSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, base str
 			continue
 		}
 		marker := strings.ReplaceAll(strings.ToLower(set.Name), strings.ToLower(base), " ")
-		slug := mtgmatcher.PromoTypeSlug(marker)
+		// "(Super Pre-Release Edition)": the edition is the catalog's word
+		// for the run, which no listing writes.
+		slug := strings.TrimSuffix(mtgmatcher.PromoTypeSlug(marker), "edition")
 		if slug == "" || !mtgmatcher.SlugDescribes(inCard.Variation, slug) {
 			continue
 		}
