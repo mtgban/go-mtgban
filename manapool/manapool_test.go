@@ -130,10 +130,10 @@ func TestPriceRefusesUnresolvedTokenPairing(t *testing.T) {
 	// alone.
 	single, err := b.MatchID(card.ScryfallID, false, false)
 	if err != nil {
-		t.Skip("Human TELD #2 not present in this datastore")
+		t.Fatal("Human TELD #2 not present in this datastore")
 	}
 	if co, _ := b.GetUUID(single); co == nil || co.Name != "Human" {
-		t.Skip("scryfall_id 94057dc6... no longer names a bare Human face in this datastore")
+		t.Fatal("scryfall_id 94057dc6... no longer names a bare Human face in this datastore")
 	}
 
 	mp := NewScraper(b)
@@ -186,7 +186,7 @@ func TestPriceResolvesNativeCombinedPrinting(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Skip("Bounty: The Outsider // Wanted! TOTC #36 not present in this datastore")
+		t.Fatal("Bounty: The Outsider // Wanted! TOTC #36 not present in this datastore")
 	}
 }
 

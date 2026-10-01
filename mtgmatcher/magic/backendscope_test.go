@@ -49,7 +49,7 @@ func TestHelpersReadTheGivenBackend(t *testing.T) {
 		}
 	}
 	if name == "" {
-		t.Skip("no uniquely printed SLU card in this datastore")
+		t.Fatal("no uniquely printed SLU card in this datastore")
 	}
 
 	// The wording says Secret Lair; which drop it belongs to is what the
@@ -93,7 +93,7 @@ func TestPromoTagFuncsReadTheGivenBackend(t *testing.T) {
 		}
 	}
 	if name == "" {
-		t.Skip("no galaxy foil printing in this datastore")
+		t.Fatal("no galaxy foil printing in this datastore")
 	}
 
 	inCard := &mtgmatcher.InputCard{Name: name, Edition: "Secret Lair Drop", Foil: true}

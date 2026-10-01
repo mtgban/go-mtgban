@@ -29,7 +29,7 @@ func TestResolveProductEtchedByID(t *testing.T) {
 		}
 	}
 	if etchedUUID == "" {
-		t.Skip("no etched printing carries a TCGplayer id")
+		t.Fatal("no etched printing carries a TCGplayer id")
 	}
 	co, _ := b.GetUUID(etchedUUID)
 

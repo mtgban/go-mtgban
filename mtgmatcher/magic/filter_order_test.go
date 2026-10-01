@@ -14,7 +14,7 @@ import (
 func TestFilterCardsOrderIsStable(t *testing.T) {
 	realDatastore(t)
 	if len(testBackend.GetUUIDs()) == 0 {
-		t.Skip("mtgmatcher datastore not loaded")
+		t.Fatal("mtgmatcher datastore not loaded")
 	}
 
 	for _, name := range []string{"City of Brass", "Llanowar Elves", "Wasteland"} {

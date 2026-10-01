@@ -215,7 +215,7 @@ func TestResolveProductTCGPlayerID(t *testing.T) {
 		}
 	}
 	if tcgID == "" {
-		t.Skip("no tcgplayerProductId in datastore")
+		t.Fatal("no tcgplayerProductId in datastore")
 	}
 
 	got, err := resolveProduct(b, GameMagic, CatalogProduct{

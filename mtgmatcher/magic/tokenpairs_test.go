@@ -32,7 +32,7 @@ func TestDerivedTokenPairsDoNotTouchTheNameIndex(t *testing.T) {
 
 	derived := derivedUUIDs(testBackend)
 	if len(derived) == 0 {
-		t.Skip("no derived token pairs in this datastore")
+		t.Fatal("no derived token pairs in this datastore")
 	}
 
 	allUUIDs := make(map[string]bool, len(testBackend.AllUUIDs))
@@ -144,7 +144,7 @@ func TestDerivedTokenPairExclusions(t *testing.T) {
 	// steal it.
 	uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, "94180")
 	if uuid == "" {
-		t.Skip("94180 not present in this datastore")
+		t.Fatal("94180 not present in this datastore")
 	}
 	co, err := testBackend.GetUUID(uuid)
 	if err != nil {
@@ -190,7 +190,7 @@ func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 	} {
 		uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
 		if uuid == "" {
-			t.Skip("AFR dungeon pairing not present in this datastore, cannot verify")
+			t.Fatal("AFR dungeon pairing not present in this datastore, cannot verify")
 		}
 		co, err := testBackend.GetUUID(uuid)
 		if err != nil {
@@ -222,7 +222,7 @@ func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 	} {
 		uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, probe.tcgID)
 		if uuid == "" {
-			t.Skip("AFR dungeon pairing not present in this datastore, cannot verify")
+			t.Fatal("AFR dungeon pairing not present in this datastore, cannot verify")
 		}
 		co, err := testBackend.GetUUID(uuid)
 		if err != nil {
@@ -258,7 +258,7 @@ func TestDerivedTokenPairsAreNotNameMatchable(t *testing.T) {
 	// this test proves), so existence there can't gate the skip; check the
 	// pairing is actually derived by asking for it by its own product id.
 	if uuid := testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, "278823"); uuid == "" {
-		t.Skip("Eldrazi Scion // Boar (id 278823) not derived in this datastore")
+		t.Fatal("Eldrazi Scion // Boar (id 278823) not derived in this datastore")
 	}
 
 	_, err := testBackend.Match(&mtgmatcher.InputCard{
@@ -349,7 +349,7 @@ func TestMatchTokenPairingAnchorsEitherHalf(t *testing.T) {
 	const scryfallID = "29c4e4f2-0040-4490-b357-660d729ad9cc"
 	const wantUUID = "7a13db1f-523c-5b19-80e5-d4d6f0121c6b_tp_7e5dc858-2163-5de0-95cb-f0e2933a7f7f"
 	if testBackend.ConvertID(mtgmatcher.IDSpaceScryfall, scryfallID) == "" {
-		t.Skip("Cat (C17) scryfallId not present in this datastore")
+		t.Fatal("Cat (C17) scryfallId not present in this datastore")
 	}
 
 	tcgID := MatchTokenPairing(testBackend, scryfallID, "Cat Token - Cat Warrior Token", false)
@@ -376,7 +376,7 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 
 	const wantTCGID = "244277"
 	if testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, wantTCGID) == "" {
-		t.Skip("Illusion // Skeleton (id 244277) not derived in this datastore")
+		t.Fatal("Illusion // Skeleton (id 244277) not derived in this datastore")
 	}
 
 	tcgID := MatchTokenPairingBySetNumber(testBackend, "TAFC", "3", "Illusion Token // Skeleton Token", false)
@@ -406,7 +406,7 @@ func TestMatchTokenPairingBySetNumberFindsContestedName(t *testing.T) {
 
 	const wantTCGID = "173808"
 	if testBackend.ConvertID(mtgmatcher.IDSpaceTCGplayer, wantTCGID) == "" {
-		t.Skip("Shapeshifter // Zombie (id 173808) not derived in this datastore")
+		t.Fatal("Shapeshifter // Zombie (id 173808) not derived in this datastore")
 	}
 
 	if cards := testBackend.MatchInSetNumber("Shapeshifter", "TC18", "2"); len(cards) != 0 {
@@ -438,7 +438,7 @@ func TestTokenPairIndexCollision(t *testing.T) {
 	bearScryfallID := "b0f09f9e-e0f9-4ed8-bfc0-5f1a3046106e"
 	bearUUID := testBackend.ConvertID(mtgmatcher.IDSpaceScryfall, bearScryfallID)
 	if bearUUID == "" {
-		t.Skip("Bear (TELD) scryfallId not present in this datastore")
+		t.Fatal("Bear (TELD) scryfallId not present in this datastore")
 	}
 
 	if id, found := testBackend.TokenPairIndex[bearUUID]["food"]; found {
@@ -468,7 +468,7 @@ func TestMatchTokenPairingRequiresBothFacesInRequestedFinish(t *testing.T) {
 
 	boarScryfallID := "8ef6aca1-2e66-48fa-a446-6ec052b1e596"
 	if testBackend.ConvertID(mtgmatcher.IDSpaceScryfall, boarScryfallID) == "" {
-		t.Skip("Boar (TKHM) scryfallId not present in this datastore")
+		t.Fatal("Boar (TKHM) scryfallId not present in this datastore")
 	}
 
 	if id := MatchTokenPairing(testBackend, boarScryfallID, "Boar Token // Spirit Token", true); id != "" {
@@ -510,7 +510,7 @@ func TestMatchNativeTokenPair(t *testing.T) {
 	realDatastore(t)
 
 	if len(testBackend.MatchInSetNumber("Copy // Horror", "TGK1", "1")) != 1 {
-		t.Skip("Copy // Horror not present at TGK1 #1 in this datastore")
+		t.Fatal("Copy // Horror not present at TGK1 #1 in this datastore")
 	}
 
 	for _, listing := range []string{
@@ -594,7 +594,7 @@ func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 	germ := testBackend.MatchInSetNumber("Germ", "TC16", "10")
 	spirit := testBackend.MatchInSetNumber("Spirit", "TC16", "6")
 	if len(germ) != 1 || len(spirit) != 1 {
-		t.Skip("Germ/Spirit TC16 #10/#6 not present in this datastore")
+		t.Fatal("Germ/Spirit TC16 #10/#6 not present in this datastore")
 	}
 
 	id := MatchTokenPairingByUUIDs(testBackend, germ[0].UUID, spirit[0].UUID, false)
@@ -625,7 +625,7 @@ func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
 	dinosaur := testBackend.MatchInSetNumber("Dinosaur", "TLCC", "10")
 	gnome := testBackend.MatchInSetNumber("Gnome", "TLCI", "16")
 	if len(dinosaur) != 1 || len(gnome) != 1 {
-		t.Skip("Dinosaur TLCC #10 / Gnome TLCI #16 not present in this datastore")
+		t.Fatal("Dinosaur TLCC #10 / Gnome TLCI #16 not present in this datastore")
 	}
 
 	id := MatchTokenPairingByUUIDs(testBackend, dinosaur[0].UUID, gnome[0].UUID, false)

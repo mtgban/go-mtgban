@@ -105,6 +105,6 @@ func TestEtchedProductKeepsItsFoils(t *testing.T) {
 		}
 	}
 	if checked == 0 {
-		t.Skip("no etched product lists a foil card")
+		t.Fatal("no etched product lists a foil card")
 	}
 }
