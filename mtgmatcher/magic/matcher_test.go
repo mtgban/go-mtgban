@@ -105,7 +105,7 @@ func runMatch(b *mtgmatcher.Backend, test MatchTest) (string, error) {
 
 func TestMatch(t *testing.T) {
 	realDatastore(t)
-	var shouldUpdateTests bool
+	var shouldUpdateTests, flipped bool
 
 	for i, probe := range matchTests {
 		test := probe
@@ -117,6 +117,13 @@ func TestMatch(t *testing.T) {
 			cardID, err := runMatch(testBackend, test)
 			if err != nil {
 				if test.Err == "" {
+					// A case that now errors has no uuid to bake; flipping
+					// one between success and error is edited by hand.
+					if *UpdateTests && cardID == "" {
+						t.Errorf("refusing to flip %q to an error: %v", test.Desc, err)
+						flipped = true
+						return
+					}
 					if *UpdateTests {
 						t.Logf("NOTE: Updating test result from '%s' to '%s'", test.ID, cardID)
 						matchTests[i].ID = cardID
@@ -137,6 +144,9 @@ func TestMatch(t *testing.T) {
 		})
 	}
 
+	if flipped {
+		t.Fatal("verdict-class flips detected; golden file left untouched")
+	}
 	if shouldUpdateTests {
 		fileWriter, err := os.Create(testDataFile)
 		if err != nil {
