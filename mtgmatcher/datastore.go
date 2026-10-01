@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 )
 
@@ -44,6 +45,22 @@ func NewBackend(spaces ...IDSpace) *Backend {
 		b.ExternalIdentifiers[space] = map[string]string{}
 	}
 	return b
+}
+
+// Complete readies a Backend a datastore loader has filled with every set,
+// card and sealed product: AllSets and the name, promo type and sealed lists
+// are put in order, NormalizedSets and SetUUIDs are built, and the game's
+// rules are attached, last because SetRules reads every printing's finishes.
+func (b *Backend) Complete(rules GameRules) {
+	sort.Strings(b.AllSets)
+	b.IndexSets()
+	sort.Strings(b.AllNames)
+	sort.Strings(b.AllCanonicalNames)
+	sort.Strings(b.AllLowerNames)
+	sort.Strings(b.AllPromoTypes)
+	b.SortSealed()
+	b.IndexSetUUIDs()
+	b.SetRules(rules)
 }
 
 // ProductKeyOf names the product a stored card is a printing of: the

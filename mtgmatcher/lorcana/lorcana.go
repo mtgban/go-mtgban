@@ -335,8 +335,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			BaseSetSize:     set.BaseSetSize,
 		}
 	}
-	sort.Strings(b.AllSets)
-	b.IndexSets()
 
 	// Which printings are promotional, which no single field says. Upstream
 	// stopped publishing nonPromoId, the back-pointer this used to read, and
@@ -383,10 +381,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			b.AddPromoType(slug, promoTypeLabel(slug))
 		}
 	}
-	sort.Strings(b.AllPromoTypes)
-	sort.Strings(b.AllNames)
-	sort.Strings(b.AllCanonicalNames)
-	sort.Strings(b.AllLowerNames)
 
 	// A product id two different cards both claim names neither of them, so
 	// it goes unregistered and a caller sending it falls back to the name it
@@ -700,7 +694,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	// BuildSealedProductMap rather than entering the external identifier
 	// index, mirroring how Magic and Riftbound keep sealed products out
 	// of MatchID's reach.
-	var mintedSets bool
 	// Sealed products live in the sealed namespace throughout; AddSealed
 	// is what files them there.
 	for _, product := range ac.Sealed {
@@ -708,7 +701,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// from, so an unknown code is a hand-made file; give the product
 		// a set to hang off all the same, or AddSealed would drop it.
 		if b.Sets[product.SetCode] == nil {
-			mintedSets = true
 			b.AllSets = append(b.AllSets, product.SetCode)
 			releaseDateTime, _ := time.Parse("2006-01-02", product.ReleaseDate)
 			b.Sets[product.SetCode] = &mtgmatcher.Set{
@@ -720,15 +712,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
-	b.SortSealed()
-	if mintedSets {
-		sort.Strings(b.AllSets)
-		b.IndexSets()
-	}
 
-	b.IndexSetUUIDs()
-
-	b.SetRules(Rules{treatments: ac.treatments})
+	b.Complete(Rules{treatments: ac.treatments})
 
 	return b
 }

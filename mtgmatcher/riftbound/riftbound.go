@@ -268,8 +268,6 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			ReleaseDateTime: releaseDateTime,
 		}
 	}
-	sort.Strings(b.AllSets)
-	b.IndexSets()
 
 	// Gather the full reprint list for each name (keyed by normalized name),
 	// in first-appearance order. Every card of a name carries the same
@@ -301,10 +299,6 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			b.AddName(product)
 		}
 	}
-	sort.Strings(b.AllPromoTypes)
-	sort.Strings(b.AllNames)
-	sort.Strings(b.AllCanonicalNames)
-	sort.Strings(b.AllLowerNames)
 
 	// Load all cards and store them in their relative sets
 	for _, card := range gallery.Cards.Items {
@@ -440,11 +434,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	for _, product := range gallery.Sealed.Items {
 		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
-	b.SortSealed()
-
-	b.IndexSetUUIDs()
-
-	b.SetRules(Rules{})
+	b.Complete(Rules{})
 
 	return b
 }
