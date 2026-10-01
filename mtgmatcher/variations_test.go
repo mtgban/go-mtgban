@@ -43,7 +43,7 @@ func TestMatchIDOverAbsentVariations(t *testing.T) {
 	}
 
 	if withAbsent == 0 {
-		t.Skip("no card in this datastore lists an absent variation")
+		t.Fatal("no card in this datastore lists an absent variation")
 	}
 	t.Logf("exercised %d cards listing an absent variation, %d finish requests unmatched", withAbsent, unmatched)
 }

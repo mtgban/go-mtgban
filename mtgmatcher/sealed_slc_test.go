@@ -15,14 +15,14 @@ func slcProduct(t *testing.T) (*mtgmatcher.Backend, string) {
 	b := testBackend
 	set, err := b.GetSet("SLC")
 	if err != nil {
-		t.Skip("no SLC in this datastore:", err)
+		t.Fatal("no SLC in this datastore:", err)
 	}
 	for _, product := range set.SealedProduct {
 		if b.SealedHasDecklist("SLC", product.UUID) {
 			return b, product.UUID
 		}
 	}
-	t.Skip("no SLC product with a decklist")
+	t.Fatal("no SLC product with a decklist")
 	return nil, ""
 }
 
