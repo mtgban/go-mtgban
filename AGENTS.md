@@ -70,9 +70,10 @@ touch does (#716).
 mtgban/                    interfaces (Scraper/Seller/Vendor), records,
                            Arbit/Mismatch, CSV I/O, WorkerPool
 mtgmatcher/                game-agnostic core: Backend, b.Match/b.MatchID,
-                           the GameRules seam, the game registry, the
-                           search API, and the Magic replay suite
-mtgmatcher/magic/          Magic rules, MTGJSON loader, promo/frame vocabulary
+                           the GameRules seam, the game registry, and the
+                           search API
+mtgmatcher/magic/          Magic rules, MTGJSON loader, promo/frame vocabulary,
+                           replay corpus
 mtgmatcher/lorcana/        Lorcana rules, loader, replay corpus
 mtgmatcher/riftbound/      Riftbound rules, loader, replay corpus
 mtgmatcher/fleshandblood/  Flesh and Blood rules, loader, replay corpus
@@ -96,10 +97,10 @@ language filtering after the final game hook.
 The dependency runs one way: a game package imports core `mtgmatcher`, and no
 non-test file in core imports a game package. That one-directional rule is
 what keeps the core game-agnostic, and it is worth remembering before reaching
-for a Magic symbol from core — the import would cycle. The Magic replay suite
-gets away with importing `magic` only because it is an external test package
-(`package mtgmatcher_test`), which is outside the import graph of the library
-itself.
+for a Magic symbol from core, since the import would cycle. Core's own tests
+get away with importing `magic`, to load the Magic datastore, only because
+they are an external test package (`package mtgmatcher_test`), which is
+outside the import graph of the library itself.
 
 ## Build, test, format
 
@@ -112,6 +113,9 @@ go run honnef.co/go/tools/cmd/staticcheck@2025.1.1 ./...
 go test ./... -v
 ```
 
+`cmd/ckodds` is a module of its own, which `./...` stops at: run vet, the
+tests, revive and staticcheck inside it too, as CI's style job does.
+
 Run all six before committing. CI (`.github/workflows/ci.yml`) runs every one
 but the build, plus a datastore-free `go test -race ./...` — vet and test
 compile the whole module anyway — and the formatting check is a hard gate:
@@ -121,14 +125,11 @@ gofmt-clean today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
 in `mtgban/`, in `mtgmatcher/` and every one of its nine `mtgmatcher/<game>`
-sub-packages, and in about a third of the scraper packages (`abugames`,
-`cardkingdom`, `cardmarket`, `cardtrader`, `coolstuffinc`, `gamenerdz`,
-`hareruya`, `starcitygames`, `tcgplayer`, and others — check for a `*_test.go`
-file before assuming a package has none). A subset run can pass while CI
-fails. `mtgmatcher/magic` carries the largest test suite of any package in
-the repo (two dozen `*_test.go` files); the core Magic *replay* suite is a
-separate thing, still living in `mtgmatcher`'s own test package (see "The
-golden suites" below).
+sub-packages, and in 19 of the 24 scraper packages (only `arcanafrisia`,
+`cardsphere`, `mtgstocks`, `secretdeskorrigans` and `toamagic` have none).
+A subset run can pass while CI fails. `mtgmatcher/magic` carries the largest
+test suite of any package in the repo, nearly forty `*_test.go` files with
+the Magic replay suite among them (see "The golden suites" below).
 
 ### Datastores
 
@@ -139,9 +140,10 @@ environment variables:
   `mtgmatcher` suite and `mtgmatcher/magic`, both of which load it through
   `magic.Load`, as well as every scraper suite that needs a real Magic
   datastore to test its `preprocess.go` (abugames, cardkingdom, cardmarket,
-  cardtrader, gamenerdz, hareruya, magiccorner, manapool, mintcard,
-  sealedev, starcitygames, tcgplayer, vegassingles — grep a package for the
-  literal skip message before assuming it is or is not among them). Magic
+  cardtrader, coolstuffinc, gamenerdz, hareruya, magiccorner, manapool,
+  mintcard, sealedev, starcitygames, strikezone, tcgplayer, vegassingles;
+  grep a package's tests for `ALLPRINTINGS5_PATH` rather than for a skip
+  message, which is not worded the same everywhere). Magic
   is the one game whose datastore is not built by `datastore-gen`.
 - `LORCANA_PATH`, `RIFTBOUND_PATH`, `ONEPIECE_PATH`, `YUGIOH_PATH`,
   `FLESHANDBLOOD_PATH`, `POKEMON_PATH`, `GUNDAM_PATH`, and `PALWORLD_PATH` —
@@ -415,12 +417,18 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    `Load`/`Inventory`/`Buylist`/`Info`), `api.go` (client and auth),
    `preprocess.go` (store text → `InputCard` → `b.Match()`), optional
    `sealed.go`.
-2. Embed the common fields (`LogCallback`, `MaxConcurrency`,
-   `DisableRetail`/`DisableBuylist`, inventory/buylist plus timestamps) and
-   keep the `*mtgmatcher.Backend` the constructor was handed in an unexported
-   field — follow `starcitygames` for an API-backed store or `mtgseattle` for
-   an HTML-scraped one.
-3. Fetch with `WorkerPool` plus `retryablehttp` (`LinearJitterBackoff`).
+2. Keep the scraper's state in unexported fields: `logCallback`,
+   `maxConcurrency` where it fans out, inventory/buylist plus timestamps,
+   and the `*mtgmatcher.Backend` the constructor was handed. Follow
+   `starcitygames` for an API-backed store or `mtgseattle` for an
+   HTML-scraped one. The `register.go` constructor (step 4) copies what
+   bantool passes in `mtgban.Options` (`LogCallback`, `Affiliate`,
+   `TargetEdition`, and secrets through `opts.Secret`) onto those fields.
+   A store whose retail and buylist halves can run alone implements
+   `mtgban.ScraperConfig`, whose `SetConfig` receives `DisableRetail` and
+   `DisableBuylist`; the registry refuses to build half of a store that
+   does not.
+3. Fetch with `WorkerPool` plus a `retryablehttp` client.
 4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
    constructor)`: `name` is the bare registry key the store has always
    been known by (`coolstuffinc_sealed`, `starcitygames_sealed`), the same
@@ -520,8 +528,9 @@ that map: it is identified by SKU and has its own scrapers.
   Compare the landed `SetCode` and `Number` with what the probe asked for,
   as `coolstuffinc`'s `pokemonNonHoloDeckExclusive` does.
 - `Normalize()` has deliberate *protection* entries that map a string to
-  itself (`"waste land"`, `"vs"`). Changing the replacer table can silently
-  re-alias unrelated cards; run the full matcher suite after any edit there.
+  itself (`"waste land"`, `"trial and error"`, `"goblin // soldier"`).
+  Changing the replacer table can silently re-alias unrelated cards; run the
+  full matcher suite after any edit there.
 - The insert-time sort invariant matters: `Arbit` assumes `entries[0]` is the
   NM entry, and that ordering is a *side effect* of the sort in `add()`. A
   change to that sort breaks `Arbit` silently. Pin the ordering in
