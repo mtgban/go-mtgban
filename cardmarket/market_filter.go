@@ -10,6 +10,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -211,7 +212,7 @@ func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string) (*ba
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := mtgban.NewHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

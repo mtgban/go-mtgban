@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -42,11 +42,10 @@ type SCGClient struct {
 // NewSCGClient returns a client using the given API key.
 func NewSCGClient(apiKey string) *SCGClient {
 	scg := SCGClient{}
-	cli := retryablehttp.NewClient()
-	cli.Logger = nil
-	cli.RetryMax = 10
-	cli.RetryWaitMin = 2 * time.Second
-	scg.client = cli.StandardClient()
+	scg.client = mtgban.NewHTTPClient(
+		mtgban.WithHTTPRetries(10),
+		mtgban.WithHTTPRetryWait(2*time.Second, 30*time.Second),
+	)
 	scg.apiKey = apiKey
 	scg.catalogURL = scgCatalogURL
 	scg.setsURL = scgSetsURL

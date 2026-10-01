@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -90,9 +90,7 @@ type VSClient struct {
 // NewScraper hands down.
 func NewVSClient(productLine string) *VSClient {
 	vs := VSClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	vs.client = client.StandardClient()
+	vs.client = mtgban.NewHTTPClient()
 	vs.productLine = productLine
 	vs.baseURL = baseURL
 	return &vs

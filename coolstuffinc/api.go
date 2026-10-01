@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -59,11 +59,9 @@ func (t userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error)
 }
 
 func newCSIHTTPClient() *http.Client {
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	standard := client.StandardClient()
-	standard.Transport = userAgentTransport{base: standard.Transport}
-	return standard
+	return mtgban.NewHTTPClient(mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
+		return userAgentTransport{base: rt}
+	}))
 }
 
 // CSIPriceEntry is one card in the buylist feed.

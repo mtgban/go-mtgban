@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // MCEdition is a set as Magic Corner files it for selling.
@@ -82,9 +82,7 @@ type MCClient struct {
 // NewMCClient returns a client.
 func NewMCClient() *MCClient {
 	mc := MCClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	mc.client = client.StandardClient()
+	mc.client = mtgban.NewHTTPClient()
 	return &mc
 }
 

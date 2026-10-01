@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // Product is a single priced item from a manapool price list. It covers every
@@ -68,7 +68,7 @@ func getList(ctx context.Context, link string) ([]Product, error) {
 		return nil, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.NewHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

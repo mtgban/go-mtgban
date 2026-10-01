@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/hashicorp/go-cleanhttp"
 )
 
 // LogCallbackFunc receives a scraper's progress messages. Scrapers log
@@ -36,7 +34,7 @@ func GetExchangeRates(ctx context.Context) (map[string]float64, error) {
 		return nil, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := NewHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

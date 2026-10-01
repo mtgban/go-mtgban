@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
@@ -281,12 +280,10 @@ const (
 // SellerKeyExists reports whether the storefront still serves a page for the
 // seller key.
 func SellerKeyExists(ctx context.Context, sellerKey string) bool {
-	client := cleanhttp.DefaultClient()
-
 	// Do not follow redirects
-	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+	client := mtgban.NewHTTPClient(mtgban.WithHTTPCheckRedirect(func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
-	}
+	}))
 
 	link := "https://shop.tcgplayer.com/sellerfeedback/" + sellerKey
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -543,9 +540,7 @@ type SellerClient struct {
 // NewSellerClient returns a client for the storefront's search API.
 func NewSellerClient() *SellerClient {
 	tcg := SellerClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	tcg.client = client.StandardClient()
+	tcg.client = mtgban.NewHTTPClient()
 	return &tcg
 }
 
@@ -718,24 +713,20 @@ type CookieClient struct {
 // NewCookieClient returns a client acting as the user whose auth cookie is
 // given.
 func NewCookieClient(authKey string) *CookieClient {
-	client := retryablehttp.NewClient()
-	client.Logger = nil
 	tcg := CookieClient{}
 	tcg.cookieLine = "TCGAuthTicket_Production=" + authKey + ";"
-	tcg.client = client.StandardClient()
+	tcg.client = mtgban.NewHTTPClient()
 	return &tcg
 }
 
 // NewCookieSetClient returns a client carrying a whole cookie jar, for the
 // pages that need more than the auth cookie alone.
 func NewCookieSetClient(cookies map[string]string) *CookieClient {
-	client := retryablehttp.NewClient()
-	client.Logger = nil
 	tcg := CookieClient{}
 	for name, value := range cookies {
 		tcg.cookieLine += fmt.Sprintf("%s=%s; ", name, value)
 	}
-	tcg.client = client.StandardClient()
+	tcg.client = mtgban.NewHTTPClient()
 	return &tcg
 }
 

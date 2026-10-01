@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -163,7 +162,7 @@ func loadSYPFrom(ctx context.Context, address string, category int, auth string)
 	}
 	req.Header.Set("Cookie", "TCGAuthTicket_Production="+auth)
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.NewHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -10,8 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/go-retryablehttp"
-
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -416,17 +415,15 @@ type authTransport struct {
 // NewCTAuthClient returns a client authenticated with the given token.
 func NewCTAuthClient(token string) *CTAuthClient {
 	ct := CTAuthClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
 	// A full catalog walk gets rate limited partway through; back off for
 	// longer than the default to wait a 429 out rather than fail on it.
-	client.RetryMax = 10
-	client.RetryWaitMax = 90 * time.Second
-	client.HTTPClient.Transport = &authTransport{
-		Parent: client.HTTPClient.Transport,
-		Token:  token,
-	}
-	ct.client = client.StandardClient()
+	ct.client = mtgban.NewHTTPClient(
+		mtgban.WithHTTPRetries(10),
+		mtgban.WithHTTPRetryWait(time.Second, 90*time.Second),
+		mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
+			return &authTransport{Parent: rt, Token: token}
+		}),
+	)
 	return &ct
 }
 

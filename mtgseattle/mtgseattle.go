@@ -58,16 +58,14 @@ func NewScraper(b *mtgmatcher.Backend) *MTGSeattle {
 	ms.inventory = mtgban.InventoryRecord{}
 	ms.buylist = mtgban.BuylistRecord{}
 	ms.maxConcurrency = defaultConcurrency
-	client := retryablehttp.NewClient()
-	client.Logger = nil
 	// The site appears to throttle rather than reject outright, so
 	// retry slower and longer instead of giving up in seconds.
-	client.Backoff = retryablehttp.RateLimitLinearJitterBackoff
-	client.RetryWaitMin = 2 * time.Second
-	client.RetryWaitMax = 10 * time.Second
-	client.RetryMax = 20
-	client.ErrorHandler = retryErrorHandler
-	ms.client = client.StandardClient()
+	ms.client = mtgban.NewHTTPClient(
+		mtgban.WithHTTPBackoff(retryablehttp.RateLimitLinearJitterBackoff),
+		mtgban.WithHTTPRetryWait(2*time.Second, 10*time.Second),
+		mtgban.WithHTTPRetries(20),
+		mtgban.WithHTTPErrorHandler(retryErrorHandler),
+	)
 	return &ms
 }
 
