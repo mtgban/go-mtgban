@@ -112,25 +112,17 @@ func GetCategoryNames(ctx context.Context, tcg *tcgplayer.Client, category int) 
 }
 
 // EditionMap indexes a category's groups, which is what TCGplayer calls an
-// edition, by their id.
+// edition, by their id. A page answering short, or a group repeated in place
+// of another, fails it rather than leaving the products of a missing
+// edition with nothing to match against.
 func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[int]tcgplayer.Group, error) {
-	totals, err := tcg.TotalGroups(ctx, category)
-	if err != nil {
-		return nil, err
-	}
-
 	results := map[int]tcgplayer.Group{}
-	for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
-		groups, err := tcg.ListAllCategoryGroups(ctx, category, i)
+	for group, err := range tcg.Groups(ctx, category) {
 		if err != nil {
 			return nil, err
 		}
-
-		for _, group := range groups {
-			results[group.GroupID] = group
-		}
+		results[group.GroupID] = group
 	}
-
 	return results, nil
 }
 
