@@ -292,17 +292,8 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 }
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
+	b := mtgmatcher.NewBackend(mtgmatcher.IDSpaceTCGplayer)
 
-	var b mtgmatcher.Backend
-
-	b.UUIDs = map[string]*mtgmatcher.CardObject{}
-	b.Hashes = map[string][]string{}
-	b.PromoTypeLabels = map[string]string{}
-	b.CanonicalNames = map[string]string{}
-	b.ExternalIdentifiers = map[mtgmatcher.IDSpace]map[string]string{mtgmatcher.IDSpaceTCGplayer: {}}
-	b.SetSealedUUIDs = map[string][]string{}
-
-	b.Sets = map[string]*mtgmatcher.Set{}
 	for code, set := range payload.Sets {
 		b.AllSets = append(b.AllSets, code)
 		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
@@ -531,7 +522,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	b.SetRules(Rules{})
 
-	return &b
+	return b
 }
 
 var fleshandbloodRarityMap = map[string]int{

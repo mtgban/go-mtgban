@@ -25,6 +25,27 @@ import (
 // GameLoader builds a Backend from a datastore reader for a particular game.
 type GameLoader func(io.Reader) (*Backend, error)
 
+// NewBackend returns an empty Backend for a datastore game's loader to fill,
+// with every map it and the Add helpers file into made: UUIDs, Hashes,
+// CanonicalNames, PromoTypeLabels, Sets and SetSealedUUIDs. ExternalIdentifiers
+// holds an empty index for each id space given, the ones the game's datastore
+// publishes ids in, and no other.
+func NewBackend(spaces ...IDSpace) *Backend {
+	b := &Backend{
+		UUIDs:               map[string]*CardObject{},
+		Hashes:              map[string][]string{},
+		CanonicalNames:      map[string]string{},
+		PromoTypeLabels:     map[string]string{},
+		Sets:                map[string]*Set{},
+		SetSealedUUIDs:      map[string][]string{},
+		ExternalIdentifiers: map[IDSpace]map[string]string{},
+	}
+	for _, space := range spaces {
+		b.ExternalIdentifiers[space] = map[string]string{}
+	}
+	return b
+}
+
 // ProductKeyOf names the product a stored card is a printing of: the
 // TCGplayer product id the datastore stamps on every printing it sells,
 // and the entry's own uuid where it stamps none - an entry the builder
