@@ -443,7 +443,7 @@ func TestRiftboundMatch(t *testing.T) {
 // regenerateRiftboundTestData re-runs Match over every committed input plus
 // the hand-authored seeds, bakes the resulting uuid/error, and rewrites the
 // golden file sorted by description for a stable diff. A committed case may
-// change verdict detail — each such change is logged — but flipping between
+// change verdict detail - each such change is logged - but flipping between
 // success and error aborts the rewrite: acknowledging a behavior change of
 // that magnitude requires editing the entry or seed by hand.
 func regenerateRiftboundTestData(t *testing.T, b *mtgmatcher.Backend, tests []matchTest) {

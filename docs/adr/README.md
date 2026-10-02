@@ -1,7 +1,7 @@
 # Architecture Decision Records
 
 Load-bearing decisions for go-mtgban, extracted from `SPECIFICATIONS.md` so the
-*reasoning* — context, alternatives, consequences — lives somewhere durable and
+*reasoning* - context, alternatives, consequences - lives somewhere durable and
 reviewable. An ADR is immutable once **Accepted**; to change a decision, add a
 new ADR that supersedes it rather than rewriting history.
 

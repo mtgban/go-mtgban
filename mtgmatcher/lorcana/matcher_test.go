@@ -357,7 +357,7 @@ func TestLorcanaMatch(t *testing.T) {
 // file sorted by description for a stable diff. The input set is curated (it
 // is not derived from Match), so this only refreshes expectations after a
 // deliberate logic change. A committed case may change verdict detail (a
-// different uuid or message) — each such change is logged — but flipping
+// different uuid or message) - each such change is logged - but flipping
 // between success and error aborts the rewrite: acknowledging a behavior
 // change of that magnitude requires editing the entry or seed by hand.
 func regenerateLorcanaTestData(t *testing.T, b *mtgmatcher.Backend, tests []matchTest) {

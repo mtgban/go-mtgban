@@ -336,7 +336,7 @@ func sellerNetSubtotal(seller sellerDetail) float64 {
 //
 // Each surviving seller's shipping comes straight from its shipping_cents; a
 // seller whose items were all refunded contributes nothing. The total is capped
-// at the order-level shipping_cents — what the buyer was actually charged — so
+// at the order-level shipping_cents - what the buyer was actually charged - so
 // an order-level shipping promo (per-seller values summing above the charge)
 // doesn't inflate the report. When the cap bites, the excess is trimmed
 // proportionally across sellers so the per-seller rows still sum to the total.

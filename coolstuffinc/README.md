@@ -2,22 +2,22 @@
 
 Prices Cool Stuff Inc's singles and sealed product, buy and sell, across
 eight games: Magic, Lorcana, Riftbound, Yu-Gi-Oh, One Piece, Pokemon,
-Gundam, Palworld. Wired into `cmd/bantool` as fourteen scrapers — one
+Gundam, Palworld. Wired into `cmd/bantool` as fourteen scrapers - one
 singles scraper per game (`coolstuffinc`, `coolstuffinc_gundam`,
 `coolstuffinc_lorcana`, `coolstuffinc_onepiece`, `coolstuffinc_palworld`,
 `coolstuffinc_pokemon`, `coolstuffinc_riftbound`, `coolstuffinc_yugioh`)
 via `NewScraper(game)`, plus one sealed scraper for six of those eight
 (`coolstuffinc_sealed*`, everything but Gundam and Palworld) via
-`NewScraperSealed(game)`. No Flesh and Blood shelf exists here — that is
-Star City Games' territory, see `starcitygames/README.md` — and no
+`NewScraperSealed(game)`. No Flesh and Blood shelf exists here - that is
+Star City Games' territory, see `starcitygames/README.md` - and no
 credential is needed: the only setting is an optional affiliate id,
 `CSI_PARTNER`.
 
 ## The core problem
 
 **CSI publishes no identifier at all, for any game, on either feed.** The
-buylist (`CSIPriceEntry`) carries a `PID` — CSI's own internal product id,
-used only to build a debug URL — and nothing else that names a printing
+buylist (`CSIPriceEntry`) carries a `PID` - CSI's own internal product id,
+used only to build a debug URL - and nothing else that names a printing
 independently of its wording. The retail HTML search carries not even
 that: no scryfall id, no tcgplayer id, in the row markup for any game. So
 every resolution, for every game, on both sides, is **wording- and
@@ -27,7 +27,7 @@ when the shelf itself names the wrong thing, nothing catches it.
 
 This is the opposite failure mode from Star City Games, whose problem is a
 vendor id that is *present and sometimes wrong*. Here there is usually no
-id to be wrong — the vendor's whole data model for a listing is prose, and
+id to be wrong - the vendor's whole data model for a listing is prose, and
 the scraper is what turns prose into an identity. That makes this package
 much larger than a single defect class fixed several times; it is one
 translation layer per game, independently discovered and independently
@@ -35,7 +35,7 @@ broken.
 
 The **one** identifier-driven path in the whole package is Magic sealed
 product: `NewScraperSealed` builds `productMap` from `co.Identifiers["csiId"]`
-on every sealed Magic uuid the datastore carries — a field this scraper
+on every sealed Magic uuid the datastore carries - a field this scraper
 reads but never writes, populated upstream (MTGJSON/datastore-gen). Every
 other resolution, sealed or singles, any game, goes through wording.
 
@@ -48,7 +48,7 @@ Three feeds, all live.
   `csiInventoryURL`), each shelf paged. `processSearch` parses one
   `product-search-row` per card and one `offers` block per condition/price
   row inside it.
-- **Buylist**: `GET .../GeneratedFiles/SellList/Section-<shelf>.json` —
+- **Buylist**: `GET .../GeneratedFiles/SellList/Section-<shelf>.json` -
   `CSIPriceEntry`, one JSON array for the whole shelf (all editions, all
   conditions, tens of thousands of rows). `LoadBuylistEditions` separately
   scrapes an HTML `<select>` for the edition-name→id map used only to build
@@ -59,14 +59,14 @@ Three feeds, all live.
   run the *same* search endpoint as singles, once per sealed-product word
   ("booster", "deck", "trove", "gift", "bundle", "case", "box", "kit",
   "vault", "collection"), and resolve each hit through
-  `mtgmatcher.ResolveSealed` — a card row simply fails to resolve and drops
+  `mtgmatcher.ResolveSealed` - a card row simply fails to resolve and drops
   out. Lorcana's sealed carries no `ItemSet` facet at all, which is why the
   sealed search goes by name rather than by shelf.
 
 A fourth, dead one used to sit here: `csiPricelistURL`
 (`gateway_json.php?k=`), `CSIClient`, `NewCSIClient`, `CSICard`, and
-`Preprocess(CSICard)` were a whole second retail API — keyed, unlike
-everything else in this package, with a scryfall id on every row — with
+`Preprocess(CSICard)` were a whole second retail API - keyed, unlike
+everything else in this package, with a scryfall id on every row - with
 zero callers anywhere in the repo. Removed outright rather than kept
 around as a maybe-someday alternate path.
 
@@ -74,30 +74,30 @@ Deleting `Preprocess(CSICard)` did not delete its knowledge for free,
 though, and that is worth knowing on its own: five of its six edition
 cases named shelves CSI is still selling on today (`Black Bordered
 (foreign)`, `Ikoria: Lair of Behemoths: Variants`, `Portal 3 Kingdoms`,
-`Double Masters: Variants`, `Dominaria United: Variants` — confirmed
+`Double Masters: Variants`, `Dominaria United: Variants` - confirmed
 against a live fetch of the shelf checkbox list), and the live retail
 path (`preprocess()`, used by `processSearch`) carries no equivalent case
 for any of them. Checked live rows from all five against the real
-datastore: four resolve fine anyway — the live path's generic wording
+datastore: four resolve fine anyway - the live path's generic wording
 already covers what the dead function's special cases once bought it,
 `Godzilla`/`Showcase Frame`/foreign-refusal included, at least in the
 sense of "resolves without error," which is as far as this was checked.
 `Black Bordered (foreign)` alone does not: a listing in any of the six
 languages that shelf carries currently returns `ErrUnsupported` from
-`preprocess()` — Italian and Japanese included, which the dead function's
+`preprocess()` - Italian and Japanese included, which the dead function's
 own table would have routed to `FBB`/`4BB`, both real sets the datastore
 carries. Nothing is mispriced by this; the listing is silently dropped
 rather than priced onto the wrong card, which is presumably why nobody
 noticed. Fixing it needs an answer this package doesn't have: `Edition:
 "Foreign Black Border"` resolves a card correctly with no `Language` set,
-and *stops* resolving it the moment `Language: "Italian"` is added — a
+and *stops* resolving it the moment `Language: "Italian"` is added - a
 question for `mtgmatcher`'s own language filtering, not for this scraper.
 
-## fetchWhole — the resume saga
+## fetchWhole - the resume saga
 
 The buylist download is an 18MB+ uncompressed file, and the storefront
 truncates it mid-stream roughly one fetch in three: HTTP 200, a short body,
-no transport error — nothing notices until the JSON decode reports an
+no transport error - nothing notices until the JSON decode reports an
 unexpected EOF. This took four commits to get right, in order:
 
 1. Retry the whole file on failure (original behaviour). Not enough: three
@@ -112,12 +112,12 @@ unexpected EOF. This took four commits to get right, in order:
    *longest* body any pass has held and stop when a pass does not beat it,
    not when the latest pass alone adds nothing.
 4. **Ask about the header before trusting it** (#548): `Content-Length`
-   only means anything while the transport doesn't touch the body — ask
+   only means anything while the transport doesn't touch the body - ask
    for `identity` encoding explicitly (checked live: CSI serves this path
    uncompressed regardless of what's offered, though it gzips its PHP
    pages). A response with no length at all (`-1`, e.g. chunked) has
    nothing to resume against and must be reported as a short read, not
-   silently accepted as the whole file — the old order did the latter,
+   silently accepted as the whole file - the old order did the latter,
    which is a truncation with **no error**, worse than the one this
    started from.
 
@@ -125,18 +125,18 @@ The fix works around what can be worked around: a chunked body that ends
 cleanly at the wrong byte is indistinguishable from a real end of stream,
 by construction.
 
-## offerSeen — the two-shelf-twin dedupe
+## offerSeen - the two-shelf-twin dedupe
 
 A card the search lists on two shelves at once (the One Piece Heroines
 Edition card, filed both under its own set and a crossover promo shelf)
 arrives as the same offer twice: same url, same condition, same seller.
 `offerSeen`'s dedupe key used to be exactly that triple, and a product
-row's *other* offers — its foil, its graded copies, its first-edition
-run — are also filed at the same url and the same `NM` condition as the
+row's *other* offers - its foil, its graded copies, its first-edition
+run - are also filed at the same url and the same `NM` condition as the
 plain copy. So the dedupe silently ate them as "the same offer already
 seen": Magic's retail row count fell from 101,645 to 74,279 the day the
 dedupe landed, Lorcana's by 40%, Riftbound's by 24% (#555). The key now
-includes the **resolved card id**, not just url+condition+seller — an
+includes the **resolved card id**, not just url+condition+seller - an
 offer is the printing it resolved to, at its condition, from its seller,
 behind its url.
 
@@ -144,21 +144,21 @@ behind its url.
 
 - **The condition column is overloaded.** CSI's per-row condition text is
   sometimes a real condition ("Near Mint"), sometimes a **print run**
-  ("1st Edition Holofoil" — `conditionRun`/`matchRun`, which refuses
+  ("1st Edition Holofoil" - `conditionRun`/`matchRun`, which refuses
   rather than silently pricing the run as the ordinary printing when the
   match doesn't actually carry that finish), sometimes a **printing of its
-  own** ("PRE-ERRATA" — `conditionPrinting`), sometimes a **grading
-  marker** ("BGS", "PSA", "Unique", "Shadowless", "No Set Symbol" —
+  own** ("PRE-ERRATA" - `conditionPrinting`), sometimes a **grading
+  marker** ("BGS", "PSA", "Unique", "Shadowless", "No Set Symbol" -
   `isGraded`, which reroutes the row to the `Cool Stuff Inc (unique)`
   sub-seller via `MarketNames`/`availableMarketNames` rather than pricing
-  it as a normal NM copy), and sometimes a **skip signal** ("Asian" —
+  it as a normal NM copy), and sometimes a **skip signal** ("Asian" -
   `isSkippedCondition`, since the one Evolving Wilds sold that way carries
   no language, set or number to resolve against). A grading service or print
   run this table doesn't know about is refused with a logged "unsupported
   <text> condition", not silently dropped as if it matched NM.
 - **Graded/unique copies are a second seller, not a second condition.**
-  `gradedMarkers`, `isGraded`, `AddRelaxed` (so a genuine finish collision —
-  a Foil-etched card's Near Mint and Near Mint Foil rows — doesn't refuse
+  `gradedMarkers`, `isGraded`, `AddRelaxed` (so a genuine finish collision -
+  a Foil-etched card's Near Mint and Near Mint Foil rows - doesn't refuse
   itself out) and `availableMarketNames`/`name2shorthand` (`Cool Stuff Inc`
   / `Cool Stuff Inc (unique)`, shorthands `CSI`/`CSIUnique`) all serve one
   fact: a single graded/unique copy sold on a printing's page is not that
@@ -171,24 +171,24 @@ behind its url.
 
 ## The recurring shape: a promo shelf collides with a real one
 
-Found three times, independently, in three different games — first on the
+Found three times, independently, in three different games - first on the
 **buylist** path in each case, where it was fixed and shipped; the retail
 path turned out to carry the identical live listings, unfixed, until the
 measurement lower down in this section closed that gap too:
 
 > A card is sold under CSI's catch-all `Promo` shelf, and the wording
-> beside it — a note, a bracket in the name — names the *real* set or
+> beside it - a note, a bracket in the name - names the *real* set or
 > event it actually belongs to. The promo shelf holds its own printing at
 > that same number, so if nothing reads the wording, the two meet: the real
 > printing's price lands on the promo shelf's card instead.
 
-- **One Piece** (#379): `onePieceShelf` — a Starter Deck reprint sits on
+- **One Piece** (#379): `onePieceShelf` - a Starter Deck reprint sits on
   `Promo` with `(Starter Deck 18)` in the name; `P-041` is both the plain
   promo and the deck card. Redirect to `"Starter Deck " + N`, but **only**
-  when the shelf is exactly `"Promo"` — every other listing naming a deck
+  when the shelf is exactly `"Promo"` - every other listing naming a deck
   already arrives on a real set, where the bracket names the deck the card
   was *reprinted from*, not where it lives now.
-- **Pokemon** (#391): `pokemonPromoShelf` — the Pokemon Day 2025 Eevee sits
+- **Pokemon** (#391): `pokemonPromoShelf` - the Pokemon Day 2025 Eevee sits
   on `Promo`... no, sits on `SV Prismatic Evolutions` at `074/131`, the
   same number as that set's own Eevee, told apart from it only by
   `RarityName == "Promo"`. Here the direction is reversed from One Piece:
@@ -196,26 +196,26 @@ measurement lower down in this section closed that gap too:
   resolves; twenty of the fifty candidate rows name a printing no promo
   shelf holds at all (the Pokemon Rumble cards, holo promos that are
   genuinely their own set's foil) and must keep the shelf they arrived on.
-- **Riftbound** (#393): `riftboundShelf` — the Nexus Night runes sit on
+- **Riftbound** (#393): `riftboundShelf` - the Nexus Night runes sit on
   `Promo` with the issuing set written at the head of the note
   (`"UNL-R05b"`, `"SFD-R05b"`); the promo shelf holds an Organized Play
   printing at that same number. Redirect to the set the note's prefix
-  names, but **only** when that set actually holds the printing — Vendetta
+  names, but **only** when that set actually holds the printing - Vendetta
   issued no b-lettered rune of its own, so its six listings correctly stay
   on `Promo`, which is where their printing really is.
 
-Two of the three — `pokemonPromoShelf` and `riftboundShelf` — share the
+Two of the three - `pokemonPromoShelf` and `riftboundShelf` - share the
 same guard: *redirect only when the redirect target resolves*, verified
 with an actual `mtgmatcher.Match` probe before committing to it.
 `onePieceShelf` is looser: it redirects on the shelf-plus-bracket pattern
 alone, with no resolve check, trusting that nothing else on the `Promo`
 shelf ever carries a `(Starter Deck N)`-shaped bracket that isn't this
 collision. That has held so far, but it is a real difference in rigor,
-not just a simpler special case — if a fourth game needs this shape,
+not just a simpler special case - if a fourth game needs this shape,
 copy the probing version, not `onePieceShelf`'s.
 
 All three are wired into `processSearch` (retail) as well as `parseBL`
-(buylist) — confirmed as a live gap, not a hypothetical one, by fetching
+(buylist) - confirmed as a live gap, not a hypothetical one, by fetching
 each game's affected shelf live and replaying every row through the pre-
 and post-fix resolution:
 
@@ -226,7 +226,7 @@ Riftbound                "Promo"                               99    87     12  
 Pokemon                  "SV Prismatic Evolutions"             459   457      2       0     0
 ```
 
-Every move landed on the correct printing — the same six Starter Deck
+Every move landed on the correct printing - the same six Starter Deck
 cards, the same twelve Nexus Night runes, and the Pokemon Day 2025 Eevee
 *and* a Sylveon carrying the identical bracket that hadn't turned up in
 the buylist capture. `pokemonPromoShelf` and `riftboundShelf` were
@@ -234,7 +234,7 @@ refactored to take primitive fields instead of `CSIPriceEntry` so both
 paths could share one implementation; `onePieceShelf` needed no change,
 since it already took primitives.
 
-`nameQualifiers` remains buylist-only by design — One Piece's retail
+`nameQualifiers` remains buylist-only by design - One Piece's retail
 `notes` field genuinely describes the artwork rather than the printing
 (see "Per-game wording" below), which is a different, still-open question
 from the shelf collision this section is about.
@@ -242,23 +242,23 @@ from the shelf collision this section is about.
 ## Per-game wording, briefly
 
 - **Magic**: two independent translation layers, not the game's own
-  identifier — this game still has none in either feed. `preprocess.go`'s
+  identifier - this game still has none in either feed. `preprocess.go`'s
   `Preprocess`/`preprocess` (retail) reconstructs set+number from the
   **image filename** when the wording alone won't resolve
   (`numFixes`, then a set-code/number split at length 3 and 4, then a
-  letter-marked treatment split — `"TMCS0032"` is TMC #32's surge foil,
+  letter-marked treatment split - `"TMCS0032"` is TMC #32's surge foil,
   where three or four raw characters read as no valid set/number pair at
   all); `PreprocessBuylist` instead trusts the buylist's own `Number`
   field first. Both funnel into `card2promo`, a large closed table of
   named promo printings the wording alone can't place (`card2promo` is a
-  `switch cardName` — see AGENTS.md's "tables before code" on why this
+  `switch cardName` - see AGENTS.md's "tables before code" on why this
   shape is a last resort, tolerated here only because the wording truly
   carries nothing else). `magicShelfFixups` is shared by both paths:
   emblems named "Emblem" with the planeswalker in the notes instead of the
   name, `"Duel Deck:"` singularized to the catalog's `"Duel Decks:"`,
   blank cards refused outright, and a `"NT Token"` note rewritten to
   `"N Token"`.
-- **Pokemon**: `pokemonListing` is the single largest per-game function —
+- **Pokemon**: `pokemonListing` is the single largest per-game function -
   about a dozen independent rewrites (Classic Collection reprints sold
   under Celebrations, "Special Metal Energy"→"Metal Energy" + Special
   variation, Imposter/Impostor Oak's Base-Set-only misspelling, Elite Four
@@ -268,46 +268,46 @@ from the shelf collision this section is about.
   Team Galactic invention names completed from their number, typed-energy
   letter spelling, and Nidoran's sex resolved by trying both). Layered on
   top: `firstEditionShelf`/`conditionRuns`/`matchRun` (a "1st Edition
-  <Set>" *shelf name*, not a condition, is a whole other print run —
+  <Set>" *shelf name*, not a condition, is a whole other print run -
   refuse rather than silently answer with Unlimited), `pokemonNonHolo` (a
   `(Non-Holo)` bracket refused when the rarity says the card was never
-  printed that way, and deliberately *not* refused the other direction — a
-  holo bracket on a plain-rare row — because the catalog simply holding no
+  printed that way, and deliberately *not* refused the other direction - a
+  holo bracket on a plain-rare row - because the catalog simply holding no
   nonfoil for a plain rare is a catalog gap rather than the storefront
   inventing a printing, and refusing those would drop real listings to
   catch nothing; see the function's own doc comment for the full
   reasoning), and `pokemonPromoShelf` above.
-- **One Piece**: `nameQualifiers` (buylist-only — the retail note already
+- **One Piece**: `nameQualifiers` (buylist-only - the retail note already
   describes the art, not the printing, so it's read raw instead),
   `onePieceEvents`/`eventNamed` (a closed table of storefront nicknames
-  for a catalog event — "afro luffy promo", a playmat SKU, a participation
-  pack — one entry per nickname, deliberately not generalized: a nickname
+  for a catalog event - "afro luffy promo", a playmat SKU, a participation
+  pack - one entry per nickname, deliberately not generalized: a nickname
   names one product), `onePieceRenamedTreatment` (the Gear5 starter deck
   calls its premium printing "Full Art" where the catalog calls every
-  premium printing in that set "Parallel" — the guard requires the word to
+  premium printing in that set "Parallel" - the guard requires the word to
   name a real catalog label *somewhere*, the card's own set to hold no
   printing under that label already, and the set to carry exactly one
   premium label throughout, so a genuine Full Art set is never touched),
   `onePieceSpellings` (one entry, a dropped word), and `onePieceShelf`
   above.
 - **Yu-Gi-Oh**: `catalogSpelling`/`csiSpellings` (nine hand-typos, kept as
-  an exact table rather than nearest-match — 255 name pairs inside one set
+  an exact table rather than nearest-match - 255 name pairs inside one set
   are a single edit apart, e.g. "Harpie Lady 1"/"2", so a distance-based
   corrector would silently answer a card the datastore is merely missing
   with its differently-numbered neighbour), `catalogColor`/`csiColors`
   ("(Light Blue)"→"(Silver)" for Duelist League prints, a *replace* not an
-  *add* — the word "blue" on its own already names the blue printing, so
+  *add* - the word "blue" on its own already names the blue printing, so
   leaving both would tie two printings where one used to resolve),
   `catalogRarity`/`csiRarities` (three foil-tier spelling differences),
   `printRunEdition`/`csiPrintRuns` (nine editions reprinted under their
   own original name, told apart only by the copyright date CSI writes into
-  the note — deliberately left out of `mtgmatcher`'s own edition aliases
+  the note - deliberately left out of `mtgmatcher`'s own edition aliases
   for this exact reason), and `unknownPrinting`/`csiUnknownPrintings` (two
   hand-verified listings selling a rarity/number pair the catalog does not
-  carry at all — refusing the general shape "rarity the card's number
+  carry at all - refusing the general shape "rarity the card's number
   doesn't have" would drop 55 listings to catch these 2, and ~35 of the 55
   are legitimately-named decorated rarities).
-- **Gundam**: `gundam.go`, one file, four problems — the shelf name
+- **Gundam**: `gundam.go`, one file, four problems - the shelf name
   carries a set-code prefix that narrows nothing (the same number repeats
   across GD01/its beta/the deck-build box) and is stripped
   (`gundamShelf`); the card's own name and the run's wording are split by
@@ -317,61 +317,61 @@ from the shelf collision this section is about.
   (`gundamNames`, exact-keyed for the reason `csiSpellings` gives) and one
   symbol-name rewrite (`gundamSymbolWord`, "Xi (Symbol) Gundam" → the
   literal Greek letter); and the storefront's number spelling disagrees
-  with the catalog's in three ways at once — a dropped digit, an extra
+  with the catalog's in three ways at once - a dropped digit, an extra
   zero, and a rarity letter suffixed onto a card number that carries none
   (`gundamNumberSpelling`).
-- **Palworld**: `palworld.go`, one file, one problem — the storefront
+- **Palworld**: `palworld.go`, one file, one problem - the storefront
   sometimes glues a rarity code onto the number's tail
   (`"EBP01-025RR"`), inconsistently even with itself (plain-spaced on one
   shelf, glued on another, and its own buylist writes every number clean).
   `palworldBaseRarities` is an *enumerated allow-list* of codes that are
   safe to split off, deliberately excluding the six rarities (OSR, SP, SR,
-  SSP, TSP, TSR) the catalog numbers as printings of their own — splitting
+  SSP, TSP, TSR) the catalog numbers as printings of their own - splitting
   those apart would answer the base card for a parallel. A rarity code
   nobody here has heard of is left glued to the number rather than
   guessed at.
-- **Lorcana**: `lorcana.go`, one file, one problem — a storefront
+- **Lorcana**: `lorcana.go`, one file, one problem - a storefront
   misspelling (`lorcanaSpellings`, exact-keyed for the reason
   `csiSpellings` gives, and the more so here: a name is a character and a
   title joined by a dash, the title is the whole of what tells one
   printing of a character from another, and Rise of the Floodborn sells
   three Basils at consecutive numbers 138-140). No collision shape is
-  known otherwise — both feeds still pass edition and the raw
+  known otherwise - both feeds still pass edition and the raw
   note/number straight through to `mtgmatcher.Match` untranslated.
 
 ## Known gaps
 
 - `pokemonPromoShelf`, `riftboundShelf`, and all of `pokemonListing` (and
-  its dozen sub-rules) carry **no dedicated unit test** — nothing in
+  its dozen sub-rules) carry **no dedicated unit test** - nothing in
   `coolstuffinc/*_test.go` references either of the first two by name,
   even though each now has two call sites. `onePieceShelf` does
   (`oneshelf_test.go`); it's the odd one out among the three "recurring
   shape" functions for having no such gap.
 - `GameDragonBallSuper` (`"dbs"`) and `GameStarWarsUnlimited` (`"swu"`) are
-  shelf-name constants CSI itself uses, sitting unwired in this file —
+  shelf-name constants CSI itself uses, sitting unwired in this file -
   `mtgmatcher.Game` has no constant for either game yet (`mtgmatcher/game.go`),
   so `csiGames` can't map them. Whoever adds either game to `mtgmatcher`
   should check back here; the shelf name is already known.
 - Sealed is wired in `cmd/bantool` for six of the eight singles-wired
-  games — Gundam and Palworld have no `coolstuffinc_sealed_*` scraper
+  games - Gundam and Palworld have no `coolstuffinc_sealed_*` scraper
   option, though `NewScraperSealed` itself would accept either game (both
   are in `csiGames`).
 - The `Black Bordered (foreign)` shelf resolves to `ErrUnsupported` on
-  every listing it carries, in every language — see "Data sources" above
+  every listing it carries, in every language - see "Data sources" above
   for the specifics. Not a mispricing, just a silent, total coverage gap
   on a shelf CSI actively sells on.
 
 ## Environment
 
-- `CSI_PARTNER` — optional affiliate id appended to every outbound link
+- `CSI_PARTNER` - optional affiliate id appended to every outbound link
   (`utm_referrer`). Not a credential; nothing here requires auth.
 - Tests load a live datastore per game the same way every scraper package
-  does — see `datastore_test.go`'s `withGameDatastore`/`readGameDatastore` —
+  does - see `datastore_test.go`'s `withGameDatastore`/`readGameDatastore` -
   gated on `POKEMON_PATH`, `ONEPIECE_PATH`, `YUGIOH_PATH`, `PALWORLD_PATH`,
   and (for the one Magic-only image-filename test) `ALLPRINTINGS5_PATH`.
   CI runs `coolstuffinc/...` narrowly under the palworld, onepiece,
   yugioh, and pokemon jobs; the Magic-needing test is instead picked up by
   the Magic job's repo-wide `go test ./... -v`. No dedicated Lorcana,
   Riftbound, or Gundam test exists in this package today, so no CI job
-  needs to run it for those three specifically — consistent with "Known
+  needs to run it for those three specifically - consistent with "Known
   gaps" above.

@@ -2,7 +2,7 @@ package mtgmatcher
 
 import "testing"
 
-// A Backend built by hand — no loader, so SetRules was never called — must
+// A Backend built by hand - no loader, so SetRules was never called - must
 // fail cleanly rather than panic on every public entry point that consults
 // the game rules.
 func TestBackendWithoutRules(t *testing.T) {

@@ -344,8 +344,8 @@ func trimEdition(edition string) string {
 // will, since none of them is a card.
 //
 // Both tests are literal and read the name alone. Normalize erases every "s",
-// which turns the lots' "Set of" into "etof" — a substring of "The Queen -
-// Cruelest of All" and four more real names — so the normalized Contains is
+// which turns the lots' "Set of" into "etof" - a substring of "The Queen -
+// Cruelest of All" and four more real names - so the normalized Contains is
 // too lossy here. And the promotion behind the lot also names a real card's
 // variant, "Mickey Mouse - True Friend (Disney Cruise Promo)", which the
 // prefilter leaves in the variation: anchoring at the start of the name keeps
@@ -389,8 +389,8 @@ func (Rules) PlainNumber(number string) string {
 // stay reachable (three real pairs exist in the data) and iteration follows
 // stable load order instead of random map order. The cardSet keys still
 // matter: the Match skeleton fills them with the sets matching the input
-// edition when one was supplied and resolves — falling back to every printing
-// otherwise — so honoring them disambiguates a name+number shared across sets
+// edition when one was supplied and resolves - falling back to every printing
+// otherwise - so honoring them disambiguates a name+number shared across sets
 // ("Let It Go" #163) while a missing or unrecognized edition changes nothing.
 func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
@@ -736,7 +736,7 @@ func numberField(variation string) string {
 }
 
 // extractNumber pulls the collector number out of the scraper-supplied
-// Variation. The number is the part before '/' with leading zeros stripped —
+// Variation. The number is the part before '/' with leading zeros stripped -
 // except a number the zeros are the whole of stays "0", with any letter it
 // carries, so the genuine 0-numbered promo stays reachable.
 func extractNumber(variation string) string {

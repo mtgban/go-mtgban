@@ -172,9 +172,9 @@ var editionAliases = map[string]string{
 }
 
 // nameRespellings pairs the card names a storefront and the catalog spell
-// differently. Both spellings of each pair are real cards — cardtrader
+// differently. Both spellings of each pair are real cards - cardtrader
 // writes the old Vampire monsters with the adjective their DASA retrains
-// carry — so no pair is ever a plain rename: respellName only crosses a
+// carry - so no pair is ever a plain rename: respellName only crosses a
 // pair for an edition that prints the other side, in whichever direction.
 var nameRespellings = [][2]string{
 	{"Vampire Orchis", "Vampiric Orchis"},

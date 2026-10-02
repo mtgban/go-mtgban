@@ -153,7 +153,7 @@ func TestCatalogDropsBulkBuyPrice(t *testing.T) {
 			scg.processProduct(product(tt.sellList))
 
 			if got := len(scg.inventory); got != 1 {
-				t.Fatalf("inventory has %d cards, want 1 — the retail side must be unaffected", got)
+				t.Fatalf("inventory has %d cards, want 1 - the retail side must be unaffected", got)
 			}
 			if got := len(scg.buylist); got != tt.wantBuylist {
 				t.Errorf("buylist has %d cards, want %d", got, tt.wantBuylist)

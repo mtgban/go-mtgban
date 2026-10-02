@@ -12,7 +12,7 @@ import (
 // derivedTokenPairSuffix marks a uuid minted here for a two-sided token
 // pairing TCGplayer sells as one product (mtgjson only describes those via
 // tokenProducts on each single face). Derived cards reach Match by
-// TCGplayer id only — the combined name is not unique in-set.
+// TCGplayer id only - the combined name is not unique in-set.
 const derivedTokenPairSuffix = "_tp_"
 
 // pairKey identifies a physical pairing by its two uuids, always ordered
@@ -34,7 +34,7 @@ func newPairKey(u1, u2 string) pairKey {
 // and records each derived entity's own ids at its base sibling.
 func deriveTokenPairs(sets map[string]*Set, uuids map[string]*mtgmatcher.CardObject, tcgIDs map[string]string) []Card {
 	// pairIDs / idPairs: an id claimed by more than one pairing is
-	// ambiguous — refuse it (same rule as crossSetProductIDs).
+	// ambiguous - refuse it (same rule as crossSetProductIDs).
 	pairIDs := map[pairKey]map[string]bool{}
 	idPairs := map[string]map[pairKey]bool{}
 
@@ -285,7 +285,7 @@ func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []
 	}
 
 	name := first.Name + " // " + second.Name
-	// Number may mix two sets' numbering on a cross-set pairing — cosmetic
+	// Number may mix two sets' numbering on a cross-set pairing - cosmetic
 	// only; derived cards are excluded from every name/number index.
 	number := first.Number + " // " + second.Number
 	uuid := uuidLo + derivedTokenPairSuffix + uuidHi
@@ -392,7 +392,7 @@ type tokenPairIndicesData struct {
 	// already have deduped the unordered pair.
 	byUUIDPair map[[2]string]string
 
-	// byBothNames: neither face anchored by identity. Blank on collision —
+	// byBothNames: neither face anchored by identity. Blank on collision -
 	// generic names like "Soldier // Spirit" recur across sheets.
 	byBothNames map[[2]string]string
 }
@@ -445,7 +445,7 @@ func buildTokenPairIndices(b *mtgmatcher.Backend) tokenPairIndicesData {
 		coB, errB := b.GetUUID(partB)
 		// No tcgplayerProductId: index the base (nonfoil) derived uuid
 		// buildDerivedCard minted, not this loop's foil/nonfoil sibling
-		// uuid — otherwise iteration order would publish two different
+		// uuid - otherwise iteration order would publish two different
 		// ids for one physical pairing.
 		id := co.Identifiers["tcgplayerProductId"]
 		if id == "" && partA != "" && partB != "" {
@@ -506,7 +506,7 @@ func NormalizeTokenFace(name string) string {
 }
 
 // StripFaceWrapping removes braces and artist/variant parentheticals but
-// keeps case and a " Token" suffix — some real Card.Names include it.
+// keeps case and a " Token" suffix - some real Card.Names include it.
 // See CleanFaceName to also strip the suffix. Exported for vendor packages
 // that anchor each face by set/number themselves.
 func StripFaceWrapping(name string) string {
@@ -548,7 +548,7 @@ func SplitTokenPairName(name string) (first, second string) {
 // MatchTokenPairing resolves a two-sided listing from one face's external
 // id (Scryfall) plus the listing name: id alone can pair with several
 // partners; name alone is not set-unique. Returns "" for a foil request
-// when the pairing was never sold foil — derived uuids have no separate
+// when the pairing was never sold foil - derived uuids have no separate
 // foil identity, so callers must fall back themselves.
 func MatchTokenPairing(b *mtgmatcher.Backend, externalID, listingName string, foil bool) string {
 	if externalID == "" {
@@ -705,7 +705,7 @@ func tokenPairingFinishOK(b *mtgmatcher.Backend, id string, foil bool) string {
 
 // VerifyTokenPairingFinish is tokenPairingFinishOK for an unverified id
 // (e.g. Card Trader's bare tcgplayerId). Always confirm derivedTokenPair
-// first — unlike in-file callers, a nonfoil ordinary card id must not pass.
+// first - unlike in-file callers, a nonfoil ordinary card id must not pass.
 func VerifyTokenPairingFinish(b *mtgmatcher.Backend, id string, foil bool) string {
 	uuid := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
 	if uuid == "" {

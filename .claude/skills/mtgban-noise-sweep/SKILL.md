@@ -8,6 +8,6 @@ description: Find and fix bad card matches in go-mtgban. Three detectors - refus
 The full method lives in
 [`docs/agents/noise-sweep/README.md`](../../../docs/agents/noise-sweep/README.md),
 with `detectors.md` and `harnesses.md` beside it. Read that file now and
-follow it — this repo keeps one copy of the method there, not a duplicate
+follow it - this repo keeps one copy of the method there, not a duplicate
 here, so every agent working in this repository (Claude Code, Codex, or a
 human) reads the same document rather than two that can drift apart.
