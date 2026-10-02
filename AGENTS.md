@@ -180,9 +180,9 @@ needs none of this: it exports every `<GAME>_PATH` directly as job env
 CI restores all nine datastores from `actions/cache` before testing, one
 `cache-<game>` job per game. Only Magic has a public URL: `cache-datastore`
 calls the reusable `cache-file.yml` with `vars.DATASTORE_MAGIC`. Every other
-game — Lorcana included, which used to be the other public-URL exception —
-is pulled from the private `mtgban-datastore` B2 bucket and cached under a
-key built from the object's own metadata, since B2 serves no HTTP etag.
+game calls the reusable `cache-b2.yml` with its object in the private
+`mtgban-datastore` B2 bucket, which it caches under a key built from the
+object's own metadata, since B2 serves no HTTP etag.
 
 `internal/vocabulary` runs two checks across the datastore-gen boundary, each
 gated on the `<GAME>_PATH` variables above and skipping the games whose
@@ -484,8 +484,8 @@ A game is named in `mtgmatcher` first and reaches the scrapers from there:
    written in `cmd/bantool/main.go` itself — `targets()` derives the entry
    from the registry, and it is reachable at `-game <game> -store <store>`
    as soon as the registration lands.
-5. Wire the game's datastore into `.github/workflows/ci.yml` — a cache job and
-   a `test-<game>` job — and add its path variable to
+5. Wire the game's datastore into `.github/workflows/ci.yml`: a cache job
+   calling `cache-b2.yml`, and a `test-<game>` job. Add its path variable to
    `internal/vocabulary/read.go`'s `Games`, keyed by that constant.
 
 For TCGplayer specifically, the per-game scrapers `TCGGame` and `TCGGameIndex`
