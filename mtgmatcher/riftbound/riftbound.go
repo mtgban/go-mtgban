@@ -397,7 +397,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	// Update any remaining details on Sets after Cards loading
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, riftboundRarityMap)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, riftboundColors)
 	}
 
 	// Load sealed products. They live in the sealed namespace throughout:
@@ -422,6 +422,10 @@ func canonicalGalleryName(card GalleryCard) string {
 	}
 	return card.Name
 }
+
+// riftboundColors are Riftbound's domains as Riot pairs them: Fury and Calm,
+// Mind and Body, Chaos and Order.
+var riftboundColors = []string{"fury", "calm", "mind", "body", "chaos", "order"}
 
 var riftboundRarityMap = map[string]int{
 	"common":   1,

@@ -13,7 +13,6 @@ import (
 	"io"
 	"maps"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -608,7 +607,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 	// Update any remaining details on Sets after Cards loading
 	for code := range b.Sets {
-		var colors []string
 		b.Sets[code].IsFoilOnly = true
 		b.Sets[code].IsNonFoilOnly = true
 		for _, card := range b.Sets[code].Cards {
@@ -618,24 +616,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			if card.HasFinish(mtgmatcher.FinishFoil) {
 				b.Sets[code].IsNonFoilOnly = false
 			}
-
-			for _, color := range card.Colors {
-				if !slices.Contains(colors, color) {
-					colors = append(colors, color)
-				}
-			}
-			if len(card.Colors) == 0 && !slices.Contains(colors, "colorless") {
-				colors = append(colors, "colorless")
-			}
-			if len(card.Colors) > 1 && !slices.Contains(colors, "multicolor") {
-				colors = append(colors, "multicolor")
-			}
 		}
 
 		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, lorcanaRarityMap)
-
-		sort.Strings(colors)
-		b.Sets[code].Colors = colors
+		b.Sets[code].Colors = mtgmatcher.ColorsOf(b.Sets[code].Cards, lorcanaColors)
 	}
 
 	// Load sealed products. They live in the sealed namespace throughout:
@@ -666,6 +650,11 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	b.Complete(Rules{treatments: ac.treatments})
 
 	return b
+}
+
+// lorcanaColors are Lorcana's inks, in the game's order.
+var lorcanaColors = []string{
+	"amber", "amethyst", "emerald", "ruby", "sapphire", "steel",
 }
 
 // lorcanaRarityMap ranks the rarities so a set can list them in a stable

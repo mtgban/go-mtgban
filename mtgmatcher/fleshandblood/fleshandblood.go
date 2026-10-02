@@ -431,7 +431,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, fleshandbloodRarityMap)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, fleshandbloodColors)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed
@@ -443,6 +443,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	return b
 }
+
+// fleshandbloodColors are Flesh and Blood's pitches, in pitch value order.
+var fleshandbloodColors = []string{"red", "yellow", "blue"}
 
 var fleshandbloodRarityMap = map[string]int{
 	"Token":        1,

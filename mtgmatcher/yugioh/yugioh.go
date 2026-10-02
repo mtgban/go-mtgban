@@ -181,6 +181,13 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
+// yugiohColors are Yu-Gi-Oh's attributes in Konami's database order, then its
+// spells and traps.
+var yugiohColors = []string{
+	"dark", "light", "earth", "water", "fire", "wind", "divine", "spell",
+	"trap",
+}
+
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b := mtgmatcher.NewBackend(mtgmatcher.IDSpaceTCGplayer)
 
@@ -328,7 +335,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, nil)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, yugiohColors)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed

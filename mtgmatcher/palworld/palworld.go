@@ -273,7 +273,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, palworldRarityMap)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, palworldColors)
 	}
 
 	for _, product := range payload.Sealed {
@@ -283,6 +283,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	return b
 }
+
+// palworldColors are Palworld's colours, in its card list's order.
+var palworldColors = []string{"red", "blue", "green", "purple"}
 
 // palworldRarityMap ranks the rarities the catalog spells for this game, and
 // a set lists them highest rank first. The trial-deck rarities run beside the
