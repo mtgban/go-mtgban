@@ -41,7 +41,7 @@ var rarityTails = map[string]string{
 	"OSR": "Over Super Rare",
 	"SP":  "Super Parallel",
 	"SSP": "Super Special Parallel",
-	"TSR": "Trial Deck Super Deck Rare",
+	"TSR": "Trial Deck Super Rare",
 	"TSP": "Trial Deck Super Parallel",
 }
 
@@ -174,8 +174,8 @@ const palworldPrototypeSet = "PW-PC"
 // number's tail is the rarity's code and the whole of what tells a parallel
 // from the card it parallels, so the run's number narrows first and the
 // tail chooses: written onto the number ("ETD01-001TSR"), written beside it
-// ("ETD01-001 TSR"), or spelled out as the rarity ("Trial Deck Super Deck
-// Rare"). A wording naming no tail means the plain card.
+// ("ETD01-001 TSR"), or spelled out as the rarity ("Trial Deck Super Rare").
+// A wording naming no tail means the plain card.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 

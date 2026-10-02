@@ -22,7 +22,7 @@ const tailFixture = `{"data": {
 		{"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 713881}, "finish": "Foil", "id": "ebp01-001ssp_713881_foil", "image": "x", "name": "Jormuntide Ignis - Savage Lava Dragon", "number": "EBP01-001SSP", "rarity": "Super Special Parallel", "setCode": "BP01", "type": "Pal"},
 		{"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 713801}, "finish": "Normal", "id": "etd01-001_713801", "image": "x", "name": "Grizzbolt - Rumbling Tank", "number": "ETD01-001", "rarity": "Trial Deck Rare", "setCode": "TD01", "type": "Pal"},
 		{"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 713802}, "finish": "Foil", "id": "etd01-001tsp_713802_foil", "image": "x", "name": "Grizzbolt - Rumbling Tank", "number": "ETD01-001TSP", "rarity": "Trial Deck Super Parallel", "setCode": "TD01", "type": "Pal"},
-		{"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 713803}, "finish": "Foil", "id": "etd01-001tsr_713803_foil", "image": "x", "name": "Grizzbolt - Rumbling Tank", "number": "ETD01-001TSR", "rarity": "Trial Deck Super Deck Rare", "setCode": "TD01", "type": "Pal"}
+		{"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 713803}, "finish": "Foil", "id": "etd01-001tsr_713803_foil", "image": "x", "name": "Grizzbolt - Rumbling Tank", "number": "ETD01-001TSR", "rarity": "Trial Deck Super Rare", "setCode": "TD01", "type": "Pal"}
 	]
 }}`
 

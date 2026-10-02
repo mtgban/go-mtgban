@@ -165,7 +165,7 @@ func TestTailReachesItsParallel(t *testing.T) {
 		},
 		{
 			desc:       "and the code spelled out reaches it too",
-			in:         mtgmatcher.InputCard{Name: "Grizzbolt - Rumbling Tank", Variation: "ETD01-001 Trial Deck Super Deck Rare"},
+			in:         mtgmatcher.InputCard{Name: "Grizzbolt - Rumbling Tank", Variation: "ETD01-001 Trial Deck Super Rare"},
 			wantNumber: "ETD01-001TSR",
 		},
 		{
