@@ -73,10 +73,10 @@ func grade(displayName string) mtgban.Condition {
 
 // The games this scraper covers, as the storefront names its product lines.
 // YuGiOh and Riftbound are lines the store knows but holds nothing of today,
-// so they are not wired up. Flesh and Blood was wired up until the store
-// retired its buylist for it: the feed still answers and still looks like
-// data, but the links it hands back no longer work, which makes every
-// listing inactionable, so the game is gone rather than kept for a retail
+// so they are not wired up. Flesh and Blood is left out too: the store retired
+// its buylist for it, and though the feed still answers and still looks like
+// data, the links it hands back no longer work, which makes every listing
+// inactionable, so the game is not kept for a retail
 // side alone.
 const (
 	GameMagic    = "Magic: the Gathering"

@@ -8,11 +8,11 @@ import (
 )
 
 // TestProTourAndMediaShelf pins which set the Pro Tour and Media promo
-// shelves land a name on when it sits in more than one. Both loops used to
-// keep whichever set matched last, so a Regional PTQ retail listing always
-// priced Snapcaster Mage at its unrelated Regional Championship Qualifiers
-// 2023 printing, and any Media listing with a media-insert reprint
-// overrode the wording's own San Diego Comic-Con set.
+// shelves land a name on when it sits in more than one. Keeping whichever
+// set matched last would price every Regional PTQ retail listing of
+// Snapcaster Mage at its unrelated Regional Championship Qualifiers 2023
+// printing, and let a media-insert reprint override the wording's own San
+// Diego Comic-Con set on a Media listing.
 func TestProTourAndMediaShelf(t *testing.T) {
 	b := realDatastore(t)
 

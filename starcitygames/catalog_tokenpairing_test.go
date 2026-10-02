@@ -267,8 +267,8 @@ func TestResolveCompositeSkuTokenPairingRefusals(t *testing.T) {
 // TestResolveDungeonPairings pins AFR's dungeon cards, a shape neither
 // face of which is a token: SCG spells its own dungeon-card listings the
 // same brace-and-suffix way it spells tokens ("{X Dungeon}" rather than
-// "{X Token}"), which the two-sided trigger and cleanFaceName both had to
-// learn about specifically, and which OAFR (Forgotten Realms Oversized
+// "{X Token}"), which the two-sided trigger and cleanFaceName both
+// recognize specifically, and which OAFR (Forgotten Realms Oversized
 // Cards, a memorabilia sibling of AFR) duplicates the ids of under its
 // own uuids - see mtgmatcher/magic/tokenpairs.go's idCanonicalKey. The
 // foil case (no scryfall_id at all) exercises MatchTokenPairingBySetNumber

@@ -27,9 +27,9 @@ const onePieceDatastore = `{"data": {
 // TestOnePieceBridgeNamesThePrinting pins that the bridge names the printing
 // where the catalog only counts. Cardmarket sells the three arts as three
 // products and tells them apart with a V-index of its own ordering, so the
-// index is a guess: the run this was written against had V.2 and V.3 landing
-// on each other's printing. The bridge says which outright, and where it says
-// nothing the catalog still names what it can.
+// index is a guess, and V.2 and V.3 can land on each other's printing. The
+// bridge says which outright, and where it says nothing the catalog still
+// names what it can.
 func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 	b := datastoreBackend(t, "onepiece", onePieceDatastore)
 

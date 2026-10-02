@@ -52,7 +52,7 @@ func TestPreprocessGradedNested(t *testing.T) {
 	}
 }
 
-// TestPreprocessGradedEditions pins three title shapes that used to leave
+// TestPreprocessGradedEditions pins three title shapes that can leave
 // the edition either wrong or cluttered with grade-tier noise: this
 // storefront's own "Breaking New" typo, the correctly-spelled showcase
 // variant of the same shelf, and a rules-status word that belongs on the

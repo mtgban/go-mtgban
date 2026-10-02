@@ -10,8 +10,8 @@ import (
 // leader or DON!! blueprint's number ("P-L", "P", empty, or a DON!! set
 // code) never names a printing, so the Version answers in its place. A
 // number that carries a digit and an index tail the matcher cannot read
-// ("OP07-047P2") is not a placeholder and keeps the old behavior of
-// dropping the Version rather than guessing which digit-shape it is.
+// ("OP07-047P2") is not a placeholder and drops the Version rather than
+// guessing which digit-shape it is.
 func TestOpPlaceholderNumber(t *testing.T) {
 	for _, tt := range []struct {
 		desc, name, version, number, want string

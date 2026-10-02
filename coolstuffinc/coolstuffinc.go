@@ -200,14 +200,14 @@ const saleTail = "Was\u00a0"
 //
 // The promotions are tails on the condition, and a row may run several at
 // once: the bundle flag sits in the condition column and the sale's "Was" in
-// the price one, so cutting a single tail left the other row's flag glued to
-// the condition and the whole offer was dropped as unparseable. Cutting
+// the price one, so cutting a single tail would leave the other row's flag
+// glued to the condition and drop the whole offer as unparseable. Cutting
 // until nothing more comes off reads them in whatever order the page lays
 // them out, and a row running none is unchanged by the first pass.
 func offerCondition(fullRow, qtyStr, bundleStr string) string {
 	// The count is a prefix, not a set of characters to eat: trimming it as
-	// a cutset ate the leading digit of a condition that opens with one,
-	// which is how "1st Edition" reached the log as "st Edition".
+	// a cutset eats the leading digit of a condition that opens with one,
+	// turning "1st Edition" into "st Edition".
 	conditions := strings.TrimPrefix(fullRow, qtyStr)
 	conditions = strings.TrimPrefix(conditions, "+")
 	conditions = strings.TrimLeft(conditions, " ")
@@ -226,9 +226,9 @@ func offerCondition(fullRow, qtyStr, bundleStr string) string {
 // title. The storefront files the first-edition run of a set as a shelf
 // beside the set - "1st Edition Fossil" next to "Fossil" - where the catalog
 // files the run as a finish of the set itself, so the shelf name has to
-// become one. Left as it was, every listing on those shelves matched the
-// unlimited printing and was published at a fraction of its price, and
-// nothing said so: the match succeeded, it just answered with the other run.
+// become one. Left as it is, every listing on those shelves matches the
+// unlimited printing and is published at a fraction of its price, and nothing
+// says so: the match succeeds, it just answers with the other run.
 func firstEditionShelf(edition string) (string, []string) {
 	trimmed := strings.TrimPrefix(edition, "1st Edition ")
 	if trimmed == edition {
@@ -238,8 +238,9 @@ func firstEditionShelf(edition string) (string, []string) {
 	// own rather than a finish of the set beside it: the first-edition and
 	// shadowless printings are "Base Set (Shadowless)", and "Base Set" holds
 	// only the shadowed unlimited run. Naming the shelf's own set asks for a
-	// run that set has one card of, so every other row fell through to the
-	// unlimited printing and was published at the first edition's price.
+	// run that set has one card of, so every other row would fall through
+	// to the unlimited printing and be published at the first edition's
+	// price.
 	if set, found := runShelfEditions[trimmed]; found {
 		trimmed = set
 	}
@@ -382,9 +383,9 @@ var bundleRe = regexp.MustCompile(`^Buy 1 get (\d+) free!$`)
 
 // bundledCopies reads how many copies the listed price buys: one, unless the
 // row runs the bundle promotion, whose price covers the bought copy and the
-// free ones together. The wording carries the count, so a promotion the
-// condition parser learned to cut is also the one the price is divided by,
-// rather than only the one spelling the exact count the flag used to name.
+// free ones together. The wording carries the count, so every promotion the
+// condition parser cuts is also one the price is divided by, whatever count
+// it spells.
 //
 // The price is the only thing the promotion changes. The count beside it is
 // the same card-qty column every row on the page carries, promotion or not,
@@ -735,9 +736,9 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 				itemNames = append(itemNames, itemName)
 			})
 		case "Rarity":
-			// Reading the tiers off the page the editions already come
-			// from spares the search a list of its own, which is how
-			// every game but Magic came to be asked for Magic's tiers
+			// Reading the tiers off the page the editions come from
+			// spares a fixed list, which would ask every game for
+			// Magic's tiers.
 			rarities = singlesRarities(s)
 		}
 	})
@@ -1178,7 +1179,7 @@ func unknownPrinting(name, edition string) bool {
 //
 // The spelling has to be swapped rather than added to. "Light Blue" says the
 // word blue, which names the blue printing outright, so a listing carrying
-// both words names two printings and ties where it used to answer one - and
+// both words names two printings and ties instead of answering one - and
 // the storefront's own word says nothing else worth keeping.
 var csiColors = strings.NewReplacer("(Light Blue)", "(Silver)")
 

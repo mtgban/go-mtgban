@@ -10,11 +10,11 @@ import "testing"
 // Normalizing strips both the dash and a comma, so that dash spelling
 // collides with an entirely different, unrelated card: "Ivern, Green
 // Father" is itself a real, non-promotional name, carried by a Secret
-// Garden printing that has nothing to do with Unleashed. Prefilter used to
-// trust that direct match and return immediately, because it is not
-// promo-only - one of its two printings sits in a real, non-promo set. The
-// fixtures are copied from a captured CI run verbatim; every one of them
-// failed as "unknown variant" before the edition-conflict retry was added.
+// Garden printing that has nothing to do with Unleashed. Prefilter checks that
+// direct match against the edition rather than trusting it for not being
+// promo-only - one of its two printings sits in a real, non-promo set. Trusting
+// it fails every fixture as "unknown variant"; the fixtures are copied from a
+// captured CI run verbatim.
 func TestRiftboundEpithetOnlyChampions(t *testing.T) {
 	b := withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
 

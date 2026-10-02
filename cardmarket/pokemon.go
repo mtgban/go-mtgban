@@ -32,8 +32,8 @@ import (
 // datastore's "XY Promos" set itself carries twelve Japanese promos under
 // their ##/XY-P numbers - Mega Tokyo's Pikachu, the poncho Pikachus - and
 // Cardmarket's numbered products land exactly on them; only its unnumbered
-// products were landing on English printings. Everywhere else the wrong
-// landings carried numbers too, so nothing passes.
+// products land on English printings. Everywhere else the wrong landings
+// carry numbers too, so nothing passes.
 var pokemonForeignExpansions = map[string]bool{
 	"Advent of Arceus":                       false,
 	"BW Promos":                              false,

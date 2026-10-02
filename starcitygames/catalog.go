@@ -104,9 +104,9 @@ func (p productRefused) Unwrap() error { return p.err }
 // The export is one long-lived response of a hundred-odd megabytes, and the
 // client's own retry can only replay a request that never returned a status.
 // A connection dropped after the header - "stream error: stream ID 1;
-// INTERNAL_ERROR" is the one seen in practice - lands past it, and used to end
-// the run with an empty catalog. Replaying from the top costs a second
-// download and is the only recovery available, since the export is not
+// INTERNAL_ERROR" is the one seen in practice - lands past it, and would
+// otherwise end the run with an empty catalog. Replaying from the top costs a
+// second download and is the only recovery available, since the export is not
 // resumable; reset undoes whatever the abandoned pass accumulated.
 func (scg *SCGClient) StreamCatalog(ctx context.Context, reset func(), fn func(CatalogProduct) error) error {
 	var err error
@@ -396,9 +396,7 @@ func tokenPairSkuAnchorSet(b *mtgmatcher.Backend, code string) string {
 // tokenPairAnchorUUIDs anchors both faces of a two-sided token listing
 // independently by identity - each face's own filing set and number, read
 // directly off the listing's own composite sku (tokenPairSkuAnchors) -
-// rather than guessing either from the vendor's own wording. The helper is
-// intentionally kept private: the offline regeneration tool that used to
-// call it was removed when the verified-pairs table was removed.
+// rather than guessing either from the vendor's own wording.
 // ok is false whenever the sku doesn't carry two such anchors, either
 // face's own set can't be resolved, or either face's own name doesn't
 // match exactly one printing in that set and number - the same
@@ -661,13 +659,13 @@ func fabRenamedTwin(b *mtgmatcher.Backend, id, sku string) string {
 // shelf where two products share a number and, once "(Marvel)" is folded
 // into the matched variant, a name: SGL-FAB-ROS2-008a-ENC is sold as "Aurora
 // (Asur Misoa)" and SGL-FAB-ROS2-008b-ENC as "Aurora (Ramza Ardyputra)", and
-// nothing about either product's own fields said which uuid was which until
-// datastore-gen started publishing the credit the-fab-cube carries and
-// TCGplayer's own catalog does not. The table is closed rather than a rule
-// guessing at a convention, the way fabRenamedTwins is: a survey for any
+// nothing about either product's own fields says which uuid is which. The
+// artist credit does, which datastore-gen publishes from the-fab-cube and
+// TCGplayer's own catalog does not carry. The table is closed rather than a
+// rule guessing at a convention, the way fabRenamedTwins is: a survey for any
 // other (set, number, foilness) with two candidate rows and no other way to
-// tell them apart is this campaign's to run again if datastore-gen publishes
-// more artists than it does today.
+// tell them apart is worth running again if datastore-gen publishes more
+// artists.
 var fabCreditedTwins = map[string]string{
 	"SGL-FAB-ROS2-008a-ENC": "Asur Misoa",
 	"SGL-FAB-ROS2-008b-ENC": "Ramza Ardyputra",
@@ -768,10 +766,9 @@ func isAllLetters(field string) bool {
 }
 
 // catalogNames are the names Star City Games spells differently from the
-// datastore, one entry per misspelling. The matcher used to forgive a stray
-// s on any name, which is what carried these - at the price of reading Nest
-// Ball as Net Ball and Swoobat as Woobat. A storefront that misspells a name
-// says so here instead.
+// datastore, one entry per misspelling. The matcher does not forgive a stray
+// s on any name, which would read Nest Ball as Net Ball and Swoobat as
+// Woobat, so a storefront that misspells a name says so here.
 var catalogNames = map[string]string{
 	"Bandana of the Blue Beyond": "Bandana of the Blue Beyonds",
 
@@ -1114,8 +1111,8 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 // - the tokens are their own yearly sets, L12 through L17 - and twelve of the
 // thirteen carry no identifier at all, so nothing but the sku says which. The
 // thirteenth is worse: {Monk Token} LEAG_FRF_L01, listed at $34.99 and bought
-// at $15.00, carries Fate Reforged's set-token scryfall id and so was priced
-// as that $0.49 common, the higher bid winning the shared id.
+// at $15.00, carries Fate Reforged's set-token scryfall id and so would be
+// priced as that $0.49 common, the higher bid winning the shared id.
 //
 // The League half is closed rather than derived: the leagues ran from 2012 to
 // 2017, and the catalog's thirteen products are exactly the datastore's
@@ -1202,19 +1199,20 @@ func idContradictsProduct(b *mtgmatcher.Backend, p CatalogProduct, uuid string) 
 	}
 	// A World Championship sku names the year's deck set, and the identifiers
 	// routinely name the ordinary printing the deck reprinted: a gold-bordered
-	// $1.25 Covetous Dragon was priced as Urza's Destiny's $4.99 rare, and the
-	// deck printing went unlisted. The year segment says which set, so a
-	// printing from any other - the original, or another year's deck - is
-	// refused and the sku read instead.
+	// $1.25 Covetous Dragon would be priced as Urza's Destiny's $4.99 rare,
+	// leaving the deck printing unlisted. The year segment says which set,
+	// so a printing from any other - the original, or another year's deck -
+	// is refused and the sku read instead.
 	if set, named := worldsSetFromSKU(p.SKU); named && co.SetCode != set {
 		return true
 	}
 	// Standard Showdown is an event, not a set: mtgjson files each year's
 	// promos under whichever set ran them, while the shop numbers them by the
 	// year and the place in that year's cycle. The 2024 lands carry the 2019
-	// promo pack's identifiers and were priced as them, so an id landing
-	// anywhere but on a Standard Showdown printing is naming another event's
-	// card. The wording path reads the year and finds the right one.
+	// promo pack's identifiers and would be priced as them, so an id
+	// landing anywhere but on a Standard Showdown printing is naming
+	// another event's card. The wording path reads the year and finds the
+	// right one.
 	if strings.HasPrefix(skuNumber(p.SKU), "SSD_") && !co.HasPromoType("standardshowdown") {
 		return true
 	}
@@ -1424,12 +1422,12 @@ func lorcanaMainSetTotal(b *mtgmatcher.Backend, edition string) string {
 //
 // One does. A printing sold in its standard foil and in a second one beside it
 // has two foils for the flag to choose between, and the flag always picks the
-// standard - so the second foil's sku and the standard's landed on one uuid,
-// and a $16.78 buylist competed with a $12.56 one on the same card. That
-// second foil is the Rainbow Pillars printing TCGplayer prices as Holofoil,
-// which the catalog names Rainbow Foil, and naming it is what separates the
-// two skus. A printing not sold in it is unaffected: the name reaches no uuid
-// and the flag decides as before.
+// standard - so on the flag alone the second foil's sku and the standard's land
+// on one uuid, and a $16.78 buylist competes with a $12.56 one on the same
+// card. That second foil is the Rainbow Pillars printing TCGplayer prices as
+// Holofoil, which the catalog names Rainbow Foil, and naming it is what
+// separates the two skus. A printing not sold in it is unaffected: the name
+// reaches no uuid and the flag decides as before.
 func lorcanaFinish(finish string) string {
 	if finish == "Rainbow Foil" {
 		return "Holofoil"

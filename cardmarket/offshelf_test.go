@@ -50,9 +50,9 @@ var opShelves = []cm.Expansion{
 	{Name: "Starter Deck: Blue Kuzan"},
 }
 
-// TestOffShelf pins the two products PR #224 resolved onto a printing
+// TestOffShelf pins two products that would otherwise resolve onto a printing
 // another product of the same run already prices. Cardmarket sells them on a
-// tournament shelf and in a starter deck; the printing they reached is the
+// tournament shelf and in a starter deck; the printing they reach is the
 // plain booster card, which the booster's own shelf sells as a product of
 // its own. A refusal says less than a price, and claims nothing.
 func TestOffShelf(t *testing.T) {

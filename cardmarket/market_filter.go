@@ -17,17 +17,14 @@ import (
 // marketFilterParams are the offline pre-filter's thresholds, one row per
 // game it applies to. Magic, Pokemon and YuGiOh need it to fit a nightly
 // scrape budget at all; measured against each game's own price snapshot
-// (see banAPIURL - a game earlier missing from this table simply because
-// the snapshot was fetched from the wrong host reads as "nothing passed
-// the filter," not as "unfiltered"), Lorcana, Riftbound, Flesh and Blood
-// and One Piece all fit their budget unfiltered too, but only clear this
-// filter on 9-26% of their own priced uuids - the rest is bulk commons a
-// live call is wasted on, and every call spends the one daily allowance
-// this app token shares across every game. One Piece's own snapshot host
-// briefly rejected every request with "invalid or expired signature" -
-// a separate backend deployment than every other game's subdomain,
-// confirmed by its own x-do-app-origin header - fixed server-side and
-// re-measured clean afterward.
+// (see banAPIURL - a snapshot fetched from the wrong host reads as "nothing
+// passed the filter," not as "unfiltered"), Lorcana, Riftbound, Flesh and Blood
+// and One Piece all fit their budget unfiltered too, but only clear this filter
+// on 9-26% of their own priced uuids - the rest is bulk commons a live call is
+// wasted on, and every call spends the one daily allowance this app token
+// shares across every game. One Piece's own snapshot host is a separate backend
+// deployment from every other game's subdomain, confirmed by its own
+// x-do-app-origin header.
 //
 // Magic's tighter minDiff guards the arbit and mismatch legs' percentage
 // spread against cent-level noise on bulk cards, where a $0.02 vs $0.10
@@ -159,12 +156,11 @@ type banPrice struct {
 // "foil" for an "_f"-suffixed one, "etched" for an etched printing - so the
 // order below is a defensive tiebreak rather than a real choice.
 //
-// Etched was missing here until it was measured: 1,195 of Magic's 151,959
-// MKMTrend-priced uuids answer under "etched" alone, and every one of them
-// read as zero, which marketCandidate takes as "this game's snapshot does
-// not price it" and refuses outright. 346 of those clear the flat threshold
-// on their own, so the pre-filter was dropping them before any spread was
-// even considered.
+// Etched has to be read: 1,195 of Magic's 151,959 MKMTrend-priced uuids answer
+// under "etched" alone, and without it every one of them reads as zero, which
+// marketCandidate takes as "this game's snapshot does not price it" and refuses
+// outright. 346 of those clear the flat threshold on their own, so the
+// pre-filter would drop them before any spread is even considered.
 func (p *banPrice) value() float64 {
 	if p == nil {
 		return 0
@@ -237,8 +233,7 @@ func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string) (*ba
 // error body instead of the two fields marketCandidates reads, and a
 // legitimate empty response no differently from one that simply is not
 // published. Trusting either as "an empty result, nothing passed the
-// filter" is the same silent-failure shape the empty-body-on-error bug in
-// go-cardmarket's own get() was.
+// filter" would let an error pass silently as an empty body.
 func parseBanSnapshot(data []byte, game mtgmatcher.Game) (*banSnapshot, error) {
 	var snap banSnapshot
 	if err := json.Unmarshal(data, &snap); err != nil {

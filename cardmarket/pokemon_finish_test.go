@@ -67,7 +67,7 @@ func loadPokemonBackend(t *testing.T) *mtgmatcher.Backend {
 	return pokemonBackend
 }
 
-// TestPokemonFinishPlanTeamRocket pins the case this whole fix exists for:
+// TestPokemonFinishPlanTeamRocket pins the case pokemonFinishPlan exists for:
 // Team Rocket's Dark Charizard predates reverse holo entirely, so its two
 // real printings - Unlimited Holofoil and 1st Edition Holofoil - both
 // project to a cell with no reverse-holo component, and both must appear

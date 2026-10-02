@@ -10,9 +10,9 @@ import (
 // A marvel is a separate product sharing its card's number and treatment, so
 // the sku, the set, the collector number and the finish are the same words for
 // both, and the rarity is the only thing that tells them apart. Dropping it
-// did not lose the listing, it moved the money: Star City Games asks $99.99
-// for the Dynasty marvel of Construct Nitro Mechanoid, and that price was
-// being quoted against the ordinary cold foil beside it.
+// does not lose the listing, it moves the money: Star City Games asks $99.99
+// for the Dynasty marvel of Construct Nitro Mechanoid, and that price would be
+// quoted against the ordinary cold foil beside it.
 func TestCatalogFabMarvel(t *testing.T) {
 	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 

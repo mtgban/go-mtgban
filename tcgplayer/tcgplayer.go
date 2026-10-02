@@ -222,7 +222,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 	// faced tokens' sku lists in the datastore's own sku file - one physical
 	// card, one price, but two unrelated uuids both listing it - so priced
 	// the ordinary way it lands on both, and a token that pairs with several
-	// partners absorbs every one of their prices. mtgmatcher now mints a
+	// partners absorbs every one of their prices. mtgmatcher mints a
 	// combined entity for it; derivedProductIDs is every id one of those
 	// entities claims, read once so the per-card walk below can skip it
 	// rather than mis-price the single-faced token, and derivedBySet is

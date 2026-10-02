@@ -111,7 +111,7 @@ var errForeign = errors.New("of a catalog we do not carry")
 // by the year they were printed, or on a trainer kit's own shelf, one product
 // standing for a card a dozen sets carry. Naming those is the same noise
 // Magic's tokens are, and resolveMagic already passes over them for the same
-// reason. They are 57 of the 177 lines a Pokemon run still reports.
+// reason. They are 57 of the 177 lines a Pokemon run would otherwise report.
 func (r *resolver) noPrinting(product *cm.Product) error {
 	if r.gameID == cm.GamePokemon && pokemonBasicEnergy(pokemonName(product.Name)) {
 		return nil
@@ -170,7 +170,7 @@ func (r *resolver) ownedElsewhere(product *cm.Product, cardID string) bool {
 // printings answered with a printing the datastore does not tag pre-errata.
 // Where it carries none at the number, the name reaches the card the set's
 // own shelf sells, which offShelf passes when labelled: 2 V.2s of "Romance
-// Dawn (Pre-Errata)" were landing on Box Toppers.
+// Dawn (Pre-Errata)" land on Box Toppers that way.
 func (r *resolver) notPreErrata(product *cm.Product, cardID string) bool {
 	if r.gameID != cm.GameOnePiece || !strings.Contains(strings.ToLower(product.ExpansionName), "errata") {
 		return false
@@ -711,14 +711,11 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// Pokemon's second column is the reverse holo's, which the flag
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
-			// is never reached. This is Index's own use of cardIDFoil -
-			// resolveProduct is shared between the two scrapers (see the
-			// package doc above) - and it stays exactly as it was: Market's
-			// own path (queryPokemonPrintings, pokemonFinishPlan) resolves
-			// cardID's whole finish set fresh from the matcher instead of
-			// through this pair, and simply never reads cardIDFoil for this
-			// game, so leaving it filled here costs Market nothing while
-			// Index still depends on it.
+			// is never reached. Only Index reads this cardIDFoil,
+			// though resolveProduct serves both scrapers: Market's
+			// own path (queryPokemonPrintings, pokemonFinishPlan)
+			// resolves cardID's whole finish set from the matcher
+			// instead.
 			cardIDFoil, _ = r.backend.MatchIDFinish(cardID, pokemonReverseHolo)
 		}
 	default:
@@ -1044,7 +1041,7 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 				// storefront does not name takes it from the version
 				// index; see yugiohVersionVariants on what that order is
 				// worth. A version the table does not cover is left
-				// alone, and aliases as it did before.
+				// alone, and aliases.
 				if labels := yugiohVersionVariants[strings.TrimSuffix(set.Code, "-EN")]; labels != nil {
 					if index := cm.ProductVersion(product); index >= 1 && index <= len(labels) {
 						variation = strings.TrimSpace(variation + " " + labels[index-1])

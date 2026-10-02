@@ -59,9 +59,9 @@ func (s *storefront) scraper(t *testing.T) (*Vegassingles, func()) {
 }
 
 // TestCrawlReadsTheCutOffTheServedPageSize covers how a crawl tells a catalog
-// that ended from one the storefront's result window cut off. The page size
-// used to be written here as a constant, so a storefront serving anything else
-// would have made every last page look ragged: no cut is ever reported, the
+// that ended from one the storefront's result window cut off. A page size
+// written here as a constant would make every last page of a storefront serving
+// anything else look ragged: no cut is ever reported, the
 // passes that widen the crawl stop running, and nothing says so. The size the
 // storefront is actually serving is in the pages it served.
 func TestCrawlReadsTheCutOffTheServedPageSize(t *testing.T) {
@@ -96,9 +96,9 @@ func TestCrawlReadsTheCutOffTheServedPageSize(t *testing.T) {
 }
 
 // TestCrawlSurvivesAFailedTailPage covers the walk past the fanned-out range,
-// where a page that would not load used to end the whole scrape: the error
-// travelled up through Load and threw away every product the run had already
-// priced, while the very same failure inside the fanned range was logged and
+// where a page that will not load must not end the whole scrape: an error
+// travelling up through Load would discard every product the run had already
+// priced, while the same failure inside the fanned range is logged and
 // the page skipped. The walk cannot skip a page and stay finite - only an
 // empty page ends it - so it stops instead, and what it collected stands.
 func TestCrawlSurvivesAFailedTailPage(t *testing.T) {

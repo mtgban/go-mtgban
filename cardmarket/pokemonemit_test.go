@@ -15,8 +15,8 @@ import (
 // holo beside a reverse holo, the Mew of Southern Islands sold as a
 // reverse holo and in nothing else, and the Team Rocket Charizard sold as
 // Unlimited Holofoil beside 1st Edition Holofoil - the print-run axis, no
-// reverse holo involved at all (mtgban/go-mtgban#641; matches Team
-// Rocket's real #4/#84572 checked live against Cardmarket).
+// reverse holo involved at all (matches Team Rocket's real #4/#84572 checked
+// live against Cardmarket).
 const pokemonEmitDatastore = `{"data": {
  "game": "pokemon",
  "sets": {"SMP": {"abbreviation": "SMP", "name": "SM Promos", "releaseDate": "2016-11-18", "type": "promo"}, "SM01": {"abbreviation": "SM01", "name": "SM Base Set", "releaseDate": "2017-02-03"}, "SI": {"abbreviation": "SI", "name": "Southern Islands", "releaseDate": "2001-07-31"}, "TR": {"abbreviation": "TR", "name": "Team Rocket", "releaseDate": "2000-04-24"}},
@@ -37,14 +37,13 @@ const pokemonEmitDatastore = `{"data": {
 // holo pair on the reverse holo sold beside it - or on the printing itself
 // where the product is sold as a reverse holo and nothing else, the own
 // columns being whatever other listings the storefront holds. A holo rare
-// is a foil to the flag, and reading the flag priced the holo from the
-// reverse's columns and the reverse from nothing; a promo sold holo and in
-// nothing else, whose guide carries no holo pair at all, went unpriced.
-// The Team Rocket Charizard pins the print-run axis specifically
-// (mtgban/go-mtgban#641): the guide has no column of its own for 1st
-// Edition, so both it and the Unlimited Holofoil sibling now share the
-// product's own first pair rather than only one of them getting it and
-// the other nothing.
+// is a foil to the flag, and reading the flag would price the holo from the
+// reverse's columns and the reverse from nothing, and leave a promo sold holo
+// and in nothing else, whose guide carries no holo pair at all, unpriced. The
+// Team Rocket Charizard pins the print-run axis specifically: the guide has no
+// column of its own for 1st Edition, so both it and the Unlimited Holofoil
+// sibling share the product's own first pair rather than only one of them
+// getting it and the other nothing.
 func TestEmitPokemonColumns(t *testing.T) {
 	b := datastoreBackend(t, "pokemon", pokemonEmitDatastore)
 
@@ -61,7 +60,7 @@ func TestEmitPokemonColumns(t *testing.T) {
 		// A holo pair is present but must go unpriced entirely: neither
 		// sibling is Reverse Holofoil, so cardIDFoil never resolves, the
 		// same as product 1's Pikachu above - this just also has a second
-		// uuid (the 1st Edition Holofoil sibling) that the first pair now
+		// uuid (the 1st Edition Holofoil sibling) that the first pair
 		// reaches too.
 		5: {IDProduct: 5, LowPrice: 15, TrendPrice: 16, HoloLowPrice: 17, HoloTrendPrice: 18},
 	}

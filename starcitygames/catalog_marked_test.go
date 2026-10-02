@@ -39,8 +39,8 @@ func TestFabVariantMarked(t *testing.T) {
 // rarity are the same words on both, so the marker is the whole of the
 // difference and the datastore is what names the treatment it stands for.
 //
-// Read as the plain printing, the listing quoted the wrong card's price: the
-// Extended Art War Machine and the ordinary rainbow foil beside it were one
+// Read as the plain printing, the listing quotes the wrong card's price: the
+// Extended Art War Machine and the ordinary rainbow foil beside it become one
 // entry with two Star City Games rows under it.
 func TestCatalogFabMarkedPrinting(t *testing.T) {
 	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")

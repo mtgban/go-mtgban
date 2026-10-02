@@ -74,7 +74,7 @@ func TestTheListConflict(t *testing.T) {
 // TestSecretLairDrop pins the two drops of one card a Secret Lair can hold.
 // The storefront's number is the only thing telling them apart - its wording
 // says "Secret Lair" and no more - and dropping that number to read a star
-// walked the listing over to the other drop entirely.
+// would walk the listing over to the other drop entirely.
 func TestSecretLairDrop(t *testing.T) {
 	b := realDatastore(t)
 	for _, test := range []struct {

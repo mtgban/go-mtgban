@@ -16,9 +16,9 @@ var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
 //
 // The Nexus Night runes are sold under the promo shelf with the set that
 // issued them written at the head of the note - "UNL-R05b", "SFD-R05b" - and
-// the promo shelf holds a printing of its own at that number. All of them met
-// there, so a $5.00 Unleashed Chaos Rune and an $11.00 Spiritforged one were
-// both priced as the Organized Play printing they share a number with. The
+// the promo shelf holds a printing of its own at that number. All of them meet
+// there, so a $5.00 Unleashed Chaos Rune and an $11.00 Spiritforged one would
+// both price as the Organized Play printing they share a number with. The
 // same three listings, word for word, sell on the retail search too.
 //
 // The note only decides where the set it names holds that printing. Vendetta

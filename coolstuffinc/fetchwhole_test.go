@@ -12,9 +12,9 @@ import (
 
 // TestFetchWholeResumesATruncatedBody pins that a sell list cut mid-stream is
 // finished rather than abandoned. The storefront answers 200 with a short
-// body and no transport error about one fetch in three, so the decode was
-// the only thing that noticed and three bad attempts in a row failed the
-// run outright.
+// body and no transport error about one fetch in three, so without the resume
+// the decode is the only thing that notices, and three bad attempts in a row
+// fail the run outright.
 func TestFetchWholeResumesATruncatedBody(t *testing.T) {
 	full := strings.Repeat("abcdefghij", 500)
 

@@ -410,24 +410,21 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// the card's own printing is, holo or plain or a print run. The finish
 	// the loader stored says which side of that split the printing is on;
 	// the foil flag cannot, a Pokemon holo being a foil to the flag and a
-	// printing of its own to the guide - which is how the holos were priced
-	// from the reverse's columns and the reverses from nothing.
+	// printing of its own to the guide - read by the flag, the holos would
+	// be priced from the reverse's columns and the reverses from nothing.
 	perTreatment := mkm.gameID == cm.GameFleshAndBlood || mkm.gameID == cm.GameOnePiece
 	// Yu-Gi-Oh's second pair is a lone trend-foil that has stopped moving
 	// and is not the 1st Edition's price, so only the product's own is read.
 	onePair := perTreatment || mkm.gameID == cm.GameYuGiOh
 	second := co.Finish != mtgmatcher.FinishNonfoil
 	if mkm.gameID == cm.GamePokemon {
-		// This is reverse-holo-only - the same blindness Market's own
-		// resolveProduct had until it was fixed to cross both of Pokemon's
-		// finish axes (see pokemonFinishPlan) - so a 1st Edition printing
-		// still reads as "not the second column" here regardless of print
-		// run. Closing mtgban/go-mtgban#641 does not change this line: the
-		// price guide has no 1st-Edition column at all, unlike Market's
-		// per-listing live query, so the fix is below instead - filing the
-		// same blended first-pair price under every uuid this product's
-		// "not reverse holo" side actually resolves to, not splitting this
-		// check itself into a third case.
+		// Reverse holo is the guide's only split: it has no 1st-Edition
+		// column, unlike Market's per-listing query (see
+		// pokemonFinishPlan), so a 1st Edition printing reads as "not
+		// the second column" here regardless of print run. The
+		// print-run axis is handled below instead, by filing the first
+		// pair under every uuid on this product's "not reverse holo"
+		// side.
 		second = co.Finish == mtgmatcher.FinishSlug(pokemonReverseHolo)
 	}
 
@@ -447,14 +444,13 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		// product that is not specifically Reverse Holofoil - Unlimited,
 		// 1st Edition, and both their Holofoil crossings all read as one
 		// number here, because the guide has no column of its own for the
-		// print-run axis at all (mtgban/go-mtgban#641). Filing the same
-		// blended number under every one of those uuids is a real
-		// improvement on filing it under only one and leaving the rest
-		// unpriced entirely, even though it cannot separate what a live
-		// listing would: Market's own per-listing query can tell 1st
-		// Edition apart from Unlimited (see pokemonFinishPlan) because it
-		// asks Cardmarket per finish; the price guide never breaks the two
-		// out to begin with, so there is no better number to give either
+		// print-run axis at all. Filing the same blended number under
+		// every one of those uuids beats filing it under only one and
+		// leaving the rest unpriced, even though it cannot separate
+		// what a live listing would: Market's per-listing query tells
+		// 1st Edition from Unlimited (see pokemonFinishPlan) by asking
+		// Cardmarket per finish, but the price guide never breaks the
+		// two out, so there is no better number to give either
 		// one here.
 		targets := []string{cardID}
 		if mkm.gameID == cm.GamePokemon {

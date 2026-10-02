@@ -10,8 +10,8 @@ import (
 // pokemonNonHolo matches the bracket a Pokemon name states a plain printing
 // with. The storefront sells a card printed in both finishes as two products
 // telling them apart by that bracket alone - the note is empty and the foil
-// flag is off on both - and read as the holo, a $2.00 Team Aqua's Kyogre was
-// served as the $80.00 one's price. The bracket's own case varies
+// flag is off on both - and read as the holo, a $2.00 Team Aqua's Kyogre
+// would be served at the $80.00 one's price. The bracket's own case varies
 // ("(NON-HOLO)" on Black & White prints), so the match has to as well.
 //
 // The rarity is what says whether the plain printing was ever made. A holo
@@ -213,9 +213,9 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 
 // pokemonBuylistCard reads a buylist row the way a sell listing is read, the
 // print run included. The run rides in the shelf's title on both sides of the
-// storefront, and only the sell listings were reading it: a buy row arrived
-// with its shelf spelled whole, matched the set of that name, and was
-// published against the unlimited printing at the first edition's price.
+// storefront: a buy row read with its shelf spelled whole matches the set of
+// that name and is published against the unlimited printing at the first
+// edition's price.
 func pokemonBuylistCard(b *mtgmatcher.Backend, product CSIPriceEntry) (*mtgmatcher.InputCard, []string) {
 	// CSI's "0" placeholder for an unnumbered year energy otherwise reads
 	// as a number word of its own at the head of the variation.
@@ -446,8 +446,8 @@ func pokemonBasicEnergy(b *mtgmatcher.Backend, energyType, bracket, edition, num
 // A promo carrying a main set's number is sold here under that set, with only
 // the rarity field saying otherwise: the Pokemon Day 2025 Eevee sits on SV
 // Prismatic Evolutions at 074/131, where that set's own Eevee already stands.
-// The two met there and a $2.50 promo was priced as the card it was stamped
-// from. The catalog keeps those on a promo shelf instead.
+// The two meet there, and the $2.50 promo would be priced as the card it was
+// stamped from. The catalog keeps those on a promo shelf instead.
 //
 // The promo shelf only decides where it answers at all. Twenty of the fifty
 // buylist listings this can reach name a printing no promo shelf holds - the

@@ -8,8 +8,8 @@ import (
 
 // TestPreprocessImageLetter pins the image names that write a letter between
 // the set code and the number. The surge foil and the pixel art of a Turtles
-// card are two printings at two numbers, and reading only the digits filed
-// both under the pixel art one: the cheaper listing was priced as the dearer
+// card are two printings at two numbers, and reading only the digits files
+// both under the pixel art one, pricing the cheaper listing as the dearer
 // printing.
 func TestPreprocessImageLetter(t *testing.T) {
 	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")

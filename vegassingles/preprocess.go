@@ -531,9 +531,9 @@ func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// The wording before the code is what the name keeps, so the code that
 	// ends it is the last one written rather than the first. This storefront
 	// states the code twice on the printings it says most about - "Roronoa
-	// Zoro (EB04-007) (Alternate Art) (EB04-007)" - and reading the first cut
-	// the name off before the qualifier, leaving the alternate art asking for
-	// the plain printing and priced as it.
+	// Zoro (EB04-007) (Alternate Art) (EB04-007)" - and reading the first
+	// would cut the name off before the qualifier, leaving the alternate
+	// art asking for the plain printing and priced as it.
 	all := bandaiCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if all == nil {
 		card := donCard(product)

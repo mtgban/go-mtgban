@@ -33,7 +33,7 @@ func TestResolvePromoShelfPrinting(t *testing.T) {
 		{"Khans of Tarkir", "SGL-MTG-PRM-LEAG_KTK_L01-ENN", "{Warrior Token}", false, "", "L14", "4"},
 
 		// The one product SCG gave an identifier to was given the set
-		// token's, which is what used to price a $34.99 promo as a $0.49
+		// token's, which would price a $34.99 promo as a $0.49
 		// common. The sku has to win over it.
 		{"Fate Reforged, whose scryfall id names the set token", "SGL-MTG-PRM-LEAG_FRF_L01-ENN", "{Monk Token}", false, "3142cb28-23cc-405f-9db5-7c4d168aab19", "L15", "1"},
 

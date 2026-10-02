@@ -267,9 +267,9 @@ func (scg *Sealed) Load(ctx context.Context) error {
 		return fmt.Errorf("catalog load failed: %w", err)
 	}
 	scg.printf("Processed %d products total", count)
-	// What a sealed run priced is only half of what it saw, and the half it
-	// turned down used to leave no trace at all: a game whose coverage falls
-	// looked exactly like a game with nothing more to sell.
+	// What a sealed run priced is only half of what it saw; without these
+	// lines the half it turned down leaves no trace, and a game whose
+	// coverage falls looks exactly like a game with nothing more to sell.
 	for _, reason := range slices.Sorted(maps.Keys(scg.dropped)) {
 		scg.printf("Dropped %d products: %s", scg.dropped[reason], reason)
 	}

@@ -22,10 +22,10 @@ const preErrataShelfDatastore = `{"data": {
 }}`
 
 // TestPreErrataShelf pins that a product on Cardmarket's pre-errata shelf
-// lands on a pre-errata printing or not at all. Inuarashi's V.2 there had
-// reached the Box Topper, which the set's own shelf sells as 690838, because
-// offShelf trusts a labelled answer; its V.1 reaches the regular card, which
-// offShelf already refused.
+// lands on a pre-errata printing or not at all. Inuarashi's V.2 there reaches
+// the Box Topper, which the set's own shelf sells as 690838 and which
+// offShelf passes for being labelled; its V.1 reaches the regular card, which
+// offShelf refuses.
 func TestPreErrataShelf(t *testing.T) {
 	b := datastoreBackend(t, "onepiece", preErrataShelfDatastore)
 	shelves := []cm.Expansion{{Name: "Romance Dawn"}, {Name: "Romance Dawn (Pre-Errata)"}}

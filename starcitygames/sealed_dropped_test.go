@@ -42,9 +42,9 @@ func TestSealedPricedCount(t *testing.T) {
 
 // TestSealedDropAccounting covers the products a sealed run turns down. For
 // the games whose datastore carries no sku, every product goes through the
-// name resolver, and a refusal used to leave no trace at all: a game losing
-// coverage looked exactly like a game with nothing more to sell. Each refusal
-// now names itself and is counted under its reason.
+// name resolver, and each refusal names itself and is counted under its
+// reason, so a game losing coverage does not look like a game with nothing
+// more to sell.
 func TestSealedDropAccounting(t *testing.T) {
 	b := withLorcana(t)
 

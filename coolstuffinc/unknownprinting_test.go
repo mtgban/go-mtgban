@@ -12,7 +12,7 @@ import (
 // TestUnknownPrinting pins the two listings dropped for naming a printing the
 // catalog does not carry, and the shelf each is keyed to: the same name on
 // another shelf is another card, and the printing sold beside each of them is
-// the one they were landing on.
+// the one they would otherwise land on.
 func TestUnknownPrinting(t *testing.T) {
 	tests := []struct {
 		desc    string
@@ -55,8 +55,8 @@ func TestUnknownPrinting(t *testing.T) {
 	}
 }
 
-// TestUnknownPrintingKept pins that the printing each dropped listing was
-// landing on still resolves: the drop is one listing, not the card.
+// TestUnknownPrintingKept pins that the printing each dropped listing would
+// land on still resolves: the drop is one listing, not the card.
 func TestUnknownPrintingKept(t *testing.T) {
 	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 

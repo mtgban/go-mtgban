@@ -7,7 +7,7 @@ import (
 // TestMarkedApart pins the printing a listing reaches where a set files two
 // of them under one number and tells them apart with a mark this storefront
 // never carries. The number names both and so names neither, and the wording
-// beside it - which is the only thing that knows - went unread.
+// beside it is the only thing that knows which.
 func TestMarkedApart(t *testing.T) {
 	b := realDatastore(t)
 	for _, test := range []struct {

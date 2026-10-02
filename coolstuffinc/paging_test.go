@@ -151,9 +151,9 @@ func TestPagingKeepsItsOwnFirstPage(t *testing.T) {
 // TestPagingReportsARefusedPage pins that a page answered with anything
 // but success is said out loud. A refusal's body parses as a page holding
 // no rows and linking nowhere, which reads as the shelf ending rather
-// than as the error it is. The server errors were loud already - the
-// client retries those and gives up with an error of its own - so the
-// silent half-read shelf was the statuses it hands straight back.
+// than as the error it is. The server errors are loud on their own - the client
+// retries those and gives up with an error of its own - so the silent half-read
+// shelf comes from the statuses it hands straight back.
 func TestPagingReportsARefusedPage(t *testing.T) {
 	var srv *httptest.Server
 	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

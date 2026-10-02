@@ -364,8 +364,8 @@ func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint 
 		products, err := vs.client.getPage(ctx, page, sortDir, rarity)
 		if err != nil {
 			// The same failure inside the fanned-out range is logged and
-			// the page skipped, and this one used to throw away the whole
-			// run's inventory and buylist instead. It cannot be skipped
+			// the page skipped, and this one must not throw away the whole
+			// run's inventory and buylist either. It cannot be skipped
 			// and stay finite - only an empty page ends this walk - so the
 			// walk stops here and the feed is reported as unfinished,
 			// which is what a page nobody could read leaves it.

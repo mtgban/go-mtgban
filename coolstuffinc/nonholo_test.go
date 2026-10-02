@@ -9,8 +9,8 @@ import (
 // TestPokemonNonHoloDeckExclusive pins a "(Non-Holo)" listing to the plain
 // printing PR-1840 Deck Exclusives actually carries at that number, rather
 // than the set's own holo the bare name and number already match on their
-// own - a $4.99 Team Aqua's Kyogre was served at $126.27, the price Game
-// Nerdz buys the real holo for.
+// own - landing there serves a $4.99 Team Aqua's Kyogre at $126.27, the price
+// Game Nerdz buys the real holo for.
 func TestPokemonNonHoloDeckExclusive(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 	for _, tt := range []struct {
