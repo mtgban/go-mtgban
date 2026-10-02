@@ -871,9 +871,10 @@ fix) without one, and `arcanafrisia`, `cardsphere`, `mtgstocks`,
 **CI provisions all nine datastores.** `.github/workflows/ci.yml` runs one
 `cache-<game>` job per game. Only `cache-datastore` (Magic) uses the reusable
 `cache-file.yml` against a public URL (`vars.DATASTORE_MAGIC`). Every other
-game, `cache-lorcana` included, pulls its `.json.xz` from the private
-`mtgban-datastore` B2 bucket (built by `datastore-gen`) and caches it under a
-key built from the object's own metadata, since B2 serves no HTTP etag. Each
+game calls the reusable `cache-b2.yml`, which pulls its `.json.xz` from the
+private `mtgban-datastore` B2 bucket (built by `datastore-gen`) and caches it
+under a key built from the object's own metadata, since B2 serves no HTTP
+etag. Each
 `test-<game>` job then exports only its own game's `<GAME>_PATH`:
 `test-magic` runs `go test ./... -v` over the whole tree, and the other eight
 run a scoped list: their `mtgmatcher/<game>` suite, a few scraper packages

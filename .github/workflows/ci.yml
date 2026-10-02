@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   # Formatting, vet and lint read no datastore, so they run on their own and
-  # report in seconds rather than behind the four cache jobs.
+  # report in seconds rather than behind the cache jobs.
   style:
     runs-on: ubuntu-latest
 
@@ -90,313 +90,59 @@ jobs:
       game: "magic"
     secrets: inherit
 
-  # Lorcana is built by github.com/mtgban/datastore-gen and published
-  # straight to the private bucket, like Riftbound below.
   cache-lorcana:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/lorcana/lorcana.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/lorcana/lorcana.json.xz"
+    secrets: inherit
 
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
-
-  # Riftbound has no public URL for cache-file.yml to curl: the file is built
-  # by github.com/mtgban/datastore-gen and published straight to the
-  # private bucket, so it is pulled from there and then cached under the same
-  # key/filepath contract the other datastores use.
   cache-riftbound:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/riftbound/riftbound.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
-
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/riftbound/riftbound.json.xz"
+    secrets: inherit
 
   cache-gundam:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/gundam/gundam.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
-
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/gundam/gundam.json.xz"
+    secrets: inherit
 
   cache-palworld:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/palworld/palworld.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
-
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/palworld/palworld.json.xz"
+    secrets: inherit
 
   cache-onepiece:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/onepiece/onepiece.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
-
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/onepiece/onepiece.json.xz"
+    secrets: inherit
 
   cache-yugioh:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/yugioh/yugioh.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
-
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/yugioh/yugioh.json.xz"
+    secrets: inherit
 
   cache-fleshandblood:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz"
+    secrets: inherit
 
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
+  cache-pokemon:
+    uses: ./.github/workflows/cache-b2.yml
+    with:
+      uri: "b2://mtgban-datastore/pokemon/pokemon.json.xz"
+    secrets: inherit
 
   # Every game is tested on its own, so one game's datastore drifting can no
   # longer hide the others: a red check names the game that broke. Magic
   # carries the whole tree because the scrapers and the matcher core read
   # AllPrintings and nothing else, and the other games' suites skip
   # themselves when their variable is unset.
-  cache-pokemon:
-    runs-on: ubuntu-latest
-    outputs:
-      key: ${{ steps.get_key.outputs.key }}
-      filepath: ${{ steps.get_key.outputs.filepath }}
-    env:
-      B2_URI: "b2://mtgban-datastore/pokemon/pokemon.json.xz"
-      B2_APPLICATION_KEY_ID: "${{ secrets.B2_APPLICATION_KEY_ID_DATASTORE }}"
-      B2_APPLICATION_KEY: "${{ secrets.B2_APPLICATION_KEY_DATASTORE }}"
-    steps:
-      - name: Fetch file checksum
-        id: get_key
-        run: |
-          pipx install b2
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          base=$(basename "$B2_URI" .xz)
-          # B2 serves no HTTP etag, so the object's own metadata stands in:
-          # it carries the file id, sha1 and upload timestamp, all of which
-          # change when the datastore is republished
-          etag=$(b2 file info "$B2_URI" | sha1sum | cut -c 1-16)
-          echo "key=$base-$etag" >> $GITHUB_OUTPUT
-          echo "filepath=datastore/$base" >> $GITHUB_OUTPUT
-
-      - name: Cache path
-        id: cache_file
-        uses: actions/cache@v6
-        with:
-          path: "datastore/"
-          key: ${{ steps.get_key.outputs.key }}
-
-      - if: steps.cache_file.outputs.cache-hit != 'true'
-        name: Download file
-        run: |
-          mkdir -p datastore/
-          b2 file download --no-progress "$B2_URI" "${{ steps.get_key.outputs.filepath }}.xz"
-          xz -d "${{ steps.get_key.outputs.filepath }}.xz"
-
   test-magic:
     needs: cache-datastore
     runs-on: ubuntu-latest
