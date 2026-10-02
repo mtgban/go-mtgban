@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
+	"slices"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -102,46 +102,10 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 	}
 	tcg.printf("Found skus for %d entries", len(skusMap))
 
-	pages := make(chan marketChan)
-	channel := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < tcg.maxConcurrency; i++ {
-		wg.Go(func() {
-			idsFound := map[int]struct{}{}
-			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)
-
-			for page := range pages {
-				// Skip dupes
-				_, found := idsFound[page.SkuID]
-				if found {
-					continue
-				}
-				idsFound[page.SkuID] = struct{}{}
-
-				// Add our pair to the buffer
-				buffer = append(buffer, page)
-
-				// When buffer is full, process its contents and empty it
-				if len(buffer) == cap(buffer) {
-					err := tcg.processEntries(ctx, channel, buffer)
-					if err != nil {
-						tcg.printf("%s", err.Error())
-					}
-					buffer = buffer[:0]
-				}
-			}
-			// Process any spillover
-			if len(buffer) != 0 {
-				err := tcg.processEntries(ctx, channel, buffer)
-				if err != nil {
-					tcg.printf("%s", err.Error())
-				}
-			}
-		})
-	}
-
-	go func() {
+	// Every sku to price once, gathered before any is asked for
+	requests := func() []marketChan {
+		var reqs []marketChan
+		idsFound := map[int]struct{}{}
 		sets := tcg.backend.GetAllSets()
 		for _, code := range sets {
 			set, _ := tcg.backend.GetSet(code)
@@ -157,8 +121,14 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 					if sku.Condition != "UNOPENED" {
 						continue
 					}
+					// Skip dupes
+					_, found := idsFound[sku.SkuID]
+					if found {
+						continue
+					}
+					idsFound[sku.SkuID] = struct{}{}
 
-					pages <- marketChan{
+					reqs = append(reqs, marketChan{
 						UUID:      uuid,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
@@ -166,25 +136,28 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 						ProductID: sku.ProductID,
 						SkuID:     sku.SkuID,
 						Language:  sku.Language,
-					}
+					})
 				}
 			}
 		}
-		close(pages)
-
-		wg.Wait()
-		close(channel)
+		return reqs
 	}()
 
-	for result := range channel {
+	consume := func(result responseChan) {
 		// Relaxed because sometimes we get duplicates due to how the ids
 		// get buffered, but there is really no harm
 		err := tcg.inventory.AddRelaxed(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
-			continue
 		}
 	}
+	mtgban.WorkerPool(ctx, tcg.maxConcurrency, slices.Collect(slices.Chunk(requests, tcgplayer.MaxIDsInRequest)),
+		func(ctx context.Context, reqs []marketChan, channel chan<- responseChan) error {
+			return tcg.processEntries(ctx, channel, reqs)
+		},
+		consume,
+		tcg.printf,
+	)
 
 	tcg.inventoryDate = time.Now()
 
