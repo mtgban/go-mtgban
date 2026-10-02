@@ -996,7 +996,7 @@ Committed tools: **bantool** (the production orchestrator), **boosterGen**,
 **boosterList**, **manapoolOrders**, and **tcgid4scryfall**
 (TCG id → Scryfall id export). A long tail of further tools exists only as
 untracked working-tree WIP (`manapoolSeller`, `mkmhtml2csv`, `mp2ckbl`,
-`amazonsearch`, `omnitool-3g`, `autocart`, and the `ck*`/`ct*`/`mkm*` family);
+`amazonsearch`, `omnitool-3g`, and the `ck*`/`ct*`/`mkm*` family);
 treat anything not in the list above as unreviewed, and note that some of it
 embeds live credentials.
 
