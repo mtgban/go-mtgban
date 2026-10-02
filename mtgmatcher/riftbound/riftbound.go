@@ -396,7 +396,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 	// Update any remaining details on Sets after Cards loading
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, riftboundRarityMap)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, riftboundRarities)
 		set.Colors = mtgmatcher.ColorsOf(set.Cards, riftboundColors)
 	}
 
@@ -427,12 +427,8 @@ func canonicalGalleryName(card GalleryCard) string {
 // Mind and Body, Chaos and Order.
 var riftboundColors = []string{"fury", "calm", "mind", "body", "chaos", "order"}
 
-var riftboundRarityMap = map[string]int{
-	"common":   1,
-	"uncommon": 2,
-	"rare":     3,
-	"epic":     4,
-	"showcase": 5,
+var riftboundRarities = []string{
+	"showcase", "epic", "rare", "uncommon", "common",
 }
 
 // printingUUID is the uuid the datastore publishes for a finish.

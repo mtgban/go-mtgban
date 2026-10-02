@@ -1207,13 +1207,9 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		set.Cards = filteredCards
 
 		// Assign the rarities and colors present in the set
-		sort.Slice(rarities, func(i, j int) bool {
-			return mtgRarityMap[rarities[i]] > mtgRarityMap[rarities[j]]
-		})
+		mtgmatcher.SortByOrder(rarities, mtgRarities)
 		set.Rarities = rarities
-		sort.Slice(colors, func(i, j int) bool {
-			return mtgColorMap[colors[i]] > mtgColorMap[colors[j]]
-		})
+		mtgmatcher.SortByOrder(colors, mtgColors)
 		set.Colors = colors
 
 		// Adjust the setBaseSize to take into account the cards with
@@ -1464,24 +1460,12 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	return &b
 }
 
-var mtgRarityMap = map[string]int{
-	"token":    1,
-	"common":   2,
-	"uncommon": 3,
-	"rare":     4,
-	"mythic":   5,
-	"special":  6,
-	"oversize": 7,
+var mtgRarities = []string{
+	"oversize", "special", "mythic", "rare", "uncommon", "common", "token",
 }
 
-var mtgColorMap = map[string]int{
-	"white":      7,
-	"blue":       6,
-	"black":      5,
-	"red":        4,
-	"green":      3,
-	"colorless":  2,
-	"multicolor": 1,
+var mtgColors = []string{
+	"white", "blue", "black", "red", "green", "colorless", "multicolor",
 }
 
 func fillinSLDdecks(set *Set) []string {

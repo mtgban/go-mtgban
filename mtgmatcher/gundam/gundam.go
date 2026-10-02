@@ -254,7 +254,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, gundamRarityMap)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, gundamRarities)
 		set.Colors = mtgmatcher.ColorsOf(set.Cards, gundamColors)
 	}
 
@@ -271,21 +271,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 // gundamColors are Gundam's colours, in its card list's order.
 var gundamColors = []string{"blue", "green", "red", "purple", "white"}
 
-// gundamRarityMap ranks the rarities the catalog spells for this game, and a
-// set lists them highest rank first. The "+" suffixes mark the parallel runs of
-// a rarity, which sit above the plain one and below the rarity over it.
-var gundamRarityMap = map[string]int{
-	"Common":      1,
-	"C+":          2,
-	"C++":         3,
-	"Uncommon":    4,
-	"U+":          5,
-	"Rare":        6,
-	"R+":          7,
-	"Legend Rare": 8,
-	"LR+":         9,
-	"LR++":        10,
-	"Promo":       11,
+// gundamRarities are the rarities the catalog spells for this game, rarest
+// first as a set lists them. The "+" suffixes mark the parallel runs of a
+// rarity, which sit above the plain one and below the rarity over it.
+var gundamRarities = []string{
+	"Promo", "LR++", "LR+", "Legend Rare", "R+", "Rare", "U+", "Uncommon",
+	"C++", "C+", "Common",
 }
 
 // cardTypes is the card's type, as the one-element list a Card carries. The
