@@ -136,6 +136,13 @@ func checkPage(products []tcgplayer.Product, page, total int) error {
 	return nil
 }
 
+// genericChan is one inventory entry a page produced, for the card it is
+// filed under.
+type genericChan struct {
+	key   string
+	entry mtgban.InventoryEntry
+}
+
 // loadPages hands every page offset of total to process across concurrency
 // workers and fails when any page did. WorkerPool only logs a worker's
 // error, which would leave an inventory missing whole pages looking loaded.
