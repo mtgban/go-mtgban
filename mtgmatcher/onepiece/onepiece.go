@@ -39,6 +39,10 @@ type Datastore struct {
 	} `json:"sets"`
 	Cards  []DatastoreCard   `json:"cards"`
 	Sealed []DatastoreSealed `json:"sealed"`
+
+	// Properties orders the values of the card fields a set lists, keyed by
+	// the field: rarities rarest first, colours in the game's own order.
+	Properties map[string][]string `json:"properties"`
 }
 
 // DatastoreCard is one printing as the datastore publishes it.
@@ -322,9 +326,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	colors := mtgmatcher.ColorNames(payload.Properties["colors"])
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, onepieceRarities)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, onepieceColors)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, payload.Properties["rarity"])
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed
@@ -335,15 +340,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Complete(Rules{})
 
 	return b
-}
-
-// onepieceColors are One Piece's colours, in its card list's order.
-var onepieceColors = []string{
-	"red", "green", "blue", "purple", "black", "yellow",
-}
-
-var onepieceRarities = []string{
-	"PR", "TR", "SP", "SEC", "L", "SR", "R", "UC", "C",
 }
 
 // productKey names the product an entry is a printing of, read off what the

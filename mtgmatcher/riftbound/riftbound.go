@@ -24,6 +24,11 @@ import (
 // carries every published card inline; only the fields the loader needs are
 // declared.
 type CardGallery struct {
+	// Properties orders the values of the card fields a set lists, keyed by
+	// the field: rarities rarest first, domains as Riot pairs them. The
+	// datastore publishes it beside the gallery.
+	Properties map[string][]string `json:"properties"`
+
 	PageProps struct {
 		Page struct {
 			Blades []GalleryBlade `json:"blades"`
@@ -166,7 +171,7 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 				return nil, errors.New("not a Riftbound datastore")
 			}
 		}
-		return blade.newBackend(), nil
+		return blade.newBackend(payload.Properties), nil
 	}
 	return nil, errors.New("not a Riftbound datastore")
 }
@@ -242,7 +247,7 @@ func describingPromoTypes(promoTypes []string, number string) []string {
 	return out
 }
 
-func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
+func (gallery *GalleryBlade) newBackend(properties map[string][]string) *mtgmatcher.Backend {
 	// Keep the semantic name of the Vendetta T04 recruit stable when the
 	// gallery omits its faction qualifier. The same card is named Recruit
 	// (NX) in Origins, and callers use that qualifier to distinguish it from
@@ -395,9 +400,10 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	}
 
 	// Update any remaining details on Sets after Cards loading
+	colors := mtgmatcher.ColorNames(properties["domain"])
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, riftboundRarities)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, riftboundColors)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, properties["rarity"])
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
 	}
 
 	// Load sealed products. They live in the sealed namespace throughout:
@@ -421,14 +427,6 @@ func canonicalGalleryName(card GalleryCard) string {
 		return "Recruit (NX)"
 	}
 	return card.Name
-}
-
-// riftboundColors are Riftbound's domains as Riot pairs them: Fury and Calm,
-// Mind and Body, Chaos and Order.
-var riftboundColors = []string{"fury", "calm", "mind", "body", "chaos", "order"}
-
-var riftboundRarities = []string{
-	"showcase", "epic", "rare", "uncommon", "common",
 }
 
 // printingUUID is the uuid the datastore publishes for a finish.

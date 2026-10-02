@@ -37,6 +37,10 @@ type Datastore struct {
 	} `json:"sets"`
 	Cards  []DatastoreCard   `json:"cards"`
 	Sealed []DatastoreSealed `json:"sealed"`
+
+	// Properties orders the values of the card fields a set lists, keyed by
+	// the field: rarities rarest first, colours in the game's own order.
+	Properties map[string][]string `json:"properties"`
 }
 
 // DatastoreCard is one printing as the datastore publishes it.
@@ -253,9 +257,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	colors := mtgmatcher.ColorNames(payload.Properties["colors"])
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, gundamRarities)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, gundamColors)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, payload.Properties["rarity"])
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed is
@@ -266,17 +271,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Complete(Rules{})
 
 	return b
-}
-
-// gundamColors are Gundam's colours, in its card list's order.
-var gundamColors = []string{"blue", "green", "red", "purple", "white"}
-
-// gundamRarities are the rarities the catalog spells for this game, rarest
-// first as a set lists them. The "+" suffixes mark the parallel runs of a
-// rarity, which sit above the plain one and below the rarity over it.
-var gundamRarities = []string{
-	"Promo", "LR++", "LR+", "Legend Rare", "R+", "Rare", "U+", "Uncommon",
-	"C++", "C+", "Common",
 }
 
 // cardTypes is the card's type, as the one-element list a Card carries. The
