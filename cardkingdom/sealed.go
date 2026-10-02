@@ -48,7 +48,7 @@ func (ck *Sealed) printf(format string, a ...any) {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ck *Sealed) Load(ctx context.Context) error {
-	pricelist, err := cardkingdom.SealedPricelist(ctx, nil)
+	pricelist, err := cardkingdom.SealedPricelist(ctx, mtgban.NewHTTPClient())
 	if err != nil {
 		return err
 	}
