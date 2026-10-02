@@ -10,7 +10,7 @@
 // Unlike the other Bandai-shaped games, a parallel printing here is filed
 // under a collector number of its own: the rarity's code is the number's
 // tail, so "ETD01-001" and "ETD01-001TSR" are the plain card and its Trial
-// Deck Super Deck Rare, and no two printings share a number. The card list
+// Deck Super Rare, and no two printings share a number. The card list
 // also numbers a card with an "E" the set code does not carry - the set is
 // BP01 and its cards are numbered EBP01-nnn - so a number's prefix never
 // names the set it belongs to.
@@ -293,7 +293,7 @@ var palworldColors = []string{"red", "blue", "green", "purple"}
 var palworldRarities = []string{
 	"Promo", "Super Special Soul", "Super Special Parallel",
 	"Trial Deck Super Parallel", "Super Parallel", "Over Super Rare",
-	"Trial Deck Super Deck Rare", "Super Rare", "Double Rare", "Rare",
+	"Trial Deck Super Rare", "Super Rare", "Double Rare", "Rare",
 	"Trial Deck Rare", "Uncommon", "Common", "Trial Deck",
 }
 
