@@ -155,9 +155,8 @@ func TestPreprocessListPromo(t *testing.T) {
 	}
 }
 
-// TestPreprocessTokens pins the two token paths a silent revert would take
-// back to the old behavior: the double-faced split must not double the
-// " Token" suffix the kept face already carries, and a sku code the
+// TestPreprocessTokens pins two token paths: the double-faced split must not
+// double the " Token" suffix the kept face already carries, and a sku code the
 // datastore does not carry must reach the filing set once its treatment
 // wrapping is stripped.
 func TestPreprocessTokens(t *testing.T) {
@@ -450,9 +449,9 @@ func TestPreprocessEmblems(t *testing.T) {
 	}
 }
 
-// TestPreprocessSplitCard pins the split cards a T-prefixed set code used to
-// sweep into the double-faced token split, which renamed them after their
-// first face and lost the row.
+// TestPreprocessSplitCard pins that a T-prefixed set code keeps split cards
+// out of the double-faced token split, which would rename them after their
+// first face and lose the row.
 func TestPreprocessSplitCard(t *testing.T) {
 	b := realDatastore(t)
 	theCard, err := Preprocess(b, cardkingdom.Product{

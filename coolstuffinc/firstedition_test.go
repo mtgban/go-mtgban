@@ -17,11 +17,9 @@ import (
 // published as the ordinary printing at a fraction of the price.
 //
 // Both rows name a set that carries its runs as finishes of itself. Base
-// Set does not - its runs are filed as "Base Set (Shadowless)" - and the
-// Alakazam row read "Base Set" until 2026-09-21, answering only because the
-// catalog hung the run's skus on the unlimited product too. That entry is
-// no longer published, and the shelf named here is where the run has always
-// been priced.
+// Set does not - its runs are filed as "Base Set (Shadowless)" - so the
+// Alakazam row names that shelf, where the run is priced; "Base Set" answers
+// only where the catalog hangs the run's skus on the unlimited product too.
 func TestConditionRunReachesTheRun(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 

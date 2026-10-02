@@ -265,7 +265,7 @@ func (ml *Manaleak) Info() (info mtgban.ScraperInfo) {
 // pageCount sizes the fan-out off the listing's own count of what it
 // paginates. A count smaller than the first page is a count that was not
 // read - the "Showing … of N" line moved or went missing - and sizing the
-// run on it walked one page and reported it as the whole store.
+// run on it would walk one page and report it as the whole store.
 func pageCount(total, onFirstPage int) (int, error) {
 	if total < onFirstPage {
 		return 0, fmt.Errorf("the listing counts %d products and its first page holds %d", total, onFirstPage)

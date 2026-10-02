@@ -10,8 +10,8 @@ import (
 
 // TestCatalogColor pins the four colours Duelist League 9 prints one number
 // in. Nothing but the colour tells them apart, and this storefront names one
-// of them differently: "Light Blue" says the word blue, so it answered with
-// the blue printing and two products met on one id.
+// of them differently: "Light Blue" says the word blue, so read as written it
+// answers with the blue printing and two products meet on one id.
 //
 // Where the colour is written is the datastore's business and has moved: an
 // ink is a mark a printing wears rather than a thing that promoted it, so it

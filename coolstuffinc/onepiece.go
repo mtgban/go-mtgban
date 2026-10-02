@@ -46,8 +46,8 @@ func onePieceSpelling(name string) string {
 // A starter deck card reprinted as a promo is filed here under the promo
 // shelf with the deck named in brackets, and the promo shelf holds a printing
 // of its own at the same number: the P-041 Luffy is both the plain promo and
-// the Starter Deck 18 card. The two met, and a $0.50 deck card was priced as
-// the $60.00 promo standing beside it.
+// the Starter Deck 18 card. The two meet, and the $0.50 deck card would be
+// priced as the $60.00 promo standing beside it.
 //
 // The bracket only decides where the shelf has nothing to say. Every other
 // listing naming a deck arrives on a real set already - a Backlight on ST11,

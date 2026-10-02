@@ -182,10 +182,10 @@ func TestAcceptArticle(t *testing.T) {
 	}
 }
 
-// TestIsCheaper pins the held-price comparison acceptArticle used to do
-// itself, now factored out so each bucket (main, Powerseller) can apply it
-// against its own held map independently - see TestPowersellerBucketIsIndependentOfMain
-// for why that independence is the whole point.
+// TestIsCheaper pins the held-price comparison each bucket (main,
+// Powerseller) applies against its own held map, apart from acceptArticle -
+// see TestPowersellerBucketIsIndependentOfMain for why that independence is
+// the whole point.
 func TestIsCheaper(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -209,15 +209,13 @@ func TestIsCheaper(t *testing.T) {
 	}
 }
 
-// TestPowersellerBucketIsIndependentOfMain is the direct regression test
-// for the bug a review of #629 caught: acceptArticle used to compare every
-// listing against the *main* held map before either bucket ever saw it, so
-// a Powerseller listing more expensive than an already-held cheap listing
-// from an unrelated seller (a cheap French private seller, say) never
-// reached the Powerseller bucket at all - that bucket could only ever
-// fill when its own listing also happened to be the single global
-// cheapest, not "cheapest among Powersellers", which is what it actually
-// claims to be.
+// TestPowersellerBucketIsIndependentOfMain pins that each bucket compares
+// against its own held price, not the main bucket's. Comparing every listing
+// against the *main* held map would keep a Powerseller listing more expensive
+// than an already-held cheap listing from an unrelated seller (a cheap French
+// private seller, say) out of the Powerseller bucket entirely - that bucket
+// would only fill when its own listing is also the single global cheapest,
+// not "cheapest among Powersellers", which is what it claims to be.
 //
 // Replays the same two-bucket decision queryOnePrinting's loop makes,
 // article by article, using the same three functions it calls
@@ -501,13 +499,12 @@ func TestResolveExpansionEntry(t *testing.T) {
 	}
 }
 
-// TestLiveExpansionsMemoizesWithoutRetrying pins the failure-mode contract
-// banreviewer's review on this fix asked for: the live call is attempted
-// at most once per Load, its outcome - success or failure - reused for
-// every later gap rather than retried. mkm.client is left nil in both
-// cases; if liveExpansions ever attempted a real call instead of trusting
-// liveExpansionsTried, dereferencing it would panic, so a clean run here
-// is itself proof no network call was attempted.
+// TestLiveExpansionsMemoizesWithoutRetrying pins the failure-mode contract:
+// the live call is attempted at most once per Load, its outcome - success or
+// failure - reused for every later gap rather than retried. mkm.client is
+// left nil in both cases; if liveExpansions ever attempted a real call
+// instead of trusting liveExpansionsTried, dereferencing it would panic, so a
+// clean run here is itself proof no network call was attempted.
 func TestLiveExpansionsMemoizesWithoutRetrying(t *testing.T) {
 	t.Run("a cached success is returned without touching client", func(t *testing.T) {
 		mkm := &Market{

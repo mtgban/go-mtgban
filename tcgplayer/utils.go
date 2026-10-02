@@ -169,9 +169,9 @@ func loadSYPFrom(ctx context.Context, address string, category int, auth string)
 	defer resp.Body.Close()
 
 	// A ticket the store no longer honours is answered with a redirect to
-	// the logon page, which the client follows: the body is that page, the
-	// CSV reader finds no record in it, and the list read as empty when it
-	// was never served. The page the response ended on says which it was.
+	// the logon page, which the client follows. The CSV reader finds no
+	// record in that page, so an expired ticket would read as an empty
+	// list; the page the response ended on tells the two apart.
 	if strings.Contains(resp.Request.URL.Path, "/account/logon") {
 		return nil, ErrSYPNotAuthenticated
 	}

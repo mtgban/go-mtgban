@@ -5,8 +5,8 @@ import "testing"
 // TestDerivedSkuMatches pins the filter a two-sided token sheet's combined
 // entity uses to find its own price rows in the other face's sku list. The
 // sku catalog spells a nonfoil printing "NON FOIL" - confirmed against the
-// real file - not "NORMAL", which this function used to compare against and
-// which silently zeroed every nonfoil two-sided token sheet's price rather
+// real file - not "NORMAL". Comparing against "NORMAL" would silently zero
+// every nonfoil two-sided token sheet's price rather
 // than erroring (an empty sku list looks identical to "priced elsewhere").
 func TestDerivedSkuMatches(t *testing.T) {
 	ownIDs := map[string]bool{"111": true}

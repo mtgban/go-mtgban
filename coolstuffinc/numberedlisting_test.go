@@ -9,8 +9,8 @@ import (
 // TestNumberedListingReachesTheNameRules pins the rules that read a Pokemon
 // listing by name. Both sides of this storefront spell a card with its
 // collector number on the end, and the matcher reads the two apart itself, so
-// the listings went on matching and nothing said that every rule keyed on a
-// name was being asked a spelling no name ever has.
+// the listings keep matching and nothing says when every rule keyed on a name
+// is asked a spelling no name ever has.
 func TestNumberedListingReachesTheNameRules(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 

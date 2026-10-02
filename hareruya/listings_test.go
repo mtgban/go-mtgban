@@ -80,8 +80,8 @@ func TestListingsFor(t *testing.T) {
 		})
 	}
 
-	// The whole page has to add up to what the storefront said, which is the
-	// property the id-only join broke: it made 111 worth 10 twice.
+	// The whole page has to add up to what the storefront said, which a
+	// join on the id alone breaks: it makes 111 worth 10 twice.
 	var all int
 	for _, p := range []Product{
 		{Product: "111", ProductClass: "1"},

@@ -464,11 +464,10 @@ const asiaRegionMark = "asia region"
 //
 // A heading earns its place here only by resolving nothing at all - 689 rows
 // across the games, every one of them otherwise reported as a name nobody
-// could place. The lots very nearly joined them, on 2 of some 200 resolving,
-// until those two turned out to be real: Cardmarket files the Basic Energy Box
-// and the Charizard Ultra-Premium Collection under Lot, and shelving the
-// heading would have stopped pricing two products to quiet a log. What the
-// datastore is merely missing stays off this list and keeps saying so.
+// could place. The lots stay off it, 2 of some 200 resolving: Cardmarket files
+// the Basic Energy Box and the Charizard Ultra-Premium Collection under Lot,
+// and shelving the heading would stop pricing two products to quiet a log. What
+// the datastore is merely missing stays off this list and keeps saying so.
 var sealedShelves = map[string]string{
 	"Coins":         "coins, which are not a sealed product",
 	"Event Tickets": "an event ticket rather than a product",

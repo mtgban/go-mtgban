@@ -7,8 +7,8 @@ import (
 )
 
 // TestPokemonBuylistCardReadsTheRun pins the print run on the buy side. The
-// sell listings read the run out of the shelf's title; the buy rows did not,
-// so every first-edition row matched the set spelled in the title and was
+// buy rows read the run out of the shelf's title the way the sell listings do;
+// otherwise every first-edition row matches the set spelled in the title and is
 // published against the unlimited printing - the whole Base Set shelf at the
 // first edition's price, which reads as arbitrage against every ordinary
 // listing of the card.
@@ -26,7 +26,7 @@ func TestPokemonBuylistCardReadsTheRun(t *testing.T) {
 		// The other shelves carry their run as a finish of the set beside
 		// them, and keep answering with it.
 		{CSIPriceEntry{Name: "Lapras - 10/62", ItemSet: "1st Edition Fossil", Notes: "1st Edition", Number: "10/62", RarityName: "Holo Rare"}, "10-62_44419_1steditionholofoil"},
-		// A shelf naming no run is matched as it always was.
+		// A shelf naming no run is matched as written.
 		{CSIPriceEntry{Name: "Charizard - 4/102", ItemSet: "Base Set", Notes: "Unlimited Edition", Number: "4/102", RarityName: "Holo Rare"}, "004-102_42382_holofoil"},
 	} {
 		t.Run(tt.row.ItemSet+" "+tt.row.Name, func(t *testing.T) {

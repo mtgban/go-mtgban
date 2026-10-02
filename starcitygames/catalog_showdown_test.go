@@ -8,7 +8,7 @@ import (
 )
 
 // TestShowdownAndStoreChampionship pins the two shelves where an event's own
-// promos were being priced as somebody else's printing. Fixtures are copied
+// promos can be priced as somebody else's printing. Fixtures are copied
 // from the export verbatim, shared identifiers and all.
 func TestShowdownAndStoreChampionship(t *testing.T) {
 	b := withMagic(t)

@@ -11,9 +11,8 @@ import (
 // by both face names plus the product's own edition - Cardmarket's own
 // Number field ("T 3/6") is a catalog ordinal, not a collector number, so
 // unlike Cool Stuff Inc's own feed there is no set+number anchor available
-// here. Before this, the product's name went straight into Preprocess/Match,
-// which was never built to read "X Token (...) // Y Token (...)", and
-// refused every one of these listings outright.
+// here. Preprocess/Match alone is not built to read "X Token (...) // Y Token
+// (...)" and refuses every one of these listings outright.
 func TestResolveMagicResolvesTokenPairing(t *testing.T) {
 	b := realDatastore(t)
 	res := &resolver{backend: b, gameID: cm.GameMagic}

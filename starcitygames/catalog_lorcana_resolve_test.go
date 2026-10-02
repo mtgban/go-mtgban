@@ -287,8 +287,8 @@ func TestResolveLorcanaPromoTotal(t *testing.T) {
 }
 
 // TestResolveLorcanaRainbowFoil covers the one treatment a Lorcana printing is
-// sold in beside its standard foil. The foil flag alone always picked the
-// standard, so the two skus landed on one uuid and one price overwrote the
+// sold in beside its standard foil. The foil flag alone always picks the
+// standard, so on it the two skus land on one uuid and one price overwrites the
 // other; the catalog's own name for it is what separates them.
 func TestResolveLorcanaRainbowFoil(t *testing.T) {
 	b := withLorcana(t)

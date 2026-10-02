@@ -129,9 +129,8 @@ func TestPriceToUSD(t *testing.T) {
 		{"dollars need no rate at all", 500, "USD", 5, false},
 		{"euros convert", 1000, "EUR", 11, false},
 		{"pounds convert", 1000, "GBP", 12.5, false},
-		// The currency an expansion went unpriced for, and the one after
-		// it: the table answers whatever the marketplace quotes, so
-		// neither had to be named in advance.
+		// Neither of these is named in advance: the table answers
+		// whatever the marketplace quotes.
 		{"australian dollars convert", 1000, "AUD", 7, false},
 		{"francs convert", 1000, "CHF", 12.5, false},
 		// The marketplace spells a currency in capitals and the feed in

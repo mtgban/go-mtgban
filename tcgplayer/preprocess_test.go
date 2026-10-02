@@ -46,8 +46,8 @@ func realDatastore(t *testing.T) *mtgmatcher.Backend {
 // TestPreprocessJapanesePromoTokens pins which sheet a Japanese promo token
 // is filed under. Six sets print one and all of them are sold from the same
 // catalog group, so the qualifier is what tells them apart. Reading every one
-// as Dominaria United's reported the Wilds of Eldraine bird as the Dominaria
-// bird, which would have overwritten a right id upstream with a wrong one.
+// as Dominaria United's would report the Wilds of Eldraine bird as the
+// Dominaria bird, overwriting a right id upstream with a wrong one.
 func TestPreprocessJapanesePromoTokens(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {

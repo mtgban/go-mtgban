@@ -36,9 +36,9 @@ func promoTypesSpell(promoTypes []string, spellings ...[]string) bool {
 var parallelPreErrata = [][]string{{"parallelpreerrata"}, {"parallel", "preerrata"}}
 
 // TestConditionPrintingReachesTheRun pins the printing this storefront sells
-// as an offer of its own, naming it where a condition would go. The rows were
-// refused as an unsupported condition and the listing dropped, though the
-// catalog carries every run they name.
+// as an offer of its own, naming it where a condition would go. Read as a
+// condition, the rows are refused as unsupported and the listing dropped,
+// though the catalog carries every run they name.
 func TestConditionPrintingReachesTheRun(t *testing.T) {
 	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 

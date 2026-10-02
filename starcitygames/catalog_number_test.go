@@ -6,11 +6,11 @@ import (
 )
 
 // TestFabNumbers pins the collector numbers a Flesh and Blood sku is read as.
-// The set segment is the datastore's own number prefix, and dropping it is what
-// made every deck reprint alias: "005" is every set's fifth card, so a Bravo
-// Hero Deck single competed with the Tales of Aria one, and the loser of that
-// tie was decided by nothing at all. The bare number stays last so the listings
-// no prefix reaches keep resolving exactly as they did.
+// The set segment is the datastore's own number prefix, and dropping it makes
+// every deck reprint alias: "005" is every set's fifth card, so a Bravo Hero
+// Deck single competes with the Tales of Aria one, and nothing at all decides
+// the loser of that tie. The bare number stays last for the listings no
+// prefix reaches.
 func TestFabNumbers(t *testing.T) {
 	for _, tt := range []struct {
 		name string

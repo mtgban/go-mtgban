@@ -9,10 +9,9 @@ import (
 )
 
 // TestMarketFilterParamsCoverage pins which games are filtered: measured
-// live against each game's own snapshot (once the wrong-host bug was
-// found and fixed - see banAPIURL), every non-Magic game clears this
-// filter on only 9-26% of its own priced uuids, so it is worth applying
-// wherever it can be measured, not only where the catalog would
+// live against each game's own snapshot (see banAPIURL), every non-Magic game
+// clears this filter on only 9-26% of its own priced uuids, so it is worth
+// applying wherever it can be measured, not only where the catalog would
 // otherwise miss its budget.
 func TestMarketFilterParamsCoverage(t *testing.T) {
 	want := map[cm.Game]bool{
@@ -167,7 +166,7 @@ func TestMarketCandidatesThresholds(t *testing.T) {
 	// cm.GameMagic in production, but the test below swaps the table for
 	// one keyed the same way so the arithmetic is exercised without
 	// depending on go-cardmarket's own constant values. The type is the
-	// library's now; the number deliberately still is not.
+	// library's; the number deliberately is not.
 	saved := marketFilterParams
 	marketFilterParams = map[cm.Game]struct {
 		floor   float64

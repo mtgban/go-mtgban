@@ -10,9 +10,8 @@ import (
 // TestResolveProductEtchedByID pins the etched flag on the id path. The
 // retail feed carries the catalog's own TCGplayer id for nearly every
 // product, and an etched product carries the etched printing's; asked for
-// with the foil flag alone, the matcher hands back the foil sibling, which
-// is the class the wording path stopped doing and the id path, answering
-// first, kept on.
+// with the foil flag alone, the matcher hands back the foil sibling. The id
+// path answers before the wording path, so it asks for etched as well.
 func TestResolveProductEtchedByID(t *testing.T) {
 	b := realDatastore(t)
 	// An etched printing filed beside its foil on one card is the shape

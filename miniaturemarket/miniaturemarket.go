@@ -295,8 +295,8 @@ func extrasNameACard(b *mtgmatcher.Backend, extras, candidate []string) bool {
 
 // resolveListing names the sealed product a storefront listing prices, or
 // says why none was found. Every listing this scraper leaves behind leaves it
-// here, which is why the reason is returned rather than swallowed: a run that
-// resolved nothing at all used to look exactly like a run with nothing to
+// here, which is why the reason is returned rather than swallowed: otherwise
+// a run that resolved nothing at all looks exactly like a run with nothing to
 // resolve.
 //
 // Magic routes through the id the datastore records; the other games' data
@@ -488,9 +488,9 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	}
 	mm.printf("Parsing %d pages", totalPages)
 
-	// Pages are numbered from one. Walking from zero fetched the first page
-	// twice - the widget answers p=0 with it - and stopped one short, so the
-	// last page of every multi-page catalog went unread.
+	// Pages are numbered from one. Walking from zero would fetch the first
+	// page twice - the widget answers p=0 with it - and stop one short,
+	// leaving the last page of every multi-page catalog unread.
 	pageNums := make([]int, totalPages)
 	for i := range pageNums {
 		pageNums[i] = i + 1

@@ -8,8 +8,8 @@ import "testing"
 // gallery's own typo, kept verbatim since that is the string every other
 // source has to match). Neither survives an ordinary lookup: the catalog's
 // spelling names no card at all. Fixtures copied from a captured CI run
-// verbatim; both failed as "unknown card name" before catalogNames grew
-// these two entries.
+// verbatim; without these two catalogNames entries both fail as
+// "unknown card name".
 func TestRiftboundMisspelledChampionNames(t *testing.T) {
 	b := withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
 

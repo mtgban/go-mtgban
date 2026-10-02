@@ -28,9 +28,10 @@ const preErrataDatastore = `{"data": {
 }}`
 
 // TestCardmarketIDNamesThePrinting pins that a product the datastore records
-// by id lands on that printing, where the name reached the plain pre-errata
-// Kaido, and that a name reaching a printing some other product's id owns is
-// refused: the plain pre-errata Kin'emon had been pricing the parallel.
+// by id lands on that printing, where the name alone reaches the plain
+// pre-errata Kaido, and that a name reaching a printing some other product's
+// id owns is refused: by name, the plain pre-errata Kin'emon would price the
+// parallel.
 func TestCardmarketIDNamesThePrinting(t *testing.T) {
 	b := datastoreBackend(t, "onepiece", preErrataDatastore)
 	mkm, err := NewScraperIndex(b)

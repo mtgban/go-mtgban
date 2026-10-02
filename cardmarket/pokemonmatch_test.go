@@ -162,8 +162,8 @@ const letteredDatastore = `{"data": {
 
 // TestMatchPokemonLettered pins that a number with a letter hung off it
 // reaches both programmes that number their cards that way, and that the
-// prefixed spelling reaches them too. Only Alternate Art Promos was tried
-// before, so every League & Championship product refused.
+// prefixed spelling reaches them too. Trying Alternate Art Promos alone would
+// refuse every League & Championship product.
 func TestMatchPokemonLettered(t *testing.T) {
 	b := datastoreBackend(t, "pokemon", letteredDatastore)
 	mkm, err := NewScraperIndex(b)

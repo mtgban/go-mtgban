@@ -64,7 +64,7 @@ func TestGundamCard(t *testing.T) {
 // GCG-PR st01-001_670590_holofoil, and the Premium Accessory Set, which
 // also covers the Resource promo shelf, rp-024_681970_holofoil. The
 // Resource case still lands on the same id either way - its promo number is
-// its own and never shares a candidate - but the wording is read now too.
+// its own and never shares a candidate - but its wording is read too.
 func TestGundamCardPremiumBandai(t *testing.T) {
 	b := readGameDatastore(t, "gundam", "GUNDAM_PATH")
 

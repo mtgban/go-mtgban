@@ -23,8 +23,7 @@ func walkSealedSearch(t *testing.T) {
 
 // TestSealedPagingAsksForTheLargerPage pins that the sealed walk reads
 // its first page again at the larger size, the same way the singles walk
-// does. The two share one helper and one shape, and only the singles one
-// was pinned.
+// does. The two share one helper and one shape, so each is pinned on its own.
 func TestSealedPagingAsksForTheLargerPage(t *testing.T) {
 	_, asked := pagingServer(t, func(srvURL, uri string) (int, string) {
 		switch uri {

@@ -32,8 +32,8 @@ var csiSearchURL = "https://www.coolstuffinc.com/sq/"
 // search results, no facets, no next link - under a 200 and with no error
 // anywhere, so only the missing rows say that anything went wrong. The
 // header therefore sits on the transport rather than on each request,
-// where a call site that forgot it has now cost this scraper its sealed
-// pages once and its whole singles inventory a second time.
+// where one call site that forgets it can cost this scraper its sealed pages or
+// its whole singles inventory.
 const csiUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
 
 // userAgentTransport stamps the agent on every request that does not name
@@ -335,8 +335,7 @@ func fetchSearchPage(ctx context.Context, client *http.Client, link string) (*go
 
 	// Whatever the storefront answers a refusal with parses as a page
 	// holding no rows and linking nowhere, which reads as the shelf
-	// ending rather than as the error it is - the same shape that cost
-	// this scraper its whole inventory once already. Say so instead: the
+	// ending rather than as the error it is. Say so instead: the
 	// worker pool logs the shelf and carries on with the others.
 	if resp.StatusCode/100 != 2 {
 		return nil, fmt.Errorf("unexpected %d status code for %s", resp.StatusCode, link)

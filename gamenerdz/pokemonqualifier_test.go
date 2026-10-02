@@ -25,7 +25,7 @@ const snorlaxDatastore = `{"data": {
 
 // TestPreprocessPokemonQualifier pins that the wording behind the number
 // reaches the printing it names. The storefront sells these two at $15.31
-// and $251.59, and the number they share is all the scraper used to read.
+// and $251.59, and the number they share cannot tell them apart.
 func TestPreprocessPokemonQualifier(t *testing.T) {
 	b, err := mtgmatcher.Open("pokemon", strings.NewReader(snorlaxDatastore))
 	if err != nil {

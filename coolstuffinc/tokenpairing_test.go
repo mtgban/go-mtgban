@@ -7,11 +7,10 @@ import (
 // TestPreprocessBuylistResolvesTokenPairing pins a two-sided token buylist
 // row resolving to the combined entity mtgmatcher/magic derives for it,
 // anchored by the row's own Code and Number - CSI's buylist JSON carries
-// both, even though CSIPriceEntry did not decode Code until this fix and
-// nothing downstream of PreprocessBuylist knew to route a "X (Token) //
-// Y (Token)" name through them instead of trying to match the whole
-// two-face string as one card name. "Angel // Cat" is Commander 2014's own
-// derived pairing (no native mtgjson entity, no usable TCGplayer id).
+// both, and PreprocessBuylist routes a "X (Token) // Y (Token)" name through
+// them rather than matching the whole two-face string as one card name.
+// "Angel // Cat" is Commander 2014's own derived pairing (no native mtgjson
+// entity, no usable TCGplayer id).
 func TestPreprocessBuylistResolvesTokenPairing(t *testing.T) {
 	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
 

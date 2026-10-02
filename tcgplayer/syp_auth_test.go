@@ -11,8 +11,8 @@ import (
 
 // TestLoadSYPNamesAnExpiredTicket pins that a ticket the store no longer
 // honours is reported as such. The store answers with a redirect to its logon
-// page, the client follows it, and the CSV reader finds nothing in the page -
-// which used to read as an empty list rather than a list never served.
+// page, the client follows it, and the CSV reader finds nothing in the page,
+// which must not read as an empty list when the list was never served.
 func TestLoadSYPNamesAnExpiredTicket(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/admin/direct/ExportSYPList", func(w http.ResponseWriter, r *http.Request) {

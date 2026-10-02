@@ -86,9 +86,9 @@ const unknownTitleProduct = `{
 
 // TestProcessUntitledBuyVariant pins that an offer hanging off an untitled
 // variant is recorded. The store buys these three at $668.90, $13.62 and
-// $541.13, and every one of them went unpriced because the platform sends
-// the untitled variant's title as null or leaves it out rather than filling
-// in the placeholder string the rest of the feed carries.
+// $541.13, and the platform sends the untitled variant's title as null or
+// leaves it out rather than filling in the placeholder string the rest of
+// the feed carries.
 func TestProcessUntitledBuyVariant(t *testing.T) {
 	b, err := mtgmatcher.Open("onepiece", strings.NewReader(untitledVariantDatastore))
 	if err != nil {

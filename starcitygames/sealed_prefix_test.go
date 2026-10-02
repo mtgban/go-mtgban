@@ -15,7 +15,7 @@ import (
 // the resolver is handed the game words along with the product.
 //
 // That is only safe because the rule forgives words the vendor says over the
-// datastore's name, and nothing in this package said so. If it ever stops
+// datastore's name, which nothing else in this package states. If it ever stops
 // forgiving them, these two games lose their whole sealed catalog silently -
 // every product refused, which reads exactly like a storefront that stopped
 // stocking them.

@@ -87,8 +87,8 @@ func TestRiftboundBridgeLandsTheRune(t *testing.T) {
 // named after one face alone ("Tentacle") is not the same card, and
 // CloseName says so. The product falls to the wording path instead of
 // landing the wrong printing - which still refuses here, since the gallery
-// carries no card named "Tentacle" on its own; that refusal is the correct,
-// unchanged outcome, not a regression the guard introduced.
+// carries no card named "Tentacle" on its own; that refusal is the correct
+// outcome.
 func TestRiftboundBridgeRejectsFusedToken(t *testing.T) {
 	b := loadRiftboundBackend(t)
 

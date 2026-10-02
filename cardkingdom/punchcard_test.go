@@ -15,7 +15,7 @@ import (
 // Neither of the other two anchors answers for all of them: the sku's number
 // is CK's index rather than the card's, and the scryfall id is missing on
 // three, unknown to the datastore on two, and on Lorwyn Eclipsed names the
-// Treefolk token instead - which is what the punch card was priced as.
+// Treefolk token instead, pricing the punch card as that token.
 func TestPreprocessPunchCard(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {

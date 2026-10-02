@@ -127,7 +127,7 @@ func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []stri
 // product's own, that preference has nothing to prefer: Chronicles Foreign
 // Black Border's four Urza's Mine arts (114a-114d) all carry Cardmarket's
 // 272488, the id of one of the four *plain* Chronicles arts instead, so
-// "the arbitrary last one found" was a different Japanese-language art
+// "the arbitrary last one found" is a different Japanese-language art
 // every time, never the English one the product actually is. Below, that
 // shape - real ids found, none of them this product's number, and not all
 // the same number either - is treated the same as no id being known at
@@ -1504,14 +1504,11 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			// the V.1 V.2 etc style and process in variants.go - but only
 			// when variants.go actually has a table for this edition and
 			// card: otherwise the raw number is the only distinguishing
-			// tag there is. Chronicles' multi-art commons (and Alternate
-			// Fourth Edition's three-art basic lands) are exactly the case
-			// this comment already described and the code did not yet do:
-			// Cardmarket sends the very same shared number for every one of
-			// a card's "(V.N)" siblings, so unconditionally keeping it here
-			// threw away the one tag (V.2) that told them apart, before
-			// magic.VariantsTable's own per-edition table ever got a chance
-			// to resolve it. The table is keyed by the matcher's own
+			// tag there is. Chronicles' multi-art commons and
+			// Alternate Fourth Edition's basic lands share one
+			// number across their "(V.N)" siblings, so keeping it
+			// would throw away the one tag that tells them apart.
+			// The table is keyed by the matcher's own
 			// canonical edition name, not Cardmarket's - "Fourth Edition:
 			// Alternate" only finds ed4Variants once resolved through
 			// magic.EditionTable the same way AdjustEdition resolves it

@@ -8,9 +8,9 @@ import (
 
 // TestFirstEditionShelfReachesTheRun pins the run a shelf names in its title.
 // The storefront sells the first-edition run as a shelf of its own, and the
-// catalog files the run as a finish of the set, so the listings matched the
-// unlimited printing instead - silently, since the match succeeded, it just
-// answered with the other run.
+// catalog files the run as a finish of the set, so read as the set alone the
+// listings match the unlimited printing instead - silently, since the match
+// succeeds, it just answers with the other run.
 func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
@@ -46,9 +46,9 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 	}
 }
 
-// TestFirstEditionShelfRefusesTheOtherRun pins the refusal that keeps the fix
-// safe: a card the set has no first-edition row for is refused rather than
-// answered with the unlimited printing, which is what used to be published.
+// TestFirstEditionShelfRefusesTheOtherRun pins the refusal that keeps reading
+// the shelf safe: a card the set has no first-edition row for is refused
+// rather than answered with the unlimited printing.
 func TestFirstEditionShelfRefusesTheOtherRun(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 

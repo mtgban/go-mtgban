@@ -141,8 +141,8 @@ func TestBuylistYuGiOhNamesTheRarity(t *testing.T) {
 }
 
 // TestIsGraded pins which wordings mean the copy is not being sold at a
-// condition tier. One Piece sells PSA slabs and the condition parser used to
-// refuse them outright, so the listing was dropped rather than priced.
+// condition tier. One Piece sells PSA slabs, which the condition parser
+// refuses outright, so a slab not caught here is dropped rather than priced.
 func TestIsGraded(t *testing.T) {
 	for _, tt := range []struct {
 		conditions string
@@ -194,10 +194,10 @@ func TestSlabCondition(t *testing.T) {
 
 // TestMarketNamesCarryTheGradedSeller pins that every game can publish a
 // graded price. The scraper files one under its own seller whatever the game,
-// but the name used to be offered for Magic alone, so everywhere else the
-// entry was written and then dropped by the split, which collects only the
-// names a market answers with. A game holding no graded copy publishes
-// nothing extra: the split skips a seller whose inventory is empty.
+// and the split collects only the names a market answers with, so a game
+// whose names leave the seller out writes the entry and then drops it. A game
+// holding no graded copy publishes nothing extra: the split skips a seller
+// whose inventory is empty.
 func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
 	for _, game := range []mtgmatcher.Game{mtgmatcher.GameMagic, mtgmatcher.GameOnePiece, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
 		mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameGundam, mtgmatcher.GamePalworld} {
@@ -243,8 +243,8 @@ func TestUnfoldSkipsTheEmptyGradedSeller(t *testing.T) {
 }
 
 // TestOfferConditionKeepsALeadingDigit pins the trim the count is cut with.
-// It was a cutset, so a condition opening with a digit the count also
-// carries lost it, and "1st Edition" was reported as "st Edition".
+// As a cutset it would also take a leading digit the count carries off the
+// condition, reporting "1st Edition" as "st Edition".
 func TestOfferConditionKeepsALeadingDigit(t *testing.T) {
 	got := offerCondition("1 1st Edition  1st Edition $19.99Add to Cart", "1", "")
 	want := "1st Edition  1st Edition "

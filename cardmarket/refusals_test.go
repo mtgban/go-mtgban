@@ -18,9 +18,9 @@ func (s *logSink) callback(format string, a ...any) {
 }
 
 // TestProcessProductRefusal pins that the route through the bridge and the
-// catalog's own words says so when it names no printing. It used to answer a
-// refusal with a plain nil, which is what a priced product answers with too,
-// so a whole catalog going unpriced looked exactly like a run with nothing
+// catalog's own words says so when it names no printing. A refusal answered
+// with a plain nil, which is what a priced product answers with too, would make
+// a whole catalog going unpriced look exactly like a run with nothing
 // to report.
 func TestProcessProductRefusal(t *testing.T) {
 	b := datastoreBackend(t, "yugioh", ygoDatastore)

@@ -10,17 +10,16 @@ import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// TestFallbackDefersOnMcmIdCollision pins the bug a formal review of the
-// Chronicles/chrVariants gap surfaced: mtgjson's own mcmId identifier links
-// all four Chronicles Foreign Black Border (Japanese) arts of Urza's Mine to
-// Cardmarket's 272488 - the id of one of the four *plain*, English Chronicles
-// arts instead. checkLoadedID's search-by-name-then-filter-by-mcmId therefore
-// answers with four Japanese candidates for an English product, none of which
-// share a number with each other or with what the product's own Number field
-// would carry (Cardmarket does not distinguish these four in that field at
-// all - that's what its own "(V.N)" name suffix is for). Before the fix,
-// Fallback trusted "the last one found" regardless; the fix defers to
-// Preprocess/Match instead, whose own chrVariants table already carries a
+// TestFallbackDefersOnMcmIdCollision pins Fallback deferring on an mcmId
+// collision: mtgjson's own mcmId identifier links all four Chronicles Foreign
+// Black Border (Japanese) arts of Urza's Mine to Cardmarket's 272488 - the id
+// of one of the four *plain*, English Chronicles arts instead. checkLoadedID's
+// search-by-name-then-filter-by-mcmId therefore answers with four Japanese
+// candidates for an English product, none of which share a number with each
+// other or with what the product's own Number field would carry (Cardmarket
+// does not distinguish these four in that field at all - that's what its own
+// "(V.N)" name suffix is for). Rather than trust "the last one found", Fallback
+// defers to Preprocess/Match, whose own chrVariants table already carries a
 // "v.1".."v.4" key for exactly this card.
 func TestFallbackDefersOnMcmIdCollision(t *testing.T) {
 	b := realDatastore(t)
@@ -72,14 +71,13 @@ func TestFallbackStillTrustsANumberMatch(t *testing.T) {
 }
 
 // TestPreprocessKeepsVIndexForChronicles pins the other half of the same
-// bug: even once Fallback defers, Preprocess's own generic fallback for
+// collision: even once Fallback defers, Preprocess's own generic fallback for
 // editions with no dedicated case ("Old editions do not have any number
 // assigned, if so, then keep the V.1 V.2 etc style and process in
-// variants.go") was unconditional on Cardmarket's Number field being
-// non-empty, discarding the "(V.2)" suffix Chronicles' own chrVariants table
-// needs whenever Cardmarket's Number field is populated at all - which for
-// these grouped, same-numbered siblings, it always is. The fix only takes
-// the number when magic.VariantsTable has no entry for this exact
+// variants.go") must keep the "(V.2)" suffix Chronicles' own chrVariants table
+// needs, although Cardmarket's Number field is always populated for these
+// grouped, same-numbered siblings. It takes the number only when
+// magic.VariantsTable has no entry for this exact
 // edition/card/variant to consult instead.
 func TestPreprocessKeepsVIndexForChronicles(t *testing.T) {
 	b := realDatastore(t)
@@ -126,8 +124,8 @@ func TestMysteryBooster2ReprintsResolvesToPLSTNumber(t *testing.T) {
 }
 
 // TestResolveMagicLandsCorrectChroniclesArt replays Fallback and Preprocess
-// together the way resolveMagic calls them, and confirms the fix actually
-// lands product 272488 on the English printing Cardmarket sells it as
+// together the way resolveMagic calls them, and confirms they land product
+// 272488 on the English printing Cardmarket sells it as
 // (114b) rather than any of the four Japanese Chronicles Foreign Black
 // Border arts mtgjson's mislinked mcmId would otherwise keep.
 func TestResolveMagicLandsCorrectChroniclesArt(t *testing.T) {
@@ -163,13 +161,13 @@ func TestResolveMagicLandsCorrectChroniclesArt(t *testing.T) {
 	}
 }
 
-// TestFourthEditionAlternateKeepsVIndex pins the same default-case fix for
+// TestFourthEditionAlternateKeepsVIndex pins the same default case for
 // an edition whose Cardmarket name ("Fourth Edition: Alternate") is not the
 // matcher's own ("Alternate Fourth Edition") - the VariantsTable lookup that
 // guards the fallback has to try the alias mtgmatcher/magic/editions.go's
 // EditionTable resolves it to, the same one AdjustEdition applies later, or
-// it never finds ed4Variants at all and clobbers the "(V.N)" tag same as
-// Chronicles did. Each of Plains's three "(V.N)" siblings must land on its
+// it never finds ed4Variants at all and clobbers the "(V.N)" tag. Each of
+// Plains's three "(V.N)" siblings must land on its
 // own distinct printing, not all three on whichever one FilterCards happens
 // to see first.
 func TestFourthEditionAlternateKeepsVIndex(t *testing.T) {

@@ -301,7 +301,7 @@ func (mkm *Market) Load(ctx context.Context) error {
 // flaky Expansions response into zero inventory for the run, not just a
 // missed enrichment for the gap set it was trying to help. A failure is
 // logged and cached the same as a success - tried, not retried - so one
-// bad response degrades back to today's "expansion <id>" placeholder for
+// bad response degrades to the "expansion <id>" placeholder for
 // every remaining gap this run hits, rather than one bad response
 // retrying once per gap (up to all 88, each through the client's own
 // retry/backoff policy).
@@ -539,9 +539,10 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 	}
 	// Unconditional, unlike the lines above: those only appear when there is
 	// something to explain, so an edition with nothing skipped or refused
-	// used to end its walk in silence - indistinguishable in the log from
-	// one that priced nothing at all. This is the one line every edition
-	// gets, so "Processing X" is always followed by what happened to it.
+	// would otherwise end its walk in silence - indistinguishable in the
+	// log from one that priced nothing at all. This is the one line every
+	// edition gets, so "Processing X" is always followed by what happened
+	// to it.
 	mkm.printf("%s: priced %d/%d products", exp.Name, priced, len(ids))
 	channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign + matchErrs, foreign: foreign}
 	return nil
@@ -591,8 +592,7 @@ func shouldStopPaging(mainDone bool, mainSatisfiedAt, page int, foundPowerseller
 // listings is the only question it is ever asked, and acceptArticle holds
 // every article to the flags being queried, so every listing it has is
 // thrown away and the printing prices at nothing. Lorcana's Enchanted cards
-// are the largest group of these; Cardmarket's own catalog was priced at
-// EUR 67k of them unpriced when this was found.
+// are the largest group of these, some EUR 67k of Cardmarket's own catalog.
 //
 // Etched counts as foil here: the datastore keeps it as a finish of its own
 // with Foil false, and Cardmarket has no etched at all - it files those

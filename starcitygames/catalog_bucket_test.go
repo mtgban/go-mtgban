@@ -11,8 +11,8 @@ import (
 
 // TestSecondBucketMerges covers the Armory Deck singles Star City Games splits
 // across two product records. Both records price the same card at the same
-// price and differ only in how many copies each holds, so the second used to
-// read as a duplicate and its copies were discarded; they belong in the
+// price and differ only in how many copies each holds, so the second would read
+// as a duplicate and lose its copies; they belong in the
 // first's count.
 //
 // Which record the catalog streams first is not fixed - most of the Armory

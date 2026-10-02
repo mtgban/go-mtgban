@@ -89,9 +89,8 @@ func TestResolveFleshAndBloodMarvelTwins(t *testing.T) {
 }
 
 // requireCredit skips a case whose premise the installed datastore does not
-// hold. datastore-gen only started publishing Flesh and Blood's artist field
-// once this fix needed it to steer by, and the datastore a checkout carries
-// may still predate that: against such a copy fabCreditedTwin has nothing to
+// hold. A datastore a checkout carries may predate Flesh and Blood's artist
+// field: against such a copy fabCreditedTwin has nothing to
 // match either uuid's Artist against and correctly leaves both alone, which
 // is not this test's premise to assert against.
 func requireCredit(t *testing.T, b *mtgmatcher.Backend, uuid string) {

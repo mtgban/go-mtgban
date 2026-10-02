@@ -12,8 +12,8 @@ import (
 // over under the name the catalog files it by. All 238 of the game's
 // DON!! cards are named "DON!! Card" and told apart by promo type,
 // which the matcher already reads out of a listing's wording - but the
-// storefront writes those words into the product name, so the name
-// reached nothing and the wording was never read.
+// storefront writes those words into the product name, so as written the name
+// reaches nothing and the wording is never read.
 func TestOnePieceDonNameReachesTheCard(t *testing.T) {
 	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
