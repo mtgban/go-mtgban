@@ -44,16 +44,17 @@ func TestProductKeyOf(t *testing.T) {
 		t.Errorf("ProductKeyOf without an id = %q, want the uuid", got)
 	}
 	for _, tt := range []struct {
-		color string
-		want  []string
+		values []string
+		want   []string
 	}{
-		{"", nil},
-		{"Red", []string{"red"}},
-		{"Red/Green", []string{"red", "green"}},
-		{"Red; Green", []string{"red", "green"}},
+		{nil, nil},
+		{[]string{"Red"}, []string{"red"}},
+		{[]string{"Grass", "Darkness"}, []string{"grass", "darkness"}},
+		{[]string{"", "DARK "}, []string{"dark"}},
 	} {
-		if got := SplitColors(tt.color); !slices.Equal(got, tt.want) {
-			t.Errorf("SplitColors(%q) = %v, want %v", tt.color, got, tt.want)
+		got := ColorNames(tt.values)
+		if !slices.Equal(got, tt.want) {
+			t.Errorf("ColorNames(%q) = %v, want %v", tt.values, got, tt.want)
 		}
 	}
 }

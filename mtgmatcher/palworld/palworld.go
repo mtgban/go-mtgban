@@ -69,11 +69,11 @@ type DatastoreCard struct {
 	// carries today has one; a card without is loaded rather than refused,
 	// the way Gundam loads one, since the number is the matcher's to miss
 	// and not the loader's to demand.
-	Number  string `json:"number,omitempty"`
-	SetCode string `json:"setCode"`
-	Rarity  string `json:"rarity"`
-	Color   string `json:"color"`
-	Type    string `json:"type"`
+	Number  string   `json:"number,omitempty"`
+	SetCode string   `json:"setCode"`
+	Rarity  string   `json:"rarity"`
+	Colors  []string `json:"colors"`
+	Type    string   `json:"type"`
 
 	// Variant is the label distilled from the product name's qualifiers,
 	// empty for all but a handful: the rarity codes the catalog writes in
@@ -240,7 +240,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"thumbnail": card.Image,
 			},
 			Language:   "English",
-			Colors:     mtgmatcher.SplitColors(card.Color),
+			Colors:     mtgmatcher.ColorNames(card.Colors),
 			Rarity:     card.Rarity,
 			Types:      cardTypes(card.Type),
 			PromoTypes: promoTypes,

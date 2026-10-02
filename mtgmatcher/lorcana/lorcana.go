@@ -487,17 +487,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// Ensure no spaces are present for ease of future comparisons
 		rarity := strings.Replace(strings.ToLower(card.Rarity), " ", "", -1)
 
-		// Collapse multi and single color info to the same slice, lower case color names
-		ogColors := card.Colors
-		if len(ogColors) == 0 {
-			ogColors = []string{card.Color}
-		}
-		var colors []string
-		for _, color := range ogColors {
-			if color != "" {
-				colors = append(colors, strings.ToLower(color))
-			}
-		}
+		colors := mtgmatcher.ColorNames(card.Colors)
 
 		// A set wholly of promos says so once, rather than every card in it
 		// repeating a field upstream does not set there.

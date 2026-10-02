@@ -51,11 +51,11 @@ type DatastoreCard struct {
 	SetCode string `json:"setCode"`
 	Rarity  string `json:"rarity"`
 
-	// Color is the colour a printing pitches for - "Red", "Yellow", "Blue" -
-	// which the catalog carries as the pitch value printed on the card. A
-	// card that pitches for nothing carries none: a hero, an equipment, a
-	// token.
-	Color string `json:"color,omitempty"`
+	// Pitches is the colour a printing pitches for - "Red", "Yellow",
+	// "Blue" - which the catalog carries as the pitch value printed on the
+	// card. A card that pitches for nothing carries none: a hero, an
+	// equipment, a token.
+	Pitches []string `json:"pitches,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, drawn from the
 	// closed vocabulary of "1st Edition" or "Unlimited Edition" (or
@@ -388,7 +388,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			},
 			Language:   cmp.Or(card.Language, "English"),
 			Rarity:     card.Rarity,
-			Colors:     mtgmatcher.SplitColors(card.Color),
+			Colors:     mtgmatcher.ColorNames(card.Pitches),
 			PromoTypes: promoTypes,
 			Watermark:  card.Watermark,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,

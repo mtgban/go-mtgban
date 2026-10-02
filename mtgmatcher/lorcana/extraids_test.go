@@ -20,14 +20,14 @@ const extraIDsData = `{"data": {
     {
       "id": 100, "name": "Louie", "fullName": "Louie - One Cool Duck",
       "setCode": "1", "number": "1", "rarity": "Common", "type": "Character",
-      "color": "Amber", "story": "DuckTales", "printings": [{"finish": "Cold Foil", "id": "100_silver"}, {"finish": "Normal", "id": "100"}],
+      "color": "Amber", "colors": ["Amber"], "story": "DuckTales", "printings": [{"finish": "Cold Foil", "id": "100_silver"}, {"finish": "Normal", "id": "100"}],
       "images": {"full": "framed.jpg", "fullFoil": "panorama.jpg", "thumbnail": "framed_thumb.jpg"},
       "externalLinks": {"tcgPlayerId": 631349, "tcgPlayerExtraIds": [633427], "cardmarketId": 826334, "cardmarketExtraIds": [826335]}
     },
     {
       "id": 200, "name": "Dewey", "fullName": "Dewey - Lovable Showoff",
       "setCode": "1", "number": "2", "rarity": "Common", "type": "Character",
-      "color": "Amber", "story": "DuckTales", "printings": [{"finish": "Cold Foil", "id": "200_silver"}, {"finish": "Normal", "id": "200"}],
+      "color": "Amber", "colors": ["Amber"], "story": "DuckTales", "printings": [{"finish": "Cold Foil", "id": "200_silver"}, {"finish": "Normal", "id": "200"}],
       "externalLinks": {"tcgPlayerId": 631350}
     }
   ]

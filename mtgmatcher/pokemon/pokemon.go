@@ -76,6 +76,11 @@ type DatastoreCard struct {
 	Rarity  string `json:"rarity"`
 	Type    string `json:"type"`
 
+	// Types are the types a Pokemon prints, ["Fire"] or ["Grass",
+	// "Darkness"], which is what the game has for a colour. A Trainer or an
+	// Energy card has none.
+	Types []string `json:"types,omitempty"`
+
 	// Total is what the card face prints after the number's first slash:
 	// nearly always the set size, the 167 of "082/167", which is what tells
 	// a reprint from its original - Cascoon is 44/130 in Diamond & Pearl
@@ -326,6 +331,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 			OriginalReleaseDate: card.OriginalReleaseDate,
 
+			Colors:     mtgmatcher.ColorNames(card.Types),
 			Types:      types,
 			PromoTypes: promoTypes,
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
@@ -380,6 +386,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, nil)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards)
 	}
 
 	// Sealed products live in the sealed namespace throughout - uuids in

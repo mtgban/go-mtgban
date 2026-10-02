@@ -13,10 +13,10 @@ const battleFaderDatastore = `{"data": {
  "game": "yugioh",
  "sets": {"ABPF": {"name": "Absolute Powerforce", "releaseDate": "2010-02-16"}},
  "cards": [
-  {"attribute": "DARK", "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 34509}, "finish": "Unlimited", "id": "abpf-en006_34509_unlimited", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultra Rare", "setCode": "ABPF", "type": "Effect Monster"},
-  {"attribute": "DARK", "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 34509}, "finish": "1st Edition", "id": "abpf-en006_34509_1stedition", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultra Rare", "setCode": "ABPF", "type": "Effect Monster"},
-  {"attribute": "DARK", "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 58454}, "finish": "Unlimited", "id": "abpf-en006_58454_unlimited", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultimate Rare", "setCode": "ABPF", "type": "Effect Monster"},
-  {"attribute": "DARK", "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 58454}, "finish": "1st Edition", "id": "abpf-en006_58454_1stedition", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultimate Rare", "setCode": "ABPF", "type": "Effect Monster"}
+  {"attribute": "DARK", "attributes": ["DARK"], "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 34509}, "finish": "Unlimited", "id": "abpf-en006_34509_unlimited", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultra Rare", "setCode": "ABPF", "type": "Effect Monster"},
+  {"attribute": "DARK", "attributes": ["DARK"], "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 34509}, "finish": "1st Edition", "id": "abpf-en006_34509_1stedition", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultra Rare", "setCode": "ABPF", "type": "Effect Monster"},
+  {"attribute": "DARK", "attributes": ["DARK"], "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 58454}, "finish": "Unlimited", "id": "abpf-en006_58454_unlimited", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultimate Rare", "setCode": "ABPF", "type": "Effect Monster"},
+  {"attribute": "DARK", "attributes": ["DARK"], "externalLinks": {"konamiId": 19665973, "tcgPlayerId": 58454}, "finish": "1st Edition", "id": "abpf-en006_58454_1stedition", "name": "Battle Fader", "number": "ABPF-EN006", "rarity": "Ultimate Rare", "setCode": "ABPF", "type": "Effect Monster"}
  ]
 }}`
 

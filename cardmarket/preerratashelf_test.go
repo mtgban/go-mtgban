@@ -16,8 +16,8 @@ const preErrataShelfDatastore = `{"data": {
  "game": "onepiece",
  "sets": {"OP01": {"name": "Romance Dawn", "releaseDate": "2022-12-02"}},
  "cards": [
-  {"color": "Green", "externalLinks": {"bandaiId": "OP01-034_p1", "tcgPlayerId": 453513}, "finish": "Foil", "id": "op01-034_453513_foil", "image": "https://static.dotgg.gg/onepiece/card/OP01-034_p1.webp", "name": "Inuarashi", "number": "OP01-034", "promoTypes": ["boxtopper"], "rarity": "C", "setCode": "OP01", "type": "Character", "variant": "Box Topper"},
-  {"color": "Green", "externalLinks": {"bandaiId": "OP01-034", "tcgPlayerId": 454555}, "finish": "Normal", "id": "op01-034_454555", "image": "https://static.dotgg.gg/onepiece/card/OP01-034.webp", "name": "Inuarashi", "number": "OP01-034", "rarity": "C", "setCode": "OP01", "type": "Character"}
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"bandaiId": "OP01-034_p1", "tcgPlayerId": 453513}, "finish": "Foil", "id": "op01-034_453513_foil", "image": "https://static.dotgg.gg/onepiece/card/OP01-034_p1.webp", "name": "Inuarashi", "number": "OP01-034", "promoTypes": ["boxtopper"], "rarity": "C", "setCode": "OP01", "type": "Character", "variant": "Box Topper"},
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"bandaiId": "OP01-034", "tcgPlayerId": 454555}, "finish": "Normal", "id": "op01-034_454555", "image": "https://static.dotgg.gg/onepiece/card/OP01-034.webp", "name": "Inuarashi", "number": "OP01-034", "rarity": "C", "setCode": "OP01", "type": "Character"}
  ]
 }}`
 

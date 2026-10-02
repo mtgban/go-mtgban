@@ -15,8 +15,8 @@ const pitchNumberFixture = `{"data": {
 	"game": "fleshandblood",
 	"sets": {"PR": {"name": "Flesh and Blood: Promo Cards", "releaseDate": "2019-10-11"}},
 	"cards": [
-		{"color": "Red", "externalLinks": {"fabId": "FAB384", "tcgPlayerId": 657466}, "finish": "Rainbow Foil", "id": "fab384_657466_rainbowfoil", "image": "x", "name": "Dig In", "number": "FAB384", "rarity": "Promo", "setCode": "PR", "variant": "Red"},
-		{"color": "Yellow", "externalLinks": {"fabId": "FAB385", "tcgPlayerId": 657467}, "finish": "Rainbow Foil", "id": "fab384_657467_rainbowfoil", "image": "x", "name": "Dig In", "number": "FAB384", "rarity": "Promo", "setCode": "PR", "variant": "Yellow FAB385"}
+		{"pitch": "Red", "pitches": ["Red"], "externalLinks": {"fabId": "FAB384", "tcgPlayerId": 657466}, "finish": "Rainbow Foil", "id": "fab384_657466_rainbowfoil", "image": "x", "name": "Dig In", "number": "FAB384", "rarity": "Promo", "setCode": "PR", "variant": "Red"},
+		{"pitch": "Yellow", "pitches": ["Yellow"], "externalLinks": {"fabId": "FAB385", "tcgPlayerId": 657467}, "finish": "Rainbow Foil", "id": "fab384_657467_rainbowfoil", "image": "x", "name": "Dig In", "number": "FAB384", "rarity": "Promo", "setCode": "PR", "variant": "Yellow FAB385"}
 	]
 }}`
 

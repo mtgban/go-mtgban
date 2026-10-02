@@ -137,10 +137,10 @@ const yugiohShelfCodeDatastore = `{"data": {
   "MISC": {"name": "Miscellaneous Promotional Cards", "releaseDate": "2020-09-22", "type": "promo"}
  },
  "cards": [
-  {"attribute": "LIGHT", "externalLinks": {"konamiId": 89631139, "tcgPlayerId": 22940}, "finish": "Unlimited", "id": "dds-001_22940_unlimited", "name": "Blue-Eyes White Dragon", "number": "DDS-001", "promoTypes": ["videogame"], "rarity": "Prismatic Secret Rare", "setCode": "VDP", "type": "Normal Monster", "variant": "Dark Duel Stories"},
-  {"attribute": "FIRE", "externalLinks": {"konamiId": 16751086, "tcgPlayerId": 80164}, "finish": "Unlimited", "id": "tf04-en001_80164_unlimited", "name": "Warm Worm", "number": "TF04-EN001", "promoTypes": ["videogame"], "rarity": "Ultra Rare", "setCode": "VDP", "type": "Effect Monster", "variant": "5D's Tag Force 4"},
-  {"attribute": "TRAP", "externalLinks": {"konamiId": 69599136, "tcgPlayerId": 228593}, "finish": "Limited", "id": "optp-en001_228593_limited", "name": "Floodgate Trap Hole", "number": "OPTP-EN001", "rarity": "Super Rare", "setCode": "MISC", "type": "Normal Trap"},
-  {"attribute": "TRAP", "externalLinks": {"konamiId": 126218, "tcgPlayerId": 236745}, "finish": "Unlimited", "id": "tsc-e003_236745_unlimited", "name": "Skull Dice", "number": "TSC-E003", "rarity": "Prismatic Secret Rare", "setCode": "VDP", "type": "Normal Trap"}
+  {"attribute": "LIGHT", "attributes": ["LIGHT"], "externalLinks": {"konamiId": 89631139, "tcgPlayerId": 22940}, "finish": "Unlimited", "id": "dds-001_22940_unlimited", "name": "Blue-Eyes White Dragon", "number": "DDS-001", "promoTypes": ["videogame"], "rarity": "Prismatic Secret Rare", "setCode": "VDP", "type": "Normal Monster", "variant": "Dark Duel Stories"},
+  {"attribute": "FIRE", "attributes": ["FIRE"], "externalLinks": {"konamiId": 16751086, "tcgPlayerId": 80164}, "finish": "Unlimited", "id": "tf04-en001_80164_unlimited", "name": "Warm Worm", "number": "TF04-EN001", "promoTypes": ["videogame"], "rarity": "Ultra Rare", "setCode": "VDP", "type": "Effect Monster", "variant": "5D's Tag Force 4"},
+  {"attribute": "TRAP", "attributes": ["TRAP"], "externalLinks": {"konamiId": 69599136, "tcgPlayerId": 228593}, "finish": "Limited", "id": "optp-en001_228593_limited", "name": "Floodgate Trap Hole", "number": "OPTP-EN001", "rarity": "Super Rare", "setCode": "MISC", "type": "Normal Trap"},
+  {"attribute": "TRAP", "attributes": ["TRAP"], "externalLinks": {"konamiId": 126218, "tcgPlayerId": 236745}, "finish": "Unlimited", "id": "tsc-e003_236745_unlimited", "name": "Skull Dice", "number": "TSC-E003", "rarity": "Prismatic Secret Rare", "setCode": "VDP", "type": "Normal Trap"}
  ]
 }}`
 

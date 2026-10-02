@@ -121,20 +121,18 @@ func SoldFinishes(printings map[string]string) (finishes []string, foilUUIDs map
 	return finishes, foilUUIDs
 }
 
-// SplitColors turns the colour value a Bandai-shaped catalog publishes into
-// its components in lower case, as Magic names its colours: "Red/Green" and
-// "Red; Green" alike are red and green.
-func SplitColors(color string) []string {
-	if color == "" {
-		return nil
+// ColorNames is what a datastore lists as a card's colours - its colours,
+// pitches, attributes or types, whatever the game calls them - in lower
+// case as Magic names its colours, empty values dropped.
+func ColorNames(values []string) []string {
+	var names []string
+	for _, value := range values {
+		name := strings.ToLower(strings.TrimSpace(value))
+		if name != "" {
+			names = append(names, name)
+		}
 	}
-	fields := strings.FieldsFunc(color, func(r rune) bool {
-		return r == ';' || r == '/'
-	})
-	for i := range fields {
-		fields[i] = strings.ToLower(strings.TrimSpace(fields[i]))
-	}
-	return fields
+	return names
 }
 
 // RaritiesOf lists the rarities of a set's cards once each, the way the set

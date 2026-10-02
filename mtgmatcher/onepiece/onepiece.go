@@ -43,13 +43,13 @@ type Datastore struct {
 
 // DatastoreCard is one printing as the datastore publishes it.
 type DatastoreCard struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Number  string `json:"number"`
-	SetCode string `json:"setCode"`
-	Rarity  string `json:"rarity"`
-	Color   string `json:"color"`
-	Type    string `json:"type"`
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Number  string   `json:"number"`
+	SetCode string   `json:"setCode"`
+	Rarity  string   `json:"rarity"`
+	Colors  []string `json:"colors"`
+	Type    string   `json:"type"`
 
 	// Variant is the label distilled from the product name's qualifiers:
 	// empty for the base printing, "Alternate Art", "Parallel", "Manga",
@@ -273,7 +273,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"thumbnail": card.Image,
 			},
 			Language:            cmp.Or(card.Language, "English"),
-			Colors:              mtgmatcher.SplitColors(card.Color),
+			Colors:              mtgmatcher.ColorNames(card.Colors),
 			Rarity:              card.Rarity,
 			Types:               []string{card.Type},
 			PromoTypes:          promoTypes,

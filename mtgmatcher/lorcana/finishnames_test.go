@@ -20,21 +20,21 @@ const finishNamesData = `{"data": {
     {
       "id": 100, "name": "Louie", "fullName": "Louie - One Cool Duck",
       "setCode": "1", "number": "1", "rarity": "Common", "type": "Character",
-      "color": "Amber", "story": "DuckTales",
+      "color": "Amber", "colors": ["Amber"], "story": "DuckTales",
       "printings": [{"finish": "Foil", "id": "100_other"}, {"finish": "Cold Foil", "id": "100_foil"}, {"finish": "Normal", "id": "100"}],
       "externalLinks": {"tcgPlayerId": 631349}
     },
     {
       "id": 200, "name": "Dewey", "fullName": "Dewey - Lovable Showoff",
       "setCode": "1", "number": "2", "rarity": "Common", "type": "Character",
-      "color": "Amber", "story": "DuckTales",
+      "color": "Amber", "colors": ["Amber"], "story": "DuckTales",
       "printings": [{"finish": "Normal", "id": "200"}],
       "externalLinks": {"tcgPlayerId": 631350}
     },
     {
       "id": 300, "name": "Huey", "fullName": "Huey - Reliable Leader",
       "setCode": "P1", "number": "1", "rarity": "Common", "type": "Character",
-      "color": "Amber", "story": "DuckTales",
+      "color": "Amber", "colors": ["Amber"], "story": "DuckTales",
       "printings": [{"finish": "Cold Foil", "id": "300_foil"}],
       "externalLinks": {"tcgPlayerId": 631351}
     }

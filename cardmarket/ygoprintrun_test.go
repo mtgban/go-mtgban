@@ -23,12 +23,12 @@ const ygoDatastore = `{"data": {
   "G2970": {"name": "Speed Duel GX: Duel Academy Box", "releaseDate": "2022-04-01"}
  },
  "cards": [
-  {"attribute": "WIND", "externalLinks": {"tcgPlayerId": 22823}, "finish": "1st Edition", "id": "dcr-005_22823_1stedition", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
-  {"attribute": "WIND", "externalLinks": {"tcgPlayerId": 22823}, "finish": "Unlimited", "id": "dcr-005_22823_unlimited", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
-  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 95478}, "finish": "1st Edition", "id": "sece-en086_95478_1stedition", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
-  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 95478}, "finish": "Unlimited", "id": "sece-en086_95478_unlimited", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
-  {"attribute": "SPELL", "externalLinks": {"tcgPlayerId": 96145}, "finish": "Limited", "id": "sece-ens14_96145_limited", "name": "Good & Evil in the Burning Abyss", "number": "SECE-ENS14", "promoTypes": ["se"], "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell", "variant": "SE"},
-  {"attribute": "TRAP", "externalLinks": {"tcgPlayerId": 266282}, "finish": "1st Edition", "id": "sgx1-end19_266282_1stedition", "name": "Damage Condenser", "number": "SGX1-END19", "rarity": "Common", "setCode": "G2970", "type": "Normal Trap"}
+  {"attribute": "WIND", "attributes": ["WIND"], "externalLinks": {"tcgPlayerId": 22823}, "finish": "1st Edition", "id": "dcr-005_22823_1stedition", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
+  {"attribute": "WIND", "attributes": ["WIND"], "externalLinks": {"tcgPlayerId": 22823}, "finish": "Unlimited", "id": "dcr-005_22823_unlimited", "name": "Guardian Elma", "number": "DCR-005", "rarity": "Common", "setCode": "DCR", "type": "Effect Monster"},
+  {"attribute": "SPELL", "attributes": ["SPELL"], "externalLinks": {"tcgPlayerId": 95478}, "finish": "1st Edition", "id": "sece-en086_95478_1stedition", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
+  {"attribute": "SPELL", "attributes": ["SPELL"], "externalLinks": {"tcgPlayerId": 95478}, "finish": "Unlimited", "id": "sece-en086_95478_unlimited", "name": "Good & Evil in the Burning Abyss", "number": "SECE-EN086", "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell"},
+  {"attribute": "SPELL", "attributes": ["SPELL"], "externalLinks": {"tcgPlayerId": 96145}, "finish": "Limited", "id": "sece-ens14_96145_limited", "name": "Good & Evil in the Burning Abyss", "number": "SECE-ENS14", "promoTypes": ["se"], "rarity": "Super Rare", "setCode": "SECE", "type": "Normal Spell", "variant": "SE"},
+  {"attribute": "TRAP", "attributes": ["TRAP"], "externalLinks": {"tcgPlayerId": 266282}, "finish": "1st Edition", "id": "sgx1-end19_266282_1stedition", "name": "Damage Condenser", "number": "SGX1-END19", "rarity": "Common", "setCode": "G2970", "type": "Normal Trap"}
  ]
 }}`
 

@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -44,13 +43,13 @@ type Datastore struct {
 
 // DatastoreCard is one printing as the datastore publishes it.
 type DatastoreCard struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Number    string `json:"number"`
-	SetCode   string `json:"setCode"`
-	Rarity    string `json:"rarity"`
-	Attribute string `json:"attribute"`
-	Type      string `json:"type"`
+	ID         string   `json:"id"`
+	Name       string   `json:"name"`
+	Number     string   `json:"number"`
+	SetCode    string   `json:"setCode"`
+	Rarity     string   `json:"rarity"`
+	Attributes []string `json:"attributes"`
+	Type       string   `json:"type"`
 
 	// Variant is the name-qualifier residue the builder distills from the
 	// product name: empty for most printings, "Alternate Art", a color
@@ -244,10 +243,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		promoTypes := promoTypeSlugs(card)
 
-		var colors []string
-		if card.Attribute != "" {
-			colors = []string{strings.ToLower(card.Attribute)}
-		}
+		colors := mtgmatcher.ColorNames(card.Attributes)
 
 		convertedCard := mtgmatcher.Card{
 			UUID:    card.ID,
