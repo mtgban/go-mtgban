@@ -49,6 +49,9 @@ func TestLoaderContracts(t *testing.T) {
 			t.Run("ColorsAreLowerCase", func(t *testing.T) {
 				colorsAreLowerCase(t, b)
 			})
+			t.Run("PropertiesOrderEveryValue", func(t *testing.T) {
+				propertiesOrderEveryValue(t, b, path)
+			})
 		})
 	}
 	if loaded == 0 {
@@ -304,4 +307,71 @@ func colorsAreLowerCase(t *testing.T, b *mtgmatcher.Backend) {
 			}
 		}
 	}
+}
+
+// propertiesOrderEveryValue holds a datastore's properties to ordering every
+// value its cards load with: "rarity" each card's rarity, every other
+// property its colours. A value no list names still loads, sorted last by
+// name, so nothing else notices an order going stale.
+func propertiesOrderEveryValue(t *testing.T, b *mtgmatcher.Backend, path string) {
+	properties := publishedProperties(t, path)
+	if len(properties) == 0 {
+		t.Skipf("%s publishes no properties", path)
+	}
+	// Folded as the loaders fold them: Lorcana's "Super Rare" is "superrare".
+	fold := func(value string) string {
+		return strings.ReplaceAll(strings.ToLower(value), " ", "")
+	}
+	listed := map[string]map[string]bool{}
+	for name, order := range properties {
+		field := "colour"
+		if name == "rarity" {
+			field = "rarity"
+		}
+		if listed[field] == nil {
+			listed[field] = map[string]bool{}
+		}
+		for _, value := range order {
+			listed[field][fold(value)] = true
+		}
+	}
+	unlisted := map[string]int{}
+	for _, set := range b.Sets {
+		for _, card := range set.Cards {
+			if listed["rarity"] != nil && card.Rarity != "" && !listed["rarity"][fold(card.Rarity)] {
+				unlisted["rarity "+card.Rarity]++
+			}
+			for _, color := range card.Colors {
+				if listed["colour"] != nil && !listed["colour"][fold(color)] {
+					unlisted["colour "+color]++
+				}
+			}
+		}
+	}
+	for _, value := range slices.Sorted(maps.Keys(unlisted)) {
+		t.Errorf("%s, on %d cards, is in no list of the datastore's properties", value, unlisted[value])
+	}
+}
+
+// publishedProperties reads the orders a built datastore publishes beside
+// its cards.
+func publishedProperties(t *testing.T, path string) map[string][]string {
+	t.Helper()
+	f, err := datastore.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	raw, err := datastore.Payload(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var data struct {
+		Properties map[string][]string `json:"properties"`
+	}
+	err = json.Unmarshal(raw, &data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data.Properties
 }
