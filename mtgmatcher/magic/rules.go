@@ -1037,15 +1037,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "Innistrad: Double Feature",
 				"March of the Machine Commander",
 				"The Lord of the Rings: Tales of Middle-earth":
-				skip := true
-				foundCards := b.MatchInSet(inCard.Name, setCode)
-				for _, card := range foundCards {
-					if card.HasPromoType(PromoTypePrerelease) {
-						skip = false
-						break
-					}
-				}
-				if skip {
+				prerelease := func(card mtgmatcher.Card) bool { return card.HasPromoType(PromoTypePrerelease) }
+				if !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), prerelease) {
 					continue
 				}
 			case "Duels of the Planeswalkers 2012 Promos",
@@ -1074,15 +1067,10 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 					continue
 				case strings.HasSuffix(set.Name, "Promos"):
 				case setDate.After(PromosForEverybodyYay) && (set.Type == "expansion" || set.Type == "core"):
-					skip := true
-					foundCards := b.MatchInSet(inCard.Name, setCode)
-					for _, card := range foundCards {
-						if card.HasPromoType(PromoTypePromoPack) || card.HasPromoType(PromoTypePlayPromo) {
-							skip = false
-							break
-						}
+					promo := func(card mtgmatcher.Card) bool {
+						return card.HasPromoType(PromoTypePromoPack) || card.HasPromoType(PromoTypePlayPromo)
 					}
-					if skip {
+					if !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), promo) {
 						continue
 					}
 				default:
@@ -1091,43 +1079,24 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			}
 
 		case isRelease(inCard):
-			skip := true
-			foundCards := b.MatchInSet(inCard.Name, setCode)
-			for _, card := range foundCards {
-				if card.HasPromoType(PromoTypeRelease) ||
+			release := func(card mtgmatcher.Card) bool {
+				return card.HasPromoType(PromoTypeRelease) ||
 					card.HasPromoType(PromoTypeDraftWeekend) ||
-					card.HasPromoType(PromoTypeWPN) {
-					skip = false
-					break
-				}
+					card.HasPromoType(PromoTypeWPN)
 			}
-			if skip {
+			if !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), release) {
 				continue
 			}
 
 		case isBaB(inCard):
-			skip := true
-			foundCards := b.MatchInSet(inCard.Name, setCode)
-			for _, card := range foundCards {
-				if card.HasPromoType(PromoTypeBuyABox) {
-					skip = false
-					break
-				}
-			}
-			if skip {
+			buyABox := func(card mtgmatcher.Card) bool { return card.HasPromoType(PromoTypeBuyABox) }
+			if !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), buyABox) {
 				continue
 			}
 
 		case isBundle(inCard):
-			skip := true
-			foundCards := b.MatchInSet(inCard.Name, setCode)
-			for _, card := range foundCards {
-				if card.HasPromoType(PromoTypeBundle) {
-					skip = false
-					break
-				}
-			}
-			if skip {
+			bundle := func(card mtgmatcher.Card) bool { return card.HasPromoType(PromoTypeBundle) }
+			if !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), bundle) {
 				continue
 			}
 
@@ -1136,18 +1105,11 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case strings.HasPrefix(set.Name, "Friday Night Magic "+maybeYear):
 			case set.Name == "Magic × Duel Masters Promos":
 			case strings.HasSuffix(set.Name, "Promos"):
-				skip := true
-				foundCards := b.MatchInSet(inCard.Name, setCode)
-				for _, card := range foundCards {
-					if card.HasPromoType(PromoTypeFNM) {
-						inCard.Variation = "FNM Promo"
-						skip = false
-						break
-					}
-				}
-				if skip {
+				fnm := func(card mtgmatcher.Card) bool { return card.HasPromoType(PromoTypeFNM) }
+				if !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), fnm) {
 					continue
 				}
+				inCard.Variation = "FNM Promo"
 			default:
 				continue
 			}
@@ -1217,13 +1179,10 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 					}
 				}
 				if isSecretLair(inCard) {
-					skip := true
-					for _, name := range b.SLDDeckNames {
-						if mtgmatcher.Contains(inCard.Edition, name) || mtgmatcher.Contains(inCard.Variation, name) {
-							skip = false
-						}
+					deck := func(name string) bool {
+						return mtgmatcher.Contains(inCard.Edition, name) || mtgmatcher.Contains(inCard.Variation, name)
 					}
-					if skip {
+					if !slices.ContainsFunc(b.SLDDeckNames, deck) {
 						continue
 					}
 				}
@@ -1290,15 +1249,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "DCI Promos":
 			case "Innistrad: Crimson Vow",
 				"The Lost Caverns of Ixalan":
-				skip := true
-				foundCards := b.MatchInSet(inCard.Name, set.Code)
-				for _, card := range foundCards {
-					if card.HasPromoType(PromoTypeWPN) {
-						skip = false
-						break
-					}
-				}
-				if skip {
+				wpn := func(card mtgmatcher.Card) bool { return card.HasPromoType(PromoTypeWPN) }
+				if !slices.ContainsFunc(b.MatchInSet(inCard.Name, set.Code), wpn) {
 					continue
 				}
 			default:
@@ -1417,21 +1369,17 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "LTR":
 			case "PEWK":
 			default:
-				skip := true
 				switch {
 				case strings.HasSuffix(set.Name, "Promos"):
-					foundCards := b.MatchInSet(inCard.Name, set.Code)
-					for _, card := range foundCards {
-						if card.HasPromoType(PromoTypeStoreChampionship) ||
-							card.HasPromoType(PromoTypeGameDay) {
-							skip = false
-							break
-						}
+					event := func(card mtgmatcher.Card) bool {
+						return card.HasPromoType(PromoTypeStoreChampionship) ||
+							card.HasPromoType(PromoTypeGameDay)
+					}
+					if !slices.ContainsFunc(b.MatchInSet(inCard.Name, set.Code), event) {
+						continue
 					}
 				case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):
-					skip = false
-				}
-				if skip {
+				default:
 					continue
 				}
 			}
@@ -1441,20 +1389,10 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case (maybeYear == "1996" || maybeYear == "") && set.Name == "Pro Tour Collector Set":
 			case maybeYear != "" && strings.HasPrefix(set.Name, "World Championship Decks "+maybeYear):
 			case maybeYear == "" && strings.HasPrefix(set.Name, "World Championship Decks"):
-				skip := true
 				num, _ := parseWorldChampPrefix(inCard.Variation)
 				foundCards := b.MatchInSet(inCard.Name, set.Code)
-				if num == "" || len(foundCards) == 1 {
-					skip = false
-				} else {
-					for _, card := range foundCards {
-						if card.Number == num {
-							skip = false
-							break
-						}
-					}
-				}
-				if skip {
+				numbered := func(card mtgmatcher.Card) bool { return card.Number == num }
+				if num != "" && len(foundCards) != 1 && !slices.ContainsFunc(foundCards, numbered) {
 					continue
 				}
 			default:
@@ -1746,32 +1684,15 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 					continue
 				}
 			case "expansion", "core", "masters", "draft_innovation":
-				skip := true
-				foundCards := b.MatchInSet(inCard.Name, setCode)
-				for _, card := range foundCards {
-					// Skip boosterfun because they are inherently non-promo
-					if card.IsPromo && !card.HasPromoType(PromoTypeBoosterfun) {
-						skip = false
-						break
-					}
-				}
-				if skip {
+				// Skip boosterfun because they are inherently non-promo
+				promo := func(card mtgmatcher.Card) bool { return card.IsPromo && !card.HasPromoType(PromoTypeBoosterfun) }
+				if !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), promo) {
 					continue
 				}
 			case "box":
-				skip := true
-				switch setCode {
 				// Only keep the planeswalkers from SLD for this category
-				case "SLD":
-					foundCards := b.MatchInSet(inCard.Name, setCode)
-					for _, card := range foundCards {
-						if slices.Contains(card.Types, "Planeswalker") {
-							skip = false
-							break
-						}
-					}
-				}
-				if skip {
+				planeswalker := func(card mtgmatcher.Card) bool { return slices.Contains(card.Types, "Planeswalker") }
+				if setCode != "SLD" || !slices.ContainsFunc(b.MatchInSet(inCard.Name, setCode), planeswalker) {
 					continue
 				}
 			case "funny":
