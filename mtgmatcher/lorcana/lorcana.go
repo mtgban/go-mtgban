@@ -29,8 +29,8 @@ type AllCards struct {
 		Language      string `json:"language"`
 	} `json:"metadata"`
 
-	// Properties orders the values of the card fields a set lists, keyed by
-	// the field: rarities rarest first, inks in the game's own order.
+	// Properties orders the values a set lists, one list per property named
+	// in the singular: rarities rarest first, inks in the game's own order.
 	Properties map[string][]string `json:"properties"`
 
 	Sets map[string]struct {
@@ -613,7 +613,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	for _, rarity := range ac.Properties["rarity"] {
 		rarities = append(rarities, rarityKey(rarity))
 	}
-	colors := mtgmatcher.ColorNames(ac.Properties["colors"])
+	colors := mtgmatcher.ColorNames(ac.Properties["color"])
 
 	// Update any remaining details on Sets after Cards loading
 	for code := range b.Sets {
