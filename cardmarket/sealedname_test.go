@@ -141,7 +141,7 @@ const ygohDatastore = `{"data": {
   "HA02": {"name": "Hidden Arsenal 2", "releaseDate": "2010-07-20"}
  },
  "cards": [
-  {"attribute": "WATER", "externalLinks": {"tcgPlayerId": 33740}, "finish": "Unlimited", "id": "ha01-en001_33740_unlimited", "name": "Blizzed, Defender of the Ice Barrier", "number": "HA01-EN001", "rarity": "Secret Rare", "setCode": "HA01", "type": "Effect Monster"}
+  {"attribute": "WATER", "attributes": ["WATER"], "externalLinks": {"tcgPlayerId": 33740}, "finish": "Unlimited", "id": "ha01-en001_33740_unlimited", "name": "Blizzed, Defender of the Ice Barrier", "number": "HA01-EN001", "rarity": "Secret Rare", "setCode": "HA01", "type": "Effect Monster"}
  ],
  "sealed": [
   {"externalLinks": {"tcgPlayerId": 33771}, "id": "ha01-33771", "name": "Hidden Arsenal - Booster Pack [Unlimited Edition]", "releaseDate": "2009-11-10", "setCode": "HA01"},
@@ -267,7 +267,7 @@ const opDatastore = `{"data": {
   "PRB-02": {"name": "Premium Booster -The Best- Vol. 2", "releaseDate": "2025-10-03"}
  },
  "cards": [
-  {"color": "Red", "externalLinks": {"bandaiId": "OP01-024_p3", "tcgPlayerId": 586178}, "finish": "Foil", "id": "op01-024_586178_foil", "name": "Monkey.D.Luffy", "number": "OP01-024", "promoTypes": ["Alternate Art"], "rarity": "SR", "setCode": "PRB-01", "type": "Character", "variant": "Alternate Art"}
+  {"color": "Red", "colors": ["Red"], "externalLinks": {"bandaiId": "OP01-024_p3", "tcgPlayerId": 586178}, "finish": "Foil", "id": "op01-024_586178_foil", "name": "Monkey.D.Luffy", "number": "OP01-024", "promoTypes": ["Alternate Art"], "rarity": "SR", "setCode": "PRB-01", "type": "Character", "variant": "Alternate Art"}
  ],
  "sealed": [
   {"externalLinks": {"tcgPlayerId": 545398}, "id": "prb-01-545398", "name": "Premium Booster - Booster Pack", "releaseDate": "2024-11-08", "setCode": "PRB-01"},

@@ -17,13 +17,13 @@ const cardmarketIDData = `{"data": {
     "7": {"name": "Archazia's Island", "type": "expansion", "releaseDate": "2025-03-21"}
   },
   "cards": [
-    {"id": 101, "name": "Dr. Facilier's Cards", "fullName": "Dr. Facilier's Cards", "setCode": "1", "number": "101", "rarity": "Uncommon", "type": "Item", "color": "Emerald", "story": "The Princess And The Frog",
+    {"id": 101, "name": "Dr. Facilier's Cards", "fullName": "Dr. Facilier's Cards", "setCode": "1", "number": "101", "rarity": "Uncommon", "type": "Item", "color": "Emerald", "colors": ["Emerald"], "story": "The Princess And The Frog",
      "printings": [{"finish": "Cold Foil", "id": "101_foil"}, {"finish": "Normal", "id": "101"}],
      "externalLinks": {"cardTraderId": 258975, "cardmarketId": 729282, "tcgPlayerId": 508762}},
-    {"id": 1433, "name": "Moana", "fullName": "Moana - Adventurer of Land and Sea", "setCode": "7", "number": "26", "rarity": "Special", "type": "Character", "color": "Sapphire", "story": "Moana",
+    {"id": 1433, "name": "Moana", "fullName": "Moana - Adventurer of Land and Sea", "setCode": "7", "number": "26", "rarity": "Special", "type": "Character", "color": "Sapphire", "colors": ["Sapphire"], "story": "Moana",
      "printings": [{"finish": "Cold Foil", "id": "1433_foil"}],
      "externalLinks": {"cardTraderId": 311906, "cardmarketId": 801862, "tcgPlayerId": 601112}},
-    {"id": 1663, "name": "Vaiana", "fullName": "Vaiana - Adventurer of Land and Sea", "setCode": "7", "number": "26", "rarity": "Special", "type": "Character", "color": "Sapphire", "story": "Moana",
+    {"id": 1663, "name": "Vaiana", "fullName": "Vaiana - Adventurer of Land and Sea", "setCode": "7", "number": "26", "rarity": "Special", "type": "Character", "color": "Sapphire", "colors": ["Sapphire"], "story": "Moana",
      "printings": [{"finish": "Cold Foil", "id": "1663_foil"}],
      "externalLinks": {"cardTraderId": 311906, "cardmarketId": 801862}}
   ]

@@ -21,9 +21,9 @@ const yugiohOversizedDatastore = `{"data": {
   "YUCB": {"abbreviation": "YUCB", "name": "Yugi's Collector Box", "releaseDate": "2017-09-15"}
  },
  "cards": [
-  {"attribute": "DARK", "externalLinks": {"tcgPlayerId": 146151}, "finish": "Limited", "id": "yucb-en001_146151_limited", "name": "Dark Magician", "number": "YUCB-EN001", "promoTypes": ["oversized"], "rarity": "Promo", "setCode": "YUCB", "type": "Normal Monster", "variant": "Oversized"},
-  {"attribute": "EARTH", "externalLinks": {"konamiId": 5556499, "tcgPlayerId": 181002}, "finish": "Limited", "id": "sdmm-en001_181002_limited", "name": "Machina Fortress", "number": "SDMM-EN001", "promoTypes": ["oversized", "machine madness"], "rarity": "Promo", "setCode": "VBX", "type": "Effect Monster", "variant": "Oversized Machine Madness"},
-  {"attribute": "EARTH", "externalLinks": {"konamiId": 5556499, "tcgPlayerId": 34641}, "finish": "1st Edition", "id": "sdmm-en001_34641_1stedition", "name": "Machina Fortress", "number": "SDMM-EN001", "rarity": "Ultra Rare", "setCode": "SDMM", "type": "Effect Monster"}
+  {"attribute": "DARK", "attributes": ["DARK"], "externalLinks": {"tcgPlayerId": 146151}, "finish": "Limited", "id": "yucb-en001_146151_limited", "name": "Dark Magician", "number": "YUCB-EN001", "promoTypes": ["oversized"], "rarity": "Promo", "setCode": "YUCB", "type": "Normal Monster", "variant": "Oversized"},
+  {"attribute": "EARTH", "attributes": ["EARTH"], "externalLinks": {"konamiId": 5556499, "tcgPlayerId": 181002}, "finish": "Limited", "id": "sdmm-en001_181002_limited", "name": "Machina Fortress", "number": "SDMM-EN001", "promoTypes": ["oversized", "machine madness"], "rarity": "Promo", "setCode": "VBX", "type": "Effect Monster", "variant": "Oversized Machine Madness"},
+  {"attribute": "EARTH", "attributes": ["EARTH"], "externalLinks": {"konamiId": 5556499, "tcgPlayerId": 34641}, "finish": "1st Edition", "id": "sdmm-en001_34641_1stedition", "name": "Machina Fortress", "number": "SDMM-EN001", "rarity": "Ultra Rare", "setCode": "SDMM", "type": "Effect Monster"}
  ]
 }}`
 

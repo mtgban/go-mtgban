@@ -20,15 +20,15 @@ const gundamDatastore = `{"data": {
   "ST09": {"name": "Starter Deck 09: Destiny Ignition", "releaseDate": "2026-03-27"}
  },
  "cards": [
-  {"color": "Blue", "externalLinks": {"tcgPlayerId": 643150}, "finish": "Holofoil", "id": "gd01-001_643150_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "Legend Rare", "setCode": "GD01", "type": "Unit"},
-  {"color": "Blue", "externalLinks": {"tcgPlayerId": 645356}, "finish": "Holofoil", "id": "gd01-001_645356_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR+", "setCode": "GD01", "type": "Unit"},
-  {"color": "Blue", "externalLinks": {"tcgPlayerId": 645375}, "finish": "Holofoil", "id": "gd01-001_645375_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR++", "setCode": "GD01", "type": "Unit"},
+  {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 643150}, "finish": "Holofoil", "id": "gd01-001_643150_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "Legend Rare", "setCode": "GD01", "type": "Unit"},
+  {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 645356}, "finish": "Holofoil", "id": "gd01-001_645356_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR+", "setCode": "GD01", "type": "Unit"},
+  {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 645375}, "finish": "Holofoil", "id": "gd01-001_645375_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR++", "setCode": "GD01", "type": "Unit"},
   {"externalLinks": {"tcgPlayerId": 673538}, "finish": "Normal", "id": "t-020_673538", "name": "GFreD Token", "number": "T-020", "rarity": "Common", "setCode": "GD03", "type": "Unit"},
   {"externalLinks": {"tcgPlayerId": 680689}, "finish": "Holofoil", "id": "t-020_680689_holofoil", "name": "GFreD Token", "number": "T-020", "promoTypes": ["premiumcardcollection"], "rarity": "Common", "setCode": "GCG-PR", "type": "Unit", "variant": "Premium Card Collection Gundam Assemble"},
-  {"color": "Purple", "externalLinks": {"tcgPlayerId": 684001}, "finish": "Holofoil", "id": "st09-002_684001_holofoil", "name": "Force Impulse Gundam", "number": "ST09-002", "rarity": "Legend Rare", "setCode": "ST09", "type": "Unit"},
-  {"color": "Purple", "externalLinks": {"tcgPlayerId": 684026}, "finish": "Holofoil", "id": "st09-001_684026_holofoil", "name": "Impulse Gundam", "number": "ST09-001", "rarity": "LR+", "setCode": "ST09", "type": "Unit"},
-  {"color": "Purple", "externalLinks": {"tcgPlayerId": 705650}, "finish": "Holofoil", "id": "gd05-114_705650_holofoil", "name": "Widespread Annihilation", "number": "GD05-114", "rarity": "Rare", "setCode": "GD05", "type": "Command"},
-  {"color": "Purple", "finish": "Holofoil", "id": "gd05-114-premium-card-collection-02_holofoil", "name": "Widespread Annihilation", "number": "GD05-114", "promoTypes": ["premiumcardcollection"], "rarity": "Rare", "setCode": "GCG-PR", "type": "Command", "variant": "Premium Card Collection 02"}
+  {"color": "Purple", "colors": ["Purple"], "externalLinks": {"tcgPlayerId": 684001}, "finish": "Holofoil", "id": "st09-002_684001_holofoil", "name": "Force Impulse Gundam", "number": "ST09-002", "rarity": "Legend Rare", "setCode": "ST09", "type": "Unit"},
+  {"color": "Purple", "colors": ["Purple"], "externalLinks": {"tcgPlayerId": 684026}, "finish": "Holofoil", "id": "st09-001_684026_holofoil", "name": "Impulse Gundam", "number": "ST09-001", "rarity": "LR+", "setCode": "ST09", "type": "Unit"},
+  {"color": "Purple", "colors": ["Purple"], "externalLinks": {"tcgPlayerId": 705650}, "finish": "Holofoil", "id": "gd05-114_705650_holofoil", "name": "Widespread Annihilation", "number": "GD05-114", "rarity": "Rare", "setCode": "GD05", "type": "Command"},
+  {"color": "Purple", "colors": ["Purple"], "finish": "Holofoil", "id": "gd05-114-premium-card-collection-02_holofoil", "name": "Widespread Annihilation", "number": "GD05-114", "promoTypes": ["premiumcardcollection"], "rarity": "Rare", "setCode": "GCG-PR", "type": "Command", "variant": "Premium Card Collection 02"}
  ]
 }}`
 

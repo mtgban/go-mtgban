@@ -17,8 +17,8 @@ const onePieceLinlinDatastore = `{"data": {
   "OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-09-30", "type": "promo"}
  },
  "cards": [
-  {"color": "Yellow", "externalLinks": {"bandaiId": "ST20-005", "tcgPlayerId": 581065}, "finish": "Foil", "id": "st20-005_581065_foil", "name": "Charlotte Linlin", "number": "ST20-005", "rarity": "SR", "setCode": "ST-20", "type": "Character"},
-  {"color": "Yellow", "externalLinks": {"tcgPlayerId": 714355}, "finish": "Foil", "id": "st20-005_714355_foil", "name": "Charlotte Linlin", "number": "ST20-005", "promoTypes": ["anniversarytreasure", "campaignpack"], "rarity": "SR", "setCode": "OP-PR", "type": "Character", "variant": "4th Anniversary Treasure Campaign Pack", "watermark": "4th"}
+  {"color": "Yellow", "colors": ["Yellow"], "externalLinks": {"bandaiId": "ST20-005", "tcgPlayerId": 581065}, "finish": "Foil", "id": "st20-005_581065_foil", "name": "Charlotte Linlin", "number": "ST20-005", "rarity": "SR", "setCode": "ST-20", "type": "Character"},
+  {"color": "Yellow", "colors": ["Yellow"], "externalLinks": {"tcgPlayerId": 714355}, "finish": "Foil", "id": "st20-005_714355_foil", "name": "Charlotte Linlin", "number": "ST20-005", "promoTypes": ["anniversarytreasure", "campaignpack"], "rarity": "SR", "setCode": "OP-PR", "type": "Character", "variant": "4th Anniversary Treasure Campaign Pack", "watermark": "4th"}
  ]
 }}`
 

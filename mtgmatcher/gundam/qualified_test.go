@@ -16,10 +16,10 @@ const qualifiedFixture = `{"data": {
 		"GD01-b": {"name": "Edition Beta", "releaseDate": "2025-02-06"}
 	},
 	"cards": [
-		{"color": "Red", "externalLinks": {"tcgPlayerId": 666557}, "finish": "Holofoil", "id": "gd02-091_666557_holofoil", "image": "x", "name": "Haman Karn", "number": "GD02-091", "promoTypes": ["newtypechallenge"], "rarity": "Rare", "setCode": "GCG-PR", "type": "Pilot", "variant": "Newtype Challenge 2025 Mission 3"},
-		{"color": "Red", "externalLinks": {"tcgPlayerId": 666560}, "finish": "Holofoil", "id": "gd02-091_666560_holofoil", "image": "x", "name": "Haman Karn", "number": "GD02-091", "rarity": "Rare", "setCode": "GCG-PR", "type": "Pilot"},
-		{"color": "Blue", "externalLinks": {"tcgPlayerId": 616528}, "finish": "Holofoil", "id": "st01-001_616528_holofoil", "image": "x", "name": "Gundam", "number": "ST01-001", "rarity": "Legend Rare", "setCode": "GD01-b", "type": "Unit"},
-		{"color": "Blue", "externalLinks": {"tcgPlayerId": 616531}, "finish": "Holofoil", "id": "st01-001_616531_holofoil", "image": "x", "name": "Gundam", "number": "ST01-001", "rarity": "LR+", "setCode": "GD01-b", "type": "Unit"}
+		{"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 666557}, "finish": "Holofoil", "id": "gd02-091_666557_holofoil", "image": "x", "name": "Haman Karn", "number": "GD02-091", "promoTypes": ["newtypechallenge"], "rarity": "Rare", "setCode": "GCG-PR", "type": "Pilot", "variant": "Newtype Challenge 2025 Mission 3"},
+		{"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 666560}, "finish": "Holofoil", "id": "gd02-091_666560_holofoil", "image": "x", "name": "Haman Karn", "number": "GD02-091", "rarity": "Rare", "setCode": "GCG-PR", "type": "Pilot"},
+		{"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 616528}, "finish": "Holofoil", "id": "st01-001_616528_holofoil", "image": "x", "name": "Gundam", "number": "ST01-001", "rarity": "Legend Rare", "setCode": "GD01-b", "type": "Unit"},
+		{"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 616531}, "finish": "Holofoil", "id": "st01-001_616531_holofoil", "image": "x", "name": "Gundam", "number": "ST01-001", "rarity": "LR+", "setCode": "GD01-b", "type": "Unit"}
 	]
 }}`
 
