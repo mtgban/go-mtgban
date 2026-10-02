@@ -618,7 +618,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 		}
 
-		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, lorcanaRarityMap)
+		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, lorcanaRarities)
 		b.Sets[code].Colors = mtgmatcher.ColorsOf(b.Sets[code].Cards, lorcanaColors)
 	}
 
@@ -657,22 +657,15 @@ var lorcanaColors = []string{
 	"amber", "amethyst", "emerald", "ruby", "sapphire", "steel",
 }
 
-// lorcanaRarityMap ranks the rarities so a set can list them in a stable
-// order. The tiers past the base set are ranked by the collector numbers
-// LorcanaJSON gives them: from Fabled on, a set runs epic, then enchanted,
-// then the two iconic cards that close it out. A rarity absent from here
-// ranks 0 and would sort below common, so every printed rarity belongs in
-// the table; "special" keeps the top slot it has always held.
-var lorcanaRarityMap = map[string]int{
-	"common":    1,
-	"uncommon":  2,
-	"rare":      3,
-	"superrare": 4,
-	"legendary": 5,
-	"epic":      6,
-	"enchanted": 7,
-	"iconic":    8,
-	"special":   9,
+// lorcanaRarities are the rarities rarest first, so a set lists them in a
+// stable order. The tiers past the base set are ordered by the collector
+// numbers LorcanaJSON gives them: from Fabled on, a set runs epic, then
+// enchanted, then the two iconic cards that close it out. A rarity absent
+// from here would sort below common, so every printed rarity belongs in the
+// list; "special" keeps the first place it has always held.
+var lorcanaRarities = []string{
+	"special", "iconic", "enchanted", "epic", "legendary", "superrare", "rare",
+	"uncommon", "common",
 }
 
 // cardUUID spells a card's id as the uuid everything downstream addresses

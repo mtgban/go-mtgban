@@ -272,7 +272,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, palworldRarityMap)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, palworldRarities)
 		set.Colors = mtgmatcher.ColorsOf(set.Cards, palworldColors)
 	}
 
@@ -287,24 +287,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 // palworldColors are Palworld's colours, in its card list's order.
 var palworldColors = []string{"red", "blue", "green", "purple"}
 
-// palworldRarityMap ranks the rarities the catalog spells for this game, and
-// a set lists them highest rank first. The trial-deck rarities run beside the
-// booster ones rather than under them: a deck's cards are its own run.
-var palworldRarityMap = map[string]int{
-	"Trial Deck":                 1,
-	"Common":                     2,
-	"Uncommon":                   3,
-	"Trial Deck Rare":            4,
-	"Rare":                       5,
-	"Double Rare":                6,
-	"Super Rare":                 7,
-	"Trial Deck Super Deck Rare": 8,
-	"Over Super Rare":            9,
-	"Super Parallel":             10,
-	"Trial Deck Super Parallel":  11,
-	"Super Special Parallel":     12,
-	"Super Special Soul":         13,
-	"Promo":                      14,
+// palworldRarities are the rarities the catalog spells for this game, rarest
+// first as a set lists them. The trial-deck rarities run beside the booster
+// ones rather than under them: a deck's cards are its own run.
+var palworldRarities = []string{
+	"Promo", "Super Special Soul", "Super Special Parallel",
+	"Trial Deck Super Parallel", "Super Parallel", "Over Super Rare",
+	"Trial Deck Super Deck Rare", "Super Rare", "Double Rare", "Rare",
+	"Trial Deck Rare", "Uncommon", "Common", "Trial Deck",
 }
 
 // productKey names the product an entry is a printing of, read off what the

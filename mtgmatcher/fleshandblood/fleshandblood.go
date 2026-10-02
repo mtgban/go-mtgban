@@ -430,7 +430,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, fleshandbloodRarityMap)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, fleshandbloodRarities)
 		set.Colors = mtgmatcher.ColorsOf(set.Cards, fleshandbloodColors)
 	}
 
@@ -447,19 +447,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 // fleshandbloodColors are Flesh and Blood's pitches, in pitch value order.
 var fleshandbloodColors = []string{"red", "yellow", "blue"}
 
-var fleshandbloodRarityMap = map[string]int{
-	"Token":        1,
-	"Basic":        2,
-	"Common":       3,
-	"Rare":         4,
-	"Super Rare":   5,
-	"Majestic":     6,
-	"Legendary":    7,
-	"Fabled":       8,
-	"Marvel":       9,
-	"Gold":         10,
-	"Pirate Booty": 11,
-	"Promo":        12,
+var fleshandbloodRarities = []string{
+	"Promo", "Pirate Booty", "Gold", "Marvel", "Fabled", "Legendary",
+	"Majestic", "Super Rare", "Rare", "Common", "Basic", "Token",
 }
 
 // productKey names the product an entry is a printing of, read off what the

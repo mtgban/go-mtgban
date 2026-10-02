@@ -324,7 +324,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, onepieceRarityMap)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, onepieceRarities)
 		set.Colors = mtgmatcher.ColorsOf(set.Cards, onepieceColors)
 	}
 
@@ -343,16 +343,8 @@ var onepieceColors = []string{
 	"red", "green", "blue", "purple", "black", "yellow",
 }
 
-var onepieceRarityMap = map[string]int{
-	"C":   1,
-	"UC":  2,
-	"R":   3,
-	"SR":  4,
-	"L":   5,
-	"SEC": 6,
-	"SP":  7,
-	"TR":  8,
-	"PR":  9,
+var onepieceRarities = []string{
+	"PR", "TR", "SP", "SEC", "L", "SR", "R", "UC", "C",
 }
 
 // productKey names the product an entry is a printing of, read off what the

@@ -135,23 +135,32 @@ func ColorNames(values []string) []string {
 	return names
 }
 
+// SortByOrder sorts values the way order lists them, and those order leaves
+// out after them alphabetically: all of them alphabetically for no order.
+func SortByOrder(values, order []string) {
+	position := func(value string) int {
+		i := slices.Index(order, value)
+		if i < 0 {
+			return len(order)
+		}
+		return i
+	}
+	sort.Strings(values)
+	sort.SliceStable(values, func(i, j int) bool {
+		return position(values[i]) < position(values[j])
+	})
+}
+
 // RaritiesOf lists the rarities of a set's cards once each, the way the set
-// lists them: highest rank first by the game's rank, where a rarity the rank
-// leaves out ranks 0, or alphabetically for a game passing no rank.
-func RaritiesOf(cards []Card, rank map[string]int) []string {
+// lists them: in the game's order, rarest first.
+func RaritiesOf(cards []Card, order []string) []string {
 	var rarities []string
 	for _, card := range cards {
 		if !slices.Contains(rarities, card.Rarity) {
 			rarities = append(rarities, card.Rarity)
 		}
 	}
-	if rank == nil {
-		sort.Strings(rarities)
-		return rarities
-	}
-	sort.Slice(rarities, func(i, j int) bool {
-		return rank[rarities[i]] > rank[rarities[j]]
-	})
+	SortByOrder(rarities, order)
 	return rarities
 }
 
@@ -175,17 +184,7 @@ func ColorsOf(cards []Card, order []string) []string {
 			}
 		}
 	}
-	position := func(color string) int {
-		i := slices.Index(order, color)
-		if i < 0 {
-			return len(order)
-		}
-		return i
-	}
-	sort.Strings(colors)
-	sort.SliceStable(colors, func(i, j int) bool {
-		return position(colors[i]) < position(colors[j])
-	})
+	SortByOrder(colors, order)
 	if colorless {
 		colors = append(colors, "colorless")
 	}
