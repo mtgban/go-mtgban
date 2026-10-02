@@ -26,14 +26,15 @@ const (
 // of its own.
 var csiSearchURL = "https://www.coolstuffinc.com/sq/"
 
-// csiUserAgent is what the storefront is asked as. Go's default agent is
-// answered with the bare site chrome in place of the page asked for - no
+// csiUserAgent is what the storefront is asked as, and it has to read as a
+// browser. Its search pages answer Go's default agent with the bare site
+// chrome and curl's with an empty body after several seconds - no
 // search results, no facets, no next link - under a 200 and with no error
 // anywhere, so only the missing rows say that anything went wrong. The
 // header therefore sits on the transport rather than on each request,
 // where a call site that forgot it has now cost this scraper its sealed
 // pages once and its whole singles inventory a second time.
-const csiUserAgent = "curl/8.6.0"
+const csiUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
 
 // userAgentTransport stamps the agent on every request that does not name
 // one of its own, retries included.
