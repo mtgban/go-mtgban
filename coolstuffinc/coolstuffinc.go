@@ -408,7 +408,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 	case "Alpha", "Beta", "Unlimited Edition":
 		skipOOS = false
 	}
-	result, err := Search(ctx, csi.shelf, itemName, skipOOS, rarities)
+	result, err := Search(ctx, csi.client, csi.shelf, itemName, skipOOS, rarities)
 	if err != nil {
 		return err
 	}
@@ -812,13 +812,13 @@ func offerSeen(seen map[string]bool, record responseChan) bool {
 }
 
 func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
-	edition2id, err := LoadBuylistEditions(ctx, csi.shelf)
+	edition2id, err := LoadBuylistEditions(ctx, csi.client, csi.shelf)
 	if err != nil {
 		return err
 	}
 	csi.printf("Loaded %d editions", len(edition2id))
 
-	products, err := GetBuylist(ctx, csi.shelf)
+	products, err := GetBuylist(ctx, csi.client, csi.shelf)
 	if err != nil {
 		return err
 	}

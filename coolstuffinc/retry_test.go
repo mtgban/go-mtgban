@@ -49,7 +49,7 @@ func TestSearchSurvivesTransientFailures(t *testing.T) {
 			csiSearchURL = srv.URL
 			defer func() { csiSearchURL = saved }()
 
-			result, err := Search(context.Background(), GameMagic, "Coldsnap", false, nil)
+			result, err := Search(context.Background(), newCSIHTTPClient(), GameMagic, "Coldsnap", false, nil)
 			if err != nil {
 				t.Fatalf("Search() after %d attempts: %v", attempts, err)
 			}
