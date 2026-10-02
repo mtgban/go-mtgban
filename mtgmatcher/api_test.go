@@ -43,6 +43,7 @@ func TestNamesForms(t *testing.T) {
 }
 
 func BenchmarkSearchEquals(b *testing.B) {
+	realDatastore(b)
 	if NameToBeFound == "" {
 		setupBenchmark()
 	}
@@ -54,6 +55,7 @@ func BenchmarkSearchEquals(b *testing.B) {
 }
 
 func BenchmarkSearchHasPrefix(b *testing.B) {
+	realDatastore(b)
 	if NameToBeFound == "" {
 		setupBenchmark()
 	}
@@ -68,6 +70,7 @@ func BenchmarkSearchHasPrefix(b *testing.B) {
 }
 
 func BenchmarkSearchContains(b *testing.B) {
+	realDatastore(b)
 	if NameToBeFound == "" {
 		setupBenchmark()
 	}
@@ -81,6 +84,7 @@ func BenchmarkSearchContains(b *testing.B) {
 }
 
 func BenchmarkSearchRegexp(b *testing.B) {
+	realDatastore(b)
 	if NameToBeFound == "" {
 		setupBenchmark()
 	}

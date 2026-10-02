@@ -19,7 +19,7 @@ var testBackend *mtgmatcher.Backend
 
 // realDatastore skips a test that reads the datastore where the run carries
 // none. The internal suite loads it, once for this whole binary.
-func realDatastore(t *testing.T) {
+func realDatastore(t testing.TB) {
 	t.Helper()
 	testBackend = mtgmatcher.RealDatastore(t)
 	testBackend.Logger = log.New(os.Stderr, "", 0)
