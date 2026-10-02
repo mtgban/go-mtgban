@@ -18,13 +18,11 @@ import (
 //
 // It asserts nothing on its own. It is a before-and-after: run it on two
 // checkouts and diff the two files, and every listing whose answer moved is
-// named, with what it used to answer beside what it answers now. Every real
-// defect found while moving the loaders onto the published facts came out of
-// this and none out of the suite - a fold that sent "CS 25-26 Celebration
-// Pack" to the wrong printing of Charlotte Pudding, a label built per-token
-// that lost 41 names of 7,099, a mark taken from another printing's number.
-// The goldens covered none of them, because a golden holds the cases someone
-// thought of.
+// named, with the first checkout's answer beside the second's. It catches
+// what the goldens cannot, because a golden holds only the cases someone
+// thought of - a fold sending "CS 25-26 Celebration Pack" to the wrong
+// printing of Charlotte Pudding, a label built per-token that loses 41
+// names of 7,099, a mark taken from another printing's number.
 //
 //	REPLAY_CATALOG=output/catalogs/onepiece.json \
 //	ONEPIECE_PATH=output/onepiece.json \

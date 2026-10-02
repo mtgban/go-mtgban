@@ -99,7 +99,7 @@ func resolveGame(options map[mtgmatcher.Game]map[string]*scraperOption, name str
 
 // enableStore turns on the named store within one game's scrapers, or
 // reports why it could not. -store, -sellers and -vendors all take bare
-// registry keys now that -game says which sub-map they reach into, so an
+// registry keys within the sub-map -game selects, so an
 // unknown name is caught here rather than at mtgban.NewScraper.
 func enableStore(scrapers map[string]*scraperOption, game mtgmatcher.Game, name string) (*scraperOption, error) {
 	opt, ok := scrapers[name]

@@ -7,7 +7,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestScraperInfoGameJSON pins that every game, Magic included, now writes
+// TestScraperInfoGameJSON pins that every game, Magic included, writes
 // an explicit game field rather than Magic relying on an omitted zero value.
 func TestScraperInfoGameJSON(t *testing.T) {
 	for _, tt := range []struct {

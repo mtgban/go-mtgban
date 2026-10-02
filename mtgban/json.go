@@ -135,8 +135,8 @@ func expectDelim(dec *json.Decoder, want json.Delim, what string) error {
 
 // decodeRecord fills one price side, decoding the entries of a card as
 // they are reached rather than the side as a whole. A side written as null
-// is a side with nothing in it: a writer before the streaming reader put a
-// nil map out that way, and the whole-file Decode read it back as empty.
+// is a side with nothing in it: that is how a nil map marshals, and how a
+// whole-file Decode reads it back.
 func decodeRecord[T any](dec *json.Decoder, out map[string][]T) error {
 	token, err := dec.Token()
 	if err != nil {
