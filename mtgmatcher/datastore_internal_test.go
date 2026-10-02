@@ -23,7 +23,7 @@ var (
 // reached through Open, which is local, and "magic" is registered by
 // mtgmatcher/magic - imported by the external test files, which share this
 // test binary.
-func realDatastore(t *testing.T) *Backend {
+func realDatastore(t testing.TB) *Backend {
 	t.Helper()
 	internalDatastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -62,7 +62,7 @@ func realDatastore(t *testing.T) *Backend {
 // RealDatastore hands the external test package the same Backend, which it
 // cannot reach for itself: realDatastore is unexported and the sync.Once
 // behind it is what keeps the two suites sharing this binary to one copy.
-func RealDatastore(t *testing.T) *Backend {
+func RealDatastore(t testing.TB) *Backend {
 	t.Helper()
 	return realDatastore(t)
 }

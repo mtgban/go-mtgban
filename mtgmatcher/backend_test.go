@@ -45,6 +45,7 @@ func backendUUIDs(name string, doneWhenFound bool) (printings []string) {
 }
 
 func BenchmarkSearchWithUUIDs(b *testing.B) {
+	realDatastore(b)
 	if NameToBeFound == "" {
 		setupBenchmark()
 	}
@@ -70,6 +71,7 @@ func backendSlice(name string, doneWhenFound bool) (printings []string) {
 }
 
 func BenchmarkSearchWithSlice(b *testing.B) {
+	realDatastore(b)
 	if NameToBeFound == "" {
 		setupBenchmark()
 	}
@@ -95,6 +97,7 @@ func backendHybrid(name string, doneWhenFound bool) (printings []string) {
 }
 
 func BenchmarkSearchWithSliceAndMap(b *testing.B) {
+	realDatastore(b)
 	for n := 0; n < b.N; n++ {
 		backendHybrid(NameToBeFound, ReturnWhenFound)
 	}

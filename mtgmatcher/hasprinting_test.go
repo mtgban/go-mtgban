@@ -136,10 +136,7 @@ func oldHasPrinting(b *Backend, name, field, value string, editions ...string) b
 // The old scans made widely printed cards pathological: every printing
 // re-scanned a full set with two normalizations per card.
 func BenchmarkHasPrintingWide(b *testing.B) {
-	back := internalTestBackend
-	if back == nil || len(back.GetUUIDs()) == 0 {
-		b.Skip("datastore not loaded")
-	}
+	back := realDatastore(b)
 	b.Run("new", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			back.HasPrinting("Island", "finish", FinishFoil)

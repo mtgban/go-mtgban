@@ -52,7 +52,7 @@ var (
 
 // realDatastore loads the Magic datastore into testBackend the first time a
 // test asks for it, and skips where the run carries none.
-func realDatastore(t *testing.T) {
+func realDatastore(t testing.TB) {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -165,6 +165,7 @@ func TestMatch(t *testing.T) {
 
 // This benchmark function just runs the Match tests b.N times
 func BenchmarkMatch(b *testing.B) {
+	realDatastore(b)
 	for n := 0; n < b.N; n++ {
 		for _, test := range matchTests {
 			_, err := runMatch(testBackend, test)
@@ -181,6 +182,7 @@ func BenchmarkMatch(b *testing.B) {
 // production leaves it - discarding - so the measurement is of the
 // matching rather than of writing the matcher's narration to stderr.
 func BenchmarkMatchQuiet(b *testing.B) {
+	realDatastore(b)
 	saved := testBackend.Logger
 	testBackend.Logger = log.New(io.Discard, "", log.LstdFlags)
 	b.Cleanup(func() { testBackend.Logger = saved })
