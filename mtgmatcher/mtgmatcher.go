@@ -548,8 +548,8 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 
 	// Filter the candidates using all the input card details. The game's rules
 	// own this step, so even a single candidate is validated rather than used
-	// blindly (Lorcana enforces the collector number here, which the old
-	// single-card shortcut skipped, returning a wrong-numbered card).
+	// blindly (Lorcana enforces the collector number here; a lone candidate
+	// taken as is could be a wrong-numbered card).
 	b.Log("Now filtering...")
 	outCards := rules.FilterCards(b, inCard, cardSet)
 
@@ -558,7 +558,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		b.Logf("%s %s %s", card.SetCode, card.Name, card.Number)
 	}
 
-	// Final game policy runs before language filtering: Magic historically
+	// Final game policy runs before language filtering: Magic
 	// trims World Championship candidates here, even across languages.
 	outCards = rules.FinalizeCandidates(b, inCard, outCards)
 

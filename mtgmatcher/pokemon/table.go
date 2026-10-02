@@ -35,15 +35,13 @@ var editionAliases = map[string]string{
 	// puts products on Jumbo, e-League and McDonald's printings the id
 	// route contradicts.
 	//
-	// Nintendo was absent for the same reason and is back, because the
-	// replay says the opposite of what was feared for it: over the whole
-	// Cool Stuff Inc Pokemon buylist it gains 7 and moves 4, and three of
-	// those four move OFF the Jumbo printings rather than onto them - a
-	// listing filed under "Nintendo Black Star Promos" is not a jumbo.
-	// The fourth is Pikachu 035, which had been answering with the
+	// Nintendo is here because its replay moves the other way: over the
+	// whole Cool Stuff Inc Pokemon buylist it gains 7 and moves 4, and
+	// three of those four move OFF the Jumbo printings rather than onto
+	// them - a listing filed under "Nintendo Black Star Promos" is not a
+	// jumbo. The fourth is Pikachu 035, which without it answers with the
 	// Evolutions card at a fortieth of the price. Nothing is lost, and 23
-	// of the 40 listings on that shelf already reached the set without
-	// the alias.
+	// of the 40 listings on that shelf reach the set without the alias.
 	"SWSH Black Star Promos":     "SWSH: Sword & Shield Promo Cards",
 	"BW Black Star Promos":       "Black and White Promos",
 	"DP Black Star Promos":       "Diamond and Pearl Promos",
@@ -71,9 +69,9 @@ var editionAliases = map[string]string{
 	"Mega Evolution Base Set": "ME01: Mega Evolution",
 
 	// The McDonald's campaigns, which the storefronts name and the catalog
-	// files by year. The years the catalog has since started carrying under
-	// the storefront's own spelling are not here: they name sets of their
-	// own now, so the lookup above reaches them and an entry would only be
+	// files by year. The years the catalog carries under the storefront's
+	// own spelling are not here: they name sets of their own, so the lookup
+	// above reaches them and an entry would only be
 	// a name this table promises not to hold.
 	"McDonald's Collection 25th Anniversary": "McDonald's 25th Anniversary Promos",
 	"McDonald's Match Battle 2022":           "McDonald's Promos 2022",

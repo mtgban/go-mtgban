@@ -22,7 +22,7 @@ func TestSealedHoldsOnlyFoils(t *testing.T) {
 		{"Innistrad Non Foil Booster Box", false},
 
 		// Collector-edition Commander decks, in all three spellings the sets
-		// use. Matching "Collector Edition" caught only the first.
+		// use. Matching "Collector Edition" would catch only the first.
 		{"Zendikar Rising Commander Deck Collector Edition", true},
 		{"Warhammer 40000 Commander Deck Tyranid Swarm Collectors Edition", true},
 		{"Marvel Super Heroes Commander Deck Wakanda Forever Collector's Edition", true},

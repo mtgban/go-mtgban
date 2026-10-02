@@ -39,7 +39,7 @@ func TestPromoFlag(t *testing.T) {
 		t.Error("setIsPromotional(nil) is true; a set the backend does not hold is not promotional")
 	}
 
-	// The printing that started this: a promo Nami no bare name could reach.
+	// A promo Nami no bare name reaches is flagged promotional too.
 	uuids, err := b.SearchEquals("Nami (Premium Card Collection -Best Selection Vol. 6-)")
 	if err != nil {
 		t.Fatal(err)

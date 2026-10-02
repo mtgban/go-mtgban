@@ -8,8 +8,7 @@ import (
 )
 
 // The functions here are InputCard vocabulary that magic alone reads,
-// migrating out of the core card type one method at a time - each was an
-// exported method that only Magic code called.
+// kept out of the core card type because only Magic code calls them.
 
 // arenaYear returns the year of an Arena league printing, deducing it from the
 // artist or set named in the variation when the listing gives no year.

@@ -70,7 +70,7 @@ func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
 
 	// A kit does promise one foil - the Lotus Field, the Alhammarret's Archive
 	// - and the data says so. What it does not promise is the third of the
-	// deck the roll used to upgrade, so a quarter separates the two cleanly
+	// deck a roll upgrades, so a quarter separates the two cleanly
 	// without pinning either number.
 	foil, _ := finishes(t, b, first)
 	if foil*4 >= len(first) {

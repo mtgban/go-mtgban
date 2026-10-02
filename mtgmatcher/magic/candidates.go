@@ -92,9 +92,9 @@ func (Rules) CandidateSets(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	return codes
 }
 
-// FinalizeCandidates preserves the historical choice of the first World
-// Championship printing, and prefers a printing over a copy of it minted in
-// the same language, before the pipeline checks its language.
+// FinalizeCandidates keeps the first World Championship printing, which the
+// Magic replay corpus expects, and prefers a printing over a copy of it
+// minted in the same language, before the pipeline checks its language.
 func (Rules) FinalizeCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	if len(cards) > 1 && isWorldChamp(inCard) {
 		return cards[:1]

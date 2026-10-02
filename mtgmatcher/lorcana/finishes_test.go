@@ -91,8 +91,8 @@ func TestFinishPromotion(t *testing.T) {
 // each of Normal, Cold Foil and Holofoil reaches the printing sold under that
 // name and is refused on a card that has none, and the bare word Foil
 // reaches the standard foil, or the treatment on a card sold only in one.
-// Holofoil used to answer with the standard foil on the 2,715 cards sold in
-// no Holofoil; that was a finish the card is not sold in.
+// Answering Holofoil with the standard foil on the 2,715 cards sold in no
+// Holofoil would name a finish the card is not sold in.
 func TestVendorFinishNames(t *testing.T) {
 	b := loadDatastore(t)
 

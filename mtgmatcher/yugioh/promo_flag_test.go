@@ -29,8 +29,8 @@ func TestPromoFlag(t *testing.T) {
 		set  string
 		want bool
 	}{
-		// The shelves these two used to name hold only sealed now, their
-		// cards having gone to the seasons and volumes that print them.
+		// The league and magazine cases name a season and a volume: the
+		// shelf spanning a whole league or magazine holds only sealed.
 		{"Duelist League 13 participation cards", true},
 		{"Judge Promotional Cards", true},
 		{"Shonen Jump Magazine Promos (JUMP)", true},

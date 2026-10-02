@@ -28,7 +28,7 @@ const labelOverlapFixture = `{"data": {
 }}`
 
 // TestLabelOverlapOnNumberedCards pins the partial-label scoring the numbered
-// path now falls through to: the catalog prefixes an event label with the
+// path falls through to: the catalog prefixes an event label with the
 // base set's code, the storefront never writes it, and the whole-label test
 // above therefore answers nothing at all.
 func TestLabelOverlapOnNumberedCards(t *testing.T) {

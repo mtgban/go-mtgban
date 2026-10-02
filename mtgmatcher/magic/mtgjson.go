@@ -734,10 +734,10 @@ var numberDecorations = SuffixSpecial + SuffixVariant + SuffixPhi + strings.ToLo
 // plainNumber is the collector number without the decoration that tells one
 // printing of it from another, and without whatever the decoration carries
 // behind it: "265†a" is the a of five Tamiyo's Journals and the plain number
-// of every one of them is 265. Trimming from the right reached only the marks
-// standing last, so a dozen numbers spelled "139★s" or "265†a" kept theirs
-// and answered to no search for the number they print. Numeric numbers also
-// lose catalog padding, so "071" and "71" share the same plain number.
+// of every one of them is 265. Trimming from the right would reach only the
+// marks standing last, so a dozen numbers spelled "139★s" or "265†a" would keep
+// theirs and answer to no search for the number they print. Numeric numbers
+// also lose catalog padding, so "071" and "71" share the same plain number.
 func plainNumber(number string) string {
 	if i := strings.IndexAny(number, numberDecorations); i >= 0 {
 		number = number[:i]
@@ -765,9 +765,9 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	alternates := map[string]mtgmatcher.AlternateProps{}
 	commanderKeywordMap := map[string]string{}
 	// Card and token names are collected as sets: the only question ever
-	// asked of them is membership, and scanning the slice they used to be
-	// cost more than every other step of the index build put together once
-	// the catalogue passed thirty thousand names.
+	// asked of them is membership, and scanning a slice of them would cost
+	// more than every other step of the index build put together, with the
+	// catalogue past thirty thousand names.
 	cardNames := map[string]bool{}
 	tokenNames := map[string]bool{}
 	// Every name the real cards answer to, so a token face repeating one
@@ -850,7 +850,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 		// Append tokens to the list of considered cards. A token named the
 		// same way as a real card is carried as "<name> Token", the shape
-		// the hand-renamed clashes already used, so the plain name keeps
+		// the hand-renamed clashes use, so the plain name keeps
 		// answering with the card. Art series stay out, as their sets do.
 		for _, token := range set.Tokens {
 			if token.Layout == "art_series" {
@@ -1892,11 +1892,9 @@ func toMtgCard(c Card) mtgmatcher.Card {
 		Watermark:           c.Watermark,
 		Images:              c.Images,
 	}
-	// A card with no foreign printings keeps the nil, rather than an empty
-	// slice standing in for one: the set-level cards used to be converted by
-	// a json round-trip, which spelled the absence that way, and the two
-	// paths describing the same card differently is a difference nothing
-	// means.
+	// A card with no foreign printings keeps the nil rather than an empty
+	// slice standing in for one, so the set-level cards and the uuid index,
+	// both converted here, describe the same card the same way.
 	if c.ForeignData != nil {
 		mc.ForeignData = make([]struct {
 			Name        string            `json:"name"`
@@ -1992,12 +1990,11 @@ func toMtgDeckCards(cards []DeckCard) []mtgmatcher.DeckCard {
 
 // toMtgSet converts a local Set to *mtgmatcher.Set field by field.
 //
-// It went through json.Marshal and json.Unmarshal until the profile said so:
-// a set carries its cards, tokens, sealed products and decks, so encoding one
-// and parsing it back read the whole catalogue a second time. That was 7.04s
-// of the index build's 11.80s, more than reading the 659MB file cost in the
-// first place. The types the two packages share are identical but named
-// apart, which is all the round-trip was bridging.
+// The types the two packages share are identical but named apart. Bridging
+// them with json.Marshal and json.Unmarshal would read the whole catalogue a
+// second time, since a set carries its cards, tokens, sealed products and
+// decks: 7.04s of an 11.80s index build, more than reading the 659MB file
+// costs in the first place.
 func toMtgSet(s *Set) *mtgmatcher.Set {
 	if s == nil {
 		return nil

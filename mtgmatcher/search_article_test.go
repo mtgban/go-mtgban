@@ -8,8 +8,8 @@ import (
 )
 
 // A name holds its articles, so the part of one that a person remembers finds
-// it. The article step used to drop an interior " the " from a name and keep a
-// leading one in a query, and the two then disagreed: the Secret Lair stored as
+// it. Dropping an interior " the " from a name while keeping a leading one in
+// a query would make the two disagree: the Secret Lair stored as
 // "...turtleslastronin" could not be found by "the last ronin".
 func TestSearchSealedContainsHoldsAnInteriorArticle(t *testing.T) {
 	b := testBackendOrEmpty()
@@ -136,8 +136,7 @@ func TestSearchContainsKeepsAnArticleOnlyQuery(t *testing.T) {
 }
 
 // A prefix finds the name it starts. Cut at a word: a name that carries "of
-// the" kept those spaces while a rule shielded it from the article step, so
-// this used to depend on where the cut fell.
+// the" is found wherever the cut falls.
 func TestSearchHasPrefixStillFindsAName(t *testing.T) {
 	b := testBackendOrEmpty()
 	uuids := b.GetUUIDs()
@@ -175,9 +174,8 @@ func TestSearchHasPrefixStillFindsAName(t *testing.T) {
 }
 
 // Glimpse the Unthinkable and Glimpse, the Unthinkable are two cards a comma
-// apart, and normalizing drops commas. The article step used to be what kept
-// them apart, by way of a rule shielding the second from itself; the playtest
-// card carries a qualifier instead, the way every other playtest card whose
+// apart, and normalizing drops commas. The playtest card carries a qualifier to
+// keep them apart, the way every other playtest card whose
 // name clashes with a real one does.
 func TestAClashingPlaytestNameStaysApart(t *testing.T) {
 	realDatastore(t)

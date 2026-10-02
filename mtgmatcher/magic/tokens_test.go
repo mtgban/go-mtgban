@@ -8,9 +8,9 @@ import (
 
 // TestIsToken pins the half of the answer the datastore's own token list
 // cannot give: the sets dropped when it is built, and the storefront
-// spellings that decorate a carried token. It also pins the names the
-// heuristic used to claim wrongly - real cards whose spelling brushes past a
-// token word, and sealed products naming a card count - which now belong to
+// spellings that decorate a carried token. It also pins the names a looser
+// heuristic would claim wrongly - real cards whose spelling brushes past a
+// token word, and sealed products naming a card count - which belong to
 // nobody.
 func TestIsToken(t *testing.T) {
 	realDatastore(t)
@@ -35,7 +35,7 @@ func TestIsToken(t *testing.T) {
 		{"Angel Token", true},
 		{"Angel Token Token", true},
 		{"Ajani Steadfast Emblem Token", true},
-		// Real cards the dropped arms used to claim
+		// Real cards whose spelling brushes past a token word
 		{"Copy Artifact", false},
 		{"Copy Enchantment", false},
 		{"Copycrook", false},
@@ -74,9 +74,9 @@ func TestIsToken(t *testing.T) {
 	var _ mtgmatcher.GameRules = Rules{}
 }
 
-// TestIsTokenDatastoreAnswersTheRest pins why the dropped arms could be
-// dropped: the datastore carries those names itself, so the backend still
-// reads them as tokens even though the heuristic no longer claims them.
+// TestIsTokenDatastoreAnswersTheRest pins the names the heuristic leaves to
+// the datastore: it carries them itself, so the backend reads them as tokens
+// without the heuristic claiming them.
 func TestIsTokenDatastoreAnswersTheRest(t *testing.T) {
 	realDatastore(t)
 	for _, name := range []string{

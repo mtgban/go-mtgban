@@ -6,7 +6,7 @@ import "testing"
 // made from. The token is what a search query carries; the label is what a
 // reader is shown. The builder folds the catalog's qualifier to lower case,
 // so the words survive and only their case is lost - unlike Magic and
-// Riftbound, whose tokens ran their words together and had to be written
+// Riftbound, whose tokens run their words together and are written
 // down one by one.
 func TestPromoTypeLabels(t *testing.T) {
 	b := loadBackend(t)

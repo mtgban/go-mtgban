@@ -34,8 +34,8 @@ func TestPrintings4CardExactName(t *testing.T) {
 	}
 
 	// The Cat Warrior token and the Cat Warriors card are one letter apart
-	// and were a single bucket back when normalization dropped the plural.
-	// They hash apart now, and must still answer only for themselves.
+	// and hash apart only because normalization keeps the plural: each must
+	// answer only for itself.
 	printings, err = b.Printings4Card("Cat Warriors")
 	if err != nil {
 		t.Fatal(err)
@@ -52,8 +52,8 @@ func TestPrintings4CardExactName(t *testing.T) {
 }
 
 // Token names clashing with a real card name must be excluded from the
-// token table no matter the order sets are iterated during load: these
-// names used to flip classification from process to process.
+// token table no matter the order sets are iterated during load, or these
+// names flip classification from process to process.
 func TestIsTokenClashingNames(t *testing.T) {
 	b := realDatastore(t)
 	for _, name := range []string{"Scarecrow", "Spark Elemental", "Spellgorger Weird"} {
@@ -63,9 +63,9 @@ func TestIsTokenClashingNames(t *testing.T) {
 	}
 }
 
-// oldHasPrinting is the pre-index implementation, kept verbatim as what
+// oldHasPrinting is HasPrinting without the hash index, the baseline
 // BenchmarkHasPrintingWide measures against: for every printing of the named
-// card it scanned the whole set comparing names with Equals.
+// card it scans the whole set comparing names with Equals.
 func oldHasPrinting(b *Backend, name, field, value string, editions ...string) bool {
 	if b.Sets == nil {
 		return false
@@ -149,15 +149,15 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 	})
 }
 
-// TestHasPrintingAnswersForTheNamedCard pins what the bucket rewrite of
-// hasPrinting broke and e2bdcb9e fixed: a hash bucket holds names that
+// TestHasPrintingAnswersForTheNamedCard pins HasPrinting answering for the
+// named card alone: a hash bucket holds names that
 // normalize the same but belong to different cards - "Mr. 1 (Daz.Bonez)"
 // beside "Mr.1 (Daz.Bonez)", since normalization folds punctuation and
 // case - and the printings of one must never answer for the other.
 //
 // The expectation is computed by scanning every card object for the exact
 // name, independently of the hash index and of entry4Name, so the test
-// keeps its meaning if either is rewritten again. It is data-driven rather
+// keeps its meaning if either is rewritten. It is data-driven rather
 // than pinned to named cards, so a refresh that retires one collision and
 // introduces another still exercises the invariant.
 func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {

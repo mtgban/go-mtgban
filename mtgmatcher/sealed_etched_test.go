@@ -66,9 +66,8 @@ func TestEtchedProductHoldsEtchedCards(t *testing.T) {
 
 // Not every card an etched drop lists is sold etched, and the flag the
 // product carries for it is the plain foil one. Asked for etched, a card sold
-// in foil and nonfoil only used to answer with the nonfoil: the etched flag
-// was dropped for a finish the card does not have, and the foil flag went
-// with it.
+// in foil and nonfoil only answers with the foil: the etched flag is dropped
+// for a finish the card does not have, and the foil flag must not go with it.
 func TestEtchedProductKeepsItsFoils(t *testing.T) {
 	realDatastore(t)
 	b := testBackend

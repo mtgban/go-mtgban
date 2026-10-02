@@ -11,7 +11,7 @@ import (
 // behind a dash, which a storefront copying the product name carries along:
 // a number written with a dash for its slash, a bracketed set behind the
 // number, and the two halves' numbers of a LEGEND pair printed as one card.
-// The datastore names none of them into the card any more.
+// The datastore names none of them into the card.
 func TestNameTailsTheCatalogWrites(t *testing.T) {
 	b := loadBackend(t)
 

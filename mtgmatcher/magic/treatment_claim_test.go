@@ -11,10 +11,10 @@ import (
 // to a list the promo types have already settled: The Hobbit's Gleaming
 // Splendor stands at #15 in a black border and at #239 and #275 borderless,
 // the latter two apart on poster and surge foil, and a listing naming only
-// the border was answered by #15 once those two had each dropped the
-// printings the listing had not claimed.
+// the border would be answered by #15 once those two have each dropped the
+// printings the listing does not claim.
 //
-// The denial is a separate rule and stays where it ran: a listing silent
+// The denial is a separate rule and runs later: a listing silent
 // about the border keeps the borderless printings until the filters that
 // read that silence have had their say, so a plain Ninja Pizza [TMC] listing
 // still answers with the borderless #93 rather than #32.

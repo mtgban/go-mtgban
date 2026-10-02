@@ -8,8 +8,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// pitchNumberFixture is Dig In as the datastore published it until
-// datastore-gen corrected the catalog's numbers: the Yellow filed at the
+// pitchNumberFixture is Dig In under the catalog's own numbers, which
+// datastore-gen corrects: the Yellow filed at the
 // Red's FAB384, the two pitches told apart by nothing a bare number carries.
 const pitchNumberFixture = `{"data": {
 	"game": "fleshandblood",
@@ -22,8 +22,7 @@ const pitchNumberFixture = `{"data": {
 
 // TestPitchVariantsOnABareNumberAlias pins that two pitches of a card at one
 // number, with no pitch-less printing beside them, refuse a listing naming
-// the number alone rather than guess. The golden suite pinned this on the
-// published Dig In until its Yellow was given its own number.
+// the number alone rather than guess.
 func TestPitchVariantsOnABareNumberAlias(t *testing.T) {
 	b, err := Load(strings.NewReader(pitchNumberFixture))
 	if err != nil {

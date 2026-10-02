@@ -10,10 +10,9 @@ import (
 // mediaInsertOriginals: the Japanese original a storefront names by its
 // number or its language, and the English reprint it names by neither.
 //
-// The reprint is the half worth pinning. Its number used to be written into
-// the rule, and by the time anyone looked three of the five had moved - Shock,
-// Duress and Voltaic Key each pointed at a number the set does not hold, so
-// every English listing of them answered "unknown variant".
+// The reprint is the half worth pinning. The rule does not write its number
+// down, because the set's numbers move, and a reprint the rule cannot reach
+// answers every English listing of the card with "unknown variant".
 func TestMediaInsertReprints(t *testing.T) {
 	realDatastore(t)
 	for _, tt := range []struct {

@@ -10,10 +10,10 @@ import (
 // TestPunchcardIsACard pins the one-word Punchcard the token sheets carry
 // against the two-word "Punch Card" insert vendors sell.
 //
-// The clause refusing the insert was written with mtgmatcher.Contains, which
-// drops spaces before comparing, so the two wordings read alike and all
-// thirteen real rows were swallowed with the insert. The refusal is silent,
-// so nothing in a run's log said so.
+// The clause refusing the insert cannot use mtgmatcher.Contains, which drops
+// spaces before comparing: the two wordings would read alike and all thirteen
+// real rows would be swallowed with the insert. The refusal is silent, so
+// nothing in a run's log would say so.
 func TestPunchcardIsACard(t *testing.T) {
 	realDatastore(t)
 

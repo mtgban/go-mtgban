@@ -10,9 +10,8 @@ import (
 // TestExtractTotal pins what a storefront's number says about the printing. A
 // Lorcana number is written over what it is one of, so the tail is either a
 // count - the set's size - or the name of a promo run, and either is the
-// denominator the face prints. It is returned as written: the card's SetTotal
-// holds the same denominator in the datastore's own spelling, where it used
-// to be slugged to match a promo type.
+// denominator the face prints. It is returned as written, not slugged: the
+// card's SetTotal holds the same denominator in the datastore's own spelling.
 func TestExtractTotal(t *testing.T) {
 	for _, tt := range []struct{ desc, in, want string }{
 		{"a promo run names itself", "5/P3", "P3"},
@@ -44,8 +43,7 @@ func TestExtractTotal(t *testing.T) {
 // number and print different totals under it, which is how Fabled's "Stitch -
 // Rock Star" at "3/204" is told from the Disney Parks printing at "3/DIS".
 //
-// It is read off SetTotal. It used to be read off PromoTypes, where the run
-// travelled because nothing else carried it; a numbering pool is not a
+// It is read off SetTotal rather than PromoTypes: a numbering pool is not a
 // promotion, and the datastore says so by publishing it as the total.
 func TestTotalTiebreak(t *testing.T) {
 	p1 := mtgmatcher.Card{UUID: "659", Name: "Mickey Mouse - Brave Little Tailor", SetTotal: "P1"}

@@ -184,8 +184,9 @@ func TestContains(t *testing.T) {
 	}
 }
 
-// The two tables are kept by hand and have to fold the same letters: š was
-// in one and not the other, so a sealed name kept a mark a card name lost.
+// The two tables are kept by hand and have to fold the same letters: a
+// letter only one of them folds, such as š, leaves a sealed name keeping a
+// mark a card name loses.
 func TestBothTablesFoldTheSameLetters(t *testing.T) {
 	for i := 0; i < len(asciiStrings); i += 2 {
 		letter, plain := asciiStrings[i], asciiStrings[i+1]

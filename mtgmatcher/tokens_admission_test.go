@@ -89,7 +89,7 @@ func TestMatchTokenSetVariation(t *testing.T) {
 		{"Angel", "Dominaria United", "Token", "TDMU"},
 		{"Wolf", "Innistrad: Midnight Hunt", "Token 13", "TMID"},
 		// The bare name shares its bucket with the Unsanctioned "Bat-",
-		// which used to answer for it; the variation names the token
+		// which must not answer for it; the variation names the token
 		{"Bat", "Bloomburrow", "Token", "TBLB"},
 	} {
 		in := mtgmatcher.InputCard{
@@ -160,8 +160,8 @@ func TestMatchTokenNameUnderTokenEdition(t *testing.T) {
 // TestMatchTokenNameKeepsTheEditionFilter pins the other direction: answering
 // with the token key skips the name fixup, and it is that fixup's " Token"
 // suffix which asks for the edition filter further down. Without asking for
-// the filter here, a token carrying a single printing was served for whatever
-// token edition a listing named.
+// the filter here, a token carrying a single printing would be served for
+// whatever token edition a listing named.
 func TestMatchTokenNameKeepsTheEditionFilter(t *testing.T) {
 	b := testBackendOrEmpty()
 	for _, probe := range []struct {

@@ -550,8 +550,8 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 	// a card that only shares its tail passes as the card being asked
 	// about. The edition says which set the listing is in, so the whole
 	// number is read out of it first. The printings this is meant to unpin
-	// the edition for wear the base card's own number, and still do; a
-	// different set's card wears its own, and no longer does.
+	// the edition for wear the base card's own number and pass; a different
+	// set's card wears its own and does not.
 	if full := fullNumberInEdition(b, inCard, number); full != "" {
 		number = full
 	}
@@ -907,9 +907,8 @@ func finishTiebreak(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtg
 // promoRemainderNamesSet reports whether what a promo line leaves behind
 // names a set. Pure punctuation names nothing ("Promos: -"), and so does the
 // possessive a storefront sometimes trails ("Promo: 's"), which is punctuation
-// wearing an s rather than a name. The matcher used to answer this by asking
-// whether the remainder normalized away, back when normalizing dropped every
-// s; it no longer does, so the possessive is named here.
+// wearing an s rather than a name. Normalizing keeps the s, so the
+// possessive is named here.
 func promoRemainderNamesSet(base string) bool {
 	trimmed := strings.Trim(base, " '\u2019\u02bc-:.,")
 	if strings.EqualFold(trimmed, "s") {
@@ -1213,9 +1212,8 @@ func truncates(edition, name string) bool {
 // release event ones, "OP05-ANN" for the anniversary tournament ones.
 //
 // The marker is read off either separator: a set code cannot carry a space,
-// since a search query is split on whitespace before a filter sees it, and
-// the datastore wrote these with one until it stopped. Reading both spellings
-// is what lets this land before the datastore is rebuilt.
+// since a search query is split on whitespace before a filter sees it, but
+// a datastore that has not been rebuilt still spells these with one.
 func isEventSet(code string) bool {
 	fields := strings.FieldsFunc(code, func(r rune) bool {
 		return r == ' ' || r == '-'
@@ -1281,7 +1279,7 @@ func tierByVariant(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidat
 // season at one end of the label and the set's number at the other. A
 // wording that says every word of the mark has named it, whatever it wrote
 // between them, and the copy the mark tells from the others at this number
-// was answering a wording that could not have been more specific.
+// answers a wording that could not have been more specific.
 func markWording(wording string, candidates []mtgmatcher.Card) string {
 	for _, card := range candidates {
 		if markSaid(wording, card.Watermark) {

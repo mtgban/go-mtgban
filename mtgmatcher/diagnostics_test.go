@@ -10,7 +10,7 @@ import (
 // TestMatchNamesAnIdOnlyInput pins what an id lookup leaves in the log. A
 // listing that carries an id and nothing else has no name for the input to
 // print, so the line naming it is the only place the card is readable at all;
-// the backend running the match is what resolves the id now.
+// the backend running the match is what resolves the id.
 func TestMatchNamesAnIdOnlyInput(t *testing.T) {
 	b := candidateTestBackend()
 	b.UUIDs["a"].Edition = "Edition A"

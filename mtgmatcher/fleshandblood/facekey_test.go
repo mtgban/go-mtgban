@@ -32,8 +32,8 @@ func TestFaceKey(t *testing.T) {
 
 // TestFusedNamedByManyFaces pins the cost of a name whose face count the
 // storefront chose. Asking after each ordering costs a factorial of that: at
-// eleven faces the old spelling-by-spelling search took the better part of a
-// minute inside Prefilter, which a vendor could aim at any run at will.
+// eleven faces a spelling-by-spelling search takes the better part of a
+// minute inside Prefilter, which a vendor can aim at any run at will.
 // Comparing the faces as a set costs one pass whatever the count.
 func TestFusedNamedByManyFaces(t *testing.T) {
 	b := loadBackend(t)

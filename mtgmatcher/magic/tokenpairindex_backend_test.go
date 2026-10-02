@@ -42,11 +42,10 @@ func fixtureBackendWithPairing(partnerUUID, partnerName, tcgID string) *mtgmatch
 	return b
 }
 
-// TestTokenPairIndexIsPerBackend pins the bug this whole feature exists to
-// kill: TokenPairIndex used to be a sync.OnceValue built once against
-// whichever datastore the process loaded first, so a second Backend built
-// later in the same process silently answered with the first one's
-// pairings. Two hand-built backends here derive the SAME Bear (same uuid,
+// TestTokenPairIndexIsPerBackend pins that each Backend answers with its
+// own pairings: an index built once per process, against whichever
+// datastore loaded first, would answer a second Backend with the first
+// one's. Two hand-built backends here derive the SAME Bear (same uuid,
 // same scryfall id) into two DIFFERENT pairings - b1's Bear pairs with
 // Food, b2's with Ogre - and each backend's own TokenPairIndex, and
 // MatchTokenPairing run against it, must answer only its own pairing,

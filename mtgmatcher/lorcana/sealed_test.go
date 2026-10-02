@@ -83,11 +83,11 @@ func TestSealedLoads(t *testing.T) {
 	}
 }
 
-// TestCardSetBucket guards the regression this loader once had: SetUUIDs
-// stayed nil because nothing built it, so GetUUIDsInSet silently answered
-// empty for every set - which is what mtgban-website's edition-only
-// searches (s:CODE) seed candidates from exclusively when there is no text
-// to search, so those searches came back empty for Lorcana entirely.
+// TestCardSetBucket pins that the loader builds SetUUIDs. Left nil,
+// GetUUIDsInSet silently answers empty for every set - which is what
+// mtgban-website's edition-only searches (s:CODE) seed candidates from
+// exclusively when there is no text to search, so those searches would
+// come back empty for Lorcana entirely.
 func TestCardSetBucket(t *testing.T) {
 	b := loadSealedFixture(t)
 

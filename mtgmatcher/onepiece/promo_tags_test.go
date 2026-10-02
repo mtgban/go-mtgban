@@ -25,7 +25,7 @@ func TestPromoTagsAreSlugs(t *testing.T) {
 		}
 	}
 
-	// The printing that started this: reachable by the event that issued
+	// A printing is reachable by the event that issued
 	// it, whichever way the datastore spells that event. One publishing a
 	// shelf's whole product name files it under a single long tag,
 	// "premiumcardcollectionbestselectionvol6"; one that takes the

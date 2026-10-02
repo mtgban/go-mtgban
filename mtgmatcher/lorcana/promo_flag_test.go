@@ -5,8 +5,8 @@ import (
 )
 
 // TestIsPromoIsSet pins that the game names its promotional printings at all.
-// It read nonPromoId, which upstream no longer publishes, so every card in
-// the game answered false - and a promo filter that matches nothing looks
+// Upstream publishes no nonPromoId, so reading it would answer false for
+// every card in the game - and a promo filter that matches nothing looks
 // exactly like a game with no promos in it.
 func TestIsPromoIsSet(t *testing.T) {
 	b := loadDatastore(t)

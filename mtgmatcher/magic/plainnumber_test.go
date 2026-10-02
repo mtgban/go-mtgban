@@ -7,8 +7,8 @@ import (
 // TestPlainNumberKeepsTheListNumbers pins the numbers The List is filed
 // under. It names a card by the set it was drawn from, "ARB-1", and those end
 // in a digit, so the letters trimmed off a number's tail never reach them:
-// 5,582 of its 5,584 numbers keep the plain form they had. The two this does
-// reach are here as well, so what the change touches is written down rather
+// 5,582 of its 5,584 numbers are their own plain form. The two the trim does
+// reach are here as well, so what it touches is written down rather
 // than assumed.
 func TestPlainNumberKeepsTheListNumbers(t *testing.T) {
 	for _, tt := range []struct {
@@ -24,7 +24,7 @@ func TestPlainNumberKeepsTheListNumbers(t *testing.T) {
 		// number standing beside it rather than a number of its own.
 		{"POR-57s", "POR-57"},
 		{"M19-185j", "M19-185"},
-		// And a mark, which the older rule already reached.
+		// And a mark, which is cut off ahead of the letters.
 		{"JUD-78†", "JUD-78"},
 	} {
 		t.Run(tt.number, func(t *testing.T) {

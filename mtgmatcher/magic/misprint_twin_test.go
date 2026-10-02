@@ -11,9 +11,9 @@ import (
 // and a listing that never says "Misprint" is not selling those. But where a
 // set filed the foil as a card of its own the loader gives the twin a star
 // too, and dropping that one takes the foil printing of an ordinary card:
-// the Turtles listings saying only "Surge Foil" lost their black-bordered
-// printing that way and answered with the borderless one standing beside it,
-// three stages before the border was ever read.
+// the Turtles listings saying only "Surge Foil" would lose their
+// black-bordered printing that way and answer with the borderless one
+// standing beside it, three stages before the border is ever read.
 func TestMisprintTwin(t *testing.T) {
 	realDatastore(t)
 	for _, tt := range []struct {

@@ -39,9 +39,9 @@ const finishTwinsFixture = `{"data": {
 }}`
 
 // TestFinishTwins pins that a product's finish twins are told apart by the
-// finish: the one the wording names, else the one the flag says. Each pair
-// aliased, which drops both listings, once the loader stopped labelling a
-// printing with the finish its variant restates.
+// finish: the one the wording names, else the one the flag says. The loader
+// does not label a printing with the finish its variant restates, so
+// without the finish each pair aliases, which drops both listings.
 func TestFinishTwins(t *testing.T) {
 	b, err := Load(strings.NewReader(finishTwinsFixture))
 	if err != nil {

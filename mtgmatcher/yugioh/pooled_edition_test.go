@@ -8,8 +8,8 @@ import (
 
 // TestPooledEdition pins the storefront name that spans two of the catalog's
 // sets. Cool Stuff Inc files both Speed Duel starter decks under one
-// "Starter Deck: Speed Dueling", so the edition reaches no set and every
-// printing the card ever had used to answer. The two decks share no card,
+// "Starter Deck: Speed Dueling", so the edition reaches no set and, left alone,
+// every printing the card ever had would answer. The two decks share no card,
 // so narrowing to the pair is all the name needs to pick one.
 func TestPooledEdition(t *testing.T) {
 	b := loadBackend(t)
@@ -54,12 +54,12 @@ func TestPooledEdition(t *testing.T) {
 }
 
 // TestPooledEditionYuyaDeclan pins that the 2-Player Starter Deck Yuya &
-// Declan is refused outright now rather than folded onto Saber Force and
+// Declan is refused outright rather than folded onto Saber Force and
 // Dark Legion. The shelf is a real Europe/Oceania product (Cardmarket's
 // YS15, TCGplayer never listed it) with its own two 21-card halves, and the
 // datastore this loader builds from - TCGplayer's own catalog - has no row
-// for either one; the fold used to land every name on whichever of the two
-// unrelated decks happened to also print it, at that deck's own number and
+// for either one; a fold would land every name on whichever of the two
+// unrelated decks also prints it, at that deck's own number and
 // rarity. See unsupportedEditions.
 func TestPooledEditionYuyaDeclan(t *testing.T) {
 	b := loadBackend(t)
@@ -68,7 +68,7 @@ func TestPooledEditionYuyaDeclan(t *testing.T) {
 		"The Calculator",         // Yuya's deck (Saber Force) prints this
 		"Mystical Space Typhoon", // both decks print this
 		"Ancient Dragon",         // neither English deck prints this; the fold
-		"Bright Star Dragon",     // used to land it on Galactic Overlord instead
+		"Bright Star Dragon",     // would land it on Galactic Overlord instead
 	} {
 		in := mtgmatcher.InputCard{Name: name, Edition: "2-Player Starter Deck Yuya & Declan", Variation: "Common"}
 		if id, err := b.Match(&in); err != mtgmatcher.ErrUnsupported {

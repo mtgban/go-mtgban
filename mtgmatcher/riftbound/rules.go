@@ -538,8 +538,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// esports team the cards commemorate, not a collector number: nothing in
 	// the game is numbered T1, and the printings themselves are at T1A001
 	// and T1S001. The number filter then admits nothing and all fifteen
-	// miss, which is how they read before this - half of every riftbound
-	// product name the catalog holds that answers with nothing.
+	// would miss.
 	//
 	// So when the number named no printing of the name at all, ask the
 	// wording on its own and keep only the printings whose every promo type
