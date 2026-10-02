@@ -36,6 +36,16 @@
 > only meaningful against the backend that minted it. See
 > [ADR-0004](0004-localized-matcher-and-scraper-registry.md).
 
+> **Amendment (2026-10-02).** "Never in the scraper" under Decision is
+> narrower in practice, and AGENTS.md says where. A vendor's own identifier
+> that is wrong, or shared by two products, is the scraper's to distrust
+> (`starcitygames/README.md`). A vendor that publishes no identifier resolves
+> by its wording and shelves in its own preprocess (`coolstuffinc/README.md`).
+> A rule one vendor's evidence would justify, but that moves far more
+> landings than that evidence covers, is guarded in that vendor's scraper
+> (#716). The decision is untouched: the uuid is still the universal key, and
+> what card a listing is still comes out of `mtgmatcher`.
+
 ## Context
 
 go-mtgban ingests inventory/buylist data from ~23 stores, each with its own
