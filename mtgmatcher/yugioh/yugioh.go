@@ -39,6 +39,10 @@ type Datastore struct {
 	} `json:"sets"`
 	Cards  []DatastoreCard   `json:"cards"`
 	Sealed []DatastoreSealed `json:"sealed"`
+
+	// Properties orders the values of the card fields a set lists, keyed by
+	// the field: rarities rarest first, colours in the game's own order.
+	Properties map[string][]string `json:"properties"`
 }
 
 // DatastoreCard is one printing as the datastore publishes it.
@@ -179,13 +183,6 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 		return ""
 	}
 	return qualified
-}
-
-// yugiohColors are Yu-Gi-Oh's attributes in Konami's database order, then its
-// spells and traps.
-var yugiohColors = []string{
-	"dark", "light", "earth", "water", "fire", "wind", "divine", "spell",
-	"trap",
 }
 
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
@@ -333,9 +330,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	colors := mtgmatcher.ColorNames(payload.Properties["attributes"])
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, nil)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, yugiohColors)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, payload.Properties["rarity"])
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed

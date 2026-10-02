@@ -45,6 +45,10 @@ type Datastore struct {
 	Sets   map[string]DatastoreSet `json:"sets"`
 	Cards  []DatastoreCard         `json:"cards"`
 	Sealed []DatastoreSealed       `json:"sealed"`
+
+	// Properties orders the values of the card fields a set lists, keyed by
+	// the field: rarities rarest first, colours in the game's own order.
+	Properties map[string][]string `json:"properties"`
 }
 
 // DatastoreSet is one set as the catalog groups it.
@@ -238,13 +242,6 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
-// pokemonColors are the types a Pokemon prints in pokemon.com's order, but for
-// Colorless, which goes last with every other game's colorless.
-var pokemonColors = []string{
-	"grass", "fire", "water", "lightning", "psychic", "fighting", "darkness",
-	"metal", "fairy", "dragon",
-}
-
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b := mtgmatcher.NewBackend(mtgmatcher.IDSpaceTCGplayer, mtgmatcher.IDSpaceCardmarket)
 
@@ -391,9 +388,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	colors := mtgmatcher.ColorNames(payload.Properties["types"])
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, nil)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, pokemonColors)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, payload.Properties["rarity"])
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
 	}
 
 	// Sealed products live in the sealed namespace throughout - uuids in

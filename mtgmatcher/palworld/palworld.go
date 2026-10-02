@@ -41,6 +41,10 @@ type Datastore struct {
 	} `json:"sets"`
 	Cards  []DatastoreCard   `json:"cards"`
 	Sealed []DatastoreSealed `json:"sealed"`
+
+	// Properties orders the values of the card fields a set lists, keyed by
+	// the field: rarities rarest first, colours in the game's own order.
+	Properties map[string][]string `json:"properties"`
 }
 
 // promoTypeLabels are the words behind a token, where a title-caser cannot
@@ -271,9 +275,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	colors := mtgmatcher.ColorNames(payload.Properties["colors"])
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, palworldRarities)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, palworldColors)
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, payload.Properties["rarity"])
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
 	}
 
 	for _, product := range payload.Sealed {
@@ -282,19 +287,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Complete(Rules{})
 
 	return b
-}
-
-// palworldColors are Palworld's colours, in its card list's order.
-var palworldColors = []string{"red", "blue", "green", "purple"}
-
-// palworldRarities are the rarities the catalog spells for this game, rarest
-// first as a set lists them. The trial-deck rarities run beside the booster
-// ones rather than under them: a deck's cards are its own run.
-var palworldRarities = []string{
-	"Promo", "Super Special Soul", "Super Special Parallel",
-	"Trial Deck Super Parallel", "Super Parallel", "Over Super Rare",
-	"Trial Deck Super Rare", "Super Rare", "Double Rare", "Rare",
-	"Trial Deck Rare", "Uncommon", "Common", "Trial Deck",
 }
 
 // productKey names the product an entry is a printing of, read off what the

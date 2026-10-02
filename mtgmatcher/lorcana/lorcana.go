@@ -28,6 +28,11 @@ type AllCards struct {
 		GeneratedOn   string `json:"generatedOn"`
 		Language      string `json:"language"`
 	} `json:"metadata"`
+
+	// Properties orders the values of the card fields a set lists, keyed by
+	// the field: rarities rarest first, inks in the game's own order.
+	Properties map[string][]string `json:"properties"`
+
 	Sets map[string]struct {
 		PrereleaseDate string `json:"prereleaseDate"`
 		ReleaseDate    string `json:"releaseDate"`
@@ -483,8 +488,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		// Ensure no spaces are present for ease of future comparisons
-		rarity := strings.Replace(strings.ToLower(card.Rarity), " ", "", -1)
+		rarity := rarityKey(card.Rarity)
 
 		colors := mtgmatcher.ColorNames(card.Colors)
 
@@ -605,6 +609,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	var rarities []string
+	for _, rarity := range ac.Properties["rarity"] {
+		rarities = append(rarities, rarityKey(rarity))
+	}
+	colors := mtgmatcher.ColorNames(ac.Properties["colors"])
+
 	// Update any remaining details on Sets after Cards loading
 	for code := range b.Sets {
 		b.Sets[code].IsFoilOnly = true
@@ -618,8 +628,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 		}
 
-		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, lorcanaRarities)
-		b.Sets[code].Colors = mtgmatcher.ColorsOf(b.Sets[code].Cards, lorcanaColors)
+		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, rarities)
+		b.Sets[code].Colors = mtgmatcher.ColorsOf(b.Sets[code].Cards, colors)
 	}
 
 	// Load sealed products. They live in the sealed namespace throughout:
@@ -652,20 +662,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	return b
 }
 
-// lorcanaColors are Lorcana's inks, in the game's order.
-var lorcanaColors = []string{
-	"amber", "amethyst", "emerald", "ruby", "sapphire", "steel",
-}
-
-// lorcanaRarities are the rarities rarest first, so a set lists them in a
-// stable order. The tiers past the base set are ordered by the collector
-// numbers LorcanaJSON gives them: from Fabled on, a set runs epic, then
-// enchanted, then the two iconic cards that close it out. A rarity absent
-// from here would sort below common, so every printed rarity belongs in the
-// list; "special" keeps the first place it has always held.
-var lorcanaRarities = []string{
-	"special", "iconic", "enchanted", "epic", "legendary", "superrare", "rare",
-	"uncommon", "common",
+// rarityKey spells a rarity without its case or spaces, for ease of
+// comparison: "Super Rare" is "superrare".
+func rarityKey(rarity string) string {
+	return strings.ReplaceAll(strings.ToLower(rarity), " ", "")
 }
 
 // cardUUID spells a card's id as the uuid everything downstream addresses
