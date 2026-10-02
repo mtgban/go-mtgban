@@ -37,9 +37,9 @@ alongside `Sealed`'s existing one) and the investigation trail behind
 it - a per-token concurrency limit measured directly rather than assumed,
 listings that turned out not to be strictly price-ascending once replayed
 against real data, and an offline pre-filter whose price snapshot is
-published one host per game, not shared, which the loader originally got
-wrong in a way that read as "nothing passed the filter" rather than "the
-fetch hit the wrong server." Read it before touching any of the three
+published one host per game, not shared, where a fetch from the wrong host
+reads as "nothing passed the filter" rather than "the fetch hit the wrong
+server." Read it before touching any of the three
 Cardmarket scrapers or the `resolver` they share.
 
 `sealedev/README.md` covers the one "scraper" with no site behind it: it
@@ -149,18 +149,13 @@ environment variables:
   `mtgmatcher/<game>` suite (`mtgmatcher/lorcana`, `mtgmatcher/riftbound`,
   and so on).
 
-There is no fail-fast/skip asymmetry between games any more - there used to
-be, when only Magic, Lorcana and Riftbound existed, and older prose (this
-file's own history included) still describes Magic's `TestMain` calling
-`log.Fatalln` and taking the whole binary down when `ALLPRINTINGS5_PATH` is
-unset. That call was removed. Every suite, Magic and core `mtgmatcher`
-included, now loads its datastore lazily behind a `sync.Once`-guarded
-`realDatastore(t)` helper and calls `t.Skip("Need <VAR> set to run this
-test")` on the tests that need it, so a contributor missing every one of the
-nine datastores still gets a green, if much thinner, `go test ./...` run.
-`mtgmatcher/magic`'s `TestMain` still calls `log.Fatalln`, but only if its own
-golden `testdata/magic_test_data.json` fails to open or parse - a repo
-integrity fault, not a missing-env-var one.
+Every suite, Magic and core `mtgmatcher` included, loads its datastore
+lazily behind a `sync.Once`-guarded `realDatastore(t)` helper and calls
+`t.Skip("Need <VAR> set to run this test")` on the tests that need it, so a
+contributor missing every one of the nine datastores still gets a green, if
+much thinner, `go test ./...` run. `mtgmatcher/magic`'s `TestMain` calls
+`log.Fatalln` only if its own golden `testdata/magic_test_data.json` fails
+to open or parse - a repo integrity fault, not a missing-env-var one.
 
 Use absolute paths for every variable. A relative path is resolved against
 the directory of the package under test, so a single relative value cannot
@@ -230,15 +225,12 @@ corpus cannot reach; Magic's corpus is curated by hand and has none. The
 Magic regenerator still rewrites the expected uuid of any case that now
 resolves to a different card, and trusts you to read that diff.
 
-**The Magic corpus is an invariant, not a scoreboard.** Making the matcher
-game-agnostic was meant to preserve pre-refactor Magic behavior exactly,
-quirks included - `magic.Rules.FilterCards` still short-circuits a lone
-candidate specifically to preserve the historical behavior of the
-pre-`GameRules` pipeline. Refactoring must therefore leave
-`magic/testdata/magic_test_data.json` byte-identical. If a change forces a
-regeneration,
-Magic matching has drifted: stop and find the cause. Do not accept the diff
-as a new baseline.
+**The Magic corpus is an invariant, not a scoreboard.** It pins Magic
+behavior exactly, quirks included - `magic.Rules.FilterCards` short-circuits
+a lone candidate only to keep the answers the corpus records. Refactoring
+must therefore leave `magic/testdata/magic_test_data.json` byte-identical.
+If a change forces a regeneration, Magic matching has drifted: stop and find
+the cause. Do not accept the diff as a new baseline.
 
 ## Conventions
 
@@ -335,9 +327,8 @@ helper that hands the backend to each test.
 
 There is no auto-detection. The caller always knows the game - bantool reads
 it off the registry key its target sits under, a test off the package it sits
-in - and the loader that tried every registered game in turn decoded
-AllPrintings three times over before reaching Magic's, behind a buffer of the
-whole file.
+in - and trying every registered loader in turn would decode AllPrintings
+once per game before reaching Magic's, behind a buffer of the whole file.
 
 `Backend` is exported and every lookup is one of its methods (`b.Match`,
 `b.GetUUID`, `b.GetSetByName`, ...); there are no package-level functions
@@ -403,10 +394,9 @@ number-and-finish disambiguation in `FilterCards`.
 
 ### Search API
 
-There is no `SimpleSearch` - it was removed when Lorcana stopped having a
-separate matching path, and every scraper now goes through `Match()`. The core
-lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
-`GetSealedUUIDsInSet`, `Names`, and the `Search*` family.
+Every scraper matches through `Match()`; no game has a separate search
+path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
+`GetUUIDsInSet`, `GetSealedUUIDsInSet`, `Names`, and the `Search*` family.
 
 ## Adding a scraper
 
@@ -443,7 +433,7 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    `.github/workflows/README.md` says what to copy and change.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` - every scraper sets
-   `Game` explicitly now, `mtgmatcher.GameMagic` included; nothing reads as Magic
+   `Game` explicitly, `mtgmatcher.GameMagic` included; nothing reads as Magic
    by default.
 6. The constructor takes the datastore first and nothing naming a game:
    `NewScraper(b *mtgmatcher.Backend, ...) (*T, error)`. A scraper that prices
@@ -451,7 +441,7 @@ lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`, `GetUUIDsInSet`,
    told one game and matched against another's datastore. The vendor's own
    naming for its games - slugs, catalog ids, department numbers - stays
    exported, because the package's own API helpers take one (`Search`,
-   `SCGBuylistURL`, `NewGNClient`); what a caller no longer needs it for is
+   `SCGBuylistURL`, `NewGNClient`); what a caller does not need it for is
    building a scraper. One `map[mtgmatcher.Game]<vendor value>` per package sits
    between the two and both converts and validates, and a game the map does
    not hold is refused at the constructor, a datastore that names no game
@@ -475,8 +465,7 @@ A game is named in `mtgmatcher` first and reaches the scrapers from there:
    constant from step 1, plus the blank import in `mtgmatcher/games/games.go`.
 3. Per storefront that carries it: one constant naming the vendor's own
    spelling beside that package's existing ones, and one line in its
-   `<recv>Games` map. Nothing else in the scraper changes - the switches that
-   used to translate a vendor id back into a game are gone.
+   `<recv>Games` map. Nothing else in the scraper changes.
 4. Per scraper that should run it: add the game to that store's own
    `register.go` (its `mtgban.Register` games list) alongside the map entry
    from step 3, and add a `bantool-<game>-<store>.yml` workflow

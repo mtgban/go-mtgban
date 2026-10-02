@@ -290,11 +290,10 @@ func Open(name Game, reader io.Reader) (*Backend, error)
 the name it was loaded as (`b.Game`). There is no global datastore to install
 it into: a caller holds the backend and asks it. Asking for a game nothing
 registered fails with an error naming the games that are.
-There is no auto-detection: the loader that once tried every registered game
-in turn decoded AllPrintings through three foreign decoders before Magic's,
-behind a buffer of the whole file, and was removed. bantool reads the game
-off the registry key its target sits under; a suite names its own in the
-helper that loads it.
+There is no auto-detection: trying every registered loader in turn would
+decode AllPrintings through each foreign decoder before Magic's, behind a
+buffer of the whole file. bantool reads the game off the registry key its
+target sits under; a suite names its own in the helper that loads it.
 
 **No global backend.** Every lookup is a method on `*Backend`; the package
 keeps no datastore of its own and no package-level logger (`b.Logger`, read
@@ -321,11 +320,11 @@ behind an `ArbitEntry`, since the entry stores a card ID rather than its
 datastore.
 
 Every accessor is an instance method, `GetUUIDsInSet`, `GetSealedUUIDsInSet`
-and `Names` (the former `AllNames`) included; `AllPromoTypes` is a field.
+and `Names` included; `AllPromoTypes` is a field.
 `ExtractNumber` reads no datastore and stays a package-level function.
 
 **What the Magic loader does** - data *repair*, not just indexing. This is the
-heavyweight path, and it now lives entirely in `mtgmatcher/magic/mtgjson.go`
+heavyweight path, and it lives entirely in `mtgmatcher/magic/mtgjson.go`
 (`magic.Load`), with its companion tables in `mtgmatcher/magic/table.go`
 (the missing PALP/PELP tag lists, `sldJPNLangDupes`, `productsWithOnlyFoils`,
 the Magic color-name map). Core's `mtgmatcher/table.go`
@@ -398,20 +397,19 @@ Three of those deserve their own note:
   loader must call once its `Sets` are populated (hence exported: the loaders
   live in other packages). It visits set codes in sorted order so that two
   sets normalizing to the same name resolve deterministically - lowest code
-  wins - replacing a linear rescan that followed random map order.
+  wins.
 - **`SetUUIDs` is built by the exported `IndexSetUUIDs()`**, its `IndexSets()`
   counterpart: every loader must call it once `UUIDs` and `AllUUIDs` are
   populated. Nothing else fills this bucket - unlike `SetSealedUUIDs`, which
   `AddSealed` builds incrementally as each sealed product is filed, there is
   no per-card add path shared across games, so a loader that never calls
   `IndexSetUUIDs()` leaves `SetUUIDs` permanently nil with no error to show
-  for it. That is exactly what happened to eight of the nine game loaders
-  before this method existed (§6).
+  for it (§6).
 
 **UUID scheme and finishes.** The source datastore's UUID identifies a
 printing; a card that exists in several finishes registers each one
 explicitly in `Card.FoilUUIDs`, a finish → UUID map the loaders populate.
-Magic keeps the historical suffixes there (`_f` for foil, `_e` for etched, and
+Magic's carry a suffix there (`_f` for foil, `_e` for etched, and
 split foil printings also carry `★`/`†` number suffixes). The datastore games
 key every finish by the name TCGplayer prices it under (`FinishSlug`:
 `nonfoil`, `coldfoil`, `1steditionholofoil`), read off the finish the entry
@@ -433,15 +431,14 @@ loader and **nil for every other game's** cards, so consumers must handle
 that. It also carries the cross-game additions described above:
 `FoilUUIDs`, `Finish`, `Images` (at minimum a `"full"` and a `"thumbnail"`
 URL) and `PlainNumber` (the collector number as a person writes it, the game's
-marks and decorations off; `OriginalNumber` before v0.8.3).
+marks and decorations off).
 
 **No compatibility shims.** The Magic promo-type constants live only in
-`mtgmatcher/magic`; core keeps no re-declared copies of them. Downstream code
-that used to resolve `PromoTypeBoosterfun` and friends from `mtgmatcher`
-imports the `magic` package instead. Core cannot import `magic` (it would
-cycle), so a shim would have had to duplicate the values rather than alias
-them, and a duplicated constant that silently drifts is worse than a build
-error that names the symbol.
+`mtgmatcher/magic`; core keeps no re-declared copies of them, and code
+reading `PromoTypeBoosterfun` and friends imports the `magic` package. Core
+cannot import `magic` (it would cycle), so a shim would have to duplicate the
+values rather than alias them, and a duplicated constant that silently
+drifts is worse than a build error that names the symbol.
 
 ### 2.2 Normalization (`mtgmatcher/replacer.go`, `mtgmatcher/utils.go`)
 
@@ -468,10 +465,10 @@ the nine games' `Prefilter` hooks call it - every one but Pokemon's.
 
 Magic's promo dates live in `mtgmatcher/magic/mtgjson.go`, including
 `BuyABoxInExpansionSetsDate` (2018-04) and `PromosForEverybodyYay` (2019-10).
-Magic's candidate-set policy consults them; core no longer knows which dates
-admit promo siblings. Callers of the former core symbols must import `magic`.
-The other date thresholds and `PromoType*`/`FrameEffect*`/`BorderColor*`
-vocabulary also remain in that game package.
+Magic's candidate-set policy consults them; core does not know which dates
+admit promo siblings. The other date thresholds and the
+`PromoType*`/`FrameEffect*`/`BorderColor*` vocabulary also live in that game
+package.
 
 ### 2.3 Input and ID matching
 
@@ -502,16 +499,16 @@ alternate genuinely differs in finish before swapping.
 requested flags against the printing's actual `Finishes` - a foil request for
 a nonfoil-only printing degrades gracefully, a foil-only printing upgrades
 automatically - and then resolves the clamped finish through `card.FoilUUIDs`,
-which is the common path now that every loader registers a UUID per finish.
-Only a `Card` without a registered map falls back to the historical `_f`/`_e`
-suffix rules. Lorcana adds a wrinkle here: when a variation names a foil
-sub-type, its `FilterCards` re-keys a copy of `FoilUUIDs` so that the
-flag-driven resolution lands on that sub-type's UUID rather than the primary
-foil's - a direct mention of the exported sub-type name wins, and failing
-that, TCGplayer's convention of calling every sub-type past the primary cold
-foil "Holofoil" resolves when the card stores exactly one such sub-type. The
-tolerance for wrong foil flags from scrapers is a deliberate design point -
-**trust the matcher's finish, not the scraper's input.**
+where every loader registers a UUID per finish. Only a `Card` without a
+registered map falls back to the `_f`/`_e` suffix rules. Lorcana adds a
+wrinkle here: when a variation names a foil sub-type, its `FilterCards`
+re-keys a copy of `FoilUUIDs` so that the flag-driven resolution lands on
+that sub-type's UUID rather than the primary foil's - a direct mention of the
+exported sub-type name wins, and failing that, TCGplayer's convention of calling
+every sub-type past the primary cold foil "Holofoil" resolves when the card
+stores exactly one such sub-type. The tolerance for wrong foil flags from
+scrapers is a deliberate design point - **trust the matcher's finish, not the
+scraper's input.**
 
 ### 2.4 The `Match()` pipeline and `GameRules`
 
@@ -622,7 +619,7 @@ The pipeline:
    Cards, Miscellaneous Cards & Products) that the card's own set, which is
    what a storefront writes, never reaches.
 
-   Magic owns its historical three passes in `magic/candidates.go`: exact
+   Magic owns its three passes in `magic/candidates.go`: exact
    edition matches can enroll the `P<code>` promo sibling (or the base set in
    reverse); loose matches admit generic promos and recent bundle/BaB sets;
    and the final fallback admits all printings. Japanese wording suppresses
@@ -630,17 +627,15 @@ The pipeline:
    Lair or `PromoWildcard` skips both narrowing passes. A lone printing still
    bypasses expansion. Date thresholds retain strict before/after boundaries.
 8. **Card-level disambiguation** - `rules.FilterCards`, run
-   **unconditionally**. This is a deliberate change from the pre-`GameRules`
-   pipeline, which returned a lone candidate without validating it: Lorcana
-   enforces the collector number in this hook, and the old shortcut let a
-   wrong-numbered card through. Magic preserves the historical behavior
-   *inside* its own hook - a single card in a single set is returned as-is,
-   so a lone candidate still matches even when the variation carries junk -
-   but that is now the game's choice rather than the skeleton's.
-   `rules.FinalizeCandidates` then applies final game policy. Magic keeps only
-   the first World Championship candidate; other games retain ambiguity.
-   This hook runs **before** core's language filter, preserving Magic's
-   historical ordering even when the first candidate is in another language.
+   **unconditionally**, a lone candidate included: Lorcana enforces the
+   collector number in this hook, and skipping it would let a wrong-numbered
+   card through. Magic short-circuits *inside* its own hook - a single card
+   in a single set is returned as-is, so a lone candidate matches even when
+   the variation carries junk - which is the game's choice rather than the
+   skeleton's. `rules.FinalizeCandidates` then applies final game policy.
+   Magic keeps only the first World Championship candidate; other games
+   retain ambiguity. This hook runs **before** core's language filter, so
+   Magic keeps its first candidate even when it is in another language.
 9. **Verdict** - 0 cards: `ErrCardWrongVariant` (or `ErrCardMissingVariant`
    if no variation was given, `ErrUnsupported` if a language was involved);
    1 card: `output()` plus a final `rules.IsUnsupported` at `StageAnswer`;
@@ -1153,29 +1148,24 @@ replay suite gated on a `<GAME>_PATH` environment variable with a
 regeneration flag. **Every `Backend` field a loader is responsible for
 needs an explicit line setting it - there is no default that makes a zero
 map or slice merely "smaller"; a nil `SetUUIDs` looks identical to an empty
-one until a caller reads it and gets nothing back.** `IndexSetUUIDs()` was
-added to close exactly this gap: eight of the nine loaders built `AllUUIDs`
-and `UUIDs` correctly but had nothing to call, so `SetUUIDs` stayed nil and
-`GetUUIDsInSet` silently answered empty for every set of every game but
-Magic, whose loader alone built the same bucketing by hand - which
-mtgban-website's edition-only searches (`s:CODE`, seeded from that index
-alone when there is no text to search) read as "no results" rather than
-"index not built," for every non-Magic deployment, until a test that
-actually loads a real datastore (not a hand-built fixture standing in for
-one) caught it. When you add a new field to `Backend` that an index or a
-lookup depends on,
-grep every game package for the sibling field it is meant to travel with
-(`AllUUIDs`, `SetSealedUUIDs`, …) and confirm each one sets the new field
-too, or add a shared setter every loader calls (`IndexSets`,
-`IndexSetUUIDs`) rather than trusting nine separate hand-written loops to
-stay in sync. Add the game to `mtgmatcher/games`, add a `Game` constant in
-`mtgmatcher/game.go` and list it in `mtgmatcher.AllGames`, and make `Load`
-refuse anything that is not its game's datastore envelope. Existing storefronts
-often come cheaply: a TCGplayer category is one entry in `tcgplayer`'s
-`tcgGames`, and cardmarket / cardtrader / coolstuffinc / starcitygames each
-need one constant naming the storefront's own spelling plus one line in their
-`map[mtgmatcher.Game]<vendor value>`. See the *Adding a game* checklist in
-`AGENTS.md` for the bantool options, workflows and CI jobs that go with it.
+one until a caller reads it and gets nothing back.** A loader that skips
+`IndexSetUUIDs()` leaves `GetUUIDsInSet` empty for every set, which
+mtgban-website's edition-only searches (`s:CODE`) read as "no results"
+rather than "index not built", and only a test that loads a real datastore,
+not a hand-built fixture, catches it. When you add a new field to `Backend`
+that an index or a lookup depends on, grep every game package for the
+sibling field it is meant to travel with (`AllUUIDs`, `SetSealedUUIDs`, …)
+and confirm each one sets the new field too, or add a shared setter every
+loader calls (`IndexSets`, `IndexSetUUIDs`) rather than trusting nine separate
+hand-written loops to stay in sync. Add the game to `mtgmatcher/games`, add a
+`Game` constant in `mtgmatcher/game.go` and list it in `mtgmatcher.AllGames`,
+and make `Load` refuse anything that is not its game's datastore envelope.
+Existing storefronts often come cheaply: a TCGplayer category is one entry in
+`tcgplayer`'s `tcgGames`, and cardmarket / cardtrader / coolstuffinc /
+starcitygames each need one constant naming the storefront's own spelling plus
+one line in their `map[mtgmatcher.Game]<vendor value>`. See the *Adding a game*
+checklist in `AGENTS.md` for the bantool options, workflows and CI jobs that go
+with it.
 
 ---
 
