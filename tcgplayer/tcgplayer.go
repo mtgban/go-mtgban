@@ -7,9 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -242,38 +242,56 @@ func (tcg *Market) Load(ctx context.Context) error {
 		}
 	}
 
-	pages := make(chan marketChan)
-	channel := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < tcg.maxConcurrency; i++ {
-		wg.Go(func() {
-			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)
-
-			for page := range pages {
-				// Add our data to the buffer
-				buffer = append(buffer, page)
-
-				// When buffer is full, process its contents and empty it
-				if len(buffer) == cap(buffer) {
-					err := tcg.processEntry(ctx, channel, buffer)
-					if err != nil {
-						tcg.printf("%s", err.Error())
-					}
-					buffer = buffer[:0]
-				}
+	// A printing whose catalog skus are stale has them looked up again, all
+	// of them before the walk below
+	var stale []int
+	for _, code := range tcg.backend.GetAllSets() {
+		if code == "4EDALT" {
+			continue
+		}
+		set, _ := tcg.backend.GetSet(code)
+		for _, card := range set.Cards {
+			_, found := skusMap[card.Identifiers["mtgjsonId"]]
+			if !found {
+				continue
 			}
-			// Process any spillover
-			if len(buffer) != 0 {
-				err := tcg.processEntry(ctx, channel, buffer)
-				if err != nil {
-					tcg.printf("%s", err.Error())
-				}
+			_, found = card.Identifiers["needsNewTCGSKUs"]
+			if !found {
+				continue
 			}
-		})
+			id, err := strconv.Atoi(card.Identifiers["tcgplayerProductId"])
+			if err == nil {
+				stale = append(stale, id)
+			}
+		}
 	}
+	slices.Sort(stale)
+	stale = slices.Compact(stale)
 
-	go func() {
+	type productSKUs struct {
+		id   int
+		skus []tcgplayer.SKU
+	}
+	alternatives := map[int][]tcgplayer.SKU{}
+	mtgban.WorkerPool(ctx, tcg.maxConcurrency, stale,
+		func(ctx context.Context, id int, results chan<- productSKUs) error {
+			skus, err := tcg.client.ListProductSKUs(ctx, id)
+			if err != nil {
+				tcg.printf("Error retrieving alternative SKUs: %s", err.Error())
+				return nil
+			}
+			results <- productSKUs{id, skus}
+			return nil
+		},
+		func(product productSKUs) {
+			alternatives[product.id] = product.skus
+		},
+		tcg.printf,
+	)
+
+	// Every sku to price, gathered before any is asked for
+	requests := func() []marketChan {
+		var reqs []marketChan
 		sets := tcg.backend.GetAllSets()
 		total := len(sets) - 1
 		i := 1
@@ -305,9 +323,8 @@ func (tcg *Market) Load(ctx context.Context) error {
 						continue
 					}
 
-					altSkus, err := tcg.client.ListProductSKUs(ctx, id)
-					if err != nil {
-						tcg.printf("Error retrieving alternative SKUs: %s", err.Error())
+					altSkus, found := alternatives[id]
+					if !found {
 						continue
 					}
 
@@ -411,7 +428,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 					}
 					idsFound[sku.SkuID] = struct{}{}
 
-					pages <- marketChan{
+					reqs = append(reqs, marketChan{
 						UUID:      card.UUID,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
@@ -419,7 +436,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 						ProductID: sku.ProductID,
 						SkuID:     sku.SkuID,
 						Language:  sku.Language,
-					}
+					})
 				}
 			}
 
@@ -451,7 +468,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 					}
 					idsFound[sku.SkuID] = struct{}{}
 
-					pages <- marketChan{
+					reqs = append(reqs, marketChan{
 						UUID:      co.UUID,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
@@ -459,17 +476,14 @@ func (tcg *Market) Load(ctx context.Context) error {
 						ProductID: sku.ProductID,
 						SkuID:     sku.SkuID,
 						Language:  sku.Language,
-					}
+					})
 				}
 			}
 		}
-		close(pages)
-
-		wg.Wait()
-		close(channel)
+		return reqs
 	}()
 
-	for result := range channel {
+	consume := func(result responseChan) {
 		err := tcg.inventory.AddStrict(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
@@ -481,6 +495,13 @@ func (tcg *Market) Load(ctx context.Context) error {
 			}
 		}
 	}
+	mtgban.WorkerPool(ctx, tcg.maxConcurrency, slices.Collect(slices.Chunk(requests, tcgplayer.MaxIDsInRequest)),
+		func(ctx context.Context, reqs []marketChan, channel chan<- responseChan) error {
+			return tcg.processEntry(ctx, channel, reqs)
+		},
+		consume,
+		tcg.printf,
+	)
 	tcg.inventoryDate = time.Now()
 	tcg.buylistDate = time.Now()
 

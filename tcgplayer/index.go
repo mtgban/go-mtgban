@@ -3,10 +3,11 @@ package tcgplayer
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -246,55 +247,23 @@ func (tcg *Index) Load(ctx context.Context) error {
 	}
 	tcg.printings = productPrintings(tcg.backend, collisions)
 
-	pages := make(chan string)
-	channel := make(chan responseChan)
-	var wg sync.WaitGroup
+	ids := slices.Collect(maps.Keys(tcg.printings))
 
-	for i := 0; i < tcg.maxConcurrency; i++ {
-		wg.Go(func() {
-			buffer := make([]string, 0, tcgplayer.MaxIDsInRequest)
-
-			for page := range pages {
-				buffer = append(buffer, page)
-
-				// When buffer is full, process its contents and empty it
-				if len(buffer) == cap(buffer) {
-					err := tcg.processEntry(ctx, channel, buffer)
-					if err != nil {
-						tcg.printf("%s", err.Error())
-					}
-					buffer = buffer[:0]
-				}
-			}
-			// Process any spillover
-			if len(buffer) != 0 {
-				err := tcg.processEntry(ctx, channel, buffer)
-				if err != nil {
-					tcg.printf("%s", err.Error())
-				}
-			}
-		})
-	}
-
-	go func() {
-		for id := range tcg.printings {
-			pages <- id
-		}
-		close(pages)
-
-		wg.Wait()
-		close(channel)
-	}()
-
-	for result := range channel {
+	consume := func(result responseChan) {
 		// Relaxed because sometimes we get duplicates due to how the ids
 		// get buffered, but there is really no harm
 		err := tcg.inventory.AddRelaxed(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
-			continue
 		}
 	}
+	mtgban.WorkerPool(ctx, tcg.maxConcurrency, slices.Collect(slices.Chunk(ids, tcgplayer.MaxIDsInRequest)),
+		func(ctx context.Context, ids []string, channel chan<- responseChan) error {
+			return tcg.processEntry(ctx, channel, ids)
+		},
+		consume,
+		tcg.printf,
+	)
 
 	tcg.inventoryDate = time.Now()
 
