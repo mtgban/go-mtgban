@@ -46,8 +46,8 @@ type Datastore struct {
 	Cards  []DatastoreCard         `json:"cards"`
 	Sealed []DatastoreSealed       `json:"sealed"`
 
-	// Properties orders the values of the card fields a set lists, keyed by
-	// the field: rarities rarest first, colours in the game's own order.
+	// Properties orders the values a set lists, one list per property named
+	// in the singular: rarities rarest first, colours in the game's own order.
 	Properties map[string][]string `json:"properties"`
 }
 
@@ -388,7 +388,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	colors := mtgmatcher.ColorNames(payload.Properties["types"])
+	colors := mtgmatcher.ColorNames(payload.Properties["type"])
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, payload.Properties["rarity"])
 		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)

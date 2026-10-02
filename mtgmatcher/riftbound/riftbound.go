@@ -24,8 +24,8 @@ import (
 // carries every published card inline; only the fields the loader needs are
 // declared.
 type CardGallery struct {
-	// Properties orders the values of the card fields a set lists, keyed by
-	// the field: rarities rarest first, domains as Riot pairs them. The
+	// Properties orders the values a set lists, one list per property named
+	// in the singular: rarities rarest first, domains as Riot pairs them. The
 	// datastore publishes it beside the gallery.
 	Properties map[string][]string `json:"properties"`
 
