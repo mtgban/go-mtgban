@@ -61,6 +61,7 @@ func (b *Backend) Complete(rules GameRules) {
 	sort.Strings(b.AllPromoTypes)
 	b.SortSealed()
 	b.IndexSetUUIDs()
+	b.IndexRarities()
 	b.SetRules(rules)
 }
 
@@ -151,16 +152,38 @@ func SortByOrder(values, order []string) {
 }
 
 // RaritiesOf lists the rarities of a set's cards once each, the way the set
-// lists them: in the game's order, rarest first.
+// lists them: spelled by RarityName, in the game's order, rarest first.
 func RaritiesOf(cards []Card, order []string) []string {
 	var rarities []string
 	for _, card := range cards {
-		if !slices.Contains(rarities, card.Rarity) {
-			rarities = append(rarities, card.Rarity)
+		rarity := RarityName(card.Rarity)
+		if !slices.Contains(rarities, rarity) {
+			rarities = append(rarities, rarity)
 		}
 	}
 	SortByOrder(rarities, order)
 	return rarities
+}
+
+// RarityName spells a rarity the way a set lists it and a search compares
+// it: lower case, without spaces, so "Super Rare" is "superrare" and a
+// rarity is one word to a query. A card keeps the spelling its datastore
+// publishes, which is what the matching reads.
+func RarityName(rarity string) string {
+	return strings.ReplaceAll(strings.ToLower(strings.TrimSpace(rarity)), " ", "")
+}
+
+// RarityNames spells each of a datastore's rarities by RarityName, empty
+// values dropped.
+func RarityNames(values []string) []string {
+	var names []string
+	for _, value := range values {
+		name := RarityName(value)
+		if name != "" {
+			names = append(names, name)
+		}
+	}
+	return names
 }
 
 // ColorsOf lists the colours of a set's cards once each, the way Magic's

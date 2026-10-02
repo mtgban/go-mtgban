@@ -400,9 +400,10 @@ func (gallery *GalleryBlade) newBackend(properties map[string][]string) *mtgmatc
 	}
 
 	// Update any remaining details on Sets after Cards loading
+	b.Rarities = mtgmatcher.RarityNames(properties["rarity"])
 	colors := mtgmatcher.ColorNames(properties["domain"])
 	for _, set := range b.Sets {
-		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, properties["rarity"])
+		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, b.Rarities)
 		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
 	}
 

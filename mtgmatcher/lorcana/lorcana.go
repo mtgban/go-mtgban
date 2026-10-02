@@ -14,7 +14,6 @@ import (
 	"maps"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -488,7 +487,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		rarity := rarityKey(card.Rarity)
+		rarity := mtgmatcher.RarityName(card.Rarity)
 
 		colors := mtgmatcher.ColorNames(card.Colors)
 
@@ -609,10 +608,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	var rarities []string
-	for _, rarity := range ac.Properties["rarity"] {
-		rarities = append(rarities, rarityKey(rarity))
-	}
+	b.Rarities = mtgmatcher.RarityNames(ac.Properties["rarity"])
 	colors := mtgmatcher.ColorNames(ac.Properties["color"])
 
 	// Update any remaining details on Sets after Cards loading
@@ -628,7 +624,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 		}
 
-		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, rarities)
+		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, b.Rarities)
 		b.Sets[code].Colors = mtgmatcher.ColorsOf(b.Sets[code].Cards, colors)
 	}
 
@@ -660,12 +656,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	b.Complete(Rules{treatments: ac.treatments})
 
 	return b
-}
-
-// rarityKey spells a rarity without its case or spaces, for ease of
-// comparison: "Super Rare" is "superrare".
-func rarityKey(rarity string) string {
-	return strings.ReplaceAll(strings.ToLower(rarity), " ", "")
 }
 
 // cardUUID spells a card's id as the uuid everything downstream addresses

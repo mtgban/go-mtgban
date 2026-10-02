@@ -83,3 +83,43 @@ func TestColorsOfListsTheTermsLast(t *testing.T) {
 		}
 	}
 }
+
+// TestRaritiesRankAsSetsListThem pins the one spelling a set lists and a
+// search ranks a rarity by, whatever spelling the card carries.
+func TestRaritiesRankAsSetsListThem(t *testing.T) {
+	b := &Backend{
+		UUIDs: map[string]*CardObject{
+			"a": {Card: Card{Rarity: "Super Rare"}},
+			"b": {Card: Card{Rarity: "Common"}},
+			"c": {Card: Card{Rarity: "Code Card"}},
+		},
+		Rarities: RarityNames([]string{"Super Rare", " Rare", "Common", ""}),
+	}
+	b.IndexRarities()
+
+	cards := []Card{{Rarity: "Common"}, {Rarity: "Super Rare"}, {Rarity: "Code Card"}}
+	got := RaritiesOf(cards, b.Rarities)
+	want := []string{"superrare", "common", "codecard"}
+	if !slices.Equal(got, want) {
+		t.Errorf("RaritiesOf = %v, want %v", got, want)
+	}
+
+	for _, tt := range []struct {
+		rarity string
+		rank   int
+		ranked bool
+	}{
+		{"Super Rare", 0, true},
+		{"superrare", 0, true},
+		{"SUPER RARE", 0, true},
+		{"rare", 1, true},
+		{"Common", 2, true},
+		{"Code Card", 0, false},
+		{"mythic", 0, false},
+	} {
+		rank, ranked := b.RarityRank(tt.rarity)
+		if rank != tt.rank || ranked != tt.ranked {
+			t.Errorf("RarityRank(%q) = %d, %v, want %d, %v", tt.rarity, rank, ranked, tt.rank, tt.ranked)
+		}
+	}
+}
