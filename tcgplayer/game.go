@@ -122,6 +122,36 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 		return err
 	}
 
+	productMap, skuMap, skuIDs := tcg.skusToPrice(products)
+
+	for i := 0; i < len(skuIDs); i += tcgplayer.MaxIDsInRequest {
+		start := i
+		end := min(i+tcgplayer.MaxIDsInRequest, len(skuIDs))
+
+		results, err := tcg.client.GetMarketPricesBySKUs(ctx, skuIDs[start:end])
+		if err != nil {
+			return err
+		}
+
+		for _, result := range results {
+			sku := skuMap[result.SKUID]
+			product, found := productMap[sku.ProductID]
+			if !found {
+				continue
+			}
+			out, found := tcg.skuEntry(result, sku, product)
+			if found {
+				channel <- out
+			}
+		}
+	}
+
+	return nil
+}
+
+// skusToPrice keeps the skus a page's products are priced by: English ones,
+// unopened in the sealed mode and in a grade it reads otherwise.
+func (tcg *TCGGame) skusToPrice(products []tcgplayer.Product) (map[int]tcgplayer.Product, map[int]tcgplayer.SKU, []int) {
 	productMap := map[int]tcgplayer.Product{}
 	skuMap := map[int]tcgplayer.SKU{}
 	var skuIDs []int
@@ -149,105 +179,88 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 		}
 	}
 
-	for i := 0; i < len(skuIDs); i += tcgplayer.MaxIDsInRequest {
-		start := i
-		end := min(i+tcgplayer.MaxIDsInRequest, len(skuIDs))
+	return productMap, skuMap, skuIDs
+}
 
-		results, err := tcg.client.GetMarketPricesBySKUs(ctx, skuIDs[start:end])
-		if err != nil {
-			return err
-		}
-
-		for _, result := range results {
-			price := result.LowestListingPrice
-			if price == 0 {
-				continue
-			}
-
-			sku := skuMap[result.SKUID]
-			product, found := productMap[sku.ProductID]
-			if !found {
-				continue
-			}
-
-			if tcg.sealed {
-				// The product id is the sealed entry's whole identity;
-				// anything the map does not name is a product the
-				// datastore does not carry
-				uuids := tcg.sealedMap[sku.ProductID]
-				if len(uuids) != 1 {
-					continue
-				}
-				channel <- genericChan{
-					key: uuids[0],
-					entry: mtgban.InventoryEntry{
-						Conditions: mtgban.NM,
-						Price:      price,
-						Quantity:   1,
-						URL:        GenerateProductURL(sku.ProductID, "", tcg.affiliate, "", "", false),
-						OriginalID: fmt.Sprint(sku.ProductID),
-						InstanceID: fmt.Sprint(sku.SKUID),
-					},
-				}
-				continue
-			}
-			if isUnsupportedProduct(&product) {
-				continue
-			}
-
-			cardName := product.Name
-			// A sku is a printing in one finish, and every game datastore
-			// stamps the product id on the printing it names: the id and
-			// the finish identify the sku, and a product the datastore does
-			// not carry is reported rather than guessed from its wording.
-			printing := tcg.printings[sku.PrintingID]
-			theCard := &mtgmatcher.InputCard{
-				ID:     fmt.Sprint(sku.ProductID),
-				Finish: printing,
-				Foil:   printing != "Normal",
-			}
-			cardID, err := tcg.backend.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				continue
-			} else if err != nil {
-				// Name the card, not just the price row: a sku id alone
-				// says nothing about which product failed to match.
-				tcg.printf("%v for %q %s (product %d)", err, cardName, printing, sku.ProductID)
-				tcg.printf("%+v", result)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					tcg.printf("%d %s got ids: %s", sku.ProductID, cardName, probes)
-					for _, probe := range probes {
-						co, _ := tcg.backend.GetUUID(probe)
-						tcg.printf("%s: %s", probe, co)
-					}
-				}
-				continue
-			}
-
-			condition := SKUConditionMap[sku.ConditionID]
-
-			link := GenerateProductURL(sku.ProductID, printing, tcg.affiliate, condition, "", false)
-
-			out := genericChan{
-				key: cardID,
-				entry: mtgban.InventoryEntry{
-					Conditions: condition,
-					Price:      price,
-					Quantity:   1,
-					URL:        link,
-					OriginalID: fmt.Sprint(sku.ProductID),
-					InstanceID: fmt.Sprint(sku.SKUID),
-				},
-			}
-
-			channel <- out
-		}
+// skuEntry is the inventory entry a sku's lowest listing makes, or false
+// where the sku names nothing the scraper prices.
+func (tcg *TCGGame) skuEntry(result tcgplayer.SKUPriceSet, sku tcgplayer.SKU, product tcgplayer.Product) (genericChan, bool) {
+	price := result.LowestListingPrice
+	if price == 0 {
+		return genericChan{}, false
 	}
 
-	return nil
+	if tcg.sealed {
+		// The product id is the sealed entry's whole identity;
+		// anything the map does not name is a product the
+		// datastore does not carry
+		uuids := tcg.sealedMap[sku.ProductID]
+		if len(uuids) != 1 {
+			return genericChan{}, false
+		}
+		return genericChan{
+			key: uuids[0],
+			entry: mtgban.InventoryEntry{
+				Conditions: mtgban.NM,
+				Price:      price,
+				Quantity:   1,
+				URL:        GenerateProductURL(sku.ProductID, "", tcg.affiliate, "", "", false),
+				OriginalID: fmt.Sprint(sku.ProductID),
+				InstanceID: fmt.Sprint(sku.SKUID),
+			},
+		}, true
+	}
+	if isUnsupportedProduct(&product) {
+		return genericChan{}, false
+	}
+
+	cardName := product.Name
+	// A sku is a printing in one finish, and every game datastore
+	// stamps the product id on the printing it names: the id and
+	// the finish identify the sku, and a product the datastore does
+	// not carry is reported rather than guessed from its wording.
+	printing := tcg.printings[sku.PrintingID]
+	theCard := &mtgmatcher.InputCard{
+		ID:     fmt.Sprint(sku.ProductID),
+		Finish: printing,
+		Foil:   printing != "Normal",
+	}
+	cardID, err := tcg.backend.Match(theCard)
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return genericChan{}, false
+	} else if err != nil {
+		// Name the card, not just the price row: a sku id alone
+		// says nothing about which product failed to match.
+		tcg.printf("%v for %q %s (product %d)", err, cardName, printing, sku.ProductID)
+		tcg.printf("%+v", result)
+
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
+			probes := alias.Probe()
+			tcg.printf("%d %s got ids: %s", sku.ProductID, cardName, probes)
+			for _, probe := range probes {
+				co, _ := tcg.backend.GetUUID(probe)
+				tcg.printf("%s: %s", probe, co)
+			}
+		}
+		return genericChan{}, false
+	}
+
+	condition := SKUConditionMap[sku.ConditionID]
+
+	link := GenerateProductURL(sku.ProductID, printing, tcg.affiliate, condition, "", false)
+
+	return genericChan{
+		key: cardID,
+		entry: mtgban.InventoryEntry{
+			Conditions: condition,
+			Price:      price,
+			Quantity:   1,
+			URL:        link,
+			OriginalID: fmt.Sprint(sku.ProductID),
+			InstanceID: fmt.Sprint(sku.SKUID),
+		},
+	}, true
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
