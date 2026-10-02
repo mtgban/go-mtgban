@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -244,7 +245,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		var colors []string
 		if card.Attribute != "" {
-			colors = []string{card.Attribute}
+			colors = []string{strings.ToLower(card.Attribute)}
 		}
 
 		convertedCard := mtgmatcher.Card{

@@ -122,7 +122,8 @@ func SoldFinishes(printings map[string]string) (finishes []string, foilUUIDs map
 }
 
 // SplitColors turns the colour value a Bandai-shaped catalog publishes into
-// its components, "Red/Green" and "Red; Green" alike.
+// its components in lower case, as Magic names its colours: "Red/Green" and
+// "Red; Green" alike are red and green.
 func SplitColors(color string) []string {
 	if color == "" {
 		return nil
@@ -131,7 +132,7 @@ func SplitColors(color string) []string {
 		return r == ';' || r == '/'
 	})
 	for i := range fields {
-		fields[i] = strings.TrimSpace(fields[i])
+		fields[i] = strings.ToLower(strings.TrimSpace(fields[i]))
 	}
 	return fields
 }

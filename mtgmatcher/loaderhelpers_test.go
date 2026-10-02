@@ -48,9 +48,9 @@ func TestProductKeyOf(t *testing.T) {
 		want  []string
 	}{
 		{"", nil},
-		{"Red", []string{"Red"}},
-		{"Red/Green", []string{"Red", "Green"}},
-		{"Red; Green", []string{"Red", "Green"}},
+		{"Red", []string{"red"}},
+		{"Red/Green", []string{"red", "green"}},
+		{"Red; Green", []string{"red", "green"}},
 	} {
 		if got := SplitColors(tt.color); !slices.Equal(got, tt.want) {
 			t.Errorf("SplitColors(%q) = %v, want %v", tt.color, got, tt.want)

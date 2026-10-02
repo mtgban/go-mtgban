@@ -46,6 +46,9 @@ func TestLoaderContracts(t *testing.T) {
 			t.Run("ProductGroupHoldsOneCard", func(t *testing.T) {
 				productGroupHoldsOneCard(t, b, path)
 			})
+			t.Run("ColorsAreLowerCase", func(t *testing.T) {
+				colorsAreLowerCase(t, b)
+			})
 		})
 	}
 	if loaded == 0 {
@@ -284,4 +287,21 @@ func textOf(value any) string {
 		return ""
 	}
 	return held
+}
+
+// colorsAreLowerCase holds every game to Magic's spelling of a colour name,
+// on its cards and on the sets that list them.
+func colorsAreLowerCase(t *testing.T, b *mtgmatcher.Backend) {
+	for code, set := range b.Sets {
+		colors := slices.Clone(set.Colors)
+		for _, card := range set.Cards {
+			colors = append(colors, card.Colors...)
+		}
+		for _, color := range colors {
+			if color != strings.ToLower(color) {
+				t.Errorf("set %s lists the colour %q", code, color)
+				break
+			}
+		}
+	}
 }
