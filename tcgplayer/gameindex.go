@@ -95,88 +95,97 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 	}
 
 	for _, result := range results {
-		if result.LowPrice == 0 && result.MarketPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0 {
-			continue
-		}
-
 		product, found := productMap[result.ProductID]
 		if !found {
 			continue
 		}
-		if isUnsupportedProduct(&product) {
-			continue
-		}
-
-		cardName := productMap[result.ProductID].Name
-		// See TCGGame.processPage: the product id and the finish identify
-		// the price row.
-		theCard := &mtgmatcher.InputCard{
-			ID:     fmt.Sprint(result.ProductID),
-			Finish: result.SubTypeName,
-			Foil:   result.SubTypeName != "Normal",
-		}
-		cardID, err := tcg.backend.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			// A row quoting a market price and nothing else is a pricing-side
-			// relic: the catalog has split or retired the printing its subtype
-			// names, and the surviving printing is priced by its own row
-			// alongside this one. Refusing it is right - the stale number can
-			// be many times the real price - but complaining every run is
-			// noise, so only the finish is let through quietly. Any other
-			// failure on such a row still speaks up.
-			marketOnly := result.LowPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0
-			if marketOnly && errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
-				continue
-			}
-
-			// Name the card, not just the price row: a product id alone
-			// says nothing about which product failed to match.
-			tcg.printf("%v for %q %s (product %d)", err, cardName, result.SubTypeName, result.ProductID)
-			tcg.printf("%+v", result)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				tcg.printf("%d %s got ids: %s", product.ProductID, cardName, probes)
-				for _, probe := range probes {
-					co, _ := tcg.backend.GetUUID(probe)
-					tcg.printf("%s: %s", probe, co)
-				}
-			}
-			continue
-		}
-
-		prices := []float64{
-			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
-		}
-
-		for i := range prices {
-			if prices[i] == 0 {
-				continue
-			}
-
-			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.affiliate, "", "", isDirect)
-
-			out := genericChan{
-				key: cardID,
-				entry: mtgban.InventoryEntry{
-					Price:      prices[i],
-					Quantity:   1,
-					URL:        link,
-					SellerName: availableIndexNames[i],
-					Bundle:     isDirect,
-					OriginalID: fmt.Sprint(result.ProductID),
-				},
-			}
-
+		for _, out := range tcg.productEntries(result, product) {
 			channel <- out
 		}
 	}
 
 	return nil
+}
+
+// productEntries are the inventory entries a product's price row makes, one
+// per price it quotes, or none where the row names nothing the scraper
+// prices.
+func (tcg *TCGGameIndex) productEntries(result tcgplayer.ProductPriceSet, product tcgplayer.Product) []genericChan {
+	if result.LowPrice == 0 && result.MarketPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0 {
+		return nil
+	}
+	if isUnsupportedProduct(&product) {
+		return nil
+	}
+
+	cardName := product.Name
+	// See TCGGame.processPage: the product id and the finish identify
+	// the price row.
+	theCard := &mtgmatcher.InputCard{
+		ID:     fmt.Sprint(result.ProductID),
+		Finish: result.SubTypeName,
+		Foil:   result.SubTypeName != "Normal",
+	}
+	cardID, err := tcg.backend.Match(theCard)
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return nil
+	} else if err != nil {
+		// A row quoting a market price and nothing else is a pricing-side
+		// relic: the catalog has split or retired the printing its subtype
+		// names, and the surviving printing is priced by its own row
+		// alongside this one. Refusing it is right - the stale number can
+		// be many times the real price - but complaining every run is
+		// noise, so only the finish is let through quietly. Any other
+		// failure on such a row still speaks up.
+		marketOnly := result.LowPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0
+		if marketOnly && errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
+			return nil
+		}
+
+		// Name the card, not just the price row: a product id alone
+		// says nothing about which product failed to match.
+		tcg.printf("%v for %q %s (product %d)", err, cardName, result.SubTypeName, result.ProductID)
+		tcg.printf("%+v", result)
+
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
+			probes := alias.Probe()
+			tcg.printf("%d %s got ids: %s", product.ProductID, cardName, probes)
+			for _, probe := range probes {
+				co, _ := tcg.backend.GetUUID(probe)
+				tcg.printf("%s: %s", probe, co)
+			}
+		}
+		return nil
+	}
+
+	var entries []genericChan
+	prices := []float64{
+		result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
+	}
+
+	for i := range prices {
+		if prices[i] == 0 {
+			continue
+		}
+
+		isDirect := availableIndexNames[i] == "TCG Direct Low"
+		link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.affiliate, "", "", isDirect)
+
+		entries = append(entries, genericChan{
+			key: cardID,
+			entry: mtgban.InventoryEntry{
+				Price:      prices[i],
+				Quantity:   1,
+				URL:        link,
+				SellerName: availableIndexNames[i],
+				Bundle:     isDirect,
+				OriginalID: fmt.Sprint(result.ProductID),
+			},
+		})
+	}
+
+	return entries
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
