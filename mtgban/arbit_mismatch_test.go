@@ -254,8 +254,8 @@ func TestMismatchFiltersTheProbeSide(t *testing.T) {
 }
 
 // TestMismatchScalesTheBoughtSide pins which price the factors move. Arbit
-// applies them to the copy being bought, and this report used to apply them
-// to the reference instead, so the same options read one way here and the
+// applies them to the copy being bought, and so does this report: applied to
+// the reference instead, the same options would read one way here and the
 // other way there.
 func TestMismatchScalesTheBoughtSide(t *testing.T) {
 	b := backendFor(plainCard())
@@ -363,7 +363,7 @@ func TestMismatchSkipsAReferenceOfNothing(t *testing.T) {
 }
 
 // TestMismatchFiltersTheReferenceSide is the mirror of the probe-side test:
-// the copy being bought is asked about first now, so a pair where only the
+// the copy being bought is asked about first, so a pair where only the
 // reference offends reaches the checks made on it.
 func TestMismatchFiltersTheReferenceSide(t *testing.T) {
 	for _, tt := range []struct {

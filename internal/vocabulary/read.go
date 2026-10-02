@@ -24,9 +24,8 @@ var ErrNotDatastore = errors.New("no cards: this is not a built datastore")
 // The variant is prose - the label the catalog wrote, which the promo types
 // and the mark are distilled out of - so a token derived from it is a token
 // the datastore never stated. That derivation is the bug this is looking
-// for: it has been written from scratch in five loaders. Everything else a
-// datastore states is a fact a printing can answer a listing with, and a
-// loader is free to carry it without declaring it.
+// for. Everything else a datastore states is a fact a printing can answer a
+// listing with, and a loader is free to carry it without declaring it.
 var aside = map[string]bool{"variant": true, "id": true, "image": true, "images": true}
 
 // unwrap returns payload's "data" value in the {"meta":...,"data":...}

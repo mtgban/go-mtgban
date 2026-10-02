@@ -7,7 +7,7 @@ import (
 
 // failAfter accepts n bytes and then fails, standing in for a destination
 // that dies partway through: with a small record set the failure lands only
-// on the final flush, which used to be deferred and its error dropped.
+// on the final flush, whose error a deferred flush would drop.
 type failAfter struct {
 	budget int
 }

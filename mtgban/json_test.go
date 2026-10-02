@@ -156,9 +156,9 @@ func TestReadFromJSONRejectsMalformed(t *testing.T) {
 	}
 }
 
-// A side written as null is a side with nothing in it: a writer before the
-// streaming reader put a nil map out that way, and the reader has to take
-// it back the way the whole-file Decode did.
+// A side written as null is a side with nothing in it: that is how a nil
+// map marshals, and the reader has to take it back the way a whole-file
+// Decode does.
 func TestReadFromJSONAcceptsANullSide(t *testing.T) {
 	raw := `{"info":{"shorthand":"TS"},"inventory":null,"buylist":null}`
 	seller, err := ReadSellerFromJSON(strings.NewReader(raw))
@@ -267,9 +267,8 @@ func TestWriteScraperToJSONWritesOnlyTheSidesTheScraperHas(t *testing.T) {
 // The decode walks the dump token by token rather than handing it all to
 // Decode, so a shape that is valid JSON but not a dump has to be refused
 // where the walk reaches it instead of read as far as it parses, and named
-// for what it is: the walk used to read past an opening it never checked
-// and fail on the next token, or on a bare EOF, with nothing said about
-// the file.
+// for what it is rather than read past an unchecked opening to fail on the
+// next token, or on a bare EOF, with nothing said about the file.
 func TestReadFromJSONRejectsWhatIsNotADump(t *testing.T) {
 	for _, tc := range []struct {
 		raw  string
