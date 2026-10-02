@@ -16,7 +16,7 @@ import (
 type Rules struct{ mtgmatcher.DefaultRules }
 
 // Prefilter splits a trailing parenthetical variant off the name before the
-// canonical-name lookup — unless the full name is itself a known card: a few
+// canonical-name lookup - unless the full name is itself a known card: a few
 // real names carry a parenthetical ("Recruit (DE)"), and the promotional
 // printings keep their storefront names verbatim, qualifiers included.
 // Dashes stay intact, since they occur in real names too ("Dark Child -
@@ -211,7 +211,7 @@ func promoOnlyName(b *mtgmatcher.Backend, name string) bool {
 // alone ("Green Father"). Nothing about the name says which is meant; the
 // edition does. A listing whose stated edition holds none of the direct
 // match's own printings is the signal that the direct match is the wrong
-// one, and it is safe to keep looking rather than trust it — an edition
+// one, and it is safe to keep looking rather than trust it - an edition
 // that does not resolve to a set at all proves nothing either way, so it
 // does not count as a conflict.
 //
@@ -219,7 +219,7 @@ func promoOnlyName(b *mtgmatcher.Backend, name string) bool {
 // whatever legendName or qualifiedBaseName retries with next. A retry
 // candidate that also lacks a printing in the stated edition is left to
 // the ordinary downstream number/edition filtering to refuse, the same as
-// any other wrong candidate — not silently accepted for having merely
+// any other wrong candidate - not silently accepted for having merely
 // passed this check.
 func editionConflictsName(b *mtgmatcher.Backend, name, edition string) bool {
 	set, err := b.GetSetByName(edition)
@@ -390,7 +390,7 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 // alone. See mtgmatcher.GameRules.
 func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
 	edition = strings.TrimSpace(edition)
-	// An edition already naming a set verbatim needs no normalization — and
+	// An edition already naming a set verbatim needs no normalization - and
 	// must not be trimmed out of matching: the promotional sets themselves
 	// are named "Riftbound ... Promotional Cards".
 	for _, set := range b.Sets {
@@ -447,7 +447,7 @@ var storefrontEditions = map[string]string{
 // names starter legends title-first ("Lux - Lady of Luminosity (Starter)" is
 // "Lady of Luminosity - Starter"): accept the bare title, a "Champion,
 // Title" name whose title matches and whose champion ends the input's
-// champion, or a dashed name led by the title — as long as exactly one
+// champion, or a dashed name led by the title - as long as exactly one
 // candidate does overall.
 func legendName(b *mtgmatcher.Backend, name string, targetsPromo bool) string {
 	champion, title, found := strings.Cut(name, " - ")
@@ -990,7 +990,7 @@ func wordsDescribe(wording string, promoTypes []string) bool {
 
 // extractNumber pulls the collector number out of the scraper-supplied
 // Variation. Core Match may append parenthetical chunks split off the input
-// name, so only the first field containing a digit counts — numbers may be
+// name, so only the first field containing a digit counts - numbers may be
 // letter-prefixed ("T1", "SP3"), letter-suffixed ("66a"), or starred
 // ("227*"). A full public code ("OGN-066a/298") reduces to its number, and
 // the result is canonicalized exactly like the loader's numbers so

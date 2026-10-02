@@ -1,7 +1,7 @@
 # Harness templates
 
 Copies of the harnesses that worked, generalised. Drop into the scraper's
-package as `zz_*_test.go`, run, then delete the copy — the source of truth
+package as `zz_*_test.go`, run, then delete the copy - the source of truth
 lives in `~/src/claude-scratchpad/ci-sweep/<date>/<tag>/`.
 
 Datastore env vars: `ALLPRINTINGS5_PATH`, `FLESHANDBLOOD_PATH`, `YUGIOH_PATH`,
@@ -13,7 +13,7 @@ Datastore env vars: `ALLPRINTINGS5_PATH`, `FLESHANDBLOOD_PATH`, `YUGIOH_PATH`,
 
 The incident's `head` carries the whole listing, so a regex over it rebuilds the
 product. Reconstruct the vendor's own struct and call the scraper's resolve
-function — not `Match` — so the scraper's preprocessing is under test too.
+function - not `Match` - so the scraper's preprocessing is under test too.
 
 ```go
 package starcitygames
@@ -110,7 +110,7 @@ A listing with no result on `ch` was refused if `logCallback` printed
 something, and skipped otherwise. `cardtrader/cardmarketid_test.go` is a
 minimal working example.
 
-Weight rows by how many log lines each blueprint accounted for — one blueprint
+Weight rows by how many log lines each blueprint accounted for - one blueprint
 can be 28 lines, and fixing it is worth more than 28 singletons.
 
 ## C. Datastore probes
@@ -134,7 +134,7 @@ show("by number", lambda c: (c.get("number") or "").startswith("SVP"))
 ```
 
 A reusable Go probe (built once from a temp `cmd/zzX` dir in a worktree)
-supports `set:CODE`, `name:SUBSTR`, `setname:NAME`, `sets:` — worth building
+supports `set:CODE`, `name:SUBSTR`, `setname:NAME`, `sets:` - worth building
 when you will probe a game more than a handful of times.
 
 Magic is ~1 GB: stream it or grep it, do not `json.load` it.
@@ -224,7 +224,7 @@ Include the negative case: the listing that must still refuse.
 `{description, input, uuid, error}` cases; regenerate with
 `go test ./mtgmatcher/<game>/ -update-<game>`. It refuses to
 flip a case between success and error unless the description carries a
-`negative:` prefix — when a flip is genuinely intended, edit that entry by hand
+`negative:` prefix - when a flip is genuinely intended, edit that entry by hand
 first, and diff the regenerated file case-by-case before committing:
 
 ```python
@@ -234,7 +234,7 @@ for d in set(old) & set(new):
     if old[d].get("uuid") != new[d].get("uuid"): print("CHANGED", d)
 ```
 
-Magic's goldens must stay byte-identical — if a change forces a Magic regen,
+Magic's goldens must stay byte-identical - if a change forces a Magic regen,
 the change is wrong.
 
 ## G. Mapping %

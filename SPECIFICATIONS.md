@@ -1,4 +1,4 @@
-# go-mtgban — Architecture & Development Specification
+# go-mtgban - Architecture & Development Specification
 
 **Module**: `github.com/mtgban/go-mtgban` (Go 1.26)
 **License**: dual AGPLv3 + commercial (see [LICENSING.md](LICENSING.md))
@@ -7,9 +7,9 @@ go-mtgban is a trading-card market-data platform: it scrapes retail
 inventories and buylists from a couple of dozen card stores and marketplaces,
 normalizes every listing to a canonical card identity, and computes arbitrage
 opportunities between them. Magic: The Gathering is the primary game; eight
-more are supported alongside it — Disney Lorcana, Riftbound (the League of
+more are supported alongside it - Disney Lorcana, Riftbound (the League of
 Legends TCG), One Piece, Yu-Gi-Oh, Flesh and Blood, Pokemon, Gundam and
-Palworld — each with its own datastore, its own matching rules, and its own
+Palworld - each with its own datastore, its own matching rules, and its own
 set of scraper targets.
 
 The system has three layers. `cmd/bantool` runs the scrapers under scheduled
@@ -31,11 +31,11 @@ mtgban/                                              interfaces, records, analys
 
 ---
 
-## 1. `mtgban/` — core framework
+## 1. `mtgban/` - core framework
 
 ### 1.1 Interface hierarchy (`mtgban/mtgban.go`)
 
-Two disjoint half-hierarchies — sell-side and buy-side — over a shared
+Two disjoint half-hierarchies - sell-side and buy-side - over a shared
 `Scraper` base, plus a `MultiScraper` mixin for aggregate platforms:
 
 ```
@@ -51,7 +51,7 @@ GenericEntry   Pricing() float64; Condition() Condition; Qty() int
 ScraperConfig  SetConfig(ScraperOptions)   // DisableRetail / DisableBuylist
 ```
 
-A `Market` is **purely sell-side** and a `Trader` **purely buy-side** — there
+A `Market` is **purely sell-side** and a `Trader` **purely buy-side** - there
 is no cross-half method. A platform that both sells and buys (TCGplayer,
 Cardtrader, Cardmarket) implements *both* interfaces on one type; because both
 embed `MultiScraper`, the shared `InfoForScraper` is unambiguous. Its
@@ -59,7 +59,7 @@ embed `MultiScraper`, the shared `InfoForScraper` is unambiguous. Its
 and `InventoryForSeller(market, name)` (`mtgban/base.go`) projects out a single
 seller by filtering on that field; `BuylistForVendor` is the buy-side twin.
 
-`GenericEntry` abstracts over the differently-named price fields — both
+`GenericEntry` abstracts over the differently-named price fields - both
 `InventoryEntry` and `BuylistEntry` implement it, with `Pricing()` returning
 `Price` and `BuyPrice` respectively (do **not** assume a single field name).
 
@@ -72,10 +72,10 @@ type-assertion.
 ### 1.2 Records and entries
 
 `InventoryRecord = map[string][]InventoryEntry` and
-`BuylistRecord = map[string][]BuylistEntry` — both keyed by the mtgmatcher
+`BuylistRecord = map[string][]BuylistEntry` - both keyed by the mtgmatcher
 UUID. The key is a string by convention; the `Add*` path does **not**
 type-check it against the backend (sealed scrapers, for instance, insert the
-product UUID directly without calling `Match()` — see §3).
+product UUID directly without calling `Match()` - see §3).
 
 - `InventoryEntry`: `Quantity`, `Conditions` (a `Condition`, named by `NM`
   through `PO`), `Price` (USD), `URL`, `SellerName`, `Bundle` (part of a
@@ -87,7 +87,7 @@ product UUID directly without calling `Match()` — see §3).
 A scraper reads a store's grade text with `ParseCondition`, which knows the
 spellings stores share and returns `ErrInvalidCondition` for anything else.
 
-**Insertion semantics** (`add()` in `mtgban/base.go`) — the de-dup engine
+**Insertion semantics** (`add()` in `mtgban/base.go`) - the de-dup engine
 every scraper relies on. Defaults are applied first, and the two sides differ:
 both default an empty condition to `NM`, but only the inventory side
 defaults a zero quantity to `1`. A buylist entry with quantity `0` keeps that
@@ -100,9 +100,9 @@ Then a strictness cascade against existing entries for the same card:
 | `AddRelaxed` | 0      | same condition+price+seller → merge quantities                 |
 | `Add`        | 1      | merge, but error if URL, quantity and Bundle are also identical |
 | `AddStrict`  | 2      | error if condition+price+seller already present                |
-| `AddUnique`  | 3      | error if condition+seller already present — **ignores price** (one per condition) |
+| `AddUnique`  | 3      | error if condition+seller already present - **ignores price** (one per condition) |
 
-`AddUnique`'s gate is the strictest and deliberately *ignores price* — its
+`AddUnique`'s gate is the strictest and deliberately *ignores price* - its
 check is separate from `AddStrict`'s, not a nested superset. Buylist has only
 the relaxed/strict pair (merge vs error on identical qty+condition+price+
 vendor). After every insert the slice is re-sorted: condition index in
@@ -111,8 +111,8 @@ vendor). After every insert the slice is re-sorted: condition index in
 
 **This sort produces a load-bearing invariant: `entries[0]` is the NM entry**
 (more precisely, the lowest-index *present* grade). `Arbit` reads
-`blEntries[0]` as the NM offer — the comment in `mtgban/arbit.go` states it
-outright — and the CSV writers emit rows in the same order. Any change that
+`blEntries[0]` as the NM offer - the comment in `mtgban/arbit.go` states it
+outright - and the CSV writers emit rows in the same order. Any change that
 reorders entries, or flips the sort direction in `add()`, silently corrupts
 both. `TestSort` in `base_test.go` pins the order; run it after touching
 the add path.
@@ -127,8 +127,8 @@ names no real game, so an unset field is a bug to fix rather than a reading
 of Magic. Giving it a type of its own is what settles which naming a scraper is *built*
 from: a multi-game scraper reads `b.Game` off its datastore, converts it to the
 vendor's own naming through one unexported map, and reports `Game` back from
-the backend. The vendor's spellings stay exported — each package's API
-helpers take one — but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
+the backend. The vendor's spellings stay exported - each package's API
+helpers take one - but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
 cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket,
 starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
 and vegassingles. The behavior flags are `MetadataOnly` (index
@@ -136,13 +136,13 @@ prices only, no conditions or quantities), `NoQuantityInventory`,
 `SealedMode`, `CreditMultiplier`
 (store-credit ratio), `Family` (price-coalescing group), plus
 `InventoryTimestamp`/`BuylistTimestamp` (`*time.Time`; **nil = never
-loaded** — used as the load-completion sentinel).
+loaded** - used as the load-completion sentinel).
 
 `BaseSeller`/`BaseVendor` with `NewSellerFromInventory`/`NewVendorFromBuylist`
 wrap pre-built records (used when deserializing and when unfolding markets, or
 when a consumer already holds an `InventoryRecord`/`BuylistRecord`).
 `UnfoldScrapers` decomposes a mixed `[]Scraper` into flat
-`[]Seller, []Vendor` — it must run **after** `Load()` and skips any scraper
+`[]Seller, []Vendor` - it must run **after** `Load()` and skips any scraper
 whose timestamp is nil. `CountScrapers` is the pre-Load-safe counterpart.
 
 ### 1.3 Arbitrage engine (`mtgban/arbit.go`)
@@ -151,7 +151,7 @@ whose timestamp is nil. `CountScrapers` is the pre-Load-safe counterpart.
 `Rate` defaulting to 1.0 and `ProfitabilityConstant` defaulting to **0** (it
 is only applied when the caller sets it `> 0`). Card-level filtering
 (`filterCard`) runs once per UUID in this order: rarity denylist → foil/etched
-(`NoFoil`/`OnlyFoil` — etched counts as foil) → sealed-without-decklist skip
+(`NoFoil`/`OnlyFoil` - etched counts as foil) → sealed-without-decklist skip
 (`SealedDecklist`) → reserved-list-only → edition deny/allow lists (matching
 either edition name or set code) → per-edition collector-number range →
 `CustomCardFilter(co)`, which can both skip the card and return a price
@@ -173,7 +173,7 @@ inventory:
 4. Compute `difference = buy − sell` and `spread = 100·difference/sell`
    straight from the buylist entry's `BuyPrice`; enforce `MinDiff`,
    `MinSpread`, `MaxSpread`. `Arbit` does **not** apply
-   `CreditMultiplier` — that field is metadata a consumer (or
+   `CreditMultiplier` - that field is metadata a consumer (or
    `WriteBuylistToCSV`) applies for itself when it wants store-credit
    pricing.
 5. Tradable `qty = min(invQty, blQty)` (buylist quantity 0 = unlimited).
@@ -182,7 +182,7 @@ inventory:
    `ProfitabilityConstant`, a denominator-stabilizing constant that keeps
    cheap cards from dominating (spec reference value 10, configurable via
    `ArbitOpts`, library default 0; the website passes 2, or 10 in global
-   mode). Changing the log base only rescales the index by a constant — it is
+   mode). Changing the log base only rescales the index by a constant - it is
    order-preserving for ranking but shifts the absolute `MinProfitability`
    gate. Enforce `MinProfitability`.
 
@@ -193,7 +193,7 @@ Spread, AbsoluteDifference (= diff·qty), Quantity, Profitability}`.
 identical filter scaffolding, but it compares across grades instead of
 requiring an exact condition match. `defaultGradeMap` is the ladder
 `NM=1, SP=0.8, MP=0.6, HP=0.4, PO=0`, and the reference price is scaled by
-`invGrade / refGrade` — dividing out the reference entry's own grade before
+`invGrade / refGrade` - dividing out the reference entry's own grade before
 applying the probe's, so a non-NM reference is not compared against a
 rescaled copy of itself. A pair whose grade is missing from the map or is
 `≤ 0` (which `PO` is) is skipped with `continue` rather than silently priced
@@ -208,7 +208,7 @@ borders or promo types lives with its caller.
 `WorkerPool[T,R]` (`mtgban/pool.go`) is the standard fetch primitive:
 N worker goroutines consume an item channel and push results to a result
 channel; a dispatcher goroutine feeds items until done or `ctx` is
-cancelled — cancellation stops *dispatch* but lets in-flight workers finish,
+cancelled - cancellation stops *dispatch* but lets in-flight workers finish,
 so partial results are preserved. `consume(R)` runs on the caller's
 goroutine, so consumers need no locking. Worker errors go to a `logErr`
 callback. Logging across the codebase is via injected
@@ -217,10 +217,10 @@ globals.
 
 `mtgban/json.go` round-trips `{info, inventory, buylist}`
 (`WriteSellerToJSON`/`ReadVendorFromJSON`, etc., reconstructing
-`BaseSeller`/`BaseVendor`). `mtgban/csv.go` defines layered headers —
+`BaseSeller`/`BaseVendor`). `mtgban/csv.go` defines layered headers -
 `CardHeader` (UUID/Name/Edition/Finish/Number/Rarity) extended into
 `InventoryHeader`, `MarketHeader` (+Seller/Bundle), `CartHeader` (+ids),
-`BuylistHeader` (+Trade Price), `ArbitHeader`, `MismatchHeader` — with
+`BuylistHeader` (+Trade Price), `ArbitHeader`, `MismatchHeader` - with
 writers auto-selecting the header from the data shape, and loaders
 (`LoadInventoryFromCSV(b, r, flags...)`, `LoadBuylistFromCSV`) skipping bad
 rows when passed `false` instead of stopping at the first one.
@@ -236,7 +236,7 @@ Trade Price column as `BuyPrice × creditMuliplier`.
 
 ---
 
-## 2. `mtgmatcher/` — the matching engine
+## 2. `mtgmatcher/` - the matching engine
 
 The hard problem: store listings name cards inconsistently
 ("Lightning Bolt (Borderless) - MH2 *F*"), while prices must key on an exact
@@ -249,8 +249,8 @@ the sealed-product API; the nine `mtgmatcher/<game>` packages (`magic`,
 `lorcana`, `riftbound`, `onepiece`, `yugioh`, `fleshandblood`, `pokemon`,
 `gundam`, `palworld`) each own their datastore loader and the game-specific
 identification logic that core dispatches through the `GameRules` interface.
-The dependency runs one way only — the game packages import core, core never
-imports a game package — which is what keeps the vocabularies from bleeding
+The dependency runs one way only - the game packages import core, core never
+imports a game package - which is what keeps the vocabularies from bleeding
 into each other.
 
 ### 2.1 Games, loaders, and the `Backend`
@@ -266,9 +266,9 @@ func RegisteredGames() []Game                  // registration order
 ```
 
 Each game package has a `register.go` whose `init()` calls `RegisterGame`,
-under the name of its own package — `"magic"`, `"lorcana"`, `"riftbound"`,
+under the name of its own package - `"magic"`, `"lorcana"`, `"riftbound"`,
 `"onepiece"`, `"yugioh"`, `"fleshandblood"`, `"pokemon"`, `"gundam"`,
-`"palworld"` — so a consumer activates a game with a blank import and pays
+`"palworld"` - so a consumer activates a game with a blank import and pays
 for nothing it does not use:
 
 ```go
@@ -324,7 +324,7 @@ Every accessor is an instance method, `GetUUIDsInSet`, `GetSealedUUIDsInSet`
 and `Names` (the former `AllNames`) included; `AllPromoTypes` is a field.
 `ExtractNumber` reads no datastore and stays a package-level function.
 
-**What the Magic loader does** — data *repair*, not just indexing. This is the
+**What the Magic loader does** - data *repair*, not just indexing. This is the
 heavyweight path, and it now lives entirely in `mtgmatcher/magic/mtgjson.go`
 (`magic.Load`), with its companion tables in `mtgmatcher/magic/table.go`
 (the missing PALP/PELP tag lists, `sldJPNLangDupes`, `productsWithOnlyFoils`,
@@ -348,7 +348,7 @@ retains only the language maps (`LanguageCode2LanguageTag` and its inverse).
 - Same-name double-faced cards collapse to one name, flagged via
   `Identifiers["isDFCSameName"]`. Scryfall image URLs and `ReleaseDateTime`
   are precomputed. `SourceProducts[finish]` is filtered through
-  `isBaseSealed`/`contentsContainCard` (direct containment per finish — it
+  `isBaseSealed`/`contentsContainCard` (direct containment per finish - it
   deliberately does *not* recurse into nested sealed sub-products).
 
 The Lorcana loader (`mtgmatcher/lorcana/lorcana.go`) and the Riftbound loader
@@ -373,7 +373,7 @@ marks the sets it appends with `Type == "promo"`, and Riftbound's `FilterCards`
 refuses those printings unless the input edition itself resolves to a promo set
 (promos reuse the main sets' collector numbers, so they would otherwise alias
 every base card). And because the gallery exports no finish information at all,
-every card is registered as available in *both* finishes — matching how
+every card is registered as available in *both* finishes - matching how
 TCGplayer lists Riftbound singles as Normal and Foil.
 
 **Indexes on `Backend`** (`mtgmatcher/backend.go`): `AllSets` and `Sets`
@@ -392,16 +392,16 @@ Three of those deserve their own note:
 
 - **`UUIDs` holds pointers.** `map[string]*CardObject`, and `GetUUID` hands
   the pointer straight back. The object is shared with every other caller and
-  **must never be modified after the load completes** — both the field and the
+  **must never be modified after the load completes** - both the field and the
   accessor say so in-source. Copy before mutating.
 - **`NormalizedSets` is built by the exported `IndexSets()`**, which every
   loader must call once its `Sets` are populated (hence exported: the loaders
   live in other packages). It visits set codes in sorted order so that two
-  sets normalizing to the same name resolve deterministically — lowest code
-  wins — replacing a linear rescan that followed random map order.
+  sets normalizing to the same name resolve deterministically - lowest code
+  wins - replacing a linear rescan that followed random map order.
 - **`SetUUIDs` is built by the exported `IndexSetUUIDs()`**, its `IndexSets()`
   counterpart: every loader must call it once `UUIDs` and `AllUUIDs` are
-  populated. Nothing else fills this bucket — unlike `SetSealedUUIDs`, which
+  populated. Nothing else fills this bucket - unlike `SetSealedUUIDs`, which
   `AddSealed` builds incrementally as each sealed product is filed, there is
   no per-card add path shared across games, so a loader that never calls
   `IndexSetUUIDs()` leaves `SetUUIDs` permanently nil with no error to show
@@ -428,7 +428,7 @@ declared in `mtgmatcher/backend.go`; the MTGJSON-shaped `AllPrintings`
 structures are the Magic loader's own, in `mtgmatcher/magic/mtgjson.go`.
 `CardObject` is a `Card` plus the resolved `Edition`/`Foil`/`Etched`/`Sealed`.
 `Card` carries the MTGJSON field set, including `Legalities map[string]string`
-(JSON tag `legalities`, format → legality) — populated only by the Magic
+(JSON tag `legalities`, format → legality) - populated only by the Magic
 loader and **nil for every other game's** cards, so consumers must handle
 that. It also carries the cross-game additions described above:
 `FoilUUIDs`, `Finish`, `Images` (at minimum a `"full"` and a `"thumbnail"`
@@ -464,7 +464,7 @@ understands PLST's `SET-123` format. `ExtractYear()` handles `'06`/`M15`
 style abbreviations. `SplitVariants()` splits the parenthesized fields stores
 use to distinguish printings while protecting legitimately-parenthesized
 names such as *Erase (Not the Urza's Legacy One)* and *B.F.M.*; eight of
-the nine games' `Prefilter` hooks call it — every one but Pokemon's.
+the nine games' `Prefilter` hooks call it - every one but Pokemon's.
 
 Magic's promo dates live in `mtgmatcher/magic/mtgjson.go`, including
 `BuyABoxInExpansionSetsDate` (2018-04) and `PromosForEverybodyYay` (2019-10).
@@ -499,18 +499,18 @@ comparing `ExtractNumberValue` of the collector numbers, and verifies the
 alternate genuinely differs in finish before swapping.
 
 `output(card, foil, etched)` is the finish reconciler. It first clamps the
-requested flags against the printing's actual `Finishes` — a foil request for
+requested flags against the printing's actual `Finishes` - a foil request for
 a nonfoil-only printing degrades gracefully, a foil-only printing upgrades
-automatically — and then resolves the clamped finish through `card.FoilUUIDs`,
+automatically - and then resolves the clamped finish through `card.FoilUUIDs`,
 which is the common path now that every loader registers a UUID per finish.
 Only a `Card` without a registered map falls back to the historical `_f`/`_e`
 suffix rules. Lorcana adds a wrinkle here: when a variation names a foil
 sub-type, its `FilterCards` re-keys a copy of `FoilUUIDs` so that the
 flag-driven resolution lands on that sub-type's UUID rather than the primary
-foil's — a direct mention of the exported sub-type name wins, and failing
+foil's - a direct mention of the exported sub-type name wins, and failing
 that, TCGplayer's convention of calling every sub-type past the primary cold
 foil "Holofoil" resolves when the card stores exactly one such sub-type. The
-tolerance for wrong foil flags from scrapers is a deliberate design point —
+tolerance for wrong foil flags from scrapers is a deliberate design point -
 **trust the matcher's finish, not the scraper's input.**
 
 ### 2.4 The `Match()` pipeline and `GameRules`
@@ -545,7 +545,7 @@ game's hook: every one is read through `FinishSlug`.
 
 Two contracts matter when implementing it. **Hooks receive the `InputCard` by
 pointer and may mutate it**; mutations persist for the rest of the pipeline
-*and* are visible to the caller after `Match` returns — the Magic
+*and* are visible to the caller after `Match` returns - the Magic
 `AdjustEdition` sets `PromoWildcard` and `BeyondBaseSet` that way, and later
 stages read them. And **`FilterCards` owns determinism**: the `cardSet` map it
 receives iterates in random order, so an implementation returning more than one
@@ -555,14 +555,14 @@ iterating `Hashes` (stable load order) and using `cardSet`'s keys only as an
 edition filter.
 
 A `Backend` with no rules attached returns `ErrDatastoreEmpty` from the name
-path — checked explicitly before the prefilter runs.
+path - checked explicitly before the prefilter runs.
 
 The pipeline:
 
-1. **Language resolution** — map codes via `LanguageCode2LanguageTag`, then
+1. **Language resolution** - map codes via `LanguageCode2LanguageTag`, then
    scan for an embedded language tag; `InputCard.Contains` looks at the
    edition and the variation, never the name. Core owns this.
-2. **Id fast path** — if `Id` is set, `b.MatchID()`; the hit is *validated*.
+2. **Id fast path** - if `Id` is set, `b.MatchID()`; the hit is *validated*.
    A wrong language resets the input to the resolved card's fields and falls
    through to full matching; a token id in a non-default language returns
    `ErrUnsupported`; and `rules.IsUnsupported` at `StageAnswer` rejects
@@ -570,7 +570,7 @@ The pipeline:
    carry (upstream tags lag releases), and for Pokemon a metal-card claim.
    This runs before the rules are known non-nil, so the hook call is
    guarded.
-3. **Name surgery** — `rules.Prefilter`. Magic's version handles the
+3. **Name surgery** - `rules.Prefilter`. Magic's version handles the
    Binderpos `Name [Edition]` syntax (resolving the bracket as a set name,
    falling back to variation, with the TCG `PP`-prefix promo-pack quirk),
    parenthesized variants via `SplitVariants()`, ` - ` suffix variants, and a
@@ -581,15 +581,15 @@ The pipeline:
    printings keep their storefront names verbatim. Core re-checks the foil
    flag afterwards, in case the prefilter moved a finish hint into the
    variant.
-4. **Unsupported gate** — `rules.IsUnsupported` at `StageWording`, checked
+4. **Unsupported gate** - `rules.IsUnsupported` at `StageWording`, checked
    before name resolution on the storefront's own wording.
-5. **Canonicalization** — `CanonicalNames[Normalize(name)]`; on miss,
+5. **Canonicalization** - `CanonicalNames[Normalize(name)]`; on miss,
    `rules.AdjustName` (Magic: typo/token/number fixups and flavor-name
    resolution via `AlternateProps`; Lorcana and Riftbound: a prefix fallback
    for feeds that truncate "Character - Title" names, plus Riftbound's
    champion-first legend remapping) and retry. Final miss → `ErrUnsupported`
    for tokens/oversize, else `ErrCardDoesNotExist`.
-6. **Edition adjustment** — `rules.AdjustEdition`. For Magic this is the
+6. **Edition adjustment** - `rules.AdjustEdition`. For Magic this is the
    long ladder in `mtgmatcher/magic/rules.go`: `EditionTable`
    aliases ("Alpha" → "Limited Edition Alpha", Universes Beyond names, …),
    variation-implies-edition rules ("Invocation" → Amonkhet Invocations),
@@ -600,7 +600,7 @@ The pipeline:
    custom token sets and most oversize cards, and asks `rules.IsUnsupported`
    again at `StageEdition`, now with the canonical name and adjusted
    edition.
-7. **Set selection** — `Printings4Card()`, then `rules.FilterPrintings` when
+7. **Set selection** - `Printings4Card()`, then `rules.FilterPrintings` when
    more than one printing survives *or* the original name ended in "Token"
    (single-printing token names still need filtering). An empty result is
    `ErrCardNotInEdition`, or `ErrUnsupported` for tokens/oversize. Then a
@@ -629,22 +629,22 @@ The pipeline:
    sibling expansion, World Championship skips loose matching, and Secret
    Lair or `PromoWildcard` skips both narrowing passes. A lone printing still
    bypasses expansion. Date thresholds retain strict before/after boundaries.
-8. **Card-level disambiguation** — `rules.FilterCards`, run
+8. **Card-level disambiguation** - `rules.FilterCards`, run
    **unconditionally**. This is a deliberate change from the pre-`GameRules`
    pipeline, which returned a lone candidate without validating it: Lorcana
    enforces the collector number in this hook, and the old shortcut let a
    wrong-numbered card through. Magic preserves the historical behavior
-   *inside* its own hook — a single card in a single set is returned as-is,
-   so a lone candidate still matches even when the variation carries junk —
+   *inside* its own hook - a single card in a single set is returned as-is,
+   so a lone candidate still matches even when the variation carries junk -
    but that is now the game's choice rather than the skeleton's.
    `rules.FinalizeCandidates` then applies final game policy. Magic keeps only
    the first World Championship candidate; other games retain ambiguity.
    This hook runs **before** core's language filter, preserving Magic's
    historical ordering even when the first candidate is in another language.
-9. **Verdict** — 0 cards: `ErrCardWrongVariant` (or `ErrCardMissingVariant`
+9. **Verdict** - 0 cards: `ErrCardWrongVariant` (or `ErrCardMissingVariant`
    if no variation was given, `ErrUnsupported` if a language was involved);
    1 card: `output()` plus a final `rules.IsUnsupported` at `StageAnswer`;
-   2+: `AliasingError`, whose `Probe()` returns all candidate UUIDs —
+   2+: `AliasingError`, whose `Probe()` returns all candidate UUIDs -
    consumers log these as data-quality alarms (and, like `mtgban-website`,
    may pick the newest printing from `Probe()`).
 
@@ -672,7 +672,7 @@ each needs.
 
 **Magic** (`mtgmatcher/magic/rules.go`) carries essentially all of it.
 `FilterPrintings` eliminates whole sets using the input's promo
-predicates against set type, release dates and name patterns — dedicated,
+predicates against set type, release dates and name patterns - dedicated,
 repetitive blocks for prerelease vs promo-pack, release/launch promos, BaB,
 bundles, Secret Lair vs Mystery List, WCD, MagicFest, Duel Decks, 30th
 Anniversary, judge promos, and a wildcard-promo mode. `FilterCards`
@@ -685,7 +685,7 @@ disambiguates within sets, consulting in order:
 2. `ExtractNumber` with its suffix semantics;
 3. for a Secret Lair listing naming a flavor name, the printings sold under
    it; naming neither a number nor a flavor name, the card's own unflavored
-   printing when there is exactly one (a number and its ★ foil) — both
+   printing when there is exactly one (a number and its ★ foil) - both
    ahead of the passes below, which would otherwise veto the printing for a
    treatment or a finish the listing never mentioned;
 4. promo-type validation through the `promoTypeElements` table (each entry:
@@ -695,13 +695,13 @@ disambiguates within sets, consulting in order:
    `numberFilterCallbacks` (`mtgmatcher/magic/callbacks.go`) for sets whose
    disambiguation needs real code;
 6. per-set promo dedup via `MultiPromosTable`, then finish/frame
-   separation — etched (gated on `SeparateFinishCollectorNumberDate`),
-   borderless, extended art (gated on `PromosForEverybodyYay`) and showcase —
+   separation - etched (gated on `SeparateFinishCollectorNumberDate`),
+   borderless, extended art (gated on `PromosForEverybodyYay`) and showcase -
    each pass discarding its result rather than the candidates when it would
    filter everything away.
 
-This three-tier design — **data tables first, generic number/promo logic
-second, per-set code last** — is the Magic package's core maintenance pattern:
+This three-tier design - **data tables first, generic number/promo logic
+second, per-set code last** - is the Magic package's core maintenance pattern:
 most new-set support lands as table entries, not code.
 
 One narrow language case runs just ahead of stage 3: a listing naming the
@@ -713,7 +713,7 @@ the listing left unsaid.
 **The other seven** need far less of that, and share a common shape: each
 game's `Rules` type embeds `mtgmatcher.DefaultRules` and overrides only the
 hooks its own catalog forces. `FinalizeCandidates` and `IsToken` fall
-through to `DefaultRules` — a genuine no-op — for all of them, and
+through to `DefaultRules` - a genuine no-op - for all of them, and
 `FilterPrintings` for all but Pokemon. A couple override one hook further
 where their catalog has a real, narrow case to handle: Lorcana and Yu-Gi-Oh
 give `IsUnsupported` real logic at `StageWording` (Lorcana drops
@@ -740,7 +740,7 @@ catalog's own spelling.
 
 Lookups: `GetUUID`, `GetSet`, `GetSetByName`, `GetAllSets`, `GetUUIDs`/
 `GetSealedUUIDs`, the per-set `GetUUIDsInSet`/`GetSealedUUIDsInSet` (backed by
-the `SetUUIDs`/`SetSealedUUIDs` buckets — the result aliases the index and must
+the `SetUUIDs`/`SetSealedUUIDs` buckets - the result aliases the index and must
 not be modified), `Printings4Card`, `CardReleaseDate`, `ConvertID`,
 `AllPromoTypes`, `Names(form NameForm, sealed)` and `NameIsToken`.
 
@@ -758,7 +758,7 @@ in `mtgmatcher/magic/wrappers.go`, where the treatments they name do.
 
 **Name buckets are not one-card-per-bucket.** `Hashes` deliberately hashes a
 card under its face, flavor and printed names as well as its full name, so a
-query naming a single face still finds the card — which means one bucket can
+query naming a single face still finds the card - which means one bucket can
 hold several *distinct* cards ("Servo" hashes both the Servo token and
 "Servo // Thopter"). `entry4Name` is the disambiguator behind
 `Printings4Card` and `NameIsToken`: it prefers the entry whose name matches
@@ -786,18 +786,18 @@ Sealed products are modeled end-to-end:
   (`GetPicksForDeck`), and the listing id a Secret Lair foil drop shares
   (`secretLairFoilID`).
 - `GetProbabilitiesForSealed`, `SealedBoosterProbabilities` and
-  `SealedSheetProbabilities` compute exact per-card pull probabilities — the
+  `SealedSheetProbabilities` compute exact per-card pull probabilities - the
   inputs to `sealedev`'s EV computation.
 - `BuildSealedProductMap` and the load-time reverse index
   (`fillinSealedContents`, in the Magic loader) link single cards back to the
   products containing them.
 
-### 2.7 Testing — strategy & coverage map
+### 2.7 Testing - strategy & coverage map
 
 **What exists.** Eight of the nine games have a data-driven golden replay
 suite that matches a corpus of real inputs against expected UUIDs or errors,
 gated on an environment variable pointing at a real datastore, with a flag
-that regenerates expectations after intentional changes — only Pokemon has
+that regenerates expectations after intentional changes - only Pokemon has
 none yet:
 
 | Game | Suite | Corpus | Env var | Regenerate |
@@ -810,10 +810,10 @@ none yet:
 | Flesh and Blood | `mtgmatcher/fleshandblood/matcher_test.go` | `mtgmatcher/fleshandblood/testdata/fleshandblood_test_data.json` | `FLESHANDBLOOD_PATH` | `-update-fleshandblood` |
 | Gundam | `mtgmatcher/gundam/matcher_test.go` | `mtgmatcher/gundam/testdata/gundam_test_data.json` | `GUNDAM_PATH` | `-update-gundam` |
 | Palworld | `mtgmatcher/palworld/matcher_test.go` | `mtgmatcher/palworld/testdata/palworld_test_data.json` | `PALWORLD_PATH` | `-update-palworld` |
-| Pokemon | — none yet — | — | `POKEMON_PATH` | — |
+| Pokemon | - none yet - | - | `POKEMON_PATH` | - |
 
 These are the regression harness for the heuristic tables. Run the relevant
-regeneration after a *deliberate* matching change and **review the diff** —
+regeneration after a *deliberate* matching change and **review the diff** -
 never blindly accept it. All seven non-Magic suites additionally carry
 hand-authored seed cases whose expected verdicts are baked by the regeneration
 rather than hard-coded, with a `"negative:"` description prefix declaring the
@@ -840,7 +840,7 @@ never called) and asserts that every rules-dependent entry point returns
 
 **The pyramid is inverted here.** Card identity is only meaningful against a
 large real dataset (AllPrintings alone is a few hundred MB), so the *largest*
-test surface — the matcher — is a data-backed integration replay rather than a
+test surface - the matcher - is a data-backed integration replay rather than a
 unit test, while the most business-critical code, the money path, needs **no**
 external data and is tested on synthetic records. The strategy follows from
 that asymmetry:
@@ -848,17 +848,17 @@ that asymmetry:
 | Layer | Targets | Test type | Needs dataset? | Today |
 |-------|---------|-----------|----------------|-------|
 | **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No**, runs in CI | 31 tests in `arbit*_test.go`, plus `Add*` and sort in `base_test.go` |
-| **Matcher** (data integrity) | `Match`/`MatchID`, normalization, variants/editions, sealed API | data-backed regression replay | **Yes** — one per game | replay + unit |
+| **Matcher** (data integrity) | `Match`/`MatchID`, normalization, variants/editions, sealed API | data-backed regression replay | **Yes** - one per game | replay + unit |
 | **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 19 of 24 packages |
 
 Principles: (1) **the money path is unit-tested**, with in-test records and
 no datastore dependency; (2)
-**characterization before refactor** — pin `Arbit`/`Mismatch`/`add()` outputs
+**characterization before refactor** - pin `Arbit`/`Mismatch`/`add()` outputs
 *before* changing them, and refactor under green; (3) **assert invariants, not
-just functions** — the `entries[0] == NM` ordering is a sort side effect that
+just functions** - the `entries[0] == NM` ordering is a sort side effect that
 `Arbit` and the CSV writers depend on, and `TestSort` in `mtgban/base_test.go`
 pins it directly; (4) **scrapers:
-breadth over depth** — a few fixture table tests for the gnarliest
+breadth over depth** - a few fixture table tests for the gnarliest
 preprocessors catch the realistic break; `cardmarket` and `cardtrader` have
 grown well past table-test fixtures into dozens of narrow, named `*_test.go`
 files each. `abugames`, `cardkingdom`, `cardmarket`, `gamenerdz`,
@@ -904,12 +904,12 @@ convention: `<store>.go` / `api.go` / `preprocess.go` / optional `sealed.go`
 same `b`).
 
 **The preprocess → `b.Match()` contract** (per listing): build an
-`InputCard`, call `b.Match()` — or `b.MatchID(externalID, foil, etched)`
+`InputCard`, call `b.Match()` - or `b.MatchID(externalID, foil, etched)`
 when the store exposes a Scryfall or TCGplayer id. Those two are the only
 entry points: every scraper's free-text path runs through the same `Match`
 pipeline on the backend it was built on, so a matching improvement lands
 for all of them at once and no scraper carries a private shortcut, and no
-scraper can be told one game while matching against another's datastore —
+scraper can be told one game while matching against another's datastore -
 `b.Game` is the one source of truth for which game a backend
 prices. On `ErrUnsupported` silently `continue`; on `AliasingError` log and
 `Probe()`; on other errors log with context (many scrapers suppress
@@ -954,14 +954,14 @@ deliberately absent: it is identified by SKU and has its own scrapers. Both
 game scrapers pass the printing name through the `InputCard.Variation`
 field alongside the collector number, so the game's rules can tell foil
 sub-types apart (this is what makes Lorcana's "Holofoil" convention
-resolvable — see §2.3).
+resolvable - see §2.3).
 
 ### HTML / crawler
 
 `starcitygames` (HawkSearch/Meilisearch APIs, serialized detection, sealed,
 plus Lorcana, Riftbound and Flesh and Blood, which its `scgGames` table maps
 onto SCG's numeric game ids), `coolstuffinc` (seven of the eight non-Magic
-games — every one but Flesh and Blood — `CreditMultiplier 1.25`),
+games - every one but Flesh and Blood - `CreditMultiplier 1.25`),
 `hareruya` (JPY, **bespoke 403 → 5-min backoff**), `magiccorner` (EUR,
 Italian), `abugames` (Solr, MINT-aware grading, `InfoForScraper`), `mtgseattle`
 (`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
@@ -978,20 +978,20 @@ rather than read: TCG Direct (net) where the buylist is missing, and
 Cardmarket for the ~86% of the catalog its market scraper never polls, which
 `sealedev/mkm.go` scales from the published guide's Trend column using a
 calibration fitted from the same snapshot being priced. That fit is per game
-and not portable — Magic's multiplier runs 0.43-1.24 across the price range
-where Yu-Gi-Oh's runs 2.2-3.7 — and Pokemon and Yu-Gi-Oh do not estimate well
+and not portable - Magic's multiplier runs 0.43-1.24 across the price range
+where Yu-Gi-Oh's runs 2.2-3.7 - and Pokemon and Yu-Gi-Oh do not estimate well
 enough to publish, for reasons upstream of the scaling.
 
 **Not templates.** Some directories in a working tree are untracked WIP and
-are not part of the committed module — `synthetic/` (a *computed* buylist with
+are not part of the committed module - `synthetic/` (a *computed* buylist with
 no site behind it, synthesizing prices from TCG/CK/SCG, `MetadataOnly`) and
 `mvpsportsandgames/`, whose non-conforming `Inventory() (record, error)` does
 **not** satisfy `mtgban.Seller`. For new work, copy `starcitygames` (API) or
-`mtgseattle` (HTML) — never an untracked orphan.
+`mtgseattle` (HTML) - never an untracked orphan.
 
 ---
 
-## 4. Tooling — `cmd/` and CI
+## 4. Tooling - `cmd/` and CI
 
 Committed tools: **bantool** (the production orchestrator), **boosterGen**,
 **boosterList**, **manapoolOrders**, and **tcgid4scryfall**
@@ -1001,7 +1001,7 @@ untracked working-tree WIP (`manapoolSeller`, `mkmhtml2csv`, `mp2ckbl`,
 treat anything not in the list above as unreviewed, and note that some of it
 embeds live credentials.
 
-- **bantool** — a table of `scraperOption{flags}`, one per target, derived
+- **bantool** - a table of `scraperOption{flags}`, one per target, derived
   from the scraper registry rather than written out by hand: `targets()` in
   `cmd/bantool/main.go` walks `mtgmatcher.AllGames` × `mtgban.Registered(game)`,
   each scraper package having filed its own keys with `mtgban`'s registry
@@ -1039,14 +1039,14 @@ embeds live credentials.
   `opts.TargetEdition`, `opts.MaxConcurrency`, `opts.Secret`) and sets the
   scraper's unexported fields from it, `scraper.logCallback = opts.LogCallback`
   alone being 37 assignments across the 20 `register.go` files.
-- **manapoolOrders** — Mana Pool buyer-order CSV dumps.
-- **boosterGen / boosterList** — booster simulation and sealed introspection
+- **manapoolOrders** - Mana Pool buyer-order CSV dumps.
+- **boosterGen / boosterList** - booster simulation and sealed introspection
   over the mtgmatcher sealed API.
-- **tcgid4scryfall** — TCGplayer id → Scryfall id mapping export.
+- **tcgid4scryfall** - TCGplayer id → Scryfall id mapping export.
 
 **CI** (`.github/workflows/`). `ci.yml` runs a datastore-free style job on its
-own — **Check formatting** (`gofmt -s -l .`), **Vet** (`go vet ./...`),
-`go test -race ./...`, **revive** and **staticcheck** — alongside nine
+own - **Check formatting** (`gofmt -s -l .`), **Vet** (`go vet ./...`),
+`go test -race ./...`, **revive** and **staticcheck** - alongside nine
 per-game jobs that each restore their own datastore from cache (§2.7);
 Magic's job runs `go test ./... -v` over the whole tree, and the other eight
 each run a scoped list: their `mtgmatcher/<game>` suite, a few scraper
@@ -1068,10 +1068,10 @@ the fresh snapshot. Magic targets prepend a `cache-datastore` job and pass a
 cached local path; every other game's targets skip caching entirely and pass
 a `b2://` path that bantool reads directly (which is why they need the
 datastore B2 keys). Cron cadence and concurrency grouping are set per
-scraper target, not by a Magic-vs-everyone-else rule — `cardmarket`'s own
+scraper target, not by a Magic-vs-everyone-else rule - `cardmarket`'s own
 targets, Magic's included, run twice daily under a `queue: max` concurrency
 group regardless of game, and other scrapers use their own schedule. No
-Makefile or Docker — plain `go build` per `cmd/` subdirectory.
+Makefile or Docker - plain `go build` per `cmd/` subdirectory.
 
 **Key dependencies**: goquery (HTML), retryablehttp + cleanhttp
 (HTTP), simplecloud (storage abstraction), weightedrand (boosters),
@@ -1088,30 +1088,30 @@ montanaflynn/stats (EV), golang.org/x/text (normalization), plus the in-house
 > publication (ADR-0003, superseding ADR-0002), and the localized matcher and
 > scraper registry (ADR-0004, superseding both).
 
-1. **Everything keys on the mtgmatcher UUID** — scrapers are thin
+1. **Everything keys on the mtgmatcher UUID** - scrapers are thin
    translators; correctness lives in one place. (By convention, not
    type-enforced; sealed inserts the product UUID directly.)
-2. **One pipeline, pluggable rules** — `Match()` is a single skeleton and
+2. **One pipeline, pluggable rules** - `Match()` is a single skeleton and
    every game-specific decision is a `GameRules` hook. Adding a game means
    adding a package, not adding a branch to shared code; and because core
    never imports a game package, a Magic-only concept cannot leak into the
    Lorcana path by accident.
-3. **Games self-register, consumers opt in** — the `database/sql` idiom.
+3. **Games self-register, consumers opt in** - the `database/sql` idiom.
    `RegisterGame` from an `init()`, a blank import to activate, `Open` when
    the game is known and auto-detection is unnecessary. A binary links only
    the games it imports.
-4. **Sorted-record invariants instead of queries** — `entries[0] == NM` is
+4. **Sorted-record invariants instead of queries** - `entries[0] == NM` is
    produced by `add()`'s sort and consumed by `Arbit`; the CSV writers rely on
    the ordering too.
-5. **Tables before code** — new-set support is data (`VariantsTable`, the
+5. **Tables before code** - new-set support is data (`VariantsTable`, the
    edition aliases, the promo elements); per-set callbacks are the escape
    hatch, and they live in the game package rather than in core.
-6. **Graceful degradation on dirty input** — `output()` finish clamping, the
+6. **Graceful degradation on dirty input** - `output()` finish clamping, the
    Id-path validation/reset, non-strict CSV loading, `ErrUnsupported` as a
    silent-skip channel distinct from real errors.
-7. **Injected logging + bounded worker pools** — uniform operational
+7. **Injected logging + bounded worker pools** - uniform operational
    behavior across scrapers via `WorkerPool` and injected log callbacks.
-8. **No global, no publication** — loaders build independent backends and
+8. **No global, no publication** - loaders build independent backends and
    hand them to callers directly; there is nothing ambient to swap and
    nothing to publish. Several related operations capture a backend
    explicitly and pass it through; its nested maps, slices and pointers
@@ -1128,7 +1128,7 @@ holding the `*mtgmatcher.Backend` it is built on; implement `Seller` and/or
 quirks. Add a `register.go` whose `init()` calls `mtgban.Register(name,
 games, constructor)` under the key name bantool has always used for the
 target and every game the scraper prices, then blank-import the package in
-`cmd/bantool/main.go` — `targets()` walks `mtgmatcher.AllGames` ×
+`cmd/bantool/main.go` - `targets()` walks `mtgmatcher.AllGames` ×
 `mtgban.Registered(game)`, so a registered scraper is immediately a valid
 `-store` value for its games, with no entry to write by hand. Add the
 matching GitHub Actions workflow: `cmd/bantool/workflows_test.go`'s
@@ -1139,7 +1139,7 @@ target that is not registered. It also checks that each file's
 `repository_dispatch` types are exactly `<game>-<store>, <game>-all`. Set the
 right `ScraperInfo` flags (`MetadataOnly`, `NoQuantityInventory`,
 `SealedMode`, `CreditMultiplier`, `Family`, `Game`). The hard part is always
-preprocessing — which is why mtgmatcher's typed errors, variant tables, and
+preprocessing - which is why mtgmatcher's typed errors, variant tables, and
 per-set callbacks exist.
 
 **Adding a game**: create `mtgmatcher/<game>/` with a `Load(io.Reader)
@@ -1151,13 +1151,13 @@ once `UUIDs`/`AllUUIDs` are in and `SetRules()`), a `rules.go` implementing
 `GameRules`, a `register.go` whose `init()` calls `RegisterGame`, and a
 replay suite gated on a `<GAME>_PATH` environment variable with a
 regeneration flag. **Every `Backend` field a loader is responsible for
-needs an explicit line setting it — there is no default that makes a zero
+needs an explicit line setting it - there is no default that makes a zero
 map or slice merely "smaller"; a nil `SetUUIDs` looks identical to an empty
 one until a caller reads it and gets nothing back.** `IndexSetUUIDs()` was
 added to close exactly this gap: eight of the nine loaders built `AllUUIDs`
 and `UUIDs` correctly but had nothing to call, so `SetUUIDs` stayed nil and
 `GetUUIDsInSet` silently answered empty for every set of every game but
-Magic, whose loader alone built the same bucketing by hand — which
+Magic, whose loader alone built the same bucketing by hand - which
 mtgban-website's edition-only searches (`s:CODE`, seeded from that index
 alone when there is no text to search) read as "no results" rather than
 "index not built," for every non-Magic deployment, until a test that
@@ -1179,14 +1179,14 @@ need one constant naming the storefront's own spelling plus one line in their
 
 ---
 
-## 7. Primary consumer — `mtgban-website` (usage reference)
+## 7. Primary consumer - `mtgban-website` (usage reference)
 
 The reference embedder demonstrates the intended production topology:
 **scraping and serving are decoupled.** bantool scrapes and uploads per-store
 `Seller`/`Vendor` JSON; the website loads those snapshots and the matcher
 datastore, and never runs scrapers in-process. Canonical patterns:
 
-- **Activate a game, then load the datastore once at startup** — the matcher
+- **Activate a game, then load the datastore once at startup** - the matcher
   can match nothing until a game package is linked in, so blank-import
   `mtgmatcher/games` (or just the games you serve) and then call
   `mtgmatcher.Open(game, reader)` streamed from a `simplecloud` bucket and
@@ -1194,33 +1194,33 @@ datastore, and never runs scrapers in-process. Canonical patterns:
   scraper is built on it with `mtgban.NewScraper`. Replacing the datastore
   is loading another backend; the old one stays valid for whatever still
   holds it, and must not be mutated (§2.1).
-- **Consume pre-scraped JSON** — `mtgban.ReadSellerFromJSON` /
+- **Consume pre-scraped JSON** - `mtgban.ReadSellerFromJSON` /
   `ReadVendorFromJSON` per `game/name/kind/shorthand`. The live sets sit
   behind `atomic.Pointer[[]mtgban.Seller]` / `[[]mtgban.Vendor]` for lock-free
-  reads with single-writer publish — the correct concurrency pattern for a
+  reads with single-writer publish - the correct concurrency pattern for a
   long-running server over swappable snapshots.
-- **Build a store from records** — `mtgban.NewSellerFromInventory` /
+- **Build a store from records** - `mtgban.NewSellerFromInventory` /
   `NewVendorFromBuylist` when you already hold an `InventoryRecord` /
   `BuylistRecord`.
-- **Match user input → UUID, handle aliasing** — `b.Match(&InputCard)` on the
+- **Match user input → UUID, handle aliasing** - `b.Match(&InputCard)` on the
   backend that holds the game, with `errors.As(err, &AliasingError)` →
   `Probe()` to pick the newest printing (the upload flow);
   `b.MatchID(scryfallID, foil, etched)` for the external-id fast path.
-- **Search dispatcher** — switch over `SearchEquals`/`SearchContains`/
+- **Search dispatcher** - switch over `SearchEquals`/`SearchContains`/
   `SearchHasPrefix`/`SearchRegexp`/`SearchSealedEquals`, falling back to
   `Match`.
-- **Arbitrage pipeline** — construct one `mtgban.ArbitOpts`, tune it with
+- **Arbitrage pipeline** - construct one `mtgban.ArbitOpts`, tune it with
   `CustomCardFilter(co *mtgmatcher.CardObject)` and
   `CustomPriceFilter(cardId, mtgban.InventoryEntry)` closures, then dispatch
   `mtgban.Arbit`/`mtgban.Mismatch` by direction over `GetSellers()`/
   `GetVendors()`; sort the `[]ArbitEntry`. Apply `CreditMultiplier` yourself
-  if you want store-credit pricing — `Arbit` does not.
-- **Buylist pricing reducer** — range `GetVendors()`, filter by `SealedMode`/
+  if you want store-credit pricing - `Arbit` does not.
+- **Buylist pricing reducer** - range `GetVendors()`, filter by `SealedMode`/
   shorthand, fold `vendor.Buylist()` entries into a price map
   (`getVendorPrices`).
-- **Sealed introspection** — `GetSealedUUIDs`/`GetDecklist`/`GetPicksForSealed`/
+- **Sealed introspection** - `GetSealedUUIDs`/`GetDecklist`/`GetPicksForSealed`/
   `SealedIsRandom`/`SealedHasDecklist` (the website surfaces booster/deck flags
   but delegates generation to the matcher). It does not call `BoosterGen`
-  directly — for that, the embedded `cmd/` tools are the example.
+  directly - for that, the embedded `cmd/` tools are the example.
 - **CSV export**: `mtgban.WriteBuylistToCSV(b, records, creditMultiplier, w)`
   straight to an HTTP writer.

@@ -1,5 +1,5 @@
 // Package magic implements the Magic: the Gathering rules for the mtgmatcher
-// card matcher — the edition/variant/promo data and the identification logic
+// card matcher - the edition/variant/promo data and the identification logic
 // that core mtgmatcher dispatches through its GameRules hooks.
 //
 // magic imports core mtgmatcher for the Backend, InputCard, and Card types and

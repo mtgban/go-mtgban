@@ -1,7 +1,7 @@
 # Org or repo workflow: wake Grok Bot hostile review on PR activity.
 # Secrets (repo or org):
-#   HOSTILE_REVIEW_WEBHOOK_URL  — from the "Hostile review via webhook" routine panel
-#   HOSTILE_REVIEW_WEBHOOK_KEY  — sender key from the same panel
+#   HOSTILE_REVIEW_WEBHOOK_URL  - from the "Hostile review via webhook" routine panel
+#   HOSTILE_REVIEW_WEBHOOK_KEY  - sender key from the same panel
 #
 # Auth: sends both Authorization: Bearer <key> and X-Webhook-Key: <key>
 # so either panel auth shape works.

@@ -976,7 +976,7 @@ func SealedIsLanguageVariant(name string) bool {
 // AddSealed files a sealed product in the sealed namespace: its uuid in
 // AllSealedUUIDs and in its set's bucket, its name in the sealed name index,
 // and the product id as an identifier for BuildSealedProductMap rather than
-// in the external identifier index — which is how Magic keeps sealed out of
+// in the external identifier index - which is how Magic keeps sealed out of
 // MatchID's reach.
 //
 // A product whose set is unknown is dropped. A uuid a card already holds

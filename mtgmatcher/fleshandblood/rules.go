@@ -14,7 +14,7 @@ import (
 // identified by name + collector number, with the variant label separating
 // the printings that share a number (extended arts, marvels and the like).
 // Finish never gates anything: every print run and treatment of a product
-// matches, resolving to the default entry of the requested foilness — but a
+// matches, resolving to the default entry of the requested foilness - but a
 // named finish routes the match onto the entry it names, whether it arrives
 // in the finish field or as the words storefronts append ("Rainbow Foil",
 // "Cold Foil", the print-run edition suffixes).
@@ -36,7 +36,7 @@ const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 // Prefilter splits the parenthetical decorations off the name before the
 // canonical-name lookup: storefronts write "Enigma, New Moon (Marvel)" for
 // a variant the datastore labels beside the plain name. A full name that is
-// itself canonical stays as it is — the pitch-color parentheticals ("Sink
+// itself canonical stays as it is - the pitch-color parentheticals ("Sink
 // Below (Red)") are part of the name.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	inCard.Name = dashQualifierRe.ReplaceAllString(inCard.Name, " ($1)")
@@ -89,7 +89,7 @@ const marvelLabel = " (Marvel)"
 // "Bloodrot Trap (Red)" at OUT171. Whichever spelling a feed sends, it is a
 // canonical name of the other set's printing, so the name lookup succeeds, the
 // number then matches nothing under it, and the printing the feed actually
-// named is unreachable — in both directions.
+// named is unreachable - in both directions.
 //
 // The collector number is what makes the re-spelling safe, and it has to be a
 // full one: a pitch color is part of the name, so "Sink Below (Red)" and "Sink
@@ -197,7 +197,7 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// numbered printing wears, and the two do not always say the same
 	// thing. A pitch color belongs to the name, so swapping one for
 	// another loses nothing; but the very same parenthetical also spells a
-	// treatment label that tells the printings sharing a number apart —
+	// treatment label that tells the printings sharing a number apart -
 	// "Golden Skull (Yellow)" is a name, and "(Marvel)" is the label on one
 	// of the two printings filed under it. Handing the dropped
 	// parenthetical to the wording keeps that printing reachable. Where no
@@ -955,7 +955,7 @@ func labelTier(inCard *mtgmatcher.InputCard, number string, candidates []mtgmatc
 // where nothing else tells two printings apart - the plain cold foil of
 // Ash // Aether Ashwing is labelled "Cold Foil" beside the marvel - and a
 // caller naming the treatment in the field names that label. When several
-// labels are described, the finish tokens step aside — a label spelled
+// labels are described, the finish tokens step aside - a label spelled
 // from them alone ("Cold Foil" the label) defers to the label the rest of
 // the wording still describes.
 func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (described, base, variants []mtgmatcher.Card) {
@@ -1077,7 +1077,7 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // variation, cardtrader's "1st Edition" expansion suffix) resolves to that
 // printing's entry instead of the flag-driven default. Only the variation
 // speaks: set names carry the same words ("1st Strike"). The unsaid axis
-// fills from the card itself — a bare print run is its plain printing, a
+// fills from the card itself - a bare print run is its plain printing, a
 // bare treatment takes the plainest print run sold with it. A wording
 // naming no finish, or a printing the product was not priced in, keeps the
 // flag-driven default.

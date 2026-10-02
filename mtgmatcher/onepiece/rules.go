@@ -48,7 +48,7 @@ var trailingCodeRe = regexp.MustCompile(`\s*\(([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\
 // Prefilter splits the parenthetical decorations off the name before the
 // canonical-name lookup: storefronts write "Roronoa Zoro (OP01-001) (V.2)",
 // "Shanks (001) (Parallel)" and "Monkey.D.Luffy - P-043 (Convention Promo
-// 2024)". A full name that is itself canonical stays as it is — the epithet
+// 2024)". A full name that is itself canonical stays as it is - the epithet
 // parentheticals ("Mr.2.Bon.Kurei (Bentham)") are part of the name.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	splitDecorations(b, inCard)

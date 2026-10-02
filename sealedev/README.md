@@ -4,7 +4,7 @@ Prices sealed product by what opening it is worth, rather than by reading a
 storefront. There is no site behind this scraper: it asks `mtgmatcher` what a
 product can contain and with what probability, prices those contents against
 the MTGBAN price API, and publishes the total. Registered as `sealed_ev`, for
-Magic alone — `banAPIURL` hardcodes `www.mtgban.com`, which serves Magic's
+Magic alone - `banAPIURL` hardcodes `www.mtgban.com`, which serves Magic's
 prices and nothing else, and `register.go` names `mtgmatcher.GameMagic` as the
 only game it answers for.
 
@@ -31,7 +31,7 @@ its own sub-seller:
 `TargetsBuylist` says which side the result is published to. Only
 `Singles Buylist (est.)` sets the second, which is why `MarketNames` returns
 eleven sub-sellers rather than twelve, and why `InfoForScraper` marks every
-one of those eleven `MetadataOnly` — they are derived numbers, not an offer
+one of those eleven `MetadataOnly` - they are derived numbers, not an offer
 anyone can take.
 
 **EV and Sim are two answers to the same question, not two sources.** An EV
@@ -44,7 +44,7 @@ skew, and it is large for anything with a chase card. Sim entries also carry
 `stdDev` and `iqr` in `ExtraValues`; EV entries carry neither, having no
 distribution to describe.
 
-A product whose contents are fixed — `backend.SealedIsRandom` says so —
+A product whose contents are fixed - `backend.SealedIsRandom` says so -
 skips the Monte Carlo entirely and copies the deterministic value, because
 simulating a deck that always contains the same cards 5,000 times answers the
 same number 5,000 times.
@@ -55,7 +55,7 @@ same number 5,000 times.
 one pass over the catalog, and that pass does more than it looks like:
 
 - **`getPrice` reads near mint, then lightly played.** A card with no NM
-  quote is priced from its SP one rather than dropped, per finish — a foil
+  quote is priced from its SP one rather than dropped, per finish - a foil
   reads `NM_foil`, an etched card `NM_etched`. Reading the plain key for a
   foil would price it at its nonfoil sibling.
 - **A price over `MaxSinglePrice` ($10,000) is discarded as broken**, except
@@ -77,15 +77,15 @@ This is the part most likely to surprise someone reading an EV number.
 **TCG Direct (net)** is derived in `loadPrices`. Where the buylist carries no
 Direct quote, it is estimated from TCG Market (falling back to TCG Low) put
 through `tcgplayer.DirectPriceAfterFees`. Where it carries one that looks
-wrong — `directNet/2 > tcgMarket`, i.e. Direct claims more than twice what
-the card sells for — it is either capped at twice Low or dropped outright.
+wrong - `directNet/2 > tcgMarket`, i.e. Direct claims more than twice what
+the card sells for - it is either capped at twice Low or dropped outright.
 `TCGDirectSYPNet` is computed unconditionally from `TCGDirect`, and `CT0` has
 its flat per-band fee (`getCT0fees`) subtracted in place.
 
 **Cardmarket** is the larger estimate, and `mkm.go` is entirely about it.
 Cardmarket's market scraper only spends a live API call where one is worth
-spending — a trend price over $7, or a wide enough spread, see
-`cardmarket.marketCandidates` — so roughly **86% of the catalog has a
+spending - a trend price over $7, or a wide enough spread, see
+`cardmarket.marketCandidates` - so roughly **86% of the catalog has a
 published guide price and no usable market price** (129,720 of the 151,466
 Magic cards carrying a guide entry, measured 2026-09-22). A search page can
 leave that blank. An EV cannot: a card with no price counts as zero, not as
@@ -101,7 +101,7 @@ estimate is not honest enough for.
 The consequence worth internalising: **a Cardmarket EV can move between two
 runs because the calibration moved, not because any price did.** The drift is
 about 1% a day, which moves a priced catalog by 0.2%, and
-`BenchmarkFitMKMCalibration` is where to read the fitted numbers off — nothing
+`BenchmarkFitMKMCalibration` is where to read the fitted numbers off - nothing
 in a run prints them.
 
 ## What never counts toward an EV
@@ -114,7 +114,7 @@ in a run prints them.
   (`probability < 1`). A fixed one counts.
 
 These are dropped before pricing, so they cost nothing and contribute
-nothing — the EV is the value of the openable rest.
+nothing - the EV is the value of the openable rest.
 
 Whole products and sets are skipped earlier, in `Load`:
 
@@ -127,13 +127,13 @@ Whole products and sets are skipped earlier, in `Load`:
 ## Running it
 
 `WithTargetProduct` narrows to a single product by name or UUID;
-`opts.TargetEdition` narrows to one set, and does double duty — it also
+`opts.TargetEdition` narrows to one set, and does double duty - it also
 narrows the price fetch to `all/<SETCODE>.json`, which is the difference
 between one small request and the whole catalog. Both are the way to iterate
 on this without a multi-minute run.
 
 `maxConcurrency` (8 by default) is the width of the simulation, not of any
-network work — there is only ever one request. `repetitions` is settable in
+network work - there is only ever one request. `repetitions` is settable in
 tests to make a run that cannot finish, or to make one finish instantly.
 
 Retail entries link to TCGplayer where the product carries a
@@ -147,13 +147,13 @@ product's own name.
   `[]mtgmatcher.Game{mtgmatcher.GameMagic}`, and `lookup(game, name)` is how a
   scraper is found, so nothing can build a `sealed_ev` for another game in
   the first place; `banAPIURL` then hardcodes `www.mtgban.com`, which serves
-  Magic's prices alone — each game's are published on its own subdomain, the
+  Magic's prices alone - each game's are published on its own subdomain, the
   way `cardmarket`'s `banAPIURL` spells them. Another game needs both
   changed, the registration before the URL. `mkm.go`'s calibration is
   already per-game and would follow on its own; the accuracy notes there say
   which games would survive the move.
 - **`maxStorePrice` takes the highest price across a source's stores**, which
-  matters only for `Singles Buylist (est.)` — the one entry naming more than
+  matters only for `Singles Buylist (est.)` - the one entry naming more than
   one store (`CK`, `SCG`). Every other source names exactly one, so the max
   is over a single value.
 - **An EV is only as good as the contents data.** `GetProbabilitiesForSealed`

@@ -1599,7 +1599,7 @@ func sealedWithinSealed(product SealedProduct) []string {
 
 // Check whether the sealed product directly contains the given card with
 // the requested finish. "Directly" means via a card/deck/pack entry at the
-// top level (or inside a variable config) — not reachable only through a
+// top level (or inside a variable config) - not reachable only through a
 // nested sealed sub-product.
 func isBaseSealed(sets map[string]*Set, products map[string]*SealedProduct, productUUID, cardUUID, finish string) bool {
 	product, found := products[productUUID]
@@ -1687,7 +1687,7 @@ func contentsContainCard(sets map[string]*Set, contents map[string][]SealedConte
 						return true
 					}
 				}
-				// "sealed": intentionally not handled — nested products don't count as direct.
+				// "sealed": intentionally not handled - nested products don't count as direct.
 			}
 		}
 	}

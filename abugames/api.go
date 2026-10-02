@@ -171,8 +171,8 @@ func (abu *ABUClient) sendSealedRequest(ctx context.Context, url string) (*ABURe
 }
 
 // GetTotalItems fetches the number of product groups. group.ngroups (the total
-// group count) is expensive for Solr to compute — a full enumeration of all
-// ~213k groups — so it is requested only here, not baked into the base URL used
+// group count) is expensive for Solr to compute - a full enumeration of all
+// ~213k groups - so it is requested only here, not baked into the base URL used
 // for page fetches.
 func (abu *ABUClient) GetTotalItems(ctx context.Context, extra string) (int, error) {
 	link := abuBaseURL
@@ -219,7 +219,7 @@ func (abu *ABUClient) GetProduct(ctx context.Context, extra string, pageStart in
 	q.Set("rows", fmt.Sprintf("%d", maxEntryPerRequest))
 	q.Set("start", fmt.Sprintf("%d", pageStart))
 	// fl trims each doc to the fields ABUCard decodes (~9x smaller payload).
-	// group.ngroups is deliberately absent from the base URL — only the count
+	// group.ngroups is deliberately absent from the base URL - only the count
 	// path (GetTotalItems) requests it, since per page it would make Solr
 	// enumerate all ~213k groups for nothing.
 	q.Set("fl", abuFieldList)

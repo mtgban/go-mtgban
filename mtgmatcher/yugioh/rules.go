@@ -63,7 +63,7 @@ const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 // Prefilter splits the parenthetical decorations off the name before the
 // canonical-name lookup: TCGplayer writes "Eldlich the Golden Lord (Quarter
 // Century Secret Rare)" and "Harpie Lady (Original Artwork)". A full name
-// that is itself canonical stays as it is — some catalog names carry their
+// that is itself canonical stays as it is - some catalog names carry their
 // qualifier parenthetical ("Dark Magician (A)"). The name then takes the
 // spelling its own edition files it under, when the two disagree.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
@@ -209,7 +209,7 @@ func carries(set *mtgmatcher.Set, name, number string, matches func(string, stri
 // several distinct respellings, or several token names on one number (OTS
 // Tournament Pack 9 prints three "Token: Mecha Phantom Beast" arts under
 // 026), decides nothing and the name stays as written. And an edition
-// naming no set at all decides nothing either — AdjustName's fallbacks own
+// naming no set at all decides nothing either - AdjustName's fallbacks own
 // that input.
 func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	alternates := alternateNames(inCard.Name)
@@ -340,7 +340,7 @@ func solePrefixName(b *mtgmatcher.Backend, prefixes []string) (string, bool) {
 }
 
 // isTokenName reports whether a name names a token outright, in any of the
-// word orders the catalog and the storefronts use — including the bare
+// word orders the catalog and the storefronts use - including the bare
 // "Token" the sheets that never name their art are filed under.
 func isTokenName(name string) bool {
 	return strings.HasPrefix(name, "Token: ") || strings.HasSuffix(name, " Token") ||
@@ -384,7 +384,7 @@ func editionHoldsNumber(set *mtgmatcher.Set, name, number string) bool {
 }
 
 // editionTokenAt answers the one token the set prints under the number, or
-// nothing when the number names none — or several, which no storefront
+// nothing when the number names none - or several, which no storefront
 // wording tells apart.
 func editionTokenAt(set *mtgmatcher.Set, number string) string {
 	var name string
@@ -1042,7 +1042,7 @@ func (Rules) PlainNumber(number string) string {
 }
 
 // FilterCards narrows candidates by edition, collector number, rarity and
-// variant, in that order. Rarity only ever narrows on an explicit signal —
+// variant, in that order. Rarity only ever narrows on an explicit signal -
 // the input wording spelling out a rarity, or the suffix map when only the
 // number's tail speaks; a bare input facing several rarities keeps them all
 // and surfaces as an aliasing error rather than a guess. The variant label
@@ -1678,7 +1678,7 @@ func wantsVariant(number string) bool {
 
 // numberMatches compares an input number against a printing's full
 // collector number: equal full codes (rarity tail stripped or not), or a
-// matching numeric tail — with equal set prefixes when the input carries
+// matching numeric tail - with equal set prefixes when the input carries
 // one, and whatever the language infix ("LOB-EN001" matches "LOB-001").
 // Leading zeros never decide ("19" matches "RA01-EN019").
 func numberMatches(input, full string) bool {

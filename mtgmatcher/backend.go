@@ -505,7 +505,7 @@ func (b *Backend) IndexSetUUIDs() {
 //
 // Each list is deduped on what it actually holds rather than on one of the
 // others. Two spellings can normalize or lowercase to one string, and a key
-// stored twice returns its whole hash bucket twice — so a name already
+// stored twice returns its whole hash bucket twice - so a name already
 // present in one list may still be missing from another, and asking the
 // wrong list is how a duplicate gets in.
 //
