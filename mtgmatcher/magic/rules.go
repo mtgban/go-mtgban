@@ -32,16 +32,13 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 // unsupportedInEdition reports the named cards unsupported in one edition
 // rather than as a class.
 func unsupportedInEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	// A word saying token in an edition or a variation used to name a custom
-	// set that had leaked this far, because no token was carried and nothing
-	// spelling one could match. It lived in the core switch and answered for
-	// every game, which is wrong for the ones whose tokens are cards like any
-	// other - Yu-Gi-Oh files "Token: Kuriboh" under a collector number and
-	// sells it by it.
-	//
-	// Magic's tokens are carried now, each filed under a set of its own named
-	// after the one it came with, so the word only names a leak when no such
-	// set answers to the edition.
+	// A word saying token in an edition or a variation names a custom set
+	// that leaked this far only when no set of tokens answers to the
+	// edition: Magic's tokens are carried, each filed under a set of its
+	// own named after the one it came with. The check is Magic's, not
+	// core's, because other games' tokens are cards like any other -
+	// Yu-Gi-Oh files "Token: Kuriboh" under a collector number and sells
+	// it by it.
 	//
 	// The word is looked for with strings rather than Contains, which
 	// filters "token" away before the comparison ever sees it.
@@ -160,9 +157,8 @@ func ravnicaGuildKit(b *mtgmatcher.Backend, name, edition, variation string) str
 //
 // Only the original is named here, and only once its English reprint exists -
 // while the Japanese printing is the only one, naming it would veto it. The
-// reprint's number is deliberately absent: it used to be written down, and by
-// the time anyone looked three of the five had moved, so every English listing
-// of Shock, Duress and Voltaic Key answered "unknown variant".
+// reprint's number is deliberately absent: the set's numbers move, and a
+// stale one answers every English listing of the card with "unknown variant".
 var mediaInsertOriginals = map[string]struct {
 	// marker is the number a storefront writes for the original, from the
 	// old "Media Promos" numbering. It is compared against the number the
@@ -1833,9 +1829,9 @@ func namesFlavor(inCard *mtgmatcher.InputCard, card mtgmatcher.Card) bool {
 // describes. See mtgmatcher.GameRules.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) (outCards []mtgmatcher.Card) {
 	// Use the result as-is if it comes from a single card in a single set,
-	// preserving the historical Magic behavior of the pre-GameRules pipeline:
-	// a lone candidate matches even when the variation carries junk the
-	// filters below would reject. Other games (Lorcana) validate strictly.
+	// as the Magic replay corpus expects: a lone candidate matches even
+	// when the variation carries junk the filters below would reject.
+	// Other games (Lorcana) validate strictly.
 	if len(cardSet) == 1 {
 		for _, inCards := range cardSet {
 			if len(inCards) == 1 {

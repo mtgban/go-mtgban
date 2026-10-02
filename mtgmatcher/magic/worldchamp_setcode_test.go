@@ -24,7 +24,7 @@ func TestWorldChampSetCodeIsNotTheNumber(t *testing.T) {
 	}
 
 	// Tom van de Logt's Mountain is the one the listing names; Jan
-	// Tomcani's is what aliasing settled on once that one was refused.
+	// Tomcani's is what aliasing settles on if that one is refused.
 	named := &mtgmatcher.Card{Name: "Mountain", SetCode: "WC01", Number: "tvdl337"}
 	other := &mtgmatcher.Card{Name: "Mountain", SetCode: "WC01", Number: "jt337"}
 	if wcdNumberCompare(b, in, named) {

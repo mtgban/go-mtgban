@@ -276,7 +276,7 @@ func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 }
 
 // NameIsToken reports whether the card actually named this way is a token.
-// Exported because the only caller now lives in the per-game rules packages.
+// Exported because the only caller lives in the per-game rules packages.
 func (b *Backend) NameIsToken(name string) bool {
 	entry, found := b.entry4Name(name)
 	return found && entry.Layout == "token"
@@ -390,7 +390,7 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 	uuids := b.Hashes[Normalize(canonicalName)]
 
 	// A pinned edition narrows the check to that set alone; when it cannot
-	// be resolved, every printing is checked, like the set loop used to.
+	// be resolved, every printing is checked.
 	var pinnedCode string
 	if len(editions) > 0 {
 		set := b.Sets[editions[0]]
@@ -403,12 +403,11 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 	}
 
 	// The hash bucket holds every card whose name (or alias) normalizes the
-	// same, so this visits exactly the cards the old per-set scans compared
-	// with Equals - minus the scans: iterating full sets for every printing
-	// made this function the dominant cost of Match for widely printed
-	// cards. The name check stays because aliases (flavor or printed names)
-	// hash into the same bucket but never matched the scans' Equals against
-	// the real card name.
+	// same, so this visits the cards a per-set scan comparing with Equals
+	// would, without iterating full sets for every printing, which would
+	// make this the dominant cost of Match for widely printed cards.
+	// Aliases (flavor or printed names) hash into the same bucket too, so
+	// the name is still checked against the real card name.
 	for _, uuid := range uuids {
 		co, found := b.UUIDs[uuid]
 		if !found {

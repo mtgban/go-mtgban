@@ -31,12 +31,9 @@ func TestListGameDayReadsTheGivenBackend(t *testing.T) {
 	}
 }
 
-// The identification hooks used to answer their auxiliary lookups from
-// whichever datastore was installed globally, so a Backend opened on the
-// side was matched against with another one's data. They take the backend
-// now, and these pin that they read it: the same input answered against an
-// empty backend must find nothing, where before it would have found
-// whatever the global happened to hold.
+// The identification hooks answer their auxiliary lookups from the backend they
+// take, and these pin that they read it: the same input answered against an
+// empty backend must find nothing, rather than whatever another backend holds.
 func TestHelpersReadTheGivenBackend(t *testing.T) {
 	realDatastore(t)
 	// A name printed exactly once in Secret Lair Ultimate, which is what

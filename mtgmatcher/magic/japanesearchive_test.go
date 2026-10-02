@@ -9,11 +9,11 @@ import (
 // TestJapaneseArchive pins the Mystical Archive sets filing one card under an
 // English printing and a Japanese one, and the listing that says which being
 // read for it. Secrets of Strixhaven files each card three times - English,
-// Japanese, and the Japanese silver scroll foil - and a listing naming the
-// Japanese art was answered with the English printing, whose price is a
-// different card's, until the set was read the way its 2021 sibling is.
+// Japanese, and the Japanese silver scroll foil - and is read the way its
+// 2021 sibling is: a listing naming the Japanese art answers with the
+// Japanese printing, not the English one, whose price is a different card's.
 //
-// The silver scroll printings were already reachable, by the treatment the
+// The silver scroll printings are reachable by the treatment the
 // listing spells beside the art, so they say here that naming the art does
 // not cost the finish that names them.
 func TestJapaneseArchive(t *testing.T) {

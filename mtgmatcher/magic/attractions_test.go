@@ -7,7 +7,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// The lights are filed by the loader now rather than carried in a field of
+// The lights are filed by the loader rather than carried in a field of
 // their own, which makes an unstamped datastore the failure to watch for:
 // nothing would error, attraction listings would just stop being told
 // apart. The invariant is pinned against the datastore itself rather than a

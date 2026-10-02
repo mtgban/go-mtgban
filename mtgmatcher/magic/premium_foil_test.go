@@ -8,8 +8,8 @@ import (
 
 // TestPremiumFoilClaim pins the treatments a set prints once, beside the
 // plain card and nowhere else, whose price is orders of magnitude above it:
-// a buylist that named one was quoted the plain printing's identity, so the
-// premium price landed on the cheap card and read as arbitrage. The plain
+// a buylist naming one must not be quoted the plain printing's identity, or
+// the premium price lands on the cheap card and reads as arbitrage. The plain
 // listings are here too, since narrowing to the treatment is only right if
 // silence still lands on the printing that wears none.
 func TestPremiumFoilClaim(t *testing.T) {

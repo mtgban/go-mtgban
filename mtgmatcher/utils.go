@@ -31,8 +31,7 @@ var (
 	// ErrCardUnnamedFinish is a finish name the game cannot place at all, as
 	// opposed to one it placed onto a finish the printing is not sold in. It is
 	// not evidence of anything - a vendor spelling nobody has taught the game
-	// yet reads the same as a typo - so Match falls through to the wording,
-	// which is what answered before an id could name a finish.
+	// yet reads the same as a typo - so Match falls through to the wording.
 	ErrCardUnnamedFinish = errors.New("unrecognized finish")
 
 	ErrUnsupported = errors.New("unsupported")

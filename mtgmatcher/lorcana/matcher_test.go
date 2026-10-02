@@ -64,13 +64,13 @@ var lorcanaSeeds = []matchTest{
 	},
 	{
 		// An id with no finish beside it is still the flag's question, so
-		// the wording no longer overrides the printing the id names.
+		// the wording does not override the printing the id names.
 		Desc: "an id sent without a finish answers with the flag's foil",
 		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
 	},
 	{
 		// A storefront that sends no id still spells the sub-type, and
-		// that path is untouched.
+		// the wording reaches it.
 		Desc: "wording alone still picks the foil sub-type",
 		In:   mtgmatcher.InputCard{Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
 	},
@@ -89,7 +89,7 @@ var lorcanaSeeds = []matchTest{
 	{
 		// A name the game cannot place at all is a vendor spelling nobody
 		// has taught it yet, which says nothing about the printing: the
-		// wording answers, exactly as it did before an id could name one.
+		// wording answers, exactly as it does when no finish is sent.
 		Desc: "a finish name the game does not know falls through to the wording",
 		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Finish: "Reverse Holofoil", Foil: true},
 	},
@@ -100,9 +100,7 @@ var lorcanaSeeds = []matchTest{
 	{
 		// A card sold in one finish is reached by a listing that names no
 		// finish at all, because requiring a plain printing would delete the
-		// only candidate there is. "A Whole New World" stood here until the
-		// data gave it a plain printing too, at which point it stopped
-		// saying anything: 16 promos are still sold foil alone.
+		// only candidate there is, and 16 promos are sold foil alone.
 		Desc: "foil-only promo listed without the flag",
 		In:   mtgmatcher.InputCard{Name: "Maleficent - Exultant Spellcaster", Variation: "004B", Edition: "Disney Lorcana Promo Cards"},
 	},
@@ -112,8 +110,8 @@ var lorcanaSeeds = []matchTest{
 	},
 	{
 		// The truncated name and the missing flag at once: an enchanted
-		// printing is sold foil only, so requiring a plain finish deleted
-		// every candidate before the name could be adopted.
+		// printing is sold foil only, so requiring a plain finish would
+		// delete every candidate before the name could be adopted.
 		Desc: "truncated name reaches a foil-only card listed without the flag",
 		In:   mtgmatcher.InputCard{Name: "Hades - King of", Variation: "205", Edition: "The First Chapter"},
 	},
@@ -201,8 +199,8 @@ var lorcanaSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Anna - Ensnared Sister", Variation: "1", Foil: true},
 	},
 	{
-		// The legacy single-uuid shortcut returned this card ignoring the
-		// number; the unified pipeline deliberately validates it.
+		// A single-printing name still has its number validated:
+		// ignoring the number would return this card.
 		Desc: "negative: single-printing name with wrong collector number",
 		In:   mtgmatcher.InputCard{Name: "Anna - Ensnared Sister", Variation: "77777"},
 	},

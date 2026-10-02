@@ -10,7 +10,7 @@ import (
 // the catalog carries without one. Strikezone numbers the Master Ball
 // patterns "074M" beside the plain "074" and the run-marked reprints "001A",
 // and the catalog numbers neither that way, so the number as written reaches
-// nothing and the listing used to go unpriced. Each case below is a listing
+// nothing and the listing would go unpriced. Each case below is a listing
 // the storefront publishes, beside the same card numbered as the catalog
 // writes it.
 func TestNumberMarker(t *testing.T) {

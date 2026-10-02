@@ -58,8 +58,8 @@ func TestPromoSetBegunByWording(t *testing.T) {
 		want string
 	}{
 		{
-			// The listing that started this: a $1250 buy price on the promo,
-			// answered with the base set's common until the edition moved.
+			// A $1250 buy price on the promo, which lands on the
+			// base set's common unless the edition moves.
 			desc: "a shortened event name reaches the promo set",
 			in: mtgmatcher.InputCard{
 				Name: "Nami (Gold in Border) (Championship 25-26)", Variation: "OP09-050",

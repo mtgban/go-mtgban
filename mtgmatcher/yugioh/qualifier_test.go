@@ -7,7 +7,7 @@ import (
 )
 
 // TestQualifierTellsTheProduct pins what the catalog's own name-qualifier
-// decides once the datastore no longer publishes it as a promo type: a
+// decides where the datastore does not publish it as a promo type: a
 // listing that says nothing means the product sold under the bare name, a
 // wording that spells a qualifier whole means that product before any word
 // of it is read as a piece of a rarity, and the qualifier saying the most

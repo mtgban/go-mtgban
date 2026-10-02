@@ -235,10 +235,9 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Edge of Night", Variation: "139", Edition: "Spiritforged"},
 	},
 	{
-		// An unknown qualifier under a promo heading refuses to pick: the
-		// old fallback to the main printing was the same mispricing shape
-		// CoolStuffInc showed for champion-stamped cards. Relabeled when
-		// promo types reached the published datastore.
+		// An unknown qualifier under a promo heading refuses to pick:
+		// falling back to the main printing is the same mispricing
+		// shape CoolStuffInc showed for champion-stamped cards.
 		Desc: "negative: a promo qualifier no printing carries refuses to pick one",
 		In:   mtgmatcher.InputCard{Name: "Edge of Night (Winner Stamp)", Variation: "139", Edition: "Promo"},
 	},
@@ -247,7 +246,7 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Stacked Deck", Edition: "Origins: Promos", Variation: "183", Foil: true},
 	},
 	// CardTrader files the prerelease and launch cards under a heading of
-	// its own. It ends in "Promos" like the generic one, so it used to
+	// its own. It ends in "Promos" like the generic one, so it could
 	// collapse onto it, but it names a set outright - every listing under it
 	// has an organized-play printing at its number - and the generic heading
 	// cannot answer for it: this is one of the few numbers two promotional
@@ -304,9 +303,8 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Rengar, Trophy Hunter", Edition: "Unleashed: Promos", Variation: "120 V.2 - Epic", Foil: true},
 	},
 	{
-		// The datastore carries the rune alternate arts since 2026-08-18;
-		// before that this input was the negative below, because no R01a row
-		// existed to answer it.
+		// The datastore carries the rune alternate arts, so an R01a row
+		// answers this input.
 		Desc: "an alternate-art rune resolves to its own printing",
 		In:   mtgmatcher.InputCard{Name: "Fury Rune", Variation: "R01a Alternate Art", Edition: "Vendetta", Foil: true},
 	},
@@ -563,7 +561,7 @@ func TestRiftboundFinishUUIDs(t *testing.T) {
 			continue
 		}
 		// What an entry is, it says. Reading the finish off the id's tail
-		// is what pinned the "_nonfoil" the datastore has stopped spelling,
+		// would pin a "_nonfoil" the datastore does not spell,
 		// and a uuid is a name rather than a description.
 		if co.Finish == mtgmatcher.FinishFoil {
 			if !co.Foil {

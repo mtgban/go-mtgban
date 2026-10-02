@@ -384,7 +384,7 @@ func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		edition = "Miscellaneous Cards & Products"
 	}
 	// A championship is a set of its own, named for the year it was held,
-	// and a storefront writes the shelf they all used to share. The year is
+	// and a storefront writes one shelf for all of them. The year is
 	// on the card instead - "Torchic - 2004" - so it says which.
 	if worldsShelfRe.MatchString(edition) {
 		if year := worldsYear(inCard); year != "" {
@@ -659,7 +659,7 @@ func promoSetNamed(b *mtgmatcher.Backend, edition string) string {
 // Only the trailing "Base Set" comes off, and only onto a name that is a set
 // outright. Dropping trailing words in general is what must not happen:
 // "Diamond and Pearl Stormfront" would resolve to "Diamond and Pearl", and
-// measured that way it cost 335 previously correct entries.
+// measured that way it costs 335 otherwise correct entries.
 func setNamedByHead(b *mtgmatcher.Backend, edition string) string {
 	head := strings.TrimSpace(strings.TrimSuffix(edition, "Base Set"))
 	if head == "" || head == edition {
@@ -1659,10 +1659,10 @@ func tierByLabel(b *mtgmatcher.Backend, wording string, candidates []mtgmatcher.
 	}
 	// Every candidate carries a label, which is what a promo run looks like
 	// once the run's own name is a label rather than part of the card's:
-	// "Archeops (Prerelease)" carries "prerelease" where it used to carry
-	// nothing, beside a "Prerelease Staff" carrying two. The least
-	// decorated is the one a wording naming none of them means, and a tie
-	// at the fewest still surfaces rather than guessing between them.
+	// "Archeops (Prerelease)" carries "prerelease" and a "Prerelease Staff"
+	// beside it carries two. The least decorated is the one a wording
+	// naming none of them means, and a tie at the fewest still surfaces
+	// rather than guessing between them.
 	fewest := len(labelled[0].PromoTypes)
 	for _, card := range labelled {
 		if len(card.PromoTypes) < fewest {

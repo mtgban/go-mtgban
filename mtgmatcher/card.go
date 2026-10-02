@@ -245,9 +245,9 @@ func (b *Backend) output(card Card, flags ...bool) string {
 // the sheets that were never built - the championship prizes, the oversized
 // dungeons - hold nothing it could mean, so the word marks it unsupported.
 //
-// The sets that carry them used to be named by the words in their titles,
-// which read "Commander Legends: Battle for Baldur's Gate" as an oversized
-// Commander product and priced its dungeon as the ordinary token. The edition
+// Naming the sets that carry them by the words in their titles would read
+// "Commander Legends: Battle for Baldur's Gate" as an oversized Commander
+// product and price its dungeon as the ordinary token. The edition
 // is the wrong thing to ask: a storefront writes "Magic Player Rewards" for a
 // card filed under "Magic Player Rewards 2009", and a set can hold one
 // oversized printing among ordinary ones. Ask whether the card has such a

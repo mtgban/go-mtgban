@@ -452,8 +452,8 @@ const (
 // IndexSets indexes Sets by their normalized name, so name lookups need one
 // map access instead of rescanning and renormalizing the whole set list.
 // Codes are visited in sorted order so that two sets normalizing to the same
-// name resolve deterministically (lowest code wins - the linear scan this
-// replaces followed random map order). Every loader has to call this once
+// name resolve deterministically (lowest code wins, where a scan over the
+// map would follow its random order). Every loader has to call this once
 // its Sets are populated, including the ones living in their own package,
 // which is why it is exported.
 func (b *Backend) IndexSets() {
@@ -480,11 +480,9 @@ func (b *Backend) IndexSets() {
 // a loader builds UUIDs and AllUUIDs itself, then calls this once - the
 // same way every loader calls IndexSets once its Sets are populated, which
 // is why this is exported too. Skipping it leaves SetUUIDs nil and
-// GetUUIDsInSet silently answering empty for every set, which is exactly
-// what every non-Magic game's loader did until this method existed: the
-// website's edition-only searches (s:CODE, seeded from this index alone,
-// see mtgban-website's searchAndFilter) came back empty for every game but
-// Magic, whose loader hand-built the same bucketing inline.
+// GetUUIDsInSet silently answering empty for every set, so the website's
+// edition-only searches (s:CODE, seeded from this index alone, see
+// mtgban-website's searchAndFilter) come back empty for that game.
 func (b *Backend) IndexSetUUIDs() {
 	b.SetUUIDs = map[string][]string{}
 	for _, uuid := range b.AllUUIDs {

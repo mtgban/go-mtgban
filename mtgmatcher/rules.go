@@ -86,7 +86,8 @@ type GameRules interface {
 	// being no other number for a person to write. The game owns this the
 	// way it owns its finish names, so a caller folding a number a person
 	// typed need not know which marks belong to which game - and one that
-	// rebuilt the vocabulary for itself got the case of Magic's phi wrong.
+	// rebuilds the vocabulary for itself can get the case of Magic's phi
+	// wrong.
 	PlainNumber(number string) string
 }
 

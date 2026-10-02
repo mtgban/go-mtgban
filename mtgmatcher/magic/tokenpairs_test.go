@@ -170,10 +170,9 @@ func TestDerivedTokenPairExclusions(t *testing.T) {
 // whichever uuid actually won, so picking the memorabilia sibling here
 // would silently leave a real vendor listing - anchored on the ordinary
 // set's own scryfall_id, the same one CK and SCG both publish - unable to
-// find the pairing at all even though a derived entity for it exists. The
-// first pass of this fix got exactly that wrong (picked whichever uuid
-// sorted first, which happened to be OAFR's); MatchTokenPairing against
-// CK's own real scryfall_id is what actually catches it.
+// find the pairing at all even though a derived entity for it exists.
+// Picking whichever uuid sorts first lands on OAFR's; MatchTokenPairing
+// against CK's own real scryfall_id is what catches it.
 func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 	realDatastore(t)
 
@@ -203,7 +202,7 @@ func TestDerivedTokenPairsSurviveSiblingSetDuplicateIDs(t *testing.T) {
 			t.Errorf("%s: id %s resolved to set %q, want the ordinary TAFR filing, not the OAFR memorabilia sibling", probe.desc, probe.tcgID, co.SetCode)
 		}
 
-		// The real regression: a vendor's own scryfall_id for the dungeon
+		// A vendor's own scryfall_id for the dungeon
 		// face (always the ordinary AFR printing in practice) must find
 		// this pairing through MatchTokenPairing, the same path
 		// cardkingdom and starcitygames actually call.
@@ -388,7 +387,7 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 // TestMatchTokenPairingBySetNumberFindsContestedName pins matchNumberedFace's
 // own reason for existing: the loader already merges a token-type set's own
 // Tokens into its Cards, so TAFC above resolves through Cards alone and
-// this fix is invisible there - but "Shapeshifter" collides with a real
+// reading Tokens adds nothing there - but "Shapeshifter" collides with a real
 // card elsewhere in the game (one of a small, known set - Ninja,
 // Ornithopter, Storm Crow, Faerie Dragon, Kobolds of Kher Keep are the
 // others), so the merged Cards copy is suffixed "Shapeshifter Token" to
@@ -396,7 +395,7 @@ func TestMatchTokenPairingBySetNumber(t *testing.T) {
 // A listing spelling the suffix itself ("Shapeshifter Token // ...", the
 // shape TestMatchTokenPairingBySetNumber above uses) tries "Shapeshifter
 // Token" as StripFaceWrapping's own unstripped first attempt and hits the
-// Cards copy directly, fix or no fix - the shape that actually needs
+// Cards copy directly, Tokens or not - the shape that actually needs
 // Tokens is a parenthesized one ("Shapeshifter (Token) // ...", the real
 // shape Cool Stuff Inc's own buylist sends, PID 262248): both
 // StripFaceWrapping and CleanFaceName strip the parenthetical down to the
@@ -419,18 +418,17 @@ func TestMatchTokenPairingBySetNumberFindsContestedName(t *testing.T) {
 	}
 }
 
-// TestTokenPairIndexCollision pins the fix for a real bug: a face commonly
-// pairs with several different partners across a sheet, and two of those
-// partners can normalize to the identical key (measured: 252 of 1,865
-// faces in today's datastore carry at least one such collision). "Bear"
-// pairs with four differently-numbered "Food" tokens across Throne of
-// Eldraine's own token sheets, all colliding on "food" - a plain
-// last-write-wins map would silently pick one and make the other three
-// unreachable, so a vendor listing that actually names one of the dropped
-// three would resolve to the wrong physical product under the survivor's
-// id. The fix must refuse rather than guess: the index itself carries
-// no entry for the colliding key, and MatchTokenPairing (the caller every
-// vendor package goes through) returns "" for it - never silently
+// TestTokenPairIndexCollision pins a refusal: a face commonly pairs with
+// several different partners across a sheet, and two of those partners can
+// normalize to the identical key (measured: 252 of 1,865 faces in today's
+// datastore carry at least one such collision). "Bear" pairs with four
+// differently-numbered "Food" tokens across Throne of Eldraine's own token
+// sheets, all colliding on "food" - a plain last-write-wins map would silently
+// pick one and make the other three unreachable, so a vendor listing that
+// actually names one of the dropped three would resolve to the wrong physical
+// product under the survivor's id. The index must refuse rather than guess: it
+// carries no entry for the colliding key, and MatchTokenPairing (the caller
+// every vendor package goes through) returns "" for it - never silently
 // answering with one of the four candidates.
 func TestTokenPairIndexCollision(t *testing.T) {
 	realDatastore(t)
@@ -450,18 +448,17 @@ func TestTokenPairIndexCollision(t *testing.T) {
 	}
 }
 
-// TestMatchTokenPairingRequiresBothFacesInRequestedFinish pins the fix for a
-// second real bug: the derived pairing's own Finishes is deliberately the
-// UNION of both faces' independent finish lists (unionFinishes, above - a
-// fine tradeoff for its own original purpose, keeping
-// mtgmatcher.MatchIDFinish from erroring on a finish only one face happens
-// to carry). Trusting that union to answer "was this specific two-sided
-// PRODUCT sold in this finish" is a different question the union was never
-// built to answer: Boar was never sold foil on its own, its TKHM sheet
-// partner Spirit was, and the union claims foil regardless. A foil request
-// anchored on Boar's own scryfall_id must be refused, not silently answered
-// with Spirit's foil-ness - the same "don't know, refuse" discipline used
-// everywhere else two-sided token matching cannot verify a vendor's own
+// TestMatchTokenPairingRequiresBothFacesInRequestedFinish pins a second
+// refusal: the derived pairing's own Finishes is deliberately the UNION of both
+// faces' independent finish lists (unionFinishes, above - a fine tradeoff for
+// its own purpose, keeping mtgmatcher.MatchIDFinish from erroring on a finish
+// only one face happens to carry). Trusting that union to answer "was this
+// specific two-sided PRODUCT sold in this finish" is a different question the
+// union was never built to answer: Boar was never sold foil on its own, its
+// TKHM sheet partner Spirit was, and the union claims foil regardless. A foil
+// request anchored on Boar's own scryfall_id must be refused, not silently
+// answered with Spirit's foil-ness - the same "don't know, refuse" discipline
+// used everywhere else two-sided token matching cannot verify a vendor's own
 // claim.
 func TestMatchTokenPairingRequiresBothFacesInRequestedFinish(t *testing.T) {
 	realDatastore(t)
@@ -580,14 +577,13 @@ func TestTokenPairIDByBothNamesCollision(t *testing.T) {
 	}
 }
 
-// TestDeriveTokenPairsMintsWithNoUsableID pins a real bug: mtgjson's own
-// tokenProducts entry links Germ (TC16 #10) and Spirit (TC16 #6) under
-// tcgplayerProductId 125098, but that id is also independently claimed by
+// TestDeriveTokenPairsMintsWithNoUsableID pins a pairing minted without its id:
+// mtgjson's own tokenProducts entry links Germ (TC16 #10) and Spirit (TC16 #6)
+// under tcgplayerProductId 125098, but that id is also independently claimed by
 // an unrelated card elsewhere in the datastore, so deriveTokenPairs's own
-// "don't let one id price two different things" guard correctly refuses
-// to hand it to this pairing. The bug was in what happened next: rather
-// than still minting the pairing itself - which this tokenProducts entry
-// already confirms is real, id or no id - the loop dropped the whole row.
+// "don't let one id price two different things" guard refuses to hand it to
+// this pairing. The pairing itself, which the tokenProducts entry confirms is
+// real, id or no id, must still be minted rather than the whole row dropped.
 func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 	realDatastore(t)
 
@@ -610,15 +606,14 @@ func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 	}
 }
 
-// TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops pins the other half
-// of the same bug: homeSet requires the two faces' sets to share an
-// mtgjson parent-set ancestor, which an ordinary same-sheet pairing always
-// has but a genuinely cross-set reprint (Dinosaur, from The Lost Caverns
-// of Ixalan Commander's own token sheet, paired with Gnome on The Lost
-// Caverns of Ixalan's own) need not. Before the fix, homeSet returning ""
-// dropped the row entirely rather than falling back to a deterministic
-// set (whichever face's uuid sorts first - cosmetic only, see
-// buildDerivedCard's own comment on the field).
+// TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops pins that a pairing with
+// no home set is kept too: homeSet requires the two faces' sets to share an
+// mtgjson parent-set ancestor, which an ordinary same-sheet pairing always has
+// but a genuinely cross-set reprint (Dinosaur, from The Lost Caverns of Ixalan
+// Commander's own token sheet, paired with Gnome on The Lost Caverns of
+// Ixalan's own) need not. When homeSet returns "", the row falls back to a
+// deterministic set (whichever face's uuid sorts first - cosmetic only, see
+// buildDerivedCard's own comment on the field) rather than being dropped.
 func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
 	realDatastore(t)
 

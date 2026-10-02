@@ -243,8 +243,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // letter that is single and singles one that is double ("Metalic Leader",
 // "Gepetto"), drops one altogether ("Somone Will Lose His Head", "Valourous
 // General") or swaps two ("Ambitious Entreperneur"), and every one of those
-// listings was dropped with the number that says which card it is sitting in
-// the same record.
+// listings carries the number that says which card it is in the same record.
 //
 // Two things gate it. The edition has to name one set, since a number is only
 // an identifier within one. And exactly one of the cards wearing that number
@@ -481,11 +480,11 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	}
 	// A feed that never says "foil" must not lose a foil-only card outright:
 	// the promotional printings are sold foil only, and a storefront listing
-	// them plain had every one of them deleted here. Saying nothing is not
-	// the same claim as saying nonfoil, which is why only this direction
-	// falls back. The number as written and the plain finish both still
-	// decide whenever they have candidates to choose between, so each
-	// fallback only ever answers where the alternative was answering nothing.
+	// them plain would have every one of them deleted here. Saying nothing
+	// is not the same claim as saying nonfoil, which is why only this
+	// direction falls back. The number as written and the plain finish both
+	// still decide whenever they have candidates to choose between, so each
+	// fallback only ever answers where the alternative answers nothing.
 	tiers := [][]mtgmatcher.Card{out, wrongFinish, bareOut, bareWrongFinish, chaseOut, chaseWrongFinish}
 	// Once a tier is named by a printing that carries it, the printings that
 	// do not are contradicted rather than merely unmentioned, and go out of
@@ -568,14 +567,13 @@ func spellsOut(text, phrase string) bool {
 // set card writes its set size - which is exactly what it is. SetTotal is the
 // denominator the face prints, "P3" on a promo where a card of the set
 // prints "204", so the tier is narrowed on the card's own total rather than
-// on a promo type: the pool was never a promotion, and it used to travel in
-// PromoTypes only because nothing else carried it.
+// on a promo type: the pool is not a promotion.
 //
 // A count separates the same way a pool does, and for the same reason: a set
 // card and a promo of it stand at one number and print different totals under
 // it. Cool Stuff Inc buys Fabled's "Stitch - Rock Star" at "3/204", where the
 // set's Super Rare prints 204 and the Disney Parks printing beside it prints
-// DIS, and the two answered together as an aliasing until the count was read.
+// DIS, and without the count the two answer together as an aliasing.
 //
 // A total no candidate carries keeps the whole tier. The storefront's
 // spelling of a total is its own - it prints the one the card came from,

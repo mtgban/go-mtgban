@@ -137,12 +137,11 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 
 // setIsPromotional reports whether a set hands out promotional printings.
 // The datastore types the sets it knows to be promotional; where it says
-// nothing the name carries it, as it did alone until the datastore learned
-// to say so. The promo set names itself "One Piece Promotion Cards", and the
-// pre-release sets hand out stamped copies ahead of a release, which are
-// promos by every other name. Matching on the name rather than the code
-// keeps the Premium Booster sets out, whose codes begin "PRB" but which are
-// an ordinary product.
+// nothing the name carries it. The promo set names itself "One Piece
+// Promotion Cards", and the pre-release sets hand out stamped copies ahead
+// of a release, which are promos by every other name. Matching on the name
+// rather than the code keeps the Premium Booster sets out, whose codes
+// begin "PRB" but which are an ordinary product.
 func setIsPromotional(set *mtgmatcher.Set) bool {
 	if set == nil {
 		return false

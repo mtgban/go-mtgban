@@ -10,10 +10,9 @@ import (
 // A dungeon's oversized sheet (OAFR, OCLB) is filed under its parent set's
 // name exactly where the ordinary token sheet is too, so a listing naming
 // the parent and saying oversized only in the variation - the common shape,
-// not the shelf's own "Oversize Cards" edition - used to read as the
-// ordinary token filed beside it instead: the sheet went unrecognized (no
-// candidate at all before it was carried), and once carried, the token
-// sheet's own edition match won the tie unchallenged. Both are pinned here.
+// not the shelf's own "Oversize Cards" edition - must reach the sheet rather
+// than the ordinary token filed beside it, whose own edition match would
+// otherwise win the tie unchallenged.
 func TestMatchOversized(t *testing.T) {
 	realDatastore(t)
 	b := testBackend

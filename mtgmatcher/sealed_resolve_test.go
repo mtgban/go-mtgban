@@ -4,8 +4,8 @@ import "testing"
 
 // The fixture and every expectation below come from the real Cardmarket
 // and StarCityGames catalogs as of 2026-08-10, run against the published
-// Riftbound and Lorcana datastores during tuning. The negative cases are
-// actual mismatches earlier drafts produced; they are the contract.
+// Riftbound and Lorcana datastores. The negative cases are actual
+// mismatches a looser resolver produces; they are the contract.
 func sealedResolveBackend() *Backend {
 	b := &Backend{
 		UUIDs: map[string]*CardObject{},
@@ -792,8 +792,7 @@ func TestResolveSealedSetSaidTwice(t *testing.T) {
 }
 
 // TestResolveSealedFoldsBlisterPlural pins the plural a catalog writes and a
-// storefront does not, which the other marketplace vocabularies were already
-// folded for.
+// storefront does not, folded as the other marketplace vocabularies are.
 func TestResolveSealedFoldsBlisterPlural(t *testing.T) {
 	b := sealedResolveBackend()
 
@@ -809,11 +808,11 @@ func TestResolveSealedFoldsBlisterPlural(t *testing.T) {
 // but they are not interchangeable, because a display is also the thing a
 // shelf of boxes comes in. So a storefront's Box may reach a catalog's
 // Display, and a storefront's Display may not reach a catalog's Box: that one
-// is the display of them, and pricing it as one box is what the fold cost
-// before this ran one way.
+// is the display of them, and a fold running both ways would price it as one
+// box.
 //
 // A storefront that says both is not naming an outer anything, it is spelling
-// one container twice, and it reaches the catalog's box as it always did.
+// one container twice, and it reaches the catalog's box.
 func TestResolveSealedOuterBox(t *testing.T) {
 	b := sealedResolveBackend()
 

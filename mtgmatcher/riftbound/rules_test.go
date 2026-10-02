@@ -38,10 +38,10 @@ func TestQualifiedBaseNameFollowsCurrentGallery(t *testing.T) {
 }
 
 // TestQualifiedBaseNameRetriesUnhashedDashedName covers a dash-joined name
-// that names no card at all - not even a wrong one. promoOnlyName already
-// answers false for an empty bucket, so before this the same "not
-// promo-only" test that gates the promo case also blocked this one,
-// skipping the split whenever nothing was hashed under the compound name.
+// that names no card at all - not even a wrong one. promoOnlyName answers
+// false for an empty bucket, so the same "not promo-only" test that gates
+// the promo case must not block this one, or the split is skipped whenever
+// nothing is hashed under the compound name.
 // A collector number is what earns the retry: it is the only thing tying
 // an unrecognized dashed name back to a real champion's own printing.
 func TestQualifiedBaseNameRetriesUnhashedDashedName(t *testing.T) {
@@ -62,7 +62,7 @@ func TestQualifiedBaseNameRetriesUnhashedDashedName(t *testing.T) {
 		t.Fatalf("qualifiedBaseName(%q) = %q, want %q", "Champion - Title", got, "Champion")
 	}
 
-	// No number to anchor the retry: the old behavior stands, unmatched.
+	// No number to anchor the retry: the name stays unmatched.
 	if got := qualifiedBaseName(b, "Champion - Title", ""); got != "" {
 		t.Fatalf("qualifiedBaseName with no number = %q, want \"\"", got)
 	}

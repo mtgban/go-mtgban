@@ -155,10 +155,7 @@ func TestPromoTags(t *testing.T) {
 //
 // The crossing is read on "Base Set (Shadowless)", which is where the
 // catalog files the run: one product sold as both 1st Edition Holofoil and
-// Unlimited Holofoil. It was read on "Base Set" until 2026-09-21, on an
-// entry that existed because the catalog hung the run's skus on the
-// unlimited product as well - the datastore stopped publishing it, and the
-// shelf beside it prices the same two printings for real.
+// Unlimited Holofoil.
 func TestFinishSelection(t *testing.T) {
 	b := loadBackend(t)
 
@@ -296,8 +293,8 @@ func TestNameCarriesNumber(t *testing.T) {
 		{"a parenthetical beside it is split off too", mtgmatcher.InputCard{
 			Name: "Wingull - 70/100 (Reverse Foil)", Edition: "EX Crystal Guardians"}, "70-100_90608_reverseholofoil"},
 		// The year is not a tail to strip here, it is which championship:
-		// each is a set of its own and the storefront writes the shelf they
-		// all used to share.
+		// each is a set of its own and the storefront writes one
+		// shelf for all of them.
 		{"the year in the name names the championship", mtgmatcher.InputCard{
 			Name: "Torchic - 2004", Edition: "World Championship Decks", Variation: "74/109"}, "74-109_477355"},
 	} {

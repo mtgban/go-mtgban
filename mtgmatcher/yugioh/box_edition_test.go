@@ -8,9 +8,9 @@ import (
 
 // TestBoxEdition pins the box a storefront sells a set in, where the catalog
 // files the cards under the set's own name. The name reaches no set as
-// written, so the edition narrowed nothing and every printing the card ever
-// had answered: each listing below was dropped as aliased rather than
-// mispriced, which is why nothing but the name had to change.
+// written, so unaliased the edition narrows nothing and every printing the
+// card ever had answers: each listing below would be dropped as aliased
+// rather than mispriced.
 func TestBoxEdition(t *testing.T) {
 	b := loadBackend(t)
 

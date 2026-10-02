@@ -9,7 +9,7 @@ import (
 // carries none. The number is a string here because that is the only
 // spelling an absence survives: an integer gives a card that prints nothing
 // the same 0 that "Bruno Madrigal - Undetected Uncle" really prints, and 173
-// puzzle inserts, lore cards and oversized components used to land on it,
+// puzzle inserts, lore cards and oversized components would land on it,
 // one crowd per set.
 func TestNumberlessCards(t *testing.T) {
 	b := loadDatastore(t)

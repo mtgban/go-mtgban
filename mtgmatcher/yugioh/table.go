@@ -42,13 +42,11 @@ var editionAliases = map[string]string{
 	"Duelist Pack 9 Yusei Fudo 2":   "Duelist Pack 9: Yusei 2",
 	"Duelist Pack 10 Yusei Fudo 3":  "Duelist Pack 10: Yusei 3",
 
-	// The leagues used to share one set code, so an edition only had to
-	// reach the shelf they were collected on and the season lived in the
-	// collector number. The datastore files each season as its own set
-	// now, so the edition reaches the season it names.
+	// The datastore files each league season as its own set, so the
+	// edition reaches the season it names.
 	//
-	// "Duelist League Promos Upperdeck" is gone rather than remapped: it
-	// names the distributor and no season, and there is no longer one set
+	// "Duelist League Promos Upperdeck" has no entry: it names the
+	// distributor and no season, so there is no one set
 	// for it to mean. Those listings answer by collector number, which is
 	// the only thing about them that says which league.
 	"Duelist League Series 1":  "Duelist League Series 1 participation cards",
@@ -99,9 +97,9 @@ var editionAliases = map[string]string{
 	"Starter Deck: Speed Duel - Ultimate Predators":      "Speed Duel Decks: Ultimate Predators",
 
 	// The manga promos are a volume each, and the datastore files them
-	// that way now - nine sets for the 5D's run, eight for GX. A wording
+	// that way - nine sets for the 5D's run, eight for GX. A wording
 	// naming the run and not the volume has not said which of them it
-	// means, so only ARC-V, which the catalog still keeps as one set,
+	// means, so only ARC-V, which the catalog keeps as one set,
 	// is answered here. The rest answer by collector number, where the
 	// volume is written down.
 	"ARC-V Manga Promos": "Yu-Gi-Oh! ARC-V Promo Cards",

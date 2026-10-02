@@ -179,7 +179,7 @@ var yugiohSeeds = []matchTest{
 	// Cool Stuff Inc files every promo shelf it cannot otherwise place under
 	// one catch-all "Promo" heading - a tin, a Legendary Collection, a
 	// Quarter Century Rare reprint - naming no set of its own. Restricted to
-	// it, the search used to reach only the sets whose own name happens to
+	// it, the search would reach only the sets whose own name happens to
 	// contain the word "Promo", which BPT-1341 does not; dropped, the
 	// number is free to answer on its own.
 	{

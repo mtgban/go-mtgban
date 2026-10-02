@@ -30,16 +30,15 @@ func TestPromoPseudoExpansionAlias(t *testing.T) {
 		// wrong for 69 of 260, so the edition stays unresolved and the
 		// name refuses instead.
 		//
-		// The prize pack series was out for the same reason and is back,
-		// pooled rather than aliased. Its siblings carry the treatment
-		// labels now - every one of the 130 numbers the set files more
-		// than one product at is told apart by a label - so restricting
-		// to the set no longer flips a coin. Replayed the same way over
-		// the whole set, the pool answers 937 right against 2 wrong where
-		// the unrestricted name managed 191 against 4, and the 4 it drops
-		// were printings in other sets entirely: a prize pack Zekrom ex
-		// priced as the Black Bolt one. Grotle is filed as a single
-		// product, so refusing it was never the sibling case anyway.
+		// The prize pack series is pooled rather than aliased. Its
+		// siblings carry the treatment labels - every one of the 130
+		// numbers the set files more than one product at is told apart
+		// by a label - so restricting to the set flips no coin.
+		// Replayed the same way over the whole set, the pool answers
+		// 937 right against 2 wrong where the unrestricted name
+		// manages 191 against 4, and the 4 it drops are printings in
+		// other sets entirely: a prize pack Zekrom ex priced as the
+		// Black Bolt one.
 		{"prize pack series reaches its own set", mtgmatcher.InputCard{
 			Name: "Grotle", Edition: "Play! Pokémon Prize Pack Series", Variation: "007 BRS 007"},
 			"007-172_489316"},

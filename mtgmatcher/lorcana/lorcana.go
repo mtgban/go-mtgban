@@ -336,7 +336,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	}
 
 	// Which printings are promotional, which no single field says. Upstream
-	// stopped publishing nonPromoId, the back-pointer this used to read, and
+	// publishes no back-pointer from a promo to its card, and
 	// states the relationship the other way round: a card lists its own promo
 	// printings in promoIds, and a promo says where it came from in
 	// promoSourceCategory. Neither reaches the two sets that are wholly
@@ -547,7 +547,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		convertedCard.Finishes, convertedCard.FoilUUIDs = mtgmatcher.SoldFinishes(printings)
 		// The printing is identified by the entry a bare flag resolves to,
 		// which is its nonfoil where it has one and its first foil where it
-		// does not. A foil-only printing no longer holds the bare uuid, so
+		// does not. A foil-only printing holds no bare uuid, so
 		// naming it here is what keeps the set listing and the identifier
 		// index pointing at a card that exists.
 		if uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]; found {

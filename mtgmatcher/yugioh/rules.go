@@ -131,9 +131,9 @@ var qualifiedNameRe = regexp.MustCompile(`\s*\([^()]*\)$`)
 // exactness throughout. The loose compare reads only the trailing digit
 // run, which serves the storefronts writing shorthand, but the Speed Duel
 // sets file a card per deck letter under one run: ENA01 and ENG01 are one
-// number to it, so the bare name at ENG01 was answering for the qualified
-// printing at ENA01 and the qualified spelling was never adopted - the
-// listing then left with the sibling's printing rather than its own.
+// number to it, so the bare name at ENG01 would answer for the qualified
+// printing at ENA01 and the qualified spelling would never be adopted, so
+// the listing would leave with the sibling's printing rather than its own.
 func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	number := extractNumber(inCard.Variation)
 	if number == "" {
@@ -1050,8 +1050,8 @@ func (Rules) PlainNumber(number string) string {
 // variant (the "a" tail) drops the base art, and a plain input keeps it.
 func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	// A pooled storefront name restricts the candidates to its pair of sets
-	// outright: the edition kept the name, so nothing upstream could narrow,
-	// and every printing the card ever had was answering instead.
+	// outright: the edition keeps the name, so nothing upstream can narrow,
+	// and every printing the card ever had would answer instead.
 	if pool, found := normalizedPooledEditions()[mtgmatcher.Normalize(inCard.Edition)]; found {
 		pooled := map[string][]mtgmatcher.Card{}
 		for _, name := range pool {
@@ -1418,7 +1418,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 		}
 		variants = append(variants, card)
 	}
-	// The tags are tokens now, so the wording's words are joined back up a
+	// The tags are tokens, so the wording's words are joined back up a
 	// run at a time to ask whether they name them. The collector number's
 	// own set segment goes on the end of the wording first: a tag naming
 	// the set it belongs to is spelled by a storefront without it, because

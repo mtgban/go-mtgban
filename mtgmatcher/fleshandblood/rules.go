@@ -623,8 +623,8 @@ func fusedNumbered(b *mtgmatcher.Backend, name, pair string) []string {
 // storefronts decorate set names with, and moves the print-run suffixes
 // cardtrader spells its expansions with ("Welcome to Rathe - 1st Edition")
 // into the variation: the datastore's sets carry no print run, but the
-// wording now names the priced entry selectFinish resolves. An edition
-// that still matches no set simply does not narrow the candidates.
+// variation carrying it names the priced entry selectFinish resolves. An
+// edition that still matches no set simply does not narrow the candidates.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition, printRun := aliasEdition(inCard.Edition)
 	if printRun != "" {
@@ -851,8 +851,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// A wording naming a pitch value names the printing that pitches for
 	// it. The value is a field of its own - the same card is printed at
 	// three of them and the catalog writes which into the product name -
-	// so it is read off the field rather than off the label, which is
-	// what slugging the whole variant used to do for it.
+	// so it is read off the field rather than off the label.
 	if pitched := pitchNarrow(inCard, candidates); len(pitched) > 0 {
 		candidates = pitched
 	}
@@ -886,12 +885,11 @@ func singlePrinting(card *mtgmatcher.Card) bool {
 // The catalog sells a few products twice at one number, once per finish and
 // differing in nothing else: ROS000 is the cold foil "Will of Arcana" beside
 // the rainbow one, and The Hunted's art card is sold plain and in cold foil.
-// The loader used to label each with its finish, read off the variant the
-// catalog spells it into; the variant is prose the datastore has since
-// distilled into the promo types, and a printing publishing none wears no
-// label, so the twins tie on everything the tiering reads. The finish is a
-// fact of the printing, and the one the wording spoke to: a wording naming
-// a finish re-keyed the copy sold in it and no other, and a wording naming
+// The catalog spells the finish into the variant, which is prose the datastore
+// distils into the promo types, and a printing publishing none wears no label,
+// so the twins tie on everything the tiering reads. The finish is a fact of the
+// printing, and the one the wording speaks to: a wording naming a finish
+// re-keys the copy sold in it and no other, and a wording naming
 // none prices the copy sold in the foilness its flag says. Two copies sold
 // in that foilness are still a tie.
 func finishTwins(inCard *mtgmatcher.InputCard, named map[string]bool, cards []mtgmatcher.Card) []mtgmatcher.Card {
@@ -969,7 +967,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		}
 		variants = append(variants, card)
 	}
-	// The tags are tokens now, so the wording's words are joined back up a
+	// The tags are tokens, so the wording's words are joined back up a
 	// run at a time to ask whether they name them.
 	described = mtgmatcher.DescribedVariants(wording, variants)
 	if len(described) > 1 {
