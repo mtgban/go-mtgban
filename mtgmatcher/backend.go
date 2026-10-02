@@ -392,6 +392,15 @@ type Backend struct {
 	// A list of promo types as exported by mtgjson
 	AllPromoTypes []string
 
+	// Rarities is the game's rarities rarest first, spelled by RarityName:
+	// the order its sets list theirs in, and the one RarityRank ranks by.
+	Rarities []string
+
+	// rarityRanks is each rarity's place in Rarities, under its RarityName
+	// and under every spelling a card carries, so a rank is a lookup; -1
+	// for a spelling a card carries that Rarities does not rank.
+	rarityRanks map[string]int
+
 	// Map of a promo type to the words it was made from, for the games that
 	// slug a qualifier the storefront wrote in full ("premiumcardcollection
 	// bestselectionvol6" was "Premium Card Collection -Best Selection Vol.
@@ -495,6 +504,36 @@ func (b *Backend) IndexSetUUIDs() {
 	for code := range b.SetUUIDs {
 		slices.Sort(b.SetUUIDs[code])
 	}
+}
+
+// IndexRarities files each rarity's place in Rarities for RarityRank,
+// under its own name and every spelling a loaded card gives it.
+func (b *Backend) IndexRarities() {
+	b.rarityRanks = map[string]int{}
+	for i, rarity := range b.Rarities {
+		b.rarityRanks[rarity] = i
+	}
+	for _, co := range b.UUIDs {
+		rank, found := b.rarityRanks[RarityName(co.Rarity)]
+		if !found {
+			rank = -1
+		}
+		b.rarityRanks[co.Rarity] = rank
+	}
+}
+
+// RarityRank is a rarity's place in the game's order, 0 the rarest, under
+// the spelling a card carries or RarityName's; false for one the game does
+// not rank. A rarity a card carries costs a lookup and nothing more.
+func (b *Backend) RarityRank(rarity string) (int, bool) {
+	rank, found := b.rarityRanks[rarity]
+	if !found {
+		rank, found = b.rarityRanks[RarityName(rarity)]
+	}
+	if !found || rank < 0 {
+		return 0, false
+	}
+	return rank, true
 }
 
 // AddName files a card name in each search index that does not already hold

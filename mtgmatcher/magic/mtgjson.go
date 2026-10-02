@@ -1431,6 +1431,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 	b.Sets = mSets
 	b.IndexSets()
+	b.Rarities = mtgRarities
 	b.CanonicalNames = canonicalNames
 	b.Tokens = tokens
 	b.UUIDs = uuids
@@ -1454,6 +1455,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.TokenPairIDByUUIDs = tokenPairs.byUUIDPair
 	b.TokenPairIDByBothNames = tokenPairs.byBothNames
 
+	b.IndexRarities()
 	b.SetRules(Rules{})
 	b.SortSealed()
 
