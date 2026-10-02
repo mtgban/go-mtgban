@@ -99,7 +99,7 @@ func TestFetchWholeResumesATruncatedBody(t *testing.T) {
 			}))
 			defer srv.Close()
 
-			got, err := fetchWhole(context.Background(), srv.URL)
+			got, err := fetchWhole(context.Background(), newCSIHTTPClient(), srv.URL)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("fetchWhole() = %d bytes, want an error", len(got))
