@@ -325,7 +325,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, onepieceRarityMap)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, onepieceColors)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed
@@ -336,6 +336,11 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b.Complete(Rules{})
 
 	return b
+}
+
+// onepieceColors are One Piece's colours, in its card list's order.
+var onepieceColors = []string{
+	"red", "green", "blue", "purple", "black", "yellow",
 }
 
 var onepieceRarityMap = map[string]int{

@@ -155,21 +155,43 @@ func RaritiesOf(cards []Card, rank map[string]int) []string {
 	return rarities
 }
 
-// ColorsOf lists the colours of a set's cards once each, sorted, with
-// "multicolor" among them where a card carries more than one.
-func ColorsOf(cards []Card) []string {
+// ColorsOf lists the colours of a set's cards once each, the way Magic's
+// sets list theirs: the colours in the game's order, those it leaves out
+// after them alphabetically; then "colorless" where a card carries none or
+// names it, and "multicolor" where one carries more than one.
+func ColorsOf(cards []Card, order []string) []string {
 	var colors []string
+	var colorless, multicolor bool
 	for _, card := range cards {
+		colorless = colorless || len(card.Colors) == 0
+		multicolor = multicolor || len(card.Colors) > 1
 		for _, color := range card.Colors {
+			if color == "colorless" {
+				colorless = true
+				continue
+			}
 			if !slices.Contains(colors, color) {
 				colors = append(colors, color)
 			}
 		}
-		if len(card.Colors) > 1 && !slices.Contains(colors, "multicolor") {
-			colors = append(colors, "multicolor")
+	}
+	position := func(color string) int {
+		i := slices.Index(order, color)
+		if i < 0 {
+			return len(order)
 		}
+		return i
 	}
 	sort.Strings(colors)
+	sort.SliceStable(colors, func(i, j int) bool {
+		return position(colors[i]) < position(colors[j])
+	})
+	if colorless {
+		colors = append(colors, "colorless")
+	}
+	if multicolor {
+		colors = append(colors, "multicolor")
+	}
 	return colors
 }
 

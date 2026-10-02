@@ -238,6 +238,13 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
+// pokemonColors are the types a Pokemon prints in pokemon.com's order, but for
+// Colorless, which goes last with every other game's colorless.
+var pokemonColors = []string{
+	"grass", "fire", "water", "lightning", "psychic", "fighting", "darkness",
+	"metal", "fairy", "dragon",
+}
+
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	b := mtgmatcher.NewBackend(mtgmatcher.IDSpaceTCGplayer, mtgmatcher.IDSpaceCardmarket)
 
@@ -386,7 +393,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, nil)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, pokemonColors)
 	}
 
 	// Sealed products live in the sealed namespace throughout - uuids in

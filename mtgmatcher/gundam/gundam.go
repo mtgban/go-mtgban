@@ -255,7 +255,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, gundamRarityMap)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, gundamColors)
 	}
 
 	// Sealed products live in the sealed namespace throughout; AddSealed is
@@ -267,6 +267,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	return b
 }
+
+// gundamColors are Gundam's colours, in its card list's order.
+var gundamColors = []string{"blue", "green", "red", "purple", "white"}
 
 // gundamRarityMap ranks the rarities the catalog spells for this game, and a
 // set lists them highest rank first. The "+" suffixes mark the parallel runs of

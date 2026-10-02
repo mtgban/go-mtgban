@@ -58,3 +58,28 @@ func TestProductKeyOf(t *testing.T) {
 		}
 	}
 }
+
+// TestColorsOfListsTheTermsLast pins a set's colours: in the game's order, or
+// alphabetically without one, then colorless and multicolor the way Magic's
+// sets list them.
+func TestColorsOfListsTheTermsLast(t *testing.T) {
+	cards := []Card{
+		{Colors: []string{"red"}},
+		{Colors: []string{"green", "blue"}},
+		{Colors: nil},
+		{Colors: []string{"colorless"}},
+		{Colors: []string{"purple"}},
+	}
+	for _, tt := range []struct {
+		order []string
+		want  []string
+	}{
+		{[]string{"red", "green", "blue"}, []string{"red", "green", "blue", "purple", "colorless", "multicolor"}},
+		{nil, []string{"blue", "green", "purple", "red", "colorless", "multicolor"}},
+	} {
+		got := ColorsOf(cards, tt.order)
+		if !slices.Equal(got, tt.want) {
+			t.Errorf("ColorsOf with %v = %v, want %v", tt.order, got, tt.want)
+		}
+	}
+}
