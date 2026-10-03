@@ -49,6 +49,9 @@ func TestLoaderContracts(t *testing.T) {
 			t.Run("ColorsAreLowerCase", func(t *testing.T) {
 				colorsAreLowerCase(t, b)
 			})
+			t.Run("RaritiesAreNames", func(t *testing.T) {
+				raritiesAreNames(t, b, path)
+			})
 			t.Run("PropertiesOrderEveryValue", func(t *testing.T) {
 				propertiesOrderEveryValue(t, b, path)
 			})
@@ -290,6 +293,26 @@ func textOf(value any) string {
 		return ""
 	}
 	return held
+}
+
+// raritiesAreNames holds every card to carrying its rarity spelled by
+// RarityName, and RarityLabel to giving back the words the datastore
+// published it as, which the rules that read a rarity word by word rely on.
+func raritiesAreNames(t *testing.T, b *mtgmatcher.Backend, path string) {
+	for _, set := range b.Sets {
+		for _, card := range set.Cards {
+			if card.Rarity != mtgmatcher.RarityName(card.Rarity) {
+				t.Fatalf("%s carries the rarity %q", card.UUID, card.Rarity)
+			}
+		}
+	}
+	for _, published := range publishedProperties(t, path)["rarity"] {
+		name := mtgmatcher.RarityName(published)
+		label := b.RarityLabel(name)
+		if name != published && label != published {
+			t.Errorf("RarityLabel(%q) = %q, want %q", name, label, published)
+		}
+	}
 }
 
 // colorsAreLowerCase holds every game to Magic's spelling of a colour name,
