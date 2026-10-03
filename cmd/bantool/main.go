@@ -593,6 +593,24 @@ func reportCollapsedPricings(backend *mtgmatcher.Backend, vendors []mtgban.Vendo
 	}
 }
 
+// load loads every scraper and answers the ones that loaded. One whose Load
+// failed may hold part of its data, which must not replace the last
+// complete dump, so its error is reported and nothing of it is kept.
+func load(ctx context.Context, scrapers []mtgban.Scraper) ([]mtgban.Scraper, []error) {
+	var loaded []mtgban.Scraper
+	var errs []error
+	for _, scraper := range scrapers {
+		err := scraper.Load(ctx)
+		if err != nil {
+			log.Println(err)
+			errs = append(errs, fmt.Errorf("%s not dumped: %w", scraper.Info().Shorthand, err))
+			continue
+		}
+		loaded = append(loaded, scraper)
+	}
+	return loaded, errs
+}
+
 func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string) []error {
 	log.Println("Writing results to", outputPath)
 
@@ -877,20 +895,11 @@ func run() int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	var nonFatalErrors []error
-
-	// Load the data
-	for _, scraper := range scrapers {
-		err := scraper.Load(ctx)
-		if err != nil {
-			log.Println(err)
-			nonFatalErrors = append(nonFatalErrors, err)
-		}
-	}
+	loaded, nonFatalErrors := load(ctx, scrapers)
 
 	log.Println("loading scraper data took:", time.Since(now))
 
-	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
+	sellers, vendors := mtgban.UnfoldScrapers(loaded)
 	retailResults, buylistResults := countResults(sellers, vendors)
 	log.Println("Found", retailResults, "retail results and", buylistResults, "buylist results")
 
