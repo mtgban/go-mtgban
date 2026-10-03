@@ -245,7 +245,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			},
 			Language:   "English",
 			Colors:     mtgmatcher.ColorNames(card.Colors),
-			Rarity:     card.Rarity,
+			Rarity:     b.AddRarity(card.Rarity),
 			Types:      cardTypes(card.Type),
 			PromoTypes: promoTypes,
 			IsPromo:    setIsPromotional(b.Sets[card.SetCode]),
