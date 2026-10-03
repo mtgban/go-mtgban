@@ -400,10 +400,15 @@ type Backend struct {
 	// the order a set's colours are listed in.
 	Colors []string
 
-	// rarityRanks is each rarity's place in Rarities, under its RarityName
-	// and under every spelling a card carries, so a rank is a lookup; -1
-	// for a spelling a card carries that Rarities does not rank.
+	// rarityRanks is each rarity's place in Rarities, so a rank is a lookup.
 	rarityRanks map[string]int
+
+	// Map of a rarity to the words its datastore published it as
+	// ("superrare" was "Super Rare"). A card carries its rarity spelled by
+	// RarityName, one word a search can be typed with; this is what puts
+	// the words back for a reader. Empty for Magic, whose rarities are
+	// single words at the source.
+	RarityLabels map[string]string
 
 	// Map of a promo type to the words it was made from, for the games that
 	// slug a qualifier the storefront wrote in full ("premiumcardcollection
@@ -510,34 +515,46 @@ func (b *Backend) IndexSetUUIDs() {
 	}
 }
 
-// IndexRarities files each rarity's place in Rarities for RarityRank,
-// under its own name and every spelling a loaded card gives it.
+// IndexRarities files each rarity's place in Rarities for RarityRank.
 func (b *Backend) IndexRarities() {
-	b.rarityRanks = map[string]int{}
+	b.rarityRanks = make(map[string]int, len(b.Rarities))
 	for i, rarity := range b.Rarities {
 		b.rarityRanks[rarity] = i
-	}
-	for _, co := range b.UUIDs {
-		rank, found := b.rarityRanks[RarityName(co.Rarity)]
-		if !found {
-			rank = -1
-		}
-		b.rarityRanks[co.Rarity] = rank
 	}
 }
 
 // RarityRank is a rarity's place in the game's order, 0 the rarest, under
-// the spelling a card carries or RarityName's; false for one the game does
-// not rank. A rarity a card carries costs a lookup and nothing more.
+// its RarityName or any spelling that folds to it; false for one the game
+// does not rank. A rarity a card carries is its name, and costs a lookup.
 func (b *Backend) RarityRank(rarity string) (int, bool) {
 	rank, found := b.rarityRanks[rarity]
 	if !found {
 		rank, found = b.rarityRanks[RarityName(rarity)]
 	}
-	if !found || rank < 0 {
-		return 0, false
+	return rank, found
+}
+
+// AddRarity spells the rarity a printing was published with by RarityName,
+// for the card to carry, and files the words it was published as in
+// RarityLabels. The first spelling filed for a name keeps it. One that is
+// already the name files nothing, and RarityLabel then title-cases it.
+func (b *Backend) AddRarity(rarity string) string {
+	name := RarityName(rarity)
+	label := strings.TrimSpace(rarity)
+	if label != name && b.RarityLabels[name] == "" {
+		b.RarityLabels[name] = label
 	}
-	return rank, true
+	return name
+}
+
+// RarityLabel spells a rarity the way its datastore published it, falling
+// back on the name title-cased where nothing fuller was kept. Callers
+// displaying a rarity should ask for this: "superrare" reads "Super Rare".
+func (b *Backend) RarityLabel(rarity string) string {
+	if label, found := b.RarityLabels[rarity]; found {
+		return label
+	}
+	return Title(rarity)
 }
 
 // AddName files a card name in each search index that does not already hold
