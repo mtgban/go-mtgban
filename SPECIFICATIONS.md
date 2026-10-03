@@ -547,9 +547,8 @@ pointer and may mutate it**; mutations persist for the rest of the pipeline
 stages read them. And **`FilterCards` owns determinism**: the `cardSet` map it
 receives iterates in random order, so an implementation returning more than one
 candidate must impose its own ordering, because that result feeds the
-user-visible aliasing diagnostics. Lorcana and Riftbound sidestep the map by
-iterating `Hashes` (stable load order) and using `cardSet`'s keys only as an
-edition filter.
+user-visible aliasing diagnostics. The datastore games read it in set code
+order.
 
 A `Backend` with no rules attached returns `ErrDatastoreEmpty` from the name
 path - checked explicitly before the prefilter runs.
@@ -601,8 +600,11 @@ The pipeline:
    more than one printing survives *or* the original name ended in "Token"
    (single-printing token names still need filtering). An empty result is
    `ErrCardNotInEdition`, or `ErrUnsupported` for tokens/oversize. Then a
-   call to `rules.CandidateSets` chooses the set codes, which core materializes
-   into `cardSet map[setCode][]Card` via `MatchInSet()`.
+   call to `rules.CandidateSets` chooses the set codes, and core fills
+   `cardSet map[setCode][]Card` from the name index: every printing filed
+   under the name's `Normalize` spelling in those sets, once whatever
+   finishes it is sold in, so printings spelled apart by case or punctuation
+   stay reachable.
 
    `DefaultRules` tries exact normalized edition names, then partial names,
    then all printings. `PromoWildcard` keeps all printings, as used by Gundam
@@ -721,10 +723,8 @@ and refuses in `IsUnsupported` at `StageAnswer` a metal-card listing that
 answered with a card that is not one. The real, shared work across all
 seven is name + collector number + finish narrowing in `FilterCards`, with
 the edition breaking ties when it resolves. The interesting details are the
-ones each game's own data forces: Lorcana honors the name hash rather than
-the edition-keyed `cardSet` values so that case-variant spellings (three real
-pairs exist) stay reachable, and it strips leading zeros from numbers while
-keeping a genuine `"0"` reachable; Riftbound canonicalizes numbers out of the
+ones each game's own data forces: Lorcana strips leading zeros from numbers
+while keeping a genuine `"0"` reachable; Riftbound canonicalizes numbers out of the
 public code ("OGN-066a/298" → "66a") and refuses promo sets unless explicitly
 targeted; One Piece, Yu-Gi-Oh, Flesh and Blood and Gundam each strip a
 different shape of padding and set-code prefix off the ordinal a person
