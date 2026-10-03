@@ -591,7 +591,7 @@ func reportCollapsedPricings(backend *mtgmatcher.Backend, vendors []mtgban.Vendo
 	}
 }
 
-func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string, meta bool) []error {
+func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string) []error {
 	log.Println("Writing results to", outputPath)
 
 	var sellerErrs []error
@@ -600,16 +600,6 @@ func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []
 		if err != nil {
 			log.Println(err)
 			sellerErrs = append(sellerErrs, err)
-			continue
-		}
-
-		if meta && format != "json" {
-			sellerMeta := mtgban.NewSellerFromInventory(nil, seller.Info())
-			err := dumpSeller(backend, dataBucket, sellerMeta, outputPath, "json")
-			if err != nil {
-				sellerErrs = append(sellerErrs, err)
-				continue
-			}
 		}
 	}
 
@@ -619,16 +609,6 @@ func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []
 		if err != nil {
 			log.Println(err)
 			vendorErrs = append(vendorErrs, err)
-			continue
-		}
-
-		if meta && format != "json" {
-			vendorMeta := mtgban.NewVendorFromBuylist(nil, vendor.Info())
-			err := dumpVendor(backend, dataBucket, vendorMeta, outputPath, "json")
-			if err != nil {
-				vendorErrs = append(vendorErrs, err)
-				continue
-			}
 		}
 	}
 
@@ -782,7 +762,6 @@ func run() int {
 	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable, within -game")
 
 	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv/ndjson)")
-	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
 	signOpt := flag.String("sign", "", "Sign input")
 	versionOpt := flag.Bool("v", false, "Print version information")
@@ -922,7 +901,7 @@ func run() int {
 
 	now = time.Now()
 	// Dump the results
-	dumpErrors := dump(backend, dataBucket, sellers, vendors, *outputPathOpt, *fileFormatOpt, *metaOpt)
+	dumpErrors := dump(backend, dataBucket, sellers, vendors, *outputPathOpt, *fileFormatOpt)
 	nonFatalErrors = append(nonFatalErrors, dumpErrors...)
 
 	log.Println("uploading data took:", time.Since(now))
