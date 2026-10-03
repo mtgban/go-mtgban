@@ -346,15 +346,15 @@ func pointedElsewhere(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool 
 	// second parallel of a starter deck's card is sold in the booster that
 	// follows it, so ST10-006 is Legend Rare and LR+ under Generation Pulse
 	// and LR++ only under Eternal Nexus.
-	return saysAnyRarity(inCard.Variation, outside) && !saysAnyRarity(inCard.Variation, inside)
+	return saysAnyRarity(b, inCard.Variation, outside) && !saysAnyRarity(b, inCard.Variation, inside)
 }
 
 // saysAnyRarity reports whether the wording spells the rarity of any of these
 // printings. It differs from rarityNamed in narrowing nothing: a group of one
 // still answers, which is the whole question being asked here.
-func saysAnyRarity(wording string, cards []mtgmatcher.Card) bool {
+func saysAnyRarity(b *mtgmatcher.Backend, wording string, cards []mtgmatcher.Card) bool {
 	for _, card := range cards {
-		if saysRarity(wording, card.Rarity) {
+		if saysRarity(wording, b.RarityLabel(card.Rarity)) {
 			return true
 		}
 	}
@@ -482,7 +482,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// what a listing without a qualifier means. Both tiers only narrow -
 	// a rarity nothing carries leaves the candidates as they were, so an
 	// ambiguity is reported rather than silently resolved.
-	if named := rarityNamed(inCard.Variation, candidates); len(named) > 0 {
+	if named := rarityNamed(b, inCard.Variation, candidates); len(named) > 0 {
 		candidates = named
 	} else if base := baseRarity(candidates); len(base) > 0 {
 		candidates = base
@@ -515,14 +515,15 @@ func unlabelled(cards []mtgmatcher.Card) []mtgmatcher.Card {
 // The longest spelling wins, because the rarity names nest - "Rare" is a
 // tail of "Legend Rare", and a listing saying the latter says the former
 // too.
-func rarityNamed(variation string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+func rarityNamed(b *mtgmatcher.Backend, variation string, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	if strings.TrimSpace(variation) == "" {
 		return nil
 	}
 	longest := 0
 	for _, card := range cards {
-		if saysRarity(variation, card.Rarity) && len(card.Rarity) > longest {
-			longest = len(card.Rarity)
+		rarity := b.RarityLabel(card.Rarity)
+		if saysRarity(variation, rarity) && len(rarity) > longest {
+			longest = len(rarity)
 		}
 	}
 	if longest == 0 {
@@ -530,7 +531,8 @@ func rarityNamed(variation string, cards []mtgmatcher.Card) []mtgmatcher.Card {
 	}
 	var out []mtgmatcher.Card
 	for _, card := range cards {
-		if len(card.Rarity) == longest && saysRarity(variation, card.Rarity) {
+		rarity := b.RarityLabel(card.Rarity)
+		if len(rarity) == longest && saysRarity(variation, rarity) {
 			out = append(out, card)
 		}
 	}
