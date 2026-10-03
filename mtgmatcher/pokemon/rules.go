@@ -274,6 +274,14 @@ func splitDecorations(b *mtgmatcher.Backend, raw string) (string, []string) {
 	if known(name) {
 		return name, tags
 	}
+	// The catalog drops the space after the dash on a few promos,
+	// "Ninetales -199/197", where the datastore names the card "Ninetales".
+	if idx := strings.LastIndex(name, " -"); idx > 0 {
+		head, segment := name[:idx], strings.TrimSpace(name[idx+2:])
+		if numberTailRe.MatchString(segment) && known(head) {
+			return head, append(append([]string{}, tags...), segment)
+		}
+	}
 	if head, split, found := numbered(false); found {
 		return head, split
 	}

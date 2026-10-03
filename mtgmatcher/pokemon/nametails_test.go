@@ -10,8 +10,9 @@ import (
 // TestNameTailsTheCatalogWrites pins the spellings the catalog itself puts
 // behind a dash, which a storefront copying the product name carries along:
 // a number written with a dash for its slash, a bracketed set behind the
-// number, and the two halves' numbers of a LEGEND pair printed as one card.
-// The datastore names none of them into the card.
+// number, the two halves' numbers of a LEGEND pair printed as one card, and
+// a number behind a dash with no space after it. The datastore names none of
+// them into the card.
 func TestNameTailsTheCatalogWrites(t *testing.T) {
 	b := loadBackend(t)
 
@@ -32,6 +33,10 @@ func TestNameTailsTheCatalogWrites(t *testing.T) {
 			Name: "Palkia & Dialga Legends - 101/102 + 102/102", Variation: "Single Oversized Promo", Edition: "Jumbo Cards"}, "101-102-102-102_211449_holofoil"},
 		{"read as one number in the wording too, not as the halves", mtgmatcher.InputCard{
 			Name: "Darkrai & Cresselia Legend", Variation: "099/102 & 100/102"}, "099-102-100-102_211448_holofoil"},
+		{"a dash with no space after it", mtgmatcher.InputCard{
+			Name: "Ninetales -199/197", Edition: "SV03: Obsidian Flames"}, "199-197_509945_holofoil"},
+		{"and a lone number behind it", mtgmatcher.InputCard{
+			Name: "Rayquaza EX -BW47", Edition: "Black and White Promos"}, "bw47_88646_holofoil"},
 		{"a name carrying a bracket of its own stays whole", mtgmatcher.InputCard{
 			Name: "Greninja V-UNION [Set of 4]", Edition: "SWSH Promos"}, "248896_holofoil"},
 	} {
