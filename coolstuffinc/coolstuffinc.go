@@ -909,7 +909,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				}
 				break
 			}
-			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(jpArtWording(product.Name)), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(jpArtWording(product.Name)))), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(jpArtWording(product.Name)), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(jpArtWording(product.Name)) + " " + onePieceNotePlace.FindString(product.Notes))), Foil: product.IsFoil == 1}
 		// Gundam prints the same card at the same number in three sets, so
 		// the shelf has to narrow and the storefront's own code prefix stops
 		// it naming one; the wording it hangs behind the name is what tells
