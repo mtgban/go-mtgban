@@ -347,6 +347,10 @@ keeps it:
 - `IsOversized` comes from the game's oversized promo type. `Language` is
   `cmp.Or(card.Language, "English")`, since core's filter drops a
   non-English candidate. `AllSets` is sorted before `IndexSets`.
+- `b.Rarities` and `b.Colors` are the datastore's `properties` orders,
+  through `RarityNames` and `ColorNames`, and each set's `Rarities` and
+  `Colors` are sorted by them with `RaritiesOf` and `ColorsOf`. A card keeps
+  its published rarity; only what a set lists is spelled by `RarityName`.
 
 ### Tables before code
 

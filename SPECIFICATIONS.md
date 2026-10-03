@@ -312,6 +312,18 @@ exception and the token lookup in its generic-promo check; its exported
 `Has*Printing` helpers take the backend first. A process serving several
 games keeps one backend per game and asks each.
 
+**Rarities and colours.** A set lists its rarities and colours in its game's
+order: rarities rarest first, each one lower-case word as `RarityName`
+spells it ("Super Rare" is `superrare`), and colours as the game names
+them, with `colorless` and `multicolor` last. The backend keeps both
+orders, `b.Rarities` and `b.Colors` (`mtgRarities` and `mtgColors` for
+Magic), for a caller listing a game's values without walking its sets.
+`b.RarityRank` places any spelling of a rarity in that order with one map
+lookup, built by `IndexRarities` at load, so ranking every card a search
+examines allocates nothing. A card keeps the rarity its datastore
+publishes, because the matching reads it: Yu-Gi-Oh's rules split it into
+words, and Gundam's look for it in a listing's wording.
+
 `Arbit`, `Mismatch` and the CSV readers and writers take the
 backend as their first parameter; `ArbitOpts` carries optional filters and
 nothing else, and a nil backend gives a nil report. Custom callbacks doing
@@ -351,9 +363,11 @@ retains only the language maps (`LanguageCode2LanguageTag` and its inverse).
   deliberately does *not* recurse into nested sealed sub-products).
 
 The eight non-Magic loaders are far simpler converters with no patch
-tables. Each derives the set-level `Rarities`/`Colors` once the cards are in,
-through `mtgmatcher.RaritiesOf`/`ColorsOf` in the order the datastore's
-properties publish; Lorcana additionally derives `IsFoilOnly`/`IsNonFoilOnly`.
+tables. Each keeps the game's rarity and colour orders on the backend, read
+from the datastore's `properties` (`b.Rarities` through `RarityNames`,
+`b.Colors` through `ColorNames`), and derives each set's `Rarities`/`Colors`
+by them once the cards are in, through `mtgmatcher.RaritiesOf`/`ColorsOf`;
+Lorcana additionally derives `IsFoilOnly`/`IsNonFoilOnly`.
 Lorcana, Pokemon and Riftbound read `BaseSetSize` from the datastore's
 `baseSetSize`; the other five datastores publish none. Each loader sets a
 card's `Language` to `"English"` where the datastore names none, on
@@ -1213,3 +1227,7 @@ datastore, and never runs scrapers in-process. Canonical patterns:
   directly - for that, the embedded `cmd/` tools are the example.
 - **CSV export**: `mtgban.WriteBuylistToCSV(b, records, creditMultiplier, w)`
   straight to an HTTP writer.
+- **Rarities and colours of the game served** - the search reads `r:` words
+  through `RarityName`, a single letter as each of `b.Rarities` it begins,
+  and ranks `r>`/`r<` by `b.RarityRank`; the palette and the guide list
+  `b.Rarities` and `b.Colors` rather than a list written for Magic (§2.1).
