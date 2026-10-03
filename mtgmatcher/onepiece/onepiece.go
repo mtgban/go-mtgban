@@ -248,12 +248,15 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(card.Watermark))
 		}
 		// A rarity the catalog also writes in a product name rides with
-		// them for the same reason. The builder drops such a label because
-		// the rarity field says it - "Vista (TR)" is filed at rarity TR -
-		// and a listing that names it is naming that printing and not the
-		// plain one beside it at the same number.
+		// them for the same reason: a listing naming "TR" is naming that
+		// printing and not the plain one beside it at the same number. The
+		// datastore publishes the label where the catalog's name carried
+		// one, and the rarity says it for the Treasure Rares whose did not.
 		if quoted := quotedRarity(card.Rarity); quoted != "" {
-			promoTypes = append(promoTypes, mtgmatcher.PromoTypeSlug(quoted))
+			slug := mtgmatcher.PromoTypeSlug(quoted)
+			if !slices.Contains(promoTypes, slug) {
+				promoTypes = append(promoTypes, slug)
+			}
 		}
 		// So does the date, where the datastore publishes one the set does
 		// not state: "Treasure Cup August 2025" stands beside a plain
