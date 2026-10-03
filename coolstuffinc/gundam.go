@@ -210,13 +210,35 @@ var gundamRarity = map[string]string{
 	"U":     "Uncommon",
 }
 
+// gundamParallelCodes are the letters the catalog spells a base rarity's
+// parallel with, "C+" being the Common's.
+var gundamParallelCodes = map[string]string{
+	"Common":      "C",
+	"Uncommon":    "U",
+	"Rare":        "R",
+	"Legend Rare": "LR",
+}
+
+// gundamPlusRun is the parallel marker a name carries, "(Alt-Art +)".
+var gundamPlusRun = regexp.MustCompile(`\s(\++)\)`)
+
 // gundamTier reads the rarity the storefront publishes beside a Gundam card.
-func gundamTier(rarity string) string {
+// A few parallels carry the base rarity in that column while the name says
+// "+", and the column alone would answer with the base card.
+func gundamTier(rarity, name string) string {
 	rarity = strings.TrimSpace(rarity)
 	if spelled, found := gundamRarity[rarity]; found {
-		return spelled
+		rarity = spelled
 	}
-	return rarity
+	code, found := gundamParallelCodes[rarity]
+	if !found {
+		return rarity
+	}
+	run := gundamPlusRun.FindStringSubmatch(name)
+	if run == nil {
+		return rarity
+	}
+	return code + run[1]
 }
 
 // gundamNumberNotes is the collector number as the sell listing's notes write

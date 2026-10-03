@@ -158,19 +158,24 @@ func TestGundamTokenName(t *testing.T) {
 }
 
 func TestGundamTier(t *testing.T) {
-	for _, tt := range []struct{ in, want string }{
+	for _, tt := range []struct{ in, name, want string }{
 		// The storefront abbreviates the suffix the catalog writes out, and
 		// the suffix is what tells a parallel run from the printing it
 		// parallels at the same number.
-		{"CP", "C+"},
-		{"LGRPP", "LR++"},
-		{"U", "Uncommon"},
+		{"CP", "", "C+"},
+		{"LGRPP", "", "LR++"},
+		{"U", "", "Uncommon"},
 		// A rarity both spell alike passes through whole.
-		{"Legend Rare", "Legend Rare"},
-		{"", ""},
+		{"Legend Rare", "", "Legend Rare"},
+		{"", "", ""},
+		// A parallel whose column names the base rarity takes the run its
+		// name carries, and the base card beside it keeps its own.
+		{"Common", "Ptolemaios (ST07-015) (Alt-Art +)", "C+"},
+		{"Common", "Ptolemaios (ST07-015)", "Common"},
+		{"CP", "Zaku II (GD01-024) (Alt-Art +)", "C+"},
 	} {
-		if got := gundamTier(tt.in); got != tt.want {
-			t.Errorf("gundamTier(%q) = %q, want %q", tt.in, got, tt.want)
+		if got := gundamTier(tt.in, tt.name); got != tt.want {
+			t.Errorf("gundamTier(%q, %q) = %q, want %q", tt.in, tt.name, got, tt.want)
 		}
 	}
 }
