@@ -84,22 +84,19 @@ func TestColorsOfListsTheTermsLast(t *testing.T) {
 	}
 }
 
-// TestRaritiesRankAsSetsListThem pins the one spelling a set lists and a
-// search ranks a rarity by, whatever spelling the card carries.
+// TestRaritiesRankAsSetsListThem pins the one spelling a card carries, a set
+// lists and a search ranks a rarity by, and the words it reads back as.
 func TestRaritiesRankAsSetsListThem(t *testing.T) {
-	b := &Backend{
-		UUIDs: map[string]*CardObject{
-			"a": {Card: Card{Rarity: "Super Rare"}},
-			"b": {Card: Card{Rarity: "Common"}},
-			"c": {Card: Card{Rarity: "Code Card"}},
-		},
-		Rarities: RarityNames([]string{"Super Rare", " Rare", "Common", ""}),
+	b := NewBackend()
+	var cards []Card
+	for _, published := range []string{"Common", "Super Rare", "Code Card", "super rare", "rare"} {
+		cards = append(cards, Card{Rarity: b.AddRarity(published)})
 	}
+	b.Rarities = RarityNames([]string{"Super Rare", " Rare", "Common", ""})
 	b.IndexRarities()
 
-	cards := []Card{{Rarity: "Common"}, {Rarity: "Super Rare"}, {Rarity: "Code Card"}}
 	got := RaritiesOf(cards, b.Rarities)
-	want := []string{"superrare", "common", "codecard"}
+	want := []string{"superrare", "rare", "common", "codecard"}
 	if !slices.Equal(got, want) {
 		t.Errorf("RaritiesOf = %v, want %v", got, want)
 	}
@@ -114,12 +111,25 @@ func TestRaritiesRankAsSetsListThem(t *testing.T) {
 		{"SUPER RARE", 0, true},
 		{"rare", 1, true},
 		{"Common", 2, true},
-		{"Code Card", 0, false},
+		{"codecard", 0, false},
 		{"mythic", 0, false},
 	} {
 		rank, ranked := b.RarityRank(tt.rarity)
 		if rank != tt.rank || ranked != tt.ranked {
 			t.Errorf("RarityRank(%q) = %d, %v, want %d, %v", tt.rarity, rank, ranked, tt.rank, tt.ranked)
+		}
+	}
+
+	for rarity, label := range map[string]string{
+		"superrare": "Super Rare",
+		"codecard":  "Code Card",
+		"common":    "Common",
+		"rare":      "Rare",
+		"mythic":    "Mythic",
+	} {
+		got := b.RarityLabel(rarity)
+		if got != label {
+			t.Errorf("RarityLabel(%q) = %q, want %q", rarity, got, label)
 		}
 	}
 }

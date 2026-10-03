@@ -29,15 +29,16 @@ type GameLoader func(io.Reader) (*Backend, error)
 
 // NewBackend returns an empty Backend for a datastore game's loader to fill,
 // with every map it and the Add helpers file into made: UUIDs, Hashes,
-// CanonicalNames, PromoTypeLabels, Sets and SetSealedUUIDs. ExternalIdentifiers
-// holds an empty index for each id space given, the ones the game's datastore
-// publishes ids in, and no other.
+// CanonicalNames, PromoTypeLabels, RarityLabels, Sets and SetSealedUUIDs.
+// ExternalIdentifiers holds an empty index for each id space given, the ones
+// the game's datastore publishes ids in, and no other.
 func NewBackend(spaces ...IDSpace) *Backend {
 	b := &Backend{
 		UUIDs:               map[string]*CardObject{},
 		Hashes:              map[string][]string{},
 		CanonicalNames:      map[string]string{},
 		PromoTypeLabels:     map[string]string{},
+		RarityLabels:        map[string]string{},
 		Sets:                map[string]*Set{},
 		SetSealedUUIDs:      map[string][]string{},
 		ExternalIdentifiers: map[IDSpace]map[string]string{},
@@ -165,10 +166,10 @@ func RaritiesOf(cards []Card, order []string) []string {
 	return rarities
 }
 
-// RarityName spells a rarity the way a set lists it and a search compares
-// it: lower case, without spaces, so "Super Rare" is "superrare" and a
-// rarity is one word to a query. A card keeps the spelling its datastore
-// publishes, which is what the matching reads.
+// RarityName spells a rarity the way a card carries it, a set lists it and a
+// search compares it: lower case, without spaces, so "Super Rare" is
+// "superrare" and a rarity is one word to a query. RarityLabels keeps the
+// words a datastore published it as.
 func RarityName(rarity string) string {
 	return strings.ReplaceAll(strings.ToLower(strings.TrimSpace(rarity)), " ", "")
 }
