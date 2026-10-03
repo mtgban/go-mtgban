@@ -536,6 +536,28 @@ func (b *Backend) RarityRank(rarity string) (int, bool) {
 	return rank, true
 }
 
+// RarityQuery reads the rarities a search names, separated by commas, as
+// RarityName spells them. A single letter names every rarity of the game it
+// begins, "c" common; one that begins none stays as written.
+func (b *Backend) RarityQuery(query string) []string {
+	var names []string
+	for _, word := range strings.Split(query, ",") {
+		name := RarityName(word)
+		begun := len(names)
+		if len(name) == 1 {
+			for _, rarity := range b.Rarities {
+				if strings.HasPrefix(rarity, name) {
+					names = append(names, rarity)
+				}
+			}
+		}
+		if len(names) == begun {
+			names = append(names, name)
+		}
+	}
+	return names
+}
+
 // AddName files a card name in each search index that does not already hold
 // it: normalized in AllNames, lower case in AllLowerNames, and as written in
 // AllCanonicalNames.

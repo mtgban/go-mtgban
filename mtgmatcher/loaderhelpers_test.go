@@ -123,3 +123,27 @@ func TestRaritiesRankAsSetsListThem(t *testing.T) {
 		}
 	}
 }
+
+// TestRarityQueryReadsLetters pins what a search's rarity words read as: a
+// letter names the game's rarities it begins, and a word one rarity.
+func TestRarityQueryReadsLetters(t *testing.T) {
+	mythic := &Backend{Rarities: []string{"oversize", "special", "mythic", "rare", "uncommon", "common", "token"}}
+	lorcana := &Backend{Rarities: RarityNames([]string{"Special", "Enchanted", "Super Rare", "Rare", "Common"})}
+	for _, tt := range []struct {
+		b     *Backend
+		query string
+		want  []string
+	}{
+		{mythic, "m,C", []string{"mythic", "common"}},
+		{mythic, "o", []string{"oversize"}},
+		{mythic, "Super Rare", []string{"superrare"}},
+		{lorcana, "s", []string{"special", "superrare"}},
+		{lorcana, "r,e", []string{"rare", "enchanted"}},
+		{lorcana, "x", []string{"x"}},
+	} {
+		got := tt.b.RarityQuery(tt.query)
+		if !slices.Equal(got, tt.want) {
+			t.Errorf("RarityQuery(%q) = %v, want %v", tt.query, got, tt.want)
+		}
+	}
+}
