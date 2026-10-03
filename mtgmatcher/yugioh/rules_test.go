@@ -181,12 +181,13 @@ func TestRespellName(t *testing.T) {
 // plain "Rare" candidate standing, since "rare" is a word of that wording
 // too.
 func TestTierByRarity(t *testing.T) {
+	b := mtgmatcher.NewBackend()
 	candidates := []mtgmatcher.Card{
-		{UUID: "common", Rarity: "Common"},
-		{UUID: "rare", Rarity: "Rare"},
-		{UUID: "collectors", Rarity: "Collector's Rare"},
-		{UUID: "quarter", Rarity: "Quarter Century Secret Rare"},
-		{UUID: "secret", Rarity: "Secret Rare"},
+		{UUID: "common", Rarity: b.AddRarity("Common")},
+		{UUID: "rare", Rarity: b.AddRarity("Rare")},
+		{UUID: "collectors", Rarity: b.AddRarity("Collector's Rare")},
+		{UUID: "quarter", Rarity: b.AddRarity("Quarter Century Secret Rare")},
+		{UUID: "secret", Rarity: b.AddRarity("Secret Rare")},
 	}
 
 	tests := []struct {
@@ -207,7 +208,7 @@ func TestTierByRarity(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			inCard := &mtgmatcher.InputCard{Variation: test.variation}
 			var kept []string
-			for _, card := range tierByRarity(inCard, candidates, test.number, nil) {
+			for _, card := range tierByRarity(b, inCard, candidates, test.number, nil) {
 				kept = append(kept, card.UUID)
 			}
 			if len(kept) != 1 || kept[0] != test.want {

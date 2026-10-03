@@ -739,7 +739,7 @@ func siblingSetRarity(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 			if mtgmatcher.Normalize(card.Name) != name {
 				continue
 			}
-			rarity := strings.ToLower(card.Rarity)
+			rarity := strings.ToLower(b.RarityLabel(card.Rarity))
 			if editions[rarity] == nil {
 				editions[rarity] = map[string]bool{}
 			}
@@ -1133,7 +1133,7 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 		}
 	}
 
-	candidates = tierByRarity(inCard, candidates, number, r.qualifiers)
+	candidates = tierByRarity(b, inCard, candidates, number, r.qualifiers)
 	if len(candidates) <= 1 {
 		return candidates
 	}
@@ -1146,12 +1146,12 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 // suffix narrows through the suffix map. No signal keeps every candidate.
 // Only the variation speaks: set names carry rarity words themselves
 // ("McDonald's Promo").
-func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string, qualifiers map[string]string) []mtgmatcher.Card {
+func tierByRarity(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string, qualifiers map[string]string) []mtgmatcher.Card {
 	words := strings.Fields(strings.ToLower(inCard.Variation))
 
 	described := map[string]bool{}
 	for _, card := range candidates {
-		rarity := strings.ToLower(card.Rarity)
+		rarity := strings.ToLower(b.RarityLabel(card.Rarity))
 		if !described[rarity] && allWordsIn(words, rarity) {
 			described[rarity] = true
 		}
@@ -1167,7 +1167,7 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 	if len(described) > 0 {
 		var out []mtgmatcher.Card
 		for _, card := range candidates {
-			if described[strings.ToLower(card.Rarity)] {
+			if described[strings.ToLower(b.RarityLabel(card.Rarity))] {
 				out = append(out, card)
 			}
 		}
@@ -1186,13 +1186,13 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 	matched := matchedQualifiers(words, candidates, qualifiers)
 	if len(matched) > 0 {
 		rest := withoutQualifierWords(words, matched)
-		if out, found := rarityFilter(rest, candidates); found {
+		if out, found := rarityFilter(b, rest, candidates); found {
 			return out
 		}
 		return suffixNarrowed(candidates, number)
 	}
 
-	if out, found := rarityFilter(words, candidates); found {
+	if out, found := rarityFilter(b, words, candidates); found {
 		return out
 	}
 
@@ -1201,10 +1201,10 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 
 // rarityFilter narrows the candidates to the one rarity decoratedRarity or
 // narrowedRarity names in the wording, or reports false where neither does.
-func rarityFilter(words []string, candidates []mtgmatcher.Card) ([]mtgmatcher.Card, bool) {
-	rarity, found := decoratedRarity(words, candidates)
+func rarityFilter(b *mtgmatcher.Backend, words []string, candidates []mtgmatcher.Card) ([]mtgmatcher.Card, bool) {
+	rarity, found := decoratedRarity(b, words, candidates)
 	if !found {
-		rarity, found = narrowedRarity(words, candidates)
+		rarity, found = narrowedRarity(b, words, candidates)
 	}
 	if !found {
 		return nil, false
@@ -1221,13 +1221,13 @@ func rarityFilter(words []string, candidates []mtgmatcher.Card) ([]mtgmatcher.Ca
 // suffixNarrowed keeps the candidates at the rarity the collector number's
 // suffix encodes, or every candidate where the number carries none.
 func suffixNarrowed(candidates []mtgmatcher.Card, number string) []mtgmatcher.Card {
-	rarity := suffixRarity(number)
+	rarity := mtgmatcher.RarityName(suffixRarity(number))
 	if rarity == "" {
 		return candidates
 	}
 	var out []mtgmatcher.Card
 	for _, card := range candidates {
-		if strings.EqualFold(card.Rarity, rarity) {
+		if card.Rarity == rarity {
 			out = append(out, card)
 		}
 	}
@@ -1250,10 +1250,10 @@ func suffixNarrowed(candidates []mtgmatcher.Card, number string) []mtgmatcher.Ca
 // them. Only the candidates' own vocabulary counts, so the set code and the
 // rest of the wording say nothing here; and one tier has to answer alone,
 // since a wording naming what several tiers share has not chosen between them.
-func narrowedRarity(words []string, candidates []mtgmatcher.Card) (string, bool) {
+func narrowedRarity(b *mtgmatcher.Backend, words []string, candidates []mtgmatcher.Card) (string, bool) {
 	vocabulary := map[string]bool{}
 	for _, card := range candidates {
-		for _, word := range strings.Fields(strings.ToLower(card.Rarity)) {
+		for _, word := range strings.Fields(strings.ToLower(b.RarityLabel(card.Rarity))) {
 			vocabulary[word] = true
 		}
 	}
@@ -1269,7 +1269,7 @@ func narrowedRarity(words []string, candidates []mtgmatcher.Card) (string, bool)
 	var narrowed string
 	for _, card := range candidates {
 		has := map[string]bool{}
-		for _, word := range strings.Fields(strings.ToLower(card.Rarity)) {
+		for _, word := range strings.Fields(strings.ToLower(b.RarityLabel(card.Rarity))) {
 			has[word] = true
 		}
 		saysAll := true
@@ -1306,12 +1306,12 @@ func narrowedRarity(words []string, candidates []mtgmatcher.Card) (string, bool)
 // it off the sets printing a tier both ways: 25LP sells an Ultra Rare beside
 // its Emblazoned Ultra Rare, and a plain wording names the plain one outright
 // before this is asked.
-func decoratedRarity(words []string, candidates []mtgmatcher.Card) (string, bool) {
+func decoratedRarity(b *mtgmatcher.Backend, words []string, candidates []mtgmatcher.Card) (string, bool) {
 	longest := 0
 	var named string
 	shared := false
 	for _, card := range candidates {
-		labelWords := strings.Fields(strings.ToLower(card.Rarity))
+		labelWords := strings.Fields(strings.ToLower(b.RarityLabel(card.Rarity)))
 		for n := len(labelWords) - 1; n >= 2; n-- {
 			if !allWordsIn(words, strings.Join(labelWords[len(labelWords)-n:], " ")) {
 				continue
