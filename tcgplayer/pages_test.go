@@ -66,3 +66,18 @@ func TestLoadPagesFailsWhenAPageDoes(t *testing.T) {
 		t.Errorf("loadPages() with a failed page error = %v, want 1 of 3 pages reported", err)
 	}
 }
+
+func TestLoadPagesFailsWhenCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	err := loadPages(ctx, 2, 250,
+		func(ctx context.Context, page int, channel chan<- genericChan) error {
+			return nil
+		},
+		func(genericChan) {},
+		func(string, ...any) {},
+	)
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("loadPages() on a cancelled context error = %v, want context.Canceled", err)
+	}
+}

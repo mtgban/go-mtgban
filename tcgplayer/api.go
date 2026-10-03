@@ -164,6 +164,12 @@ func loadPages(ctx context.Context, concurrency, total int, process func(context
 		consume,
 		logf,
 	)
+	// A cancelled walk stops dispatching, and the pages it never sent
+	// are not counted as failed
+	err := ctx.Err()
+	if err != nil {
+		return err
+	}
 	if n := failed.Load(); n > 0 {
 		return fmt.Errorf("%d of %d pages failed or came back short, so the inventory is incomplete", n, len(pageNums))
 	}
