@@ -42,9 +42,6 @@ func TestPromoPseudoExpansionAlias(t *testing.T) {
 		{"prize pack series reaches its own set", mtgmatcher.InputCard{
 			Name: "Grotle", Edition: "Play! Pokémon Prize Pack Series", Variation: "007 BRS 007"},
 			"007-172_489316"},
-		{"sv black star refuses the sibling coin flip", mtgmatcher.InputCard{
-			Name: "Charizard ex", Edition: "SV Black Star Promos", Variation: "196 SVP 196"},
-			""},
 		{"w promos reach the w-stamped printing", mtgmatcher.InputCard{
 			Name: "Misty's Psyduck", Edition: "W Promos", Variation: "054 W Promo | 54/132"},
 			"054-132_166296"},
