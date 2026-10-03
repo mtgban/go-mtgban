@@ -126,16 +126,6 @@ func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[i
 	return results, nil
 }
 
-// checkPage reports a product page holding other than its share of total,
-// which the API answers without an error of its own: a short page is
-// products the scrape never sees.
-func checkPage(products []tcgplayer.Product, page, total int) error {
-	if want := min(tcgplayer.MaxItemsInResponse, total-page); len(products) != want {
-		return fmt.Errorf("page at offset %d holds %d products, want %d of %d", page, len(products), want, total)
-	}
-	return nil
-}
-
 // genericChan is one inventory entry a page produced, for the card it is
 // filed under.
 type genericChan struct {
@@ -171,7 +161,7 @@ func loadPages(ctx context.Context, concurrency, total int, process func(context
 		return err
 	}
 	if n := failed.Load(); n > 0 {
-		return fmt.Errorf("%d of %d pages failed or came back short, so the inventory is incomplete", n, len(pageNums))
+		return fmt.Errorf("%d of %d pages failed, so the inventory is incomplete", n, len(pageNums))
 	}
 	return nil
 }

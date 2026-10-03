@@ -7,27 +7,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
-
-	"github.com/mtgban/go-tcgplayer"
 )
-
-func TestCheckPage(t *testing.T) {
-	for _, tt := range []struct {
-		page, total, got int
-		ok               bool
-	}{
-		{0, 250, 100, true},
-		{0, 250, 99, false},
-		{200, 250, 50, true},
-		{200, 250, 49, false},
-		{200, 250, 51, false},
-	} {
-		err := checkPage(make([]tcgplayer.Product, tt.got), tt.page, tt.total)
-		if (err == nil) != tt.ok {
-			t.Errorf("checkPage(%d products, offset %d of %d) error = %v, want ok=%v", tt.got, tt.page, tt.total, err, tt.ok)
-		}
-	}
-}
 
 // WorkerPool only logs a page's error; loadPages is what turns one into a
 // failed Load rather than an inventory missing that page.

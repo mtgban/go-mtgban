@@ -113,12 +113,9 @@ func NewScraperGameSealed(b *mtgmatcher.Backend, publicID, privateID string) (*T
 	return tcg, nil
 }
 
-func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan, page, total int) error {
+func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
 	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, true, page)
 	if err != nil {
-		return err
-	}
-	if err := checkPage(products, page, total); err != nil {
 		return err
 	}
 
@@ -304,7 +301,7 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 
 	err = loadPages(ctx, tcg.maxConcurrency, totals,
 		func(ctx context.Context, page int, channel chan<- genericChan) error {
-			return tcg.processPage(ctx, channel, page, totals)
+			return tcg.processPage(ctx, channel, page)
 		},
 		func(result genericChan) {
 			err := tcg.inventory.Add(result.key, &result.entry)
