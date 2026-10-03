@@ -160,8 +160,9 @@ func TestRarityTellsParallelsApart(t *testing.T) {
 			if err != nil {
 				t.Fatalf("GetUUID(%s) = %v", id, err)
 			}
-			if co.Rarity != tt.wantRarity {
-				t.Errorf("Match(%v) = %s (%s), want rarity %s", tt.in, co.UUID, co.Rarity, tt.wantRarity)
+			rarity := b.RarityLabel(co.Rarity)
+			if rarity != tt.wantRarity {
+				t.Errorf("Match(%v) = %s (%s), want rarity %s", tt.in, co.UUID, rarity, tt.wantRarity)
 			}
 		})
 	}
@@ -224,7 +225,7 @@ func TestNumberReachesItsPrinting(t *testing.T) {
 		}
 		variation := co.Number
 		if co.Rarity != "" {
-			variation += " " + co.Rarity
+			variation += " " + b.RarityLabel(co.Rarity)
 		}
 		// The promo set reprints a card once per event it was handed out
 		// at, every one of them at the main set's number and rarity, so the
