@@ -389,10 +389,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	b.Rarities = mtgmatcher.RarityNames(payload.Properties["rarity"])
-	colors := mtgmatcher.ColorNames(payload.Properties["type"])
+	b.Colors = mtgmatcher.ColorNames(payload.Properties["type"])
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, b.Rarities)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, b.Colors)
 	}
 
 	// Sealed products live in the sealed namespace throughout - uuids in

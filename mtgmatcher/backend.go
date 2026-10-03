@@ -396,6 +396,10 @@ type Backend struct {
 	// the order its sets list theirs in, and the one RarityRank ranks by.
 	Rarities []string
 
+	// Colors is the game's colours in its own order, as its sets list them:
+	// the order a set's colours are listed in.
+	Colors []string
+
 	// rarityRanks is each rarity's place in Rarities, under its RarityName
 	// and under every spelling a card carries, so a rank is a lookup; -1
 	// for a spelling a card carries that Rarities does not rank.
