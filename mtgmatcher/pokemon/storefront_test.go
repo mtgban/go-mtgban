@@ -24,12 +24,17 @@ func TestPromoPseudoExpansionAlias(t *testing.T) {
 		{"mcdonald's collection names its promo set", mtgmatcher.InputCard{
 			Name: "Froakie", Edition: "McDonald's Collection 25th Anniversary", Variation: "022h Holo Promo | 022/025"},
 			"022-025_232336_holofoil"},
-		// The SV promos are absent from both tables on purpose: the set
-		// pairs printings only an id can tell apart, and replayed against
-		// the products whose TCGplayer id names the answer the flip lands
-		// wrong for 69 of 260, so the edition stays unresolved and the
-		// name refuses instead.
-		//
+		// The SV promos are in neither table: the edition stays
+		// unresolved and the name and number find the printing. Every
+		// number the set files twice, all 65, pairs a printing with a
+		// labelled sibling - a Pokemon Center exclusive, a prerelease
+		// staff stamp - so a listing naming no label reaches the plain one.
+		{"sv black star reaches the plain printing of a pair", mtgmatcher.InputCard{
+			Name: "Charmander", Edition: "SV Black Star Promos", Variation: "044 SVP 044"},
+			"044_512035_holofoil"},
+		{"and the prerelease one rather than its staff stamp", mtgmatcher.InputCard{
+			Name: "Quaquaval", Edition: "SV Black Star Promos", Variation: "005 SVP 005"},
+			"005_487751_holofoil"},
 		// The prize pack series is pooled rather than aliased. Its
 		// siblings carry the treatment labels - every one of the 130
 		// numbers the set files more than one product at is told apart
@@ -49,12 +54,6 @@ func TestPromoPseudoExpansionAlias(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			in := tt.in
 			id, err := b.Match(&in)
-			if tt.want == "" {
-				if err == nil {
-					t.Fatalf("Match(%v) = %s (%v), want an error", tt.in, id, b.UUIDs[id])
-				}
-				return
-			}
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", tt.in, err)
 			}
