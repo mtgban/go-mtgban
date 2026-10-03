@@ -1088,7 +1088,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				}
 				printings = append(printings, card.Printings[i])
 			}
-			// Sort printings by most recent sets first
+			// Sort printings by most recent sets first; duplicate() keeps
+			// this order when it adds its sets later
 			sortPrintings(ap.Data, printings)
 
 			card.Printings = printings
@@ -1721,6 +1722,9 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	// Target slice for later use
 	var numbers []string
 
+	// Add duplicated set (with no cards) to the root, for sortPrintings
+	sets[dup.Code] = &dup
+
 	// Rework printings information
 	for i := range sets[code].Cards {
 		// Skip misprints from main sets
@@ -1728,8 +1732,10 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 			continue
 		}
 
-		// Update printings for the original set
-		printings := append(sets[code].Cards[i].Printings, dup.Code)
+		// Update printings for the original set, keeping them sorted by
+		// date like every other card's: the site lists them in this order
+		printings := append(slices.Clone(sets[code].Cards[i].Printings), dup.Code)
+		sortPrintings(sets, printings)
 		sets[code].Cards[i].Printings = printings
 
 		// Loop through all other sets mentioned
@@ -1758,9 +1764,6 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 
 		numbers = append(numbers, sets[code].Cards[i].Number)
 	}
-
-	// Add duplicated set (with no cards) to the root
-	sets[dup.Code] = &dup
 
 	// Duplicate cards
 	dup.Cards = duplicateCards(sets, code, tag, numbers)
