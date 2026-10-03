@@ -320,9 +320,11 @@ orders, `b.Rarities` and `b.Colors` (`mtgRarities` and `mtgColors` for
 Magic), for a caller listing a game's values without walking its sets.
 `b.RarityRank` places any spelling of a rarity in that order with one map
 lookup, built by `IndexRarities` at load, so ranking every card a search
-examines allocates nothing. A card keeps the rarity its datastore
-publishes, because the matching reads it: Yu-Gi-Oh's rules split it into
-words, and Gundam's look for it in a listing's wording.
+examines allocates nothing. A card carries its rarity spelled the same way,
+through `b.AddRarity`, which keeps the words the datastore published it as
+in `b.RarityLabels`. A reader wanting those words asks `b.RarityLabel`:
+Yu-Gi-Oh's rules split a rarity into words, Gundam's look for it in a
+listing's wording, and a page displays it.
 
 `Arbit`, `Mismatch` and the CSV readers and writers take the
 backend as their first parameter; `ArbitOpts` carries optional filters and
