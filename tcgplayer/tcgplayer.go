@@ -328,7 +328,8 @@ func (tcg *Market) Load(ctx context.Context) error {
 						continue
 					}
 
-					skus = skus[:0]
+					// A fresh slice: the old one is the shared sku map's
+					skus = nil
 					for _, sku := range altSkus {
 						lang, found := map[int]string{
 							1:  "ENGLISH",
