@@ -382,15 +382,11 @@ func (Rules) PlainNumber(number string) string {
 	return plain
 }
 
-// FilterCards narrows candidates by edition, collector number, and finish:
-// candidates come from the name hash rather than the edition-keyed cardSet
-// values, so case-variant spellings that normalize to the same canonical name
-// stay reachable (three real pairs exist in the data) and iteration follows
-// stable load order instead of random map order. The cardSet keys still
-// matter: the Match skeleton fills them with the sets matching the input
-// edition when one was supplied and resolves - falling back to every printing
-// otherwise - so honoring them disambiguates a name+number shared across sets
-// ("Let It Go" #163) while a missing or unrecognized edition changes nothing.
+// FilterCards narrows candidates by edition, collector number, and finish.
+// cardSet holds the sets matching the input edition when one was supplied
+// and resolves, and every printing otherwise, so it disambiguates a
+// name+number shared across sets ("Let It Go" #163) while a missing or
+// unrecognized edition changes nothing.
 func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 	// A letter hung off the end of the number may be the storefront's own
@@ -406,33 +402,11 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 
 	var out, wrongFinish, bareOut, bareWrongFinish, chaseOut, chaseWrongFinish []mtgmatcher.Card
 	chased := false
-	seen := map[string]bool{}
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found {
-			continue
-		}
-		// Every finish of a printing is stored under a uuid of its own;
-		// fold them back onto the printing so each candidate appears
-		// exactly once. The uuids are the datastore's to spell, so the
-		// printing is told by the finishes it is sold in rather than by
-		// cutting its uuid at a character.
-		key := mtgmatcher.PrintingKey(co.Card)
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-		// Sealed products share the name buckets but never match as
-		// cards; without this a sealed product named like a card would
-		// read as an aliased printing of it
-		if co.Sealed {
-			continue
-		}
-		card := co.Card
-
-		if _, found := cardSet[card.SetCode]; !found {
-			continue
-		}
+	var cards []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		cards = append(cards, cardSet[code]...)
+	}
+	for _, card := range cards {
 		exact := number == "" || number == card.Number || number == card.PlainNumber
 		bareFits := !exact && bare != "" && bare == card.Number
 		// A named chase tier is a claim about the printing, and it holds

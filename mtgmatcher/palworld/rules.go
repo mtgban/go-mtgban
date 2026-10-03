@@ -1,7 +1,9 @@
 package palworld
 
 import (
+	"maps"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 
@@ -180,23 +182,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	number := extractNumber(inCard.Variation)
 
 	var candidates []mtgmatcher.Card
-	seen := map[string]bool{}
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed {
-			continue
-		}
-		base := mtgmatcher.ProductKeyOf(co.Card.Identifiers, uuid)
-		if seen[base] {
-			continue
-		}
-		seen[base] = true
-
-		card := co.Card
-		if _, found := cardSet[card.SetCode]; !found {
-			continue
-		}
-		candidates = append(candidates, card)
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		candidates = append(candidates, cardSet[code]...)
 	}
 
 	if number == "" {

@@ -1088,28 +1088,11 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	}
 
 	var candidates []mtgmatcher.Card
-	seen := map[string]bool{}
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed {
-			continue
-		}
-		card := co.Card
-
-		// A product's print-run siblings all file under the name bucket;
-		// fold them onto their shared product id so each candidate appears
-		// exactly once, and output() picks the run afterwards. The loader
-		// writes each entry's uuid onto its Card, which rules the uuid out
-		// as the folding key.
-		key := mtgmatcher.ProductKeyOf(card.Identifiers, uuid)
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-
-		if _, found := cardSet[card.SetCode]; !found {
-			continue
-		}
+	var cards []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		cards = append(cards, cardSet[code]...)
+	}
+	for _, card := range cards {
 		if number != "" && !numberMatches(number, card.Number) &&
 			!(looseSet != nil && strings.EqualFold(card.SetCode, looseSet.Code) &&
 				loosePrefixMatches(number, card.Number)) {

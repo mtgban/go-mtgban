@@ -1,6 +1,7 @@
 package onepiece
 
 import (
+	"maps"
 	"regexp"
 	"slices"
 	"strconv"
@@ -615,27 +616,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	number := inputNumber(b, inCard)
 
 	var candidates []mtgmatcher.Card
-	seen := map[string]bool{}
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed {
-			continue
-		}
-		card := co.Card
-
-		// A dual-printing product files both its finish uuids under the
-		// name bucket; fold them onto the product they print so each
-		// candidate appears exactly once, and output() picks the finish
-		// afterwards.
-		base := mtgmatcher.ProductKeyOf(co.Card.Identifiers, uuid)
-		if seen[base] {
-			continue
-		}
-		seen[base] = true
-
-		if _, found := cardSet[card.SetCode]; !found {
-			continue
-		}
+	var cards []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		cards = append(cards, cardSet[code]...)
+	}
+	for _, card := range cards {
 		if number != "" && !numberMatches(number, card.Number) {
 			continue
 		}

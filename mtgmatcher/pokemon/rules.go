@@ -1493,31 +1493,14 @@ func letteredPromo(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbers 
 // empty number asks for every printing the edition admits.
 func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card, number string) []mtgmatcher.Card {
 	var candidates []mtgmatcher.Card
-	seen := map[string]bool{}
 	// The sizes the edition's shelf can lend a listing, read once and only
 	// where a total has to be told from the shelf's.
 	var figures map[string]bool
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed {
-			continue
-		}
-		card := co.Card
-
-		// A product's printing siblings all file under the name bucket;
-		// fold them onto their shared product id so each candidate appears
-		// exactly once, and output() picks the printing afterwards. The
-		// loader writes each entry's uuid onto its Card, which rules the
-		// uuid out as the folding key.
-		key := productKeyOf(card.Identifiers, uuid)
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-
-		if _, found := cardSet[card.SetCode]; !found && !subsetOf(b, cardSet, card.SetCode) {
-			continue
-		}
+	var cards []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		cards = append(cards, cardSet[code]...)
+	}
+	for _, card := range cards {
 		if number != "" && !numberMatchesCard(b, number, &card) {
 			continue
 		}
@@ -1900,31 +1883,6 @@ func numberMatches(input, number string) bool {
 		return false
 	}
 	return foldNumber(input) == foldNumber(number)
-}
-
-// subsetOf reports whether a set is one the edition already admits, filed
-// under its own code. The catalog splits the collections printed inside a
-// set out into a set of their own - "Legendary Treasures: Radiant
-// Collection" beside "Legendary Treasures", the four Trainer Galleries
-// beside their parents - while the storefronts file those cards under the
-// parent, so the perfect-match loop builds the parent's code alone and the
-// RC- and TG-numbered candidates are gated out.
-//
-// The suffixed code is not enough on its own: the same shape spells 32
-// unrelated sets, from "Burger King Promos" under BKP to every POP series
-// and every promo set under PR. The subset's name opening with its parent's
-// is what tells the two apart, and it costs nothing to require - the eight
-// real subsets all spell their parent out.
-func subsetOf(b *mtgmatcher.Backend, cardSet map[string][]mtgmatcher.Card, code string) bool {
-	parent, _, found := strings.Cut(code, "-")
-	if !found {
-		return false
-	}
-	if _, admitted := cardSet[parent]; !admitted {
-		return false
-	}
-	set, subset := b.Sets[parent], b.Sets[code]
-	return set != nil && subset != nil && strings.HasPrefix(subset.Name, set.Name)
 }
 
 // totalDisagrees reports whether the wording spells the card's own
