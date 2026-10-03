@@ -276,10 +276,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 
 	b.Rarities = mtgmatcher.RarityNames(payload.Properties["rarity"])
-	colors := mtgmatcher.ColorNames(payload.Properties["color"])
+	b.Colors = mtgmatcher.ColorNames(payload.Properties["color"])
 	for _, set := range b.Sets {
 		set.Rarities = mtgmatcher.RaritiesOf(set.Cards, b.Rarities)
-		set.Colors = mtgmatcher.ColorsOf(set.Cards, colors)
+		set.Colors = mtgmatcher.ColorsOf(set.Cards, b.Colors)
 	}
 
 	for _, product := range payload.Sealed {

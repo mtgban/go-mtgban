@@ -1433,6 +1433,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.Sets = mSets
 	b.IndexSets()
 	b.Rarities = mtgRarities
+	b.Colors = mtgColors
 	b.CanonicalNames = canonicalNames
 	b.Tokens = tokens
 	b.UUIDs = uuids

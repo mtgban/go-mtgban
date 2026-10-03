@@ -609,7 +609,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	}
 
 	b.Rarities = mtgmatcher.RarityNames(ac.Properties["rarity"])
-	colors := mtgmatcher.ColorNames(ac.Properties["color"])
+	b.Colors = mtgmatcher.ColorNames(ac.Properties["color"])
 
 	// Update any remaining details on Sets after Cards loading
 	for code := range b.Sets {
@@ -625,7 +625,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		}
 
 		b.Sets[code].Rarities = mtgmatcher.RaritiesOf(b.Sets[code].Cards, b.Rarities)
-		b.Sets[code].Colors = mtgmatcher.ColorsOf(b.Sets[code].Cards, colors)
+		b.Sets[code].Colors = mtgmatcher.ColorsOf(b.Sets[code].Cards, b.Colors)
 	}
 
 	// Load sealed products. They live in the sealed namespace throughout:
