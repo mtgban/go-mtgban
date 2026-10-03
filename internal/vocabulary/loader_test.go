@@ -312,7 +312,9 @@ func colorsAreLowerCase(t *testing.T, b *mtgmatcher.Backend) {
 // propertiesOrderEveryValue holds a datastore's properties to ordering every
 // value its cards load with: "rarity" each card's rarity, every other
 // property its colours. A value no list names still loads, sorted last by
-// name, so nothing else notices an order going stale.
+// name, so nothing else notices an order going stale. It also holds the
+// backend to the order the lists give, which a loader reading a property
+// under the wrong name loses without an error.
 func propertiesOrderEveryValue(t *testing.T, b *mtgmatcher.Backend, path string) {
 	properties := publishedProperties(t, path)
 	if len(properties) == 0 {
@@ -350,6 +352,41 @@ func propertiesOrderEveryValue(t *testing.T, b *mtgmatcher.Backend, path string)
 	}
 	for _, value := range slices.Sorted(maps.Keys(unlisted)) {
 		t.Errorf("%s, on %d cards, is in no list of the datastore's properties", value, unlisted[value])
+	}
+
+	// A loader reading a property by a name the datastore does not publish
+	// loads all the same, with no order and no colours
+	rarities, found := properties["rarity"]
+	if found && !slices.Equal(b.Rarities, mtgmatcher.RarityNames(rarities)) {
+		t.Errorf("rarities are ordered %v, not as the properties list them", b.Rarities)
+	}
+	// Every game publishes its colours under one property of its own name
+	var colorKeys []string
+	for name := range properties {
+		if name != "rarity" {
+			colorKeys = append(colorKeys, name)
+		}
+	}
+	if len(colorKeys) > 1 {
+		slices.Sort(colorKeys)
+		t.Fatalf("the properties list colours under %v, not one name", colorKeys)
+	}
+	var colors []string
+	if len(colorKeys) == 1 {
+		colors = mtgmatcher.ColorNames(properties[colorKeys[0]])
+	}
+	coloured := false
+	for code, set := range b.Sets {
+		for _, card := range set.Cards {
+			coloured = coloured || len(card.Colors) > 0
+		}
+		want := mtgmatcher.ColorsOf(set.Cards, colors)
+		if colors != nil && !slices.Equal(set.Colors, want) {
+			t.Errorf("%s lists its colours %v, not as the properties order them, %v", code, set.Colors, want)
+		}
+	}
+	if colors != nil && !coloured {
+		t.Error("no card carries a colour, though the properties list them")
 	}
 }
 
