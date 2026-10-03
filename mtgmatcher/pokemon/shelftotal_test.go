@@ -24,6 +24,8 @@ func TestShelfTotalDoesNotVeto(t *testing.T) {
 			Name: "Unown", Edition: "EX Unseen Forces", Variation: "Z/115"}, "z-28_90193_holofoil"},
 		{"the whole run's figure over one year of it", mtgmatcher.InputCard{
 			Name: "AZ", Edition: "World Championship Decks", Variation: "91/100 2015 Patrick Martinez"}, "91-119_481163"},
+		{"the parent's own card count, without the subset admitted beside it", mtgmatcher.InputCard{
+			Name: "Luxio", Edition: "SWSH09: Brilliant Stars", Variation: "050/206"}, "050-172_263756"},
 		{"the face itself still lands", mtgmatcher.InputCard{
 			Name: "Blastoise", Edition: "Celebrations: Classic Collection", Variation: "2/102"}, "2-102_250319_holofoil"},
 		{"another set's total is not the shelf's and still vetoes", mtgmatcher.InputCard{

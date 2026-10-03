@@ -56,17 +56,25 @@ func (r Rules) editionSets(b *mtgmatcher.Backend, in *mtgmatcher.InputCard, edit
 // real subsets all spell their parent out.
 func subsetsOf(b *mtgmatcher.Backend, codes []string) []string {
 	var subsets []string
-	for code, subset := range b.Sets {
-		parent, _, found := strings.Cut(code, "-")
-		if !found || !slices.Contains(codes, parent) || slices.Contains(codes, code) {
-			continue
-		}
-		if set := b.Sets[parent]; set != nil && strings.HasPrefix(subset.Name, set.Name) {
+	for code := range b.Sets {
+		parent, found := parentOf(b, code)
+		if found && slices.Contains(codes, parent) && !slices.Contains(codes, code) {
 			subsets = append(subsets, code)
 		}
 	}
 	slices.Sort(subsets)
 	return subsets
+}
+
+// parentOf names the set a subset is filed inside, false for a set that is
+// not one.
+func parentOf(b *mtgmatcher.Backend, code string) (string, bool) {
+	parent, _, found := strings.Cut(code, "-")
+	if !found {
+		return "", false
+	}
+	set, subset := b.Sets[parent], b.Sets[code]
+	return parent, set != nil && subset != nil && strings.HasPrefix(subset.Name, set.Name)
 }
 
 // isGenericPromo reports a promo listing with no more specific kind: it says

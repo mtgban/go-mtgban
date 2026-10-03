@@ -928,6 +928,12 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 				}
 			}
 		}
+		for code, cards := range cardSet {
+			parent, found := parentOf(b, code)
+			if _, pooledParent := pooled[parent]; found && pooledParent {
+				pooled[code] = cards
+			}
+		}
 		cardSet = pooled
 	}
 
@@ -1969,6 +1975,12 @@ func shelfFigures(b *mtgmatcher.Backend, cardSet map[string][]mtgmatcher.Card) m
 	for code := range cardSet {
 		set := b.Sets[code]
 		if set == nil {
+			continue
+		}
+		// A subset is admitted beside its parent, but a shelf's figures
+		// are its parent's own
+		parent, found := parentOf(b, code)
+		if _, admitted := cardSet[parent]; found && admitted {
 			continue
 		}
 		shelf[code] = true
