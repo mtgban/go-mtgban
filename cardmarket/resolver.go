@@ -816,8 +816,8 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 
 // numberedPrinting answers the printing of the mapped card at the product's
 // own number, where the map lists none at it and the set carries one: mtgjson
-// crosses the ids of two printings of a card now and then, 2X2's #345 and
-// #427 each linked to the other's product.
+// crosses the ids of two printings of a card now and then, each linked to the
+// other's product.
 func (r *resolver) numberedPrinting(product *cm.Product, uuids []string) string {
 	if product.Number == "" {
 		return ""

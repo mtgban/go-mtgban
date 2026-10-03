@@ -350,14 +350,14 @@ retains only the language maps (`LanguageCode2LanguageTag` and its inverse).
   `isBaseSealed`/`contentsContainCard` (direct containment per finish - it
   deliberately does *not* recurse into nested sealed sub-products).
 
-The Lorcana loader (`mtgmatcher/lorcana/lorcana.go`) and the Riftbound loader
-(`mtgmatcher/riftbound/riftbound.go`) are far simpler converters with no patch
-tables; both derive the set-level `Rarities`/`Colors` once the cards are in,
-Lorcana additionally deriving `IsFoilOnly`/`IsNonFoilOnly` and inferring
-`BaseSetSize` from the first enchanted-rarity number, while Riftbound takes
-`BaseSetSize` straight from the gallery's `collectorNumberMax`. Both set every
-card's `Language` to `"English"`
-on purpose: core `Match`'s language filter drops candidates whose `Language`
+The eight non-Magic loaders are far simpler converters with no patch
+tables. Each derives the set-level `Rarities`/`Colors` once the cards are in,
+through `mtgmatcher.RaritiesOf`/`ColorsOf` in the order the datastore's
+properties publish; Lorcana additionally derives `IsFoilOnly`/`IsNonFoilOnly`.
+Lorcana, Pokemon and Riftbound read `BaseSetSize` from the datastore's
+`baseSetSize`; the other five datastores publish none. Each loader sets a
+card's `Language` to `"English"` where the datastore names none, on
+purpose: core `Match`'s language filter drops candidates whose `Language`
 differs from English whenever more than one survives, so leaving the field
 empty would turn every legitimate aliasing result into a bogus wrong-variant
 error.
@@ -886,9 +886,8 @@ its `register.go` sets from `mtgban.Options` (`logCallback`,
 `maxConcurrency`, optional `partner`/`affiliate`), `disableRetail`/
 `disableBuylist` set through `SetConfig`, and `inventory`/`buylist` +
 `inventoryDate`/`buylistDate`. Most packages' `Load(ctx)` fans out via
-`mtgban.WorkerPool`, usually over `retryablehttp` clients; tcgplayer's Magic
-scrapers (`index.go`, `tcgplayer.go`, `sealed.go`) hand-roll their own
-pools. Of the clients, only the unregistered cardsphere and mtgstocks set
+`mtgban.WorkerPool`, usually over a client from `mtgban.NewHTTPClient`. Of
+the clients, only the unregistered cardsphere and mtgstocks set
 `LinearJitterBackoff`, and mtgseattle `RateLimitLinearJitterBackoff`. A
 `preprocess.go` translates store naming into `InputCard` + `b.Match()`,
 skipping `ErrUnsupported`, logging `AliasingError`s; results inserted via
@@ -1118,7 +1117,7 @@ montanaflynn/stats (EV), golang.org/x/text (normalization), plus the in-house
 **Adding a store**: create a package with the four-file layout, its scraper
 holding the `*mtgmatcher.Backend` it is built on; implement `Seller` and/or
 `Vendor` (and `Market`/`Trader` if it has sub-sellers), fetch with
-`WorkerPool` + retryablehttp, write a `preprocess.go` that builds
+`WorkerPool` + `mtgban.NewHTTPClient`, write a `preprocess.go` that builds
 `InputCard`s and calls `b.Match`/`b.MatchID`, handling the store's naming
 quirks. Add a `register.go` whose `init()` calls `mtgban.Register(name,
 games, constructor)` under the key name bantool has always used for the

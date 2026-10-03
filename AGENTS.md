@@ -340,7 +340,7 @@ keeps it:
   anything else, and any card missing its id or name, as "not a <Game>
   datastore". A card with no printing is skipped, not refused.
 - Cards are read by the names every datastore publishes: `setCode`,
-  `number`, `image`, `externalLinks.tcgPlayerId`, `baseSetSize`, and
+  `number`, `image`, `externalLinks.tcgPlayerId`, and `baseSetSize`,
   `language` and `watermark` where the game has them. Lorcana's `images` is
   the one upstream field read instead, for a thumbnail the common `image`
   lacks.
@@ -415,7 +415,7 @@ path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
    `mtgban.ScraperConfig`, whose `SetConfig` receives `DisableRetail` and
    `DisableBuylist`; the registry refuses to build half of a store that
    does not.
-3. Fetch with `WorkerPool` plus a `retryablehttp` client.
+3. Fetch with `WorkerPool` plus a client from `mtgban.NewHTTPClient`.
 4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
    constructor)`: `name` is the bare registry key the store has always
    been known by (`coolstuffinc_sealed`, `starcitygames_sealed`), the same
