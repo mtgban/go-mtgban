@@ -18,9 +18,10 @@ func promoTypeSpelling(promoType string) string {
 }
 
 // quotedRarities are the rarities this catalog writes in a product name as
-// well as in the rarity field: the Treasure Rares, which arrive as "Vista
-// (TR)". Every other rarity is only ever the field.
-var quotedRarities = map[string]string{"TR": "TR"}
+// well as in the rarity field, by the code the name writes: the Treasure
+// Rares, which arrive as "Vista (TR)". Every other rarity is only ever the
+// field.
+var quotedRarities = map[string]string{"Treasure Rare": "TR"}
 
 // quotedRarity is the rarity a listing may name, empty for one it never does.
 func quotedRarity(rarity string) string {
