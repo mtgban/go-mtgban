@@ -176,9 +176,7 @@ func gameFromCatalog(game string) int {
 		return GameFleshAndBlood
 	case "Disney Lorcana":
 		return GameLorcana
-	case "Riftbound", "Riftbound: League of Legends TCG":
-		// The catalog dropped the subtitle in August 2026; accept both
-		// spellings so a flip back does not zero the scraper again.
+	case "Riftbound":
 		return GameRiftbound
 	default:
 		return 0

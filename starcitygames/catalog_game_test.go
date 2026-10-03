@@ -6,9 +6,7 @@ import "testing"
 // mapping is the only thing standing between a product and the scraper that
 // wants it, and an unrecognized name is indistinguishable from a game we do
 // not carry: it maps to 0, the product is skipped, and a scraper configured
-// for that game simply finds nothing. The catalog has spelled Riftbound both
-// "Riftbound: League of Legends TCG" and "Riftbound", so both spellings
-// answer, and a rename between the two is one the scraper survives.
+// for that game simply finds nothing.
 func TestGameFromCatalog(t *testing.T) {
 	tests := []struct {
 		catalog string
@@ -17,7 +15,6 @@ func TestGameFromCatalog(t *testing.T) {
 		{"Magic: The Gathering", GameMagic},
 		{"Flesh and Blood", GameFleshAndBlood},
 		{"Disney Lorcana", GameLorcana},
-		{"Riftbound: League of Legends TCG", GameRiftbound},
 		{"Riftbound", GameRiftbound},
 		// Shapes the catalog does not use, kept to show the mapping is exact
 		// rather than prefix- or substring-based.
