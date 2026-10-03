@@ -247,7 +247,7 @@ func promoNumbered(b *mtgmatcher.Backend, name, number string) bool {
 		if !found || co.Sealed || !numberMatches(number, co.Number) {
 			continue
 		}
-		if !co.IsPromo && co.Rarity != "Promo" {
+		if !co.IsPromo && co.Rarity != "promo" {
 			return false
 		}
 		numbered = true

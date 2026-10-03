@@ -391,7 +391,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 				"thumbnail": card.Image,
 			},
 			Language:   cmp.Or(card.Language, "English"),
-			Rarity:     card.Rarity,
+			Rarity:     b.AddRarity(card.Rarity),
 			Colors:     mtgmatcher.ColorNames(card.Pitches),
 			PromoTypes: promoTypes,
 			Watermark:  card.Watermark,

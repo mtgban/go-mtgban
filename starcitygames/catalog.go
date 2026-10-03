@@ -716,7 +716,7 @@ func fabMarkedSibling(b *mtgmatcher.Backend, id string, p CatalogProduct) string
 		// The marker is on the sku of a marvel too, and letting it choose
 		// one would price a listing as a marvel on the strength of a digit
 		// where the rarity beside it says the ordinary card.
-		if fabTiers[card.Rarity] {
+		if fabTiers[b.RarityLabel(card.Rarity)] {
 			continue
 		}
 		sibling, serr := b.MatchIDFinish(card.UUID, p.Finish)
