@@ -26,6 +26,11 @@ var onePieceEvents = map[string]string{
 // onePieceStarterDeck matches the starter deck a name states in brackets.
 var onePieceStarterDeck = regexp.MustCompile(`\(Starter Deck (\d+)\)`)
 
+// onePieceNotePlace is the finishing place a buy row's note names. The name
+// carries the event and the note the place, and the catalog labels the
+// printing by both: without the place, the plain card wins.
+var onePieceNotePlace = regexp.MustCompile(`(?i)\b(?:participant|winner|finalist)\b`)
+
 // onePieceSpellings spells the One Piece names this storefront writes its
 // own way: the Heroines Edition event card lost a word.
 var onePieceSpellings = map[string]string{
