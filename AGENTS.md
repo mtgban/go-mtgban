@@ -349,8 +349,10 @@ keeps it:
   non-English candidate. `AllSets` is sorted before `IndexSets`.
 - `b.Rarities` and `b.Colors` are the datastore's `properties` orders,
   through `RarityNames` and `ColorNames`, and each set's `Rarities` and
-  `Colors` are sorted by them with `RaritiesOf` and `ColorsOf`. A card keeps
-  its published rarity; only what a set lists is spelled by `RarityName`.
+  `Colors` are sorted by them with `RaritiesOf` and `ColorsOf`. A card's
+  rarity is stored through `b.AddRarity`, spelled by `RarityName`
+  ("superrare"); a rule or display wanting the published words ("Super
+  Rare") asks `b.RarityLabel`.
 
 ### Tables before code
 
