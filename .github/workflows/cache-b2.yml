@@ -37,6 +37,7 @@ jobs:
       - name: Fetch file checksum
         id: get_key
         run: |
+          set -o pipefail
           pipx install b2
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           base=$(basename "$B2_URI" .xz)
