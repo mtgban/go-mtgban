@@ -1,6 +1,7 @@
 package riftbound
 
 import (
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -500,9 +501,8 @@ func (Rules) PlainNumber(number string) string {
 }
 
 // FilterCards narrows candidates by edition, collector number, and finish,
-// mirroring the Lorcana rules: candidates come from the name hash (stable
-// load order), the cardSet keys carry the sets matching the input edition
-// when one was supplied and resolves (falling back to every printing
+// mirroring the Lorcana rules: cardSet carries the sets matching the input
+// edition when one was supplied and resolves (falling back to every printing
 // otherwise), and the number comparison is case-insensitive because real
 // numbers carry letter affixes ("66a", "T5", "SP3").
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
@@ -780,39 +780,15 @@ func isLetter(c byte) bool {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 }
 
-// collectPrintings gathers the printings hashed under the input name that the
-// edition, the promo gate and the given collector number all admit.
+// collectPrintings gathers the printings in cardSet that the promo gate and
+// the given collector number admit.
 func collectPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card, allowPromo bool, number string) []mtgmatcher.Card {
 	var out []mtgmatcher.Card
-	seen := map[string]bool{}
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found {
-			continue
-		}
-		// Sealed products share the name buckets but never match as
-		// cards; without this a sealed product named like a card would
-		// read as an aliased printing of it
-		if co.Sealed {
-			continue
-		}
-
-		// Every finish of a printing is stored under a uuid of its own;
-		// fold them back onto the printing so each candidate appears
-		// exactly once. The uuids are the datastore's to spell, so the
-		// printing is told by the finishes it is sold in rather than by
-		// cutting its uuid at a character.
-		key := mtgmatcher.PrintingKey(co.Card)
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-
-		card := co.Card
-
-		if _, found := cardSet[card.SetCode]; !found {
-			continue
-		}
+	var cards []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		cards = append(cards, cardSet[code]...)
+	}
+	for _, card := range cards {
 		set, known := b.Sets[card.SetCode]
 		if known && !allowPromo && set.Type == "promo" {
 			continue

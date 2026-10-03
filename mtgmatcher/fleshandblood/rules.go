@@ -749,29 +749,12 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	number := extractNumber(inCard.Variation)
 
 	var candidates, exact, unsold []mtgmatcher.Card
-	seen := map[string]bool{}
 	named := map[string]bool{}
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed {
-			continue
-		}
-		card := co.Card
-
-		// A product's finish siblings all file under the name bucket; fold
-		// them onto their shared product id so each candidate appears
-		// exactly once, and output() picks the finish afterwards. The
-		// loader writes each entry's uuid onto its Card, which rules the
-		// uuid out as the folding key.
-		key := productKeyOf(card.Identifiers, uuid)
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-
-		if _, found := cardSet[card.SetCode]; !found {
-			continue
-		}
+	var cards []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		cards = append(cards, cardSet[code]...)
+	}
+	for _, card := range cards {
 		// A printing the catalog left unnumbered cannot disagree with a
 		// number: the Antiquity Pack art cards and the armory decks'
 		// counters carry none, and the storefront's number for them is

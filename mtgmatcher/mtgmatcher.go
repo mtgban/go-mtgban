@@ -534,9 +534,28 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		}
 	}
 
+	// Every printing filed under the name in a set the game admits, once
+	// whatever finishes it is sold in. The index is keyed by Normalize, so
+	// printings spelled apart by case or punctuation stay reachable.
 	cardSet := map[string][]Card{}
 	for _, code := range rules.CandidateSets(b, inCard, printings) {
-		cardSet[code] = b.MatchInSet(inCard.Name, code)
+		cardSet[code] = nil
+	}
+	seen := map[string]bool{}
+	for _, uuid := range b.Hashes[Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed {
+			continue
+		}
+		if _, admitted := cardSet[co.SetCode]; !admitted {
+			continue
+		}
+		key := PrintingKey(co.Card)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		cardSet[co.SetCode] = append(cardSet[co.SetCode], co.Card)
 	}
 
 	b.Log("Found these possible matches")

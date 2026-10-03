@@ -469,16 +469,3 @@ func (card *DatastoreCard) productKey() string {
 	}
 	return card.ID
 }
-
-// productKeyOf is the same key read off a card the backend already holds,
-// where those ids hang off Identifiers and the entry's own id is the uuid
-// being asked about.
-func productKeyOf(identifiers map[string]string, uuid string) string {
-	if id := identifiers["tcgplayerProductId"]; id != "" {
-		return id
-	}
-	if id := identifiers["fabId"]; id != "" {
-		return id
-	}
-	return uuid
-}

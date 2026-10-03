@@ -1,6 +1,7 @@
 package gundam
 
 import (
+	"maps"
 	"regexp"
 	"slices"
 	"sort"
@@ -428,25 +429,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	number := extractNumber(inCard.Variation)
 
 	var candidates []mtgmatcher.Card
-	seen := map[string]bool{}
-	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed {
-			continue
-		}
-		// A dual-printing product files both finish uuids under the name
-		// bucket; fold them onto the product they print so each candidate
-		// appears once, and let output() pick the finish.
-		base := mtgmatcher.ProductKeyOf(co.Card.Identifiers, uuid)
-		if seen[base] {
-			continue
-		}
-		seen[base] = true
-
-		card := co.Card
-		if _, found := cardSet[card.SetCode]; !found {
-			continue
-		}
+	var cards []mtgmatcher.Card
+	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
+		cards = append(cards, cardSet[code]...)
+	}
+	for _, card := range cards {
 		if number != "" && !strings.EqualFold(number, card.Number) {
 			continue
 		}

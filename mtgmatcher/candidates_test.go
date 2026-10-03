@@ -105,7 +105,7 @@ func TestMatchUsesGameCandidateSets(t *testing.T) {
 
 func TestMatchFinalizesBeforeLanguageFiltering(t *testing.T) {
 	b := candidateTestBackend()
-	b.Sets["A"].Cards[0].Language = "French"
+	b.UUIDs["a"].Language = "French"
 	var seen []string
 	b.SetRules(candidateTestRules{finalize: func(cards []Card) []Card {
 		for _, card := range cards {

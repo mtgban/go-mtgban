@@ -55,10 +55,12 @@ type GameRules interface {
 	// FilterCards and before language filtering. DefaultRules keeps every
 	// candidate; order is the deterministic order returned by FilterCards.
 	FinalizeCandidates(b *Backend, inCard *InputCard, cards []Card) []Card
-	// FilterCards narrows the candidate cards for the input card. The cardSet
-	// map iterates in random order; implementations are responsible for
-	// producing deterministic output ordering when more than one candidate
-	// survives, since the result feeds user-visible aliasing diagnostics.
+	// FilterCards narrows the candidate cards for the input card. cardSet
+	// holds every set CandidateSets admitted, each with the printings filed
+	// under the input's name there, once per printing. The map iterates in
+	// random order; implementations are responsible for producing
+	// deterministic output ordering when more than one candidate survives,
+	// since the result feeds user-visible aliasing diagnostics.
 	FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card
 	// IsUnsupported reports whether the input names something the game has
 	// no printing for, which Match answers with ErrUnsupported so a caller
