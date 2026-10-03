@@ -215,13 +215,13 @@ CardTrader links only the product carried before the split, which on LON
 and MRL is V.1, so there the European print held the North American row and
 the North American product was its twin. Writing the index's prefix onto
 the bare number sends the European print to its own row where one is
-published (MRL-E104 to E130 alone, until datastore-gen's own European
-first-print mint gives every one of these seven shelves a row) or refuses
-it, and a reprint numbered bare to its EN set. Replaying the 2026-09-24
-catalog: 208 North American products take their pair back, 64 bare
-reprints price 63 EN rows nothing priced before, and no printing loses its
-price. Duelist Pack: Kaiba and Yugi split the same way in 2024 but number
-both prints alike, one row of ours, so their V.2 stays a twin.
+published (datastore-gen mints one for the European first prints of all
+seven shelves) or refuses it, and a reprint numbered bare to its EN set.
+Replaying the 2026-09-24 catalog: 208 North American products take their
+pair back, 64 bare reprints price 63 EN rows nothing priced before, and no
+printing loses its price. Duelist Pack: Kaiba and Yugi split the same way
+in 2024 but number both prints alike, one row of ours, so their V.2 stays a
+twin.
 
 **Strictly sequential, not pooled.** Measured directly: a concurrency ladder
 (1→24 workers) plateaus at ~1.4 successful calls/sec regardless of worker

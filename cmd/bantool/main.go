@@ -461,6 +461,7 @@ func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sell
 	}
 	// On the cloud backends Close is what publishes, so only a clean encode
 	// may reach it: an error or a panic aborts, keeping the last good dump
+	// there; a local file is truncated on open and removed on abort
 	var complete bool
 	defer func() {
 		if !complete {
@@ -499,6 +500,7 @@ func dumpVendor(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, vend
 	}
 	// On the cloud backends Close is what publishes, so only a clean encode
 	// may reach it: an error or a panic aborts, keeping the last good dump
+	// there; a local file is truncated on open and removed on abort
 	var complete bool
 	defer func() {
 		if !complete {
