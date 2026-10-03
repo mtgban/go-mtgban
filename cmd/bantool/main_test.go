@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -157,5 +159,42 @@ func TestDumpCommitsACompleteEncode(t *testing.T) {
 				t.Errorf("committed %v, aborted %v; want a commit alone", bucket.committed, bucket.aborted)
 			}
 		})
+	}
+}
+
+// loadStub is a scraper that holds a row whether or not its Load fails.
+type loadStub struct {
+	name string
+	err  error
+}
+
+func (s *loadStub) Load(context.Context) error { return s.err }
+
+func (s *loadStub) Info() mtgban.ScraperInfo {
+	return mtgban.ScraperInfo{Shorthand: s.name}
+}
+
+func (s *loadStub) Inventory() mtgban.InventoryRecord {
+	return mtgban.InventoryRecord{"uuid": {{Price: 1}}}
+}
+
+// A scraper whose Load failed may hold part of its data, which must not
+// reach the dump, while the scrapers around it still do.
+func TestLoadKeepsOnlyWhatLoaded(t *testing.T) {
+	scrapers := []mtgban.Scraper{
+		&loadStub{name: "A"},
+		&loadStub{name: "B", err: errors.New("2 of 3 pages failed")},
+		&loadStub{name: "C"},
+	}
+	loaded, errs := load(context.Background(), scrapers)
+	if len(loaded) != 2 || loaded[0].Info().Shorthand != "A" || loaded[1].Info().Shorthand != "C" {
+		t.Errorf("load() kept %d scrapers, want A and C", len(loaded))
+	}
+	if len(errs) != 1 || !strings.Contains(errs[0].Error(), "B not dumped") {
+		t.Errorf("load() errors = %v, want B's alone", errs)
+	}
+	sellers, _ := mtgban.UnfoldScrapers(loaded)
+	if len(sellers) != 2 {
+		t.Errorf("UnfoldScrapers() made %d sellers, want 2", len(sellers))
 	}
 }
