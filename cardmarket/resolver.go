@@ -1184,7 +1184,7 @@ func (r *resolver) yugiohShelfCode(product *cm.Product, name, rarity, region str
 			continue
 		}
 		// A version names its rarity where the shelf sells the card in two.
-		if rarity != "" && !strings.EqualFold(co.Rarity, rarity) {
+		if rarity != "" && co.Rarity != mtgmatcher.RarityName(rarity) {
 			continue
 		}
 		return id

@@ -268,7 +268,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// printing whose language a listing did not ask for.
 			Language: cmp.Or(card.Language, "English"),
 			Colors:   colors,
-			Rarity:   card.Rarity,
+			Rarity:   b.AddRarity(card.Rarity),
 
 			OriginalReleaseDate: card.OriginalReleaseDate,
 

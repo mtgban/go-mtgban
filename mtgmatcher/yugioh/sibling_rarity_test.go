@@ -52,9 +52,10 @@ func TestSiblingRarity(t *testing.T) {
 				t.Fatalf("Match(%v) = %v", tt.in, err)
 			}
 			co := b.UUIDs[id]
-			if co.SetCode != tt.wantSet || co.Number != tt.wantNumber || co.Rarity != tt.wantRarity {
+			rarity := b.RarityLabel(co.Rarity)
+			if co.SetCode != tt.wantSet || co.Number != tt.wantNumber || rarity != tt.wantRarity {
 				t.Errorf("Match(%v) = %s|%s|%s, want %s|%s|%s", tt.in,
-					co.SetCode, co.Number, co.Rarity, tt.wantSet, tt.wantNumber, tt.wantRarity)
+					co.SetCode, co.Number, rarity, tt.wantSet, tt.wantNumber, tt.wantRarity)
 			}
 		})
 	}

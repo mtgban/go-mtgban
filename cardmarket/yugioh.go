@@ -283,7 +283,7 @@ func (r *resolver) yugiohWorded(product *cm.Product, cardID string) string {
 		return ""
 	}
 	co, err := r.backend.GetUUID(cardID)
-	if err != nil || rarityNames(fields[1], co.Rarity) {
+	if err != nil || rarityNames(fields[1], r.backend.RarityLabel(co.Rarity)) {
 		return ""
 	}
 	id, err := r.matchYugioh(product)
@@ -291,7 +291,7 @@ func (r *resolver) yugiohWorded(product *cm.Product, cardID string) string {
 		return ""
 	}
 	alt, err := r.backend.GetUUID(id)
-	if err != nil || !rarityNames(fields[1], alt.Rarity) {
+	if err != nil || !rarityNames(fields[1], r.backend.RarityLabel(alt.Rarity)) {
 		return ""
 	}
 	// Keep the bridged run, which the columns are laid out by.
