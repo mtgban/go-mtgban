@@ -364,7 +364,7 @@ func (gallery *GalleryBlade) newBackend(properties map[string][]string) *mtgmatc
 			IsPromo: b.Sets[setCode].Type == "promo",
 
 			Colors: colors,
-			Rarity: card.Rarity.Value.ID,
+			Rarity: b.AddRarity(card.Rarity.Value.ID),
 
 			Types:      types,
 			Subtypes:   card.Tags.Tags,

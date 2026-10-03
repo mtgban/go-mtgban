@@ -330,7 +330,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// Pikachu World Collection does. A language is not a promotion
 			// and is not among the promo types.
 			Language:  cmp.Or(card.Language, "English"),
-			Rarity:    card.Rarity,
+			Rarity:    b.AddRarity(card.Rarity),
 			Watermark: card.Watermark,
 
 			OriginalReleaseDate: card.OriginalReleaseDate,

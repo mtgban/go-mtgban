@@ -964,7 +964,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		if csi.backend.Game == mtgmatcher.GamePokemon && pokemonNonHolo.MatchString(product.Name) {
 			co, cerr := csi.backend.GetUUID(cardID)
 			if cerr == nil && !co.HasFinish(mtgmatcher.FinishNonfoil) &&
-				strings.Contains(co.Rarity, "Holo") {
+				strings.Contains(co.Rarity, "holo") {
 				continue
 			}
 		}

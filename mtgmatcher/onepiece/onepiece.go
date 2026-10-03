@@ -280,7 +280,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			},
 			Language:            cmp.Or(card.Language, "English"),
 			Colors:              mtgmatcher.ColorNames(card.Colors),
-			Rarity:              mtgmatcher.RarityName(card.Rarity),
+			Rarity:              b.AddRarity(card.Rarity),
 			Types:               []string{card.Type},
 			PromoTypes:          promoTypes,
 			IsOversized:         slices.Contains(promoTypes, "oversized"),

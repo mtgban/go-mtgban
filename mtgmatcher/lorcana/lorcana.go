@@ -487,7 +487,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		rarity := mtgmatcher.RarityName(card.Rarity)
+		rarity := b.AddRarity(card.Rarity)
 
 		colors := mtgmatcher.ColorNames(card.Colors)
 
