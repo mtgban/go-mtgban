@@ -30,9 +30,9 @@ func TestCatalogFabMarvel(t *testing.T) {
 		rarity     string
 		wantRarity string
 	}{
-		{"the rarity names the marvel", "Marvel", "Marvel"},
-		{"and a tier that describes rather than names leaves the printing alone", "Majestic", "Majestic"},
-		{"as does a catalog that says nothing", "", "Majestic"},
+		{"the rarity names the marvel", "Marvel", "marvel"},
+		{"and a tier that describes rather than names leaves the printing alone", "Majestic", "majestic"},
+		{"as does a catalog that says nothing", "", "majestic"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			id, err := resolveProduct(b, GameFleshAndBlood, product(tt.rarity))
