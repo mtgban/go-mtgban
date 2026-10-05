@@ -197,7 +197,7 @@ var card2setTable = map[string]string{
 	"Tempered Steel (Full Art Textless)": "Scars of Mirrodin Promos",
 
 	// Future Sight frame promos the store files under its Secret Lair
-	// shelf, which never says the drop the way hasSeveralDrops needs.
+	// shelf, which never says the drop the way secretLairDrops needs.
 	"The First Sliver (Future Sight) (003)": "PF25",
 	"The Ur-Dragon (003) (Future Sight)":    "PF25",
 }
