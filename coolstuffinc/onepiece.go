@@ -188,6 +188,14 @@ func onePieceRenamedTreatment(b *mtgmatcher.Backend, id, name string) string {
 	return alternate
 }
 
+// onePieceAlternatePromo reports a listing of the 25th Edition premium card
+// collection. The storefront shelves its cards on their own set, where the
+// catalog files them on the promo shelf as the card's Alternate Art, and the
+// "Manga Background" its notes describe routes the card to a manga printing.
+func onePieceAlternatePromo(name string) bool {
+	return strings.Contains(strings.ToLower(name), "premium card collection - 25th edition")
+}
+
 // onePieceParallelPrinting answers the printing a "(Alternate Art)" listing
 // means when the catalog calls that printing "Parallel", and "" otherwise.
 //
