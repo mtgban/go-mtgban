@@ -338,6 +338,7 @@ type shelf struct {
 // Golden)", so fabFinish still reads it off the corrected name.
 var fabRenames = map[int]string{
 	822630: "Kabuto of Imperial Authority (Cold Foil Golden)", // "Imperial Kabuto (Cold Foil Golden)", FAB292
+	849485: "Stand Strong (Cold Foil)",                        // "(Rainbow Foil)", Super Slam prints SUP169 in Cold Foil
 	905276: "Otherworldly Sins (Red) (Marvel)",                // "Otherwordly Sins (Red) (Marvel)", JDG090
 }
 
