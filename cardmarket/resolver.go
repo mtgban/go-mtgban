@@ -1001,7 +1001,7 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 // an expansion naming no set of ours, or a run we have no set for, is a
 // catalog we do not carry rather than a product that named nothing.
 func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
-	name := versionTail.ReplaceAllString(product.Name, "")
+	name := yugiohArtToken.ReplaceAllString(versionTail.ReplaceAllString(product.Name, ""), "Art Token: $1")
 	var rarity string
 	if fields := rarityTail.FindStringSubmatch(product.Name); fields != nil {
 		rarity = fields[1]
@@ -1089,6 +1089,9 @@ func (r *resolver) matchYugioh(product *cm.Product) (string, error) {
 				return id, nil
 			}
 		}
+	}
+	if id := r.yugiohTokenNumber(product); id != "" {
+		return id, nil
 	}
 	if carried && region != "" && tail != "" {
 		id := r.yugiohInfixed(product, name, rarity, region, tail)

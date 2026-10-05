@@ -10,6 +10,49 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// yugiohTokenPrefixes gives the collector number each Token Promos shelf's
+// tokens are numbered with. Cardmarket names a token by its art ("Grinder
+// Token", "Judge Token") and the datastore by the card it stands for ("Token:
+// Grinder Golem"), so only the number names the printing.
+var yugiohTokenPrefixes = map[string]string{
+	"Token Promos 1": "TKN1-EN",
+	"Token Promos 3": "TKN3-EN",
+	"Token Promos 4": "TKN4-EN",
+}
+
+// yugiohArtToken matches the Legendary Duelists art tokens, which the
+// datastore names the other way round: "Art Token: Mai Valentine".
+var yugiohArtToken = regexp.MustCompile(`^(.+) Art Token$`)
+
+// yugiohTokenNumber answers the one printing of the product's shelf that
+// carries the number the shelf's token prefix gives it, and nothing when
+// there is none or the number is held twice.
+func (r *resolver) yugiohTokenNumber(product *cm.Product) string {
+	prefix := yugiohTokenPrefixes[product.ExpansionName]
+	tail := numberTail.FindString(product.Number)
+	if prefix == "" || tail == "" {
+		return ""
+	}
+	var found string
+	for _, edition := range yugiohEditions(product.ExpansionName) {
+		set, err := r.backend.GetSetByName(edition)
+		if err != nil {
+			continue
+		}
+		for _, uuid := range r.backend.GetUUIDsInSet(set.Code) {
+			co, err := r.backend.GetUUID(uuid)
+			if err != nil || !strings.EqualFold(co.Number, prefix+tail) {
+				continue
+			}
+			if found != "" {
+				return ""
+			}
+			found = uuid
+		}
+	}
+	return found
+}
+
 // yugiohExpansions maps the Cardmarket Yu-Gi-Oh expansions the matcher
 // resolves to no set onto the sets their bridged products land in, by code
 // where the catalog's own name is nothing the storefront would write. Most
