@@ -28,9 +28,6 @@ type Market struct {
 	// Only retrieve data from a single edition
 	targetEdition string
 
-	// Keep same-conditions entries
-	keepDuplicates bool
-
 	exchangeRates map[string]float64
 	client        *CTAuthClient
 	backend       *mtgmatcher.Backend
@@ -480,26 +477,7 @@ func (ct *Market) Load(ctx context.Context) error {
 			return ct.processExpansion(ctx, results, item.id)
 		},
 		func(result resultChan) {
-			// Only keep one offer per condition, the cheapest since listings
-			// arrive cheapest first, holding every offer's copies
-			entries := ct.inventory[result.cardID]
-			for i := range entries {
-				if entries[i].Conditions == result.invEntry.Conditions && entries[i].SellerName == result.invEntry.SellerName && !ct.keepDuplicates {
-					entries[i].Available += result.invEntry.Quantity
-					return
-				}
-			}
-			result.invEntry.Available = result.invEntry.Quantity
-
-			var err error
-			if ct.keepDuplicates {
-				err = ct.inventory.AddRelaxed(result.cardID, result.invEntry)
-			} else {
-				err = ct.inventory.Add(result.cardID, result.invEntry)
-			}
-			if err != nil {
-				ct.printf("%s", err.Error())
-			}
+			addFirstOffer(ct.inventory, result, ct.printf)
 		},
 		ct.printf,
 	)
@@ -507,6 +485,25 @@ func (ct *Market) Load(ctx context.Context) error {
 	ct.inventoryDate = time.Now()
 
 	return nil
+}
+
+// addFirstOffer keeps the first offer per condition and storefront, the
+// cheapest since listings arrive cheapest first, holding every offer's
+// copies as its Available. Singles and sealed both fold through it.
+func addFirstOffer(inventory mtgban.InventoryRecord, result resultChan, printf func(string, ...any)) {
+	entries := inventory[result.cardID]
+	for i := range entries {
+		if entries[i].Conditions == result.invEntry.Conditions && entries[i].SellerName == result.invEntry.SellerName {
+			entries[i].Available += result.invEntry.Quantity
+			return
+		}
+	}
+
+	result.invEntry.Available = result.invEntry.Quantity
+	err := inventory.Add(result.cardID, result.invEntry)
+	if err != nil {
+		printf("%s", err.Error())
+	}
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
