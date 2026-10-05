@@ -1456,9 +1456,9 @@ func lorcanaMarker(number string) string {
 // So a marker the resolved printing does not wear is asked of the name: the
 // printing at that set and number whose name is the product's plus a suffix
 // is the sibling the marker names. A marker with no such printing behind it
-// is refused rather than folded onto the base card, which is a product Star
-// City Games sells and the datastore does not carry - a missing price, where
-// folding it in corrupts the price of a card that is carried.
+// is skipped rather than folded onto the base card: Star City Games sells a
+// printing the datastore does not carry (a misprint, or one not added yet),
+// and a missing price beats corrupting the price of a card that is carried.
 func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string, error) {
 	number := lorcanaNumber(p)
 	variation := number
@@ -1548,6 +1548,9 @@ func lorcanaSibling(b *mtgmatcher.Backend, p CatalogProduct, base *mtgmatcher.Ca
 			continue
 		}
 		candidates = append(candidates, co)
+	}
+	if len(candidates) == 0 {
+		return "", mtgmatcher.ErrUnsupported
 	}
 	found := soleSibling(candidates)
 	if found == nil {

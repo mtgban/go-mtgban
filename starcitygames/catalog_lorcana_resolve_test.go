@@ -1,6 +1,7 @@
 package starcitygames
 
 import (
+	"errors"
 	"log"
 	"os"
 	"testing"
@@ -36,8 +37,8 @@ func withLorcana(t *testing.T) *mtgmatcher.Backend {
 // requireSibling skips a case whose premise the installed datastore does not
 // hold. The errata printings a sku marker reaches are recent rows, and the
 // Lorcana file a checkout carries may predate them; against such a copy the
-// marker has nothing to reach and the refusal is the rule working rather than
-// the rule broken, so there is nothing here to assert either way.
+// marker has nothing to reach and the listing is skipped, so
+// there is nothing here to assert either way.
 func requireSibling(t *testing.T, b *mtgmatcher.Backend, name string) {
 	t.Helper()
 	uuids, err := b.SearchEquals(name)
@@ -56,10 +57,11 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 	b := withLorcana(t)
 
 	for _, tt := range []struct {
-		name                                string
-		product                             CatalogProduct
-		needs                               string
-		wantSet, wantNum, wantName, wantErr string
+		name                       string
+		product                    CatalogProduct
+		needs                      string
+		wantSet, wantNum, wantName string
+		unsupported                bool
 	}{
 		{
 			name: "the datastore's own variant letter resolves outright",
@@ -101,8 +103,8 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 				Set: "The First Chapter", CollectorNumber: "005",
 				Finish: "Foil", FinishGroup: "Foil",
 			},
-			needs:   "Hades - King of Olympus (Oversized)",
-			wantErr: "no printing beside 1 5 for the sku marker",
+			needs:       "Hades - King of Olympus (Oversized)",
+			unsupported: true,
 		},
 		{
 			// The jumbo is sold in one foil and nothing else, so adopting it
@@ -113,17 +115,17 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 				Set: "The First Chapter", CollectorNumber: "118",
 				Finish: "Non-foil", FinishGroup: "Non-foil",
 			},
-			needs:   "Mulan - Imperial Soldier (Oversized)",
-			wantErr: "no printing beside 1 118 for the sku marker",
+			needs:       "Mulan - Imperial Soldier (Oversized)",
+			unsupported: true,
 		},
 		{
-			name: "a marker no printing answers is refused, not folded onto the base",
+			name: "a marker no printing answers is skipped, not folded onto the base",
 			product: CatalogProduct{
 				SKU: "SGL-LOR-001-143M-ENC", Name: "Chief Tui - Respected Leader",
 				Set: "The First Chapter", CollectorNumber: "143",
 				Finish: "Foil", FinishGroup: "Foil",
 			},
-			wantErr: "no printing beside 1 143 for the sku marker",
+			unsupported: true,
 		},
 		{
 			name: "an unmarked number keeps the base printing",
@@ -140,9 +142,9 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 				requireSibling(t, b, tt.needs)
 			}
 			id, err := resolveProduct(b, GameLorcana, tt.product)
-			if tt.wantErr != "" {
-				if err == nil || err.Error() != tt.wantErr {
-					t.Fatalf("got id %q err %v, want error %q", id, err, tt.wantErr)
+			if tt.unsupported {
+				if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+					t.Fatalf("got id %q err %v, want ErrUnsupported", id, err)
 				}
 				return
 			}
