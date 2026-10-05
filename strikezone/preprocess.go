@@ -367,12 +367,28 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		if cardName == "Arcane Signet" && mtgmatcher.Contains(variation, "Etched") {
 			edition = "P30M"
 		}
+	case "Alpha", "Beta":
+		// A bare basic land is the first art, the others being listed as B
+		// (and C).
+		if variation == "" && magic.IsBasicLand(cardName) && !strings.Contains(cardName, " ") {
+			variation = "A"
+		}
+	case "Aetherdrift":
+		// The Aetherdrift shelf also holds the Spotlight Series Chrome Mox.
+		if cardName == "Chrome Mox" {
+			edition = "SPG"
+		}
 	case "Duel of the Planeswalkers":
 		edition = "Duels of the Planeswalkers"
 	case "Hours of Devestation":
 		edition = "HOU"
 	case "Secret Lair Commander: Heads I Win":
 		edition = "Secret Lair Commander: Heads I Win, Tails You Lose"
+		// A set code names the set the card was reprinted from.
+		_, isSet := b.Sets[variation]
+		if isSet && len(b.MatchInSet(cardName, "PLST")) > 0 {
+			edition = "PLST"
+		}
 	case "Secret Lair Commander: From Cute to Brute":
 		if slices.Contains(fromCuteToBrutePathways, cardName) {
 			edition = "PLST"
