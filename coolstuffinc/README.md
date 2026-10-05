@@ -276,20 +276,48 @@ from the shelf collision this section is about.
   nonfoil for a plain rare is a catalog gap rather than the storefront
   inventing a printing, and refusing those would drop real listings to
   catch nothing; see the function's own doc comment for the full
-  reasoning), and `pokemonPromoShelf` above.
-- **One Piece**: `nameQualifiers` (buylist-only - the retail note already
-  describes the art, not the printing, so it's read raw instead),
+  reasoning), and `pokemonPromoShelf` above. Four more rules re-ask a
+  listing where the catalog files it elsewhere, each kept only where the
+  finished listing lands on the shelf's own set: `pokemonNoteShelves`
+  (a note naming a regional championship, a Build & Battle kit, an XY
+  prerelease or a Dragon Vault blister, whose stamp wording would
+  otherwise demand a stamp the catalog does not label),
+  `pokemonCosmosHolo` (a Promo-rarity listing bracketed Holo Promo, Cosmo
+  Holo or Holo is the collection-box cosmos holo on the miscellaneous
+  shelf, at the set's own number), `pokemonProfessor` (the other
+  Prof./Professor spelling, taken only when it lands at the listing's
+  number and the listing's own does not), and the jumbo shelf
+  (`Pokemon Oversized Cards` is the catalog's Jumbo Cards, without the
+  programme prefix on its number). `ME094` is the catalog's `MEP094`.
+  `pokemonRespellings` is a replacer, so a bracket behind a misspelled
+  name keeps matching.
+- **One Piece**: `onePiecePIDs` is a closed table of storefront product
+  ids mapped to their TCGplayer product id, for the DON!! cards and
+  reprinted promos the storefront words in prose the catalog never uses;
+  it is read first, on both feeds, because the pid is shared by both and
+  no wording reaches those printings (the catalog tells DON!! apart by
+  promo types and watermarks the storefront does not write). Past that,
+  both feeds build the variation the same way: `nameQualifiers` (the
+  brackets the name carries behind the card's own) plus the notes, then
   `onePieceEvents`/`eventNamed` (a closed table of storefront nicknames
   for a catalog event - "afro luffy promo", a playmat SKU, a participation
   pack - one entry per nickname, deliberately not generalized: a nickname
-  names one product), `onePieceRenamedTreatment` (the Gear5 starter deck
-  calls its premium printing "Full Art" where the catalog calls every
-  premium printing in that set "Parallel" - the guard requires the word to
-  name a real catalog label *somewhere*, the card's own set to hold no
-  printing under that label already, and the set to carry exactly one
-  premium label throughout, so a genuine Full Art set is never touched),
-  `onePieceSpellings` (one entry, a dropped word), and `onePieceShelf`
-  above.
+  names one product). After the match, `onePieceRefined` corrects a
+  landing the wording could not reach: `onePieceRenamedTreatment` (the
+  Gear5 starter deck calls its premium printing "Full Art" where the
+  catalog calls every premium printing in that set "Parallel" - the guard
+  requires the word to name a real catalog label *somewhere*, the card's
+  own number to hold no printing under that label, a single alternate
+  printing at that number, and the name to carry no second qualifier, so a
+  genuine Full Art is never touched) and `onePieceParallelPrinting` (OP01
+  and OP02 file their alternate arts as Parallel, so the storefront's
+  "Alternate Art" matched the PRB-01 reprint or the manga row: the shelf's
+  own set answers when it holds one parallel printing of the number and no
+  plain alternate art of it). `onePieceAlternatePromo` files the 25th
+  Edition premium card collection on the promo shelf as the card's
+  Alternate Art. `onePieceSpellings` is a replacer that rewrites the part
+  that differs and keeps the number or bracket behind it, and
+  `onePieceShelf` is above.
 - **Yu-Gi-Oh**: `catalogSpelling`/`csiSpellings` (nine hand-typos, kept as
   an exact table rather than nearest-match - 255 name pairs inside one set
   are a single edit apart, e.g. "Harpie Lady 1"/"2", so a distance-based
@@ -306,7 +334,16 @@ from the shelf collision this section is about.
   hand-verified listings selling a rarity/number pair the catalog does not
   carry at all - refusing the general shape "rarity the card's number
   doesn't have" would drop 55 listings to catch these 2, and ~35 of the 55
-  are legitimately-named decorated rarities).
+  are legitimately-named decorated rarities). The buylist also needs
+  `yugiohCodes` (SD9/HL3 for the catalog's SD09/HL03, in the Number and the
+  note), `yugiohImageCard` (a refused row retried with the code its own
+  image sku carries, accepted only on a card of the same name) and
+  `yugiohArtNotes` (the 26LP alternate art is described by its border and
+  lettering, and is asked as the catalog's Emblazoned Alternate Art without
+  the bracket or rarity that make the matcher read the Emblazoned Secret
+  Rare). `csiAmbiguousNote` is shared with Pokemon: a note opening "Can be"
+  says the product is one of several printings, and a refusal of one is not
+  logged.
 - **Gundam**: `gundam.go`, one file, four problems - the shelf name
   carries a set-code prefix that narrows nothing (the same number repeats
   across GD01/its beta/the deck-build box) and is stripped
@@ -319,7 +356,8 @@ from the shelf collision this section is about.
   literal Greek letter); and the storefront's number spelling disagrees
   with the catalog's in three ways at once - a dropped digit, an extra
   zero, and a rarity letter suffixed onto a card number that carries none
-  (`gundamNumberSpelling`).
+  (`gundamNumberSpelling`). `gundamTier` also reads the Green Dress
+  Cagalli as the R+ of its number, which only its name says.
 - **Palworld**: `palworld.go`, one file, one problem - the storefront
   sometimes glues a rarity code onto the number's tail
   (`"EBP01-025RR"`), inconsistently even with itself (plain-spaced on one
@@ -329,15 +367,25 @@ from the shelf collision this section is about.
   SSP, TSP, TSR) the catalog numbers as printings of their own - splitting
   those apart would answer the base card for a parallel. A rarity code
   nobody here has heard of is left glued to the number rather than
-  guessed at.
-- **Lorcana**: `lorcana.go`, one file, one problem - a storefront
+  guessed at. The LA Release Party souls are named "Soul - Dawn of
+  Palpagos" with a colour tail where the catalog names every Soul promo
+  "Soul" (`palworldSpellings`).
+- **Lorcana**: `lorcana.go`, one file, two problems - a storefront
   misspelling (`lorcanaSpellings`, exact-keyed for the reason
   `csiSpellings` gives, and the more so here: a name is a character and a
   title joined by a dash, the title is the whole of what tells one
   printing of a character from another, and Rise of the Floodborn sells
-  three Basils at consecutive numbers 138-140). No collision shape is
-  known otherwise - both feeds still pass edition and the raw
-  note/number straight through to `mtgmatcher.Match` untranslated.
+  three Basils at consecutive numbers 138-140), and the Illumineer's Quest
+  prize cards, which the storefront shelves on the set whose card they
+  repeat at a number that set does not reach: `lorcanaQuestNotes` maps the
+  frame the note names to its quest, kept only where the card exists
+  there. Both feeds otherwise pass edition and the raw note/number
+  straight through to `mtgmatcher.Match` untranslated.
+- **Riftbound**: `riftboundShelf` redirects a Nexus Night rune by the set
+  code its note opens with, and a promo whose name carries `(Prerelease)`
+  or `(Origins Stamp)` to the Release Event Promos shelf, where the promo
+  shelf holds a printing of its own at the same number. `riftboundNotes`
+  drops the year from "Worlds Bundle 2025 Promo".
 
 ## Known gaps
 
