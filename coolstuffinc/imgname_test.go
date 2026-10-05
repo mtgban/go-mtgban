@@ -99,6 +99,24 @@ func TestPreprocessImageStem(t *testing.T) {
 			imgURL:  "https://s.cf.net/i/BorosGuildgate244.jpg",
 			wantSet: "GRN", wantNum: "244",
 		},
+		{
+			desc:    "the name trails the set and number",
+			name:    "Roil Eruption",
+			edition: "Promo",
+			imgURL:  "https://s.cf.net/i/znr389roileruption.jpg",
+			wantSet: "ZNR", wantNum: "389",
+		},
+		{
+			// The bare number is the intro pack's; only the stem carrying
+			// the stamped printing's "s" may name the prerelease one, so
+			// this one is left to the wording.
+			desc:    "a prerelease stem without the stamp's letter is left alone",
+			name:    "Ivorytusk Fortress",
+			edition: "Prerelease Promo",
+			variant: "Khans of Tarkir Prerelease Promo",
+			imgURL:  "https://s.cf.net/i/pktk179ivorytuskfortress.jpg",
+			wantSet: "Prerelease Promo", wantNum: "Khans of Tarkir Prerelease Promo",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			got, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL)

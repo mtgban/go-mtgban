@@ -159,6 +159,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		return input, nil
 	}
 
+	imgName = imageNumberStem(b, cardName, edition, variant, imgName)
 	if len(imgName) > 4 {
 		for i := range 2 {
 			maybeSet := strings.ToUpper(imgName[:i+3])
@@ -325,6 +326,31 @@ func stemLetters(name string) string {
 		}
 		return -1
 	}, strings.ToLower(name))
+}
+
+// imageNumberStem drops the card's own name from the end of an image stem
+// ("znr389roileruption"), leaving the set and number the plain stems carry.
+// The prerelease shelf keeps only the stems that carry the "s" of the stamped
+// printing, since the bare number there is the intro pack's, and a variant
+// the matcher already places by its own table is left to it.
+func imageNumberStem(b *mtgmatcher.Backend, cardName, edition, variant, imgName string) string {
+	name := stemLetters(cardName)
+	low := strings.ToLower(imgName)
+	if name == "" || len(low) <= len(name) || !strings.HasSuffix(low, name) {
+		return imgName
+	}
+	stem := imgName[:len(imgName)-len(name)]
+	if edition == "Prerelease Promo" && !strings.HasSuffix(strings.ToLower(stem), "s") {
+		return imgName
+	}
+	set, err := b.GetSetByName(edition)
+	if err == nil {
+		_, tabled := magic.VariantsTable[set.Name][cardName][strings.ToLower(variant)]
+		if tabled {
+			return imgName
+		}
+	}
+	return stem
 }
 
 // imageNumberAfterName reads a stem that writes the card's name before the
