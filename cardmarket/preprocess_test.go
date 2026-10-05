@@ -255,6 +255,28 @@ func TestFallbackKeepsWCDProductsOnWCDPrintings(t *testing.T) {
 	}
 }
 
+// TestFallbackIgnoresLanguageCopies pins Fallback answering with the English
+// printings of a Secret Lair product: the Japanese copies minted beside them
+// repeat the product's mcmId and must not make the id ambiguous.
+func TestFallbackIgnoresLanguageCopies(t *testing.T) {
+	b := realDatastore(t)
+
+	product := &cm.Product{IDProduct: 680699, Name: "Carrion Feeder"}
+	cardID, cardIDFoil := Fallback(b, product)
+	for _, id := range []string{cardID, cardIDFoil} {
+		if id == "" {
+			t.Fatal("Fallback deferred on a product whose id names one English printing")
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.SetCode != "SLD" || co.Language != "English" {
+			t.Errorf("Fallback kept %s, want the English SLD printing", co)
+		}
+	}
+}
+
 // TestSLDCommanderDeckCardDisambiguatesByNumber pins sldCommanderDeckCard's
 // disambiguation rule: a deck that reprints one name under more than one
 // distinct printing - four Shapeshifter Tokens (SLD 1906-1909) in
