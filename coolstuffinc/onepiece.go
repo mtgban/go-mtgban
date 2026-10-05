@@ -135,7 +135,7 @@ func onePieceShelf(shelf, name string) string {
 
 // onePieceRenamedTreatment answers the printing a One Piece listing means
 // when it names its treatment with a word the catalog does not use for that
-// set, and "" wherever the listing is already answered.
+// card, and "" wherever the listing is already answered.
 //
 // This storefront calls the Gear5 starter deck's premium printing "Full Art"
 // where the catalog files every alternate printing of that set as "Parallel",
@@ -144,10 +144,11 @@ func onePieceShelf(shelf, name string) string {
 //
 // The guard is what keeps it from touching a real Full Art. The word must
 // name a label the catalog uses somewhere, so a typo reaches nothing; the
-// card's own set must hold no printing of it, which is false for all 75 real
-// Full Art printings, since their sets are the ones that use the name; and
-// the set must wear a single premium label throughout, so the one printing
-// the storefront can mean is the one the number carries.
+// card's own number must hold no printing of it, which is false for every
+// real Full Art printing; and the number must hold a single alternate
+// printing, so the one printing the storefront can mean is the one the
+// number carries. A listing naming a second qualifier is not answered by the
+// treatment alone, so it is left where it landed.
 func onePieceRenamedTreatment(b *mtgmatcher.Backend, id, name string) string {
 	co, err := b.GetUUID(id)
 	if err != nil || len(co.PromoTypes) > 0 {
@@ -161,28 +162,30 @@ func onePieceRenamedTreatment(b *mtgmatcher.Backend, id, name string) string {
 	labels := map[string]bool{}
 	var alternate string
 	for _, card := range set.Cards {
+		if card.Number != co.Number || len(card.PromoTypes) == 0 {
+			continue
+		}
+		if alternate != "" && alternate != card.UUID {
+			return ""
+		}
+		alternate = card.UUID
 		for _, promoType := range card.PromoTypes {
 			labels[promoType] = true
 		}
-		if card.Number == co.Number && len(card.PromoTypes) > 0 {
-			if alternate != "" && alternate != card.UUID {
-				return ""
-			}
-			alternate = card.UUID
-		}
 	}
-	if len(labels) != 1 || alternate == "" {
+	if alternate == "" {
 		return ""
 	}
 
-	for _, match := range nameParenthetical.FindAllStringSubmatch(name, -1) {
-		slug := mtgmatcher.PromoTypeSlug(strings.TrimSpace(match[1]))
-		if slug == "" || labels[slug] || !slices.Contains(b.AllPromoTypes, slug) {
-			continue
-		}
-		return alternate
+	qualifiers := nameQualifierList(name)
+	if len(qualifiers) != 1 {
+		return ""
 	}
-	return ""
+	slug := mtgmatcher.PromoTypeSlug(qualifiers[0])
+	if slug == "" || labels[slug] || !slices.Contains(b.AllPromoTypes, slug) {
+		return ""
+	}
+	return alternate
 }
 
 // eventNamed adds the catalog's name for every event the wording gives its

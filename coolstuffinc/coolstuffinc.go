@@ -108,6 +108,12 @@ var nameParenthetical = regexp.MustCompile(`\(([^)]+)\)`)
 // nor a description. A number-shaped bracket is left behind: the feed repeats
 // the collector number there and it says nothing the number field has not.
 func nameQualifiers(name string) string {
+	return strings.Join(nameQualifierList(name), " ")
+}
+
+// nameQualifierList answers each qualifier nameQualifiers joins, one per
+// bracket.
+func nameQualifierList(name string) []string {
 	var words []string
 	for _, match := range nameParenthetical.FindAllStringSubmatch(name, -1) {
 		qualifier := strings.TrimSpace(match[1])
@@ -116,7 +122,7 @@ func nameQualifiers(name string) string {
 		}
 		words = append(words, qualifier)
 	}
-	return strings.Join(words, " ")
+	return words
 }
 
 // buylistNumberWord matches the number-shaped words of a buylist note.
@@ -592,7 +598,8 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						}
 						break
 					}
-					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(onePieceSpelling(jpArtWording(notes))), Foil: isFoil}
+					spelled := onePieceSpelling(jpArtWording(cardName))
+					theCard = &mtgmatcher.InputCard{Name: spelled, Edition: shelf, Variation: eventNamed(strings.TrimSpace(nameQualifiers(spelled) + " " + onePieceSpelling(jpArtWording(notes)))), Foil: isFoil}
 				case mtgmatcher.GameGundam:
 					name, variation := gundamCard(csi.backend, cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity, cardName)), Foil: isFoil}
@@ -649,6 +656,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						}
 					}
 					return
+				}
+
+				if csi.backend.Game == mtgmatcher.GameOnePiece {
+					renamed := onePieceRenamedTreatment(csi.backend, cardID, cardName)
+					if renamed != "" {
+						cardID = renamed
+					}
 				}
 
 				// Magic-only finish sanity check: skip cards that do not have the
