@@ -578,7 +578,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					}
 					variation := catalogTreatment(notes)
 					shelf = pokemonPromoShelf(csi.backend, cardName, shelf, rarity, isFoil, variation)
-					theCard = pokemonListing(csi.backend, cardName, shelf, variation, isFoil)
+					theCard = pokemonCosmosHolo(csi.backend, pokemonListing(csi.backend, cardName, shelf, variation, isFoil), rarity)
 				case mtgmatcher.GameOnePiece:
 					tcgID, named := onePiecePIDs[pid]
 					if named {
