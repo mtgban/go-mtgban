@@ -223,9 +223,45 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 		}
 	}
 	if numbered != "" {
+		card.Name = pokemonProfessor(b, card, numbered)
 		card.Name += " - " + numbered
 	}
 	return card
+}
+
+// pokemonProfessor answers the name a Professor card goes by in the catalog
+// where this storefront spells it the other way round ("Prof." for
+// "Professor" and back, each the way some sets print it). The other spelling
+// is taken only when the listing's own does not land at its number and the
+// other does.
+func pokemonProfessor(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, numbered string) string {
+	var swapped string
+	switch {
+	case strings.HasPrefix(card.Name, "Prof. "):
+		swapped = "Professor " + strings.TrimPrefix(card.Name, "Prof. ")
+	case strings.HasPrefix(card.Name, "Professor "):
+		swapped = "Prof. " + strings.TrimPrefix(card.Name, "Professor ")
+	default:
+		return card.Name
+	}
+	num := mtgmatcher.ExtractNumber(numbered)
+	if num == "" {
+		return card.Name
+	}
+	landsAtNumber := func(name string) bool {
+		probe := *card
+		probe.Name = name + " - " + numbered
+		id, err := b.Match(&probe)
+		if err != nil {
+			return false
+		}
+		co, err := b.GetUUID(id)
+		return err == nil && strings.TrimLeft(co.Number, "0") == num
+	}
+	if landsAtNumber(card.Name) || !landsAtNumber(swapped) {
+		return card.Name
+	}
+	return swapped
 }
 
 // pokemonBuylistCard reads a buylist row the way a sell listing is read, the

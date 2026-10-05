@@ -36,6 +36,9 @@ func TestNumberedListingReachesTheNameRules(t *testing.T) {
 		// A Team Galactic invention, sold under the invention alone.
 		{"SP Radar - 96/111", "Platinum Rising Rivals", "96", "96-111_89809"},
 		{"Poke Turn - 118/127", "Platinum Base Set", "118", "118-127_89807"},
+		// A Professor card spelled the other way round from its set's own.
+		{"Professor Oak's Research - 98/112", "Ex FireRed and LeafGreen", "98", "98-112_88403"},
+		{"Prof. Elm's Training Method - 148/165", "Expedition", "148", "148-165_88389"},
 		// Nidoran, sold without the sex the catalog names it by.
 		{"Nidoran - 57/101", "Ex Dragon Frontiers", "57", "57-101_87731"},
 	} {
