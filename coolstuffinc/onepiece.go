@@ -95,13 +95,16 @@ var onePieceNotePlace = regexp.MustCompile(`(?i)\b(?:participant|winner|finalist
 
 // onePieceSpellings spells the One Piece wording this storefront writes its
 // own way: the Heroines Edition event card lost a word, the Event Pack card
-// lost the dash before its number, and the eighth Winner Pack is the catalog's
-// October to December one. Only the part that differs is rewritten, so the
-// number or bracket behind it is kept.
+// lost the dash before its number, the eighth Winner Pack is the catalog's
+// October to December one, and a Jolly Roger foil is named by half its name.
+// Only the part that differs is rewritten, so the number or bracket behind it
+// is kept.
 var onePieceSpellings = strings.NewReplacer(
 	"But If We See Each Other Again...Will You Call Me Your Shipmate?!!", "But If We Ever See Each Other Again... Will You Call Me Your Shipmate?!!",
 	"Kouzuki Momonosuke P-064", "Kouzuki Momonosuke - P-064",
 	"Winner Pack Vol. 8", "Winner Pack 2024 Oct.-Dec.",
+	"(Jolly Roger)", "(Jolly Roger Foil)",
+	"(Jolly Roger Art)", "(Jolly Roger Foil)",
 )
 
 // onePieceSpelling spells One Piece wording the way the catalog does.
