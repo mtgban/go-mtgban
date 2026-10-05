@@ -53,6 +53,26 @@ func (r *resolver) yugiohTokenNumber(product *cm.Product) string {
 	return found
 }
 
+// yugiohNonCards names the products no printing of ours exists for, each
+// checked against the whole datastore: the tokens and counters handed out
+// at events, which no set lists, and the cards a duel is set up with.
+var yugiohNonCards = map[string]bool{
+	"Duelist Name Card":                    true,
+	"Duelist ID Card":                      true,
+	"Field Center Card":                    true,
+	"QSCR Dummy":                           true,
+	"OTS Token":                            true,
+	"UDS Judge Token":                      true,
+	"UDE Token":                            true,
+	"2025 World Championship Token (Red)":  true,
+	"2025 World Championship Token (Blue)": true,
+}
+
+// yugiohNonCard reports whether a product is one of the yugiohNonCards.
+func yugiohNonCard(product *cm.Product) bool {
+	return yugiohNonCards[strings.TrimSpace(versionTail.ReplaceAllString(product.Name, ""))]
+}
+
 // yugiohExpansions maps the Cardmarket Yu-Gi-Oh expansions the matcher
 // resolves to no set onto the sets their bridged products land in, by code
 // where the catalog's own name is nothing the storefront would write. Most
