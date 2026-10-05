@@ -42,6 +42,7 @@ var numFixes = map[string]string{
 	"SLDDPThrillCF":                   "SLDIFIYW-8",
 	"SLDDPGreavesCF":                  "SLDIFIYW-9",
 	"SLDDPSolRingCF":                  "SLDIFIYW-10",
+	"SLDMikuSwanSong":                 "SLD1591",
 	"414937":                          "FIN385",
 	"414881":                          "FIN398",
 	"414952":                          "FIN382",
