@@ -7,7 +7,6 @@ import (
 	"slices"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -170,6 +169,29 @@ func crossSetProductIDs(b *mtgmatcher.Backend) map[string][]string {
 	return collisions
 }
 
+// starTwin returns the star printing that is the other finish of the card's
+// product, if there is one: the same language, numbered "<number>★" and with
+// no product of its own (FRF 65★ is the foil of 95037).
+func starTwin(byNumber map[string]*mtgmatcher.CardObject, card *mtgmatcher.Card) *mtgmatcher.CardObject {
+	twin, found := byNumber[card.Number+"★|"+card.Language]
+	if !found || twin.Identifiers["tcgplayerProductId"] != "" {
+		return nil
+	}
+	return twin
+}
+
+// cardsByNumber indexes a set's cards by number and language.
+func cardsByNumber(b *mtgmatcher.Backend, set *mtgmatcher.Set) map[string]*mtgmatcher.CardObject {
+	byNumber := map[string]*mtgmatcher.CardObject{}
+	for _, card := range set.Cards {
+		co, found := b.UUIDs[card.UUID]
+		if found {
+			byNumber[co.Number+"|"+co.Language] = co
+		}
+	}
+	return byNumber
+}
+
 // productPrintings maps each product id, and the subtype its price rows
 // carry, to the printing the datastore says that product sells in that
 // finish: "Normal" for nonfoil, "Foil" for foil, and for etched on an etched
@@ -194,13 +216,12 @@ func productPrintings(b *mtgmatcher.Backend, collisions map[string][]string) map
 		if err != nil {
 			continue
 		}
-		byNumber := map[string]*mtgmatcher.CardObject{}
+		byNumber := cardsByNumber(b, set)
 		for _, card := range set.Cards {
 			co, found := b.UUIDs[card.UUID]
 			if !found {
 				continue
 			}
-			byNumber[co.Number+"|"+co.Language] = co
 			id := co.Identifiers["tcgplayerProductId"]
 			etchedID := co.Identifiers["tcgplayerEtchedProductId"]
 			if etchedID == "" {
@@ -211,11 +232,9 @@ func productPrintings(b *mtgmatcher.Backend, collisions map[string][]string) map
 			add(etchedID, "Foil", co.FoilUUIDs[mtgmatcher.FinishEtched])
 		}
 
-		// A star printing with no product of its own is the other finish
-		// of its base card's product (FRF 65★ is the foil of 95037).
-		for _, co := range byNumber {
-			base, found := byNumber[strings.TrimSuffix(co.Number, "★")+"|"+co.Language]
-			if !found || base == co || co.Identifiers["tcgplayerProductId"] != "" {
+		for _, base := range byNumber {
+			co := starTwin(byNumber, &base.Card)
+			if co == nil {
 				continue
 			}
 			id := base.Identifiers["tcgplayerProductId"]

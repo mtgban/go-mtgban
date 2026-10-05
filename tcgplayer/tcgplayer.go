@@ -314,6 +314,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 			tcg.printf("Scraping %s (%d/%d)", set.Name, i, total)
 			i++
 
+			byNumber := cardsByNumber(tcg.backend, set)
 			for _, card := range set.Cards {
 				uuid := card.Identifiers["mtgjsonId"]
 				skus, found := skusMap[uuid]
@@ -390,6 +391,16 @@ func (tcg *Market) Load(ctx context.Context) error {
 				hasFoil := card.HasFinish(mtgmatcher.FinishFoil)
 				hasEtched := card.HasFinish(mtgmatcher.FinishEtched)
 
+				// The sku file lists the foil of a star printing under the
+				// base card, which has none of its own
+				var foilTwin *mtgmatcher.CardObject
+				if !hasFoil && !hasEtched {
+					foilTwin = starTwin(byNumber, &card)
+					if foilTwin != nil && !foilTwin.HasFinish(mtgmatcher.FinishFoil) {
+						foilTwin = nil
+					}
+				}
+
 				for _, sku := range skus {
 					// Skip sealed products
 					if sku.Condition == "UNOPENED" {
@@ -411,8 +422,12 @@ func (tcg *Market) Load(ctx context.Context) error {
 					if !hasNonfoil && sku.Printing == "NON FOIL" {
 						continue
 					}
+					target := card.UUID
 					if !hasFoil && !hasEtched && (sku.Printing == "FOIL" || sku.Finish == "ETCHED") {
-						continue
+						if foilTwin == nil || sku.Finish == "ETCHED" {
+							continue
+						}
+						target = foilTwin.UUID
 					}
 					if !hasEtched && sku.Finish == "ETCHED" {
 						continue
@@ -436,7 +451,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 					idsFound[sku.SkuID] = struct{}{}
 
 					reqs = append(reqs, marketChan{
-						UUID:      card.UUID,
+						UUID:      target,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
 						Finish:    sku.Finish,
