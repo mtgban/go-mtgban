@@ -148,6 +148,19 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		for i := range 2 {
 			maybeSet := strings.ToUpper(imgName[:i+3])
 			maybeNum := strings.TrimLeft(imgName[i+3:], "_0")
+			if edition == "Mystery Booster Reprints" {
+				listNum := maybeSet + "-" + maybeNum
+				if len(b.MatchInSetNumber(cardName, "PLST", listNum)) == 1 {
+					return &mtgmatcher.InputCard{
+						Name:      cardName,
+						Variation: listNum,
+						Edition:   "PLST",
+						Foil:      isFoil,
+					}, nil
+				}
+				// The image is the original printing's, not The List's.
+				continue
+			}
 			if len(b.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
 				return &mtgmatcher.InputCard{
 					Name:      cardName,
@@ -251,13 +264,37 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		}
 	}
 
-	return &mtgmatcher.InputCard{
+	input = &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
 		Foil:      isFoil,
 		Language:  language,
-	}, nil
+	}
+	if edition == "Mystery Booster Reprints" {
+		input = listReprint(b, input)
+	}
+	return input, nil
+}
+
+// listReprint moves a Mystery Booster Reprints listing that landed on the
+// printing The List copied from onto The List's own row, which is the one
+// the shelf sells. The List files each copy as "<set>-<number>".
+func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher.InputCard {
+	probe := *input
+	id, err := b.Match(&probe)
+	if err != nil {
+		return input
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || co.SetCode == "PLST" || co.SetCode == "ULST" {
+		return input
+	}
+	listNum := co.SetCode + "-" + co.Number
+	if len(b.MatchInSetNumber(co.Name, "PLST", listNum)) != 1 {
+		return input
+	}
+	return &mtgmatcher.InputCard{Name: co.Name, Variation: listNum, Edition: "PLST", Foil: input.Foil}
 }
 
 // basicLandLetter matches a shelf-lettered basic land ("Island A",
