@@ -444,6 +444,11 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		}
 	default:
 		if strings.HasPrefix(edition, "Secret Lair Commander Deck") {
+			// An id that got this far resolved nowhere, a deck reprint the
+			// catalog does not hold yet; the number would guess at another card.
+			if bp.ScryfallID != "" || bp.TCGplayerID != 0 {
+				return nil, fmt.Errorf("unknown printing %q for %q", edition, cardName)
+			}
 			// The cards themselves are ordinary SLD or The List printings.
 			if len(b.MatchInSetNumber(cardName, "SLD", number)) > 0 {
 				edition = "Secret Lair Drop"
