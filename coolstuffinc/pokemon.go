@@ -77,7 +77,7 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 		edition = "Jumbo Cards"
 		name = promoProgrammeNumber.ReplaceAllString(strings.TrimSuffix(name, " Jumbo Size"), "$1")
 	}
-	name, numbered := numberedListing(name)
+	name, numbered := numberedListing(pokemonRespellings.Replace(name))
 	numbered = megaPromoNumber.ReplaceAllString(numbered, "MEP$1")
 	variation = megaPromoNumber.ReplaceAllString(variation, "MEP$1")
 	name = strings.TrimSpace(nonStampedName.ReplaceAllString(name, ""))
@@ -112,8 +112,15 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	if reprint {
 		card.Variation = ""
 	}
-	if name == "Vivillon" {
+	if strings.HasPrefix(name, "Vivillon") {
+		name = pokemonVivillonColors.Replace(name)
+		card.Name = name
 		numbered = pokemonVivillonColors.Replace(numbered)
+	}
+	// This storefront numbers the Alph Lithographs as secret rares past their
+	// set's total, where the catalog numbers each of the four by its set.
+	if name == "Alph Lithograph" {
+		numbered, card.Variation = "", ""
 	}
 	shelved := false
 	if !nonHolo {
@@ -177,9 +184,6 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 				card.Variation = strings.Replace(variation, m[0], m[2], 1)
 			}
 		}
-	}
-	if respelled, found := pokemonRespellings[name]; found {
-		card.Name = respelled
 	}
 	// The notes say a printing is the plain one ("Non-Stamped Version"),
 	// name the illustrator, or name the stamp a promo carries; the plain
@@ -252,13 +256,16 @@ var pokemonNumberSets = map[string]string{
 }
 
 // pokemonRespellings pairs the names this storefront misspells with the
-// catalog's own.
-var pokemonRespellings = map[string]string{
-	"Galatic HQ":                   "Galactic HQ",
-	"Sprigattito":                  "Sprigatito",
-	"Unit Energy GFW":              "Unit Energy GRW",
-	"Delta Species Rainbow Energy": "Delta Rainbow Energy",
-}
+// catalog's own. The head is rewritten in place, so the number or bracket
+// behind it is kept; Kyurem's number is run into its name without a dash.
+var pokemonRespellings = strings.NewReplacer(
+	"Galatic HQ", "Galactic HQ",
+	"Sprigattito", "Sprigatito",
+	"Unit Energy GFW", "Unit Energy GRW",
+	"Delta Species Rainbow Energy", "Delta Rainbow Energy",
+	"Kyurem 43/113", "Kyurem - 43/113",
+	"Vivilion", "Vivillon",
+)
 
 var (
 	plainWords = regexp.MustCompile(`(?i)\bNon-?Stamped(?: Version)?\b|\bIllus\. [^,]+,`)
