@@ -736,7 +736,7 @@ var editionTable = map[string]string{
 	"30周年記念":              "30th Anniversary",
 	"APACランド":             "Asia Pacific Land Program",
 	"BOOKプロモ":             "Book Promo",
-	"BOXプロモ":              "Box Promo",
+	"BOXプロモ":              "Buy a Box",
 	"CardZプロモ":            "CardZ Promo",
 	"CSP構築済み":             "CST",
 	"DCIマーク":              "DCI Promo",
@@ -795,6 +795,7 @@ var editionTable = map[string]string{
 	"マジックリーグ":              "Year of the Tiger 2022",
 	"メディア系プロモ":             "Media Promo",
 	"リセールプロモ":              "Resale Promo",
+	"リリースプロモ":              "Release Promo",
 	"旧正月プロモ":               "Lunar New Year",
 	"午年プロモ":                "Year of the Horse 2026",
 	"卯年プロモ":                "Year of the Rabbit 2023",
@@ -924,6 +925,18 @@ var promoMap = map[string]map[string]map[string]struct {
 				Variant: "108",
 			},
 		},
+		"Fyndhorn Elves": {
+			"Textless コマンドフェスト": {
+				Edition: "PF26",
+				Variant: "2",
+			},
+		},
+		"Gandalf, Friend of the Shire": {
+			"コマンドフェスト": {
+				Edition: "PF23",
+				Variant: "1",
+			},
+		},
 	},
 	"Other Promos": {
 		"Serra the Benevolent": {
@@ -960,6 +973,24 @@ var promoMap = map[string]map[string]map[string]struct {
 			"PCMP": {
 				Edition: "PCMP",
 				Variant: "12",
+			},
+		},
+		"Counterspell": {
+			"テキストレス MagicConプロモ": {
+				Edition: "PF24",
+				Variant: "1",
+			},
+		},
+		"Electrolyze": {
+			"PCMP": {
+				Edition: "PCMP",
+				Variant: "1",
+			},
+		},
+		"Mind Stone": {
+			"2021年版プロモ": {
+				Edition: "PW21",
+				Variant: "5",
 			},
 		},
 	},
@@ -1029,6 +1060,12 @@ var promoMap = map[string]map[string]map[string]struct {
 				Variant: "12",
 			},
 		},
+		"Nowhere to Run": {
+			"Retro Frame スタンダード・ショーダウン": {
+				Edition: "PW26",
+				Variant: "1",
+			},
+		},
 	},
 	"Commander Event Promo": {
 		"Echo, Perceptive Prodigy": {
@@ -1067,6 +1104,12 @@ var promoMap = map[string]map[string]map[string]struct {
 			"マジック・プレゼンツプロモ": {
 				Edition: "PW26",
 				Variant: "13",
+			},
+		},
+		"An Unexpected Party": {
+			"Extended Art マジック・プレゼンツプロモ": {
+				Edition: "PW26",
+				Variant: "14",
 			},
 		},
 	},
@@ -1186,6 +1229,87 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Peter Parker": {
 			"Extended Art Other Promos": {Edition: "PMEI", Variant: "2025-22"},
 		},
+		"Into the Flood Maw": {
+			"旧枠 スタンダード・ショーダウン": {Edition: "PW26", Variant: "8"},
+		},
+		"Dark Deed": {
+			"スタンダード・ショーダウン": {Edition: "PW26", Variant: "12"},
+		},
+		"Wood Elves": {
+			"拡張アート スタンダード・ショーダウン": {Edition: "PW26", Variant: "16"},
+		},
+		"Echo, Perceptive Prodigy": {
+			"コマンダーイベントプロモ": {Edition: "PW26", Variant: "11"},
+		},
+		"Command Tower": {
+			"フルアート コマンダーイベントプロモ": {Edition: "PW25", Variant: "17"},
+		},
+		"Sliver Hive": {
+			"Retro Frame Other Promos": {Edition: "PF25", Variant: "7"},
+		},
+		"Ugin, the Spirit Dragon": {
+			"Retro Frame Other Promos": {Edition: "PF25", Variant: "6"},
+		},
+		"Ponder": {
+			"Other Promos": {Edition: "PF25", Variant: "2"},
+		},
+		"Ephemerate": {
+			"夏休み": {Edition: "PSVC", Variant: "1"},
+		},
+		"Arcane Signet": {
+			"30th Anniversary":   {Edition: "P30M", Variant: "1F"},
+			"Etched Foil 30周年記念": {Edition: "P30M", Variant: "1F★"},
+		},
+		"Bolas's Citadel": {
+			"旧枠プロモ": {Edition: "PLG21", Variant: "3"},
+		},
+		"Loki, God of Mischief": {
+			"その他イベント記念系": {Edition: "PMEI", Variant: "2026-14"},
+		},
+		"Counterspell": {
+			"旧枠 MagicConプロモ": {Edition: "PF26", Variant: "5"},
+		},
+		"Tifa Lockhart": {
+			"Borderless Premier Play": {Edition: "PF25", Variant: "9"},
+		},
+		"Gandalf, Friend of the Shire": {
+			"Play Promo": {Edition: "PF23", Variant: "1"},
+		},
+		"Behold the Sinister Six!": {
+			"Extended Art Other Promos": {Edition: "PURL", Variant: "2025-4"},
+		},
+	},
+	"DCI Promo": {
+		"Goblin Warchief": {
+			"2006年度版FNM": {Edition: "F06", Variant: "5"},
+		},
+	},
+	"新枠プロモ": {
+		"Kor Skyfisher": {
+			"PURL": {Edition: "PURL", Variant: "23"},
+		},
+	},
+	"NEM": {
+		"Rhox": {
+			"S00プロモ": {Edition: "S00", Variant: "43"},
+		},
+	},
+	// The oldest prerelease promos of a set are filed as its release
+	// promos, the only promo printing the catalog holds of each.
+	"LRW-P Prerelease": {
+		"Shriekmaw": {"Prerelease": {Edition: "PLRW", Variant: "139★"}},
+	},
+	"PLC-P Prerelease": {
+		"Hedge Troll": {"Prerelease": {Edition: "PPLC", Variant: "151★"}},
+	},
+	"FUT-P Prerelease": {
+		"Storm Entity": {"Prerelease": {Edition: "PFUT", Variant: "122★"}},
+	},
+	"BOK-P Prerelease": {
+		"Budoka Pupil": {"Prerelease": {Edition: "PBOK", Variant: "122★"}},
+	},
+	"9ED-P Prerelease": {
+		"Force of Nature": {"Prerelease": {Edition: "P9ED", Variant: "242★"}},
 	},
 	"Commander Play": {
 		"Palladium Myr": {
@@ -1222,6 +1346,12 @@ var promoMap = map[string]map[string]map[string]struct {
 			"Extended Art MagicConプロモ": {
 				Edition: "PSPM",
 				Variant: "3a",
+			},
+		},
+		"Counterspell": {
+			"Textless MagicConプロモ": {
+				Edition: "PF24",
+				Variant: "1",
 			},
 		},
 	},
@@ -1299,6 +1429,12 @@ var promoMap = map[string]map[string]map[string]struct {
 				Variant: "12",
 			},
 		},
+		"Doran, the Siege Tower": {
+			"ゲームデー": {
+				Edition: "PCMP",
+				Variant: "10",
+			},
+		},
 		"Serra Avenger": {
 			"ゲームデー": {
 				Edition: "PCMP",
@@ -1309,6 +1445,10 @@ var promoMap = map[string]map[string]map[string]struct {
 	"P30A": {
 		"Arcane Signet": {
 			"30周年プロモ": {
+				Edition: "P30M",
+				Variant: "1F",
+			},
+			"30周年記念": {
 				Edition: "P30M",
 				Variant: "1F",
 			},
