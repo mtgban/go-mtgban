@@ -9,6 +9,30 @@ Arabian Nights shelf. MTGJSON's map, which copies Scryfall's
 - a sibling version's printing;
 - several printings at once.
 
+The same table places the 10 Chaos Vault "(V.2)" products on the starred foil
+twin of their printing (SLD 2102-2111, CardTrader's Galaxy Foil blueprints),
+where the datastore links them to the plain one.
+
+`etchedPrintings` is the same table for 4 products that are a printing's
+etched finish: the "(V.2)" of Carrion Feeder, Plaguecrafter, Thoughtseize and
+Doomsday in October Superdrop 2022. The datastore carries the etched
+product's id on no printing, so the product lands on the plain printing its
+V.1 already sells, and the index holds two entries on it. Each row is
+CardTrader's "Etched Foil" blueprint for the product, and both price columns
+go to the etched printing, as for any foil-only product.
+
+`unplacedProducts` lists 12 October Superdrop 2022 versions (V.2 to V.4 of
+Tezzeret the Seeker, Phyrexian Metamorph, Skullclamp and Solemn Simulacrum)
+that no evidence places. CardTrader links none of them, and the datastore
+holds Japanese printings of the same four cards beside the English one, so
+no printing is evidenced, and the name route would file them on another
+drop's printing. They are skipped without a log line, by Index and Market
+alike; their guide row is zero in every column today.
+
+Measured 2026-10-06 against AllPrintings 5.3.0+20261005 and the published
+Cardmarket catalog: the Index walk of 115,651 products changes for 14 landed
+products, and 12 more go from landed or error to skipped.
+
 Built on 2026-09-25 against AllPrintings 5.3.0+20260924.
 
 ## Why a table

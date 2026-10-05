@@ -11,6 +11,7 @@ import (
 
 // TestVersionPrintingsAreReal holds versionPrintings to the datastore: every
 // row names exactly one printing of its set, and no two rows the same one.
+// An etched row also names a printing the datastore sells etched.
 func TestVersionPrintingsAreReal(t *testing.T) {
 	b := realDatastore(t)
 
@@ -35,6 +36,26 @@ func TestVersionPrintingsAreReal(t *testing.T) {
 			t.Errorf("%d and %d both name %s", id, other, key)
 		}
 		seen[key] = id
+	}
+
+	etched := map[string]int{}
+	for id, printing := range etchedPrintings {
+		product := &cm.Product{IDProduct: id}
+		for _, card := range b.Sets[printing.set].Cards {
+			if card.Number == printing.number {
+				product.Name = card.Name
+			}
+		}
+		cardID, cardIDFoil := versionPrinting(b, product)
+		co, err := b.GetUUID(cardID)
+		if err != nil || !co.Etched || cardIDFoil != cardID {
+			t.Errorf("%d: %s %s does not name an etched printing", id, printing.set, printing.number)
+		}
+		key := printing.set + " " + printing.number
+		if other, taken := etched[key]; taken {
+			t.Errorf("%d and %d both name %s", id, other, key)
+		}
+		etched[key] = id
 	}
 }
 
@@ -82,5 +103,24 @@ func TestMagicPrintings(t *testing.T) {
 		if got := r.magicPrintings(id); !slices.Equal(got, want) {
 			t.Errorf("%d: %v, want %v", id, got, want)
 		}
+	}
+}
+
+// TestResolveMappedPlacesEtchedProducts pins that an etched product the list
+// does not name lands on its printing's etched finish for both columns, and
+// that an unplaced one is skipped.
+func TestResolveMappedPlacesEtchedProducts(t *testing.T) {
+	b := realDatastore(t)
+	r := &resolver{backend: b, gameID: cm.GameMagic}
+
+	got := r.resolveMapped(680700, cm.CatalogProduct{Name: "Carrion Feeder (V.2)"}, cm.Expansion{Name: "Secret Lair Drop Series: October Superdrop 2022"})
+	co, err := b.GetUUID(got.cardID)
+	if err != nil || !co.Etched || co.Number != "1114" || got.cardIDFoil != got.cardID {
+		t.Errorf("resolveMapped(680700) = %+v, want SLD 1114 etched in both columns", got)
+	}
+
+	got = r.resolveMapped(680725, cm.CatalogProduct{Name: "Skullclamp"}, cm.Expansion{Name: "Secret Lair Drop Series: October Superdrop 2022"})
+	if got.err != nil || got.cardID != "" {
+		t.Errorf("resolveMapped(680725) = %+v, want a skip", got)
 	}
 }
