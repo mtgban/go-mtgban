@@ -925,12 +925,28 @@ func gameFinish(gameID int, bp *Blueprint, product Product) string {
 		if product.Properties.PokemonReverse {
 			return "Reverse Holofoil"
 		}
-		if product.Properties.FirstEdition {
-			return "1st Edition"
+		// The listing flags never say a card is a holo, the blueprint's
+		// version does, and a product sold in Normal and Holofoil answers
+		// a listing naming neither with its Normal printing.
+		treatment := ""
+		if bp != nil && pkmHoloVersion.MatchString(bp.Version) && !pkmNotHoloVersion.MatchString(bp.Version) {
+			treatment = "Holofoil"
 		}
+		if product.Properties.FirstEdition {
+			return mtgmatcher.PrintingFinish("1st Edition", treatment)
+		}
+		return treatment
 	}
 	return ""
 }
+
+// pkmHoloVersion matches a Pokemon version naming a holo treatment: "Holo
+// Rare", "Holo Promo", "Cosmos Holo", "Sheen Holo". pkmNotHoloVersion matches
+// the ones that name a different treatment with the same word.
+var (
+	pkmHoloVersion    = regexp.MustCompile(`(?i)\bholo\b`)
+	pkmNotHoloVersion = regexp.MustCompile(`(?i)\bnon[- ]?holo\b|\breverse\b`)
+)
 
 // foilPrintingID adopts the foil printing's id for a foil listing, which
 // CardTrader files under the plain printing's. A printing that already
