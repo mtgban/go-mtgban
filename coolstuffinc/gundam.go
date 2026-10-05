@@ -37,6 +37,7 @@ var gundamNames = map[string]string{
 	`Prototype Asshimar TR-3 "Keharr"`:                                  `Prototype Asshimar TR-3 "Kehaar"`,
 	"Elan Ceres (Enchanted Person Number 5)":                            "Elan Ceres (Enhanced Person Number 5)",
 	"AI-Saachez's AEU Enact Custom Moralia Development Experiment Type": "Al-Saachez's AEU Enact Custom Moralia Development Experiment Type",
+	"Patimus Scirocco":                                                  "Paptimus Scirocco",
 }
 
 // gundamSymbolWord is the storefront naming a glyph the catalog writes out.
