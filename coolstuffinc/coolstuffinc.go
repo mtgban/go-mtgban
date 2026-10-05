@@ -132,7 +132,8 @@ var buylistReprintNote = regexp.MustCompile(`(?i)\breprints?\b`)
 
 // jpArtWordingRe matches "Japanese Art"/"Artwork"/"Art Style", which
 // mtgmatcher's language filter otherwise reads as a request for a
-// Japanese-language card. Leaves "Japanese Letters in Art" alone.
+// Japanese-language card. "Japanese Letters in Art" is a Yu-Gi-Oh artwork
+// note and is read by yugiohArtNotes before it gets here.
 var jpArtWordingRe = regexp.MustCompile(`(?i)Japanese Art(?:work|\s+Style)?`)
 
 // jpArtWording rewrites the wording jpArtWordingRe matches to "JP Art", the
@@ -570,6 +571,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					if unknownPrinting(cardName, edition) {
 						return
 					}
+					theCard = yugiohArtCard(cardName, edition, "", notes, isFoil)
+					if theCard != nil {
+						break
+					}
 					theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(cardName))), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(jpArtWording(notes) + " " + catalogRarity(rarity)), Foil: isFoil}
 				case mtgmatcher.GamePokemon:
 					shelf, shelfRun := firstEditionShelf(edition)
@@ -912,6 +917,10 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		case mtgmatcher.GameYuGiOh:
 			if unknownPrinting(product.Name, product.ItemSet) {
 				continue
+			}
+			theCard = yugiohArtCard(product.Name, product.ItemSet, product.Number, product.Notes, product.IsFoil == 1)
+			if theCard != nil {
+				break
 			}
 			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(product.Name))), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(jpArtWording(yugiohCodes.Replace(buylistVariation(product))) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case mtgmatcher.GameOnePiece:
