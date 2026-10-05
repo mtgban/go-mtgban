@@ -213,8 +213,19 @@ func yugiohSameProduct(a, b *cm.Product) bool {
 // within one card run from 22.50 to 550, so a row found wrong is worth
 // correcting here rather than reasoning about: swap two labels and the
 // products follow.
+//
+// Two older shelves use the table with a firmer order. Tournament Pack 1
+// numbers its European print "001" where the datastore says "E001", so V.2
+// is that print. On a Duelist League shelf V.1 is the Blue print, the
+// colour the bridged V.2 to V.4 never reach, and the later colours are the
+// ones the CardTrader bridge lands those versions on: all 180 bridged
+// products of the three shelves agree with the rows below.
 var yugiohVersionVariants = map[string][]string{
 	"WI26": {"OTS Stamp", "Regional Qualifier Stamp", "Judge Stamp"},
+	"TP1":  {"", "European"},
+	"DL09": {"Blue", "Green", "Bronze", "Silver"},
+	"DL17": {"Blue", "Green", "Purple", "Red"},
+	"DL18": {"Blue", "Green", "Purple", "Red"},
 }
 
 // yugiohOversized answers the oversized card a product names, which the
