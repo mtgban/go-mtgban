@@ -135,7 +135,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 	}
 
 	// Skip tokens with the same names as cards
-	if strings.Contains(variant, "Emblem") && !b.IsToken(cardName) {
+	if isEmblemListing(b, cardName, variant) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
@@ -820,7 +820,7 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	}
 
 	// Skip tokens with the same names as cards
-	if strings.Contains(variant, "Emblem") && !b.IsToken(cardName) {
+	if isEmblemListing(b, cardName, variant) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
@@ -1013,6 +1013,33 @@ func csiTokenPairNumbers(number string) []string {
 		}
 	}
 	return out
+}
+
+// isEmblemListing reports whether the "Emblem" in a listing's notes is a
+// planeswalker emblem filed under a card's name. It is not when the word is
+// part of what the card is called: the Jurassic World "Emblem Variant"
+// treatment, or a printing's own flavor name.
+func isEmblemListing(b *mtgmatcher.Backend, cardName, variant string) bool {
+	if !strings.Contains(variant, "Emblem") || b.IsToken(cardName) {
+		return false
+	}
+	if strings.Contains(variant, "Emblem Variant") {
+		return false
+	}
+	ids, err := b.SearchEquals(cardName)
+	if err != nil {
+		return true
+	}
+	for _, id := range ids {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			continue
+		}
+		if co.FlavorName != "" && strings.Contains(variant, co.FlavorName) {
+			return false
+		}
+	}
+	return true
 }
 
 // magicShelfFixups reads the shapes this storefront gives a few classes of
