@@ -967,6 +967,12 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		} else {
 			cardID, err = csi.backend.Match(theCard)
 		}
+		if err != nil && csi.backend.Game == mtgmatcher.GameYuGiOh {
+			fromImage := yugiohImageCard(csi.backend, theCard, product)
+			if fromImage != "" {
+				cardID, err = fromImage, nil
+			}
+		}
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
