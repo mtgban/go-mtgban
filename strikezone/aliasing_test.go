@@ -65,6 +65,13 @@ func TestAliasingContradictions(t *testing.T) {
 			ok:    func(co *mtgmatcher.CardObject) bool { return co.HasFinish(mtgmatcher.FinishFoil) },
 			want:  "a printing made in foil",
 		},
+		{
+			desc: "several printings left, the one in the set the shelf is named for",
+			name: "Delighted Halfling (Borderless)", shelf: "Universes Beyond: The Lord of the Rings: Tales of Middle-earth",
+			notes: "Foil",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "LTR" },
+			want:  "the printing in LTR",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			co := tieBreak(t, b, tt.name, tt.shelf, tt.notes)

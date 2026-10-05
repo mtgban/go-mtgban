@@ -2,6 +2,20 @@ package strikezone
 
 import "testing"
 
+func TestShelfName(t *testing.T) {
+	for _, tt := range []struct{ h1, want string }{
+		{"Singles Alpha Buy Lists", "Alpha"},
+		{"Singles Tarkir: Dragonstorm\t Buy Lists", "Tarkir: Dragonstorm"},
+		{"Lorcana Singles\u00a0Disney Lorcana Promo Cards Buy Lists", "Disney Lorcana Promo Cards"},
+		{"Lorcana Singles Disney Lorcana Promo Cards", "Disney Lorcana Promo Cards"},
+	} {
+		got := shelfName(tt.h1)
+		if got != tt.want {
+			t.Errorf("shelfName(%q) = %q, want %q", tt.h1, got, tt.want)
+		}
+	}
+}
+
 // TestBasicLandArt pins that a bare basic land on the Alpha and Beta shelves
 // reads as the first art, and that the lands the store marks B or C are left
 // to the matcher.

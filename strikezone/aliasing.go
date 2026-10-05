@@ -20,9 +20,9 @@ type aliasedListing struct {
 // contradiction reports whether a listing's wording rules out a printing.
 type contradiction func(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool
 
-// contradictions are the ways a listing rules out a printing the matcher
-// could not tell from the others. Each reads the printing alone, so a row can
-// be taken out of the table without touching the rest.
+// contradictions are the ways a Magic listing rules out a printing the
+// matcher could not tell from the others. Each reads the printing alone, so a
+// row can be taken out of the table without touching the rest.
 var contradictions = []contradiction{
 	wearsUnnamedPremiumFoil,
 	wearsUnnamedBorderless,
@@ -61,8 +61,9 @@ func notPrintedInFinish(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.
 }
 
 // resolveAliasing narrows an ambiguous match down to the one printing the
-// listing does not rule out. It returns "" when the survivors do not reduce
-// to exactly one, leaving the original error in place.
+// listing does not rule out, or among several, the one in the set the shelf
+// is named for. It returns "" when the survivors do not reduce to exactly
+// one, leaving the original error in place.
 //
 // A promo shelf holds promos only, so a printing that is not one is not the
 // answer however few survive: a lone survivor there is what the rest was
@@ -74,12 +75,18 @@ func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) st
 		if err != nil {
 			return ""
 		}
-		ruledOut := slices.ContainsFunc(contradictions, func(contradicts contradiction) bool {
+		ruledOut := b.Game == mtgmatcher.GameMagic && slices.ContainsFunc(contradictions, func(contradicts contradiction) bool {
 			return contradicts(b, l, co)
 		})
 		if !ruledOut {
 			keep = append(keep, id)
 		}
+	}
+	if len(keep) > 1 {
+		keep = slices.DeleteFunc(keep, func(id string) bool {
+			co, err := b.GetUUID(id)
+			return err != nil || !namesSet(b, l, co)
+		})
 	}
 	if len(keep) != 1 {
 		return ""
@@ -89,6 +96,13 @@ func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) st
 		return ""
 	}
 	return keep[0]
+}
+
+// namesSet reports whether the shelf, or the edition preprocess made of it, is
+// the name of the printing's set.
+func namesSet(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+	set, found := b.Sets[co.SetCode]
+	return found && (mtgmatcher.Equals(set.Name, l.shelf) || mtgmatcher.Equals(set.Name, l.card.Edition))
 }
 
 // isPromoShelf reports whether the shelf is one of the promo categories.
