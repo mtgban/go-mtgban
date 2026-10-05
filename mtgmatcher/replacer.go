@@ -85,10 +85,10 @@ var replacerStrings = slices.Concat([]string{
 	" ", "",
 })
 
-// asciiStrings folds the letters that carry a mark down to the plain ascii
-// they stand for, and nothing else, for the callers that split a name into
-// words themselves and must not have the rest of the normalizing rewrites
-// applied to it.
+// asciiStrings folds the letters that carry a mark, and the roman numeral
+// codepoints some storefronts write, down to the plain ascii they stand for,
+// and nothing else, for the callers that split a name into words themselves
+// and must not have the rest of the normalizing rewrites applied to it.
 var asciiStrings = []string{
 	"â", "a",
 	"á", "a",
@@ -123,6 +123,18 @@ var asciiStrings = []string{
 	"š", "s",
 	"æ", "ae",
 	"ß", "ss",
+	"ⅰ", "i",
+	"ⅱ", "ii",
+	"ⅲ", "iii",
+	"ⅳ", "iv",
+	"ⅴ", "v",
+	"ⅵ", "vi",
+	"ⅶ", "vii",
+	"ⅷ", "viii",
+	"ⅸ", "ix",
+	"ⅹ", "x",
+	"ⅺ", "xi",
+	"ⅻ", "xii",
 }
 
 // asciiReplacer folds a marked letter to the plain ascii it stands for.

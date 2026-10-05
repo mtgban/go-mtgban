@@ -57,6 +57,10 @@ var NormalizeTests = []NormalizeTest{
 		Out: "aetherfluxreservoir",
 	},
 	{
+		In:  "Tallgeese \u2162",
+		Out: "tallgeeseiii",
+	},
+	{
 		In:  "forest b",
 		Out: "forestb",
 	},
