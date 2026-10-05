@@ -15,6 +15,7 @@ const gundamDatastore = `{"data": {
  "sets": {
   "GCG-PR": {"name": "Gundam Promotional Cards", "releaseDate": "2025-03-01", "type": "promo"},
   "GD01": {"name": "Newtype Rising", "releaseDate": "2025-07-25"},
+  "GD01-B": {"name": "Edition Beta", "releaseDate": "2025-02-06"},
   "GD03": {"name": "Steel Requiem", "releaseDate": "2026-01-30"},
   "GD05": {"name": "Freedom Ascension", "releaseDate": "2026-07-24"},
   "ST09": {"name": "Starter Deck 09: Destiny Ignition", "releaseDate": "2026-03-27"},
@@ -26,6 +27,8 @@ const gundamDatastore = `{"data": {
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 645375}, "finish": "Holofoil", "id": "gd01-001_645375_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR++", "setCode": "GD01", "type": "Unit"},
   {"externalLinks": {"tcgPlayerId": 673538}, "finish": "Normal", "id": "t-020_673538", "name": "GFreD Token", "number": "T-020", "rarity": "Common", "setCode": "GD03", "type": "Unit"},
   {"externalLinks": {"tcgPlayerId": 680689}, "finish": "Holofoil", "id": "t-020_680689_holofoil", "name": "GFreD Token", "number": "T-020", "promoTypes": ["premiumcardcollection"], "rarity": "Common", "setCode": "GCG-PR", "type": "Unit", "variant": "Premium Card Collection Gundam Assemble"},
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 616640}, "finish": "Holofoil", "id": "gd01-026_616640_holofoil", "name": "Char's Zaku II", "number": "GD01-026", "rarity": "Rare", "setCode": "GD01-B", "type": "Unit"},
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 616641}, "finish": "Holofoil", "id": "gd01-026_616641_holofoil", "name": "Char's Zaku II", "number": "GD01-026", "rarity": "R+", "setCode": "GD01-B", "type": "Unit"},
   {"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 716381}, "finish": "Normal", "id": "st12-002_716381", "name": "Shining Gundam", "number": "ST12-002", "rarity": "Common", "setCode": "ST12", "type": "Unit"},
   {"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 721022}, "finish": "Holofoil", "id": "st12-002_721022_holofoil", "name": "Shining Gundam", "number": "ST12-002", "rarity": "C+", "setCode": "ST12", "type": "Unit"},
   {"color": "Purple", "colors": ["Purple"], "externalLinks": {"tcgPlayerId": 684001}, "finish": "Holofoil", "id": "st09-002_684001_holofoil", "name": "Force Impulse Gundam", "number": "ST09-002", "rarity": "Legend Rare", "setCode": "ST09", "type": "Unit"},
@@ -80,6 +83,11 @@ func TestGundamResolve(t *testing.T) {
 			"a parallel Cardmarket's version text names once more", 914345,
 			cm.CatalogProduct{Name: "Shining Gundam (ST12-002) (V.2 - Common +)", Number: "002", Rarity: "Common +", Version: 2},
 			"Starter Deck: Raging Onslaught", nil, "st12-002_721022_holofoil",
+		},
+		{
+			"two links crossed by CardTrader are read the other way", 905979,
+			cm.CatalogProduct{Name: "Char's Zaku II (GD01-026) (V.1 - Rare +)", Number: "GD01-026", Rarity: "Rare +", Version: 1},
+			"Edition Beta", map[int]int{905979: 616640}, "gd01-026_616641_holofoil",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

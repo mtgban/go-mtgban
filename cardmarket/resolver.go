@@ -446,6 +446,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GameOnePiece && onePieceNonEnglish[product.IDProduct] {
 			return "", "", false, errForeign
 		}
+		if r.gameID == cm.GameGundam && gundamUnmade[product.IDProduct] {
+			return "", "", false, nil
+		}
 		// A product the datastore records by id is that printing: the
 		// pre-errata One Piece cards no TCGplayer product sells, or a
 		// Lorcana card Cardmarket names its own way.
@@ -454,6 +457,10 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			cardID = uuid
 			cardIDFoil, _ = r.backend.MatchID(cardID, true)
 			break
+		}
+		tcgID, found := r.tcgBridge[product.IDProduct]
+		if crossed, linked := gundamCrossedLinks[product.IDProduct]; linked {
+			tcgID, found = crossed, true
 		}
 		// The bridge answers next: One Piece through onePieceByID's
 		// off-code/off-shelf checks, Riftbound and Lorcana only where the
@@ -468,7 +475,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				cardIDFoil, _ = r.backend.MatchID(cardID, true)
 				break
 			}
-		} else if tcgID, found := r.tcgBridge[product.IDProduct]; found {
+		} else if found {
 			id, idErr := r.backend.MatchID(fmt.Sprint(tcgID), false)
 			agrees := idErr == nil && bridgeNamesCard(r.backend, product, id)
 			if r.gameID == cm.GameGundam {
