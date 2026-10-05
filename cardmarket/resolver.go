@@ -500,6 +500,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
+		if r.gameID == cm.GameLorcana {
+			cardName = cmp.Or(lorcanaRenames[product.IDProduct], cardName)
+		}
 		number := product.Number
 		edition := product.ExpansionName
 		if r.gameID == cm.GameGundam {
