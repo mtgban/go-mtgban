@@ -106,8 +106,7 @@ var langMap = map[string]string{
 }
 
 // tcgIDOverrides corrects a blueprint's own TCGplayerID where it names a
-// sibling card, or supplies one Card Trader sends none for at all. See the
-// commit for why this is a closed table rather than a general rule.
+// sibling card, or supplies one Card Trader sends none for at all.
 var tcgIDOverrides = map[int]int{
 	// Flesh and Blood: the id names the other half of a printed pair.
 	334431: 633285, // Saltwater Swell (Yellow), SEA142
