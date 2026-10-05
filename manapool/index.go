@@ -44,7 +44,13 @@ func (mp *Index) Load(ctx context.Context) error {
 	}
 
 	mp.printf("Found %d singles", len(singles))
+	mp.price(singles)
+	mp.inventoryDate = time.Now()
+	return nil
+}
 
+// price records the market valuation of every row of the list.
+func (mp *Index) price(singles []Product) {
 	for _, card := range singles {
 		// The finish is named by the field the price sits in rather than by
 		// a column, so each one resolves to its own printing.
@@ -98,6 +104,23 @@ func (mp *Index) Load(ctx context.Context) error {
 				if cardID == "" {
 					continue
 				}
+				co, err = mp.backend.GetUUID(cardID)
+				if err != nil {
+					continue
+				}
+			}
+
+			// A printing sold nonfoil and etched has its foil market in the
+			// etched copy; one sold in neither has none to record.
+			if finish.foil && !co.Foil && !co.Etched {
+				cardID, err = mp.backend.MatchID(cardID, true, true)
+				if err != nil {
+					continue
+				}
+				co, err = mp.backend.GetUUID(cardID)
+				if err != nil || !co.Etched {
+					continue
+				}
 			}
 
 			link := card.URL
@@ -127,10 +150,6 @@ func (mp *Index) Load(ctx context.Context) error {
 			}
 		}
 	}
-
-	mp.inventoryDate = time.Now()
-
-	return nil
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
