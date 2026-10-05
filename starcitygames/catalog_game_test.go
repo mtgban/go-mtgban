@@ -16,6 +16,7 @@ func TestGameFromCatalog(t *testing.T) {
 		{"Flesh and Blood", GameFleshAndBlood},
 		{"Disney Lorcana", GameLorcana},
 		{"Riftbound", GameRiftbound},
+		{"Riftbound: League of Legends TCG", GameRiftbound},
 		// Shapes the catalog does not use, kept to show the mapping is exact
 		// rather than prefix- or substring-based.
 		{"Magic", 0},
