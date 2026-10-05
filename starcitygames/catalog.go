@@ -176,7 +176,9 @@ func gameFromCatalog(game string) int {
 		return GameFleshAndBlood
 	case "Disney Lorcana":
 		return GameLorcana
-	case "Riftbound":
+	case "Riftbound", "Riftbound: League of Legends TCG":
+		// Unlike the other games, the catalog has flipped between these two
+		// spellings and back; mapping only one empties every Riftbound run.
 		return GameRiftbound
 	default:
 		return 0
