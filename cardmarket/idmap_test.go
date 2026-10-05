@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"maps"
 	"os"
 	"testing"
 
@@ -154,5 +155,34 @@ func TestCheckCatalog(t *testing.T) {
 		if (err == nil) != tt.usable {
 			t.Errorf("%s: checkCatalog() = %v, want usable %v", tt.name, err, tt.usable)
 		}
+	}
+}
+
+// TestMergeList pins how the product list fills out the catalog, for every
+// game: a catalog product stays as the catalog has it, a product only the
+// list carries joins on a shelf the catalog names, with no number, and one on
+// a shelf the catalog does not name is dropped.
+func TestMergeList(t *testing.T) {
+	catalog := &cm.Catalog{}
+	catalog.Data.Expansions = map[int]cm.CatalogExpansion{1: {Name: "Alpha", Code: "LEA"}}
+	catalog.Data.Products = map[int]cm.CatalogProduct{
+		10: {ExpansionID: 1, Name: "Black Lotus", Number: "232", Rarity: "Rare"},
+	}
+	list := []cm.ProductList{
+		{IDProduct: 10, Name: "Black Lotus (renamed)", ExpansionID: 1},
+		{IDProduct: 11, Name: "Mox Pearl", ExpansionID: 1},
+		{IDProduct: 12, Name: "Alfie's Token", ExpansionID: 5571},
+	}
+
+	got := mergeList(catalog, list, nil)
+	want := map[int]cm.CatalogProduct{
+		10: {ExpansionID: 1, Name: "Black Lotus", Number: "232", Rarity: "Rare"},
+		11: {ExpansionID: 1, Name: "Mox Pearl"},
+	}
+	same := func(a, b cm.CatalogProduct) bool {
+		return a.ExpansionID == b.ExpansionID && a.Name == b.Name && a.Number == b.Number && a.Rarity == b.Rarity
+	}
+	if !maps.EqualFunc(got, want, same) {
+		t.Errorf("mergeList = %v, want %v", got, want)
 	}
 }

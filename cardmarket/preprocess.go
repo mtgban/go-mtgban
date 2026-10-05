@@ -248,45 +248,15 @@ func plausiblePrinting(b *mtgmatcher.Backend, expansionName, cardID string) bool
 	return true
 }
 
-// filteredExpansionsTags name the shelves nothing the name route should
-// price from: the vendors' custom tokens and alters, the oversized promos,
-// the player cards and the marketplace's own series. A product of one of
-// them that MTGJSON has linked to a printing of ours is priced through the
-// link, which is MTGJSON's call to make - the official token sets and a
-// handful of oversized promos, 165 products of the 8,341 on these shelves -
-// and every other one is refused here rather than matched by a name that
-// would land an alter on the card it copies.
-var filteredExpansionsTags = []string{
-	"Boomer Tokns",
-	"Filler Cards",
-	"For Science!",
-	"Gatherers' Tavern",
-	"GnD Cards",
-	"Heroes of the Realm",
-	"Mana ZenZero",
-	"MKM Series",
-	"Oversized",
-	"Player Cards",
-	"Revista Serra Promos",
-	"Rk post Products",
-	"SAWATARIX",
-	"Starcity",
-	"Street Clans",
-	"Three for One",
-	"Token",
-	"TokyoMTG Products",
-	"Vanlubow",
-}
-
 // Preprocess turns Cardmarket's name, number and edition into the card
 // description the matcher takes.
 func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgmatcher.InputCard, error) {
 	var foil bool
 
-	for _, tag := range filteredExpansionsTags {
-		if strings.Contains(edition, tag) {
-			return nil, mtgmatcher.ErrUnsupported
-		}
+	// A set's token shelf prices only the printings the datastore links to
+	// its products; a token's bare name would land on any of its namesakes.
+	if strings.HasSuffix(edition, ": Tokens") {
+		return nil, mtgmatcher.ErrUnsupported
 	}
 
 	switch number {
