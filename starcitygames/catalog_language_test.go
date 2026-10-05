@@ -147,3 +147,36 @@ func TestResolveEnglishTagOnForeignPrinting(t *testing.T) {
 		})
 	}
 }
+
+// A Secret Lair sold in Japanese is the Japanese copy kept beside the English
+// printing, not the English printing itself.
+func TestResolveJapaneseSecretLairCopy(t *testing.T) {
+	b := withMagic(t)
+
+	for _, product := range []CatalogProduct{
+		{
+			Name: "Phyrexian Metamorph", Set: "Secret Lair Drop", Language: "Japanese",
+			CollectorNumber: "1110", SKU: "SGL-MTG-PRM-SECRET_SLD_1110-JAN",
+			Finish: "Non-foil", FinishGroup: "Non-foil",
+		},
+		{
+			Name: "Azusa, Lost but Seeking", Set: "Secret Lair Drop", Language: "Japanese",
+			CollectorNumber: "1597", SKU: "SGL-MTG-PRM-SECRET_SLD_1597-JAF",
+			Finish: "Foil", FinishGroup: "Foil",
+		},
+	} {
+		t.Run(product.SKU, func(t *testing.T) {
+			id, err := resolveProduct(b, GameMagic, product)
+			if err != nil {
+				t.Fatalf("resolveProduct: %v", err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "SLD" || !strings.HasSuffix(co.Number, "jpn") || co.Language != "Japanese" {
+				t.Errorf("got %s #%s (%s), want an SLD Japanese copy", co.SetCode, co.Number, co.Language)
+			}
+		})
+	}
+}

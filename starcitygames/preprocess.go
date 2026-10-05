@@ -590,6 +590,16 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 			}
 		}
 
+		// A Japanese product is the copy minted beside the English printing
+		// when there is one, since the id of the English one fails the
+		// language check.
+		if language == "JA" {
+			copies := b.MatchWithNumber(cardName, card.SetCode, card.Number+"jpn")
+			if len(copies) == 1 {
+				card = copies[0]
+			}
+		}
+
 		return &mtgmatcher.InputCard{
 			ID:        card.UUID,
 			Variation: variant,
