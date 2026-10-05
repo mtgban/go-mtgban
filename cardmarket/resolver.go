@@ -45,7 +45,7 @@ type resolver struct {
 
 	// Catalog is the published id-map catalog a scraper may resolve from
 	// before falling back to name/number matching. bantool loads it from
-	// MTGJSON_MKMID_PATH; nil is a resolver with no id map at all, which
+	// CARDMARKET_CATALOG_PATH; nil is a resolver with no id map at all, which
 	// checkCatalog refuses to walk when the game needs one to walk safely.
 	catalog *cm.Catalog
 

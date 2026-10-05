@@ -415,7 +415,7 @@ carries it.
   other four games in `marketFilterParams` fall back to running unfiltered
   instead: a missing key there loses call-volume savings, not the ability
   to run.
-- `MTGJSON_MKMID_PATH` - the id-map catalog `Index` and `Market` both resolve
+- `CARDMARKET_CATALOG_PATH` - the id-map catalog `Index` and `Market` both resolve
   products from, as `go-cardmarket`'s `mkmcatalog` builds it for every game.
 - `CARDTRADER_TOKEN_BEARER` - the bridge Flesh and Blood, Pokemon and Yu-Gi-Oh
   require and One Piece merely improves with, for all three scrapers alike

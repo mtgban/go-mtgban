@@ -19,5 +19,5 @@ jobs:
       game: "riftbound"
       affiliate: ${{ vars.MKM_PARTNER }}
       datastore-filepath: b2://mtgban-datastore/riftbound/riftbound.json.xz
-      mkmids-filepath: b2://mtgban-datastore/riftbound/cardmarket_catalog.json.xz
+      cardmarket-catalog-filepath: b2://mtgban-datastore/riftbound/cardmarket_catalog.json.xz
     secrets: inherit
