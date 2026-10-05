@@ -8,13 +8,13 @@ import (
 // These stop compiling when either entry gains a field, so the comparisons
 // below cannot fall behind one without anyone noticing.
 var (
-	_ = InventoryEntry{0, "", 0, "", "", false, "", "", nil, nil}
+	_ = InventoryEntry{0, 0, "", 0, "", "", false, "", "", nil, nil}
 	_ = BuylistEntry{0, "", 0, 0, "", "", "", "", nil}
 )
 
 // sameInventoryEntry compares every field of two inventory entries.
 func sameInventoryEntry(a, b InventoryEntry) bool {
-	return a.Quantity == b.Quantity && a.Conditions == b.Conditions && a.Price == b.Price &&
+	return a.Quantity == b.Quantity && a.Available == b.Available && a.Conditions == b.Conditions && a.Price == b.Price &&
 		a.URL == b.URL && a.SellerName == b.SellerName && a.Bundle == b.Bundle &&
 		a.OriginalID == b.OriginalID && a.InstanceID == b.InstanceID &&
 		maps.Equal(a.CustomFields, b.CustomFields) && maps.Equal(a.ExtraValues, b.ExtraValues)

@@ -24,6 +24,11 @@ type InventoryEntry struct {
 	// Quantity of this entry
 	Quantity int `json:"quantity"`
 
+	// Available is every copy of this entry's variant - its condition,
+	// finish and language - on sale at any price; zero where the vendor does
+	// not say. Quantity is the part of it sold at Price.
+	Available int `json:"available,omitempty"`
+
 	// The grade of the current entry
 	// Only supported values are listed in FullGradeTags
 	Conditions Condition `json:"conditions"`

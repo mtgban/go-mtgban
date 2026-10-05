@@ -49,6 +49,7 @@ func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int)
 				}
 
 				inv[cardID][i].Quantity += entry.Quantity
+				inv[cardID][i].Available += entry.Available
 				return nil
 			}
 		}

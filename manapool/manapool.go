@@ -163,6 +163,7 @@ func (mp *Manapool) record(card Product, cardID string) {
 	out := &mtgban.InventoryEntry{
 		Conditions: grade,
 		Price:      price,
+		Available:  card.AvailableQuantity,
 		URL:        link,
 	}
 	mp.addCheapest(cardID, out)
@@ -183,11 +184,12 @@ func (mp *Manapool) Info() (info mtgban.ScraperInfo) {
 	return
 }
 
-// addCheapest records one price per printing and grade: the lowest one. The
-// list carries a row per product, and a printing the store files under more
-// than one product - the same token from several decks, a card in two of its
-// own product lines - arrives once per product, each with its own low price.
-// The site shows one row for the grade, and a buyer pays the lower of them.
+// addCheapest records one price per printing and grade: the lowest one, with
+// the copies every product holds as its Available. The list carries a row per
+// product, and a printing the store files under more than one product - the
+// same token from several decks, a card in two of its own product lines -
+// arrives once per product, each with its own low price. The site shows one
+// row for the grade, and a buyer pays the lower of them.
 func (mp *Manapool) addCheapest(cardID string, entry *mtgban.InventoryEntry) {
 	err := mp.inventory.AddUnique(cardID, entry)
 	if !errors.Is(err, mtgban.ErrDuplicateEntry) {
@@ -198,7 +200,11 @@ func (mp *Manapool) addCheapest(cardID string, entry *mtgban.InventoryEntry) {
 	}
 	entries := mp.inventory[cardID]
 	for i := range entries {
-		if entries[i].Conditions == entry.Conditions && entry.Price < entries[i].Price {
+		if entries[i].Conditions != entry.Conditions {
+			continue
+		}
+		entries[i].Available += entry.Available
+		if entry.Price < entries[i].Price {
 			entries[i].Price = entry.Price
 			entries[i].URL = entry.URL
 		}
