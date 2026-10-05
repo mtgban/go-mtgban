@@ -115,6 +115,13 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	if name == "Vivillon" {
 		numbered = pokemonVivillonColors.Replace(numbered)
 	}
+	shelved := false
+	if !nonHolo {
+		shelf := pokemonNoteShelf(b, numbered, card)
+		if shelf != nil {
+			card, numbered, shelved = shelf, strings.TrimSpace(pokemonStampTail.ReplaceAllString(numbered, "")), true
+		}
+	}
 	// A "(Non-Holo)" listing is never a holo pull, so it is never this
 	// redirect's business even when its note also carries one of
 	// pokemonDeckHoloNotes' markers.
@@ -179,7 +186,7 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	// words come off, and a stamp names a promo shelf the catalog files
 	// apart from the set the listing arrived on.
 	card.Variation = strings.TrimSpace(plainWords.ReplaceAllString(card.Variation, " "))
-	if !reprint && stamped.MatchString(card.Variation) {
+	if !reprint && !shelved && stamped.MatchString(card.Variation) {
 		card.Edition = "Promo"
 	}
 	// The Team Galactic inventions are named by their invention alone
@@ -323,6 +330,57 @@ var pokemonVivillonColors = strings.NewReplacer(
 	"(Pink)", "(Meadow Pink)",
 	"(Orange)", "(High Plains Orange)",
 )
+
+// pokemonNoteShelves names what a note says about the shelf a listing
+// belongs on, for the printings this storefront files on a main or promo
+// shelf while its note names the catalog's own: the edition to ask for, the
+// variation to ask it with instead of the note ("" keeps the note), and the
+// set code the listing has to land on to be trusted.
+var pokemonNoteShelves = []struct {
+	marker, edition, variation, wantSet string
+}{
+	{"Regional Championship", "League & Championship Cards", "", "PR-1539"},
+	{"Build & Battle", "Miscellaneous Cards & Products", "Prerelease", "MCAP"},
+	{"Prerelease", "XY Promos", "", "PR-1451"},
+	{"From Dragon Vault Blister Pack", "Blister Exclusives", "", "BLE"},
+}
+
+// pokemonStampTail matches the stamp the name carries behind its number for
+// the printings pokemonNoteShelves redirects: the catalog labels them by the
+// event and not by a stamp, so the word would only demand one that is not
+// there.
+var pokemonStampTail = regexp.MustCompile(`(?i)\s*\([^)]*\bStamp(?:ed)?\)|\s+-\s+Dragon Vault Stamped Mirror Holo`)
+
+// pokemonNoteShelf answers the listing re-asked on the shelf its note names,
+// or nil where no note names one or the redirected listing does not land on
+// that shelf's own set.
+func pokemonNoteShelf(b *mtgmatcher.Backend, numbered string, card *mtgmatcher.InputCard) *mtgmatcher.InputCard {
+	cleaned := strings.TrimSpace(pokemonStampTail.ReplaceAllString(numbered, ""))
+	for _, r := range pokemonNoteShelves {
+		if !strings.Contains(card.Variation, r.marker) {
+			continue
+		}
+		redirected := *card
+		redirected.Edition = r.edition
+		if r.variation != "" {
+			redirected.Variation = r.variation
+		}
+		probe := redirected
+		if cleaned != "" {
+			probe.Name += " - " + cleaned
+		}
+		id, err := b.Match(&probe)
+		if err != nil {
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err != nil || co.SetCode != r.wantSet {
+			continue
+		}
+		return &redirected
+	}
+	return nil
+}
 
 // pokemonDeckHoloNotes names the edition a print-run note belongs to, and
 // the set code the redirect has to land on to be trusted.
