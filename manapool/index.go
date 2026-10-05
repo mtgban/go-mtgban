@@ -81,9 +81,12 @@ func (mp *Index) Load(ctx context.Context) error {
 			// whole two-sided card as if the other half did not exist,
 			// and not every such pairing is one mtgjson's own
 			// tokenProducts feed has a record of at all.
-			if co, err := mp.backend.GetUUID(cardID); err == nil &&
-				strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
-				strings.HasPrefix(card.SetCode, "T") {
+			co, err := mp.backend.GetUUID(cardID)
+			if err != nil {
+				continue
+			}
+			if strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
+				isTokenSheet(mp.backend, co) {
 				cardID = ""
 				// MatchTokenPairing answers either with a bare derived-
 				// entity uuid or a raw TCGplayer product id - MatchID

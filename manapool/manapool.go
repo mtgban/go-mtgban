@@ -48,6 +48,13 @@ func isUnindexed(b *mtgmatcher.Backend, card Product) bool {
 	return err != nil
 }
 
+// isTokenSheet reports whether the printing a listing landed on sits in a set
+// of tokens, the only place a two-sided listing is a pairing of two faces.
+func isTokenSheet(b *mtgmatcher.Backend, co *mtgmatcher.CardObject) bool {
+	set, err := b.GetSet(co.SetCode)
+	return err == nil && set.Type == "token"
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Manapool) Load(ctx context.Context) error {
 	pricelist, err := GetPriceList(ctx)
@@ -96,7 +103,7 @@ func (mp *Manapool) price(pricelist []Product) {
 			continue
 		}
 		if strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
-			strings.HasPrefix(card.SetCode, "T") {
+			isTokenSheet(mp.backend, co) {
 			cardID = ""
 			// MatchTokenPairing answers either with a bare derived-entity
 			// uuid (no usable TCGplayer id at all) or a raw TCGplayer

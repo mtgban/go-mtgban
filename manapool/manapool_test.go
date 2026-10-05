@@ -240,3 +240,34 @@ func TestReplayCapturedVariants(t *testing.T) {
 		t.Logf("log: %s", l)
 	}
 }
+
+// TestPriceResolvesReversibleCardInTokenLookalikeSet pins that a listing named
+// "X // Y" in a set of real cards is not taken for a pairing of two tokens
+// because the set's code starts with a T: Marang River Regent // Coil and
+// Catch (Tarkir: Dragonstorm) is a card the datastore files under its front
+// face.
+func TestPriceResolvesReversibleCardInTokenLookalikeSet(t *testing.T) {
+	b := withMagic(t)
+
+	card := Product{
+		URL:       "https://manapool.com/card/tdm/378/marang-river-regent-coil-and-catch",
+		ProductID: "71fddb8b-7d80-4a59-b10a-fa4cabb9aaef", SetCode: "TDM", Number: "378",
+		Name:       "Marang River Regent // Coil and Catch",
+		ScryfallID: "484b5580-b179-4dce-8bdf-d714eb4635e5", TcgplayerProductID: 623988,
+		LanguageID: "EN", ConditionID: "NM", FinishID: "NF", LowPrice: 111, AvailableQuantity: 74,
+	}
+	mp := NewScraper(b)
+	mp.price([]Product{card})
+
+	for id := range mp.Inventory() {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatalf("GetUUID(%s) = %v", id, err)
+		}
+		if co.SetCode != "TDM" || co.Number != "378" {
+			t.Errorf("landed on %s %s, want TDM 378", co.SetCode, co.Number)
+		}
+		return
+	}
+	t.Fatal("listing produced no inventory entry")
+}
