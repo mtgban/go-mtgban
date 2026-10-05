@@ -1466,6 +1466,18 @@ func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string,
 	if total != "" {
 		variation = number + "/" + total
 	}
+	if suffix, found := lorcanaExclusives[p.Language]; found {
+		id, err := b.Match(&mtgmatcher.InputCard{
+			Name:      p.Name + suffix,
+			Edition:   p.Set,
+			Variation: variation,
+			Foil:      foil,
+			Finish:    lorcanaFinish(p.Finish),
+		})
+		if err == nil {
+			return id, nil
+		}
+	}
 	id, err := b.Match(&mtgmatcher.InputCard{
 		Name:      p.Name,
 		Edition:   p.Set,
@@ -1484,6 +1496,17 @@ func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string,
 		return id, nil
 	}
 	return lorcanaSibling(b, p, co, foil)
+}
+
+// lorcanaExclusives are what the datastore adds to a promo's name where the
+// catalog sells it in Japanese or Simplified Chinese: the promo struck for
+// that market is a card of its own beside the English one, and its name has
+// already said which printing a letter on the sku's number would pick. A
+// listing in that language the suffixed name does not answer is read by its
+// plain name like any other.
+var lorcanaExclusives = map[string]string{
+	"Japanese":             " (JP Exclusive)",
+	"Chinese - Simplified": " (CS Exclusive)",
 }
 
 // lorcanaQuest answers an Illumineer's Quest promo, which the catalog shelves
