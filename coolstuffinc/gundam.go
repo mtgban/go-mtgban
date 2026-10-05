@@ -225,9 +225,13 @@ var gundamPlusRun = regexp.MustCompile(`\s(\++)\)`)
 
 // gundamTier reads the rarity the storefront publishes beside a Gundam card.
 // A few parallels carry the base rarity in that column while the name says
-// "+", and the column alone would answer with the base card.
+// "+", and the column alone would answer with the base card. The Green Dress
+// Cagalli is the R+ of its number and says so only by its name.
 func gundamTier(rarity, name string) string {
 	rarity = strings.TrimSpace(rarity)
+	if strings.Contains(name, "(Green Dress)") {
+		return "R+"
+	}
 	if spelled, found := gundamRarity[rarity]; found {
 		rarity = spelled
 	}
