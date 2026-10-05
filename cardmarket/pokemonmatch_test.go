@@ -66,6 +66,42 @@ func TestMatchProductForeignExpansion(t *testing.T) {
 	}
 }
 
+// pokemonStampedDatastore holds EX Deoxys' Manectric and the prerelease
+// stamped copy of it that Nintendo Promos files apart, rows copied verbatim.
+const pokemonStampedDatastore = `{"data": {
+ "game": "pokemon",
+ "sets": {"DX": {"abbreviation": "DX", "baseSetSize": 107, "name": "EX Deoxys", "releaseDate": "2005-02-14"}, "PR-1423": {"abbreviation": "PR", "name": "Nintendo Promos", "releaseDate": "2003-10-01", "type": "promo"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 87155}, "finish": "Normal", "id": "38-107_87155", "name": "Manectric", "number": "38", "rarity": "Uncommon", "setCode": "DX", "total": "107"},
+  {"externalLinks": {"tcgPlayerId": 87155}, "finish": "Reverse Holofoil", "id": "38-107_87155_reverseholofoil", "name": "Manectric", "number": "38", "rarity": "Uncommon", "setCode": "DX", "total": "107"},
+  {"externalLinks": {"tcgPlayerId": 153078}, "finish": "Normal", "id": "38-107_153078", "name": "Manectric", "number": "38", "promoTypes": ["prerelease"], "rarity": "Promo", "setCode": "PR-1423", "total": "107", "variant": "Prerelease"}
+ ]
+}}`
+
+// TestMatchPokemonStamped pins that a product Cardmarket rates "Promo" on a
+// set's own shelf is the stamped printing of the card, where the plain
+// product of the same name and number is the set's own.
+func TestMatchPokemonStamped(t *testing.T) {
+	b := datastoreBackend(t, "pokemon", pokemonStampedDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	for _, tt := range []struct {
+		rarity, want string
+	}{
+		{"Uncommon", "38-107_87155"},
+		{"Promo", "38-107_153078"},
+	} {
+		product := cm.Product{Name: "Manectric ", Number: "38", Rarity: tt.rarity, ExpansionName: "EX Deoxys"}
+		got, err := mkm.matchPokemon(&product)
+		if err != nil || got != tt.want {
+			t.Errorf("matchPokemon(%q product) = (%q, %v), want %q", tt.rarity, got, err, tt.want)
+		}
+	}
+}
+
 // TestPokemonBasicEnergy pins which names go quiet. The whole name is read,
 // not a substring of it: a shelf sells the special energies on their own
 // account, and one Trainer merely has the word in its title.

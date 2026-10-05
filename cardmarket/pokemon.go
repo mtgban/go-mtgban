@@ -3,6 +3,7 @@ package cardmarket
 import (
 	"errors"
 	"regexp"
+	"strconv"
 	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -387,4 +388,58 @@ func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarg
 		targets = append(targets, pokemonFinishTarget{cardID: sibling, isFirstEd: isFirstEd, isReverseHolo: isReverseHolo})
 	}
 	return targets
+}
+
+// pokemonStamped answers the stamped printing of a plain card that
+// Cardmarket's own rarity, "Promo", says a product sells: the one row of the
+// same name, number and set total in another set that carries a promo type.
+// Rows spanning more than one TCGplayer product, or with a row of no
+// TCGplayer product among them, name nothing, and the product stays with the
+// plain card's other siblings.
+func (r *resolver) pokemonStamped(plain *mtgmatcher.CardObject) string {
+	if plain.IsPromo || len(plain.PromoTypes) > 0 || plain.Rarity == mtgmatcher.RarityName("Promo") {
+		return ""
+	}
+	uuids, _ := r.backend.SearchEquals(plain.Name)
+	var found, tcgID string
+	for _, uuid := range uuids {
+		co, err := r.backend.GetUUID(uuid)
+		if err != nil || co.SetCode == plain.SetCode || co.Name != plain.Name {
+			continue
+		}
+		if strings.TrimLeft(co.Number, "0") != strings.TrimLeft(plain.Number, "0") ||
+			strings.TrimLeft(co.SetTotal, "0") != strings.TrimLeft(plain.SetTotal, "0") {
+			continue
+		}
+		if len(co.PromoTypes) == 0 {
+			continue
+		}
+		id := co.Identifiers["tcgplayerProductId"]
+		if id == "" || (found != "" && id != tcgID) {
+			return ""
+		}
+		if found == "" || co.Finish != pokemonReverseHolo {
+			found, tcgID = uuid, id
+		}
+	}
+	return found
+}
+
+// bridgeHolds reports whether the bridge links a product other than the one
+// given to the TCGplayer product of cardID, which that product then prices.
+func (r *resolver) bridgeHolds(cardID string, product int) bool {
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	tcgID, err := strconv.Atoi(co.Identifiers["tcgplayerProductId"])
+	if err != nil {
+		return false
+	}
+	for id, linked := range r.tcgBridge {
+		if linked == tcgID && id != product {
+			return true
+		}
+	}
+	return false
 }
