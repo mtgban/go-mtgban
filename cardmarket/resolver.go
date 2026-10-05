@@ -449,6 +449,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GameGundam && gundamUnmade[product.IDProduct] {
 			return "", "", false, nil
 		}
+		if r.gameID == cm.GameGundam && gundamNoRow[product.IDProduct] {
+			return "", "", false, errNoPrinting
+		}
 		// A product the datastore records by id is that printing: the
 		// pre-errata One Piece cards no TCGplayer product sells, or a
 		// Lorcana card Cardmarket names its own way.
@@ -501,6 +504,12 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		cardName := fields[0]
 		number := product.Number
 		edition := product.ExpansionName
+		if r.gameID == cm.GameGundam {
+			number = gundamNumber(cardName, number)
+			if gundamPromoShelves[edition] {
+				edition = gundamPromoSet
+			}
+		}
 		if r.gameID == cm.GameOnePiece {
 			// Alias the shelf before picking the number: onePieceNumber
 			// only trusts the name's own code on a shelf naming a set of
