@@ -2,6 +2,7 @@ package strikezone
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -26,6 +27,7 @@ var contradictions = []contradiction{
 	wearsUnnamedPremiumFoil,
 	wearsUnnamedBorderless,
 	wearsUnnamedFlavor,
+	notPrintedInFinish,
 }
 
 // wearsUnnamedPremiumFoil reports whether the printing wears a premium foil
@@ -52,9 +54,19 @@ func wearsUnnamedFlavor(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.
 	return co.FlavorName != "" && !mtgmatcher.Contains(l.name, co.FlavorName)
 }
 
+// notPrintedInFinish reports whether the printing was never made in the
+// finish the listing is on sale in.
+func notPrintedInFinish(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+	return !co.HasFinish(requestedFinish(l.card.Foil, l.card.Variation))
+}
+
 // resolveAliasing narrows an ambiguous match down to the one printing the
 // listing does not rule out. It returns "" when the survivors do not reduce
 // to exactly one, leaving the original error in place.
+//
+// A promo shelf holds promos only, so a printing that is not one is not the
+// answer however few survive: a lone survivor there is what the rest was
+// ruled out for, not what the listing says.
 func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) string {
 	var keep []string
 	for _, id := range probe {
@@ -69,8 +81,17 @@ func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) st
 			keep = append(keep, id)
 		}
 	}
-	if len(keep) == 1 {
-		return keep[0]
+	if len(keep) != 1 {
+		return ""
 	}
-	return ""
+	co, err := b.GetUUID(keep[0])
+	if err != nil || (isPromoShelf(l.shelf) && !co.IsPromo) {
+		return ""
+	}
+	return keep[0]
+}
+
+// isPromoShelf reports whether the shelf is one of the promo categories.
+func isPromoShelf(shelf string) bool {
+	return strings.HasPrefix(shelf, "Promos:") || strings.HasPrefix(shelf, "Promo Pack:")
 }
