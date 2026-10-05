@@ -185,6 +185,10 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 				}, nil
 			}
 		}
+		input = imageNumberAfterName(b, cardName, edition, imgName, isFoil)
+		if input != nil {
+			return input, nil
+		}
 		// A letter can stand between the set code and the number, marking
 		// the treatment: "TMCS0032" is the surge foil of TMC 32, where
 		// "TMC0093" is the pixel art one filed at its own number. Neither
@@ -310,6 +314,36 @@ func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher
 		return input
 	}
 	return &mtgmatcher.InputCard{Name: co.Name, Variation: listNum, Edition: "PLST", Foil: input.Foil}
+}
+
+// stemLetters keeps the letters and digits of a name, as CSI spells it into
+// an image file name.
+func stemLetters(name string) string {
+	return strings.Map(func(r rune) rune {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			return r
+		}
+		return -1
+	}, strings.ToLower(name))
+}
+
+// imageNumberAfterName reads a stem that writes the card's name before the
+// number ("borosguildgate244") as that number in the shelf's own set.
+func imageNumberAfterName(b *mtgmatcher.Backend, cardName, edition, imgName string, isFoil bool) *mtgmatcher.InputCard {
+	name := stemLetters(cardName)
+	low := strings.ToLower(imgName)
+	if name == "" || !strings.HasPrefix(low, name) {
+		return nil
+	}
+	num := strings.TrimLeft(low[len(name):], "_0")
+	if num == "" || leadingDigits(num) != num {
+		return nil
+	}
+	set, err := b.GetSetByName(edition)
+	if err != nil || len(b.MatchInSetNumber(cardName, set.Code, num)) != 1 {
+		return nil
+	}
+	return &mtgmatcher.InputCard{Name: cardName, Variation: num, Edition: set.Code, Foil: isFoil}
 }
 
 // basicLandLetter matches a shelf-lettered basic land ("Island A",

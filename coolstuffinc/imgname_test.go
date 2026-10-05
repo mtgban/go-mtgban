@@ -75,3 +75,40 @@ func TestPreprocessImageLetter(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessImageStem pins the image names that put the card's own name
+// beside the number, which the set-code-first reading never parses: the
+// listing then falls back to the wording, which cannot tell two arts of one
+// card apart.
+func TestPreprocessImageStem(t *testing.T) {
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+
+	for _, tt := range []struct {
+		desc    string
+		name    string
+		edition string
+		variant string
+		imgURL  string
+		wantSet string
+		wantNum string
+	}{
+		{
+			desc:    "the name leads and the shelf gives the set",
+			name:    "Boros Guildgate",
+			edition: "Guilds of Ravnica",
+			imgURL:  "https://s.cf.net/i/BorosGuildgate244.jpg",
+			wantSet: "GRN", wantNum: "244",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			got, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL)
+			if err != nil {
+				t.Fatalf("preprocess(%q) = %v", tt.imgURL, err)
+			}
+			if got.Edition != tt.wantSet || got.Variation != tt.wantNum {
+				t.Errorf("preprocess(%q) = %q/%q, want %q/%q",
+					tt.imgURL, got.Edition, got.Variation, tt.wantSet, tt.wantNum)
+			}
+		})
+	}
+}
