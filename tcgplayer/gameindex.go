@@ -27,6 +27,9 @@ type TCGGameIndex struct {
 
 	editions map[int]tcgplayer.Group
 
+	// printings are the names of the finishes the category sells.
+	printings []string
+
 	category            int
 	categoryName        string
 	categoryDisplayName string
@@ -132,10 +135,12 @@ func (tcg *TCGGameIndex) productEntries(result tcgplayer.ProductPriceSet, produc
 		// names, and the surviving printing is priced by its own row
 		// alongside this one. Refusing it is right - the stale number can
 		// be many times the real price - but complaining every run is
-		// noise, so only the finish is let through quietly. Any other
-		// failure on such a row still speaks up.
+		// noise, so only a finish the printing lacks, or one the category
+		// no longer sells, is let through quietly. Any other failure on
+		// such a row still speaks up.
 		marketOnly := result.LowPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0
-		if marketOnly && errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
+		retired := !slices.Contains(tcg.printings, result.SubTypeName)
+		if marketOnly && (retired || errors.Is(err, mtgmatcher.ErrCardWrongFinish)) {
 			return nil
 		}
 
@@ -192,6 +197,14 @@ func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
 	if err != nil {
 		return err
+	}
+
+	printings, err := tcg.client.ListCategoryPrintings(ctx, tcg.category)
+	if err != nil {
+		return err
+	}
+	for _, printing := range printings {
+		tcg.printings = append(tcg.printings, printing.Name)
 	}
 
 	editions, err := EditionMap(ctx, tcg.client, tcg.category)
