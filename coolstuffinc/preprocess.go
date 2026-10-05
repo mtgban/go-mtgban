@@ -5,6 +5,8 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -137,7 +139,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
-	input := basicLandListing(b, cardName, edition, isFoil, imgName)
+	input := basicLandListing(b, cardName, edition, variant, isFoil, imgName)
 	if input != nil {
 		return input, nil
 	}
@@ -266,45 +268,77 @@ var basicLandLetter = regexp.MustCompile(`^((?:Snow-Covered )?(?:Plains|Island|S
 
 // basicLandListing resolves a lettered or letterless basic land listing to
 // the printing its image names, deferring to the ordinary pipeline first
-// and only stepping in where that already fails. Candidates are gathered
-// under both foil states to require the same single number either way.
-func basicLandListing(b *mtgmatcher.Backend, cardName, edition string, isFoil bool, imgName string) *mtgmatcher.InputCard {
+// and only stepping in where that already fails. Battle Royale is the
+// exception: CSI letters its arts in collector number order, and the
+// matcher's own letters follow another, so there the position of the letter
+// decides and the matcher's reading of it is never used.
+func basicLandListing(b *mtgmatcher.Backend, cardName, edition, variant string, isFoil bool, imgName string) *mtgmatcher.InputCard {
 	m := basicLandLetter.FindStringSubmatch(cardName)
 	if m == nil {
 		return nil
 	}
-	base := m[1]
+	base, letter := m[1], m[2]
+	ownLetters := edition == "Battle Royale"
 
-	already := &mtgmatcher.InputCard{Name: cardName, Edition: edition, Foil: isFoil}
-	_, err := b.Match(already)
-	if err == nil {
-		return nil
+	if !ownLetters {
+		already := &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: variant, Foil: isFoil}
+		_, err := b.Match(already)
+		if err == nil {
+			return nil
+		}
 	}
 
-	setCode := ""
-	var digits string
+	return basicLandPrinting(b, base, letter, edition, variant, isFoil, imgName)
+}
+
+// basicLandPrinting finds the collector number of a basic among the
+// candidates of its edition, from the number its image names or, failing
+// that, from the position its letter holds among the plain numbers of a
+// single set. Candidates are gathered under both foil states to require the
+// same single number either way.
+func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant string, isFoil bool, imgName string) *mtgmatcher.InputCard {
 	var match string
 	for _, foil := range [...]bool{false, true} {
-		probe := &mtgmatcher.InputCard{Name: base, Edition: edition, Foil: foil}
+		probe := &mtgmatcher.InputCard{Name: base, Edition: edition, Variation: variant, Foil: foil}
 		_, err := b.Match(probe)
 		var alias *mtgmatcher.AliasingError
+		if !errors.As(err, &alias) && variant != "" {
+			// The notes can rule every printing out; the edition alone then
+			// has to name the candidates.
+			probe = &mtgmatcher.InputCard{Name: base, Edition: edition, Foil: foil}
+			_, err = b.Match(probe)
+		}
 		if !errors.As(err, &alias) {
 			return nil
 		}
-		var nums []string
+		setCodes := map[string]bool{}
+		setCode := ""
+		var nums, regular []string
 		for _, id := range alias.Probe() {
 			co, err := b.GetUUID(id)
 			if err != nil {
 				continue
 			}
 			setCode = co.SetCode
+			setCodes[co.SetCode] = true
 			nums = append(nums, co.Number)
+			if !co.IsFullArt {
+				regular = append(regular, co.Number)
+			}
+		}
+
+		digits := basicLandStemNumber(imgName, setCode, base)
+		if digits == "" && len(setCodes) == 1 {
+			// CSI sells a full-art basic as its own unlettered product, so
+			// the letters only count the other arts when the set has any.
+			ordinals := regular
+			if len(ordinals) == 0 {
+				ordinals = nums
+			}
+			digits = basicLandOrdinal(ordinals, letter)
 		}
 		if digits == "" {
-			digits = basicLandStemNumber(imgName, setCode, base)
-			if digits == "" {
-				return nil
-			}
+			return nil
 		}
 		found, matches, lettered := "", 0, false
 		for _, n := range nums {
@@ -327,6 +361,32 @@ func basicLandListing(b *mtgmatcher.Backend, cardName, edition string, isFoil bo
 		match = found
 	}
 	return &mtgmatcher.InputCard{Name: base, Variation: match, Edition: edition, Foil: isFoil}
+}
+
+// basicLandOrdinal reads a basic's letter as its position among the plain
+// collector numbers of a set ("B" is the second one). Arts are lettered in
+// number order, but a set that also holds a star or letter-suffixed number
+// has arts the letters do not count, so it answers nothing.
+func basicLandOrdinal(nums []string, letter string) string {
+	if letter == "" {
+		return ""
+	}
+	var plain []int
+	for _, n := range nums {
+		v, err := strconv.Atoi(n)
+		if err != nil {
+			return ""
+		}
+		if !slices.Contains(plain, v) {
+			plain = append(plain, v)
+		}
+	}
+	slices.Sort(plain)
+	idx := int(letter[0] - 'A')
+	if idx >= len(plain) {
+		return ""
+	}
+	return strconv.Itoa(plain[idx])
 }
 
 // basicLandStemNumber pulls a collector number out of a basic land image

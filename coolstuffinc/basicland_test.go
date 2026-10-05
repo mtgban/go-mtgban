@@ -30,6 +30,33 @@ func TestPreprocessBasicLand(t *testing.T) {
 			imgURL:  "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Hour%20of%20Devastation/full/Plains190.jpg",
 			wantSet: "HOU", wantNum: "190",
 		},
+		{
+			// The image names no number, so the letter's position among the
+			// set's plain numbers is all there is to read.
+			desc:    "a lettered basic with no number in its image",
+			name:    "Forest B",
+			edition: "Magic 2014",
+			imgURL:  "https://s.cf.net/i/foresta.jpg",
+			wantSet: "M14", wantNum: "247",
+		},
+		{
+			// The full-art Forest is its own unlettered product, so A is
+			// the first of the regular arts and not the full-art 254.
+			desc:    "a lettered basic in a set holding a full-art printing",
+			name:    "Forest A",
+			edition: "Amonkhet",
+			imgURL:  "https://s.cf.net/i/forestA.jpg",
+			wantSet: "AKH", wantNum: "267",
+		},
+		{
+			// Matched by the letter alone, Battle Royale would answer with
+			// a different art than the one CSI letters.
+			desc:    "a basic on a shelf lettered in number order",
+			name:    "Swamp C",
+			edition: "Battle Royale",
+			imgURL:  "https://s.cf.net/i/SwampCBRBa.jpg",
+			wantSet: "BRB", wantNum: "135",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			card, err := preprocess(b, tt.name, tt.edition, "", tt.imgURL)
@@ -74,4 +101,26 @@ func TestPreprocessBasicLand(t *testing.T) {
 			t.Errorf("Match(%+v) unexpectedly succeeded, want an error", card)
 		}
 	})
+}
+
+func TestBasicLandOrdinal(t *testing.T) {
+	for _, tt := range []struct {
+		desc   string
+		nums   []string
+		letter string
+		want   string
+	}{
+		{"second of the plain numbers", []string{"247", "246", "248", "246"}, "B", "247"},
+		{"no letter", []string{"1", "2"}, "", ""},
+		{"a letter past the last number", []string{"1", "2"}, "C", ""},
+		{"a lettered sibling number", []string{"265", "265a", "266"}, "A", ""},
+		{"a star sibling number", []string{"101", "102", "102\u2605"}, "A", ""},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			got := basicLandOrdinal(tt.nums, tt.letter)
+			if got != tt.want {
+				t.Errorf("basicLandOrdinal(%q, %q) = %q, want %q", tt.nums, tt.letter, got, tt.want)
+			}
+		})
+	}
 }
