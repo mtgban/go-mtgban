@@ -57,32 +57,44 @@ type resolved struct {
 	err        error
 }
 
-// walkCatalog prices every product of the id map, and of the product list
-// beside it, expansion by expansion.
-func (mkm *Index) walkCatalog(ctx context.Context) error {
-	// The map knows what its last walk found; the published product list
-	// knows everything on sale today. Products it names that the map does
-	// not - added since the walk - are priced from what the list says of
-	// them, with the one thing the list never carries left empty: their
-	// collector number.
-	products := make(map[int]cm.CatalogProduct, len(mkm.catalog.Data.Products))
-	for id, product := range mkm.catalog.Data.Products {
+// mergeList adds to the catalog's products those of the published product
+// list it does not carry. The map knows what its last walk found; the list
+// knows everything on sale today. A product added since the walk is priced
+// from what the list says of it, with the one thing the list never carries
+// left empty: its collector number. A product of an expansion the catalog
+// does not name is dropped: the catalog leaves some shelves out on purpose,
+// and one added since the walk waits for the next.
+func mergeList(catalog *cm.Catalog, list []cm.ProductList, printf func(string, ...any)) map[int]cm.CatalogProduct {
+	products := make(map[int]cm.CatalogProduct, len(catalog.Data.Products))
+	for id, product := range catalog.Data.Products {
 		products[id] = product
 	}
-	list, err := cm.DownloadProductListSingles(ctx, mkm.gameID)
-	if err != nil {
-		return err
-	}
-	var unmapped int
+	var unmapped, unnamed int
 	for _, entry := range list {
-		_, found := products[entry.IDProduct]
-		if found {
+		if _, found := products[entry.IDProduct]; found {
+			continue
+		}
+		if _, named := catalog.Data.Expansions[entry.ExpansionID]; !named {
+			unnamed++
 			continue
 		}
 		products[entry.IDProduct] = cm.CatalogProduct{ExpansionID: entry.ExpansionID, Name: entry.Name}
 		unmapped++
 	}
-	mkm.printf("%d products of the list are not in the map and resolve by name", unmapped)
+	if printf != nil {
+		printf("%d products of the list are not in the map and resolve by name; %d more are on shelves the map does not name", unmapped, unnamed)
+	}
+	return products
+}
+
+// walkCatalog prices every product of the id map, and of the product list
+// beside it, expansion by expansion.
+func (mkm *Index) walkCatalog(ctx context.Context) error {
+	list, err := cm.DownloadProductListSingles(ctx, mkm.gameID)
+	if err != nil {
+		return err
+	}
+	products := mergeList(mkm.catalog, list, mkm.printf)
 
 	byExpansion := map[int][]int{}
 	for id, product := range products {
@@ -92,14 +104,10 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 	var items []cm.Expansion
 	for expansionID := range byExpansion {
 		entry := mkm.catalog.Data.Expansions[expansionID]
-		name := entry.Name
-		if name == "" {
-			name = fmt.Sprintf("expansion %d", expansionID)
-		}
-		if mkm.targetEdition != "" && name != mkm.targetEdition {
+		if mkm.targetEdition != "" && entry.Name != mkm.targetEdition {
 			continue
 		}
-		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})
+		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: entry.Name, SetCode: entry.Code})
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].IDExpansion < items[j].IDExpansion })
 

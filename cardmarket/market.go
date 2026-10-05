@@ -51,14 +51,6 @@ type Market struct {
 
 	client *cm.Client
 
-	// liveExpansionsCache and liveExpansionsTried back liveExpansions: the
-	// live call is attempted at most once per Load, its result (success or
-	// failure) reused for every gap the rest of that run hits. Reset at
-	// the top of Load so a Market reused across more than one run tries
-	// again rather than replaying a stale failure or a stale list forever.
-	liveExpansionsCache map[int]cm.Expansion
-	liveExpansionsTried bool
-
 	// bounced counts requests since the last one that came back a usable
 	// answer - a price, or a clean empty result. Load runs strictly
 	// sequentially, so this needs no lock: exactly one goroutine ever
@@ -253,12 +245,6 @@ func (mkm *Market) Load(ctx context.Context) error {
 		return err
 	}
 
-	// A fresh attempt at the live-expansions enrichment every Load, rather
-	// than trusting a cache (or a remembered failure) from a previous run
-	// on a reused Market instance - see liveExpansions.
-	mkm.liveExpansionsCache = nil
-	mkm.liveExpansionsTried = false
-
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
@@ -285,58 +271,6 @@ func (mkm *Market) Load(ctx context.Context) error {
 	return mkm.walkCatalog(ctx, candidates)
 }
 
-// liveExpansions answers every expansion Cardmarket's live API currently
-// has for this game, to fill a gap in mkm.catalog: mkm.catalog is built
-// from MTGJSON's own CardmarketIdentifiers.json export, which is
-// currently missing 88 of Magic's 761 real expansions (mostly
-// individually-Cardmarket-ID'd Secret Lair drops MTGJSON never mapped,
-// plus a handful of genuinely new sets it hasn't caught up to yet) -
-// without this, every product under one of those 88 falls back to the
-// literal edition string "expansion <id>", which nothing downstream
-// recognises, so every one of those cards fails to resolve.
-//
-// This is a best-effort enrichment, not a hard dependency: with the
-// current gap set, essentially every Magic run hits at least one empty
-// Catalog entry, so treating a failed call here as fatal would turn one
-// flaky Expansions response into zero inventory for the run, not just a
-// missed enrichment for the gap set it was trying to help. A failure is
-// logged and cached the same as a success - tried, not retried - so one
-// bad response degrades to the "expansion <id>" placeholder for
-// every remaining gap this run hits, rather than one bad response
-// retrying once per gap (up to all 88, each through the client's own
-// retry/backoff policy).
-func (mkm *Market) liveExpansions(ctx context.Context) map[int]cm.Expansion {
-	if mkm.liveExpansionsTried {
-		return mkm.liveExpansionsCache
-	}
-	mkm.liveExpansionsTried = true
-
-	live, err := mkm.client.Expansions(ctx, mkm.gameID)
-	if err != nil {
-		mkm.printf("could not fetch the live expansion list to fill Catalog's gaps: %v", err)
-		return nil
-	}
-	byID := make(map[int]cm.Expansion, len(live))
-	for _, exp := range live {
-		byID[exp.IDExpansion] = exp
-	}
-	mkm.liveExpansionsCache = byID
-	return byID
-}
-
-// resolveExpansionEntry substitutes entry from live when Catalog has no
-// name for expansionID, split out from liveExpansions so the substitution
-// itself can be tested without a live network call.
-func resolveExpansionEntry(entry cm.CatalogExpansion, expansionID int, live map[int]cm.Expansion) cm.CatalogExpansion {
-	if entry.Name != "" {
-		return entry
-	}
-	if liveEntry, found := live[expansionID]; found {
-		return cm.CatalogExpansion{Name: liveEntry.Name, Code: liveEntry.SetCode}
-	}
-	return entry
-}
-
 // walkCatalog prices every product of the id map, and of the product list
 // beside it, expansion by expansion - the same shape Index.walkCatalog
 // walks the catalog in, since resolving a Cardmarket product to a printing
@@ -344,24 +278,11 @@ func resolveExpansionEntry(entry cm.CatalogExpansion, expansionID int, live map[
 // differs is what happens once a product resolves: Index reads its price
 // off the published guide, this asks the product's own live listings.
 func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) error {
-	products := make(map[int]cm.CatalogProduct, len(mkm.catalog.Data.Products))
-	for id, product := range mkm.catalog.Data.Products {
-		products[id] = product
-	}
 	list, err := cm.DownloadProductListSingles(ctx, mkm.gameID)
 	if err != nil {
 		return err
 	}
-	var unmapped int
-	for _, entry := range list {
-		_, found := products[entry.IDProduct]
-		if found {
-			continue
-		}
-		products[entry.IDProduct] = cm.CatalogProduct{ExpansionID: entry.ExpansionID, Name: entry.Name}
-		unmapped++
-	}
-	mkm.printf("%d products of the list are not in the map and resolve by name", unmapped)
+	products := mergeList(mkm.catalog, list, mkm.printf)
 
 	byExpansion := map[int][]int{}
 	for id, product := range products {
@@ -371,17 +292,10 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 	var items []cm.Expansion
 	for expansionID := range byExpansion {
 		entry := mkm.catalog.Data.Expansions[expansionID]
-		if entry.Name == "" {
-			entry = resolveExpansionEntry(entry, expansionID, mkm.liveExpansions(ctx))
-		}
-		name := entry.Name
-		if name == "" {
-			name = fmt.Sprintf("expansion %d", expansionID)
-		}
-		if mkm.targetEdition != "" && name != mkm.targetEdition {
+		if mkm.targetEdition != "" && entry.Name != mkm.targetEdition {
 			continue
 		}
-		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: name, SetCode: entry.Code})
+		items = append(items, cm.Expansion{IDExpansion: expansionID, Name: entry.Name, SetCode: entry.Code})
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].IDExpansion < items[j].IDExpansion })
 
