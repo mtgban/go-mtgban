@@ -402,7 +402,6 @@ func skipSet(set *Set) bool {
 	switch set.Code {
 	case "PRED", // a single foreign card
 		"PSAL", "PS11", "PHUK", // salvat05, salvat11, hachette
-		"UNK",                          // not on sale anywhere
 		"OLGC", "OLEP", "OVNT", "O90P": // oversize
 		return true
 	}
@@ -979,6 +978,25 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 			case "TMC":
 				set.Name = "Teenage Mutant Ninja Turtles Commander"
+
+			case "UNK":
+				switch card.Name {
+				// Normalizing reads these as the real card they pun on
+				// or share a name with
+				case "Rampant, Growth",
+					"Lava, Axe",
+					"Clear, the Mind",
+					"Gather, the Townsfolk",
+					"Ransack, the Lab",
+					"Math is for Blockers", // PSSC's "Math is for Blockers (Plane)"
+					"Monster Mash-Up",
+					"______",
+					"Fast // Furious":
+					card.Name += " Playtest"
+					if card.FaceName != "" {
+						card.FaceName += " Playtest"
+					}
+				}
 			}
 
 			// Make sure this property is correctly initialized
