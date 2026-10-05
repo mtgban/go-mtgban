@@ -720,6 +720,10 @@ func card2promo(cardName, variant string) (string, string) {
 		return "PF25", "17"
 	case "Katara, the Fearless":
 		return "PURL", "2025-3"
+	case "Command Tower":
+		if variant == "Marvel Super Heroes Event Promo" {
+			return "PMEI", "2026-13"
+		}
 	case "Portable Hole":
 		return "AFR", "398"
 	}
@@ -733,6 +737,10 @@ var buylistNumberFixes = map[string]string{
 	"343896": "675", // Lightning Bolt (Hadoken): SLD x Street Fighter
 	"306846": "315", // Horizon Stone: Commander Legends extended art
 	"391205": "244", // Ratonhnhake:ton (Foil-Etched): Assassin's Creed
+	"409117": "123", // Stormscale Scion: Tarkir: Dragonstorm
+	"325589": "368", // Demonic Bargain: Crimson Vow extended art
+	"299005": "356", // Demonic Embrace: Core Set 2021 extended art
+	"325967": "384", // Avabruck Caretaker: Crimson Vow extended art
 }
 
 // buylistImageNumber retries a card whose Number field named no printing
@@ -842,10 +850,6 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	}
 
 	switch edition {
-	case "Coldsnap Theme Deck":
-		if magic.IsBasicLand(cardName) {
-			return nil, mtgmatcher.ErrUnsupported
-		}
 	case "Zendikar", "Battle for Zendikar", "Oath of the Gatewatch":
 		// Strip the extra letter from the name
 		if magic.IsBasicLand(cardName) {
@@ -959,9 +963,25 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	probe := *final
 	_, err = b.Match(&probe)
 	if err != nil && !(errors.Is(err, mtgmatcher.ErrUnsupported) && mtgmatcher.Contains(final.Variation, "Oversize")) {
-		retry := buylistImageNumber(b, cardName, isFoil, language, card.Image)
+		// The image names a printing of the basic, whatever its letter.
+		retryName := cardName
+		m := basicLandLetter.FindStringSubmatch(cardName)
+		if m != nil {
+			retryName = m[1]
+		}
+		retry := buylistImageNumber(b, retryName, isFoil, language, card.Image)
 		if retry != nil {
 			return retry, nil
+		}
+		// The set code and number CSI files the product under, when that
+		// names exactly one printing of the card.
+		if card.Code != "" && num != "" && len(b.MatchInSetNumber(cardName, card.Code, num)) == 1 {
+			candidate := &mtgmatcher.InputCard{Name: cardName, Variation: num, Edition: card.Code, Foil: isFoil, Language: language}
+			probe := *candidate
+			_, matchErr := b.Match(&probe)
+			if matchErr == nil {
+				return candidate, nil
+			}
 		}
 	}
 	return final, nil
