@@ -431,9 +431,16 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	// Secret Lair files a card under one drop or under several, and the store
 	// says which only where it writes something beside the name. Where the
 	// set holds several, the match that follows picks one of them for no
-	// reason and prices the others as it, so refuse instead of choosing.
-	if edition == "Secret Lair" && variation == "" && hasSeveralDrops(b, cardName, droppedFlavor) {
-		return nil, mtgmatcher.ErrUnsupported
+	// reason and prices the others as it, so refuse instead of choosing,
+	// unless the finish on sale leaves one of them to be it.
+	if edition == "Secret Lair" && variation == "" {
+		drops, inFinish := secretLairDrops(b, cardName, droppedFlavor, requestedFinish(isFoil, variation))
+		if len(drops) > 1 {
+			if len(inFinish) != 1 {
+				return nil, mtgmatcher.ErrUnsupported
+			}
+			variation = inFinish[0]
+		}
 	}
 
 	return &mtgmatcher.InputCard{
@@ -454,15 +461,16 @@ func isFlavorOf(b *mtgmatcher.Backend, head, tail string) bool {
 	return found && alt.IsFlavor && mtgmatcher.Equals(alt.OriginalName, mtgmatcher.SplitVariants(tail)[0])
 }
 
-// hasSeveralDrops reports whether the set files a card under more than one
-// drop. The suffixes a number can end on - the star of a foil twin, the phi
-// of a step-and-compleat - mark twins the wording picks, not drops of their
-// own, and PlainNumber is the number with all of them already stripped.
+// secretLairDrops returns the distinct drops the set files a card under, and
+// those of them printed in finish. The suffixes a number can end on - the
+// star of a foil twin, the phi of a step-and-compleat - mark twins the
+// wording picks, not drops of their own, and PlainNumber is the number with
+// all of them already stripped.
 //
 // A flavor-named drop does not count beside the card's own, which the matcher
 // lands a listing naming no flavor on - unless preprocess cut one off the
 // name (droppedFlavor), which the match then never sees.
-func hasSeveralDrops(b *mtgmatcher.Backend, cardName string, droppedFlavor bool) bool {
+func secretLairDrops(b *mtgmatcher.Backend, cardName string, droppedFlavor bool, finish string) (drops, inFinish []string) {
 	cards := b.MatchInSet(cardName, "SLD")
 	var unflavored []mtgmatcher.Card
 	for _, card := range cards {
@@ -473,16 +481,15 @@ func hasSeveralDrops(b *mtgmatcher.Backend, cardName string, droppedFlavor bool)
 	if len(unflavored) > 0 && !droppedFlavor {
 		cards = unflavored
 	}
-	if len(cards) < 2 {
-		return false
-	}
-	first := cards[0].PlainNumber
-	for _, card := range cards[1:] {
-		if card.PlainNumber != first {
-			return true
+	for _, card := range cards {
+		if !slices.Contains(drops, card.PlainNumber) {
+			drops = append(drops, card.PlainNumber)
+		}
+		if card.HasFinish(finish) && !slices.Contains(inFinish, card.PlainNumber) {
+			inFinish = append(inFinish, card.PlainNumber)
 		}
 	}
-	return false
+	return drops, inFinish
 }
 
 // retroFrameVersion is the frame the catalog files the retro printings under.
@@ -595,6 +602,17 @@ func resolvePremiumFoilTiebreak(b *mtgmatcher.Backend, variation string, probe [
 	return ""
 }
 
+// requestedFinish is the finish a listing is on sale in.
+func requestedFinish(foil bool, variation string) string {
+	switch {
+	case mtgmatcher.Contains(variation, "Etched"):
+		return mtgmatcher.FinishEtched
+	case foil:
+		return mtgmatcher.FinishFoil
+	}
+	return mtgmatcher.FinishNonfoil
+}
+
 // finishPrinted reports whether the printing a Magic listing resolved to was
 // sold in the finish the listing named, mirroring gamenerdz's guard of the
 // same name. A mismatch only means a wrong card when the landed set holds
@@ -602,13 +620,7 @@ func resolvePremiumFoilTiebreak(b *mtgmatcher.Backend, variation string, probe [
 // this shelf already prices it there; otherwise the printing is the only one
 // this name and set ever had, so dropping it would lose its only price.
 func finishPrinted(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, foil bool, variation string, hasFoilSibling bool) bool {
-	requested := mtgmatcher.FinishNonfoil
-	switch {
-	case mtgmatcher.Contains(variation, "Etched"):
-		requested = mtgmatcher.FinishEtched
-	case foil:
-		requested = mtgmatcher.FinishFoil
-	}
+	requested := requestedFinish(foil, variation)
 	if co.HasFinish(requested) {
 		return true
 	}

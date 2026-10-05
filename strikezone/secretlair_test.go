@@ -21,7 +21,7 @@ func TestSecretLairDrop(t *testing.T) {
 		wantRefused bool
 	}{
 		{"a name the set files under three drops", "Path of Ancestry", true},
-		{"and one it files under two", "Windfall", true},
+		{"nor does one whose other drop is printed in another finish", "Windfall", false},
 		{"the number it never wrote is what was missing", "Path of Ancestry (0914)", false},
 		{"any wording at all names the drop", "Kodama's Reach (2294 Reskin)", false},
 		{"a name standing at one drop needs none", "Sliver Hive", false},
@@ -41,5 +41,36 @@ func TestSecretLairDrop(t *testing.T) {
 				t.Fatalf("preprocess(%q) returned no card and no refusal", tt.name)
 			}
 		})
+	}
+}
+
+// TestSecretLairDropByFinish pins that a name filed under several drops is
+// not refused when the finish on sale is printed in only one of them, and
+// that the drop it lands on follows the finish.
+func TestSecretLairDropByFinish(t *testing.T) {
+	b := realDatastore(t)
+
+	// Teferi, Time Raveler has a nonfoil-only drop and a foil-only one.
+	drops := map[string]string{}
+	for _, notes := range []string{"Normal", "Foil"} {
+		card, err := preprocess(b, "Teferi, Time Raveler", "Secret Lair", notes)
+		if err != nil {
+			t.Fatalf("%s: %v", notes, err)
+		}
+		if card.Variation == "" {
+			t.Fatalf("%s: no drop was named", notes)
+		}
+		drops[notes] = card.Variation
+	}
+	if drops["Normal"] == drops["Foil"] {
+		t.Errorf("both finishes read as drop %s", drops["Normal"])
+	}
+
+	// Path of Ancestry is printed in both finishes in more than one drop.
+	for _, notes := range []string{"Normal", "Foil"} {
+		_, err := preprocess(b, "Path of Ancestry", "Secret Lair", notes)
+		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			t.Errorf("Path of Ancestry %s: err %v, want a refusal", notes, err)
+		}
 	}
 }
