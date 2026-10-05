@@ -17,7 +17,8 @@ const gundamDatastore = `{"data": {
   "GD01": {"name": "Newtype Rising", "releaseDate": "2025-07-25"},
   "GD03": {"name": "Steel Requiem", "releaseDate": "2026-01-30"},
   "GD05": {"name": "Freedom Ascension", "releaseDate": "2026-07-24"},
-  "ST09": {"name": "Starter Deck 09: Destiny Ignition", "releaseDate": "2026-03-27"}
+  "ST09": {"name": "Starter Deck 09: Destiny Ignition", "releaseDate": "2026-03-27"},
+  "ST12": {"name": "Starter Deck 12: Raging Onslaught", "releaseDate": "2026-09-25"}
  },
  "cards": [
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 643150}, "finish": "Holofoil", "id": "gd01-001_643150_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "Legend Rare", "setCode": "GD01", "type": "Unit"},
@@ -25,6 +26,8 @@ const gundamDatastore = `{"data": {
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 645375}, "finish": "Holofoil", "id": "gd01-001_645375_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR++", "setCode": "GD01", "type": "Unit"},
   {"externalLinks": {"tcgPlayerId": 673538}, "finish": "Normal", "id": "t-020_673538", "name": "GFreD Token", "number": "T-020", "rarity": "Common", "setCode": "GD03", "type": "Unit"},
   {"externalLinks": {"tcgPlayerId": 680689}, "finish": "Holofoil", "id": "t-020_680689_holofoil", "name": "GFreD Token", "number": "T-020", "promoTypes": ["premiumcardcollection"], "rarity": "Common", "setCode": "GCG-PR", "type": "Unit", "variant": "Premium Card Collection Gundam Assemble"},
+  {"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 716381}, "finish": "Normal", "id": "st12-002_716381", "name": "Shining Gundam", "number": "ST12-002", "rarity": "Common", "setCode": "ST12", "type": "Unit"},
+  {"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 721022}, "finish": "Holofoil", "id": "st12-002_721022_holofoil", "name": "Shining Gundam", "number": "ST12-002", "rarity": "C+", "setCode": "ST12", "type": "Unit"},
   {"color": "Purple", "colors": ["Purple"], "externalLinks": {"tcgPlayerId": 684001}, "finish": "Holofoil", "id": "st09-002_684001_holofoil", "name": "Force Impulse Gundam", "number": "ST09-002", "rarity": "Legend Rare", "setCode": "ST09", "type": "Unit"},
   {"color": "Purple", "colors": ["Purple"], "externalLinks": {"tcgPlayerId": 684026}, "finish": "Holofoil", "id": "st09-001_684026_holofoil", "name": "Impulse Gundam", "number": "ST09-001", "rarity": "LR+", "setCode": "ST09", "type": "Unit"},
   {"color": "Purple", "colors": ["Purple"], "externalLinks": {"tcgPlayerId": 705650}, "finish": "Holofoil", "id": "gd05-114_705650_holofoil", "name": "Widespread Annihilation", "number": "GD05-114", "rarity": "Rare", "setCode": "GD05", "type": "Command"},
@@ -72,6 +75,11 @@ func TestGundamResolve(t *testing.T) {
 			"a Premium Card Collection 02 print", 908747,
 			cm.CatalogProduct{Name: "Widespread Annihilation (GD05-114) (V.1 - Rare)", Number: "GD05-114", Rarity: "Rare", Version: 1},
 			"Premium Bandai Products", nil, "gd05-114-premium-card-collection-02_holofoil",
+		},
+		{
+			"a parallel Cardmarket's version text names once more", 914345,
+			cm.CatalogProduct{Name: "Shining Gundam (ST12-002) (V.2 - Common +)", Number: "002", Rarity: "Common +", Version: 2},
+			"Starter Deck: Raging Onslaught", nil, "st12-002_721022_holofoil",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
