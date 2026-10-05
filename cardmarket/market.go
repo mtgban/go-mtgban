@@ -715,9 +715,12 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 	entries := map[mtgban.Condition]responseChan{}
 	heldPS := map[mtgban.Condition]float64{}
 	entriesPS := map[mtgban.Condition]responseChan{}
+	available := map[mtgban.Condition]int{}
+	availablePS := map[mtgban.Condition]int{}
+	complete := false
 	mainSatisfiedAt := -1
 	for page := 0; page < marketMaxPages; page++ {
-		articles, total, _, err := mkm.client.Articles(ctx, product.IDProduct, query, page, cm.MaxEntities)
+		articles, total, capped, err := mkm.client.Articles(ctx, product.IDProduct, query, page, cm.MaxEntities)
 		if err != nil {
 			if mkm.bounce() {
 				return fmt.Errorf("%w (%d in a row, last: %v)", errTooManyBounces, mkm.bounced, err)
@@ -730,6 +733,10 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 			cond, ok := acceptArticle(flags, article)
 			if !ok {
 				continue
+			}
+			available[cond] += article.Count
+			if isPowerseller(article) {
+				availablePS[cond] += article.Count
 			}
 
 			opt := cm.URLOption{
@@ -792,21 +799,27 @@ func (mkm *Market) queryOnePrinting(ctx context.Context, channel chan<- response
 		if mainDone && mainSatisfiedAt == -1 {
 			mainSatisfiedAt = page
 		}
+		// A capped range ends at Cardmarket's 1000, not at the last listing
+		if len(articles) == 0 || contentRangeCovered(page+1, cm.MaxEntities, total) {
+			complete = !capped
+			break
+		}
 		if shouldStopPaging(mainDone, mainSatisfiedAt, page, len(heldPS) > 0) {
-			break
-		}
-		if len(articles) == 0 {
-			break
-		}
-		if contentRangeCovered(page+1, cm.MaxEntities, total) {
 			break
 		}
 	}
 
-	for _, out := range entries {
+	// Copies are only counted in full when every listing was read
+	for cond, out := range entries {
+		if complete {
+			out.entry.Available = available[cond]
+		}
 		channel <- out
 	}
-	for _, out := range entriesPS {
+	for cond, out := range entriesPS {
+		if complete {
+			out.entry.Available = availablePS[cond]
+		}
 		channel <- out
 	}
 	return nil
