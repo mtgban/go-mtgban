@@ -110,7 +110,8 @@ var errTwin = errors.New("twin of another product")
 var errForeign = errors.New("of a catalog we do not carry")
 
 // noPrinting answers the error a product no route named a printing for
-// refuses with - which for a Pokemon basic energy is no error at all.
+// refuses with - which for a Pokemon basic energy, or a Yu-Gi-Oh product no
+// set lists, is no error at all.
 //
 // Every set prints the nine basic energies and reprints them unchanged for
 // years, so the catalogs shelve them where no printing of ours is separable:
@@ -120,6 +121,9 @@ var errForeign = errors.New("of a catalog we do not carry")
 // reason. They are 57 of the 177 lines a Pokemon run would otherwise report.
 func (r *resolver) noPrinting(product *cm.Product) error {
 	if r.gameID == cm.GamePokemon && pokemonBasicEnergy(pokemonName(product.Name)) {
+		return nil
+	}
+	if r.gameID == cm.GameYuGiOh && yugiohNonCard(product) {
 		return nil
 	}
 	return errNoPrinting
