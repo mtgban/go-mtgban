@@ -218,8 +218,8 @@ func targets() map[mtgmatcher.Game]map[string]*scraperOption {
 var options = targets()
 
 // mkmCatalog reads Cardmarket's own published id-map catalog, whatever the
-// game and whichever of cardmarket's scrapers asks for it: MTGJSON publishes
-// Magic's, go-cardmarket's mkmcatalog builds the rest.
+// game and whichever of cardmarket's scrapers asks for it, as go-cardmarket's
+// mkmcatalog builds it.
 func mkmCatalog() (*cm.Catalog, error) {
 	path := os.Getenv("MTGJSON_MKMID_PATH")
 	if path == "" {

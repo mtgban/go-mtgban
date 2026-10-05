@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -52,6 +53,11 @@ type resolver struct {
 	// built on first use; see yugiohNumberTaken.
 	numbers   map[string]map[string]string
 	numbersMu sync.Mutex
+
+	// mcmPrintings indexes Magic's printings by the Cardmarket product id
+	// the datastore links them to, built on first use; see magicPrintings.
+	mcmPrintings   map[int][]string
+	mcmPrintingsMu sync.Mutex
 
 	// fabDeckSets indexes a Flesh and Blood set's collector-number prefix
 	// onto every set that opens numbers on it, built on first use; see
@@ -405,7 +411,7 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 // legitimately sells both finishes.
 func foilOnlyShelf(product *cm.Product, setCode string) bool {
 	switch product.ExpansionName {
-	case "Commander: Magic: The Gathering - FINAL FANTASY: Collector's Edition",
+	case "Commander: FINAL FANTASY: Collector's Edition",
 		"Commander: Marvel Super Heroes: Collector's Edition",
 		"Commander: Teenage Mutant Ninja Turtles: Extras":
 		return true
@@ -729,7 +735,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 // pair of columns, as TCGplayer names it.
 const pokemonReverseHolo = "Reverse Holofoil"
 
-// resolveUUIDs answers a product from the printings its map entry lists,
+// resolveUUIDs answers a product from the printings listed for it,
 // splitting them by finish the way the guide's columns are split. Ids the
 // datastore does not carry are passed over - a double-faced card lists its
 // back face too, and the index knows only fronts. Within a finish the
@@ -750,8 +756,8 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		if err != nil {
 			continue
 		}
-		// See plausiblePrinting: a Magic WCD or Oversized product's map
-		// entry can carry an id mtgjson has wrongly linked, the same
+		// See plausiblePrinting: a Magic WCD or Oversized product can be
+		// listed with a printing mtgjson has wrongly linked, the same
 		// drift Fallback's own mcmId route guards against.
 		if r.gameID == cm.GameMagic && !plausiblePrinting(r.backend, product.ExpansionName, uuid) {
 			continue
@@ -790,8 +796,8 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		if len(foil) > 0 {
 			cardIDFoil = foil[0]
 		} else {
-			// The entry lists no foil printing, but the datastore may
-			// still carry one, the way resolveProduct probes for it.
+			// No foil printing is listed, but the datastore may still
+			// carry one, the way resolveProduct probes for it.
 			cardIDFoil, _ = r.backend.MatchID(cardID, true)
 		}
 	case len(foil) > 0:
@@ -801,7 +807,7 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		cardIDFoil = foil[0]
 	}
 
-	// The map names the printing, not the finish sold; redirect a
+	// The listing names the printing, not the finish sold; redirect a
 	// foil-only shelf's product the way resolveMagic does.
 	co, err := r.backend.GetUUID(cardID)
 	if err == nil && !co.Etched && foilOnlyShelf(product, co.SetCode) {
@@ -814,8 +820,8 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 	return cardID, cardIDFoil
 }
 
-// numberedPrinting answers the printing of the mapped card at the product's
-// own number, where the map lists none at it and the set carries one: mtgjson
+// numberedPrinting answers the printing of the listed card at the product's
+// own number, where none listed is at it and the set carries one: mtgjson
 // crosses the ids of two printings of a card now and then, each linked to the
 // other's product.
 func (r *resolver) numberedPrinting(product *cm.Product, uuids []string) string {
@@ -850,10 +856,11 @@ func (r *resolver) numberedPrinting(product *cm.Product, uuids []string) string 
 	return ""
 }
 
-// resolveMapped answers one product of the id map. versionPrintings answers
-// first, since it corrects the map, then the map itself; what it left
-// unmapped is answered from what the catalog says of it, by resolveProduct,
-// so a product the file does not know yet is matched rather than lost.
+// resolveMapped answers one product of the id map. For Magic,
+// versionPrintings answers first, since it corrects the datastore's links,
+// then the printings the datastore links to the product's id; what neither
+// names is answered from what the catalog says of it, by resolveProduct, so
+// a product the datastore does not link yet is matched rather than lost.
 func (r *resolver) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.Expansion) resolved {
 	product := &cm.Product{
 		IDProduct:     id,
@@ -871,12 +878,12 @@ func (r *resolver) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.
 			cardIDFoil, _ := r.backend.MatchID(cardID, true)
 			return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
 		}
+		cardID, cardIDFoil := r.resolveUUIDs(product, r.magicPrintings(id))
+		if cardID != "" {
+			return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
+		}
 	}
 
-	cardID, cardIDFoil := r.resolveUUIDs(product, mapped.UUIDs)
-	if cardID != "" {
-		return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
-	}
 	cardID, cardIDFoil, byName, err := r.resolveProduct(product)
 	return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil, byName: byName, err: err}
 }
@@ -1312,6 +1319,38 @@ func (r *resolver) yugiohNumbers() map[string]map[string]string {
 		}
 	}
 	return r.numbers
+}
+
+// magicPrintings answers the Magic printings whose mcmId is the product id,
+// by mtgjson uuid and sorted, as MTGJSON's own CardmarketIdentifiers lists
+// them. The index is built once over the whole datastore on first use under
+// a mutex and never written again.
+func (r *resolver) magicPrintings(id int) []string {
+	r.mcmPrintingsMu.Lock()
+	defer r.mcmPrintingsMu.Unlock()
+	if r.mcmPrintings == nil {
+		r.mcmPrintings = map[int][]string{}
+		for _, uuid := range r.backend.GetUUIDs() {
+			co, err := r.backend.GetUUID(uuid)
+			if err != nil {
+				continue
+			}
+			mcmID, err := strconv.Atoi(co.Identifiers["mcmId"])
+			if err != nil {
+				continue
+			}
+			// A printing's foil and etched siblings share its
+			// identifiers, mtgjsonId included, so it is listed once.
+			printing := cmp.Or(co.Identifiers["mtgjsonId"], uuid)
+			if !slices.Contains(r.mcmPrintings[mcmID], printing) {
+				r.mcmPrintings[mcmID] = append(r.mcmPrintings[mcmID], printing)
+			}
+		}
+		for _, printings := range r.mcmPrintings {
+			slices.Sort(printings)
+		}
+	}
+	return r.mcmPrintings[id]
 }
 
 // yugiohNumberTaken reports whether one of the numbers names a card of the

@@ -101,7 +101,7 @@ func TestFoilOnlyShelf(t *testing.T) {
 		setCode string
 		want    bool
 	}{
-		{"FIC Collector's Edition", cm.Product{Name: "Summon: Esper Valigarmanda", ExpansionName: "Commander: Magic: The Gathering - FINAL FANTASY: Collector's Edition"}, "FIC", true},
+		{"FIC Collector's Edition", cm.Product{Name: "Summon: Esper Valigarmanda", ExpansionName: "Commander: FINAL FANTASY: Collector's Edition"}, "FIC", true},
 		{"MSC Collector's Edition", cm.Product{Name: "Iron Man, Armored Avenger", ExpansionName: "Commander: Marvel Super Heroes: Collector's Edition"}, "MSC", true},
 		{"TMC Extras", cm.Product{Name: "Baxter, Fly in the Ointment", ExpansionName: "Commander: Teenage Mutant Ninja Turtles: Extras"}, "TMC", true},
 		{"M3C Extras with no (V.N) suffix", cm.Product{Name: "Drowner of Hope", ExpansionName: "Commander: Modern Horizons 3: Extras"}, "M3C", true},

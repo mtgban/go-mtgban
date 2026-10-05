@@ -40,15 +40,13 @@ fetch() {
 }
 
 cd "$D/data"
+export B2_APPLICATION_KEY_ID=$B2_APPLICATION_KEY_ID_DATASTORE B2_APPLICATION_KEY=$B2_APPLICATION_KEY_DATASTORE
+[ -e "$game-catalog.json" ] || fetch "b2://mtgban-datastore/$game/cardmarket_catalog.json.xz" "$game-catalog.json"
 if [ "$game" = magic ]; then
-  # Magic prices from MTGJSON's AllPrintings and its CardmarketIdentifiers,
-  # the file the Cardmarket workflows read as MKMIDS_MAGIC.
+  # Magic prices from MTGJSON's AllPrintings
   ln -sf "$ALLPRINTINGS5_PATH" magic-datastore.json
-  [ -e magic-catalog.json ] || fetch https://www.mtgjson.com/api/v5/CardmarketIdentifiers.json.xz magic-catalog.json
 else
-  export B2_APPLICATION_KEY_ID=$B2_APPLICATION_KEY_ID_DATASTORE B2_APPLICATION_KEY=$B2_APPLICATION_KEY_DATASTORE
   [ -e "$game-datastore.json" ] || fetch "b2://mtgban-datastore/$game/$game.json.xz" "$game-datastore.json"
-  [ -e "$game-catalog.json" ] || fetch "b2://mtgban-datastore/$game/cardmarket_catalog.json.xz" "$game-catalog.json"
   [ -e tcgplayer-catalog.json ] || fetch "b2://mtgban-datastore/$game/tcgplayer-catalog.json.xz" tcgplayer-catalog.json
 fi
 

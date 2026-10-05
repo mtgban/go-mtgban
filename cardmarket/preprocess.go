@@ -1227,11 +1227,10 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			variant = "Foil Etched"
 		}
 
-	case "Commander: Magic: The Gathering - FINAL FANTASY: Collector's Edition":
-		// The core edition aliasing collapses this shelf's own name to
-		// "Commander: Magic: The Gathering", which names no set and
-		// aliases its numbers across FIC and three unrelated commander
-		// sets sharing them; naming FIC directly here bypasses that.
+	case "Commander: FINAL FANTASY: Collector's Edition":
+		// The shelf's numbers alias across FIC and three unrelated
+		// commander sets sharing them; naming FIC directly keeps them on
+		// FIC.
 		edition = "FIC"
 		variant = number
 
