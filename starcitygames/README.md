@@ -167,6 +167,10 @@ source checked. Reach for the rule first; drop to a table only once a
 survey shows the rule can't be derived; refuse only once a survey shows
 even a table can't be built honestly.
 
+A **double-sided** listing ("Front // Back", a sku naming two numbers) whose
+faces the datastore holds only as separate printings is skipped, not refused.
+`fabNumberRespellings` corrects the numbers the catalog's own skus misspell.
+
 ### Lorcana
 
 Reads its number off the sku (`lorcanaNumber`), which is more specific than
@@ -178,14 +182,22 @@ numbers both printings alike and tells them apart by name - a longer name
 extending the base card's own (`"Bucky - Squirrel Squeak Tutor (Errata
 Version)"` beside plain `"Bucky - Squirrel Squeak Tutor"`) - in which case
 `lorcanaSibling` searches by name and picks the sole agreeing candidate,
-refusing outright if it doesn't resolve to exactly one card. `lorcanaFinish`
+refusing outright if several cards answer, and skipping when none does (a
+printing the datastore does not carry, such as a "Misprinted Version"). `lorcanaFinish`
 separately handles the one treatment (rainbow foil / `RainbowPillars`) two
-products can share a bare foil flag but not a uuid.
+products can share a bare foil flag but not a uuid. Three more shapes are
+read before or after the main match: an Illumineer's Quest promo shelved
+under the set it promotes is found by name and number across every set
+(`lorcanaQuest`), a Japanese or Simplified Chinese promo asks for the name
+plus "(JP Exclusive)" or "(CS Exclusive)" first (`lorcanaExclusives`), and
+`lorcanaNumberRespellings` fixes two promo skus that carry the wrong number.
 
 ### Riftbound
 
 No known collision shapes yet. Straight `mtgmatcher.Match` on name +
-set + number + foil.
+set + number + foil. The catalog's game name is "Riftbound: League of
+Legends TCG"; `gameFromCatalog` also takes the bare "Riftbound", both by
+exact match.
 
 ## Bulk tiers (`bulk.go`)
 
