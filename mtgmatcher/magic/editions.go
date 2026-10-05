@@ -539,6 +539,9 @@ var EditionTable = map[string]string{
 	"Commander: March of the Machine": "March of the Machine Commander",
 	"Commander Anthology 2":           "Commander Anthology Volume II",
 	"Commander Anthology II":          "Commander Anthology Volume II",
+	"Commander Anthology Vol II":      "Commander Anthology Volume II",
+	"Master 25":                       "Masters 25",
+	"2012 Core Set":                   "Magic 2012",
 
 	"SLX Cards":        "Universes Within",
 	"Universes Within": "Universes Within",
