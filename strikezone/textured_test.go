@@ -6,9 +6,9 @@ import (
 
 // TestUnnamedTextured pins which listings the textured guard refuses. The
 // store shelves the Duskmourn mythics three times over - plain, "(Showcase)"
-// and "(Showcase) (Textured)" - but the set files its showcase frame on the
-// textured printing alone, so both showcase wordings reached it and the
-// cheaper card was bought and sold at the textured one's price.
+// and "(Showcase) (Textured)" - and the set files the showcase frame on the
+// textured printing. A "(Showcase)" wording is the borderless double
+// exposure, which the table sends to its number.
 func TestUnnamedTextured(t *testing.T) {
 	b := realDatastore(t)
 
@@ -22,34 +22,34 @@ func TestUnnamedTextured(t *testing.T) {
 			notes: "Near Mint Foil English", wantNumber: "407",
 		},
 		{
-			desc: "the one standing beside it names another card",
+			desc: "the one standing beside it names the double exposure",
 			name: "Valgavoth, Terror Eater (Showcase)", edition: "Duskmourn: House of Horror",
-			notes: "Near Mint Foil English", wantNumber: "",
+			notes: "Near Mint Foil English", wantNumber: "352",
 		},
 		{
 			desc: "and says so in either finish",
 			name: "Valgavoth, Terror Eater (Showcase)", edition: "Duskmourn: House of Horror",
-			notes: "Near Mint Normal English", wantNumber: "",
+			notes: "Near Mint Normal English", wantNumber: "352",
 		},
 		{
 			desc: "Tyvar sells the same three",
 			name: "Tyvar, the Pummeler (Showcase)", edition: "Duskmourn: House of Horror",
-			notes: "Near Mint Foil English", wantNumber: "",
+			notes: "Near Mint Foil English", wantNumber: "353",
 		},
 		{
 			desc: "so does Kaito",
 			name: "Kaito, Bane of Nightmares (Showcase)", edition: "Duskmourn: House of Horror",
-			notes: "Near Mint Foil English", wantNumber: "",
+			notes: "Near Mint Foil English", wantNumber: "354",
 		},
 		{
 			desc: "and the Wandering Rescuer",
 			name: "The Wandering Rescuer (Showcase)", edition: "Duskmourn: House of Horror",
-			notes: "Near Mint Foil English", wantNumber: "",
+			notes: "Near Mint Foil English", wantNumber: "351",
 		},
 		{
 			desc: "Niko sells the same three",
 			name: "Niko, Light of Hope (Showcase)", edition: "Duskmourn: House of Horror",
-			notes: "Near Mint Foil English", wantNumber: "",
+			notes: "Near Mint Foil English", wantNumber: "355",
 		},
 		{
 			desc: "a number matching the textured printing names it as plainly as the word",

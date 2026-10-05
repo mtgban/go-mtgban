@@ -132,6 +132,44 @@ var cardTable = map[string]string{
 	"Thanos, the Mad Titan (Borderless) (0367)":                 "Thanos, the Mad Titan (Borderless) (376)",
 	"Smaug the Magnificent (247) (Gold Headliner) (Borderless)": "Smaug the Magnificent (Gold Headliner)",
 
+	// Duskmourn double exposure frames, which the store calls Showcase.
+	"The Wandering Rescuer (Showcase)":       "The Wandering Rescuer (351)",
+	"Valgavoth, Terror Eater (Showcase)":     "Valgavoth, Terror Eater (352)",
+	"Tyvar, the Pummeler (Showcase)":         "Tyvar, the Pummeler (353)",
+	"Kaito, Bane of Nightmares (Showcase)":   "Kaito, Bane of Nightmares (354)",
+	"Niko, Light of Hope (Showcase)":         "Niko, Light of Hope (355)",
+	"Toby, Beastie Befriender (Showcase)":    "Toby, Beastie Befriender (356)",
+	"The Mindskinner (Showcase)":             "The Mindskinner (357)",
+	"Kona, Rescue Beastie (Showcase)":        "Kona, Rescue Beastie (358)",
+	"Marvin, Murderous Mimic (Showcase)":     "Marvin, Murderous Mimic (367)",
+	"Kaito, Bane of Nightmares (Borderless)": "Kaito, Bane of Nightmares (328)",
+
+	// Listings whose number or treatment word names the base printing
+	// instead of the one on sale.
+	"The Capitoline Triad (Showcase)":                "The Capitoline Triad (117)",
+	"The Arkenstone (Borderless)":                    "The Arkenstone (247)",
+	"Narset, Parter of Veils (Borderless)":           "Narset, Parter of Veils (1141)",
+	"Dust Bowl (0057) (Borderless) (Galaxy Foil)":    "Dust Bowl (147) (Borderless) (Galaxy Foil)",
+	"Boseiju, Who Shelters All (2657) (Neon Yellow)": "Boseiju, Who Shelters All (Neon Yellow)",
+	"Kiora, Behemoth Beckoner (Rainbow Foil)":        "Kiora, Behemoth Beckoner (1700)",
+	"Mindcrank (Rainbow Foil)":                       "Mindcrank (2186)",
+	"Chromatic Lantern (2314) (Confetti Foil)":       "Chromatic Lantern (2329) (Confetti Foil)",
+	"Distant Melody (2311) (Confetti Foil)":          "Distant Melody (2326) (Confetti Foil)",
+	"Explore (2312) (Confetti Foil)":                 "Explore (2327) (Confetti Foil)",
+	"Serum Visions (2323) (Confetti Foil)":           "Serum Visions (2338) (Confetti Foil)",
+	"Sol Ring (2315) (Confetti Foil)":                "Sol Ring (2330) (Confetti Foil)",
+	"Sphere of Safety (2316) (Confetti Foil)":        "Sphere of Safety (2331) (Confetti Foil)",
+
+	// The number carries the artist's name, a mistyped number, or a lowercase
+	// set code.
+	"Birds of Paradise 176 Poole":    "Birds of Paradise (176)",
+	"Flusterstorm (196 Retro Frame)": "Flusterstorm (496 Retro Frame)",
+	"Vivien Reid (m19)":              "Vivien Reid (M19 Prerelease)",
+
+	// Premiere Shop lands spelled with a dash.
+	"Plains - Orzhov Syndicate": "Plains (The Orzhov Syndicate)",
+	"Swamp - Orzhov Syndicate":  "Swamp (The Orzhov Syndicate)",
+
 	// Funny cards
 	"(Untitled Card": "_____",
 
