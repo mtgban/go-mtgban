@@ -379,10 +379,10 @@ var lorcanaFaces = map[int]bool{
 // for itself. A promo programme is asked of its own set before the one set
 // every programme was once filed in, and an expansion no name places is
 // asked of the set wearing its code, which is how the Silver Age decks and
-// the Slingshot promos are filed - or, where no set answers to the code
-// either, of every set deckSets says opens its numbers on it: the Silver
-// Age decks the datastore keeps inside their chapter's umbrella set, the
-// code surviving only as the number's own prefix.
+// the Slingshot promos are filed. Every set deckSets says opens its numbers
+// on the code is asked last, found by name or not: the Silver Age decks and
+// the GEM Pack promos the datastore keeps inside another set, the code
+// surviving only as the number's own prefix.
 func fabShelves(b *mtgmatcher.Backend, product *cm.Product, deckSets map[string][]*mtgmatcher.Set) []shelf {
 	printRun, edition := fabPrintRun(product.ExpansionName)
 	var shelves []shelf
@@ -408,16 +408,14 @@ func fabShelves(b *mtgmatcher.Backend, product *cm.Product, deckSets map[string]
 		}
 	}
 	if product.ExpansionCode != "" {
-		coded, cerr := b.GetSet(product.ExpansionCode)
-		switch {
-		case cerr == nil && !shelved(shelves, coded):
+		coded, err := b.GetSet(product.ExpansionCode)
+		if err == nil && !shelved(shelves, coded) {
 			shelves = append(shelves, shelf{set: coded, edition: coded.Name, printRun: printRun})
-		case cerr != nil && len(shelves) == 0:
-			code := strings.ToUpper(product.ExpansionCode)
-			for _, coded := range deckSets[code] {
-				if !shelved(shelves, coded) {
-					shelves = append(shelves, shelf{set: coded, numberPrefix: code, printRun: printRun})
-				}
+		}
+		code := strings.ToUpper(product.ExpansionCode)
+		for _, deck := range deckSets[code] {
+			if !shelved(shelves, deck) {
+				shelves = append(shelves, shelf{set: deck, numberPrefix: code, printRun: printRun})
 			}
 		}
 	}
