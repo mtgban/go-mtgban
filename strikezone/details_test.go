@@ -53,6 +53,21 @@ func TestPreprocessDetails(t *testing.T) {
 			outName: "Eevee V", outVariation: "108 1st Edition",
 		},
 		{
+			game: mtgmatcher.GamePokemon, name: "Iono 237", edition: "Scarlet and Violet Paldean Fates",
+			number: "237", details: "Near Mint Normal 1st Edition English",
+			outName: "Iono", outVariation: "237 1st Edition",
+		},
+		{
+			game: mtgmatcher.GamePokemon, name: "Blaine's Quiz 2", edition: "Gym Challenge",
+			number: "111", details: "Near Mint Normal Unlimited English",
+			outName: "Blaine's Quiz 2", outVariation: "111 Unlimited",
+		},
+		{
+			game: mtgmatcher.GamePokemon, name: "Luxray", edition: "Scarlet and Violet Paldean Fates",
+			number: "136", details: "Near Mint Normal 1st Edition English",
+			outName: "Luxray", outVariation: "137 1st Edition",
+		},
+		{
 			game: mtgmatcher.GamePokemon, name: "Charizard", edition: "Base Set Unlimited",
 			number: "004", details: "Light Play Normal Unlimited English",
 			outName: "Charizard", outVariation: "004 Unlimited",

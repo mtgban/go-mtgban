@@ -85,6 +85,15 @@ var pokemonEditionRespellings = map[string]string{
 	"Sword and Shield Silver Tempest Trainers Gallery": "SWSH12: Silver Tempest Trainer Gallery",
 }
 
+// pokemonNumberRespellings are the numbers the store mistypes, keyed by the
+// shelf, name and number it lists them under, and the number the catalog
+// gives the same card.
+var pokemonNumberRespellings = map[[3]string]string{
+	{"Scarlet and Violet Paldean Fates", "Luxray", "136"}:                "137",
+	{"Sword and Shield Silver Tempest", "Energy Switch (Secret)", "213"}: "212",
+	{"Sword and Shield Silver Tempest", "Gapejaw Bog", "214"}:            "213",
+}
+
 // fabRunSets are the sets printed in runs, and the only ones the datastore
 // crosses a run with a treatment for: every set since Everfest was printed
 // once, promos included, and files under the bare treatment.
@@ -200,13 +209,23 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 
 	switch game {
 	case mtgmatcher.GamePokemon:
+		// A number written after the name with no dash belongs to the
+		// Number column already.
+		if number != "" {
+			cardName = strings.TrimSuffix(cardName, " "+number)
+		}
+		respelled, found := pokemonNumberRespellings[[3]string{edition, cardName, number}]
+		if found {
+			number = respelled
+		}
 		// The matcher deliberately does not respell this one, so it is the
 		// scraper's to fix on the one shelf the store lists it under.
 		if cardName == "Imposter Professor Oak" && edition == "Base Set Unlimited" {
 			cardName = "Impostor Professor Oak"
 		}
-		if respelled, found := pokemonEditionRespellings[edition]; found {
-			edition = respelled
+		editionRespelled, found := pokemonEditionRespellings[edition]
+		if found {
+			edition = editionRespelled
 		}
 		// The two promo shelves prefix a bare digit run by series - "SWSH"
 		// for a Sword & Shield promo, "SM" for a Sun & Moon one - the same
