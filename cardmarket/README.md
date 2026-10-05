@@ -416,8 +416,7 @@ carries it.
   instead: a missing key there loses call-volume savings, not the ability
   to run.
 - `MTGJSON_MKMID_PATH` - the id-map catalog `Index` and `Market` both resolve
-  products from; MTGJSON's own for Magic, `go-cardmarket`'s `mkmcatalog`
-  builds the rest.
+  products from, as `go-cardmarket`'s `mkmcatalog` builds it for every game.
 - `CARDTRADER_TOKEN_BEARER` - the bridge Flesh and Blood, Pokemon and Yu-Gi-Oh
   require and One Piece merely improves with, for all three scrapers alike
   (`TestCardmarketNeedsItsBridge` pins the refusal).

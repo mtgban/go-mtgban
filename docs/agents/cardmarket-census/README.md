@@ -39,7 +39,7 @@ It reads `.env` (`ENV_FILE`) and writes under `$OUT/<game>`, by default
 | input | source |
 |---|---|
 | datastore | `b2://mtgban-datastore/<game>/<game>.json.xz`; Magic: `$ALLPRINTINGS5_PATH` |
-| id map | `b2://mtgban-datastore/<game>/cardmarket_catalog.json.xz`; Magic: MTGJSON's `CardmarketIdentifiers.json.xz` (the workflows' `MKMIDS_MAGIC`) |
+| id map | `b2://mtgban-datastore/<game>/cardmarket_catalog.json.xz` |
 | product list, price guide | Cardmarket's own downloads, as `Index.Load` fetches them |
 | CardTrader blueprints and the bridge | `cardtrader.BlueprintsForGame`, the bridge built as bantool's `cardtraderBridge` builds it |
 | published dumps | `b2://mtgban-dumps/<game>/{tcg_index,cardmarket,cardtrader}/retail/`, for every game |
@@ -73,9 +73,10 @@ own Cardmarket id where it has one, and CardTrader's link otherwise:
   structural reason.
 
 Not every game's resolver reads the datastore's own Cardmarket id. One
-Piece, Lorcana and Riftbound read it first. Pokemon, Yu-Gi-Oh and Flesh and
-Blood never read it, and Magic uses MTGJSON's map. So an `own-id` row in
-those games is a cross-check, not the path production took.
+Piece, Lorcana and Riftbound read it first, and Magic right after its
+`versionPrintings` table. Pokemon, Yu-Gi-Oh and Flesh and Blood never read
+it. So an `own-id` row in those three is a cross-check, not the path
+production took.
 
 ## 4. Classify before fixing
 

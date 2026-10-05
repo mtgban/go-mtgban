@@ -82,12 +82,12 @@ The two shapes differ on purpose, so copy a workflow of the same game:
 
 - **Magic** runs a `cache-datastore` job first (`cache-file.yml` on
   `vars.DATASTORE_MAGIC`) and passes the cached path and its key. The
-  workflows that need TCGplayer SKUs or MTGJSON's Cardmarket ids cache
-  `vars.SKUS_MAGIC` or `vars.MKMIDS_MAGIC` the same way.
+  workflows that need TCGplayer SKUs cache `vars.SKUS_MAGIC` the same way.
 - **Every other game** passes `b2://mtgban-datastore/<game>/<game>.json.xz`,
-  which bantool reads straight from the bucket. A Cardmarket workflow also
-  passes `b2://mtgban-datastore/<game>/cardmarket_catalog.json.xz` as its id
-  map.
+  which bantool reads straight from the bucket.
+
+A Cardmarket workflow of any game, Magic included, passes
+`b2://mtgban-datastore/<game>/cardmarket_catalog.json.xz` as its id map.
 
 ## Triggers
 
@@ -117,7 +117,7 @@ Workflows pass `secrets: inherit`. They read:
 
 - **vars:** each vendor's affiliate code (`TCG_PARTNER`, `CK_PARTNER`,
   `MKM_PARTNER`, `CT_PARTNER`, `CSI_PARTNER` and the rest),
-  `DATASTORE_MAGIC`, `SKUS_MAGIC`, `MKMIDS_MAGIC`, `MAX_CONCURRENCY` and
+  `DATASTORE_MAGIC`, `SKUS_MAGIC`, `MAX_CONCURRENCY` and
   `RELOAD_GAMES`;
 - **secrets:** the dumps bucket key (`B2_KEY_ID`, `B2_APP_KEY`), the
   datastore bucket key, `BAN_SECRET` for the reload signature, and each

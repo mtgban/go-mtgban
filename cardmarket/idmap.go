@@ -60,11 +60,11 @@ type resolved struct {
 // walkCatalog prices every product of the id map, and of the product list
 // beside it, expansion by expansion.
 func (mkm *Index) walkCatalog(ctx context.Context) error {
-	// The map knows only what MTGJSON has linked; the published product list
+	// The map knows what its last walk found; the published product list
 	// knows everything on sale today. Products it names that the map does
-	// not - several thousand for Magic - are priced from what the catalog
-	// says of them, with the one thing the list never carries left empty:
-	// their collector number.
+	// not - added since the walk - are priced from what the list says of
+	// them, with the one thing the list never carries left empty: their
+	// collector number.
 	products := make(map[int]cm.CatalogProduct, len(mkm.catalog.Data.Products))
 	for id, product := range mkm.catalog.Data.Products {
 		products[id] = product
