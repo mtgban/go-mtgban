@@ -2,6 +2,7 @@ package cardkingdom
 
 import (
 	"errors"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-cardkingdom"
@@ -661,7 +662,8 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 }
 
 // matchGraded retries an unknown "Secret Lair" edition against the
-// storefront's own Secret Lair Countdown shelf before giving up.
+// storefront's own Secret Lair Countdown shelf before giving up, and settles
+// a tie that only a claim-only promo type causes (see unclaimedPrinting).
 func matchGraded(b *mtgmatcher.Backend, theCard *mtgmatcher.InputCard) (string, error) {
 	cardID, err := b.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrCardNotInEdition) && theCard.Edition == "Secret Lair" {
@@ -672,7 +674,56 @@ func matchGraded(b *mtgmatcher.Backend, theCard *mtgmatcher.InputCard) (string, 
 			return id, nil
 		}
 	}
+
+	var alias *mtgmatcher.AliasingError
+	if errors.As(err, &alias) {
+		id := unclaimedPrinting(b, theCard, alias.Probe())
+		if id != "" {
+			return id, nil
+		}
+	}
 	return cardID, err
+}
+
+// gradedClaimOnly lists the promo types a graded title always spells out
+// when the slab is one, with the words it spells them with.
+var gradedClaimOnly = []struct {
+	promoType string
+	words     []string
+}{
+	{magic.PromoTypeJapanShowcase, []string{"japan", "jp"}},
+	{magic.PromoTypeHeadliner, []string{"signature", "headliner"}},
+}
+
+// unclaimedPrinting answers the one candidate left once the printings whose
+// promo type the title never claims are set aside, and empty when that does
+// not leave exactly one.
+func unclaimedPrinting(b *mtgmatcher.Backend, theCard *mtgmatcher.InputCard, candidates []string) string {
+	text := strings.ToLower(theCard.Edition + " " + theCard.Variation)
+
+	var left []string
+	for _, id := range candidates {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			return ""
+		}
+		claimed := true
+		for _, rule := range gradedClaimOnly {
+			spelled := slices.ContainsFunc(rule.words, func(word string) bool {
+				return strings.Contains(text, word)
+			})
+			if co.HasPromoType(rule.promoType) && !spelled {
+				claimed = false
+			}
+		}
+		if claimed {
+			left = append(left, id)
+		}
+	}
+	if len(left) != 1 {
+		return ""
+	}
+	return left[0]
 }
 
 // gradedEditions spells an edition this storefront abbreviates the way the
