@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"slices"
 	"testing"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
@@ -181,6 +182,41 @@ func TestPreprocessImageExtendedArt(t *testing.T) {
 		}
 		if card.Edition != "DFT" || card.Variation != "294" {
 			t.Errorf("preprocess() = %q/%q, want the image's DFT/294", card.Edition, card.Variation)
+		}
+	})
+}
+
+// TestPreprocessFinalFantasyBackground pins the two-sided Final Fantasy
+// variants, whose notes name only the colour behind the art: the base card
+// answers unless the number or the borderless treatment is asked for.
+func TestPreprocessFinalFantasyBackground(t *testing.T) {
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+
+	t.Run("a product-named image takes the borderless treatment", func(t *testing.T) {
+		card, err := preprocess(b, "Jill, Shiva's Dominant // Shiva, Warden of Ice", "Final Fantasy Variants", "XVI in Blue Background", "https://s.cf.net/i/414814.jpg")
+		if err != nil {
+			t.Fatal(err)
+		}
+		id, err := b.Match(card)
+		if err != nil {
+			t.Fatalf("Match(%+v) = %v", card, err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Contains(co.PromoTypes, "borderless") {
+			t.Errorf("landed %s %s, which is not borderless", co.SetCode, co.Number)
+		}
+	})
+
+	t.Run("a numbered image keeps its number past a ds prefix", func(t *testing.T) {
+		card, err := preprocess(b, "Cecil, Dark Knight // Cecil, Redeemed Paladin", "Final Fantasy Variants", "IV in Purple Background", "https://s.cf.net/i/dsfin0380.jpg")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if card.Edition != "FIN" || card.Variation != "380" {
+			t.Errorf("preprocess() = %q/%q, want FIN/380", card.Edition, card.Variation)
 		}
 	})
 }
