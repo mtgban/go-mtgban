@@ -1303,6 +1303,14 @@ func bucketKey(sku string) string {
 	return strings.Join(fields, "-")
 }
 
+// lorcanaNumberRespellings spells the promo numbers two skus misnumber, keyed
+// by the sku's number segment: Merlin - Envisioning the Future is PD1 7 and
+// Belle - Always Reading is P4 13, in the datastore and on TCGplayer alike.
+var lorcanaNumberRespellings = map[string]string{
+	"PD1_013": "7",
+	"P04_014": "13",
+}
+
 // lorcanaNumber returns the collector number to match a Lorcana product by.
 //
 // The sku's number segment is the more specific of the two numbers a product
@@ -1322,6 +1330,9 @@ func bucketKey(sku string) string {
 // than the same card more precisely.
 func lorcanaNumber(p CatalogProduct) string {
 	number := skuNumber(p.SKU)
+	if spelled, found := lorcanaNumberRespellings[number]; found {
+		return spelled
+	}
 	idx := strings.LastIndexByte(number, '_')
 	if idx >= 0 {
 		number = number[idx+1:]
