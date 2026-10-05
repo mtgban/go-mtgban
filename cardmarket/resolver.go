@@ -669,7 +669,8 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// when nothing carries it does the id's own printing stand, the
 		// card being agreed on and the finish the one disagreement.
 		var loose string
-		if tcgID, found := r.tcgBridge[product.IDProduct]; found {
+		tcgID, found := r.tcgBridge[product.IDProduct]
+		if found && !pokemonCrossedLinks[product.IDProduct] {
 			cardID, _ = r.backend.MatchID(fmt.Sprint(tcgID), false)
 			if finish := productFinish(r.gameID, product); finish != "" && cardID != "" {
 				loose = cardID

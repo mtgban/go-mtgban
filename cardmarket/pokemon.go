@@ -50,6 +50,16 @@ var pokemonForeignExpansions = map[string]bool{
 	"Unnumbered Promos": false,
 }
 
+// pokemonCrossedLinks lists the products whose CardTrader link names another
+// card's TCGplayer product, or the one basic energy of many printings; they
+// resolve by their wording instead.
+var pokemonCrossedLinks = map[int]bool{
+	864380: true, // Lunatone, linked to Latios
+	883858: true, // Gardevoir ex, linked to Scream Tail
+	883865: true, // Scream Tail, linked to Gardevoir ex
+	651753: true, // Metal Energy, linked to the HGSS basic
+}
+
 // pokemonForeign reports whether an expansion is one of those catalogs.
 func pokemonForeign(expansion string) bool {
 	_, found := pokemonForeignExpansions[expansion]
