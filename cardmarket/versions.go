@@ -8,8 +8,9 @@ import (
 
 // versionPrintings names the printing a Magic product sells where the id map
 // cannot tell: a "(V.N)" version the map links to no printing of its shelf,
-// to a sibling's, or to several. Keyed by Cardmarket's product id; the tag
-// after each name says what placed the row, and
+// to a sibling's, or to several, or the starred foil twin of a Secret Lair
+// printing the map links to the plain one. Keyed by Cardmarket's product id;
+// the tag after each name says what placed the row, and
 // docs/agents/cardmarket-census/versions.md what each tag means.
 var versionPrintings = map[int]struct{ set, number string }{
 	// Arabian Nights
@@ -253,18 +254,73 @@ var versionPrintings = map[int]struct{ set, number string }{
 
 	// Secret Lair Drop Series: Secretversary 2021
 	687581: {"PLST", "CMR-395"}, // Counterspell (V.2), Scryfall
+
+	// Secret Lair Drop Series: Chaos Vault
+	839898: {"SLD", "2102★"}, // Ethersworn Canonist, CardTrader
+	839900: {"SLD", "2103★"}, // Goblin Engineer, CardTrader
+	839902: {"SLD", "2104★"}, // Dance of the Manse, CardTrader
+	839904: {"SLD", "2105★"}, // Arcbound Ravager, CardTrader
+	839906: {"SLD", "2106★"}, // Foundry Inspector, CardTrader
+	839908: {"SLD", "2107★"}, // Reprocess, CardTrader
+	839910: {"SLD", "2108★"}, // Aggressive Mining, CardTrader
+	839912: {"SLD", "2109★"}, // Sylvan Safekeeper, CardTrader
+	839914: {"SLD", "2110★"}, // Crucible of Worlds, CardTrader
+	839916: {"SLD", "2111★"}, // Zuran Orb, CardTrader
 }
 
-// versionPrinting answers the printing versionPrintings names for a Magic
-// product, or "" where it names none the datastore carries.
-func versionPrinting(b *mtgmatcher.Backend, product *cm.Product) string {
+// etchedPrintings is versionPrintings for the products that are the etched
+// finish of a printing. Cardmarket files an etched foil as a second product of
+// the card, and the datastore links it to the plain printing, which its V.1
+// already sells. Each row is CardTrader's blueprint for the product, an
+// "Etched Foil" at the number shown.
+var etchedPrintings = map[int]struct{ set, number string }{
+	// Secret Lair Drop Series: October Superdrop 2022
+	680700: {"SLD", "1114"}, // Carrion Feeder
+	680704: {"SLD", "1116"}, // Plaguecrafter
+	680709: {"SLD", "1117"}, // Thoughtseize
+	680713: {"SLD", "1115"}, // Doomsday
+}
+
+// unplacedProducts are Magic products no evidence places on a printing: the
+// V.2 to V.4 of an October Superdrop 2022 card, whose Japanese printings sit
+// beside the English one. The name route would file them on another drop's
+// printing, so they are skipped.
+var unplacedProducts = map[int]bool{
+	680717: true, 680718: true, 680719: true, // Tezzeret the Seeker
+	680721: true, 680722: true, 680723: true, // Phyrexian Metamorph
+	680725: true, 680726: true, 680727: true, // Skullclamp
+	680729: true, 680730: true, 680731: true, // Solemn Simulacrum
+}
+
+// versionPrinting answers the nonfoil and foil printings versionPrintings and
+// etchedPrintings name for a Magic product, or two empty ids where they name
+// none the datastore carries. An etched product answers its etched printing
+// for both, the way a lone-finish product does elsewhere.
+func versionPrinting(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
 	printing, found := versionPrintings[product.IDProduct]
+	etched := false
 	if !found {
-		return ""
+		printing, found = etchedPrintings[product.IDProduct]
+		etched = true
+	}
+	if !found {
+		return "", ""
 	}
 	cards := b.MatchInSetNumber(mtgmatcher.SplitVariants(product.Name)[0], printing.set, printing.number)
 	if len(cards) != 1 {
-		return ""
+		return "", ""
 	}
-	return cards[0].UUID
+	if !etched {
+		cardIDFoil, _ := b.MatchID(cards[0].UUID, true)
+		return cards[0].UUID, cardIDFoil
+	}
+	cardID, err := b.MatchID(cards[0].UUID, false, true)
+	if err != nil {
+		return "", ""
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil || !co.Etched {
+		return "", ""
+	}
+	return cardID, cardID
 }

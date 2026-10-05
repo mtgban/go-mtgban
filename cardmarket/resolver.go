@@ -906,12 +906,14 @@ func (r *resolver) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.
 	product.Expansion.IDExpansion = expansion.IDExpansion
 
 	if r.gameID == cm.GameMagic {
-		cardID := versionPrinting(r.backend, product)
+		if unplacedProducts[id] {
+			return resolved{product: product}
+		}
+		cardID, cardIDFoil := versionPrinting(r.backend, product)
 		if cardID != "" {
-			cardIDFoil, _ := r.backend.MatchID(cardID, true)
 			return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
 		}
-		cardID, cardIDFoil := r.resolveUUIDs(product, r.magicPrintings(id))
+		cardID, cardIDFoil = r.resolveUUIDs(product, r.magicPrintings(id))
 		if cardID != "" {
 			return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
 		}
