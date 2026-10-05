@@ -1280,6 +1280,7 @@ var pkmJapaneseShelves = map[string]bool{
 	"M Audino EX Mega Battle Deck":                true,
 	"Mythical & Legendary Dream Shine Collection": true,
 	"Shaymin LV. X COLLECTION PACK":               true,
+	"Space-Time Creation":                         true,
 }
 
 // pkmInserts are the products Card Trader sells as Pokemon singles that are
@@ -1287,6 +1288,12 @@ var pkmJapaneseShelves = map[string]bool{
 var pkmInserts = map[string]bool{
 	"VSTAR Marker":      true,
 	"Blank Filler Card": true,
+}
+
+// gundamInserts are the products Card Trader sells as Gundam singles that are
+// not cards.
+var gundamInserts = map[string]bool{
+	"Damage Counter Punch Card": true,
 }
 
 // lorcanaInserts are products Card Trader sells as Lorcana singles that are
@@ -1321,6 +1328,8 @@ func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
 		return lorcanaInserts[bp.Name] || (bp.Expansion.Name == lorcanaErrataShelf && bp.TCGplayerProductID() == 0)
 	case GameYuGiOh:
 		return ygoInserts[bp.Name]
+	case GameGundam:
+		return gundamInserts[bp.Name]
 	default:
 		return false
 	}
