@@ -499,8 +499,14 @@ func card2promo(cardName, variant string) (string, string) {
 		return "PCBB", ""
 	case strings.Contains(variant, "PWCS"):
 		return "PWCS", ""
-	case strings.Contains(variant, "Magic Spotlight"):
+	case strings.Contains(variant, "Magic Spotlight"), strings.Contains(variant, "Spotlight Series"):
 		return "PSPL", ""
+	case strings.Contains(variant, "Manga Promo") && !strings.Contains(variant, "Japanese"):
+		return "PMEI", ""
+	case strings.Contains(variant, "Eternal Weekend"):
+		return "PEWK", ""
+	case strings.Contains(variant, "2025 MagicCon"):
+		return "PF25", ""
 	case strings.Contains(variant, "Friday Night Magic Promo"):
 		variant = "FNM"
 	case strings.Contains(variant, "Japan Standard Cup 2025 Promo"):
@@ -665,6 +671,12 @@ func card2promo(cardName, variant string) (string, string) {
 		if variant == "Festival Magic Con" {
 			return "P30M", "1F"
 		}
+		if strings.Contains(variant, "Magic 30") {
+			if mtgmatcher.Contains(variant, "etched") {
+				return "P30M", "etched"
+			}
+			return "P30M", ""
+		}
 	case "Sakura-Tribe Elder":
 		if variant == "Textless Victor Adame Minguez art" {
 			edition = "PLG24"
@@ -675,18 +687,18 @@ func card2promo(cardName, variant string) (string, string) {
 		}
 	case "Dragon's Hoard":
 		if variant == "Tarkir: Dragonstorm Magic Academy Promo" {
-			return "PW25", "1p"
+			return "PW25", "18"
 		}
 	case "Lightning Bolt":
-		switch variant {
-		case "MagicFest Promo textless":
+		switch {
+		case variant == "MagicFest Promo textless":
 			return "PF19", "1"
-		case "Future Sight Frame 2025 MagicCon Atlanta Promo":
-			return "PF25", "13"
+		case strings.Contains(variant, "TMNT Standard Showdown"):
+			return "PW26", "5"
 		}
-	case "Ugin, the Spirit Dragon":
-		if variant == "Retro Frame 2025 MagicCon Las Vegas Promo" {
-			return "PF25", "6"
+	case "Highly Illogical":
+		if strings.Contains(variant, "Play Promo") {
+			return "PW26", "17"
 		}
 	case "Cloud, Midgar Mercenary":
 		switch variant {
