@@ -32,6 +32,16 @@ var numFixes = map[string]string{
 	"LeylineoftheVoidv2":              "PM20107p",
 	"386443":                          "POTJ149p",
 	"Ugin001":                         "M211",
+	"SLDDPDispute":                    "SLDIFIYW-1",
+	"SLDDPBolt":                       "SLDIFIYW-2",
+	"SLDDPThrill":                     "SLDIFIYW-3",
+	"SLDDPGreaves":                    "SLDIFIYW-4",
+	"SLDDPSolRing":                    "SLDIFIYW-5",
+	"SLDDPDisputeCF":                  "SLDIFIYW-6",
+	"SLDDPBoltCF":                     "SLDIFIYW-7",
+	"SLDDPThrillCF":                   "SLDIFIYW-8",
+	"SLDDPGreavesCF":                  "SLDIFIYW-9",
+	"SLDDPSolRingCF":                  "SLDIFIYW-10",
 }
 
 // shelfNumFixes holds the image stems that name a printing only on one shelf:
@@ -852,6 +862,10 @@ var buylistNumberFixes = map[string]string{
 // language included - though Match clamps a mismatched foil request
 // rather than reject it, so a landed candidate is not proof of finish.
 func buylistImageNumber(b *mtgmatcher.Backend, cardName, variant string, isFoil bool, language, image string) *mtgmatcher.InputCard {
+	fixup, found := numFixes[image]
+	if found {
+		image = fixup
+	}
 	stem := strings.ToUpper(image)
 	for _, n := range [...]int{3, 4} {
 		if len(stem) <= n {
