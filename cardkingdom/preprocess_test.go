@@ -12,8 +12,7 @@ import (
 	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 var (
@@ -152,6 +151,43 @@ func TestPreprocessListPromo(t *testing.T) {
 				t.Errorf("%s landed on %s #%s, want PLST #%s", tt.product.SKU, co.SetCode, co.Number, tt.number)
 			}
 		})
+	}
+}
+
+// TestPreprocessPromoPackWithoutStampedSet pins a promo pack of a set whose
+// stamped P-set is not published yet: it must stay with its own set's promo
+// pack printing, never an older set's pack nor the plain main-set copy.
+func TestPreprocessPromoPackWithoutStampedSet(t *testing.T) {
+	b := realDatastore(t)
+	product := cardkingdom.Product{
+		SKU:       "FRA-0176P",
+		Name:      "Deserted Beach",
+		Variation: "Promo Pack - FRA",
+		Edition:   "Promo Pack",
+	}
+	if !setCodeExists(b, "FRA") {
+		t.Skip("datastore carries no FRA")
+	}
+	theCard, err := Preprocess(b, product)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cardID, err := b.Match(theCard)
+	if err != nil {
+		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			t.Errorf("%s: %v, want a skip", product.SKU, err)
+		}
+		return
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.SetCode != "FRA" && co.SetCode != "PFRA" {
+		t.Errorf("%s landed on %s #%s, want FRA or PFRA", product.SKU, co.SetCode, co.Number)
+	}
+	if !co.HasPromoType(magic.PromoTypePromoPack) {
+		t.Errorf("%s landed on %s #%s, which is not a promo pack printing", product.SKU, co.SetCode, co.Number)
 	}
 }
 
