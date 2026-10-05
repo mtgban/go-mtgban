@@ -69,6 +69,11 @@ var nameTable = map[string]string{
 	"Alesha, Whos Smiles at Death":           "Alesha, Who Smiles at Death",
 	"Pertified Hamlet":                       "Petrified Hamlet",
 	"Zuri, Warrior of Wakana":                "Zuri, Warrior of Wakanda",
+	"Rin and Seri, Inseperable":              "Rin and Seri, Inseparable",
+	"Shadowheart, Dark Justicar":             "Shadowheart, Dark Justiciar",
+	"Sakashima the Imposter":                 "Sakashima the Impostor",
+
+	"Doric, Nature's Warden // Doric, Owlbear Avenger": "Doric, Nature's Warden",
 }
 
 // buylistLanguage reads a foreign-language marker out of a buylist row's
