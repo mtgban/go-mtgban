@@ -73,7 +73,13 @@ func numberedListing(name string) (string, string) {
 // "Alakazam E4"; and the metal cards are named for the metal, "Metal Mew ex"
 // for the catalog's Mew ex labelled a metal card.
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
+	if edition == "Pokemon Oversized Cards" {
+		edition = "Jumbo Cards"
+		name = promoProgrammeNumber.ReplaceAllString(strings.TrimSuffix(name, " Jumbo Size"), "$1")
+	}
 	name, numbered := numberedListing(name)
+	numbered = megaPromoNumber.ReplaceAllString(numbered, "MEP$1")
+	variation = megaPromoNumber.ReplaceAllString(variation, "MEP$1")
 	name = strings.TrimSpace(nonStampedName.ReplaceAllString(name, ""))
 	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
 	m := basicEnergyName.FindStringSubmatch(name)
@@ -281,8 +287,16 @@ var (
 	typedEnergy    = regexp.MustCompile(`^(\w+) (Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy|Dragon|Colorless) Energy$`)
 	prefixedNumber = regexp.MustCompile(`\b(MEE|SVE|MEP|SVP|SWSH|SM)(\d{3})\b`)
 	classicNumber  = regexp.MustCompile(`Classic Collection (\d+)`)
-	specialEnergy  = regexp.MustCompile(`^Special ((?:Metal|Darkness) Energy)$`)
-	eliteFour      = regexp.MustCompile(`^(.+) 4( LV\.X)?$`)
+
+	// megaPromoNumber matches the Mega Evolution promo number as this
+	// storefront writes it, "ME099", where the catalog's own is "MEP099".
+	megaPromoNumber = regexp.MustCompile(`\bME(\d{3})\b`)
+
+	// promoProgrammeNumber matches the programme prefix a jumbo card's number
+	// carries, which the catalog files its Jumbo Cards under without.
+	promoProgrammeNumber = regexp.MustCompile(`\b(?:SVP|MEP|ME)(\d{3})\b`)
+	specialEnergy        = regexp.MustCompile(`^Special ((?:Metal|Darkness) Energy)$`)
+	eliteFour            = regexp.MustCompile(`^(.+) 4( LV\.X)?$`)
 
 	// goldStar matches a Gold Star the way this storefront names it, "Mew *
 	// (Star)" for the catalog's "Mew Star" - $1,800 of buylist refusals on

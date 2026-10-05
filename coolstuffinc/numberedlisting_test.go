@@ -29,6 +29,10 @@ func TestNumberedListingReachesTheNameRules(t *testing.T) {
 		{"Heat Fire Energy - 174/189 (Reverse Foil)", "SWSH Darkness Ablaze", "174/189", "174-189_219291_reverseholofoil"},
 		// A misspelling this storefront reads off the printing.
 		{"Sprigattito - MEP061", "ME Promos", "MEP061", "061_709975_holofoil"},
+		// The Mega Evolution promos, numbered ME where the catalog says MEP.
+		{"Alolan Exeggutor - ME094", "ME Promos", "", "094_713262_holofoil"},
+		// A jumbo card, filed on a shelf of its own without its programme.
+		{"Houndstone ex - SVP162 Jumbo Size", "Pokemon Oversized Cards", "", "162_596423_holofoil"},
 		// A Team Galactic invention, sold under the invention alone.
 		{"SP Radar - 96/111", "Platinum Rising Rivals", "96", "96-111_89809"},
 		{"Poke Turn - 118/127", "Platinum Base Set", "118", "118-127_89807"},
