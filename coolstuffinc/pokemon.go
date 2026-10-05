@@ -3,6 +3,7 @@ package coolstuffinc
 import (
 	"cmp"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -283,7 +284,8 @@ func pokemonBuylistCard(b *mtgmatcher.Backend, product CSIPriceEntry) (*mtgmatch
 	variation := catalogTreatment(buylistVariation(product))
 	shelf, run := firstEditionShelf(product.ItemSet)
 	shelf = pokemonPromoShelf(b, product.Name, shelf, product.RarityName, product.IsFoil == 1, variation)
-	return pokemonListing(b, product.Name, shelf, variation, product.IsFoil == 1), run
+	card := pokemonListing(b, product.Name, shelf, variation, product.IsFoil == 1)
+	return pokemonCosmosHolo(b, card, product.RarityName), run
 }
 
 // pokemonNumberSets are the sets a number's prefix names outright.
@@ -558,6 +560,51 @@ func pokemonBasicEnergy(b *mtgmatcher.Backend, energyType, bracket, edition, num
 		return nil
 	}
 	return redirected
+}
+
+// pokemonCosmosBracket matches the bracket this storefront names a cosmos
+// holo with: "Holo Promo", "Cosmo Holo" or the bare "Holo".
+var pokemonCosmosBracket = regexp.MustCompile(`(?i)\s*\((?:Holo Promo|Cosmos? Holo|Holo)\)`)
+
+// pokemonCosmosHolo answers a Promo-rarity listing sold under a main set with
+// one of those brackets as the collection-box cosmos holo the catalog files
+// on its miscellaneous shelf, and leaves the listing as it is unless that
+// printing exists at the listing's own number.
+//
+// The storefront keeps the set's number and total on it, so the base set's
+// nonfoil answers for it, a $2.99 Charmeleon priced as the $0.29 one. A
+// listing that already lands on a cosmos holo is left there.
+func pokemonCosmosHolo(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, rarity string) *mtgmatcher.InputCard {
+	if rarity != "Promo" || !pokemonCosmosBracket.MatchString(card.Name) {
+		return card
+	}
+	asked := *card
+	id, err := b.Match(&asked)
+	if err == nil {
+		co, err := b.GetUUID(id)
+		if err == nil && slices.Contains(co.PromoTypes, "cosmosholo") {
+			return card
+		}
+	}
+	cosmos := *card
+	cosmos.Name = pokemonCosmosBracket.ReplaceAllString(card.Name, "")
+	cosmos.Edition = "Miscellaneous Cards & Products"
+	cosmos.Variation = "Cosmos Holo"
+	_, tail := numberedListing(cosmos.Name)
+	num := strings.TrimLeft(mtgmatcher.ExtractNumber(tail), "0")
+	if num == "" {
+		return card
+	}
+	probe := cosmos
+	id, err = b.Match(&probe)
+	if err != nil {
+		return card
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || co.SetCode != "MCAP" || strings.TrimLeft(co.Number, "0") != num {
+		return card
+	}
+	return &cosmos
 }
 
 // pokemonPromoShelf answers the shelf a Pokemon listing belongs to, which is
