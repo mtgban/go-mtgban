@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // aliasedListing is a row the matcher answered with several printings: the
@@ -23,6 +24,7 @@ type contradiction func(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.
 // be taken out of the table without touching the rest.
 var contradictions = []contradiction{
 	wearsUnnamedPremiumFoil,
+	wearsUnnamedBorderless,
 }
 
 // wearsUnnamedPremiumFoil reports whether the printing wears a premium foil
@@ -35,6 +37,12 @@ func wearsUnnamedPremiumFoil(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmat
 		}
 	}
 	return false
+}
+
+// wearsUnnamedBorderless reports whether the printing is a borderless one the
+// listing never calls borderless, which the store writes on every one of them.
+func wearsUnnamedBorderless(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+	return co.HasPromoType(magic.PromoTypeBorderless) && !mtgmatcher.Contains(l.card.Variation, "Borderless")
 }
 
 // resolveAliasing narrows an ambiguous match down to the one printing the
