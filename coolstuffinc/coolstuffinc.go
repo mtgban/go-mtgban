@@ -913,7 +913,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			if unknownPrinting(product.Name, product.ItemSet) {
 				continue
 			}
-			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(product.Name))), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(jpArtWording(buylistVariation(product)) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(product.Name))), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(jpArtWording(yugiohCodes.Replace(buylistVariation(product))) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case mtgmatcher.GameOnePiece:
 			tcgID, named := onePiecePIDs[product.PID]
 			if named {
