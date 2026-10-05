@@ -9,6 +9,7 @@ import (
 func TestAddRelaxed(t *testing.T) {
 	entryNM := InventoryEntry{
 		Quantity:   5,
+		Available:  7,
 		Conditions: NM,
 		Price:      20.0,
 		URL:        "https://mtgban.com",
@@ -55,7 +56,7 @@ func TestAddRelaxed(t *testing.T) {
 		t.Errorf("FAIL: inventory contains a differen number of entries (%d) than expected for A", len(inventory["A"]))
 		return
 	}
-	if inventory["A"][0].Quantity != 10 {
+	if inventory["A"][0].Quantity != 10 || inventory["A"][0].Available != 14 {
 		t.Error("FAIL: inventory did not merge quantities")
 		return
 	}

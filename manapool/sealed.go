@@ -86,8 +86,9 @@ func (mp *Sealed) Load(ctx context.Context) error {
 				u.RawQuery = v.Encode()
 
 				out := &mtgban.InventoryEntry{
-					Price: float64(sealed.LowPrice) / 100.0,
-					URL:   u.String(),
+					Price:     float64(sealed.LowPrice) / 100.0,
+					Available: sealed.AvailableQuantity,
+					URL:       u.String(),
 				}
 				err = mp.inventory.AddUnique(product.UUID, out)
 				if err != nil {

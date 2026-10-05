@@ -77,8 +77,10 @@ UUID. The key is a string by convention; the `Add*` path does **not**
 type-check it against the backend (sealed scrapers, for instance, insert the
 product UUID directly without calling `Match()` - see §3).
 
-- `InventoryEntry`: `Quantity`, `Conditions` (a `Condition`, named by `NM`
-  through `PO`), `Price` (USD), `URL`, `SellerName`, `Bundle` (part of a
+- `InventoryEntry`: `Quantity` (the copies sold at `Price`), `Available`
+  (every copy of the entry's variant on sale at any price, zero where the
+  store does not say), `Conditions` (a `Condition`, named by `NM` through
+  `PO`), `Price` (USD), `URL`, `SellerName`, `Bundle` (part of a
   direct-shipping hub), `OriginalID` (store product id), `InstanceID` (SKU),
   `CustomFields map[string]string`, `ExtraValues map[string]float64`.
 - `BuylistEntry`: swaps `Price` for `BuyPrice` + `PriceRatio` (buy/sell
@@ -97,7 +99,7 @@ Then a strictness cascade against existing entries for the same card:
 
 | Method       | strict | Behavior on duplicate                                          |
 |--------------|--------|----------------------------------------------------------------|
-| `AddRelaxed` | 0      | same condition+price+seller → merge quantities                 |
+| `AddRelaxed` | 0      | same condition+price+seller → merge `Quantity` and `Available` |
 | `Add`        | 1      | merge, but error if URL, quantity and Bundle are also identical |
 | `AddStrict`  | 2      | error if condition+price+seller already present                |
 | `AddUnique`  | 3      | error if condition+seller already present - **ignores price** (one per condition) |

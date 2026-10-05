@@ -45,12 +45,13 @@ func withMagic(t *testing.T) *mtgmatcher.Backend {
 
 // TestAddCheapestKeepsTheLowerPrice pins that a printing the store files under
 // more than one product is priced once per grade, at the lower of the prices
-// it arrives with, whichever product arrives first.
+// it arrives with, whichever product arrives first, holding every product's
+// copies.
 func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 	mp := NewScraper(&mtgmatcher.Backend{})
-	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 25, URL: "first"})
-	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 15, URL: "cheaper"})
-	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 40, URL: "dearer"})
+	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 25, Available: 3, URL: "first"})
+	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 15, Available: 1, URL: "cheaper"})
+	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 40, Available: 2, URL: "dearer"})
 	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.SP, Price: 9, URL: "other-grade"})
 
 	got := map[mtgban.Condition]mtgban.InventoryEntry{}
@@ -62,6 +63,9 @@ func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 	}
 	if got[mtgban.NM].Price != 15 || got[mtgban.NM].URL != "cheaper" {
 		t.Errorf("NM is %.0f from %q, want 15 from the cheaper product", got[mtgban.NM].Price, got[mtgban.NM].URL)
+	}
+	if got[mtgban.NM].Available != 6 || got[mtgban.NM].Quantity != 1 {
+		t.Errorf("NM has %d available and quantity %d, want the 6 of all three products and one", got[mtgban.NM].Available, got[mtgban.NM].Quantity)
 	}
 	if got[mtgban.SP].Price != 9 {
 		t.Errorf("SP is %.0f, want 9", got[mtgban.SP].Price)
