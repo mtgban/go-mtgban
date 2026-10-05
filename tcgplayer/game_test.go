@@ -198,6 +198,7 @@ func TestGameIndexProductEntries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	tcg.printings = []string{"Normal", "Holofoil"}
 	var logs []string
 	tcg.logCallback = func(format string, a ...any) {
 		logs = append(logs, fmt.Sprintf(format, a...))
@@ -239,6 +240,17 @@ func TestGameIndexProductEntries(t *testing.T) {
 		{
 			desc:   "a market price alone on a finish the printing lacks is let through quietly",
 			result: tcgplayer.ProductPriceSet{ProductID: 616532, MarketPrice: 0.5, SubTypeName: "Holofoil"},
+		},
+		{
+			desc:   "a market price alone on a finish the category no longer sells is let through quietly",
+			result: tcgplayer.ProductPriceSet{ProductID: 616532, MarketPrice: 0.5, SubTypeName: "1st Edition - Ultimate"},
+		},
+		{
+			desc:   "a market price alone on a finish the category sells is priced",
+			result: tcgplayer.ProductPriceSet{ProductID: 616532, MarketPrice: 0.79, SubTypeName: "Normal"},
+			want: []string{
+				"Gundam (MA Form) ST01-002: TCG Market 0.79 https://www.tcgplayer.com/product/616532?Language=all&Printing=Normal&direct=false",
+			},
 		},
 		{
 			desc:   "any other price on that finish is reported",
