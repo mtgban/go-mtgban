@@ -380,3 +380,43 @@ func TestResolveLorcanaQuest(t *testing.T) {
 		t.Errorf("got %s #%s (%s), want Q1 #223", co.SetCode, co.Number, co.Name)
 	}
 }
+
+// TestResolveLorcanaExclusive checks that a Japanese or Simplified Chinese
+// promo reaches the printing struck for that market, and that a listing in
+// that language of an ordinary printing of the same card is not pulled onto
+// the exclusive: it is read by its plain name and skipped for its language.
+func TestResolveLorcanaExclusive(t *testing.T) {
+	b := withLorcana(t)
+
+	product := func(sku, set, number, language string) CatalogProduct {
+		return CatalogProduct{
+			SKU: sku, Name: "Mickey Mouse - True Friend", Set: set, CollectorNumber: number,
+			Finish: "Foil", FinishGroup: "Foil", Language: language,
+		}
+	}
+	for _, tt := range []struct {
+		p    CatalogProduct
+		want string
+	}{
+		{product("SGL-LOR-PRM-P01_025-JAC", "Promotional Cards", "025", "Japanese"), "Mickey Mouse - True Friend (JP Exclusive)"},
+		{product("SGL-LOR-PRM-P01_025-ZSC", "Promotional Cards", "025", "Chinese - Simplified"), "Mickey Mouse - True Friend (CS Exclusive)"},
+	} {
+		requireSibling(t, b, tt.want)
+		id, err := resolveProduct(b, GameLorcana, tt.p)
+		if err != nil {
+			t.Fatalf("resolveProduct(%s): %v", tt.p.SKU, err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatalf("GetUUID(%q): %v", id, err)
+		}
+		if co.Name != tt.want {
+			t.Errorf("resolveProduct(%s) = %q, want %q", tt.p.SKU, co.Name, tt.want)
+		}
+	}
+
+	id, err := resolveProduct(b, GameLorcana, product("SGL-LOR-001-012-JAC", "The First Chapter", "012", "Japanese"))
+	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		t.Errorf("Japanese The First Chapter 012 = %q, %v, want ErrUnsupported", id, err)
+	}
+}
