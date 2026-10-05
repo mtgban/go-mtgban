@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"cmp"
 	"regexp"
 	"strings"
 
@@ -22,12 +23,16 @@ import (
 // those would drop 25 real listings to catch nothing.
 var pokemonNonHolo = regexp.MustCompile(`(?i)\(Non-?\s?Holo\)`)
 
+// pokemonNonHoloNote matches the note a Black & White deck exclusive carries
+// where its name carries no bracket.
+var pokemonNonHoloNote = regexp.MustCompile(`(?i)\*Non-?\s?Holo Version\b`)
+
 // pokemonNonHoloDeckExclusive answers whether the catalog's Deck Exclusives
 // shelf carries the plain printing a "(Non-Holo)" bracket asks for, taken
 // only when the probe lands on PR-1840's own nonfoil at the listing's own
 // number.
 func pokemonNonHoloDeckExclusive(b *mtgmatcher.Backend, name, numbered string, foil bool) bool {
-	num := mtgmatcher.ExtractNumber(numbered)
+	num := cmp.Or(mtgmatcher.ExtractNumber(numbered), numbered)
 	if num == "" {
 		return false
 	}
@@ -90,8 +95,8 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 			return fixed
 		}
 	}
-	nonHolo := pokemonNonHolo.MatchString(name) || pokemonNonHolo.MatchString(numbered)
-	if nonHolo && !strings.Contains(strings.ToLower(edition), "promo") {
+	nonHolo := pokemonNonHolo.MatchString(name) || pokemonNonHolo.MatchString(numbered) || pokemonNonHoloNote.MatchString(variation)
+	if nonHolo {
 		strippedName := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(name, ""))
 		strippedNumbered := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(numbered, ""))
 		if pokemonNonHoloDeckExclusive(b, strippedName, strippedNumbered, foil) {
