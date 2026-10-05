@@ -456,6 +456,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GameGundam && gundamNoRow[product.IDProduct] {
 			return "", "", false, errNoPrinting
 		}
+		if r.gameID == cm.GameRiftbound && riftboundNonEnglish[product.IDProduct] {
+			return "", "", false, errForeign
+		}
 		// A product the datastore records by id is that printing: the
 		// pre-errata One Piece cards no TCGplayer product sells, or a
 		// Lorcana card Cardmarket names its own way.

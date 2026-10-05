@@ -29,6 +29,18 @@ func bridgeNamesCard(b *mtgmatcher.Backend, product *cm.Product, cardID string) 
 	return false
 }
 
+// riftboundChineseShelf is the code of Project K Promos, Riftbound's Chinese
+// release: its FND numbers follow no English set's, and CardTrader marks its
+// items Chinese Exclusive.
+const riftboundChineseShelf = "PROK"
+
+// riftboundNonEnglish holds the products Cardmarket shelves among the English
+// cards that were printed in another language alone: the Korean Ahri,
+// Nine-Tailed Fox signed showcase.
+var riftboundNonEnglish = map[int]bool{
+	907588: true,
+}
+
 // riftboundShelves spells a Cardmarket shelf of promotional prints as the set
 // the datastore files them in and the bundle it labels them with; a starred
 // number is the bundle's serial-numbered print.
