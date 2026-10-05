@@ -2,6 +2,7 @@ package cardtrader
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -418,5 +420,31 @@ func TestBuildProductMapTrimsShelfCode(t *testing.T) {
 		if !slices.Equal(got, tt.want) {
 			t.Errorf("%q on %q: got %v, want %v", tt.name, tt.shelf, got, tt.want)
 		}
+	}
+}
+
+// TestSealedAddResultPerSeller pins that Zero and 1 Day Ready, both bundle
+// listings, each keep their first offer for the same product.
+func TestSealedAddResultPerSeller(t *testing.T) {
+	ct := &Sealed{inventory: mtgban.InventoryRecord{}}
+	for _, entry := range []mtgban.InventoryEntry{
+		{Price: 10, SellerName: availableMarketNames[1], Bundle: true},
+		{Price: 12, SellerName: availableMarketNames[2], Bundle: true},
+		{Price: 11, SellerName: availableMarketNames[1], Bundle: true},
+	} {
+		entry.Conditions = mtgban.NM
+		ct.addResult(resultChan{cardID: "uuid", invEntry: &entry})
+	}
+
+	got := map[string]float64{}
+	for _, entry := range ct.inventory["uuid"] {
+		got[entry.SellerName] = entry.Price
+	}
+	want := map[string]float64{
+		availableMarketNames[1]: 10,
+		availableMarketNames[2]: 12,
+	}
+	if len(ct.inventory["uuid"]) != len(want) || !maps.Equal(got, want) {
+		t.Errorf("got %v, want %v", ct.inventory["uuid"], want)
 	}
 }
