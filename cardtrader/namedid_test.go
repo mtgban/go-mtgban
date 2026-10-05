@@ -66,8 +66,86 @@ func TestNamedID(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			if got := namedID(b, tt.scryfallID, tt.tcgplayerID, tt.cardName); got != tt.want {
+			got := namedID(b, &Blueprint{Name: tt.cardName}, tt.scryfallID, tt.tcgplayerID)
+			if got != tt.want {
 				t.Errorf("namedID = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestNamedIDSamePrinting pins the choice between two ids that name one card
+// in two printings, with the blueprints' own ids and collector numbers.
+func TestNamedIDSamePrinting(t *testing.T) {
+	b := realDatastore(t)
+	scryfall := func(id string) string {
+		out := b.ConvertID(mtgmatcher.IDSpaceScryfall, id)
+		if out == "" {
+			t.Fatalf("scryfall id %q resolves to nothing", id)
+		}
+		return out
+	}
+	tcgplayer := func(id string) string {
+		out := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+		if out == "" {
+			t.Fatalf("TCGplayer id %q resolves to nothing", id)
+		}
+		return out
+	}
+
+	for _, tt := range []struct {
+		desc               string
+		name, number       string
+		scryfallID, tcgID  string
+		wantTCGplayerPrint bool
+	}{
+		{
+			// The scryfall id names the etched twin, 2X2 427.
+			desc: "the printing with the blueprint's number wins",
+			name: "Consecrated Sphinx", number: "345",
+			scryfallID: "2fddeced-9d04-4b4c-bf3f-e9add96f4f5a", tcgID: "277162",
+			wantTCGplayerPrint: true,
+		},
+		{
+			// The player prefix is not part of the blueprint's number.
+			desc: "a World Championship prefix is set aside",
+			name: "Swamp", number: "440",
+			scryfallID: "12681e76-6ffc-489e-8dcd-131a31170ced", tcgID: "162302",
+			wantTCGplayerPrint: true,
+		},
+		{
+			// The scryfall id names the Chinese alt art, 5ED 147s.
+			desc: "the number outweighs a foreign alt art",
+			name: "Bog Wraith", number: "147",
+			scryfallID: "fe305196-fd9d-4f92-a37c-6c4fe5abad1f", tcgID: "2053",
+			wantTCGplayerPrint: true,
+		},
+		{
+			// No number to go by, and the scryfall id names the Japanese
+			// printing, PMEI 2020-7.
+			desc:       "the English printing beats a foreign one",
+			name:       "Crop Rotation",
+			scryfallID: "0f8b6160-84cc-4052-8c19-6184a72c16a6", tcgID: "672480",
+			wantTCGplayerPrint: true,
+		},
+		{
+			// The scryfall id agrees with the number, et364.
+			desc: "a scryfall id agreeing with the number is kept",
+			name: "Plains", number: "364",
+			scryfallID: "7d39625b-cfc5-439e-b888-fbd7849f47a6", tcgID: "158561",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			bp := &Blueprint{Name: tt.name}
+			bp.Properties.Number = tt.number
+			scry, tcg := scryfall(tt.scryfallID), tcgplayer(tt.tcgID)
+			want := scry
+			if tt.wantTCGplayerPrint {
+				want = tcg
+			}
+			got := namedID(b, bp, scry, tcg)
+			if got != want {
+				t.Errorf("namedID = %q, want %q", got, want)
 			}
 		})
 	}

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -22,9 +23,17 @@ var reprintedPrereleaseShelves = map[string]string{
 	"March of the Machine Prerelease": "PMOM",
 }
 
+// tcgplayerIDWins lists the blueprints whose scryfall id Card Trader copied
+// from a sibling blueprint of the same name and number, leaving the TCGplayer
+// id as the only one naming the printing the blueprint sells.
+var tcgplayerIDWins = map[int]bool{
+	62502:  true, // Bombardment, carries the "No PW Symbol" blueprint's id
+	155482: true, // Illuminate History, carries the Prerelease blueprint's id
+}
+
 // namedID picks between the two ids a blueprint carries, preferring the
-// scryfall one as before and only weighing the name where the vendor's own
-// ids contradict each other.
+// scryfall one as before and only weighing the blueprint's own wording where
+// the vendor's ids contradict each other.
 //
 // An id is the surest thing a storefront publishes, but the two are not
 // checked against each other on the way in and a shelf can be filed a card
@@ -35,14 +44,19 @@ var reprintedPrereleaseShelves = map[string]string{
 //
 // Where the ids name two different cards the blueprint's own name is the
 // third thing said about it, and the id it agrees with is the one to keep.
-// Where the name settles nothing, which is what a pair of tokens sold under
-// one blueprint looks like, the order stands and nothing changes.
-func namedID(b *mtgmatcher.Backend, scryfallID, tcgplayerID, cardName string) string {
+// Where they name two printings of one card, the collector number says which
+// one, and failing that the English printing beats a foreign one. Where the
+// wording settles nothing, which is what a pair of tokens sold under one
+// blueprint looks like, the order stands and nothing changes.
+func namedID(b *mtgmatcher.Backend, bp *Blueprint, scryfallID, tcgplayerID string) string {
 	if scryfallID == "" {
 		return tcgplayerID
 	}
 	if tcgplayerID == "" || scryfallID == tcgplayerID {
 		return scryfallID
+	}
+	if tcgplayerIDWins[bp.ID] {
+		return tcgplayerID
 	}
 
 	scryfallCard, err := b.GetUUID(scryfallID)
@@ -54,15 +68,45 @@ func namedID(b *mtgmatcher.Backend, scryfallID, tcgplayerID, cardName string) st
 		return scryfallID
 	}
 	if mtgmatcher.Equals(scryfallCard.Name, tcgplayerCard.Name) {
+		if preferTCGplayerPrinting(scryfallCard, tcgplayerCard, bp.Properties.Number) {
+			return tcgplayerID
+		}
 		return scryfallID
 	}
 
-	namesScryfall := idNamesCard(scryfallCard, cardName)
-	namesTCGplayer := idNamesCard(tcgplayerCard, cardName)
+	namesScryfall := idNamesCard(scryfallCard, bp.Name)
+	namesTCGplayer := idNamesCard(tcgplayerCard, bp.Name)
 	if namesTCGplayer && !namesScryfall {
 		return tcgplayerID
 	}
 	return scryfallID
+}
+
+// preferTCGplayerPrinting reports whether, of two printings of one card, the
+// TCGplayer id's is the one a blueprint numbered number sells: the printing
+// carrying that collector number, with a World Championship player prefix
+// ("js440") set aside if neither does, and the English printing if the
+// numbers settle nothing. A tie keeps the scryfall printing.
+func preferTCGplayerPrinting(scryfallCard, tcgplayerCard *mtgmatcher.CardObject, number string) bool {
+	number = strings.TrimLeft(number, "0")
+	for _, stripPrefix := range []bool{false, true} {
+		scryfallMatch := cardNumberIs(scryfallCard, number, stripPrefix)
+		tcgplayerMatch := cardNumberIs(tcgplayerCard, number, stripPrefix)
+		if scryfallMatch != tcgplayerMatch {
+			return tcgplayerMatch
+		}
+	}
+	return scryfallCard.Language != "English" && tcgplayerCard.Language == "English"
+}
+
+// cardNumberIs reports whether a printing carries the collector number,
+// ignoring case and, when stripPrefix is set, any letters leading it.
+func cardNumberIs(co *mtgmatcher.CardObject, number string, stripPrefix bool) bool {
+	cardNumber := co.Number
+	if stripPrefix {
+		cardNumber = strings.TrimLeftFunc(cardNumber, unicode.IsLetter)
+	}
+	return number != "" && strings.EqualFold(cardNumber, number)
 }
 
 // idNamesCard reports whether a card is the one a blueprint's wording names.
@@ -245,7 +289,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	// blueprint says which space each one lives in
 	scryfallID := b.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
 	tcgplayerID := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
-	id := namedID(b, scryfallID, tcgplayerID, cardName)
+	id := namedID(b, bp, scryfallID, tcgplayerID)
 	if id != "" {
 		idEdition, idVariation := edition, bp.Version
 
