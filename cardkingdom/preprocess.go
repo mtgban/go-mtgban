@@ -320,6 +320,12 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 	case "Promo Pack":
 		variation = card.Variation
 		edition = card.Edition
+		// Until the stamped set exists, reach the sku's own printing by number
+		// so the missing promo tag skips it, rather than another set's pack.
+		if !setCodeExists(b, "P"+setCode) && setCodeExists(b, setCode) {
+			edition = setCode
+			variation = number + " Promo Pack"
+		}
 	case "Promotional":
 		variation = card.Variation
 		switch {
