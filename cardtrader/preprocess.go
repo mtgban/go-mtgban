@@ -494,6 +494,8 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 			variant = number
 
 			switch edition {
+			case "Media Inserts Promos":
+				edition = "Media and Collaboration Promos"
 			case "Guilds of Ravnica Promos":
 				switch cardName {
 				case "Attendant of Vraska",
