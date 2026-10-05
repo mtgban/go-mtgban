@@ -18,6 +18,7 @@ const gundamDatastore = `{"data": {
   "GD01-B": {"name": "Edition Beta", "releaseDate": "2025-02-06"},
   "GD03": {"name": "Steel Requiem", "releaseDate": "2026-01-30"},
   "GD05": {"name": "Freedom Ascension", "releaseDate": "2026-07-24"},
+  "ST03": {"name": "Starter Deck 03: Zeon's Rush", "releaseDate": "2025-07-11"},
   "ST09": {"name": "Starter Deck 09: Destiny Ignition", "releaseDate": "2026-03-27"},
   "ST12": {"name": "Starter Deck 12: Raging Onslaught", "releaseDate": "2026-09-25"}
  },
@@ -25,8 +26,13 @@ const gundamDatastore = `{"data": {
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 643150}, "finish": "Holofoil", "id": "gd01-001_643150_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "Legend Rare", "setCode": "GD01", "type": "Unit"},
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 645356}, "finish": "Holofoil", "id": "gd01-001_645356_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR+", "setCode": "GD01", "type": "Unit"},
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 645375}, "finish": "Holofoil", "id": "gd01-001_645375_holofoil", "name": "Gundam", "number": "GD01-001", "rarity": "LR++", "setCode": "GD01", "type": "Unit"},
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 670499}, "finish": "Holofoil", "id": "gd03-021_670499_holofoil", "name": "Gundam Deathscythe Hell", "number": "GD03-021", "rarity": "Rare", "setCode": "GD03", "type": "Unit"},
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 670579}, "finish": "Holofoil", "id": "gd03-021_670579_holofoil", "name": "Gundam Deathscythe Hell", "number": "GD03-021", "promoTypes": ["storetournament", "participationpack"], "rarity": "Rare", "setCode": "GCG-PR", "type": "Unit", "variant": "Store Tournament Participant Pack 03"},
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 670580}, "finish": "Holofoil", "id": "gd03-021_670580_holofoil", "name": "Gundam Deathscythe Hell", "number": "GD03-021", "promoTypes": ["storetournament", "winnerpack"], "rarity": "R+", "setCode": "GCG-PR", "type": "Unit", "variant": "Store Tournament Winner Pack 03"},
   {"externalLinks": {"tcgPlayerId": 673538}, "finish": "Normal", "id": "t-020_673538", "name": "GFreD Token", "number": "T-020", "rarity": "Common", "setCode": "GD03", "type": "Unit"},
   {"externalLinks": {"tcgPlayerId": 680689}, "finish": "Holofoil", "id": "t-020_680689_holofoil", "name": "GFreD Token", "number": "T-020", "promoTypes": ["premiumcardcollection"], "rarity": "Common", "setCode": "GCG-PR", "type": "Unit", "variant": "Premium Card Collection Gundam Assemble"},
+  {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 641505}, "finish": "Holofoil", "id": "st03-006_641505_holofoil", "name": "Char's Zaku II", "number": "ST03-006", "rarity": "Legend Rare", "setCode": "ST03", "type": "Unit"},
+  {"color": "Green", "colors": ["Green"], "finish": "Holofoil", "id": "st03-006-premium-card-collection-02_holofoil", "name": "Char's Zaku II", "number": "ST03-006", "promoTypes": ["premiumcardcollection"], "rarity": "Legend Rare", "setCode": "GCG-PR", "type": "Unit", "variant": "Premium Card Collection 02"},
   {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 616640}, "finish": "Holofoil", "id": "gd01-026_616640_holofoil", "name": "Char's Zaku II", "number": "GD01-026", "rarity": "Rare", "setCode": "GD01-B", "type": "Unit"},
   {"color": "Green", "colors": ["Green"], "externalLinks": {"tcgPlayerId": 616641}, "finish": "Holofoil", "id": "gd01-026_616641_holofoil", "name": "Char's Zaku II", "number": "GD01-026", "rarity": "R+", "setCode": "GD01-B", "type": "Unit"},
   {"color": "Red", "colors": ["Red"], "externalLinks": {"tcgPlayerId": 716381}, "finish": "Normal", "id": "st12-002_716381", "name": "Shining Gundam", "number": "ST12-002", "rarity": "Common", "setCode": "ST12", "type": "Unit"},
@@ -41,8 +47,9 @@ const gundamDatastore = `{"data": {
 // TestGundamResolve pins how a Cardmarket Gundam product finds its printing:
 // the parallel by its rarity spelled the catalog's way, a CardTrader link
 // held to the number the product's name writes rather than to its spelling,
-// and a Premium Card Collection 02 print by its product id. The products and
-// links are the catalog's and CardTrader's own.
+// a Premium Card Collection 02 print by its product id, and a promo shelf's
+// product on the promo set's row rather than the main set's. The products
+// and links are the catalog's and CardTrader's own.
 func TestGundamResolve(t *testing.T) {
 	b := datastoreBackend(t, "gundam", gundamDatastore)
 
@@ -80,9 +87,19 @@ func TestGundamResolve(t *testing.T) {
 			"Premium Bandai Products", nil, "gd05-114-premium-card-collection-02_holofoil",
 		},
 		{
+			"a number contradicting the code in the name", 908748,
+			cm.CatalogProduct{Name: "Char's Zaku II (ST03-006) (V.1 - Legendary Rare)", Number: "GD01-026", Rarity: "Legendary Rare", Version: 1},
+			"Premium Bandai Products", nil, "st03-006-premium-card-collection-02_holofoil",
+		},
+		{
 			"a parallel Cardmarket's version text names once more", 914345,
 			cm.CatalogProduct{Name: "Shining Gundam (ST12-002) (V.2 - Common +)", Number: "002", Rarity: "Common +", Version: 2},
 			"Starter Deck: Raging Onslaught", nil, "st12-002_721022_holofoil",
+		},
+		{
+			"a promo shelf reads the promo set", 913375,
+			cm.CatalogProduct{Name: "Gundam Deathscythe Hell (GD03-021) (V.1 - Rare)", Number: "GD03-021", Rarity: "Rare", Version: 1},
+			"Unnumbered Promos", nil, "gd03-021_670579_holofoil",
 		},
 		{
 			"two links crossed by CardTrader are read the other way", 905979,
