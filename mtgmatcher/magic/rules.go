@@ -960,6 +960,16 @@ func setHoldsOversized(set *mtgmatcher.Set, name, number string) bool {
 // FilterPrintings narrows the sets a card could have come from. See
 // mtgmatcher.GameRules.
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) (printings []string) {
+	// A playtest card the Unknown Event shares with another set competes
+	// only when the listing names the event; what is left of a lone
+	// printing is as good as the unfiltered one core would have kept.
+	if !inCard.Contains("Unknown Event") && slices.Contains(editions, "UNK") && len(editions) > 1 {
+		editions = slices.DeleteFunc(slices.Clone(editions), func(code string) bool { return code == "UNK" })
+		if len(editions) == 1 {
+			return editions
+		}
+	}
+
 	maybeYear := mtgmatcher.ExtractYear(inCard.Variation)
 	if maybeYear == "" {
 		maybeYear = mtgmatcher.ExtractYear(inCard.Edition)
