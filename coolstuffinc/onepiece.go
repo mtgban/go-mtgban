@@ -21,6 +21,7 @@ var onePieceEvents = map[string]string{
 	// in, where the catalog names the event that handed it out.
 	"bcgf playmat promo":                             "Official Playmat -Bandai Card Games Fest 24-25 Edition-",
 	"offline regional participation pack 2024 vol.2": "Offline Regional 2024 Vol. 2 Participant",
+	"premium card collection - film red edition":     "Premium Card Collection ONE PIECE FILM RED Edition",
 }
 
 // onePiecePIDs names the TCGplayer product a storefront product is, for the
@@ -92,18 +93,20 @@ var onePieceStarterDeck = regexp.MustCompile(`\(Starter Deck (\d+)\)`)
 // printing by both: without the place, the plain card wins.
 var onePieceNotePlace = regexp.MustCompile(`(?i)\b(?:participant|winner|finalist)\b`)
 
-// onePieceSpellings spells the One Piece names this storefront writes its
-// own way: the Heroines Edition event card lost a word.
-var onePieceSpellings = map[string]string{
-	"But If We See Each Other Again...Will You Call Me Your Shipmate?!!": "But If We Ever See Each Other Again... Will You Call Me Your Shipmate?!!",
-}
+// onePieceSpellings spells the One Piece wording this storefront writes its
+// own way: the Heroines Edition event card lost a word, the Event Pack card
+// lost the dash before its number, and the eighth Winner Pack is the catalog's
+// October to December one. Only the part that differs is rewritten, so the
+// number or bracket behind it is kept.
+var onePieceSpellings = strings.NewReplacer(
+	"But If We See Each Other Again...Will You Call Me Your Shipmate?!!", "But If We Ever See Each Other Again... Will You Call Me Your Shipmate?!!",
+	"Kouzuki Momonosuke P-064", "Kouzuki Momonosuke - P-064",
+	"Winner Pack Vol. 8", "Winner Pack 2024 Oct.-Dec.",
+)
 
-// onePieceSpelling spells a One Piece name the way the catalog does.
-func onePieceSpelling(name string) string {
-	if spelled, found := onePieceSpellings[name]; found {
-		return spelled
-	}
-	return name
+// onePieceSpelling spells One Piece wording the way the catalog does.
+func onePieceSpelling(wording string) string {
+	return onePieceSpellings.Replace(wording)
 }
 
 // onePieceShelf answers the set a One Piece listing belongs to, which is the

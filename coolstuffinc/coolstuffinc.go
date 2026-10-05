@@ -592,7 +592,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						}
 						break
 					}
-					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(jpArtWording(notes)), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: shelf, Variation: eventNamed(onePieceSpelling(jpArtWording(notes))), Foil: isFoil}
 				case mtgmatcher.GameGundam:
 					name, variation := gundamCard(csi.backend, cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity, cardName)), Foil: isFoil}
@@ -919,7 +919,8 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				}
 				break
 			}
-			theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(jpArtWording(product.Name)), Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(jpArtWording(product.Name)) + " " + onePieceNotePlace.FindString(product.Notes))), Foil: product.IsFoil == 1}
+			spelled := onePieceSpelling(jpArtWording(product.Name))
+			theCard = &mtgmatcher.InputCard{Name: spelled, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(spelled) + " " + onePieceNotePlace.FindString(product.Notes))), Foil: product.IsFoil == 1}
 		// Gundam prints the same card at the same number in three sets, so
 		// the shelf has to narrow and the storefront's own code prefix stops
 		// it naming one; the wording it hangs behind the name is what tells
