@@ -16,6 +16,10 @@ var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
 // Promos shelf, apart from the promo shelf's own printing at the same number.
 var riftboundEventMarkers = []string{"(Prerelease)", "(Origins Stamp)"}
 
+// riftboundNotes spells the notes this storefront words with a year the
+// catalog's promo does not carry, which the matcher would read as a number.
+var riftboundNotes = strings.NewReplacer("Worlds Bundle 2025 Promo", "Worlds Bundle Promo")
+
 // riftboundShelf answers the set a Riftbound listing belongs to, which is the
 // shelf it arrived on except where that shelf says only "Promo".
 //
