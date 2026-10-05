@@ -108,6 +108,78 @@ func buildProductURL(product string) (string, error) {
 	return u.String(), nil
 }
 
+// offer is one in-stock variant of a product.
+type offer struct {
+	conditions mtgban.Condition
+	price      float64
+	qty        int
+}
+
+// inventoryOffers reads every in-stock variant of the product holding meta
+// from its detail rows; the grid block shows only the most expensive one.
+func (ms *MTGSeattle) inventoryOffers(meta *goquery.Selection) []offer {
+	var offers []offer
+	rows := meta.Closest(`div[class="inner"]`).Find(`div[class="variants"] div[class="variant-row row"]`)
+	rows.Each(func(_ int, row *goquery.Selection) {
+		condLang := row.Find(`span[class="variant-short-info variant-description"]`).Text()
+		fields := strings.Split(condLang, ", ")
+		if len(fields) > 1 && fields[1] != "English" {
+			return
+		}
+
+		qtyStr := strings.TrimSpace(row.Find(`span[class="variant-short-info variant-qty"]`).Text())
+		qtyStr = strings.TrimPrefix(qtyStr, "Limit ")
+		qtyStr = strings.TrimSuffix(qtyStr, " In Stock")
+		qty, err := strconv.Atoi(qtyStr)
+		if err != nil {
+			return
+		}
+
+		price, _ := mtgmatcher.ParsePrice(row.Find(`span[class="regular price"]`).Text())
+		if price == 0 {
+			return
+		}
+
+		cond := fields[0]
+		if cond == "Graded" {
+			return
+		}
+		grade, err := mtgban.ParseCondition(cond)
+		if err != nil {
+			ms.printf("unsupported %s condition", cond)
+			return
+		}
+
+		// Adjust price for their discount when bought from the website
+		offers = append(offers, offer{conditions: grade, price: price * 0.95, qty: qty})
+	})
+	return offers
+}
+
+// buylistOffers reads the NM English offer of a buylist product, if any.
+func buylistOffers(meta *goquery.Selection) []offer {
+	container := `span[class="variant-main-info small-12 medium-5 large-5 column eat-both"]`
+	// Early exit to avoid catching sealed and similar
+	condLang := meta.Find(container + ` span[class="variant-short-info variant-description"]`).Text()
+	if condLang != "NM-Mint, English" {
+		return nil
+	}
+
+	qtyStr := meta.Find(container + ` span[class="variant-short-info variant-qty"]`).Text()
+	qtyStr = strings.TrimPrefix(qtyStr, "Limit ")
+	qtyStr = strings.TrimSuffix(qtyStr, " In Stock")
+	qty, err := strconv.Atoi(qtyStr)
+	if err != nil {
+		return nil
+	}
+
+	price, _ := mtgmatcher.ParsePrice(meta.Find(`div[class="product-price"] span[class="regular price"]`).Text())
+	if price == 0 {
+		return nil
+	}
+	return []offer{{conditions: mtgban.NM, price: price, qty: qty}}
+}
+
 func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- responseChan, product, mode string) error {
 	link, err := buildProductURL(product)
 	if err != nil {
@@ -178,51 +250,14 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			variant = "Foil"
 		}
 
-		container := `div[class="list-variants grid small-12 medium-8"] div[class="variant-row in-stock"] span[class="variant-main-info small-12 medium-4 large-5 column eat-both"]`
-		if mode == modeBuylist {
-			container = `span[class="variant-main-info small-12 medium-5 large-5 column eat-both"]`
-		}
-		// This will skip the variants in the search page
-		condLang := s.Find(container + ` span[class="variant-short-info variant-description"]`).Text()
-
-		qtyStr := s.Find(container + ` span[class="variant-short-info variant-qty"]`).Text()
-		qtyStr = strings.TrimPrefix(qtyStr, "Limit ")
-		qtyStr = strings.TrimSuffix(qtyStr, " In Stock")
-
-		priceStr := s.Find(`div[class="product-price"] span[class="regular price"]`).Text()
-
-		qty, err := strconv.Atoi(qtyStr)
-		if err != nil {
-			return
-		}
-
-		price, _ := mtgmatcher.ParsePrice(priceStr)
-		if price == 0 {
-			return
-		}
-
-		// Adjust price for their discount when bought from the website
+		var offers []offer
 		if mode == modeInventory {
-			price *= 0.95
-		}
-
-		var conditions mtgban.Condition
-		if mode == modeInventory {
-			cond := strings.Split(condLang, ", ")[0]
-			if cond == "Graded" {
-				return
-			}
-			grade, err := mtgban.ParseCondition(cond)
-			if err != nil {
-				ms.printf("unsupported %s condition", cond)
-				return
-			}
-			conditions = grade
+			offers = ms.inventoryOffers(s)
 		} else if mode == modeBuylist {
-			// Early exit to avoid catching sealed and similar
-			if condLang != "NM-Mint, English" {
-				return
-			}
+			offers = buylistOffers(s)
+		}
+		if len(offers) == 0 {
+			return
 		}
 
 		theCard, err := preprocess(ms.backend, cardName, edition, variant)
@@ -279,17 +314,20 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 		}
 
 		if mode == modeInventory {
-			out := responseChan{
-				cardID: cardID,
-				invEntry: &mtgban.InventoryEntry{
-					Price:      price,
-					Conditions: conditions,
-					Quantity:   qty,
-					URL:        baseURL + link,
-				},
+			for _, o := range offers {
+				out := responseChan{
+					cardID: cardID,
+					invEntry: &mtgban.InventoryEntry{
+						Price:      o.price,
+						Conditions: o.conditions,
+						Quantity:   o.qty,
+						URL:        baseURL + link,
+					},
+				}
+				channel <- out
 			}
-			channel <- out
 		} else if mode == modeBuylist {
+			price, qty := offers[0].price, offers[0].qty
 			var priceRatio, sellPrice float64
 
 			invCards := ms.inventory[cardID]
