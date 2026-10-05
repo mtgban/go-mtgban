@@ -355,3 +355,26 @@ func TestResolveLorcanaRainbowFoil(t *testing.T) {
 		}
 	}
 }
+
+// TestResolveLorcanaQuest checks that an Illumineer's Quest promo shelved
+// under the set it promotes reaches the Quest printing at that number, rather
+// than being refused for want of the number in the shelf's own set.
+func TestResolveLorcanaQuest(t *testing.T) {
+	b := withLorcana(t)
+
+	id, err := resolveProduct(b, GameLorcana, CatalogProduct{
+		SKU: "SGL-LOR-004b-223-ENC", Name: "Yen Sid - Powerful Sorcerer",
+		Set: "Ursula's Return", CollectorNumber: "223",
+		Finish: "Foil", FinishGroup: "Foil",
+	})
+	if err != nil {
+		t.Fatalf("resolveProduct: %v", err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%q): %v", id, err)
+	}
+	if co.SetCode != "Q1" || co.Number != "223" {
+		t.Errorf("got %s #%s (%s), want Q1 #223", co.SetCode, co.Number, co.Name)
+	}
+}

@@ -1474,7 +1474,7 @@ func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string,
 		Finish:    lorcanaFinish(p.Finish),
 	})
 	if err != nil {
-		return "", err
+		return lorcanaQuest(b, p, number, foil, err)
 	}
 	if lorcanaMarker(number) == "" {
 		return id, nil
@@ -1484,6 +1484,29 @@ func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string,
 		return id, nil
 	}
 	return lorcanaSibling(b, p, co, foil)
+}
+
+// lorcanaQuest answers an Illumineer's Quest promo, which the catalog shelves
+// under the set it promotes while the datastore files it in the Quest set at
+// numbers 223 to 225. The set name alone cannot reach it, so the name and
+// number are asked of every set and the answer is taken only where it is a
+// Quest printing at the number asked; anything else keeps the refusal.
+func lorcanaQuest(b *mtgmatcher.Backend, p CatalogProduct, number string, foil bool, refusal error) (string, error) {
+	id, err := b.Match(&mtgmatcher.InputCard{
+		Name:      p.Name,
+		Variation: number,
+		Foil:      foil,
+		Finish:    lorcanaFinish(p.Finish),
+	})
+	if err != nil {
+		return "", refusal
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || !strings.HasPrefix(co.Edition, "Illumineer's Quest") ||
+		co.Number != strings.TrimLeft(number, "0") {
+		return "", refusal
+	}
+	return id, nil
 }
 
 // otherFormats are what the Lorcana datastore adds to a card's name to file
