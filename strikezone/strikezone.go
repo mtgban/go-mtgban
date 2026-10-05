@@ -304,13 +304,11 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	}
 
 	cardID, err := sz.backend.Match(theCard)
-	if sz.backend.Game == mtgmatcher.GameMagic {
-		var alias *mtgmatcher.AliasingError
-		if errors.As(err, &alias) {
-			id := resolveAliasing(sz.backend, aliasedListing{name: cardName, shelf: edition, card: theCard}, alias.Probe())
-			if id != "" {
-				cardID, err = id, nil
-			}
+	var alias *mtgmatcher.AliasingError
+	if errors.As(err, &alias) {
+		id := resolveAliasing(sz.backend, aliasedListing{name: cardName, shelf: edition, card: theCard}, alias.Probe())
+		if id != "" {
+			cardID, err = id, nil
 		}
 	}
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -324,7 +322,6 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		sz.printf("%q", theCard)
 		sz.printf("%s|%s|%s", cardName, edition, notes)
 
-		var alias *mtgmatcher.AliasingError
 		if errors.As(err, &alias) {
 			for _, probe := range alias.Probe() {
 				card, _ := sz.backend.GetUUID(probe)
@@ -401,10 +398,17 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	return nil
 }
 
+// shelfName reads the shelf off a category page's heading, which carries
+// stray whitespace and the prefix and suffix each listing mode adds.
+func shelfName(h1 string) string {
+	shelf := strings.Join(strings.Fields(h1), " ")
+	shelf = strings.TrimSuffix(shelf, " Buy Lists")
+	shelf = strings.TrimPrefix(shelf, "Lorcana Singles ")
+	return strings.TrimPrefix(shelf, "Singles ")
+}
+
 func (sz *Strikezone) parseRows(doc *goquery.Document, pageURL, mode string, channel chan<- respChan) {
-	edition := strings.TrimSpace(doc.Find("h1").First().Text())
-	edition = strings.TrimSuffix(edition, " Buy Lists")
-	edition = strings.TrimPrefix(edition, "Singles ")
+	edition := shelfName(doc.Find("h1").First().Text())
 
 	sz.printf("Parsing %s", edition)
 
