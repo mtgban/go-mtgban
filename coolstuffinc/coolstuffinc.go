@@ -624,8 +624,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				case mtgmatcher.GamePalworld:
 					theCard = &mtgmatcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
 				case mtgmatcher.GameRiftbound:
-					shelf := riftboundShelf(csi.backend, edition, notes, cardName, notes, isFoil)
-					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: shelf, Variation: notes, Foil: isFoil}
+					variation := riftboundNotes.Replace(notes)
+					shelf := riftboundShelf(csi.backend, edition, notes, cardName, variation, isFoil)
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: shelf, Variation: variation, Foil: isFoil}
 					_, err := csi.backend.Match(theCard)
 					if err != nil {
 						fromImage := riftboundImageCard(csi.backend, imgURL, isFoil)
@@ -907,7 +908,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		case mtgmatcher.GamePokemon:
 			theCard, runFinishes = pokemonBuylistCard(csi.backend, product)
 		case mtgmatcher.GameRiftbound:
-			variation := buylistVariation(product)
+			variation := riftboundNotes.Replace(buylistVariation(product))
 			shelf := riftboundShelf(csi.backend, product.ItemSet, product.Notes, product.Name, variation, product.IsFoil == 1)
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
 			_, err := csi.backend.Match(theCard)
