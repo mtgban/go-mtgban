@@ -134,18 +134,15 @@ func (ck *Graded) scrapePage(session string, page int) error {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
+			// A slab title carries no collector number, so a title naming
+			// several printings has nothing left to tell them apart.
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				return
+			}
 			ck.printf("%v", err)
 			ck.printf("%q", theCard)
 			ck.printf("%q", title)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := ck.backend.GetUUID(probe)
-					ck.printf("- %s", card)
-				}
-			}
 			return
 		}
 
