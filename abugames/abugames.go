@@ -292,11 +292,14 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 	extraSets := []string{
 		`"Alpha"`, `"Beta"`, `"Unlimited"`, `"Arabian Nights"`, `"Antiquities"`, `"Legends"`, `"The Dark"`,
 	}
+	// A signed, slabbed, altered or miscut copy is listed on its own, by
+	// serial. Its price is not the printing's, so none of them is read.
+	oneOffs := `"Artist Signed" OR "Artist Signed Case" OR "Graded" OR "Altered" OR "Miscut" OR "Printing Error"`
 	// Remove all cards with pictures and the editions above
-	normalQuery := ` -magic_features:("Actual Picture Card") -magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
+	normalQuery := ` -magic_features:("Actual Picture Card" OR ` + oneOffs + `) -magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
 	// Enable card with pictures for the editions above
 	// (the +magic_features, means only report cards with pics, we need both)
-	extraQuery := ` magic_features:("Actual Picture Card") +magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
+	extraQuery := ` magic_features:("Actual Picture Card") -magic_features:(` + oneOffs + `) +magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
 
 	count, err := abu.client.GetTotalItems(ctx, normalQuery)
 	if err != nil {
