@@ -87,3 +87,91 @@ func TestTitleTreatments(t *testing.T) {
 		})
 	}
 }
+
+// TestRetailTreatments pins the retail line reading the same markers the
+// buylist does: the finish group on the Japanese title, and the stamp the
+// English one squares. Without them the listing lands on the printing the
+// treated one is numbered beside.
+func TestRetailTreatments(t *testing.T) {
+	for _, tt := range []struct {
+		desc                 string
+		product              Product
+		wantSet, wantNumber  string
+		wantFoil, wantEtched bool
+	}{
+		{
+			desc: "the etched foil is its own finish of the card",
+			product: Product{
+				ProductName:   "【エッチング・Foil】(048)《豊穣な収穫/Abundant Harvest》[STA-BF] 緑R",
+				ProductNameEN: "【Foil Etched】《Abundant Harvest》[STA]",
+				CardName:      "Abundant Harvest", FoilFlag: "1", Language: "2",
+			},
+			wantSet: "STA", wantNumber: "48", wantEtched: true,
+		},
+		{
+			desc: "and the plain foil bought beside it stays the foil",
+			product: Product{
+				ProductName:   "【Foil】(048)《豊穣な収穫/Abundant Harvest》[STA] 緑R",
+				ProductNameEN: "【Foil】《Abundant Harvest》[STA]",
+				CardName:      "Abundant Harvest", FoilFlag: "1", Language: "2",
+			},
+			wantSet: "STA", wantNumber: "48", wantFoil: true,
+		},
+		{
+			desc: "the surge foil is its own printing of the set it reprints",
+			product: Product{
+				ProductName:   "【サージ・Foil】(286)《オパールの宮殿/Opal Palace》[40K-SF] 土地C",
+				ProductNameEN: "【SurgeFoil】《Opal Palace》[40K]",
+				CardName:      "Opal Palace", FoilFlag: "1", Language: "2",
+			},
+			wantSet: "40K", wantNumber: "286★", wantFoil: true,
+		},
+		{
+			desc: "the stamped copy is the promo pack's, not the set's",
+			product: Product{
+				ProductName:   "【Foil】(123)■プロモスタンプ付■《嵐鱗の末裔/Stormscale Scion》[TDM] 赤R",
+				ProductNameEN: "【Foil】(123)■Promo Stamped■《Stormscale Scion》[TDM]",
+				CardName:      "Stormscale Scion", FoilFlag: "1", Language: "2",
+			},
+			wantSet: "PTDM", wantNumber: "123p", wantFoil: true,
+		},
+		{
+			desc: "the Secret Lair dazzle foil is the Pool Party printing",
+			product: Product{
+				ProductName:   "【Pool Party・Foil】(2XM-080)《命取りの論争/Deadly Dispute》[SLD] 黒R",
+				ProductNameEN: "【Pool Party・Foil】(2XM-080)《Deadly Dispute》[SLD]",
+				CardName:      "Deadly Dispute", FoilFlag: "1", Language: "2",
+			},
+			wantSet: "SLD", wantNumber: "IFIYW-6", wantFoil: true,
+		},
+		{
+			desc: "the prerelease square is read off the Japanese title",
+			product: Product{
+				ProductName:   "【Foil】■プレリリース■《砂塵破/Duneblast》[KTK-PRE] 金R",
+				ProductNameEN: "【Foil】◆Prereleace◆《Duneblast》[KTK-PRE]",
+				CardName:      "Duneblast", FoilFlag: "1", Language: "2",
+			},
+			wantSet: "PKTK", wantNumber: "174s", wantFoil: true,
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			b := withMagic(t)
+			in, err := Preprocess(b, tt.product)
+			if err != nil {
+				t.Fatalf("Preprocess(%q) = %v", tt.product.ProductName, err)
+			}
+			id, err := b.Match(in)
+			if err != nil {
+				t.Fatalf("Match(%q) = %v", in, err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", id, err)
+			}
+			if co.SetCode != tt.wantSet || co.Number != tt.wantNumber || co.Foil != tt.wantFoil || co.Etched != tt.wantEtched {
+				t.Errorf("Match(%q) = %s|%s foil=%t etched=%t, want %s|%s foil=%t etched=%t", in, co.SetCode, co.Number, co.Foil, co.Etched,
+					tt.wantSet, tt.wantNumber, tt.wantFoil, tt.wantEtched)
+			}
+		})
+	}
+}
