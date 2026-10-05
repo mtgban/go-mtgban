@@ -141,6 +141,8 @@ func TestPreprocessPromoShelves(t *testing.T) {
 			"Secret Lair Commander Deck: Goblin Storm", "Zada, Hedron Grinder", "Display Commander", "2423", "", 0, "SLD", "2423"},
 		{"a Secret Lair Commander Deck reprint lands on its List printing", 405781, CategoryMagicSingles,
 			"Secret Lair Commander Deck: Hatsune Miku", "Congregate", "", "004", "", 0, "PLST", "DMR-4"},
+		{"a Secret Lair Commander Deck reprint with an unresolved id is not guessed by number", 415442, CategoryMagicSingles,
+			"Secret Lair Commander Deck: Odds and Ends", "Doom Whisperer", "", "128", "", 999999999, "", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
