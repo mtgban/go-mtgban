@@ -81,6 +81,8 @@ var allVariants = map[string]map[string]string{
 		"wizard and presence facing forward": "23b",
 		"monster screaming":                  "23a",
 		"person running from monster":        "23b",
+		"monster raising arms":               "23a",
+		"person left monster right":          "23b",
 		"v.1":                                "23a",
 		"v.2":                                "23b",
 	},
@@ -546,6 +548,8 @@ var allVariants = map[string]map[string]string{
 		"red cloak":              "34a",
 		"blue robe":              "34b",
 		"old woman":              "34b",
+
+		"wizard sitting and reading a book": "34b",
 	},
 	"Soldevi Sentry": {
 		"close up":               "132a",
@@ -937,6 +941,7 @@ var atqVariants = map[string]map[string]string{
 		"a pillar": "84b",
 		"b bug":    "84c",
 		"c sphere": "84a",
+		"d sphere": "84a",
 		"c vat":    "84d",
 
 		"b pillar": "84b",
@@ -1187,6 +1192,8 @@ var chkVariants = map[string]map[string]string{
 		"art b with pole arm": "160b",
 		"v.1":                 "160a",
 		"v.2":                 "160b",
+		"version 1":           "160a",
+		"version 2":           "160b",
 		"sword":               "160a",
 		"pike":                "160b",
 	},
@@ -1476,6 +1483,7 @@ var chrVariants = map[string]map[string]string{
 		"d vat":    "115a",
 		"b pillar": "115b",
 		"a bug":    "115c",
+		"b bug":    "115c",
 		"c sphere": "115d",
 
 		"a pillar": "115b",
@@ -1518,9 +1526,11 @@ var chrVariants = map[string]map[string]string{
 
 		"a forest":   "116a",
 		"c plains":   "116b",
+		"b plains":   "116b",
 		"b mountain": "116c",
 		"d mountain": "116c",
 		"d seashore": "116d",
+		"c shore":    "116d",
 
 		"fall leaves":                 "116a",
 		"cloudy skies wheat field":    "116b",
@@ -4079,6 +4089,8 @@ var ustVariants = map[string]map[string]string{
 		"v.5": "165c",
 		"v.3": "165d",
 		"v.2": "165e",
+
+		"the league of dastardly doom": "165c",
 	},
 	"Sly Spy": {
 		"reveal hand":                                "67a",
