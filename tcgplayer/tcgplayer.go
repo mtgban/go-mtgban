@@ -144,6 +144,12 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 		}
 		for i := range availableMarketNames {
 			isDirect := i == 1
+			// Direct quotes $0 for a sku it does not stock, and that entry
+			// sorts first. TCG Player's $0 entries stay: the site finds
+			// skus through them.
+			if isDirect && prices[i] == 0 {
+				continue
+			}
 			link := GenerateProductURL(req.ProductID, printing, tcg.affiliate, cond, req.Language, isDirect)
 
 			out := responseChan{
