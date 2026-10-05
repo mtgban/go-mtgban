@@ -953,7 +953,7 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 	name := pokemonName(product.Name)
 	type candidate struct {
 		edition, number string
-		prefixed        bool
+		prefixed, shelf bool
 	}
 	var candidates []candidate
 	editions, prefix := pokemonEditions(r.backend, product.ExpansionName)
@@ -962,17 +962,17 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 		number = prefix + number
 	}
 	for _, edition := range editions {
-		candidates = append(candidates, candidate{edition, number, prefix != ""})
+		candidates = append(candidates, candidate{edition, number, prefix != "", true})
 	}
 	if pokemonLettered.MatchString(number) {
 		for _, edition := range pokemonLetteredSets {
-			candidates = append(candidates, candidate{edition, number, false})
+			candidates = append(candidates, candidate{edition, number, false, false})
 		}
 	}
 	if m := pokemonPromoNumber.FindStringSubmatch(product.Number); m != nil {
 		if shelf, found := pokemonPromoCodes[m[1]]; found {
 			promo := pokemonExpansions[shelf]
-			candidates = append(candidates, candidate{promo.sets[0], promo.prefix + m[2], promo.prefix != ""})
+			candidates = append(candidates, candidate{promo.sets[0], promo.prefix + m[2], promo.prefix != "", false})
 		}
 	}
 	carried := false
@@ -992,6 +992,14 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 		}
 		if c.prefixed && !strings.EqualFold(co.Number, c.number) {
 			continue
+		}
+		// Cardmarket rates a stamped copy "Promo" and names it like the
+		// plain card; a shelf with no base run of its own is a bundle's.
+		if c.shelf && set.BaseSetSize > 0 && product.Rarity == "Promo" {
+			stamped := r.pokemonStamped(co)
+			if stamped != "" && !r.bridgeHolds(stamped, product.IDProduct) {
+				return stamped, nil
+			}
 		}
 		return id, nil
 	}
