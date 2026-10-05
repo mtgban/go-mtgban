@@ -387,7 +387,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 					if number == "" {
 						number = product.Properties.Number
 					}
-					if fabDoubleSidedFace(ct.backend, fabNumber(blueprint, number)) {
+					if fabDoubleSidedFace(ct.backend, fabNumber(blueprint, number), gameFoil(ct.gameID, product)) {
 						continue
 					}
 				}
