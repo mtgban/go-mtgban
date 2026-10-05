@@ -386,31 +386,28 @@ func (ct *Sealed) Load(ctx context.Context) error {
 			ct.printf("Processing %s [%d]", item.name, item.id)
 			return ct.processEntry(ctx, results, item.id, item.name, productMap)
 		},
-		func(result resultChan) {
-			// Only keep one offer per condition
-			skip := false
-			entries := ct.inventory[result.cardID]
-			for _, entry := range entries {
-				if entry.Conditions == result.invEntry.Conditions && entry.Bundle == result.invEntry.Bundle {
-					skip = true
-					break
-				}
-			}
-			if skip {
-				return
-			}
-
-			err := ct.inventory.Add(result.cardID, result.invEntry)
-			if err != nil {
-				ct.printf("%s", err.Error())
-			}
-		},
+		ct.addResult,
 		ct.printf,
 	)
 
 	ct.inventoryDate = time.Now()
 
 	return nil
+}
+
+// addResult keeps the first offer per condition and storefront, the way
+// the singles scraper does.
+func (ct *Sealed) addResult(result resultChan) {
+	for _, entry := range ct.inventory[result.cardID] {
+		if entry.Conditions == result.invEntry.Conditions && entry.SellerName == result.invEntry.SellerName {
+			return
+		}
+	}
+
+	err := ct.inventory.Add(result.cardID, result.invEntry)
+	if err != nil {
+		ct.printf("%s", err.Error())
+	}
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
