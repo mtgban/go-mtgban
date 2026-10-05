@@ -83,6 +83,7 @@ var onePiecePIDs = map[string]string{
 	"425300": "656177", // Jinbe P-063 = PRB-02 Reprint
 	"384878": "541670", // Rebecca OP05-091 (SP) In Sunflower Field = OP06 SP
 	"423973": "654571", // Rebecca OP05-091 (SP) Stitched Together Border = PRB-02 SP
+	"386653": "539201", // Scratchmen Apoo ST02-008 Offline Regional 2024: the feed's Number says ST03-008
 }
 
 // onePieceStarterDeck matches the starter deck a name states in brackets.
