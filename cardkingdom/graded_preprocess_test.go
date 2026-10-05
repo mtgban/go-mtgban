@@ -152,3 +152,55 @@ func TestMatchGradedSecretLairCountdown(t *testing.T) {
 		})
 	}
 }
+
+// TestMatchGradedClaimOnlyPrintings pins the tie between a plain printing and
+// a japanshowcase or headliner twin: a title that never says Japan or
+// Signature is the plain printing, and one that does never lands on it.
+func TestMatchGradedClaimOnlyPrintings(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc   string
+		title  string
+		number string // "" means it must stay refused
+	}{
+		{
+			desc:   "a borderless title is the plain printing",
+			title:  "Leonardo, Sewer Samurai (TMNT Foil (Borderless) CGC 10) #7145",
+			number: "215",
+		},
+		{
+			desc:   "a Japan Showcase title is the Japan printing",
+			title:  "Leonardo, Cutting Edge (TMNT Foil (Japan Showcase) CGC Pristine 10) #7141",
+			number: "281",
+		},
+		{
+			desc:  "a Signature title is not taken for the plain printing",
+			title: "Leonardo, Sewer Samurai (TMNT Foil (Borderless Signature) CGC 10) #7145",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			theCard, err := preprocessGraded(tt.title)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cardID, err := matchGraded(b, theCard)
+			if tt.number == "" {
+				if err == nil {
+					co, _ := b.GetUUID(cardID)
+					t.Errorf("%q landed on %v, want it to stay refused", tt.title, co)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("matchGraded(%v) = %v", theCard, err)
+			}
+			co, err := b.GetUUID(cardID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "TMT" || co.Number != tt.number {
+				t.Errorf("%q landed on %s #%s, want TMT #%s", tt.title, co.SetCode, co.Number, tt.number)
+			}
+		})
+	}
+}
