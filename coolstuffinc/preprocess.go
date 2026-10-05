@@ -99,11 +99,11 @@ func buylistLanguage(name, notes string) string {
 
 func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
 	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
-	fixup, found := numFixes[imgName]
-	if !found {
-		fixup, found = shelfNumFixes[edition][imgName]
+	fixup, curated := numFixes[imgName]
+	if !curated {
+		fixup, curated = shelfNumFixes[edition][imgName]
 	}
-	if found {
+	if curated {
 		imgName = fixup
 	}
 
@@ -159,8 +159,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		return input, nil
 	}
 
+	// The promo pack's images are named for the set they were printed for or
+	// for the product, so a set and number read out of one is the base card's,
+	// unless numFixes names the printing.
 	imgName = imageNumberStem(b, cardName, edition, variant, imgName)
-	if len(imgName) > 4 {
+	if len(imgName) > 4 && (curated || edition != "Universal Promo Pack") {
 		for i := range 2 {
 			maybeSet := strings.ToUpper(imgName[:i+3])
 			maybeNum := strings.TrimLeft(imgName[i+3:], "_0")
@@ -188,13 +191,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		// listings both answer with 93 and the cheaper of them is priced as
 		// the dearer. The letters are dropped and the digits behind them
 		// asked for, which the set and the number together still have to
-		// agree on. The promo pack is left alone: there the letters name a
-		// set of its own rather than a treatment, and "BIGUPP0006" is the
-		// promo pack printing, not the sixth card of The Big Score.
+		// agree on.
 		maybeSet := strings.ToUpper(imgName[:3])
 		maybeNum := strings.TrimLeft(imgName[3:], "_0")
 		trimmed := strings.TrimLeft(maybeNum, letters)
-		if trimmed != maybeNum && edition != "Universal Promo Pack" {
+		if trimmed != maybeNum {
 			maybeNum = strings.TrimLeft(trimmed, "_0")
 			if imagePrinting(b, cardName, maybeSet, maybeNum, variant) {
 				return imageCard(cardName, maybeSet, maybeNum, variant, isFoil), nil

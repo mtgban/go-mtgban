@@ -100,6 +100,24 @@ func TestPreprocessImageStem(t *testing.T) {
 			wantSet: "GRN", wantNum: "244",
 		},
 		{
+			// Product-named and set-named images alike carry the base
+			// card's number, which the promo pack's own row is not at.
+			desc:    "a promo pack image is not the base card's number",
+			name:    "Atsushi, the Blazing Sky",
+			edition: "Universal Promo Pack",
+			variant: "Silver Planeswalker Symbol",
+			imgURL:  "https://s.cf.net/i/NEO134.jpg",
+			wantSet: "Universal Promo Pack", wantNum: "Silver Planeswalker Symbol",
+		},
+		{
+			desc:    "but a curated promo pack stem names its printing",
+			name:    "Terror of the Peaks",
+			edition: "Universal Promo Pack",
+			variant: "Silver Planeswalker Symbol",
+			imgURL:  "https://s.cf.net/i/386443.jpg",
+			wantSet: "POTJ", wantNum: "149p",
+		},
+		{
 			desc:    "the name trails the set and number",
 			name:    "Roil Eruption",
 			edition: "Promo",
