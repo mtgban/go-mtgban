@@ -250,10 +250,16 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		}
 
 	case "Universal Promo Pack":
+		m := promoPackSymbol.FindStringSubmatch(variant)
 		if strings.HasPrefix(imgName, "UPP") && len(imgName) > 6 {
 			maybeSet := strings.ToUpper(imgName[3:6])
 			if maybeSet != "" {
 				variant = maybeSet
+			}
+		} else if m != nil {
+			set, err := b.GetSetByName(m[1])
+			if err == nil {
+				variant = set.Code
 			}
 		}
 
@@ -1213,3 +1219,7 @@ var (
 	tokenNumber  = regexp.MustCompile(`^(\d+)T Token$`)
 	emblemNumber = regexp.MustCompile(`^\d+(?:/\d+)?[A-Za-z]? `)
 )
+
+// promoPackSymbol reads the set a Universal Promo Pack listing names in its
+// note, "<Set Name> - Silver Planeswalker Symbol" once cleaned.
+var promoPackSymbol = regexp.MustCompile(`^(.+) Silver Planeswalker Symbol$`)
