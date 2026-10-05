@@ -253,7 +253,17 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: PromoTypeFractureFoil,
-		Tags:      []string{"Fracture", "Fractal"},
+		// The only tag that is part of a set name, so the name is not a claim
+		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+			setName := mtgmatcher.Normalize("Reality Fracture")
+			for _, field := range []string{inCard.Variation, inCard.Edition} {
+				text := strings.ReplaceAll(mtgmatcher.Normalize(field), setName, "")
+				if mtgmatcher.Contains(text, "Fracture") || mtgmatcher.Contains(text, "Fractal") {
+					return true
+				}
+			}
+			return false
+		},
 	},
 	{
 		PromoType: PromoTypeCosmicFoil,
