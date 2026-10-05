@@ -83,6 +83,9 @@ var palworldSpellings = strings.NewReplacer(
 	// part of the name; Chillet's is the one listing this storefront
 	// names epithet-style.
 	"Soul - Chillet (Demo Caravan Promo)", "Soul (Demo Caravan Promo)",
+	"Soul - Dawn of Palpagos G/P", "Soul",
+	"Soul - Dawn of Palpagos R/B", "Soul",
+	"Soul - Dawn of Palpagos", "Soul",
 )
 
 // palworldPrototypeSuffix is the tail this storefront appends to the
