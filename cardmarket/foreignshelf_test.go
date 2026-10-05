@@ -34,8 +34,9 @@ func TestForeignShelf(t *testing.T) {
 }
 
 // TestForeignExpansion pins which expansions each game drops before the
-// walk: Flesh and Blood by its own five foreign-only programs, One Piece and
-// Yu-Gi-Oh by the shared -JP suffix and shelf-name test.
+// walk: Flesh and Blood by its own five foreign-only programs, Riftbound by
+// its Chinese shelf, One Piece and Yu-Gi-Oh by the shared -JP suffix and
+// shelf-name test.
 func TestForeignExpansion(t *testing.T) {
 	for _, tt := range []struct {
 		name    string
@@ -48,6 +49,8 @@ func TestForeignExpansion(t *testing.T) {
 		{"One Piece Japanese shelf", cm.GameOnePiece, cm.Expansion{Name: "Romance Dawn (Japanese)", SetCode: "OP01"}, true},
 		{"One Piece -JP code", cm.GameOnePiece, cm.Expansion{Name: "Romance Dawn", SetCode: "OP01-JP"}, true},
 		{"One Piece English set", cm.GameOnePiece, cm.Expansion{Name: "Romance Dawn", SetCode: "OP01"}, false},
+		{"Riftbound Project K", cm.GameRiftbound, cm.Expansion{Name: "Project K Promos", SetCode: "PROK"}, true},
+		{"Riftbound English set", cm.GameRiftbound, cm.Expansion{Name: "Origins", SetCode: "OGN"}, false},
 		{"Pokemon is never filtered", cm.GamePokemon, cm.Expansion{Name: "Base Set (Japanese)", SetCode: "BS"}, false},
 	} {
 		if got := foreignExpansion(tt.gameID, tt.exp); got != tt.foreign {

@@ -377,6 +377,8 @@ func foreignExpansion(gameID cm.Game, exp cm.Expansion) bool {
 		return strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name)
 	case cm.GameFleshAndBlood:
 		return fabForeignPrograms[exp.SetCode]
+	case cm.GameRiftbound:
+		return exp.SetCode == riftboundChineseShelf
 	}
 	return false
 }
