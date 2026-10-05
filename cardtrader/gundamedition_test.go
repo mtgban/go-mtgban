@@ -25,7 +25,8 @@ func withID(bp Blueprint, id int) Blueprint {
 }
 
 // TestPromoShelfNeedsLabel pins the answers that need no datastore: no
-// game but Gundam is ever asked for a label, and a Gundam blueprint is
+// game but Gundam and One Piece are ever asked for a label, One Piece only
+// on its promotional pack shelves, and a Gundam blueprint is
 // asked whether or not it carries a TCGplayer id - the guard runs inside
 // the name fallback, which is where a blueprint lands once its id has
 // answered nothing.
@@ -39,8 +40,26 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 	}{
 		{
 			desc:   "another game is left alone",
+			gameID: GameLorcana,
+			bp:     shelf("Winner Pack"),
+			want:   false,
+		},
+		{
+			desc:   "a One Piece promotional pack shelf is asked",
 			gameID: GameOnePiece,
-			bp:     Blueprint{},
+			bp:     shelf("Winner Pack"),
+			want:   true,
+		},
+		{
+			desc:   "so is its tournament shelf",
+			gameID: GameOnePiece,
+			bp:     shelf("Store Tournaments Promos"),
+			want:   true,
+		},
+		{
+			desc:   "a One Piece set shelf is not",
+			gameID: GameOnePiece,
+			bp:     shelf("OP-02: Paramount War Promos"),
 			want:   false,
 		},
 		{
