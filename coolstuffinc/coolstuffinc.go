@@ -1156,6 +1156,7 @@ var csiTreatments = strings.NewReplacer(
 	"Poke Ball Foil", "Poke Ball Pattern",
 	"Shatterfoil", "Cracked Ice Holo",
 	"Cosmo Holo", "Cosmos Holo",
+	"Energy Foil", "Energy Symbol Pattern",
 )
 
 // catalogTreatment answers the catalog's wording for a treatment the
