@@ -153,3 +153,17 @@ func TestOnePieceDonNameLeavesOtherListingsAlone(t *testing.T) {
 		}
 	}
 }
+
+// TestOnePiecePIDsNameHeldProducts pins that every product the storefront id
+// table points at is one the datastore holds, so a catalog that drops or
+// renumbers a product shows here and not as a listing gone unpriced.
+func TestOnePiecePIDsNameHeldProducts(t *testing.T) {
+	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+
+	for pid, tcgID := range onePiecePIDs {
+		_, err := b.Match(&mtgmatcher.InputCard{ID: tcgID, Foil: true})
+		if err != nil {
+			t.Errorf("product %s names TCGplayer %s: %v", pid, tcgID, err)
+		}
+	}
+}

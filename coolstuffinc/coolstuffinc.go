@@ -574,6 +574,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					shelf = pokemonPromoShelf(csi.backend, cardName, shelf, rarity, isFoil, variation)
 					theCard = pokemonListing(csi.backend, cardName, shelf, variation, isFoil)
 				case mtgmatcher.GameOnePiece:
+					tcgID, named := onePiecePIDs[pid]
+					if named {
+						theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: isFoil}
+						break
+					}
 					shelf := onePieceShelf(edition, cardName)
 					donName, donDescription, isDon := onePieceDonName(cardName)
 					if isDon {
@@ -895,6 +900,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			}
 			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(product.Name))), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(jpArtWording(buylistVariation(product)) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case mtgmatcher.GameOnePiece:
+			tcgID, named := onePiecePIDs[product.PID]
+			if named {
+				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				break
+			}
 			donName, donDescription, isDon := onePieceDonName(product.Name)
 			if isDon {
 				donShelf := onePieceShelf(product.ItemSet, product.Name)
