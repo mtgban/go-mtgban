@@ -503,6 +503,21 @@ func fabNumbers(sku string) []string {
 	return append(candidates, bare)
 }
 
+// fabFacesOnly reports whether a double-sided listing is one the datastore
+// holds only as its two faces. SCG sells the card as a front with one of
+// several backs, a product with two collector numbers; the datastore has each
+// face as its own printing and no row for the pair, so there is no single
+// printing to price and neither face's price is the listing's.
+func fabFacesOnly(b *mtgmatcher.Backend, name, front, back string) bool {
+	return !fabHasName(b, name) && fabHasName(b, front) && fabHasName(b, back)
+}
+
+// fabHasName reports whether the datastore carries a printing of the name.
+func fabHasName(b *mtgmatcher.Backend, name string) bool {
+	uuids, err := b.SearchEquals(name)
+	return err == nil && len(uuids) > 0
+}
+
 // fabSingleNumbered reports whether a sku's number segment names exactly one
 // collector number, the way "NUU-026" and "PRM-FAB_233" do and the pairs
 // ("OMN-048_047") do not.
@@ -1077,12 +1092,15 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 		// it has to hold exactly one number - the genuine double-sided
 		// cards carry a pair ("048_047") and a front-face retry would
 		// flatten them onto the ordinary single.
-		front, _, twoFaced := strings.Cut(name, " // ")
+		front, back, twoFaced := strings.Cut(name, " // ")
 		if twoFaced && fabSingleNumbered(p.SKU) {
 			retry, rerr := fabMatch(b, front, edition, finish, p.Rarity, foil, numbers)
 			if rerr == nil {
 				return fabMarkedSibling(b, retry, p), nil
 			}
+		}
+		if twoFaced && !fabSingleNumbered(p.SKU) && fabFacesOnly(b, name, front, back) {
+			return "", mtgmatcher.ErrUnsupported
 		}
 		return "", err
 	}

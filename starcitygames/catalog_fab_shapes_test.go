@@ -99,3 +99,45 @@ func TestCatalogFabShapes(t *testing.T) {
 		t.Errorf("resolveProduct(Binder Label) = %v, want ErrUnsupported", err)
 	}
 }
+
+// TestCatalogFabDoubleSided pins the three ways a "Front // Back" listing
+// resolves: a pair the datastore files under the fused name lands on it, a
+// pair it holds only as two faces is skipped, and a single-numbered listing
+// is the front face with its token on the back.
+func TestCatalogFabDoubleSided(t *testing.T) {
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+
+	product := func(sku, name, set, rarity string) CatalogProduct {
+		return CatalogProduct{
+			SKU: sku, Name: name, Game: "Flesh and Blood", Set: set, Rarity: rarity,
+			ProductType: ProductTypeSingles, Finish: "Non-foil", FinishGroup: "Non-foil",
+			Language: "English",
+		}
+	}
+	for _, tt := range []struct {
+		desc string
+		p    CatalogProduct
+		want string
+	}{
+		{"fused pair", product("SGL-FAB-MST-003_159-ENN", "Beckoning Mistblade // Tiger Taming Khakkara", "Part the Mistveil", "Token"), "mst003-mst159_553466"},
+		{"front with its token", product("SGL-FAB-NUU-026-ENN", "Pass Over // Inner Chi", "Nuu Blitz Deck", "Common"), "nuu026_549970"},
+	} {
+		got, err := resolveProduct(b, GameFleshAndBlood, tt.p)
+		if err != nil {
+			t.Errorf("%s: resolveProduct(%s) = %v", tt.desc, tt.p.SKU, err)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("%s: resolveProduct(%s) = %q, want %q", tt.desc, tt.p.SKU, got, tt.want)
+		}
+	}
+	for _, p := range []CatalogProduct{
+		product("SGL-FAB-MST-003_026-ENN", "Beckoning Mistblade // Enigma", "Part the Mistveil", "Token"),
+		product("SGL-FAB-OMN-048_047-ENN", "Aurora, Emissary of Lightning // Aurora, Legacy of Tempest", "Omens of the Third Age", "Basic"),
+	} {
+		got, err := resolveProduct(b, GameFleshAndBlood, p)
+		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			t.Errorf("faces only: resolveProduct(%s) = %q, %v, want ErrUnsupported", p.SKU, got, err)
+		}
+	}
+}
