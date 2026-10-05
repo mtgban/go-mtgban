@@ -480,18 +480,16 @@ func (ct *Market) Load(ctx context.Context) error {
 			return ct.processExpansion(ctx, results, item.id)
 		},
 		func(result resultChan) {
-			// Only keep one offer per condition
-			skip := false
+			// Only keep one offer per condition, the cheapest since listings
+			// arrive cheapest first, holding every offer's copies
 			entries := ct.inventory[result.cardID]
-			for _, entry := range entries {
-				if entry.Conditions == result.invEntry.Conditions && entry.SellerName == result.invEntry.SellerName {
-					skip = true
-					break
+			for i := range entries {
+				if entries[i].Conditions == result.invEntry.Conditions && entries[i].SellerName == result.invEntry.SellerName && !ct.keepDuplicates {
+					entries[i].Available += result.invEntry.Quantity
+					return
 				}
 			}
-			if skip && !ct.keepDuplicates {
-				return
-			}
+			result.invEntry.Available = result.invEntry.Quantity
 
 			var err error
 			if ct.keepDuplicates {
