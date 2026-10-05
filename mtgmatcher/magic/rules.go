@@ -1138,14 +1138,16 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				continue
 			}
 			noSymbol := inCard.Contains("No") && inCard.Contains("Symbol")
+			second := noSymbol || strings.Contains(inCard.Variation, "V.2") ||
+				(inCard.Contains("Playtest") && inCard.Contains("2021"))
 			switch set.Code {
 			case "MBC":
 			case "CMB1":
-				if noSymbol || strings.Contains(inCard.Variation, "V.2") {
+				if second {
 					continue
 				}
 			case "CMB2":
-				if !noSymbol && !strings.Contains(inCard.Variation, "V.2") {
+				if !second {
 					continue
 				}
 			case "MB2":
