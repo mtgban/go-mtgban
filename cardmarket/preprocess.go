@@ -92,6 +92,16 @@ var cardNameTypos = map[string]string{
 	"Silvergil Douser": "Silvergill Douser",
 }
 
+// hasEnglishIn reports whether cos holds an English printing of setCode.
+func hasEnglishIn(cos []*mtgmatcher.CardObject, setCode string) bool {
+	for _, co := range cos {
+		if co.Language == "English" && co.SetCode == setCode {
+			return true
+		}
+	}
+	return false
+}
+
 func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []string {
 	cardName = mtgmatcher.SplitVariants(cardName)[0]
 	cardName = strings.TrimSuffix(cardName, " Token")
@@ -102,7 +112,7 @@ func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []stri
 		return nil
 	}
 
-	var ids []string
+	var cos []*mtgmatcher.CardObject
 	for _, possibleID := range possibleIDs {
 		co, err := b.GetUUID(possibleID)
 		if err != nil {
@@ -110,8 +120,18 @@ func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []stri
 		}
 
 		if co.Identifiers["mcmId"] == testProductID {
-			ids = append(ids, co.UUID)
+			cos = append(cos, co)
 		}
+	}
+
+	// A language copy minted beside its original (SLD's Japanese printings)
+	// repeats the original's mcmId, but a product names the English card.
+	var ids []string
+	for _, co := range cos {
+		if co.Language != "English" && hasEnglishIn(cos, co.SetCode) {
+			continue
+		}
+		ids = append(ids, co.UUID)
 	}
 
 	return ids
