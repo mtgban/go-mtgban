@@ -14,14 +14,15 @@ import (
 
 // finishTwins reports whether two set-mates are one card filed as two
 // finish-split entries: the same collector number - the foil twin only adds
-// a suffix - with no primary finish sold by both, which is what tells a
-// twin apart from a promo that happens to share the number. The three
-// finishes named are the axis the flags can ask for, which every loader
-// files its game's vocabulary into, not a magic idiom: a secondary
-// treatment both entries sell - a signed art card - must not hide that
-// the pair splits on the axis.
+// a suffix - in the same language, with no primary finish sold by both,
+// which is what tells a twin apart from a promo that happens to share the
+// number. The three finishes named are the axis the flags can ask for,
+// which every loader files its game's vocabulary into, not a magic idiom: a
+// secondary treatment both entries sell - a signed art card - must not hide
+// that the pair splits on the axis.
 func finishTwins(co, altCo *CardObject) bool {
-	if ExtractNumberValue(co.Number) != ExtractNumberValue(altCo.Number) {
+	if ExtractNumberValue(co.Number) != ExtractNumberValue(altCo.Number) ||
+		co.Language != altCo.Language {
 		return false
 	}
 	sameFinish := (co.HasFinish(FinishNonfoil) && altCo.HasFinish(FinishNonfoil)) ||
