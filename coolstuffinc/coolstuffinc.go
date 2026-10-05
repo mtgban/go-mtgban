@@ -586,6 +586,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						break
 					}
 					shelf := onePieceShelf(edition, cardName)
+					if onePieceAlternatePromo(cardName) {
+						theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: "One Piece Promotion Cards", Variation: "Alternate Art", Foil: isFoil}
+						break
+					}
 					donName, donDescription, isDon := onePieceDonName(cardName)
 					if isDon {
 						theCard = &mtgmatcher.InputCard{Name: donName, Edition: shelf, Variation: donDescription, Foil: isFoil}
@@ -914,6 +918,10 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			tcgID, named := onePiecePIDs[product.PID]
 			if named {
 				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				break
+			}
+			if onePieceAlternatePromo(product.Name) {
+				theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(product.Name), Edition: "One Piece Promotion Cards", Variation: "Alternate Art", Foil: product.IsFoil == 1}
 				break
 			}
 			donName, donDescription, isDon := onePieceDonName(product.Name)
