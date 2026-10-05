@@ -62,6 +62,58 @@ func (sdk *SecretDesKorrigans) printf(format string, a ...any) {
 	}
 }
 
+// offer is one in-stock variant of a product.
+type offer struct {
+	conditions mtgban.Condition
+	price      float64
+	qty        int
+}
+
+// inventoryOffers reads every in-stock variant of the product holding meta
+// from its detail rows; the grid block shows only the most expensive one.
+func (sdk *SecretDesKorrigans) inventoryOffers(meta *goquery.Selection) []offer {
+	var offers []offer
+	rows := meta.Closest(`div[class="inner"]`).Find(`div[class="variants"] div[class="variant-row row"]`)
+	rows.Each(func(_ int, row *goquery.Selection) {
+		condLang := row.Find(`span[class="variant-short-info variant-description"]`).Text()
+		fields := strings.Split(condLang, ", ")
+		if len(fields) > 1 && fields[1] != "English" {
+			return
+		}
+
+		qtyStr := strings.TrimSpace(row.Find(`span[class="variant-short-info variant-qty"]`).Text())
+		qtyStr = strings.TrimPrefix(qtyStr, "Limit ")
+		qtyStr = strings.TrimSuffix(qtyStr, " En stock")
+		qtyStr = strings.TrimSuffix(qtyStr, " En Stock")
+		qtyStr = strings.TrimSuffix(qtyStr, " In Stock")
+		qty, err := strconv.Atoi(qtyStr)
+		if err != nil {
+			return
+		}
+
+		priceStr := strings.TrimSpace(row.Find(`span[class="regular price"]`).Text())
+		priceStr = strings.TrimPrefix(priceStr, "CAD")
+		price, perr := mtgmatcher.ParsePrice(priceStr)
+		if price == 0 {
+			sdk.printf("price error '%s': %v", priceStr, perr)
+			return
+		}
+
+		cond := strings.TrimPrefix(fields[0], "Website Exclusive ")
+		if cond == "Graded" {
+			return
+		}
+		grade, err := mtgban.ParseCondition(cond)
+		if err != nil {
+			sdk.printf("unsupported %s condition", cond)
+			return
+		}
+
+		offers = append(offers, offer{conditions: grade, price: price, qty: qty})
+	})
+	return offers
+}
+
 func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<- responseChan, productPath string) error {
 	link := "https://www.lesecretdeskorrigans.com" + productPath + "?layout=false&filter_by_stock=in-stock"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -125,39 +177,10 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			variant = strings.Join(fields[1:], " ")
 		}
 
-		container := `div[class="list-variants grid small-12 medium-8"] div[class="variant-row in-stock"] span[class="variant-main-info small-12 medium-4 large-5 column eat-both"]`
-		condLang := s.Find(container + ` span[class="variant-short-info variant-description"]`).Text()
-
-		qtyStr := s.Find(container + ` span[class="variant-short-info variant-qty"]`).Text()
-		qtyStr = strings.TrimPrefix(qtyStr, "Limit ")
-		qtyStr = strings.TrimSuffix(qtyStr, " En stock")
-		qtyStr = strings.TrimSuffix(qtyStr, " En Stock")
-		qtyStr = strings.TrimSuffix(qtyStr, " In Stock")
-		qty, err := strconv.Atoi(qtyStr)
-		if err != nil {
+		offers := sdk.inventoryOffers(s)
+		if len(offers) == 0 {
 			return
 		}
-
-		priceStr := s.Find(`div[class="product-price"] span[class="regular price"]`).Text()
-		priceStr = strings.TrimPrefix(priceStr, "CAD")
-		price, perr := mtgmatcher.ParsePrice(priceStr)
-		if price == 0 {
-			sdk.printf("price error '%s': %v", priceStr, perr)
-			return
-		}
-
-		cond := strings.Split(condLang, ", ")[0]
-		cond = strings.TrimPrefix(cond, "Website Exclusive ")
-		if cond == "Graded" {
-			return
-		}
-		conditions, err := mtgban.ParseCondition(cond)
-		if err != nil {
-			sdk.printf("unsupported %s condition", cond)
-			return
-		}
-
-		//log.Println(cardName, edition, variant, cond, price)
 
 		theCard, err := preprocess(cardName, edition, variant)
 		if err != nil {
@@ -198,16 +221,18 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			return
 		}
 
-		out := responseChan{
-			cardID: cardID,
-			invEntry: &mtgban.InventoryEntry{
-				Price:      price * sdk.exchangeRate,
-				Conditions: conditions,
-				Quantity:   qty,
-				URL:        "https://www.lesecretdeskorrigans.com" + link,
-			},
+		for _, o := range offers {
+			out := responseChan{
+				cardID: cardID,
+				invEntry: &mtgban.InventoryEntry{
+					Price:      o.price * sdk.exchangeRate,
+					Conditions: o.conditions,
+					Quantity:   o.qty,
+					URL:        "https://www.lesecretdeskorrigans.com" + link,
+				},
+			}
+			channel <- out
 		}
-		channel <- out
 	})
 
 	// Search for the next page, if not found we processed them all
