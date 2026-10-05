@@ -25,6 +25,7 @@ type contradiction func(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.
 var contradictions = []contradiction{
 	wearsUnnamedPremiumFoil,
 	wearsUnnamedBorderless,
+	wearsUnnamedFlavor,
 }
 
 // wearsUnnamedPremiumFoil reports whether the printing wears a premium foil
@@ -43,6 +44,12 @@ func wearsUnnamedPremiumFoil(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmat
 // listing never calls borderless, which the store writes on every one of them.
 func wearsUnnamedBorderless(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
 	return co.HasPromoType(magic.PromoTypeBorderless) && !mtgmatcher.Contains(l.card.Variation, "Borderless")
+}
+
+// wearsUnnamedFlavor reports whether the printing goes by a flavor name the
+// listing does not write, a name the store gives in the product's own.
+func wearsUnnamedFlavor(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+	return co.FlavorName != "" && !mtgmatcher.Contains(l.name, co.FlavorName)
 }
 
 // resolveAliasing narrows an ambiguous match down to the one printing the

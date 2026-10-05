@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // tieBreak runs a listing through preprocess and the match the way processRow
@@ -40,12 +41,22 @@ func TestAliasingContradictions(t *testing.T) {
 
 	for _, tt := range []struct {
 		desc, name, shelf, notes string
-		wantPromoType            string
+		ok                       func(co *mtgmatcher.CardObject) bool
+		want                     string
 	}{
 		{
 			desc: "a borderless printing the listing does not call borderless",
 			name: "Betor, Kin to All (Showcase)", shelf: "Tarkir: Dragonstorm",
-			notes: "Near Mint Normal English", wantPromoType: "showcase",
+			notes: "Near Mint Normal English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return !co.HasPromoType(magic.PromoTypeBorderless) },
+			want:  "a printing that is not borderless",
+		},
+		{
+			desc: "a flavor name the listing does not write",
+			name: "Beast Within (Borderless)", shelf: "Marvel Universe Eternal-Legal",
+			notes: "Near Mint Normal English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.FlavorName == "" },
+			want:  "the printing with no flavor name",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -53,8 +64,8 @@ func TestAliasingContradictions(t *testing.T) {
 			if co == nil {
 				t.Fatalf("%q was left aliased", tt.name)
 			}
-			if !co.HasPromoType(tt.wantPromoType) {
-				t.Errorf("%q landed on %s #%s %v, want %s", tt.name, co.SetCode, co.Number, co.PromoTypes, tt.wantPromoType)
+			if !tt.ok(co) {
+				t.Errorf("%q landed on %s #%s %v, want %s", tt.name, co.SetCode, co.Number, co.PromoTypes, tt.want)
 			}
 		})
 	}
