@@ -18,6 +18,32 @@ var yugiohCodes = strings.NewReplacer(
 	"HL3-EN", "HL03-EN",
 )
 
+// yugiohArtNotes names the artwork a note describes as the catalog's
+// qualifier for it. The Limited Pack World Championship 2026 prints an
+// alternate art of five Secret Rares, and the note describes its border and
+// lettering where the catalog names it Emblazoned.
+var yugiohArtNotes = map[string]string{
+	"Red Inner Border, Japanese Letters in Art": "Emblazoned Alternate Art",
+}
+
+// yugiohArtCard answers a listing whose note is one of yugiohArtNotes, or nil.
+// The qualifier names exactly one printing of the number, so the bracket the
+// name carries and the rarity beside it are left behind: either one makes the
+// matcher read the Emblazoned Secret Rare of the same number instead.
+func yugiohArtCard(name, edition, number, notes string, foil bool) *mtgmatcher.InputCard {
+	qualifier, found := yugiohArtNotes[strings.TrimSpace(notes)]
+	if !found {
+		return nil
+	}
+	head, _, _ := strings.Cut(name, " (")
+	return &mtgmatcher.InputCard{
+		Name:      catalogColor(catalogSpelling(head)),
+		Edition:   printRunEdition(edition, notes),
+		Variation: strings.TrimSpace(number + " " + qualifier),
+		Foil:      foil,
+	}
+}
+
 // yugiohImageCode matches the set code and number a Yu-Gi-Oh image sku
 // carries: "BLMMEN053" is BLMM-EN053.
 var yugiohImageCode = regexp.MustCompile(`^([A-Za-z0-9]{2,5}?)EN(\d{3})`)
