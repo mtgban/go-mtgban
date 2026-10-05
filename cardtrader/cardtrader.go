@@ -144,6 +144,69 @@ var tcgIDOverrides = map[int]int{
 	346315: 637082, // Blue-Eyes White Dragon, 25YC-ENP01 YCS Stamp
 	// Lorcana: none sent for the one errata reprint TCGplayer sells.
 	311912: 597095, // Bucky - Squirrel Squeak Tutor, Errata Version
+	// Pokemon promos: none sent, and the shelf names no set.
+	287980: 562025, // Pecharunt, Blister Exclusives | 149
+	337180: 645415, // Wellspring Mask Ogerpon ex, Premium Collection | TWM 040
+	337178: 645458, // Hearthflame Mask Ogerpon ex, Premium Collection | TWM 040
+	374802: 678169, // Bulbasaur, Pokémon Day Promo | 001/132
+	131770: 244347, // Rapidash, Pokemon Center Stamped | 51
+	111628: 164284, // Tepig, Pokémon League | 15/114
+	128302: 123196, // Gyarados, Holo Promo | 19/100
+	114420: 145864, // Latias, Stamp Holo Promo | 009/020
+	323068: 247362, // Duraludon, Gamestop Promo | 028
+	341065: 594468, // Magneton, Pokemon Center Stamped | 159
+	124918: 165634, // Blastoise, Cosmos Holo | ©2013 Promo 16/101
+	351718: 658354, // Yveltal, EB Games Promo | 088/132
+	397591: 713261, // Nidorina, MEP 101 | Pokemon Center Stamp
+	118520: 153288, // Electabuzz, Toys R Us Promo | 41/108
+	354634: 666533, // Suicune, GameStop Promo | 026/132
+	358323: 664006, // Flygon, Non-Holo | 053/167
+	312388: 515290, // Toxtricity, Non-Holo Prerelase Kit
+	399831: 244348, // Ho-Oh, Pokemon Center Stamped | 52
+	128303: 125079, // Tyranitar, Holo Promo | 30/100
+	399560: 706199, // Zarude, MEP 088 | Pokemon Center Stamp
+	391487: 694626, // Ho-Oh, EB Games Promo | 010/086
+	392243: 694625, // Ho-Oh, GameStop Promo | 010/086
+	364566: 680957, // Eevee, GYM Stamped | 143/191
+	357871: 680953, // Reshiram ex, WHT 020
+	// One Piece promos: none sent, and a blank or unlabelled version.
+	358719: 668182, // Gol.D.Roger P-107, Store Tournament 2025 Vol. 4
+	400812: 719661, // DON!! Flame-Flame Fruit Coliseum, Championships Promo
+	337323: 646721, // Kid & Killer EB01-003P2, Offline Regional 25-26 Finalist
+	337325: 646726, // Trafalgar Law OP07-047P2, Offline Regional 25-26 Finalist
+	345022: 646743, // Shanks, 25-26 Offline Regionals Top 8
+	345023: 646742, // Benn.Beckman, 25-26 Regionals Top 16
+	345024: 646741, // Yasopp, 25-26 Regionals Top 16
+	// Riftbound tokens: none sent.
+	367443: 678186, // Mech // Buff, T01
+	408192: 713239, // Shadow Clone // Tentacle, Full Art
+	// Yu-Gi-Oh: arts of one number, told apart by the artwork.
+	81844: 123620, // Blue-Eyes White Dragon, LDK2-ENK01 Version 4
+	81905: 123525, // Blue-Eyes White Dragon, LDK2-ENK01 Version 2
+	81937: 123621, // Blue-Eyes White Dragon, LDK2-ENK01 Version 1
+	81519: 79484,  // Cyber Dragon, SDCR-EN003 White
+	81520: 79485,  // Cyber Dragon, SDCR-EN003 Black
+	// Yu-Gi-Oh: a video game promo on a shelf naming no set.
+	69769: 22817,  // Riryoku, TSC-002
+	75164: 22817,  // Riryoku, TSC-002
+	81033: 22941,  // Dark Magician, DDS-002
+	72219: 186749, // Meteor B. Dragon, SBLS-EN013
+	// Yu-Gi-Oh: the id names the European print, After the Struggle (LOD-EN086).
+	63798: 21725, // After Genocide, LOD-086
+	// Yu-Gi-Oh: Legendary Collection Kaiba 2025 reprint arts.
+	353822: 658908, // Blue-Eyes White Dragon, LCKC-EN001
+	353823: 658907, // Blue-Eyes White Dragon, LCKC-EN001
+	353824: 658909, // Blue-Eyes White Dragon, LCKC-EN001
+	353893: 658910, // Blue-Eyes White Dragon, LCKC-EN001
+	353939: 658920, // Crush Card Virus, LCKC-EN046
+	353940: 658921, // Crush Card Virus, LCKC-EN046 Alternate Art
+	// Flesh and Blood: Spectral Shield's plain print, not its token.
+	289168: 552843, // Spectral Shield, MST158-A
+	// Gundam: the ST11-ST14 release event promos, filed under GD06.
+	412578: 717612, // Acguy, ST11-002
+	412579: 717613, // Char Aznable, ST11-011
+	412580: 717615, // Unicorn Gundam 02 Banshee, ST12-009
+	412581: 717617, // Ple-Twelve, ST12-012
 }
 
 // TCGplayerProductID answers the TCGplayer id a blueprint's listings resolve
