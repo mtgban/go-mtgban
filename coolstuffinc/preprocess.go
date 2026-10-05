@@ -172,7 +172,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 				// The image is the original printing's, not The List's.
 				continue
 			}
-			if len(b.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
+			if imagePrinting(b, cardName, maybeSet, maybeNum, variant) {
 				return imageCard(cardName, maybeSet, maybeNum, variant, isFoil), nil
 			}
 		}
@@ -196,7 +196,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		trimmed := strings.TrimLeft(maybeNum, letters)
 		if trimmed != maybeNum && edition != "Universal Promo Pack" {
 			maybeNum = strings.TrimLeft(trimmed, "_0")
-			if len(b.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
+			if imagePrinting(b, cardName, maybeSet, maybeNum, variant) {
 				return imageCard(cardName, maybeSet, maybeNum, variant, isFoil), nil
 			}
 		}
@@ -302,6 +302,35 @@ func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher
 	return &mtgmatcher.InputCard{Name: co.Name, Variation: listNum, Edition: "PLST", Foil: input.Foil}
 }
 
+// imagePrinting reports whether a product image's set and number name exactly
+// one printing of the card. A variants shelf reuses the base card's image for
+// its extended art copy, so when the listing asks for extended art, the image
+// is turned down if it names a printing without it where the set holds one.
+func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant string) bool {
+	cards := b.MatchInSetNumber(cardName, setCode, number)
+	if len(cards) != 1 {
+		return false
+	}
+	if !mtgmatcher.Contains(variant, "Extended Art") || isExtendedArt(cards[0]) {
+		return true
+	}
+	set, err := b.GetSet(setCode)
+	if err != nil {
+		return true
+	}
+	for _, card := range set.Cards {
+		if card.Name == cardName && isExtendedArt(card) {
+			return false
+		}
+	}
+	return true
+}
+
+// isExtendedArt reports an extended art printing, by promo type or by frame.
+func isExtendedArt(card mtgmatcher.Card) bool {
+	return slices.Contains(card.PromoTypes, "extendedart") || slices.Contains(card.FrameEffects, "extendedart")
+}
+
 // imageCard asks for the printing a product image names, in the finish and
 // language the listing's own wording gives it: the image is the same for the
 // etched and the plain copy, and for the Japanese one.
@@ -363,7 +392,7 @@ func imageNumberAfterName(b *mtgmatcher.Backend, cardName, edition, variant, img
 		return nil
 	}
 	set, err := b.GetSetByName(edition)
-	if err != nil || len(b.MatchInSetNumber(cardName, set.Code, num)) != 1 {
+	if err != nil || !imagePrinting(b, cardName, set.Code, num, variant) {
 		return nil
 	}
 	return imageCard(cardName, set.Code, num, variant, isFoil)

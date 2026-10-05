@@ -130,3 +130,39 @@ func TestPreprocessImageStem(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessImageExtendedArt pins the variants shelves whose image names
+// the base card's number: when the listing says extended art and the set
+// holds one, the image is not trusted; when the set holds none, it stays the
+// only evidence there is.
+func TestPreprocessImageExtendedArt(t *testing.T) {
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+
+	t.Run("the set holds an extended art printing", func(t *testing.T) {
+		card, err := preprocess(b, "Copy Land", "Modern Horizons 3 Commander: Variants", "Extended Art Frame", "https://s.cf.net/i/M3C0099.jpg")
+		if err != nil {
+			t.Fatal(err)
+		}
+		id, err := b.Match(card)
+		if err != nil {
+			t.Fatalf("Match(%+v) = %v", card, err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !isExtendedArt(co.Card) {
+			t.Errorf("landed %s %s, which is not extended art", co.SetCode, co.Number)
+		}
+	})
+
+	t.Run("the set holds none", func(t *testing.T) {
+		card, err := preprocess(b, "Detention Chariot", "Aetherdrift: Variants", "Extended Art Frame", "https://s.cf.net/i/DFT0294.jpg")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if card.Edition != "DFT" || card.Variation != "294" {
+			t.Errorf("preprocess() = %q/%q, want the image's DFT/294", card.Edition, card.Variation)
+		}
+	})
+}
