@@ -114,7 +114,7 @@ const fabDeckPrefixDatastore = `{"data": {
 // that code. Azalea's SAZ answers with both the chapter that introduced her
 // and the one that shipped the rest of her deck; Lyath's SLY answers with
 // the one chapter that opens on it; a code no set's numbers carry answers
-// with none.
+// with none. A set found by name does not stop them: its deck sets follow.
 func TestFabShelvesDeckPrefix(t *testing.T) {
 	b := datastoreBackend(t, "fleshandblood", fabDeckPrefixDatastore)
 	deckSets := fabDeckSetIndex(b)
@@ -124,6 +124,7 @@ func TestFabShelvesDeckPrefix(t *testing.T) {
 	}{
 		{"Silver Age Deck - Azalea", "SAZ", []string{"SAC1", "SAC2"}},
 		{"Silver Age Deck - Lyath Goldmane", "SLY", []string{"SAC3"}},
+		{"Silver Age Chapter 3", "SAZ", []string{"SAC3", "SAC1", "SAC2"}},
 		{"Silver Age Deck - Nobody", "NOPE", nil},
 	} {
 		var got []string
