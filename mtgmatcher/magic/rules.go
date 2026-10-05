@@ -1190,13 +1190,14 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			case "SLD":
 				skip := false
+				sldNumber := len(b.MatchInSetNumber(inCard.Name, "SLD", mtgmatcher.ExtractNumber(inCard.Variation))) != 0
 
 				// Iterate on all possible combinations of tags, and skip if a
 				// condition is unmet
 				for _, code := range []string{"SLU", "SLX", "SLC", "SLP"} {
-					// The only card with the same name within and without
-					if code == "SLX" && inCard.Name == "Themberchaud" {
-						continue
+					// A number the SLD set holds for this name is SLD's
+					if sldNumber {
+						break
 					}
 					if len(b.MatchInSet(inCard.Name, code)) > 0 && hasSecretLairTag(b, inCard, code) {
 						skip = true
