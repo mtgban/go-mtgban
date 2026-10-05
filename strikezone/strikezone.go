@@ -307,7 +307,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	if sz.backend.Game == mtgmatcher.GameMagic {
 		var alias *mtgmatcher.AliasingError
 		if errors.As(err, &alias) {
-			id := resolvePremiumFoilTiebreak(sz.backend, theCard.Variation, alias.Probe())
+			id := resolveAliasing(sz.backend, aliasedListing{name: cardName, shelf: edition, card: theCard}, alias.Probe())
 			if id != "" {
 				cardID, err = id, nil
 			}
