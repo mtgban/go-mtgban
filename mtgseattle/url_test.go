@@ -6,6 +6,7 @@ func TestBuildProductURL(t *testing.T) {
 	tests := []struct {
 		name    string
 		product string
+		inStock bool
 		want    string
 		wantErr bool
 	}{
@@ -27,6 +28,12 @@ func TestBuildProductURL(t *testing.T) {
 			want:    "https://www.mtgseattle.com/catalog/magic_singles-kaldheim/2244?layout=false&page=37&sort_by_price=1",
 		},
 		{
+			name:    "inventory pagination href gets the in-stock filter",
+			product: "/catalog/magic_singles-kaldheim/2244?page=37&sort_by_price=1",
+			inStock: true,
+			want:    "https://www.mtgseattle.com/catalog/magic_singles-kaldheim/2244?filter_by_stock=in-stock&layout=false&page=37&sort_by_price=1",
+		},
+		{
 			name:    "unparseable href is an error, not a malformed request",
 			product: "/catalog/foo%zz",
 			wantErr: true,
@@ -35,7 +42,7 @@ func TestBuildProductURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := buildProductURL(tt.product)
+			got, err := buildProductURL(tt.product, tt.inStock)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("buildProductURL(%q) = %q, want an error", tt.product, got)

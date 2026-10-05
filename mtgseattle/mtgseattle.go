@@ -97,13 +97,18 @@ func (ms *MTGSeattle) printf(format string, a ...any) {
 
 // buildProductURL sets layout=false on product, merging it into any
 // query string the href already carries instead of appending a second "?".
-func buildProductURL(product string) (string, error) {
+// inStock lists only products in stock; a container's subcategories show
+// either way.
+func buildProductURL(product string, inStock bool) (string, error) {
 	u, err := url.Parse(baseURL + product)
 	if err != nil {
 		return "", err
 	}
 	q := u.Query()
 	q.Set("layout", "false")
+	if inStock {
+		q.Set("filter_by_stock", "in-stock")
+	}
 	u.RawQuery = q.Encode()
 	return u.String(), nil
 }
@@ -181,7 +186,7 @@ func buylistOffers(meta *goquery.Selection) []offer {
 }
 
 func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- responseChan, product, mode string) error {
-	link, err := buildProductURL(product)
+	link, err := buildProductURL(product, mode == modeInventory)
 	if err != nil {
 		return err
 	}
