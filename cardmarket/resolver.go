@@ -511,7 +511,12 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// foil probes are inert for One Piece too - both flags resolve to
 		// the same printing.
 		if len(fields) > 1 {
-			number = strings.TrimSpace(number + " V." + strings.TrimSuffix(fields[1], ")"))
+			version := strings.TrimSuffix(fields[1], ")")
+			if r.gameID == cm.GameGundam {
+				// The rarity after the index is read from the product's own.
+				version, _, _ = strings.Cut(version, " - ")
+			}
+			number = strings.TrimSpace(number + " V." + version)
 		}
 		// Only the rarity tells an oversized card from the set's own at its
 		// number; a card with no oversized printing is then unsupported.
