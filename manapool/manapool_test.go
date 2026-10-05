@@ -241,6 +241,46 @@ func TestReplayCapturedVariants(t *testing.T) {
 	}
 }
 
+// TestIndexFoilMarketNeedsAFoilFinish pins that a foil market is recorded on
+// the etched copy of a printing sold nonfoil and etched, and not at all on one
+// sold nonfoil only, rather than as a second price beside the nonfoil one.
+func TestIndexFoilMarketNeedsAFoilFinish(t *testing.T) {
+	b := withMagic(t)
+
+	rows := []Product{
+		{Name: "Carrion Feeder", SetCode: "SLD", Number: "1114", ScryfallID: "c0e175cb-ffea-473f-8422-53273f263016",
+			PriceMarket: 4488, PriceMarketFoil: 2546, URL: "https://manapool.com/card/sld/1114/carrion-feeder"},
+		{Name: "Arcane Signet", SetCode: "FDC", Number: "245", ScryfallID: "ee7710cf-e73d-479f-bc8d-0e78a0e324d9",
+			PriceMarket: 38, PriceMarketFoil: 58, URL: "https://manapool.com/card/fdc/245/arcane-signet"},
+	}
+	mp := NewScraperIndex(b)
+	mp.price(rows)
+
+	prices := map[string][]float64{}
+	for id, entries := range mp.Inventory() {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatalf("GetUUID(%s) = %v", id, err)
+		}
+		for _, e := range entries {
+			key := co.SetCode + " " + co.Number
+			if co.Etched {
+				key += " etched"
+			}
+			prices[key] = append(prices[key], e.Price)
+		}
+	}
+	if got := prices["SLD 1114"]; len(got) != 1 || got[0] != 44.88 {
+		t.Errorf("nonfoil Carrion Feeder is %v, want its market alone", got)
+	}
+	if got := prices["SLD 1114 etched"]; len(got) != 1 || got[0] != 25.46 {
+		t.Errorf("etched Carrion Feeder is %v, want the foil market", got)
+	}
+	if got := prices["FDC 245"]; len(got) != 1 || got[0] != 0.38 {
+		t.Errorf("Arcane Signet is %v, want its nonfoil market alone", got)
+	}
+}
+
 // TestPriceResolvesReversibleCardInTokenLookalikeSet pins that a listing named
 // "X // Y" in a set of real cards is not taken for a pairing of two tokens
 // because the set's code starts with a T: Marang River Regent // Coil and
