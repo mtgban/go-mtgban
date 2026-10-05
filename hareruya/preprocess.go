@@ -128,6 +128,17 @@ func splitParens(b *mtgmatcher.Backend, title string) (number, series, treatment
 	return number, series, treatment
 }
 
+// announcedTreatment returns the catalog's wording for the treatment a title
+// announces in the group the plain finish otherwise occupies, or "" when that
+// group names none.
+func announcedTreatment(title string) string {
+	matches := reThick.FindStringSubmatch(title)
+	if len(matches) > 1 {
+		return treatmentTable[matches[1]]
+	}
+	return ""
+}
+
 // prereleaseOnPromoLine reports whether a prerelease card is filed on the
 // set's promo line rather than among the set's own cards.
 //
@@ -214,6 +225,16 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 	match = reSquares.FindStringSubmatch(product.ProductNameEN)
 	if len(match) > 1 {
 		variant = match[1]
+	}
+
+	// The finish group is read off the Japanese line, which spells every
+	// treatment one way where the English line spells several.
+	treatment := announcedTreatment(product.ProductName)
+	if treatment != "" {
+		if variant != "" {
+			variant += " "
+		}
+		variant += treatment
 	}
 
 	// The number is only found in the JPN line, which may name the series too
@@ -306,25 +327,17 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 			edition = "PLST"
 		}
 	default:
-		if strings.Contains(edition, "P Stamped_") {
+		if strings.Contains(edition, "P Stamped_") || strings.Contains(variant, "Promo Stamped") {
 			edition = "Promo Pack"
-			fields := strings.Split(edition, "_")
-			if len(fields) > 1 {
-				edition += " " + fields[1]
-			}
-		} else if strings.Contains(product.ProductNameEN, "Prerelease") && prereleaseOnPromoLine(b, cardName, edition, number) {
+		} else if strings.Contains(product.ProductName, prerelease) && prereleaseOnPromoLine(b, cardName, edition, number) {
 			edition += " Prerelease"
 		}
 
 		variant = strings.Replace(variant, "RetroF ", "Retro Frame ", 1)
 		cardName = strings.TrimPrefix(cardName, "【Gold Frame】")
-		// The Pool Party drop's dazzle foil is marked where the foil
-		// otherwise is, and only the marker tells it from the plain foil
-		if strings.Contains(product.ProductNameEN, "【Pool Party・Foil】") {
-			variant = strings.TrimSpace("Pool Party " + variant)
-		}
 	}
 
+	variant = strings.TrimSpace(variant)
 	override, found := promoMap[edition][cardName][variant]
 	if found {
 		edition = override.Edition
@@ -526,15 +539,16 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	matches = reThick.FindStringSubmatch(title)
 	if len(matches) > 1 {
 		foil = strings.Contains(matches[1], "Foil")
-		// The treatment is announced where the plain finish would be, and
-		// carries the same set tag and number as the printing it is a
-		// treatment of, so nothing else in the title tells them apart.
-		if treatment, found := treatmentTable[matches[1]]; found {
-			if variant != "" {
-				variant += " "
-			}
-			variant += treatment
+	}
+	// The treatment is announced where the plain finish would be, and
+	// carries the same set tag and number as the printing it is a
+	// treatment of, so nothing else in the title tells them apart.
+	treatment := announcedTreatment(title)
+	if treatment != "" {
+		if variant != "" {
+			variant += " "
 		}
+		variant += treatment
 	}
 
 	if number != "" {
@@ -585,10 +599,6 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		strings.Contains(variant, "Promo Stamped") ||
 		strings.Contains(variant, "プロモスタンプ付") {
 		edition = "Promo Pack"
-		fields := strings.Split(edition, "_")
-		if len(fields) > 1 {
-			edition += " " + fields[1]
-		}
 	}
 
 	//variant = strings.Replace(variant, "RetroF ", "Retro Frame ", 1)
