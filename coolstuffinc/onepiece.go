@@ -23,6 +23,67 @@ var onePieceEvents = map[string]string{
 	"offline regional participation pack 2024 vol.2": "Offline Regional 2024 Vol. 2 Participant",
 }
 
+// onePiecePIDs names the TCGplayer product a storefront product is, for the
+// listings whose wording cannot reach it: the storefront describes a DON!!
+// card and a reprinted promo in prose the catalog never uses, and the catalog
+// tells them apart by promo types and watermarks the storefront does not
+// write. The product id is the storefront's own and both feeds share it.
+var onePiecePIDs = map[string]string{
+	"353757": "456059", // OP01 DON "The King of the Pirates" = OP01 Manga Alternate Art
+	"357696": "482273", // OP02 DON "To Put An End To This War!!" = OP02 Manga
+	"368617": "483145", // DON (Tournament Pack Vol. 2) participant, no stamp
+	"368620": "482237", // DON Red (DON!! Card Pack Vol. 1)
+	"368621": "483170", // DON Teal (Vol. 2)
+	"368674": "482239", // DON Blue (Vol. 1)
+	"368675": "483171", // DON Bronze (Vol. 2)
+	"368676": "483167", // DON Green (Vol. 2)
+	"371229": "483168", // DON Orange (Vol. 2)
+	"371230": "483169", // DON Pink (Vol. 2)
+	"371231": "482240", // DON Purple (Vol. 1)
+	"371232": "482241", // DON Silver (Vol. 1)
+	"371233": "482238", // DON Yellow (Vol. 1)
+	"371821": "517476", // OP04 DON "Will you call me your Shipmate?!!" = OP04 Alternate Art
+	"378041": "529792", // OP05 DON "Luffy Punching Kaido" = OP05 Alternate Art
+	"384872": "541671", // OP06 DON "Zoro & Sanji" = OP06 Alternate Art
+	"391902": "555894", // OP07 DON "Five Remaining Warlords" = OP07 Alternate Art
+	"404440": "604246", // OP09 DON "Are you that afraid of the new era?!" = OP09 Alternate Art
+	"417147": "636742", // OP11 DON "... They Believe In Me" = OP11 Alternate Art
+	"422589": "646574", // OP12 DON "It's My Student's Farewell." = OP12 Alternate Art
+	"433483": "672738", // OP14 DON (Sand Tornado) DP Vol. 9 = Crocodile
+	"433484": "672736", // OP14 DON (Smile and Strings) DP Vol. 9 = Donquixote Doflamingo
+	"440300": "698313", // OP16 DON "We'll Have To Break Out" = OP16 Alternate Art
+	"440301": "698314", // OP16 DON same (GOLD) = Alternate Art Gold
+	"447228": "712747", // OP17 DON Luffy = Alternate Art
+	"447229": "710859", // OP17 DON Luffy (GOLD) = Alternate Art Gold
+	"447230": "712748", // OP17 DON Luffy & Loki
+	"447231": "710860", // OP17 DON Luffy & Loki (GOLD)
+	"447232": "712750", // OP17 DON Four Emperors
+	"447233": "711421", // OP17 DON Four Emperors (GOLD)
+	"447234": "712749", // OP17 DON Xebec = Alternate Art Rocks
+	"447235": "711420", // OP17 DON Xebec (BLUE) = Rocks Special Foil
+	"447236": "715682", // OP17 DON Rocks.D.Xebec (Double Pack Vol. 12)
+	"447636": "681871", // DON (Red Bull Don!!)
+	"354630": "457032", // Shanks P-016 nonfoil = Film Red
+	"354622": "457039", // Monkey.D.Luffy P-022 (Film Red) nonfoil
+	"379043": "518702", // Monkey.D.Luffy P-055 nonfoil = Sealed Battle Kit Vol. 1
+	"379048": "518696", // Usopp P-049 nonfoil = Sealed Battle Kit Vol. 1
+	"387345": "537438", // Roronoa Zoro P-045 (OP06 Pre-Release Tournament) nonfoil = Participant
+	"424023": "656166", // Sabo P-044 White Border = PRB-02 Reprint
+	"424027": "656192", // Koala P-069 White Border = PRB-02 Reprint
+	"424028": "656199", // Carrot P-070 White Border = PRB-02 Reprint
+	"424029": "656209", // Sabo P-073 = PRB-02 Reprint
+	"424030": "656212", // Portgas.D.Ace P-074 = PRB-02 Reprint
+	"424031": "656216", // Monkey.D.Luffy P-075 = PRB-02 Reprint
+	"424032": "656223", // Adio P-078 = PRB-02 plain
+	"424033": "656229", // Lim P-079 = PRB-02 plain
+	"424036": "656237", // Shanks P-083 = PRB-02 Reprint
+	"424037": "656230", // Jewelry Bonney P-085 = PRB-02 Reprint
+	"424038": "656220", // Trafalgar Law P-088 = PRB-02 Reprint
+	"425300": "656177", // Jinbe P-063 = PRB-02 Reprint
+	"384878": "541670", // Rebecca OP05-091 (SP) In Sunflower Field = OP06 SP
+	"423973": "654571", // Rebecca OP05-091 (SP) Stitched Together Border = PRB-02 SP
+}
+
 // onePieceStarterDeck matches the starter deck a name states in brackets.
 var onePieceStarterDeck = regexp.MustCompile(`\(Starter Deck (\d+)\)`)
 
