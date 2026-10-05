@@ -1,6 +1,10 @@
 package coolstuffinc
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // lorcanaSpellings corrects the Lorcana names this storefront misspells.
 // Each key is a name no set in the game has and each value is the card it
@@ -36,4 +40,37 @@ func lorcanaSpelling(name string) string {
 // no finish the matcher knows and lands on the set's ordinary cold foil.
 func lorcanaVariation(variation string) string {
 	return strings.ReplaceAll(variation, "Rainbow Foil", "Holofoil")
+}
+
+// lorcanaQuestNotes names the Illumineer's Quest a prize card's note belongs
+// to, and the set code a probe has to land on to be trusted. The storefront
+// files the prize on the shelf of the set whose card it repeats, at a number
+// that set does not reach, and the frame its note names is the only thing
+// saying which quest handed it out.
+var lorcanaQuestNotes = []struct{ marker, edition, wantSet string }{
+	{"Ink Tentacles Card Frame", "Illumineer's Quest: Deep Trouble", "Q1"},
+	{"Shifting Sands", "Illumineer's Quest: Palace Heist", "Q2"},
+	{"Ink Vines Card Frame", "Illumineer's Quest: The Great Hunny Rescue", "Q3"},
+}
+
+// lorcanaShelf answers the shelf a Lorcana listing belongs to: the quest its
+// note names when a probe of the card lands in that quest's set, and the shelf
+// it arrived on otherwise. An edition holding no such card widens to every
+// printing, so the landed set is what is checked.
+func lorcanaShelf(b *mtgmatcher.Backend, name, shelf, notes string) string {
+	for _, quest := range lorcanaQuestNotes {
+		if !strings.Contains(notes, quest.marker) {
+			continue
+		}
+		probe := &mtgmatcher.InputCard{Name: lorcanaSpelling(name), Edition: quest.edition, Variation: lorcanaVariation(notes), Foil: true}
+		id, err := b.Match(probe)
+		if err != nil {
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err == nil && co.SetCode == quest.wantSet {
+			return quest.edition
+		}
+	}
+	return shelf
 }
