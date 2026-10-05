@@ -58,6 +58,13 @@ func TestAliasingContradictions(t *testing.T) {
 			ok:    func(co *mtgmatcher.CardObject) bool { return co.FlavorName == "" },
 			want:  "the printing with no flavor name",
 		},
+		{
+			desc: "a printing never made in the finish on sale",
+			name: "Exemplar of Light", shelf: "Foundations",
+			notes: "Near Mint Foil English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.HasFinish(mtgmatcher.FinishFoil) },
+			want:  "a printing made in foil",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			co := tieBreak(t, b, tt.name, tt.shelf, tt.notes)
@@ -66,6 +73,27 @@ func TestAliasingContradictions(t *testing.T) {
 			}
 			if !tt.ok(co) {
 				t.Errorf("%q landed on %s #%s %v, want %s", tt.name, co.SetCode, co.Number, co.PromoTypes, tt.want)
+			}
+		})
+	}
+}
+
+// TestAliasingStands pins the listings left aliased: a lone survivor on a
+// promo shelf that is not a promo, and several survivors with nothing to tell
+// them apart.
+func TestAliasingStands(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		desc, name, shelf, notes string
+	}{
+		{"a non-promo is not what a promo shelf holds", "Scute Swarm", "Promos: Media", "Near Mint Foil English"},
+		{"two printings the wording fits equally", "Vampiric Tutor", "Promos: Judge", "Near Mint Foil English"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			co := tieBreak(t, b, tt.name, tt.shelf, tt.notes)
+			if co != nil {
+				t.Errorf("%q landed on %s #%s, want it left aliased", tt.name, co.SetCode, co.Number)
 			}
 		})
 	}
