@@ -11,6 +11,11 @@ import (
 // riftboundNotePrefix matches the set code a Riftbound note opens with.
 var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
 
+// riftboundEventMarkers are the brackets a promo's name carries for the
+// event that handed it out, which the catalog files on its Release Event
+// Promos shelf, apart from the promo shelf's own printing at the same number.
+var riftboundEventMarkers = []string{"(Prerelease)", "(Origins Stamp)"}
+
 // riftboundShelf answers the set a Riftbound listing belongs to, which is the
 // shelf it arrived on except where that shelf says only "Promo".
 //
@@ -27,6 +32,20 @@ var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
 func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation string, foil bool) string {
 	if itemSet != "Promo" {
 		return itemSet
+	}
+	for _, marker := range riftboundEventMarkers {
+		if !strings.Contains(name, marker) {
+			continue
+		}
+		probe := &mtgmatcher.InputCard{Name: name, Edition: "Release Event Promos", Variation: variation, Foil: foil}
+		id, err := b.Match(probe)
+		if err != nil {
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err == nil && co.SetCode == "OPP" {
+			return probe.Edition
+		}
 	}
 	match := riftboundNotePrefix.FindStringSubmatch(notes)
 	if match == nil {
