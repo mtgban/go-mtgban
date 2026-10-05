@@ -188,6 +188,61 @@ func onePieceRenamedTreatment(b *mtgmatcher.Backend, id, name string) string {
 	return alternate
 }
 
+// onePieceParallelPrinting answers the printing a "(Alternate Art)" listing
+// means when the catalog calls that printing "Parallel", and "" otherwise.
+//
+// The wording names a label another set uses for the number: the PRB-01
+// reprints and the manga rows are filed as Alternate Art, so the listing
+// lands there beside the cheaper printing it means. The shelf's own set
+// settles it when it holds one parallel printing of the number and no plain
+// Alternate Art of it, which is false for every set filing its alternate
+// arts under that name. Only a printing in the finish the match settled on
+// counts.
+func onePieceParallelPrinting(b *mtgmatcher.Backend, id, edition, name string) string {
+	if !slices.Equal(nameQualifierList(name), []string{"Alternate Art"}) {
+		return ""
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		return ""
+	}
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return ""
+	}
+
+	var parallel string
+	for _, card := range set.Cards {
+		if card.Number != co.Number || !slices.Equal(card.Finishes, co.Finishes) {
+			continue
+		}
+		switch {
+		case slices.Equal(card.PromoTypes, []string{"parallel"}):
+			if parallel != "" {
+				return ""
+			}
+			parallel = card.UUID
+		case slices.Contains(card.PromoTypes, "alternateart") && !slices.Contains(card.PromoTypes, "manga"):
+			return ""
+		}
+	}
+	return parallel
+}
+
+// onePieceRefined answers the printing a One Piece listing means once the
+// match has settled on one, where its own wording says it is another.
+func onePieceRefined(b *mtgmatcher.Backend, id, edition, name string) string {
+	renamed := onePieceRenamedTreatment(b, id, name)
+	if renamed != "" {
+		return renamed
+	}
+	parallel := onePieceParallelPrinting(b, id, edition, name)
+	if parallel != "" {
+		return parallel
+	}
+	return id
+}
+
 // eventNamed adds the catalog's name for every event the wording gives its
 // own name to. The storefront's words stay: they are what the listing says
 // about the art, and the catalog's name is only what files it.

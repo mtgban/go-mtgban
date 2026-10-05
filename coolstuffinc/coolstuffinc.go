@@ -659,10 +659,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				}
 
 				if csi.backend.Game == mtgmatcher.GameOnePiece {
-					renamed := onePieceRenamedTreatment(csi.backend, cardID, cardName)
-					if renamed != "" {
-						cardID = renamed
-					}
+					cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, cardName)
 				}
 
 				// Magic-only finish sanity check: skip cards that do not have the
@@ -995,9 +992,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		}
 
 		if csi.backend.Game == mtgmatcher.GameOnePiece {
-			if renamed := onePieceRenamedTreatment(csi.backend, cardID, product.Name); renamed != "" {
-				cardID = renamed
-			}
+			cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, product.Name)
 		}
 
 		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
