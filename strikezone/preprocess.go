@@ -554,8 +554,8 @@ func wearsUnnamedTextured(b *mtgmatcher.Backend, variation string, co *mtgmatche
 }
 
 // premiumFoilTreatments are the foil-only treatments this storefront always
-// spells out; resolvePremiumFoilTiebreak drops a candidate wearing one the
-// variation is silent about.
+// spells out; a candidate wearing one the variation is silent about is not the
+// card being sold.
 var premiumFoilTreatments = []struct {
 	promoType string
 	tag       string
@@ -571,35 +571,6 @@ var premiumFoilTreatments = []struct {
 	{magic.PromoTypeNeonInk, "Neon"},
 	{magic.PromoTypeFirstPlaceFoil, "First Place"},
 	{magic.PromoTypeStepAndCompleat, "Compleat"},
-}
-
-// resolvePremiumFoilTiebreak narrows an ambiguous match down to the one
-// candidate this listing's wording actually names, dropping every candidate
-// that wears a premium foil treatment the variation is silent about. It
-// returns "" when the survivors don't reduce to exactly one, leaving the
-// original error in place.
-func resolvePremiumFoilTiebreak(b *mtgmatcher.Backend, variation string, probe []string) string {
-	var keep []string
-	for _, id := range probe {
-		co, err := b.GetUUID(id)
-		if err != nil {
-			return ""
-		}
-		silent := false
-		for _, treatment := range premiumFoilTreatments {
-			if co.HasPromoType(treatment.promoType) && !mtgmatcher.Contains(variation, treatment.tag) {
-				silent = true
-				break
-			}
-		}
-		if !silent {
-			keep = append(keep, id)
-		}
-	}
-	if len(keep) == 1 {
-		return keep[0]
-	}
-	return ""
 }
 
 // requestedFinish is the finish a listing is on sale in.
