@@ -1097,10 +1097,11 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		candidates = marked
 	}
 	candidates = tierByLabel(b, wording, candidates)
+	candidates = tierByQualifier(b, inCard, candidates)
 	// A wording naming a bare year - the league energies' only way of
 	// saying which year's row they price, since every year's copy of one
 	// shares its name, number and label - narrows by it last, among
-	// whatever the label and mark tiers above left standing.
+	// whatever the mark, label and qualifier tiers above left standing.
 	candidates = tierByYear(inCard, wording, candidates)
 	// TCGplayer sells a handful of stamped promos twice, once at their own
 	// size and once as an oversized Jumbo Card, with nothing but the size
@@ -1292,6 +1293,32 @@ func tierByYear(inCard *mtgmatcher.InputCard, wording string, candidates []mtgma
 		return byYear
 	}
 	return candidates
+}
+
+// tierByQualifier keeps the candidates whose product name TCGplayer
+// qualifies with exactly the listing's Variation, the spelling the loader
+// indexes as "Name (qualifier)": "2017" is what tells "Psychic Energy (2017)"
+// from the set's numbered secret rare. Nothing is narrowed unless a
+// candidate carries that exact spelling, so a qualifier left in the name or
+// spelled another way ("2017 Unnumbered") does not fire it.
+func tierByQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(candidates) <= 1 || inCard.Variation == "" {
+		return candidates
+	}
+	uuids := b.Hashes[mtgmatcher.Normalize(inCard.Name+" ("+inCard.Variation+")")]
+	var named []mtgmatcher.Card
+	for _, card := range candidates {
+		for _, uuid := range card.FoilUUIDs {
+			if slices.Contains(uuids, uuid) {
+				named = append(named, card)
+				break
+			}
+		}
+	}
+	if len(named) == 0 {
+		return candidates
+	}
+	return named
 }
 
 // wearingStamp keeps the candidates wearing a stamp label.

@@ -143,3 +143,45 @@ func TestExcludeJumbo(t *testing.T) {
 		t.Errorf("landed on the Jumbo twin %s, want the Miscellaneous Cards & Products printing", id)
 	}
 }
+
+// TestTierByQualifier pins that a qualifier the catalog spells into a
+// product name settles a conflict with the numbered card it shares the name
+// with: SM01's unnumbered "Psychic Energy (2017)" against the holo secret
+// rare Psychic Energy 162.
+func TestTierByQualifier(t *testing.T) {
+	b := loadBackend(t)
+
+	in := &mtgmatcher.InputCard{Name: "Psychic Energy", Edition: "SM Base Set", Variation: "2017"}
+	id, err := b.Match(in)
+	if err != nil {
+		t.Fatalf("Match(%+v) = %v", in, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.SetCode != "SM01" || co.Number != "" {
+		t.Errorf("Match(%+v) = %s (%s %s), want the unnumbered SM01 energy", in, id, co.SetCode, co.Number)
+	}
+
+	// A league energy spells year and program as one qualifier; without
+	// it the 2010 and 2011 copies both stood.
+	league := &mtgmatcher.InputCard{Name: "Grass Energy", Edition: "League & Championship Cards", Variation: "2011 Play! Pokemon"}
+	id, err = b.Match(league)
+	if err != nil {
+		t.Fatalf("Match(%+v) = %v", league, err)
+	}
+	const wantLeague = "136750_holofoil"
+	if id != wantLeague {
+		t.Errorf("Match(%+v) = %s, want %s", league, id, wantLeague)
+	}
+
+	// A qualifier no row carries narrows nothing, so the conflict stands.
+	for _, variation := range []string{"", "1999"} {
+		in := &mtgmatcher.InputCard{Name: "Psychic Energy", Edition: "SM Base Set", Variation: variation}
+		_, err := b.Match(in)
+		if err == nil {
+			t.Errorf("Match(%+v) = no error, want a refusal", in)
+		}
+	}
+}
