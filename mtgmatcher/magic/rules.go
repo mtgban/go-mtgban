@@ -746,7 +746,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = "War of the Spark Promos"
 			}
 		case "Llanowar Elves":
-			if isGenericPromo(b, inCard) {
+			if isGenericPromo(b, inCard) && !isWPNGateway(inCard) && !isMagicFest(inCard) {
 				edition = "Dominaria Promos"
 			}
 		case "Evolving Wilds":
