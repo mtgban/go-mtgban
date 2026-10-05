@@ -25,6 +25,10 @@ var listingCorrections = map[string]struct {
 	"8114685": {title: "Sledding Otter-Penguin - FOIL", edition: "Avatar: The Last Airbender Eternal", number: "208", correctedNumber: "218"},
 	// The title's parenthetical is a typo for the halofoil card_number.
 	"7895279": {title: "Harnessed Snubhorn (HALO 168) - FOIL", edition: "March of the Machine: The Aftermath", number: "188", correctedTitle: "Harnessed Snubhorn (HALO 188) - FOIL"},
+	// The listings misspell the flavor name, or splice the finish into it.
+	"8100899": {title: "Chancla relampagos | Lightning Greaves (Secret Lair)", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair)"},
+	"8100901": {title: "Chancla relampagos | Lightning Greaves (Secret Lair) - FOIL", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair) - FOIL"},
+	"8035587": {title: "Inigo, Avenging  - FOILSwordsman | Samut, Voice of Dissent (Secret Lair) - FOIL", edition: "Secret Lair Drop", number: "1451", correctedTitle: "Inigo, Avenging Swordsman | Samut, Voice of Dissent (Secret Lair) - FOIL"},
 	// Filed as "(Prerelease)"; the catalog only carries the release promo.
 	"162808": {title: "Reya Dawnbringer (Prerelease) - FOIL", edition: "Tenth Edition Promos", number: "35", correctedTitle: "Reya Dawnbringer (Release) - FOIL"},
 	"206639": {title: "Reya Dawnbringer (Prerelease) - FOIL", edition: "Tenth Edition Promos", number: "35", correctedTitle: "Reya Dawnbringer (Release) - FOIL"},

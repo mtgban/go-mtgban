@@ -444,7 +444,8 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	case "Silent Submersible (Promo Pack)",
 		"Silent Submersible (Promo Pack) - FOIL",
 		"Hymn to Tourach (B - Mark Justice - 1996)",
-		"Skyclave Shade (Extended Art)":
+		"Skyclave Shade (Extended Art)",
+		"Test Animate Dead":
 		return nil, errors.New("untracked card")
 	}
 	switch card.ID {
