@@ -125,6 +125,11 @@ func nameQualifierList(name string) []string {
 	return words
 }
 
+// csiAmbiguousNote matches the note a listing carries when it says it is one
+// of several printings ("Can be Normal or 25th Anniversary Stamp"): no single
+// identity exists for it, so a refusal of one is the vendor's own ambiguity.
+var csiAmbiguousNote = regexp.MustCompile(`(?i)^\s*can be\b`)
+
 // buylistNumberWord matches the number-shaped words of a buylist note.
 var buylistNumberWord = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+)?[,.]?$`)
 
@@ -649,7 +654,8 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					// Ignore expected misses
 					case magic.IsBasicLand(theCard.Name),
 						notes == "" && strings.Contains(edition, "The List"),
-						strings.Contains(notes, "Preorder"):
+						strings.Contains(notes, "Preorder"),
+						csiAmbiguousNote.MatchString(notes):
 					default:
 						csi.printf("%v", err)
 						csi.printf("%v", theCard)
@@ -985,6 +991,9 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
+			if csiAmbiguousNote.MatchString(product.Notes) {
+				continue
+			}
 			csi.printf("error: %v", err)
 			csi.printf("original: %q", product)
 			csi.printf("preprocessed: %q", theCard)
