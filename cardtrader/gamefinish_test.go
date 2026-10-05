@@ -50,3 +50,38 @@ func shelfBlueprint(name string) *Blueprint {
 	bp.Expansion.Name = name
 	return &bp
 }
+
+// TestGameFinishPokemon pins that a Pokemon listing's finish follows the
+// blueprint's version as well as its flags: a holo rare names its treatment,
+// a first-edition one crosses it with the run, and a non-holo or reverse
+// version never reads as a holo.
+func TestGameFinishPokemon(t *testing.T) {
+	for _, tt := range []struct {
+		desc         string
+		version      string
+		reverse      bool
+		firstEdition bool
+		want         string
+	}{
+		{"holo rare", "Holo Rare | 8/64", false, false, "Holofoil"},
+		{"first edition holo rare", "Holo Rare | 8/64", false, true, "1st Edition Holofoil"},
+		{"cosmos holo", "Cosmos Holo | 144/172", false, false, "Holofoil"},
+		{"first edition, no treatment", "Rare | 8/64", false, true, "1st Edition"},
+		{"non-holo", "Non-Holo | 053/167", false, false, ""},
+		{"reverse flag wins", "Holo Rare | 8/64", true, false, "Reverse Holofoil"},
+		{"reverse version", "Reverse Holo | 8/64", false, false, ""},
+		{"no version", "", false, false, ""},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			var bp Blueprint
+			bp.Version = tt.version
+			var product Product
+			product.Properties.PokemonReverse = tt.reverse
+			product.Properties.FirstEdition = tt.firstEdition
+			got := gameFinish(GamePokemon, &bp, product)
+			if got != tt.want {
+				t.Errorf("gameFinish = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
