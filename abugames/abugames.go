@@ -107,6 +107,11 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			continue
 		}
 
+		co, err := abu.backend.GetUUID(cardID)
+		if err != nil {
+			continue
+		}
+
 		for _, doc := range group.Doclist.Docs {
 			if doc.Condition == "SP" {
 				// There is nothing available on the website under this condition
@@ -115,14 +120,8 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 
 			// Sanity check, a bunch of cards are market as foil when they
 			// actually don't have a foil printing, just skip them
-			if strings.Contains(doc.DisplayTitle, "FOIL") {
-				co, err := abu.backend.GetUUID(cardID)
-				if err != nil {
-					continue
-				}
-				if !co.Foil {
-					continue
-				}
+			if foilOfUnfoiled(doc.DisplayTitle, co) {
+				continue
 			}
 
 			// Older sets tend to be rougher, so grade stricter

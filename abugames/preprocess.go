@@ -348,6 +348,12 @@ func finishNamed(co *mtgmatcher.CardObject) bool {
 	return co.Foil || co.Etched
 }
 
+// foilOfUnfoiled reports a listing spelled FOIL whose printing has no finish
+// to name, which the storefront does for cards it never had in foil.
+func foilOfUnfoiled(title string, co *mtgmatcher.CardObject) bool {
+	return strings.Contains(title, "FOIL") && !finishNamed(co)
+}
+
 // resolved answers the printing a description names, and nil when it names
 // none. It matches a copy, so the matcher's own edits stay in the probe.
 func resolved(b *mtgmatcher.Backend, name, edition, variation, language string, foil bool) *mtgmatcher.CardObject {
