@@ -454,8 +454,8 @@ func (ct *CTAuthClient) Expansions(ctx context.Context) ([]Expansion, error) {
 	return out, nil
 }
 
-// ProductsForExpansion returns every product in an expansion, each with its 25
-// cheapest listings.
+// ProductsForExpansion returns every product in an expansion, each with all
+// of its listings, cheapest first.
 func (ct *CTAuthClient) ProductsForExpansion(ctx context.Context, id int) (map[int][]Product, error) {
 	link := fmt.Sprintf("%s?expansion_id=%d", ctMarketplaceURL, id)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -478,8 +478,7 @@ func (ct *CTAuthClient) ProductsForExpansion(ctx context.Context, id int) (map[i
 	return out, nil
 }
 
-// ProductsForBlueprint returns every product sold against one blueprint, each
-// with its 25 cheapest listings.
+// ProductsForBlueprint returns every listing of one blueprint, cheapest first.
 func (ct *CTAuthClient) ProductsForBlueprint(ctx context.Context, id int) ([]Product, error) {
 	link := fmt.Sprintf("%s?blueprint_id=%d", ctMarketplaceURL, id)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
