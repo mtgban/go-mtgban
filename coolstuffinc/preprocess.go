@@ -18,10 +18,6 @@ const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 var numFixes = map[string]string{
 	"GolgariSignetCM2":                "CM2191",
 	"GolgariSignetCM2v2":              "CM2192",
-	"TempleoftheFalse_God271":         "CM2271",
-	"TempleoftheFalseGod":             "CM2272",
-	"SolemnSimulacrum":                "CM2218",
-	"SolemnSimulacrum__219v2":         "CM2219",
 	"Aura_Shards":                     "PLSTCMD-182",
 	"aurashardslist2":                 "PLSTINV-233",
 	"NissaWhoShakestheWorld518v2":     "SLD518",
@@ -36,6 +32,17 @@ var numFixes = map[string]string{
 	"LeylineoftheVoidv2":              "PM20107p",
 	"386443":                          "POTJ149p",
 	"Ugin001":                         "M211",
+}
+
+// shelfNumFixes holds the image stems that name a printing only on one shelf:
+// CSI reuses these generic ones on the shelves of every other reprint.
+var shelfNumFixes = map[string]map[string]string{
+	"Commander Anthology Volume II": {
+		"TempleoftheFalse_God271": "CM2271",
+		"TempleoftheFalseGod":     "CM2272",
+		"SolemnSimulacrum":        "CM2218",
+		"SolemnSimulacrum__219v2": "CM2219",
+	},
 }
 
 var variantTable = map[string]string{
@@ -93,6 +100,9 @@ func buylistLanguage(name, notes string) string {
 func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
 	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
 	fixup, found := numFixes[imgName]
+	if !found {
+		fixup, found = shelfNumFixes[edition][imgName]
+	}
 	if found {
 		imgName = fixup
 	}
