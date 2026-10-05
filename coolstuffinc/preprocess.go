@@ -42,6 +42,9 @@ var numFixes = map[string]string{
 	"SLDDPThrillCF":                   "SLDIFIYW-8",
 	"SLDDPGreavesCF":                  "SLDIFIYW-9",
 	"SLDDPSolRingCF":                  "SLDIFIYW-10",
+	"414937":                          "FIN385",
+	"414881":                          "FIN398",
+	"414952":                          "FIN382",
 }
 
 // shelfNumFixes holds the image stems that name a printing only on one shelf:
@@ -169,6 +172,12 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		return input, nil
 	}
 
+	// A "ds" in front of the set code marks a double-sided card's image.
+	rest, found := strings.CutPrefix(imgName, "ds")
+	if found && !hasSetPrefix(b, imgName) && hasSetPrefix(b, rest) {
+		imgName = rest
+	}
+
 	// The promo pack's images are named for the set they were printed for or
 	// for the product, so a set and number read out of one is the base card's,
 	// unless numFixes names the printing.
@@ -277,6 +286,13 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 	case "Deckmasters":
 		variant = strings.TrimSpace(strings.Split(variant, "Deckmaster")[0])
 
+	case "Final Fantasy Variants":
+		// The two-sided cards with no number in their image are the
+		// borderless ones; the note names only the colour behind the art.
+		if finalFantasyBackground.MatchString(variant) {
+			variant += " Borderless"
+		}
+
 	case "Unfinity":
 		variant = strings.Replace(variant, ",", "/", -1)
 
@@ -320,19 +336,27 @@ func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher
 }
 
 // imagePrinting reports whether a product image's set and number name exactly
-// one printing of the card. A variants shelf reuses the base card's image for
-// its extended art copy, so when the listing asks for extended art, the image
-// is turned down if it names a printing without it where the set holds one.
+// one printing of the card, whose front face a listing may name alone. A
+// variants shelf reuses the base card's image for its extended art copy, so
+// when the listing asks for extended art, the image is turned down if it
+// names a printing without it where the set holds one.
 func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant string) bool {
 	cards := b.MatchInSetNumber(cardName, setCode, number)
+	set, err := b.GetSet(setCode)
+	if err != nil {
+		return false
+	}
+	if len(cards) == 0 {
+		for _, card := range set.Cards {
+			if card.Number == number && card.FaceName == cardName {
+				cards = append(cards, card)
+			}
+		}
+	}
 	if len(cards) != 1 {
 		return false
 	}
 	if !mtgmatcher.Contains(variant, "Extended Art") || isExtendedArt(cards[0]) {
-		return true
-	}
-	set, err := b.GetSet(setCode)
-	if err != nil {
 		return true
 	}
 	for _, card := range set.Cards {
@@ -358,6 +382,20 @@ func imageCard(cardName, set, number, variant string, isFoil bool) *mtgmatcher.I
 		}
 	}
 	return &mtgmatcher.InputCard{Name: cardName, Variation: number, Edition: set, Foil: isFoil}
+}
+
+// hasSetPrefix reports whether an image stem opens with a set code.
+func hasSetPrefix(b *mtgmatcher.Backend, stem string) bool {
+	for _, n := range [...]int{3, 4} {
+		if len(stem) <= n {
+			continue
+		}
+		_, err := b.GetSet(strings.ToUpper(stem[:n]))
+		if err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 // stemLetters keeps the letters and digits of a name, as CSI spells it into
@@ -1234,6 +1272,10 @@ var (
 	tokenNumber  = regexp.MustCompile(`^(\d+)T Token$`)
 	emblemNumber = regexp.MustCompile(`^\d+(?:/\d+)?[A-Za-z]? `)
 )
+
+// finalFantasyBackground matches the note of a Final Fantasy borderless
+// variant: "XVI in Gray Background", or its misspelling "Blackground".
+var finalFantasyBackground = regexp.MustCompile(`(?i) in .* Bl?ackground`)
 
 // promoPackSymbol reads the set a Universal Promo Pack listing names in its
 // note, "<Set Name> - Silver Planeswalker Symbol" once cleaned.
