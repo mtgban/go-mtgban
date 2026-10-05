@@ -407,7 +407,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			// A promotional shelf sells no ordinary card, so an answer
 			// carrying no promotional label is the number having spoken
 			// alone; promoShelfNeedsLabel says when that is worth refusing,
-			// and today only Gundam ever says so.
+			// and today only Gundam and One Piece ever say so.
 			if promoShelfNeedsLabel(ct.backend, ct.gameID, blueprint) {
 				co, err := ct.backend.GetUUID(cardID)
 				if err != nil || len(co.PromoTypes) == 0 {

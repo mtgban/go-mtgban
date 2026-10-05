@@ -468,25 +468,29 @@ func fabWording(version, number string) string {
 // promoShelfNeedsLabel reports whether a blueprint matched by name alone
 // has to answer with a promotional printing rather than an ordinary card.
 //
-// It only ever answers yes for Gundam, and only because that game's numbers
-// are not unique. Its promotional shelves reprint another set's card under
-// that card's own number, and Card Trader files them under shelves the
-// datastore names no set for - "Premium Accessory and Card Set", "Gundam
-// Championships", "Reprints". The edition then narrows nothing and the
-// number answers alone, with the ordinary card. A shelf that sells nothing
-// but promotional reprints answering with a card carrying no promotional
-// label is a contradiction, and publishing it files a promo's price at the
-// ordinary card's identity.
+// It answers yes for Gundam and for One Piece's promotional shelves
+// (opPromoShelves), only because those games' numbers are not unique. Their
+// promotional shelves reprint another set's card under that card's own
+// number, and Card Trader files them under shelves the datastore names no set
+// for - "Premium Accessory and Card Set", "Gundam Championships", "Reprints".
+// The edition then narrows nothing and the number answers alone, with the
+// ordinary card. A shelf that sells nothing but promotional reprints
+// answering with a card carrying no promotional label is a contradiction, and
+// publishing it files a promo's price at the ordinary card's identity.
 //
-// A shelf that names a set is never asked, and so is one that opens with the
-// game's own set code: Bandai brands its sets that way and the catalog spells
-// the code into the set name too, so "GD-01: Newtype Rising" is a set's shelf
-// even though no exact lookup answers for it. The starter decks are why the
-// code has to be read rather than the name looked up - the catalog files them
-// as "Starter Deck 01: Heroic Beginnings", which "ST-01: Heroic Beginnings"
-// never reaches by name. Of Card Trader's 37 Gundam shelves, 4 name a set, 22
-// carry a code, and the 11 left are the promotional ones this asks about.
+// One Piece asks only the closed list. For Gundam, a shelf that names a set
+// is never asked, and so is one that opens with the game's own set code:
+// Bandai brands its sets that way and the catalog spells the code into the
+// set name too, so "GD-01: Newtype Rising" is a set's shelf even though no
+// exact lookup answers for it. The starter decks are why the code has to be
+// read rather than the name looked up - the catalog files them as "Starter
+// Deck 01: Heroic Beginnings", which "ST-01: Heroic Beginnings" never reaches
+// by name. Of Card Trader's 37 Gundam shelves, 4 name a set, 22 carry a code,
+// and the 11 left are the promotional ones this asks about.
 func promoShelfNeedsLabel(b *mtgmatcher.Backend, gameID int, bp *Blueprint) bool {
+	if gameID == GameOnePiece {
+		return opPromoShelves[bp.Expansion.Name]
+	}
 	if gameID != GameGundam {
 		return false
 	}
@@ -501,6 +505,16 @@ func promoShelfNeedsLabel(b *mtgmatcher.Backend, gameID int, bp *Blueprint) bool
 	}
 	set, err := b.GetSetByName(bp.Expansion.Name)
 	return err != nil || set == nil
+}
+
+// opPromoShelves are the One Piece shelves that sell nothing but promotional
+// printings of other sets' cards, so an answer with no promotional label is
+// the base card answering for a promo the datastore does not carry yet.
+var opPromoShelves = map[string]bool{
+	"Winner Pack":              true,
+	"Tournament Pack":          true,
+	"Store Tournaments Promos": true,
+	"Championships Promo":      true,
 }
 
 // codedShelf matches a shelf named for the set it sells, opening with that
