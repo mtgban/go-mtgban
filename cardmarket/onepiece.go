@@ -40,14 +40,19 @@ var onePieceDons = map[int]struct{ edition, label string }{
 // onePieceNonEnglish holds the products Cardmarket shelves among the English
 // cards that were printed in another language alone: the Première Édition
 // starter leaders, the French 1st Anniversary Pack, the French-exclusive
-// Treasure Rares, and the Japanese DON!! cards listed as the V.2 of an
-// English one. Their wording reaches the English printing.
+// Treasure Rares, the Japanese DON!! cards listed as the V.2 of an
+// English one, and the Japanese and Chinese event DON!! cards (Kumamoto,
+// Saikyo Jump, the Chinese anniversaries) the datastore carries no row of.
+// Their wording reaches the English printing.
 var onePieceNonEnglish = map[int]bool{
 	818082: true, 818083: true, 818084: true, 818085: true, 818086: true, 818087: true,
 	818088: true, 818089: true, 818090: true, 818091: true, 818092: true, 818093: true,
 	878040: true, 878041: true, 878042: true, 878043: true, 878044: true, 878045: true, 878046: true,
 	814438: true, 817152: true, 830578: true, 843043: true, 859007: true, 868221: true, 880301: true,
 	874451: true, 883576: true, 883577: true, 883578: true, 884708: true, 911358: true,
+	878056: true, 878057: true, 878058: true, 878059: true, 878060: true, 878061: true,
+	878062: true, 878063: true, 878064: true, 878065: true,
+	850409: true, 858758: true, 867220: true, 870125: true, 808800: true, 866419: true,
 }
 
 // onePieceByID answers a One Piece product from the bridge's TCGplayer id,
