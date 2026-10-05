@@ -97,3 +97,37 @@ func TestLorcanaVariationRainbowFoil(t *testing.T) {
 		t.Error("unrewritten wording already reached the rainbow pillars uuid; the fixture no longer demonstrates the bug")
 	}
 }
+
+// TestLorcanaShelfFollowsTheQuestNote pins the prize cards filed on the shelf
+// of the set whose card they repeat: the frame the note names is the quest.
+func TestLorcanaShelfFollowsTheQuestNote(t *testing.T) {
+	b := readGameDatastore(t, "lorcana", "LORCANA_PATH")
+
+	for _, tt := range []struct {
+		name, shelf, notes, wantSet string
+	}{
+		{"Yen Sid - Powerful Sorcerer", "Ursula's Return", "223/204, Ink Tentacles Card Frame", "Q1"},
+		{"Pinocchio - Strings Attached", "Reign of Jafar", "224/204, Foil Shifting Sands Version", "Q2"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			shelf := lorcanaShelf(b, tt.name, tt.shelf, tt.notes)
+			card := &mtgmatcher.InputCard{Name: tt.name, Edition: shelf, Variation: lorcanaVariation(tt.notes), Foil: true}
+			id, err := b.Match(card)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", card, err)
+			}
+			co, _ := b.GetUUID(id)
+			if co.SetCode != tt.wantSet {
+				t.Errorf("Match = %q (%s), want set %s", id, co.SetCode, tt.wantSet)
+			}
+		})
+	}
+	got := lorcanaShelf(b, "Yen Sid - Powerful Sorcerer", "Ursula's Return", "223/204")
+	if got != "Ursula's Return" {
+		t.Errorf("a note naming no quest moved the listing to %q", got)
+	}
+	got = lorcanaShelf(b, "Ariel - On Human Legs", "The First Chapter", "1/204, Ink Tentacles Card Frame")
+	if got != "The First Chapter" {
+		t.Errorf("a card absent from the quest moved the listing to %q", got)
+	}
+}

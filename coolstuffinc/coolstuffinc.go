@@ -624,7 +624,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						}
 					}
 				case mtgmatcher.GameLorcana:
-					theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(cardName), Edition: edition, Variation: lorcanaVariation(notes), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(cardName), Edition: lorcanaShelf(csi.backend, cardName, edition, notes), Variation: lorcanaVariation(notes), Foil: isFoil}
 				}
 
 				if printing != "" {
@@ -957,7 +957,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// Notes starts with the same number Number carries and spends the
 		// rest on the qualifier; Number alone misses a Starter Deck Exclusive.
 		case mtgmatcher.GameLorcana:
-			theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(product.Name), Edition: product.ItemSet, Variation: lorcanaVariation(product.Notes), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(product.Name), Edition: lorcanaShelf(csi.backend, product.Name, product.ItemSet, product.Notes), Variation: lorcanaVariation(product.Notes), Foil: product.IsFoil == 1}
 		}
 
 		var cardID string
