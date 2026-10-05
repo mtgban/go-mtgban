@@ -738,8 +738,10 @@ func fabNumber(bp *Blueprint, number string) string {
 // names no printing of its own, existing in the backend only as a face of
 // at least two double-sided pairings and never standalone. See the commit
 // for why a number that also carries a printing of its own (Spectral
-// Shield's MST158-A/-B) is excluded.
-func fabDoubleSidedFace(b *mtgmatcher.Backend, number string) bool {
+// Shield's MST158-A/-B) is excluded. A standalone printing only counts when
+// it is sold in the listing's own finish: a foil-only one is not what a
+// regular listing can be, which leaves it a face of one of the pairings.
+func fabDoubleSidedFace(b *mtgmatcher.Backend, number string, foil bool) bool {
 	if number == "" || strings.Contains(number, "//") {
 		return false
 	}
@@ -752,7 +754,7 @@ func fabDoubleSidedFace(b *mtgmatcher.Backend, number string) bool {
 		front, back, split := strings.Cut(co.Number, "//")
 		if !split {
 			rest, found := strings.CutPrefix(co.Number, number)
-			if found && (rest == "" || !unicode.IsDigit(rune(rest[0]))) {
+			if found && (rest == "" || !unicode.IsDigit(rune(rest[0]))) && co.Foil == foil {
 				return false
 			}
 			continue
