@@ -29,7 +29,7 @@ func TestCardmarketNeedsItsBridge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("MTGJSON_MKMID_PATH", catalog)
+	t.Setenv("CARDMARKET_CATALOG_PATH", catalog)
 
 	_, err = scraperResources(mtgmatcher.GamePokemon, "cardmarket_sealed")
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {

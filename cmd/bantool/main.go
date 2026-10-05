@@ -221,9 +221,9 @@ var options = targets()
 // game and whichever of cardmarket's scrapers asks for it, as go-cardmarket's
 // mkmcatalog builds it.
 func mkmCatalog() (*cm.Catalog, error) {
-	path := os.Getenv("MTGJSON_MKMID_PATH")
+	path := os.Getenv("CARDMARKET_CATALOG_PATH")
 	if path == "" {
-		return nil, errors.New("missing MTGJSON_MKMID_PATH env var")
+		return nil, errors.New("missing CARDMARKET_CATALOG_PATH env var")
 	}
 	reader, err := openPath(path, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 	if err != nil {
