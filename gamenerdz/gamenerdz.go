@@ -257,6 +257,9 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 			cardID, err = retried, nil
 		}
 	}
+	if err == nil && gn.backend.Game == mtgmatcher.GameOnePiece && onePieceCodeless(product.DisplayName) && !landedOnLeader(gn.backend, cardID) {
+		err = errors.New("no card code in display name, and no promo leader answers it")
+	}
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return "", nil
 	} else if err != nil {
