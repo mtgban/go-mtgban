@@ -25,6 +25,7 @@ var nameTable = map[string]string{
 	"Faithbound Judge // Sinner's Judgement": "Faithbound Judge // Sinner's Judgment",
 	"Mothra's Giant Cocoon":                  "Mothra's Great Cocoon",
 	"rathi Berserker":                        "Aerathi Berserker",
+	"Lim-Dul's Vault":                        "Lim-Dûl's Vault",
 }
 
 // name2edition maps a card on one of the promo shelves that name no set to
@@ -143,6 +144,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 			variant = "Commander 2011"
 		}
 	case "SLD":
+		// The variant repeats the reskin names of both faces, which no
+		// edition spells, so the match stops at an unknown edition.
+		if cardName == "Hawkins National Laboratory" {
+			variant = ""
+		}
 		// The shelf holds the drops, the convention promos and the
 		// commander decks alike, and only the card says which
 		edition = setCode
