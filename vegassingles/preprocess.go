@@ -469,7 +469,13 @@ func preprocessGundam(product VSProduct) (*mtgmatcher.InputCard, error) {
 	cardName := strings.TrimSpace(product.DisplayName[:loc[0]])
 	variation := product.DisplayName[loc[2]:loc[3]]
 	if rarity := gundamRarity.FindStringSubmatch(cardName); rarity != nil {
-		variation += " " + rarity[1]
+		named := rarity[1]
+		// Where the name and the body both name a parallel, the body's is
+		// the catalog's: "Gundam Airmaster (R+)" is a U+ in both.
+		if strings.HasSuffix(named, "+") && strings.HasSuffix(product.ProductData.Rarity, "+") {
+			named = product.ProductData.Rarity
+		}
+		variation += " " + named
 		cardName = strings.TrimSpace(gundamRarity.ReplaceAllString(cardName, ""))
 	}
 

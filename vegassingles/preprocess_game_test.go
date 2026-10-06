@@ -371,11 +371,22 @@ func TestPreprocessGundam(t *testing.T) {
 		}
 	}
 
+	// The body's parallel rarity wins over the one the name brackets.
+	airmaster := VSProduct{DisplayName: "Gundam Airmaster (R+) (GD02-059) - Dual Impact Holofoil"}
+	airmaster.ProductData.Rarity = "U+"
+	card, err := preprocessGundam(airmaster)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.Variation != "GD02-059 U+" {
+		t.Errorf("got variation %q, want %q", card.Variation, "GD02-059 U+")
+	}
+
 	// The edition comes from the product body, not the tail of the name,
 	// which spells it without its punctuation.
 	product := VSProduct{DisplayName: "Zaku II (C+) (ST03-006) - Starter Deck 03 Zeons Rush Holofoil"}
 	product.ProductData.SetName = "Starter Deck 03: Zeon's Rush"
-	card, err := preprocessGundam(product)
+	card, err = preprocessGundam(product)
 	if err != nil {
 		t.Fatal(err)
 	}
