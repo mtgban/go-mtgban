@@ -42,7 +42,8 @@ var forcedLanguages = map[string]string{
 	"4BB": "Japanese",
 }
 
-// List of numbers in SLD that need to be decoupled
+// List of numbers in SLD that need to be decoupled, each with its starred
+// sibling where it has one
 var sldJPNLangDupes = []string{
 	// Special Guests Yoji Shinkawa
 	"1110", "1111", "1112", "1113",
@@ -50,19 +51,22 @@ var sldJPNLangDupes = []string{
 	"1114", "1115", "1116", "1117",
 	// Miku Sakura Superstar
 	"1587", "1594", "1596", "1597", "805", "808",
-	"1587★", "1594★", "1596★", "1597★",
 	// Miku Digital Sensation
 	"1592", "1595", "1599", "1603", "1604", "1607", "806",
 	// Miku Electric Entourage
 	"1585", "1590", "1593", "1598", "1600", "807",
 	// Miku Winter Diva
 	"1586", "1588", "1589", "1591", "1601", "1606", "804",
+	// Feather, the Redeemed and Inspiring Vantage
+	"1602", "1605",
 	// Final Fantasy Game Over
 	"1858", "1859", "1860", "1861", "1862",
 	// Final Fantasy Weapons
 	"1863", "1864", "1865", "1866", "1867",
 	// Final Fantasy Grimoire
 	"1868", "1869", "1870", "1871", "1872",
+	// Secret Lair bonus cards
+	"7001", "7002", "7003",
 	// Summer Superdrop 2025 promo
 	"909",
 }

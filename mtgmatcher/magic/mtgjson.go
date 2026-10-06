@@ -1821,8 +1821,8 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 	}
 
 	for i := range sets[code].Cards {
-		// Skip unneeded
-		if !slices.Contains(numbers, sets[code].Cards[i].Number) {
+		// Skip unneeded; a listed number copies its starred sibling too
+		if !slices.Contains(numbers, strings.TrimSuffix(sets[code].Cards[i].Number, SuffixSpecial)) {
 			continue
 		}
 
