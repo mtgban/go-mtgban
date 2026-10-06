@@ -29,6 +29,9 @@ type responseChan struct {
 	// byName marks a price whose printing was named rather than looked
 	// up by id, which is a guess however well guarded; see namedLast.
 	byName bool
+	// owned marks a price for a printing the datastore files under this
+	// very product, which namedLast lets hold it first.
+	owned bool
 	// product is what was priced, for the collector to tell a twin of a
 	// product already priced from a disagreement worth reporting.
 	product *cm.Product
@@ -55,23 +58,26 @@ type responseChan struct {
 // first - and half the time that hands a verified printing over to a guess
 // about a different one. Waiting decides it instead: the guess is offered
 // only where nothing verified stands.
+//
+// A printing is priced by one product, in every column. The first product
+// to reach it holds it, and any other gives way, so the Low and Trend
+// shelves name the same product for a card and never mix the prices of two.
 type namedLast struct {
 	add     func(responseChan)
 	results []responseChan
-	// held is what priced each printing so far, keyed by uuid and by the
-	// name of the price column, so a named price for a printing another
-	// product of the same name already holds gives way silently: it is
-	// the same card sold again on another shelf, and the inventory would
-	// only refuse it out loud.
-	held map[string]*cm.Product
+	// held is the product pricing each printing so far, keyed by uuid.
+	held map[string]holder
 	// twin says whether two products are the same card sold twice, for
-	// the games whose shelves do that; nil leaves every collision to the
-	// inventory.
+	// the games whose shelves do that.
 	twin func(a, b *cm.Product) bool
 	// face says whether a product names one face of the fused printing
 	// it is beside, the other way a shelf sells one card twice
 	face  func(product *cm.Product, cardID string) bool
 	twins int
+	// clash hears of a price that gave way to another product that is
+	// neither its twin nor its face; nil only counts it.
+	clash   func(result responseChan, held int)
+	clashes int
 	// The run's tally, summed from the editions' records; the collector
 	// runs on one goroutine, so plain counts are all this takes.
 	walked  int
@@ -95,32 +101,50 @@ func (n *namedLast) collect(result responseChan) {
 	n.results = append(n.results, result)
 }
 
-// hold records what priced a printing's column, and reports whether the
-// price is the first of its product for it: a product named like the one
-// already there is the same card sold again on another shelf, and the
-// inventory would only refuse it out loud.
-func (n *namedLast) hold(result responseChan) bool {
-	if n.held == nil {
-		n.held = map[string]*cm.Product{}
-	}
-	key := result.cardID + "|" + result.entry.SellerName
-	if holder := n.held[key]; holder != nil && result.product != nil {
-		if (n.twin != nil && n.twin(holder, result.product)) || (n.face != nil && n.face(result.product, result.cardID)) {
-			n.twins++
-			return false
-		}
-	}
-	n.held[key] = result.product
-	return true
+// holder is the product a printing is priced by.
+type holder struct {
+	ogID    int
+	product *cm.Product
 }
 
-// flush adds everything held back, the prices looked up by id first and
-// the named ones after them, each in the order of the catalog - expansion,
-// then product - and reports how many named prices went in and how many
-// gave way to a product already priced.
+// hold records the product pricing a printing, and reports whether the
+// price is that product's. A twin or a face of the holder gives way
+// silently, being the same card sold again; any other product is a second
+// guess at the printing, and clash hears of it.
+func (n *namedLast) hold(result responseChan) bool {
+	if n.held == nil {
+		n.held = map[string]holder{}
+	}
+	held, found := n.held[result.cardID]
+	if !found {
+		n.held[result.cardID] = holder{ogID: result.ogID, product: result.product}
+		return true
+	}
+	if held.ogID == result.ogID && held.product == result.product {
+		return true
+	}
+	if held.product != nil && result.product != nil &&
+		((n.twin != nil && n.twin(held.product, result.product)) || (n.face != nil && n.face(result.product, result.cardID))) {
+		n.twins++
+		return false
+	}
+	n.clashes++
+	if n.clash != nil {
+		n.clash(result, held.ogID)
+	}
+	return false
+}
+
+// flush adds everything held back: the prices of a printing's own product
+// first, then those looked up by id, then the named ones, each in the
+// order of the catalog - expansion, then product - and reports how many
+// named prices went in and how many gave way to a twin already priced.
 func (n *namedLast) flush() (added, twins int) {
 	sort.SliceStable(n.results, func(i, j int) bool {
 		a, b := n.results[i], n.results[j]
+		if a.owned != b.owned {
+			return a.owned
+		}
 		if a.byName != b.byName {
 			return !a.byName
 		}
@@ -475,6 +499,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 					product: product,
 					cardID:  id,
 					byName:  byName,
+					owned:   mkm.owns(product, id),
 					entry: mtgban.InventoryEntry{
 						Conditions: mtgban.NM,
 						Price:      prices[i] * mkm.exchangeRate,
@@ -510,6 +535,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 						product: product,
 						cardID:  cardIDFoil,
 						byName:  byName,
+						owned:   mkm.owns(product, cardIDFoil),
 						entry: mtgban.InventoryEntry{
 							Conditions: mtgban.NM,
 							Price:      foilprices[i] * mkm.exchangeRate,
@@ -541,6 +567,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 				product: product,
 				cardID:  cardID,
 				byName:  byName,
+				owned:   mkm.owns(product, cardID),
 				entry: mtgban.InventoryEntry{
 					Conditions: mtgban.NM,
 					Price:      foilprices[i] * mkm.exchangeRate,
@@ -555,6 +582,18 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	}
 
 	return nil
+}
+
+// owns reports whether the datastore files cardID's printing under this
+// product's id, the strongest word there is on which product prices it:
+// another printing's foil column can reach it too, through a foil sibling
+// picked by finish alone.
+func (mkm *Index) owns(product *cm.Product, cardID string) bool {
+	co, err := mkm.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	return co.Identifiers["mcmId"] == fmt.Sprint(product.IDProduct)
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -598,36 +637,27 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
 	// one, and a cardtrader blueprint names every Cardmarket product it
 	// sells as, so nothing stops two products from resolving to one
-	// printing. An index wants a single price per name per uuid, and a
-	// second one is worth the log line the callback already prints rather
-	// than a second row no consumer can choose between.
-	add := mkm.inventory.AddStrict
+	// printing. namedLast keeps the first, so the inventory sees one
+	// product per printing and one price per column.
+	collector := namedLast{
+		add: func(result responseChan) {
+			err := mkm.inventory.AddUnique(result.cardID, &result.entry)
+			if err != nil {
+				mkm.printf("%d - %s", result.ogID, err.Error())
+			}
+		},
+		twin: sameProduct(mkm.gameID),
+		face: faceOf(mkm.backend, mkm.gameID),
+	}
+	// A second product on a printing is rare enough in these games to be
+	// worth a line each. Elsewhere it is counted: Magic's are mostly V.N,
+	// Extras and reprint shelves the datastore has no printing for.
 	switch mkm.gameID {
 	case cm.GameYuGiOh, cm.GameFleshAndBlood, cm.GamePokemon:
-		add = mkm.inventory.AddUnique
-	}
-
-	addOne := func(result responseChan) {
-		err := add(result.cardID, &result.entry)
-		if err != nil {
-			card, cerr := mkm.backend.GetUUID(result.cardID)
-			if cerr != nil {
-				mkm.printf("%d - %s: %s", result.ogID, cerr.Error(), result.cardID)
-				return
-			}
-			// PLST also prints as Mystery Booster/2 - a second landing
-			// on a uuid AddStrict already holds is not an error here.
-			if mkm.backend.IsToken(card.Name) ||
-				card.Edition == "Pro Tour Collector Set" ||
-				strings.HasPrefix(card.Edition, "World Championship Decks") ||
-				card.SetCode == "PLST" {
-				return
-			}
-			mkm.printf("%d - %s", result.ogID, err.Error())
+		collector.clash = func(result responseChan, held int) {
+			mkm.printf("%d - gives way to %d on %s", result.ogID, held, result.cardID)
 		}
 	}
-
-	collector := namedLast{add: addOne, twin: sameProduct(mkm.gameID), face: faceOf(mkm.backend, mkm.gameID)}
 
 	mtgban.WorkerPool(ctx, mkm.maxConcurrency, items, worker, collector.collect, mkm.printf)
 
@@ -635,6 +665,9 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 	mkm.printf("Adding %d prices whose printing was named", added)
 	if collector.twins > 0 {
 		mkm.printf("%d prices gave way to a product of the same name already priced", collector.twins)
+	}
+	if collector.clashes > 0 {
+		mkm.printf("%d prices gave way to another product already pricing the printing", collector.clashes)
 	}
 	return collector.walked, collector.refused, collector.foreign
 }

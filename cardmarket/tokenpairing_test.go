@@ -21,12 +21,15 @@ func TestResolveMagicResolvesTokenPairing(t *testing.T) {
 		IDProduct: 362664, Name: "Manifest Token // Angel Token (W 4/4)",
 		ExpansionName: "Commander 2018", Number: "T 12/24",
 	}
-	cardID, _, err := res.resolveMagic(product)
+	cardID, _, byName, err := res.resolveMagic(product)
 	if err != nil {
 		t.Fatalf("resolveMagic(%d) = %v", product.IDProduct, err)
 	}
 	if cardID == "" {
 		t.Fatal("resolveMagic returned no id, want the derived Manifest // Angel pairing")
+	}
+	if !byName {
+		t.Error("resolveMagic said the pairing was found by id, want it named")
 	}
 	co, err := b.GetUUID(cardID)
 	if err != nil {
@@ -54,7 +57,7 @@ func TestResolveMagicRefusesAmbiguousTokenPairing(t *testing.T) {
 		IDProduct: 294192, Name: "Bird Token (W 1/1) // Spirit Token (W 1/1)",
 		ExpansionName: "Commander 2016", Number: "T 2/6",
 	}
-	cardID, cardIDFoil, err := res.resolveMagic(product)
+	cardID, cardIDFoil, _, err := res.resolveMagic(product)
 	if err != nil {
 		t.Fatalf("resolveMagic(%d) = %v", product.IDProduct, err)
 	}
