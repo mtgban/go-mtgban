@@ -361,6 +361,13 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			edition = "LCI"
 			variation = "410b"
 		}
+	case "Promos: 30th Anniversary Promos":
+		// The shelf calls a History promo's starred copy "Retro Frame", which
+		// P30A's datestamped retro copies would otherwise take
+		if mtgmatcher.Contains(variation, "Retro Frame") && len(b.MatchInSet(cardName, "P30H")) > 0 {
+			edition = "P30H"
+			variation = "Retro Frame"
+		}
 	case "Promos: Magicfest":
 		// Only the etched Arcane Signet needs steering; PF25 has no etched
 		// printing of its own, but its other rows land there unaided.

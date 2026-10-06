@@ -45,6 +45,7 @@ func TestShelfCards(t *testing.T) {
 	for _, tt := range []struct{ name, edition, notes, wantSet string }{
 		{"Chrome Mox (Borderless)", "Aetherdrift", "Normal", "SPG"},
 		{"Sol Ring (C21)", "Secret Lair Commander: Heads I Win", "Near Mint Normal English", "PLST"},
+		{"Serra Angel (Retro Frame)", "Promos: 30th Anniversary Promos", "Near Mint Foil English", "P30H"},
 	} {
 		card, err := preprocess(b, tt.name, tt.edition, tt.notes)
 		if err != nil {
