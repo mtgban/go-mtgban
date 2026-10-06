@@ -102,6 +102,43 @@ func TestPreprocessShelves(t *testing.T) {
 	}
 }
 
+// TestPreprocessCatchAllShelves pins that a promo shelf naming no set, the
+// Wizards Play Network and 30th Anniversary ones as well as the
+// miscellaneous one, sends a listed card to the set the datastore files it
+// in, and that a name the miscellaneous shelf maps stays on it alone.
+func TestPreprocessCatchAllShelves(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		name, edition, code string
+		wantSet, wantNumber string
+	}{
+		{"Ruby, Daring Tracker (PWFM 2024 Spring)", "Promo: Unique and Miscellaneous", "PMSC", "PWCS", "2024-02"},
+		{"Saheeli, the Sun's Brilliance (JP Exclusive)", "Promo: WPN & Gateway", "PWPN", "PWCS", "2024-05"},
+		{"Destroy Evil (30th Anniversary Celebration Tokyo)", "Promo: 30th Anniversary", "P30", "P30T", "1"},
+	} {
+		theCard, err := preprocess(b, tt.name, "", "Foil", "Japanese", tt.edition, tt.code)
+		if err != nil {
+			t.Fatalf("preprocess(%q) = %v", tt.name, err)
+		}
+		cardID, err := b.Match(theCard)
+		if err != nil {
+			t.Fatalf("Match(%q) = %v", theCard, err)
+		}
+		co, _ := b.GetUUID(cardID)
+		if co.SetCode != tt.wantSet || co.Number != tt.wantNumber {
+			t.Errorf("Match(%q) = %s %s, want %s %s", theCard, co.SetCode, co.Number, tt.wantSet, tt.wantNumber)
+		}
+	}
+
+	theCard, err := preprocess(b, "Serra Angel (30th Anniversary)", "", "Foil", "Japanese", "Promo: 30th Anniversary", "P30")
+	if err != nil {
+		t.Fatalf("preprocess() = %v", err)
+	}
+	if theCard.Edition != "Promo: 30th Anniversary" {
+		t.Errorf("preprocess() edition = %q, want the shelf's own", theCard.Edition)
+	}
+}
+
 // TestPreprocessLanguage pins that the feed's blanket Language "English" is
 // dropped before it reaches mtgmatcher: an Arabic prerelease foil shelved
 // under that tag, with no language of its own beside "English" to pass,

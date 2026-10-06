@@ -27,10 +27,22 @@ var nameTable = map[string]string{
 	"rathi Berserker":                        "Aerathi Berserker",
 }
 
-var name2edition = map[string]string{
-	"Serra Angel":    "PWOS",
-	"Fiendish Duo":   "PKHM",
-	"Lightning Bolt": "PW26",
+// name2edition maps a card on one of the promo shelves that name no set to
+// the set the datastore files it in, keyed by shelf code and then name: the
+// same name on another shelf is another printing.
+var name2edition = map[string]map[string]string{
+	"PMSC": {
+		"Serra Angel":          "PWOS",
+		"Fiendish Duo":         "PKHM",
+		"Lightning Bolt":       "PW26",
+		"Ruby, Daring Tracker": "PWCS",
+	},
+	"PWPN": {
+		"Saheeli, the Sun's Brilliance": "PWCS",
+	},
+	"P30": {
+		"Destroy Evil": "P30T",
+	},
 }
 
 // codeTable maps the set codes the storefront invents onto the datastore's
@@ -113,8 +125,8 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 	}
 
 	switch setCode {
-	case "PMSC":
-		fixup, found := name2edition[cardName]
+	case "PMSC", "PWPN", "P30":
+		fixup, found := name2edition[setCode][cardName]
 		if found {
 			edition = fixup
 		}
