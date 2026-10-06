@@ -19,6 +19,9 @@ func TestGetProductReadsIdentifiers(t *testing.T) {
 		if !slices.Equal(filters, []string{`+category:"Magic the Gathering Singles"`, singlesFilter()}) {
 			t.Errorf("catalog request filters on %q", filters)
 		}
+		if r.URL.Query().Get("sort") != "product_id asc" {
+			t.Errorf("catalog request sorts on %q", r.URL.Query().Get("sort"))
+		}
 		fields := strings.Split(r.URL.Query().Get("fl"), ",")
 		for _, key := range []string{"scryfall_id", "tcgplayer_id", "multiverseid"} {
 			if !slices.Contains(fields, key) {
