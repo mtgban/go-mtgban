@@ -7,6 +7,7 @@ import (
 	"maps"
 	"slices"
 	"sort"
+	"strconv"
 	"time"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -419,6 +420,16 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 				skipped++
 			} else {
 				err = mkm.queryPrintings(ctx, channel, r.product, r.cardID, r.cardIDFoil, r.byName)
+				if err == nil {
+					// The product is priced already; a copy failing is its own error
+					copyErr := mkm.queryLanguageCopies(ctx, channel, r.product, r.cardID, r.cardIDFoil, r.byName)
+					if errors.Is(copyErr, errTooManyBounces) {
+						return copyErr
+					}
+					if copyErr != nil {
+						mkm.printf("product id %d language copy returned %s", id, copyErr)
+					}
+				}
 				if errors.Is(err, errTooManyBounces) {
 					return err
 				}
@@ -567,6 +578,88 @@ func (mkm *Market) queryPrintings(ctx context.Context, channel chan<- responseCh
 		return nil
 	}
 	return mkm.queryOnePrinting(ctx, channel, product, cardIDFoil, byName, map[string]bool{finish: true})
+}
+
+// queryLanguageCopies prices the printings in another language a product
+// also names, from its listings in that language: a Secret Lair Japanese
+// copy shares its original's product, and Cardmarket sells both under it.
+func (mkm *Market) queryLanguageCopies(ctx context.Context, channel chan<- responseChan, product *cm.Product, cardID, cardIDFoil string, byName bool) error {
+	for _, pair := range languageCopies(mkm.backend, product.IDProduct, cardID, cardIDFoil) {
+		err := mkm.queryPrintings(ctx, channel, product, pair[0], pair[1], byName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// languageCopies answers the printings in another language that carry
+// productID at the same set and number, as the uuids of the finishes cardID
+// and cardIDFoil resolved to. A language offering two uuids for one finish
+// is left out, as is a printing at another number: an id upstream gave to
+// more than one card names neither.
+func languageCopies(b *mtgmatcher.Backend, productID int, cardID, cardIDFoil string) [][2]string {
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		return nil
+	}
+	foilFinish := co.Finish
+	if cardIDFoil != "" {
+		foil, err := b.GetUUID(cardIDFoil)
+		if err == nil {
+			foilFinish = foil.Finish
+		}
+	}
+	ids, err := b.SearchEquals(co.Name)
+	if err != nil {
+		return nil
+	}
+
+	pid := strconv.Itoa(productID)
+	finishes := []string{co.Finish, foilFinish}
+	byLanguage := map[string][2]map[string]bool{}
+	for _, id := range ids {
+		cp, err := b.GetUUID(id)
+		if err != nil || cp.SetCode != co.SetCode || cp.Language == co.Language || cp.PlainNumber != co.PlainNumber {
+			continue
+		}
+		if cp.Identifiers["mcmId"] != pid && cp.Identifiers["mcmEtchedId"] != pid {
+			continue
+		}
+		sets, found := byLanguage[cp.Language]
+		if !found {
+			sets = [2]map[string]bool{{}, {}}
+			byLanguage[cp.Language] = sets
+		}
+		for i, finish := range finishes {
+			uuid := cp.FoilUUIDs[finish]
+			if uuid != "" {
+				sets[i][uuid] = true
+			}
+		}
+	}
+
+	var copies [][2]string
+	for _, sets := range byLanguage {
+		var pair [2]string
+		ambiguous := false
+		for i := range sets {
+			if len(sets[i]) > 1 {
+				ambiguous = true
+			}
+			for uuid := range sets[i] {
+				pair[i] = uuid
+			}
+		}
+		if pair[0] == "" {
+			pair[0] = pair[1]
+		}
+		if !ambiguous && pair[0] != "" {
+			copies = append(copies, pair)
+		}
+	}
+	sort.Slice(copies, func(i, j int) bool { return copies[i][0] < copies[j][0] })
+	return copies
 }
 
 // queryPokemonPrintings prices every printing pokemonFinishPlan resolved for
