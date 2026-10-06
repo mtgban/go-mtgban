@@ -44,7 +44,7 @@ func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgmatcher.Game) 
 
 	switch game {
 	case mtgmatcher.GameRiftbound:
-		return preprocessRiftbound(product)
+		return preprocessRiftbound(b, product)
 	case mtgmatcher.GameOnePiece:
 		return preprocessOnePiece(product)
 	case mtgmatcher.GamePokemon:
@@ -483,7 +483,29 @@ func preprocessGundam(product VSProduct) (*mtgmatcher.InputCard, error) {
 	}, nil
 }
 
-func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
+// riftboundEdition is the set the wording between the number and the shelf
+// names, as in "Calm Rune (R02b) Spiritforged - Riftbound Organized Play
+// Promotional Cards Foil": the promo shelf files the rune of another set, and
+// the shelf alone would land its Vendetta printing. It is asked of every
+// Riftbound listing, and returns "" when that wording is absent or names no
+// set exactly.
+func riftboundEdition(b *mtgmatcher.Backend, displayName string, numberEnd int) string {
+	idx := strings.LastIndex(displayName, " - ")
+	if idx < numberEnd {
+		return ""
+	}
+	wording := strings.TrimSpace(displayName[numberEnd:idx])
+	if wording == "" {
+		return ""
+	}
+	set, err := b.GetSetByName(wording)
+	if err != nil || !mtgmatcher.Equals(set.Name, wording) {
+		return ""
+	}
+	return set.Name
+}
+
+func preprocessRiftbound(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.InputCard, error) {
 	loc := riftboundNumber.FindStringSubmatchIndex(product.DisplayName)
 	if loc == nil {
 		return nil, errors.New("no collector number in display name")
@@ -507,9 +529,14 @@ func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
 		variation += " " + tag[1]
 	}
 
+	edition := riftboundEdition(b, product.DisplayName, loc[1])
+	if edition == "" {
+		edition = product.ProductData.SetName
+	}
+
 	return &mtgmatcher.InputCard{
 		Name:      strings.TrimSpace(cardName),
-		Edition:   product.ProductData.SetName,
+		Edition:   edition,
 		Variation: strings.TrimSpace(variation),
 		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
 	}, nil
