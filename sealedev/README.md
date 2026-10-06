@@ -51,13 +51,15 @@ same number 5,000 times.
 
 ## The price pass
 
-`loadPrices` fetches `all[/SET].json?tag=tags&conds=true` once and then makes
-one pass over the catalog, and that pass does more than it looks like:
+`loadPrices` fetches the API's version 2 `all[/SET].json` once, reads it
+into one price per card and store, and then makes one pass over the
+catalog, and that pass does more than it looks like:
 
-- **`getPrice` reads near mint, then lightly played.** A card with no NM
-  quote is priced from its SP one rather than dropped, per finish - a foil
-  reads `NM_foil`, an etched card `NM_etched`. Reading the plain key for a
-  foil would price it at its nonfoil sibling.
+- **`readPrice` reads near mint, then lightly played**, from the finish the
+  card is sold in. A card with no NM quote is priced from its SP one rather
+  than dropped; an index price, which carries no condition, counts as NM.
+  Each store's price in a condition is its best one there, the lowest
+  retail or the highest buylist offer.
 - **A price over `MaxSinglePrice` ($10,000) is discarded as broken**, except
   in LEA, LEB, 3ED, ARN and LEG, where five figures is a real price.
 - **Anything under `BulkThreshold` ($0.50) is pruned**, from every store, and

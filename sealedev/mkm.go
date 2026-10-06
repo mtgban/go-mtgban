@@ -164,7 +164,7 @@ func (c *mkmCalibration) estimate(low, trend float64) float64 {
 // like it should, either - a card with no near mint copy is one with a thin
 // market, which is the same thing that makes market-over-trend high, so those
 // rows sit above the typical multiplier rather than below it.
-func fitMKMCalibration(b *mtgmatcher.Backend, r *BANPriceResponse) *mkmCalibration {
+func fitMKMCalibration(b *mtgmatcher.Backend, r *priceSnapshot) *mkmCalibration {
 	var n, sumX, sumY, sumXY, sumXX float64
 	bandSum := make([]float64, len(mkmTrendBands))
 	bandNum := make([]int, len(mkmTrendBands))
@@ -222,7 +222,7 @@ func fitMKMCalibration(b *mtgmatcher.Backend, r *BANPriceResponse) *mkmCalibrati
 //
 // The price lands under the near mint key because that is the one a reader
 // looks in first, not as a claim about what condition is on the shelf.
-func (c *mkmCalibration) fill(b *mtgmatcher.Backend, r *BANPriceResponse, uuid string) bool {
+func (c *mkmCalibration) fill(b *mtgmatcher.Backend, r *priceSnapshot, uuid string) bool {
 	if c == nil || r.getRetail(b, uuid, mkmStore) > 0 {
 		return false
 	}

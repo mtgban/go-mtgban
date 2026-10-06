@@ -6,35 +6,37 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
-// BanPrice is one price as the BAN API reports it.
-type BanPrice struct {
-	Conditions map[string]float64 `json:"conditions,omitempty"`
+// v2Entry is one condition of a store's prices in the BAN API's version 2,
+// best condition first; an index price and a sealed product carry none.
+type v2Entry struct {
+	Condition string  `json:"condition"`
+	Price     float64 `json:"price"`
 }
 
-// BANPriceResponse is what the BAN price endpoint answers with.
-type BANPriceResponse struct {
-	Error string `json:"error,omitempty"`
-	Meta  struct {
-		Date    time.Time `json:"date"`
-		Version string    `json:"version"`
-		BaseURL string    `json:"base_url"`
-	} `json:"meta"`
+// v2Response is what the BAN API's version 2 answers with: card, then
+// finish, then store, then that store's prices.
+type v2Response struct {
+	Error string `json:"error"`
 
-	// uuid > store > price {regular/foil/etched}
-	// No omitempty: always emit the keys so decoders never see a nil map.
-	Retail  map[string]map[string]*BanPrice `json:"retail"`
-	Buylist map[string]map[string]*BanPrice `json:"buylist"`
+	Retail  map[string]map[string]map[string][]v2Entry `json:"retail"`
+	Buylist map[string]map[string]map[string][]v2Entry `json:"buylist"`
+}
+
+// priceSnapshot is the BAN price snapshot an EV reads: per side, a card's
+// price at each store.
+type priceSnapshot struct {
+	Retail  map[string]map[string]float64
+	Buylist map[string]map[string]float64
 }
 
 const (
-	banAPIURL = "https://www.mtgban.com/api/mtgban/all%s.json?tag=tags&conds=true&sig=%s"
+	banAPIURL = "https://www.mtgban.com/api/v2/all%s.json?sig=%s"
 
 	// BulkThreshold is the price under which a card counts as bulk and stops
 	// being worth naming in an opening
@@ -44,94 +46,85 @@ const (
 	MaxSinglePrice = 10000.0
 )
 
-func getPrice(b *mtgmatcher.Backend, uuid string, price *BanPrice) float64 {
-	if price == nil {
-		return 0
+// readPrice is the price a store's entries give a card: near mint, else
+// lightly played, an index price counting as near mint. The API lists
+// conditions best first, so the first of these is the one.
+func readPrice(entries []v2Entry) float64 {
+	for _, e := range entries {
+		switch e.Condition {
+		case "NM", "SP", "":
+			return e.Price
+		}
 	}
+	return 0
+}
 
-	co, err := b.GetUUID(uuid)
-	if err != nil {
-		return 0
+// readSide reads one side of the response, each card's prices from the
+// finish it is sold in.
+func readSide(b *mtgmatcher.Backend, side map[string]map[string]map[string][]v2Entry) map[string]map[string]float64 {
+	out := make(map[string]map[string]float64, len(side))
+	for uuid, finishes := range side {
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		for store, entries := range finishes[co.Finish] {
+			price := readPrice(entries)
+			if price == 0 {
+				continue
+			}
+			if out[uuid] == nil {
+				out[uuid] = map[string]float64{}
+			}
+			out[uuid][store] = price
+		}
 	}
+	return out
+}
 
-	var tag string
-	if co.Etched {
-		tag = "_etched"
-	} else if co.Foil {
-		tag = "_foil"
-	}
-
-	result := price.Conditions["NM"+tag]
-	if result == 0 {
-		result = price.Conditions["SP"+tag]
-	}
-
+// getPrice is a card's price at one store, a broken one counting as none.
+func getPrice(b *mtgmatcher.Backend, uuid string, price float64) float64 {
 	// Ignore broken prices, except for well known editions
-	if result > MaxSinglePrice {
+	if price > MaxSinglePrice {
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			return 0
+		}
 		switch co.SetCode {
 		case "LEA", "LEB", "3ED", "ARN", "LEG":
 		default:
-			result = 0
+			return 0
 		}
 	}
-
-	return result
+	return price
 }
 
-func (r *BANPriceResponse) getRetail(b *mtgmatcher.Backend, uuid, source string) float64 {
+func (r *priceSnapshot) getRetail(b *mtgmatcher.Backend, uuid, source string) float64 {
 	return getPrice(b, uuid, r.Retail[uuid][source])
 }
 
-func (r *BANPriceResponse) getBuylist(b *mtgmatcher.Backend, uuid, source string) float64 {
+func (r *priceSnapshot) getBuylist(b *mtgmatcher.Backend, uuid, source string) float64 {
 	return getPrice(b, uuid, r.Buylist[uuid][source])
 }
 
-func (r *BANPriceResponse) setRetail(b *mtgmatcher.Backend, uuid, store string, price float64) {
-	co, err := b.GetUUID(uuid)
-	if err != nil {
-		return
-	}
-
-	var tag string
-	if co.Etched {
-		tag = "_etched"
-	} else if co.Foil {
-		tag = "_foil"
-	}
-
-	// Rebuild the price entry
-	if r.Retail[uuid] == nil {
-		r.Retail[uuid] = map[string]*BanPrice{}
-	}
-	r.Retail[uuid][store] = &BanPrice{
-		Conditions: map[string]float64{
-			"NM" + tag: price,
-		},
-	}
+func (r *priceSnapshot) setRetail(b *mtgmatcher.Backend, uuid, store string, price float64) {
+	setPrice(b, r.Retail, uuid, store, price)
 }
 
-func (r *BANPriceResponse) setBuylist(b *mtgmatcher.Backend, uuid, store string, price float64) {
-	co, err := b.GetUUID(uuid)
+func (r *priceSnapshot) setBuylist(b *mtgmatcher.Backend, uuid, store string, price float64) {
+	setPrice(b, r.Buylist, uuid, store, price)
+}
+
+// setPrice files a price for a card the datastore knows.
+func setPrice(b *mtgmatcher.Backend, side map[string]map[string]float64, uuid, store string, price float64) {
+	_, err := b.GetUUID(uuid)
 	if err != nil {
 		return
 	}
-
-	var tag string
-	if co.Etched {
-		tag = "_etched"
-	} else if co.Foil {
-		tag = "_foil"
+	if side[uuid] == nil {
+		side[uuid] = map[string]float64{}
 	}
-
-	// Rebuild the price entry
-	if r.Buylist[uuid] == nil {
-		r.Buylist[uuid] = map[string]*BanPrice{}
-	}
-	r.Buylist[uuid][store] = &BanPrice{
-		Conditions: map[string]float64{
-			"NM" + tag: price,
-		},
-	}
+	side[uuid][store] = price
 }
 
 func getCT0fees(price float64) float64 {
@@ -157,7 +150,7 @@ func getCT0fees(price float64) float64 {
 	return 0.64
 }
 
-func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string) (*BANPriceResponse, error) {
+func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string) (*priceSnapshot, error) {
 	link := fmt.Sprintf(banAPIURL, selected, sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -177,23 +170,19 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 		return nil, fmt.Errorf("BAN API returned HTTP %d", resp.StatusCode)
 	}
 
-	var response BANPriceResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
+	var raw v2Response
+	err = json.NewDecoder(resp.Body).Decode(&raw)
 	if err != nil {
 		return nil, err
 	}
 
-	if response.Error != "" {
-		return nil, errors.New(response.Error)
+	if raw.Error != "" {
+		return nil, errors.New(raw.Error)
 	}
 
-	// A response that omits one of the two sides leaves its map nil, and the
-	// setters below assign into it
-	if response.Retail == nil {
-		response.Retail = map[string]map[string]*BanPrice{}
-	}
-	if response.Buylist == nil {
-		response.Buylist = map[string]map[string]*BanPrice{}
+	response := priceSnapshot{
+		Retail:  readSide(b, raw.Retail),
+		Buylist: readSide(b, raw.Buylist),
 	}
 
 	// Measured over the whole snapshot before any of it is written back, so
@@ -217,11 +206,6 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 			// TCG Direct (net) is missing: estimate it from Market, falling back
 			// to Low. Skip entirely if neither is available.
 			if tcgMarket != 0 || tcgLow != 0 {
-				// Allocate memory
-				if response.Buylist[uuid] == nil {
-					response.Buylist[uuid] = map[string]*BanPrice{}
-				}
-
 				// Use Market as base estimate, or Low as fallback
 				directNet = tcgMarket
 				if directNet == 0 {
@@ -257,7 +241,7 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 		}
 
 		// Prune prices too low to matter, after the adjustments above.
-		for _, category := range []map[string]map[string]*BanPrice{response.Retail, response.Buylist} {
+		for _, category := range []map[string]map[string]float64{response.Retail, response.Buylist} {
 			for store := range category[uuid] {
 				if getPrice(b, uuid, category[uuid][store]) < BulkThreshold {
 					delete(category[uuid], store)
@@ -271,7 +255,7 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 
 // maxStorePrice returns the highest available price for a card across the given
 // source stores (0 if none are present).
-func maxStorePrice(b *mtgmatcher.Backend, uuid string, prices map[string]map[string]*BanPrice, stores []string) float64 {
+func maxStorePrice(b *mtgmatcher.Backend, uuid string, prices map[string]map[string]float64, stores []string) float64 {
 	var price float64
 	for _, source := range stores {
 		sourcePrice := getPrice(b, uuid, prices[uuid][source])
