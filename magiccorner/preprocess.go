@@ -890,6 +890,11 @@ func preprocessBL(b *mtgmatcher.Backend, cardName, edition, extra string, number
 			variant = vars[1]
 		}
 	}
+	// The store also writes the version on the name, "X (V.2)".
+	vars := mtgmatcher.SplitVariants(cardName)
+	if variant == "" && len(vars) > 1 {
+		cardName, variant = vars[0], vars[1]
+	}
 
 	cardName, edition, variant = internalPreprocess(b, cardName, edition, variant, extra)
 

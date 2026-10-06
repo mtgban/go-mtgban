@@ -41,3 +41,26 @@ func TestBuylistNumber(t *testing.T) {
 		})
 	}
 }
+
+// TestBuylistNameVersion pins that a version written on the card name, as the
+// store does for a promo pack printing, reaches the same mapping one written
+// on the edition does.
+func TestBuylistNameVersion(t *testing.T) {
+	b := realDatastore(t)
+
+	card, err := preprocessBL(b, "Sublime Epiphany (V.2)", "Core 2021: Promos", "", 74)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := b.Match(card)
+	if err != nil {
+		t.Fatalf("Match(%q) = %v", card, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.SetCode != "PM21" || co.Number != "74p" {
+		t.Errorf("Match(%q) = %s|%s, want PM21|74p", card, co.SetCode, co.Number)
+	}
+}
