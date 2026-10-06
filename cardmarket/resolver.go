@@ -317,16 +317,17 @@ func (r *resolver) matchFab(product *cm.Product) string {
 }
 
 // resolveMagic answers a product with the printings its two price columns
-// belong to. An empty id under a nil error means the product names nothing
-// this datastore carries, which is a skip rather than a failure.
-func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
+// belong to, and whether they were named rather than found by the product's
+// id. An empty id under a nil error means the product names nothing this
+// datastore carries, which is a skip rather than a failure.
+func (r *resolver) resolveMagic(product *cm.Product) (string, string, bool, error) {
 	// An exact mcmId match ties the product to its printings more
 	// reliably than name/number matching, which cannot tell apart
 	// products sharing a collector number (e.g. RVR 312 vs 312z,
 	// both "312" upstream); preprocess only when no id is known.
 	cardID, cardIDFoil := Fallback(r.backend, product)
 	if cardID != "" {
-		return cardID, cardIDFoil, nil
+		return cardID, cardIDFoil, false, nil
 	}
 
 	// A two-sided token sheet's own product name ("Bird Token (W 1/1) //
@@ -347,26 +348,26 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 		if pairIDFoil := magic.MatchTokenPairingByNamesAndEdition(r.backend, product.Name, product.ExpansionName, true); pairIDFoil != "" {
 			cardIDFoil, _ = r.backend.MatchID(pairIDFoil, true)
 		}
-		return cardID, cardIDFoil, nil
+		return cardID, cardIDFoil, true, nil
 	}
 
 	theCard, err := Preprocess(r.backend, product.Name, product.Number, product.ExpansionName)
 	if err != nil {
 		_, ok := err.(*PreprocessError)
 		if ok {
-			return "", "", err
+			return "", "", false, err
 		}
-		return "", "", nil
+		return "", "", false, nil
 	}
 
 	cardID, err = r.backend.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
-		return "", "", nil
+		return "", "", false, nil
 	} else if err != nil {
 		if r.backend.IsToken(theCard.Name) ||
 			theCard.Edition == "Pro Tour Collector Set" ||
 			strings.HasPrefix(theCard.Edition, "World Championship Decks") {
-			return "", "", nil
+			return "", "", false, nil
 		}
 
 		r.logf("%v", err)
@@ -381,7 +382,7 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 				r.logf("- %s", card)
 			}
 		}
-		return "", "", err
+		return "", "", false, err
 	}
 
 	co, cerr := r.backend.GetUUID(cardID)
@@ -403,7 +404,7 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, error) {
 	default:
 		cardIDFoil, _ = r.backend.MatchID(cardID, true)
 	}
-	return cardID, cardIDFoil, nil
+	return cardID, cardIDFoil, true, nil
 }
 
 // foilOnlyShelf reports whether product's shelf sells only the foil shown,
@@ -439,7 +440,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 
 	switch r.gameID {
 	case cm.GameMagic:
-		cardID, cardIDFoil, err = r.resolveMagic(product)
+		cardID, cardIDFoil, byName, err = r.resolveMagic(product)
 		if err != nil || cardID == "" {
 			return "", "", false, err
 		}

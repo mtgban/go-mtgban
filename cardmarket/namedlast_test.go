@@ -86,6 +86,16 @@ func TestNamedLast(t *testing.T) {
 			want: 2.5,
 		},
 		{
+			// 7ED's Scathe Zombies prices its foil column on the
+			// Simplified Chinese alternate art, which has its own product.
+			name: "the product the datastore files the printing under holds it first",
+			results: []responseChan{
+				{ogID: 2923, cardID: uuid, entry: entry(5.67, 2923), product: filed(37, 2923)},
+				{ogID: 257634, cardID: uuid, entry: entry(0.02, 257634), product: filed(1401, 257634), owned: true},
+			},
+			want: 0.02,
+		},
+		{
 			name: "and within one expansion the lower product id holds it",
 			results: []responseChan{
 				{ogID: 106410, cardID: uuid, entry: entry(1.5, 106410), product: filed(10, 106410)},
@@ -199,5 +209,139 @@ func TestCollectTally(t *testing.T) {
 	}
 	if added != 2 {
 		t.Errorf("prices added by flush = %d, want 2", added)
+	}
+}
+
+// TestNamedLastOnePerPrinting pins that a printing is priced by one product
+// in every column: a second product gives way even in a column the first
+// has no price in, so the Low and Trend shelves cannot name two products
+// for one card.
+func TestNamedLastOnePerPrinting(t *testing.T) {
+	const uuid = "m3c-223_f"
+	low, trend := entry(1, 772984), entry(3, 772984)
+	low.SellerName, trend.SellerName = availableIndexNames[0], availableIndexNames[1]
+	otherLow, otherTrend := entry(0.5, 774875), entry(4, 774875)
+	otherLow.SellerName, otherTrend.SellerName = availableIndexNames[0], availableIndexNames[1]
+
+	for _, tt := range []struct {
+		name    string
+		results []responseChan
+		want    []mtgban.InventoryEntry
+		clashes int
+	}{
+		{
+			name: "one product keeps both of its columns",
+			results: []responseChan{
+				{ogID: 772984, cardID: uuid, entry: low},
+				{ogID: 772984, cardID: uuid, entry: trend},
+			},
+			want: []mtgban.InventoryEntry{low, trend},
+		},
+		{
+			name: "a second product gives way where the first has no price",
+			results: []responseChan{
+				{ogID: 774875, cardID: uuid, entry: otherLow, byName: true},
+				{ogID: 774875, cardID: uuid, entry: otherTrend, byName: true},
+				{ogID: 772984, cardID: uuid, entry: trend},
+			},
+			want:    []mtgban.InventoryEntry{trend},
+			clashes: 2,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			inventory := mtgban.InventoryRecord{}
+			var heard int
+			collector := namedLast{
+				add: func(result responseChan) {
+					_ = inventory.AddUnique(result.cardID, &result.entry)
+				},
+				clash: func(result responseChan, held int) {
+					heard++
+					if held != 772984 {
+						t.Errorf("%d gave way to %d, want 772984", result.ogID, held)
+					}
+				},
+			}
+			for _, result := range tt.results {
+				collector.collect(result)
+			}
+			collector.flush()
+
+			got := inventory[uuid]
+			if len(got) != len(tt.want) {
+				t.Fatalf("got %d entries, want %d: %v", len(got), len(tt.want), got)
+			}
+			for _, want := range tt.want {
+				found := false
+				for _, entry := range got {
+					found = found || (entry.SellerName == want.SellerName && entry.OriginalID == want.OriginalID && entry.Price == want.Price)
+				}
+				if !found {
+					t.Errorf("missing %s from %s at %v", want.SellerName, want.OriginalID, want.Price)
+				}
+			}
+			if collector.clashes != tt.clashes || heard != tt.clashes {
+				t.Errorf("clashes = %d, heard %d, want %d", collector.clashes, heard, tt.clashes)
+			}
+		})
+	}
+}
+
+// TestCollectPricesOneProductPerMagicPrinting pins the Magic shape behind
+// it: the Extras shelf sells Commander: Modern Horizons 3's ripple foils as
+// products of their own, named onto the foil the base product's id already
+// prices. The base product holds both shelves even where it has no Low,
+// whichever product the walk reaches first. Extras is filed ahead of it in
+// the catalog's order here, so only the datastore's id can decide it.
+func TestCollectPricesOneProductPerMagicPrinting(t *testing.T) {
+	b := realDatastore(t)
+
+	const plain, foil = "00a85170-a441-5911-bc5b-626e7e8cb5ec", "00a85170-a441-5911-bc5b-626e7e8cb5ec_f"
+	extras := cm.Product{IDProduct: 774875, Name: "Beast Within", Number: "223", ExpansionName: "Commander: Modern Horizons 3: Extras"}
+	extras.Expansion.IDExpansion = 1
+	base := cm.Product{IDProduct: 772984, Name: "Beast Within", Number: "223", ExpansionName: "Commander: Modern Horizons 3"}
+	base.Expansion.IDExpansion = 2
+
+	for _, tt := range []struct {
+		name     string
+		products []cm.Product
+	}{
+		{"Extras walked first", []cm.Product{extras, base}},
+		{"base walked first", []cm.Product{base, extras}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			// Built by hand: the test datastore is loaded without the game
+			// name NewScraperIndex reads.
+			mkm := &Index{inventory: mtgban.InventoryRecord{}, exchangeRate: 1, maxConcurrency: 1}
+			mkm.gameID = cm.GameMagic
+			mkm.resolver.backend = b
+			mkm.resolver.printf = mkm.printf
+			mkm.priceGuide = map[int]cm.PriceGuide{
+				772984: {IDProduct: 772984, LowPrice: 1, TrendPrice: 2, FoilTrendPrice: 3},
+				774875: {IDProduct: 774875, FoilLowPrice: 0.5, FoilTrendPrice: 4},
+			}
+
+			mkm.collectPrices(context.Background(), []cm.Expansion{{Name: "Commander: Modern Horizons 3"}},
+				func(_ context.Context, _ cm.Expansion, channel chan<- responseChan) error {
+					for i := range tt.products {
+						err := mkm.processProduct(channel, &tt.products[i])
+						if err != nil {
+							return err
+						}
+					}
+					return nil
+				})
+
+			if len(mkm.inventory[plain]) != 2 {
+				t.Errorf("got %d entries for the nonfoil, want Low and Trend", len(mkm.inventory[plain]))
+			}
+			entries := mkm.inventory[foil]
+			if len(entries) != 1 {
+				t.Fatalf("got %d entries for the foil, want its Trend alone: %v", len(entries), entries)
+			}
+			if entries[0].OriginalID != "772984" || entries[0].SellerName != availableIndexNames[1] {
+				t.Errorf("the foil kept %s from %s, want Trend from 772984", entries[0].SellerName, entries[0].OriginalID)
+			}
+		})
 	}
 }
