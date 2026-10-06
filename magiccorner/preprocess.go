@@ -51,6 +51,9 @@ var cardTable = map[string]string{
 	"Spellscorn Covern // Take It Back": "Spellscorn Coven // Take It Back",
 	"Fear, Fires, Foes!":                "Fear, Fire, Foes!",
 	"Cut Shot":                          "Cut Short",
+	"Ambitions's Cost":                  "Ambition's Cost",
+	"Inscriptiom of Abundance":          "Inscription of Abundance",
+	"Ral, Caller of Storm":              "Ral, Caller of Storms",
 }
 
 var editionTable = map[string]string{
