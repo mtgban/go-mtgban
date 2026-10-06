@@ -223,8 +223,9 @@ func TestImageName(t *testing.T) {
 
 // TestImageProductID pins the guards the image-carried id is resolved
 // under, on rows copied verbatim from the datastore: same-name collapse,
-// cross-set image reuse, a Phyrexian-language hit let through, and a
-// same-set jpn twin resolving to the English printing.
+// cross-set image reuse, a Phyrexian-language hit let through, a same-set jpn
+// twin resolving to the English printing, a basic land told apart by its id,
+// and a listing that may not take another card's image.
 func TestImageProductID(t *testing.T) {
 	b := realDatastore(t)
 
@@ -268,6 +269,30 @@ func TestImageProductID(t *testing.T) {
 		co, err := b.GetUUID(got)
 		if err != nil || co.SetCode != "SLD" || co.Number != "1600" || co.Language != "English" {
 			t.Errorf("imageProductID resolved to %v, want SLD 1600 English", co)
+		}
+	})
+
+	t.Run("a basic land is told apart by its image id", func(t *testing.T) {
+		got := imageProductID(b, "Phyrexia: All Will Be One", "/x/phyrexia-all-will-be-one-plains-v2-689730.jpg", "Plains", "Phyrexia: All Will Be One", "V.2", false)
+		co, err := b.GetUUID(got)
+		if err != nil || co.Identifiers["mcmId"] != "689730" {
+			t.Errorf("imageProductID resolved to %v, want the printing Cardmarket 689730 names", co)
+		}
+	})
+
+	t.Run("a basic land does not take a same-set sibling's image", func(t *testing.T) {
+		got := imageProductID(b, "Kaldheim", "/x/kaldheim-snow-covered-plains-530262.jpg", "Plains", "Kaldheim", "", false)
+		if got != "" {
+			co, _ := b.GetUUID(got)
+			t.Errorf("imageProductID = %v, want \"\" - the id names Snow-Covered Plains", co)
+		}
+	})
+
+	t.Run("a failed wording does not take another card's image", func(t *testing.T) {
+		got := imageProductID(b, "Dominaria United", "/x/wastescape-battlemage_772110.jpg", "Wastes", "Dominaria United", "", false)
+		if got != "" {
+			co, _ := b.GetUUID(got)
+			t.Errorf("imageProductID = %v, want \"\" - the id names Wastescape Battlemage", co)
 		}
 	})
 }

@@ -253,8 +253,9 @@ func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.Inp
 var mcmImageIDRe = regexp.MustCompile(`[-_](\d{5,7})(?:-\d+)?\.jpg$`)
 
 // imageProductID resolves an Extras/Promos image's Cardmarket product id to
-// a uuid, accepted only under the wording's own language and set - this
-// store also reuses one image across unrelated products in another set.
+// a uuid. It is accepted only when it names the listing's card, under the
+// wording's own language, and in the wording's set unless the wording failed -
+// this store also reuses one image across unrelated products.
 func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edition, variation string, isFoil bool) string {
 	switch rawEdition {
 	// These shelves' images are named after the English printing, not the
@@ -263,13 +264,6 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 		return ""
 	}
 	if cardName == "" {
-		return ""
-	}
-	// A basic land's SearchContains span is hundreds of printings wide and
-	// its ordinal disambiguation is unverified; deferred rather than folded
-	// in here.
-	capitalized := strings.ToUpper(cardName[:1]) + cardName[1:]
-	if magic.IsBasicLand(capitalized) {
 		return ""
 	}
 
@@ -291,6 +285,11 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	for _, candidate := range ids {
 		co, err := b.GetUUID(candidate)
 		if err != nil || co.Identifiers["mcmId"] != m[1] {
+			continue
+		}
+		// SearchContains is a substring search: Plains also finds
+		// Snow-Covered Plains, whose image a Plains listing may carry.
+		if !namesFrontFace(co.Name, cardName) {
 			continue
 		}
 		// The store sells Phyrexian printings on the English shelf, so
@@ -338,7 +337,10 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 			}
 		}
 	}
-	if !sameSet {
+	// Where the wording failed, the image's id is the only witness left. A
+	// wording refused as unsupported is a verdict, not a failure.
+	failed := wordingErr != nil && !errors.Is(wordingErr, mtgmatcher.ErrUnsupported)
+	if !sameSet && !failed {
 		return ""
 	}
 
@@ -354,6 +356,14 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 		return ""
 	}
 	return resolved
+}
+
+// namesFrontFace reports whether name and cardName share a front face. The
+// cut at " /" reads both the store's "A / B" and the datastore's "A // B".
+func namesFrontFace(name, cardName string) bool {
+	front, _, _ := strings.Cut(name, " /")
+	cardFront, _, _ := strings.Cut(cardName, " /")
+	return mtgmatcher.Equals(front, cardFront)
 }
 
 func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, extra string) (string, string, string) {
