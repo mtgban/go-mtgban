@@ -431,6 +431,18 @@ func TestPreprocess(t *testing.T) {
 			name: "DON!! Card // Green Compass", edition: "Starter Deck 1: Straw Hat Crew", variation: "",
 		},
 		{
+			// On this shelf the storefront's "(Parallel)" is the manga
+			// printing.
+			game: mtgmatcher.GameOnePiece,
+			product: GNProduct{
+				DisplayName:    "Shanks (004) (Parallel) (OP09-004) Emperors in the New World Foil",
+				SelectedFinish: "Foil",
+				ProductData:    GNProductData{SetName: "Emperors in the New World"},
+			},
+			name: "Shanks (004) (Manga)", edition: "Emperors in the New World",
+			variation: "OP09-004", foil: true,
+		},
+		{
 			// A code padded with a trailing space before the parenthesis.
 			game: mtgmatcher.GameOnePiece,
 			product: GNProduct{

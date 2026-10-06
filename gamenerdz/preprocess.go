@@ -441,6 +441,14 @@ func nameSaysFoil(displayName string) bool {
 // all just writes the number alone, "(4)".
 var lorcanaNumber = regexp.MustCompile(`\((\d+[a-z]?)(?:/+[A-Z]?\d+)?\)`)
 
+// lorcanaRespellings pairs the names this storefront misspells with the
+// catalog's own: a rarity added to a song's name, and a subtitle left off,
+// kept to the shelf it was read on where other sets print the bare name.
+var lorcanaRespellings = []struct{ name, shelf, to string }{
+	{"Into the Unknown - Enchanted", "", "Into the Unknown"},
+	{"Mulan", "The First Chapter", "Mulan - Imperial Soldier"},
+}
+
 // A Lorcana display name reads
 //
 //	4*Town - Hottest Band of the Year (17/204) - Attack of the Vine
@@ -467,8 +475,15 @@ func preprocessLorcana(product GNProduct) (*mtgmatcher.InputCard, error) {
 		finish = ""
 	}
 
+	name := strings.TrimSpace(product.DisplayName[:loc[0]])
+	for _, respelling := range lorcanaRespellings {
+		if respelling.name == name && (respelling.shelf == "" || respelling.shelf == product.ProductData.SetName) {
+			name = respelling.to
+		}
+	}
+
 	return &mtgmatcher.InputCard{
-		Name:      strings.TrimSpace(product.DisplayName[:loc[0]]),
+		Name:      name,
 		Edition:   product.ProductData.SetName,
 		Variation: product.DisplayName[loc[2]:loc[3]],
 		Finish:    finish,
@@ -798,7 +813,7 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 
 	locs := onePieceCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if locs == nil {
-		return nil, errors.New("no card code in display name")
+		return preprocessOnePieceLeader(product)
 	}
 	loc := locs[len(locs)-1]
 
@@ -812,12 +827,60 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 		cardName += " " + wording
 	}
 	cardName = squareDecorations.Replace(cardName)
+	for _, relabel := range onePieceRelabels {
+		if relabel.code == code && relabel.shelf == product.ProductData.SetName {
+			cardName = strings.Replace(cardName, relabel.from, relabel.to, 1)
+		}
+	}
 
 	return &mtgmatcher.InputCard{
 		Name:      strings.Join(strings.Fields(cardName), " "),
 		Edition:   product.ProductData.SetName,
 		Variation: code,
 		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
+	}, nil
+}
+
+// onePieceRelabels are the listings whose label names another printing than
+// the catalog's for it, each read off the retail TCGplayer id of the product.
+// On Emperors in the New World the storefront's "(Parallel)" label names the
+// manga printing, sold beside separate "(Alternate Art)" products. Shanks of
+// Premium Booster Vol. 2 is the SP, listed under the alternate art's label.
+var onePieceRelabels = []struct{ code, shelf, from, to string }{
+	{"OP09-004", "Emperors in the New World", "(Parallel)", "(Manga)"},
+	{"OP09-093", "Emperors in the New World", "(Parallel)", "(Manga)"},
+	{"OP09-119", "Emperors in the New World", "(Parallel)", "(Manga)"},
+	{"OP06-007", "Premium Booster -The Best- Vol. 2", "(Alternate Art)", "(SP)"},
+}
+
+// onePieceCodeless reports a listing whose name carries no card code and is
+// not a DON!! card.
+func onePieceCodeless(displayName string) bool {
+	return !strings.HasPrefix(displayName, "DON!! Card") && !onePieceCode.MatchString(displayName)
+}
+
+// landedOnLeader reports whether a printing is one of the promo leaders the
+// catalog numbers "LEADER", which is all a listing with no code can name.
+func landedOnLeader(b *mtgmatcher.Backend, id string) bool {
+	landed, err := b.GetUUID(id)
+	return err == nil && landed.Number == "LEADER"
+}
+
+// preprocessOnePieceLeader answers a promo leader that carries no card code,
+// "Monkey.D.Luffy (Sealed Battle 2024 Vol. 2)". The catalog numbers these
+// "LEADER" and tells them apart by their label alone, so the head up to its
+// last bracket stays whole as the name, the way a DON!! listing's does.
+// resolveProduct keeps the answer only where it lands on such a leader.
+func preprocessOnePieceLeader(product GNProduct) (*mtgmatcher.InputCard, error) {
+	end := strings.LastIndex(product.DisplayName, ")")
+	if end < 0 {
+		return nil, errors.New("no card code in display name")
+	}
+	name := squareDecorations.Replace(product.DisplayName[:end+1])
+	return &mtgmatcher.InputCard{
+		Name:    strings.Join(strings.Fields(name), " "),
+		Edition: product.ProductData.SetName,
+		Foil:    strings.EqualFold(product.SelectedFinish, "foil"),
 	}, nil
 }
 
