@@ -223,6 +223,17 @@ func TestPreprocess(t *testing.T) {
 			name: "Aang's Shelter - Teferi's Protection", edition: "TLE", variation: "007",
 		},
 		{
+			// A List number with no set size still takes its origin from
+			// the tag ahead of it.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Impact Tremors (MOC) (LIST-285) - The List Reprints",
+				SelectedFinish: "Normal",
+				ProductData:    GNProductData{Set: "list", SetName: "The List Reprints"},
+			},
+			name: "Impact Tremors", edition: "list", variation: "MOC-285",
+		},
+		{
 			game: mtgmatcher.GameLorcana,
 			product: GNProduct{
 				DisplayName:    "4*Town - Hottest Band of the Year (17/204) - Attack of the Vine",

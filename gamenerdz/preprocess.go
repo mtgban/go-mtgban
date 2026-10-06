@@ -77,6 +77,12 @@ var magicOrigin = regexp.MustCompile(`\(([0-9A-Z]{2,6})\) \(LIST-`)
 // The name stops at the first parenthesis: the collector number pins the
 // printing, so variant wording like (Borderless) only restates it.
 func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.InputCard, error) {
+	// The matcher refuses the Spanish Salvat reprint sets. The shelf the
+	// name ends on is read, not the body, which can name Salvat's set under
+	// a name that is another card's.
+	if strings.HasPrefix(magicTailSet(product.DisplayName), "Salvat") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
 	number, err := magicNumber(product)
 	if err != nil {
 		return nil, err
@@ -265,8 +271,14 @@ func magicTailSet(displayName string) string {
 	if idx == -1 {
 		return ""
 	}
-	return strings.TrimSpace(magicRarityTail.ReplaceAllString(displayName[idx+3:], ""))
+	tail := magicRarityTail.ReplaceAllString(displayName[idx+3:], "")
+	return strings.TrimSpace(magicColonNote.ReplaceAllString(tail, ""))
 }
+
+// magicColonNote is the bracketed note a few shelves hang after a colon,
+// "Friday Night Magic 2005: (tombstone)". A bracket that belongs to the set's
+// name, "The List (Unfinity Foil Edition)", has no colon before it.
+var magicColonNote = regexp.MustCompile(`:\s*\([^)]*\)$`)
 
 // magicWording joins what a display name brackets besides its code tag,
 // which is the variant the storefront is describing.
@@ -318,6 +330,7 @@ var magicRespellings = map[string]string{
 	"Airbender Lesson":       "Airbending Lesson",
 	"Beetle-Headed Mechants": "Beetle-Headed Merchants",
 	"Broodguard Ellite":      "Broodguard Elite",
+	"Captain Guard":          "Capital Guard",
 	"Charging Strikeknight":  "Charging Strifeknight",
 	"Cursecloth Wrapping":    "Cursecloth Wrappings",
 	"Dollhouse of Horros":    "Dollhouse of Horrors",
@@ -325,9 +338,11 @@ var magicRespellings = map[string]string{
 	"Flitting Guerilla":      "Flitting Guerrilla",
 	"Frosteliff Siege":       "Frostcliff Siege",
 	"Glided Kids":            "Glider Kids",
+	"Kefka, Court Magem":     "Kefka, Court Mage",
 	"Nine Live":              "Nine Lives",
 	"Passeneger Ferry":       "Passenger Ferry",
 	"Perigree Beckoner":      "Perigee Beckoner",
+	"Thousand-Year Elixer":   "Thousand-Year Elixir",
 	"Village Messenger Treatments // Moonrise Intruder": "Village Messenger // Moonrise Intruder",
 	"Volatile Arsonist / Dire-Strain Anaarchist":        "Volatile Arsonist // Dire-Strain Anarchist",
 }
@@ -366,22 +381,21 @@ var magicRarityTail = regexp.MustCompile(`(: (?:Common|Uncommon|Rare|Mythic)(?: 
 // magicNumber reads a product's collector number, from the tag in its
 // display name where the name carries one and from the product body where
 // it does not. A List tag names the reprinted printing by origin and number
-// ("C16-177"), or by number and set size ("229/350") with the origin in a
-// tag of its own before it, and without either the number alone is left to
-// the name. The retail body carries the number as printed; the buylist body
-// only its digits, which is still the number for every card the set numbers
-// plainly.
+// ("C16-177"), or by number alone, with or without the set size ("229/350",
+// "285"), with the origin in a tag of its own before it, and without either
+// the number alone is left to the name. The retail body carries the number
+// as printed; the buylist body only its digits, which is still the number for
+// every card the set numbers plainly.
 func magicNumber(product GNProduct) (string, error) {
 	matches := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
 	if matches != nil {
 		last := matches[len(matches)-1]
 		code, number := last[1], last[2]
 		if code == "LIST" {
-			if before, _, found := strings.Cut(number, "/"); found {
-				number = before
-				if origin := magicOrigin.FindStringSubmatch(product.DisplayName); origin != nil {
-					number = origin[1] + "-" + strings.TrimLeft(number, "0")
-				}
+			number, _, _ = strings.Cut(number, "/")
+			origin := magicOrigin.FindStringSubmatch(product.DisplayName)
+			if origin != nil && !strings.Contains(number, "-") {
+				number = origin[1] + "-" + strings.TrimLeft(number, "0")
 			}
 		}
 		if number != "" {

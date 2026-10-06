@@ -241,6 +241,9 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	}
 
 	theCard, err := preprocess(gn.backend, product, gn.backend.Game)
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return "", nil
+	}
 	if err != nil {
 		// Name the product, the way the failure below already does. A
 		// reason alone says a listing was dropped without saying which,
