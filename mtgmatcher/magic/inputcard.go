@@ -364,6 +364,25 @@ func isMysteryList(c *mtgmatcher.InputCard) bool {
 	return saysMysteryList(c.Edition, c.Variation)
 }
 
+// playtestPrinting returns the playtest card the loader filed as "<name>
+// Playtest" when the listing spells its name exactly and its wording reads
+// as that card: it says playtest, names the card's set, or says Mystery for
+// a Mystery Booster playtest card.
+func playtestPrinting(b *mtgmatcher.Backend, c *mtgmatcher.InputCard) *mtgmatcher.CardObject {
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(c.Name+" Playtest")] {
+		co, err := b.GetUUID(uuid)
+		if err != nil || !strings.EqualFold(co.Name, c.Name+" Playtest") {
+			continue
+		}
+		if c.Contains("Playtest") ||
+			(c.Edition != "" && (mtgmatcher.Contains(co.Edition, c.Edition) || mtgmatcher.Contains(c.Edition, co.Edition))) ||
+			(isMysteryList(c) && strings.Contains(co.Edition, "Mystery Booster")) {
+			return co
+		}
+	}
+	return nil
+}
+
 // saysMysteryList is isMysteryList over the wording alone, for the edition
 // alias, which has no card to read.
 func saysMysteryList(edition, variation string) bool {
