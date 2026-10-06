@@ -56,8 +56,8 @@ func (abu *ABUGames) printf(format string, a ...any) {
 	}
 }
 
-func (abu *ABUGames) processEntry(ctx context.Context, query string, channel chan<- resultChan, page int) error {
-	product, err := abu.client.GetProduct(ctx, query, page)
+func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel chan<- resultChan, page int) error {
+	product, err := abu.client.GetProduct(ctx, filter, page)
 	if err != nil {
 		return err
 	}
@@ -289,29 +289,12 @@ func abuBuylistCondition(condition string, foil bool) (mtgban.Condition, error) 
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (abu *ABUGames) Load(ctx context.Context) error {
-	extraSets := []string{
-		`"Alpha"`, `"Beta"`, `"Unlimited"`, `"Arabian Nights"`, `"Antiquities"`, `"Legends"`, `"The Dark"`,
-	}
-	// A signed, slabbed, altered or miscut copy is listed on its own, by
-	// serial. Its price is not the printing's, so none of them is read.
-	oneOffs := `"Artist Signed" OR "Artist Signed Case" OR "Graded" OR "Altered" OR "Miscut" OR "Printing Error"`
-	// Remove all cards with pictures and the editions above
-	normalQuery := ` -magic_features:("Actual Picture Card" OR ` + oneOffs + `) -magic_edition:(` + strings.Join(extraSets, " OR ") + `)`
-	// Enable card with pictures for the editions above
-	// (the +magic_features, means only report cards with pics, we need both)
-	extraQuery := ` magic_features:("Actual Picture Card") -magic_features:(` + oneOffs + `) +magic_edition:(` + strings.Join(extraSets, " OR ") + `)`
-
-	count, err := abu.client.GetTotalItems(ctx, normalQuery)
+	filter := singlesFilter()
+	count, err := abu.client.GetTotalItems(ctx, filter)
 	if err != nil {
 		return err
 	}
 	abu.printf("Parsing %d entries", count)
-
-	secondCount, err := abu.client.GetTotalItems(ctx, extraQuery)
-	if err != nil {
-		return err
-	}
-	abu.printf("Adding %d entries for pictures", secondCount)
 
 	pageNums := make([]int, 0, count/maxEntryPerRequest+1)
 	for i := 0; i < count; i += maxEntryPerRequest {
@@ -321,18 +304,9 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 	mtgban.WorkerPool(ctx, abu.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- resultChan) error {
 			abu.printf("Processing page %d/%d", page/maxEntryPerRequest, count/maxEntryPerRequest)
-			err := abu.processEntry(ctx, normalQuery, results, page)
+			err := abu.processEntry(ctx, filter, results, page)
 			if err != nil {
 				abu.printf("%v", err)
-			}
-			// secondCount will always be less than count so we can hijack
-			// the loop and query more in detail when needed
-			if page <= secondCount {
-				abu.printf("Processing detailed page %d/%d", page/maxEntryPerRequest, secondCount/maxEntryPerRequest)
-				err := abu.processEntry(ctx, extraQuery, results, page)
-				if err != nil {
-					abu.printf("%v", err)
-				}
 			}
 			return nil
 		},

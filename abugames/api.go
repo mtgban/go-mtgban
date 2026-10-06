@@ -80,10 +80,9 @@ const (
 		"card_number,price,quantity,sub_qty,buy_list_quantity," +
 		"buy_price,trade_price,scryfall_id,tcgplayer_id,multiverseid"
 
-	abuBaseURL = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20-magic_features%3A(%22Actual%20Picture%20Card%22)`
-
-	// This URL will include pics, but queries will be slower
-	abuBaseURLFull = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20`
+	// abuBaseURL keeps every singles walk inside the singles catalog, whatever
+	// filter it is given.
+	abuBaseURL = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22`
 
 	abuBaseSealedURL = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
 )
@@ -170,20 +169,17 @@ func (abu *ABUClient) sendSealedRequest(ctx context.Context, url string) (*ABURe
 	return &response, nil
 }
 
-// GetTotalItems fetches the number of product groups. group.ngroups (the total
-// group count) is expensive for Solr to compute - a full enumeration of all
-// ~213k groups - so it is requested only here, not baked into the base URL used
-// for page fetches.
-func (abu *ABUClient) GetTotalItems(ctx context.Context, extra string) (int, error) {
-	link := abuBaseURL
-	if extra != "" {
-		link = abuBaseURLFull + url.QueryEscape(extra)
-	}
-	u, err := url.Parse(link)
+// GetTotalItems fetches the number of product groups filter selects.
+// group.ngroups (the total group count) is expensive for Solr to compute - a
+// full enumeration of all ~213k groups - so it is requested only here, not
+// baked into the base URL used for page fetches.
+func (abu *ABUClient) GetTotalItems(ctx context.Context, filter string) (int, error) {
+	u, err := url.Parse(abuBaseURL)
 	if err != nil {
 		return 0, err
 	}
 	q := u.Query()
+	q.Add("fq", filter)
 	q.Set("group.ngroups", "true")
 	u.RawQuery = q.Encode()
 
@@ -204,18 +200,15 @@ func (abu *ABUClient) GetTotalSealedItems(ctx context.Context) (int, error) {
 	return response.Response.NumFound, nil
 }
 
-// GetProduct returns one page of the singles catalog.
-func (abu *ABUClient) GetProduct(ctx context.Context, extra string, pageStart int) (*ABUProduct, error) {
-	link := abuBaseURL
-	if extra != "" {
-		link = abuBaseURLFull + url.QueryEscape(extra)
-	}
-	u, err := url.Parse(link)
+// GetProduct returns one page of the singles catalog filter selects.
+func (abu *ABUClient) GetProduct(ctx context.Context, filter string, pageStart int) (*ABUProduct, error) {
+	u, err := url.Parse(abuBaseURL)
 	if err != nil {
 		return nil, err
 	}
 
 	q := u.Query()
+	q.Add("fq", filter)
 	q.Set("rows", fmt.Sprintf("%d", maxEntryPerRequest))
 	q.Set("start", fmt.Sprintf("%d", pageStart))
 	// fl trims each doc to the fields ABUCard decodes (~9x smaller payload).
