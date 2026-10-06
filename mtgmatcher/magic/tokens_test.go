@@ -144,3 +144,23 @@ func TestParseCommanderEditionKeepsTokenSets(t *testing.T) {
 		}
 	}
 }
+
+// TestColorlessTokenListing pins a token listing that names only colorless:
+// it answers with the colorless token rather than aliasing it with a colored
+// one of the same name.
+func TestColorlessTokenListing(t *testing.T) {
+	realDatastore(t)
+
+	in := mtgmatcher.InputCard{Name: "Spirit", Edition: "Double Masters 2022 Tokens", Variation: "Colorless"}
+	id, err := testBackend.Match(&in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	co, err := testBackend.GetUUID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.Number != "2" || len(co.Colors) != 0 {
+		t.Errorf("Match(%v) = #%s %v, want the colorless #2", in, co.Number, co.Colors)
+	}
+}
