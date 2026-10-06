@@ -19,6 +19,8 @@ func TestUnknownEventCards(t *testing.T) {
 		{"485115", "Unclaimed Cat", "UNK"},
 		{"532622", "Rampant, Growth Playtest", "UNK"},
 		{"532632", "Ransack, the Lab Playtest", "UNK"},
+		// Named like a different card, with no table row of its own
+		{"496930", "Joven and Chandler Playtest", "UNK"},
 		// MTGJSON files this product on UNK's Fast // Furious too
 		{"240150", "Fast // Furious", "MH2"},
 	} {
@@ -47,6 +49,8 @@ func TestUnknownEventCards(t *testing.T) {
 		{"Mox Poison", "Mystery Booster Playtest Cards", "MB2"},
 		{"Mox Poison", "", "MB2"},
 		{"Mox Poison", "Unknown Event", "UNK"},
+		// A pun spelled exactly, in wording that names its set
+		{"Clear, the Mind", "Unknown Event", "UNK"},
 	} {
 		uuid, err := b.Match(&mtgmatcher.InputCard{Name: tc.name, Edition: tc.edition})
 		if err != nil {

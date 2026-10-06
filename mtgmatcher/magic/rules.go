@@ -2348,14 +2348,12 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		}
 	}
 
+	playtest := playtestPrinting(b, inCard)
+	if playtest != nil {
+		inCard.Name = playtest.Name
+	}
+
 	switch inCard.Name {
-	case "Red Herring",
-		"Bind // Liberate",
-		"Pick Your Poison",
-		"Glimpse, the Unthinkable":
-		if isMysteryList(inCard) || inCard.Contains("Playtest") {
-			inCard.Name += " Playtest"
-		}
 	case "Unquenchable Fury":
 		if inCard.Contains("Battle the Horde") || inCard.Contains("Hero's Path") {
 			inCard.Name += " Token"

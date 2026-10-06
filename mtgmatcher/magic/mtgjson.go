@@ -773,6 +773,9 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	// never steals its lookup. Filled by the same pass as cardNames, which
 	// runs before any token is read.
 	cardOwnedNames := map[string]bool{}
+	// The oracle ids each name answers for among the cards that are not
+	// playtest cards, so a playtest card sharing a name can be told apart.
+	cardOracles := map[string][]string{}
 	var tokens []string
 	var allSets []string
 
@@ -786,6 +789,13 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		// Load all possible card names
 		for _, card := range set.Cards {
 			cardNames[card.Name] = true
+			if !slices.Contains(card.PromoTypes, "playtest") {
+				key := mtgmatcher.Normalize(card.Name)
+				oracle := card.Identifiers["scryfallOracleId"]
+				if !slices.Contains(cardOracles[key], oracle) {
+					cardOracles[key] = append(cardOracles[key], oracle)
+				}
+			}
 			for _, name := range []string{
 				card.Name, card.FaceName, card.FlavorName,
 				card.FaceFlavorName, card.PrintedName, card.FacePrintedName,
@@ -888,6 +898,18 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				}
 			}
 
+			// A playtest card named like a different card is carried as
+			// "<name> Playtest", so the plain name keeps answering for it
+			if !fromTokens && slices.Contains(card.PromoTypes, "playtest") &&
+				slices.ContainsFunc(cardOracles[mtgmatcher.Normalize(card.Name)], func(oracle string) bool {
+					return oracle != card.Identifiers["scryfallOracleId"]
+				}) {
+				card.Name += " Playtest"
+				if card.FaceName != "" {
+					card.FaceName += " Playtest"
+				}
+			}
+
 			card.Images = map[string]string{}
 			card.Images["full"] = generateImageURL(card, "normal")
 			card.Images["thumbnail"] = generateImageURL(card, "small")
@@ -962,16 +984,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				}
 
 			case "CMB1", "CMB2", "MB2":
-				// Rename cards that have names clashing with real cards
-				switch card.Name {
-				case "Pick Your Poison",
-					"Red Herring",
-					// Normalizing drops the comma that is all this has
-					// over Glimpse the Unthinkable
-					"Glimpse, the Unthinkable":
-					card.Name += " Playtest"
-				// This could mess up Bind (INV)
-				case "Bind // Liberate":
+				// Only a face of this one is named like a card, Bind (INV)
+				if card.Name == "Bind // Liberate" {
 					card.Name = "Bind // Liberate Playtest"
 					card.FaceName = "Bind Playtest"
 				}
@@ -980,22 +994,10 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				set.Name = "Teenage Mutant Ninja Turtles Commander"
 
 			case "UNK":
-				switch card.Name {
-				// Normalizing reads these as the real card they pun on
-				// or share a name with
-				case "Rampant, Growth",
-					"Lava, Axe",
-					"Clear, the Mind",
-					"Gather, the Townsfolk",
-					"Ransack, the Lab",
-					"Math is for Blockers", // PSSC's "Math is for Blockers (Plane)"
-					"Monster Mash-Up",
-					"______",
-					"Fast // Furious":
+				// PSSC's "Math is for Blockers (Plane)" once the prefilter
+				// drops its suffix
+				if card.Name == "Math is for Blockers" {
 					card.Name += " Playtest"
-					if card.FaceName != "" {
-						card.FaceName += " Playtest"
-					}
 				}
 			}
 
