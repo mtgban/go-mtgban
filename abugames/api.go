@@ -87,7 +87,8 @@ const (
 	// filter it is given.
 	abuBaseURL = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22`
 
-	abuBaseSealedURL = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
+	// id breaks ties between sealed listings sharing a title.
+	abuBaseSealedURL = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc%2C%20id%20asc&wt=json&start=0&rows=0`
 )
 
 // ABUClient reads ABU's own catalog API.
@@ -212,6 +213,9 @@ func (abu *ABUClient) GetProduct(ctx context.Context, filter string, pageStart i
 
 	q := u.Query()
 	q.Add("fq", filter)
+	// Unsorted, groups come in index order, which an update mid-walk
+	// reorders, so later pages skip groups.
+	q.Set("sort", "product_id asc")
 	q.Set("rows", fmt.Sprintf("%d", maxEntryPerRequest))
 	q.Set("start", fmt.Sprintf("%d", pageStart))
 	// fl trims each doc to the fields ABUCard decodes (~9x smaller payload).
