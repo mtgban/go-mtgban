@@ -35,6 +35,8 @@ type ABUCard struct {
 	TCGplayerIDs  []int64  `json:"tcgplayer_id"`
 	MultiverseIDs []int64  `json:"multiverseid"`
 
+	Features []string `json:"magic_features"`
+
 	SellPrice       float64 `json:"price"`
 	SellQuantity    int     `json:"quantity"`
 	SubSellQuantity int     `json:"sub_qty"`
@@ -78,7 +80,8 @@ const (
 	abuFieldList = "id,product_id,display_title,simple_title,complete_description," +
 		"magic_edition_sort,condition,layout,rarity,language,title," +
 		"card_number,price,quantity,sub_qty,buy_list_quantity," +
-		"buy_price,trade_price,scryfall_id,tcgplayer_id,multiverseid"
+		"buy_price,trade_price,scryfall_id,tcgplayer_id,multiverseid," +
+		"magic_features"
 
 	// abuBaseURL keeps every singles walk inside the singles catalog, whatever
 	// filter it is given.

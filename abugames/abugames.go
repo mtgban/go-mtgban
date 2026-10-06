@@ -66,7 +66,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 		// hasMintGrade4Retail feeds abuRetailCondition; buylist ignores it.
 		var hasMintGrade4Retail bool
 		for _, doc := range group.Doclist.Docs {
-			if doc.Condition == "MINT" && (doc.SellQuantity > 0 || doc.SubSellQuantity > 0) && doc.SellPrice > 0 {
+			if doc.Condition == "MINT" && !isSlab(&doc) && (doc.SellQuantity > 0 || doc.SubSellQuantity > 0) && doc.SellPrice > 0 {
 				hasMintGrade4Retail = true
 			}
 		}
@@ -113,7 +113,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 		}
 
 		for _, doc := range group.Doclist.Docs {
-			if doc.Condition == "SP" {
+			if doc.Condition == "SP" && !isSlab(&doc) {
 				// There is nothing available on the website under this condition
 				continue
 			}
@@ -154,6 +154,36 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 				v.Set("language", "[\""+doc.Language[0]+"\"]")
 			}
 			u.RawQuery = v.Encode()
+
+			if isSlab(&doc) {
+				if doc.SellQuantity <= 0 || doc.SellPrice <= 0 {
+					continue
+				}
+				cond, text := slabCondition(&doc, lowerGrade, theCard.Foil)
+				if cond == "" {
+					abu.printf("unsupported %q condition on %s", text, doc.ID)
+					continue
+				}
+
+				u.Path = "/magic-the-gathering/singles"
+				v.Set("magic_features", `[["Graded"]]`)
+				u.RawQuery = v.Encode()
+
+				channel <- resultChan{
+					theCard: *theCard,
+					cardID:  cardID,
+					invEntry: &mtgban.InventoryEntry{
+						Conditions: cond,
+						Price:      doc.SellPrice,
+						Quantity:   doc.SellQuantity,
+						URL:        u.String() + searchQuery,
+						OriginalID: group.GroupValue,
+						InstanceID: doc.ID,
+						SellerName: availableMarketNames[2],
+					},
+				}
+				continue
+			}
 
 			if doc.SellQuantity > 0 && doc.SellPrice > 0 {
 				cond, err := abuRetailCondition(doc.Condition, hasMintGrade4Retail, lowerGrade, theCard.Foil)
@@ -355,6 +385,7 @@ func (abu *ABUGames) Buylist() mtgban.BuylistRecord {
 var availableMarketNames = []string{
 	"ABU Games",
 	"ABU Games Scans",
+	"ABU Games Graded",
 }
 
 var availableTraderNames = []string{
@@ -365,6 +396,7 @@ var availableTraderNames = []string{
 var name2shorthand = map[string]string{
 	"ABU Games":          "ABUGames",
 	"ABU Games Scans":    "ABUScans",
+	"ABU Games Graded":   "ABUGraded",
 	"ABU Games (credit)": "ABUCredit",
 }
 
