@@ -2,6 +2,7 @@ package gamenerdz
 
 import (
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
 
 // TestMain loads the datastore once for the whole package: the prerelease
@@ -475,6 +477,59 @@ func TestPreprocess(t *testing.T) {
 				tt.game, tt.product.DisplayName,
 				card.Name, card.Edition, card.Variation, card.Finish, card.Foil,
 				tt.name, tt.edition, tt.variation, tt.finish, tt.foil)
+		}
+	}
+}
+
+// sizedDatastore holds a Burger King promo whose printed size belongs to the
+// set it was first printed in, and two cosmos holo promos of one set and
+// number told apart by their own size, rows copied verbatim.
+const sizedDatastore = `{"data": {
+ "game": "pokemon",
+ "sets": {
+  "BKP": {"abbreviation": "BKP", "baseSetSize": 122, "name": "XY - BREAKpoint", "releaseDate": "2016-02-03"},
+  "BKP-2175": {"abbreviation": "BKP", "name": "Burger King Promos", "releaseDate": "2008-07-07", "type": "promo"},
+  "MCAP": {"abbreviation": "MCAP", "name": "Miscellaneous Cards & Products", "releaseDate": "1999-01-09"}
+ },
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 155609}, "finish": "Reverse Holofoil", "id": "052-123_155609_reverseholofoil", "name": "Happiny", "number": "052", "rarity": "Promo", "setCode": "BKP-2175", "total": "123", "type": "Colorless", "variant": "Diamond & Pearl", "watermark": "diamond & pearl"},
+  {"externalLinks": {"tcgPlayerId": 220117}, "finish": "Holofoil", "id": "013-098_220117_holofoil", "name": "Flareon", "number": "013", "promoTypes": ["cosmosholo"], "rarity": "Promo", "setCode": "MCAP", "total": "098", "type": "Fire", "variant": "Cosmos Holo"},
+  {"externalLinks": {"tcgPlayerId": 654775}, "finish": "Holofoil", "id": "013-131_654775_holofoil", "name": "Flareon", "number": "013", "promoTypes": ["cosmosholo"], "rarity": "Rare", "setCode": "MCAP", "total": "131", "type": "Fire", "variant": "Cosmos Holo"}
+ ]
+}}`
+
+// TestResolveProductSizedNumber pins that a dashed listing whose printed size
+// names no printing is asked for again by its number alone, and that a size
+// naming one is read as written.
+func TestResolveProductSizedNumber(t *testing.T) {
+	b, err := mtgmatcher.Open("pokemon", strings.NewReader(sizedDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gn, err := NewScraper(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		displayName string
+		setName     string
+		finish      string
+		uuid        string
+	}{
+		{"Happiny - 52/124 [Diamond & Pearl] 52 - Burger King Promos Reverse Holofoil", "Burger King Promos", "Reverse Holofoil", "052-123_155609_reverseholofoil"},
+		{"Flareon - 13/131 (Cosmos Holo) 13 - Miscellaneous Cards  Products Holofoil", "Miscellaneous Cards & Products", "Holofoil", "013-131_654775_holofoil"},
+		{"Flareon - 13/98 (Cosmos Holo) 13 - Miscellaneous Cards  Products Holofoil", "Miscellaneous Cards & Products", "Holofoil", "013-098_220117_holofoil"},
+	}
+	for _, tt := range tests {
+		product := GNProduct{
+			DisplayName:    tt.displayName,
+			SelectedFinish: tt.finish,
+			ProductData:    GNProductData{SetName: tt.setName},
+		}
+		uuid, err := gn.resolveProduct(modeBuylist, product)
+		if err != nil || uuid != tt.uuid {
+			t.Errorf("%q: got %q (%v); want %q", tt.displayName, uuid, err, tt.uuid)
 		}
 	}
 }
