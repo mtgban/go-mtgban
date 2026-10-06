@@ -507,7 +507,7 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 						balancedSheets[color] = append(balancedSheets[color], choice)
 					}
 					if len(co.ColorIdentity) < 1 && !slices.Contains(co.Types, "Land") {
-						balancedSheets["C"] = append(balancedSheets["C"], choice)
+						balancedSheets["colorless"] = append(balancedSheets["colorless"], choice)
 					}
 				}
 

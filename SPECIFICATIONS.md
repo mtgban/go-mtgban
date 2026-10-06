@@ -326,7 +326,9 @@ examines allocates nothing. A card carries its rarity spelled the same way,
 through `b.AddRarity`, which keeps the words the datastore published it as
 in `b.RarityLabels`. A reader wanting those words asks `b.RarityLabel`:
 Yu-Gi-Oh's rules split a rarity into words, Gundam's look for it in a
-listing's wording, and a page displays it.
+listing's wording, and a page displays it. Cards carry their colours by the
+names their sets list, Magic's colour identity included: its loader spells
+MTGJSON's letters out (`W` is `white`).
 
 `Arbit`, `Mismatch` and the CSV readers and writers take the
 backend as their first parameter; `ArbitOpts` carries optional filters and
