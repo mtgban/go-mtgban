@@ -2588,14 +2588,13 @@ func isExactBasicLand(name string) bool {
 	return false
 }
 
-// colorWords are the colors a listing spells out, as the catalog letters
-// them.
-var colorWords = map[string]string{
-	"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G",
+// colorWords are the colors a listing spells out, as cards carry them.
+var colorWords = map[string]bool{
+	"white": true, "blue": true, "black": true, "red": true, "green": true,
 }
 
-// namedColors reads the colors a token listing names, in the catalog's
-// letters, or nil when it names none. "Colorless" names the empty set.
+// namedColors reads the colors a token listing names, or nil when it names
+// none. "Colorless" names the empty set.
 func namedColors(variation string) []string {
 	var colors []string
 	named := false
@@ -2606,9 +2605,9 @@ func namedColors(variation string) []string {
 			named = true
 			continue
 		}
-		if letter, found := colorWords[word]; found {
+		if colorWords[word] {
 			named = true
-			colors = append(colors, letter)
+			colors = append(colors, word)
 		}
 	}
 	if !named {
@@ -2622,8 +2621,8 @@ func sameColors(colors, named []string) bool {
 	if len(colors) != len(named) {
 		return false
 	}
-	for _, letter := range named {
-		if !slices.Contains(colors, letter) {
+	for _, color := range named {
+		if !slices.Contains(colors, color) {
 			return false
 		}
 	}

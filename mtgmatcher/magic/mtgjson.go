@@ -1849,13 +1849,26 @@ const (
 	suffixEtched = "_e"
 )
 
+// colorNames spells MTGJSON's color letters by name ("W" is "white"), the
+// way every game's cards carry their colors.
+func colorNames(letters []string) []string {
+	if len(letters) == 0 {
+		return letters
+	}
+	names := make([]string, 0, len(letters))
+	for _, letter := range letters {
+		names = append(names, mtgColorNameMap[letter])
+	}
+	return names
+}
+
 // toMtgCard converts a local Card to mtgmatcher.Card via direct field copy.
 func toMtgCard(c Card) mtgmatcher.Card {
 	mc := mtgmatcher.Card{
 		Artist:              c.Artist,
 		BorderColor:         c.BorderColor,
-		Colors:              c.Colors,
-		ColorIdentity:       c.ColorIdentity,
+		Colors:              colorNames(c.Colors),
+		ColorIdentity:       colorNames(c.ColorIdentity),
 		FaceName:            c.FaceName,
 		FaceFlavorName:      c.FaceFlavorName,
 		FacePrintedName:     c.FacePrintedName,

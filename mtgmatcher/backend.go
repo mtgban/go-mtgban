@@ -128,7 +128,9 @@ type Set struct {
 }
 
 // Card is one printing, with the properties that tell it apart from every
-// other printing of the same name. Fields follow the MTGJSON project.
+// other printing of the same name. Fields follow the MTGJSON project, but
+// for Colors and ColorIdentity, which name each color as the game's sets
+// list it ("white") where MTGJSON writes Magic's as letters ("W").
 type Card struct {
 	Artist              string              `json:"artist"`
 	BorderColor         string              `json:"borderColor"`
