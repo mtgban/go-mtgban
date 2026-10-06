@@ -22,13 +22,22 @@ func TestRiftboundT1Shelf(t *testing.T) {
 		product cm.CatalogProduct
 		want    string
 	}{
-		{904070, cm.CatalogProduct{Name: "Ambessa, The Wolf (V.1 - Showcase)", Number: "S001", Rarity: "Showcase", Version: 1}, "pr-716012_foil"},
-		{904071, cm.CatalogProduct{Name: "Ambessa, The Wolf (V.2 - Signed Showcase)", Number: "S001*", Rarity: "Signed Showcase", Version: 2}, "pr-716013_foil"},
+		{904070, cm.CatalogProduct{Name: "Ambessa, The Wolf (V.1 - Showcase)", Number: "S001", Rarity: "Showcase", Version: 1}, "716012"},
+		{904071, cm.CatalogProduct{Name: "Ambessa, The Wolf (V.2 - Signed Showcase)", Number: "S001*", Rarity: "Signed Showcase", Version: 2}, "716013"},
 	} {
 		got := mkm.resolveMapped(tt.id, tt.product, exp)
-		if got.err != nil || got.cardID != tt.want || got.cardIDFoil != tt.want {
-			t.Errorf("%d %q: resolveMapped = (%q, %q, %v), want %q in both slots",
-				tt.id, tt.product.Name, got.cardID, got.cardIDFoil, got.err, tt.want)
+		if got.err != nil || got.cardID != got.cardIDFoil {
+			t.Errorf("%d %q: resolveMapped = (%q, %q, %v), want one printing in both slots",
+				tt.id, tt.product.Name, got.cardID, got.cardIDFoil, got.err)
+			continue
+		}
+		co, err := b.GetUUID(got.cardID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.Identifiers["tcgplayerProductId"] != tt.want {
+			t.Errorf("%d %q: landed on %s, TCGplayer product %q, want %q",
+				tt.id, tt.product.Name, got.cardID, co.Identifiers["tcgplayerProductId"], tt.want)
 		}
 	}
 }
