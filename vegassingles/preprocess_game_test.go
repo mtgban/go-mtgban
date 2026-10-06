@@ -174,7 +174,7 @@ func TestPreprocessRiftbound(t *testing.T) {
 		// number: the first group in the name is, and it is read first.
 		{"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil (Unique) (699149)", "Foil", "Teemo - Swift Scout", "263a Alternate Art", true},
 	} {
-		card, err := preprocessRiftbound(VSProduct{
+		card, err := preprocessRiftbound(&mtgmatcher.Backend{}, VSProduct{
 			DisplayName:    tt.display,
 			SelectedFinish: tt.finish,
 			ProductData:    VSProductData{SetName: "Origins"},
@@ -195,13 +195,51 @@ func TestPreprocessRiftbound(t *testing.T) {
 		"Teemo - Swift Scout (Alternate Art) - Riftbound Promotional Cards Foil (Unique) (699149)",
 		"Ahri - Inquisitive - Vendetta Foil",
 	} {
-		card, err := preprocessRiftbound(VSProduct{
+		card, err := preprocessRiftbound(&mtgmatcher.Backend{}, VSProduct{
 			DisplayName:    display,
 			SelectedFinish: "Foil",
 			ProductData:    VSProductData{SetName: "Origins"},
 		})
 		if err == nil {
 			t.Errorf("%s: read a number and answered %q, want no number", display, card.Variation)
+		}
+	}
+}
+
+// A promo shelf can file the rune of another set, naming it between the
+// number and the shelf. The set named there is the printing, not the shelf.
+func TestPreprocessRiftboundSpelledSet(t *testing.T) {
+	b := withRiftbound(t)
+
+	const shelf = "Riftbound Organized Play Promotional Cards"
+	for _, tt := range []struct {
+		display, finish, edition, setCode string
+	}{
+		{"Calm Rune (R02b) Spiritforged - Riftbound Organized Play Promotional Cards Foil", "Foil", "Spiritforged", "SFD"},
+		{"Calm Rune (R02c) (R02c) - Riftbound Organized Play Promotional Cards", "Normal", shelf, "OPP"},
+	} {
+		card, err := preprocessRiftbound(b, VSProduct{
+			DisplayName:    tt.display,
+			SelectedFinish: tt.finish,
+			ProductData:    VSProductData{SetName: shelf},
+		})
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if card.Edition != tt.edition {
+			t.Errorf("%s: edition %q, want %q", tt.display, card.Edition, tt.edition)
+		}
+		cardID, err := b.Match(card)
+		if err != nil {
+			t.Errorf("%s: %v", tt.display, err)
+			continue
+		}
+		co, err := b.GetUUID(cardID)
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if co.SetCode != tt.setCode {
+			t.Errorf("%s: landed %s %s, want set %s", tt.display, co.SetCode, co.Number, tt.setCode)
 		}
 	}
 }
