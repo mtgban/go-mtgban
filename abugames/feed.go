@@ -10,7 +10,7 @@ var oldEditions = []string{"Alpha", "Beta", "Unlimited", "Arabian Nights", "Anti
 
 // oneOffLabels mark a single copy listed on its own, by serial. Its price is
 // not the printing's, so none of them is read.
-var oneOffLabels = []string{"Artist Signed", "Artist Signed Case", "Graded", "Altered", "Miscut", "Printing Error"}
+var oneOffLabels = []string{"Artist Signed", "Artist Signed Case", "Altered", "Miscut", "Printing Error"}
 
 // anyOf is a Solr group matching any of words, each quoted once.
 func anyOf(words []string) string {
@@ -21,12 +21,15 @@ func anyOf(words []string) string {
 	return "(" + strings.Join(quoted, " OR ") + ")"
 }
 
-// singlesFilter selects every singles listing read, for one walk, inside
-// the singles catalog abuBaseURL already holds it to.
+// singlesFilter selects every singles listing read, slabs included, for one
+// walk, inside the singles catalog abuBaseURL already holds it to. A sold
+// slab stays in the index, so only slabs in stock are asked for.
 func singlesFilter() string {
 	old := anyOf(oldEditions)
 	return `+language:` + anyOf(singlesLanguages) +
 		` -offline_item:true` +
 		` -magic_features:` + anyOf(oneOffLabels) +
-		` +((*:* -magic_features:"Actual Picture Card" -magic_edition:` + old + `) OR magic_edition:` + old + `)`
+		` +((*:* -magic_features:("Actual Picture Card" OR "Graded") -magic_edition:` + old + `)` +
+		` OR (+magic_edition:` + old + ` -magic_features:"Graded")` +
+		` OR (+magic_features:"Graded" +quantity:[1 TO *]))`
 }
