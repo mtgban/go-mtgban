@@ -63,3 +63,52 @@ func TestPreprocessPokemonQualifier(t *testing.T) {
 		}
 	}
 }
+
+// aquapolisDatastore holds the two Aquapolis printings of one name that the
+// catalog tells apart by a letter after the number, rows copied verbatim.
+const aquapolisDatastore = `{"data": {
+ "game": "pokemon",
+ "sets": {"AQ": {"abbreviation": "AQ", "name": "Aquapolis", "releaseDate": "2003-01-15"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 84971}, "finish": "Normal", "id": "074a-147_84971", "name": "Drowzee", "number": "074a", "rarity": "Common", "setCode": "AQ", "total": "147", "type": "Psychic"},
+  {"externalLinks": {"tcgPlayerId": 84972}, "finish": "Normal", "id": "074b-147_84972", "name": "Drowzee", "number": "074b", "rarity": "Common", "setCode": "AQ", "total": "147", "type": "Psychic"}
+ ]
+}}`
+
+// TestPreprocessPokemonBracketedNumber pins that a lettered number written
+// in a bracket is read as the number, that any other bracket stays wording
+// on a name with no number to read, and that such a name is still asked for.
+func TestPreprocessPokemonBracketedNumber(t *testing.T) {
+	b, err := mtgmatcher.Open("pokemon", strings.NewReader(aquapolisDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		displayName string
+		name        string
+		variation   string
+	}{
+		{"Drowzee (74a) - Aquapolis", "Drowzee", "74a"},
+		{"Darkness Energy (2019 Unnumbered)  - SM  Team Up Reverse Holofoil", "Darkness Energy", "2019 Unnumbered"},
+		{"Ancient Mew - Miscellaneous Cards  Products Holofoil", "Ancient Mew", ""},
+	}
+	for _, tt := range tests {
+		product := GNProduct{DisplayName: tt.displayName, ProductData: GNProductData{SetName: "Aquapolis"}}
+		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+		if err != nil {
+			t.Errorf("%q: unexpected error %v", tt.displayName, err)
+			continue
+		}
+		if card.Name != tt.name || card.Variation != tt.variation {
+			t.Errorf("%q: got %q %q; want %q %q", tt.displayName, card.Name, card.Variation, tt.name, tt.variation)
+		}
+	}
+
+	product := GNProduct{DisplayName: tests[0].displayName, ProductData: GNProductData{SetName: "Aquapolis"}}
+	card, _ := preprocess(b, product, mtgmatcher.GamePokemon)
+	uuid, err := b.Match(card)
+	if err != nil || uuid != "074a-147_84971" {
+		t.Errorf("%q: got %q (%v); want 074a-147_84971", product.DisplayName, uuid, err)
+	}
+}

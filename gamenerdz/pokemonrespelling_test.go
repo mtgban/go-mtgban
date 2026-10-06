@@ -19,7 +19,8 @@ const respellingDatastore = `{"data": {
  "sets": {
   "DRI": {"abbreviation": "DRI", "baseSetSize": 182, "name": "SV10: Destined Rivals", "releaseDate": "2025-05-30"},
   "PAR": {"abbreviation": "PAR", "baseSetSize": 182, "name": "SV04: Paradox Rift", "releaseDate": "2023-11-03"},
-  "SVI": {"abbreviation": "SVI", "baseSetSize": 198, "name": "SV01: Scarlet & Violet Base Set", "releaseDate": "2023-03-31"}
+  "SVI": {"abbreviation": "SVI", "baseSetSize": 198, "name": "SV01: Scarlet & Violet Base Set", "releaseDate": "2023-03-31"},
+  "SWSH02": {"abbreviation": "SWSH02", "baseSetSize": 192, "name": "SWSH02: Rebel Clash", "releaseDate": "2020-05-01"}
  },
  "cards": [
   {"externalLinks": {"tcgPlayerId": 632917}, "finish": "Normal", "id": "109-182_632917", "name": "Arven's Toedscool", "number": "109", "rarity": "Common", "setCode": "DRI", "total": "182", "type": "Fighting"},
@@ -29,7 +30,8 @@ const respellingDatastore = `{"data": {
   {"externalLinks": {"tcgPlayerId": 523644}, "finish": "Normal", "id": "035-182_523644", "name": "Feebas", "number": "035", "rarity": "Common", "setCode": "PAR", "total": "182", "type": "Water"},
   {"externalLinks": {"tcgPlayerId": 488053}, "finish": "Holofoil", "id": "158-198_488053_holofoil", "name": "Oinkologne ex", "number": "158", "originalName": "Oinkologne ex - 158/198", "rarity": "Double Rare", "setCode": "SVI", "total": "198", "type": "Colorless"},
   {"externalLinks": {"tcgPlayerId": 488074}, "finish": "Normal", "id": "169-198_488074", "name": "Defiance Band", "number": "169", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Tool"},
-  {"externalLinks": {"tcgPlayerId": 488075}, "finish": "Normal", "id": "170-198_488075", "name": "Electric Generator", "number": "170", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Item"}
+  {"externalLinks": {"tcgPlayerId": 488075}, "finish": "Normal", "id": "170-198_488075", "name": "Electric Generator", "number": "170", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Item"},
+  {"externalLinks": {"tcgPlayerId": 213283}, "finish": "Normal", "id": "172-192_213283", "name": "Horror P Energy", "number": "172", "rarity": "Uncommon", "setCode": "SWSH02", "total": "192", "type": "Special Energy"}
  ]
 }}`
 
@@ -56,6 +58,8 @@ func TestPreprocessPokemonRespelling(t *testing.T) {
 		{"Oinkalogne ex - 158/198 158 - SV01 Scarlet  Violet Base Set Holofoil", "SV01: Scarlet & Violet Base Set", "Holofoil", "158-198_488053_holofoil"},
 		{"Defiant Band - 169/198 169 - SV01 Scarlet  Violet Base Set", "SV01: Scarlet & Violet Base Set", "Normal", "169-198_488074"},
 		{"Electro Generator - 170/198 170 - SV01 Scarlet  Violet Base Set", "SV01: Scarlet & Violet Base Set", "Normal", "170-198_488075"},
+		// An energy's type spelled out where the catalog writes its letter.
+		{"Horror Psychic Energy 172/192 - Rebel Clash", "SWSH02: Rebel Clash", "Normal", "172-192_213283"},
 		// The catalog's own spelling is not a key of the table and still
 		// answers with the same printing.
 		{"Arven's Toedscool 109 - SV10 Destined Rivals", "SV10: Destined Rivals", "Normal", "109-182_632917"},

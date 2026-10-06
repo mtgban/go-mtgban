@@ -17,7 +17,7 @@ func preprocess(b *mtgmatcher.Backend, product GNProduct, game mtgmatcher.Game) 
 	case mtgmatcher.GameLorcana:
 		return preprocessLorcana(product)
 	case mtgmatcher.GamePokemon:
-		return preprocessPokemon(product)
+		return preprocessPokemon(b, product)
 	case mtgmatcher.GameOnePiece:
 		return preprocessOnePiece(product)
 	}
@@ -502,13 +502,70 @@ var pokemonGenders = strings.NewReplacer("♀", "F", "♂", "M")
 // under the same wrong names, so the correction is a table rather than a
 // second reading of the body.
 var pokemonRespellings = map[string]string{
-	"Arver's Toedscool":      "Arven's Toedscool",
-	"Defiant Band":           "Defiance Band",
-	"Electro Generator":      "Electric Generator",
-	"Feebass":                "Feebas",
-	"Marnie's Marpeko":       "Marnie's Morpeko",
-	"Oinkalogne ex":          "Oinkologne ex",
-	"Team Rocket's Nidorand": "Team Rocket's Nidoran M",
+	"Arver's Toedscool":                        "Arven's Toedscool",
+	"Blend Energy GrassFirePsychicDarkness":    "Blend Energy GFPD",
+	"Blend Energy WaterLightningFightingMetal": "Blend Energy WLFM",
+	"Defiant Band":                             "Defiance Band",
+	"Electro Generator":                        "Electric Generator",
+	"Feebass":                                  "Feebas",
+	"Jamming Net Team Flare Hyper Gear":        "Jamming Net",
+	"Marnie's Marpeko":                         "Marnie's Morpeko",
+	"Oinkalogne ex":                            "Oinkologne ex",
+	"Target Whistle Team Flare Gear":           "Target Whistle",
+	"Team Rocket's Nidorand":                   "Team Rocket's Nidoran M",
+	"Unit Energy FightingDarknessFairy":        "Unit Energy FDY",
+	"Unit Energy GrassFireWater":               "Unit Energy GRW",
+	"Unit Energy LightningPsychicMetal":        "Unit Energy LPM",
+}
+
+// pokemonEnergyLetters are the letters the catalog writes an energy type as
+// in a special energy's name ("Bubbly W Energy"), where this storefront
+// spells the type out. The catalog does not letter every one ("Magnetic Metal
+// Energy"), so the spelled name is kept wherever the catalog knows it.
+var pokemonEnergyLetters = map[string]string{
+	"Grass": "G", "Fire": "R", "Water": "W", "Lightning": "L", "Psychic": "P",
+	"Fighting": "F", "Darkness": "D", "Metal": "M", "Fairy": "Y", "Dragon": "N",
+	"Colorless": "C",
+}
+
+var pokemonTypedEnergy = regexp.MustCompile(`^(\w+) (Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy|Dragon|Colorless) Energy$`)
+
+// pokemonGreek spells out the Greek letters this storefront prints in a name
+// where the catalog writes Alpha, Beta, Gamma and Delta.
+var pokemonGreek = strings.NewReplacer(" α", " Alpha", " β", " Beta", " γ", " Gamma", " δ", " Delta", "δ ", "Delta ")
+
+// pokemonLabels spells the labels this storefront gives a promo the way the
+// catalog words them. Only these exact labels are read: a bracket can also
+// name the set a card was printed in, "[Rebel Clash]".
+var pokemonLabels = strings.NewReplacer(
+	"(GameStop Promo)", "(GameStop Exclusive)",
+	"(Store Promo)", "(Store Exclusive)",
+	"(Cosmo Foil)", "(Cosmos Holo)",
+	"(Cosmo Holo)", "(Cosmos Holo)",
+	"(Pokemon Day Stamped)", "(Pokemon Day)",
+	"[Winner]", "(Winner)",
+)
+
+// pokemonCatalogName is the name the catalog files a card under where the
+// storefront's spelling of an energy type or a Greek letter is one it does
+// not know.
+func pokemonCatalogName(b *mtgmatcher.Backend, name string) string {
+	_, err := b.SearchEquals(name)
+	if err == nil {
+		return name
+	}
+	candidates := []string{pokemonGreek.Replace(name)}
+	typed := pokemonTypedEnergy.FindStringSubmatch(name)
+	if typed != nil {
+		candidates = append(candidates, typed[1]+" "+pokemonEnergyLetters[typed[2]]+" Energy")
+	}
+	for _, candidate := range candidates {
+		_, err := b.SearchEquals(candidate)
+		if candidate != name && err == nil {
+			return candidate
+		}
+	}
+	return name
 }
 
 // A Pokemon display name reads
@@ -523,7 +580,8 @@ var pokemonRespellings = map[string]string{
 // first took the card's own suffix for its collector number and asked for a
 // card nobody prints. The finish travels in its own field for this game,
 // where the matcher tells Holofoil from Reverse Holofoil by wording.
-func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
+func preprocessPokemon(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.InputCard, error) {
+	product.DisplayName = pokemonLabels.Replace(product.DisplayName)
 	shelf := strings.LastIndex(product.DisplayName, " - ")
 	if shelf < 0 {
 		return nil, errors.New("no collector number in display name")
@@ -562,7 +620,7 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 			}
 		}
 		if at < 0 {
-			return nil, errors.New("no collector number in display name")
+			return pokemonUnnumbered(b, product, head), nil
 		}
 		number = fields[at]
 		name = strings.Join(fields[:at], " ")
@@ -579,10 +637,29 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 			}
 		}
 		if number == "" {
-			return nil, errors.New("no collector number in display name")
+			return pokemonUnnumbered(b, product, head), nil
 		}
 	}
 
+	card := pokemonCard(b, product, name, number)
+
+	// A printing's second axis rides just behind the number, bracketed -
+	// "Snorlax - 051 (Pokemon Center Exclusive)". The same set prints the
+	// same number both ways, so the number alone cannot tell them apart,
+	// and this storefront sells the two at $15.31 and $251.59. Wording the
+	// catalog does not know costs nothing, since a variation it cannot
+	// place falls back on the number it was read from.
+	qualifier := pokemonQualifier.FindStringSubmatch(strings.TrimPrefix(strings.TrimSpace(rest), number))
+	if qualifier != nil {
+		card.Variation = strings.TrimSpace(number + " " + qualifier[1])
+	}
+
+	return card, nil
+}
+
+// pokemonCard is the matcher's input for a name and a variation read off a
+// display name, with the finish and the spelling the catalog uses.
+func pokemonCard(b *mtgmatcher.Backend, product GNProduct, name, variation string) *mtgmatcher.InputCard {
 	finish := product.SelectedFinish
 	if strings.EqualFold(finish, "Normal") {
 		finish = ""
@@ -592,25 +669,96 @@ func preprocessPokemon(product GNProduct) (*mtgmatcher.InputCard, error) {
 	if respelled, found := pokemonRespellings[cardName]; found {
 		cardName = respelled
 	}
+	cardName = pokemonCatalogName(b, pokemonGenders.Replace(cardName))
 
-	card := &mtgmatcher.InputCard{
-		Name:      pokemonGenders.Replace(cardName),
+	return &mtgmatcher.InputCard{
+		Name:      cardName,
 		Edition:   product.ProductData.SetName,
-		Variation: number,
+		Variation: variation,
 		Finish:    finish,
 	}
+}
 
-	// A printing's second axis rides just behind the number, bracketed -
-	// "Snorlax - 051 (Pokemon Center Exclusive)". The same set prints the
-	// same number both ways, so the number alone cannot tell them apart,
-	// and this storefront sells the two at $15.31 and $251.59. Wording the
-	// catalog does not know costs nothing, since a variation it cannot
-	// place falls back on the number it was read from.
-	if qualifier := pokemonQualifier.FindStringSubmatch(strings.TrimPrefix(strings.TrimSpace(rest), number)); qualifier != nil {
-		card.Variation = strings.TrimSpace(number + " " + qualifier[1])
+// pokemonBracket is one bracketed group of a display name, and
+// pokemonLetteredNumber the number Aquapolis writes in one, "(74a)".
+var (
+	pokemonBracket        = regexp.MustCompile(`\s*[(\[]([^)\]]*)[)\]]`)
+	pokemonLetteredNumber = regexp.MustCompile(`^\d+[a-z]$`)
+)
+
+// pokemonUnnumbered reads a head that carries no number field: the basic
+// energies, which the catalog files with an empty number, and the cards that
+// write their lettered number in a bracket. Every other bracket is wording
+// that names the printing, "(2019 Unnumbered)".
+func pokemonUnnumbered(b *mtgmatcher.Backend, product GNProduct, head string) *mtgmatcher.InputCard {
+	var number string
+	var wording []string
+	for _, group := range pokemonBracket.FindAllStringSubmatch(head, -1) {
+		if number == "" && pokemonLetteredNumber.MatchString(group[1]) {
+			number = group[1]
+			continue
+		}
+		wording = append(wording, group[1])
+	}
+	name := strings.Join(strings.Fields(pokemonBracket.ReplaceAllString(head, " ")), " ")
+	variation := strings.TrimSpace(number + " " + strings.Join(wording, " "))
+	return pokemonCard(b, product, name, variation)
+}
+
+// pokemonBasicEnergy is a basic energy's name, which the catalog files with an
+// empty number where a few sets print none.
+var pokemonBasicEnergy = regexp.MustCompile(`^(?:Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy) Energy$`)
+
+// retryPokemon asks the catalog again for a card it turned down, in the two
+// readings the first one cannot take. A basic energy is asked for without the
+// number the storefront gives it. And where the name wrote a dash ahead of the
+// number, the size beside it belongs to the set the card was printed in, not
+// the shelf it is sold from ("Happiny - 52/124 [Diamond & Pearl] 52 - Burger
+// King Promos"), so the number alone is asked for; that answer is taken only
+// from the shelf's own set, at that number, since a printing elsewhere would
+// be a different card.
+func retryPokemon(b *mtgmatcher.Backend, product GNProduct, card *mtgmatcher.InputCard) (string, bool) {
+	if pokemonBasicEnergy.MatchString(card.Name) && card.Variation != "" {
+		probe := *card
+		probe.Variation = ""
+		id, err := b.Match(&probe)
+		if err == nil && landedWithoutNumber(b, id) {
+			return id, true
+		}
 	}
 
-	return card, nil
+	shelf := strings.LastIndex(product.DisplayName, " - ")
+	if shelf < 0 || !strings.Contains(product.DisplayName[:shelf], " - ") {
+		return "", false
+	}
+	fields := strings.Fields(card.Variation)
+	if len(fields) == 0 || !pokemonSizedNumber.MatchString(fields[0]) {
+		return "", false
+	}
+	numerator, _, _ := strings.Cut(fields[0], "/")
+	fields[0] = numerator
+	probe := *card
+	probe.Variation = strings.Join(fields, " ")
+	id, err := b.Match(&probe)
+	if err != nil {
+		return "", false
+	}
+	set, err := b.GetSetByName(card.Edition)
+	if err != nil {
+		return "", false
+	}
+	landed, err := b.GetUUID(id)
+	if err != nil || landed.SetCode != set.Code || b.PlainNumber(landed.Number) != numerator {
+		return "", false
+	}
+	return id, true
+}
+
+// landedWithoutNumber reports whether a printing is one the catalog files with
+// no collector number, which is what a numberless probe asks for.
+func landedWithoutNumber(b *mtgmatcher.Backend, id string) bool {
+	landed, err := b.GetUUID(id)
+	return err == nil && landed.Number == ""
 }
 
 // pokemonQualifier is the bracketed wording a display name hangs behind the

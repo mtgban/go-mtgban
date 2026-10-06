@@ -251,6 +251,12 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	foil := theCard.Foil
 
 	cardID, err := gn.backend.Match(theCard)
+	if err != nil && gn.backend.Game == mtgmatcher.GamePokemon && !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		retried, found := retryPokemon(gn.backend, product, theCard)
+		if found {
+			cardID, err = retried, nil
+		}
+	}
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return "", nil
 	} else if err != nil {
