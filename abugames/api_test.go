@@ -15,6 +15,10 @@ func (f catalogTransport) RoundTrip(r *http.Request) (*http.Response, error) { r
 
 func TestGetProductReadsIdentifiers(t *testing.T) {
 	client := &ABUClient{client: &http.Client{Transport: catalogTransport(func(r *http.Request) (*http.Response, error) {
+		filters := r.URL.Query()["fq"]
+		if !slices.Equal(filters, []string{`+category:"Magic the Gathering Singles"`, singlesFilter()}) {
+			t.Errorf("catalog request filters on %q", filters)
+		}
 		fields := strings.Split(r.URL.Query().Get("fl"), ",")
 		for _, key := range []string{"scryfall_id", "tcgplayer_id", "multiverseid"} {
 			if !slices.Contains(fields, key) {
@@ -26,7 +30,7 @@ func TestGetProductReadsIdentifiers(t *testing.T) {
 		body := `{"grouped":{"product_id":{"groups":[{"groupValue":"8118507","doclist":{"docs":[{"id":"2655495","display_title":"Counterspell (NYCC 2024) - FOIL","scryfall_id":["f2a7042f-a6f0-4e77-86a2-5eb0d2587363"],"tcgplayer_id":[589737],"multiverseid":[74476]},{"id":"missing"}]}}]}}}`
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(body)), Header: make(http.Header)}, nil
 	})}}
-	product, err := client.GetProduct(context.Background(), "", 0)
+	product, err := client.GetProduct(context.Background(), singlesFilter(), 0)
 	if err != nil {
 		t.Fatal(err)
 	}
