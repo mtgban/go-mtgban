@@ -60,9 +60,10 @@ func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgmatcher.Game) 
 // printings and the name as written has none - so there is no rule to find
 // here, only the correction.
 var cardTable = map[string]string{
-	"Stripe Mine":          "Strip Mine",
-	"The Visioon":          "The Vision",
-	"Thousand-Year Elixer": "Thousand-Year Elixir",
+	"Stripe Mine":                           "Strip Mine",
+	"Spira's Punishment - Day of Judgement": "Day of Judgment",
+	"The Visioon":                           "The Vision",
+	"Thousand-Year Elixer":                  "Thousand-Year Elixir",
 }
 
 // magicCode is the "(SETCODE-NUMBER)" group a magic display name carries just
@@ -749,6 +750,8 @@ var pokemonNumberFixes = map[pokemonNumberFix]string{
 	{"SV: Black Bolt", "Klang", "147/086"}:                          "140/086",
 	{"SV: White Flare", "Hilda", "166/086"}:                         "164/086",
 	{"SV: White Flare", "Hilda", "173/086"}:                         "171/086",
+	{"SV: White Flare", "Bouffalant ex", "172/086"}:                 "170/086",
+	{"SV: White Flare", "Keldeo ex", "169/086"}:                     "167/086",
 	{"SV: White Flare", "Hydreigon ex", "171/086"}:                  "169/086",
 	{"SV: Black Bolt", "Klink", "146/086"}:                          "139/086",
 	{"SV: White Flare", "Lampent", "101/086"}:                       "102/086",
