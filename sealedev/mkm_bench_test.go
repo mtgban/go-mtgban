@@ -15,12 +15,12 @@ import (
 // actually spans, and the market price is drawn around the same rising
 // multiplier the published dumps show, so a fit against this lands where a
 // fit against them does and the benchmark doubles as a sanity check on it.
-func mkmSnapshot(cards, polled int) (*mtgmatcher.Backend, *BANPriceResponse) {
+func mkmSnapshot(cards, polled int) (*mtgmatcher.Backend, *priceSnapshot) {
 	rng := rand.New(rand.NewSource(1))
 	b := &mtgmatcher.Backend{UUIDs: make(map[string]*mtgmatcher.CardObject, cards)}
-	r := &BANPriceResponse{
-		Retail:  make(map[string]map[string]*BanPrice, cards),
-		Buylist: map[string]map[string]*BanPrice{},
+	r := &priceSnapshot{
+		Retail:  make(map[string]map[string]float64, cards),
+		Buylist: map[string]map[string]float64{},
 	}
 	for i := range cards {
 		uuid := fmt.Sprintf("card%d", i)

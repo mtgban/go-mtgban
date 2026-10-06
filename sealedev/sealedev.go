@@ -50,7 +50,7 @@ type Scraper struct {
 
 	backend     *mtgmatcher.Backend
 	banpriceKey string
-	prices      *BANPriceResponse
+	prices      *priceSnapshot
 }
 
 type evConfig struct {

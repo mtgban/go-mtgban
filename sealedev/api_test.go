@@ -1,6 +1,7 @@
 package sealedev
 
 import (
+	"encoding/json"
 	"math"
 	"testing"
 
@@ -13,10 +14,6 @@ import (
 func installCards(t *testing.T, cards map[string]*mtgmatcher.CardObject) *mtgmatcher.Backend {
 	t.Helper()
 	return &mtgmatcher.Backend{UUIDs: cards}
-}
-
-func priced(conditions map[string]float64) *BanPrice {
-	return &BanPrice{Conditions: conditions}
 }
 
 func TestSkipFromEV(t *testing.T) {
@@ -49,50 +46,55 @@ func TestSkipFromEV(t *testing.T) {
 	}
 }
 
-// TestGetPriceReadsTheFinishBeingQuoted pins which condition key answers for
-// a card. A foil is quoted under its own key, so reading the plain one would
-// price a foil at its nonfoil copy's price.
-func TestGetPriceReadsTheFinishBeingQuoted(t *testing.T) {
+// TestReadSideReadsTheFinishBeingQuoted pins which finish answers for a
+// card: each is quoted under its own, so reading another would price a foil
+// at its nonfoil copy's price. It decodes the API's own JSON, so the field
+// names are pinned too.
+func TestReadSideReadsTheFinishBeingQuoted(t *testing.T) {
 	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"plain":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
-		"foil":   {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}, Foil: true},
-		"etched": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}, Etched: true},
+		"plain":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA", Finish: "nonfoil"}},
+		"foil":   {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA", Finish: "foil"}, Foil: true},
+		"etched": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA", Finish: "etched"}, Etched: true},
 	})
-
-	conditions := map[string]float64{
-		"NM": 1, "NM_foil": 10, "NM_etched": 100,
+	finishes := `{"nonfoil": {"CK": [{"condition": "NM", "price": 1}]},
+		"foil": {"CK": [{"condition": "NM", "price": 10}]},
+		"etched": {"CK": [{"condition": "NM", "price": 100}]}}`
+	doc := `{"retail": {"plain": ` + finishes + `, "foil": ` + finishes + `, "etched": ` + finishes +
+		`, "unknown": ` + finishes + `}}`
+	var raw v2Response
+	err := json.Unmarshal([]byte(doc), &raw)
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, tt := range []struct {
-		uuid string
-		want float64
-	}{
-		{"plain", 1},
-		{"foil", 10},
-		{"etched", 100},
-	} {
-		t.Run(tt.uuid, func(t *testing.T) {
-			if got := getPrice(b, tt.uuid, priced(conditions)); got != tt.want {
-				t.Errorf("getPrice(%q) = %v, want %v", tt.uuid, got, tt.want)
-			}
-		})
+	prices := readSide(b, raw.Retail)
+	for uuid, want := range map[string]float64{"plain": 1, "foil": 10, "etched": 100} {
+		if got := prices[uuid]["CK"]; got != want {
+			t.Errorf("%s read %v, want %v", uuid, got, want)
+		}
+	}
+	if _, found := prices["unknown"]; found {
+		t.Error("a price was read for a card the datastore does not hold")
 	}
 }
 
 // A card with no near mint copy is quoted at its played one rather than at
-// nothing, which would drop it out of the value entirely.
-func TestGetPriceFallsBackToPlayed(t *testing.T) {
-	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"plain": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
-		"foil":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}, Foil: true},
-	})
-
-	if got := getPrice(b, "plain", priced(map[string]float64{"SP": 3})); got != 3 {
-		t.Errorf("getPrice = %v, want the played price 3", got)
-	}
-	// The fallback keeps the finish: a foil falls back to the foil played
-	// price, not to the plain one.
-	if got := getPrice(b, "foil", priced(map[string]float64{"SP": 3, "SP_foil": 30})); got != 30 {
-		t.Errorf("getPrice = %v, want the foil played price 30", got)
+// nothing, which would drop it out of the value entirely. An index price has
+// no condition and counts as near mint.
+func TestReadPriceFallsBackToPlayed(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		entries []v2Entry
+		want    float64
+	}{
+		{"near mint", []v2Entry{{"NM", 2}, {"SP", 3}}, 2},
+		{"played only", []v2Entry{{"SP", 3}, {"MP", 1}}, 3},
+		{"index", []v2Entry{{"", 4}}, 4},
+		{"worse than played only", []v2Entry{{"MP", 1}, {"HP", 0.5}}, 0},
+		{"nothing", nil, 0},
+	} {
+		if got := readPrice(tt.entries); got != tt.want {
+			t.Errorf("%s: readPrice = %v, want %v", tt.name, got, tt.want)
+		}
 	}
 }
 
@@ -105,29 +107,18 @@ func TestGetPriceCapsAMisprice(t *testing.T) {
 		"vintage": {Card: mtgmatcher.Card{Name: "Card", SetCode: "LEA"}},
 	})
 
-	over := priced(map[string]float64{"NM": MaxSinglePrice + 1})
-	if got := getPrice(b, "modern", over); got != 0 {
+	if got := getPrice(b, "modern", MaxSinglePrice+1); got != 0 {
 		t.Errorf("getPrice = %v, want 0 for a price past the cap", got)
 	}
-	if got := getPrice(b, "vintage", over); got != MaxSinglePrice+1 {
+	if got := getPrice(b, "vintage", MaxSinglePrice+1); got != MaxSinglePrice+1 {
 		t.Errorf("getPrice = %v, want the price kept for a set that reaches it", got)
 	}
 	// The cap itself is not past the cap.
-	if got := getPrice(b, "modern", priced(map[string]float64{"NM": MaxSinglePrice})); got != MaxSinglePrice {
+	if got := getPrice(b, "modern", MaxSinglePrice); got != MaxSinglePrice {
 		t.Errorf("getPrice = %v, want the cap itself kept", got)
 	}
-}
-
-// Nothing to read is worth nothing, rather than a panic.
-func TestGetPriceOfNothing(t *testing.T) {
-	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"plain": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
-	})
-	if got := getPrice(b, "plain", nil); got != 0 {
-		t.Errorf("getPrice(nil) = %v, want 0", got)
-	}
-	if got := getPrice(b, "unknown", priced(map[string]float64{"NM": 5})); got != 0 {
-		t.Errorf("getPrice of a card the datastore lacks = %v, want 0", got)
+	if got := getPrice(b, "unknown", MaxSinglePrice+1); got != 0 {
+		t.Errorf("getPrice past the cap for a card the datastore lacks = %v, want 0", got)
 	}
 }
 
@@ -138,12 +129,8 @@ func TestMaxStorePriceTakesTheBest(t *testing.T) {
 		"card": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
 	})
 
-	prices := map[string]map[string]*BanPrice{
-		"card": {
-			"CK":  priced(map[string]float64{"NM": 4}),
-			"SCG": priced(map[string]float64{"NM": 7}),
-			"MP":  priced(map[string]float64{"NM": 2}),
-		},
+	prices := map[string]map[string]float64{
+		"card": {"CK": 4, "SCG": 7, "MP": 2},
 	}
 	if got := maxStorePrice(b, "card", prices, []string{"CK", "SCG"}); got != 7 {
 		t.Errorf("maxStorePrice = %v, want 7", got)
@@ -184,20 +171,19 @@ func TestCT0FeesLadder(t *testing.T) {
 	}
 }
 
-// TestSetPriceKeepsTheFinish pins that a price written back is filed under
-// the key the reader will look for, which is the finish's own.
-func TestSetPriceKeepsTheFinish(t *testing.T) {
+// TestSetPriceReadsBack pins that a price written back is the one read, on
+// either side, and that a card the datastore cannot name gets none.
+func TestSetPriceReadsBack(t *testing.T) {
 	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"plain":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
-		"foil":   {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}, Foil: true},
-		"etched": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}, Etched: true},
+		"plain": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
+		"foil":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}, Foil: true},
 	})
 
-	r := &BANPriceResponse{
-		Retail:  map[string]map[string]*BanPrice{},
-		Buylist: map[string]map[string]*BanPrice{},
+	r := &priceSnapshot{
+		Retail:  map[string]map[string]float64{},
+		Buylist: map[string]map[string]float64{},
 	}
-	for _, uuid := range []string{"plain", "foil", "etched"} {
+	for _, uuid := range []string{"plain", "foil"} {
 		r.setRetail(b, uuid, "CK", 5)
 		r.setBuylist(b, uuid, "CK", 3)
 		if got := r.getRetail(b, uuid, "CK"); got != 5 {
@@ -208,8 +194,6 @@ func TestSetPriceKeepsTheFinish(t *testing.T) {
 		}
 	}
 
-	// A card the datastore cannot name has no finish to file under, so
-	// nothing is written rather than something filed wrongly.
 	r.setRetail(b, "unknown", "CK", 5)
 	if _, found := r.Retail["unknown"]; found {
 		t.Error("a price was filed for a card the datastore does not hold")

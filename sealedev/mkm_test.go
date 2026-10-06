@@ -9,16 +9,16 @@ import (
 )
 
 // mkmCards builds a backend and an empty price response over n plain cards.
-func mkmCards(n int) (*mtgmatcher.Backend, *BANPriceResponse) {
+func mkmCards(n int) (*mtgmatcher.Backend, *priceSnapshot) {
 	b := &mtgmatcher.Backend{UUIDs: map[string]*mtgmatcher.CardObject{}}
 	for i := range n {
 		uuid := fmt.Sprintf("card%d", i)
 		b.UUIDs[uuid] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: uuid, SetCode: "AAA"}}
 		b.AllUUIDs = append(b.AllUUIDs, uuid)
 	}
-	return b, &BANPriceResponse{
-		Retail:  map[string]map[string]*BanPrice{},
-		Buylist: map[string]map[string]*BanPrice{},
+	return b, &priceSnapshot{
+		Retail:  map[string]map[string]float64{},
+		Buylist: map[string]map[string]float64{},
 	}
 }
 

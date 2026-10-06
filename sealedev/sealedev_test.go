@@ -80,11 +80,11 @@ func sealedProduct(t *testing.T, b *mtgmatcher.Backend, wantRandom bool) (string
 // pricedAt quotes every card the product can contain at the same price, in
 // every store the parameters read, so what comes out is arithmetic on the
 // contents rather than on which store happened to carry what.
-func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price float64) *BANPriceResponse {
+func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price float64) *priceSnapshot {
 	t.Helper()
-	r := &BANPriceResponse{
-		Retail:  map[string]map[string]*BanPrice{},
-		Buylist: map[string]map[string]*BanPrice{},
+	r := &priceSnapshot{
+		Retail:  map[string]map[string]float64{},
+		Buylist: map[string]map[string]float64{},
 	}
 	probs, err := b.GetProbabilitiesForSealed(setCode, uuid)
 	if err != nil {
@@ -290,9 +290,9 @@ func TestRunEVReportsAProductItCannotOpen(t *testing.T) {
 
 	ss := NewScraper(b, "")
 	ss.repetitions = 10
-	ss.prices = &BANPriceResponse{
-		Retail:  map[string]map[string]*BanPrice{},
-		Buylist: map[string]map[string]*BanPrice{},
+	ss.prices = &priceSnapshot{
+		Retail:  map[string]map[string]float64{},
+		Buylist: map[string]map[string]float64{},
 	}
 
 	results, errs := ss.runEV(context.Background(), "not-a-uuid")
@@ -312,9 +312,9 @@ func TestRunEVDropsAProductWorthNothing(t *testing.T) {
 
 	ss := NewScraper(b, "")
 	ss.repetitions = 10
-	ss.prices = &BANPriceResponse{
-		Retail:  map[string]map[string]*BanPrice{},
-		Buylist: map[string]map[string]*BanPrice{},
+	ss.prices = &priceSnapshot{
+		Retail:  map[string]map[string]float64{},
+		Buylist: map[string]map[string]float64{},
 	}
 
 	results, _ := ss.runEV(context.Background(), uuid)
@@ -382,9 +382,9 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 
 	// Price the contents unevenly, or every opening is worth the same and
 	// there is no spread to report.
-	r := &BANPriceResponse{
-		Retail:  map[string]map[string]*BanPrice{},
-		Buylist: map[string]map[string]*BanPrice{},
+	r := &priceSnapshot{
+		Retail:  map[string]map[string]float64{},
+		Buylist: map[string]map[string]float64{},
 	}
 	probs, err := b.GetProbabilitiesForSealed(setCode, uuid)
 	if err != nil {
