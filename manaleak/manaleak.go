@@ -2,9 +2,11 @@
 package manaleak
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -60,6 +62,12 @@ func (ml *Manaleak) printf(format string, a ...any) {
 	}
 }
 
+// nameTypos holds the names the storefront misspells, keyed by the spelling
+// it lists.
+var nameTypos = map[string]string{
+	"Dread Sanctuary": "Dread Statuary",
+}
+
 // match resolves the card a row lists. The newer sets carry their TCGplayer
 // product id and the older ones their multiverse id, each converted through
 // its own id space; either answers by itself. The name and set only speak
@@ -77,6 +85,7 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 		cardName = strings.TrimSuffix(cardName, " - Foil")
 		foil = true
 	}
+	cardName = cmp.Or(nameTypos[cardName], cardName)
 
 	space, inputID := mtgmatcher.IDSpaceTCGplayer, product.TCGProductID
 	if inputID == "" {
@@ -94,14 +103,23 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 	})
 }
 
-// nameAgrees reports whether cardID is the card cardName names, used to
-// confirm an AmbiguousID guess before trusting it.
+// nameAgrees reports whether cardID is one of the printings named cardName,
+// used to confirm an AmbiguousID guess before trusting it. The search reads
+// a double-faced card by either face; the printing's own name is asked
+// first, since a derived token pair is kept out of the search.
 func (ml *Manaleak) nameAgrees(cardID, cardName string) bool {
+	if cardName == "" {
+		return false
+	}
 	co, err := ml.backend.GetUUID(cardID)
+	if err == nil && mtgmatcher.Equals(co.Name, cardName) {
+		return true
+	}
+	ids, err := ml.backend.SearchEquals(cardName)
 	if err != nil {
 		return false
 	}
-	return mtgmatcher.Equals(co.Name, cardName)
+	return slices.Contains(ids, cardID)
 }
 
 func (ml *Manaleak) processProduct(mode string, product MLProduct) {
