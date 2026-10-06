@@ -2597,7 +2597,7 @@ var colorWords = map[string]string{
 // namedColors reads the colors a token listing names, in the catalog's
 // letters, or nil when it names none. "Colorless" names the empty set.
 func namedColors(variation string) []string {
-	var colors []string
+	colors := []string{}
 	named := false
 	for _, word := range strings.FieldsFunc(strings.ToLower(variation), func(r rune) bool {
 		return r == ' ' || r == '-' || r == '/' || r == ','
