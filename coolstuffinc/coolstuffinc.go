@@ -675,7 +675,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				}
 
 				if csi.backend.Game == mtgmatcher.GameOnePiece {
-					cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, cardName)
+					cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, cardName, notes)
 				}
 
 				// Magic-only finish sanity check: skip cards that do not have the
@@ -1025,7 +1025,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		}
 
 		if csi.backend.Game == mtgmatcher.GameOnePiece {
-			cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, product.Name)
+			cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, product.Name, product.Notes)
 		}
 
 		buyPrice, err := mtgmatcher.ParsePrice(product.Price)

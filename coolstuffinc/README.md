@@ -313,7 +313,8 @@ from the shelf collision this section is about.
   and OP02 file their alternate arts as Parallel, so the storefront's
   "Alternate Art" matched the PRB-01 reprint or the manga row: the shelf's
   own set answers when it holds one parallel printing of the number and no
-  plain alternate art of it). `onePieceAlternatePromo` files the 25th
+  plain alternate art of it, unless the note names the matched set as the
+  reprint, "PRB01 Reprint - OP01-120"). `onePieceAlternatePromo` files the 25th
   Edition premium card collection on the promo shelf as the card's
   Alternate Art. `onePieceSpellings` is a replacer that rewrites the part
   that differs and keeps the number or bracket behind it, and

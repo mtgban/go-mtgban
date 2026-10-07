@@ -209,13 +209,17 @@ func onePieceAlternatePromo(name string) bool {
 // settles it when it holds one parallel printing of the number and no plain
 // Alternate Art of it, which is false for every set filing its alternate
 // arts under that name. Only a printing in the finish the match settled on
-// counts.
-func onePieceParallelPrinting(b *mtgmatcher.Backend, id, edition, name string) string {
+// counts, and a match on the set the note names as the reprint stays there.
+func onePieceParallelPrinting(b *mtgmatcher.Backend, id, edition, name, notes string) string {
 	if !slices.Equal(nameQualifierList(name), []string{"Alternate Art"}) {
 		return ""
 	}
 	co, err := b.GetUUID(id)
 	if err != nil {
+		return ""
+	}
+	reprint := onePieceReprintNote.FindStringSubmatch(notes)
+	if reprint != nil && strings.EqualFold(strings.ReplaceAll(co.SetCode, "-", ""), reprint[1]) {
 		return ""
 	}
 	set, err := b.GetSetByName(edition)
@@ -241,14 +245,18 @@ func onePieceParallelPrinting(b *mtgmatcher.Backend, id, edition, name string) s
 	return parallel
 }
 
+// onePieceReprintNote matches the set a note names a listing as a reprint
+// from, "PRB01 Reprint - OP01-120", spelled without the catalog's dash.
+var onePieceReprintNote = regexp.MustCompile(`(?i)\b([a-z]+\d+) reprint\b`)
+
 // onePieceRefined answers the printing a One Piece listing means once the
 // match has settled on one, where its own wording says it is another.
-func onePieceRefined(b *mtgmatcher.Backend, id, edition, name string) string {
+func onePieceRefined(b *mtgmatcher.Backend, id, edition, name, notes string) string {
 	renamed := onePieceRenamedTreatment(b, id, name)
 	if renamed != "" {
 		return renamed
 	}
-	parallel := onePieceParallelPrinting(b, id, edition, name)
+	parallel := onePieceParallelPrinting(b, id, edition, name, notes)
 	if parallel != "" {
 		return parallel
 	}
