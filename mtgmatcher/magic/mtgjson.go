@@ -1020,8 +1020,13 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			// The 1997 frame is also just what every card printed before
 			// 8th Edition already wears, so only file it as a promo type
 			// where it is a deliberate modern treatment, not the frame
-			// its era printed by default.
-			if card.FrameVersion == "1997" && set.ReleaseDateTime.After(PromosForEverybodyYay) {
+			// its era printed by default. A long-running promo set dates
+			// each card on its own (a 2023 Media Insert in a 1995 set).
+			releaseDate := set.ReleaseDateTime
+			if card.OriginalReleaseDate != "" {
+				releaseDate, _ = time.Parse("2006-01-02", card.OriginalReleaseDate)
+			}
+			if card.FrameVersion == "1997" && releaseDate.After(PromosForEverybodyYay) {
 				card.PromoTypes = append(card.PromoTypes, PromoTypeRetroFrame)
 			}
 
