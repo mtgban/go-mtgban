@@ -14,6 +14,7 @@ func TestGameFromCatalog(t *testing.T) {
 	}{
 		{"Magic: The Gathering", GameMagic},
 		{"Flesh and Blood", GameFleshAndBlood},
+		{"Lorcana", GameLorcana},
 		{"Disney Lorcana", GameLorcana},
 		{"Riftbound", GameRiftbound},
 		{"Riftbound: League of Legends TCG", GameRiftbound},
