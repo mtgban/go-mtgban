@@ -366,7 +366,8 @@ func (Rules) AliasEdition(b *mtgmatcher.Backend, edition string) string {
 	edition = strings.TrimSpace(edition)
 	norm := mtgmatcher.Normalize(edition)
 	if code, found := editionAliases[norm]; found {
-		if set, err := b.GetSet(code); err == nil {
+		set, err := b.GetSet(code)
+		if err == nil {
 			return set.Name
 		}
 	}

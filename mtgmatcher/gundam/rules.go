@@ -482,7 +482,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// what a listing without a qualifier means. Both tiers only narrow -
 	// a rarity nothing carries leaves the candidates as they were, so an
 	// ambiguity is reported rather than silently resolved.
-	if named := rarityNamed(b, inCard.Variation, candidates); len(named) > 0 {
+	named := rarityNamed(b, inCard.Variation, candidates)
+	if len(named) > 0 {
 		candidates = named
 	} else if base := baseRarity(candidates); len(base) > 0 {
 		candidates = base

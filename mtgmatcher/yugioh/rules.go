@@ -1186,13 +1186,15 @@ func tierByRarity(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidate
 	matched := matchedQualifiers(words, candidates, qualifiers)
 	if len(matched) > 0 {
 		rest := withoutQualifierWords(words, matched)
-		if out, found := rarityFilter(b, rest, candidates); found {
+		out, found := rarityFilter(b, rest, candidates)
+		if found {
 			return out
 		}
 		return suffixNarrowed(candidates, number)
 	}
 
-	if out, found := rarityFilter(b, words, candidates); found {
+	out, found := rarityFilter(b, words, candidates)
+	if found {
 		return out
 	}
 
