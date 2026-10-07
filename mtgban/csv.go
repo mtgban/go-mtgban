@@ -329,7 +329,7 @@ func cardID2record(b *mtgmatcher.Backend, cardID string) ([]string, error) {
 		co.Edition,
 		finish,
 		co.Card.Number,
-		co.Card.Rarity,
+		b.RarityLabel(co.Card.Rarity),
 	}
 	return record, nil
 }
