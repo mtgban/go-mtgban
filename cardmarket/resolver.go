@@ -332,21 +332,23 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, bool, erro
 
 	// A two-sided token sheet's own product name ("Bird Token (W 1/1) //
 	// Spirit Token (W 1/1)") is not one Preprocess/Match below was ever
-	// built to read. Cardmarket's own product Number ("T 2/6") is a
-	// catalog ordinal, not a collector number, so unlike Cool Stuff Inc's
-	// own feed there is no set+number anchor available here - both faces'
-	// own names plus the product's edition (magic.MatchTokenPairingByNamesAndEdition,
-	// already refusing rather than guessing whenever a name repeats across
-	// several same-named tokens in one edition) is the only anchor this
-	// vendor's own data gives. Resolved or not, this listing is done here:
-	// falling into Preprocess/Match below would only refuse it again, more
-	// noisily.
+	// built to read. Both faces' names plus the product's edition
+	// (magic.MatchTokenPairingByNamesAndEdition, already refusing rather
+	// than guessing whenever a name repeats across several same-named
+	// tokens in one edition) name the pair, and the product's Number
+	// ("T 2/6", "CT 37/2") states its faces' collector numbers, which a
+	// pair numbered otherwise is another printing of. Resolved or not,
+	// this listing is done here: falling into Preprocess/Match below would
+	// only refuse it again, more noisily.
 	if strings.Contains(product.Name, "Token") && strings.Contains(product.Name, " // ") {
 		if pairID := magic.MatchTokenPairingByNamesAndEdition(r.backend, product.Name, product.ExpansionName, false); pairID != "" {
 			cardID, _ = r.backend.MatchID(pairID, false)
 		}
 		if pairIDFoil := magic.MatchTokenPairingByNamesAndEdition(r.backend, product.Name, product.ExpansionName, true); pairIDFoil != "" {
 			cardIDFoil, _ = r.backend.MatchID(pairIDFoil, true)
+		}
+		if r.otherFaces(product, cardID) || r.otherFaces(product, cardIDFoil) {
+			return "", "", true, nil
 		}
 		return cardID, cardIDFoil, true, nil
 	}
@@ -405,6 +407,50 @@ func (r *resolver) resolveMagic(product *cm.Product) (string, string, bool, erro
 		cardIDFoil, _ = r.backend.MatchID(cardID, true)
 	}
 	return cardID, cardIDFoil, true, nil
+}
+
+// tokenFace reads one face of a token product's Number, a collector number
+// that may carry its set's code ("REX02").
+var tokenFace = regexp.MustCompile(`^[A-Z]*0*([0-9]+[a-z]?)$`)
+
+// otherFaces reports whether a two-faced token product's Number names face
+// numbers other than those of the pair cardID, which a product whose Number
+// does not read as two faces never does.
+func (r *resolver) otherFaces(product *cm.Product, cardID string) bool {
+	_, faces, found := strings.Cut(product.Number, " ")
+	if !found {
+		faces = product.Number
+	}
+	front, back, found := strings.Cut(faces, "/")
+	if !found {
+		return false
+	}
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	pairFront, pairBack, found := strings.Cut(co.Number, " // ")
+	if !found {
+		return false
+	}
+	var got, want []string
+	for _, face := range []string{front, back} {
+		m := tokenFace.FindStringSubmatch(face)
+		if m == nil {
+			return false
+		}
+		got = append(got, m[1])
+	}
+	for _, face := range []string{pairFront, pairBack} {
+		m := tokenFace.FindStringSubmatch(face)
+		if m == nil {
+			return false
+		}
+		want = append(want, m[1])
+	}
+	slices.Sort(got)
+	slices.Sort(want)
+	return !slices.Equal(got, want)
 }
 
 // foilOnlyShelf reports whether product's shelf sells only the foil shown,
