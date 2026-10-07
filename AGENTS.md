@@ -393,7 +393,9 @@ wording stage (Lorcana drops puzzle-insert and cruise-promo products;
 Yu-Gi-Oh drops storefront character-art cards that carry no collector
 number), Pokemon at the answer stage (a metal-card listing that answered
 with a plain printing), and Pokemon overrides `CandidateSets` to fold
-`*Promos` shelves into its loose-edition pass. The
+`*Promos` shelves into its loose-edition pass and to add, on every pass,
+the subsets filed inside a set it selects: a set coded `<parent>-<suffix>`
+whose name opens with its parent's, such as a Trainer Gallery. The
 real, shared work across all eight is edition and number normalization in
 `Prefilter`/`AdjustName`/`AdjustEdition`/`AliasEdition` and the
 number-and-finish disambiguation in `FilterCards`.

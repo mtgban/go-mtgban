@@ -737,12 +737,16 @@ give `IsUnsupported` real logic at `StageWording` (Lorcana drops
 puzzle-insert and cruise-promo products; Yu-Gi-Oh drops the storefront's own
 character-art cards, which carry no collector number and no catalog row), and
 Pokemon overrides `CandidateSets` to fold `*Promos` shelves into the loose
-pass before falling back to every printing. Pokemon also holds oversized and
-metal-card listings to those printings in `FilterPrintings` (§2.4, stage 7),
-and refuses in `IsUnsupported` at `StageAnswer` a metal-card listing that
-answered with a card that is not one. The real, shared work across all
-seven is name + collector number + finish narrowing in `FilterCards`, with
-the edition breaking ties when it resolves. The interesting details are the
+pass before falling back to every printing, and to add, on every pass, the
+subsets filed inside a set it selects: a set coded `<parent>-<suffix>` whose
+name opens with its parent's (the Trainer Galleries and Radiant Collections
+among them), since the storefronts file those cards under the parent. Pokemon
+also holds oversized and metal-card listings to those printings in
+`FilterPrintings` (§2.4, stage 7), and refuses in `IsUnsupported` at
+`StageAnswer` a metal-card listing that answered with a card that is not one.
+The real, shared work across all seven is name + collector number + finish
+narrowing in `FilterCards`, with the edition breaking ties when it resolves.
+The interesting details are the
 ones each game's own data forces: Lorcana strips leading zeros from numbers
 while keeping a genuine `"0"` reachable; Riftbound canonicalizes numbers out of the
 public code ("OGN-066a/298" → "66a") and refuses promo sets unless explicitly
