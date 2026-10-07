@@ -423,7 +423,9 @@ path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
    `mtgban.ScraperConfig`, whose `SetConfig` receives `DisableRetail` and
    `DisableBuylist`; the registry refuses to build half of a store that
    does not.
-3. Fetch with `WorkerPool` plus a client from `mtgban.NewHTTPClient`.
+3. Fetch with `WorkerPool` plus a client from `mtgban.NewHTTPClient`, built
+   with `mtgban.WithHTTPLogCallback(x.retryf)`: a `printf` gated on a
+   `logRetries` field that `register.go` copies from `opts.LogRetries`.
 4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
    constructor)`: `name` is the bare registry key the store has always
    been known by (`coolstuffinc_sealed`, `starcitygames_sealed`), the same
