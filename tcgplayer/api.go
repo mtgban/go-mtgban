@@ -718,7 +718,7 @@ type CookieClient struct {
 func NewCookieClient(authKey string) *CookieClient {
 	tcg := CookieClient{}
 	tcg.cookieLine = "TCGAuthTicket_Production=" + authKey + ";"
-	tcg.client = mtgban.NewHTTPClient()
+	tcg.client = mtgban.NewHTTPClient(mtgban.WithHTTPWritesOnce())
 	return &tcg
 }
 
@@ -729,7 +729,7 @@ func NewCookieSetClient(cookies map[string]string) *CookieClient {
 	for name, value := range cookies {
 		tcg.cookieLine += fmt.Sprintf("%s=%s; ", name, value)
 	}
-	tcg.client = mtgban.NewHTTPClient()
+	tcg.client = mtgban.NewHTTPClient(mtgban.WithHTTPWritesOnce())
 	return &tcg
 }
 

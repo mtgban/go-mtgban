@@ -418,6 +418,7 @@ func NewCTAuthClient(token string) *CTAuthClient {
 	// A full catalog walk gets rate limited partway through; back off for
 	// longer than the default to wait a 429 out rather than fail on it.
 	ct.client = mtgban.NewHTTPClient(
+		mtgban.WithHTTPWritesOnce(),
 		mtgban.WithHTTPRetries(10),
 		mtgban.WithHTTPRetryWait(time.Second, 90*time.Second),
 		mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
