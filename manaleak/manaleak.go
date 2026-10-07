@@ -241,7 +241,7 @@ func (ml *Manaleak) Load(ctx context.Context) error {
 	if !ml.disableRetail {
 		err := ml.scrape(ctx, modeRetail)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		} else {
 			ml.inventoryDate = time.Now()
 		}
@@ -250,7 +250,7 @@ func (ml *Manaleak) Load(ctx context.Context) error {
 	if !ml.disableBuylist {
 		err := ml.scrape(ctx, modeBuylist)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		} else {
 			ml.buylistDate = time.Now()
 		}

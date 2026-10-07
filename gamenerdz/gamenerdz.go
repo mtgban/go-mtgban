@@ -576,7 +576,7 @@ func (gn *Gamenerdz) Load(ctx context.Context) error {
 	if !gn.disableRetail {
 		err := gn.scrape(ctx, modeRetail)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		} else {
 			gn.inventoryDate = time.Now()
 		}
@@ -585,7 +585,7 @@ func (gn *Gamenerdz) Load(ctx context.Context) error {
 	if !gn.disableBuylist {
 		err := gn.scrape(ctx, modeBuylist)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		} else {
 			gn.buylistDate = time.Now()
 		}

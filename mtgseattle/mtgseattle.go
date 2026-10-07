@@ -462,14 +462,14 @@ func (ms *MTGSeattle) Load(ctx context.Context) error {
 	if !ms.disableRetail {
 		err := ms.scrape(ctx, modeInventory)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		}
 	}
 
 	if !ms.disableBuylist {
 		err := ms.scrape(ctx, modeBuylist)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		}
 	}
 

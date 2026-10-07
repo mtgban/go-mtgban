@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"testing"
 
@@ -178,23 +180,47 @@ func (s *loadStub) Inventory() mtgban.InventoryRecord {
 	return mtgban.InventoryRecord{"uuid": {{Price: 1}}}
 }
 
+// bothStub is a loadStub that also buys, loading both halves in one Load.
+type bothStub struct{ loadStub }
+
+func (s *bothStub) Buylist() mtgban.BuylistRecord {
+	return mtgban.BuylistRecord{"uuid": {{BuyPrice: 1}}}
+}
+
 // A scraper whose Load failed may hold part of its data, which must not
-// reach the dump, while the scrapers around it still do.
+// reach the dump, while the scrapers around it, and the half of a scraper
+// that loaded when its error names the other half alone, still do.
 func TestLoadKeepsOnlyWhatLoaded(t *testing.T) {
+	retailErr := fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, errors.New("timeout"))
+	buylistErr := fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, errors.New("timeout"))
 	scrapers := []mtgban.Scraper{
-		&loadStub{name: "A"},
-		&loadStub{name: "B", err: errors.New("2 of 3 pages failed")},
-		&loadStub{name: "C"},
+		&bothStub{loadStub{name: "A"}},
+		&bothStub{loadStub{name: "B", err: errors.Join(buylistErr)}},
+		&bothStub{loadStub{name: "C", err: errors.Join(retailErr, buylistErr)}},
+		&loadStub{name: "D", err: errors.New("2 of 3 pages failed")},
+		&bothStub{loadStub{name: "E", err: errors.Join(retailErr)}},
+		&loadStub{name: "F"},
 	}
-	loaded, errs := load(context.Background(), scrapers)
-	if len(loaded) != 2 || loaded[0].Info().Shorthand != "A" || loaded[1].Info().Shorthand != "C" {
-		t.Errorf("load() kept %d scrapers, want A and C", len(loaded))
+	sellers, vendors, errs := load(context.Background(), scrapers)
+
+	var got []string
+	for _, seller := range sellers {
+		got = append(got, "sell "+seller.Info().Shorthand)
 	}
-	if len(errs) != 1 || !strings.Contains(errs[0].Error(), "B not dumped") {
-		t.Errorf("load() errors = %v, want B's alone", errs)
+	for _, vendor := range vendors {
+		got = append(got, "buy "+vendor.Info().Shorthand)
 	}
-	sellers, _ := mtgban.UnfoldScrapers(loaded)
-	if len(sellers) != 2 {
-		t.Errorf("UnfoldScrapers() made %d sellers, want 2", len(sellers))
+	want := []string{"sell A", "sell B", "sell F", "buy A", "buy E"}
+	if !slices.Equal(got, want) {
+		t.Errorf("load() kept %q, want %q", got, want)
+	}
+
+	got = nil
+	for _, err := range errs {
+		got = append(got, strings.SplitN(err.Error(), ":", 2)[0])
+	}
+	want = []string{"B", "C not dumped", "D not dumped", "E"}
+	if !slices.Equal(got, want) {
+		t.Errorf("load() errors %q, want %q", got, want)
 	}
 }

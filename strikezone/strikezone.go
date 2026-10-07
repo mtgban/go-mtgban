@@ -543,14 +543,14 @@ func (sz *Strikezone) Load(ctx context.Context) error {
 	if !sz.disableRetail {
 		err := sz.scrape(ctx, modeRetail)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		}
 	}
 
 	if !sz.disableBuylist {
 		err := sz.scrape(ctx, modeBuylist)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		}
 	}
 
