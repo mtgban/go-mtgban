@@ -100,7 +100,7 @@ type ABUClient struct {
 // NewABUClient returns a client for the public catalog.
 func NewABUClient() *ABUClient {
 	abu := ABUClient{}
-	abu.client = mtgban.NewHTTPClient()
+	abu.client = mtgban.NewHTTPClient(mtgban.WithHTTPWritesOnce())
 	return &abu
 }
 

@@ -1,7 +1,13 @@
 package mtgban
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -26,6 +32,7 @@ type httpConfig struct {
 	waitMax       time.Duration
 	backoff       retryablehttp.Backoff
 	checkRetry    retryablehttp.CheckRetry
+	writesOnce    bool
 	errorHandler  retryablehttp.ErrorHandler
 	checkRedirect func(*http.Request, []*http.Request) error
 	wraps         []func(http.RoundTripper) http.RoundTripper
@@ -60,6 +67,13 @@ func WithHTTPRetryWait(minWait, maxWait time.Duration) HTTPOption {
 // WithHTTPBackoff replaces how long to wait before each retry.
 func WithHTTPBackoff(fn retryablehttp.Backoff) HTTPOption {
 	return func(c *httpConfig) { c.backoff = fn }
+}
+
+// WithHTTPWritesOnce retries a POST or PATCH only when the server never read
+// it: its dial failed, or it was answered 429. Any other failure is returned
+// as an error at once, so a POST or PATCH is never sent twice.
+func WithHTTPWritesOnce() HTTPOption {
+	return func(c *httpConfig) { c.writesOnce = true }
 }
 
 // WithHTTPCheckRetry replaces the decision whether a response or an error is
@@ -126,6 +140,9 @@ func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	if config.checkRetry != nil {
 		client.CheckRetry = config.checkRetry
 	}
+	if config.writesOnce {
+		client.CheckRetry = writesOnce(client.CheckRetry)
+	}
 	if config.errorHandler != nil {
 		client.ErrorHandler = config.errorHandler
 	}
@@ -141,4 +158,36 @@ func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	standard := client.StandardClient()
 	standard.CheckRedirect = config.checkRedirect
 	return standard
+}
+
+// writesOnce narrows policy for a POST or PATCH to the failures the server
+// never read.
+func writesOnce(policy retryablehttp.CheckRetry) retryablehttp.CheckRetry {
+	return func(ctx context.Context, resp *http.Response, err error) (bool, error) {
+		retry, checkErr := policy(ctx, resp, err)
+		if !retry || !isWrite(resp, err) {
+			return retry, checkErr
+		}
+		if resp != nil {
+			if resp.StatusCode == http.StatusTooManyRequests {
+				return true, checkErr
+			}
+			return false, fmt.Errorf("unexpected HTTP status %s, not retried: the server may have acted on it", resp.Status)
+		}
+		var opErr *net.OpError
+		return errors.As(err, &opErr) && opErr.Op == "dial", checkErr
+	}
+}
+
+// isWrite reads the method off the response or, with none, off the error
+// net/http names it in ("Post").
+func isWrite(resp *http.Response, err error) bool {
+	var method string
+	var urlErr *url.Error
+	if resp != nil && resp.Request != nil {
+		method = resp.Request.Method
+	} else if errors.As(err, &urlErr) {
+		method = strings.ToUpper(urlErr.Op)
+	}
+	return method == http.MethodPost || method == http.MethodPatch
 }

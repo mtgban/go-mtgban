@@ -121,3 +121,66 @@ type roundTripFunc func(*http.Request) (*http.Response, error)
 func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)
 }
+
+// WithHTTPWritesOnce sends a write answered with a failure once and fails it,
+// while a 429, a read and a client without the option keep retrying.
+func TestNewHTTPClientWritesOnce(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		method     string
+		status     int
+		writesOnce bool
+		served     int32
+		fails      bool
+	}{
+		{"write answered 502", http.MethodPost, http.StatusBadGateway, true, 1, true},
+		{"write answered 429", http.MethodPost, http.StatusTooManyRequests, true, 2, false},
+		{"read answered 502", http.MethodGet, http.StatusBadGateway, true, 2, false},
+		{"write without the option", http.MethodPost, http.StatusBadGateway, false, 2, false},
+	} {
+		var served atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if served.Add(1) == 1 {
+				w.WriteHeader(tc.status)
+			}
+		}))
+		opts := []HTTPOption{WithHTTPRetries(4), WithHTTPRetryWait(time.Millisecond, time.Millisecond)}
+		if tc.writesOnce {
+			opts = append(opts, WithHTTPWritesOnce())
+		}
+		req, err := http.NewRequest(tc.method, srv.URL, strings.NewReader("{}"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp, err := NewHTTPClient(opts...).Do(req)
+		srv.Close()
+		if tc.fails != (err != nil) {
+			t.Fatalf("%s: error %v, want one: %v", tc.name, err, tc.fails)
+		}
+		if err == nil {
+			resp.Body.Close()
+		}
+		if served.Load() != tc.served {
+			t.Errorf("%s: served %d times, want %d", tc.name, served.Load(), tc.served)
+		}
+	}
+}
+
+// A write that never reached the server is retried under WithHTTPWritesOnce.
+func TestNewHTTPClientWritesOnceRetriesAFailedDial(t *testing.T) {
+	srv := httptest.NewServer(http.NotFoundHandler())
+	link := srv.URL
+	srv.Close()
+
+	var retries int
+	client := NewHTTPClient(WithHTTPRetries(2), WithHTTPRetryWait(time.Millisecond, time.Millisecond), WithHTTPWritesOnce(),
+		WithHTTPLogCallback(func(string, ...any) { retries++ }))
+	resp, err := client.Post(link, "application/json", strings.NewReader("{}"))
+	if err == nil {
+		resp.Body.Close()
+		t.Fatal("a closed port answered")
+	}
+	if retries != 2 {
+		t.Errorf("retried %d times, want 2", retries)
+	}
+}
