@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -99,6 +100,23 @@ func TestMatchPokemonStamped(t *testing.T) {
 		if err != nil || got != tt.want {
 			t.Errorf("matchPokemon(%q product) = (%q, %v), want %q", tt.rarity, got, err, tt.want)
 		}
+	}
+}
+
+// TestPokemonStampedPlainRow pins that a stamped printing sold in a reverse
+// holo too answers with its plain row, whichever the index lists last.
+func TestPokemonStampedPlainRow(t *testing.T) {
+	b := datastoreBackend(t, "pokemon", strings.Replace(pokemonStampedDatastore, `"variant": "Prerelease"}`,
+		`"variant": "Prerelease"},
+  {"externalLinks": {"tcgPlayerId": 153078}, "finish": "Reverse Holofoil", "id": "38-107_153078_reverseholofoil", "name": "Manectric", "number": "38", "promoTypes": ["prerelease"], "rarity": "Promo", "setCode": "PR-1423", "total": "107", "variant": "Prerelease"}`, 1))
+	plain, err := b.GetUUID("38-107_87155")
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resolver{backend: b, gameID: cm.GamePokemon}
+	got := r.pokemonStamped(plain)
+	if got != "38-107_153078" {
+		t.Errorf("pokemonStamped = %q, want the plain stamped row", got)
 	}
 }
 
