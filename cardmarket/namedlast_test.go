@@ -213,9 +213,10 @@ func TestCollectTally(t *testing.T) {
 }
 
 // TestNamedLastOnePerPrinting pins that a printing is priced by one product
-// in every column: a second product gives way even in a column the first
-// has no price in, so the Low and Trend shelves cannot name two products
-// for one card.
+// in every column, so the Low and Trend shelves cannot name two products
+// for one card, and that the product pricing it in more columns holds it:
+// M3C's regular product has a stale foil Trend and no foil Low, where its
+// Extras product sells the ripple foil in both.
 func TestNamedLastOnePerPrinting(t *testing.T) {
 	const uuid = "m3c-223_f"
 	low, trend := entry(1, 772984), entry(3, 772984)
@@ -227,6 +228,7 @@ func TestNamedLastOnePerPrinting(t *testing.T) {
 		name    string
 		results []responseChan
 		want    []mtgban.InventoryEntry
+		holder  int
 		clashes int
 	}{
 		{
@@ -238,14 +240,27 @@ func TestNamedLastOnePerPrinting(t *testing.T) {
 			want: []mtgban.InventoryEntry{low, trend},
 		},
 		{
-			name: "a second product gives way where the first has no price",
+			name: "a second product gives way in every column",
 			results: []responseChan{
 				{ogID: 774875, cardID: uuid, entry: otherLow, byName: true},
 				{ogID: 774875, cardID: uuid, entry: otherTrend, byName: true},
-				{ogID: 772984, cardID: uuid, entry: trend},
+				{ogID: 772984, cardID: uuid, entry: low, owned: true},
+				{ogID: 772984, cardID: uuid, entry: trend, owned: true},
 			},
-			want:    []mtgban.InventoryEntry{trend},
+			want:    []mtgban.InventoryEntry{low, trend},
+			holder:  772984,
 			clashes: 2,
+		},
+		{
+			name: "a product with no price in a column gives way to one with both",
+			results: []responseChan{
+				{ogID: 774875, cardID: uuid, entry: otherLow, byName: true},
+				{ogID: 774875, cardID: uuid, entry: otherTrend, byName: true},
+				{ogID: 772984, cardID: uuid, entry: trend, owned: true},
+			},
+			want:    []mtgban.InventoryEntry{otherLow, otherTrend},
+			holder:  774875,
+			clashes: 1,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -257,8 +272,8 @@ func TestNamedLastOnePerPrinting(t *testing.T) {
 				},
 				clash: func(result responseChan, held int) {
 					heard++
-					if held != 772984 {
-						t.Errorf("%d gave way to %d, want 772984", result.ogID, held)
+					if held != tt.holder {
+						t.Errorf("%d gave way to %d, want %d", result.ogID, held, tt.holder)
 					}
 				},
 			}
@@ -289,10 +304,10 @@ func TestNamedLastOnePerPrinting(t *testing.T) {
 
 // TestCollectPricesOneProductPerMagicPrinting pins the Magic shape behind
 // it: the Extras shelf sells Commander: Modern Horizons 3's ripple foils as
-// products of their own, named onto the foil the base product's id already
-// prices. The base product holds both shelves even where it has no Low,
-// whichever product the walk reaches first. Extras is filed ahead of it in
-// the catalog's order here, so only the datastore's id can decide it.
+// products of their own, named onto the foil the base product's id also
+// reaches. The base product has a stale foil Trend and no foil Low, so
+// Extras holds the foil in both columns and the base keeps the nonfoil,
+// whichever product the walk reaches first.
 func TestCollectPricesOneProductPerMagicPrinting(t *testing.T) {
 	b := realDatastore(t)
 
@@ -336,11 +351,13 @@ func TestCollectPricesOneProductPerMagicPrinting(t *testing.T) {
 				t.Errorf("got %d entries for the nonfoil, want Low and Trend", len(mkm.inventory[plain]))
 			}
 			entries := mkm.inventory[foil]
-			if len(entries) != 1 {
-				t.Fatalf("got %d entries for the foil, want its Trend alone: %v", len(entries), entries)
+			if len(entries) != 2 {
+				t.Fatalf("got %d entries for the foil, want Low and Trend: %v", len(entries), entries)
 			}
-			if entries[0].OriginalID != "772984" || entries[0].SellerName != availableIndexNames[1] {
-				t.Errorf("the foil kept %s from %s, want Trend from 772984", entries[0].SellerName, entries[0].OriginalID)
+			for _, entry := range entries {
+				if entry.OriginalID != "774875" {
+					t.Errorf("the foil kept %s from %s, want 774875", entry.SellerName, entry.OriginalID)
+				}
 			}
 		})
 	}

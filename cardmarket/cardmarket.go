@@ -30,7 +30,8 @@ type responseChan struct {
 	// up by id, which is a guess however well guarded; see namedLast.
 	byName bool
 	// owned marks a price for a printing the datastore files under this
-	// very product, which namedLast lets hold it first.
+	// very product, which namedLast prefers among products pricing it in
+	// as many columns.
 	owned bool
 	// product is what was priced, for the collector to tell a twin of a
 	// product already priced from a disagreement worth reporting.
@@ -57,11 +58,12 @@ type responseChan struct {
 // the wait the winner is whichever expansion the pool happened to walk
 // first - and half the time that hands a verified printing over to a guess
 // about a different one. Waiting decides it instead: the guess is offered
-// only where nothing verified stands.
+// only where nothing verified prices the printing in as many columns.
 //
-// A printing is priced by one product, in every column. The first product
-// to reach it holds it, and any other gives way, so the Low and Trend
-// shelves name the same product for a card and never mix the prices of two.
+// A printing is priced by one product, in every column. The product pricing
+// it in the most columns holds it, the first to reach it among equals, and
+// any other gives way, so the Low and Trend shelves name the same product
+// for a card and never mix the prices of two.
 type namedLast struct {
 	add     func(responseChan)
 	results []responseChan
@@ -135,13 +137,28 @@ func (n *namedLast) hold(result responseChan) bool {
 	return false
 }
 
-// flush adds everything held back: the prices of a printing's own product
-// first, then those looked up by id, then the named ones, each in the
-// order of the catalog - expansion, then product - and reports how many
-// named prices went in and how many gave way to a twin already priced.
+// flush adds everything held back: the prices of the product pricing a
+// printing in the most columns first, then of its own product, then those
+// looked up by id, then the named ones, each in the order of the catalog -
+// expansion, then product - and reports how many named prices went in and
+// how many gave way to a twin already priced.
 func (n *namedLast) flush() (added, twins int) {
+	// A product with nothing in a column would empty it, and a foil-only
+	// product's plain Low is its foil one, so the fuller product holds.
+	type priced struct {
+		ogID   int
+		cardID string
+	}
+	columns := map[priced]int{}
+	for _, result := range n.results {
+		columns[priced{result.ogID, result.cardID}]++
+	}
 	sort.SliceStable(n.results, func(i, j int) bool {
 		a, b := n.results[i], n.results[j]
+		ca, cb := columns[priced{a.ogID, a.cardID}], columns[priced{b.ogID, b.cardID}]
+		if ca != cb {
+			return ca > cb
+		}
 		if a.owned != b.owned {
 			return a.owned
 		}

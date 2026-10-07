@@ -11,8 +11,9 @@ has never modeled at all; see "Known gaps").
 - **`Index`** (`cardmarket.go`, `idmap.go`) reads Cardmarket's published price
   guide: one bulk download per game, no credential, the low and trend columns
   as a lagging aggregate. One product prices a printing in both columns:
-  the one the datastore files it under, else one found by id, else one
-  named, first in the catalog's order (`namedLast`).
+  the one pricing it in the most columns, then the one the datastore files
+  it under, else one found by id, else one named, first in the catalog's
+  order (`namedLast`).
 - **`Sealed`** (`sealed.go`) reads live listings for sealed product through
   the authenticated `Articles` endpoint, one request per product.
 - **`Market`** (`market.go`, `market_filter.go`) reads the same live listings
