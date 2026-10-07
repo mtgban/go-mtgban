@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"context"
 	"maps"
 	"net/url"
 	"slices"
@@ -450,5 +451,38 @@ func TestShouldStopPaging(t *testing.T) {
 					tt.mainDone, tt.mainSatisfiedAt, tt.page, tt.foundPowerseller, got, tt.want)
 			}
 		})
+	}
+}
+
+// Kenrith ELD #303 is sold as 400369 (Buy a Box Promos) and 400374 (Throne
+// of Eldraine: Extras); each product counts only its own copies.
+func TestMarketAvailableUnknownAcrossProducts(t *testing.T) {
+	mkm, err := NewScraperMarket(&mtgmatcher.Backend{Game: "magic"}, "token", "secret")
+	if err != nil {
+		t.Fatal(err)
+	}
+	results := []responseChan{
+		{ogID: 400369, cardID: "kenrith", entry: mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 1, SellerName: marketMainName, Available: 5}},
+		{ogID: 400374, cardID: "kenrith", entry: mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 2, SellerName: marketMainName}},
+		{ogID: 1, cardID: "alone", entry: mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 1, SellerName: marketMainName, Available: 7}},
+		{ogID: 1, cardID: "alone", entry: mtgban.InventoryEntry{Conditions: mtgban.SP, Price: 1, SellerName: marketMainName, Available: 7}},
+	}
+	mkm.collectPrices(context.Background(), []cm.Expansion{{}},
+		func(_ context.Context, _ cm.Expansion, channel chan<- responseChan) error {
+			for _, result := range results {
+				channel <- result
+			}
+			return nil
+		})
+
+	for cardID, want := range map[string]int{"kenrith": 0, "alone": 7} {
+		if len(mkm.inventory[cardID]) != 2 {
+			t.Fatalf("%s has %d entries, want 2", cardID, len(mkm.inventory[cardID]))
+		}
+		for _, entry := range mkm.inventory[cardID] {
+			if entry.Available != want {
+				t.Errorf("%s at %v: Available = %d, want %d", cardID, entry.Price, entry.Available, want)
+			}
+		}
 	}
 }
