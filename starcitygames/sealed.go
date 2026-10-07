@@ -248,14 +248,17 @@ func (scg *Sealed) Load(ctx context.Context) error {
 	}
 	scg.setIDs = setIDs
 
-	count := 0
+	count, ofGame := 0, 0
 	err = scg.client.StreamCatalog(ctx, func() {
 		scg.printf("Catalog stream broke after %d products, downloading it again", count)
 		scg.inventory = mtgban.InventoryRecord{}
 		scg.buylist = mtgban.BuylistRecord{}
 		scg.dropped = nil
-		count = 0
+		count, ofGame = 0, 0
 	}, func(p CatalogProduct) error {
+		if gameFromCatalog(p.Game) == scg.gameID {
+			ofGame++
+		}
 		scg.processProduct(p)
 		count++
 		if count%5000 == 0 {
@@ -265,6 +268,11 @@ func (scg *Sealed) Load(ctx context.Context) error {
 	})
 	if err != nil {
 		return fmt.Errorf("catalog load failed: %w", err)
+	}
+	// Counted over every product type, since a game may have no sealed
+	// listed while its singles still prove the spelling maps.
+	if ofGame == 0 {
+		return fmt.Errorf("none of %d catalog products maps to %s", count, scg.backend.Game)
 	}
 	scg.printf("Processed %d products total", count)
 	// What a sealed run priced is only half of what it saw; without these
