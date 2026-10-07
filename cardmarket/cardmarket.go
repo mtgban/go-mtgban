@@ -459,6 +459,13 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// Yu-Gi-Oh's second pair is a lone trend-foil that has stopped moving
 	// and is not the 1st Edition's price, so only the product's own is read.
 	onePair := perTreatment || mkm.gameID == cm.GameYuGiOh
+	// A product that never sold a plain copy and lists its cheapest foil as
+	// its Low sells foils only, and that Low is the foil's, unless the
+	// printing has no foil of its own for that Low to belong to.
+	if mkm.gameID == cm.GameMagic && cardIDFoil != "" && cardIDFoil != cardID &&
+		guide.TrendPrice == 0 && guide.AvgSellPrice == 0 && guide.AvgDay30 == 0 && guide.LowPrice == foilLow {
+		prices[0] = 0
+	}
 	second := co.Finish != mtgmatcher.FinishNonfoil
 	if mkm.gameID == cm.GamePokemon {
 		// Reverse holo is the guide's only split: it has no 1st-Edition
