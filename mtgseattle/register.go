@@ -10,6 +10,7 @@ func init() {
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			// The site throttles hard past defaultConcurrency, so a
 			// caller may only lower it, never raise it.
 			if opts.MaxConcurrency != 0 && opts.MaxConcurrency < scraper.maxConcurrency {

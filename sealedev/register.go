@@ -29,6 +29,7 @@ func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 
 	scraper := NewScraper(b, sig)
 	scraper.logCallback = opts.LogCallback
+	scraper.logRetries = opts.LogRetries
 	scraper.affiliate = opts.Affiliate
 	scraper.targetEdition = opts.TargetEdition
 	targetProduct, err := mtgban.Resource[string](opts, ResourceTargetProduct)

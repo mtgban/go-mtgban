@@ -20,6 +20,7 @@ const (
 // ABUGames prices ABU Games' singles, both what they sell and what they buy.
 type ABUGames struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	inventoryDate  time.Time
 	buylistDate    time.Time
 	maxConcurrency int
@@ -36,7 +37,7 @@ func NewScraper(b *mtgmatcher.Backend) *ABUGames {
 	abu := ABUGames{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
-	abu.client = NewABUClient()
+	abu.client = NewABUClient(mtgban.WithHTTPLogCallback(abu.retryf))
 	abu.backend = b
 	abu.maxConcurrency = defaultConcurrency
 	return &abu
@@ -53,6 +54,13 @@ type resultChan struct {
 func (abu *ABUGames) printf(format string, a ...any) {
 	if abu.logCallback != nil {
 		abu.logCallback("[ABU] "+format, a...)
+	}
+}
+
+// retryf reports a request retry when the run asked for retry lines.
+func (abu *ABUGames) retryf(format string, a ...any) {
+	if abu.logRetries {
+		abu.printf(format, a...)
 	}
 }
 

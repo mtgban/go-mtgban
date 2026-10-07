@@ -74,6 +74,7 @@ var name2shorthand = map[string]string{
 // they buy.
 type Coolstuffinc struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	partner     string
 
 	// If set to true scrape will include all entries without a nonfoil NM price
@@ -194,7 +195,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
 	csi := Coolstuffinc{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	csi.client = newCSIHTTPClient()
+	csi.client = newCSIHTTPClient(mtgban.WithHTTPLogCallback(csi.retryf))
 	csi.maxConcurrency = defaultConcurrency
 	csi.shelf = shelf
 	csi.backend = b
@@ -210,6 +211,12 @@ type responseChan struct {
 func (csi *Coolstuffinc) printf(format string, a ...any) {
 	if csi.logCallback != nil {
 		csi.logCallback("[CSI] "+format, a...)
+	}
+}
+
+func (csi *Coolstuffinc) retryf(format string, a ...any) {
+	if csi.logRetries {
+		csi.printf(format, a...)
 	}
 }
 

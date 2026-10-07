@@ -83,6 +83,7 @@ func buildProductSlug(displayName string) string {
 // Vegassingles prices Vegas Singles' stock of one game.
 type Vegassingles struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	maxConcurrency int
 
 	backend *mtgmatcher.Backend
@@ -108,7 +109,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
 	vs := Vegassingles{backend: b}
 	vs.inventory = mtgban.InventoryRecord{}
 	vs.buylist = mtgban.BuylistRecord{}
-	vs.client = NewVSClient(line)
+	vs.client = NewVSClient(line, mtgban.WithHTTPLogCallback(vs.retryf))
 	vs.line = line
 	vs.maxConcurrency = defaultConcurrency
 	return &vs, nil
@@ -117,6 +118,12 @@ func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
 func (vs *Vegassingles) printf(format string, a ...any) {
 	if vs.logCallback != nil {
 		vs.logCallback("[VS] "+format, a...)
+	}
+}
+
+func (vs *Vegassingles) retryf(format string, a ...any) {
+	if vs.logRetries {
+		vs.printf(format, a...)
 	}
 }
 

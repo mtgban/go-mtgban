@@ -11,6 +11,7 @@ func init() {
 			scraper := NewScraper(b)
 			scraper.partner = opts.Affiliate
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			return scraper, nil
 		})
 	mtgban.Register("manapool_index", []mtgmatcher.Game{mtgmatcher.GameMagic},
@@ -18,6 +19,7 @@ func init() {
 			scraper := NewScraperIndex(b)
 			scraper.partner = opts.Affiliate
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			return scraper, nil
 		})
 	mtgban.Register("manapool_sealed", []mtgmatcher.Game{mtgmatcher.GameMagic},
@@ -25,6 +27,7 @@ func init() {
 			scraper := NewScraperSealed(b)
 			scraper.partner = opts.Affiliate
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			return scraper, nil
 		})
 }

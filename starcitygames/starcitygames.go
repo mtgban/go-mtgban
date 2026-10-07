@@ -20,6 +20,7 @@ import (
 // Starcitygames prices SCG's singles, both what they sell and what they buy.
 type Starcitygames struct {
 	logCallback   mtgban.LogCallbackFunc
+	logRetries    bool
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -55,7 +56,7 @@ func NewScraper(b *mtgmatcher.Backend, apiKey string) (*Starcitygames, error) {
 	}
 	scg := Starcitygames{}
 	scg.reset()
-	scg.client = NewSCGClient(apiKey)
+	scg.client = NewSCGClient(apiKey, mtgban.WithHTTPLogCallback(scg.retryf))
 	scg.backend = b
 	scg.gameID = gameID
 	return &scg, nil
@@ -74,6 +75,12 @@ func (scg *Starcitygames) reset() {
 func (scg *Starcitygames) printf(format string, a ...any) {
 	if scg.logCallback != nil {
 		scg.logCallback("[SCG] "+format, a...)
+	}
+}
+
+func (scg *Starcitygames) retryf(format string, a ...any) {
+	if scg.logRetries {
+		scg.printf(format, a...)
 	}
 }
 

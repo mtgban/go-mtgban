@@ -98,9 +98,9 @@ type ABUClient struct {
 }
 
 // NewABUClient returns a client for the public catalog.
-func NewABUClient() *ABUClient {
+func NewABUClient(opts ...mtgban.HTTPOption) *ABUClient {
 	abu := ABUClient{}
-	abu.client = mtgban.NewHTTPClient(mtgban.WithHTTPWritesOnce())
+	abu.client = mtgban.NewHTTPClient(append([]mtgban.HTTPOption{mtgban.WithHTTPWritesOnce()}, opts...)...)
 	return &abu
 }
 

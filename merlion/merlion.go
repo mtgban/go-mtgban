@@ -13,6 +13,7 @@ import (
 // Merlion prices what Merlion Games buys.
 type Merlion struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 
 	backend *mtgmatcher.Backend
 
@@ -33,6 +34,12 @@ func (mg *Merlion) printf(format string, a ...any) {
 	}
 }
 
+func (mg *Merlion) retryf(format string, a ...any) {
+	if mg.logRetries {
+		mg.printf(format, a...)
+	}
+}
+
 // Merlion quotes one price per printing and buys played copies at a set
 // discount off it, so the feed's price is the Near Mint one and the rest of
 // the ladder comes from these factors. A grade left out is one they do not
@@ -49,7 +56,7 @@ const playedPriceFloor = 100
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mg *Merlion) Load(ctx context.Context) error {
-	cards, err := DownloadBuylistCSV(ctx)
+	cards, err := DownloadBuylistCSV(ctx, mtgban.WithHTTPLogCallback(mg.retryf))
 	if err != nil {
 		return err
 	}

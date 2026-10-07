@@ -16,6 +16,7 @@ import (
 // storefronts as the singles.
 type Sealed struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	maxConcurrency int
 	shareCode      string
 
@@ -49,7 +50,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 	ct.inventory = mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
 	ct.maxConcurrency = 2
-	ct.client = NewCTAuthClient(token)
+	ct.client = NewCTAuthClient(token, mtgban.WithHTTPLogCallback(ct.retryf))
 	ct.backend = b
 	ct.gameID = id
 	return &ct, nil
@@ -58,6 +59,12 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 func (ct *Sealed) printf(format string, a ...any) {
 	if ct.logCallback != nil {
 		ct.logCallback("[CTSealed] "+format, a...)
+	}
+}
+
+func (ct *Sealed) retryf(format string, a ...any) {
+	if ct.logRetries {
+		ct.printf(format, a...)
 	}
 }
 

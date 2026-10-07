@@ -12,6 +12,7 @@ import (
 // Sealed prices ABU Games' sealed product.
 type Sealed struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 
 	inventoryDate  time.Time
 	buylistDate    time.Time
@@ -31,7 +32,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
 	abu.maxConcurrency = defaultConcurrency
-	abu.client = NewABUClient()
+	abu.client = NewABUClient(mtgban.WithHTTPLogCallback(abu.retryf))
 	abu.backend = b
 
 	abu.productMap = map[string]string{}
@@ -52,6 +53,12 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 func (abu *Sealed) printf(format string, a ...any) {
 	if abu.logCallback != nil {
 		abu.logCallback("[ABUSealed] "+format, a...)
+	}
+}
+
+func (abu *Sealed) retryf(format string, a ...any) {
+	if abu.logRetries {
+		abu.printf(format, a...)
 	}
 }
 

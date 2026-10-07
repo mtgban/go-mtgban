@@ -34,6 +34,7 @@ func init() {
 				return nil, err
 			}
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			scraper.targetEdition = opts.TargetEdition
 			scraper.shareCode = opts.Affiliate
 			if opts.MaxConcurrency != 0 {
@@ -53,6 +54,7 @@ func init() {
 				return nil, err
 			}
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			scraper.targetEdition = opts.TargetEdition
 			scraper.shareCode = opts.Affiliate
 			if opts.MaxConcurrency != 0 {

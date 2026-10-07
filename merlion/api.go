@@ -46,13 +46,13 @@ type Card struct {
 }
 
 // DownloadBuylistCSV downloads the buylist, which Merlion serves as a CSV.
-func DownloadBuylistCSV(ctx context.Context) ([]Card, error) {
+func DownloadBuylistCSV(ctx context.Context, opts ...mtgban.HTTPOption) ([]Card, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, buylistURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := mtgban.NewHTTPClient().Do(req)
+	resp, err := mtgban.NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}

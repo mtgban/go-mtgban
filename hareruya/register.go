@@ -10,6 +10,7 @@ func init() {
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			scraper.targetEdition = opts.TargetEdition
 			if opts.MaxConcurrency != 0 {
 				scraper.maxConcurrency = opts.MaxConcurrency
@@ -20,6 +21,7 @@ func init() {
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraperSealed(b)
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			return scraper, nil
 		})
 }

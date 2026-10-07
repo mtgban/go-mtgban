@@ -413,18 +413,18 @@ type authTransport struct {
 }
 
 // NewCTAuthClient returns a client authenticated with the given token.
-func NewCTAuthClient(token string) *CTAuthClient {
+func NewCTAuthClient(token string, opts ...mtgban.HTTPOption) *CTAuthClient {
 	ct := CTAuthClient{}
 	// A full catalog walk gets rate limited partway through; back off for
 	// longer than the default to wait a 429 out rather than fail on it.
-	ct.client = mtgban.NewHTTPClient(
+	ct.client = mtgban.NewHTTPClient(append([]mtgban.HTTPOption{
 		mtgban.WithHTTPWritesOnce(),
 		mtgban.WithHTTPRetries(10),
 		mtgban.WithHTTPRetryWait(time.Second, 90*time.Second),
 		mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
 			return &authTransport{Parent: rt, Token: token}
 		}),
-	)
+	}, opts...)...)
 	return &ct
 }
 

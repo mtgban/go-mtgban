@@ -40,12 +40,12 @@ type SCGClient struct {
 }
 
 // NewSCGClient returns a client using the given API key.
-func NewSCGClient(apiKey string) *SCGClient {
+func NewSCGClient(apiKey string, opts ...mtgban.HTTPOption) *SCGClient {
 	scg := SCGClient{}
-	scg.client = mtgban.NewHTTPClient(
+	scg.client = mtgban.NewHTTPClient(append([]mtgban.HTTPOption{
 		mtgban.WithHTTPRetries(10),
 		mtgban.WithHTTPRetryWait(2*time.Second, 30*time.Second),
-	)
+	}, opts...)...)
 	scg.apiKey = apiKey
 	scg.catalogURL = scgCatalogURL
 	scg.setsURL = scgSetsURL

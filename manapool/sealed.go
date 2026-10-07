@@ -13,6 +13,7 @@ import (
 // Sealed prices Mana Pool's sealed product.
 type Sealed struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	partner     string
 
 	backend *mtgmatcher.Backend
@@ -34,9 +35,15 @@ func (mp *Sealed) printf(format string, a ...any) {
 	}
 }
 
+func (mp *Sealed) retryf(format string, a ...any) {
+	if mp.logRetries {
+		mp.printf(format, a...)
+	}
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Sealed) Load(ctx context.Context) error {
-	pricelist, err := GetSealedList(ctx)
+	pricelist, err := GetSealedList(ctx, mtgban.WithHTTPLogCallback(mp.retryf))
 	if err != nil {
 		return err
 	}

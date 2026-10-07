@@ -21,6 +21,7 @@ import (
 // Sealed prices Cool Stuff Inc's sealed product.
 type Sealed struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	partner     string
 
 	inventoryDate  time.Time
@@ -50,7 +51,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 	csi := Sealed{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	csi.client = newCSIHTTPClient()
+	csi.client = newCSIHTTPClient(mtgban.WithHTTPLogCallback(csi.retryf))
 	csi.maxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
@@ -75,6 +76,12 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 func (csi *Sealed) printf(format string, a ...any) {
 	if csi.logCallback != nil {
 		csi.logCallback("[CSISealed] "+format, a...)
+	}
+}
+
+func (csi *Sealed) retryf(format string, a ...any) {
+	if csi.logRetries {
+		csi.printf(format, a...)
 	}
 }
 

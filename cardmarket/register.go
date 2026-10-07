@@ -187,6 +187,7 @@ func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, er
 	scraper.tcgBridge = bridge
 
 	scraper.logCallback = opts.LogCallback
+	scraper.logRetries = opts.LogRetries
 	scraper.affiliate = opts.Affiliate
 	scraper.targetEdition = opts.TargetEdition
 	// Market prices without it, so a caller that holds no BAN key still

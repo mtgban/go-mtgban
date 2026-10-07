@@ -15,6 +15,7 @@ import (
 // reckoned to be worth rather than the cheapest copy anyone has listed.
 type Index struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	partner     string
 
 	backend *mtgmatcher.Backend
@@ -36,9 +37,15 @@ func (mp *Index) printf(format string, a ...any) {
 	}
 }
 
+func (mp *Index) retryf(format string, a ...any) {
+	if mp.logRetries {
+		mp.printf(format, a...)
+	}
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Index) Load(ctx context.Context) error {
-	singles, err := GetSinglesList(ctx)
+	singles, err := GetSinglesList(ctx, mtgban.WithHTTPLogCallback(mp.retryf))
 	if err != nil {
 		return err
 	}

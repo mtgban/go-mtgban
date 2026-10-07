@@ -202,13 +202,13 @@ func (snap *banSnapshot) firstBuylist(uuid string, sources []string) float64 {
 // loadBanSnapshot fetches game's own price snapshot, the one the offline
 // pre-filter reads. sig authenticates it - bantool reads it from the
 // BAN_API_KEY env var, the same key sealedev's own price loader uses.
-func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string) (*banSnapshot, error) {
+func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string, opts ...mtgban.HTTPOption) (*banSnapshot, error) {
 	link := fmt.Sprintf(banAPIURL, game, sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := mtgban.NewHTTPClient().Do(req)
+	resp, err := mtgban.NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}

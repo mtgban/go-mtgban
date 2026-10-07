@@ -14,6 +14,7 @@ func init() {
 func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraper(b)
 	scraper.logCallback = opts.LogCallback
+	scraper.logRetries = opts.LogRetries
 	scraper.partner = opts.Affiliate
 	// This was bantool's own setting, and is really the store's: Card
 	// Kingdom's out-of-stock listings are worth publishing for their URL
@@ -35,6 +36,7 @@ func newScraperGraded(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scrape
 func newScraperSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraperSealed(b)
 	scraper.logCallback = opts.LogCallback
+	scraper.logRetries = opts.LogRetries
 	scraper.partner = opts.Affiliate
 	scraper.preserveOOS = true
 	return scraper, nil

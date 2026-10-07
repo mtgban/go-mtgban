@@ -31,7 +31,7 @@ type Card struct {
 }
 
 // GetBuylist downloads the whole buylist in one call.
-func GetBuylist(ctx context.Context) ([]Card, error) {
+func GetBuylist(ctx context.Context, opts ...mtgban.HTTPOption) ([]Card, error) {
 	// Bust any cache in front of the feed so the daily scrape gets a fresh copy
 	url := buylistURL + "?v=" + strconv.FormatInt(time.Now().Unix(), 10)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
@@ -39,7 +39,7 @@ func GetBuylist(ctx context.Context) ([]Card, error) {
 		return nil, err
 	}
 
-	resp, err := mtgban.NewHTTPClient().Do(req)
+	resp, err := mtgban.NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}

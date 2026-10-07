@@ -23,6 +23,7 @@ const (
 // dollars at the day's rate.
 type Manaleak struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	maxConcurrency int
 
 	backend *mtgmatcher.Backend
@@ -44,7 +45,7 @@ func NewScraper(b *mtgmatcher.Backend) *Manaleak {
 	ml := Manaleak{backend: b}
 	ml.inventory = mtgban.InventoryRecord{}
 	ml.buylist = mtgban.BuylistRecord{}
-	ml.client = NewMLClient()
+	ml.client = NewMLClient(mtgban.WithHTTPLogCallback(ml.retryf))
 	ml.maxConcurrency = defaultConcurrency
 	return &ml
 }
@@ -59,6 +60,12 @@ func (ml *Manaleak) SetConfig(opt mtgban.ScraperOptions) {
 func (ml *Manaleak) printf(format string, a ...any) {
 	if ml.logCallback != nil {
 		ml.logCallback("[ML] "+format, a...)
+	}
+}
+
+func (ml *Manaleak) retryf(format string, a ...any) {
+	if ml.logRetries {
+		ml.printf(format, a...)
 	}
 }
 

@@ -48,27 +48,27 @@ const (
 )
 
 // GetPriceList downloads the singles price list in one call.
-func GetPriceList(ctx context.Context) ([]Product, error) {
-	return getList(ctx, manapoolURL)
+func GetPriceList(ctx context.Context, opts ...mtgban.HTTPOption) ([]Product, error) {
+	return getList(ctx, manapoolURL, opts...)
 }
 
 // GetSealedList downloads the sealed price list in one call.
-func GetSealedList(ctx context.Context) ([]Product, error) {
-	return getList(ctx, sealedURL)
+func GetSealedList(ctx context.Context, opts ...mtgban.HTTPOption) ([]Product, error) {
+	return getList(ctx, sealedURL, opts...)
 }
 
 // GetSinglesList downloads the singles price list in one call.
-func GetSinglesList(ctx context.Context) ([]Product, error) {
-	return getList(ctx, singlesURL)
+func GetSinglesList(ctx context.Context, opts ...mtgban.HTTPOption) ([]Product, error) {
+	return getList(ctx, singlesURL, opts...)
 }
 
-func getList(ctx context.Context, link string) ([]Product, error) {
+func getList(ctx context.Context, link string, opts ...mtgban.HTTPOption) ([]Product, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := mtgban.NewHTTPClient().Do(req)
+	resp, err := mtgban.NewHTTPClient(opts...).Do(req)
 	if err != nil {
 		return nil, err
 	}

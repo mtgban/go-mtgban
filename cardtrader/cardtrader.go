@@ -22,6 +22,7 @@ const (
 // the storefronts they sell under: the marketplace itself, Zero, and 1DR.
 type Market struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	inventoryDate  time.Time
 	maxConcurrency int
 	shareCode      string
@@ -61,7 +62,7 @@ func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
 	ct := Market{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.maxConcurrency = defaultConcurrency
-	ct.client = NewCTAuthClient(token)
+	ct.client = NewCTAuthClient(token, mtgban.WithHTTPLogCallback(ct.retryf))
 	ct.backend = b
 	ct.gameID = id
 	return &ct, nil
@@ -70,6 +71,12 @@ func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
 func (ct *Market) printf(format string, a ...any) {
 	if ct.logCallback != nil {
 		ct.logCallback("[CT] "+format, a...)
+	}
+}
+
+func (ct *Market) retryf(format string, a ...any) {
+	if ct.logRetries {
+		ct.printf(format, a...)
 	}
 }
 

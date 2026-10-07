@@ -197,6 +197,7 @@ func newTCGSYPListScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Sc
 	}
 	scraper.catalog = catalog
 	scraper.logCallback = opts.LogCallback
+	scraper.logRetries = opts.LogRetries
 	scraper.affiliate = opts.Affiliate
 	return scraper, nil
 }

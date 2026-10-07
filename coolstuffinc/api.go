@@ -57,10 +57,10 @@ func (t userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error)
 // silently. A scraper keeps one, since a client built per call cannot pool
 // anything, and each request would pay for a fresh handshake against a
 // storefront being asked for hundreds of editions at a time.
-func newCSIHTTPClient() *http.Client {
-	return mtgban.NewHTTPClient(mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
+func newCSIHTTPClient(opts ...mtgban.HTTPOption) *http.Client {
+	return mtgban.NewHTTPClient(append([]mtgban.HTTPOption{mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
 		return userAgentTransport{base: rt}
-	}))
+	})}, opts...)...)
 }
 
 // CSIPriceEntry is one card in the buylist feed.

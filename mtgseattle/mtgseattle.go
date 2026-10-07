@@ -36,6 +36,7 @@ const (
 // buy.
 type MTGSeattle struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	maxConcurrency int
 
 	backend *mtgmatcher.Backend
@@ -65,6 +66,7 @@ func NewScraper(b *mtgmatcher.Backend) *MTGSeattle {
 		mtgban.WithHTTPRetryWait(2*time.Second, 10*time.Second),
 		mtgban.WithHTTPRetries(20),
 		mtgban.WithHTTPErrorHandler(retryErrorHandler),
+		mtgban.WithHTTPLogCallback(ms.retryf),
 	)
 	return &ms
 }
@@ -92,6 +94,12 @@ type responseChan struct {
 func (ms *MTGSeattle) printf(format string, a ...any) {
 	if ms.logCallback != nil {
 		ms.logCallback("[MS] "+format, a...)
+	}
+}
+
+func (ms *MTGSeattle) retryf(format string, a ...any) {
+	if ms.logRetries {
+		ms.printf(format, a...)
 	}
 }
 

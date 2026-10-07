@@ -19,6 +19,7 @@ const (
 // Sealed prices Card Kingdom's sealed product.
 type Sealed struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	partner     string
 	preserveOOS bool
 
@@ -46,9 +47,15 @@ func (ck *Sealed) printf(format string, a ...any) {
 	}
 }
 
+func (ck *Sealed) retryf(format string, a ...any) {
+	if ck.logRetries {
+		ck.printf(format, a...)
+	}
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ck *Sealed) Load(ctx context.Context) error {
-	pricelist, err := cardkingdom.SealedPricelist(ctx, mtgban.NewHTTPClient())
+	pricelist, err := cardkingdom.SealedPricelist(ctx, mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(ck.retryf)))
 	if err != nil {
 		return err
 	}

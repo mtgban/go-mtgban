@@ -16,6 +16,7 @@ import (
 // Sealed prices SCG's sealed product.
 type Sealed struct {
 	logCallback   mtgban.LogCallbackFunc
+	logRetries    bool
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -67,7 +68,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
 	scg := Sealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient(apiKey)
+	scg.client = NewSCGClient(apiKey, mtgban.WithHTTPLogCallback(scg.retryf))
 	scg.backend = b
 	scg.gameID = gameID
 	return &scg, nil
@@ -76,6 +77,12 @@ func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
 func (scg *Sealed) printf(format string, a ...any) {
 	if scg.logCallback != nil {
 		scg.logCallback("[SCGSealed] "+format, a...)
+	}
+}
+
+func (scg *Sealed) retryf(format string, a ...any) {
+	if scg.logRetries {
+		scg.printf(format, a...)
 	}
 }
 

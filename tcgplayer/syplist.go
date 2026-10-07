@@ -99,6 +99,7 @@ func productFinish(productName string) string {
 // can host for you and sell on Direct.
 type TCGSYPList struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	affiliate   string
 
 	// Catalog names the product and finish behind each sku the list refers
@@ -117,6 +118,12 @@ type TCGSYPList struct {
 func (tcg *TCGSYPList) printf(format string, a ...any) {
 	if tcg.logCallback != nil {
 		tcg.logCallback("[TCGSYPList] "+format, a...)
+	}
+}
+
+func (tcg *TCGSYPList) retryf(format string, a ...any) {
+	if tcg.logRetries {
+		tcg.printf(format, a...)
 	}
 }
 
@@ -167,7 +174,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	}
 	tcg.printf("Found %d near mint skus in the catalog", len(tcg.catalog))
 
-	sypList, err := LoadSYP(ctx, tcg.category, tcg.auth)
+	sypList, err := LoadSYP(ctx, tcg.category, tcg.auth, mtgban.WithHTTPLogCallback(tcg.retryf))
 	if err != nil {
 		return err
 	}

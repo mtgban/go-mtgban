@@ -26,6 +26,7 @@ func init() {
 				return nil, err
 			}
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			scraper.affiliate = opts.Affiliate
 			scraper.targetEdition = opts.TargetEdition
 			return scraper, nil
@@ -41,6 +42,7 @@ func init() {
 				return nil, err
 			}
 			scraper.logCallback = opts.LogCallback
+			scraper.logRetries = opts.LogRetries
 			scraper.affiliate = opts.Affiliate
 			return scraper, nil
 		})

@@ -22,6 +22,7 @@ const (
 type Magiccorner struct {
 	verboseLog     bool
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	inventoryDate  time.Time
 	buylistDate    time.Time
 	maxConcurrency int
@@ -47,7 +48,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Magiccorner, error) {
 	mc := Magiccorner{}
 	mc.inventory = mtgban.InventoryRecord{}
 	mc.buylist = mtgban.BuylistRecord{}
-	mc.client = NewMCClient()
+	mc.client = NewMCClient(mtgban.WithHTTPLogCallback(mc.retryf))
 	mc.backend = b
 	mc.maxConcurrency = defaultConcurrency
 	return &mc, nil
@@ -62,6 +63,12 @@ type resultChan struct {
 func (mc *Magiccorner) printf(format string, a ...any) {
 	if mc.logCallback != nil {
 		mc.logCallback("[MC] "+format, a...)
+	}
+}
+
+func (mc *Magiccorner) retryf(format string, a ...any) {
+	if mc.logRetries {
+		mc.printf(format, a...)
 	}
 }
 

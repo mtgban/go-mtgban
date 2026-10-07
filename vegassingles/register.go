@@ -15,6 +15,7 @@ func init() {
 			return nil, err
 		}
 		scraper.logCallback = opts.LogCallback
+		scraper.logRetries = opts.LogRetries
 		if opts.MaxConcurrency != 0 {
 			scraper.maxConcurrency = opts.MaxConcurrency
 		}

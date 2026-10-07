@@ -32,6 +32,7 @@ type Market struct {
 	resolver
 
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	affiliate   string
 
 	// BanPriceKey authenticates the mtgban price snapshot Load reads to
@@ -62,6 +63,12 @@ type Market struct {
 func (mkm *Market) printf(format string, a ...any) {
 	if mkm.logCallback != nil {
 		mkm.logCallback("[MKMMarket] "+format, a...)
+	}
+}
+
+func (mkm *Market) retryf(format string, a ...any) {
+	if mkm.logRetries {
+		mkm.printf(format, a...)
 	}
 }
 
@@ -256,7 +263,7 @@ func (mkm *Market) Load(ctx context.Context) error {
 	if _, filtered := marketFilterParams[mkm.gameID]; filtered {
 		switch {
 		case mkm.banPriceKey != "":
-			snap, err := loadBanSnapshot(ctx, mkm.backend.Game, mkm.banPriceKey)
+			snap, err := loadBanSnapshot(ctx, mkm.backend.Game, mkm.banPriceKey, mtgban.WithHTTPLogCallback(mkm.retryf))
 			if err != nil {
 				return fmt.Errorf("loading the price snapshot to pre-filter this catalog: %w", err)
 			}

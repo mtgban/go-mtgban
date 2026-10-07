@@ -82,9 +82,9 @@ type MLClient struct {
 }
 
 // NewMLClient returns a client for the storefront.
-func NewMLClient() *MLClient {
+func NewMLClient(opts ...mtgban.HTTPOption) *MLClient {
 	ml := MLClient{}
-	ml.client = mtgban.NewHTTPClient()
+	ml.client = mtgban.NewHTTPClient(opts...)
 	return &ml
 }
 

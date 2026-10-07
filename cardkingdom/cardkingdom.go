@@ -20,6 +20,7 @@ import (
 // buy.
 type Cardkingdom struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	partner     string
 	preserveOOS bool
 
@@ -59,13 +60,19 @@ func (ck *Cardkingdom) printf(format string, a ...any) {
 	}
 }
 
+func (ck *Cardkingdom) retryf(format string, a ...any) {
+	if ck.logRetries {
+		ck.printf(format, a...)
+	}
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ck *Cardkingdom) Load(ctx context.Context) error {
 	link := ck.localPath
 	if link == "" {
 		link = cardkingdom.PricelistURL
 	}
-	pricelist, err := cardkingdom.Pricelist(ctx, mtgban.NewHTTPClient(), link)
+	pricelist, err := cardkingdom.Pricelist(ctx, mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(ck.retryf)), link)
 	if err != nil {
 		return err
 	}

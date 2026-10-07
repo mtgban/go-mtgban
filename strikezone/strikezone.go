@@ -94,6 +94,7 @@ var skipSuffixes = []string{
 // buy.
 type Strikezone struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	inventoryDate  time.Time
 	buylistDate    time.Time
 	maxConcurrency int
@@ -122,13 +123,19 @@ func NewScraper(b *mtgmatcher.Backend) (*Strikezone, error) {
 	sz.maxConcurrency = defaultConcurrency
 	sz.backend = b
 	sz.shelf = shelf
-	sz.client = mtgban.NewHTTPClient()
+	sz.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(sz.retryf))
 	return &sz, nil
 }
 
 func (sz *Strikezone) printf(format string, a ...any) {
 	if sz.logCallback != nil {
 		sz.logCallback("[SZ] "+format, a...)
+	}
+}
+
+func (sz *Strikezone) retryf(format string, a ...any) {
+	if sz.logRetries {
+		sz.printf(format, a...)
 	}
 }
 

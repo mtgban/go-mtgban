@@ -23,6 +23,7 @@ import (
 // singles.
 type Miniaturemarket struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	maxConcurrency int
 	affiliate      string
 
@@ -61,7 +62,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
 	mm.maxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
 	mm.backend = b
-	mm.client = mtgban.NewHTTPClient()
+	mm.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(mm.retryf))
 	mm.widget = widget
 	return &mm, nil
 }
@@ -372,6 +373,12 @@ type respChan struct {
 func (mm *Miniaturemarket) printf(format string, a ...any) {
 	if mm.logCallback != nil {
 		mm.logCallback("[MMSealed] "+format, a...)
+	}
+}
+
+func (mm *Miniaturemarket) retryf(format string, a ...any) {
+	if mm.logRetries {
+		mm.printf(format, a...)
 	}
 }
 

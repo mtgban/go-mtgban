@@ -19,6 +19,7 @@ import (
 // Sealed prices Hareruya's sealed product.
 type Sealed struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 
 	backend *mtgmatcher.Backend
 
@@ -37,13 +38,19 @@ func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
 	ha := Sealed{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
-	ha.client = mtgban.NewHTTPClient()
+	ha.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(ha.retryf))
 	return &ha
 }
 
 func (ha *Sealed) printf(format string, a ...any) {
 	if ha.logCallback != nil {
 		ha.logCallback("[HASealed] "+format, a...)
+	}
+}
+
+func (ha *Sealed) retryf(format string, a ...any) {
+	if ha.logRetries {
+		ha.printf(format, a...)
 	}
 }
 

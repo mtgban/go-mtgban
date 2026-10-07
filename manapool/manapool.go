@@ -16,6 +16,7 @@ import (
 // Manapool prices Mana Pool's catalog.
 type Manapool struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 	partner     string
 
 	backend *mtgmatcher.Backend
@@ -38,6 +39,12 @@ func (mp *Manapool) printf(format string, a ...any) {
 	}
 }
 
+func (mp *Manapool) retryf(format string, a ...any) {
+	if mp.logRetries {
+		mp.printf(format, a...)
+	}
+}
+
 // isUnindexed reports whether the backend was never meant to know this card,
 // so that failing to match its id is expected and not worth reporting. Whole
 // editions are dropped when the datastore is built - oversize, minigames,
@@ -57,7 +64,7 @@ func isTokenSheet(b *mtgmatcher.Backend, co *mtgmatcher.CardObject) bool {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Manapool) Load(ctx context.Context) error {
-	pricelist, err := GetPriceList(ctx)
+	pricelist, err := GetPriceList(ctx, mtgban.WithHTTPLogCallback(mp.retryf))
 	if err != nil {
 		return err
 	}

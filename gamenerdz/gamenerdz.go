@@ -101,6 +101,7 @@ var gnGames = map[mtgmatcher.Game]string{
 // cards it does not buy - so retail and buylist are each their own crawl.
 type Gamenerdz struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	maxConcurrency int
 
 	disableRetail  bool
@@ -126,7 +127,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
 	gn := Gamenerdz{}
 	gn.inventory = mtgban.InventoryRecord{}
 	gn.buylist = mtgban.BuylistRecord{}
-	gn.client = NewGNClient(line)
+	gn.client = NewGNClient(line, mtgban.WithHTTPLogCallback(gn.retryf))
 	gn.backend = b
 	gn.line = line
 	gn.maxConcurrency = defaultConcurrency
@@ -143,6 +144,12 @@ func (gn *Gamenerdz) SetConfig(opt mtgban.ScraperOptions) {
 func (gn *Gamenerdz) printf(format string, a ...any) {
 	if gn.logCallback != nil {
 		gn.logCallback("[GN] "+format, a...)
+	}
+}
+
+func (gn *Gamenerdz) retryf(format string, a ...any) {
+	if gn.logRetries {
+		gn.printf(format, a...)
 	}
 }
 

@@ -32,6 +32,7 @@ const (
 // its contents against singles prices rather than reading any storefront.
 type Scraper struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	affiliate      string
 	targetEdition  string
 	targetProduct  string
@@ -192,6 +193,12 @@ func NewScraper(b *mtgmatcher.Backend, sig string) *Scraper {
 func (ss *Scraper) printf(format string, a ...any) {
 	if ss.logCallback != nil {
 		ss.logCallback("[SS] "+format, a...)
+	}
+}
+
+func (ss *Scraper) retryf(format string, a ...any) {
+	if ss.logRetries {
+		ss.printf(format, a...)
 	}
 }
 
@@ -472,7 +479,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 	}
 
 	ss.printf("Loading BAN prices")
-	prices, err := loadPrices(ctx, ss.backend, ss.banpriceKey, selected)
+	prices, err := loadPrices(ctx, ss.backend, ss.banpriceKey, selected, mtgban.WithHTTPLogCallback(ss.retryf))
 	if err != nil {
 		return err
 	}

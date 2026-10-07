@@ -13,6 +13,7 @@ import (
 // Arcanafrisia prices what Arcana Frisia buys; they publish no sale prices.
 type Arcanafrisia struct {
 	logCallback mtgban.LogCallbackFunc
+	logRetries  bool
 
 	backend *mtgmatcher.Backend
 
@@ -30,6 +31,12 @@ func NewScraper(b *mtgmatcher.Backend) *Arcanafrisia {
 func (af *Arcanafrisia) printf(format string, a ...any) {
 	if af.logCallback != nil {
 		af.logCallback("[AF] "+format, a...)
+	}
+}
+
+func (af *Arcanafrisia) retryf(format string, a ...any) {
+	if af.logRetries {
+		af.printf(format, a...)
 	}
 }
 
@@ -55,7 +62,7 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 		return err
 	}
 
-	cards, err := GetBuylist(ctx)
+	cards, err := GetBuylist(ctx, mtgban.WithHTTPLogCallback(af.retryf))
 	if err != nil {
 		return err
 	}

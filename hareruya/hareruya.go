@@ -40,6 +40,7 @@ var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC)\s*(\S+)$`)
 // Hareruya prices Hareruya's singles.
 type Hareruya struct {
 	logCallback    mtgban.LogCallbackFunc
+	logRetries     bool
 	maxConcurrency int
 
 	backend *mtgmatcher.Backend
@@ -65,7 +66,7 @@ func NewScraper(b *mtgmatcher.Backend) *Hareruya {
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	ha.maxConcurrency = defaultConcurrency
-	ha.client = mtgban.NewHTTPClient()
+	ha.client = mtgban.NewHTTPClient(mtgban.WithHTTPLogCallback(ha.retryf))
 	return &ha
 }
 
@@ -82,6 +83,12 @@ type responseChan struct {
 func (ha *Hareruya) printf(format string, a ...any) {
 	if ha.logCallback != nil {
 		ha.logCallback("[HA] "+format, a...)
+	}
+}
+
+func (ha *Hareruya) retryf(format string, a ...any) {
+	if ha.logRetries {
+		ha.printf(format, a...)
 	}
 }
 
