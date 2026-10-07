@@ -134,10 +134,20 @@ func gundamCard(b *mtgmatcher.Backend, name, number string) (string, string) {
 // "Regional Championship" - does not.
 var gundamWCSCode = regexp.MustCompile(`^WCS[0-9-]*`)
 
+// gundamNicknames are the promo runs this storefront names after the art,
+// one product per nickname: the Green Dress Cagalli is the GD01-096 of the
+// first Championship Participation Pack.
+var gundamNicknames = map[string]string{
+	"Green Dress": "Championship Participation Pack 01",
+}
+
 // gundamWording spells a storefront's own code for a promo run the way the
 // catalog's label reads, so the wording match in FilterCards can reach the
 // printing it names.
 func gundamWording(b *mtgmatcher.Backend, name, number, wording string) string {
+	if label, found := gundamNicknames[wording]; found {
+		return label
+	}
 	switch {
 	case wording == "PB01":
 		label := gundamPremiumBandai(b, name, number)
@@ -225,13 +235,9 @@ var gundamPlusRun = regexp.MustCompile(`\s(\++)\)`)
 
 // gundamTier reads the rarity the storefront publishes beside a Gundam card.
 // A few parallels carry the base rarity in that column while the name says
-// "+", and the column alone would answer with the base card. The Green Dress
-// Cagalli is the R+ of its number and says so only by its name.
+// "+", and the column alone would answer with the base card.
 func gundamTier(rarity, name string) string {
 	rarity = strings.TrimSpace(rarity)
-	if strings.Contains(name, "(Green Dress)") {
-		return "R+"
-	}
 	if spelled, found := gundamRarity[rarity]; found {
 		rarity = spelled
 	}

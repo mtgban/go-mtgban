@@ -357,8 +357,9 @@ from the shelf collision this section is about.
   literal Greek letter); and the storefront's number spelling disagrees
   with the catalog's in three ways at once - a dropped digit, an extra
   zero, and a rarity letter suffixed onto a card number that carries none
-  (`gundamNumberSpelling`). `gundamTier` also reads the Green Dress
-  Cagalli as the R+ of its number, which only its name says.
+  (`gundamNumberSpelling`). `gundamNicknames` reads a promo run the
+  storefront names after its art, the Green Dress Cagalli being the
+  Championship Participation Pack 01 printing.
 - **Palworld**: `palworld.go`, one file, one problem - the storefront
   sometimes glues a rarity code onto the number's tail
   (`"EBP01-025RR"`), inconsistently even with itself (plain-spaced on one

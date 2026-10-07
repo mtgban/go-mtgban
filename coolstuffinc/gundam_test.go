@@ -96,6 +96,23 @@ func TestGundamCardPremiumBandai(t *testing.T) {
 	}
 }
 
+// TestGundamCardNickname pins the Green Dress Cagalli to the Championship
+// Participation Pack 01 printing, gd01-096_654583_holofoil, which its art
+// matches, rather than the R+ or the base Rare at the same number.
+func TestGundamCardNickname(t *testing.T) {
+	b := readGameDatastore(t, "gundam", "GUNDAM_PATH")
+
+	name, variation := gundamCard(b, "Cagalli Yula Athha (GD01-096) (Green Dress)", "GD01-096")
+	if name != "Cagalli Yula Athha" || variation != "GD01-096 Championship Participation Pack 01" {
+		t.Errorf("gundamCard(green dress) = %q, %q", name, variation)
+	}
+	variation += " GREEN DRESS GD01-096 " + gundamTier("Rare", name)
+	id, err := b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Newtype Rising", Variation: variation, Foil: true})
+	if err != nil || id != "gd01-096_654583_holofoil" {
+		t.Errorf("Match(green dress) = %q, %v, want gd01-096_654583_holofoil", id, err)
+	}
+}
+
 func TestGundamName(t *testing.T) {
 	for _, tt := range []struct{ in, want string }{
 		// Names this storefront types its own way, one letter or one word
