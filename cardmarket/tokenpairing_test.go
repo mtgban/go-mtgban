@@ -4,22 +4,22 @@ import (
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestResolveMagicResolvesTokenPairing pins a two-sided token product
 // resolving to the combined entity mtgmatcher/magic derives for it, anchored
-// by both face names plus the product's own edition - Cardmarket's own
-// Number field ("T 3/6") is a catalog ordinal, not a collector number, so
-// unlike Cool Stuff Inc's own feed there is no set+number anchor available
-// here. Preprocess/Match alone is not built to read "X Token (...) // Y Token
-// (...)" and refuses every one of these listings outright.
+// by both face names plus the product's own edition, its Number naming the
+// same faces. Preprocess/Match alone is not built to read "X Token (...) //
+// Y Token (...)" and refuses every one of these listings outright.
 func TestResolveMagicResolvesTokenPairing(t *testing.T) {
 	b := realDatastore(t)
 	res := &resolver{backend: b, gameID: cm.GameMagic}
 
 	product := &cm.Product{
 		IDProduct: 362664, Name: "Manifest Token // Angel Token (W 4/4)",
-		ExpansionName: "Commander 2018", Number: "T 12/24",
+		ExpansionName: "Commander 2018", Number: "T 01/03", // as the catalog lists it
 	}
 	cardID, _, byName, err := res.resolveMagic(product)
 	if err != nil {
@@ -63,5 +63,53 @@ func TestResolveMagicRefusesAmbiguousTokenPairing(t *testing.T) {
 	}
 	if cardID != "" || cardIDFoil != "" {
 		t.Fatalf("resolveMagic(%d) = (%q, %q), want both empty: Commander 2016 prints several Bird and Spirit tokens, name+edition alone cannot say which pairing this is", product.IDProduct, cardID, cardIDFoil)
+	}
+}
+
+// TestResolveMagicRefusesOtherFaces pins TMH3's two Copy // Eldrazi Angel
+// products onto the one pair the datastore has: "CT 1/2" lands on it, and
+// "CT 37/2", Copy #37's, names no printing of ours.
+func TestResolveMagicRefusesOtherFaces(t *testing.T) {
+	b := realDatastore(t)
+	res := &resolver{backend: b, gameID: cm.GameMagic}
+	for _, tt := range []struct {
+		number string
+		landed bool
+	}{
+		{"CT 1/2", true},
+		{"CT 37/2", false},
+	} {
+		product := &cm.Product{Name: "Copy Token // Eldrazi Angel Token (C 4/4)", ExpansionName: "Modern Horizons 3: Tokens", Number: tt.number}
+		cardID, cardIDFoil, _, err := res.resolveMagic(product)
+		if err != nil || (cardID != "") != tt.landed || (cardIDFoil != "") != tt.landed {
+			t.Errorf("resolveMagic(%q) = (%q, %q, %v), want landed %v", tt.number, cardID, cardIDFoil, err, tt.landed)
+		}
+	}
+}
+
+// TestOtherFaces pins the face numbers a token product's Number states
+// against its pair's: TMH3 sells Copy #1 and Copy #37 beside Eldrazi Angel
+// #2, and only the first is the pair the datastore has.
+func TestOtherFaces(t *testing.T) {
+	b := &mtgmatcher.Backend{UUIDs: map[string]*mtgmatcher.CardObject{
+		"pair":  {Card: mtgmatcher.Card{Number: "1 // 2"}},
+		"other": {Card: mtgmatcher.Card{Number: "2 // 15"}},
+	}}
+	res := &resolver{backend: b, gameID: cm.GameMagic}
+	for _, tt := range []struct {
+		number, cardID string
+		want           bool
+	}{
+		{"CT 1/2", "pair", false},
+		{"CT 2/1", "pair", false},
+		{"CT 37/2", "pair", true},
+		{"T 15/REX02", "other", false},
+		{"", "pair", false},
+		{"T 1", "pair", false},
+	} {
+		got := res.otherFaces(&cm.Product{Number: tt.number}, tt.cardID)
+		if got != tt.want {
+			t.Errorf("otherFaces(%q, %s) = %v, want %v", tt.number, tt.cardID, got, tt.want)
+		}
 	}
 }
