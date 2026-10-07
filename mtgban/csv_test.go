@@ -328,6 +328,37 @@ func TestWriteInventoryToCSVNamesTheFinish(t *testing.T) {
 	}
 }
 
+// The rarity column reads as the site displays it: "superrare" is "Super
+// Rare", and a rarity with no label kept is title-cased.
+func TestWriteInventoryToCSVSpellsTheRarity(t *testing.T) {
+	cards := csvCards()
+	cards["super"] = &mtgmatcher.CardObject{
+		Card:    mtgmatcher.Card{Name: "Super Card", Rarity: "superrare", Number: "14"},
+		Edition: "Alpha Set",
+	}
+	b := backendFor(cards)
+	b.RarityLabels = map[string]string{"superrare": "Super Rare"}
+
+	inv := InventoryRecord{}
+	for _, cardID := range []string{"plain", "shiny", "super"} {
+		inv[cardID] = []InventoryEntry{{Conditions: NM, Price: 1, Quantity: 1}}
+	}
+
+	records := writeCSV(t, func(w *bytes.Buffer) error {
+		return WriteInventoryToCSV(b, inv, w)
+	})
+
+	rarity := slices.Index(InventoryHeader, "Rarity")
+	for cardID, want := range map[string]string{
+		"plain": "Rare", "shiny": "Mythic", "super": "Super Rare",
+	} {
+		got := rowFor(t, records, cardID)[rarity]
+		if got != want {
+			t.Errorf("%s rarity = %q, want %q", cardID, got, want)
+		}
+	}
+}
+
 // A card the datastore lost between the scrape and the dump is dropped from
 // the file rather than failing the whole write.
 func TestWriteToCSVSkipsACardItCannotName(t *testing.T) {
