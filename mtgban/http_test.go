@@ -75,6 +75,62 @@ func TestNewHTTPClientRetriesThroughTheWrapper(t *testing.T) {
 	}
 }
 
+// A write the server may have acted on is not sent again, unless the client
+// says its POSTs only read.
+func TestNewHTTPClientRetriesAWriteOnlyUnread(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		status     int
+		retryPosts bool
+		want       int32
+		fails      bool
+	}{
+		{"write answered 502", http.StatusBadGateway, false, 1, true},
+		{"write answered 429", http.StatusTooManyRequests, false, 2, false},
+		{"read answered 502", http.StatusBadGateway, true, 2, false},
+	} {
+		var served atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if served.Add(1) == 1 {
+				w.WriteHeader(tc.status)
+			}
+		}))
+		opts := []HTTPOption{WithHTTPRetries(4), WithHTTPRetryWait(time.Millisecond, time.Millisecond)}
+		if tc.retryPosts {
+			opts = append(opts, WithHTTPRetryPosts())
+		}
+		resp, err := NewHTTPClient(opts...).Post(srv.URL, "application/json", strings.NewReader("{}"))
+		srv.Close()
+		if tc.fails != (err != nil) {
+			t.Fatalf("%s: error %v, want one: %v", tc.name, err, tc.fails)
+		}
+		if err == nil {
+			resp.Body.Close()
+		}
+		if served.Load() != tc.want {
+			t.Errorf("%s: served %d times, want %d", tc.name, served.Load(), tc.want)
+		}
+	}
+}
+
+// A write that could not dial never reached the server, so it is retried.
+func TestNewHTTPClientRetriesAWriteThatNeverDialed(t *testing.T) {
+	srv := httptest.NewServer(http.NotFoundHandler())
+	srv.Close()
+
+	var retries int
+	ctx := ContextWithLogCallback(context.Background(), func(string, ...any) { retries++ })
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, srv.URL, strings.NewReader("{}"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	client := NewHTTPClient(WithHTTPRetries(2), WithHTTPRetryWait(time.Millisecond, time.Millisecond))
+	_, err = client.Do(req)
+	if err == nil || retries != 2 {
+		t.Errorf("got %v after %d retries, want a dial error after 2", err, retries)
+	}
+}
+
 // Options are collected before the client is built, so a wrapper given first
 // does not hide the transport the header bound is set on.
 func TestNewHTTPClientBoundsAWrappedTransport(t *testing.T) {

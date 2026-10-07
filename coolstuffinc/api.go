@@ -58,7 +58,7 @@ func (t userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error)
 // anything, and each request would pay for a fresh handshake against a
 // storefront being asked for hundreds of editions at a time.
 func newCSIHTTPClient() *http.Client {
-	return mtgban.NewHTTPClient(mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
+	return mtgban.NewHTTPClient(mtgban.WithHTTPRetryPosts(), mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
 		return userAgentTransport{base: rt}
 	}))
 }

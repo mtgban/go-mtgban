@@ -65,7 +65,7 @@ func NewScraper(b *mtgmatcher.Backend) *Hareruya {
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	ha.maxConcurrency = defaultConcurrency
-	ha.client = mtgban.NewHTTPClient()
+	ha.client = mtgban.NewHTTPClient(mtgban.WithHTTPRetryPosts())
 	return &ha
 }
 

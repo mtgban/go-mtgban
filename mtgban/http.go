@@ -2,7 +2,12 @@ package mtgban
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"net"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -25,7 +30,7 @@ type httpConfig struct {
 	waitMin       time.Duration
 	waitMax       time.Duration
 	backoff       retryablehttp.Backoff
-	checkRetry    retryablehttp.CheckRetry
+	retryPosts    bool
 	errorHandler  retryablehttp.ErrorHandler
 	checkRedirect func(*http.Request, []*http.Request) error
 	wraps         []func(http.RoundTripper) http.RoundTripper
@@ -65,10 +70,10 @@ func WithHTTPBackoff(fn retryablehttp.Backoff) HTTPOption {
 	return func(c *httpConfig) { c.backoff = fn }
 }
 
-// WithHTTPCheckRetry replaces the decision whether a response or an error is
-// retried.
-func WithHTTPCheckRetry(fn retryablehttp.CheckRetry) HTTPOption {
-	return func(c *httpConfig) { c.checkRetry = fn }
+// WithHTTPRetryPosts retries a POST or PATCH as it does a GET, for a client
+// whose POSTs only read, such as a search sent as a body.
+func WithHTTPRetryPosts() HTTPOption {
+	return func(c *httpConfig) { c.retryPosts = true }
 }
 
 // WithHTTPErrorHandler replaces what a request answers once its retries run
@@ -94,7 +99,9 @@ func WithHTTPTransport(wrap func(http.RoundTripper) http.RoundTripper) HTTPOptio
 // NewHTTPClient returns the client scrapers fetch with: it retries a failed
 // request with retryablehttp's policy, logging each retry through the
 // request context's ContextWithLogCallback, and bounds every attempt, so a
-// server that stops answering costs a retry instead of the whole run.
+// server that stops answering costs a retry instead of the whole run. A POST
+// or PATCH, which the server may have acted on, is retried only when it was
+// never read, unless WithHTTPRetryPosts says the client's POSTs only read.
 func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
@@ -126,8 +133,8 @@ func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	if config.backoff != nil {
 		client.Backoff = config.backoff
 	}
-	if config.checkRetry != nil {
-		client.CheckRetry = config.checkRetry
+	if !config.retryPosts {
+		client.CheckRetry = retryUnreadWrites
 	}
 	if config.errorHandler != nil {
 		client.ErrorHandler = config.errorHandler
@@ -142,4 +149,36 @@ func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	standard := client.StandardClient()
 	standard.CheckRedirect = config.checkRedirect
 	return standard
+}
+
+// retryUnreadWrites is retryablehttp's policy, except that a POST or PATCH is
+// retried only when the server never read it: its dial failed, or it was
+// answered 429.
+func retryUnreadWrites(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	retry, checkErr := retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+	if !retry || !isWrite(resp, err) {
+		return retry, checkErr
+	}
+	if resp != nil {
+		if resp.StatusCode == http.StatusTooManyRequests {
+			return true, checkErr
+		}
+		// Still a failure, so the caller does not take it for a success
+		return false, fmt.Errorf("unexpected HTTP status %s, not retried: the server may have acted on it", resp.Status)
+	}
+	var opErr *net.OpError
+	return errors.As(err, &opErr) && opErr.Op == "dial", checkErr
+}
+
+// isWrite reads the method off the response or, with none, off the error
+// net/http names it in ("Post").
+func isWrite(resp *http.Response, err error) bool {
+	var method string
+	var urlErr *url.Error
+	if resp != nil && resp.Request != nil {
+		method = resp.Request.Method
+	} else if errors.As(err, &urlErr) {
+		method = strings.ToUpper(urlErr.Op)
+	}
+	return method == http.MethodPost || method == http.MethodPatch
 }

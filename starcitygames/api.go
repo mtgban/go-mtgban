@@ -45,6 +45,7 @@ func NewSCGClient(apiKey string) *SCGClient {
 	scg.client = mtgban.NewHTTPClient(
 		mtgban.WithHTTPRetries(10),
 		mtgban.WithHTTPRetryWait(2*time.Second, 30*time.Second),
+		mtgban.WithHTTPRetryPosts(),
 	)
 	scg.apiKey = apiKey
 	scg.catalogURL = scgCatalogURL

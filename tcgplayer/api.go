@@ -543,7 +543,7 @@ type SellerClient struct {
 // NewSellerClient returns a client for the storefront's search API.
 func NewSellerClient() *SellerClient {
 	tcg := SellerClient{}
-	tcg.client = mtgban.NewHTTPClient()
+	tcg.client = mtgban.NewHTTPClient(mtgban.WithHTTPRetryPosts())
 	return &tcg
 }
 
