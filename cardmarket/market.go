@@ -597,7 +597,8 @@ func (mkm *Market) queryLanguageCopies(ctx context.Context, channel chan<- respo
 // productID at the same set and number, as the uuids of the finishes cardID
 // and cardIDFoil resolved to. A language offering two uuids for one finish
 // is left out, as is a printing at another number: an id upstream gave to
-// more than one card names neither.
+// more than one card names neither. So is a language the listings filter
+// cannot name.
 func languageCopies(b *mtgmatcher.Backend, productID int, cardID, cardIDFoil string) [][2]string {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
@@ -624,6 +625,10 @@ func languageCopies(b *mtgmatcher.Backend, productID int, cardID, cardIDFoil str
 			continue
 		}
 		if cp.Identifiers["mcmId"] != pid && cp.Identifiers["mcmEtchedId"] != pid {
+			continue
+		}
+		// A language the listings filter cannot name would be priced in English.
+		if cp.Language != "English" && marketLanguage(cp.Language) == cm.LanguageEnglish {
 			continue
 		}
 		sets, found := byLanguage[cp.Language]
