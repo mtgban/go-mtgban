@@ -418,7 +418,7 @@ func (r *resolver) pokemonStamped(plain *mtgmatcher.CardObject) string {
 		if id == "" || (found != "" && id != tcgID) {
 			return ""
 		}
-		if found == "" || co.Finish != pokemonReverseHolo {
+		if found == "" || co.Finish != mtgmatcher.FinishSlug(pokemonReverseHolo) {
 			found, tcgID = uuid, id
 		}
 	}
