@@ -240,14 +240,14 @@ func (mc *Magiccorner) Load(ctx context.Context) error {
 	if !mc.disableRetail {
 		err := mc.scrape(ctx)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		}
 	}
 
 	if !mc.disableBuylist {
 		err := mc.scrapeBL(ctx)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		}
 	}
 

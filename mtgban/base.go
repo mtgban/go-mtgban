@@ -19,6 +19,13 @@ var ErrInvalidCondition = errors.New("invalid condition")
 // product can tell this apart from a failure and stay quiet about it.
 var ErrDuplicateEntry = errors.New("duplicate entry")
 
+// ErrInventoryLoad and ErrBuylistLoad mark the half that failed in the error
+// of a Load fetching both, so a caller can keep the half that loaded.
+var (
+	ErrInventoryLoad = errors.New("inventory load failed")
+	ErrBuylistLoad   = errors.New("buylist load failed")
+)
+
 func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int) error {
 	// Safe defaults
 	if entry.Conditions == "" {

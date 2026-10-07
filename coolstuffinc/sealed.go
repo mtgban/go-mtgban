@@ -312,12 +312,12 @@ func (csi *Sealed) Load(ctx context.Context) error {
 		var errs []error
 		if !csi.disableRetail {
 			if err := csi.scrapeBysets(ctx); err != nil {
-				errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+				errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 			}
 		}
 		if !csi.disableBuylist {
 			if err := csi.parseBL(ctx); err != nil {
-				errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+				errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 			}
 		}
 		return errors.Join(errs...)
@@ -328,14 +328,14 @@ func (csi *Sealed) Load(ctx context.Context) error {
 	if !csi.disableRetail {
 		err := csi.scrape(ctx)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		}
 	}
 
 	if !csi.disableBuylist {
 		err := csi.parseBL(ctx)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		}
 	}
 

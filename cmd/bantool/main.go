@@ -593,22 +593,35 @@ func reportCollapsedPricings(backend *mtgmatcher.Backend, vendors []mtgban.Vendo
 	}
 }
 
-// load loads every scraper and answers the ones that loaded. One whose Load
-// failed may hold part of its data, which must not replace the last
-// complete dump, so its error is reported and nothing of it is kept.
-func load(ctx context.Context, scrapers []mtgban.Scraper) ([]mtgban.Scraper, []error) {
-	var loaded []mtgban.Scraper
+// load loads every scraper and answers the sellers and vendors that loaded.
+// One whose Load failed may hold part of its data, which must not replace the
+// last complete dump, so its error is reported and nothing of it is kept,
+// except the half that loaded when the error names the other half alone.
+func load(ctx context.Context, scrapers []mtgban.Scraper) ([]mtgban.Seller, []mtgban.Vendor, []error) {
+	var sellers []mtgban.Seller
+	var vendors []mtgban.Vendor
 	var errs []error
 	for _, scraper := range scrapers {
 		err := scraper.Load(ctx)
+		retailFailed := errors.Is(err, mtgban.ErrInventoryLoad)
+		buylistFailed := errors.Is(err, mtgban.ErrBuylistLoad)
 		if err != nil {
 			log.Println(err)
-			errs = append(errs, fmt.Errorf("%s not dumped: %w", scraper.Info().Shorthand, err))
-			continue
+			if retailFailed == buylistFailed {
+				errs = append(errs, fmt.Errorf("%s not dumped: %w", scraper.Info().Shorthand, err))
+				continue
+			}
+			errs = append(errs, fmt.Errorf("%s: %w", scraper.Info().Shorthand, err))
 		}
-		loaded = append(loaded, scraper)
+		s, v := mtgban.UnfoldScrapers([]mtgban.Scraper{scraper})
+		if !retailFailed {
+			sellers = append(sellers, s...)
+		}
+		if !buylistFailed {
+			vendors = append(vendors, v...)
+		}
 	}
-	return loaded, errs
+	return sellers, vendors, errs
 }
 
 func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string) []error {
@@ -895,11 +908,10 @@ func run() int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	loaded, nonFatalErrors := load(ctx, scrapers)
+	sellers, vendors, nonFatalErrors := load(ctx, scrapers)
 
 	log.Println("loading scraper data took:", time.Since(now))
 
-	sellers, vendors := mtgban.UnfoldScrapers(loaded)
 	retailResults, buylistResults := countResults(sellers, vendors)
 	log.Println("Found", retailResults, "retail results and", buylistResults, "buylist results")
 

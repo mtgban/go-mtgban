@@ -1105,14 +1105,14 @@ func (csi *Coolstuffinc) Load(ctx context.Context) error {
 	if !csi.disableRetail {
 		err := csi.scrape(ctx)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		}
 	}
 
 	if !csi.disableBuylist {
 		err := csi.parseBL(ctx)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		}
 	}
 
