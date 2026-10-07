@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -539,7 +540,7 @@ func (ct *Market) Load(ctx context.Context) error {
 			return ct.processExpansion(ctx, results, item.id)
 		},
 		func(result resultChan) {
-			addFirstOffer(ct.inventory, result, ct.printf)
+			addCheapestOffer(ct.inventory, result, ct.printf)
 		},
 		ct.printf,
 	)
@@ -549,20 +550,32 @@ func (ct *Market) Load(ctx context.Context) error {
 	return nil
 }
 
-// addFirstOffer keeps the first offer per condition and storefront, the
-// cheapest since listings arrive cheapest first, holding every offer's
-// copies as its Available. Singles and sealed both fold through it.
-func addFirstOffer(inventory mtgban.InventoryRecord, result resultChan, printf func(string, ...any)) {
+// addCheapestOffer keeps the cheapest offer per condition and storefront,
+// holding every offer's copies as its Available. Several blueprints can land
+// on one card and arrive in any order, so an equal price goes to the
+// blueprint id that sorts first. Singles and sealed both fold through it.
+func addCheapestOffer(inventory mtgban.InventoryRecord, result resultChan, printf func(string, ...any)) {
+	offer := result.invEntry
+	offer.Available = offer.Quantity
+
 	entries := inventory[result.cardID]
 	for i := range entries {
-		if entries[i].Conditions == result.invEntry.Conditions && entries[i].SellerName == result.invEntry.SellerName {
-			entries[i].Available += result.invEntry.Quantity
+		kept := entries[i]
+		if kept.Conditions != offer.Conditions || kept.SellerName != offer.SellerName {
+			continue
+		}
+		cheaper := offer.Price < kept.Price || (offer.Price == kept.Price && offer.OriginalID < kept.OriginalID)
+		if !cheaper {
+			entries[i].Available += offer.Quantity
 			return
 		}
+		// Re-added rather than edited, so the entries stay sorted by price.
+		offer.Available += kept.Available
+		inventory[result.cardID] = slices.Delete(entries, i, i+1)
+		break
 	}
 
-	result.invEntry.Available = result.invEntry.Quantity
-	err := inventory.Add(result.cardID, result.invEntry)
+	err := inventory.Add(result.cardID, offer)
 	if err != nil {
 		printf("%s", err.Error())
 	}
