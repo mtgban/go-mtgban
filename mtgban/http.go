@@ -18,6 +18,12 @@ import (
 const (
 	defaultHeaderTimeout = 2 * time.Minute
 	defaultTimeout       = 10 * time.Minute
+	// A host that takes this long to accept a connection is down; cleanhttp's
+	// 30s spends minutes on one across the retries.
+	defaultDialTimeout = 10 * time.Second
+	// cleanhttp's TCP keep-alive, which a zero Dialer.KeepAlive would turn into
+	// Go's 15s.
+	defaultKeepAlive = 30 * time.Second
 )
 
 // HTTPOption configures a client from NewHTTPClient.
@@ -124,6 +130,7 @@ func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	transport, ok := client.HTTPClient.Transport.(*http.Transport)
 	if ok {
 		transport.ResponseHeaderTimeout = config.headerTimeout
+		transport.DialContext = (&net.Dialer{Timeout: defaultDialTimeout, KeepAlive: defaultKeepAlive}).DialContext
 	}
 	for _, wrap := range config.wraps {
 		client.HTTPClient.Transport = wrap(client.HTTPClient.Transport)
