@@ -387,7 +387,7 @@ func (ct *Sealed) Load(ctx context.Context) error {
 			return ct.processEntry(ctx, results, item.id, item.name, productMap)
 		},
 		func(result resultChan) {
-			addFirstOffer(ct.inventory, result, ct.printf)
+			addCheapestOffer(ct.inventory, result, ct.printf)
 		},
 		ct.printf,
 	)
