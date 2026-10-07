@@ -415,13 +415,10 @@ from the shelf collision this section is about.
 
 - `CSI_PARTNER` - optional affiliate id appended to every outbound link
   (`utm_referrer`). Not a credential; nothing here requires auth.
-- Tests load a live datastore per game the same way every scraper package
-  does - see `datastore_test.go`'s `withGameDatastore`/`readGameDatastore` -
-  gated on `POKEMON_PATH`, `ONEPIECE_PATH`, `YUGIOH_PATH`, `PALWORLD_PATH`,
-  and (for the one Magic-only image-filename test) `ALLPRINTINGS5_PATH`.
-  CI runs `coolstuffinc/...` narrowly under the palworld, onepiece,
-  yugioh, and pokemon jobs; the Magic-needing test is instead picked up by
-  the Magic job's repo-wide `go test ./... -v`. No dedicated Lorcana,
-  Riftbound, or Gundam test exists in this package today, so no CI job
-  needs to run it for those three specifically - consistent with "Known
-  gaps" above.
+- Tests load a live datastore per game through `datastore_test.go`'s
+  `readGameDatastore`, which reads each game's file once and skips a test
+  whose variable is unset. All eight games have tests here, gated on
+  `ALLPRINTINGS5_PATH`, `POKEMON_PATH`, `ONEPIECE_PATH`, `RIFTBOUND_PATH`,
+  `YUGIOH_PATH`, `LORCANA_PATH`, `GUNDAM_PATH` and `PALWORLD_PATH`. CI runs
+  `coolstuffinc/...` under each non-Magic game's job, and the Magic job's
+  repo-wide `go test ./... -v` picks up the Magic tests.
