@@ -52,8 +52,8 @@ func (r Rules) editionSets(b *mtgmatcher.Backend, in *mtgmatcher.InputCard, edit
 // The suffixed code is not enough on its own: the same shape spells 32
 // unrelated sets, from "Burger King Promos" under BKP to every POP series
 // and every promo set under PR. The subset's name opening with its parent's
-// is what tells the two apart, and it costs nothing to require - the eight
-// real subsets all spell their parent out.
+// is what tells the two apart, and it costs nothing to require: every real
+// subset spells its parent out.
 func subsetsOf(b *mtgmatcher.Backend, codes []string) []string {
 	var subsets []string
 	for code := range b.Sets {
