@@ -69,6 +69,7 @@ var onePiecePIDs = map[string]string{
 	"379043": "518702", // Monkey.D.Luffy P-055 nonfoil = Sealed Battle Kit Vol. 1
 	"379048": "518696", // Usopp P-049 nonfoil = Sealed Battle Kit Vol. 1
 	"387345": "537438", // Roronoa Zoro P-045 (OP06 Pre-Release Tournament) nonfoil = Participant
+	"400504": "586897", // Donquixote Doflamingo OP04-031 (Alternate Art) = PRB-01 Alternate Art
 	"424023": "656166", // Sabo P-044 White Border = PRB-02 Reprint
 	"424027": "656192", // Koala P-069 White Border = PRB-02 Reprint
 	"424028": "656199", // Carrot P-070 White Border = PRB-02 Reprint
