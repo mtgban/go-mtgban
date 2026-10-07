@@ -296,3 +296,24 @@ func TestIsGradedTakesTheSingleCopyPrintings(t *testing.T) {
 		})
 	}
 }
+
+// TestCSIAmbiguousRefusal pins which refusals a "Can be" note keeps quiet:
+// only the ones its own ambiguity causes.
+func TestCSIAmbiguousRefusal(t *testing.T) {
+	for _, tt := range []struct {
+		notes string
+		err   error
+		want  bool
+	}{
+		{"Can be (STAS-EN020) OR (STAS-EN039)", mtgmatcher.NewAliasingError("a", "b"), true},
+		{"Can Be Normal or 25th Anniversary Stamp", mtgmatcher.ErrCardWrongVariant, true},
+		{"Can be Autumn 2011, Spring 2012", mtgmatcher.ErrCardDoesNotExist, false},
+		{"Can be Autumn 2011, Spring 2012", mtgmatcher.ErrCardNotInEdition, false},
+		{"Alt-Art", mtgmatcher.NewAliasingError("a", "b"), false},
+	} {
+		got := csiAmbiguousRefusal(tt.notes, tt.err)
+		if got != tt.want {
+			t.Errorf("csiAmbiguousRefusal(%q, %v) = %v, want %v", tt.notes, tt.err, got, tt.want)
+		}
+	}
+}
