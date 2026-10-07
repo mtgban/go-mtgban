@@ -231,12 +231,15 @@ func (scg *Starcitygames) loadCatalog(ctx context.Context) error {
 	}
 	scg.setIDs = setIDs
 
-	count := 0
+	count, ofGame := 0, 0
 	err = scg.client.StreamCatalog(ctx, func() {
 		scg.printf("Catalog stream broke after %d products, downloading it again", count)
 		scg.reset()
-		count = 0
+		count, ofGame = 0, 0
 	}, func(p CatalogProduct) error {
+		if gameFromCatalog(p.Game) == scg.gameID {
+			ofGame++
+		}
 		scg.processProduct(p)
 		count++
 		if count%5000 == 0 {
@@ -246,6 +249,12 @@ func (scg *Starcitygames) loadCatalog(ctx context.Context) error {
 	})
 	if err != nil {
 		return err
+	}
+	// Every game SCG is registered for has singles in the export, so none
+	// at all means the catalog spells the game in a way gameFromCatalog
+	// does not map, and the run would publish an empty dump.
+	if ofGame == 0 {
+		return fmt.Errorf("none of %d catalog products maps to %s", count, scg.backend.Game)
 	}
 	scg.printf("Processed %d products total, %d buylist prices were a bulk rate", count, scg.bulkRated)
 
