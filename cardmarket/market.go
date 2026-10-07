@@ -360,17 +360,17 @@ func (mkm *Market) walkCatalog(ctx context.Context, candidates map[string]bool) 
 // actually disagree on seller, condition or price; when two products'
 // cheapest listing for a condition lands on the very same seller at the
 // very same price - plausible when Cardmarket's own catalog has split one
-// physical product across two ids - it folds the second into the first's
-// Quantity instead of adding a second line, and only drops a listing
-// outright (ErrDuplicateEntry, silently ignored below) when the URL,
-// quantity and bundle also match exactly. Twin products are still caught
-// before ever reaching this, at the resolution step in walkExpansion, so as
-// not to query the same live listings twice.
+// physical product across two ids - it drops the second (ErrDuplicateEntry,
+// silently ignored below). Twin products are still caught before ever
+// reaching this, at the resolution step in walkExpansion, so as not to
+// query the same live listings twice.
 //
 // Sequential by construction (concurrency 1, not a configurable field):
 // the API tolerates almost no in-flight parallelism per token, so pooling
 // workers the way Sealed does would only manufacture 429s here.
 func (mkm *Market) collectPrices(ctx context.Context, items []cm.Expansion, worker func(context.Context, cm.Expansion, chan<- responseChan) error) (walked, refused, foreign int) {
+	fedBy := map[string]int{}
+	shared := map[string]bool{}
 	mtgban.WorkerPool(ctx, 1, items, worker, func(result responseChan) {
 		if result.tally {
 			walked += result.walked
@@ -378,11 +378,25 @@ func (mkm *Market) collectPrices(ctx context.Context, items []cm.Expansion, work
 			foreign += result.foreign
 			return
 		}
+		id, seen := fedBy[result.cardID]
+		if !seen {
+			fedBy[result.cardID] = result.ogID
+		} else if id != result.ogID {
+			shared[result.cardID] = true
+		}
 		err := mkm.inventory.AddStrict(result.cardID, &result.entry)
 		if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
 			mkm.printf("%d - %s", result.ogID, err.Error())
 		}
 	}, mkm.printf)
+
+	// Each product counts only its own copies, so a card two products price
+	// has no full count
+	for cardID := range shared {
+		for i := range mkm.inventory[cardID] {
+			mkm.inventory[cardID][i].Available = 0
+		}
+	}
 	return walked, refused, foreign
 }
 
