@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -44,6 +45,9 @@ func TestNewHTTPClientRetriesThroughTheWrapper(t *testing.T) {
 
 	var wrapped atomic.Int32
 	var logged []string
+	ctx := ContextWithLogCallback(context.Background(), func(format string, a ...any) {
+		logged = append(logged, fmt.Sprintf(format, a...))
+	})
 	client := NewHTTPClient(
 		WithHTTPRetries(2),
 		WithHTTPRetryWait(time.Millisecond, time.Millisecond),
@@ -53,11 +57,12 @@ func TestNewHTTPClientRetriesThroughTheWrapper(t *testing.T) {
 				return rt.RoundTrip(req)
 			})
 		}),
-		WithHTTPLogCallback(func(format string, a ...any) {
-			logged = append(logged, fmt.Sprintf(format, a...))
-		}),
 	)
-	resp, err := client.Get(srv.URL + "/prices?sig=secret")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL+"/prices?sig=secret", http.NoBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}

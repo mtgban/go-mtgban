@@ -892,7 +892,8 @@ func run() int {
 
 	now = time.Now()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx := mtgban.ContextWithLogCallback(context.Background(), log.Printf)
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
 	loaded, nonFatalErrors := load(ctx, scrapers)

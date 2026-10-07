@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -18,7 +19,6 @@ const (
 type HTTPOption func(*httpConfig)
 
 type httpConfig struct {
-	logCallback   LogCallbackFunc
 	headerTimeout time.Duration
 	timeout       time.Duration
 	retries       int
@@ -31,10 +31,13 @@ type httpConfig struct {
 	wraps         []func(http.RoundTripper) http.RoundTripper
 }
 
-// WithHTTPLogCallback reports every retry through fn: the method and the
-// address without its query, which can carry a signature.
-func WithHTTPLogCallback(fn LogCallbackFunc) HTTPOption {
-	return func(c *httpConfig) { c.logCallback = fn }
+type logKey struct{}
+
+// ContextWithLogCallback returns ctx carrying fn, which a client from
+// NewHTTPClient reports each retry of a request made with ctx through: the
+// method and the address without its query, which can carry a signature.
+func ContextWithLogCallback(ctx context.Context, fn LogCallbackFunc) context.Context {
+	return context.WithValue(ctx, logKey{}, fn)
 }
 
 // WithHTTPTimeout bounds each attempt, body included.
@@ -88,10 +91,10 @@ func WithHTTPTransport(wrap func(http.RoundTripper) http.RoundTripper) HTTPOptio
 	return func(c *httpConfig) { c.wraps = append(c.wraps, wrap) }
 }
 
-// NewHTTPClient returns the client scrapers fetch with: it logs nothing,
-// retries a failed request with retryablehttp's policy unless told
-// otherwise, and bounds every attempt, so a server that stops answering
-// costs a retry instead of the whole run.
+// NewHTTPClient returns the client scrapers fetch with: it retries a failed
+// request with retryablehttp's policy, logging each retry through the
+// request context's ContextWithLogCallback, and bounds every attempt, so a
+// server that stops answering costs a retry instead of the whole run.
 func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
@@ -129,14 +132,12 @@ func NewHTTPClient(opts ...HTTPOption) *http.Client {
 	if config.errorHandler != nil {
 		client.ErrorHandler = config.errorHandler
 	}
-	if config.logCallback != nil {
-		logf := config.logCallback
-		client.RequestLogHook = func(_ retryablehttp.Logger, req *http.Request, attempt int) {
-			if attempt == 0 {
-				return
-			}
-			logf("%s %s://%s%s: retry %d of %d", req.Method, req.URL.Scheme, req.URL.Host, req.URL.Path, attempt, config.retries)
+	client.RequestLogHook = func(_ retryablehttp.Logger, req *http.Request, attempt int) {
+		logf, ok := req.Context().Value(logKey{}).(LogCallbackFunc)
+		if attempt == 0 || !ok || logf == nil {
+			return
 		}
+		logf("%s %s://%s%s: retry %d of %d", req.Method, req.URL.Scheme, req.URL.Host, req.URL.Path, attempt, config.retries)
 	}
 	standard := client.StandardClient()
 	standard.CheckRedirect = config.checkRedirect
