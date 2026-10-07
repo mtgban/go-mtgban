@@ -524,6 +524,11 @@ func (tcg *Market) Load(ctx context.Context) error {
 		consume,
 		tcg.printf,
 	)
+	// A cancelled run stops dispatching and would leave the prices half read
+	err := ctx.Err()
+	if err != nil {
+		return err
+	}
 	tcg.inventoryDate = time.Now()
 	tcg.buylistDate = time.Now()
 
