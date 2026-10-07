@@ -1758,9 +1758,16 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 			continue
 		}
 
+		// A same-name card met earlier already gave every card of this name
+		// the printings below
+		if slices.Contains(sets[code].Cards[i].Printings, dup.Code) {
+			numbers = append(numbers, sets[code].Cards[i].Number)
+			continue
+		}
+
 		// Update printings for the original set, keeping them sorted by
 		// date like every other card's: the site lists them in this order
-		printings := append(slices.Clone(sets[code].Cards[i].Printings), dup.Code)
+		printings := append(sets[code].Cards[i].Printings, dup.Code)
 		sortPrintings(sets, printings)
 		sets[code].Cards[i].Printings = printings
 
