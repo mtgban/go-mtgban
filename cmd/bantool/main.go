@@ -363,18 +363,22 @@ func (envAuthenticator) Secret(name string) (string, error) {
 
 // scraperOptions turns the flags and environment bantool reads into the
 // options the key's own registered constructor understands: always the log
-// callback and, where set, a concurrency cap; one half if the target asked
-// for it; AFFILIATE when the caller set it (CI passes one partner per
-// target); and any catalog, sku list or bridge scraperResources loads.
+// callback and, where set, a concurrency cap and retry lines; one half if
+// the target asked for it; AFFILIATE when the caller set it (CI passes one
+// partner per target); and any catalog, sku list or bridge scraperResources
+// loads.
 // Secrets are not read here either: envAuthenticator goes along as an
 // option and answers each constructor's own Secret* names directly.
-func scraperOptions(game mtgmatcher.Game, key string, opt *scraperOption, maxConcurrency int) ([]mtgban.Option, error) {
+func scraperOptions(game mtgmatcher.Game, key string, opt *scraperOption, maxConcurrency int, logRetries bool) ([]mtgban.Option, error) {
 	opts := []mtgban.Option{
 		mtgban.WithLogCallback(log.Printf),
 		mtgban.WithAuthenticator(envAuthenticator{}),
 	}
 	if maxConcurrency != 0 {
 		opts = append(opts, mtgban.WithMaxConcurrency(maxConcurrency))
+	}
+	if logRetries {
+		opts = append(opts, mtgban.WithLogRetries())
 	}
 	if opt.OnlySeller {
 		opts = append(opts, mtgban.WithRetailOnly())
@@ -798,6 +802,7 @@ func run() int {
 
 	signOpt := flag.String("sign", "", "Sign input")
 	versionOpt := flag.Bool("v", false, "Print version information")
+	logRetriesOpt := flag.Bool("log-retries", true, "Log each HTTP request retry")
 	flag.Parse()
 
 	log.Println("bantool version", Commit)
@@ -885,7 +890,7 @@ func run() int {
 			continue
 		}
 
-		opts, err := scraperOptions(game, key, opt, maxConcurrency)
+		opts, err := scraperOptions(game, key, opt, maxConcurrency, *logRetriesOpt)
 		if err != nil {
 			log.Println(err)
 			return 1

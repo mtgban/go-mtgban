@@ -33,6 +33,9 @@ type Options struct {
 	DisableRetail  bool
 	DisableBuylist bool
 
+	// LogRetries reports each HTTP request retry through LogCallback.
+	LogRetries bool
+
 	resources map[string]any
 }
 
@@ -96,6 +99,13 @@ func WithRetailOnly() Option {
 func WithBuylistOnly() Option {
 	return optionFunc(func(o *Options) {
 		o.DisableRetail = true
+	})
+}
+
+// WithLogRetries reports each HTTP request retry through LogCallback.
+func WithLogRetries() Option {
+	return optionFunc(func(o *Options) {
+		o.LogRetries = true
 	})
 }
 

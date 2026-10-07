@@ -55,6 +55,7 @@ func TestNewScraperBuildsTheRegisteredScraper(t *testing.T) {
 		WithMaxConcurrency(3),
 		WithAffiliate("aff"),
 		WithTargetEdition("LEA"),
+		WithLogRetries(),
 		WithResource("bridge", map[int]int{1: 2}),
 	)
 	if err != nil {
@@ -75,7 +76,7 @@ func TestNewScraperBuildsTheRegisteredScraper(t *testing.T) {
 		t.Error("LogCallback was not passed through")
 	}
 	if got.opts.MaxConcurrency != 3 || got.opts.Affiliate != "aff" ||
-		got.opts.TargetEdition != "LEA" {
+		got.opts.TargetEdition != "LEA" || !got.opts.LogRetries {
 		t.Errorf("options = %+v", got.opts)
 	}
 	bridge, err := Resource[map[int]int](got.opts, "bridge")
