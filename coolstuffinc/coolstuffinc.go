@@ -130,6 +130,17 @@ func nameQualifierList(name string) []string {
 // identity exists for it, so a refusal of one is the vendor's own ambiguity.
 var csiAmbiguousNote = regexp.MustCompile(`(?i)^\s*can be\b`)
 
+// csiAmbiguousRefusal reports a refusal that is the note's own ambiguity:
+// the printings it names alias, or its wording names no single variant. A
+// name or edition the catalog lacks is refused whatever the note says.
+func csiAmbiguousRefusal(notes string, err error) bool {
+	if !csiAmbiguousNote.MatchString(notes) {
+		return false
+	}
+	var alias *mtgmatcher.AliasingError
+	return errors.As(err, &alias) || errors.Is(err, mtgmatcher.ErrCardWrongVariant)
+}
+
 // buylistNumberWord matches the number-shaped words of a buylist note.
 var buylistNumberWord = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+)?[,.]?$`)
 
@@ -656,7 +667,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					case magic.IsBasicLand(theCard.Name),
 						notes == "" && strings.Contains(edition, "The List"),
 						strings.Contains(notes, "Preorder"),
-						csiAmbiguousNote.MatchString(notes):
+						csiAmbiguousRefusal(notes, err):
 					default:
 						csi.printf("%v", err)
 						csi.printf("%v", theCard)
@@ -992,7 +1003,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
-			if csiAmbiguousNote.MatchString(product.Notes) {
+			if csiAmbiguousRefusal(product.Notes, err) {
 				continue
 			}
 			csi.printf("error: %v", err)
