@@ -158,6 +158,10 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 		consume,
 		tcg.printf,
 	)
+	err := ctx.Err()
+	if err != nil {
+		return err
+	}
 
 	tcg.inventoryDate = time.Now()
 
