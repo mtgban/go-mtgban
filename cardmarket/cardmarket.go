@@ -654,8 +654,9 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
 	// one, and a cardtrader blueprint names every Cardmarket product it
 	// sells as, so nothing stops two products from resolving to one
-	// printing. namedLast keeps the first, so the inventory sees one
-	// product per printing and one price per column.
+	// printing. namedLast keeps the one pricing it in the most columns,
+	// catalog order among equals, so the inventory sees one product per
+	// printing and one price per column.
 	collector := namedLast{
 		add: func(result responseChan) {
 			err := mkm.inventory.AddUnique(result.cardID, &result.entry)
