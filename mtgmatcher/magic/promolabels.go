@@ -134,6 +134,7 @@ var promoTypeLabels = map[string]string{
 	"textured":            "Textured foil",
 	"themepack":           "Theme Pack",
 	"thick":               "Thick display",
+	"token":               "Token",
 	"tourney":             "Tournament",
 	"universesbeyond":     "Universes Beyond",
 	"upsidedown":          "Upside Down",

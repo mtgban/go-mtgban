@@ -306,6 +306,7 @@ const (
 	PromoTypeSurgeFoil         = "surgefoil"
 	PromoTypeTextured          = "textured"
 	PromoTypeThickDisplay      = "thick"
+	PromoTypeToken             = "token"
 	PromoTypeWPN               = "wizardsplaynetwork"
 
 	BorderColorBorderless = "borderless"
@@ -1016,6 +1017,10 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			}
 			if card.HasFrameEffect(FrameEffectShowcase) {
 				card.PromoTypes = append(card.PromoTypes, PromoTypeShowcase)
+			}
+			// Every token-like card (emblem, dungeon, helper card) is a token by now
+			if card.Layout == "token" {
+				card.PromoTypes = append(card.PromoTypes, PromoTypeToken)
 			}
 			// The 1997 frame is also just what every card printed before
 			// 8th Edition already wears, so only file it as a promo type

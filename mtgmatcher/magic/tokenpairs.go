@@ -320,6 +320,7 @@ func buildDerivedCard(co1, co2 *mtgmatcher.CardObject, home string, usableIDs []
 		SetCode:     home,
 		Layout:      "token",
 		Rarity:      "token",
+		PromoTypes:  []string{PromoTypeToken},
 		Language:    "English",
 		Finishes:    unionFinishes(co1.Finishes, co2.Finishes),
 		Identifiers: identifiers,
