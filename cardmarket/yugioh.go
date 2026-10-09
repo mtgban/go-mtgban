@@ -3,6 +3,7 @@ package cardmarket
 import (
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -302,6 +303,25 @@ func yugiohPrintNumber(product *cm.Product) (*cm.Product, error) {
 	prefixed := *product
 	prefixed.Number = prints[index-1] + product.Number
 	return &prefixed, nil
+}
+
+// yugiohPromoLinks names, by Cardmarket product id, the TCGplayer product of
+// the Reshef of Destruction promos, which the datastore files in the video
+// game promos as ROD-EN001 and ROD-EN002. Cardmarket numbers them EN1 and 001
+// and CardTrader links neither.
+var yugiohPromoLinks = map[int]int{
+	244606: 23322, 244607: 23323, 363275: 130171, 363276: 130170,
+}
+
+// yugiohByID answers a Yu-Gi-Oh product yugiohPromoLinks names; an empty id
+// leaves the product to the bridge and its wording.
+func (r *resolver) yugiohByID(product *cm.Product) string {
+	tcgID, found := yugiohPromoLinks[product.IDProduct]
+	if !found {
+		return ""
+	}
+	uuid, _ := r.backend.MatchID(strconv.Itoa(tcgID), false)
+	return uuid
 }
 
 // yugiohOtherCard reports whether the bridged printing is of a card the
