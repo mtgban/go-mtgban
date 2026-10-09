@@ -54,3 +54,43 @@ func TestResolveProductEtchedByID(t *testing.T) {
 		t.Errorf("resolveProduct(%q, tcg %s) = %s, want the etched printing %s", product.DisplayName, tcgID, got, etchedUUID)
 	}
 }
+
+// TestResolveProductBuylistByRetailID pins that a buylist product, which
+// carries no TCGplayer id, answers with the id its retail product carried,
+// and only where that id names the card the display does. The Swarmlord is
+// written 40K-004 in both feeds and is the surge foil numbered 4; Game Nerdz
+// also carries an id on a Clickslither that TCGplayer files as a Necroblossom
+// Snarl.
+func TestResolveProductBuylistByRetailID(t *testing.T) {
+	gn, err := NewScraper(realDatastore(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolve := func(id, display string, tcgID int64) string {
+		t.Helper()
+		retail := GNProduct{ID: id, DisplayName: display, SelectedFinish: "foil"}
+		retail.ProductData.TCGProductID = tcgID
+		_, err := gn.resolveProduct(modeRetail, retail)
+		if err != nil {
+			t.Fatal(err)
+		}
+		buylist := GNProduct{ID: id, DisplayName: display, SelectedFinish: "foil"}
+		got, err := gn.resolveProduct(modeBuylist, buylist)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
+
+	got := resolve("swarmlord", "The Swarmlord (40K-004) - Warhammer 40,000 Commander Foil", 285793)
+	co, err := gn.backend.GetUUID(got)
+	if err != nil || co.SetCode != "40K" || co.Number != "4" {
+		t.Errorf("The Swarmlord: got %q (%v); want 40K 4", got, err)
+	}
+
+	got = resolve("clickslither", "Clickslither (VMA-156) - Vintage Masters", 237191)
+	co, err = gn.backend.GetUUID(got)
+	if err == nil && co.Name == "Necroblossom Snarl" {
+		t.Errorf("Clickslither landed on %s through an id that names another card", co.Name)
+	}
+}

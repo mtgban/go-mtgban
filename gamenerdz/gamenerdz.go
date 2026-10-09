@@ -114,6 +114,11 @@ type Gamenerdz struct {
 	buylistDate   time.Time
 	inventory     mtgban.InventoryRecord
 	buylist       mtgban.BuylistRecord
+
+	// retailIDs holds the TCGplayer id each Magic retail product carries,
+	// by the storefront's own product id. The buylist record of the same
+	// product shares that id and carries no TCGplayer id of its own.
+	retailIDs map[string]int64
 }
 
 // NewScraper returns a scraper for the datastore's game.
@@ -130,6 +135,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
 	gn.backend = b
 	gn.line = line
 	gn.maxConcurrency = defaultConcurrency
+	gn.retailIDs = map[string]int64{}
 	return &gn, nil
 }
 
@@ -230,25 +236,35 @@ var staleTCGIDs = map[int64]int64{
 }
 
 // resolveProduct names the printing a product is. The retail feed carries
-// the catalog's own TCGplayer id for nearly every product, and it answers
-// first: the display name is the storefront's own wording, and where the two
-// disagree the id is right - a name copied from another card, a promo pack
-// printing named as the plain one. The buylist feed carries no id, so its
-// wording is read the way the retail wording is, and the retail ids are
-// what that reading is measured against. An empty id under a nil error is
-// a product the catalog does not carry.
+// the catalog's own TCGplayer id for nearly every Magic product, and it
+// answers first: the display name is the storefront's own wording, and where
+// the two disagree the id is right - a name copied from another card, a
+// promo pack printing named as the plain one. The buylist feed carries no
+// id, but its product shares the storefront's id with the retail product of
+// the same card, so it answers with the id that product carried, where that
+// id names the card the display does. Anything the id does not place is read
+// by its wording, and the retail ids are what that reading is measured
+// against. An empty id under a nil error is a product the catalog does not
+// carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
 	etched := gn.backend.Game == mtgmatcher.GameMagic && saysEtched(product)
-	tcgID := product.ProductData.TCGProductID
-	live, found := staleTCGIDs[tcgID]
-	if found {
-		tcgID = live
-	}
-	if mode == modeRetail && gn.backend.Game == mtgmatcher.GameMagic && tcgID != 0 {
-		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
-		cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
-		if err == nil {
-			return cardID, nil
+	if gn.backend.Game == mtgmatcher.GameMagic {
+		tcgID := product.ProductData.TCGProductID
+		if mode == modeRetail {
+			gn.retailIDs[product.ID] = tcgID
+		} else {
+			tcgID = gn.retailIDs[product.ID]
+		}
+		live, found := staleTCGIDs[tcgID]
+		if found {
+			tcgID = live
+		}
+		if tcgID != 0 {
+			foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
+			cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
+			if err == nil && (mode == modeRetail || gn.namesCard(cardID, product)) {
+				return cardID, nil
+			}
 		}
 	}
 
@@ -298,6 +314,21 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		return "", nil
 	}
 	return cardID, nil
+}
+
+// namesCard reports whether a printing is the card a display name writes: its
+// name is in the display, or the display's name is the front of it. A flavor
+// name before the dash ("Torgal, Clive's Companion - Yoshimaru, Ever
+// Faithful") and a double-faced card's other face both pass.
+func (gn *Gamenerdz) namesCard(cardID string, product GNProduct) bool {
+	co, err := gn.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	landed := mtgmatcher.Normalize(co.Name)
+	name := mtgmatcher.Normalize(magicName(gn.backend, product.DisplayName))
+	return strings.Contains(mtgmatcher.Normalize(product.DisplayName), landed) ||
+		name != "" && strings.Contains(landed, name)
 }
 
 // finishPrinted reports whether the printing a product resolved to was sold in
