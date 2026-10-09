@@ -12,11 +12,12 @@ import (
 // the names this storefront gives it instead. They are its own: the catalog
 // sells the card in "BANDAI Card Games Fest 25-26" and it goes up here as
 // the Afro Luffy promo, after the art rather than the pack. A nickname
-// names one product and nothing else, which is why they are listed one at a
-// time rather than read for.
+// names one product, or one numbered series of it, and nothing else, which
+// is why they are listed one at a time rather than read for.
 var onePieceEvents = map[string]string{
-	"afro luffy promo":   "BANDAI Card Games Fest 25-26",
-	"l.a. dodgers promo": "Dodgers x One Piece",
+	"afro luffy promo":    "BANDAI Card Games Fest 25-26",
+	"l.a. dodgers promo":  "Dodgers x One Piece",
+	"best selection vol.": "Premium Card Collection",
 	// The playmat and the participation pack name the product the card came
 	// in, where the catalog names the event that handed it out.
 	"bcgf playmat promo":                             "Official Playmat -Bandai Card Games Fest 24-25 Edition-",
