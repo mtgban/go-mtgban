@@ -161,7 +161,7 @@ var yugiohShelfPatterns = []struct {
 	{regexp.MustCompile(`^(\d{4}) Mega-Tin Mega Pack$`), "$1 Mega-Tins Mega Pack"},
 }
 
-var yugiohOrdinals = map[string]int{
+var ordinalWords = map[string]int{
 	"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five": 5, "Six": 6, "Seven": 7, "Eight": 8, "Nine": 9,
 }
 
@@ -177,7 +177,7 @@ func yugiohEditions(expansion string) []string {
 			continue
 		}
 		if strings.Contains(pattern.code, "%d") {
-			if n, found := yugiohOrdinals[m[1]]; found {
+			if n, found := ordinalWords[m[1]]; found {
 				return []string{strings.Replace(pattern.code, "%d", string(rune('0'+n)), 1)}
 			}
 			continue

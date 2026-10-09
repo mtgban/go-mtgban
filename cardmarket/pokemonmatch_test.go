@@ -144,6 +144,38 @@ func TestMatchPokemonOversized(t *testing.T) {
 	}
 }
 
+// pokemonPrizePackDatastore holds the Ogerpon ex two prize pack series both
+// printed, rows copied verbatim.
+const pokemonPrizePackDatastore = `{"data": {
+ "game": "pokemon",
+ "sets": {"G22880": {"name": "Prize Pack Series Cards", "releaseDate": "2022-11-30"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 619166}, "finish": "Holofoil", "id": "025-167_619166_holofoil", "name": "Teal Mask Ogerpon ex", "number": "025", "promoTypes": ["prizepackseries"], "rarity": "Double Rare", "setCode": "G22880", "total": "167", "variant": "Prize Pack Series 6", "watermark": "series 6"},
+  {"externalLinks": {"tcgPlayerId": 684109}, "finish": "Holofoil", "id": "025-167_684109_holofoil", "name": "Teal Mask Ogerpon ex", "number": "025", "promoTypes": ["prizepackseries"], "rarity": "Double Rare", "setCode": "G22880", "total": "167", "variant": "Prize Pack Series 7", "watermark": "series 7"}
+ ]
+}}`
+
+// TestMatchPokemonPrizePackSeries pins that a prize pack shelf names its
+// series, which is all that tells the printings of one card apart.
+func TestMatchPokemonPrizePackSeries(t *testing.T) {
+	b := datastoreBackend(t, "pokemon", pokemonPrizePackDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	for _, tt := range []struct{ shelf, want string }{
+		{"Play! Pokémon Prize Pack Series Six", "025-167_619166_holofoil"},
+		{"Play! Pokémon Prize Pack Series Seven", "025-167_684109_holofoil"},
+	} {
+		product := cm.Product{Name: "Teal Mask Ogerpon ex ", Number: "TWM 025", ExpansionName: tt.shelf}
+		got, err := mkm.matchPokemon(&product)
+		if err != nil || got != tt.want {
+			t.Errorf("matchPokemon(%q) = (%q, %v), want %q", tt.shelf, got, err, tt.want)
+		}
+	}
+}
+
 // TestPokemonStampedPlainRow pins that a stamped printing sold in a reverse
 // holo too answers with its plain row, whichever the index lists last.
 func TestPokemonStampedPlainRow(t *testing.T) {

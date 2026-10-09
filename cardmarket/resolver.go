@@ -1034,6 +1034,15 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 	for _, edition := range editions {
 		candidates = append(candidates, candidate{edition, number, prefix != "", true, false})
 	}
+	// A prize pack series reprints a card the series before it printed;
+	// the series is asked for only when the number alone cannot tell.
+	word, onSeries := strings.CutPrefix(product.ExpansionName, pokemonPrizePack)
+	series, ordinal := ordinalWords[word]
+	if onSeries && ordinal && number != "" {
+		for _, edition := range editions {
+			candidates = append(candidates, candidate{edition, number + " Series " + strconv.Itoa(series), false, true, false})
+		}
+	}
 	if pokemonLettered.MatchString(number) {
 		for _, edition := range pokemonLetteredSets {
 			candidates = append(candidates, candidate{edition, number, false, false, false})
