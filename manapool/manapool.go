@@ -2,6 +2,7 @@
 package manapool
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"net/url"
@@ -130,7 +131,10 @@ func (mp *Manapool) record(card Product, cardID string) {
 	if err != nil {
 		return
 	}
-	if mtgmatcher.LanguageTag2LanguageCode[co.Language] != strings.ToLower(card.LanguageID) {
+	// The table names English by the empty tag, and Portuguese without the
+	// "(Brazil)" the datastore adds, so the printing's language holds it.
+	lang, found := mtgmatcher.LanguageCode2LanguageTag[strings.ToLower(card.LanguageID)]
+	if !found || !strings.Contains(co.Language, cmp.Or(lang, "English")) {
 		return
 	}
 
