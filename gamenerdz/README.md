@@ -27,9 +27,6 @@ Converting every `[...]` to `(...)` is wrong as well: `Dragapult - 091/192
 ## Known remaining
 
 - Fairy Energy in Kalos Starter Set has no row in the Pokemon datastore.
-- Pikachu World Collection listings written `Pikachu (French) PW` carry a
-  language and no number; the catalog carries them as `PW1`-`PW10`, so a
-  language-to-number table would land them.
 - Aquapolis listings written over a plain number (`Drowzee 74/147`) name two
   printings (74a, 74b) and stay refused.
 - `Monkey.D.Luffy (Release Event Leader) (P)` stays refused. Its label alone
