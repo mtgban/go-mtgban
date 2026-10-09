@@ -18,13 +18,17 @@ all to the V.1 product, at CardTrader's numbers; Ebony Charm's V.1 and its
 corrected V.2, which the map gives one id in Mirage; and The List's Tetsuko
 Umezawa, Fugitive, which the map links to neither of its two candidates.
 
-`etchedPrintings` is the same table for 4 products that are a printing's
-etched finish: the "(V.2)" of Carrion Feeder, Plaguecrafter, Thoughtseize and
-Doomsday in October Superdrop 2022. The datastore carries the etched
-product's id on no printing, so the product lands on the plain printing its
-V.1 already sells, and the index holds two entries on it. Each row is
-CardTrader's "Etched Foil" blueprint for the product, and both price columns
-go to the etched printing, as for any foil-only product.
+`etchedPrintings` is the same table for products that are a printing's
+etched finish, such as the "(V.2)" of Carrion Feeder, Plaguecrafter,
+Thoughtseize and Doomsday in October Superdrop 2022. The datastore carries
+the etched product's id on no printing, so the product lands on the plain
+printing its V.1 already sells, and the index holds two entries on it. Each
+row is CardTrader's "Etched Foil" blueprint for the product, and both price
+columns go to the etched printing, as for any foil-only product.
+
+The same holds for the etched products of Secret Lair cards whose datastore
+link names Cardmarket's Etched Foil product for both finishes, which the
+walk would otherwise land on the plain printing beside its V.1.
 
 `unplacedProducts` lists 12 October Superdrop 2022 versions (V.2 to V.4 of
 Tezzeret the Seeker, Phyrexian Metamorph, Skullclamp and Solemn Simulacrum)
