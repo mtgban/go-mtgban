@@ -330,6 +330,10 @@ func pokemonBuylistCard(b *mtgmatcher.Backend, product CSIPriceEntry) (*mtgmatch
 	if product.Number == "0" {
 		product.Number = ""
 	}
+	// Zoroark-GX's alternate art number is typed with its letter transposed.
+	if product.Number == "77/a73" {
+		product.Number = "77a/73"
+	}
 	variation := catalogTreatment(buylistVariation(product))
 	shelf, run := firstEditionShelf(product.ItemSet)
 	shelf = pokemonPromoShelf(b, product.Name, shelf, product.RarityName, product.IsFoil == 1, variation)
@@ -358,7 +362,11 @@ var pokemonRespellings = strings.NewReplacer(
 	"Kyurem 43/113", "Kyurem - 43/113",
 	"Vivilion", "Vivillon",
 	"Rayquaza-GX (Shiny) - 177a", "Rayquaza-GX (Alt Art) - 177a",
+	"Zoroark-GX (Shiny) - 77a", "Zoroark-GX (Alt Art) - 77a",
 	" - NON HOLO", " - NON-HOLO",
+	"Victory Cup 1st Place", "Victory Cup",
+	"Victory Cup 2nd Place", "Victory Cup",
+	"Victory Cup 3rd Place", "Victory Cup",
 )
 
 var (
