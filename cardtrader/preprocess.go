@@ -120,6 +120,22 @@ func idNamesCard(co *mtgmatcher.CardObject, cardName string) bool {
 	return split && mtgmatcher.Equals(front, cardName)
 }
 
+// hasShelfPromo reports whether the card has a prerelease or promo pack
+// printing in its own set or that set's promo set, which is what a promo
+// shelf would be selling instead of the plain card.
+func hasShelfPromo(b *mtgmatcher.Backend, co *mtgmatcher.CardObject) bool {
+	for _, code := range []string{co.SetCode, "P" + co.SetCode} {
+		// HasPrinting widens to every printing when the set is unknown.
+		if b.Sets[code] == nil {
+			continue
+		}
+		if b.HasPrinting(co.Name, "promo_type", magic.PromoTypePrerelease, code) || magic.HasPromoPackPrinting(b, co.Name, code) {
+			return true
+		}
+	}
+	return false
+}
+
 // plstNumber returns the unique PLST collector number for cardName that
 // ends in "-"+number, the shape every reprint on The List carries, or ""
 // when no printing does or more than one does.
@@ -293,10 +309,12 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	if id != "" {
 		idEdition, idVariation := edition, bp.Version
 
-		// Override the shelf wording once the id names a real promo, so
-		// Match's promo-tag check on the answer doesn't veto it.
+		// Override the shelf wording once the id names a real promo, or both
+		// vendor ids name the same plain card, so Match's promo-tag check on
+		// the answer doesn't veto it.
 		co, err := b.GetUUID(id)
-		if err == nil && len(co.PromoTypes) > 0 {
+		idsAgree := scryfallID != "" && scryfallID == tcgplayerID && err == nil && !hasShelfPromo(b, co)
+		if err == nil && (len(co.PromoTypes) > 0 || idsAgree) {
 			probe := mtgmatcher.InputCard{Edition: idEdition, Variation: idVariation}
 			vetoed := (magic.IsPrerelease(&probe) && !co.HasPromoType(magic.PromoTypePrerelease)) ||
 				(magic.IsPromoPack(&probe) && !co.HasPromoType(magic.PromoTypePromoPack))
