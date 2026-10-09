@@ -1,6 +1,11 @@
 package coolstuffinc
 
 import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -209,5 +214,45 @@ func TestGundamNumber(t *testing.T) {
 		if got := gundamNumber(tt.in); got != tt.want {
 			t.Errorf("gundamNumber(%q) = %q, want %q", tt.in, got, tt.want)
 		}
+	}
+}
+
+// TestPreorderOfferIsSkippedQuietly pins that an offer saying only Preorder
+// is passed over without a log line. Its row has no quantity, and the product
+// note, which would stand in for one, does not say Preorder.
+func TestPreorderOfferIsSkippedQuietly(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `<html><div class="row product-search-row main-container">`+
+			`<span itemprop="name">Kira Yamato</span>`+
+			`<span class="rating-display " data-pid="1"></span>`+
+			`<div itemprop="offers">Preorder Near Mint <b itemprop="price">1.00</b></div>`+
+			`</div></html>`)
+	}))
+	t.Cleanup(srv.Close)
+
+	saved := csiSearchURL
+	csiSearchURL = srv.URL
+	t.Cleanup(func() { csiSearchURL = saved })
+
+	var logged []string
+	csi := Coolstuffinc{
+		client: newCSIHTTPClient(),
+		shelf:  GameGundam,
+		logCallback: func(format string, a ...any) {
+			logged = append(logged, fmt.Sprintf(format, a...))
+		},
+	}
+	results := make(chan responseChan, 1)
+	err := csi.processSearch(context.Background(), results, "Starter Deck", nil)
+	if err != nil {
+		t.Fatalf("processSearch(): %v", err)
+	}
+	for _, line := range logged {
+		if strings.Contains(line, "invalid") {
+			t.Errorf("processSearch() logged %q for a preorder offer", line)
+		}
+	}
+	if len(results) != 0 {
+		t.Error("processSearch() priced a preorder offer")
 	}
 }
