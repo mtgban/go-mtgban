@@ -102,7 +102,7 @@ func TestAliasingStands(t *testing.T) {
 		desc, name, shelf, notes string
 	}{
 		{"a non-promo is not what a promo shelf holds", "Scute Swarm", "Promos: Pro Tour", "Near Mint Foil English"},
-		{"two printings the wording fits equally", "Vampiric Tutor", "Promos: Judge", "Near Mint Foil English"},
+		{"two printings the wording fits equally", "Lightning Bolt", "Promos: Magicfest", "Near Mint Foil English"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			co := tieBreak(t, b, tt.name, tt.shelf, tt.notes)

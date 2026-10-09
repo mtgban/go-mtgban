@@ -271,6 +271,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		}
 	}
 
+	printing, found := shelfPrintings[[2]string{edition, cardName}]
+	if found && variation == "" {
+		edition, variation = printing[0], printing[1]
+	}
+
 	switch edition {
 	case "Promotional Cards":
 		if variation == "" {
@@ -357,6 +362,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		cardName = strings.TrimSuffix(cardName, " Arena Promo")
 	case "Promos: Judge":
 		cardName = strings.TrimSuffix(cardName, " Full Art")
+		// The shelf lists the 2018 copy with its code, so the bare name is
+		// the 2000 one.
+		if cardName == "Vampiric Tutor" && variation == "" {
+			edition = "G00"
+		}
 	case "Promos: Planeswalker Event":
 		edition = "PWCS"
 		if variation == "Top 8" {
