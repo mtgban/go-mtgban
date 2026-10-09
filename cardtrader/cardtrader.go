@@ -136,9 +136,13 @@ var tcgIDOverrides = map[int]int{
 	171625: 252517, // Charizard, Gold Metal, Celebrations
 	171624: 252516, // Pikachu, Gold Metal, Celebrations
 	314342: 616824, // Greninja ex, Metal Card, Twilight Masquerade
+	228430: 131869, // Arcanine BREAK, Jumbo Oversized, id names no product
+	341092: 478425, // Pikachu VMAX, Jumbo Oversized | 286
+	323065: 131864, // Snorlax GX, Jumbo Oversized | 069
 	// Yu-Gi-Oh: the qualifier copy named the YCS one, which has none.
 	341992: 679562, // Blue-Eyes White Dragon, 25YC-ENP01 World Championship Qualifier
 	346315: 637082, // Blue-Eyes White Dragon, 25YC-ENP01 YCS Stamp
+	346313: 637080, // Effect Veiler, 25YC-EN002 YCS Stamp
 	// Lorcana: none sent for the one errata reprint TCGplayer sells.
 	311912: 597095, // Bucky - Squirrel Squeak Tutor, Errata Version
 	// Pokemon promos: none sent, and the shelf names no set.
@@ -166,6 +170,11 @@ var tcgIDOverrides = map[int]int{
 	392243: 694625, // Ho-Oh, GameStop Promo | 010/086
 	364566: 680957, // Eevee, GYM Stamped | 143/191
 	357871: 680953, // Reshiram ex, WHT 020
+	337188: 639952, // Team Rocket's Giovanni, Holo | DRI 174
+	299930: 607999, // Basic Lightning Energy, 004 | Pikachu 7
+	299914: 557054, // Jacq, 175 | Armarouge 49
+	396495: 716740, // Pikachu, MEP 093 | Winner Stamp
+	120070: 136645, // Clefairy, 20th Anniversary Holo Promo 50/83
 	// One Piece promos: none sent, and a blank or unlabelled version.
 	358719: 668182, // Gol.D.Roger P-107, Store Tournament 2025 Vol. 4
 	400812: 719661, // DON!! Flame-Flame Fruit Coliseum, Championships Promo
