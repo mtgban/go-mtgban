@@ -726,6 +726,9 @@ var fabBlueprintNumbers = map[int]string{
 	// numbers instead of the blitz deck's own.
 	289007: "NUU028",
 	289009: "NUU029",
+	// Azalea, Ace in the Hole // Azalea: blank, and the listings' ARC038
+	// names the back face of twelve other pairings.
+	215671: "ARC039//ARC038",
 }
 
 // fabNumber spells a Flesh and Blood blueprint's collector number the way the
