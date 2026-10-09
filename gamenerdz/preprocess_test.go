@@ -521,12 +521,14 @@ const sizedDatastore = `{"data": {
  "sets": {
   "BKP": {"abbreviation": "BKP", "baseSetSize": 122, "name": "XY - BREAKpoint", "releaseDate": "2016-02-03"},
   "BKP-2175": {"abbreviation": "BKP", "name": "Burger King Promos", "releaseDate": "2008-07-07", "type": "promo"},
-  "MCAP": {"abbreviation": "MCAP", "name": "Miscellaneous Cards & Products", "releaseDate": "1999-01-09"}
+  "MCAP": {"abbreviation": "MCAP", "name": "Miscellaneous Cards & Products", "releaseDate": "1999-01-09"},
+  "ROS": {"abbreviation": "ROS", "baseSetSize": 108, "name": "XY - Roaring Skies", "releaseDate": "2015-05-06"}
  },
  "cards": [
   {"externalLinks": {"tcgPlayerId": 155609}, "finish": "Reverse Holofoil", "id": "052-123_155609_reverseholofoil", "name": "Happiny", "number": "052", "rarity": "Promo", "setCode": "BKP-2175", "total": "123", "type": "Colorless", "variant": "Diamond & Pearl", "watermark": "diamond & pearl"},
   {"externalLinks": {"tcgPlayerId": 220117}, "finish": "Holofoil", "id": "013-098_220117_holofoil", "name": "Flareon", "number": "013", "promoTypes": ["cosmosholo"], "rarity": "Promo", "setCode": "MCAP", "total": "098", "type": "Fire", "variant": "Cosmos Holo"},
-  {"externalLinks": {"tcgPlayerId": 654775}, "finish": "Holofoil", "id": "013-131_654775_holofoil", "name": "Flareon", "number": "013", "promoTypes": ["cosmosholo"], "rarity": "Rare", "setCode": "MCAP", "total": "131", "type": "Fire", "variant": "Cosmos Holo"}
+  {"externalLinks": {"tcgPlayerId": 654775}, "finish": "Holofoil", "id": "013-131_654775_holofoil", "name": "Flareon", "number": "013", "promoTypes": ["cosmosholo"], "rarity": "Rare", "setCode": "MCAP", "total": "131", "type": "Fire", "variant": "Cosmos Holo"},
+  {"externalLinks": {"tcgPlayerId": 98141, "tcgdexId": "xy6-105"}, "finish": "Holofoil", "id": "105-108_98141_holofoil", "name": "M Rayquaza EX", "number": "105", "promoTypes": ["fullart"], "rarity": "Ultra Rare", "setCode": "ROS", "total": "108", "type": "Colorless", "types": ["Colorless"], "variant": "Full Art"}
  ]
 }}`
 
@@ -562,6 +564,77 @@ func TestResolveProductSizedNumber(t *testing.T) {
 		uuid, err := gn.resolveProduct(modeBuylist, product)
 		if err != nil || uuid != tt.uuid {
 			t.Errorf("%q: got %q (%v); want %q", tt.displayName, uuid, err, tt.uuid)
+		}
+	}
+}
+
+// TestResolveProductPokemonByRetailID pins that a listing the wording leaves
+// between two printings is placed by the id its retail product carried: both
+// Flareon are the cosmos holo 13 of one shelf, told apart only by the id.
+func TestResolveProductPokemonByRetailID(t *testing.T) {
+	b, err := mtgmatcher.Open("pokemon", strings.NewReader(sizedDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gn, err := NewScraper(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	display := "Flareon - 13 (Cosmos Holo) 13 - Miscellaneous Cards  Products Holofoil"
+	retail := GNProduct{
+		ID:             "flareon",
+		DisplayName:    display,
+		SelectedFinish: "Holofoil",
+		ProductData:    GNProductData{SetName: "Miscellaneous Cards & Products", TCGProductID: 654775},
+	}
+	buylist := retail
+	buylist.ProductData.TCGProductID = 0
+
+	uuid, err := gn.resolveProduct(modeBuylist, buylist)
+	if err != nil || uuid != "" {
+		t.Fatalf("without an id: got %q (%v); want the listing left unplaced", uuid, err)
+	}
+	_, err = gn.resolveProduct(modeRetail, retail)
+	if err != nil {
+		t.Fatal(err)
+	}
+	uuid, err = gn.resolveProduct(modeBuylist, buylist)
+	if err != nil || uuid != "013-131_654775_holofoil" {
+		t.Errorf("with its retail id: got %q (%v); want 013-131_654775_holofoil", uuid, err)
+	}
+}
+
+// TestResolveProductPokemonIDNumberConflict pins that a retail id does not
+// place a listing on a printing whose number is not the one the display name
+// writes: Ancient Origins 98 is not Roaring Skies 105.
+func TestResolveProductPokemonIDNumberConflict(t *testing.T) {
+	b, err := mtgmatcher.Open("pokemon", strings.NewReader(sizedDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gn, err := NewScraper(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	retail := GNProduct{
+		ID:             "rayquaza",
+		DisplayName:    "M Rayquaza-EX 98/98 - Ancient Origins Holofoil (MP)",
+		SelectedFinish: "Holofoil",
+		ProductData:    GNProductData{SetName: "XY - Roaring Skies", TCGProductID: 98141},
+	}
+	buylist := retail
+	buylist.ProductData.TCGProductID = 0
+
+	for _, mode := range []string{modeRetail, modeBuylist} {
+		product := retail
+		if mode == modeBuylist {
+			product = buylist
+		}
+		uuid, err := gn.resolveProduct(mode, product)
+		if err != nil || uuid != "" {
+			t.Errorf("%s: got %q (%v); want the listing left unplaced", mode, uuid, err)
 		}
 	}
 }

@@ -1,9 +1,14 @@
 # Game Nerdz
 
 The storefront publishes two feeds per game. Retail carries the catalog's
-TCGplayer id for nearly every product; the buylist carries none, so its wording
-is what lands, and the retail ids are what that reading is measured against.
-`resolveProduct` reads Magic retail by id first and every other row by wording.
+TCGplayer id for nearly every product; the buylist carries none, but a product
+shares the storefront's id with its retail record, and the crawl keeps that
+record's TCGplayer id. `resolveProduct` reads Magic by id first - retail by its
+own, the buylist by its retail record's, kept only where the printing it names
+is the card the display writes. Every other row is read by wording, and the id
+places it only where the wording is refused and the id names the same card.
+A buylist-only run (`-vendors gamenerdz`) crawls no retail record, so its
+buylist is read by wording alone.
 
 ## Guards on the wording rules
 
@@ -26,11 +31,15 @@ Converting every `[...]` to `(...)` is wrong as well: `Dragapult - 091/192
 
 ## Known remaining
 
-- Fairy Energy in Kalos Starter Set has no row in the Pokemon datastore.
+- Fairy Energy in Kalos Starter Set carries the id 85378, which TCGplayer
+  deleted, and the datastore has no such energy: not a datastore gap.
 - Aquapolis listings written over a plain number (`Drowzee 74/147`) name two
-  printings (74a, 74b) and stay refused.
+  printings (74a, 74b) and stay refused unless the retail id names one.
 - `Monkey.D.Luffy (Release Event Leader) (P)` stays refused. Its label alone
   lands the OP-PR P-135 Green character, while the vendor's retail id 634531
-  is a six-colour Leader the datastore does not carry.
+  is one TCGplayer deleted.
+- A few retail ids name another card than their display: `Seel 41` carries
+  Ludicolo's, `Beedrill 17/102` Ekans's, `Clickslither (VMA-156)` Necroblossom
+  Snarl's. The buylist refuses them; Magic retail lands them as the id says.
 - `Gum-Gum Mole Pistol (Premium Card Collection -Best Selection Vol.5)` has no
   card code and is not a leader, so it stays refused.
