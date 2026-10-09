@@ -83,6 +83,7 @@ func TestYugiohListingReachesItsPrinting(t *testing.T) {
 		{"Vanquish Soul Razen (No Stamp Starlight Rare)", "Rarity Collection 5", "Starlight Rare - No Stamp", "", "Starlight Rare", "ra05-en134_689639_1stedition"},
 		{"Ten Thousand Dragon", "Battles of Legend - Armageddon", "", "BLAR-EN093", "Secret Rare", "blar-en10k_218039_1stedition"},
 		{"Gladiator Beast Secutor", "Legendary Collection 2", "", "LCGX-EN040", "Secret Rare", "lcgx-en240_56880_unlimited"},
+		{"Borrelsword Dragon", "Battles of Legend - Chapter 1", "Gold Letter Ultra Rare", "", "Ultra Rare", "blc1-en023_538495_1stedition"},
 	}
 	for _, test := range tests {
 		variation := test.notes
