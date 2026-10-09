@@ -49,11 +49,22 @@ var yugiohAlternateArts = map[string]bool{
 	"Number 39: Utopia (Astral Language)|Battles of Legend - Chapter 1": true,
 }
 
+// yugiohSkillCards names the Speed Duel skill cards a listing sells under the
+// bare name, keyed by name and edition. The catalog files them as
+// "<name> (Skill Card)", and the bare name finds another card of that name.
+var yugiohSkillCards = map[string]string{
+	"Call of the Haunted|Speed Duel: Arena of Lost Souls": "Call of the Haunted (Skill Card)",
+	"Zombie Master|Speed Duel: Trials of the Kingdom":     "Zombie Master (Skill Card)",
+}
+
 // yugiohListing answers the card a Yu-Gi-Oh listing describes. The variation
 // is the note on the sell listing and the number and note on the buylist, and
 // notes is the note alone, which tells the print runs apart.
 func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *mtgmatcher.InputCard {
 	listed := name + "|" + edition
+	if skill, found := yugiohSkillCards[listed]; found {
+		name = skill
+	}
 	variation = jpArtWording(yugiohWording.Replace(variation))
 	if yugiohAlternateArts[listed] {
 		variation += " Alternate Art"

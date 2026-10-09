@@ -66,8 +66,9 @@ func TestYugiohArtCardReachesTheEmblazonedPrinting(t *testing.T) {
 
 // TestYugiohListingReachesItsPrinting pins the listings whose wording the
 // matcher reads as something else: a bare digit in a note as the collector
-// number, the word Stamp inside "No Stamp" as the stamp promo type, and a
-// number the vendor mistyped.
+// number, the word Stamp inside "No Stamp" as the stamp promo type, a number
+// the vendor mistyped, and a skill card or alternate art sold under the name
+// and wording of another printing.
 func TestYugiohListingReachesItsPrinting(t *testing.T) {
 	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
@@ -84,6 +85,7 @@ func TestYugiohListingReachesItsPrinting(t *testing.T) {
 		{"Ten Thousand Dragon", "Battles of Legend - Armageddon", "", "BLAR-EN093", "Secret Rare", "blar-en10k_218039_1stedition"},
 		{"Gladiator Beast Secutor", "Legendary Collection 2", "", "LCGX-EN040", "Secret Rare", "lcgx-en240_56880_unlimited"},
 		{"Borrelsword Dragon", "Battles of Legend - Chapter 1", "Gold Letter Ultra Rare", "", "Ultra Rare", "blc1-en023_538495_1stedition"},
+		{"Call of the Haunted", "Speed Duel: Arena of Lost Souls", "", "", "Ultra Rare", "sbls-ens03_186714_1stedition"},
 	}
 	for _, test := range tests {
 		variation := test.notes
