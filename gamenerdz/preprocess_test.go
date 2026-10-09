@@ -481,6 +481,15 @@ func TestPreprocess(t *testing.T) {
 			product: GNProduct{DisplayName: "Illumineer's Trove - Sapphire and Steel"},
 			err:     true,
 		},
+		{
+			// A Jumpstart front card is not a card.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName: "Lands (JMP-019) - Jumpstart Front Cards",
+				ProductData: GNProductData{Set: "jmp", SetName: "Jumpstart Front Cards"},
+			},
+			err: true,
+		},
 	}
 	for _, tt := range tests {
 		card, err := preprocess(b, tt.product, tt.game)

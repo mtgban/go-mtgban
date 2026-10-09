@@ -80,7 +80,13 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 	// The matcher refuses the Spanish Salvat reprint sets. The shelf the
 	// name ends on is read, not the body, which can name Salvat's set under
 	// a name that is another card's.
-	if strings.HasPrefix(magicTailSet(product.DisplayName), "Salvat") {
+	tail := magicTailSet(product.DisplayName)
+	if strings.HasPrefix(tail, "Salvat") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+	// A front card is the art card on the face of a Jumpstart pack, not
+	// a card; its name is a prefix of a real one and would land on it.
+	if strings.HasSuffix(tail, "Front Cards") {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 	number, err := magicNumber(product)
