@@ -20,6 +20,14 @@ func TestPreprocessBuylistMagic(t *testing.T) {
 			},
 			wantSet: "DKM", wantNum: "42",
 		},
+		{
+			desc: "a Zendikar block basic told apart by its note",
+			card: CSIPriceEntry{
+				PID: "229637", Name: "Wastes A - 183", ItemSet: "Oath of the Gatewatch", Code: "OGW",
+				Notes: "This is NOT the full art version", Number: "183", Image: "WASTES183PROMO",
+			},
+			wantSet: "OGW", wantNum: "183a",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in, err := PreprocessBuylist(b, tt.card)

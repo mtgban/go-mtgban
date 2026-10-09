@@ -1102,6 +1102,9 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		// Strip the extra letter from the name
 		if magic.IsBasicLand(cardName) {
 			cardName = strings.Fields(cardName)[0]
+			if num != "" && cleanVar != "" {
+				variant = strings.TrimSpace(variant + " " + cleanVar)
+			}
 		}
 	case "Unstable":
 		variant = cleanVar
