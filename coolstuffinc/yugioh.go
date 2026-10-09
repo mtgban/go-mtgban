@@ -132,15 +132,50 @@ func yugiohImageCard(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, product 
 	if strings.EqualFold(code, product.Number) {
 		return ""
 	}
+	return yugiohRetry(b, card, strings.Replace(card.Variation, product.Number, code, 1), code)
+}
+
+// yugiohSKUCard retries a refused sell listing with the number its product
+// image names, and answers the id it lands on. The image file is the code with
+// its dash left out, so the number is the datastore's own that spells it:
+// LEHDENA23 is LEHD-ENA23 and MRL103 is MRL-103, which no pattern could split.
+func yugiohSKUCard(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, imgURL string) string {
+	match := riftboundImageStem.FindStringSubmatch(imgURL)
+	if match == nil {
+		return ""
+	}
+	tried := map[string]bool{}
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
+		if err != nil || tried[co.Number] || !strings.EqualFold(strings.ReplaceAll(co.Number, "-", ""), match[1]) {
+			continue
+		}
+		tried[co.Number] = true
+		id := yugiohRetry(b, card, co.Number+" "+card.Variation, co.Number)
+		if id != "" {
+			return id
+		}
+	}
+	return ""
+}
+
+// yugiohRetry matches the card again with another variation and answers the id
+// only if it is the printing at number and the same card, the catalog's deck
+// letter "Monster Reborn (A)" aside.
+func yugiohRetry(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, variation, number string) string {
 	retried := *card
-	retried.Variation = strings.Replace(card.Variation, product.Number, code, 1)
+	retried.Variation = variation
 	id, err := b.Match(&retried)
 	if err != nil {
 		return ""
 	}
 	co, err := b.GetUUID(id)
+	if err != nil || !strings.EqualFold(co.Number, number) {
+		return ""
+	}
 	head, _, _ := strings.Cut(card.Name, " (")
-	if err != nil || !mtgmatcher.Equals(co.Name, head) {
+	landed, _, _ := strings.Cut(co.Name, " (")
+	if !mtgmatcher.Equals(landed, head) {
 		return ""
 	}
 	return id

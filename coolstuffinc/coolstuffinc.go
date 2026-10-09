@@ -663,6 +663,12 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				} else {
 					cardID, err = csi.backend.Match(theCard)
 				}
+				if err != nil && csi.backend.Game == mtgmatcher.GameYuGiOh && runFinishes == nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && !csiAmbiguousNote.MatchString(notes) {
+					fromImage := yugiohSKUCard(csi.backend, theCard, imgURL)
+					if fromImage != "" {
+						cardID, err = fromImage, nil
+					}
+				}
 				if errors.Is(err, mtgmatcher.ErrUnsupported) {
 					return
 				} else if err != nil {

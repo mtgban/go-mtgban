@@ -42,6 +42,31 @@ func TestYugiohImageCardNeedsTheSameName(t *testing.T) {
 	}
 }
 
+// TestYugiohSKUCardReadsTheNumberOffTheImage pins the retry of a refused sell
+// listing with the number its product image names, where the wording gives
+// several printings of the card at once and the image file leaves the dash
+// out of the number.
+func TestYugiohSKUCardReadsTheNumberOffTheImage(t *testing.T) {
+	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
+
+	const dir = "https://res.cloudinary.com/csicdn/image/upload/v1/Images/Products/YuGiOh%20Art/"
+	for _, test := range []struct {
+		name, edition, rarity, img, want string
+	}{
+		{"Serpent Night Dragon", "Magic Ruler", "Secret Rare", "Magic%20Ruler/full/MRL103.jpg", "mrl-103_22981_unlimited"},
+		{"Monster Reborn", "Legendary Hero Decks", "Common", "Legendary%20Hero%20Decks/full/LEHDENA23.jpg", "lehd-ena23_177611_1stedition"},
+		{"Monster Reborn", "Legendary Hero Decks", "Common", "Legendary%20Hero%20Decks/full/LEHDENC16.jpg", "lehd-enc16_177613_1stedition"},
+		// An image naming another card's number answers nothing.
+		{"Monster Reborn", "Legendary Hero Decks", "Common", "Magic%20Ruler/full/MRL103.jpg", ""},
+	} {
+		card := yugiohListing(test.name, test.edition, "", "", test.rarity, false)
+		got := yugiohSKUCard(b, card, dir+test.img)
+		if got != test.want {
+			t.Errorf("%s (%s) landed %q, want %q", test.name, test.img, got, test.want)
+		}
+	}
+}
+
 // TestYugiohArtCardReachesTheEmblazonedPrinting pins the alternate art the
 // storefront describes by its border and lettering.
 func TestYugiohArtCardReachesTheEmblazonedPrinting(t *testing.T) {
