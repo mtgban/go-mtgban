@@ -1068,6 +1068,9 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 		if fabDuplicateStock[p.SKU] {
 			return "", mtgmatcher.ErrUnsupported
 		}
+		if fabUnmade[p.SKU] {
+			return "", mtgmatcher.ErrUnsupported
+		}
 		name := p.Name
 		if spelled, found := fabNames[name]; found {
 			name = spelled
@@ -1784,6 +1787,18 @@ var fabInserts = map[string]bool{
 var fabDuplicateStock = map[string]bool{
 	"SGL-FAB-ROS-027a-ENN": true,
 	"SGL-FAB-ROS-027b-ENN": true,
+}
+
+// fabUnmade are the skus SCG lists for something no datastore row can be:
+// a Rainbow Foil of two cards TCGplayer prints only in Normal and Cold Foil
+// (Hyper Driver (Red) DYN110, Flat Trackers HVY155), and the Mastery Pack
+// sheets of tokens and hero cards sold as one product (MPG H01, MPW 134 to
+// 154) that name no single printing.
+var fabUnmade = map[string]bool{
+	"SGL-FAB-DYN-110-ENR":             true,
+	"SGL-FAB-HVY-155-ENR":             true,
+	"SGL-FAB-MPG-H01-ENN":             true,
+	"SGL-FAB-MPW-134_135_154_154-ENN": true,
 }
 
 // fabArtPositions are the nine pieces the Antiquity Pack art cards cut a
