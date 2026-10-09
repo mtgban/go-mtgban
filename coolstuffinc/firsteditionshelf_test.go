@@ -46,27 +46,6 @@ func TestFirstEditionShelfReachesTheRun(t *testing.T) {
 	}
 }
 
-// TestFirstEditionShelfRefusesTheOtherRun pins the refusal that keeps reading
-// the shelf safe: a card the set has no first-edition row for is refused
-// rather than answered with the unlimited printing.
-func TestFirstEditionShelfRefusesTheOtherRun(t *testing.T) {
-	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
-
-	// Machamp is the one Base Set card with no shadowless printing - its
-	// first-edition stamp sits on a shadowed card - so the run names nothing
-	// the catalog can answer with.
-	shelf, run := firstEditionShelf("1st Edition Base Set")
-	card := pokemonListing(b, "Machamp - 8/102", shelf, "", false)
-	if card == nil {
-		t.Skip("the listing preprocessed to nothing")
-	}
-	id, err := matchRun(b, card, run)
-	if err == nil {
-		co, _ := b.GetUUID(id)
-		t.Errorf("matchRun = %q (finish %q), want a refusal", id, co.Finish)
-	}
-}
-
 // A shelf naming no run is left exactly as it was.
 func TestFirstEditionShelfLeavesOtherShelves(t *testing.T) {
 	shelf, run := firstEditionShelf("Fossil")

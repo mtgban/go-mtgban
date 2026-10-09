@@ -68,6 +68,24 @@ func numberedListing(name string) (string, string) {
 	return head, tail
 }
 
+// pokemonCatalogShelves names the listings this storefront files on a main
+// or promo shelf for printings the catalog keeps on another: the listing's
+// own name and shelf (and a marker its note has to carry, "" for none), then
+// the card to ask for. All of them are holo printings and nothing else.
+var pokemonCatalogShelves = []struct {
+	listing, shelf, marker   string
+	name, edition, variation string
+}{
+	{"Machamp - 8/102", "Base Set (Shadowless)", "", "Machamp - 8/102", "Deck Exclusives", "Base Set Shadowless"},
+	{"Machamp - 8/102", "Base Set", "Stamp w/ Shadow", "Machamp - 8/102", "Deck Exclusives", ""},
+	{"Ancient Mew - Movie Promo", "WOTC Black Star Promos", "", "Ancient Mew", "Miscellaneous Cards & Products", ""},
+	{"Darkness Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Darkness Energy", "Deck Exclusives", "2017 Wave Foil"},
+	{"Fairy Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Fairy Energy", "Deck Exclusives", "2017 Wave Foil"},
+	{"Grass Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Grass Energy", "Deck Exclusives", "2017 Wave Foil"},
+	{"Lightning Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Lightning Energy", "Deck Exclusives", "2017 Wave Foil"},
+	{"Metal Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Metal Energy", "Deck Exclusives", "2017 Wave Foil"},
+}
+
 // pokemonListing reads a Pokemon listing the way the catalog names it. The
 // Classic Collection reprints are sold under Celebrations with the
 // collection in the note; the special energies are named "Special Metal
@@ -79,6 +97,11 @@ func numberedListing(name string) (string, string) {
 // "Alakazam E4"; and the metal cards are named for the metal, "Metal Mew ex"
 // for the catalog's Mew ex labelled a metal card.
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
+	for _, r := range pokemonCatalogShelves {
+		if name == r.listing && edition == r.shelf && strings.Contains(variation, r.marker) {
+			return &mtgmatcher.InputCard{Name: r.name, Edition: r.edition, Variation: r.variation, Foil: true}
+		}
+	}
 	if edition == "Pokemon Oversized Cards" {
 		edition = "Jumbo Cards"
 		name = promoProgrammeNumber.ReplaceAllString(strings.TrimSuffix(name, " Jumbo Size"), "$1")
@@ -308,6 +331,7 @@ var pokemonRespellings = strings.NewReplacer(
 	"Delta Species Rainbow Energy", "Delta Rainbow Energy",
 	"Kyurem 43/113", "Kyurem - 43/113",
 	"Vivilion", "Vivillon",
+	"Rayquaza-GX (Shiny) - 177a", "Rayquaza-GX (Alt Art) - 177a",
 )
 
 var (

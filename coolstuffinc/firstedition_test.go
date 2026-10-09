@@ -55,11 +55,16 @@ func TestConditionRunReachesTheRun(t *testing.T) {
 func TestMatchRunRefusesTheOtherRun(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 
-	// This card has no first-edition printing, so the wording names nothing
-	// the catalog can answer with.
-	card := pokemonListing(b, "Pikachu V - 43/172", "SWSH08: Brilliant Stars", "", false)
+	// Base Set holds only the unlimited run, which answers the listing asked
+	// plainly, so the run names nothing the catalog can answer with.
+	card := pokemonListing(b, "Charizard - 4/102", "Base Set", "", false)
 	if card == nil {
-		t.Skip("the listing preprocessed to nothing")
+		t.Fatal("the listing preprocessed to nothing")
+	}
+	plain := *card
+	_, err := b.Match(&plain)
+	if err != nil {
+		t.Fatalf("Match = %v, want the unlimited printing", err)
 	}
 	id, err := matchRun(b, card, conditionRun("1st Edition"))
 	if err == nil {
