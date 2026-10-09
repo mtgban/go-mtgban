@@ -29,6 +29,8 @@ var onePieceDons = map[int]struct{ edition, label string }{
 	768199: {"", "One Piece Film RED Promo"},
 	873734: {"", "Nico Robin"},
 	873735: {"", "Nico Robin Gold"},
+	873730: {"", "Heroines Special Set"},
+	873731: {"", "Heroines Special Set Gold"},
 	873738: {"", "Boa Hancock"},
 	873739: {"", "Boa Hancock Gold"},
 	877822: {"One Piece Promotion Cards", "Japanese Version 3rd Anniversary Set"},
