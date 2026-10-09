@@ -303,6 +303,23 @@ var etchedPrintings = map[int]struct{ set, number string }{
 	680704: {"SLD", "1116"}, // Plaguecrafter
 	680709: {"SLD", "1117"}, // Thoughtseize
 	680713: {"SLD", "1115"}, // Doomsday
+
+	// Secret Lair Drop Series
+	674316: {"SLD", "1053"}, // Talisman of Dominance
+	674320: {"SLD", "1055"}, // Talisman of Impulse
+	674319: {"SLD", "1056"}, // Talisman of Unity
+	674311: {"SLD", "1057"}, // Talisman of Hierarchy
+	674315: {"SLD", "1058"}, // Talisman of Creativity
+	674308: {"SLD", "1059"}, // Talisman of Resilience
+	674312: {"SLD", "1060"}, // Talisman of Conviction
+	674324: {"SLD", "1061"}, // Talisman of Curiosity
+	609643: {"SLD", "163"},  // Razaketh, the Foulblooded
+	666814: {"SLD", "305"},  // Ravenous Chupacabra
+	666813: {"SLD", "306"},  // Managorger Hydra
+	666810: {"SLD", "309"},  // Winding Constrictor
+	609622: {"SLD", "316"},  // Fleet Swallower
+	660446: {"SLD", "328"},  // Snow-Covered Mountain
+	674280: {"SLD", "46"},   // Plains
 }
 
 // unplacedProducts are Magic products no evidence places on a printing: the
