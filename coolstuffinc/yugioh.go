@@ -30,6 +30,8 @@ var yugiohWording = strings.NewReplacer(
 	"GB1-001", "GBI-001",
 	"(No Stamp ", "(",
 	" - No Stamp", "",
+	"(Normal Art) Dragon Art", "A Alternate Art",
+	"(Alt Art) Hero Art", "B HERO Art",
 )
 
 // yugiohNumbers holds the numbers the buylist mistypes, keyed by name and the
