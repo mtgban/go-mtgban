@@ -115,9 +115,9 @@ type Gamenerdz struct {
 	inventory     mtgban.InventoryRecord
 	buylist       mtgban.BuylistRecord
 
-	// retailIDs holds the TCGplayer id each Magic retail product carries,
-	// by the storefront's own product id. The buylist record of the same
-	// product shares that id and carries no TCGplayer id of its own.
+	// retailIDs holds the TCGplayer id each retail product carries, by the
+	// storefront's own product id. The buylist record of the same product
+	// shares that id and carries no TCGplayer id of its own.
 	retailIDs map[string]int64
 }
 
@@ -248,23 +248,21 @@ var staleTCGIDs = map[int64]int64{
 // carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
 	etched := gn.backend.Game == mtgmatcher.GameMagic && saysEtched(product)
-	if gn.backend.Game == mtgmatcher.GameMagic {
-		tcgID := product.ProductData.TCGProductID
-		if mode == modeRetail {
-			gn.retailIDs[product.ID] = tcgID
-		} else {
-			tcgID = gn.retailIDs[product.ID]
-		}
-		live, found := staleTCGIDs[tcgID]
-		if found {
-			tcgID = live
-		}
-		if tcgID != 0 {
-			foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
-			cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
-			if err == nil && (mode == modeRetail || gn.namesCard(cardID, product)) {
-				return cardID, nil
-			}
+	tcgID := product.ProductData.TCGProductID
+	if mode == modeRetail {
+		gn.retailIDs[product.ID] = tcgID
+	} else {
+		tcgID = gn.retailIDs[product.ID]
+	}
+	live, found := staleTCGIDs[tcgID]
+	if found {
+		tcgID = live
+	}
+	if gn.backend.Game == mtgmatcher.GameMagic && tcgID != 0 {
+		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
+		cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
+		if err == nil && (mode == modeRetail || gn.namesCard(cardID, product.DisplayName, magicName(gn.backend, product.DisplayName))) {
+			return cardID, nil
 		}
 	}
 
@@ -286,6 +284,15 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		retried, found := retryPokemon(gn.backend, product, theCard)
 		if found {
 			cardID, err = retried, nil
+		}
+	}
+	// The other games answer by wording, and where it turns a product down
+	// the id may still place it, as long as it names the same card and does
+	// not contradict the number the wording wrote.
+	if err != nil && gn.backend.Game != mtgmatcher.GameMagic && !errors.Is(err, mtgmatcher.ErrUnsupported) && tcgID != 0 {
+		idCard, idErr := gn.backend.MatchIDFinish(strconv.FormatInt(tcgID, 10), product.SelectedFinish)
+		if idErr == nil && gn.namesCard(idCard, product.DisplayName, theCard.Name) && !gn.numberConflicts(idCard, theCard.Variation) {
+			cardID, err = idCard, nil
 		}
 	}
 	if err == nil && gn.backend.Game == mtgmatcher.GameOnePiece && onePieceCodeless(product.DisplayName) && !landedOnLeader(gn.backend, cardID) {
@@ -317,18 +324,46 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 }
 
 // namesCard reports whether a printing is the card a display name writes: its
-// name is in the display, or the display's name is the front of it. A flavor
-// name before the dash ("Torgal, Clive's Companion - Yoshimaru, Ever
-// Faithful") and a double-faced card's other face both pass.
-func (gn *Gamenerdz) namesCard(cardID string, product GNProduct) bool {
+// name is in the display, or the card name read off the display is the front
+// of it. A flavor name before the dash ("Torgal, Clive's Companion -
+// Yoshimaru, Ever Faithful") and a double-faced card's other face both pass.
+func (gn *Gamenerdz) namesCard(cardID, displayName, cardName string) bool {
 	co, err := gn.backend.GetUUID(cardID)
 	if err != nil {
 		return false
 	}
 	landed := mtgmatcher.Normalize(co.Name)
-	name := mtgmatcher.Normalize(magicName(gn.backend, product.DisplayName))
-	return strings.Contains(mtgmatcher.Normalize(product.DisplayName), landed) ||
+	name := mtgmatcher.Normalize(cardName)
+	return strings.Contains(mtgmatcher.Normalize(displayName), landed) ||
 		name != "" && strings.Contains(landed, name)
+}
+
+// numberConflicts reports whether the number a variation opens with is not the
+// printing's own. Only the digits are compared, so "95" and "095a" agree and
+// "98" and "105" do not; a variation or a printing with no digits says nothing.
+func (gn *Gamenerdz) numberConflicts(cardID, variation string) bool {
+	co, err := gn.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	fields := strings.Fields(variation)
+	if len(fields) == 0 {
+		return false
+	}
+	written, _, _ := strings.Cut(fields[0], "/")
+	wrote := numberDigits(written)
+	return wrote != "" && numberDigits(co.Number) != "" && wrote != numberDigits(co.Number)
+}
+
+// numberDigits is the digits of a collector number without their leading zeros.
+func numberDigits(number string) string {
+	digits := strings.Map(func(r rune) rune {
+		if r >= '0' && r <= '9' {
+			return r
+		}
+		return -1
+	}, number)
+	return strings.TrimLeft(digits, "0")
 }
 
 // finishPrinted reports whether the printing a product resolved to was sold in
