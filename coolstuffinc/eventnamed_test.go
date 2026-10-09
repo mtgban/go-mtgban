@@ -39,6 +39,12 @@ func TestEventNamed(t *testing.T) {
 			wantSet: "OP-PR", wantPromos: [][]string{{"dodgersxonepiece"}},
 		},
 		{
+			desc: "the reprint set whose full art shares the number",
+			name: "Boa Hancock - 013 (Best Selection Vol. 2)", number: "ST03-013 Full Art Legs Crossed",
+			edition: "ST03 - Starter Deck: The Seven Warlords of the Sea",
+			wantSet: "OP-PR", wantPromos: [][]string{{"premiumcardcollection"}},
+		},
+		{
 			desc: "and the plain listing beside them is unmoved",
 			name: "Monkey.D.Luffy (073)", number: "OP07-073",
 			edition: "OP07 - 500 Years in the Future",
