@@ -18,6 +18,33 @@ var yugiohCodes = strings.NewReplacer(
 	"HL3-EN", "HL03-EN",
 )
 
+// yugiohWording corrects the words a listing's name or note types the catalog
+// cannot read. The matcher takes a bare number in the wording for the
+// collector number, so "Version 1 - " and "4 Corners" are rewritten away from
+// it; "No Stamp" says the opposite of the word the stamp promo type is read
+// from; and GB1-001 is the number GBI-001 mistyped.
+var yugiohWording = strings.NewReplacer(
+	"Version 1 - ", "",
+	"Version 2 - ", "",
+	"Flowers in 4 Corners", "Flowers in Four Corners",
+	"GB1-001", "GBI-001",
+	"(No Stamp ", "(",
+	" - No Stamp", "",
+)
+
+// yugiohListing answers the card a Yu-Gi-Oh listing describes. The variation
+// is the note on the sell listing and the number and note on the buylist, and
+// notes is the note alone, which tells the print runs apart.
+func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *mtgmatcher.InputCard {
+	variation = jpArtWording(yugiohWording.Replace(variation))
+	return &mtgmatcher.InputCard{
+		Name:      catalogColor(catalogSpelling(jpArtWording(yugiohWording.Replace(name)))),
+		Edition:   printRunEdition(edition, notes),
+		Variation: strings.TrimSpace(variation + " " + catalogRarity(rarity)),
+		Foil:      foil,
+	}
+}
+
 // yugiohArtNotes names the artwork a note describes as the catalog's
 // qualifier for it. The Limited Pack World Championship 2026 prints an
 // alternate art of five Secret Rares, and the note describes its border and
