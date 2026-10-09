@@ -68,7 +68,14 @@ func (mp *Index) price(singles []Product) {
 			}
 
 			uuid := mp.backend.ConvertID(mtgmatcher.IDSpaceScryfall, card.ScryfallID)
-			cardID, err := mp.backend.MatchID(uuid, finish.foil)
+			// A printing sold etched only quotes its market in the foil
+			// field, and its foil flag would route to the other number.
+			etchedOnly := false
+			if finish.foil {
+				printing, err := mp.backend.GetUUID(uuid)
+				etchedOnly = err == nil && printing.Etched && !printing.Foil
+			}
+			cardID, err := mp.backend.MatchID(uuid, finish.foil, etchedOnly)
 			if err != nil {
 				if !isUnindexed(mp.backend, card) {
 					mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
