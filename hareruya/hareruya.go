@@ -242,6 +242,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 		}
 
 		duplicate := strings.Contains(title, setBooster) || strings.Contains(title, secretLairDeck)
+		class := cartClass(s)
 
 		deductions := []float64{1, 0.8, 0.5}
 		for i, deduction := range deductions {
@@ -254,6 +255,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 					PriceRatio: priceRatio,
 					URL:        "https://www.hareruyamtg.com" + link,
 					OriginalID: id,
+					InstanceID: class,
 				},
 			}
 
@@ -332,7 +334,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				price := row.Price * ha.exchangeRate
 				qty := row.Quantity
 
-				link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
+				link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + row.Class
 				out := responseChan{
 					cardID: cardID,
 					invEntry: &mtgban.InventoryEntry{
@@ -341,7 +343,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 						Quantity:   qty,
 						URL:        link,
 						OriginalID: product.Product,
-						InstanceID: product.ProductClass,
+						InstanceID: row.Class,
 						SellerName: availableMarketNames[0],
 					},
 				}
@@ -394,6 +396,16 @@ type Row struct {
 	Price     float64
 	// Graded marks a copy in a grading service's slab.
 	Graded bool
+	// Class is the product class the row's cart button adds: each
+	// condition of a lot has its own.
+	Class string
+}
+
+// cartClass is the product class a listing's own cart button adds, the one
+// beside its main row rather than an extra condition row's, for the store
+// and the buylist alike.
+func cartClass(item *goquery.Selection) string {
+	return item.Find(".itemUserAct__cart [data-productclass]").AttrOr("data-productclass", "")
 }
 
 // haCondition maps Hareruya's condition text to our grade, and reports
@@ -476,6 +488,11 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 		return nil, err
 	}
 
+	return ha.lazyResults(doc), nil
+}
+
+// lazyResults reads the lazy endpoint's answer, a block per lot.
+func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 	var out []LazyResult
 
 	doc.Find(".itemList").Each(func(i int, s *goquery.Selection) {
@@ -525,6 +542,7 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				Condition: grade,
 				Quantity:  qty,
 				Graded:    graded,
+				Class:     cartClass(s),
 			})
 			//lint:ignore SA4004 the single iteration is the point
 			break
@@ -559,13 +577,14 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				Condition: grade,
 				Quantity:  qty,
 				Graded:    graded,
+				Class:     se.Find(".addCart[data-productclass]").AttrOr("data-productclass", ""),
 			})
 		})
 
 		out = append(out, result)
 	})
 
-	return out, nil
+	return out
 }
 
 func (ha *Hareruya) getCardSets(ctx context.Context) ([]string, error) {
