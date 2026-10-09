@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path"
 	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -164,6 +166,46 @@ func prereleaseOnPromoLine(b *mtgmatcher.Backend, cardName, edition, number stri
 		}
 	}
 	return number == "" || len(b.MatchInSetNumber(cardName, edition, number)) != 1
+}
+
+// basicArtSets names the set code of the shelves that number a basic land's
+// art variants with a letter.
+var basicArtSets = map[string]string{
+	"DKM":          "DKM",
+	"IE":           "CEI",
+	"CE":           "CED",
+	"Summer Magic": "SUM",
+}
+
+// reArtLetter reads the letter a basic land's title states for its art, in
+// parentheses before the set tag, bare before the artist, or after the tag.
+var reArtLetter = regexp.MustCompile(`》\(?([A-C])[)（]|\]([A-C])(?:\s|$)`)
+
+// basicArtNumber returns the collector number of the art variant a title
+// names by letter: the letter's place among the set's printings of the
+// basic land, in number order. It returns "" for a title with no letter.
+func basicArtNumber(b *mtgmatcher.Backend, setCode, cardName, title string) string {
+	m := reArtLetter.FindStringSubmatch(title)
+	if m == nil {
+		return ""
+	}
+	letter := m[1] + m[2]
+
+	var numbers []int
+	for _, card := range b.MatchInSet(cardName, setCode) {
+		n, err := strconv.Atoi(card.Number)
+		if err == nil {
+			numbers = append(numbers, n)
+		}
+	}
+	slices.Sort(numbers)
+	numbers = slices.Compact(numbers)
+
+	i := int(letter[0] - 'A')
+	if i >= len(numbers) {
+		return ""
+	}
+	return strconv.Itoa(numbers[i])
 }
 
 // Preprocess turns a storefront product into the card description the matcher
@@ -340,6 +382,14 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 
 		variant = strings.Replace(variant, "RetroF ", "Retro Frame ", 1)
 		cardName = strings.TrimPrefix(cardName, "【Gold Frame】")
+	}
+
+	setCode, found := basicArtSets[edition]
+	if found && magic.IsBasicLand(cardName) {
+		number := basicArtNumber(b, setCode, cardName, product.ProductName)
+		if number != "" {
+			variant = number
+		}
 	}
 
 	if strings.Contains(product.ProductName, "シリアル入り") {
