@@ -53,6 +53,11 @@ func TestResolvePromoShelfPrinting(t *testing.T) {
 		// A con-exclusive Counterspell whose scryfall id names the
 		// URL/Convention Promos printing instead of MagicFest 2026's own.
 		{"MagicFest 2026's Counterspell", "SGL-MTG-PRM-FEST_2026_002-ENF", "Counterspell", true, "f2a7042f-a6f0-4e77-86a2-5eb0d2587363", "PF26", "5"},
+
+		// Game Edition Cloud carries the Pro Tour product's identifiers,
+		// and the MagicCon Tifa reads as the Final Fantasy prerelease.
+		{"Game Edition Cloud, whose ids name the Pro Tour promo", "SGL-MTG-PRM-GAME_2025_001-ENF", "Cloud, Midgar Mercenary", true, "570ca3e8-1563-4cef-8559-776982a78838", "PMEI", "2025-21"},
+		{"MagicCon's Tifa Lockhart", "SGL-MTG-PRM-PTQ_2025_002-ENF", "Tifa Lockhart", true, "", "PF25", "9"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			finish, group := "Non-foil", "Non-foil"

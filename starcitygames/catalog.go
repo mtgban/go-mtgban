@@ -1180,6 +1180,11 @@ var promoShelfPrintings = map[string]struct{ set, number string }{
 	"RC_LTR_301":     {"LTR", "301"},
 	"GBUN_MSH_432":   {"MSH", "432"},
 	"DD3_048":        {"PLST", "GVL-48"},
+
+	// Game Edition Cloud carries the Pro Tour product's identifiers, and
+	// the MagicCon Tifa has none and reads as the Final Fantasy prerelease.
+	"GAME_2025_001": {"PMEI", "2025-21"},
+	"PTQ_2025_002":  {"PF25", "9"},
 }
 
 // idContradictsProduct reports whether the resolved printing lacks what the
