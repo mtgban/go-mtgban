@@ -323,6 +323,15 @@ func finishSibling(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, foil bool) 
 	return number
 }
 
+// eternalNonfoil maps the number the catalog files an Avatar Eternal card
+// under, foil only, to the alternative printing it sells in nonfoil.
+var eternalNonfoil = map[string]string{
+	"210": "265", "211": "266", "214": "268", "215": "269", "218": "273",
+	"219": "274", "220": "275", "221": "276", "234": "277", "238": "280",
+	"239": "281", "240": "282", "244": "285", "245": "286", "246": "287",
+	"247": "288",
+}
+
 // errForeignListing marks a listing in a language the catalog never printed
 // the card in, which has no printing of its own to be priced against.
 var errForeignListing = errors.New("foreign listing")
@@ -1022,6 +1031,9 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 		variation = strings.TrimSpace(variation + " Etched")
 	case !finishAsked(printing, isFoil):
 		sibling := finishSibling(b, printing, isFoil)
+		if sibling == "" && !isFoil && printing.SetCode == "TLE" {
+			sibling = eternalNonfoil[printing.Number]
+		}
 		if sibling == "" {
 			return nil, errUnprintedFinish
 		}
