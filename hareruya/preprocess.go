@@ -828,6 +828,7 @@ var editionTable = map[string]string{
 	"Etched Foil 30周年プロモ": "P30M etched frame",
 	"GPプロモ":               "Grand Prix Promos",
 	"Guru Lnad":           "Guru Land",
+	"Marvel Legend Promo": "LMAR",
 	"MCQプロモ":              "MCQ Promo",
 	"Nationalプロモ":         "National Promos",
 	"PWシンボル付き再版":          "Mystery Booster/The List",
@@ -934,6 +935,12 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Sunken Hollow":    {"": {Edition: "PSS1", Variant: "249"}},
 	},
 	"Other event promo": {
+		"Jedit Ojanen": {
+			"Textless マジックリーグ": {
+				Edition: "PL22",
+				Variant: "2",
+			},
+		},
 		"Swords to Plowshares": {
 			"Borderless その他イベント記念系": {
 				Edition: "PF25",
@@ -1053,6 +1060,10 @@ var promoMap = map[string]map[string]map[string]struct {
 				Edition: "PLG24",
 				Variant: "1",
 			},
+			"Textless": {
+				Edition: "PLG24",
+				Variant: "1",
+			},
 		},
 		"Mutavault": {
 			"PCMP": {
@@ -1103,6 +1114,12 @@ var promoMap = map[string]map[string]map[string]struct {
 	// or Standard Showdown printing, filed by year, the Spotlight Series
 	// set, and the Final Fantasy Standard Showdown set.
 	"Showdown Promo": {
+		"Wood Elves": {
+			"Extended Art スタンダード・ショーダウン": {
+				Edition: "PW26",
+				Variant: "16",
+			},
+		},
 		"Squall, SeeD Mercenary": {
 			"Borderless スタンダード・ショーダウン": {
 				Edition: "PSS5",
@@ -1353,6 +1370,13 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 		"Counterspell": {
 			"旧枠 MagicConプロモ": {Edition: "PF26", Variant: "5"},
+			"Full Art 2":     {Edition: "PURL", Variant: "2"},
+		},
+		"Lightning Bolt": {
+			"MagicConプロモ": {Edition: "PF25", Variant: "13"},
+		},
+		"Lotus Petal": {
+			"P30M etched frame": {Edition: "P30M", Variant: "2"},
 		},
 		"Tifa Lockhart": {
 			"Borderless Premier Play": {Edition: "PF25", Variant: "9"},
@@ -1421,6 +1445,12 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 	},
 	"MagicCon Promo": {
+		"Lightning Bolt": {
+			"MagicConプロモ": {
+				Edition: "PF25",
+				Variant: "13",
+			},
+		},
 		"Sokka, Bold Boomeranger": {
 			"Extended Art MagicConプロモ": {
 				Edition: "PURL",
@@ -1566,6 +1596,34 @@ var promoMap = map[string]map[string]map[string]struct {
 			"印刷ミス": {
 				Edition: "PTOR",
 				Variant: "67†a",
+			},
+			"": {
+				Edition: "PTOR",
+				Variant: "67†a",
+			},
+		},
+	},
+	"PRM": {
+		"Rampant Growth": {
+			"Etched Foil 1": {
+				Edition: "PW23",
+				Variant: "9",
+			},
+		},
+	},
+	"Mystery Booster/The List": {
+		"Lightning Bolt": {
+			"Textless Magic Fest": {
+				Edition: "PLST",
+				Variant: "PF19-1",
+			},
+		},
+	},
+	"Japan Junior Tournament": {
+		"Serra Avatar": {
+			"": {
+				Edition: "PSUS",
+				Variant: "2",
 			},
 		},
 	},
