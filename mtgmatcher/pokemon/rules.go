@@ -2139,6 +2139,7 @@ func numberMatchesPrefixed(b *mtgmatcher.Backend, input string, card *mtgmatcher
 
 // foldNumber reduces a collector number to the letters and digits that carry
 // it, dropping the set total and the zeros each digit run is padded with.
+// The two Unown that are numbered "!" and "?" are carried by those marks.
 func foldNumber(number string) string {
 	number = strings.Split(number, "/")[0]
 	var out strings.Builder
@@ -2151,7 +2152,7 @@ func foldNumber(number string) string {
 			}
 			digits = true
 			out.WriteRune(r)
-		case r >= 'a' && r <= 'z':
+		case r >= 'a' && r <= 'z', r == '!', r == '?':
 			digits = false
 			out.WriteRune(r)
 		}
