@@ -26,6 +26,7 @@ var cardTable = map[string]string{
 	"Rohgahh di Kher":        "Rohgahh of Kher Keep",
 	"El-Ajjaj":               "El-Hajjâj",
 	"Immagina Fantasma":      "Phantasmal Image",
+	"Distese di Llanowar":    "Llanowar Wastes",
 
 	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
 	"Mourning Patrol // Mourning Apparition":             "Mourning Patrol",
@@ -136,6 +137,8 @@ var editionTable = map[string]string{
 	"Duel Deck: Elfi Vs Goblin":        "Duel Decks: Elves vs. Goblins",
 	"Duel Deck: Elspeth Vs Tezzereth":  "Duel Decks: Elspeth vs. Tezzeret",
 	"Duel Decks: Cavalieri vs. Draghi": "Duel Decks: Knights vs. Dragons",
+
+	"Commander Legends: Battle for Baldur's Gate: Promos": "Battle for Baldur's Gate Promos",
 
 	"Eight Edition":  "Eighth Edition",
 	"Fifth Ediiton":  "Fifth Edition",
