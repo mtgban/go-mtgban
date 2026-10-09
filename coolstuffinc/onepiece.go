@@ -85,6 +85,15 @@ var onePiecePIDs = map[string]string{
 	"384878": "541670", // Rebecca OP05-091 (SP) In Sunflower Field = OP06 SP
 	"423973": "654571", // Rebecca OP05-091 (SP) Stitched Together Border = PRB-02 SP
 	"386653": "539201", // Scratchmen Apoo ST02-008 Offline Regional 2024: the feed's Number says ST03-008
+	"354624": "450300", // Monkey.D.Luffy P-001 (Super Pre-Release) nonfoil = participant, no stamp
+	"378075": "527027", // Monkey.D.Luffy ST01-012 (OP05 1st Anniversary Special) = OP05 Alternate Art
+	"417100": "632776", // Monkey.D.Luffy OP09-061 (Starter Deck) = ST-26
+	"417106": "632819", // Marshall.D.Teach OP09-081 (Starter Deck) = ST-27
+	"417112": "633760", // Shanks OP09-001 (Starter Deck) = ST-23
+	"417118": "633944", // Buggy OP09-042 (Starter Deck) = ST-25
+	"417125": "634599", // Jewelry Bonney OP07-019 (Starter Deck) = ST-24
+	"417130": "634623", // Yamato OP06-022 (Starter Deck) = ST-28
+	"434532": "681614", // Jewelry Bonney P-113 (Heroines Battle Pack - Winner) foil = Winner Pack
 	"386661": "530120", // Vol. 2 DON Luffy & Kaido = Manga, beside 386659 = Silhouette
 	"397181": "577568", // OP08 DON "My Beloved Son..." = Alternate Art, beside 398704 and 398705
 }
