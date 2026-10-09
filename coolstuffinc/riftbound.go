@@ -14,7 +14,7 @@ var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
 // riftboundEventMarkers are the brackets a promo's name carries for the
 // event that handed it out, which the catalog files on its Release Event
 // Promos shelf, apart from the promo shelf's own printing at the same number.
-var riftboundEventMarkers = []string{"(Prerelease)", "(Origins Stamp)"}
+var riftboundEventMarkers = []string{"(Prerelease)", "(Origins Stamp)", "(Release Event)"}
 
 // riftboundNotes spells the notes this storefront words with a year the
 // catalog's promo does not carry, which the matcher would read as a number.
