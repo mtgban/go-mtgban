@@ -653,7 +653,7 @@ func cleanVariant(variant string) string {
 	variant = strings.Replace(variant, ")", "", -1)
 	variant = strings.Replace(variant, ",", "", -1)
 	variant = strings.Replace(variant, ".", "", -1)
-	variant = strings.Replace(variant, "- ", "", -1)
+	variant = strings.Replace(variant, "- ", " ", -1)
 	variant = strings.Replace(variant, "  ", " ", -1)
 	variant = strings.Replace(variant, "\r\n", " ", -1)
 	variant = strings.Replace(variant, "\n", " ", -1)
