@@ -113,6 +113,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 				Quantity:   card.Quantity,
 				URL:        link,
 				OriginalID: card.ID,
+				InstanceID: card.ID,
 			}
 			err = mint.inventory.Add(cardID, out)
 			if err != nil {
@@ -147,6 +148,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 					PriceRatio: priceRatio,
 					URL:        link,
 					OriginalID: card.ID,
+					InstanceID: card.ID,
 				}
 				err = mint.buylist.Add(cardID, out)
 				if err != nil {
