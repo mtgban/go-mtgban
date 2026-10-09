@@ -61,6 +61,13 @@ var pokemonCrossedLinks = map[int]bool{
 	651753: true, // Metal Energy, linked to the HGSS basic
 }
 
+// pokemonByID answers a Pokemon product the datastore records by its
+// Cardmarket id; an empty id leaves the product to the bridge and its
+// wording.
+func (r *resolver) pokemonByID(product *cm.Product) string {
+	return r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, strconv.Itoa(product.IDProduct))
+}
+
 // pokemonForeign reports whether an expansion is one of those catalogs.
 func pokemonForeign(expansion string) bool {
 	_, found := pokemonForeignExpansions[expansion]

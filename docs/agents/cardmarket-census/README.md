@@ -74,9 +74,9 @@ own Cardmarket id where it has one, and CardTrader's link otherwise:
 
 Not every game's resolver reads the datastore's own Cardmarket id. One
 Piece, Lorcana and Riftbound read it first, and Magic right after its
-`versionPrintings` table. Pokemon, Yu-Gi-Oh and Flesh and Blood never read
-it. So an `own-id` row in those three is a cross-check, not the path
-production took.
+`versionPrintings` table, and Pokemon before CardTrader's link. Yu-Gi-Oh
+and Flesh and Blood never read it. So an `own-id` row in those two is a
+cross-check, not the path production took.
 
 ## 4. Classify before fixing
 
@@ -147,7 +147,7 @@ check row by row:
 Before sending, confirm that the fix will change a landing:
 
 - **Publishing a `cardmarketId` only moves games whose resolver reads it.**
-  One Piece does; Pokemon does not.
+  One Piece and Pokemon do; Yu-Gi-Oh and Flesh and Blood do not.
 - **One Piece's `claimByID` and `giveWay` read only `tcgLink`**, the
   bridge and then `onePieceEventLinks`, never the published id. A
   published id there can still lose to a wrong CardTrader link, and that
