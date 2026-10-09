@@ -1104,6 +1104,7 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	// shares its name, number and label - narrows by it last, among
 	// whatever the mark, label and qualifier tiers above left standing.
 	candidates = tierByYear(inCard, wording, candidates)
+	candidates = tierByFinish(wording, candidates)
 	// TCGplayer sells a handful of stamped promos twice, once at their own
 	// size and once as an oversized Jumbo Card, with nothing but the size
 	// to tell the two apart; a wording that never says so means the
@@ -1260,6 +1261,38 @@ func excludeJumbo(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Car
 		return candidates
 	}
 	return kept
+}
+
+// tierByFinish keeps, among copies still tied, the ones sold in the finish
+// the wording names: "Blaziken (Holo)" beside the plain Blaziken at the same
+// EX Battle Stadium number, two products nothing else tells apart. It only
+// reads a tie within one set and number: across several, the finish would be
+// picking between cards the wording never named.
+func tierByFinish(wording string, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(candidates) <= 1 {
+		return candidates
+	}
+	for _, card := range candidates {
+		if card.SetCode != candidates[0].SetCode || card.Number != candidates[0].Number {
+			return candidates
+		}
+	}
+	// "Non-Holo / Cosmos Holo" names both, and stays the ambiguity it is.
+	if describesPlain(wording) && strings.Count(strings.ToLower(wording), "holo") > 1 {
+		return candidates
+	}
+	var sold []mtgmatcher.Card
+	for _, card := range candidates {
+		plain := slices.Contains(card.Finishes, mtgmatcher.FinishNonfoil)
+		holo := mtgmatcher.NamedFinish(card.FoilUUIDs, "", "Holofoil") != ""
+		if (describesPlain(wording) && plain) || (describesHolo(wording) && holo) {
+			sold = append(sold, card)
+		}
+	}
+	if len(sold) > 0 {
+		return sold
+	}
+	return candidates
 }
 
 // tierByYear narrows candidates sharing a number and label by the bare year

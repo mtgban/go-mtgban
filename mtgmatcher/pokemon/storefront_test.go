@@ -141,6 +141,12 @@ func TestVersionWording(t *testing.T) {
 		{"a cosmos wording refuses a printing that cannot be one", mtgmatcher.InputCard{
 			Name: "Fezandipiti", Edition: "Theme Deck & Blisters Exclusives", Variation: "096 Cosmos Holo | 096/167"},
 			""},
+		{"a holo wording picks the product sold only as holofoil", mtgmatcher.InputCard{
+			Name: "Blaziken", Edition: "EX Battle Stadium", Variation: "3 Holo"},
+			"3_125113_holofoil"},
+		{"a non-holo wording picks the product sold as nonfoil", mtgmatcher.InputCard{
+			Name: "Blaziken", Edition: "EX Battle Stadium", Variation: "3 Non-Holo"},
+			"3_125112"},
 		{"a cosmos wording keeps a printing selling the holo", mtgmatcher.InputCard{
 			Name: "Eevee", Edition: "Wizards Black Star Promos", Variation: "011 Cosmos Holo 11"},
 			"11-53_85074_holofoil"},
