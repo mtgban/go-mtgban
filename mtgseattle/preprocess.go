@@ -152,6 +152,12 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 		if variant == "Winner" {
 			return nil, errors.New("unsupported")
 		}
+	case "Mystery Booster Cards":
+		number := mb1PLSTNumber(b, cardName)
+		if number != "" {
+			edition = "PLST"
+			variant = number
+		}
 	case "Core Set 2021":
 		if strings.Contains(variant, "Alternate Art") && mtgmatcher.ExtractNumber(variant) == "" {
 			variant = "Borderless"
@@ -177,4 +183,32 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
+}
+
+// mb1PLSTBooster is the Mystery Booster sealed product mb1PLSTNumber reads
+// booster contents from.
+const mb1PLSTBooster = "Mystery Booster Booster Pack (Retail Edition)"
+
+// mb1PLSTNumber answers which PLST printing Mystery Booster's own booster
+// bundles for cardName, or "" when the booster does not name it.
+func mb1PLSTNumber(b *mtgmatcher.Backend, cardName string) string {
+	for _, uuid := range b.GetSealedUUIDsInSet("MB1") {
+		co, err := b.GetUUID(uuid)
+		if err != nil || co.Name != mb1PLSTBooster {
+			continue
+		}
+
+		probs, err := b.GetProbabilitiesForSealed("MB1", uuid)
+		if err != nil {
+			return ""
+		}
+		for _, p := range probs {
+			card, err := b.GetUUID(p.UUID)
+			if err == nil && card.SetCode == "PLST" && card.Name == cardName {
+				return card.Number
+			}
+		}
+		return ""
+	}
+	return ""
 }
