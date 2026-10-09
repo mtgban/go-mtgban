@@ -281,6 +281,39 @@ func TestIndexFoilMarketNeedsAFoilFinish(t *testing.T) {
 	}
 }
 
+// TestPriceKeepsTheListedLanguage pins that a row is priced when its code
+// names the language of the printing its scryfall id resolves to, Phyrexian
+// included, and dropped when it names another one.
+func TestPriceKeepsTheListedLanguage(t *testing.T) {
+	b := withMagic(t)
+
+	rows := []Product{
+		{Name: "Elesh Norn, Mother of Machines", SetCode: "ONE", Number: "414",
+			ScryfallID: "09705595-47c6-4f7c-9351-4004bfa39218", LanguageID: "PH",
+			ConditionID: "NM", FinishID: "NF", LowPrice: 2725, AvailableQuantity: 4,
+			URL: "https://manapool.com/card/one/414/elesh-norn-mother-of-machines"},
+		{Name: "Marang River Regent // Coil and Catch", SetCode: "TDM", Number: "378",
+			ScryfallID: "484b5580-b179-4dce-8bdf-d714eb4635e5", LanguageID: "JA",
+			ConditionID: "NM", FinishID: "NF", LowPrice: 111, AvailableQuantity: 74,
+			URL: "https://manapool.com/card/tdm/378/marang-river-regent-coil-and-catch"},
+	}
+	mp := NewScraper(b)
+	mp.price(rows)
+
+	if len(mp.Inventory()) != 1 {
+		t.Fatalf("priced %d printings, want the Phyrexian one alone", len(mp.Inventory()))
+	}
+	for id := range mp.Inventory() {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatalf("GetUUID(%s) = %v", id, err)
+		}
+		if co.Language != "Phyrexian" {
+			t.Errorf("priced a %s printing, want Phyrexian", co.Language)
+		}
+	}
+}
+
 // TestPriceResolvesReversibleCardInTokenLookalikeSet pins that a listing named
 // "X // Y" in a set of real cards is not taken for a pairing of two tokens
 // because the set's code starts with a T: Marang River Regent // Coil and
