@@ -3944,6 +3944,7 @@ var ustVariants = map[string]map[string]string{
 		"1.3.x": "147c",
 		"t.1.8": "147d",
 		"0.0.2": "147e",
+		"s.s.2": "147e",
 		"1.1.7": "147f",
 	},
 	"Extremely Slow Zombie": {
