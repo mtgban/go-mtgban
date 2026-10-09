@@ -14,7 +14,7 @@ func TestPreprocessBasicLand(t *testing.T) {
 	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
 
 	for _, tt := range []struct {
-		desc, name, edition, imgURL, wantSet, wantNum string
+		desc, name, edition, variant, imgURL, wantSet, wantNum string
 	}{
 		{
 			desc:    "a lettered basic, the set code and number in the image",
@@ -57,9 +57,33 @@ func TestPreprocessBasicLand(t *testing.T) {
 			imgURL:  "https://s.cf.net/i/SwampCBRBa.jpg",
 			wantSet: "BRB", wantNum: "135",
 		},
+		{
+			// BFZ 255 is the full art, which CSI sells as its own product;
+			// a plain basic on the same digits is the "a" printing.
+			desc:    "a basic whose number also names a lettered sibling",
+			name:    "Island A",
+			edition: "Battle for Zendikar",
+			imgURL:  "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Battle%20for%20Zendikar/full/255.jpg",
+			wantSet: "BFZ", wantNum: "255a",
+		},
+		{
+			desc:    "a full-art basic named by an FA stem",
+			name:    "Forest",
+			edition: "Amonkhet",
+			imgURL:  "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Amonkhet/full/ForestFA.jpg",
+			wantSet: "AKH", wantNum: "254",
+		},
+		{
+			desc:    "an Anthology basic in the deck its notes name",
+			name:    "Swamp",
+			edition: "Duel Decks: Anthology",
+			variant: "Divine vs Demonic",
+			imgURL:  "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Duel%20Decks%20Anthology/full/swamp060dvd.jpg",
+			wantSet: "DVD", wantNum: "60",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(b, tt.name, tt.edition, "", tt.imgURL)
+			card, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.name, err)
 			}
@@ -80,19 +104,6 @@ func TestPreprocessBasicLand(t *testing.T) {
 
 	t.Run("a full-art basic whose image names no number of its own", func(t *testing.T) {
 		card, err := preprocess(b, "Mountain A", "Battle for Zendikar", "", "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Battle%20for%20Zendikar/full/MountainA.jpg")
-		if err != nil {
-			t.Fatalf("preprocess() = %v", err)
-		}
-		_, err = b.Match(card)
-		if err == nil {
-			t.Errorf("Match(%+v) unexpectedly succeeded, want an error", card)
-		}
-	})
-
-	// BFZ 255 (full-art) and 255a (non-full-art) share this stem; nothing
-	// says which one "Island A" is, so it must refuse rather than guess.
-	t.Run("a basic whose number also names a lettered sibling", func(t *testing.T) {
-		card, err := preprocess(b, "Island A", "Battle for Zendikar", "", "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Battle%20for%20Zendikar/full/255.jpg")
 		if err != nil {
 			t.Fatalf("preprocess() = %v", err)
 		}
