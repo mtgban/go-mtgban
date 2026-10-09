@@ -424,6 +424,12 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				continue
 			}
 		}
+		if ygoNoRow[bpID] {
+			co, err := ct.backend.GetUUID(cardID)
+			if err != nil || !mtgmatcher.Equals(co.Number, ygoBlueprintNumbers[bpID]) {
+				continue
+			}
+		}
 
 		// A starter deck's exclusive foil is its card's Holofoil, and only
 		// the version says a blueprint is one.
