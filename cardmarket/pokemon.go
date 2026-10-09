@@ -61,11 +61,34 @@ var pokemonCrossedLinks = map[int]bool{
 	651753: true, // Metal Energy, linked to the HGSS basic
 }
 
+// pokemonStampLinks names, by Cardmarket product id, the TCGplayer product
+// of the stamped, league and promo copies Cardmarket sells under the plain
+// card's name and number, which neither the bridge nor the wording tells
+// from the plain card.
+var pokemonStampLinks = map[int]int{
+	280585: 488813, 295325: 131300, 295411: 131301, 295426: 131303,
+	319255: 131861, 371657: 158422, 567076: 145860, 722693: 635612,
+	722697: 600060, 722699: 681598, 749041: 527882, 749909: 545659,
+	762531: 586555, 800144: 599656, 800837: 620552, 804338: 604492,
+	819347: 628291, 833946: 634333, 841258: 664140, 841273: 663020,
+	858716: 610125, 858724: 616155, 858734: 654647, 862171: 658501,
+	882856: 232876, 901195: 181559,
+}
+
 // pokemonByID answers a Pokemon product the datastore records by its
-// Cardmarket id; an empty id leaves the product to the bridge and its
-// wording.
+// Cardmarket id or pokemonStampLinks names; an empty id leaves the product
+// to the bridge and its wording.
 func (r *resolver) pokemonByID(product *cm.Product) string {
-	return r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, strconv.Itoa(product.IDProduct))
+	uuid := r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, strconv.Itoa(product.IDProduct))
+	if uuid != "" {
+		return uuid
+	}
+	tcgID, found := pokemonStampLinks[product.IDProduct]
+	if !found {
+		return ""
+	}
+	uuid, _ = r.backend.MatchID(strconv.Itoa(tcgID), false)
+	return uuid
 }
 
 // pokemonForeign reports whether an expansion is one of those catalogs.
