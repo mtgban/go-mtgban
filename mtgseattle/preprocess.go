@@ -137,6 +137,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 			edition = "PMEI"
 		case "Sanctum Prelate":
 			edition = "MH2"
+		case "Gala Greeters":
+			if variant == "Box Topper" {
+				edition = "SNC"
+				variant = "Borderless"
+			}
 		}
 		for _, tag := range promoTags {
 			if strings.HasSuffix(cardName, tag) {
