@@ -56,7 +56,7 @@ func TestPalworldListing(t *testing.T) {
 		{"Fuak - Manic Wave Ripper (PR Card Pack Vol. 1)", "Promo", "EPR-004 PR ", "epr-004_714396_foil"},
 		{"Cattiva - Prototype", "Souls & Misc.", "Prototype", "716343"},
 		{"Soul - Prototype", "Souls & Misc.", "Prototype", "716360"},
-		{"Soul - Chillet (Demo Caravan Promo)", "Promo", "ESOUL-000 PR Blue Long Creature in Pool Ring", "esoul-003_714403_foil"},
+		{"Soul - Chillet (Demo Caravan Promo)", "Promo", "ESOUL-000 PR Long Blue Creature in Pool Ring", "esoul-003_714403_foil"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			asTyped := mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.notes}

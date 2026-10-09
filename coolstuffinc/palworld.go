@@ -36,8 +36,10 @@ var palworldBaseRarities = map[string]bool{
 // palworldNoteFixes corrects a Notes field this storefront has typed with
 // the wrong collector number for one listing: Chillet's Demo Caravan Promo
 // carries "ESOUL-000", a real but different, non-foil Soul promo, where the
-// listing itself sells foil and CSI's own product image is ESOUL003.
+// listing itself sells foil and CSI's own product image is ESOUL003. CSI
+// has worded the art both ways round.
 var palworldNoteFixes = strings.NewReplacer(
+	"ESOUL-000 PR Long Blue Creature in Pool Ring", "ESOUL-003 PR",
 	"ESOUL-000 PR Blue Long Creature in Pool Ring", "ESOUL-003 PR",
 )
 
@@ -86,6 +88,7 @@ var palworldSpellings = strings.NewReplacer(
 	"Soul - Dawn of Palpagos G/P", "Soul",
 	"Soul - Dawn of Palpagos R/B", "Soul",
 	"Soul - Dawn of Palpagos", "Soul",
+	"Soul - Palworld Logo", "Soul",
 )
 
 // palworldPrototypeSuffix is the tail this storefront appends to the
