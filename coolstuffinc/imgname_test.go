@@ -119,6 +119,14 @@ func TestPreprocessImageStem(t *testing.T) {
 			wantSet: "POTJ", wantNum: "149p",
 		},
 		{
+			desc:    "a name the shelf spells without its accent",
+			name:    "Tura Kennerud, Skyknight",
+			edition: "Dominaria United: Variants",
+			variant: "Stained Glass Frame",
+			imgURL:  "https://s.cf.net/i/DMU323.jpg",
+			wantSet: "DMU", wantNum: "323",
+		},
+		{
 			desc:    "the name trails the set and number",
 			name:    "Roil Eruption",
 			edition: "Promo",

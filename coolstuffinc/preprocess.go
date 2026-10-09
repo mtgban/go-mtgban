@@ -375,7 +375,7 @@ func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant str
 	}
 	if len(cards) == 0 {
 		for _, card := range set.Cards {
-			if card.Number == number && card.FaceName == cardName {
+			if card.Number == number && (card.FaceName == cardName || mtgmatcher.Equals(card.Name, cardName)) {
 				cards = append(cards, card)
 			}
 		}
