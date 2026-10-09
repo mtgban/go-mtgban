@@ -197,17 +197,17 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 			card, numbered, shelved = shelf, strings.TrimSpace(pokemonStampTail.ReplaceAllString(numbered, "")), true
 		}
 	}
-	// A "(Non-Holo)" listing is never a holo pull, so it is never this
-	// redirect's business even when its note also carries one of
-	// pokemonDeckHoloNotes' markers.
-	redirected := ""
-	if !nonHolo {
-		redirected = pokemonDeckHoloRedirect(b, name, numbered, variation)
+	// A "(Non-Holo)" listing asks the redirect for the deck's plain copy.
+	probe, probeFoil := "Cracked Ice Holo", true
+	if nonHolo {
+		probe, probeFoil = "Non-Holo", false
 	}
+	redirected := pokemonDeckHoloRedirect(b, strings.TrimSpace(pokemonNonHolo.ReplaceAllString(name, "")), strings.TrimSpace(pokemonNonHolo.ReplaceAllString(numbered, "")), variation, probe, probeFoil)
 	if redirected != "" {
+		card.Name = strings.TrimSpace(pokemonNonHolo.ReplaceAllString(card.Name, ""))
 		card.Edition = redirected
-		card.Variation = "Cracked Ice Holo"
-		card.Foil = true
+		card.Variation = probe
+		card.Foil = probeFoil
 	}
 	m = goldStar.FindStringSubmatch(name)
 	if m != nil {
@@ -516,10 +516,12 @@ var pokemonDeckHoloNotes = []struct {
 }
 
 // pokemonDeckHoloRedirect answers the edition for a pokemonDeckHoloNotes
-// marker whose probe - asking for the "Cracked Ice Holo" label so a
-// cracked-ice twin outranks the plain printing of the same number - lands
-// on that marker's own set code at the listing's own number, or "" otherwise.
-func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes string) string {
+// marker whose probe lands on that marker's own set code at the listing's own
+// number, or "" otherwise.
+// The probe asks for the "Cracked Ice Holo" label and the foil finish so a
+// cracked-ice twin outranks the plain printing of the same number, or for
+// "Non-Holo" and the plain finish where the listing is the plain copy.
+func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes, variation string, foil bool) string {
 	for _, r := range pokemonDeckHoloNotes {
 		if !strings.Contains(notes, r.marker) && !strings.Contains(numbered, r.marker) {
 			continue
@@ -530,7 +532,7 @@ func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes string
 		if num == "" {
 			continue
 		}
-		probe := &mtgmatcher.InputCard{Name: name + " - " + tail, Edition: r.edition, Variation: "Cracked Ice Holo", Foil: true}
+		probe := &mtgmatcher.InputCard{Name: name + " - " + tail, Edition: r.edition, Variation: variation, Foil: foil}
 		id, err := b.Match(probe)
 		if err != nil {
 			continue
