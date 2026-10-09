@@ -538,6 +538,21 @@ func countResults(sellers []mtgban.Seller, vendors []mtgban.Vendor) (int, int) {
 	return retail, buylist
 }
 
+// reportResultCounts logs how many distinct cards each seller and vendor
+// holds, so a change in the run totals can be traced to the scraper behind it.
+// A seller or vendor that came back empty was dropped when unfolding, so it
+// gets no line rather than a zero.
+func reportResultCounts(sellers []mtgban.Seller, vendors []mtgban.Vendor) {
+	for _, seller := range sellers {
+		info := seller.Info()
+		log.Printf("[%s] %d retail results", info.Shorthand, len(seller.Inventory()))
+	}
+	for _, vendor := range vendors {
+		info := vendor.Info()
+		log.Printf("[%s] %d buylist results", info.Shorthand, len(vendor.Buylist()))
+	}
+}
+
 // reportSuspectPricings says which cards a scraper priced on both sides at
 // prices too close to be the same printing. A shop's buy price sits well under
 // what it asks, so a pairing that does not is usually two products meeting on
@@ -914,6 +929,7 @@ func run() int {
 
 	retailResults, buylistResults := countResults(sellers, vendors)
 	log.Println("Found", retailResults, "retail results and", buylistResults, "buylist results")
+	reportResultCounts(sellers, vendors)
 
 	reportSuspectPricings(backend, sellers, vendors)
 	reportCollapsedPricings(backend, vendors)
