@@ -47,14 +47,13 @@ func TestPokemonDeckHoloRedirectPrefersSetCode(t *testing.T) {
 	}
 }
 
-// TestPokemonDeckHoloRedirectSkipsANonHoloListing pins that a "(Non-Holo)"
-// listing is never handed to pokemonDeckHoloRedirect. The bracket sits in
-// the number's own tail here (CSI's "Chandelure - 16/116 (NON-HOLO)"
-// shape), not the name's head, because that is what leaves pokemonListing's
-// local name clean enough to reach the redirect at all - without the
-// guard, Theme Deck's own note then forces Espeon and Umbreon (where a
-// plain nonfoil and a cracked-ice twin both exist) onto the wrong one.
-func TestPokemonDeckHoloRedirectSkipsANonHoloListing(t *testing.T) {
+// TestPokemonDeckHoloRedirectAsksForThePlainCopy pins that a "(Non-Holo)"
+// listing is redirected for the plain copy and never for the cracked-ice
+// one. The bracket sits in the number's own tail here (CSI's "Chandelure -
+// 16/116 (NON-HOLO)" shape), not the name's head, and Theme Deck's own note
+// would otherwise force Espeon and Umbreon (where a plain nonfoil and a
+// cracked-ice twin both exist) onto the wrong one.
+func TestPokemonDeckHoloRedirectAsksForThePlainCopy(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 	for _, tt := range []struct {
 		row    CSIPriceEntry
@@ -93,11 +92,11 @@ func TestPokemonDeckHoloRedirectSkipsANonHoloListing(t *testing.T) {
 func TestPokemonDeckHoloRedirectNeedsTheListingsNumber(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 	for _, name := range []string{"Charizard", "Espeon"} {
-		redirected := pokemonDeckHoloRedirect(b, name, "", "Shattered Holo from Theme Deck")
+		redirected := pokemonDeckHoloRedirect(b, name, "", "Shattered Holo from Theme Deck", "Cracked Ice Holo", true)
 		if redirected != "" {
 			t.Errorf("%s without a number redirected to %q", name, redirected)
 		}
-		redirected = pokemonDeckHoloRedirect(b, name, "Shattered Holo", "")
+		redirected = pokemonDeckHoloRedirect(b, name, "Shattered Holo", "", "Cracked Ice Holo", true)
 		if redirected != "" {
 			t.Errorf("%s with only the marker redirected to %q", name, redirected)
 		}
