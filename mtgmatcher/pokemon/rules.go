@@ -1700,6 +1700,17 @@ func tierByLabel(b *mtgmatcher.Backend, wording string, candidates []mtgmatcher.
 			plainest = append(plainest, card)
 		}
 	}
+	// A placement is never named by accident, so a wording naming none
+	// means the copy that wears none: "Toxtricity - 017" beside its Staff.
+	var unplaced []mtgmatcher.Card
+	for _, card := range plainest {
+		if !wearsAny([]mtgmatcher.Card{card}, placements) {
+			unplaced = append(unplaced, card)
+		}
+	}
+	if len(unplaced) > 0 {
+		return unplaced
+	}
 	return plainest
 }
 

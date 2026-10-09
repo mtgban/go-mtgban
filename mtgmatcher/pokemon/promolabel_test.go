@@ -13,15 +13,18 @@ import (
 func TestPromoLabelDepth(t *testing.T) {
 	b := loadBackend(t)
 
-	for _, tt := range []struct{ desc, variation, want string }{
-		{"the retailer is what tells the stampings apart", "117 GameStop Cosmos Holo", "117-159_626640_holofoil"},
-		{"and the other retailer likewise", "117 EB Games Cosmos Holo", "117-159_629648_holofoil"},
+	for _, tt := range []struct{ desc, name, edition, variation, want string }{
+		{"the retailer is what tells the stampings apart", "Hop's Snorlax", "", "117 GameStop Cosmos Holo", "117-159_626640_holofoil"},
+		{"and the other retailer likewise", "Hop's Snorlax", "", "117 EB Games Cosmos Holo", "117-159_629648_holofoil"},
+		// A placement is never named by accident, so a wording naming none
+		// means the copy wearing none.
+		{"no placement named is not the staff copy", "Toxtricity", "ME: Mega Evolution Promo", "017", "017_663193_holofoil"},
 		// Naming only the shared label names no one of them, and saying so
 		// beats answering with whichever came first.
-		{"the shared label alone still aliases", "117 Cosmos Holo", ""},
+		{"the shared label alone still aliases", "Hop's Snorlax", "", "117 Cosmos Holo", ""},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, err := b.Match(&mtgmatcher.InputCard{Name: "Hop's Snorlax", Variation: tt.variation})
+			id, err := b.Match(&mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.variation})
 			if id != tt.want {
 				t.Errorf("Match(%q) = %q (err %v), want %q", tt.variation, id, err, tt.want)
 			}
