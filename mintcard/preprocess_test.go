@@ -87,6 +87,7 @@ func TestPreprocessShelves(t *testing.T) {
 		{"Beast Within (New Phyrexian)", "Mystery Booster/The List", "MYS", "English", "PLST", "NPH-103"},
 		{"Lightning Bolt (0002)", "Promo:\u00a0Unique and Miscellaneous", "PMSC", "English", "PW26", "5"},
 		{"La Madre Tierra (Xenagos, God of Revels) (Spanish)", "Secret Lair", "SLD", "English", "SLD", "2061"},
+		{"Carnage, Crimson Chaos", "Promo: Standard Showdown", "PSSP", "English", "PW25", "13"},
 	} {
 		theCard, err := preprocess(b, tt.name, "", "Regular", tt.language, tt.edition, tt.code)
 		if err != nil {
