@@ -10,7 +10,8 @@ import (
 // "Promo" heading and describes by the event or insert series that issued
 // them. The series is the only thing that says which set the listing means:
 // left unread, every one of these cards also has a prerelease printing whose
-// promo set outranks the one the wording asked for.
+// promo set outranks the one the wording asked for. The same goes for the
+// Foundations starter products, whose cards the set extension repeats.
 func TestPromoWordingNamesItsSet(t *testing.T) {
 	realDatastore(t)
 	for _, tt := range []struct {
@@ -59,6 +60,26 @@ func TestPromoWordingNamesItsSet(t *testing.T) {
 			desc:    "a listing that says prerelease instead is still the prerelease printing",
 			in:      mtgmatcher.InputCard{Name: "Iron Spider, Stark Upgrade", Edition: "Marvel's Spider-Man Promos", Variation: "Prerelease", Foil: true},
 			wantSet: "PSPM", wantNum: "166s", wantFoil: true,
+		},
+		{
+			desc:    "a Beginner Box listing is that printing, not the set extension twin",
+			in:      mtgmatcher.InputCard{Name: "Herald of Faith", Edition: "Foundations", Variation: "Beginner Box"},
+			wantSet: "FDN", wantNum: "494",
+		},
+		{
+			desc:    "a plain listing is the main printing, not the set extension twin",
+			in:      mtgmatcher.InputCard{Name: "Exemplar of Light", Edition: "Foundations"},
+			wantSet: "FDN", wantNum: "11",
+		},
+		{
+			desc:    "a Set Extension listing is the extension printing",
+			in:      mtgmatcher.InputCard{Name: "Herald of Faith", Edition: "Foundations", Variation: "Set Extension"},
+			wantSet: "FDN", wantNum: "735",
+		},
+		{
+			desc:    "a Starter Collection listing is that printing",
+			in:      mtgmatcher.InputCard{Name: "Pelakka Wurm", Edition: "Foundations", Variation: "Starter Collection", Foil: true},
+			wantSet: "FDN", wantNum: "720", wantFoil: true,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

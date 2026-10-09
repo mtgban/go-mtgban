@@ -60,10 +60,10 @@ func TestAliasingContradictions(t *testing.T) {
 		},
 		{
 			desc: "a printing never made in the finish on sale",
-			name: "Exemplar of Light", shelf: "Foundations",
-			notes: "Near Mint Foil English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.HasFinish(mtgmatcher.FinishFoil) },
-			want:  "a printing made in foil",
+			name: "Lightning Bolt", shelf: "Promos: Magicfest",
+			notes: "Near Mint Normal English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.HasFinish(mtgmatcher.FinishNonfoil) },
+			want:  "a printing made in nonfoil",
 		},
 		{
 			desc: "several printings left, the one in the set the shelf is named for",
