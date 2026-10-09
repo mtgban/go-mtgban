@@ -117,6 +117,12 @@ var (
 	}
 )
 
+var setExtensionTreatment = promoTypeElement{
+	PromoType:     PromoTypeSetExtension,
+	Tags:          []string{"Set Extension"},
+	OnlyWhenNamed: true,
+}
+
 var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypePrerelease,
@@ -338,6 +344,17 @@ var promoTypeElements = []promoTypeElement{
 		},
 		OnlyWhenNamed: true,
 	},
+	{
+		PromoType:     PromoTypeBeginnerBox,
+		Tags:          []string{"Beginner Box"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeStarterCollection,
+		Tags:          []string{"Starter Collection"},
+		OnlyWhenNamed: true,
+	},
+	setExtensionTreatment,
 	borderlessTreatment,
 	extendedArtTreatment,
 	showcaseTreatment,
@@ -442,7 +459,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"SNC": phyrexianCheck,
 	"DMU": phyrexianCheck,
 	"ONE": phyrexianCheck,
-	"FDN": phyrexianCheck,
 
 	"TSR": releaseRetroCheck,
 	"CLU": releaseRetroCheck,
@@ -467,6 +483,7 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"BRR": {schematicCheck},
 	"DMR": {launchPromoInSet, releaseRetroCheck},
 	"VOW": {wpnCheck, reskinDraculaCheck},
+	"FDN": {phyrexianCheck, setExtensionTwin},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
 	"M3C": {foilCheckM3C, thickDisplayCheck},
@@ -660,6 +677,13 @@ func listEditionCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card 
 	}
 
 	return false
+}
+
+// setExtensionTwin reports the extension printing of a card whose listing
+// does not call for it. Foundations repeats cards of the set under new
+// numbers, and a shop that does not say so means the original.
+func setExtensionTwin(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
+	return setExtensionTreatment.carriedBy(card) && !setExtensionTreatment.claimedBy(b, inCard)
 }
 
 func phyrexianCheck(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {

@@ -250,6 +250,7 @@ const (
 	PromoTypeShowcase    = FrameEffectShowcase
 	PromoTypeRetroFrame  = "retroframe"
 
+	PromoTypeBeginnerBox       = "beginnerbox"
 	PromoTypeBoosterfun        = "boosterfun"
 	PromoTypeBundle            = "bundle"
 	PromoTypeBuyABox           = "buyabox"
@@ -299,9 +300,11 @@ const (
 	PromoTypeSilverScroll      = "silverscroll"
 	PromoTypeSLDBonus          = "sldbonus"
 	PromoTypeSerialized        = "serialized"
+	PromoTypeSetExtension      = "setextension"
 	PromoTypeSilverFoil        = "silverfoil"
 	PromoTypeSingularityFoil   = "singularityfoil"
 	PromoTypeStandardShowdown  = "standardshowdown"
+	PromoTypeStarterCollection = "startercollection"
 	PromoTypeStarterDeck       = "starterdeck"
 	PromoTypeStepAndCompleat   = "stepandcompleat"
 	PromoTypeStoreChampionship = "storechampionship"
