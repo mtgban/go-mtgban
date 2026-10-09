@@ -44,6 +44,9 @@ var name2edition = map[string]map[string]string{
 	"P30": {
 		"Destroy Evil": "P30T",
 	},
+	"PSSP": {
+		"Carnage, Crimson Chaos": "PW25",
+	},
 }
 
 // codeTable maps the set codes the storefront invents onto the datastore's
@@ -126,7 +129,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 	}
 
 	switch setCode {
-	case "PMSC", "PWPN", "P30":
+	case "PMSC", "PWPN", "P30", "PSSP":
 		fixup, found := name2edition[setCode][cardName]
 		if found {
 			edition = fixup
