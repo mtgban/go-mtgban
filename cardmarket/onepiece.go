@@ -55,11 +55,51 @@ var onePieceNonEnglish = map[int]bool{
 	850409: true, 858758: true, 867220: true, 870125: true, 808800: true, 866419: true,
 }
 
-// onePieceByID answers a One Piece product from the bridge's TCGplayer id,
-// naming its printing outright. An empty id under a nil error leaves the
+// onePieceEventLinks names, by Cardmarket product id, the TCGplayer product
+// of the event promos CardTrader links with an id of 0: the datastore
+// labels each with its event, and neither the wording nor the bridge says
+// which one a product sells. The bridge answers first.
+var onePieceEventLinks = map[int]int{
+	776930: 552131, 787474: 580043, 787493: 580052, 787496: 580053,
+	792749: 552131, 794716: 584365, 794717: 583773, 794718: 584366,
+	806194: 607976, 806198: 607978, 837872: 646747, 840669: 646734,
+	840672: 646733, 840673: 646731, 840688: 646720, 840710: 646727,
+	845293: 539552, 845294: 525694, 845295: 539549, 845297: 539553,
+	845298: 539557, 845299: 539555, 845300: 539550, 845301: 539548,
+	845302: 539554, 845303: 539551, 854473: 656608, 854474: 656609,
+	858533: 668173, 858534: 668174, 858535: 668175, 858536: 668177,
+	858537: 668179, 858538: 668181, 858539: 668182, 858766: 661690,
+	858767: 661692, 858768: 661693, 858769: 661694, 858773: 661702,
+	866566: 671734, 866567: 671741, 866568: 671735, 867182: 672373,
+	867183: 672374, 867185: 672376, 867187: 672378, 869926: 669279,
+	869927: 669293, 869928: 669296, 874225: 657221, 882469: 675742,
+	882471: 684110, 882472: 683981, 901283: 710741, 901342: 712840,
+	901343: 712842, 901344: 712844, 901345: 712848, 901346: 712846,
+	901347: 712851, 904363: 710222, 904370: 710237, 904371: 710276,
+	904372: 710277, 904376: 710212, 904378: 710213, 904380: 710214,
+	904382: 710215, 904384: 710216, 904386: 710218, 904387: 710254,
+	904388: 710219, 904390: 710221, 904401: 710245, 904415: 710728,
+	904418: 710729, 904421: 710730, 904424: 710731, 912181: 710271,
+	912182: 710270, 914111: 722631, 914113: 722640, 914116: 722634,
+	914117: 722637,
+}
+
+// tcgLink answers the TCGplayer id a One Piece product is known by: the
+// bridge's, then onePieceEventLinks'.
+func (r *resolver) tcgLink(productID int) (int, bool) {
+	tcgID, found := r.tcgBridge[productID]
+	if found {
+		return tcgID, true
+	}
+	tcgID, found = onePieceEventLinks[productID]
+	return tcgID, found
+}
+
+// onePieceByID answers a One Piece product from the TCGplayer id tcgLink
+// gives it, naming its printing outright. An empty id under a nil error leaves the
 // product to its wording.
 func (r *resolver) onePieceByID(product *cm.Product) (string, error) {
-	tcgID, found := r.tcgBridge[product.IDProduct]
+	tcgID, found := r.tcgLink(product.IDProduct)
 	if !found {
 		return "", nil
 	}
@@ -89,7 +129,7 @@ func offCode(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
 // answered with by id, before any product is named by its wording.
 func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) {
 	r.claimed = map[string]bool{}
-	r.foilVersions = foilVersions(r.tcgBridge, byExpansion, products, items)
+	r.foilVersions = foilVersions(r.tcgLink, byExpansion, products, items)
 	for _, exp := range items {
 		for _, id := range byExpansion[exp.IDExpansion] {
 			product := &cm.Product{IDProduct: id, Name: products[id].Name, ExpansionName: exp.Name}
@@ -106,16 +146,16 @@ func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.Cata
 	}
 }
 
-// foilVersions names the products the bridge links to the same TCGplayer
-// product as a lower version on their shelf. CardTrader keeps one blueprint
+// foilVersions names the products link gives the same TCGplayer product as
+// a lower version on their shelf. CardTrader keeps one blueprint
 // for both finishes of a The Best DON!!, where Cardmarket sells the foil as
 // the card's V.2.
-func foilVersions(bridge map[int]int, byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) map[int]bool {
+func foilVersions(link func(int) (int, bool), byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) map[int]bool {
 	foils := map[int]bool{}
 	for _, exp := range items {
 		lowest := map[int]int{}
 		for _, id := range byExpansion[exp.IDExpansion] {
-			tcgID, found := bridge[id]
+			tcgID, found := link(id)
 			if !found {
 				continue
 			}
@@ -125,7 +165,7 @@ func foilVersions(bridge map[int]int, byExpansion map[int][]int, products map[in
 			}
 		}
 		for _, id := range byExpansion[exp.IDExpansion] {
-			tcgID, found := bridge[id]
+			tcgID, found := link(id)
 			if found && products[id].Version > lowest[tcgID] {
 				foils[id] = true
 			}

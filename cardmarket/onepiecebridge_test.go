@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"cmp"
 	"errors"
 	"testing"
 
@@ -10,14 +11,17 @@ import (
 )
 
 // onePieceDatastore is the published One Piece datastore cut down to the
-// three printings this test turns on, copied verbatim: one collector number
-// sold as a base art and two alternates, which is the shape the catalog
-// cannot tell apart. Each carries its own TCGplayer id, which is what the
-// bridge names them by.
+// printings these tests turn on, copied verbatim: one collector number sold
+// as a base art and two alternates, which is the shape the catalog cannot
+// tell apart, and a convention promo. Each carries its own TCGplayer id,
+// which is what the bridge names them by.
 const onePieceDatastore = `{"data": {
  "game": "onepiece",
- "sets": {"OP05": {"name": "Awakening of the New Era", "releaseDate": "2023-11-25"}},
+ "sets": {"OP05": {"name": "Awakening of the New Era", "releaseDate": "2023-11-25"}, "OP-PR": {"name": "One Piece Promotion Cards", "releaseDate": "2022-09-30"}},
  "cards": [
+  {"externalLinks": {"tcgPlayerId": 552131}, "finish": "Normal", "id": "p-043_552131", "name": "Monkey.D.Luffy", "number": "P-043", "promoTypes": ["conventionpromo"], "rarity": "Promo", "setCode": "OP-PR", "variant": "Convention Promo 2024"},
+  {"externalLinks": {"tcgPlayerId": 552131}, "finish": "Foil", "id": "p-043_552131_foil", "name": "Monkey.D.Luffy", "number": "P-043", "promoTypes": ["conventionpromo"], "rarity": "Promo", "setCode": "OP-PR", "variant": "Convention Promo 2024"},
+  {"externalLinks": {"tcgPlayerId": 603076}, "finish": "Normal", "id": "p-043_603076", "name": "Monkey.D.Luffy", "number": "P-043", "promoTypes": ["anniversarystampedpromo"], "rarity": "Promo", "setCode": "OP-PR", "variant": "2nd Anniversary Stamped Promo", "watermark": "2nd"},
   {"externalLinks": {"tcgPlayerId": 527875}, "finish": "Foil", "id": "op05-069_527875_foil", "name": "Trafalgar Law", "number": "OP05-069", "rarity": "SR", "setCode": "OP05"},
   {"externalLinks": {"tcgPlayerId": 527662}, "finish": "Foil", "id": "op05-069_527662_foil", "name": "Trafalgar Law", "number": "OP05-069", "promoTypes": ["Alternate Art"], "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art"},
   {"externalLinks": {"tcgPlayerId": 527019}, "finish": "Foil", "id": "op05-069_527019_foil", "name": "Trafalgar Law", "number": "OP05-069", "promoTypes": ["Alternate Art Manga"], "rarity": "SR", "setCode": "OP05", "variant": "Alternate Art Manga"}
@@ -38,6 +42,8 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 		mkmID   int
 		bridge  map[int]int
 		product string
+		number  string
+		shelf   string
 		want    string
 	}{
 		{
@@ -55,6 +61,11 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 			mkmID: 102, bridge: map[int]int{},
 			product: "Trafalgar Law (OP05-069)", want: "op05-069_527875_foil",
 		},
+		{
+			desc:  "an event promo CardTrader links with no id is named by the table",
+			mkmID: 776930, bridge: map[int]int{},
+			product: "Monkey.D.Luffy (P-043) (V.1)", number: "P-043", shelf: "Promos", want: "p-043_552131",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			mkm, err := NewScraperIndex(b)
@@ -66,8 +77,8 @@ func TestOnePieceBridgeNamesThePrinting(t *testing.T) {
 			product := cm.Product{
 				IDProduct:     tt.mkmID,
 				Name:          tt.product,
-				Number:        "OP05-069",
-				ExpansionName: "Awakening of the New Era",
+				Number:        cmp.Or(tt.number, "OP05-069"),
+				ExpansionName: cmp.Or(tt.shelf, "Awakening of the New Era"),
 			}
 			channel := make(chan responseChan, 8)
 			if err := mkm.processProduct(channel, &product); err != nil {
