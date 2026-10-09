@@ -222,6 +222,13 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 	return nil
 }
 
+// staleTCGIDs pairs the TCGplayer ids the retail feed still carries after
+// TCGplayer deleted the product with the live id of the same card: Torgal's
+// MagicFest listing, whose twin under the Las Vegas 2025 name carries 638804.
+var staleTCGIDs = map[int64]int64{
+	638819: 638804,
+}
+
 // resolveProduct names the printing a product is. The retail feed carries
 // the catalog's own TCGplayer id for nearly every product, and it answers
 // first: the display name is the storefront's own wording, and where the two
@@ -232,9 +239,14 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 // a product the catalog does not carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
 	etched := gn.backend.Game == mtgmatcher.GameMagic && saysEtched(product)
-	if mode == modeRetail && gn.backend.Game == mtgmatcher.GameMagic && product.ProductData.TCGProductID != 0 {
+	tcgID := product.ProductData.TCGProductID
+	live, found := staleTCGIDs[tcgID]
+	if found {
+		tcgID = live
+	}
+	if mode == modeRetail && gn.backend.Game == mtgmatcher.GameMagic && tcgID != 0 {
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
-		cardID, err := gn.backend.MatchID(strconv.FormatInt(product.ProductData.TCGProductID, 10), foil, etched)
+		cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
 		if err == nil {
 			return cardID, nil
 		}
