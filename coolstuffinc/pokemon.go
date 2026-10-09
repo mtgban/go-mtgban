@@ -587,19 +587,38 @@ func pokemonBasicEnergy(b *mtgmatcher.Backend, energyType, bracket, edition, num
 }
 
 // pokemonCosmosBracket matches the bracket this storefront names a cosmos
-// holo with: "Holo Promo", "Cosmo Holo" or the bare "Holo".
-var pokemonCosmosBracket = regexp.MustCompile(`(?i)\s*\((?:Holo Promo|Cosmos? Holo|Holo)\)`)
+// holo with: "Holo Promo", "Cosmo Holo" or the bare "Holo". The bare one is
+// also what a plain holo rare is called, so it counts only beside the
+// Promo rarity or a note saying cosmos holo.
+var pokemonCosmosBracket = regexp.MustCompile(`(?i)\s*\((Holo Promo|Cosmos? Holo|Holo)\)`)
 
-// pokemonCosmosHolo answers a Promo-rarity listing sold under a main set with
-// one of those brackets as the collection-box cosmos holo the catalog files
-// on its miscellaneous shelf, and leaves the listing as it is unless that
-// printing exists at the listing's own number.
+// pokemonCosmosNote matches a note stating the listing is the cosmos holo,
+// and pokemonCosmosHedge one saying it can be ("Can be Regular or Cosmo Holo").
+var pokemonCosmosNote = regexp.MustCompile(`(?i)(?:^|[\d\s])Cosmos Holo\b`)
+var pokemonCosmosHedge = regexp.MustCompile(`(?i)\bor Cosmos Holo\b`)
+
+// pokemonCosmosShelves are the catalog shelves that hold a collection-box
+// holo, each with the set code a probe has to land on to be trusted.
+var pokemonCosmosShelves = []struct{ edition, set string }{
+	{"Miscellaneous Cards & Products", "MCAP"},
+	{"Blister Exclusives", "BLE"},
+}
+
+// pokemonCosmosHolo answers a listing sold under a main set with one of those
+// brackets as the collection-box holo the catalog files on a miscellaneous or
+// blister shelf, and leaves the listing as it is unless that printing exists
+// at the listing's own number.
 //
 // The storefront keeps the set's number and total on it, so the base set's
 // nonfoil answers for it, a $2.99 Charmeleon priced as the $0.29 one. A
 // listing that already lands on a cosmos holo is left there.
 func pokemonCosmosHolo(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, rarity string) *mtgmatcher.InputCard {
-	if rarity != "Promo" || !pokemonCosmosBracket.MatchString(card.Name) {
+	m := pokemonCosmosBracket.FindStringSubmatch(card.Name)
+	if m == nil {
+		return card
+	}
+	cosmosNote := pokemonCosmosNote.MatchString(card.Variation) && !pokemonCosmosHedge.MatchString(card.Variation)
+	if strings.EqualFold(m[1], "Holo") && rarity != "Promo" && !cosmosNote {
 		return card
 	}
 	asked := *card
@@ -612,23 +631,26 @@ func pokemonCosmosHolo(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, rarity
 	}
 	cosmos := *card
 	cosmos.Name = pokemonCosmosBracket.ReplaceAllString(card.Name, "")
-	cosmos.Edition = "Miscellaneous Cards & Products"
 	cosmos.Variation = "Cosmos Holo"
+	cosmos.Foil = true
 	_, tail := numberedListing(cosmos.Name)
 	num := strings.TrimLeft(mtgmatcher.ExtractNumber(tail), "0")
 	if num == "" {
 		return card
 	}
-	probe := cosmos
-	id, err = b.Match(&probe)
-	if err != nil {
-		return card
+	for _, shelf := range pokemonCosmosShelves {
+		cosmos.Edition = shelf.edition
+		probe := cosmos
+		id, err = b.Match(&probe)
+		if err != nil {
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err == nil && co.SetCode == shelf.set && strings.TrimLeft(co.Number, "0") == num {
+			return &cosmos
+		}
 	}
-	co, err := b.GetUUID(id)
-	if err != nil || co.SetCode != "MCAP" || strings.TrimLeft(co.Number, "0") != num {
-		return card
-	}
-	return &cosmos
+	return card
 }
 
 // pokemonPromoShelf answers the shelf a Pokemon listing belongs to, which is
