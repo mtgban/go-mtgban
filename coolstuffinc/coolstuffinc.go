@@ -501,6 +501,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				if qtyStr == "" && strings.Contains(notes, "Preorder") {
 					qtyStr = "20"
 				}
+				// An offer that only says Preorder is not on sale yet
+				if qtyStr == "" && strings.Contains(fullRow, "Preorder") {
+					return
+				}
 
 				qty, err := strconv.Atoi(qtyStr)
 				if err != nil {
