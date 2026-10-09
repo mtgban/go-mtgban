@@ -149,6 +149,10 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		if cardName == "Hawkins National Laboratory" {
 			variant = ""
 		}
+		// The Spanish flavor-name drops are English printings, and Match
+		// would read the word as a language. A Spanish printing is named
+		// by the feed's own language column, not by this tag.
+		variant = strings.TrimSpace(strings.ReplaceAll(variant, "Spanish", ""))
 		// The shelf holds the drops, the convention promos and the
 		// commander decks alike, and only the card says which
 		edition = setCode
