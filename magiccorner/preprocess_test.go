@@ -240,6 +240,18 @@ func TestImageProductID(t *testing.T) {
 		}
 	})
 
+	t.Run("a bare numeric image name carries the id too", func(t *testing.T) {
+		got := imageProductID(b, "The Lord of the Rings: Tales of Middle-earth: Extras", "/prodotti/magic_the_gathering/717774.jpeg",
+			"Faramir, Field Commander", "The Lord of the Rings: Tales of Middle-earth", "", false)
+		if got == "" {
+			t.Fatal("imageProductID returned no id, want LTR 303")
+		}
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "LTR" || co.Number != "303" {
+			t.Errorf("imageProductID resolved to %v, want LTR 303", co)
+		}
+	})
+
 	t.Run("a cross-set id is refused, deferring to the wording", func(t *testing.T) {
 		got := imageProductID(b, "Secret Lair Drop Series", "/x/ertai-resurrected_672617.jpg", "Ertai Resurrected", "Secret Lair Drop Series", "", false)
 		if got != "" {
