@@ -25,7 +25,7 @@ var numFixes = map[string]string{
 	"253486Signed_gold":               "WC97JK1",
 	"one420eleshnornmotherofmachines": "ONE420",
 	"295044":                          "SLD51",
-	"wild0042":                        "SLD42",
+	"wild0042":                        "SLP42",
 	"Sol381656":                       "SLD1512",
 	"TDM0300a":                        "TDM300",
 	"LTR0425":                         "LTR425",
@@ -46,6 +46,32 @@ var numFixes = map[string]string{
 	"414937":                          "FIN385",
 	"414881":                          "FIN398",
 	"414952":                          "FIN382",
+	"381147":                          "PMKM187p",
+	"AssassinsTrophyv2":               "PGRN152p",
+	"BlastZonev2":                     "PWAR244p",
+	"BreedingPoolv2":                  "PRNA246p",
+	"OvergrownTombv2":                 "PGRN253p",
+	"291465":                          "PGRN258p",
+	"WateryGravev2":                   "PGRN259p",
+	"SLD1129a":                        "SLD1129",
+	"SLD1113a":                        "SLD1113",
+	"SLD1125a":                        "SLD1125",
+	"SLD1995a":                        "SLD1995",
+	"fdn0720b":                        "FDN720",
+	"SeaGateOracle043a":               "KHC43",
+	"40K169a":                         "40K169",
+	"ONE272a":                         "ONE272",
+	"ONE273a":                         "ONE273",
+	"ONE274a":                         "ONE274",
+	"ONE275a":                         "ONE275",
+	"ONE276a":                         "ONE276",
+	"SLDMikuGiadaJPN":                 "SLD1586",
+	"SLDMikuYouthValkJPN":             "SLD1588",
+	"SLD1112JPN":                      "SLD1112",
+	"396167":                          "THB009",
+	// The images of Tellah 416385 and 416386 are swapped on CSI's side.
+	"FIN0510": "FIN349",
+	"FIN0349": "FIN510",
 }
 
 // shelfNumFixes holds the image stems that name a printing only on one shelf:
@@ -886,13 +912,18 @@ func card2promo(cardName, variant string) (string, string) {
 // specific product; its own Image sku disagrees with Number on 268 other
 // products for an unrelated reason, so this is a keyed table, not a rule.
 var buylistNumberFixes = map[string]string{
-	"343896": "675", // Lightning Bolt (Hadoken): SLD x Street Fighter
-	"306846": "315", // Horizon Stone: Commander Legends extended art
-	"391205": "244", // Ratonhnhake:ton (Foil-Etched): Assassin's Creed
-	"409117": "123", // Stormscale Scion: Tarkir: Dragonstorm
-	"325589": "368", // Demonic Bargain: Crimson Vow extended art
-	"299005": "356", // Demonic Embrace: Core Set 2021 extended art
-	"325967": "384", // Avabruck Caretaker: Crimson Vow extended art
+	"343896": "675",      // Lightning Bolt (Hadoken): SLD x Street Fighter
+	"306846": "315",      // Horizon Stone: Commander Legends extended art
+	"391205": "244",      // Ratonhnhake:ton (Foil-Etched): Assassin's Creed
+	"409117": "123",      // Stormscale Scion: Tarkir: Dragonstorm
+	"325589": "368",      // Demonic Bargain: Crimson Vow extended art
+	"299005": "356",      // Demonic Embrace: Core Set 2021 extended art
+	"325967": "384",      // Avabruck Caretaker: Crimson Vow extended art
+	"326111": "DDD-48",   // Bad Moon: The List, Garruk vs. Liliana
+	"326909": "PDKA-127", // Strangleroot Geist: Game Day promo
+	"411004": "315",      // Purging Stormbrood: Tarkir: Dragonstorm showcase
+	"318838": "PBFZ-50",  // Stasis Snare: Game Day promo
+	"289318": "C19-249",  // Graypelt Refuge: Commander 2019
 }
 
 // buylistImageNumber retries a card whose Number field named no printing
