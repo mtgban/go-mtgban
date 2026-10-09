@@ -1023,6 +1023,7 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 	type candidate struct {
 		edition, number string
 		prefixed, shelf bool
+		jumbo           bool
 	}
 	var candidates []candidate
 	editions, prefix := pokemonEditions(r.backend, product.ExpansionName)
@@ -1031,17 +1032,29 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 		number = prefix + number
 	}
 	for _, edition := range editions {
-		candidates = append(candidates, candidate{edition, number, prefix != "", true})
+		candidates = append(candidates, candidate{edition, number, prefix != "", true, false})
 	}
 	if pokemonLettered.MatchString(number) {
 		for _, edition := range pokemonLetteredSets {
-			candidates = append(candidates, candidate{edition, number, false, false})
+			candidates = append(candidates, candidate{edition, number, false, false, false})
 		}
 	}
 	if m := pokemonPromoNumber.FindStringSubmatch(product.Number); m != nil {
 		if shelf, found := pokemonPromoCodes[m[1]]; found {
 			promo := pokemonExpansions[shelf]
-			candidates = append(candidates, candidate{promo.sets[0], promo.prefix + m[2], promo.prefix != "", false})
+			candidates = append(candidates, candidate{promo.sets[0], promo.prefix + m[2], promo.prefix != "", false, false})
+		}
+	}
+	// Only the rarity tells an oversized card from the set's own at its
+	// number, and the datastore files it in the Jumbo Cards set. A shelf
+	// of a catalog we do not carry stays foreign.
+	if product.Rarity == "Oversized" && !pokemonJumboHeld[product.IDProduct] {
+		onShelf := slices.ContainsFunc(candidates, func(c candidate) bool {
+			_, err := r.backend.GetSetByName(c.edition)
+			return err == nil
+		})
+		if onShelf {
+			candidates = slices.Insert(candidates, 0, candidate{pokemonJumbo, number, prefix != "", false, true})
 		}
 	}
 	carried := false
@@ -1060,6 +1073,10 @@ func (r *resolver) matchPokemon(product *cm.Product) (string, error) {
 			continue
 		}
 		if c.prefixed && !strings.EqualFold(co.Number, c.number) {
+			continue
+		}
+		// A jumbo the bridge gives to another product is that one's.
+		if c.jumbo && r.bridgeHolds(id, product.IDProduct) {
 			continue
 		}
 		// Cardmarket rates a stamped copy "Promo" and names it like the

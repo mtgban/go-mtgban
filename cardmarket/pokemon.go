@@ -160,9 +160,18 @@ var pokemonExpansions = map[string]pokemonExpansion{
 	"Southeast Asia Promos":     {sets: []string{"Southeast Asia Exclusives"}},
 	"Professor Program":         {sets: []string{"Professor Program Promos"}},
 	"Best of Game Cards Promos": {sets: []string{"Best of Promos"}},
-	"Promos":                    {sets: []string{"League & Championship Cards", "Jumbo Cards"}},
+	"Promos":                    {sets: []string{"League & Championship Cards", pokemonJumbo}},
 	"XY Trainer Kit":            {sets: []string{"XY Trainer Kit: Sylveon & Noivern"}},
 	"Futsal Promos":             {sets: []string{"Miscellaneous Cards & Products"}},
+}
+
+// pokemonJumbo is the set the datastore files the oversized cards in.
+const pokemonJumbo = "Jumbo Cards"
+
+// pokemonJumboHeld lists the oversized products whose jumbo row another
+// product prices by its name, in an expansion of its own.
+var pokemonJumboHeld = map[int]bool{
+	362859: true, // Base Set Pikachu, held by the Power Magazine Pikachu
 }
 
 // pokemonAdditionals are the sets an "Additionals" expansion draws on: the
@@ -170,7 +179,7 @@ var pokemonExpansions = map[string]pokemonExpansion{
 // are not. The base set is left out on purpose - the products here that
 // are its own printings are its pattern reprints, which the name cannot
 // tell from the plain card.
-var pokemonAdditionals = []string{"Miscellaneous Cards & Products", "Deck Exclusives", "Blister Exclusives", "Jumbo Cards"}
+var pokemonAdditionals = []string{"Miscellaneous Cards & Products", "Deck Exclusives", "Blister Exclusives", pokemonJumbo}
 
 var (
 	pokemonPrizePack = "Play! Pokémon Prize Pack Series "
