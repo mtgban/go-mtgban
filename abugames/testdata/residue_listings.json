@@ -551,5 +551,29 @@
       "simple_title": "Trial and Error Playtest card"
     },
     "uuid": "f6508a43-1c2c-59e9-b213-6fec99af1c7f"
+  },
+  {
+    "group": "8114506",
+    "card": {
+      "id": "2647519",
+      "product_id": "8114506",
+      "display_title": "Aang's Defense (211)",
+      "simple_title": "Aang's Defense",
+      "magic_edition_sort": "Avatar: The Last Airbender Eternal",
+      "layout": "Normal",
+      "rarity": "Common",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "211",
+      "scryfall_id": [
+        "642e1b90-c240-44fe-82b2-7522026224ae"
+      ],
+      "tcgplayer_id": [
+        649330
+      ]
+    },
+    "uuid": "73301af2-fe76-5b73-a274-64ab6f268ad6"
   }
 ]
