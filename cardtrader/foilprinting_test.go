@@ -50,22 +50,33 @@ func TestFoilPrintingID(t *testing.T) {
 		t.Fatal("datastore carries no derived pairing for TCGplayer id 209922")
 	}
 
+	// Card Trader spells this one "Lord of Ulvenwald", which no printing
+	// carries, so only the resolved card's own name finds its foil.
+	dfc := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, "247917")
+	if dfc == "" {
+		t.Fatal("datastore carries no TCGplayer id 247917")
+	}
+	dfcFoil, err := b.MatchID(dfc, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	tests := []struct {
 		desc   string
 		cardID string
-		name   string
 		want   string
 	}{
-		{"plain printing reaches its foil", plain, "Tainted Pact", foil},
-		{"foil printing stays put", foil, "Tainted Pact", foil},
-		{"etched printing stays put", etched, "Tainted Pact", etched},
-		{"unknown id is left alone", "not-a-uuid", "Tainted Pact", "not-a-uuid"},
-		{"a derived pairing sold in foil reaches its own foil sibling", pairedFoilCapable, "Dungeon of the Mad Mage // Lost Mine of Phandelver", pairedFoilCapableFoil},
-		{"a derived pairing never sold in foil is refused, not kept nonfoil", pairedNonfoilOnly, "Goblin // Giant Teddy Bear", ""},
+		{"plain printing reaches its foil", plain, foil},
+		{"a double-faced printing reaches its foil", dfc, dfcFoil},
+		{"foil printing stays put", foil, foil},
+		{"etched printing stays put", etched, etched},
+		{"unknown id is left alone", "not-a-uuid", "not-a-uuid"},
+		{"a derived pairing sold in foil reaches its own foil sibling", pairedFoilCapable, pairedFoilCapableFoil},
+		{"a derived pairing never sold in foil is refused, not kept nonfoil", pairedNonfoilOnly, ""},
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			got := foilPrintingID(b, test.cardID, test.name)
+			got := foilPrintingID(b, test.cardID)
 			if got != test.want {
 				t.Errorf("got %q, want %q", got, test.want)
 			}
