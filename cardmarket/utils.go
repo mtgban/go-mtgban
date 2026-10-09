@@ -340,6 +340,9 @@ var fabRenames = map[int]string{
 	822630: "Kabuto of Imperial Authority (Cold Foil Golden)", // "Imperial Kabuto (Cold Foil Golden)", FAB292
 	849485: "Stand Strong (Cold Foil)",                        // "(Rainbow Foil)", Super Slam prints SUP169 in Cold Foil
 	905276: "Otherworldly Sins (Red) (Marvel)",                // "Otherwordly Sins (Red) (Marvel)", JDG090
+	760404: "Kayo, Armed and Dangerous (Rainbow Foil)",        // "Kayo (Rainbow Foil)" is right, the datastore files KYO001 under the adult hero; drop once fixed
+	604970: "Ironrot Plate (Artist Proof)",                    // "Ironrot Chest (Artist Proof)", OXO002
+	890075: "Barraging Beatdown (Marvel)",                     // "(Yellow) (Marvel)", TNP035 is filed without its pitch
 }
 
 // fabRenumbers corrects a Cardmarket Flesh and Blood product whose own
