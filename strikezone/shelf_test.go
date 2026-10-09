@@ -39,7 +39,7 @@ func TestBasicLandArt(t *testing.T) {
 }
 
 // TestShelfCards pins the cards a shelf holds that belong to another set, or
-// that a shelf names a promo type for.
+// that a shelf names a promo type or a deck for.
 func TestShelfCards(t *testing.T) {
 	b := realDatastore(t)
 
@@ -51,6 +51,9 @@ func TestShelfCards(t *testing.T) {
 		{"Vito, Thorn of the Dusk Rose", "Promos: Media", "Near Mint Foil English", "PM21", "127★"},
 		{"Swords to Plowshares", "Promos: Media", "Near Mint Foil English", "PMEI", "2026-4"},
 		{"Gandalf, Friend of the Shire", "Promos: Play", "Near Mint Foil English", "PF23", "1"},
+		{"Pongify", "Secret Lair Commander: From Cute to Brute", "Near Mint Normal English", "PLST", "PLC-44"},
+		{"Sauron, the Dark Lord", "Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Near Mint Foil English", "LTR", "224"},
+		{"Vampiric Tutor", "Promos: Judge", "Near Mint Foil English", "G00", ""},
 	} {
 		card, err := preprocess(b, tt.name, tt.edition, tt.notes)
 		if err != nil {

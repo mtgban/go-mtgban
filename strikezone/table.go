@@ -132,6 +132,15 @@ var cardTable = map[string]string{
 	"Thanos, the Mad Titan (Borderless) (0367)":                 "Thanos, the Mad Titan (Borderless) (376)",
 	"Smaug the Magnificent (247) (Gold Headliner) (Borderless)": "Smaug the Magnificent (Gold Headliner)",
 
+	// Secret Lair drops numbered after the set the card was reprinted from,
+	// the Pool Party foil being the dazzle foil printing.
+	"Lightning Bolt (042)":                      "Lightning Bolt (IFIYW-2)",
+	"Lightning Bolt (042) (Pool Party Foil)":    "Lightning Bolt (IFIYW-7)",
+	"Lightning Greaves (382)":                   "Lightning Greaves (IFIYW-4)",
+	"Lightning Greaves (382) (Pool Party Foil)": "Lightning Greaves (IFIYW-9)",
+	"Sol Ring (288)":                            "Sol Ring (IFIYW-5)",
+	"Sol Ring (288) (Pool Party Foil)":          "Sol Ring (IFIYW-10)",
+
 	// Duskmourn double exposure frames, which the store calls Showcase.
 	"The Wandering Rescuer (Showcase)":       "The Wandering Rescuer (351)",
 	"Valgavoth, Terror Eater (Showcase)":     "Valgavoth, Terror Eater (352)",
@@ -165,6 +174,26 @@ var cardTable = map[string]string{
 	"Birds of Paradise 176 Poole":    "Birds of Paradise (176)",
 	"Flusterstorm (196 Retro Frame)": "Flusterstorm (496 Retro Frame)",
 	"Vivien Reid (m19)":              "Vivien Reid (M19 Prerelease)",
+
+	// Misspelled or mistyped Secret Lair, MagicFest and Step-and-Compleat
+	// listings.
+	"Spira's Punishment - Day of Judgement":                                "Spira's Punishment - Day of Judgment",
+	"Spira's Punishment - Day of Judgement (Rainbow Foil)":                 "Spira's Punishment - Day of Judgment (Rainbow Foil)",
+	"Spell Pierce (61)":                                                    "Spell Pierce (41)",
+	"Archangel of Tunes - Archangel of Thune (234)":                        "Archangel of Tunes - Archangel of Thune (2430)",
+	"Counterspell (Retro Frame) (2)":                                       "Counterspell (Retro Frame) (5)",
+	"Nissa, Who Shakes the World (Retro Frame)":                            "Nissa, Who Shakes the World (1042)",
+	"Elesh Norn, Mother of Machines (Borderless) (Step-and-Compleat Foil)": "Elesh Norn, Mother of Machines (419)",
+	"Elesh Norn, Mother of Machines (Showcase) (Step-and-Compleat Foil)":   "Elesh Norn, Mother of Machines (420)",
+
+	// The rainbow foil 741 star is the Chaos Theory listing, which names
+	// itself, so the bare name is the 823 bonus card.
+	"Chaos Warp (Rainbow Foil)": "Chaos Warp (823)",
+
+	// The List art words, each naming the one reprint drawn that way.
+	"Aura Shards (Commander Art)":    "Aura Shards (CMD-182)",
+	"Demonic Tutor (Duel Deck Art)":  "Demonic Tutor (DDC-49)",
+	"Lightning Bolt (Magicfest Art)": "Lightning Bolt (PF19-1)",
 
 	// Premiere Shop lands spelled with a dash.
 	"Plains - Orzhov Syndicate": "Plains (The Orzhov Syndicate)",
@@ -200,6 +229,23 @@ var card2setTable = map[string]string{
 	// shelf, which never says the drop the way secretLairDrops needs.
 	"The First Sliver (Future Sight) (003)": "PF25",
 	"The Ur-Dragon (003) (Future Sight)":    "PF25",
+	"Sliver Hive (Retro Frame)":             "PF25",
+	"Ugin, the Spirit Dragon (Retro Frame)": "PF25",
+	"Ponder (Future Sight) (002)":           "PF25",
+}
+
+// shelfPrintings are the cards a shelf lists bare that another printing of
+// the same name shares, keyed by shelf and name, with the set and number of
+// the one the shelf holds. A Secret Lair Commander deck's decklist says which
+// reprint it contains, and the Lord of the Rings shelf holds the plain Sauron
+// beside the Pro Tour promo.
+var shelfPrintings = map[[2]string][2]string{
+	{"Secret Lair Commander: From Cute to Brute", "Pongify"}:           {"PLST", "PLC-44"},
+	{"Secret Lair Commander: From Cute to Brute", "Rhys the Redeemed"}: {"PLST", "SHM-237"},
+	{"Secret Lair Commander: Heads I Win", "Arcane Signet"}:            {"PLST", "C21-234"},
+	{"Secret Lair Commander: Heads I Win", "Reshape"}:                  {"PLST", "2XM-64"},
+
+	{"Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Sauron, the Dark Lord"}: {"LTR", "224"},
 }
 
 // These cards don't have any variant, we know they are Promotional Cards,
