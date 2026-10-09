@@ -704,6 +704,7 @@ var pokemonNumberFixes = map[pokemonNumberFix]string{
 	{"SV: Black Bolt", "Tynamo", "117/086"}:                         "113/086",
 	{"SV: Black Bolt", "Unfezant", "155/086"}:                       "150/086",
 	{"SV: Black Bolt", "Venipede", "138/086"}:                       "132/086",
+	{"SV: Black Bolt", "Volcarona", "104/086"}:                      "100/086",
 	{"SV: Black Bolt", "Whirlipede", "139/086"}:                     "133/086",
 	{"SV: White Flare", "Archen", "129/086"}:                        "131/086",
 	{"SV: White Flare", "Archeops", "048/086"}:                      "051/086",
