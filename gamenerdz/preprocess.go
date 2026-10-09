@@ -757,8 +757,30 @@ func pokemonUnnumbered(b *mtgmatcher.Backend, product GNProduct, head string) *m
 		wording = append(wording, group[1])
 	}
 	name := strings.Join(strings.Fields(pokemonBracket.ReplaceAllString(head, " ")), " ")
+	if name == "Pikachu PW" && len(wording) == 1 {
+		world, found := pokemonWorldNumbers[wording[0]]
+		if found {
+			return pokemonCard(b, product, "Pikachu", world)
+		}
+	}
 	variation := strings.TrimSpace(number + " " + strings.Join(wording, " "))
 	return pokemonCard(b, product, name, variation)
+}
+
+// pokemonWorldNumbers are the numbers the catalog gives the Pikachu World
+// Collection promos, which this storefront names by language alone:
+// "Pikachu (French) PW". Each is read off the TCGplayer id the retail feed
+// carries beside the listing.
+var pokemonWorldNumbers = map[string]string{
+	"English":    "PW1",
+	"Italian":    "PW2",
+	"Korean":     "PW3",
+	"Spanish":    "PW4",
+	"Japanese":   "PW5",
+	"German":     "PW6",
+	"French":     "PW7",
+	"Polish":     "PW8",
+	"Portuguese": "PW9",
 }
 
 // pokemonBasicEnergy is a basic energy's name, which the catalog files with an

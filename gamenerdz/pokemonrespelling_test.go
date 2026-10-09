@@ -10,15 +10,16 @@ import (
 )
 
 // respellingDatastore is the published Pokemon datastore cut down to the
-// printings this storefront misspells, every row copied verbatim from it. The
-// names are what the vendor's own product body calls these cards, and the
-// TCGplayer id each row carries is the one the body carries beside the
-// misspelt display name.
+// printings this storefront misspells or numbers in its own way, every row
+// copied verbatim from it. The names are what the vendor's own product body
+// calls these cards, and the TCGplayer id each row carries is the one the
+// body carries beside the misspelt display name.
 const respellingDatastore = `{"data": {
  "game": "pokemon",
  "sets": {
   "DRI": {"abbreviation": "DRI", "baseSetSize": 182, "name": "SV10: Destined Rivals", "releaseDate": "2025-05-30"},
   "PAR": {"abbreviation": "PAR", "baseSetSize": 182, "name": "SV04: Paradox Rift", "releaseDate": "2023-11-03"},
+  "PWCP": {"abbreviation": "PWCP", "name": "Pikachu World Collection Promos", "releaseDate": "2000-09-12", "type": "promo"},
   "SVI": {"abbreviation": "SVI", "baseSetSize": 198, "name": "SV01: Scarlet & Violet Base Set", "releaseDate": "2023-03-31"},
   "SWSH02": {"abbreviation": "SWSH02", "baseSetSize": 192, "name": "SWSH02: Rebel Clash", "releaseDate": "2020-05-01"}
  },
@@ -31,7 +32,8 @@ const respellingDatastore = `{"data": {
   {"externalLinks": {"tcgPlayerId": 488053}, "finish": "Holofoil", "id": "158-198_488053_holofoil", "name": "Oinkologne ex", "number": "158", "originalName": "Oinkologne ex - 158/198", "rarity": "Double Rare", "setCode": "SVI", "total": "198", "type": "Colorless"},
   {"externalLinks": {"tcgPlayerId": 488074}, "finish": "Normal", "id": "169-198_488074", "name": "Defiance Band", "number": "169", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Tool"},
   {"externalLinks": {"tcgPlayerId": 488075}, "finish": "Normal", "id": "170-198_488075", "name": "Electric Generator", "number": "170", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Item"},
-  {"externalLinks": {"tcgPlayerId": 213283}, "finish": "Normal", "id": "172-192_213283", "name": "Horror P Energy", "number": "172", "rarity": "Uncommon", "setCode": "SWSH02", "total": "192", "type": "Special Energy"}
+  {"externalLinks": {"tcgPlayerId": 213283}, "finish": "Normal", "id": "172-192_213283", "name": "Horror P Energy", "number": "172", "rarity": "Uncommon", "setCode": "SWSH02", "total": "192", "type": "Special Energy"},
+  {"externalLinks": {"tcgPlayerId": 215159}, "finish": "Holofoil", "id": "pw-7_215159_holofoil", "language": "French", "name": "Pikachu", "number": "PW7", "rarity": "Promo", "setCode": "PWCP", "type": "Lightning", "types": ["Lightning"], "variant": "French"}
  ]
 }}`
 
@@ -69,6 +71,46 @@ func TestPreprocessPokemonRespelling(t *testing.T) {
 			DisplayName:    tt.displayName,
 			SelectedFinish: tt.finish,
 			ProductData:    GNProductData{SetName: tt.setName},
+		}
+		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+		if err != nil {
+			t.Errorf("%q: unexpected error %v", tt.displayName, err)
+			continue
+		}
+		uuid, err := b.Match(card)
+		if err != nil {
+			t.Errorf("%q: unexpected error %v", tt.displayName, err)
+			continue
+		}
+		if uuid != tt.uuid {
+			t.Errorf("%q: got %q; want %q", tt.displayName, uuid, tt.uuid)
+		}
+	}
+}
+
+// TestPreprocessPokemonPromoNumbers pins the promos this storefront numbers
+// in its own way: the Pikachu World Collection ones by the language they are
+// printed in.
+func TestPreprocessPokemonPromoNumbers(t *testing.T) {
+	b, err := mtgmatcher.Open("pokemon", strings.NewReader(respellingDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		displayName string
+		setName     string
+		sku         string
+		uuid        string
+	}{
+		{"Pikachu (French) PW - Pikachu World Collection Promos Holofoil", "Pikachu World Collection Promos", "PKM-PWCP-PW 7-H-3QSRE7LUY9", "pw-7_215159_holofoil"},
+	}
+	for _, tt := range tests {
+		product := GNProduct{
+			DisplayName:    tt.displayName,
+			SelectedFinish: "Holofoil",
+			ProductData:    GNProductData{SetName: tt.setName},
+			RetailVariants: []GNRetailVariant{{SKU: tt.sku}},
 		}
 		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
 		if err != nil {
