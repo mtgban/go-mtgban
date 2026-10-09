@@ -1916,7 +1916,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 				case isJudge(inCard) || isResale(inCard):
 					possibleSuffixes = append(possibleSuffixes, SuffixSpecial)
 				case IsJPN(inCard):
-					possibleSuffixes = append(possibleSuffixes, "jpn")
+					possibleSuffixes = append(possibleSuffixes, "jpn", SuffixSpecial+"jpn")
 				}
 
 				for _, numSuffix := range possibleSuffixes {
