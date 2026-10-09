@@ -322,15 +322,40 @@ var etchedPrintings = map[int]struct{ set, number string }{
 	674280: {"SLD", "46"},   // Plains
 }
 
-// unplacedProducts are Magic products no evidence places on a printing: the
-// V.2 to V.4 of an October Superdrop 2022 card, whose Japanese printings sit
-// beside the English one. The name route would file them on another drop's
-// printing, so they are skipped.
+// unplacedProducts are Magic products no evidence places on a printing, or
+// that name a printing never made: the V.2 to V.4 of an October Superdrop 2022
+// card, whose Japanese printings sit beside the English one; the Modern
+// Horizons 3 and March of the Machine promo products for cards that have no
+// promo; and duplicates of a product on a shelf that never held the card. The
+// name route would file them on another printing, so they are skipped.
 var unplacedProducts = map[int]bool{
 	680717: true, 680718: true, 680719: true, // Tezzeret the Seeker
 	680721: true, 680722: true, 680723: true, // Phyrexian Metamorph
 	680725: true, 680726: true, 680727: true, // Skullclamp
 	680729: true, 680730: true, 680731: true, // Solemn Simulacrum
+
+	// Modern Horizons 3: Promos, every product but Urza's Incubator (773590)
+	773571: true, 773572: true, 773573: true, 773574: true, 773575: true,
+	773576: true, 773577: true, 773578: true, 773579: true, 773580: true,
+	773581: true, 773582: true, 773583: true, 773584: true, 773585: true,
+	773586: true, 773587: true, 773588: true, 773589: true, 773591: true,
+	773592: true,
+
+	// Cards no promo or list printing exists for
+	706398: true, // Orthion, Hero of Lavabrink, March of the Machine
+	706399: true, // Orthion, Hero of Lavabrink, March of the Machine
+	706400: true, // Surrak and Goreclaw, March of the Machine
+	706401: true, // Surrak and Goreclaw, March of the Machine
+	530692: true, // Warstorm Surge, Kaldheim
+	609000: true, // Nissa, Voice of Zendikar, Commander: Kamigawa
+	744396: true, // Growing Rites of Itlimoc, The Lost Caverns of Ixalan
+	744397: true, // Growing Rites of Itlimoc, The Lost Caverns of Ixalan
+	851530: true, // Distant Melody, Secret Lair Drop Series
+	893828: true, // Loki, God of Mischief, Marvel Super Heroes: Promos
+	893841: true, // Elektra, Daughter of the Hand, Marvel Super Heroes: Promos
+	893849: true, // Quicksilver, Brash Blur, Marvel Super Heroes: Promos
+	791815: true, // Iymrith, Desert Doom, Mystery Booster 2
+	791938: true, // Call to the Feast, Mystery Booster 2
 }
 
 // versionPrinting answers the nonfoil and foil printings versionPrintings and
