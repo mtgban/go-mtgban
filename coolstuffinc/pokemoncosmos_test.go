@@ -21,6 +21,8 @@ func TestPokemonCosmosHolo(t *testing.T) {
 			"Squirtle - 33/214 (Holo Promo)", "SM Unbroken Bonds", "", "Common", "033-214_193275_holofoil"},
 		{"a bare holo bracket beside a cosmos holo note",
 			"Mimikyu (Holo) - 081/189", "SWSH Darkness Ablaze", "Cosmos Holo", "Holo Rare", "081-189_247469_holofoil"},
+		{"a dashed cosmos holo on the blister shelf",
+			"Dragonite - 5/20 - Cosmos Holo", "Dragon Vault", "", "Fixed", "005-020_233835_holofoil"},
 		{"a bare holo bracket on a holo rare is the holo rare",
 			"Munkidori (Holo) - 095/167", "SV Twilight Masquerade", "", "Holo Rare", "095-167_550139_holofoil"},
 		{"a bare holo bracket beside a note saying it may be cosmos holo",
