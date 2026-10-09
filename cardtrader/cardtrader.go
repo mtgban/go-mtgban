@@ -372,7 +372,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			}
 		}
 
-		if cardID == "" {
+		byName := cardID == ""
+		if byName {
 			var err error
 			cardID, err = ct.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -413,15 +414,14 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				}
 				continue
 			}
-			// A promotional shelf sells no ordinary card, so an answer
-			// carrying no promotional label is the number having spoken
-			// alone; promoShelfNeedsLabel says when that is worth refusing,
-			// and today only Gundam and One Piece ever say so.
-			if promoShelfNeedsLabel(ct.backend, ct.gameID, blueprint) {
-				co, err := ct.backend.GetUUID(cardID)
-				if err != nil || len(co.PromoTypes) == 0 {
-					continue
-				}
+		}
+		// On a promotional shelf an answer with no promotional label is the
+		// number speaking alone; a Yu-Gi-Oh misprint is asked after an id
+		// too, since its id can name the genuine card.
+		if (byName || ct.gameID == GameYuGiOh) && promoShelfNeedsLabel(ct.backend, ct.gameID, blueprint) {
+			co, err := ct.backend.GetUUID(cardID)
+			if err != nil || len(co.PromoTypes) == 0 {
+				continue
 			}
 		}
 

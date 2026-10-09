@@ -25,8 +25,9 @@ func withID(bp Blueprint, id int) Blueprint {
 }
 
 // TestPromoShelfNeedsLabel pins the answers that need no datastore: no
-// game but Gundam and One Piece are ever asked for a label, One Piece only
-// on its promotional pack shelves, and a Gundam blueprint is
+// game but Gundam, One Piece and Yu-Gi-Oh are ever asked for a label, One
+// Piece only on its promotional pack shelves, Yu-Gi-Oh only on a misprint
+// or counterfeit, and a Gundam blueprint is
 // asked whether or not it carries a TCGplayer id - the guard runs inside
 // the name fallback, which is where a blueprint lands once its id has
 // answered nothing.
@@ -55,6 +56,24 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 			gameID: GameOnePiece,
 			bp:     shelf("Store Tournaments Promos"),
 			want:   true,
+		},
+		{
+			desc:   "so is the pre-errata shelf",
+			gameID: GameOnePiece,
+			bp:     shelf("Pre-Errata Cards"),
+			want:   true,
+		},
+		{
+			desc:   "a Yu-Gi-Oh misprint is asked",
+			gameID: GameYuGiOh,
+			bp:     Blueprint{Version: "Counterfeit UDA Promo | Silver Stamp"},
+			want:   true,
+		},
+		{
+			desc:   "an ordinary Yu-Gi-Oh blueprint is not",
+			gameID: GameYuGiOh,
+			bp:     Blueprint{Version: "Ultra Rare"},
+			want:   false,
 		},
 		{
 			desc:   "a One Piece set shelf is not",

@@ -478,6 +478,9 @@ func fabWording(version, number string) string {
 // answering with a card carrying no promotional label is a contradiction, and
 // publishing it files a promo's price at the ordinary card's identity.
 //
+// Yu-Gi-Oh asks of a blueprint whose version says misprint or counterfeit,
+// which TCGplayer sells none of: the name and number reach the genuine card.
+//
 // One Piece asks only the closed list. For Gundam, a shelf that names a set
 // is never asked, and so is one that opens with the game's own set code:
 // Bandai brands its sets that way and the catalog spells the code into the
@@ -490,6 +493,9 @@ func fabWording(version, number string) string {
 func promoShelfNeedsLabel(b *mtgmatcher.Backend, gameID int, bp *Blueprint) bool {
 	if gameID == GameOnePiece {
 		return opPromoShelves[bp.Expansion.Name]
+	}
+	if gameID == GameYuGiOh {
+		return mtgmatcher.Contains(bp.Version, "misprint") || mtgmatcher.Contains(bp.Version, "counterfeit")
 	}
 	if gameID != GameGundam {
 		return false
@@ -508,13 +514,15 @@ func promoShelfNeedsLabel(b *mtgmatcher.Backend, gameID int, bp *Blueprint) bool
 }
 
 // opPromoShelves are the One Piece shelves that sell nothing but promotional
-// printings of other sets' cards, so an answer with no promotional label is
-// the base card answering for a promo the datastore does not carry yet.
+// (or, on Pre-Errata Cards, pre-errata) printings of other sets' cards, so an
+// answer with no promotional label is the base card answering for a promo the
+// datastore does not carry yet.
 var opPromoShelves = map[string]bool{
 	"Winner Pack":              true,
 	"Tournament Pack":          true,
 	"Store Tournaments Promos": true,
 	"Championships Promo":      true,
+	"Pre-Errata Cards":         true,
 }
 
 // codedShelf matches a shelf named for the set it sells, opening with that
