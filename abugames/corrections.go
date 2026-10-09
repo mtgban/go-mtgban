@@ -23,6 +23,9 @@ var listingCorrections = map[string]struct {
 	"7918400": {title: "Cirdan the Shipwright", edition: "The Lord of the Rings: Tales of Middle-earth Commander", number: "133", correctedNumber: "50", ignoreIDs: true},
 	// card_number (208) is the set's Tutorial Card, not this one's own 218.
 	"8114685": {title: "Sledding Otter-Penguin - FOIL", edition: "Avatar: The Last Airbender Eternal", number: "208", correctedNumber: "218"},
+	// The numbers are swapped between the nonfoil and FOIL products; only
+	// the TCGplayer id names the nonfoil 820, the Scryfall id is the 820★.
+	"8037997": {title: "Arcane Signet (Secret Lair Sketch 820)", edition: "Secret Lair Drop", number: "820★", correctedNumber: "820"},
 	// The title's parenthetical is a typo for the halofoil card_number.
 	"7895279": {title: "Harnessed Snubhorn (HALO 168) - FOIL", edition: "March of the Machine: The Aftermath", number: "188", correctedTitle: "Harnessed Snubhorn (HALO 188) - FOIL"},
 	// The listings misspell the flavor name, or splice the finish into it.
