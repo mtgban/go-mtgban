@@ -603,6 +603,15 @@ var ygoInserts = map[string]bool{
 	"Rainbow Front Filler Card": true,
 }
 
+// ygoGermanShelves are Card Trader Yu-Gi-Oh shelves that sell only German
+// product, even where a seller marks a copy "en": the datastore names those
+// rows after TCGplayer's German titles, so the plain name reaches another
+// set's printing.
+var ygoGermanShelves = map[string]bool{
+	"Advent Calendar 2011": true,
+	"Advent Calendar 2014": true,
+}
+
 // ygoBlueprintNumbers are the collector numbers Card Trader writes as an
 // index of its own where the card wears another set's code, keyed by the
 // blueprint since the index names another card of the shelf: the Raging
@@ -651,6 +660,18 @@ var ygoBlueprintNumbers = map[int]string{
 	81560: "MP1-004",
 	80276: "SBSC-ENS05",
 	80277: "SBSC-ENS01",
+	// The Swedish Shonen Jump copies of Blue-Eyes White Dragon and Red-Eyes
+	// B. Dragon, which the English JMP-001 and JMP-002 are not.
+	208973: "JMP-EN001",
+	208974: "JMP-EN002",
+}
+
+// ygoNoRow are the blueprints in ygoBlueprintNumbers whose printing the
+// datastore does not carry yet: the matcher reads JMP-EN001 as the English
+// JMP-001, so an answer is kept only when it wears the blueprint's own number.
+var ygoNoRow = map[int]bool{
+	208973: true,
+	208974: true,
 }
 
 // ygoShelfNumberRe matches the numbers Card Trader writes on the shelves
@@ -1342,7 +1363,7 @@ func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
 		// The shelf's one printing the datastore carries has a TCGplayer id.
 		return lorcanaInserts[bp.Name] || (bp.Expansion.Name == lorcanaErrataShelf && bp.TCGplayerProductID() == 0)
 	case GameYuGiOh:
-		return ygoInserts[bp.Name]
+		return ygoInserts[bp.Name] || ygoGermanShelves[bp.Expansion.Name]
 	case GameGundam:
 		return gundamInserts[bp.Name]
 	default:
