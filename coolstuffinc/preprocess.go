@@ -99,6 +99,25 @@ var variantTable = map[string]string{
 	"Big Furry Monster Right Side":                     "29",
 }
 
+// anthologyDecks maps the deck a Duel Decks: Anthology basic names in its
+// notes to the deck's own set.
+var anthologyDecks = map[string]string{
+	"Garruk vs Liliana": "GVL",
+	"Elves vs Goblins":  "EVG",
+	"Goblins vs Elves":  "EVG",
+	"Jace vs Chandra":   "JVC",
+	"Divine vs Demonic": "DVD",
+}
+
+// basicSibling holds the suffix of the printing a basic's image number names
+// when the set also files a lettered sibling under the same digits: the
+// unsuffixed number in Zendikar, and "a" in Battle for Zendikar, whose
+// unsuffixed number is the full art CSI sells as its own product.
+var basicSibling = map[string]string{
+	"Zendikar":            "",
+	"Battle for Zendikar": "a",
+}
+
 var nameTable = map[string]string{
 	"Yennet, Cryptic Sovereign":              "Yennett, Cryptic Sovereign",
 	"Invasion of Moag // Bloomweaver Dryads": "Invasion of Moag // Bloomwielder Dryads",
@@ -194,6 +213,12 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
+	if edition == "Duel Decks: Anthology" {
+		code, found := anthologyDecks[variant]
+		if found {
+			edition = code
+		}
+	}
 	input := basicLandListing(b, cardName, edition, variant, isFoil, imgName)
 	if input != nil {
 		return input, nil
@@ -533,7 +558,7 @@ func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant str
 		}
 		setCodes := map[string]bool{}
 		setCode := ""
-		var nums, regular []string
+		var nums, regular, fullArt []string
 		for _, id := range alias.Probe() {
 			co, err := b.GetUUID(id)
 			if err != nil {
@@ -541,13 +566,30 @@ func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant str
 			}
 			setCode = co.SetCode
 			setCodes[co.SetCode] = true
-			nums = append(nums, co.Number)
+			number := strings.TrimSuffix(co.Number, magic.SuffixSpecial)
+			nums = append(nums, number)
 			if !co.IsFullArt {
-				regular = append(regular, co.Number)
+				regular = append(regular, number)
+			} else if !slices.Contains(fullArt, number) {
+				fullArt = append(fullArt, number)
 			}
 		}
 
 		digits := basicLandStemNumber(imgName, setCode, base)
+		// Digits that name no candidate are a picture index or a hash.
+		named := false
+		for _, n := range nums {
+			trimmed := strings.TrimLeft(n, "0")
+			if trimmed == digits || strings.TrimRight(trimmed, letters) == digits {
+				named = true
+			}
+		}
+		if !named {
+			digits = ""
+		}
+		if digits == "" && letter == "" && strings.HasSuffix(strings.ToLower(imgName), "fa") && len(fullArt) == 1 {
+			digits = strings.TrimLeft(fullArt[0], "0")
+		}
 		if digits == "" && len(setCodes) == 1 {
 			// CSI sells a full-art basic as its own unlettered product, so
 			// the letters only count the other arts when the set has any.
@@ -575,18 +617,26 @@ func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant str
 				lettered = true
 			}
 		}
+		suffix, sided := basicSibling[edition]
+		if lettered && sided && slices.Contains(nums, digits+suffix) {
+			found, matches, lettered = digits+suffix, 1, false
+		}
 		if matches != 1 || lettered || (match != "" && found != match) {
 			return nil
 		}
 		match = found
 	}
-	return &mtgmatcher.InputCard{Name: base, Variation: match, Edition: edition, Foil: isFoil}
+	input := imageCard(base, edition, match, variant, isFoil)
+	if mtgmatcher.Contains(variant, "Surge Foil") {
+		input.Variation += " Surge Foil"
+	}
+	return input
 }
 
 // basicLandOrdinal reads a basic's letter as its position among the plain
 // collector numbers of a set ("B" is the second one). Arts are lettered in
-// number order, but a set that also holds a star or letter-suffixed number
-// has arts the letters do not count, so it answers nothing.
+// number order, but a number with a suffix names an art the letters do not
+// count, so it answers nothing. basicLandPrinting trims the star beforehand.
 func basicLandOrdinal(nums []string, letter string) string {
 	if letter == "" {
 		return ""
