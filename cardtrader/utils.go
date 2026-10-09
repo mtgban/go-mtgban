@@ -968,8 +968,10 @@ var (
 // CardTrader files under the plain printing's. A printing that already
 // carries a finish keeps its own id: an etched listing raises the same foil
 // flag, and the flag has one bit for a card sold in two premium finishes, so
-// answering it would walk the etched printing back onto the foil one.
-func foilPrintingID(b *mtgmatcher.Backend, cardID, name string) string {
+// answering it would walk the etched printing back onto the foil one. The
+// resolved card's own name is asked, since the vendor's spelling of it may
+// not be one the datastore sells in foil.
+func foilPrintingID(b *mtgmatcher.Backend, cardID string) string {
 	co, err := b.GetUUID(cardID)
 	if err != nil || co.Foil || co.Etched {
 		return cardID
@@ -997,7 +999,7 @@ func foilPrintingID(b *mtgmatcher.Backend, cardID, name string) string {
 		return foilID
 	}
 
-	if !b.HasFoilPrinting(name) {
+	if !b.HasFoilPrinting(co.Name) {
 		return cardID
 	}
 	foilID, err := b.MatchID(cardID, true)
