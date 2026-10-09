@@ -514,21 +514,24 @@ func TestPreprocess(t *testing.T) {
 }
 
 // sizedDatastore holds a Burger King promo whose printed size belongs to the
-// set it was first printed in, and two cosmos holo promos of one set and
-// number told apart by their own size, rows copied verbatim.
+// set it was first printed in, two cosmos holo promos of one set and number
+// told apart by their own size, and the Evolving Skies card a cosmos holo
+// promo of the miscellaneous shelf is cut from, rows copied verbatim.
 const sizedDatastore = `{"data": {
  "game": "pokemon",
  "sets": {
   "BKP": {"abbreviation": "BKP", "baseSetSize": 122, "name": "XY - BREAKpoint", "releaseDate": "2016-02-03"},
   "BKP-2175": {"abbreviation": "BKP", "name": "Burger King Promos", "releaseDate": "2008-07-07", "type": "promo"},
   "MCAP": {"abbreviation": "MCAP", "name": "Miscellaneous Cards & Products", "releaseDate": "1999-01-09"},
-  "ROS": {"abbreviation": "ROS", "baseSetSize": 108, "name": "XY - Roaring Skies", "releaseDate": "2015-05-06"}
+  "ROS": {"abbreviation": "ROS", "baseSetSize": 108, "name": "XY - Roaring Skies", "releaseDate": "2015-05-06"},
+  "SWSH07": {"abbreviation": "SWSH07", "baseSetSize": 203, "name": "SWSH07: Evolving Skies", "releaseDate": "2021-08-27"}
  },
  "cards": [
   {"externalLinks": {"tcgPlayerId": 155609}, "finish": "Reverse Holofoil", "id": "052-123_155609_reverseholofoil", "name": "Happiny", "number": "052", "rarity": "Promo", "setCode": "BKP-2175", "total": "123", "type": "Colorless", "variant": "Diamond & Pearl", "watermark": "diamond & pearl"},
   {"externalLinks": {"tcgPlayerId": 220117}, "finish": "Holofoil", "id": "013-098_220117_holofoil", "name": "Flareon", "number": "013", "promoTypes": ["cosmosholo"], "rarity": "Promo", "setCode": "MCAP", "total": "098", "type": "Fire", "variant": "Cosmos Holo"},
   {"externalLinks": {"tcgPlayerId": 654775}, "finish": "Holofoil", "id": "013-131_654775_holofoil", "name": "Flareon", "number": "013", "promoTypes": ["cosmosholo"], "rarity": "Rare", "setCode": "MCAP", "total": "131", "type": "Fire", "variant": "Cosmos Holo"},
-  {"externalLinks": {"tcgPlayerId": 98141, "tcgdexId": "xy6-105"}, "finish": "Holofoil", "id": "105-108_98141_holofoil", "name": "M Rayquaza EX", "number": "105", "promoTypes": ["fullart"], "rarity": "Ultra Rare", "setCode": "ROS", "total": "108", "type": "Colorless", "types": ["Colorless"], "variant": "Full Art"}
+  {"externalLinks": {"tcgPlayerId": 98141, "tcgdexId": "xy6-105"}, "finish": "Holofoil", "id": "105-108_98141_holofoil", "name": "M Rayquaza EX", "number": "105", "promoTypes": ["fullart"], "rarity": "Ultra Rare", "setCode": "ROS", "total": "108", "type": "Colorless", "types": ["Colorless"], "variant": "Full Art"},
+  {"externalLinks": {"tcgPlayerId": 246875, "tcgdexId": "swsh7-82"}, "finish": "Holofoil", "id": "082-203_246875_holofoil", "name": "Galarian Zapdos", "number": "082", "rarity": "Holo Rare", "setCode": "SWSH07", "total": "203", "type": "Fighting", "types": ["Fighting"]}
  ]
 }}`
 
@@ -554,6 +557,9 @@ func TestResolveProductSizedNumber(t *testing.T) {
 		{"Happiny - 52/124 [Diamond & Pearl] 52 - Burger King Promos Reverse Holofoil", "Burger King Promos", "Reverse Holofoil", "052-123_155609_reverseholofoil"},
 		{"Flareon - 13/131 (Cosmos Holo) 13 - Miscellaneous Cards  Products Holofoil", "Miscellaneous Cards & Products", "Holofoil", "013-131_654775_holofoil"},
 		{"Flareon - 13/98 (Cosmos Holo) 13 - Miscellaneous Cards  Products Holofoil", "Miscellaneous Cards & Products", "Holofoil", "013-098_220117_holofoil"},
+		// The shelf holds no Galarian Zapdos, and the card of the set it is
+		// cut from is not it.
+		{"Galarian Zapdos - 082/203 (Cosmos Holo) 82 - Miscellaneous Cards  Products Holofoil", "Miscellaneous Cards & Products", "Holofoil", ""},
 	}
 	for _, tt := range tests {
 		product := GNProduct{

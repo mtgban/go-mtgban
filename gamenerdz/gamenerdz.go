@@ -306,6 +306,10 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		return "", nil
 	}
 
+	if gn.backend.Game == mtgmatcher.GamePokemon && gn.leftShelf(cardID, product) {
+		return "", nil
+	}
+
 	// The finish a listing names has to be one the printing was sold in.
 	// This storefront mints a "-F-" sku beside the plain one whether or not
 	// the set ever printed a foil, and where it did not both listings answer
@@ -364,6 +368,27 @@ func numberDigits(number string) string {
 		return -1
 	}, number)
 	return strings.TrimLeft(digits, "0")
+}
+
+// pokemonMiscShelf is the shelf the storefront files its promos under, and
+// the name of a set of the catalog's own.
+const pokemonMiscShelf = "Miscellaneous Cards & Products"
+
+// leftShelf reports whether a cosmos holo listing on the miscellaneous shelf
+// was answered by a printing outside that set. The shelf's cosmos holo promos
+// are not the cards they are cut from: a Galarian Zapdos the catalog does not
+// carry would take the price of the Evolving Skies card.
+func (gn *Gamenerdz) leftShelf(cardID string, product GNProduct) bool {
+	if product.ProductData.SetName != pokemonMiscShelf ||
+		!strings.Contains(pokemonLabels.Replace(product.DisplayName), "(Cosmos Holo)") {
+		return false
+	}
+	shelf, err := gn.backend.GetSetByName(pokemonMiscShelf)
+	if err != nil {
+		return false
+	}
+	co, err := gn.backend.GetUUID(cardID)
+	return err == nil && co.SetCode != shelf.Code
 }
 
 // finishPrinted reports whether the printing a product resolved to was sold in
