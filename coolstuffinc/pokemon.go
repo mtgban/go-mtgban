@@ -22,28 +22,44 @@ import (
 // rare is the opposite: the catalog holding no nonfoil for it is the catalog
 // missing a printing rather than the storefront inventing one, and refusing
 // those would drop 25 real listings to catch nothing.
-var pokemonNonHolo = regexp.MustCompile(`(?i)\(Non-?\s?Holo\)`)
+//
+// "(Rare)" says the same of a holo rare's theme deck copy, sold beside the
+// "(Holo Rare)" one.
+var pokemonNonHolo = regexp.MustCompile(`(?i)\((?:Non-?\s?Holo|Rare)\)`)
 
 // pokemonNonHoloNote matches the note a Black & White deck exclusive carries
 // where its name carries no bracket.
 var pokemonNonHoloNote = regexp.MustCompile(`(?i)\*Non-?\s?Holo Version\b`)
 
-// pokemonNonHoloDeckExclusive answers whether the catalog's Deck Exclusives
-// shelf carries the plain printing a "(Non-Holo)" bracket asks for, taken
-// only when the probe lands on PR-1840's own nonfoil at the listing's own
-// number.
-func pokemonNonHoloDeckExclusive(b *mtgmatcher.Backend, name, numbered string, foil bool) bool {
+// pokemonNonHoloShelves are the catalog shelves that can hold the plain
+// printing a "(Non-Holo)" bracket asks for, each with the set code the probe
+// has to land on to be trusted.
+var pokemonNonHoloShelves = []struct{ edition, set string }{
+	{"Deck Exclusives", "PR-1840"},
+	{"Miscellaneous Cards & Products", "MCAP"},
+}
+
+// pokemonNonHoloShelf answers the shelf of pokemonNonHoloShelves that carries
+// the plain printing a "(Non-Holo)" bracket asks for, or "" where none does.
+// It is taken only when the probe lands on that shelf's own nonfoil at the
+// listing's own number.
+func pokemonNonHoloShelf(b *mtgmatcher.Backend, name, numbered string, foil bool) string {
 	num := cmp.Or(mtgmatcher.ExtractNumber(numbered), numbered)
 	if num == "" {
-		return false
+		return ""
 	}
-	id, err := b.Match(&mtgmatcher.InputCard{Name: name + " - " + numbered, Edition: "Deck Exclusives", Foil: foil})
-	if err != nil {
-		return false
+	for _, shelf := range pokemonNonHoloShelves {
+		id, err := b.Match(&mtgmatcher.InputCard{Name: name + " - " + numbered, Edition: shelf.edition, Foil: foil})
+		if err != nil {
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err == nil && co.SetCode == shelf.set && co.Finish == mtgmatcher.FinishNonfoil &&
+			strings.TrimLeft(co.Number, "0") == num {
+			return shelf.edition
+		}
 	}
-	co, err := b.GetUUID(id)
-	return err == nil && co.SetCode == "PR-1840" && co.Finish == mtgmatcher.FinishNonfoil &&
-		strings.TrimLeft(co.Number, "0") == num
+	return ""
 }
 
 // numberedListing reads a listing name apart from the collector number this
@@ -123,9 +139,10 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	if nonHolo {
 		strippedName := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(name, ""))
 		strippedNumbered := strings.TrimSpace(pokemonNonHolo.ReplaceAllString(numbered, ""))
-		if pokemonNonHoloDeckExclusive(b, strippedName, strippedNumbered, foil) {
+		shelf := pokemonNonHoloShelf(b, strippedName, strippedNumbered, foil)
+		if shelf != "" {
 			card.Name = strippedName
-			card.Edition = "Deck Exclusives"
+			card.Edition = shelf
 			numbered = strippedNumbered
 		}
 	}
@@ -332,6 +349,7 @@ var pokemonRespellings = strings.NewReplacer(
 	"Kyurem 43/113", "Kyurem - 43/113",
 	"Vivilion", "Vivillon",
 	"Rayquaza-GX (Shiny) - 177a", "Rayquaza-GX (Alt Art) - 177a",
+	" - NON HOLO", " - NON-HOLO",
 )
 
 var (

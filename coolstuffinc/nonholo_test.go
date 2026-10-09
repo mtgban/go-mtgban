@@ -20,6 +20,11 @@ func TestPokemonNonHoloDeckExclusive(t *testing.T) {
 		{"Team Aqua's Kyogre (Non-Holo) - 3/95", "Ex Team Magma vs. Team Aqua", "003-095_125256"},
 		// The bracket's case varies by print era.
 		{"Chandelure - 16/116 (NON-HOLO)", "BW Plasma Freeze", "016-116_135041"},
+		// The same statement spelled with a dash and a space, or as the
+		// "(Rare)" copy of a holo rare, or filed on the miscellaneous shelf.
+		{"Chespin - 3/39 - NON HOLO", "XY Kalos Starter", "3-39_84271"},
+		{"Oranguru (Rare) - 113/149", "Sun & Moon", "113-149_131303"},
+		{"Mew (Non-Holo) - 111/110", "Ex Holon Phantoms", "111-110_162457"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			card := pokemonListing(b, tt.name, tt.edition, "", false)
