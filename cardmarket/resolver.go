@@ -717,7 +717,14 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GamePokemon && pokemonCodeCard(product.Name) {
 			return "", "", false, nil
 		}
+		// A product named by id is that printing; its wording reads as
+		// a European print or another card.
+		var byID bool
 		if r.gameID == cm.GameYuGiOh {
+			cardID = r.yugiohByID(product)
+			byID = cardID != ""
+		}
+		if r.gameID == cm.GameYuGiOh && !byID {
 			product, err = yugiohPrintNumber(product)
 			if err != nil {
 				return "", "", false, err
@@ -745,7 +752,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		}
 		// CardTrader's tcg id can name a sibling rarity, another card,
 		// another printing's number or another set; distrust it.
-		if r.gameID == cm.GameYuGiOh && cardID != "" {
+		if r.gameID == cm.GameYuGiOh && cardID != "" && !byID {
 			if r.yugiohOtherCard(product, cardID) || r.yugiohOtherNumber(product, cardID) {
 				cardID = ""
 			} else {
