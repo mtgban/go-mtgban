@@ -1713,6 +1713,20 @@ var promoMap = map[string]map[string]map[string]struct {
 			},
 		},
 	},
+	"The List": {
+		"Negate": {
+			"褒賞プログラム": {Edition: "PLST", Variant: "P09-8"},
+		},
+		"Burst Lightning": {
+			"Textless 褒賞プログラム": {Edition: "PLST", Variant: "P10-8"},
+		},
+		"Mortify": {
+			"Textless 褒賞プログラム": {Edition: "PLST", Variant: "P07-3"},
+		},
+		"Harmonize": {
+			"Textless 褒賞プログラム": {Edition: "PLST", Variant: "P08-5"},
+		},
+	},
 	"Mystery Booster/The List": {
 		"Lightning Bolt": {
 			"Textless Magic Fest": {
