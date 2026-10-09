@@ -45,6 +45,7 @@ type VSProduct struct {
 	Price             float64           `json:"price"`
 	OfferPrice        float64           `json:"offer_price"`
 	SelectedFinish    string            `json:"selectedFinish"`
+	ImageURL          string            `json:"image_url"`
 	ProductData       VSProductData     `json:"product_data"`
 	VariantInfo       []VSVariant       `json:"store_pass_variant_info"`
 	RetailVariantInfo []VSRetailVariant `json:"variant_info"`

@@ -2,6 +2,7 @@ package vegassingles
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
@@ -626,5 +627,81 @@ func TestPreprocessMagicSubset(t *testing.T) {
 		if card.Edition != tt.edition {
 			t.Errorf("%s:\n got  %q\n want %q", tt.display, card.Edition, tt.edition)
 		}
+	}
+}
+
+// TestPreprocessImageID pins that the TCGplayer id the image file is named
+// after settles a listing the wording leaves aliasing between two printings,
+// and that a placeholder image leaves the wording alone.
+func TestPreprocessImageID(t *testing.T) {
+	b := withOnePiece(t)
+	product := VSProduct{
+		DisplayName:    "Carrot (Alternate Art) (OP08-023) - Premium Booster -The Best- Vol. 2 Foil",
+		SelectedFinish: "Foil",
+		ImageURL:       "https://cdn.shopify.com/s/files/1/0912/8761/7842/files/654143_a16de4cd-4373-4b3a-a68a-fcd4f1a918cf.jpg?v=1760151809",
+	}
+	card, err := preprocess(b, product, mtgmatcher.GameOnePiece)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := b.Match(card)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", card, err)
+	}
+	co, _ := b.GetUUID(id)
+	if co.SetCode != "PRB-02" || co.Number != "OP08-023" || !slices.Contains(co.PromoTypes, "sp") {
+		t.Errorf("Match(%v) = %s %s %v, want PRB-02 OP08-023 sp", card, co.SetCode, co.Number, co.PromoTypes)
+	}
+
+	product.ImageURL = "https://store.storepass.co/imgs/placeholder-img.jpg"
+	card, err = preprocess(b, product, mtgmatcher.GameOnePiece)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.ID != "" {
+		t.Errorf("preprocess() took id %q from a placeholder image", card.ID)
+	}
+}
+
+// TestPreprocessImageIDFinish pins that the image's id is taken only in a
+// finish its printing is sold in: the Master Ball holofoil photo settles a
+// holofoil listing, and a reverse holofoil one is left to its wording.
+func TestPreprocessImageIDFinish(t *testing.T) {
+	b := withPokemon(t)
+	product := VSProduct{
+		DisplayName:    "Cinccino 078/086  - Holofoil SV Black Bolt - Uncommon",
+		SelectedFinish: "Holofoil",
+		ImageURL:       "https://cdn.shopify.com/s/files/1/0912/8761/7842/files/642695.jpg?v=1774682639",
+		ProductData:    VSProductData{SetName: "SV: Black Bolt"},
+	}
+	card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := b.Match(card)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", card, err)
+	}
+	co, _ := b.GetUUID(id)
+	if co.Number != "076" || !slices.Contains(co.PromoTypes, "masterballpattern") {
+		t.Errorf("Match(%v) = %s %s %v, want BLK 076 masterballpattern", card, co.SetCode, co.Number, co.PromoTypes)
+	}
+
+	product.DisplayName = "Cinccino 076/086  - Reverse Holofoil SV Black Bolt - Uncommon"
+	product.SelectedFinish = "Reverse Holofoil"
+	card, err = preprocess(b, product, mtgmatcher.GamePokemon)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.ID != "" {
+		t.Errorf("preprocess() took id %q, a Master Ball holofoil, for a reverse holofoil", card.ID)
+	}
+	id, err = b.Match(card)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", card, err)
+	}
+	co, _ = b.GetUUID(id)
+	if co.Number != "076" || co.Finish != "reverseholofoil" {
+		t.Errorf("Match(%v) = %s %s %s, want BLK 076 reverseholofoil", card, co.SetCode, co.Number, co.Finish)
 	}
 }
