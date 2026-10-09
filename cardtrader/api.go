@@ -302,6 +302,57 @@ type Blueprint struct {
 	Slug string `json:"slug"`
 }
 
+// ProductProperties are what a listing says about its copy: condition,
+// language, finish and the rest, under each game's own names.
+type ProductProperties struct {
+	Condition string `json:"condition"`
+	Number    string `json:"collector_number"`
+	Altered   bool   `json:"altered"`
+	Signed    bool   `json:"signed"`
+
+	MTGLanguage string `json:"mtg_language,omitempty"`
+	MTGFoil     bool   `json:"mtg_foil,omitempty"`
+
+	LorcanaLanguage string `json:"lorcana_language,omitempty"`
+	LorcanaFoil     bool   `json:"lorcana_foil,omitempty"`
+
+	RiftboundLanguage string `json:"riftbound_language,omitempty"`
+	RiftboundFoil     bool   `json:"riftbound_foil,omitempty"`
+
+	OnePieceLanguage string `json:"onepiece_language,omitempty"`
+	OnePieceFoil     bool   `json:"onepiece_foil,omitempty"`
+
+	// Gundam and Palworld carry no foil property either, and need
+	// none: every printing of theirs is a product of its own, told
+	// apart by the rarity its number or its version names. Palworld's
+	// palworld_rarity property repeats the tail its number already
+	// carries, and is left unread.
+	GundamLanguage   string `json:"gundam_language,omitempty"`
+	PalworldLanguage string `json:"palworld_language,omitempty"`
+
+	// Yu-Gi-Oh carries no foil property: the rarity is the finish.
+	// Its treatment is the print run instead, which every listing
+	// names through FirstEdition below.
+	YuGiOhLanguage string `json:"yugioh_language,omitempty"`
+
+	// The Flesh and Blood finish is a named treatment ("Regular",
+	// "Rainbow Foil", "Cold Foil") rather than a boolean, and crosses
+	// with the print run FirstEdition names.
+	FabLanguage string `json:"fab_language,omitempty"`
+	FabFoilNew  string `json:"fab_foil_new,omitempty"`
+
+	// FirstEdition is the print run, which the games selling one
+	// carry beside whatever else names their treatment.
+	FirstEdition bool `json:"first_edition,omitempty"`
+
+	// Pokemon names its treatment with two flags rather than one, and
+	// needs to: a holo rare's own printing is already a foil one, so a
+	// single bit cannot say whether the reverse holo beside it is the
+	// one being priced. The print run is the FirstEdition flag above.
+	PokemonLanguage string `json:"pokemon_language,omitempty"`
+	PokemonReverse  bool   `json:"pokemon_reverse,omitempty"`
+}
+
 // Product is one listing: a blueprint offered by a seller at a price, in a
 // condition and a language.
 type Product struct {
@@ -314,56 +365,9 @@ type Product struct {
 	// A graded (slabbed) listing prices the grading company's assessment
 	// of a specific copy, not the raw NM/SP condition the rest of this
 	// struct assumes every listing is.
-	Graded     bool `json:"graded"`
-	Properties struct {
-		Condition string `json:"condition"`
-		Number    string `json:"collector_number"`
-		Altered   bool   `json:"altered"`
-		Signed    bool   `json:"signed"`
-
-		MTGLanguage string `json:"mtg_language,omitempty"`
-		MTGFoil     bool   `json:"mtg_foil,omitempty"`
-
-		LorcanaLanguage string `json:"lorcana_language,omitempty"`
-		LorcanaFoil     bool   `json:"lorcana_foil,omitempty"`
-
-		RiftboundLanguage string `json:"riftbound_language,omitempty"`
-		RiftboundFoil     bool   `json:"riftbound_foil,omitempty"`
-
-		OnePieceLanguage string `json:"onepiece_language,omitempty"`
-		OnePieceFoil     bool   `json:"onepiece_foil,omitempty"`
-
-		// Gundam and Palworld carry no foil property either, and need
-		// none: every printing of theirs is a product of its own, told
-		// apart by the rarity its number or its version names. Palworld's
-		// palworld_rarity property repeats the tail its number already
-		// carries, and is left unread.
-		GundamLanguage   string `json:"gundam_language,omitempty"`
-		PalworldLanguage string `json:"palworld_language,omitempty"`
-
-		// Yu-Gi-Oh carries no foil property: the rarity is the finish.
-		// Its treatment is the print run instead, which every listing
-		// names through FirstEdition below.
-		YuGiOhLanguage string `json:"yugioh_language,omitempty"`
-
-		// The Flesh and Blood finish is a named treatment ("Regular",
-		// "Rainbow Foil", "Cold Foil") rather than a boolean, and crosses
-		// with the print run FirstEdition names.
-		FabLanguage string `json:"fab_language,omitempty"`
-		FabFoilNew  string `json:"fab_foil_new,omitempty"`
-
-		// FirstEdition is the print run, which the games selling one
-		// carry beside whatever else names their treatment.
-		FirstEdition bool `json:"first_edition,omitempty"`
-
-		// Pokemon names its treatment with two flags rather than one, and
-		// needs to: a holo rare's own printing is already a foil one, so a
-		// single bit cannot say whether the reverse holo beside it is the
-		// one being priced. The print run is the FirstEdition flag above.
-		PokemonLanguage string `json:"pokemon_language,omitempty"`
-		PokemonReverse  bool   `json:"pokemon_reverse,omitempty"`
-	} `json:"properties_hash"`
-	User struct {
+	Graded     bool              `json:"graded"`
+	Properties ProductProperties `json:"properties_hash"`
+	User       struct {
 		Name        string `json:"username"`
 		SinglesZero bool   `json:"can_sell_via_hub"`
 		SealedZero  bool   `json:"can_sell_sealed_with_ct_zero"`
@@ -548,15 +552,25 @@ func (ct *CTAuthClient) GetOrderProducts(ctx context.Context, orderID int) ([]Pr
 	}
 	defer resp.Body.Close()
 
+	// An order item names its properties "properties", where a listing
+	// names them "properties_hash".
 	var order struct {
-		OrderItems []Product `json:"order_items"`
+		OrderItems []struct {
+			Product
+			OrderProperties ProductProperties `json:"properties"`
+		} `json:"order_items"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&order)
 	if err != nil {
 		return nil, err
 	}
 
-	return order.OrderItems, nil
+	products := make([]Product, 0, len(order.OrderItems))
+	for _, item := range order.OrderItems {
+		item.Properties = item.OrderProperties
+		products = append(products, item.Product)
+	}
+	return products, nil
 }
 
 // BulkProduct is a listing as the bulk endpoints take it, which differs
