@@ -640,7 +640,7 @@ func preprocessPokemon(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.In
 	product.DisplayName = pokemonLabels.Replace(product.DisplayName)
 	shelf := strings.LastIndex(product.DisplayName, " - ")
 	if shelf < 0 {
-		return nil, errors.New("no collector number in display name")
+		return pokemonShelfless(b, product)
 	}
 	head := product.DisplayName[:shelf]
 
@@ -711,6 +711,40 @@ func preprocessPokemon(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.In
 	}
 
 	return card, nil
+}
+
+// pokemonPromoCode is the number a Scarlet & Violet promo's display name
+// carries, "(SVP-007)", and pokemonSKUNumber the one its sku does, as in
+// "PKM-SS&VPC-002-H-VLDF24NPY4".
+var (
+	pokemonPromoCode = regexp.MustCompile(`\(SVP-(\d+)\)`)
+	pokemonSKUNumber = regexp.MustCompile(`^PKM-[^-]+-([^-]+)-`)
+)
+
+// pokemonShelfless reads a display name with no shelf after a dash, which is
+// how this storefront writes the Scarlet & Violet promos: "Hawlucha (SVP-007)
+// (Scarlet & Violet Base Set) Holofoil". The name stops at its first bracket,
+// and the number is the one the name codes where it does and the sku's where
+// it does not; the set is the product body's own.
+func pokemonShelfless(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.InputCard, error) {
+	name, _, _ := strings.Cut(product.DisplayName, " (")
+	name, _, _ = strings.Cut(name, " [")
+
+	var number string
+	code := pokemonPromoCode.FindStringSubmatch(product.DisplayName)
+	if code != nil {
+		number = code[1]
+	}
+	if number == "" && len(product.RetailVariants) > 0 {
+		sku := pokemonSKUNumber.FindStringSubmatch(product.RetailVariants[0].SKU)
+		if sku != nil {
+			number = sku[1]
+		}
+	}
+	if number == "" {
+		return nil, errors.New("no collector number in display name")
+	}
+	return pokemonCard(b, product, name, number), nil
 }
 
 // pokemonCard is the matcher's input for a name and a variation read off a
