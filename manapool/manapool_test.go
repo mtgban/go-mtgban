@@ -243,7 +243,9 @@ func TestReplayCapturedVariants(t *testing.T) {
 
 // TestIndexFoilMarketNeedsAFoilFinish pins that a foil market is recorded on
 // the etched copy of a printing sold nonfoil and etched, and not at all on one
-// sold nonfoil only, rather than as a second price beside the nonfoil one.
+// sold nonfoil only, rather than as a second price beside the nonfoil one. A
+// printing sold etched only keeps its foil market on its own etched copy, not
+// beside the foil one of the number it shares a name with.
 func TestIndexFoilMarketNeedsAFoilFinish(t *testing.T) {
 	b := withMagic(t)
 
@@ -252,6 +254,10 @@ func TestIndexFoilMarketNeedsAFoilFinish(t *testing.T) {
 			PriceMarket: 4488, PriceMarketFoil: 2546, URL: "https://manapool.com/card/sld/1114/carrion-feeder"},
 		{Name: "Arcane Signet", SetCode: "FDC", Number: "245", ScryfallID: "ee7710cf-e73d-479f-bc8d-0e78a0e324d9",
 			PriceMarket: 38, PriceMarketFoil: 58, URL: "https://manapool.com/card/fdc/245/arcane-signet"},
+		{Name: "Demonlord Belzenlok", SetCode: "SLD", Number: "159", ScryfallID: "27197660-8489-419b-9ad6-29a8713e4673",
+			PriceMarket: 155, PriceMarketFoil: 193, URL: "https://manapool.com/card/sld/159/demonlord-belzenlok"},
+		{Name: "Demonlord Belzenlok", SetCode: "SLD", Number: "159★", ScryfallID: "5d58cb4d-2091-40c8-b97c-09bf9c022a8b",
+			PriceMarketFoil: 241, URL: "https://manapool.com/card/sld/159%E2%98%85/demonlord-belzenlok"},
 	}
 	mp := NewScraperIndex(b)
 	mp.price(rows)
@@ -264,6 +270,9 @@ func TestIndexFoilMarketNeedsAFoilFinish(t *testing.T) {
 		}
 		for _, e := range entries {
 			key := co.SetCode + " " + co.Number
+			if co.Foil {
+				key += " foil"
+			}
 			if co.Etched {
 				key += " etched"
 			}
@@ -278,6 +287,15 @@ func TestIndexFoilMarketNeedsAFoilFinish(t *testing.T) {
 	}
 	if got := prices["FDC 245"]; len(got) != 1 || got[0] != 0.38 {
 		t.Errorf("Arcane Signet is %v, want its nonfoil market alone", got)
+	}
+	if got := prices["SLD 159"]; len(got) != 1 || got[0] != 1.55 {
+		t.Errorf("nonfoil Demonlord Belzenlok is %v, want its market alone", got)
+	}
+	if got := prices["SLD 159 foil"]; len(got) != 1 || got[0] != 1.93 {
+		t.Errorf("foil Demonlord Belzenlok 159 is %v, want its own foil market alone", got)
+	}
+	if got := prices["SLD 159★ etched"]; len(got) != 1 || got[0] != 2.41 {
+		t.Errorf("etched-only Demonlord Belzenlok 159★ is %v, want its foil market", got)
 	}
 }
 
