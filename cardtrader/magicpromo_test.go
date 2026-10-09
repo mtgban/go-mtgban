@@ -53,9 +53,9 @@ func TestPreprocessPromoWordingVeto(t *testing.T) {
 		}
 	})
 
-	t.Run("an id naming a plain, unpromoted card is still vetoed", func(t *testing.T) {
-		// Domri's Nodorog: Prerelease shelf, but its id names the
-		// plain RNA printing - no prerelease copy exists.
+	t.Run("wording is overridden when both ids name the same plain card", func(t *testing.T) {
+		// Domri's Nodorog: Prerelease shelf, but its scryfall and tcgplayer
+		// ids both name the plain RNA printing - no prerelease copy exists.
 		bp := &Blueprint{
 			ID:          48983,
 			Name:        "Domri's Nodorog",
@@ -70,13 +70,53 @@ func TestPreprocessPromoWordingVeto(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if in.Edition != bp.Expansion.Name {
-			t.Errorf("Edition = %q, want the shelf wording left alone", in.Edition)
+		if in.Edition != "Ravnica Allegiance" {
+			t.Errorf("Edition = %q, want the shelf wording replaced", in.Edition)
 		}
 
+		id, err := b.Match(in)
+		if err != nil {
+			t.Fatalf("Match refused a correctly id-resolved card: %v", err)
+		}
+		if id != in.ID {
+			t.Errorf("Match landed on %q, want %q", id, in.ID)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.SetCode != "RNA" || co.Number != "272" {
+			t.Errorf("landed on %s %s, want RNA 272", co.SetCode, co.Number)
+		}
+
+		// One id alone naming the plain card is not enough to lift the veto.
+		bp.TCGplayerID = 0
+		in, err = Preprocess(b, bp)
+		if err != nil {
+			t.Fatal(err)
+		}
 		_, err = b.Match(in)
 		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
-			t.Errorf("Match = %v, want ErrUnsupported", err)
+			t.Errorf("Match with the scryfall id alone = %v, want ErrUnsupported", err)
+		}
+
+		// Nor are two ids naming the plain card of one that has a prerelease
+		// copy (Hydroid Krasis, PRNA 183s): the shelf sells that copy.
+		krasis := &Blueprint{
+			Name:        "Hydroid Krasis",
+			CategoryID:  CategoryMagicSingles,
+			ScryfallID:  "801dd9c6-b159-4e1c-af2c-214c1f573633",
+			TCGplayerID: 182840,
+		}
+		krasis.Expansion.Name = "Ravnica Allegiance Prerelease"
+		krasis.Properties.Number = "183"
+		in, err = Preprocess(b, krasis)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = b.Match(in)
+		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			t.Errorf("Match with both ids on a card with a prerelease copy = %v, want ErrUnsupported", err)
 		}
 	})
 }
