@@ -1,11 +1,14 @@
 package cardmarket
 
 import (
+	"errors"
 	"slices"
 	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -351,5 +354,11 @@ func TestSLDCommanderDeckCardDisambiguatesByNumber(t *testing.T) {
 				t.Errorf("sldCommanderDeckCard(%q, %q) = %s, want %s %s", tt.cardName, tt.number, co, tt.wantSet, tt.wantNumber)
 			}
 		})
+	}
+
+	// A deck MTGJSON does not list is skipped, not matched by name alone
+	_, err := Preprocess(b, "Sol Ring", "1", "Secret Lair Commander Deck: Not Yet Published")
+	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		t.Errorf("Preprocess in an unpublished deck = %v, want ErrUnsupported", err)
 	}
 }

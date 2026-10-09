@@ -1514,6 +1514,12 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 
 	// Try separating SLD and PLST cards if possible
 	if strings.Contains(ogEdition, "Secret Lair Commander Deck") {
+		// A deck MTGJSON has not published yet has no printing to land
+		// on, and the name alone would widen to every printing of it.
+		if sldCommanderDeck(b, ogEdition) == "" {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
 		matched := false
 		for _, card := range b.MatchInSet(cardName, "PLST") {
 			if strings.HasSuffix(card.Number, "-"+number) {
@@ -1554,34 +1560,42 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 	}, nil
 }
 
-// sldCommanderDeckCard answers, for a Secret Lair Commander Deck reprint
-// whose PLST number the id map does not carry, the printing MTGJSON's own
-// deck list names for cardName - by the product's own number where the
-// deck reprints that name under more than one printing, else by name.
-func sldCommanderDeckCard(b *mtgmatcher.Backend, expansionName, cardName, number string) string {
+// sldCommanderDeck answers the name of the MTGJSON deck of Secret Lair
+// that the Cardmarket expansion names, or "" when none is published.
+// The deck must carry Cardmarket's suffix exactly, or be the only non-foil
+// deck that suffix prefixes: one MTGJSON spells differently ("&" for "and")
+// answers "" too, and Preprocess then skips the expansion without a log
+// line, so an expansion still pricing nothing once its deck is out is
+// checked here first.
+func sldCommanderDeck(b *mtgmatcher.Backend, expansionName string) string {
 	sld, err := b.GetSet("SLD")
 	if err != nil {
 		return ""
 	}
 	want := strings.TrimPrefix(expansionName, "Secret Lair Commander Deck: ")
-	deck := ""
 	for _, d := range sld.Decks {
 		if d.Name == want {
-			deck = d.Name
-			break
+			return d.Name
 		}
 	}
-	if deck == "" {
-		var candidates []string
-		for _, d := range sld.Decks {
-			if strings.HasPrefix(d.Name, want) && !strings.Contains(d.Name, "Foil Edition") {
-				candidates = append(candidates, d.Name)
-			}
-		}
-		if len(candidates) == 1 {
-			deck = candidates[0]
+	var candidates []string
+	for _, d := range sld.Decks {
+		if strings.HasPrefix(d.Name, want) && !strings.Contains(d.Name, "Foil Edition") {
+			candidates = append(candidates, d.Name)
 		}
 	}
+	if len(candidates) == 1 {
+		return candidates[0]
+	}
+	return ""
+}
+
+// sldCommanderDeckCard answers, for a Secret Lair Commander Deck reprint
+// whose PLST number the id map does not carry, the printing MTGJSON's own
+// deck list names for cardName - by the product's own number where the
+// deck reprints that name under more than one printing, else by name.
+func sldCommanderDeckCard(b *mtgmatcher.Backend, expansionName, cardName, number string) string {
+	deck := sldCommanderDeck(b, expansionName)
 	if deck == "" {
 		return ""
 	}
