@@ -68,6 +68,12 @@ var nameTypos = map[string]string{
 	"Dread Sanctuary": "Dread Statuary",
 }
 
+// staleTCGIDs maps a TCGplayer product id the storefront still lists, and
+// TCGplayer has deleted, to the live product of the same card.
+var staleTCGIDs = map[string]string{
+	"507429": "510091", // Fists of Flame, Commander Masters 223
+}
+
 // match resolves the card a row lists. The newer sets carry their TCGplayer
 // product id and the older ones their multiverse id, each converted through
 // its own id space; either answers by itself. The name and set only speak
@@ -90,6 +96,9 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 	space, inputID := mtgmatcher.IDSpaceTCGplayer, product.TCGProductID
 	if inputID == "" {
 		space, inputID = mtgmatcher.IDSpaceMultiverse, product.MultiverseID
+	}
+	if space == mtgmatcher.IDSpaceTCGplayer {
+		inputID = cmp.Or(staleTCGIDs[inputID], inputID)
 	}
 	cardID, err := ml.backend.MatchID(ml.backend.ConvertID(space, inputID), foil, etched)
 	if err == nil && (!product.AmbiguousID || ml.nameAgrees(cardID, cardName)) {
