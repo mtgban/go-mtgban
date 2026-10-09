@@ -591,7 +591,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					if theCard != nil {
 						break
 					}
-					theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(cardName))), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(jpArtWording(notes) + " " + catalogRarity(rarity)), Foil: isFoil}
+					theCard = yugiohListing(cardName, edition, notes, notes, rarity, isFoil)
 				case mtgmatcher.GamePokemon:
 					shelf, shelfRun := firstEditionShelf(edition)
 					if shelfRun != nil {
@@ -940,7 +940,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			if theCard != nil {
 				break
 			}
-			theCard = &mtgmatcher.InputCard{Name: catalogColor(catalogSpelling(jpArtWording(product.Name))), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(jpArtWording(yugiohCodes.Replace(buylistVariation(product))) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
+			theCard = yugiohListing(product.Name, product.ItemSet, product.Notes, yugiohCodes.Replace(buylistVariation(product)), product.RarityName, product.IsFoil == 1)
 		case mtgmatcher.GameOnePiece:
 			tcgID, named := onePiecePIDs[product.PID]
 			if named {
