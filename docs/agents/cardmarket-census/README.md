@@ -148,7 +148,8 @@ Before sending, confirm that the fix will change a landing:
 
 - **Publishing a `cardmarketId` only moves games whose resolver reads it.**
   One Piece does; Pokemon does not.
-- **One Piece's `claimByID` and `giveWay` read only the bridge.** A
+- **One Piece's `claimByID` and `giveWay` read only `tcgLink`**, the
+  bridge and then `onePieceEventLinks`, never the published id. A
   published id there can still lose to a wrong CardTrader link, and that
   link needs a `tcgIDOverrides` row too (#860).
 
