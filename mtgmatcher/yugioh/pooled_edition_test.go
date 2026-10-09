@@ -76,3 +76,30 @@ func TestPooledEditionYuyaDeclan(t *testing.T) {
 		}
 	}
 }
+
+// TestOTSPastRun pins that an OTS Tournament Pack listing numbered past the
+// set's English run is skipped as a printing the datastore has no row for,
+// where the same number would otherwise coincide with a card of another set
+// ("Gladiator Beast Darius" 031 is Premium Gold's PTDN-EN031), and that a
+// listing inside the run still matches.
+func TestOTSPastRun(t *testing.T) {
+	b := loadBackend(t)
+
+	past := mtgmatcher.InputCard{Name: "Gladiator Beast Darius", Edition: "OTS Tournament Pack 12", Variation: "031 Common"}
+	if id, err := b.Match(&past); err != mtgmatcher.ErrUnsupported {
+		t.Errorf("Match(%v) = (%q, %v), want %v", past, id, err, mtgmatcher.ErrUnsupported)
+	}
+
+	inRun := mtgmatcher.InputCard{Name: "Tenyi Spirit - Vishuda", Edition: "OTS Tournament Pack 12", Variation: "010 Super Rare"}
+	id, err := b.Match(&inRun)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", inRun, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", id, err)
+	}
+	if co.Number != "OP12-EN010" {
+		t.Errorf("Match(%v) = %s, want OP12-EN010", inRun, co.Number)
+	}
+}

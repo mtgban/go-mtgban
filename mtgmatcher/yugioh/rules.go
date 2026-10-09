@@ -4,6 +4,7 @@ import (
 	"maps"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -935,6 +936,9 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	if strings.HasSuffix(inCard.Name, "Character Art Card") {
 		return true
 	}
+	if pastOTSRun(b, inCard) {
+		return true
+	}
 	for _, field := range strings.Fields(inCard.Variation) {
 		match := foreignNumberRe.FindStringSubmatch(field)
 		if match == nil || !foreignInfixes[strings.ToUpper(match[2])] {
@@ -955,6 +959,41 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 		return true
 	}
 	return false
+}
+
+// trailingDigitsRe reads the digits a collector number ends on.
+var trailingDigitsRe = regexp.MustCompile(`[0-9]+$`)
+
+// pastOTSRun reports whether an OTS Tournament Pack listing is numbered past
+// the last card its set prints. The packs' extra cards past the English run
+// exist only as Portuguese printings, which no English datastore carries, so
+// a plain leading number beyond the set's own run names a printing it has no
+// row for. A number inside the run is left to the match.
+func pastOTSRun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	if !strings.HasPrefix(inCard.Edition, "OTS Tournament Pack") {
+		return false
+	}
+	set, err := b.GetSetByName(inCard.Edition)
+	if err != nil {
+		return false
+	}
+	fields := strings.Fields(inCard.Variation)
+	if len(fields) == 0 {
+		return false
+	}
+	listed, err := strconv.Atoi(fields[0])
+	if err != nil {
+		return false
+	}
+	var last int
+	for i := range set.Cards {
+		digits := trailingDigitsRe.FindString(set.Cards[i].Number)
+		n, err := strconv.Atoi(digits)
+		if err == nil {
+			last = max(last, n)
+		}
+	}
+	return last > 0 && listed > last
 }
 
 // numberTailRe matches what a collector number holds behind its set code: the
