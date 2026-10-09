@@ -50,22 +50,42 @@ func TestRiftboundEpithetOnlyChampions(t *testing.T) {
 	}
 }
 
-// TestRiftboundAmbiguousOrganizedPlayPromoRefuses pins the one case in the
-// whole Riftbound datastore where two different promotional sets carry the
-// same name at the same number - Organized Play's and the plain
-// Promotional Cards set's own "Jinx, Rebel" #202 - with nothing else
-// distinguishing them: identical rarity, identical finish, no promo type on
-// either. SCG's own catalog set bucket ("Promotional Cards") does not say
-// which either. Resolving would mean guessing; refusing is correct.
-func TestRiftboundAmbiguousOrganizedPlayPromoRefuses(t *testing.T) {
+// TestRiftboundPromoSkuEvent pins the promo skus whose generic "Promotional
+// Cards" set says nothing: the event and set in the sku place them. Jinx,
+// Rebel #202 exists in both Organized Play and the plain promotional set,
+// and only the release-event prefix names the first. The Spiritforged runes
+// "R01b" share their wording with the Vendetta runes, which a Vendetta sku
+// keeps.
+func TestRiftboundPromoSkuEvent(t *testing.T) {
 	b := withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
 
-	p := CatalogProduct{
-		SKU: "SGL-RIFT-PRM-RLS_OGN_202-ENF", Name: "Jinx - Rebel", Game: "Riftbound",
-		Set: "Promotional Cards", Finish: "Foil", FinishGroup: "Foil",
-		CollectorNumber: "202", ProductType: ProductTypeSingles,
-	}
-	if _, err := resolveProduct(b, GameRiftbound, p); err == nil {
-		t.Fatalf("resolveProduct(%s) resolved, want a refusal", p.SKU)
+	for _, tt := range []struct {
+		sku, name, number string
+		wantSet, wantNo   string
+	}{
+		{"SGL-RIFT-PRM-RLS_OGN_202-ENF", "Jinx - Rebel", "202", "OPP", "202"},
+		{"SGL-RIFT-PRM-NN_SFD_R01b-ENF", "Fury Rune", "R01b", "SFD", "R1b"},
+		{"SGL-RIFT-PRM-NN_SFD_R04b-ENF", "Body Rune", "R04b", "SFD", "R4b"},
+		{"SGL-RIFT-PRM-NN_VEN_R04b-ENF", "Body Rune", "R04b", "OPP", "R4b"},
+		{"SGL-RIFT-PRM-NN_SFD_007-ENF", "Gem Jammer", "007", "OPP", "7"},
+	} {
+		t.Run(tt.sku, func(t *testing.T) {
+			p := CatalogProduct{
+				SKU: tt.sku, Name: tt.name, Game: "Riftbound",
+				Set: "Promotional Cards", Finish: "Foil", FinishGroup: "Foil",
+				CollectorNumber: tt.number, ProductType: ProductTypeSingles,
+			}
+			id, err := resolveProduct(b, GameRiftbound, p)
+			if err != nil {
+				t.Fatalf("resolveProduct(%s) = %v", tt.sku, err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatalf("GetUUID(%s) = %v", id, err)
+			}
+			if co.SetCode != tt.wantSet || co.Number != tt.wantNo {
+				t.Errorf("%s resolved to %s #%s, want %s #%s", tt.sku, co.SetCode, co.Number, tt.wantSet, tt.wantNo)
+			}
+		})
 	}
 }

@@ -1113,12 +1113,65 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 
 	// Riftbound identifies a card by name + collector number + finish; the
 	// catalog set narrows same-name-and-number collisions across sets.
+	return resolveRiftbound(b, p, foil)
+}
+
+// riftboundEventHeadings names the promo shelf behind the event prefix of a
+// promo sku, "NN_SFD_R01b" or "RLS_OGN_202": the catalog's own set is the
+// generic "Promotional Cards", which spans every promotional set.
+var riftboundEventHeadings = map[string]string{
+	"NN":  "Nexus Night Promos",
+	"RLS": "Release Event Promos",
+}
+
+// resolveRiftbound reads a promo sku's own event, set and number, which the
+// product's generic set drops. A lettered number that the named set carries
+// exactly is that set's printing: the Spiritforged runes "R01b" are filed in
+// Spiritforged itself, not beside the Vendetta runes of the same wording.
+// Otherwise the event prefix picks the promo shelf.
+func resolveRiftbound(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string, error) {
+	edition := p.Set
+	segments := strings.Split(skuNumber(p.SKU), "_")
+	if skuSetCode(p.SKU) == "PRM" && len(segments) == 3 {
+		id, found := riftboundLetteredPrinting(b, p.Name, segments[1], segments[2], foil)
+		if found {
+			return id, nil
+		}
+		heading, found := riftboundEventHeadings[segments[0]]
+		if found {
+			edition = heading
+		}
+	}
 	return b.Match(&mtgmatcher.InputCard{
 		Name:      p.Name,
-		Edition:   p.Set,
+		Edition:   edition,
 		Variation: p.CollectorNumber,
 		Foil:      foil,
 	})
+}
+
+// riftboundLetteredPrinting finds the printing a lettered number names in
+// the set it is filed under. The letter is what makes the number exact: a
+// bare one would also match the set's plain card of that number.
+func riftboundLetteredPrinting(b *mtgmatcher.Backend, name, setCode, number string, foil bool) (string, bool) {
+	set, found := b.Sets[setCode]
+	if !found || number == "" || !unicode.IsLetter(rune(number[len(number)-1])) {
+		return "", false
+	}
+	id, err := b.Match(&mtgmatcher.InputCard{
+		Name:      name,
+		Edition:   set.Name,
+		Variation: number,
+		Foil:      foil,
+	})
+	if err != nil {
+		return "", false
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || co.SetCode != setCode || co.Number == "" {
+		return "", false
+	}
+	return id, unicode.IsLetter(rune(co.Number[len(co.Number)-1]))
 }
 
 // promoShelfPrintings names the printing behind a sku that SCG files on its
