@@ -110,8 +110,12 @@ func splitParens(b *mtgmatcher.Backend, title string) (number, series, treatment
 				} else {
 					// The padding is a collector number's, and a power is
 					// not one: stripping a leading zero off "0/4" leaves
-					// "/4", which names nothing and drops the listing.
-					number = strings.TrimLeft(before, "0")
+					// "/4", which names nothing and drops the listing. Nor
+					// is the cost line "0.0.2" that names an Unstable card.
+					number = before
+					if !strings.Contains(before, ".") {
+						number = strings.TrimLeft(before, "0")
+					}
 				}
 			}
 			continue

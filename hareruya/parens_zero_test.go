@@ -22,6 +22,8 @@ func TestSplitParensKeepsAZeroPower(t *testing.T) {
 		// A collector number still loses its padding.
 		{"《Card》(007)", "7"},
 		{"《Card》(0100)", "100"},
+		// Nor does an Unstable cost line.
+		{"《Card》(0.0.2)", "0.0.2"},
 		// And a two-spelling promo code still keeps its first side.
 		{"《Card》(PRM-001/ABC)", "PRM-001"},
 	} {
