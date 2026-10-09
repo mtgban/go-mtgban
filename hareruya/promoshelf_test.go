@@ -1,7 +1,10 @@
 package hareruya
 
 import (
+	"errors"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestPromoShelf pins the retail promo shelf's newer wordings to the
@@ -135,7 +138,8 @@ func TestPromoShelf(t *testing.T) {
 // shooting-star listings whose series names no shelf a per-card row
 // already answers: the Spotlight Series and 30th Anniversary History
 // promos, and four cards whose treatment and series were reaching the
-// wrong printing untranslated together.
+// wrong printing untranslated together. A row with no set is one the
+// buylist skips, having no printing to land on.
 func TestBuylistPromoShelf(t *testing.T) {
 	for _, tt := range []struct {
 		title, wantSet, wantNumber string
@@ -170,10 +174,22 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】【Foil】■ボーダーレス■《スタークによる改良、アイアン・スパイダー/Iron Spider, Stark Upgrade》(マーベル・レジェンドプロモ)[流星マーク] 茶", "LMAR", "4"},
 		{"【EN】【Foil】■ボーダーレス■《恐ろしき癒し手、アンチヴェノム/Anti-Venom, Horrifying Healer》(マーベル・レジェンドプロモ)[流星マーク] 白", "LMAR", "1"},
 		{"【EN】【Foil】■ボーダーレス■《スペクタキュラー・スパイダーマン/Spectacular Spider-Man》(マーベル・レジェンドプロモ)[流星マーク] 白", "LMAR", "2"},
+		// A stamped copy lands where the set files a promo pack printing.
+		{"【EN】(022)■プロモスタンプ付■《復活した精霊信者、ニッサ/Nissa, Resurgent Animist》[MAT] 緑R", "PMAT", "22p"},
+		{"【EN】(049)■プロモスタンプ付■《再鍛されたレガシー、カーン/Karn, Legacy Reforged》[MAT] 茶R", "", ""},
+		{"【EN】【Foil】《セラのアバター/Serra Avatar》[テストプリント]", "", ""},
+		{"【EN】【Foil】■FFTCG■《アルフィノ/Alphinaud》(その他イベント記念系)[その他プロモ]", "", ""},
+		{"【EN】《ルビーの大メダル/Ruby Medallion》[エラーカード] 茶R", "", ""},
 	} {
 		t.Run(tt.title, func(t *testing.T) {
 			b := withMagic(t)
 			theCard, err := preprocess(b, tt.title)
+			if tt.wantSet == "" {
+				if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+					t.Errorf("preprocess(%q) = %v, want ErrUnsupported", tt.title, err)
+				}
+				return
+			}
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.title, err)
 			}

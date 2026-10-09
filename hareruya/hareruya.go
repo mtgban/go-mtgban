@@ -31,8 +31,9 @@ const (
 )
 
 // reAltered finds the note a storefront grade carries for a copy someone
-// signed or inked, in English or Japanese ("MP Signed", "BGS8 サイン9点").
-var reAltered = regexp.MustCompile(`Singed|Signed|Inked|サイン`)
+// signed or inked, or that ink, water or a chipped case has damaged, in
+// English or Japanese ("MP Signed", "BGS8 サイン9点", "Poor Water").
+var reAltered = regexp.MustCompile(`Singed|Signed|Ink|Water|サイン|欠け`)
 
 // reSlab reads a graded slab's label, grader and score ("BGS8.5").
 var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC)\s*(\S+)$`)
