@@ -33,6 +33,17 @@ listing is pinned to that drop's number. The names still refused (158 keys in
 the capture) have more than one drop in the finish, which no wording on the
 page tells apart.
 
+## Cart ids
+
+Every buylist and store entry's `InstanceID` is the id Strike Zone's CSV cart
+import takes, `USCIDU-637-F-19290-285-OVN-RMS`, computed by `importID` from
+the `637-C-<item>-<variant>` code the row's "Sell to Us" or "Add to Cart"
+link carries. One id names a printing and grade on both sides. No page
+publishes the id itself: its digit shifts and two checksums were
+reconstructed from cart exports, and `cartid_test.go` pins them to ids
+exported on 2026-10-09. A code of a shape they were never measured on keeps
+its plain `637-C-…` form, which the cart still takes one link at a time.
+
 ## Known limits
 
 - Secret Lair, The List and Mystery Booster errors are not logged: the shelf

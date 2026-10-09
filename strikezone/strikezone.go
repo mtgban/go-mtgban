@@ -363,6 +363,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 				Price:      cardPrice,
 				Quantity:   quantity,
 				URL:        "http://shop.strikezoneonline.com" + pathURL,
+				InstanceID: cartCode(el, "Add"),
 			},
 		}
 	} else if mode == modeBuylist {
@@ -392,6 +393,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 				Quantity:   quantity,
 				PriceRatio: priceRatio,
 				URL:        link,
+				InstanceID: cartCode(el, "Buy"),
 			},
 		}
 	}
