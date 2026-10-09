@@ -85,6 +85,12 @@ func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) st
 	if len(keep) > 1 {
 		keep = slices.DeleteFunc(keep, func(id string) bool {
 			co, err := b.GetUUID(id)
+			return err != nil || reprintedAfterPromoPack(b, l, co)
+		})
+	}
+	if len(keep) > 1 {
+		keep = slices.DeleteFunc(keep, func(id string) bool {
+			co, err := b.GetUUID(id)
 			return err != nil || !namesSet(b, l, co)
 		})
 	}
@@ -103,6 +109,23 @@ func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) st
 func namesSet(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
 	set, found := b.Sets[co.SetCode]
 	return found && (mtgmatcher.Equals(set.Name, l.shelf) || mtgmatcher.Equals(set.Name, l.card.Edition))
+}
+
+// reprintedAfterPromoPack reports whether the printing sits in a set released
+// after the one a "Promo Pack: <Set>" shelf is named for. The store stocks
+// the packs of that release only, so a later reprint of the same land is not
+// what the shelf holds, however the set's own promo pack came to share it.
+func reprintedAfterPromoPack(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+	name, found := strings.CutPrefix(l.shelf, "Promo Pack: ")
+	if !found {
+		return false
+	}
+	shelfSet, err := b.GetSetByName(name)
+	if err != nil {
+		return false
+	}
+	set, err := b.GetSet(co.SetCode)
+	return err == nil && set.ReleaseDateTime.After(shelfSet.ReleaseDateTime)
 }
 
 // isPromoShelf reports whether the shelf is one of the promo categories.

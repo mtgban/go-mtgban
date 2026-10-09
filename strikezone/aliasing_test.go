@@ -72,6 +72,13 @@ func TestAliasingContradictions(t *testing.T) {
 			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "LTR" },
 			want:  "the printing in LTR",
 		},
+		{
+			desc: "a promo pack land a later set reprinted, on the shelf of the set it came in",
+			name: "Deserted Beach", shelf: "Promo Pack: Innistrad: Midnight Hunt",
+			notes: "Near Mint Normal English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "PMID" },
+			want:  "the printing in PMID",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			co := tieBreak(t, b, tt.name, tt.shelf, tt.notes)
