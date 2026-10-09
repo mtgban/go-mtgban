@@ -22,6 +22,8 @@ func TestShelfTotalDoesNotVeto(t *testing.T) {
 			Name: "Blastoise", Edition: "Celebrations: Classic Collection", Variation: "2/25"}, "2-102_250319_holofoil"},
 		{"the total most of the shelf prints over a subset numbered apart", mtgmatcher.InputCard{
 			Name: "Unown", Edition: "EX Unseen Forces", Variation: "Z/115"}, "z-28_90193_holofoil"},
+		{"the Unown numbered by a mark rather than a letter", mtgmatcher.InputCard{
+			Name: "Unown", Edition: "EX Unseen Forces", Variation: "?/115"}, "28_90167_holofoil"},
 		{"the whole run's figure over one year of it", mtgmatcher.InputCard{
 			Name: "AZ", Edition: "World Championship Decks", Variation: "91/100 2015 Patrick Martinez"}, "91-119_481163"},
 		{"the parent's own card count, without the subset admitted beside it", mtgmatcher.InputCard{
