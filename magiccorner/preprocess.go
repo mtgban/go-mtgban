@@ -250,7 +250,7 @@ func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.Inp
 
 // mcmImageIDRe matches the Cardmarket product id an Extras or Promos shelf's
 // image name carries as its trailing number.
-var mcmImageIDRe = regexp.MustCompile(`[-_](\d{5,7})(?:-\d+)?\.jpg$`)
+var mcmImageIDRe = regexp.MustCompile(`[-_/](\d{5,7})(?:-\d+)?\.(?:jpe?g|png)$`)
 
 // imageProductID resolves an Extras/Promos image's Cardmarket product id to
 // a uuid. It is accepted only when it names the listing's card, under the
