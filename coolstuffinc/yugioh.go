@@ -40,11 +40,24 @@ var yugiohNumbers = map[string]string{
 	"Gladiator Beast Secutor|LCGX-EN040": "LCGX-EN240",
 }
 
+// yugiohAlternateArts lists the Gold Letter alternate arts of Battles of
+// Legend - Chapter 1 whose listing leaves "Alternate Art" out, keyed by name
+// and edition. Both printings of these numbers are alternate arts, and only
+// that word tells the Gold Letter one from the Silver.
+var yugiohAlternateArts = map[string]bool{
+	"Borrelsword Dragon|Battles of Legend - Chapter 1":                  true,
+	"Number 39: Utopia (Astral Language)|Battles of Legend - Chapter 1": true,
+}
+
 // yugiohListing answers the card a Yu-Gi-Oh listing describes. The variation
 // is the note on the sell listing and the number and note on the buylist, and
 // notes is the note alone, which tells the print runs apart.
 func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *mtgmatcher.InputCard {
+	listed := name + "|" + edition
 	variation = jpArtWording(yugiohWording.Replace(variation))
+	if yugiohAlternateArts[listed] {
+		variation += " Alternate Art"
+	}
 	return &mtgmatcher.InputCard{
 		Name:      catalogColor(catalogSpelling(jpArtWording(yugiohWording.Replace(name)))),
 		Edition:   printRunEdition(edition, notes),
