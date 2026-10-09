@@ -281,6 +281,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 			BuyPrice:   buyPrice,
 			PriceRatio: priceRatio,
 			URL:        link,
+			InstanceID: product.PPQID,
 		}
 
 		err = csi.buylist.Add(uuid, &buyEntry)

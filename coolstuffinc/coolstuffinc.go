@@ -1062,6 +1062,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				BuyPrice:   buyPrice * deduction,
 				PriceRatio: priceRatio,
 				URL:        link,
+				InstanceID: product.PPQID,
 				CustomFields: map[string]string{
 					"originalProduct": fmt.Sprintf("%+v", product),
 				},

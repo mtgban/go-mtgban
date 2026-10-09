@@ -66,6 +66,7 @@ func newCSIHTTPClient() *http.Client {
 // CSIPriceEntry is one card in the buylist feed.
 type CSIPriceEntry struct {
 	PID         string `json:"PID"`
+	PPQID       string `json:"PPQID"`
 	Name        string `json:"Name"`
 	ItemSet     string `json:"ItemSet"`
 	Notes       string `json:"Notes"`
