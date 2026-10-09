@@ -57,6 +57,7 @@ var gundamUnmade = map[int]bool{
 // which the promo shelf pin would otherwise land on a sibling's row.
 var gundamNoRow = map[int]bool{
 	908683: true, // Char's Zaku II, ST03-006, a Special Tournament Promo
+	908594: true, // GD01-013 V.2, a fifth print no catalog names
 }
 
 // gundamPromoSet is the one set the datastore files every promotional
