@@ -575,5 +575,29 @@
       ]
     },
     "uuid": "73301af2-fe76-5b73-a274-64ab6f268ad6"
+  },
+  {
+    "group": "8037997",
+    "card": {
+      "id": "2528030",
+      "product_id": "8037997",
+      "display_title": "Arcane Signet (Secret Lair Sketch 820)",
+      "simple_title": "Arcane Signet",
+      "magic_edition_sort": "Secret Lair Drop",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "820★",
+      "scryfall_id": [
+        "3722c7e8-bba3-4db0-a157-577cf37f53b4"
+      ],
+      "tcgplayer_id": [
+        547740
+      ]
+    },
+    "uuid": "d0b1e043-d5e4-5feb-8066-b271adfe8d76"
   }
 ]
