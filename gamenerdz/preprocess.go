@@ -93,6 +93,10 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		cardName = respelled
 	}
 	cardName = strings.ReplaceAll(cardName, " / ", " // ")
+	fixed, found := magicNumberTypos[magicTypo{strings.ToLower(string(product.ProductData.Set)), cardName, number}]
+	if found {
+		number = fixed
+	}
 
 	edition := string(product.ProductData.Set)
 	if edition == "" {
@@ -345,6 +349,23 @@ var magicRespellings = map[string]string{
 	"Thousand-Year Elixer":   "Thousand-Year Elixir",
 	"Village Messenger Treatments // Moonrise Intruder": "Village Messenger // Moonrise Intruder",
 	"Volatile Arsonist / Dire-Strain Anaarchist":        "Volatile Arsonist // Dire-Strain Anarchist",
+}
+
+// magicTypo names a product whose display number is wrong: its set code in
+// lower case, the card's name as the display writes it, and the number it
+// prints.
+type magicTypo struct{ set, name, number string }
+
+// magicNumberTypos pairs those display numbers with the catalog's own, each
+// read off the number and TCGplayer id the retail feed carries for the same
+// product. The buylist feed carries neither, so its display number is all it
+// has to go on.
+var magicNumberTypos = map[magicTypo]string{
+	{"dft", "Webstrike Elite", "455"}:    "544",
+	{"fin", "Traveling Chocobo", "511B"}: "551b",
+	{"fin", "Traveling Chocobo", "511D"}: "551d",
+	{"inr", "Pack Guardian", "316"}:      "416",
+	{"spg", "Galvanic Blast", "010"}:     "100",
 }
 
 // magicName reads the card's name off a display name. The name stops at the
