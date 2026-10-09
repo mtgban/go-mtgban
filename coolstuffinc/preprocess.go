@@ -692,6 +692,8 @@ func card2promo(cardName, variant string) (string, string) {
 		return "PF25", ""
 	case strings.Contains(variant, "Friday Night Magic Promo"):
 		variant = "FNM"
+	case strings.Contains(variant, "Japanese Summer Vacation"):
+		return "PSVC", ""
 	case strings.Contains(variant, "Japan Standard Cup 2025 Promo"):
 		return "PJSC", ""
 	case strings.Contains(variant, "MKM Standard Showdown"):
@@ -864,10 +866,6 @@ func card2promo(cardName, variant string) (string, string) {
 		if variant == "Textless Victor Adame Minguez art" {
 			edition = "PLG24"
 		}
-	case "Ephemerate":
-		if variant == "Japanese Summer Vacation 2022 Promo" {
-			edition = "PSVC"
-		}
 	case "Dragon's Hoard":
 		if variant == "Tarkir: Dragonstorm Magic Academy Promo" {
 			return "PW25", "18"
@@ -898,6 +896,18 @@ func card2promo(cardName, variant string) (string, string) {
 		return "PF25", "17"
 	case "Katara, the Fearless":
 		return "PURL", "2025-3"
+	case "Unbreakable Formation":
+		if strings.Contains(variant, "TMNT Promo") {
+			return "PURL", "2025-5"
+		}
+	case "Mental Misstep":
+		if strings.Contains(variant, "Phyrexian") {
+			return "PMEI", "2023-1"
+		}
+	case "Lotus Bloom":
+		if strings.Contains(variant, "Timeshifted") {
+			return "TSR", "411"
+		}
 	case "Command Tower":
 		if variant == "Marvel Super Heroes Event Promo" {
 			return "PMEI", "2026-13"
