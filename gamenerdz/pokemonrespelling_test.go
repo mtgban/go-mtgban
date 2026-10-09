@@ -20,6 +20,7 @@ const respellingDatastore = `{"data": {
   "DRI": {"abbreviation": "DRI", "baseSetSize": 182, "name": "SV10: Destined Rivals", "releaseDate": "2025-05-30"},
   "PAR": {"abbreviation": "PAR", "baseSetSize": 182, "name": "SV04: Paradox Rift", "releaseDate": "2023-11-03"},
   "PWCP": {"abbreviation": "PWCP", "name": "Pikachu World Collection Promos", "releaseDate": "2000-09-12", "type": "promo"},
+  "SVP": {"abbreviation": "SVP", "name": "SV: Scarlet & Violet Promo Cards", "releaseDate": "2023-03-31", "type": "promo"},
   "SVI": {"abbreviation": "SVI", "baseSetSize": 198, "name": "SV01: Scarlet & Violet Base Set", "releaseDate": "2023-03-31"},
   "SWSH02": {"abbreviation": "SWSH02", "baseSetSize": 192, "name": "SWSH02: Rebel Clash", "releaseDate": "2020-05-01"}
  },
@@ -33,7 +34,9 @@ const respellingDatastore = `{"data": {
   {"externalLinks": {"tcgPlayerId": 488074}, "finish": "Normal", "id": "169-198_488074", "name": "Defiance Band", "number": "169", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Tool"},
   {"externalLinks": {"tcgPlayerId": 488075}, "finish": "Normal", "id": "170-198_488075", "name": "Electric Generator", "number": "170", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Item"},
   {"externalLinks": {"tcgPlayerId": 213283}, "finish": "Normal", "id": "172-192_213283", "name": "Horror P Energy", "number": "172", "rarity": "Uncommon", "setCode": "SWSH02", "total": "192", "type": "Special Energy"},
-  {"externalLinks": {"tcgPlayerId": 215159}, "finish": "Holofoil", "id": "pw-7_215159_holofoil", "language": "French", "name": "Pikachu", "number": "PW7", "rarity": "Promo", "setCode": "PWCP", "type": "Lightning", "types": ["Lightning"], "variant": "French"}
+  {"externalLinks": {"tcgPlayerId": 215159}, "finish": "Holofoil", "id": "pw-7_215159_holofoil", "language": "French", "name": "Pikachu", "number": "PW7", "rarity": "Promo", "setCode": "PWCP", "type": "Lightning", "types": ["Lightning"], "variant": "French"},
+  {"externalLinks": {"tcgPlayerId": 477182, "tcgdexId": "svp-002"}, "finish": "Holofoil", "id": "002_477182_holofoil", "name": "Fuecoco", "number": "002", "rarity": "Promo", "setCode": "SVP", "type": "Fire", "types": ["Fire"]},
+  {"externalLinks": {"tcgPlayerId": 487755, "tcgdexId": "svp-007"}, "finish": "Holofoil", "id": "007_487755_holofoil", "name": "Hawlucha", "number": "007", "promoTypes": ["prerelease"], "rarity": "Promo", "setCode": "SVP", "type": "Fighting", "types": ["Fighting"], "variant": "Prerelease"}
  ]
 }}`
 
@@ -88,9 +91,10 @@ func TestPreprocessPokemonRespelling(t *testing.T) {
 	}
 }
 
-// TestPreprocessPokemonPromoNumbers pins the promos this storefront numbers
-// in its own way: the Pikachu World Collection ones by the language they are
-// printed in.
+// TestPreprocessPokemonPromoNumbers pins the two promos this storefront
+// numbers in its own way: the Pikachu World Collection ones by the language
+// they are printed in, and the Scarlet & Violet ones by a code in the name
+// or by the sku alone.
 func TestPreprocessPokemonPromoNumbers(t *testing.T) {
 	b, err := mtgmatcher.Open("pokemon", strings.NewReader(respellingDatastore))
 	if err != nil {
@@ -104,6 +108,8 @@ func TestPreprocessPokemonPromoNumbers(t *testing.T) {
 		uuid        string
 	}{
 		{"Pikachu (French) PW - Pikachu World Collection Promos Holofoil", "Pikachu World Collection Promos", "PKM-PWCP-PW 7-H-3QSRE7LUY9", "pw-7_215159_holofoil"},
+		{"Hawlucha (SVP-007) (Scarlet & Violet Base Set) Holofoil", "SV: Scarlet & Violet Promo Cards", "PKM-SS&VPC-007-H-XV2SJUDZGC", "007_487755_holofoil"},
+		{"Fuecoco (Scarlet & Violet Base Set) Holofoil", "SV: Scarlet & Violet Promo Cards", "PKM-SS&VPC-002-H-VLDF24NPY4", "002_477182_holofoil"},
 	}
 	for _, tt := range tests {
 		product := GNProduct{
