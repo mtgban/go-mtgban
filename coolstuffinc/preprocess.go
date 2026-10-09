@@ -118,6 +118,39 @@ var basicSibling = map[string]string{
 	"Battle for Zendikar": "a",
 }
 
+// finishSplitNote reads the two numbers a note offers for one product whose
+// printings differ only by finish.
+var finishSplitNote = regexp.MustCompile(`(?i)(?:card number can be|nonfoil is number)\s*0*(\d+)\D+?0*(\d+)`)
+
+// finishSplitCard answers the one printing, in the row's own set, among the
+// numbers the note offers that carries the listing's finish. A foreign
+// language row is left to the ordinary path, which carries its language.
+func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language string, isFoil bool) *mtgmatcher.InputCard {
+	m := finishSplitNote.FindStringSubmatch(notes)
+	if m == nil || language != "" {
+		return nil
+	}
+	ids, err := b.SearchEquals(cardName)
+	if err != nil {
+		return nil
+	}
+	var found *mtgmatcher.InputCard
+	for _, id := range ids {
+		co, err := b.GetUUID(id)
+		if err != nil || (co.Number != m[1] && co.Number != m[2]) || co.Foil != isFoil || co.Etched {
+			continue
+		}
+		if setCode != "" && co.SetCode != setCode {
+			continue
+		}
+		if found != nil {
+			return nil
+		}
+		found = &mtgmatcher.InputCard{Name: cardName, Edition: co.SetCode, Variation: co.Number, Foil: isFoil}
+	}
+	return found
+}
+
 var nameTable = map[string]string{
 	"Yennet, Cryptic Sovereign":              "Yennett, Cryptic Sovereign",
 	"Invasion of Moag // Bloomweaver Dryads": "Invasion of Moag // Bloomwielder Dryads",
@@ -1085,6 +1118,11 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	if found {
 		variant = vars
 		cleanVar = vars
+	}
+
+	split := finishSplitCard(b, cardName, card.Code, card.Notes, language, isFoil)
+	if split != nil {
+		return split, nil
 	}
 
 	cardName, edition, variant, err := magicShelfFixups(cardName, edition, variant)

@@ -28,6 +28,22 @@ func TestPreprocessBuylistMagic(t *testing.T) {
 			},
 			wantSet: "OGW", wantNum: "183a",
 		},
+		{
+			desc: "the nonfoil row of a note offering one number per finish",
+			card: CSIPriceEntry{
+				PID: "421807", Name: "Aang, Air Nomad", ItemSet: "Avatar: The Last Airbender Eternal Legal Cards",
+				Code: "TLE", Notes: "Card number can be 210 or 265", Image: "TLE0210",
+			},
+			wantSet: "TLE", wantNum: "265",
+		},
+		{
+			desc: "the foil row of a note offering one number per finish",
+			card: CSIPriceEntry{
+				PID: "421807", Name: "Aang, Air Nomad", ItemSet: "Avatar: The Last Airbender Eternal Legal Cards",
+				Code: "TLE", Notes: "Card number can be 210 or 265", Image: "TLE0210", IsFoil: 1,
+			},
+			wantSet: "TLE", wantNum: "210",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in, err := PreprocessBuylist(b, tt.card)
