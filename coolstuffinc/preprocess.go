@@ -1221,6 +1221,12 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		if retry != nil {
 			return retry, nil
 		}
+		if m != nil {
+			basic := basicLandPrinting(b, m[1], m[2], edition, final.Variation, isFoil, card.Image)
+			if basic != nil {
+				return basic, nil
+			}
+		}
 		// The set code and number CSI files the product under, when that
 		// names exactly one printing of the card.
 		if card.Code != "" && num != "" && len(b.MatchInSetNumber(cardName, card.Code, num)) == 1 {
