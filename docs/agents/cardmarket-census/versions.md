@@ -13,6 +13,11 @@ The same table places the 10 Chaos Vault "(V.2)" products on the starred foil
 twin of their printing (SLD 2102-2111, CardTrader's Galaxy Foil blueprints),
 where the datastore links them to the plain one.
 
+It also places each Summer Magic basic's three versions, which the map gives
+all to the V.1 product, at CardTrader's numbers; Ebony Charm's V.1 and its
+corrected V.2, which the map gives one id in Mirage; and The List's Tetsuko
+Umezawa, Fugitive, which the map links to neither of its two candidates.
+
 `etchedPrintings` is the same table for 4 products that are a printing's
 etched finish: the "(V.2)" of Carrion Feeder, Plaguecrafter, Thoughtseize and
 Doomsday in October Superdrop 2022. The datastore carries the etched

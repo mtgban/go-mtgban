@@ -252,6 +252,30 @@ var versionPrintings = map[int]struct{ set, number string }{
 	272502: {"BCHR", "115b"}, // Urza's Power Plant (V.2), map lists four
 	272552: {"BCHR", "116a"}, // Urza's Tower (V.1), map lists four
 
+	// Mirage
+	8069:   {"MIR", "120"},  // Ebony Charm (V.1), CardTrader
+	878087: {"MIR", "120†"}, // Ebony Charm (V.2), CardTrader
+
+	// Summer Magic
+	16934: {"SUM", "306"}, // Forest (V.1), CardTrader
+	16939: {"SUM", "305"}, // Forest (V.2), CardTrader
+	16944: {"SUM", "304"}, // Forest (V.3), CardTrader
+	16935: {"SUM", "296"}, // Island (V.1), CardTrader
+	16940: {"SUM", "295"}, // Island (V.2), CardTrader
+	16945: {"SUM", "297"}, // Island (V.3), CardTrader
+	16936: {"SUM", "302"}, // Mountain (V.1), CardTrader
+	16941: {"SUM", "303"}, // Mountain (V.2), CardTrader
+	16946: {"SUM", "301"}, // Mountain (V.3), CardTrader
+	16937: {"SUM", "294"}, // Plains (V.1), CardTrader
+	16942: {"SUM", "292"}, // Plains (V.2), CardTrader
+	16947: {"SUM", "293"}, // Plains (V.3), CardTrader
+	16938: {"SUM", "300"}, // Swamp (V.1), CardTrader
+	16943: {"SUM", "298"}, // Swamp (V.2), CardTrader
+	16948: {"SUM", "299"}, // Swamp (V.3), CardTrader
+
+	// The List
+	826306: {"PLST", "MUL-12"}, // Tetsuko Umezawa, Fugitive, CardTrader
+
 	// Secret Lair Drop Series: Secretversary 2021
 	687581: {"PLST", "CMR-395"}, // Counterspell (V.2), Scryfall
 
