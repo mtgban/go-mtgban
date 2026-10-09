@@ -177,6 +177,7 @@ var editionAliases = map[string]string{
 var nameRespellings = [][2]string{
 	{"Vampire Orchis", "Vampiric Orchis"},
 	{"Vampire Koala", "Vampiric Koala"},
+	{"Gradius' Option", "Gradius's Option"},
 
 	// The cards Konami renamed, which the catalog files under the name
 	// each set printed and Cardmarket writes under the current one
