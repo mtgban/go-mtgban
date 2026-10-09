@@ -160,12 +160,21 @@ func announcedTreatment(title string) string {
 // the card, that is where the listing belongs, whatever the set holds at
 // the number.
 func prereleaseOnPromoLine(b *mtgmatcher.Backend, cardName, edition, number string) bool {
+	if holdsPrerelease(b, cardName, edition) {
+		return true
+	}
+	return number == "" || len(b.MatchInSetNumber(cardName, edition, number)) != 1
+}
+
+// holdsPrerelease reports whether the set's promo line files a prerelease
+// printing of the card.
+func holdsPrerelease(b *mtgmatcher.Backend, cardName, edition string) bool {
 	for _, card := range b.MatchInSet(cardName, "P"+edition) {
 		if card.HasPromoType("prerelease") {
 			return true
 		}
 	}
-	return number == "" || len(b.MatchInSetNumber(cardName, edition, number)) != 1
+	return false
 }
 
 // basicArtSets names the set code of the shelves that number a basic land's
@@ -378,6 +387,11 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 			edition = "Promo Pack"
 		} else if strings.Contains(product.ProductName, prerelease) && prereleaseOnPromoLine(b, cardName, edition, number) {
 			edition += " Prerelease"
+		} else if number != "" && holdsPrerelease(b, cardName, edition) &&
+			len(b.MatchInSetNumber(cardName, edition, number)) == 1 {
+			// The set holds this number once, so the frame word beside it
+			// only pulls in the prerelease copy filed on the promo line.
+			variant = strings.TrimPrefix(variant, "Borderless ")
 		}
 
 		variant = strings.Replace(variant, "RetroF ", "Retro Frame ", 1)
@@ -764,6 +778,9 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		edition = variant
 	} else if strings.Contains(title, "プレリリース") {
 		variant += " Prerelease"
+		if prereleaseOnPromoLine(b, cardName, edition, number) {
+			edition += " Prerelease"
+		}
 	} else if strings.Contains(title, "シリアル入り") {
 		variant += " Serialized"
 	} else if edition == "4ED" && variant == "Alternate" {

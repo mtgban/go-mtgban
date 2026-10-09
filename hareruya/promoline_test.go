@@ -143,6 +143,13 @@ func TestRetailPromoLine(t *testing.T) {
 			card: "Forest", foil: "0",
 			wantSet: "SUM", wantNumber: "305",
 		},
+		{
+			desc: "a borderless number the set holds once is not the prerelease copy",
+			jp:   "(402)■ボーダーレス■《喜ぶハーフリング/Delighted Halfling》[LTR-BF] 緑R",
+			en:   "(402)■Borderless■《Delighted Halfling》[LTR-BF]",
+			card: "Delighted Halfling", foil: "0",
+			wantSet: "LTR", wantNumber: "402",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := withMagic(t)
