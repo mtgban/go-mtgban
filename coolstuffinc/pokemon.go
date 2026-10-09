@@ -107,6 +107,15 @@ var pokemonCatalogShelves = []struct {
 // Stars' unnumbered 2022 energies, apart from Crown Zenith's own textured ones.
 var pokemonReverse2022Energy = regexp.MustCompile(`^(\w+ Energy) - 2022 \(Reverse Foil\)$`)
 
+// pokemonListingIDs names the catalog product of the listings whose number is
+// a bare letter no matcher reads: the 30th Celebration Mew, one for each of
+// the Red, Green and Blue scans.
+var pokemonListingIDs = map[string]string{
+	"Mew (Red) - R/RGB|30th Celebration":   "717607",
+	"Mew (Green) - G/RGB|30th Celebration": "717608",
+	"Mew (Blue) - B/RGB|30th Celebration":  "717609",
+}
+
 // pokemonListing reads a Pokemon listing the way the catalog names it. The
 // Classic Collection reprints are sold under Celebrations with the
 // collection in the note; the special energies are named "Special Metal
@@ -121,6 +130,10 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	m2022 := pokemonReverse2022Energy.FindStringSubmatch(name)
 	if m2022 != nil && edition == "SWSH Crown Zenith" {
 		return &mtgmatcher.InputCard{Name: m2022[1], Edition: "SWSH Brilliant Stars", Variation: "2022", Foil: true}
+	}
+	id, found := pokemonListingIDs[name+"|"+edition]
+	if found {
+		return &mtgmatcher.InputCard{ID: id, Foil: true}
 	}
 	for _, r := range pokemonCatalogShelves {
 		if name == r.listing && edition == r.shelf && strings.Contains(variation, r.marker) {
