@@ -292,6 +292,7 @@ const (
 	PromoTypeRainbowFoil       = "rainbowfoil"
 	PromoTypeRaisedFoil        = "raisedfoil"
 	PromoTypeRelease           = "release"
+	PromoTypeResale            = "resale"
 	PromoTypeRippleFoil        = "ripplefoil"
 	PromoTypeSChineseAltArt    = "schinesealtart"
 	PromoTypeScroll            = "scroll"
@@ -300,6 +301,7 @@ const (
 	PromoTypeSerialized        = "serialized"
 	PromoTypeSilverFoil        = "silverfoil"
 	PromoTypeSingularityFoil   = "singularityfoil"
+	PromoTypeStandardShowdown  = "standardshowdown"
 	PromoTypeStarterDeck       = "starterdeck"
 	PromoTypeStepAndCompleat   = "stepandcompleat"
 	PromoTypeStoreChampionship = "storechampionship"
@@ -307,6 +309,7 @@ const (
 	PromoTypeTextured          = "textured"
 	PromoTypeThickDisplay      = "thick"
 	PromoTypeToken             = "token"
+	PromoTypeTourney           = "tourney"
 	PromoTypeWPN               = "wizardsplaynetwork"
 
 	BorderColorBorderless = "borderless"
