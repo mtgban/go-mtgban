@@ -42,17 +42,53 @@ func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgmatcher.Game) 
 		return nil, fmt.Errorf("%w: listing is an oversize display card, not a single", mtgmatcher.ErrUnsupported)
 	}
 
+	var card *mtgmatcher.InputCard
+	var err error
 	switch game {
 	case mtgmatcher.GameRiftbound:
-		return preprocessRiftbound(b, product)
+		card, err = preprocessRiftbound(b, product)
 	case mtgmatcher.GameOnePiece:
-		return preprocessOnePiece(product)
+		card, err = preprocessOnePiece(product)
 	case mtgmatcher.GamePokemon:
-		return preprocessPokemon(product)
+		card, err = preprocessPokemon(product)
 	case mtgmatcher.GameGundam:
-		return preprocessGundam(product)
+		card, err = preprocessGundam(product)
+	default:
+		card, err = preprocessMagic(b, product)
 	}
-	return preprocessMagic(b, product)
+	if err != nil {
+		return card, err
+	}
+	card.ID = imageProductID(b, product, card)
+	return card, nil
+}
+
+// imageIDRe matches the TCGplayer product id a listing's image file is
+// named after, bare or followed by the upload's own uuid.
+var imageIDRe = regexp.MustCompile(`/(\d{5,7})(?:_[0-9a-f-]{36})?\.[a-z]+(?:\?|$)`)
+
+// imageProductID answers the printing the listing's image names, as the id
+// Match tries before the wording, or "" when the file carries no TCGplayer
+// id the datastore knows. The store reuses a photo now and then, so the id
+// is only taken for the card the listing names, and in a finish named by the
+// listing only when that printing is sold in it.
+func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.InputCard) string {
+	m := imageIDRe.FindStringSubmatch(product.ImageURL)
+	if m == nil {
+		return ""
+	}
+	id := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, m[1])
+	co, err := b.GetUUID(id)
+	if err != nil || !mtgmatcher.Equals(co.Name, mtgmatcher.SplitVariants(card.Name)[0]) {
+		return ""
+	}
+	if card.Finish != "" {
+		_, err = b.MatchIDFinish(id, card.Finish)
+		if err != nil {
+			return ""
+		}
+	}
+	return id
 }
 
 // cardTable spells the names the storefront types wrong. Each is a plain
