@@ -94,6 +94,12 @@ var pokemonNumberRespellings = map[[3]string]string{
 	{"Sword and Shield Silver Tempest", "Gapejaw Bog", "214"}:            "213",
 }
 
+// pokemonUnprintedListings are the listings of cards that were never printed,
+// keyed by the shelf, name and number the store lists them under.
+var pokemonUnprintedListings = map[[3]string]bool{
+	{"Gym Challenge", "______'s Chansey", "113A"}: true,
+}
+
 // fabRunSets are the sets printed in runs, and the only ones the datastore
 // crosses a run with a treatment for: every set since Everfest was printed
 // once, promos included, and files under the bare treatment.
@@ -213,6 +219,9 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 		// Number column already.
 		if number != "" {
 			cardName = strings.TrimSuffix(cardName, " "+number)
+		}
+		if pokemonUnprintedListings[[3]string{edition, cardName, number}] {
+			return nil, mtgmatcher.ErrUnsupported
 		}
 		respelled, found := pokemonNumberRespellings[[3]string{edition, cardName, number}]
 		if found {
