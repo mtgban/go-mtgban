@@ -30,7 +30,7 @@ The same holds for the etched products of Secret Lair cards whose datastore
 link names Cardmarket's Etched Foil product for both finishes, which the
 walk would otherwise land on the plain printing beside its V.1.
 
-`unplacedProducts` lists 12 October Superdrop 2022 versions (V.2 to V.4 of
+`unplacedProducts` lists the 12 October Superdrop 2022 versions (V.2 to V.4 of
 Tezzeret the Seeker, Phyrexian Metamorph, Skullclamp and Solemn Simulacrum)
 that no evidence places. CardTrader links none of them, and the datastore
 holds Japanese printings of the same four cards beside the English one, so
@@ -38,9 +38,18 @@ no printing is evidenced, and the name route would file them on another
 drop's printing. They are skipped without a log line, by Index and Market
 alike; their guide row is zero in every column today.
 
-Measured 2026-10-06 against AllPrintings 5.3.0+20261005 and the published
-Cardmarket catalog: the Index walk of 115,651 products changes for 14 landed
-products, and 12 more go from landed or error to skipped.
+The list also holds the products that name a printing never made: Cardmarket
+filed a prerelease promo for the Modern Horizons 3 reprints and for two March
+of the Machine cards, none of which has a promo printing, and a few copies of
+a product on a shelf that never held the card. The datastore carries none of
+them, so the name route would widen each to every printing and refuse it.
+
+Measured against the published Cardmarket catalog, the Chaos Vault and
+October Superdrop rows change the Index walk for 14 landed products and skip
+12 more (2026-10-06, AllPrintings 5.3.0+20261005, 115,651 products). The
+Summer Magic, Ebony Charm, Tetsuko, Secret Lair etched and never-made rows
+change 31 landed products and skip 35 more (2026-10-09, AllPrintings
+5.3.0+20261008, 123,013 products).
 
 Built on 2026-09-25 against AllPrintings 5.3.0+20260924.
 
