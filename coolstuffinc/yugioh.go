@@ -32,6 +32,14 @@ var yugiohWording = strings.NewReplacer(
 	" - No Stamp", "",
 )
 
+// yugiohNumbers holds the numbers the buylist mistypes, keyed by name and the
+// number as typed. A blind replacement cannot hold them: LCGX-EN040 is the
+// real number of another card.
+var yugiohNumbers = map[string]string{
+	"Ten Thousand Dragon|BLAR-EN093":     "BLAR-EN10K",
+	"Gladiator Beast Secutor|LCGX-EN040": "LCGX-EN240",
+}
+
 // yugiohListing answers the card a Yu-Gi-Oh listing describes. The variation
 // is the note on the sell listing and the number and note on the buylist, and
 // notes is the note alone, which tells the print runs apart.
@@ -43,6 +51,16 @@ func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *m
 		Variation: strings.TrimSpace(variation + " " + catalogRarity(rarity)),
 		Foil:      foil,
 	}
+}
+
+// yugiohBuylistVariation is buylistVariation with the number a vendor typo
+// replaced and the codes spelled the catalog's way.
+func yugiohBuylistVariation(product CSIPriceEntry) string {
+	fixed, found := yugiohNumbers[product.Name+"|"+product.Number]
+	if found {
+		product.Number = fixed
+	}
+	return yugiohCodes.Replace(buylistVariation(product))
 }
 
 // yugiohArtNotes names the artwork a note describes as the catalog's

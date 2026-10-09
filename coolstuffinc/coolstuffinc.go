@@ -940,7 +940,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			if theCard != nil {
 				break
 			}
-			theCard = yugiohListing(product.Name, product.ItemSet, product.Notes, yugiohCodes.Replace(buylistVariation(product)), product.RarityName, product.IsFoil == 1)
+			theCard = yugiohListing(product.Name, product.ItemSet, product.Notes, yugiohBuylistVariation(product), product.RarityName, product.IsFoil == 1)
 		case mtgmatcher.GameOnePiece:
 			tcgID, named := onePiecePIDs[product.PID]
 			if named {
