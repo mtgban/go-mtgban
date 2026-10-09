@@ -22,6 +22,7 @@ func TestPokemonDeckHoloRedirectPrefersSetCode(t *testing.T) {
 	}{
 		{CSIPriceEntry{Name: "Espeon - 2/90", ItemSet: "HS Undaunted", Notes: "Shattered Holo from Theme Deck", Number: "2/90", RarityName: "Rare Holo"}, "002-090_125042_holofoil"},
 		{CSIPriceEntry{Name: "Umbreon - 10/90", ItemSet: "HS Undaunted", Notes: "Shattered Holo from Theme Deck", Number: "10/90", RarityName: "Rare Holo"}, "010-090_125044_holofoil"},
+		{CSIPriceEntry{Name: "Charizard - 1/99 - Shattered Holo", ItemSet: "Platinum Arceus", Notes: "*** Shattered Holo Promo (From Collector Tin) ***", Number: "1", RarityName: "Promo"}, "001-099_153234_holofoil"},
 		// A number the redirect's own set prints only once is unaffected
 		// by the label: there is no plain twin to prefer over it.
 		{CSIPriceEntry{Name: "Charizard - 14/181", ItemSet: "SM Team Up", Notes: "Shattered Holo Theme Deck Version", Number: "14/181", RarityName: "Rare Holo"}, "014-181_184217_holofoil"},
@@ -83,5 +84,22 @@ func TestPokemonDeckHoloRedirectSkipsANonHoloListing(t *testing.T) {
 				t.Errorf("a (Non-Holo) listing landed on a foil printing: %q", co)
 			}
 		})
+	}
+}
+
+// TestPokemonDeckHoloRedirectNeedsTheListingsNumber pins that a print-run
+// note without a collector number redirects nothing: a probe asked for a
+// bare name would land on any printing of the card the shelf holds.
+func TestPokemonDeckHoloRedirectNeedsTheListingsNumber(t *testing.T) {
+	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
+	for _, name := range []string{"Charizard", "Espeon"} {
+		redirected := pokemonDeckHoloRedirect(b, name, "", "Shattered Holo from Theme Deck")
+		if redirected != "" {
+			t.Errorf("%s without a number redirected to %q", name, redirected)
+		}
+		redirected = pokemonDeckHoloRedirect(b, name, "Shattered Holo", "")
+		if redirected != "" {
+			t.Errorf("%s with only the marker redirected to %q", name, redirected)
+		}
 	}
 }

@@ -102,6 +102,11 @@ var pokemonCatalogShelves = []struct {
 	{"Metal Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Metal Energy", "Deck Exclusives", "2017 Wave Foil"},
 }
 
+// pokemonReverse2022Energy matches the 2022 reverse holo basic energies this
+// storefront sells under Crown Zenith, which the catalog files with Brilliant
+// Stars' unnumbered 2022 energies, apart from Crown Zenith's own textured ones.
+var pokemonReverse2022Energy = regexp.MustCompile(`^(\w+ Energy) - 2022 \(Reverse Foil\)$`)
+
 // pokemonListing reads a Pokemon listing the way the catalog names it. The
 // Classic Collection reprints are sold under Celebrations with the
 // collection in the note; the special energies are named "Special Metal
@@ -113,6 +118,10 @@ var pokemonCatalogShelves = []struct {
 // "Alakazam E4"; and the metal cards are named for the metal, "Metal Mew ex"
 // for the catalog's Mew ex labelled a metal card.
 func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
+	m2022 := pokemonReverse2022Energy.FindStringSubmatch(name)
+	if m2022 != nil && edition == "SWSH Crown Zenith" {
+		return &mtgmatcher.InputCard{Name: m2022[1], Edition: "SWSH Brilliant Stars", Variation: "2022", Foil: true}
+	}
 	for _, r := range pokemonCatalogShelves {
 		if name == r.listing && edition == r.shelf && strings.Contains(variation, r.marker) {
 			return &mtgmatcher.InputCard{Name: r.name, Edition: r.edition, Variation: r.variation, Foil: true}
@@ -482,12 +491,13 @@ var pokemonDeckHoloNotes = []struct {
 	{"Theme Deck", "Deck Exclusives", "PR-1840"},
 	{"EX Battle Stadium", "EX Battle Stadium", "BST"},
 	{"Prism Holo", "Miscellaneous Cards & Products", "MCAP"},
+	{"Shattered Holo", "Miscellaneous Cards & Products", "MCAP"},
 }
 
 // pokemonDeckHoloRedirect answers the edition for a pokemonDeckHoloNotes
 // marker whose probe - asking for the "Cracked Ice Holo" label so a
 // cracked-ice twin outranks the plain printing of the same number - lands
-// on that marker's own set code, or "" otherwise.
+// on that marker's own set code at the listing's own number, or "" otherwise.
 func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes string) string {
 	for _, r := range pokemonDeckHoloNotes {
 		if !strings.Contains(notes, r.marker) && !strings.Contains(numbered, r.marker) {
@@ -495,17 +505,17 @@ func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes string
 		}
 		tail := strings.TrimSpace(strings.Replace(numbered, r.marker, "", 1))
 		tail = strings.TrimSpace(strings.TrimSuffix(tail, "-"))
-		probeName := name
-		if tail != "" {
-			probeName += " - " + tail
+		num := mtgmatcher.ExtractNumber(tail)
+		if num == "" {
+			continue
 		}
-		probe := &mtgmatcher.InputCard{Name: probeName, Edition: r.edition, Variation: "Cracked Ice Holo", Foil: true}
+		probe := &mtgmatcher.InputCard{Name: name + " - " + tail, Edition: r.edition, Variation: "Cracked Ice Holo", Foil: true}
 		id, err := b.Match(probe)
 		if err != nil {
 			continue
 		}
 		co, err := b.GetUUID(id)
-		if err != nil || co.SetCode != r.wantSet {
+		if err != nil || co.SetCode != r.wantSet || strings.TrimLeft(co.Number, "0") != num {
 			continue
 		}
 		return r.edition
@@ -605,10 +615,11 @@ func pokemonBasicEnergy(b *mtgmatcher.Backend, energyType, bracket, edition, num
 }
 
 // pokemonCosmosBracket matches the bracket this storefront names a cosmos
-// holo with: "Holo Promo", "Cosmo Holo" or the bare "Holo". The bare one is
-// also what a plain holo rare is called, so it counts only beside the
-// Promo rarity or a note saying cosmos holo.
-var pokemonCosmosBracket = regexp.MustCompile(`(?i)\s*\((Holo Promo|Cosmos? Holo|Holo)\)`)
+// holo with: "Holo Promo", "Cosmo Holo" or the bare "Holo", or "- Cosmos
+// Holo" ending the name. The bare one is also what a plain holo rare is
+// called, so it counts only beside the Promo rarity or a note saying cosmos
+// holo.
+var pokemonCosmosBracket = regexp.MustCompile(`(?i)\s*(?:\((Holo Promo|Cosmos? Holo|Holo)\)|- (Cosmos? Holo)$)`)
 
 // pokemonCosmosNote matches a note stating the listing is the cosmos holo,
 // and pokemonCosmosHedge one saying it can be ("Can be Regular or Cosmo Holo").

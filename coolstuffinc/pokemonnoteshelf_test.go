@@ -24,6 +24,7 @@ func TestPokemonNoteShelfFollowsTheNote(t *testing.T) {
 		{CSIPriceEntry{Name: "Machamp - 8/102", ItemSet: "Base Set", Number: "8", Notes: "Unlimited Edition (1st Edition Stamp w/ Shadow)", RarityName: "Holo Rare"}, "PR-1840", "008-102_42425_1steditionholofoil"},
 		{CSIPriceEntry{Name: "Ancient Mew - Movie Promo", ItemSet: "WOTC Black Star Promos", RarityName: "Promo"}, "MCAP", ""},
 		{CSIPriceEntry{Name: "Grass Energy - 2017 (Reverse Foil)", ItemSet: "Shining Legends", RarityName: "Fixed"}, "PR-1840", ""},
+		{CSIPriceEntry{Name: "Psychic Energy - 2022 (Reverse Foil)", ItemSet: "SWSH Crown Zenith", Number: "2022", RarityName: "Fixed"}, "SWSH09", ""},
 		{CSIPriceEntry{Name: "Rayquaza-GX (Shiny) - 177a/168", ItemSet: "SM Celestial Storm", Number: "177a/168", RarityName: "Ultra Rare"}, "PR-1938", ""},
 	} {
 		t.Run(tt.row.Name, func(t *testing.T) {
