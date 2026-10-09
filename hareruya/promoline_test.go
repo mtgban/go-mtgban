@@ -12,8 +12,8 @@ import (
 // this exercises them.
 func TestRetailPromoLine(t *testing.T) {
 	for _, tt := range []struct {
-		desc, jp, en, card, foil string
-		wantSet, wantNumber      string
+		desc, jp, en, card, foil, image string
+		wantSet, wantNumber             string
 	}{
 		{
 			desc: "the tag alone names the Standard Showdown packs",
@@ -78,12 +78,56 @@ func TestRetailPromoLine(t *testing.T) {
 			card: "Sultai Charm", foil: "1",
 			wantSet: "PKTK", wantNumber: "204",
 		},
+		{
+			desc: "a deck card names the player it belonged to",
+			jp:   "【金枠】《神の怒り/Wrath of God》[PT96] 白 Michael Loconto",
+			en:   "【Gold Frame】《Wrath of God》[PT96] Michael Loconto",
+			card: "【Gold Frame】Wrath of God", foil: "0",
+			wantSet: "PTC", wantNumber: "ml58",
+		},
+		{
+			desc: "and the storefront's spelling of a player is corrected",
+			jp:   "【金枠】《闇への追放/Dark Banishing》[PT96] 黒 Leon Linback",
+			en:   "【Gold Frame】《Dark Banishing》[PT96] Leon Linback",
+			card: "【Gold Frame】Dark Banishing", foil: "0",
+			wantSet: "PTC", wantNumber: "ll119",
+		},
+		{
+			desc: "a deck's copies of a card are told apart by the art in the image",
+			jp:   "【金枠】《森/Forest》[PT96] 土地(C) Preston Poulter",
+			en:   "【Gold Frame】《Forest》[PT96](C) Preston Poulter",
+			card: "【Gold Frame】Forest", foil: "0",
+			image:   "https://files.hareruyamtg.com/img/goods/L/PTC/pp0377.jpg",
+			wantSet: "PTC", wantNumber: "pp377",
+		},
+		{
+			desc: "and 2001 images letter the first art where the catalog leaves it bare",
+			jp:   "【金枠】《山/Mountain》[WC01] 土地 Jan Tomcani(343)INV",
+			en:   "【Gold Frame】《Mountain》[WC01] Jan Tomcani(343)INV",
+			card: "【Gold Frame】Mountain", foil: "0",
+			image:   "https://files.hareruyamtg.com/img/goods/L/WC/2001/jt0343b.jpg",
+			wantSet: "WC01", wantNumber: "jt343a",
+		},
+		{
+			desc: "a serial numbered copy is the serialized printing",
+			jp:   "【ダブルレインボウ・Foil】(401)■旧枠■《神無き祭殿/Godless Shrine》(シリアル入り)[RVR] 土地R",
+			en:   "【DR・Foil】(401)■RetroF■《Godless Shrine》(serial number)[RVR]",
+			card: "Godless Shrine", foil: "1",
+			wantSet: "RVR", wantNumber: "401z",
+		},
+		{
+			desc: "a convention promo leaves the set it was drawn from",
+			jp:   "【Foil】《紅蓮の達人チャンドラ/Chandra, Pyromaster》(SDCC2014)[M15-P] 赤R",
+			en:   "【Foil】《Chandra, Pyromaster》[SDCC]",
+			card: "Chandra, Pyromaster", foil: "1",
+			wantSet: "PS14", wantNumber: "134",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := withMagic(t)
 			theCard, err := Preprocess(b, Product{
 				ProductName: tt.jp, ProductNameEN: tt.en,
-				CardName: tt.card, FoilFlag: tt.foil,
+				CardName: tt.card, FoilFlag: tt.foil, ImageURL: tt.image,
 			})
 			if err != nil {
 				t.Fatalf("Preprocess(%q) = %v", tt.jp, err)

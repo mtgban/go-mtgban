@@ -2,6 +2,7 @@ package hareruya
 
 import (
 	"errors"
+	"path"
 	"regexp"
 	"strings"
 	"unicode"
@@ -337,11 +338,26 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 		cardName = strings.TrimPrefix(cardName, "【Gold Frame】")
 	}
 
+	if strings.Contains(product.ProductName, "シリアル入り") {
+		variant += " Serialized"
+	}
+	// The tag names the set the card was drawn from, not the convention
+	// promo set that holds it.
+	if strings.Contains(product.ProductName, "SDCC") {
+		edition = ""
+	}
 	variant = strings.TrimSpace(variant)
 	override, found := promoMap[edition][cardName][variant]
 	if found {
 		edition = override.Edition
 		variant = override.Variant
+	}
+	if isDeckEdition(edition) {
+		variant = withPlayer(variant, product.ProductName)
+		number := deckArtNumber(b, edition, cardName, product.ImageURL)
+		if number != "" {
+			variant = number
+		}
 	}
 
 	language := ""
@@ -435,6 +451,84 @@ func hareruyaTokenPairNumbers(number string) []string {
 		}
 	}
 	return out
+}
+
+// withPlayer appends to the variant the player the deck belonged to, who
+// closes the title past the last Japanese field and takes as many words as
+// their name needs.
+func withPlayer(variant, title string) string {
+	fields := strings.Fields(title)
+	i := len(fields) - 1
+	for i >= 0 && !reJapanese.MatchString(fields[i]) {
+		i--
+	}
+	if i+1 >= len(fields) {
+		return variant
+	}
+
+	player := strings.Join(fields[i+1:], " ")
+	if variant != "" {
+		variant += " "
+	}
+	return variant + player
+}
+
+// reDeckArt reads the initials and the number a deck card's image file names,
+// as in "pp0378.jpg", "ll0038b.jpg" or "wc00-jf0139a.jpg".
+var reDeckArt = regexp.MustCompile(`^(?:wc\d\d-)?([a-z]+)0*(\d+)([a-z]*)$`)
+
+// deckArtNumber returns the collector number of the deck card whose art the
+// product image names, which tells apart the copies of a card one player's
+// deck holds more than once. The catalog extends the initials the image
+// carries ("sh" is "shr"). It returns "" unless one printing fits.
+func deckArtNumber(b *mtgmatcher.Backend, edition, cardName, imageURL string) string {
+	stem, _, _ := strings.Cut(path.Base(imageURL), ".")
+	m := reDeckArt.FindStringSubmatch(strings.ToLower(stem))
+	if m == nil {
+		return ""
+	}
+	digits, art := m[2], m[3]
+	// The 2001 images letter the first art "a" where the catalog leaves
+	// the number bare, and the second "a" in its place.
+	if edition == "WC01" && len(art) == 1 {
+		if art == "a" {
+			art = ""
+		} else {
+			art = string(rune(art[0] - 1))
+		}
+	}
+
+	setCode := edition
+	if edition == "PT96" {
+		setCode = "PTC"
+	}
+	found := ""
+	for _, card := range b.MatchInSet(cardName, setCode) {
+		initials, tail := splitDeckNumber(card.Number)
+		if tail != digits+art || !strings.HasPrefix(initials, m[1]) {
+			continue
+		}
+		if found != "" {
+			return ""
+		}
+		found = card.Number
+	}
+	return found
+}
+
+// splitDeckNumber cuts a deck card's collector number after its initials.
+func splitDeckNumber(number string) (string, string) {
+	i := strings.IndexFunc(number, unicode.IsDigit)
+	if i < 0 {
+		return number, ""
+	}
+	return number[:i], number[i:]
+}
+
+// isDeckEdition reports whether an edition is one of the player-deck
+// shelves, where the player is what tells a card from its other copies.
+func isDeckEdition(edition string) bool {
+	return strings.Contains(edition, "WC9") || strings.Contains(edition, "WC0") || edition == "PT96"
 }
 
 // process titles like
@@ -610,21 +704,8 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		variant = override.Variant
 	}
 
-	if strings.Contains(edition, "WC9") || strings.Contains(edition, "WC0") || edition == "PT96" {
-		// The player the deck belonged to closes the title, past the last
-		// Japanese field, and takes as many words as their name needs
-		fields := strings.Fields(title)
-		i := len(fields) - 1
-		for i >= 0 && !reJapanese.MatchString(fields[i]) {
-			i--
-		}
-
-		if i+1 < len(fields) {
-			if variant != "" {
-				variant += " "
-			}
-			variant += strings.Join(fields[i+1:], " ")
-		}
+	if isDeckEdition(edition) {
+		variant = withPlayer(variant, title)
 	} else if strings.Contains(variant, "P30H") {
 		edition = variant
 	} else if strings.Contains(title, "プレリリース") {
