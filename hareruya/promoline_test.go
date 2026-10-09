@@ -122,6 +122,27 @@ func TestRetailPromoLine(t *testing.T) {
 			card: "Chandra, Pyromaster", foil: "1",
 			wantSet: "PS14", wantNumber: "134",
 		},
+		{
+			desc: "a basic land's art letter is its place among the set's printings",
+			jp:   "《沼/Swamp》(B)[DKM] 土地",
+			en:   " 《Swamp》[DKM]  B",
+			card: "Swamp", foil: "0",
+			wantSet: "DKM", wantNumber: "43",
+		},
+		{
+			desc: "and so it is where the letter follows the card name",
+			jp:   "《島/Island》A（Light Blue） Mark Poole[IE]",
+			en:   "《Island》A（Light Blue） Mark Poole[IE]",
+			card: "Island", foil: "0",
+			wantSet: "CEI", wantNumber: "291",
+		},
+		{
+			desc: "or where it follows the set tag",
+			jp:   "《森/Forest》[Summer Magic]B 土地",
+			en:   "《Forest》[Summer Magic]B",
+			card: "Forest", foil: "0",
+			wantSet: "SUM", wantNumber: "305",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			b := withMagic(t)
