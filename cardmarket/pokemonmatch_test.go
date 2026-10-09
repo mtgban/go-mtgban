@@ -103,6 +103,47 @@ func TestMatchPokemonStamped(t *testing.T) {
 	}
 }
 
+// pokemonOversizedDatastore holds Snorlax VMAX of the base set and its jumbo
+// printing, rows copied verbatim.
+const pokemonOversizedDatastore = `{"data": {
+ "game": "pokemon",
+ "sets": {"PR-1528": {"abbreviation": "PR", "name": "Jumbo Cards", "releaseDate": "2015-04-01"}, "SWSH01": {"abbreviation": "SWSH01", "baseSetSize": 202, "name": "SWSH01: Sword & Shield Base Set", "releaseDate": "2020-02-07"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 206057}, "finish": "Holofoil", "id": "142-202_206057_holofoil", "name": "Snorlax VMAX", "number": "142", "rarity": "Ultra Rare", "setCode": "SWSH01", "total": "202"},
+  {"externalLinks": {"tcgPlayerId": 253399}, "finish": "Holofoil", "id": "142-202_253399_holofoil", "name": "Snorlax VMAX", "number": "142", "rarity": "Ultra Rare", "setCode": "PR-1528", "total": "202"}
+ ]
+}}`
+
+// TestMatchPokemonOversized pins that an Oversized product is the jumbo
+// printing of its card, not the set's own, unless the bridge already gives
+// that jumbo to another product.
+func TestMatchPokemonOversized(t *testing.T) {
+	b := datastoreBackend(t, "pokemon", pokemonOversizedDatastore)
+
+	for _, tt := range []struct {
+		desc, rarity string
+		bridge       map[int]int
+		want         string
+	}{
+		{"the set's own", "Ultra Rare", nil, "142-202_206057_holofoil"},
+		{"the jumbo", "Oversized", nil, "142-202_253399_holofoil"},
+		{"a jumbo another product holds", "Oversized", map[int]int{1: 253399}, "142-202_206057_holofoil"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			mkm, err := NewScraperIndex(b)
+			if err != nil {
+				t.Fatalf("NewScraperIndex(b) = %v", err)
+			}
+			mkm.tcgBridge = tt.bridge
+			product := cm.Product{IDProduct: 2, Name: "Snorlax VMAX", Number: "142", Rarity: tt.rarity, ExpansionName: "Sword & Shield"}
+			got, err := mkm.matchPokemon(&product)
+			if err != nil || got != tt.want {
+				t.Errorf("matchPokemon(%q product) = (%q, %v), want %q", tt.rarity, got, err, tt.want)
+			}
+		})
+	}
+}
+
 // TestPokemonStampedPlainRow pins that a stamped printing sold in a reverse
 // holo too answers with its plain row, whichever the index lists last.
 func TestPokemonStampedPlainRow(t *testing.T) {
