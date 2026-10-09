@@ -72,18 +72,24 @@ func TestYugiohListingReachesItsPrinting(t *testing.T) {
 	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	tests := []struct {
-		name, edition, notes, rarity string
-		want                         string
+		name, edition, notes, number, rarity string
+		want                                 string
 	}{
-		{"Black Rose Dragon (Super Rare)", "Quarter Century Stampede", "Version 1 - Super Rare", "Super Rare", "ra04-en057_626965_1stedition"},
-		{"Black Rose Dragon (Quarter Century Secret Rare)", "Quarter Century Stampede", "Version 2 - Quarter Century Secret Rare", "Quarter Century Secret Rare", "ra04-en057_626963_1stedition"},
-		{"Ghost Sister & Spooky Dogwood", "Maximum Gold", "(Normal) Flowers in 4 Corners", "Premium Gold Rare", "mago-en013_227431_1stedition"},
-		{"Slifer the Sky Dragon", "Promo", "GB1-001", "Ultra Rare", "gbi-001_25371_limited"},
-		{"Raigeki (No Stamp Ultra Rare)", "Rarity Collection 5", "Ultra Rare - No Stamp", "Ultra Rare", "ra05-en110_689625_1stedition"},
-		{"Vanquish Soul Razen (No Stamp Starlight Rare)", "Rarity Collection 5", "Starlight Rare - No Stamp", "Starlight Rare", "ra05-en134_689639_1stedition"},
+		{"Black Rose Dragon (Super Rare)", "Quarter Century Stampede", "Version 1 - Super Rare", "", "Super Rare", "ra04-en057_626965_1stedition"},
+		{"Black Rose Dragon (Quarter Century Secret Rare)", "Quarter Century Stampede", "Version 2 - Quarter Century Secret Rare", "", "Quarter Century Secret Rare", "ra04-en057_626963_1stedition"},
+		{"Ghost Sister & Spooky Dogwood", "Maximum Gold", "(Normal) Flowers in 4 Corners", "", "Premium Gold Rare", "mago-en013_227431_1stedition"},
+		{"Slifer the Sky Dragon", "Promo", "GB1-001", "", "Ultra Rare", "gbi-001_25371_limited"},
+		{"Raigeki (No Stamp Ultra Rare)", "Rarity Collection 5", "Ultra Rare - No Stamp", "", "Ultra Rare", "ra05-en110_689625_1stedition"},
+		{"Vanquish Soul Razen (No Stamp Starlight Rare)", "Rarity Collection 5", "Starlight Rare - No Stamp", "", "Starlight Rare", "ra05-en134_689639_1stedition"},
+		{"Ten Thousand Dragon", "Battles of Legend - Armageddon", "", "BLAR-EN093", "Secret Rare", "blar-en10k_218039_1stedition"},
+		{"Gladiator Beast Secutor", "Legendary Collection 2", "", "LCGX-EN040", "Secret Rare", "lcgx-en240_56880_unlimited"},
 	}
 	for _, test := range tests {
-		card := yugiohListing(test.name, test.edition, test.notes, test.notes, test.rarity, false)
+		variation := test.notes
+		if test.number != "" {
+			variation = yugiohBuylistVariation(CSIPriceEntry{Name: test.name, Number: test.number, Notes: test.notes})
+		}
+		card := yugiohListing(test.name, test.edition, test.notes, variation, test.rarity, false)
 		id, err := b.Match(card)
 		if err != nil {
 			t.Errorf("Match(%v) = %v", card, err)
