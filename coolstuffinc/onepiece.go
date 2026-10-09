@@ -85,6 +85,8 @@ var onePiecePIDs = map[string]string{
 	"384878": "541670", // Rebecca OP05-091 (SP) In Sunflower Field = OP06 SP
 	"423973": "654571", // Rebecca OP05-091 (SP) Stitched Together Border = PRB-02 SP
 	"386653": "539201", // Scratchmen Apoo ST02-008 Offline Regional 2024: the feed's Number says ST03-008
+	"386661": "530120", // Vol. 2 DON Luffy & Kaido = Manga, beside 386659 = Silhouette
+	"397181": "577568", // OP08 DON "My Beloved Son..." = Alternate Art, beside 398704 and 398705
 }
 
 // onePieceStarterDeck matches the starter deck a name states in brackets.
@@ -98,7 +100,8 @@ var onePieceNotePlace = regexp.MustCompile(`(?i)\b(?:participant|winner|finalist
 // onePieceSpellings spells the One Piece wording this storefront writes its
 // own way: the Heroines Edition event card lost a word, the Event Pack card
 // lost the dash before its number, the eighth Winner Pack is the catalog's
-// October to December one, and a Jolly Roger foil is named by half its name.
+// October to December one, a Jolly Roger foil is named by half its name, and
+// an Alternate Art Promo is a Premium Card Collection card.
 // Only the part that differs is rewritten, so the number or bracket behind it
 // is kept.
 var onePieceSpellings = strings.NewReplacer(
@@ -107,6 +110,7 @@ var onePieceSpellings = strings.NewReplacer(
 	"Winner Pack Vol. 8", "Winner Pack 2024 Oct.-Dec.",
 	"(Jolly Roger)", "(Jolly Roger Foil)",
 	"(Jolly Roger Art)", "(Jolly Roger Foil)",
+	"(Alternate Art Promo)", "(Premium Card Collection)",
 )
 
 // onePieceSpelling spells One Piece wording the way the catalog does.
