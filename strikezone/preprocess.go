@@ -291,9 +291,14 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	case "Promos: Play":
 		edition = "Promotional"
 		variation = "playpromo"
+		printing, unique := promoPrinting(b, cardName, magic.PromoTypePlayPromo)
+		if unique {
+			edition, variation = printing.SetCode, printing.Number
+		}
 	case "Promos: Standard Showdown":
-		if len(b.MatchInSet(cardName, "PSS1")) > 0 {
-			edition = "PSS1"
+		printing, unique := promoPrinting(b, cardName, magic.PromoTypeStandardShowdown)
+		if unique {
+			edition, variation = printing.SetCode, printing.Number
 		}
 	case "Promos: Champs":
 		edition = "PCMP"
@@ -310,6 +315,13 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			}
 			edition = code
 		}
+		// LTR holds the tournament promo beside the plain printing.
+		if edition == "LTR" {
+			printing, unique := promoPrinting(b, cardName, magic.PromoTypeTourney)
+			if unique {
+				variation = printing.Number
+			}
+		}
 		// This category never spells out the Secret Lair drop, so say Play.
 		if edition == "SLP" {
 			variation = strings.TrimSpace(variation + " Play")
@@ -317,12 +329,21 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	case "Promos: Media":
 		// SDCC wording resolves through the core SDCC rule instead.
 		if !mtgmatcher.Contains(variation, "SDCC") {
+			// The last hit wins, so PF25 goes first and a media insert of the
+			// same card keeps it.
 			for _, code := range []string{
-				"PHPR", "PMEI", "PURL",
+				"PF25", "PHPR", "PMEI", "PURL",
 				"PDTP", "PDP10", "PDP12", "PDP13", "PDP14", "PDP15",
 			} {
 				if len(b.MatchInSet(cardName, code)) > 0 {
 					edition = code
+				}
+			}
+			// What the codes miss is the resale promo of a set's release.
+			if edition == "Promos: Media" {
+				printing, unique := promoPrinting(b, cardName, magic.PromoTypeResale)
+				if unique {
+					edition, variation = printing.SetCode, printing.Number
 				}
 			}
 		}
@@ -347,6 +368,8 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			edition = "P30M"
 		case "Serra Angel":
 			edition = "PWOS"
+		case "J. Jonah Jameson":
+			edition = "PF25"
 		}
 	case "Promos: Launch Party and Release Event":
 		if magic.IsBasicLand(cardName) {
@@ -457,6 +480,27 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		Foil:      isFoil,
 		Language:  language,
 	}, nil
+}
+
+// promoPrinting returns the one printing of the card wearing the promo type,
+// and false when the card has none or several to tell apart.
+func promoPrinting(b *mtgmatcher.Backend, cardName, promoType string) (mtgmatcher.Card, bool) {
+	var found []mtgmatcher.Card
+	sets, err := b.Printings4Card(cardName)
+	if err != nil {
+		return mtgmatcher.Card{}, false
+	}
+	for _, code := range sets {
+		for _, card := range b.MatchInSet(cardName, code) {
+			if card.HasPromoType(promoType) {
+				found = append(found, card)
+			}
+		}
+	}
+	if len(found) != 1 {
+		return mtgmatcher.Card{}, false
+	}
+	return found[0], true
 }
 
 // isFlavorOf reports whether the catalog sells the card heading tail under

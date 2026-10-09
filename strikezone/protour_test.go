@@ -31,6 +31,11 @@ func TestProTourAndMediaShelf(t *testing.T) {
 			wantSet: "PR23", wantNumber: "2",
 		},
 		{
+			desc: "a name the Lord of the Rings set prints twice takes the tournament promo",
+			name: "Sauron, the Dark Lord", edition: "Promos: Pro Tour",
+			wantSet: "LTR", wantNumber: "301",
+		},
+		{
 			desc: "SDCC wording is left for the core SDCC rule, not PMEI",
 			name: "Jace, Memory Adept (SDCC 2013 Exclusive)", edition: "Promos: Media",
 			wantSet: "PSDC", wantNumber: "60★",

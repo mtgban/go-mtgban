@@ -101,7 +101,7 @@ func TestAliasingStands(t *testing.T) {
 	for _, tt := range []struct {
 		desc, name, shelf, notes string
 	}{
-		{"a non-promo is not what a promo shelf holds", "Scute Swarm", "Promos: Media", "Near Mint Foil English"},
+		{"a non-promo is not what a promo shelf holds", "Scute Swarm", "Promos: Pro Tour", "Near Mint Foil English"},
 		{"two printings the wording fits equally", "Vampiric Tutor", "Promos: Judge", "Near Mint Foil English"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
