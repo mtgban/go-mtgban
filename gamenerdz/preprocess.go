@@ -538,12 +538,12 @@ func preprocessLorcana(product GNProduct) (*mtgmatcher.InputCard, error) {
 var pokemonNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?(?:/[0-9]+)?|[A-Z]+/[0-9]+)$`)
 
 // pokemonSizedNumber is the half of those written over the set's size,
-// "65/130" or "Z/115". Only a card's collector number is written that way,
+// "65/130", "Z/115" or "?/115". Only a card's collector number is written that way,
 // so where one appears it is the number and the name ends in front of it -
 // which is what tells "Alakazam E4 38/111" from "Dragonite 149/165 (Cosmos
 // Holo) 149", the one carrying its own suffix and the other the catalog's
 // number repeated.
-var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]+)/[0-9]+$`)
+var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]+|[!?])/[0-9]+$`)
 
 // pokemonGenders spells the symbols this storefront prints on a face where
 // the catalog writes the letter: Nidoran and its Gym-era owners are filed as
