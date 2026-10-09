@@ -153,15 +153,7 @@ func TestZZCensusWalk(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	products := map[int]cm.CatalogProduct{}
-	for id, p := range mkm.catalog.Data.Products {
-		products[id] = p
-	}
-	for _, e := range list {
-		if _, ok := products[e.IDProduct]; !ok {
-			products[e.IDProduct] = cm.CatalogProduct{ExpansionID: e.ExpansionID, Name: e.Name}
-		}
-	}
+	products := mergeList(mkm.catalog, list, nil)
 	byExpansion := map[int][]int{}
 	for id, p := range products {
 		byExpansion[p.ExpansionID] = append(byExpansion[p.ExpansionID], id)
@@ -169,11 +161,7 @@ func TestZZCensusWalk(t *testing.T) {
 	var items []cm.Expansion
 	for id := range byExpansion {
 		e := mkm.catalog.Data.Expansions[id]
-		name := e.Name
-		if name == "" {
-			name = fmt.Sprintf("expansion %d", id)
-		}
-		exp := cm.Expansion{IDExpansion: id, Name: name, SetCode: e.Code}
+		exp := cm.Expansion{IDExpansion: id, Name: e.Name, SetCode: e.Code}
 		if !foreignExpansion(mkm.gameID, exp) {
 			items = append(items, exp)
 		}
