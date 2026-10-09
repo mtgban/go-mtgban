@@ -160,17 +160,34 @@ func announcedTreatment(title string) string {
 // the card, that is where the listing belongs, whatever the set holds at
 // the number.
 func prereleaseOnPromoLine(b *mtgmatcher.Backend, cardName, edition, number string) bool {
-	if holdsPrerelease(b, cardName, edition) {
+	if promoLineHolds(b, cardName, edition, "prerelease") {
 		return true
 	}
 	return number == "" || len(b.MatchInSetNumber(cardName, edition, number)) != 1
 }
 
-// holdsPrerelease reports whether the set's promo line files a prerelease
-// printing of the card.
-func holdsPrerelease(b *mtgmatcher.Backend, cardName, edition string) bool {
-	for _, card := range b.MatchInSet(cardName, "P"+edition) {
-		if card.HasPromoType("prerelease") {
+// promoLineHolds reports whether the set's promo line files a printing of
+// the card with the promo type.
+func promoLineHolds(b *mtgmatcher.Backend, cardName, edition, promoType string) bool {
+	// The storefront joins the two halves of a split card with a plus.
+	front, _, _ := strings.Cut(cardName, "+")
+	for _, card := range b.MatchInSet(front, "P"+edition) {
+		if card.HasPromoType(promoType) {
+			return true
+		}
+	}
+	return false
+}
+
+// promoPackFiled reports whether the set, or a set filed under it such as
+// its promo line or PPP1 under M20, holds a promo pack printing of the card.
+func promoPackFiled(b *mtgmatcher.Backend, cardName, setCode string) bool {
+	front, _, _ := strings.Cut(cardName, "+")
+	for _, set := range b.Sets {
+		if set.Code != setCode && set.ParentCode != setCode {
+			continue
+		}
+		if magic.HasPromoPackPrinting(b, front, set.Code) {
 			return true
 		}
 	}
@@ -387,7 +404,7 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 			edition = "Promo Pack"
 		} else if strings.Contains(product.ProductName, prerelease) && prereleaseOnPromoLine(b, cardName, edition, number) {
 			edition += " Prerelease"
-		} else if number != "" && holdsPrerelease(b, cardName, edition) &&
+		} else if number != "" && promoLineHolds(b, cardName, edition, "prerelease") &&
 			len(b.MatchInSetNumber(cardName, edition, number)) == 1 {
 			// The set holds this number once, so the frame word beside it
 			// only pulls in the prerelease copy filed on the promo line.
@@ -603,7 +620,11 @@ func isDeckEdition(edition string) bool {
 // 【EN】【Foil】(168)《武器製造/Weapons Manufacturing》[EOE] 赤R
 // 【EN】【Foil】(086)■プレリリース■《虚空間渡り/Weftwalking》[EOE] 青R
 func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, error) {
-	if strings.Contains(title, "Ultra Pro Puzzle") {
+	// Test prints and the trading card game this storefront also carries
+	// are not Magic printings.
+	if strings.Contains(title, "Ultra Pro Puzzle") ||
+		strings.Contains(title, "テストプリント") ||
+		strings.Contains(title, "■FFTCG■") {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
@@ -756,6 +777,14 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		cardName = fixup
 	}
 
+	// A stamped copy of a card the set files no promo pack printing of has
+	// no printing of its own to land on.
+	set, setErr := b.GetSet(edition)
+	if strings.Contains(variant, "プロモスタンプ付") && setErr == nil &&
+		!promoPackFiled(b, cardName, set.Code) {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	if strings.Contains(edition, "Pスタンプ_") ||
 		strings.Contains(edition, "P Stamped_") ||
 		strings.Contains(variant, "Promo Stamped") ||
@@ -770,6 +799,12 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	if found {
 		edition = override.Edition
 		variant = override.Variant
+	}
+
+	// A misprint the table does not place has no printing in the catalog,
+	// and answering with the card it misprints prices that card off the error.
+	if edition == "Misprint" {
+		return nil, mtgmatcher.ErrUnsupported
 	}
 
 	if isDeckEdition(edition) {

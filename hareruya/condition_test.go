@@ -33,4 +33,10 @@ func TestHaCondition(t *testing.T) {
 	if err == nil {
 		t.Errorf("haCondition(%q) took a score no grader gives", "PSA11")
 	}
+
+	for _, label := range []string{"MP Signed", "Poor Ink", "Poor Water", "BGS9.5 ※ケースに欠けあり"} {
+		if !reAltered.MatchString(label) {
+			t.Errorf("%q is a damaged or altered copy, not a grade", label)
+		}
+	}
 }
