@@ -724,6 +724,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						Quantity:   qty,
 						URL:        link,
 						OriginalID: pid,
+						InstanceID: offerRowID(se),
 						SellerName: availableMarketNames[0],
 					},
 					relaxed: relaxed || graded,
@@ -1374,4 +1375,17 @@ func catalogRarity(rarity string) string {
 		return spelled
 	}
 	return rarity
+}
+
+// reOfferRow reads an offer's Add to Cart button, atc[<product>][<row>].
+var reOfferRow = regexp.MustCompile(`^atc\[\d+\]\[(\d+)\]$`)
+
+// offerRowID is the id CSI's store cart adds an offer row by, one per
+// condition and finish of a product.
+func offerRowID(offer *goquery.Selection) string {
+	m := reOfferRow.FindStringSubmatch(offer.Find("[data-atc]").AttrOr("data-atc", ""))
+	if m == nil {
+		return ""
+	}
+	return m[1]
 }
