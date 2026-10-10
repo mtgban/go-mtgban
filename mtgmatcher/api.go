@@ -928,6 +928,8 @@ func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {
 type ProductProbabilities struct {
 	UUID        string
 	Probability float64
+	// Copies is how many copies of a held product this entry sums over.
+	Copies int
 }
 
 // SealedBoosterProbabilities returns how likely each card is to appear in one
@@ -968,6 +970,7 @@ func (b *Backend) SealedBoosterProbabilities(setCode, boosterType string) ([]Pro
 		probabilities = append(probabilities, ProductProbabilities{
 			UUID:        uuid,
 			Probability: tmp[uuid] / float64(boosterConfig.BoostersTotalWeight),
+			Copies:      1,
 		})
 	}
 	return probabilities, nil
@@ -998,6 +1001,7 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 		probs = append(probs, ProductProbabilities{
 			UUID:        uuid,
 			Probability: probability,
+			Copies:      1,
 		})
 	}
 
@@ -1045,6 +1049,7 @@ func (b *Backend) contentProbabilities(contents map[string][]SealedContent, etch
 				probs = append(probs, ProductProbabilities{
 					UUID:        uuid,
 					Probability: 1,
+					Copies:      1,
 				})
 			case "pack":
 				boosterProbabilities, err := b.SealedBoosterProbabilities(content.Set, content.Code)
@@ -1062,6 +1067,7 @@ func (b *Backend) contentProbabilities(contents map[string][]SealedContent, etch
 				}
 				for i := range sealedProbabilities {
 					sealedProbabilities[i].Probability *= float64(content.Count)
+					sealedProbabilities[i].Copies *= content.Count
 				}
 				probs = append(probs, sealedProbabilities...)
 			case "deck":
@@ -1075,6 +1081,7 @@ func (b *Backend) contentProbabilities(contents map[string][]SealedContent, etch
 						probNF := ProductProbabilities{
 							UUID:        uuid,
 							Probability: float64(10-tenths) / 10,
+							Copies:      1,
 						}
 						probs = append(probs, probNF)
 
@@ -1085,12 +1092,14 @@ func (b *Backend) contentProbabilities(contents map[string][]SealedContent, etch
 						probF := ProductProbabilities{
 							UUID:        uuidFoil,
 							Probability: float64(tenths) / 10,
+							Copies:      1,
 						}
 						probs = append(probs, probF)
 					} else {
 						probs = append(probs, ProductProbabilities{
 							UUID:        uuid,
 							Probability: 1,
+							Copies:      1,
 						})
 					}
 				}

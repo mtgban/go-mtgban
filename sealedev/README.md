@@ -112,8 +112,10 @@ in a run prints them.
 
 - **Serialized** printings, which have no usable market price at all.
 - **Cosmic foil** printings, same.
-- **Secret Lair bonus cards** whose published distribution is not fixed
-  (`probability < 1`). A fixed one counts.
+- **Secret Lair bonus cards** whose published distribution is not fixed:
+  a chance below 1 in one copy of the product holding them. A fixed one
+  counts. A bundle of ten drops whose bonus is 0.93 per drop sees 9.3, and
+  skips it all the same.
 
 These are dropped before pricing, so they cost nothing and contribute
 nothing - the EV is the value of the openable rest.
