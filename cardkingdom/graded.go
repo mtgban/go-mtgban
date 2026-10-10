@@ -122,12 +122,18 @@ func (ck *Graded) scrapePage(session string, page int) error {
 
 		title := strings.TrimSpace(s.Find(".productTitle a").Text())
 
+		// Product ID from hidden input
+		id, _ := s.Find("input.product_id").Attr("value")
+
 		theCard, err := preprocessGraded(title)
 		if err != nil {
 			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 				ck.printf("%s: %v", title, err)
 			}
 			return
+		}
+		if scryfallID, found := gradedScryfallIDs[id]; found {
+			theCard.ID = scryfallID
 		}
 
 		cardID, err := matchGraded(ck.backend, theCard)
@@ -165,9 +171,6 @@ func (ck *Graded) scrapePage(session string, page int) error {
 		linkPath, _ := s.Find(".productTitle a").Attr("href")
 		u.Path = linkPath
 		link := u.String()
-
-		// Product ID from hidden input
-		id, _ := s.Find("input.product_id").Attr("value")
 
 		conditions, slab := parseGradedCondition(title)
 		if conditions == "" {

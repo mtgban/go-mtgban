@@ -744,6 +744,36 @@ var gradedEditions = map[string]string{
 	"Promotional RPTQ Promo":             "Pro Tour Promos",
 }
 
+// gradedScryfallIDs names the printing of a slab whose title leaves several
+// candidates, keyed by the storefront's product id.
+var gradedScryfallIDs = map[string]string{
+	"312820": "2e97dadd-0849-4c18-9523-4775d09fca9a", // SNC 279
+	"314659": "07eb0e22-1e19-46e0-913e-94ccbf858bb9", // M10 249
+	"315977": "013612b4-fed9-4112-8018-9267ae608fd7", // MOM 287
+	"315996": "c464b81a-3d91-4d07-bc9d-6756780417e3", // BRO 284
+	"316001": "ef099f25-2b0b-4028-8490-fbc859e35f6c", // MH3 343
+	"317660": "5549b73a-9abe-4d63-a673-aa08e9f6a678", // CED 290
+	"318592": "f0ca4b9f-4ee6-4ad8-a95f-326ada9de3cd", // ZEN 246
+	"321125": "ed878350-ebc3-419b-9dd9-384e44906569", // EOS 35
+	"321128": "010abd40-3f9c-44bc-8570-d539750c3cd7", // EOS 14
+	"321786": "6f9c1419-aa54-4dd3-8d7d-4e2f60e7f581", // SLD 115
+	"321922": "651f1740-1a79-42c5-bc0b-33a79a00621e", // SLD 687
+	"323183": "f76d6ecc-a774-44d5-8c16-e2ba4bf7d283", // SLD 1514
+	"323411": "59bdb4a0-0f2d-4018-ad74-3970a5cd71ab", // SPM 237
+	"323459": "c163a697-01ee-4a55-814f-b0ba79be3a7f", // ACR 105
+	"323559": "040ed422-663a-4b6c-bdcd-09092f1c9004", // PIP 320
+	"324425": "feef6ea3-67f3-42d8-bf19-02ba9151c2a3", // SLD 1150
+	"324725": "b2d1219f-fadb-4427-8627-e5aef3589600", // SLD 1591
+	"325111": "68df89dc-3909-4051-adc1-a86589d0e99d", // INV 345
+	"326239": "5d93b770-dc46-46ad-aefe-282dac8cc246", // SLD 7010
+	"326989": "29da3c7f-f886-4be0-bce5-d2707c5fc926", // SLD 1146
+	"327025": "6e169f68-d336-429d-bdd0-f034a53391a3", // SLD 1170
+	"330063": "0f0cdff4-c81e-4e53-8721-748eb71d9e81", // SLD 1145
+	"331275": "e1e88b41-7ae5-40fc-8947-5f5aa03388be", // ODY 344
+	"331402": "16ffb489-3c9c-43e2-b407-aae1ba55035a", // SLD 7034
+	"334364": "d7741b03-c16a-426c-8847-622b5fc1236f", // PWCS 2023-4
+}
+
 var supportedScores = []string{
 	"PSA", "BGS", "CGC",
 }
