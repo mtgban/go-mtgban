@@ -13,8 +13,8 @@ func TestTCGplayerIDOverrides(t *testing.T) {
 		bp   *Blueprint
 		want int
 	}{
-		{"Saltwater Swell (Yellow) SEA142, id named Blue", &Blueprint{ID: 334431, TCGplayerID: 633284}, 633285},
-		{"Saltwater Swell (Blue) SEA143, id named Yellow", &Blueprint{ID: 334432, TCGplayerID: 633285}, 633284},
+		{"Saltwater Swell (Yellow) SEA142 Cold Foil, id named Blue", &Blueprint{ID: 334549, TCGplayerID: 633633}, 633634},
+		{"Saltwater Swell (Blue) SEA143 Cold Foil, id named Yellow", &Blueprint{ID: 334550, TCGplayerID: 633634}, 633633},
 		{"Judge Professor Program Stamp 167/182, id named a different Judge", &Blueprint{ID: 357942, TCGplayerID: 658743}, 685999},
 		{"One Piece DON!! Pop Art, no id sent at all", &Blueprint{ID: 290971, TCGplayerID: 0}, 544805},
 		{"O-Nami Dash Pack 2025, id named the Illustration Box", &Blueprint{ID: 326797, TCGplayerID: 623070}, 712033},

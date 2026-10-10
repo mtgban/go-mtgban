@@ -110,8 +110,6 @@ var langMap = map[string]string{
 // sibling card, or supplies one Card Trader sends none for at all.
 var tcgIDOverrides = map[int]int{
 	// Flesh and Blood: the id names the other half of a printed pair.
-	334431: 633285, // Saltwater Swell (Yellow), SEA142
-	334432: 633284, // Saltwater Swell (Blue), SEA143
 	334549: 633634, // Saltwater Swell (Yellow), Lost Treasure | Cold Foil
 	334550: 633633, // Saltwater Swell (Blue), Lost Treasure | Cold Foil
 	295093: 557937, // Take Flight (Red), Armory Deck: Boltyn
