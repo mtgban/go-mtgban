@@ -305,6 +305,76 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 	}
 }
 
+// TestRunEVDrawsAHeldProductFromItsOpenings pins the reuse: a product made
+// only of whole sealed products values each opening from the openings kept
+// for what it holds, rather than opening them again card by card.
+func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
+	b := realDatastore(t)
+
+	var uuid, setCode string
+	var contents []mtgmatcher.SealedContent
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
+		if err != nil {
+			continue
+		}
+		for _, product := range set.SealedProduct {
+			if holdsOnlySealed(product.Contents) && sealed.IsRandom(b, set.Code, product.UUID) {
+				uuid, setCode, contents = product.UUID, set.Code, product.Contents["sealed"]
+				break
+			}
+		}
+		if uuid != "" {
+			break
+		}
+	}
+	if uuid == "" {
+		t.Fatal("no random product made only of whole sealed products")
+	}
+
+	ss := NewScraper(b, "")
+	ss.repetitions = 10
+	ss.prices = pricedAt(t, b, setCode, uuid, 1)
+	ss.held = heldWhole(b)
+	ss.kept = map[string]opened{}
+
+	// Every product it holds has already opened, at 7 every time.
+	const each = 7.0
+	var want float64
+	for _, content := range contents {
+		datasets := make([][]float64, len(evParameters))
+		for i := range evParameters {
+			if evParameters[i].Simulation {
+				datasets[i] = []float64{each}
+			}
+		}
+		ss.kept[content.UUID] = opened{datasets: datasets}
+		want += each * float64(content.Count)
+	}
+
+	results, errs := ss.runEV(context.Background(), uuid)
+	if len(errs) != 0 {
+		t.Fatalf("runEV reported %v", errs)
+	}
+	simulated := map[string]bool{}
+	for _, parameter := range evParameters {
+		simulated[parameter.Name] = parameter.Simulation
+	}
+	var checked int
+	for _, res := range results {
+		if res.invEntry == nil || !simulated[res.invEntry.SellerName] {
+			continue
+		}
+		if res.invEntry.Price != want {
+			t.Errorf("%q gave %v, want %v drawn from the kept openings", res.invEntry.SellerName, res.invEntry.Price, want)
+		}
+		checked++
+	}
+	if checked == 0 {
+		t.Fatal("no simulated measure came back")
+	}
+}
+
 // A product the datastore has no contents for is reported rather than valued
 // at nothing silently.
 func TestRunEVReportsAProductItCannotOpen(t *testing.T) {

@@ -6,6 +6,7 @@ package sealedev
 import (
 	"context"
 	"errors"
+	"math/rand/v2"
 	"net/url"
 	"slices"
 	"strconv"
@@ -52,6 +53,20 @@ type Scraper struct {
 	backend     *mtgmatcher.Backend
 	banpriceKey string
 	prices      *priceSnapshot
+
+	// held marks the products another product holds whole, and kept is what
+	// opening each of those came to once it has been simulated, so the
+	// product holding it draws from those openings rather than opening it
+	// again.
+	held map[string]bool
+	kept map[string]opened
+}
+
+// opened is what simulating one product came to: a dataset per parameter,
+// and what went wrong along the way.
+type opened struct {
+	datasets [][]float64
+	errs     []string
 }
 
 type evConfig struct {
@@ -227,15 +242,23 @@ func skipFromEV(co *mtgmatcher.CardObject, err error, expectedCountPerCopy float
 		(co.HasPromoType(magic.PromoTypeSLDBonus) && expectedCountPerCopy < 1)
 }
 
-func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
-	co, err := ss.backend.GetUUID(uuid)
-	if err != nil {
-		return nil, []string{err.Error()}
+// open simulates a product, or hands back what simulating it came to
+// already where another product holding it asked first.
+func (ss *Scraper) open(ctx context.Context, co *mtgmatcher.CardObject) opened {
+	kept, found := ss.kept[co.UUID]
+	if found {
+		return kept
 	}
+	op := ss.simulate(ctx, co.SetCode, co.UUID)
+	if ss.held[co.UUID] {
+		ss.kept[co.UUID] = op
+	}
+	return op
+}
 
-	productUUID := co.UUID
-	setCode := co.SetCode
-
+// simulate values a product under every parameter: by its probabilities, and
+// by simulated openings where the parameter simulates.
+func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) opened {
 	var allTheErrors []string
 
 	// Enumerate the full universe of possible cards and their probabilities.
@@ -244,7 +267,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		if err == nil {
 			err = errors.New("no probabilities found")
 		}
-		return nil, []string{err.Error()}
+		return opened{errs: []string{err.Error()}}
 	}
 
 	picks := make([]string, len(probs))
@@ -304,6 +327,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 	} else {
 		// Random contents: Monte Carlo the simulation parameters.
 		repeats := ss.repetitions
+		held := ss.heldOpenings(ctx, setCode, productUUID)
 
 		var mu sync.Mutex
 		var wg sync.WaitGroup
@@ -314,6 +338,15 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 			wg.Go(func() {
 				local := make([][]float64, len(evParameters))
 				for range repeatsChannel {
+					if held != nil {
+						for i := range evParameters {
+							if evParameters[i].Simulation {
+								local[i] = append(local[i], held.draw(i))
+							}
+						}
+						continue
+					}
+
 					simPicks, err := sealed.ProductPicks(ss.backend, setCode, productUUID)
 					if err != nil {
 						mu.Lock()
@@ -353,6 +386,91 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 			}
 		}
 	}
+
+	return opened{datasets: datasets, errs: allTheErrors}
+}
+
+// heldContents is one product another holds whole, as many times as it
+// holds it.
+type heldContents struct {
+	datasets [][]float64
+	count    int
+}
+
+type heldOpenings []heldContents
+
+// draw values one opening of the holding product for parameter i, as one
+// opening of each product it holds, each drawn from that product's own.
+func (h heldOpenings) draw(i int) float64 {
+	var total float64
+	for _, content := range h {
+		dataset := content.datasets[i]
+		for range content.count {
+			total += dataset[rand.IntN(len(dataset))]
+		}
+	}
+	return total
+}
+
+// heldOpenings returns the openings of the products a product holds, where
+// whole sealed products are all it holds and each of them opened, and nil
+// where it must be opened card by card instead, which is also what decides
+// whether an unopenable sample pack may be left out.
+func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string) heldOpenings {
+	set, err := ss.backend.GetSet(setCode)
+	if err != nil {
+		return nil
+	}
+	idx := slices.IndexFunc(set.SealedProduct, func(p mtgmatcher.SealedProduct) bool {
+		return p.UUID == productUUID
+	})
+	if idx < 0 {
+		return nil
+	}
+	contents := set.SealedProduct[idx].Contents
+	if !holdsOnlySealed(contents) {
+		return nil
+	}
+
+	var out heldOpenings
+	for _, content := range contents["sealed"] {
+		co, err := ss.backend.GetUUID(content.UUID)
+		if err != nil {
+			return nil
+		}
+		op := ss.open(ctx, co)
+		if !opensForEveryParameter(op) {
+			return nil
+		}
+		out = append(out, heldContents{datasets: op.datasets, count: content.Count})
+	}
+	return out
+}
+
+// opensForEveryParameter reports whether a simulation came to at least one
+// opening for each parameter that simulates.
+func opensForEveryParameter(op opened) bool {
+	if len(op.datasets) == 0 {
+		return false
+	}
+	for i := range evParameters {
+		if evParameters[i].Simulation && len(op.datasets[i]) == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
+	co, err := ss.backend.GetUUID(uuid)
+	if err != nil {
+		return nil, []string{err.Error()}
+	}
+	productUUID := co.UUID
+
+	op := ss.open(ctx, co)
+	datasets := op.datasets
+	allTheErrors := op.errs
 
 	var out []result
 	for i, dataset := range datasets {
@@ -423,6 +541,38 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 	return out, allTheErrors
 }
 
+// heldWhole marks the products that another product made only of whole
+// sealed products holds, the ones whose openings are worth keeping.
+func heldWhole(b *mtgmatcher.Backend) map[string]bool {
+	held := map[string]bool{}
+	for _, code := range b.GetAllSets() {
+		set, err := b.GetSet(code)
+		if err != nil {
+			continue
+		}
+		for _, product := range set.SealedProduct {
+			if !holdsOnlySealed(product.Contents) {
+				continue
+			}
+			for _, content := range product.Contents["sealed"] {
+				held[content.UUID] = true
+			}
+		}
+	}
+	return held
+}
+
+// holdsOnlySealed reports whether every card a product's contents can give
+// comes from a whole sealed product inside it.
+func holdsOnlySealed(contents map[string][]mtgmatcher.SealedContent) bool {
+	for kind, entries := range contents {
+		if kind != "sealed" && kind != "other" && len(entries) > 0 {
+			return false
+		}
+	}
+	return len(contents["sealed"]) > 0
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ss *Scraper) Load(ctx context.Context) error {
 	var selected string
@@ -480,6 +630,8 @@ func (ss *Scraper) Load(ctx context.Context) error {
 	}
 	ss.printf("Retrieved %d+%d prices", len(prices.Retail), len(prices.Buylist))
 	ss.prices = prices
+	ss.held = heldWhole(ss.backend)
+	ss.kept = make(map[string]opened, len(ss.held))
 
 	start := time.Now()
 
