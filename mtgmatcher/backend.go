@@ -6,6 +6,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -125,6 +126,10 @@ type Set struct {
 		Name               string     `json:"name"`
 		SealedProductUUIDs []string   `json:"sealedProductUuids"`
 	} `json:"decks"`
+
+	// boosterDraws holds each booster type BoosterGen has opened, made
+	// ready so the next opening only draws.
+	boosterDraws sync.Map
 }
 
 // Card is one printing, with the properties that tell it apart from every

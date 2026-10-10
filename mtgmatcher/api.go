@@ -426,6 +426,164 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 
 const maxRerollThreshold = 50
 
+// boosterDraw is a booster type made ready to open: its contents chooser,
+// and each sheet's choosers and resolved ids, built the first time the type
+// is opened rather than every time.
+type boosterDraw struct {
+	contents *weightedrand.Chooser[map[string]int, int]
+	sheets   map[string]*sheetDraw
+}
+
+// sheetDraw is one sheet made ready to draw from. An error found preparing it
+// is kept and returned only when a booster draws from it, as drawing did
+// before anything was prepared.
+type sheetDraw struct {
+	allowDuplicates bool
+
+	isFixed  bool
+	fixed    []string
+	fixedErr error
+
+	balanced    []*weightedrand.Chooser[string, int]
+	balanceErr  error
+	cards       *weightedrand.Chooser[string, int]
+	cardsErr    error
+	resolved    map[string]string
+	resolveErrs map[string]error
+}
+
+// boosterDraw returns the booster type made ready to open, preparing it the
+// first time it is asked for.
+func (b *Backend) boosterDraw(set *Set, boosterType string) (*boosterDraw, error) {
+	cached, _ := set.boosterDraws.Load(boosterType)
+	draw, ok := cached.(*boosterDraw)
+	if ok {
+		return draw, nil
+	}
+
+	var choices []weightedrand.Choice[map[string]int, int]
+	for _, booster := range set.Booster[boosterType].Boosters {
+		choices = append(choices, weightedrand.NewChoice(booster.Contents, booster.Weight))
+	}
+	contents, err := weightedrand.NewChooser(choices...)
+	if err != nil {
+		return nil, err
+	}
+
+	draw = &boosterDraw{
+		contents: contents,
+		sheets:   map[string]*sheetDraw{},
+	}
+	for _, booster := range set.Booster[boosterType].Boosters {
+		for sheetName := range booster.Contents {
+			_, found := draw.sheets[sheetName]
+			if !found {
+				draw.sheets[sheetName] = b.prepareSheet(set.Booster[boosterType].Sheets[sheetName], sheetName)
+			}
+		}
+	}
+
+	// Two openings preparing the type at once build the same draw, so
+	// either may keep it.
+	set.boosterDraws.Store(boosterType, draw)
+	return draw, nil
+}
+
+// prepareSheet resolves a sheet's cards and builds the choosers drawing from
+// it.
+func (b *Backend) prepareSheet(sheet Sheet, sheetName string) *sheetDraw {
+	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
+	draw := &sheetDraw{allowDuplicates: sheet.AllowDuplicates}
+
+	if sheet.Fixed {
+		draw.isFixed = true
+		// Fixed means there is no randomness, just pick the cards as listed
+		for cardID, subcount := range sheet.Cards {
+			uuid, err := b.MatchID(cardID, sheet.Foil, isEtched)
+			if err != nil {
+				draw.fixedErr = err
+				return draw
+			}
+			for range subcount {
+				draw.fixed = append(draw.fixed, uuid)
+			}
+		}
+		return draw
+	}
+
+	draw.resolved = map[string]string{}
+	draw.resolveErrs = map[string]error{}
+	for cardID := range sheet.Cards {
+		_, found := b.UUIDs[cardID]
+		if !found {
+			draw.resolveErrs[cardID] = fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardID)
+			continue
+		}
+		uuid, err := b.MatchID(cardID, sheet.Foil, isEtched)
+		if err != nil {
+			draw.resolveErrs[cardID] = err
+			continue
+		}
+		draw.resolved[cardID] = uuid
+	}
+
+	// This is an approximation of the actual algorithm since we don't
+	// have precise print sheet information available.
+	// The first N cards (where N is the number of colors) get picked
+	// from these special sheets.
+	// See https://github.com/taw/magic-search-engine/blob/master/search-engine/lib/color_balanced_card_sheet.rb
+	if sheet.BalanceColors {
+		draw.balanceErr = b.prepareBalanced(draw, sheet, sheetName)
+	}
+
+	// Move sheet data into weightedrand choices
+	var cardChoices []weightedrand.Choice[string, int]
+	for cardID, weight := range sheet.Cards {
+		cardChoices = append(cardChoices, weightedrand.NewChoice(cardID, weight))
+	}
+	draw.cards, draw.cardsErr = weightedrand.NewChooser(cardChoices...)
+
+	return draw
+}
+
+// prepareBalanced builds one chooser per colour of a colour-balanced sheet,
+// each of which fills one slot before the rest are drawn.
+func (b *Backend) prepareBalanced(draw *sheetDraw, sheet Sheet, sheetName string) error {
+	balancedSheets := map[string][]weightedrand.Choice[string, int]{}
+
+	// Rescale weights of the subsheets
+	mult := 1
+	for _, weight := range sheet.Cards {
+		mult = leastCommonMultiple(mult, weight)
+	}
+
+	// Create subsheets for each color (multi color gets included
+	// multiple times)
+	for cardID, weight := range sheet.Cards {
+		co, found := b.UUIDs[cardID]
+		if !found {
+			return fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardID)
+		}
+
+		choice := weightedrand.NewChoice(cardID, weight*mult)
+		for _, color := range co.ColorIdentity {
+			balancedSheets[color] = append(balancedSheets[color], choice)
+		}
+		if len(co.ColorIdentity) < 1 && !slices.Contains(co.Types, "Land") {
+			balancedSheets["colorless"] = append(balancedSheets["colorless"], choice)
+		}
+	}
+
+	for _, cardChoices := range balancedSheets {
+		cardChooser, err := weightedrand.NewChooser(cardChoices...)
+		if err != nil {
+			return err
+		}
+		draw.balanced = append(draw.balanced, cardChooser)
+	}
+	return nil
+}
+
 // BoosterGen opens one booster of the given type, drawing from the set's
 // sheets with the weights the real product uses, and returns what came out.
 func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
@@ -441,154 +599,90 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 		return nil, fmt.Errorf("%s has no booster named '%s'", strings.ToUpper(setCode), boosterType)
 	}
 
-	// Pick a rarity distribution as defined in Contents at random using their weight
-	var choices []weightedrand.Choice[map[string]int, int]
-	for _, booster := range set.Booster[boosterType].Boosters {
-		choices = append(choices, weightedrand.NewChoice(booster.Contents, booster.Weight))
-	}
-	sheetChooser, err := weightedrand.NewChooser(choices...)
+	draw, err := b.boosterDraw(set, boosterType)
 	if err != nil {
 		return nil, err
 	}
 
-	contents := sheetChooser.Pick()
+	// Pick a rarity distribution as defined in Contents at random using their weight
+	contents := draw.contents.Pick()
 
 	var picks []string
 	// For each sheet, pick a card at random using the weight
 	for sheetName, count := range contents {
-		// Grab the sheet
-		sheet := set.Booster[boosterType].Sheets[sheetName]
+		sheet := draw.sheets[sheetName]
 
-		if sheet.Fixed {
-			// Fixed means there is no randomness, just pick the cards as listed
-			for cardID, subcount := range sheet.Cards {
-				// Convert to custom IDs
-				uuid, err := b.MatchID(cardID, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
-				if err != nil {
-					return nil, err
-				}
-				for range subcount {
-					picks = append(picks, uuid)
-				}
-			}
-		} else {
-			var duplicated map[string]bool
-			var balancedSheets map[string][]weightedrand.Choice[string, int]
+		if sheet.fixedErr != nil {
+			return nil, sheet.fixedErr
+		}
+		if sheet.isFixed {
+			picks = append(picks, sheet.fixed...)
+			continue
+		}
 
-			// Prepare maps to keep track of duplicates and balanced colors if necessary
-			if !sheet.AllowDuplicates {
-				duplicated = map[string]bool{}
-			}
-
-			// This is an approximation of the actual algorithm since we don't
-			// have precise print sheet information available.
-			// The first N cards (where N is the number of colors) get picked
-			// from these special sheets.
-			// See https://github.com/taw/magic-search-engine/blob/master/search-engine/lib/color_balanced_card_sheet.rb
-			if sheet.BalanceColors {
-				balancedSheets = map[string][]weightedrand.Choice[string, int]{}
-
-				// Rescale weights of the subsheets
-				mult := 1
-				for _, weight := range sheet.Cards {
-					mult = leastCommonMultiple(mult, weight)
-				}
-
-				// Create subsheets for each color (multi color gets included
-				// multiple times)
-				for cardID, weight := range sheet.Cards {
-					co, found := b.UUIDs[cardID]
-					if !found {
-						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardID)
-					}
-
-					choice := weightedrand.NewChoice(cardID, weight*mult)
-					for _, color := range co.ColorIdentity {
-						balancedSheets[color] = append(balancedSheets[color], choice)
-					}
-					if len(co.ColorIdentity) < 1 && !slices.Contains(co.Types, "Land") {
-						balancedSheets["colorless"] = append(balancedSheets["colorless"], choice)
-					}
-				}
-
-				// Sanity check
-				if count < len(balancedSheets) {
-					return nil, fmt.Errorf("fewer slots (%d) than colors (%d) for %s", count, len(balancedSheets), sheetName)
-				}
-
-				// Prefill the balanced slots
-				for _, cardChoices := range balancedSheets {
-					cardChooser, err := weightedrand.NewChooser(cardChoices...)
-					if err != nil {
-						return nil, err
-					}
-					item := cardChooser.Pick()
-
-					// Convert to custom IDs
-					uuid, err := b.MatchID(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
-					if err != nil {
-						return nil, err
-					}
-
-					// Add to what's found
-					picks = append(picks, uuid)
-
-					// One slot was filled, reduce the number of remaining ones
-					count--
-				}
-			}
-
-			// Move sheet data into weightedrand choices
-			var cardChoices []weightedrand.Choice[string, int]
-			for cardID, weight := range sheet.Cards {
-				cardChoices = append(cardChoices, weightedrand.NewChoice(cardID, weight))
-			}
-
-			cardChooser, err := weightedrand.NewChooser(cardChoices...)
+		if sheet.balanceErr != nil {
+			return nil, sheet.balanceErr
+		}
+		// Sanity check
+		if count < len(sheet.balanced) {
+			return nil, fmt.Errorf("fewer slots (%d) than colors (%d) for %s", count, len(sheet.balanced), sheetName)
+		}
+		// Prefill the balanced slots
+		for _, cardChooser := range sheet.balanced {
+			item := cardChooser.Pick()
+			err := sheet.resolveErrs[item]
 			if err != nil {
 				return nil, err
 			}
+			picks = append(picks, sheet.resolved[item])
 
-			// Pick a card uuid as many times as defined by its count
-			// (count may have been adjusted due to balanceColors)
-			for j := 0; j < count; j++ {
-				var uuid string
-				var e int
+			// One slot was filled, reduce the number of remaining ones
+			count--
+		}
 
-				// Repeat rerolls up to the specified threshold
-				for e = 0; e < maxRerollThreshold; e++ {
-					item := cardChooser.Pick()
+		if sheet.cardsErr != nil {
+			return nil, sheet.cardsErr
+		}
 
-					// Validate card exists (ie in case of online-only printing)
-					_, found := b.UUIDs[item]
-					if !found {
-						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, item)
-					}
+		var duplicated map[string]bool
+		if !sheet.allowDuplicates {
+			duplicated = map[string]bool{}
+		}
 
-					// Check if the sheet allows duplicates, and, if not, pick again
-					// in case the uuid was already picked
-					if !sheet.AllowDuplicates {
-						if duplicated[item] {
-							continue
-						}
-						duplicated[item] = true
-					}
+		// Pick a card uuid as many times as defined by its count
+		// (count may have been adjusted due to balanceColors)
+		for j := 0; j < count; j++ {
+			var uuid string
+			var e int
 
-					// Convert to custom IDs
-					uuid, err = b.MatchID(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
-					if err != nil {
-						return nil, err
-					}
+			// Repeat rerolls up to the specified threshold
+			for e = 0; e < maxRerollThreshold; e++ {
+				item := sheet.cards.Pick()
 
-					// Gotem
-					break
-				}
-				if e == maxRerollThreshold {
-					return nil, errors.New("reroll threshold reached")
+				// Validate card exists (ie in case of online-only printing)
+				err := sheet.resolveErrs[item]
+				if err != nil {
+					return nil, err
 				}
 
-				picks = append(picks, uuid)
+				// Check if the sheet allows duplicates, and, if not, pick again
+				// in case the uuid was already picked
+				if !sheet.allowDuplicates {
+					if duplicated[item] {
+						continue
+					}
+					duplicated[item] = true
+				}
+
+				// Gotem
+				uuid = sheet.resolved[item]
+				break
 			}
+			if e == maxRerollThreshold {
+				return nil, errors.New("reroll threshold reached")
+			}
+
+			picks = append(picks, uuid)
 		}
 	}
 
