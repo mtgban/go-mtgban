@@ -49,6 +49,14 @@ skips the Monte Carlo entirely and copies the deterministic value, because
 simulating a deck that always contains the same cards 5,000 times answers the
 same number 5,000 times.
 
+A product made only of whole sealed products - a case of boxes, a box of
+boosters - is not opened card by card either. Each of its openings adds up one
+opening of everything it holds, drawn from the openings already simulated for
+those products, which `Load` keeps for every product something else holds
+whole. A bonus skipped in a drop is skipped in a bundle of drops too, since
+the rule reads its chance in one copy, so the drop's openings value it the
+same way the bundle would.
+
 ## The price pass
 
 `loadPrices` fetches the API's version 2 `all[/SET].json` once, reads it
