@@ -1448,6 +1448,9 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Command Tower": {
 			"フルアート コマンダーイベントプロモ": {Edition: "PW25", Variant: "17"},
 		},
+		"Yuna, Grand Summoner": {
+			"ボーダーレス コマンダーボックスリーグプロモ": {Edition: "PW25", Variant: "16"},
+		},
 		"Sliver Hive": {
 			"Retro Frame Other Promos": {Edition: "PF25", Variant: "7"},
 		},
