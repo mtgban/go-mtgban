@@ -95,6 +95,7 @@ func parseWorldChampPrefix(variation string) (string, bool) {
 		"Julien Nuijten":       "jn",
 		"Kai Budde":            "kb",
 		"Leon Lindback":        "ll",
+		"Leon Linback":         "ll",
 		"Manuel Bevand":        "mb",
 		"Mark Justice":         "mj",
 		"Mark Le Pine":         "mlp",
