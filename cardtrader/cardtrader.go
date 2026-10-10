@@ -114,6 +114,8 @@ var tcgIDOverrides = map[int]int{
 	334550: 633633, // Saltwater Swell (Blue), Lost Treasure | Cold Foil
 	295093: 557937, // Take Flight (Red), Armory Deck: Boltyn
 	295089: 557943, // Engulfing Light (Red), Armory Deck: Boltyn
+	// Flesh and Blood: the id names the hero's Rainbow Foil promo, HER137.
+	331877: 638041, // Puffin, Hightail, SEA001
 	// Pokemon: same shape, a Poké Ball Pattern reverse holo pair.
 	343417: 642431, // Rufflet, 077/086
 	343418: 642432, // Braviary, 078/086
