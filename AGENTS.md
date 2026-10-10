@@ -83,6 +83,8 @@ mtgmatcher/palworld/       Palworld rules, loader, replay corpus
 mtgmatcher/pokemon/        Pokemon rules, loader (no replay corpus yet)
 mtgmatcher/yugioh/         Yu-Gi-Oh rules, loader, replay corpus
 mtgmatcher/games/          meta-package that blank-imports all nine games
+mtgmatcher/sealed/         opening sealed product: picks, decklists and
+                           expected counts per product, booster and deck
 <store>/                   one package per store (tcgplayer, cardkingdom,
                            cardmarket, ...)
 cmd/                       tools; cmd/bantool is the production orchestrator
@@ -156,6 +158,13 @@ contributor missing every one of the nine datastores still gets a green, if
 much thinner, `go test ./...` run. `mtgmatcher/magic`'s `TestMain` calls
 `log.Fatalln` only if its own golden `testdata/magic_test_data.json` fails
 to open or parse - a repo integrity fault, not a missing-env-var one.
+
+Reuse a datastore a suite already loads rather than adding another loader.
+Each helper costs a parse of about ten seconds and three gigabytes per test
+binary, and a test file cannot import another package's helper, so tests
+for a new package that only needs the Magic datastore belong in a suite that
+already loads it: `mtgmatcher/sealed` is tested from `mtgmatcher`'s external
+test package, on its `testBackend`.
 
 Use absolute paths for every variable. A relative path is resolved against
 the directory of the package under test, so a single relative value cannot

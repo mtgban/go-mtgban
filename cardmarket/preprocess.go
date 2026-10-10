@@ -11,6 +11,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 )
 
 // PreprocessError reports a listing Preprocess could not turn into a card, and
@@ -1599,12 +1600,12 @@ func sldCommanderDeckCard(b *mtgmatcher.Backend, expansionName, cardName, number
 	if deck == "" {
 		return ""
 	}
-	picks, err := b.GetPicksForDeck("SLD", deck)
+	picks, err := sealed.DeckCards(b, "SLD", deck)
 	if err != nil {
 		return ""
 	}
 
-	// GetPicksForDeck lists one entry per physical copy, not per distinct
+	// sealed.DeckCards lists one entry per physical copy, not per distinct
 	// printing (a deck's basic lands repeat the same uuid many times over),
 	// so named is deduped by uuid before its length says how many distinct
 	// printings cardName actually has in this deck.
@@ -1649,7 +1650,7 @@ func mb2PLSTNumber(b *mtgmatcher.Backend, cardName string) string {
 			continue
 		}
 
-		probs, err := b.GetProbabilitiesForSealed("MB2", uuid)
+		probs, err := sealed.ProductCounts(b, "MB2", uuid)
 		if err != nil {
 			return ""
 		}

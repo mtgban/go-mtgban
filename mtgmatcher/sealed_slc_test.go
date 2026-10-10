@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 )
 
 // slcProduct finds a Secret Lair Countdown Kit, the one product whose deck
@@ -18,7 +19,7 @@ func slcProduct(t *testing.T) (*mtgmatcher.Backend, string) {
 		t.Fatal("no SLC in this datastore:", err)
 	}
 	for _, product := range set.SealedProduct {
-		if b.SealedHasDecklist("SLC", product.UUID) {
+		if sealed.HasDecklist(b, "SLC", product.UUID) {
 			return b, product.UUID
 		}
 	}
@@ -45,10 +46,10 @@ func finishes(t *testing.T, b *mtgmatcher.Backend, uuids []string) (foil, nonfoi
 // A decklist is what a product always holds, so asking twice has to answer
 // twice the same. The Countdown Kit upgrades some of its cards to foil at
 // random, which is a fact about one copy rather than about the product.
-func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
+func TestProductDecklistIsTheSameEveryTime(t *testing.T) {
 	b, uuid := slcProduct(t)
 
-	first, err := b.GetDecklist("SLC", uuid)
+	first, err := sealed.ProductDecklist(b, "SLC", uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +58,7 @@ func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
 	}
 
 	for i := 0; i < 5; i++ {
-		again, err := b.GetDecklist("SLC", uuid)
+		again, err := sealed.ProductDecklist(b, "SLC", uuid)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -81,12 +82,12 @@ func TestGetDecklistIsTheSameEveryTime(t *testing.T) {
 
 // The chance itself is not lost: it belongs to opening a copy, which is what
 // the simulation does.
-func TestGetPicksForSealedStillRollsTheFoils(t *testing.T) {
+func TestProductPicksStillRollsTheFoils(t *testing.T) {
 	b, uuid := slcProduct(t)
 
 	var sawFoil bool
 	for i := 0; i < 10 && !sawFoil; i++ {
-		picks, err := b.GetPicksForSealed("SLC", uuid)
+		picks, err := sealed.ProductPicks(b, "SLC", uuid)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -99,12 +100,12 @@ func TestGetPicksForSealedStillRollsTheFoils(t *testing.T) {
 	}
 }
 
-// And the expected value reads the chance from the probabilities, where each
-// card is listed in both finishes with the odds of each.
-func TestProbabilitiesCarryBothFinishes(t *testing.T) {
+// And the expected value reads the chance from the counts, where each card is
+// listed in both finishes with the odds of each.
+func TestCountsCarryBothFinishes(t *testing.T) {
 	b, uuid := slcProduct(t)
 
-	probs, err := b.GetProbabilitiesForSealed("SLC", uuid)
+	probs, err := sealed.ProductCounts(b, "SLC", uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,10 +116,10 @@ func TestProbabilitiesCarryBothFinishes(t *testing.T) {
 		if err != nil {
 			continue
 		}
-		if co.Foil && prob.Probability == 0.3 {
+		if co.Foil && prob.ExpectedCount == 0.3 {
 			foilOdds++
 		}
-		if !co.Foil && prob.Probability == 0.7 {
+		if !co.Foil && prob.ExpectedCount == 0.7 {
 			nonfoilOdds++
 		}
 	}
@@ -128,17 +129,17 @@ func TestProbabilitiesCarryBothFinishes(t *testing.T) {
 }
 
 // The roll spares only the bonus card, which the product lists apart from the
-// deck, so enough copies show every printing the probabilities give a chance.
-func TestGetPicksForSealedDrawsWhatTheProbabilitiesList(t *testing.T) {
+// deck, so enough copies show every printing the counts give a chance.
+func TestProductPicksDrawsWhatTheCountsList(t *testing.T) {
 	b, uuid := slcProduct(t)
 
-	probs, err := b.GetProbabilitiesForSealed("SLC", uuid)
+	probs, err := sealed.ProductCounts(b, "SLC", uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
 	seen := map[string]bool{}
 	for i := 0; i < 100; i++ {
-		picks, err := b.GetPicksForSealed("SLC", uuid)
+		picks, err := sealed.ProductPicks(b, "SLC", uuid)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -148,10 +149,10 @@ func TestGetPicksForSealedDrawsWhatTheProbabilitiesList(t *testing.T) {
 	}
 
 	for _, prob := range probs {
-		if prob.Probability > 0 && !seen[prob.UUID] {
+		if prob.ExpectedCount > 0 && !seen[prob.UUID] {
 			co, _ := b.GetUUID(prob.UUID)
 			t.Errorf("%s #%s (foil %v) has a %.1f chance but never came up",
-				co.Name, co.Number, co.Foil, prob.Probability)
+				co.Name, co.Number, co.Foil, prob.ExpectedCount)
 		}
 	}
 }

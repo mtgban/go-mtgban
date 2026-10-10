@@ -3,6 +3,8 @@ package mtgmatcher_test
 import (
 	"strings"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 )
 
 // saysEtched reports whether a product's name says its cards are etched,
@@ -30,11 +32,11 @@ func TestEtchedProductHoldsEtchedCards(t *testing.T) {
 			continue
 		}
 		for _, product := range set.SealedProduct {
-			if !saysEtched(product.Name) || !b.SealedHasDecklist(code, product.UUID) {
+			if !saysEtched(product.Name) || !sealed.HasDecklist(b, code, product.UUID) {
 				continue
 			}
 
-			picks, err := b.GetDecklist(code, product.UUID)
+			picks, err := sealed.ProductDecklist(b, code, product.UUID)
 			if err != nil {
 				t.Errorf("%s %q: %v", code, product.Name, err)
 				continue

@@ -786,26 +786,27 @@ case and punctuation, so "Mr. 1 (Daz.Bonez)" and "Mr.1 (Daz.Bonez)" are
 distinct cards sharing a bucket), and only then falls back to the first
 entry, which is the right answer for alias-only buckets such as flavor names.
 
-Sealed products are modeled end-to-end:
+Sealed products are modeled end-to-end, in `mtgmatcher/sealed`, whose
+functions take the backend first:
 
-- `BoosterGen(set, boosterType)` performs MTGJSON-rule weighted sheet draws
+- `BoosterPicks(set, boosterType)` performs MTGJSON-rule weighted sheet draws
   (`weightedrand`), honoring `BalanceColors` (an approximation citing
   magic-search-engine) and per-sheet `AllowDuplicates`; its single hard-fail
   is `maxRerollThreshold = 50` ("reroll threshold reached").
-- `GetPicksForSealed` recursively expands product contents
+- `ProductPicks` recursively expands product contents
   (card/pack/deck/sealed/variable), opening the config a variable entry
-  draws with the same code as the product, and `GetPicksForDeck` does the
-  same for a named deck. `GetDecklist`/`SealedHasDecklist` distinguish
-  fixed-content products, and `SealedIsRandom` flags random ones. These and
-  `GetProbabilitiesForSealed` read a product's contents kind by kind in one
+  draws with the same code as the product, and `DeckCards` lists a named
+  deck. `ProductDecklist`/`HasDecklist` distinguish fixed-content products,
+  and `IsRandom` flags random ones. These and `ProductCounts` read a
+  product's contents kind by kind in one
   fixed order (`sealedKinds`), and the Magic data's special cases each have
   one named place: the Countdown Kit decks' three-in-ten foil roll
   (`deckFoilTenths`), the sample pack a product may fail to open
   (`optionalSealed`), the deck tokens the datastore does not hold
-  (`GetPicksForDeck`), and the listing id a Secret Lair foil drop shares
+  (`DeckCards`), and the listing id a Secret Lair foil drop shares
   (`secretLairFoilID`).
-- `GetProbabilitiesForSealed`, `SealedBoosterProbabilities` and
-  `SealedSheetProbabilities` compute exact per-card pull probabilities - the
+- `ProductCounts`, `BoosterCounts` and `SheetCounts` compute how many copies
+  of each card a product, a booster or one sheet draw yields on average - the
   inputs to `sealedev`'s EV computation.
 - `BuildSealedProductMap` and the load-time reverse index
   (`fillinSealedContents`, in the Magic loader) link single cards back to the
@@ -1231,9 +1232,10 @@ datastore, and never runs scrapers in-process. Canonical patterns:
 - **Buylist pricing reducer** - range `GetVendors()`, filter by `SealedMode`/
   shorthand, fold `vendor.Buylist()` entries into a price map
   (`getVendorPrices`).
-- **Sealed introspection** - `GetSealedUUIDs`/`GetDecklist`/`GetPicksForSealed`/
-  `SealedIsRandom`/`SealedHasDecklist` (the website surfaces booster/deck flags
-  but delegates generation to the matcher). It does not call `BoosterGen`
+- **Sealed introspection** - `GetSealedUUIDs` and `mtgmatcher/sealed`'s
+  `ProductDecklist`/`ProductPicks`/`IsRandom`/`HasDecklist` (the website
+  surfaces booster/deck flags but delegates generation to the matcher). It
+  does not call `BoosterPicks`
   directly - for that, the embedded `cmd/` tools are the example.
 - **CSV export**: `mtgban.WriteBuylistToCSV(b, records, creditMultiplier, w)`
   straight to an HTTP writer.

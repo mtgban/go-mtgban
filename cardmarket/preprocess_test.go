@@ -290,7 +290,7 @@ func TestFallbackIgnoresLanguageCopies(t *testing.T) {
 // that name, the caller's own route decides instead. A name the deck lists
 // under only one printing still resolves without a number, whether the
 // deck holds one copy of it (Sol Ring) or several (the ten-copy Plains of
-// "Raining Cats and Dogs" - GetPicksForDeck lists one entry per physical
+// "Raining Cats and Dogs" - sealed.DeckCards lists one entry per physical
 // copy, not per printing, so the count itself must not read as ambiguity).
 func TestSLDCommanderDeckCardDisambiguatesByNumber(t *testing.T) {
 	b := realDatastore(t)

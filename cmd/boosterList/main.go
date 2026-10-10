@@ -13,6 +13,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 )
 
 func getListForDeck(ds *mtgmatcher.Backend, setCode, deckName string) ([]string, error) {
@@ -67,7 +68,7 @@ func getListForSealed(ds *mtgmatcher.Backend, setCode, sealedUUID string) ([]str
 					list = append(list, uuid)
 
 				case "pack":
-					boosterList, err := ds.BoosterGen(content.Set, content.Code)
+					boosterList, err := sealed.BoosterPicks(ds, content.Set, content.Code)
 					if err != nil {
 						return nil, err
 					}
@@ -97,7 +98,7 @@ func getListForSealed(ds *mtgmatcher.Backend, setCode, sealedUUID string) ([]str
 							list = append(list, uuid)
 						}
 						for _, pack := range config["pack"] {
-							boosterList, err := ds.BoosterGen(pack.Set, pack.Code)
+							boosterList, err := sealed.BoosterPicks(ds, pack.Set, pack.Code)
 							if err != nil {
 								return nil, err
 							}

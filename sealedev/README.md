@@ -38,13 +38,13 @@ anyone can take.
 entry sums every possible card weighted by its probability: one deterministic
 number, the mean of infinitely many openings. A Sim entry opens the product
 `repetitions` times (5,000 by default) through
-`backend.GetPicksForSealed` and takes the median, which is what a person
+`sealed.ProductPicks` and takes the median, which is what a person
 opening one box is more likely to actually see. The gap between them is the
 skew, and it is large for anything with a chase card. Sim entries also carry
 `stdDev` and `iqr` in `ExtraValues`; EV entries carry neither, having no
 distribution to describe.
 
-A product whose contents are fixed - `backend.SealedIsRandom` says so -
+A product whose contents are fixed - `sealed.IsRandom` says so -
 skips the Monte Carlo entirely and copies the deterministic value, because
 simulating a deck that always contains the same cards 5,000 times answers the
 same number 5,000 times.
@@ -158,7 +158,7 @@ product's own name.
   matters only for `Singles Buylist (est.)` - the one entry naming more than
   one store (`CK`, `SCG`). Every other source names exactly one, so the max
   is over a single value.
-- **An EV is only as good as the contents data.** `GetProbabilitiesForSealed`
+- **An EV is only as good as the contents data.** `sealed.ProductCounts`
   returning nothing is reported per product and the product is skipped; a
   product whose contents are *wrong* is not detectable here at all, and shows
   up as an EV that looks fine.

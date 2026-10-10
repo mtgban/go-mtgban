@@ -12,6 +12,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
@@ -65,11 +66,11 @@ func sealedProduct(t *testing.T, b *mtgmatcher.Backend, wantRandom bool) (string
 		if err != nil {
 			continue
 		}
-		probs, err := b.GetProbabilitiesForSealed(co.SetCode, uuid)
+		probs, err := sealed.ProductCounts(b, co.SetCode, uuid)
 		if err != nil || len(probs) == 0 {
 			continue
 		}
-		if b.SealedIsRandom(co.SetCode, uuid) == wantRandom {
+		if sealed.IsRandom(b, co.SetCode, uuid) == wantRandom {
 			return uuid, co.SetCode
 		}
 	}
@@ -86,7 +87,7 @@ func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price f
 		Retail:  map[string]map[string]float64{},
 		Buylist: map[string]map[string]float64{},
 	}
-	probs, err := b.GetProbabilitiesForSealed(setCode, uuid)
+	probs, err := sealed.ProductCounts(b, setCode, uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,13 +115,13 @@ func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend) (string, string, strin
 		if err != nil {
 			continue
 		}
-		probs, err := b.GetProbabilitiesForSealed(co.SetCode, uuid)
+		probs, err := sealed.ProductCounts(b, co.SetCode, uuid)
 		if err != nil {
 			continue
 		}
 		for _, prob := range probs {
 			card, err := b.GetUUID(prob.UUID)
-			if err == nil && card.HasPromoType(magic.PromoTypeSLDBonus) && prob.Probability < 1 {
+			if err == nil && card.HasPromoType(magic.PromoTypeSLDBonus) && prob.ExpectedCount < 1 {
 				return uuid, co.SetCode, prob.UUID
 			}
 		}
@@ -386,7 +387,7 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 		Retail:  map[string]map[string]float64{},
 		Buylist: map[string]map[string]float64{},
 	}
-	probs, err := b.GetProbabilitiesForSealed(setCode, uuid)
+	probs, err := sealed.ProductCounts(b, setCode, uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
