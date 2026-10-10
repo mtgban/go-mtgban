@@ -355,22 +355,6 @@ func Title(str string) string {
 	return strings.Join(words, " ")
 }
 
-// greatestCommonDivisor exists for the multiple below.
-func greatestCommonDivisor(a, b int) int {
-	for b != 0 {
-		t := b
-		b = a % b
-		a = t
-	}
-	return a
-}
-
-// leastCommonMultiple is folded over a color-balanced sheet's weights:
-// scaled by it, every subsheet keeps its proportions in integers.
-func leastCommonMultiple(a, b int) int {
-	return a * b / greatestCommonDivisor(a, b)
-}
-
 // CardReleaseDate returns the date the card's set was released.
 func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 	co, err := b.GetUUID(cardID)

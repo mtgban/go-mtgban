@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 )
 
 // ArbitOpts is the bag of optional filters and thresholds Arbit and Mismatch
@@ -227,7 +228,7 @@ func (r *resolvedOpts) filterCard(cardID string) (*mtgmatcher.CardObject, float6
 	if r.filterOnlyFoil && !co.Foil && !co.Etched {
 		return nil, 0, false
 	}
-	if r.filterDecksOnly && co.Sealed && !r.backend.SealedHasDecklist(co.SetCode, cardID) {
+	if r.filterDecksOnly && co.Sealed && !sealed.HasDecklist(r.backend, co.SetCode, cardID) {
 		return nil, 0, false
 	}
 	if r.filterRLOnly && !co.IsReserved {

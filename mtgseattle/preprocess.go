@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 )
 
 var cardTable = map[string]string{
@@ -198,7 +199,7 @@ func mb1PLSTNumber(b *mtgmatcher.Backend, cardName string) string {
 			continue
 		}
 
-		probs, err := b.GetProbabilitiesForSealed("MB1", uuid)
+		probs, err := sealed.ProductCounts(b, "MB1", uuid)
 		if err != nil {
 			return ""
 		}

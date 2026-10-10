@@ -17,6 +17,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -237,7 +238,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 	var allTheErrors []string
 
 	// Enumerate the full universe of possible cards and their probabilities.
-	probs, err := ss.backend.GetProbabilitiesForSealed(setCode, productUUID)
+	probs, err := sealed.ProductCounts(ss.backend, setCode, productUUID)
 	if len(probs) == 0 {
 		if err == nil {
 			err = errors.New("no probabilities found")
@@ -250,11 +251,11 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 	skipped := make(map[string]bool)
 	for i := range probs {
 		picks[i] = probs[i].UUID
-		probabilities[i] = probs[i].Probability
+		probabilities[i] = probs[i].ExpectedCount
 
 		// SLD bonuses without a fixed published distribution never count towards the EV.
 		co, err := ss.backend.GetUUID(probs[i].UUID)
-		if skipFromEV(co, err, probs[i].Probability) {
+		if skipFromEV(co, err, probs[i].ExpectedCount) {
 			skipped[probs[i].UUID] = true
 		}
 	}
@@ -289,7 +290,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		datasets[i] = append(datasets[i], valueFromCache(picks, unitPrices[i], probabilities))
 	}
 
-	if !ss.backend.SealedIsRandom(setCode, productUUID) {
+	if !sealed.IsRandom(ss.backend, setCode, productUUID) {
 		// Fixed contents: a simulation would always draw the same cards, so its
 		// value equals the deterministic probability EV. Copy it instead of
 		// running a pointless Monte Carlo.
@@ -312,7 +313,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 			wg.Go(func() {
 				local := make([][]float64, len(evParameters))
 				for range repeatsChannel {
-					simPicks, err := ss.backend.GetPicksForSealed(setCode, productUUID)
+					simPicks, err := sealed.ProductPicks(ss.backend, setCode, productUUID)
 					if err != nil {
 						mu.Lock()
 						if !slices.Contains(allTheErrors, err.Error()) {
