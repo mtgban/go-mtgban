@@ -21,7 +21,14 @@ var LanguageCode2LanguageTag = map[string]string{
 	"zhs":   "Chinese Simplified",
 	"zht":   "Chinese Traditional",
 	"phi":   "Phyrexian",
+	"ph":    "Phyrexian",
 	"qya":   "Quenya",
+	"dw":    "Dwarvish",
+	"he":    "Hebrew",
+	"la":    "Latin",
+	"sa":    "Sanskrit",
+	"el":    "Ancient Greek",
+	"ar":    "Arabic",
 }
 
 // LanguageTag2LanguageCode is the reverse of LanguageCode2LanguageTag.
