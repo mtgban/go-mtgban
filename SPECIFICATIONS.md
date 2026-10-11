@@ -998,7 +998,8 @@ and the unregistered `secretdeskorrigans` (CAD, French) and `toamagic`
 (Spanish), which bantool does not run.
 
 `sealedev` builds sealed-EV "scrapers" from mtgmatcher probabilities or
-5,000-run booster simulations priced against the MTGBAN API, emitting EV
+5,000-run booster simulations priced against the MTGBAN API (a product made of
+whole sealed products draws from the openings kept for those), emitting EV
 entries with dispersion stats (std-dev/IQR), `Family="EV"`, `SealedMode`, and
 `MetadataOnly` toggled per sub-scraper. Two of its sources are estimated
 rather than read: TCG Direct (net) where the buylist is missing, and
@@ -1101,9 +1102,10 @@ group regardless of game, and other scrapers use their own schedule. No
 Makefile or Docker - plain `go build` per `cmd/` subdirectory.
 
 **Key dependencies**: goquery (HTML), retryablehttp + cleanhttp
-(HTTP), simplecloud (storage abstraction), weightedrand (variable configurations),
-montanaflynn/stats (EV), golang.org/x/text (normalization), plus the in-house
-`go-cardkingdom`, `go-cardmarket` and `go-tcgplayer` clients.
+(HTTP), simplecloud (storage abstraction), weightedrand (variable sealed
+configurations, and `cmd/boosterGen`'s boosters), montanaflynn/stats (EV),
+golang.org/x/text (normalization), plus the in-house `go-cardkingdom`,
+`go-cardmarket` and `go-tcgplayer` clients.
 
 ---
 

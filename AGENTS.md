@@ -123,9 +123,10 @@ so a stray unformatted file fails the build rather than merely drawing a
 review comment. The tree is gofmt-clean today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
-in `mtgban/`, in `mtgmatcher/` and every one of its nine `mtgmatcher/<game>`
-sub-packages, and in 19 of the 24 scraper packages (only `arcanafrisia`,
-`cardsphere`, `mtgstocks`, `secretdeskorrigans` and `toamagic` have none).
+in `mtgban/`, in `mtgmatcher/`, every one of its nine `mtgmatcher/<game>`
+sub-packages and `mtgmatcher/sealed`, and in 19 of the 24 scraper packages
+(only `arcanafrisia`, `cardsphere`, `mtgstocks`, `secretdeskorrigans` and
+`toamagic` have none).
 A subset run can pass while CI fails. `mtgmatcher/magic` carries the largest
 test suite of any package in the repo, nearly forty `*_test.go` files with
 the Magic replay suite among them (see "The golden suites" below).
@@ -163,8 +164,9 @@ Reuse a datastore a suite already loads rather than adding another loader.
 Each helper costs a parse of about ten seconds and three gigabytes per test
 binary, and a test file cannot import another package's helper, so tests
 for a new package that only needs the Magic datastore belong in a suite that
-already loads it: `mtgmatcher/sealed` is tested from `mtgmatcher`'s external
-test package, on its `testBackend`.
+already loads it: `mtgmatcher/sealed`'s datastore-backed tests live in
+`mtgmatcher`'s external test package, on its `testBackend`, and only the ones
+needing no datastore sit in its own directory.
 
 Use absolute paths for every variable. A relative path is resolved against
 the directory of the package under test, so a single relative value cannot
