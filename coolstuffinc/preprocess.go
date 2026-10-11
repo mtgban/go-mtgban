@@ -595,6 +595,10 @@ func basicLandListing(b *mtgmatcher.Backend, cardName, edition, variant string, 
 // single set. Candidates are gathered under both foil states to require the
 // same single number either way.
 func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant string, isFoil bool, imgName string) *mtgmatcher.InputCard {
+	// A hash names no number or full art, whatever its characters spell.
+	if imageHash.MatchString(strings.ToLower(strings.TrimSuffix(path.Base(imgName), filepath.Ext(imgName)))) {
+		imgName = ""
+	}
 	var match string
 	for _, foil := range [...]bool{false, true} {
 		probe := &mtgmatcher.InputCard{Name: base, Edition: edition, Variation: variant, Foil: foil}
@@ -685,6 +689,10 @@ func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant str
 	}
 	return input
 }
+
+// imageHash matches an image file named by a hash rather than a set and
+// number.
+var imageHash = regexp.MustCompile(`^[0-9a-f]{32}$`)
 
 // basicLandOrdinal reads a basic's letter as its position among the plain
 // collector numbers of a set ("B" is the second one). Arts are lettered in
