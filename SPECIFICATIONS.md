@@ -789,10 +789,13 @@ entry, which is the right answer for alias-only buckets such as flavor names.
 Sealed products are modeled end-to-end, in `mtgmatcher/sealed`, whose
 functions take the backend first:
 
-- `BoosterPicks(set, boosterType)` performs MTGJSON-rule weighted sheet draws
-  (`weightedrand`), honoring `BalanceColors` (an approximation citing
-  magic-search-engine) and per-sheet `AllowDuplicates`; its single hard-fail
-  is `maxRerollThreshold = 50` ("reroll threshold reached").
+- `BoosterPicks(set, boosterType)` performs MTGJSON-rule weighted sheet draws,
+  walking each sheet's weights against their sum so that opening a booster
+  builds nothing per call, honoring `BalanceColors` (an approximation citing
+  magic-search-engine) and per-sheet `AllowDuplicates`; a weight below one is
+  never drawn, and the published `totalWeight`/`boostersTotalWeight` are not
+  read. Its single hard-fail is `maxRerollThreshold = 50` ("reroll threshold
+  reached").
 - `ProductPicks` recursively expands product contents
   (card/pack/deck/sealed/variable), opening the config a variable entry
   draws with the same code as the product, and `DeckCards` lists a named
@@ -810,7 +813,8 @@ functions take the backend first:
   inputs to `sealedev`'s EV computation. Each `Count` is per copy of the
   product its card comes from, with `Copies` saying how many copies a held
   product contributes, so a rule can read a chance in one copy and a total
-  is `ExpectedCount * Copies`.
+  is `ExpectedCount * Copies`. They read the same summed weights the draw
+  does, so a count describes what `BoosterPicks` actually draws.
 - `BuildSealedProductMap` and the load-time reverse index
   (`fillinSealedContents`, in the Magic loader) link single cards back to the
   products containing them.
@@ -1096,7 +1100,7 @@ group regardless of game, and other scrapers use their own schedule. No
 Makefile or Docker - plain `go build` per `cmd/` subdirectory.
 
 **Key dependencies**: goquery (HTML), retryablehttp + cleanhttp
-(HTTP), simplecloud (storage abstraction), weightedrand (boosters),
+(HTTP), simplecloud (storage abstraction), weightedrand (variable configurations),
 montanaflynn/stats (EV), golang.org/x/text (normalization), plus the in-house
 `go-cardkingdom`, `go-cardmarket` and `go-tcgplayer` clients.
 

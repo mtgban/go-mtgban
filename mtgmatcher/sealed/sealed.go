@@ -19,6 +19,9 @@ const maxRerollThreshold = 50
 
 // BoosterPicks opens one booster of the given type, drawing from the set's
 // sheets with the weights the real product uses, and returns what came out.
+//
+// Each draw walks the weights against their total, so opening a booster
+// builds nothing per call. A weight below one is never drawn.
 func BoosterPicks(b *mtgmatcher.Backend, setCode, boosterType string) ([]string, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -27,34 +30,29 @@ func BoosterPicks(b *mtgmatcher.Backend, setCode, boosterType string) ([]string,
 	if set.Booster == nil {
 		return nil, fmt.Errorf("%s is missing booster information", strings.ToUpper(setCode))
 	}
-	_, found := set.Booster[boosterType]
+	booster, found := set.Booster[boosterType]
 	if !found {
 		return nil, fmt.Errorf("%s has no booster named '%s'", strings.ToUpper(setCode), boosterType)
 	}
 
 	// Pick a rarity distribution as defined in Contents at random using their weight
-	var choices []weightedrand.Choice[map[string]int, int]
-	for _, booster := range set.Booster[boosterType].Boosters {
-		choices = append(choices, weightedrand.NewChoice(booster.Contents, booster.Weight))
-	}
-	sheetChooser, err := weightedrand.NewChooser(choices...)
+	contents, err := drawContents(booster, boosterType)
 	if err != nil {
 		return nil, err
 	}
-
-	contents := sheetChooser.Pick()
 
 	var picks []string
 	// For each sheet, pick a card at random using the weight
 	for sheetName, count := range contents {
 		// Grab the sheet
-		sheet := set.Booster[boosterType].Sheets[sheetName]
+		sheet := booster.Sheets[sheetName]
+		isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 
 		if sheet.Fixed {
 			// Fixed means there is no randomness, just pick the cards as listed
 			for cardID, subcount := range sheet.Cards {
 				// Convert to custom IDs
-				uuid, err := b.MatchID(cardID, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
+				uuid, err := b.MatchID(cardID, sheet.Foil, isEtched)
 				if err != nil {
 					return nil, err
 				}
@@ -62,127 +60,185 @@ func BoosterPicks(b *mtgmatcher.Backend, setCode, boosterType string) ([]string,
 					picks = append(picks, uuid)
 				}
 			}
-		} else {
-			var duplicated map[string]bool
-			var balancedSheets map[string][]weightedrand.Choice[string, int]
+			continue
+		}
 
-			// Prepare maps to keep track of duplicates and balanced colors if necessary
-			if !sheet.AllowDuplicates {
-				duplicated = map[string]bool{}
-			}
-
-			// This is an approximation of the actual algorithm since we don't
-			// have precise print sheet information available.
-			// The first N cards (where N is the number of colors) get picked
-			// from these special sheets.
-			// See https://github.com/taw/magic-search-engine/blob/master/search-engine/lib/color_balanced_card_sheet.rb
-			if sheet.BalanceColors {
-				balancedSheets = map[string][]weightedrand.Choice[string, int]{}
-
-				// Rescale weights of the subsheets
-				mult := 1
-				for _, weight := range sheet.Cards {
-					mult = leastCommonMultiple(mult, weight)
-				}
-
-				// Create subsheets for each color (multi color gets included
-				// multiple times)
-				for cardID, weight := range sheet.Cards {
-					co, found := b.UUIDs[cardID]
-					if !found {
-						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardID)
-					}
-
-					choice := weightedrand.NewChoice(cardID, weight*mult)
-					for _, color := range co.ColorIdentity {
-						balancedSheets[color] = append(balancedSheets[color], choice)
-					}
-					if len(co.ColorIdentity) < 1 && !slices.Contains(co.Types, "Land") {
-						balancedSheets["colorless"] = append(balancedSheets["colorless"], choice)
-					}
-				}
-
-				// Sanity check
-				if count < len(balancedSheets) {
-					return nil, fmt.Errorf("fewer slots (%d) than colors (%d) for %s", count, len(balancedSheets), sheetName)
-				}
-
-				// Prefill the balanced slots
-				for _, cardChoices := range balancedSheets {
-					cardChooser, err := weightedrand.NewChooser(cardChoices...)
-					if err != nil {
-						return nil, err
-					}
-					item := cardChooser.Pick()
-
-					// Convert to custom IDs
-					uuid, err := b.MatchID(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
-					if err != nil {
-						return nil, err
-					}
-
-					// Add to what's found
-					picks = append(picks, uuid)
-
-					// One slot was filled, reduce the number of remaining ones
-					count--
-				}
-			}
-
-			// Move sheet data into weightedrand choices
-			var cardChoices []weightedrand.Choice[string, int]
-			for cardID, weight := range sheet.Cards {
-				cardChoices = append(cardChoices, weightedrand.NewChoice(cardID, weight))
-			}
-
-			cardChooser, err := weightedrand.NewChooser(cardChoices...)
+		// This is an approximation of the actual algorithm since we don't
+		// have precise print sheet information available.
+		// The first N cards (where N is the number of colors) get picked
+		// from these special sheets.
+		// See https://github.com/taw/magic-search-engine/blob/master/search-engine/lib/color_balanced_card_sheet.rb
+		if sheet.BalanceColors {
+			before := len(picks)
+			picks, err = drawBalanced(b, picks, sheet, sheetName, count)
 			if err != nil {
 				return nil, err
 			}
+			// Each slot filled reduces the number of remaining ones
+			count -= len(picks) - before
+		}
 
-			// Pick a card uuid as many times as defined by its count
-			// (count may have been adjusted due to balanceColors)
-			for j := 0; j < count; j++ {
-				var uuid string
-				var e int
+		total := sheetWeight(sheet.Cards, nil)
+		if total <= 0 {
+			return nil, fmt.Errorf("sheet '%s' has no weight to draw by", sheetName)
+		}
 
-				// Repeat rerolls up to the specified threshold
-				for e = 0; e < maxRerollThreshold; e++ {
-					item := cardChooser.Pick()
+		// Cards already drawn, where the sheet allows no duplicates
+		var drawn []string
 
-					// Validate card exists (ie in case of online-only printing)
-					_, found := b.UUIDs[item]
-					if !found {
-						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, item)
-					}
+		// Pick a card uuid as many times as defined by its count
+		// (count may have been adjusted due to balanceColors)
+		for j := 0; j < count; j++ {
+			var uuid string
+			var e int
 
-					// Check if the sheet allows duplicates, and, if not, pick again
-					// in case the uuid was already picked
-					if !sheet.AllowDuplicates {
-						if duplicated[item] {
-							continue
-						}
-						duplicated[item] = true
-					}
+			// Repeat rerolls up to the specified threshold
+			for e = 0; e < maxRerollThreshold; e++ {
+				item := drawCard(sheet.Cards, total, nil)
 
-					// Convert to custom IDs
-					uuid, err = b.MatchID(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
-					if err != nil {
-						return nil, err
-					}
-
-					// Gotem
-					break
-				}
-				if e == maxRerollThreshold {
-					return nil, errors.New("reroll threshold reached")
+				// Validate card exists (ie in case of online-only printing)
+				_, found := b.UUIDs[item]
+				if !found {
+					return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, item)
 				}
 
-				picks = append(picks, uuid)
+				// Check if the sheet allows duplicates, and, if not, pick again
+				// in case the uuid was already picked
+				if !sheet.AllowDuplicates {
+					if slices.Contains(drawn, item) {
+						continue
+					}
+					drawn = append(drawn, item)
+				}
+
+				// Convert to custom IDs
+				uuid, err = b.MatchID(item, sheet.Foil, isEtched)
+				if err != nil {
+					return nil, err
+				}
+
+				// Gotem
+				break
 			}
+			if e == maxRerollThreshold {
+				return nil, errors.New("reroll threshold reached")
+			}
+
+			picks = append(picks, uuid)
 		}
 	}
 
+	return picks, nil
+}
+
+// drawContents picks one of a booster type's slot layouts by its weight.
+func drawContents(booster mtgmatcher.Booster, boosterType string) (map[string]int, error) {
+	var total int
+	for _, layout := range booster.Boosters {
+		total += max(layout.Weight, 0)
+	}
+	if total <= 0 {
+		return nil, fmt.Errorf("booster '%s' has no weight to draw by", boosterType)
+	}
+	r := rand.Intn(total)
+	for _, layout := range booster.Boosters {
+		if r < layout.Weight {
+			return layout.Contents, nil
+		}
+		r -= max(layout.Weight, 0)
+	}
+	return nil, fmt.Errorf("booster '%s' drew past its weight", boosterType)
+}
+
+// sheetWeight is the weight of the cards keep accepts, or of all of them
+// where keep is nil, a weight below one counting as none.
+func sheetWeight(cards map[string]int, keep func(cardID string) bool) int {
+	var total int
+	for cardID, weight := range cards {
+		if weight > 0 && (keep == nil || keep(cardID)) {
+			total += weight
+		}
+	}
+	return total
+}
+
+// drawCard picks one card id from a sheet by weight, total being what
+// sheetWeight gives for the same keep, and above zero. Walking a map in
+// whatever order it iterates is still an exact weighted draw.
+func drawCard(cards map[string]int, total int, keep func(cardID string) bool) string {
+	r := rand.Intn(total)
+	for cardID, weight := range cards {
+		if weight <= 0 || (keep != nil && !keep(cardID)) {
+			continue
+		}
+		if r < weight {
+			return cardID
+		}
+		r -= weight
+	}
+	return ""
+}
+
+// inBalance reports whether a card belongs to the subsheet of one color of
+// its identity, or, for color "", to the colorless subsheet, which holds no
+// lands.
+func inBalance(co *mtgmatcher.CardObject, color string) bool {
+	if color == "" {
+		return len(co.ColorIdentity) < 1 && !slices.Contains(co.Types, "Land")
+	}
+	return slices.Contains(co.ColorIdentity, color)
+}
+
+// drawBalanced fills one slot of a color-balanced sheet from each color on
+// it, appending to picks. A multicolor card stands in every color of its
+// identity, at its own weight.
+func drawBalanced(b *mtgmatcher.Backend, picks []string, sheet mtgmatcher.Sheet, sheetName string, count int) ([]string, error) {
+	var colors []string
+	var totals []int
+	add := func(color string, weight int) {
+		idx := slices.Index(colors, color)
+		if idx < 0 {
+			colors = append(colors, color)
+			totals = append(totals, 0)
+			idx = len(colors) - 1
+		}
+		totals[idx] += weight
+	}
+	for cardID, weight := range sheet.Cards {
+		co, found := b.UUIDs[cardID]
+		if !found {
+			return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardID)
+		}
+		weight = max(weight, 0)
+		for _, color := range co.ColorIdentity {
+			add(color, weight)
+		}
+		if inBalance(co, "") {
+			add("", weight)
+		}
+	}
+
+	// Sanity check
+	if count < len(colors) {
+		return nil, fmt.Errorf("fewer slots (%d) than colors (%d) for %s", count, len(colors), sheetName)
+	}
+
+	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
+	for i, color := range colors {
+		if totals[i] <= 0 {
+			return nil, fmt.Errorf("sheet '%s' has no weight to draw color '%s' by", sheetName, color)
+		}
+		item := drawCard(sheet.Cards, totals[i], func(cardID string) bool {
+			return inBalance(b.UUIDs[cardID], color)
+		})
+
+		// Convert to custom IDs
+		uuid, err := b.MatchID(item, sheet.Foil, isEtched)
+		if err != nil {
+			return nil, err
+		}
+		picks = append(picks, uuid)
+	}
 	return picks, nil
 }
 
@@ -535,7 +591,7 @@ func newCount(uuid string, expectedCount float64) Count {
 }
 
 // BoosterCounts returns how many copies of each card one booster of the given
-// type holds on average.
+// type holds on average, by the same weights BoosterPicks draws by.
 func BoosterCounts(b *mtgmatcher.Backend, setCode, boosterType string) ([]Count, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -547,10 +603,21 @@ func BoosterCounts(b *mtgmatcher.Backend, setCode, boosterType string) ([]Count,
 		return nil, fmt.Errorf("booster '%s' not found", boosterType)
 	}
 
+	var total int
+	for _, booster := range boosterConfig.Boosters {
+		total += max(booster.Weight, 0)
+	}
+	if total <= 0 {
+		return nil, fmt.Errorf("booster '%s' has no weight to draw by", boosterType)
+	}
+
 	// Sheets are read in order, so a card on several sheets sums to the same
 	// bits on every call.
 	tmp := map[string]float64{}
 	for _, booster := range boosterConfig.Boosters {
+		if booster.Weight <= 0 {
+			continue
+		}
 		for _, sheetName := range slices.Sorted(maps.Keys(booster.Contents)) {
 			count := booster.Contents[sheetName]
 			sheetCounts, err := SheetCounts(b, setCode, boosterType, sheetName)
@@ -569,13 +636,14 @@ func BoosterCounts(b *mtgmatcher.Backend, setCode, boosterType string) ([]Count,
 	// Normalize booster weight with the provided totals
 	var counts []Count
 	for _, uuid := range slices.Sorted(maps.Keys(tmp)) {
-		counts = append(counts, newCount(uuid, tmp[uuid]/float64(boosterConfig.BoostersTotalWeight)))
+		counts = append(counts, newCount(uuid, tmp[uuid]/float64(total)))
 	}
 	return counts, nil
 }
 
 // SheetCounts returns how likely each card on one sheet is to be drawn from
-// it, which for a single draw is also the copies it yields on average.
+// it, which for a single draw is also the copies it yields on average, by the
+// same weights BoosterPicks draws by.
 func SheetCounts(b *mtgmatcher.Backend, setCode, boosterType, sheetName string) ([]Count, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -587,15 +655,23 @@ func SheetCounts(b *mtgmatcher.Backend, setCode, boosterType, sheetName string) 
 		return nil, fmt.Errorf("sheet '%s' not found", sheetName)
 	}
 
+	total := sheetWeight(sheet.Cards, nil)
+	if total <= 0 {
+		return nil, fmt.Errorf("sheet '%s' has no weight to draw by", sheetName)
+	}
+
 	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 	var counts []Count
 
 	for cardID, count := range sheet.Cards {
+		if count <= 0 {
+			continue
+		}
 		uuid, err := b.MatchID(cardID, sheet.Foil, isEtched)
 		if err != nil {
 			return nil, err
 		}
-		probability := float64(count) / float64(sheet.TotalWeight)
+		probability := float64(count) / float64(total)
 		counts = append(counts, newCount(uuid, probability))
 	}
 
@@ -704,20 +780,4 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 	}
 
 	return counts, nil
-}
-
-// greatestCommonDivisor exists for the multiple below.
-func greatestCommonDivisor(a, b int) int {
-	for b != 0 {
-		t := b
-		b = a % b
-		a = t
-	}
-	return a
-}
-
-// leastCommonMultiple is folded over a color-balanced sheet's weights:
-// scaled by it, every subsheet keeps its proportions in integers.
-func leastCommonMultiple(a, b int) int {
-	return a * b / greatestCommonDivisor(a, b)
 }
