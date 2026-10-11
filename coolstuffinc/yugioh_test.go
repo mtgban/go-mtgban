@@ -65,6 +65,7 @@ func TestYugiohSKUCardReadsTheNumberOffTheImage(t *testing.T) {
 	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	const dir = "https://res.cloudinary.com/csicdn/image/upload/v1/Images/Products/YuGiOh%20Art/"
+	numbers := skuNumbers(b)
 	for _, test := range []struct {
 		name, edition, rarity, img, want string
 	}{
@@ -75,7 +76,7 @@ func TestYugiohSKUCardReadsTheNumberOffTheImage(t *testing.T) {
 		{"Monster Reborn", "Legendary Hero Decks", "Common", "Magic%20Ruler/full/MRL103.jpg", ""},
 	} {
 		card := yugiohListing(test.name, test.edition, "", "", test.rarity, false)
-		got := yugiohSKUCard(b, card, dir+test.img)
+		got := yugiohSKUCard(b, numbers, card, dir+test.img)
 		if got != test.want {
 			t.Errorf("%s (%s) landed %q, want %q", test.name, test.img, got, test.want)
 		}

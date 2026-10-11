@@ -72,12 +72,10 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 	return set.Name
 }
 
-// riftboundImageStem reads the file name off a product image, whatever
-// the storefront pictures in, and riftboundImageTCG the TCGplayer
-// product id the oldest Origins products are pictured by.
+// riftboundImageTCG reads the TCGplayer product id the oldest Origins
+// products are pictured by.
 var (
-	riftboundImageStem = regexp.MustCompile(`(?i)/([^/]+)\.(?:jpe?g|png|webp|avif)$`)
-	riftboundImageTCG  = regexp.MustCompile(`[0-9]{5,}`)
+	riftboundImageTCG = regexp.MustCompile(`[0-9]{5,}`)
 
 	riftboundImageTail = regexp.MustCompile(`(?i)(?:ovr|alt)?[_.]*(?:v[0-9]+)?$`)
 
@@ -117,7 +115,7 @@ var (
 // sibling printing's, reused, and the notes carry the exact number those
 // listings are sold at.
 func riftboundImageCard(b *mtgmatcher.Backend, imgURL string, foil bool) *mtgmatcher.InputCard {
-	match := riftboundImageStem.FindStringSubmatch(imgURL)
+	match := imageStem.FindStringSubmatch(imgURL)
 	if match == nil {
 		return nil
 	}
