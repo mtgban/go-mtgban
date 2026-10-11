@@ -99,8 +99,8 @@ Then a strictness cascade against existing entries for the same card:
 
 | Method       | strict | Behavior on duplicate                                          |
 |--------------|--------|----------------------------------------------------------------|
-| `AddRelaxed` | 0      | same condition+price+seller → merge `Quantity` and `Available` |
-| `Add`        | 1      | merge, but error if URL, quantity and Bundle are also identical |
+| `AddRelaxed` | 0      | same condition+price+seller → merge `Quantity` and `Available`, unless their `InstanceID`s differ |
+| `Add`        | 1      | merge as `AddRelaxed`, but error if URL, quantity and Bundle are also identical |
 | `AddStrict`  | 2      | error if condition+price+seller already present                |
 | `AddUnique`  | 3      | error if condition+seller already present - **ignores price** (one per condition) |
 

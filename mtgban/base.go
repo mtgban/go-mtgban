@@ -51,46 +51,60 @@ func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int)
 					return fmt.Errorf("%w: duplicate inventory key, same conditions and price:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 				}
 
+				// Two rows the store tells apart by id are two offers: each
+				// keeps its own id and quantity, so a cart can ask for either.
+				if entry.InstanceID != entries[i].InstanceID {
+					continue
+				}
+
 				if strict > 0 && entry.URL == entries[i].URL && entry.Quantity == entries[i].Quantity && entry.Bundle == entries[i].Bundle {
 					return fmt.Errorf("%w: duplicate inventory key, same url, and qty:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 				}
 
 				inv[cardID][i].Quantity += entry.Quantity
 				inv[cardID][i].Available += entry.Available
+				inv.sort(cardID)
 				return nil
 			}
 		}
 	}
 
 	inv[cardID] = append(inv[cardID], *entry)
-
-	// Keep array sorted
-	sort.Slice(inv[cardID], func(i, j int) bool {
-		iIdx := slices.Index(FullGradeTags, inv[cardID][i].Conditions)
-		jIdx := slices.Index(FullGradeTags, inv[cardID][j].Conditions)
-
-		if iIdx == jIdx {
-			if inv[cardID][i].Price == inv[cardID][j].Price {
-				// Prioritize higher quantity for same price and same condition
-				return inv[cardID][i].Quantity > inv[cardID][j].Quantity
-			}
-			// Prioritize lower prices first for the same condition
-			return inv[cardID][i].Price < inv[cardID][j].Price
-		}
-
-		return iIdx < jIdx
-	})
+	inv.sort(cardID)
 
 	return nil
 }
 
+// sort orders a card's entries by condition, then by lower price, then by
+// higher quantity.
+func (inv InventoryRecord) sort(cardID string) {
+	entries := inv[cardID]
+	sort.Slice(entries, func(i, j int) bool {
+		iIdx := slices.Index(FullGradeTags, entries[i].Conditions)
+		jIdx := slices.Index(FullGradeTags, entries[j].Conditions)
+
+		if iIdx == jIdx {
+			if entries[i].Price == entries[j].Price {
+				// Prioritize higher quantity for same price and same condition
+				return entries[i].Quantity > entries[j].Quantity
+			}
+			// Prioritize lower prices first for the same condition
+			return entries[i].Price < entries[j].Price
+		}
+
+		return iIdx < jIdx
+	})
+}
+
 // AddRelaxed adds a record to the inventory, always merging into an existing
-// entry rather than reporting one.
+// entry rather than reporting one. Entries carrying different InstanceIDs,
+// an empty one included, are different offers and are never merged.
 func (inv InventoryRecord) AddRelaxed(cardID string, entry *InventoryEntry) error {
 	return inv.add(cardID, entry, 0)
 }
 
 // Add a new record to the inventory, similar existing entries are merged
+// unless they carry different InstanceIDs, an empty one included.
 func (inv InventoryRecord) Add(cardID string, entry *InventoryEntry) error {
 	return inv.add(cardID, entry, 1)
 }

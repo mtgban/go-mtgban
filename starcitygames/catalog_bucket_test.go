@@ -3,17 +3,16 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
-// TestSecondBucketMerges covers the Armory Deck singles Star City Games splits
-// across two product records. Both records price the same card at the same
-// price and differ only in how many copies each holds, so the second would read
-// as a duplicate and lose its copies; they belong in the
-// first's count.
+// TestSecondBucketKeepsItsCopies covers the Armory Deck singles Star City
+// Games splits across two product records. Both records price the same card at
+// the same price and differ only in how many copies each holds, so the second
+// would read as a duplicate and lose its copies; it is kept as its own offer,
+// under its own sku.
 //
 // Which record the catalog streams first is not fixed - most of the Armory
 // Deck: Pleiades listings lead with the marked one - so the pair has to fold
@@ -21,7 +20,7 @@ import (
 //
 // The quantities are the ones the catalog carried on 2026-08-24: eleven Near
 // Mint and five Played under the plain sku, seven and two under the second.
-func TestSecondBucketMerges(t *testing.T) {
+func TestSecondBucketKeepsItsCopies(t *testing.T) {
 	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
 
 	product := func(sku string, nm, sp int) CatalogProduct {
@@ -64,13 +63,16 @@ func TestSecondBucketMerges(t *testing.T) {
 				t.Fatalf("got %d priced cards, want 1", len(scg.inventory))
 			}
 			for _, entries := range scg.inventory {
-				if len(entries) != 2 {
-					t.Fatalf("got %d entries, want one per grade: %v", len(entries), entries)
+				want := map[string]int{
+					"SGL-FAB-AGB-014-ENN1": 11, "SGL-FAB-AGB-014-ENN2": 5,
+					"SGL-FAB-AGB-014_CC-ENN1": 7, "SGL-FAB-AGB-014_CC-ENN2": 2,
 				}
-				want := map[mtgban.Condition]int{mtgban.NM: 18, mtgban.SP: 7}
+				if len(entries) != len(want) {
+					t.Fatalf("got %d entries, want one per sku: %v", len(entries), entries)
+				}
 				for _, entry := range entries {
-					if entry.Quantity != want[entry.Conditions] {
-						t.Errorf("%s holds %d copies, want %d", entry.Conditions, entry.Quantity, want[entry.Conditions])
+					if entry.Quantity != want[entry.InstanceID] {
+						t.Errorf("%s holds %d copies, want %d", entry.InstanceID, entry.Quantity, want[entry.InstanceID])
 					}
 				}
 			}

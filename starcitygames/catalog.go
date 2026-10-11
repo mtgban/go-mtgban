@@ -1371,7 +1371,7 @@ func secondBucket(sku string) bool {
 
 // bucketKey names the listing a record belongs to: the sku with the marker
 // taken off its number segment, which both records of a pair answer with and
-// no other sku does. It is what lets the two be folded together whichever of
+// no other sku does. It is what lets the two be filed together whichever of
 // them the catalog streams first.
 func bucketKey(sku string) string {
 	fields := strings.Split(sku, "-")
