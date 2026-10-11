@@ -513,12 +513,19 @@ func HasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
 	return false
 }
 
-// Count is one uuid and how many copies of it opening a product yields on
-// average. A card drawn from several slots, or held in several copies of a
-// product, can average more than one.
+// Count is one uuid and how many copies of it one copy of the product it
+// comes from yields on average, which can be more than one for a card drawn
+// from several slots. Copies is how many copies of that product the entry
+// stands for, so the whole product yields ExpectedCount * Copies.
 type Count struct {
 	UUID          string
 	ExpectedCount float64
+	Copies        int
+}
+
+// newCount is an entry for one copy of the product the card comes from.
+func newCount(uuid string, expectedCount float64) Count {
+	return Count{UUID: uuid, ExpectedCount: expectedCount, Copies: 1}
 }
 
 // BoosterCounts returns how many copies of each card one booster of the given
@@ -556,10 +563,7 @@ func BoosterCounts(b *mtgmatcher.Backend, setCode, boosterType string) ([]Count,
 	// Normalize booster weight with the provided totals
 	var counts []Count
 	for _, uuid := range slices.Sorted(maps.Keys(tmp)) {
-		counts = append(counts, Count{
-			UUID:          uuid,
-			ExpectedCount: tmp[uuid] / float64(boosterConfig.BoostersTotalWeight),
-		})
+		counts = append(counts, newCount(uuid, tmp[uuid]/float64(boosterConfig.BoostersTotalWeight)))
 	}
 	return counts, nil
 }
@@ -586,17 +590,15 @@ func SheetCounts(b *mtgmatcher.Backend, setCode, boosterType, sheetName string) 
 			return nil, err
 		}
 		probability := float64(count) / float64(sheet.TotalWeight)
-		counts = append(counts, Count{
-			UUID:          uuid,
-			ExpectedCount: probability,
-		})
+		counts = append(counts, newCount(uuid, probability))
 	}
 
 	return counts, nil
 }
 
-// ProductCounts returns how many copies of each card opening the whole
-// product yields on average, across every pack and deck it contains.
+// ProductCounts returns how many copies of each card opening the product
+// yields on average, across every pack and deck it contains: per copy of the
+// product each entry comes from, held Copies times.
 func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -633,10 +635,7 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 				if err != nil {
 					return nil, err
 				}
-				counts = append(counts, Count{
-					UUID:          uuid,
-					ExpectedCount: 1,
-				})
+				counts = append(counts, newCount(uuid, 1))
 			case "pack":
 				boosterCounts, err := BoosterCounts(b, content.Set, content.Code)
 				if err != nil {
@@ -651,8 +650,10 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 					}
 					return nil, err
 				}
+				// Each level multiplies its count onto what the held product
+				// returned: 6 boxes of 36 packs hold each pack 216 times.
 				for i := range heldCounts {
-					heldCounts[i].ExpectedCount *= float64(content.Count)
+					heldCounts[i].Copies *= content.Count
 				}
 				counts = append(counts, heldCounts...)
 			case "deck":
@@ -663,26 +664,17 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 				tenths := deckFoilTenths(content.Set)
 				for _, uuid := range deckPicks {
 					if tenths > 0 {
-						countNF := Count{
-							UUID:          uuid,
-							ExpectedCount: float64(10-tenths) / 10,
-						}
+						countNF := newCount(uuid, float64(10-tenths)/10)
 						counts = append(counts, countNF)
 
 						uuidFoil, err := b.MatchID(uuid, true)
 						if err != nil {
 							continue
 						}
-						countF := Count{
-							UUID:          uuidFoil,
-							ExpectedCount: float64(tenths) / 10,
-						}
+						countF := newCount(uuidFoil, float64(tenths)/10)
 						counts = append(counts, countF)
 					} else {
-						counts = append(counts, Count{
-							UUID:          uuid,
-							ExpectedCount: 1,
-						})
+						counts = append(counts, newCount(uuid, 1))
 					}
 				}
 			case "variable":

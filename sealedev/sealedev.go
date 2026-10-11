@@ -219,11 +219,12 @@ func valueFromCache(picks []string, unit map[string]float64, probabilities []flo
 
 // skipFromEV identifies cards that should not contribute to sealed-product
 // EV. Serialized and cosmic-foil printings have no usable EV; SLD bonuses are
-// skipped only when their published distribution is not fixed.
-func skipFromEV(co *mtgmatcher.CardObject, err error, probability float64) bool {
+// skipped only when their published distribution is not fixed: fewer than one
+// copy, on average, in one copy of the product holding them.
+func skipFromEV(co *mtgmatcher.CardObject, err error, expectedCountPerCopy float64) bool {
 	return err != nil || co.HasPromoType(magic.PromoTypeSerialized) ||
 		co.HasPromoType(magic.PromoTypeCosmicFoil) ||
-		(co.HasPromoType(magic.PromoTypeSLDBonus) && probability < 1)
+		(co.HasPromoType(magic.PromoTypeSLDBonus) && expectedCountPerCopy < 1)
 }
 
 func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
@@ -251,7 +252,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 	skipped := make(map[string]bool)
 	for i := range probs {
 		picks[i] = probs[i].UUID
-		probabilities[i] = probs[i].ExpectedCount
+		probabilities[i] = probs[i].ExpectedCount * float64(probs[i].Copies)
 
 		// SLD bonuses without a fixed published distribution never count towards the EV.
 		co, err := ss.backend.GetUUID(probs[i].UUID)
