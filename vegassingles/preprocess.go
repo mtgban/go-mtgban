@@ -70,8 +70,8 @@ var imageIDRe = regexp.MustCompile(`/(\d{5,7})(?:_[0-9a-f-]{36})?\.[a-z]+(?:\?|$
 // imageProductID answers the printing the listing's image names, as the id
 // Match tries before the wording, or "" when the file carries no TCGplayer
 // id the datastore knows. The store reuses a photo now and then, so the id
-// is only taken for the card the listing names, and in a finish named by the
-// listing only when that printing is sold in it.
+// is only taken for the card the listing names, in the listing's finish when
+// that printing is sold in it, and for Magic in the set the wording names.
 func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.InputCard) string {
 	m := imageIDRe.FindStringSubmatch(product.ImageURL)
 	if m == nil {
@@ -88,7 +88,34 @@ func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.I
 			return ""
 		}
 	}
+	if b.Game == mtgmatcher.GameMagic && !magicImageFits(b, id, card) {
+		return ""
+	}
 	return id
+}
+
+// magicImageFits reports whether a Magic printing an image names is sold in
+// the listing's finish, which the id lookup would otherwise clamp to one it
+// is, and sits in the set the wording names, or in its parent or child.
+func magicImageFits(b *mtgmatcher.Backend, id string, card *mtgmatcher.InputCard) bool {
+	etched := card.IsEtched()
+	landed, err := b.MatchID(id, card.Foil, etched)
+	if err != nil {
+		return false
+	}
+	co, err := b.GetUUID(landed)
+	if err != nil || co.Etched != etched || co.Foil != (card.Foil && !etched) {
+		return false
+	}
+	named, err := b.GetSetByName(card.Edition)
+	if err != nil {
+		return true
+	}
+	set, err := b.GetSet(co.SetCode)
+	if err != nil {
+		return false
+	}
+	return set.Code == named.Code || set.ParentCode == named.Code || named.ParentCode == set.Code
 }
 
 // cardTable spells the names the storefront types wrong. Each is a plain

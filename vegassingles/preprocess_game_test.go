@@ -705,3 +705,42 @@ func TestPreprocessImageIDFinish(t *testing.T) {
 		t.Errorf("Match(%v) = %s %s %s, want BLK 076 reverseholofoil", card, co.SetCode, co.Number, co.Finish)
 	}
 }
+
+// TestPreprocessMagicImageID pins that a Magic image's id is taken only for a
+// printing sold in the listing's finish and filed in the set its wording
+// names: a reused photo of a nonfoil-only printing leaves a foil listing, or
+// a listing on another set's shelf, to its wording.
+func TestPreprocessMagicImageID(t *testing.T) {
+	b := withMagic(t)
+
+	cards := b.MatchInSetNumber("Tranquil Expanse", "AER", "189")
+	if len(cards) != 1 {
+		t.Fatalf("AER 189 holds %d Tranquil Expanse", len(cards))
+	}
+	tcgID := cards[0].Identifiers["tcgplayerProductId"]
+	if tcgID == "" {
+		t.Fatal("AER 189 carries no TCGplayer id")
+	}
+	image := "https://cdn.shopify.com/s/files/1/0912/8761/7842/files/" + tcgID + ".jpg?v=1"
+
+	for _, tt := range []struct {
+		display, set, setName string
+		taken                 bool
+	}{
+		{"Tranquil Expanse (AER-189) - Aether Revolt", "aer", "Aether Revolt", true},
+		{"Tranquil Expanse (AER-189) - Aether Revolt Foil", "aer", "Aether Revolt", false},
+		{"Tranquil Expanse (KLD-189) - Kaladesh", "kld", "Kaladesh", false},
+	} {
+		card, err := preprocess(b, VSProduct{
+			DisplayName: tt.display,
+			ImageURL:    image,
+			ProductData: VSProductData{Set: jsonflex.String(tt.set), SetName: tt.setName},
+		}, mtgmatcher.GameMagic)
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if (card.ID != "") != tt.taken {
+			t.Errorf("%s: took id %q, want taken=%v", tt.display, card.ID, tt.taken)
+		}
+	}
+}
