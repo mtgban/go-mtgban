@@ -43,19 +43,23 @@ func realDatastore(t *testing.T) *mtgmatcher.Backend {
 }
 
 // TestMysteryBoosterCardsResolvesToPLSTNumber pins a Mystery Booster Cards
-// listing to the PLST printing the MB1 retail booster bundles for that name.
+// listing to the PLST printing the MB1 retail booster bundles for that name
+// in the listing's finish.
 func TestMysteryBoosterCardsResolvesToPLSTNumber(t *testing.T) {
 	b := realDatastore(t)
 
 	tests := []struct {
 		cardName string
+		variant  string
 		number   string
 	}{
-		{"Gonti, Lord of Luxury", "KLD-84"},
-		{"Krosan Verge", "C18-263"},
+		{"Gonti, Lord of Luxury", "", "KLD-84"},
+		{"Krosan Verge", "", "C18-263"},
+		{"Storm Crow", "", "POR-69"},
+		{"Storm Crow", "Foil", "9ED-100"},
 	}
 	for _, test := range tests {
-		theCard, err := preprocess(b, test.cardName, "Mystery Booster Cards", "")
+		theCard, err := preprocess(b, test.cardName, "Mystery Booster Cards", test.variant)
 		if err != nil {
 			t.Fatalf("%s: preprocess: %v", test.cardName, err)
 		}
@@ -69,7 +73,17 @@ func TestMysteryBoosterCardsResolvesToPLSTNumber(t *testing.T) {
 			t.Fatalf("%s: GetUUID: %v", test.cardName, err)
 		}
 		if co.SetCode != "PLST" || co.Number != test.number {
-			t.Errorf("%s: matched %s %s, want PLST %s", test.cardName, co.SetCode, co.Number, test.number)
+			t.Errorf("%s %s: matched %s %s, want PLST %s", test.cardName, test.variant, co.SetCode, co.Number, test.number)
 		}
+	}
+
+	// The booster names only a nonfoil printing, so a foil listing keeps
+	// its own wording.
+	theCard, err := preprocess(b, "Skullclamp", "Mystery Booster Cards", "Foil")
+	if err != nil {
+		t.Fatalf("Skullclamp: preprocess: %v", err)
+	}
+	if theCard.Edition == "PLST" {
+		t.Errorf("foil Skullclamp sent to PLST %s", theCard.Variation)
 	}
 }
