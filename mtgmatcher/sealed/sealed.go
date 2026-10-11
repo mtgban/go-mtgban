@@ -578,11 +578,18 @@ func HasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
 // Count is one uuid and how many copies of it one copy of the product it
 // comes from yields on average, which can be more than one for a card drawn
 // from several slots. Copies is how many copies of that product the entry
-// stands for, so the whole product yields ExpectedCount * Copies.
+// stands for, and Total what the whole product yields.
 type Count struct {
 	UUID          string
 	ExpectedCount float64
 	Copies        int
+}
+
+// Total is how many copies of the uuid the whole product yields on average,
+// across every copy of the product the entry stands for: ExpectedCount alone
+// is the chance in one copy, and undercounts a product held several times.
+func (c Count) Total() float64 {
+	return c.ExpectedCount * float64(c.Copies)
 }
 
 // newCount is an entry for one copy of the product the card comes from.

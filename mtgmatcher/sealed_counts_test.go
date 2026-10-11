@@ -41,14 +41,14 @@ func TestProductCountsCountTheCopiesHeld(t *testing.T) {
 			perCopy, total := map[string]float64{}, map[string]float64{}
 			for _, count := range inner {
 				perCopy[count.UUID] += count.ExpectedCount
-				total[count.UUID] += count.ExpectedCount * float64(count.Copies*held[0].Count)
+				total[count.UUID] += count.Total() * float64(held[0].Count)
 				if count.Copies > 1 {
 					nested++
 				}
 			}
 			for _, count := range outer {
 				perCopy[count.UUID] -= count.ExpectedCount
-				total[count.UUID] -= count.ExpectedCount * float64(count.Copies)
+				total[count.UUID] -= count.Total()
 			}
 			for uuid := range perCopy {
 				if math.Abs(perCopy[uuid]) > 1e-9 || math.Abs(total[uuid]) > 1e-9 {

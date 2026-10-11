@@ -156,8 +156,7 @@ func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend, held bool) (string, st
 			if err != nil || !card.HasPromoType(magic.PromoTypeSLDBonus) {
 				continue
 			}
-			total := prob.ExpectedCount * float64(prob.Copies)
-			if prob.ExpectedCount < 1 && (total >= 1) == held {
+			if prob.ExpectedCount < 1 && (prob.Total() >= 1) == held {
 				return uuid, co.SetCode, prob.UUID
 			}
 		}
