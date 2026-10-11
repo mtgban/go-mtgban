@@ -169,6 +169,13 @@ func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
+// spellsNumber reports whether the input writes the collector number out in
+// full, language infix included, ignoring a rarity or misprint letter tail.
+func spellsNumber(input, full string) bool {
+	return strings.EqualFold(input, full) ||
+		strings.EqualFold(strings.TrimRight(input, letters), full)
+}
+
 // setSpellsNumber reports whether the set prints the number exactly as the
 // input wrote it.
 func setSpellsNumber(set *mtgmatcher.Set, number string) bool {
@@ -229,6 +236,15 @@ func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// a respelling would price the neighbor.
 	if editionCarries(set, inCard.Name, "") {
 		return
+	}
+	// A number naming the card as written in the set's Worldwide English
+	// reprint ("LOD-EN060") is that printing, which the loose number
+	// compare would read as the respelled one's ("LOD-060").
+	if number != "" {
+		worldwide, err := b.GetSet(set.Code + "-EN")
+		if err == nil && carries(worldwide, inCard.Name, number, spellsNumber) {
+			return
+		}
 	}
 	var adopt string
 	for _, alternate := range alternates {
