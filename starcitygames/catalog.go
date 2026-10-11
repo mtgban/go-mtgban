@@ -1292,7 +1292,7 @@ func idContradictsProduct(b *mtgmatcher.Backend, p CatalogProduct, uuid string) 
 	// landing anywhere but on a Standard Showdown printing is naming
 	// another event's card. The wording path reads the year and finds the
 	// right one.
-	if strings.HasPrefix(skuNumber(p.SKU), "SSD_") && !co.HasPromoType("standardshowdown") {
+	if strings.HasPrefix(skuNumber(p.SKU), "SSD_") && !co.HasPromoType(magic.PromoTypeStandardShowdown) {
 		return true
 	}
 	return false
@@ -1318,13 +1318,13 @@ func resalePrinting(b *mtgmatcher.Backend, id string, p CatalogProduct, foil, et
 		return id
 	}
 	co, err := b.GetUUID(id)
-	if err != nil || co.HasPromoType("resale") {
+	if err != nil || co.HasPromoType(magic.PromoTypeResale) {
 		return id
 	}
 	var found string
 	for _, card := range b.MatchInSet(co.Name, co.SetCode) {
 		sibling, serr := b.GetUUID(card.UUID)
-		if serr != nil || !sibling.HasPromoType("resale") {
+		if serr != nil || !sibling.HasPromoType(magic.PromoTypeResale) {
 			continue
 		}
 		out, merr := b.MatchID(card.UUID, foil, etched)
