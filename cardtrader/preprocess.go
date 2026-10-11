@@ -313,12 +313,14 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		// vendor ids name the same plain card, so Match's promo-tag check on
 		// the answer doesn't veto it.
 		co, err := b.GetUUID(id)
-		idsAgree := scryfallID != "" && scryfallID == tcgplayerID && err == nil && !hasShelfPromo(b, co)
+		idsAgree := scryfallID != "" && scryfallID == tcgplayerID && err == nil
 		if err == nil && (len(co.PromoTypes) > 0 || idsAgree) {
 			probe := mtgmatcher.InputCard{Edition: idEdition, Variation: idVariation}
 			vetoed := (magic.IsPrerelease(&probe) && !co.HasPromoType(magic.PromoTypePrerelease)) ||
 				(magic.IsPromoPack(&probe) && !co.HasPromoType(magic.PromoTypePromoPack))
-			if vetoed {
+			// Agreeing ids override only where the card has no shelf promo,
+			// asked last since it costs up to four lookups.
+			if vetoed && (len(co.PromoTypes) > 0 || !hasShelfPromo(b, co)) {
 				idEdition = co.Edition
 				idVariation = ""
 				if strings.Contains(bp.Version, "Etched") {
