@@ -133,8 +133,10 @@ their own product, 3 by a sibling's and 17 not at all. Now all 26 are
 priced by their own. A One Piece name that reaches a printing another product's id
 owns is refused (`ownedElsewhere`), and so is a product on the pre-errata shelf
 that reaches a printing the datastore does not tag pre-errata (`notPreErrata`).
-Pokemon's arm does not consult the id: its 70 stamped promos already resolve by
-name. CardTrader reads the same space through each blueprint's
+Pokemon's arm reads the published id first, then `pokemonStampLinks` (the
+stamped and league copies Cardmarket sells under the plain card's name and
+number, linked to their TCGplayer products), then CardTrader's link and the
+wording. CardTrader reads the same space through each blueprint's
 `card_market_ids`.
 
 ## Market's design
