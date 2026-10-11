@@ -63,9 +63,10 @@ type Scraper struct {
 }
 
 // opened is what simulating one product came to: a dataset per parameter,
-// and what went wrong along the way.
+// its exact expected value per parameter, and what went wrong along the way.
 type opened struct {
 	datasets [][]float64
+	expected []float64
 	errs     []string
 }
 
@@ -306,12 +307,14 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 
 	datasets := make([][]float64, len(evParameters))
 
-	// Deterministic probability-based EV for the non-simulation parameters.
+	// Deterministic probability-based EV, kept for every parameter: the
+	// non-simulation ones report it, and a product holding this one reads it.
+	expected := make([]float64, len(evParameters))
 	for i := range evParameters {
-		if evParameters[i].Simulation {
-			continue
+		expected[i] = valueFromCache(picks, unitPrices[i], probabilities)
+		if !evParameters[i].Simulation {
+			datasets[i] = append(datasets[i], expected[i])
 		}
-		datasets[i] = append(datasets[i], valueFromCache(picks, unitPrices[i], probabilities))
 	}
 
 	if !sealed.IsRandom(ss.backend, setCode, productUUID) {
@@ -322,12 +325,12 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 			if !evParameters[i].Simulation {
 				continue
 			}
-			datasets[i] = append(datasets[i], valueFromCache(picks, unitPrices[i], probabilities))
+			datasets[i] = append(datasets[i], expected[i])
 		}
 	} else {
 		// Random contents: Monte Carlo the simulation parameters.
 		repeats := ss.repetitions
-		held := ss.heldOpenings(ctx, setCode, productUUID)
+		held := ss.heldOpenings(ctx, setCode, productUUID, expected)
 
 		var mu sync.Mutex
 		var wg sync.WaitGroup
@@ -387,7 +390,7 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 		}
 	}
 
-	return opened{datasets: datasets, errs: allTheErrors}
+	return opened{datasets: datasets, expected: expected, errs: allTheErrors}
 }
 
 // heldContents is one product another holds whole, as many times as it
@@ -397,13 +400,20 @@ type heldContents struct {
 	count    int
 }
 
-type heldOpenings []heldContents
+// heldOpenings is how a product opens from what it holds: the same fixed
+// cards and decks every time, worth fixed per parameter, and the products it
+// holds whole.
+type heldOpenings struct {
+	fixed    []float64
+	contents []heldContents
+}
 
-// draw values one opening of the holding product for parameter i, as one
-// opening of each product it holds, each drawn from that product's own.
-func (h heldOpenings) draw(i int) float64 {
-	var total float64
-	for _, content := range h {
+// draw values one opening of the holding product for parameter i: its fixed
+// part, and one opening of each product it holds, drawn from that product's
+// own.
+func (h *heldOpenings) draw(i int) float64 {
+	total := h.fixed[i]
+	for _, content := range h.contents {
 		dataset := content.datasets[i]
 		for range content.count {
 			total += dataset[rand.IntN(len(dataset))]
@@ -412,11 +422,13 @@ func (h heldOpenings) draw(i int) float64 {
 	return total
 }
 
-// heldOpenings returns the openings of the products a product holds, where
-// whole sealed products are all it holds and each of them opened, and nil
-// where it must be opened card by card instead, which is also what decides
-// whether an unopenable sample pack may be left out.
-func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string) heldOpenings {
+// heldOpenings returns how a product opens from what it holds, where it holds
+// only fixed cards and decks beside whole sealed products and each of those
+// opened, and nil where it must be opened card by card instead, which is also
+// what decides whether an unopenable sample pack may be left out. expected is
+// the product's own expected value per parameter: what is left of it once the
+// products it holds are taken out is what its fixed part is worth.
+func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string, expected []float64) *heldOpenings {
 	set, err := ss.backend.GetSet(setCode)
 	if err != nil {
 		return nil
@@ -428,11 +440,11 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 		return nil
 	}
 	contents := set.SealedProduct[idx].Contents
-	if !holdsOnlySealed(contents) {
+	if !opensFromHeld(contents) {
 		return nil
 	}
 
-	var out heldOpenings
+	out := &heldOpenings{fixed: slices.Clone(expected)}
 	for _, content := range contents["sealed"] {
 		co, err := ss.backend.GetUUID(content.UUID)
 		if err != nil {
@@ -442,7 +454,10 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 		if !opensForEveryParameter(op) {
 			return nil
 		}
-		out = append(out, heldContents{datasets: op.datasets, count: content.Count})
+		for i := range out.fixed {
+			out.fixed[i] -= op.expected[i] * float64(content.Count)
+		}
+		out.contents = append(out.contents, heldContents{datasets: op.datasets, count: content.Count})
 	}
 	return out
 }
@@ -450,7 +465,7 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 // opensForEveryParameter reports whether a simulation came to at least one
 // opening for each parameter that simulates.
 func opensForEveryParameter(op opened) bool {
-	if len(op.datasets) == 0 {
+	if len(op.datasets) == 0 || len(op.expected) == 0 {
 		return false
 	}
 	for i := range evParameters {
@@ -541,8 +556,8 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 	return out, allTheErrors
 }
 
-// heldWhole marks the products that another product made only of whole
-// sealed products holds, the ones whose openings are worth keeping.
+// heldWhole marks the products held whole by another that opens from what it
+// holds, the ones whose openings are worth keeping.
 func heldWhole(b *mtgmatcher.Backend) map[string]bool {
 	held := map[string]bool{}
 	for _, code := range b.GetAllSets() {
@@ -551,7 +566,7 @@ func heldWhole(b *mtgmatcher.Backend) map[string]bool {
 			continue
 		}
 		for _, product := range set.SealedProduct {
-			if !holdsOnlySealed(product.Contents) {
+			if !opensFromHeld(product.Contents) {
 				continue
 			}
 			for _, content := range product.Contents["sealed"] {
@@ -562,12 +577,23 @@ func heldWhole(b *mtgmatcher.Backend) map[string]bool {
 	return held
 }
 
-// holdsOnlySealed reports whether every card a product's contents can give
-// comes from a whole sealed product inside it.
-func holdsOnlySealed(contents map[string][]mtgmatcher.SealedContent) bool {
+// opensFromHeld reports whether every opening of a product is the same fixed
+// cards and decks plus one opening of each sealed product it holds whole:
+// it holds at least one, and nothing drawn at random besides.
+func opensFromHeld(contents map[string][]mtgmatcher.SealedContent) bool {
 	for kind, entries := range contents {
-		if kind != "sealed" && kind != "other" && len(entries) > 0 {
-			return false
+		switch kind {
+		case "sealed", "card", "other":
+		case "deck":
+			for _, deck := range entries {
+				if sealed.DeckIsRandom(deck.Set) {
+					return false
+				}
+			}
+		default:
+			if len(entries) > 0 {
+				return false
+			}
 		}
 	}
 	return len(contents["sealed"]) > 0

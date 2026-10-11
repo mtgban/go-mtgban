@@ -3,6 +3,7 @@ package sealedev
 import (
 	"context"
 	"maps"
+	"math"
 	"os"
 	"sync"
 	"testing"
@@ -305,74 +306,112 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 	}
 }
 
-// TestRunEVDrawsAHeldProductFromItsOpenings pins the reuse: a product made
-// only of whole sealed products values each opening from the openings kept
-// for what it holds, rather than opening them again card by card.
+// TestRunEVDrawsAHeldProductFromItsOpenings pins the reuse: a product that
+// opens from what it holds values each opening as its fixed cards and decks
+// plus the openings kept for what it holds, rather than opening them again
+// card by card.
 func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 	b := realDatastore(t)
+	for _, withFixed := range []bool{false, true} {
+		uuid, setCode, contents, fixed := heldProduct(t, b, withFixed)
 
-	var uuid, setCode string
-	var contents []mtgmatcher.SealedContent
+		ss := NewScraper(b, "")
+		ss.repetitions = 10
+		ss.prices = pricedAt(t, b, setCode, uuid, 1)
+		ss.held = heldWhole(b)
+		ss.kept = map[string]opened{}
+
+		// Every product it holds has already opened, at 7 every time.
+		const each = 7.0
+		want := fixed
+		for _, content := range contents {
+			co, err := b.GetUUID(content.UUID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			op := ss.open(context.Background(), co)
+			for i := range evParameters {
+				if evParameters[i].Simulation {
+					op.datasets[i] = []float64{each}
+				}
+			}
+			ss.kept[content.UUID] = op
+			want += each * float64(content.Count)
+		}
+
+		results, errs := ss.runEV(context.Background(), uuid)
+		if len(errs) != 0 {
+			t.Fatalf("runEV reported %v", errs)
+		}
+		simulated := map[string]bool{}
+		for _, parameter := range evParameters {
+			simulated[parameter.Name] = parameter.Simulation
+		}
+		var checked int
+		for _, res := range results {
+			if res.invEntry == nil || !simulated[res.invEntry.SellerName] {
+				continue
+			}
+			if math.Abs(res.invEntry.Price-want) > 1e-6 {
+				t.Errorf("fixed=%v: %q gave %v, want %v drawn from the kept openings", withFixed, res.invEntry.SellerName, res.invEntry.Price, want)
+			}
+			checked++
+		}
+		if checked == 0 {
+			t.Fatalf("fixed=%v: no simulated measure came back", withFixed)
+		}
+	}
+}
+
+// heldProduct finds a random product that opens from what it holds, either
+// holding nothing else or, with withFixed, fixed cards or decks beside it, and
+// how many fixed cards it holds: its decklist less those of what it holds.
+func heldProduct(t *testing.T, b *mtgmatcher.Backend, withFixed bool) (string, string, []mtgmatcher.SealedContent, float64) {
+	t.Helper()
 	for _, code := range b.GetAllSets() {
 		set, err := b.GetSet(code)
 		if err != nil {
 			continue
 		}
 		for _, product := range set.SealedProduct {
-			if holdsOnlySealed(product.Contents) && sealed.IsRandom(b, set.Code, product.UUID) {
-				uuid, setCode, contents = product.UUID, set.Code, product.Contents["sealed"]
-				break
+			hasFixed := len(product.Contents["card"]) > 0 || len(product.Contents["deck"]) > 0
+			if hasFixed != withFixed || !opensFromHeld(product.Contents) || !sealed.IsRandom(b, set.Code, product.UUID) {
+				continue
+			}
+			if !withFixed {
+				return product.UUID, set.Code, product.Contents["sealed"], 0
+			}
+			if !sealed.HasDecklist(b, set.Code, product.UUID) {
+				continue
+			}
+			own, err := sealed.ProductDecklist(b, set.Code, product.UUID)
+			if err != nil {
+				continue
+			}
+			left := map[string]int{}
+			for _, uuid := range own {
+				left[uuid]++
+			}
+			for _, content := range product.Contents["sealed"] {
+				heldDeck, _ := sealed.ProductDecklist(b, content.Set, content.UUID)
+				for _, uuid := range heldDeck {
+					left[uuid] -= content.Count
+				}
+			}
+			var fixed float64
+			for uuid, n := range left {
+				co, err := b.GetUUID(uuid)
+				if n > 0 && !skipFromEV(co, err, 1) {
+					fixed += float64(n)
+				}
+			}
+			if fixed > 0 {
+				return product.UUID, set.Code, product.Contents["sealed"], fixed
 			}
 		}
-		if uuid != "" {
-			break
-		}
 	}
-	if uuid == "" {
-		t.Fatal("no random product made only of whole sealed products")
-	}
-
-	ss := NewScraper(b, "")
-	ss.repetitions = 10
-	ss.prices = pricedAt(t, b, setCode, uuid, 1)
-	ss.held = heldWhole(b)
-	ss.kept = map[string]opened{}
-
-	// Every product it holds has already opened, at 7 every time.
-	const each = 7.0
-	var want float64
-	for _, content := range contents {
-		datasets := make([][]float64, len(evParameters))
-		for i := range evParameters {
-			if evParameters[i].Simulation {
-				datasets[i] = []float64{each}
-			}
-		}
-		ss.kept[content.UUID] = opened{datasets: datasets}
-		want += each * float64(content.Count)
-	}
-
-	results, errs := ss.runEV(context.Background(), uuid)
-	if len(errs) != 0 {
-		t.Fatalf("runEV reported %v", errs)
-	}
-	simulated := map[string]bool{}
-	for _, parameter := range evParameters {
-		simulated[parameter.Name] = parameter.Simulation
-	}
-	var checked int
-	for _, res := range results {
-		if res.invEntry == nil || !simulated[res.invEntry.SellerName] {
-			continue
-		}
-		if res.invEntry.Price != want {
-			t.Errorf("%q gave %v, want %v drawn from the kept openings", res.invEntry.SellerName, res.invEntry.Price, want)
-		}
-		checked++
-	}
-	if checked == 0 {
-		t.Fatal("no simulated measure came back")
-	}
+	t.Fatalf("no random product opening from what it holds (fixed=%v)", withFixed)
+	return "", "", nil, 0
 }
 
 // A product the datastore has no contents for is reported rather than valued
