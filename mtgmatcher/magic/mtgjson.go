@@ -1008,11 +1008,6 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				}
 			}
 
-			// Make sure this property is correctly initialized
-			if strings.HasSuffix(card.Number, "p") && !slices.Contains(card.PromoTypes, PromoTypePromoPack) {
-				card.PromoTypes = append(card.PromoTypes, PromoTypePromoPack)
-			}
-
 			// A shop names the border and these frames the way it names any
 			// promo type, so file them among them
 			if card.BorderColor == BorderColorBorderless {
