@@ -480,6 +480,7 @@ func fabWording(version, number string) string {
 //
 // Yu-Gi-Oh asks of a blueprint whose version says misprint or counterfeit,
 // which TCGplayer sells none of: the name and number reach the genuine card.
+// Its answer must be a misprint printing (shelfLabelled), not any promo.
 //
 // One Piece asks only the closed list. For Gundam, a shelf that names a set
 // is never asked, and so is one that opens with the game's own set code:
@@ -511,6 +512,19 @@ func promoShelfNeedsLabel(b *mtgmatcher.Backend, gameID int, bp *Blueprint) bool
 	}
 	set, err := b.GetSetByName(bp.Expansion.Name)
 	return err != nil || set == nil
+}
+
+// shelfLabelled reports whether an answer carries the label
+// promoShelfNeedsLabel asks for. Yu-Gi-Oh needs a misprint promo type
+// ("misprint", "unlimitedmisprint", "chaosneosmisprint"); every other game
+// any promo type.
+func shelfLabelled(gameID int, co *mtgmatcher.CardObject) bool {
+	if gameID != GameYuGiOh {
+		return len(co.PromoTypes) > 0
+	}
+	return slices.ContainsFunc(co.PromoTypes, func(promoType string) bool {
+		return strings.HasSuffix(promoType, "misprint")
+	})
 }
 
 // opPromoShelves are the One Piece shelves that sell nothing but promotional

@@ -135,6 +135,32 @@ func TestPromoShelfNeedsLabel(t *testing.T) {
 	}
 }
 
+// TestShelfLabelled pins that a Yu-Gi-Oh misprint blueprint is let through
+// only onto a misprint printing: the datastore labels European and
+// alternate-art rows too, and those are the genuine card.
+func TestShelfLabelled(t *testing.T) {
+	for _, tt := range []struct {
+		gameID     int
+		promoTypes []string
+		want       bool
+	}{
+		{GameYuGiOh, []string{"misprint"}, true},
+		{GameYuGiOh, []string{"unlimitedmisprint"}, true},
+		{GameYuGiOh, []string{"european"}, false},
+		{GameYuGiOh, []string{"alternateart"}, false},
+		{GameYuGiOh, nil, false},
+		{GameOnePiece, []string{"preerrata"}, true},
+		{GameOnePiece, nil, false},
+	} {
+		co := &mtgmatcher.CardObject{}
+		co.PromoTypes = tt.promoTypes
+		got := shelfLabelled(tt.gameID, co)
+		if got != tt.want {
+			t.Errorf("shelfLabelled(%d, %v) = %v, want %v", tt.gameID, tt.promoTypes, got, tt.want)
+		}
+	}
+}
+
 // TestGundamShelvesNameASet pins the split the guard rests on, which is a
 // fact about Card Trader's shelf names rather than about this code: the
 // shelves selling nothing but promotional reprints are named nothing the
