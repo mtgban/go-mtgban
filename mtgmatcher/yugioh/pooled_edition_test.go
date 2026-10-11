@@ -103,3 +103,33 @@ func TestOTSPastRun(t *testing.T) {
 		t.Errorf("Match(%v) = %s, want OP12-EN010", inRun, co.Number)
 	}
 }
+
+// TestRespellWorldwideNumber pins that the "Gradius' Option" respelling
+// moves a Legacy of Darkness listing onto the North American LOD-060 unless
+// its number names the Worldwide English LOD-EN060, the card as written.
+func TestRespellWorldwideNumber(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		variation string
+		wantNum   string
+	}{
+		{"", "LOD-060"},
+		{"1st Edition", "LOD-060"},
+		{"LOD-060", "LOD-060"},
+		{"LOD-EN060", "LOD-EN060"},
+	} {
+		in := mtgmatcher.InputCard{Name: "Gradius' Option", Edition: "Legacy of Darkness", Variation: tt.variation}
+		id, err := b.Match(&in)
+		if err != nil {
+			t.Fatalf("Match(%q) = %v", tt.variation, err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatalf("GetUUID(%s) = %v", id, err)
+		}
+		if co.Number != tt.wantNum {
+			t.Errorf("Match(%q) = %s, want %s", tt.variation, co.Number, tt.wantNum)
+		}
+	}
+}
