@@ -420,7 +420,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// too, since its id can name the genuine card.
 		if (byName || ct.gameID == GameYuGiOh) && promoShelfNeedsLabel(ct.backend, ct.gameID, blueprint) {
 			co, err := ct.backend.GetUUID(cardID)
-			if err != nil || len(co.PromoTypes) == 0 {
+			if err != nil || !shelfLabelled(ct.gameID, co) {
 				continue
 			}
 		}
