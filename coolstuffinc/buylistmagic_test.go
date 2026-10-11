@@ -129,3 +129,30 @@ func TestPreprocessFinishSplitRetail(t *testing.T) {
 		}
 	}
 }
+
+// TestShelfFinishSplit pins where the sale listing's split looks: on the
+// shelf's own set where its name resolves, so a card filed at the same number
+// in two sets lands on the shelf's, and anywhere when the name names no set.
+func TestShelfFinishSplit(t *testing.T) {
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+
+	for _, tt := range []struct {
+		name, edition, notes string
+		foil                 bool
+		wantSet, wantNum     string
+	}{
+		// Clone is #45 in both Magic 2013 and Magic 2010.
+		{"Clone", "Magic 2013", "Card number can be 45 or 46", false, "M13", "45"},
+		{"Clone", "Magic 2010", "Card number can be 45 or 46", false, "M10", "45"},
+		{"Clone", "Core Sets", "Card number can be 45 or 46", false, "", ""},
+		{"Aang, Air Nomad", "Avatar Eternal", "Card number can be 210 or 265", false, "TLE", "265"},
+	} {
+		got := shelfFinishSplit(b, tt.name, tt.edition, tt.notes, tt.foil)
+		switch {
+		case tt.wantSet == "" && got != nil:
+			t.Errorf("%s on %q split to %s %s, want no split", tt.name, tt.edition, got.Edition, got.Variation)
+		case tt.wantSet != "" && (got == nil || got.Edition != tt.wantSet || got.Variation != tt.wantNum):
+			t.Errorf("%s on %q split to %+v, want %s %s", tt.name, tt.edition, got, tt.wantSet, tt.wantNum)
+		}
+	}
+}
