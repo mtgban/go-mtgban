@@ -384,10 +384,17 @@ func listingsFor(product Product, lazyData []LazyResult) []Row {
 			unnamed = append(unnamed, lazy.Rows...)
 		}
 	}
+	rows := unnamed
 	if named {
-		return own
+		rows = own
 	}
-	return unnamed
+	// A lot's own row whose cart button is missing adds the lot itself.
+	for i := range rows {
+		if rows[i].Main && rows[i].Class == "" {
+			rows[i].Class = product.ProductClass
+		}
+	}
+	return rows
 }
 
 // Row is one line of the storefront's table, before it becomes a listing.
@@ -400,6 +407,8 @@ type Row struct {
 	// Class is the product class the row's cart button adds: each
 	// condition of a lot has its own.
 	Class string
+	// Main marks the lot's own row, rather than an extra condition row.
+	Main bool
 }
 
 // cartClass is the product class a listing's own cart button adds, the one
@@ -544,6 +553,7 @@ func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 				Quantity:  qty,
 				Graded:    graded,
 				Class:     cartClass(s),
+				Main:      true,
 			})
 			//lint:ignore SA4004 the single iteration is the point
 			break
