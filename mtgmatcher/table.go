@@ -47,6 +47,12 @@ var LanguageTag2LanguageCode = map[string]string{
 	"Chinese Traditional": "zht",
 	"Phyrexian":           "phi",
 	"Quenya":              "qya",
+	"Dwarvish":            "dw",
+	"Hebrew":              "he",
+	"Latin":               "la",
+	"Sanskrit":            "sa",
+	"Ancient Greek":       "el",
+	"Arabic":              "ar",
 }
 
 // This set skips any fictional language
