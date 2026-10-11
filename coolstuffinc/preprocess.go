@@ -192,7 +192,9 @@ func buylistLanguage(name, notes string) string {
 	return ""
 }
 
-func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
+// preprocess answers the card a retail listing names. foil is the finish of
+// the offer row, which the listing's own wording does not carry.
+func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, foil bool) (*mtgmatcher.InputCard, error) {
 	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
 	fixup, curated := numFixes[imgName]
 	if !curated {
@@ -202,7 +204,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 		imgName = fixup
 	}
 
-	variant = cleanVariant(variant)
+	variant := cleanVariant(notes)
 	vars, found := variantTable[variant]
 	if found {
 		variant = vars
@@ -237,6 +239,21 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant, imgURL string
 	fixup, found = nameTable[cardName]
 	if found {
 		cardName = fixup
+	}
+
+	// The shelf's own set scopes the split where its name resolves to one
+	// that holds the card; a shelf filing another set's printings does not.
+	splitLanguage := buylistLanguage(cardName, notes)
+	var split *mtgmatcher.InputCard
+	shelf, shelfErr := b.GetSetByName(edition)
+	if shelfErr == nil {
+		split = finishSplitCard(b, cardName, shelf.Code, notes, splitLanguage, isFoil || foil)
+	}
+	if split == nil {
+		split = finishSplitCard(b, cardName, "", notes, splitLanguage, isFoil || foil)
+	}
+	if split != nil {
+		return split, nil
 	}
 
 	cardName, edition, variant, err := magicShelfFixups(cardName, edition, variant)

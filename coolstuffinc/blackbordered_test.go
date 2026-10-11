@@ -69,7 +69,7 @@ func TestPreprocessBlackBorderedForeign(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(b, tt.name, "Black Bordered (foreign)", tt.variant, "")
+			card, err := preprocess(b, tt.name, "Black Bordered (foreign)", tt.variant, "", false)
 			if tt.wantPreErr {
 				if err != mtgmatcher.ErrUnsupported {
 					t.Fatalf("preprocess(%q) = %v, want ErrUnsupported", tt.name, err)

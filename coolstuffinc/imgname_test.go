@@ -65,7 +65,7 @@ func TestPreprocessImageLetter(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			got, err := preprocess(b, tt.name, tt.edition, "", tt.imgURL)
+			got, err := preprocess(b, tt.name, tt.edition, "", tt.imgURL, false)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.imgURL, err)
 			}
@@ -146,7 +146,7 @@ func TestPreprocessImageStem(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			got, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL)
+			got, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL, false)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.imgURL, err)
 			}
@@ -166,7 +166,7 @@ func TestPreprocessImageExtendedArt(t *testing.T) {
 	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
 
 	t.Run("the set holds an extended art printing", func(t *testing.T) {
-		card, err := preprocess(b, "Copy Land", "Modern Horizons 3 Commander: Variants", "Extended Art Frame", "https://s.cf.net/i/M3C0099.jpg")
+		card, err := preprocess(b, "Copy Land", "Modern Horizons 3 Commander: Variants", "Extended Art Frame", "https://s.cf.net/i/M3C0099.jpg", false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -184,7 +184,7 @@ func TestPreprocessImageExtendedArt(t *testing.T) {
 	})
 
 	t.Run("the set holds none", func(t *testing.T) {
-		card, err := preprocess(b, "Detention Chariot", "Aetherdrift: Variants", "Extended Art Frame", "https://s.cf.net/i/DFT0294.jpg")
+		card, err := preprocess(b, "Detention Chariot", "Aetherdrift: Variants", "Extended Art Frame", "https://s.cf.net/i/DFT0294.jpg", false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -201,7 +201,7 @@ func TestPreprocessFinalFantasyBackground(t *testing.T) {
 	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
 
 	t.Run("a product-named image takes the borderless treatment", func(t *testing.T) {
-		card, err := preprocess(b, "Jill, Shiva's Dominant // Shiva, Warden of Ice", "Final Fantasy Variants", "XVI in Blue Background", "https://s.cf.net/i/414814.jpg")
+		card, err := preprocess(b, "Jill, Shiva's Dominant // Shiva, Warden of Ice", "Final Fantasy Variants", "XVI in Blue Background", "https://s.cf.net/i/414814.jpg", false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -219,7 +219,7 @@ func TestPreprocessFinalFantasyBackground(t *testing.T) {
 	})
 
 	t.Run("a numbered image keeps its number past a ds prefix", func(t *testing.T) {
-		card, err := preprocess(b, "Cecil, Dark Knight // Cecil, Redeemed Paladin", "Final Fantasy Variants", "IV in Purple Background", "https://s.cf.net/i/dsfin0380.jpg")
+		card, err := preprocess(b, "Cecil, Dark Knight // Cecil, Redeemed Paladin", "Final Fantasy Variants", "IV in Purple Background", "https://s.cf.net/i/dsfin0380.jpg", false)
 		if err != nil {
 			t.Fatal(err)
 		}

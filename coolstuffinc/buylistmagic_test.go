@@ -89,3 +89,43 @@ func TestFinishSplitNote(t *testing.T) {
 		}
 	}
 }
+
+// TestPreprocessFinishSplitRetail pins the sale listing of a product whose
+// note offers one number per finish: the image names the foil number, and
+// the offer row's finish picks the printing.
+func TestPreprocessFinishSplitRetail(t *testing.T) {
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+
+	for _, tt := range []struct {
+		foil    bool
+		wantNum string
+	}{
+		{false, "265"},
+		{true, "210"},
+	} {
+		in, err := preprocess(b, "Aang, Air Nomad", "Avatar: The Last Airbender Eternal Legal Cards", "Card number can be 210 or 265", "https://s.cf.net/i/TLE0210.jpg", tt.foil)
+		if err != nil {
+			t.Fatalf("preprocess() = %v", err)
+		}
+		id, err := b.Match(in)
+		if err != nil {
+			t.Fatalf("Match(%+v) = %v", in, err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.SetCode != "TLE" || co.Number != tt.wantNum || co.Foil != tt.foil {
+			t.Errorf("foil=%v -> %s %s foil=%v, want TLE %s", tt.foil, co.SetCode, co.Number, co.Foil, tt.wantNum)
+		}
+	}
+
+	// A note naming a language is not split, so the listing stays foreign.
+	in, err := preprocess(b, "Aang, Air Nomad", "Avatar: The Last Airbender Eternal Legal Cards", "Card number can be 210 or 265 - Japanese", "https://s.cf.net/i/TLE0210.jpg", false)
+	if err == nil {
+		id, err := b.Match(in)
+		if err == nil {
+			t.Errorf("Japanese listing matched %s, want a refusal", id)
+		}
+	}
+}

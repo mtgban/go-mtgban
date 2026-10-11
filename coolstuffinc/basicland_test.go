@@ -83,7 +83,7 @@ func TestPreprocessBasicLand(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL)
+			card, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL, false)
 			if err != nil {
 				t.Fatalf("preprocess(%q) = %v", tt.name, err)
 			}
@@ -103,7 +103,7 @@ func TestPreprocessBasicLand(t *testing.T) {
 	}
 
 	t.Run("a full-art basic whose image names no number of its own", func(t *testing.T) {
-		card, err := preprocess(b, "Mountain A", "Battle for Zendikar", "", "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Battle%20for%20Zendikar/full/MountainA.jpg")
+		card, err := preprocess(b, "Mountain A", "Battle for Zendikar", "", "https://res.cloudinary.com/csicdn/image/upload/c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/mtg%20art/Battle%20for%20Zendikar/full/MountainA.jpg", false)
 		if err != nil {
 			t.Fatalf("preprocess() = %v", err)
 		}
