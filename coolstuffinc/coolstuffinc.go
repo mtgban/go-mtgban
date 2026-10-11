@@ -579,7 +579,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				var theCard *mtgmatcher.InputCard
 				switch csi.backend.Game {
 				case mtgmatcher.GameMagic:
-					c, err := preprocess(csi.backend, cardName, edition, notes, imgURL)
+					c, err := preprocess(csi.backend, cardName, edition, notes, imgURL, isFoil)
 					if err != nil {
 						return
 					}
