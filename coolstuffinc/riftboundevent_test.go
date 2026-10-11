@@ -19,6 +19,7 @@ func TestRiftboundShelfFollowsTheEventBracket(t *testing.T) {
 	}{
 		{"Jinx - Rebel - (Origins Stamp)", "Gold Origins Stamp", "OPP"},
 		{"Riven - Shattered (Prerelease)", "", "OPP"},
+		{"Jinx - Rebel - (Origins Stamp)", "OGN-202", "OPP"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			shelf := riftboundShelf(b, "Promo", tt.notes, tt.name, tt.notes, true)
