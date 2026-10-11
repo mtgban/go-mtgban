@@ -164,6 +164,11 @@ behind its url.
   fact: a single graded/unique copy sold on a printing's page is not that
   printing's market price, and pricing it as one prints a $500 slab as a
   card's going rate.
+- **Each entry keeps the store's own row id.** A sale offer's
+  `InstanceID` is the row id its Add to Cart button names
+  (`atc[<product>][<row>]`, `offerRowID`), one per condition and finish of
+  a product; a buylist entry's is the row's `PPQID`. Sealed entries carry
+  none.
 - **Bundles divide the price, not the quantity.** `bundleRe`/`bundledCopies`
   ("Buy 1 get 3 free!") divides the listed price by the bundle size; the
   displayed quantity is left as the stock figure the page shows (capped at
@@ -207,6 +212,8 @@ measurement lower down in this section closed that gap too:
 Two of the three - `pokemonPromoShelf` and `riftboundShelf` - share the
 same guard: *redirect only when the redirect target resolves*, verified
 with an actual `mtgmatcher.Match` probe before committing to it.
+`riftboundShelf` also requires the probe to land in the set it asked for,
+at the number the note or listing names (`riftboundLandsAt`).
 `onePieceShelf` is looser: it redirects on the shelf-plus-bracket pattern
 alone, with no resolve check, trusting that nothing else on the `Promo`
 shelf ever carries a `(Starter Deck N)`-shaped bracket that isn't this
@@ -249,7 +256,18 @@ from the shelf collision this section is about.
   letter-marked treatment split - `"TMCS0032"` is TMC #32's surge foil,
   where three or four raw characters read as no valid set/number pair at
   all); `PreprocessBuylist` instead trusts the buylist's own `Number`
-  field first. Both funnel into `card2promo`, a large closed table of
+  field first. Ahead of either, `finishSplitCard` reads a note offering one
+  number per finish ("Card number can be 210 or 265", "Nonfoil is number
+  0765, Foil is 0720") and answers the single printing at either number
+  with the row's finish; a range or a longer list is not read. The image
+  names the foil number on those listings, so the retail path needs the
+  offer row's finish, passed into `preprocess`. Basic lands read their
+  number off the image, or their letter's position among the set's plain
+  numbers; a 32-character hash image names no number. `basicSibling`
+  picks the unsuffixed or "a" printing where Zendikar or Battle for
+  Zendikar files a lettered sibling under the same digits, and
+  `anthologyDecks` moves a Duel Decks: Anthology basic to the deck its
+  note names. Both funnel into `card2promo`, a large closed table of
   named promo printings the wording alone can't place (`card2promo` is a
   `switch cardName` - see AGENTS.md's "tables before code" on why this
   shape is a last resort, tolerated here only because the wording truly
@@ -290,7 +308,15 @@ from the shelf collision this section is about.
   (`Pokemon Oversized Cards` is the catalog's Jumbo Cards, without the
   programme prefix on its number). `ME094` is the catalog's `MEP094`.
   `pokemonRespellings` is a replacer, so a bracket behind a misspelled
-  name keeps matching.
+  name keeps matching. `pokemonCatalogShelves` is a closed table of
+  listings the storefront files on a main or promo shelf for holo
+  printings the catalog keeps elsewhere (the Shadowless Machamp deck
+  card, Ancient Mew, the 2017 wave foil energies), and `pokemonListingIDs`
+  names by product id the 30th Celebration Mews, whose bare-letter numbers
+  no matcher reads. The shelf probes (`pokemonNonHoloShelf`,
+  `pokemonCosmosHolo`, `pokemonDeckHoloRedirect`) take a shelf only where
+  the probe lands on that shelf's set at the listing's number
+  (`pokemonLandsAt`).
 - **One Piece**: `onePiecePIDs` is a closed table of storefront product
   ids mapped to their TCGplayer product id, for the DON!! cards and
   reprinted promos the storefront words in prose the catalog never uses;
@@ -335,15 +361,24 @@ from the shelf collision this section is about.
   hand-verified listings selling a rarity/number pair the catalog does not
   carry at all - refusing the general shape "rarity the card's number
   doesn't have" would drop 55 listings to catch these 2, and ~35 of the 55
-  are legitimately-named decorated rarities). The buylist also needs
-  `yugiohCodes` (SD9/HL3 for the catalog's SD09/HL03, in the Number and the
-  note), `yugiohImageCard` (a refused row retried with the code its own
-  image sku carries, accepted only on a card of the same name) and
-  `yugiohArtNotes` (the 26LP alternate art is described by its border and
-  lettering, and is asked as the catalog's Emblazoned Alternate Art without
-  the bracket or rarity that make the matcher read the Emblazoned Secret
-  Rare). `csiAmbiguousNote` is shared with Pokemon: a note opening "Can be"
-  says the product is one of several printings, and a refusal of one is not
+  are legitimately-named decorated rarities). `yugiohWording` rewrites the
+  words in a name or note the matcher would misread (a bare digit taken
+  for the number, "No Stamp" read as the stamp, a mistyped GBI-001), and
+  `yugiohArtNotes` asks the 26LP alternate art, described by its border
+  and lettering, as the catalog's Emblazoned Alternate Art without the
+  bracket or rarity that make the matcher read the Emblazoned Secret Rare.
+  The buylist also needs `yugiohCodes` (SD9/HL3 for the catalog's
+  SD09/HL03, in the Number and the note) and `yugiohNumbers` (two numbers
+  it mistypes, keyed by name and number since one typo is another card's
+  real number). Both feeds retry a refused listing by its image, and
+  accept the retry only on a card of the same name at that number:
+  `yugiohImageCard` puts the code the buylist image sku carries where the
+  row's corrected Number stood, and `yugiohSKUCard` reads a sale image's
+  file name as a catalog number with its dash left out, through an index
+  built once per run (`skuNumbers`). `yugiohRetries` keeps the retry off a
+  listing the matcher skipped and off a "Can be" note on both.
+  `csiAmbiguousNote` is shared with Pokemon: a note opening "Can be" says
+  the product is one of several printings, and a refusal of one is not
   logged.
 - **Gundam**: `gundam.go`, one file, four problems - the shelf name
   carries a set-code prefix that narrows nothing (the same number repeats
@@ -391,12 +426,6 @@ from the shelf collision this section is about.
 
 ## Known gaps
 
-- `pokemonPromoShelf`, `riftboundShelf`, and all of `pokemonListing` (and
-  its dozen sub-rules) carry **no dedicated unit test** - nothing in
-  `coolstuffinc/*_test.go` references either of the first two by name,
-  even though each now has two call sites. `onePieceShelf` does
-  (`oneshelf_test.go`); it's the odd one out among the three "recurring
-  shape" functions for having no such gap.
 - `GameDragonBallSuper` (`"dbs"`) and `GameStarWarsUnlimited` (`"swu"`) are
   shelf-name constants CSI itself uses, sitting unwired in this file -
   `mtgmatcher.Game` has no constant for either game yet (`mtgmatcher/game.go`),
