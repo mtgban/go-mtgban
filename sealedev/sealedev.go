@@ -340,11 +340,13 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 		for w := 0; w < ss.maxConcurrency; w++ {
 			wg.Go(func() {
 				local := make([][]float64, len(evParameters))
+				values := make([]float64, len(evParameters))
 				for range repeatsChannel {
 					if held != nil {
+						held.draw(values)
 						for i := range evParameters {
 							if evParameters[i].Simulation {
-								local[i] = append(local[i], held.draw(i))
+								local[i] = append(local[i], values[i])
 							}
 						}
 						continue
@@ -394,9 +396,11 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 }
 
 // heldContents is one product another holds whole, as many times as it
-// holds it.
+// holds it, and how many openings were kept for it under each parameter that
+// simulates, the n-th of each being the same opening.
 type heldContents struct {
 	datasets [][]float64
+	openings int
 	count    int
 }
 
@@ -408,18 +412,22 @@ type heldOpenings struct {
 	contents []heldContents
 }
 
-// draw values one opening of the holding product for parameter i: its fixed
-// part, and one opening of each product it holds, drawn from that product's
-// own.
-func (h *heldOpenings) draw(i int) float64 {
-	total := h.fixed[i]
+// draw values one opening of the holding product into values, for every
+// parameter that simulates: its fixed part, and one opening of each product
+// it holds, drawn from that product's own and the same one under every
+// parameter.
+func (h *heldOpenings) draw(values []float64) {
+	copy(values, h.fixed)
 	for _, content := range h.contents {
-		dataset := content.datasets[i]
 		for range content.count {
-			total += dataset[rand.IntN(len(dataset))]
+			pick := rand.IntN(content.openings)
+			for i := range values {
+				if evParameters[i].Simulation {
+					values[i] += content.datasets[i][pick]
+				}
+			}
 		}
 	}
-	return total
 }
 
 // heldOpenings returns how a product opens from what it holds, where it holds
@@ -457,7 +465,8 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 			return nil
 		}
 		op := ss.open(ctx, co)
-		if !opensForEveryParameter(op) {
+		openings := openingsKept(op)
+		if openings == 0 {
 			return nil
 		}
 		if hasFixed {
@@ -465,23 +474,31 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 				out.fixed[i] -= op.expected[i] * float64(content.Count)
 			}
 		}
-		out.contents = append(out.contents, heldContents{datasets: op.datasets, count: content.Count})
+		out.contents = append(out.contents, heldContents{datasets: op.datasets, openings: openings, count: content.Count})
 	}
 	return out
 }
 
-// opensForEveryParameter reports whether a simulation came to at least one
-// opening for each parameter that simulates.
-func opensForEveryParameter(op opened) bool {
+// openingsKept is how many openings a simulation kept for each parameter that
+// simulates, the n-th of each being the same opening, and zero where it kept
+// none or a different number for two of them.
+func openingsKept(op opened) int {
 	if len(op.datasets) == 0 || len(op.expected) == 0 {
-		return false
+		return 0
 	}
+	kept := -1
 	for i := range evParameters {
-		if evParameters[i].Simulation && len(op.datasets[i]) == 0 {
-			return false
+		if !evParameters[i].Simulation {
+			continue
+		}
+		if kept < 0 {
+			kept = len(op.datasets[i])
+		}
+		if len(op.datasets[i]) != kept {
+			return 0
 		}
 	}
-	return true
+	return max(kept, 0)
 }
 
 func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) {

@@ -5,6 +5,7 @@ import (
 	"maps"
 	"math"
 	"os"
+	"slices"
 	"sync"
 	"testing"
 	"time"
@@ -99,6 +100,34 @@ func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price f
 		}
 	}
 	for _, prob := range probs {
+		for store := range stores {
+			r.setRetail(b, prob.UUID, store, price)
+			r.setBuylist(b, prob.UUID, store, price)
+		}
+	}
+	return r
+}
+
+// pricedUnevenly quotes the cards the product can contain at prices from 1 to
+// 50, each card at the same price in every store the parameters read.
+func pricedUnevenly(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string) *priceSnapshot {
+	t.Helper()
+	r := &priceSnapshot{
+		Retail:  map[string]map[string]float64{},
+		Buylist: map[string]map[string]float64{},
+	}
+	probs, err := sealed.ProductCounts(b, setCode, uuid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stores := map[string]bool{}
+	for _, parameter := range evParameters {
+		for _, store := range parameter.SourceStores {
+			stores[store] = true
+		}
+	}
+	for i, prob := range probs {
+		price := float64(1 + i%50)
 		for store := range stores {
 			r.setRetail(b, prob.UUID, store, price)
 			r.setBuylist(b, prob.UUID, store, price)
@@ -368,6 +397,47 @@ func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 	}
 }
 
+// TestRunEVDrawsOneOpeningForEveryParameter pins that every simulated measure
+// of a product opening from what it holds values the same openings: priced
+// the same in every store, each parameter's openings come out identical.
+func TestRunEVDrawsOneOpeningForEveryParameter(t *testing.T) {
+	b := realDatastore(t)
+	for _, withFixed := range []bool{false, true} {
+		uuid, setCode, _, _ := heldProduct(t, b, withFixed)
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		ss := NewScraper(b, "")
+		ss.repetitions = 50
+		ss.prices = pricedUnevenly(t, b, setCode, uuid)
+		ss.held = heldWhole(b)
+		ss.kept = map[string]opened{}
+
+		op := ss.open(context.Background(), co)
+		var first []float64
+		for i := range evParameters {
+			if !evParameters[i].Simulation {
+				continue
+			}
+			if first == nil {
+				first = op.datasets[i]
+				continue
+			}
+			if !slices.Equal(op.datasets[i], first) {
+				t.Errorf("fixed=%v: %q drew other openings than the first simulated measure", withFixed, evParameters[i].Name)
+			}
+		}
+		if len(first) != ss.repetitions {
+			t.Fatalf("fixed=%v: drew %d openings, want %d", withFixed, len(first), ss.repetitions)
+		}
+		if slices.Min(first) == slices.Max(first) {
+			t.Fatalf("fixed=%v: every opening is worth %v, so nothing tells them apart", withFixed, first[0])
+		}
+	}
+}
+
 // heldProduct finds a random product that opens from what it holds, either
 // holding nothing else or, with withFixed, fixed cards or decks beside it, and
 // how many fixed cards it holds: its decklist less those of what it holds.
@@ -518,31 +588,9 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 
 	// Price the contents unevenly, or every opening is worth the same and
 	// there is no spread to report.
-	r := &priceSnapshot{
-		Retail:  map[string]map[string]float64{},
-		Buylist: map[string]map[string]float64{},
-	}
-	probs, err := sealed.ProductCounts(b, setCode, uuid)
-	if err != nil {
-		t.Fatal(err)
-	}
-	stores := map[string]bool{}
-	for _, parameter := range evParameters {
-		for _, store := range parameter.SourceStores {
-			stores[store] = true
-		}
-	}
-	for i, prob := range probs {
-		price := float64(1 + i%50)
-		for store := range stores {
-			r.setRetail(b, prob.UUID, store, price)
-			r.setBuylist(b, prob.UUID, store, price)
-		}
-	}
-
 	ss := NewScraper(b, "")
 	ss.repetitions = 10
-	ss.prices = r
+	ss.prices = pricedUnevenly(t, b, setCode, uuid)
 
 	results, _ := ss.runEV(context.Background(), uuid)
 
