@@ -57,7 +57,7 @@ type Scraper struct {
 	// held marks the products another product holds whole, and kept is what
 	// opening each of those came to once it has been simulated, so the
 	// product holding it draws from those openings rather than opening it
-	// again.
+	// again. Both live only while Load runs.
 	held map[string]bool
 	kept map[string]opened
 }
@@ -711,6 +711,11 @@ func (ss *Scraper) Load(ctx context.Context) error {
 	}
 
 	ss.printf("Took %v", time.Since(start))
+
+	// The kept openings run to hundreds of megabytes, and nothing past
+	// this load reads them.
+	ss.held = nil
+	ss.kept = nil
 
 	ss.inventoryDate = time.Now()
 	ss.buylistDate = time.Now()
