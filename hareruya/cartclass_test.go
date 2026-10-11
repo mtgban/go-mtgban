@@ -30,11 +30,11 @@ func TestLazyRowClasses(t *testing.T) {
 	got := (&Hareruya{}).lazyResults(fixture(t, "lazy_classes.html"))
 	want := [][]Row{
 		{
-			{Quantity: 4, Condition: mtgban.NM, Price: 1000, Class: "27947"},
+			{Quantity: 4, Condition: mtgban.NM, Price: 1000, Class: "27947", Main: true},
 			{Quantity: 1, Condition: mtgban.SP, Price: 700, Class: "27948"},
 		},
 		{
-			{Quantity: 1, Condition: mtgban.NM, Price: 300},
+			{Quantity: 1, Condition: mtgban.NM, Price: 300, Main: true},
 			{Quantity: 27, Condition: mtgban.SP, Price: 250, Class: "18808"},
 		},
 	}
@@ -45,6 +45,23 @@ func TestLazyRowClasses(t *testing.T) {
 		if !slices.Equal(got[i].Rows, want[i]) {
 			t.Errorf("block %d rows = %+v, want %+v", i, got[i].Rows, want[i])
 		}
+	}
+}
+
+// A lot's main row without a cart button adds the lot's own class; an extra
+// row keeps only its button's.
+func TestListingsForFillsMainClass(t *testing.T) {
+	lazy := (&Hareruya{}).lazyResults(fixture(t, "lazy_classes.html"))
+	got := listingsFor(Product{Product: "2597", ProductClass: "18807"}, lazy)
+	want := []Row{
+		{Quantity: 1, Condition: mtgban.NM, Price: 300, Class: "18807", Main: true},
+		{Quantity: 27, Condition: mtgban.SP, Price: 250, Class: "18808"},
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("rows = %+v, want %+v", got, want)
+	}
+	if lazy[1].Rows[0].Class != "" {
+		t.Errorf("listingsFor wrote into the lazy block: %+v", lazy[1].Rows[0])
 	}
 }
 
