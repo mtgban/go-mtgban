@@ -337,9 +337,8 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 // TestRunEVDrawsAHeldProductFromItsOpenings pins the reuse: a product that
 // opens from what it holds draws each opening from the openings kept for what
 // it holds, recentred on their expected value, rather than opening them again
-// card by card. Kept openings all worth the same leave every opening of the
-// product worth its own expected value, however unevenly its cards are priced,
-// and what went wrong opening what it holds is reported for it too, once.
+// card by card, one draw for every copy it holds. What went wrong opening what
+// it holds is reported for it too, once.
 func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 	b := realDatastore(t)
 	for _, withFixed := range []bool{false, true} {
@@ -350,14 +349,17 @@ func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 		}
 
 		ss := NewScraper(b, "")
-		ss.repetitions = 10
+		ss.repetitions = 400
 		ss.prices = pricedUnevenly(t, b, setCode, uuid)
 		ss.held = heldWhole(b)
 		ss.kept = map[string]opened{}
 
-		// Every product it holds has already opened, at 7 every time, and
-		// with the same complaint.
+		// Every product it holds has already opened twice, at 0 and at 10,
+		// with the same complaint. Recentring takes 5 off per copy held, so
+		// an opening is its expected value less 5 per copy, plus 10 for each
+		// copy that drew the 10.
 		const complaint = "a kept complaint"
+		var copies int
 		for _, content := range contents {
 			co, err := b.GetUUID(content.UUID)
 			if err != nil {
@@ -366,11 +368,12 @@ func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 			op := ss.open(context.Background(), co)
 			for i := range evParameters {
 				if evParameters[i].Simulation {
-					op.datasets[i] = []float64{7}
+					op.datasets[i] = []float64{0, 10}
 				}
 			}
 			op.errs = []string{complaint}
 			ss.kept[content.UUID] = op
+			copies += content.Count
 		}
 
 		op := ss.open(context.Background(), product)
@@ -384,11 +387,21 @@ func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 			if !evParameters[i].Simulation {
 				continue
 			}
+			var drewTen float64
 			for _, value := range op.datasets[i] {
-				if math.Abs(value-op.expected[i]) > 1e-6 {
-					t.Errorf("fixed=%v: %q drew %v, want its expected %v", withFixed, evParameters[i].Name, value, op.expected[i])
-					break
+				tens := (value - op.expected[i] + 5*float64(copies)) / 10
+				if math.Abs(tens-math.Round(tens)) > 1e-6 || tens < -1e-6 || tens > float64(copies)+1e-6 {
+					t.Fatalf("fixed=%v: %q drew %v, not its expected %v less 5 for each of %d copies plus 10 for some of them",
+						withFixed, evParameters[i].Name, value, op.expected[i], copies)
 				}
+				drewTen += tens
+			}
+			// Each copy draws the 10 half the time.
+			mean := drewTen / float64(len(op.datasets[i]))
+			spread := math.Sqrt(float64(copies)) / 2 / math.Sqrt(float64(len(op.datasets[i])))
+			if math.Abs(mean-float64(copies)/2) > 5*spread {
+				t.Errorf("fixed=%v: %q drew the 10 %.2f times an opening, want about %.1f, half of %d copies",
+					withFixed, evParameters[i].Name, mean, float64(copies)/2, copies)
 			}
 		}
 	}
