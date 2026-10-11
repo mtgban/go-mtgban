@@ -963,7 +963,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				case "797":
 					card.PromoTypes = append(card.PromoTypes, "convention")
 				case "8001":
-					card.PromoTypes = append(card.PromoTypes, "tourney")
+					card.PromoTypes = append(card.PromoTypes, PromoTypeTourney)
 					card.IsPromo = true
 
 				default:
@@ -987,7 +987,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				num, _ := strconv.Atoi(card.Number)
 				// These cards have been distributed by stores and not found in products
 				if num >= 24 && num <= 30 {
-					card.PromoTypes = append(card.PromoTypes, "wizardsplaynetwork")
+					card.PromoTypes = append(card.PromoTypes, PromoTypeWPN)
 				}
 
 			case "CMB1", "CMB2", "MB2":
