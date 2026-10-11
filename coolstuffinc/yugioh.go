@@ -83,11 +83,18 @@ func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *m
 // yugiohBuylistVariation is buylistVariation with the number a vendor typo
 // replaced and the codes spelled the catalog's way.
 func yugiohBuylistVariation(product CSIPriceEntry) string {
+	product.Number = yugiohBuylistNumber(product)
+	return yugiohCodes.Replace(buylistVariation(product))
+}
+
+// yugiohBuylistNumber is a buylist row's Number as yugiohBuylistVariation
+// writes it.
+func yugiohBuylistNumber(product CSIPriceEntry) string {
 	fixed, found := yugiohNumbers[product.Name+"|"+product.Number]
 	if found {
-		product.Number = fixed
+		return fixed
 	}
-	return yugiohCodes.Replace(buylistVariation(product))
+	return yugiohCodes.Replace(product.Number)
 }
 
 // yugiohArtNotes names the artwork a note describes as the catalog's
@@ -128,19 +135,20 @@ func yugiohRetries(err error, notes string) bool {
 var yugiohImageCode = regexp.MustCompile(`^([A-Za-z0-9]{2,5}?)EN(\d{3})`)
 
 // yugiohImageCard retries a refused buylist row with the code its own image
-// sku carries in place of its Number, where the two disagree, and answers the
-// id it lands on. The landing has to be the same card, so a sku naming
-// another card's code reaches nothing.
+// sku carries in place of its Number, as yugiohBuylistNumber spells it, where
+// the two disagree, and answers the id it lands on. The landing has to be the
+// same card, so a sku naming another card's code reaches nothing.
 func yugiohImageCard(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, product CSIPriceEntry) string {
 	match := yugiohImageCode.FindStringSubmatch(product.Image)
-	if match == nil || product.Number == "" {
+	number := yugiohBuylistNumber(product)
+	if match == nil || number == "" {
 		return ""
 	}
 	code := match[1] + "-EN" + match[2]
-	if strings.EqualFold(code, product.Number) {
+	if strings.EqualFold(code, number) {
 		return ""
 	}
-	return yugiohRetry(b, card, strings.Replace(card.Variation, product.Number, code, 1), code)
+	return yugiohRetry(b, card, strings.Replace(card.Variation, number, code, 1), code)
 }
 
 // yugiohSKUCard retries a refused sell listing with the number its product

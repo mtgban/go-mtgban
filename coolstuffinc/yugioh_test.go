@@ -40,6 +40,21 @@ func TestYugiohImageCardNeedsTheSameName(t *testing.T) {
 		co, _ := b.GetUUID(id)
 		t.Errorf("a sku naming another card's code landed %q (%s)", id, co.Name)
 	}
+
+	// The variation carries the code as the catalog spells it, SD09.
+	product = CSIPriceEntry{
+		Name: "Super Conductor Tyranno", ItemSet: "Structure Deck: Dinosaur's Rage",
+		Number: "SD9-EN002", RarityName: "Ultra Rare", Image: "SD09EN001",
+	}
+	card = yugiohListing(product.Name, product.ItemSet, "", yugiohBuylistVariation(product), product.RarityName, false)
+	_, err = b.Match(card)
+	if err == nil {
+		t.Fatalf("Match(%v) landed as typed, want the typo to refuse", card)
+	}
+	id = yugiohImageCard(b, card, product)
+	if id != "sd09-en001_26173_1stedition" {
+		t.Errorf("landed %q, want the card at SD09-EN001", id)
+	}
 }
 
 // TestYugiohSKUCardReadsTheNumberOffTheImage pins the retry of a refused sell
