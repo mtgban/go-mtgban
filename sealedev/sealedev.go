@@ -276,7 +276,7 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 	skipped := make(map[string]bool)
 	for i := range probs {
 		picks[i] = probs[i].UUID
-		probabilities[i] = probs[i].ExpectedCount * float64(probs[i].Copies)
+		probabilities[i] = probs[i].Total()
 
 		// SLD bonuses without a fixed published distribution never count towards the EV.
 		co, err := ss.backend.GetUUID(probs[i].UUID)
