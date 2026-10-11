@@ -179,7 +179,7 @@ func namesPromopack(b *mtgmatcher.Backend, name, edition, number string) bool {
 	name = frontFace(name)
 	for i := range set.Cards {
 		card := &set.Cards[i]
-		if card.Name == name && card.Number == number && slices.Contains(card.PromoTypes, "promopack") {
+		if card.Name == name && card.Number == number && slices.Contains(card.PromoTypes, magic.PromoTypePromoPack) {
 			return true
 		}
 	}
@@ -349,7 +349,7 @@ var errUnprintedFinish = errors.New("unprinted finish")
 // its plain one - borderless, showcase, extended art, retro. A drop marker
 // like sldbonus is not one of them: it says where a card came from, not what
 // frame it wears.
-const boosterFun = "boosterfun"
+const boosterFun = magic.PromoTypeBoosterfun
 
 // finishNamed reports a printing sold in a finish this storefront would spell
 // FOIL, which is the flag its own wording carries.
