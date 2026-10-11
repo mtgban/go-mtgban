@@ -400,7 +400,8 @@ TCGplayer prices it, and `mtgmatcher.Finishes` is the table of those names
 narrow, real check: Lorcana and Yu-Gi-Oh override `IsUnsupported` at the
 wording stage (Lorcana drops puzzle-insert and cruise-promo products;
 Yu-Gi-Oh drops storefront character-art cards that carry no collector
-number), Pokemon at the answer stage (a metal-card listing that answered
+number, and OTS Tournament Pack numbers past the set's English run),
+Pokemon at the answer stage (a metal-card listing that answered
 with a plain printing), and Pokemon overrides `CandidateSets` to fold
 `*Promos` shelves into its loose-edition pass and to add, on every pass,
 the subsets filed inside a set it selects: a set coded `<parent>-<suffix>`
