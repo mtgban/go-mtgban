@@ -31,7 +31,7 @@ type Starcitygames struct {
 	buylist   mtgban.BuylistRecord
 
 	// buckets holds the listings a second stock record has already been seen
-	// for, so the pair folds together in either stream order.
+	// for, so the pair is filed as one listing in either stream order.
 	buckets map[string]struct{}
 
 	setIDs  map[string]int
@@ -150,15 +150,15 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 	// records - "SGL-FAB-AGB-014-ENN" beside "SGL-FAB-AGB-014_CC-ENN" - which
 	// agree on the card, the set, the number, the treatment and the price of
 	// every grade they share, and differ only in how many copies sit in each.
-	// They are one listing's stock written twice over, so the pair's copies
-	// are added together rather than reported as the duplicate they would
-	// otherwise look like, which discarded them.
+	// They are one listing's stock written twice over, so the second record
+	// is filed as an offer of its own, under its own sku, rather than
+	// reported as the duplicate it would otherwise look like.
 	//
 	// Which of the two comes down the stream first is not the catalog's to
 	// promise, and it does not hold: most Armory Deck: Pleiades listings lead
 	// with the marked record. So it is the one that arrives second that is
-	// folded in, whether or not it wears the marker - the first is the one
-	// there is nothing yet to fold it into.
+	// filed that way, whether or not it wears the marker - the first is the
+	// one there is nothing yet to stand beside.
 	second := scg.secondStock(p.SKU)
 
 	for _, v := range p.Variants {
@@ -276,7 +276,7 @@ func (scg *Starcitygames) Load(ctx context.Context) error {
 // listing already seen this run: by the marker it wears, or by its plain
 // twin arriving after the marked record registered the pair. Which of the
 // two the catalog streams first is not its to promise, and it does not
-// hold, so whichever arrives second is the one that folds.
+// hold, so whichever arrives second is the one filed beside the first.
 func (scg *Starcitygames) secondStock(sku string) bool {
 	key := bucketKey(sku)
 	if secondBucket(sku) {
@@ -288,8 +288,8 @@ func (scg *Starcitygames) secondStock(sku string) bool {
 }
 
 // addInventoryStock files a variant's retail record with the strictness the
-// bucket decision picked: a second bucket merges into the first rather than
-// reading as the duplicate it would otherwise be, and a primary record is
+// bucket decision picked: a second bucket is filed beside the first rather
+// than reading as the duplicate it would otherwise be, and a primary record is
 // unique - one card sells for one price at one grade, so a second one here is
 // the sweep's own signature, two catalog products folding onto one uuid.
 func (scg *Starcitygames) addInventoryStock(second bool, cardID string, entry *mtgban.InventoryEntry) error {

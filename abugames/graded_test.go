@@ -112,7 +112,8 @@ func TestGradedSeller(t *testing.T) {
 	want := []string{
 		"ABU Games 2ED 262 foil=false NM 9000.00 x1",
 		"ABU Games Graded 2ED 262 foil=false NM 7000.00 x1",
-		"ABU Games Graded 2ED 262 foil=false SP 6324.99 x2",
+		"ABU Games Graded 2ED 262 foil=false SP 6324.99 x1",
+		"ABU Games Graded 2ED 262 foil=false SP 6324.99 x1",
 		"ABU Games Graded PLC 73 foil=true MP 25.45 x1",
 		"ABU Games Graded PUMA U5 foil=true NM 124.69 x1",
 		"ABU Games Graded PUMA U5 foil=true NM 129.69 x1",

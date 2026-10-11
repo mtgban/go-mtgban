@@ -118,13 +118,17 @@ func TestLoadCatalogRetryStartsClean(t *testing.T) {
 	}
 	for _, entries := range scg.inventory {
 		wantQty := map[mtgban.Condition]int{mtgban.NM: 18, mtgban.SP: 7}
-		if len(entries) != len(wantQty) {
-			t.Fatalf("got %d entries, want one per grade: %v", len(entries), entries)
+		if len(entries) != 2*len(wantQty) {
+			t.Fatalf("got %d entries, want one per grade of each record: %v", len(entries), entries)
 		}
+		gotQty := map[mtgban.Condition]int{}
 		for _, entry := range entries {
-			if entry.Quantity != wantQty[entry.Conditions] {
+			gotQty[entry.Conditions] += entry.Quantity
+		}
+		for grade, qty := range wantQty {
+			if gotQty[grade] != qty {
 				t.Errorf("%s holds %d copies, want %d: the abandoned pass was counted again",
-					entry.Conditions, entry.Quantity, wantQty[entry.Conditions])
+					grade, gotQty[grade], qty)
 			}
 		}
 	}

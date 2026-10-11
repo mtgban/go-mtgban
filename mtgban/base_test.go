@@ -375,3 +375,112 @@ func TestDuplicateEntryIsRecognisable(t *testing.T) {
 		}
 	})
 }
+
+// TestAddKeepsInstancesApart pins that offers the store tells apart by id,
+// or by having none, stay apart in whatever order they arrive, each with its
+// own id and quantity, while the NM entry still sorts first.
+func TestAddKeepsInstancesApart(t *testing.T) {
+	adds := map[string]func(InventoryRecord, string, *InventoryEntry) error{
+		"relaxed": InventoryRecord.AddRelaxed,
+		"add":     InventoryRecord.Add,
+	}
+	nm := []InventoryEntry{
+		{Conditions: NM, Price: 5, Quantity: 2, URL: "u", InstanceID: "a"},
+		{Conditions: NM, Price: 5, Quantity: 1, URL: "u", InstanceID: "b"},
+		{Conditions: NM, Price: 5, Quantity: 3, URL: "u"},
+	}
+	orders := map[string][]int{"id-less last": {0, 1, 2}, "id-less first": {2, 0, 1}}
+	for name, add := range adds {
+		for order, idx := range orders {
+			t.Run(name+"/"+order, func(t *testing.T) {
+				inv := InventoryRecord{}
+				rows := []InventoryEntry{{Conditions: SP, Price: 3, Quantity: 1, URL: "u", InstanceID: "c"}}
+				for _, i := range idx {
+					rows = append(rows, nm[i])
+				}
+				for i := range rows {
+					err := add(inv, "A", &rows[i])
+					if err != nil {
+						t.Fatalf("row %d: %v", i, err)
+					}
+				}
+
+				entries := inv["A"]
+				if len(entries) != 4 {
+					t.Fatalf("got %d entries, want 4: %v", len(entries), entries)
+				}
+				got := map[string]int{}
+				for _, entry := range entries[:3] {
+					if entry.Conditions != NM {
+						t.Fatalf("NM entries do not lead: %v", entries)
+					}
+					got[entry.InstanceID] = entry.Quantity
+				}
+				if got["a"] != 2 || got["b"] != 1 || got[""] != 3 {
+					t.Errorf("offers merged across ids: %v", entries)
+				}
+				if entries[3].InstanceID != "c" {
+					t.Errorf("SP entry does not trail: %v", entries)
+				}
+			})
+		}
+	}
+
+	t.Run("merge resorts", func(t *testing.T) {
+		inv := InventoryRecord{}
+		for _, row := range []InventoryEntry{
+			{Conditions: NM, Price: 5, Quantity: 2, InstanceID: "a"},
+			{Conditions: NM, Price: 5, Quantity: 1, InstanceID: "b"},
+			{Conditions: NM, Price: 5, Quantity: 3, InstanceID: "b"},
+		} {
+			err := inv.AddRelaxed("A", &row)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		entries := inv["A"]
+		if len(entries) != 2 || entries[0].InstanceID != "b" || entries[0].Quantity != 4 {
+			t.Errorf("merged offer does not lead by quantity: %v", entries)
+		}
+	})
+
+	t.Run("same id", func(t *testing.T) {
+		inv := InventoryRecord{}
+		for range 2 {
+			err := inv.AddRelaxed("A", &InventoryEntry{Conditions: NM, Price: 5, Quantity: 1, InstanceID: "a"})
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		if len(inv["A"]) != 1 || inv["A"][0].Quantity != 2 {
+			t.Errorf("one id not merged: %v", inv["A"])
+		}
+	})
+
+	t.Run("strict", func(t *testing.T) {
+		inv := InventoryRecord{}
+		err := inv.AddStrict("A", &InventoryEntry{Conditions: NM, Price: 5, InstanceID: "a"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = inv.AddStrict("A", &InventoryEntry{Conditions: NM, Price: 5, InstanceID: "b"})
+		if !errors.Is(err, ErrDuplicateEntry) {
+			t.Errorf("AddStrict accepted a second offer at one price: %v", err)
+		}
+	})
+}
+
+// TestBuylistAddReportsAcrossInstances pins that the buylist alarm still
+// fires for two ids at one price: there it names two products folded onto one
+// card, not two offers.
+func TestBuylistAddReportsAcrossInstances(t *testing.T) {
+	bl := BuylistRecord{}
+	err := bl.Add("A", &BuylistEntry{Conditions: NM, BuyPrice: 5, Quantity: 1, InstanceID: "a"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bl.Add("A", &BuylistEntry{Conditions: NM, BuyPrice: 5, Quantity: 1, InstanceID: "b"})
+	if !errors.Is(err, ErrDuplicateEntry) {
+		t.Errorf("Add accepted a duplicate buylist entry: %v", err)
+	}
+}
