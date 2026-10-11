@@ -155,19 +155,14 @@ func yugiohImageCard(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, product 
 // image names, and answers the id it lands on. The image file is the code with
 // its dash left out, so the number is the datastore's own that spells it:
 // LEHDENA23 is LEHD-ENA23 and MRL103 is MRL-103, which no pattern could split.
-func yugiohSKUCard(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, imgURL string) string {
-	match := riftboundImageStem.FindStringSubmatch(imgURL)
+// numbers is skuNumbers of the backend.
+func yugiohSKUCard(b *mtgmatcher.Backend, numbers map[string][]string, card *mtgmatcher.InputCard, imgURL string) string {
+	match := imageStem.FindStringSubmatch(imgURL)
 	if match == nil {
 		return ""
 	}
-	tried := map[string]bool{}
-	for _, uuid := range b.GetUUIDs() {
-		co, err := b.GetUUID(uuid)
-		if err != nil || tried[co.Number] || !strings.EqualFold(strings.ReplaceAll(co.Number, "-", ""), match[1]) {
-			continue
-		}
-		tried[co.Number] = true
-		id := yugiohRetry(b, card, co.Number+" "+card.Variation, co.Number)
+	for _, number := range numbers[strings.ToUpper(match[1])] {
+		id := yugiohRetry(b, card, number+" "+card.Variation, number)
 		if id != "" {
 			return id
 		}

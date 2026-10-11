@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -95,6 +96,9 @@ type Coolstuffinc struct {
 	client  *http.Client
 	shelf   string
 	backend *mtgmatcher.Backend
+
+	// skuIndex is skuNumbers of the backend, for a Yu-Gi-Oh scraper.
+	skuIndex map[string][]string
 }
 
 // nameParenthetical matches a qualifier a buylist name carries in brackets,
@@ -198,6 +202,9 @@ func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
 	csi.maxConcurrency = defaultConcurrency
 	csi.shelf = shelf
 	csi.backend = b
+	if game == mtgmatcher.GameYuGiOh {
+		csi.skuIndex = skuNumbers(b)
+	}
 	return &csi, nil
 }
 
@@ -664,7 +671,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					cardID, err = csi.backend.Match(theCard)
 				}
 				if csi.backend.Game == mtgmatcher.GameYuGiOh && runFinishes == nil && yugiohRetries(err, notes) {
-					fromImage := yugiohSKUCard(csi.backend, theCard, imgURL)
+					fromImage := yugiohSKUCard(csi.backend, csi.skuIndex, theCard, imgURL)
 					if fromImage != "" {
 						cardID, err = fromImage, nil
 					}
@@ -1388,4 +1395,26 @@ func offerRowID(offer *goquery.Selection) string {
 		return ""
 	}
 	return m[1]
+}
+
+// imageStem reads the file name off a product image, whatever the
+// storefront pictures in.
+var imageStem = regexp.MustCompile(`(?i)/([^/]+)\.(?:jpe?g|png|webp|avif)$`)
+
+// skuNumbers indexes a datastore's collector numbers by the spelling an image
+// sku gives them, upper-cased with the dash left out, each in the order the
+// datastore lists its cards.
+func skuNumbers(b *mtgmatcher.Backend) map[string][]string {
+	index := map[string][]string{}
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		key := strings.ToUpper(strings.ReplaceAll(co.Number, "-", ""))
+		if !slices.Contains(index[key], co.Number) {
+			index[key] = append(index[key], co.Number)
+		}
+	}
+	return index
 }
