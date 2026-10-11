@@ -272,6 +272,12 @@ func deckFoilTenths(deckSet string) int {
 	return 0
 }
 
+// DeckIsRandom reports whether an opened copy of a deck from the set can hold
+// other cards than its list, as a Countdown Kit's foil roll does.
+func DeckIsRandom(deckSet string) bool {
+	return deckFoilTenths(deckSet) > 0
+}
+
 // sealedKinds are the kinds of entry a walk reads from a product's contents,
 // in the order it reads them, so the same product answers the same way every
 // time. "other" lists what holds no card and is never read.
@@ -470,7 +476,7 @@ func IsRandom(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
 						return true
 					}
 				case "deck":
-					if deckFoilTenths(content.Set) > 0 {
+					if DeckIsRandom(content.Set) {
 						return true
 					}
 				case "variable":
