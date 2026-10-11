@@ -106,9 +106,11 @@ func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price f
 	return r
 }
 
-// sldBonusProduct finds a product listing an SLD bonus at a chance below 1.
-// Only a product drawn at random lists one.
-func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend) (string, string, string) {
+// sldBonusProduct finds a product listing an SLD bonus at a chance below 1 in
+// one copy of what holds it, either in the product itself or, with held, in
+// copies it holds that add up to at least one. Only a product drawn at random
+// lists one.
+func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend, held bool) (string, string, string) {
 	t.Helper()
 	for _, uuid := range b.GetSealedUUIDs() {
 		co, err := b.GetUUID(uuid)
@@ -121,12 +123,16 @@ func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend) (string, string, strin
 		}
 		for _, prob := range probs {
 			card, err := b.GetUUID(prob.UUID)
-			if err == nil && card.HasPromoType(magic.PromoTypeSLDBonus) && prob.ExpectedCount < 1 {
+			if err != nil || !card.HasPromoType(magic.PromoTypeSLDBonus) {
+				continue
+			}
+			total := prob.ExpectedCount * float64(prob.Copies)
+			if prob.ExpectedCount < 1 && (total >= 1) == held {
 				return uuid, co.SetCode, prob.UUID
 			}
 		}
 	}
-	t.Fatal("no sealed product lists an SLD bonus at a chance below 1")
+	t.Fatalf("no sealed product lists an SLD bonus at a chance below 1 (held=%v)", held)
 	return "", "", ""
 }
 
@@ -151,8 +157,23 @@ func weightedPrices(results []result) map[string]float64 {
 // any EV result because that UUID never enters the unit-price cache.
 func TestRunEVSkipsUnfixedSLDBonusFromPriceCache(t *testing.T) {
 	b := realDatastore(t)
-	productUUID, setCode, bonusUUID := sldBonusProduct(t, b)
+	productUUID, setCode, bonusUUID := sldBonusProduct(t, b, false)
+	bonusLeftOut(t, b, productUUID, setCode, bonusUUID)
+}
 
+// TestRunEVSkipsABonusRandomInEveryCopyHeld pins the bundle case: ten drops
+// whose bonus is 0.93 each hold it 9.3 times in all, and it is still random
+// in each.
+func TestRunEVSkipsABonusRandomInEveryCopyHeld(t *testing.T) {
+	b := realDatastore(t)
+	productUUID, setCode, bonusUUID := sldBonusProduct(t, b, true)
+	bonusLeftOut(t, b, productUUID, setCode, bonusUUID)
+}
+
+// bonusLeftOut checks that pricing the bonus at 1000 moves no
+// probability-weighted value of the product.
+func bonusLeftOut(t *testing.T, b *mtgmatcher.Backend, productUUID, setCode, bonusUUID string) {
+	t.Helper()
 	base := pricedAt(t, b, setCode, productUUID, 1)
 	high := pricedAt(t, b, setCode, productUUID, 1)
 	for _, parameter := range evParameters {

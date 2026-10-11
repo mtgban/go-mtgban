@@ -807,7 +807,10 @@ functions take the backend first:
   (`secretLairFoilID`).
 - `ProductCounts`, `BoosterCounts` and `SheetCounts` compute how many copies
   of each card a product, a booster or one sheet draw yields on average - the
-  inputs to `sealedev`'s EV computation.
+  inputs to `sealedev`'s EV computation. Each `Count` is per copy of the
+  product its card comes from, with `Copies` saying how many copies a held
+  product contributes, so a rule can read a chance in one copy and a total
+  is `ExpectedCount * Copies`.
 - `BuildSealedProductMap` and the load-time reverse index
   (`fillinSealedContents`, in the Magic loader) link single cards back to the
   products containing them.
