@@ -74,6 +74,14 @@ func TestPreprocessBasicLand(t *testing.T) {
 			wantSet: "AKH", wantNum: "254",
 		},
 		{
+			// The hash opens with 231, Plains B's number.
+			desc:    "a lettered basic whose image is a hash",
+			name:    "Plains A",
+			edition: "Scars of Mirrodin",
+			imgURL:  "https://s.cf.net/i/231a0e95bafd04ac4beb596163b411fe.jpg",
+			wantSet: "SOM", wantNum: "230",
+		},
+		{
 			desc:    "an Anthology basic in the deck its notes name",
 			name:    "Swamp",
 			edition: "Duel Decks: Anthology",
