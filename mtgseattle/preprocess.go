@@ -154,7 +154,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 			return nil, errors.New("unsupported")
 		}
 	case "Mystery Booster Cards":
-		number := mb1PLSTNumber(b, cardName)
+		number := mb1PLSTNumber(b, cardName, isFoil)
 		if number != "" {
 			edition = "PLST"
 			variant = number
@@ -191,8 +191,13 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 const mb1PLSTBooster = "Mystery Booster Booster Pack (Retail Edition)"
 
 // mb1PLSTNumber answers which PLST printing Mystery Booster's own booster
-// bundles for cardName, or "" when the booster does not name it.
-func mb1PLSTNumber(b *mtgmatcher.Backend, cardName string) string {
+// bundles for cardName in the listing's finish, or "" when the booster names
+// none sold in that finish.
+func mb1PLSTNumber(b *mtgmatcher.Backend, cardName string, isFoil bool) string {
+	finish := mtgmatcher.FinishNonfoil
+	if isFoil {
+		finish = mtgmatcher.FinishFoil
+	}
 	for _, uuid := range b.GetSealedUUIDsInSet("MB1") {
 		co, err := b.GetUUID(uuid)
 		if err != nil || co.Name != mb1PLSTBooster {
@@ -205,7 +210,7 @@ func mb1PLSTNumber(b *mtgmatcher.Backend, cardName string) string {
 		}
 		for _, p := range probs {
 			card, err := b.GetUUID(p.UUID)
-			if err == nil && card.SetCode == "PLST" && card.Name == cardName {
+			if err == nil && card.SetCode == "PLST" && card.Name == cardName && card.HasFinish(finish) {
 				return card.Number
 			}
 		}
