@@ -112,3 +112,28 @@ func TestAliasingStands(t *testing.T) {
 		})
 	}
 }
+
+// TestPromoPackKeepsItsOwnSet pins that a Promo Pack shelf never drops the
+// printings of the set it names or of that set's own promo sets, however late
+// they are dated.
+func TestPromoPackKeepsItsOwnSet(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct{ shelf, code string }{
+		{"Promo Pack: March of the Machine: The Aftermath", "PMAT"},
+		{"Promo Pack: March of the Machine: The Aftermath", "MAT"},
+		{"Promo Pack: Time Spiral Remastered", "PTSR"},
+	} {
+		set, err := b.GetSet(tt.code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		co, err := b.GetUUID(set.Cards[0].UUID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if reprintedAfterPromoPack(b, aliasedListing{shelf: tt.shelf}, co) {
+			t.Errorf("%s dropped %s #%s", tt.shelf, co.SetCode, co.Number)
+		}
+	}
+}
