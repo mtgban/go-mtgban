@@ -357,6 +357,17 @@ func finishNamed(co *mtgmatcher.CardObject) bool {
 	return co.Foil || co.Etched
 }
 
+// unmarked reports a printing the catalog gives no treatment, the token
+// promo type every token carries aside.
+func unmarked(co *mtgmatcher.CardObject) bool {
+	for _, promoType := range co.PromoTypes {
+		if promoType != magic.PromoTypeToken {
+			return false
+		}
+	}
+	return true
+}
+
 // foilOfUnfoiled reports a listing spelled FOIL whose printing has no finish
 // to name, which the storefront does for cards it never had in foil.
 func foilOfUnfoiled(title string, co *mtgmatcher.CardObject) bool {
@@ -959,7 +970,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	if numbered {
 		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
 		plain := resolved(b, cardName, edition, variation, lang, isFoil)
-		if bare != "" && plain != nil && len(plain.PromoTypes) == 0 {
+		if bare != "" && plain != nil && unmarked(plain) {
 			marked := resolved(b, cardName, edition, bare, lang, isFoil)
 			if marked != nil && framedApart(marked, plain) &&
 				(finishNamed(marked) == isFoil || finishNamed(marked) == finishNamed(plain)) {
@@ -978,7 +989,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 		framed := resolved(b, cardName, edition, variation, lang, isFoil)
 		if framed != nil && framed.HasPromoType(boosterFun) {
 			plain := resolved(b, cardName, edition, "", lang, isFoil)
-			if plain != nil && len(plain.PromoTypes) == 0 &&
+			if plain != nil && unmarked(plain) &&
 				plain.SetCode == framed.SetCode && finishNamed(plain) == isFoil {
 				variation = ""
 			}
