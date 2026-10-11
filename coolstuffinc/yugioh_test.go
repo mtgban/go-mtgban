@@ -130,3 +130,22 @@ func TestYugiohListingReachesItsPrinting(t *testing.T) {
 		}
 	}
 }
+
+// TestYugiohRetries pins which refusals both feeds ask again by the image.
+func TestYugiohRetries(t *testing.T) {
+	for _, tt := range []struct {
+		err   error
+		notes string
+		want  bool
+	}{
+		{nil, "", false},
+		{mtgmatcher.ErrCardWrongVariant, "", true},
+		{mtgmatcher.ErrUnsupported, "", false},
+		{mtgmatcher.ErrCardWrongVariant, "Can be Normal or 25th Anniversary Stamp", false},
+	} {
+		got := yugiohRetries(tt.err, tt.notes)
+		if got != tt.want {
+			t.Errorf("yugiohRetries(%v, %q) = %v, want %v", tt.err, tt.notes, got, tt.want)
+		}
+	}
+}

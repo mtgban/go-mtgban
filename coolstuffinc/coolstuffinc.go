@@ -663,7 +663,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				} else {
 					cardID, err = csi.backend.Match(theCard)
 				}
-				if err != nil && csi.backend.Game == mtgmatcher.GameYuGiOh && runFinishes == nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && !csiAmbiguousNote.MatchString(notes) {
+				if csi.backend.Game == mtgmatcher.GameYuGiOh && runFinishes == nil && yugiohRetries(err, notes) {
 					fromImage := yugiohSKUCard(csi.backend, theCard, imgURL)
 					if fromImage != "" {
 						cardID, err = fromImage, nil
@@ -1005,7 +1005,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		} else {
 			cardID, err = csi.backend.Match(theCard)
 		}
-		if err != nil && csi.backend.Game == mtgmatcher.GameYuGiOh {
+		if csi.backend.Game == mtgmatcher.GameYuGiOh && runFinishes == nil && yugiohRetries(err, product.Notes) {
 			fromImage := yugiohImageCard(csi.backend, theCard, product)
 			if fromImage != "" {
 				cardID, err = fromImage, nil
