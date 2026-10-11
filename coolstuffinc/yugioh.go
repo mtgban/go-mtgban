@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 
@@ -113,6 +114,13 @@ func yugiohArtCard(name, edition, number, notes string, foil bool) *mtgmatcher.I
 		Variation: strings.TrimSpace(number + " " + qualifier),
 		Foil:      foil,
 	}
+}
+
+// yugiohRetries reports whether a refused listing is asked again by its
+// image, on either feed: not where the matcher skips it, and not where the
+// note says it is one of several printings.
+func yugiohRetries(err error, notes string) bool {
+	return err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && !csiAmbiguousNote.MatchString(notes)
 }
 
 // yugiohImageCode matches the set code and number a Yu-Gi-Oh image sku
