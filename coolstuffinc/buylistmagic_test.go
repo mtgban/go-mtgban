@@ -64,3 +64,28 @@ func TestPreprocessBuylistMagic(t *testing.T) {
 		})
 	}
 }
+
+// TestFinishSplitNote pins the notes read as one number per finish, and the
+// range and list shapes that name more printings than that.
+func TestFinishSplitNote(t *testing.T) {
+	for _, tt := range []struct {
+		note          string
+		first, second string
+	}{
+		{"Card number can be 210 or 265", "210", "265"},
+		{"Card number can be 0522 or 0842", "522", "842"},
+		{"Nonfoil is number 0765, Foil is 0720 - Not Available in Play Boosters", "765", "720"},
+		{"Card number can be 289 - 296", "", ""},
+		{"Artist Pace Wilder - Card number can be 859, 861, 863, or 865", "", ""},
+		{"Card number can be 1 or 2 or 3", "", ""},
+	} {
+		m := finishSplitNote.FindStringSubmatch(tt.note)
+		var first, second string
+		if m != nil {
+			first, second = m[1]+m[2], m[3]
+		}
+		if first != tt.first || second != tt.second {
+			t.Errorf("%q read as %q/%q, want %q/%q", tt.note, first, second, tt.first, tt.second)
+		}
+	}
+}
