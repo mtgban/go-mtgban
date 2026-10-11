@@ -119,8 +119,10 @@ var basicSibling = map[string]string{
 }
 
 // finishSplitNote reads the two numbers a note offers for one product whose
-// printings differ only by finish.
-var finishSplitNote = regexp.MustCompile(`(?i)(?:card number can be|nonfoil is number)\s*0*(\d+)\D+?0*(\d+)`)
+// printings differ only by finish: "Card number can be 210 or 265", or
+// "Nonfoil is number 0765, Foil is 0720". A range or a longer list names
+// more than one printing per finish and is not read.
+var finishSplitNote = regexp.MustCompile(`(?i)(?:card number can be 0*(\d+) or|nonfoil is number 0*(\d+), foil is) 0*(\d+)(?:\s*$|\s+-\s)`)
 
 // finishSplitCard answers the one printing, in the row's own set, among the
 // numbers the note offers that carries the listing's finish. A foreign
@@ -130,6 +132,7 @@ func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language s
 	if m == nil || language != "" {
 		return nil
 	}
+	first, second := m[1]+m[2], m[3]
 	ids, err := b.SearchEquals(cardName)
 	if err != nil {
 		return nil
@@ -137,7 +140,7 @@ func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language s
 	var found *mtgmatcher.InputCard
 	for _, id := range ids {
 		co, err := b.GetUUID(id)
-		if err != nil || (co.Number != m[1] && co.Number != m[2]) || co.Foil != isFoil || co.Etched {
+		if err != nil || (co.Number != first && co.Number != second) || co.Foil != isFoil || co.Etched {
 			continue
 		}
 		if setCode != "" && co.SetCode != setCode {
