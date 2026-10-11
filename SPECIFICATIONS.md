@@ -735,9 +735,10 @@ through to `DefaultRules` - a genuine no-op - for all of them, and
 where their catalog has a real, narrow case to handle: Lorcana and Yu-Gi-Oh
 give `IsUnsupported` real logic at `StageWording` (Lorcana drops
 puzzle-insert and cruise-promo products; Yu-Gi-Oh drops the storefront's own
-character-art cards, which carry no collector number and no catalog row), and
-Pokemon overrides `CandidateSets` to fold `*Promos` shelves into the loose
-pass before falling back to every printing, and to add, on every pass, the
+character-art cards, which carry no collector number and no catalog row, and
+OTS Tournament Pack numbers past the set's English run), and Pokemon
+overrides `CandidateSets` to fold `*Promos` shelves into the loose pass
+before falling back to every printing, and to add, on every pass, the
 subsets filed inside a set it selects: a set coded `<parent>-<suffix>` whose
 name opens with its parent's (the Trainer Galleries and Radiant Collections
 among them), since the storefronts file those cards under the parent. Pokemon
@@ -755,7 +756,7 @@ different shape of padding and set-code prefix off the ordinal a person
 actually types (`PlainNumber`, §2.1's "Data model") rather than the
 catalog's own spelling.
 
-### 2.6 Sealed products & search API (`mtgmatcher/api.go`)
+### 2.6 Sealed products (`mtgmatcher/sealed`) & search API (`mtgmatcher/api.go`)
 
 Lookups: `GetUUID`, `GetSet`, `GetSetByName`, `GetAllSets`, `GetUUIDs`/
 `GetSealedUUIDs`, the per-set `GetUUIDsInSet`/`GetSealedUUIDsInSet` (backed by
