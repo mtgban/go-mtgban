@@ -404,20 +404,22 @@ type heldContents struct {
 	count    int
 }
 
-// heldOpenings is how a product opens from what it holds: the same fixed
-// cards and decks every time, worth fixed per parameter, and the products it
-// holds whole.
+// heldOpenings is how a product opens from what it holds: the products it
+// holds whole, and a base per parameter added to every opening. The base is
+// the product's expected value less the mean of the openings kept for what it
+// holds, so its openings average to its expected value however far a finite
+// sample of theirs strays from their own.
 type heldOpenings struct {
-	fixed    []float64
+	base     []float64
 	contents []heldContents
 }
 
 // draw values one opening of the holding product into values, for every
-// parameter that simulates: its fixed part, and one opening of each product
-// it holds, drawn from that product's own and the same one under every
+// parameter that simulates: its base, and one opening of each product it
+// holds, drawn from that product's own and the same one under every
 // parameter.
 func (h *heldOpenings) draw(values []float64) {
-	copy(values, h.fixed)
+	copy(values, h.base)
 	for _, content := range h.contents {
 		for range content.count {
 			pick := rand.IntN(content.openings)
@@ -434,8 +436,8 @@ func (h *heldOpenings) draw(values []float64) {
 // only fixed cards and decks beside whole sealed products and each of those
 // opened, and nil where it must be opened card by card instead, which is also
 // what decides whether an unopenable sample pack may be left out. expected is
-// the product's own expected value per parameter: what is left of it once the
-// products it holds are taken out is what its fixed part is worth.
+// the product's own expected value per parameter, which its fixed cards and
+// decks make up beside what it holds.
 func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string, expected []float64) *heldOpenings {
 	set, err := ss.backend.GetSet(setCode)
 	if err != nil {
@@ -452,13 +454,7 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 		return nil
 	}
 
-	// A product holding nothing fixed keeps a fixed part of exactly zero,
-	// rather than what is left of a subtraction.
-	hasFixed := len(contents["card"])+len(contents["deck"]) > 0
-	out := &heldOpenings{fixed: make([]float64, len(expected))}
-	if hasFixed {
-		copy(out.fixed, expected)
-	}
+	out := &heldOpenings{base: slices.Clone(expected)}
 	for _, content := range contents["sealed"] {
 		co, err := ss.backend.GetUUID(content.UUID)
 		if err != nil {
@@ -469,10 +465,9 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 		if openings == 0 {
 			return nil
 		}
-		if hasFixed {
-			for i := range out.fixed {
-				out.fixed[i] -= op.expected[i] * float64(content.Count)
-			}
+		for i := range out.base {
+			average, _ := stats.Mean(op.datasets[i])
+			out.base[i] -= average * float64(content.Count)
 		}
 		out.contents = append(out.contents, heldContents{datasets: op.datasets, openings: openings, count: content.Count})
 	}

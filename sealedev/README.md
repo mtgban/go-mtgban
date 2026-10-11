@@ -52,12 +52,15 @@ same number 5,000 times.
 A product made of whole sealed products, and of fixed cards and decks beside
 them - a case of boxes, a box of boosters, a fat pack's boosters and lands, a
 Festival in a Box - is not opened card by card either. Each of its openings is
-its fixed part plus one opening of everything it holds, drawn from the openings
-already simulated for those products, which `Load` keeps for every product held
-this way. The fixed part's value is the product's expected value less what it
-holds, and a deck that rolls foils is not fixed. A bonus skipped in a drop is
-skipped in a bundle of drops too, since the rule reads its chance in one copy,
-so the drop's openings value it the same way the bundle would.
+a base plus one opening of everything it holds, drawn from the openings already
+simulated for those products, which `Load` keeps for every product held this
+way; one draw is valued under every parameter. The base is the product's
+expected value less the mean of those kept openings, so its openings average
+to its expected value: it is what the fixed cards and decks are worth, plus
+however far a finite sample of what it holds strays from that product's own
+expected value. A deck that rolls foils is not fixed. A bonus skipped in a
+drop is skipped in a bundle of drops too, since the rule reads its chance in
+one copy, so the drop's openings value it the same way the bundle would.
 
 ## The price pass
 
