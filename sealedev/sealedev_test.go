@@ -339,7 +339,8 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 // opens from what it holds draws each opening from the openings kept for what
 // it holds, recentred on their expected value, rather than opening them again
 // card by card. Kept openings all worth the same leave every opening of the
-// product worth its own expected value, however unevenly its cards are priced.
+// product worth its own expected value, however unevenly its cards are priced,
+// and what went wrong opening what it holds is reported for it too, once.
 func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 	b := realDatastore(t)
 	for _, withFixed := range []bool{false, true} {
@@ -355,7 +356,9 @@ func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 		ss.held = heldWhole(b)
 		ss.kept = map[string]opened{}
 
-		// Every product it holds has already opened, at 7 every time.
+		// Every product it holds has already opened, at 7 every time, and
+		// with the same complaint.
+		const complaint = "a kept complaint"
 		for _, content := range contents {
 			co, err := b.GetUUID(content.UUID)
 			if err != nil {
@@ -367,12 +370,16 @@ func TestRunEVDrawsAHeldProductFromItsOpenings(t *testing.T) {
 					op.datasets[i] = []float64{7}
 				}
 			}
+			op.errs = []string{complaint}
 			ss.kept[content.UUID] = op
 		}
 
 		op := ss.open(context.Background(), product)
 		if openingsKept(op) == 0 {
 			t.Fatalf("fixed=%v: no simulated measure came back", withFixed)
+		}
+		if !slices.Equal(op.errs, []string{complaint}) {
+			t.Errorf("fixed=%v: reported %q, want what its held products reported, once", withFixed, op.errs)
 		}
 		for i := range evParameters {
 			if !evParameters[i].Simulation {

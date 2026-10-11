@@ -331,6 +331,9 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 		// Random contents: Monte Carlo the simulation parameters.
 		repeats := ss.repetitions
 		held := ss.heldOpenings(ctx, setCode, productUUID, expected)
+		if held != nil {
+			allTheErrors = slices.Clone(held.errs)
+		}
 
 		var mu sync.Mutex
 		var wg sync.WaitGroup
@@ -408,10 +411,12 @@ type heldContents struct {
 // holds whole, and a base per parameter added to every opening. The base is
 // the product's expected value less the mean of the openings kept for what it
 // holds, so its openings average to its expected value however far a finite
-// sample of theirs strays from their own.
+// sample of theirs strays from their own. errs is what went wrong opening
+// what it holds, each message once.
 type heldOpenings struct {
 	base     []float64
 	contents []heldContents
+	errs     []string
 }
 
 // draw values one opening of the holding product into values, for every
@@ -468,6 +473,11 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 		for i := range out.base {
 			average, _ := stats.Mean(op.datasets[i])
 			out.base[i] -= average * float64(content.Count)
+		}
+		for _, msg := range op.errs {
+			if !slices.Contains(out.errs, msg) {
+				out.errs = append(out.errs, msg)
+			}
 		}
 		out.contents = append(out.contents, heldContents{datasets: op.datasets, openings: openings, count: content.Count})
 	}
