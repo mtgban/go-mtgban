@@ -115,6 +115,8 @@ func namesSet(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject
 // after the one a "Promo Pack: <Set>" shelf is named for. The store stocks
 // the packs of that release only, so a later reprint of the same land is not
 // what the shelf holds, however the set's own promo pack came to share it.
+// The shelf set and its own promo sets are never a reprint, whatever their
+// dates: PMAT is dated half a year after MAT.
 func reprintedAfterPromoPack(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
 	name, found := strings.CutPrefix(l.shelf, "Promo Pack: ")
 	if !found {
@@ -125,7 +127,10 @@ func reprintedAfterPromoPack(b *mtgmatcher.Backend, l aliasedListing, co *mtgmat
 		return false
 	}
 	set, err := b.GetSet(co.SetCode)
-	return err == nil && set.ReleaseDateTime.After(shelfSet.ReleaseDateTime)
+	if err != nil || set.Code == shelfSet.Code || set.ParentCode == shelfSet.Code {
+		return false
+	}
+	return set.ReleaseDateTime.After(shelfSet.ReleaseDateTime)
 }
 
 // isPromoShelf reports whether the shelf is one of the promo categories.
