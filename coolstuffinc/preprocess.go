@@ -154,6 +154,27 @@ func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language s
 	return found
 }
 
+// shelfFinishSplit answers finishSplitCard for a sale listing, scoped to the
+// shelf's own set where its name resolves to one that holds the card; a shelf
+// filing another set's printings does not. A listing naming a language is
+// never split.
+func shelfFinishSplit(b *mtgmatcher.Backend, cardName, edition, notes string, isFoil bool) *mtgmatcher.InputCard {
+	if !finishSplitNote.MatchString(notes) {
+		return nil
+	}
+	if buylistLanguage(cardName, notes) != "" {
+		return nil
+	}
+	shelf, err := b.GetSetByName(edition)
+	if err == nil {
+		split := finishSplitCard(b, cardName, shelf.Code, notes, "", isFoil)
+		if split != nil {
+			return split
+		}
+	}
+	return finishSplitCard(b, cardName, "", notes, "", isFoil)
+}
+
 var nameTable = map[string]string{
 	"Yennet, Cryptic Sovereign":              "Yennett, Cryptic Sovereign",
 	"Invasion of Moag // Bloomweaver Dryads": "Invasion of Moag // Bloomwielder Dryads",
@@ -241,17 +262,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 		cardName = fixup
 	}
 
-	// The shelf's own set scopes the split where its name resolves to one
-	// that holds the card; a shelf filing another set's printings does not.
-	splitLanguage := buylistLanguage(cardName, notes)
-	var split *mtgmatcher.InputCard
-	shelf, shelfErr := b.GetSetByName(edition)
-	if shelfErr == nil {
-		split = finishSplitCard(b, cardName, shelf.Code, notes, splitLanguage, isFoil || foil)
-	}
-	if split == nil {
-		split = finishSplitCard(b, cardName, "", notes, splitLanguage, isFoil || foil)
-	}
+	split := shelfFinishSplit(b, cardName, edition, notes, isFoil || foil)
 	if split != nil {
 		return split, nil
 	}
