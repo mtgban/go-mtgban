@@ -8,8 +8,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// riftboundNotePrefix matches the set code a Riftbound note opens with.
-var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-`)
+// riftboundNotePrefix matches the set code a Riftbound note opens with, and
+// the number behind it where there is one.
+var riftboundNotePrefix = regexp.MustCompile(`^([A-Z]{2,4})-([A-Za-z]?[0-9]+[a-z]?)?`)
 
 // riftboundEventMarkers are the brackets a promo's name carries for the
 // event that handed it out, which the catalog files on its Release Event
@@ -42,12 +43,7 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 			continue
 		}
 		probe := &mtgmatcher.InputCard{Name: name, Edition: "Release Event Promos", Variation: variation, Foil: foil}
-		id, err := b.Match(probe)
-		if err != nil {
-			continue
-		}
-		co, err := b.GetUUID(id)
-		if err == nil && co.SetCode == "OPP" {
+		if riftboundLandsAt(b, probe, "OPP", mtgmatcher.ExtractNumber(variation)) {
 			return probe.Edition
 		}
 	}
@@ -65,11 +61,30 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 		Variation: variation,
 		Foil:      foil,
 	}
-	_, err = b.Match(probe)
-	if err != nil {
+	if !riftboundLandsAt(b, probe, set.Code, match[2]) {
 		return itemSet
 	}
 	return set.Name
+}
+
+// riftboundLandsAt reports whether a probe lands in set, and at number where
+// the listing names one, leading zeros and a set code before it aside.
+func riftboundLandsAt(b *mtgmatcher.Backend, probe *mtgmatcher.InputCard, set, number string) bool {
+	id, err := b.Match(probe)
+	if err != nil {
+		return false
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || co.SetCode != set {
+		return false
+	}
+	_, after, coded := strings.Cut(number, "-")
+	if coded {
+		number = after
+	}
+	asked := riftboundImagePad.ReplaceAllString(number, "${1}${2}")
+	landed := riftboundImagePad.ReplaceAllString(co.Number, "${1}${2}")
+	return number == "" || strings.EqualFold(asked, landed)
 }
 
 // riftboundImageTCG reads the TCGplayer product id the oldest Origins
