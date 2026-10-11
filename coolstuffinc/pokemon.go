@@ -49,17 +49,26 @@ func pokemonNonHoloShelf(b *mtgmatcher.Backend, name, numbered string, foil bool
 		return ""
 	}
 	for _, shelf := range pokemonNonHoloShelves {
-		id, err := b.Match(&mtgmatcher.InputCard{Name: name + " - " + numbered, Edition: shelf.edition, Foil: foil})
-		if err != nil {
-			continue
-		}
-		co, err := b.GetUUID(id)
-		if err == nil && co.SetCode == shelf.set && co.Finish == mtgmatcher.FinishNonfoil &&
-			strings.TrimLeft(co.Number, "0") == num {
+		co := pokemonLandsAt(b, mtgmatcher.InputCard{Name: name + " - " + numbered, Edition: shelf.edition, Foil: foil}, shelf.set, num)
+		if co != nil && co.Finish == mtgmatcher.FinishNonfoil {
 			return shelf.edition
 		}
 	}
 	return ""
+}
+
+// pokemonLandsAt matches a copy of a probe and answers the printing it lands
+// on, or nil unless that is set's own at num, leading zeros aside.
+func pokemonLandsAt(b *mtgmatcher.Backend, probe mtgmatcher.InputCard, set, num string) *mtgmatcher.CardObject {
+	id, err := b.Match(&probe)
+	if err != nil {
+		return nil
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || co.SetCode != set || strings.TrimLeft(co.Number, "0") != num {
+		return nil
+	}
+	return co
 }
 
 // numberedListing reads a listing name apart from the collector number this
@@ -532,16 +541,10 @@ func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes, varia
 		if num == "" {
 			continue
 		}
-		probe := &mtgmatcher.InputCard{Name: name + " - " + tail, Edition: r.edition, Variation: variation, Foil: foil}
-		id, err := b.Match(probe)
-		if err != nil {
-			continue
+		probe := mtgmatcher.InputCard{Name: name + " - " + tail, Edition: r.edition, Variation: variation, Foil: foil}
+		if pokemonLandsAt(b, probe, r.wantSet, num) != nil {
+			return r.edition
 		}
-		co, err := b.GetUUID(id)
-		if err != nil || co.SetCode != r.wantSet || strings.TrimLeft(co.Number, "0") != num {
-			continue
-		}
-		return r.edition
 	}
 	return ""
 }
@@ -692,13 +695,7 @@ func pokemonCosmosHolo(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, rarity
 	}
 	for _, shelf := range pokemonCosmosShelves {
 		cosmos.Edition = shelf.edition
-		probe := cosmos
-		id, err = b.Match(&probe)
-		if err != nil {
-			continue
-		}
-		co, err := b.GetUUID(id)
-		if err == nil && co.SetCode == shelf.set && strings.TrimLeft(co.Number, "0") == num {
+		if pokemonLandsAt(b, cosmos, shelf.set, num) != nil {
 			return &cosmos
 		}
 	}
