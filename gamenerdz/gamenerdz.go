@@ -329,17 +329,56 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 
 // namesCard reports whether a printing is the card a display name writes: its
 // name is in the display, or the card name read off the display is the front
-// of it. A flavor name before the dash ("Torgal, Clive's Companion -
-// Yoshimaru, Ever Faithful") and a double-faced card's other face both pass.
+// of it, as whole words either way. A flavor name before the dash ("Torgal,
+// Clive's Companion - Yoshimaru, Ever Faithful") and a double-faced card's
+// other face both pass; a name inside a longer word does not.
 func (gn *Gamenerdz) namesCard(cardID, displayName, cardName string) bool {
 	co, err := gn.backend.GetUUID(cardID)
 	if err != nil {
 		return false
 	}
-	landed := mtgmatcher.Normalize(co.Name)
-	name := mtgmatcher.Normalize(cardName)
-	return strings.Contains(mtgmatcher.Normalize(displayName), landed) ||
-		name != "" && strings.Contains(landed, name)
+	return containsWords(displayName, co.Name) || containsWords(co.Name, cardName)
+}
+
+// containsWords reports whether inner is in outer as Normalize reads both,
+// starting and ending where words of outer do. The whole-string reading
+// keeps the names Normalize protects, such as "waste land", apart.
+func containsWords(outer, inner string) bool {
+	text, bounds := normalizedWords(outer)
+	want, _ := normalizedWords(inner)
+	if want == "" || !strings.Contains(mtgmatcher.Normalize(outer), mtgmatcher.Normalize(inner)) {
+		return false
+	}
+	for from := 0; from < len(text); {
+		idx := strings.Index(text[from:], want)
+		if idx < 0 {
+			return false
+		}
+		start := from + idx
+		if bounds[start] && bounds[start+len(want)] {
+			return true
+		}
+		from = start + 1
+	}
+	return false
+}
+
+// normalizedWords is s as Normalize reads it, a word at a time, with the
+// offsets where its words start and end. The joining words Normalize drops
+// are dropped here too.
+func normalizedWords(s string) (string, map[int]bool) {
+	var text strings.Builder
+	bounds := map[int]bool{0: true}
+	for word := range strings.FieldsSeq(s) {
+		norm := mtgmatcher.Normalize(word)
+		switch norm {
+		case "", "and", "to", "&":
+			continue
+		}
+		text.WriteString(norm)
+		bounds[text.Len()] = true
+	}
+	return text.String(), bounds
 }
 
 // numberConflicts reports whether the number a variation opens with is not the
