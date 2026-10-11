@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
+	"os"
 	"slices"
 	"strings"
 	"testing"
@@ -222,5 +224,38 @@ func TestLoadKeepsOnlyWhatLoaded(t *testing.T) {
 	want = []string{"B", "C not dumped", "D not dumped", "E"}
 	if !slices.Equal(got, want) {
 		t.Errorf("load() errors %q, want %q", got, want)
+	}
+}
+
+// emptyBuylistStub is a loadStub that also buys, and whose buylist loaded
+// nothing.
+type emptyBuylistStub struct{ loadStub }
+
+func (s *emptyBuylistStub) Buylist() mtgban.BuylistRecord { return nil }
+
+// A half the run asked for that loaded nothing still gets its line, as a
+// zero, while a half its option turned off gets none.
+func TestReportResultCounts(t *testing.T) {
+	scrapers := []mtgban.Scraper{
+		&bothStub{loadStub{name: "A"}},
+		&emptyBuylistStub{loadStub{name: "G"}},
+		&bothStub{loadStub{name: "H"}},
+	}
+	opts := []*scraperOption{{}, {}, {OnlySeller: true}}
+	sellers, vendors, _ := load(context.Background(), scrapers)
+
+	var buf strings.Builder
+	log.SetOutput(&buf)
+	log.SetFlags(0)
+	defer func() {
+		log.SetOutput(os.Stderr)
+		log.SetFlags(log.LstdFlags)
+	}()
+	reportResultCounts(scrapers, opts, sellers, vendors)
+
+	want := "[A] 1 retail results\n[G] 1 retail results\n[H] 1 retail results\n" +
+		"[A] 1 buylist results\n[G] 0 buylist results\n"
+	if buf.String() != want {
+		t.Errorf("reportResultCounts() logged\n%s\nwant\n%s", buf.String(), want)
 	}
 }

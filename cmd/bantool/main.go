@@ -538,19 +538,65 @@ func countResults(sellers []mtgban.Seller, vendors []mtgban.Vendor) (int, int) {
 	return retail, buylist
 }
 
-// reportResultCounts logs how many distinct cards each seller and vendor
-// holds, so a change in the run totals can be traced to the scraper behind it.
-// A seller or vendor that came back empty was dropped when unfolding, so it
-// gets no line rather than a zero.
-func reportResultCounts(sellers []mtgban.Seller, vendors []mtgban.Vendor) {
+// reportResultCounts logs how many distinct cards each seller and vendor the
+// run asked for holds, so a change in the run totals can be traced to the
+// scraper behind it. A half that came back empty or failed to load was
+// dropped when unfolding, and logs a zero; a half the run did not ask for,
+// by its option, logs nothing.
+func reportResultCounts(scrapers []mtgban.Scraper, opts []*scraperOption, sellers []mtgban.Seller, vendors []mtgban.Vendor) {
+	retail := map[string]int{}
 	for _, seller := range sellers {
-		info := seller.Info()
-		log.Printf("[%s] %d retail results", info.Shorthand, len(seller.Inventory()))
+		retail[seller.Info().Shorthand] = len(seller.Inventory())
 	}
+	buylist := map[string]int{}
 	for _, vendor := range vendors {
-		info := vendor.Info()
-		log.Printf("[%s] %d buylist results", info.Shorthand, len(vendor.Buylist()))
+		buylist[vendor.Info().Shorthand] = len(vendor.Buylist())
 	}
+	for i, scraper := range scrapers {
+		if opts[i].OnlyVendor {
+			continue
+		}
+		names, _ := halfShorthands(scraper)
+		for _, name := range names {
+			log.Printf("[%s] %d retail results", name, retail[name])
+		}
+	}
+	for i, scraper := range scrapers {
+		if opts[i].OnlySeller {
+			continue
+		}
+		_, names := halfShorthands(scraper)
+		for _, name := range names {
+			log.Printf("[%s] %d buylist results", name, buylist[name])
+		}
+	}
+}
+
+// halfShorthands names the sellers and vendors a scraper unfolds into, the
+// enabled sub-scrapers of a Market or Trader included, whatever they hold.
+func halfShorthands(scraper mtgban.Scraper) ([]string, []string) {
+	var sellers, vendors []string
+	market, isMarket := scraper.(mtgban.Market)
+	if isMarket {
+		for _, name := range market.MarketNames() {
+			sellers = append(sellers, market.InfoForScraper(name).Shorthand)
+		}
+	}
+	_, isSeller := scraper.(mtgban.Seller)
+	if isSeller && !isMarket {
+		sellers = append(sellers, scraper.Info().Shorthand)
+	}
+	trader, isTrader := scraper.(mtgban.Trader)
+	if isTrader {
+		for _, name := range trader.TraderNames() {
+			vendors = append(vendors, trader.InfoForScraper(name).Shorthand)
+		}
+	}
+	_, isVendor := scraper.(mtgban.Vendor)
+	if isVendor && !isTrader {
+		vendors = append(vendors, scraper.Info().Shorthand)
+	}
+	return sellers, vendors
 }
 
 // reportSuspectPricings says which cards a scraper priced on both sides at
@@ -893,6 +939,7 @@ func run() int {
 	log.Printf("loading datastore took: %v (%s)", time.Since(now), game)
 
 	var scrapers []mtgban.Scraper
+	var scraperOpts []*scraperOption
 
 	// Initialize the enabled scrapers
 	for key, opt := range options[game] {
@@ -913,6 +960,7 @@ func run() int {
 		}
 
 		scrapers = append(scrapers, scraper)
+		scraperOpts = append(scraperOpts, opt)
 	}
 
 	countSellers, countVendors := mtgban.CountScrapers(scrapers)
@@ -929,7 +977,7 @@ func run() int {
 
 	retailResults, buylistResults := countResults(sellers, vendors)
 	log.Println("Found", retailResults, "retail results and", buylistResults, "buylist results")
-	reportResultCounts(sellers, vendors)
+	reportResultCounts(scrapers, scraperOpts, sellers, vendors)
 
 	reportSuspectPricings(backend, sellers, vendors)
 	reportCollapsedPricings(backend, vendors)
