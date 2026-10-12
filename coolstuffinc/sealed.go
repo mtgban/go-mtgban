@@ -280,6 +280,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 		buyEntry := mtgban.BuylistEntry{
 			BuyPrice:   buyPrice,
 			PriceRatio: priceRatio,
+			Quantity:   maxBuylistQuantity,
 			URL:        link,
 			InstanceID: product.PPQID,
 		}

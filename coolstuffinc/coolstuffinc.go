@@ -27,6 +27,9 @@ import (
 const (
 	defaultConcurrency = 8
 
+	// The feed names no buylist quantity; this is the most CSI buys of one.
+	maxBuylistQuantity = 20
+
 	csiInventoryURL = "https://www.coolstuffinc.com/sq/?s="
 )
 
@@ -1079,6 +1082,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				Conditions: mtgban.DefaultGradeTags[i],
 				BuyPrice:   buyPrice * deduction,
 				PriceRatio: priceRatio,
+				Quantity:   maxBuylistQuantity,
 				URL:        link,
 				InstanceID: product.PPQID,
 				CustomFields: map[string]string{
