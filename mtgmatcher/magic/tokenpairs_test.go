@@ -608,30 +608,35 @@ func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 
 // TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops pins that a pairing with
 // no home set is kept too: homeSet requires the two faces' sets to share an
-// mtgjson parent-set ancestor, which an ordinary same-sheet pairing always has
-// but a genuinely cross-set reprint (Dinosaur, from The Lost Caverns of Ixalan
-// Commander's own token sheet, paired with Gnome on The Lost Caverns of
-// Ixalan's own) need not. When homeSet returns "", the row falls back to a
-// deterministic set (whichever face's uuid sorts first - cosmetic only, see
-// buildDerivedCard's own comment on the field) rather than being dropped.
+// mtgjson parent-set ancestor, which no real pairing lacks today, so the
+// two sets here are made up. When homeSet returns "", the row falls back to
+// the first face's token set (cosmetic only, see buildDerivedCard's own
+// comment on the field) rather than being dropped.
 func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
-	realDatastore(t)
-
-	dinosaur := testBackend.MatchInSetNumber("Dinosaur", "TLCC", "10")
-	gnome := testBackend.MatchInSetNumber("Gnome", "TLCI", "16")
-	if len(dinosaur) != 1 || len(gnome) != 1 {
-		t.Fatal("Dinosaur TLCC #10 / Gnome TLCI #16 not present in this datastore")
+	face := func(uuid, setCode, name string) *mtgmatcher.CardObject {
+		return &mtgmatcher.CardObject{Card: mtgmatcher.Card{
+			UUID: uuid, SetCode: setCode, Name: name, Number: "1", Layout: "token",
+		}}
+	}
+	uuids := map[string]*mtgmatcher.CardObject{
+		"a": face("a", "TAAA", "Dinosaur"),
+		"b": face("b", "TBBB", "Gnome"),
+	}
+	sets := map[string]*Set{
+		"AAA": {Code: "AAA", TokenSetCode: "TAAA"},
+		"TAAA": {Code: "TAAA", ParentCode: "AAA", Tokens: []Card{{UUID: "a", TokenProducts: []TokenProduct{{
+			Identifiers: map[string]string{"tcgplayerProductId": "1"},
+			TokenParts:  []TokenPart{{UUID: "a"}, {UUID: "b"}},
+		}}}}},
+		"BBB":  {Code: "BBB", TokenSetCode: "TBBB"},
+		"TBBB": {Code: "TBBB", ParentCode: "BBB"},
 	}
 
-	id := MatchTokenPairingByUUIDs(testBackend, dinosaur[0].UUID, gnome[0].UUID, false)
-	if id == "" {
-		t.Fatal("MatchTokenPairingByUUIDs(Dinosaur, Gnome) = \"\", want the derived pairing - homeSet has no common ancestor for TLCC/TLCI, and must fall back rather than drop the row")
+	derived := deriveTokenPairs(sets, uuids, map[string]string{})
+	if len(derived) != 1 {
+		t.Fatalf("deriveTokenPairs minted %d pairings, want 1: a pairing whose faces share no ancestor must fall back rather than drop the row", len(derived))
 	}
-	co, err := testBackend.GetUUID(id)
-	if err != nil {
-		t.Fatalf("GetUUID(%s) = %v", id, err)
-	}
-	if co.SetCode != "TLCI" {
-		t.Errorf("resolved to SetCode %q, want the homeSet fallback (whichever face's uuid sorts first, TLCI here)", co.SetCode)
+	if derived[0].SetCode != "TAAA" {
+		t.Errorf("derived pairing filed under %q, want the first face's token set TAAA", derived[0].SetCode)
 	}
 }
