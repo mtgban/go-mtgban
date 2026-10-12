@@ -168,6 +168,16 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】【Foil】《ハールーンの将軍、セスロン/Sethron, Hurloon General》(旧正月プロモ)[流星マーク] 赤", "PL21", "1★"},
 		{"【EN】【Foil】■ボーダーレス■《ザックス・フェア/Zack Fair》(その他プロモ)[流星マーク] 白", "PMEI", "2026-3"},
 		{"【EN】■拡張アート■《ピーター・パーカー/Peter Parker》/《アメイジング・スパイダーマン/Amazing Spider-Man》(その他プロモ)[流星マーク] 白R", "PMEI", "2025-22"},
+		// Shooting-star rows the matcher widened to the set's own card
+		// (FIN 243, ONE 26, SPM 157, TLA 54, TMT 109/112, HOB 29/32).
+		{"【EN】【Foil】■ボーダーレス■《SeeDの傭兵、スコール/Squall, SeeD Mercenary》(スタンダード・ショーダウン)[流星マーク] 金", "PSS5", "2"},
+		{"【EN】【Foil】■ボーダーレス■《骨化/Ossification》(スタンダード・ショーダウン)[流星マーク] 白", "PCBB", "1"},
+		{"【EN】【Foil】《アルティメット・グリーンゴブリン/Ultimate Green Goblin》(マジック・プレゼンツプロモ)[流星マーク] 金", "PW25", "12"},
+		{"【EN】【Foil】《ばあば/Gran-Gran》(コマンダーイベントプロモ)[流星マーク] 青", "PW25", "14"},
+		{"【EN】【Foil】■ボーダーレス■《食料配達人/Courier of Comestibles》(コマンダーイベントプロモ)[流星マーク] 緑", "PW26", "6"},
+		{"【EN】【Foil】■ボーダーレス■《ピリ辛オートミールピザ/Spicy Oatmeal Pizza》(マジック・プレゼンツプロモ)[流星マーク] 赤", "PW26", "7"},
+		{"【EN】【Foil】■拡張アート■《思いがけない客たち/An Unexpected Party》(マジック・プレゼンツプロモ)[流星マーク] 白", "PW26", "14"},
+		{"【EN】【Foil】■拡張アート■《幸運児、ビルボ/Bilbo, Luckwearer》(コマンダーイベントプロモ)[流星マーク] 青", "PW26", "15"},
 		// The Marvel Legends compound entry named a set code as a bare
 		// word, which only ever reaches the wrong printing as a variant;
 		// spelling it out resolves the shelf's own set directly.
