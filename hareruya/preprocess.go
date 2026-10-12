@@ -1425,6 +1425,30 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Ultima": {
 			"ボーダーレス スタンダード・ショーダウン": {Edition: "PSS5", Variant: "1"},
 		},
+		"Squall, SeeD Mercenary": {
+			"ボーダーレス スタンダード・ショーダウン": {Edition: "PSS5", Variant: "2"},
+		},
+		"Ossification": {
+			"ボーダーレス スタンダード・ショーダウン": {Edition: "PCBB", Variant: "1"},
+		},
+		"Ultimate Green Goblin": {
+			"マジック・プレゼンツプロモ": {Edition: "PW25", Variant: "12"},
+		},
+		"Gran-Gran": {
+			"コマンダーイベントプロモ": {Edition: "PW25", Variant: "14"},
+		},
+		"Courier of Comestibles": {
+			"ボーダーレス コマンダーイベントプロモ": {Edition: "PW26", Variant: "6"},
+		},
+		"Spicy Oatmeal Pizza": {
+			"ボーダーレス マジック・プレゼンツプロモ": {Edition: "PW26", Variant: "7"},
+		},
+		"An Unexpected Party": {
+			"拡張アート マジック・プレゼンツプロモ": {Edition: "PW26", Variant: "14"},
+		},
+		"Bilbo, Luckwearer": {
+			"拡張アート コマンダーイベントプロモ": {Edition: "PW26", Variant: "15"},
+		},
 		"Zack Fair": {
 			"ボーダーレス その他プロモ": {Edition: "PMEI", Variant: "2026-3"},
 		},
