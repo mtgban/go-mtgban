@@ -172,3 +172,33 @@ func TestOtherRun(t *testing.T) {
 		}
 	}
 }
+
+// TestCardObjectString pins the finish an entry is named by: its own, so two
+// foil finishes of one printing read apart, and the flags' where it has none.
+func TestCardObjectString(t *testing.T) {
+	card := Card{Name: "Ariel - On Human Legs", SetCode: "1", Number: "1"}
+	for _, test := range []struct {
+		finish       string
+		foil, etched bool
+		want         string
+	}{
+		{"coldfoil", true, false, "Ariel - On Human Legs|1|1|coldfoil"},
+		{FinishFoil, true, false, "Ariel - On Human Legs|1|1|foil"},
+		{"", false, false, "Ariel - On Human Legs|1|1|nonfoil"},
+		{"", true, false, "Ariel - On Human Legs|1|1|foil"},
+		{"", true, true, "Ariel - On Human Legs|1|1|etched"},
+	} {
+		co := CardObject{Card: card, Foil: test.foil, Etched: test.etched}
+		co.Finish = test.finish
+		got := co.String()
+		if got != test.want {
+			t.Errorf("finish %q foil %t etched %t: got %q, want %q", test.finish, test.foil, test.etched, got, test.want)
+		}
+	}
+
+	sealed := CardObject{Card: Card{Name: "Booster Box", SetCode: "1"}, Sealed: true}
+	got := sealed.String()
+	if got != "[1] Booster Box" {
+		t.Errorf("sealed: got %q", got)
+	}
+}
