@@ -37,6 +37,9 @@ type MLProduct struct {
 	Price      float64
 	OutOfStock bool
 
+	// The storefront's own id, which both of its carts take
+	ProductID string
+
 	// The card behind the row, read from its image file: the newer sets
 	// name theirs by TCGplayer product id, the older by multiverse id, and
 	// the file name says which era it is.
@@ -140,6 +143,10 @@ func parseListing(doc *goquery.Document) []MLProduct {
 		name := row.Find(".caption .name a").First()
 		product.Name = strings.TrimSpace(name.Text())
 		product.URL, _ = name.Attr("href")
+		u, err := url.Parse(product.URL)
+		if err == nil {
+			product.ProductID = u.Query().Get("product_id")
+		}
 
 		// The set rides in the row's description as a link on the retail
 		// side; the buylist fills the description with rules text instead,
