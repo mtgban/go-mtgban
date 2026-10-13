@@ -1129,6 +1129,10 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			for finish, sources := range card.SourceProducts {
 				var filtered []string
 				for _, source := range sources {
+					// Minimal Packaging copies the contents of its retail product
+					if strings.HasSuffix(sealedNames[source], " Minimal Packaging") {
+						continue
+					}
 					if isBaseSealed(ap.Data, sealedProducts, source, card.UUID, finish) {
 						filtered = append(filtered, source)
 					}
