@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -488,20 +490,77 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		channel <- resultChan{
 			cardID: cardID,
 			invEntry: &mtgban.InventoryEntry{
-				Conditions: conditions,
-				Price:      price,
-				Quantity:   qty,
-				URL:        link,
-				SellerName: sellerName,
-				Bundle:     product.User.SinglesZero,
-				OriginalID: fmt.Sprint(product.BlueprintID),
-				InstanceID: fmt.Sprint(product.ID),
-				CustomFields: map[string]string{
-					"SubSellerName": product.User.Name,
-					"SubSellerGeo":  product.User.CountryCode,
-				},
+				Conditions:   conditions,
+				Price:        price,
+				Quantity:     qty,
+				URL:          link,
+				SellerName:   sellerName,
+				Bundle:       product.User.SinglesZero,
+				OriginalID:   fmt.Sprint(product.BlueprintID),
+				InstanceID:   fmt.Sprint(product.ID),
+				CustomFields: listingFields(ct.gameID, product),
 			},
 		}
+	}
+}
+
+// listingFields are the CustomFields a listing's entry keeps: its seller, its
+// price as Card Trader quotes it, and its listingProperties, for a cart to
+// find the listings of the card priced at or under this one.
+func listingFields(gameID int, product Product) map[string]string {
+	return map[string]string{
+		"SubSellerName": product.User.Name,
+		"SubSellerGeo":  product.User.CountryCode,
+		"PriceCents":    strconv.Itoa(product.Price.Cents),
+		"PriceCurrency": product.Price.Currency,
+		"Properties":    listingProperties(gameID, product).Encode(),
+	}
+}
+
+// listingProperties are the properties_hash keys and values that tell one
+// game's listings of a blueprint apart beside the condition: the language,
+// and the finish where the game names it, a false flag as an empty value.
+// Gundam and Palworld name no finish: the blueprint is the printing.
+func listingProperties(gameID int, product Product) url.Values {
+	props := product.Properties
+	values := url.Values{}
+	switch gameID {
+	case GameMagic:
+		values.Set("mtg_language", props.MTGLanguage)
+		setFlag(values, "mtg_foil", props.MTGFoil)
+	case GameLorcana:
+		values.Set("lorcana_language", props.LorcanaLanguage)
+		setFlag(values, "lorcana_foil", props.LorcanaFoil)
+	case GameRiftbound:
+		values.Set("riftbound_language", props.RiftboundLanguage)
+		setFlag(values, "riftbound_foil", props.RiftboundFoil)
+	case GameOnePiece:
+		values.Set("onepiece_language", props.OnePieceLanguage)
+		setFlag(values, "onepiece_foil", props.OnePieceFoil)
+	case GameYuGiOh:
+		values.Set("yugioh_language", props.YuGiOhLanguage)
+		setFlag(values, "first_edition", props.FirstEdition)
+	case GameFleshAndBlood:
+		values.Set("fab_language", props.FabLanguage)
+		values.Set("fab_foil_new", props.FabFoilNew)
+		setFlag(values, "first_edition", props.FirstEdition)
+	case GamePokemon:
+		values.Set("pokemon_language", props.PokemonLanguage)
+		setFlag(values, "pokemon_reverse", props.PokemonReverse)
+		setFlag(values, "first_edition", props.FirstEdition)
+	case GameGundam:
+		values.Set("gundam_language", props.GundamLanguage)
+	case GamePalworld:
+		values.Set("palworld_language", props.PalworldLanguage)
+	}
+	return values
+}
+
+// setFlag sets a listingProperties flag, "true" when on and empty when off.
+func setFlag(values url.Values, key string, on bool) {
+	values.Set(key, "")
+	if on {
+		values.Set(key, "true")
 	}
 }
 
