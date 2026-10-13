@@ -159,6 +159,7 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 			Price:      product.Price * ml.rate,
 			Quantity:   1,
 			URL:        product.URL,
+			InstanceID: product.ProductID,
 		})
 	} else {
 		var sellPrice, priceRatio float64
@@ -178,6 +179,7 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 			BuyPrice:   product.Price * ml.rate,
 			PriceRatio: priceRatio,
 			URL:        product.URL,
+			InstanceID: product.ProductID,
 		})
 	}
 	if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {

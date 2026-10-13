@@ -27,6 +27,7 @@ func TestParseListing(t *testing.T) {
 	if first.Name != "Hadoken - Lightning Bolt" ||
 		first.SetName != "Secret Lair" ||
 		first.TCGProductID != "272554" ||
+		first.ProductID != "112651" ||
 		first.MultiverseID != "" ||
 		first.Price != 7.51 ||
 		!first.OutOfStock {
@@ -35,6 +36,30 @@ func TestParseListing(t *testing.T) {
 
 	if m := showingTotal.FindStringSubmatch("Showing 1 to 58 of 58 (1 Pages)"); m == nil || m[1] != "58" {
 		t.Errorf("showing total parsed as %v", m)
+	}
+}
+
+// TestParseBuylistListing pins a buylist row, copied verbatim from the
+// buylist category listing, whose link carries the product id the buylist
+// cart takes, as a retail row's does.
+func TestParseBuylistListing(t *testing.T) {
+	f, err := os.Open("testdata/buylist_row.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	doc, err := goquery.NewDocumentFromReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	products := parseListing(doc)
+	if len(products) != 1 {
+		t.Fatalf("parsed %d products, want 1", len(products))
+	}
+	row := products[0]
+	if row.Name != "Aboshan's Desire" || row.ProductID != "13424" || row.MultiverseID != "29728" || row.Price != 0.01 {
+		t.Errorf("buylist row parsed as %+v", row)
 	}
 }
 
