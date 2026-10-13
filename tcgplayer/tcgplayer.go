@@ -53,7 +53,7 @@ type responseChan struct {
 }
 
 var availableMarketNames = []string{
-	"TCG Player", "TCG Direct",
+	"TCG Player", "TCG Direct", "TCGplayer Trends",
 }
 
 var name2shorthand = map[string]string{
@@ -66,6 +66,7 @@ var name2shorthand = map[string]string{
 	"TCG Direct (net)": "TCGDirectNet",
 	"TCGplayer":        "TCGPlayer",
 	"TCGplayer Direct": "TCGDirect",
+	"TCGplayer Trends": "TCGTrends",
 }
 
 func (tcg *Market) printf(format string, a ...any) {
@@ -111,80 +112,91 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 			}
 		}
 
-		isFoil := req.Printing == "FOIL"
-		isEtched := req.Finish == "ETCHED"
-		cardID, err := tcg.backend.MatchID(req.UUID, isFoil, isEtched)
-		if err != nil {
-			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductID, req.UUID)
-			continue
-		}
-
-		// Skip impossible entries, such as listing mistakes that list a foil
-		// price for a foil-only card
-		co, _ := tcg.backend.GetUUID(cardID)
-		if !co.Etched &&
-			((co.Foil && req.Printing != "FOIL") ||
-				(!co.Foil && req.Printing != "NON FOIL")) {
-			continue
-		}
-
-		cond, err := mtgban.ParseCondition(req.Condition)
-		if err != nil {
-			tcg.printf("unsupported %s condition", req.Condition)
-			continue
-		}
-
-		// Sorted as in availableMarketNames
-		prices := []float64{
-			result.LowestListingPrice, getDirectPrice(result.DirectLowPrice),
-		}
-		printing := "Normal"
-		if req.Printing == "FOIL" {
-			printing = "Foil"
-		}
-		for i := range availableMarketNames {
-			isDirect := i == 1
-			// Direct quotes $0 for a sku it does not stock, and that entry
-			// sorts first. TCG Player's $0 entries stay: the site finds
-			// skus through them.
-			if isDirect && prices[i] == 0 {
-				continue
-			}
-			link := GenerateProductURL(req.ProductID, printing, tcg.affiliate, cond, req.Language, isDirect)
-
-			out := responseChan{
-				cardID: cardID,
-				entry: mtgban.InventoryEntry{
-					Conditions: cond,
-					Price:      prices[i],
-					Quantity:   1,
-					URL:        link,
-					SellerName: availableMarketNames[i],
-					Bundle:     isDirect,
-					OriginalID: fmt.Sprint(req.ProductID),
-					InstanceID: fmt.Sprint(result.SKUID),
-				},
-			}
-
-			if isDirect {
-				price := DirectPriceAfterFees(prices[i])
-				if price > 0 {
-					out.bl = &mtgban.BuylistEntry{
-						Conditions: cond,
-						BuyPrice:   price,
-						URL:        link,
-						VendorName: "TCG Direct (net)",
-						OriginalID: fmt.Sprint(req.ProductID),
-						InstanceID: fmt.Sprint(result.SKUID),
-					}
-				}
-			}
-
+		for _, out := range tcg.skuEntries(result, req) {
 			channel <- out
 		}
 	}
 
 	return nil
+}
+
+// skuEntries are the entries a sku's prices make for the card req names:
+// one per sub-seller quoting a price, and the Direct buylist beside it.
+func (tcg *Market) skuEntries(result tcgplayer.SKUPriceSet, req marketChan) []responseChan {
+	isFoil := req.Printing == "FOIL"
+	isEtched := req.Finish == "ETCHED"
+	cardID, err := tcg.backend.MatchID(req.UUID, isFoil, isEtched)
+	if err != nil {
+		tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductID, req.UUID)
+		return nil
+	}
+
+	// Skip impossible entries, such as listing mistakes that list a foil
+	// price for a foil-only card
+	co, _ := tcg.backend.GetUUID(cardID)
+	if !co.Etched &&
+		((co.Foil && req.Printing != "FOIL") ||
+			(!co.Foil && req.Printing != "NON FOIL")) {
+		return nil
+	}
+
+	cond, err := mtgban.ParseCondition(req.Condition)
+	if err != nil {
+		tcg.printf("unsupported %s condition", req.Condition)
+		return nil
+	}
+
+	// Sorted as in availableMarketNames
+	prices := []float64{
+		result.LowestListingPrice, getDirectPrice(result.DirectLowPrice), result.MarketPrice,
+	}
+	printing := "Normal"
+	if req.Printing == "FOIL" {
+		printing = "Foil"
+	}
+	var out []responseChan
+	for i := range availableMarketNames {
+		isDirect := i == 1
+		isTrend := i == 2
+		// Direct quotes $0 for a sku it does not stock, and that entry
+		// sorts first; a sku with no sales has no market price. TCG
+		// Player's $0 entries stay: the site finds skus through them.
+		if (isDirect || isTrend) && prices[i] == 0 {
+			continue
+		}
+		link := GenerateProductURL(req.ProductID, printing, tcg.affiliate, cond, req.Language, isDirect)
+
+		entry := responseChan{
+			cardID: cardID,
+			entry: mtgban.InventoryEntry{
+				Conditions: cond,
+				Price:      prices[i],
+				Quantity:   1,
+				URL:        link,
+				SellerName: availableMarketNames[i],
+				Bundle:     isDirect,
+				OriginalID: fmt.Sprint(req.ProductID),
+				InstanceID: fmt.Sprint(result.SKUID),
+			},
+		}
+
+		if isDirect {
+			price := DirectPriceAfterFees(prices[i])
+			if price > 0 {
+				entry.bl = &mtgban.BuylistEntry{
+					Conditions: cond,
+					BuyPrice:   price,
+					URL:        link,
+					VendorName: "TCG Direct (net)",
+					OriginalID: fmt.Sprint(req.ProductID),
+					InstanceID: fmt.Sprint(result.SKUID),
+				}
+			}
+		}
+
+		out = append(out, entry)
+	}
+	return out
 }
 
 // derivedSkuMatches reports whether sku prices the two-sided token sheet's
