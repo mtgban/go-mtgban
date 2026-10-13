@@ -170,12 +170,13 @@ func (mp *Manapool) record(card Product, cardID string) {
 	// Convert price to float and add the 4.2% fee
 	price := float64(card.LowPrice) / 100.0 * 1.042
 
-	// Got there!
+	// Got there! The product id is what Mana Pool's cart optimizer takes
 	out := &mtgban.InventoryEntry{
 		Conditions: grade,
 		Price:      price,
 		Available:  card.AvailableQuantity,
 		URL:        link,
+		InstanceID: card.ProductID,
 	}
 	mp.addCheapest(cardID, out)
 }
@@ -196,11 +197,13 @@ func (mp *Manapool) Info() (info mtgban.ScraperInfo) {
 }
 
 // addCheapest records one price per printing and grade: the lowest one, with
-// the copies every product holds as its Available. The list carries a row per
-// product, and a printing the store files under more than one product - the
-// same token from several decks, a card in two of its own product lines -
-// arrives once per product, each with its own low price. The site shows one
-// row for the grade, and a buyer pays the lower of them.
+// its product's link and id, and the copies every product holds as its
+// Available. The list carries a row per product, and a printing the store
+// files under more than one product - the same token from several decks, a
+// card in two of its own product lines - arrives once per product, each with
+// its own low price. The site shows one row for the grade, and a buyer pays
+// the lower of them. Available can so count more copies than the product
+// InstanceID names holds.
 func (mp *Manapool) addCheapest(cardID string, entry *mtgban.InventoryEntry) {
 	err := mp.inventory.AddUnique(cardID, entry)
 	if !errors.Is(err, mtgban.ErrDuplicateEntry) {
@@ -218,6 +221,7 @@ func (mp *Manapool) addCheapest(cardID string, entry *mtgban.InventoryEntry) {
 		if entry.Price < entries[i].Price {
 			entries[i].Price = entry.Price
 			entries[i].URL = entry.URL
+			entries[i].InstanceID = entry.InstanceID
 		}
 	}
 }
