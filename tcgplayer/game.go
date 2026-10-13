@@ -136,8 +136,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			if !found {
 				continue
 			}
-			out, found := tcg.skuEntry(result, sku, product)
-			if found {
+			for _, out := range tcg.skuEntries(result, sku, product) {
 				channel <- out
 			}
 		}
@@ -179,36 +178,39 @@ func (tcg *TCGGame) skusToPrice(products []tcgplayer.Product) (map[int]tcgplayer
 	return productMap, skuMap, skuIDs
 }
 
-// skuEntry is the inventory entry a sku's lowest listing makes, or false
-// where the sku names nothing the scraper prices.
-func (tcg *TCGGame) skuEntry(result tcgplayer.SKUPriceSet, sku tcgplayer.SKU, product tcgplayer.Product) (genericChan, bool) {
-	price := result.LowestListingPrice
-	if price == 0 {
-		return genericChan{}, false
-	}
-
+// skuEntries are the inventory entries a sku makes: its lowest listing, and
+// for singles its market price, each where TCGplayer quotes one. None where
+// the sku names nothing the scraper prices.
+func (tcg *TCGGame) skuEntries(result tcgplayer.SKUPriceSet, sku tcgplayer.SKU, product tcgplayer.Product) []genericChan {
 	if tcg.sealed {
+		if result.LowestListingPrice == 0 {
+			return nil
+		}
 		// The product id is the sealed entry's whole identity;
 		// anything the map does not name is a product the
 		// datastore does not carry
 		uuids := tcg.sealedMap[sku.ProductID]
 		if len(uuids) != 1 {
-			return genericChan{}, false
+			return nil
 		}
-		return genericChan{
+		return []genericChan{{
 			key: uuids[0],
 			entry: mtgban.InventoryEntry{
 				Conditions: mtgban.NM,
-				Price:      price,
+				Price:      result.LowestListingPrice,
 				Quantity:   1,
 				URL:        GenerateProductURL(sku.ProductID, "", tcg.affiliate, "", "", false),
+				SellerName: gameMarketNames[0],
 				OriginalID: fmt.Sprint(sku.ProductID),
 				InstanceID: fmt.Sprint(sku.SKUID),
 			},
-		}, true
+		}}
+	}
+	if result.LowestListingPrice == 0 && result.MarketPrice == 0 {
+		return nil
 	}
 	if isUnsupportedProduct(&product) {
-		return genericChan{}, false
+		return nil
 	}
 
 	cardName := product.Name
@@ -224,7 +226,7 @@ func (tcg *TCGGame) skuEntry(result tcgplayer.SKUPriceSet, sku tcgplayer.SKU, pr
 	}
 	cardID, err := tcg.backend.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
-		return genericChan{}, false
+		return nil
 	} else if err != nil {
 		// Name the card, not just the price row: a sku id alone
 		// says nothing about which product failed to match.
@@ -240,24 +242,34 @@ func (tcg *TCGGame) skuEntry(result tcgplayer.SKUPriceSet, sku tcgplayer.SKU, pr
 				tcg.printf("%s: %s", probe, co)
 			}
 		}
-		return genericChan{}, false
+		return nil
 	}
 
 	condition := SKUConditionMap[sku.ConditionID]
 
 	link := GenerateProductURL(sku.ProductID, printing, tcg.affiliate, condition, "", false)
 
-	return genericChan{
-		key: cardID,
-		entry: mtgban.InventoryEntry{
-			Conditions: condition,
-			Price:      price,
-			Quantity:   1,
-			URL:        link,
-			OriginalID: fmt.Sprint(sku.ProductID),
-			InstanceID: fmt.Sprint(sku.SKUID),
-		},
-	}, true
+	// Sorted as in gameMarketNames
+	prices := []float64{result.LowestListingPrice, result.MarketPrice}
+	var out []genericChan
+	for i, price := range prices {
+		if price == 0 {
+			continue
+		}
+		out = append(out, genericChan{
+			key: cardID,
+			entry: mtgban.InventoryEntry{
+				Conditions: condition,
+				Price:      price,
+				Quantity:   1,
+				URL:        link,
+				SellerName: gameMarketNames[i],
+				OriginalID: fmt.Sprint(sku.ProductID),
+				InstanceID: fmt.Sprint(sku.SKUID),
+			},
+		})
+	}
+	return out
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -323,6 +335,32 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 // Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGGame) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
+}
+
+// gameMarketNames are TCGGame's sub-sellers: the lowest listing of a sku,
+// and the market price TCGplayer quotes for it.
+var gameMarketNames = []string{
+	"TCGplayer", "TCGplayer Trends",
+}
+
+// MarketNames names the sub-sellers this market splits into, the lowest
+// listing alone for sealed product. See mtgban.Market.
+func (tcg *TCGGame) MarketNames() []string {
+	if tcg.sealed {
+		return gameMarketNames[:1]
+	}
+	return gameMarketNames
+}
+
+// InfoForScraper describes one of the sub-scrapers named above. The lowest
+// listing keeps the scraper's own name and shorthand.
+func (tcg *TCGGame) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := tcg.Info()
+	if name != gameMarketNames[0] {
+		info.Name = name
+		info.Shorthand = name2shorthand[name]
+	}
+	return info
 }
 
 // Info describes this scraper. See mtgban.Scraper.

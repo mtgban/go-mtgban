@@ -129,27 +129,41 @@ func TestGameSKUEntry(t *testing.T) {
 		desc   string
 		sealed bool
 		result tcgplayer.SKUPriceSet
-		want   string
+		want   []string
 		logged bool
 	}{
 		{
 			desc:   "a holofoil single at near mint",
 			result: tcgplayer.SKUPriceSet{SKUID: 8560578, LowestListingPrice: 29, MarketPrice: 48.27},
-			want:   "Gundam ST01-001 foil: NM 29.00 https://www.tcgplayer.com/product/616528?Condition=Near+Mint&Language=all&Printing=Holofoil&direct=false",
+			want: []string{
+				"Gundam ST01-001 foil: TCGplayer NM 29.00 https://www.tcgplayer.com/product/616528?Condition=Near+Mint&Language=all&Printing=Holofoil&direct=false",
+				"Gundam ST01-001 foil: TCGplayer Trends NM 48.27 https://www.tcgplayer.com/product/616528?Condition=Near+Mint&Language=all&Printing=Holofoil&direct=false",
+			},
 		},
 		{
 			desc:   "lightly played reads as SP",
 			result: tcgplayer.SKUPriceSet{SKUID: 8560579, LowestListingPrice: 33.98, MarketPrice: 33.74},
-			want:   "Gundam ST01-001 foil: SP 33.98 https://www.tcgplayer.com/product/616528?Condition=Lightly+Played&Language=all&Printing=Holofoil&direct=false",
+			want: []string{
+				"Gundam ST01-001 foil: TCGplayer SP 33.98 https://www.tcgplayer.com/product/616528?Condition=Lightly+Played&Language=all&Printing=Holofoil&direct=false",
+				"Gundam ST01-001 foil: TCGplayer Trends SP 33.74 https://www.tcgplayer.com/product/616528?Condition=Lightly+Played&Language=all&Printing=Holofoil&direct=false",
+			},
 		},
 		{
 			desc:   "a normal single",
 			result: tcgplayer.SKUPriceSet{SKUID: 8560649, LowestListingPrice: 2.15, MarketPrice: 0.79},
-			want:   "Gundam (MA Form) ST01-002: NM 2.15 https://www.tcgplayer.com/product/616532?Condition=Near+Mint&Language=all&Printing=Normal&direct=false",
+			want: []string{
+				"Gundam (MA Form) ST01-002: TCGplayer NM 2.15 https://www.tcgplayer.com/product/616532?Condition=Near+Mint&Language=all&Printing=Normal&direct=false",
+				"Gundam (MA Form) ST01-002: TCGplayer Trends NM 0.79 https://www.tcgplayer.com/product/616532?Condition=Near+Mint&Language=all&Printing=Normal&direct=false",
+			},
 		},
 		{
-			desc:   "a grade with no listing",
+			desc:   "a grade with no listing and no sales",
 			result: tcgplayer.SKUPriceSet{SKUID: 8560580},
+		},
+		{
+			desc:   "a grade with sales but no listing",
+			result: tcgplayer.SKUPriceSet{SKUID: 8560580, MarketPrice: 21.5},
+			want:   []string{"Gundam ST01-001 foil: TCGplayer Trends MP 21.50 https://www.tcgplayer.com/product/616528?Condition=Moderately+Played&Language=all&Printing=Holofoil&direct=false"},
 		},
 		{
 			desc:   "a finish the printing is not sold in is reported",
@@ -160,7 +174,7 @@ func TestGameSKUEntry(t *testing.T) {
 			desc:   "the booster box",
 			sealed: true,
 			result: tcgplayer.SKUPriceSet{SKUID: 8569425, LowestListingPrice: 4749.99, MarketPrice: 2842.9},
-			want:   "Gundam Card Game Edition Beta Box: NM 4749.99 https://www.tcgplayer.com/product/617436?Language=all&direct=false",
+			want:   []string{"Gundam Card Game Edition Beta Box: TCGplayer NM 4749.99 https://www.tcgplayer.com/product/617436?Language=all&direct=false"},
 		},
 		{
 			desc:   "a single is no sealed product",
@@ -171,12 +185,11 @@ func TestGameSKUEntry(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			tcg, logs := gameScraper(t, tt.sealed)
 			s := sku[tt.result.SKUID]
-			out, found := tcg.skuEntry(tt.result, s, product[s.ProductID])
-			got := ""
-			if found {
-				got = describe(tcg.backend, out)
+			var got []string
+			for _, out := range tcg.skuEntries(tt.result, s, product[s.ProductID]) {
+				got = append(got, describe(tcg.backend, out))
 			}
-			if got != tt.want {
+			if !slices.Equal(got, tt.want) {
 				t.Errorf("got  %q\nwant %q", got, tt.want)
 			}
 			if tt.logged != (len(*logs) > 0) {
@@ -186,6 +199,27 @@ func TestGameSKUEntry(t *testing.T) {
 				t.Errorf("report %q does not name the product", (*logs)[0])
 			}
 		})
+	}
+}
+
+// TestGameMarketNames pins the shorthands the sub-sellers dump under: the
+// lowest listing keeps the scraper's own, which sealed product has alone.
+func TestGameMarketNames(t *testing.T) {
+	for _, tt := range []struct {
+		sealed bool
+		want   []string
+	}{
+		{false, []string{"TCGPlayer", "TCGTrends"}},
+		{true, []string{"TCGSealed"}},
+	} {
+		tcg, _ := gameScraper(t, tt.sealed)
+		var got []string
+		for _, name := range tcg.MarketNames() {
+			got = append(got, tcg.InfoForScraper(name).Shorthand)
+		}
+		if !slices.Equal(got, tt.want) {
+			t.Errorf("sealed %v: shorthands %v, want %v", tt.sealed, got, tt.want)
+		}
 	}
 }
 
