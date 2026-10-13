@@ -277,16 +277,21 @@ type CardObject struct {
 	Sealed  bool
 }
 
-// Card implements the Stringer interface
+// String names the entry as Name|SET|number|finish: the Finish it carries,
+// which tells apart finishes the flags cannot ("coldfoil", "1stedition"), or
+// one read off the flags where it names none. Sealed entries carry no finish.
 func (co CardObject) String() string {
 	if co.Sealed {
 		return co.Card.String()
 	}
-	finish := "nonfoil"
-	if co.Etched {
-		finish = "etched"
-	} else if co.Foil {
-		finish = "foil"
+	finish := co.Finish
+	if finish == "" {
+		finish = FinishNonfoil
+		if co.Etched {
+			finish = FinishEtched
+		} else if co.Foil {
+			finish = FinishFoil
+		}
 	}
 	return fmt.Sprintf("%s|%s", co.Card, finish)
 }
