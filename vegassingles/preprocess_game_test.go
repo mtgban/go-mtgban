@@ -665,6 +665,45 @@ func TestPreprocessImageID(t *testing.T) {
 	}
 }
 
+// TestPreprocessImageIDNumbered pins that an image's id outside Magic is also
+// taken when the datastore spells the name differently but the printing sits
+// at the number and in the edition the wording names, and only then.
+func TestPreprocessImageIDNumbered(t *testing.T) {
+	b := withRiftbound(t)
+	product := VSProduct{
+		DisplayName:    "Corina Veraza (179/221) - Spiritforged Foil",
+		SelectedFinish: "Foil",
+		ImageURL:       "https://cdn.shopify.com/s/files/1/0912/8761/7842/files/666471_aea6bc27-1b0c-4f1f-8d1e-3b0f4a1c2d3e.jpg?v=1760151809",
+		ProductData:    VSProductData{SetName: "Spiritforged"},
+	}
+
+	other := product
+	other.DisplayName = "Corina Veraza (180/221) - Spiritforged Foil"
+	refused, err := preprocess(b, other, mtgmatcher.GameRiftbound)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if refused.ID != "" {
+		t.Errorf("preprocess() took id %q for another number", refused.ID)
+	}
+
+	card, err := preprocess(b, product, mtgmatcher.GameRiftbound)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.ID == "" {
+		t.Fatal("preprocess() took no id from the image")
+	}
+	id, err := b.Match(card)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", card, err)
+	}
+	co, _ := b.GetUUID(id)
+	if co.SetCode != "SFD" || co.Number != "179" {
+		t.Errorf("Match(%v) = %s %s, want SFD 179", card, co.SetCode, co.Number)
+	}
+}
+
 // TestPreprocessImageIDFinish pins that the image's id is taken only in a
 // finish its printing is sold in: the Master Ball holofoil photo settles a
 // holofoil listing, and a reverse holofoil one is left to its wording.
