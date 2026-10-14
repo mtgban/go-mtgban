@@ -715,6 +715,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				if csi.backend.Game == mtgmatcher.GameOnePiece {
 					cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, cardName, notes)
+					// A slab's finish, or a named printing's, is not told by the
+					// foil prefix, and a product id names its own printing.
+					if !isFoil && !graded && !slabbed && printing == "" && theCard.ID == "" {
+						cardID = onePieceNonfoilPrinting(csi.backend, cardID)
+					}
 				}
 
 				// Magic-only finish sanity check: skip cards that do not have the
@@ -1066,6 +1071,9 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 
 		if csi.backend.Game == mtgmatcher.GameOnePiece {
 			cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, product.Name, product.Notes)
+			if product.IsFoil == 0 && theCard.ID == "" {
+				cardID = onePieceNonfoilPrinting(csi.backend, cardID)
+			}
 		}
 
 		buyPrice, err := mtgmatcher.ParsePrice(product.Price)

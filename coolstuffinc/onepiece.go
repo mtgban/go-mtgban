@@ -280,6 +280,40 @@ func onePieceRefined(b *mtgmatcher.Backend, id, edition, name, notes string) str
 	return id
 }
 
+// onePieceNonfoilPrinting answers the printing a nonfoil listing means once
+// the match settled on id. A printing sold in no nonfoil finish is not the
+// card a nonfoil row prices: the storefront's nonfoil row of such a rare is
+// the starter deck or reprint printing of the same name and number, so that
+// is the answer where exactly one exists. Where none or several do, the row
+// is a foil-only printing listed without the foil marker and stays on id. A
+// printing with a promo type (an alternate art, a parallel, an event promo)
+// stays too: the plain printing at its number is not it in another finish.
+func onePieceNonfoilPrinting(b *mtgmatcher.Backend, id string) string {
+	co, err := b.GetUUID(id)
+	if err != nil || co.HasFinish(mtgmatcher.FinishNonfoil) || len(co.PromoTypes) > 0 {
+		return id
+	}
+	siblings, err := b.SearchEquals(co.Name)
+	if err != nil {
+		return id
+	}
+	var found string
+	for _, sibling := range siblings {
+		other, err := b.GetUUID(sibling)
+		if err != nil || other.Number != co.Number || other.Foil || !other.HasFinish(mtgmatcher.FinishNonfoil) {
+			continue
+		}
+		if found != "" {
+			return id
+		}
+		found = sibling
+	}
+	if found == "" {
+		return id
+	}
+	return found
+}
+
 // eventNamed adds the catalog's name for every event the wording gives its
 // own name to. The storefront's words stay: they are what the listing says
 // about the art, and the catalog's name is only what files it.

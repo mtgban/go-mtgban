@@ -35,3 +35,22 @@ func TestOnePieceParallelPrinting(t *testing.T) {
 		})
 	}
 }
+
+// TestOnePieceNonfoilPrinting pins where a nonfoil listing goes once it lands
+// on a printing sold only in foil: Nami OP11-054 has one nonfoil printing at
+// its number, the LT-01 deck's, while her alternate art and a printing sold
+// nonfoil stay where they are.
+func TestOnePieceNonfoilPrinting(t *testing.T) {
+	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+
+	for _, tt := range []struct{ id, want string }{
+		{"op11-054_632421_foil", "op11-054_656695"},
+		{"op11-054_632422_foil", "op11-054_632422_foil"},
+		{"op11-054_656695", "op11-054_656695"},
+	} {
+		got := onePieceNonfoilPrinting(b, tt.id)
+		if got != tt.want {
+			t.Errorf("onePieceNonfoilPrinting(%s) = %s, want %s", tt.id, got, tt.want)
+		}
+	}
+}
