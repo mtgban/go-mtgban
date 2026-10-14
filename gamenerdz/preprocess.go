@@ -198,6 +198,18 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		Foil:      foil,
 	}
 
+	// The play shelf holds Play Booster promo packs of older sets, numbered
+	// as in the set they came from. Naming the stamp reaches the pack; a
+	// card with no pack keeps the reading it had.
+	if strings.EqualFold(string(product.ProductData.Set), playShelf) && !namesASet(b, edition) {
+		probe := *card
+		probe.Variation = strings.TrimSpace(number + " " + packStamp)
+		_, err := b.Match(&probe)
+		if err == nil {
+			card.Variation = probe.Variation
+		}
+	}
+
 	// The storefront files every prerelease stamp under one pseudo-set,
 	// whatever set the card was printed for. That code names no set the
 	// catalog has, so the edition selects nothing and the number answers
@@ -279,14 +291,22 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		_, err := b.Match(&probe)
 		if err != nil {
 			wording := magicWording(product.DisplayName)
+			var tries []mtgmatcher.InputCard
 			for _, edition := range []string{card.Edition, product.ProductData.SetName, shelf} {
-				if !namesASet(b, edition) {
-					continue
+				if namesASet(b, edition) {
+					tries = append(tries, mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: wording, Foil: card.Foil})
 				}
-				probe := mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: wording, Foil: card.Foil}
-				if _, err := b.Match(&probe); err == nil {
-					card.Edition = edition
-					card.Variation = wording
+			}
+			// Failing that the card is looked for by name in the sets the
+			// shelf holds its promos in.
+			for _, edition := range magicPromoShelves[strings.ToLower(string(product.ProductData.Set))] {
+				tries = append(tries, mtgmatcher.InputCard{Name: cardName, Edition: edition, Foil: card.Foil})
+			}
+			for _, try := range tries {
+				_, err := b.Match(&try)
+				if err == nil {
+					card.Edition = try.Edition
+					card.Variation = try.Variation
 					break
 				}
 			}
@@ -380,6 +400,15 @@ func saysEtched(product GNProduct) bool {
 // catalog's name for the set.
 var magicShelves = map[string]string{
 	"The List Reprints": "The List",
+}
+
+// magicPromoShelves pairs the codes of the shelves that number their promos
+// with the storefront's own index with the sets those promos sit in.
+var magicPromoShelves = map[string][]string{
+	"mfp":   {"MagicFest 2025"},
+	"ump":   {"MagicFest 2025", "Media and Collaboration Promos", "URL/Convention Promos"},
+	"media": {"URL/Convention Promos", "Media and Collaboration Promos"},
+	"play":  {"Spotlight Series"},
 }
 
 // magicRespellings pairs the names this storefront misspells with the
@@ -499,6 +528,7 @@ func namesASet(b *mtgmatcher.Backend, edition string) bool {
 // word the catalog tells those printings apart by.
 const (
 	preShelf  = "pre"
+	playShelf = "play"
 	preStamp  = "Prerelease"
 	packStamp = "Promo Pack"
 )
