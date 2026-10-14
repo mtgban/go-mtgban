@@ -94,8 +94,12 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	products := mergeList(mkm.catalog, list, mkm.printf)
+	return mkm.priceProducts(ctx, mergeList(mkm.catalog, list, mkm.printf))
+}
 
+// priceProducts walks the merged products expansion by expansion, resolving
+// each and landing its guide prices.
+func (mkm *Index) priceProducts(ctx context.Context, products map[int]cm.CatalogProduct) error {
 	byExpansion := map[int][]int{}
 	for id, product := range products {
 		byExpansion[product.ExpansionID] = append(byExpansion[product.ExpansionID], id)
