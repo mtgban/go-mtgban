@@ -245,7 +245,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 				}, nil
 			}
 		}
-		if verified := magic.VerifyTokenPairingFinish(b, fmt.Sprintf("%d", bp.TCGplayerID), false); verified != "" {
+		if verified := magic.VerifyTokenPairingFinish(b, fmt.Sprintf("%d", bp.TCGplayerProductID()), false); verified != "" {
 			if id, err := b.MatchID(verified, false); err == nil {
 				return &mtgmatcher.InputCard{
 					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
@@ -304,7 +304,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	// Some, but not all, have a proper id we can reuse right away, and the
 	// blueprint says which space each one lives in
 	scryfallID := b.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
-	tcgplayerID := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerID))
+	tcgplayerID := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerProductID()))
 	id := namedID(b, bp, scryfallID, tcgplayerID)
 	if id != "" {
 		idEdition, idVariation := edition, bp.Version
@@ -466,7 +466,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		if strings.HasPrefix(edition, "Secret Lair Commander Deck") {
 			// An id that got this far resolved nowhere, a deck reprint the
 			// catalog does not hold yet; the number would guess at another card.
-			if bp.ScryfallID != "" || bp.TCGplayerID != 0 {
+			if bp.ScryfallID != "" || bp.TCGplayerProductID() != 0 {
 				return nil, fmt.Errorf("unknown printing %q for %q", edition, cardName)
 			}
 			// The cards themselves are ordinary SLD or The List printings.
@@ -638,7 +638,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 					switch {
 					case magic.HasPromoPackPrinting(b, cardName) && !notPromoPack:
 						variant = "Promo Pack"
-					case notPromoPack && bp.ScryfallID == "" && bp.TCGplayerID == 0:
+					case notPromoPack && bp.ScryfallID == "" && bp.TCGplayerProductID() == 0:
 						// Only guess the base edition when the vendor gave
 						// no id to distrust; an unresolved id stays refused.
 						edition = strings.TrimSuffix(edition, " Promos")
