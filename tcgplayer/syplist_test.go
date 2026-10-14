@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
@@ -49,6 +50,35 @@ func TestNewScraperSYPGames(t *testing.T) {
 				t.Errorf("Info().Game is %q, want %q", got, tt.game)
 			}
 		})
+	}
+}
+
+// TestInfoNamesTheGame pins that every TCGplayer scraper reports the game of
+// the datastore it was built on.
+func TestInfoNamesTheGame(t *testing.T) {
+	b := &mtgmatcher.Backend{Game: mtgmatcher.GameMagic}
+	market, err := NewScraperMarket(b, "public", "private")
+	if err != nil {
+		t.Fatal(err)
+	}
+	index, err := NewScraperIndex(b, "public", "private")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sealed, err := NewScraperSealed(b, "public", "private")
+	if err != nil {
+		t.Fatal(err)
+	}
+	seller := NewScraperForSellerIDs(b, []string{"seller"}, false)
+	for name, info := range map[string]mtgban.ScraperInfo{
+		"market": market.Info(),
+		"index":  index.Info(),
+		"sealed": sealed.Info(),
+		"seller": seller.Info(),
+	} {
+		if info.Game != mtgmatcher.GameMagic {
+			t.Errorf("%s Info().Game is %q, want %q", name, info.Game, mtgmatcher.GameMagic)
+		}
 	}
 }
 
