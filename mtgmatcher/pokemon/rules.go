@@ -954,40 +954,53 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	// only answers when nothing else does.
 	numbers := extractNumbers(inCard.Variation)
 	number := ""
-	var candidates []mtgmatcher.Card
+	var candidates, promo []mtgmatcher.Card
 	for _, number0 := range slices.Backward(numbers) {
 		number = number0
 		candidates = filterByNumber(b, inCard, cardSet, number)
+		// A lettered number the edition admits no printing of names a
+		// promo printing filed in a set of its own. The storefronts sell
+		// the alternate arts under the set the card was first printed in
+		// - Cool Stuff Inc lists "Garbodor (Alt Art) - 51a/145" against
+		// "SM Guardians Rising" - where the catalog files them in
+		// "Alternate Art Promos", which the edition then keeps out. The
+		// letter says which printing this is, so it is asked of the
+		// catalog entire, and before an earlier number the vendor wrote
+		// without it. Where the edition holds the number only as a row
+		// TCGplayer never priced, the promo printing carrying the id wins.
+		if letteredNumberRe.MatchString(number0) && len(withProductID(candidates)) == 0 {
+			promo = letteredPromo(b, inCard, []string{number0})
+			if len(candidates) > 0 {
+				promo = withProductID(promo)
+			}
+			if len(promo) > 0 {
+				break
+			}
+		}
 		if len(candidates) > 0 {
 			break
 		}
 	}
-	// A lettered number the edition admits no printing of names a promo
-	// printing filed in a set of its own. The storefronts sell the
-	// alternate arts under the set the card was first printed in - Cool
-	// Stuff Inc lists "Garbodor (Alt Art) - 51a/145" against "SM Guardians
-	// Rising" - where the catalog files them in "Alternate Art Promos",
-	// which the edition then keeps out. The number is the whole of what
-	// says which printing this is, so it is asked of the catalog entire
-	// before the letter is given up on.
-	if len(candidates) == 0 {
-		promo := letteredPromo(b, inCard, numbers)
-		if len(promo) == 1 {
-			return promo
-		}
-		// The catalog carries the lettered number more than once: TCGplayer
-		// sells several of these promos twice, once at their own size and
-		// once as an oversized jumbo, with the same name, number and finish
-		// and nothing on the card to tell them apart. The set is what tells
-		// them apart, and the wording names it - "(Alt Art)" against
-		// "Alternate Art Promos" beside "Jumbo Cards".
-		if len(promo) > 1 {
-			if named := setNamed(b, inCard, promo); len(named) == 1 {
-				return named
-			}
-			// It named neither, so the letter stands rather than being
-			// dropped: answering with the plain card the promo reprints
-			// would be a third card again.
+	if len(promo) == 1 {
+		return promo
+	}
+	// The catalog carries the lettered number more than once: TCGplayer
+	// sells several of these promos twice, once at their own size and once
+	// as an oversized jumbo, with the same name, number and finish and
+	// nothing on the card to tell them apart. The set is what tells them
+	// apart, and the wording names it - "(Alt Art)" against "Alternate Art
+	// Promos" beside "Jumbo Cards". A set holding the number once per
+	// finish is left to the label tiers below. A wording naming neither set
+	// leaves the letter standing: dropping it would answer with the plain
+	// card the promo reprints, which is a third card again.
+	if len(promo) > 1 {
+		named := setNamed(b, inCard, promo)
+		switch {
+		case len(named) == 1:
+			return named
+		case len(named) > 1:
+			candidates = named
+		case len(candidates) == 0:
 			return nil
 		}
 	}
@@ -1517,6 +1530,17 @@ func setNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgma
 			}
 		}
 		if own && whole {
+			out = append(out, card)
+		}
+	}
+	return out
+}
+
+// withProductID keeps the printings that carry a TCGplayer product id.
+func withProductID(cards []mtgmatcher.Card) []mtgmatcher.Card {
+	var out []mtgmatcher.Card
+	for _, card := range cards {
+		if card.Identifiers["tcgplayerProductId"] != "" {
 			out = append(out, card)
 		}
 	}
