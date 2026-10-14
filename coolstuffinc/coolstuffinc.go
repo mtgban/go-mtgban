@@ -606,6 +606,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					c.Foil = c.Foil || isFoil
 					theCard = c
 				case mtgmatcher.GameYuGiOh:
+					tcgID, named := yugiohPIDs[pid]
+					if named {
+						theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: isFoil}
+						break
+					}
 					if unknownPrinting(cardName, edition) {
 						return
 					}
@@ -970,6 +975,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
 		case mtgmatcher.GameYuGiOh:
+			tcgID, named := yugiohPIDs[product.PID]
+			if named {
+				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				break
+			}
 			if unknownPrinting(product.Name, product.ItemSet) {
 				continue
 			}
