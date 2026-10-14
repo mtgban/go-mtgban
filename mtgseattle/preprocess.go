@@ -91,6 +91,9 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 			cardName = strings.TrimSuffix(cardName, " Foil")
 			isFoil = true
 		}
+		if strings.Contains(variant, "Launch") {
+			edition = "Launch Party"
+		}
 	case "FNM Promos":
 		switch cardName {
 		case "Elvish Mystic":
