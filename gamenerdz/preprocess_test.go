@@ -503,6 +503,31 @@ func TestPreprocess(t *testing.T) {
 			edition: "Secret Lair Commander: Heads I Win, Tails You Lose",
 			foil:    true,
 		},
+		{
+			// The miscellaneous shelves index their promos themselves, so
+			// the card is looked for by name in the sets they hold.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Tifa Lockhart (Borderless) (MFP-002) - MagicFest Cards Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "mfp", SetName: "MagicFest Cards"},
+			},
+			name:    "Tifa Lockhart",
+			edition: "MagicFest 2025",
+			foil:    true,
+		},
+		{
+			// A play shelf number is the card's in the set its promo pack
+			// came from, so the stamp reaches the pack.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName: "Cemetery Desecrator (PLAY-100) - Play Promos",
+				ProductData: GNProductData{Set: "play", SetName: "Play Promos"},
+			},
+			name:      "Cemetery Desecrator",
+			edition:   "play",
+			variation: "100 Promo Pack",
+		},
 	}
 	for _, tt := range tests {
 		card, err := preprocess(b, tt.product, tt.game)
