@@ -54,6 +54,38 @@ func skuFamily(product GNProduct) string {
 	return ""
 }
 
+// skuMarker is the finish segment a product's sku carries, "F" or "EF", and
+// empty when it carries none. A product with no sku at all has none either.
+func skuMarker(product GNProduct) string {
+	for _, variant := range product.RetailVariants {
+		if variant.SKU == "" {
+			continue
+		}
+		fields := strings.Split(variant.SKU, "-")
+		for i := 1; i < len(fields)-1; i++ {
+			if fields[i] == "F" || fields[i] == "EF" {
+				return fields[i]
+			}
+		}
+		return ""
+	}
+	return ""
+}
+
+// doubtfulFoil reports a product whose selectedFinish is the only thing
+// saying foil: its sku carries no finish segment and its name no Foil tail.
+// The field is wrong on some of these - a ninth edition land sold plain is
+// flagged foil and lands its star twin - and right on the rest, where the
+// product is a second listing of its foil sibling at the same price or the
+// card was only ever printed foil. Its price tells which, once the sibling's
+// is known.
+func doubtfulFoil(product GNProduct) bool {
+	if !strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName) {
+		return false
+	}
+	return skuMarker(product) == "" && skuFamily(product) != ""
+}
+
 // bodyNamesOwnSet reports whether a product's body names the set its own
 // display name does. A product with no set tag to read has nothing to
 // disagree with and counts as its own witness.
