@@ -848,6 +848,12 @@ var pokemonShelfFixes = map[pokemonShelfFix]string{
 	{"SV: Black Bolt", "Lampent"}:   "SV: White Flare",
 }
 
+// pokemonLabels spells the labels this storefront gives a promo the way the
+// catalog words them.
+var pokemonLabels = strings.NewReplacer(
+	"(Game Stop)", "(GameStop Exclusive)",
+)
+
 func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 	loc := pokemonNumber.FindStringSubmatchIndex(product.DisplayName)
 	if loc == nil {
@@ -859,7 +865,7 @@ func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 		finish = ""
 	}
 
-	name := strings.TrimSpace(product.DisplayName[:loc[0]])
+	name := strings.TrimSpace(pokemonLabels.Replace(product.DisplayName[:loc[0]]))
 	edition := product.ProductData.SetName
 	if shelf, found := pokemonShelfFixes[pokemonShelfFix{edition, name}]; found {
 		edition = shelf
