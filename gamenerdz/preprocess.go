@@ -645,12 +645,12 @@ func preprocessLorcana(product GNProduct) (*mtgmatcher.InputCard, error) {
 var pokemonNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?(?:/[0-9]+)?|[A-Z]+/[0-9]+)$`)
 
 // pokemonSizedNumber is the half of those written over the set's size,
-// "65/130", "Z/115" or "?/115". Only a card's collector number is written that way,
+// "65/130", "Z/115", "?/115" or "RC10/RC25". Only a card's collector number is written that way,
 // so where one appears it is the number and the name ends in front of it -
 // which is what tells "Alakazam E4 38/111" from "Dragonite 149/165 (Cosmos
 // Holo) 149", the one carrying its own suffix and the other the catalog's
 // number repeated.
-var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]+|[!?])/[0-9]+$`)
+var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]+|[!?])/[A-Z]*[0-9]+$`)
 
 // pokemonGenders spells the symbols this storefront prints on a face where
 // the catalog writes the letter: Nidoran and its Gym-era owners are filed as
@@ -669,10 +669,12 @@ var pokemonRespellings = map[string]string{
 	"Blend Energy GrassFirePsychicDarkness":    "Blend Energy GFPD",
 	"Blend Energy WaterLightningFightingMetal": "Blend Energy WLFM",
 	"Defiant Band":                             "Defiance Band",
+	"Deoxys (Normal Forme)":                    "Deoxys",
 	"Electro Generator":                        "Electric Generator",
 	"Feebass":                                  "Feebas",
 	"Jamming Net Team Flare Hyper Gear":        "Jamming Net",
 	"Marnie's Marpeko":                         "Marnie's Morpeko",
+	"ナッシー[Exeggutor]":                          "Exeggutor",
 	"Oinkalogne ex":                            "Oinkologne ex",
 	"Target Whistle Team Flare Gear":           "Target Whistle",
 	"Team Rocket's Nidorand":                   "Team Rocket's Nidoran M",
@@ -706,6 +708,7 @@ var pokemonLabels = strings.NewReplacer(
 	"(Cosmo Foil)", "(Cosmos Holo)",
 	"(Cosmo Holo)", "(Cosmos Holo)",
 	"(Pokemon Day Stamped)", "(Pokemon Day)",
+	"(25th Anniversary Stamp)", "(25th Anniversary)",
 	"[Winner]", "(Winner)",
 )
 
@@ -804,7 +807,14 @@ func preprocessPokemon(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.In
 		}
 	}
 
-	card := pokemonCard(b, product, name, number)
+	// A qualifier hung behind a bracket in the name belongs with the
+	// number: "Professor's Research [Professor Elm] (Poke Ball Pattern)".
+	variation := number
+	moved := pokemonNameQualifier.FindStringSubmatch(name)
+	if moved != nil {
+		name, variation = moved[1], number+" "+moved[2]
+	}
+	card := pokemonCard(b, product, name, variation)
 
 	// A printing's second axis rides just behind the number, bracketed -
 	// "Snorlax - 051 (Pokemon Center Exclusive)". The same set prints the
@@ -814,11 +824,15 @@ func preprocessPokemon(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.In
 	// place falls back on the number it was read from.
 	qualifier := pokemonQualifier.FindStringSubmatch(strings.TrimPrefix(strings.TrimSpace(rest), number))
 	if qualifier != nil {
-		card.Variation = strings.TrimSpace(number + " " + qualifier[1])
+		card.Variation = strings.TrimSpace(variation + " " + qualifier[1])
 	}
 
 	return card, nil
 }
+
+// pokemonNameQualifier splits a name ending in a bracket and then a
+// parenthesis into the two.
+var pokemonNameQualifier = regexp.MustCompile(`^(.*\])\s+(\([^)]*\))$`)
 
 // pokemonPromoCode is the number a Scarlet & Violet promo's display name
 // carries, "(SVP-007)", and pokemonSKUNumber the one its sku does, as in
