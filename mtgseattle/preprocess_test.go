@@ -87,3 +87,38 @@ func TestMysteryBoosterCardsResolvesToPLSTNumber(t *testing.T) {
 		t.Errorf("foil Skullclamp sent to PLST %s", theCard.Variation)
 	}
 }
+
+// TestShelfWordingResolvesToItsPrinting pins listings whose bracketed wording
+// is read as a release event, not as a prerelease.
+func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
+	b := realDatastore(t)
+
+	tests := []struct {
+		cardName string
+		edition  string
+		variant  string
+		set      string
+		number   string
+	}{
+		{"Azorius Guildmage", "Pre-Release Promos", "Foil Launch Promo", "PDIS", "141★"},
+		{"Blight Herder", "Pre-Release Promos", "Foil Launch Promo", "PBFZ", "2"},
+	}
+	for _, test := range tests {
+		theCard, err := preprocess(b, test.cardName, test.edition, test.variant)
+		if err != nil {
+			t.Fatalf("%s: preprocess: %v", test.cardName, err)
+		}
+
+		cardID, err := b.Match(theCard)
+		if err != nil {
+			t.Fatalf("%s: Match: %v", test.cardName, err)
+		}
+		co, err := b.GetUUID(cardID)
+		if err != nil {
+			t.Fatalf("%s: GetUUID: %v", test.cardName, err)
+		}
+		if co.SetCode != test.set || co.Number != test.number {
+			t.Errorf("%s %s: matched %s %s, want %s %s", test.cardName, test.variant, co.SetCode, co.Number, test.set, test.number)
+		}
+	}
+}
