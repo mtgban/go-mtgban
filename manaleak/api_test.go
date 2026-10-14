@@ -95,3 +95,63 @@ func TestCardImage(t *testing.T) {
 		}
 	}
 }
+
+// TestParseProduct pins the category and code read off a product page, copied
+// verbatim from manaleak.com.
+func TestParseProduct(t *testing.T) {
+	f, err := os.Open("testdata/product.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	doc, err := goquery.NewDocumentFromReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	category, code := parseProduct(doc)
+	if category != "The List" || code != "mtgTLP269131" {
+		t.Errorf("product page parsed as %q, %q", category, code)
+	}
+}
+
+// TestReadPage pins every product code shape manaleak.com serves, copied
+// verbatim from its pages: an id behind a set code, a bare id, a set code and
+// collector number, the storefront's own index, and the "MTG" codes of
+// sealed product, which name no card. A "-f" ending states the finish, and
+// the letters a set code opens with name the shelf.
+func TestReadPage(t *testing.T) {
+	for _, tt := range []struct {
+		code                    string
+		tcg, bare, index, shelf string
+		card, foil, ambiguous   bool
+	}{
+		{code: "mtgTLP269131", tcg: "269131", shelf: "TLP", card: true, ambiguous: true},
+		{code: "mtg2X2276647-f", tcg: "276647", card: true, foil: true, ambiguous: true},
+		{code: "mtgMBP125841-f", tcg: "125841", shelf: "MBP", card: true, foil: true, ambiguous: true},
+		{code: "mtgSCD456950", tcg: "456950", shelf: "SCD", card: true, ambiguous: true},
+		{code: "mtgCMB1246964", tcg: "246964", shelf: "CMB", card: true, ambiguous: true},
+		{code: "mtgSTA235515-f", tcg: "235515", shelf: "STA", card: true, foil: true, ambiguous: true},
+		{code: "mtgSLD213821-jp-f", tcg: "213821", shelf: "SLD", card: true, foil: true, ambiguous: true},
+		{code: "mtg401991", bare: "401991", card: true},
+		{code: "mtg473052-f", bare: "473052", card: true, foil: true},
+		{code: "mtg2916", bare: "2916", card: true},
+		{code: "mtgELD290-f", index: "290", shelf: "ELD", card: true, foil: true},
+		{code: "mtgGRC_12-f", index: "12", shelf: "GRC", card: true, foil: true},
+		{code: "mtgDM_1", index: "1", shelf: "DM", card: true},
+		{code: "mtgFNMP_180-f", index: "180", shelf: "FNMP", card: true, foil: true},
+		{code: "mtgMBP_132-f", index: "132", shelf: "MBP", card: true, foil: true},
+		{code: "mtg439392a", card: true},
+		{code: "MTGFDN"},
+		{code: ""},
+	} {
+		var p MLProduct
+		p.readPage("Promos", tt.code)
+		if p.TCGProductID != tt.tcg || p.CodeID != tt.bare || p.Number != tt.index || p.Shelf != tt.shelf ||
+			p.FromPage != tt.card || p.Foil != tt.foil || p.AmbiguousID != tt.ambiguous {
+			t.Errorf("%s: got tcg=%q bare=%q index=%q shelf=%q card=%v foil=%v ambiguous=%v, want tcg=%q bare=%q index=%q shelf=%q card=%v foil=%v ambiguous=%v",
+				tt.code, p.TCGProductID, p.CodeID, p.Number, p.Shelf, p.FromPage, p.Foil, p.AmbiguousID,
+				tt.tcg, tt.bare, tt.index, tt.shelf, tt.card, tt.foil, tt.ambiguous)
+		}
+	}
+}
