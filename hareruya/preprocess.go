@@ -1019,6 +1019,12 @@ var editionTable = map[string]string{
 	"JvC": "Duel Decks: Jace vs. Chandra",
 
 	"FNM": "Friday Night Magic",
+
+	"Old Arena": "PARL",
+	"ONS Arena": "PAL03",
+	"MRD Arena": "PAL04",
+	"CHK Arena": "PAL05",
+	"RAV Arena": "PAL06",
 }
 
 var promoMap = map[string]map[string]map[string]struct {
@@ -1133,6 +1139,9 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 	},
 	"Other Promos": {
+		"Plains":   {"Illus.Mark Poole": {Edition: "G17", Variant: "1"}},
+		"Island":   {"Illus.Mark Poole": {Edition: "G17", Variant: "2"}},
+		"Mountain": {"Illus.Mark Poole": {Edition: "G17", Variant: "4"}},
 		"Serra the Benevolent": {
 			"Retro Frame その他プロモ": {
 				Edition: "PF25",
@@ -1216,6 +1225,10 @@ var promoMap = map[string]map[string]map[string]struct {
 	// or Standard Showdown printing, filed by year, the Spotlight Series
 	// set, and the Final Fantasy Standard Showdown set.
 	"Showdown Promo": {
+		"Plains":   {"Full-Art Illus.Lucas Graciano": {Edition: "PSS4", Variant: "1"}},
+		"Island":   {"Full-Art Illus.Piotr Dura": {Edition: "PSS4", Variant: "2"}},
+		"Swamp":    {"Full-Art Illus.Alexander Forssberg": {Edition: "PSS4", Variant: "3"}},
+		"Mountain": {"Full-Art 2024年版 Illus.Alayna Danner": {Edition: "PSS4", Variant: "4"}, "2018年版 Illus.Alayna Danner": {Edition: "PSS3", Variant: "4"}},
 		"Wood Elves": {
 			"Extended Art スタンダード・ショーダウン": {
 				Edition: "PW26",
@@ -1394,6 +1407,7 @@ var promoMap = map[string]map[string]map[string]struct {
 	// The buylist names the promo shelf by its shooting-star mark, and
 	// the wording beside the card by the program that handed it out.
 	"流星マーク": {
+		"Cloud, Midgar Mercenary": {"統率者デッキプロモ": {Edition: "PMEI", Variant: "2025-21"}},
 		"Unstoppable Slasher": {
 			"ジャパンスタンダードカッププロモ": {Edition: "PJSC", Variant: "2026-2"},
 		},
@@ -1471,6 +1485,7 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 		"Command Tower": {
 			"フルアート コマンダーイベントプロモ": {Edition: "PW25", Variant: "17"},
+			"ボーダーレス その他プロモ":      {Edition: "PMEI", Variant: "2026-13"},
 		},
 		"Yuna, Grand Summoner": {
 			"ボーダーレス コマンダーボックスリーグプロモ": {Edition: "PW25", Variant: "16"},
@@ -1654,7 +1669,28 @@ var promoMap = map[string]map[string]map[string]struct {
 			},
 		},
 	},
+	"UST-P": {
+		"Earl of Squirrel": {"": {Edition: "PUST", Variant: "108"}},
+	},
+	"M15-P": {
+		"Aeronaut Tinkerer": {"PURL": {Edition: "PURL", Variant: "8"}},
+	},
+	"ARENA": {
+		"Plains":   {"ICE版アリーナFoilランド": {Edition: "PAL01", Variant: "7"}},
+		"Island":   {"ICE版アリーナFoilランド": {Edition: "PAL01", Variant: "3"}},
+		"Swamp":    {"ICE版アリーナFoilランド": {Edition: "PAL01", Variant: "9"}},
+		"Mountain": {"ICE版アリーナFoilランド": {Edition: "PAL01", Variant: "5"}},
+		"Forest":   {"ICE版アリーナFoilランド": {Edition: "PAL01", Variant: "1"}},
+	},
+	"Arena Foil Land": {
+		"Mountain": {"MMQ版": {Edition: "PAL00", Variant: "11"}},
+		"Forest":   {"ベータ版": {Edition: "PAL01", Variant: "11"}},
+	},
+	"USG": {
+		"Plains": {"アリーナFoilランド": {Edition: "PAL99", Variant: "7"}},
+	},
 	"Game Day Promos": {
+		"Niv-Mizzet, the Firemind": {"ゲームデー": {Edition: "PCMP", Variant: "2"}},
 		"Urza's Factory": {
 			"ゲームデー": {
 				Edition: "PCMP",
