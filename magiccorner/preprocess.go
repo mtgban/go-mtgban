@@ -255,7 +255,23 @@ func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.Inp
 // image name carries as its trailing number.
 var mcmImageIDRe = regexp.MustCompile(`[-_/](\d{5,7})(?:-\d+)?\.(?:jpe?g|png)$`)
 
-// imageProductID resolves an Extras/Promos image's Cardmarket product id to
+// scryfallImageRe matches the Scryfall id an image name ends with: the whole
+// uuid on older shelves, its first eight digits after the card's slug on newer
+// ones.
+var scryfallImageRe = regexp.MustCompile(`(?:^|_)([0-9a-f]{8}(?:-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?)$`)
+
+// scryfallImageID returns the Scryfall id, or its leading digits, an image
+// path ends with.
+func scryfallImageID(imagePath string) string {
+	base := strings.TrimSuffix(path.Base(imagePath), path.Ext(imagePath))
+	m := scryfallImageRe.FindStringSubmatch(base)
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
+
+// imageProductID resolves an image's Cardmarket product id or Scryfall id to
 // a uuid. It is accepted only when it names the listing's card, under the
 // wording's own language, and in the wording's set unless the wording failed -
 // this store also reuses one image across unrelated products.
@@ -271,7 +287,8 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	}
 
 	m := mcmImageIDRe.FindStringSubmatch(imagePath)
-	if m == nil {
+	scryfall := scryfallImageID(imagePath)
+	if m == nil && scryfall == "" {
 		return ""
 	}
 
@@ -287,7 +304,12 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	var hit *mtgmatcher.CardObject
 	for _, candidate := range ids {
 		co, err := b.GetUUID(candidate)
-		if err != nil || co.Identifiers["mcmId"] != m[1] {
+		if err != nil {
+			continue
+		}
+		byMCM := m != nil && co.Identifiers["mcmId"] == m[1]
+		byScryfall := scryfall != "" && strings.HasPrefix(co.Identifiers["scryfallId"], scryfall)
+		if !byMCM && !byScryfall {
 			continue
 		}
 		// SearchContains is a substring search: Plains also finds

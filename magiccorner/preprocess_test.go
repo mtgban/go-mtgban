@@ -277,6 +277,39 @@ func TestImageProductID(t *testing.T) {
 		}
 	})
 
+	t.Run("the Scryfall digits in the image name pick the treatment", func(t *testing.T) {
+		const name = "Aang, at the Crossroads // Aang, Destined Savior"
+		for image, number := range map[string]string{
+			"/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_fea89ca0.jpg": "203",
+			"/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_d7f35cd9.jpg": "346",
+			"/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_ea886239.jpg": "304",
+		} {
+			got := imageProductID(b, "Avatar: The Last Airbender", image, name, "Avatar: The Last Airbender", "", false)
+			co, err := b.GetUUID(got)
+			if err != nil || co.SetCode != "TLA" || co.Number != number {
+				t.Errorf("%s resolved to %v, want TLA %s", image, co, number)
+			}
+		}
+	})
+
+	t.Run("a whole Scryfall id names the printing", func(t *testing.T) {
+		got := imageProductID(b, "Ikoria: Lair of Behemoths", "/prodotti/1/IKO2/9c348494-f60c-4bd1-9077-bff24f2e634b.jpg",
+			"Forest", "Ikoria: Lair of Behemoths", "V.1", false)
+		co, err := b.GetUUID(got)
+		if err != nil || co.Identifiers["scryfallId"] != "9c348494-f60c-4bd1-9077-bff24f2e634b" {
+			t.Errorf("imageProductID resolved to %v, want the printing that Scryfall id names", co)
+		}
+	})
+
+	t.Run("a Scryfall id naming another card is refused", func(t *testing.T) {
+		got := imageProductID(b, "Avatar: The Last Airbender", "/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_d7f35cd9.jpg",
+			"Zuko, Conflicted", "Avatar: The Last Airbender", "", false)
+		if got != "" {
+			co, _ := b.GetUUID(got)
+			t.Errorf("imageProductID = %v, want \"\" - the id names Aang", co)
+		}
+	})
+
 	t.Run("a cross-set id is refused, deferring to the wording", func(t *testing.T) {
 		got := imageProductID(b, "Secret Lair Drop Series", "/x/ertai-resurrected_672617.jpg", "Ertai Resurrected", "Secret Lair Drop Series", "", false)
 		if got != "" {
