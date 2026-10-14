@@ -310,6 +310,16 @@ func TestImageProductID(t *testing.T) {
 		}
 	})
 
+	t.Run("an image in the wording set's promo set is accepted", func(t *testing.T) {
+		got := imageProductID(b, "Adventures in the Forgotten Realms: Promos",
+			"/prodotti/1/pafr/a-adventures-in-the-forgotten-realms-promos-treasure-vault-v3-574677.jpg",
+			"Treasure Vault", "Adventures in the Forgotten Realms", "Bundle", true)
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "PAFR" || co.Number != "261a" {
+			t.Errorf("imageProductID resolved to %v, want PAFR 261a", co)
+		}
+	})
+
 	t.Run("a cross-set id is refused, deferring to the wording", func(t *testing.T) {
 		got := imageProductID(b, "Secret Lair Drop Series", "/x/ertai-resurrected_672617.jpg", "Ertai Resurrected", "Secret Lair Drop Series", "", false)
 		if got != "" {

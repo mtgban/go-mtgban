@@ -348,14 +348,14 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	if wordingErr == nil {
 		co, err := b.GetUUID(wordingID)
 		if err == nil {
-			sameSet = co.SetCode == hit.SetCode
+			sameSet = inSetOrPromo(b, co.SetCode, hit.SetCode)
 		}
 	} else {
 		var alias *mtgmatcher.AliasingError
 		if errors.As(wordingErr, &alias) {
 			for _, probe := range alias.Probe() {
 				co, err := b.GetUUID(probe)
-				if err == nil && co.SetCode == hit.SetCode {
+				if err == nil && inSetOrPromo(b, co.SetCode, hit.SetCode) {
 					sameSet = true
 					break
 				}
@@ -381,6 +381,18 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 		return ""
 	}
 	return resolved
+}
+
+// inSetOrPromo reports whether the image's set is the wording's own, or the
+// promo set decorating it: the wording sends a promo shelf to the base set.
+// The other way round is not accepted, as the store shows one base image on a
+// promo listing that the wording had placed correctly.
+func inSetOrPromo(b *mtgmatcher.Backend, wordingSet, imageSet string) bool {
+	if wordingSet == imageSet {
+		return true
+	}
+	set, err := b.GetSet(imageSet)
+	return err == nil && set.Type == "promo" && set.ParentCode == wordingSet
 }
 
 // namesFrontFace reports whether name and cardName share a front face. The
