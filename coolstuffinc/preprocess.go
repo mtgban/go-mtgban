@@ -502,6 +502,13 @@ func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant str
 	if len(cards) != 1 {
 		return false
 	}
+	// The dagger copy shares the plain number's image, so a note the
+	// matcher reads as that copy decides between the two.
+	for _, card := range set.Cards {
+		if variant != "" && card.Number == number+"†" && (mtgmatcher.Equals(card.FaceName, cardName) || mtgmatcher.Equals(card.Name, cardName)) && noteLandsOn(b, cardName, setCode, variant, card.Number) {
+			return false
+		}
+	}
 	if !mtgmatcher.Contains(variant, "Extended Art") || isExtendedArt(cards[0]) {
 		return true
 	}
@@ -511,6 +518,20 @@ func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant str
 		}
 	}
 	return true
+}
+
+// noteLandsOn reports whether the listing's note, asked in this set, lands on
+// the given number.
+func noteLandsOn(b *mtgmatcher.Backend, cardName, setCode, variant, number string) bool {
+	cardID, err := b.Match(&mtgmatcher.InputCard{Name: cardName, Edition: setCode, Variation: variant})
+	if err != nil {
+		return false
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	return co.SetCode == setCode && co.Number == number
 }
 
 // isExtendedArt reports an extended art printing, by promo type or by frame.
