@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"strconv"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -63,6 +64,33 @@ func checkPromoLinks(t *testing.T, b *mtgmatcher.Backend, table map[int]int, lin
 	for mkmID := range table {
 		if !seen[mkmID] {
 			t.Errorf("table entry %d has no expected landing", mkmID)
+		}
+	}
+}
+
+// TestPokemonHoloLinks checks every pokemonHoloLinks entry lands on the
+// Holofoil printing of the TCGplayer product it names.
+func TestPokemonHoloLinks(t *testing.T) {
+	b := loadPokemonBackend(t)
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	holofoil := mtgmatcher.FinishSlug("Holofoil")
+	for mkmID, tcgID := range pokemonHoloLinks {
+		cardID, err := mkm.pokemonByID(&cm.Product{IDProduct: mkmID})
+		if err != nil {
+			t.Errorf("pokemonByID(%d) = %v", mkmID, err)
+			continue
+		}
+		co, err := b.GetUUID(cardID)
+		if err != nil {
+			t.Errorf("pokemonByID(%d) = %q, %v", mkmID, cardID, err)
+			continue
+		}
+		if co.Finish != holofoil || co.Identifiers["tcgplayerProductId"] != strconv.Itoa(tcgID) {
+			t.Errorf("product %d landed on %s (%s, tcgplayer %s), want the %s of %d",
+				mkmID, co.Name, co.Finish, co.Identifiers["tcgplayerProductId"], holofoil, tcgID)
 		}
 	}
 }
