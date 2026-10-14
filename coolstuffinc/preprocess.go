@@ -327,6 +327,10 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 		if input != nil {
 			return input, nil
 		}
+		input = imageLetterAfterName(b, cardName, edition, variant, imgName, isFoil)
+		if input != nil {
+			return input, nil
+		}
 		// A letter can stand between the set code and the number, marking
 		// the treatment: "TMCS0032" is the surge foil of TMC 32, where
 		// "TMC0093" is the pixel art one filed at its own number. Neither
@@ -593,6 +597,35 @@ func imageNumberAfterName(b *mtgmatcher.Backend, cardName, edition, variant, img
 		return nil
 	}
 	return imageCard(cardName, set.Code, num, variant, isFoil)
+}
+
+// imageLetterAfterName reads a stem that is the card's name and one letter
+// ("targetminotaurb") as the lettered number of that name in the shelf's own
+// set, when exactly one printing of the card carries that letter.
+func imageLetterAfterName(b *mtgmatcher.Backend, cardName, edition, variant, imgName string, isFoil bool) *mtgmatcher.InputCard {
+	name := stemLetters(cardName)
+	low := strings.ToLower(imgName)
+	if name == "" || len(low) != len(name)+1 || !strings.HasPrefix(low, name) {
+		return nil
+	}
+	letter := low[len(name):]
+	if letter < "b" || letter > "z" {
+		return nil
+	}
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return nil
+	}
+	var numbers []string
+	for _, card := range set.Cards {
+		if card.Number == leadingDigits(card.Number)+letter && (mtgmatcher.Equals(card.FaceName, cardName) || mtgmatcher.Equals(card.Name, cardName)) {
+			numbers = append(numbers, card.Number)
+		}
+	}
+	if len(numbers) != 1 {
+		return nil
+	}
+	return imageCard(cardName, set.Code, numbers[0], variant, isFoil)
 }
 
 // basicLandLetter matches a shelf-lettered basic land ("Island A",
