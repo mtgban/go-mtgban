@@ -477,11 +477,14 @@ func finishPrinted(b *mtgmatcher.Backend, cardID string, foil, etched bool) bool
 // against other skus as a substring, so MTG-WOE-199-WC5VKQJZA2 takes the
 // body, the price and the finish of MTG-MOC-103-QXUYX199FD, whose hash
 // happens to spell 199. The twin escapes because its own sku string does not
-// match, and that is what makes the pair worth comparing.
+// match, and that is what makes the pair worth comparing. The products whose
+// finish field is the only thing saying foil are held for the same reason,
+// and read against the price of their foil sibling.
 func (gn *Gamenerdz) release(mode string, state *crawlState) {
 	var dropped int
-	for _, product := range state.held {
-		if len(state.bodies[skuFamily(product)]) > 1 {
+	for _, held := range state.held {
+		product, ok := state.settle(held)
+		if !ok {
 			dropped++
 			continue
 		}
@@ -494,6 +497,21 @@ func (gn *Gamenerdz) release(mode string, state *crawlState) {
 	if dropped > 0 {
 		gn.printf("%s dropped %d products whose body belongs to another", mode, dropped)
 	}
+}
+
+// settle reads a held product against the rest of the crawl: it is not a
+// product at all where its body belongs to another one, and it is plain
+// where its finish field says foil but its price is not its foil sibling's.
+func (state *crawlState) settle(product GNProduct) (GNProduct, bool) {
+	family := skuFamily(product)
+	if len(state.bodies[family]) > 1 {
+		return product, false
+	}
+	price, found := state.foilPrices[family]
+	if doubtfulFoil(product) && found && price != product.Price {
+		product.SelectedFinish = "nonfoil"
+	}
+	return product, true
 }
 
 // crawlState is what one mode's passes accumulate together: the products any
@@ -511,6 +529,10 @@ type crawlState struct {
 	// same body. See release.
 	bodies map[string]map[string]bool
 	held   []GNProduct
+	// What a product's own foil sibling is priced at, by sku family. A
+	// product whose finish field alone says foil waits for it too: see
+	// doubtfulFoil.
+	foilPrices map[string]float64
 }
 
 func sorted(set map[string]bool) []string {
@@ -559,10 +581,11 @@ func (gn *Gamenerdz) scrape(ctx context.Context, mode string) error {
 	// crawl observed rather than where the window sat last measured, so
 	// the storefront resizing it resizes the crawl.
 	state := &crawlState{
-		seen:     map[string]bool{},
-		rarities: map[string]bool{},
-		finishes: map[string]bool{},
-		bodies:   map[string]map[string]bool{},
+		seen:       map[string]bool{},
+		rarities:   map[string]bool{},
+		finishes:   map[string]bool{},
+		bodies:     map[string]map[string]bool{},
+		foilPrices: map[string]float64{},
 	}
 	err := gn.widen(ctx, mode, map[string]string{}, gn.axes(), state)
 	if err != nil {
@@ -620,6 +643,26 @@ func (gn *Gamenerdz) widen(ctx context.Context, mode string, filters map[string]
 		}
 	}
 	return nil
+}
+
+// admit notes what a Magic product tells the crawl about the others, and
+// reports whether it has to wait until the crawl has been everywhere.
+func (gn *Gamenerdz) admit(product GNProduct, state *crawlState) bool {
+	if gn.backend.Game != mtgmatcher.GameMagic {
+		return false
+	}
+	family := skuFamily(product)
+	if family == "" {
+		return false
+	}
+	if state.bodies[family] == nil {
+		state.bodies[family] = map[string]bool{}
+	}
+	state.bodies[family][strings.ToLower(string(product.ProductData.Set))] = true
+	if skuMarker(product) == "F" {
+		state.foilPrices[family] = product.Price
+	}
+	return !bodyNamesOwnSet(product) || doubtfulFoil(product)
 }
 
 // crawl fetches every page of one ordering, optionally narrowed to a rarity,
@@ -680,18 +723,9 @@ func (gn *Gamenerdz) crawl(ctx context.Context, mode, sortDir string, filters ma
 			if product.SelectedFinish != "" {
 				state.finishes[product.SelectedFinish] = true
 			}
-			if gn.backend.Game == mtgmatcher.GameMagic {
-				family := skuFamily(product)
-				if family != "" {
-					if state.bodies[family] == nil {
-						state.bodies[family] = map[string]bool{}
-					}
-					state.bodies[family][strings.ToLower(string(product.ProductData.Set))] = true
-					if !bodyNamesOwnSet(product) {
-						state.held = append(state.held, product)
-						continue
-					}
-				}
+			if gn.admit(product, state) {
+				state.held = append(state.held, product)
+				continue
 			}
 			err := gn.processProduct(mode, product)
 			if err != nil {

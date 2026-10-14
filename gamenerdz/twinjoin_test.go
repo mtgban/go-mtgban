@@ -124,3 +124,38 @@ func TestReleaseHeldProducts(t *testing.T) {
 		t.Errorf("the Special Guest was priced %d times, want 1", chromeMox)
 	}
 }
+
+// A plain listing whose finish field alone says foil is plain where its price
+// is not its foil sibling's, and the sibling's duplicate where it is.
+func TestSettleFoilBySibling(t *testing.T) {
+	gn, err := NewScraper(realDatastore(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range []struct {
+		desc, set             string
+		plainSKU, foilSKU     string
+		display               string
+		plainPrice, foilPrice float64
+		want                  string
+	}{
+		{"priced as the plain card", "9ed", "MTG-9ED-289-AMGOSOAL3W", "MTG-9ED-289-F-AMGOSOAL3W", "Booby Trap (9ED-289) - 9th Edition", 0.48, 9.89, "nonfoil"},
+		{"a second listing of the foil", "8ed", "MTG-8ED-064-LZWABIF543", "MTG-8ED-064-F-LZWABIF543", "Bribery (8ED-064) - 8th Edition", 24.13, 24.13, "foil"},
+	} {
+		state := &crawlState{bodies: map[string]map[string]bool{}, foilPrices: map[string]float64{}}
+		foil := product(tt.foilSKU, tt.display+" Foil", tt.set)
+		foil.SelectedFinish, foil.Price = "foil", tt.foilPrice
+		plain := product(tt.plainSKU, tt.display, tt.set)
+		plain.SelectedFinish, plain.Price = "foil", tt.plainPrice
+		if gn.admit(foil, state) {
+			t.Errorf("%s: the foil listing should not wait", tt.desc)
+		}
+		if !gn.admit(plain, state) {
+			t.Errorf("%s: the plain listing should wait for its sibling", tt.desc)
+		}
+		settled, ok := state.settle(plain)
+		if !ok || settled.SelectedFinish != tt.want {
+			t.Errorf("%s: settled to %q (kept %v), want %q", tt.desc, settled.SelectedFinish, ok, tt.want)
+		}
+	}
+}
