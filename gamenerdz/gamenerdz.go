@@ -15,6 +15,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -262,6 +263,9 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 		cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
 		if err == nil && (mode == modeRetail || gn.namesCard(cardID, product.DisplayName, magicName(gn.backend, product.DisplayName))) {
+			if foil && mintedRipple(gn.backend, cardID, product.DisplayName) {
+				return "", nil
+			}
 			return cardID, nil
 		}
 	}
@@ -319,12 +323,28 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	if gn.backend.Game == mtgmatcher.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
 		return "", nil
 	}
+	if gn.backend.Game == mtgmatcher.GameMagic && foil && mintedRipple(gn.backend, cardID, product.DisplayName) {
+		return "", nil
+	}
 	// A "(N)" promo number names its printing without saying its finish, so
 	// a plain listing can land on a printing that was only ever made foil.
 	if gn.backend.Game == mtgmatcher.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
 		return "", nil
 	}
 	return cardID, nil
+}
+
+// mintedRipple reports a foil listing that landed the ripple foil star twin
+// of a number printed plain only, without the display naming the ripple. The
+// storefront mints a "-F-" sku beside every plain Modern Horizons 3 Commander
+// card, and the ripple foil it would stand for is listed under its own name.
+func mintedRipple(b *mtgmatcher.Backend, cardID, displayName string) bool {
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	return strings.HasSuffix(co.Number, "★") && co.HasPromoType(magic.PromoTypeRippleFoil) &&
+		!strings.Contains(strings.ToLower(displayName), "ripple")
 }
 
 // namesCard reports whether a printing is the card a display name writes: its
