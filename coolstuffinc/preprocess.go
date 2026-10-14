@@ -1266,6 +1266,16 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		variant = "Ampersand"
 	case "Promo":
 		variant = cleanVar
+		if cleanVar == "" {
+			// No notes: the number alone is the promo pack's, and the
+			// image names the set it belongs to.
+			stem := imageNumberStem(b, cardName, edition, num, card.Image)
+			retry := buylistImageNumber(b, cardName, num, isFoil, language, stem)
+			if retry != nil {
+				return retry, nil
+			}
+			variant = num
+		}
 		switch variant {
 		case "Ravnica Weekend Promo":
 			edition = variant
