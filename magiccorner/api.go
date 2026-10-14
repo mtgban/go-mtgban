@@ -140,6 +140,12 @@ func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEditio
 		return nil, nil
 	}
 
+	// The Final Fantasy one always answers HTTP 500, and the loader holds
+	// no art series card for any of them anyway
+	if strings.Contains(edition.Name, "Art Series") {
+		return nil, nil
+	}
+
 	// The last field before || is the language
 	// 0 - any language, 72 - english only
 	langCode := 0
