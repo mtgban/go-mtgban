@@ -490,6 +490,19 @@ func TestPreprocess(t *testing.T) {
 			},
 			err: true,
 		},
+		{
+			// A Secret Lair Commander deck numbers its cards by the deck's
+			// own index, so the deck's name places them in the List.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Fiery Gambit (PHED-022) - Heads I Win, Tails You Lose Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "phed", SetName: "Heads I Win, Tails You Lose"},
+			},
+			name:    "Fiery Gambit",
+			edition: "Secret Lair Commander: Heads I Win, Tails You Lose",
+			foil:    true,
+		},
 	}
 	for _, tt := range tests {
 		card, err := preprocess(b, tt.product, tt.game)
