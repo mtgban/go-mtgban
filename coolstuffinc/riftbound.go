@@ -67,6 +67,31 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 	return set.Name
 }
 
+// riftboundLetteredImage matches the lettered collector number an image sku
+// writes into its name, "041a" in "Riven041aPromoStamp".
+var riftboundLetteredImage = regexp.MustCompile(`[0-9]{3}[a-z](?:[A-Z_.]|$)`)
+
+// riftboundLetteredPromo answers the lettered number a promo listing with no
+// note is pictured by, when the promo shelf holds the card at that number.
+// The bare name lands on the Organized Play printing of the same card, which
+// sells for a fraction of the lettered one.
+func riftboundLetteredPromo(b *mtgmatcher.Backend, name, imgURL string, foil bool) string {
+	stem := imageStem.FindStringSubmatch(imgURL)
+	if stem == nil {
+		return ""
+	}
+	lettered := riftboundLetteredImage.FindString(stem[1])
+	if lettered == "" {
+		return ""
+	}
+	number := lettered[:4]
+	probe := &mtgmatcher.InputCard{Name: name, Edition: "Promo", Variation: number, Foil: foil}
+	if !riftboundLandsAt(b, probe, "PR", number) {
+		return ""
+	}
+	return number
+}
+
 // riftboundLandsAt reports whether a probe lands in set, and at number where
 // the listing names one, leading zeros and a set code before it aside.
 func riftboundLandsAt(b *mtgmatcher.Backend, probe *mtgmatcher.InputCard, set, number string) bool {

@@ -3,6 +3,8 @@ package coolstuffinc
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
@@ -108,5 +110,39 @@ func TestRiftboundImageCardRefusesWhatItCannotName(t *testing.T) {
 				t.Errorf("riftboundImageCard(%q) = %v, want none", tt.img, card)
 			}
 		})
+	}
+}
+
+// TestRiftboundLetteredPromo pins the lettered number a promo listing with no
+// note is pictured by: Riven's stamped promo is PR 41a, not the Organized Play
+// card its bare name reaches, and a letter the promo shelf does not hold at
+// that number, or an image naming no letter, answers nothing.
+func TestRiftboundLetteredPromo(t *testing.T) {
+	b := readGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
+
+	const base = "https://res.cloudinary.com/csicdn/image/upload/" +
+		"c_pad,fl_lossy,h_186,q_auto,w_186/v1/Images/Products/Misc%20Art/Promo/full/"
+
+	for _, tt := range []struct {
+		name, img, wantID string
+	}{
+		{"Riven - Shattered", "Riven041aPromoStamp.jpg", "pr-710699_foil"},
+		{"Jinx - Rebel", "JinxRebel202bArcane.jpg", ""},
+		{"Lillia - Protector of Dreams", "Lillia058OPP.jpg", ""},
+	} {
+		number := riftboundLetteredPromo(b, tt.name, base+tt.img, true)
+		if tt.wantID == "" {
+			if number != "" {
+				t.Errorf("riftboundLetteredPromo(%q) = %q, want none", tt.img, number)
+			}
+			continue
+		}
+		id, err := b.Match(&mtgmatcher.InputCard{Name: tt.name, Edition: "Promo", Variation: number, Foil: true})
+		if err != nil {
+			t.Fatalf("Match(%s, %q) = %v", tt.name, number, err)
+		}
+		if id != tt.wantID {
+			t.Errorf("%s pictured by %s landed on %s, want %s", tt.name, tt.img, id, tt.wantID)
+		}
 	}
 }
