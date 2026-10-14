@@ -185,6 +185,10 @@ func TestPreprocessPromoShelves(t *testing.T) {
 			"Secret Lair Commander Deck: Odds and Ends", "Doom Whisperer", "", "128", "", 999999999, "", ""},
 		{"an overridden TCGplayer id outranks a Scryfall id naming another card", 155490, CategoryMagicSingles,
 			"Strixhaven: School of Mages Promos", "Nicol Bolas, God-Pharaoh", "", "140", "256ff8d2-0f0d-4717-a58f-ce3be1d6340c", 0, "PHOU", "140p"},
+		{"a Welcome Deck 2024 reprint whose id resolves lands on it", 331110, CategoryMagicSingles,
+			"Welcome Deck 2024", "Charmed Sleep", "", "040", "9aba5b08-ba40-4c67-bf0d-dedbef0af1cc", 0, "PLST", "ELD-40"},
+		{"a Welcome Deck 2024 reprint whose id resolves nowhere is skipped", 331102, CategoryMagicSingles,
+			"Welcome Deck 2024", "Serra Angel", "", "025", "b804473a-0dc6-473a-89c2-0b35ef6856de", 0, "", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {

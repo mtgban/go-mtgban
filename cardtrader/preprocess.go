@@ -358,6 +358,10 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	case "Commander Legends: Commander Decks":
 		edition = "Commander Legends"
 		variant = number
+	// Every blueprint here with no resolving id is a reprint Scryfall
+	// deleted as never printed.
+	case "Welcome Deck 2024":
+		return nil, errors.New("pass")
 	case "Arabian Nights":
 		if strings.HasSuffix(number, "b") {
 			variant = "light"
