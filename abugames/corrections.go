@@ -26,8 +26,11 @@ var listingCorrections = map[string]struct {
 	// The numbers are swapped between the nonfoil and FOIL products; only
 	// the TCGplayer id names the nonfoil 820, the Scryfall id is the 820★.
 	"8037997": {title: "Arcane Signet (Secret Lair Sketch 820)", edition: "Secret Lair Drop", number: "820★", correctedNumber: "820"},
-	// The title's parenthetical is a typo for the halofoil card_number.
+	// The title's parenthetical is a typo for the card_number.
 	"7895279": {title: "Harnessed Snubhorn (HALO 168) - FOIL", edition: "March of the Machine: The Aftermath", number: "188", correctedTitle: "Harnessed Snubhorn (HALO 188) - FOIL"},
+	"8054274": {title: "Searslicer Goblin (Borderless Mana 393) - FOIL", edition: "Foundations", number: "394", correctedTitle: "Searslicer Goblin (Borderless Mana 394) - FOIL"},
+	"8147346": {title: "Island (346 Surge) - FOIL", edition: "Marvel Super Heroes", number: "436", correctedTitle: "Island (436 Surge) - FOIL"},
+	"7966260": {title: "Missy (Surge 614) - FOIL", edition: "Doctor Who", number: "613", correctedTitle: "Missy (Surge 613) - FOIL"},
 	// The listings misspell the flavor name, or splice the finish into it.
 	"8100899": {title: "Chancla relampagos | Lightning Greaves (Secret Lair)", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair)"},
 	"8100901": {title: "Chancla relampagos | Lightning Greaves (Secret Lair) - FOIL", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair) - FOIL"},
@@ -36,6 +39,16 @@ var listingCorrections = map[string]struct {
 	"162808": {title: "Reya Dawnbringer (Prerelease) - FOIL", edition: "Tenth Edition Promos", number: "35", correctedTitle: "Reya Dawnbringer (Release) - FOIL"},
 	"206639": {title: "Reya Dawnbringer (Prerelease) - FOIL", edition: "Tenth Edition Promos", number: "35", correctedTitle: "Reya Dawnbringer (Release) - FOIL"},
 	"206640": {title: "Reya Dawnbringer (Prerelease) - FOIL", edition: "Tenth Edition Promos", number: "35", correctedTitle: "Reya Dawnbringer (Release) - FOIL"},
+	// The number or shelf is a typo; both ids name the printing the
+	// corrected number and edition below describe.
+	"8091744": {title: "Traveling Chocobo (Neon Ink Yellow) - FOIL", edition: "Final Fantasy", number: "511a", correctedNumber: "551a"},
+	"8091746": {title: "Traveling Chocobo (Neon Ink Pink) - FOIL", edition: "Final Fantasy", number: "511b", correctedNumber: "551b"},
+	"8091748": {title: "Traveling Chocobo (Neon Ink Blue) - FOIL", edition: "Final Fantasy", number: "511c", correctedNumber: "551c"},
+	"8091750": {title: "Traveling Chocobo (Neon Ink Green) - FOIL", edition: "Final Fantasy", number: "511d", correctedNumber: "551d"},
+	"8129394": {title: "Mox Jasper (Retro Frame Serial Numbered) - FOIL", edition: "Tarkir: Dragonstorm", number: "325", correctedNumber: "419"},
+	"8129659": {title: "Birds of Paradise (Retro Frame Serial Numbered) - FOIL", edition: "Dominaria Remastered", number: "336z", correctedEdition: "Ravnica Remastered", correctedNumber: "344z"},
+	"8130042": {title: "Lord of the Pit (Secret Lair Serial Numbered)", edition: "Secret Lair Drop", number: "893z", correctedNumber: "715"},
+	"8111157": {title: "Gandalf, Friend of the Shire (Play) - FOIL", edition: "The Lord of the Rings: Tales of Middle-earth", number: "1", correctedEdition: "MagicFest 2023"},
 }
 
 func correctListing(card ABUCard) ABUCard {
