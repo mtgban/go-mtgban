@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -46,6 +47,9 @@ type responseChan struct {
 	// not carry, which the run reports as its own figure: they are shelves
 	// nobody can act on, where the rest of the refusals are work.
 	foreign int
+	// unpriced lists the products that resolved but had no guide row yet,
+	// which are no refusal: the guide trails the product list by a day.
+	unpriced []int
 }
 
 // namedLast holds back the prices whose printing was named until every
@@ -85,6 +89,8 @@ type namedLast struct {
 	walked  int
 	refused int
 	foreign int
+	// unpriced gathers the editions' products the guide does not price yet.
+	unpriced []int
 }
 
 // collect takes one result, holding it back or counting it into the run's
@@ -98,6 +104,7 @@ func (n *namedLast) collect(result responseChan) {
 		n.walked += result.walked
 		n.refused += result.refused
 		n.foreign += result.foreign
+		n.unpriced = append(n.unpriced, result.unpriced...)
 		return
 	}
 	n.results = append(n.results, result)
@@ -424,6 +431,9 @@ func foreignExpansion(gameID cm.Game, exp cm.Expansion) bool {
 	return false
 }
 
+// errNoGuide marks a resolved product the price guide has no row for yet.
+var errNoGuide = errors.New("not in the price guide")
+
 // emitPrices lands a product's guide prices on the printings resolved for
 // it, the plain columns on one and the foil columns on the other, in the
 // games that split them.
@@ -431,7 +441,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// Look for the price presence
 	guide, found := mkm.priceGuide[product.IDProduct]
 	if !found {
-		return fmt.Errorf("IdProduct %d not found in cm.PriceGuide", product.IDProduct)
+		return errNoGuide
 	}
 
 	// Sorted as availableIndexNames
@@ -638,7 +648,8 @@ func (mkm *Index) Load(ctx context.Context) error {
 		return err
 	}
 	// An empty guide is a download that went wrong, not a day with no
-	// prices, and walking the catalog against it logs one miss per product.
+	// prices, and walking the catalog against it reports every product as
+	// merely not priced yet.
 	if len(priceGuide) == 0 {
 		return errors.New("empty price guide")
 	}
@@ -693,6 +704,10 @@ func (mkm *Index) collectPrices(ctx context.Context, items []cm.Expansion, worke
 	}
 	if collector.clashes > 0 {
 		mkm.printf("%d prices gave way to another product already pricing the printing", collector.clashes)
+	}
+	if len(collector.unpriced) > 0 {
+		slices.Sort(collector.unpriced)
+		mkm.printf("%d product(s) not in the price guide yet: %v", len(collector.unpriced), collector.unpriced)
 	}
 	return collector.walked, collector.refused, collector.foreign
 }
