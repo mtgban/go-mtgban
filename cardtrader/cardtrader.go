@@ -277,6 +277,9 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 	}
 
+	// Listings of one blueprint mostly fail alike, so each distinct refusal
+	// is logged once.
+	refusals := map[string]bool{}
 	for _, product := range products {
 		switch {
 		case product.Quantity < 1,
@@ -432,6 +435,10 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 						continue
 					}
 				}
+				if refusals[err.Error()] {
+					continue
+				}
+				refusals[err.Error()] = true
 				ct.printf("%v", err)
 				ct.printf("%q", theCard)
 				ct.printf("%d %+v", bpID, blueprint)
