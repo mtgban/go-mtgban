@@ -57,6 +57,54 @@ func pokemonNonHoloShelf(b *mtgmatcher.Backend, name, numbered string, foil bool
 	return ""
 }
 
+// pokemonHolo matches the bracket a Pokemon name states a holo printing
+// with where the card's own set prints it plain, or in reverse holo only.
+var pokemonHolo = regexp.MustCompile(`(?i)\s*\((?:Alt Art )?Holo(?: Promo)?\)`)
+
+// pokemonHoloShelves are the catalog shelves that hold the holofoil of such
+// a card, each with the set code the probe has to land on to be trusted.
+var pokemonHoloShelves = []struct{ edition, set string }{
+	{"Alternate Art Promos", "PR-1938"},
+	{"Deck Exclusives", "PR-1840"},
+	{"League & Championship Cards", "PR-1539"},
+}
+
+// pokemonHoloShelf answers a listing named by a holo bracket as the holofoil
+// its own set holds at the number, else as the one the catalog files on one of
+// pokemonHoloShelves, and leaves it as it is where neither does.
+func pokemonHoloShelf(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) *mtgmatcher.InputCard {
+	head, numbered := numberedListing(card.Name)
+	if !pokemonHolo.MatchString(head) && !pokemonHolo.MatchString(numbered) {
+		return card
+	}
+	num := strings.TrimLeft(mtgmatcher.ExtractNumber(numbered), "0")
+	if num == "" {
+		return card
+	}
+	probe := *card
+	probe.Name = strings.TrimSpace(pokemonHolo.ReplaceAllString(head, "")) + " - " + strings.TrimSpace(pokemonHolo.ReplaceAllString(numbered, ""))
+	probe.Foil = true
+	plain := *card
+	plainID, err := b.Match(&plain)
+	if err == nil {
+		own, err := b.GetUUID(plainID)
+		if err == nil {
+			co := pokemonLandsAt(b, probe, own.SetCode, num)
+			if co != nil && co.Finish == "holofoil" {
+				return &probe
+			}
+		}
+	}
+	for _, shelf := range pokemonHoloShelves {
+		probe.Edition = shelf.edition
+		co := pokemonLandsAt(b, probe, shelf.set, num)
+		if co != nil && co.Finish == "holofoil" {
+			return &probe
+		}
+	}
+	return card
+}
+
 // pokemonLandsAt matches a copy of a probe and answers the printing it lands
 // on, or nil unless that is set's own at num, leading zeros aside.
 func pokemonLandsAt(b *mtgmatcher.Backend, probe mtgmatcher.InputCard, set, num string) *mtgmatcher.CardObject {
@@ -374,7 +422,7 @@ func pokemonBuylistCard(b *mtgmatcher.Backend, product CSIPriceEntry) (*mtgmatch
 	shelf, run := firstEditionShelf(product.ItemSet)
 	shelf = pokemonPromoShelf(b, product.Name, shelf, product.RarityName, product.IsFoil == 1, variation)
 	card := pokemonListing(b, product.Name, shelf, variation, product.IsFoil == 1)
-	return pokemonCosmosHolo(b, card, product.RarityName), run
+	return pokemonHoloShelf(b, pokemonCosmosHolo(b, card, product.RarityName)), run
 }
 
 // pokemonNumberSets are the sets a number's prefix names outright.
