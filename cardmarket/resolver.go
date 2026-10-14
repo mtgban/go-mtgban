@@ -691,6 +691,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// One Piece is the catalog that files one card onto shelf after
 		// shelf; see offShelf.
 		if r.gameID == cm.GameOnePiece && r.offShelf(product, cardID) {
+			if r.onePieceDeckReprint(product) {
+				return "", "", false, errTwin
+			}
 			return "", "", false, errNoPrinting
 		}
 		// A pre-errata printing the datastore records under a sibling
