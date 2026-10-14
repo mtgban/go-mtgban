@@ -180,5 +180,6 @@ func (tcg *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.NoQuantityInventory = true
 	info.SealedMode = true
+	info.Game = tcg.backend.Game
 	return
 }

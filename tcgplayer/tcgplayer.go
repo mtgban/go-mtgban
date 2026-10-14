@@ -586,5 +586,6 @@ func (tcg *Market) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.BuylistTimestamp = &tcg.buylistDate
 	info.NoQuantityInventory = true
+	info.Game = tcg.backend.Game
 	return
 }
