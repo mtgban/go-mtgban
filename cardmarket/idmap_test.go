@@ -1,8 +1,11 @@
 package cardmarket
 
 import (
+	"context"
+	"fmt"
 	"maps"
 	"os"
+	"strings"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -215,5 +218,56 @@ func TestMergeList(t *testing.T) {
 	}
 	if !maps.EqualFunc(got, want, same) {
 		t.Errorf("mergeList = %v, want %v", got, want)
+	}
+}
+
+// TestUnpricedSummary pins that a product the guide has no row for yet is
+// no refusal: of two products that resolve by their ids, the one the guide
+// prices is added and the other is named once, in a summary line, instead of
+// once each as an error.
+func TestUnpricedSummary(t *testing.T) {
+	b := loadCatalogDatastore(t)
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	var lines []string
+	mkm.logCallback = func(format string, a ...any) { lines = append(lines, fmt.Sprintf(format, a...)) }
+	mkm.exchangeRate = 1
+	mkm.maxConcurrency = 1
+	mkm.catalog = &cm.Catalog{}
+	mkm.catalog.Data.Expansions = map[int]cm.CatalogExpansion{1: {Name: "Visions", Code: "VIS"}}
+	mkm.priceGuide = map[int]cm.PriceGuide{14866: {IDProduct: 14866, LowPrice: 1, TrendPrice: 1}}
+	products := map[int]cm.CatalogProduct{
+		14866:  {ExpansionID: 1, Name: "Laughing Hyena", Number: "103"},
+		398679: {ExpansionID: 1, Name: "Order of Midnight // Alter Fate", Number: "99"},
+	}
+
+	err = mkm.priceProducts(context.Background(), products)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var pending int
+	var refusedZero bool
+	for _, line := range lines {
+		if strings.Contains(line, "returned") || strings.Contains(line, "PriceGuide") {
+			t.Errorf("unpriced product reported as an error: %q", line)
+		}
+		if strings.Contains(line, "Walked 2 products, 0 of which") {
+			refusedZero = true
+		}
+		if strings.Contains(line, "not in the price guide yet") && strings.Contains(line, "398679") {
+			pending++
+		}
+	}
+	if pending != 1 {
+		t.Errorf("got %d summary lines in %q, want 1", pending, lines)
+	}
+	if !refusedZero {
+		t.Errorf("the unpriced product counted as refused: %q", lines)
+	}
+	if len(mkm.inventory) != 1 {
+		t.Errorf("priced %d printings, want the one product the guide lists", len(mkm.inventory))
 	}
 }

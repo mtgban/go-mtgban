@@ -162,6 +162,7 @@ func (mkm *Index) priceProducts(ctx context.Context, products map[int]cm.Catalog
 			var refused []string
 			named := map[string]int{}
 			var twins, foreign, refusals, matchErrs int
+			var unpriced []int
 			for i := range results {
 				r := &results[i]
 				id, mapped := r.product.IDProduct, products[r.product.IDProduct]
@@ -174,6 +175,8 @@ func (mkm *Index) priceProducts(ctx context.Context, products map[int]cm.Catalog
 					twins++
 				case errors.Is(err, errForeign):
 					foreign++
+				case errors.Is(err, errNoGuide):
+					unpriced = append(unpriced, id)
 				case errors.Is(err, errNoPrinting):
 					refusals++
 					key := fmt.Sprintf("%q (%s) in %s", mkm.refusalName(mapped.Name), mapped.Number, exp.Name)
@@ -190,7 +193,7 @@ func (mkm *Index) priceProducts(ctx context.Context, products map[int]cm.Catalog
 			}
 
 			mkm.reportRefused(exp.Name, len(ids), refused, twins, foreign)
-			channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign + matchErrs, foreign: foreign}
+			channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign + matchErrs, foreign: foreign, unpriced: unpriced}
 			return nil
 		})
 
