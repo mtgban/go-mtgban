@@ -420,6 +420,8 @@ func TestPreprocessPokemon(t *testing.T) {
 		{"Altaria TG11/TG30  - Holofoil SWSH12 Silver Tempest Trainer Gallery - Ultra Rare", "Holofoil", "Altaria", "TG11/TG30", "Holofoil"},
 		{"Aether Foundation Employee SV81/SV94  - Holofoil Hidden Fates Shiny Vault - Shiny Holo Rare", "Holofoil", "Aether Foundation Employee", "SV81/SV94", "Holofoil"},
 		{"Absol GG16/GG70  - Holofoil Crown Zenith Galarian Gallery - Ultra Rare", "Holofoil", "Absol", "GG16/GG70", "Holofoil"},
+		// The catalog words the store label as one name.
+		{"Yveltal (Game Stop) 088  - Holofoil Miscellaneous Cards & Products - Rare", "Holofoil", "Yveltal (GameStop Exclusive)", "088", "Holofoil"},
 	} {
 		card, err := preprocessPokemon(VSProduct{
 			DisplayName:    tt.display,
