@@ -555,6 +555,27 @@ func TestPreprocess(t *testing.T) {
 			variation: "233",
 			foil:      true,
 		},
+		{
+			// The storefront's typo for the manga label.
+			game: mtgmatcher.GameOnePiece,
+			product: GNProduct{
+				DisplayName:    "Buggy (051) (Paralle) (OP09-051) Emperors in the New World Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{SetName: "Emperors in the New World"},
+			},
+			name: "Buggy (051) (Manga)", edition: "Emperors in the New World",
+			variation: "OP09-051", foil: true,
+		},
+		{
+			// A DON!! card's finishing place is bracketed, not parenthesized.
+			game: mtgmatcher.GameOnePiece,
+			product: GNProduct{
+				DisplayName: "DON!! Card (Tournament Pack Vol. 2) [Winner]  One Piece Promotion Cards",
+				ProductData: GNProductData{SetName: "One Piece Promotion Cards"},
+			},
+			name: "DON!! Card", edition: "One Piece Promotion Cards",
+			variation: "Tournament Pack Vol. 2 Winner",
+		},
 	}
 	for _, tt := range tests {
 		card, err := preprocess(b, tt.product, tt.game)

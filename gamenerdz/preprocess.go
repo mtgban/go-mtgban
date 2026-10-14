@@ -1053,6 +1053,7 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 var onePieceRelabels = []struct{ code, shelf, from, to string }{
 	{"OP09-004", "Emperors in the New World", "(Parallel)", "(Manga)"},
 	{"OP09-093", "Emperors in the New World", "(Parallel)", "(Manga)"},
+	{"OP09-051", "Emperors in the New World", "(Paralle)", "(Manga)"},
 	{"OP09-119", "Emperors in the New World", "(Parallel)", "(Manga)"},
 	{"OP06-007", "Premium Booster -The Best- Vol. 2", "(Alternate Art)", "(SP)"},
 }
@@ -1101,6 +1102,7 @@ var onePieceDonWording = regexp.MustCompile(`\(([^)]*)\)`)
 // Compass"), which the catalog names literally and this keeps whole.
 func preprocessOnePieceDon(product GNProduct) *mtgmatcher.InputCard {
 	head, _, _ := strings.Cut(product.DisplayName, "  ")
+	head = squareDecorations.Replace(head)
 
 	if strings.Contains(head, " // ") {
 		return &mtgmatcher.InputCard{
