@@ -1,6 +1,7 @@
 package manaleak
 
 import (
+	"errors"
 	"os"
 	"sync"
 	"testing"
@@ -84,6 +85,120 @@ func TestMatchAmbiguousID(t *testing.T) {
 					co.SetCode, co.Number, co.Finish, tc.set, tc.number, tc.finish)
 			}
 		})
+	}
+}
+
+// TestMatchProductPage pins rows whose listing image names no card, read off
+// their product page: an id behind a set code, a bare id in either id space,
+// the Promos shelf, where only a collector number picks the printing, and a
+// set's own promo shelf, where the promo printing is the one that counts.
+func TestMatchProductPage(t *testing.T) {
+	b := realDatastore(t)
+	ml := NewScraper(b)
+
+	tests := []struct {
+		name     string
+		category string
+		code     string
+		product  MLProduct
+		set      string
+		number   string
+		finish   string
+	}{
+		{
+			name: "TCGplayer id behind a set code", category: "The List",
+			code: "mtgTLP269131", product: MLProduct{Name: "Elspeth, Undaunted Hero"},
+			set: "PLST", number: "THB-270", finish: "nonfoil",
+		},
+		{
+			name: "bare multiverse id", category: "Battle for Zendikar",
+			code: "mtg401991", product: MLProduct{Name: "Plains (252) - Full Art"},
+			set: "BFZ", number: "252", finish: "nonfoil",
+		},
+		{
+			name: "collector number on the Promos shelf", category: "Promos",
+			code: "mtgGRC_12-f", product: MLProduct{Name: "Dauntless Dourbark - Foil"},
+			set: "DCI", number: "12", finish: "foil",
+		},
+		{
+			name: "intro pack promo of a set", category: "Khans of Tarkir",
+			code: "mtgMBP_93-f", product: MLProduct{Name: "Ankle Shanker - Intro Pack Foil"},
+			set: "PKTK", number: "164", finish: "foil",
+		},
+		{
+			name: "box promo spelling", category: "Zendikar",
+			code: "mtgMBP_22-f", product: MLProduct{Name: "Day Of Judgment - Box Promo Foil"},
+			set: "PZEN", number: "9★", finish: "foil",
+		},
+		{
+			name: "storefront index on the Promos shelf", category: "Promos",
+			code: "mtgFNMP_122-f", product: MLProduct{Name: "Anathemancer - Foil"},
+			set: "F10", number: "7", finish: "foil",
+		},
+		{
+			name: "player rewards index, nonfoil", category: "Promos",
+			code: "mtgMPRP_39", product: MLProduct{Name: "Terminate"},
+			set: "P09", number: "9", finish: "nonfoil",
+		},
+		{
+			name: "generic promo name on the prerelease shelf", category: "Zendikar",
+			code: "mtgPTC_42-f", product: MLProduct{Name: "Rampaging Baloths - Promo Foil"},
+			set: "PZEN", number: "178★", finish: "foil",
+		},
+		{
+			name: "duels promo filed under its set's core category", category: "Magic 2014 Core Set",
+			code: "mtgMBP_68-f", product: MLProduct{Name: "Bonescythe Sliver - Promo Foil"},
+			set: "PDP14", number: "1", finish: "foil",
+		},
+		{
+			name: "card with a single promo printing on the Promos shelf", category: "Promos",
+			code: "mtgMBP_7", product: MLProduct{Name: "Windseeker Centaur"},
+			set: "PHPR", number: "3", finish: "nonfoil",
+		},
+		{
+			name: "release shelf row named prerelease", category: "Magic 2011",
+			code: "mtgMLP_11-f", product: MLProduct{Name: "Ancient Hellkite - Prerelease Promo Foil"},
+			set: "PM11", number: "122★", finish: "foil",
+		},
+		{
+			name: "promo shelf id naming the promo", category: "Aether Revolt",
+			code: "mtgMBP125841-f", product: MLProduct{Name: "Scrap Trawler - Buy a Box Promo Foil"},
+			set: "PAER", number: "175", finish: "foil",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.product.readPage(tc.category, tc.code)
+			id, err := ml.match(tc.product)
+			if err != nil {
+				t.Fatal(err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != tc.set || co.Number != tc.number || co.Finish != tc.finish {
+				t.Errorf("landed on %s %s %s, want %s %s %s",
+					co.SetCode, co.Number, co.Finish, tc.set, tc.number, tc.finish)
+			}
+		})
+	}
+
+	// Rows no printing is provable for stay unpriced: FNM promos of one card
+	// in two years, and a card whose lone answer from the matcher is not the
+	// printing the shelf and number name.
+	for _, tc := range []struct {
+		name, category, code string
+	}{
+		{"Goblin Warchief - Foil", "Promos", "mtgFNMP_72-f"},
+		{"Niv-Mizzet, The Firemind - Foil", "Promos", "mtgCP_2-f"},
+	} {
+		product := MLProduct{Name: tc.name}
+		product.readPage(tc.category, tc.code)
+		_, err := ml.match(product)
+		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			t.Errorf("%s: an unprovable promo row answered %v, want ErrUnsupported", tc.name, err)
+		}
 	}
 }
 
