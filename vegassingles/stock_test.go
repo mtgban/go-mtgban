@@ -167,10 +167,9 @@ func ahriFoil() VSProduct {
 	}
 }
 
-// TestRiftboundStock runs the guard against a game whose shelf this scraper
-// actually publishes. The Magic cases above cover the same code, but Magic is
-// a target for its buylist alone, so a run that only had those was a run
-// proving nothing about any shelf that ships.
+// TestRiftboundStock runs the stock guard on a non-Magic listing with two
+// grades stocked and one only priced, and checks that Riftbound's NM-only
+// buylist grading leaves the shelf alone.
 func TestRiftboundStock(t *testing.T) {
 	b := withRiftbound(t)
 

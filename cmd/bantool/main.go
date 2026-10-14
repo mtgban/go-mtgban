@@ -205,9 +205,6 @@ func targets() map[mtgmatcher.Game]map[string]*scraperOption {
 		all[game] = scrapers
 	}
 
-	// The store keeps no Magic singles shelf - not one variant in 960 sampled
-	// had stock - so only the half it does answer for is asked here.
-	all[mtgmatcher.GameMagic]["vegassingles"].OnlyVendor = true
 	all[mtgmatcher.GameMagic]["mtgseattle"].OnlySeller = true
 	all[mtgmatcher.GameYuGiOh]["coolstuffinc_sealed"].OnlySeller = true
 	all[mtgmatcher.GameLorcana]["coolstuffinc_sealed"].OnlySeller = true
