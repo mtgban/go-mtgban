@@ -95,30 +95,48 @@ func TestPrereleaseWildcardEscape(t *testing.T) {
 
 // TestForeignListing pins the listings priced in a language the catalog never
 // printed the card in. The match falls back on the English printing, so the
-// storefront's Italian and Japanese prices land beside its English one.
+// storefront's Italian and Japanese prices land beside its English one. A
+// listing whose ids all name its own-language printing in the finish it asks
+// for is kept on that printing instead.
 func TestForeignListing(t *testing.T) {
 	b := realDatastore(t)
 	for _, test := range []struct {
-		desc string
-		card ABUCard
-		want error
+		desc   string
+		card   ABUCard
+		want   error
+		wantID string
 	}{
 		{"an Italian printing this set never had", ABUCard{
 			DisplayTitle: "Elvish Piper - FOIL", Edition: "9th Edition", Number: "239",
-			Title: "Non-English - Italian", Language: []string{"Italian"}}, errForeignListing},
+			Title: "Non-English - Italian", Language: []string{"Italian"}}, errForeignListing, ""},
+		{"ids naming the English printing leave it foreign", ABUCard{
+			DisplayTitle: "Elvish Piper", Edition: "9th Edition", Number: "239",
+			Title: "Non-English - Italian", Language: []string{"Italian"},
+			ScryfallIDs: []string{"cb459fb2-b0d3-4be9-99cb-fcff4518abc2"}, TCGplayerIDs: []int64{12635}}, errForeignListing, ""},
 		{"a Japanese one it never had either", ABUCard{
 			DisplayTitle: "Elvish Piper - FOIL", Edition: "9th Edition", Number: "239",
-			Title: "Non-English - Japanese", Language: []string{"Japanese"}}, errForeignListing},
+			Title: "Non-English - Japanese", Language: []string{"Japanese"}}, errForeignListing, ""},
 		{"a set that does hold the Japanese printing is kept", ABUCard{
 			DisplayTitle: "Urza's Mine (d Tower)", Edition: "Chronicles", Number: "114d",
-			Title: "Non-English - Japanese", Language: []string{"Japanese"}}, nil},
+			Title: "Non-English - Japanese", Language: []string{"Japanese"}}, nil, ""},
+		{"ids naming the listing's own Japanese printing are kept", ABUCard{
+			DisplayTitle: "Flusterstorm (JP Alternate Art 73)", Edition: "Secrets of Strixhaven Mystical Archive",
+			Number: "83", Title: "Non-English - Japanese", Language: []string{"Japanese"},
+			ScryfallIDs: []string{"9df19f7c-2922-4d71-999a-818ae69045c3"}, TCGplayerIDs: []int64{690170}}, nil,
+			"96d8a2e9-2bde-55ec-9487-2f218779b589"},
+		{"the same ids on a finish that printing was never sold in stay foreign", ABUCard{
+			DisplayTitle: "Flusterstorm (JP Alternate Art 73) - FOIL", Edition: "Secrets of Strixhaven Mystical Archive",
+			Number: "83", Title: "Non-English - Japanese", Language: []string{"Japanese"},
+			ScryfallIDs: []string{"9df19f7c-2922-4d71-999a-818ae69045c3"}}, errForeignListing, ""},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := test.card
-			_, err := preprocess(b, &card)
+			in, err := preprocess(b, &card)
 			if test.want == nil {
 				if err != nil {
 					t.Errorf("preprocess(%q) = %v, want no error", card.DisplayTitle, err)
+				} else if test.wantID != "" && in.ID != test.wantID {
+					t.Errorf("preprocess(%q) = %s, want %s", card.DisplayTitle, in.ID, test.wantID)
 				}
 				return
 			}

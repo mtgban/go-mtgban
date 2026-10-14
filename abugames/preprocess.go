@@ -1057,7 +1057,11 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	if lang != "" && lang != "English" {
 		printing := resolved(b, cardName, edition, variation, lang, isFoil)
 		if printing == nil || printing.Language != lang {
-			return nil, errForeignListing
+			identified := foreignIdentified(b, card, cardName, lang, isFoil)
+			if identified == nil {
+				return nil, errForeignListing
+			}
+			return identified, nil
 		}
 	} else if lang == "English" && onlyForeignPrinting(b, cardName, edition, card.Number) {
 		lang = ""
