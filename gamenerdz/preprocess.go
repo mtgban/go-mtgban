@@ -102,6 +102,37 @@ func bodyNamesOwnSet(product GNProduct) bool {
 // bracket before their code, "Eddie Brock (0233) (Borderless) (SPM-224)".
 var magicBareNumber = regexp.MustCompile(`\((0\d{3})\)`)
 
+// magicBodyTag is the set a display name's tag leads with when the tag names
+// the body: "(SPE, MAR-005)" is a Marvel card whose body is Spider-Man
+// Eternal's.
+var magicBodyTag = regexp.MustCompile(`\(([0-9A-Z]{2,6}), [0-9A-Z&]{2,6}-`)
+
+// foreignBody reports whether a product's body is a real set that neither the
+// display's code, its leading body tag nor a List origin names, while the code
+// names a known set: the body then belongs to another product. A body on one
+// of the storefront's own shelves never qualifies.
+func foreignBody(b *mtgmatcher.Backend, product GNProduct) bool {
+	tags := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
+	if len(tags) == 0 || bodyNamesOwnSet(product) {
+		return false
+	}
+	body := strings.ToLower(string(product.ProductData.Set))
+	lead := magicBodyTag.FindStringSubmatch(product.DisplayName)
+	if lead != nil && strings.EqualFold(lead[1], body) {
+		return false
+	}
+	// A List tag spells the origin set into its number, "PLST-JMP-18".
+	if strings.HasPrefix(strings.ToLower(tags[len(tags)-1][2]), body+"-") {
+		return false
+	}
+	_, err := b.GetSet(body)
+	if err != nil {
+		return false
+	}
+	_, err = b.GetSet(tags[len(tags)-1][1])
+	return err == nil
+}
+
 // magicOrigin is the bare set-code tag a List display name puts before the
 // number when the number alone would not say which printing the card is
 // reprinted from: "Ancestral Mask (MMQ) (LIST-229/350)".
