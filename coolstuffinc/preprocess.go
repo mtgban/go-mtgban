@@ -26,6 +26,8 @@ var numFixes = map[string]string{
 	"one420eleshnornmotherofmachines": "ONE420",
 	"295044":                          "SLD51",
 	"wild0042":                        "SLP42",
+	"living0030":                      "SLP30",
+	"fatalpushsld884":                 "SLD884",
 	"Sol381656":                       "SLD1512",
 	"TDM0300a":                        "TDM300",
 	"LTR0425":                         "LTR425",
@@ -1027,6 +1029,18 @@ func card2promo(cardName, variant string) (string, string) {
 		if strings.Contains(variant, "Play Promo") {
 			return "PW26", "17"
 		}
+	case "Gandalf, Friend of the Shire":
+		if strings.Contains(variant, "Play Promo") {
+			return "PF23", "1"
+		}
+	case "Crystal Ball":
+		if strings.Contains(variant, "Commander Night") {
+			return "PW26", "21"
+		}
+	case "Swords to Plowshares":
+		if strings.Contains(variant, "Final Fantasy Event Promo") {
+			return "PF25", "12"
+		}
 	case "Cloud, Midgar Mercenary":
 		switch variant {
 		case "0001 FFVII Commander Deck Game Edition Promo":
@@ -1080,6 +1094,7 @@ var buylistNumberFixes = map[string]string{
 	"411004": "315",      // Purging Stormbrood: Tarkir: Dragonstorm showcase
 	"318838": "PBFZ-50",  // Stasis Snare: Game Day promo
 	"289318": "C19-249",  // Graypelt Refuge: Commander 2019
+	"296103": "280",      // Huntmaster Liger: Ikoria showcase
 }
 
 // buylistImageNumber retries a card whose Number field named no printing
