@@ -44,6 +44,16 @@ func TestPreprocessBuylistMagic(t *testing.T) {
 			},
 			wantSet: "TLE", wantNum: "210",
 		},
+		{
+			// No notes: the number is the promo pack's, in the set the
+			// image names.
+			desc: "a noteless Promo row keeps its number",
+			card: CSIPriceEntry{
+				PID: "310976", Name: "Usher of the Fallen", ItemSet: "Promo", Number: "401",
+				Image: "khm401usherofthefallen", IsFoil: 1,
+			},
+			wantSet: "KHM", wantNum: "401",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in, err := PreprocessBuylist(b, tt.card)

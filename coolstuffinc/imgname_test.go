@@ -144,6 +144,42 @@ func TestPreprocessImageStem(t *testing.T) {
 			imgURL:  "https://s.cf.net/i/pktk179ivorytuskfortress.jpg",
 			wantSet: "Prerelease Promo", wantNum: "Khans of Tarkir Prerelease Promo",
 		},
+		{
+			// The image is the card's own art, named for the booster
+			// printing; the shelf sells the stamped one.
+			desc:    "a prerelease image of the booster printing asks for the stamped row",
+			name:    "Scheming Fence",
+			edition: "Prerelease Promo",
+			variant: "Streets of New Capenna Prerelease Promo",
+			imgURL:  "https://s.cf.net/i/SNC219.jpg",
+			wantSet: "PSNC", wantNum: "219s",
+		},
+		{
+			desc:    "a letter after the name is the lettered number",
+			name:    "Novellamental",
+			edition: "Unstable",
+			variant: "This pendant",
+			imgURL:  "https://s.cf.net/i/Novellamentalb.jpg",
+			wantSet: "UST", wantNum: "41b",
+		},
+		{
+			// The no-flavor-text copy is 173 with a dagger and shares the
+			// plain number's image, so the note decides.
+			desc:    "a dagger copy shares the image and is left to the note",
+			name:    "Monstrous Growth",
+			edition: "Portal",
+			variant: "No flavor text",
+			imgURL:  "https://s.cf.net/i/por173.jpg",
+			wantSet: "Portal", wantNum: "No flavor text",
+		},
+		{
+			desc:    "a note that is not the dagger's keeps the image",
+			name:    "Kuja, Genome Sorcerer",
+			edition: "Final Fantasy Variants",
+			variant: "Showcase",
+			imgURL:  "https://s.cf.net/i/FIN399.jpg",
+			wantSet: "FIN", wantNum: "399",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			got, err := preprocess(b, tt.name, tt.edition, tt.variant, tt.imgURL, false)
