@@ -635,13 +635,18 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// siblings first - a version of a card another version
 			// already priced is a twin, not a report - so the walk says
 			// what is left to say; see twinsAmong.
+			var alias *mtgmatcher.AliasingError
 			if r.gameID == cm.GameOnePiece {
+				// An event DON!! no catalog carries aliases across every
+				// DON!! row, which is a refusal, not an alarm.
+				if errors.As(err, &alias) && product.Rarity == onePieceDonRarity {
+					return "", "", false, errNoPrinting
+				}
 				return "", "", false, err
 			}
 			r.logf("%v", err)
 			r.logf("%+v", product)
 
-			var alias *mtgmatcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				r.logf("%s got ids: %s", cardName, probes)

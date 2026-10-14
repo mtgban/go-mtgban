@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"errors"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -48,5 +49,24 @@ func TestOnePieceDonFoilVersion(t *testing.T) {
 		if got.err != nil || got.cardID != want {
 			t.Errorf("%d %q: resolveMapped = (%q, %v), want %q", id, products[id].Name, got.cardID, got.err, want)
 		}
+	}
+}
+
+// TestOnePieceDonAliasing pins that an event DON!! the datastore does not
+// carry, which aliases across its DON!! rows, is a refusal rather than an
+// error.
+func TestOnePieceDonAliasing(t *testing.T) {
+	b := datastoreBackend(t, "onepiece", onePieceDonDatastore)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	exp := cm.Expansion{IDExpansion: 5244, Name: "One Piece Products"}
+	product := cm.CatalogProduct{ExpansionID: 5244, Name: "Don!! (Elbaph)", Rarity: "DON!!"}
+
+	got := mkm.resolver.resolveMapped(858544, product, exp)
+	if !errors.Is(got.err, errNoPrinting) || got.cardID != "" {
+		t.Errorf("resolveMapped = (%q, %v), want a refusal", got.cardID, got.err)
 	}
 }
