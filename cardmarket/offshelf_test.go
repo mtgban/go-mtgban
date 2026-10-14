@@ -16,7 +16,8 @@ import (
 // every one of those copies is labelled with the event that gave it away.
 // OP12-046 is a booster card the Kuzan deck reprints, which the datastore
 // does not carry - though it does carry the deck's reprint of OP12-047,
-// which is how a deck's shelf is supposed to reach a card.
+// which is how a deck's shelf is supposed to reach a card. The trophy card
+// is the one TCGplayer sells, with no number of its own.
 const offShelfDatastore = `{"data": {
  "game": "onepiece",
  "sets": {
@@ -36,7 +37,8 @@ const offShelfDatastore = `{"data": {
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 643781}, "finish": "Normal", "id": "op12-046_643781", "name": "Zephyr (Navy)", "number": "OP12-046", "rarity": "C", "setCode": "OP12", "type": "Character"},
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 649276}, "finish": "Normal", "id": "op12-046_649276", "name": "Zephyr (Navy)", "number": "OP12-046", "rarity": "C", "setCode": "OP12-RE", "type": "Character"},
   {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 643782}, "finish": "Foil", "id": "op12-047_643782_foil", "name": "Sengoku", "number": "OP12-047", "rarity": "R", "setCode": "OP12", "type": "Character"},
-  {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 706331}, "finish": "Normal", "id": "op12-047_706331", "name": "Sengoku", "number": "OP12-047", "rarity": "R", "setCode": "ST-33", "type": "Character"}
+  {"color": "Blue", "colors": ["Blue"], "externalLinks": {"tcgPlayerId": 706331}, "finish": "Normal", "id": "op12-047_706331", "name": "Sengoku", "number": "OP12-047", "rarity": "R", "setCode": "ST-33", "type": "Character"},
+  {"color": "", "externalLinks": {"tcgPlayerId": 719668}, "finish": "Foil", "id": "719668_foil", "name": "Flame-Flame Fruit Trophy Card", "promoTypes": ["flameflamefruitcoliseum"], "rarity": "None", "setCode": "OP-PR", "type": "", "variant": "Flame-Flame Fruit Coliseum"}
  ]
 }}`
 
@@ -90,6 +92,23 @@ func TestOffShelf(t *testing.T) {
 			},
 			bridge:  581008,
 			refusal: errNoPrinting,
+		},
+		{
+			what: "a trophy card is no card of the game and says nothing",
+			product: cm.Product{
+				IDProduct: 906851, Name: "Flame-Flame Fruit Coliseum Champion Trophy Card",
+				ExpansionName: "Special Tournament Promos",
+			},
+		},
+		{
+			// The product above, given the link CardTrader does not hold.
+			what: "a trophy card an id links keeps its price",
+			product: cm.Product{
+				IDProduct: 906851, Name: "Flame-Flame Fruit Coliseum Champion Trophy Card",
+				ExpansionName: "Special Tournament Promos",
+			},
+			bridge: 719668,
+			want:   "719668_foil",
 		},
 		{
 			what: "the booster's own shelf keeps the booster card",
