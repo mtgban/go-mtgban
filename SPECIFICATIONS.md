@@ -814,8 +814,9 @@ functions take the backend first:
   inputs to `sealedev`'s EV computation. Each `Count` is per copy of the
   product its card comes from, with `Copies` saying how many copies a held
   product contributes, so a rule can read a chance in one copy and a total
-  is `ExpectedCount * Copies`. They read the same summed weights the draw
-  does, so a count describes what `BoosterPicks` actually draws.
+  is `Count.Total()`, `ExpectedCount * Copies`. They read the same summed
+  weights the draw does, so a count describes what `BoosterPicks` actually
+  draws.
 - `BuildSealedProductMap` and the load-time reverse index
   (`fillinSealedContents`, in the Magic loader) link single cards back to the
   products containing them.
