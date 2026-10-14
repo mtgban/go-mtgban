@@ -89,7 +89,7 @@ func TestMysteryBoosterCardsResolvesToPLSTNumber(t *testing.T) {
 }
 
 // TestShelfWordingResolvesToItsPrinting pins listings whose bracketed wording
-// is read as a release event, not as a prerelease.
+// is read as an art index or a release event, not a collector number.
 func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
 	b := realDatastore(t)
 
@@ -100,6 +100,9 @@ func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
 		set      string
 		number   string
 	}{
+		{"Abbey Matron", "Homelands", "1", "HML", "2a"},
+		{"Abbey Matron", "Homelands", "2", "HML", "2b"},
+		{"Aliban's Tower", "Homelands", "2", "HML", "61b"},
 		{"Azorius Guildmage", "Pre-Release Promos", "Foil Launch Promo", "PDIS", "141★"},
 		{"Blight Herder", "Pre-Release Promos", "Foil Launch Promo", "PBFZ", "2"},
 	}
@@ -120,5 +123,14 @@ func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
 		if co.SetCode != test.set || co.Number != test.number {
 			t.Errorf("%s %s: matched %s %s, want %s %s", test.cardName, test.variant, co.SetCode, co.Number, test.set, test.number)
 		}
+	}
+
+	// An index past the card's arts is left as the shelf wrote it.
+	theCard, err := preprocess(b, "Abbey Matron", "Homelands", "3")
+	if err != nil {
+		t.Fatalf("Abbey Matron (3): preprocess: %v", err)
+	}
+	if theCard.Variation != "3" {
+		t.Errorf("Abbey Matron (3): variant rewritten to %q", theCard.Variation)
 	}
 }
