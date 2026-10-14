@@ -44,16 +44,7 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 		if magic.IsJPN(&in) && lang != "Japanese" {
 			return
 		}
-		finish := mtgmatcher.FinishNonfoil
-		if in.IsEtched() {
-			finish = mtgmatcher.FinishEtched
-		} else if in.Foil {
-			finish = mtgmatcher.FinishFoil
-			// ABU calls both foil and etched-only printings FOIL.
-			if !co.HasFinish(finish) && co.HasFinish(mtgmatcher.FinishEtched) {
-				finish = mtgmatcher.FinishEtched
-			}
-		}
+		finish := listingFinish(co, in.Foil, in.IsEtched())
 		probe := in
 		probe.Name = identifierName(in.Name)
 		probe.ID, probe.Finish, probe.Language = base, finish, lang
@@ -109,6 +100,63 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 		in.Finish = mtgmatcher.FinishNonfoil
 	}
 	return &in
+}
+
+// foreignIdentified takes the vendor ids of a listing in a language other than
+// English when every one of them names the same printing, in that language,
+// under the listing's name and finish. The shelf wording of such listings
+// rarely describes the printing, so the ids are the only witness.
+func foreignIdentified(b *mtgmatcher.Backend, card *ABUCard, name, lang string, foil bool) *mtgmatcher.InputCard {
+	var found string
+	var finish string
+	consider := func(space mtgmatcher.IDSpace, external string) bool {
+		base := b.ConvertID(space, external)
+		if base == "" {
+			return false
+		}
+		co, err := b.GetUUID(base)
+		if err != nil {
+			return false
+		}
+		finish = listingFinish(co, foil, false)
+		id, err := b.ValidateID(mtgmatcher.InputCard{
+			Name: identifierName(name), ID: base, Finish: finish, Foil: foil, Language: lang,
+		}, mtgmatcher.IDValidationOptions{})
+		if err != nil || (found != "" && found != id) {
+			return false
+		}
+		found = id
+		return true
+	}
+	for _, id := range card.ScryfallIDs {
+		if !consider(mtgmatcher.IDSpaceScryfall, id) {
+			return nil
+		}
+	}
+	for _, id := range card.TCGplayerIDs {
+		if id > 0 && !consider(mtgmatcher.IDSpaceTCGplayer, strconv.FormatInt(id, 10)) {
+			return nil
+		}
+	}
+	if found == "" {
+		return nil
+	}
+	return &mtgmatcher.InputCard{Name: name, ID: found, Foil: foil, Finish: finish, Language: lang}
+}
+
+// listingFinish is the finish a listing asks of co. ABU calls both foil and
+// etched-only printings FOIL.
+func listingFinish(co *mtgmatcher.CardObject, foil, etched bool) string {
+	if etched {
+		return mtgmatcher.FinishEtched
+	}
+	if !foil {
+		return mtgmatcher.FinishNonfoil
+	}
+	if !co.HasFinish(mtgmatcher.FinishFoil) && co.HasFinish(mtgmatcher.FinishEtched) {
+		return mtgmatcher.FinishEtched
+	}
+	return mtgmatcher.FinishFoil
 }
 
 func identifierName(name string) string {
