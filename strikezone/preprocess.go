@@ -487,6 +487,13 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			}
 			variation = inFinish[0]
 		}
+		// A card Secret Lair files only under Play has no drop to pick.
+		otherDrop := slices.ContainsFunc([]string{"SLU", "SLX", "SLC"}, func(code string) bool {
+			return len(b.MatchInSet(cardName, code)) > 0
+		})
+		if len(drops) == 0 && !otherDrop && len(b.MatchInSet(cardName, "SLP")) == 1 {
+			edition, variation = "SLP", "Play"
+		}
 	}
 
 	return &mtgmatcher.InputCard{

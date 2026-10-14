@@ -48,6 +48,7 @@ func TestShelfCards(t *testing.T) {
 		{"Sol Ring (C21)", "Secret Lair Commander: Heads I Win", "Near Mint Normal English", "PLST", ""},
 		{"Serra Angel (Retro Frame)", "Promos: 30th Anniversary Promos", "Near Mint Foil English", "P30H", ""},
 		{"Serra Angel (001)", "Promos: 30th Anniversary Promos", "Near Mint Foil English", "P30H", "1"},
+		{"Wrenn and Six", "Secret Lair", "Near Mint Foil English", "SLP", "15"},
 		{"Go for the Throat", "Promos: Standard Showdown", "Near Mint Foil English", "PCBB", "3"},
 		{"Vito, Thorn of the Dusk Rose", "Promos: Media", "Near Mint Foil English", "PM21", "127★"},
 		{"Swords to Plowshares", "Promos: Media", "Near Mint Foil English", "PMEI", "2026-4"},
