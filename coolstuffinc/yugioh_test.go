@@ -167,3 +167,17 @@ func TestYugiohRetries(t *testing.T) {
 		}
 	}
 }
+
+// TestYugiohPIDsNameHeldProducts pins that every product the storefront id
+// table points at is one the datastore holds, so a catalog that drops or
+// renumbers a product shows here and not as a listing gone unpriced.
+func TestYugiohPIDsNameHeldProducts(t *testing.T) {
+	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
+
+	for pid, tcgID := range yugiohPIDs {
+		_, err := b.Match(&mtgmatcher.InputCard{ID: tcgID})
+		if err != nil {
+			t.Errorf("product %s names TCGplayer %s: %v", pid, tcgID, err)
+		}
+	}
+}

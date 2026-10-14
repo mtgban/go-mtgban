@@ -8,6 +8,46 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// yugiohPIDs names the TCGplayer product a storefront product is, for the
+// listings whose wording cannot reach it: the storefront tells the arts of one
+// number apart by the background it describes where the catalog numbers them
+// "Version N" or "A, B, C", and its Promo shelf cannot tell a set from the date
+// reprint made of it later. The product id is the storefront's own and both
+// feeds share it.
+var yugiohPIDs = map[string]string{
+	"255629": "162087", // LCKC-EN001 Blue-Eyes White Dragon (Blue Ripple Background) = Version 2
+	"255628": "161927", // LCKC-EN001 (Red Sparks Background) = Version 1
+	"255630": "162088", // LCKC-EN001 (Space and Earth Background) = Version 3
+	"255626": "162089", // LCKC-EN001 (Tablet Background) = Version 4
+	"255382": "161972", // LCKC-EN046 Crush Card Virus (Yellow and Orange Background) = Version 1
+	"255631": "162086", // LCKC-EN046 (Red and Black Background) = Version 2
+	"233930": "123525", // LDK2-ENK01 Blue-Eyes White Dragon (Blue Ripple Background) = Version 2
+	"233816": "123621", // LDK2-ENK01 (Red Sparks Background) = Version 1
+	"233929": "123620", // LDK2-ENK01 (Tablet Background) = Version 4
+	"402767": "593847", // RA03-EN123 Dark Magician Girl (Platinum Secret Rare) Gold Circle Background = B
+	"402768": "593849", // RA03-EN123 (Quarter Century Secret Rare) Gold Circle Background = B
+	"402769": "592812", // RA03-EN123 (Platinum Secret Rare) Giant Hearts Background = A
+	"402771": "593848", // RA03-EN123 (Platinum Secret Rare) Little Hearts, Raising Staff Up = C
+	"402772": "593850", // RA03-EN123 (Quarter Century Secret Rare) Little Hearts, Raising Staff Up = C
+	"255618": "161922", // LC06-EN001 Goddess of Sweet Revenge, not the 2020 date reprint
+	"255619": "161923", // LC06-EN002 The King of D.
+	"255622": "161926", // LC06-EN003 Destruction Dragon
+	"255621": "161925", // LC06-EN004 Dragon Revival Rhapsody
+	"255620": "161924", // LC06-EN005 Loop of Destruction
+	"222257": "108333", // YGLD Glory of the King's Hand, not the 2021 date reprint
+	"222308": "108334", // YGLD Set Sail for The Kingdom
+	"222244": "108335", // YGLD Duelist Kingdom
+	"112537": "80163",  // RGBT-ENPP1 Iron Core of Koa'ki Meiru, sold as the Raging Battle card
+	"112538": "80160",  // RGBT-ENPP2 Blackwing - Shura the Blue Flame
+	"112539": "80293",  // RGBT-ENPP3 Koa'ki Meiru Guardian
+	"112540": "80162",  // RGBT-ENPP4 Moja
+	"112541": "174115", // RGBT-ENPP5 Master Gig
+	"112542": "153436", // RGBT-ENPP6 Level Retuner
+	"292911": "207877", // MVP1-ENSV4 Blue-Eyes White Dragon, the Secret Edition art the buylist numbers
+	"264850": "175258", // MVP1-ENSE4 Blue-Eyes White Dragon, the Special Edition art the sku numbers
+	"207108": "92623",  // MP14-EN073 Bujingi Crane, sold as the 2014 Mega-Tins card
+}
+
 // yugiohCodes spells the set codes the buylist writes unpadded the way the
 // catalog does: the Dinosaurs Rage deck is SD9 here and SD09 there, and the
 // third Hobby League is HL3 where the catalog says HL03. Both the Number and
