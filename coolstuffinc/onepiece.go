@@ -45,6 +45,8 @@ var onePiecePIDs = map[string]string{
 	"371232": "482241", // DON Silver (Vol. 1)
 	"371233": "482238", // DON Yellow (Vol. 1)
 	"371821": "517476", // OP04 DON "Will you call me your Shipmate?!!" = OP04 Alternate Art
+	"406129": "517477", // OP04 DON Rosinante & Law (Double Pack Set Vol. 1) = Special DON!! Card Pack Color
+	"406130": "517478", // OP04 DON Crocodile & Luffy (Double Pack Set Vol. 1) = Special DON!! Card Pack Black & White
 	"378041": "529792", // OP05 DON "Luffy Punching Kaido" = OP05 Alternate Art
 	"384872": "541671", // OP06 DON "Zoro & Sanji" = OP06 Alternate Art
 	"391902": "555894", // OP07 DON "Five Remaining Warlords" = OP07 Alternate Art
