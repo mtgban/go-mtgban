@@ -119,6 +119,9 @@ func (r *resolver) onePieceByID(product *cm.Product) (string, error) {
 	return id, nil
 }
 
+// onePieceDonRarity is the rarity Cardmarket files every DON!! card under.
+const onePieceDonRarity = "DON!!"
+
 // onePieceDeckReprint reports whether a starter deck's card is a booster
 // card reprinted under its own code, which no catalog lists apart: the
 // name lands on the booster printing another shelf prices already. A
