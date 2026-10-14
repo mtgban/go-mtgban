@@ -119,6 +119,16 @@ func (r *resolver) onePieceByID(product *cm.Product) (string, error) {
 	return id, nil
 }
 
+// onePieceDeckReprint reports whether a starter deck's card is a booster
+// card reprinted under its own code, which no catalog lists apart: the
+// name lands on the booster printing another shelf prices already. A
+// product the bridge links names a printing of its own, whose absence is a
+// refusal.
+func (r *resolver) onePieceDeckReprint(product *cm.Product) bool {
+	_, linked := r.tcgLink(product.IDProduct)
+	return strings.HasPrefix(product.ExpansionName, "Starter Deck:") && !linked
+}
+
 // offCode reports whether the product's name carries a collector number
 // other than the printing's. The bridge's links are another marketplace's,
 // and one pointing at the neighbouring product names the wrong card.
