@@ -72,6 +72,8 @@ func TestYugiohSKUCardReadsTheNumberOffTheImage(t *testing.T) {
 		{"Serpent Night Dragon", "Magic Ruler", "Secret Rare", "Magic%20Ruler/full/MRL103.jpg", "mrl-103_22981_unlimited"},
 		{"Monster Reborn", "Legendary Hero Decks", "Common", "Legendary%20Hero%20Decks/full/LEHDENA23.jpg", "lehd-ena23_177611_1stedition"},
 		{"Monster Reborn", "Legendary Hero Decks", "Common", "Legendary%20Hero%20Decks/full/LEHDENC16.jpg", "lehd-enc16_177613_1stedition"},
+		// A tail past the number - an art or rarity letter - is cut off.
+		{"Polymerization", "Speed Duel GX: Duel Academy Box", "Secret Rare", "Speed%20Duel%20GX/full/SGX1ENA12V.jpg", "sgx1-ena12_266296_1stedition"},
 		// An image naming another card's number answers nothing.
 		{"Monster Reborn", "Legendary Hero Decks", "Common", "Magic%20Ruler/full/MRL103.jpg", ""},
 	} {

@@ -161,7 +161,13 @@ func yugiohSKUCard(b *mtgmatcher.Backend, numbers map[string][]string, card *mtg
 	if match == nil {
 		return ""
 	}
-	for _, number := range numbers[strings.ToUpper(match[1])] {
+	// The sku can carry a tail past the number - an art ("V1QCR"), a letter -
+	// so the longest head the index knows is the number it names.
+	key := strings.ToUpper(match[1])
+	for key != "" && numbers[key] == nil {
+		key = key[:len(key)-1]
+	}
+	for _, number := range numbers[key] {
 		id := yugiohRetry(b, card, number+" "+card.Variation, number)
 		if id != "" {
 			return id
