@@ -757,7 +757,10 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// card being agreed on and the finish the one disagreement.
 		var loose string
 		if r.gameID == cm.GamePokemon {
-			cardID = r.pokemonByID(product)
+			cardID, err = r.pokemonByID(product)
+			if err != nil {
+				return "", "", false, err
+			}
 		}
 		tcgID, found := r.tcgBridge[product.IDProduct]
 		if cardID == "" && found && !pokemonCrossedLinks[product.IDProduct] {

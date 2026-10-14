@@ -87,20 +87,64 @@ var pokemonStampLinks = map[int]int{
 	916469: 714870,
 }
 
+// pokemonHoloLinks names, by Cardmarket product id, the TCGplayer product
+// whose Holofoil printing a product sells. TCGplayer files the holo and the
+// plain card of a McDonald's Collection 25th Anniversary card or a Prize
+// Pack Series card under one product, and Cardmarket sells them as two,
+// which the plain card's product holds. The rows go once datastore-gen
+// publishes these products' cardmarketId.
+var pokemonHoloLinks = map[int]int{
+	538783: 232316, 538793: 232317, 538803: 232318, 538813: 232319,
+	538823: 232320, 538833: 232321, 538843: 232322, 538853: 232323,
+	538863: 232324, 538873: 232325, 538883: 232326, 538893: 232327,
+	538903: 232328, 538913: 232329, 538923: 232341, 538933: 232330,
+	538943: 232331, 538953: 232332, 538963: 232333, 538973: 232334,
+	538983: 232335, 538993: 232336, 539003: 232337, 539013: 232338,
+	539023: 232339, 782313: 515640, 782315: 515639, 782317: 515644,
+	782319: 515641, 782321: 515643, 782323: 515638, 782325: 515635,
+	782327: 515642, 835690: 489332, 835691: 515539, 835692: 515463,
+	835693: 515464, 835694: 515349, 835697: 515470, 835698: 515474,
+	835699: 515476, 835703: 489354, 835704: 489322, 835705: 515480,
+	835707: 515582, 835708: 515583, 835710: 515452, 835712: 515458,
+	835783: 489333, 835784: 489332, 835787: 476104, 835788: 489334,
+	835789: 489335, 835790: 476106, 835791: 489355, 835792: 489347,
+	835793: 476011, 835794: 476117, 835795: 489356, 835796: 489348,
+	835797: 476051, 835798: 476003, 835799: 476079, 835800: 489354,
+	835801: 476025, 835802: 489322, 835803: 489323, 835804: 475994,
+	835805: 476100, 835806: 489336, 835807: 489350, 835808: 476110,
+	835809: 476134, 835810: 476115, 835811: 476123, 835812: 476124,
+	835813: 476135, 835814: 489337, 835815: 476038, 835816: 489328,
+	835817: 476086, 835818: 476131, 835819: 476095, 835820: 476132,
+	835821: 476082, 835822: 476104, 835824: 476106, 835825: 476001,
+	835826: 476113, 835827: 476011, 835828: 476117, 835829: 476003,
+	835830: 476002, 835831: 476079, 835832: 476025, 835833: 476085,
+	835834: 476091, 835835: 476038, 835836: 476098, 835837: 476100,
+	835838: 476103, 835839: 476107, 835840: 476110, 835841: 476134,
+	835842: 476115, 835843: 476122, 835844: 476135, 835845: 476076,
+	835846: 476123, 835847: 476124, 835848: 476137, 894237: 703865,
+	894239: 703866, 894241: 703867, 894243: 703868, 894245: 703869,
+	894248: 703870, 894250: 703871,
+}
+
 // pokemonByID answers a Pokemon product the datastore records by its
-// Cardmarket id or pokemonStampLinks names; an empty id leaves the product
-// to the bridge and its wording.
-func (r *resolver) pokemonByID(product *cm.Product) string {
+// Cardmarket id or pokemonStampLinks and pokemonHoloLinks name; an empty id
+// leaves the product to the bridge and its wording. A table row the
+// datastore cannot answer is an error rather than a fall through to the
+// plain card the row exists to keep the product off.
+func (r *resolver) pokemonByID(product *cm.Product) (string, error) {
 	uuid := r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, strconv.Itoa(product.IDProduct))
 	if uuid != "" {
-		return uuid
+		return uuid, nil
 	}
 	tcgID, found := pokemonStampLinks[product.IDProduct]
-	if !found {
-		return ""
+	if found {
+		return r.backend.MatchID(strconv.Itoa(tcgID), false)
 	}
-	uuid, _ = r.backend.MatchID(strconv.Itoa(tcgID), false)
-	return uuid
+	tcgID, found = pokemonHoloLinks[product.IDProduct]
+	if !found {
+		return "", nil
+	}
+	return r.backend.MatchIDFinish(strconv.Itoa(tcgID), "Holofoil")
 }
 
 // pokemonForeign reports whether an expansion is one of those catalogs.
