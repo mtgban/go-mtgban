@@ -411,3 +411,54 @@ func TestUnquote(t *testing.T) {
 		})
 	}
 }
+
+// A basic land's image names its set code, of 2 to 4 characters, then its
+// number. Anything else yields no number.
+func TestBasicImageNumber(t *testing.T) {
+	for extra, want := range map[string]string{
+		"LO299":   "299",
+		"BFZ250":  "250",
+		"SVSC078": "78",
+		"ELD402":  "",
+		"817906":  "",
+		"noimage": "",
+	} {
+		got := basicImageNumber(extra)
+		if got != want {
+			t.Errorf("basicImageNumber(%q) = %q, want %q", extra, got, want)
+		}
+	}
+}
+
+// A basic the store tags only by its own version index is placed by the number
+// its image names, and only where the landed card carries that number.
+func TestMatchBasicByImage(t *testing.T) {
+	b := realDatastore(t)
+	input := mtgmatcher.InputCard{Name: "Plains", Edition: "Battle for Zendikar", Variation: "Version 1"}
+	tests := []struct {
+		desc  string
+		image string
+		want  string
+	}{
+		{"the image number places the land", "/prodotti/1/1050/BFZ250.jpg", "250"},
+		{"a number the land was never printed with is refused", "/prodotti/1/1050/BFZ300.jpg", ""},
+		{"an image naming no number is refused", "/prodotti/1/1050/noimage.jpg", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			id, found := matchBasicByImage(b, &MCCard{Extra: tt.image}, input)
+			if tt.want == "" {
+				if found {
+					co, _ := b.GetUUID(id)
+					t.Errorf("matchBasicByImage() = %v, want no match", co)
+				}
+				return
+			}
+			co, err := b.GetUUID(id)
+			if !found || err != nil || co.SetCode != "BFZ" || co.Number != tt.want {
+				t.Errorf("matchBasicByImage() = %v, want BFZ %s", co, tt.want)
+			}
+		})
+	}
+}
