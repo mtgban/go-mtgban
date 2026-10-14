@@ -841,7 +841,7 @@ func needsImageLookup(edition string) bool {
 func hasNumberedImage(edition string) bool {
 	switch edition {
 	case "Throne of Eldraine: Extras", "Theros Beyond Death: Extras",
-		"Guilds of Ravnica", "Ravnica Allegiance", "Unglued":
+		"Guilds of Ravnica", "Ravnica Allegiance", "Unglued", "Battlebond":
 		return true
 	}
 	return false
