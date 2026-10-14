@@ -159,3 +159,28 @@ func TestSettleFoilBySibling(t *testing.T) {
 		}
 	}
 }
+
+// A body naming another set than the display's own known one is the price of
+// another product, and a refusal of it is not worth reporting.
+func TestForeignBody(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc    string
+		product GNProduct
+		want    bool
+	}{
+		{"another set's body", product("MTG-LEA-031", "Personal Incarnation (LEA-031) - Limited Edition Alpha", "tla"), true},
+		{"its own body", product("MTG-LEA-031", "Personal Incarnation (LEA-031) - Limited Edition Alpha", "lea"), false},
+		{"a shelf code of the storefront's", product("MTG-PM21-179P-F-WNWC8O2ID2", "Elder Gargaroth (PPM21-179P) - Core Set 2021 Promos Foil", "ppm21"), false},
+		{"the storefront's prerelease shelf", product("MTG-PXLN-213S-F", "Verdant Sun's Avatar (PXLN-213S) - Ixalan Promos Foil (LP)", "pre"), false},
+		{"the List shelf", product("MTG-PLST-C16-52", "Boompile (PLST-C16-52) - The List", "list"), false},
+		{"the List's origin set", product("MTG-PLST-JMP-18", "Witch of the Moors (PLST-JMP-18) - The List", "jmp"), false},
+		{"a leading body tag", product("MTG-SPE-MAR-005", "Alchemax Slayer-Bots (SPE, MAR-005) - Marvel's Spider-Man: Eternal-Legal", "spe"), false},
+		{"no tag to disagree with", product("MTG-DMU-160-LP", "Defiler of Vigor - Dominaria United (LP)", "pre"), false},
+	} {
+		got := foreignBody(b, tt.product)
+		if got != tt.want {
+			t.Errorf("%s: foreignBody = %v, want %v", tt.desc, got, tt.want)
+		}
+	}
+}

@@ -305,6 +305,11 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return "", nil
 	} else if err != nil {
+		// A body naming another set than the display's known one carries the
+		// price of another product, so there is nothing here to report.
+		if gn.backend.Game == mtgmatcher.GameMagic && foreignBody(gn.backend, product) {
+			return "", nil
+		}
 		gn.printf("%v", err)
 		gn.printf("%s: %q", product.ID, product.DisplayName)
 		return "", nil
