@@ -710,17 +710,11 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			}
 		default:
 			// Try using the number, except the set code can randomly be
-			// 2 or 3 characters.
+			// 2 to 4 characters.
 			if magic.IsBasicLand(cardName) {
-				for _, lengthToDrop := range []int{2, 3} {
-					if len(extra) > lengthToDrop {
-						internalNumber := strings.TrimLeft(extra[lengthToDrop:], "0")
-						val, err := strconv.Atoi(internalNumber)
-						if err == nil && val < 400 {
-							variation = internalNumber
-							break
-						}
-					}
+				number := basicImageNumber(extra)
+				if number != "" {
+					variation = number
 				}
 			}
 		}
@@ -730,6 +724,48 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 	}
 
 	return cardName, edition, variation
+}
+
+// basicImageNumber returns the collector number a basic land's image name
+// spells after its set code, which is 2 to 4 characters long. A digit in the
+// fourth place opens the number of a shorter code, or a Cardmarket id, so no
+// 4-character code is read there.
+func basicImageNumber(extra string) string {
+	drops := []int{2, 3, 4}
+	if len(extra) > 3 && extra[3] >= '0' && extra[3] <= '9' {
+		drops = drops[:2]
+	}
+	for _, lengthToDrop := range drops {
+		if len(extra) > lengthToDrop {
+			number := strings.TrimLeft(extra[lengthToDrop:], "0")
+			val, err := strconv.Atoi(number)
+			if err == nil && val < 400 {
+				return number
+			}
+		}
+	}
+	return ""
+}
+
+// matchBasicByImage retries a basic land the wording could not place with the
+// number its image names. The store's version tag counts its own index, which
+// is not collector order, so the number is trusted only where the landed card
+// confirms it. input is a copy taken before the first Match, which mutates it.
+func matchBasicByImage(b *mtgmatcher.Backend, card *MCCard, input mtgmatcher.InputCard) (string, bool) {
+	number := basicImageNumber(strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra)))
+	if number == "" {
+		return "", false
+	}
+	input.Variation = number
+	cardID, err := b.Match(&input)
+	if err != nil {
+		return "", false
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil || (co.Number != number && co.PlainNumber != number) {
+		return "", false
+	}
+	return cardID, true
 }
 
 // genericVersionRe matches the store's bare "Version N" tag, which names no
