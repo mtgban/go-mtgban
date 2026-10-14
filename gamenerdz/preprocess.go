@@ -141,6 +141,7 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 	if edition == "" {
 		edition = product.ProductData.SetName
 	}
+	shelfSet := magicShelves[product.ProductData.SetName]
 	foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 	switch {
 	// The promo pack shelves are coded with a second P in front of the
@@ -173,6 +174,8 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		edition = product.ProductData.SetName
 	case !namesASet(b, edition) && namesASet(b, magicTailSet(product.DisplayName)):
 		edition = magicTailSet(product.DisplayName)
+	case !namesASet(b, edition) && namesASet(b, shelfSet):
+		edition = shelfSet
 	// A yearly shelf is coded once for every year ("fnm" is the catalog's
 	// code for the first Friday Night Magic year) and the year the product
 	// is from is written only where the name ends.
@@ -371,6 +374,12 @@ func saysEtched(product GNProduct) bool {
 		}
 	}
 	return false
+}
+
+// magicShelves pairs the shelves this storefront names its own way with the
+// catalog's name for the set.
+var magicShelves = map[string]string{
+	"The List Reprints": "The List",
 }
 
 // magicRespellings pairs the names this storefront misspells with the

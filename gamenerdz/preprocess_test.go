@@ -231,7 +231,7 @@ func TestPreprocess(t *testing.T) {
 				SelectedFinish: "Normal",
 				ProductData:    GNProductData{Set: "list", SetName: "The List Reprints"},
 			},
-			name: "Impact Tremors", edition: "list", variation: "MOC-285",
+			name: "Impact Tremors", edition: "The List", variation: "MOC-285",
 		},
 		{
 			game: mtgmatcher.GameLorcana,
