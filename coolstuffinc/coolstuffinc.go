@@ -658,6 +658,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					theCard = &mtgmatcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
 				case mtgmatcher.GameRiftbound:
 					variation := riftboundNotes.Replace(notes)
+					if edition == "Promo" && notes == "" {
+						variation = riftboundLetteredPromo(csi.backend, cardName, imgURL, isFoil)
+					}
 					shelf := riftboundShelf(csi.backend, edition, notes, cardName, variation, isFoil)
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: shelf, Variation: variation, Foil: isFoil}
 					_, err := csi.backend.Match(theCard)
