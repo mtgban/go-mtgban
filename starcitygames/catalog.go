@@ -1750,10 +1750,12 @@ var fabNames = map[string]string{
 
 // fabNumberRespellings spells the collector numbers the catalog misspells:
 // Attention Grabbers is APS006, the sixth card of the Pleiades armory deck,
-// on the card and everywhere but this sku.
+// on the card and everywhere but this sku. Malice (Marvel) is IAR054; the
+// catalog's IAR2-055 sku misnumbers it, and IAR055 is Vox Necropolis.
 var fabNumberRespellings = map[string]string{
-	"APS056": "APS006",
-	"1HK01":  "1HK012",
+	"APS056":  "APS006",
+	"1HK01":   "1HK012",
+	"IAR2055": "IAR054",
 }
 
 // fabWordings are the labels the datastore tells the printings of one
