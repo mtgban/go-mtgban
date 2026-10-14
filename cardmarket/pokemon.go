@@ -412,18 +412,18 @@ type pokemonFinishTarget struct {
 // pokemonFinishPlan groups cardID's own finish siblings (mtgmatcher.
 // FinishSiblings, which already carries the game's whole vocabulary and
 // handles finish twins) by the Cardmarket cell each projects onto (see
-// pokemonFinishCell), keeping one anchor uuid per occupied cell - the first
-// FinishSiblings returns for that cell, which is already ordered base
-// finish first, then the game's own vocabulary alphabetically. Any other
-// sibling sharing that cell is a real, distinct printing this scraper
-// cannot separately price: Cardmarket's own flags cannot tell it from the
-// anchor, so querying it again would file the same listings under two
-// uuids instead of one - confirmed live: 349 real products (EX-era holo
-// rares) carry both a Normal and a Holofoil sibling as one Cardmarket
-// product.
+// pokemonFinishCell), keeping one anchor uuid per occupied cell - cardID
+// itself for its own cell, otherwise the first FinishSiblings returns for
+// that cell, which is already ordered base finish first, then the game's
+// own vocabulary alphabetically. Any other sibling sharing that cell is a
+// real, distinct printing this scraper cannot separately price:
+// Cardmarket's own flags cannot tell it from the anchor, so querying it
+// again would file the same listings under two uuids instead of one -
+// confirmed live: 349 real products (EX-era holo rares) carry both a
+// Normal and a Holofoil sibling as one Cardmarket product.
 func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarget {
 	type cell struct{ isFirstEd, isReverseHolo bool }
-	seen := map[cell]bool{}
+	anchors := map[cell]int{}
 	var targets []pokemonFinishTarget
 	for _, sibling := range b.FinishSiblings(cardID) {
 		co, err := b.GetUUID(sibling)
@@ -432,10 +432,14 @@ func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarg
 		}
 		isFirstEd, isReverseHolo := pokemonFinishCell(co.Finish)
 		c := cell{isFirstEd, isReverseHolo}
-		if seen[c] {
+		i, found := anchors[c]
+		if found {
+			if sibling == cardID {
+				targets[i].cardID = cardID
+			}
 			continue
 		}
-		seen[c] = true
+		anchors[c] = len(targets)
 		targets = append(targets, pokemonFinishTarget{cardID: sibling, isFirstEd: isFirstEd, isReverseHolo: isReverseHolo})
 	}
 	return targets

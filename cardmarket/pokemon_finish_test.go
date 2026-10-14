@@ -112,3 +112,31 @@ func TestPokemonFinishPlanTeamRocket(t *testing.T) {
 		t.Errorf("1st Edition Holofoil target = %+v, want isFirstEd true, isReverseHolo false", firstEd)
 	}
 }
+
+// TestPokemonFinishPlanOwnCell pins that the printing a product resolved to
+// is its cell's anchor: a Holofoil and a Normal sibling share a cell, and
+// the listings of the product that sells the holo belong to the Holofoil.
+func TestPokemonFinishPlanOwnCell(t *testing.T) {
+	b := loadPokemonBackend(t)
+
+	normalID, err := b.Match(&mtgmatcher.InputCard{
+		Name: "Pikachu", Edition: "McDonald's 25th Anniversary Promos", Variation: "25",
+	})
+	if err != nil {
+		t.Fatalf("Match: %v", err)
+	}
+	holoID, err := b.MatchIDFinish(normalID, "Holofoil")
+	if err != nil {
+		t.Fatalf("MatchIDFinish(Holofoil): %v", err)
+	}
+	if holoID == normalID {
+		t.Fatalf("Normal and Holofoil resolve to the same uuid %q", normalID)
+	}
+
+	for _, cardID := range []string{normalID, holoID} {
+		targets := pokemonFinishPlan(b, cardID)
+		if len(targets) != 1 || targets[0].cardID != cardID {
+			t.Errorf("pokemonFinishPlan(%q) = %+v, want %q alone", cardID, targets, cardID)
+		}
+	}
+}
