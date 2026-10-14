@@ -160,6 +160,11 @@ var tcgIDOverrides = map[int]int{
 	341065: 594468, // Magneton, Pokemon Center Stamped | 159
 	124918: 165634, // Blastoise, Cosmos Holo | ©2013 Promo 16/101
 	351718: 658354, // Yveltal, EB Games Promo | 088/132
+	// One blueprint for both finishes: the Non-Holo is the pick, as on the
+	// siblings of this wording that do send an id.
+	296379: 565488, // Morpeko, Non-Holo | Cosmos Holo | PAR 121
+	296385: 565453, // Counter Catcher, Non-Holo / Cosmos Holo | PAR 160
+	296386: 565266, // Earthen Vessel, Non-Holo / Cosmos Holo | PAR 163
 	397591: 713261, // Nidorina, MEP 101 | Pokemon Center Stamp
 	118520: 153288, // Electabuzz, Toys R Us Promo | 41/108
 	354634: 666533, // Suicune, GameStop Promo | 026/132
@@ -182,6 +187,11 @@ var tcgIDOverrides = map[int]int{
 	400812: 719661, // DON!! Flame-Flame Fruit Coliseum, Championships Promo
 	337323: 646721, // Kid & Killer EB01-003P2, Offline Regional 25-26 Finalist
 	337325: 646726, // Trafalgar Law OP07-047P2, Offline Regional 25-26 Finalist
+	337316: 646734, // Tony Tony.Chopper P-089, Offline Regional 25-26 Participant
+	337328: 646733, // Chopper P-089P2, Offline Regional 25-26 Finalist
+	337329: 646720, // Kid & Killer EB01-003, Offline Regional 25-26 Champion
+	337331: 646727, // Trafalgar Law OP07-047, Offline Regional 25-26 Champion
+	337334: 646731, // Chopper P-089, Offline Regional 25-26 Champion
 	345022: 646743, // Shanks, 25-26 Offline Regionals Top 8
 	345023: 646742, // Benn.Beckman, 25-26 Regionals Top 16
 	345024: 646741, // Yasopp, 25-26 Regionals Top 16
@@ -215,6 +225,23 @@ var tcgIDOverrides = map[int]int{
 	412579: 717613, // Char Aznable, ST11-011
 	412580: 717615, // Unicorn Gundam 02 Banshee, ST12-009
 	412581: 717617, // Ple-Twelve, ST12-012
+	// Gundam: Store Tournament and Winner Pack 06 promos, none sent.
+	417447: 721540, // Victory Gundam, GD04-011 Participation
+	417448: 721541, // GD04-107 Participation
+	417449: 721542, // GD05-016 Participation
+	417450: 721543, // GD05-019 Participation
+	417451: 721544, // GD05-069 Participation
+	417452: 721545, // Quess Paraya, GD05-094 Participation
+	417453: 721546, // GD05-111 Participation
+	417454: 721547, // T-029 Participation
+	417438: 721548, // GD04-011 Winner Pack 06
+	417440: 721549, // GD04-107 Winner Pack 06
+	417441: 721550, // Murasame, GD05-016 Winner Pack 06
+	417442: 721551, // GD05-019 Winner Pack 06
+	417443: 721552, // GD05-069 Winner Pack 06
+	417444: 721553, // GD05-094 Winner Pack 06
+	417445: 721554, // GD05-111 Winner Pack 06
+	417446: 721555, // T-029 Winner Pack 06
 }
 
 // TCGplayerProductID answers the TCGplayer id a blueprint's listings resolve
