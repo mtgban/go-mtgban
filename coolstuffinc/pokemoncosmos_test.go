@@ -27,11 +27,47 @@ func TestPokemonCosmosHolo(t *testing.T) {
 			"Munkidori (Holo) - 095/167", "SV Twilight Masquerade", "", "Holo Rare", "095-167_550139_holofoil"},
 		{"a bare holo bracket beside a note saying it may be cosmos holo",
 			"Mimikyu (Holo) - 081/189", "SWSH Darkness Ablaze", "Can be Regular or Cosmos Holo", "Holo Rare", "081-189_219467"},
-		{"a printing the miscellaneous shelf lacks stays where it was",
+		{"the cosmos step leaves a printing the miscellaneous shelf lacks alone",
 			"Greavard (Holo Promo) - 100/197", "SV Obsidian Flames", "", "Promo", "100-197_509947"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			card := pokemonCosmosHolo(b, pokemonListing(b, tt.name, tt.edition, tt.notes, false), tt.rarity)
+			id, err := b.Match(card)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", card, err)
+			}
+			if id != tt.wantID {
+				co, _ := b.GetUUID(id)
+				t.Errorf("Match(%v) = %q (%s %s), want %q", card, id, co.SetCode, co.Number, tt.wantID)
+			}
+		})
+	}
+}
+
+// TestPokemonHoloShelf pins a holo bracket to the holofoil the catalog files
+// on a promo shelf when the listing's own set prints that number plain or in
+// reverse holo only, and to the listing's own holofoil where it has one.
+func TestPokemonHoloShelf(t *testing.T) {
+	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
+
+	for _, tt := range []struct {
+		desc, name, edition, rarity, wantID string
+	}{
+		{"a deck exclusive sold under its set's reverse holo",
+			"Boss's Orders (Holo) - 058/072", "SWSH Shining Fates", "Holo Rare", "058-072_234447_holofoil"},
+		{"an alternate art promo sold as its set's plain card",
+			"Delinquent (Holo) - 98a/122", "XY BREAKpoint", "Uncommon", "098a-122_177167_holofoil"},
+		{"a league promo sold as its set's plain card",
+			"Salandit (Holo Promo) - 15/145", "SM Guardians Rising", "Common", "015-145_148431_holofoil"},
+		{"the bracket beside a plain copy of the same promo",
+			"Professor's Letter (Alt Art Holo) - 146a/162", "XY BREAKthrough", "Promo", "146a-162_177166_holofoil"},
+		{"a holo promo the miscellaneous shelf lacks is the deck exclusive",
+			"Greavard (Holo Promo) - 100/197", "SV Obsidian Flames", "Promo", "100-197_613974_holofoil"},
+		{"its own set's holofoil wins over a league promo at the number",
+			"Charizard (Holo) - 100/97", "Ex Dragon", "Ultra Rare", "100-97_84187_holofoil"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			card := pokemonHoloShelf(b, pokemonCosmosHolo(b, pokemonListing(b, tt.name, tt.edition, "", false), tt.rarity))
 			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", card, err)
