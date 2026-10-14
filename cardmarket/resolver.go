@@ -731,6 +731,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.gameID == cm.GamePokemon && pokemonCodeCard(product.Name) {
 			return "", "", false, nil
 		}
+		if r.gameID == cm.GameYuGiOh && yugiohNoRow[product.IDProduct] {
+			return "", "", false, errNoPrinting
+		}
 		// A product named by id is that printing; its wording reads as
 		// a European print or another card.
 		var byID bool

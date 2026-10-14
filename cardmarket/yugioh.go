@@ -313,6 +313,14 @@ var yugiohPromoLinks = map[int]int{
 	244606: 23322, 244607: 23323, 363275: 130171, 363276: 130170,
 }
 
+// yugiohNoRow lists the products of a printing the datastore does not carry,
+// which the bridge or the name would land on a sibling's row.
+var yugiohNoRow = map[int]bool{
+	// Effect Veiler, 25YC-EN002 World Championship Qualifier: TCGplayer's
+	// one product is the YCS Stamp, the row cardtrader.tcgIDOverrides gives it.
+	829741: true,
+}
+
 // yugiohByID answers a Yu-Gi-Oh product yugiohPromoLinks names; an empty id
 // leaves the product to the bridge and its wording.
 func (r *resolver) yugiohByID(product *cm.Product) string {
