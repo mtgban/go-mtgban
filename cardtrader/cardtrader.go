@@ -242,6 +242,8 @@ var tcgIDOverrides = map[int]int{
 	417444: 721553, // GD05-094 Winner Pack 06
 	417445: 721554, // GD05-111 Winner Pack 06
 	417446: 721555, // T-029 Winner Pack 06
+	// Magic: the Scryfall id names the card before it on the shelf.
+	155490: 237359, // Nicol Bolas, God-Pharaoh, PHOU 140p
 }
 
 // TCGplayerProductID answers the TCGplayer id a blueprint's listings resolve

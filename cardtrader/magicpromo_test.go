@@ -183,6 +183,8 @@ func TestPreprocessPromoShelves(t *testing.T) {
 			"Secret Lair Commander Deck: Hatsune Miku", "Congregate", "", "004", "", 0, "PLST", "DMR-4"},
 		{"a Secret Lair Commander Deck reprint with an unresolved id is not guessed by number", 415442, CategoryMagicSingles,
 			"Secret Lair Commander Deck: Odds and Ends", "Doom Whisperer", "", "128", "", 999999999, "", ""},
+		{"an overridden TCGplayer id outranks a Scryfall id naming another card", 155490, CategoryMagicSingles,
+			"Strixhaven: School of Mages Promos", "Nicol Bolas, God-Pharaoh", "", "140", "256ff8d2-0f0d-4717-a58f-ce3be1d6340c", 0, "PHOU", "140p"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
