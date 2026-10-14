@@ -132,6 +132,14 @@ func nameQualifierList(name string) []string {
 	return words
 }
 
+// csiSignedBy matches the autograph credit a name carries, "Signed by X" or
+// "Signed FOIL  by X", which only the artist's copy has.
+var csiSignedBy = regexp.MustCompile(`(?i)\bsigned\s+(?:foil\s+)?by\b`)
+
+// csiSignedFoil matches the credit that puts FOIL after Signed, where the
+// other listings put it before.
+var csiSignedFoil = regexp.MustCompile(`(?i)signed\s+foil\s+by`)
+
 // csiAmbiguousNote matches the note a listing carries when it says it is one
 // of several printings ("Can be Normal or 25th Anniversary Stamp"): no single
 // identity exists for it, so a refusal of one is the vendor's own ambiguity.
@@ -563,7 +571,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					csi.printf("unsupported %s condition", conditions)
 					return
 				}
-				if strings.Contains(cardName, "Signed by") {
+				if csiSignedBy.MatchString(cardName) {
 					grade = mtgban.HP
 				}
 

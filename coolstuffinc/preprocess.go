@@ -231,6 +231,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 		variant = vars
 	}
 
+	cardName = csiSignedFoil.ReplaceAllString(cardName, "FOIL Signed by")
 	if strings.Contains(cardName, "Signed") && strings.Contains(cardName, "by") {
 		cuts := mtgmatcher.Cut(cardName, "Signed")
 		cardName = cuts[0]
