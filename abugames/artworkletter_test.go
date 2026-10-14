@@ -24,6 +24,7 @@ func TestArtworkLetter(t *testing.T) {
 		{"the same land, another artwork", "Island (D) - Arches", "Portal", "200", "POR", "203"},
 		{"a name the store writes without a dash", "Island (D) Sunset", "Mirage", "338", "MIR", "338"},
 		{"and the artwork beside it", "Island (A) Palm Tree", "Mirage", "338", "MIR", "335"},
+		{"a shelf whose basics carry their own numbers", "Forest (A Rocks)", "Summer Magic / Edgar", "304", "SUM", "304"},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			card := ABUCard{DisplayTitle: test.title, SimpleTitle: "", Edition: test.edition, Number: test.number}

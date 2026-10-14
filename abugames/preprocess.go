@@ -769,10 +769,6 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 			// Hack to prevent aliasing with the real "Trial // Error"
 			cardName = "Trial and Error "
 		}
-	case "Summer Magic / Edgar":
-		if magic.IsBasicLand(cardName) {
-			return nil, errors.New("unsupported")
-		}
 	case "Streets of New Capenna Commander":
 		if strings.Contains(cardName, "Spellbinding Soprano") && strings.Contains(cardName, "The List") {
 			cardName = "Spellbinding Soprano"
