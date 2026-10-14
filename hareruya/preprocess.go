@@ -1764,7 +1764,7 @@ var promoMap = map[string]map[string]map[string]struct {
 			},
 			"": {
 				Edition: "PTOR",
-				Variant: "67†a",
+				Variant: "67†",
 			},
 		},
 	},

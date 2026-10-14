@@ -190,6 +190,9 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】【Foil】《セラのアバター/Serra Avatar》[テストプリント]", "", ""},
 		{"【EN】【Foil】■FFTCG■《アルフィノ/Alphinaud》(その他イベント記念系)[その他プロモ]", "", ""},
 		{"【EN】《ルビーの大メダル/Ruby Medallion》[エラーカード] 茶R", "", ""},
+		// Only the misprint wording is 67†a; the plain error card is 67†.
+		{"【EN】【Foil】《ラクァタスのチャンピオン/Laquatus's Champion》(印刷ミス)[エラーカード] 黒R", "PTOR", "67†a"},
+		{"【EN】【Foil】《ラクァタスのチャンピオン/Laquatus's Champion》[エラーカード] 黒R", "PTOR", "67†"},
 	} {
 		t.Run(tt.title, func(t *testing.T) {
 			b := withMagic(t)
