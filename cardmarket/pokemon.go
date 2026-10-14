@@ -62,9 +62,10 @@ var pokemonCrossedLinks = map[int]bool{
 }
 
 // pokemonStampLinks names, by Cardmarket product id, the TCGplayer product
-// of the stamped, league and promo copies Cardmarket sells under the plain
-// card's name and number, which neither the bridge nor the wording tells
-// from the plain card.
+// of the stamped, league, Countdown Calendar and promo copies Cardmarket
+// sells under the plain card's name and number, or under a deck slot's
+// number, which neither the bridge nor the wording tells from the plain
+// card.
 var pokemonStampLinks = map[int]int{
 	280585: 488813, 295325: 131300, 295411: 131301, 295426: 131303,
 	319255: 131861, 371657: 158422, 567076: 145860, 722693: 635612,
@@ -73,6 +74,17 @@ var pokemonStampLinks = map[int]int{
 	819347: 628291, 833946: 634333, 841258: 664140, 841273: 663020,
 	858716: 610125, 858724: 616155, 858734: 654647, 862171: 658501,
 	882856: 232876, 901195: 181559,
+	359292: 168219, 359295: 168220, 359322: 168222, 359325: 168221,
+	550116: 219066, 550326: 219188, 764550: 658742, 833950: 219067,
+	833952: 219065, 833969: 219099, 834011: 219165, 855028: 696170,
+	855691: 702301, 868432: 681248, 882196: 153104, 882197: 153094,
+	882198: 153106, 882199: 153108, 882200: 153083, 882201: 153089,
+	882202: 153092, 882203: 153095, 882205: 153084, 882207: 153085,
+	882210: 153096, 882214: 153105, 882215: 153107, 882216: 153110,
+	882217: 153087, 882218: 153091, 882219: 153086, 882220: 153093,
+	882221: 153088, 882222: 153090, 882223: 153097, 882224: 153102,
+	882225: 153109, 894193: 704471, 916454: 714875, 916463: 714846,
+	916469: 714870,
 }
 
 // pokemonByID answers a Pokemon product the datastore records by its
