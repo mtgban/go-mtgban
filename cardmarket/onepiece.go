@@ -154,6 +154,7 @@ func offCode(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
 // answered with by id, before any product is named by its wording.
 func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) {
 	r.claimed = map[string]bool{}
+	r.foilSold = map[string]bool{}
 	r.foilVersions = foilVersions(r.tcgLink, byExpansion, products, items)
 	for _, exp := range items {
 		for _, id := range byExpansion[exp.IDExpansion] {
@@ -163,6 +164,9 @@ func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.Cata
 				continue
 			}
 			r.claimed[cardID] = true
+			if r.foilVersions[id] {
+				r.foilSold[cardID] = true
+			}
 			foilID, err := r.backend.MatchID(cardID, true)
 			if err == nil {
 				r.claimed[foilID] = true
