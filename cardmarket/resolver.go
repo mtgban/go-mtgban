@@ -853,7 +853,8 @@ const pokemonReverseHolo = "Reverse Holofoil"
 // back face too, and the index knows only fronts. Within a finish the
 // printing whose number agrees with the product's wins, the way Fallback
 // already prefers it; a pick between printings the number cannot settle is
-// said out loud. Both ids empty means the entry decided nothing.
+// said out loud, unless only one of them is undecorated, see undecorated.
+// Both ids empty means the entry decided nothing.
 func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, string) {
 	if r.gameID == cm.GameMagic {
 		id := r.numberedPrinting(product, uuids)
@@ -890,6 +891,13 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 				plain = append(plain, uuid)
 			}
 		}
+	}
+
+	if len(plain) > 1 && !plainMatched {
+		plain, plainMatched = r.undecorated(plain)
+	}
+	if len(foil) > 1 && !foilMatched {
+		foil, foilMatched = r.undecorated(foil)
 	}
 
 	if len(plain) > 1 && !plainMatched {
@@ -930,6 +938,29 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		cardIDFoil = cardID
 	}
 	return cardID, cardIDFoil
+}
+
+// undecorated puts first the one printing of uuids whose number is its own
+// PlainNumber, free of every decoration the game strips (a star, a dagger,
+// a printing letter, zero padding), and reports whether there was one. MTGJSON lists a printing and its decorated
+// variants under one Cardmarket id, and the plain printing is the one the
+// product sells. More or fewer than one leaves the order alone.
+func (r *resolver) undecorated(uuids []string) ([]string, bool) {
+	pick := -1
+	for i, uuid := range uuids {
+		co, err := r.backend.GetUUID(uuid)
+		if err != nil || co.Number != co.PlainNumber {
+			continue
+		}
+		if pick >= 0 {
+			return uuids, false
+		}
+		pick = i
+	}
+	if pick < 0 {
+		return uuids, false
+	}
+	return slices.Concat([]string{uuids[pick]}, uuids[:pick], uuids[pick+1:]), true
 }
 
 // numberedPrinting answers the printing of the listed card at the product's
