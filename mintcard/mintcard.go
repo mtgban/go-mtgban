@@ -46,6 +46,22 @@ func (mint *MTGMintCard) printf(format string, a ...any) {
 	}
 }
 
+// onlyTheList reports whether err is an aliasing error whose candidates are
+// all The List printings.
+func (mint *MTGMintCard) onlyTheList(err error) bool {
+	var alias *mtgmatcher.AliasingError
+	if !errors.As(err, &alias) || len(alias.Dupes) == 0 {
+		return false
+	}
+	for _, probe := range alias.Probe() {
+		card, uuidErr := mint.backend.GetUUID(probe)
+		if uuidErr != nil || card.SetCode != "PLST" {
+			return false
+		}
+	}
+	return true
+}
+
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
 	cond, err := mtgban.ParseCondition(condition)
 	if err != nil {
@@ -80,6 +96,11 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 		} else if err != nil {
 			// Skip errors on tokens
 			if strings.Contains(card.Name, "Token") {
+				return
+			}
+			// A bare name names no origin printing, so one held only by
+			// The List cannot be told apart.
+			if setCode == "MYS" && theCard.Variation == "" && mint.onlyTheList(err) {
 				return
 			}
 			mint.printf("%v", err)
