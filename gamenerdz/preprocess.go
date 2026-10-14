@@ -3,6 +3,7 @@ package gamenerdz
 import (
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -177,6 +178,14 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 	// is from is written only where the name ends.
 	case sameShelfAnotherYear(b, edition, magicTailSet(product.DisplayName)):
 		edition = magicTailSet(product.DisplayName)
+	}
+
+	// A Secret Lair Commander deck's cards are List reprints, numbered by the
+	// deck's own index, which names no card of the List. The deck's name is
+	// what places them.
+	deck := func(name string) bool { return mtgmatcher.Contains(product.ProductData.SetName, name) }
+	if slices.ContainsFunc(b.SLDDeckNames, deck) {
+		edition, number = "Secret Lair Commander: "+product.ProductData.SetName, ""
 	}
 
 	card := &mtgmatcher.InputCard{
