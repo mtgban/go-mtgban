@@ -1,7 +1,10 @@
 package mtgseattle
 
 import (
+	"cmp"
 	"errors"
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -93,6 +96,18 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 		}
 		if strings.Contains(variant, "Launch") {
 			edition = "Launch Party"
+		}
+	case "Homelands":
+		// "(N)" is the N-th art of the card, not a collector number
+		n, err := strconv.Atoi(variant)
+		if err == nil {
+			cards := b.MatchInSet(cardName, "HML")
+			slices.SortFunc(cards, func(x, y mtgmatcher.Card) int {
+				return cmp.Compare(x.Number, y.Number)
+			})
+			if n >= 1 && n <= len(cards) {
+				variant = cards[n-1].Number
+			}
 		}
 	case "FNM Promos":
 		switch cardName {
