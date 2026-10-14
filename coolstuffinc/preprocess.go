@@ -312,6 +312,12 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 				continue
 			}
 			if imagePrinting(b, cardName, maybeSet, maybeNum, variant) {
+				if edition == "Prerelease Promo" {
+					input = prereleaseImageCard(b, cardName, maybeSet, maybeNum, variant, isFoil)
+					if input != nil {
+						return input, nil
+					}
+				}
 				return imageCard(cardName, maybeSet, maybeNum, variant, isFoil), nil
 			}
 		}
@@ -450,6 +456,23 @@ func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher
 		return input
 	}
 	return &mtgmatcher.InputCard{Name: co.Name, Variation: listNum, Edition: "PLST", Foil: input.Foil}
+}
+
+// prereleaseImageCard answers the stamped printing a prerelease listing
+// sells when its image names the set's booster printing: the image is the
+// card's own art, so the "P<set>" number-"s" row is asked for instead. It
+// answers nothing where the image already names a prerelease printing or
+// the set has no such stamped row.
+func prereleaseImageCard(b *mtgmatcher.Backend, cardName, set, number, variant string, isFoil bool) *mtgmatcher.InputCard {
+	for _, card := range b.MatchInSetNumber(cardName, set, number) {
+		if slices.Contains(card.PromoTypes, magic.PromoTypePrerelease) {
+			return nil
+		}
+	}
+	if !imagePrinting(b, cardName, "P"+set, number+"s", variant) {
+		return nil
+	}
+	return imageCard(cardName, "P"+set, number+"s", variant, isFoil)
 }
 
 // imagePrinting reports whether a product image's set and number name exactly
