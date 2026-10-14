@@ -79,6 +79,20 @@ func TestAliasingContradictions(t *testing.T) {
 			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "PMID" },
 			want:  "the printing in PMID",
 		},
+		{
+			desc: "a promo shelf holds the promo, whatever set the shelf is named for",
+			name: "Elektra, Daughter of the Hand", shelf: "Promos: Standard Showdown",
+			notes: "Near Mint Normal English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.IsPromo },
+			want:  "a promo",
+		},
+		{
+			desc: "a promo shelf holds its card's only promo, whatever event it was for",
+			name: "Quicksilver, Brash Blur", shelf: "Promos: Standard Showdown",
+			notes: "Near Mint Normal English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "PPRO" && co.Number == "2026-1" },
+			want:  "PPRO #2026-1",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			co := tieBreak(t, b, tt.name, tt.shelf, tt.notes)

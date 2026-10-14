@@ -88,6 +88,12 @@ func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) st
 			return err != nil || reprintedAfterPromoPack(b, l, co)
 		})
 	}
+	if len(keep) > 1 && isPromoShelf(l.shelf) {
+		keep = slices.DeleteFunc(keep, func(id string) bool {
+			co, err := b.GetUUID(id)
+			return err != nil || !co.IsPromo
+		})
+	}
 	if len(keep) > 1 {
 		keep = slices.DeleteFunc(keep, func(id string) bool {
 			co, err := b.GetUUID(id)
