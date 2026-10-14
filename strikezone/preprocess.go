@@ -401,6 +401,12 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			edition = "P30H"
 			variation = "Retro Frame"
 		}
+		// Serra Angel is the one History promo P30A also numbers (001), and
+		// the shelf lists its two copies as the plain one and the Retro Frame.
+		if cardName == "Serra Angel" && variation == "001" {
+			edition = "P30H"
+			variation = "1"
+		}
 	case "Promos: Magicfest":
 		// Only the etched Arcane Signet needs steering; PF25 has no etched
 		// printing of its own, but its other rows land there unaided.
