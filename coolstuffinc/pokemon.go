@@ -109,6 +109,19 @@ var pokemonCatalogShelves = []struct {
 	{"Grass Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Grass Energy", "Deck Exclusives", "2017 Wave Foil"},
 	{"Lightning Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Lightning Energy", "Deck Exclusives", "2017 Wave Foil"},
 	{"Metal Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Metal Energy", "Deck Exclusives", "2017 Wave Foil"},
+	{"Fighting Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Fighting Energy", "League & Championship Cards", "WotC League Promo"},
+	{"Fire Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Fire Energy", "League & Championship Cards", "WotC League Promo"},
+	{"Grass Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Grass Energy", "League & Championship Cards", "WotC League Promo"},
+	{"Lightning Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Lightning Energy", "League & Championship Cards", "WotC League Promo"},
+	{"Psychic Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Psychic Energy", "League & Championship Cards", "WotC League Promo"},
+	{"Water Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Water Energy", "League & Championship Cards", "WotC League Promo"},
+	{"Articuno, Moltres, and Zapdos Oversize Card", "WOTC Black Star Promos", "", "Articuno, Moltres, and Zapdos", "Jumbo Cards", ""},
+	{"Great Tusk ex (Shiny) - SVP072 (Paldean Fates Stamp)", "SV Promos", "", "Great Tusk ex - 072", "Miscellaneous Cards & Products", "Paldean Fates Stamped"},
+	{"Iron Treads ex (Shiny) - SVP073 (Paldean Fates Stamp)", "SV Promos", "", "Iron Treads ex - 073", "Miscellaneous Cards & Products", "Paldean Fates Stamped"},
+	{"Champions Festival - XY27", "XY Promos", "", "Champions Festival - XY27", "XY Promos", "2014"},
+	{"Champions Festival - XY91", "XY Promos", "", "Champions Festival - XY91", "XY Promos", "2015"},
+	{"Champions Festival - XY176", "XY Promos", "", "Champions Festival - XY176", "XY Promos", "2016"},
+	{"Electrode (Holo) - 088/264", "SWSH Fusion Strike", "", "Electrode - 088", "Miscellaneous Cards & Products", "Cosmos Holo"},
 }
 
 // pokemonReverse2022Energy matches the 2022 reverse holo basic energies this
@@ -120,9 +133,10 @@ var pokemonReverse2022Energy = regexp.MustCompile(`^(\w+ Energy) - 2022 \(Revers
 // a bare letter no matcher reads: the 30th Celebration Mew, one for each of
 // the Red, Green and Blue scans.
 var pokemonListingIDs = map[string]string{
-	"Mew (Red) - R/RGB|30th Celebration":   "717607",
-	"Mew (Green) - G/RGB|30th Celebration": "717608",
-	"Mew (Blue) - B/RGB|30th Celebration":  "717609",
+	"Mew (Red) - R/RGB|30th Celebration":                           "717607",
+	"Mew (Green) - G/RGB|30th Celebration":                         "717608",
+	"Mew (Blue) - B/RGB|30th Celebration":                          "717609",
+	"Mega Greninja ex - MEP081 Jumbo Size|Pokemon Oversized Cards": "704880",
 }
 
 // pokemonListing reads a Pokemon listing the way the catalog names it. The
