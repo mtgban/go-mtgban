@@ -553,6 +553,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				break
 			}
 		}
+		if r.gameID == cm.GameOnePiece && onePieceTrophy(product) {
+			return "", "", false, nil
+		}
 
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
