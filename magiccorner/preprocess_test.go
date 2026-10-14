@@ -116,6 +116,31 @@ func TestInternalPreprocessUginPromoShelf(t *testing.T) {
 	}
 }
 
+// The WAR Japanese shelf tags its Prerelease promos "(Version 2)", and every
+// other listing there is the booster printing.
+func TestInternalPreprocessWarJapanese(t *testing.T) {
+	tests := []struct {
+		variation     string
+		extra         string
+		wantEdition   string
+		wantVariation string
+	}{
+		{"Version 2", "jaya-venerated-firemage-version-2_373440", "War of the Spark Promos", "Japanese Prerelease"},
+		{"Version 1", "WAR135b", "War of the Spark", "Japanese"},
+	}
+
+	b := &mtgmatcher.Backend{}
+	for _, tt := range tests {
+		t.Run(tt.variation, func(t *testing.T) {
+			_, gotEdition, gotVariation := internalPreprocess(b, "Jaya, Venerated Firemage", warSparkJapaneseEdition, tt.variation, tt.extra)
+			if gotEdition != tt.wantEdition || gotVariation != tt.wantVariation {
+				t.Errorf("internalPreprocess() = edition %q, variation %q, want %q, %q",
+					gotEdition, gotVariation, tt.wantEdition, tt.wantVariation)
+			}
+		})
+	}
+}
+
 // The Ravnica guildgates are told apart by the number in their image name,
 // and the tag steps aside only where a number is actually there to read.
 func TestNamesTheArt(t *testing.T) {

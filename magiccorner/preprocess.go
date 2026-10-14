@@ -384,11 +384,12 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			variation = extra
 		}
 	case warSparkJapaneseEdition:
-		variation = "Japanese"
-		edition = "War of the Spark"
 		if variation == "Version 2" {
 			variation = "Japanese Prerelease"
 			edition = "War of the Spark Promos"
+		} else {
+			variation = "Japanese"
+			edition = "War of the Spark"
 		}
 	case "Core 2020: Extras":
 		edition = "PM20"
