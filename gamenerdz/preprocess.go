@@ -98,6 +98,10 @@ func bodyNamesOwnSet(product GNProduct) bool {
 	return strings.EqualFold(tags[len(tags)-1][1], string(product.ProductData.Set))
 }
 
+// magicBareNumber is the four digit collector number a few display names
+// bracket before their code, "Eddie Brock (0233) (Borderless) (SPM-224)".
+var magicBareNumber = regexp.MustCompile(`\((0\d{3})\)`)
+
 // magicOrigin is the bare set-code tag a List display name puts before the
 // number when the number alone would not say which printing the card is
 // reprinted from: "Ancestral Mask (MMQ) (LIST-229/350)".
@@ -132,6 +136,15 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		cardName = respelled
 	}
 	cardName = strings.ReplaceAll(cardName, " / ", " // ")
+	// The bare number a display writes ahead of its code, "(0233)", is the
+	// printing's own, and the code's can name another card's of the same set.
+	bare := magicBareNumber.FindStringSubmatch(product.DisplayName)
+	if bare != nil {
+		own := strings.TrimLeft(bare[1], "0")
+		if own != strings.TrimLeft(number, "0") && len(b.MatchWithNumber(cardName, strings.ToUpper(string(product.ProductData.Set)), own)) > 0 {
+			number = own
+		}
+	}
 	fixed, found := magicNumberTypos[magicTypo{strings.ToLower(string(product.ProductData.Set)), cardName, number}]
 	if found {
 		number = fixed
@@ -463,6 +476,20 @@ func magicName(b *mtgmatcher.Backend, displayName string) string {
 	name := displayName
 	if idx := strings.Index(name, " ("); idx != -1 {
 		name = name[:idx]
+		// A card can carry a parenthesis of its own, "Erase (Not the Urza's
+		// Legacy One)", so the longest head the catalog knows is the name.
+		for at := idx + 2; ; {
+			next := strings.Index(displayName[at:], " (")
+			if next == -1 {
+				break
+			}
+			at += next
+			_, err := b.SearchEquals(displayName[:at])
+			if err == nil {
+				name = displayName[:at]
+			}
+			at += 2
+		}
 	} else if idx := strings.Index(name, " - "); idx != -1 {
 		name = name[:idx]
 	}

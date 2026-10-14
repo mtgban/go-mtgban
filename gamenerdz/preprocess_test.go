@@ -528,6 +528,33 @@ func TestPreprocess(t *testing.T) {
 			edition:   "play",
 			variation: "100 Promo Pack",
 		},
+		{
+			// A card's own parenthesis is part of its name.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Erase (Not the Urza's Legacy One) (UNH-010) - Unhinged Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "unh", SetName: "Unhinged"},
+			},
+			name:      "Erase (Not the Urza's Legacy One)",
+			edition:   "Unhinged",
+			variation: "010",
+			foil:      true,
+		},
+		{
+			// The bare number is the printing's own where the code's is
+			// another printing of the card.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Eddie Brock (0233) (Borderless) (SPM-224) - Marvel's Spider-Man Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "spm", SetName: "Marvel's Spider-Man"},
+			},
+			name:      "Eddie Brock",
+			edition:   "Marvel's Spider-Man",
+			variation: "233",
+			foil:      true,
+		},
 	}
 	for _, tt := range tests {
 		card, err := preprocess(b, tt.product, tt.game)
