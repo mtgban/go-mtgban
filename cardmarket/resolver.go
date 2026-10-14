@@ -78,6 +78,9 @@ type resolver struct {
 	// the foil of their printing; see foilVersions.
 	foilVersions map[int]bool
 
+	// foilSold holds the foil printings those products are answered with.
+	foilSold map[string]bool
+
 	// printf logs through the owning scraper's own prefix. Left nil, calls
 	// through it are no-ops - a resolver built for a test rather than a
 	// live scraper needs none.
@@ -826,6 +829,12 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		}
 	default:
 		return "", "", false, errors.New("unsupported game")
+	}
+
+	// A foil Cardmarket sells as a product of its own is that product's to
+	// price, not the plain version's second column.
+	if r.gameID == cm.GameOnePiece && cardIDFoil != cardID && r.foilSold[cardIDFoil] {
+		cardIDFoil = ""
 	}
 
 	return cardID, cardIDFoil, byName, nil
