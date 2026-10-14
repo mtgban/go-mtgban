@@ -122,6 +122,12 @@ func (r *resolver) onePieceByID(product *cm.Product) (string, error) {
 // onePieceDonRarity is the rarity Cardmarket files every DON!! card under.
 const onePieceDonRarity = "DON!!"
 
+// onePieceTrophy reports whether a product is a serialized trophy card: an
+// event prize, no card of the game, priced only where an id links it.
+func onePieceTrophy(product *cm.Product) bool {
+	return strings.HasSuffix(versionTail.ReplaceAllString(product.Name, ""), "Trophy Card")
+}
+
 // onePieceDeckReprint reports whether a starter deck's card is a booster
 // card reprinted under its own code, which no catalog lists apart: the
 // name lands on the booster printing another shelf prices already. A

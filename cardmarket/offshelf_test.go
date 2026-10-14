@@ -92,6 +92,13 @@ func TestOffShelf(t *testing.T) {
 			refusal: errNoPrinting,
 		},
 		{
+			what: "a trophy card is no card of the game and says nothing",
+			product: cm.Product{
+				IDProduct: 906851, Name: "Flame-Flame Fruit Coliseum Champion Trophy Card",
+				ExpansionName: "Special Tournament Promos",
+			},
+		},
+		{
 			what: "the booster's own shelf keeps the booster card",
 			product: cm.Product{
 				IDProduct: 700916, Name: "Mr.1 (Daz.Bonez) (OP02-063)",
