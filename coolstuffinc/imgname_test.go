@@ -228,3 +228,17 @@ func TestPreprocessFinalFantasyBackground(t *testing.T) {
 		}
 	})
 }
+
+// TestPreprocessSignedFoil pins a signed foil copy, whose FOIL sits between
+// "Signed" and the artist.
+func TestPreprocessSignedFoil(t *testing.T) {
+	b := readGameDatastore(t, "magic", "ALLPRINTINGS5_PATH")
+
+	card, err := preprocess(b, "Capture Sphere Signed FOIL  by Mark Behm", "Guilds of Ravnica", "", "https://s.cf.net/i/287494SignedFv2.jpg", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.Name != "Capture Sphere" || !card.Foil {
+		t.Errorf("preprocess() = %q foil=%v, want Capture Sphere foil", card.Name, card.Foil)
+	}
+}
