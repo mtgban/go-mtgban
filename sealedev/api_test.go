@@ -230,3 +230,25 @@ func TestPassthroughFirst(t *testing.T) {
 		t.Errorf("passthroughFirst = %v, %v; want 7, nil", got, err)
 	}
 }
+
+func TestSYPDirectPriceFallsBackToHistory(t *testing.T) {
+	b := installCards(t, map[string]*mtgmatcher.CardObject{
+		"live":    {Card: mtgmatcher.Card{Name: "Live", SetCode: "AAA"}},
+		"hist":    {Card: mtgmatcher.Card{Name: "Hist", SetCode: "AAA"}},
+		"neither": {Card: mtgmatcher.Card{Name: "Neither", SetCode: "AAA"}},
+	})
+	r := &priceSnapshot{Retail: map[string]map[string]float64{}, Buylist: map[string]map[string]float64{}}
+	r.setRetail(b, "live", "TCGDirect", 10)
+	r.setRetail(b, "live", "TCGDirectHist", 99)
+	r.setRetail(b, "hist", "TCGDirectHist", 4)
+
+	if got := sypDirectPrice(b, r, "live"); got != 10 {
+		t.Errorf("live Direct must win: %v", got)
+	}
+	if got := sypDirectPrice(b, r, "hist"); got != 4 {
+		t.Errorf("history must stand in: %v", got)
+	}
+	if got := sypDirectPrice(b, r, "neither"); got != 0 {
+		t.Errorf("nothing to price from: %v", got)
+	}
+}
