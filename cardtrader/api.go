@@ -356,8 +356,15 @@ type ProductProperties struct {
 // Product is one listing: a blueprint offered by a seller at a price, in a
 // condition and a language.
 type Product struct {
-	ID          int    `json:"id"`
-	BlueprintID int    `json:"blueprint_id"`
+	ID          int `json:"id"`
+	BlueprintID int `json:"blueprint_id"`
+
+	// The export names each listing's card and files it under its game
+	// and category; the marketplace endpoints leave these empty.
+	Name       string `json:"name_en"`
+	GameID     int    `json:"game_id"`
+	CategoryID int    `json:"category_id"`
+
 	Quantity    int    `json:"quantity"`
 	Description string `json:"description"`
 	OnVacation  bool   `json:"on_vacation"`
@@ -394,6 +401,33 @@ type BlueprintError struct {
 		Message string `json:"message"`
 	} `json:"extra"`
 	RequestID string `json:"request_id"`
+}
+
+// StatusError is a status the API answered a call with instead of its body;
+// callers read a refused token with errors.As and Code 401 or 403.
+type StatusError struct {
+	Code    int    // the HTTP status
+	Op      string // the call, as its error strings name it
+	Message string // the API's own message, when the body carried one
+}
+
+func (e *StatusError) Error() string {
+	s := fmt.Sprintf("%s: %d %s", e.Op, e.Code, http.StatusText(e.Code))
+	if e.Message != "" {
+		s += ": " + e.Message
+	}
+	return s
+}
+
+// statusError reads a non-200 answer into a StatusError, keeping the message
+// the body carries when it is the catalog's error shape.
+func statusError(op string, resp *http.Response, body []byte) *StatusError {
+	se := &StatusError{Code: resp.StatusCode, Op: op}
+	var apiErr BlueprintError
+	if json.Unmarshal(body, &apiErr) == nil {
+		se.Message = apiErr.Extra.Message
+	}
+	return se
 }
 
 // Expansion is a set as Card Trader files it, which does not always agree with
@@ -525,6 +559,12 @@ func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionID int) ([]Blue
 		return nil, err
 	}
 
+	// A refused or missing expansion names its status even when the body
+	// carries no message of its own.
+	if resp.StatusCode != http.StatusOK {
+		return nil, statusError("blueprints export", resp, data)
+	}
+
 	var blueprints []Blueprint
 	err = json.Unmarshal(data, &blueprints)
 	if err != nil {
@@ -620,8 +660,19 @@ func (ct *CTAuthClient) ProductsExport(ctx context.Context) ([]Product, error) {
 	}
 	defer resp.Body.Close()
 
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// A refused token answers with a status, which the caller needs to
+	// tell from a body that does not decode.
+	if resp.StatusCode != http.StatusOK {
+		return nil, statusError("products export", resp, data)
+	}
+
 	var products []Product
-	err = json.NewDecoder(resp.Body).Decode(&products)
+	err = json.Unmarshal(data, &products)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
