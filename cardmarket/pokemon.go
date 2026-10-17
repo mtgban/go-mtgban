@@ -62,9 +62,10 @@ var pokemonCrossedLinks = map[int]bool{
 }
 
 // pokemonStampLinks names, by Cardmarket product id, the TCGplayer product
-// of the stamped, league and promo copies Cardmarket sells under the plain
-// card's name and number, which neither the bridge nor the wording tells
-// from the plain card.
+// of the stamped, league, Countdown Calendar and promo copies Cardmarket
+// sells under the plain card's name and number, or under a deck slot's
+// number, which neither the bridge nor the wording tells from the plain
+// card.
 var pokemonStampLinks = map[int]int{
 	280585: 488813, 295325: 131300, 295411: 131301, 295426: 131303,
 	319255: 131861, 371657: 158422, 567076: 145860, 722693: 635612,
@@ -73,22 +74,77 @@ var pokemonStampLinks = map[int]int{
 	819347: 628291, 833946: 634333, 841258: 664140, 841273: 663020,
 	858716: 610125, 858724: 616155, 858734: 654647, 862171: 658501,
 	882856: 232876, 901195: 181559,
+	359292: 168219, 359295: 168220, 359322: 168222, 359325: 168221,
+	550116: 219066, 550326: 219188, 764550: 658742, 833950: 219067,
+	833952: 219065, 833969: 219099, 834011: 219165, 855028: 696170,
+	855691: 702301, 868432: 681248, 882196: 153104, 882197: 153094,
+	882198: 153106, 882199: 153108, 882200: 153083, 882201: 153089,
+	882202: 153092, 882203: 153095, 882205: 153084, 882207: 153085,
+	882210: 153096, 882214: 153105, 882215: 153107, 882216: 153110,
+	882217: 153087, 882218: 153091, 882219: 153086, 882220: 153093,
+	882221: 153088, 882222: 153090, 882223: 153097, 882224: 153102,
+	882225: 153109, 894193: 704471, 916454: 714875, 916463: 714846,
+	916469: 714870,
+}
+
+// pokemonHoloLinks names, by Cardmarket product id, the TCGplayer product
+// whose Holofoil printing a product sells. TCGplayer files the holo and the
+// plain card of a McDonald's Collection 25th Anniversary card or a Prize
+// Pack Series card under one product, and Cardmarket sells them as two,
+// which the plain card's product holds. The rows go once datastore-gen
+// publishes these products' cardmarketId.
+var pokemonHoloLinks = map[int]int{
+	538783: 232316, 538793: 232317, 538803: 232318, 538813: 232319,
+	538823: 232320, 538833: 232321, 538843: 232322, 538853: 232323,
+	538863: 232324, 538873: 232325, 538883: 232326, 538893: 232327,
+	538903: 232328, 538913: 232329, 538923: 232341, 538933: 232330,
+	538943: 232331, 538953: 232332, 538963: 232333, 538973: 232334,
+	538983: 232335, 538993: 232336, 539003: 232337, 539013: 232338,
+	539023: 232339, 782313: 515640, 782315: 515639, 782317: 515644,
+	782319: 515641, 782321: 515643, 782323: 515638, 782325: 515635,
+	782327: 515642, 835690: 489332, 835691: 515539, 835692: 515463,
+	835693: 515464, 835694: 515349, 835697: 515470, 835698: 515474,
+	835699: 515476, 835703: 489354, 835704: 489322, 835705: 515480,
+	835707: 515582, 835708: 515583, 835710: 515452, 835712: 515458,
+	835783: 489333, 835784: 489332, 835787: 476104, 835788: 489334,
+	835789: 489335, 835790: 476106, 835791: 489355, 835792: 489347,
+	835793: 476011, 835794: 476117, 835795: 489356, 835796: 489348,
+	835797: 476051, 835798: 476003, 835799: 476079, 835800: 489354,
+	835801: 476025, 835802: 489322, 835803: 489323, 835804: 475994,
+	835805: 476100, 835806: 489336, 835807: 489350, 835808: 476110,
+	835809: 476134, 835810: 476115, 835811: 476123, 835812: 476124,
+	835813: 476135, 835814: 489337, 835815: 476038, 835816: 489328,
+	835817: 476086, 835818: 476131, 835819: 476095, 835820: 476132,
+	835821: 476082, 835822: 476104, 835824: 476106, 835825: 476001,
+	835826: 476113, 835827: 476011, 835828: 476117, 835829: 476003,
+	835830: 476002, 835831: 476079, 835832: 476025, 835833: 476085,
+	835834: 476091, 835835: 476038, 835836: 476098, 835837: 476100,
+	835838: 476103, 835839: 476107, 835840: 476110, 835841: 476134,
+	835842: 476115, 835843: 476122, 835844: 476135, 835845: 476076,
+	835846: 476123, 835847: 476124, 835848: 476137, 894237: 703865,
+	894239: 703866, 894241: 703867, 894243: 703868, 894245: 703869,
+	894248: 703870, 894250: 703871,
 }
 
 // pokemonByID answers a Pokemon product the datastore records by its
-// Cardmarket id or pokemonStampLinks names; an empty id leaves the product
-// to the bridge and its wording.
-func (r *resolver) pokemonByID(product *cm.Product) string {
+// Cardmarket id or pokemonStampLinks and pokemonHoloLinks name; an empty id
+// leaves the product to the bridge and its wording. A table row the
+// datastore cannot answer is an error rather than a fall through to the
+// plain card the row exists to keep the product off.
+func (r *resolver) pokemonByID(product *cm.Product) (string, error) {
 	uuid := r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, strconv.Itoa(product.IDProduct))
 	if uuid != "" {
-		return uuid
+		return uuid, nil
 	}
 	tcgID, found := pokemonStampLinks[product.IDProduct]
-	if !found {
-		return ""
+	if found {
+		return r.backend.MatchID(strconv.Itoa(tcgID), false)
 	}
-	uuid, _ = r.backend.MatchID(strconv.Itoa(tcgID), false)
-	return uuid
+	tcgID, found = pokemonHoloLinks[product.IDProduct]
+	if !found {
+		return "", nil
+	}
+	return r.backend.MatchIDFinish(strconv.Itoa(tcgID), "Holofoil")
 }
 
 // pokemonForeign reports whether an expansion is one of those catalogs.
@@ -400,18 +456,18 @@ type pokemonFinishTarget struct {
 // pokemonFinishPlan groups cardID's own finish siblings (mtgmatcher.
 // FinishSiblings, which already carries the game's whole vocabulary and
 // handles finish twins) by the Cardmarket cell each projects onto (see
-// pokemonFinishCell), keeping one anchor uuid per occupied cell - the first
-// FinishSiblings returns for that cell, which is already ordered base
-// finish first, then the game's own vocabulary alphabetically. Any other
-// sibling sharing that cell is a real, distinct printing this scraper
-// cannot separately price: Cardmarket's own flags cannot tell it from the
-// anchor, so querying it again would file the same listings under two
-// uuids instead of one - confirmed live: 349 real products (EX-era holo
-// rares) carry both a Normal and a Holofoil sibling as one Cardmarket
-// product.
+// pokemonFinishCell), keeping one anchor uuid per occupied cell - cardID
+// itself for its own cell, otherwise the first FinishSiblings returns for
+// that cell, which is already ordered base finish first, then the game's
+// own vocabulary alphabetically. Any other sibling sharing that cell is a
+// real, distinct printing this scraper cannot separately price:
+// Cardmarket's own flags cannot tell it from the anchor, so querying it
+// again would file the same listings under two uuids instead of one -
+// confirmed live: 349 real products (EX-era holo rares) carry both a
+// Normal and a Holofoil sibling as one Cardmarket product.
 func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarget {
 	type cell struct{ isFirstEd, isReverseHolo bool }
-	seen := map[cell]bool{}
+	anchors := map[cell]int{}
 	var targets []pokemonFinishTarget
 	for _, sibling := range b.FinishSiblings(cardID) {
 		co, err := b.GetUUID(sibling)
@@ -420,10 +476,14 @@ func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarg
 		}
 		isFirstEd, isReverseHolo := pokemonFinishCell(co.Finish)
 		c := cell{isFirstEd, isReverseHolo}
-		if seen[c] {
+		i, found := anchors[c]
+		if found {
+			if sibling == cardID {
+				targets[i].cardID = cardID
+			}
 			continue
 		}
-		seen[c] = true
+		anchors[c] = len(targets)
 		targets = append(targets, pokemonFinishTarget{cardID: sibling, isFirstEd: isFirstEd, isReverseHolo: isReverseHolo})
 	}
 	return targets
