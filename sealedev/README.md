@@ -94,8 +94,11 @@ Direct quote, it is estimated from TCG Market (falling back to TCG Low) put
 through `tcgplayer.DirectPriceAfterFees`. Where it carries one that looks
 wrong - `directNet/2 > tcgMarket`, i.e. Direct claims more than twice what
 the card sells for - it is either capped at twice Low or dropped outright.
-`TCGDirectSYPNet` is computed unconditionally from `TCGDirect`, and `CT0` has
-its flat per-band fee (`getCT0fees`) subtracted in place.
+`TCGDirectSYPNet` is computed unconditionally, written even when zero, from
+`TCGDirect`, or from `TCGDirectHist` (the site's trailing average of recorded
+Direct prices, served only for SYP cards with no live Direct price) where
+`TCGDirect` does not price the card. `CT0` has its flat per-band fee
+(`getCT0fees`) subtracted in place.
 
 **Cardmarket** is the larger estimate, and `mkm.go` is entirely about it.
 Cardmarket's market scraper only spends a live API call where one is worth
