@@ -255,7 +255,23 @@ func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.Inp
 // image name carries as its trailing number.
 var mcmImageIDRe = regexp.MustCompile(`[-_/](\d{5,7})(?:-\d+)?\.(?:jpe?g|png)$`)
 
-// imageProductID resolves an Extras/Promos image's Cardmarket product id to
+// scryfallImageRe matches the Scryfall id an image name ends with: the whole
+// uuid on older shelves, its first eight digits after the card's slug on newer
+// ones.
+var scryfallImageRe = regexp.MustCompile(`(?:^|_)([0-9a-f]{8}(?:-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?)$`)
+
+// scryfallImageID returns the Scryfall id, or its leading digits, an image
+// path ends with.
+func scryfallImageID(imagePath string) string {
+	base := strings.TrimSuffix(path.Base(imagePath), path.Ext(imagePath))
+	m := scryfallImageRe.FindStringSubmatch(base)
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
+
+// imageProductID resolves an image's Cardmarket product id or Scryfall id to
 // a uuid. It is accepted only when it names the listing's card, under the
 // wording's own language, and in the wording's set unless the wording failed -
 // this store also reuses one image across unrelated products.
@@ -271,7 +287,8 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	}
 
 	m := mcmImageIDRe.FindStringSubmatch(imagePath)
-	if m == nil {
+	scryfall := scryfallImageID(imagePath)
+	if m == nil && scryfall == "" {
 		return ""
 	}
 
@@ -287,7 +304,12 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	var hit *mtgmatcher.CardObject
 	for _, candidate := range ids {
 		co, err := b.GetUUID(candidate)
-		if err != nil || co.Identifiers["mcmId"] != m[1] {
+		if err != nil {
+			continue
+		}
+		byMCM := m != nil && co.Identifiers["mcmId"] == m[1]
+		byScryfall := scryfall != "" && strings.HasPrefix(co.Identifiers["scryfallId"], scryfall)
+		if !byMCM && !byScryfall {
 			continue
 		}
 		// SearchContains is a substring search: Plains also finds
@@ -326,14 +348,14 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	if wordingErr == nil {
 		co, err := b.GetUUID(wordingID)
 		if err == nil {
-			sameSet = co.SetCode == hit.SetCode
+			sameSet = inSetOrPromo(b, co.SetCode, hit.SetCode)
 		}
 	} else {
 		var alias *mtgmatcher.AliasingError
 		if errors.As(wordingErr, &alias) {
 			for _, probe := range alias.Probe() {
 				co, err := b.GetUUID(probe)
-				if err == nil && co.SetCode == hit.SetCode {
+				if err == nil && inSetOrPromo(b, co.SetCode, hit.SetCode) {
 					sameSet = true
 					break
 				}
@@ -361,6 +383,18 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	return resolved
 }
 
+// inSetOrPromo reports whether the image's set is the wording's own, or the
+// promo set decorating it: the wording sends a promo shelf to the base set.
+// The other way round is not accepted, as the store shows one base image on a
+// promo listing that the wording had placed correctly.
+func inSetOrPromo(b *mtgmatcher.Backend, wordingSet, imageSet string) bool {
+	if wordingSet == imageSet {
+		return true
+	}
+	set, err := b.GetSet(imageSet)
+	return err == nil && set.Type == "promo" && set.ParentCode == wordingSet
+}
+
 // namesFrontFace reports whether name and cardName share a front face. The
 // cut at " /" reads both the store's "A / B" and the datastore's "A // B".
 func namesFrontFace(name, cardName string) bool {
@@ -384,11 +418,12 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			variation = extra
 		}
 	case warSparkJapaneseEdition:
-		variation = "Japanese"
-		edition = "War of the Spark"
 		if variation == "Version 2" {
 			variation = "Japanese Prerelease"
 			edition = "War of the Spark Promos"
+		} else {
+			variation = "Japanese"
+			edition = "War of the Spark"
 		}
 	case "Core 2020: Extras":
 		edition = "PM20"
@@ -675,17 +710,11 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 			}
 		default:
 			// Try using the number, except the set code can randomly be
-			// 2 or 3 characters.
+			// 2 to 4 characters.
 			if magic.IsBasicLand(cardName) {
-				for _, lengthToDrop := range []int{2, 3} {
-					if len(extra) > lengthToDrop {
-						internalNumber := strings.TrimLeft(extra[lengthToDrop:], "0")
-						val, err := strconv.Atoi(internalNumber)
-						if err == nil && val < 400 {
-							variation = internalNumber
-							break
-						}
-					}
+				number := basicImageNumber(extra)
+				if number != "" {
+					variation = number
 				}
 			}
 		}
@@ -695,6 +724,48 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 	}
 
 	return cardName, edition, variation
+}
+
+// basicImageNumber returns the collector number a basic land's image name
+// spells after its set code, which is 2 to 4 characters long. A digit in the
+// fourth place opens the number of a shorter code, or a Cardmarket id, so no
+// 4-character code is read there.
+func basicImageNumber(extra string) string {
+	drops := []int{2, 3, 4}
+	if len(extra) > 3 && extra[3] >= '0' && extra[3] <= '9' {
+		drops = drops[:2]
+	}
+	for _, lengthToDrop := range drops {
+		if len(extra) > lengthToDrop {
+			number := strings.TrimLeft(extra[lengthToDrop:], "0")
+			val, err := strconv.Atoi(number)
+			if err == nil && val < 400 {
+				return number
+			}
+		}
+	}
+	return ""
+}
+
+// matchBasicByImage retries a basic land the wording could not place with the
+// number its image names. The store's version tag counts its own index, which
+// is not collector order, so the number is trusted only where the landed card
+// confirms it. input is a copy taken before the first Match, which mutates it.
+func matchBasicByImage(b *mtgmatcher.Backend, card *MCCard, input mtgmatcher.InputCard) (string, bool) {
+	number := basicImageNumber(strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra)))
+	if number == "" {
+		return "", false
+	}
+	input.Variation = number
+	cardID, err := b.Match(&input)
+	if err != nil {
+		return "", false
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil || (co.Number != number && co.PlainNumber != number) {
+		return "", false
+	}
+	return cardID, true
 }
 
 // genericVersionRe matches the store's bare "Version N" tag, which names no
@@ -770,7 +841,7 @@ func needsImageLookup(edition string) bool {
 func hasNumberedImage(edition string) bool {
 	switch edition {
 	case "Throne of Eldraine: Extras", "Theros Beyond Death: Extras",
-		"Guilds of Ravnica", "Ravnica Allegiance", "Unglued":
+		"Guilds of Ravnica", "Ravnica Allegiance", "Unglued", "Battlebond":
 		return true
 	}
 	return false

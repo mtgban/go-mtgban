@@ -144,16 +144,21 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				continue
 			}
 
+			retry := *theCard
 			cardID, err := mc.backend.Match(theCard)
+			// The basic lands carry nothing but the store's own version tag,
+			// so retry them with the number their image names, and ignore
+			// the ones it cannot place.
+			if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && magic.IsBasicLand(card.Name) {
+				id, found := matchBasicByImage(mc.backend, &card, retry)
+				if !found {
+					continue
+				}
+				cardID, err = id, nil
+			}
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
-				// The basic lands need custom handling for each edition if they
-				// aren't found with other methods, ignore errors until they are
-				// added to the variants table.
-				if magic.IsBasicLand(card.Name) {
-					continue
-				}
 				var alias *mtgmatcher.AliasingError
 				aliased := errors.As(err, &alias)
 				if aliased && blindAttraction(mc.backend, alias.Probe()) {

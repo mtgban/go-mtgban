@@ -116,6 +116,31 @@ func TestInternalPreprocessUginPromoShelf(t *testing.T) {
 	}
 }
 
+// The WAR Japanese shelf tags its Prerelease promos "(Version 2)", and every
+// other listing there is the booster printing.
+func TestInternalPreprocessWarJapanese(t *testing.T) {
+	tests := []struct {
+		variation     string
+		extra         string
+		wantEdition   string
+		wantVariation string
+	}{
+		{"Version 2", "jaya-venerated-firemage-version-2_373440", "War of the Spark Promos", "Japanese Prerelease"},
+		{"Version 1", "WAR135b", "War of the Spark", "Japanese"},
+	}
+
+	b := &mtgmatcher.Backend{}
+	for _, tt := range tests {
+		t.Run(tt.variation, func(t *testing.T) {
+			_, gotEdition, gotVariation := internalPreprocess(b, "Jaya, Venerated Firemage", warSparkJapaneseEdition, tt.variation, tt.extra)
+			if gotEdition != tt.wantEdition || gotVariation != tt.wantVariation {
+				t.Errorf("internalPreprocess() = edition %q, variation %q, want %q, %q",
+					gotEdition, gotVariation, tt.wantEdition, tt.wantVariation)
+			}
+		})
+	}
+}
+
 // The Ravnica guildgates are told apart by the number in their image name,
 // and the tag steps aside only where a number is actually there to read.
 func TestNamesTheArt(t *testing.T) {
@@ -252,6 +277,49 @@ func TestImageProductID(t *testing.T) {
 		}
 	})
 
+	t.Run("the Scryfall digits in the image name pick the treatment", func(t *testing.T) {
+		const name = "Aang, at the Crossroads // Aang, Destined Savior"
+		for image, number := range map[string]string{
+			"/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_fea89ca0.jpg": "203",
+			"/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_d7f35cd9.jpg": "346",
+			"/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_ea886239.jpg": "304",
+		} {
+			got := imageProductID(b, "Avatar: The Last Airbender", image, name, "Avatar: The Last Airbender", "", false)
+			co, err := b.GetUUID(got)
+			if err != nil || co.SetCode != "TLA" || co.Number != number {
+				t.Errorf("%s resolved to %v, want TLA %s", image, co, number)
+			}
+		}
+	})
+
+	t.Run("a whole Scryfall id names the printing", func(t *testing.T) {
+		got := imageProductID(b, "Ikoria: Lair of Behemoths", "/prodotti/1/IKO2/9c348494-f60c-4bd1-9077-bff24f2e634b.jpg",
+			"Forest", "Ikoria: Lair of Behemoths", "V.1", false)
+		co, err := b.GetUUID(got)
+		if err != nil || co.Identifiers["scryfallId"] != "9c348494-f60c-4bd1-9077-bff24f2e634b" {
+			t.Errorf("imageProductID resolved to %v, want the printing that Scryfall id names", co)
+		}
+	})
+
+	t.Run("a Scryfall id naming another card is refused", func(t *testing.T) {
+		got := imageProductID(b, "Avatar: The Last Airbender", "/prodotti/1/tla/aang-at-the-crossroads--aang-destined-savior_d7f35cd9.jpg",
+			"Zuko, Conflicted", "Avatar: The Last Airbender", "", false)
+		if got != "" {
+			co, _ := b.GetUUID(got)
+			t.Errorf("imageProductID = %v, want \"\" - the id names Aang", co)
+		}
+	})
+
+	t.Run("an image in the wording set's promo set is accepted", func(t *testing.T) {
+		got := imageProductID(b, "Adventures in the Forgotten Realms: Promos",
+			"/prodotti/1/pafr/a-adventures-in-the-forgotten-realms-promos-treasure-vault-v3-574677.jpg",
+			"Treasure Vault", "Adventures in the Forgotten Realms", "Bundle", true)
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "PAFR" || co.Number != "261a" {
+			t.Errorf("imageProductID resolved to %v, want PAFR 261a", co)
+		}
+	})
+
 	t.Run("a cross-set id is refused, deferring to the wording", func(t *testing.T) {
 		got := imageProductID(b, "Secret Lair Drop Series", "/x/ertai-resurrected_672617.jpg", "Ertai Resurrected", "Secret Lair Drop Series", "", false)
 		if got != "" {
@@ -339,6 +407,57 @@ func TestUnquote(t *testing.T) {
 			got := unquote(tt.name)
 			if got != tt.want {
 				t.Errorf("unquote(%q) = %q, want %q", tt.name, got, tt.want)
+			}
+		})
+	}
+}
+
+// A basic land's image names its set code, of 2 to 4 characters, then its
+// number. Anything else yields no number.
+func TestBasicImageNumber(t *testing.T) {
+	for extra, want := range map[string]string{
+		"LO299":   "299",
+		"BFZ250":  "250",
+		"SVSC078": "78",
+		"ELD402":  "",
+		"817906":  "",
+		"noimage": "",
+	} {
+		got := basicImageNumber(extra)
+		if got != want {
+			t.Errorf("basicImageNumber(%q) = %q, want %q", extra, got, want)
+		}
+	}
+}
+
+// A basic the store tags only by its own version index is placed by the number
+// its image names, and only where the landed card carries that number.
+func TestMatchBasicByImage(t *testing.T) {
+	b := realDatastore(t)
+	input := mtgmatcher.InputCard{Name: "Plains", Edition: "Battle for Zendikar", Variation: "Version 1"}
+	tests := []struct {
+		desc  string
+		image string
+		want  string
+	}{
+		{"the image number places the land", "/prodotti/1/1050/BFZ250.jpg", "250"},
+		{"a number the land was never printed with is refused", "/prodotti/1/1050/BFZ300.jpg", ""},
+		{"an image naming no number is refused", "/prodotti/1/1050/noimage.jpg", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			id, found := matchBasicByImage(b, &MCCard{Extra: tt.image}, input)
+			if tt.want == "" {
+				if found {
+					co, _ := b.GetUUID(id)
+					t.Errorf("matchBasicByImage() = %v, want no match", co)
+				}
+				return
+			}
+			co, err := b.GetUUID(id)
+			if !found || err != nil || co.SetCode != "BFZ" || co.Number != tt.want {
+				t.Errorf("matchBasicByImage() = %v, want BFZ %s", co, tt.want)
 			}
 		})
 	}
