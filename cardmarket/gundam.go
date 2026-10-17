@@ -47,10 +47,13 @@ var gundamCrossedLinks = map[int]int{
 	905980: 616640, // Rare
 }
 
-// gundamUnmade lists Cardmarket duplicates of a product that carry a code
-// of another card, and name no printing at all.
+// gundamUnmade lists Cardmarket products that name no printing at all: a
+// duplicate carrying a code of another card, or a prize that is no card.
 var gundamUnmade = map[int]bool{
 	908636: true, // a second Haman Karn tournament promo, coded GD02-092
+	908740: true, // Trophy Card Gundam (World Championship 25-26), V.1
+	908741: true, // V.2
+	908742: true, // V.3
 }
 
 // gundamNoRow lists the products of a printing the datastore does not carry,
