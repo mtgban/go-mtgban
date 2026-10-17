@@ -548,6 +548,7 @@ func isSpecificUnsupported(c *mtgmatcher.InputCard) bool {
 	case "Drudge Skeletons",
 		"Emerald Medallion",
 		"Forest",
+		"Ruby Medallion",
 		"Sapphire Medallion",
 		"Serra Angel",
 		"Time Elemental",
