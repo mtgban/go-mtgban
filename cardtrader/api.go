@@ -356,8 +356,15 @@ type ProductProperties struct {
 // Product is one listing: a blueprint offered by a seller at a price, in a
 // condition and a language.
 type Product struct {
-	ID          int    `json:"id"`
-	BlueprintID int    `json:"blueprint_id"`
+	ID          int `json:"id"`
+	BlueprintID int `json:"blueprint_id"`
+
+	// The export names each listing's card and files it under its game
+	// and category; the marketplace endpoints leave these empty.
+	Name       string `json:"name_en"`
+	GameID     int    `json:"game_id"`
+	CategoryID int    `json:"category_id"`
+
 	Quantity    int    `json:"quantity"`
 	Description string `json:"description"`
 	OnVacation  bool   `json:"on_vacation"`
