@@ -124,3 +124,63 @@ func TestReleaseHeldProducts(t *testing.T) {
 		t.Errorf("the Special Guest was priced %d times, want 1", chromeMox)
 	}
 }
+
+// A plain listing whose finish field alone says foil is plain where its price
+// is not its foil sibling's, and the sibling's duplicate where it is.
+func TestSettleFoilBySibling(t *testing.T) {
+	gn, err := NewScraper(realDatastore(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range []struct {
+		desc, set             string
+		plainSKU, foilSKU     string
+		display               string
+		plainPrice, foilPrice float64
+		want                  string
+	}{
+		{"priced as the plain card", "9ed", "MTG-9ED-289-AMGOSOAL3W", "MTG-9ED-289-F-AMGOSOAL3W", "Booby Trap (9ED-289) - 9th Edition", 0.48, 9.89, "nonfoil"},
+		{"a second listing of the foil", "8ed", "MTG-8ED-064-LZWABIF543", "MTG-8ED-064-F-LZWABIF543", "Bribery (8ED-064) - 8th Edition", 24.13, 24.13, "foil"},
+	} {
+		state := &crawlState{bodies: map[string]map[string]bool{}, foilPrices: map[string]float64{}}
+		foil := product(tt.foilSKU, tt.display+" Foil", tt.set)
+		foil.SelectedFinish, foil.Price = "foil", tt.foilPrice
+		plain := product(tt.plainSKU, tt.display, tt.set)
+		plain.SelectedFinish, plain.Price = "foil", tt.plainPrice
+		if gn.admit(foil, state) {
+			t.Errorf("%s: the foil listing should not wait", tt.desc)
+		}
+		if !gn.admit(plain, state) {
+			t.Errorf("%s: the plain listing should wait for its sibling", tt.desc)
+		}
+		settled, ok := state.settle(plain)
+		if !ok || settled.SelectedFinish != tt.want {
+			t.Errorf("%s: settled to %q (kept %v), want %q", tt.desc, settled.SelectedFinish, ok, tt.want)
+		}
+	}
+}
+
+// A body naming another set than the display's own known one is the price of
+// another product, and a refusal of it is not worth reporting.
+func TestForeignBody(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc    string
+		product GNProduct
+		want    bool
+	}{
+		{"another set's body", product("MTG-LEA-031", "Personal Incarnation (LEA-031) - Limited Edition Alpha", "tla"), true},
+		{"its own body", product("MTG-LEA-031", "Personal Incarnation (LEA-031) - Limited Edition Alpha", "lea"), false},
+		{"a shelf code of the storefront's", product("MTG-PM21-179P-F-WNWC8O2ID2", "Elder Gargaroth (PPM21-179P) - Core Set 2021 Promos Foil", "ppm21"), false},
+		{"the storefront's prerelease shelf", product("MTG-PXLN-213S-F", "Verdant Sun's Avatar (PXLN-213S) - Ixalan Promos Foil (LP)", "pre"), false},
+		{"the List shelf", product("MTG-PLST-C16-52", "Boompile (PLST-C16-52) - The List", "list"), false},
+		{"the List's origin set", product("MTG-PLST-JMP-18", "Witch of the Moors (PLST-JMP-18) - The List", "jmp"), false},
+		{"a leading body tag", product("MTG-SPE-MAR-005", "Alchemax Slayer-Bots (SPE, MAR-005) - Marvel's Spider-Man: Eternal-Legal", "spe"), false},
+		{"no tag to disagree with", product("MTG-DMU-160-LP", "Defiler of Vigor - Dominaria United (LP)", "pre"), false},
+	} {
+		got := foreignBody(b, tt.product)
+		if got != tt.want {
+			t.Errorf("%s: foreignBody = %v, want %v", tt.desc, got, tt.want)
+		}
+	}
+}

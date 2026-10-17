@@ -76,3 +76,32 @@ func TestFinishPrinted(t *testing.T) {
 		})
 	}
 }
+
+// The storefront also mints a "-F-" sku on Modern Horizons 3 Commander cards
+// printed plain only, and a plain foil request is answered with the ripple
+// foil star twin of the number. That foil is listed under its own name.
+func TestMintedRipple(t *testing.T) {
+	gn, err := NewScraper(realDatastore(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	setData := GNProductData{Set: "m3c", SetName: "Modern Horizons 3 Commander"}
+	for _, tt := range []struct {
+		display string
+		finish  string
+		landed  bool
+	}{
+		{"Magus of the Candelabra (M3C-236) - Modern Horizons 3 Commander Foil", "foil", false},
+		{"Magus of the Candelabra (Ripple Foil) (M3C-236) - Modern Horizons 3 Commander Foil", "foil", true},
+		{"Magus of the Candelabra (M3C-236) - Modern Horizons 3 Commander", "nonfoil", true},
+	} {
+		product := GNProduct{ID: tt.display, DisplayName: tt.display, SelectedFinish: tt.finish, ProductData: setData}
+		got, err := gn.resolveProduct(modeBuylist, product)
+		if err != nil {
+			t.Fatalf("%q: %v", tt.display, err)
+		}
+		if (got != "") != tt.landed {
+			t.Errorf("resolveProduct(%q) = %q, want landed=%v", tt.display, got, tt.landed)
+		}
+	}
+}

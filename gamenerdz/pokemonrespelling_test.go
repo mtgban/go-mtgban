@@ -18,10 +18,15 @@ const respellingDatastore = `{"data": {
  "game": "pokemon",
  "sets": {
   "DRI": {"abbreviation": "DRI", "baseSetSize": 182, "name": "SV10: Destined Rivals", "releaseDate": "2025-05-30"},
+  "EVO": {"abbreviation": "EVO", "baseSetSize": 108, "name": "XY - Evolutions", "releaseDate": "2016-11-02"},
+  "LTR-1465": {"abbreviation": "LTR", "name": "Legendary Treasures: Radiant Collection", "releaseDate": "2013-11-06"},
+  "MCAP": {"abbreviation": "MCAP", "name": "Miscellaneous Cards & Products", "releaseDate": "1999-01-09"},
   "PAR": {"abbreviation": "PAR", "baseSetSize": 182, "name": "SV04: Paradox Rift", "releaseDate": "2023-11-03"},
+  "PRE": {"abbreviation": "PRE", "baseSetSize": 131, "name": "SV: Prismatic Evolutions", "releaseDate": "2025-01-17"},
   "PWCP": {"abbreviation": "PWCP", "name": "Pikachu World Collection Promos", "releaseDate": "2000-09-12", "type": "promo"},
   "SVP": {"abbreviation": "SVP", "name": "SV: Scarlet & Violet Promo Cards", "releaseDate": "2023-03-31", "type": "promo"},
   "SVI": {"abbreviation": "SVI", "baseSetSize": 198, "name": "SV01: Scarlet & Violet Base Set", "releaseDate": "2023-03-31"},
+  "SWSD": {"abbreviation": "SWSD", "name": "SWSH: Sword & Shield Promo Cards", "releaseDate": "2019-11-15", "type": "promo"},
   "SWSH02": {"abbreviation": "SWSH02", "baseSetSize": 192, "name": "SWSH02: Rebel Clash", "releaseDate": "2020-05-01"}
  },
  "cards": [
@@ -35,6 +40,12 @@ const respellingDatastore = `{"data": {
   {"externalLinks": {"tcgPlayerId": 488075}, "finish": "Normal", "id": "170-198_488075", "name": "Electric Generator", "number": "170", "rarity": "Uncommon", "setCode": "SVI", "total": "198", "type": "Item"},
   {"externalLinks": {"tcgPlayerId": 213283}, "finish": "Normal", "id": "172-192_213283", "name": "Horror P Energy", "number": "172", "rarity": "Uncommon", "setCode": "SWSH02", "total": "192", "type": "Special Energy"},
   {"externalLinks": {"tcgPlayerId": 215159}, "finish": "Holofoil", "id": "pw-7_215159_holofoil", "language": "French", "name": "Pikachu", "number": "PW7", "rarity": "Promo", "setCode": "PWCP", "type": "Lightning", "types": ["Lightning"], "variant": "French"},
+  {"externalLinks": {"tcgPlayerId": 85639}, "finish": "Holofoil", "id": "rc10-rc25_85639_holofoil", "name": "Gardevoir", "number": "RC10", "rarity": "Uncommon", "setCode": "LTR-1465", "total": "RC25"},
+  {"externalLinks": {"tcgPlayerId": 124122, "tcgdexId": "xy12-109"}, "finish": "Normal", "id": "109-108_124122", "name": "Exeggutor", "number": "109", "rarity": "Secret Rare", "setCode": "EVO", "total": "108", "type": "Grass", "types": ["Grass"]},
+  {"externalLinks": {"tcgPlayerId": 167223}, "finish": "Normal", "id": "016-107_167223", "name": "Deoxys", "number": "016", "promoTypes": ["movie"], "rarity": "Promo", "setCode": "MCAP", "total": "107", "type": "Psychic", "types": ["Psychic"], "variant": "Movie Normal Forme", "watermark": "normal forme"},
+  {"externalLinks": {"tcgPlayerId": 247300, "tcgdexId": "swshp-SWSH167"}, "finish": "Normal", "id": "swsh167_247300", "name": "Professor Burnet", "number": "SWSH167", "promoTypes": ["25thanniversary"], "rarity": "Promo", "setCode": "SWSD", "type": "Supporter", "variant": "25th Anniversary"},
+  {"externalLinks": {"tcgPlayerId": 610478, "tcgdexId": "sv08.5-123"}, "finish": "Normal", "id": "123-131_610478", "name": "Professor's Research", "number": "123", "rarity": "Common", "setCode": "PRE", "total": "131", "type": "Trainer - Supporter", "variant": "Professor Elm", "watermark": "professor elm"},
+  {"externalLinks": {"tcgPlayerId": 610631, "tcgdexId": "sv08.5-123"}, "finish": "Holofoil", "id": "123-131_610631_holofoil", "name": "Professor's Research", "number": "123", "promoTypes": ["pokeballpattern"], "rarity": "Common", "setCode": "PRE", "total": "131", "type": "Trainer - Supporter", "variant": "Professor Elm Poke Ball Pattern", "watermark": "professor elm"},
   {"externalLinks": {"tcgPlayerId": 477182, "tcgdexId": "svp-002"}, "finish": "Holofoil", "id": "002_477182_holofoil", "name": "Fuecoco", "number": "002", "rarity": "Promo", "setCode": "SVP", "type": "Fire", "types": ["Fire"]},
   {"externalLinks": {"tcgPlayerId": 487755, "tcgdexId": "svp-007"}, "finish": "Holofoil", "id": "007_487755_holofoil", "name": "Hawlucha", "number": "007", "promoTypes": ["prerelease"], "rarity": "Promo", "setCode": "SVP", "type": "Fighting", "types": ["Fighting"], "variant": "Prerelease"}
  ]
@@ -65,6 +76,15 @@ func TestPreprocessPokemonRespelling(t *testing.T) {
 		{"Electro Generator - 170/198 170 - SV01 Scarlet  Violet Base Set", "SV01: Scarlet & Violet Base Set", "Normal", "170-198_488075"},
 		// An energy's type spelled out where the catalog writes its letter.
 		{"Horror Psychic Energy 172/192 - Rebel Clash", "SWSH02: Rebel Clash", "Normal", "172-192_213283"},
+		// The label this storefront gives a promo, a size lettered like the
+		// number, a bracket in front of the qualifier, and the names it
+		// writes its own way.
+		{"Professor Burnet - SWSH167 (25th Anniversary Stamp) SWSH167 - SWSH Sword  Shield Promo Cards", "SWSH: Sword & Shield Promo Cards", "Normal", "swsh167_247300"},
+		{"Gardevoir RC10/RC25 - Legendary Treasures Holofoil", "Legendary Treasures: Radiant Collection", "Holofoil", "rc10-rc25_85639_holofoil"},
+		{"Professor's Research [Professor Elm] (Poke Ball Pattern) 123 - SV Prismatic Evolutions Holofoil", "SV: Prismatic Evolutions", "Holofoil", "123-131_610631_holofoil"},
+		{"Professor's Research [Professor Elm] 123 - SV Prismatic Evolutions", "SV: Prismatic Evolutions", "Normal", "123-131_610478"},
+		{"Deoxys (Normal Forme) - 16/107 (Movie Promo) 16 - Miscellaneous Cards  Products", "Miscellaneous Cards & Products", "Normal", "016-107_167223"},
+		{"ナッシー[Exeggutor] 109/108 - Evolutions", "XY - Evolutions", "Normal", "109-108_124122"},
 		// The catalog's own spelling is not a key of the table and still
 		// answers with the same printing.
 		{"Arven's Toedscool 109 - SV10 Destined Rivals", "SV10: Destined Rivals", "Normal", "109-182_632917"},

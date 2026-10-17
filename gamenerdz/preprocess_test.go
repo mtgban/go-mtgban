@@ -231,7 +231,7 @@ func TestPreprocess(t *testing.T) {
 				SelectedFinish: "Normal",
 				ProductData:    GNProductData{Set: "list", SetName: "The List Reprints"},
 			},
-			name: "Impact Tremors", edition: "list", variation: "MOC-285",
+			name: "Impact Tremors", edition: "The List", variation: "MOC-285",
 		},
 		{
 			game: mtgmatcher.GameLorcana,
@@ -489,6 +489,92 @@ func TestPreprocess(t *testing.T) {
 				ProductData: GNProductData{Set: "jmp", SetName: "Jumpstart Front Cards"},
 			},
 			err: true,
+		},
+		{
+			// A Secret Lair Commander deck numbers its cards by the deck's
+			// own index, so the deck's name places them in the List.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Fiery Gambit (PHED-022) - Heads I Win, Tails You Lose Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "phed", SetName: "Heads I Win, Tails You Lose"},
+			},
+			name:    "Fiery Gambit",
+			edition: "Secret Lair Commander: Heads I Win, Tails You Lose",
+			foil:    true,
+		},
+		{
+			// The miscellaneous shelves index their promos themselves, so
+			// the card is looked for by name in the sets they hold.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Tifa Lockhart (Borderless) (MFP-002) - MagicFest Cards Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "mfp", SetName: "MagicFest Cards"},
+			},
+			name:    "Tifa Lockhart",
+			edition: "MagicFest 2025",
+			foil:    true,
+		},
+		{
+			// A play shelf number is the card's in the set its promo pack
+			// came from, so the stamp reaches the pack.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName: "Cemetery Desecrator (PLAY-100) - Play Promos",
+				ProductData: GNProductData{Set: "play", SetName: "Play Promos"},
+			},
+			name:      "Cemetery Desecrator",
+			edition:   "play",
+			variation: "100 Promo Pack",
+		},
+		{
+			// A card's own parenthesis is part of its name.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Erase (Not the Urza's Legacy One) (UNH-010) - Unhinged Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "unh", SetName: "Unhinged"},
+			},
+			name:      "Erase (Not the Urza's Legacy One)",
+			edition:   "Unhinged",
+			variation: "010",
+			foil:      true,
+		},
+		{
+			// The bare number is the printing's own where the code's is
+			// another printing of the card.
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Eddie Brock (0233) (Borderless) (SPM-224) - Marvel's Spider-Man Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "spm", SetName: "Marvel's Spider-Man"},
+			},
+			name:      "Eddie Brock",
+			edition:   "Marvel's Spider-Man",
+			variation: "233",
+			foil:      true,
+		},
+		{
+			// The storefront's typo for the manga label.
+			game: mtgmatcher.GameOnePiece,
+			product: GNProduct{
+				DisplayName:    "Buggy (051) (Paralle) (OP09-051) Emperors in the New World Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{SetName: "Emperors in the New World"},
+			},
+			name: "Buggy (051) (Manga)", edition: "Emperors in the New World",
+			variation: "OP09-051", foil: true,
+		},
+		{
+			// A DON!! card's finishing place is bracketed, not parenthesized.
+			game: mtgmatcher.GameOnePiece,
+			product: GNProduct{
+				DisplayName: "DON!! Card (Tournament Pack Vol. 2) [Winner]  One Piece Promotion Cards",
+				ProductData: GNProductData{SetName: "One Piece Promotion Cards"},
+			},
+			name: "DON!! Card", edition: "One Piece Promotion Cards",
+			variation: "Tournament Pack Vol. 2 Winner",
 		},
 	}
 	for _, tt := range tests {

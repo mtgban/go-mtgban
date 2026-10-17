@@ -3,6 +3,7 @@ package gamenerdz
 import (
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -54,6 +55,38 @@ func skuFamily(product GNProduct) string {
 	return ""
 }
 
+// skuMarker is the finish segment a product's sku carries, "F" or "EF", and
+// empty when it carries none. A product with no sku at all has none either.
+func skuMarker(product GNProduct) string {
+	for _, variant := range product.RetailVariants {
+		if variant.SKU == "" {
+			continue
+		}
+		fields := strings.Split(variant.SKU, "-")
+		for i := 1; i < len(fields)-1; i++ {
+			if fields[i] == "F" || fields[i] == "EF" {
+				return fields[i]
+			}
+		}
+		return ""
+	}
+	return ""
+}
+
+// doubtfulFoil reports a product whose selectedFinish is the only thing
+// saying foil: its sku carries no finish segment and its name no Foil tail.
+// The field is wrong on some of these - a ninth edition land sold plain is
+// flagged foil and lands its star twin - and right on the rest, where the
+// product is a second listing of its foil sibling at the same price or the
+// card was only ever printed foil. Its price tells which, once the sibling's
+// is known.
+func doubtfulFoil(product GNProduct) bool {
+	if !strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName) {
+		return false
+	}
+	return skuMarker(product) == "" && skuFamily(product) != ""
+}
+
 // bodyNamesOwnSet reports whether a product's body names the set its own
 // display name does. A product with no set tag to read has nothing to
 // disagree with and counts as its own witness.
@@ -63,6 +96,41 @@ func bodyNamesOwnSet(product GNProduct) bool {
 		return true
 	}
 	return strings.EqualFold(tags[len(tags)-1][1], string(product.ProductData.Set))
+}
+
+// magicBareNumber is the four digit collector number a few display names
+// bracket before their code, "Eddie Brock (0233) (Borderless) (SPM-224)".
+var magicBareNumber = regexp.MustCompile(`\((0\d{3})\)`)
+
+// magicBodyTag is the set a display name's tag leads with when the tag names
+// the body: "(SPE, MAR-005)" is a Marvel card whose body is Spider-Man
+// Eternal's.
+var magicBodyTag = regexp.MustCompile(`\(([0-9A-Z]{2,6}), [0-9A-Z&]{2,6}-`)
+
+// foreignBody reports whether a product's body is a real set that neither the
+// display's code, its leading body tag nor a List origin names, while the code
+// names a known set: the body then belongs to another product. A body on one
+// of the storefront's own shelves never qualifies.
+func foreignBody(b *mtgmatcher.Backend, product GNProduct) bool {
+	tags := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
+	if len(tags) == 0 || bodyNamesOwnSet(product) {
+		return false
+	}
+	body := strings.ToLower(string(product.ProductData.Set))
+	lead := magicBodyTag.FindStringSubmatch(product.DisplayName)
+	if lead != nil && strings.EqualFold(lead[1], body) {
+		return false
+	}
+	// A List tag spells the origin set into its number, "PLST-JMP-18".
+	if strings.HasPrefix(strings.ToLower(tags[len(tags)-1][2]), body+"-") {
+		return false
+	}
+	_, err := b.GetSet(body)
+	if err != nil {
+		return false
+	}
+	_, err = b.GetSet(tags[len(tags)-1][1])
+	return err == nil
 }
 
 // magicOrigin is the bare set-code tag a List display name puts before the
@@ -99,6 +167,15 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		cardName = respelled
 	}
 	cardName = strings.ReplaceAll(cardName, " / ", " // ")
+	// The bare number a display writes ahead of its code, "(0233)", is the
+	// printing's own, and the code's can name another card's of the same set.
+	bare := magicBareNumber.FindStringSubmatch(product.DisplayName)
+	if bare != nil {
+		own := strings.TrimLeft(bare[1], "0")
+		if own != strings.TrimLeft(number, "0") && len(b.MatchWithNumber(cardName, strings.ToUpper(string(product.ProductData.Set)), own)) > 0 {
+			number = own
+		}
+	}
 	fixed, found := magicNumberTypos[magicTypo{strings.ToLower(string(product.ProductData.Set)), cardName, number}]
 	if found {
 		number = fixed
@@ -108,6 +185,7 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 	if edition == "" {
 		edition = product.ProductData.SetName
 	}
+	shelfSet := magicShelves[product.ProductData.SetName]
 	foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 	switch {
 	// The promo pack shelves are coded with a second P in front of the
@@ -140,6 +218,8 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		edition = product.ProductData.SetName
 	case !namesASet(b, edition) && namesASet(b, magicTailSet(product.DisplayName)):
 		edition = magicTailSet(product.DisplayName)
+	case !namesASet(b, edition) && namesASet(b, shelfSet):
+		edition = shelfSet
 	// A yearly shelf is coded once for every year ("fnm" is the catalog's
 	// code for the first Friday Night Magic year) and the year the product
 	// is from is written only where the name ends.
@@ -147,11 +227,31 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		edition = magicTailSet(product.DisplayName)
 	}
 
+	// A Secret Lair Commander deck's cards are List reprints, numbered by the
+	// deck's own index, which names no card of the List. The deck's name is
+	// what places them.
+	deck := func(name string) bool { return mtgmatcher.Contains(product.ProductData.SetName, name) }
+	if slices.ContainsFunc(b.SLDDeckNames, deck) {
+		edition, number = "Secret Lair Commander: "+product.ProductData.SetName, ""
+	}
+
 	card := &mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: number,
 		Foil:      foil,
+	}
+
+	// The play shelf holds Play Booster promo packs of older sets, numbered
+	// as in the set they came from. Naming the stamp reaches the pack; a
+	// card with no pack keeps the reading it had.
+	if strings.EqualFold(string(product.ProductData.Set), playShelf) && !namesASet(b, edition) {
+		probe := *card
+		probe.Variation = strings.TrimSpace(number + " " + packStamp)
+		_, err := b.Match(&probe)
+		if err == nil {
+			card.Variation = probe.Variation
+		}
 	}
 
 	// The storefront files every prerelease stamp under one pseudo-set,
@@ -235,14 +335,22 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		_, err := b.Match(&probe)
 		if err != nil {
 			wording := magicWording(product.DisplayName)
+			var tries []mtgmatcher.InputCard
 			for _, edition := range []string{card.Edition, product.ProductData.SetName, shelf} {
-				if !namesASet(b, edition) {
-					continue
+				if namesASet(b, edition) {
+					tries = append(tries, mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: wording, Foil: card.Foil})
 				}
-				probe := mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: wording, Foil: card.Foil}
-				if _, err := b.Match(&probe); err == nil {
-					card.Edition = edition
-					card.Variation = wording
+			}
+			// Failing that the card is looked for by name in the sets the
+			// shelf holds its promos in.
+			for _, edition := range magicPromoShelves[strings.ToLower(string(product.ProductData.Set))] {
+				tries = append(tries, mtgmatcher.InputCard{Name: cardName, Edition: edition, Foil: card.Foil})
+			}
+			for _, try := range tries {
+				_, err := b.Match(&try)
+				if err == nil {
+					card.Edition = try.Edition
+					card.Variation = try.Variation
 					break
 				}
 			}
@@ -332,6 +440,21 @@ func saysEtched(product GNProduct) bool {
 	return false
 }
 
+// magicShelves pairs the shelves this storefront names its own way with the
+// catalog's name for the set.
+var magicShelves = map[string]string{
+	"The List Reprints": "The List",
+}
+
+// magicPromoShelves pairs the codes of the shelves that number their promos
+// with the storefront's own index with the sets those promos sit in.
+var magicPromoShelves = map[string][]string{
+	"mfp":   {"MagicFest 2025"},
+	"ump":   {"MagicFest 2025", "Media and Collaboration Promos", "URL/Convention Promos"},
+	"media": {"URL/Convention Promos", "Media and Collaboration Promos"},
+	"play":  {"Spotlight Series"},
+}
+
 // magicRespellings pairs the names this storefront misspells with the
 // catalog's own, each read off the TCGplayer id the retail feed carries
 // beside the misspelt name, or off the set the buylist files it in. "Dwight,
@@ -384,6 +507,20 @@ func magicName(b *mtgmatcher.Backend, displayName string) string {
 	name := displayName
 	if idx := strings.Index(name, " ("); idx != -1 {
 		name = name[:idx]
+		// A card can carry a parenthesis of its own, "Erase (Not the Urza's
+		// Legacy One)", so the longest head the catalog knows is the name.
+		for at := idx + 2; ; {
+			next := strings.Index(displayName[at:], " (")
+			if next == -1 {
+				break
+			}
+			at += next
+			_, err := b.SearchEquals(displayName[:at])
+			if err == nil {
+				name = displayName[:at]
+			}
+			at += 2
+		}
 	} else if idx := strings.Index(name, " - "); idx != -1 {
 		name = name[:idx]
 	}
@@ -449,6 +586,7 @@ func namesASet(b *mtgmatcher.Backend, edition string) bool {
 // word the catalog tells those printings apart by.
 const (
 	preShelf  = "pre"
+	playShelf = "play"
 	preStamp  = "Prerelease"
 	packStamp = "Promo Pack"
 )
@@ -538,12 +676,12 @@ func preprocessLorcana(product GNProduct) (*mtgmatcher.InputCard, error) {
 var pokemonNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?(?:/[0-9]+)?|[A-Z]+/[0-9]+)$`)
 
 // pokemonSizedNumber is the half of those written over the set's size,
-// "65/130", "Z/115" or "?/115". Only a card's collector number is written that way,
+// "65/130", "Z/115", "?/115" or "RC10/RC25". Only a card's collector number is written that way,
 // so where one appears it is the number and the name ends in front of it -
 // which is what tells "Alakazam E4 38/111" from "Dragonite 149/165 (Cosmos
 // Holo) 149", the one carrying its own suffix and the other the catalog's
 // number repeated.
-var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]+|[!?])/[0-9]+$`)
+var pokemonSizedNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?|[A-Z]+|[!?])/[A-Z]*[0-9]+$`)
 
 // pokemonGenders spells the symbols this storefront prints on a face where
 // the catalog writes the letter: Nidoran and its Gym-era owners are filed as
@@ -562,10 +700,12 @@ var pokemonRespellings = map[string]string{
 	"Blend Energy GrassFirePsychicDarkness":    "Blend Energy GFPD",
 	"Blend Energy WaterLightningFightingMetal": "Blend Energy WLFM",
 	"Defiant Band":                             "Defiance Band",
+	"Deoxys (Normal Forme)":                    "Deoxys",
 	"Electro Generator":                        "Electric Generator",
 	"Feebass":                                  "Feebas",
 	"Jamming Net Team Flare Hyper Gear":        "Jamming Net",
 	"Marnie's Marpeko":                         "Marnie's Morpeko",
+	"ナッシー[Exeggutor]":                          "Exeggutor",
 	"Oinkalogne ex":                            "Oinkologne ex",
 	"Target Whistle Team Flare Gear":           "Target Whistle",
 	"Team Rocket's Nidorand":                   "Team Rocket's Nidoran M",
@@ -599,6 +739,7 @@ var pokemonLabels = strings.NewReplacer(
 	"(Cosmo Foil)", "(Cosmos Holo)",
 	"(Cosmo Holo)", "(Cosmos Holo)",
 	"(Pokemon Day Stamped)", "(Pokemon Day)",
+	"(25th Anniversary Stamp)", "(25th Anniversary)",
 	"[Winner]", "(Winner)",
 )
 
@@ -697,7 +838,14 @@ func preprocessPokemon(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.In
 		}
 	}
 
-	card := pokemonCard(b, product, name, number)
+	// A qualifier hung behind a bracket in the name belongs with the
+	// number: "Professor's Research [Professor Elm] (Poke Ball Pattern)".
+	variation := number
+	moved := pokemonNameQualifier.FindStringSubmatch(name)
+	if moved != nil {
+		name, variation = moved[1], number+" "+moved[2]
+	}
+	card := pokemonCard(b, product, name, variation)
 
 	// A printing's second axis rides just behind the number, bracketed -
 	// "Snorlax - 051 (Pokemon Center Exclusive)". The same set prints the
@@ -707,11 +855,15 @@ func preprocessPokemon(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.In
 	// place falls back on the number it was read from.
 	qualifier := pokemonQualifier.FindStringSubmatch(strings.TrimPrefix(strings.TrimSpace(rest), number))
 	if qualifier != nil {
-		card.Variation = strings.TrimSpace(number + " " + qualifier[1])
+		card.Variation = strings.TrimSpace(variation + " " + qualifier[1])
 	}
 
 	return card, nil
 }
+
+// pokemonNameQualifier splits a name ending in a bracket and then a
+// parenthesis into the two.
+var pokemonNameQualifier = regexp.MustCompile(`^(.*\])\s+(\([^)]*\))$`)
 
 // pokemonPromoCode is the number a Scarlet & Violet promo's display name
 // carries, "(SVP-007)", and pokemonSKUNumber the one its sku does, as in
@@ -946,6 +1098,7 @@ func preprocessOnePiece(product GNProduct) (*mtgmatcher.InputCard, error) {
 var onePieceRelabels = []struct{ code, shelf, from, to string }{
 	{"OP09-004", "Emperors in the New World", "(Parallel)", "(Manga)"},
 	{"OP09-093", "Emperors in the New World", "(Parallel)", "(Manga)"},
+	{"OP09-051", "Emperors in the New World", "(Paralle)", "(Manga)"},
 	{"OP09-119", "Emperors in the New World", "(Parallel)", "(Manga)"},
 	{"OP06-007", "Premium Booster -The Best- Vol. 2", "(Alternate Art)", "(SP)"},
 }
@@ -994,6 +1147,7 @@ var onePieceDonWording = regexp.MustCompile(`\(([^)]*)\)`)
 // Compass"), which the catalog names literally and this keeps whole.
 func preprocessOnePieceDon(product GNProduct) *mtgmatcher.InputCard {
 	head, _, _ := strings.Cut(product.DisplayName, "  ")
+	head = squareDecorations.Replace(head)
 
 	if strings.Contains(head, " // ") {
 		return &mtgmatcher.InputCard{
