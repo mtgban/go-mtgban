@@ -273,6 +273,10 @@ var versionPrintings = map[int]struct{ set, number string }{
 	16943: {"SUM", "298"}, // Swamp (V.2), CardTrader
 	16948: {"SUM", "299"}, // Swamp (V.3), CardTrader
 
+	// 30th Anniversary History Promos
+	678517: {"P30H", "4★"}, // Shivan Dragon (V.2), CardTrader
+	678520: {"P30H", "5★"}, // Llanowar Elves (V.2), CardTrader
+
 	// The List
 	826306: {"PLST", "MUL-12"}, // Tetsuko Umezawa, Fugitive, CardTrader
 

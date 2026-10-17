@@ -13,6 +13,10 @@ The same table places the 10 Chaos Vault "(V.2)" products on the starred foil
 twin of their printing (SLD 2102-2111, CardTrader's Galaxy Foil blueprints),
 where the datastore links them to the plain one.
 
+It also places the (V.2) of 30th Anniversary History's Shivan Dragon and
+Llanowar Elves on their starred printings, which the map gives the plain one's
+id, as CardTrader's Retro Frame blueprints show.
+
 It also places each Summer Magic basic's three versions, which the map gives
 all to the V.1 product, at CardTrader's numbers; Ebony Charm's V.1 and its
 corrected V.2, which the map gives one id in Mirage; and The List's Tetsuko
