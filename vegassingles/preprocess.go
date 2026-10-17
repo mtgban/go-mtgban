@@ -70,8 +70,10 @@ var imageIDRe = regexp.MustCompile(`/(\d{5,7})(?:_[0-9a-f-]{36})?\.[a-z]+(?:\?|$
 // imageProductID answers the printing the listing's image names, as the id
 // Match tries before the wording, or "" when the file carries no TCGplayer
 // id the datastore knows. The store reuses a photo now and then, so the id
-// is only taken for the card the listing names, in the listing's finish when
-// that printing is sold in it, and for Magic in the set the wording names.
+// is only taken for the card the listing names (or, outside Magic, the
+// printing at the number and in the set the wording names), in the listing's
+// finish when that printing is sold in it, and for Magic in the set the
+// wording names.
 func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.InputCard) string {
 	m := imageIDRe.FindStringSubmatch(product.ImageURL)
 	if m == nil {
@@ -79,7 +81,10 @@ func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.I
 	}
 	id := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, m[1])
 	co, err := b.GetUUID(id)
-	if err != nil || !mtgmatcher.Equals(co.Name, mtgmatcher.SplitVariants(card.Name)[0]) {
+	if err != nil {
+		return ""
+	}
+	if !mtgmatcher.Equals(co.Name, mtgmatcher.SplitVariants(card.Name)[0]) && !numberedInEdition(b, co, card) {
 		return ""
 	}
 	if card.Finish != "" {
@@ -92,6 +97,22 @@ func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.I
 		return ""
 	}
 	return id
+}
+
+// numberedInEdition reports whether a printing outside Magic carries the
+// number the wording names in the edition it names. It settles a printing
+// whose name the storefront and the datastore spell differently, where the
+// number and the set are the same.
+func numberedInEdition(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, card *mtgmatcher.InputCard) bool {
+	if b.Game == mtgmatcher.GameMagic {
+		return false
+	}
+	number, _, _ := strings.Cut(card.Variation, " ")
+	if number == "" || !mtgmatcher.Equals(co.Number, number) {
+		return false
+	}
+	named, err := b.GetSetByName(card.Edition)
+	return err == nil && named.Code == co.SetCode
 }
 
 // magicImageFits reports whether a Magic printing an image names is sold in
@@ -848,6 +869,12 @@ var pokemonShelfFixes = map[pokemonShelfFix]string{
 	{"SV: Black Bolt", "Lampent"}:   "SV: White Flare",
 }
 
+// pokemonLabels spells the labels this storefront gives a promo the way the
+// catalog words them.
+var pokemonLabels = strings.NewReplacer(
+	"(Game Stop)", "(GameStop Exclusive)",
+)
+
 func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 	loc := pokemonNumber.FindStringSubmatchIndex(product.DisplayName)
 	if loc == nil {
@@ -859,7 +886,7 @@ func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 		finish = ""
 	}
 
-	name := strings.TrimSpace(product.DisplayName[:loc[0]])
+	name := strings.TrimSpace(pokemonLabels.Replace(product.DisplayName[:loc[0]]))
 	edition := product.ProductData.SetName
 	if shelf, found := pokemonShelfFixes[pokemonShelfFix{edition, name}]; found {
 		edition = shelf
