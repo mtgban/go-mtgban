@@ -78,6 +78,9 @@ type resolver struct {
 	// the foil of their printing; see foilVersions.
 	foilVersions map[int]bool
 
+	// foilSold holds the foil printings those products are answered with.
+	foilSold map[string]bool
+
 	// printf logs through the owning scraper's own prefix. Left nil, calls
 	// through it are no-ops - a resolver built for a test rather than a
 	// live scraper needs none.
@@ -553,6 +556,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				break
 			}
 		}
+		if r.gameID == cm.GameOnePiece && onePieceTrophy(product) {
+			return "", "", false, nil
+		}
 
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
@@ -635,13 +641,18 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// siblings first - a version of a card another version
 			// already priced is a twin, not a report - so the walk says
 			// what is left to say; see twinsAmong.
+			var alias *mtgmatcher.AliasingError
 			if r.gameID == cm.GameOnePiece {
+				// An event DON!! no catalog carries aliases across every
+				// DON!! row, which is a refusal, not an alarm.
+				if errors.As(err, &alias) && product.Rarity == onePieceDonRarity {
+					return "", "", false, errNoPrinting
+				}
 				return "", "", false, err
 			}
 			r.logf("%v", err)
 			r.logf("%+v", product)
 
-			var alias *mtgmatcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				r.logf("%s got ids: %s", cardName, probes)
@@ -691,6 +702,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// One Piece is the catalog that files one card onto shelf after
 		// shelf; see offShelf.
 		if r.gameID == cm.GameOnePiece && r.offShelf(product, cardID) {
+			if r.onePieceDeckReprint(product) {
+				return "", "", false, errTwin
+			}
 			return "", "", false, errNoPrinting
 		}
 		// A pre-errata printing the datastore records under a sibling
@@ -716,6 +730,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		// falls back on what the catalog says of it.
 		if r.gameID == cm.GamePokemon && pokemonCodeCard(product.Name) {
 			return "", "", false, nil
+		}
+		if r.gameID == cm.GameYuGiOh && yugiohNoRow[product.IDProduct] {
+			return "", "", false, errNoPrinting
 		}
 		// A product named by id is that printing; its wording reads as
 		// a European print or another card.
@@ -817,6 +834,12 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		return "", "", false, errors.New("unsupported game")
 	}
 
+	// A foil Cardmarket sells as a product of its own is that product's to
+	// price, not the plain version's second column.
+	if r.gameID == cm.GameOnePiece && cardIDFoil != cardID && r.foilSold[cardIDFoil] {
+		cardIDFoil = ""
+	}
+
 	return cardID, cardIDFoil, byName, nil
 }
 
@@ -830,7 +853,8 @@ const pokemonReverseHolo = "Reverse Holofoil"
 // back face too, and the index knows only fronts. Within a finish the
 // printing whose number agrees with the product's wins, the way Fallback
 // already prefers it; a pick between printings the number cannot settle is
-// said out loud. Both ids empty means the entry decided nothing.
+// said out loud, unless only one of them is undecorated, see undecorated.
+// Both ids empty means the entry decided nothing.
 func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, string) {
 	if r.gameID == cm.GameMagic {
 		id := r.numberedPrinting(product, uuids)
@@ -867,6 +891,13 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 				plain = append(plain, uuid)
 			}
 		}
+	}
+
+	if len(plain) > 1 && !plainMatched {
+		plain, plainMatched = r.undecorated(plain)
+	}
+	if len(foil) > 1 && !foilMatched {
+		foil, foilMatched = r.undecorated(foil)
 	}
 
 	if len(plain) > 1 && !plainMatched {
@@ -907,6 +938,29 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		cardIDFoil = cardID
 	}
 	return cardID, cardIDFoil
+}
+
+// undecorated puts first the one printing of uuids whose number is its own
+// PlainNumber, free of every decoration the game strips (a star, a dagger,
+// a printing letter, zero padding), and reports whether there was one. MTGJSON lists a printing and its decorated
+// variants under one Cardmarket id, and the plain printing is the one the
+// product sells. More or fewer than one leaves the order alone.
+func (r *resolver) undecorated(uuids []string) ([]string, bool) {
+	pick := -1
+	for i, uuid := range uuids {
+		co, err := r.backend.GetUUID(uuid)
+		if err != nil || co.Number != co.PlainNumber {
+			continue
+		}
+		if pick >= 0 {
+			return uuids, false
+		}
+		pick = i
+	}
+	if pick < 0 {
+		return uuids, false
+	}
+	return slices.Concat([]string{uuids[pick]}, uuids[:pick], uuids[pick+1:]), true
 }
 
 // numberedPrinting answers the printing of the listed card at the product's

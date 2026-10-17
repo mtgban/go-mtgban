@@ -13,10 +13,11 @@ import (
 )
 
 // loadCatalogDatastore installs testdata/idmap_datastore.json, the published
-// Magic datastore cut down to the six printings these tests turn on, every
-// row copied verbatim: Laughing Hyena and its starred foil, both faces of
-// Order of Midnight, and the two same-numbered Growth Charms of the Mystery
-// Booster playtest sets.
+// Magic datastore cut down to the printings these tests turn on, every row
+// copied verbatim: Laughing Hyena and its starred foil, both faces of Order
+// of Midnight, the two same-numbered Growth Charms of the Mystery Booster
+// playtest sets, and the dagger variants under one Cardmarket id of Fifth
+// Edition's Shivan Dragon and Happy Holidays' foil-only Gifts Given.
 func loadCatalogDatastore(t *testing.T) *mtgmatcher.Backend {
 	t.Helper()
 	reader, err := os.Open("testdata/idmap_datastore.json")
@@ -49,7 +50,9 @@ func TestResolveUUIDs(t *testing.T) {
 		uuids    []string
 		wantSame bool // both ids answer the same printing
 		wantFoil bool // the foil id differs from the plain one
+		foilOnly bool // one foil printing answers both columns
 		wantNone bool
+		wantUUID string // the plain id, where it has to be a given one
 	}{
 		{
 			name:    "a plain and foil pair splits across the columns",
@@ -77,6 +80,25 @@ func TestResolveUUIDs(t *testing.T) {
 			},
 		},
 		{
+			name:    "a dagger variant under the same id loses to the undecorated printing",
+			product: cm.Product{IDProduct: 9639, Name: "Shivan Dragon"},
+			uuids: []string{
+				"2f118c2e-da99-54a6-894b-5c948d74b0f4",
+				"7a24a4dd-a3e5-5b06-b133-ad4fd6293eb0",
+			},
+			wantUUID: "7a24a4dd-a3e5-5b06-b133-ad4fd6293eb0",
+		},
+		{
+			name:    "a foil-only dagger variant loses to the undecorated printing",
+			product: cm.Product{IDProduct: 20040, Name: "Gifts Given"},
+			uuids: []string{
+				"87e5a278-5cfd-5abf-bc89-5d6a50d91fac",
+				"b9c93bde-7e6a-5a9d-b078-2cf886f7007e",
+			},
+			foilOnly: true,
+			wantUUID: "b9c93bde-7e6a-5a9d-b078-2cf886f7007e",
+		},
+		{
 			name:     "no known uuid decides nothing",
 			product:  cm.Product{IDProduct: 1, Name: "Unknown"},
 			uuids:    []string{"not-a-uuid"},
@@ -96,9 +118,18 @@ func TestResolveUUIDs(t *testing.T) {
 			if cardID == "" {
 				t.Fatal("resolved nothing")
 			}
+			if test.wantUUID != "" && cardID != test.wantUUID {
+				t.Errorf("plain column landed on %s, want %s", cardID, test.wantUUID)
+			}
 			co, err := b.GetUUID(cardID)
 			if err != nil {
 				t.Fatalf("plain id %q: %v", cardID, err)
+			}
+			if test.foilOnly {
+				if cardIDFoil != cardID {
+					t.Errorf("foil column got %q, want %s", cardIDFoil, cardID)
+				}
+				return
 			}
 			if co.Foil || co.Etched {
 				t.Errorf("plain column landed on a foil printing %s", cardID)

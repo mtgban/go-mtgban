@@ -139,6 +139,20 @@ number, linked to their TCGplayer products), then CardTrader's link and the
 wording. CardTrader reads the same space through each blueprint's
 `card_market_ids`.
 
+**Which products count as refusals.** A One Piece product on a `Starter Deck:`
+shelf that the bridge does not link reaches the booster printing its code
+names, which another shelf prices already, so it is a twin
+(`onePieceDeckReprint`); a bridge-linked one names a printing of its own and
+stays a refusal. An event DON!! no catalog carries aliases across every DON!!
+row and counts as a refusal (`onePieceDonRarity`), and a serialized trophy
+card that no id links is skipped (`onePieceTrophy`). A foil that
+Cardmarket sells as its own product (`foilSold`) is not handed to the plain
+version as a second printing. Yu-Gi-Oh's `yugiohNoRow` holds the products of a
+printing the datastore lacks. For Magic, where MTGJSON lists a printing and
+its decorated variants (a dagger, a star, a letter) under one Cardmarket id
+and no number settles the pick, the undecorated printing is kept
+(`undecorated`).
+
 ## Market's design
 
 **A printing sold foil-only is queried as a foil.** Such a printing answers

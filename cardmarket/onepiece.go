@@ -64,7 +64,9 @@ var onePieceNonEnglish = map[int]bool{
 var onePieceEventLinks = map[int]int{
 	776930: 552131, 787474: 580043, 787493: 580052, 787496: 580053,
 	792749: 552131, 794716: 584365, 794717: 583773, 794718: 584366,
-	806194: 607976, 806198: 607978, 837872: 646747, 840669: 646734,
+	806194: 607976, 806198: 607978,
+	825209: 641163,
+	837872: 646747, 840669: 646734,
 	840672: 646733, 840673: 646731, 840688: 646720, 840710: 646727,
 	845293: 539552, 845294: 525694, 845295: 539549, 845297: 539553,
 	845298: 539557, 845299: 539555, 845300: 539550, 845301: 539548,
@@ -75,7 +77,9 @@ var onePieceEventLinks = map[int]int{
 	866566: 671734, 866567: 671741, 866568: 671735, 867182: 672373,
 	867183: 672374, 867185: 672376, 867187: 672378, 869926: 669279,
 	869927: 669293, 869928: 669296, 874225: 657221, 882469: 675742,
-	882471: 684110, 882472: 683981, 901283: 710741, 901342: 712840,
+	882471: 684110, 882472: 683981,
+	896412: 708457,
+	901283: 710741, 901342: 712840,
 	901343: 712842, 901344: 712844, 901345: 712848, 901346: 712846,
 	901347: 712851, 904363: 710222, 904370: 710237, 904371: 710276,
 	904372: 710277, 904376: 710212, 904378: 710213, 904380: 710214,
@@ -115,6 +119,25 @@ func (r *resolver) onePieceByID(product *cm.Product) (string, error) {
 	return id, nil
 }
 
+// onePieceDonRarity is the rarity Cardmarket files every DON!! card under.
+const onePieceDonRarity = "DON!!"
+
+// onePieceTrophy reports whether a product is a serialized trophy card: an
+// event prize, no card of the game, priced only where an id links it.
+func onePieceTrophy(product *cm.Product) bool {
+	return strings.HasSuffix(versionTail.ReplaceAllString(product.Name, ""), "Trophy Card")
+}
+
+// onePieceDeckReprint reports whether a starter deck's card is a booster
+// card reprinted under its own code, which no catalog lists apart: the
+// name lands on the booster printing another shelf prices already. A
+// product the bridge links names a printing of its own, whose absence is a
+// refusal.
+func (r *resolver) onePieceDeckReprint(product *cm.Product) bool {
+	_, linked := r.tcgLink(product.IDProduct)
+	return strings.HasPrefix(product.ExpansionName, "Starter Deck:") && !linked
+}
+
 // offCode reports whether the product's name carries a collector number
 // other than the printing's. The bridge's links are another marketplace's,
 // and one pointing at the neighbouring product names the wrong card.
@@ -131,6 +154,7 @@ func offCode(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
 // answered with by id, before any product is named by its wording.
 func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.CatalogProduct, items []cm.Expansion) {
 	r.claimed = map[string]bool{}
+	r.foilSold = map[string]bool{}
 	r.foilVersions = foilVersions(r.tcgLink, byExpansion, products, items)
 	for _, exp := range items {
 		for _, id := range byExpansion[exp.IDExpansion] {
@@ -140,6 +164,9 @@ func (r *resolver) claimByID(byExpansion map[int][]int, products map[int]cm.Cata
 				continue
 			}
 			r.claimed[cardID] = true
+			if r.foilVersions[id] {
+				r.foilSold[cardID] = true
+			}
 			foilID, err := r.backend.MatchID(cardID, true)
 			if err == nil {
 				r.claimed[foilID] = true

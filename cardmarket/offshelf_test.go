@@ -61,6 +61,8 @@ func TestOffShelf(t *testing.T) {
 	for _, tt := range []struct {
 		what    string
 		product cm.Product
+		bridge  int   // the TCGplayer id CardTrader links the product to
+		refusal error // the verdict when nothing is priced
 		want    string
 	}{
 		{
@@ -69,12 +71,31 @@ func TestOffShelf(t *testing.T) {
 				IDProduct: 794707, Name: "Mr.1 (Daz.Bonez) (OP02-063) (V.1)",
 				Number: "OP02-063", ExpansionName: "Special Tournament Promos",
 			},
+			refusal: errNoPrinting,
 		},
 		{
-			what: "a deck reprint the datastore does not carry is not the booster card",
+			what: "a deck reprint the datastore does not carry is a twin of the booster card",
 			product: cm.Product{
 				IDProduct: 900308, Name: "Zephyr(Navy) (OP12-046)",
 				Number: "OP12-046", ExpansionName: "Starter Deck: Blue Kuzan",
+			},
+			refusal: errTwin,
+		},
+		{
+			// The product above, given a link CardTrader does not hold.
+			what: "a deck reprint the bridge links to a product we lack is a refusal",
+			product: cm.Product{
+				IDProduct: 900308, Name: "Zephyr(Navy) (OP12-046)",
+				Number: "OP12-046", ExpansionName: "Starter Deck: Blue Kuzan",
+			},
+			bridge:  581008,
+			refusal: errNoPrinting,
+		},
+		{
+			what: "a trophy card is no card of the game and says nothing",
+			product: cm.Product{
+				IDProduct: 906851, Name: "Flame-Flame Fruit Coliseum Champion Trophy Card",
+				ExpansionName: "Special Tournament Promos",
 			},
 		},
 		{
@@ -117,6 +138,9 @@ func TestOffShelf(t *testing.T) {
 			}
 			mkm.exchangeRate = 1
 			mkm.shelved = shelvedSets(b, opShelves)
+			if tt.bridge != 0 {
+				mkm.tcgBridge = map[int]int{tt.product.IDProduct: tt.bridge}
+			}
 			mkm.priceGuide = map[int]cm.PriceGuide{
 				tt.product.IDProduct: {IDProduct: tt.product.IDProduct, LowPrice: 1, TrendPrice: 2},
 			}
@@ -125,8 +149,8 @@ func TestOffShelf(t *testing.T) {
 			close(channel)
 
 			if tt.want == "" {
-				if !errors.Is(err, errNoPrinting) {
-					t.Fatalf("product %d returned %v, want %v", tt.product.IDProduct, err, errNoPrinting)
+				if !errors.Is(err, tt.refusal) {
+					t.Fatalf("product %d returned %v, want %v", tt.product.IDProduct, err, tt.refusal)
 				}
 				if len(channel) != 0 {
 					t.Errorf("a refused product priced %d entries, want none", len(channel))
