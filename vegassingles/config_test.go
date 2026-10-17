@@ -11,11 +11,10 @@ import (
 // asked for one half and publishes both.
 var _ mtgban.ScraperConfig = (*Vegassingles)(nil)
 
-// TestMagicPublishesOnlyTheBuylist pins what the Magic target is for. The
-// store keeps no Magic singles shelf, so it is registered asking for the
-// buylist alone; the retail row below would publish if the option were
-// dropped, since a grade in stock is the one shape that reaches it.
-func TestMagicPublishesOnlyTheBuylist(t *testing.T) {
+// TestDisablingRetailLeavesTheBuylist pins the retail-off option: the retail
+// row below would publish if it were ignored, since a grade in stock is the
+// one shape that reaches it.
+func TestDisablingRetailLeavesTheBuylist(t *testing.T) {
 	b := withMagic(t)
 
 	product := entombFoil()
