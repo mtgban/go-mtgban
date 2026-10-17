@@ -22,6 +22,7 @@ func TestNumberMarker(t *testing.T) {
 		wantSet string
 		wantNum string
 		wantVar string
+		wantID  string
 	}{
 		{
 			desc:    "the marked number reaches the pattern the wording names",
@@ -54,6 +55,18 @@ func TestNumberMarker(t *testing.T) {
 			wantSet: "PR-1938", wantNum: "051a", wantVar: "Cosmos Holo",
 		},
 		{
+			// The catalog also files this card in the set it came from,
+			// as a row TCGplayer never priced, and the edition holds it.
+			desc:    "a lettered promo beside a tcgdex row of its own edition",
+			in:      mtgmatcher.InputCard{Name: "Professor Sycamore", Edition: "XY BREAKpoint", Variation: "107a/122 Alt Art HOLO", Foil: true},
+			wantSet: "PR-1938", wantNum: "107a", wantID: "107a-122_133813_holofoil",
+		},
+		{
+			desc:    "and its non-holo twin, which the catalog prices apart",
+			in:      mtgmatcher.InputCard{Name: "Professor Sycamore", Edition: "XY BREAKpoint", Variation: "107a/122 Alt Art Non-Holo"},
+			wantSet: "PR-1938", wantNum: "107a", wantID: "107a-122_133814",
+		},
+		{
 			desc:    "the same, for a number the set code is written into",
 			in:      mtgmatcher.InputCard{Name: "Tapu Koko", Edition: "SM Promos", Variation: "SM30a Alt Art"},
 			wantSet: "PR-1938", wantNum: "SM30a",
@@ -74,6 +87,9 @@ func TestNumberMarker(t *testing.T) {
 			id, err := b.Match(&in)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if tt.wantID != "" && id != tt.wantID {
+				t.Errorf("Match(%v) = %s, want %s", tt.in, id, tt.wantID)
 			}
 			co, err := b.GetUUID(id)
 			if err != nil {
