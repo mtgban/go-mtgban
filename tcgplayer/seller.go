@@ -265,5 +265,6 @@ func (tcg *TCGSellerInventory) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TCGSI" + tag
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.CountryFlag = "EU"
+	info.Game = tcg.backend.Game
 	return
 }

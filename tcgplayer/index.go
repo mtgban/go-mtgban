@@ -320,5 +320,6 @@ func (tcg *Index) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
 	info.Family = "TCG"
+	info.Game = tcg.backend.Game
 	return
 }
