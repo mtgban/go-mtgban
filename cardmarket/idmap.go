@@ -94,8 +94,12 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	products := mergeList(mkm.catalog, list, mkm.printf)
+	return mkm.priceProducts(ctx, mergeList(mkm.catalog, list, mkm.printf))
+}
 
+// priceProducts walks the merged products expansion by expansion, resolving
+// each and landing its guide prices.
+func (mkm *Index) priceProducts(ctx context.Context, products map[int]cm.CatalogProduct) error {
 	byExpansion := map[int][]int{}
 	for id, product := range products {
 		byExpansion[product.ExpansionID] = append(byExpansion[product.ExpansionID], id)
@@ -158,6 +162,7 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 			var refused []string
 			named := map[string]int{}
 			var twins, foreign, refusals, matchErrs int
+			var unpriced []int
 			for i := range results {
 				r := &results[i]
 				id, mapped := r.product.IDProduct, products[r.product.IDProduct]
@@ -170,6 +175,8 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 					twins++
 				case errors.Is(err, errForeign):
 					foreign++
+				case errors.Is(err, errNoGuide):
+					unpriced = append(unpriced, id)
 				case errors.Is(err, errNoPrinting):
 					refusals++
 					key := fmt.Sprintf("%q (%s) in %s", mkm.refusalName(mapped.Name), mapped.Number, exp.Name)
@@ -186,7 +193,7 @@ func (mkm *Index) walkCatalog(ctx context.Context) error {
 			}
 
 			mkm.reportRefused(exp.Name, len(ids), refused, twins, foreign)
-			channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign + matchErrs, foreign: foreign}
+			channel <- responseChan{tally: true, walked: len(ids), refused: refusals + twins + foreign + matchErrs, foreign: foreign, unpriced: unpriced}
 			return nil
 		})
 
