@@ -104,20 +104,41 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 		return err
 	}
 
-	for _, result := range results {
-		var req marketChan
-		for _, req = range reqs {
-			if result.SKUID == req.SkuID {
-				break
-			}
-		}
-
-		for _, out := range tcg.skuEntries(result, req) {
-			channel <- out
-		}
+	for _, out := range tcg.resultEntries(results, reqs) {
+		channel <- out
 	}
 
 	return nil
+}
+
+// resultEntries are the entries a price response makes, each row priced for
+// the request that asked for its sku. A row for a sku none asked for has no
+// card to land on, and is dropped.
+func (tcg *Market) resultEntries(results []tcgplayer.SKUPriceSet, reqs []marketChan) []responseChan {
+	bySKU := skuRequests(reqs)
+	var out []responseChan
+	for _, result := range results {
+		req, found := bySKU[result.SKUID]
+		if !found {
+			tcg.printf("sku %d priced but not requested", result.SKUID)
+			continue
+		}
+		out = append(out, tcg.skuEntries(result, req)...)
+	}
+	return out
+}
+
+// skuRequests indexes a batch of requests by sku, keeping the first of any
+// repeat.
+func skuRequests(reqs []marketChan) map[int]marketChan {
+	bySKU := make(map[int]marketChan, len(reqs))
+	for _, req := range reqs {
+		_, found := bySKU[req.SkuID]
+		if !found {
+			bySKU[req.SkuID] = req
+		}
+	}
+	return bySKU
 }
 
 // skuEntries are the entries a sku's prices make for the card req names:

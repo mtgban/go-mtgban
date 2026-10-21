@@ -59,25 +59,35 @@ func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseCh
 		return err
 	}
 
+	for _, out := range tcg.resultEntries(results, reqs) {
+		channel <- out
+	}
+
+	return nil
+}
+
+// resultEntries are the entries a price response makes, each row priced for
+// the request that asked for its sku. A row for a sku none asked for has no
+// product to land on, and is dropped.
+func (tcg *Sealed) resultEntries(results []tcgplayer.SKUPriceSet, reqs []marketChan) []responseChan {
+	bySKU := skuRequests(reqs)
+	var out []responseChan
 	for _, result := range results {
 		if result.LowestListingPrice == 0 {
 			continue
 		}
 
-		uuid := ""
-		productID := 0
-		for _, req := range reqs {
-			if result.SKUID == req.SkuID {
-				uuid = req.UUID
-				productID = req.ProductID
-				break
-			}
+		req, found := bySKU[result.SKUID]
+		if !found {
+			tcg.printf("sku %d priced but not requested", result.SKUID)
+			continue
 		}
+		productID := req.ProductID
 
 		link := GenerateProductURL(productID, "", tcg.affiliate, "", "", false)
 
-		out := responseChan{
-			cardID: uuid,
+		out = append(out, responseChan{
+			cardID: req.UUID,
 			entry: mtgban.InventoryEntry{
 				Conditions: mtgban.NM,
 				Price:      result.LowestListingPrice,
@@ -86,12 +96,9 @@ func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseCh
 				OriginalID: fmt.Sprint(productID),
 				InstanceID: fmt.Sprint(result.SKUID),
 			},
-		}
-
-		channel <- out
+		})
 	}
-
-	return nil
+	return out
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
