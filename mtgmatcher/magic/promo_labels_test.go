@@ -35,6 +35,7 @@ func TestPromoTypeLabels(t *testing.T) {
 		{"arenaleague", "Arena League"},
 		{"planeswalkerstamped", "Planeswalker Stamped"},
 		{"universesbeyond", "Universes Beyond"},
+		{"extendedart", "Extended Art"},
 	} {
 		if got := b.PromoTypeLabel(tt.promoType); got != tt.want {
 			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.promoType, got, tt.want)
