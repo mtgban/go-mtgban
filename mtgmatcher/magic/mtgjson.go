@@ -1028,11 +1028,14 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			// where it is a deliberate modern treatment, not the frame
 			// its era printed by default. A long-running promo set dates
 			// each card on its own (a 2023 Media Insert in a 1995 set).
+			// The List, Unfinity's included, reprints a card in the frame
+			// it first wore, so there it is never the treatment.
 			releaseDate := set.ReleaseDateTime
 			if card.OriginalReleaseDate != "" {
 				releaseDate, _ = time.Parse("2006-01-02", card.OriginalReleaseDate)
 			}
-			if card.FrameVersion == "1997" && releaseDate.After(PromosForEverybodyYay) {
+			theList := set.Code == "PLST" || set.Code == "ULST"
+			if card.FrameVersion == "1997" && releaseDate.After(PromosForEverybodyYay) && !theList {
 				card.PromoTypes = append(card.PromoTypes, PromoTypeRetroFrame)
 			}
 
