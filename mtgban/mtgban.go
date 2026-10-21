@@ -320,7 +320,8 @@ type Carter interface {
 }
 
 // InventoryRecord is what a Seller offers: a uuid to the entries on sale for
-// it, one per condition and seller.
+// it, one per condition and seller. A uuid is present only with at least one
+// entry, as the Add methods write it; readers take its first entry as given.
 type InventoryRecord map[string][]InventoryEntry
 
 // Market is the interface describing actions to be performed on the
@@ -360,7 +361,8 @@ type Seller interface {
 }
 
 // BuylistRecord is what a Vendor buys: a uuid to the entries it will pay for,
-// one per condition and vendor.
+// one per condition and vendor. A uuid is present only with at least one
+// entry, as the Add methods write it; readers take its first entry as given.
 type BuylistRecord map[string][]BuylistEntry
 
 // Vendor is the interface describing actions to be performed on a vendor buylist

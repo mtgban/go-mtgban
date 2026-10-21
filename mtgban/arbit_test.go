@@ -421,3 +421,38 @@ func TestArbitrageReturnsACompleteRow(t *testing.T) {
 		t.Error("arbitrage took a quote of nothing")
 	}
 }
+
+// A negative spread is not a trade that pays, so it scores zero. The index's
+// log10(1+spread) is undefined there: below -1% it is NaN, which slips past
+// every MinProfitability gate, and at exactly -1% it is +Inf, which ranks the
+// row above every real opportunity. The website's negative modes reach these
+// rows with MinSpread -30.
+func TestArbitScoresANegativeSpreadAsZero(t *testing.T) {
+	for _, tt := range []struct {
+		desc       string
+		ask, offer float64
+		spread     float64
+	}{
+		{"half the asking price", 10, 5, -50},
+		{"exactly one percent under", 100, 99, -1},
+		{"a fraction of a percent under", 1000, 999.5, -0.05},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			b := backendFor(plainCard())
+			opts := &ArbitOpts{MinSpread: -63, MinDiff: math.Inf(-1)}
+			got := Arbit(b, opts,
+				vendorOf(BuylistRecord{"card": {{Conditions: NM, BuyPrice: tt.offer, Quantity: 2}}}),
+				sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: tt.ask, Quantity: 4}}},
+					ScraperInfo{Name: "seller"}))
+			if len(got) != 1 {
+				t.Fatalf("Arbit returned %d entries, want the one row the negative floor admits", len(got))
+			}
+			if math.Abs(got[0].Spread-tt.spread) > 1e-9 {
+				t.Errorf("Spread = %v, want %v", got[0].Spread, tt.spread)
+			}
+			if got[0].Profitability != 0 {
+				t.Errorf("Profitability = %v, want 0", got[0].Profitability)
+			}
+		})
+	}
+}

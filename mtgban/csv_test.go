@@ -858,3 +858,49 @@ func TestCSVNilBackend(t *testing.T) {
 		})
 	}
 }
+
+// The header has a column for everything any entry carries, whichever card
+// the map hands over first: a seller, a bundle or the cart ids on one entry
+// of one card widen the whole file, so no row loses what it holds. Map order
+// changes from write to write, so each shape is written several times.
+func TestWriteInventoryToCSVHeaderCoversEveryEntry(t *testing.T) {
+	b := backendFor(csvCards())
+
+	for _, tt := range []struct {
+		desc      string
+		inventory InventoryRecord
+		header    []string
+	}{
+		{"no entry names a seller", InventoryRecord{
+			"plain": {{Conditions: NM, Price: 1, Quantity: 1}},
+			"shiny": {{Conditions: NM, Price: 2, Quantity: 1}},
+		}, InventoryHeader},
+		{"one card names a seller", InventoryRecord{
+			"plain": {{Conditions: NM, Price: 1, Quantity: 1}},
+			"shiny": {{Conditions: NM, Price: 2, Quantity: 1, SellerName: "Store A"}},
+			"box":   {{Conditions: NM, Price: 3, Quantity: 1}},
+		}, MarketHeader},
+		{"one card is a bundle", InventoryRecord{
+			"plain": {{Conditions: NM, Price: 1, Quantity: 1}},
+			"shiny": {{Conditions: NM, Price: 2, Quantity: 1, Bundle: true}},
+		}, MarketHeader},
+		{"a played copy carries the cart ids", InventoryRecord{
+			"plain": {{Conditions: NM, Price: 1, Quantity: 1, SellerName: "Store A"}},
+			"shiny": {
+				{Conditions: NM, Price: 2, Quantity: 1, SellerName: "Store A"},
+				{Conditions: SP, Price: 1, Quantity: 1, SellerName: "Store A", InstanceID: "sku-1"},
+			},
+		}, CartHeader},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			for range 20 {
+				records := writeCSV(t, func(w *bytes.Buffer) error {
+					return WriteInventoryToCSV(b, tt.inventory, w)
+				})
+				if !slices.Equal(records[0], tt.header) {
+					t.Fatalf("header = %v, want %v", records[0], tt.header)
+				}
+			}
+		})
+	}
+}
