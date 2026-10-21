@@ -190,3 +190,96 @@ func TestSealedWalksRefuseAHugeCount(t *testing.T) {
 		})
 	}
 }
+
+// A booster slot or fixed-sheet count no real booster comes near is refused
+// at once rather than drawn card by card.
+func TestBoosterPicksRefusesAHugeCount(t *testing.T) {
+	for name, b := range map[string]*mtgmatcher.Backend{
+		"slot": boosterBackend(mtgmatcher.Sheet{
+			AllowDuplicates: true,
+			Cards:           map[string]int{"a": 1},
+		}, 1000000000000, 1, map[string][]string{"a": nil}),
+		"fixed": boosterBackend(mtgmatcher.Sheet{
+			Fixed: true,
+			Cards: map[string]int{"a": 1000000000000},
+		}, 1, 1, map[string][]string{"a": nil}),
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, err := sealed.BoosterPicks(b, "AAA", "draft")
+			if err == nil {
+				t.Error("BoosterPicks opened it")
+			}
+		})
+	}
+}
+
+// Packs held by a product draw from the product's budget: 300,000 packs of
+// two cards each are past it with their cards, though no single pack is.
+func TestProductPicksChargesItsPacks(t *testing.T) {
+	b := boosterBackend(mtgmatcher.Sheet{
+		AllowDuplicates: true,
+		Cards:           map[string]int{"a": 1},
+	}, 2, 1, map[string][]string{"a": nil})
+	set := b.Sets["AAA"]
+	set.SealedProduct = []mtgmatcher.SealedProduct{
+		{UUID: "box", Name: "Box", Contents: map[string][]mtgmatcher.SealedContent{
+			"sealed": {{Set: "aaa", UUID: "p", Count: 300000}},
+		}},
+		{UUID: "p", Name: "P", Contents: map[string][]mtgmatcher.SealedContent{
+			"pack": {{Set: "aaa", Code: "draft"}},
+		}},
+	}
+	_, err := sealed.ProductPicks(b, "AAA", "box")
+	if err == nil {
+		t.Error("ProductPicks opened 300,000 packs")
+	}
+}
+
+// A variable entry that publishes no total weight is read the way its draw
+// is: each config's chance against the sum of them all, a chance below one
+// never coming up. Nothing to draw by is an error, never a NaN or an Inf.
+func TestProductCountsReadUnweightedConfigs(t *testing.T) {
+	b := sealedBackend(t, `{"sealedProduct":[
+		{"uuid":"v","name":"V","contents":{"variable":[{"configs":[
+			{"card":[{"uuid":"a"}],"variable_config":[{"chance":1,"weight":0}]},
+			{"card":[{"uuid":"b"}],"variable_config":[{"chance":3,"weight":0}]},
+			{"card":[{"uuid":"c"}],"variable_config":[{"chance":0,"weight":0}]}]}]}},
+		{"uuid":"n","name":"N","contents":{"variable":[{"configs":[
+			{"card":[{"uuid":"a"}],"variable_config":[{"chance":1,"weight":2}]},
+			{"card":[{"uuid":"b"}],"variable_config":[{"chance":-1,"weight":2}]}]}]}},
+		{"uuid":"z","name":"Z","contents":{"variable":[{"configs":[
+			{"card":[{"uuid":"a"}],"variable_config":[{"chance":0,"weight":0}]},
+			{"card":[{"uuid":"b"}],"variable_config":[{"chance":0,"weight":0}]}]}]}}]}`)
+
+	for uuid, want := range map[string]map[string]float64{
+		"v": {"a": 0.25, "b": 0.75, "c": 0},
+		"n": {"a": 0.5, "b": 0},
+	} {
+		counts, err := sealed.ProductCounts(b, "AAA", uuid)
+		if err != nil {
+			t.Fatalf("%s: %v", uuid, err)
+		}
+		got := totals(counts)
+		for id, n := range want {
+			if got[id] != n {
+				t.Errorf("%s: ProductCounts totals = %v, want %v", uuid, got, want)
+				break
+			}
+		}
+	}
+
+	for range 50 {
+		picks, err := sealed.ProductPicks(b, "AAA", "v")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if slices.Contains(picks, "c") {
+			t.Fatal("drew the config whose chance is zero")
+		}
+	}
+
+	_, err := sealed.ProductCounts(b, "AAA", "z")
+	if err == nil {
+		t.Error("ProductCounts counted a variable entry with nothing to draw by")
+	}
+}

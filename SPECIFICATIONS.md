@@ -812,8 +812,10 @@ functions take the backend first:
   one seen, so a product held twice is opened twice while one listed in its
   own contents is refused: an error from `ProductPicks` and `ProductCounts`,
   nothing added by `IsRandom`, `HasDecklist` and `ProductDecklist`. A walk
-  past `maxOpened` (2^20) products, copies and cards fails rather than
-  spinning on a corrupt count.
+  past `maxOpened` (2^20) products, copies and cards, a booster's slots
+  included, fails rather than spinning on a corrupt count. A variable entry
+  publishing no total weight is counted against the sum of its chances, as
+  it is drawn.
 - `ProductCounts`, `BoosterCounts` and `SheetCounts` compute how many copies
   of each card a product, a booster or one sheet draw yields on average - the
   inputs to `sealedev`'s EV computation. Each `Count` is per copy of the

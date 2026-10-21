@@ -21,8 +21,13 @@ const maxRerollThreshold = 50
 // sheets with the weights the real product uses, and returns what came out.
 //
 // Each draw walks the weights against their total, so opening a booster
-// builds nothing per call. A weight below one is never drawn.
+// builds nothing per call. A weight below one is never drawn, and a booster
+// drawing more than maxOpened cards is refused.
 func BoosterPicks(b *mtgmatcher.Backend, setCode, boosterType string) ([]string, error) {
+	return boosterPicks(b, setCode, boosterType, newWalk())
+}
+
+func boosterPicks(b *mtgmatcher.Backend, setCode, boosterType string, w *walk) ([]string, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
@@ -56,11 +61,20 @@ func BoosterPicks(b *mtgmatcher.Backend, setCode, boosterType string) ([]string,
 				if err != nil {
 					return nil, err
 				}
+				err = w.spend(subcount)
+				if err != nil {
+					return nil, err
+				}
 				for range subcount {
 					picks = append(picks, uuid)
 				}
 			}
 			continue
+		}
+
+		err = w.spend(count)
+		if err != nil {
+			return nil, err
 		}
 
 		// This is an approximation of the actual algorithm since we don't
@@ -533,15 +547,11 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 				}
 				picks = append(picks, uuid)
 			case "pack":
-				boosterPicks, err := BoosterPicks(b, content.Set, content.Code)
+				packPicks, err := boosterPicks(b, content.Set, content.Code, w)
 				if err != nil {
 					return nil, err
 				}
-				err = w.spend(len(boosterPicks))
-				if err != nil {
-					return nil, err
-				}
-				picks = append(picks, boosterPicks...)
+				picks = append(picks, packPicks...)
 			case "sealed":
 				err := w.spend(content.Count)
 				if err != nil {
@@ -930,9 +940,22 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 					}
 				}
 			case "variable":
+				// A config with no total weight is read against the sum of
+				// the chances, as the draw reads it
+				var chances int
+				for _, config := range content.Configs {
+					chances += max(configOdds(config, len(content.Configs)).Chance, 0)
+				}
 				for _, config := range content.Configs {
 					odds := configOdds(config, len(content.Configs))
-					variableChance := float64(odds.Chance) / float64(odds.Weight)
+					weight := odds.Weight
+					if weight <= 0 {
+						weight = chances
+					}
+					if weight <= 0 {
+						return nil, errors.New("variable entry has no weight to draw by")
+					}
+					variableChance := float64(max(odds.Chance, 0)) / float64(weight)
 
 					variableCounts, err := contentCounts(b, config, etched, w)
 					if err != nil {
