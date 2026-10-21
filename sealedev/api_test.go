@@ -1,19 +1,28 @@
 package sealedev
 
 import (
+	"context"
 	"encoding/json"
 	"math"
+	"net/http"
+	"net/http/httptest"
+	"slices"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-// installCards builds a backend behind GetUUID for one test. Every price
-// lookup reads the card to know which finish it is quoting.
+// installCards builds a backend behind GetUUID and GetUUIDs for one test.
+// Every price lookup reads the card to know which finish it is quoting.
 func installCards(t *testing.T, cards map[string]*mtgmatcher.CardObject) *mtgmatcher.Backend {
 	t.Helper()
-	return &mtgmatcher.Backend{UUIDs: cards}
+	b := &mtgmatcher.Backend{UUIDs: cards}
+	for uuid := range cards {
+		b.AllUUIDs = append(b.AllUUIDs, uuid)
+	}
+	slices.Sort(b.AllUUIDs)
+	return b
 }
 
 func TestSkipFromEV(t *testing.T) {
@@ -228,5 +237,73 @@ func TestPassthroughFirst(t *testing.T) {
 	got, err := passthroughFirst([]float64{7, 9})
 	if err != nil || got != 7 {
 		t.Errorf("passthroughFirst = %v, %v; want 7, nil", got, err)
+	}
+}
+
+func TestSYPDirectPriceFallsBackToHistory(t *testing.T) {
+	b := installCards(t, map[string]*mtgmatcher.CardObject{
+		"live":    {Card: mtgmatcher.Card{Name: "Live", SetCode: "AAA"}},
+		"hist":    {Card: mtgmatcher.Card{Name: "Hist", SetCode: "AAA"}},
+		"neither": {Card: mtgmatcher.Card{Name: "Neither", SetCode: "AAA"}},
+	})
+	r := &priceSnapshot{Retail: map[string]map[string]float64{}, Buylist: map[string]map[string]float64{}}
+	r.setRetail(b, "live", "TCGDirect", 10)
+	r.setRetail(b, "live", "TCGDirectHist", 99)
+	r.setRetail(b, "hist", "TCGDirectHist", 4)
+
+	if got := sypDirectPrice(b, r, "live"); got != 10 {
+		t.Errorf("live Direct must win: %v", got)
+	}
+	if got := sypDirectPrice(b, r, "hist"); got != 4 {
+		t.Errorf("history must stand in: %v", got)
+	}
+	if got := sypDirectPrice(b, r, "neither"); got != 0 {
+		t.Errorf("nothing to price from: %v", got)
+	}
+}
+
+// TestLoadPricesNetsSYPFromHistory pins sypDirectPrice's wiring into
+// loadPrices through a v2 body: a card Direct does not list nets from its
+// history price, a live Direct price beats history, and a history price that
+// nets under the bulk threshold is pruned like any other.
+func TestLoadPricesNetsSYPFromHistory(t *testing.T) {
+	b := installCards(t, map[string]*mtgmatcher.CardObject{
+		"hist": {Card: mtgmatcher.Card{Name: "Hist", SetCode: "AAA", Finish: "nonfoil"}},
+		"live": {Card: mtgmatcher.Card{Name: "Live", SetCode: "AAA", Finish: "nonfoil"}},
+		"bulk": {Card: mtgmatcher.Card{Name: "Bulk", SetCode: "AAA", Finish: "nonfoil"}},
+	})
+	body := `{"retail": {
+		"hist": {"nonfoil": {"TCGDirectHist": [{"condition": "", "price": 4}]}},
+		"live": {"nonfoil": {"TCGDirect": [{"condition": "NM", "price": 10}],
+			"TCGDirectHist": [{"condition": "", "price": 99}]}},
+		"bulk": {"nonfoil": {"TCGDirectHist": [{"condition": "", "price": 0.8}]}}
+	}}`
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/v2/allSET.json" || r.URL.Query().Get("sig") != "s3cret" {
+			t.Errorf("loadPrices requested %s", r.URL)
+		}
+		w.Write([]byte(body))
+	}))
+	t.Cleanup(srv.Close)
+	saved := banAPIURL
+	banAPIURL = srv.URL + "/api/v2/all%s.json?sig=%s"
+	t.Cleanup(func() { banAPIURL = saved })
+
+	prices, err := loadPrices(context.Background(), b, "s3cret", "SET")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for uuid, want := range map[string]float64{"hist": 2.942, "live": 8.255} {
+		if got := prices.Buylist[uuid]["TCGDirectSYPNet"]; math.Abs(got-want) > 1e-9 {
+			t.Errorf("%s TCGDirectSYPNet = %v, want %v", uuid, got, want)
+		}
+	}
+	if _, found := prices.Buylist["bulk"]["TCGDirectSYPNet"]; found {
+		t.Errorf("a history price netting under the bulk threshold survived: %v", prices.Buylist["bulk"])
+	}
+	// History prices only SYP; the Direct estimate keeps to Market and Low.
+	if _, found := prices.Buylist["hist"]["TCGDirectNet"]; found {
+		t.Errorf("TCGDirectNet was derived from history: %v", prices.Buylist["hist"])
 	}
 }

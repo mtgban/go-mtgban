@@ -35,9 +35,10 @@ type priceSnapshot struct {
 	Buylist map[string]map[string]float64
 }
 
-const (
-	banAPIURL = "https://www.mtgban.com/api/v2/all%s.json?sig=%s"
+// banAPIURL is where loadPrices reads the snapshot; a var so a test can serve it.
+var banAPIURL = "https://www.mtgban.com/api/v2/all%s.json?sig=%s"
 
+const (
 	// BulkThreshold is the price under which a card counts as bulk and stops
 	// being worth naming in an opening
 	BulkThreshold = 0.5
@@ -125,6 +126,17 @@ func setPrice(b *mtgmatcher.Backend, side map[string]map[string]float64, uuid, s
 		side[uuid] = map[string]float64{}
 	}
 	side[uuid][store] = price
+}
+
+// sypDirectPrice is what a SYP sale of the card goes for on Direct today,
+// or, when Direct does not list it, the site's trailing average of its
+// recorded Direct prices (the TCGDirectHist store), which the site serves
+// only for SYP cards.
+func sypDirectPrice(b *mtgmatcher.Backend, r *priceSnapshot, uuid string) float64 {
+	if direct := r.getRetail(b, uuid, "TCGDirect"); direct > 0 {
+		return direct
+	}
+	return r.getRetail(b, uuid, "TCGDirectHist")
 }
 
 func getCT0fees(price float64) float64 {
@@ -229,8 +241,7 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 		}
 
 		// Create a custom price
-		direct := response.getRetail(b, uuid, "TCGDirect")
-		directSyp := tcgplayer.DirectSYPPriceAfterFees(direct)
+		directSyp := tcgplayer.DirectSYPPriceAfterFees(sypDirectPrice(b, &response, uuid))
 		response.setBuylist(b, uuid, "TCGDirectSYPNet", directSyp)
 
 		// CardTrader Zero: subtract its flat fee.
