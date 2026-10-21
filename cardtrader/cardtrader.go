@@ -468,6 +468,12 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				continue
 			}
 		}
+		// A Flesh and Blood product filed in one treatment answers a listing
+		// naming another with its own, through the foil flag: a Regular copy
+		// of a Cold Foil token, or a Gold Foil one, is not that printing.
+		if ct.gameID == GameFleshAndBlood && !fabSameTreatment(ct.backend, cardID, product) {
+			continue
+		}
 
 		// A starter deck's exclusive foil is its card's Holofoil, and only
 		// the version says a blueprint is one.

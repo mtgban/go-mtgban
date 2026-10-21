@@ -945,6 +945,20 @@ func fabTreatment(product Product) string {
 	return product.Properties.FabFoilNew
 }
 
+// fabSameTreatment reports whether a Flesh and Blood listing's treatment,
+// whatever its print run, is the one the printing it resolved to is sold in.
+func fabSameTreatment(b *mtgmatcher.Backend, cardID string, product Product) bool {
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	landed, found := mtgmatcher.FinishOf(mtgmatcher.FinishSlug(co.Finish))
+	if !found {
+		return false
+	}
+	return landed.Treatment == mtgmatcher.FinishSlug(fabTreatment(product))
+}
+
 // gameFinish names the finish a listing prices, for the games whose
 // properties name one rather than flagging it. Flesh and Blood is the only
 // one so far: its treatment is a string, and the name reaches the printing's
