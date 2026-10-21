@@ -909,11 +909,7 @@ func gameFoil(gameID int, product Product) bool {
 		// beside it is not one, so the treatment alone answers the flag.
 		// Yu-Gi-Oh deliberately has no arm: the rarity is its treatment,
 		// so every listing reads nonfoil through the default below.
-		switch product.Properties.FabFoilNew {
-		case "", "Regular", "false":
-			return false
-		}
-		return true
+		return fabTreatment(product) != "Normal"
 	case GamePokemon:
 		// Only the reverse holo is a foil treatment the flag can stand for;
 		// a first-edition listing is whatever its rarity makes it, and the
@@ -938,12 +934,22 @@ var lorcanaStarterFoils = map[string]bool{
 // beside "Monarch - First").
 var unlimitedShelf = regexp.MustCompile(`(?i)\bUnlimited\b`)
 
+// fabTreatment names a Flesh and Blood listing's treatment as the datastore
+// spells it: the plain values Card Trader writes for no treatment are its
+// Normal, and the stringly-false is what old listings carry.
+func fabTreatment(product Product) string {
+	switch product.Properties.FabFoilNew {
+	case "", "Regular", "false":
+		return "Normal"
+	}
+	return product.Properties.FabFoilNew
+}
+
 // gameFinish names the finish a listing prices, for the games whose
 // properties name one rather than flagging it. Flesh and Blood is the only
 // one so far: its treatment is a string, and the name reaches the printing's
 // own Cold Foil sibling, which the boolean cannot - it has one bit for a
-// game selling three treatments. The plain values name no treatment and are
-// left to the flag; the stringly-false is what old listings carry.
+// game selling three treatments. A Normal listing is left to the flag.
 func gameFinish(gameID int, bp *Blueprint, product Product) string {
 	switch gameID {
 	case GameFleshAndBlood:
@@ -951,11 +957,7 @@ func gameFinish(gameID int, bp *Blueprint, product Product) string {
 		// each crossing its own printing, so a first-edition listing has
 		// to name both. Only the run is worth naming on its own: the
 		// unlimited one is what a product answers with by default.
-		treatment := product.Properties.FabFoilNew
-		switch treatment {
-		case "", "Regular", "false":
-			treatment = "Normal"
-		}
+		treatment := fabTreatment(product)
 		if product.Properties.FirstEdition {
 			return mtgmatcher.PrintingFinish("1st Edition", treatment)
 		}
