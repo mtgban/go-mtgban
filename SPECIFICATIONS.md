@@ -808,7 +808,12 @@ functions take the backend first:
   (`deckFoilTenths`), the sample pack a product may fail to open
   (`optionalSealed`), the deck tokens the datastore does not hold
   (`DeckCards`), and the listing id a Secret Lair foil drop shares
-  (`secretLairFoilID`).
+  (`secretLairFoilID`). Each walk tracks the products on its path, not every
+  one seen, so a product held twice is opened twice while one listed in its
+  own contents is refused: an error from `ProductPicks` and `ProductCounts`,
+  nothing added by `IsRandom`, `HasDecklist` and `ProductDecklist`. A walk
+  past `maxOpened` (2^20) products, copies and cards fails rather than
+  spinning on a corrupt count.
 - `ProductCounts`, `BoosterCounts` and `SheetCounts` compute how many copies
   of each card a product, a booster or one sheet draw yields on average - the
   inputs to `sealedev`'s EV computation. Each `Count` is per copy of the

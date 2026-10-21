@@ -243,6 +243,8 @@ func drawBalanced(b *mtgmatcher.Backend, picks []string, sheet mtgmatcher.Sheet,
 }
 
 // DeckCards returns the uuids a preconstructed deck contains.
+//
+// A deck listing more than maxOpened cards is refused, like a product.
 func DeckCards(b *mtgmatcher.Backend, setCode, deckName string) ([]string, error) {
 	var picks []string
 
@@ -270,6 +272,9 @@ func DeckCards(b *mtgmatcher.Backend, setCode, deckName string) ([]string, error
 					return nil, err
 				}
 
+				if card.Count > maxOpened-len(picks) {
+					return nil, errTooLarge
+				}
 				for range card.Count {
 					picks = append(picks, uuid)
 				}
@@ -284,6 +289,9 @@ func DeckCards(b *mtgmatcher.Backend, setCode, deckName string) ([]string, error
 				continue
 			}
 
+			if card.Count > maxOpened-len(picks) {
+				return nil, errTooLarge
+			}
 			for range card.Count {
 				picks = append(picks, uuid)
 			}
@@ -339,6 +347,58 @@ func DeckIsRandom(deckSet string) bool {
 // time. "other" lists what holds no card and is never read.
 var sealedKinds = []string{"card", "pack", "deck", "sealed", "variable"}
 
+// maxOpened is the most one walk opens: products entered, held copies and
+// uuids yielded together. The largest real products, a case of six 36-pack
+// boxes, come to a few thousand; past a million the data is corrupt, and
+// opening it copy by copy would spin or exhaust memory.
+const maxOpened = 1 << 20
+
+var errTooLarge = fmt.Errorf("sealed product opens more than %d items", maxOpened)
+
+// walk is one pass over a product and everything it holds. It tracks the
+// products on the path from the root, not every one seen, so a product held
+// twice is opened twice while one holding itself is refused, and it spends
+// from the maxOpened budget.
+type walk struct {
+	path  map[string]bool
+	spent int
+}
+
+func newWalk() *walk {
+	return &walk{path: map[string]bool{}}
+}
+
+// spend charges n items to the walk, failing once it is past maxOpened; a
+// negative count opens nothing and refunds nothing.
+func (w *walk) spend(n int) error {
+	n = max(n, 0)
+	if n > maxOpened-w.spent {
+		w.spent = maxOpened
+		return errTooLarge
+	}
+	w.spent += n
+	return nil
+}
+
+// enter puts a product on the walk's path, failing if it is already there or
+// the budget is spent; a nil error is paired with a call to leave.
+func (w *walk) enter(setCode, sealedUUID string) error {
+	err := w.spend(1)
+	if err != nil {
+		return err
+	}
+	key := strings.ToUpper(setCode) + "/" + sealedUUID
+	if w.path[key] {
+		return fmt.Errorf("sealed product %s holds itself", sealedUUID)
+	}
+	w.path[key] = true
+	return nil
+}
+
+func (w *walk) leave(setCode, sealedUUID string) {
+	delete(w.path, strings.ToUpper(setCode)+"/"+sealedUUID)
+}
+
 // ProductDecklist returns the uuids of the fixed decks a sealed product
 // contains, for the products whose contents are known rather than drawn.
 //
@@ -347,11 +407,21 @@ var sealedKinds = []string{"card", "pack", "deck", "sealed", "variable"}
 // the data cannot express - that belongs to opening a copy rather than to the
 // product, and lives in ProductPicks and in the counts ProductCounts carries.
 func ProductDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, error) {
+	return productDecklist(b, setCode, sealedUUID, newWalk())
+}
+
+func productDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) ([]string, error) {
 	var picks []string
 
-	if !HasDecklist(b, setCode, sealedUUID) {
+	if !hasDecklist(b, setCode, sealedUUID, w) {
 		return nil, errors.New("product does not have a decklist")
 	}
+
+	err := w.enter(setCode, sealedUUID)
+	if err != nil {
+		return nil, err
+	}
+	defer w.leave(setCode, sealedUUID)
 
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -372,15 +442,31 @@ func ProductDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]strin
 					if err != nil {
 						return nil, err
 					}
+					err = w.spend(1)
+					if err != nil {
+						return nil, err
+					}
 					picks = append(picks, uuid)
 				case "sealed":
+					err := w.spend(content.Count)
+					if err != nil {
+						return nil, err
+					}
 					for i := 0; i < content.Count; i++ {
 						// Content of sealed is unpredictable, so ignore errors
-						sealedPicks, _ := ProductDecklist(b, content.Set, content.UUID)
+						// but for a walk that has opened too much
+						sealedPicks, err := productDecklist(b, content.Set, content.UUID, w)
+						if errors.Is(err, errTooLarge) {
+							return nil, err
+						}
 						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
 					deckPicks, err := DeckCards(b, content.Set, content.Name)
+					if err != nil {
+						return nil, err
+					}
+					err = w.spend(len(deckPicks))
 					if err != nil {
 						return nil, err
 					}
@@ -397,7 +483,17 @@ func ProductDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]strin
 // ProductPicks opens a sealed product once, resolving its packs and decks
 // and drawing whatever it leaves to chance.
 func ProductPicks(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, error) {
+	return productPicks(b, setCode, sealedUUID, newWalk())
+}
+
+func productPicks(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) ([]string, error) {
 	var picks []string
+
+	err := w.enter(setCode, sealedUUID)
+	if err != nil {
+		return nil, err
+	}
+	defer w.leave(setCode, sealedUUID)
 
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -408,7 +504,7 @@ func ProductPicks(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, 
 		if sealedUUID != product.UUID {
 			continue
 		}
-		contentPicks, err := pickContents(b, product.Contents, productNamesEtched(product.Name))
+		contentPicks, err := pickContents(b, product.Contents, productNamesEtched(product.Name), w)
 		if err != nil {
 			return nil, err
 		}
@@ -420,7 +516,7 @@ func ProductPicks(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, 
 
 // pickContents opens every entry of a product's contents, or of the variable
 // config a copy holds; etched is what the product's name says.
-func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]string, error) {
+func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool, w *walk) ([]string, error) {
 	var picks []string
 
 	for _, kind := range sealedKinds {
@@ -431,18 +527,30 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 				if err != nil {
 					return nil, err
 				}
+				err = w.spend(1)
+				if err != nil {
+					return nil, err
+				}
 				picks = append(picks, uuid)
 			case "pack":
 				boosterPicks, err := BoosterPicks(b, content.Set, content.Code)
 				if err != nil {
 					return nil, err
 				}
+				err = w.spend(len(boosterPicks))
+				if err != nil {
+					return nil, err
+				}
 				picks = append(picks, boosterPicks...)
 			case "sealed":
+				err := w.spend(content.Count)
+				if err != nil {
+					return nil, err
+				}
 				for i := 0; i < content.Count; i++ {
-					sealedPicks, err := ProductPicks(b, content.Set, content.UUID)
+					sealedPicks, err := productPicks(b, content.Set, content.UUID, w)
 					if err != nil {
-						if optionalSealed(content.Name) {
+						if optionalSealed(content.Name) && !errors.Is(err, errTooLarge) {
 							continue
 						}
 						return nil, err
@@ -451,6 +559,10 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 				}
 			case "deck":
 				deckPicks, err := DeckCards(b, content.Set, content.Name)
+				if err != nil {
+					return nil, err
+				}
+				err = w.spend(len(deckPicks))
 				if err != nil {
 					return nil, err
 				}
@@ -482,7 +594,7 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 					return nil, err
 				}
 
-				configPicks, err := pickContents(b, variableChooser.Pick(), etched)
+				configPicks, err := pickContents(b, variableChooser.Pick(), etched, w)
 				if err != nil {
 					return nil, err
 				}
@@ -495,10 +607,11 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 }
 
 // configOdds returns the odds a variable entry's config is the one a copy
-// holds, as Chance in Weight; a config stating none is one of n equals.
+// holds, as Chance in Weight; a config stating none, or publishing an empty
+// list of them, is one of n equals.
 func configOdds(config map[string][]mtgmatcher.SealedContent, n int) mtgmatcher.SealedContent {
-	odds, found := config["variable_config"]
-	if !found {
+	odds := config["variable_config"]
+	if len(odds) == 0 {
 		return mtgmatcher.SealedContent{Chance: 1, Weight: n}
 	}
 	return odds[0]
@@ -506,7 +619,19 @@ func configOdds(config map[string][]mtgmatcher.SealedContent, n int) mtgmatcher.
 
 // IsRandom reports whether opening the product twice can give different
 // cards, which is what separates a booster from a fixed deck.
+//
+// A product held inside itself adds nothing past its first copy on the path.
 func IsRandom(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
+	return isRandom(b, setCode, sealedUUID, newWalk())
+}
+
+func isRandom(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) bool {
+	err := w.enter(setCode, sealedUUID)
+	if err != nil {
+		return false
+	}
+	defer w.leave(setCode, sealedUUID)
+
 	set, err := b.GetSet(setCode)
 	if err != nil {
 		return false
@@ -528,7 +653,7 @@ func IsRandom(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
 				case "pack":
 					return true
 				case "sealed":
-					if IsRandom(b, content.Set, content.UUID) {
+					if isRandom(b, content.Set, content.UUID, w) {
 						return true
 					}
 				case "deck":
@@ -547,7 +672,19 @@ func IsRandom(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
 
 // HasDecklist reports whether the product contains a fixed deck whose
 // contents are known.
+//
+// A product held inside itself adds nothing past its first copy on the path.
 func HasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
+	return hasDecklist(b, setCode, sealedUUID, newWalk())
+}
+
+func hasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) bool {
+	err := w.enter(setCode, sealedUUID)
+	if err != nil {
+		return false
+	}
+	defer w.leave(setCode, sealedUUID)
+
 	set, err := b.GetSet(setCode)
 	if err != nil {
 		return false
@@ -562,7 +699,7 @@ func HasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
 			for _, content := range product.Contents[kind] {
 				switch kind {
 				case "sealed":
-					if HasDecklist(b, content.Set, content.UUID) {
+					if hasDecklist(b, content.Set, content.UUID, w) {
 						return true
 					}
 				case "deck":
@@ -689,6 +826,16 @@ func SheetCounts(b *mtgmatcher.Backend, setCode, boosterType, sheetName string) 
 // yields on average, across every pack and deck it contains: per copy of the
 // product each entry comes from, held Copies times.
 func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, error) {
+	return productCounts(b, setCode, sealedUUID, newWalk())
+}
+
+func productCounts(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) ([]Count, error) {
+	err := w.enter(setCode, sealedUUID)
+	if err != nil {
+		return nil, err
+	}
+	defer w.leave(setCode, sealedUUID)
+
 	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
@@ -700,7 +847,7 @@ func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, 
 		if sealedUUID != product.UUID {
 			continue
 		}
-		found, err := contentCounts(b, product.Contents, productNamesEtched(product.Name))
+		found, err := contentCounts(b, product.Contents, productNamesEtched(product.Name), w)
 		if err != nil {
 			return nil, err
 		}
@@ -713,7 +860,7 @@ func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, 
 // contentCounts returns how many copies of each card the entries of a
 // product's contents, or of one of its variable configs, yield on average;
 // etched is what the product's name says.
-func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]Count, error) {
+func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool, w *walk) ([]Count, error) {
 	var counts []Count
 
 	for _, kind := range sealedKinds {
@@ -724,29 +871,45 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 				if err != nil {
 					return nil, err
 				}
+				err = w.spend(1)
+				if err != nil {
+					return nil, err
+				}
 				counts = append(counts, newCount(uuid, 1))
 			case "pack":
 				boosterCounts, err := BoosterCounts(b, content.Set, content.Code)
 				if err != nil {
 					return nil, err
 				}
+				err = w.spend(len(boosterCounts))
+				if err != nil {
+					return nil, err
+				}
 				counts = append(counts, boosterCounts...)
 			case "sealed":
-				heldCounts, err := ProductCounts(b, content.Set, content.UUID)
+				heldCounts, err := productCounts(b, content.Set, content.UUID, w)
 				if err != nil {
-					if optionalSealed(content.Name) {
+					if optionalSealed(content.Name) && !errors.Is(err, errTooLarge) {
 						continue
 					}
 					return nil, err
 				}
 				// Each level multiplies its count onto what the held product
 				// returned: 6 boxes of 36 packs hold each pack 216 times.
+				// No entry stands for more copies than a walk may open.
 				for i := range heldCounts {
+					if content.Count > 0 && heldCounts[i].Copies > maxOpened/content.Count {
+						return nil, errTooLarge
+					}
 					heldCounts[i].Copies *= content.Count
 				}
 				counts = append(counts, heldCounts...)
 			case "deck":
 				deckPicks, err := DeckCards(b, content.Set, content.Name)
+				if err != nil {
+					return nil, err
+				}
+				err = w.spend(len(deckPicks))
 				if err != nil {
 					return nil, err
 				}
@@ -771,7 +934,7 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 					odds := configOdds(config, len(content.Configs))
 					variableChance := float64(odds.Chance) / float64(odds.Weight)
 
-					variableCounts, err := contentCounts(b, config, etched)
+					variableCounts, err := contentCounts(b, config, etched, w)
 					if err != nil {
 						return nil, err
 					}
