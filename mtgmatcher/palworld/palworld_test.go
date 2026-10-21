@@ -273,13 +273,15 @@ func TestNumberReachesItsPrinting(t *testing.T) {
 // TestSetCodeIsNotTheNumberPrefix pins the mismatch this game carries: the
 // card list numbers a card with an "E" the set code does not have, so BP01's
 // cards are numbered EBP01-nnn. Nothing may read a set out of a number's
-// prefix here.
+// prefix here. The one agreement is a set TCGplayer itself codes with the E
+// (ESS01, the Sleeve and Card Set).
 func TestSetCodeIsNotTheNumberPrefix(t *testing.T) {
 	b := loadBackend(t)
 
 	var agree, disagree int
 	for _, co := range b.UUIDs {
-		if co.Sealed || co.Number == "" {
+		// The one set TCGplayer codes with the E.
+		if co.Sealed || co.Number == "" || co.SetCode == "ESS01" {
 			continue
 		}
 		run, _ := splitNumber(co.Number)
