@@ -25,6 +25,10 @@ func ExtractWCDNumber(str, prefix string, sideboard bool) string {
 			num = strings.Replace(num, "sb", "", 1)
 		}
 		num = strings.TrimLeft(num, "0")
+		// Nothing past the deck code, zeros and sideboard mark is no number
+		if num == "" {
+			continue
+		}
 		if unicode.IsLetter(rune(num[len(num)-1])) {
 			num = num[:len(num)-1]
 		}
