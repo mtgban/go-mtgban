@@ -120,6 +120,7 @@ func TestCatalogFabDoubleSided(t *testing.T) {
 		want string
 	}{
 		{"fused pair", product("SGL-FAB-MST-003_159-ENN", "Beckoning Mistblade // Tiger Taming Khakkara", "Part the Mistveil", "Token"), "mst003-mst159_553466"},
+		{"fused pair named in the other order", product("SGL-FAB-OMN-048_047-ENN", "Aurora, Emissary of Lightning // Aurora, Legacy of Tempest", "Omens of the Third Age", "Basic"), "omn047-omn048_724643"},
 		{"front with its token", product("SGL-FAB-NUU-026-ENN", "Pass Over // Inner Chi", "Nuu Blitz Deck", "Common"), "nuu026_549970"},
 	} {
 		got, err := resolveProduct(b, GameFleshAndBlood, tt.p)
@@ -133,7 +134,6 @@ func TestCatalogFabDoubleSided(t *testing.T) {
 	}
 	for _, p := range []CatalogProduct{
 		product("SGL-FAB-MST-003_026-ENN", "Beckoning Mistblade // Enigma", "Part the Mistveil", "Token"),
-		product("SGL-FAB-OMN-048_047-ENN", "Aurora, Emissary of Lightning // Aurora, Legacy of Tempest", "Omens of the Third Age", "Basic"),
 	} {
 		got, err := resolveProduct(b, GameFleshAndBlood, p)
 		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
