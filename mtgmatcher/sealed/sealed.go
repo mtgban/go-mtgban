@@ -427,11 +427,15 @@ func ProductDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]strin
 func productDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) ([]string, error) {
 	var picks []string
 
-	if !hasDecklist(b, setCode, sealedUUID, w) {
+	found, err := hasDecklist(b, setCode, sealedUUID, w)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
 		return nil, errors.New("product does not have a decklist")
 	}
 
-	err := w.enter(setCode, sealedUUID)
+	err = w.enter(setCode, sealedUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -630,21 +634,28 @@ func configOdds(config map[string][]mtgmatcher.SealedContent, n int) mtgmatcher.
 // IsRandom reports whether opening the product twice can give different
 // cards, which is what separates a booster from a fixed deck.
 //
-// A product held inside itself adds nothing past its first copy on the path.
+// A product held inside itself adds nothing past its first copy on the path,
+// and one too large to walk is not random.
 func IsRandom(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
-	return isRandom(b, setCode, sealedUUID, newWalk())
+	random, _ := isRandom(b, setCode, sealedUUID, newWalk())
+	return random
 }
 
-func isRandom(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) bool {
+// isRandom is IsRandom along a walk, failing only once the walk's budget is
+// spent, so a caller can tell running out from finding nothing random.
+func isRandom(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) (bool, error) {
 	err := w.enter(setCode, sealedUUID)
+	if errors.Is(err, errTooLarge) {
+		return false, err
+	}
 	if err != nil {
-		return false
+		return false, nil
 	}
 	defer w.leave(setCode, sealedUUID)
 
 	set, err := b.GetSet(setCode)
 	if err != nil {
-		return false
+		return false, nil
 	}
 
 	for _, product := range set.SealedProduct {
@@ -653,7 +664,7 @@ func isRandom(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) bool {
 		}
 
 		if product.Contents == nil {
-			return true
+			return true, nil
 		}
 
 		for _, kind := range sealedKinds {
@@ -661,43 +672,52 @@ func isRandom(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) bool {
 				switch kind {
 				case "card":
 				case "pack":
-					return true
+					return true, nil
 				case "sealed":
-					if isRandom(b, content.Set, content.UUID, w) {
-						return true
+					random, err := isRandom(b, content.Set, content.UUID, w)
+					if err != nil || random {
+						return random, err
 					}
 				case "deck":
 					if DeckIsRandom(content.Set) {
-						return true
+						return true, nil
 					}
 				case "variable":
-					return true
+					return true, nil
 				}
 			}
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // HasDecklist reports whether the product contains a fixed deck whose
 // contents are known.
 //
-// A product held inside itself adds nothing past its first copy on the path.
+// A product held inside itself adds nothing past its first copy on the path,
+// and one too large to walk has no decklist.
 func HasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) bool {
-	return hasDecklist(b, setCode, sealedUUID, newWalk())
+	found, _ := hasDecklist(b, setCode, sealedUUID, newWalk())
+	return found
 }
 
-func hasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) bool {
+// hasDecklist is HasDecklist along a walk, failing only once the walk's
+// budget is spent, so ProductDecklist can tell running out from a copy
+// holding no deck.
+func hasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) (bool, error) {
 	err := w.enter(setCode, sealedUUID)
+	if errors.Is(err, errTooLarge) {
+		return false, err
+	}
 	if err != nil {
-		return false
+		return false, nil
 	}
 	defer w.leave(setCode, sealedUUID)
 
 	set, err := b.GetSet(setCode)
 	if err != nil {
-		return false
+		return false, nil
 	}
 
 	for _, product := range set.SealedProduct {
@@ -709,17 +729,18 @@ func hasDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string, w *walk) boo
 			for _, content := range product.Contents[kind] {
 				switch kind {
 				case "sealed":
-					if hasDecklist(b, content.Set, content.UUID, w) {
-						return true
+					found, err := hasDecklist(b, content.Set, content.UUID, w)
+					if err != nil || found {
+						return found, err
 					}
 				case "deck":
-					return true
+					return true, nil
 				}
 			}
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // Count is one uuid and how many copies of it one copy of the product it
@@ -897,6 +918,10 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 				}
 				counts = append(counts, boosterCounts...)
 			case "sealed":
+				// A count below one holds nothing, as ProductPicks reads it
+				if content.Count < 1 {
+					continue
+				}
 				heldCounts, err := productCounts(b, content.Set, content.UUID, w)
 				if err != nil {
 					if optionalSealed(content.Name) && !errors.Is(err, errTooLarge) {
@@ -908,7 +933,7 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 				// returned: 6 boxes of 36 packs hold each pack 216 times.
 				// No entry stands for more copies than a walk may open.
 				for i := range heldCounts {
-					if content.Count > 0 && heldCounts[i].Copies > maxOpened/content.Count {
+					if heldCounts[i].Copies > maxOpened/content.Count {
 						return nil, errTooLarge
 					}
 					heldCounts[i].Copies *= content.Count

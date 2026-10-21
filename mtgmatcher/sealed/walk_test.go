@@ -283,3 +283,43 @@ func TestProductCountsReadUnweightedConfigs(t *testing.T) {
 		t.Error("ProductCounts counted a variable entry with nothing to draw by")
 	}
 }
+
+// A decklist the budget runs out on is refused, not cut short: checking
+// whether each copy holds a deck spends too, and running out there is not a
+// copy without one.
+func TestProductDecklistRefusesWhatItCannotFinish(t *testing.T) {
+	// 262,144 copies run out on the very last check, 500,002 long before
+	for _, count := range []string{"262144", "500002"} {
+		b := sealedBackend(t, `{"sealedProduct":[
+			{"uuid":"x","name":"X","contents":{"sealed":[{"set":"aaa","uuid":"p","count":`+count+`}]}},
+			{"uuid":"p","name":"P","contents":{"deck":[{"set":"aaa","name":"D"}]}}],
+			"decks":[{"name":"D","mainBoard":[{"uuid":"b","count":1}]}]}`)
+		list, err := sealed.ProductDecklist(b, "AAA", "x")
+		if err == nil {
+			t.Errorf("ProductDecklist listed %d of %s decks with no error", len(list), count)
+		}
+	}
+}
+
+// A held product with a count below one is not held, in the counts as in the
+// draws, rather than counting negative copies.
+func TestProductCountsSkipANegativeCount(t *testing.T) {
+	b := sealedBackend(t, `{"sealedProduct":[
+		{"uuid":"x","name":"X","contents":{"card":[{"uuid":"a"}],"sealed":[{"set":"aaa","uuid":"p","count":-3}]}},
+		{"uuid":"p","name":"P","contents":{"card":[{"uuid":"b"}]}}]}`)
+	counts, err := sealed.ProductCounts(b, "AAA", "x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := totals(counts)
+	if got["a"] != 1 || got["b"] != 0 {
+		t.Errorf("ProductCounts totals = %v, want a once and no b", got)
+	}
+	picks, err := sealed.ProductPicks(b, "AAA", "x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(picks, []string{"a"}) {
+		t.Errorf("ProductPicks = %v, want [a]", picks)
+	}
+}
