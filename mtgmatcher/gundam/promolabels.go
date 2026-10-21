@@ -49,15 +49,18 @@ var promoTypeLabels = map[string]string{
 	"resourcepack":           "Resource Pack",
 	"resourceset":            "Resource Set",
 	"righthand":              "Right Hand",
+	"rogueorbit":             "Rogue Orbit",
 	"sandiegocomiccon":       "San Diego Comic-Con",
 	"serialnumbered":         "Serial Numbered",
 	"sp":                     "SP",
 	"specialboosterbundle":   "Special Booster Bundle",
+	"st11st14releaseevent":   "ST11-ST14 Release Event",
 	"starterdeckbattleevent": "Starter Deck Battle Event",
 	"storetournament":        "Store Tournament",
 	"storetrialevent":        "Store Trial Event",
 	"winnerpack":             "Winner Pack",
 	"worldchampionship":      "World Championship",
+	"xarxzero":               "XARX-ZERO",
 }
 
 // promoTypeLabel spells a token the way a reader should see it: the words

@@ -37,6 +37,7 @@ func TestPromoTypeLabels(t *testing.T) {
 		// The case that says why the spelling is looked up rather than
 		// guessed: title-casing this token gives "Gg Ez".
 		{"ggez", "GG EZ"},
+		{"kdaspecialartcard", "K/DA Special Art Card"},
 	} {
 		if got := b.PromoTypeLabel(tt.promoType); got != tt.want {
 			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.promoType, got, tt.want)
