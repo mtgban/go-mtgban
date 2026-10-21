@@ -904,3 +904,54 @@ func TestWriteInventoryToCSVHeaderCoversEveryEntry(t *testing.T) {
 		})
 	}
 }
+
+// A report's Seller and Bundle columns are there when any row needs them, not
+// only when the first does: Arbit and Mismatch return rows in map order, so
+// the first row is whichever card came up first. A bundle with no seller
+// name needs the columns too.
+func TestReportsNameTheSellerWhenAnyRowHasOne(t *testing.T) {
+	b := backendFor(csvCards())
+
+	plain := arbitEntry()
+	seller := arbitEntry()
+	seller.InventoryEntry.SellerName = "Store A"
+	bundle := arbitEntry()
+	bundle.InventoryEntry.Bundle = true
+
+	for _, tc := range []struct {
+		name  string
+		base  []string
+		write func(entries []ArbitEntry, w *bytes.Buffer) error
+	}{
+		{"arbitrage", ArbitHeader, func(e []ArbitEntry, w *bytes.Buffer) error { return WriteArbitrageToCSV(b, e, w) }},
+		{"mismatch", MismatchHeader, func(e []ArbitEntry, w *bytes.Buffer) error { return WriteMismatchToCSV(b, e, w) }},
+	} {
+		for _, rows := range []struct {
+			desc    string
+			entries []ArbitEntry
+			wide    bool
+		}{
+			{"no row names a seller", []ArbitEntry{plain, plain}, false},
+			{"a later row names a seller", []ArbitEntry{plain, seller}, true},
+			{"a later row is a bundle", []ArbitEntry{plain, bundle}, true},
+		} {
+			t.Run(tc.name+"/"+rows.desc, func(t *testing.T) {
+				records := writeCSV(t, func(w *bytes.Buffer) error {
+					return tc.write(rows.entries, w)
+				})
+				want := tc.base
+				if rows.wide {
+					want = slices.Concat(tc.base, []string{"Seller", "Bundle"})
+				}
+				if !slices.Equal(records[0], want) {
+					t.Fatalf("header = %v, want %v", records[0], want)
+				}
+				for _, row := range records[1:] {
+					if len(row) != len(want) {
+						t.Errorf("row %v has %d columns, want %d", row, len(row), len(want))
+					}
+				}
+			})
+		}
+	}
+}

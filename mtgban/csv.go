@@ -448,6 +448,15 @@ func WriteBuylistToCSV(b *mtgmatcher.Backend, buylist BuylistRecord, creditMulip
 	return csvWriter.Error()
 }
 
+// namesASeller reports whether any row needs the Seller and Bundle columns.
+// Arbit and Mismatch return rows in map order, so the first row alone would
+// pick the header by chance.
+func namesASeller(entries []ArbitEntry) bool {
+	return slices.ContainsFunc(entries, func(e ArbitEntry) bool {
+		return e.InventoryEntry.SellerName != "" || e.InventoryEntry.Bundle
+	})
+}
+
 // WriteArbitrageToCSV writes what Arbit returned, both prices and the spread
 // and profitability derived from them.
 // b is the datastore every card id is read against; a nil b is an error.
@@ -460,7 +469,7 @@ func WriteArbitrageToCSV(b *mtgmatcher.Backend, arbitrage []ArbitEntry, w io.Wri
 
 	hasExtraSeller := false
 	header := ArbitHeader
-	if len(arbitrage) > 0 && arbitrage[0].InventoryEntry.SellerName != "" {
+	if namesASeller(arbitrage) {
 		header = append(header, "Seller")
 		header = append(header, "Bundle")
 		hasExtraSeller = true
@@ -522,7 +531,7 @@ func WriteMismatchToCSV(b *mtgmatcher.Backend, mismatch []ArbitEntry, w io.Write
 
 	hasExtraSeller := false
 	header := MismatchHeader
-	if len(mismatch) > 0 && mismatch[0].InventoryEntry.SellerName != "" {
+	if namesASeller(mismatch) {
 		header = append(header, "Seller")
 		header = append(header, "Bundle")
 		hasExtraSeller = true

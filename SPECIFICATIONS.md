@@ -230,7 +230,8 @@ globals.
 `BuylistHeader` (+Trade Price), `ArbitHeader`, `MismatchHeader` - with
 writers auto-selecting the header from the data shape (the inventory
 writer takes the widest any entry needs: `CartHeader` if one carries an id,
-else `MarketHeader` if one names a seller or is a bundle), and loaders
+else `MarketHeader` if one names a seller or is a bundle; the arbitrage and
+mismatch writers add Seller/Bundle on the same any-row rule), and loaders
 (`LoadInventoryFromCSV(b, r, flags...)`, `LoadBuylistFromCSV`) skipping bad
 rows when passed `false` instead of stopping at the first one.
 **`WriteBuylistToCSV(b, buylist, creditMuliplier float64, w)` is the one
