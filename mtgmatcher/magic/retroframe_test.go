@@ -16,6 +16,8 @@ func TestRetroFrameDatesTheCard(t *testing.T) {
 		{"Pyromancer's Gauntlet", "PMEI", "2023-6", true},
 		{"Command Tower", "PMEI", "2026-1", true},
 		{"Wasteland", "TMP", "", false},
+		{"Afterlife", "PLST", "MIR-1", false},
+		{"Old Fogey", "ULST", "39", false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			cards := testBackend.MatchInSet(tt.name, tt.set)
