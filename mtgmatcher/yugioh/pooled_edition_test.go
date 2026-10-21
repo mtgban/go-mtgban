@@ -77,6 +77,31 @@ func TestPooledEditionYuyaDeclan(t *testing.T) {
 	}
 }
 
+// TestWGRTUnsupported pins that a War of the Giants Reinforcements listing
+// is refused rather than landed on Battle Pack 2: War of the Giants Round 2
+// at the same number, and that Round 2's own listing still matches.
+func TestWGRTUnsupported(t *testing.T) {
+	b := loadBackend(t)
+
+	wgrt := mtgmatcher.InputCard{Name: "Mystic Box", Edition: "War of the Giants Reinforcements", Variation: "073 Super Rare"}
+	if id, err := b.Match(&wgrt); err != mtgmatcher.ErrUnsupported {
+		t.Errorf("Match(%v) = (%q, %v), want %v", wgrt, id, err, mtgmatcher.ErrUnsupported)
+	}
+
+	round2 := mtgmatcher.InputCard{Name: "Mystic Box", Edition: "Battle Pack 2: Round 2", Variation: "073 Super Rare"}
+	id, err := b.Match(&round2)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", round2, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", id, err)
+	}
+	if co.Number != "BPW2-EN073" {
+		t.Errorf("Match(%v) = %s, want BPW2-EN073", round2, co.Number)
+	}
+}
+
 // TestOTSPastRun pins that an OTS Tournament Pack listing numbered past the
 // set's English run is skipped as a printing the datastore has no row for,
 // where the same number would otherwise coincide with a card of another set
