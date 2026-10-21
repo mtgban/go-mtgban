@@ -130,7 +130,7 @@ type ArbitEntry struct {
 	// where k is ProfitabilityConstant, a denominator-stabilizing constant
 	// that keeps cheap cards from dominating (reference value 10; configurable
 	// via ArbitOpts, defaults to 0). The sqrt(Units) term is applied only when
-	// Units > 1.
+	// Units > 1, and the index is 0 when Spread <= 0.
 	Profitability float64
 }
 
@@ -346,9 +346,15 @@ func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price floa
 		qty = min(entry.Quantity, q.quantity)
 	}
 
-	profitability := (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
-	if qty > 1 {
-		profitability *= math.Sqrt(float64(qty))
+	// A spread at or below zero pays nothing and scores zero. log10(1+spread)
+	// is NaN below -1% and -Inf at -1% (a +Inf index), and in between it
+	// scores a loss above a gain of the same size
+	profitability := 0.0
+	if spread > 0 {
+		profitability = (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
+		if qty > 1 {
+			profitability *= math.Sqrt(float64(qty))
+		}
 	}
 	if profitability < r.minProfitability {
 		return ArbitEntry{}, false

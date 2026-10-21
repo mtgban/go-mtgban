@@ -75,7 +75,10 @@ type-assertion.
 `BuylistRecord = map[string][]BuylistEntry` - both keyed by the mtgmatcher
 UUID. The key is a string by convention; the `Add*` path does **not**
 type-check it against the backend (sealed scrapers, for instance, insert the
-product UUID directly without calling `Match()` - see §3).
+product UUID directly without calling `Match()` - see §3). A key exists only
+with at least one entry: `Add*` is the one way to write a record, and it only
+appends, so readers such as `Arbit` take a card's first entry as given. A
+record built by hand or a dump written by anything else must keep to this.
 
 - `InventoryEntry`: `Quantity` (the copies sold at `Price`), `Available`
   (every copy of the entry's variant on sale at any price, zero where the
@@ -180,6 +183,8 @@ inventory:
    pricing.
 5. Tradable `qty = min(invQty, blQty)` (buylist quantity 0 = unlimited).
    **Profitability** = `(difference / (sell + k)) · log10(1 + spread) · √qty`,
+   or **0** when spread ≤ 0 (the log is NaN, -Inf or negative there; the
+   website's negative modes reach these rows with `MinSpread` -30),
    where `√qty` is applied only when qty > 1 and `k` is
    `ProfitabilityConstant`, a denominator-stabilizing constant that keeps
    cheap cards from dominating (spec reference value 10, configurable via
@@ -223,7 +228,9 @@ globals.
 `CardHeader` (UUID/Name/Edition/Finish/Number/Rarity) extended into
 `InventoryHeader`, `MarketHeader` (+Seller/Bundle), `CartHeader` (+ids),
 `BuylistHeader` (+Trade Price), `ArbitHeader`, `MismatchHeader` - with
-writers auto-selecting the header from the data shape, and loaders
+writers auto-selecting the header from the data shape (the inventory
+writer takes the widest any entry needs: `CartHeader` if one carries an id,
+else `MarketHeader` if one names a seller or is a bundle), and loaders
 (`LoadInventoryFromCSV(b, r, flags...)`, `LoadBuylistFromCSV`) skipping bad
 rows when passed `false` instead of stopping at the first one.
 **`WriteBuylistToCSV(b, buylist, creditMuliplier float64, w)` is the one
@@ -876,7 +883,7 @@ that asymmetry:
 
 | Layer | Targets | Test type | Needs dataset? | Today |
 |-------|---------|-----------|----------------|-------|
-| **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No**, runs in CI | 31 tests in `arbit*_test.go`, plus `Add*` and sort in `base_test.go` |
+| **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No**, runs in CI | 32 tests in `arbit*_test.go`, plus `Add*` and sort in `base_test.go` |
 | **Matcher** (data integrity) | `Match`/`MatchID`, normalization, variants/editions, sealed API | data-backed regression replay | **Yes** - one per game | replay + unit |
 | **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 19 of 24 packages |
 

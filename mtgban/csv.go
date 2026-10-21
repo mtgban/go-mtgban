@@ -344,15 +344,20 @@ func WriteInventoryToCSV(b *mtgmatcher.Backend, inventory InventoryRecord, w io.
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
-	header := InventoryHeader
+	// The header is the widest any entry needs, so no row loses a column
+	// to whichever card the map yields first
+	var market, cart bool
 	for _, entries := range inventory {
-		if entries[0].SellerName != "" {
-			header = MarketHeader
+		for _, entry := range entries {
+			market = market || entry.SellerName != "" || entry.Bundle
+			cart = cart || entry.OriginalID != "" || entry.InstanceID != ""
 		}
-		if entries[0].OriginalID != "" || entries[0].InstanceID != "" {
-			header = CartHeader
-		}
-		break
+	}
+	header := InventoryHeader
+	if cart {
+		header = CartHeader
+	} else if market {
+		header = MarketHeader
 	}
 
 	err := csvWriter.Write(header)
