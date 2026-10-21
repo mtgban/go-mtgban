@@ -232,11 +232,14 @@ var normalizedPooledEditions = sync.OnceValue(func() map[string][]string {
 	return pools
 })
 
-// unsupportedEditions names a storefront shelf that answers for no set of
-// its own: "2-Player Starter Deck Yuya & Declan" prints only in Cardmarket's
-// YS15, which TCGplayer never listed - see TestPooledEditionYuyaDeclan.
+// unsupportedEditions names a storefront shelf whose set TCGplayer never
+// listed, so the catalog has no row for it and the name and number alone
+// answer with another set's printing. "2-Player Starter Deck Yuya & Declan"
+// prints only in Cardmarket's YS15 (TestPooledEditionYuyaDeclan); War of the
+// Giants Reinforcements' WGRT shares Round 2's numbers (TestWGRTUnsupported).
 var unsupportedEditions = map[string]bool{
 	"2-Player Starter Deck Yuya & Declan": true,
+	"War of the Giants Reinforcements":    true,
 }
 
 // normalizedUnsupportedEditions indexes unsupportedEditions the same way.
