@@ -503,20 +503,30 @@ func PromoTypeSlug(promoType string) string {
 // substring test would be too generous - "metal" is inside "metallic". Words
 // are joined back up a run at a time instead, which asks the question the
 // slug's own spelling asks: does this wording name this promo type.
+//
+// A word that is punctuation alone ("-", "&") slugs to nothing and is dropped
+// first: a run reads straight across it anyway, and left in, every run walked
+// each stretch of them to the end, quadratic in the wording's length.
 func SlugDescribes(wording, slug string) bool {
 	if slug == "" {
 		return false
 	}
-	words := strings.Fields(strings.ToLower(wording))
-	for i := range words {
-		var joined string
-		for j := i; j < len(words); j++ {
-			joined += PromoTypeSlug(words[j])
-			if joined == slug {
-				return true
-			}
-			if len(joined) >= len(slug) {
+	var slugs []string
+	for _, word := range strings.Fields(strings.ToLower(wording)) {
+		s := PromoTypeSlug(word)
+		if s != "" {
+			slugs = append(slugs, s)
+		}
+	}
+	for i := range slugs {
+		rest := slug
+		for _, s := range slugs[i:] {
+			if !strings.HasPrefix(rest, s) {
 				break
+			}
+			rest = rest[len(s):]
+			if rest == "" {
+				return true
 			}
 		}
 	}
