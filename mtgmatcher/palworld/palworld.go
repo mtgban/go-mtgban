@@ -12,8 +12,10 @@
 // tail, so "ETD01-001" and "ETD01-001TSR" are the plain card and its Trial
 // Deck Super Rare, and no two printings share a number. The card list
 // also numbers a card with an "E" the set code does not carry - the set is
-// BP01 and its cards are numbered EBP01-nnn - so a number's prefix never
-// names the set it belongs to.
+// BP01 and its cards are numbered EBP01-nnn - so a number's prefix cannot
+// be read as the set it belongs to. Only where TCGplayer abbreviates a set
+// with the E, as it does Sleeve and Card Set Vol. 1's ESS01, do the two
+// agree.
 package palworld
 
 import (
