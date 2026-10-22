@@ -139,12 +139,12 @@ environment variables:
 - `ALLPRINTINGS5_PATH` - MTGJSON `AllPrintings5.json`. Feeds the core
   `mtgmatcher` suite and `mtgmatcher/magic`, both of which load it through
   `magic.Load`, as well as every scraper suite that needs a real Magic
-  datastore to test its `preprocess.go` (abugames, cardkingdom, cardmarket,
-  cardtrader, coolstuffinc, gamenerdz, hareruya, magiccorner, manapool,
-  mintcard, sealedev, starcitygames, strikezone, tcgplayer, vegassingles;
-  grep a package's tests for `ALLPRINTINGS5_PATH` rather than for a skip
-  message, which is not worded the same everywhere). Magic
-  is the one game whose datastore is not built by `datastore-gen`.
+  datastore to test its `preprocess.go` (abugames, cardgamecorner,
+  cardkingdom, cardmarket, cardtrader, coolstuffinc, gamenerdz, hareruya,
+  manapool, mintcard, sealedev, starcitygames, strikezone, tcgplayer,
+  vegassingles; grep a package's tests for `ALLPRINTINGS5_PATH` rather than
+  for a skip message, which is not worded the same everywhere). Magic is the
+  one game whose datastore is not built by `datastore-gen`.
 - `LORCANA_PATH`, `RIFTBOUND_PATH`, `ONEPIECE_PATH`, `YUGIOH_PATH`,
   `FLESHANDBLOOD_PATH`, `POKEMON_PATH`, `GUNDAM_PATH`, and `PALWORLD_PATH` -
   one datastore per remaining game, all built by
