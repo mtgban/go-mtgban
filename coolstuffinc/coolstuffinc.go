@@ -475,6 +475,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 		}
 	}
 
+	read := map[string]bool{}
 	for page := 1; ; page++ {
 		doc.Find(searchRowSelector).Each(func(i int, s *goquery.Selection) {
 			// The storefront escapes its names twice, so the decode the
@@ -771,9 +772,12 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 			})
 		})
 
-		if next == "" {
+		// A next link already followed would read the same pages again,
+		// without end.
+		if next == "" || read[next] {
 			break
 		}
+		read[next] = true
 
 		doc, err = fetchSearchPage(ctx, csi.client, next)
 		if err != nil {

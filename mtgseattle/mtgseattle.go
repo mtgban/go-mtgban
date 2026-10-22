@@ -185,24 +185,43 @@ func buylistOffers(meta *goquery.Selection) []offer {
 	return []offer{{conditions: mtgban.NM, price: price, qty: qty}}
 }
 
-func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- responseChan, product, mode string) error {
+// processProduct reads a category, every page it runs to and every
+// subcategory it lists. seen holds each page and category this walk from a
+// top-level category has read, and none is read twice: a next link back to
+// a page already read ends the category, and a set listed under two parents
+// is read under the first.
+func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- responseChan, product, mode string, seen map[string]bool) error {
+	for product != "" && !seen[product] {
+		seen[product] = true
+		next, err := ms.processPage(ctx, channel, product, mode, seen)
+		if err != nil {
+			return err
+		}
+		product = next
+	}
+	return nil
+}
+
+// processPage reads one page of a category, and answers the link to the
+// page after it, "" on the last.
+func (ms *MTGSeattle) processPage(ctx context.Context, channel chan<- responseChan, product, mode string, seen map[string]bool) (string, error) {
 	link, err := buildProductURL(product, mode == modeInventory)
 	if err != nil {
-		return err
+		return "", err
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
-		return err
+		return "", err
 	}
 	resp, err := ms.client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	edition := doc.Find(`h1[class="page-title"]`).Text()
@@ -224,16 +243,16 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 
 		var failed int
 		for _, link := range links {
-			err := ms.processProduct(ctx, channel, link, mode)
+			err := ms.processProduct(ctx, channel, link, mode, seen)
 			if err != nil {
 				failed++
 				ms.printf("%s", err.Error())
 			}
 		}
 		if failed > 0 {
-			return fmt.Errorf("%d of %d subcategories of %q failed", failed, len(links), edition)
+			return "", fmt.Errorf("%d of %d subcategories of %q failed", failed, len(links), edition)
 		}
-		return nil
+		return "", nil
 	}
 
 	xpath := `ul[class="products"] li[class="product"] div[class="inner"] div[class="meta"]`
@@ -370,10 +389,9 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 	// Search for the next page, if not found we processed them all
 	next, found := doc.Find(`a[class="next_page"]`).Attr("href")
 	if !found {
-		return nil
+		return "", nil
 	}
-
-	return ms.processProduct(ctx, channel, next, mode)
+	return next, nil
 }
 
 func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
@@ -423,7 +441,7 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 	mtgban.WorkerPool(ctx, ms.maxConcurrency, items,
 		func(ctx context.Context, it item, results chan<- responseChan) error {
 			ms.printf("Processing %s", it.title)
-			return ms.processProduct(ctx, results, it.link, mode)
+			return ms.processProduct(ctx, results, it.link, mode, map[string]bool{})
 		},
 		func(record responseChan) {
 			var err error

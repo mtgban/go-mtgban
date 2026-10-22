@@ -473,6 +473,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		}
 	}
 
+	read := map[string]bool{}
 	for page := 1; ; page++ {
 		rows := doc.Find(searchRowSelector)
 		rows.Each(func(i int, s *goquery.Selection) {
@@ -542,9 +543,12 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 			}
 		})
 
-		if next == "" {
+		// A next link already followed would read the same pages again,
+		// without end.
+		if next == "" || read[next] {
 			break
 		}
+		read[next] = true
 
 		doc, err = fetchSearchPage(ctx, csi.client, next)
 		if err != nil {

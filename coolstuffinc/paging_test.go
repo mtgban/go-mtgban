@@ -197,3 +197,31 @@ func TestPagingStopsOnASinglePage(t *testing.T) {
 
 	wantAsked(t, *asked, []string{"/"})
 }
+
+// TestPagingStopsOnALinkAlreadyFollowed pins that a next link the walk has
+// already followed ends it, in both walks. Master followed it forever.
+func TestPagingStopsOnALinkAlreadyFollowed(t *testing.T) {
+	for name, walk := range map[string]func(*testing.T){"singles": walkSearch, "sealed": walkSealedSearch} {
+		t.Run(name, func(t *testing.T) {
+			_, asked := pagingServer(t, func(srvURL, uri string) (int, string) {
+				switch uri {
+				case "/":
+					return 25, srvURL + "/sq/12345&page=2"
+				case "/sq/12345&page=2", "/sq/12345&page=3":
+					return 25, srvURL + "/sq/12345&page=3"
+				}
+				// Including the widened page, which this storefront declines.
+				return 0, ""
+			})
+
+			walk(t)
+
+			wantAsked(t, *asked, []string{
+				"/",
+				"/sq/12345&resultsPerPage=50&page=1",
+				"/sq/12345&page=2",
+				"/sq/12345&page=3",
+			})
+		})
+	}
+}
