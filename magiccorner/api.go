@@ -18,59 +18,108 @@ type MCEdition struct {
 	Code string `json:"ImageUrl"`
 }
 
-// MCCard is one card on sale, in a condition and a language.
+// MCCard is one card on sale, with the copies in stock in each condition,
+// finish and language.
 type MCCard struct {
-	ID       int    `json:"IdProduct"`
-	Name     string `json:"NomeEn"`
-	Edition  string `json:"Category"`
-	Code     string `json:"Icon"`
-	Rarity   string `json:"Rarita"`
-	Extra    string `json:"Image"`
-	OrigName string `json:"NomeIt"`
-	URL      string `json:"Url"`
-	Variants []struct {
-		ID        int     `json:"IdProduct"`
-		Language  string  `json:"Lingua"`
-		Foil      string  `json:"Foil"`
-		Condition string  `json:"CondizioniShort"`
-		Quantity  int     `json:"DispoWeb"`
-		Price     float64 `json:"Price"`
-	} `json:"Varianti"`
+	ID       int
+	SKU      string
+	Name     string
+	Edition  string
+	Code     string
+	Rarity   string
+	Extra    string
+	OrigName string
+	URL      string
+	Variants []MCVariant
 }
 
-type mcResponse struct {
-	Error string   `json:"Message"`
-	Data  []MCCard `json:"d"`
+// MCVariant is the stock of a card in one condition, finish and language.
+type MCVariant struct {
+	ID        int     `json:"idproduct"`
+	SKU       string  `json:"sku"`
+	Language  string  `json:"flag"`
+	Foil      string  `json:"p4"`
+	Condition string  `json:"condizionishort"`
+	Quantity  int     `json:"quantity"`
+	Price     float64 `json:"price"`
 }
 
-type mcParam struct {
-	SearchField   string `json:"f"`
-	IDCategory    string `json:"IdCategory"`
-	UIc           string `json:"UIc"`
-	OnlyAvailable bool   `json:"SoloDispo"`
-	ProductType   int    `json:"TipoProdotto"`
-	IsBuy         bool   `json:"IsVendita"`
+// mcRaw is how the singles search wraps every field it returns.
+type mcRaw[T any] struct {
+	Raw T `json:"raw"`
 }
 
-type mcBlob struct {
-	Data string `json:"d"`
+type mcSingle struct {
+	ID       mcRaw[float64]  `json:"idproduct"`
+	SKU      mcRaw[string]   `json:"sku"`
+	Model    mcRaw[string]   `json:"model"`
+	ModelEn  mcRaw[string]   `json:"modelen"`
+	Image    mcRaw[string]   `json:"image"`
+	Category mcRaw[string]   `json:"category"`
+	Icon     mcRaw[string]   `json:"icon"`
+	URL      mcRaw[string]   `json:"url"`
+	Rarity   mcRaw[[]string] `json:"p2"`
 }
 
-type mcEditionParam struct {
-	UIc string `json:"UIc"`
+func (s *mcSingle) card() MCCard {
+	card := MCCard{
+		ID:       int(s.ID.Raw),
+		SKU:      s.SKU.Raw,
+		Name:     s.ModelEn.Raw,
+		Edition:  s.Category.Raw,
+		Code:     s.Icon.Raw,
+		Extra:    s.Image.Raw,
+		OrigName: s.Model.Raw,
+		URL:      s.URL.Raw,
+	}
+	if len(s.Rarity.Raw) > 0 {
+		card.Rarity = s.Rarity.Raw[0]
+	}
+	return card
+}
+
+type mcSearch struct {
+	Query   string `json:"query"`
+	Filters struct {
+		All []map[string]any `json:"all"`
+	} `json:"filters"`
+	Page struct {
+		Size    int `json:"size"`
+		Current int `json:"current"`
+	} `json:"page"`
+}
+
+type mcSearchRequest struct {
+	JSON mcSearch `json:"json"`
+}
+
+type mcSearchResponse struct {
+	Meta struct {
+		Page struct {
+			TotalPages int `json:"total_pages"`
+		} `json:"page"`
+	} `json:"meta"`
+	Results []mcSingle `json:"results"`
+}
+
+type mcVariantsRequest struct {
+	OnlyAvailable bool     `json:"onlyAvailable"`
+	SKUs          []string `json:"SKUs"`
 }
 
 const (
-	mcBaseURL       = "https://www.cardgamecorner.com/12/modules/store/mcpub.asmx/"
-	mcEditionsEndpt = "espansioni"
-	mcCardsEndpt    = "carte"
+	mcSearchBaseURL     = "https://www.cardgamecorner.com/webapi/"
+	mcEditionsEndpt     = "mcexpansions/magic/it"
+	mcSinglesEndpt      = "productssearch-singles"
+	mcVariantsEndpt     = "productssearch-variants"
+	mcSinglesPageSize   = 1000
+	mcVariantsBatchSize = 1000
 
 	mcHotBuylistURL      = "https://www.cardgamecorner.com/webapi/mcbuylist/magic/-/0"
 	mcEditionBuylistURL  = "https://www.cardgamecorner.com/webapi/mclistboxes/magic/it"
 	mcAdvancedBuylistURL = "https://www.cardgamecorner.com/webapi/mcadvsearch"
 
-	mcPromoEditionID      = 1113
-	mcMerfolksVsGoblinsID = 1116
+	mcPromoEditionID = 1113
 )
 
 // MCClient reads the Magic Corner storefront, which serves its catalog and
@@ -86,38 +135,37 @@ func NewMCClient() *MCClient {
 	return &mc
 }
 
-// GetEditionList returns the editions Magic Corner sells, by id and name.
-func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEdition, error) {
-	param := mcEditionParam{
-		UIc: "it",
-	}
-	reqBody, err := json.Marshal(&param)
-	if err != nil {
-		return nil, err
+func (mc *MCClient) do(ctx context.Context, method, endpoint string, body, out any) error {
+	var reqBody bytes.Buffer
+	if body != nil {
+		err := json.NewEncoder(&reqBody).Encode(body)
+		if err != nil {
+			return err
+		}
 	}
 
-	link := mcBaseURL + mcEditionsEndpt
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(reqBody))
+	req, err := http.NewRequestWithContext(ctx, method, mcSearchBaseURL+endpoint, &reqBody)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := mc.client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
-	var blob mcBlob
-	err = json.NewDecoder(resp.Body).Decode(&blob)
-	if err != nil {
-		return nil, err
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("%s: %s", endpoint, resp.Status)
 	}
+	return json.NewDecoder(resp.Body).Decode(out)
+}
 
+// GetEditionList returns the editions Magic Corner sells, by id and name.
+func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEdition, error) {
 	var editionList []MCEdition
-	// There is json in this json!
-	err = json.NewDecoder(strings.NewReader(blob.Data)).Decode(&editionList)
+	err := mc.do(ctx, http.MethodGet, mcEditionsEndpt, nil, &editionList)
 	if err != nil {
 		return nil, err
 	}
@@ -133,70 +181,54 @@ func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEd
 	return editionList, nil
 }
 
-// GetInventoryForEdition returns everything on sale in one edition.
+// GetInventoryForEdition returns the cards of an edition that have any copy
+// in stock, without their stock: GetVariants reads that by SKU.
 func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEdition) ([]MCCard, error) {
-	// This breaks on the main website too, just skip it
-	if edition.ID == mcMerfolksVsGoblinsID {
-		return nil, nil
-	}
-
-	// The Final Fantasy one always answers HTTP 500, and the loader holds
-	// no art series card for any of them anyway
+	// The loader holds no art series card
 	if strings.Contains(edition.Name, "Art Series") {
 		return nil, nil
 	}
 
-	// The last field before || is the language
-	// 0 - any language, 72 - english only
-	langCode := 0
-	if edition.ID == mcPromoEditionID {
-		langCode = 72
+	var search mcSearch
+	search.Filters.All = []map[string]any{
+		{"game": "magic"},
+		{"quantity": map[string]int{"from": 1}},
+		{"idcategory": edition.ID},
 	}
-	param := mcParam{
-		// Search string for Id and Language
-		SearchField: fmt.Sprintf("%d|0|0|0|0|%d||true|0|", edition.ID, langCode),
+	search.Page.Size = mcSinglesPageSize
 
-		// The edition/category id
-		IDCategory: fmt.Sprintf("%d", edition.ID),
+	var cards []MCCard
+	for page := 1; ; page++ {
+		search.Page.Current = page
 
-		// Returns entries with available quantity
+		var response mcSearchResponse
+		err := mc.do(ctx, http.MethodPost, mcSinglesEndpt, mcSearchRequest{JSON: search}, &response)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", edition.Name, err)
+		}
+		for i := range response.Results {
+			cards = append(cards, response.Results[i].card())
+		}
+
+		if page >= response.Meta.Page.TotalPages || len(response.Results) == 0 {
+			return cards, nil
+		}
+	}
+}
+
+// GetVariants returns the stock of the cards with the given SKUs, in every
+// condition, finish and language. The search answers rows out of stock too,
+// asked for available ones or not, so a caller still checks the quantity.
+func (mc *MCClient) GetVariants(ctx context.Context, skus []string) ([]MCVariant, error) {
+	var variants []MCVariant
+	err := mc.do(ctx, http.MethodPost, mcVariantsEndpt, mcVariantsRequest{
 		OnlyAvailable: true,
-
-		// Only mtg
-		ProductType: 1,
-
-		// No idea what these fields are for
-		UIc:   "it",
-		IsBuy: false,
-	}
-	reqBody, err := json.Marshal(&param)
+		SKUs:          skus,
+	}, &variants)
 	if err != nil {
 		return nil, err
 	}
-
-	link := mcBaseURL + mcCardsEndpt
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(reqBody))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := mc.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("%s - %v", edition.Name, err)
-	}
-	defer resp.Body.Close()
-
-	var response mcResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %v", edition.Name, err)
-	}
-	if response.Error != "" {
-		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, response.Error)
-	}
-
-	return response.Data, nil
+	return variants, nil
 }
 
 // MCExpansion is a set as Magic Corner files it for buying, which does not

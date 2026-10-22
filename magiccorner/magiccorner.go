@@ -2,10 +2,14 @@
 package magiccorner
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"net/url"
+	"slices"
+	"sync/atomic"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -81,22 +85,12 @@ func blindAttraction(b *mtgmatcher.Backend, probes []string) bool {
 	return len(probes) > 0
 }
 
-func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultChan, edition MCEdition) error {
-	cards, err := mc.client.GetInventoryForEdition(ctx, edition)
-	if err != nil {
-		return err
-	}
-
-	printed := false
-
+func (mc *Magiccorner) processEntry(channel chan<- resultChan, cards []listing) {
 	// Keep track of the processed ids, and don't add duplicates
 	duplicate := map[int]bool{}
 
-	for _, card := range cards {
-		if !printed && mc.verboseLog {
-			mc.printf("Processing id %d - %s (%s, code: %s)", edition.ID, edition.Name, card.Extra, card.Code)
-			printed = true
-		}
+	for _, l := range cards {
+		edition, card := l.edition, l.card
 
 		for i, v := range card.Variants {
 			// Skip duplicate cards
@@ -193,20 +187,128 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 			duplicate[v.ID] = true
 		}
 	}
-
-	return nil
 }
 
-// Scrape returns an array of Entry, containing pricing and card information
+// listing is a card as one edition lists it.
+type listing struct {
+	edition MCEdition
+	card    MCCard
+}
+
+// ownersBySKU picks the listing each SKU's stock is read against. Listings
+// sharing a SKU are one card listed twice, and the catch-all Promo edition,
+// or a copy missing the English name or the image, is the worse one to read
+// it against.
+func ownersBySKU(listed []listing, editions []MCEdition) map[string]listing {
+	order := map[int]int{}
+	for i, edition := range editions {
+		order[edition.ID] = i
+	}
+	rank := func(l *listing) (promo, incomplete int) {
+		if l.edition.ID == mcPromoEditionID {
+			promo++
+		}
+		if l.card.Name == l.card.OrigName {
+			incomplete++
+		}
+		if l.card.Extra == "/noimage.png" {
+			incomplete++
+		}
+		return promo, incomplete
+	}
+	slices.SortFunc(listed, func(a, b listing) int {
+		promoA, incompleteA := rank(&a)
+		promoB, incompleteB := rank(&b)
+		return cmp.Or(
+			cmp.Compare(promoA, promoB),
+			cmp.Compare(incompleteA, incompleteB),
+			cmp.Compare(order[a.edition.ID], order[b.edition.ID]),
+			cmp.Compare(a.card.ID, b.card.ID),
+		)
+	})
+
+	owners := map[string]listing{}
+	for _, l := range listed {
+		_, found := owners[l.card.SKU]
+		if !found {
+			owners[l.card.SKU] = l
+		}
+	}
+	return owners
+}
+
+// Scrape returns an array of Entry, containing pricing and card information.
+// Every edition is listed before any stock is read, because the stock is
+// asked for by SKU alone, and a SKU can be listed more than once.
 func (mc *Magiccorner) scrape(ctx context.Context) error {
 	editionList, err := mc.client.GetEditionList(ctx, true)
 	if err != nil {
 		return err
 	}
 
+	var listed []listing
+	var failedEditions atomic.Int32
 	mtgban.WorkerPool(ctx, mc.maxConcurrency, editionList,
-		func(ctx context.Context, edition MCEdition, results chan<- resultChan) error {
-			return mc.processEntry(ctx, results, edition)
+		func(ctx context.Context, edition MCEdition, results chan<- listing) error {
+			cards, err := mc.client.GetInventoryForEdition(ctx, edition)
+			if err != nil {
+				failedEditions.Add(1)
+				return err
+			}
+			if mc.verboseLog {
+				mc.printf("Processing id %d - %s (%d cards)", edition.ID, edition.Name, len(cards))
+			}
+			var noSKU int
+			for _, card := range cards {
+				// A SKU is all the stock is asked for by, so a card without
+				// one has none to read
+				if card.SKU == "" {
+					noSKU++
+					continue
+				}
+				results <- listing{edition: edition, card: card}
+			}
+			if noSKU > 0 {
+				mc.printf("%s: %d cards listed without a SKU", edition.Name, noSKU)
+			}
+			return nil
+		},
+		func(l listing) {
+			listed = append(listed, l)
+		},
+		mc.printf,
+	)
+	if failedEditions.Load() > 0 {
+		return fmt.Errorf("%d of %d editions failed to list", failedEditions.Load(), len(editionList))
+	}
+	if len(listed) == 0 {
+		return errors.New("no edition listed any card")
+	}
+
+	owners := ownersBySKU(listed, editionList)
+	skus := slices.Sorted(maps.Keys(owners))
+
+	batches := slices.Collect(slices.Chunk(skus, mcVariantsBatchSize))
+	var failedBatches atomic.Int32
+	mtgban.WorkerPool(ctx, mc.maxConcurrency, batches,
+		func(ctx context.Context, batch []string, results chan<- resultChan) error {
+			variants, err := mc.client.GetVariants(ctx, batch)
+			if err != nil {
+				failedBatches.Add(1)
+				return err
+			}
+			bySKU := map[string][]MCVariant{}
+			for _, v := range variants {
+				bySKU[v.SKU] = append(bySKU[v.SKU], v)
+			}
+			cards := make([]listing, 0, len(batch))
+			for _, sku := range batch {
+				owner := owners[sku]
+				owner.card.Variants = bySKU[sku]
+				cards = append(cards, owner)
+			}
+			mc.processEntry(results, cards)
+			return nil
 		},
 		func(result resultChan) {
 			err := mc.inventory.AddRelaxed(result.cardID, result.invEntry)
@@ -216,6 +318,12 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 		},
 		mc.printf,
 	)
+
+	// A batch holds cards from every edition, so a partial inventory would
+	// read as a whole one
+	if failedBatches.Load() > 0 {
+		return fmt.Errorf("%d of %d stock batches failed", failedBatches.Load(), len(batches))
+	}
 
 	mc.inventoryDate = time.Now()
 
