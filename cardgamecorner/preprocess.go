@@ -148,6 +148,9 @@ var editionTable = map[string]string{
 }
 
 func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.InputCard, error) {
+	if b.Game != mtgmatcher.GameMagic {
+		return preprocessGame(b, card, index)
+	}
 	cardName := card.Name
 	edition := card.Edition
 
