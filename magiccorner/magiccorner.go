@@ -320,9 +320,18 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 	)
 
 	// A batch holds cards from every edition, so a partial inventory would
-	// read as a whole one
+	// read as a whole one, and so would a cancelled run's
 	if failedBatches.Load() > 0 {
 		return fmt.Errorf("%d of %d stock batches failed", failedBatches.Load(), len(batches))
+	}
+	err = ctx.Err()
+	if err != nil {
+		return err
+	}
+	// Every listed card has a copy in stock, so a stock read naming none
+	// failed without saying so
+	if len(mc.inventory) == 0 {
+		return fmt.Errorf("no stock read for %d listed cards", len(skus))
 	}
 
 	mc.inventoryDate = time.Now()
