@@ -573,3 +573,28 @@ func TestAlias(t *testing.T) {
 	}
 	t.Log("PASS: Aliasing")
 }
+
+// TestParsePrice pins that a price is read in decimal notation alone: the
+// spellings ParseFloat also takes - NaN, the infinities, hexadecimal, digit
+// underscores - and a number too large to be finite are refused with a zero,
+// so a caller ignoring the error still never holds one of them.
+func TestParsePrice(t *testing.T) {
+	good := map[string]float64{
+		"$1,234.50": 1234.5,
+		" 0.25 ":    0.25,
+		"12":        12,
+		"1e2":       100,
+	}
+	for in, want := range good {
+		got, err := ParsePrice(in)
+		if err != nil || got != want {
+			t.Errorf("ParsePrice(%q) = %v, %v; want %v", in, got, err, want)
+		}
+	}
+	for _, in := range []string{"$NaN", "nan", "Inf", "-Infinity", "+inf", "0x1p4", "0x10", "1_000", "1e999", ""} {
+		got, err := ParsePrice(in)
+		if err == nil || got != 0 {
+			t.Errorf("ParsePrice(%q) = %v, %v; want 0 and an error", in, got, err)
+		}
+	}
+}
