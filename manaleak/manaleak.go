@@ -250,11 +250,16 @@ func (ml *Manaleak) onPromoShelf(product MLProduct, cardName, cardID string, err
 		return "", err
 	}
 
+	// A program shelf's index is the storefront's own, and names no printing
+	number := product.Number
+	if byProgram {
+		number = ""
+	}
 	var found []string
 	for _, id := range candidates {
 		co, uuidErr := ml.backend.GetUUID(id)
 		if uuidErr == nil && co.Foil == foil && co.Etched == etched &&
-			product.Number != "" && collectorDigits.FindString(co.Number) == product.Number {
+			number != "" && collectorDigits.FindString(co.Number) == number {
 			found = append(found, id)
 		}
 	}
@@ -396,7 +401,7 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 	var imageless []MLProduct
 	take := func(products []MLProduct) {
 		for _, product := range products {
-			if wanted(mode, product) && len(product.idGuesses()) == 0 {
+			if wanted(mode, product) && len(product.idGuesses()) == 0 && product.ProductID != "" {
 				imageless = append(imageless, product)
 				continue
 			}
