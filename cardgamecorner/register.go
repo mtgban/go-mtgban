@@ -1,4 +1,4 @@
-package magiccorner
+package cardgamecorner
 
 import (
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	mtgban.Register("magiccorner", []mtgmatcher.Game{mtgmatcher.GameMagic},
+	mtgban.Register("cardgamecorner", []mtgmatcher.Game{mtgmatcher.GameMagic},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)
 			if err != nil {

@@ -1,4 +1,4 @@
-package magiccorner
+package cardgamecorner
 
 import (
 	"bytes"

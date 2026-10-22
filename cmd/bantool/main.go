@@ -40,11 +40,11 @@ import (
 
 	_ "github.com/mtgban/go-mtgban/abugames"
 	_ "github.com/mtgban/go-mtgban/arcanafrisia"
+	_ "github.com/mtgban/go-mtgban/cardgamecorner"
 	_ "github.com/mtgban/go-mtgban/cardkingdom"
 	_ "github.com/mtgban/go-mtgban/coolstuffinc"
 	_ "github.com/mtgban/go-mtgban/gamenerdz"
 	_ "github.com/mtgban/go-mtgban/hareruya"
-	_ "github.com/mtgban/go-mtgban/magiccorner"
 	_ "github.com/mtgban/go-mtgban/manaleak"
 	_ "github.com/mtgban/go-mtgban/manapool"
 	_ "github.com/mtgban/go-mtgban/merlion"

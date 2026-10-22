@@ -1,5 +1,5 @@
-// Package magiccorner scrapes Magic Corner.
-package magiccorner
+// Package cardgamecorner scrapes Magic Corner.
+package cardgamecorner
 
 import (
 	"cmp"
@@ -21,9 +21,9 @@ const (
 	defaultConcurrency = 8
 )
 
-// Magiccorner prices Magic Corner's singles, both what they sell and what they
-// buy.
-type Magiccorner struct {
+// Cardgamecorner prices Magic Corner's singles, both what they sell and
+// what they buy.
+type Cardgamecorner struct {
 	verboseLog     bool
 	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -43,12 +43,12 @@ type Magiccorner struct {
 
 // NewScraper returns a scraper against the datastore, failing if the
 // datastore is not Magic's or the edition list cannot be read.
-func NewScraper(b *mtgmatcher.Backend) (*Magiccorner, error) {
+func NewScraper(b *mtgmatcher.Backend) (*Cardgamecorner, error) {
 	game := b.Game
 	if game != mtgmatcher.GameMagic {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
-	mc := Magiccorner{}
+	mc := Cardgamecorner{}
 	mc.inventory = mtgban.InventoryRecord{}
 	mc.buylist = mtgban.BuylistRecord{}
 	mc.client = NewMCClient()
@@ -63,7 +63,7 @@ type resultChan struct {
 	buyEntry *mtgban.BuylistEntry
 }
 
-func (mc *Magiccorner) printf(format string, a ...any) {
+func (mc *Cardgamecorner) printf(format string, a ...any) {
 	if mc.logCallback != nil {
 		mc.logCallback("[MC] "+format, a...)
 	}
@@ -85,7 +85,7 @@ func blindAttraction(b *mtgmatcher.Backend, probes []string) bool {
 	return len(probes) > 0
 }
 
-func (mc *Magiccorner) processEntry(channel chan<- resultChan, cards []listing) {
+func (mc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listing) {
 	// Keep track of the processed ids, and don't add duplicates
 	duplicate := map[int]bool{}
 
@@ -240,7 +240,7 @@ func ownersBySKU(listed []listing, editions []MCEdition) map[string]listing {
 // Scrape returns an array of Entry, containing pricing and card information.
 // Every edition is listed before any stock is read, because the stock is
 // asked for by SKU alone, and a SKU can be listed more than once.
-func (mc *Magiccorner) scrape(ctx context.Context) error {
+func (mc *Cardgamecorner) scrape(ctx context.Context) error {
 	editionList, err := mc.client.GetEditionList(ctx, true)
 	if err != nil {
 		return err
@@ -341,13 +341,13 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
-func (mc *Magiccorner) SetConfig(opt mtgban.ScraperOptions) {
+func (mc *Cardgamecorner) SetConfig(opt mtgban.ScraperOptions) {
 	mc.disableRetail = opt.DisableRetail
 	mc.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (mc *Magiccorner) Load(ctx context.Context) error {
+func (mc *Cardgamecorner) Load(ctx context.Context) error {
 	var errs []error
 
 	// Both sides price in euro, so the rate has to be in place before either
@@ -377,16 +377,16 @@ func (mc *Magiccorner) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (mc *Magiccorner) Inventory() mtgban.InventoryRecord {
+func (mc *Cardgamecorner) Inventory() mtgban.InventoryRecord {
 	return mc.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (mc *Magiccorner) Buylist() mtgban.BuylistRecord {
+func (mc *Cardgamecorner) Buylist() mtgban.BuylistRecord {
 	return mc.buylist
 }
 
-func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, edition MCExpansion) error {
+func (mc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan, edition MCExpansion) error {
 	i := 1
 	totals := 0
 	for {
@@ -484,7 +484,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 	return nil
 }
 
-func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
+func (mc *Cardgamecorner) scrapeBL(ctx context.Context) error {
 	editions, err := mc.client.GetBuylistEditions(ctx)
 	if err != nil {
 		return err
@@ -510,7 +510,7 @@ func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
+func (mc *Cardgamecorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
 	info.CountryFlag = "EU"
