@@ -1,6 +1,7 @@
 package yugioh
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -84,12 +85,13 @@ func TestWGRTUnsupported(t *testing.T) {
 	b := loadBackend(t)
 
 	wgrt := mtgmatcher.InputCard{Name: "Mystic Box", Edition: "War of the Giants Reinforcements", Variation: "073 Super Rare"}
-	if id, err := b.Match(&wgrt); err != mtgmatcher.ErrUnsupported {
+	id, err := b.Match(&wgrt)
+	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 		t.Errorf("Match(%v) = (%q, %v), want %v", wgrt, id, err, mtgmatcher.ErrUnsupported)
 	}
 
 	round2 := mtgmatcher.InputCard{Name: "Mystic Box", Edition: "Battle Pack 2: Round 2", Variation: "073 Super Rare"}
-	id, err := b.Match(&round2)
+	id, err = b.Match(&round2)
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", round2, err)
 	}
