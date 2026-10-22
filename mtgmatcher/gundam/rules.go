@@ -20,6 +20,11 @@ import (
 // a label.
 type Rules struct{ mtgmatcher.DefaultRules }
 
+// rejoinMaxLen bounds the spelling rejoinName normalizes, far past any name.
+// A longer spelling comes from an uploaded cell, not a scraper's title, and
+// would need hundreds of bytes Normalize drops to be a name.
+const rejoinMaxLen = 512
+
 // fullNumberRe matches the game's collector number shapes: "GD01-001",
 // "ST01-011", "EB01-023", "RP-001", "T-024". Every number the datastore
 // carries matches it.
@@ -117,7 +122,14 @@ func rejoinName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	variation := func(left []string) string {
 		return strings.Join(append(slices.Clone(numbers), left...), " ")
 	}
-	for i := len(words); i > 0; i-- {
+	// Only a run short enough to be a name is normalized: each one is the
+	// whole spelling again, so asking every run of a long variation was
+	// quadratic. Normalize drops only spaces, punctuation and joining words.
+	i := len(words)
+	for size := len(inCard.Name) + len(strings.Join(words, " ")) + 1; size > rejoinMaxLen && i > 0; i-- {
+		size -= len(words[i-1]) + 1
+	}
+	for ; i > 0; i-- {
 		key := mtgmatcher.Normalize(inCard.Name + " " + strings.Join(words[:i], " "))
 		if canonical, found := b.CanonicalNames[key]; found {
 			inCard.Name = canonical
