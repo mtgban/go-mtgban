@@ -26,15 +26,16 @@ func TestExtractWCDNumber(t *testing.T) {
 		{"00", "", false, ""},
 		{"Not Tournament Legal ()", "", false, ""},
 	} {
-		if got := ExtractWCDNumber(tt.str, tt.prefix, tt.sideboard); got != tt.want {
+		got := ExtractWCDNumber(tt.str, tt.prefix, tt.sideboard)
+		if got != tt.want {
 			t.Errorf("ExtractWCDNumber(%q, %q, %v) = %q, want %q", tt.str, tt.prefix, tt.sideboard, got, tt.want)
 		}
 	}
 }
 
 // "City of Brass (0)" is a plain card name with a stray number, and every
-// World Championship printing of it ran wcdNumberCompare on the "0": the
-// empty number was indexed and Match panicked, which ended a scraper run.
+// World Championship printing of it runs wcdNumberCompare on the "0", which
+// names no number and must not panic.
 func TestWorldChampVariationWithNoNumber(t *testing.T) {
 	b := &mtgmatcher.Backend{Sets: map[string]*mtgmatcher.Set{
 		"WC01": {Name: "World Championship Decks 2001"},

@@ -123,7 +123,7 @@ func rejoinName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return strings.Join(append(slices.Clone(numbers), left...), " ")
 	}
 	// Only a run short enough to be a name is normalized: each one is the
-	// whole spelling again, so asking every run of a long variation was
+	// whole spelling again, so asking every run of a long variation would be
 	// quadratic. Normalize drops only spaces, punctuation and joining words.
 	i := len(words)
 	for size := len(inCard.Name) + len(strings.Join(words, " ")) + 1; size > rejoinMaxLen && i > 0; i-- {

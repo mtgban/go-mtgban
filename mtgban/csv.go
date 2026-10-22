@@ -334,8 +334,9 @@ func cardID2record(b *mtgmatcher.Backend, cardID string) ([]string, error) {
 	return record, nil
 }
 
-// WriteInventoryToCSV writes an inventory under CardHeader, or under the
-// Market headers when the entries name a seller.
+// WriteInventoryToCSV writes an inventory under the widest header any entry
+// needs: CartHeader if one carries an id, else MarketHeader if one names a
+// seller or is a bundle, else InventoryHeader.
 // b is the datastore every card id is read against; a nil b is an error.
 func WriteInventoryToCSV(b *mtgmatcher.Backend, inventory InventoryRecord, w io.Writer) error {
 	if b == nil {

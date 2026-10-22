@@ -6,7 +6,7 @@ import (
 )
 
 // TestSlugDescribesPunctuation pins wordings carrying punctuation words: a
-// run is read straight across one, as it always was.
+// run is read straight across one.
 func TestSlugDescribesPunctuation(t *testing.T) {
 	for _, tt := range []struct {
 		wording, slug string
@@ -32,7 +32,7 @@ func TestSlugDescribesPunctuation(t *testing.T) {
 }
 
 // BenchmarkSlugDescribesLongPunctuation is the fuzzed shape: an 8 KB wording
-// of punctuation words, which every run used to walk to the end.
+// of punctuation words, which no run may walk to the end.
 func BenchmarkSlugDescribesLongPunctuation(b *testing.B) {
 	wording := strings.Repeat("- ", 4096)
 	for b.Loop() {

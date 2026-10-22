@@ -2650,8 +2650,8 @@ func unlabelled(b *mtgmatcher.Backend, name, wording string) string {
 // last's.
 //
 // Punctuation words are skipped as SlugDescribes skips them, and none begins
-// a run: keyed to it, each dash before a label had unlabelled clear the whole
-// stretch again, and it only ever reads a number out of what is left.
+// a run, so unlabelled clears a stretch once rather than once per dash before
+// a label; it only reads a number out of what is left.
 func slugRuns(words []string, slug string) map[int]int {
 	runs := map[int]int{}
 	if slug == "" {
