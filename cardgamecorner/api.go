@@ -38,6 +38,7 @@ type Card struct {
 type Variant struct {
 	ID        int     `json:"idproduct"`
 	SKU       string  `json:"sku"`
+	Print     string  `json:"p1"`
 	Language  string  `json:"flag"`
 	Foil      string  `json:"p4"`
 	Condition string  `json:"condizionishort"`
