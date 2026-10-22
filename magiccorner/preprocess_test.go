@@ -421,6 +421,8 @@ func TestBasicImageNumber(t *testing.T) {
 		"SVSC078": "78",
 		"ELD402":  "",
 		"817906":  "",
+		"571283":  "",
+		"10E123":  "123",
 		"noimage": "",
 	} {
 		got := basicImageNumber(extra)
