@@ -19,8 +19,8 @@ func TestSearchStopsAtRenumberedPage(t *testing.T) {
 		noPage   bool
 		fails    bool
 	}{
-		{name: "every listing served", numFound: 2*60 + 1},
-		{name: "listings past the last page", numFound: 4 * 60, fails: true},
+		{name: "every listing served", numFound: 2*searchRows + 1},
+		{name: "listings past the last page", numFound: 4 * searchRows, fails: true},
 		{name: "no page number", noPage: true, fails: true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
