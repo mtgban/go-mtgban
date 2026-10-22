@@ -47,6 +47,10 @@ var replacerStrings = slices.Concat([]string{
 	"\ufeff", "",
 	// The other spaces they send - a no-break space where the HTML had
 	// &nbsp;, a tab, a thin or ideographic one - go with the ascii space.
+	// They are deleted here, not read as one, so the entries below that
+	// need a space around a word never see them: " and ", " to " and
+	// " & " stay in the key, and "Waste\u00a0Land" loses the protection
+	// that keeps it apart from Wasteland.
 	"\t", "",
 	"\u00a0", "",
 	"\u2009", "",
