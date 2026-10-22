@@ -147,7 +147,7 @@ var editionTable = map[string]string{
 	"Journey to Nyx": "Journey into Nyx",
 }
 
-func preprocess(b *mtgmatcher.Backend, card *MCCard, index int) (*mtgmatcher.InputCard, error) {
+func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.InputCard, error) {
 	cardName := card.Name
 	edition := card.Edition
 
@@ -752,7 +752,7 @@ func basicImageNumber(extra string) string {
 // number its image names. The store's version tag counts its own index, which
 // is not collector order, so the number is trusted only where the landed card
 // confirms it. input is a copy taken before the first Match, which mutates it.
-func matchBasicByImage(b *mtgmatcher.Backend, card *MCCard, input mtgmatcher.InputCard) (string, bool) {
+func matchBasicByImage(b *mtgmatcher.Backend, card *Card, input mtgmatcher.InputCard) (string, bool) {
 	number := basicImageNumber(strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra)))
 	if number == "" {
 		return "", false
