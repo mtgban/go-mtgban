@@ -48,7 +48,7 @@ type Product struct {
 	HighPriceCode string `json:"high_price_code"`
 }
 
-func search(ctx context.Context, client *http.Client, link string) ([]Product, error) {
+func search(ctx context.Context, client *http.Client, link string, page int) ([]Product, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -65,15 +65,27 @@ func search(ctx context.Context, client *http.Client, link string) ([]Product, e
 		return nil, err
 	}
 
+	// Past its last page the search answers with that last page again,
+	// renumbered, so a page it renumbers lies beyond the end
+	served := (response.Response.Page-1)*60 + len(response.Response.Docs)
+	switch {
+	case response.Response.Page == 0:
+		return nil, fmt.Errorf("%s: no page number", link)
+	case response.Response.Page != page && response.Response.NumFound > served:
+		return nil, fmt.Errorf("%s: search stops at %d of %d listings", link, served, response.Response.NumFound)
+	case response.Response.Page != page:
+		return nil, nil
+	}
+
 	return response.Response.Docs, nil
 }
 
 // SearchCardSet returns one page of the listings in a set.
 func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
-	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, page))
+	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, page), page)
 }
 
 // SearchSealed returns one page of the sealed listings.
 func SearchSealed(ctx context.Context, client *http.Client, page int) ([]Product, error) {
-	return search(ctx, client, fmt.Sprintf(sealedURL, page))
+	return search(ctx, client, fmt.Sprintf(sealedURL, page), page)
 }
