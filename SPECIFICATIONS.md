@@ -390,6 +390,18 @@ differs from English whenever more than one survives, so leaving the field
 empty would turn every legitimate aliasing result into a bogus wrong-variant
 error.
 
+**Every card's set is listed.** datastore-gen refuses to publish a card
+filed under a set the file does not list. Its `validate.Check` fails with
+`card %q in unknown set %s` (`internal/validate/validate.go`), and each of
+the eight builders `log.Fatalln`s on a validation error before it writes
+the file. MTGJSON, Magic's source, files every card inside its set and always
+carries the card's `identifiers`. So the loaders take a card's set as present
+in `b.Sets`. The eight datastore loaders build a name's `Printings` from
+every card without checking its set, the rules read each of those codes back
+through `b.Sets[code]`, and the Magic loader writes its own entries
+(`mtgjsonId`, `tokenSetCode`) into a card's `Identifiers` without making the
+map first. A datastore written by anything else has to keep to the same rule.
+
 **Riftbound in particular.** The datastore is the official card-gallery
 payload served by the Riftbound site, enriched by
 `github.com/mtgban/datastore-gen`, which stamps every printing with its

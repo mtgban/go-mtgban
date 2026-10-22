@@ -131,6 +131,11 @@ type Set struct {
 // other printing of the same name. Fields follow the MTGJSON project, but
 // for Colors and ColorIdentity, which name each color as the game's sets
 // list it ("white") where MTGJSON writes Magic's as letters ("W").
+//
+// Printings names the sets a card of this name is printed in, and the rules
+// read each one back through Backend.Sets. The eight datastore loaders build
+// it from every card without checking its set: a datastore files every card
+// under a set it lists (SPECIFICATIONS.md §2.1).
 type Card struct {
 	Artist              string              `json:"artist"`
 	BorderColor         string              `json:"borderColor"`
