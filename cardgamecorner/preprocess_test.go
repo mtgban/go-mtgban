@@ -449,7 +449,7 @@ func TestMatchBasicByImage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, found := matchBasicByImage(b, &MCCard{Extra: tt.image}, input)
+			id, found := matchBasicByImage(b, &Card{Extra: tt.image}, input)
 			if tt.want == "" {
 				if found {
 					co, _ := b.GetUUID(id)

@@ -37,7 +37,7 @@ type Cardgamecorner struct {
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
-	client    *MCClient
+	client    *Client
 	backend   *mtgmatcher.Backend
 }
 
@@ -48,13 +48,13 @@ func NewScraper(b *mtgmatcher.Backend) (*Cardgamecorner, error) {
 	if game != mtgmatcher.GameMagic {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
-	mc := Cardgamecorner{}
-	mc.inventory = mtgban.InventoryRecord{}
-	mc.buylist = mtgban.BuylistRecord{}
-	mc.client = NewMCClient()
-	mc.backend = b
-	mc.maxConcurrency = defaultConcurrency
-	return &mc, nil
+	cgc := Cardgamecorner{}
+	cgc.inventory = mtgban.InventoryRecord{}
+	cgc.buylist = mtgban.BuylistRecord{}
+	cgc.client = NewClient()
+	cgc.backend = b
+	cgc.maxConcurrency = defaultConcurrency
+	return &cgc, nil
 }
 
 type resultChan struct {
@@ -63,9 +63,9 @@ type resultChan struct {
 	buyEntry *mtgban.BuylistEntry
 }
 
-func (mc *Cardgamecorner) printf(format string, a ...any) {
-	if mc.logCallback != nil {
-		mc.logCallback("[MC] "+format, a...)
+func (cgc *Cardgamecorner) printf(format string, a ...any) {
+	if cgc.logCallback != nil {
+		cgc.logCallback("[MC] "+format, a...)
 	}
 }
 
@@ -85,7 +85,7 @@ func blindAttraction(b *mtgmatcher.Backend, probes []string) bool {
 	return len(probes) > 0
 }
 
-func (mc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listing) {
+func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listing) {
 	// Keep track of the processed ids, and don't add duplicates
 	duplicate := map[int]bool{}
 
@@ -95,8 +95,8 @@ func (mc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listin
 		for i, v := range card.Variants {
 			// Skip duplicate cards
 			if duplicate[v.ID] {
-				if mc.verboseLog {
-					mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Edition, v.Foil)
+				if cgc.verboseLog {
+					cgc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Edition, v.Foil)
 				}
 				continue
 			}
@@ -129,22 +129,22 @@ func (mc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listin
 
 			grade, err := mtgban.ParseCondition(v.Condition)
 			if err != nil {
-				mc.printf("unsupported %s condition", v.Condition)
+				cgc.printf("unsupported %s condition", v.Condition)
 				continue
 			}
 
-			theCard, err := preprocess(mc.backend, &card, i)
+			theCard, err := preprocess(cgc.backend, &card, i)
 			if err != nil {
 				continue
 			}
 
 			retry := *theCard
-			cardID, err := mc.backend.Match(theCard)
+			cardID, err := cgc.backend.Match(theCard)
 			// The basic lands carry nothing but the store's own version tag,
 			// so retry them with the number their image names, and ignore
 			// the ones it cannot place.
 			if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && magic.IsBasicLand(card.Name) {
-				id, found := matchBasicByImage(mc.backend, &card, retry)
+				id, found := matchBasicByImage(cgc.backend, &card, retry)
 				if !found {
 					continue
 				}
@@ -155,18 +155,18 @@ func (mc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listin
 			} else if err != nil {
 				var alias *mtgmatcher.AliasingError
 				aliased := errors.As(err, &alias)
-				if aliased && blindAttraction(mc.backend, alias.Probe()) {
+				if aliased && blindAttraction(cgc.backend, alias.Probe()) {
 					continue
 				}
 
-				mc.printf("%v", err)
-				mc.printf("%q", theCard)
-				mc.printf("%q", card)
+				cgc.printf("%v", err)
+				cgc.printf("%q", theCard)
+				cgc.printf("%q", card)
 
 				if aliased {
 					for _, probe := range alias.Probe() {
-						card, _ := mc.backend.GetUUID(probe)
-						mc.printf("- %s", card)
+						card, _ := cgc.backend.GetUUID(probe)
+						cgc.printf("- %s", card)
 					}
 				}
 				continue
@@ -176,7 +176,7 @@ func (mc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listin
 				cardID: cardID,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: grade,
-					Price:      v.Price * mc.exchangeRate,
+					Price:      v.Price * cgc.exchangeRate,
 					Quantity:   v.Quantity,
 					URL:        "https://www.magiccorner.it" + card.URL,
 					OriginalID: fmt.Sprint(card.ID),
@@ -191,21 +191,21 @@ func (mc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listin
 
 // listing is a card as one edition lists it.
 type listing struct {
-	edition MCEdition
-	card    MCCard
+	edition Edition
+	card    Card
 }
 
 // ownersBySKU picks the listing each SKU's stock is read against. Listings
 // sharing a SKU are one card listed twice, and the catch-all Promo edition,
 // or a copy missing the English name or the image, is the worse one to read
 // it against.
-func ownersBySKU(listed []listing, editions []MCEdition) map[string]listing {
+func ownersBySKU(listed []listing, editions []Edition) map[string]listing {
 	order := map[int]int{}
 	for i, edition := range editions {
 		order[edition.ID] = i
 	}
 	rank := func(l *listing) (promo, incomplete int) {
-		if l.edition.ID == mcPromoEditionID {
+		if l.edition.ID == promoEditionID {
 			promo++
 		}
 		if l.card.Name == l.card.OrigName {
@@ -240,23 +240,23 @@ func ownersBySKU(listed []listing, editions []MCEdition) map[string]listing {
 // Scrape returns an array of Entry, containing pricing and card information.
 // Every edition is listed before any stock is read, because the stock is
 // asked for by SKU alone, and a SKU can be listed more than once.
-func (mc *Cardgamecorner) scrape(ctx context.Context) error {
-	editionList, err := mc.client.GetEditionList(ctx, true)
+func (cgc *Cardgamecorner) scrape(ctx context.Context) error {
+	editionList, err := cgc.client.GetEditionList(ctx, true)
 	if err != nil {
 		return err
 	}
 
 	var listed []listing
 	var failedEditions atomic.Int32
-	mtgban.WorkerPool(ctx, mc.maxConcurrency, editionList,
-		func(ctx context.Context, edition MCEdition, results chan<- listing) error {
-			cards, err := mc.client.GetInventoryForEdition(ctx, edition)
+	mtgban.WorkerPool(ctx, cgc.maxConcurrency, editionList,
+		func(ctx context.Context, edition Edition, results chan<- listing) error {
+			cards, err := cgc.client.GetInventoryForEdition(ctx, edition)
 			if err != nil {
 				failedEditions.Add(1)
 				return err
 			}
-			if mc.verboseLog {
-				mc.printf("Processing id %d - %s (%d cards)", edition.ID, edition.Name, len(cards))
+			if cgc.verboseLog {
+				cgc.printf("Processing id %d - %s (%d cards)", edition.ID, edition.Name, len(cards))
 			}
 			var noSKU int
 			for _, card := range cards {
@@ -269,14 +269,14 @@ func (mc *Cardgamecorner) scrape(ctx context.Context) error {
 				results <- listing{edition: edition, card: card}
 			}
 			if noSKU > 0 {
-				mc.printf("%s: %d cards listed without a SKU", edition.Name, noSKU)
+				cgc.printf("%s: %d cards listed without a SKU", edition.Name, noSKU)
 			}
 			return nil
 		},
 		func(l listing) {
 			listed = append(listed, l)
 		},
-		mc.printf,
+		cgc.printf,
 	)
 	if failedEditions.Load() > 0 {
 		return fmt.Errorf("%d of %d editions failed to list", failedEditions.Load(), len(editionList))
@@ -288,16 +288,16 @@ func (mc *Cardgamecorner) scrape(ctx context.Context) error {
 	owners := ownersBySKU(listed, editionList)
 	skus := slices.Sorted(maps.Keys(owners))
 
-	batches := slices.Collect(slices.Chunk(skus, mcVariantsBatchSize))
+	batches := slices.Collect(slices.Chunk(skus, variantsBatchSize))
 	var failedBatches atomic.Int32
-	mtgban.WorkerPool(ctx, mc.maxConcurrency, batches,
+	mtgban.WorkerPool(ctx, cgc.maxConcurrency, batches,
 		func(ctx context.Context, batch []string, results chan<- resultChan) error {
-			variants, err := mc.client.GetVariants(ctx, batch)
+			variants, err := cgc.client.GetVariants(ctx, batch)
 			if err != nil {
 				failedBatches.Add(1)
 				return err
 			}
-			bySKU := map[string][]MCVariant{}
+			bySKU := map[string][]Variant{}
 			for _, v := range variants {
 				bySKU[v.SKU] = append(bySKU[v.SKU], v)
 			}
@@ -307,16 +307,16 @@ func (mc *Cardgamecorner) scrape(ctx context.Context) error {
 				owner.card.Variants = bySKU[sku]
 				cards = append(cards, owner)
 			}
-			mc.processEntry(results, cards)
+			cgc.processEntry(results, cards)
 			return nil
 		},
 		func(result resultChan) {
-			err := mc.inventory.AddRelaxed(result.cardID, result.invEntry)
+			err := cgc.inventory.AddRelaxed(result.cardID, result.invEntry)
 			if err != nil {
-				mc.printf("%s", err.Error())
+				cgc.printf("%s", err.Error())
 			}
 		},
-		mc.printf,
+		cgc.printf,
 	)
 
 	// A batch holds cards from every edition, so a partial inventory would
@@ -330,24 +330,24 @@ func (mc *Cardgamecorner) scrape(ctx context.Context) error {
 	}
 	// Every listed card has a copy in stock, so a stock read naming none
 	// failed without saying so
-	if len(mc.inventory) == 0 {
+	if len(cgc.inventory) == 0 {
 		return fmt.Errorf("no stock read for %d listed cards", len(skus))
 	}
 
-	mc.inventoryDate = time.Now()
+	cgc.inventoryDate = time.Now()
 
 	return nil
 }
 
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
-func (mc *Cardgamecorner) SetConfig(opt mtgban.ScraperOptions) {
-	mc.disableRetail = opt.DisableRetail
-	mc.disableBuylist = opt.DisableBuylist
+func (cgc *Cardgamecorner) SetConfig(opt mtgban.ScraperOptions) {
+	cgc.disableRetail = opt.DisableRetail
+	cgc.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (mc *Cardgamecorner) Load(ctx context.Context) error {
+func (cgc *Cardgamecorner) Load(ctx context.Context) error {
 	var errs []error
 
 	// Both sides price in euro, so the rate has to be in place before either
@@ -357,17 +357,17 @@ func (mc *Cardgamecorner) Load(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	mc.exchangeRate = rate
+	cgc.exchangeRate = rate
 
-	if !mc.disableRetail {
-		err := mc.scrape(ctx)
+	if !cgc.disableRetail {
+		err := cgc.scrape(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
 		}
 	}
 
-	if !mc.disableBuylist {
-		err := mc.scrapeBL(ctx)
+	if !cgc.disableBuylist {
+		err := cgc.scrapeBL(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
 		}
@@ -377,21 +377,21 @@ func (mc *Cardgamecorner) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (mc *Cardgamecorner) Inventory() mtgban.InventoryRecord {
-	return mc.inventory
+func (cgc *Cardgamecorner) Inventory() mtgban.InventoryRecord {
+	return cgc.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (mc *Cardgamecorner) Buylist() mtgban.BuylistRecord {
-	return mc.buylist
+func (cgc *Cardgamecorner) Buylist() mtgban.BuylistRecord {
+	return cgc.buylist
 }
 
-func (mc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan, edition MCExpansion) error {
+func (cgc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan, edition Expansion) error {
 	i := 1
 	totals := 0
 	for {
-		mc.printf("Querying %s page %d", edition.Name, i)
-		result, err := mc.client.GetBuylistForEdition(ctx, edition.ID, i)
+		cgc.printf("Querying %s page %d", edition.Name, i)
+		result, err := cgc.client.GetBuylistForEdition(ctx, edition.ID, i)
 		if err != nil {
 			return err
 		}
@@ -411,28 +411,28 @@ func (mc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan
 				continue
 			}
 
-			theCard, err := preprocessBL(mc.backend, cardName, edition, product.ID, product.SerialNumber)
+			theCard, err := preprocessBL(cgc.backend, cardName, edition, product.ID, product.SerialNumber)
 			if err != nil {
 				continue
 			}
 
-			cardID, err := mc.backend.Match(theCard)
+			cardID, err := cgc.backend.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
 				var alias *mtgmatcher.AliasingError
 				aliased := errors.As(err, &alias)
-				if aliased && blindAttraction(mc.backend, alias.Probe()) {
+				if aliased && blindAttraction(cgc.backend, alias.Probe()) {
 					continue
 				}
 
-				mc.printf("%v", err)
-				mc.printf("%q", theCard)
+				cgc.printf("%v", err)
+				cgc.printf("%q", theCard)
 
 				if aliased {
 					for _, probe := range alias.Probe() {
-						card, _ := mc.backend.GetUUID(probe)
-						mc.printf("- %s", card)
+						card, _ := cgc.backend.GetUUID(probe)
+						cgc.printf("- %s", card)
 					}
 				}
 				continue
@@ -459,7 +459,7 @@ func (mc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan
 					buyEntry: &mtgban.BuylistEntry{
 						Quantity:   quantity,
 						Conditions: grade,
-						BuyPrice:   price * mc.exchangeRate * factor,
+						BuyPrice:   price * cgc.exchangeRate * factor,
 						URL:        link,
 						OriginalID: product.ID,
 					},
@@ -484,38 +484,38 @@ func (mc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan
 	return nil
 }
 
-func (mc *Cardgamecorner) scrapeBL(ctx context.Context) error {
-	editions, err := mc.client.GetBuylistEditions(ctx)
+func (cgc *Cardgamecorner) scrapeBL(ctx context.Context) error {
+	editions, err := cgc.client.GetBuylistEditions(ctx)
 	if err != nil {
 		return err
 	}
-	mc.printf("Found %d editions", len(editions))
+	cgc.printf("Found %d editions", len(editions))
 
-	mtgban.WorkerPool(ctx, mc.maxConcurrency, editions,
-		func(ctx context.Context, edition MCExpansion, results chan<- resultChan) error {
-			return mc.parseBL(ctx, results, edition)
+	mtgban.WorkerPool(ctx, cgc.maxConcurrency, editions,
+		func(ctx context.Context, edition Expansion, results chan<- resultChan) error {
+			return cgc.parseBL(ctx, results, edition)
 		},
 		func(record resultChan) {
-			err := mc.buylist.AddRelaxed(record.cardID, record.buyEntry)
+			err := cgc.buylist.AddRelaxed(record.cardID, record.buyEntry)
 			if err != nil {
-				mc.printf("%s", err.Error())
+				cgc.printf("%s", err.Error())
 			}
 		},
-		mc.printf,
+		cgc.printf,
 	)
 
-	mc.buylistDate = time.Now()
+	cgc.buylistDate = time.Now()
 
 	return nil
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (mc *Cardgamecorner) Info() (info mtgban.ScraperInfo) {
+func (cgc *Cardgamecorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
 	info.CountryFlag = "EU"
-	info.InventoryTimestamp = &mc.inventoryDate
-	info.BuylistTimestamp = &mc.buylistDate
+	info.InventoryTimestamp = &cgc.inventoryDate
+	info.BuylistTimestamp = &cgc.buylistDate
 	info.Game = mtgmatcher.GameMagic
 	return
 }
