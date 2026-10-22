@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -727,16 +728,16 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 }
 
 // basicImageNumber returns the collector number a basic land's image name
-// spells after its set code, which is 2 to 4 characters long. A digit in the
-// fourth place opens the number of a shorter code, or a Cardmarket id, so no
-// 4-character code is read there.
+// spells after its set code, which is 2 to 4 characters long and holds a
+// letter, so a Cardmarket id names none. A digit in the fourth place opens
+// the number of a shorter code, so no 4-character code is read there.
 func basicImageNumber(extra string) string {
 	drops := []int{2, 3, 4}
 	if len(extra) > 3 && extra[3] >= '0' && extra[3] <= '9' {
 		drops = drops[:2]
 	}
 	for _, lengthToDrop := range drops {
-		if len(extra) > lengthToDrop {
+		if len(extra) > lengthToDrop && strings.ContainsFunc(extra[:lengthToDrop], unicode.IsLetter) {
 			number := strings.TrimLeft(extra[lengthToDrop:], "0")
 			val, err := strconv.Atoi(number)
 			if err == nil && val < 400 {
