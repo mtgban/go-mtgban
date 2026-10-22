@@ -45,6 +45,13 @@ var replacerStrings = slices.Concat([]string{
 	"\u200f", "",
 	"\u00ad", "",
 	"\ufeff", "",
+	// The other spaces they send - a no-break space where the HTML had
+	// &nbsp;, a tab, a thin or ideographic one - go with the ascii space.
+	"\t", "",
+	"\u00a0", "",
+	"\u2009", "",
+	"\u202f", "",
+	"\u3000", "",
 	",", "",
 	"®", "",
 	":", "",

@@ -127,6 +127,18 @@ var NormalizeTests = []NormalizeTest{
 		In:  "Word of War",
 		Out: "wordofwar",
 	},
+	{
+		In:  "Lotus\u00a0Bloom",
+		Out: "lotusbloom",
+	},
+	{
+		In:  "Lightning\tBolt",
+		Out: "lightningbolt",
+	},
+	{
+		In:  "Lotus\u3000Bloom",
+		Out: "lotusbloom",
+	},
 }
 
 func TestNormalize(t *testing.T) {
