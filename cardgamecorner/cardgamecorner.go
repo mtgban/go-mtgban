@@ -1,4 +1,4 @@
-// Package cardgamecorner scrapes Magic Corner.
+// Package cardgamecorner scrapes Card Game Corner.
 package cardgamecorner
 
 import (
@@ -21,7 +21,7 @@ const (
 	defaultConcurrency = 8
 )
 
-// Cardgamecorner prices Magic Corner's singles, both what they sell and
+// Cardgamecorner prices Card Game Corner's singles, both what they sell and
 // what they buy.
 type Cardgamecorner struct {
 	verboseLog     bool
@@ -65,7 +65,7 @@ type resultChan struct {
 
 func (cgc *Cardgamecorner) printf(format string, a ...any) {
 	if cgc.logCallback != nil {
-		cgc.logCallback("[MC] "+format, a...)
+		cgc.logCallback("[CGC] "+format, a...)
 	}
 }
 
@@ -178,7 +178,7 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 					Conditions: grade,
 					Price:      v.Price * cgc.exchangeRate,
 					Quantity:   v.Quantity,
-					URL:        "https://www.magiccorner.it" + card.URL,
+					URL:        "https://www.cardgamecorner.com" + card.URL,
 					OriginalID: fmt.Sprint(card.ID),
 					InstanceID: fmt.Sprint(v.ID),
 				},
@@ -511,8 +511,8 @@ func (cgc *Cardgamecorner) scrapeBL(ctx context.Context) error {
 
 // Info describes this scraper. See mtgban.Scraper.
 func (cgc *Cardgamecorner) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Magic Corner"
-	info.Shorthand = "MC"
+	info.Name = "Card Game Corner"
+	info.Shorthand = "CGC"
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &cgc.inventoryDate
 	info.BuylistTimestamp = &cgc.buylistDate

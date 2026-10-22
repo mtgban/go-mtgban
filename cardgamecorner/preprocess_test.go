@@ -71,7 +71,7 @@ func TestInternalPreprocessVersionTag(t *testing.T) {
 	}
 }
 
-// Magic Corner's generic "Promo" shelf sells this card under two different
+// Card Game Corner's generic "Promo" shelf sells this card under two different
 // physical listings and never tags either one with the "(V.N)" suffix its
 // own DCI Promo shelf puts on the same listing, leaving the matcher a bare
 // name shared by half a dozen printings - it lands on the Secret Lair Promo
