@@ -26,6 +26,8 @@ const (
 	// The widest page the storefront serves. The sort is pinned so the
 	// pages keep their order while the crawl fans out over them.
 	pageLimit = 100
+	// The most pages a listing is walked over, far past any real listing.
+	maxPages = 20000
 
 	// The server answers 406 to a bare client, so every request wears a
 	// browser's User-Agent and Accept.

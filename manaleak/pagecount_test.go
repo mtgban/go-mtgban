@@ -1,6 +1,9 @@
 package manaleak
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 // TestPageCount pins that the fan-out is sized off a count that was read:
 // a listing whose count is missing says zero, and a first page holding
@@ -15,6 +18,8 @@ func TestPageCount(t *testing.T) {
 		{pageLimit + 1, pageLimit, 2, false},
 		{0, 12, 0, true},
 		{5, 12, 0, true},
+		{maxPages * pageLimit, pageLimit, maxPages, false},
+		{math.MaxInt, pageLimit, 0, true},
 	} {
 		got, err := pageCount(tt.total, tt.onFirstPage)
 		if (err != nil) != tt.err || got != tt.want {

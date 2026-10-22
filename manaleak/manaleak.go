@@ -514,5 +514,8 @@ func pageCount(total, onFirstPage int) (int, error) {
 	if total < onFirstPage {
 		return 0, fmt.Errorf("the listing counts %d products and its first page holds %d", total, onFirstPage)
 	}
+	if total > maxPages*pageLimit {
+		return 0, fmt.Errorf("the listing counts %d products, past the page cap of %d", total, maxPages)
+	}
 	return (total + pageLimit - 1) / pageLimit, nil
 }
