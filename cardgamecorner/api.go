@@ -11,7 +11,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
-// Edition is a set as Magic Corner files it for selling.
+// Edition is a set as Card Game Corner files it for selling.
 type Edition struct {
 	ID   int    `json:"Id"`
 	Name string `json:"Espansione"`
@@ -122,7 +122,7 @@ const (
 	promoEditionID = 1113
 )
 
-// Client reads the Magic Corner storefront, which serves its catalog and
+// Client reads the Card Game Corner storefront, which serves its catalog and
 // its buylist through different endpoints.
 type Client struct {
 	client *http.Client
@@ -162,7 +162,7 @@ func (cgc *Client) do(ctx context.Context, method, endpoint string, body, out an
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-// GetEditionList returns the editions Magic Corner sells, by id and name.
+// GetEditionList returns the editions Card Game Corner sells, by id and name.
 func (cgc *Client) GetEditionList(ctx context.Context, addPromoEd bool) ([]Edition, error) {
 	var editionList []Edition
 	err := cgc.do(ctx, http.MethodGet, editionsEndpt, nil, &editionList)
@@ -231,7 +231,7 @@ func (cgc *Client) GetVariants(ctx context.Context, skus []string) ([]Variant, e
 	return variants, nil
 }
 
-// Expansion is a set as Magic Corner files it for buying, which does not
+// Expansion is a set as Card Game Corner files it for buying, which does not
 // always agree with Edition.
 type Expansion struct {
 	ID      int    `json:"Id"`
@@ -244,7 +244,7 @@ type BuylistEditionResponse struct {
 	Expansions []Expansion `json:"Expansions"`
 }
 
-// GetBuylistEditions returns the editions Magic Corner is buying from.
+// GetBuylistEditions returns the editions Card Game Corner is buying from.
 func (cgc *Client) GetBuylistEditions(ctx context.Context) ([]Expansion, error) {
 	link := editionBuylistURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -302,7 +302,7 @@ type BuylistResult struct {
 	Total    int       `json:"Total"`
 }
 
-// Product is one card Magic Corner is buying, with the price they pay.
+// Product is one card Card Game Corner is buying, with the price they pay.
 type Product struct {
 	ID           string  `json:"Id"`
 	Game         string  `json:"Game"`
@@ -316,7 +316,7 @@ type Product struct {
 	SerialNumber int     `json:"SerialNumber"`
 }
 
-// GetBuylistForEdition returns one page of what Magic Corner buys in an
+// GetBuylistForEdition returns one page of what Card Game Corner buys in an
 // edition.
 func (cgc *Client) GetBuylistForEdition(ctx context.Context, edition, page int) (*BuylistResult, error) {
 	payload, err := json.Marshal(&BuylistRequest{
