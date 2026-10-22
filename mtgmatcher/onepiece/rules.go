@@ -2161,23 +2161,9 @@ func lastNamedTiebreak(b *mtgmatcher.Backend, wording string, cards []mtgmatcher
 // slugSaidAt answers the word a wording last begins spelling a slug at, and
 // -1 when it never does. It is SlugDescribes keeping the position it found.
 func slugSaidAt(wording, slug string) int {
-	if slug == "" {
-		return -1
-	}
-	words := strings.Fields(strings.ToLower(wording))
 	at := -1
-	for i := range words {
-		var joined string
-		for j := i; j < len(words); j++ {
-			joined += mtgmatcher.PromoTypeSlug(words[j])
-			if joined == slug {
-				at = i
-				break
-			}
-			if len(joined) >= len(slug) {
-				break
-			}
-		}
+	for first := range slugRuns(strings.Fields(strings.ToLower(wording)), slug) {
+		at = max(at, first)
 	}
 	return at
 }
@@ -2662,20 +2648,32 @@ func unlabelled(b *mtgmatcher.Backend, name, wording string) string {
 // slugRuns finds the runs of whole words in a wording that spell a slug, as
 // SlugDescribes reads them, keyed by the first word's index and holding the
 // last's.
+//
+// Punctuation words are skipped as SlugDescribes skips them, and none begins
+// a run: keyed to it, each dash before a label had unlabelled clear the whole
+// stretch again, and it only ever reads a number out of what is left.
 func slugRuns(words []string, slug string) map[int]int {
 	runs := map[int]int{}
 	if slug == "" {
 		return runs
 	}
-	for i := range words {
-		var joined string
-		for j := i; j < len(words); j++ {
-			joined += mtgmatcher.PromoTypeSlug(words[j])
-			if joined == slug {
-				runs[i] = j
+	slugs := make([]string, len(words))
+	var spelled []int
+	for i, word := range words {
+		slugs[i] = mtgmatcher.PromoTypeSlug(word)
+		if slugs[i] != "" {
+			spelled = append(spelled, i)
+		}
+	}
+	for k, first := range spelled {
+		rest := slug
+		for _, j := range spelled[k:] {
+			if !strings.HasPrefix(rest, slugs[j]) {
 				break
 			}
-			if len(joined) >= len(slug) {
+			rest = rest[len(slugs[j]):]
+			if rest == "" {
+				runs[first] = j
 				break
 			}
 		}
