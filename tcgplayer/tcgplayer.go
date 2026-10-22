@@ -52,8 +52,12 @@ type responseChan struct {
 	bl     *mtgban.BuylistEntry
 }
 
+// trendsName is the sub-seller holding TCGplayer's market price, an index of
+// past sales rather than a listing anyone sells at.
+const trendsName = "TCGplayer Trends"
+
 var availableMarketNames = []string{
-	"TCG Player", "TCG Direct", "TCGplayer Trends",
+	"TCG Player", "TCG Direct", trendsName,
 }
 
 var name2shorthand = map[string]string{
@@ -576,6 +580,7 @@ func (tcg *Market) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := tcg.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
+	info.MetadataOnly = name == trendsName
 	return info
 }
 

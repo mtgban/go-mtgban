@@ -206,19 +206,27 @@ func TestGameSKUEntry(t *testing.T) {
 // lowest listing keeps the scraper's own, which sealed product has alone.
 func TestGameMarketNames(t *testing.T) {
 	for _, tt := range []struct {
-		sealed bool
-		want   []string
+		sealed   bool
+		want     []string
+		metadata []string
 	}{
-		{false, []string{"TCGPlayer", "TCGTrends"}},
-		{true, []string{"TCGSealed"}},
+		{false, []string{"TCGPlayer", "TCGTrends"}, []string{"TCGTrends"}},
+		{true, []string{"TCGSealed"}, nil},
 	} {
 		tcg, _ := gameScraper(t, tt.sealed)
-		var got []string
+		var got, metadata []string
 		for _, name := range tcg.MarketNames() {
-			got = append(got, tcg.InfoForScraper(name).Shorthand)
+			info := tcg.InfoForScraper(name)
+			got = append(got, info.Shorthand)
+			if info.MetadataOnly {
+				metadata = append(metadata, info.Shorthand)
+			}
 		}
 		if !slices.Equal(got, tt.want) {
 			t.Errorf("sealed %v: shorthands %v, want %v", tt.sealed, got, tt.want)
+		}
+		if !slices.Equal(metadata, tt.metadata) {
+			t.Errorf("sealed %v: metadata-only shorthands %v, want %v", tt.sealed, metadata, tt.metadata)
 		}
 	}
 }
