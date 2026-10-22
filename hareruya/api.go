@@ -8,12 +8,15 @@ import (
 )
 
 const (
-	unisearchURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.cardset=%s&fq.price=1~*&fq.language=2&fq.stock=1~*&rows=60&page=%d"
+	// searchRows is how many listings a search page holds
+	searchRows = 60
+
+	unisearchURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.cardset=%s&fq.price=1~*&fq.language=2&fq.stock=1~*&rows=%d&page=%d"
 
 	// Sealed products are grouped under the "Product Category > Sealed Product"
 	// node, which the site addresses with the category_id 177:505 (parent:child).
 	// The stock filter keeps only the items currently in stock.
-	sealedURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.category_id=177:505&fq.price=1~*&fq.stock=1~*&rows=60&page=%d"
+	sealedURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.category_id=177:505&fq.price=1~*&fq.stock=1~*&rows=%d&page=%d"
 )
 
 // Response is what the storefront's search endpoint answers with.
@@ -67,7 +70,7 @@ func search(ctx context.Context, client *http.Client, link string, page int) ([]
 
 	// Past its last page the search answers with that last page again,
 	// renumbered, so a page it renumbers lies beyond the end
-	served := (response.Response.Page-1)*60 + len(response.Response.Docs)
+	served := (response.Response.Page-1)*searchRows + len(response.Response.Docs)
 	switch {
 	case response.Response.Page == 0:
 		return nil, fmt.Errorf("%s: no page number", link)
@@ -82,10 +85,10 @@ func search(ctx context.Context, client *http.Client, link string, page int) ([]
 
 // SearchCardSet returns one page of the listings in a set.
 func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
-	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, page), page)
+	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, searchRows, page), page)
 }
 
 // SearchSealed returns one page of the sealed listings.
 func SearchSealed(ctx context.Context, client *http.Client, page int) ([]Product, error) {
-	return search(ctx, client, fmt.Sprintf(sealedURL, page), page)
+	return search(ctx, client, fmt.Sprintf(sealedURL, searchRows, page), page)
 }
