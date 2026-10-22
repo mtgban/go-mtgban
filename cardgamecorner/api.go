@@ -30,6 +30,7 @@ type Card struct {
 	Extra    string
 	OrigName string
 	URL      string
+	Number   string
 	Variants []Variant
 }
 
@@ -58,6 +59,7 @@ type single struct {
 	Category raw[string]   `json:"category"`
 	Icon     raw[string]   `json:"icon"`
 	URL      raw[string]   `json:"url"`
+	Number   raw[string]   `json:"serialnumber"`
 	Rarity   raw[[]string] `json:"p2"`
 }
 
@@ -71,6 +73,7 @@ func (s *single) card() Card {
 		Extra:    s.Image.Raw,
 		OrigName: s.Model.Raw,
 		URL:      s.URL.Raw,
+		Number:   s.Number.Raw,
 	}
 	if len(s.Rarity.Raw) > 0 {
 		card.Rarity = s.Rarity.Raw[0]
@@ -109,7 +112,7 @@ type variantsRequest struct {
 
 const (
 	searchBaseURL     = "https://www.cardgamecorner.com/webapi/"
-	editionsEndpt     = "mcexpansions/magic/it"
+	editionsEndpt     = "mcexpansions/%s/it"
 	singlesEndpt      = "productssearch-singles"
 	variantsEndpt     = "productssearch-variants"
 	singlesPageSize   = 1000
@@ -126,12 +129,15 @@ const (
 // its buylist through different endpoints.
 type Client struct {
 	client *http.Client
+	game   string
 }
 
-// NewClient returns a client.
-func NewClient() *Client {
+// NewClient returns a client for one of the storefront's games, named the
+// way it names them (GameMagic, GamePokemon, ...).
+func NewClient(game string) *Client {
 	cgc := Client{}
 	cgc.client = mtgban.NewHTTPClient()
+	cgc.game = game
 	return &cgc
 }
 
@@ -165,7 +171,7 @@ func (cgc *Client) do(ctx context.Context, method, endpoint string, body, out an
 // GetEditionList returns the editions Card Game Corner sells, by id and name.
 func (cgc *Client) GetEditionList(ctx context.Context, addPromoEd bool) ([]Edition, error) {
 	var editionList []Edition
-	err := cgc.do(ctx, http.MethodGet, editionsEndpt, nil, &editionList)
+	err := cgc.do(ctx, http.MethodGet, fmt.Sprintf(editionsEndpt, cgc.game), nil, &editionList)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +197,7 @@ func (cgc *Client) GetInventoryForEdition(ctx context.Context, edition Edition) 
 
 	var search searchQuery
 	search.Filters.All = []map[string]any{
-		{"game": "magic"},
+		{"game": cgc.game},
 		{"quantity": map[string]int{"from": 1}},
 		{"idcategory": edition.ID},
 	}

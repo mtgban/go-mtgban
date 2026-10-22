@@ -21,8 +21,8 @@ const (
 	defaultConcurrency = 8
 )
 
-// Cardgamecorner prices Card Game Corner's singles, both what they sell and
-// what they buy.
+// Cardgamecorner prices Card Game Corner's singles of one game: what they
+// sell in every game, and what they buy in Magic.
 type Cardgamecorner struct {
 	verboseLog     bool
 	logCallback    mtgban.LogCallbackFunc
@@ -42,16 +42,16 @@ type Cardgamecorner struct {
 }
 
 // NewScraper returns a scraper against the datastore, failing if the
-// datastore is not Magic's or the edition list cannot be read.
+// datastore's game is not one the store sells.
 func NewScraper(b *mtgmatcher.Backend) (*Cardgamecorner, error) {
-	game := b.Game
-	if game != mtgmatcher.GameMagic {
-		return nil, fmt.Errorf("unsupported game %q", game)
+	game, ok := cgcGames[b.Game]
+	if !ok {
+		return nil, fmt.Errorf("unsupported game %q", b.Game)
 	}
 	cgc := Cardgamecorner{}
 	cgc.inventory = mtgban.InventoryRecord{}
 	cgc.buylist = mtgban.BuylistRecord{}
-	cgc.client = NewClient()
+	cgc.client = NewClient(game)
 	cgc.backend = b
 	cgc.maxConcurrency = defaultConcurrency
 	return &cgc, nil
@@ -143,7 +143,7 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 			// The basic lands carry nothing but the store's own version tag,
 			// so retry them with the number their image names, and ignore
 			// the ones it cannot place.
-			if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && magic.IsBasicLand(card.Name) {
+			if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && cgc.backend.Game == mtgmatcher.GameMagic && magic.IsBasicLand(card.Name) {
 				id, found := matchBasicByImage(cgc.backend, &card, retry)
 				if !found {
 					continue
@@ -241,7 +241,7 @@ func ownersBySKU(listed []listing, editions []Edition) map[string]listing {
 // Every edition is listed before any stock is read, because the stock is
 // asked for by SKU alone, and a SKU can be listed more than once.
 func (cgc *Cardgamecorner) scrape(ctx context.Context) error {
-	editionList, err := cgc.client.GetEditionList(ctx, true)
+	editionList, err := cgc.client.GetEditionList(ctx, cgc.backend.Game == mtgmatcher.GameMagic)
 	if err != nil {
 		return err
 	}
@@ -366,7 +366,8 @@ func (cgc *Cardgamecorner) Load(ctx context.Context) error {
 		}
 	}
 
-	if !cgc.disableBuylist {
+	// Only Magic's buylist is read
+	if !cgc.disableBuylist && cgc.backend.Game == mtgmatcher.GameMagic {
 		err := cgc.scrapeBL(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
@@ -516,6 +517,6 @@ func (cgc *Cardgamecorner) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &cgc.inventoryDate
 	info.BuylistTimestamp = &cgc.buylistDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = cgc.backend.Game
 	return
 }

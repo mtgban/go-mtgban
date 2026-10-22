@@ -6,7 +6,12 @@ import (
 )
 
 func init() {
-	mtgban.Register("cardgamecorner", []mtgmatcher.Game{mtgmatcher.GameMagic},
+	mtgban.Register("cardgamecorner",
+		[]mtgmatcher.Game{
+			mtgmatcher.GameMagic, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
+			mtgmatcher.GameOnePiece, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound,
+			mtgmatcher.GameFleshAndBlood,
+		},
 		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)
 			if err != nil {
