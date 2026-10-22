@@ -257,7 +257,8 @@ the cause. Do not accept the diff as a new baseline.
   `Backend` it is asked through (`b.Logf`), and is quiet while that is nil.
 - **Insert via the `Add*` family**, never by appending to the map directly.
   `Add`/`AddRelaxed`/`AddStrict`/`AddUnique` enforce defaults (NM, qty 1),
-  validate conditions against `FullGradeTags`, merge duplicates, and keep each
+  validate conditions against `FullGradeTags`, refuse a NaN, infinite or
+  negative price and a negative quantity, merge duplicates, and keep each
   slice sorted. `Arbit` depends on that sort leaving the NM entry at
   `entries[0]`. `AddUnique` is the strictest gate and **ignores price**.
 - **Grades go through `mtgban.ParseCondition`.** It reads the spellings

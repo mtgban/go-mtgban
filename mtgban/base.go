@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"slices"
 	"sort"
 )
@@ -18,6 +19,21 @@ var ErrInvalidCondition = errors.New("invalid condition")
 // new one, so a scraper whose storefront lists a card under more than one
 // product can tell this apart from a failure and stay quiet about it.
 var ErrDuplicateEntry = errors.New("duplicate entry")
+
+// ErrInvalidPrice is returned for an entry whose price is negative, NaN or
+// infinite: nothing a store quotes, and a NaN would make the record's whole
+// dump fail to encode as JSON. A price of zero is let through, because Card
+// Kingdom publishes its out-of-stock listings for their link alone.
+var ErrInvalidPrice = errors.New("invalid price")
+
+// ErrInvalidQuantity is returned for an entry claiming fewer than no copies.
+var ErrInvalidQuantity = errors.New("invalid quantity")
+
+// validPrice reports whether a price is one an entry may carry: finite and
+// not below zero.
+func validPrice(price float64) bool {
+	return !math.IsNaN(price) && !math.IsInf(price, 0) && price >= 0
+}
 
 // ErrInventoryLoad and ErrBuylistLoad mark the half that failed in the error
 // of a Load fetching both, so a caller can keep the half that loaded.
@@ -37,6 +53,12 @@ func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int)
 
 	if !slices.Contains(FullGradeTags, entry.Conditions) {
 		return ErrInvalidCondition
+	}
+	if !validPrice(entry.Price) {
+		return fmt.Errorf("%w %v for %s", ErrInvalidPrice, entry.Price, cardID)
+	}
+	if entry.Quantity < 0 {
+		return fmt.Errorf("%w %d for %s", ErrInvalidQuantity, entry.Quantity, cardID)
 	}
 
 	entries, found := inv[cardID]
@@ -158,6 +180,12 @@ func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict int) erro
 
 	if !slices.Contains(FullGradeTags, entry.Conditions) {
 		return ErrInvalidCondition
+	}
+	if !validPrice(entry.BuyPrice) {
+		return fmt.Errorf("%w %v for %s", ErrInvalidPrice, entry.BuyPrice, cardID)
+	}
+	if entry.Quantity < 0 {
+		return fmt.Errorf("%w %d for %s", ErrInvalidQuantity, entry.Quantity, cardID)
 	}
 
 	entries, found := bl[cardID]

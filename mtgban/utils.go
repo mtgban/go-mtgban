@@ -25,9 +25,9 @@ const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@
 // know in advance which it will be handed can look the answer up instead of
 // having to have named it.
 //
-// A currency quoted at zero is left out rather than kept as an infinity: it
-// converts nothing, and a caller reading a missing entry refuses the price
-// where one read as a number would invent it.
+// A currency quoted at zero or below is left out rather than kept as an
+// infinite or negative factor: it converts nothing, and a caller reading a
+// missing entry refuses the price where one read as a number would invent it.
 func GetExchangeRates(ctx context.Context) (map[string]float64, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, exchangeRateURL, http.NoBody)
 	if err != nil {
@@ -53,7 +53,7 @@ func GetExchangeRates(ctx context.Context) (map[string]float64, error) {
 
 	rates := make(map[string]float64, len(response.USD))
 	for currency, rate := range response.USD {
-		if rate == 0 {
+		if rate <= 0 {
 			continue
 		}
 		rates[currency] = 1 / rate

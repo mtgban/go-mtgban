@@ -97,7 +97,10 @@ every scraper relies on. Defaults are applied first, and the two sides differ:
 both default an empty condition to `NM`, but only the inventory side
 defaults a zero quantity to `1`. A buylist entry with quantity `0` keeps that
 value, which `Arbit` reads as "unlimited". Conditions outside
-`FullGradeTags = [NM SP MP HP PO]` are rejected with `ErrInvalidCondition`.
+`FullGradeTags = [NM SP MP HP PO]` are rejected with `ErrInvalidCondition`,
+a NaN, infinite or negative `Price` or `BuyPrice` with `ErrInvalidPrice`, and
+a negative quantity with `ErrInvalidQuantity`. A price of zero is kept: Card
+Kingdom publishes an out-of-stock card as an entry carrying its link alone.
 Then a strictness cascade against existing entries for the same card:
 
 | Method       | strict | Behavior on duplicate                                          |
@@ -242,7 +245,8 @@ Trade Price column as `BuyPrice × creditMuliplier`.
 `mtgban/utils.go` supplies `GetExchangeRates(ctx)` and
 `GetExchangeRate(ctx, currency)` (fawazahmed0 currency CDN,
 `@latest`/unpinned), which return the **reciprocal**, i.e. a
-*multiply-to-USD* factor, not the raw quoted rate.
+*multiply-to-USD* factor, not the raw quoted rate. A currency quoted at zero
+or below is left out.
 
 ---
 

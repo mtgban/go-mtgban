@@ -276,12 +276,24 @@ func Cut(in, tag string) []string {
 }
 
 // ParsePrice reads a price written for people, with a dollar sign and
-// thousands separators, as a float.
+// thousands separators, as a float. Only decimal notation is a price:
+// ParseFloat's NaN, Inf and hexadecimal spellings are refused, as is a
+// number too large to be finite, and a refusal always answers zero.
 func ParsePrice(priceStr string) (float64, error) {
 	priceStr = strings.Replace(priceStr, "$", "", 1)
 	priceStr = strings.Replace(priceStr, ",", "", -1)
 	priceStr = strings.TrimSpace(priceStr)
-	return strconv.ParseFloat(priceStr, 64)
+	notDecimal := strings.ContainsFunc(priceStr, func(r rune) bool {
+		return !strings.ContainsRune("0123456789.+-eE", r)
+	})
+	if notDecimal {
+		return 0, fmt.Errorf("%q is not a decimal price", priceStr)
+	}
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		return 0, err
+	}
+	return price, nil
 }
 
 // Wrapper for the deprecated strings.Title
