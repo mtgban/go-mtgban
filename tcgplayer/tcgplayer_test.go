@@ -61,12 +61,19 @@ func TestMarketSKUEntries(t *testing.T) {
 // TestMarketNames pins the shorthands the Magic sub-sellers dump under.
 func TestMarketNames(t *testing.T) {
 	tcg := &Market{backend: &mtgmatcher.Backend{Game: mtgmatcher.GameMagic}}
-	var got []string
+	var got, metadata []string
 	for _, name := range tcg.MarketNames() {
-		got = append(got, tcg.InfoForScraper(name).Shorthand)
+		info := tcg.InfoForScraper(name)
+		got = append(got, info.Shorthand)
+		if info.MetadataOnly {
+			metadata = append(metadata, info.Shorthand)
+		}
 	}
 	want := []string{"TCGPlayer", "TCGDirect", "TCGTrends"}
 	if !slices.Equal(got, want) {
 		t.Errorf("shorthands %v, want %v", got, want)
+	}
+	if !slices.Equal(metadata, []string{"TCGTrends"}) {
+		t.Errorf("metadata-only shorthands %v, want only TCGTrends", metadata)
 	}
 }

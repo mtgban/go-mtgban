@@ -340,7 +340,7 @@ func (tcg *TCGGame) Inventory() mtgban.InventoryRecord {
 // gameMarketNames are TCGGame's sub-sellers: the lowest listing of a sku,
 // and the market price TCGplayer quotes for it.
 var gameMarketNames = []string{
-	"TCGplayer", "TCGplayer Trends",
+	"TCGplayer", trendsName,
 }
 
 // MarketNames names the sub-sellers this market splits into, the lowest
@@ -360,6 +360,7 @@ func (tcg *TCGGame) InfoForScraper(name string) mtgban.ScraperInfo {
 		info.Name = name
 		info.Shorthand = name2shorthand[name]
 	}
+	info.MetadataOnly = name == trendsName
 	return info
 }
 
