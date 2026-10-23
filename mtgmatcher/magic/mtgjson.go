@@ -78,6 +78,7 @@ type SealedProduct struct {
 	Category    string                     `json:"category"`
 	Contents    map[string][]SealedContent `json:"contents"`
 	Identifiers map[string]string          `json:"identifiers"`
+	Language    string                     `json:"language"`
 	Name        string                     `json:"name"`
 	SetCode     string                     `json:"setCode"`
 	CardCount   int                        `json:"cardCount"`
@@ -2054,6 +2055,7 @@ func toMtgSealedProduct(p SealedProduct) mtgmatcher.SealedProduct {
 		Category:    p.Category,
 		Contents:    toMtgSealedContents(p.Contents),
 		Identifiers: p.Identifiers,
+		Language:    p.Language,
 		Name:        p.Name,
 		SetCode:     p.SetCode,
 		CardCount:   p.CardCount,

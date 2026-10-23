@@ -242,8 +242,12 @@ func drawBalanced(b *mtgmatcher.Backend, picks []string, sheet mtgmatcher.Sheet,
 	return picks, nil
 }
 
-// DeckCards returns the uuids a preconstructed deck contains.
-func DeckCards(b *mtgmatcher.Backend, setCode, deckName string) ([]string, error) {
+// DeckCards returns the uuids a preconstructed deck contains: the printings
+// the deck lists, or, given languages, each card's printing in every one of
+// them the datastore loads, found through the card's foreignData. A card
+// then yields one uuid per language for each copy, and one loaded in none of
+// them stays the printing listed.
+func DeckCards(b *mtgmatcher.Backend, setCode, deckName string, languages ...string) ([]string, error) {
 	var picks []string
 
 	set, err := b.GetSet(setCode)
@@ -270,8 +274,9 @@ func DeckCards(b *mtgmatcher.Backend, setCode, deckName string) ([]string, error
 					return nil, err
 				}
 
+				printings := printingsIn(b, uuid, languages)
 				for range card.Count {
-					picks = append(picks, uuid)
+					picks = append(picks, printings...)
 				}
 			}
 		}
@@ -284,13 +289,57 @@ func DeckCards(b *mtgmatcher.Backend, setCode, deckName string) ([]string, error
 				continue
 			}
 
+			printings := printingsIn(b, uuid, languages)
 			for range card.Count {
-				picks = append(picks, uuid)
+				picks = append(picks, printings...)
 			}
 		}
 	}
 
 	return picks, nil
+}
+
+// printingsIn returns uuid's printing in each of languages the datastore
+// loads, or uuid itself when there are no languages or none is loaded.
+func printingsIn(b *mtgmatcher.Backend, uuid string, languages []string) []string {
+	if len(languages) == 0 {
+		return []string{uuid}
+	}
+	co, err := b.GetUUID(uuid)
+	if err != nil {
+		return []string{uuid}
+	}
+
+	var printings []string
+	for _, language := range languages {
+		if co.Language == language {
+			printings = append(printings, uuid)
+			continue
+		}
+		for _, fd := range co.ForeignData {
+			if fd.Language != language {
+				continue
+			}
+			id, err := b.MatchID(fd.UUID, co.Foil, co.Etched)
+			if err == nil {
+				printings = append(printings, id)
+			}
+			break
+		}
+	}
+	if len(printings) == 0 {
+		return []string{uuid}
+	}
+	return printings
+}
+
+// productLanguages is what a product's decks are opened in: the language
+// mtgjson names for the product, or none to keep the printings they list.
+func productLanguages(product mtgmatcher.SealedProduct) []string {
+	if product.Language == "" {
+		return nil
+	}
+	return []string{product.Language}
 }
 
 // productNamesEtched reports whether a sealed product's name says the cards
@@ -380,7 +429,7 @@ func ProductDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]strin
 						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
-					deckPicks, err := DeckCards(b, content.Set, content.Name)
+					deckPicks, err := DeckCards(b, content.Set, content.Name, productLanguages(product)...)
 					if err != nil {
 						return nil, err
 					}
@@ -408,7 +457,7 @@ func ProductPicks(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, 
 		if sealedUUID != product.UUID {
 			continue
 		}
-		contentPicks, err := pickContents(b, product.Contents, productNamesEtched(product.Name))
+		contentPicks, err := pickContents(b, product.Contents, productLanguages(product), productNamesEtched(product.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -419,8 +468,9 @@ func ProductPicks(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, 
 }
 
 // pickContents opens every entry of a product's contents, or of the variable
-// config a copy holds; etched is what the product's name says.
-func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]string, error) {
+// config a copy holds, with its decks in languages; etched is what the
+// product's name says.
+func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, languages []string, etched bool) ([]string, error) {
 	var picks []string
 
 	for _, kind := range sealedKinds {
@@ -450,7 +500,7 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 					picks = append(picks, sealedPicks...)
 				}
 			case "deck":
-				deckPicks, err := DeckCards(b, content.Set, content.Name)
+				deckPicks, err := DeckCards(b, content.Set, content.Name, languages...)
 				if err != nil {
 					return nil, err
 				}
@@ -482,7 +532,7 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 					return nil, err
 				}
 
-				configPicks, err := pickContents(b, variableChooser.Pick(), etched)
+				configPicks, err := pickContents(b, variableChooser.Pick(), languages, etched)
 				if err != nil {
 					return nil, err
 				}
@@ -700,7 +750,7 @@ func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, 
 		if sealedUUID != product.UUID {
 			continue
 		}
-		found, err := contentCounts(b, product.Contents, productNamesEtched(product.Name))
+		found, err := contentCounts(b, product.Contents, productLanguages(product), productNamesEtched(product.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -711,9 +761,9 @@ func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, 
 }
 
 // contentCounts returns how many copies of each card the entries of a
-// product's contents, or of one of its variable configs, yield on average;
-// etched is what the product's name says.
-func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]Count, error) {
+// product's contents, or of one of its variable configs, yield on average,
+// with its decks in languages; etched is what the product's name says.
+func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, languages []string, etched bool) ([]Count, error) {
 	var counts []Count
 
 	for _, kind := range sealedKinds {
@@ -746,7 +796,7 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 				}
 				counts = append(counts, heldCounts...)
 			case "deck":
-				deckPicks, err := DeckCards(b, content.Set, content.Name)
+				deckPicks, err := DeckCards(b, content.Set, content.Name, languages...)
 				if err != nil {
 					return nil, err
 				}
@@ -771,7 +821,7 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 					odds := configOdds(config, len(content.Configs))
 					variableChance := float64(odds.Chance) / float64(odds.Weight)
 
-					variableCounts, err := contentCounts(b, config, etched)
+					variableCounts, err := contentCounts(b, config, languages, etched)
 					if err != nil {
 						return nil, err
 					}
