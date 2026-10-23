@@ -293,6 +293,48 @@ func DeckCards(b *mtgmatcher.Backend, setCode, deckName string) ([]string, error
 	return picks, nil
 }
 
+// productDeckCards returns the uuids a deck holds inside one product. A deck
+// lists one language and is shared by every product naming it, so a card is
+// swapped for the printing whose sourceProducts name this product - a Japanese
+// release of an English deck - where the datastore has that printing and the
+// listed card is not in the product itself.
+func productDeckCards(b *mtgmatcher.Backend, setCode, deckName, productUUID string) ([]string, error) {
+	picks, err := DeckCards(b, setCode, deckName)
+	if err != nil {
+		return nil, err
+	}
+	for i, uuid := range picks {
+		picks[i] = productPrinting(b, uuid, productUUID)
+	}
+	return picks, nil
+}
+
+func productPrinting(b *mtgmatcher.Backend, uuid, productUUID string) string {
+	co, err := b.GetUUID(uuid)
+	if err != nil || holdsProduct(co.SourceProducts, productUUID) {
+		return uuid
+	}
+	for _, fd := range co.ForeignData {
+		if !holdsProduct(fd.SourceProducts, productUUID) {
+			continue
+		}
+		id, err := b.MatchID(fd.UUID, co.Foil, co.Etched)
+		if err == nil {
+			return id
+		}
+	}
+	return uuid
+}
+
+func holdsProduct(sourceProducts map[string][]string, productUUID string) bool {
+	for _, products := range sourceProducts {
+		if slices.Contains(products, productUUID) {
+			return true
+		}
+	}
+	return false
+}
+
 // productNamesEtched reports whether a sealed product's name says the cards
 // it holds are the etched printings. mtgjson has no field for it: a Secret
 // Lair sold etched is a separate product whose card contents carry the plain
@@ -380,7 +422,7 @@ func ProductDecklist(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]strin
 						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
-					deckPicks, err := DeckCards(b, content.Set, content.Name)
+					deckPicks, err := productDeckCards(b, content.Set, content.Name, product.UUID)
 					if err != nil {
 						return nil, err
 					}
@@ -408,7 +450,7 @@ func ProductPicks(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, 
 		if sealedUUID != product.UUID {
 			continue
 		}
-		contentPicks, err := pickContents(b, product.Contents, productNamesEtched(product.Name))
+		contentPicks, err := pickContents(b, product.UUID, product.Contents, productNamesEtched(product.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -420,7 +462,7 @@ func ProductPicks(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, 
 
 // pickContents opens every entry of a product's contents, or of the variable
 // config a copy holds; etched is what the product's name says.
-func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]string, error) {
+func pickContents(b *mtgmatcher.Backend, productUUID string, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]string, error) {
 	var picks []string
 
 	for _, kind := range sealedKinds {
@@ -450,7 +492,7 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 					picks = append(picks, sealedPicks...)
 				}
 			case "deck":
-				deckPicks, err := DeckCards(b, content.Set, content.Name)
+				deckPicks, err := productDeckCards(b, content.Set, content.Name, productUUID)
 				if err != nil {
 					return nil, err
 				}
@@ -482,7 +524,7 @@ func pickContents(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Sealed
 					return nil, err
 				}
 
-				configPicks, err := pickContents(b, variableChooser.Pick(), etched)
+				configPicks, err := pickContents(b, productUUID, variableChooser.Pick(), etched)
 				if err != nil {
 					return nil, err
 				}
@@ -700,7 +742,7 @@ func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, 
 		if sealedUUID != product.UUID {
 			continue
 		}
-		found, err := contentCounts(b, product.Contents, productNamesEtched(product.Name))
+		found, err := contentCounts(b, product.UUID, product.Contents, productNamesEtched(product.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -713,7 +755,7 @@ func ProductCounts(b *mtgmatcher.Backend, setCode, sealedUUID string) ([]Count, 
 // contentCounts returns how many copies of each card the entries of a
 // product's contents, or of one of its variable configs, yield on average;
 // etched is what the product's name says.
-func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]Count, error) {
+func contentCounts(b *mtgmatcher.Backend, productUUID string, contents map[string][]mtgmatcher.SealedContent, etched bool) ([]Count, error) {
 	var counts []Count
 
 	for _, kind := range sealedKinds {
@@ -746,7 +788,7 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 				}
 				counts = append(counts, heldCounts...)
 			case "deck":
-				deckPicks, err := DeckCards(b, content.Set, content.Name)
+				deckPicks, err := productDeckCards(b, content.Set, content.Name, productUUID)
 				if err != nil {
 					return nil, err
 				}
@@ -771,7 +813,7 @@ func contentCounts(b *mtgmatcher.Backend, contents map[string][]mtgmatcher.Seale
 					odds := configOdds(config, len(content.Configs))
 					variableChance := float64(odds.Chance) / float64(odds.Weight)
 
-					variableCounts, err := contentCounts(b, config, etched)
+					variableCounts, err := contentCounts(b, productUUID, config, etched)
 					if err != nil {
 						return nil, err
 					}
