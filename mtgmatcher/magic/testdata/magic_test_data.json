@@ -4089,7 +4089,7 @@
         }
     },
     {
-        "uuid": "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
+        "uuid": "4cec7ccc-ece6-56b0-8ed2-3b5df716537b",
         "description": "custom_language_tag",
         "input": {
             "name": "Sylvan Library",
@@ -4097,10 +4097,10 @@
         }
     },
     {
-        "uuid": "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
+        "uuid": "4cec7ccc-ece6-56b0-8ed2-3b5df716537b",
         "description": "custom_language_id_lookup",
         "input": {
-            "id": "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita"
+            "id": "4cec7ccc-ece6-56b0-8ed2-3b5df716537b"
         }
     },
     {
@@ -4839,7 +4839,7 @@
         }
     },
     {
-        "uuid": "92cdc45a-4135-5e7c-a177-a381f9b99e1c_jpn_f",
+        "uuid": "b62e4a21-0f46-5dc7-b658-11509fd27507_f",
         "description": "language_duplicate",
         "input": {
             "name": "Solemn Simulacrum",

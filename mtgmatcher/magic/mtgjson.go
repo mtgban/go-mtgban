@@ -174,10 +174,12 @@ type Card struct {
 	Watermark           string              `json:"watermark"`
 
 	ForeignData []struct {
-		Name        string            `json:"name"`
-		Language    string            `json:"language"`
-		Identifiers map[string]string `json:"identifiers"`
-		Type        string            `json:"type"`
+		Name           string              `json:"name"`
+		Language       string              `json:"language"`
+		Identifiers    map[string]string   `json:"identifiers"`
+		Type           string              `json:"type"`
+		UUID           string              `json:"uuid"`
+		SourceProducts map[string][]string `json:"sourceProducts"`
 	} `json:"foreignData"`
 
 	// TokenProducts names, for a token this printing shares a physical card
@@ -1833,6 +1835,16 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	}
 }
 
+// mintedSuffix is what a printing minted here from an mtgjson one, such as an
+// alternative foil, adds to that printing's uuid; an mtgjson printing adds none.
+func mintedSuffix(card Card) string {
+	id := card.Identifiers["mtgjsonId"]
+	if id == "" || !strings.HasPrefix(card.UUID, id) {
+		return ""
+	}
+	return card.UUID[len(id):]
+}
+
 // Duplicate certain cards within the same set according to the language tag
 func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []Card {
 	var duplicates []Card
@@ -1853,6 +1865,7 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 		dupeCard := sets[code].Cards[i]
 		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
 		dupeCard.Language = langs[tag]
+		dupeCard.Identifiers = maps.Clone(dupeCard.Identifiers)
 
 		// A whole-set copy is told apart by its own code, one filed next to
 		// its original only by the tag behind its number
@@ -1871,6 +1884,13 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 			dupeCard.PrintedName = foreignData.Name
 			dupeCard.PrintedType = foreignData.Type
 			dupeCard.Identifiers["originalScryfallId"] = foreignData.Identifiers["scryfallId"]
+			// mtgjson names this printing itself, and knows which products hold it
+			if foreignData.UUID != "" {
+				dupeCard.UUID = foreignData.UUID + mintedSuffix(sets[code].Cards[i])
+			}
+			if foreignData.SourceProducts != nil {
+				dupeCard.SourceProducts = foreignData.SourceProducts
+			}
 		}
 
 		// Update images
@@ -1957,16 +1977,20 @@ func toMtgCard(c Card) mtgmatcher.Card {
 	// both converted here, describe the same card the same way.
 	if c.ForeignData != nil {
 		mc.ForeignData = make([]struct {
-			Name        string            `json:"name"`
-			Language    string            `json:"language"`
-			Identifiers map[string]string `json:"identifiers"`
-			Type        string            `json:"type"`
+			Name           string              `json:"name"`
+			Language       string              `json:"language"`
+			Identifiers    map[string]string   `json:"identifiers"`
+			Type           string              `json:"type"`
+			UUID           string              `json:"uuid"`
+			SourceProducts map[string][]string `json:"sourceProducts"`
 		}, len(c.ForeignData))
 		for i, fd := range c.ForeignData {
 			mc.ForeignData[i].Name = fd.Name
 			mc.ForeignData[i].Language = fd.Language
 			mc.ForeignData[i].Identifiers = fd.Identifiers
 			mc.ForeignData[i].Type = fd.Type
+			mc.ForeignData[i].UUID = fd.UUID
+			mc.ForeignData[i].SourceProducts = fd.SourceProducts
 		}
 	}
 	return mc
