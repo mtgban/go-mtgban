@@ -96,6 +96,10 @@ var gnGames = map[mtgmatcher.Game]string{
 	mtgmatcher.GameOnePiece: GameOnePiece,
 }
 
+// buylistQuantity is how many copies of a card Game Nerdz buys at most; the
+// feed states no limit of its own.
+const buylistQuantity = 8
+
 // Gamenerdz prices Game Nerdz's stock of one game. The storefront's two
 // faces answer from one search endpoint in two modes, and neither list is a
 // subset of the other - the store buys cards it does not retail and retails
@@ -194,6 +198,7 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 				Conditions: cond,
 				BuyPrice:   variant.OfferPrice,
 				PriceRatio: priceRatio,
+				Quantity:   buylistQuantity,
 				URL:        buylistLink,
 				OriginalID: strconv.FormatInt(product.ProductID, 10),
 				InstanceID: strconv.FormatInt(variant.ID, 10),
