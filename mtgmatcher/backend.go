@@ -186,6 +186,7 @@ type Card struct {
 		Language    string            `json:"language"`
 		Identifiers map[string]string `json:"identifiers"`
 		Type        string            `json:"type"`
+		UUID        string            `json:"uuid"`
 	} `json:"foreignData"`
 
 	// PlainNumber is Number with the game's own decorations stripped -
