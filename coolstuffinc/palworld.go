@@ -48,12 +48,11 @@ var palworldNoteFixes = strings.NewReplacer(
 //
 // The glue is this storefront's alone, and not even consistently its own:
 // it files Victor's Strategy at "EBP01-046 RR" and Chillet at
-// "EBP01-025RR" on the same shelf, and its buylist writes every number
-// clean. Nobody else writes the code into the number either - Bushiroad's
-// own card list numbers BP01-025 and carries RR in a rarity field,
-// CardTrader splits the same two into collector_number and
-// palworld_rarity, and TCGplayer, which the catalog takes its identity
-// from, only ever suffixes the parallel tiers.
+// "EBP01-025RR" on the same shelf. Nobody else writes the code into the
+// number either - Bushiroad's own card list numbers BP01-025 and carries
+// RR in a rarity field, CardTrader splits the same two into
+// collector_number and palworld_rarity, and TCGplayer, which the catalog
+// takes its identity from, only ever suffixes the parallel tiers.
 func palworldNotes(notes string) string {
 	notes = palworldNoteFixes.Replace(notes)
 	fields := strings.Fields(notes)

@@ -400,7 +400,8 @@ from the shelf collision this section is about.
 - **Palworld**: `palworld.go`, one file, one problem - the storefront
   sometimes glues a rarity code onto the number's tail
   (`"EBP01-025RR"`), inconsistently even with itself (plain-spaced on one
-  shelf, glued on another, and its own buylist writes every number clean).
+  shelf, glued on another). Its buylist sometimes leaves the number empty
+  and writes it in the note, so that feed reads `buylistVariation`.
   `palworldBaseRarities` is an *enumerated allow-list* of codes that are
   safe to split off, deliberately excluding the six rarities (OSR, SP, SR,
   SSP, TSP, TSR) the catalog numbers as printings of their own - splitting
