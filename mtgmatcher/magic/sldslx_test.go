@@ -7,8 +7,8 @@ import (
 )
 
 // A Secret Lair Drop number the SLD set holds names that printing, even when
-// the card also has a plain SLX printing, and a Japanese foil reaches its own
-// foil row.
+// the card also has a plain SLX or SLC printing, unless the listing is tagged
+// for the other set, and a Japanese foil reaches its own foil row.
 func TestSLDNumberBeatsSLX(t *testing.T) {
 	realDatastore(t)
 	b := testBackend
@@ -20,6 +20,8 @@ func TestSLDNumberBeatsSLX(t *testing.T) {
 		{"Cecily, Haunted Mage", "343", "SLD", "", false},
 		{"Themberchaud", "728", "SLD", "", false},
 		{"Cecily, Haunted Mage", "", "SLX", "", false},
+		{"Lightning Bolt", "83", "SLD", "83", false},
+		{"Lightning Bolt", "Countdown 83", "SLC", "83", false},
 		{"Chord of Calling", "1595 Japanese", "SLD", "1595★jpn", true},
 		{"Chord of Calling", "1595 Japanese", "SLD", "1595jpn", false},
 	} {
