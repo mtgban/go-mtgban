@@ -1276,22 +1276,24 @@ func catalogTreatment(variation string) string {
 // printing the catalog does not carry, keyed by the name and the shelf it
 // sits on.
 //
-// Both are a rarity the set prints and the card at that number is not.
+// Each is a rarity the set prints and the card at that number does not.
 // Gladiator Beast Octavius exists in Gladiator's Assault as a Secret Rare
 // and nothing else, and the Exodia of Limited Pack World Championship 2025
-// is one of that set's two Emblazoned rarities and never the plain Secret
-// Rare - EN000 is the only one of its 21 numbers without the plain tiers,
-// which is what says the card is Emblazoned-only rather than half-published.
-// Each is priced at a quarter against the printing it lands on, $13.00 and
-// $500.00, which is the price of a card that is not that card.
+// is one of that set's two Emblazoned rarities and never a plain Secret
+// Rare or Ultra Rare - EN000 is the only one of its 21 numbers without the
+// plain tiers, which is what says the card is Emblazoned-only rather than
+// half-published.
+// Each is priced at a quarter against the printing it lands on, $13.00,
+// $500.00 and $45.00, which is the price of a card that is not that card.
 //
 // They are listed one at a time because no rule separates them from a
 // decorated rarity a storefront spells shorter: "Secret Rare" for the
 // catalog's "Prismatic Secret Rare" is the same shape and is correct.
 // Refusing a rarity the card does not carry drops 55 Yu-Gi-Oh listings to
-// catch these two, and around 35 of those are right.
+// catch these, and around 35 of those are right.
 var csiUnknownPrintings = map[string]bool{
 	"Exodia the Forbidden One (Secret Rare)|Limited Pack World Championship 2025": true,
+	"Exodia the Forbidden One (Ultra Rare)|Limited Pack World Championship 2025":  true,
 	"Gladiator Beast Octavius (Super Rare)|Gladiators Assault":                    true,
 }
 
