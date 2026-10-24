@@ -182,10 +182,12 @@ type Card struct {
 	Watermark           string              `json:"watermark"`
 
 	ForeignData []struct {
-		Name        string            `json:"name"`
-		Language    string            `json:"language"`
-		Identifiers map[string]string `json:"identifiers"`
-		Type        string            `json:"type"`
+		Name           string              `json:"name"`
+		Language       string              `json:"language"`
+		Identifiers    map[string]string   `json:"identifiers"`
+		Type           string              `json:"type"`
+		UUID           string              `json:"uuid"`
+		SourceProducts map[string][]string `json:"sourceProducts"`
 	} `json:"foreignData"`
 
 	// PlainNumber is Number with the game's own decorations stripped -
