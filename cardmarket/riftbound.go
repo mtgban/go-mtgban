@@ -55,3 +55,27 @@ var riftboundShelves = map[string]struct{ edition, label, starLabel string }{
 		starLabel: "T1 Worlds Champion Signature Edition Bundle Serial Numbered",
 	},
 }
+
+// otherSetPromo reports whether a product on a "<Set>: Promos" shelf landed
+// on a printing promoted for another set of the datastore. The matcher folds
+// every such shelf into one "Promos" heading, so a set's promo runes reach the
+// earlier set's printings at the same numbers: Radiance's R01b-R06b land on
+// Vendetta's, which the datastore carries and Vendetta: Promos already prices.
+// A shelf naming its own set keeps its printings.
+func (r *resolver) otherSetPromo(product *cm.Product, cardID string) bool {
+	set, promos := strings.CutSuffix(product.ExpansionName, ": Promos")
+	if r.gameID != cm.GameRiftbound || !promos {
+		return false
+	}
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	for _, promoType := range co.PromoTypes {
+		_, namesSet := r.backend.NormalizedSets[mtgmatcher.Normalize(promoType)]
+		if namesSet && !mtgmatcher.Equals(promoType, set) {
+			return true
+		}
+	}
+	return false
+}
