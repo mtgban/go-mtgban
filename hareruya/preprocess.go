@@ -78,6 +78,54 @@ const prerelease = "プレリリース"
 // so the tables and the rule cannot drift apart.
 const judgeRewards = "Judge Reward"
 
+// promoLineTreatments names the promo type a treatment group stands for in a
+// numbered "-P" retail title: the three the promo line numbers as the set
+// itself does, so the number alone cannot tell the two printings apart.
+var promoLineTreatments = map[string]string{
+	"プロモパック":       magic.PromoTypePromoPack,
+	"Bundleプロモ":    magic.PromoTypeBundle,
+	"Bundle Promo": magic.PromoTypeBundle,
+	"リセールプロモ":      magic.PromoTypeResale,
+}
+
+// treatedPromoPrinting finds the printing on the set's promo line that a
+// numbered "-P" title names by its treatment, when the line holds exactly
+// one of that card at the title's number. The set holds the card at the
+// same number, which is where the number alone would send the listing.
+func treatedPromoPrinting(b *mtgmatcher.Backend, title, cardName, edition, number string, foil bool) (setCode, promoNumber string) {
+	if number == "" {
+		return "", ""
+	}
+	var promoType string
+	_, after, _ := strings.Cut(title, "》")
+	for _, group := range reParens.FindAllStringSubmatch(after, -1) {
+		promoType = promoLineTreatments[group[1]]
+		if promoType != "" {
+			break
+		}
+	}
+	if promoType == "" {
+		return "", ""
+	}
+
+	finish := "nonfoil"
+	if foil {
+		finish = "foil"
+	}
+	front, _, _ := strings.Cut(cardName, "+")
+	var found []mtgmatcher.Card
+	for _, card := range b.MatchInSet(front, "P"+edition) {
+		if card.HasPromoType(promoType) && card.HasFinish(finish) &&
+			strings.TrimRight(card.PlainNumber, "ps") == number {
+			found = append(found, card)
+		}
+	}
+	if len(found) != 1 {
+		return "", ""
+	}
+	return found[0].SetCode, found[0].Number
+}
+
 // powerToughness matches the pair a title states in place of a collector
 // number for the cards a set prints several times at several sizes.
 var powerToughness = regexp.MustCompile(`^\d+/\d+$`)
@@ -439,6 +487,12 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 	// promo set that holds it.
 	if strings.Contains(product.ProductName, "SDCC") {
 		edition = ""
+	}
+	if promoLine && series == "" {
+		promoSet, promoNumber := treatedPromoPrinting(b, product.ProductName, cardName, edition, number, foil)
+		if promoSet != "" {
+			edition, variant = promoSet, promoNumber
+		}
 	}
 	variant = strings.TrimSpace(spaceSDCC(variant))
 	override, found := promoMap[edition][cardName][variant]
