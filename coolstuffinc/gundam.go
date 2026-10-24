@@ -149,7 +149,7 @@ func gundamWording(b *mtgmatcher.Backend, name, number, wording string) string {
 		return label
 	}
 	switch {
-	case wording == "PB01":
+	case wording == "PB01" || wording == "PB02":
 		label := gundamPremiumBandai(b, name, number)
 		if label != "" {
 			return label
@@ -267,4 +267,28 @@ func gundamNumber(notes string) string {
 		}
 	}
 	return ""
+}
+
+// gundamPIDs names the TCGplayer product a storefront product is, for the
+// reprints it shelves under the card's first set and tells apart only by a
+// description of the art, which names no label the catalog could be matched
+// on. The Destiny Ignition deck (ST09) reprints cards of four other products
+// and the product id is the storefront's own, shared by both feeds.
+var gundamPIDs = map[string]string{
+	"435239": "684017", // GD01-049 Blitz Gundam (Dodging Yellow Laser) = ST09
+	"435240": "684018", // GD01-054 Duel Gundam (Smoke Cloud)
+	"435241": "684019", // GD01-111 Battle of Aces (Two Mechs Fighting)
+	"435242": "684020", // GD01-118 Overflowing Affection (Singer in Mech's Hand)
+	"435243": "684021", // GD02-076 Buster Gundam (Shot by Green Laser)
+	"435244": "684022", // GD02-110 Awakened Power (Mech with Sword in Ground)
+	"435222": "684010", // ST01-014 Unforeseen Incident (Two People in Red Outfits)
+	"435223": "684011", // ST04-002 Strike Gundam (In Water)
+	"435225": "684013", // ST04-010 Kira Yamato (Two People in Blue and Red Outfits)
+	"435226": "684014", // ST04-011 Athrun Zala (Two People in Red and Blue Outfits)
+	"435227": "684015", // ST04-015 Archangel (Explosions)
+	"435228": "684016", // ST04-016 Vesalius (Up Close with Lasers)
+	"424310": "653635", // ST01-014 Unforeseen Incident (Purple Hair) = ST05
+	"431164": "671926", // ST05-014 Fatal Strike (Reflection) = ST07
+	"431198": "672000", // ST05-014 Fatal Strike (Alt-Art +) (Reflection) = ST07
+	"431220": "671979", // ST02-014 Siege Ploy (Alt-Art +) (Sword Fight) = ST08
 }

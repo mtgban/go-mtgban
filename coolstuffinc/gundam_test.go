@@ -99,6 +99,29 @@ func TestGundamCardPremiumBandai(t *testing.T) {
 	if err != nil || id != "rp-024_681970_holofoil" {
 		t.Errorf("Match(resource) = %q, %v, want rp-024_681970_holofoil", id, err)
 	}
+
+	name, variation = gundamCard(b, "Awakened Power (GD02-110) (Alt-Art +) (PB02)", "GD02-110")
+	if name != "Awakened Power" || variation != "GD02-110 Alt-Art + Premium Accessory" {
+		t.Errorf("gundamCard(PB02) = %q, %q", name, variation)
+	}
+	id, err = b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Dual Impact", Variation: variation, Foil: true})
+	if err != nil || id != "gd02-110_698145_holofoil" {
+		t.Errorf("Match(PB02) = %q, %v, want gd02-110_698145_holofoil", id, err)
+	}
+}
+
+// TestGundamPIDsNameHeldProducts pins that every product the storefront id
+// table points at is one the datastore holds, so a catalog that drops or
+// renumbers a product shows here and not as a listing gone unpriced.
+func TestGundamPIDsNameHeldProducts(t *testing.T) {
+	b := readGameDatastore(t, "gundam", "GUNDAM_PATH")
+
+	for pid, tcgID := range gundamPIDs {
+		_, err := b.Match(&mtgmatcher.InputCard{ID: tcgID, Foil: true})
+		if err != nil {
+			t.Errorf("product %s names TCGplayer %s: %v", pid, tcgID, err)
+		}
+	}
 }
 
 // TestGundamCardNickname pins the Green Dress Cagalli to the Championship
