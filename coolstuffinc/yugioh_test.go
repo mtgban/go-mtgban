@@ -129,6 +129,7 @@ func TestYugiohListingReachesItsPrinting(t *testing.T) {
 		{"Polymerization [Alt Art] (Secret Rare)", "Quarter Century Bonanza", "(Alt Art) Hero Art - Secret Rare", "", "Secret Rare", "ra03-en051_592525_1stedition"},
 		{"Ten Thousand Dragon", "Battles of Legend - Armageddon", "", "BLAR-EN093", "Secret Rare", "blar-en10k_218039_1stedition"},
 		{"Gladiator Beast Secutor", "Legendary Collection 2", "", "LCGX-EN040", "Secret Rare", "lcgx-en240_56880_unlimited"},
+		{"Nordic Relic Laevateinn", "Battle Pack 2: Round 2", "", "BPW2-EN088 ", "Super Rare", "bpw2-en089_78945_1stedition"},
 		{"Borrelsword Dragon", "Battles of Legend - Chapter 1", "Gold Letter Ultra Rare", "", "Ultra Rare", "blc1-en023_538495_1stedition"},
 		{"Call of the Haunted", "Speed Duel: Arena of Lost Souls", "", "", "Ultra Rare", "sbls-ens03_186714_1stedition"},
 	}

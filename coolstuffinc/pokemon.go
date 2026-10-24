@@ -157,6 +157,8 @@ var pokemonCatalogShelves = []struct {
 	{"Grass Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Grass Energy", "Deck Exclusives", "2017 Wave Foil"},
 	{"Lightning Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Lightning Energy", "Deck Exclusives", "2017 Wave Foil"},
 	{"Metal Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Metal Energy", "Deck Exclusives", "2017 Wave Foil"},
+	{"Psychic Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Psychic Energy", "Deck Exclusives", "2017 Wave Foil"},
+	{"Water Energy - 2017 (Reverse Foil)", "Shining Legends", "", "Water Energy", "Deck Exclusives", "2017 Wave Foil"},
 	{"Fighting Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Fighting Energy", "League & Championship Cards", "WotC League Promo"},
 	{"Fire Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Fire Energy", "League & Championship Cards", "WotC League Promo"},
 	{"Grass Energy - Starfoil Promo", "WOTC Black Star Promos", "", "Grass Energy", "League & Championship Cards", "WotC League Promo"},
@@ -177,14 +179,17 @@ var pokemonCatalogShelves = []struct {
 // Stars' unnumbered 2022 energies, apart from Crown Zenith's own textured ones.
 var pokemonReverse2022Energy = regexp.MustCompile(`^(\w+ Energy) - 2022 \(Reverse Foil\)$`)
 
-// pokemonListingIDs names the catalog product of the listings whose number is
-// a bare letter no matcher reads: the 30th Celebration Mew, one for each of
-// the Red, Green and Blue scans.
+// pokemonListingIDs names the catalog product of the listings whose wording no
+// matcher reads: the 30th Celebration Mew, one for each of the Red, Green and
+// Blue scans, a jumbo's bare letter number, and the Pokemon Day stamped
+// Pikachu the POP Series catalog labels without the word Stamp.
 var pokemonListingIDs = map[string]string{
 	"Mew (Red) - R/RGB|30th Celebration":                           "717607",
 	"Mew (Green) - G/RGB|30th Celebration":                         "717608",
 	"Mew (Blue) - B/RGB|30th Celebration":                          "717609",
 	"Mega Greninja ex - MEP081 Jumbo Size|Pokemon Oversized Cards": "704880",
+	"Pikachu (Pokemon Day Stamp) - 9/17|POP Series 6":              "276377",
+	"Pikachu (Pokemon Day Stamp) - 15/17|POP Series 9":             "701479",
 }
 
 // pokemonListing reads a Pokemon listing the way the catalog names it. The

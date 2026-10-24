@@ -29,7 +29,9 @@ var onePieceEvents = map[string]string{
 // listings whose wording cannot reach it: the storefront describes a DON!!
 // card and a reprinted promo in prose the catalog never uses, and the catalog
 // tells them apart by promo types and watermarks the storefront does not
-// write. The product id is the storefront's own and both feeds share it.
+// write. A few more are listings whose art or number the shelf's own edition
+// keeps the matcher from reaching. The product id is the storefront's own and
+// both feeds share it.
 var onePiecePIDs = map[string]string{
 	"353757": "456059", // OP01 DON "The King of the Pirates" = OP01 Manga Alternate Art
 	"357696": "482273", // OP02 DON "To Put An End To This War!!" = OP02 Manga
@@ -99,6 +101,10 @@ var onePiecePIDs = map[string]string{
 	"434532": "681614", // Jewelry Bonney P-113 (Heroines Battle Pack - Winner) foil = Winner Pack
 	"386661": "530120", // Vol. 2 DON Luffy & Kaido = Manga, beside 386659 = Silhouette
 	"397181": "577568", // OP08 DON "My Beloved Son..." = Alternate Art, beside 398704 and 398705
+	"447221": "705991", // Roronoa Zoro EB04-007 (Haki SP) = OP17 SP: the feed's Number says EB04-061
+	"447143": "712091", // Kaido OP17-062 (Baki Alternate Art) = Super Alternate Art, beside 447141 = Alternate Art
+	"421641": "643883", // Shanks OP09-001 (PSA Magazine Promo) = 2025 PSA Magazine, not the OP09 Parallel
+	"426348": "648101", // Boa Hancock OP07-051 (Binder Set Alt-Art) = Binder Set Alternate Art
 }
 
 // onePieceStarterDeck matches the starter deck a name states in brackets.
