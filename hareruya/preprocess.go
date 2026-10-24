@@ -1170,6 +1170,12 @@ var promoMap = map[string]map[string]map[string]struct {
 				Variant: "2",
 			},
 		},
+		"Avacyn's Pilgrim": {
+			"テキストレス Festival": {
+				Edition: "PF25",
+				Variant: "1F",
+			},
+		},
 		"Sliver Hive": {
 			"Retro Frame その他プロモ": {
 				Edition: "PF25",
@@ -1496,6 +1502,7 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Command Tower": {
 			"フルアート コマンダーイベントプロモ": {Edition: "PW25", Variant: "17"},
 			"ボーダーレス その他プロモ":      {Edition: "PMEI", Variant: "2026-13"},
+			"旧枠 メディア系プロモ":        {Edition: "PMEI", Variant: "2026-1"},
 		},
 		"Yuna, Grand Summoner": {
 			"ボーダーレス コマンダーボックスリーグプロモ": {Edition: "PW25", Variant: "16"},
