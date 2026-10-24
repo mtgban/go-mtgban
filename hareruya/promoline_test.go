@@ -137,6 +137,27 @@ func TestRetailPromoLine(t *testing.T) {
 			wantSet: "PS18", wantNumber: "110",
 		},
 		{
+			desc: "a resale promo is filed on the promo line under the set's number",
+			jp:   "【Foil】(149)《ドラゴンの女王、ラスリス/Lathliss, Dragon Queen》(リセールプロモ)[M19-P] 赤",
+			en:   "【Foil】(149)《Lathliss, Dragon Queen》[Resale promo]",
+			card: "Lathliss, Dragon Queen", foil: "1",
+			wantSet: "PM19", wantNumber: "149★",
+		},
+		{
+			desc: "and so is a promo pack, in either finish",
+			jp:   "【Foil】(139)《炎の一掃/Flame Sweep》(プロモパック)[M20-P] 赤U",
+			en:   "【Foil】(139)《Flame Sweep》[M20-P]",
+			card: "Flame Sweep", foil: "1",
+			wantSet: "PM20", wantNumber: "139",
+		},
+		{
+			desc: "and a bundle promo",
+			jp:   "【Foil】(131)《チャンドラの調圧器/Chandra's Regulator》(Bundleプロモ)[M20-P] 赤",
+			en:   "【Foil】(131)《Chandra's Regulator》[Bundle Promo]",
+			card: "Chandra's Regulator", foil: "1",
+			wantSet: "PM20", wantNumber: "131",
+		},
+		{
 			desc: "a basic land's art letter is its place among the set's printings",
 			jp:   "《沼/Swamp》(B)[DKM] 土地",
 			en:   " 《Swamp》[DKM]  B",
