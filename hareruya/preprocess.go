@@ -28,6 +28,15 @@ var rePLSTCode = regexp.MustCompile(`^[A-Z0-9]{2,5}-\d+$`)
 // alone, right after the bracketed set tag.
 var reTrailingNumber = regexp.MustCompile(`\]\((\d+)\)`)
 
+// reSDCC matches the convention tag, which the storefront writes against the
+// year it names, while the catalog reads the year as a word of its own.
+var reSDCC = regexp.MustCompile(`SDCC ?`)
+
+// spaceSDCC puts the year apart from the convention tag.
+func spaceSDCC(s string) string {
+	return reSDCC.ReplaceAllString(s, "SDCC ")
+}
+
 // reYearEdition matches the year a MagicFest promo states as "YYYY年版".
 var reYearEdition = regexp.MustCompile(`^(\d{4})年版$`)
 
@@ -431,7 +440,7 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 	if strings.Contains(product.ProductName, "SDCC") {
 		edition = ""
 	}
-	variant = strings.TrimSpace(variant)
+	variant = strings.TrimSpace(spaceSDCC(variant))
 	override, found := promoMap[edition][cardName][variant]
 	if found {
 		edition = override.Edition
@@ -650,7 +659,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	title = strings.TrimPrefix(title, "【EN】")
 	title = strings.Replace(title, "(Bottom)", "", -1)
 	title = strings.Replace(title, "(Big Furry Monster)", "", -1)
-	title = strings.Replace(title, "SDCC", "SDCC ", -1)
+	title = spaceSDCC(title)
 	title = strings.Replace(title, "No Emblem", "No Symbol", -1)
 
 	// /Weapons Manufacturing
