@@ -28,6 +28,15 @@ var rePLSTCode = regexp.MustCompile(`^[A-Z0-9]{2,5}-\d+$`)
 // alone, right after the bracketed set tag.
 var reTrailingNumber = regexp.MustCompile(`\]\((\d+)\)`)
 
+// reSDCC matches the convention tag, which the storefront writes against the
+// year it names, while the catalog reads the year as a word of its own.
+var reSDCC = regexp.MustCompile(`SDCC ?`)
+
+// spaceSDCC puts the year apart from the convention tag.
+func spaceSDCC(s string) string {
+	return reSDCC.ReplaceAllString(s, "SDCC ")
+}
+
 // reYearEdition matches the year a MagicFest promo states as "YYYY年版".
 var reYearEdition = regexp.MustCompile(`^(\d{4})年版$`)
 
@@ -68,6 +77,54 @@ const prerelease = "プレリリース"
 // judgeRewards is the wording every judge tag translates into, spelled once
 // so the tables and the rule cannot drift apart.
 const judgeRewards = "Judge Reward"
+
+// promoLineTreatments names the promo type a treatment group stands for in a
+// numbered "-P" retail title: the three the promo line numbers as the set
+// itself does, so the number alone cannot tell the two printings apart.
+var promoLineTreatments = map[string]string{
+	"プロモパック":       magic.PromoTypePromoPack,
+	"Bundleプロモ":    magic.PromoTypeBundle,
+	"Bundle Promo": magic.PromoTypeBundle,
+	"リセールプロモ":      magic.PromoTypeResale,
+}
+
+// treatedPromoPrinting finds the printing on the set's promo line that a
+// numbered "-P" title names by its treatment, when the line holds exactly
+// one of that card at the title's number. The set holds the card at the
+// same number, which is where the number alone would send the listing.
+func treatedPromoPrinting(b *mtgmatcher.Backend, title, cardName, edition, number string, foil bool) (setCode, promoNumber string) {
+	if number == "" {
+		return "", ""
+	}
+	var promoType string
+	_, after, _ := strings.Cut(title, "》")
+	for _, group := range reParens.FindAllStringSubmatch(after, -1) {
+		promoType = promoLineTreatments[group[1]]
+		if promoType != "" {
+			break
+		}
+	}
+	if promoType == "" {
+		return "", ""
+	}
+
+	finish := "nonfoil"
+	if foil {
+		finish = "foil"
+	}
+	front, _, _ := strings.Cut(cardName, "+")
+	var found []mtgmatcher.Card
+	for _, card := range b.MatchInSet(front, "P"+edition) {
+		if card.HasPromoType(promoType) && card.HasFinish(finish) &&
+			strings.TrimRight(card.PlainNumber, "ps") == number {
+			found = append(found, card)
+		}
+	}
+	if len(found) != 1 {
+		return "", ""
+	}
+	return found[0].SetCode, found[0].Number
+}
 
 // powerToughness matches the pair a title states in place of a collector
 // number for the cards a set prints several times at several sizes.
@@ -431,7 +488,13 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 	if strings.Contains(product.ProductName, "SDCC") {
 		edition = ""
 	}
-	variant = strings.TrimSpace(variant)
+	if promoLine && series == "" {
+		promoSet, promoNumber := treatedPromoPrinting(b, product.ProductName, cardName, edition, number, foil)
+		if promoSet != "" {
+			edition, variant = promoSet, promoNumber
+		}
+	}
+	variant = strings.TrimSpace(spaceSDCC(variant))
 	override, found := promoMap[edition][cardName][variant]
 	if found {
 		edition = override.Edition
@@ -650,7 +713,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	title = strings.TrimPrefix(title, "【EN】")
 	title = strings.Replace(title, "(Bottom)", "", -1)
 	title = strings.Replace(title, "(Big Furry Monster)", "", -1)
-	title = strings.Replace(title, "SDCC", "SDCC ", -1)
+	title = spaceSDCC(title)
 	title = strings.Replace(title, "No Emblem", "No Symbol", -1)
 
 	// /Weapons Manufacturing
@@ -829,7 +892,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		// ways, so a listing that gives none is left where it was.
 		edition = "PAFR"
 		variant = number + "a"
-	} else if strings.Contains(variant, doubleRainbow) && cardName != "Sol Ring" {
+	} else if strings.Contains(variant, doubleRainbow) && magic.HasSerializedPrinting(b, cardName, edition) {
 		// The marker travels with whatever else the title says about the
 		// printing - its number, and the frame it is printed in - so the
 		// variant is only ever equal to it on a title that says nothing
@@ -876,6 +939,11 @@ var cardTable = map[string]string{
 	"Tyrannosaurs Rex":                   "Tyrannosaurus Rex",
 }
 
+// doubleRainbow is the treatment every serialized printing is sold in, and
+// some printings that are not: a set that holds no serialized printing of
+// the card sells it unnumbered, as Secret Lair's rainbow foils are.
+const doubleRainbow = "Double Rainbow Foil"
+
 // treatmentTable names the treatments the storefront announces in the group
 // the plain finish otherwise occupies, in the words the catalog labels them
 // with. Only the marker says which printing a listing is: the treated
@@ -885,11 +953,6 @@ var cardTable = map[string]string{
 //
 // Every entry was read off the storefront's own buylist: each marker below
 // appears there, and each names a promo type the catalog carries.
-// doubleRainbow is the treatment every serialized printing is sold in: of
-// the 289 printings the catalog files under it, 288 are serialized, and the
-// one that is not is the Sol Ring excepted below.
-const doubleRainbow = "Double Rainbow Foil"
-
 var treatmentTable = map[string]string{
 	"Pool Party・Foil": "Pool Party",
 	"S&C・Foil":        "Step-and-Compleat Foil",
@@ -1004,13 +1067,14 @@ var editionTable = map[string]string{
 	"褒賞プログラム":              "Rewards Program",
 	"辰年プロモ":                "Year of the Dragon 2024",
 
-	"S&C・Foil":             "Step-and-Compleat Foil",
-	"Secret Lair Showdown": "SLP",
-	"Retro Frame Promos":   "PLG21",
-	"30th Promo":           "P30A",
-	"POS Reward Promo":     "PW24",
-	"CMA":                  "CM1",
-	"WMC":                  "World Magic Cup Qualifiers",
+	"S&C・Foil":               "Step-and-Compleat Foil",
+	"Secret Lair Showdown":   "SLP",
+	"Retro Frame Promos":     "PLG21",
+	"30th Promo":             "P30A",
+	"POS Reward Promo":       "PW24",
+	"CMA":                    "CM1",
+	"WMC":                    "World Magic Cup Qualifiers",
+	"JapanStandardCup Promo": "Japan Standard Cup",
 
 	"DvD": "Duel Decks: Divine vs. Demonic",
 	"EVG": "Duel Decks: Elves vs. Goblins",
@@ -1158,6 +1222,12 @@ var promoMap = map[string]map[string]map[string]struct {
 			"その他プロモ": {
 				Edition: "PF25",
 				Variant: "2",
+			},
+		},
+		"Avacyn's Pilgrim": {
+			"テキストレス Festival": {
+				Edition: "PF25",
+				Variant: "1F",
 			},
 		},
 		"Sliver Hive": {
@@ -1486,6 +1556,7 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Command Tower": {
 			"フルアート コマンダーイベントプロモ": {Edition: "PW25", Variant: "17"},
 			"ボーダーレス その他プロモ":      {Edition: "PMEI", Variant: "2026-13"},
+			"旧枠 メディア系プロモ":        {Edition: "PMEI", Variant: "2026-1"},
 		},
 		"Yuna, Grand Summoner": {
 			"ボーダーレス コマンダーボックスリーグプロモ": {Edition: "PW25", Variant: "16"},
