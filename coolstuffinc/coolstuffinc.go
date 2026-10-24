@@ -1033,11 +1033,12 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName, product.Name)), Foil: product.IsFoil == 1}
 		// Palworld numbers a parallel apart from the card it parallels, the
 		// rarity riding in the number's own tail, so the plain reading names
-		// one printing and nothing has to be read out of the wording. This
-		// feed writes its numbers clean today, but it is the same hands
-		// typing the sell listings that glue the rarity onto one.
+		// one printing and nothing has to be read out of the wording. The
+		// feed sometimes leaves the number empty and writes it in the note,
+		// and it is the same hands typing the sell listings that glue the
+		// rarity onto one.
 		case mtgmatcher.GamePalworld:
-			theCard = &mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(product.Number), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(buylistVariation(product)), Foil: product.IsFoil == 1}
 		// Notes starts with the same number Number carries and spends the
 		// rest on the qualifier; Number alone misses a Starter Deck Exclusive.
 		case mtgmatcher.GameLorcana:
