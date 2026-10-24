@@ -114,6 +114,40 @@ var langMap = map[string]string{
 	"zh-tw": "Chinese",
 }
 
+// listingID resolves a listing on the printing id its blueprint names. A
+// named finish reaches the sibling the foil flag cannot: the flag has one bit
+// and lands on the product's foil default, where the name says which of its
+// treatments the listing prices. A name the product is sold in no printing of
+// falls back to the print run the listing states, then to the flag, which
+// answers with the default rather than nothing.
+func listingID(b *mtgmatcher.Backend, gameID int, id string, card *mtgmatcher.InputCard, product Product) string {
+	var cardID string
+	if card.Finish != "" {
+		cardID, _ = b.MatchIDFinish(id, card.Finish)
+		run := listingRunFinish(gameID, product)
+		if cardID == "" && run != "" {
+			cardID, _ = b.MatchIDFinish(id, run)
+		}
+	}
+	if cardID == "" {
+		cardID, _ = b.MatchID(id, card.Foil)
+	}
+	return cardID
+}
+
+// listingRunFinish names the holo printing in the print run a Pokemon listing
+// states, for a product whose version never says holo: the flag fallback takes
+// the first foil printing, which can sit in the other run.
+func listingRunFinish(gameID int, product Product) string {
+	if gameID != GamePokemon {
+		return ""
+	}
+	if product.Properties.FirstEdition {
+		return mtgmatcher.PrintingFinish(mtgmatcher.Run1stEdition, "Holofoil")
+	}
+	return mtgmatcher.PrintingFinish(mtgmatcher.RunUnlimited, "Holofoil")
+}
+
 // tcgIDOverrides corrects a blueprint's own TCGplayerID where it names a
 // sibling card, or supplies one Card Trader sends none for at all.
 var tcgIDOverrides = map[int]int{
@@ -391,18 +425,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				}
 			}
 			for _, id := range ids {
-				// A named finish reaches the sibling the flag cannot: the
-				// flag has one bit and lands on the product's foil default,
-				// where the name says which of its treatments the listing
-				// prices. A name the product is sold in no printing of falls
-				// back to the flag, which answers with the default rather
-				// than nothing.
-				if theCard.Finish != "" {
-					cardID, _ = ct.backend.MatchIDFinish(id, theCard.Finish)
-				}
-				if cardID == "" {
-					cardID, _ = ct.backend.MatchID(id, theCard.Foil)
-				}
+				cardID = listingID(ct.backend, ct.gameID, id, theCard, product)
 				if cardID != "" {
 					break
 				}

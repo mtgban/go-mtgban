@@ -1,9 +1,12 @@
 package cardtrader
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 )
 
 // TestFoilPrintingID pins which listings the foil flag may move. CardTrader
@@ -79,6 +82,57 @@ func TestFoilPrintingID(t *testing.T) {
 			got := foilPrintingID(b, test.cardID)
 			if got != test.want {
 				t.Errorf("got %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
+// wotcRunDatastore is two WotC holos as published, each sold in a 1st Edition
+// and an Unlimited printing of its one TCGplayer product.
+const wotcRunDatastore = `{"meta": {"date": "2026-10-23", "version": "1"}, "data": {
+  "game": "pokemon",
+  "properties": {"rarity": ["Secret Rare", "Holo Rare"], "type": ["Grass", "Lightning"]},
+  "sets": {
+    "G1": {"abbreviation": "G1", "baseSetSize": 132, "name": "Gym Heroes", "releaseDate": "2000-10-14"},
+    "TR": {"abbreviation": "TR", "baseSetSize": 82, "name": "Team Rocket", "releaseDate": "2000-04-24"}
+  },
+  "cards": [
+    {"externalLinks": {"tcgPlayerId": 84647, "tcgdexId": "base5-83"}, "finish": "1st Edition Holofoil", "id": "83-82_84647_1steditionholofoil", "name": "Dark Raichu", "number": "83", "rarity": "Secret Rare", "setCode": "TR", "total": "82", "type": "Lightning", "types": ["Lightning"]},
+    {"externalLinks": {"tcgPlayerId": 84647, "tcgdexId": "base5-83"}, "finish": "Unlimited Holofoil", "id": "83-82_84647_unlimitedholofoil", "name": "Dark Raichu", "number": "83", "rarity": "Secret Rare", "setCode": "TR", "total": "82", "type": "Lightning", "types": ["Lightning"]},
+    {"externalLinks": {"tcgPlayerId": 88788, "tcgdexId": "gym1-13"}, "finish": "1st Edition Holofoil", "id": "013-132_88788_1steditionholofoil", "name": "Rocket's Scyther", "number": "013", "rarity": "Holo Rare", "setCode": "G1", "total": "132", "type": "Grass", "types": ["Grass"]},
+    {"externalLinks": {"tcgPlayerId": 88788, "tcgdexId": "gym1-13"}, "finish": "Unlimited Holofoil", "id": "013-132_88788_unlimitedholofoil", "name": "Rocket's Scyther", "number": "013", "rarity": "Holo Rare", "setCode": "G1", "total": "132", "type": "Grass", "types": ["Grass"]}
+  ]
+}}`
+
+// TestListingID pins that a Pokemon listing whose named finish the product
+// is not sold in keeps the print run it states instead of the foil flag's
+// first printing: a reverse holo of a card with no reverse printing is its
+// unlimited holo, and a first-edition listing on a version that never says
+// holo is the 1st Edition holo.
+func TestListingID(t *testing.T) {
+	b, err := mtgmatcher.Open("pokemon", strings.NewReader(wotcRunDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range []struct {
+		desc, id, finish string
+		foil, first      bool
+		want             string
+	}{
+		{"reverse flag, no reverse printing", "88788", "Reverse Holofoil", true, false, "013-132_88788_unlimitedholofoil"},
+		{"reverse flag on a first-edition listing", "88788", "Reverse Holofoil", true, true, "013-132_88788_1steditionholofoil"},
+		{"first edition named without the holo", "84647", "1st Edition", false, true, "83-82_84647_1steditionholofoil"},
+		{"first edition holo named outright", "88788", "1st Edition Holofoil", false, true, "013-132_88788_1steditionholofoil"},
+		{"no finish named keeps the flag", "84647", "", true, false, "83-82_84647_1steditionholofoil"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			card := &mtgmatcher.InputCard{Finish: tt.finish, Foil: tt.foil}
+			var p Product
+			p.Properties.FirstEdition = tt.first
+			got := listingID(b, GamePokemon, tt.id, card, p)
+			if got != tt.want {
+				t.Errorf("listingID(%s, %q) = %q, want %q", tt.id, tt.finish, got, tt.want)
 			}
 		})
 	}
