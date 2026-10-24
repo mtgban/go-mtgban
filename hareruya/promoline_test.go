@@ -130,6 +130,13 @@ func TestRetailPromoLine(t *testing.T) {
 			wantSet: "PJSC", wantNumber: "2026-2",
 		},
 		{
+			desc: "and the year it names tells two conventions' copies apart",
+			jp:   "【Foil】《反逆の先導者、チャンドラ/Chandra, Torch of Defiance》(SDCC2018)[KLD-P] 赤R",
+			en:   "【Foil】《Chandra, Torch of Defiance》[SDCC]",
+			card: "Chandra, Torch of Defiance", foil: "1",
+			wantSet: "PS18", wantNumber: "110",
+		},
+		{
 			desc: "a basic land's art letter is its place among the set's printings",
 			jp:   "《沼/Swamp》(B)[DKM] 土地",
 			en:   " 《Swamp》[DKM]  B",
