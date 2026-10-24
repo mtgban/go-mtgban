@@ -44,14 +44,16 @@ func TestPkmShelves(t *testing.T) {
 	}
 }
 
-// TestPkmJapaneseShelves pins the shelves that sell only Japanese product,
-// even when a seller marks a copy "en": no row in the English datastore can
-// ever answer for them, so the blueprint is skipped rather than refused.
-func TestPkmJapaneseShelves(t *testing.T) {
-	jp := Blueprint{Name: "Dusknoir"}
-	jp.Expansion.Name = "Night Wanderer"
-	if !unsupportedBlueprint(GamePokemon, &jp) {
-		t.Error("a Night Wanderer blueprint should be unsupported")
+// TestPkmUnrowedShelves pins the shelves the English catalog has no row for,
+// Japanese sets even when a seller marks a copy "en" and misprints: no row
+// can ever answer for them, so the blueprint is skipped rather than refused.
+func TestPkmUnrowedShelves(t *testing.T) {
+	for _, shelf := range []string{"Night Wanderer", "Stellar Miracle", "Stellar Miracle Deck Build Box", "Pokémon Misprints"} {
+		bp := Blueprint{Name: "Dusknoir"}
+		bp.Expansion.Name = shelf
+		if !unsupportedBlueprint(GamePokemon, &bp) {
+			t.Errorf("a %s blueprint should be unsupported", shelf)
+		}
 	}
 	en := Blueprint{Name: "Dusknoir"}
 	en.Expansion.Name = "Paldea Evolved"

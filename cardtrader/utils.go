@@ -617,13 +617,14 @@ var ygoInserts = map[string]bool{
 	"Rainbow Front Filler Card": true,
 }
 
-// ygoGermanShelves are Card Trader Yu-Gi-Oh shelves that sell only German
-// product, even where a seller marks a copy "en": the datastore names those
-// rows after TCGplayer's German titles, so the plain name reaches another
-// set's printing.
-var ygoGermanShelves = map[string]bool{
-	"Advent Calendar 2011": true,
-	"Advent Calendar 2014": true,
+// ygoForeignShelves are Card Trader Yu-Gi-Oh shelves that sell only German
+// or Italian product, even where a seller marks a copy "en": the datastore
+// names those rows after TCGplayer's German titles, or has none, so the plain
+// name reaches another set's printing.
+var ygoForeignShelves = map[string]bool{
+	"Advent Calendar 2011":                   true,
+	"Advent Calendar 2014":                   true,
+	"Yu-Gi-Oh! The Official Magazine Promos": true,
 }
 
 // ygoBlueprintNumbers are the collector numbers Card Trader writes as an
@@ -1384,10 +1385,10 @@ var pkmNames = map[string]string{
 	"Psichic Energy": "Psychic Energy",
 }
 
-// pkmJapaneseShelves are Card Trader Pokemon shelves that sell only
-// Japanese product, even where a seller marks a copy "en": no TCGplayer id
-// on any of them is in the English catalog.
-var pkmJapaneseShelves = map[string]bool{
+// pkmUnrowedShelves are Card Trader Pokemon shelves the English catalog has
+// no row for: Japanese sets, even where a seller marks a copy "en", and
+// misprints, which TCGplayer does not sell.
+var pkmUnrowedShelves = map[string]bool{
 	"Ruler of the Black Flame":                    true,
 	"Night Wanderer":                              true,
 	"Shiny Treasure ex":                           true,
@@ -1402,6 +1403,9 @@ var pkmJapaneseShelves = map[string]bool{
 	"Mythical & Legendary Dream Shine Collection": true,
 	"Shaymin LV. X COLLECTION PACK":               true,
 	"Space-Time Creation":                         true,
+	"Stellar Miracle":                             true,
+	"Stellar Miracle Deck Build Box":              true,
+	"Pokémon Misprints":                           true,
 }
 
 // pkmInserts are the products Card Trader sells as Pokemon singles that are
@@ -1443,12 +1447,12 @@ var pkmCollectorNumberRe = regexp.MustCompile(`^[A-Za-z]{0,4}[0-9]{1,3}[a-z]?(?:
 func unsupportedBlueprint(gameID int, bp *Blueprint) bool {
 	switch gameID {
 	case GamePokemon:
-		return pkmInserts[bp.Name] || pkmJapaneseShelves[bp.Expansion.Name]
+		return pkmInserts[bp.Name] || pkmUnrowedShelves[bp.Expansion.Name]
 	case GameLorcana:
 		// The shelf's one printing the datastore carries has a TCGplayer id.
 		return lorcanaInserts[bp.Name] || (bp.Expansion.Name == lorcanaErrataShelf && bp.TCGplayerProductID() == 0)
 	case GameYuGiOh:
-		return ygoInserts[bp.Name] || ygoGermanShelves[bp.Expansion.Name]
+		return ygoInserts[bp.Name] || ygoForeignShelves[bp.Expansion.Name]
 	case GameGundam:
 		return gundamInserts[bp.Name]
 	default:
