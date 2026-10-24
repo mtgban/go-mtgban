@@ -93,24 +93,33 @@ func TestPreprocessKeepsVIndexForChronicles(t *testing.T) {
 	}
 }
 
-// TestMysteryBooster2ReprintsResolvesToPLSTNumber pins mb2PLSTNumber against
-// the live MTGJSON datastore: "Mystery Booster 2: Reprints from Across
-// Magic's History" products carry no number of their own, and the same card
-// name can print at more than one PLST number (Suture Priest at both
-// MOC-210 and NPH-25) - without reading which one MB2's own booster
-// actually bundles, resolution is an AliasingError instead of a match.
-func TestMysteryBooster2ReprintsResolvesToPLSTNumber(t *testing.T) {
+// TestMysteryBoosterReprintsResolveToPLST pins the Mystery Booster reprint
+// shelves against the live MTGJSON datastore. Mystery Booster 2 products
+// carry no number of their own, and the same card name can print at more
+// than one PLST number (Suture Priest at both MOC-210 and NPH-25), so
+// mb2PLSTNumber reads which one MB2's own booster bundles. The Commander
+// Edition shelf gives the PLST number's tail as the product number, and its
+// vendor misspellings are corrected by name.
+func TestMysteryBoosterReprintsResolveToPLST(t *testing.T) {
 	b := realDatastore(t)
 
+	mb2 := "Mystery Booster 2: Reprints from Across Magic's History"
+	mbc := "Mystery Booster Commander Edition: Reprints from Across Magic's History"
 	tests := []struct {
 		cardName string
 		number   string
+		edition  string
+		setCode  string
+		want     string
 	}{
-		{"Suture Priest", "NPH-25"},
-		{"Terramorphic Expanse", "JMP-78"},
+		{"Suture Priest", "", mb2, "PLST", "NPH-25"},
+		{"Terramorphic Expanse", "", mb2, "PLST", "JMP-78"},
+		{"Yahenni, Undying Partisan", "99", mbc, "PLST", "2X2-99"},
+		{"Toski, *** Secrets", "244", mbc, "PLST", "BLC-244"},
+		{"Gradmother Goby", "9", "Mystery Booster Commander Edition", "MBC", "9"},
 	}
 	for _, test := range tests {
-		theCard, err := Preprocess(b, test.cardName, "", "Mystery Booster 2: Reprints from Across Magic's History")
+		theCard, err := Preprocess(b, test.cardName, test.number, test.edition)
 		if err != nil {
 			t.Fatalf("%s: Preprocess: %v", test.cardName, err)
 		}
@@ -120,8 +129,8 @@ func TestMysteryBooster2ReprintsResolvesToPLSTNumber(t *testing.T) {
 			t.Fatalf("%s: Match: %v", test.cardName, err)
 		}
 		co, _ := b.GetUUID(cardID)
-		if co.SetCode != "PLST" || co.Number != test.number {
-			t.Errorf("%s: matched %s %s, want PLST %s", test.cardName, co.SetCode, co.Number, test.number)
+		if co.SetCode != test.setCode || co.Number != test.want {
+			t.Errorf("%s: matched %s %s, want %s %s", test.cardName, co.SetCode, co.Number, test.setCode, test.want)
 		}
 	}
 }

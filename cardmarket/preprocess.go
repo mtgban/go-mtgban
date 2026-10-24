@@ -90,7 +90,9 @@ var gameday2editionTable = map[string]string{
 // literally - never by edit distance, which would risk re-aliasing an
 // unrelated card of a similar name.
 var cardNameTypos = map[string]string{
-	"Silvergil Douser": "Silvergill Douser",
+	"Silvergil Douser":   "Silvergill Douser",
+	"Gradmother Goby":    "Grandmother Goby",
+	"Toski, *** Secrets": "Toski, Bearer of Secrets",
 }
 
 // hasEnglishIn reports whether cos holds an English printing of setCode.
@@ -1057,6 +1059,10 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		case "Plains":
 			variant = "UGL-84"
 		}
+
+	case "Mystery Booster Commander Edition: Reprints from Across Magic's History":
+		edition = "PLST"
+		variant = number
 
 	case "Mystery Booster 2: Playtest Cards":
 		edition = "MB2"

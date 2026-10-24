@@ -354,6 +354,7 @@ var unplacedProducts = map[int]bool{
 	609000: true, // Nissa, Voice of Zendikar, Commander: Kamigawa
 	744396: true, // Growing Rites of Itlimoc, The Lost Caverns of Ixalan
 	744397: true, // Growing Rites of Itlimoc, The Lost Caverns of Ixalan
+	851490: true, // Guardian Project, Secret Lair Drop Series, duplicate of 851489
 	851530: true, // Distant Melody, Secret Lair Drop Series
 	893828: true, // Loki, God of Mischief, Marvel Super Heroes: Promos
 	893841: true, // Elektra, Daughter of the Hand, Marvel Super Heroes: Promos
