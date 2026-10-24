@@ -132,6 +132,16 @@ func (r *resolver) noPrinting(product *cm.Product) error {
 	return errNoPrinting
 }
 
+// nameMiss reports whether the matcher found nothing at the name and number
+// asked for: no such card, or no such variant of it. For a game whose catalog
+// lists printings the datastore does not carry, that is the same fact
+// errNoPrinting reports, and a refusal says it in one line.
+func nameMiss(err error) bool {
+	return errors.Is(err, mtgmatcher.ErrCardDoesNotExist) ||
+		errors.Is(err, mtgmatcher.ErrCardWrongVariant) ||
+		errors.Is(err, mtgmatcher.ErrCardMissingVariant)
+}
+
 // offShelf reports whether a product answered with a printing that another
 // expansion of this catalog sells as a product of its own.
 //
@@ -650,6 +660,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				}
 				return "", "", false, err
 			}
+			if nameMiss(err) {
+				return "", "", false, errNoPrinting
+			}
 			r.logf("%v", err)
 			r.logf("%+v", product)
 
@@ -684,6 +697,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 				return "", "", false, errNoPrinting
 			}
 			if r.gameID != cm.GameOnePiece {
+				if nameMiss(err) {
+					return "", "", false, errNoPrinting
+				}
 				r.logf("%v", err)
 				r.logf("%+v", product)
 			}

@@ -150,3 +150,27 @@ func TestReportRefused(t *testing.T) {
 		})
 	}
 }
+
+// TestResolveNameMiss pins that a wording the datastore has no card for is
+// refused in one line rather than dumped: the product names no printing of
+// ours, whichever probe the matcher failed on.
+func TestResolveNameMiss(t *testing.T) {
+	b := loadRiftboundBackend(t)
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+	var sink logSink
+	mkm.logCallback = sink.callback
+	mkm.resolver.printf = mkm.printf
+
+	exp := cm.Expansion{Name: "Origins", SetCode: "OGN"}
+	product := cm.CatalogProduct{Name: "Zzyzx, Not A Riftbound Card", Number: "001", Rarity: "Common"}
+	got := mkm.resolveMapped(900000001, product, exp)
+	if !errors.Is(got.err, errNoPrinting) {
+		t.Errorf("resolveMapped = %v, want %v", got.err, errNoPrinting)
+	}
+	if len(sink.lines) != 0 {
+		t.Errorf("a wording miss said %q, want nothing beyond the refusal", sink.lines)
+	}
+}
