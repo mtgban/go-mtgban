@@ -601,9 +601,9 @@ func generateSealedUUIDs(product SealedProduct, uuids map[string]*mtgmatcher.Car
 		Images:         map[string]string{},
 	}
 
-	// Preserve ReleaseDate information only for SLD, the other sets
-	// will derive it from the set date itself
-	if product.SetCode == "SLD" {
+	// SLD, SLC and SLU aggregate products released over years under one set code,
+	// so preserve their product date. Other sets derive it from their set date.
+	if product.SetCode == "SLD" || product.SetCode == "SLC" || product.SetCode == "SLU" {
 		card.OriginalReleaseDate = product.ReleaseDate
 	}
 
