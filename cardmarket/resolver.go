@@ -736,6 +736,9 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 		if r.notPreErrata(product, cardID) {
 			return "", "", false, errNoPrinting
 		}
+		if r.otherSetPromo(product, cardID) {
+			return "", "", false, errNoPrinting
+		}
 		// Lorcana's are misprints and pre-errata prints the datastore has
 		// no printing of apart from the card's own.
 		if r.gameID == cm.GameLorcana && r.ownedElsewhere(product, cardID) {
