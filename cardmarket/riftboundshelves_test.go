@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"errors"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -38,6 +39,32 @@ func TestRiftboundT1Shelf(t *testing.T) {
 		if co.Identifiers["tcgplayerProductId"] != tt.want {
 			t.Errorf("%d %q: landed on %s, TCGplayer product %q, want %q",
 				tt.id, tt.product.Name, got.cardID, co.Identifiers["tcgplayerProductId"], tt.want)
+		}
+	}
+}
+
+// TestRiftboundPromoRunes pins that a promo shelf's runes keep to their own
+// set: Vendetta: Promos lands on Vendetta's printings, while Radiance: Promos
+// has none yet and names no printing of ours.
+func TestRiftboundPromoRunes(t *testing.T) {
+	b := loadRiftboundBackend(t)
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+
+	for _, tt := range []struct {
+		id      int
+		shelf   string
+		product cm.CatalogProduct
+		wantErr error
+	}{
+		{898192, "Vendetta: Promos", cm.CatalogProduct{Name: "Order Rune", Number: "R06b", Rarity: "Showcase"}, nil},
+		{917613, "Radiance: Promos", cm.CatalogProduct{Name: "Order Rune", Number: "R06b", Rarity: "Showcase"}, errNoPrinting},
+	} {
+		got := mkm.resolveMapped(tt.id, tt.product, cm.Expansion{Name: tt.shelf})
+		if !errors.Is(got.err, tt.wantErr) || (tt.wantErr == nil && got.cardID == "") {
+			t.Errorf("%d %q on %s: resolveMapped = (%q, %v), want error %v", tt.id, tt.product.Name, tt.shelf, got.cardID, got.err, tt.wantErr)
 		}
 	}
 }
