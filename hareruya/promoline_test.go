@@ -123,6 +123,13 @@ func TestRetailPromoLine(t *testing.T) {
 			wantSet: "PS14", wantNumber: "134",
 		},
 		{
+			desc: "the Japan Standard Cup prize is named by the English line",
+			jp:   "【Foil】《止められぬ斬鬼/Unstoppable Slasher》(ジャパンスタンダードカッププロモ)[流星マーク] 黒",
+			en:   "【Foil】《Unstoppable Slasher》[JapanStandardCup Promo]",
+			card: "Unstoppable Slasher", foil: "1",
+			wantSet: "PJSC", wantNumber: "2026-2",
+		},
+		{
 			desc: "a basic land's art letter is its place among the set's printings",
 			jp:   "《沼/Swamp》(B)[DKM] 土地",
 			en:   " 《Swamp》[DKM]  B",
