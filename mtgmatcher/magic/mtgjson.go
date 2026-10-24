@@ -266,6 +266,7 @@ const (
 	PromoTypeEmbossed          = "embossed"
 	PromoTypeFNM               = "fnm"
 	PromoTypeFirstPlaceFoil    = "firstplacefoil"
+	PromoTypeFacetFoil         = "facetfoil"
 	PromoTypeFractureFoil      = "fracturefoil"
 	PromoTypeGalaxyFoil        = "galaxyfoil"
 	PromoTypeGameDay           = "gameday"

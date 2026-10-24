@@ -258,6 +258,10 @@ var promoTypeElements = []promoTypeElement{
 		ValidDate: time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC),
 	},
 	{
+		PromoType: PromoTypeFacetFoil,
+		Tags:      []string{"Facet"},
+	},
+	{
 		PromoType: PromoTypeFractureFoil,
 		// The only tag that is part of a set name, so the name is not a claim
 		TagFunc: func(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
