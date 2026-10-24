@@ -77,7 +77,7 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 			product: CatalogProduct{
 				SKU: "SGL-LOR-002-073b-ENC", Name: "Bucky - Squirrel Squeak Tutor",
 				Set: "Rise of the Floodborn", CollectorNumber: "073b",
-				Finish: "Foil", FinishGroup: "Foil",
+				Finish: "Foil", FinishGroup: "Foil", TCGPlayerID: "519506",
 			},
 			needs:    "Bucky - Squirrel Squeak Tutor (Errata Version)",
 			wantSet:  "2",
@@ -123,7 +123,7 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 			product: CatalogProduct{
 				SKU: "SGL-LOR-001-143M-ENC", Name: "Chief Tui - Respected Leader",
 				Set: "The First Chapter", CollectorNumber: "143",
-				Finish: "Foil", FinishGroup: "Foil",
+				Finish: "Foil", FinishGroup: "Foil", TCGPlayerID: "508819",
 			},
 			unsupported: true,
 		},
@@ -229,6 +229,8 @@ func TestResolveLorcanaPromoSeries(t *testing.T) {
 		{"SGL-LOR-PRM-P3_034-ENK", "Tinker Bell - Snowflake Collector", "Inkwash Foil", "P3_034", "DLPC", "34"},
 		{"SGL-LOR-PRM-P02_025-ENA", "Lilo - Escape Artist", "Glimmer Foil", "P02_025", "DLPC", "25"},
 		{"SGL-LOR-PRM-P03_036-ENA", "Scrooge McDuck - S.H.U.S.H. Agent", "Glimmer Foil", "P03_036", "DLPC", "36"},
+		{"SGL-LOR-PRM-P04_013-ENC", "Belle - Always Reading", "Foil", "013", "DLPC", "13"},
+		{"SGL-LOR-PRM-P04_014-ENC", "If I Didn't Have You", "Foil", "014", "DLPC", "14"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
 			group := "Alt Foil"
@@ -272,6 +274,7 @@ func TestResolveLorcanaPromoTotal(t *testing.T) {
 		SKU: "SGL-LOR-PRM-P03_005-ENK", Name: "Maleficent - Monstrous Dragon",
 		Set: "Promotional Cards", CollectorNumber: "005",
 		Finish: "Miscellaneous Foil", FinishGroup: "Alt Foil",
+		TCGPlayerID: "454232",
 	})
 	if err != nil {
 		t.Fatalf("P03: %v", err)

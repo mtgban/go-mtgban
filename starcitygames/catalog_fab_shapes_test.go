@@ -63,6 +63,12 @@ func TestCatalogFabShapes(t *testing.T) {
 			Finish: finish, FinishGroup: group, Language: "English",
 		}
 	}
+	// The catalog's TCGplayer id names the card in every print run and
+	// treatment, so a product carrying one still reads its set and finish.
+	withID := func(p CatalogProduct, id string) CatalogProduct {
+		p.TCGPlayerID = id
+		return p
+	}
 	for _, tt := range []struct {
 		desc string
 		p    CatalogProduct
@@ -73,7 +79,8 @@ func TestCatalogFabShapes(t *testing.T) {
 		{"promo marvel misnamed", product("SGL-FAB-PRM-TNP_001-ENC", "Wild Ride (Red)", "Promotional Cards", "Cold Foil", "Alt Foil"), "tnp001_692575_rainbowfoil"},
 		{"art card piece", product("SGL-FAB-ANQ-P08-ENR", "Eye of Ophidia Art Card", "Antiquity Pack", "Rainbow Foil", "Foil"), "688788_rainbowfoil"},
 		{"art card of the next picture", product("SGL-FAB-ANQ-P14-ENR", "Heart of Fyendal Art Card", "Antiquity Pack", "Rainbow Foil", "Foil"), "688794_rainbowfoil"},
-		{"pitch-labelled base", product("SGL-FAB-HNT-155-ENR", "Drop of Dragon Blood", "The Hunted", "Rainbow Foil", "Foil"), "hnt155_611179_rainbowfoil"},
+		{"pitch-labelled base", withID(product("SGL-FAB-HNT-155-ENR", "Drop of Dragon Blood", "The Hunted", "Rainbow Foil", "Foil"), "614550"), "hnt155_611179_rainbowfoil"},
+		{"first edition run", withID(product("SGL-FAB-ELE1-080-ENR", "Rites of Replenishment (Yellow)", "Tales of Aria (1st Edition)", "Rainbow Foil", "Foil"), "248353"), "ele080_248353_1steditionrainbowfoil"},
 		{"marker finds the extended art past the pitch label", product("SGL-FAB-HNT2-155-ENR", "Drop of Dragon Blood", "The Hunted", "Rainbow Foil", "Foil"), "hnt155_614550_rainbowfoil"},
 		{"misspelt name", product("SGL-FAB-PEN-190-ENN", "Deep Recess of Existence", "Compendium of Rathe", "Non-foil", "Non-foil"), "pen190_676395"},
 		{"misspelt number", product("SGL-FAB-APS-056-ENR", "Attention Grabbers", "Armory Deck: Pleiades", "Rainbow Foil", "Foil"), "aps006_653806_rainbowfoil"},

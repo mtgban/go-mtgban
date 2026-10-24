@@ -800,6 +800,9 @@ var catalogNames = map[string]string{
 	// Vendetta #60: the gallery's own typo ("Crusier"), kept verbatim -
 	// SCG's plainly-spelled "Cruiser" is the one that names no card.
 	"Sky Cruiser": "Sky Crusier",
+
+	// Star Trek #83: SCG's own typo.
+	"Suurok-Class Science Vessek": "Suurok-Class Science Vessel",
 }
 
 // prereleaseMissing reports whether a PRE_<set>_<number> sku names a card
@@ -977,29 +980,13 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 		}
 	}
 
-	// The authoritative identifiers resolve directly through the identifier
-	// index, regardless of game: Scryfall id first, then the TCGplayer id
-	// (MatchID resolves a bare product id through the external-id index and
-	// applies the finish exactly like the scryfall path). Etched is the only
-	// alt-foil that changes the printing; every other alt-foil shares the plain
-	// foil's id. An id the product's own wording contradicts is refused,
-	// and the sku-driven path below reads the wording instead.
-	for _, id := range []string{p.ScryfallID, p.TCGPlayerID} {
-		if id == "" {
-			continue
-		}
-		out, err := b.MatchID(id, foil, etched)
-		if err != nil {
-			continue
-		}
-		if idContradictsProduct(b, p, out) {
-			break
-		}
-		return resalePrinting(b, out, p, foil, etched), nil
-	}
-
-	// Magic needs catalog-specific fixups before the generic matcher.
 	if game == GameMagic {
+		vendorID, found := resolveByVendorID(b, p, foil, etched)
+		if found {
+			return vendorID, nil
+		}
+
+		// Magic needs catalog-specific fixups before the generic matcher.
 		// SCG's "-WAR2-" is the War of the Spark Japanese planeswalker
 		// (jpwalker), whose Japanese-language Scryfall id isn't in the index and
 		// which preprocess rejects as non-english. It maps to WAR #NNN★.
@@ -1054,58 +1041,21 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 		return b.MatchID(id, foil, etched)
 	}
 
-	// Flesh and Blood reads its number off the sku instead: the segments
-	// keep the set code, the fused-card pair ("077_112"), the promo-pack
-	// prefix ("JDG_001") and the variant letter ("155b") that the product's
-	// bare number field drops. The candidates run most specific first, so
-	// the bare number only decides what the set-prefixed one could not.
-	// The catalog's own finish name rides beside the flag: a product is one
-	// printing in one treatment, and only the name says which.
+	id, err := resolveOtherGame(b, game, p, foil)
+	if err == nil || errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return id, err
+	}
+	fallback, found := resolveByTCGPlayerID(b, p, foil, etched)
+	if found {
+		return fallback, nil
+	}
+	return "", err
+}
+
+// resolveOtherGame resolves a product of any game but Magic by its wording.
+func resolveOtherGame(b *mtgmatcher.Backend, game int, p CatalogProduct, foil bool) (string, error) {
 	if game == GameFleshAndBlood {
-		if fabInserts[p.Name] {
-			return "", mtgmatcher.ErrUnsupported
-		}
-		if fabDuplicateStock[p.SKU] {
-			return "", mtgmatcher.ErrUnsupported
-		}
-		if fabUnmade[p.SKU] {
-			return "", mtgmatcher.ErrUnsupported
-		}
-		name := p.Name
-		if spelled, found := fabNames[name]; found {
-			name = spelled
-		}
-		edition, finish := fabPrintRun(p.Set, p.Finish)
-		numbers := fabNumbers(p.SKU)
-		if position := fabArtPosition(name, p.SKU); position != "" {
-			numbers = []string{position}
-		}
-		id, err := fabMatch(b, name, edition, finish, p.Rarity, foil, numbers)
-		if err == nil {
-			id = fabPlainSibling(b, id, p.Rarity)
-			id = fabRenamedTwin(b, id, p.SKU)
-			id = fabCreditedTwin(b, id, p.SKU)
-			return fabMarkedSibling(b, id, p), nil
-		}
-		// A product named by both its faces at a single collector number
-		// is one printing plus the token printed on its back, not a
-		// two-numbered double-sided card: the catalog writes "Pass Over //
-		// Inner Chi" for NUU026, which the datastore files under the front
-		// face alone. The number segment is what tells the two apart, and
-		// it has to hold exactly one number - the genuine double-sided
-		// cards carry a pair ("048_047") and a front-face retry would
-		// flatten them onto the ordinary single.
-		front, back, twoFaced := strings.Cut(name, " // ")
-		if twoFaced && fabSingleNumbered(p.SKU) {
-			retry, rerr := fabMatch(b, front, edition, finish, p.Rarity, foil, numbers)
-			if rerr == nil {
-				return fabMarkedSibling(b, retry, p), nil
-			}
-		}
-		if twoFaced && !fabSingleNumbered(p.SKU) && fabFacesOnly(b, name, front, back) {
-			return "", mtgmatcher.ErrUnsupported
-		}
-		return "", err
+		return resolveFleshAndBlood(b, p, foil)
 	}
 
 	// Lorcana reads its number off the sku, which spells it more fully than
@@ -1117,6 +1067,103 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 	// Riftbound identifies a card by name + collector number + finish; the
 	// catalog set narrows same-name-and-number collisions across sets.
 	return resolveRiftbound(b, p, foil)
+}
+
+// resolveFleshAndBlood reads a product's number off the sku instead of its
+// bare number field: the segments keep the set code, the fused-card pair
+// ("077_112"), the promo-pack prefix ("JDG_001") and the variant letter
+// ("155b") that the field drops. The candidates run most specific first, so
+// the bare number only decides what the set-prefixed one could not.
+// The catalog's own finish name rides beside the flag: a product is one
+// printing in one treatment, and only the name says which.
+func resolveFleshAndBlood(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string, error) {
+	if fabInserts[p.Name] {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	if fabDuplicateStock[p.SKU] {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	if fabUnmade[p.SKU] {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	name := p.Name
+	if spelled, found := fabNames[name]; found {
+		name = spelled
+	}
+	edition, finish := fabPrintRun(p.Set, p.Finish)
+	numbers := fabNumbers(p.SKU)
+	if position := fabArtPosition(name, p.SKU); position != "" {
+		numbers = []string{position}
+	}
+	id, err := fabMatch(b, name, edition, finish, p.Rarity, foil, numbers)
+	if err == nil {
+		id = fabPlainSibling(b, id, p.Rarity)
+		id = fabRenamedTwin(b, id, p.SKU)
+		id = fabCreditedTwin(b, id, p.SKU)
+		return fabMarkedSibling(b, id, p), nil
+	}
+	// A product named by both its faces at a single collector number
+	// is one printing plus the token printed on its back, not a
+	// two-numbered double-sided card: the catalog writes "Pass Over //
+	// Inner Chi" for NUU026, which the datastore files under the front
+	// face alone. The number segment is what tells the two apart, and
+	// it has to hold exactly one number - the genuine double-sided
+	// cards carry a pair ("048_047") and a front-face retry would
+	// flatten them onto the ordinary single.
+	front, back, twoFaced := strings.Cut(name, " // ")
+	if twoFaced && fabSingleNumbered(p.SKU) {
+		retry, rerr := fabMatch(b, front, edition, finish, p.Rarity, foil, numbers)
+		if rerr == nil {
+			return fabMarkedSibling(b, retry, p), nil
+		}
+	}
+	if twoFaced && !fabSingleNumbered(p.SKU) && fabFacesOnly(b, name, front, back) {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	return "", err
+}
+
+// resolveByVendorID resolves a Magic product by the identifiers the catalog
+// carries: the Scryfall id first, then the TCGplayer id (MatchID resolves a
+// bare product id through the external-id index and applies the finish exactly
+// like the scryfall path). Etched is the only alt-foil that changes the
+// printing; every other alt-foil shares the plain foil's id. An id the
+// product's own wording contradicts is refused, and the sku-driven path reads
+// the wording instead.
+func resolveByVendorID(b *mtgmatcher.Backend, p CatalogProduct, foil, etched bool) (string, bool) {
+	for _, id := range []string{p.ScryfallID, p.TCGPlayerID} {
+		if id == "" {
+			continue
+		}
+		out, err := b.MatchID(id, foil, etched)
+		if err != nil {
+			continue
+		}
+		if idContradictsProduct(b, p, out) {
+			break
+		}
+		return resalePrinting(b, out, p, foil, etched), true
+	}
+	return "", false
+}
+
+// resolveByTCGPlayerID is the last resort for the other games, whose wording
+// the game resolvers have already failed to read. A TCGplayer product id names
+// a card, not the print run, finish, misprint or signature twin a listing
+// sells, so it is taken only when the card it names bears the product's name.
+func resolveByTCGPlayerID(b *mtgmatcher.Backend, p CatalogProduct, foil, etched bool) (string, bool) {
+	if p.TCGPlayerID == "" {
+		return "", false
+	}
+	id, err := b.MatchID(p.TCGPlayerID, foil, etched)
+	if err != nil || idContradictsProduct(b, p, id) {
+		return "", false
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || !mtgmatcher.Contains(p.Name, co.Name) {
+		return "", false
+	}
+	return id, true
 }
 
 // riftboundEventHeadings names the promo shelf behind the event prefix of a
@@ -1382,13 +1429,12 @@ func bucketKey(sku string) string {
 	return strings.Join(fields, "-")
 }
 
-// lorcanaNumberRespellings spells the promo numbers three skus misnumber,
-// keyed by the sku's number segment: Merlin - Envisioning the Future is PD1 7,
-// Belle - Always Reading is P4 13 and the Top 128 Challenge Let It Go is DLPC 2,
-// in the datastore and on TCGplayer alike.
+// lorcanaNumberRespellings spells the promo numbers two skus misnumber,
+// keyed by the sku's number segment: Merlin - Envisioning the Future is PD1 7
+// and the Top 128 Challenge Let It Go is DLPC 2, in the datastore and on
+// TCGplayer alike.
 var lorcanaNumberRespellings = map[string]string{
 	"PD1_013":  "7",
-	"P04_014":  "13",
 	"P01_041a": "2",
 }
 
@@ -1746,6 +1792,8 @@ var fabFinishes = map[string]string{
 var fabNames = map[string]string{
 	"Deep Recess of Existence": "Deep Recesses of Existence",
 	"Robe of Resourcefullness": "Robe of Resourcefulness",
+
+	"Gold / Goldkiss Rum // Gold / Goldkiss Rum": "Goldkiss Rum // Gold",
 }
 
 // fabNumberRespellings spells the collector numbers the catalog misspells:
