@@ -39,6 +39,9 @@ type Market struct {
 
 	blueprints map[int]*Blueprint
 
+	// Flesh and Blood only: fabNumbers of backend.
+	fabSiblings map[string][]*mtgmatcher.CardObject
+
 	gameID int
 }
 
@@ -66,6 +69,9 @@ func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
 	ct.client = NewCTAuthClient(token)
 	ct.backend = b
 	ct.gameID = id
+	if id == GameFleshAndBlood {
+		ct.fabSiblings = fabNumbers(b)
+	}
 	return &ct, nil
 }
 
@@ -468,10 +474,10 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				continue
 			}
 		}
-		// A Flesh and Blood product filed in one treatment answers a listing
-		// naming another with its own, through the foil flag: a Regular copy
-		// of a Cold Foil token, or a Gold Foil one, is not that printing.
-		if ct.gameID == GameFleshAndBlood && !fabSameTreatment(ct.backend, cardID, product) {
+		// A Flesh and Blood listing flagged in a treatment a sibling at the
+		// number is sold in is that sibling, not this printing: a Regular
+		// copy of Volzar's Cold Foil token is its Normal face.
+		if ct.gameID == GameFleshAndBlood && !fabSameTreatment(ct.backend, ct.fabSiblings, cardID, blueprint.TCGplayerProductID(), product) {
 			continue
 		}
 
