@@ -829,7 +829,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		// ways, so a listing that gives none is left where it was.
 		edition = "PAFR"
 		variant = number + "a"
-	} else if strings.Contains(variant, doubleRainbow) && cardName != "Sol Ring" {
+	} else if strings.Contains(variant, doubleRainbow) && magic.HasSerializedPrinting(b, cardName, edition) {
 		// The marker travels with whatever else the title says about the
 		// printing - its number, and the frame it is printed in - so the
 		// variant is only ever equal to it on a title that says nothing
@@ -876,6 +876,11 @@ var cardTable = map[string]string{
 	"Tyrannosaurs Rex":                   "Tyrannosaurus Rex",
 }
 
+// doubleRainbow is the treatment every serialized printing is sold in, and
+// some printings that are not: a set that holds no serialized printing of
+// the card sells it unnumbered, as Secret Lair's rainbow foils are.
+const doubleRainbow = "Double Rainbow Foil"
+
 // treatmentTable names the treatments the storefront announces in the group
 // the plain finish otherwise occupies, in the words the catalog labels them
 // with. Only the marker says which printing a listing is: the treated
@@ -885,11 +890,6 @@ var cardTable = map[string]string{
 //
 // Every entry was read off the storefront's own buylist: each marker below
 // appears there, and each names a promo type the catalog carries.
-// doubleRainbow is the treatment every serialized printing is sold in: of
-// the 289 printings the catalog files under it, 288 are serialized, and the
-// one that is not is the Sol Ring excepted below.
-const doubleRainbow = "Double Rainbow Foil"
-
 var treatmentTable = map[string]string{
 	"Pool Party・Foil": "Pool Party",
 	"S&C・Foil":        "Step-and-Compleat Foil",
