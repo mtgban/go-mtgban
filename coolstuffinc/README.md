@@ -425,7 +425,9 @@ from the shelf collision this section is about.
   code its note opens with, and a promo whose name carries `(Prerelease)`
   or `(Origins Stamp)` to the Release Event Promos shelf, where the promo
   shelf holds a printing of its own at the same number. `riftboundNotes`
-  drops the year from "Worlds Bundle 2025 Promo".
+  drops the year from "Worlds Bundle 2025 Promo", and `riftboundSpellings`
+  corrects a storefront misspelling of a card name before the shelf probe
+  reads it.
 
 ## Known gaps
 
