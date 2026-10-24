@@ -947,7 +947,11 @@ func fabTreatment(product Product) string {
 
 // fabSameTreatment reports whether a Flesh and Blood listing's treatment,
 // whatever its print run, is the one the printing it resolved to is sold in.
-func fabSameTreatment(b *mtgmatcher.Backend, cardID string, product Product) bool {
+// A treatment no printing at that number is sold in names nothing, so the
+// blueprint's product stands: the printing named by tcgID, or one carrying no
+// promo type. A promo printing reached by name alone keeps the strict rule.
+// siblings is the fabNumbers index of the same backend.
+func fabSameTreatment(b *mtgmatcher.Backend, siblings map[string][]*mtgmatcher.CardObject, cardID string, tcgID int, product Product) bool {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return false
@@ -956,7 +960,58 @@ func fabSameTreatment(b *mtgmatcher.Backend, cardID string, product Product) boo
 	if !found {
 		return false
 	}
-	return landed.Treatment == mtgmatcher.FinishSlug(fabTreatment(product))
+	want := mtgmatcher.FinishSlug(fabTreatment(product))
+	if landed.Treatment == want {
+		return true
+	}
+	ownProduct := tcgID != 0 && co.Identifiers["tcgplayerProductId"] == fmt.Sprint(tcgID)
+	if len(co.PromoTypes) > 0 && !ownProduct {
+		return false
+	}
+	return !fabTreatmentAtNumber(siblings, co, want)
+}
+
+// fabNumbers indexes every printing of b by each part of its lowercased
+// collector number, a Normal "ROS009//ROS021" under both. It is built once
+// and only read.
+func fabNumbers(b *mtgmatcher.Backend) map[string][]*mtgmatcher.CardObject {
+	index := map[string][]*mtgmatcher.CardObject{}
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		for _, part := range strings.Split(strings.ToLower(co.Number), "//") {
+			index[part] = append(index[part], co)
+		}
+	}
+	return index
+}
+
+// fabTreatmentAtNumber reports whether some printing at the collector number
+// of co, in any set, is sold in the treatment want and carries every promo
+// type co carries. Without one the seller's treatment names no printing, and
+// the blueprint's own product is the only candidate.
+func fabTreatmentAtNumber(siblings map[string][]*mtgmatcher.CardObject, co *mtgmatcher.CardObject, want string) bool {
+	for _, part := range strings.Split(strings.ToLower(co.Number), "//") {
+		for _, other := range siblings[part] {
+			f, found := mtgmatcher.FinishOf(mtgmatcher.FinishSlug(other.Finish))
+			if found && f.Treatment == want && carriesPromoTypes(other, co.PromoTypes) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// carriesPromoTypes reports whether co carries every one of promoTypes.
+func carriesPromoTypes(co *mtgmatcher.CardObject, promoTypes []string) bool {
+	for _, pt := range promoTypes {
+		if !slices.Contains(co.PromoTypes, pt) {
+			return false
+		}
+	}
+	return true
 }
 
 // gameFinish names the finish a listing prices, for the games whose
