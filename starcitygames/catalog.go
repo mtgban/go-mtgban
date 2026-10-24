@@ -800,6 +800,9 @@ var catalogNames = map[string]string{
 	// Vendetta #60: the gallery's own typo ("Crusier"), kept verbatim -
 	// SCG's plainly-spelled "Cruiser" is the one that names no card.
 	"Sky Cruiser": "Sky Crusier",
+
+	// Star Trek #83: SCG's own typo.
+	"Suurok-Class Science Vessek": "Suurok-Class Science Vessel",
 }
 
 // prereleaseMissing reports whether a PRE_<set>_<number> sku names a card
@@ -1426,13 +1429,12 @@ func bucketKey(sku string) string {
 	return strings.Join(fields, "-")
 }
 
-// lorcanaNumberRespellings spells the promo numbers three skus misnumber,
-// keyed by the sku's number segment: Merlin - Envisioning the Future is PD1 7,
-// Belle - Always Reading is P4 13 and the Top 128 Challenge Let It Go is DLPC 2,
-// in the datastore and on TCGplayer alike.
+// lorcanaNumberRespellings spells the promo numbers two skus misnumber,
+// keyed by the sku's number segment: Merlin - Envisioning the Future is PD1 7
+// and the Top 128 Challenge Let It Go is DLPC 2, in the datastore and on
+// TCGplayer alike.
 var lorcanaNumberRespellings = map[string]string{
 	"PD1_013":  "7",
-	"P04_014":  "13",
 	"P01_041a": "2",
 }
 
@@ -1790,6 +1792,8 @@ var fabFinishes = map[string]string{
 var fabNames = map[string]string{
 	"Deep Recess of Existence": "Deep Recesses of Existence",
 	"Robe of Resourcefullness": "Robe of Resourcefulness",
+
+	"Gold / Goldkiss Rum // Gold / Goldkiss Rum": "Goldkiss Rum // Gold",
 }
 
 // fabNumberRespellings spells the collector numbers the catalog misspells:
