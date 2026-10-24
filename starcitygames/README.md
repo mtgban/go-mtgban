@@ -52,10 +52,15 @@ did - `datastore-gen` grew the field, not this scraper).
 
 ## The core problem
 
-SCG's own `scryfall_id` / `tcgplayer_id` are the fast path: `resolveProductID`
-tries them first (after a handful of sku-driven steers that have to run
-*before* the identifiers, described below), and when the id is present and
-un-contradicted, it resolves directly with no wording involved.
+For Magic, SCG's own `scryfall_id` / `tcgplayer_id` are the fast path:
+`resolveProductID` tries them first (after a handful of sku-driven steers that
+have to run *before* the identifiers, described below), and when the id is
+present and un-contradicted, it resolves directly with no wording involved.
+The other games carry a `tcgplayer_id` too, but it names a TCGplayer product,
+which spans print runs, finishes, misprints and signature twins that SCG sells
+as separate products. Their game resolvers read the wording first, and the id
+is only a last resort (`resolveByTCGPlayerID`) when the wording is refused and
+the card the id names bears the product's name.
 
 The catch: **those ids are sometimes wrong, and sometimes shared between two
 genuinely different products.** A League Tokens promo carries the *set
@@ -134,10 +139,11 @@ same set + name so it can't wander.
 
 ### Flesh and Blood
 
-FaB carries **no identifiers at all** (`scryfall_id`/`tcgplayer_id` are
-always empty) - resolution is 100% sku- and wording-driven, via `fabMatch`
-trying the sku's own numbers (most specific first) against
-`mtgmatcher.Match`. Four steers run on a successful match, each closing a
+FaB's `tcgplayer_id` is present on almost every product but is not used to
+resolve it: one id names the card in both print runs and every treatment, and
+SCG swaps it between the pitch pairs of a few cards. Resolution is sku- and
+wording-driven (`resolveFleshAndBlood`), via `fabMatch` trying the sku's own
+numbers (most specific first) against `mtgmatcher.Match`. Four steers run on a successful match, each closing a
 *different* shape of "two products, one number, nothing else says which is
 which":
 
@@ -191,13 +197,18 @@ under the set it promotes is found by name and number across every set
 (`lorcanaQuest`), a Japanese or Simplified Chinese promo asks for the name
 plus "(JP Exclusive)" or "(CS Exclusive)" first (`lorcanaExclusives`), and
 `lorcanaNumberRespellings` fixes two promo skus that carry the wrong number.
+The sku's `tcgplayer_id` is not trusted over any of this: it names one card
+for an errata, a misprint and its base alike, and P03_005 carries the D23
+promo's.
 
 ### Riftbound
 
-No known collision shapes yet. Straight `mtgmatcher.Match` on name +
-set + number + foil. The catalog's game name is "Riftbound: League of
-Legends TCG"; `gameFromCatalog` also takes the bare "Riftbound", both by
-exact match.
+Straight `mtgmatcher.Match` on name + set + number + foil. The
+`tcgplayer_id` is shared by a signature (`s`) sku and the overnumbered card it
+signs, so it is not read first; the Radiance Jarvan IV products the wording
+cannot place are the ones the id fallback lands. The catalog's game name is
+"Riftbound: League of Legends TCG"; `gameFromCatalog` also takes the bare
+"Riftbound", both by exact match.
 
 ## Bulk tiers (`bulk.go`)
 
