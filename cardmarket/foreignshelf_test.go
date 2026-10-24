@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"errors"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -55,6 +56,28 @@ func TestForeignExpansion(t *testing.T) {
 	} {
 		if got := foreignExpansion(tt.gameID, tt.exp); got != tt.foreign {
 			t.Errorf("%s: foreignExpansion(%v, %v) = %v, want %v", tt.name, tt.gameID, tt.exp, got, tt.foreign)
+		}
+	}
+}
+
+// TestNonEnglishProduct pins that a product Cardmarket shelves among the
+// English cards, printed in another language alone, is a catalog we do not
+// carry. The ids are the catalog's own, so no datastore is read.
+func TestNonEnglishProduct(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		gameID cm.Game
+		id     int
+	}{
+		{"Riftbound Korean Ahri", cm.GameRiftbound, 907588},
+		{"Riftbound Chinese Kennen", cm.GameRiftbound, 916943},
+		{"Riftbound Chinese Seraphine", cm.GameRiftbound, 917606},
+		{"Lorcana Chinese Snow White", cm.GameLorcana, 895480},
+	} {
+		r := &resolver{gameID: tt.gameID}
+		_, _, _, err := r.resolveProduct(&cm.Product{IDProduct: tt.id})
+		if !errors.Is(err, errForeign) {
+			t.Errorf("%s: resolveProduct = %v, want %v", tt.name, err, errForeign)
 		}
 	}
 }
