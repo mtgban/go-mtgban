@@ -91,6 +91,9 @@ func respellBackend() *mtgmatcher.Backend {
 			{Name: "Vampiric Orchis", Number: "DASA-EN047"},
 			{Name: "Vampiric Koala", Number: "DASA-EN048"},
 		}},
+		"TP1": {Name: "Tournament Pack 1", Cards: []mtgmatcher.Card{
+			{Name: "Oscillo Hero #2", Number: "TP1-016"},
+		}},
 		"OP08": {Name: "OTS Tournament Pack 8", Cards: []mtgmatcher.Card{
 			{Name: "Token: Sky Striker Ace", Number: "OP08-EN026"},
 		}},
@@ -139,6 +142,8 @@ func TestRespellName(t *testing.T) {
 			"Vampiric Orchis", "Magician's Force", "014 Common", "Vampire Orchis"},
 		{"the real DASA Vampiric stays itself",
 			"Vampiric Orchis", "Dark Saviors", "047 Super Rare", "Vampiric Orchis"},
+		{"a card Konami renamed takes the name its set printed",
+			"Wattkid", "Tournament Pack 1", "016 Common", "Oscillo Hero #2"},
 		{"the pair reads in the other direction too",
 			"Vampire Orchis", "Dark Saviors", "047", "Vampiric Orchis"},
 		{"the token flip follows the set's word order",

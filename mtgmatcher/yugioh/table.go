@@ -200,6 +200,7 @@ var nameRespellings = [][2]string{
 	{"Cipher Soldier", "Kinetic Soldier"},
 	{"Armityle the Chaos Phantasm", "Armityle the Chaos Phantom"},
 	{"Roar of the Earthbound Immortal", "Roar of the Earthbound"},
+	{"Wattkid", "Oscillo Hero #2"},
 	// The catalog files the Rise of Destiny printing under the name
 	// without its prefix.
 	{"B.E.S. Big Core", "Big Core"},
