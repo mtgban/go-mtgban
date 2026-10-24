@@ -368,9 +368,9 @@ from the shelf collision this section is about.
   and lettering, as the catalog's Emblazoned Alternate Art without the
   bracket or rarity that make the matcher read the Emblazoned Secret Rare.
   The buylist also needs `yugiohCodes` (SD9/HL3 for the catalog's
-  SD09/HL03, in the Number and the note) and `yugiohNumbers` (two numbers
-  it mistypes, keyed by name and number since one typo is another card's
-  real number). Both feeds retry a refused listing by its image, and
+  SD09/HL03, in the Number and the note) and `yugiohNumbers` (three
+  numbers it mistypes, keyed by name and the trimmed number since one typo
+  is another card's real number). Both feeds retry a refused listing by its image, and
   accept the retry only on a card of the same name at that number:
   `yugiohImageCard` puts the code the buylist image sku carries where the
   row's corrected Number stood, and `yugiohSKUCard` reads a sale image's

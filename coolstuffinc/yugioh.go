@@ -27,6 +27,7 @@ var yugiohPIDs = map[string]string{
 	"402767": "593847", // RA03-EN123 Dark Magician Girl (Platinum Secret Rare) Gold Circle Background = B
 	"402768": "593849", // RA03-EN123 (Quarter Century Secret Rare) Gold Circle Background = B
 	"402769": "592812", // RA03-EN123 (Platinum Secret Rare) Giant Hearts Background = A
+	"402770": "592813", // RA03-EN123 (Quarter Century Secret Rare) Giant Hearts Background = A
 	"402771": "593848", // RA03-EN123 (Platinum Secret Rare) Little Hearts, Raising Staff Up = C
 	"402772": "593850", // RA03-EN123 (Quarter Century Secret Rare) Little Hearts, Raising Staff Up = C
 	"255618": "161922", // LC06-EN001 Goddess of Sweet Revenge, not the 2020 date reprint
@@ -46,6 +47,10 @@ var yugiohPIDs = map[string]string{
 	"292911": "207877", // MVP1-ENSV4 Blue-Eyes White Dragon, the Secret Edition art the buylist numbers
 	"264850": "175258", // MVP1-ENSE4 Blue-Eyes White Dragon, the Special Edition art the sku numbers
 	"207108": "92623",  // MP14-EN073 Bujingi Crane, sold as the 2014 Mega-Tins card
+	"114599": "26594",  // STON-ENSP1 Grandmaster of the Six Samurai (Super Rare), not the Secret Rare STON-EN000
+	"412920": "626808", // RA04-EN024 Aleister the Invoker (Platinum Secret Rare) Facing Forward, not EN278
+	"412921": "626809", // RA04-EN024 (Quarter Century Secret Rare) Facing Forward
+	"327178": "254483", // MGED-EN141 Firewall Dragon (Orange Background) = Red Alternate Art
 }
 
 // yugiohCodes spells the set codes the buylist writes unpadded the way the
@@ -76,11 +81,12 @@ var yugiohWording = strings.NewReplacer(
 )
 
 // yugiohNumbers holds the numbers the buylist mistypes, keyed by name and the
-// number as typed. A blind replacement cannot hold them: LCGX-EN040 is the
-// real number of another card.
+// number as typed, less any space around it. A blind replacement cannot hold
+// them: LCGX-EN040 is the real number of another card.
 var yugiohNumbers = map[string]string{
 	"Ten Thousand Dragon|BLAR-EN093":     "BLAR-EN10K",
 	"Gladiator Beast Secutor|LCGX-EN040": "LCGX-EN240",
+	"Nordic Relic Laevateinn|BPW2-EN088": "BPW2-EN089",
 }
 
 // yugiohAlternateArts lists the Gold Letter alternate arts of Battles of
@@ -130,11 +136,12 @@ func yugiohBuylistVariation(product CSIPriceEntry) string {
 // yugiohBuylistNumber is a buylist row's Number as yugiohBuylistVariation
 // writes it.
 func yugiohBuylistNumber(product CSIPriceEntry) string {
-	fixed, found := yugiohNumbers[product.Name+"|"+product.Number]
+	number := strings.TrimSpace(product.Number)
+	fixed, found := yugiohNumbers[product.Name+"|"+number]
 	if found {
 		return fixed
 	}
-	return yugiohCodes.Replace(product.Number)
+	return yugiohCodes.Replace(number)
 }
 
 // yugiohArtNotes names the artwork a note describes as the catalog's
