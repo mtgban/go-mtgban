@@ -1197,7 +1197,13 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
 				// If these have no strict matches AND are not properly tagged, skip them
-				if len(b.MatchInSetNumber(inCard.Name, set.Code, mtgmatcher.ExtractNumber(inCard.Variation))) == 0 && !hasSecretLairTag(b, inCard, set.Code) {
+				number := mtgmatcher.ExtractNumber(inCard.Variation)
+				tagged := hasSecretLairTag(b, inCard, set.Code)
+				if len(b.MatchInSetNumber(inCard.Name, set.Code, number)) == 0 && !tagged {
+					continue
+				}
+				// An untagged number the SLD set holds for this name is SLD's
+				if !tagged && len(b.MatchInSetNumber(inCard.Name, "SLD", number)) != 0 {
 					continue
 				}
 			case "SLD":
