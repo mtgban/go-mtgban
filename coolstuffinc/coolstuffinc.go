@@ -653,6 +653,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					spelled := onePieceSpelling(jpArtWording(cardName))
 					theCard = &mtgmatcher.InputCard{Name: spelled, Edition: shelf, Variation: eventNamed(strings.TrimSpace(nameQualifiers(spelled) + " " + onePieceSpelling(jpArtWording(notes)))), Foil: isFoil}
 				case mtgmatcher.GameGundam:
+					tcgID, named := gundamPIDs[pid]
+					if named {
+						theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: isFoil}
+						break
+					}
 					name, variation := gundamCard(csi.backend, cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity, cardName)), Foil: isFoil}
 				// Palworld numbers a parallel apart from the card it
@@ -662,12 +667,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				case mtgmatcher.GamePalworld:
 					theCard = &mtgmatcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
 				case mtgmatcher.GameRiftbound:
+					riftboundCardName := riftboundSpellings.Replace(cardName)
 					variation := riftboundNotes.Replace(notes)
 					if edition == "Promo" && notes == "" {
-						variation = riftboundLetteredPromo(csi.backend, cardName, imgURL, isFoil)
+						variation = riftboundLetteredPromo(csi.backend, riftboundCardName, imgURL, isFoil)
 					}
-					shelf := riftboundShelf(csi.backend, edition, notes, cardName, variation, isFoil)
-					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: shelf, Variation: variation, Foil: isFoil}
+					shelf := riftboundShelf(csi.backend, edition, notes, riftboundCardName, variation, isFoil)
+					theCard = &mtgmatcher.InputCard{Name: riftboundCardName, Edition: shelf, Variation: variation, Foil: isFoil}
 					_, err := csi.backend.Match(theCard)
 					if err != nil {
 						fromImage := riftboundImageCard(csi.backend, imgURL, isFoil)
@@ -961,9 +967,10 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		case mtgmatcher.GamePokemon:
 			theCard, runFinishes = pokemonBuylistCard(csi.backend, product)
 		case mtgmatcher.GameRiftbound:
+			riftboundCardName := riftboundSpellings.Replace(product.Name)
 			variation := riftboundNotes.Replace(buylistVariation(product))
-			shelf := riftboundShelf(csi.backend, product.ItemSet, product.Notes, product.Name, variation, product.IsFoil == 1)
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
+			shelf := riftboundShelf(csi.backend, product.ItemSet, product.Notes, riftboundCardName, variation, product.IsFoil == 1)
+			theCard = &mtgmatcher.InputCard{Name: riftboundCardName, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
 			_, err := csi.backend.Match(theCard)
 			if err != nil {
 				fromSKU := riftboundSKUCard(csi.backend, product.Image, product.IsFoil == 1)
@@ -1019,15 +1026,21 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it naming one; the wording it hangs behind the name is what tells
 		// the parallel runs apart.
 		case mtgmatcher.GameGundam:
+			tcgID, named := gundamPIDs[product.PID]
+			if named {
+				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				break
+			}
 			name, variation := gundamCard(csi.backend, product.Name, product.Number)
 			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName, product.Name)), Foil: product.IsFoil == 1}
 		// Palworld numbers a parallel apart from the card it parallels, the
 		// rarity riding in the number's own tail, so the plain reading names
-		// one printing and nothing has to be read out of the wording. This
-		// feed writes its numbers clean today, but it is the same hands
-		// typing the sell listings that glue the rarity onto one.
+		// one printing and nothing has to be read out of the wording. The
+		// feed sometimes leaves the number empty and writes it in the note,
+		// and it is the same hands typing the sell listings that glue the
+		// rarity onto one.
 		case mtgmatcher.GamePalworld:
-			theCard = &mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(product.Number), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(buylistVariation(product)), Foil: product.IsFoil == 1}
 		// Notes starts with the same number Number carries and spends the
 		// rest on the qualifier; Number alone misses a Starter Deck Exclusive.
 		case mtgmatcher.GameLorcana:
@@ -1263,22 +1276,24 @@ func catalogTreatment(variation string) string {
 // printing the catalog does not carry, keyed by the name and the shelf it
 // sits on.
 //
-// Both are a rarity the set prints and the card at that number is not.
+// Each is a rarity the set prints and the card at that number does not.
 // Gladiator Beast Octavius exists in Gladiator's Assault as a Secret Rare
 // and nothing else, and the Exodia of Limited Pack World Championship 2025
-// is one of that set's two Emblazoned rarities and never the plain Secret
-// Rare - EN000 is the only one of its 21 numbers without the plain tiers,
-// which is what says the card is Emblazoned-only rather than half-published.
-// Each is priced at a quarter against the printing it lands on, $13.00 and
-// $500.00, which is the price of a card that is not that card.
+// is one of that set's two Emblazoned rarities and never a plain Secret
+// Rare or Ultra Rare - EN000 is the only one of its 21 numbers without the
+// plain tiers, which is what says the card is Emblazoned-only rather than
+// half-published.
+// Each is priced at a quarter against the printing it lands on, $13.00,
+// $500.00 and $45.00, which is the price of a card that is not that card.
 //
 // They are listed one at a time because no rule separates them from a
 // decorated rarity a storefront spells shorter: "Secret Rare" for the
 // catalog's "Prismatic Secret Rare" is the same shape and is correct.
 // Refusing a rarity the card does not carry drops 55 Yu-Gi-Oh listings to
-// catch these two, and around 35 of those are right.
+// catch these, and around 35 of those are right.
 var csiUnknownPrintings = map[string]bool{
 	"Exodia the Forbidden One (Secret Rare)|Limited Pack World Championship 2025": true,
+	"Exodia the Forbidden One (Ultra Rare)|Limited Pack World Championship 2025":  true,
 	"Gladiator Beast Octavius (Super Rare)|Gladiators Assault":                    true,
 }
 

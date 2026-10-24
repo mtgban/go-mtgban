@@ -394,11 +394,14 @@ from the shelf collision this section is about.
   zero, and a rarity letter suffixed onto a card number that carries none
   (`gundamNumberSpelling`). `gundamNicknames` reads a promo run the
   storefront names after its art, the Green Dress Cagalli being the
-  Championship Participation Pack 01 printing.
+  Championship Participation Pack 01 printing. `gundamPIDs` names by
+  product id the Destiny Ignition (ST09) reprints the storefront shelves
+  under the card's first set, told apart only by a description of the art.
 - **Palworld**: `palworld.go`, one file, one problem - the storefront
   sometimes glues a rarity code onto the number's tail
   (`"EBP01-025RR"`), inconsistently even with itself (plain-spaced on one
-  shelf, glued on another, and its own buylist writes every number clean).
+  shelf, glued on another). Its buylist sometimes leaves the number empty
+  and writes it in the note, so that feed reads `buylistVariation`.
   `palworldBaseRarities` is an *enumerated allow-list* of codes that are
   safe to split off, deliberately excluding the six rarities (OSR, SP, SR,
   SSP, TSP, TSR) the catalog numbers as printings of their own - splitting
@@ -422,7 +425,9 @@ from the shelf collision this section is about.
   code its note opens with, and a promo whose name carries `(Prerelease)`
   or `(Origins Stamp)` to the Release Event Promos shelf, where the promo
   shelf holds a printing of its own at the same number. `riftboundNotes`
-  drops the year from "Worlds Bundle 2025 Promo".
+  drops the year from "Worlds Bundle 2025 Promo", and `riftboundSpellings`
+  corrects a storefront misspelling of a card name before the shelf probe
+  reads it.
 
 ## Known gaps
 

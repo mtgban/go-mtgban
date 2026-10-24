@@ -76,3 +76,23 @@ func TestPalworldListing(t *testing.T) {
 		})
 	}
 }
+
+// TestPalworldBuylistNote pins that a buy row leaving the number empty and
+// writing it in the note reaches the printing the note names.
+func TestPalworldBuylistNote(t *testing.T) {
+	b := readGameDatastore(t, "palworld", "PALWORLD_PATH")
+
+	for _, tt := range []struct {
+		notes, uuid string
+	}{
+		{"ESS01-002 R", "ess01-002_723233_foil"},
+		{"ESS01-002OSR Full Art", "ess01-002osr_723234_foil"},
+	} {
+		product := CSIPriceEntry{Name: "Chillet - Final Frostneedle (Sleeve & Card Set Vol. 1)", ItemSet: "Souls & Misc.", Notes: tt.notes, IsFoil: 1}
+		card := mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(buylistVariation(product)), Foil: true}
+		id, err := b.Match(&card)
+		if err != nil || id != tt.uuid {
+			t.Errorf("Match(%q) = %q, %v, want %q", tt.notes, id, err, tt.uuid)
+		}
+	}
+}

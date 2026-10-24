@@ -20,10 +20,12 @@ func TestRiftboundShelfFollowsTheEventBracket(t *testing.T) {
 		{"Jinx - Rebel - (Origins Stamp)", "Gold Origins Stamp", "OPP"},
 		{"Riven - Shattered (Prerelease)", "", "OPP"},
 		{"Jinx - Rebel - (Origins Stamp)", "OGN-202", "OPP"},
+		{"Lux - Iluminated (Organized Play Promo)", "006 - Organized Play Promo", "OPP"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			shelf := riftboundShelf(b, "Promo", tt.notes, tt.name, tt.notes, true)
-			card := &mtgmatcher.InputCard{Name: tt.name, Edition: shelf, Variation: tt.notes, Foil: true}
+			name := riftboundSpellings.Replace(tt.name)
+			shelf := riftboundShelf(b, "Promo", tt.notes, name, tt.notes, true)
+			card := &mtgmatcher.InputCard{Name: name, Edition: shelf, Variation: tt.notes, Foil: true}
 			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", card, err)
