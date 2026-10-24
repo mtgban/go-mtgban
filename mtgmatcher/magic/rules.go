@@ -1186,13 +1186,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 						continue
 					}
 				}
-				if isSecretLair(inCard) {
-					deck := func(name string) bool {
-						return mtgmatcher.Contains(inCard.Edition, name) || mtgmatcher.Contains(inCard.Variation, name)
-					}
-					if !slices.ContainsFunc(b.SLDDeckNames, deck) {
-						continue
-					}
+				if isSecretLair(inCard) && !namesSLDDeck(b, inCard) {
+					continue
 				}
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
@@ -1233,14 +1228,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				// ExtractNumberAny so Secret Lair collector numbers above the
 				// year cap (e.g. 2406) aren't dropped and misrouted to PLST,
 				// mirroring the SLD number check further below.
-				if len(b.MatchInSetNumber(inCard.Name, "SLD", mtgmatcher.ExtractNumberAny(inCard.Variation))) == 0 && len(b.MatchInSet(inCard.Name, "PLST")) > 0 {
-					for _, name := range b.SLDDeckNames {
-						deckNameInCard := mtgmatcher.Contains(inCard.Edition, name) || mtgmatcher.Contains(inCard.Variation, name)
-						if deckNameInCard {
-							skip = true
-							break
-						}
-					}
+				if len(b.MatchInSetNumber(inCard.Name, "SLD", mtgmatcher.ExtractNumberAny(inCard.Variation))) == 0 && len(b.MatchInSet(inCard.Name, "PLST")) > 0 && namesSLDDeck(b, inCard) {
+					skip = true
 				}
 
 				if skip {
