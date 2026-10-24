@@ -21,19 +21,20 @@ func TestRiftboundEpithetOnlyChampions(t *testing.T) {
 	for _, tt := range []struct {
 		sku, name, number string
 		wantNumber        string
+		tcgplayerID       string
 	}{
 		{sku: "SGL-RIFT-UNL-195-ENF", name: "Ivern - Green Father", number: "195", wantNumber: "195"},
-		{sku: "SGL-RIFT-UNL-233-ENA", name: "Ivern - Green Father", number: "233", wantNumber: "233"},
-		{sku: "SGL-RIFT-UNL-233s-ENA", name: "Ivern - Green Father", number: "233s", wantNumber: "233*"},
+		{sku: "SGL-RIFT-UNL-233-ENA", name: "Ivern - Green Father", number: "233", wantNumber: "233", tcgplayerID: "684503"},
+		{sku: "SGL-RIFT-UNL-233s-ENA", name: "Ivern - Green Father", number: "233s", wantNumber: "233*", tcgplayerID: "684503"},
 		{sku: "SGL-RIFT-UNL-189-ENF", name: "Lillia - Bashful Bloom", number: "189", wantNumber: "189"},
-		{sku: "SGL-RIFT-UNL-230-ENA", name: "Lillia - Bashful Bloom", number: "230", wantNumber: "230"},
-		{sku: "SGL-RIFT-UNL-230s-ENA", name: "Lillia - Bashful Bloom", number: "230s", wantNumber: "230*"},
+		{sku: "SGL-RIFT-UNL-230-ENA", name: "Lillia - Bashful Bloom", number: "230", wantNumber: "230", tcgplayerID: "684501"},
+		{sku: "SGL-RIFT-UNL-230s-ENA", name: "Lillia - Bashful Bloom", number: "230s", wantNumber: "230*", tcgplayerID: "684501"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
 			p := CatalogProduct{
 				SKU: tt.sku, Name: tt.name, Game: "Riftbound", Set: "Unleashed",
 				Finish: "Foil", FinishGroup: "Foil", CollectorNumber: tt.number,
-				ProductType: ProductTypeSingles,
+				ProductType: ProductTypeSingles, TCGPlayerID: tt.tcgplayerID,
 			}
 			id, err := resolveProduct(b, GameRiftbound, p)
 			if err != nil {
@@ -47,6 +48,44 @@ func TestRiftboundEpithetOnlyChampions(t *testing.T) {
 				t.Errorf("%s resolved to %s #%s, want UNL #%s", tt.sku, co.SetCode, co.Number, tt.wantNumber)
 			}
 		})
+	}
+}
+
+// TestRiftboundTCGPlayerIDFallback pins the last-resort id read on a Radiance
+// product the wording does not place: its own id lands, and an id naming
+// another card (652968, Acceptable Losses) is refused by the name gate.
+func TestRiftboundTCGPlayerIDFallback(t *testing.T) {
+	b := withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
+
+	p := CatalogProduct{
+		SKU: "SGL-RIFT-RAD-155-ENF", Name: "Jarvan IV - Exemplar of Demacia",
+		Game: "Riftbound", Set: "Radiance", Finish: "Foil", FinishGroup: "Foil",
+		CollectorNumber: "155", ProductType: ProductTypeSingles, TCGPlayerID: "722305",
+	}
+	id, err := resolveProduct(b, GameRiftbound, p)
+	if err != nil {
+		t.Fatalf("resolveProduct(%s) = %v", p.SKU, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", id, err)
+	}
+	if co.SetCode != "RAD" || co.Number != "155" || !co.Foil {
+		t.Errorf("%s resolved to %s, want RAD #155 foil", p.SKU, co)
+	}
+	fallback, found := resolveByTCGPlayerID(b, p, true, false)
+	if !found || fallback != id {
+		t.Errorf("resolveByTCGPlayerID(%s) = %q, %v, want %q", p.TCGPlayerID, fallback, found, id)
+	}
+
+	p.TCGPlayerID = "652968"
+	_, err = b.MatchID(p.TCGPlayerID, true, false)
+	if err != nil {
+		t.Fatalf("MatchID(%s) = %v, want Acceptable Losses", p.TCGPlayerID, err)
+	}
+	other, found := resolveByTCGPlayerID(b, p, true, false)
+	if found {
+		t.Errorf("resolveByTCGPlayerID(%s) landed %q, want the name gate to refuse it", p.TCGPlayerID, other)
 	}
 }
 
