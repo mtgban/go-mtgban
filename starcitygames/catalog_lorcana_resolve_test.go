@@ -229,6 +229,8 @@ func TestResolveLorcanaPromoSeries(t *testing.T) {
 		{"SGL-LOR-PRM-P3_034-ENK", "Tinker Bell - Snowflake Collector", "Inkwash Foil", "P3_034", "DLPC", "34"},
 		{"SGL-LOR-PRM-P02_025-ENA", "Lilo - Escape Artist", "Glimmer Foil", "P02_025", "DLPC", "25"},
 		{"SGL-LOR-PRM-P03_036-ENA", "Scrooge McDuck - S.H.U.S.H. Agent", "Glimmer Foil", "P03_036", "DLPC", "36"},
+		{"SGL-LOR-PRM-P04_013-ENC", "Belle - Always Reading", "Foil", "013", "DLPC", "13"},
+		{"SGL-LOR-PRM-P04_014-ENC", "If I Didn't Have You", "Foil", "014", "DLPC", "14"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
 			group := "Alt Foil"
