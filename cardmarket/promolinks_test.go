@@ -168,6 +168,7 @@ func TestPokemonStampLinks(t *testing.T) {
 		{916454, "Air Balloon", "BLK 079", "Southeast Asia Promos", "SEA", "079", ""},
 		{916463, "Lillie's Determination", "MEG 119", "Southeast Asia Promos", "SEA", "119", ""},
 		{916469, "Wally's Compassion", "MEG 132", "Southeast Asia Promos", "SEA", "132", ""},
+		{917602, "Pokemon Run Pikachu", "131", "MEP Black Star Promos", "SEA", "131", ""},
 	})
 }
 
