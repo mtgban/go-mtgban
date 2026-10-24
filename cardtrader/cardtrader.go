@@ -135,8 +135,13 @@ var tcgIDOverrides = map[int]int{
 	290971: 544805, // Pop Art (3D Text)
 	406254: 715681, // Double Pack Set Vol. 12 Shanks, labeled Gol.D.Roger
 	406255: 715682, // Double Pack Set Vol. 12 Rocks.D.Xebec
+	294212: 600706, // Garp and Luffy, Saikyo Jump Promo, 2nd Anniversary Tournament
+	358981: 710745, // EB-03, Heroines Special Set
 	// One Piece: the id names another event's print of the card.
 	326797: 712033, // O-Nami, Dash Pack 2025, sent the Illustration Box's 623070
+	// Riftbound: the T1 2025 Worlds Signature Edition Bundle, T1S002.
+	400778: 716016, // Xin Zhao, Vigilant, 002 Showcase
+	400783: 716018, // Xin Zhao, Vigilant, 002s Showcase, Signed Serialized
 	// Pokemon: none sent either.
 	340672: 211449, // Palkia & Dialga LEGEND, Jumbo Oversized
 	242584: 250252, // Mewtwo V-UNION, Jumbo Oversized
