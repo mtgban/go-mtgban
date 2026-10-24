@@ -26,6 +26,11 @@ func TestUnknownPrinting(t *testing.T) {
 			edition: "Limited Pack World Championship 2025", want: true,
 		},
 		{
+			desc:    "and the plain ultra rare of the same card",
+			name:    "Exodia the Forbidden One (Ultra Rare)",
+			edition: "Limited Pack World Championship 2025", want: true,
+		},
+		{
 			desc:    "the super rare of a card that is secret rare only",
 			name:    "Gladiator Beast Octavius (Super Rare)",
 			edition: "Gladiators Assault", want: true,
@@ -65,6 +70,7 @@ func TestUnknownPrintingKept(t *testing.T) {
 	}{
 		{"Gladiator Beast Octavius (Secret Rare)", "Gladiators Assault", "GLAS-EN000 Secret Rare", "GLAS", "GLAS-EN000"},
 		{"Exodia the Forbidden One (Emblazoned Secret Rare)", "Limited Pack World Championship 2025", "Emblazoned Secret Rare", "25LP", "25LP-EN000"},
+		{"Exodia the Forbidden One (Emblazoned Ultra Rare)", "Limited Pack World Championship 2025", "Emblazoned Ultra Rare", "25LP", "25LP-EN000"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			if unknownPrinting(test.name, test.edition) {
