@@ -358,6 +358,17 @@ func isResale(c *mtgmatcher.InputCard) bool {
 	return !c.Contains("Championship") && (c.Contains("Repack") || c.Contains("Store") || c.Contains("Resale"))
 }
 
+// namesSLDDeck reports a listing whose edition or variation names a Secret
+// Lair deck.
+func namesSLDDeck(b *mtgmatcher.Backend, c *mtgmatcher.InputCard) bool {
+	for _, name := range b.SLDDeckNames {
+		if mtgmatcher.Contains(c.Edition, name) || mtgmatcher.Contains(c.Variation, name) {
+			return true
+		}
+	}
+	return false
+}
+
 // isMysteryList reports a Mystery Booster or The List printing. The List is
 // matched raw, since folded it also matches The Little.
 func isMysteryList(c *mtgmatcher.InputCard) bool {
