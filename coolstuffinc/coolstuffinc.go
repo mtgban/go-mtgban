@@ -653,6 +653,11 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					spelled := onePieceSpelling(jpArtWording(cardName))
 					theCard = &mtgmatcher.InputCard{Name: spelled, Edition: shelf, Variation: eventNamed(strings.TrimSpace(nameQualifiers(spelled) + " " + onePieceSpelling(jpArtWording(notes)))), Foil: isFoil}
 				case mtgmatcher.GameGundam:
+					tcgID, named := gundamPIDs[pid]
+					if named {
+						theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: isFoil}
+						break
+					}
 					name, variation := gundamCard(csi.backend, cardName, gundamNumber(notes))
 					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity, cardName)), Foil: isFoil}
 				// Palworld numbers a parallel apart from the card it
@@ -1019,6 +1024,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it naming one; the wording it hangs behind the name is what tells
 		// the parallel runs apart.
 		case mtgmatcher.GameGundam:
+			tcgID, named := gundamPIDs[product.PID]
+			if named {
+				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				break
+			}
 			name, variation := gundamCard(csi.backend, product.Name, product.Number)
 			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName, product.Name)), Foil: product.IsFoil == 1}
 		// Palworld numbers a parallel apart from the card it parallels, the
