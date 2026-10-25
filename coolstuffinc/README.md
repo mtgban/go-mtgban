@@ -412,7 +412,7 @@ from the shelf collision this section is about.
   guessed at. The LA Release Party souls are named "Soul - Dawn of
   Palpagos" with a colour tail where the catalog names every Soul promo
   "Soul" (`palworldSpellings`).
-- **Lorcana**: `lorcana.go`, one file, two problems - a storefront
+- **Lorcana**: `lorcana.go`, one file, three problems - a storefront
   misspelling (`lorcanaSpellings`, exact-keyed for the reason
   `csiSpellings` gives, and the more so here: a name is a character and a
   title joined by a dash, the title is the whole of what tells one
@@ -422,7 +422,10 @@ from the shelf collision this section is about.
   repeat at a number that set does not reach: `lorcanaQuestNotes` maps the
   frame the note names to its quest, kept only where the card exists
   there. Both feeds otherwise pass edition and the raw note/number
-  straight through to `mtgmatcher.Match` untranslated.
+  straight through to `mtgmatcher.Match` untranslated. The third is
+  sealed wording: `lorcanaSealedWords` turns the storefront's "Two-Player
+  Starter Deck" and "Booster Case" into the catalog's "2-Player Starter
+  Set" and "Booster Box Case" before the sealed resolver reads them.
 - **Riftbound**: `riftboundShelf` redirects a Nexus Night rune by the set
   code its note opens with, and a promo whose name carries `(Prerelease)`
   or `(Origins Stamp)` to the Release Event Promos shelf, where the promo

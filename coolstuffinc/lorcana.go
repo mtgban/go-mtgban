@@ -35,6 +35,14 @@ func lorcanaSpelling(name string) string {
 	return name
 }
 
+// lorcanaSealedWords spells this storefront's sealed products the way the
+// catalog does: its "Two-Player Starter Deck" is the catalog's "2-Player
+// Starter Set", and its "Booster Case" a "Booster Box Case".
+var lorcanaSealedWords = strings.NewReplacer(
+	"Two-Player Starter Deck", "2-Player Starter Set",
+	"Booster Case", "Booster Box Case",
+)
+
 // lorcanaVariation spells "Rainbow Foil" the way TCGplayer names the printing
 // it is, "Holofoil" - a Starter Deck Exclusive's rainbow foil otherwise names
 // no finish the matcher knows and lands on the set's ordinary cold foil.
