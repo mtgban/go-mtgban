@@ -105,7 +105,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			}
 			mint.printf("%v", err)
 			mint.printf("%q", theCard)
-			mint.printf("%s|%s|%s|%s|%s|%s|%s", card.Name, card.Number, finish, language, edition, setCode, card.TCGplayerID)
+			mint.printf("%s|%s|%s|%s|%s|%s|%d", card.Name, card.Number, finish, language, edition, setCode, card.TCGplayerID)
 			mint.printf("%s", link)
 
 			var alias *mtgmatcher.AliasingError
