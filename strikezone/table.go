@@ -203,12 +203,14 @@ var cardTable = map[string]string{
 	"(Untitled Card": "_____",
 
 	// Misspellings, each read off the printing the set holds
-	"Frosteliff Siege":        "Frostcliff Siege",
-	"Kefka, Court Magem":      "Kefka, Court Mage // Kefka, Ruler of Ruin",
-	"Maha, Its Feather Night": "Maha, Its Feathers Night",
-	"Nine Live":               "Nine Lives",
-	"Sauron, Dino Devoteee":   "Sauron, Dino Devotee",
-	"Swords to Plowshare":     "Swords to Plowshares",
+	"Assassin s Trophy":         "Assassin's Trophy",
+	"Frosteliff Siege":          "Frostcliff Siege",
+	"Kefka, Court Magem":        "Kefka, Court Mage // Kefka, Ruler of Ruin",
+	"Maha, Its Feather Night":   "Maha, Its Feathers Night",
+	"Nine Live":                 "Nine Lives",
+	"Samut, Hazorer's Champion": "Samut, Hazoret's Champion",
+	"Sauron, Dino Devoteee":     "Sauron, Dino Devotee",
+	"Swords to Plowshare":       "Swords to Plowshares",
 }
 
 // Map a card/edition set to a correct edition
@@ -244,6 +246,7 @@ var shelfPrintings = map[[2]string][2]string{
 	{"Secret Lair Commander: From Cute to Brute", "Rhys the Redeemed"}: {"PLST", "SHM-237"},
 	{"Secret Lair Commander: Heads I Win", "Arcane Signet"}:            {"PLST", "C21-234"},
 	{"Secret Lair Commander: Heads I Win", "Reshape"}:                  {"PLST", "2XM-64"},
+	{"Secret Lair Commander: Heads I Win", "Ponder"}:                   {"PLST", "C21-125"},
 
 	{"Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Sauron, the Dark Lord"}: {"LTR", "224"},
 }
