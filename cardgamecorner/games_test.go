@@ -21,6 +21,12 @@ func TestGameInput(t *testing.T) {
 		},
 		{
 			game:    mtgmatcher.GameFleshAndBlood,
+			card:    Card{Name: "Dash, Inventor Extraordinaire // Dash (Normal)", Edition: "Arcane Rising - Unlimited", Number: "001/002"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Dash, Inventor Extraordinaire // Dash", Edition: "Arcane Rising - Unlimited", Finish: "Unlimited Edition Normal"},
+		},
+		{
+			game:    mtgmatcher.GameFleshAndBlood,
 			card:    Card{Name: "Drone of Brutality (Red) (Rainbow Foil)", Edition: "Welcome to Rathe - Unlimited", Number: "WTR164"},
 			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
 			want:    mtgmatcher.InputCard{Name: "Drone of Brutality (Red)", Edition: "Welcome to Rathe - Unlimited", Variation: "WTR164", Foil: true, Finish: "Unlimited Edition Rainbow Foil"},
