@@ -36,8 +36,8 @@ var cgcGames = map[mtgmatcher.Game]string{
 // under, where the shelf's own name points at no single set. One Piece's
 // promo shelves sell event printings, which share their number with the
 // booster card they reprint; Pokemon's "Base" is the unlimited Base Set, not
-// its Shadowless run; Yu-Gi-Oh's 25th anniversary and date reprints share
-// theirs with the original's prints.
+// its Shadowless run, but for its first edition copies; Yu-Gi-Oh's 25th
+// anniversary and date reprints share theirs with the original's prints.
 var shelfSets = map[mtgmatcher.Game]map[string]string{
 	mtgmatcher.GameOnePiece: {
 		"Promos":                     "OP-PR",
@@ -228,16 +228,24 @@ func slugName(b *mtgmatcher.Backend, extra string) string {
 // printing that is not one: the matcher falls back to the unlimited print
 // where the datastore holds no first edition of the card.
 func losesFirstEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	run, found := landedRun(b, inCard)
+	return found && run != mtgmatcher.Run1stEdition
+}
+
+// landedRun returns the print run of the printing a listing lands on, and
+// false where it lands on none.
+func landedRun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) (string, bool) {
 	probe := *inCard
 	cardID, err := b.Match(&probe)
 	if err != nil {
-		return false
+		return "", false
 	}
 	co, err := b.GetUUID(cardID)
 	if err != nil {
-		return false
+		return "", false
 	}
-	return co.Finish != mtgmatcher.FinishSlug(mtgmatcher.Run1stEdition)
+	finish, _ := mtgmatcher.FinishOf(co.Finish)
+	return finish.Run, true
 }
 
 // classicName is the name a Classic deck card goes by in the catalog, which
@@ -261,6 +269,11 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 
 	inCard := gameInput(b.Game, card, index)
 	code, found := shelfSets[b.Game][card.Edition]
+	// The Base Set's first edition was printed before its shadow was, so
+	// its copies are the Shadowless product's
+	if b.Game == mtgmatcher.GamePokemon && code == "BS" && card.Variants[index].Print == "First Edition" {
+		code = "BSS"
+	}
 	_, classic := classicDecks[card.Edition]
 	if classic {
 		code, found = classicSet, true
@@ -290,6 +303,18 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 	// still, would be priced as the unlimited it lands on
 	if oldShelf && inCard.Finish == mtgmatcher.Run1stEdition && losesFirstEdition(b, inCard) {
 		return nil, mtgmatcher.ErrUnsupported
+	}
+
+	// A first edition rare its rarity does not call holo, as a Shining
+	// card's is, was printed holofoil only, and the plain first edition it
+	// asks for lands on the unlimited holofoil
+	if b.Game == mtgmatcher.GamePokemon && inCard.Finish == mtgmatcher.Run1stEdition && losesFirstEdition(b, inCard) {
+		probe := *inCard
+		probe.Finish = mtgmatcher.PrintingFinish(mtgmatcher.Run1stEdition, "Holofoil")
+		run, found := landedRun(b, &probe)
+		if found && run == mtgmatcher.Run1stEdition {
+			inCard.Finish = probe.Finish
+		}
 	}
 	return inCard, nil
 }
