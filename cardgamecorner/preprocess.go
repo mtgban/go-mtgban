@@ -807,9 +807,6 @@ func matchBasicByImage(b *mtgmatcher.Backend, card *Card, input mtgmatcher.Input
 // printing on its own.
 var genericVersionRe = regexp.MustCompile(`(?i)^version\s*[0-9]+$`)
 
-// hasPromoPack reports whether the card was ever printed in a promo pack. It
-// walks the card's own printings because the name-keyed lookup answers false
-// for a double-faced card the store names by its front face alone.
 // promoSetBase answers the set a promo edition decorates, and whether the
 // edition names one at all. The store spells the same thing both ways - with
 // the colon its own set list uses, and without it - so the colon cannot be
@@ -841,6 +838,9 @@ func promoSetBase(b *mtgmatcher.Backend, edition string) (base string, colon boo
 	return base, false, true
 }
 
+// hasPromoPack reports whether the card was ever printed in a promo pack. It
+// walks the card's own printings because the name-keyed lookup answers false
+// for a double-faced card the store names by its front face alone.
 func hasPromoPack(b *mtgmatcher.Backend, cardName string) bool {
 	if magic.HasPromoPackPrinting(b, cardName) {
 		return true

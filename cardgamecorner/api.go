@@ -15,7 +15,6 @@ import (
 type Edition struct {
 	ID   int    `json:"Id"`
 	Name string `json:"Espansione"`
-	Code string `json:"ImageUrl"`
 }
 
 // Card is one card on sale, with the copies in stock in each condition,
@@ -25,7 +24,6 @@ type Card struct {
 	SKU      string
 	Name     string
 	Edition  string
-	Code     string
 	Rarity   string
 	Extra    string
 	OrigName string
@@ -58,7 +56,6 @@ type single struct {
 	ModelEn  raw[string]   `json:"modelen"`
 	Image    raw[string]   `json:"image"`
 	Category raw[string]   `json:"category"`
-	Icon     raw[string]   `json:"icon"`
 	URL      raw[string]   `json:"url"`
 	Number   raw[string]   `json:"serialnumber"`
 	Rarity   raw[[]string] `json:"p2"`
@@ -70,7 +67,6 @@ func (s *single) card() Card {
 		SKU:      s.SKU.Raw,
 		Name:     s.ModelEn.Raw,
 		Edition:  s.Category.Raw,
-		Code:     s.Icon.Raw,
 		Extra:    s.Image.Raw,
 		OrigName: s.Model.Raw,
 		URL:      s.URL.Raw,
@@ -119,7 +115,6 @@ const (
 	singlesPageSize   = 1000
 	variantsBatchSize = 1000
 
-	hotBuylistURL      = "https://www.cardgamecorner.com/webapi/mcbuylist/magic/-/0"
 	editionBuylistURL  = "https://www.cardgamecorner.com/webapi/mclistboxes/magic/it"
 	advancedBuylistURL = "https://www.cardgamecorner.com/webapi/mcadvsearch"
 
