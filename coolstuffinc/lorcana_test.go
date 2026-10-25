@@ -1,6 +1,10 @@
 package coolstuffinc
 
 import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -129,5 +133,61 @@ func TestLorcanaShelfFollowsTheQuestNote(t *testing.T) {
 	got = lorcanaShelf(b, "Ariel - On Human Legs", "The First Chapter", "1/204, Ink Tentacles Card Frame")
 	if got != "The First Chapter" {
 		t.Errorf("a card absent from the quest moved the listing to %q", got)
+	}
+}
+
+// TestLorcanaSealedWording pins the storefront's sealed words onto the
+// catalog's through the sealed search, where the wording is read.
+func TestLorcanaSealedWording(t *testing.T) {
+	b := readGameDatastore(t, mtgmatcher.GameLorcana, "LORCANA_PATH")
+
+	row := func(pid, name string) string {
+		return `<div class="row product-search-row main-container">` +
+			`<span itemprop="name">` + name + `</span>` +
+			`<span class="rating-display " data-pid="` + pid + `"></span>` +
+			`<span class="card-qty">19</span>` +
+			`<meta itemprop="price" content="29.99">` +
+			`<link itemprop="availability" content="https://schema.org/InStock"/>` +
+			`</div>`
+	}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `<html>`+
+			row("447918", "Lorcana - Hyperia City - Two-Player Starter Deck")+
+			row("447910", "Lorcana - Hyperia City - Booster Case")+
+			row("434769", "Lorcana - Wilds Unknown Booster Case")+
+			`</html>`)
+	}))
+	t.Cleanup(srv.Close)
+
+	saved := csiSearchURL
+	csiSearchURL = srv.URL
+	t.Cleanup(func() { csiSearchURL = saved })
+
+	csi := Sealed{client: newCSIHTTPClient(), shelf: GameLorcana, backend: b}
+	results := make(chan responseChan, 3)
+	err := csi.processSealedSearch(context.Background(), results, "deck")
+	if err != nil {
+		t.Fatalf("processSealedSearch(): %v", err)
+	}
+	close(results)
+
+	want := map[string]string{
+		"447918": "Disney Lorcana: Hyperia City 2-Player Starter Set",
+		"447910": "Disney Lorcana: Hyperia City Booster Box Case",
+		"434769": "Disney Lorcana: Wilds Unknown Booster Box Case",
+	}
+	for res := range results {
+		co, err := b.GetUUID(res.cardID)
+		if err != nil {
+			t.Fatalf("GetUUID(%q): %v", res.cardID, err)
+		}
+		pid := res.invEntry.OriginalID
+		if co.Name != want[pid] {
+			t.Errorf("%s landed on %q, want %q", pid, co.Name, want[pid])
+		}
+		delete(want, pid)
+	}
+	for pid, name := range want {
+		t.Errorf("%s did not land, want %q", pid, name)
 	}
 }

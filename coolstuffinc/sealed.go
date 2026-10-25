@@ -483,6 +483,9 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 				productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")
 				productName = strings.TrimPrefix(strings.TrimSpace(productName), "- ")
 			}
+			if csi.backend.Game == mtgmatcher.GameLorcana {
+				productName = lorcanaSealedWords.Replace(productName)
+			}
 			if productName == "" || mtgmatcher.SealedIsLanguageVariant(productName) {
 				return
 			}
