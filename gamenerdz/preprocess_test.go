@@ -503,16 +503,41 @@ func TestPreprocess(t *testing.T) {
 		},
 		{
 			// A Secret Lair Commander deck numbers its cards by the deck's
-			// own index, so the deck's name places them in the List.
+			// own index, so the printing the deck lists places them in the
+			// List, also where the name is a List card's twin.
 			game: mtgmatcher.GameMagic,
 			product: GNProduct{
 				DisplayName:    "Fiery Gambit (PHED-022) - Heads I Win, Tails You Lose Foil",
 				SelectedFinish: "foil",
 				ProductData:    GNProductData{Set: "phed", SetName: "Heads I Win, Tails You Lose"},
 			},
-			name:    "Fiery Gambit",
-			edition: "Secret Lair Commander: Heads I Win, Tails You Lose",
-			foil:    true,
+			name:      "Fiery Gambit",
+			edition:   "PLST",
+			variation: "MRD-90",
+			foil:      true,
+		},
+		{
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Great Furnace (PHED-066) - Heads I Win, Tails You Lose Foil",
+				SelectedFinish: "foil",
+				ProductData:    GNProductData{Set: "phed", SetName: "Heads I Win, Tails You Lose"},
+			},
+			name:      "Great Furnace",
+			edition:   "PLST",
+			variation: "MRD-282",
+			foil:      true,
+		},
+		{
+			game: mtgmatcher.GameMagic,
+			product: GNProduct{
+				DisplayName:    "Rhys the Redeemed (PCTB-045) - From Cute to Brute",
+				SelectedFinish: "nonfoil",
+				ProductData:    GNProductData{Set: "pctb", SetName: "From Cute to Brute"},
+			},
+			name:      "Rhys the Redeemed",
+			edition:   "PLST",
+			variation: "SHM-237",
 		},
 		{
 			// The miscellaneous shelves index their promos themselves, so
