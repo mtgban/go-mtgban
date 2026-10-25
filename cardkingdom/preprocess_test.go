@@ -632,9 +632,14 @@ func TestUnindexedTokenSheet(t *testing.T) {
 		// The Jumpstart sheets the datastore has no set for
 		{"TJMP-001", true},
 		{"TJ22-014", true},
+		{"FTJMP-001", true},
 		// A sheet it does carry, so a failure there is worth hearing
 		{"TNCC-021", false},
 		{"THOU-004", false},
+		{"FTAER-001", false},
+		// A foil card of an existing set is not a token sheet
+		{"FTRK-0090", false},
+		{"SFTRK-0498", false},
 		// Not a sheet at all
 		{"JMP-001", false},
 		{"PLST-TAFR-1", false},
