@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -38,6 +39,15 @@ type Manaleak struct {
 	buylistDate   time.Time
 	inventory     mtgban.InventoryRecord
 	buylist       mtgban.BuylistRecord
+
+	// listedNM is the listing's price of each card in stock, which is its
+	// top grade's whatever grades the page holds; the buylist's ratio
+	// reads it.
+	listedNM map[string]float64
+
+	// The retail rows whose product page did and did not hold a grade in
+	// stock.
+	graded, gradeless int
 }
 
 // NewScraper returns a scraper matching against b.
@@ -45,6 +55,7 @@ func NewScraper(b *mtgmatcher.Backend) *Manaleak {
 	ml := Manaleak{backend: b}
 	ml.inventory = mtgban.InventoryRecord{}
 	ml.buylist = mtgban.BuylistRecord{}
+	ml.listedNM = map[string]float64{}
 	ml.client = NewMLClient()
 	ml.maxConcurrency = defaultConcurrency
 	return &ml
@@ -353,22 +364,10 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 	}
 
 	if mode == modeRetail {
-		err = ml.inventory.Add(cardID, &mtgban.InventoryEntry{
-			Conditions: mtgban.NM,
-			Price:      product.Price * ml.rate,
-			Quantity:   1,
-			URL:        product.URL,
-			InstanceID: product.ProductID,
-		})
+		ml.addGrades(cardID, product)
 	} else {
-		var sellPrice, priceRatio float64
-		invCards := ml.inventory[cardID]
-		for _, invCard := range invCards {
-			if invCard.Conditions == mtgban.NM {
-				sellPrice = invCard.Price
-				break
-			}
-		}
+		var priceRatio float64
+		sellPrice := ml.listedNM[cardID]
 		if sellPrice > 0 {
 			priceRatio = product.Price * ml.rate / sellPrice * 100
 		}
@@ -386,6 +385,37 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 	}
 }
 
+// addGrades lists a row once per grade its product page holds in stock,
+// each at its own price and quantity.
+func (ml *Manaleak) addGrades(cardID string, product MLProduct) {
+	_, found := ml.listedNM[cardID]
+	if !found {
+		ml.listedNM[cardID] = product.Price * ml.rate
+	}
+	if len(product.Grades) == 0 {
+		ml.gradeless++
+		return
+	}
+	ml.graded++
+	for _, grade := range product.Grades {
+		cond, err := mtgban.ParseCondition(grade.Name)
+		if err != nil {
+			ml.printf("unsupported %s condition", grade.Name)
+			continue
+		}
+		err = ml.inventory.Add(cardID, &mtgban.InventoryEntry{
+			Conditions: cond,
+			Price:      grade.Price * ml.rate,
+			Quantity:   grade.Quantity,
+			URL:        product.URL,
+			InstanceID: product.ProductID,
+		})
+		if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
+			ml.printf("%s", err.Error())
+		}
+	}
+}
+
 const (
 	modeRetail  = "retail"
 	modeBuylist = "buylist"
@@ -397,12 +427,18 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 		base = buylistURL
 	}
 
-	// A row whose image names no card waits for its product page.
-	var imageless []MLProduct
+	// A page that fails past the client's retries loses its rows, and a
+	// store missing them would publish as whole.
+	var failed atomic.Int32
+
+	// A row whose image names no card waits for its product page, and so
+	// does every retail row, whose grades only that page lists.
+	var paged []MLProduct
 	take := func(products []MLProduct) {
 		for _, product := range products {
-			if wanted(mode, product) && len(product.idGuesses()) == 0 && product.ProductID != "" {
-				imageless = append(imageless, product)
+			if wanted(mode, product) && product.ProductID != "" &&
+				(mode == modeRetail || len(product.idGuesses()) == 0) {
+				paged = append(paged, product)
 				continue
 			}
 			ml.processProduct(mode, product)
@@ -432,6 +468,7 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 		func(ctx context.Context, page int, results chan<- []MLProduct) error {
 			products, _, err := ml.client.GetPage(ctx, base, page)
 			if err != nil {
+				failed.Add(1)
 				return fmt.Errorf("page %d: %s", page, err.Error())
 			}
 			results <- products
@@ -441,10 +478,16 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 		ml.printf,
 	)
 
-	mtgban.WorkerPool(ctx, ml.maxConcurrency, imageless,
+	ml.printf("%s: %d product pages", mode, len(paged))
+	mtgban.WorkerPool(ctx, ml.maxConcurrency, paged,
 		func(ctx context.Context, product MLProduct, results chan<- MLProduct) error {
 			product, err := ml.client.GetProduct(ctx, product)
+			if errors.Is(err, errNotFound) {
+				// Removed since the listing was read
+				return nil
+			}
 			if err != nil {
+				failed.Add(1)
 				return fmt.Errorf("product %s: %s", product.ProductID, err.Error())
 			}
 			results <- product
@@ -456,6 +499,22 @@ func (ml *Manaleak) scrape(ctx context.Context, mode string) error {
 		ml.printf,
 	)
 
+	err = ctx.Err()
+	if err != nil {
+		return err
+	}
+	n := failed.Load()
+	if n > 0 {
+		return fmt.Errorf("%s: %d of %d listing and product pages failed", mode, n, pages+len(paged))
+	}
+	if mode == modeRetail {
+		ml.printf("%s: %d rows with a grade in stock, %d without", mode, ml.graded, ml.gradeless)
+		// The listing calls these in stock, so none graded means the
+		// condition select moved
+		if ml.graded == 0 && ml.gradeless > 0 {
+			return fmt.Errorf("%s: no product page named a grade in stock", mode)
+		}
+	}
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -219,5 +220,36 @@ func TestNameAgrees(t *testing.T) {
 	}
 	if ml.nameAgrees(cardID, "") {
 		t.Error("an empty name should not agree")
+	}
+}
+
+// TestBuylistRatioBelowNM pins the buylist's ratio for a card stocked only
+// below NM: it still reads the listing's price, which is the NM one.
+func TestBuylistRatioBelowNM(t *testing.T) {
+	b := realDatastore(t)
+	ml := NewScraper(b)
+	ml.rate = 1
+
+	card := MLProduct{Name: "Bruna, The Fading Light", TCGProductID: "119686", AmbiguousID: true, ProductID: "1"}
+	retail := card
+	retail.Price = 10
+	retail.Grades = []MLGrade{{Name: "Light Play", Price: 9, Quantity: 1}}
+	ml.processProduct(modeRetail, retail)
+
+	buy := card
+	buy.Price = 5
+	ml.processProduct(modeBuylist, buy)
+
+	for id, entries := range ml.inventory {
+		if len(entries) != 1 || entries[0].Conditions != mtgban.SP || entries[0].Price != 9 {
+			t.Errorf("inventory holds %+v", entries)
+		}
+		bl := ml.buylist[id]
+		if len(bl) != 1 || bl[0].PriceRatio != 50 {
+			t.Errorf("buylist holds %+v, want a ratio of 50", bl)
+		}
+	}
+	if len(ml.inventory) != 1 {
+		t.Errorf("inventory holds %d cards, want 1", len(ml.inventory))
 	}
 }

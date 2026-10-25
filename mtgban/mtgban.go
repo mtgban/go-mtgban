@@ -195,11 +195,12 @@ var FullGradeTags = []Condition{
 // on the US scale. A word read differently per store - CardTrader's or SCG's
 // own "Played", or Cardmarket's scale - is the scraper's to map first.
 var conditionWords = map[string]Condition{
-	"nm":        NM,
-	"near mint": NM,
-	"mint":      NM,
-	"nm-mint":   NM,
-	"nm/m":      NM,
+	"nm":             NM,
+	"near mint":      NM,
+	"mint":           NM,
+	"nm-mint":        NM,
+	"nm/m":           NM,
+	"mint/near mint": NM,
 
 	"sp":              SP,
 	"lp":              SP,

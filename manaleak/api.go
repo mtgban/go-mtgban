@@ -2,6 +2,7 @@ package manaleak
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -76,6 +77,18 @@ type MLProduct struct {
 	// FromPage marks a row whose image names no card and whose product
 	// page names one, by a "mtg" product code.
 	FromPage bool
+
+	// Grades are the conditions the product page holds in stock. The
+	// listing's price is always the top grade's, and it calls a row in
+	// stock when any grade is.
+	Grades []MLGrade
+}
+
+// MLGrade is one condition a product page holds in stock, priced in pounds.
+type MLGrade struct {
+	Name     string
+	Price    float64
+	Quantity int
 }
 
 // cardImage matches a card image path: "<folder>/<id>_200w-..." (TCGplayer
@@ -103,6 +116,10 @@ const maxTCGDigits = 6
 
 // showingTotal is the listing's own count of everything it paginates.
 var showingTotal = regexp.MustCompile(`Showing \d+ to \d+ of (\d+)`)
+
+// gradeOption reads a condition option in stock: "Light Play (£1.24) - Qty:1".
+// One out of stock ends in "- Out of Stock" instead.
+var gradeOption = regexp.MustCompile(`^(.+?)\s*\(£([\d,.]+)\)\s*-\s*Qty:(\d+)$`)
 
 // readImage classifies src against cardImage and fills the id field it
 // names.
@@ -177,6 +194,9 @@ func (p MLProduct) idGuesses() []idGuess {
 	return nil
 }
 
+// errNotFound is a page the storefront no longer serves.
+var errNotFound = errors.New("not found")
+
 // MLClient reads the Manaleak storefront.
 type MLClient struct {
 	client *http.Client
@@ -214,6 +234,9 @@ func (ml *MLClient) get(ctx context.Context, u string) (*goquery.Document, error
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, errNotFound
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
@@ -237,16 +260,47 @@ func (ml *MLClient) GetPage(ctx context.Context, base string, page int) ([]MLPro
 	return parseListing(doc), total, nil
 }
 
-// GetProduct fetches the product page of a row whose image names no card, and
-// fills in the set and code it carries.
+// GetProduct fetches a row's product page and fills in the grades it holds
+// in stock, and, for a row whose image names no card, the set and code it
+// carries.
 func (ml *MLClient) GetProduct(ctx context.Context, product MLProduct) (MLProduct, error) {
 	doc, err := ml.get(ctx, productURL+url.QueryEscape(product.ProductID))
 	if err != nil {
 		return product, err
 	}
-	category, code := parseProduct(doc)
-	product.readPage(category, code)
+	if len(product.idGuesses()) == 0 {
+		category, code := parseProduct(doc)
+		product.readPage(category, code)
+	}
+	product.Grades = parseGrades(doc)
 	return product, nil
+}
+
+// parseGrades reads the conditions a product page holds in stock, each with
+// its own price and quantity.
+func parseGrades(doc *goquery.Document) []MLGrade {
+	var grades []MLGrade
+	doc.Find(".product-options .option-select").Each(func(_ int, opt *goquery.Selection) {
+		if !strings.HasPrefix(opt.Find("b").First().Text(), "Card Condition") {
+			return
+		}
+		opt.Find("option").Each(func(_ int, o *goquery.Selection) {
+			m := gradeOption.FindStringSubmatch(strings.Join(strings.Fields(o.Text()), " "))
+			if m == nil {
+				return
+			}
+			price, err := strconv.ParseFloat(strings.ReplaceAll(m[2], ",", ""), 64)
+			if err != nil {
+				return
+			}
+			qty, err := strconv.Atoi(m[3])
+			if err != nil || qty == 0 {
+				return
+			}
+			grades = append(grades, MLGrade{Name: m[1], Price: price, Quantity: qty})
+		})
+	})
+	return grades
 }
 
 // parseProduct reads a product page's first category and its product code.
