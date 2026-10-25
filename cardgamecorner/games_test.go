@@ -84,3 +84,23 @@ func TestGameFinish(t *testing.T) {
 		}
 	}
 }
+
+func TestOldShelfSet(t *testing.T) {
+	for _, tt := range []struct {
+		edition  string
+		language string
+		want     string
+	}{
+		{edition: "Legend of Blue Eyes White Dragon ENG (LOB)", language: "US", want: "LOB"},
+		{edition: "Legend of Blue Eyes White Dragon ENG (LOB)", language: "EN"},
+		{edition: "Spell Ruler / Magic Ruler ENG (MRL)", language: "US", want: "MRL"},
+		{edition: "Starter Deck: Yugi ENG (SDY)", language: "US", want: "SDY"},
+		{edition: "Legend of Blue Eyes White Dragon ITA (LDD)", language: "US"},
+		{edition: "Alliance Insight", language: "US"},
+	} {
+		got, found := oldShelfSet(tt.edition, tt.language)
+		if got != tt.want || found != (tt.want != "") {
+			t.Errorf("oldShelfSet(%q, %q) = %q, %t; want %q", tt.edition, tt.language, got, found, tt.want)
+		}
+	}
+}

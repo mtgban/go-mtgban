@@ -85,6 +85,27 @@ func blindAttraction(b *mtgmatcher.Backend, probes []string) bool {
 	return len(probes) > 0
 }
 
+// wantedLanguage reports whether a copy in the given language is read. Only
+// English is, with a few shelves where another language is the one the
+// datastore carries. Yu-Gi-Oh files its North American English copies as
+// "US".
+func wantedLanguage(game mtgmatcher.Game, language, edition string) bool {
+	switch language {
+	case "EN":
+		return true
+	case "US":
+		return game == mtgmatcher.GameYuGiOh
+	case "JP":
+		return edition == "War of the Spark: Japanese Alternate-Art Planeswalkers"
+	case "IT":
+		switch edition {
+		case "Revised EU FBB", "Rinascimento", "L'Oscurità", "Leggende":
+			return true
+		}
+	}
+	return false
+}
+
 func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listing) {
 	// Keep track of the processed ids, and don't add duplicates
 	duplicate := map[int]bool{}
@@ -101,25 +122,7 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 				continue
 			}
 
-			// Only keep English cards and a few other exceptions
-			switch v.Language {
-			case "EN":
-			case "JP":
-				switch edition.Name {
-				case "War of the Spark: Japanese Alternate-Art Planeswalkers":
-				default:
-					continue
-				}
-			case "IT":
-				switch edition.Name {
-				case "Revised EU FBB":
-				case "Rinascimento":
-				case "L'Oscurità":
-				case "Leggende":
-				default:
-					continue
-				}
-			default:
+			if !wantedLanguage(cgc.backend.Game, v.Language, edition.Name) {
 				continue
 			}
 
