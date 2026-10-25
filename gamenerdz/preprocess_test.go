@@ -814,3 +814,22 @@ func TestResolveProductMagicSkips(t *testing.T) {
 		}
 	}
 }
+
+// TestLetteredOnly pins that a promo pack and prerelease pair at one number
+// is not read as the art letters of a parent product.
+func TestLetteredOnly(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		name, edition, number string
+		want                  bool
+	}{
+		{"Very Cryptic Command", "Unstable", "49", true},
+		{"Disallow", "Aether Revolt Promos", "31", false},
+		{"Flumph", "Adventures in the Forgotten Realms Promos", "15", false},
+	} {
+		got := letteredOnly(b, &mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.number})
+		if got != tt.want {
+			t.Errorf("letteredOnly(%s %s %s) = %t, want %t", tt.name, tt.edition, tt.number, got, tt.want)
+		}
+	}
+}
