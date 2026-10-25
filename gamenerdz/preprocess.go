@@ -227,12 +227,9 @@ func preprocessMagic(b *mtgmatcher.Backend, product GNProduct) (*mtgmatcher.Inpu
 		edition = magicTailSet(product.DisplayName)
 	}
 
-	// A Secret Lair Commander deck's cards are List reprints, numbered by the
-	// deck's own index, which names no card of the List. The deck's name is
-	// what places them.
-	deck := func(name string) bool { return mtgmatcher.Contains(product.ProductData.SetName, name) }
-	if slices.ContainsFunc(b.SLDDeckNames, deck) {
-		edition, number = "Secret Lair Commander: "+product.ProductData.SetName, ""
+	deck := sldCommanderDeck(b, product.ProductData.SetName)
+	if deck != "" {
+		edition, number = secretLairDeckPrinting(b, deck, product.ProductData.SetName, cardName)
 	}
 
 	card := &mtgmatcher.InputCard{
@@ -478,6 +475,56 @@ var magicRespellings = map[string]string{
 	"Thousand-Year Elixer":   "Thousand-Year Elixir",
 	"Village Messenger Treatments // Moonrise Intruder": "Village Messenger // Moonrise Intruder",
 	"Volatile Arsonist / Dire-Strain Anaarchist":        "Volatile Arsonist // Dire-Strain Anarchist",
+}
+
+// sldCommanderDeck returns the Secret Lair Commander deck a shelf is named
+// after, or "" for any other shelf.
+func sldCommanderDeck(b *mtgmatcher.Backend, shelf string) string {
+	for _, name := range b.SLDDeckNames {
+		if mtgmatcher.Contains(shelf, name) {
+			return name
+		}
+	}
+	return ""
+}
+
+// secretLairDeckPrinting returns the edition and number to look a card of a
+// Secret Lair Commander deck's shelf up by. The deck's cards are List
+// reprints numbered by the deck's own index, which names no card of the
+// List, so the printing the deck lists for the card is what places it. A
+// card the deck does not list, or lists as more than one printing, is
+// placed by the shelf's name alone.
+func secretLairDeckPrinting(b *mtgmatcher.Backend, deckName, shelf, cardName string) (string, string) {
+	set, found := b.Sets["SLD"]
+	if found {
+		for _, deck := range set.Decks {
+			if mtgmatcher.Equals(deck.Name, deckName) {
+				cards := slices.Concat(deck.Commander, deck.DisplayCommander, deck.MainBoard)
+				return deckPrinting(b, cards, shelf, cardName)
+			}
+		}
+	}
+	return "Secret Lair Commander: " + shelf, ""
+}
+
+// deckPrinting is the one printing of the card a deck's list holds, or the
+// shelf's own name when it holds none or several.
+func deckPrinting(b *mtgmatcher.Backend, cards []mtgmatcher.DeckCard, shelf, cardName string) (string, string) {
+	var listed *mtgmatcher.CardObject
+	for _, entry := range cards {
+		co, err := b.GetUUID(entry.UUID)
+		if err != nil || !mtgmatcher.Equals(co.Name, cardName) {
+			continue
+		}
+		if listed != nil && listed.UUID != co.UUID {
+			return "Secret Lair Commander: " + shelf, ""
+		}
+		listed = co
+	}
+	if listed == nil {
+		return "Secret Lair Commander: " + shelf, ""
+	}
+	return listed.SetCode, listed.Number
 }
 
 // magicTypo names a product whose display number is wrong: its set code in
