@@ -38,6 +38,12 @@ func TestGameInput(t *testing.T) {
 			want:    mtgmatcher.InputCard{Name: "Miss Fortune, Buccaneer", Edition: "Origins", Variation: "193a", Foil: true},
 		},
 		{
+			game:    mtgmatcher.GameYuGiOh,
+			card:    Card{Name: "Goblin Biker Big Cabonga (V.1 - Secret Rare)", Edition: "Phantom Nightmare", Number: "047", Rarity: "Secret Rare"},
+			variant: Variant{Print: "First Edition", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Goblin Biker Big Gabonga (V.1 - Secret Rare)", Edition: "Phantom Nightmare", Variation: "047 Secret Rare", Finish: "1st Edition"},
+		},
+		{
 			game:    mtgmatcher.GameRiftbound,
 			card:    Card{Name: "Vi, Piltover ZHorcer (V.1 - Rare)", Edition: "Unleashed", Number: "187"},
 			variant: Variant{Foil: "Foil"},

@@ -35,8 +35,8 @@ var cgcGames = map[mtgmatcher.Game]string{
 // under, where the shelf's own name points at no single set. One Piece's
 // promo shelves sell event printings, which share their number with the
 // booster card they reprint; Pokemon's "Base" is the unlimited Base Set, not
-// its Shadowless run; Yu-Gi-Oh's 25th anniversary reprints share theirs with
-// both of the original's regional prints.
+// its Shadowless run; Yu-Gi-Oh's 25th anniversary and date reprints share
+// theirs with the original's prints.
 var shelfSets = map[mtgmatcher.Game]map[string]string{
 	mtgmatcher.GameOnePiece: {
 		"Promos":                     "OP-PR",
@@ -54,6 +54,8 @@ var shelfSets = map[mtgmatcher.Game]map[string]string{
 		"Pharaoh’s Servant REPRINT 25th Anniversary Edition":                "PSV-EN-23054",
 		"Dark Crisis REPRINT 25th Anniversary Edition":                      "DCR-EN-23055",
 		"Invasion of Chaos REPRINT 25th Anniversary Edition":                "IOC-EN-23056",
+		"Retro Pack 2 Reprint 2025":                                         "RP02-24352",
+		"Light of Destruction - 2024 Reprint Unlimited":                     "LODT-23579",
 	},
 }
 
@@ -70,6 +72,28 @@ var promoNumberPrefixes = map[string]string{
 // gameNames holds the card names the store misspells, by game, as the
 // datastore spells them.
 var gameNames = map[mtgmatcher.Game]map[string]string{
+	mtgmatcher.GameYuGiOh: {
+		"Abyss Actors' Dress Rehersal":          "Abyss Actors' Dress Rehearsal",
+		"Aphophis the Swamp Deity":              "Apophis the Swamp Deity",
+		"Battlin‚Äô Boxer Lead Yolk":            "Battlin' Boxer Lead Yoke",
+		"Carnot the Eternal Maching":            "Carnot the Eternal Machine",
+		"Damage Vaccine O MAX":                  "Damage Vaccine Omega MAX",
+		"Exstellarknight Constellar Ptolemy O7": "Exstellarknight Constellar Ptolemy Omega 7",
+		"Falchionß":                             "Falchion Beta",
+		"Goblin Biker Big Cabonga":              "Goblin Biker Big Gabonga",
+		"Gold Pride - Chariot Carrier":          "Gold Pride - Chariot Carrie",
+		"K9-ØØ Lupis":                           "K9-00 Lupis",
+		"Majespecter Orthus - Nue":              "Majespecter Orthrus - Nue",
+		"Maliss Q HEARTS OF CRYPTER":            "Maliss Q Hearts Crypter",
+		"Outer Entity Azathoth":                 "Outer Entity Azathot",
+		"Reincarnation Unvealing Mail":          "Reincarnation Unveiling Mail",
+		"Sky Striker Ace - Azelea Temperance":   "Sky Striker Ace - Azalea Temperance",
+		"Supernatural Regeneration":             "Metaphysical Regeneration",
+		"Terrors of the Overrroot":              "Terrors of the Overroot",
+		"The Virtuos Vestals":                   "The Virtuous Vestals",
+		"Urubonus, the Avatar of the Malice":    "Urubonus, the Avatar of Malice",
+		"Xyz Posiedon Splash":                   "Xyz Poseidon Splash",
+	},
 	mtgmatcher.GameLorcana: {
 		"Balu - Lively Bear": "Baloo - Fun-Loving Bear",
 		"Miss Bianca - International Rescue Aid Society Age": "Miss Bianca - Rescue Aid Society Agent",
