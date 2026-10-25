@@ -37,6 +37,26 @@ var updatePalworld = flag.Bool("update-palworld", false,
 // author's intent and the regeneration fails loudly if the class disagrees.
 var palworldSeeds = []matchTest{
 	{
+		// A reprint run shares the number of the card it reprints, and
+		// only the wording naming the run reaches it.
+		Desc: "a 2nd Edition reprint is the printing its run names",
+		In:   mtgmatcher.InputCard{Name: "Rooby - Brave Sparks", Variation: "EBP01-011 2nd Edition"},
+	},
+	{
+		Desc: "and so it is where the run rides in the name",
+		In:   mtgmatcher.InputCard{Name: "Rooby - Brave Sparks (2nd Edition)", Variation: "EBP01-011"},
+	},
+	{
+		Desc: "and beside a parallel's tail",
+		In:   mtgmatcher.InputCard{Name: "Suzaku - Hellfire Wings", Variation: "EBP01-002SP 2nd Edition"},
+	},
+	{
+		// A run named on a card never reprinted in it names no printing,
+		// rather than the original's
+		Desc: "negative: a 2nd Edition of a card printed in none",
+		In:   mtgmatcher.InputCard{Name: "Jolthog - Shocking Yet Innocent", Variation: "ETD01-002 2nd Edition"},
+	},
+	{
 		// This game numbers a parallel apart from the card it parallels,
 		// the rarity riding in the number's own tail, so the number names
 		// one printing on its own.
