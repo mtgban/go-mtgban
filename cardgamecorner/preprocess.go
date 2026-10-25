@@ -158,10 +158,10 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 	edition := card.Edition
 
 	if strings.Contains(card.Extra, "pokemon") {
-		return nil, errors.New("pokemon")
+		return nil, mtgmatcher.ErrUnsupported
 	}
 	if strings.Contains(cardName, "Art Series") {
-		return nil, errors.New("art series")
+		return nil, mtgmatcher.ErrUnsupported
 	}
 
 	// Grab the image url and keep only the image name
@@ -173,7 +173,7 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 		card.Variants[index].ID == 108840 ||
 		// Wrong English name for Chain Lightning
 		card.OrigName == "Crepaccio" {
-		return nil, errors.New("duplicate")
+		return nil, mtgmatcher.ErrUnsupported
 	}
 
 	isFoil := card.Variants[index].Foil == "Foil"
