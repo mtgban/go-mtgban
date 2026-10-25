@@ -388,9 +388,11 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 // addGrades lists a row once per grade its product page holds in stock,
 // each at its own price and quantity.
 func (ml *Manaleak) addGrades(cardID string, product MLProduct) {
-	_, found := ml.listedNM[cardID]
-	if !found {
-		ml.listedNM[cardID] = product.Price * ml.rate
+	// The cheapest listing, whichever product page answers first
+	price := product.Price * ml.rate
+	listed, found := ml.listedNM[cardID]
+	if !found || price < listed {
+		ml.listedNM[cardID] = price
 	}
 	if len(product.Grades) == 0 {
 		ml.gradeless++
