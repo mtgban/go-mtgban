@@ -206,10 +206,10 @@ plus "(JP Exclusive)" or "(CS Exclusive)" first (`lorcanaExclusives`), and
 The `tcgplayer_id` of a signature (`s`) sku names the overnumbered card it
 signs, so the sku-number check sends it to the wording, which lands the
 signature. Outside the `PRM` shelf the sku's set segment has to be the
-printing's set too. Otherwise straight `mtgmatcher.Match` on name + set + number +
-foil. The catalog's game name is "Riftbound: League of
-Legends TCG"; `gameFromCatalog` also takes the bare "Riftbound", both by
-exact match.
+printing's set too. Otherwise straight `mtgmatcher.Match` on name + set +
+number + foil. The catalog's game name is "Riftbound: League of Legends
+TCG"; `gameFromCatalog` also takes the bare "Riftbound", both by exact
+match.
 
 ## Bulk tiers (`bulk.go`)
 
