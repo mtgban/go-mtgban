@@ -81,6 +81,24 @@ func TestGameInput(t *testing.T) {
 		},
 		{
 			game:    mtgmatcher.GamePokemon,
+			card:    Card{Name: "Nidoran ? Lv.12", OrigName: "Nidoran female Lv.12", Edition: "Mysterious Treasures", Number: "91", Rarity: "Common"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Nidoran F Lv.12", Edition: "Mysterious Treasures", Variation: "91"},
+		},
+		{
+			game:    mtgmatcher.GamePokemon,
+			card:    Card{Name: "Stone [F] Energy", Edition: "Vivid Voltage", Number: "164", Rarity: "Uncommon"},
+			variant: Variant{Print: "Unl.", Foil: "Reverse Holo"},
+			want:    mtgmatcher.InputCard{Name: "Stone Fighting Energy", Edition: "Vivid Voltage", Variation: "164", Finish: "Reverse Holofoil"},
+		},
+		{
+			game:    mtgmatcher.GamePokemon,
+			card:    Card{Name: "Fairy Energy", Edition: "Team Up", Number: "E002", Rarity: "Common"},
+			variant: Variant{Print: "Unl.", Foil: "Reverse Holo"},
+			want:    mtgmatcher.InputCard{Name: "Fairy Energy", Edition: "Team Up", Finish: "Reverse Holofoil"},
+		},
+		{
+			game:    mtgmatcher.GamePokemon,
 			card:    Card{Name: "Wooloo", Edition: "Sword & Shield: Black Star Promos", Number: "011", Rarity: "Promo"},
 			variant: Variant{Print: "Unl.", Foil: "Reverse Holo"},
 			want:    mtgmatcher.InputCard{Name: "Wooloo", Edition: "Sword & Shield: Black Star Promos", Variation: "SWSH011", Finish: "Reverse Holofoil"},
