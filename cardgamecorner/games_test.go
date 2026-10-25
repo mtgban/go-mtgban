@@ -38,6 +38,12 @@ func TestGameInput(t *testing.T) {
 			want:    mtgmatcher.InputCard{Name: "Miss Fortune, Buccaneer", Edition: "Origins", Variation: "193a", Foil: true},
 		},
 		{
+			game:    mtgmatcher.GameRiftbound,
+			card:    Card{Name: "Vi, Piltover ZHorcer (V.1 - Rare)", Edition: "Unleashed", Number: "187"},
+			variant: Variant{Foil: "Foil"},
+			want:    mtgmatcher.InputCard{Name: "Vi, Piltover Enforcer", Edition: "Unleashed", Variation: "187", Foil: true},
+		},
+		{
 			game:    mtgmatcher.GamePokemon,
 			card:    Card{Name: "Gyarados d Delta Species ", Edition: "EX Holon Phantoms", Number: "8", Rarity: "Rare Holo"},
 			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
