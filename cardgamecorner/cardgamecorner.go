@@ -141,8 +141,8 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 			retry := *theCard
 			cardID, err := cgc.backend.Match(theCard)
 			// The basic lands carry nothing but the store's own version tag,
-			// so retry them with the number their image names, and ignore
-			// the ones it cannot place.
+			// so retry them with the number their SKU spells, then the one
+			// their image names, and ignore the ones neither places.
 			if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && cgc.backend.Game == mtgmatcher.GameMagic && magic.IsBasicLand(card.Name) {
 				id, found := matchBasicByImage(cgc.backend, &card, retry)
 				if !found {
