@@ -119,6 +119,24 @@ func TestPreprocessImageStem(t *testing.T) {
 			wantSet: "POTJ", wantNum: "149p",
 		},
 		{
+			// A bare note leaves a shockland two promo pack printings,
+			// the 2019 one and a later set's; the image names the first.
+			desc:    "a curated shockland stem names the 2019 promo pack",
+			name:    "Blood Crypt",
+			edition: "Universal Promo Pack",
+			variant: "Silver Planeswalker Symbol",
+			imgURL:  "https://s.cf.net/i/BloodCryptv2.jpg",
+			wantSet: "PRNA", wantNum: "245p",
+		},
+		{
+			desc:    "a stem with a pid suffix is curated to its number",
+			name:    "Jetmir, Nexus of Revels",
+			edition: "Secret Lair",
+			variant: "Raining Cats and Dogs",
+			imgURL:  "https://s.cf.net/i/Jetmir381652.jpg",
+			wantSet: "SLD", wantNum: "1509",
+		},
+		{
 			desc:    "a name the shelf spells without its accent",
 			name:    "Tura Kennerud, Skyknight",
 			edition: "Dominaria United: Variants",
