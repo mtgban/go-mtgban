@@ -19,6 +19,19 @@ const (
 	sealedURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.category_id=177:505&fq.price=1~*&fq.stock=1~*&rows=%d&page=%d"
 )
 
+// SearchCapError is a search that stops serving pages at Served of its
+// NumFound listings, which a set holding more listings than the search will
+// page through does.
+type SearchCapError struct {
+	Link     string
+	Served   int
+	NumFound int
+}
+
+func (e *SearchCapError) Error() string {
+	return fmt.Sprintf("%s: search stops at %d of %d listings", e.Link, e.Served, e.NumFound)
+}
+
 // Response is what the storefront's search endpoint answers with.
 type Response struct {
 	ResponseHeader struct {
@@ -75,7 +88,7 @@ func search(ctx context.Context, client *http.Client, link string, page int) ([]
 	case response.Response.Page == 0:
 		return nil, fmt.Errorf("%s: no page number", link)
 	case response.Response.Page != page && response.Response.NumFound > served:
-		return nil, fmt.Errorf("%s: search stops at %d of %d listings", link, served, response.Response.NumFound)
+		return nil, &SearchCapError{Link: link, Served: served, NumFound: response.Response.NumFound}
 	case response.Response.Page != page:
 		return nil, nil
 	}
@@ -85,7 +98,13 @@ func search(ctx context.Context, client *http.Client, link string, page int) ([]
 
 // SearchCardSet returns one page of the listings in a set.
 func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
-	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, searchRows, page), page)
+	return SearchCardSetFiltered(ctx, client, cardSet, "", page)
+}
+
+// SearchCardSetFiltered returns one page of the listings in a set, narrowed
+// by a search filter ("&fq.color=1") unless it is empty.
+func SearchCardSetFiltered(ctx context.Context, client *http.Client, cardSet, filter string, page int) ([]Product, error) {
+	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, searchRows, page)+filter, page)
 }
 
 // SearchSealed returns one page of the sealed listings.

@@ -2,6 +2,7 @@ package hareruya
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -18,9 +19,10 @@ func TestSearchStopsAtRenumberedPage(t *testing.T) {
 		numFound int
 		noPage   bool
 		fails    bool
+		capped   bool
 	}{
 		{name: "every listing served", numFound: 2*searchRows + 1},
-		{name: "listings past the last page", numFound: 4 * searchRows, fails: true},
+		{name: "listings past the last page", numFound: 4 * searchRows, fails: true, capped: true},
 		{name: "no page number", noPage: true, fails: true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -49,6 +51,27 @@ func TestSearchStopsAtRenumberedPage(t *testing.T) {
 			if (err != nil) != tt.fails || docs != nil {
 				t.Errorf("page %d: got %d docs, %v, want failure %v", start, len(docs), err, tt.fails)
 			}
+			var capErr *SearchCapError
+			capped := errors.As(err, &capErr)
+			if capped != tt.capped || (capped && capErr.NumFound != tt.numFound) {
+				t.Errorf("page %d: cap error %v for %v", start, capped, err)
+			}
 		})
+	}
+}
+
+// A set read again once per color sends each listing once, a multicolored
+// card included.
+func TestUnsent(t *testing.T) {
+	sent := map[string]bool{}
+	first := []Product{{Product: "1"}, {Product: "2", ProductClass: "a"}, {Product: "2", ProductClass: "b"}}
+	kept := unsent(first, sent)
+	if len(kept) != len(first) {
+		t.Errorf("first reading kept %d of %d", len(kept), len(first))
+	}
+	second := []Product{{Product: "2", ProductClass: "b"}, {Product: "3"}}
+	got := unsent(second, sent)
+	if len(got) != 1 || got[0].Product != "3" {
+		t.Errorf("second reading kept %v", got)
 	}
 }

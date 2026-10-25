@@ -270,17 +270,92 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 	return results, canExit, nil
 }
 
+// colorFilters narrow a set's search to each color it files listings under:
+// white, blue, black, red, green, and colorless. A multicolored card is
+// filed under each of its colors, and a card of no color (a conspiracy, a
+// double token) under none.
+var colorFilters = []string{"&fq.color=1", "&fq.color=2", "&fq.color=3", "&fq.color=4", "&fq.color=5", "&fq.color=6"}
+
+// foilFilters narrow a set's search to each foil flag, which every listing
+// carries, a card of no color included.
+var foilFilters = []string{"&fq.foil_flg=0", "&fq.foil_flg=1"}
+
+// processSet reads a set whole. A set holding more listings than the search
+// pages through is read again once per color, then once per foil flag for
+// what the colors left out, passing over the listings already sent. The
+// listings still unread are counted in the log.
 func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan, cardSet string) error {
+	sent := map[string]bool{}
+	err := ha.walkSet(ctx, channel, cardSet, "", sent)
+	var capErr *SearchCapError
+	if !errors.As(err, &capErr) {
+		return err
+	}
+	numFound := capErr.NumFound
+
+	ha.printf("Set %s is past the search cap, reading it by color", cardSet)
+	err = ha.walkFilters(ctx, channel, cardSet, colorFilters, sent)
+	if err != nil {
+		return err
+	}
+	if len(sent) < numFound {
+		ha.printf("Set %s: %d listings past the cap are in no color, reading it by foil flag", cardSet, numFound-len(sent))
+		err = ha.walkFilters(ctx, channel, cardSet, foilFilters, sent)
+		if err != nil {
+			return err
+		}
+	}
+	if len(sent) < numFound {
+		ha.printf("Set %s: %d of its %d listings stay past the cap", cardSet, numFound-len(sent), numFound)
+	}
+	return nil
+}
+
+// walkFilters walks a set once per filter. A narrowed search past the cap
+// keeps what it served, and what it could not is left to the caller's count.
+func (ha *Hareruya) walkFilters(ctx context.Context, channel chan<- responseChan, cardSet string, filters []string, sent map[string]bool) error {
+	for _, filter := range filters {
+		err := ha.walkSet(ctx, channel, cardSet, filter, sent)
+		var capErr *SearchCapError
+		if err != nil && !errors.As(err, &capErr) {
+			return err
+		}
+	}
+	return nil
+}
+
+// unsent returns the products not yet sent, and records them as sent.
+func unsent(products []Product, sent map[string]bool) []Product {
+	var fresh []Product
+	for _, product := range products {
+		key := product.Product + "/" + product.ProductClass
+		if sent[key] {
+			continue
+		}
+		sent[key] = true
+		fresh = append(fresh, product)
+	}
+	return fresh
+}
+
+// walkSet sends every page of a set, narrowed by a search filter unless it
+// is empty, leaving out the listings already in sent.
+func (ha *Hareruya) walkSet(ctx context.Context, channel chan<- responseChan, cardSet, filter string, sent map[string]bool) error {
 	var i int
 	for {
 		i++
-		products, err := SearchCardSet(ctx, ha.client, cardSet, i)
+		listings, err := SearchCardSetFiltered(ctx, ha.client, cardSet, filter, i)
 		if err != nil {
 			return err
 		}
 
-		if len(products) == 0 {
+		if len(listings) == 0 {
 			return nil
+		}
+
+		products := unsent(listings, sent)
+		if len(products) == 0 {
+			continue
 		}
 
 		lazyData, err := ha.getLazy(ctx, products, 0)
