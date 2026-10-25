@@ -67,6 +67,34 @@ var promoNumberPrefixes = map[string]string{
 	"Sword & Shield: Black Star Promos": "SWSH",
 }
 
+// gameNames holds the card names the store misspells, by game, as the
+// datastore spells them.
+var gameNames = map[mtgmatcher.Game]map[string]string{
+	mtgmatcher.GameLorcana: {
+		"Balu - Lively Bear": "Baloo - Fun-Loving Bear",
+		"Miss Bianca - International Rescue Aid Society Age": "Miss Bianca - Rescue Aid Society Agent",
+	},
+	mtgmatcher.GameRiftbound: {
+		"Corina Veraza":        "Corinna Veraza",
+		"lascylla":             "Iascylla",
+		"Vi, Piltover ZHorcer": "Vi, Piltover Enforcer",
+	},
+}
+
+// vendorName returns the name a misspelled one stands for, keeping the
+// version the store may have written after it.
+func vendorName(game mtgmatcher.Game, name string) string {
+	head, tail, hasTail := strings.Cut(name, " (")
+	fixed, found := gameNames[game][head]
+	if !found {
+		return name
+	}
+	if hasTail {
+		return fixed + " (" + tail
+	}
+	return fixed
+}
+
 // riftboundVersionRe matches the "(V.2 - Showcase)" a Riftbound name ends in,
 // which the number already says: a showcase is "193a" beside the rare's
 // "193".
@@ -140,7 +168,7 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		}
 	}
 	return &mtgmatcher.InputCard{
-		Name:      name,
+		Name:      vendorName(game, name),
 		Edition:   card.Edition,
 		Variation: number,
 		Foil:      foil,
