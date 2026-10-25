@@ -77,7 +77,7 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 			product: CatalogProduct{
 				SKU: "SGL-LOR-002-073b-ENC", Name: "Bucky - Squirrel Squeak Tutor",
 				Set: "Rise of the Floodborn", CollectorNumber: "073b",
-				Finish: "Foil", FinishGroup: "Foil",
+				Finish: "Foil", FinishGroup: "Foil", TCGPlayerID: "519506",
 			},
 			needs:    "Bucky - Squirrel Squeak Tutor (Errata Version)",
 			wantSet:  "2",
@@ -123,7 +123,7 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 			product: CatalogProduct{
 				SKU: "SGL-LOR-001-143M-ENC", Name: "Chief Tui - Respected Leader",
 				Set: "The First Chapter", CollectorNumber: "143",
-				Finish: "Foil", FinishGroup: "Foil",
+				Finish: "Foil", FinishGroup: "Foil", TCGPlayerID: "508819",
 			},
 			unsupported: true,
 		},
@@ -272,6 +272,7 @@ func TestResolveLorcanaPromoTotal(t *testing.T) {
 		SKU: "SGL-LOR-PRM-P03_005-ENK", Name: "Maleficent - Monstrous Dragon",
 		Set: "Promotional Cards", CollectorNumber: "005",
 		Finish: "Miscellaneous Foil", FinishGroup: "Alt Foil",
+		TCGPlayerID: "454232",
 	})
 	if err != nil {
 		t.Fatalf("P03: %v", err)

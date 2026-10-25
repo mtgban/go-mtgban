@@ -707,6 +707,28 @@ func fabCreditedTwin(b *mtgmatcher.Backend, id, sku string) string {
 	return id
 }
 
+// fabUnmarkedTreatment reports whether a vendor id lands an unmarked sku on
+// a treatment printing. SCG files one id on a card's plain sku and on its
+// marked one ("HNT-155" and "HNT2-155"), so only the marker says which
+// printing is sold, and an unmarked sku is left to its wording.
+func fabUnmarkedTreatment(b *mtgmatcher.Backend, p CatalogProduct, uuid string) bool {
+	if fabVariantMarked(p.SKU) {
+		return false
+	}
+	co, err := b.GetUUID(uuid)
+	return err == nil && len(fabTreatments(co.PromoTypes)) > 0
+}
+
+// fabSkuPrinting picks the printing a Flesh and Blood sku names among the
+// siblings of the one a match landed on: the plain card the rarity names, a
+// renamed or credited twin, or the sibling a marker digit points at.
+func fabSkuPrinting(b *mtgmatcher.Backend, id string, p CatalogProduct) string {
+	id = fabPlainSibling(b, id, p.Rarity)
+	id = fabRenamedTwin(b, id, p.SKU)
+	id = fabCreditedTwin(b, id, p.SKU)
+	return fabMarkedSibling(b, id, p)
+}
+
 // fabMarkedSibling returns the printing a marked sku names, given the plain
 // one the match landed on. The marker says that a second printing of this
 // number exists and not which it is, so the datastore is what names it: where
@@ -977,23 +999,28 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 		}
 	}
 
-	// The authoritative identifiers resolve directly through the identifier
-	// index, regardless of game: Scryfall id first, then the TCGplayer id
-	// (MatchID resolves a bare product id through the external-id index and
-	// applies the finish exactly like the scryfall path). Etched is the only
-	// alt-foil that changes the printing; every other alt-foil shares the plain
-	// foil's id. An id the product's own wording contradicts is refused,
-	// and the sku-driven path below reads the wording instead.
+	// The vendor ids resolve directly, Scryfall first, in the product's finish
+	// (matchVendorID); outside Magic the printing must carry the sku's number.
+	// An id the product's own wording contradicts goes to the wording path.
 	for _, id := range []string{p.ScryfallID, p.TCGPlayerID} {
 		if id == "" {
 			continue
 		}
-		out, err := b.MatchID(id, foil, etched)
+		out, err := matchVendorID(b, game, id, p, foil, etched)
 		if err != nil {
 			continue
 		}
+		if game != GameMagic && !carriesSkuNumber(b, game, p, out) {
+			break
+		}
+		if game == GameFleshAndBlood && fabUnmarkedTreatment(b, p, out) {
+			break
+		}
 		if idContradictsProduct(b, p, out) {
 			break
+		}
+		if game == GameFleshAndBlood {
+			out = fabSkuPrinting(b, out, p)
 		}
 		return resalePrinting(b, out, p, foil, etched), nil
 	}
@@ -1082,10 +1109,7 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 		}
 		id, err := fabMatch(b, name, edition, finish, p.Rarity, foil, numbers)
 		if err == nil {
-			id = fabPlainSibling(b, id, p.Rarity)
-			id = fabRenamedTwin(b, id, p.SKU)
-			id = fabCreditedTwin(b, id, p.SKU)
-			return fabMarkedSibling(b, id, p), nil
+			return fabSkuPrinting(b, id, p), nil
 		}
 		// A product named by both its faces at a single collector number
 		// is one printing plus the token printed on its back, not a
@@ -1241,6 +1265,60 @@ var promoShelfPrintings = map[string]struct{ set, number string }{
 	// the MagicCon Tifa has none and reads as the Final Fantasy prerelease.
 	"GAME_2025_001": {"PMEI", "2025-21"},
 	"PTQ_2025_002":  {"PF25", "9"},
+}
+
+// matchVendorID resolves a vendor id to the printing sold in the finish the
+// product names, print run included, where the game's catalog spells one,
+// and through the foil and etched flags otherwise.
+func matchVendorID(b *mtgmatcher.Backend, game int, id string, p CatalogProduct, foil, etched bool) (string, error) {
+	finish := catalogFinish(game, p)
+	if mtgmatcher.FinishSlug(finish) == "" {
+		return b.MatchID(id, foil, etched)
+	}
+	return b.MatchIDFinish(id, finish)
+}
+
+// catalogFinish names the finish a product is sold in the way the datastore
+// names it, or "" where the game's catalog does not spell one beyond the
+// flags.
+func catalogFinish(game int, p CatalogProduct) string {
+	switch game {
+	case GameFleshAndBlood:
+		_, finish := fabPrintRun(p.Set, p.Finish)
+		return finish
+	case GameLorcana:
+		return lorcanaFinish(p.Finish)
+	}
+	return ""
+}
+
+// carriesSkuNumber reports whether the printing a vendor id lands on carries
+// the number the sku names. Outside Magic SCG files the id on a sibling of
+// the card at times (the other pitch of a pair, one face of a double-faced
+// pair, the base of a misprint, the card a signature signs), and the sku's
+// number is what tells them apart. A Flesh and Blood number carries its
+// set's letters, read the way the wording path reads them (fabNumbers).
+// Elsewhere the sku's raw number segment is compared, so a prefixed promo
+// sku ("P04_013") never agrees and is left to the wording, which lands it.
+func carriesSkuNumber(b *mtgmatcher.Backend, game int, p CatalogProduct, uuid string) bool {
+	co, err := b.GetUUID(uuid)
+	if err != nil {
+		return false
+	}
+	if game == GameFleshAndBlood {
+		for _, number := range fabNumbers(p.SKU) {
+			if strings.EqualFold(number, co.Number) {
+				return true
+			}
+		}
+		return false
+	}
+	// A Riftbound sku names the set too, which tells same-numbered cards apart
+	set := skuSetCode(p.SKU)
+	if game == GameRiftbound && set != "PRM" && !strings.EqualFold(co.SetCode, set) {
+		return false
+	}
+	return strings.EqualFold(strings.TrimLeft(co.Number, "0"), strings.TrimLeft(skuNumber(p.SKU), "0"))
 }
 
 // idContradictsProduct reports whether the resolved printing lacks what the
