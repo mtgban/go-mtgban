@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/internal/jsonflex"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -727,6 +728,52 @@ func TestResolveProductPokemonIDNumberConflict(t *testing.T) {
 		uuid, err := gn.resolveProduct(mode, product)
 		if err != nil || uuid != "" {
 			t.Errorf("%s: got %q (%v); want the listing left unplaced", mode, uuid, err)
+		}
+	}
+}
+
+// TestResolveProductMagicSkips pins the listings that name no printing: a
+// letterless product beside the lettered ones the set prints. The lettered
+// sibling still lands.
+func TestResolveProductMagicSkips(t *testing.T) {
+	b := realDatastore(t)
+	tests := []struct {
+		id      string
+		display string
+		set     string
+		setName string
+		finish  string
+		landed  bool
+	}{
+		{"bg5oG1xUUE", "Very Cryptic Command (UST-049) - Unstable Foil", "ust", "Unstable", "foil", false},
+		{"xa36fGO5Kh", "Swinging Ship (UNF-231) - Unfinity Foil", "unf", "Unfinity", "foil", false},
+		{"Yhb4Bmw66A", "Very Cryptic Command (UST-49F) - Unstable Foil", "ust", "Unstable", "foil", true},
+	}
+	for _, tt := range tests {
+		gn, err := NewScraper(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var logs []string
+		gn.logCallback = func(format string, a ...any) {
+			logs = append(logs, format)
+		}
+		product := GNProduct{
+			ID:             tt.id,
+			DisplayName:    tt.display,
+			SelectedFinish: tt.finish,
+			ProductData:    GNProductData{Set: jsonflex.String(tt.set), SetName: tt.setName},
+		}
+		got, err := gn.resolveProduct(modeBuylist, product)
+		if err != nil {
+			t.Errorf("%q: unexpected error %v", tt.display, err)
+			continue
+		}
+		if (got != "") != tt.landed {
+			t.Errorf("%q: got %q; want landed %v", tt.display, got, tt.landed)
+		}
+		if len(logs) != 0 {
+			t.Errorf("%q: logged %v; want nothing", tt.display, logs)
 		}
 	}
 }

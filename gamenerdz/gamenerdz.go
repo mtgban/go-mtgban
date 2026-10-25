@@ -321,6 +321,10 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		if gn.backend.Game == mtgmatcher.GameMagic && foreignBody(gn.backend, product) {
 			return "", nil
 		}
+		// A letterless product beside its lettered ones names no printing.
+		if gn.backend.Game == mtgmatcher.GameMagic && letteredOnly(gn.backend, theCard) {
+			return "", nil
+		}
 		gn.printf("%v", err)
 		gn.printf("%s: %q", product.ID, product.DisplayName)
 		return "", nil
@@ -400,6 +404,31 @@ func finishTiebreak(b *mtgmatcher.Backend, product GNProduct, aliasErr error) st
 		return ""
 	}
 	return keptID
+}
+
+// letteredOnly reports a listing written over a bare number whose set prints
+// that card only as two or more lettered variants of the number. The
+// storefront lists such a parent beside its lettered products, and it names
+// none of them.
+func letteredOnly(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) bool {
+	number := strings.TrimLeft(card.Variation, "0")
+	if number == "" || strings.Trim(number, "0123456789") != "" {
+		return false
+	}
+	set, err := b.GetSetByName(card.Edition)
+	if err != nil {
+		return false
+	}
+	lettered := 0
+	for _, co := range b.MatchInSet(card.Name, set.Code) {
+		if co.Number == number {
+			return false
+		}
+		if strings.TrimRight(co.Number, "abcdefghijklmnopqrstuvwxyz") == number {
+			lettered++
+		}
+	}
+	return lettered > 1
 }
 
 // mintedRipple reports a foil listing that landed the ripple foil star twin
