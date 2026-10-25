@@ -1,6 +1,10 @@
 package cardgamecorner
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 func TestOwnersBySKU(t *testing.T) {
 	editions := []Edition{
@@ -40,5 +44,31 @@ func TestOwnersBySKU(t *testing.T) {
 	}
 	if len(owners) != 4 {
 		t.Errorf("got %d owners, want 4", len(owners))
+	}
+}
+
+func TestWantedLanguage(t *testing.T) {
+	tests := []struct {
+		game     mtgmatcher.Game
+		language string
+		edition  string
+		want     bool
+	}{
+		{mtgmatcher.GameMagic, "EN", "Zendikar Rising", true},
+		{mtgmatcher.GameMagic, "DE", "Zendikar Rising", false},
+		{mtgmatcher.GameYuGiOh, "EN", "Legend of Blue Eyes White Dragon", true},
+		{mtgmatcher.GameYuGiOh, "US", "Legend of Blue Eyes White Dragon", true},
+		{mtgmatcher.GameYuGiOh, "IT", "Legend of Blue Eyes White Dragon", false},
+		{mtgmatcher.GameMagic, "US", "Zendikar Rising", false},
+		{mtgmatcher.GameMagic, "IT", "Revised EU FBB", true},
+		{mtgmatcher.GameMagic, "IT", "Zendikar Rising", false},
+		{mtgmatcher.GameMagic, "JP", "War of the Spark: Japanese Alternate-Art Planeswalkers", true},
+		{mtgmatcher.GameMagic, "JP", "War of the Spark", false},
+	}
+	for _, test := range tests {
+		got := wantedLanguage(test.game, test.language, test.edition)
+		if got != test.want {
+			t.Errorf("wantedLanguage(%s, %s, %q) = %t, want %t", test.game, test.language, test.edition, got, test.want)
+		}
 	}
 }

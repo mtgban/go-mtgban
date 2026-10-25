@@ -72,6 +72,20 @@ var promoNumberPrefixes = map[string]string{
 // "193".
 var riftboundVersionRe = regexp.MustCompile(`\s*\(V\.[0-9]+ - [^)]*\)$`)
 
+// oldShelfRe matches the name of a Yu-Gi-Oh shelf holding the first prints
+// of an old set, which ends in the set's code.
+var oldShelfRe = regexp.MustCompile(`ENG \(([A-Z0-9]+)\)$`)
+
+// oldShelfSet returns the set an old Yu-Gi-Oh shelf holds for a copy of the
+// North American print, flagged "US".
+func oldShelfSet(edition, language string) (string, bool) {
+	match := oldShelfRe.FindStringSubmatch(edition)
+	if match == nil || language != "US" {
+		return "", false
+	}
+	return match[1], true
+}
+
 // preprocessGame reads a card of any game but Magic, whose listings name the
 // card, its set and its collector number plainly.
 func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.InputCard, error) {
@@ -82,6 +96,9 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 
 	inCard := gameInput(b.Game, card, index)
 	code, found := shelfSets[b.Game][card.Edition]
+	if !found && b.Game == mtgmatcher.GameYuGiOh {
+		code, found = oldShelfSet(card.Edition, card.Variants[index].Language)
+	}
 	if found {
 		set, err := b.GetSet(code)
 		if err != nil {
