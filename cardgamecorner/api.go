@@ -291,6 +291,10 @@ type BuylistRequest struct {
 	OnlyAvailable  bool    `json:"onlyAvailable"`
 }
 
+// taskRanToCompletion is the status the buylist endpoint reports for a search
+// that finished, whether or not it found anything.
+const taskRanToCompletion = 5
+
 // BuylistResponse is what the buylist endpoint answers with.
 type BuylistResponse struct {
 	Result BuylistResult `json:"Result"`
@@ -353,10 +357,21 @@ func (cgc *Client) GetBuylistForEdition(ctx context.Context, edition, page int) 
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("edition %d page %d: %s", edition, page, resp.Status)
+	}
+
 	var response BuylistResponse
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+
+	// The endpoint answers with the state of the task that ran the search, and
+	// a failed one carries an empty result like an edition with nothing to buy
+	if response.Status != taskRanToCompletion || response.IsFaulted || response.IsCanceled {
+		return nil, fmt.Errorf("edition %d page %d: search failed (status %d, faulted %t, canceled %t)",
+			edition, page, response.Status, response.IsFaulted, response.IsCanceled)
 	}
 
 	return &response.Result, nil

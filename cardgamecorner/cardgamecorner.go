@@ -495,9 +495,14 @@ func (cgc *Cardgamecorner) scrapeBL(ctx context.Context) error {
 	}
 	cgc.printf("Found %d editions", len(editions))
 
+	var failedEditions atomic.Int32
 	mtgban.WorkerPool(ctx, cgc.maxConcurrency, editions,
 		func(ctx context.Context, edition Expansion, results chan<- resultChan) error {
-			return cgc.parseBL(ctx, results, edition)
+			err := cgc.parseBL(ctx, results, edition)
+			if err != nil {
+				failedEditions.Add(1)
+			}
+			return err
 		},
 		func(record resultChan) {
 			err := cgc.buylist.AddRelaxed(record.cardID, record.buyEntry)
@@ -507,6 +512,19 @@ func (cgc *Cardgamecorner) scrapeBL(ctx context.Context) error {
 		},
 		cgc.printf,
 	)
+
+	// An edition that failed is indistinguishable from one with nothing to
+	// buy once its entries are missing, so a partial buylist must not pass
+	if failedEditions.Load() > 0 {
+		return fmt.Errorf("%d of %d editions failed to read", failedEditions.Load(), len(editions))
+	}
+	err = ctx.Err()
+	if err != nil {
+		return err
+	}
+	if len(cgc.buylist) == 0 {
+		return fmt.Errorf("no buylist entry read in %d editions", len(editions))
+	}
 
 	cgc.buylistDate = time.Now()
 

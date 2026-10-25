@@ -1,6 +1,40 @@
 package cardgamecorner
 
-import "testing"
+import (
+	"cmp"
+	"context"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+)
+
+// fakeStorefront answers the buylist endpoints from canned bodies, and the
+// search with searchStatus when one is set.
+type fakeStorefront struct {
+	editions     string
+	search       string
+	searchStatus int
+}
+
+func (f fakeStorefront) RoundTrip(req *http.Request) (*http.Response, error) {
+	body := f.search
+	status := cmp.Or(f.searchStatus, http.StatusOK)
+	if req.Method == http.MethodGet {
+		body = f.editions
+		status = http.StatusOK
+	}
+	return &http.Response{
+		StatusCode: status,
+		Status:     fmt.Sprintf("%d %s", status, http.StatusText(status)),
+		Header:     http.Header{"Content-Type": {"application/json"}},
+		Body:       io.NopCloser(strings.NewReader(body)),
+		Request:    req,
+	}, nil
+}
 
 // TestBuylistNumber pins the number a buylist listing states outright. The
 // store publishes one name for a card and prices its treatments separately,
@@ -62,5 +96,46 @@ func TestBuylistNameVersion(t *testing.T) {
 	}
 	if co.SetCode != "PM21" || co.Number != "74p" {
 		t.Errorf("Match(%q) = %s|%s, want PM21|74p", card, co.SetCode, co.Number)
+	}
+}
+
+// TestScrapeBuylistFailure pins that a search the storefront reports as
+// failed, or an empty one for every edition, is an error rather than a
+// buylist with the cards missing.
+func TestScrapeBuylistFailure(t *testing.T) {
+	const editions = `{"Expansions":[{"Id":1,"Espansione":"Alpha","Enabled":true},{"Id":2,"Espansione":"Beta","Enabled":true}]}`
+	const completed = `{"Result":{"Products":[],"Total":0},"Status":5,"IsCompleted":true}`
+	tests := []struct {
+		desc        string
+		search      string
+		status      int
+		searchFails bool
+	}{
+		{"faulted", `{"Result":{"Products":[],"Total":0},"Status":7,"IsCompleted":true,"IsFaulted":true}`, 0, true},
+		{"canceled", `{"Result":{"Products":[],"Total":0},"Status":6,"IsCompleted":true,"IsCanceled":true}`, 0, true},
+		{"server error", completed, http.StatusInternalServerError, true},
+		{"nothing bought anywhere", completed, 0, false},
+	}
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			cgc := &Cardgamecorner{
+				buylist: mtgban.BuylistRecord{},
+				client: &Client{client: &http.Client{
+					Transport: fakeStorefront{editions: editions, search: test.search, searchStatus: test.status},
+				}},
+			}
+			_, err := cgc.client.GetBuylistForEdition(context.Background(), 1, 1)
+			if (err != nil) != test.searchFails {
+				t.Errorf("GetBuylistForEdition error = %v, want failure %t", err, test.searchFails)
+			}
+
+			err = cgc.scrapeBL(context.Background())
+			if err == nil {
+				t.Fatalf("scrapeBL answered no error with %d entries", len(cgc.buylist))
+			}
+			if !cgc.buylistDate.IsZero() {
+				t.Errorf("buylist dated despite %v", err)
+			}
+		})
 	}
 }
