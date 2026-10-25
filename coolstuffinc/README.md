@@ -397,8 +397,9 @@ from the shelf collision this section is about.
   (`gundamNumberSpelling`). `gundamNicknames` reads a promo run the
   storefront names after its art, the Green Dress Cagalli being the
   Championship Participation Pack 01 printing. `gundamPIDs` names by
-  product id the Destiny Ignition (ST09) reprints the storefront shelves
-  under the card's first set, told apart only by a description of the art.
+  product id the starter deck reprints (ST05, ST07, ST08, and most of all
+  the Destiny Ignition ST09) the storefront shelves under the card's first
+  set, told apart only by a description of the art.
 - **Palworld**: `palworld.go`, one file, one problem - the storefront
   sometimes glues a rarity code onto the number's tail
   (`"EBP01-025RR"`), inconsistently even with itself (plain-spaced on one

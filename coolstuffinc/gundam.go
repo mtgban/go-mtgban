@@ -270,10 +270,10 @@ func gundamNumber(notes string) string {
 }
 
 // gundamPIDs names the TCGplayer product a storefront product is, for the
-// reprints it shelves under the card's first set and tells apart only by a
-// description of the art, which names no label the catalog could be matched
-// on. The Destiny Ignition deck (ST09) reprints cards of four other products
-// and the product id is the storefront's own, shared by both feeds.
+// starter deck reprints (ST05, ST07, ST08 and most of all ST09) it shelves
+// under the card's first set and tells apart only by a description of the
+// art, which names no label the catalog could be matched on. The product id
+// is the storefront's own, shared by both feeds.
 var gundamPIDs = map[string]string{
 	"435239": "684017", // GD01-049 Blitz Gundam (Dodging Yellow Laser) = ST09
 	"435240": "684018", // GD01-054 Duel Gundam (Smoke Cloud)
