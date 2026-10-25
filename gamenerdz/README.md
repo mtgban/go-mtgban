@@ -37,7 +37,9 @@ Converting every `[...]` to `(...)` is wrong as well: `Dragapult - 091/192
 ## Known remaining
 
 - Fairy Energy in Kalos Starter Set carries the id 85378, which TCGplayer
-  deleted, and the datastore has no such energy: not a datastore gap.
+  deleted, and the datastore has no such energy: not a datastore gap. It is
+  skipped by its storefront id with seven other listings for printings never
+  made (`unmadeProducts`).
 - Aquapolis listings written over a plain number (`Drowzee 74/147`) name two
   printings (74a, 74b) and stay refused unless the retail id names one.
 - `Monkey.D.Luffy (Release Event Leader) (P)` stays refused. Its label alone
