@@ -172,7 +172,9 @@ var tokenSetPrefixes = []string{"F", "T", "FT", "SF", "RF", "CF"}
 // unindexedTokenSheet reports whether a sku names a sheet of tokens no set in
 // the datastore stands for, as the Jumpstart theme cards do: the set the
 // sheet came with is carried, the sheet itself never was, so no row of it can
-// match and none is worth reporting.
+// match and none is worth reporting. The first prefix that leaves a set code
+// decides, and only one ending in the token marker makes a sheet: FTRK is a
+// foil of the TRK set, a card like any other.
 func unindexedTokenSheet(b *mtgmatcher.Backend, sku string) bool {
 	fields := strings.Split(sku, "-")
 	if len(fields) < 2 || setCodeExists(b, fields[0]) {
@@ -181,7 +183,7 @@ func unindexedTokenSheet(b *mtgmatcher.Backend, sku string) bool {
 	for _, prefix := range tokenSetPrefixes {
 		trimmed := strings.TrimPrefix(fields[0], prefix)
 		if trimmed != fields[0] && setCodeExists(b, trimmed) {
-			return true
+			return strings.HasSuffix(prefix, "T")
 		}
 	}
 	return false
