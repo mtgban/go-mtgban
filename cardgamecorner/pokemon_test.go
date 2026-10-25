@@ -63,3 +63,19 @@ func TestPokemonFirstEdition(t *testing.T) {
 		}
 	}
 }
+
+// TestEnergyName pins an energy's type letter to the spelling the catalog
+// gives that energy: spelled out where that names a card, kept where not.
+func TestEnergyName(t *testing.T) {
+	b := pokemonDatastore(t)
+	for _, tt := range []struct{ in, want string }{
+		{"Wash [W] Energy", "Wash Water Energy"},
+		{"Bubbly [W] Energy", "Bubbly [W] Energy"},
+		{"Unown [A] Lv.15", "Unown [A] Lv.15"},
+	} {
+		got := energyName(b, tt.in)
+		if got != tt.want {
+			t.Errorf("energyName(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}

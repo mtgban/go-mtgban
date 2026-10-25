@@ -154,9 +154,27 @@ var nidoranSexes = strings.NewReplacer(
 	"Nidoran ♂", "Nidoran M",
 )
 
-// energyLetters are the letters the store brackets in the name of a basic
-// energy, which the catalog spells out.
-var energyLetters = strings.NewReplacer("[F]", "Fighting", "[W]", "Water")
+// energyLetters are the type letters the store brackets in the name of an
+// energy, which the catalog spells out for some energies and not others.
+var energyLetters = strings.NewReplacer(
+	"[G]", "Grass", "[R]", "Fire", "[W]", "Water", "[L]", "Lightning",
+	"[P]", "Psychic", "[F]", "Fighting", "[D]", "Darkness", "[M]", "Metal",
+	"[Y]", "Fairy", "[N]", "Dragon", "[C]", "Colorless",
+)
+
+// energyName spells out the type letter of an energy where the catalog
+// does ("Wash Water Energy"), and keeps it where the catalog keeps the
+// letter ("Bubbly W Energy").
+func energyName(b *mtgmatcher.Backend, name string) string {
+	if !strings.HasSuffix(name, " Energy") {
+		return name
+	}
+	spelled := energyLetters.Replace(name)
+	if spelled != name && namesACard(b, spelled) {
+		return spelled
+	}
+	return name
+}
 
 // storeEnergyNumberRe matches the number the store gives a basic energy
 // the catalog does not number.
@@ -166,9 +184,6 @@ var storeEnergyNumberRe = regexp.MustCompile(`^E[0-9]{3}$`)
 // spells its own way.
 func pokemonName(card *Card) string {
 	name := deltaSpeciesRe.ReplaceAllString(strings.TrimSpace(card.Name), "")
-	if strings.HasSuffix(name, " Energy") {
-		name = energyLetters.Replace(name)
-	}
 
 	// A "?" stands for the symbol of the sex, which the original name may
 	// still carry
@@ -268,6 +283,9 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 	}
 
 	inCard := gameInput(b.Game, card, index)
+	if b.Game == mtgmatcher.GamePokemon {
+		inCard.Name = energyName(b, inCard.Name)
+	}
 	code, found := shelfSets[b.Game][card.Edition]
 	// The Base Set's first edition was printed before its shadow was, so
 	// its copies are the Shadowless product's

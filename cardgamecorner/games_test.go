@@ -89,7 +89,7 @@ func TestGameInput(t *testing.T) {
 			game:    mtgmatcher.GamePokemon,
 			card:    Card{Name: "Stone [F] Energy", Edition: "Vivid Voltage", Number: "164", Rarity: "Uncommon"},
 			variant: Variant{Print: "Unl.", Foil: "Reverse Holo"},
-			want:    mtgmatcher.InputCard{Name: "Stone Fighting Energy", Edition: "Vivid Voltage", Variation: "164", Finish: "Reverse Holofoil"},
+			want:    mtgmatcher.InputCard{Name: "Stone [F] Energy", Edition: "Vivid Voltage", Variation: "164", Finish: "Reverse Holofoil"},
 		},
 		{
 			game:    mtgmatcher.GamePokemon,
