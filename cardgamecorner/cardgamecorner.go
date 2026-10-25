@@ -109,6 +109,8 @@ func wantedLanguage(game mtgmatcher.Game, language, edition string) bool {
 func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listing) {
 	// Keep track of the processed ids, and don't add duplicates
 	duplicate := map[int]bool{}
+	// A preprocess failure is the shelf's, so it is logged once per edition
+	failedEditions := map[string]bool{}
 
 	for _, l := range cards {
 		edition, card := l.edition, l.card
@@ -137,7 +139,13 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 			}
 
 			theCard, err := preprocess(cgc.backend, &card, i)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				if !failedEditions[card.Edition] {
+					cgc.printf("%s: %v", card.Edition, err)
+					failedEditions[card.Edition] = true
+				}
 				continue
 			}
 
