@@ -9,17 +9,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
 
 // sypGames are the categories Store Your Products is read for, one line per
 // game. Magic is absent from tcgGames because its singles are priced through
 // scrapers of their own, but its SYP list is served the same way.
-var sypGames = map[mtgmatcher.Game]int{
-	mtgmatcher.GameMagic:   tcgplayer.CategoryMagic,
-	mtgmatcher.GamePokemon: tcgplayer.CategoryPokemon,
+var sypGames = map[matcher.Game]int{
+	matcher.GameMagic:   tcgplayer.CategoryMagic,
+	matcher.GamePokemon: tcgplayer.CategoryPokemon,
 }
 
 // skuLanguageEnglish is the language id every English sku carries; Direct
@@ -90,7 +90,7 @@ func LoadSYPCatalog(reader io.Reader) (SYPCatalog, error) {
 // Normal, so the title is the only place it is said.
 func productFinish(productName string) string {
 	if strings.Contains(productName, "(Foil Etched)") {
-		return mtgmatcher.FinishEtched
+		return matcher.FinishEtched
 	}
 	return ""
 }
@@ -111,7 +111,7 @@ type TCGSYPList struct {
 	buylistDate time.Time
 	buylist     mtgban.BuylistRecord
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 }
 
 func (tcg *TCGSYPList) printf(format string, a ...any) {
@@ -123,7 +123,7 @@ func (tcg *TCGSYPList) printf(format string, a ...any) {
 // NewScraperSYP returns a SYP scraper for any game the list is read for. The
 // list is served against an authorization ticket alone, so this needs no API
 // credentials of its own.
-func NewScraperSYP(b *mtgmatcher.Backend, auth string) (*TCGSYPList, error) {
+func NewScraperSYP(b *matcher.Backend, auth string) (*TCGSYPList, error) {
 	game := b.Game
 	category, found := sypGames[game]
 	if !found {
@@ -149,15 +149,15 @@ func (tcg *TCGSYPList) resolve(sku SYPSku) (string, error) {
 	if err == nil {
 		return cardID, nil
 	}
-	canonical := mtgmatcher.FinishSlug(sku.Finish)
-	if canonical != mtgmatcher.FinishNonfoil && canonical != mtgmatcher.FinishFoil && sku.Finish != mtgmatcher.FinishEtched {
+	canonical := matcher.FinishSlug(sku.Finish)
+	if canonical != matcher.FinishNonfoil && canonical != matcher.FinishFoil && sku.Finish != matcher.FinishEtched {
 		// A finish only the game names, and it did not answer: there is no
 		// flag that says it, so there is nothing left to ask.
 		return "", err
 	}
 	return tcg.backend.MatchID(id,
-		canonical == mtgmatcher.FinishFoil || sku.Finish == mtgmatcher.FinishEtched,
-		sku.Finish == mtgmatcher.FinishEtched)
+		canonical == matcher.FinishFoil || sku.Finish == matcher.FinishEtched,
+		sku.Finish == matcher.FinishEtched)
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.

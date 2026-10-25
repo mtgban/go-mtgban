@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
 )
 
 // lorcanaPanoramaDatastore is Huey - Reliable Leader as published: TCGplayer
@@ -25,7 +25,7 @@ const lorcanaPanoramaDatastore = `{"data": {
 // a foil claim on the plain card's blueprint, which sells no foil, goes
 // unpriced.
 func TestLorcanaPanoramaFoil(t *testing.T) {
-	b, err := mtgmatcher.Open("lorcana", strings.NewReader(lorcanaPanoramaDatastore))
+	b, err := matcher.Open("lorcana", strings.NewReader(lorcanaPanoramaDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}

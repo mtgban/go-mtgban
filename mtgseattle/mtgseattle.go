@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-retryablehttp"
@@ -38,7 +38,7 @@ type MTGSeattle struct {
 	logCallback    mtgban.LogCallbackFunc
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -53,7 +53,7 @@ type MTGSeattle struct {
 }
 
 // NewScraper returns a scraper matching against b.
-func NewScraper(b *mtgmatcher.Backend) *MTGSeattle {
+func NewScraper(b *matcher.Backend) *MTGSeattle {
 	ms := MTGSeattle{backend: b}
 	ms.inventory = mtgban.InventoryRecord{}
 	ms.buylist = mtgban.BuylistRecord{}
@@ -140,7 +140,7 @@ func (ms *MTGSeattle) inventoryOffers(meta *goquery.Selection) []offer {
 			return
 		}
 
-		price, _ := mtgmatcher.ParsePrice(row.Find(`span[class="regular price"]`).Text())
+		price, _ := matcher.ParsePrice(row.Find(`span[class="regular price"]`).Text())
 		if price == 0 {
 			return
 		}
@@ -178,7 +178,7 @@ func buylistOffers(meta *goquery.Selection) []offer {
 		return nil
 	}
 
-	price, _ := mtgmatcher.ParsePrice(meta.Find(`div[class="product-price"] span[class="regular price"]`).Text())
+	price, _ := matcher.ParsePrice(meta.Find(`div[class="product-price"] span[class="regular price"]`).Text())
 	if price == 0 {
 		return nil
 	}
@@ -271,7 +271,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 		}
 
 		cardID, err := ms.backend.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			return
 		} else if err != nil {
 			// Skip reporting an error for known failures (invalid variant number)
@@ -298,7 +298,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			ms.printf("%q", theCard)
 			ms.printf("%s ~ %s ~ %s", cardName, edition, variant)
 
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
@@ -486,7 +486,7 @@ func (ms *MTGSeattle) Buylist() mtgban.BuylistRecord {
 	return ms.buylist
 }
 
-func grading(b *mtgmatcher.Backend, cardID string, price float64) map[mtgban.Condition]float64 {
+func grading(b *matcher.Backend, cardID string, price float64) map[mtgban.Condition]float64 {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil
@@ -547,6 +547,6 @@ func (ms *MTGSeattle) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ms.inventoryDate
 	info.BuylistTimestamp = &ms.buylistDate
 	info.CreditMultiplier = 1.33
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

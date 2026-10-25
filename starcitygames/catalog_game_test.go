@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestGameFromCatalog pins the catalog's own spelling of each game. The
@@ -66,7 +66,7 @@ func TestLoadRefusesACatalogWithoutItsGame(t *testing.T) {
 			}))
 			defer srv.Close()
 
-			b := &mtgmatcher.Backend{Game: mtgmatcher.GameLorcana}
+			b := &matcher.Backend{Game: matcher.GameLorcana}
 			singles, err := NewScraper(b, "")
 			if err != nil {
 				t.Fatal(err)

@@ -3,7 +3,7 @@ package starcitygames
 import "testing"
 
 // TestResolveTwoSidedTokenPairing pins a two-sided token listing resolving
-// to the combined entity mtgmatcher/magic/tokenpairs.go derives for the same
+// to the combined entity matcher/magic/tokenpairs.go derives for the same
 // physical pairing, anchored by SCG's own scryfall_id rather than guessed
 // from the name alone - the same mechanism cardkingdom uses (see
 // magic.MatchTokenPairing), reached here through SCG's own brace-
@@ -153,7 +153,7 @@ func TestResolveTokenPairingBySetNumber(t *testing.T) {
 // single-anchor shape above expects (e.g. "LCI-T03_REX_T02" - faceA files
 // under LCI, faceB under the embedded REX code; "T01_LCI_T18" anchors
 // faceA to the sku's own leading set instead). Each face is anchored
-// independently by identity via mtgmatcher.MatchInSetNumber and joined
+// independently by identity via matcher.MatchInSetNumber and joined
 // through the uuid-pair-keyed magic.MatchTokenPairingByUUIDs, sidestepping
 // Backend.TokenPairIndex's name-collision-blanking entirely - see
 // tokenPairSkuAnchors and resolveProductID's own comment on this shape.
@@ -223,7 +223,7 @@ func TestResolveCompositeSkuTokenPairing(t *testing.T) {
 // number names no real printing at all), and a listing that claims a
 // finish one of its two real faces was never sold in - tokenPairingFinishOK
 // requiring both source faces to agree, not just the derived entity's own
-// unioned finish list. See mtgmatcher/magic/tokenpairs.go's own comment on
+// unioned finish list. See matcher/magic/tokenpairs.go's own comment on
 // why the union is deliberately not good enough for this specific check.
 func TestResolveCompositeSkuTokenPairingRefusals(t *testing.T) {
 	b := withMagic(t)
@@ -270,7 +270,7 @@ func TestResolveCompositeSkuTokenPairingRefusals(t *testing.T) {
 // "{X Token}"), which the two-sided trigger and cleanFaceName both
 // recognize specifically, and which OAFR (Forgotten Realms Oversized
 // Cards, a memorabilia sibling of AFR) duplicates the ids of under its
-// own uuids - see mtgmatcher/magic/tokenpairs.go's idCanonicalKey. The
+// own uuids - see matcher/magic/tokenpairs.go's idCanonicalKey. The
 // foil case (no scryfall_id at all) exercises MatchTokenPairingBySetNumber
 // rather than MatchTokenPairing; the third case pins catalogNames' own
 // fixup for a real SCG typo ("Lost Mine of THE Phandelver" - the real

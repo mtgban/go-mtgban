@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 func TestParseDetails(t *testing.T) {
@@ -35,7 +35,7 @@ func TestParseDetails(t *testing.T) {
 
 func TestPreprocessDetails(t *testing.T) {
 	tests := []struct {
-		game    mtgmatcher.Game
+		game    matcher.Game
 		name    string
 		edition string
 		number  string
@@ -49,80 +49,80 @@ func TestPreprocessDetails(t *testing.T) {
 		err          error
 	}{
 		{
-			game: mtgmatcher.GamePokemon, name: "Eevee V", edition: "Crown Zenith",
+			game: matcher.GamePokemon, name: "Eevee V", edition: "Crown Zenith",
 			number: "108", details: "Near Mint Normal 1st Edition English",
 			outName: "Eevee V", outVariation: "108 1st Edition",
 		},
 		{
-			game: mtgmatcher.GamePokemon, name: "Iono 237", edition: "Scarlet and Violet Paldean Fates",
+			game: matcher.GamePokemon, name: "Iono 237", edition: "Scarlet and Violet Paldean Fates",
 			number: "237", details: "Near Mint Normal 1st Edition English",
 			outName: "Iono", outVariation: "237 1st Edition",
 		},
 		{
-			game: mtgmatcher.GamePokemon, name: "Blaine's Quiz 2", edition: "Gym Challenge",
+			game: matcher.GamePokemon, name: "Blaine's Quiz 2", edition: "Gym Challenge",
 			number: "111", details: "Near Mint Normal Unlimited English",
 			outName: "Blaine's Quiz 2", outVariation: "111 Unlimited",
 		},
 		{
-			game: mtgmatcher.GamePokemon, name: "Luxray", edition: "Scarlet and Violet Paldean Fates",
+			game: matcher.GamePokemon, name: "Luxray", edition: "Scarlet and Violet Paldean Fates",
 			number: "136", details: "Near Mint Normal 1st Edition English",
 			outName: "Luxray", outVariation: "137 1st Edition",
 		},
 		{
-			game: mtgmatcher.GamePokemon, name: "Charizard", edition: "Base Set Unlimited",
+			game: matcher.GamePokemon, name: "Charizard", edition: "Base Set Unlimited",
 			number: "004", details: "Light Play Normal Unlimited English",
 			outName: "Charizard", outVariation: "004 Unlimited",
 		},
 		{
-			game: mtgmatcher.GamePokemon, name: "Kingdra", edition: "Aquapolis",
+			game: matcher.GamePokemon, name: "Kingdra", edition: "Aquapolis",
 			number: "148", details: "Near Mint Parallel Foil English",
 			outName: "Kingdra", outVariation: "148", outFinish: "Reverse Holofoil",
 		},
 		{
 			// A buylist name repeats the number after a dash.
-			game: mtgmatcher.GamePokemon, name: "Amarys - 170", edition: "Scarlet and Violet Prismatic Evolutions",
+			game: matcher.GamePokemon, name: "Amarys - 170", edition: "Scarlet and Violet Prismatic Evolutions",
 			number: "170", details: "Near Mint Normal 1st Edition English",
 			outName: "Amarys", outVariation: "170 1st Edition",
 		},
 		{
 			// The name's tail spells the promo number more fully than the
 			// Number column does.
-			game: mtgmatcher.GamePokemon, name: "Dragapult (Prime) - SWSH132", edition: "Promos Sword and Shield",
+			game: matcher.GamePokemon, name: "Dragapult (Prime) - SWSH132", edition: "Promos Sword and Shield",
 			number: "132", details: "Near Mint Normal 1st Edition English",
 			outName: "Dragapult (Prime)", outVariation: "SWSH132 1st Edition",
 		},
 		{
 			// The gallery subsets number their cards with a prefix the bare
 			// Number column drops.
-			game: mtgmatcher.GamePokemon, name: "Bidoof", edition: "Crown Zenith: Galarian Gallery",
+			game: matcher.GamePokemon, name: "Bidoof", edition: "Crown Zenith: Galarian Gallery",
 			number: "029", details: "Near Mint Normal 1st Edition English",
 			outName: "Bidoof", outVariation: "GG029 1st Edition",
 		},
 		{
 			// The two promo shelves prefix a bare number the same way.
-			game: mtgmatcher.GamePokemon, name: "Boss's Orders (Full Art)", edition: "Promos Sword and Shield",
+			game: matcher.GamePokemon, name: "Boss's Orders (Full Art)", edition: "Promos Sword and Shield",
 			number: "251", details: "Near Mint Normal 1st Edition English",
 			outName: "Boss's Orders (Full Art)", outVariation: "SWSH251 1st Edition",
 		},
 		{
-			game: mtgmatcher.GamePokemon, name: "Raikou GX", edition: "Promos Sun and Moon",
+			game: matcher.GamePokemon, name: "Raikou GX", edition: "Promos Sun and Moon",
 			number: "121", details: "Near Mint Normal 1st Edition English",
 			outName: "Raikou GX", outVariation: "SM121 1st Edition",
 		},
 		{
-			game: mtgmatcher.GamePokemon, name: "Mewtwo", edition: "Legendary Collection",
+			game: matcher.GamePokemon, name: "Mewtwo", edition: "Legendary Collection",
 			number: "010", details: "Light Play Normal Unlimited Chinese",
 			err: errForeignListing,
 		},
 		{
 			// Super Slam was printed once: the stamp names no run.
-			game: mtgmatcher.GameFleshAndBlood, name: "Apex Bonebreaker", edition: "Super Slam",
+			game: matcher.GameFleshAndBlood, name: "Apex Bonebreaker", edition: "Super Slam",
 			number: "008", details: "Near Mint Cold Foil 1st Edition English",
 			outName: "Apex Bonebreaker", outVariation: "008",
 			outFinish: "Cold Foil", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Command and Conquer", edition: "Crucible of War",
+			game: matcher.GameFleshAndBlood, name: "Command and Conquer", edition: "Crucible of War",
 			number: "063", details: "Near Mint Rainbow Foil Unlimited English",
 			outName: "Command and Conquer", outVariation: "063",
 			outFinish: "Unlimited Edition Rainbow Foil", outFoil: true,
@@ -130,48 +130,48 @@ func TestPreprocessDetails(t *testing.T) {
 		{
 			// A promo's number names its printing; the treatment the
 			// shelf writes beside it is not trusted.
-			game: mtgmatcher.GameFleshAndBlood, name: "Briar, Warden of Thorns - HER044", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Briar, Warden of Thorns - HER044", edition: "Flesh and Blood Promos",
 			number: "044", details: "Near Mint Cold Foil 1st Edition English",
 			outName: "Briar, Warden of Thorns", outVariation: "HER044", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Raise an Army", edition: "Heavy Hitters",
+			game: matcher.GameFleshAndBlood, name: "Raise an Army", edition: "Heavy Hitters",
 			number: "105", details: "Near Mint Normal 1st Edition English",
 			outName: "Raise an Army", outVariation: "105",
 			outFinish: "Normal",
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Fai Rising Rebellion Hero065", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Fai Rising Rebellion Hero065", edition: "Flesh and Blood Promos",
 			number: "Hero065", details: "Near Mint Rainbow Foil 1st Edition English",
 			outName: "Fai Rising Rebellion", outVariation: "HER065", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Fai Hero 61", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Fai Hero 61", edition: "Flesh and Blood Promos",
 			number: "Hero061", details: "Near Mint Cold Foil 1st Edition English",
 			outName: "Fai", outVariation: "HER061", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "- HER084Prism, Advent of Thrones", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "- HER084Prism, Advent of Thrones", edition: "Flesh and Blood Promos",
 			number: "084", details: "Near Mint Rainbow Foil 1st Edition English",
 			outName: "Prism, Advent of Thrones", outVariation: "HER084", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Bloodrot Pox / Frailty", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Bloodrot Pox / Frailty", edition: "Flesh and Blood Promos",
 			number: "LGS125LGS126", details: "Near Mint Cold Foil 1st Edition English",
 			outName: "Bloodrot Pox / Frailty", outVariation: "LGS125//LGS126", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Theryon, Magister of Justice", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Theryon, Magister of Justice", edition: "Flesh and Blood Promos",
 			number: "JDC008", details: "Near Mint Rainbow Foil 1st Edition English",
 			outName: "Theryon, Magister of Justice", outVariation: "JDG008", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Hexagore, the Death Hydra - FAB186 (Golden) - FAB186", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Hexagore, the Death Hydra - FAB186 (Golden) - FAB186", edition: "Flesh and Blood Promos",
 			number: "186", details: "Near Mint Cold Foil 1st Edition English",
 			outName: "Hexagore, the Death Hydra (Golden)", outVariation: "FAB186", outFoil: true,
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Aurora (Marvel) (Alternate Art)", edition: "Rosetta",
+			game: matcher.GameFleshAndBlood, name: "Aurora (Marvel) (Alternate Art)", edition: "Rosetta",
 			number: "008A", details: "Near Mint Cold Foil 1st Edition English",
 			outName: "Aurora (Marvel)", outVariation: "008 Alternate Art",
 			outFinish: "Cold Foil", outFoil: true,
@@ -179,19 +179,19 @@ func TestPreprocessDetails(t *testing.T) {
 		{
 			// A foreign promo keeps its language and loses the label that
 			// repeats it.
-			game: mtgmatcher.GameFleshAndBlood, name: "Enigma, Ledger of Ancestry (Marvel) (Japanese Alternate Art)", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Enigma, Ledger of Ancestry (Marvel) (Japanese Alternate Art)", edition: "Flesh and Blood Promos",
 			number: "116", details: "Near Mint Rainbow Foil 1st Edition Japanese",
 			outName: "Enigma, Ledger of Ancestry (Marvel)", outVariation: "116", outFoil: true,
 			outLanguage: "Japanese",
 		},
 		{
-			game: mtgmatcher.GameFleshAndBlood, name: "Nuu, Alluring Desire (Japanese Alternative Art) - HER128", edition: "Flesh and Blood Promos",
+			game: matcher.GameFleshAndBlood, name: "Nuu, Alluring Desire (Japanese Alternative Art) - HER128", edition: "Flesh and Blood Promos",
 			number: "128", details: "Near Mint Rainbow Foil 1st Edition Japanese",
 			outName: "Nuu, Alluring Desire", outVariation: "HER128", outFoil: true,
 			outLanguage: "Japanese",
 		},
 		{
-			game: mtgmatcher.GameYuGiOh, name: "Dark Magician", edition: "Yugi Reloaded",
+			game: matcher.GameYuGiOh, name: "Dark Magician", edition: "Yugi Reloaded",
 			number: "001", details: "Near Mint Normal Unlimited English",
 			outName: "Dark Magician", outVariation: "001",
 		},

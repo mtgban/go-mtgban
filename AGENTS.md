@@ -10,14 +10,14 @@ reasoning behind the load-bearing decisions.
 
 ## The one rule that matters
 
-**Everything keys on the `mtgmatcher` UUID.** Scrapers are thin translators;
-correctness lives in `mtgmatcher`. If a card matches wrong, fix it in
-`mtgmatcher` - usually in a data table, and for Magic inside the
-`mtgmatcher/magic` sub-package - not in the scraper.
+**Everything keys on the `matcher` UUID.** Scrapers are thin translators;
+correctness lives in `matcher`. If a card matches wrong, fix it in
+`matcher` - usually in a data table, and for Magic inside the
+`matcher/magic` sub-package - not in the scraper.
 
 The exception is a vendor's own identifier being wrong, or shared between
 two genuinely different products - that's the vendor's data to distrust,
-which makes it the scraper's fix, not `mtgmatcher`'s.
+which makes it the scraper's fix, not `matcher`'s.
 `starcitygames/README.md` works through that whole defect class end to end:
 how it's found, the fix shapes (a general rule, a closed table, a
 refusal), and the repeatable method for catching the next one.
@@ -53,7 +53,7 @@ what silently never counts toward a total (serialized, cosmic foil,
 unfixed Secret Lair bonuses, anything under the bulk threshold) and why
 that floor is deliberately the same for every source.
 
-A third case tempers "fix it in `mtgmatcher`" without contradicting it: a
+A third case tempers "fix it in `matcher`" without contradicting it: a
 shared matcher rule reaches every vendor and every printing of its class,
 so size the fix to the evidence behind it. When one vendor's evidence would
 justify a rule that moves far more landings than that evidence covers, put
@@ -69,21 +69,21 @@ touch does (#716).
 ```
 mtgban/                    interfaces (Scraper/Seller/Vendor), records,
                            Arbit/Mismatch, CSV I/O, WorkerPool
-mtgmatcher/                game-agnostic core: Backend, b.Match/b.MatchID,
+matcher/                   game-agnostic core: Backend, b.Match/b.MatchID,
                            the GameRules seam, the game registry, and the
                            search API
-mtgmatcher/magic/          Magic rules, MTGJSON loader, promo/frame vocabulary,
+matcher/magic/             Magic rules, MTGJSON loader, promo/frame vocabulary,
                            replay corpus
-mtgmatcher/lorcana/        Lorcana rules, loader, replay corpus
-mtgmatcher/riftbound/      Riftbound rules, loader, replay corpus
-mtgmatcher/fleshandblood/  Flesh and Blood rules, loader, replay corpus
-mtgmatcher/gundam/         Gundam rules, loader, replay corpus
-mtgmatcher/onepiece/       One Piece rules, loader, replay corpus
-mtgmatcher/palworld/       Palworld rules, loader, replay corpus
-mtgmatcher/pokemon/        Pokemon rules, loader (no replay corpus yet)
-mtgmatcher/yugioh/         Yu-Gi-Oh rules, loader, replay corpus
-mtgmatcher/games/          meta-package that blank-imports all nine games
-mtgmatcher/sealed/         opening sealed product: picks, decklists and
+matcher/lorcana/           Lorcana rules, loader, replay corpus
+matcher/riftbound/         Riftbound rules, loader, replay corpus
+matcher/fleshandblood/     Flesh and Blood rules, loader, replay corpus
+matcher/gundam/            Gundam rules, loader, replay corpus
+matcher/onepiece/          One Piece rules, loader, replay corpus
+matcher/palworld/          Palworld rules, loader, replay corpus
+matcher/pokemon/           Pokemon rules, loader (no replay corpus yet)
+matcher/yugioh/            Yu-Gi-Oh rules, loader, replay corpus
+matcher/games/             meta-package that blank-imports all nine games
+matcher/sealed/            opening sealed product: picks, decklists and
                            expected counts per product, booster and deck
 <store>/                   one package per store (tcgplayer, cardkingdom,
                            cardmarket, ...)
@@ -91,17 +91,17 @@ cmd/                       tools; cmd/bantool is the production orchestrator
 ```
 
 Magic's edition aliases, variants, replay corpus and promo dates live in
-`mtgmatcher/magic`. Its `CandidateSets` hook owns promo sibling expansion,
+`matcher/magic`. Its `CandidateSets` hook owns promo sibling expansion,
 Secret Lair widening and edition-selection policy; `FinalizeCandidates` owns
 the World Championship trim. Core materializes the selected sets and applies
 language filtering after the final game hook.
 
-The dependency runs one way: a game package imports core `mtgmatcher`, and no
+The dependency runs one way: a game package imports core `matcher`, and no
 non-test file in core imports a game package. That one-directional rule is
 what keeps the core game-agnostic, and it is worth remembering before reaching
 for a Magic symbol from core, since the import would cycle. Core's own tests
 get away with importing `magic`, to load the Magic datastore, only because
-they are an external test package (`package mtgmatcher_test`), which is
+they are an external test package (`package matcher_test`), which is
 outside the import graph of the library itself.
 
 ## Build, test, format
@@ -123,11 +123,11 @@ so a stray unformatted file fails the build rather than merely drawing a
 review comment. The tree is gofmt-clean today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
-in `mtgban/`, in `mtgmatcher/`, every one of its nine `mtgmatcher/<game>`
-sub-packages and `mtgmatcher/sealed`, and in 19 of the 24 scraper packages
+in `mtgban/`, in `matcher/`, every one of its nine `matcher/<game>`
+sub-packages and `matcher/sealed`, and in 19 of the 24 scraper packages
 (only `arcanafrisia`, `cardsphere`, `mtgstocks`, `secretdeskorrigans` and
 `toamagic` have none).
-A subset run can pass while CI fails. `mtgmatcher/magic` carries the largest
+A subset run can pass while CI fails. `matcher/magic` carries the largest
 test suite of any package in the repo, nearly forty `*_test.go` files with
 the Magic replay suite among them (see "The golden suites" below).
 
@@ -137,7 +137,7 @@ The matcher suites exercise real data, one datastore per game, located through
 environment variables:
 
 - `ALLPRINTINGS5_PATH` - MTGJSON `AllPrintings5.json`. Feeds the core
-  `mtgmatcher` suite and `mtgmatcher/magic`, both of which load it through
+  `matcher` suite and `matcher/magic`, both of which load it through
   `magic.Load`, as well as every scraper suite that needs a real Magic
   datastore to test its `preprocess.go` (abugames, cardgamecorner,
   cardkingdom, cardmarket, cardtrader, coolstuffinc, gamenerdz, hareruya,
@@ -149,14 +149,14 @@ environment variables:
   `FLESHANDBLOOD_PATH`, `POKEMON_PATH`, `GUNDAM_PATH`, and `PALWORLD_PATH` -
   one datastore per remaining game, all built by
   `github.com/mtgban/datastore-gen`. Each feeds its matching
-  `mtgmatcher/<game>` suite (`mtgmatcher/lorcana`, `mtgmatcher/riftbound`,
+  `matcher/<game>` suite (`matcher/lorcana`, `matcher/riftbound`,
   and so on).
 
-Every suite, Magic and core `mtgmatcher` included, loads its datastore
+Every suite, Magic and core `matcher` included, loads its datastore
 lazily behind a `sync.Once`-guarded `realDatastore(t)` helper and calls
 `t.Skip("Need <VAR> set to run this test")` on the tests that need it, so a
 contributor missing every one of the nine datastores still gets a green, if
-much thinner, `go test ./...` run. `mtgmatcher/magic`'s `TestMain` calls
+much thinner, `go test ./...` run. `matcher/magic`'s `TestMain` calls
 `log.Fatalln` only if its own golden `testdata/magic_test_data.json` fails
 to open or parse - a repo integrity fault, not a missing-env-var one.
 
@@ -164,21 +164,21 @@ Reuse a datastore a suite already loads rather than adding another loader.
 Each helper costs a parse of about ten seconds and three gigabytes per test
 binary, and a test file cannot import another package's helper, so tests
 for a new package that only needs the Magic datastore belong in a suite that
-already loads it: `mtgmatcher/sealed`'s datastore-backed tests live in
-`mtgmatcher`'s external test package, on its `testBackend`, and only the ones
+already loads it: `matcher/sealed`'s datastore-backed tests live in
+`matcher`'s external test package, on its `testBackend`, and only the ones
 needing no datastore sit in its own directory.
 
 Use absolute paths for every variable. A relative path is resolved against
 the directory of the package under test, so a single relative value cannot
 serve suites that sit at different depths in the tree - and they do:
-`ALLPRINTINGS5_PATH` is read from `mtgmatcher` one level down and from
-`mtgmatcher/magic` two. CI passes every one as an absolute path, per game,
+`ALLPRINTINGS5_PATH` is read from `matcher` one level down and from
+`matcher/magic` two. CI passes every one as an absolute path, per game,
 for that reason.
 
 **Locally**, `go test` does not source `.env` on its own - only
 `cmd/bantool` does, via a blank `godotenv/autoload` import in its own
 `main.go`. Export the variables yourself before running a suite that needs
-one, e.g. `set -a; . .env; set +a; go test ./mtgmatcher/...`, or
+one, e.g. `set -a; . .env; set +a; go test ./matcher/...`, or
 `source .env && go test ./...` if your shell's `source` does the same. CI
 needs none of this: it exports every `<GAME>_PATH` directly as job env
 (below), so this is a local-checkout step only.
@@ -205,21 +205,21 @@ Eight of the nine games own a replay corpus of *(input card → expected
 verdict)* pairs under their own `testdata/` directory, each with its own
 regeneration flag; only Pokemon has none yet. The flag belongs to the test
 binary, not to `go test`, so the package has to come first - `go test -u
-./mtgmatcher/magic/` fails with "no Go files in" the repository root, having
+./matcher/magic/` fails with "no Go files in" the repository root, having
 read `-u` as a `go` flag and dropped the path.
 
 ```sh
-# mtgmatcher/magic     -> testdata/magic_test_data.json
-go test ./mtgmatcher/magic/ -run TestMatch -u
+# matcher/magic        -> testdata/magic_test_data.json
+go test ./matcher/magic/ -run TestMatch -u
 
 # every other game     -> testdata/<game>_test_data.json
-go test ./mtgmatcher/lorcana/     -update-lorcana
-go test ./mtgmatcher/riftbound/   -update-riftbound
-go test ./mtgmatcher/onepiece/    -update-onepiece
-go test ./mtgmatcher/yugioh/      -update-yugioh
-go test ./mtgmatcher/fleshandblood/ -update-fleshandblood
-go test ./mtgmatcher/gundam/      -update-gundam
-go test ./mtgmatcher/palworld/    -update-palworld
+go test ./matcher/lorcana/        -update-lorcana
+go test ./matcher/riftbound/      -update-riftbound
+go test ./matcher/onepiece/       -update-onepiece
+go test ./matcher/yugioh/         -update-yugioh
+go test ./matcher/fleshandblood/ -update-fleshandblood
+go test ./matcher/gundam/         -update-gundam
+go test ./matcher/palworld/       -update-palworld
 ```
 
 The Magic regeneration flag is the odd one out: it is the bare `-u` it has
@@ -279,12 +279,12 @@ the cause. Do not accept the diff as a new baseline.
   too. This is for new code - older code still folds calls, and that is not
   a sweep target.
 
-## mtgmatcher: the game seam
+## matcher: the game seam
 
 ### GameRules
 
 `Match()` is one pipeline shared by every game. The steps that differ per game
-are dispatched through the `GameRules` interface in `mtgmatcher/rules.go`, 11
+are dispatched through the `GameRules` interface in `matcher/rules.go`, 11
 methods in all: `Prefilter`, `AdjustName`, `AdjustEdition`, `AliasEdition`,
 `FilterPrintings`, `CandidateSets`, `FinalizeCandidates`, `FilterCards`,
 `IsUnsupported`, `IsToken`, and `PlainNumber` (read `rules.go` itself - each
@@ -313,20 +313,20 @@ aliasing diagnostics.
 ### Games register themselves
 
 Each game package ships `rules.go` (its `GameRules` implementation), a
-`Load(io.Reader) (*mtgmatcher.Backend, error)` function, and a `register.go`
-whose `init()` calls `mtgmatcher.RegisterGame(name, Load)` - the
+`Load(io.Reader) (*matcher.Backend, error)` function, and a `register.go`
+whose `init()` calls `matcher.RegisterGame(name, Load)` - the
 `database/sql` driver idiom - under the name of its own package: `magic`,
 `lorcana`, `riftbound`, `onepiece`, `yugioh`, `fleshandblood`, `pokemon`,
 `gundam`, and `palworld`.
 
 The consequence is that **a game only exists if something imports it**. A
 consumer blank-imports the games it needs, or blank-imports
-`mtgmatcher/games` to get all of them (`cmd/bantool` does the latter); asking
+`matcher/games` to get all of them (`cmd/bantool` does the latter); asking
 `Open` for a game nothing registered is an error naming the games that are.
 
 ### Datastore loading
 
-`mtgmatcher.Open(name, reader)` loads the named game's datastore: it runs
+`matcher.Open(name, reader)` loads the named game's datastore: it runs
 exactly one loader and hands back the `*Backend`, stamped with the game it
 was loaded as (`b.Game`). There is no global datastore: every lookup is a
 method on the backend a caller holds, a scraper is built on one
@@ -370,12 +370,12 @@ keeps it:
 
 New-set and new-promo support is almost always **data**, not logic:
 
-- edition name aliases → `mtgmatcher/magic/editions.go` (`EditionTable`) for
+- edition name aliases → `matcher/magic/editions.go` (`EditionTable`) for
   Magic; One Piece, Pokemon and Yu-Gi-Oh keep their own `editionAliases`,
   Riftbound its `storefrontEditions`;
-- card↔number disambiguation → `mtgmatcher/magic/variants.go`
+- card↔number disambiguation → `matcher/magic/variants.go`
   (`VariantsTable`), which scrapers reach as `magic.VariantsTable`;
-- Magic promo detection rules → `mtgmatcher/magic/callbacks.go`
+- Magic promo detection rules → `matcher/magic/callbacks.go`
   (`promoTypeElements`);
 - per-set special cases that genuinely need code → the filter callbacks in
   `magic/callbacks.go`, or the load-time patch tables in `magic/mtgjson.go`
@@ -385,11 +385,11 @@ New-set and new-promo support is almost always **data**, not logic:
 Adding a `switch` case to a `Rules` hook is the last resort. The terminal
 per-card `switch inCard.Name` at the end of `magic.Rules.AdjustEdition` is
 itself a standing "tables before code" violation; do not grow it without a
-good reason. Read the `Match` pipeline in `mtgmatcher/mtgmatcher.go`, and the
+good reason. Read the `Match` pipeline in `matcher/matcher.go`, and the
 ordering notes in `SPECIFICATIONS.md`, before editing any stage.
 
 Every non-Magic game needs far less of this, and shares the shape: each
-embeds `mtgmatcher.DefaultRules` (`Rules struct{ DefaultRules }`) and
+embeds `matcher.DefaultRules` (`Rules struct{ DefaultRules }`) and
 overrides only what it actually needs different. All eight rely on
 `DefaultRules` - a real no-op - for `FinalizeCandidates` and `IsToken`, and
 all but Pokemon for `FilterPrintings`, which Pokemon uses to hold oversized
@@ -397,8 +397,8 @@ and metal-card listings to those printings. All eight
 implement their own `Prefilter`, `AdjustName`, `AdjustEdition`,
 `AliasEdition`, `FilterCards` and `PlainNumber`, which is where a game's
 actual vocabulary - its editions and its number shapes - lives. Finishes are
-not a game's to name: every one is read through `mtgmatcher.FinishSlug`, as
-TCGplayer prices it, and `mtgmatcher.Finishes` is the table of those names
+not a game's to name: every one is read through `matcher.FinishSlug`, as
+TCGplayer prices it, and `matcher.Finishes` is the table of those names
 (`docs/finishes.md`). A few games additionally override one hook for a
 narrow, real check: Lorcana and Yu-Gi-Oh override `IsUnsupported` at the
 wording stage (Lorcana drops puzzle-insert and cruise-promo products;
@@ -416,7 +416,7 @@ number-and-finish disambiguation in `FilterCards`.
 ### Search API
 
 Every scraper matches through `Match()`; no game has a separate search
-path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
+path. The core lookup surface is in `matcher/api.go`: `GetUUIDs`,
 `GetUUIDsInSet`, `GetSealedUUIDsInSet`, `Names`, and the `Search*` family.
 
 ## Adding a scraper
@@ -427,7 +427,7 @@ path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
    `sealed.go`.
 2. Keep the scraper's state in unexported fields: `logCallback`,
    `maxConcurrency` where it fans out, inventory/buylist plus timestamps,
-   and the `*mtgmatcher.Backend` the constructor was handed. Follow
+   and the `*matcher.Backend` the constructor was handed. Follow
    `starcitygames` for an API-backed store or `mtgseattle` for an
    HTML-scraped one. The `register.go` constructor (step 4) copies what
    bantool passes in `mtgban.Options` (`LogCallback`, `Affiliate`,
@@ -442,7 +442,7 @@ path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
    been known by (`coolstuffinc_sealed`, `starcitygames_sealed`), the same
    spelling under every game, and `games` is every game the scraper prices.
    Blank-import the package in `cmd/bantool/main.go`: `targets()` walks
-   `mtgmatcher.AllGames` × `mtgban.Registered(game)` to build the option
+   `matcher.AllGames` × `mtgban.Registered(game)` to build the option
    table, so a registered scraper needs no entry written there by hand,
    only the import, and is immediately selectable as `-game <game> -store
    name`. Add one `bantool-<game>-<store>.yml` workflow per target,
@@ -454,16 +454,16 @@ path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
    `.github/workflows/README.md` says what to copy and change.
 5. Set the right `ScraperInfo` flags: `MetadataOnly`, `NoQuantityInventory`,
    `SealedMode`, `CreditMultiplier`, `Family`, and `Game` - every scraper sets
-   `Game` explicitly, `mtgmatcher.GameMagic` included; nothing reads as Magic
+   `Game` explicitly, `matcher.GameMagic` included; nothing reads as Magic
    by default.
 6. The constructor takes the datastore first and nothing naming a game:
-   `NewScraper(b *mtgmatcher.Backend, ...) (*T, error)`. A scraper that prices
+   `NewScraper(b *matcher.Backend, ...) (*T, error)`. A scraper that prices
    more than one game reads which one from `b.Game`, so it cannot be
    told one game and matched against another's datastore. The vendor's own
    naming for its games - slugs, catalog ids, department numbers - stays
    exported, because the package's own API helpers take one (`Search`,
    `SCGBuylistURL`, `NewGNClient`); what a caller does not need it for is
-   building a scraper. One `map[mtgmatcher.Game]<vendor value>` per package sits
+   building a scraper. One `map[matcher.Game]<vendor value>` per package sits
    between the two and both converts and validates, and a game the map does
    not hold is refused at the constructor, a datastore that names no game
    included, rather than anything silently defaulting to Magic. `Info()`
@@ -473,17 +473,17 @@ path. The core lookup surface is in `mtgmatcher/api.go`: `GetUUIDs`,
 
 ### Adding a game
 
-A game is named in `mtgmatcher` first and reaches the scrapers from there:
+A game is named in `matcher` first and reaches the scrapers from there:
 
-1. Add the `mtgmatcher.Game` constant in `mtgmatcher/game.go` and list it in
-   `mtgmatcher.AllGames`. Its value is the game's own lowercase name, the one
+1. Add the `matcher.Game` constant in `matcher/game.go` and list it in
+   `matcher.AllGames`. Its value is the game's own lowercase name, the one
    its loader registers under and the one flags, workflows, bucket paths and
-   every dump spell it with. `mtgmatcher/game_test.go` pins it and checks
+   every dump spell it with. `matcher/game_test.go` pins it and checks
    every constant has a loader behind it, so pick it once and do not rename
    it later.
 2. Register the matcher side: a loader, a `GameRules` implementation and a
-   `register.go` under `mtgmatcher/<game>/` calling `RegisterGame` with the
-   constant from step 1, plus the blank import in `mtgmatcher/games/games.go`.
+   `register.go` under `matcher/<game>/` calling `RegisterGame` with the
+   constant from step 1, plus the blank import in `matcher/games/games.go`.
 3. Per storefront that carries it: one constant naming the vendor's own
    spelling beside that package's existing ones, and one line in its
    `<recv>Games` map. Nothing else in the scraper changes.
@@ -521,8 +521,8 @@ that map: it is identified by SKU and has its own scrapers.
   Keep new identification lookups on `b`, including in callbacks.
 - The Magic promo-type constants (`PromoTypeBoosterfun`, `PromoTypeBuyABox`,
   `PromoTypePrerelease`, `PromoTypePromoPack`, `PromoTypeThickDisplay` and the
-  rest) live only in `mtgmatcher/magic`. Core keeps no shim copies, so code
-  that resolved them from `mtgmatcher` fails to compile until it imports
+  rest) live only in `matcher/magic`. Core keeps no shim copies, so code
+  that resolved them from `matcher` fails to compile until it imports
   `magic` - deliberately, since core cannot import `magic` and a duplicated
   constant would drift silently where a build error names the symbol.
 - Foil and etched flags coming from scrapers are often wrong. `output()`
@@ -562,8 +562,8 @@ that map: it is identified by SKU and has its own scrapers.
   runs longer goes in a file under `docs/`, committed with the change, and
   the body points at it. Comments stay two or three lines the same way.
 - Commit messages follow the existing `area: imperative summary` style, e.g.
-  `mtgmatcher: dedup hashes via per-norm membership set`. Game sub-packages
-  use their full path as the area, e.g. `mtgmatcher/riftbound: ...`.
+  `matcher: dedup hashes via per-norm membership set`. Game sub-packages
+  use their full path as the area, e.g. `matcher/riftbound: ...`.
 - Do not commit compiled binaries, datastore JSON, or scraped CSVs. The
   current `.gitignore` catches `*.exe`/`*.dll`/`*.so`/`*.dylib`/`*.test` and
   `*.csv`, but **not** extensionless Go binaries and **not** datastore

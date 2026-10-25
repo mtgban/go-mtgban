@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestCheckReadsTheRules holds each rule against a loader that breaks it and

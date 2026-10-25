@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // workflowsDir holds one bantool-<game>-<store>.yml per scheduled target,
@@ -88,7 +88,7 @@ func TestEveryTargetIsScheduledByItsOwnWorkflow(t *testing.T) {
 			t.Errorf("%s dispatches on %q, want %q", file, dispatches[0][1], wantTypes)
 		}
 
-		if _, ok := options[mtgmatcher.Game(game)][store]; !ok {
+		if _, ok := options[matcher.Game(game)][store]; !ok {
 			t.Errorf("%s schedules %s / %s, which is not a registered target", file, game, store)
 			continue
 		}

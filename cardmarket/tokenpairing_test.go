@@ -5,11 +5,11 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestResolveMagicResolvesTokenPairing pins a two-sided token product
-// resolving to the combined entity mtgmatcher/magic derives for it, anchored
+// resolving to the combined entity matcher/magic derives for it, anchored
 // by both face names plus the product's own edition, its Number naming the
 // same faces. Preprocess/Match alone is not built to read "X Token (...) //
 // Y Token (...)" and refuses every one of these listings outright.
@@ -47,7 +47,7 @@ func TestResolveMagicResolvesTokenPairing(t *testing.T) {
 // 2016 prints more than one "Bird" token and more than one "Spirit" token,
 // so a listing naming only "Bird" and "Spirit" cannot say which pairing it
 // means - the same collision TestTokenPairIndexCollision already pins at
-// the mtgmatcher/magic level. A refusal here is correct: guessing one of
+// the matcher/magic level. A refusal here is correct: guessing one of
 // several candidate pairings would risk pricing the wrong physical product.
 func TestResolveMagicRefusesAmbiguousTokenPairing(t *testing.T) {
 	b := realDatastore(t)
@@ -91,9 +91,9 @@ func TestResolveMagicRefusesOtherFaces(t *testing.T) {
 // against its pair's: TMH3 sells Copy #1 and Copy #37 beside Eldrazi Angel
 // #2, and only the first is the pair the datastore has.
 func TestOtherFaces(t *testing.T) {
-	b := &mtgmatcher.Backend{UUIDs: map[string]*mtgmatcher.CardObject{
-		"pair":  {Card: mtgmatcher.Card{Number: "1 // 2"}},
-		"other": {Card: mtgmatcher.Card{Number: "2 // 15"}},
+	b := &matcher.Backend{UUIDs: map[string]*matcher.CardObject{
+		"pair":  {Card: matcher.Card{Number: "1 // 2"}},
+		"other": {Card: matcher.Card{Number: "2 // 15"}},
 	}}
 	res := &resolver{backend: b, gameID: cm.GameMagic}
 	for _, tt := range []struct {

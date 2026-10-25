@@ -3,7 +3,7 @@ package gamenerdz
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // A listing has to name a finish the printing was sold in. This storefront
@@ -50,7 +50,7 @@ func TestFinishPrinted(t *testing.T) {
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card, err := preprocess(b, tt.product, mtgmatcher.GameMagic)
+			card, err := preprocess(b, tt.product, matcher.GameMagic)
 			if err != nil {
 				t.Fatalf("preprocess: %v", err)
 			}

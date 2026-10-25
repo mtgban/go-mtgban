@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // neonInkColors are the Neon Ink treatments the catalog files under a colour.
@@ -41,17 +41,17 @@ var fromCuteToBrutePathways = []string{
 	"Riverglide Pathway",
 }
 
-func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *matcher.Backend, cardName, edition, notes string) (*matcher.InputCard, error) {
 	var variation string
 
 	// Skip tokens, too many variations
 	if strings.Contains(cardName, "Token") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 	// A signed copy prices the signature, not the printing, and the
 	// datastore carries no separate row for one.
 	if strings.Contains(cardName, "(Autographed)") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	cn, found := cardTable[cardName]
@@ -63,7 +63,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	// Titan") keeps the card's own. Ikoria's Godzilla names are read below.
 	var droppedFlavor bool
 	if head, tail, dashed := strings.Cut(cardName, " - "); dashed && edition != "Ikoria: Lair of Behemoths" {
-		if _, err := b.SearchEquals(mtgmatcher.SplitVariants(tail)[0]); err == nil {
+		if _, err := b.SearchEquals(matcher.SplitVariants(tail)[0]); err == nil {
 			if _, err := b.SearchEquals(head); err != nil && !isFlavorOf(b, head, tail) {
 				cardName = tail
 				droppedFlavor = true
@@ -138,7 +138,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		edition = "SLD"
 	// APAC and EURO lands, drop specifier
 	case strings.Contains(cardName, "APAC") || strings.Contains(cardName, "EURO"):
-		variants := mtgmatcher.SplitVariants(cardName)
+		variants := matcher.SplitVariants(cardName)
 		cardName = variants[0]
 		if magic.IsBasicLand(cardName) {
 			edition = "European Land Program"
@@ -169,7 +169,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		edition = ed
 	}
 
-	variants := mtgmatcher.SplitVariants(cardName)
+	variants := matcher.SplitVariants(cardName)
 	cardName = variants[0]
 	if len(variants) > 1 {
 		if variation != "" {
@@ -182,7 +182,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 
 	// Repeat to catch numbers
 	if magic.IsBasicLand(cardName) {
-		num := mtgmatcher.ExtractNumber(cardName)
+		num := matcher.ExtractNumber(cardName)
 		if num != "" {
 			cardName = strings.Replace(cardName, num, "", 1)
 			cardName = strings.TrimSpace(cardName)
@@ -263,7 +263,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		edition = "Magic Premiere Shop 2005"
 	case strings.Contains(variation, "Holiday"):
 		edition = "Happy Holidays"
-	case mtgmatcher.HasPrefix(cardName, "Teferi Master of Time"):
+	case matcher.HasPrefix(cardName, "Teferi Master of Time"):
 		if edition == "Promotional Cards" {
 			variation += "s"
 		} else if edition == "Promo Pack" {
@@ -310,7 +310,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	case "Promos: Pro Tour":
 		// A plain Pro Tour listing keeps PPRO unless the wording names an
 		// RCQ series (Snapcaster Mage sits in both PPRO and PR23).
-		rcq := mtgmatcher.Contains(variation, "Regional Championship") || mtgmatcher.Contains(variation, "RCQ")
+		rcq := matcher.Contains(variation, "Regional Championship") || matcher.Contains(variation, "RCQ")
 		for _, code := range []string{"PPRO", "SLP", "LTR", "PRCQ", "PR23"} {
 			if len(b.MatchInSet(cardName, code)) == 0 {
 				continue
@@ -333,7 +333,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		}
 	case "Promos: Media":
 		// SDCC wording resolves through the core SDCC rule instead.
-		if !mtgmatcher.Contains(variation, "SDCC") {
+		if !matcher.Contains(variation, "SDCC") {
 			// The last hit wins, so PF25 goes first and a media insert of the
 			// same card keeps it.
 			for _, code := range []string{
@@ -397,7 +397,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	case "Promos: 30th Anniversary Promos":
 		// The shelf calls a History promo's starred copy "Retro Frame", which
 		// P30A's datestamped retro copies would otherwise take
-		if mtgmatcher.Contains(variation, "Retro Frame") && len(b.MatchInSet(cardName, "P30H")) > 0 {
+		if matcher.Contains(variation, "Retro Frame") && len(b.MatchInSet(cardName, "P30H")) > 0 {
 			edition = "P30H"
 			variation = "Retro Frame"
 		}
@@ -410,7 +410,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	case "Promos: Magicfest":
 		// The plain Arcane Signet is a shelfPrintings row; the etched one is
 		// steered here, its variation naming the finish.
-		if cardName == "Arcane Signet" && mtgmatcher.Contains(variation, "Etched") {
+		if cardName == "Arcane Signet" && matcher.Contains(variation, "Etched") {
 			edition = "P30M"
 		}
 	case "Alpha", "Beta":
@@ -466,10 +466,10 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		}
 		variation += "Etched"
 	}
-	isFoil := strings.Contains(lowNotes, "foil") && !etchedNote && !mtgmatcher.Contains(variation, "Etched")
+	isFoil := strings.Contains(lowNotes, "foil") && !etchedNote && !matcher.Contains(variation, "Etched")
 
 	var language string
-	for lang := range mtgmatcher.LanguageTag2LanguageCode {
+	for lang := range matcher.LanguageTag2LanguageCode {
 		// Skip empty (or it would match everything) and skip English as sometimes
 		// non-English cards are mistakenly tagged as such
 		if lang != "" && lang != "English" && strings.Contains(notes, lang) {
@@ -487,7 +487,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		drops, inFinish := secretLairDrops(b, cardName, droppedFlavor, requestedFinish(isFoil, variation))
 		if len(drops) > 1 {
 			if len(inFinish) != 1 {
-				return nil, mtgmatcher.ErrUnsupported
+				return nil, matcher.ErrUnsupported
 			}
 			variation = inFinish[0]
 		}
@@ -500,7 +500,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		}
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,
@@ -511,11 +511,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 
 // promoPrinting returns the one printing of the card wearing the promo type,
 // and false when the card has none or several to tell apart.
-func promoPrinting(b *mtgmatcher.Backend, cardName, promoType string) (mtgmatcher.Card, bool) {
-	var found []mtgmatcher.Card
+func promoPrinting(b *matcher.Backend, cardName, promoType string) (matcher.Card, bool) {
+	var found []matcher.Card
 	sets, err := b.Printings4Card(cardName)
 	if err != nil {
-		return mtgmatcher.Card{}, false
+		return matcher.Card{}, false
 	}
 	for _, code := range sets {
 		for _, card := range b.MatchInSet(cardName, code) {
@@ -525,7 +525,7 @@ func promoPrinting(b *mtgmatcher.Backend, cardName, promoType string) (mtgmatche
 		}
 	}
 	if len(found) != 1 {
-		return mtgmatcher.Card{}, false
+		return matcher.Card{}, false
 	}
 	return found[0], true
 }
@@ -534,9 +534,9 @@ func promoPrinting(b *mtgmatcher.Backend, cardName, promoType string) (mtgmatche
 // the flavor name head. The search indexes a reversible card's flavor only
 // doubled ("Optimus Prime // Optimus Prime"), but Match reads the bare one
 // off the whole name, as it does every other flavor name.
-func isFlavorOf(b *mtgmatcher.Backend, head, tail string) bool {
+func isFlavorOf(b *matcher.Backend, head, tail string) bool {
 	alt, found := b.AlternateProps[head]
-	return found && alt.IsFlavor && mtgmatcher.Equals(alt.OriginalName, mtgmatcher.SplitVariants(tail)[0])
+	return found && alt.IsFlavor && matcher.Equals(alt.OriginalName, matcher.SplitVariants(tail)[0])
 }
 
 // secretLairDrops returns the distinct drops the set files a card under, and
@@ -548,9 +548,9 @@ func isFlavorOf(b *mtgmatcher.Backend, head, tail string) bool {
 // A flavor-named drop does not count beside the card's own, which the matcher
 // lands a listing naming no flavor on - unless preprocess cut one off the
 // name (droppedFlavor), which the match then never sees.
-func secretLairDrops(b *mtgmatcher.Backend, cardName string, droppedFlavor bool, finish string) (drops, inFinish []string) {
+func secretLairDrops(b *matcher.Backend, cardName string, droppedFlavor bool, finish string) (drops, inFinish []string) {
 	cards := b.MatchInSet(cardName, "SLD")
-	var unflavored []mtgmatcher.Card
+	var unflavored []matcher.Card
 	for _, card := range cards {
 		if card.FlavorName == "" {
 			unflavored = append(unflavored, card)
@@ -583,15 +583,15 @@ const retroFrameVersion = "1997"
 // reading those as claims refuses 62 of its listings for saying so.
 var treatmentClaims = []struct {
 	tag   string
-	wears func(co *mtgmatcher.CardObject) bool
+	wears func(co *matcher.CardObject) bool
 }{
-	{"Retro Frame", func(co *mtgmatcher.CardObject) bool {
+	{"Retro Frame", func(co *matcher.CardObject) bool {
 		return co.FrameVersion == retroFrameVersion
 	}},
-	{"Textured", func(co *mtgmatcher.CardObject) bool {
+	{"Textured", func(co *matcher.CardObject) bool {
 		return co.HasPromoType(magic.PromoTypeTextured)
 	}},
-	{"Surge Foil", func(co *mtgmatcher.CardObject) bool {
+	{"Surge Foil", func(co *matcher.CardObject) bool {
 		return co.HasPromoType(magic.PromoTypeSurgeFoil)
 	}},
 }
@@ -600,9 +600,9 @@ var treatmentClaims = []struct {
 // printing it was answered with does not wear. The store says these words
 // about the card in hand, so an answer without one is a different card, and
 // the price it carries belongs to that card rather than this listing.
-func namesAbsentTreatment(variation string, co *mtgmatcher.CardObject) bool {
+func namesAbsentTreatment(variation string, co *matcher.CardObject) bool {
 	for _, claim := range treatmentClaims {
-		if mtgmatcher.Contains(variation, claim.tag) && !claim.wears(co) {
+		if matcher.Contains(variation, claim.tag) && !claim.wears(co) {
 			return true
 		}
 	}
@@ -619,14 +619,14 @@ func namesAbsentTreatment(variation string, co *mtgmatcher.CardObject) bool {
 // itself would, so it stands aside there the same way: the store has not
 // been seen writing one for these listings, but a number matching the
 // answer's own is a claim, not the silence this guard exists to catch.
-func wearsUnnamedTextured(b *mtgmatcher.Backend, variation string, co *mtgmatcher.CardObject) bool {
-	if !co.HasPromoType(magic.PromoTypeTextured) || mtgmatcher.Contains(variation, "Textured") {
+func wearsUnnamedTextured(b *matcher.Backend, variation string, co *matcher.CardObject) bool {
+	if !co.HasPromoType(magic.PromoTypeTextured) || matcher.Contains(variation, "Textured") {
 		return false
 	}
-	if number := mtgmatcher.ExtractNumber(variation); number != "" && number == co.Number {
+	if number := matcher.ExtractNumber(variation); number != "" && number == co.Number {
 		return false
 	}
-	return slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card mtgmatcher.Card) bool {
+	return slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card matcher.Card) bool {
 		return !card.HasPromoType(magic.PromoTypeTextured)
 	})
 }
@@ -654,12 +654,12 @@ var premiumFoilTreatments = []struct {
 // requestedFinish is the finish a listing is on sale in.
 func requestedFinish(foil bool, variation string) string {
 	switch {
-	case mtgmatcher.Contains(variation, "Etched"):
-		return mtgmatcher.FinishEtched
+	case matcher.Contains(variation, "Etched"):
+		return matcher.FinishEtched
 	case foil:
-		return mtgmatcher.FinishFoil
+		return matcher.FinishFoil
 	}
-	return mtgmatcher.FinishNonfoil
+	return matcher.FinishNonfoil
 }
 
 // finishPrinted reports whether the printing a Magic listing resolved to was
@@ -668,12 +668,12 @@ func requestedFinish(foil bool, variation string) string {
 // another printing of the name in the requested finish, or a sibling row on
 // this shelf already prices it there; otherwise the printing is the only one
 // this name and set ever had, so dropping it would lose its only price.
-func finishPrinted(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, foil bool, variation string, hasFoilSibling bool) bool {
+func finishPrinted(b *matcher.Backend, co *matcher.CardObject, foil bool, variation string, hasFoilSibling bool) bool {
 	requested := requestedFinish(foil, variation)
 	if co.HasFinish(requested) {
 		return true
 	}
-	if slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card mtgmatcher.Card) bool {
+	if slices.ContainsFunc(b.MatchInSet(co.Name, co.SetCode), func(card matcher.Card) bool {
 		return card.HasFinish(requested)
 	}) {
 		return false

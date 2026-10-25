@@ -6,26 +6,26 @@ import (
 	"testing"
 
 	"github.com/montanaflynn/stats"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // boxBackend holds one set, AAA: a booster type drawing one of four cards, a
 // pack holding one such booster, and a box holding packs of them. It is built
 // by hand, unlike realDatastore's products, because it pins arithmetic rather
 // than the shape of a real product.
-func boxBackend(packs int) *mtgmatcher.Backend {
-	b := &mtgmatcher.Backend{
+func boxBackend(packs int) *matcher.Backend {
+	b := &matcher.Backend{
 		AllSets: []string{"AAA"},
-		UUIDs:   map[string]*mtgmatcher.CardObject{},
-		Sets:    map[string]*mtgmatcher.Set{},
+		UUIDs:   map[string]*matcher.CardObject{},
+		Sets:    map[string]*matcher.Set{},
 	}
 	cards := map[string]int{}
 	for _, id := range []string{"c0", "c1", "c2", "c3"} {
-		b.UUIDs[id] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{UUID: id, SetCode: "AAA"}}
+		b.UUIDs[id] = &matcher.CardObject{Card: matcher.Card{UUID: id, SetCode: "AAA"}}
 		cards[id] = 1
 	}
-	booster := mtgmatcher.Booster{
-		Sheets:              map[string]mtgmatcher.Sheet{"common": {Cards: cards, TotalWeight: len(cards)}},
+	booster := matcher.Booster{
+		Sheets:              map[string]matcher.Sheet{"common": {Cards: cards, TotalWeight: len(cards)}},
 		BoostersTotalWeight: 1,
 	}
 	booster.Boosters = append(booster.Boosters, struct {
@@ -33,17 +33,17 @@ func boxBackend(packs int) *mtgmatcher.Backend {
 		Weight   int            `json:"weight"`
 	}{Contents: map[string]int{"common": 1}, Weight: 1})
 
-	set := &mtgmatcher.Set{Code: "AAA", Booster: map[string]mtgmatcher.Booster{"draft": booster}}
-	set.SealedProduct = []mtgmatcher.SealedProduct{
-		{UUID: "pack", Name: "Pack", Contents: map[string][]mtgmatcher.SealedContent{
+	set := &matcher.Set{Code: "AAA", Booster: map[string]matcher.Booster{"draft": booster}}
+	set.SealedProduct = []matcher.SealedProduct{
+		{UUID: "pack", Name: "Pack", Contents: map[string][]matcher.SealedContent{
 			"pack": {{Set: "aaa", Code: "draft"}},
 		}},
-		{UUID: "box", Name: "Box", Contents: map[string][]mtgmatcher.SealedContent{
+		{UUID: "box", Name: "Box", Contents: map[string][]matcher.SealedContent{
 			"sealed": {{Set: "aaa", UUID: "pack", Name: "Pack", Count: packs}},
 		}},
 	}
 	for _, product := range set.SealedProduct {
-		b.UUIDs[product.UUID] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{UUID: product.UUID, SetCode: "AAA"}, Sealed: true}
+		b.UUIDs[product.UUID] = &matcher.CardObject{Card: matcher.Card{UUID: product.UUID, SetCode: "AAA"}, Sealed: true}
 	}
 	b.Sets["AAA"] = set
 	return b

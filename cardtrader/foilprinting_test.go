@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 // TestFoilPrintingID pins which listings the foil flag may move. CardTrader
@@ -20,7 +20,7 @@ func TestFoilPrintingID(t *testing.T) {
 
 	// Strixhaven Mystical Archive sells one printing in all three finishes,
 	// which is what lets the flag cross between two of them.
-	plain := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, "235648")
+	plain := b.ConvertID(matcher.IDSpaceTCGplayer, "235648")
 	if plain == "" {
 		t.Fatal("datastore carries no TCGplayer id 235648")
 	}
@@ -34,13 +34,13 @@ func TestFoilPrintingID(t *testing.T) {
 	}
 
 	// A derived token pairing's own combined name is deliberately excluded
-	// from every name index (mtgmatcher/magic/tokenpairs.go), so the plain
+	// from every name index (matcher/magic/tokenpairs.go), so the plain
 	// HasFoilPrinting path below can never find one's foil sibling by name -
 	// resolved instead by the pairing's own tcgplayerProductId plus the
 	// foil flag. AFR's dungeon-card pairing sells in foil; a pairing where
 	// one face never did (Goblin // Giant Teddy Bear, TC21) is refused
 	// rather than silently kept at its nonfoil price.
-	pairedFoilCapable := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, "244297")
+	pairedFoilCapable := b.ConvertID(matcher.IDSpaceTCGplayer, "244297")
 	if pairedFoilCapable == "" {
 		t.Fatal("datastore carries no derived pairing for TCGplayer id 244297")
 	}
@@ -48,14 +48,14 @@ func TestFoilPrintingID(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pairedNonfoilOnly := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, "209922")
+	pairedNonfoilOnly := b.ConvertID(matcher.IDSpaceTCGplayer, "209922")
 	if pairedNonfoilOnly == "" {
 		t.Fatal("datastore carries no derived pairing for TCGplayer id 209922")
 	}
 
 	// Card Trader spells this one "Lord of Ulvenwald", which no printing
 	// carries, so only the resolved card's own name finds its foil.
-	dfc := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, "247917")
+	dfc := b.ConvertID(matcher.IDSpaceTCGplayer, "247917")
 	if dfc == "" {
 		t.Fatal("datastore carries no TCGplayer id 247917")
 	}
@@ -110,7 +110,7 @@ const wotcRunDatastore = `{"meta": {"date": "2026-10-23", "version": "1"}, "data
 // unlimited holo, and a first-edition listing on a version that never says
 // holo is the 1st Edition holo.
 func TestListingID(t *testing.T) {
-	b, err := mtgmatcher.Open("pokemon", strings.NewReader(wotcRunDatastore))
+	b, err := matcher.Open("pokemon", strings.NewReader(wotcRunDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func TestListingID(t *testing.T) {
 		{"no finish named keeps the flag", "84647", "", true, false, "83-82_84647_1steditionholofoil"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			card := &mtgmatcher.InputCard{Finish: tt.finish, Foil: tt.foil}
+			card := &matcher.InputCard{Finish: tt.finish, Foil: tt.foil}
 			var p Product
 			p.Properties.FirstEdition = tt.first
 			got := listingID(b, GamePokemon, tt.id, card, p)

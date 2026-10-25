@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -172,7 +172,7 @@ func (p *MLProduct) readPage(category, code string) {
 // idGuess is one id the row may name a card by, and whether match() must
 // see the name agree before trusting it.
 type idGuess struct {
-	space   mtgmatcher.IDSpace
+	space   matcher.IDSpace
 	id      string
 	confirm bool
 }
@@ -182,13 +182,13 @@ type idGuess struct {
 func (p MLProduct) idGuesses() []idGuess {
 	switch {
 	case p.TCGProductID != "":
-		return []idGuess{{mtgmatcher.IDSpaceTCGplayer, p.TCGProductID, p.AmbiguousID}}
+		return []idGuess{{matcher.IDSpaceTCGplayer, p.TCGProductID, p.AmbiguousID}}
 	case p.MultiverseID != "":
-		return []idGuess{{mtgmatcher.IDSpaceMultiverse, p.MultiverseID, false}}
+		return []idGuess{{matcher.IDSpaceMultiverse, p.MultiverseID, false}}
 	case p.CodeID != "":
 		return []idGuess{
-			{mtgmatcher.IDSpaceTCGplayer, p.CodeID, true},
-			{mtgmatcher.IDSpaceMultiverse, p.CodeID, true},
+			{matcher.IDSpaceTCGplayer, p.CodeID, true},
+			{matcher.IDSpaceMultiverse, p.CodeID, true},
 		}
 	}
 	return nil

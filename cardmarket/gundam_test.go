@@ -5,7 +5,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/gundam"
+	_ "github.com/mtgban/go-mtgban/matcher/gundam"
 )
 
 // gundamDatastore is the published Gundam datastore cut down to the rows

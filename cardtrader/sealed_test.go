@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestMain loads the datastore once for the whole package, where a run
@@ -18,12 +18,12 @@ import (
 var (
 	datastoreOnce    sync.Once
 	datastoreErr     error
-	datastoreBackend *mtgmatcher.Backend
+	datastoreBackend *matcher.Backend
 )
 
 // realDatastore reads the Magic datastore the first time a test asks for it,
 // and skips where the run carries none.
-func realDatastore(t *testing.T) *mtgmatcher.Backend {
+func realDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -89,7 +89,7 @@ func TestBuildProductMap(t *testing.T) {
 		}
 		// A language variant would be dropped before the resolver runs,
 		// failing the assertion for the wrong reason.
-		if mtgmatcher.SealedIsLanguageVariant(co.Name) {
+		if matcher.SealedIsLanguageVariant(co.Name) {
 			continue
 		}
 		uuid, err := b.ResolveSealed(co.Name)
@@ -152,13 +152,13 @@ func TestBuildProductMap(t *testing.T) {
 // sealedRunsBackend is a set carrying one product in both of its print runs,
 // which is how a catalog names a Flesh and Blood or a YuGiOh set. CardTrader
 // names both blueprints the same and shelves them apart.
-func sealedRunsBackend() *mtgmatcher.Backend {
-	backend := &mtgmatcher.Backend{
+func sealedRunsBackend() *matcher.Backend {
+	backend := &matcher.Backend{
 		Game:           "fleshandblood",
-		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		UUIDs:          map[string]*matcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
-		Sets: map[string]*mtgmatcher.Set{
+		Sets: map[string]*matcher.Set{
 			"CRU": {Name: "Crucible of War", Code: "CRU"},
 		},
 	}
@@ -273,13 +273,13 @@ func TestBuildProductMapDropsAccessories(t *testing.T) {
 // donates "sleeves" to the pooled vocabulary - which is what makes the word
 // free against every product of the game, and so what lets a sleeve's name
 // reach the box it was printed for.
-func sealedAccessoryBackend() *mtgmatcher.Backend {
-	backend := &mtgmatcher.Backend{
+func sealedAccessoryBackend() *matcher.Backend {
+	backend := &matcher.Backend{
 		Game:           "fleshandblood",
-		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		UUIDs:          map[string]*matcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
-		Sets: map[string]*mtgmatcher.Set{
+		Sets: map[string]*matcher.Set{
 			"CRU": {Name: "Crucible of War", Code: "CRU"},
 			"SLV": {Name: "Sleeves Promos", Code: "SLV"},
 		},
@@ -347,13 +347,13 @@ func TestBuildProductMapDropsSubsumed(t *testing.T) {
 // donates "bundle" to the pooled vocabulary - which is what lets a vendor say
 // it about any product of the game, and so what lets the bundle's name reach
 // the box at all.
-func sealedSubsumedBackend() *mtgmatcher.Backend {
-	backend := &mtgmatcher.Backend{
+func sealedSubsumedBackend() *matcher.Backend {
+	backend := &matcher.Backend{
 		Game:           "fleshandblood",
-		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		UUIDs:          map[string]*matcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
-		Sets: map[string]*mtgmatcher.Set{
+		Sets: map[string]*matcher.Set{
 			"CRU": {Name: "Crucible of War", Code: "CRU"},
 			"BND": {Name: "Bundle Promos", Code: "BND"},
 		},
@@ -366,13 +366,13 @@ func sealedSubsumedBackend() *mtgmatcher.Backend {
 
 // sealedShelfCodeBackend is two sets a storefront files under a Bandai set
 // code, one of them named for the number that code carries.
-func sealedShelfCodeBackend() *mtgmatcher.Backend {
-	backend := &mtgmatcher.Backend{
+func sealedShelfCodeBackend() *matcher.Backend {
+	backend := &matcher.Backend{
 		Game:           "gundam",
-		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		UUIDs:          map[string]*matcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
-		Sets: map[string]*mtgmatcher.Set{
+		Sets: map[string]*matcher.Set{
 			"GD05": {Name: "Freedom Ascension", Code: "GD05"},
 			"ST10": {Name: "Starter Deck 10: Generation Pulse", Code: "ST10"},
 		},

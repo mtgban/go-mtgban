@@ -5,7 +5,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
 )
 
 // lorcanaBridgeDatastore is the published datastore cut down to the rows the

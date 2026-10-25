@@ -7,9 +7,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -23,7 +23,7 @@ type MTGStocks struct {
 	inventoryDate  time.Time
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	client    *STKSClient
 	inventory mtgban.InventoryRecord
@@ -46,7 +46,7 @@ func (stks *MTGStocks) printf(format string, a ...any) {
 }
 
 // NewScraper returns an interests scraper matching against b.
-func NewScraper(b *mtgmatcher.Backend) *MTGStocks {
+func NewScraper(b *matcher.Backend) *MTGStocks {
 	stks := MTGStocks{backend: b}
 	stks.client = NewClient()
 	stks.inventory = mtgban.InventoryRecord{}
@@ -65,7 +65,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	}
 
 	cardID, err := stks.backend.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
 		switch theCard.Edition {
@@ -83,7 +83,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		stks.printf("%q", theCard)
 		stks.printf("%s | %s | %v", req.interest.Print.Name, req.interest.Print.SetName, req.interest.Foil)
 
-		var alias *mtgmatcher.AliasingError
+		var alias *matcher.AliasingError
 		if errors.As(err, &alias) {
 			probes := alias.Probe()
 			for _, probe := range probes {
@@ -104,7 +104,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 			Price:      req.interest.PresentPrice,
 			Quantity:   1,
 			URL:        link,
-			SellerName: req.name + " " + mtgmatcher.Title(req.interest.InterestType),
+			SellerName: req.name + " " + matcher.Title(req.interest.InterestType),
 		},
 	}
 
@@ -179,6 +179,6 @@ func (stks *MTGStocks) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "STKS"
 	info.InventoryTimestamp = &stks.inventoryDate
 	info.MetadataOnly = true
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

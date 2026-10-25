@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 func TestPreprocessMagic(t *testing.T) {
@@ -92,7 +92,7 @@ func TestPreprocessMagicFinish(t *testing.T) {
 		{"Aether Channeler (GAME-011) - Store Championships Foil", "foil", true},
 		{"Aether Channeler (GAME-011) - Store Championships", "foil", false},
 	} {
-		card, err := preprocessMagic(&mtgmatcher.Backend{}, VSProduct{
+		card, err := preprocessMagic(&matcher.Backend{}, VSProduct{
 			DisplayName:    tt.display,
 			SelectedFinish: tt.finish,
 		})
@@ -177,7 +177,7 @@ func TestPreprocessRiftbound(t *testing.T) {
 		// number: the first group in the name is, and it is read first.
 		{"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil (Unique) (699149)", "Foil", "Teemo - Swift Scout", "263a Alternate Art", true},
 	} {
-		card, err := preprocessRiftbound(&mtgmatcher.Backend{}, VSProduct{
+		card, err := preprocessRiftbound(&matcher.Backend{}, VSProduct{
 			DisplayName:    tt.display,
 			SelectedFinish: tt.finish,
 			ProductData:    VSProductData{SetName: "Origins"},
@@ -198,7 +198,7 @@ func TestPreprocessRiftbound(t *testing.T) {
 		"Teemo - Swift Scout (Alternate Art) - Riftbound Promotional Cards Foil (Unique) (699149)",
 		"Ahri - Inquisitive - Vendetta Foil",
 	} {
-		card, err := preprocessRiftbound(&mtgmatcher.Backend{}, VSProduct{
+		card, err := preprocessRiftbound(&matcher.Backend{}, VSProduct{
 			DisplayName:    display,
 			SelectedFinish: "Foil",
 			ProductData:    VSProductData{SetName: "Origins"},
@@ -576,11 +576,11 @@ func TestPreprocessMagicSlashedNumber(t *testing.T) {
 // both ways: the misspelling has no printing, the correction has many.
 func TestCardTable(t *testing.T) {
 	for written, meant := range cardTable {
-		if mtgmatcher.Normalize(written) == mtgmatcher.Normalize(meant) {
+		if matcher.Normalize(written) == matcher.Normalize(meant) {
 			t.Errorf("%q corrects to itself", written)
 		}
 		product := VSProduct{DisplayName: written + " (EOS-040) - Edge of Eternities: Stellar Sights"}
-		card, err := preprocessMagic(&mtgmatcher.Backend{}, product)
+		card, err := preprocessMagic(&matcher.Backend{}, product)
 		if err != nil {
 			t.Errorf("%s: %v", written, err)
 			continue
@@ -644,7 +644,7 @@ func TestPreprocessImageID(t *testing.T) {
 		SelectedFinish: "Foil",
 		ImageURL:       "https://cdn.shopify.com/s/files/1/0912/8761/7842/files/654143_a16de4cd-4373-4b3a-a68a-fcd4f1a918cf.jpg?v=1760151809",
 	}
-	card, err := preprocess(b, product, mtgmatcher.GameOnePiece)
+	card, err := preprocess(b, product, matcher.GameOnePiece)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -658,7 +658,7 @@ func TestPreprocessImageID(t *testing.T) {
 	}
 
 	product.ImageURL = "https://store.storepass.co/imgs/placeholder-img.jpg"
-	card, err = preprocess(b, product, mtgmatcher.GameOnePiece)
+	card, err = preprocess(b, product, matcher.GameOnePiece)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -681,7 +681,7 @@ func TestPreprocessImageIDNumbered(t *testing.T) {
 
 	other := product
 	other.DisplayName = "Corinna Veraza (180/221) - Spiritforged Foil"
-	refused, err := preprocess(b, other, mtgmatcher.GameRiftbound)
+	refused, err := preprocess(b, other, matcher.GameRiftbound)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -689,7 +689,7 @@ func TestPreprocessImageIDNumbered(t *testing.T) {
 		t.Errorf("preprocess() took id %q for another number", refused.ID)
 	}
 
-	card, err := preprocess(b, product, mtgmatcher.GameRiftbound)
+	card, err := preprocess(b, product, matcher.GameRiftbound)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -717,7 +717,7 @@ func TestPreprocessImageIDFinish(t *testing.T) {
 		ImageURL:       "https://cdn.shopify.com/s/files/1/0912/8761/7842/files/642695.jpg?v=1774682639",
 		ProductData:    VSProductData{SetName: "SV: Black Bolt"},
 	}
-	card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+	card, err := preprocess(b, product, matcher.GamePokemon)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -732,7 +732,7 @@ func TestPreprocessImageIDFinish(t *testing.T) {
 
 	product.DisplayName = "Cinccino 076/086  - Reverse Holofoil SV Black Bolt - Uncommon"
 	product.SelectedFinish = "Reverse Holofoil"
-	card, err = preprocess(b, product, mtgmatcher.GamePokemon)
+	card, err = preprocess(b, product, matcher.GamePokemon)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -778,7 +778,7 @@ func TestPreprocessMagicImageID(t *testing.T) {
 			DisplayName: tt.display,
 			ImageURL:    image,
 			ProductData: VSProductData{Set: jsonflex.String(tt.set), SetName: tt.setName},
-		}, mtgmatcher.GameMagic)
+		}, matcher.GameMagic)
 		if err != nil {
 			t.Fatalf("%s: %v", tt.display, err)
 		}

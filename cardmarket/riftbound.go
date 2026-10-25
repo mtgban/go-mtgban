@@ -5,26 +5,26 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // bridgeNamesCard reports whether a bridged printing is the card the
 // product names, allowing for the datastore's own shortened or misspelt
 // wording. It is what keeps a bridge link to a fused-token product (whose
 // TCGplayer id names an unrelated dual-faced card) from landing.
-func bridgeNamesCard(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
+func bridgeNamesCard(b *matcher.Backend, product *cm.Product, cardID string) bool {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return false
 	}
 	name, _, _ := strings.Cut(product.Name, " (V.")
-	if mtgmatcher.CloseName(co.Name, name) {
+	if matcher.CloseName(co.Name, name) {
 		return true
 	}
 	// A promo's name carries what sets it apart, "(JP Exclusive)" and the like.
 	bare, decorated := strings.CutSuffix(co.Name, ")")
 	if i := strings.LastIndex(bare, " ("); decorated && i > 0 {
-		return mtgmatcher.CloseName(bare[:i], name)
+		return matcher.CloseName(bare[:i], name)
 	}
 	return false
 }
@@ -84,8 +84,8 @@ func (r *resolver) otherSetPromo(product *cm.Product, cardID string) bool {
 		return false
 	}
 	for _, promoType := range co.PromoTypes {
-		_, namesSet := r.backend.NormalizedSets[mtgmatcher.Normalize(promoType)]
-		if namesSet && !mtgmatcher.Equals(promoType, set) {
+		_, namesSet := r.backend.NormalizedSets[matcher.Normalize(promoType)]
+		if namesSet && !matcher.Equals(promoType, set) {
 			return true
 		}
 	}

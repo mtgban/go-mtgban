@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // mkmSnapshot builds a catalog the shape of a real one: a published guide
@@ -15,16 +15,16 @@ import (
 // actually spans, and the market price is drawn around the same rising
 // multiplier the published dumps show, so a fit against this lands where a
 // fit against them does and the benchmark doubles as a sanity check on it.
-func mkmSnapshot(cards, polled int) (*mtgmatcher.Backend, *priceSnapshot) {
+func mkmSnapshot(cards, polled int) (*matcher.Backend, *priceSnapshot) {
 	rng := rand.New(rand.NewSource(1))
-	b := &mtgmatcher.Backend{UUIDs: make(map[string]*mtgmatcher.CardObject, cards)}
+	b := &matcher.Backend{UUIDs: make(map[string]*matcher.CardObject, cards)}
 	r := &priceSnapshot{
 		Retail:  make(map[string]map[string]float64, cards),
 		Buylist: map[string]map[string]float64{},
 	}
 	for i := range cards {
 		uuid := fmt.Sprintf("card%d", i)
-		b.UUIDs[uuid] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: uuid, SetCode: "AAA"}}
+		b.UUIDs[uuid] = &matcher.CardObject{Card: matcher.Card{Name: uuid, SetCode: "AAA"}}
 		b.AllUUIDs = append(b.AllUUIDs, uuid)
 
 		// $0.05 to $500, log-uniform.

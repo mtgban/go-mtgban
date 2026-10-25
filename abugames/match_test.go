@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 func TestMatchCardIdentifiers(t *testing.T) {
@@ -37,7 +37,7 @@ func TestMatchCardIdentifiers(t *testing.T) {
 				}
 				id, err := matchCard(b, &card, in)
 				if tt.wantAlias {
-					var alias *mtgmatcher.AliasingError
+					var alias *matcher.AliasingError
 					if !errors.As(err, &alias) {
 						t.Fatalf("got %s, %v; want ambiguity", id, err)
 					}
@@ -67,7 +67,7 @@ func TestMatchCardRejectsConflictingIDs(t *testing.T) {
 		t.Fatal(err)
 	}
 	id, err := matchCard(b, &card, in)
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if !errors.As(err, &alias) {
 		t.Fatalf("got %s, %v; conflicting IDs must leave ambiguity", id, err)
 	}
@@ -106,9 +106,9 @@ func TestMatchCardKeepsWordingOverStaleIDs(t *testing.T) {
 func TestMatchCardIDsDoNotOverrideUnsupported(t *testing.T) {
 	b := realDatastore(t)
 	card := ABUCard{ScryfallIDs: []string{"f2a7042f-a6f0-4e77-86a2-5eb0d2587363"}}
-	in := mtgmatcher.InputCard{Name: "Counterspell", Edition: "URL/Convention Promos", Variation: "2", Foil: true, Language: "Italian"}
+	in := matcher.InputCard{Name: "Counterspell", Edition: "URL/Convention Promos", Variation: "2", Foil: true, Language: "Italian"}
 	_, err := matchCard(b, &card, &in)
-	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if !errors.Is(err, matcher.ErrUnsupported) {
 		t.Fatalf("got %v, want unsupported language", err)
 	}
 }

@@ -22,9 +22,9 @@ import (
 	"bufio"; "encoding/json"; "errors"; "fmt"; "os"; "regexp"; "strings"; "testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 var zzHead = regexp.MustCompile(`(unknown variant|unknown card name|aliasing detected) for "(.*?)" \[(.*?) #(.*?)\] sku=(\S+)`)
@@ -57,7 +57,7 @@ func TestZZReplay(t *testing.T) {
 
 		verdict, where := "landed", ""
 		switch {
-		case errors.Is(err, mtgmatcher.ErrUnsupported):
+		case errors.Is(err, matcher.ErrUnsupported):
 			verdict, where, skipped = "skipped", "unsupported", skipped+1
 		case err != nil:
 			verdict, where = "refused", err.Error()
@@ -176,7 +176,7 @@ both shapes per listing in one run, and build the id-only card first, because
 `Match` mutates its input:
 
 ```go
-byID := &mtgmatcher.InputCard{ID: in.ID, Finish: in.Finish, Foil: in.Foil}
+byID := &matcher.InputCard{ID: in.ID, Finish: in.Finish, Foil: in.Foil}
 full, err := b.Match(in)
 idOnly, idErr := b.Match(byID) // bucket same/moved/lost/gained, split by b.ConvertID(space, in.ID) != ""
 ```
@@ -220,9 +220,9 @@ Include the negative case: the listing that must still refuse.
 
 ## F. Golden test data
 
-`mtgmatcher/<game>/testdata/<game>_test_data.json` holds baked
+`matcher/<game>/testdata/<game>_test_data.json` holds baked
 `{description, input, uuid, error}` cases; regenerate with
-`go test ./mtgmatcher/<game>/ -update-<game>`. It refuses to
+`go test ./matcher/<game>/ -update-<game>`. It refuses to
 flip a case between success and error unless the description carries a
 `negative:` prefix - when a flip is genuinely intended, edit that entry by hand
 first, and diff the regenerated file case-by-case before committing:

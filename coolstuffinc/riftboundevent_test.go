@@ -3,9 +3,9 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestRiftboundShelfFollowsTheEventBracket pins the promos whose name carries
@@ -25,7 +25,7 @@ func TestRiftboundShelfFollowsTheEventBracket(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			name := riftboundSpellings.Replace(tt.name)
 			shelf := riftboundShelf(b, "Promo", tt.notes, name, tt.notes, true)
-			card := &mtgmatcher.InputCard{Name: name, Edition: shelf, Variation: tt.notes, Foil: true}
+			card := &matcher.InputCard{Name: name, Edition: shelf, Variation: tt.notes, Foil: true}
 			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", card, err)

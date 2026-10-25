@@ -9,21 +9,21 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
+	"github.com/mtgban/go-mtgban/matcher"
+	_ "github.com/mtgban/go-mtgban/matcher/riftbound"
 )
 
 var (
 	riftboundBackendOnce sync.Once
 	riftboundBackendErr  error
-	riftboundBackend     *mtgmatcher.Backend
+	riftboundBackend     *matcher.Backend
 )
 
 // loadRiftboundBackend installs the real Riftbound datastore RIFTBOUND_PATH
 // names, once per test binary run: the gallery envelope Load parses is too
 // shaped to fake convincingly, so the bridge guard below is graded against
 // real rows instead (see the *_finish_test.go equivalents for other games).
-func loadRiftboundBackend(t *testing.T) *mtgmatcher.Backend {
+func loadRiftboundBackend(t *testing.T) *matcher.Backend {
 	t.Helper()
 	riftboundBackendOnce.Do(func() {
 		path := os.Getenv("RIFTBOUND_PATH")

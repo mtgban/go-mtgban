@@ -31,7 +31,7 @@ for g in ['lorcana', 'riftbound', 'onepiece', 'yugioh', 'fleshandblood', 'pokemo
         data = [b for b in data['pageProps']['page']['blades'] if b['type'] == 'riftboundCardGallery'][0]
     out = collections.defaultdict(lambda: [0, 0])
     walk(data, '', out)
-    tags = set(re.findall(r'json:"([^",]+)', ''.join(open(f).read() for f in glob.glob(f'mtgmatcher/{g}/*.go') if not f.endswith('_test.go'))))
+    tags = set(re.findall(r'json:"([^",]+)', ''.join(open(f).read() for f in glob.glob(f'matcher/{g}/*.go') if not f.endswith('_test.go'))))
     print(f'== {g}')
     for p, (n, filled) in sorted(out.items()):
         if not p.endswith('.*') and p.rsplit('.', 1)[-1].rstrip('[]') not in tags:
@@ -48,7 +48,7 @@ The `Card` fields each loader's literal sets, side by side:
 import re
 games = ['lorcana', 'riftbound', 'onepiece', 'yugioh', 'fleshandblood', 'pokemon', 'gundam', 'palworld']
 def keys(src):
-    i = src.index('mtgmatcher.Card{') + len('mtgmatcher.Card{'); depth, j = 1, i
+    i = src.index('matcher.Card{') + len('matcher.Card{'); depth, j = 1, i
     while depth:
         depth += {'{': 1, '}': -1}.get(src[j], 0); j += 1
     found, d = set(), 0
@@ -57,7 +57,7 @@ def keys(src):
         if d == 0 and m: found.add(m.group(1))
         d += line.count('{') - line.count('}')
     return found
-sets = {g: keys(open(f'mtgmatcher/{g}/{g}.go').read()) for g in games}
+sets = {g: keys(open(f'matcher/{g}/{g}.go').read()) for g in games}
 for k in sorted(set().union(*sets.values())):
     print(f'{k:20}', ' '.join(f'{("x" if k in sets[g] else "."):5}' for g in games))
 ```
@@ -81,7 +81,7 @@ docs/agents/loader-cleanup/jdiff.py <dumps>/master/<pkg>.<fixture>.json <dumps>/
 - `P=<dir>` reads every `<game>.json` from `dir`, to load a local build.
 - `ENV_FILE` names another `.env`.
 - Variants that tests derive with `strings.Replace` are listed by hand in
-  `DERIVED`, and fixtures outside `mtgmatcher/<game>` and cardmarket in
+  `DERIVED`, and fixtures outside `matcher/<game>` and cardmarket in
   `BY_HAND`.
 
 ## C. Cardmarket catalog replay (`cardmarket/zz_replay_test.go`)

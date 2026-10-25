@@ -1,13 +1,13 @@
 package mtgseattle
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func init() {
-	mtgban.Register("mtgseattle", []mtgmatcher.Game{mtgmatcher.GameMagic},
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	mtgban.Register("mtgseattle", []matcher.Game{matcher.GameMagic},
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback
 			// The site throttles hard past defaultConcurrency, so a

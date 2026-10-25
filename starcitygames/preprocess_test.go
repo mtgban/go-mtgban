@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // withMagic skips a test that reads the Magic datastore where none is
@@ -17,12 +17,12 @@ import (
 var (
 	magicOnce    sync.Once
 	magicErr     error
-	magicBackend *mtgmatcher.Backend
+	magicBackend *matcher.Backend
 )
 
 // withMagic loads AllPrintings the first time a test asks for it, and skips
 // where the run carries none.
-func withMagic(t *testing.T) *mtgmatcher.Backend {
+func withMagic(t *testing.T) *matcher.Backend {
 	t.Helper()
 	magicOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")

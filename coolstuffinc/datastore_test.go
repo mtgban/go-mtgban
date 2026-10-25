@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // datastores holds each game's backend once a test has read it: 48 tests
@@ -14,14 +14,14 @@ import (
 // written to once loaded.
 var (
 	datastoresMu sync.Mutex
-	datastores   = map[mtgmatcher.Game]*mtgmatcher.Backend{}
+	datastores   = map[matcher.Game]*matcher.Backend{}
 )
 
 // readGameDatastore reads a game's datastore from the variable naming it,
 // for a test to ask directly, or skips the test where the run carries none:
 // this storefront's tests cover several games, and each runs under the job
 // holding its own game's file.
-func readGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatcher.Backend {
+func readGameDatastore(t *testing.T, game matcher.Game, env string) *matcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {

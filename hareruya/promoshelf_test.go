@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestPromoShelf pins the retail promo shelf's newer wordings to the
@@ -198,7 +198,7 @@ func TestBuylistPromoShelf(t *testing.T) {
 			b := withMagic(t)
 			theCard, err := preprocess(b, tt.title)
 			if tt.wantSet == "" {
-				if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+				if !errors.Is(err, matcher.ErrUnsupported) {
 					t.Errorf("preprocess(%q) = %v, want ErrUnsupported", tt.title, err)
 				}
 				return

@@ -5,7 +5,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestMarketFilterParamsCoverage pins which games are filtered: measured
@@ -86,7 +86,7 @@ func TestParseBanSnapshotBodyLevelErrors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := parseBanSnapshot([]byte(tt.body), mtgmatcher.GamePokemon)
+			_, err := parseBanSnapshot([]byte(tt.body), matcher.GamePokemon)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseBanSnapshot() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -100,7 +100,7 @@ func TestParseBanSnapshotBodyLevelErrors(t *testing.T) {
 // price decode as zero - which marketCandidate refuses as "not priced".
 func TestBanPriceDecodesEtched(t *testing.T) {
 	const body = `{"retail":{"u":{"MKMTrend":{"etched":11.95}}},"buylist":{}}`
-	snap, err := parseBanSnapshot([]byte(body), mtgmatcher.GameMagic)
+	snap, err := parseBanSnapshot([]byte(body), matcher.GameMagic)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -283,7 +283,7 @@ func TestMarketCandidatesThresholds(t *testing.T) {
 }
 
 func TestMarketCandidatesUnfilteredGame(t *testing.T) {
-	if got := marketCandidates(&mtgmatcher.Backend{}, 999999, &banSnapshot{}); got != nil {
+	if got := marketCandidates(&matcher.Backend{}, 999999, &banSnapshot{}); got != nil {
 		t.Errorf("marketCandidates for an unfiltered game = %v, want nil", got)
 	}
 }

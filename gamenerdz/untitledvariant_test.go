@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
+	_ "github.com/mtgban/go-mtgban/matcher/onepiece"
 )
 
 // untitledVariantDatastore is the published One Piece datastore cut down to
@@ -90,7 +90,7 @@ const unknownTitleProduct = `{
 // leaves it out rather than filling in the placeholder string the rest of
 // the feed carries.
 func TestProcessUntitledBuyVariant(t *testing.T) {
-	b, err := mtgmatcher.Open("onepiece", strings.NewReader(untitledVariantDatastore))
+	b, err := matcher.Open("onepiece", strings.NewReader(untitledVariantDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -4,9 +4,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // promoTypesSpell reports whether a printing's tags spell the label wanted,
@@ -61,7 +61,7 @@ func TestConditionPrintingReachesTheRun(t *testing.T) {
 			if printing == "" {
 				t.Fatal("the wording named no printing")
 			}
-			card := &mtgmatcher.InputCard{
+			card := &matcher.InputCard{
 				Name:      onePieceSpelling(test.name),
 				Edition:   test.edition,
 				Variation: eventNamed(test.number+" "+nameQualifiers(test.name)) + " " + printing,

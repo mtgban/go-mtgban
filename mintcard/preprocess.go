@@ -5,16 +5,16 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
-func setCodeExists(b *mtgmatcher.Backend, code string) bool {
+func setCodeExists(b *matcher.Backend, code string) bool {
 	_, err := b.GetSet(code)
 	return err == nil
 }
 
-func nameExists(b *mtgmatcher.Backend, name string) bool {
+func nameExists(b *matcher.Backend, name string) bool {
 	uuids, err := b.SearchEquals(name)
 	return err == nil && len(uuids) > 0
 }
@@ -54,9 +54,9 @@ var codeTable = map[string]string{
 	"PVC": "DDE",
 }
 
-func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, edition, setCode string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition, setCode string) (*matcher.InputCard, error) {
 	if setCode == "FWB" {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 	// The double-faced helper cards a booster carries are the datastore's
 	// substitute cards, filed in a set of their own beside the one they
@@ -78,7 +78,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		strings.Contains(cardName, "Helper Card") ||
 		strings.HasPrefix(cardName, "Emblem ") ||
 		(strings.Contains(cardName, "Signature") && !strings.Contains(cardName, "Signature Spellbook"))) {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 	if fixup, found := codeTable[setCode]; found {
 		setCode = fixup
@@ -87,17 +87,17 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		return preprocessTokenPair(b, cardName, finish, setCode)
 	}
 	if strings.Contains(cardName, "Complete") && strings.Contains(cardName, "Set") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 	if strings.Contains(cardName, "Signed") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 	if strings.Contains(cardName, "Graded") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	cardName = strings.Replace(cardName, ")(", ") (", -1)
-	s := mtgmatcher.SplitVariants(cardName)
+	s := matcher.SplitVariants(cardName)
 	cardName = s[0]
 	variant := ""
 	if len(s) > 1 {
@@ -164,7 +164,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		}
 		if len(b.MatchInSet(cardName, "SLC")) == 1 {
 			edition = "SLC"
-			if len(b.MatchInSet(cardName, "SLD")) > 0 && mtgmatcher.ExtractYear(variant) == "" {
+			if len(b.MatchInSet(cardName, "SLD")) > 0 && matcher.ExtractYear(variant) == "" {
 				edition = "SLD"
 			}
 		}
@@ -198,7 +198,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, number, finish, langauge, editi
 		langauge = ""
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
@@ -227,11 +227,11 @@ var missingSpaceBeforeParen = regexp.MustCompile(`(\S)(\(\d+(?:/\d+)?\))`)
 
 // preprocessTokenPair resolves a two-sided token listing - one whose own
 // name carries "Token" twice, sku2uuid's own TCGplayer sku lookup already
-// having found nothing for it - to the combined entity mtgmatcher/magic
+// having found nothing for it - to the combined entity matcher/magic
 // derives for it, anchored by the catalog's own set code (setCode is
 // already the datastore's own code here, unlike the wording other vendors
 // give an edition) and each face's own number.
-func preprocessTokenPair(b *mtgmatcher.Backend, cardName, finish, setCode string) (*mtgmatcher.InputCard, error) {
+func preprocessTokenPair(b *matcher.Backend, cardName, finish, setCode string) (*matcher.InputCard, error) {
 	foil := strings.Contains(finish, "Foil")
 	cardName = missingSpaceBeforeParen.ReplaceAllString(cardName, "$1 $2")
 
@@ -247,15 +247,15 @@ func preprocessTokenPair(b *mtgmatcher.Backend, cardName, finish, setCode string
 		}
 		if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, cardName); uuid != "" {
 			if id, err := b.MatchID(uuid, foil); err == nil {
-				return &mtgmatcher.InputCard{ID: id}, nil
+				return &matcher.InputCard{ID: id}, nil
 			}
 		}
 		if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, cardName, foil); tcgID != "" {
 			if id, err := b.MatchID(tcgID, foil); err == nil {
-				return &mtgmatcher.InputCard{ID: id}, nil
+				return &matcher.InputCard{ID: id}, nil
 			}
 		}
 	}
 
-	return nil, mtgmatcher.ErrUnsupported
+	return nil, matcher.ErrUnsupported
 }

@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestPkmShelves pins what the listing path asks for on the Pokemon shelves
@@ -12,7 +12,7 @@ import (
 // field carries a year or an online code rather than a collector number,
 // and a marker is no card.
 func TestPkmShelves(t *testing.T) {
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	bp := Blueprint{Name: "Team Rocket's Mewtwo ex", Version: "SVP 205"}
 	bp.Expansion.Name = "SV Black Star Promos"
 	if got := gameEdition(b, GamePokemon, &bp); got != "SV: Scarlet & Violet Promo Cards" {
@@ -67,7 +67,7 @@ func TestPkmUnrowedShelves(t *testing.T) {
 // shelf's own "Professor Program", and every version on it leads with a
 // "Professor Program Stamp" no catalog row carries as a promo type.
 func TestPkmProfessorProgramShelf(t *testing.T) {
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	bp := Blueprint{Name: "Bianca's Devotion", Version: "Professor Program Stamp | 142/162"}
 	bp.Expansion.Name = "Professor Program"
 	if got := gameEdition(b, GamePokemon, &bp); got != "Professor Program Promos" {

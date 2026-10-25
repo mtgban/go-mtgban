@@ -3,7 +3,7 @@ package abugames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestFrameNumber pins the printing a listing reaches when this storefront's
@@ -67,12 +67,12 @@ func TestFrameNumber(t *testing.T) {
 // with: etched counts, because the storefront spells it the same way.
 func TestFinishNamed(t *testing.T) {
 	for _, test := range []struct {
-		co   mtgmatcher.CardObject
+		co   matcher.CardObject
 		want bool
 	}{
-		{mtgmatcher.CardObject{Foil: true}, true},
-		{mtgmatcher.CardObject{Etched: true}, true},
-		{mtgmatcher.CardObject{}, false},
+		{matcher.CardObject{Foil: true}, true},
+		{matcher.CardObject{Etched: true}, true},
+		{matcher.CardObject{}, false},
 	} {
 		if got := finishNamed(&test.co); got != test.want {
 			t.Errorf("finishNamed(foil=%v etched=%v) = %v, want %v", test.co.Foil, test.co.Etched, got, test.want)

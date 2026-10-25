@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 // snorlaxDatastore is the published Pokemon datastore cut down to the two
@@ -27,7 +27,7 @@ const snorlaxDatastore = `{"data": {
 // reaches the printing it names. The storefront sells these two at $15.31
 // and $251.59, and the number they share cannot tell them apart.
 func TestPreprocessPokemonQualifier(t *testing.T) {
-	b, err := mtgmatcher.Open("pokemon", strings.NewReader(snorlaxDatastore))
+	b, err := matcher.Open("pokemon", strings.NewReader(snorlaxDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestPreprocessPokemonQualifier(t *testing.T) {
 			SelectedFinish: "Holofoil",
 			ProductData:    GNProductData{SetName: "SV: Scarlet & Violet Promo Cards"},
 		}
-		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+		card, err := preprocess(b, product, matcher.GamePokemon)
 		if err != nil {
 			t.Errorf("%q: unexpected error %v", tt.displayName, err)
 			continue
@@ -79,7 +79,7 @@ const aquapolisDatastore = `{"data": {
 // in a bracket is read as the number, that any other bracket stays wording
 // on a name with no number to read, and that such a name is still asked for.
 func TestPreprocessPokemonBracketedNumber(t *testing.T) {
-	b, err := mtgmatcher.Open("pokemon", strings.NewReader(aquapolisDatastore))
+	b, err := matcher.Open("pokemon", strings.NewReader(aquapolisDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestPreprocessPokemonBracketedNumber(t *testing.T) {
 	}
 	for _, tt := range tests {
 		product := GNProduct{DisplayName: tt.displayName, ProductData: GNProductData{SetName: "Aquapolis"}}
-		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+		card, err := preprocess(b, product, matcher.GamePokemon)
 		if err != nil {
 			t.Errorf("%q: unexpected error %v", tt.displayName, err)
 			continue
@@ -106,7 +106,7 @@ func TestPreprocessPokemonBracketedNumber(t *testing.T) {
 	}
 
 	product := GNProduct{DisplayName: tests[0].displayName, ProductData: GNProductData{SetName: "Aquapolis"}}
-	card, _ := preprocess(b, product, mtgmatcher.GamePokemon)
+	card, _ := preprocess(b, product, matcher.GamePokemon)
 	uuid, err := b.Match(card)
 	if err != nil || uuid != "074a-147_84971" {
 		t.Errorf("%q: got %q (%v); want 074a-147_84971", product.DisplayName, uuid, err)

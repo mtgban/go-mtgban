@@ -3,7 +3,7 @@ package starcitygames
 import (
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 // TestCatalogFabMarvel pins the tier the catalog spends a field of its own on.

@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // The older sets' reprints are told apart in the variants table by the
@@ -61,7 +61,7 @@ func TestInternalPreprocessVersionTag(t *testing.T) {
 		},
 	}
 
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			_, _, got := internalPreprocess(b, tt.name, tt.edition, tt.variation, tt.extra)
@@ -105,7 +105,7 @@ func TestInternalPreprocessUginPromoShelf(t *testing.T) {
 		},
 	}
 
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			_, gotEdition, gotVariation := internalPreprocess(b, "Ugin, the Spirit Dragon", "Promo", "", tt.extra)
@@ -130,7 +130,7 @@ func TestInternalPreprocessWarJapanese(t *testing.T) {
 		{"Version 1", "WAR135b", "War of the Spark", "Japanese"},
 	}
 
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	for _, tt := range tests {
 		t.Run(tt.variation, func(t *testing.T) {
 			_, gotEdition, gotVariation := internalPreprocess(b, "Jaya, Venerated Firemage", warSparkJapaneseEdition, tt.variation, tt.extra)
@@ -518,7 +518,7 @@ func TestMatchBasicByImage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			input := mtgmatcher.InputCard{Name: "Plains", Edition: cmp.Or(tt.edition, "Battle for Zendikar"), Variation: "Version 1"}
+			input := matcher.InputCard{Name: "Plains", Edition: cmp.Or(tt.edition, "Battle for Zendikar"), Variation: "Version 1"}
 			id, found := matchBasicByImage(b, &Card{Extra: tt.image, SKU: tt.sku}, input)
 			if tt.want == "" {
 				if found {

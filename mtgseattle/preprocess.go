@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/sealed"
 )
 
 var cardTable = map[string]string{
@@ -31,8 +31,8 @@ var promoTags = []string{
 	"SDCC 2019 Exclusive",
 }
 
-func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgmatcher.InputCard, error) {
-	s := mtgmatcher.SplitVariants(cardName)
+func preprocess(b *matcher.Backend, cardName, edition, variant string) (*matcher.InputCard, error) {
+	s := matcher.SplitVariants(cardName)
 	cardName = s[0]
 	if len(s) > 1 {
 		if variant != "" {
@@ -42,7 +42,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 	}
 
 	if strings.Contains(variant, "BGS") ||
-		mtgmatcher.Contains(cardName, "Deprecated") ||
+		matcher.Contains(cardName, "Deprecated") ||
 		strings.Contains(cardName, "Does not exist") {
 		return nil, errors.New("unsupported")
 	}
@@ -103,7 +103,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 		n, err := strconv.Atoi(variant)
 		if err == nil {
 			cards := b.MatchInSet(cardName, "HML")
-			slices.SortFunc(cards, func(x, y mtgmatcher.Card) int {
+			slices.SortFunc(cards, func(x, y matcher.Card) int {
 				return cmp.Compare(x.Number, y.Number)
 			})
 			if n >= 1 && n <= len(cards) {
@@ -130,12 +130,12 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 				year = "2020"
 			}
 		case "Vampiric Tutor":
-			year = mtgmatcher.ExtractYear(variant)
+			year = matcher.ExtractYear(variant)
 			if year == "" {
 				year = "2000"
 			}
 		case "Wasteland":
-			year = mtgmatcher.ExtractYear(variant)
+			year = matcher.ExtractYear(variant)
 		}
 		if year != "" {
 			variant = year
@@ -179,7 +179,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 			variant = number
 		}
 	case "Core Set 2021":
-		if strings.Contains(variant, "Alternate Art") && mtgmatcher.ExtractNumber(variant) == "" {
+		if strings.Contains(variant, "Alternate Art") && matcher.ExtractNumber(variant) == "" {
 			variant = "Borderless"
 		}
 	case "Adventures in the Forgotten Realms":
@@ -197,7 +197,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, variant string) (*mtgm
 		cardName = lutName
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
@@ -212,10 +212,10 @@ const mb1PLSTBooster = "Mystery Booster Booster Pack (Retail Edition)"
 // mb1PLSTNumber answers which PLST printing Mystery Booster's own booster
 // bundles for cardName in the listing's finish, or "" when the booster names
 // none sold in that finish.
-func mb1PLSTNumber(b *mtgmatcher.Backend, cardName string, isFoil bool) string {
-	finish := mtgmatcher.FinishNonfoil
+func mb1PLSTNumber(b *matcher.Backend, cardName string, isFoil bool) string {
+	finish := matcher.FinishNonfoil
 	if isFoil {
-		finish = mtgmatcher.FinishFoil
+		finish = matcher.FinishFoil
 	}
 	for _, uuid := range b.GetSealedUUIDsInSet("MB1") {
 		co, err := b.GetUUID(uuid)

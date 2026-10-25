@@ -3,11 +3,11 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // numberShapes are the collector numbers One Piece writes, and whether the
-// game's matcher reads one as a number. mtgmatcher/onepiece owns the shape
+// game's matcher reads one as a number. matcher/onepiece owns the shape
 // - its fullNumberRe decides the same table, in TestFullNumberShapes -
 // and collectorNumberRe below only has to agree with it: a shape the
 // matcher gains and this gate does not would send the blueprint's Version
@@ -101,7 +101,7 @@ func TestGameName(t *testing.T) {
 			"Monkey.D.Luffy", "Token", "Monkey.D.Luffy"},
 	}
 
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			bp := Blueprint{Name: test.name, Version: test.version}

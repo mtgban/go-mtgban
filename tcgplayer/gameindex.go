@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/mtgban/go-tcgplayer"
 )
@@ -36,7 +36,7 @@ type TCGGameIndex struct {
 
 	productTypes []string
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	client  *tcgplayer.Client
 }
 
@@ -52,7 +52,7 @@ func (tcg *TCGGameIndex) printf(format string, a ...any) {
 
 // NewScraperGameIndex returns an index scraper for one game, authenticated
 // with a partner API key pair.
-func NewScraperGameIndex(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGameIndex, error) {
+func NewScraperGameIndex(b *matcher.Backend, publicID, privateID string) (*TCGGameIndex, error) {
 	game := b.Game
 	category, found := tcgGames[game]
 	if !found {
@@ -121,13 +121,13 @@ func (tcg *TCGGameIndex) productEntries(result tcgplayer.ProductPriceSet, produc
 	cardName := product.Name
 	// See TCGGame.processPage: the product id and the finish identify
 	// the price row.
-	theCard := &mtgmatcher.InputCard{
+	theCard := &matcher.InputCard{
 		ID:     fmt.Sprint(result.ProductID),
 		Finish: result.SubTypeName,
 		Foil:   result.SubTypeName != "Normal",
 	}
 	cardID, err := tcg.backend.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
 		// A row quoting a market price and nothing else is a pricing-side
@@ -140,7 +140,7 @@ func (tcg *TCGGameIndex) productEntries(result tcgplayer.ProductPriceSet, produc
 		// such a row still speaks up.
 		marketOnly := result.LowPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0
 		retired := !slices.Contains(tcg.printings, result.SubTypeName)
-		if marketOnly && (retired || errors.Is(err, mtgmatcher.ErrCardWrongFinish)) {
+		if marketOnly && (retired || errors.Is(err, matcher.ErrCardWrongFinish)) {
 			return nil
 		}
 
@@ -149,7 +149,7 @@ func (tcg *TCGGameIndex) productEntries(result tcgplayer.ProductPriceSet, produc
 		tcg.printf("%v for %q %s (product %d)", err, cardName, result.SubTypeName, result.ProductID)
 		tcg.printf("%+v", result)
 
-		var alias *mtgmatcher.AliasingError
+		var alias *matcher.AliasingError
 		if errors.As(err, &alias) {
 			probes := alias.Probe()
 			tcg.printf("%d %s got ids: %s", product.ProductID, cardName, probes)

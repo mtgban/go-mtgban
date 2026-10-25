@@ -12,9 +12,9 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // scgCatalogURL is the HawkSearch catalog export. It returns the full product
@@ -223,7 +223,7 @@ func catalogHit(p CatalogProduct, foil bool) Hit {
 // MatchID, which associates the foil id with its etched sibling. Every other
 // alt-foil (surge/rainbow/cold) resolves to the plain foil. When the id is
 // missing or unresolved, it falls back to the SKU-driven preprocess path.
-func resolveProduct(b *mtgmatcher.Backend, game int, p CatalogProduct) (string, error) {
+func resolveProduct(b *matcher.Backend, game int, p CatalogProduct) (string, error) {
 	id, err := resolveProductID(b, game, p)
 	if err != nil {
 		return "", err
@@ -244,7 +244,7 @@ func resolveProduct(b *mtgmatcher.Backend, game int, p CatalogProduct) (string, 
 	co, cerr := b.GetUUID(id)
 	claimed := catalogLanguageTag(p.Language)
 	if cerr == nil && claimed != "" && !strings.Contains(co.Language, claimed) {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 
 	// A Store Championship promo was struck in foil alone, so the shop's
@@ -259,7 +259,7 @@ func resolveProduct(b *mtgmatcher.Backend, game int, p CatalogProduct) (string, 
 	// bury the mistake rather than fix it.
 	if cerr == nil && !catalogFoil(p) && co.Foil &&
 		strings.HasPrefix(skuNumber(p.SKU), "SCHP_") {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 	return id, nil
 }
@@ -272,11 +272,11 @@ func resolveProduct(b *mtgmatcher.Backend, game int, p CatalogProduct) (string, 
 // against it. One the table does not know is left as it is spelled.
 func catalogLanguageTag(catalogLanguage string) string {
 	spelled := strings.ReplaceAll(catalogLanguage, " - ", " ")
-	for tag, code := range mtgmatcher.LanguageTag2LanguageCode {
+	for tag, code := range matcher.LanguageTag2LanguageCode {
 		if !strings.EqualFold(tag, spelled) {
 			continue
 		}
-		return mtgmatcher.LanguageCode2LanguageTag[code]
+		return matcher.LanguageCode2LanguageTag[code]
 	}
 	return spelled
 }
@@ -376,7 +376,7 @@ func tokenPairSkuAnchors(sku string) []tokenPairSkuAnchor {
 // print-run/sheet digit trimmed off the code (SCG appends one to some of
 // its own shelf codes that mtgjson's own code never carries - "T40K2" and
 // "TWHO3" name the same real sets as "T40K"/"TWHO").
-func tokenPairSkuAnchorSet(b *mtgmatcher.Backend, code string) string {
+func tokenPairSkuAnchorSet(b *matcher.Backend, code string) string {
 	for _, candidate := range []string{"T" + code, code} {
 		if _, err := b.GetSet(candidate); err == nil {
 			return candidate
@@ -401,7 +401,7 @@ func tokenPairSkuAnchorSet(b *mtgmatcher.Backend, code string) string {
 // face's own set can't be resolved, or either face's own name doesn't
 // match exactly one printing in that set and number - the same
 // "don't know, refuse" the rest of this file already applies.
-func tokenPairAnchorUUIDs(b *mtgmatcher.Backend, p CatalogProduct) (uuidA, uuidB string, ok bool) {
+func tokenPairAnchorUUIDs(b *matcher.Backend, p CatalogProduct) (uuidA, uuidB string, ok bool) {
 	if gameFromCatalog(p.Game) != GameMagic || !strings.Contains(p.Name, " // ") {
 		return "", "", false
 	}
@@ -508,12 +508,12 @@ func fabNumbers(sku string) []string {
 // several backs, a product with two collector numbers; the datastore has each
 // face as its own printing and no row for the pair, so there is no single
 // printing to price and neither face's price is the listing's.
-func fabFacesOnly(b *mtgmatcher.Backend, name, front, back string) bool {
+func fabFacesOnly(b *matcher.Backend, name, front, back string) bool {
 	return !fabHasName(b, name) && fabHasName(b, front) && fabHasName(b, back)
 }
 
 // fabHasName reports whether the datastore carries a printing of the name.
-func fabHasName(b *mtgmatcher.Backend, name string) bool {
+func fabHasName(b *matcher.Backend, name string) bool {
 	uuids, err := b.SearchEquals(name)
 	return err == nil && len(uuids) > 0
 }
@@ -610,7 +610,7 @@ func fabVariantMarked(sku string) bool {
 // nothing here says which of those the product is either. A survey of the
 // whole Flesh and Blood datastore found 36 (set, number, foilness) keys
 // holding both a Marvel and a non-Marvel printing, 32 of them this clean.
-func fabPlainSibling(b *mtgmatcher.Backend, id, rarity string) string {
+func fabPlainSibling(b *matcher.Backend, id, rarity string) string {
 	if rarity == "Marvel" {
 		return id
 	}
@@ -651,7 +651,7 @@ var fabRenamedTwins = map[string]string{
 
 // fabRenamedTwin steers a fabMatch result onto the printing fabRenamedTwins
 // names, given the one the match landed on.
-func fabRenamedTwin(b *mtgmatcher.Backend, id, sku string) string {
+func fabRenamedTwin(b *matcher.Backend, id, sku string) string {
 	want, renamed := fabRenamedTwins[sku]
 	if !renamed {
 		return id
@@ -688,7 +688,7 @@ var fabCreditedTwins = map[string]string{
 
 // fabCreditedTwin steers a fabMatch result onto the printing fabCreditedTwins
 // names, given the one the match landed on.
-func fabCreditedTwin(b *mtgmatcher.Backend, id, sku string) string {
+func fabCreditedTwin(b *matcher.Backend, id, sku string) string {
 	want, credited := fabCreditedTwins[sku]
 	if !credited {
 		return id
@@ -711,7 +711,7 @@ func fabCreditedTwin(b *mtgmatcher.Backend, id, sku string) string {
 // a treatment printing. SCG files one id on a card's plain sku and on its
 // marked one ("HNT-155" and "HNT2-155"), so only the marker says which
 // printing is sold, and an unmarked sku is left to its wording.
-func fabUnmarkedTreatment(b *mtgmatcher.Backend, p CatalogProduct, uuid string) bool {
+func fabUnmarkedTreatment(b *matcher.Backend, p CatalogProduct, uuid string) bool {
 	if fabVariantMarked(p.SKU) {
 		return false
 	}
@@ -722,7 +722,7 @@ func fabUnmarkedTreatment(b *mtgmatcher.Backend, p CatalogProduct, uuid string) 
 // fabSkuPrinting picks the printing a Flesh and Blood sku names among the
 // siblings of the one a match landed on: the plain card the rarity names, a
 // renamed or credited twin, or the sibling a marker digit points at.
-func fabSkuPrinting(b *mtgmatcher.Backend, id string, p CatalogProduct) string {
+func fabSkuPrinting(b *matcher.Backend, id string, p CatalogProduct) string {
 	id = fabPlainSibling(b, id, p.Rarity)
 	id = fabRenamedTwin(b, id, p.SKU)
 	id = fabCreditedTwin(b, id, p.SKU)
@@ -737,7 +737,7 @@ func fabSkuPrinting(b *mtgmatcher.Backend, id string, p CatalogProduct) string {
 // Extended Art both - the marker cannot choose between them, and the treatment
 // the catalog does spell (through the rarity, see fabTiers) has already had
 // its say, so the answer already reached stands.
-func fabMarkedSibling(b *mtgmatcher.Backend, id string, p CatalogProduct) string {
+func fabMarkedSibling(b *matcher.Backend, id string, p CatalogProduct) string {
 	if !fabVariantMarked(p.SKU) {
 		return id
 	}
@@ -823,14 +823,14 @@ var catalogNames = map[string]string{
 // prereleaseMissing reports whether a PRE_<set>_<number> sku names a card
 // with no prerelease copy: the promo set holds no printing of it, and the
 // set's own row at that number is not the prerelease one.
-func prereleaseMissing(b *mtgmatcher.Backend, cardName, number string) bool {
+func prereleaseMissing(b *matcher.Backend, cardName, number string) bool {
 	fields := strings.Split(number, "_")
 	if len(fields) != 3 || fields[0] != "PRE" {
 		return false
 	}
 	if promo, found := b.Sets["P"+fields[1]]; found {
 		for _, card := range promo.Cards {
-			if mtgmatcher.Contains(card.Name, cardName) {
+			if matcher.Contains(card.Name, cardName) {
 				return false
 			}
 		}
@@ -847,11 +847,11 @@ func prereleaseMissing(b *mtgmatcher.Backend, cardName, number string) bool {
 	return true
 }
 
-func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string, error) {
+func resolveProductID(b *matcher.Backend, game int, p CatalogProduct) (string, error) {
 	// Duel Masters crossover promos are catalogued under Magic but aren't Magic
 	// cards, so there's nothing to match; discard them.
 	if strings.Contains(p.Name, "(Duel Masters)") {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 
 	if spelled, found := catalogNames[p.Name]; found {
@@ -861,7 +861,7 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 	// Star City Games lists prerelease skus for cards that were never given
 	// a prerelease printing, and there is nothing for those to price.
 	if game == GameMagic && prereleaseMissing(b, p.Name, skuNumber(p.SKU)) {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 
 	foil := catalogFoil(p)
@@ -906,7 +906,7 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 	}
 
 	// A two-sided token sheet prints one physical card for a pairing
-	// mtgmatcher/magic may already carry a combined entity for
+	// matcher/magic may already carry a combined entity for
 	// (tokenpairs.go) - resolve that precisely, by id, before the plain
 	// identifier lookup further down, which resolves the id straight
 	// through with no regard for what the other half of the listing's
@@ -997,7 +997,7 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 
 	// The closed Flesh and Blood refusals hold whatever ids the product sends
 	if game == GameFleshAndBlood && (fabInserts[p.Name] || fabDuplicateStock[p.SKU] || fabUnmade[p.SKU]) {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 
 	// The vendor ids resolve directly, Scryfall first, in the product's finish
@@ -1119,7 +1119,7 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 			}
 		}
 		if twoFaced && !fabSingleNumbered(p.SKU) && fabFacesOnly(b, name, front, back) {
-			return "", mtgmatcher.ErrUnsupported
+			return "", matcher.ErrUnsupported
 		}
 		return "", err
 	}
@@ -1148,7 +1148,7 @@ var riftboundEventHeadings = map[string]string{
 // exactly is that set's printing: the Spiritforged runes "R01b" are filed in
 // Spiritforged itself, not beside the Vendetta runes of the same wording.
 // Otherwise the event prefix picks the promo shelf.
-func resolveRiftbound(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string, error) {
+func resolveRiftbound(b *matcher.Backend, p CatalogProduct, foil bool) (string, error) {
 	edition := p.Set
 	segments := strings.Split(skuNumber(p.SKU), "_")
 	if skuSetCode(p.SKU) == "PRM" && len(segments) == 3 {
@@ -1161,7 +1161,7 @@ func resolveRiftbound(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (strin
 			edition = heading
 		}
 	}
-	return b.Match(&mtgmatcher.InputCard{
+	return b.Match(&matcher.InputCard{
 		Name:      p.Name,
 		Edition:   edition,
 		Variation: p.CollectorNumber,
@@ -1172,12 +1172,12 @@ func resolveRiftbound(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (strin
 // riftboundLetteredPrinting finds the printing a lettered number names in
 // the set it is filed under. The letter is what makes the number exact: a
 // bare one would also match the set's plain card of that number.
-func riftboundLetteredPrinting(b *mtgmatcher.Backend, name, setCode, number string, foil bool) (string, bool) {
+func riftboundLetteredPrinting(b *matcher.Backend, name, setCode, number string, foil bool) (string, bool) {
 	set, found := b.Sets[setCode]
 	if !found || number == "" || !unicode.IsLetter(rune(number[len(number)-1])) {
 		return "", false
 	}
-	id, err := b.Match(&mtgmatcher.InputCard{
+	id, err := b.Match(&matcher.InputCard{
 		Name:      name,
 		Edition:   set.Name,
 		Variation: number,
@@ -1262,9 +1262,9 @@ var promoShelfPrintings = map[string]struct{ set, number string }{
 // matchVendorID resolves a vendor id to the printing sold in the finish the
 // product names, print run included, where the game's catalog spells one,
 // and through the foil and etched flags otherwise.
-func matchVendorID(b *mtgmatcher.Backend, game int, id string, p CatalogProduct, foil, etched bool) (string, error) {
+func matchVendorID(b *matcher.Backend, game int, id string, p CatalogProduct, foil, etched bool) (string, error) {
 	finish := catalogFinish(game, p)
-	if mtgmatcher.FinishSlug(finish) == "" {
+	if matcher.FinishSlug(finish) == "" {
 		return b.MatchID(id, foil, etched)
 	}
 	return b.MatchIDFinish(id, finish)
@@ -1292,7 +1292,7 @@ func catalogFinish(game int, p CatalogProduct) string {
 // set's letters, read the way the wording path reads them (fabNumbers).
 // Elsewhere the sku's raw number segment is compared, so a prefixed promo
 // sku ("P04_013") never agrees and is left to the wording, which lands it.
-func carriesSkuNumber(b *mtgmatcher.Backend, game int, p CatalogProduct, uuid string) bool {
+func carriesSkuNumber(b *matcher.Backend, game int, p CatalogProduct, uuid string) bool {
 	co, err := b.GetUUID(uuid)
 	if err != nil {
 		return false
@@ -1316,7 +1316,7 @@ func carriesSkuNumber(b *mtgmatcher.Backend, game int, p CatalogProduct, uuid st
 // idContradictsProduct reports whether the resolved printing lacks what the
 // product's own record says of itself; a product saying nothing cannot
 // contradict.
-func idContradictsProduct(b *mtgmatcher.Backend, p CatalogProduct, uuid string) bool {
+func idContradictsProduct(b *matcher.Backend, p CatalogProduct, uuid string) bool {
 	co, err := b.GetUUID(uuid)
 	if err != nil {
 		return false
@@ -1383,7 +1383,7 @@ const resaleMarker = "RESL_"
 // printing of the name, that is what is being sold. Where it holds none the id
 // stands, because the shelf also carries printings mtgjson labels no resale
 // and refusing those would lose the only answer there is.
-func resalePrinting(b *mtgmatcher.Backend, id string, p CatalogProduct, foil, etched bool) string {
+func resalePrinting(b *matcher.Backend, id string, p CatalogProduct, foil, etched bool) string {
 	if !strings.HasPrefix(skuNumber(p.SKU), resaleMarker) {
 		return id
 	}
@@ -1513,7 +1513,7 @@ func numberDigits(number string) string {
 // lorcanaNumber cuts on; a main-set sku carries no pool, and its total comes
 // from lorcanaMainSetTotal rather than the datastore's BaseSetSize, which
 // runs past what Fabled and Into the Inklands print on their own cards.
-func lorcanaTotal(b *mtgmatcher.Backend, p CatalogProduct) string {
+func lorcanaTotal(b *matcher.Backend, p CatalogProduct) string {
 	raw := skuNumber(p.SKU)
 	idx := strings.LastIndexByte(raw, '_')
 	if idx < 0 {
@@ -1552,7 +1552,7 @@ func lorcanaSeriesTotal(series string) string {
 
 // lorcanaMainSetTotal returns the SetTotal printed on the named edition's
 // own cards, read off the first one whose SetTotal is plain digits.
-func lorcanaMainSetTotal(b *mtgmatcher.Backend, edition string) string {
+func lorcanaMainSetTotal(b *matcher.Backend, edition string) string {
 	set, err := b.GetSetByName(edition)
 	if err != nil {
 		return ""
@@ -1620,7 +1620,7 @@ func lorcanaMarker(number string) string {
 // is skipped rather than folded onto the base card: Star City Games sells a
 // printing the datastore does not carry (a misprint, or one not added yet),
 // and a missing price beats corrupting the price of a card that is carried.
-func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string, error) {
+func resolveLorcana(b *matcher.Backend, p CatalogProduct, foil bool) (string, error) {
 	number := lorcanaNumber(p)
 	variation := number
 	total := lorcanaTotal(b, p)
@@ -1628,7 +1628,7 @@ func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string,
 		variation = number + "/" + total
 	}
 	if suffix, found := lorcanaExclusives[p.Language]; found {
-		id, err := b.Match(&mtgmatcher.InputCard{
+		id, err := b.Match(&matcher.InputCard{
 			Name:      p.Name + suffix,
 			Edition:   p.Set,
 			Variation: variation,
@@ -1639,7 +1639,7 @@ func resolveLorcana(b *mtgmatcher.Backend, p CatalogProduct, foil bool) (string,
 			return id, nil
 		}
 	}
-	id, err := b.Match(&mtgmatcher.InputCard{
+	id, err := b.Match(&matcher.InputCard{
 		Name:      p.Name,
 		Edition:   p.Set,
 		Variation: variation,
@@ -1675,8 +1675,8 @@ var lorcanaExclusives = map[string]string{
 // numbers 223 to 225. The set name alone cannot reach it, so the name and
 // number are asked of every set and the answer is taken only where it is a
 // Quest printing at the number asked; anything else keeps the refusal.
-func lorcanaQuest(b *mtgmatcher.Backend, p CatalogProduct, number string, foil bool, refusal error) (string, error) {
-	id, err := b.Match(&mtgmatcher.InputCard{
+func lorcanaQuest(b *matcher.Backend, p CatalogProduct, number string, foil bool, refusal error) (string, error) {
+	id, err := b.Match(&matcher.InputCard{
 		Name:      p.Name,
 		Variation: number,
 		Foil:      foil,
@@ -1716,13 +1716,13 @@ func namesAnotherFormat(extension string) bool {
 // and number under a longer name, which is where it puts the errata reprint a
 // sku marks with a letter. Exactly one such name may answer: two would leave
 // the marker naming neither in particular.
-func lorcanaSibling(b *mtgmatcher.Backend, p CatalogProduct, base *mtgmatcher.CardObject, foil bool) (string, error) {
+func lorcanaSibling(b *matcher.Backend, p CatalogProduct, base *matcher.CardObject, foil bool) (string, error) {
 	missing := fmt.Errorf("no printing beside %s %s for the sku marker", base.SetCode, base.Number)
 	uuids, err := b.SearchHasPrefix(p.Name)
 	if err != nil {
 		return "", missing
 	}
-	var candidates []*mtgmatcher.CardObject
+	var candidates []*matcher.CardObject
 	for _, uuid := range uuids {
 		co, err := b.GetUUID(uuid)
 		if err != nil {
@@ -1734,7 +1734,7 @@ func lorcanaSibling(b *mtgmatcher.Backend, p CatalogProduct, base *mtgmatcher.Ca
 		candidates = append(candidates, co)
 	}
 	if len(candidates) == 0 {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 	found := soleSibling(candidates)
 	if found == nil {
@@ -1747,7 +1747,7 @@ func lorcanaSibling(b *mtgmatcher.Backend, p CatalogProduct, base *mtgmatcher.Ca
 // names beside its base: the same slot in the same set, spelled as the
 // base's name extended - and not extended into another physical format,
 // which is a different product wearing the same slot.
-func siblingCandidate(base, co *mtgmatcher.CardObject) bool {
+func siblingCandidate(base, co *matcher.CardObject) bool {
 	if co.Sealed || co.Name == base.Name {
 		return false
 	}
@@ -1761,8 +1761,8 @@ func siblingCandidate(base, co *mtgmatcher.CardObject) bool {
 // where they name two cards, which would leave the marker naming neither in
 // particular. They are counted by name because one printing is spelled once
 // per treatment it is sold in, and those are the same card.
-func soleSibling(candidates []*mtgmatcher.CardObject) *mtgmatcher.CardObject {
-	var found *mtgmatcher.CardObject
+func soleSibling(candidates []*matcher.CardObject) *matcher.CardObject {
+	var found *matcher.CardObject
 	for _, co := range candidates {
 		if found != nil && found.Name != co.Name {
 			return nil
@@ -1783,14 +1783,14 @@ var fabTiers = map[string]bool{
 	"Marvel": true,
 }
 
-func fabMatch(b *mtgmatcher.Backend, name, edition, finish, rarity string, foil bool, numbers []string) (string, error) {
+func fabMatch(b *matcher.Backend, name, edition, finish, rarity string, foil bool, numbers []string) (string, error) {
 	var err error
 	for _, number := range numbers {
 		if fabTiers[rarity] {
 			number = strings.TrimSpace(number + " " + rarity)
 		}
 		var id string
-		id, err = b.Match(&mtgmatcher.InputCard{
+		id, err = b.Match(&matcher.InputCard{
 			Name:      name,
 			Edition:   edition,
 			Variation: number,
@@ -1927,7 +1927,7 @@ func fabPrintRun(set, finish string) (string, string) {
 	if finish == "" || finish == "Non-foil" {
 		finish = "Normal"
 	}
-	return set, mtgmatcher.PrintingFinish(run, finish)
+	return set, matcher.PrintingFinish(run, finish)
 }
 
 // catalogCondition maps a catalog condition string to an mtgban grade.

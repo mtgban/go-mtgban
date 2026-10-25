@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // The storefront's own names for the games it sells.
@@ -23,14 +23,14 @@ const (
 // cgcGames is what NewScraper is built through: it names the storefront's
 // game for each of ours, and a game named nowhere here is not one Card Game
 // Corner is read for.
-var cgcGames = map[mtgmatcher.Game]string{
-	mtgmatcher.GameMagic:         GameMagic,
-	mtgmatcher.GamePokemon:       GamePokemon,
-	mtgmatcher.GameYuGiOh:        GameYuGiOh,
-	mtgmatcher.GameOnePiece:      GameOnePiece,
-	mtgmatcher.GameLorcana:       GameLorcana,
-	mtgmatcher.GameRiftbound:     GameRiftbound,
-	mtgmatcher.GameFleshAndBlood: GameFleshAndBlood,
+var cgcGames = map[matcher.Game]string{
+	matcher.GameMagic:         GameMagic,
+	matcher.GamePokemon:       GamePokemon,
+	matcher.GameYuGiOh:        GameYuGiOh,
+	matcher.GameOnePiece:      GameOnePiece,
+	matcher.GameLorcana:       GameLorcana,
+	matcher.GameRiftbound:     GameRiftbound,
+	matcher.GameFleshAndBlood: GameFleshAndBlood,
 }
 
 // shelfSets names the set a game files the printings of a store shelf
@@ -39,18 +39,18 @@ var cgcGames = map[mtgmatcher.Game]string{
 // booster card they reprint; Pokemon's "Base" is the unlimited Base Set, not
 // its Shadowless run, but for its first edition copies; Yu-Gi-Oh's 25th
 // anniversary and date reprints share theirs with the original's prints.
-var shelfSets = map[mtgmatcher.Game]map[string]string{
-	mtgmatcher.GameOnePiece: {
+var shelfSets = map[matcher.Game]map[string]string{
+	matcher.GameOnePiece: {
 		"Promos":                     "OP-PR",
 		"Unnumbered Promos":          "OP-PR",
 		"Premium Bandai Promo":       "OP-PR",
 		"Special Tournaments Promos": "OP-PR",
 	},
-	mtgmatcher.GamePokemon: {
+	matcher.GamePokemon: {
 		"Base":              "BS",
 		"30th Celebrations": "30C",
 	},
-	mtgmatcher.GameYuGiOh: {
+	matcher.GameYuGiOh: {
 		"Legend of Blue Eyes White Dragon REPRINT 25th Anniversary Edition": "LOB-EN-23050",
 		"Metal Raiders REPRINT 25th Anniversary Edition":                    "MRD-EN-23052",
 		"Spell Ruler REPRINT 25th Anniversary Edition":                      "SRL-EN-23053",
@@ -92,8 +92,8 @@ var promoNumberPrefixes = map[string]string{
 // gameNames holds the card names the store misspells, by game, as the
 // datastore spells them, and one Yu-Gi-Oh name it gives in Italian whose
 // image carries no English one.
-var gameNames = map[mtgmatcher.Game]map[string]string{
-	mtgmatcher.GameYuGiOh: {
+var gameNames = map[matcher.Game]map[string]string{
+	matcher.GameYuGiOh: {
 		"Abyss Actors' Dress Rehersal":          "Abyss Actors' Dress Rehearsal",
 		"Aphophis the Swamp Deity":              "Apophis the Swamp Deity",
 		"Battlin‚Äô Boxer Lead Yolk":            "Battlin' Boxer Lead Yoke",
@@ -116,14 +116,14 @@ var gameNames = map[mtgmatcher.Game]map[string]string{
 		"Urubonus, the Avatar of the Malice":    "Urubonus, the Avatar of Malice",
 		"Xyz Posiedon Splash":                   "Xyz Poseidon Splash",
 	},
-	mtgmatcher.GameLorcana: {
+	matcher.GameLorcana: {
 		"Balu - Lively Bear": "Baloo - Fun-Loving Bear",
 		"Miss Bianca - International Rescue Aid Society Age": "Miss Bianca - Rescue Aid Society Agent",
 	},
-	mtgmatcher.GamePokemon: {
+	matcher.GamePokemon: {
 		"Target Whistle Team Flare Gear": "Target Whistle",
 	},
-	mtgmatcher.GameRiftbound: {
+	matcher.GameRiftbound: {
 		"lascylla":             "Iascylla",
 		"Vi, Piltover ZHorcer": "Vi, Piltover Enforcer",
 	},
@@ -131,7 +131,7 @@ var gameNames = map[mtgmatcher.Game]map[string]string{
 
 // vendorName returns the name a misspelled one stands for, keeping the
 // version the store may have written after it.
-func vendorName(game mtgmatcher.Game, name string) string {
+func vendorName(game matcher.Game, name string) string {
 	head, tail, hasTail := strings.Cut(name, " (")
 	fixed, found := gameNames[game][head]
 	if !found {
@@ -170,7 +170,7 @@ var energyLetters = strings.NewReplacer(
 // energyName spells out the type letter of an energy where the catalog
 // does ("Wash Water Energy"), and keeps it where the catalog keeps the
 // letter ("Bubbly W Energy").
-func energyName(b *mtgmatcher.Backend, name string) string {
+func energyName(b *matcher.Backend, name string) string {
 	if !strings.HasSuffix(name, " Energy") {
 		return name
 	}
@@ -225,7 +225,7 @@ func oldShelfSet(edition string) (string, bool) {
 
 // knownOldShelf returns the set oldShelfSet reads off a shelf, where the
 // datastore knows it.
-func knownOldShelf(b *mtgmatcher.Backend, edition string) (string, bool) {
+func knownOldShelf(b *matcher.Backend, edition string) (string, bool) {
 	code, found := oldShelfSet(edition)
 	if !found {
 		return "", false
@@ -236,7 +236,7 @@ func knownOldShelf(b *mtgmatcher.Backend, edition string) (string, bool) {
 
 // slugName reads the card an image is named after, where the store gave the
 // name in Italian and the image directory holds the English one.
-func slugName(b *mtgmatcher.Backend, extra string) string {
+func slugName(b *matcher.Backend, extra string) string {
 	slug := strings.ReplaceAll(path.Base(path.Dir(extra)), "-", " ")
 	if !namesACard(b, slug) {
 		return ""
@@ -247,14 +247,14 @@ func slugName(b *mtgmatcher.Backend, extra string) string {
 // losesFirstEdition reports whether a first edition listing lands on a
 // printing that is not one: the matcher falls back to the unlimited print
 // where the datastore holds no first edition of the card.
-func losesFirstEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+func losesFirstEdition(b *matcher.Backend, inCard *matcher.InputCard) bool {
 	run, found := landedRun(b, inCard)
-	return found && run != mtgmatcher.Run1stEdition
+	return found && run != matcher.Run1stEdition
 }
 
 // landedRun returns the print run of the printing a listing lands on, and
 // false where it lands on none.
-func landedRun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) (string, bool) {
+func landedRun(b *matcher.Backend, inCard *matcher.InputCard) (string, bool) {
 	probe := *inCard
 	cardID, err := b.Match(&probe)
 	if err != nil {
@@ -264,14 +264,14 @@ func landedRun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) (string, boo
 	if err != nil {
 		return "", false
 	}
-	finish, _ := mtgmatcher.FinishOf(co.Finish)
+	finish, _ := matcher.FinishOf(co.Finish)
 	return finish.Run, true
 }
 
 // classicName is the name a Classic deck card goes by in the catalog, which
 // calls a basic energy "Basic Fire Energy" where the store writes "Fire
 // Energy".
-func classicName(b *mtgmatcher.Backend, name string) string {
+func classicName(b *matcher.Backend, name string) string {
 	basic := "Basic " + name
 	if strings.HasSuffix(name, " Energy") && namesACard(b, basic) {
 		return basic
@@ -281,20 +281,20 @@ func classicName(b *mtgmatcher.Backend, name string) string {
 
 // preprocessGame reads a card of any game but Magic, whose listings name the
 // card, its set and its collector number plainly.
-func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.InputCard, error) {
+func preprocessGame(b *matcher.Backend, card *Card, index int) (*matcher.InputCard, error) {
 	// Graded slabs are sold on shelves of their own
 	if strings.Contains(card.Edition, "Gradat") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	inCard := gameInput(b.Game, card, index)
-	if b.Game == mtgmatcher.GamePokemon {
+	if b.Game == matcher.GamePokemon {
 		inCard.Name = energyName(b, inCard.Name)
 	}
 	code, found := shelfSets[b.Game][card.Edition]
 	// The Base Set's first edition was printed before its shadow was, so
 	// its copies are the Shadowless product's
-	if b.Game == mtgmatcher.GamePokemon && code == "BS" && card.Variants[index].Print == "First Edition" {
+	if b.Game == matcher.GamePokemon && code == "BS" && card.Variants[index].Print == "First Edition" {
 		code = "BSS"
 	}
 	_, classic := classicDecks[card.Edition]
@@ -302,7 +302,7 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 		code, found = classicSet, true
 		inCard.Name = classicName(b, inCard.Name)
 	}
-	oldShelf := b.Game == mtgmatcher.GameYuGiOh && oldShelfRe.MatchString(card.Edition)
+	oldShelf := b.Game == matcher.GameYuGiOh && oldShelfRe.MatchString(card.Edition)
 	if oldShelf {
 		if !namesACard(b, inCard.Name) {
 			name := slugName(b, card.Extra)
@@ -324,18 +324,18 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 
 	// A copy of a first edition the datastore lacks, the European ones
 	// still, would be priced as the unlimited it lands on
-	if oldShelf && inCard.Finish == mtgmatcher.Run1stEdition && losesFirstEdition(b, inCard) {
-		return nil, mtgmatcher.ErrUnsupported
+	if oldShelf && inCard.Finish == matcher.Run1stEdition && losesFirstEdition(b, inCard) {
+		return nil, matcher.ErrUnsupported
 	}
 
 	// A first edition rare its rarity does not call holo, as a Shining
 	// card's is, was printed holofoil only, and the plain first edition it
 	// asks for lands on the unlimited holofoil
-	if b.Game == mtgmatcher.GamePokemon && inCard.Finish == mtgmatcher.Run1stEdition && losesFirstEdition(b, inCard) {
+	if b.Game == matcher.GamePokemon && inCard.Finish == matcher.Run1stEdition && losesFirstEdition(b, inCard) {
 		probe := *inCard
-		probe.Finish = mtgmatcher.PrintingFinish(mtgmatcher.Run1stEdition, "Holofoil")
+		probe.Finish = matcher.PrintingFinish(matcher.Run1stEdition, "Holofoil")
 		run, found := landedRun(b, &probe)
-		if found && run == mtgmatcher.Run1stEdition {
+		if found && run == matcher.Run1stEdition {
 			inCard.Finish = probe.Finish
 		}
 	}
@@ -351,7 +351,7 @@ var onePiecePromoShelfRe = regexp.MustCompile(`^[A-Z]{2}[0-9]{2} - (.+): Promo$`
 var unbracketedVersionRe = regexp.MustCompile(`^(.+?) (V\.[0-9]+ - [^()]*?)\s*\)$`)
 
 // gameInput reads a listing's wording the way the game's rules expect it.
-func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCard {
+func gameInput(game matcher.Game, card *Card, index int) *matcher.InputCard {
 	name := card.Name
 	number := card.Number
 	variant := card.Variants[index]
@@ -359,11 +359,11 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 	edition := card.Edition
 	var rainbow bool
 	switch game {
-	case mtgmatcher.GameOnePiece:
+	case matcher.GameOnePiece:
 		// The store spells Cardmarket's "Promos: <set>" shelf as
 		// "<code> - <set>: Promo"
 		edition = onePiecePromoShelfRe.ReplaceAllString(edition, "Promos: $1")
-	case mtgmatcher.GameFleshAndBlood:
+	case matcher.GameFleshAndBlood:
 		// Every name ends in its finish, which hides the pitch before it
 		// from the rules, and is the only place a rainbow foil says so
 		name, rainbow = strings.CutSuffix(name, " (Rainbow Foil)")
@@ -375,7 +375,7 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		if strings.Contains(name, " // ") {
 			number = ""
 		}
-	case mtgmatcher.GameYuGiOh:
+	case matcher.GameYuGiOh:
 		name = unbracketedVersionRe.ReplaceAllString(name, "$1 ($2)")
 		// A manga shelf writes the volume, and on most the card index too
 		prefix, found := promoNumberPrefixes[card.Edition]
@@ -394,9 +394,9 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		if oldShelfRe.MatchString(card.Edition) && variant.Language == "EN" {
 			number = "European " + card.Rarity
 		}
-	case mtgmatcher.GameRiftbound:
+	case matcher.GameRiftbound:
 		name = riftboundVersionRe.ReplaceAllString(name, "")
-	case mtgmatcher.GamePokemon:
+	case matcher.GamePokemon:
 		name = pokemonName(card)
 		prefix, found := promoNumberPrefixes[card.Edition]
 		if found && !strings.HasPrefix(number, prefix) {
@@ -410,7 +410,7 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 			number = strings.TrimSpace(number + " " + deck)
 		}
 	}
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      vendorName(game, name),
 		Edition:   edition,
 		Variation: number,
@@ -422,14 +422,14 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 // gameFinish names the finish a listing prices, for the games whose
 // printings the foil flag cannot tell apart: a print run, and Pokemon's two
 // holo treatments.
-func gameFinish(game mtgmatcher.Game, card *Card, variant Variant, rainbow bool) string {
+func gameFinish(game matcher.Game, card *Card, variant Variant, rainbow bool) string {
 	firstEdition := variant.Print == "First Edition"
 	switch game {
-	case mtgmatcher.GameYuGiOh:
+	case matcher.GameYuGiOh:
 		if firstEdition {
 			return "1st Edition"
 		}
-	case mtgmatcher.GamePokemon:
+	case matcher.GamePokemon:
 		if variant.Foil == "Reverse Holo" {
 			return "Reverse Holofoil"
 		}
@@ -438,19 +438,19 @@ func gameFinish(game mtgmatcher.Game, card *Card, variant Variant, rainbow bool)
 			treatment = "Holofoil"
 		}
 		if firstEdition {
-			return mtgmatcher.PrintingFinish("1st Edition", treatment)
+			return matcher.PrintingFinish("1st Edition", treatment)
 		}
 		return treatment
-	case mtgmatcher.GameFleshAndBlood:
+	case matcher.GameFleshAndBlood:
 		treatment := "Normal"
 		if rainbow {
 			treatment = "Rainbow Foil"
 		}
 		switch {
 		case firstEdition:
-			return mtgmatcher.PrintingFinish("1st Edition", treatment)
+			return matcher.PrintingFinish("1st Edition", treatment)
 		case variant.Print == "Unl.":
-			return mtgmatcher.PrintingFinish("Unlimited Edition", treatment)
+			return matcher.PrintingFinish("Unlimited Edition", treatment)
 		case rainbow:
 			return treatment
 		}

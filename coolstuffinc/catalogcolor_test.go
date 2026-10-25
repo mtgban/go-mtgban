@@ -3,9 +3,9 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestCatalogColor pins the four colours Duelist League 9 prints one number
@@ -32,7 +32,7 @@ func TestCatalogColor(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			card := &mtgmatcher.InputCard{
+			card := &matcher.InputCard{
 				Name:      catalogColor(test.name),
 				Edition:   "Duelist League 9",
 				Variation: "DL09-EN003 Rare",

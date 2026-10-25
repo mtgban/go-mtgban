@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 func TestFabArtPosition(t *testing.T) {
@@ -97,7 +97,7 @@ func TestCatalogFabShapes(t *testing.T) {
 		t.Errorf("resolveProduct(DYN-110 Rainbow Foil) = %q, want a refusal", got)
 	}
 	_, err := resolveProduct(b, GameFleshAndBlood, product("SGL-FAB-ROS-ART_000a-ENC", "Binder Label", "Rosetta", "Cold Foil", "Alt Foil"))
-	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if !errors.Is(err, matcher.ErrUnsupported) {
 		t.Errorf("resolveProduct(Binder Label) = %v, want ErrUnsupported", err)
 	}
 }
@@ -138,7 +138,7 @@ func TestCatalogFabDoubleSided(t *testing.T) {
 		product("SGL-FAB-MST-003_026-ENN", "Beckoning Mistblade // Enigma", "Part the Mistveil", "Token"),
 	} {
 		got, err := resolveProduct(b, GameFleshAndBlood, p)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("faces only: resolveProduct(%s) = %q, %v, want ErrUnsupported", p.SKU, got, err)
 		}
 	}

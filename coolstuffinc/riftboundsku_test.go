@@ -3,7 +3,7 @@ package coolstuffinc
 import (
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestRiftboundSKUCardReadsTheBuylistSKU pins that the sku the buylist

@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // fabFixtureBackend builds a minimal in-memory backend from a handful of
@@ -15,7 +15,7 @@ import (
 // Shield's real MST158-A/-B), beside an unrelated number that merely
 // extends MON002 with another digit, and a number whose only standalone
 // printing is a foil (UPR103, mirroring Iyslander's Marvel cold foil).
-func fabFixtureBackend() *mtgmatcher.Backend {
+func fabFixtureBackend() *matcher.Backend {
 	rows := []struct {
 		number string
 		foil   bool
@@ -32,10 +32,10 @@ func fabFixtureBackend() *mtgmatcher.Backend {
 		{"UPR103//UPR046", false},
 		{"UPR102//UPR103", false},
 	}
-	b := &mtgmatcher.Backend{UUIDs: map[string]*mtgmatcher.CardObject{}}
+	b := &matcher.Backend{UUIDs: map[string]*matcher.CardObject{}}
 	for i, row := range rows {
 		uuid := "fixture" + string(rune('0'+i))
-		b.UUIDs[uuid] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{Number: row.number}, Foil: row.foil}
+		b.UUIDs[uuid] = &matcher.CardObject{Card: matcher.Card{Number: row.number}, Foil: row.foil}
 		b.AllUUIDs = append(b.AllUUIDs, uuid)
 	}
 	return b

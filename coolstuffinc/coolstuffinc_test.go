@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestBuylistVariation pins what the buylist tells the matcher about a
@@ -199,10 +199,10 @@ func TestSlabCondition(t *testing.T) {
 // holding no graded copy publishes nothing extra: the split skips a seller
 // whose inventory is empty.
 func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
-	for _, game := range []mtgmatcher.Game{mtgmatcher.GameMagic, mtgmatcher.GameOnePiece, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
-		mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameGundam, mtgmatcher.GamePalworld} {
+	for _, game := range []matcher.Game{matcher.GameMagic, matcher.GameOnePiece, matcher.GamePokemon, matcher.GameYuGiOh,
+		matcher.GameLorcana, matcher.GameRiftbound, matcher.GameGundam, matcher.GamePalworld} {
 		t.Run(fmt.Sprintf("%q", game), func(t *testing.T) {
-			csi, err := NewScraper(&mtgmatcher.Backend{Game: game})
+			csi, err := NewScraper(&matcher.Backend{Game: game})
 			if err != nil {
 				t.Fatalf("NewScraper(%q) = %v", game, err)
 			}
@@ -219,7 +219,7 @@ func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
 // nothing extra, because the split drops a seller whose inventory is empty.
 // Palworld is that game today.
 func TestUnfoldSkipsTheEmptyGradedSeller(t *testing.T) {
-	csi, err := NewScraper(&mtgmatcher.Backend{Game: mtgmatcher.GamePalworld})
+	csi, err := NewScraper(&matcher.Backend{Game: matcher.GamePalworld})
 	if err != nil {
 		t.Fatalf("NewScraper(GamePalworld) = %v", err)
 	}
@@ -305,11 +305,11 @@ func TestCSIAmbiguousRefusal(t *testing.T) {
 		err   error
 		want  bool
 	}{
-		{"Can be (STAS-EN020) OR (STAS-EN039)", mtgmatcher.NewAliasingError("a", "b"), true},
-		{"Can Be Normal or 25th Anniversary Stamp", mtgmatcher.ErrCardWrongVariant, true},
-		{"Can be Autumn 2011, Spring 2012", mtgmatcher.ErrCardDoesNotExist, false},
-		{"Can be Autumn 2011, Spring 2012", mtgmatcher.ErrCardNotInEdition, false},
-		{"Alt-Art", mtgmatcher.NewAliasingError("a", "b"), false},
+		{"Can be (STAS-EN020) OR (STAS-EN039)", matcher.NewAliasingError("a", "b"), true},
+		{"Can Be Normal or 25th Anniversary Stamp", matcher.ErrCardWrongVariant, true},
+		{"Can be Autumn 2011, Spring 2012", matcher.ErrCardDoesNotExist, false},
+		{"Can be Autumn 2011, Spring 2012", matcher.ErrCardNotInEdition, false},
+		{"Alt-Art", matcher.NewAliasingError("a", "b"), false},
 	} {
 		got := csiAmbiguousRefusal(tt.notes, tt.err)
 		if got != tt.want {

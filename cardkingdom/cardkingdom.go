@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/mtgban/go-cardkingdom"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Cardkingdom prices Card Kingdom's singles, both what they sell and what they
@@ -27,7 +27,7 @@ type Cardkingdom struct {
 	inventoryDate time.Time
 	buylistDate   time.Time
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -35,7 +35,7 @@ type Cardkingdom struct {
 
 // NewScraperLocal returns a singles scraper reading the feed from a file
 // instead of the network.
-func NewScraperLocal(b *mtgmatcher.Backend, localPath string) *Cardkingdom {
+func NewScraperLocal(b *matcher.Backend, localPath string) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
@@ -45,7 +45,7 @@ func NewScraperLocal(b *mtgmatcher.Backend, localPath string) *Cardkingdom {
 }
 
 // NewScraper returns a singles scraper reading Card Kingdom's published feed.
-func NewScraper(b *mtgmatcher.Backend) *Cardkingdom {
+func NewScraper(b *matcher.Backend) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
@@ -79,14 +79,14 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 
 		theCard, err := Preprocess(ck.backend, card)
 		if err != nil {
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if !errors.Is(err, matcher.ErrUnsupported) {
 				ck.printf("%v", err)
 			}
 			continue
 		}
 
 		cardID, err := ck.backend.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			id, rerr := matchPrereleaseSKU(ck.backend, card.SKU, card.ScryfallID, theCard.Foil)
 			if rerr == nil {
 				cardID, err = id, nil
@@ -105,7 +105,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 				ck.printf("%q", theCard)
 				ck.printf("%q", card)
 
-				var alias *mtgmatcher.AliasingError
+				var alias *matcher.AliasingError
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
@@ -319,6 +319,6 @@ func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ck.inventoryDate
 	info.BuylistTimestamp = &ck.buylistDate
 	info.CreditMultiplier = 1.3
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestFabNumber pins the collector numbers Card Trader misspells: a set code
@@ -67,7 +67,7 @@ func TestFabPuzzle(t *testing.T) {
 
 func TestFabNames(t *testing.T) {
 	bp := Blueprint{Name: "Kassai of the Golden Sands"}
-	if got := gameName(&mtgmatcher.Backend{}, GameFleshAndBlood, &bp); got != "Kassai of the Golden Sand" {
+	if got := gameName(&matcher.Backend{}, GameFleshAndBlood, &bp); got != "Kassai of the Golden Sand" {
 		t.Errorf("gameName = %q, want the datastore's spelling", got)
 	}
 }

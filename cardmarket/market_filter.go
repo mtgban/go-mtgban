@@ -10,8 +10,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // marketFilterParams are the offline pre-filter's thresholds, one row per
@@ -83,7 +83,7 @@ const marketCandidateThreshold = 7.0
 //
 // A game marketFilterParams does not cover returns nil - unfiltered, not
 // empty - which Load reads as "price every candidate this game has."
-func marketCandidates(b *mtgmatcher.Backend, gameID cm.Game, snap *banSnapshot) map[string]bool {
+func marketCandidates(b *matcher.Backend, gameID cm.Game, snap *banSnapshot) map[string]bool {
 	if _, filtered := marketFilterParams[gameID]; !filtered {
 		return nil
 	}
@@ -202,7 +202,7 @@ func (snap *banSnapshot) firstBuylist(uuid string, sources []string) float64 {
 // loadBanSnapshot fetches game's own price snapshot, the one the offline
 // pre-filter reads. sig authenticates it - bantool reads it from the
 // BAN_API_KEY env var, the same key sealedev's own price loader uses.
-func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string) (*banSnapshot, error) {
+func loadBanSnapshot(ctx context.Context, game matcher.Game, sig string) (*banSnapshot, error) {
 	link := fmt.Sprintf(banAPIURL, game, sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -234,7 +234,7 @@ func loadBanSnapshot(ctx context.Context, game mtgmatcher.Game, sig string) (*ba
 // legitimate empty response no differently from one that simply is not
 // published. Trusting either as "an empty result, nothing passed the
 // filter" would let an error pass silently as an empty body.
-func parseBanSnapshot(data []byte, game mtgmatcher.Game) (*banSnapshot, error) {
+func parseBanSnapshot(data []byte, game matcher.Game) (*banSnapshot, error) {
 	var snap banSnapshot
 	if err := json.Unmarshal(data, &snap); err != nil {
 		return nil, err

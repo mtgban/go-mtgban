@@ -1,8 +1,8 @@
 package starcitygames
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // SecretAPIKey is the environment variable name bantool reads the API key
@@ -10,13 +10,13 @@ import (
 const SecretAPIKey = "SCG_API_KEY"
 
 // starcitygamesGames are the games Star City Games' catalog covers.
-var starcitygamesGames = []mtgmatcher.Game{
-	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameFleshAndBlood,
+var starcitygamesGames = []matcher.Game{
+	matcher.GameMagic, matcher.GameLorcana, matcher.GameRiftbound, matcher.GameFleshAndBlood,
 }
 
 func init() {
 	mtgban.Register("starcitygames", starcitygamesGames,
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			apiKey, err := opts.Secret(SecretAPIKey)
 			if err != nil {
 				return nil, err
@@ -31,7 +31,7 @@ func init() {
 			return scraper, nil
 		})
 	mtgban.Register("starcitygames_sealed", starcitygamesGames,
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			apiKey, err := opts.Secret(SecretAPIKey)
 			if err != nil {
 				return nil, err

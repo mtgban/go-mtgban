@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -20,7 +20,7 @@ import (
 type Sealed struct {
 	logCallback mtgban.LogCallbackFunc
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -33,7 +33,7 @@ type Sealed struct {
 }
 
 // NewScraperSealed returns a sealed scraper matching against b.
-func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
+func NewScraperSealed(b *matcher.Backend) *Sealed {
 	ha := Sealed{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
@@ -112,7 +112,7 @@ func (ha *Sealed) buylistPrices(ctx context.Context) (map[string]float64, error)
 			}
 
 			priceStr := strings.TrimSpace(s.Find(`p.itemDetail__price`).Text())
-			price, err := mtgmatcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
+			price, err := matcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
 			if err != nil {
 				ha.printf("could not parse buylist price %q for %s: %v", priceStr, id, err)
 				return
@@ -254,6 +254,6 @@ func (ha *Sealed) Info() (info mtgban.ScraperInfo) {
 	// The unisearch API only exposes an unreliable aggregate stock count, so
 	// per-item quantity is not reported.
 	info.NoQuantityInventory = true
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

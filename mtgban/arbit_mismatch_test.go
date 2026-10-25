@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestMismatchNormalisesTheGrades pins the correction that makes two shops
@@ -211,7 +211,7 @@ func TestMismatchNeedsBothShops(t *testing.T) {
 
 // And a card the datastore cannot name is skipped before any of it.
 func TestMismatchSkipsAnUnknownCard(t *testing.T) {
-	b := backendFor(map[string]*mtgmatcher.CardObject{})
+	b := backendFor(map[string]*matcher.CardObject{})
 
 	entries := Mismatch(b, nil,
 		sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: 10, Quantity: 1}}},

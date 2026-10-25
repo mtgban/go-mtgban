@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
 )
 
 // lorcanaOversizedDatastore is the published datastore cut down to Hades,
@@ -30,7 +30,7 @@ const lorcanaOversizedDatastore = `{"data": {
 // TCGplayer id, and is skipped where the datastore carries none, rather than
 // priced on the ordinary card.
 func TestLorcanaOversized(t *testing.T) {
-	b, err := mtgmatcher.Open("lorcana", strings.NewReader(lorcanaOversizedDatastore))
+	b, err := matcher.Open("lorcana", strings.NewReader(lorcanaOversizedDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}

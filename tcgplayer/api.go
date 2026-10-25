@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -66,7 +66,7 @@ func GetProductNameAndVariant(tcgp *tcgplayer.Product) (string, string) {
 		cardName = strings.Replace(cardName, "]", ")", -1)
 	}
 	if strings.Contains(cardName, " (") {
-		fields := mtgmatcher.SplitVariants(cardName)
+		fields := matcher.SplitVariants(cardName)
 		cardName = fields[0]
 		if len(fields) > 1 {
 			if variant != "" {

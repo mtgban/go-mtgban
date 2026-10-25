@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 var cardTable = map[string]string{
@@ -17,8 +17,8 @@ var promoTags = []string{
 	"Godzilla Lands",
 }
 
-func preprocess(cardName, edition, variant string) (*mtgmatcher.InputCard, error) {
-	s := mtgmatcher.SplitVariants(cardName)
+func preprocess(cardName, edition, variant string) (*matcher.InputCard, error) {
+	s := matcher.SplitVariants(cardName)
 	cardName = s[0]
 	if len(s) > 1 {
 		if variant != "" {
@@ -68,7 +68,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.InputCard, error
 		cardName = lutName
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

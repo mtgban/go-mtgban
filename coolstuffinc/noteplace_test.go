@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestNotePlace pins the finishing place a buy row names only in its note.
@@ -23,7 +23,7 @@ func TestNotePlace(t *testing.T) {
 		{"Nefeltari Vivi - 009", "ST01-009", "ST01-009", "st01-009_288238"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			card := &mtgmatcher.InputCard{
+			card := &matcher.InputCard{
 				Name:      tt.name,
 				Edition:   "ST01 - Starter Deck: Straw Hat Crew",
 				Variation: eventNamed(strings.TrimSpace(tt.number + " " + nameQualifiers(tt.name) + " " + onePieceNotePlace.FindString(tt.notes))),

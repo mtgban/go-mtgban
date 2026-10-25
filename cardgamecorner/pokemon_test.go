@@ -6,27 +6,27 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 var (
 	pokemonOnce    sync.Once
 	pokemonErr     error
-	pokemonBackend *mtgmatcher.Backend
+	pokemonBackend *matcher.Backend
 )
 
 // pokemonDatastore reads the Pokemon datastore the first time a test asks
 // for it, and skips where the run carries none.
-func pokemonDatastore(t *testing.T) *mtgmatcher.Backend {
+func pokemonDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	pokemonOnce.Do(func() {
 		path := os.Getenv("POKEMON_PATH")
 		if path == "" {
 			return
 		}
-		pokemonBackend, pokemonErr = datastore.Read(mtgmatcher.GamePokemon, path)
+		pokemonBackend, pokemonErr = datastore.Read(matcher.GamePokemon, path)
 	})
 	if pokemonErr != nil {
 		t.Fatal(pokemonErr)

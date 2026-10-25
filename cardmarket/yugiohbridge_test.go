@@ -8,20 +8,20 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
+	"github.com/mtgban/go-mtgban/matcher"
+	_ "github.com/mtgban/go-mtgban/matcher/yugioh"
 )
 
 var (
 	yugiohBackendOnce sync.Once
 	yugiohBackendErr  error
-	yugiohBackend     *mtgmatcher.Backend
+	yugiohBackend     *matcher.Backend
 )
 
 // loadYugiohBackend reads the real Yu-Gi-Oh datastore YUGIOH_PATH
 // names, once per test binary run, for the tests below: they need real
 // sibling rarities and konamiId, not a synthetic subset.
-func loadYugiohBackend(t *testing.T) *mtgmatcher.Backend {
+func loadYugiohBackend(t *testing.T) *matcher.Backend {
 	t.Helper()
 	yugiohBackendOnce.Do(func() {
 		path := os.Getenv("YUGIOH_PATH")

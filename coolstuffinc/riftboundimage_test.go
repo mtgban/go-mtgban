@@ -3,9 +3,9 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestRiftboundImageCardNamesThePrinting pins the printing a product image
@@ -137,7 +137,7 @@ func TestRiftboundLetteredPromo(t *testing.T) {
 			}
 			continue
 		}
-		id, err := b.Match(&mtgmatcher.InputCard{Name: tt.name, Edition: "Promo", Variation: number, Foil: true})
+		id, err := b.Match(&matcher.InputCard{Name: tt.name, Edition: "Promo", Variation: number, Foil: true})
 		if err != nil {
 			t.Fatalf("Match(%s, %q) = %v", tt.name, number, err)
 		}

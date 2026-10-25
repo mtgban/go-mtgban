@@ -9,7 +9,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // sameProduct says whether two products of a game's shelves are the same
@@ -30,7 +30,7 @@ func sameProduct(gameID cm.Game) func(a, b *cm.Product) bool {
 
 // faceOf answers the rule telling a product that names one face of a fused
 // printing, for the games whose shelves sell a card face by face.
-func faceOf(b *mtgmatcher.Backend, gameID cm.Game) func(product *cm.Product, cardID string) bool {
+func faceOf(b *matcher.Backend, gameID cm.Game) func(product *cm.Product, cardID string) bool {
 	if gameID == cm.GameFleshAndBlood {
 		return func(product *cm.Product, cardID string) bool {
 			return fabFaceOf(b, product, cardID)
@@ -44,7 +44,7 @@ func faceOf(b *mtgmatcher.Backend, gameID cm.Game) func(product *cm.Product, car
 // is off it. The shelves sell each event copy of a promo as a version, and
 // the name reaches the same family for every one of them.
 func onePieceSameProduct(a, b *cm.Product) bool {
-	return mtgmatcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == mtgmatcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
+	return matcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == matcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
 }
 
 // resolved is what one product of the walk answered with, held until its

@@ -5,15 +5,15 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // mkmCards builds a backend and an empty price response over n plain cards.
-func mkmCards(n int) (*mtgmatcher.Backend, *priceSnapshot) {
-	b := &mtgmatcher.Backend{UUIDs: map[string]*mtgmatcher.CardObject{}}
+func mkmCards(n int) (*matcher.Backend, *priceSnapshot) {
+	b := &matcher.Backend{UUIDs: map[string]*matcher.CardObject{}}
 	for i := range n {
 		uuid := fmt.Sprintf("card%d", i)
-		b.UUIDs[uuid] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: uuid, SetCode: "AAA"}}
+		b.UUIDs[uuid] = &matcher.CardObject{Card: matcher.Card{Name: uuid, SetCode: "AAA"}}
 		b.AllUUIDs = append(b.AllUUIDs, uuid)
 	}
 	return b, &priceSnapshot{

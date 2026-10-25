@@ -3,9 +3,9 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestPreprocessBlackBorderedForeign pins the one shelf CSI files every
@@ -71,7 +71,7 @@ func TestPreprocessBlackBorderedForeign(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			card, err := preprocess(b, tt.name, "Black Bordered (foreign)", tt.variant, "", false)
 			if tt.wantPreErr {
-				if err != mtgmatcher.ErrUnsupported {
+				if err != matcher.ErrUnsupported {
 					t.Fatalf("preprocess(%q) = %v, want ErrUnsupported", tt.name, err)
 				}
 				return

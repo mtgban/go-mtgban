@@ -9,8 +9,8 @@ import (
 	"slices"
 	"testing"
 
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 	"github.com/mtgban/go-mtgban/mtgban"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 )
 
 // TestLoadCatalogRetryStartsClean drives the singles scraper through a catalog

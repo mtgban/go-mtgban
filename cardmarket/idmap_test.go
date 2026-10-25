@@ -10,9 +10,9 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // loadCatalogDatastore installs testdata/idmap_datastore.json, the published
@@ -21,14 +21,14 @@ import (
 // of Midnight, the two same-numbered Growth Charms of the Mystery Booster
 // playtest sets, and the dagger variants under one Cardmarket id of Fifth
 // Edition's Shivan Dragon and Happy Holidays' foil-only Gifts Given.
-func loadCatalogDatastore(t *testing.T) *mtgmatcher.Backend {
+func loadCatalogDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	reader, err := os.Open("testdata/idmap_datastore.json")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer reader.Close()
-	b, err := mtgmatcher.Open("magic", reader)
+	b, err := matcher.Open("magic", reader)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,19 +168,19 @@ func TestCheckCatalog(t *testing.T) {
 
 	for _, tt := range []struct {
 		name    string
-		game    mtgmatcher.Game
+		game    matcher.Game
 		catalog *cm.Catalog
 		usable  bool
 	}{
-		{"one piece coded", mtgmatcher.GameOnePiece, coded, true},
-		{"one piece bare", mtgmatcher.GameOnePiece, bare, false},
-		{"yugioh bare", mtgmatcher.GameYuGiOh, bare, false},
-		{"fab coded", mtgmatcher.GameFleshAndBlood, coded, true},
-		{"fab bare", mtgmatcher.GameFleshAndBlood, bare, false},
-		{"magic bare", mtgmatcher.GameMagic, bare, true},
-		{"magic none", mtgmatcher.GameMagic, nil, false},
+		{"one piece coded", matcher.GameOnePiece, coded, true},
+		{"one piece bare", matcher.GameOnePiece, bare, false},
+		{"yugioh bare", matcher.GameYuGiOh, bare, false},
+		{"fab coded", matcher.GameFleshAndBlood, coded, true},
+		{"fab bare", matcher.GameFleshAndBlood, bare, false},
+		{"magic bare", matcher.GameMagic, bare, true},
+		{"magic none", matcher.GameMagic, nil, false},
 	} {
-		mkm, err := NewScraperIndex(&mtgmatcher.Backend{Game: tt.game})
+		mkm, err := NewScraperIndex(&matcher.Backend{Game: tt.game})
 		if err != nil {
 			t.Fatalf("%s: NewScraperIndex(%v) = %v", tt.name, tt.game, err)
 		}

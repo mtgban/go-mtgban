@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestResolveProductEtchedByID pins the etched flag on the id path. The
@@ -19,7 +19,7 @@ func TestResolveProductEtchedByID(t *testing.T) {
 	var etchedUUID, tcgID string
 	for _, uuid := range b.GetUUIDs() {
 		co, err := b.GetUUID(uuid)
-		if err != nil || !co.Etched || !co.HasFinish(mtgmatcher.FinishFoil) {
+		if err != nil || !co.Etched || !co.HasFinish(matcher.FinishFoil) {
 			continue
 		}
 		if id := co.Identifiers["tcgplayerEtchedProductId"]; id != "" {

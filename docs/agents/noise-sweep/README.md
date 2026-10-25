@@ -86,7 +86,7 @@ distinct listings. An inventory-only request stops there.
 
 ### 2. Replay the corpus through the *production path*
 
-This is the step that makes the difference. Do **not** call `mtgmatcher.Match`
+This is the step that makes the difference. Do **not** call `matcher.Match`
 directly with hand-built inputs - replay the run's own log through the same
 function the scraper calls (`resolveProduct` / `resolveProductID` for Star
 City, `(*Market).processProducts` for CardTrader, which tries the blueprint's
@@ -221,7 +221,7 @@ ranked. **Before listing a gap, have a separate pass try to refute it**
 against the loaded backend: another spelling, another set code (promo and
 sibling sets too), the detail in `variant`/`promoTypes`/finish, the number
 with a prefix or suffix, another language, and the vendor's own id
-(`b.MatchID`, or `b.ConvertID(mtgmatcher.IDSpaceCardmarket, id)`). It refuted
+(`b.MatchID`, or `b.ConvertID(matcher.IDSpaceCardmarket, id)`). It refuted
 26 of 59 claimed gaps on 2026-09-07 and 16 of 22, in whole or part, on
 2026-09-24.
 
@@ -241,7 +241,7 @@ the `project-datastore-gaps` memory so datastore-gen work can be batched.
 - Sealed is **low priority** in every game: the ceiling is ~84-91%, so a sealed
   target that is not at zero is usually finished, not broken.
 - The Magic loader does not carry every mtgjson row: `art_series` and
-  `front_card` layouts are deliberately dropped (`mtgmatcher/magic/mtgjson.go`).
+  `front_card` layouts are deliberately dropped (`matcher/magic/mtgjson.go`).
   A row being in `allprintings5.json` does not mean the matcher can reach it -
   check the loaded backend, not the raw JSON, before calling something present.
 - Vendor ids are theirs: a wrong authoritative id is the vendor's bug, not

@@ -14,8 +14,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Sealed prices Cool Stuff Inc's sealed product.
@@ -37,11 +37,11 @@ type Sealed struct {
 
 	client  *http.Client
 	shelf   string
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 }
 
 // NewScraperSealed returns a sealed scraper for the datastore's game.
-func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
+func NewScraperSealed(b *matcher.Backend) (*Sealed, error) {
 	game := b.Game
 	shelf, ok := csiGames[game]
 	if !ok {
@@ -54,7 +54,7 @@ func NewScraperSealed(b *mtgmatcher.Backend) (*Sealed, error) {
 	csi.maxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
-	if game == mtgmatcher.GameMagic {
+	if game == matcher.GameMagic {
 		for _, uuid := range b.GetSealedUUIDs() {
 			co, err := b.GetUUID(uuid)
 			if err != nil {
@@ -247,10 +247,10 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 		// skipping the language variants the datastores never carry.
 		uuid, found := csi.productMap[product.PID]
 		if !found {
-			if csi.backend.Game == mtgmatcher.GameMagic {
+			if csi.backend.Game == matcher.GameMagic {
 				continue
 			}
-			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
+			if matcher.SealedIsLanguageVariant(product.Name) {
 				continue
 			}
 			resolved, err := csi.backend.ResolveSealed(product.Name)
@@ -260,7 +260,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 			uuid = resolved
 		}
 
-		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
+		buyPrice, err := matcher.ParsePrice(product.Price)
 		if err != nil {
 			csi.printf("%s error: %s", product.Name, err.Error())
 			continue
@@ -310,7 +310,7 @@ func (csi *Sealed) Load(ctx context.Context) error {
 	// other games ride the same set-facet search the singles use, with
 	// the sealed-name resolver telling the sealed rows apart from the
 	// card ones.
-	if csi.backend.Game != mtgmatcher.GameMagic {
+	if csi.backend.Game != matcher.GameMagic {
 		var errs []error
 		if !csi.disableRetail {
 			if err := csi.scrapeBysets(ctx); err != nil {
@@ -477,16 +477,16 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		rows := doc.Find(searchRowSelector)
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
-			if csi.backend.Game == mtgmatcher.GameYuGiOh {
+			if csi.backend.Game == matcher.GameYuGiOh {
 				// The storefront leads its yugioh sealed listings with the
 				// game's own name, which the canonical names never carry.
 				productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")
 				productName = strings.TrimPrefix(strings.TrimSpace(productName), "- ")
 			}
-			if csi.backend.Game == mtgmatcher.GameLorcana {
+			if csi.backend.Game == matcher.GameLorcana {
 				productName = lorcanaSealedWords.Replace(productName)
 			}
-			if productName == "" || mtgmatcher.SealedIsLanguageVariant(productName) {
+			if productName == "" || matcher.SealedIsLanguageVariant(productName) {
 				return
 			}
 			uuid, err := csi.backend.ResolveSealed(productName)

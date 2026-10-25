@@ -3,7 +3,7 @@ package hareruya
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestSplitParensKeepsAZeroPower pins that the unpadding a collector number
@@ -27,7 +27,7 @@ func TestSplitParensKeepsAZeroPower(t *testing.T) {
 		// And a two-spelling promo code still keeps its first side.
 		{"《Card》(PRM-001/ABC)", "PRM-001"},
 	} {
-		if got, _, _ := splitParens(&mtgmatcher.Backend{}, tt.title); got != tt.want {
+		if got, _, _ := splitParens(&matcher.Backend{}, tt.title); got != tt.want {
 			t.Errorf("splitParens(%q) = %q, want %q", tt.title, got, tt.want)
 		}
 	}
@@ -54,7 +54,7 @@ func TestSplitParensReadsTheTreatment(t *testing.T) {
 		// A treatment with no number before it is the number itself.
 		{"【EN】《Vexing Shusher》(発売記念)[SHM-P] 金", ""},
 	} {
-		if _, _, got := splitParens(&mtgmatcher.Backend{}, tt.title); got != tt.want {
+		if _, _, got := splitParens(&matcher.Backend{}, tt.title); got != tt.want {
 			t.Errorf("splitParens(%q) treatment = %q, want %q", tt.title, got, tt.want)
 		}
 	}

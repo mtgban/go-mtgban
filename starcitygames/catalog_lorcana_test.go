@@ -3,7 +3,7 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestLorcanaNumber pins the collector number a Lorcana sku is read as. The
@@ -92,21 +92,21 @@ func TestSecondBucket(t *testing.T) {
 // candidates are counted by name; two names would leave the marker naming
 // neither in particular, and the product is refused rather than guessed at.
 func TestSoleSibling(t *testing.T) {
-	card := func(name, uuid string) *mtgmatcher.CardObject {
-		return &mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: name, UUID: uuid}}
+	card := func(name, uuid string) *matcher.CardObject {
+		return &matcher.CardObject{Card: matcher.Card{Name: name, UUID: uuid}}
 	}
 	// The answer is pinned by name rather than by uuid: where one printing is
 	// spelled twice, either spelling of it is the same right answer.
 	for _, tt := range []struct {
 		name       string
-		candidates []*mtgmatcher.CardObject
+		candidates []*matcher.CardObject
 		want       string
 	}{
 		{"no printing beside the base one", nil, ""},
-		{"one printing answers", []*mtgmatcher.CardObject{card("Elsa - Gloves Off (Errata Version)", "a")}, "Elsa - Gloves Off (Errata Version)"},
+		{"one printing answers", []*matcher.CardObject{card("Elsa - Gloves Off (Errata Version)", "a")}, "Elsa - Gloves Off (Errata Version)"},
 		{
 			"one printing sold in two treatments is still one printing",
-			[]*mtgmatcher.CardObject{
+			[]*matcher.CardObject{
 				card("Elsa - Gloves Off (Errata Version)", "a"),
 				card("Elsa - Gloves Off (Errata Version)", "b"),
 			},
@@ -114,7 +114,7 @@ func TestSoleSibling(t *testing.T) {
 		},
 		{
 			"two printings name neither in particular",
-			[]*mtgmatcher.CardObject{
+			[]*matcher.CardObject{
 				card("Hades - King of Olympus (Oversized)", "a"),
 				card("Hades - King of Olympus (Errata Version)", "b"),
 			},

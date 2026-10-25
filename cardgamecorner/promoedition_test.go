@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // TestMain loads the datastore when one is configured. The rest of this
@@ -18,12 +18,12 @@ import (
 var (
 	datastoreOnce    sync.Once
 	datastoreErr     error
-	datastoreBackend *mtgmatcher.Backend
+	datastoreBackend *matcher.Backend
 )
 
 // realDatastore reads the Magic datastore the first time a test asks for it,
 // and skips where the run carries none.
-func realDatastore(t *testing.T) *mtgmatcher.Backend {
+func realDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")

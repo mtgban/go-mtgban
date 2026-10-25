@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Arcanafrisia prices what Arcana Frisia buys; they publish no sale prices.
 type Arcanafrisia struct {
 	logCallback mtgban.LogCallbackFunc
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	buylistDate time.Time
 	buylist     mtgban.BuylistRecord
 }
 
 // NewScraper returns a buylist scraper matching against b.
-func NewScraper(b *mtgmatcher.Backend) *Arcanafrisia {
+func NewScraper(b *matcher.Backend) *Arcanafrisia {
 	af := Arcanafrisia{backend: b}
 	af.buylist = mtgban.BuylistRecord{}
 	return &af
@@ -104,6 +104,6 @@ func (af *Arcanafrisia) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "AF"
 	info.CountryFlag = "EU"
 	info.BuylistTimestamp = &af.buylistDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

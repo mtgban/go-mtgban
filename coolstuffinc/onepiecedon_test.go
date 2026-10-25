@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	"github.com/mtgban/go-mtgban/matcher"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestOnePieceDonNameReachesTheCard pins that a DON!! listing is handed
@@ -47,7 +47,7 @@ func TestOnePieceDonNameReachesTheCard(t *testing.T) {
 			if !isDon {
 				t.Fatalf("onePieceDonName(%q) did not read a DON!! listing", tt.name)
 			}
-			card := &mtgmatcher.InputCard{
+			card := &matcher.InputCard{
 				Name:      name,
 				Edition:   onePieceShelf(tt.shelf, tt.name),
 				Variation: description,
@@ -87,7 +87,7 @@ func TestOnePieceDonRenamedIsASecondAttempt(t *testing.T) {
 	if !isDon {
 		t.Fatal("onePieceDonName did not read a DON!! listing")
 	}
-	id, err := b.Match(&mtgmatcher.InputCard{
+	id, err := b.Match(&matcher.InputCard{
 		Name: "DON!! Card", Edition: "Promo", Variation: description, Foil: true,
 	})
 	if err != nil {
@@ -119,7 +119,7 @@ func TestOnePieceDonNameTellsTheGoldApart(t *testing.T) {
 		if !isDon {
 			t.Fatalf("onePieceDonName(%q) did not read a DON!! listing", listing)
 		}
-		id, err := b.Match(&mtgmatcher.InputCard{
+		id, err := b.Match(&matcher.InputCard{
 			Name:      name,
 			Edition:   onePieceShelf("EB03 - Heroines Edition", listing),
 			Variation: description,
@@ -161,7 +161,7 @@ func TestOnePiecePIDsNameHeldProducts(t *testing.T) {
 	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 
 	for pid, tcgID := range onePiecePIDs {
-		_, err := b.Match(&mtgmatcher.InputCard{ID: tcgID, Foil: true})
+		_, err := b.Match(&matcher.InputCard{ID: tcgID, Foil: true})
 		if err != nil {
 			t.Errorf("product %s names TCGplayer %s: %v", pid, tcgID, err)
 		}

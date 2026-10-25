@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Sealed prices SCG's sealed product.
@@ -28,7 +28,7 @@ type Sealed struct {
 	setIDs     map[string]int
 	dropped    map[string]int
 	client     *SCGClient
-	backend    *mtgmatcher.Backend
+	backend    *matcher.Backend
 	gameID     int
 }
 
@@ -58,7 +58,7 @@ func (scg *Sealed) drop(reason string) {
 
 // NewScraperSealed returns a sealed scraper for one game, using the given API
 // key.
-func NewScraperSealed(b *mtgmatcher.Backend, apiKey string) (*Sealed, error) {
+func NewScraperSealed(b *matcher.Backend, apiKey string) (*Sealed, error) {
 	game := b.Game
 	gameID, ok := scgGames[game]
 	if !ok {
@@ -81,7 +81,7 @@ func (scg *Sealed) printf(format string, a ...any) {
 
 // buildProductMap indexes the sealed products by their SCG id (the catalog SKU)
 // so a catalog product can be resolved to its mtgban uuid directly.
-func buildProductMap(b *mtgmatcher.Backend) map[string]string {
+func buildProductMap(b *matcher.Backend) map[string]string {
 	out := map[string]string{}
 	for _, uuid := range b.GetSealedUUIDs() {
 		co, err := b.GetUUID(uuid)
@@ -163,7 +163,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	// lorcana) resolve by name instead, English only, unique or nothing.
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
-		if scg.backend.Game == mtgmatcher.GameMagic {
+		if scg.backend.Game == matcher.GameMagic {
 			scg.drop("sku the datastore does not carry")
 			return
 		}
@@ -171,7 +171,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 			scg.drop("not sold in English")
 			return
 		}
-		if mtgmatcher.SealedIsLanguageVariant(p.Name) {
+		if matcher.SealedIsLanguageVariant(p.Name) {
 			scg.drop("language variant")
 			return
 		}
@@ -203,7 +203,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	}
 
 	for _, v := range p.Variants {
-		retailPrice, _ := mtgmatcher.ParsePrice(v.Price)
+		retailPrice, _ := matcher.ParsePrice(v.Price)
 
 		if retailPrice > 0 && v.Qty > 0 {
 			entry := &mtgban.InventoryEntry{
@@ -218,7 +218,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 			}
 		}
 
-		if buyPrice, err := mtgmatcher.ParsePrice(v.SellListPrice); err == nil && buyPrice > 0 {
+		if buyPrice, err := matcher.ParsePrice(v.SellListPrice); err == nil && buyPrice > 0 {
 			var priceRatio float64
 			if retailPrice > 0 {
 				priceRatio = buyPrice / retailPrice * 100

@@ -3,7 +3,7 @@ package starcitygames
 import (
 	"math"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // bulkRateEpsilon absorbs the last bit of a decimal parse. The closest two
@@ -138,7 +138,7 @@ func bulkBuyRates(game int, rarity, finish string) []float64 {
 // quotes is itself under a cent, and the count of rates is what says this
 // table is still current.
 func buylistPrice(game int, p CatalogProduct, sellListPrice string) (price float64, priced, bulk bool) {
-	price, err := mtgmatcher.ParsePrice(sellListPrice)
+	price, err := matcher.ParsePrice(sellListPrice)
 	if err != nil || price <= 0 {
 		return 0, false, false
 	}

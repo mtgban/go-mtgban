@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestUnprintedFinish pins the listings this storefront prices in a finish
@@ -86,8 +86,8 @@ func TestPrereleaseWildcardEscape(t *testing.T) {
 			card := ABUCard{DisplayTitle: test.title, Edition: "The Lost Caverns of Ixalan Promos",
 				Number: test.number, Language: []string{"English"}}
 			in, err := preprocess(b, &card)
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
-				t.Errorf("preprocess(%q) = %v, %v, want %v", test.title, in, err, mtgmatcher.ErrUnsupported)
+			if !errors.Is(err, matcher.ErrUnsupported) {
+				t.Errorf("preprocess(%q) = %v, %v, want %v", test.title, in, err, matcher.ErrUnsupported)
 			}
 		})
 	}

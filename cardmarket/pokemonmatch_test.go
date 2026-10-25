@@ -7,9 +7,9 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 // pokemonDatastore is the published Pokemon datastore cut down to the
@@ -245,18 +245,18 @@ func TestPokemonBasicEnergy(t *testing.T) {
 func TestNoPrintingSkipsBasicEnergy(t *testing.T) {
 	for _, tt := range []struct {
 		desc string
-		game mtgmatcher.Game
+		game matcher.Game
 		name string
 		want error
 	}{
-		{"a Pokemon basic energy goes quiet", mtgmatcher.GamePokemon, "Water Energy", nil},
-		{"its bracketed spelling too", mtgmatcher.GamePokemon, "Grass Energy [Basic]", nil},
-		{"a Pokemon special energy still refuses", mtgmatcher.GamePokemon, "Rainbow Energy", errNoPrinting},
-		{"an ordinary Pokemon card still refuses", mtgmatcher.GamePokemon, "Pikachu", errNoPrinting},
-		{"another game's energy still refuses", mtgmatcher.GameYuGiOh, "Water Energy", errNoPrinting},
+		{"a Pokemon basic energy goes quiet", matcher.GamePokemon, "Water Energy", nil},
+		{"its bracketed spelling too", matcher.GamePokemon, "Grass Energy [Basic]", nil},
+		{"a Pokemon special energy still refuses", matcher.GamePokemon, "Rainbow Energy", errNoPrinting},
+		{"an ordinary Pokemon card still refuses", matcher.GamePokemon, "Pikachu", errNoPrinting},
+		{"another game's energy still refuses", matcher.GameYuGiOh, "Water Energy", errNoPrinting},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			mkm, err := NewScraperIndex(&mtgmatcher.Backend{Game: tt.game})
+			mkm, err := NewScraperIndex(&matcher.Backend{Game: tt.game})
 			if err != nil {
 				t.Fatalf("NewScraperIndex(%v) = %v", tt.game, err)
 			}

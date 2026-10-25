@@ -3,15 +3,15 @@ package mtgseattle
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestMaxConcurrencyOnlyLowers pins the registration override: a caller can
 // ask for fewer workers than defaultConcurrency, never more, because the
 // site throttles hard past it.
 func TestMaxConcurrencyOnlyLowers(t *testing.T) {
-	b := &mtgmatcher.Backend{Game: "magic"}
+	b := &matcher.Backend{Game: "magic"}
 
 	tests := []struct {
 		name string

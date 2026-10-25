@@ -10,7 +10,7 @@ uuid in the same spelling, but a consumer must not rely on it.
 
 ## The table
 
-`mtgmatcher.Finishes` holds every printing TCGplayer's catalogs define for
+`matcher.Finishes` holds every printing TCGplayer's catalogs define for
 the eight datastore games, checked against the catalog dumps on 2026-09-25.
 
 | slug | TCGplayer | run | treatment | foil |

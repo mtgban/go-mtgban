@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // pokemonNonHolo matches the bracket a Pokemon name states a plain printing
@@ -43,14 +43,14 @@ var pokemonNonHoloShelves = []struct{ edition, set string }{
 // the plain printing a "(Non-Holo)" bracket asks for, or "" where none does.
 // It is taken only when the probe lands on that shelf's own nonfoil at the
 // listing's own number.
-func pokemonNonHoloShelf(b *mtgmatcher.Backend, name, numbered string, foil bool) string {
-	num := cmp.Or(mtgmatcher.ExtractNumber(numbered), numbered)
+func pokemonNonHoloShelf(b *matcher.Backend, name, numbered string, foil bool) string {
+	num := cmp.Or(matcher.ExtractNumber(numbered), numbered)
 	if num == "" {
 		return ""
 	}
 	for _, shelf := range pokemonNonHoloShelves {
-		co := pokemonLandsAt(b, mtgmatcher.InputCard{Name: name + " - " + numbered, Edition: shelf.edition, Foil: foil}, shelf.set, num)
-		if co != nil && co.Finish == mtgmatcher.FinishNonfoil {
+		co := pokemonLandsAt(b, matcher.InputCard{Name: name + " - " + numbered, Edition: shelf.edition, Foil: foil}, shelf.set, num)
+		if co != nil && co.Finish == matcher.FinishNonfoil {
 			return shelf.edition
 		}
 	}
@@ -72,12 +72,12 @@ var pokemonHoloShelves = []struct{ edition, set string }{
 // pokemonHoloShelf answers a listing named by a holo bracket as the holofoil
 // its own set holds at the number, else as the one the catalog files on one of
 // pokemonHoloShelves, and leaves it as it is where neither does.
-func pokemonHoloShelf(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) *mtgmatcher.InputCard {
+func pokemonHoloShelf(b *matcher.Backend, card *matcher.InputCard) *matcher.InputCard {
 	head, numbered := numberedListing(card.Name)
 	if !pokemonHolo.MatchString(head) && !pokemonHolo.MatchString(numbered) {
 		return card
 	}
-	num := strings.TrimLeft(mtgmatcher.ExtractNumber(numbered), "0")
+	num := strings.TrimLeft(matcher.ExtractNumber(numbered), "0")
 	if num == "" {
 		return card
 	}
@@ -107,7 +107,7 @@ func pokemonHoloShelf(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) *mtgmat
 
 // pokemonLandsAt matches a copy of a probe and answers the printing it lands
 // on, or nil unless that is set's own at num, leading zeros aside.
-func pokemonLandsAt(b *mtgmatcher.Backend, probe mtgmatcher.InputCard, set, num string) *mtgmatcher.CardObject {
+func pokemonLandsAt(b *matcher.Backend, probe matcher.InputCard, set, num string) *matcher.CardObject {
 	id, err := b.Match(&probe)
 	if err != nil {
 		return nil
@@ -206,18 +206,18 @@ var pokemonListingIDs = map[string]string{
 // cards of the Platinum sets are named "Alakazam 4" for the catalog's
 // "Alakazam E4"; and the metal cards are named for the metal, "Metal Mew ex"
 // for the catalog's Mew ex labelled a metal card.
-func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil bool) *mtgmatcher.InputCard {
+func pokemonListing(b *matcher.Backend, name, edition, variation string, foil bool) *matcher.InputCard {
 	m2022 := pokemonReverse2022Energy.FindStringSubmatch(name)
 	if m2022 != nil && edition == "SWSH Crown Zenith" {
-		return &mtgmatcher.InputCard{Name: m2022[1], Edition: "SWSH Brilliant Stars", Variation: "2022", Foil: true}
+		return &matcher.InputCard{Name: m2022[1], Edition: "SWSH Brilliant Stars", Variation: "2022", Foil: true}
 	}
 	id, found := pokemonListingIDs[name+"|"+edition]
 	if found {
-		return &mtgmatcher.InputCard{ID: id, Foil: true}
+		return &matcher.InputCard{ID: id, Foil: true}
 	}
 	for _, r := range pokemonCatalogShelves {
 		if name == r.listing && edition == r.shelf && strings.Contains(variation, r.marker) {
-			return &mtgmatcher.InputCard{Name: r.name, Edition: r.edition, Variation: r.variation, Foil: true}
+			return &matcher.InputCard{Name: r.name, Edition: r.edition, Variation: r.variation, Foil: true}
 		}
 	}
 	if edition == "Pokemon Oversized Cards" {
@@ -228,7 +228,7 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 	numbered = megaPromoNumber.ReplaceAllString(numbered, "MEP$1")
 	variation = megaPromoNumber.ReplaceAllString(variation, "MEP$1")
 	name = strings.TrimSpace(nonStampedName.ReplaceAllString(name, ""))
-	card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
+	card := &matcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
 	m := basicEnergyName.FindStringSubmatch(name)
 	if m != nil {
 		bracket := strings.Trim(m[2], "()")
@@ -310,7 +310,7 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 		_, rest := b.SearchEquals(m[1])
 		if whole != nil && rest == nil {
 			card.Name = m[1]
-			if !mtgmatcher.SlugDescribes(card.Variation, "metalcard") {
+			if !matcher.SlugDescribes(card.Variation, "metalcard") {
 				card.Variation = strings.TrimSpace(card.Variation + " Metal Card")
 			}
 		}
@@ -382,7 +382,7 @@ func pokemonListing(b *mtgmatcher.Backend, name, edition, variation string, foil
 // "Professor" and back, each the way some sets print it). The other spelling
 // is taken only when the listing's own does not land at its number and the
 // other does.
-func pokemonProfessor(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, numbered string) string {
+func pokemonProfessor(b *matcher.Backend, card *matcher.InputCard, numbered string) string {
 	var swapped string
 	switch {
 	case strings.HasPrefix(card.Name, "Prof. "):
@@ -392,7 +392,7 @@ func pokemonProfessor(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, numbere
 	default:
 		return card.Name
 	}
-	num := mtgmatcher.ExtractNumber(numbered)
+	num := matcher.ExtractNumber(numbered)
 	if num == "" {
 		return card.Name
 	}
@@ -417,7 +417,7 @@ func pokemonProfessor(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, numbere
 // storefront: a buy row read with its shelf spelled whole matches the set of
 // that name and is published against the unlimited printing at the first
 // edition's price.
-func pokemonBuylistCard(b *mtgmatcher.Backend, product CSIPriceEntry) (*mtgmatcher.InputCard, []string) {
+func pokemonBuylistCard(b *matcher.Backend, product CSIPriceEntry) (*matcher.InputCard, []string) {
 	// CSI's "0" placeholder for an unnumbered year energy otherwise reads
 	// as a number word of its own at the head of the variation.
 	if product.Number == "0" {
@@ -473,9 +473,9 @@ var (
 
 // galacticInvention names the Team Galactic invention the catalog files
 // under its number, or nothing when no invention ends in the name given.
-func galacticInvention(b *mtgmatcher.Backend, name string) string {
+func galacticInvention(b *matcher.Backend, name string) string {
 	found := ""
-	for _, candidate := range b.Names(mtgmatcher.NameFormCanonical, false) {
+	for _, candidate := range b.Names(matcher.NameFormCanonical, false) {
 		if strings.HasPrefix(candidate, "Team Galactic's Invention") && strings.HasSuffix(candidate, " "+name) {
 			if found != "" {
 				return ""
@@ -556,7 +556,7 @@ var pokemonStampTail = regexp.MustCompile(`(?i)\s*\([^)]*\bStamp(?:ed)?\)|\s+-\s
 // pokemonNoteShelf answers the listing re-asked on the shelf its note names,
 // or nil where no note names one or the redirected listing does not land on
 // that shelf's own set.
-func pokemonNoteShelf(b *mtgmatcher.Backend, numbered string, card *mtgmatcher.InputCard) *mtgmatcher.InputCard {
+func pokemonNoteShelf(b *matcher.Backend, numbered string, card *matcher.InputCard) *matcher.InputCard {
 	cleaned := strings.TrimSpace(pokemonStampTail.ReplaceAllString(numbered, ""))
 	for _, r := range pokemonNoteShelves {
 		if !strings.Contains(card.Variation, r.marker) {
@@ -601,18 +601,18 @@ var pokemonDeckHoloNotes = []struct {
 // The probe asks for the "Cracked Ice Holo" label and the foil finish so a
 // cracked-ice twin outranks the plain printing of the same number, or for
 // "Non-Holo" and the plain finish where the listing is the plain copy.
-func pokemonDeckHoloRedirect(b *mtgmatcher.Backend, name, numbered, notes, variation string, foil bool) string {
+func pokemonDeckHoloRedirect(b *matcher.Backend, name, numbered, notes, variation string, foil bool) string {
 	for _, r := range pokemonDeckHoloNotes {
 		if !strings.Contains(notes, r.marker) && !strings.Contains(numbered, r.marker) {
 			continue
 		}
 		tail := strings.TrimSpace(strings.Replace(numbered, r.marker, "", 1))
 		tail = strings.TrimSpace(strings.TrimSuffix(tail, "-"))
-		num := mtgmatcher.ExtractNumber(tail)
+		num := matcher.ExtractNumber(tail)
 		if num == "" {
 			continue
 		}
-		probe := mtgmatcher.InputCard{Name: name + " - " + tail, Edition: r.edition, Variation: variation, Foil: foil}
+		probe := matcher.InputCard{Name: name + " - " + tail, Edition: r.edition, Variation: variation, Foil: foil}
 		if pokemonLandsAt(b, probe, r.wantSet, num) != nil {
 			return r.edition
 		}
@@ -628,12 +628,12 @@ var basicEnergyName = regexp.MustCompile(`^(Grass|Fire|Water|Lightning|Psychic|F
 // pokemonBasicEnergy answers a bare "<Type> Energy" listing the way the
 // catalog spells its Scarlet & Violet / Mega Evolution era printings, read
 // off the SVE/MEE-shaped product number glued onto the tail.
-func pokemonBasicEnergy(b *mtgmatcher.Backend, energyType, bracket, edition, numbered, variation string, foil bool) *mtgmatcher.InputCard {
+func pokemonBasicEnergy(b *matcher.Backend, energyType, bracket, edition, numbered, variation string, foil bool) *matcher.InputCard {
 	name := "Basic " + energyType + " Energy"
 	bracket = catalogTreatment(bracket)
 
-	build := func(fromVariation bool, numberedTail string) *mtgmatcher.InputCard {
-		card := &mtgmatcher.InputCard{Name: name, Edition: edition, Variation: bracket, Foil: foil}
+	build := func(fromVariation bool, numberedTail string) *matcher.InputCard {
+		card := &matcher.InputCard{Name: name, Edition: edition, Variation: bracket, Foil: foil}
 		if fromVariation {
 			card.Variation = strings.TrimSpace(bracket + " " + numberedTail)
 		} else if numberedTail != "" {
@@ -652,7 +652,7 @@ func pokemonBasicEnergy(b *mtgmatcher.Backend, energyType, bracket, edition, num
 		// A plain rename needs the tail's own number to say which
 		// printing is meant, on the shelf's own set: the same gate
 		// the on-shelf and SVE/MEE probes below both apply.
-		num := mtgmatcher.ExtractNumber(numbered)
+		num := matcher.ExtractNumber(numbered)
 		if num == "" {
 			return nil
 		}
@@ -738,7 +738,7 @@ var pokemonCosmosShelves = []struct{ edition, set string }{
 // The storefront keeps the set's number and total on it, so the base set's
 // nonfoil answers for it, a $2.99 Charmeleon priced as the $0.29 one. A
 // listing that already lands on a cosmos holo is left there.
-func pokemonCosmosHolo(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, rarity string) *mtgmatcher.InputCard {
+func pokemonCosmosHolo(b *matcher.Backend, card *matcher.InputCard, rarity string) *matcher.InputCard {
 	m := pokemonCosmosBracket.FindStringSubmatch(card.Name)
 	if m == nil {
 		return card
@@ -760,7 +760,7 @@ func pokemonCosmosHolo(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, rarity
 	cosmos.Variation = "Cosmos Holo"
 	cosmos.Foil = true
 	_, tail := numberedListing(cosmos.Name)
-	num := strings.TrimLeft(mtgmatcher.ExtractNumber(tail), "0")
+	num := strings.TrimLeft(matcher.ExtractNumber(tail), "0")
 	if num == "" {
 		return card
 	}
@@ -790,12 +790,12 @@ func pokemonCosmosHolo(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, rarity
 // shelf, with the same breadcrumb rarity "Promo" - so both sides call this
 // with their own name for the rarity field: RarityName on the buylist, the
 // scraped breadcrumb text on retail.
-func pokemonPromoShelf(b *mtgmatcher.Backend, name, itemSet, rarityName string, foil bool, variation string) string {
+func pokemonPromoShelf(b *matcher.Backend, name, itemSet, rarityName string, foil bool, variation string) string {
 	if rarityName != "Promo" ||
 		strings.Contains(strings.ToLower(itemSet), "promo") {
 		return itemSet
 	}
-	probe := &mtgmatcher.InputCard{
+	probe := &matcher.InputCard{
 		Name:      name,
 		Edition:   "Promo",
 		Variation: variation,

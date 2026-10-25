@@ -3,7 +3,7 @@ package mintcard
 import "testing"
 
 // TestPreprocessResolvesTokenPairingWithDenominator pins a two-sided token
-// listing resolving to the combined entity mtgmatcher/magic derives for
+// listing resolving to the combined entity matcher/magic derives for
 // it, anchored by the catalog's own set code and each face's own number:
 // "Bird Token (2/21) // Saproling Token (16/21)" names Bird as C16's own
 // token #2 and Saproling as its #16 - confirmed against real listings to

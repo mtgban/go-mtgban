@@ -14,8 +14,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Sealed prices sealed product from Cardmarket's marketplace,
@@ -47,7 +47,7 @@ type Sealed struct {
 	gameID cm.Game
 
 	// backend is the datastore this scraper matches against.
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 }
 
 func (mkm *Sealed) printf(format string, a ...any) {
@@ -58,7 +58,7 @@ func (mkm *Sealed) printf(format string, a ...any) {
 
 // NewScraperSealed returns a sealed scraper matching against b,
 // authenticated with an app token and secret.
-func NewScraperSealed(b *mtgmatcher.Backend, appToken, appSecret string) (*Sealed, error) {
+func NewScraperSealed(b *matcher.Backend, appToken, appSecret string) (*Sealed, error) {
 	game := b.Game
 	id, found := mkmGames[game]
 	if !found {
@@ -144,7 +144,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 			// Skip all the silly non-really-sealed listings
 			skip := false
 			for _, comment := range notSealedComments {
-				if mtgmatcher.Contains(article.Comments, comment) {
+				if matcher.Contains(article.Comments, comment) {
 					skip = true
 					break
 				}
@@ -408,7 +408,7 @@ func (mkm *Sealed) resolveSealedName(name string) (string, error) {
 
 // pruneSubsumed drops the products that reached a product another entry of the
 // catalog names in fewer words, and returns how many it dropped. Which names
-// those are is mtgmatcher.SealedNameSubsumed's question; this walks the
+// those are is matcher.SealedNameSubsumed's question; this walks the
 // products that reached each one and asks it.
 //
 // A product the bridge or the print-run index answered for is asked about but
@@ -432,7 +432,7 @@ func (mkm *Sealed) pruneSubsumed(names map[int]string, productMap map[int][]stri
 			}
 		}
 		for _, id := range ids {
-			if !mtgmatcher.SealedNameSubsumed(names[id], beside, co.Edition) {
+			if !matcher.SealedNameSubsumed(names[id], beside, co.Edition) {
 				continue
 			}
 			mkm.printf("%q (%d): names a product built on %s", names[id], id, uuid)
@@ -494,7 +494,7 @@ func sealedShelfHoldsNoProduct(category string) (string, bool) {
 // is free to forgive. Naming them here is what keeps them off the English
 // row however much the spellings below loosen.
 func sealedIsForeignPrinting(name string) bool {
-	return mtgmatcher.SealedIsLanguageVariant(name) ||
+	return matcher.SealedIsLanguageVariant(name) ||
 		strings.Contains(strings.ToLower(name), asiaRegionMark)
 }
 
@@ -577,7 +577,7 @@ func editionRunSpellings(name string) []string {
 // never wrote, and a candidate reached by handing it one has to answer for
 // everything else the vendor did write. Two runs answering equally well is a
 // name that does not say which it is, and stays unresolved.
-func resolveSealedRun(b *mtgmatcher.Backend, name string) (string, bool) {
+func resolveSealedRun(b *matcher.Backend, name string) (string, bool) {
 	var found string
 	seen := map[string]bool{}
 	for _, spelling := range editionRunSpellings(name) {
@@ -725,7 +725,7 @@ type printRunEntry struct {
 	wave int
 }
 
-func newPrintRunIndex(b *mtgmatcher.Backend) printRunIndex {
+func newPrintRunIndex(b *matcher.Backend) printRunIndex {
 	index := printRunIndex{}
 	for _, uuid := range b.GetSealedUUIDs() {
 		co, err := b.GetUUID(uuid)

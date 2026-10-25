@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -14,7 +14,7 @@ import (
 // TCGplayer quotes one.
 func TestMarketSKUEntries(t *testing.T) {
 	b := realDatastore(t)
-	uuid, err := b.Match(&mtgmatcher.InputCard{Name: "Lightning Bolt", Edition: "Magic 2010"})
+	uuid, err := b.Match(&matcher.InputCard{Name: "Lightning Bolt", Edition: "Magic 2010"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestMarketSKUEntries(t *testing.T) {
 
 // TestMarketNames pins the shorthands the Magic sub-sellers dump under.
 func TestMarketNames(t *testing.T) {
-	tcg := &Market{backend: &mtgmatcher.Backend{Game: mtgmatcher.GameMagic}}
+	tcg := &Market{backend: &matcher.Backend{Game: matcher.GameMagic}}
 	var got, metadata []string
 	for _, name := range tcg.MarketNames() {
 		info := tcg.InfoForScraper(name)

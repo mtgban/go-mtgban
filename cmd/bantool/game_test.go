@@ -4,13 +4,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
-func testOptions() map[mtgmatcher.Game]map[string]*scraperOption {
-	return map[mtgmatcher.Game]map[string]*scraperOption{
-		mtgmatcher.GameMagic:   {"cardmarket": {}, "starcitygames": {}},
-		mtgmatcher.GameLorcana: {"cardmarket": {}, "cardtrader": {}},
+func testOptions() map[matcher.Game]map[string]*scraperOption {
+	return map[matcher.Game]map[string]*scraperOption{
+		matcher.GameMagic:   {"cardmarket": {}, "starcitygames": {}},
+		matcher.GameLorcana: {"cardmarket": {}, "cardtrader": {}},
 	}
 }
 
@@ -21,10 +21,10 @@ func TestResolveGame(t *testing.T) {
 	for _, tt := range []struct {
 		desc    string
 		name    string
-		want    mtgmatcher.Game
+		want    matcher.Game
 		wantErr string
 	}{
-		{"registered", "lorcana", mtgmatcher.GameLorcana, ""},
+		{"registered", "lorcana", matcher.GameLorcana, ""},
 		{"empty", "", "", "no -game given"},
 		{"unknown", "nosuch", "", `unknown game "nosuch"`},
 	} {
@@ -48,7 +48,7 @@ func TestResolveGame(t *testing.T) {
 func TestEnableStores(t *testing.T) {
 	t.Run("store enables both halves", func(t *testing.T) {
 		scrapers := map[string]*scraperOption{"cardmarket": {}}
-		err := enableStores(scrapers, mtgmatcher.GameLorcana, "cardmarket", "", "")
+		err := enableStores(scrapers, matcher.GameLorcana, "cardmarket", "", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -60,7 +60,7 @@ func TestEnableStores(t *testing.T) {
 
 	t.Run("sellers pins retail", func(t *testing.T) {
 		scrapers := map[string]*scraperOption{"cardmarket": {}}
-		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "cardmarket", "")
+		err := enableStores(scrapers, matcher.GameLorcana, "", "cardmarket", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -72,7 +72,7 @@ func TestEnableStores(t *testing.T) {
 
 	t.Run("vendors pins buylist", func(t *testing.T) {
 		scrapers := map[string]*scraperOption{"cardmarket": {}}
-		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "", "cardmarket")
+		err := enableStores(scrapers, matcher.GameLorcana, "", "", "cardmarket")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -84,7 +84,7 @@ func TestEnableStores(t *testing.T) {
 
 	t.Run("store and vendors on the same name leave both standing", func(t *testing.T) {
 		scrapers := map[string]*scraperOption{"cardmarket": {}}
-		err := enableStores(scrapers, mtgmatcher.GameLorcana, "cardmarket", "", "cardmarket")
+		err := enableStores(scrapers, matcher.GameLorcana, "cardmarket", "", "cardmarket")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -96,7 +96,7 @@ func TestEnableStores(t *testing.T) {
 
 	t.Run("unknown store lists what is registered", func(t *testing.T) {
 		scrapers := map[string]*scraperOption{"cardmarket": {}, "cardtrader": {}}
-		err := enableStores(scrapers, mtgmatcher.GameLorcana, "nosuch", "", "")
+		err := enableStores(scrapers, matcher.GameLorcana, "nosuch", "", "")
 		if err == nil || !strings.Contains(err.Error(), "cardmarket") || !strings.Contains(err.Error(), "cardtrader") {
 			t.Errorf("enableStores() error = %v, want it to name the registered stores", err)
 		}
@@ -104,7 +104,7 @@ func TestEnableStores(t *testing.T) {
 
 	t.Run("unknown seller is refused before it is enabled", func(t *testing.T) {
 		scrapers := map[string]*scraperOption{"cardmarket": {}}
-		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "nosuch", "")
+		err := enableStores(scrapers, matcher.GameLorcana, "", "nosuch", "")
 		if err == nil {
 			t.Error("enableStores() = nil, want an error naming the unregistered seller")
 		}
@@ -112,7 +112,7 @@ func TestEnableStores(t *testing.T) {
 
 	t.Run("nothing given is refused", func(t *testing.T) {
 		scrapers := map[string]*scraperOption{"cardmarket": {}}
-		err := enableStores(scrapers, mtgmatcher.GameLorcana, "", "", "")
+		err := enableStores(scrapers, matcher.GameLorcana, "", "", "")
 		if err == nil {
 			t.Error("enableStores() = nil, want an error naming no store given")
 		}

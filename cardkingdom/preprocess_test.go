@@ -11,19 +11,19 @@ import (
 
 	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var (
 	datastoreOnce    sync.Once
 	datastoreErr     error
-	datastoreBackend *mtgmatcher.Backend
+	datastoreBackend *matcher.Backend
 )
 
 // realDatastore reads the Magic datastore the first time a test asks for it,
 // and skips where the run carries none.
-func realDatastore(t *testing.T) *mtgmatcher.Backend {
+func realDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -217,7 +217,7 @@ func TestPreprocessPromoPackWithoutStampedSet(t *testing.T) {
 	}
 	cardID, err := b.Match(theCard)
 	if err != nil {
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("%s: %v, want a skip", product.SKU, err)
 		}
 		return
@@ -294,7 +294,7 @@ func TestPreprocessTokens(t *testing.T) {
 }
 
 // TestPreprocessTokenPairing pins CK's own two-sided token wording resolving
-// to the combined entity mtgmatcher/magic/tokenpairs.go derives for the same
+// to the combined entity matcher/magic/tokenpairs.go derives for the same
 // physical pairing, anchored by CK's own scryfall_id rather than guessed from
 // the name alone. Commander 2018 carries the Angel/Cat pairing under the same
 // scryfall_id CK ships for it.
@@ -607,13 +607,13 @@ func TestMatchPrereleaseSKU(t *testing.T) {
 	})
 	t.Run("a non-PREL sku is refused", func(t *testing.T) {
 		_, err := matchPrereleaseSKU(b, "PLST-005", "4638a30d-48e9-42cb-bf5f-001b4259391c", true)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("matchPrereleaseSKU = %v, want ErrUnsupported", err)
 		}
 	})
 	t.Run("a PREL sku whose id is not a Release promo is refused", func(t *testing.T) {
 		_, err := matchPrereleaseSKU(b, "PREL-999", "72449552-aa2c-4ae3-846f-df523c5e6078", false)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("matchPrereleaseSKU = %v, want ErrUnsupported", err)
 		}
 	})
@@ -659,7 +659,7 @@ func TestPreprocessTokenFoilRefused(t *testing.T) {
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			theCard, err := Preprocess(b, tt.product)
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if !errors.Is(err, matcher.ErrUnsupported) {
 				t.Errorf("Preprocess(%v) = %v, %v, want ErrUnsupported", tt.product, theCard, err)
 			}
 		})

@@ -11,19 +11,19 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func TestNewScraperMarketUnsupportedGame(t *testing.T) {
-	_, err := NewScraperMarket(&mtgmatcher.Backend{Game: "NotAGame"}, "token", "secret")
+	_, err := NewScraperMarket(&matcher.Backend{Game: "NotAGame"}, "token", "secret")
 	if err == nil {
 		t.Fatal("expected an error for an unsupported game")
 	}
 }
 
 func TestNewScraperMarketWiresTheResolver(t *testing.T) {
-	mkm, err := NewScraperMarket(&mtgmatcher.Backend{Game: "magic"}, "token", "secret")
+	mkm, err := NewScraperMarket(&matcher.Backend{Game: "magic"}, "token", "secret")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -376,7 +376,7 @@ func TestPowersellerLink(t *testing.T) {
 // TestMarketNames pins the two sub-sellers Market splits its inventory
 // into, the same shape cardtrader.Market's three storefronts use.
 func TestMarketNames(t *testing.T) {
-	mkm, err := NewScraperMarket(&mtgmatcher.Backend{Game: "magic"}, "token", "secret")
+	mkm, err := NewScraperMarket(&matcher.Backend{Game: "magic"}, "token", "secret")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -396,7 +396,7 @@ func TestMarketNames(t *testing.T) {
 // everything else (Game, CountryFlag, InventoryTimestamp) still comes
 // through from the base Info().
 func TestInfoForScraper(t *testing.T) {
-	mkm, err := NewScraperMarket(&mtgmatcher.Backend{Game: "magic"}, "token", "secret")
+	mkm, err := NewScraperMarket(&matcher.Backend{Game: "magic"}, "token", "secret")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -415,8 +415,8 @@ func TestInfoForScraper(t *testing.T) {
 		if info.Shorthand != tt.wantShorthand {
 			t.Errorf("InfoForScraper(%q).Shorthand = %q, want %q", tt.name, info.Shorthand, tt.wantShorthand)
 		}
-		if info.Game != mtgmatcher.GameMagic {
-			t.Errorf("InfoForScraper(%q).Game = %q, want %q", tt.name, info.Game, mtgmatcher.GameMagic)
+		if info.Game != matcher.GameMagic {
+			t.Errorf("InfoForScraper(%q).Game = %q, want %q", tt.name, info.Game, matcher.GameMagic)
 		}
 	}
 }
@@ -457,7 +457,7 @@ func TestShouldStopPaging(t *testing.T) {
 // Kenrith ELD #303 is sold as 400369 (Buy a Box Promos) and 400374 (Throne
 // of Eldraine: Extras); each product counts only its own copies.
 func TestMarketAvailableUnknownAcrossProducts(t *testing.T) {
-	mkm, err := NewScraperMarket(&mtgmatcher.Backend{Game: "magic"}, "token", "secret")
+	mkm, err := NewScraperMarket(&matcher.Backend{Game: "magic"}, "token", "secret")
 	if err != nil {
 		t.Fatal(err)
 	}

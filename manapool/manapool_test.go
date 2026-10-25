@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // TestMain loads the datastore when one is configured; the unit test below
@@ -20,12 +20,12 @@ import (
 var (
 	datastoreOnce sync.Once
 	datastoreErr  error
-	datastoreB    *mtgmatcher.Backend
+	datastoreB    *matcher.Backend
 )
 
 // withMagic loads the Magic datastore the first time a test asks for it, and
 // skips where the run carries none.
-func withMagic(t *testing.T) *mtgmatcher.Backend {
+func withMagic(t *testing.T) *matcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -48,7 +48,7 @@ func withMagic(t *testing.T) *mtgmatcher.Backend {
 // it arrives with, whichever product arrives first, holding every product's
 // copies.
 func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
-	mp := NewScraper(&mtgmatcher.Backend{})
+	mp := NewScraper(&matcher.Backend{})
 	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 25, Available: 3, URL: "first", InstanceID: "p1"})
 	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 15, Available: 1, URL: "cheaper", InstanceID: "p2"})
 	mp.addCheapest("card", &mtgban.InventoryEntry{Conditions: mtgban.NM, Price: 40, Available: 2, URL: "dearer", InstanceID: "p3"})
@@ -73,7 +73,7 @@ func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 }
 
 // TestPriceResolvesTokenPairing pins a real listing resolving to the
-// combined entity mtgmatcher/magic derives for it (a real, usable
+// combined entity matcher/magic derives for it (a real, usable
 // TCGplayer id in mtgjson's own tokenProducts feed), not the single face
 // Mana Pool's own scryfall_id names on its own: Squirrel // Starscape
 // Cleric (The Lost Caverns of Ixalan Commander) ships as one physical

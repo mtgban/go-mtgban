@@ -9,8 +9,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // reprintedPrereleaseShelves are the prerelease shelves Card Trader also files
@@ -49,7 +49,7 @@ var tcgplayerIDWins = map[int]bool{
 // one, and failing that the English printing beats a foreign one. Where the
 // wording settles nothing, which is what a pair of tokens sold under one
 // blueprint looks like, the order stands and nothing changes.
-func namedID(b *mtgmatcher.Backend, bp *Blueprint, scryfallID, tcgplayerID string) string {
+func namedID(b *matcher.Backend, bp *Blueprint, scryfallID, tcgplayerID string) string {
 	if scryfallID == "" {
 		return tcgplayerID
 	}
@@ -68,7 +68,7 @@ func namedID(b *mtgmatcher.Backend, bp *Blueprint, scryfallID, tcgplayerID strin
 	if err != nil {
 		return scryfallID
 	}
-	if mtgmatcher.Equals(scryfallCard.Name, tcgplayerCard.Name) {
+	if matcher.Equals(scryfallCard.Name, tcgplayerCard.Name) {
 		if preferTCGplayerPrinting(scryfallCard, tcgplayerCard, bp.Properties.Number) {
 			return tcgplayerID
 		}
@@ -88,7 +88,7 @@ func namedID(b *mtgmatcher.Backend, bp *Blueprint, scryfallID, tcgplayerID strin
 // carrying that collector number, with a World Championship player prefix
 // ("js440") set aside if neither does, and the English printing if the
 // numbers settle nothing. A tie keeps the scryfall printing.
-func preferTCGplayerPrinting(scryfallCard, tcgplayerCard *mtgmatcher.CardObject, number string) bool {
+func preferTCGplayerPrinting(scryfallCard, tcgplayerCard *matcher.CardObject, number string) bool {
 	number = strings.TrimLeft(number, "0")
 	for _, stripPrefix := range []bool{false, true} {
 		scryfallMatch := cardNumberIs(scryfallCard, number, stripPrefix)
@@ -102,7 +102,7 @@ func preferTCGplayerPrinting(scryfallCard, tcgplayerCard *mtgmatcher.CardObject,
 
 // cardNumberIs reports whether a printing carries the collector number,
 // ignoring case and, when stripPrefix is set, any letters leading it.
-func cardNumberIs(co *mtgmatcher.CardObject, number string, stripPrefix bool) bool {
+func cardNumberIs(co *matcher.CardObject, number string, stripPrefix bool) bool {
 	cardNumber := co.Number
 	if stripPrefix {
 		cardNumber = strings.TrimLeftFunc(cardNumber, unicode.IsLetter)
@@ -113,18 +113,18 @@ func cardNumberIs(co *mtgmatcher.CardObject, number string, stripPrefix bool) bo
 // idNamesCard reports whether a card is the one a blueprint's wording names.
 // A storefront writes the front of a two-faced card where the catalog spells
 // both halves, so the front alone stands for the whole.
-func idNamesCard(co *mtgmatcher.CardObject, cardName string) bool {
-	if mtgmatcher.Equals(co.Name, cardName) || mtgmatcher.Equals(co.FaceName, cardName) {
+func idNamesCard(co *matcher.CardObject, cardName string) bool {
+	if matcher.Equals(co.Name, cardName) || matcher.Equals(co.FaceName, cardName) {
 		return true
 	}
 	front, _, split := strings.Cut(co.Name, " // ")
-	return split && mtgmatcher.Equals(front, cardName)
+	return split && matcher.Equals(front, cardName)
 }
 
 // hasShelfPromo reports whether the card has a prerelease or promo pack
 // printing in its own set or that set's promo set, which is what a promo
 // shelf would be selling instead of the plain card.
-func hasShelfPromo(b *mtgmatcher.Backend, co *mtgmatcher.CardObject) bool {
+func hasShelfPromo(b *matcher.Backend, co *matcher.CardObject) bool {
 	for _, code := range []string{co.SetCode, "P" + co.SetCode} {
 		// HasPrinting widens to every printing when the set is unknown.
 		if b.Sets[code] == nil {
@@ -140,7 +140,7 @@ func hasShelfPromo(b *mtgmatcher.Backend, co *mtgmatcher.CardObject) bool {
 // plstNumber returns the unique PLST collector number for cardName that
 // ends in "-"+number, the shape every reprint on The List carries, or ""
 // when no printing does or more than one does.
-func plstNumber(b *mtgmatcher.Backend, cardName, number string) string {
+func plstNumber(b *matcher.Backend, cardName, number string) string {
 	found := ""
 	for _, card := range b.MatchInSet(cardName, "PLST") {
 		if strings.HasSuffix(card.Number, "-"+number) {
@@ -196,7 +196,7 @@ func isTwoSidedTokenBlueprint(bp *Blueprint, cardName string) bool {
 
 // Preprocess turns a blueprint into the card description the matcher takes,
 // reporting an error for the blueprints that are not cards.
-func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *matcher.Backend, bp *Blueprint) (*matcher.InputCard, error) {
 	cardName := bp.Name
 	edition := bp.Expansion.Name
 	if code, found := reprintedPrereleaseShelves[edition]; found &&
@@ -241,14 +241,14 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 	if isTwoSidedTokenBlueprint(bp, cardName) {
 		if tcgID := magic.MatchTokenPairing(b, bp.ScryfallID, cardName, false); tcgID != "" {
 			if id, err := b.MatchID(tcgID, false); err == nil {
-				return &mtgmatcher.InputCard{
+				return &matcher.InputCard{
 					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 				}, nil
 			}
 		}
 		if verified := magic.VerifyTokenPairingFinish(b, fmt.Sprintf("%d", bp.TCGplayerProductID()), false); verified != "" {
 			if id, err := b.MatchID(verified, false); err == nil {
-				return &mtgmatcher.InputCard{
+				return &matcher.InputCard{
 					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 				}, nil
 			}
@@ -270,14 +270,14 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 				for _, number := range []string{n1, n2} {
 					if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, cardName); uuid != "" {
 						if id, err := b.MatchID(uuid, false); err == nil {
-							return &mtgmatcher.InputCard{
+							return &matcher.InputCard{
 								ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 							}, nil
 						}
 					}
 					if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, cardName, false); tcgID != "" {
 						if id, err := b.MatchID(tcgID, false); err == nil {
-							return &mtgmatcher.InputCard{
+							return &matcher.InputCard{
 								ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 							}, nil
 						}
@@ -295,7 +295,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		// anchor above is strictly the safer bar when one parses.
 		if tcgID := magic.MatchTokenPairingByNamesAndEdition(b, cardName, edition, false); tcgID != "" {
 			if id, err := b.MatchID(tcgID, false); err == nil {
-				return &mtgmatcher.InputCard{
+				return &matcher.InputCard{
 					ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 				}, nil
 			}
@@ -304,8 +304,8 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 
 	// Some, but not all, have a proper id we can reuse right away, and the
 	// blueprint says which space each one lives in
-	scryfallID := b.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
-	tcgplayerID := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerProductID()))
+	scryfallID := b.ConvertID(matcher.IDSpaceScryfall, bp.ScryfallID)
+	tcgplayerID := b.ConvertID(matcher.IDSpaceTCGplayer, fmt.Sprintf("%d", bp.TCGplayerProductID()))
 	id := namedID(b, bp, scryfallID, tcgplayerID)
 	if id != "" {
 		idEdition, idVariation := edition, bp.Version
@@ -316,7 +316,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		co, err := b.GetUUID(id)
 		idsAgree := scryfallID != "" && scryfallID == tcgplayerID && err == nil
 		if err == nil && (len(co.PromoTypes) > 0 || idsAgree) {
-			probe := mtgmatcher.InputCard{Edition: idEdition, Variation: idVariation}
+			probe := matcher.InputCard{Edition: idEdition, Variation: idVariation}
 			vetoed := (magic.IsPrerelease(&probe) && !co.HasPromoType(magic.PromoTypePrerelease)) ||
 				(magic.IsPromoPack(&probe) && !co.HasPromoType(magic.PromoTypePromoPack))
 			// Agreeing ids override only where the card has no shelf promo,
@@ -330,7 +330,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 			}
 		}
 
-		return &mtgmatcher.InputCard{
+		return &matcher.InputCard{
 			ID: id,
 			// Not needed, but helps debugging
 			Name:    cardName,
@@ -592,7 +592,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 				}
 			// This set acts mostly as a catch-all for anything prior :(
 			case "Core Set 2020 Promos":
-				version := mtgmatcher.ExtractNumber(strings.Replace(bp.Slug, "-", " ", -1))
+				version := matcher.ExtractNumber(strings.Replace(bp.Slug, "-", " ", -1))
 				if magic.IsBasicLand(cardName) {
 					edition = "M20 Promo Packs"
 				} else if cardName == "Chandra's Regulator" {
@@ -684,7 +684,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 			}
 		// Some lands have years set
 		case "Arena League Promos":
-			variant = mtgmatcher.ExtractYear(strings.Replace(bp.Slug, "-", " ", -1))
+			variant = matcher.ExtractYear(strings.Replace(bp.Slug, "-", " ", -1))
 
 			switch variant {
 			case "2001":
@@ -763,7 +763,7 @@ func Preprocess(b *mtgmatcher.Backend, bp *Blueprint) (*mtgmatcher.InputCard, er
 		}
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

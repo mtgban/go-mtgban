@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestSecretLairDrop pins when a bare Secret Lair listing is refused. What
@@ -32,7 +32,7 @@ func TestSecretLairDrop(t *testing.T) {
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			card, err := preprocess(b, tt.name, "Secret Lair", "")
-			refused := errors.Is(err, mtgmatcher.ErrUnsupported)
+			refused := errors.Is(err, matcher.ErrUnsupported)
 			if refused != tt.wantRefused {
 				t.Fatalf("preprocess(%q) refused = %v, want %v (err %v)",
 					tt.name, refused, tt.wantRefused, err)
@@ -69,7 +69,7 @@ func TestSecretLairDropByFinish(t *testing.T) {
 	// Path of Ancestry is printed in both finishes in more than one drop.
 	for _, notes := range []string{"Normal", "Foil"} {
 		_, err := preprocess(b, "Path of Ancestry", "Secret Lair", notes)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("Path of Ancestry %s: err %v, want a refusal", notes, err)
 		}
 	}

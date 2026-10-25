@@ -13,7 +13,7 @@ import (
 
 	"github.com/mroth/weightedrand/v2"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // The command's flags, and the CSV writer the -csv flag turns on.

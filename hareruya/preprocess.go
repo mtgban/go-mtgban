@@ -9,8 +9,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var reParens = regexp.MustCompile(`\(([^)]+)\)`)
@@ -92,7 +92,7 @@ var promoLineTreatments = map[string]string{
 // numbered "-P" title names by its treatment, when the line holds exactly
 // one of that card at the title's number. The set holds the card at the
 // same number, which is where the number alone would send the listing.
-func treatedPromoPrinting(b *mtgmatcher.Backend, title, cardName, edition, number string, foil bool) (setCode, promoNumber string) {
+func treatedPromoPrinting(b *matcher.Backend, title, cardName, edition, number string, foil bool) (setCode, promoNumber string) {
 	if number == "" {
 		return "", ""
 	}
@@ -113,7 +113,7 @@ func treatedPromoPrinting(b *mtgmatcher.Backend, title, cardName, edition, numbe
 		finish = "foil"
 	}
 	front, _, _ := strings.Cut(cardName, "+")
-	var found []mtgmatcher.Card
+	var found []matcher.Card
 	for _, card := range b.MatchInSet(front, "P"+edition) {
 		if card.HasPromoType(promoType) && card.HasFinish(finish) &&
 			strings.TrimRight(card.PlainNumber, "ps") == number {
@@ -135,13 +135,13 @@ var powerToughness = regexp.MustCompile(`^\d+/\d+$`)
 // it. A trailing group only counts as a series when it spells a set name
 // outright: the matcher's lookup also honors set codes and its own aliases,
 // and the storefront's promo qualifiers land on those by accident.
-func splitParens(b *mtgmatcher.Backend, title string) (number, series, treatment string) {
+func splitParens(b *matcher.Backend, title string) (number, series, treatment string) {
 	end := strings.Index(title, "》")
 	for _, loc := range reParens.FindAllStringSubmatchIndex(title, -1) {
 		group := title[loc[2]:loc[3]]
 		if end >= 0 && loc[0] > end {
 			set, err := b.GetSetByName(group)
-			if err == nil && mtgmatcher.Normalize(set.Name) == mtgmatcher.Normalize(group) {
+			if err == nil && matcher.Normalize(set.Name) == matcher.Normalize(group) {
 				series = group
 				continue
 			}
@@ -216,7 +216,7 @@ func announcedTreatment(title string) string {
 // The promo line is asked first: where it holds a prerelease printing of
 // the card, that is where the listing belongs, whatever the set holds at
 // the number.
-func prereleaseOnPromoLine(b *mtgmatcher.Backend, cardName, edition, number string) bool {
+func prereleaseOnPromoLine(b *matcher.Backend, cardName, edition, number string) bool {
 	if promoLineHolds(b, cardName, edition, "prerelease") {
 		return true
 	}
@@ -225,7 +225,7 @@ func prereleaseOnPromoLine(b *mtgmatcher.Backend, cardName, edition, number stri
 
 // promoLineHolds reports whether the set's promo line files a printing of
 // the card with the promo type.
-func promoLineHolds(b *mtgmatcher.Backend, cardName, edition, promoType string) bool {
+func promoLineHolds(b *matcher.Backend, cardName, edition, promoType string) bool {
 	// The storefront joins the two halves of a split card with a plus.
 	front, _, _ := strings.Cut(cardName, "+")
 	for _, card := range b.MatchInSet(front, "P"+edition) {
@@ -238,7 +238,7 @@ func promoLineHolds(b *mtgmatcher.Backend, cardName, edition, promoType string) 
 
 // promoPackFiled reports whether the set, or a set filed under it such as
 // its promo line or PPP1 under M20, holds a promo pack printing of the card.
-func promoPackFiled(b *mtgmatcher.Backend, cardName, setCode string) bool {
+func promoPackFiled(b *matcher.Backend, cardName, setCode string) bool {
 	front, _, _ := strings.Cut(cardName, "+")
 	for _, set := range b.Sets {
 		if set.Code != setCode && set.ParentCode != setCode {
@@ -267,7 +267,7 @@ var reArtLetter = regexp.MustCompile(`》\(?([A-C])[)（]|\]([A-C])(?:\s|$)`)
 // basicArtNumber returns the collector number of the art variant a title
 // names by letter: the letter's place among the set's printings of the
 // basic land, in number order. It returns "" for a title with no letter.
-func basicArtNumber(b *mtgmatcher.Backend, setCode, cardName, title string) string {
+func basicArtNumber(b *matcher.Backend, setCode, cardName, title string) string {
 	m := reArtLetter.FindStringSubmatch(title)
 	if m == nil {
 		return ""
@@ -293,7 +293,7 @@ func basicArtNumber(b *mtgmatcher.Backend, setCode, cardName, title string) stri
 
 // Preprocess turns a storefront product into the card description the matcher
 // takes, reporting an error for what is not a card.
-func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *matcher.Backend, product Product) (*matcher.InputCard, error) {
 	// The art cards a set booster carries are filed in art series sets the
 	// datastore does not carry, so a row of one has no printing to reach
 	if strings.Contains(product.ProductNameEN, "【Art Card】") ||
@@ -307,7 +307,7 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 		strings.Contains(product.ProductNameEN, "Test Print") ||
 		strings.Contains(product.ProductName, "Ultra Pro Puzzle") ||
 		strings.Contains(strings.ToLower(product.CardName), "test print") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	// A two-sided token sheet's own card_name ("Cat Token/Soldier Token")
@@ -448,7 +448,7 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 		cardName = strings.TrimPrefix(cardName, "【International Edition】")
 		cardName = strings.TrimPrefix(cardName, "【Collector's Edition】")
 
-		variants := mtgmatcher.SplitVariants(product.ProductNameEN)
+		variants := matcher.SplitVariants(product.ProductNameEN)
 		if len(variants) > 1 {
 			variant = variants[1]
 		}
@@ -518,7 +518,7 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 		variant += " No Symbol"
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
@@ -528,7 +528,7 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 }
 
 // preprocessTokenPair resolves a two-sided token listing to the combined
-// entity mtgmatcher/magic derives for it, anchored by the set code and
+// entity matcher/magic derives for it, anchored by the set code and
 // collector numbers the storefront's own product_name already carries -
 // "(005/006)《Cat+Soldier Token》[C18]" names Cat as C18's own token #5 and
 // Soldier as its #6, confirmed against real listings to agree with
@@ -536,10 +536,10 @@ func Preprocess(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, 
 // ordinal, this is a real anchor; unlike Cool Stuff Inc's own feed, the set
 // code sits beside the number in the same field rather than in one of its
 // own.
-func preprocessTokenPair(b *mtgmatcher.Backend, product Product) (*mtgmatcher.InputCard, error) {
+func preprocessTokenPair(b *matcher.Backend, product Product) (*matcher.InputCard, error) {
 	faces := strings.SplitN(product.CardName, "/", 2)
 	if len(faces) != 2 {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 	listingName := faces[0] + " // " + faces[1]
 	foil := product.FoilFlag == "1"
@@ -567,18 +567,18 @@ func preprocessTokenPair(b *mtgmatcher.Backend, product Product) (*mtgmatcher.In
 		for _, n := range hareruyaTokenPairNumbers(number) {
 			if uuid := magic.MatchNativeTokenPair(b, setCode, n, listingName); uuid != "" {
 				if id, err := b.MatchID(uuid, foil); err == nil {
-					return &mtgmatcher.InputCard{ID: id}, nil
+					return &matcher.InputCard{ID: id}, nil
 				}
 			}
 			if tcgID := magic.MatchTokenPairingBySetNumber(b, setCode, n, listingName, foil); tcgID != "" {
 				if id, err := b.MatchID(tcgID, foil); err == nil {
-					return &mtgmatcher.InputCard{ID: id}, nil
+					return &matcher.InputCard{ID: id}, nil
 				}
 			}
 		}
 	}
 
-	return nil, mtgmatcher.ErrUnsupported
+	return nil, matcher.ErrUnsupported
 }
 
 // hareruyaTokenPairNumbers splits the storefront's own compound number
@@ -630,7 +630,7 @@ var reDeckArt = regexp.MustCompile(`^(?:wc\d\d-)?([a-z]+)0*(\d+)([a-z]*)$`)
 // product image names, which tells apart the copies of a card one player's
 // deck holds more than once. The catalog extends the initials the image
 // carries ("sh" is "shr"). It returns "" unless one printing fits.
-func deckArtNumber(b *mtgmatcher.Backend, edition, cardName, imageURL string) string {
+func deckArtNumber(b *matcher.Backend, edition, cardName, imageURL string) string {
 	stem, _, _ := strings.Cut(path.Base(imageURL), ".")
 	m := reDeckArt.FindStringSubmatch(strings.ToLower(stem))
 	if m == nil {
@@ -683,13 +683,13 @@ func isDeckEdition(edition string) bool {
 // process titles like
 // 【EN】【Foil】(168)《武器製造/Weapons Manufacturing》[EOE] 赤R
 // 【EN】【Foil】(086)■プレリリース■《虚空間渡り/Weftwalking》[EOE] 青R
-func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, error) {
+func preprocess(b *matcher.Backend, title string) (*matcher.InputCard, error) {
 	// Test prints and the trading card game this storefront also carries
 	// are not Magic printings.
 	if strings.Contains(title, "Ultra Pro Puzzle") ||
 		strings.Contains(title, "テストプリント") ||
 		strings.Contains(title, "■FFTCG■") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	// A store championship prize is printed with the winning shop's name on
@@ -697,13 +697,13 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	// stamped copy has no printing of its own and answering with the plain
 	// one prices that card off the stamp.
 	if strings.Contains(title, storeStamped) {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	// A misprint is not a printing of its own, and answering with the card it
 	// is a misprint of prices that card off the error.
 	if strings.Contains(title, "シンボル無し") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	var cardName string
@@ -737,7 +737,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		return nil, errors.New("invalid title format")
 	}
 	if reJapanese.MatchString(cardName) {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	// [EOE]
@@ -846,7 +846,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	set, setErr := b.GetSet(edition)
 	if strings.Contains(variant, "プロモスタンプ付") && setErr == nil &&
 		!promoPackFiled(b, cardName, set.Code) {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	if strings.Contains(edition, "Pスタンプ_") ||
@@ -868,7 +868,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 	// A misprint the table does not place has no printing in the catalog,
 	// and answering with the card it misprints prices that card off the error.
 	if edition == "Misprint" {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	if isDeckEdition(edition) {
@@ -924,7 +924,7 @@ func preprocess(b *mtgmatcher.Backend, title string) (*mtgmatcher.InputCard, err
 		edition = ""
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: strings.TrimSpace(variant),
 		Edition:   edition,

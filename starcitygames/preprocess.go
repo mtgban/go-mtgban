@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 var cardTable = map[string]string{
@@ -61,7 +61,7 @@ func languageTags(language, edition, variant, number string) (string, string, er
 
 // Special sets like collectors have an extra number as suffix
 // Handle set renames like OTC2 and LTR2
-func fixupSetCode(b *mtgmatcher.Backend, setCode string) string {
+func fixupSetCode(b *matcher.Backend, setCode string) string {
 	// SCG's "3rd Edition - Black Border" is mtgjson's Foreign Black Border.
 	if setCode == "3BB" {
 		return "FBB"
@@ -102,7 +102,7 @@ var arenaLeagueSets = []string{"PARL", "PAL99", "PAL00", "PAL01", "PAL02", "PAL0
 // arenaLeaguePrinting returns the set code and number of the card's single
 // Arena League printing, if exactly one exists across all Arena League sets.
 // Basics (printed every year) resolve to more than one and are left alone.
-func arenaLeaguePrinting(b *mtgmatcher.Backend, cardName string) (code, number string, ok bool) {
+func arenaLeaguePrinting(b *matcher.Backend, cardName string) (code, number string, ok bool) {
 	count := 0
 	for _, set := range arenaLeagueSets {
 		for _, c := range b.MatchInSet(cardName, set) {
@@ -152,7 +152,7 @@ func isPWYear(set string) bool {
 // PSPL), if exactly one exists. The SCG SKU's year/set is unreliable (some are
 // year-offset, some map to PLG/PSPL), so the unique printing is authoritative;
 // cards with none (non-WPN promos) or several are left alone.
-func playPromoPrinting(b *mtgmatcher.Backend, cardName string) (code, number string, ok bool) {
+func playPromoPrinting(b *matcher.Backend, cardName string) (code, number string, ok bool) {
 	type printing struct{ code, number string }
 	var all, pwYear []printing
 	for _, set := range b.GetAllSets() {
@@ -182,7 +182,7 @@ func playPromoPrinting(b *mtgmatcher.Backend, cardName string) (code, number str
 // cannot go through fixupSetCode: that reads the same digit as the oversized
 // shelf it means in the sku's set position, so "CMD2" comes back as OCMD,
 // while LNCH_CMD2_184 is a Commander 2011 launch party foil.
-func trimShelfDigit(b *mtgmatcher.Backend, code string) string {
+func trimShelfDigit(b *matcher.Backend, code string) string {
 	_, err := b.GetSet(code)
 	if err == nil {
 		return code
@@ -205,7 +205,7 @@ func trimShelfDigit(b *mtgmatcher.Backend, code string) string {
 // in that set's promo set or, for a release promo, in the set itself. Failing
 // both, the shop has filed a tournament promo on a store shelf; that is asked
 // last, so a card with any stronger claim never reaches it.
-func playPromoTarget(b *mtgmatcher.Backend, cardName string, fields []string) (string, string, bool) {
+func playPromoTarget(b *matcher.Backend, cardName string, fields []string) (string, string, bool) {
 	code, number, found := playPromoPrinting(b, cardName)
 	if found {
 		return code, number, true
@@ -250,7 +250,7 @@ var poolPartyDazzleFoils = map[string]string{
 // * SGL-MTG-PRM-SECRET_SLD_1095-ENN1
 // * SGL-MTG-PRM-PP_MKM_187-ENN
 // * SGL-MTG-PWSB-PCA_115-ENN1
-func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputCard, error) {
+func ProcessSKU(b *matcher.Backend, cardName, SKU string) (*matcher.InputCard, error) {
 	fields := strings.Split(SKU, "-")
 	if len(fields) < 5 || len(fields[4]) < 3 {
 		return nil, fmt.Errorf("malformed SKU: %s", SKU)
@@ -454,14 +454,14 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 				// unique printing; let the matcher's arena handling pick the
 				// right year from the base set (its name carries the year hint).
 				if base, err := b.GetSet(fields[1]); err == nil {
-					arena := mtgmatcher.InputCard{
+					arena := matcher.InputCard{
 						Name:      cardName,
 						Variation: "Arena " + base.Name,
 						Foil:      foil,
 						Language:  language,
 					}
 					if id, err := b.Match(&arena); err == nil {
-						return &mtgmatcher.InputCard{ID: id, Foil: foil, Language: language}, nil
+						return &matcher.InputCard{ID: id, Foil: foil, Language: language}, nil
 					}
 				}
 			}
@@ -533,7 +533,7 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 		}
 	}
 
-	backup := mtgmatcher.InputCard{
+	backup := matcher.InputCard{
 		Edition:   setCode,
 		Variation: number,
 		Foil:      foil,
@@ -559,8 +559,8 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 		// If there's a single finish make sure the number+finish combination is correct
 		// Otherwise let it be processed upstream
 		if len(card.Finishes) == 1 &&
-			(((card.HasFinish(mtgmatcher.FinishFoil) || card.HasFinish(mtgmatcher.FinishEtched)) && !foil) ||
-				(card.HasFinish(mtgmatcher.FinishNonfoil) && foil)) {
+			(((card.HasFinish(matcher.FinishFoil) || card.HasFinish(matcher.FinishEtched)) && !foil) ||
+				(card.HasFinish(matcher.FinishNonfoil) && foil)) {
 
 			// Let's check if there is a duplicated card somewhere, and repeat the check
 			out := b.MatchWithNumber(cardName, setCode, number+"★")
@@ -570,8 +570,8 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 			card = out[0]
 
 			if len(card.Finishes) == 1 &&
-				(((card.HasFinish(mtgmatcher.FinishFoil) || card.HasFinish(mtgmatcher.FinishEtched)) && !foil) ||
-					(card.HasFinish(mtgmatcher.FinishNonfoil) && foil)) {
+				(((card.HasFinish(matcher.FinishFoil) || card.HasFinish(matcher.FinishEtched)) && !foil) ||
+					(card.HasFinish(matcher.FinishNonfoil) && foil)) {
 				return &backup, errors.New("invalid number/foil combination")
 			}
 		}
@@ -600,7 +600,7 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 			}
 		}
 
-		return &mtgmatcher.InputCard{
+		return &matcher.InputCard{
 			ID:        card.UUID,
 			Variation: variant,
 			Foil:      foil,
@@ -608,7 +608,7 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 		}, nil
 	}
 	if len(out) > 1 {
-		alias := mtgmatcher.NewAliasingError()
+		alias := matcher.NewAliasingError()
 		for _, id := range out {
 			alias.Dupes = append(alias.Dupes, id.UUID)
 		}
@@ -617,7 +617,7 @@ func ProcessSKU(b *mtgmatcher.Backend, cardName, SKU string) (*mtgmatcher.InputC
 	return &backup, errors.New("not found")
 }
 
-func preprocess(b *mtgmatcher.Backend, hit Hit) (*mtgmatcher.InputCard, error) {
+func preprocess(b *matcher.Backend, hit Hit) (*matcher.InputCard, error) {
 	card := hit.Variants[0]
 	edition := hit.SetName
 	language := hit.Language
@@ -633,7 +633,7 @@ func preprocess(b *mtgmatcher.Backend, hit Hit) (*mtgmatcher.InputCard, error) {
 	cardName = strings.Replace(cardName, "{", "", -1)
 	cardName = strings.Replace(cardName, "}", "", -1)
 
-	vars := mtgmatcher.SplitVariants(cardName)
+	vars := matcher.SplitVariants(cardName)
 	cardName = vars[0]
 	if len(vars) > 1 {
 		if variant != "" {
@@ -664,7 +664,7 @@ func preprocess(b *mtgmatcher.Backend, hit Hit) (*mtgmatcher.InputCard, error) {
 	// token's, with its own type name as a suffix ("Lost Mine of
 	// Phandelver Dungeon") rather than the card's real name alone - the
 	// same convention the two-sided pairing path already strips for the
-	// paired shape (mtgmatcher/magic/tokenpairs.go's cleanFaceName). No
+	// paired shape (matcher/magic/tokenpairs.go's cleanFaceName). No
 	// real Magic card name ends in the literal word "Dungeon", but the
 	// trim is still verified before committing to it, the same
 	// discipline the Token suffix above already uses, rather than
@@ -681,7 +681,7 @@ func preprocess(b *mtgmatcher.Backend, hit Hit) (*mtgmatcher.InputCard, error) {
 		edition = strings.TrimSuffix(edition, " (Foil)")
 		foil = true
 	}
-	vars = mtgmatcher.SplitVariants(edition)
+	vars = matcher.SplitVariants(edition)
 	edition = vars[0]
 	if len(vars) > 1 {
 		if variant != "" {
@@ -828,7 +828,7 @@ func preprocess(b *mtgmatcher.Backend, hit Hit) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

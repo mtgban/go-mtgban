@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -89,11 +89,11 @@ const (
 // gnGames is what NewScraper is built through: it names the product line a
 // game is sold under, and a game named nowhere here is not one Game Nerdz is
 // read for. The lines themselves stay public, since NewGNClient takes one.
-var gnGames = map[mtgmatcher.Game]string{
-	mtgmatcher.GameMagic:    GameMagic,
-	mtgmatcher.GameLorcana:  GameLorcana,
-	mtgmatcher.GamePokemon:  GamePokemon,
-	mtgmatcher.GameOnePiece: GameOnePiece,
+var gnGames = map[matcher.Game]string{
+	matcher.GameMagic:    GameMagic,
+	matcher.GameLorcana:  GameLorcana,
+	matcher.GamePokemon:  GamePokemon,
+	matcher.GameOnePiece: GameOnePiece,
 }
 
 // buylistQuantity is how many copies of a card Game Nerdz buys at most; the
@@ -112,7 +112,7 @@ type Gamenerdz struct {
 	disableBuylist bool
 
 	client  *GNClient
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	line    string
 
 	inventoryDate time.Time
@@ -127,7 +127,7 @@ type Gamenerdz struct {
 }
 
 // NewScraper returns a scraper for the datastore's game.
-func NewScraper(b *mtgmatcher.Backend) (*Gamenerdz, error) {
+func NewScraper(b *matcher.Backend) (*Gamenerdz, error) {
 	game := b.Game
 	line, ok := gnGames[game]
 	if !ok {
@@ -277,7 +277,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	if unmadeProducts[product.ID] {
 		return "", nil
 	}
-	etched := gn.backend.Game == mtgmatcher.GameMagic && saysEtched(product)
+	etched := gn.backend.Game == matcher.GameMagic && saysEtched(product)
 	tcgID := product.ProductData.TCGProductID
 	if mode == modeRetail {
 		gn.retailIDs[product.ID] = tcgID
@@ -288,7 +288,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	if found {
 		tcgID = live
 	}
-	if gn.backend.Game == mtgmatcher.GameMagic && tcgID != 0 {
+	if gn.backend.Game == matcher.GameMagic && tcgID != 0 {
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 		cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
 		named := err == nil && gn.namesCard(cardID, product.DisplayName, magicName(gn.backend, product.DisplayName))
@@ -305,7 +305,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	}
 
 	theCard, err := preprocess(gn.backend, product, gn.backend.Game)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return "", nil
 	}
 	if err != nil {
@@ -318,7 +318,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	foil := theCard.Foil
 
 	cardID, err := gn.backend.Match(theCard)
-	if err != nil && gn.backend.Game == mtgmatcher.GamePokemon && !errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if err != nil && gn.backend.Game == matcher.GamePokemon && !errors.Is(err, matcher.ErrUnsupported) {
 		retried, found := retryPokemon(gn.backend, product, theCard)
 		if found {
 			cardID, err = retried, nil
@@ -327,31 +327,31 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	// The other games answer by wording, and where it turns a product down
 	// the id may still place it, as long as it names the same card and does
 	// not contradict the number the wording wrote.
-	if err != nil && gn.backend.Game != mtgmatcher.GameMagic && !errors.Is(err, mtgmatcher.ErrUnsupported) && tcgID != 0 {
+	if err != nil && gn.backend.Game != matcher.GameMagic && !errors.Is(err, matcher.ErrUnsupported) && tcgID != 0 {
 		idCard, idErr := gn.backend.MatchIDFinish(strconv.FormatInt(tcgID, 10), product.SelectedFinish)
 		if idErr == nil && gn.namesCard(idCard, product.DisplayName, theCard.Name) && !gn.numberConflicts(idCard, theCard.Variation) {
 			cardID, err = idCard, nil
 		}
 	}
-	if err != nil && gn.backend.Game != mtgmatcher.GameMagic {
+	if err != nil && gn.backend.Game != matcher.GameMagic {
 		tied := finishTiebreak(gn.backend, product, err)
 		if tied != "" {
 			cardID, err = tied, nil
 		}
 	}
-	if err == nil && gn.backend.Game == mtgmatcher.GameOnePiece && onePieceCodeless(product.DisplayName) && !landedOnLeader(gn.backend, cardID) {
+	if err == nil && gn.backend.Game == matcher.GameOnePiece && onePieceCodeless(product.DisplayName) && !landedOnLeader(gn.backend, cardID) {
 		err = errors.New("no card code in display name, and no promo leader answers it")
 	}
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return "", nil
 	} else if err != nil {
 		// A body naming another set than the display's known one carries the
 		// price of another product, so there is nothing here to report.
-		if gn.backend.Game == mtgmatcher.GameMagic && foreignBody(gn.backend, product) {
+		if gn.backend.Game == matcher.GameMagic && foreignBody(gn.backend, product) {
 			return "", nil
 		}
 		// A letterless product beside its lettered ones names no printing.
-		if gn.backend.Game == mtgmatcher.GameMagic && letteredOnly(gn.backend, theCard) {
+		if gn.backend.Game == matcher.GameMagic && letteredOnly(gn.backend, theCard) {
 			return "", nil
 		}
 		gn.printf("%v", err)
@@ -359,7 +359,7 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		return "", nil
 	}
 
-	if gn.backend.Game == mtgmatcher.GamePokemon && gn.leftShelf(cardID, product) {
+	if gn.backend.Game == matcher.GamePokemon && gn.leftShelf(cardID, product) {
 		return "", nil
 	}
 
@@ -369,15 +369,15 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	// with the single printing there is - the minted one carrying a price of
 	// its own, which the buylist keeps whenever it is the higher of the two.
 	// Nothing else was printed to move it to, so let it go.
-	if gn.backend.Game == mtgmatcher.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
+	if gn.backend.Game == matcher.GameMagic && !finishPrinted(gn.backend, cardID, foil, etched) {
 		return "", nil
 	}
-	if gn.backend.Game == mtgmatcher.GameMagic && foil && mintedRipple(gn.backend, cardID, product.DisplayName) {
+	if gn.backend.Game == matcher.GameMagic && foil && mintedRipple(gn.backend, cardID, product.DisplayName) {
 		return "", nil
 	}
 	// A "(N)" promo number names its printing without saying its finish, so
 	// a plain listing can land on a printing that was only ever made foil.
-	if gn.backend.Game == mtgmatcher.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
+	if gn.backend.Game == matcher.GameLorcana && !foil && !finishPrinted(gn.backend, cardID, false, false) {
 		return "", nil
 	}
 	return cardID, nil
@@ -389,8 +389,8 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 // in that finish and either every candidate sits at one set and number, or
 // the survivor is in the set the storefront shelved the product under; a
 // plain Base Set Seel whose body says Shadowless is not one.
-func finishTiebreak(b *mtgmatcher.Backend, product GNProduct, aliasErr error) string {
-	var alias *mtgmatcher.AliasingError
+func finishTiebreak(b *matcher.Backend, product GNProduct, aliasErr error) string {
+	var alias *matcher.AliasingError
 	if !errors.As(aliasErr, &alias) {
 		return ""
 	}
@@ -398,12 +398,12 @@ func finishTiebreak(b *mtgmatcher.Backend, product GNProduct, aliasErr error) st
 	if finish == "" {
 		finish = "Normal"
 	}
-	want := mtgmatcher.FinishSlug(finish)
+	want := matcher.FinishSlug(finish)
 
-	var kept *mtgmatcher.CardObject
+	var kept *matcher.CardObject
 	keptID := ""
 	sameSpot := true
-	var first *mtgmatcher.CardObject
+	var first *matcher.CardObject
 	for _, id := range alias.Probe() {
 		co, err := b.GetUUID(id)
 		if err != nil {
@@ -439,7 +439,7 @@ func finishTiebreak(b *mtgmatcher.Backend, product GNProduct, aliasErr error) st
 // that card only as two or more lettered variants of the number. The
 // storefront lists such a parent beside its lettered products, and it names
 // none of them. A promo pack "p" or prerelease "s" is not an art letter.
-func letteredOnly(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) bool {
+func letteredOnly(b *matcher.Backend, card *matcher.InputCard) bool {
 	number := strings.TrimLeft(card.Variation, "0")
 	if number == "" || strings.Trim(number, "0123456789") != "" {
 		return false
@@ -464,7 +464,7 @@ func letteredOnly(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) bool {
 // of a number printed plain only, without the display naming the ripple. The
 // storefront mints a "-F-" sku beside every plain Modern Horizons 3 Commander
 // card, and the ripple foil it would stand for is listed under its own name.
-func mintedRipple(b *mtgmatcher.Backend, cardID, displayName string) bool {
+func mintedRipple(b *matcher.Backend, cardID, displayName string) bool {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return false
@@ -492,7 +492,7 @@ func (gn *Gamenerdz) namesCard(cardID, displayName, cardName string) bool {
 func containsWords(outer, inner string) bool {
 	text, bounds := normalizedWords(outer)
 	want, _ := normalizedWords(inner)
-	if want == "" || !strings.Contains(mtgmatcher.Normalize(outer), mtgmatcher.Normalize(inner)) {
+	if want == "" || !strings.Contains(matcher.Normalize(outer), matcher.Normalize(inner)) {
 		return false
 	}
 	for from := 0; from < len(text); {
@@ -516,7 +516,7 @@ func normalizedWords(s string) (string, map[int]bool) {
 	var text strings.Builder
 	bounds := map[int]bool{0: true}
 	for word := range strings.FieldsSeq(s) {
-		norm := mtgmatcher.Normalize(word)
+		norm := matcher.Normalize(word)
 		switch norm {
 		case "", "and", "to", "&":
 			continue
@@ -592,18 +592,18 @@ func (gn *Gamenerdz) leftShelf(cardID string, product GNProduct) bool {
 // finishPrinted reports whether the printing a product resolved to was sold in
 // the finish the product names. An id the catalog cannot place says nothing
 // either way and is left alone.
-func finishPrinted(b *mtgmatcher.Backend, cardID string, foil, etched bool) bool {
+func finishPrinted(b *matcher.Backend, cardID string, foil, etched bool) bool {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return true
 	}
 	switch {
 	case etched:
-		return co.HasFinish(mtgmatcher.FinishEtched)
+		return co.HasFinish(matcher.FinishEtched)
 	case foil:
-		return co.HasFinish(mtgmatcher.FinishFoil)
+		return co.HasFinish(matcher.FinishFoil)
 	}
-	return co.HasFinish(mtgmatcher.FinishNonfoil)
+	return co.HasFinish(matcher.FinishNonfoil)
 }
 
 // release decides the products the crawl held back, now that it has been
@@ -787,7 +787,7 @@ func (gn *Gamenerdz) widen(ctx context.Context, mode string, filters map[string]
 // admit notes what a Magic product tells the crawl about the others, and
 // reports whether it has to wait until the crawl has been everywhere.
 func (gn *Gamenerdz) admit(product GNProduct, state *crawlState) bool {
-	if gn.backend.Game != mtgmatcher.GameMagic {
+	if gn.backend.Game != matcher.GameMagic {
 		return false
 	}
 	family := skuFamily(product)

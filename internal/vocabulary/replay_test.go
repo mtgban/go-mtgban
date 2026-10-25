@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestReplayCatalogNames matches every product name a catalog holds and
@@ -67,7 +67,7 @@ var parens = regexp.MustCompile(`\(([^()]*)\)`)
 // that product's name would arrive: the name with its qualifiers taken off,
 // the qualifiers as the wording, the number the catalog files it under, and
 // the group as the edition.
-func replay(b *mtgmatcher.Backend, path string) ([]string, error) {
+func replay(b *matcher.Backend, path string) ([]string, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -152,7 +152,7 @@ func replay(b *mtgmatcher.Backend, path string) ([]string, error) {
 		for _, qualifier := range parens.FindAllStringSubmatch(product.Name, -1) {
 			wording = append(wording, qualifier[1])
 		}
-		in := mtgmatcher.InputCard{
+		in := matcher.InputCard{
 			Name:      strings.TrimSpace(parens.ReplaceAllString(product.Name, "")),
 			Variation: strings.Join(wording, " "),
 			Edition:   editions[product.GroupID],

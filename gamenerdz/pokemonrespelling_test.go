@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 // respellingDatastore is the published Pokemon datastore cut down to the
@@ -55,7 +55,7 @@ const respellingDatastore = `{"data": {
 // wrong reaches the printing its own body names, and that the spelling the
 // catalog uses is left alone.
 func TestPreprocessPokemonRespelling(t *testing.T) {
-	b, err := mtgmatcher.Open("pokemon", strings.NewReader(respellingDatastore))
+	b, err := matcher.Open("pokemon", strings.NewReader(respellingDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestPreprocessPokemonRespelling(t *testing.T) {
 			SelectedFinish: tt.finish,
 			ProductData:    GNProductData{SetName: tt.setName},
 		}
-		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+		card, err := preprocess(b, product, matcher.GamePokemon)
 		if err != nil {
 			t.Errorf("%q: unexpected error %v", tt.displayName, err)
 			continue
@@ -116,7 +116,7 @@ func TestPreprocessPokemonRespelling(t *testing.T) {
 // they are printed in, and the Scarlet & Violet ones by a code in the name
 // or by the sku alone.
 func TestPreprocessPokemonPromoNumbers(t *testing.T) {
-	b, err := mtgmatcher.Open("pokemon", strings.NewReader(respellingDatastore))
+	b, err := matcher.Open("pokemon", strings.NewReader(respellingDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +138,7 @@ func TestPreprocessPokemonPromoNumbers(t *testing.T) {
 			ProductData:    GNProductData{SetName: tt.setName},
 			RetailVariants: []GNRetailVariant{{SKU: tt.sku}},
 		}
-		card, err := preprocess(b, product, mtgmatcher.GamePokemon)
+		card, err := preprocess(b, product, matcher.GamePokemon)
 		if err != nil {
 			t.Errorf("%q: unexpected error %v", tt.displayName, err)
 			continue

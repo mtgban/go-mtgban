@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestFabListingID pins that a Flesh and Blood listing lands only on a
@@ -17,16 +17,16 @@ import (
 // siblings name neither: Star Fall // Volzar's Normal has a Cold Foil at
 // each of its numbers.
 func TestFabListingID(t *testing.T) {
-	b := &mtgmatcher.Backend{UUIDs: map[string]*mtgmatcher.CardObject{
-		"ros021_coldfoil":           {Card: mtgmatcher.Card{UUID: "ros021_coldfoil", Finish: "Cold Foil", Number: "ROS021", Identifiers: map[string]string{"tcgplayerProductId": "565399"}}, Foil: true},
-		"ros009_584673_coldfoil":    {Card: mtgmatcher.Card{UUID: "ros009_584673_coldfoil", Finish: "Cold Foil", Number: "ROS009", Identifiers: map[string]string{"tcgplayerProductId": "584673"}}, Foil: true},
-		"ros009_ros021_normal":      {Card: mtgmatcher.Card{Finish: "Normal", Number: "ROS009//ROS021"}},
-		"her009_1steditioncoldfoil": {Card: mtgmatcher.Card{Finish: "1st Edition Cold Foil", Number: "HER009"}, Foil: true},
-		"wtr001_normal":             {Card: mtgmatcher.Card{Finish: "Normal", Number: "WTR001"}},
-		"wtr001_unlimitednormal":    {Card: mtgmatcher.Card{Finish: "Unlimited Edition Normal", Number: "WTR001"}},
-		"iar004_706647":             {Card: mtgmatcher.Card{Finish: "Normal", Number: "IAR004", Identifiers: map[string]string{"tcgplayerProductId": "706647"}}},
-		"iar004_724676_coldfoil":    {Card: mtgmatcher.Card{UUID: "iar004_724676_coldfoil", Finish: "Cold Foil", Number: "IAR004", PromoTypes: []string{"extendedart"}, Identifiers: map[string]string{"tcgplayerProductId": "724676"}}, Foil: true},
-		"sea245_rainbowfoil":        {Card: mtgmatcher.Card{Finish: "Rainbow Foil", Number: "SEA245", PromoTypes: []string{"treasure"}, Identifiers: map[string]string{"tcgplayerProductId": "633612"}}, Foil: true},
+	b := &matcher.Backend{UUIDs: map[string]*matcher.CardObject{
+		"ros021_coldfoil":           {Card: matcher.Card{UUID: "ros021_coldfoil", Finish: "Cold Foil", Number: "ROS021", Identifiers: map[string]string{"tcgplayerProductId": "565399"}}, Foil: true},
+		"ros009_584673_coldfoil":    {Card: matcher.Card{UUID: "ros009_584673_coldfoil", Finish: "Cold Foil", Number: "ROS009", Identifiers: map[string]string{"tcgplayerProductId": "584673"}}, Foil: true},
+		"ros009_ros021_normal":      {Card: matcher.Card{Finish: "Normal", Number: "ROS009//ROS021"}},
+		"her009_1steditioncoldfoil": {Card: matcher.Card{Finish: "1st Edition Cold Foil", Number: "HER009"}, Foil: true},
+		"wtr001_normal":             {Card: matcher.Card{Finish: "Normal", Number: "WTR001"}},
+		"wtr001_unlimitednormal":    {Card: matcher.Card{Finish: "Unlimited Edition Normal", Number: "WTR001"}},
+		"iar004_706647":             {Card: matcher.Card{Finish: "Normal", Number: "IAR004", Identifiers: map[string]string{"tcgplayerProductId": "706647"}}},
+		"iar004_724676_coldfoil":    {Card: matcher.Card{UUID: "iar004_724676_coldfoil", Finish: "Cold Foil", Number: "IAR004", PromoTypes: []string{"extendedart"}, Identifiers: map[string]string{"tcgplayerProductId": "724676"}}, Foil: true},
+		"sea245_rainbowfoil":        {Card: matcher.Card{Finish: "Rainbow Foil", Number: "SEA245", PromoTypes: []string{"treasure"}, Identifiers: map[string]string{"tcgplayerProductId": "633612"}}, Foil: true},
 	}}
 	b.AllUUIDs = []string{"ros021_coldfoil", "ros009_584673_coldfoil", "ros009_ros021_normal", "her009_1steditioncoldfoil", "wtr001_normal", "wtr001_unlimitednormal", "iar004_706647", "iar004_724676_coldfoil", "sea245_rainbowfoil"}
 	siblings := fabNumbers(b)

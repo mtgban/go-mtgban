@@ -30,7 +30,7 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/cardtrader"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 func TestZZCensusFetch(t *testing.T) {
@@ -38,7 +38,7 @@ func TestZZCensusFetch(t *testing.T) {
 	if game == "" {
 		t.Skip()
 	}
-	g := mtgmatcher.Game(game)
+	g := matcher.Game(game)
 	ctx := context.Background()
 	write := func(name string, v any) {
 		raw, err := json.Marshal(v)
@@ -103,9 +103,9 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 func TestZZCensusWalk(t *testing.T) {
@@ -113,7 +113,7 @@ func TestZZCensusWalk(t *testing.T) {
 	if game == "" {
 		t.Skip()
 	}
-	b, err := datastore.Read(mtgmatcher.Game(game), filepath.Join(dir, game+"-datastore.json"))
+	b, err := datastore.Read(matcher.Game(game), filepath.Join(dir, game+"-datastore.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +180,7 @@ func TestZZCensusWalk(t *testing.T) {
 		cands := map[int]string{}
 		for _, id := range ids {
 			res := mkm.resolveMapped(id, products[id], exp)
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(res.err, &alias) {
 				var c []string
 				for _, probe := range alias.Probe() {
@@ -246,9 +246,9 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 func TestZZCensusBackend(t *testing.T) {
@@ -256,7 +256,7 @@ func TestZZCensusBackend(t *testing.T) {
 	if game == "" {
 		t.Skip()
 	}
-	b, err := datastore.Read(mtgmatcher.Game(game), filepath.Join(dir, game+"-datastore.json"))
+	b, err := datastore.Read(matcher.Game(game), filepath.Join(dir, game+"-datastore.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

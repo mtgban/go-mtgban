@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Sealed prices sealed product from Card Trader, under the same
@@ -24,7 +24,7 @@ type Sealed struct {
 
 	exchangeRates map[string]float64
 	client        *CTAuthClient
-	backend       *mtgmatcher.Backend
+	backend       *matcher.Backend
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -34,7 +34,7 @@ type Sealed struct {
 
 // NewScraperSealed returns a sealed scraper for the datastore's game,
 // authenticated with a full API token.
-func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
+func NewScraperSealed(b *matcher.Backend, token string) (*Sealed, error) {
 	game := b.Game
 	id, found := ctGames[game]
 	// An unknown game would not error anywhere later: its listings would
@@ -42,7 +42,7 @@ func NewScraperSealed(b *mtgmatcher.Backend, token string) (*Sealed, error) {
 	// Palworld is the one game the shared table carries that this side has
 	// never been built for, so it is refused here rather than left out of
 	// the table the market scraper reads too.
-	if !found || game == mtgmatcher.GamePalworld {
+	if !found || game == matcher.GamePalworld {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
 	ct := Sealed{}
@@ -89,13 +89,13 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 				product.Bundle,
 				product.Properties.Altered:
 				continue
-			case mtgmatcher.Contains(product.Description, "ita"),
-				mtgmatcher.Contains(product.Description, "empty booster"),
-				mtgmatcher.Contains(product.Description, "empty box"),
-				mtgmatcher.Contains(product.Description, "opened"),
-				mtgmatcher.Contains(product.Description, "only cards"),
-				mtgmatcher.Contains(product.Description, "missing"),
-				mtgmatcher.Contains(product.Description, "deck box only"):
+			case matcher.Contains(product.Description, "ita"),
+				matcher.Contains(product.Description, "empty booster"),
+				matcher.Contains(product.Description, "empty box"),
+				matcher.Contains(product.Description, "opened"),
+				matcher.Contains(product.Description, "only cards"),
+				matcher.Contains(product.Description, "missing"),
+				matcher.Contains(product.Description, "deck box only"):
 				continue
 			}
 
@@ -303,7 +303,7 @@ var accessoryWords = map[int]string{
 // sealedNamePassSkips reports whether a blueprint must not be asked of the
 // sealed-name resolver at all, and what to call the refusal in the tally.
 func sealedNamePassSkips(bp *Blueprint) (bool, string) {
-	if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
+	if matcher.SealedIsLanguageVariant(bp.Name) {
 		return true, "language variant"
 	}
 	word, filed := accessoryWords[bp.CategoryID]
@@ -315,7 +315,7 @@ func sealedNamePassSkips(bp *Blueprint) (bool, string) {
 
 // pruneSubsumed drops the blueprints that reached a product another blueprint
 // names in fewer words, and returns how many it dropped. Which names those are
-// is mtgmatcher.SealedNameSubsumed's question; this walks the blueprints that
+// is matcher.SealedNameSubsumed's question; this walks the blueprints that
 // reached each product and asks it.
 //
 // A blueprint the datastore's own ids answered for is asked about but never
@@ -338,7 +338,7 @@ func (ct *Sealed) pruneSubsumed(blueprints map[int]*Blueprint, productMap map[in
 			}
 		}
 		for _, id := range ids {
-			if !mtgmatcher.SealedNameSubsumed(blueprints[id].Name, beside, co.Edition) {
+			if !matcher.SealedNameSubsumed(blueprints[id].Name, beside, co.Edition) {
 				continue
 			}
 			ct.printf("%q (%d): names a product built on %s", blueprints[id].Name, id, uuid)

@@ -7,7 +7,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // fabPrintRuns names the print run a Cardmarket Flesh and Blood expansion
@@ -190,7 +190,7 @@ func fabFinish(expansion, name string) string {
 
 	switch {
 	case run != "" && treatment != "":
-		return mtgmatcher.PrintingFinish(run, treatment)
+		return matcher.PrintingFinish(run, treatment)
 	case treatment != "":
 		return treatment
 	}
@@ -255,14 +255,14 @@ func fabSameProduct(a, b *cm.Product) bool {
 // fabSameCard reports whether two card names, wording already off them,
 // name one card: the same name, or one the unpitched spelling of the
 // other, which is how the older listings and the token-sized reprints
-// write a card the set sells pitched. mtgmatcher.Equals folds accents and
+// write a card the set sells pitched. matcher.Equals folds accents and
 // apostrophes as well as case: Cardmarket's own "Jarl Vetreiði" against the
 // datastore's "Jarl Vetreidi", "Bolt'n' Shot" against "Bolt'n Shot".
 func fabSameCard(nameA, nameB string) bool {
-	if mtgmatcher.Equals(nameA, nameB) {
+	if matcher.Equals(nameA, nameB) {
 		return true
 	}
-	return mtgmatcher.Equals(unpitched(nameA), nameB) || mtgmatcher.Equals(nameA, unpitched(nameB))
+	return matcher.Equals(unpitched(nameA), nameB) || matcher.Equals(nameA, unpitched(nameB))
 }
 
 // fabPitchTail matches the pitch parenthetical ending a name.
@@ -275,14 +275,14 @@ func unpitched(name string) string {
 // fabFaceOf reports whether a Cardmarket product names one face of the
 // fused printing it is beside: the storefront sells a double-sided hero
 // face by face, and the datastore files the card once under both faces.
-func fabFaceOf(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
+func fabFaceOf(b *matcher.Backend, product *cm.Product, cardID string) bool {
 	co, err := b.GetUUID(cardID)
 	if err != nil || !strings.Contains(co.Name, "//") {
 		return false
 	}
-	name := mtgmatcher.Normalize(fabBaseName(product.Name))
+	name := matcher.Normalize(fabBaseName(product.Name))
 	for _, face := range strings.Split(co.Name, "//") {
-		if mtgmatcher.Normalize(strings.TrimSpace(face)) == name {
+		if matcher.Normalize(strings.TrimSpace(face)) == name {
 			return true
 		}
 	}
@@ -293,7 +293,7 @@ func fabFaceOf(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
 // landed it on: the same card, or one face of a fused card. The bridge
 // speaks through another marketplace's links, and a link tied to the
 // wrong product lands a card on its neighbour's printing.
-func fabNamesPrinting(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
+func fabNamesPrinting(b *matcher.Backend, product *cm.Product, cardID string) bool {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return false
@@ -312,7 +312,7 @@ var fabNumberPrefix = regexp.MustCompile(`^([A-Za-z0-9]*?[A-Za-z])(\d{3,4})[A-Za
 // nothing for a set numbered by digits alone. Cardmarket writes the digits
 // and the datastore the whole number, and a fused card answers to a face's
 // number only when it is written whole.
-func fabSetPrefix(set *mtgmatcher.Set) string {
+func fabSetPrefix(set *matcher.Set) string {
 	for _, card := range set.Cards {
 		if fields := fabNumberPrefix.FindStringSubmatch(card.Number); fields != nil {
 			return fields[1]
@@ -325,7 +325,7 @@ func fabSetPrefix(set *mtgmatcher.Set) string {
 // are read there: the prefix a promo programme's numbers carry, and the
 // print run the expansion names.
 type shelf struct {
-	set          *mtgmatcher.Set
+	set          *matcher.Set
 	edition      string
 	numberPrefix string
 	printRun     string
@@ -387,7 +387,7 @@ var lorcanaFaces = map[int]bool{
 // on the code is asked last, found by name or not: the Silver Age decks and
 // the GEM Pack promos the datastore keeps inside another set, the code
 // surviving only as the number's own prefix.
-func fabShelves(b *mtgmatcher.Backend, product *cm.Product, deckSets map[string][]*mtgmatcher.Set) []shelf {
+func fabShelves(b *matcher.Backend, product *cm.Product, deckSets map[string][]*matcher.Set) []shelf {
 	printRun, edition := fabPrintRun(product.ExpansionName)
 	var shelves []shelf
 	if prefix, promo := fabPromoPrefixes[edition]; promo {
@@ -432,8 +432,8 @@ func fabShelves(b *mtgmatcher.Backend, product *cm.Product, deckSets map[string]
 // where a deck's opening card ships in the chapter that introduced it and
 // the rest of the deck in a later chapter's box, both keeping the deck's own
 // code as their numbers' prefix.
-func fabDeckSetIndex(b *mtgmatcher.Backend) map[string][]*mtgmatcher.Set {
-	index := map[string][]*mtgmatcher.Set{}
+func fabDeckSetIndex(b *matcher.Backend) map[string][]*matcher.Set {
+	index := map[string][]*matcher.Set{}
 	for _, set := range b.Sets {
 		seen := map[string]bool{}
 		for _, card := range set.Cards {
@@ -455,7 +455,7 @@ func fabDeckSetIndex(b *mtgmatcher.Backend) map[string][]*mtgmatcher.Set {
 	return index
 }
 
-func shelved(shelves []shelf, set *mtgmatcher.Set) bool {
+func shelved(shelves []shelf, set *matcher.Set) bool {
 	for _, sh := range shelves {
 		if sh.set.Code == set.Code {
 			return true

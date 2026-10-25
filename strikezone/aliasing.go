@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // aliasedListing is a row the matcher answered with several printings: the
@@ -14,11 +14,11 @@ import (
 type aliasedListing struct {
 	name  string
 	shelf string
-	card  *mtgmatcher.InputCard
+	card  *matcher.InputCard
 }
 
 // contradiction reports whether a listing's wording rules out a printing.
-type contradiction func(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool
+type contradiction func(b *matcher.Backend, l aliasedListing, co *matcher.CardObject) bool
 
 // contradictions are the ways a Magic listing rules out a printing the
 // matcher could not tell from the others. Each reads the printing alone, so a
@@ -33,9 +33,9 @@ var contradictions = []contradiction{
 // wearsUnnamedPremiumFoil reports whether the printing wears a premium foil
 // treatment the listing never names, which this storefront spells out on
 // every one of them.
-func wearsUnnamedPremiumFoil(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+func wearsUnnamedPremiumFoil(_ *matcher.Backend, l aliasedListing, co *matcher.CardObject) bool {
 	for _, treatment := range premiumFoilTreatments {
-		if co.HasPromoType(treatment.promoType) && !mtgmatcher.Contains(l.card.Variation, treatment.tag) {
+		if co.HasPromoType(treatment.promoType) && !matcher.Contains(l.card.Variation, treatment.tag) {
 			return true
 		}
 	}
@@ -44,19 +44,19 @@ func wearsUnnamedPremiumFoil(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmat
 
 // wearsUnnamedBorderless reports whether the printing is a borderless one the
 // listing never calls borderless, which the store writes on every one of them.
-func wearsUnnamedBorderless(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
-	return co.HasPromoType(magic.PromoTypeBorderless) && !mtgmatcher.Contains(l.card.Variation, "Borderless")
+func wearsUnnamedBorderless(_ *matcher.Backend, l aliasedListing, co *matcher.CardObject) bool {
+	return co.HasPromoType(magic.PromoTypeBorderless) && !matcher.Contains(l.card.Variation, "Borderless")
 }
 
 // wearsUnnamedFlavor reports whether the printing goes by a flavor name the
 // listing does not write, a name the store gives in the product's own.
-func wearsUnnamedFlavor(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
-	return co.FlavorName != "" && !mtgmatcher.Contains(l.name, co.FlavorName)
+func wearsUnnamedFlavor(_ *matcher.Backend, l aliasedListing, co *matcher.CardObject) bool {
+	return co.FlavorName != "" && !matcher.Contains(l.name, co.FlavorName)
 }
 
 // notPrintedInFinish reports whether the printing was never made in the
 // finish the listing is on sale in.
-func notPrintedInFinish(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+func notPrintedInFinish(_ *matcher.Backend, l aliasedListing, co *matcher.CardObject) bool {
 	return !co.HasFinish(requestedFinish(l.card.Foil, l.card.Variation))
 }
 
@@ -68,14 +68,14 @@ func notPrintedInFinish(_ *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.
 // A promo shelf holds promos only, so a printing that is not one is not the
 // answer however few survive: a lone survivor there is what the rest was
 // ruled out for, not what the listing says.
-func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) string {
+func resolveAliasing(b *matcher.Backend, l aliasedListing, probe []string) string {
 	var keep []string
 	for _, id := range probe {
 		co, err := b.GetUUID(id)
 		if err != nil {
 			return ""
 		}
-		ruledOut := b.Game == mtgmatcher.GameMagic && slices.ContainsFunc(contradictions, func(contradicts contradiction) bool {
+		ruledOut := b.Game == matcher.GameMagic && slices.ContainsFunc(contradictions, func(contradicts contradiction) bool {
 			return contradicts(b, l, co)
 		})
 		if !ruledOut {
@@ -112,9 +112,9 @@ func resolveAliasing(b *mtgmatcher.Backend, l aliasedListing, probe []string) st
 
 // namesSet reports whether the shelf, or the edition preprocess made of it, is
 // the name of the printing's set.
-func namesSet(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+func namesSet(b *matcher.Backend, l aliasedListing, co *matcher.CardObject) bool {
 	set, found := b.Sets[co.SetCode]
-	return found && (mtgmatcher.Equals(set.Name, l.shelf) || mtgmatcher.Equals(set.Name, l.card.Edition))
+	return found && (matcher.Equals(set.Name, l.shelf) || matcher.Equals(set.Name, l.card.Edition))
 }
 
 // reprintedAfterPromoPack reports whether the printing sits in a set released
@@ -123,7 +123,7 @@ func namesSet(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject
 // what the shelf holds, however the set's own promo pack came to share it.
 // The shelf set and its own promo sets are never a reprint, whatever their
 // dates: PMAT is dated half a year after MAT.
-func reprintedAfterPromoPack(b *mtgmatcher.Backend, l aliasedListing, co *mtgmatcher.CardObject) bool {
+func reprintedAfterPromoPack(b *matcher.Backend, l aliasedListing, co *matcher.CardObject) bool {
 	name, found := strings.CutPrefix(l.shelf, "Promo Pack: ")
 	if !found {
 		return false

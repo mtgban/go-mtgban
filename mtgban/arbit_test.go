@@ -4,20 +4,20 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
-// backendFor builds a *mtgmatcher.Backend around a fixed set of cards. Every
+// backendFor builds a *matcher.Backend around a fixed set of cards. Every
 // arbitrage function reads the card to filter on it, so a card the backend
 // does not hold is skipped outright and the arithmetic below would never run.
-func backendFor(cards map[string]*mtgmatcher.CardObject) *mtgmatcher.Backend {
-	return &mtgmatcher.Backend{UUIDs: cards}
+func backendFor(cards map[string]*matcher.CardObject) *matcher.Backend {
+	return &matcher.Backend{UUIDs: cards}
 }
 
-func plainCard() map[string]*mtgmatcher.CardObject {
-	return map[string]*mtgmatcher.CardObject{
+func plainCard() map[string]*matcher.CardObject {
+	return map[string]*matcher.CardObject{
 		"card": {
-			Card: mtgmatcher.Card{
+			Card: matcher.Card{
 				Name: "Plain Card", Rarity: "rare", SetCode: "AAA", Number: "10",
 			},
 			Edition: "Alpha Set",
@@ -214,13 +214,13 @@ func TestArbitAppliesTheRateAndFactors(t *testing.T) {
 	}{
 		{"the rate scales the ask", &ArbitOpts{Rate: 1.2}, 15 - 12},
 		{"a card factor scales it", &ArbitOpts{
-			CustomCardFilter: func(*mtgmatcher.CardObject) (float64, bool) { return 0.5, false },
+			CustomCardFilter: func(*matcher.CardObject) (float64, bool) { return 0.5, false },
 		}, 15 - 5},
 		{"a price factor scales it", &ArbitOpts{
 			CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 2, false },
 		}, 15 - 20},
 		{"both factors multiply", &ArbitOpts{
-			CustomCardFilter:  func(*mtgmatcher.CardObject) (float64, bool) { return 0.5, false },
+			CustomCardFilter:  func(*matcher.CardObject) (float64, bool) { return 0.5, false },
 			CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 3, false },
 		}, 0}, // the ask lands on the offer: 10 * 0.5 * 3
 	} {
@@ -251,7 +251,7 @@ func TestArbitFiltersCanSkip(t *testing.T) {
 		opts *ArbitOpts
 	}{
 		{"the card filter", &ArbitOpts{
-			CustomCardFilter: func(*mtgmatcher.CardObject) (float64, bool) { return 1, true },
+			CustomCardFilter: func(*matcher.CardObject) (float64, bool) { return 1, true },
 		}},
 		{"the price filter", &ArbitOpts{
 			CustomPriceFilter: func(string, InventoryEntry) (float64, bool) { return 1, true },
@@ -273,7 +273,7 @@ func TestArbitFiltersCanSkip(t *testing.T) {
 // A card the datastore does not hold is skipped: nothing can be said about
 // what it is, so nothing is said about the trade.
 func TestArbitSkipsAnUnknownCard(t *testing.T) {
-	b := backendFor(map[string]*mtgmatcher.CardObject{})
+	b := backendFor(map[string]*matcher.CardObject{})
 
 	entries := Arbit(b, nil,
 		vendorOf(BuylistRecord{"card": {{Conditions: NM, BuyPrice: 15}}}),
@@ -302,34 +302,34 @@ func TestArbitNeedsBothSides(t *testing.T) {
 func TestArbitCardFilters(t *testing.T) {
 	for _, tt := range []struct {
 		desc string
-		card *mtgmatcher.CardObject
+		card *matcher.CardObject
 		opts *ArbitOpts
 		want int
 	}{
 		{"a foil is dropped when foils are excluded",
-			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Shiny"}, Foil: true},
+			&matcher.CardObject{Card: matcher.Card{Name: "Shiny"}, Foil: true},
 			&ArbitOpts{NoFoil: true}, 0},
 		{"an etched card counts as one",
-			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Shiny"}, Etched: true},
+			&matcher.CardObject{Card: matcher.Card{Name: "Shiny"}, Etched: true},
 			&ArbitOpts{NoFoil: true}, 0},
 		{"a foil is kept when only foils are wanted",
-			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Shiny"}, Foil: true},
+			&matcher.CardObject{Card: matcher.Card{Name: "Shiny"}, Foil: true},
 			&ArbitOpts{OnlyFoil: true}, 1},
 		{"an ignored language drops the card",
-			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Card", Language: "Japanese"}},
+			&matcher.CardObject{Card: matcher.Card{Name: "Card", Language: "Japanese"}},
 			&ArbitOpts{Languages: []string{"Japanese"}}, 0},
 		{"selecting another language drops it",
-			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Card", Language: "Japanese"}},
+			&matcher.CardObject{Card: matcher.Card{Name: "Card", Language: "Japanese"}},
 			&ArbitOpts{OnlyLanguages: []string{"English"}}, 0},
 		{"selecting its own language keeps it",
-			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Card", Language: "Japanese"}},
+			&matcher.CardObject{Card: matcher.Card{Name: "Card", Language: "Japanese"}},
 			&ArbitOpts{OnlyLanguages: []string{"Japanese"}}, 1},
 		{"a sealed product with no decklist is dropped when one is required",
-			&mtgmatcher.CardObject{Card: mtgmatcher.Card{Name: "Box"}, Sealed: true},
+			&matcher.CardObject{Card: matcher.Card{Name: "Box"}, Sealed: true},
 			&ArbitOpts{SealedDecklist: true}, 0},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			b := backendFor(map[string]*mtgmatcher.CardObject{"card": tt.card})
+			b := backendFor(map[string]*matcher.CardObject{"card": tt.card})
 			got := Arbit(b, tt.opts,
 				vendorOf(BuylistRecord{"card": {{Conditions: NM, BuyPrice: 15}}}),
 				sellerOf(InventoryRecord{"card": {{Conditions: NM, Price: 10, Quantity: 1}}},

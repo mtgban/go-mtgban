@@ -9,21 +9,21 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var (
 	datastoreOnce    sync.Once
 	datastoreErr     error
-	datastoreBackend *mtgmatcher.Backend
+	datastoreBackend *matcher.Backend
 )
 
 // realDatastore loads the Magic datastore the first time a test asks for it,
 // and skips where the run carries none.
-func realDatastore(t *testing.T) *mtgmatcher.Backend {
+func realDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -53,7 +53,7 @@ func realDatastore(t *testing.T) *mtgmatcher.Backend {
 func TestPreprocessInserts(t *testing.T) {
 	// No datastore lookup is reached on this path, so an empty backend is
 	// enough.
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	for _, name := range []string{
 		"Angels Theme Card",
 		"Helper Card",
@@ -61,7 +61,7 @@ func TestPreprocessInserts(t *testing.T) {
 		"Chrome Mox (Manuel Bevand Signature)",
 	} {
 		_, err := preprocess(b, name, "", "Regular", "English", "Foundations Jumpstart", "J25")
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("preprocess(%q) = %v, want ErrUnsupported", name, err)
 		}
 	}
@@ -144,7 +144,7 @@ func TestPreprocessCatchAllShelves(t *testing.T) {
 }
 
 // TestPreprocessLanguage pins that the feed's blanket Language "English" is
-// dropped before it reaches mtgmatcher: an Arabic prerelease foil shelved
+// dropped before it reaches matcher: an Arabic prerelease foil shelved
 // under that tag, with no language of its own beside "English" to pass,
 // would otherwise demand an English candidate and refuse.
 func TestPreprocessLanguage(t *testing.T) {
@@ -209,13 +209,13 @@ func TestPreprocessTokenFlavorSwap(t *testing.T) {
 // sku list repeating that id - not a rival claim - is kept regardless.
 func TestBuildSkuToUUID(t *testing.T) {
 	const uuidA, uuidB, uuidC, uuidD, uuidE, uuidF, uuidG, uuidH = "uuid-a", "uuid-b", "uuid-c", "uuid-d", "uuid-e", "uuid-f", "uuid-g", "uuid-h"
-	newCard := func(uuid, name, number string, foil bool, finishes ...string) *mtgmatcher.CardObject {
-		return &mtgmatcher.CardObject{
-			Card: mtgmatcher.Card{Name: name, SetCode: "TST", Number: number, UUID: uuid, Finishes: finishes},
+	newCard := func(uuid, name, number string, foil bool, finishes ...string) *matcher.CardObject {
+		return &matcher.CardObject{
+			Card: matcher.Card{Name: name, SetCode: "TST", Number: number, UUID: uuid, Finishes: finishes},
 			Foil: foil,
 		}
 	}
-	b := &mtgmatcher.Backend{UUIDs: map[string]*mtgmatcher.CardObject{
+	b := &matcher.Backend{UUIDs: map[string]*matcher.CardObject{
 		uuidA: newCard(uuidA, "Card A", "1", false, "nonfoil"),
 		uuidB: newCard(uuidB, "Card B", "2", false, "nonfoil"),
 		uuidC: newCard(uuidC, "Card C", "3", false, "nonfoil"),

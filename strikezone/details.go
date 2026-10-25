@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // The conditions a Details wording opens with, the treatments in the middle,
@@ -149,7 +149,7 @@ func fabListing(cardName, number string) (string, string) {
 		return strings.TrimSpace(cardName[len(fields[0]):]), fields[1]
 	}
 	altArt := fabAlternateArtNumber.FindStringSubmatch(number)
-	if altArt != nil && mtgmatcher.Contains(cardName, "Alternate Art") {
+	if altArt != nil && matcher.Contains(cardName, "Alternate Art") {
 		// The shelf names the set; the wording stays as a variation
 		// instead of a second copy of the name.
 		cardName = strings.TrimSpace(strings.Replace(cardName, "(Alternate Art)", "", 1))
@@ -186,9 +186,9 @@ func fabForeignName(cardName string) string {
 // printing's default when a finish names nothing - so the stamp costs the
 // modern rows nothing and tells the WotC-era Pokemon printings apart, where
 // the same wording flips between "1st Edition" and "Unlimited" row by row.
-func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details string) (*mtgmatcher.InputCard, error) {
+func preprocessDetails(game matcher.Game, cardName, edition, number, details string) (*matcher.InputCard, error) {
 	treatment, run, language := parseDetails(details)
-	if language != "" && language != "English" && game != mtgmatcher.GameFleshAndBlood {
+	if language != "" && language != "English" && game != matcher.GameFleshAndBlood {
 		return nil, errForeignListing
 	}
 
@@ -224,14 +224,14 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 	}
 
 	switch game {
-	case mtgmatcher.GamePokemon:
+	case matcher.GamePokemon:
 		// A number written after the name with no dash belongs to the
 		// Number column already.
 		if number != "" {
 			cardName = strings.TrimSuffix(cardName, " "+number)
 		}
 		if pokemonUnprintedListings[[3]string{edition, cardName, number}] {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 		respelled, found := pokemonNumberRespellings[[3]string{edition, cardName, number}]
 		if found {
@@ -296,13 +296,13 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 		} else if treatment != "Normal" {
 			finish = treatment
 		}
-		return &mtgmatcher.InputCard{
+		return &matcher.InputCard{
 			Name:      cardName,
 			Edition:   edition,
 			Variation: variation,
 			Finish:    finish,
 		}, nil
-	case mtgmatcher.GameFleshAndBlood:
+	case matcher.GameFleshAndBlood:
 		if language == "English" {
 			language = ""
 		} else if language != "" {
@@ -325,9 +325,9 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 			if run == "Unlimited" {
 				run = "Unlimited Edition"
 			}
-			finish = mtgmatcher.PrintingFinish(run, finish)
+			finish = matcher.PrintingFinish(run, finish)
 		}
-		return &mtgmatcher.InputCard{
+		return &matcher.InputCard{
 			Name:      cardName,
 			Edition:   edition,
 			Variation: number,
@@ -335,8 +335,8 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 			Foil:      strings.Contains(treatment, "Foil"),
 			Language:  language,
 		}, nil
-	case mtgmatcher.GameYuGiOh:
-		return &mtgmatcher.InputCard{
+	case matcher.GameYuGiOh:
+		return &matcher.InputCard{
 			Name:      cardName,
 			Edition:   edition,
 			Variation: number,

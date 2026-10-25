@@ -5,15 +5,15 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // installCards builds a backend behind GetUUID for one test. Every price
 // lookup reads the card to know which finish it is quoting.
-func installCards(t *testing.T, cards map[string]*mtgmatcher.CardObject) *mtgmatcher.Backend {
+func installCards(t *testing.T, cards map[string]*matcher.CardObject) *matcher.Backend {
 	t.Helper()
-	return &mtgmatcher.Backend{UUIDs: cards}
+	return &matcher.Backend{UUIDs: cards}
 }
 
 func TestSkipFromEV(t *testing.T) {
@@ -29,7 +29,7 @@ func TestSkipFromEV(t *testing.T) {
 		{name: "bonus with fixed distribution", promoType: magic.PromoTypeSLDBonus, probability: 1, wantSkip: false},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			co := &mtgmatcher.CardObject{Card: mtgmatcher.Card{
+			co := &matcher.CardObject{Card: matcher.Card{
 				PromoTypes: []string{test.promoType},
 			}}
 			if got := skipFromEV(co, nil, test.probability); got != test.wantSkip {
@@ -38,10 +38,10 @@ func TestSkipFromEV(t *testing.T) {
 		})
 	}
 
-	if !skipFromEV(nil, mtgmatcher.ErrCardUnknownID, 1) {
+	if !skipFromEV(nil, matcher.ErrCardUnknownID, 1) {
 		t.Error("skipFromEV did not exclude an unresolvable card")
 	}
-	if skipFromEV(&mtgmatcher.CardObject{}, nil, 1) {
+	if skipFromEV(&matcher.CardObject{}, nil, 1) {
 		t.Error("skipFromEV excluded an ordinary card")
 	}
 }
@@ -51,10 +51,10 @@ func TestSkipFromEV(t *testing.T) {
 // at its nonfoil copy's price. It decodes the API's own JSON, so the field
 // names are pinned too.
 func TestReadSideReadsTheFinishBeingQuoted(t *testing.T) {
-	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"plain":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA", Finish: "nonfoil"}},
-		"foil":   {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA", Finish: "foil"}, Foil: true},
-		"etched": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA", Finish: "etched"}, Etched: true},
+	b := installCards(t, map[string]*matcher.CardObject{
+		"plain":  {Card: matcher.Card{Name: "Card", SetCode: "AAA", Finish: "nonfoil"}},
+		"foil":   {Card: matcher.Card{Name: "Card", SetCode: "AAA", Finish: "foil"}, Foil: true},
+		"etched": {Card: matcher.Card{Name: "Card", SetCode: "AAA", Finish: "etched"}, Etched: true},
 	})
 	finishes := `{"nonfoil": {"CK": [{"condition": "NM", "price": 1}]},
 		"foil": {"CK": [{"condition": "NM", "price": 10}]},
@@ -102,9 +102,9 @@ func TestReadPriceFallsBackToPlayed(t *testing.T) {
 // One bad price would otherwise carry the whole product's value with it,
 // except in the editions where a four-figure card is ordinary.
 func TestGetPriceCapsAMisprice(t *testing.T) {
-	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"modern":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
-		"vintage": {Card: mtgmatcher.Card{Name: "Card", SetCode: "LEA"}},
+	b := installCards(t, map[string]*matcher.CardObject{
+		"modern":  {Card: matcher.Card{Name: "Card", SetCode: "AAA"}},
+		"vintage": {Card: matcher.Card{Name: "Card", SetCode: "LEA"}},
 	})
 
 	if got := getPrice(b, "modern", MaxSinglePrice+1); got != 0 {
@@ -125,8 +125,8 @@ func TestGetPriceCapsAMisprice(t *testing.T) {
 // TestMaxStorePriceTakesTheBest pins that the value uses the best price a
 // card can be had at across the named stores, not the first one listed.
 func TestMaxStorePriceTakesTheBest(t *testing.T) {
-	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"card": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
+	b := installCards(t, map[string]*matcher.CardObject{
+		"card": {Card: matcher.Card{Name: "Card", SetCode: "AAA"}},
 	})
 
 	prices := map[string]map[string]float64{
@@ -174,9 +174,9 @@ func TestCT0FeesLadder(t *testing.T) {
 // TestSetPriceReadsBack pins that a price written back is the one read, on
 // either side, and that a card the datastore cannot name gets none.
 func TestSetPriceReadsBack(t *testing.T) {
-	b := installCards(t, map[string]*mtgmatcher.CardObject{
-		"plain": {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}},
-		"foil":  {Card: mtgmatcher.Card{Name: "Card", SetCode: "AAA"}, Foil: true},
+	b := installCards(t, map[string]*matcher.CardObject{
+		"plain": {Card: matcher.Card{Name: "Card", SetCode: "AAA"}},
+		"foil":  {Card: matcher.Card{Name: "Card", SetCode: "AAA"}, Foil: true},
 	})
 
 	r := &priceSnapshot{

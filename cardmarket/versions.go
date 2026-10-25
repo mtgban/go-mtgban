@@ -3,7 +3,7 @@ package cardmarket
 import (
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // versionPrintings names the printing a Magic product sells where the id map
@@ -367,7 +367,7 @@ var unplacedProducts = map[int]bool{
 // etchedPrintings name for a Magic product, or two empty ids where they name
 // none the datastore carries. An etched product answers its etched printing
 // for both, the way a lone-finish product does elsewhere.
-func versionPrinting(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
+func versionPrinting(b *matcher.Backend, product *cm.Product) (string, string) {
 	printing, found := versionPrintings[product.IDProduct]
 	etched := false
 	if !found {
@@ -377,7 +377,7 @@ func versionPrinting(b *mtgmatcher.Backend, product *cm.Product) (string, string
 	if !found {
 		return "", ""
 	}
-	cards := b.MatchInSetNumber(mtgmatcher.SplitVariants(product.Name)[0], printing.set, printing.number)
+	cards := b.MatchInSetNumber(matcher.SplitVariants(product.Name)[0], printing.set, printing.number)
 	if len(cards) != 1 {
 		return "", ""
 	}

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // ErrNotDatastore says a file is not a built datastore. The games whose
@@ -120,7 +120,7 @@ func wordsSaid(card map[string]any, words map[string]string) {
 	}
 	wanted := map[string]bool{}
 	for _, token := range scalars(card["promoTypes"]) {
-		if slug := mtgmatcher.PromoTypeSlug(token); words[slug] == "" {
+		if slug := matcher.PromoTypeSlug(token); words[slug] == "" {
 			wanted[slug] = true
 		}
 	}
@@ -139,15 +139,15 @@ func wordsSaid(card map[string]any, words map[string]string) {
 		// between two labels, not part of either: "Learn Together Deck Set
 		// - Set Sail Event" holds a dash that would otherwise be read as
 		// the first word of the event's name.
-		if mtgmatcher.PromoTypeSlug(fields[i]) == "" {
+		if matcher.PromoTypeSlug(fields[i]) == "" {
 			continue
 		}
 		for j := i + 1; j <= len(fields); j++ {
-			if mtgmatcher.PromoTypeSlug(fields[j-1]) == "" {
+			if matcher.PromoTypeSlug(fields[j-1]) == "" {
 				continue
 			}
 			span := strings.Join(fields[i:j], " ")
-			slug := mtgmatcher.PromoTypeSlug(span)
+			slug := matcher.PromoTypeSlug(span)
 			if wanted[slug] {
 				words[slug] = span
 				delete(wanted, slug)
@@ -175,11 +175,11 @@ func withoutMark(variant, mark string) []string {
 	}
 	held := map[string]int{}
 	for _, word := range strings.Fields(mark) {
-		held[mtgmatcher.PromoTypeSlug(word)]++
+		held[matcher.PromoTypeSlug(word)]++
 	}
 	kept := make([]string, 0, len(fields))
 	for _, word := range fields {
-		slug := mtgmatcher.PromoTypeSlug(word)
+		slug := matcher.PromoTypeSlug(word)
 		if held[slug] > 0 {
 			held[slug]--
 			continue
@@ -201,7 +201,7 @@ func walk(held any, stated *Published) {
 			}
 			if key == "promoTypes" {
 				for _, token := range scalars(one) {
-					stated.Tokens = append(stated.Tokens, mtgmatcher.PromoTypeSlug(token))
+					stated.Tokens = append(stated.Tokens, matcher.PromoTypeSlug(token))
 				}
 				continue
 			}
@@ -216,7 +216,7 @@ func walk(held any, stated *Published) {
 		}
 	default:
 		for _, said := range scalars(held) {
-			if slug := mtgmatcher.PromoTypeSlug(said); slug != "" {
+			if slug := matcher.PromoTypeSlug(said); slug != "" {
 				stated.Facts = append(stated.Facts, slug)
 			}
 		}
@@ -252,11 +252,11 @@ func dateSaid(published string) []string {
 	}
 	year := published[:4]
 	month := time.Month(int(published[5]-'0')*10 + int(published[6]-'0'))
-	return []string{year, mtgmatcher.PromoTypeSlug(month.String() + " " + year)}
+	return []string{year, matcher.PromoTypeSlug(month.String() + " " + year)}
 }
 
 // ReadLoaded reads what a loader made of the same file.
-func ReadLoaded(game mtgmatcher.Game, path string) (Backend, error) {
+func ReadLoaded(game matcher.Game, path string) (Backend, error) {
 	b, err := datastore.Read(game, path)
 	if err != nil {
 		return Backend{}, err
@@ -282,20 +282,20 @@ func ReadLoaded(game mtgmatcher.Game, path string) (Backend, error) {
 // Games are the games built by the datastore generator, keyed by the
 // variable naming where each one's file is. Magic is not among them: its
 // datastore is MTGJSON's and its promo types are MTGJSON's too.
-var Games = map[mtgmatcher.Game]string{
-	mtgmatcher.GameFleshAndBlood: "FLESHANDBLOOD_PATH",
-	mtgmatcher.GameGundam:        "GUNDAM_PATH",
-	mtgmatcher.GameLorcana:       "LORCANA_PATH",
-	mtgmatcher.GameOnePiece:      "ONEPIECE_PATH",
-	mtgmatcher.GamePalworld:      "PALWORLD_PATH",
-	mtgmatcher.GamePokemon:       "POKEMON_PATH",
-	mtgmatcher.GameRiftbound:     "RIFTBOUND_PATH",
-	mtgmatcher.GameYuGiOh:        "YUGIOH_PATH",
+var Games = map[matcher.Game]string{
+	matcher.GameFleshAndBlood: "FLESHANDBLOOD_PATH",
+	matcher.GameGundam:        "GUNDAM_PATH",
+	matcher.GameLorcana:       "LORCANA_PATH",
+	matcher.GameOnePiece:      "ONEPIECE_PATH",
+	matcher.GamePalworld:      "PALWORLD_PATH",
+	matcher.GamePokemon:       "POKEMON_PATH",
+	matcher.GameRiftbound:     "RIFTBOUND_PATH",
+	matcher.GameYuGiOh:        "YUGIOH_PATH",
 }
 
 // GameNames are the games in a settled order, for a test to run through.
-func GameNames() []mtgmatcher.Game {
-	names := make([]mtgmatcher.Game, 0, len(Games))
+func GameNames() []matcher.Game {
+	names := make([]matcher.Game, 0, len(Games))
 	for game := range Games {
 		names = append(names, game)
 	}
@@ -304,6 +304,6 @@ func GameNames() []mtgmatcher.Game {
 }
 
 // PathOf is where a game's datastore is, empty where the run carries none.
-func PathOf(game mtgmatcher.Game) string {
+func PathOf(game matcher.Game) string {
 	return strings.TrimSpace(os.Getenv(Games[game]))
 }

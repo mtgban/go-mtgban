@@ -3,9 +3,9 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 // TestSecondBucketKeepsItsCopies covers the Armory Deck singles Star City
@@ -86,7 +86,7 @@ func TestSecondBucketKeepsItsCopies(t *testing.T) {
 // the rest of it: every record is about to arrive a second time, and a first
 // arrival must not be taken for a second one.
 func TestStreamRetryForgetsBuckets(t *testing.T) {
-	scg, err := NewScraper(&mtgmatcher.Backend{Game: "fleshandblood"}, "")
+	scg, err := NewScraper(&matcher.Backend{Game: "fleshandblood"}, "")
 	if err != nil {
 		t.Fatal(err)
 	}

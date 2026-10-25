@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestUniqueCopy pins which listings name one particular card rather than a
@@ -25,8 +25,8 @@ func TestUniqueCopy(t *testing.T) {
 		"Yasuo - Windrider (Signature) (235*/221) - Spiritforged Foil Unique (58724) (Copy)",
 		"Gengar VMAX (Unique- Miscut Corner) (Alternate Art Secret) 271/264  - Holofoil SWSH08 Fusion Strike - Secret Rare",
 	} {
-		_, err := preprocess(&mtgmatcher.Backend{}, VSProduct{DisplayName: display}, mtgmatcher.GameRiftbound)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		_, err := preprocess(&matcher.Backend{}, VSProduct{DisplayName: display}, matcher.GameRiftbound)
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("%s: preprocess() = %v, want a refusal wrapping ErrUnsupported", display, err)
 		}
 	}
@@ -51,7 +51,7 @@ func TestUniqueCopy(t *testing.T) {
 func TestProcessProductSkipsUniqueCopyQuietly(t *testing.T) {
 	var logged []string
 	vs := &Vegassingles{
-		backend:     &mtgmatcher.Backend{Game: mtgmatcher.GameRiftbound},
+		backend:     &matcher.Backend{Game: matcher.GameRiftbound},
 		logCallback: func(format string, a ...any) { logged = append(logged, format) },
 	}
 

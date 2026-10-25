@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
 )
 
 // lorcanaStarterFoilDatastore is two cards as published, each with the
@@ -28,7 +28,7 @@ const lorcanaStarterFoilDatastore = `{"data": {
 // deck's exclusive foil lands on its card's Holofoil whatever its listing's
 // flag, under either wording, while the card's own blueprint keeps the flag.
 func TestLorcanaStarterFoil(t *testing.T) {
-	b, err := mtgmatcher.Open("lorcana", strings.NewReader(lorcanaStarterFoilDatastore))
+	b, err := matcher.Open("lorcana", strings.NewReader(lorcanaStarterFoilDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}

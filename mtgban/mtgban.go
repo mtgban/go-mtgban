@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // GenericEntry is the part an inventory and a buylist entry have in common, so
@@ -164,7 +164,7 @@ type ScraperInfo struct {
 	Family string `json:"family,omitempty"`
 
 	// Which game the scraper belongs to
-	Game mtgmatcher.Game `json:"game"`
+	Game matcher.Game `json:"game"`
 }
 
 // Condition is the grade of an entry, spelled as the records and the dumps

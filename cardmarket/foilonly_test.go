@@ -6,10 +6,10 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/yugioh"
 )
 
 // foilOnlyDatastore carries two printings of one Lorcana set: a card sold
@@ -153,7 +153,7 @@ func TestResolveUUIDsFoilOnlyShelf(t *testing.T) {
 	}
 }
 
-func describePrinting(b *mtgmatcher.Backend, id string) string {
+func describePrinting(b *matcher.Backend, id string) string {
 	co, err := b.GetUUID(id)
 	if err != nil {
 		return fmt.Sprintf("%q (%v)", id, err)

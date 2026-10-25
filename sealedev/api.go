@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -61,7 +61,7 @@ func readPrice(entries []v2Entry) float64 {
 
 // readSide reads one side of the response, each card's prices from the
 // finish it is sold in.
-func readSide(b *mtgmatcher.Backend, side map[string]map[string]map[string][]v2Entry) map[string]map[string]float64 {
+func readSide(b *matcher.Backend, side map[string]map[string]map[string][]v2Entry) map[string]map[string]float64 {
 	out := make(map[string]map[string]float64, len(side))
 	for uuid, finishes := range side {
 		co, err := b.GetUUID(uuid)
@@ -83,7 +83,7 @@ func readSide(b *mtgmatcher.Backend, side map[string]map[string]map[string][]v2E
 }
 
 // getPrice is a card's price at one store, a broken one counting as none.
-func getPrice(b *mtgmatcher.Backend, uuid string, price float64) float64 {
+func getPrice(b *matcher.Backend, uuid string, price float64) float64 {
 	// Ignore broken prices, except for well known editions
 	if price > MaxSinglePrice {
 		co, err := b.GetUUID(uuid)
@@ -99,24 +99,24 @@ func getPrice(b *mtgmatcher.Backend, uuid string, price float64) float64 {
 	return price
 }
 
-func (r *priceSnapshot) getRetail(b *mtgmatcher.Backend, uuid, source string) float64 {
+func (r *priceSnapshot) getRetail(b *matcher.Backend, uuid, source string) float64 {
 	return getPrice(b, uuid, r.Retail[uuid][source])
 }
 
-func (r *priceSnapshot) getBuylist(b *mtgmatcher.Backend, uuid, source string) float64 {
+func (r *priceSnapshot) getBuylist(b *matcher.Backend, uuid, source string) float64 {
 	return getPrice(b, uuid, r.Buylist[uuid][source])
 }
 
-func (r *priceSnapshot) setRetail(b *mtgmatcher.Backend, uuid, store string, price float64) {
+func (r *priceSnapshot) setRetail(b *matcher.Backend, uuid, store string, price float64) {
 	setPrice(b, r.Retail, uuid, store, price)
 }
 
-func (r *priceSnapshot) setBuylist(b *mtgmatcher.Backend, uuid, store string, price float64) {
+func (r *priceSnapshot) setBuylist(b *matcher.Backend, uuid, store string, price float64) {
 	setPrice(b, r.Buylist, uuid, store, price)
 }
 
 // setPrice files a price for a card the datastore knows.
-func setPrice(b *mtgmatcher.Backend, side map[string]map[string]float64, uuid, store string, price float64) {
+func setPrice(b *matcher.Backend, side map[string]map[string]float64, uuid, store string, price float64) {
 	_, err := b.GetUUID(uuid)
 	if err != nil {
 		return
@@ -150,7 +150,7 @@ func getCT0fees(price float64) float64 {
 	return 0.64
 }
 
-func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string) (*priceSnapshot, error) {
+func loadPrices(ctx context.Context, b *matcher.Backend, sig, selected string) (*priceSnapshot, error) {
 	link := fmt.Sprintf(banAPIURL, selected, sig)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -255,7 +255,7 @@ func loadPrices(ctx context.Context, b *mtgmatcher.Backend, sig, selected string
 
 // maxStorePrice returns the highest available price for a card across the given
 // source stores (0 if none are present).
-func maxStorePrice(b *mtgmatcher.Backend, uuid string, prices map[string]map[string]float64, stores []string) float64 {
+func maxStorePrice(b *matcher.Backend, uuid string, prices map[string]map[string]float64, stores []string) float64 {
 	var price float64
 	for _, source := range stores {
 		sourcePrice := getPrice(b, uuid, prices[uuid][source])

@@ -13,8 +13,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/RomainMichau/cloudscraper_go/cloudscraper"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -31,11 +31,11 @@ type Graded struct {
 	inventory     mtgban.InventoryRecord
 
 	client  *cloudscraper.CloudScrapper
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 }
 
 // NewScraperGraded returns a graded scraper.
-func NewScraperGraded(b *mtgmatcher.Backend) (*Graded, error) {
+func NewScraperGraded(b *matcher.Backend) (*Graded, error) {
 	client, err := cloudscraper.Init(false, false)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (ck *Graded) scrapePage(session string, page int) error {
 
 		theCard, err := preprocessGraded(title)
 		if err != nil {
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if !errors.Is(err, matcher.ErrUnsupported) {
 				ck.printf("%s: %v", title, err)
 			}
 			return
@@ -137,14 +137,14 @@ func (ck *Graded) scrapePage(session string, page int) error {
 		}
 
 		cardID, err := matchGraded(ck.backend, theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			return
 		} else if err != nil {
 			// A slab title naming several printings and no collector number
 			// has nothing left to tell them apart.
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			aliased := errors.As(err, &alias)
-			if aliased && mtgmatcher.ExtractNumber(theCard.Variation) == "" {
+			if aliased && matcher.ExtractNumber(theCard.Variation) == "" {
 				return
 			}
 			ck.printf("%v", err)
@@ -161,7 +161,7 @@ func (ck *Graded) scrapePage(session string, page int) error {
 
 		// Price
 		priceStr := strings.TrimSpace(s.Find(".itemPrice").First().Text())
-		price, err := mtgmatcher.ParsePrice(priceStr)
+		price, err := matcher.ParsePrice(priceStr)
 		if err != nil {
 			ck.printf("%s", err.Error())
 			return
@@ -233,6 +233,6 @@ func (ck *Graded) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom Graded"
 	info.Shorthand = "CKGraded"
 	info.InventoryTimestamp = &ck.inventoryDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

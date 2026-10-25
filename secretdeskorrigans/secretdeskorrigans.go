@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-retryablehttp"
@@ -29,7 +29,7 @@ type SecretDesKorrigans struct {
 	logCallback    mtgban.LogCallbackFunc
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -41,7 +41,7 @@ type SecretDesKorrigans struct {
 
 // NewScraper returns a scraper matching against b, failing if the edition
 // list cannot be read.
-func NewScraper(b *mtgmatcher.Backend) (*SecretDesKorrigans, error) {
+func NewScraper(b *matcher.Backend) (*SecretDesKorrigans, error) {
 	sdk := SecretDesKorrigans{backend: b}
 	sdk.inventory = mtgban.InventoryRecord{}
 	sdk.maxConcurrency = defaultConcurrency
@@ -93,7 +93,7 @@ func (sdk *SecretDesKorrigans) inventoryOffers(meta *goquery.Selection) []offer 
 
 		priceStr := strings.TrimSpace(row.Find(`span[class="regular price"]`).Text())
 		priceStr = strings.TrimPrefix(priceStr, "CAD")
-		price, perr := mtgmatcher.ParsePrice(priceStr)
+		price, perr := matcher.ParsePrice(priceStr)
 		if price == 0 {
 			sdk.printf("price error '%s': %v", priceStr, perr)
 			return
@@ -188,7 +188,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 		}
 
 		cardID, err := sdk.backend.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			return
 		} else if err != nil {
 			// Skip reporting an error for known failures (invalid variant number)
@@ -210,7 +210,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			sdk.printf("%q", theCard)
 			sdk.printf("%s | %s | %s", cardName, edition, variant)
 
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
@@ -318,6 +318,6 @@ func (sdk *SecretDesKorrigans) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Le Secret des Korrigans"
 	info.Shorthand = "SK"
 	info.InventoryTimestamp = &sdk.inventoryDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

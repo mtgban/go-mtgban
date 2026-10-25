@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -25,14 +25,14 @@ type ABUGames struct {
 	maxConcurrency int
 
 	client  *ABUClient
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 }
 
 // NewScraper returns a singles scraper. ABU needs no credentials for prices.
-func NewScraper(b *mtgmatcher.Backend) *ABUGames {
+func NewScraper(b *matcher.Backend) *ABUGames {
 	abu := ABUGames{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
@@ -43,7 +43,7 @@ func NewScraper(b *mtgmatcher.Backend) *ABUGames {
 }
 
 type resultChan struct {
-	theCard    mtgmatcher.InputCard
+	theCard    matcher.InputCard
 	cardID     string
 	invEntry   *mtgban.InventoryEntry
 	buyEntry   *mtgban.BuylistEntry
@@ -81,7 +81,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 		}
 
 		cardID, err := matchCard(abu.backend, &group.Doclist.Docs[0], theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
 			// There are a bunch of non-existing prerelease cards from mh2
@@ -96,7 +96,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 			abu.printf("%v", group.Doclist.Docs[0])
 			abu.printf("%v", err)
 
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
@@ -429,6 +429,6 @@ func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "ABU"
 	info.InventoryTimestamp = &abu.inventoryDate
 	info.BuylistTimestamp = &abu.buylistDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

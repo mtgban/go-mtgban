@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 var (
@@ -41,7 +41,7 @@ var (
 	MismatchHeader = slices.Concat(CardHeader, []string{"Conditions", "Price", "Reference", "Difference", "Spread"})
 )
 
-func record2entry(b *mtgmatcher.Backend, record []string) (*InventoryEntry, error) {
+func record2entry(b *matcher.Backend, record []string) (*InventoryEntry, error) {
 	index := len(CardHeader)
 	cardID := record[0]
 	_, err := b.GetUUID(cardID)
@@ -102,7 +102,7 @@ func record2entry(b *mtgmatcher.Backend, record []string) (*InventoryEntry, erro
 // bad rows are skipped and whatever parsed is returned; use that for a file
 // from somewhere else, not for one this package wrote.
 // b is the datastore every card id is checked against; a nil b is an error.
-func LoadInventoryFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (InventoryRecord, error) {
+func LoadInventoryFromCSV(b *matcher.Backend, r io.Reader, flags ...bool) (InventoryRecord, error) {
 	if b == nil {
 		return nil, errors.New("LoadInventoryFromCSV: nil backend")
 	}
@@ -177,7 +177,7 @@ func LoadInventoryFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (In
 // LoadBuylistFromCSV reads what WriteBuylistToCSV produced, with the same
 // optional leniency as LoadInventoryFromCSV.
 // b is the datastore every card id is checked against; a nil b is an error.
-func LoadBuylistFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (BuylistRecord, error) {
+func LoadBuylistFromCSV(b *matcher.Backend, r io.Reader, flags ...bool) (BuylistRecord, error) {
 	if b == nil {
 		return nil, errors.New("LoadBuylistFromCSV: nil backend")
 	}
@@ -292,7 +292,7 @@ func LoadBuylistFromCSV(b *mtgmatcher.Backend, r io.Reader, flags ...bool) (Buyl
 	return buylist, nil
 }
 
-func cardID2record(b *mtgmatcher.Backend, cardID string) ([]string, error) {
+func cardID2record(b *matcher.Backend, cardID string) ([]string, error) {
 	if strings.Contains(cardID, "|") {
 		fields := strings.Split(cardID, "|")
 		if len(fields) != 4 {
@@ -338,7 +338,7 @@ func cardID2record(b *mtgmatcher.Backend, cardID string) ([]string, error) {
 // needs: CartHeader if one carries an id, else MarketHeader if one names a
 // seller or is a bundle, else InventoryHeader.
 // b is the datastore every card id is read against; a nil b is an error.
-func WriteInventoryToCSV(b *mtgmatcher.Backend, inventory InventoryRecord, w io.Writer) error {
+func WriteInventoryToCSV(b *matcher.Backend, inventory InventoryRecord, w io.Writer) error {
 	if b == nil {
 		return errors.New("WriteInventoryToCSV: nil backend")
 	}
@@ -409,7 +409,7 @@ func WriteInventoryToCSV(b *mtgmatcher.Backend, inventory InventoryRecord, w io.
 // creditMuliplier times the cash price, for vendors who pay more in credit.
 // Pass 1 to make the two columns agree.
 // b is the datastore every card id is read against; a nil b is an error.
-func WriteBuylistToCSV(b *mtgmatcher.Backend, buylist BuylistRecord, creditMuliplier float64, w io.Writer) error {
+func WriteBuylistToCSV(b *matcher.Backend, buylist BuylistRecord, creditMuliplier float64, w io.Writer) error {
 	if b == nil {
 		return errors.New("WriteBuylistToCSV: nil backend")
 	}
@@ -461,7 +461,7 @@ func namesASeller(entries []ArbitEntry) bool {
 // WriteArbitrageToCSV writes what Arbit returned, both prices and the spread
 // and profitability derived from them.
 // b is the datastore every card id is read against; a nil b is an error.
-func WriteArbitrageToCSV(b *mtgmatcher.Backend, arbitrage []ArbitEntry, w io.Writer) error {
+func WriteArbitrageToCSV(b *matcher.Backend, arbitrage []ArbitEntry, w io.Writer) error {
 	if b == nil {
 		return errors.New("WriteArbitrageToCSV: nil backend")
 	}
@@ -523,7 +523,7 @@ func WriteArbitrageToCSV(b *mtgmatcher.Backend, arbitrage []ArbitEntry, w io.Wri
 // WriteMismatchToCSV writes what Mismatch returned, the probed price beside
 // the reference it was compared against.
 // b is the datastore every card id is read against; a nil b is an error.
-func WriteMismatchToCSV(b *mtgmatcher.Backend, mismatch []ArbitEntry, w io.Writer) error {
+func WriteMismatchToCSV(b *matcher.Backend, mismatch []ArbitEntry, w io.Writer) error {
 	if b == nil {
 		return errors.New("WriteMismatchToCSV: nil backend")
 	}

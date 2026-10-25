@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // riftboundNotePrefix matches the set code a Riftbound note opens with, and
@@ -40,7 +40,7 @@ var riftboundSpellings = strings.NewReplacer("Lux - Iluminated", "Lux - Illumina
 // The note only decides where the set it names holds that printing. Vendetta
 // issued no b-lettered rune of its own, so its six listings stay on the promo
 // shelf, which is where the printing they mean actually is.
-func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation string, foil bool) string {
+func riftboundShelf(b *matcher.Backend, itemSet, notes, name, variation string, foil bool) string {
 	if itemSet != "Promo" {
 		return itemSet
 	}
@@ -48,8 +48,8 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 		if !strings.Contains(name, marker) {
 			continue
 		}
-		probe := &mtgmatcher.InputCard{Name: name, Edition: "Release Event Promos", Variation: variation, Foil: foil}
-		if riftboundLandsAt(b, probe, "OPP", mtgmatcher.ExtractNumber(variation)) {
+		probe := &matcher.InputCard{Name: name, Edition: "Release Event Promos", Variation: variation, Foil: foil}
+		if riftboundLandsAt(b, probe, "OPP", matcher.ExtractNumber(variation)) {
 			return probe.Edition
 		}
 	}
@@ -61,7 +61,7 @@ func riftboundShelf(b *mtgmatcher.Backend, itemSet, notes, name, variation strin
 	if err != nil {
 		return itemSet
 	}
-	probe := &mtgmatcher.InputCard{
+	probe := &matcher.InputCard{
 		Name:      name,
 		Edition:   set.Name,
 		Variation: variation,
@@ -81,7 +81,7 @@ var riftboundLetteredImage = regexp.MustCompile(`[0-9]{3}[a-z](?:[A-Z_.]|$)`)
 // note is pictured by, when the promo shelf holds the card at that number.
 // The bare name lands on the Organized Play printing of the same card, which
 // sells for a fraction of the lettered one.
-func riftboundLetteredPromo(b *mtgmatcher.Backend, name, imgURL string, foil bool) string {
+func riftboundLetteredPromo(b *matcher.Backend, name, imgURL string, foil bool) string {
 	stem := imageStem.FindStringSubmatch(imgURL)
 	if stem == nil {
 		return ""
@@ -91,7 +91,7 @@ func riftboundLetteredPromo(b *mtgmatcher.Backend, name, imgURL string, foil boo
 		return ""
 	}
 	number := lettered[:4]
-	probe := &mtgmatcher.InputCard{Name: name, Edition: "Promo", Variation: number, Foil: foil}
+	probe := &matcher.InputCard{Name: name, Edition: "Promo", Variation: number, Foil: foil}
 	if !riftboundLandsAt(b, probe, "PR", number) {
 		return ""
 	}
@@ -100,7 +100,7 @@ func riftboundLetteredPromo(b *mtgmatcher.Backend, name, imgURL string, foil boo
 
 // riftboundLandsAt reports whether a probe lands in set, and at number where
 // the listing names one, leading zeros and a set code before it aside.
-func riftboundLandsAt(b *mtgmatcher.Backend, probe *mtgmatcher.InputCard, set, number string) bool {
+func riftboundLandsAt(b *matcher.Backend, probe *matcher.InputCard, set, number string) bool {
 	id, err := b.Match(probe)
 	if err != nil {
 		return false
@@ -160,7 +160,7 @@ var (
 // opinion the wording is the better one: a handful of images are a
 // sibling printing's, reused, and the notes carry the exact number those
 // listings are sold at.
-func riftboundImageCard(b *mtgmatcher.Backend, imgURL string, foil bool) *mtgmatcher.InputCard {
+func riftboundImageCard(b *matcher.Backend, imgURL string, foil bool) *matcher.InputCard {
 	match := imageStem.FindStringSubmatch(imgURL)
 	if match == nil {
 		return nil
@@ -171,7 +171,7 @@ func riftboundImageCard(b *mtgmatcher.Backend, imgURL string, foil bool) *mtgmat
 // riftboundSKUCard answers the card one of the storefront's skus names.
 // The sale listings carry it inside an image url and the buylist feed
 // hands it over bare, in an Image field of its own.
-func riftboundSKUCard(b *mtgmatcher.Backend, stem string, foil bool) *mtgmatcher.InputCard {
+func riftboundSKUCard(b *matcher.Backend, stem string, foil bool) *matcher.InputCard {
 	if stem == "" {
 		return nil
 	}
@@ -181,7 +181,7 @@ func riftboundSKUCard(b *mtgmatcher.Backend, stem string, foil bool) *mtgmatcher
 	// ids, so one that answers a card is the card; one that answers
 	// nothing was never an id and the sku is read instead.
 	for _, id := range riftboundImageTCG.FindAllString(stem, -1) {
-		uuid := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+		uuid := b.ConvertID(matcher.IDSpaceTCGplayer, id)
 		if uuid == "" {
 			continue
 		}
@@ -239,7 +239,7 @@ func riftboundSKUCard(b *mtgmatcher.Backend, stem string, foil bool) *mtgmatcher
 // nothing where the number names several cards or none. Several is not a
 // miss to guess at: the number is being read to tell printings apart, so
 // a number that does not is no answer.
-func riftboundCardAt(b *mtgmatcher.Backend, code, number string, foil bool) *mtgmatcher.InputCard {
+func riftboundCardAt(b *matcher.Backend, code, number string, foil bool) *matcher.InputCard {
 	set, err := b.GetSet(code)
 	if err != nil {
 		return nil
@@ -258,7 +258,7 @@ func riftboundCardAt(b *mtgmatcher.Backend, code, number string, foil bool) *mtg
 	if name == "" {
 		return nil
 	}
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      name,
 		Edition:   set.Name,
 		Variation: number,

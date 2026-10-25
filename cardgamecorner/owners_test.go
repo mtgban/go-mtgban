@@ -3,7 +3,7 @@ package cardgamecorner
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 func TestOwnersBySKU(t *testing.T) {
@@ -49,21 +49,21 @@ func TestOwnersBySKU(t *testing.T) {
 
 func TestWantedLanguage(t *testing.T) {
 	tests := []struct {
-		game     mtgmatcher.Game
+		game     matcher.Game
 		language string
 		edition  string
 		want     bool
 	}{
-		{mtgmatcher.GameMagic, "EN", "Zendikar Rising", true},
-		{mtgmatcher.GameMagic, "DE", "Zendikar Rising", false},
-		{mtgmatcher.GameYuGiOh, "EN", "Legend of Blue Eyes White Dragon", true},
-		{mtgmatcher.GameYuGiOh, "US", "Legend of Blue Eyes White Dragon", true},
-		{mtgmatcher.GameYuGiOh, "IT", "Legend of Blue Eyes White Dragon", false},
-		{mtgmatcher.GameMagic, "US", "Zendikar Rising", false},
-		{mtgmatcher.GameMagic, "IT", "Revised EU FBB", true},
-		{mtgmatcher.GameMagic, "IT", "Zendikar Rising", false},
-		{mtgmatcher.GameMagic, "JP", "War of the Spark: Japanese Alternate-Art Planeswalkers", true},
-		{mtgmatcher.GameMagic, "JP", "War of the Spark", false},
+		{matcher.GameMagic, "EN", "Zendikar Rising", true},
+		{matcher.GameMagic, "DE", "Zendikar Rising", false},
+		{matcher.GameYuGiOh, "EN", "Legend of Blue Eyes White Dragon", true},
+		{matcher.GameYuGiOh, "US", "Legend of Blue Eyes White Dragon", true},
+		{matcher.GameYuGiOh, "IT", "Legend of Blue Eyes White Dragon", false},
+		{matcher.GameMagic, "US", "Zendikar Rising", false},
+		{matcher.GameMagic, "IT", "Revised EU FBB", true},
+		{matcher.GameMagic, "IT", "Zendikar Rising", false},
+		{matcher.GameMagic, "JP", "War of the Spark: Japanese Alternate-Art Planeswalkers", true},
+		{matcher.GameMagic, "JP", "War of the Spark", false},
 	}
 	for _, test := range tests {
 		got := wantedLanguage(test.game, test.language, test.edition)

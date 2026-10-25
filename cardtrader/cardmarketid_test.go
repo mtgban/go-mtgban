@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 // seaDatastore is the published Pokemon datastore cut down to one collector
@@ -35,7 +35,7 @@ const seaDatastore = `{"data": {
 // sells lands through the Cardmarket product it names, where the name alone
 // aliased the stamped promo with every other printing of its number.
 func TestBlueprintCardmarketID(t *testing.T) {
-	b, err := mtgmatcher.Open("pokemon", strings.NewReader(seaDatastore))
+	b, err := matcher.Open("pokemon", strings.NewReader(seaDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestShowdownAndStoreChampionship pins the two shelves where an event's own
@@ -83,7 +83,7 @@ func TestShowdownAndStoreChampionship(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			id, err := resolveProduct(b, GameMagic, tt.p)
 			if tt.wantRefused {
-				if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+				if !errors.Is(err, matcher.ErrUnsupported) {
 					t.Fatalf("resolveProduct(%s) = (%q, %v), want ErrUnsupported", tt.p.SKU, id, err)
 				}
 				return

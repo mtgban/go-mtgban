@@ -1,13 +1,13 @@
 package hareruya
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func init() {
-	mtgban.Register("hareruya", []mtgmatcher.Game{mtgmatcher.GameMagic},
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	mtgban.Register("hareruya", []matcher.Game{matcher.GameMagic},
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback
 			scraper.targetEdition = opts.TargetEdition
@@ -16,8 +16,8 @@ func init() {
 			}
 			return scraper, nil
 		})
-	mtgban.Register("hareruya_sealed", []mtgmatcher.Game{mtgmatcher.GameMagic},
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	mtgban.Register("hareruya_sealed", []matcher.Game{matcher.GameMagic},
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraperSealed(b)
 			scraper.logCallback = opts.LogCallback
 			return scraper, nil

@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // registryScraper is the scraper the registry tests build: it records what
 // its constructor was handed and can be asked for one half.
 type registryScraper struct {
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	secret  string
 	opts    Options
 	config  ScraperOptions
@@ -32,22 +32,22 @@ func (registryPlain) Load(context.Context) error { return nil }
 func (registryPlain) Info() ScraperInfo          { return ScraperInfo{Name: "Plain"} }
 
 func init() {
-	Register("registry_test", []mtgmatcher.Game{mtgmatcher.GameMagic, mtgmatcher.GamePokemon},
-		func(b *mtgmatcher.Backend, opts Options) (Scraper, error) {
+	Register("registry_test", []matcher.Game{matcher.GameMagic, matcher.GamePokemon},
+		func(b *matcher.Backend, opts Options) (Scraper, error) {
 			secret, err := opts.Secret("REGISTRY_TEST_SECRET")
 			if err != nil {
 				return nil, err
 			}
 			return &registryScraper{backend: b, secret: secret, opts: opts}, nil
 		})
-	Register("registry_plain", []mtgmatcher.Game{mtgmatcher.GameMagic},
-		func(*mtgmatcher.Backend, Options) (Scraper, error) {
+	Register("registry_plain", []matcher.Game{matcher.GameMagic},
+		func(*matcher.Backend, Options) (Scraper, error) {
 			return registryPlain{}, nil
 		})
 }
 
 func TestNewScraperBuildsTheRegisteredScraper(t *testing.T) {
-	b := &mtgmatcher.Backend{Game: "magic"}
+	b := &matcher.Backend{Game: "magic"}
 	logged := false
 	scraper, err := NewScraper(b, "registry_test",
 		WithAuthenticator(MapAuthenticator{"REGISTRY_TEST_SECRET": "hunter2"}),
@@ -88,21 +88,21 @@ func TestNewScraperBuildsTheRegisteredScraper(t *testing.T) {
 }
 
 func TestNewScraperRefusesWhatItCannotBuild(t *testing.T) {
-	magic := &mtgmatcher.Backend{Game: "magic"}
+	magic := &matcher.Backend{Game: "magic"}
 	auth := WithAuthenticator(MapAuthenticator{"REGISTRY_TEST_SECRET": "x"})
 	cases := []struct {
 		name    string
-		backend *mtgmatcher.Backend
+		backend *matcher.Backend
 		scraper string
 		opts    []Option
 		want    string
 	}{
 		{"nil datastore", nil, "registry_test", []Option{auth}, "needs a datastore"},
-		{"unnamed game", &mtgmatcher.Backend{}, "registry_test", []Option{auth}, "names no game"},
-		{"unknown game", &mtgmatcher.Backend{Game: "chess"}, "registry_test", []Option{auth}, `no scraper "registry_test" for chess`},
-		{"capitalized game", &mtgmatcher.Backend{Game: "Magic"}, "registry_test", []Option{auth}, `no scraper "registry_test" for Magic`},
+		{"unnamed game", &matcher.Backend{}, "registry_test", []Option{auth}, "names no game"},
+		{"unknown game", &matcher.Backend{Game: "chess"}, "registry_test", []Option{auth}, `no scraper "registry_test" for chess`},
+		{"capitalized game", &matcher.Backend{Game: "Magic"}, "registry_test", []Option{auth}, `no scraper "registry_test" for Magic`},
 		{"unknown scraper", magic, "nope", []Option{auth}, `no scraper "nope" for magic (registered: registry_plain, registry_test)`},
-		{"wrong game", &mtgmatcher.Backend{Game: "lorcana"}, "registry_test", []Option{auth}, `no scraper "registry_test" for lorcana`},
+		{"wrong game", &matcher.Backend{Game: "lorcana"}, "registry_test", []Option{auth}, `no scraper "registry_test" for lorcana`},
 		{"no authenticator", magic, "registry_test", nil, "registry_test: missing secret: REGISTRY_TEST_SECRET"},
 		{"authenticator without the secret", magic, "registry_test", []Option{WithAuthenticator(MapAuthenticator{})}, "registry_test: missing secret: REGISTRY_TEST_SECRET"},
 		{"both halves", magic, "registry_test", []Option{auth, WithRetailOnly(), WithBuylistOnly()}, "leaves nothing to publish"},
@@ -119,7 +119,7 @@ func TestNewScraperRefusesWhatItCannotBuild(t *testing.T) {
 }
 
 func TestNewScraperConfiguresOneHalf(t *testing.T) {
-	b := &mtgmatcher.Backend{Game: "pokemon"}
+	b := &matcher.Backend{Game: "pokemon"}
 	auth := WithAuthenticator(MapAuthenticator{"REGISTRY_TEST_SECRET": "x"})
 	cases := []struct {
 		name string
@@ -147,11 +147,11 @@ func TestNewScraperConfiguresOneHalf(t *testing.T) {
 }
 
 func TestRegisteredListsAGameSortedAndRegisterRefusesTwice(t *testing.T) {
-	names := Registered(mtgmatcher.GameMagic)
+	names := Registered(matcher.GameMagic)
 	if !strings.Contains(strings.Join(names, ","), "registry_plain,registry_test") {
 		t.Errorf("Registered(Magic) = %v", names)
 	}
-	for _, name := range Registered(mtgmatcher.GamePokemon) {
+	for _, name := range Registered(matcher.GamePokemon) {
 		if name == "registry_plain" {
 			t.Error("registry_plain was registered for Magic alone")
 		}
@@ -161,7 +161,7 @@ func TestRegisteredListsAGameSortedAndRegisterRefusesTwice(t *testing.T) {
 			t.Error("registering a name twice for one game did not panic")
 		}
 	}()
-	Register("registry_plain", []mtgmatcher.Game{mtgmatcher.GameMagic}, func(*mtgmatcher.Backend, Options) (Scraper, error) {
+	Register("registry_plain", []matcher.Game{matcher.GameMagic}, func(*matcher.Backend, Options) (Scraper, error) {
 		return registryPlain{}, nil
 	})
 }

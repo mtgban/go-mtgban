@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var cardTable = map[string]string{
@@ -87,7 +87,7 @@ func sharesNumber(number, filed string) bool {
 // number is the one given, bare or wearing whatever the set marks its second
 // printing with and the storefront does not carry - a dagger in Arabian
 // Nights, a letter in Portal. A number naming several printings names none.
-func markedApart(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, number string) bool {
+func markedApart(b *matcher.Backend, co *matcher.CardObject, number string) bool {
 	if co == nil || number == "" {
 		return false
 	}
@@ -128,12 +128,12 @@ var promoShelves = map[string]string{
 // year for some of them, and there the words repeat the shelf rather than
 // correcting it - and none where the run holds the card more than once,
 // which is a year this cannot pick between.
-func promoSet(b *mtgmatcher.Backend, name, edition, variation string) string {
+func promoSet(b *matcher.Backend, name, edition, variation string) string {
 	for wording, shelf := range promoShelves {
 		if !strings.Contains(variation, wording) {
 			continue
 		}
-		if mtgmatcher.Contains(edition, strings.TrimSuffix(wording, " Textless")) {
+		if matcher.Contains(edition, strings.TrimSuffix(wording, " Textless")) {
 			return ""
 		}
 		printings, err := b.Printings4Card(name)
@@ -171,7 +171,7 @@ func frontFace(name string) string {
 // separate promo-only set - AFR sends Power Word Kill's promo pack to #400,
 // not the plain card's #114 - so a listing wearing that number and edition
 // already names the exact printing.
-func namesPromopack(b *mtgmatcher.Backend, name, edition, number string) bool {
+func namesPromopack(b *matcher.Backend, name, edition, number string) bool {
 	set, err := b.GetSetByName(edition)
 	if err != nil {
 		return false
@@ -190,7 +190,7 @@ func namesPromopack(b *mtgmatcher.Backend, name, edition, number string) bool {
 // the named set's family (its parent, or a set it is itself the parent of)
 // instead of refusing outright. A set that stays in family, or holds no
 // candidate at all, is left alone.
-func escapesFamily(b *mtgmatcher.Backend, set *mtgmatcher.Set, name string) bool {
+func escapesFamily(b *matcher.Backend, set *matcher.Set, name string) bool {
 	related := func(code string) bool {
 		if code == set.Code || code == set.ParentCode {
 			return true
@@ -198,13 +198,13 @@ func escapesFamily(b *mtgmatcher.Backend, set *mtgmatcher.Set, name string) bool
 		other, err := b.GetSet(code)
 		return err == nil && other.ParentCode == set.Code
 	}
-	probe := mtgmatcher.InputCard{Name: name, Edition: set.Name, Variation: "Prerelease"}
+	probe := matcher.InputCard{Name: name, Edition: set.Name, Variation: "Prerelease"}
 	id, err := b.Match(&probe)
 	if err == nil {
 		co, err := b.GetUUID(id)
 		return err == nil && !related(co.SetCode)
 	}
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if errors.As(err, &alias) {
 		for _, candidate := range alias.Probe() {
 			co, err := b.GetUUID(candidate)
@@ -219,7 +219,7 @@ func escapesFamily(b *mtgmatcher.Backend, set *mtgmatcher.Set, name string) bool
 // onlyForeignPrinting reports an edition filing a number in a language that
 // never included English, scoped to the exact number so a number the set
 // also prints in English still refuses.
-func onlyForeignPrinting(b *mtgmatcher.Backend, name, edition, number string) bool {
+func onlyForeignPrinting(b *matcher.Backend, name, edition, number string) bool {
 	set, err := b.GetSetByName(edition)
 	if err != nil {
 		return false
@@ -256,7 +256,7 @@ func numberCorroborates(number, filed string) bool {
 // does not. A set outside the booster-fun run marks nothing - Teenage Mutant
 // Ninja Turtles files its showcase at 226 with no mark at all - and there the
 // frame is the whole of what says so.
-func framedApart(marked, plain *mtgmatcher.CardObject) bool {
+func framedApart(marked, plain *matcher.CardObject) bool {
 	if marked.HasPromoType(boosterFun) {
 		return true
 	}
@@ -279,7 +279,7 @@ const (
 
 // finishAsked is the finish a listing's own FOIL flag asks the catalog for.
 // Etched counts as one: this storefront spells it the same way.
-func finishAsked(co *mtgmatcher.CardObject, foil bool) bool {
+func finishAsked(co *matcher.CardObject, foil bool) bool {
 	if foil {
 		return co.HasFinish(finishFoil) || co.HasFinish(finishEtched)
 	}
@@ -295,7 +295,7 @@ func finishAsked(co *mtgmatcher.CardObject, foil bool) bool {
 // an alternative: Avatar's tutorial cards carry the set's own names and only
 // that flag tells them from the cards they teach. So is the set a reprint
 // came from, which The List spells into the number it files each card under.
-func finishSibling(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, foil bool) string {
+func finishSibling(b *matcher.Backend, co *matcher.CardObject, foil bool) string {
 	set, err := b.GetSet(co.SetCode)
 	if err != nil {
 		return ""
@@ -311,7 +311,7 @@ func finishSibling(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, foil bool) 
 			!slices.Equal(card.PromoTypes, co.PromoTypes) {
 			continue
 		}
-		object := mtgmatcher.CardObject{Card: *card}
+		object := matcher.CardObject{Card: *card}
 		if !finishAsked(&object, foil) {
 			continue
 		}
@@ -353,13 +353,13 @@ const boosterFun = magic.PromoTypeBoosterfun
 
 // finishNamed reports a printing sold in a finish this storefront would spell
 // FOIL, which is the flag its own wording carries.
-func finishNamed(co *mtgmatcher.CardObject) bool {
+func finishNamed(co *matcher.CardObject) bool {
 	return co.Foil || co.Etched
 }
 
 // unmarked reports a printing the catalog gives no treatment, the token
 // promo type every token carries aside.
-func unmarked(co *mtgmatcher.CardObject) bool {
+func unmarked(co *matcher.CardObject) bool {
 	for _, promoType := range co.PromoTypes {
 		if promoType != magic.PromoTypeToken {
 			return false
@@ -370,14 +370,14 @@ func unmarked(co *mtgmatcher.CardObject) bool {
 
 // foilOfUnfoiled reports a listing spelled FOIL whose printing has no finish
 // to name, which the storefront does for cards it never had in foil.
-func foilOfUnfoiled(title string, co *mtgmatcher.CardObject) bool {
+func foilOfUnfoiled(title string, co *matcher.CardObject) bool {
 	return strings.Contains(title, "FOIL") && !finishNamed(co)
 }
 
 // resolved answers the printing a description names, and nil when it names
 // none. It matches a copy, so the matcher's own edits stay in the probe.
-func resolved(b *mtgmatcher.Backend, name, edition, variation, language string, foil bool) *mtgmatcher.CardObject {
-	probe := mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Language: language, Foil: foil}
+func resolved(b *matcher.Backend, name, edition, variation, language string, foil bool) *matcher.CardObject {
+	probe := matcher.InputCard{Name: name, Edition: edition, Variation: variation, Language: language, Foil: foil}
 	id, err := b.Match(&probe)
 	if err != nil {
 		return nil
@@ -408,7 +408,7 @@ func variantLetter(variation string) string {
 // describedArtwork preserves exact artwork descriptions already cataloged by
 // the matcher. ABU's letter is not necessarily the catalog's suffix: Strip
 // Mine "d Tower" is 82c, while the bare letter "d" names another artwork.
-func describedArtwork(b *mtgmatcher.Backend, name, edition, variation string) string {
+func describedArtwork(b *matcher.Backend, name, edition, variation string) string {
 	if variantLetter(variation) == "" {
 		return ""
 	}
@@ -439,7 +439,7 @@ func artworkLetter(cardName, variation string) string {
 	return match[1]
 }
 
-func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, error) {
+func preprocess(b *matcher.Backend, card *ABUCard) (*matcher.InputCard, error) {
 	corrected := correctListing(*card)
 	card = &corrected
 	lang := ""
@@ -515,7 +515,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	}
 
 	// Split by ()
-	vars = mtgmatcher.SplitVariants(cardName)
+	vars = matcher.SplitVariants(cardName)
 	cardName = vars[0]
 	if len(vars) > 1 {
 		oldVariation := variation
@@ -576,7 +576,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 			case strings.Contains(variation, "Prerelease"):
 				set, setErr := b.GetSetByName(card.Edition)
 				if setErr == nil && escapesFamily(b, set, cardName) {
-					return nil, mtgmatcher.ErrUnsupported
+					return nil, matcher.ErrUnsupported
 				}
 				// Handle promo cards appearing in multiple editions
 				// like Sorcerous Spyglass
@@ -586,7 +586,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 				variation += " " + edition
 				edition = "Promo"
 			default:
-				// Reset edition, and trust mtgmatcher to find it by
+				// Reset edition, and trust matcher to find it by
 				// its variation
 				edition = "Promo"
 			}
@@ -611,7 +611,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// The vendor IDs are the primary identity when they agree with the
 	// listing's name, language, finish and printing descriptors. Known copied
 	// IDs and descriptions the ID checks cannot establish use the text path.
-	if identified := identifiedCard(b, card, mtgmatcher.InputCard{
+	if identified := identifiedCard(b, card, matcher.InputCard{
 		Name: cardName, Edition: edition, Variation: variation, Foil: isFoil, Language: lang,
 	}); identified != nil {
 		return identified, nil
@@ -625,7 +625,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// MagicFest ones, and the matcher reads that shelf first and never gets
 	// to the rule that knows the programme by its own name and year. Say
 	// nothing about the shelf and let that rule answer.
-	if mtgmatcher.Contains(variation, "Player Rewards") && mtgmatcher.Contains(edition, "MagicFest") {
+	if matcher.Contains(variation, "Player Rewards") && matcher.Contains(edition, "MagicFest") {
 		edition = "Promo"
 	}
 
@@ -701,7 +701,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 			variation = "189"
 		}
 		if strings.Contains(variation, "Secret") || strings.Contains(variation, "Lair") {
-			num := mtgmatcher.ExtractNumber(variation)
+			num := matcher.ExtractNumber(variation)
 			if num != "" {
 				variation = num
 			} else if strings.Contains(variation, "Seb McKinnon") {
@@ -732,7 +732,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 			// Lair collector number >= 1993 (e.g. 7010) is recognized and not
 			// clobbered by a stale card.Number, while still ignoring dates and
 			// ordinals.
-			num := mtgmatcher.ExtractNumberAny(variation)
+			num := matcher.ExtractNumberAny(variation)
 			if num == "" && card.Number != "" {
 				variation += " " + card.Number
 			}
@@ -816,7 +816,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// the catalog holds 4ED in English and white, 4BB in Japanese and black,
 	// and nothing else - so a foreign one names a card that was never made,
 	// and the matcher already knows to refuse it under that name.
-	if mtgmatcher.Contains(edition, "4th Edition") {
+	if matcher.Contains(edition, "4th Edition") {
 		switch variation {
 		case "BB":
 			variation = "Japanese"
@@ -830,7 +830,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// The wording repeats the number and the storefront's own field spells
 	// it with the mark that tells two printings apart - "(Secret Lair
 	// 1630)" beside a card_number of 1630 with a star. Take the fuller one.
-	if spelled := mtgmatcher.ExtractNumberAny(variation); spelled != "" &&
+	if spelled := matcher.ExtractNumberAny(variation); spelled != "" &&
 		spelled != card.Number && sharesNumber(spelled, card.Number) {
 		variation = strings.Replace(variation, spelled, card.Number, 1)
 	}
@@ -839,7 +839,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// card_number over a conflicting number spelled in the title, once that
 	// spelled number names a real printing rather than a stray year.
 	if strings.Contains(variation, "Extended Art") {
-		spelled := mtgmatcher.ExtractNumberAny(variation)
+		spelled := matcher.ExtractNumberAny(variation)
 		if spelled != "" && card.Number != "" && spelled != card.Number {
 			set, err := b.GetSetByName(edition)
 			if err == nil && len(b.MatchInSetNumber(frontFace(cardName), set.Code, spelled)) > 0 {
@@ -856,7 +856,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 
 	// Use collector number data when the variation carries has none, unless for a couple of editions
 	var numbered bool
-	if card.Number != "" && mtgmatcher.ExtractNumberAny(variation) == "" {
+	if card.Number != "" && matcher.ExtractNumberAny(variation) == "" {
 		switch {
 		case edition == "Unfinity":
 		// A Secret Lair is numbered whatever shelf the storefront files it
@@ -864,9 +864,9 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 		// MagicFest reprints can span years; its collector number separates
 		// Counterspell in PF24 (#1) from PF26 (#5). A promo pack without a
 		// shelf also needs its number to distinguish reprinted promo lands.
-		case edition == "Promo" && !mtgmatcher.Contains(variation, "Secret Lair") &&
-			!mtgmatcher.Contains(variation, "MagicFest") &&
-			!(card.Edition == "" && mtgmatcher.Contains(variation, "Promo Pack")):
+		case edition == "Promo" && !matcher.Contains(variation, "Secret Lair") &&
+			!matcher.Contains(variation, "MagicFest") &&
+			!(card.Edition == "" && matcher.Contains(variation, "Promo Pack")):
 		default:
 			if variation != "" {
 				variation += " "
@@ -894,7 +894,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// only where it reaches a printing on its own.
 	if letter == "" {
 		variant := variantLetter(variation)
-		if variant != "" && !mtgmatcher.Contains(variation, "The List") && resolved(b, cardName, edition, variant, lang, isFoil) != nil {
+		if variant != "" && !matcher.Contains(variation, "The List") && resolved(b, cardName, edition, variant, lang, isFoil) != nil {
 			variation = variant
 		}
 	}
@@ -904,7 +904,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// files its cards under the original's code and number - AVR-20, not 20
 	// - so the bare number reaches the first printing and the words naming
 	// the reprint go unread, putting the two beside each other.
-	if numbered && mtgmatcher.Contains(variation, "The List") {
+	if numbered && matcher.Contains(variation, "The List") {
 		bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
 		reprint := resolved(b, cardName, edition, bare, lang, isFoil)
 		if reprint != nil {
@@ -1002,7 +1002,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 	// The playtest card is literally named Trial and Error; only the
 	// ordinary split card needs the historical Trial // Error alias.
 	name, found := cardTable[cardName]
-	if found && !(cardName == "Trial and Error" && mtgmatcher.Contains(edition, "Playtest")) {
+	if found && !(cardName == "Trial and Error" && matcher.Contains(edition, "Playtest")) {
 		cardName = name
 	}
 
@@ -1067,7 +1067,7 @@ func preprocess(b *mtgmatcher.Backend, card *ABUCard) (*mtgmatcher.InputCard, er
 		lang = ""
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,

@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // onePieceEvents spells a One Piece event the way the catalog names it, for
@@ -180,7 +180,7 @@ func onePieceShelf(shelf, name string) string {
 // printing, so the one printing the storefront can mean is the one the
 // number carries. A listing naming a second qualifier is not answered by the
 // treatment alone, so it is left where it landed.
-func onePieceRenamedTreatment(b *mtgmatcher.Backend, id, name string) string {
+func onePieceRenamedTreatment(b *matcher.Backend, id, name string) string {
 	co, err := b.GetUUID(id)
 	if err != nil || len(co.PromoTypes) > 0 {
 		return ""
@@ -212,7 +212,7 @@ func onePieceRenamedTreatment(b *mtgmatcher.Backend, id, name string) string {
 	if len(qualifiers) != 1 {
 		return ""
 	}
-	slug := mtgmatcher.PromoTypeSlug(qualifiers[0])
+	slug := matcher.PromoTypeSlug(qualifiers[0])
 	if slug == "" || labels[slug] || !slices.Contains(b.AllPromoTypes, slug) {
 		return ""
 	}
@@ -237,7 +237,7 @@ func onePieceAlternatePromo(name string) bool {
 // Alternate Art of it, which is false for every set filing its alternate
 // arts under that name. Only a printing in the finish the match settled on
 // counts, and a match on the set the note names as the reprint stays there.
-func onePieceParallelPrinting(b *mtgmatcher.Backend, id, edition, name, notes string) string {
+func onePieceParallelPrinting(b *matcher.Backend, id, edition, name, notes string) string {
 	if !slices.Equal(nameQualifierList(name), []string{"Alternate Art"}) {
 		return ""
 	}
@@ -278,7 +278,7 @@ var onePieceReprintNote = regexp.MustCompile(`(?i)\b([a-z]+\d+) reprint\b`)
 
 // onePieceRefined answers the printing a One Piece listing means once the
 // match has settled on one, where its own wording says it is another.
-func onePieceRefined(b *mtgmatcher.Backend, id, edition, name, notes string) string {
+func onePieceRefined(b *matcher.Backend, id, edition, name, notes string) string {
 	renamed := onePieceRenamedTreatment(b, id, name)
 	if renamed != "" {
 		return renamed
@@ -298,9 +298,9 @@ func onePieceRefined(b *mtgmatcher.Backend, id, edition, name, notes string) str
 // is a foil-only printing listed without the foil marker and stays on id. A
 // printing with a promo type (an alternate art, a parallel, an event promo)
 // stays too: the plain printing at its number is not it in another finish.
-func onePieceNonfoilPrinting(b *mtgmatcher.Backend, id string) string {
+func onePieceNonfoilPrinting(b *matcher.Backend, id string) string {
 	co, err := b.GetUUID(id)
-	if err != nil || co.HasFinish(mtgmatcher.FinishNonfoil) || len(co.PromoTypes) > 0 {
+	if err != nil || co.HasFinish(matcher.FinishNonfoil) || len(co.PromoTypes) > 0 {
 		return id
 	}
 	siblings, err := b.SearchEquals(co.Name)
@@ -310,7 +310,7 @@ func onePieceNonfoilPrinting(b *mtgmatcher.Backend, id string) string {
 	var found string
 	for _, sibling := range siblings {
 		other, err := b.GetUUID(sibling)
-		if err != nil || other.Number != co.Number || other.Foil || !other.HasFinish(mtgmatcher.FinishNonfoil) {
+		if err != nil || other.Number != co.Number || other.Foil || !other.HasFinish(matcher.FinishNonfoil) {
 			continue
 		}
 		if found != "" {

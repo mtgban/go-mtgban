@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestPromoShelf pins the promos this storefront files under one edition and
@@ -130,7 +130,7 @@ func TestEtchedForFoil(t *testing.T) {
 // whose own title says otherwise. There is no Japanese 30th Anniversary Serra
 // Angel, so that listing answered with the English one and priced beside it.
 func TestLanguageFromTitle(t *testing.T) {
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	card := ABUCard{DisplayTitle: "Serra Angel (30th Anniversary History Retro Frame JP) - FOIL",
 		Edition: "Promo", Number: "1★", Title: "Non-English - Japanese", Language: []string{"English"}}
 	in, err := preprocess(b, &card)

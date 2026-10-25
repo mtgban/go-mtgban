@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestProductSlug pins the shape of the storefront's product path. The
@@ -58,7 +58,7 @@ func TestCrawlAsksForStock(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	vs, err := NewScraper(&mtgmatcher.Backend{Game: "riftbound"})
+	vs, err := NewScraper(&matcher.Backend{Game: "riftbound"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,19 +80,19 @@ func TestCrawlAsksForStock(t *testing.T) {
 func TestListedConditions(t *testing.T) {
 	for _, tt := range []struct {
 		desc  string
-		game  mtgmatcher.Game
+		game  matcher.Game
 		title string
 		want  bool
 	}{
-		{"riftbound deals in near mint", mtgmatcher.GameRiftbound, "Near Mint", true},
-		{"and in nothing below it", mtgmatcher.GameRiftbound, "Lightly Played", false},
-		{"pokemon the same", mtgmatcher.GamePokemon, "Moderately Played", false},
-		{"one piece takes lightly played too", mtgmatcher.GameOnePiece, "Lightly Played", true},
-		{"but stops there", mtgmatcher.GameOnePiece, "Moderately Played", false},
-		{"a line configured nowhere deals in them all", mtgmatcher.GameMagic, "Damaged", true},
+		{"riftbound deals in near mint", matcher.GameRiftbound, "Near Mint", true},
+		{"and in nothing below it", matcher.GameRiftbound, "Lightly Played", false},
+		{"pokemon the same", matcher.GamePokemon, "Moderately Played", false},
+		{"one piece takes lightly played too", matcher.GameOnePiece, "Lightly Played", true},
+		{"but stops there", matcher.GameOnePiece, "Moderately Played", false},
+		{"a line configured nowhere deals in them all", matcher.GameMagic, "Damaged", true},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
-			vs, err := NewScraper(&mtgmatcher.Backend{Game: tt.game})
+			vs, err := NewScraper(&matcher.Backend{Game: tt.game})
 			if err != nil {
 				t.Fatal(err)
 			}

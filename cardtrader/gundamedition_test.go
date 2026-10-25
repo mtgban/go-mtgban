@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/gundam"
+	_ "github.com/mtgban/go-mtgban/matcher/gundam"
 )
 
 // shelf names a blueprint's expansion, which is the only field the guard
@@ -32,7 +32,7 @@ func withID(bp Blueprint, id int) Blueprint {
 // the name fallback, which is where a blueprint lands once its id has
 // answered nothing.
 func TestPromoShelfNeedsLabel(t *testing.T) {
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	for _, tt := range []struct {
 		desc   string
 		gameID int
@@ -152,7 +152,7 @@ func TestShelfLabelled(t *testing.T) {
 		{GameOnePiece, []string{"preerrata"}, true},
 		{GameOnePiece, nil, false},
 	} {
-		co := &mtgmatcher.CardObject{}
+		co := &matcher.CardObject{}
 		co.PromoTypes = tt.promoTypes
 		got := shelfLabelled(tt.gameID, co)
 		if got != tt.want {
@@ -232,7 +232,7 @@ func TestGundamShelfSets(t *testing.T) {
 
 // gundamBackend reads the Gundam datastore for a test to ask directly, or
 // skips the test where the run carries none.
-func gundamBackend(t *testing.T) *mtgmatcher.Backend {
+func gundamBackend(t *testing.T) *matcher.Backend {
 	t.Helper()
 	path := os.Getenv("GUNDAM_PATH")
 	if path == "" {

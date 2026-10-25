@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-cardkingdom"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestPreprocessPunchCard pins that a punch card reaches the Punchcard row of
@@ -91,7 +91,7 @@ func TestPreprocessPunchCard(t *testing.T) {
 	} {
 		t.Run(product.SKU, func(t *testing.T) {
 			theCard, err := Preprocess(b, product)
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if !errors.Is(err, matcher.ErrUnsupported) {
 				t.Errorf("Preprocess(%v) = %v, %v, want ErrUnsupported", product, theCard, err)
 			}
 		})

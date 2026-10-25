@@ -18,7 +18,7 @@ import (
 
 	"github.com/mtgban/simplecloud"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // concurrentDownloads matches what the scraping tools ask B2 for: the
@@ -69,11 +69,11 @@ func b2Credentials() (id, key string) {
 // Read opens the datastore the path names and reads it as the game's
 // datastore, handing back the backend. The game has to be
 // registered by the binary, the way its own package's blank import does.
-func Read(game mtgmatcher.Game, path string) (*mtgmatcher.Backend, error) {
+func Read(game matcher.Game, path string) (*matcher.Backend, error) {
 	reader, err := Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer reader.Close()
-	return mtgmatcher.Open(game, reader)
+	return matcher.Open(game, reader)
 }

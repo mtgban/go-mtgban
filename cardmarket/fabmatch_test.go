@@ -5,9 +5,9 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 // fabDatastore is the published Flesh and Blood datastore cut down to the
@@ -34,7 +34,7 @@ const fabDatastore = `{"data": {
 }}`
 
 // loadFabDatastore reads the cut-down datastore the matcher answers from.
-func loadFabDatastore(t *testing.T) *mtgmatcher.Backend {
+func loadFabDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	return datastoreBackend(t, "fleshandblood", fabDatastore)
 }

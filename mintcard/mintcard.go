@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -29,11 +29,11 @@ type MTGMintCard struct {
 
 	skusData tcgplayer.SKUMap
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 }
 
 // NewScraper returns a scraper.
-func NewScraper(b *mtgmatcher.Backend) *MTGMintCard {
+func NewScraper(b *matcher.Backend) *MTGMintCard {
 	mint := MTGMintCard{}
 	mint.backend = b
 	mint.inventory = mtgban.InventoryRecord{}
@@ -50,7 +50,7 @@ func (mint *MTGMintCard) printf(format string, a ...any) {
 // onlyTheList reports whether err is an aliasing error whose candidates are
 // all The List printings.
 func (mint *MTGMintCard) onlyTheList(err error) bool {
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if !errors.As(err, &alias) || len(alias.Dupes) == 0 {
 		return false
 	}
@@ -66,8 +66,8 @@ func (mint *MTGMintCard) onlyTheList(err error) bool {
 // soldInFinish answers an aliasing error with the one candidate sold in the
 // finish the listing names, and returns "" when none or several are, or when
 // the listing is etched.
-func (mint *MTGMintCard) soldInFinish(theCard *mtgmatcher.InputCard, err error) string {
-	var alias *mtgmatcher.AliasingError
+func (mint *MTGMintCard) soldInFinish(theCard *matcher.InputCard, err error) string {
+	var alias *matcher.AliasingError
 	if theCard.IsEtched() || !errors.As(err, &alias) {
 		return ""
 	}
@@ -88,15 +88,15 @@ func (mint *MTGMintCard) soldInFinish(theCard *mtgmatcher.InputCard, err error) 
 // lumpedArts reports whether err is an aliasing error over several arts of
 // one basic land in one set, for a listing that gave no number: one product
 // stocking every art of a basic names none of them.
-func (mint *MTGMintCard) lumpedArts(card Card, theCard *mtgmatcher.InputCard, err error) bool {
-	var alias *mtgmatcher.AliasingError
+func (mint *MTGMintCard) lumpedArts(card Card, theCard *matcher.InputCard, err error) bool {
+	var alias *matcher.AliasingError
 	if !errors.As(err, &alias) || len(alias.Dupes) == 0 || card.Number != "" || theCard.Variation != "" {
 		return false
 	}
 	setCode := ""
 	for _, probe := range alias.Probe() {
 		co, uuidErr := mint.backend.GetUUID(probe)
-		if uuidErr != nil || !mtgmatcher.Equals(co.Name, theCard.Name) || !slices.Contains(co.Supertypes, "Basic") {
+		if uuidErr != nil || !matcher.Equals(co.Name, theCard.Name) || !slices.Contains(co.Supertypes, "Basic") {
 			return false
 		}
 		if setCode != "" && co.SetCode != setCode {
@@ -129,14 +129,14 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 	if !found {
 		theCard, err := preprocess(mint.backend, card.Name, card.Number, finish, language, edition, setCode)
 		if err != nil {
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if !errors.Is(err, matcher.ErrUnsupported) {
 				mint.printf("%v", err)
 			}
 			return
 		}
 
 		cardID, err = mint.backend.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			return
 		} else if err != nil {
 			// Skip errors on tokens
@@ -221,13 +221,13 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 
 // logRefusal reports a listing that matched no printing, with the candidates
 // of an aliasing error.
-func (mint *MTGMintCard) logRefusal(card Card, theCard *mtgmatcher.InputCard, err error, finish, language, edition, setCode, link string) {
+func (mint *MTGMintCard) logRefusal(card Card, theCard *matcher.InputCard, err error, finish, language, edition, setCode, link string) {
 	mint.printf("%v", err)
 	mint.printf("%q", theCard)
 	mint.printf("%s|%s|%s|%s|%s|%s|%d", card.Name, card.Number, finish, language, edition, setCode, card.TCGplayerID)
 	mint.printf("%s", link)
 
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if errors.As(err, &alias) {
 		for _, probe := range alias.Probe() {
 			candidate, _ := mint.backend.GetUUID(probe)
@@ -352,7 +352,7 @@ func (mint *MTGMintCard) Buylist() mtgban.BuylistRecord {
 	return mint.buylist
 }
 
-func grading(b *mtgmatcher.Backend, cardID string, price float64) map[mtgban.Condition]float64 {
+func grading(b *matcher.Backend, cardID string, price float64) map[mtgban.Condition]float64 {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil
@@ -398,6 +398,6 @@ func (mint *MTGMintCard) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mint.inventoryDate
 	info.BuylistTimestamp = &mint.buylistDate
 	info.CreditMultiplier = 1.1
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

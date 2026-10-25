@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // withGameDatastore reads a game's datastore for the test, from the variable
 // naming it. The test is skipped where the run carries no such file.
-func withGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatcher.Backend {
+func withGameDatastore(t *testing.T, game matcher.Game, env string) *matcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {

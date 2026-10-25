@@ -110,7 +110,7 @@ Order: Portal `b`-suffix override → lettered prerelease (`PRE_..b`) → Duel
 Decks: Anthology → `promoShelfPrintings` (sku-keyed, closed table) →
 `ScryfallID` then `TCGPlayerID` through `idContradictsProduct` (with
 `resalePrinting` applied to a surviving id) → WAR Japanese planeswalker /
-`PP_` promo-pack fixups → generic `preprocess` + `mtgmatcher.Match` wording
+`PP_` promo-pack fixups → generic `preprocess` + `matcher.Match` wording
 fallback.
 
 **`idContradictsProduct`** is the general defense - a resolved id is
@@ -145,7 +145,7 @@ SEA143's id) on the wording path. SCG files one id on a card's plain sku and
 on its marked one ("HNT-155" and "HNT2-155"), so an unmarked sku whose id
 lands on a treatment is left to the wording too (`fabUnmarkedTreatment`).
 Otherwise resolution is sku- and wording-driven, via `fabMatch` trying the
-sku's own numbers (most specific first) against `mtgmatcher.Match`. Four
+sku's own numbers (most specific first) against `matcher.Match`. Four
 steers (`fabSkuPrinting`) run on a successful match or an id landing, each
 closing a *different* shape of "two products, one number, nothing else says
 which is which":
@@ -206,7 +206,7 @@ plus "(JP Exclusive)" or "(CS Exclusive)" first (`lorcanaExclusives`), and
 The `tcgplayer_id` of a signature (`s`) sku names the overnumbered card it
 signs, so the sku-number check sends it to the wording, which lands the
 signature. Outside the `PRM` shelf the sku's set segment has to be the
-printing's set too. Otherwise straight `mtgmatcher.Match` on name + set +
+printing's set too. Otherwise straight `matcher.Match` on name + set +
 number + foil. The catalog's game name is "Riftbound: League of Legends
 TCG"; `gameFromCatalog` also takes the bare "Riftbound", both by exact
 match.
@@ -355,7 +355,7 @@ a different method, its own section above):
   it's sold as.
 - **Aurora's artist field, until republished.** `fabCreditedTwin` reads
   `Card.Artist`, which `datastore-gen@698813b` now populates for FaB and
-  `mtgmatcher/fleshandblood@4f21ab43` now reads - but CI's pinned datastore
+  `matcher/fleshandblood@4f21ab43` now reads - but CI's pinned datastore
   is whatever's currently published to B2, and republishing that is
   someone's deliberate call, not this scraper's. Until it happens, the
   steer is a safe no-op (`Artist == ""` on both candidates never matches

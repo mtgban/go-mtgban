@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	"github.com/mtgban/go-mtgban/matcher"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 // TestPokemonFinishCell pins the projection every real finish name collapses
@@ -43,13 +43,13 @@ func TestPokemonFinishCell(t *testing.T) {
 var (
 	pokemonBackendOnce sync.Once
 	pokemonBackendErr  error
-	pokemonBackend     *mtgmatcher.Backend
+	pokemonBackend     *matcher.Backend
 )
 
 // loadPokemonBackend installs the real Pokemon datastore POKEMON_PATH
 // names, once per test binary run, for the tests below that need real
 // finish siblings rather than synthetic ones.
-func loadPokemonBackend(t *testing.T) *mtgmatcher.Backend {
+func loadPokemonBackend(t *testing.T) *matcher.Backend {
 	t.Helper()
 	pokemonBackendOnce.Do(func() {
 		path := os.Getenv("POKEMON_PATH")
@@ -75,7 +75,7 @@ func loadPokemonBackend(t *testing.T) *mtgmatcher.Backend {
 func TestPokemonFinishPlanTeamRocket(t *testing.T) {
 	b := loadPokemonBackend(t)
 
-	cardID, err := b.Match(&mtgmatcher.InputCard{
+	cardID, err := b.Match(&matcher.InputCard{
 		Name: "Dark Charizard", Edition: "Team Rocket", Variation: "4",
 	})
 	if err != nil {
@@ -119,7 +119,7 @@ func TestPokemonFinishPlanTeamRocket(t *testing.T) {
 func TestPokemonFinishPlanOwnCell(t *testing.T) {
 	b := loadPokemonBackend(t)
 
-	normalID, err := b.Match(&mtgmatcher.InputCard{
+	normalID, err := b.Match(&matcher.InputCard{
 		Name: "Pikachu", Edition: "McDonald's 25th Anniversary Promos", Variation: "25",
 	})
 	if err != nil {
