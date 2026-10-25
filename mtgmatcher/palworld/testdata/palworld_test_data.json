@@ -8,6 +8,14 @@
         "uuid": "716360"
     },
     {
+        "description": "a 2nd Edition reprint is the printing its run names",
+        "input": {
+            "name": "Rooby - Brave Sparks",
+            "variant": "EBP01-011 2nd Edition"
+        },
+        "uuid": "ebp01-011_725651"
+    },
+    {
         "description": "a number answers without an edition",
         "input": {
             "name": "Suzaku - Hellfire Wings",
@@ -32,12 +40,36 @@
         "uuid": "716343"
     },
     {
+        "description": "and beside a parallel's tail",
+        "input": {
+            "name": "Suzaku - Hellfire Wings",
+            "variant": "EBP01-002SP 2nd Edition"
+        },
+        "uuid": "ebp01-002sp_725737_foil"
+    },
+    {
         "description": "and its super parallel",
         "input": {
             "name": "Suzaku - Hellfire Wings",
             "variant": "EBP01-002SP"
         },
         "uuid": "ebp01-002sp_713884_foil"
+    },
+    {
+        "description": "and so it is where the run rides in the name",
+        "input": {
+            "name": "Rooby - Brave Sparks (2nd Edition)",
+            "variant": "EBP01-011"
+        },
+        "uuid": "ebp01-011_725651"
+    },
+    {
+        "description": "negative: a 2nd Edition of a card printed in none",
+        "input": {
+            "name": "Jolthog - Shocking Yet Innocent",
+            "variant": "ETD01-002 2nd Edition"
+        },
+        "error": "unknown variant"
     },
     {
         "description": "negative: a name the catalog does not carry",

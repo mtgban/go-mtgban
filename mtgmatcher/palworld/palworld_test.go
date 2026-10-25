@@ -92,7 +92,8 @@ func TestPlainNumberIsPlain(t *testing.T) {
 // TestNumbersAreUnique pins what identifies a printing in this game. Unlike
 // the other Bandai-shaped games, a parallel is numbered apart from the card
 // it parallels rather than sharing its number under a different rarity, so
-// a number names one product and the rules never have to tier.
+// a number names one product but for a reprint run, which its promo type
+// tells apart, and the rules never have to tier.
 func TestNumbersAreUnique(t *testing.T) {
 	b := loadBackend(t)
 
@@ -102,7 +103,7 @@ func TestNumbersAreUnique(t *testing.T) {
 		if co.Sealed || co.Number == "" {
 			continue
 		}
-		key := co.SetCode + "|" + co.Number
+		key := strings.Join(append([]string{co.SetCode, co.Number}, co.PromoTypes...), "|")
 		words := strings.Join(append([]string{co.Name, co.Rarity}, co.PromoTypes...), "|")
 		// The finishes of one product fold onto the product: the uuid of
 		// its plain printing where it has one, the foil's otherwise.

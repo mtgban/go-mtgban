@@ -11,12 +11,13 @@ import (
 )
 
 // Rules implements mtgmatcher.GameRules for Palworld. A card is identified
-// by name + collector number alone: this game numbers a parallel printing
-// apart from the card it parallels, the rarity's code being the number's
-// tail, so no two printings of the game share a number. What the rules have
-// to do is read that tail out of a storefront's wording where the number
-// was written without it - TCGplayer names the products that way too,
-// "Grizzbolt - Rumbling Tank (TSR)" for ETD01-001TSR.
+// by name + collector number: this game numbers a parallel printing apart
+// from the card it parallels, the rarity's code being the number's tail.
+// What the rules have to do is read that tail out of a storefront's wording
+// where the number was written without it - TCGplayer names the products
+// that way too, "Grizzbolt - Rumbling Tank (TSR)" for ETD01-001TSR. Only a
+// reprint run, such as BP01's 2nd Edition, shares a number with the
+// original, and its promo type tells the two apart.
 type Rules struct{ mtgmatcher.DefaultRules }
 
 // fullNumberRe matches the game's collector number shapes, the rarity tail
@@ -193,7 +194,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if saysWord(inCard.Variation, "Prototype") {
 			return withSet(candidates, palworldPrototypeSet)
 		}
-		return candidates
+		return withPromoTypes(b, candidates, inCard.Variation)
 	}
 
 	run, writtenTail := splitNumber(number)
@@ -208,21 +209,44 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 	candidates = sameRun
 	if len(candidates) == 1 {
-		return candidates
+		return withPromoTypes(b, candidates, inCard.Variation)
 	}
 
 	// A tail written onto the number says which printing outright.
-	if writtenTail != "" {
-		return withTail(candidates, writtenTail)
-	}
 	// Otherwise the wording may name one beside the number, by the code or
-	// by the rarity it stands for.
-	if tail := tailSaid(inCard.Variation); tail != "" {
-		return withTail(candidates, tail)
+	// by the rarity it stands for, and saying nothing means the plain card:
+	// the parallels are the printings a storefront names.
+	tail := writtenTail
+	if tail == "" {
+		tail = tailSaid(inCard.Variation)
 	}
-	// Saying nothing means the plain card: the parallels are the printings
-	// a storefront names.
-	return withTail(candidates, "")
+	return withPromoTypes(b, withTail(candidates, tail), inCard.Variation)
+}
+
+// withPromoTypes keeps the printings wearing a promo type the wording names,
+// and nothing where no candidate wears it, as withTail treats a tail: a
+// "2nd Edition" listing is not the original's to price. A wording naming
+// none keeps the printings wearing none, a reprint run being the printing a
+// storefront names, and leaves alone a candidate set it settles neither way.
+func withPromoTypes(b *mtgmatcher.Backend, cards []mtgmatcher.Card, wording string) []mtgmatcher.Card {
+	var said []string
+	for _, promoType := range b.AllPromoTypes {
+		if mtgmatcher.SlugDescribes(wording, promoType) {
+			said = append(said, promoType)
+		}
+	}
+	var out []mtgmatcher.Card
+	for _, card := range cards {
+		if len(said) > 0 && slices.ContainsFunc(said, func(promoType string) bool { return slices.Contains(card.PromoTypes, promoType) }) {
+			out = append(out, card)
+		} else if len(said) == 0 && len(card.PromoTypes) == 0 {
+			out = append(out, card)
+		}
+	}
+	if len(said) == 0 && len(out) == 0 {
+		return cards
+	}
+	return out
 }
 
 // withTail keeps the candidates whose number ends in the given rarity code,
