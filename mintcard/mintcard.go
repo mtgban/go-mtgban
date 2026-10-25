@@ -62,6 +62,28 @@ func (mint *MTGMintCard) onlyTheList(err error) bool {
 	return true
 }
 
+// soldInFinish answers an aliasing error with the one candidate sold in the
+// finish the listing names, and returns "" when none or several are, or when
+// the listing is etched.
+func (mint *MTGMintCard) soldInFinish(theCard *mtgmatcher.InputCard, err error) string {
+	var alias *mtgmatcher.AliasingError
+	if theCard.IsEtched() || !errors.As(err, &alias) {
+		return ""
+	}
+	found := ""
+	for _, probe := range alias.Probe() {
+		co, uuidErr := mint.backend.GetUUID(probe)
+		if uuidErr != nil || co.Foil != theCard.Foil || co.Etched {
+			continue
+		}
+		if found != "" {
+			return ""
+		}
+		found = probe
+	}
+	return found
+}
+
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
 	cond, err := mtgban.ParseCondition(condition)
 	if err != nil {
@@ -103,20 +125,11 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			if setCode == "MYS" && theCard.Variation == "" && mint.onlyTheList(err) {
 				return
 			}
-			mint.printf("%v", err)
-			mint.printf("%q", theCard)
-			mint.printf("%s|%s|%s|%s|%s|%s|%d", card.Name, card.Number, finish, language, edition, setCode, card.TCGplayerID)
-			mint.printf("%s", link)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mint.backend.GetUUID(probe)
-					mint.printf("- %s", card)
-				}
+			cardID = mint.soldInFinish(theCard, err)
+			if cardID == "" {
+				mint.logRefusal(card, theCard, err, finish, language, edition, setCode, link)
+				return
 			}
-			return
 		}
 	}
 
@@ -176,6 +189,23 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 					mint.printf("%v", err)
 				}
 			}
+		}
+	}
+}
+
+// logRefusal reports a listing that matched no printing, with the candidates
+// of an aliasing error.
+func (mint *MTGMintCard) logRefusal(card Card, theCard *mtgmatcher.InputCard, err error, finish, language, edition, setCode, link string) {
+	mint.printf("%v", err)
+	mint.printf("%q", theCard)
+	mint.printf("%s|%s|%s|%s|%s|%s|%d", card.Name, card.Number, finish, language, edition, setCode, card.TCGplayerID)
+	mint.printf("%s", link)
+
+	var alias *mtgmatcher.AliasingError
+	if errors.As(err, &alias) {
+		for _, probe := range alias.Probe() {
+			candidate, _ := mint.backend.GetUUID(probe)
+			mint.printf("- %s", candidate)
 		}
 	}
 }

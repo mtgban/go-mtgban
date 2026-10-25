@@ -2,7 +2,9 @@ package mintcard
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -269,5 +271,54 @@ func TestBuildSkuToUUID(t *testing.T) {
 	}
 	if len(got) != len(want) {
 		t.Errorf("buildSku2UUID() = %v, want exactly %v", got, want)
+	}
+}
+
+// TestProcessEntryAliasing pins how a listing that matches several printings
+// is settled: the finish it is sold in picks between a nonfoil promo and a
+// foil-only one of the same card, and a foil listing both candidates are sold
+// in stays refused with its log line well formed.
+func TestProcessEntryAliasing(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		name, finish, edition, code string
+		wantSet, wantNumber         string
+		wantRefused                 bool
+	}{
+		{"Counterspell (MagicFest)", "Regular", "Promo: MagicFest", "PMF", "PF24", "1", false},
+		{"Lightning Bolt (Magicfest)", "Regular", "Promo: MagicFest", "PMF", "PF19", "1", false},
+		{"Counterspell (MagicFest)", "Foil", "Promo: MagicFest", "PMF", "", "", true},
+	} {
+		mint := NewScraper(b)
+		var logged []string
+		mint.logCallback = func(format string, a ...any) {
+			logged = append(logged, fmt.Sprintf(format, a...))
+		}
+		card := Card{ID: "1", Name: tt.name, Quantity: 1, Price: "1.00", BuyPrice: "0.50"}
+		mint.processEntry(nil, card, "NM", tt.finish, "English", tt.edition, tt.code, "1")
+
+		if tt.wantRefused != (len(logged) > 0) {
+			t.Errorf("processEntry(%q, %s) logged %v, want refused = %v", tt.name, tt.finish, logged, tt.wantRefused)
+		}
+		for _, line := range logged {
+			if strings.Contains(line, "%!") {
+				t.Errorf("processEntry(%q) logged a malformed line %q", tt.name, line)
+			}
+		}
+		if tt.wantSet == "" {
+			if len(mint.inventory)+len(mint.buylist) != 0 {
+				t.Errorf("processEntry(%q, %s) priced %v %v, want nothing", tt.name, tt.finish, mint.inventory, mint.buylist)
+			}
+			continue
+		}
+		for id := range mint.inventory {
+			co, _ := b.GetUUID(id)
+			if co.SetCode != tt.wantSet || co.Number != tt.wantNumber {
+				t.Errorf("processEntry(%q, %s) = %s %s, want %s %s", tt.name, tt.finish, co.SetCode, co.Number, tt.wantSet, tt.wantNumber)
+			}
+		}
+		if len(mint.inventory) != 1 || len(mint.buylist) != 1 {
+			t.Errorf("processEntry(%q, %s) priced %d sell and %d buy ids, want one each", tt.name, tt.finish, len(mint.inventory), len(mint.buylist))
+		}
 	}
 }
