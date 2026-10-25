@@ -504,12 +504,15 @@ func spelledSet(b *mtgmatcher.Backend, displayName string) string {
 // only thing keeping them off the shelf - and the storefront zero-pads
 // where the datastore does not, which the matcher already reads through.
 //
-// Only a letter-led code may leave the set size out, which is why the two
+// The Worlds bundle promos space the letters from the number, "(T1S 003/005)",
+// and are read as one code, T1S003, by joining whatever groups matched.
+//
+// Only a letter-led code may leave the set size out, which is why the
 // shapes are spelled as separate alternatives rather than one with the size
 // made optional. A group of bare digits standing alone is not a number: the
 // unique listings end their name with the copy's own id in parentheses, and
 // reading that as a collector number would answer a card nobody listed.
-var riftboundNumber = regexp.MustCompile(`\(([A-Z]+\d+[a-z]?\*?)(?:/\d+)?\)|\((\d+[a-z]?\*?)/\d+\)`)
+var riftboundNumber = regexp.MustCompile(`\(([A-Z]+\d+[a-z]?\*?)(?:/\d+)?\)|\((\d+[a-z]?\*?)/\d+\)|\(([A-Z]+\d*[A-Z]+) (\d+)/\d+\)`)
 
 // riftboundTag is a parenthetical qualifier a riftbound display name carries
 // ahead of its collector number, like "(Signature)" or "(Champion)".
@@ -602,10 +605,12 @@ func preprocessRiftbound(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.
 		return nil, errors.New("no collector number in display name")
 	}
 
-	// Whichever alternative matched left the other's group unset
-	start, end := loc[2], loc[3]
-	if start < 0 {
-		start, end = loc[4], loc[5]
+	// The alternatives that did not match leave their groups unset
+	var number string
+	for i := 2; i+1 < len(loc); i += 2 {
+		if loc[i] >= 0 {
+			number += product.DisplayName[loc[i]:loc[i+1]]
+		}
 	}
 
 	head := product.DisplayName[:loc[0]]
@@ -615,7 +620,7 @@ func preprocessRiftbound(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.
 		cardName = cardName[:idx]
 	}
 
-	variation := product.DisplayName[start:end]
+	variation := number
 	for _, tag := range riftboundTag.FindAllStringSubmatch(head, -1) {
 		variation += " " + tag[1]
 	}
