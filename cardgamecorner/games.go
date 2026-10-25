@@ -46,7 +46,8 @@ var shelfSets = map[mtgmatcher.Game]map[string]string{
 		"Special Tournaments Promos": "OP-PR",
 	},
 	mtgmatcher.GamePokemon: {
-		"Base": "BS",
+		"Base":              "BS",
+		"30th Celebrations": "30C",
 	},
 	mtgmatcher.GameYuGiOh: {
 		"Legend of Blue Eyes White Dragon REPRINT 25th Anniversary Edition": "LOB-EN-23050",
@@ -121,6 +122,10 @@ func vendorName(game mtgmatcher.Game, name string) string {
 	}
 	return fixed
 }
+
+// deltaSpeciesRe matches the words a Delta Species name carries after its
+// Pokemon, which may be cut short and may be followed by an attack.
+var deltaSpeciesRe = regexp.MustCompile(` d Delta Species?`)
 
 // riftboundVersionRe matches the "(V.2 - Showcase)" a Riftbound name ends in,
 // which the number already says: a showcase is "193a" beside the rare's
@@ -252,7 +257,7 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		// The storefront spells the δ of a Delta Species card as a "d"
 		// before the words it stands for, which the catalog files as the
 		// variant of the plain name instead
-		name = strings.TrimSuffix(strings.TrimSpace(name), " d Delta Species")
+		name = deltaSpeciesRe.ReplaceAllString(strings.TrimSpace(name), "")
 		prefix, found := promoNumberPrefixes[card.Edition]
 		if found && !strings.HasPrefix(number, prefix) {
 			number = prefix + number
