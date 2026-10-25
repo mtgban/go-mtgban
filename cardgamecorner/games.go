@@ -114,6 +114,9 @@ var gameNames = map[mtgmatcher.Game]map[string]string{
 		"Balu - Lively Bear": "Baloo - Fun-Loving Bear",
 		"Miss Bianca - International Rescue Aid Society Age": "Miss Bianca - Rescue Aid Society Agent",
 	},
+	mtgmatcher.GamePokemon: {
+		"Target Whistle Team Flare Gear": "Target Whistle",
+	},
 	mtgmatcher.GameRiftbound: {
 		"Corina Veraza":        "Corinna Veraza",
 		"lascylla":             "Iascylla",
