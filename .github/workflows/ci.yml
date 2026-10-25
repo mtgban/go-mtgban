@@ -529,7 +529,7 @@ jobs:
         env:
           POKEMON_PATH: "${{ github.workspace }}/${{ needs.cache-pokemon.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/pokemon/... ./vegassingles/... ./coolstuffinc/... ./cardmarket/... ./internal/vocabulary/... -v
+          go test ./mtgmatcher/pokemon/... ./vegassingles/... ./coolstuffinc/... ./cardmarket/... ./cardgamecorner/... ./internal/vocabulary/... -v
 
   # The one check master's branch protection requires, kept as a name rather
   # than as work: it fans the per-game jobs back into a single verdict. It has
