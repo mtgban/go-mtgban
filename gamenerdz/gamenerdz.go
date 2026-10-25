@@ -304,6 +304,12 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 			cardID, err = idCard, nil
 		}
 	}
+	if err != nil && gn.backend.Game != mtgmatcher.GameMagic {
+		tied := finishTiebreak(gn.backend, product, err)
+		if tied != "" {
+			cardID, err = tied, nil
+		}
+	}
 	if err == nil && gn.backend.Game == mtgmatcher.GameOnePiece && onePieceCodeless(product.DisplayName) && !landedOnLeader(gn.backend, cardID) {
 		err = errors.New("no card code in display name, and no promo leader answers it")
 	}
@@ -342,6 +348,58 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 		return "", nil
 	}
 	return cardID, nil
+}
+
+// finishTiebreak settles an aliasing refusal between printings that differ
+// only in finish, or in a promo the wording does not name: the listing's own
+// finish keeps one of them. It answers when exactly one candidate is printed
+// in that finish and either every candidate sits at one set and number, or
+// the survivor is in the set the storefront shelved the product under; a
+// plain Base Set Seel whose body says Shadowless is not one.
+func finishTiebreak(b *mtgmatcher.Backend, product GNProduct, aliasErr error) string {
+	var alias *mtgmatcher.AliasingError
+	if !errors.As(aliasErr, &alias) {
+		return ""
+	}
+	finish := product.SelectedFinish
+	if finish == "" {
+		finish = "Normal"
+	}
+	want := mtgmatcher.FinishSlug(finish)
+
+	var kept *mtgmatcher.CardObject
+	keptID := ""
+	sameSpot := true
+	var first *mtgmatcher.CardObject
+	for _, id := range alias.Probe() {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			return ""
+		}
+		if first == nil {
+			first = co
+		} else if co.SetCode != first.SetCode || co.Number != first.Number {
+			sameSpot = false
+		}
+		if co.Finish != want {
+			continue
+		}
+		if kept != nil {
+			return ""
+		}
+		kept, keptID = co, id
+	}
+	if kept == nil {
+		return ""
+	}
+	if sameSpot {
+		return keptID
+	}
+	shelf, err := b.GetSetByName(product.ProductData.SetName)
+	if err != nil || !strings.EqualFold(shelf.Code, kept.SetCode) {
+		return ""
+	}
+	return keptID
 }
 
 // mintedRipple reports a foil listing that landed the ripple foil star twin

@@ -25,6 +25,11 @@ Four guards keep the buylist rules from widening:
 - The sized-number retry runs only after a refusal, on a dashed listing, and is
   taken only when it lands the shelf's own set at that number. Stripping the
   size always lost five Miscellaneous Cards cosmos promos.
+- The finish tiebreak (every game but Magic) runs only on an aliasing refusal,
+  and answers only when one candidate has the listing's finish and either all
+  share a set and number or it is the shelf's own set. Without the shelf test
+  `Seel 41`, whose body says Platinum, would land the plain Base Set card
+  instead of the Shadowless one.
 
 Converting every `[...]` to `(...)` is wrong as well: `Dragapult - 091/192
 [Rebel Clash]` names an origin set, so only `[Winner]` is read.
