@@ -11,6 +11,7 @@ new ADR that supersedes it rather than rewriting history.
 | [0002](0002-global-immutable-matcher-backend.md) | Global, immutable-after-load, unsynchronized matcher backend | Superseded by ADR-0003, then ADR-0004 |
 | [0003](0003-atomic-backend-snapshots.md) | Atomically publish immutable backend snapshots | Superseded by ADR-0004 |
 | [0004](0004-localized-matcher-and-scraper-registry.md) | No global state in mtgmatcher; scrapers build on the datastore they are handed | Accepted |
+| [0005](0005-matcher-package-name.md) | The matcher package is named `matcher` | Accepted |
 
 ## Format
 
