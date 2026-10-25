@@ -126,10 +126,10 @@ type ArbitEntry struct {
 
 	// The higher the number the better the arbit is. Using this formula
 	// Profitability Index (PI) =
-	//   (Difference / (Sell Price + k)) * log10(1 + Spread) * sqrt(Units)
+	//   (Difference / (Sell Price + k)) * log10(1 + Spread) * Units^(1/4)
 	// where k is ProfitabilityConstant, a denominator-stabilizing constant
 	// that keeps cheap cards from dominating (reference value 10; configurable
-	// via ArbitOpts, defaults to 0). The sqrt(Units) term is applied only when
+	// via ArbitOpts, defaults to 0). The Units^(1/4) term is applied only when
 	// Units > 1, and the index is 0 when Spread <= 0.
 	Profitability float64
 }
@@ -353,7 +353,7 @@ func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price floa
 	if spread > 0 {
 		profitability = (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
 		if qty > 1 {
-			profitability *= math.Sqrt(float64(qty))
+			profitability *= math.Pow(float64(qty), 0.25)
 		}
 	}
 	if profitability < r.minProfitability {
