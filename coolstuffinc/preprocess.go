@@ -1287,6 +1287,14 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		}
 	case "Unstable":
 		variant = cleanVar
+	case "Prerelease Promo":
+		// Without a stamp the card is the booster printing its image names.
+		if mtgmatcher.Contains(card.Notes, "Non-Stamped") {
+			retry := buylistImageNumber(b, cardName, "", isFoil, language, card.Image)
+			if retry != nil {
+				return retry, nil
+			}
+		}
 	case "Mystery Booster Reprints":
 		// Keep the cards that strictly need extra information
 		switch cardName {
