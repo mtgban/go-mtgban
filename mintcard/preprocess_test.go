@@ -276,8 +276,9 @@ func TestBuildSkuToUUID(t *testing.T) {
 
 // TestProcessEntryAliasing pins how a listing that matches several printings
 // is settled: the finish it is sold in picks between a nonfoil promo and a
-// foil-only one of the same card, and a foil listing both candidates are sold
-// in stays refused with its log line well formed.
+// foil-only one of the same card, a foil listing both candidates are sold in
+// stays refused with its log line well formed, and a basic land stocked
+// without a number is skipped quietly.
 func TestProcessEntryAliasing(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {
@@ -288,6 +289,8 @@ func TestProcessEntryAliasing(t *testing.T) {
 		{"Counterspell (MagicFest)", "Regular", "Promo: MagicFest", "PMF", "PF24", "1", false},
 		{"Lightning Bolt (Magicfest)", "Regular", "Promo: MagicFest", "PMF", "PF19", "1", false},
 		{"Counterspell (MagicFest)", "Foil", "Promo: MagicFest", "PMF", "", "", true},
+		{"Mountain", "Regular", "Avatar: The Last Airbender Eternal", "TLE", "", "", false},
+		{"Plains", "Regular", "Avatar: The Last Airbender Eternal", "TLE", "", "", false},
 	} {
 		mint := NewScraper(b)
 		var logged []string
