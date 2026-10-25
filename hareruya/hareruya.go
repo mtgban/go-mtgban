@@ -299,7 +299,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 		return err
 	}
 	if len(sent) < numFound {
-		ha.printf("Set %s: %d listings past the cap are in no color, reading it by foil flag", cardSet, numFound-len(sent))
+		ha.printf("Set %s: %d listings past the cap are still unread after the colors, reading it by foil flag", cardSet, numFound-len(sent))
 		err = ha.walkFilters(ctx, channel, cardSet, foilFilters, sent)
 		if err != nil {
 			return err
