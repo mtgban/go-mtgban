@@ -55,7 +55,11 @@ did - `datastore-gen` grew the field, not this scraper).
 SCG's own `scryfall_id` / `tcgplayer_id` are the fast path: `resolveProductID`
 tries them first (after a handful of sku-driven steers that have to run
 *before* the identifiers, described below), and when the id is present and
-un-contradicted, it resolves directly with no wording involved.
+un-contradicted, it resolves directly with no wording involved. The id is
+read in the finish the product names (`matchVendorID`: `MatchIDFinish` with
+FaB's print run and treatment or Lorcana's rainbow foil, Magic's foil and
+etched flags otherwise). Outside Magic the printing it lands on also has to
+carry the sku's own number (`carriesSkuNumber`), or the wording decides.
 
 The catch: **those ids are sometimes wrong, and sometimes shared between two
 genuinely different products.** A League Tokens promo carries the *set
@@ -134,12 +138,17 @@ same set + name so it can't wander.
 
 ### Flesh and Blood
 
-FaB carries **no identifiers at all** (`scryfall_id`/`tcgplayer_id` are
-always empty) - resolution is 100% sku- and wording-driven, via `fabMatch`
-trying the sku's own numbers (most specific first) against
-`mtgmatcher.Match`. Four steers run on a successful match, each closing a
-*different* shape of "two products, one number, nothing else says which is
-which":
+FaB carries a `tcgplayer_id` on almost every product. It lands through the
+id loop when the printing carries one of the sku's own numbers, read the way
+`fabNumbers` reads them, which keeps SCG's pitch swaps (SEA142 filed under
+SEA143's id) on the wording path. SCG files one id on a card's plain sku and
+on its marked one ("HNT-155" and "HNT2-155"), so an unmarked sku whose id
+lands on a treatment is left to the wording too (`fabUnmarkedTreatment`).
+Otherwise resolution is sku- and wording-driven, via `fabMatch` trying the
+sku's own numbers (most specific first) against `mtgmatcher.Match`. Four
+steers (`fabSkuPrinting`) run on a successful match or an id landing, each
+closing a *different* shape of "two products, one number, nothing else says
+which is which":
 
 | steer | what it fixes | keyed on |
 |---|---|---|
@@ -194,8 +203,11 @@ plus "(JP Exclusive)" or "(CS Exclusive)" first (`lorcanaExclusives`), and
 
 ### Riftbound
 
-No known collision shapes yet. Straight `mtgmatcher.Match` on name +
-set + number + foil. The catalog's game name is "Riftbound: League of
+The `tcgplayer_id` of a signature (`s`) sku names the overnumbered card it
+signs, so the sku-number check sends it to the wording, which lands the
+signature. Outside the `PRM` shelf the sku's set segment has to be the
+printing's set too. Otherwise straight `mtgmatcher.Match` on name + set + number +
+foil. The catalog's game name is "Riftbound: League of
 Legends TCG"; `gameFromCatalog` also takes the bare "Riftbound", both by
 exact match.
 
