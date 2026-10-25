@@ -431,7 +431,7 @@ func finishTiebreak(b *mtgmatcher.Backend, product GNProduct, aliasErr error) st
 // letteredOnly reports a listing written over a bare number whose set prints
 // that card only as two or more lettered variants of the number. The
 // storefront lists such a parent beside its lettered products, and it names
-// none of them.
+// none of them. A promo pack "p" or prerelease "s" is not an art letter.
 func letteredOnly(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) bool {
 	number := strings.TrimLeft(card.Variation, "0")
 	if number == "" || strings.Trim(number, "0123456789") != "" {
@@ -446,7 +446,7 @@ func letteredOnly(b *mtgmatcher.Backend, card *mtgmatcher.InputCard) bool {
 		if co.Number == number {
 			return false
 		}
-		if strings.TrimRight(co.Number, "abcdefghijklmnopqrstuvwxyz") == number {
+		if strings.TrimRight(co.Number, "abcdefghijklmnoqrtuvwxyz") == number {
 			lettered++
 		}
 	}
