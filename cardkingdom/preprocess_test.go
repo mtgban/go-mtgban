@@ -57,13 +57,45 @@ var PriceListTest = `
       "variation": "Commander's Bundle Promo",
       "edition": "Promotional",
       "is_foil": "false"
+    },
+    {
+      "id": 312764,
+      "sku": "PLG21-001-JP",
+      "scryfall_id": "2c0edd02-181e-4077-9829-1c1ed5035eeb",
+      "url": "mtg/promotional/orb-of-dragonkind-001-love-your-lgs-2021-japanese",
+      "name": "Orb of Dragonkind",
+      "variation": "001 - Love Your LGS 2021 - Japanese",
+      "edition": "Promotional",
+      "is_foil": "false"
+    },
+    {
+      "id": 312765,
+      "sku": "PLG21-002-JP",
+      "scryfall_id": "bc9c39d1-1e10-4cd3-a4b1-b6eb7c1a0b65",
+      "url": "mtg/promotional/orb-of-dragonkind-002-love-your-lgs-2021-japanese",
+      "name": "Orb of Dragonkind",
+      "variation": "002 - Love Your LGS 2021 - Japanese",
+      "edition": "Promotional",
+      "is_foil": "false"
+    },
+    {
+      "id": 312766,
+      "sku": "PLG21-003-JP",
+      "scryfall_id": "4a5ae275-5983-45c2-85fc-e87747b2198b",
+      "url": "mtg/promotional/orb-of-dragonkind-003-love-your-lgs-2021-japanese",
+      "name": "Orb of Dragonkind",
+      "variation": "003 - Love Your LGS 2021 - Japanese",
+      "edition": "Promotional",
+      "is_foil": "false"
     }
 ]
 `
 
 var priceListResults = []string{
 	"3b00adaa-962a-5316-9b9d-e12e0284f87f",
-	"b30a3061-ce20-54eb-b25c-7520aa76f8b7",
+	"18441809-3027-5c19-b373-a85a5629aba1",
+	"2b1f73ca-a54d-5735-9404-16b397ca88a3",
+	"12c30aa1-9fcd-542b-a0e8-6d0897c50b76",
 }
 
 func TestPreprocess(t *testing.T) {

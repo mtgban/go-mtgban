@@ -350,6 +350,9 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 			variation += " Bundle"
 		case variation == "Commander's Bundle Promo":
 			edition = strings.TrimPrefix(setCode, "P")
+		case setCode == "PLG21" && strings.Contains(variation, "Japanese"):
+			// The datastore numbers the Japanese Orbs J1-J3, CK 001-003
+			variation = "J" + number
 		}
 	case "Mystery Booster/The List":
 		edition = card.Edition
