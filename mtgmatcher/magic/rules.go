@@ -1203,19 +1203,22 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			case "SLD":
 				skip := false
-				sldNumber := len(b.MatchInSetNumber(inCard.Name, "SLD", mtgmatcher.ExtractNumber(inCard.Variation))) != 0
+				number := mtgmatcher.ExtractNumber(inCard.Variation)
+				sldNumber := len(b.MatchInSetNumber(inCard.Name, "SLD", number)) != 0
 
 				// Iterate on all possible combinations of tags, and skip if a
 				// condition is unmet
 				for _, code := range []string{"SLU", "SLX", "SLC", "SLP"} {
-					// A number the SLD set holds for this name is SLD's
-					if sldNumber {
-						break
+					if len(b.MatchInSet(inCard.Name, code)) == 0 || !hasSecretLairTag(b, inCard, code) {
+						continue
 					}
-					if len(b.MatchInSet(inCard.Name, code)) > 0 && hasSecretLairTag(b, inCard, code) {
-						skip = true
-						break
+					// A number the SLD set holds for this name is SLD's,
+					// unless a tagged set holds it too
+					if sldNumber && len(b.MatchInSetNumber(inCard.Name, code, number)) == 0 {
+						continue
 					}
+					skip = true
+					break
 				}
 
 				// No PLST in SLD
