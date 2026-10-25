@@ -133,6 +133,12 @@ func TestScrapeBuylistFailure(t *testing.T) {
 			if err == nil {
 				t.Fatalf("scrapeBL answered no error with %d entries", len(cgc.buylist))
 			}
+			// A failed search has to be reported as one, not as an
+			// empty buylist
+			failed := strings.Contains(err.Error(), "editions failed to read")
+			if failed != test.searchFails {
+				t.Errorf("scrapeBL error = %v, want failed search %t", err, test.searchFails)
+			}
 			if !cgc.buylistDate.IsZero() {
 				t.Errorf("buylist dated despite %v", err)
 			}
