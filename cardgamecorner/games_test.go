@@ -75,6 +75,12 @@ func TestGameInput(t *testing.T) {
 		},
 		{
 			game:    mtgmatcher.GamePokemon,
+			card:    Card{Name: "Larvitar d Delta Specie (Hide)", Edition: "EX Dragon Frontiers", Number: "52", Rarity: "Common"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Larvitar (Hide)", Edition: "EX Dragon Frontiers", Variation: "52"},
+		},
+		{
+			game:    mtgmatcher.GamePokemon,
 			card:    Card{Name: "Wooloo", Edition: "Sword & Shield: Black Star Promos", Number: "011", Rarity: "Promo"},
 			variant: Variant{Print: "Unl.", Foil: "Reverse Holo"},
 			want:    mtgmatcher.InputCard{Name: "Wooloo", Edition: "Sword & Shield: Black Star Promos", Variation: "SWSH011", Finish: "Reverse Holofoil"},
