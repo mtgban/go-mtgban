@@ -61,6 +61,18 @@ var shelfSets = map[mtgmatcher.Game]map[string]string{
 	},
 }
 
+// classicSet is the one set the catalog files the three Classic collection
+// decks under, which numbers each from 001 and tags it as classicDecks says.
+const classicSet = "CL-23323"
+
+// classicDecks is the tag the catalog gives each deck of the Classic
+// collection.
+var classicDecks = map[string]string{
+	"Pokémon Trading Card Game Classic: Blastoise & Suicune Deck": "CLB",
+	"Pokémon Trading Card Game Classic: Charizard & Ho-Oh Deck":   "CLC",
+	"Pokémon Trading Card Game Classic: Venusaur & Lugia Deck":    "CLV",
+}
+
 // promoNumberPrefixes is the code each Pokemon Black Star promo shelf leaves
 // off its numbers, which the catalog numbers "SWSH011" where the storefront
 // writes "011".
@@ -225,6 +237,17 @@ func losesFirstEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool
 	return co.Finish != mtgmatcher.FinishSlug(mtgmatcher.Run1stEdition)
 }
 
+// classicName is the name a Classic deck card goes by in the catalog, which
+// calls a basic energy "Basic Fire Energy" where the store writes "Fire
+// Energy".
+func classicName(b *mtgmatcher.Backend, name string) string {
+	basic := "Basic " + name
+	if strings.HasSuffix(name, " Energy") && namesACard(b, basic) {
+		return basic
+	}
+	return name
+}
+
 // preprocessGame reads a card of any game but Magic, whose listings name the
 // card, its set and its collector number plainly.
 func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.InputCard, error) {
@@ -235,6 +258,11 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 
 	inCard := gameInput(b.Game, card, index)
 	code, found := shelfSets[b.Game][card.Edition]
+	_, classic := classicDecks[card.Edition]
+	if classic {
+		code, found = classicSet, true
+		inCard.Name = classicName(b, inCard.Name)
+	}
 	oldShelf := b.Game == mtgmatcher.GameYuGiOh && oldShelfRe.MatchString(card.Edition)
 	if oldShelf {
 		if !namesACard(b, inCard.Name) {
@@ -302,6 +330,10 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		}
 		if strings.HasSuffix(name, " Energy") && storeEnergyNumberRe.MatchString(number) {
 			number = ""
+		}
+		deck, found := classicDecks[card.Edition]
+		if found {
+			number = strings.TrimSpace(number + " " + deck)
 		}
 	}
 	return &mtgmatcher.InputCard{
