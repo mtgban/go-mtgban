@@ -171,6 +171,8 @@ func TestPreprocessRiftbound(t *testing.T) {
 		{"Calm Rune (Alternate Art) (R02a) - Spiritforged Foil", "Foil", "Calm Rune", "R02a Alternate Art", true},
 		{"Order Rune (R06c) (R06c) - Riftbound Organized Play Promotional Cards", "Normal", "Order Rune", "R06c", false},
 		{"Ahri - Inquisitive (SP3/006) - Vendetta Foil", "Foil", "Ahri - Inquisitive", "SP3", true},
+		// The Worlds bundle promos space their code, read as one.
+		{"Galio, Indefatigable (T1 Worlds Champion Signature Edition Bundle) (T1S 003/005) - Riftbound Promotional Cards Foil", "Foil", "Galio, Indefatigable", "T1S003 T1 Worlds Champion Signature Edition Bundle", true},
 		// A trailing parenthetical that only carries digits is not the
 		// number: the first group in the name is, and it is read first.
 		{"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil (Unique) (699149)", "Foil", "Teemo - Swift Scout", "263a Alternate Art", true},
