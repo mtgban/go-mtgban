@@ -1,0 +1,483 @@
+// Package pokemon loads a Pokemon datastore.
+//
+// The datastore is built from the TCGplayer catalog dump for category 3,
+// annotated with the tcgdex card database. Identity is the catalog's: every
+// English single product is one card, and the same collector number recurs
+// as several products told apart by the qualifiers TCGplayer decorates their
+// names with.
+//
+// Two axes cross on a Pokemon product and both are priced separately, which
+// is why each entry is one printing of one product rather than one card with
+// flags: the print run (1st Edition, Unlimited) and the foil treatment
+// (Holofoil, Reverse Holofoil). A card exists as Normal and Holofoil, or as
+// 1st Edition Holofoil and Unlimited Holofoil, and TCGplayer prices each
+// crossing on its own sku. Sibling entries share their product's
+// tcgPlayerId, and their ids differ by the finish suffix the builder derives
+// from the printing name alone.
+//
+// Unlike Yu-Gi-Oh, where the print runs are the whole finish vocabulary and
+// foilness never gates anything, here the treatment really is foilness: a
+// storefront's foil flag has to reach the Holofoil printing and not the
+// Normal one. So the flag-driven defaults resolve to the plain printings of
+// each foilness, and the specific names re-key onto the exact crossing.
+package pokemon
+
+import (
+	"cmp"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"slices"
+	"strings"
+	"time"
+
+	"github.com/mtgban/go-mtgban/matcher"
+)
+
+// setTypePromo is what the builder types a set that hands its cards out.
+const setTypePromo = "promo"
+
+// Datastore is the cmd/pokemon output: sets keyed by code, one card entry
+// per priced printing, and the sealed products.
+type Datastore struct {
+	Game   string                  `json:"game"`
+	Sets   map[string]DatastoreSet `json:"sets"`
+	Cards  []DatastoreCard         `json:"cards"`
+	Sealed []DatastoreSealed       `json:"sealed"`
+
+	// Properties orders the values a set lists, one list per property named
+	// in the singular: rarities rarest first, colours in the game's own order.
+	Properties map[string][]string `json:"properties"`
+}
+
+// DatastoreSet is one set as the catalog groups it.
+type DatastoreSet struct {
+	Name         string `json:"name"`
+	ReleaseDate  string `json:"releaseDate"`
+	Abbreviation string `json:"abbreviation,omitempty"`
+	// BaseSetSize is how many cards the set was printed with, the total its
+	// cards print beside their number. It is absent on the pooled sets,
+	// whose cards keep the total of wherever they were first printed and so
+	// agree on none.
+	BaseSetSize int `json:"baseSetSize,omitempty"`
+	// Type is "promo" on the sets that hand their cards out rather than
+	// sell them in packs, and empty on every other.
+	Type string `json:"type,omitempty"`
+	// Symbol is the opaque URL of the mark this set's cards print, when the
+	// datastore builder has one. Its source and URL shape are not part of the
+	// loader contract; absent means the set has no published symbol.
+	Symbol string `json:"symbol,omitempty"`
+}
+
+// DatastoreCard is one printing of one product: a card as the catalog sells
+// it, in one crossing of the print run and the foil treatment.
+type DatastoreCard struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Number  string `json:"number"`
+	SetCode string `json:"setCode"`
+	Rarity  string `json:"rarity"`
+	Type    string `json:"type"`
+
+	// Types are the types a Pokemon prints, ["Fire"] or ["Grass",
+	// "Darkness"], which is what the game has for a colour. A Trainer or an
+	// Energy card has none.
+	Types []string `json:"types,omitempty"`
+
+	// Total is what the card face prints after the number's first slash:
+	// nearly always the set size, the 167 of "082/167", which is what tells
+	// a reprint from its original - Cascoon is 44/130 in Diamond & Pearl
+	// and 44/127 in Platinum. A few faces print something else there, such
+	// as a promo code ("S-P" of "226/S-P") or the rest of a LEGEND pair's
+	// number ("102&100/102" of "099/102&100/102"). A card whose face prints
+	// no total at all - which is most promos - has none, the absence being
+	// as much a fact as the number.
+	Total string `json:"total,omitempty"`
+
+	// Finish is the TCGplayer printing this entry prices, one crossing of
+	// the print run and the foil treatment. Entries sharing everything but
+	// the finish are the same product sold several ways.
+	Finish string `json:"finish"`
+
+	// Variant is the qualifier residue the builder distills from the
+	// product name: empty for most printings, "Full Art", "Staff" or a
+	// World Championship player's name for the others.
+	Variant string `json:"variant,omitempty"`
+
+	// PromoTypes is the same residue as the labels it is made of, which
+	// the joined Variant cannot be read back into: "Full Art Staff" is two
+	// labels, and a query naming either has to reach the printing.
+	PromoTypes []string `json:"promoTypes,omitempty"`
+
+	// Language is what the printing is printed in, where that is not
+	// English: the Pikachu World Collection is one Pikachu printed in
+	// eight languages and sold as eight cards, and the language is what
+	// tells those printings apart. Empty means English, which is what
+	// every other entry is.
+	Language string `json:"language,omitempty"`
+
+	// OriginalReleaseDate is when this printing was handed out, published
+	// only where its set's date does not cover it. The promo shelves are
+	// why: "League & Championship Cards" is one set holding cards given
+	// away from 2006 to 2011, and the shelf is dated 2016. Empty means the
+	// set dates the printing, which is what CardReleaseDate falls back to.
+	OriginalReleaseDate string `json:"originalReleaseDate,omitempty"`
+
+	// Watermark is the mark saying which copy of a collector number this
+	// printing is, rather than what promoted it: the player whose World
+	// Championship deck it came in, the theme deck a promo was packed in
+	// ("Latias" against "Latios"), the set it was reprinted from, the
+	// place a Battle Academy stamp gives it, or the blister a code card
+	// was sold on. Nothing promoted any of them, and for 890 printings the
+	// mark is the whole of what tells one from its siblings.
+	Watermark string `json:"watermark,omitempty"`
+
+	Image         string `json:"image"`
+	ExternalLinks struct {
+		TcgPlayerID int `json:"tcgPlayerId"`
+
+		// TcgdexID is the tcgdex identifier, annotated where the builder
+		// could align the two sources.
+		TcgdexID string `json:"tcgdexId,omitempty"`
+
+		// CardmarketID is the Cardmarket product a stamped promo was minted
+		// from, the only product selling it.
+		CardmarketID int `json:"cardmarketId,omitempty"`
+	} `json:"externalLinks"`
+}
+
+// DatastoreSealed is a sealed product, which carries no printing of its own
+// and hangs off the set that issued it.
+type DatastoreSealed struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	SetCode       string `json:"setCode"`
+	Image         string `json:"image"`
+	ExternalLinks struct {
+		TcgPlayerID int `json:"tcgPlayerId"`
+	} `json:"externalLinks"`
+}
+
+// Load reads a Pokemon datastore from r and returns a Backend for it, or an
+// error when r holds something else. The datastore names its game at the
+// root, and every card carries the identity fields the backend is built
+// from. The collector number is not among them: the catalog sells cards it
+// numbers with nothing at all.
+//
+// It reads the {"meta":...,"data":...} envelope the builders publish, where
+// "data" holds the payload; a bare document reads as empty and is refused.
+func Load(r io.Reader) (*matcher.Backend, error) {
+	var envelope struct {
+		Data Datastore `json:"data"`
+	}
+	if err := json.NewDecoder(r).Decode(&envelope); err != nil {
+		return nil, err
+	}
+	payload := envelope.Data
+	if payload.Game != "pokemon" || len(payload.Sets) == 0 || len(payload.Cards) == 0 {
+		return nil, errors.New("not a Pokemon datastore")
+	}
+	for _, card := range payload.Cards {
+		if card.ID == "" || card.Name == "" || card.Finish == "" {
+			return nil, errors.New("not a Pokemon datastore")
+		}
+	}
+	return payload.newBackend(), nil
+}
+
+// describingPromoTypes keeps the labels worth declaring as tags: the ones a
+// printing's own finish does not already say. The catalog qualifies a name
+// with the treatment it is sold in often enough ("(Cosmos Holo)") that
+// declaring those would fill the tag list with finish names. The card keeps
+// the full list either way, which the matcher still reads to tell sibling
+// printings apart; only the declaration is filtered, the same terms
+// Riftbound carries its number-restating labels on.
+func describingPromoTypes(card *DatastoreCard) []string {
+	sold := matcher.FinishSlug(card.Finish)
+	var out []string
+	for _, promoType := range card.PromoTypes {
+		if label := matcher.FinishSlug(promoType); label != "" && strings.Contains(sold, label) {
+			continue
+		}
+		out = append(out, promoType)
+	}
+	return out
+}
+
+// promoTypeSlugs is a printing's promo types as the tokens a query can carry,
+// which is what a card stores: a search splits its words apart before a
+// filter sees them, so a tag only survives the trip as one. A printing that
+// publishes none has none; its variant is the prose they were distilled out
+// of, and reading it back would put on what the builder took off.
+func promoTypeSlugs(card *DatastoreCard) []string {
+	labels := card.PromoTypes
+	if len(labels) == 0 {
+		return nil
+	}
+	out := make([]string, 0, len(labels))
+	for _, label := range labels {
+		out = append(out, matcher.PromoTypeSlug(label))
+	}
+	return out
+}
+
+// qualifiedName spells a printing the way TCGplayer names the product, the
+// card name followed by the qualifier that tells it from the siblings
+// sharing its number ("Pikachu (Cosmos Holo)"). Empty for a printing the
+// catalog qualifies with nothing, which the bare name already describes.
+//
+// Empty too for a spelling the datastore already carries as a name of its
+// own: some rows keep the qualifier inside the name where others split it
+// into the variant, and indexing the split row's spelling would pour its
+// printings into the bucket the whole name answers with.
+func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) string {
+	if card.Variant == "" {
+		return ""
+	}
+	qualified := card.Name + " (" + card.Variant + ")"
+	if printingsByName[matcher.Normalize(qualified)] != nil {
+		return ""
+	}
+	return qualified
+}
+
+func (payload *Datastore) newBackend() *matcher.Backend {
+	b := matcher.NewBackend(matcher.IDSpaceTCGplayer, matcher.IDSpaceCardmarket)
+
+	for code, set := range payload.Sets {
+		b.AllSets = append(b.AllSets, code)
+		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
+		b.Sets[code] = &matcher.Set{
+			Name:            set.Name,
+			Code:            code,
+			Type:            set.Type,
+			ReleaseDate:     set.ReleaseDate,
+			ReleaseDateTime: releaseDateTime,
+			BaseSetSize:     set.BaseSetSize,
+			Symbol:          set.Symbol,
+		}
+	}
+
+	printingsByName := map[string][]string{}
+	for _, card := range payload.Cards {
+		n := matcher.Normalize(card.Name)
+		if !slices.Contains(printingsByName[n], card.SetCode) {
+			printingsByName[n] = append(printingsByName[n], card.SetCode)
+		}
+	}
+
+	for i := range payload.Cards {
+		card := &payload.Cards[i]
+		b.AddCanonicalName(card.Name)
+		// The builder folds a qualifier to lower case on the way in, so the
+		// words are title-cased back and the game's own suffixes looked up.
+		for _, promoType := range describingPromoTypes(card) {
+			b.AddPromoType(matcher.PromoTypeSlug(promoType), promoTypeLabel(promoType))
+		}
+		if qualified := qualifiedName(card, printingsByName); qualified != "" {
+			b.AddName(qualified)
+		}
+	}
+
+	// Group sibling entries back into their product: a product priced in
+	// several printings is the same card several times, and the matcher
+	// wants it once, with FoilUUIDs naming the uuid each printing prices.
+	// Which entries are one product is read off the identifiers they
+	// publish, never off the shape of their ids.
+	for _, group := range matcher.GroupProducts(payload.Cards, (*DatastoreCard).productKey) {
+		printings := map[string]*DatastoreCard{}
+		uuids := map[string]string{}
+		for _, entry := range group {
+			finish := matcher.FinishSlug(entry.Finish)
+			printings[finish] = entry
+			uuids[finish] = entry.ID
+		}
+		// The printing both flag values resolve to. A plain printing is
+		// what a storefront means when it says nothing, so the nonfoil
+		// flag prefers Normal and the foil flag prefers Holofoil, each
+		// falling back through the print runs that carry its foilness.
+		card, found := matcher.DefaultPrinting(printings, false)
+		if !found {
+			card = group[0]
+		}
+		if b.Sets[card.SetCode] == nil {
+			continue
+		}
+
+		var types []string
+		if card.Type != "" {
+			types = []string{card.Type}
+		}
+
+		promoTypes := promoTypeSlugs(card)
+		finishes, foilUUIDs := matcher.SoldFinishes(uuids)
+		convertedCard := matcher.Card{
+			UUID:    card.ID,
+			Name:    card.Name,
+			SetCode: card.SetCode,
+			// Only the foilness classes the product is actually sold in
+			// are registered: a card printed holo-only must not answer a
+			// nonfoil query with its holo, and output() folds a
+			// storefront's unreliable flag onto the class it does sell.
+			Finishes: finishes,
+			Number:   card.Number,
+			Images: map[string]string{
+				"full":      card.Image,
+				"thumbnail": card.Image,
+			},
+			// English unless the printing says otherwise, which only the
+			// Pikachu World Collection does. A language is not a promotion
+			// and is not among the promo types.
+			Language:  cmp.Or(card.Language, "English"),
+			Rarity:    b.AddRarity(card.Rarity),
+			Watermark: card.Watermark,
+
+			OriginalReleaseDate: card.OriginalReleaseDate,
+
+			Colors:     matcher.ColorNames(card.Types),
+			Types:      types,
+			PromoTypes: promoTypes,
+			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
+			Printings:  printingsByName[matcher.Normalize(card.Name)],
+
+			// Jumbo Cards holds the catalog's oversized printings, and the
+			// "Single Oversized Promo" label marks one wherever it is filed.
+			IsOversized: card.SetCode == jumboSetCode || slices.Contains(promoTypes, "singleoversizedpromo"),
+
+			PlainNumber: Rules{}.PlainNumber(card.Number),
+			SetTotal:    card.Total,
+		}
+
+		// Each printing under its own finish, so an input naming a treatment
+		// reaches the exact crossing it names.
+		convertedCard.FoilUUIDs = foilUUIDs
+
+		// Each identifier is guarded on its own. The product id and the
+		// upstream id are separate facts about a printing, and gathering
+		// them under one guard lost the second whenever the first was
+		// missing: a card upstream names and TCGplayer does not sell
+		// carried no identifier at all, though its own id was in hand.
+		identifiers := map[string]string{}
+		if card.ExternalLinks.TcgPlayerID != 0 {
+			pid := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
+			identifiers["tcgplayerProductId"] = pid
+			// The product id names the product, not one of its printings,
+			// so it points at the same default entry the flags resolve to.
+			b.ExternalIdentifiers[matcher.IDSpaceTCGplayer][pid] = card.ID
+		}
+		if id := card.ExternalLinks.TcgdexID; id != "" {
+			identifiers["tcgdexId"] = id
+		}
+		if card.ExternalLinks.CardmarketID != 0 {
+			mcmID := fmt.Sprint(card.ExternalLinks.CardmarketID)
+			identifiers["mcmId"] = mcmID
+			b.ExternalIdentifiers[matcher.IDSpaceCardmarket][mcmID] = card.ID
+		}
+		// A printing with none keeps the nil map it had, so nothing is
+		// stamped with an empty string for want of a value.
+		if len(identifiers) > 0 {
+			convertedCard.Identifiers = identifiers
+		}
+
+		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
+
+		qualified := qualifiedName(card, printingsByName)
+		for _, entry := range group {
+			b.AddPrinting(&convertedCard, entry.ID, matcher.FinishSlug(entry.Finish), card.Name, qualified)
+		}
+	}
+
+	b.Rarities = matcher.RarityNames(payload.Properties["rarity"])
+	b.Colors = matcher.ColorNames(payload.Properties["type"])
+	for _, set := range b.Sets {
+		set.Rarities = matcher.RaritiesOf(set.Cards, b.Rarities)
+		set.Colors = matcher.ColorsOf(set.Cards, b.Colors)
+	}
+
+	// Sealed products live in the sealed namespace throughout - uuids in
+	// AllSealedUUIDs, names in the sealed name index, and the product id
+	// as an identifier for BuildSealedProductMap rather than the external
+	// identifier index, mirroring how Magic keeps sealed out of MatchID's
+	// reach - and AddSealed is what files them there.
+	for _, product := range payload.Sealed {
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+	}
+	b.Complete(NewRules(b))
+
+	return b
+}
+
+// productKey names the product an entry is a printing of, read off what the
+// entry publishes. A product the catalog sells stamps its product id on every
+// printing of it; an entry minted for a card the catalog sells no product for
+// names the tcgdex card its printings were minted together from. An entry
+// naming neither is a product of one printing, and stands for itself.
+//
+// Nothing here takes an id apart. The tail an id ends in is the builder's to
+// spell, and a loader that reads one stops folding the day the spelling
+// changes - which is exactly what "_holo" becoming "_holofoil" did here.
+func (card *DatastoreCard) productKey() string {
+	if card.ExternalLinks.TcgPlayerID != 0 {
+		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
+	}
+	if id := card.ExternalLinks.TcgdexID; id != "" {
+		return id
+	}
+	return card.ID
+}
+
+// productKeyOf is the same key read off a card the backend already holds,
+// where those ids hang off Identifiers and the entry's own id is the uuid
+// being asked about.
+func productKeyOf(identifiers map[string]string, uuid string) string {
+	if id := identifiers["tcgplayerProductId"]; id != "" {
+		return id
+	}
+	if id := identifiers["tcgdexId"]; id != "" {
+		return id
+	}
+	return uuid
+}
+
+// plainNumber is the collector number as a person writes it, which for this
+// game means without the zeros the catalog pads an ordinal out to three
+// digits with: card 1 is written "1", not "001". It is what PlainNumber
+// carries, the field a plain-number search matches, so "cn:1" reaches the
+// card that "cns:001" does. Number keeps the padding, being the number
+// exactly as written.
+//
+// The letter a number ends in goes the same way, for the same reason it
+// goes in Magic and in Lorcana: it names which of a number's printings this
+// is rather than numbering it, so "002a" and "002b" are both the 2 that
+// "002" is, and a plain-number search reaches all three. 89 numbers wear
+// one.
+//
+// The padding inside a code is untouched because a code does not open with
+// it - "SWSH020" and "TG01" keep theirs, and reducing them would invent a
+// spelling that is neither what the card prints nor a plainer way of
+// writing it. Nor does the letter trim touch them, a code ending in its
+// digits: all 1,386 are left as they are.
+//
+// Pokemon is the game this applies to. Lorcana and Riftbound number their
+// cards bare as well but never pad them, and the games numbering a card
+// behind a code - "OP04-047", "YS13-ENV08", "WTR018" - fold to the ordinal
+// through matcher.PlainOrdinal.
+//
+// A number of nothing but letters, or of nothing but zeros, would trim away
+// to nothing, and an empty PlainNumber is a card no plain-number search can
+// reach, so each trim keeps what it had. No such number exists today; the
+// guards are what make the trims safe to read.
+func plainNumber(number string) string {
+	if plain := strings.TrimRight(number, plainNumberTail); plain != "" {
+		number = plain
+	}
+	if plain := strings.TrimLeft(number, "0"); plain != "" {
+		return plain
+	}
+	return number
+}
+
+// plainNumberTail are the letters a printing is spelled with behind a
+// number, the same tail Magic and Lorcana drop.
+const plainNumberTail = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

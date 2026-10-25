@@ -8,9 +8,9 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // TestFallbackDefersOnMcmIdCollision pins Fallback deferring on an mcmId
@@ -176,7 +176,7 @@ func TestResolveMagicLandsCorrectChroniclesArt(t *testing.T) {
 // TestFourthEditionAlternateKeepsVIndex pins the same default case for
 // an edition whose Cardmarket name ("Fourth Edition: Alternate") is not the
 // matcher's own ("Alternate Fourth Edition") - the VariantsTable lookup that
-// guards the fallback has to try the alias mtgmatcher/magic/editions.go's
+// guards the fallback has to try the alias matcher/magic/editions.go's
 // EditionTable resolves it to, the same one AdjustEdition applies later, or
 // it never finds ed4Variants at all and clobbers the "(V.N)" tag. Each of
 // Plains's three "(V.N)" siblings must land on its
@@ -367,7 +367,7 @@ func TestSLDCommanderDeckCardDisambiguatesByNumber(t *testing.T) {
 
 	// A deck MTGJSON does not list is skipped, not matched by name alone
 	_, err := Preprocess(b, "Sol Ring", "1", "Secret Lair Commander Deck: Not Yet Published")
-	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if !errors.Is(err, matcher.ErrUnsupported) {
 		t.Errorf("Preprocess in an unpublished deck = %v, want ErrUnsupported", err)
 	}
 }

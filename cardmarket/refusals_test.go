@@ -7,7 +7,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
+	_ "github.com/mtgban/go-mtgban/matcher/yugioh"
 )
 
 // logSink collects what a scraper says, so a test can read it back.

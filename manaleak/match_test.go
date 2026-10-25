@@ -8,21 +8,21 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var (
 	datastoreOnce    sync.Once
 	datastoreErr     error
-	datastoreBackend *mtgmatcher.Backend
+	datastoreBackend *matcher.Backend
 )
 
 // realDatastore reads the Magic datastore the first time a test asks for it,
 // and skips where the run carries none.
-func realDatastore(t *testing.T) *mtgmatcher.Backend {
+func realDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -198,7 +198,7 @@ func TestMatchProductPage(t *testing.T) {
 		product := MLProduct{Name: tc.name}
 		product.readPage(tc.category, tc.code)
 		_, err := ml.match(product)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("%s: an unprovable promo row answered %v, want ErrUnsupported", tc.name, err)
 		}
 	}
@@ -208,7 +208,7 @@ func TestNameAgrees(t *testing.T) {
 	b := realDatastore(t)
 	ml := NewScraper(b)
 
-	id := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, "119686")
+	id := b.ConvertID(matcher.IDSpaceTCGplayer, "119686")
 	cardID, err := b.MatchID(id, false, false)
 	if err != nil {
 		t.Fatal(err)

@@ -6,12 +6,12 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/onepiece"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/riftbound"
 )
 
 // withMagic skips a test that reads the Magic datastore where none is
@@ -19,12 +19,12 @@ import (
 var (
 	magicOnce sync.Once
 	magicErr  error
-	magicB    *mtgmatcher.Backend
+	magicB    *matcher.Backend
 )
 
 // withMagic installs AllPrintings as the global the first time a test asks
 // for it, and skips where the run carries none.
-func withMagic(t *testing.T) *mtgmatcher.Backend {
+func withMagic(t *testing.T) *matcher.Backend {
 	t.Helper()
 	magicOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -51,7 +51,7 @@ func withMagic(t *testing.T) *mtgmatcher.Backend {
 // rest of this package's tests are Magic ones. The test is skipped where
 // that game's datastore is not configured, which is how the shared
 // `go test ./...` run sees it.
-func withGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatcher.Backend {
+func withGameDatastore(t *testing.T, game matcher.Game, env string) *matcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {
@@ -64,17 +64,17 @@ func withGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatch
 	return b
 }
 
-func withRiftbound(t *testing.T) *mtgmatcher.Backend {
+func withRiftbound(t *testing.T) *matcher.Backend {
 	t.Helper()
 	return withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
 }
 
-func withOnePiece(t *testing.T) *mtgmatcher.Backend {
+func withOnePiece(t *testing.T) *matcher.Backend {
 	t.Helper()
 	return withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 }
 
-func withPokemon(t *testing.T) *mtgmatcher.Backend {
+func withPokemon(t *testing.T) *matcher.Backend {
 	t.Helper()
 	return withGameDatastore(t, "pokemon", "POKEMON_PATH")
 }

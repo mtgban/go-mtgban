@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Sealed prices Mana Pool's sealed product.
@@ -15,14 +15,14 @@ type Sealed struct {
 	logCallback mtgban.LogCallbackFunc
 	partner     string
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 }
 
 // NewScraperSealed returns a sealed scraper matching against b.
-func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
+func NewScraperSealed(b *matcher.Backend) *Sealed {
 	mp := Sealed{backend: b}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
@@ -118,6 +118,6 @@ func (mp *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mp.inventoryDate
 	info.SealedMode = true
 	info.NoQuantityInventory = true
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

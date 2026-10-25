@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // The storefront links a listing is published under. The partner form wraps a
@@ -51,7 +51,7 @@ func GenerateProductURL(productID int, printing, affiliate string, condition mtg
 		v.Set("Condition", name)
 	}
 	if language != "" {
-		language = mtgmatcher.Title(language)
+		language = matcher.Title(language)
 		switch language {
 		case "Portuguese (Brazil)":
 			language = "Portuguese"

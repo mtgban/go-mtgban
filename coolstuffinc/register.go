@@ -1,22 +1,22 @@
 package coolstuffinc
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // singlesGames are the games "coolstuffinc" registers for.
-var singlesGames = []mtgmatcher.Game{
-	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameOnePiece,
-	mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh, mtgmatcher.GameGundam, mtgmatcher.GamePalworld,
+var singlesGames = []matcher.Game{
+	matcher.GameMagic, matcher.GameLorcana, matcher.GameRiftbound, matcher.GameOnePiece,
+	matcher.GamePokemon, matcher.GameYuGiOh, matcher.GameGundam, matcher.GamePalworld,
 }
 
 // sealedGames are the games "coolstuffinc_sealed" registers for: every
 // singles game but Gundam and Palworld, which this storefront sells no
 // sealed product of.
-var sealedGames = []mtgmatcher.Game{
-	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound, mtgmatcher.GameOnePiece,
-	mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
+var sealedGames = []matcher.Game{
+	matcher.GameMagic, matcher.GameLorcana, matcher.GameRiftbound, matcher.GameOnePiece,
+	matcher.GamePokemon, matcher.GameYuGiOh,
 }
 
 // ResourceIncludeOOS names the optional out-of-stock listing input.
@@ -32,7 +32,7 @@ func init() {
 	mtgban.Register("coolstuffinc_sealed", sealedGames, newScraperSealed)
 }
 
-func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper, err := NewScraper(b)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 	return scraper, nil
 }
 
-func newScraperSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraperSealed(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper, err := NewScraperSealed(b)
 	if err != nil {
 		return nil, err

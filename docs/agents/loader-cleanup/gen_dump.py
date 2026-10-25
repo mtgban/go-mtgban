@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # gen_dump.py ROOT: write zz_dump_test.go into every package holding
-# {"data": ...} fixtures. The test loads each fixture through mtgmatcher.Open
+# {"data": ...} fixtures. The test loads each fixture through matcher.Open
 # and writes its Backend as JSON to $DUMP_DIR, and writes the sha256 of each
 # published datastore's Backend beside them.
 import glob
@@ -12,7 +12,7 @@ root = sys.argv[1]
 GAMES = ["lorcana", "riftbound", "onepiece", "yugioh", "fleshandblood",
          "pokemon", "gundam", "palworld"]
 
-# Fixtures outside mtgmatcher/<game> name their game where a test opens them.
+# Fixtures outside matcher/<game> name their game where a test opens them.
 # cardmarket's datastoreBackend(t, "<game>", fixture) calls are read below;
 # list the rest by hand.
 BY_HAND = {
@@ -24,7 +24,7 @@ BY_HAND = {
 # Variants a test derives with strings.Replace, by hand:
 # (package, label, game, Go expression).
 DERIVED = [
-    ("mtgmatcher/riftbound", "sealed_absent", "riftbound",
+    ("matcher/riftbound", "sealed_absent", "riftbound",
      'strings.Replace(sealedFixture, `"sealed"`, `"ignored"`, 1)'),
 ]
 
@@ -56,12 +56,12 @@ def games_of(pkg):
     return found
 
 
-pkgs = [f"mtgmatcher/{g}" for g in GAMES]
+pkgs = [f"matcher/{g}" for g in GAMES]
 pkgs += sorted({os.path.dirname(p)[len(root) + 1:] for p in glob.glob(f"{root}/*/*_test.go")
                 if re.search(r'`\{"data"', open(p).read())} - set(pkgs))
 
 for pkg in pkgs:
-    game = pkg.split("/")[1] if pkg.startswith("mtgmatcher/") else None
+    game = pkg.split("/")[1] if pkg.startswith("matcher/") else None
     owner = games_of(pkg)
     entries = [(n, game or owner.get(n), n) for n in fixtures(pkg) if game or owner.get(n)]
     entries += [(label, g, expr) for p, label, g, expr in DERIVED if p == pkg]
@@ -96,19 +96,19 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // zzEncode drops what JSON cannot or need not carry and sorts what arrives
 // in map order, so two loads of one file encode alike.
-func zzEncode(b *mtgmatcher.Backend) []byte {{
+func zzEncode(b *matcher.Backend) []byte {{
 	b.Logger, b.TokenPairIDByUUIDs, b.TokenPairIDByBothNames = nil, nil, nil
 {masks}	b.AllSets = append([]string(nil), b.AllSets...)
 	sort.Strings(b.AllSets)
 	// A map keyed by an array is refused even when nil, so the token pair
 	// maps are shadowed by fields that encode to nothing.
 	out, err := json.MarshalIndent(struct {{
-		*mtgmatcher.Backend
+		*matcher.Backend
 		TokenPairIDByUUIDs     *struct{{}} `json:",omitempty"`
 		TokenPairIDByBothNames *struct{{}} `json:",omitempty"`
 	}}{{Backend: b}}, "", " ")
@@ -125,11 +125,11 @@ func TestZZDump(t *testing.T) {{
 	}}
 	for _, d := range []struct{{
 		name string
-		game mtgmatcher.Game
+		game matcher.Game
 		doc  string
 	}}{{
 {docs}	}} {{
-		b, err := mtgmatcher.Open(d.game, strings.NewReader(d.doc))
+		b, err := matcher.Open(d.game, strings.NewReader(d.doc))
 		if err != nil {{
 			t.Fatalf("%s: %v", d.name, err)
 		}}

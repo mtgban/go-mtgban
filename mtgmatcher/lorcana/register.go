@@ -1,9 +1,0 @@
-package lorcana
-
-import "github.com/mtgban/go-mtgban/mtgmatcher"
-
-// Register the Lorcana datastore loader so that a blank import of this package
-// makes it known to mtgmatcher.Open.
-func init() {
-	mtgmatcher.RegisterGame(mtgmatcher.GameLorcana, Load)
-}

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -148,7 +148,7 @@ var finishSplitNote = regexp.MustCompile(`(?i)(?:card number can be 0*(\d+) or|n
 // finishSplitCard answers the one printing, in the row's own set, among the
 // numbers the note offers that carries the listing's finish. A foreign
 // language row is left to the ordinary path, which carries its language.
-func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language string, isFoil bool) *mtgmatcher.InputCard {
+func finishSplitCard(b *matcher.Backend, cardName, setCode, notes, language string, isFoil bool) *matcher.InputCard {
 	m := finishSplitNote.FindStringSubmatch(notes)
 	if m == nil || language != "" {
 		return nil
@@ -158,7 +158,7 @@ func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language s
 	if err != nil {
 		return nil
 	}
-	var found *mtgmatcher.InputCard
+	var found *matcher.InputCard
 	for _, id := range ids {
 		co, err := b.GetUUID(id)
 		if err != nil || (co.Number != first && co.Number != second) || co.Foil != isFoil || co.Etched {
@@ -170,7 +170,7 @@ func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language s
 		if found != nil {
 			return nil
 		}
-		found = &mtgmatcher.InputCard{Name: cardName, Edition: co.SetCode, Variation: co.Number, Foil: isFoil}
+		found = &matcher.InputCard{Name: cardName, Edition: co.SetCode, Variation: co.Number, Foil: isFoil}
 	}
 	return found
 }
@@ -179,7 +179,7 @@ func finishSplitCard(b *mtgmatcher.Backend, cardName, setCode, notes, language s
 // shelf's own set where its name resolves to one that holds the card; a shelf
 // filing another set's printings does not. A listing naming a language is
 // never split.
-func shelfFinishSplit(b *mtgmatcher.Backend, cardName, edition, notes string, isFoil bool) *mtgmatcher.InputCard {
+func shelfFinishSplit(b *matcher.Backend, cardName, edition, notes string, isFoil bool) *matcher.InputCard {
 	if !finishSplitNote.MatchString(notes) {
 		return nil
 	}
@@ -236,7 +236,7 @@ func buylistLanguage(name, notes string) string {
 
 // preprocess answers the card a retail listing names. foil is the finish of
 // the offer row, which the listing's own wording does not carry.
-func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, foil bool) (*mtgmatcher.InputCard, error) {
+func preprocess(b *matcher.Backend, cardName, edition, notes, imgURL string, foil bool) (*matcher.InputCard, error) {
 	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
 	fixup, curated := numFixes[imgName]
 	if !curated {
@@ -254,11 +254,11 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 
 	cardName = csiSignedFoil.ReplaceAllString(cardName, "FOIL Signed by")
 	if strings.Contains(cardName, "Signed") && strings.Contains(cardName, "by") {
-		cuts := mtgmatcher.Cut(cardName, "Signed")
+		cuts := matcher.Cut(cardName, "Signed")
 		cardName = cuts[0]
 	}
 
-	variants := mtgmatcher.SplitVariants(cardName)
+	variants := matcher.SplitVariants(cardName)
 	if len(variants) > 1 {
 		cardName = variants[0]
 		if variant != "" {
@@ -274,7 +274,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 	}
 
 	if strings.HasSuffix(cardName, "Promo") {
-		cuts := mtgmatcher.Cut(cardName, "Promo")
+		cuts := matcher.Cut(cardName, "Promo")
 		cardName = cuts[0]
 	}
 	cardName = strings.TrimSpace(cardName)
@@ -296,7 +296,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 
 	// Skip tokens with the same names as cards
 	if isEmblemListing(b, cardName, variant) {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	if edition == "Duel Decks: Anthology" {
@@ -387,13 +387,13 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 			edition = "4BB"
 			language = "Japanese"
 		default:
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 	case "Promo":
 		// Black Lotus - Ultra Pro Puzzle - Eight of 9
 		if strings.Contains(cardName, "Ultra Pro Puzzle") {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 		switch variant {
@@ -450,7 +450,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 		}
 	}
 
-	input = &mtgmatcher.InputCard{
+	input = &matcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
@@ -466,7 +466,7 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes, imgURL string, 
 // listReprint moves a Mystery Booster Reprints listing that landed on the
 // printing The List copied from onto The List's own row, which is the one
 // the shelf sells. The List files each copy as "<set>-<number>".
-func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher.InputCard {
+func listReprint(b *matcher.Backend, input *matcher.InputCard) *matcher.InputCard {
 	probe := *input
 	id, err := b.Match(&probe)
 	if err != nil {
@@ -480,7 +480,7 @@ func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher
 	if len(b.MatchInSetNumber(co.Name, "PLST", listNum)) != 1 {
 		return input
 	}
-	return &mtgmatcher.InputCard{Name: co.Name, Variation: listNum, Edition: "PLST", Foil: input.Foil}
+	return &matcher.InputCard{Name: co.Name, Variation: listNum, Edition: "PLST", Foil: input.Foil}
 }
 
 // prereleaseImageCard answers the stamped printing a prerelease listing
@@ -488,7 +488,7 @@ func listReprint(b *mtgmatcher.Backend, input *mtgmatcher.InputCard) *mtgmatcher
 // card's own art, so the "P<set>" number-"s" row is asked for instead. It
 // answers nothing where the image already names a prerelease printing or
 // the set has no such stamped row.
-func prereleaseImageCard(b *mtgmatcher.Backend, cardName, set, number, variant string, isFoil bool) *mtgmatcher.InputCard {
+func prereleaseImageCard(b *matcher.Backend, cardName, set, number, variant string, isFoil bool) *matcher.InputCard {
 	for _, card := range b.MatchInSetNumber(cardName, set, number) {
 		if slices.Contains(card.PromoTypes, magic.PromoTypePrerelease) {
 			return nil
@@ -505,7 +505,7 @@ func prereleaseImageCard(b *mtgmatcher.Backend, cardName, set, number, variant s
 // variants shelf reuses the base card's image for its extended art copy, so
 // when the listing asks for extended art, the image is turned down if it
 // names a printing without it where the set holds one.
-func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant string) bool {
+func imagePrinting(b *matcher.Backend, cardName, setCode, number, variant string) bool {
 	cards := b.MatchInSetNumber(cardName, setCode, number)
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -513,7 +513,7 @@ func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant str
 	}
 	if len(cards) == 0 {
 		for _, card := range set.Cards {
-			if card.Number == number && (mtgmatcher.Equals(card.FaceName, cardName) || mtgmatcher.Equals(card.Name, cardName)) {
+			if card.Number == number && (matcher.Equals(card.FaceName, cardName) || matcher.Equals(card.Name, cardName)) {
 				cards = append(cards, card)
 			}
 		}
@@ -524,11 +524,11 @@ func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant str
 	// The dagger copy shares the plain number's image, so a note the
 	// matcher reads as that copy decides between the two.
 	for _, card := range set.Cards {
-		if variant != "" && card.Number == number+"†" && (mtgmatcher.Equals(card.FaceName, cardName) || mtgmatcher.Equals(card.Name, cardName)) && noteLandsOn(b, cardName, setCode, variant, card.Number) {
+		if variant != "" && card.Number == number+"†" && (matcher.Equals(card.FaceName, cardName) || matcher.Equals(card.Name, cardName)) && noteLandsOn(b, cardName, setCode, variant, card.Number) {
 			return false
 		}
 	}
-	if !mtgmatcher.Contains(variant, "Extended Art") || isExtendedArt(cards[0]) {
+	if !matcher.Contains(variant, "Extended Art") || isExtendedArt(cards[0]) {
 		return true
 	}
 	for _, card := range set.Cards {
@@ -541,8 +541,8 @@ func imagePrinting(b *mtgmatcher.Backend, cardName, setCode, number, variant str
 
 // noteLandsOn reports whether the listing's note, asked in this set, lands on
 // the given number.
-func noteLandsOn(b *mtgmatcher.Backend, cardName, setCode, variant, number string) bool {
-	cardID, err := b.Match(&mtgmatcher.InputCard{Name: cardName, Edition: setCode, Variation: variant})
+func noteLandsOn(b *matcher.Backend, cardName, setCode, variant, number string) bool {
+	cardID, err := b.Match(&matcher.InputCard{Name: cardName, Edition: setCode, Variation: variant})
 	if err != nil {
 		return false
 	}
@@ -554,24 +554,24 @@ func noteLandsOn(b *mtgmatcher.Backend, cardName, setCode, variant, number strin
 }
 
 // isExtendedArt reports an extended art printing, by promo type or by frame.
-func isExtendedArt(card mtgmatcher.Card) bool {
+func isExtendedArt(card matcher.Card) bool {
 	return slices.Contains(card.PromoTypes, "extendedart") || slices.Contains(card.FrameEffects, "extendedart")
 }
 
 // imageCard asks for the printing a product image names, in the finish and
 // language the listing's own wording gives it: the image is the same for the
 // etched and the plain copy, and for the Japanese one.
-func imageCard(cardName, set, number, variant string, isFoil bool) *mtgmatcher.InputCard {
+func imageCard(cardName, set, number, variant string, isFoil bool) *matcher.InputCard {
 	for _, tag := range [...]string{"etched", "Japanese"} {
-		if mtgmatcher.Contains(variant, tag) {
+		if matcher.Contains(variant, tag) {
 			number += " " + tag
 		}
 	}
-	return &mtgmatcher.InputCard{Name: cardName, Variation: number, Edition: set, Foil: isFoil}
+	return &matcher.InputCard{Name: cardName, Variation: number, Edition: set, Foil: isFoil}
 }
 
 // hasSetPrefix reports whether an image stem opens with a set code.
-func hasSetPrefix(b *mtgmatcher.Backend, stem string) bool {
+func hasSetPrefix(b *matcher.Backend, stem string) bool {
 	for _, n := range [...]int{3, 4} {
 		if len(stem) <= n {
 			continue
@@ -600,7 +600,7 @@ func stemLetters(name string) string {
 // The prerelease shelf keeps only the stems that carry the "s" of the stamped
 // printing, since the bare number there is the intro pack's, and a variant
 // the matcher already places by its own table is left to it.
-func imageNumberStem(b *mtgmatcher.Backend, cardName, edition, variant, imgName string) string {
+func imageNumberStem(b *matcher.Backend, cardName, edition, variant, imgName string) string {
 	name := stemLetters(cardName)
 	low := strings.ToLower(imgName)
 	if name == "" || len(low) <= len(name) || !strings.HasSuffix(low, name) {
@@ -622,7 +622,7 @@ func imageNumberStem(b *mtgmatcher.Backend, cardName, edition, variant, imgName 
 
 // imageNumberAfterName reads a stem that writes the card's name before the
 // number ("borosguildgate244") as that number in the shelf's own set.
-func imageNumberAfterName(b *mtgmatcher.Backend, cardName, edition, variant, imgName string, isFoil bool) *mtgmatcher.InputCard {
+func imageNumberAfterName(b *matcher.Backend, cardName, edition, variant, imgName string, isFoil bool) *matcher.InputCard {
 	name := stemLetters(cardName)
 	low := strings.ToLower(imgName)
 	if name == "" || !strings.HasPrefix(low, name) {
@@ -642,7 +642,7 @@ func imageNumberAfterName(b *mtgmatcher.Backend, cardName, edition, variant, img
 // imageLetterAfterName reads a stem that is the card's name and one letter
 // ("targetminotaurb") as the lettered number of that name in the shelf's own
 // set, when exactly one printing of the card carries that letter.
-func imageLetterAfterName(b *mtgmatcher.Backend, cardName, edition, variant, imgName string, isFoil bool) *mtgmatcher.InputCard {
+func imageLetterAfterName(b *matcher.Backend, cardName, edition, variant, imgName string, isFoil bool) *matcher.InputCard {
 	name := stemLetters(cardName)
 	low := strings.ToLower(imgName)
 	if name == "" || len(low) != len(name)+1 || !strings.HasPrefix(low, name) {
@@ -658,7 +658,7 @@ func imageLetterAfterName(b *mtgmatcher.Backend, cardName, edition, variant, img
 	}
 	var numbers []string
 	for _, card := range set.Cards {
-		if card.Number == leadingDigits(card.Number)+letter && (mtgmatcher.Equals(card.FaceName, cardName) || mtgmatcher.Equals(card.Name, cardName)) {
+		if card.Number == leadingDigits(card.Number)+letter && (matcher.Equals(card.FaceName, cardName) || matcher.Equals(card.Name, cardName)) {
 			numbers = append(numbers, card.Number)
 		}
 	}
@@ -680,7 +680,7 @@ var basicLandLetter = regexp.MustCompile(`^((?:Snow-Covered )?(?:Plains|Island|S
 // exception: CSI letters its arts in collector number order, and the
 // matcher's own letters follow another, so there the position of the letter
 // decides and the matcher's reading of it is never used.
-func basicLandListing(b *mtgmatcher.Backend, cardName, edition, variant string, isFoil bool, imgName string) *mtgmatcher.InputCard {
+func basicLandListing(b *matcher.Backend, cardName, edition, variant string, isFoil bool, imgName string) *matcher.InputCard {
 	m := basicLandLetter.FindStringSubmatch(cardName)
 	if m == nil {
 		return nil
@@ -689,7 +689,7 @@ func basicLandListing(b *mtgmatcher.Backend, cardName, edition, variant string, 
 	ownLetters := edition == "Battle Royale"
 
 	if !ownLetters {
-		already := &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: variant, Foil: isFoil}
+		already := &matcher.InputCard{Name: cardName, Edition: edition, Variation: variant, Foil: isFoil}
 		_, err := b.Match(already)
 		if err == nil {
 			return nil
@@ -704,20 +704,20 @@ func basicLandListing(b *mtgmatcher.Backend, cardName, edition, variant string, 
 // that, from the position its letter holds among the plain numbers of a
 // single set. Candidates are gathered under both foil states to require the
 // same single number either way.
-func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant string, isFoil bool, imgName string) *mtgmatcher.InputCard {
+func basicLandPrinting(b *matcher.Backend, base, letter, edition, variant string, isFoil bool, imgName string) *matcher.InputCard {
 	// A hash names no number or full art, whatever its characters spell.
 	if imageHash.MatchString(strings.ToLower(strings.TrimSuffix(path.Base(imgName), filepath.Ext(imgName)))) {
 		imgName = ""
 	}
 	var match string
 	for _, foil := range [...]bool{false, true} {
-		probe := &mtgmatcher.InputCard{Name: base, Edition: edition, Variation: variant, Foil: foil}
+		probe := &matcher.InputCard{Name: base, Edition: edition, Variation: variant, Foil: foil}
 		_, err := b.Match(probe)
-		var alias *mtgmatcher.AliasingError
+		var alias *matcher.AliasingError
 		if !errors.As(err, &alias) && variant != "" {
 			// The notes can rule every printing out; the edition alone then
 			// has to name the candidates.
-			probe = &mtgmatcher.InputCard{Name: base, Edition: edition, Foil: foil}
+			probe = &matcher.InputCard{Name: base, Edition: edition, Foil: foil}
 			_, err = b.Match(probe)
 		}
 		if !errors.As(err, &alias) {
@@ -794,7 +794,7 @@ func basicLandPrinting(b *mtgmatcher.Backend, base, letter, edition, variant str
 		match = found
 	}
 	input := imageCard(base, edition, match, variant, isFoil)
-	if mtgmatcher.Contains(variant, "Surge Foil") {
+	if matcher.Contains(variant, "Surge Foil") {
 		input.Variation += " Surge Foil"
 	}
 	return input
@@ -1069,7 +1069,7 @@ func card2promo(cardName, variant string) (string, string) {
 	case "Sol Ring":
 		if variant == "Commander Promo" {
 			edition = "PF19"
-		} else if mtgmatcher.Equals(variant, "Love Your Local Game Store promo") {
+		} else if matcher.Equals(variant, "Love Your Local Game Store promo") {
 			edition = "PLG22"
 			variant = "1"
 		}
@@ -1078,7 +1078,7 @@ func card2promo(cardName, variant string) (string, string) {
 			return "P30M", "1F"
 		}
 		if strings.Contains(variant, "Magic 30") {
-			if mtgmatcher.Contains(variant, "etched") {
+			if matcher.Contains(variant, "etched") {
 				return "P30M", "etched"
 			}
 			return "P30M", ""
@@ -1175,7 +1175,7 @@ var buylistNumberFixes = map[string]string{
 // exactly one printing. The candidate is confirmed through Match itself,
 // language included - though Match clamps a mismatched foil request
 // rather than reject it, so a landed candidate is not proof of finish.
-func buylistImageNumber(b *mtgmatcher.Backend, cardName, variant string, isFoil bool, language, image string) *mtgmatcher.InputCard {
+func buylistImageNumber(b *matcher.Backend, cardName, variant string, isFoil bool, language, image string) *matcher.InputCard {
 	fixup, found := numFixes[image]
 	if found {
 		image = fixup
@@ -1212,7 +1212,7 @@ func buylistImageNumber(b *mtgmatcher.Backend, cardName, variant string, isFoil 
 
 // PreprocessBuylist is Preprocess for the buylist feed, which describes a card
 // differently from the sale catalog.
-func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
+func PreprocessBuylist(b *matcher.Backend, card CSIPriceEntry) (*matcher.InputCard, error) {
 	if fix, ok := buylistNumberFixes[card.PID]; ok {
 		card.Number = fix
 	}
@@ -1235,8 +1235,8 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	isFoil := card.IsFoil == 1
 	cardName := card.Name
 
-	if mtgmatcher.Contains(cardName, "signed by") {
-		return nil, mtgmatcher.ErrUnsupported
+	if matcher.Contains(cardName, "signed by") {
+		return nil, matcher.ErrUnsupported
 	}
 
 	variant := num
@@ -1244,7 +1244,7 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		variant = cleanVar
 	}
 
-	fixName := mtgmatcher.SplitVariants(cardName)
+	fixName := matcher.SplitVariants(cardName)
 	var altVariant string
 	if len(fixName) > 1 {
 		altVariant = strings.Join(fixName[1:], " ")
@@ -1283,7 +1283,7 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 
 	// Skip tokens with the same names as cards
 	if isEmblemListing(b, cardName, variant) {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	switch edition {
@@ -1299,7 +1299,7 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		variant = cleanVar
 	case "Prerelease Promo":
 		// Without a stamp the card is the booster printing its image names.
-		if mtgmatcher.Contains(card.Notes, "Non-Stamped") {
+		if matcher.Contains(card.Notes, "Non-Stamped") {
 			retry := buylistImageNumber(b, cardName, "", isFoil, language, card.Image)
 			if retry != nil {
 				return retry, nil
@@ -1408,7 +1408,7 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 		variant += "Japanese"
 	}
 
-	final := &mtgmatcher.InputCard{
+	final := &matcher.InputCard{
 		Language:  language,
 		Name:      cardName,
 		Variation: variant,
@@ -1420,7 +1420,7 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 	// failed: the retry rebuilds Variation from the image and drops it.
 	probe := *final
 	_, err = b.Match(&probe)
-	if err != nil && !(errors.Is(err, mtgmatcher.ErrUnsupported) && mtgmatcher.Contains(final.Variation, "Oversize")) {
+	if err != nil && !(errors.Is(err, matcher.ErrUnsupported) && matcher.Contains(final.Variation, "Oversize")) {
 		// The image names a printing of the basic, whatever its letter.
 		retryName := cardName
 		m := basicLandLetter.FindStringSubmatch(cardName)
@@ -1453,14 +1453,14 @@ func PreprocessBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.I
 }
 
 // preprocessTokenPairBuylist resolves a two-sided token buylist row to the
-// combined entity mtgmatcher/magic derives for it, anchored by the row's
+// combined entity matcher/magic derives for it, anchored by the row's
 // own set code and collector number - CSI publishes both (Code and Number)
 // alongside the storefront's edition wording, unlike ManaPool's own single
 // scryfall_id shape. A row this precise with no combined entity on file
 // (no mtgjson tokenProducts record at all - not every real pairing has
 // one) is refused rather than left for the rest of PreprocessBuylist to
 // mistake for a single face.
-func preprocessTokenPairBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
+func preprocessTokenPairBuylist(b *matcher.Backend, card CSIPriceEntry) (*matcher.InputCard, error) {
 	isFoil := card.IsFoil == 1
 
 	tokenSet := magic.EditionTokenSetCode(b, card.ItemSet)
@@ -1474,12 +1474,12 @@ func preprocessTokenPairBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtg
 		for _, number := range csiTokenPairNumbers(card.Number) {
 			if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, card.Name); uuid != "" {
 				if id, err := b.MatchID(uuid, isFoil); err == nil {
-					return &mtgmatcher.InputCard{ID: id}, nil
+					return &matcher.InputCard{ID: id}, nil
 				}
 			}
 			if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, card.Name, isFoil); tcgID != "" {
 				if id, err := b.MatchID(tcgID, isFoil); err == nil {
-					return &mtgmatcher.InputCard{ID: id}, nil
+					return &matcher.InputCard{ID: id}, nil
 				}
 			}
 		}
@@ -1487,11 +1487,11 @@ func preprocessTokenPairBuylist(b *mtgmatcher.Backend, card CSIPriceEntry) (*mtg
 
 	if pairID := magic.MatchTokenPairingByNamesAndEdition(b, card.Name, card.ItemSet, isFoil); pairID != "" {
 		if id, err := b.MatchID(pairID, isFoil); err == nil {
-			return &mtgmatcher.InputCard{ID: id}, nil
+			return &matcher.InputCard{ID: id}, nil
 		}
 	}
 
-	return nil, mtgmatcher.ErrUnsupported
+	return nil, matcher.ErrUnsupported
 }
 
 // csiTokenPairNumbers returns the collector numbers worth anchoring a two-
@@ -1521,7 +1521,7 @@ func csiTokenPairNumbers(number string) []string {
 // planeswalker emblem filed under a card's name. It is not when the word is
 // part of what the card is called: the Jurassic World "Emblem Variant"
 // treatment, or a printing's own flavor name.
-func isEmblemListing(b *mtgmatcher.Backend, cardName, variant string) bool {
+func isEmblemListing(b *matcher.Backend, cardName, variant string) bool {
 	if !strings.Contains(variant, "Emblem") || b.IsToken(cardName) {
 		return false
 	}
@@ -1554,14 +1554,14 @@ func isEmblemListing(b *mtgmatcher.Backend, cardName, variant string) bool {
 func magicShelfFixups(cardName, edition, variant string) (string, string, string, error) {
 	if cardName == "Emblem" && variant != "" {
 		if strings.Contains(variant, "Token") || strings.Contains(variant, "//") {
-			return "", "", "", mtgmatcher.ErrUnsupported
+			return "", "", "", matcher.ErrUnsupported
 		}
 		// The buylist writes the token number ahead of the planeswalker
 		// ("7 The Capitoline Triad", "8/8 Tamiyo, the Moon Sage").
 		cardName, variant = emblemNumber.ReplaceAllString(variant, "")+" Emblem", ""
 	}
 	if strings.HasPrefix(cardName, "Blank Card") {
-		return "", "", "", mtgmatcher.ErrUnsupported
+		return "", "", "", matcher.ErrUnsupported
 	}
 	if strings.HasPrefix(edition, "Duel Deck:") {
 		edition = "Duel Decks:" + strings.TrimPrefix(edition, "Duel Deck:")

@@ -24,7 +24,7 @@ uuid (`2752_coldfoil`) is the Panorama, and its TCGplayer product is listed in
 
 ## What the loader does
 
-`mtgmatcher/lorcana` splits such a row in two:
+`matcher/lorcana` splits such a row in two:
 
 - **The plain card** keeps the Normal printing, the main product and the
   Cardmarket id (the V.1).

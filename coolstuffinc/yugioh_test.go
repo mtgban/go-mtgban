@@ -4,9 +4,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestYugiohImageCardNeedsTheSameName pins the retry that reads the set code
@@ -20,7 +20,7 @@ func TestYugiohImageCardNeedsTheSameName(t *testing.T) {
 		Name: "Enlilgirsu, the Orcust Mekk-Knight (Ultra Rare)", ItemSet: "Battles of Legend - Monster Mayhem",
 		Number: "BLMM-EN052", RarityName: "Ultra Rare", Image: "BLMMEN053",
 	}
-	card := &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: "BLMM-EN052 Ultra Rare"}
+	card := &matcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: "BLMM-EN052 Ultra Rare"}
 	_, err := b.Match(card)
 	if err == nil {
 		t.Fatalf("Match(%v) landed as typed, want the typo to refuse", card)
@@ -158,9 +158,9 @@ func TestYugiohRetries(t *testing.T) {
 		want  bool
 	}{
 		{nil, "", false},
-		{mtgmatcher.ErrCardWrongVariant, "", true},
-		{mtgmatcher.ErrUnsupported, "", false},
-		{mtgmatcher.ErrCardWrongVariant, "Can be Normal or 25th Anniversary Stamp", false},
+		{matcher.ErrCardWrongVariant, "", true},
+		{matcher.ErrUnsupported, "", false},
+		{matcher.ErrCardWrongVariant, "Can be Normal or 25th Anniversary Stamp", false},
 	} {
 		got := yugiohRetries(tt.err, tt.notes)
 		if got != tt.want {
@@ -176,7 +176,7 @@ func TestYugiohPIDsNameHeldProducts(t *testing.T) {
 	b := readGameDatastore(t, "yugioh", "YUGIOH_PATH")
 
 	for pid, tcgID := range yugiohPIDs {
-		_, err := b.Match(&mtgmatcher.InputCard{ID: tcgID})
+		_, err := b.Match(&matcher.InputCard{ID: tcgID})
 		if err != nil {
 			t.Errorf("product %s names TCGplayer %s: %v", pid, tcgID, err)
 		}

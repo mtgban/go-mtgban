@@ -1,17 +1,17 @@
 package strikezone
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func init() {
 	mtgban.Register("strikezone",
-		[]mtgmatcher.Game{
-			mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GamePokemon,
-			mtgmatcher.GameFleshAndBlood,
+		[]matcher.Game{
+			matcher.GameMagic, matcher.GameLorcana, matcher.GamePokemon,
+			matcher.GameFleshAndBlood,
 		},
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)
 			if err != nil {
 				return nil, err

@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Sealed prices ABU Games' sealed product.
@@ -19,14 +19,14 @@ type Sealed struct {
 
 	productMap map[string]string
 	client     *ABUClient
-	backend    *mtgmatcher.Backend
+	backend    *matcher.Backend
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
+func NewScraperSealed(b *matcher.Backend) *Sealed {
 	abu := Sealed{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
@@ -223,6 +223,6 @@ func (abu *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &abu.inventoryDate
 	info.BuylistTimestamp = &abu.buylistDate
 	info.SealedMode = true
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

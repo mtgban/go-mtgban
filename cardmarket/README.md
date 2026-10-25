@@ -30,7 +30,7 @@ additionally needs `BAN_API_KEY` (see "The offline pre-filter").
 
 `resolver.go` holds what `Index` and `Market` both need and neither owns
 alone: turning a Cardmarket product - its name, number, expansion - into an
-`mtgmatcher` uuid. Id-map lookup first, then name/number matching per game,
+`matcher` uuid. Id-map lookup first, then name/number matching per game,
 twins, foreign shelves, print runs. It used to live entirely on `Index`;
 `Market` needed the identical logic and inherited it by embedding `resolver`
 rather than reimplementing a thinner version of it, once for the eleven
@@ -126,7 +126,7 @@ priced by the MRL-E130 misprint.
 
 **The datastore's own Cardmarket id answers before the bridge.** One Piece,
 Lorcana and Pokemon publish `cardmarketId`, and the loaders file it under
-`mtgmatcher.IDSpaceCardmarket`. The One Piece ones are the hand-carried
+`matcher.IDSpaceCardmarket`. The One Piece ones are the hand-carried
 pre-errata and reprint printings, which no TCGplayer product sells, so no
 bridge can reach them. Before the id route, 6 of those 26 were priced by
 their own product, 3 by a sibling's and 17 not at all. Now all 26 are
@@ -410,7 +410,7 @@ carries it.
   `mtgban` equivalent**: World of Warcraft, The Spoils, Force of Will,
   Cardfight!! Vanguard, Final Fantasy, Weiss Schwarz, Dragoborne, My Little
   Pony, Dragon Ball Super, Star Wars Destiny, Digimon, Battle Spirits Saga,
-  Star Wars Unlimited and Cyberpunk. `mkmGames` covers exactly the games `mtgmatcher/games` blank-
+  Star Wars Unlimited and Cyberpunk. `mkmGames` covers exactly the games `matcher/games` blank-
   imports; adding any of these needs the full "Adding a game" checklist in
   `AGENTS.md` first; this package is the last, not the first, step.
 - **Index cannot price Yu-Gi-Oh's 1st Edition apart.** Cardmarket keeps

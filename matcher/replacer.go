@@ -1,0 +1,300 @@
+package matcher
+
+import (
+	"slices"
+	"strings"
+	"sync"
+	"sync/atomic"
+)
+
+var replacerStrings = slices.Concat([]string{
+	// Wrong escaping or conversion
+	"&quot;", "",
+
+	// Quotes and commas and whatnot
+	// Brackets are dropped the way parentheses already are: the catalog
+	// spells one card's subtitle both ways - "Boss's Orders [Cyrus]" in
+	// one set and "Boss's Orders (Cyrus)" in another - and a name that
+	// depends on which bracket the catalog reached for is two names for
+	// one card.
+	"[", "",
+	"]", "",
+
+	"''", "",
+	"“", "",
+	"”", "",
+	"\"", "",
+	"'", "",
+	"-", "",
+	"—", "",
+	// Storefronts typeset the hyphen a card is printed with: cardmarket
+	// sends Lorcana's "Fix-It Felix, Jr." spelled with U+2010, and its
+	// dashes with an en dash. Left standing they are one more letter, and
+	// the name matches nothing.
+	"‐", "",
+	"–", "",
+	"’", "",
+	// Storefront exports carry invisible formatting marks: every Yu-Gi-Oh
+	// name coolstuffinc spells with one ends in U+200E. Left standing they
+	// are one more letter, and no datastore name is spelled with any of
+	// them.
+	"\u200b", "",
+	"\u200c", "",
+	"\u200d", "",
+	"\u200e", "",
+	"\u200f", "",
+	"\u00ad", "",
+	"\ufeff", "",
+	// The other spaces they send - a no-break space where the HTML had
+	// &nbsp;, a tab, a thin or ideographic one - go with the ascii space.
+	// They are deleted here, not read as one, so the entries below that
+	// need a space around a word never see them: " and ", " to " and
+	// " & " stay in the key, and "Waste\u00a0Land" loses the protection
+	// that keeps it apart from Wasteland.
+	"\t", "",
+	"\u00a0", "",
+	"\u2009", "",
+	"\u202f", "",
+	"\u3000", "",
+	",", "",
+	"®", "",
+	":", "",
+	"꞉", "",
+	"：", "",
+	"~", "",
+	// Yu-Gi-Oh numbers the cards sharing a name, "Sasuke Samurai #2", and
+	// the storefronts write it without the mark.
+	"#", "",
+	"(", "",
+	")", "",
+	".", "",
+	"!", "",
+	"?", "",
+	"+", "",
+	"…", "",
+
+	// UNF blanks
+	"___________", "_____",
+	"__________", "_____",
+	"_________", "_____",
+	"________", "_____",
+	"_______", "_____",
+	"______", "_____",
+
+	// Separators
+	"goblin // soldier", "goblin // soldier",
+	"/", "",
+	"|", "",
+	"trial and error", "trial and error",
+	"welcome to", "welcometo",
+	" and ", "",
+	" to ", "",
+	" & ", "",
+}, asciiStrings, []string{
+	// Spaces are overrated, except when not
+	"waste land", "waste land",
+	" ", "",
+})
+
+// asciiStrings folds the letters that carry a mark, and the roman numeral
+// codepoints some storefronts write, down to the plain ascii they stand for,
+// and nothing else, for the callers that split a name into words themselves
+// and must not have the rest of the normalizing rewrites applied to it.
+var asciiStrings = []string{
+	"â", "a",
+	"á", "a",
+	"à", "a",
+	"ä", "a",
+	"ā", "a",
+	"ã", "a",
+	"é", "e",
+	"è", "e",
+	"ê", "e",
+	"ë", "e",
+	"ē", "e",
+	"í", "i",
+	"ì", "i",
+	"î", "i",
+	"ï", "i",
+	"ī", "i",
+	"ó", "o",
+	"ò", "o",
+	"ô", "o",
+	"ö", "o",
+	"ō", "o",
+	"õ", "o",
+	"ú", "u",
+	"ù", "u",
+	"û", "u",
+	"ü", "u",
+	"ū", "u",
+	"ñ", "n",
+	"ç", "c",
+	"ð", "d",
+	"š", "s",
+	"æ", "ae",
+	"ß", "ss",
+	"ⅰ", "i",
+	"ⅱ", "ii",
+	"ⅲ", "iii",
+	"ⅳ", "iv",
+	"ⅴ", "v",
+	"ⅵ", "vi",
+	"ⅶ", "vii",
+	"ⅷ", "viii",
+	"ⅸ", "ix",
+	"ⅹ", "x",
+	"ⅺ", "xi",
+	"ⅻ", "xii",
+}
+
+// asciiReplacer folds a marked letter to the plain ascii it stands for.
+var asciiReplacer = strings.NewReplacer(asciiStrings...)
+
+// asciiLower lowercases a name and folds the marks its letters carry.
+//
+// The order is not interchangeable and is why this is a function rather
+// than two calls at each site: asciiStrings knows only the lowercase
+// letters, so folding first leaves an uppercase mark standing, and a name
+// that shouts its accent reads as a different name from one that does not.
+func asciiLower(name string) string {
+	return asciiReplacer.Replace(strings.ToLower(name))
+}
+
+var replacer = strings.NewReplacer(replacerStrings...)
+
+// Normalize is called millions of times, and the generic Replacer
+// allocates on every call even when nothing matches, so results are
+// memoized. The gain comes from repetition in what callers pass in, not
+// just from the datastore names: a scrape normalizes the same handful of
+// store tags across every listing. Caller input therefore has to be
+// cached to be worth anything, which means arbitrary strings reach this
+// map (the site hands it search queries), and the two bounds below exist
+// to keep that from being a liability.
+const (
+	normalizeCacheCap = 1 << 17
+
+	// The longest name the datastore produces is 141 bytes. Anything
+	// past this is caller input too long to repeat, and caching it only
+	// buys a way to retain megabytes of someone else's text.
+	normalizeCacheMaxKey = 160
+)
+
+var (
+	normalizeCache     atomic.Pointer[sync.Map] // string -> string
+	normalizeCacheSize atomic.Int64
+)
+
+func init() {
+	normalizeCache.Store(&sync.Map{})
+}
+
+// Normalize uses the rules defined in Replacer to replace uncommon elements of
+// card names, dropping all the spaces and producing a lowercase string.
+func Normalize(str string) string {
+	cache := normalizeCache.Load()
+	cached, found := cache.Load(str)
+	normalized, isString := cached.(string)
+	if found && isString {
+		return normalized
+	}
+
+	out := strings.TrimSpace(str)
+	out = strings.ToLower(out)
+	out = replacer.Replace(out)
+
+	if len(str) > normalizeCacheMaxKey {
+		return out
+	}
+
+	if normalizeCacheSize.Load() >= normalizeCacheCap {
+		// Start over rather than stop: freezing a full cache lets a
+		// flood of one-off keys lock it shut for the rest of the
+		// process, so that a later datastore reload would never cache
+		// its new names. The entries worth having are re-filled by the
+		// calls that follow. Two goroutines racing here only costs a
+		// second reset.
+		normalizeCache.Store(&sync.Map{})
+		normalizeCacheSize.Store(0)
+		cache = normalizeCache.Load()
+	}
+
+	// Clone the key so the cache cannot pin a larger buffer the
+	// input may be slicing (the output is always freshly built)
+	_, loaded := cache.LoadOrStore(strings.Clone(str), out)
+	if !loaded {
+		normalizeCacheSize.Add(1)
+	}
+	return out
+}
+
+// Equals reports whether the two strings are the same after both are
+// Normalize-d, which folds case and drops punctuation.
+func Equals(str1, str2 string) bool {
+	return Normalize(str1) == Normalize(str2)
+}
+
+// Contains reports whether str1 contains str2 after both are Normalize-d.
+func Contains(str1, str2 string) bool {
+	return strings.Contains(Normalize(str1), Normalize(str2))
+}
+
+// HasPrefix reports whether str2 is a prefix of str1 after both are
+// Normalize-d.
+func HasPrefix(str1, str2 string) bool {
+	return strings.HasPrefix(Normalize(str1), Normalize(str2))
+}
+
+// CloseName reports whether got is want with a piece missing off one end or
+// up to two letters wrong, both read Normalize-d. It is the misspelling test
+// a game's rules gate a rename on, once something else - a collector number,
+// an edition - has already picked the one printing the new name may come
+// from: the closeness is what stops that pick from renaming a card into an
+// unrelated one. Which evidence licenses the rename is each game's own
+// business; what counts as close is not.
+func CloseName(got, want string) bool {
+	got, want = Normalize(got), Normalize(want)
+	if got == "" || want == "" {
+		return false
+	}
+	if strings.HasPrefix(want, got) || strings.HasSuffix(want, got) {
+		return true
+	}
+	return editDistance(got, want, 2) <= 2
+}
+
+// editDistance is the Levenshtein distance between two strings, giving up at
+// limit: the caller only cares whether the two are within a couple of edits,
+// and a name pair that is not stops being measured once the whole row of the
+// table is past the limit.
+func editDistance(a, b string, limit int) int {
+	ar, br := []rune(a), []rune(b)
+	if len(ar) > len(br) {
+		ar, br = br, ar
+	}
+	if len(br)-len(ar) > limit {
+		return limit + 1
+	}
+	prev := make([]int, len(ar)+1)
+	cur := make([]int, len(ar)+1)
+	for i := range prev {
+		prev[i] = i
+	}
+	for j := 1; j <= len(br); j++ {
+		cur[0] = j
+		best := cur[0]
+		for i := 1; i <= len(ar); i++ {
+			cost := 1
+			if ar[i-1] == br[j-1] {
+				cost = 0
+			}
+			cur[i] = min(prev[i]+1, cur[i-1]+1, prev[i-1]+cost)
+			best = min(best, cur[i])
+		}
+		if best > limit {
+			return limit + 1
+		}
+		prev, cur = cur, prev
+	}
+	return prev[len(ar)]
+}

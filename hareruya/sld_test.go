@@ -6,17 +6,17 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var (
 	hareruyaDatastoreOnce sync.Once
-	hareruyaDatastore     *mtgmatcher.Backend
+	hareruyaDatastore     *matcher.Backend
 	hareruyaDatastoreErr  error
 )
 
-func realDatastore(t *testing.T) *mtgmatcher.Backend {
+func realDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	hareruyaDatastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")

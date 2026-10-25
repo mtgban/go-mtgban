@@ -3,7 +3,7 @@ package mtgban
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestArbitUsesTheBackendPassedIn pins that Arbit and Mismatch resolve every
@@ -14,12 +14,12 @@ import (
 func TestArbitUsesTheBackendPassedIn(t *testing.T) {
 	for _, report := range []string{"arbit", "mismatch"} {
 		t.Run(report, func(t *testing.T) {
-			wanted := map[string]*mtgmatcher.CardObject{}
-			other := map[string]*mtgmatcher.CardObject{}
+			wanted := map[string]*matcher.CardObject{}
+			other := map[string]*matcher.CardObject{}
 			inv, reference, buy := InventoryRecord{}, InventoryRecord{}, BuylistRecord{}
 			for _, id := range []string{"first", "second"} {
-				wanted[id] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{UUID: id, Name: "wanted"}}
-				other[id] = &mtgmatcher.CardObject{Card: mtgmatcher.Card{UUID: id, Name: "other"}}
+				wanted[id] = &matcher.CardObject{Card: matcher.Card{UUID: id, Name: "wanted"}}
+				other[id] = &matcher.CardObject{Card: matcher.Card{UUID: id, Name: "other"}}
 				if err := inv.Add(id, &InventoryEntry{Price: 1}); err != nil {
 					t.Fatal(err)
 				}
@@ -36,13 +36,13 @@ func TestArbitUsesTheBackendPassedIn(t *testing.T) {
 			var calls int
 			seen := map[string]bool{}
 			opts := &ArbitOpts{
-				CustomCardFilter: func(co *mtgmatcher.CardObject) (float64, bool) {
+				CustomCardFilter: func(co *matcher.CardObject) (float64, bool) {
 					calls++
 					seen[co.Name] = true
 					return 1, false
 				},
 			}
-			run := func(b *mtgmatcher.Backend) []ArbitEntry {
+			run := func(b *matcher.Backend) []ArbitEntry {
 				calls = 0
 				seen = map[string]bool{}
 				if report == "arbit" {

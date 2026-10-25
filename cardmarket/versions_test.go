@@ -6,7 +6,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // TestVersionPrintingsAreReal holds versionPrintings to the datastore: every

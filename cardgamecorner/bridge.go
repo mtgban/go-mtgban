@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // listedCodeRe matches the collector code a One Piece name carries, ahead of
@@ -27,7 +27,7 @@ func (cgc *Cardgamecorner) matchByProductImage(card *Card, foil bool) (string, b
 	}
 
 	b := cgc.backend
-	id := b.ConvertID(mtgmatcher.IDSpaceCardmarket, image[1])
+	id := b.ConvertID(matcher.IDSpaceCardmarket, image[1])
 	if id == "" {
 		productID, err := strconv.Atoi(image[1])
 		if err != nil {

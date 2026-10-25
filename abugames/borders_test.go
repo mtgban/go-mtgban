@@ -3,7 +3,7 @@ package abugames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestForeignWhiteBorder pins the listing naming a white-bordered Fourth
@@ -11,7 +11,7 @@ import (
 // white and 4BB in Japanese and black, and nothing else, so this answered
 // with the black-bordered card and put its price beside that one's.
 func TestForeignWhiteBorder(t *testing.T) {
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	card := ABUCard{DisplayTitle: "Sylvan Library (WB)", Edition: "4th Edition", Number: "273",
 		Title: "Non-English - Japanese - White Bordered", Language: []string{"Japanese"}}
 	in, err := preprocess(b, &card)

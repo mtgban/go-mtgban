@@ -7,30 +7,30 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // csvCards is the datastore the writers read to fill the card columns. A card
 // the datastore does not hold is dropped from the file, so every id used below
 // needs an entry here or the row it should have written never appears.
-func csvCards() map[string]*mtgmatcher.CardObject {
-	return map[string]*mtgmatcher.CardObject{
+func csvCards() map[string]*matcher.CardObject {
+	return map[string]*matcher.CardObject{
 		"plain": {
-			Card:    mtgmatcher.Card{Name: "Plain Card", Rarity: "rare", Number: "10"},
+			Card:    matcher.Card{Name: "Plain Card", Rarity: "rare", Number: "10"},
 			Edition: "Alpha Set",
 		},
 		"shiny": {
-			Card:    mtgmatcher.Card{Name: "Shiny Card", Rarity: "mythic", Number: "11"},
+			Card:    matcher.Card{Name: "Shiny Card", Rarity: "mythic", Number: "11"},
 			Edition: "Alpha Set",
 			Foil:    true,
 		},
 		"scratched": {
-			Card:    mtgmatcher.Card{Name: "Etched Card", Rarity: "rare", Number: "12"},
+			Card:    matcher.Card{Name: "Etched Card", Rarity: "rare", Number: "12"},
 			Edition: "Alpha Set",
 			Etched:  true,
 		},
 		"box": {
-			Card:    mtgmatcher.Card{Name: "Booster Box", Number: "13"},
+			Card:    matcher.Card{Name: "Booster Box", Number: "13"},
 			Edition: "Alpha Set",
 			Sealed:  true,
 		},
@@ -332,8 +332,8 @@ func TestWriteInventoryToCSVNamesTheFinish(t *testing.T) {
 // Rare", and a rarity with no label kept is title-cased.
 func TestWriteInventoryToCSVSpellsTheRarity(t *testing.T) {
 	cards := csvCards()
-	cards["super"] = &mtgmatcher.CardObject{
-		Card:    mtgmatcher.Card{Name: "Super Card", Rarity: "superrare", Number: "14"},
+	cards["super"] = &matcher.CardObject{
+		Card:    matcher.Card{Name: "Super Card", Rarity: "superrare", Number: "14"},
 		Edition: "Alpha Set",
 	}
 	b := backendFor(cards)

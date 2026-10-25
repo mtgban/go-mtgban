@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-tcgplayer"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/gundam"
+	_ "github.com/mtgban/go-mtgban/matcher/gundam"
 )
 
 // gameFixture is the published Gundam datastore's rows of 2026-10-02 for
@@ -51,7 +51,7 @@ var gameProducts = []tcgplayer.Product{
 // its printings are the category's, as TCGplayer lists them.
 func gameScraper(t *testing.T, sealed bool) (*TCGGame, *[]string) {
 	t.Helper()
-	b, err := mtgmatcher.Open(mtgmatcher.GameGundam, strings.NewReader(gameFixture))
+	b, err := matcher.Open(matcher.GameGundam, strings.NewReader(gameFixture))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ func gameScraper(t *testing.T, sealed bool) (*TCGGame, *[]string) {
 }
 
 // describe names what an entry landed on, and how it is priced.
-func describe(b *mtgmatcher.Backend, out genericChan) string {
+func describe(b *matcher.Backend, out genericChan) string {
 	what := out.key
 	co, err := b.GetUUID(out.key)
 	if err == nil {
@@ -232,7 +232,7 @@ func TestGameMarketNames(t *testing.T) {
 }
 
 func TestGameIndexProductEntries(t *testing.T) {
-	b, err := mtgmatcher.Open(mtgmatcher.GameGundam, strings.NewReader(gameFixture))
+	b, err := matcher.Open(matcher.GameGundam, strings.NewReader(gameFixture))
 	if err != nil {
 		t.Fatal(err)
 	}

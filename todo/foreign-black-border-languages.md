@@ -1,7 +1,7 @@
 # Todo: language copies for Foreign Black Border and 4th Edition FBB
 
 Written for whichever agent picks this up next. Nothing here is built yet;
-this is the design agreed on 2026-09-24, when "mtgmatcher/magic: keep
+this is the design agreed on 2026-09-24, when "matcher/magic: keep
 numbers on whole-set copies" stopped tagging the numbers of LEGITA, DRKITA
 and 4EDALT and kept the tag only for copies filed next to their original.
 
@@ -15,7 +15,7 @@ card once, in one language, and refuses every other on purpose.
 | FBB | French, German, Italian | French | Italian |
 | 4BB | Chinese Traditional, Japanese, Korean, Portuguese (Brazil), Spanish | Spanish | Japanese |
 
-- The override is `forcedLanguages` in `mtgmatcher/magic/table.go`, applied
+- The override is `forcedLanguages` in `matcher/magic/table.go`, applied
   in the per-set loop of `mtgjson.go`: US storefronts mostly sell Italian
   FBB and Japanese 4BB. A card takes the language only if it was printed in
   it (FBB's Forest #306a exists in German alone).
@@ -59,7 +59,7 @@ card once, in one language, and refuses every other on purpose.
   base's ids.
 - `duplicateCards` finds a copy's printed name and Scryfall id by exact
   `foreignData.Language`. mtgjson says "Portuguese (Brazil)"; core's tag is
-  "Portuguese" (`mtgmatcher/table.go`), so the lookup would miss.
+  "Portuguese" (`matcher/table.go`), so the lookup would miss.
 - The base cards show their forced language's image since #769, but the
   name the site quotes beside the flag is still mtgjson's `flavorName`,
   which for these sets holds its own printing's name ("Animation de mur",

@@ -6,22 +6,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Merlion prices what Merlion Games buys.
 type Merlion struct {
 	logCallback mtgban.LogCallbackFunc
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	buylistDate time.Time
 	buylist     mtgban.BuylistRecord
 }
 
 // NewScraper returns a buylist scraper matching against b.
-func NewScraper(b *mtgmatcher.Backend) *Merlion {
+func NewScraper(b *matcher.Backend) *Merlion {
 	mg := Merlion{backend: b}
 	mg.buylist = mtgban.BuylistRecord{}
 	return &mg
@@ -59,7 +59,7 @@ func (mg *Merlion) Load(ctx context.Context) error {
 		// The feed names a printing by its TCGplayer id: ConvertID crosses
 		// into the matcher's uuids and MatchID applies the finish. So
 		// neither the name nor the edition has to survive the round trip.
-		uuid := mg.backend.ConvertID(mtgmatcher.IDSpaceTCGplayer, card.TCGplayerID)
+		uuid := mg.backend.ConvertID(matcher.IDSpaceTCGplayer, card.TCGplayerID)
 		cardID, err := mg.backend.MatchID(uuid, card.Foil)
 		if err != nil {
 			mg.printf("%v: %s %s (%s)", err, card.TCGplayerID, card.Name, card.Edition)
@@ -117,7 +117,7 @@ func (mg *Merlion) Buylist() mtgban.BuylistRecord {
 func (mg *Merlion) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Merlion Games"
 	info.Shorthand = "MG"
-	info.Game = mtgmatcher.GameRiftbound
+	info.Game = matcher.GameRiftbound
 	info.BuylistTimestamp = &mg.buylistDate
 	return
 }

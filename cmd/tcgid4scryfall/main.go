@@ -1,5 +1,5 @@
 // Command tcgid4scryfall walks Scryfall's catalog and reports where its
-// TCGplayer ids disagree with the ones mtgmatcher resolves.
+// TCGplayer ids disagree with the ones matcher resolves.
 package main
 
 import (
@@ -13,9 +13,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 	api "github.com/mtgban/go-tcgplayer"
 )
@@ -40,7 +40,7 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
-func processCards(ctx context.Context, ds *mtgmatcher.Backend, client *api.Client, channel chan<- responseChan, page int) error {
+func processCards(ctx context.Context, ds *matcher.Backend, client *api.Client, channel chan<- responseChan, page int) error {
 	products, err := client.ListAllProducts(ctx, api.CategoryMagic, []string{"Cards"}, false, page)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func processCards(ctx context.Context, ds *mtgmatcher.Backend, client *api.Clien
 		}
 
 		cardID, err := ds.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			continue
 		}
 		if err != nil {
@@ -78,7 +78,7 @@ func processCards(ctx context.Context, ds *mtgmatcher.Backend, client *api.Clien
 			fmt.Fprintln(os.Stderr, "error on page", page, "-", err)
 			fmt.Fprintln(os.Stderr, theCard)
 			fmt.Fprintln(os.Stderr, product)
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {

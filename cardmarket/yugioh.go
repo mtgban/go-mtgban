@@ -8,7 +8,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // yugiohTokenPrefixes gives the collector number each Token Promos shelf's
@@ -193,7 +193,7 @@ func yugiohEditions(expansion string) []string {
 // shifted by a card or two, and two products named alike that reached one
 // printing are that printing's however they are numbered.
 func yugiohSameProduct(a, b *cm.Product) bool {
-	return mtgmatcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == mtgmatcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
+	return matcher.Normalize(versionTail.ReplaceAllString(a.Name, "")) == matcher.Normalize(versionTail.ReplaceAllString(b.Name, ""))
 }
 
 // yugiohVersionVariants names the printings a shelf sells under one name,
@@ -241,7 +241,7 @@ var yugiohVersionVariants = map[string][]string{
 // the tag. Twenty-six of the thirty-eight oversized products have no such
 // printing at all and stay refused, which is what they are: cards we do not
 // carry.
-func yugiohOversized(b *mtgmatcher.Backend, name string) (string, error) {
+func yugiohOversized(b *matcher.Backend, name string) (string, error) {
 	uuids, err := b.SearchEquals(name)
 	if err != nil {
 		return "", errNoPrinting
@@ -341,7 +341,7 @@ func (r *resolver) yugiohOtherCard(product *cm.Product, cardID string) bool {
 	}
 	name := versionTail.ReplaceAllString(product.Name, "")
 	konamiID := co.Identifiers["konamiId"]
-	if konamiID == "" || mtgmatcher.Equals(co.Name, name) {
+	if konamiID == "" || matcher.Equals(co.Name, name) {
 		return false
 	}
 	uuids, err := r.backend.SearchEquals(name)

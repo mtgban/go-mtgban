@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestPreprocessPromoWordingVeto pins the shelf/version wording guard in the
@@ -25,7 +25,7 @@ func TestPreprocessPromoWordingVeto(t *testing.T) {
 		bp.Expansion.Name = "Aether Revolt Prerelease"
 		bp.Properties.Number = "093"
 
-		want := b.ConvertID(mtgmatcher.IDSpaceScryfall, bp.ScryfallID)
+		want := b.ConvertID(matcher.IDSpaceScryfall, bp.ScryfallID)
 		if want == "" {
 			t.Fatal("datastore carries no scryfall id 54b8a03a-de93-43ed-b90d-7d168a21801a")
 		}
@@ -96,7 +96,7 @@ func TestPreprocessPromoWordingVeto(t *testing.T) {
 			t.Fatal(err)
 		}
 		_, err = b.Match(in)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("Match with the scryfall id alone = %v, want ErrUnsupported", err)
 		}
 
@@ -115,7 +115,7 @@ func TestPreprocessPromoWordingVeto(t *testing.T) {
 			t.Fatal(err)
 		}
 		_, err = b.Match(in)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("Match with both ids on a card with a prerelease copy = %v, want ErrUnsupported", err)
 		}
 	})

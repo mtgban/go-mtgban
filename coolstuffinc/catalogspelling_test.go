@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestCatalogSpelling pins the Yu-Gi-Oh names this storefront misspells. Each
@@ -41,12 +41,12 @@ func TestCatalogSpelling(t *testing.T) {
 			if spelled == test.name {
 				t.Fatalf("catalogSpelling(%q) corrected nothing", test.name)
 			}
-			asTyped := &mtgmatcher.InputCard{Name: test.name, Edition: test.edition, Variation: test.variation}
+			asTyped := &matcher.InputCard{Name: test.name, Edition: test.edition, Variation: test.variation}
 			if id, err := b.Match(asTyped); err == nil {
 				t.Errorf("Match(%q) = %q, want the name to reach nothing before it is corrected",
 					test.name, id)
 			}
-			card := &mtgmatcher.InputCard{Name: spelled, Edition: test.edition, Variation: test.variation}
+			card := &matcher.InputCard{Name: spelled, Edition: test.edition, Variation: test.variation}
 			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", spelled, err)

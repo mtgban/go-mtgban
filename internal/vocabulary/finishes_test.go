@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestPublishedFinishesHaveARow reports a finish a datastore publishes that
-// mtgmatcher.Finishes has no row for: it loads under its own name, but it is
+// matcher.Finishes has no row for: it loads under its own name, but it is
 // taken for a foil and has no run or label until someone adds the row.
 func TestPublishedFinishesHaveARow(t *testing.T) {
 	var played int
@@ -27,12 +27,12 @@ func TestPublishedFinishesHaveARow(t *testing.T) {
 			if co.Sealed {
 				continue
 			}
-			if _, found := mtgmatcher.FinishOf(co.Finish); !found {
+			if _, found := matcher.FinishOf(co.Finish); !found {
 				missing[co.Finish]++
 			}
 		}
 		for finish, count := range missing {
-			t.Errorf("%s: %d printings are sold in %q, which mtgmatcher.Finishes has no row for", game, count, finish)
+			t.Errorf("%s: %d printings are sold in %q, which matcher.Finishes has no row for", game, count, finish)
 		}
 	}
 	if played == 0 {

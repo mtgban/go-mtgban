@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestOpPlaceholderNumber pins the One Piece placeholder-number rule: a
@@ -36,7 +36,7 @@ func TestOpPlaceholderNumber(t *testing.T) {
 // catalog's own promo shelf name. A non-DON!! card on the same shelf, and a
 // DON!! on any other shelf, are both left alone.
 func TestOpDonPromoShelfEdition(t *testing.T) {
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	don := Blueprint{Name: "DON!!"}
 	don.Expansion.Name = "One Piece Promos"
 	if got := gameEdition(b, GameOnePiece, &don); got != "One Piece Promotion Cards" {

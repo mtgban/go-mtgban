@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -32,7 +32,7 @@ type Cardsphere struct {
 	buylistDate    time.Time
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	client  *Client
 	buylist mtgban.BuylistRecord
@@ -40,7 +40,7 @@ type Cardsphere struct {
 
 // NewScraper returns a scraper matching against b, authenticated with the
 // given token.
-func NewScraper(b *mtgmatcher.Backend, token string) *Cardsphere {
+func NewScraper(b *matcher.Backend, token string) *Cardsphere {
 	cs := Cardsphere{backend: b}
 	cs.buylist = mtgban.BuylistRecord{}
 	cs.maxConcurrency = defaultConcurrency
@@ -213,6 +213,6 @@ func (cs *Cardsphere) Info() (info mtgban.ScraperInfo) {
 	// Rebuild the cash out fee
 	info.CreditMultiplier = 1.1
 	info.BuylistTimestamp = &cs.buylistDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

@@ -6,7 +6,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // promoLink is one product a promo link table names, as Cardmarket
@@ -21,7 +21,7 @@ type promoLink struct {
 // checkPromoLinks resolves every product of a link table and checks it
 // lands on its card, set, number and, where given, rarity; a table entry
 // with no row here fails too.
-func checkPromoLinks(t *testing.T, b *mtgmatcher.Backend, table map[int]int, links []promoLink) {
+func checkPromoLinks(t *testing.T, b *matcher.Backend, table map[int]int, links []promoLink) {
 	t.Helper()
 	mkm, err := NewScraperIndex(b)
 	if err != nil {
@@ -76,7 +76,7 @@ func TestPokemonHoloLinks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
-	holofoil := mtgmatcher.FinishSlug("Holofoil")
+	holofoil := matcher.FinishSlug("Holofoil")
 	for mkmID, tcgID := range pokemonHoloLinks {
 		cardID, err := mkm.pokemonByID(&cm.Product{IDProduct: mkmID})
 		if err != nil {

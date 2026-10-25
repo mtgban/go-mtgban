@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestScraperInfoGameJSON pins that every game, Magic included, writes
 // an explicit game field rather than Magic relying on an omitted zero value.
 func TestScraperInfoGameJSON(t *testing.T) {
 	for _, tt := range []struct {
-		game mtgmatcher.Game
+		game matcher.Game
 		want string
 	}{
-		{mtgmatcher.GameMagic, `{"name":"","shorthand":"","game":"magic"}`},
-		{mtgmatcher.GamePokemon, `{"name":"","shorthand":"","game":"pokemon"}`},
+		{matcher.GameMagic, `{"name":"","shorthand":"","game":"magic"}`},
+		{matcher.GamePokemon, `{"name":"","shorthand":"","game":"pokemon"}`},
 	} {
 		blob, err := json.Marshal(ScraperInfo{Game: tt.game})
 		if err != nil {

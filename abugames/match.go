@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // matchCard uses catalog IDs to distinguish candidates the listing's wording
@@ -13,22 +13,22 @@ import (
 // (38) names DDI #40 by ID, and The List listings carry the original's IDs.
 // A successful text match therefore wins; IDs cannot override its distinctions
 // or resurrect an unsupported listing.
-func matchCard(b *mtgmatcher.Backend, card *ABUCard, in *mtgmatcher.InputCard) (string, error) {
+func matchCard(b *matcher.Backend, card *ABUCard, in *matcher.InputCard) (string, error) {
 	id, err := b.Match(in)
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if !errors.As(err, &alias) {
 		return id, err
 	}
 	candidates := alias.Probe()
-	finish := mtgmatcher.FinishNonfoil
+	finish := matcher.FinishNonfoil
 	if in.IsEtched() {
-		finish = mtgmatcher.FinishEtched
+		finish = matcher.FinishEtched
 	} else if in.Foil {
-		finish = mtgmatcher.FinishFoil
+		finish = matcher.FinishFoil
 	}
 	var found string
 	conflict := false
-	consider := func(space mtgmatcher.IDSpace, external string) {
+	consider := func(space matcher.IDSpace, external string) {
 		base := b.ConvertID(space, external)
 		if base == "" {
 			return
@@ -41,7 +41,7 @@ func matchCard(b *mtgmatcher.Backend, card *ABUCard, in *mtgmatcher.InputCard) (
 		probe := *in
 		probe.ID = candidate
 		probe.Finish = finish
-		validated, lookupErr := b.ValidateID(probe, mtgmatcher.IDValidationOptions{})
+		validated, lookupErr := b.ValidateID(probe, matcher.IDValidationOptions{})
 		if lookupErr != nil || validated != candidate {
 			return
 		}
@@ -51,11 +51,11 @@ func matchCard(b *mtgmatcher.Backend, card *ABUCard, in *mtgmatcher.InputCard) (
 		found = candidate
 	}
 	for _, external := range card.ScryfallIDs {
-		consider(mtgmatcher.IDSpaceScryfall, external)
+		consider(matcher.IDSpaceScryfall, external)
 	}
 	for _, external := range card.TCGplayerIDs {
 		if external > 0 {
-			consider(mtgmatcher.IDSpaceTCGplayer, strconv.FormatInt(external, 10))
+			consider(matcher.IDSpaceTCGplayer, strconv.FormatInt(external, 10))
 		}
 	}
 	if found != "" && !conflict {

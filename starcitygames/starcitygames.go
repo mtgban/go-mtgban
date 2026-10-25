@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Starcitygames prices SCG's singles, both what they sell and what they buy.
@@ -36,7 +36,7 @@ type Starcitygames struct {
 
 	setIDs  map[string]int
 	client  *SCGClient
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	gameID  int
 
 	// bulkRated counts the buylist figures dropped as a bulk tier's rate.
@@ -47,7 +47,7 @@ type Starcitygames struct {
 }
 
 // NewScraper returns a singles scraper for one game, using the given API key.
-func NewScraper(b *mtgmatcher.Backend, apiKey string) (*Starcitygames, error) {
+func NewScraper(b *matcher.Backend, apiKey string) (*Starcitygames, error) {
 	game := b.Game
 	gameID, ok := scgGames[game]
 	if !ok {
@@ -105,7 +105,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 
 	cardID, err := resolveProduct(scg.backend, scg.gameID, p)
 	if err != nil {
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			return
 		}
 		// Skip tokens and similar
@@ -114,7 +114,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		}
 		scg.printf("%v for %q [%s %s #%s] sku=%s scryfall=%s", err, p.Name, p.Set, p.Finish, p.CollectorNumber, p.SKU, p.ScryfallID)
 
-		var alias *mtgmatcher.AliasingError
+		var alias *matcher.AliasingError
 		if errors.As(err, &alias) {
 			for _, probe := range alias.Probe() {
 				co, _ := scg.backend.GetUUID(probe)
@@ -170,7 +170,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 
 		// A single catalog download carries both retail and buylist data, so
 		// both records are populated in the same pass.
-		retailPrice, _ := mtgmatcher.ParsePrice(v.Price)
+		retailPrice, _ := matcher.ParsePrice(v.Price)
 
 		if retailPrice > 0 && v.Qty > 0 {
 			entry := &mtgban.InventoryEntry{

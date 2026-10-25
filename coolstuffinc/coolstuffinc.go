@@ -19,9 +19,9 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -51,15 +51,15 @@ const (
 // shelf a game is searched under, and a game named nowhere here is not one
 // Cool Stuff Inc is read for. The shelves themselves stay public - Search,
 // GetBuylist and LoadBuylistEditions each ask for one by name.
-var csiGames = map[mtgmatcher.Game]string{
-	mtgmatcher.GameMagic:     GameMagic,
-	mtgmatcher.GameLorcana:   GameLorcana,
-	mtgmatcher.GameRiftbound: GameRiftbound,
-	mtgmatcher.GameYuGiOh:    GameYuGiOh,
-	mtgmatcher.GameOnePiece:  GameOnePiece,
-	mtgmatcher.GamePokemon:   GamePokemon,
-	mtgmatcher.GameGundam:    GameGundam,
-	mtgmatcher.GamePalworld:  GamePalworld,
+var csiGames = map[matcher.Game]string{
+	matcher.GameMagic:     GameMagic,
+	matcher.GameLorcana:   GameLorcana,
+	matcher.GameRiftbound: GameRiftbound,
+	matcher.GameYuGiOh:    GameYuGiOh,
+	matcher.GameOnePiece:  GameOnePiece,
+	matcher.GamePokemon:   GamePokemon,
+	matcher.GameGundam:    GameGundam,
+	matcher.GamePalworld:  GamePalworld,
 }
 
 var deductions = []float64{1, 1, 0.75}
@@ -98,7 +98,7 @@ type Coolstuffinc struct {
 
 	client  *http.Client
 	shelf   string
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	// skuIndex is skuNumbers of the backend, for a Yu-Gi-Oh scraper.
 	skuIndex map[string][]string
@@ -152,8 +152,8 @@ func csiAmbiguousRefusal(notes string, err error) bool {
 	if !csiAmbiguousNote.MatchString(notes) {
 		return false
 	}
-	var alias *mtgmatcher.AliasingError
-	return errors.As(err, &alias) || errors.Is(err, mtgmatcher.ErrCardWrongVariant)
+	var alias *matcher.AliasingError
+	return errors.As(err, &alias) || errors.Is(err, matcher.ErrCardWrongVariant)
 }
 
 // buylistNumberWord matches the number-shaped words of a buylist note.
@@ -162,7 +162,7 @@ var buylistNumberWord = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,
 var buylistReprintNote = regexp.MustCompile(`(?i)\breprints?\b`)
 
 // jpArtWordingRe matches "Japanese Art"/"Artwork"/"Art Style", which
-// mtgmatcher's language filter otherwise reads as a request for a
+// matcher's language filter otherwise reads as a request for a
 // Japanese-language card. "Japanese Letters in Art" is a Yu-Gi-Oh artwork
 // note and is read by yugiohArtNotes before it gets here.
 var jpArtWordingRe = regexp.MustCompile(`(?i)Japanese Art(?:work|\s+Style)?`)
@@ -200,7 +200,7 @@ func buylistVariation(product CSIPriceEntry) string {
 }
 
 // NewScraper returns a singles scraper for the datastore's game.
-func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
+func NewScraper(b *matcher.Backend) (*Coolstuffinc, error) {
 	game := b.Game
 	shelf, ok := csiGames[game]
 	if !ok {
@@ -213,7 +213,7 @@ func NewScraper(b *mtgmatcher.Backend) (*Coolstuffinc, error) {
 	csi.maxConcurrency = defaultConcurrency
 	csi.shelf = shelf
 	csi.backend = b
-	if game == mtgmatcher.GameYuGiOh {
+	if game == matcher.GameYuGiOh {
 		csi.skuIndex = skuNumbers(b)
 	}
 	return &csi, nil
@@ -320,7 +320,7 @@ func conditionRun(conditions string) []string {
 // matchRun resolves a listing sold as one of a card's print runs, refusing
 // an answer that does not carry it rather than pricing the run as the
 // ordinary printing.
-func matchRun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, finishes []string) (string, error) {
+func matchRun(b *matcher.Backend, inCard *matcher.InputCard, finishes []string) (string, error) {
 	var err error
 	for _, finish := range finishes {
 		probe := *inCard
@@ -334,12 +334,12 @@ func matchRun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, finishes []st
 		if uerr != nil {
 			continue
 		}
-		if co.Finish == mtgmatcher.Normalize(finish) {
+		if co.Finish == matcher.Normalize(finish) {
 			return cardID, nil
 		}
 	}
 	if err == nil {
-		err = mtgmatcher.ErrUnsupported
+		err = matcher.ErrUnsupported
 	}
 	return "", err
 }
@@ -594,9 +594,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					link += "?utm_referrer=" + csi.partner
 				}
 
-				var theCard *mtgmatcher.InputCard
+				var theCard *matcher.InputCard
 				switch csi.backend.Game {
-				case mtgmatcher.GameMagic:
+				case matcher.GameMagic:
 					c, err := preprocess(csi.backend, cardName, edition, notes, imgURL, isFoil)
 					if err != nil {
 						return
@@ -605,10 +605,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					// from one of the fields (cardName in particular)
 					c.Foil = c.Foil || isFoil
 					theCard = c
-				case mtgmatcher.GameYuGiOh:
+				case matcher.GameYuGiOh:
 					tcgID, named := yugiohPIDs[pid]
 					if named {
-						theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: isFoil}
+						theCard = &matcher.InputCard{ID: tcgID, Foil: isFoil}
 						break
 					}
 					if unknownPrinting(cardName, edition) {
@@ -619,7 +619,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						break
 					}
 					theCard = yugiohListing(cardName, edition, notes, notes, rarity, isFoil)
-				case mtgmatcher.GamePokemon:
+				case matcher.GamePokemon:
 					shelf, shelfRun := firstEditionShelf(edition)
 					if shelfRun != nil {
 						runFinishes = shelfRun
@@ -630,53 +630,53 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					variation := catalogTreatment(head)
 					shelf = pokemonPromoShelf(csi.backend, cardName, shelf, rarity, isFoil, variation)
 					theCard = pokemonHoloShelf(csi.backend, pokemonCosmosHolo(csi.backend, pokemonListing(csi.backend, cardName, shelf, variation, isFoil), rarity))
-				case mtgmatcher.GameOnePiece:
+				case matcher.GameOnePiece:
 					tcgID, named := onePiecePIDs[pid]
 					if named {
-						theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: isFoil}
+						theCard = &matcher.InputCard{ID: tcgID, Foil: isFoil}
 						break
 					}
 					shelf := onePieceShelf(edition, cardName)
 					if onePieceAlternatePromo(cardName) {
-						theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(cardName), Edition: "One Piece Promotion Cards", Variation: "Alternate Art", Foil: isFoil}
+						theCard = &matcher.InputCard{Name: onePieceSpelling(cardName), Edition: "One Piece Promotion Cards", Variation: "Alternate Art", Foil: isFoil}
 						break
 					}
 					donName, donDescription, isDon := onePieceDonName(cardName)
 					if isDon {
-						theCard = &mtgmatcher.InputCard{Name: donName, Edition: shelf, Variation: donDescription, Foil: isFoil}
+						theCard = &matcher.InputCard{Name: donName, Edition: shelf, Variation: donDescription, Foil: isFoil}
 						_, err := csi.backend.Match(theCard)
 						if err != nil {
 							renamed := onePieceDonRenamed(donDescription)
 							if renamed != "" {
-								theCard = &mtgmatcher.InputCard{Name: donName, Edition: shelf, Variation: renamed, Foil: isFoil}
+								theCard = &matcher.InputCard{Name: donName, Edition: shelf, Variation: renamed, Foil: isFoil}
 							}
 						}
 						break
 					}
 					spelled := onePieceSpelling(jpArtWording(cardName))
-					theCard = &mtgmatcher.InputCard{Name: spelled, Edition: shelf, Variation: eventNamed(strings.TrimSpace(nameQualifiers(spelled) + " " + onePieceSpelling(jpArtWording(notes)))), Foil: isFoil}
-				case mtgmatcher.GameGundam:
+					theCard = &matcher.InputCard{Name: spelled, Edition: shelf, Variation: eventNamed(strings.TrimSpace(nameQualifiers(spelled) + " " + onePieceSpelling(jpArtWording(notes)))), Foil: isFoil}
+				case matcher.GameGundam:
 					tcgID, named := gundamPIDs[pid]
 					if named {
-						theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: isFoil}
+						theCard = &matcher.InputCard{ID: tcgID, Foil: isFoil}
 						break
 					}
 					name, variation := gundamCard(csi.backend, cardName, gundamNumber(notes))
-					theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity, cardName)), Foil: isFoil}
+					theCard = &matcher.InputCard{Name: name, Edition: gundamShelf(edition), Variation: strings.TrimSpace(variation + " " + notes + " " + gundamTier(rarity, cardName)), Foil: isFoil}
 				// Palworld numbers a parallel apart from the card it
 				// parallels, so the note names one printing on its own -
 				// once the rarity code this storefront sometimes types onto
 				// the number is written back beside it.
-				case mtgmatcher.GamePalworld:
-					theCard = &mtgmatcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
-				case mtgmatcher.GameRiftbound:
+				case matcher.GamePalworld:
+					theCard = &matcher.InputCard{Name: palworldName(cardName), Edition: edition, Variation: palworldNotes(notes), Foil: isFoil}
+				case matcher.GameRiftbound:
 					riftboundCardName := riftboundSpellings.Replace(cardName)
 					variation := riftboundNotes.Replace(notes)
 					if edition == "Promo" && notes == "" {
 						variation = riftboundLetteredPromo(csi.backend, riftboundCardName, imgURL, isFoil)
 					}
 					shelf := riftboundShelf(csi.backend, edition, notes, riftboundCardName, variation, isFoil)
-					theCard = &mtgmatcher.InputCard{Name: riftboundCardName, Edition: shelf, Variation: variation, Foil: isFoil}
+					theCard = &matcher.InputCard{Name: riftboundCardName, Edition: shelf, Variation: variation, Foil: isFoil}
 					_, err := csi.backend.Match(theCard)
 					if err != nil {
 						fromImage := riftboundImageCard(csi.backend, imgURL, isFoil)
@@ -684,8 +684,8 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 							theCard = fromImage
 						}
 					}
-				case mtgmatcher.GameLorcana:
-					theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(cardName), Edition: lorcanaShelf(csi.backend, cardName, edition, notes), Variation: lorcanaVariation(notes), Foil: isFoil}
+				case matcher.GameLorcana:
+					theCard = &matcher.InputCard{Name: lorcanaSpelling(cardName), Edition: lorcanaShelf(csi.backend, cardName, edition, notes), Variation: lorcanaVariation(notes), Foil: isFoil}
 				}
 
 				if printing != "" {
@@ -698,13 +698,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				} else {
 					cardID, err = csi.backend.Match(theCard)
 				}
-				if csi.backend.Game == mtgmatcher.GameYuGiOh && runFinishes == nil && yugiohRetries(err, notes) {
+				if csi.backend.Game == matcher.GameYuGiOh && runFinishes == nil && yugiohRetries(err, notes) {
 					fromImage := yugiohSKUCard(csi.backend, csi.skuIndex, theCard, imgURL)
 					if fromImage != "" {
 						cardID, err = fromImage, nil
 					}
 				}
-				if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				if errors.Is(err, matcher.ErrUnsupported) {
 					return
 				} else if err != nil {
 					switch {
@@ -719,7 +719,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						csi.printf("'%s' '%s' '%s'", cardName, edition, notes)
 						csi.printf("- %s", link)
 
-						var alias *mtgmatcher.AliasingError
+						var alias *matcher.AliasingError
 						if errors.As(err, &alias) {
 							for _, probe := range alias.Probe() {
 								card, _ := csi.backend.GetUUID(probe)
@@ -730,7 +730,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					return
 				}
 
-				if csi.backend.Game == mtgmatcher.GameOnePiece {
+				if csi.backend.Game == matcher.GameOnePiece {
 					cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, cardName, notes)
 					// A slab's finish, or a named printing's, is not told by the
 					// foil prefix, and a product id names its own printing.
@@ -741,7 +741,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				// Magic-only finish sanity check: skip cards that do not have the
 				// requested finish.
-				if csi.backend.Game == mtgmatcher.GameMagic {
+				if csi.backend.Game == matcher.GameMagic {
 					if strings.Contains(cardName, "Foil-etched") {
 						co, err := csi.backend.GetUUID(cardID)
 						if err != nil || !co.Etched {
@@ -922,7 +922,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 	// Some Magic PIDs get a placeholder isFoil=1 row at a flat price beside
 	// their real nonfoil row; nonfoilPID feeds magicPhantomFoilTwin below.
 	nonfoilPID := map[string]bool{}
-	if csi.backend.Game == mtgmatcher.GameMagic {
+	if csi.backend.Game == matcher.GameMagic {
 		for _, product := range products {
 			if product.IsFoil == 0 {
 				nonfoilPID[product.PID] = true
@@ -955,10 +955,10 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		u.RawQuery = v.Encode()
 		link := u.String()
 
-		var theCard *mtgmatcher.InputCard
+		var theCard *matcher.InputCard
 		var runFinishes []string
 		switch csi.backend.Game {
-		case mtgmatcher.GameMagic:
+		case matcher.GameMagic:
 			c, err := PreprocessBuylist(csi.backend, product)
 			if err != nil {
 				continue
@@ -967,13 +967,13 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// The note names the printing for these games - a Riftbound promo's
 		// finish and prize track, a Yu-Gi-Oh rarity - where One Piece spends
 		// it describing the artwork and Lorcana's changes no answer at all.
-		case mtgmatcher.GamePokemon:
+		case matcher.GamePokemon:
 			theCard, runFinishes = pokemonBuylistCard(csi.backend, product)
-		case mtgmatcher.GameRiftbound:
+		case matcher.GameRiftbound:
 			riftboundCardName := riftboundSpellings.Replace(product.Name)
 			variation := riftboundNotes.Replace(buylistVariation(product))
 			shelf := riftboundShelf(csi.backend, product.ItemSet, product.Notes, riftboundCardName, variation, product.IsFoil == 1)
-			theCard = &mtgmatcher.InputCard{Name: riftboundCardName, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
+			theCard = &matcher.InputCard{Name: riftboundCardName, Edition: shelf, Variation: variation, Foil: product.IsFoil == 1}
 			_, err := csi.backend.Match(theCard)
 			if err != nil {
 				fromSKU := riftboundSKUCard(csi.backend, product.Image, product.IsFoil == 1)
@@ -984,10 +984,10 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// The rarity arrives in a field of its own here, where the sell
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
-		case mtgmatcher.GameYuGiOh:
+		case matcher.GameYuGiOh:
 			tcgID, named := yugiohPIDs[product.PID]
 			if named {
-				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				theCard = &matcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
 				break
 			}
 			if unknownPrinting(product.Name, product.ItemSet) {
@@ -998,56 +998,56 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				break
 			}
 			theCard = yugiohListing(product.Name, product.ItemSet, product.Notes, yugiohBuylistVariation(product), product.RarityName, product.IsFoil == 1)
-		case mtgmatcher.GameOnePiece:
+		case matcher.GameOnePiece:
 			tcgID, named := onePiecePIDs[product.PID]
 			if named {
-				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				theCard = &matcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
 				break
 			}
 			if onePieceAlternatePromo(product.Name) {
-				theCard = &mtgmatcher.InputCard{Name: onePieceSpelling(product.Name), Edition: "One Piece Promotion Cards", Variation: "Alternate Art", Foil: product.IsFoil == 1}
+				theCard = &matcher.InputCard{Name: onePieceSpelling(product.Name), Edition: "One Piece Promotion Cards", Variation: "Alternate Art", Foil: product.IsFoil == 1}
 				break
 			}
 			donName, donDescription, isDon := onePieceDonName(product.Name)
 			if isDon {
 				donShelf := onePieceShelf(product.ItemSet, product.Name)
 				donFoil := product.IsFoil == 1
-				theCard = &mtgmatcher.InputCard{Name: donName, Edition: donShelf, Variation: donDescription, Foil: donFoil}
+				theCard = &matcher.InputCard{Name: donName, Edition: donShelf, Variation: donDescription, Foil: donFoil}
 				_, err := csi.backend.Match(theCard)
 				if err != nil {
 					renamed := onePieceDonRenamed(donDescription)
 					if renamed != "" {
-						theCard = &mtgmatcher.InputCard{Name: donName, Edition: donShelf, Variation: renamed, Foil: donFoil}
+						theCard = &matcher.InputCard{Name: donName, Edition: donShelf, Variation: renamed, Foil: donFoil}
 					}
 				}
 				break
 			}
 			spelled := onePieceSpelling(jpArtWording(product.Name))
-			theCard = &mtgmatcher.InputCard{Name: spelled, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(spelled) + " " + onePieceNotePlace.FindString(product.Notes))), Foil: product.IsFoil == 1}
+			theCard = &matcher.InputCard{Name: spelled, Edition: onePieceShelf(product.ItemSet, product.Name), Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(spelled) + " " + onePieceNotePlace.FindString(product.Notes))), Foil: product.IsFoil == 1}
 		// Gundam prints the same card at the same number in three sets, so
 		// the shelf has to narrow and the storefront's own code prefix stops
 		// it naming one; the wording it hangs behind the name is what tells
 		// the parallel runs apart.
-		case mtgmatcher.GameGundam:
+		case matcher.GameGundam:
 			tcgID, named := gundamPIDs[product.PID]
 			if named {
-				theCard = &mtgmatcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
+				theCard = &matcher.InputCard{ID: tcgID, Foil: product.IsFoil == 1}
 				break
 			}
 			name, variation := gundamCard(csi.backend, product.Name, product.Number)
-			theCard = &mtgmatcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName, product.Name)), Foil: product.IsFoil == 1}
+			theCard = &matcher.InputCard{Name: name, Edition: gundamShelf(product.ItemSet), Variation: strings.TrimSpace(variation + " " + gundamTier(product.RarityName, product.Name)), Foil: product.IsFoil == 1}
 		// Palworld numbers a parallel apart from the card it parallels, the
 		// rarity riding in the number's own tail, so the plain reading names
 		// one printing and nothing has to be read out of the wording. The
 		// feed sometimes leaves the number empty and writes it in the note,
 		// and it is the same hands typing the sell listings that glue the
 		// rarity onto one.
-		case mtgmatcher.GamePalworld:
-			theCard = &mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(buylistVariation(product)), Foil: product.IsFoil == 1}
+		case matcher.GamePalworld:
+			theCard = &matcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(buylistVariation(product)), Foil: product.IsFoil == 1}
 		// Notes starts with the same number Number carries and spends the
 		// rest on the qualifier; Number alone misses a Starter Deck Exclusive.
-		case mtgmatcher.GameLorcana:
-			theCard = &mtgmatcher.InputCard{Name: lorcanaSpelling(product.Name), Edition: lorcanaShelf(csi.backend, product.Name, product.ItemSet, product.Notes), Variation: lorcanaVariation(product.Notes), Foil: product.IsFoil == 1}
+		case matcher.GameLorcana:
+			theCard = &matcher.InputCard{Name: lorcanaSpelling(product.Name), Edition: lorcanaShelf(csi.backend, product.Name, product.ItemSet, product.Notes), Variation: lorcanaVariation(product.Notes), Foil: product.IsFoil == 1}
 		}
 
 		var cardID string
@@ -1057,13 +1057,13 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		} else {
 			cardID, err = csi.backend.Match(theCard)
 		}
-		if csi.backend.Game == mtgmatcher.GameYuGiOh && runFinishes == nil && yugiohRetries(err, product.Notes) {
+		if csi.backend.Game == matcher.GameYuGiOh && runFinishes == nil && yugiohRetries(err, product.Notes) {
 			fromImage := yugiohImageCard(csi.backend, theCard, product)
 			if fromImage != "" {
 				cardID, err = fromImage, nil
 			}
 		}
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
 			if csiAmbiguousRefusal(product.Notes, err) {
@@ -1073,7 +1073,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			csi.printf("original: %q", product)
 			csi.printf("preprocessed: %q", theCard)
 
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(err, &alias) {
 				for _, probe := range alias.Probe() {
 					co, _ := csi.backend.GetUUID(probe)
@@ -1083,29 +1083,29 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			continue
 		}
 
-		if csi.backend.Game == mtgmatcher.GameMagic {
+		if csi.backend.Game == matcher.GameMagic {
 			co, cerr := csi.backend.GetUUID(cardID)
 			if cerr == nil && magicPhantomFoilTwin(co, product.IsFoil, nonfoilPID[product.PID]) {
 				continue
 			}
 		}
 
-		if csi.backend.Game == mtgmatcher.GamePokemon && pokemonNonHolo.MatchString(product.Name) {
+		if csi.backend.Game == matcher.GamePokemon && pokemonNonHolo.MatchString(product.Name) {
 			co, cerr := csi.backend.GetUUID(cardID)
-			if cerr == nil && !co.HasFinish(mtgmatcher.FinishNonfoil) &&
+			if cerr == nil && !co.HasFinish(matcher.FinishNonfoil) &&
 				strings.Contains(co.Rarity, "holo") {
 				continue
 			}
 		}
 
-		if csi.backend.Game == mtgmatcher.GameOnePiece {
+		if csi.backend.Game == matcher.GameOnePiece {
 			cardID = onePieceRefined(csi.backend, cardID, theCard.Edition, product.Name, product.Notes)
 			if product.IsFoil == 0 && theCard.ID == "" {
 				cardID = onePieceNonfoilPrinting(csi.backend, cardID)
 			}
 		}
 
-		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
+		buyPrice, err := matcher.ParsePrice(product.Price)
 		if err != nil {
 			csi.printf("%s error: %s", product.Name, err.Error())
 			continue
@@ -1155,7 +1155,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 
 // magicPhantomFoilTwin reports whether a Magic buylist row is CSI's flat-
 // priced isFoil=1 placeholder for a printing that has no real foil finish.
-func magicPhantomFoilTwin(co *mtgmatcher.CardObject, isFoil int, hasNonfoilRow bool) bool {
+func magicPhantomFoilTwin(co *matcher.CardObject, isFoil int, hasNonfoilRow bool) bool {
 	return isFoil == 1 && hasNonfoilRow && !co.Foil && !co.Etched
 }
 
@@ -1391,7 +1391,7 @@ var csiRarities = map[string]string{
 // and tells them apart the only way anybody can, by the copyright date
 // printed on the card, which it writes into the note. Nothing downstream can
 // pick between them - the later run reissues the original's numbers - which
-// is why mtgmatcher's Yu-Gi-Oh edition aliases leave these sets out on
+// is why matcher's Yu-Gi-Oh edition aliases leave these sets out on
 // purpose, and why naming only one of the two would file the other under it.
 //
 // The earlier run is spelled out even where the storefront's own name
@@ -1455,7 +1455,7 @@ var imageStem = regexp.MustCompile(`(?i)/([^/]+)\.(?:jpe?g|png|webp|avif)$`)
 // skuNumbers indexes a datastore's collector numbers by the spelling an image
 // sku gives them, upper-cased with the dash left out, each in the order the
 // datastore lists its cards.
-func skuNumbers(b *mtgmatcher.Backend) map[string][]string {
+func skuNumbers(b *matcher.Backend) map[string][]string {
 	index := map[string][]string{}
 	for _, uuid := range b.GetUUIDs() {
 		co, err := b.GetUUID(uuid)

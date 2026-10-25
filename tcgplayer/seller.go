@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TCGSellerInventory prices the inventory of named sellers, read from the
@@ -21,7 +21,7 @@ type TCGSellerInventory struct {
 	sellerKeys    []string
 	onlyDirect    bool
 	requestSize   int
-	backend       *mtgmatcher.Backend
+	backend       *matcher.Backend
 	client        *SellerClient
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
@@ -43,7 +43,7 @@ const (
 
 // NewScraperForSellerIDs returns a scraper over the given seller keys,
 // optionally restricted to their Direct listings.
-func NewScraperForSellerIDs(b *mtgmatcher.Backend, sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
+func NewScraperForSellerIDs(b *matcher.Backend, sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
 	tcg.backend = b
 	tcg.inventory = mtgban.InventoryRecord{}
@@ -131,7 +131,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 		}
 
 		tcgProductID := fmt.Sprint(int(result.ProductID))
-		uuid := tcg.backend.ConvertID(mtgmatcher.IDSpaceTCGplayer, tcgProductID)
+		uuid := tcg.backend.ConvertID(matcher.IDSpaceTCGplayer, tcgProductID)
 		if uuid == "" {
 			continue
 		}

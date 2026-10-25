@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/mtgban/go-tcgplayer"
 )
@@ -32,7 +32,7 @@ type Market struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	client  *tcgplayer.Client
 }
 
@@ -81,7 +81,7 @@ func (tcg *Market) printf(format string, a ...any) {
 
 // NewScraperMarket returns a market scraper authenticated with a partner API
 // key pair.
-func NewScraperMarket(b *mtgmatcher.Backend, publicID, privateID string) (*Market, error) {
+func NewScraperMarket(b *matcher.Backend, publicID, privateID string) (*Market, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
@@ -227,7 +227,7 @@ func derivedSkuMatches(sku TCGSku, ownIDs map[string]bool, wantFoil bool, wantLa
 	if sku.Printing != wantPrinting {
 		return false
 	}
-	return mtgmatcher.Equals(sku.Language, wantLanguage) || sku.Language == "ENGLISH"
+	return matcher.Equals(sku.Language, wantLanguage) || sku.Language == "ENGLISH"
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -244,13 +244,13 @@ func (tcg *Market) Load(ctx context.Context) error {
 	// faced tokens' sku lists in the datastore's own sku file - one physical
 	// card, one price, but two unrelated uuids both listing it - so priced
 	// the ordinary way it lands on both, and a token that pairs with several
-	// partners absorbs every one of their prices. mtgmatcher mints a
+	// partners absorbs every one of their prices. matcher mints a
 	// combined entity for it; derivedProductIDs is every id one of those
 	// entities claims, read once so the per-card walk below can skip it
 	// rather than mis-price the single-faced token, and derivedBySet is
 	// where each entity's own combined walk (below) prices it instead.
 	derivedProductIDs := map[int]bool{}
-	derivedBySet := map[string][]*mtgmatcher.CardObject{}
+	derivedBySet := map[string][]*matcher.CardObject{}
 	for _, co := range tcg.backend.UUIDs {
 		if co.Identifiers["derivedTokenPair"] != "true" {
 			continue
@@ -373,7 +373,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 
 						// Check for language early because we cannot have
 						// duplicated sku ids, while the card may very well do
-						if !mtgmatcher.Equals(lang, card.Language) {
+						if !matcher.Equals(lang, card.Language) {
 							continue
 						}
 
@@ -403,16 +403,16 @@ func (tcg *Market) Load(ctx context.Context) error {
 					}
 				}
 
-				hasNonfoil := card.HasFinish(mtgmatcher.FinishNonfoil)
-				hasFoil := card.HasFinish(mtgmatcher.FinishFoil)
-				hasEtched := card.HasFinish(mtgmatcher.FinishEtched)
+				hasNonfoil := card.HasFinish(matcher.FinishNonfoil)
+				hasFoil := card.HasFinish(matcher.FinishFoil)
+				hasEtched := card.HasFinish(matcher.FinishEtched)
 
 				// The sku file lists the foil of a star printing under the
 				// base card, which has none of its own
-				var foilTwin *mtgmatcher.CardObject
+				var foilTwin *matcher.CardObject
 				if !hasFoil && !hasEtched {
 					foilTwin = starTwin(byNumber, &card)
-					if foilTwin != nil && !foilTwin.HasFinish(mtgmatcher.FinishFoil) {
+					if foilTwin != nil && !foilTwin.HasFinish(matcher.FinishFoil) {
 						foilTwin = nil
 					}
 				}
@@ -423,7 +423,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 						continue
 					}
 					// Skip non-main languages
-					if !mtgmatcher.Equals(sku.Language, card.Language) {
+					if !matcher.Equals(sku.Language, card.Language) {
 						// These two sets contain English sku, skip them
 						switch set.Code {
 						case "LEGITA", "DRKITA":

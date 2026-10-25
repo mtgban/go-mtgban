@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -43,7 +43,7 @@ type Hareruya struct {
 	logCallback    mtgban.LogCallbackFunc
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	exchangeRate float64
 
@@ -61,7 +61,7 @@ type Hareruya struct {
 }
 
 // NewScraper returns a singles scraper matching against b.
-func NewScraper(b *mtgmatcher.Backend) *Hareruya {
+func NewScraper(b *matcher.Backend) *Hareruya {
 	ha := Hareruya{backend: b}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
@@ -171,7 +171,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 
 		priceStr := s.Find(`p.itemDetail__price`).Text()
 		priceStr = strings.TrimPrefix(priceStr, "¥ ")
-		price, err := mtgmatcher.ParsePrice(priceStr)
+		price, err := matcher.ParsePrice(priceStr)
 		if err != nil {
 			ha.printf("page %d entry %d: %s", page, i, err.Error())
 			return false
@@ -199,7 +199,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 		}
 
 		cardID, err := ha.backend.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			return true
 		} else if err != nil {
 			if magic.IsBasicLand(theCard.Name) {
@@ -209,7 +209,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			ha.printf("%q", theCard)
 			ha.printf("%s", title)
 
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
@@ -374,7 +374,7 @@ func (ha *Hareruya) walkSet(ctx context.Context, channel chan<- responseChan, ca
 			}
 
 			cardID, err := ha.backend.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if errors.Is(err, matcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
 				// Skip errors from lands, "misc" promos, tokens, emblem
@@ -394,7 +394,7 @@ func (ha *Hareruya) walkSet(ctx context.Context, channel chan<- responseChan, ca
 				ha.printf("%q", theCard)
 				ha.printf("%v", product)
 
-				var alias *mtgmatcher.AliasingError
+				var alias *matcher.AliasingError
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
@@ -595,7 +595,7 @@ func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 		// the listing unpriced and carries on with the rest of the page.
 		for {
 			priceStr := strings.TrimSpace(s.Find(".itemDataWrapper .itemDetail__price").Text())
-			price, err := mtgmatcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
+			price, err := matcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
 			if err != nil {
 				break
 			}
@@ -642,7 +642,7 @@ func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 			}
 
 			priceStr := strings.TrimSpace(se.Find(".col-xs-4").Text())
-			price, err := mtgmatcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
+			price, err := matcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
 			if err != nil {
 				return
 			}
@@ -881,6 +881,6 @@ func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "JP"
 	info.InventoryTimestamp = &ha.inventoryDate
 	info.BuylistTimestamp = &ha.buylistDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

@@ -1,0 +1,69 @@
+package riftbound
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/mtgban/go-mtgban/matcher"
+)
+
+// thirdFinishFixture sells one printing in a finish that is neither plain
+// nor foil, named the way TCGplayer would price it, beside a card sold both
+// ways.
+const thirdFinishFixture = `{"data": {
+	"pageProps": {"page": {"blades": [{
+		"type": "riftboundCardGallery",
+		"sets": {"items": [
+			{"id": "OGN", "name": "Origins", "baseSetSize": 298, "releaseDate": "2025-10-31"}
+		]},
+		"cards": {"items": [
+			{
+				"id": "ogn-001",
+				"name": "Fixture Blade",
+				"number": "001",
+				"setCode": "OGN",
+				"rarity": {"value": {"id": "rare"}},
+				"externalLinks": {"tcgPlayerId": 100},
+				"printings": [{"finish": "Normal", "id": "ogn-001"}, {"finish": "Foil", "id": "ogn-001_f"}]
+			},
+			{
+				"id": "ogn-002",
+				"name": "Fixture Cannon",
+				"number": "002",
+				"setCode": "OGN",
+				"rarity": {"value": {"id": "epic"}},
+				"externalLinks": {"tcgPlayerId": 200},
+				"printings": [{"finish": "Prismatic Foil", "id": "ogn-002_prismatic"}]
+			}
+		]}
+	}]}}
+}}`
+
+// TestThirdFinish pins the loader half of FinishSlug placing a finish
+// it was not taught: a printing sold in a treatment alone is a foil to the
+// flag, its product id reaches it, and a card sold plain and foil is one
+// candidate to Match however its uuids are spelled.
+func TestThirdFinish(t *testing.T) {
+	b, err := Load(strings.NewReader(thirdFinishFixture))
+	if err != nil {
+		t.Fatal(err)
+	}
+	co, err := b.GetUUID("ogn-002_prismatic")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !co.Foil {
+		t.Error("a printing sold in a treatment alone was stored as plain")
+	}
+	if got := b.ExternalIdentifiers[matcher.IDSpaceTCGplayer]["200"]; got != "ogn-002_prismatic" {
+		t.Errorf("product 200 points at %q, want the treatment's uuid", got)
+	}
+	got, err := b.MatchID("200", true)
+	if err != nil || got != "ogn-002_prismatic" {
+		t.Errorf("MatchID(200, foil) = %q, %v; want the treatment's uuid", got, err)
+	}
+	got, err = b.Match(&matcher.InputCard{Name: "Fixture Blade", Edition: "Origins", Variation: "001"})
+	if err != nil || got != "ogn-001" {
+		t.Errorf("Match(Fixture Blade 001) = %q, %v; want ogn-001", got, err)
+	}
+}

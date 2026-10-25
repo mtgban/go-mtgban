@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // yugiohPIDs names the TCGplayer product a storefront product is, for the
@@ -118,7 +118,7 @@ var yugiohSkillCards = map[string]string{
 // yugiohListing answers the card a Yu-Gi-Oh listing describes. The variation
 // is the note on the sell listing and the number and note on the buylist, and
 // notes is the note alone, which tells the print runs apart.
-func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *mtgmatcher.InputCard {
+func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *matcher.InputCard {
 	listed := name + "|" + edition
 	if skill, found := yugiohSkillCards[listed]; found {
 		name = skill
@@ -127,7 +127,7 @@ func yugiohListing(name, edition, notes, variation, rarity string, foil bool) *m
 	if yugiohAlternateArts[listed] {
 		variation += " Alternate Art"
 	}
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      catalogColor(catalogSpelling(jpArtWording(yugiohWording.Replace(name)))),
 		Edition:   printRunEdition(edition, notes),
 		Variation: strings.TrimSpace(variation + " " + catalogRarity(rarity)),
@@ -165,13 +165,13 @@ var yugiohArtNotes = map[string]string{
 // The qualifier names exactly one printing of the number, so the bracket the
 // name carries and the rarity beside it are left behind: either one makes the
 // matcher read the Emblazoned Secret Rare of the same number instead.
-func yugiohArtCard(name, edition, number, notes string, foil bool) *mtgmatcher.InputCard {
+func yugiohArtCard(name, edition, number, notes string, foil bool) *matcher.InputCard {
 	qualifier, found := yugiohArtNotes[strings.TrimSpace(notes)]
 	if !found {
 		return nil
 	}
 	head, _, _ := strings.Cut(name, " (")
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      catalogColor(catalogSpelling(head)),
 		Edition:   printRunEdition(edition, notes),
 		Variation: strings.TrimSpace(number + " " + qualifier),
@@ -183,7 +183,7 @@ func yugiohArtCard(name, edition, number, notes string, foil bool) *mtgmatcher.I
 // image, on either feed: not where the matcher skips it, and not where the
 // note says it is one of several printings.
 func yugiohRetries(err error, notes string) bool {
-	return err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && !csiAmbiguousNote.MatchString(notes)
+	return err != nil && !errors.Is(err, matcher.ErrUnsupported) && !csiAmbiguousNote.MatchString(notes)
 }
 
 // yugiohImageCode matches the set code and number a Yu-Gi-Oh image sku
@@ -194,7 +194,7 @@ var yugiohImageCode = regexp.MustCompile(`^([A-Za-z0-9]{2,5}?)EN(\d{3})`)
 // sku carries in place of its Number, as yugiohBuylistNumber spells it, where
 // the two disagree, and answers the id it lands on. The landing has to be the
 // same card, so a sku naming another card's code reaches nothing.
-func yugiohImageCard(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, product CSIPriceEntry) string {
+func yugiohImageCard(b *matcher.Backend, card *matcher.InputCard, product CSIPriceEntry) string {
 	match := yugiohImageCode.FindStringSubmatch(product.Image)
 	number := yugiohBuylistNumber(product)
 	if match == nil || number == "" {
@@ -212,7 +212,7 @@ func yugiohImageCard(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, product 
 // its dash left out, so the number is the datastore's own that spells it:
 // LEHDENA23 is LEHD-ENA23 and MRL103 is MRL-103, which no pattern could split.
 // numbers is skuNumbers of the backend.
-func yugiohSKUCard(b *mtgmatcher.Backend, numbers map[string][]string, card *mtgmatcher.InputCard, imgURL string) string {
+func yugiohSKUCard(b *matcher.Backend, numbers map[string][]string, card *matcher.InputCard, imgURL string) string {
 	match := imageStem.FindStringSubmatch(imgURL)
 	if match == nil {
 		return ""
@@ -235,7 +235,7 @@ func yugiohSKUCard(b *mtgmatcher.Backend, numbers map[string][]string, card *mtg
 // yugiohRetry matches the card again with another variation and answers the id
 // only if it is the printing at number and the same card, the catalog's deck
 // letter "Monster Reborn (A)" aside.
-func yugiohRetry(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, variation, number string) string {
+func yugiohRetry(b *matcher.Backend, card *matcher.InputCard, variation, number string) string {
 	retried := *card
 	retried.Variation = variation
 	id, err := b.Match(&retried)
@@ -248,7 +248,7 @@ func yugiohRetry(b *mtgmatcher.Backend, card *mtgmatcher.InputCard, variation, n
 	}
 	head, _, _ := strings.Cut(card.Name, " (")
 	landed, _, _ := strings.Cut(co.Name, " (")
-	if !mtgmatcher.Equals(landed, head) {
+	if !matcher.Equals(landed, head) {
 		return ""
 	}
 	return id

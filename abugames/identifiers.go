@@ -4,18 +4,18 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // identifiedCard reads IDs before text matching. An ID must name the card in
 // the listing and support its language, finish and printing descriptors. Both
 // namespaces may carry copied IDs, so an unresolved disagreement falls back to
 // text rather than giving either source unconditional priority.
-func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCard) *mtgmatcher.InputCard {
+func identifiedCard(b *matcher.Backend, card *ABUCard, in matcher.InputCard) *matcher.InputCard {
 	var found string
 	conflict := false
-	consider := func(space mtgmatcher.IDSpace, external string) {
+	consider := func(space matcher.IDSpace, external string) {
 		base := b.ConvertID(space, external)
 		if base == "" {
 			return
@@ -26,12 +26,12 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 		}
 		// Flavor-name misprints can have their own catalog entry (Luca/Luka
 		// Stadium). A title spelling alone must not override its printed number.
-		if (mtgmatcher.Equals(in.Name, co.FlavorName) || mtgmatcher.Equals(in.Name, co.FaceFlavorName)) && card.Number != "" && card.Number != co.Number {
+		if (matcher.Equals(in.Name, co.FlavorName) || matcher.Equals(in.Name, co.FaceFlavorName)) && card.Number != "" && card.Number != co.Number {
 			return
 		}
 		// Multiverse identifies a catalog printing, but older ABU shelves
 		// include reprints and special editions with copied original IDs.
-		if space == mtgmatcher.IDSpaceMultiverse {
+		if space == matcher.IDSpaceMultiverse {
 			set, setErr := b.GetSetByName(card.Edition)
 			if setErr != nil || set.Code != co.SetCode || (card.Number != "" && card.Number != co.Number) {
 				return
@@ -48,7 +48,7 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 		probe := in
 		probe.Name = identifierName(in.Name)
 		probe.ID, probe.Finish, probe.Language = base, finish, lang
-		id, err := b.ValidateID(probe, mtgmatcher.IDValidationOptions{AllowFinishSiblings: true})
+		id, err := b.ValidateID(probe, matcher.IDValidationOptions{AllowFinishSiblings: true})
 		if err != nil {
 			return
 		}
@@ -69,11 +69,11 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 		found = id
 	}
 	for _, id := range card.ScryfallIDs {
-		consider(mtgmatcher.IDSpaceScryfall, id)
+		consider(matcher.IDSpaceScryfall, id)
 	}
 	for _, id := range card.TCGplayerIDs {
 		if id > 0 {
-			consider(mtgmatcher.IDSpaceTCGplayer, strconv.FormatInt(id, 10))
+			consider(matcher.IDSpaceTCGplayer, strconv.FormatInt(id, 10))
 		}
 	}
 	// Older listings sometimes supply only a Multiverse ID. Keep it in its
@@ -82,7 +82,7 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 	if len(card.ScryfallIDs) == 0 && len(card.TCGplayerIDs) == 0 {
 		for _, id := range card.MultiverseIDs {
 			if id > 0 {
-				consider(mtgmatcher.IDSpaceMultiverse, strconv.FormatInt(id, 10))
+				consider(matcher.IDSpaceMultiverse, strconv.FormatInt(id, 10))
 			}
 		}
 	}
@@ -93,11 +93,11 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 	in.ID = found
 	in.Foil = co.Foil || co.Etched
 	if co.Etched {
-		in.Finish = mtgmatcher.FinishEtched
+		in.Finish = matcher.FinishEtched
 	} else if co.Foil {
-		in.Finish = mtgmatcher.FinishFoil
+		in.Finish = matcher.FinishFoil
 	} else {
-		in.Finish = mtgmatcher.FinishNonfoil
+		in.Finish = matcher.FinishNonfoil
 	}
 	return &in
 }
@@ -106,10 +106,10 @@ func identifiedCard(b *mtgmatcher.Backend, card *ABUCard, in mtgmatcher.InputCar
 // English when every one of them names the same printing, in that language,
 // under the listing's name and finish. The shelf wording of such listings
 // rarely describes the printing, so the ids are the only witness.
-func foreignIdentified(b *mtgmatcher.Backend, card *ABUCard, name, lang string, foil bool) *mtgmatcher.InputCard {
+func foreignIdentified(b *matcher.Backend, card *ABUCard, name, lang string, foil bool) *matcher.InputCard {
 	var found string
 	var finish string
-	consider := func(space mtgmatcher.IDSpace, external string) bool {
+	consider := func(space matcher.IDSpace, external string) bool {
 		base := b.ConvertID(space, external)
 		if base == "" {
 			return false
@@ -119,9 +119,9 @@ func foreignIdentified(b *mtgmatcher.Backend, card *ABUCard, name, lang string, 
 			return false
 		}
 		finish = listingFinish(co, foil, false)
-		id, err := b.ValidateID(mtgmatcher.InputCard{
+		id, err := b.ValidateID(matcher.InputCard{
 			Name: identifierName(name), ID: base, Finish: finish, Foil: foil, Language: lang,
-		}, mtgmatcher.IDValidationOptions{})
+		}, matcher.IDValidationOptions{})
 		if err != nil || (found != "" && found != id) {
 			return false
 		}
@@ -129,34 +129,34 @@ func foreignIdentified(b *mtgmatcher.Backend, card *ABUCard, name, lang string, 
 		return true
 	}
 	for _, id := range card.ScryfallIDs {
-		if !consider(mtgmatcher.IDSpaceScryfall, id) {
+		if !consider(matcher.IDSpaceScryfall, id) {
 			return nil
 		}
 	}
 	for _, id := range card.TCGplayerIDs {
-		if id > 0 && !consider(mtgmatcher.IDSpaceTCGplayer, strconv.FormatInt(id, 10)) {
+		if id > 0 && !consider(matcher.IDSpaceTCGplayer, strconv.FormatInt(id, 10)) {
 			return nil
 		}
 	}
 	if found == "" {
 		return nil
 	}
-	return &mtgmatcher.InputCard{Name: name, ID: found, Foil: foil, Finish: finish, Language: lang}
+	return &matcher.InputCard{Name: name, ID: found, Foil: foil, Finish: finish, Language: lang}
 }
 
 // listingFinish is the finish a listing asks of co. ABU calls both foil and
 // etched-only printings FOIL.
-func listingFinish(co *mtgmatcher.CardObject, foil, etched bool) string {
+func listingFinish(co *matcher.CardObject, foil, etched bool) string {
 	if etched {
-		return mtgmatcher.FinishEtched
+		return matcher.FinishEtched
 	}
 	if !foil {
-		return mtgmatcher.FinishNonfoil
+		return matcher.FinishNonfoil
 	}
-	if !co.HasFinish(mtgmatcher.FinishFoil) && co.HasFinish(mtgmatcher.FinishEtched) {
-		return mtgmatcher.FinishEtched
+	if !co.HasFinish(matcher.FinishFoil) && co.HasFinish(matcher.FinishEtched) {
+		return matcher.FinishEtched
 	}
-	return mtgmatcher.FinishFoil
+	return matcher.FinishFoil
 }
 
 func identifierName(name string) string {
@@ -171,7 +171,7 @@ func identifierName(name string) string {
 // catalog audit found copied IDs on The List, lettered artwork, marked-number
 // variants and special finishes. Those descriptions keep their existing text
 // rules unless the candidate explicitly establishes the distinction.
-func idDescribesPrinting(b *mtgmatcher.Backend, card *ABUCard, in *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
+func idDescribesPrinting(b *matcher.Backend, card *ABUCard, in *matcher.InputCard, co *matcher.CardObject) bool {
 	variation := in.Variation
 	if number := describedArtwork(b, in.Name, card.Edition, variation); number != "" {
 		return co.Number == number
@@ -201,7 +201,7 @@ func idDescribesPrinting(b *mtgmatcher.Backend, card *ABUCard, in *mtgmatcher.In
 	if strings.HasPrefix(variation, "Prerelease ") || strings.HasPrefix(variation, "Promo Pack ") {
 		variation = strings.TrimSuffix(variation, " "+card.Edition)
 	}
-	if normalized := mtgmatcher.Normalize(variation); (normalized == "prerelease" || normalized == "promopack") && card.Number != "" && card.Number != co.Number {
+	if normalized := matcher.Normalize(variation); (normalized == "prerelease" || normalized == "promopack") && card.Number != "" && card.Number != co.Number {
 		return false
 	}
 	probe := *in

@@ -1,8 +1,8 @@
 package sealedev
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // SecretBanKey is the env var name bantool has always read the BAN price
@@ -18,10 +18,10 @@ func WithTargetProduct(product string) mtgban.Option {
 }
 
 func init() {
-	mtgban.Register("sealed_ev", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraper)
+	mtgban.Register("sealed_ev", []matcher.Game{matcher.GameMagic}, newScraper)
 }
 
-func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	sig, err := opts.Secret(SecretBanKey)
 	if err != nil {
 		return nil, err

@@ -3,8 +3,8 @@ package tcgplayer
 import (
 	"errors"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // The environment variable names bantool has always read these secrets
@@ -51,7 +51,7 @@ func tcgCredentials(opts mtgban.Options) (publicID, privateID string, err error)
 
 // newTCGIndexScraper builds tcg_index: Magic is priced by its own sku-driven
 // scraper, every other game by the shared TCGGameIndex.
-func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newTCGIndexScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	publicID, privateID, err := tcgCredentials(opts)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scra
 
 	game := b.Game
 
-	if game == mtgmatcher.GameMagic {
+	if game == matcher.GameMagic {
 		scraper, err := NewScraperIndex(b, publicID, privateID)
 		if err != nil {
 			return nil, err
@@ -87,7 +87,7 @@ func newTCGIndexScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scra
 // newTCGMarketScraper builds tcg_market: Magic's Market scraper needs the
 // sku catalog to run, every other game's TCGGame resolves by name and
 // number alone.
-func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newTCGMarketScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	publicID, privateID, err := tcgCredentials(opts)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 
 	game := b.Game
 
-	if game == mtgmatcher.GameMagic {
+	if game == matcher.GameMagic {
 		skus, err := mtgban.Resource[SKUMap](opts, ResourceSKUs)
 		if err != nil {
 			return nil, err
@@ -133,7 +133,7 @@ func newTCGMarketScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 // sku catalog the same way its Market sibling does, every other game's
 // TCGGame resolves sealed products through the datastore's sealed product
 // map instead.
-func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newTCGSealedScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	publicID, privateID, err := tcgCredentials(opts)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 
 	game := b.Game
 
-	if game == mtgmatcher.GameMagic {
+	if game == matcher.GameMagic {
 		skus, err := mtgban.Resource[SKUMap](opts, ResourceSKUs)
 		if err != nil {
 			return nil, err
@@ -178,7 +178,7 @@ func newTCGSealedScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scr
 // newTCGSYPListScraper builds tcg_syplist, served the same way for every
 // game it covers: the list names a sku and the catalog resolves it to a
 // product and finish the datastore knows.
-func newTCGSYPListScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newTCGSYPListScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	authTicket, err := opts.Secret(SecretAuth)
 	if err != nil {
 		return nil, err
@@ -202,8 +202,8 @@ func newTCGSYPListScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Sc
 }
 
 func init() {
-	mtgban.Register("tcg_index", mtgmatcher.AllGames, newTCGIndexScraper)
-	mtgban.Register("tcg_market", mtgmatcher.AllGames, newTCGMarketScraper)
-	mtgban.Register("tcg_sealed", mtgmatcher.AllGames, newTCGSealedScraper)
-	mtgban.Register("tcg_syplist", []mtgmatcher.Game{mtgmatcher.GameMagic, mtgmatcher.GamePokemon}, newTCGSYPListScraper)
+	mtgban.Register("tcg_index", matcher.AllGames, newTCGIndexScraper)
+	mtgban.Register("tcg_market", matcher.AllGames, newTCGMarketScraper)
+	mtgban.Register("tcg_sealed", matcher.AllGames, newTCGSealedScraper)
+	mtgban.Register("tcg_syplist", []matcher.Game{matcher.GameMagic, matcher.GamePokemon}, newTCGSYPListScraper)
 }

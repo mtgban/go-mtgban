@@ -59,7 +59,7 @@ Three feeds, all live.
   run the *same* search endpoint as singles, once per sealed-product word
   ("booster", "deck", "trove", "gift", "bundle", "case", "box", "kit",
   "vault", "collection"), and resolve each hit through
-  `mtgmatcher.ResolveSealed` - a card row simply fails to resolve and drops
+  `matcher.ResolveSealed` - a card row simply fails to resolve and drops
   out. Lorcana's sealed carries no `ItemSet` facet at all, which is why the
   sealed search goes by name rather than by shelf.
 
@@ -91,7 +91,7 @@ rather than priced onto the wrong card, which is presumably why nobody
 noticed. Fixing it needs an answer this package doesn't have: `Edition:
 "Foreign Black Border"` resolves a card correctly with no `Language` set,
 and *stops* resolving it the moment `Language: "Italian"` is added - a
-question for `mtgmatcher`'s own language filtering, not for this scraper.
+question for `matcher`'s own language filtering, not for this scraper.
 
 ## fetchWhole - the resume saga
 
@@ -211,7 +211,7 @@ measurement lower down in this section closed that gap too:
 
 Two of the three - `pokemonPromoShelf` and `riftboundShelf` - share the
 same guard: *redirect only when the redirect target resolves*, verified
-with an actual `mtgmatcher.Match` probe before committing to it.
+with an actual `matcher.Match` probe before committing to it.
 `riftboundShelf` also requires the probe to land in the set it asked for,
 at the number the note or listing names (`riftboundLandsAt`).
 `onePieceShelf` is looser: it redirects on the shelf-plus-bracket pattern
@@ -360,7 +360,7 @@ from the shelf collision this section is about.
   `catalogRarity`/`csiRarities` (three foil-tier spelling differences),
   `printRunEdition`/`csiPrintRuns` (nine editions reprinted under their
   own original name, told apart only by the copyright date CSI writes into
-  the note - deliberately left out of `mtgmatcher`'s own edition aliases
+  the note - deliberately left out of `matcher`'s own edition aliases
   for this exact reason), and `unknownPrinting`/`csiUnknownPrintings` (two
   hand-verified listings selling a rarity/number pair the catalog does not
   carry at all - refusing the general shape "rarity the card's number
@@ -425,7 +425,7 @@ from the shelf collision this section is about.
   repeat at a number that set does not reach: `lorcanaQuestNotes` maps the
   frame the note names to its quest, kept only where the card exists
   there. Both feeds otherwise pass edition and the raw note/number
-  straight through to `mtgmatcher.Match` untranslated. The third is
+  straight through to `matcher.Match` untranslated. The third is
   sealed wording: `lorcanaSealedWords` turns the storefront's "Two-Player
   Starter Deck" and "Booster Case" into the catalog's "2-Player Starter
   Set" and "Booster Box Case" before the sealed resolver reads them.
@@ -441,8 +441,8 @@ from the shelf collision this section is about.
 
 - `GameDragonBallSuper` (`"dbs"`) and `GameStarWarsUnlimited` (`"swu"`) are
   shelf-name constants CSI itself uses, sitting unwired in this file -
-  `mtgmatcher.Game` has no constant for either game yet (`mtgmatcher/game.go`),
-  so `csiGames` can't map them. Whoever adds either game to `mtgmatcher`
+  `matcher.Game` has no constant for either game yet (`matcher/game.go`),
+  so `csiGames` can't map them. Whoever adds either game to `matcher`
   should check back here; the shelf name is already known.
 - Sealed is wired in `cmd/bantool` for six of the eight singles-wired
   games - Gundam and Palworld have no `coolstuffinc_sealed_*` scraper

@@ -15,10 +15,10 @@ import (
 	"time"
 
 	"github.com/montanaflynn/stats"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
+	"github.com/mtgban/go-mtgban/matcher/sealed"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
-	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -50,7 +50,7 @@ type Scraper struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	backend     *mtgmatcher.Backend
+	backend     *matcher.Backend
 	banpriceKey string
 	prices      *priceSnapshot
 
@@ -195,7 +195,7 @@ var evParameters = []evConfig{
 }
 
 // NewScraper returns an EV scraper, signing its price lookups with sig.
-func NewScraper(b *mtgmatcher.Backend, sig string) *Scraper {
+func NewScraper(b *matcher.Backend, sig string) *Scraper {
 	ss := Scraper{}
 	ss.backend = b
 	ss.inventory = mtgban.InventoryRecord{}
@@ -237,7 +237,7 @@ func valueFromCache(picks []string, unit map[string]float64, probabilities []flo
 // EV. Serialized and cosmic-foil printings have no usable EV; SLD bonuses are
 // skipped only when their published distribution is not fixed: fewer than one
 // copy, on average, in one copy of the product holding them.
-func skipFromEV(co *mtgmatcher.CardObject, err error, expectedCountPerCopy float64) bool {
+func skipFromEV(co *matcher.CardObject, err error, expectedCountPerCopy float64) bool {
 	return err != nil || co.HasPromoType(magic.PromoTypeSerialized) ||
 		co.HasPromoType(magic.PromoTypeCosmicFoil) ||
 		(co.HasPromoType(magic.PromoTypeSLDBonus) && expectedCountPerCopy < 1)
@@ -245,7 +245,7 @@ func skipFromEV(co *mtgmatcher.CardObject, err error, expectedCountPerCopy float
 
 // open simulates a product, or hands back what simulating it came to
 // already where another product holding it asked first.
-func (ss *Scraper) open(ctx context.Context, co *mtgmatcher.CardObject) opened {
+func (ss *Scraper) open(ctx context.Context, co *matcher.CardObject) opened {
 	kept, found := ss.kept[co.UUID]
 	if found {
 		return kept
@@ -448,7 +448,7 @@ func (ss *Scraper) heldOpenings(ctx context.Context, setCode, productUUID string
 	if err != nil {
 		return nil
 	}
-	idx := slices.IndexFunc(set.SealedProduct, func(p mtgmatcher.SealedProduct) bool {
+	idx := slices.IndexFunc(set.SealedProduct, func(p matcher.SealedProduct) bool {
 		return p.UUID == productUUID
 	})
 	if idx < 0 {
@@ -588,7 +588,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 
 // heldWhole marks the products held whole by another that opens from what it
 // holds, the ones whose openings are worth keeping.
-func heldWhole(b *mtgmatcher.Backend) map[string]bool {
+func heldWhole(b *matcher.Backend) map[string]bool {
 	held := map[string]bool{}
 	for _, code := range b.GetAllSets() {
 		set, err := b.GetSet(code)
@@ -610,7 +610,7 @@ func heldWhole(b *mtgmatcher.Backend) map[string]bool {
 // opensFromHeld reports whether every opening of a product is the same fixed
 // cards and decks plus one opening of each sealed product it holds whole:
 // it holds at least one, and nothing drawn at random besides.
-func opensFromHeld(contents map[string][]mtgmatcher.SealedContent) bool {
+func opensFromHeld(contents map[string][]matcher.SealedContent) bool {
 	for kind, entries := range contents {
 		switch kind {
 		case "sealed", "card", "other":
@@ -781,6 +781,6 @@ func (ss *Scraper) Info() (info mtgban.ScraperInfo) {
 	info.SealedMode = true
 	info.CreditMultiplier = 1.3
 	info.Family = "EV"
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

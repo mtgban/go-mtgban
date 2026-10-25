@@ -1,8 +1,8 @@
 package cardgamecorner
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // ResourceBridge names the Cardmarket-id to TCGplayer-id bridge; see
@@ -19,12 +19,12 @@ func WithBridge(bridge map[int]int) mtgban.Option {
 
 func init() {
 	mtgban.Register("cardgamecorner",
-		[]mtgmatcher.Game{
-			mtgmatcher.GameMagic, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
-			mtgmatcher.GameOnePiece, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound,
-			mtgmatcher.GameFleshAndBlood,
+		[]matcher.Game{
+			matcher.GameMagic, matcher.GamePokemon, matcher.GameYuGiOh,
+			matcher.GameOnePiece, matcher.GameLorcana, matcher.GameRiftbound,
+			matcher.GameFleshAndBlood,
 		},
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraper(b)
 			if err != nil {
 				return nil, err

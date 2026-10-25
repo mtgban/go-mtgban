@@ -12,8 +12,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Market prices singles from Cardmarket's own listings, live, rather than
@@ -84,7 +84,7 @@ func (mkm *Market) bounce() bool {
 
 // NewScraperMarket returns a live-listing scraper matching against b,
 // authenticated with an app token and secret.
-func NewScraperMarket(b *mtgmatcher.Backend, appToken, appSecret string) (*Market, error) {
+func NewScraperMarket(b *matcher.Backend, appToken, appSecret string) (*Market, error) {
 	game := b.Game
 	id, found := mkmGames[game]
 	if !found {
@@ -541,7 +541,7 @@ func shouldStopPaging(mainDone bool, mainSatisfiedAt, page int, foundPowerseller
 // A 1st Edition printing asks for its flag too, rather than any listing:
 // the unflagged copies of an older set are the Unlimited run the datastore
 // does not carry, and are priced below it - see the README.
-func marketLoneFlag(b *mtgmatcher.Backend, param, cardID, cardIDFoil string) bool {
+func marketLoneFlag(b *matcher.Backend, param, cardID, cardIDFoil string) bool {
 	if cardIDFoil != "" && cardIDFoil != cardID {
 		return false
 	}
@@ -553,7 +553,7 @@ func marketLoneFlag(b *mtgmatcher.Backend, param, cardID, cardIDFoil string) boo
 	case "isFoil":
 		return co.Foil || co.Etched
 	case "isFirstEd":
-		return co.Finish == mtgmatcher.FinishSlug(mtgmatcher.Run1stEdition)
+		return co.Finish == matcher.FinishSlug(matcher.Run1stEdition)
 	}
 	return false
 }
@@ -613,7 +613,7 @@ func (mkm *Market) queryLanguageCopies(ctx context.Context, channel chan<- respo
 // is left out, as is a printing at another number: an id upstream gave to
 // more than one card names neither. So is a language the listings filter
 // cannot name.
-func languageCopies(b *mtgmatcher.Backend, productID int, cardID, cardIDFoil string) [][2]string {
+func languageCopies(b *matcher.Backend, productID int, cardID, cardIDFoil string) [][2]string {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return nil
@@ -746,7 +746,7 @@ func acceptArticle(flags map[string]bool, article cm.Article) (mtgban.Condition,
 	if excludedCountries[article.Seller.Address.Country] {
 		return "", false
 	}
-	if mtgmatcher.Contains(article.Comments, "ink") {
+	if matcher.Contains(article.Comments, "ink") {
 		return "", false
 	}
 	for param, want := range flags {

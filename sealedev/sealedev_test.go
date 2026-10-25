@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
+	"github.com/mtgban/go-mtgban/matcher/sealed"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
-	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // The Magic datastore is parsed the first time a test asks for it rather
@@ -27,14 +27,14 @@ import (
 var (
 	datastoreOnce    sync.Once
 	datastoreErr     error
-	datastoreBackend *mtgmatcher.Backend
+	datastoreBackend *matcher.Backend
 )
 
 // realDatastore loads the published Magic datastore, skipping the test where
 // none is configured. The value is drawn from real sealed contents, so there
 // is nothing to fake: a hand-built product would be a guess about the shape
 // being priced.
-func realDatastore(t *testing.T) *mtgmatcher.Backend {
+func realDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	datastoreOnce.Do(func() {
 		path := os.Getenv("ALLPRINTINGS5_PATH")
@@ -61,7 +61,7 @@ func realDatastore(t *testing.T) *mtgmatcher.Backend {
 // whose contents are drawn at random or one whose contents are fixed. Picking
 // it at runtime keeps the test true across a datastore refresh, where a uuid
 // written down here would rot.
-func sealedProduct(t *testing.T, b *mtgmatcher.Backend, wantRandom bool) (string, string) {
+func sealedProduct(t *testing.T, b *matcher.Backend, wantRandom bool) (string, string) {
 	t.Helper()
 	for _, uuid := range b.GetSealedUUIDs() {
 		co, err := b.GetUUID(uuid)
@@ -83,7 +83,7 @@ func sealedProduct(t *testing.T, b *mtgmatcher.Backend, wantRandom bool) (string
 // pricedAt quotes every card the product can contain at the same price, in
 // every store the parameters read, so what comes out is arithmetic on the
 // contents rather than on which store happened to carry what.
-func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price float64) *priceSnapshot {
+func pricedAt(t *testing.T, b *matcher.Backend, setCode, uuid string, price float64) *priceSnapshot {
 	t.Helper()
 	r := &priceSnapshot{
 		Retail:  map[string]map[string]float64{},
@@ -110,7 +110,7 @@ func pricedAt(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string, price f
 
 // pricedUnevenly quotes the cards the product can contain at prices from 1 to
 // 50, each card at the same price in every store the parameters read.
-func pricedUnevenly(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string) *priceSnapshot {
+func pricedUnevenly(t *testing.T, b *matcher.Backend, setCode, uuid string) *priceSnapshot {
 	t.Helper()
 	r := &priceSnapshot{
 		Retail:  map[string]map[string]float64{},
@@ -140,7 +140,7 @@ func pricedUnevenly(t *testing.T, b *mtgmatcher.Backend, setCode, uuid string) *
 // one copy of what holds it, either in the product itself or, with held, in
 // copies it holds that add up to at least one. Only a product drawn at random
 // lists one.
-func sldBonusProduct(t *testing.T, b *mtgmatcher.Backend, held bool) (string, string, string) {
+func sldBonusProduct(t *testing.T, b *matcher.Backend, held bool) (string, string, string) {
 	t.Helper()
 	for _, uuid := range b.GetSealedUUIDs() {
 		co, err := b.GetUUID(uuid)
@@ -201,7 +201,7 @@ func TestRunEVSkipsABonusRandomInEveryCopyHeld(t *testing.T) {
 
 // bonusLeftOut checks that pricing the bonus at 1000 moves no
 // probability-weighted value of the product.
-func bonusLeftOut(t *testing.T, b *mtgmatcher.Backend, productUUID, setCode, bonusUUID string) {
+func bonusLeftOut(t *testing.T, b *matcher.Backend, productUUID, setCode, bonusUUID string) {
 	t.Helper()
 	base := pricedAt(t, b, setCode, productUUID, 1)
 	high := pricedAt(t, b, setCode, productUUID, 1)
@@ -451,7 +451,7 @@ func TestRunEVDrawsOneOpeningForEveryParameter(t *testing.T) {
 // heldProduct finds a random product that opens from what it holds, either
 // holding nothing else or, with withFixed, fixed cards beside it that count:
 // its decklist less those of what it holds.
-func heldProduct(t *testing.T, b *mtgmatcher.Backend, withFixed bool) (string, string, []mtgmatcher.SealedContent) {
+func heldProduct(t *testing.T, b *matcher.Backend, withFixed bool) (string, string, []matcher.SealedContent) {
 	t.Helper()
 	for _, code := range b.GetAllSets() {
 		set, err := b.GetSet(code)
@@ -568,7 +568,7 @@ func TestRunEVStopsWhenCancelled(t *testing.T) {
 func TestMarketNames(t *testing.T) {
 	// No datastore lookup is reached on this path, so an empty backend is
 	// enough.
-	ss := NewScraper(&mtgmatcher.Backend{}, "")
+	ss := NewScraper(&matcher.Backend{}, "")
 	names := ss.MarketNames()
 	if len(names) == 0 {
 		t.Fatal("the scraper names no measures")
@@ -625,7 +625,7 @@ func TestRunEVReportsHowMuchOpeningsVaried(t *testing.T) {
 func TestInventoryAndBuylistAreWhatWasLoaded(t *testing.T) {
 	// No datastore lookup is reached on this path, so an empty backend is
 	// enough.
-	ss := NewScraper(&mtgmatcher.Backend{}, "")
+	ss := NewScraper(&matcher.Backend{}, "")
 	if got := len(ss.Inventory()); got != 0 {
 		t.Errorf("a fresh scraper holds %d inventory rows, want none", got)
 	}

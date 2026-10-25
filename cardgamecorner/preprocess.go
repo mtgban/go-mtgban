@@ -11,8 +11,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var cardTable = map[string]string{
@@ -151,18 +151,18 @@ var editionTable = map[string]string{
 	"Journey to Nyx": "Journey into Nyx",
 }
 
-func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.InputCard, error) {
-	if b.Game != mtgmatcher.GameMagic {
+func preprocess(b *matcher.Backend, card *Card, index int) (*matcher.InputCard, error) {
+	if b.Game != matcher.GameMagic {
 		return preprocessGame(b, card, index)
 	}
 	cardName := card.Name
 	edition := card.Edition
 
 	if strings.Contains(card.Extra, "pokemon") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 	if strings.Contains(cardName, "Art Series") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	// Grab the image url and keep only the image name
@@ -172,7 +172,7 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 	if card.Variants[index].ID == 223958 ||
 		// Excruciator RAV duplicate card
 		card.Variants[index].ID == 108840 {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	isFoil := card.Variants[index].Foil == "Foil"
@@ -194,13 +194,13 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 	}
 
 	variation := ""
-	variants := mtgmatcher.SplitVariants(cardName)
+	variants := matcher.SplitVariants(cardName)
 	if len(variants) > 1 {
 		variation = variants[1]
 	}
 	cardName = variants[0]
 	if variation == "" {
-		variants = mtgmatcher.SplitVariants(card.OrigName)
+		variants = matcher.SplitVariants(card.OrigName)
 		if len(variants) > 1 {
 			variation = variants[1]
 		}
@@ -250,7 +250,7 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 		id = imageProductID(b, card.Edition, card.Extra, cardName, edition, variation, isFoil)
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		ID:        id,
 		Name:      cardName,
 		Variation: variation,
@@ -285,7 +285,7 @@ func scryfallImageID(imagePath string) string {
 // wording's own language, and in the wording's set unless the wording failed or
 // the shelf names no set - this store also reuses one image across unrelated
 // products.
-func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edition, variation string, isFoil bool) string {
+func imageProductID(b *matcher.Backend, rawEdition, imagePath, cardName, edition, variation string, isFoil bool) string {
 	// The wording of these shelves names no set, so it lands on whichever
 	// printing of the card it finds first and the image is the better witness.
 	imageFirst := strings.HasPrefix(rawEdition, "Secret Lair Commander Deck")
@@ -314,7 +314,7 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	if err != nil {
 		return ""
 	}
-	var hit *mtgmatcher.CardObject
+	var hit *matcher.CardObject
 	for _, candidate := range ids {
 		co, err := b.GetUUID(candidate)
 		if err != nil {
@@ -353,9 +353,9 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	// A snapshot ahead of Match, which is free to mutate the card it is
 	// handed: the promo-tag check below has to see what the wording itself
 	// claimed, not what Match rewrote it to while landing.
-	claimed := mtgmatcher.InputCard{Variation: variation, Edition: edition}
+	claimed := matcher.InputCard{Variation: variation, Edition: edition}
 
-	wording := &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: variation, Foil: isFoil}
+	wording := &matcher.InputCard{Name: cardName, Edition: edition, Variation: variation, Foil: isFoil}
 	wordingID, wordingErr := b.Match(wording)
 	sameSet := false
 	if wordingErr == nil {
@@ -364,7 +364,7 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 			sameSet = inSetOrPromo(b, co.SetCode, hit.SetCode)
 		}
 	} else {
-		var alias *mtgmatcher.AliasingError
+		var alias *matcher.AliasingError
 		if errors.As(wordingErr, &alias) {
 			for _, probe := range alias.Probe() {
 				co, err := b.GetUUID(probe)
@@ -377,7 +377,7 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	}
 	// Where the wording failed, the image's id is the only witness left. A
 	// wording refused as unsupported is a verdict, not a failure.
-	failed := wordingErr != nil && !errors.Is(wordingErr, mtgmatcher.ErrUnsupported)
+	failed := wordingErr != nil && !errors.Is(wordingErr, matcher.ErrUnsupported)
 	if !sameSet && !failed && !imageFirst {
 		return ""
 	}
@@ -385,8 +385,8 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	// A serialized print is only the one on sale where the wording says so;
 	// otherwise the image names its plain twin, the same number without the
 	// serial suffix.
-	if hit.HasPromoType(magic.PromoTypeSerialized) && !mtgmatcher.Contains(variation+" "+edition, "serial") {
-		var twin *mtgmatcher.CardObject
+	if hit.HasPromoType(magic.PromoTypeSerialized) && !matcher.Contains(variation+" "+edition, "serial") {
+		var twin *matcher.CardObject
 		for _, candidate := range ids {
 			co, err := b.GetUUID(candidate)
 			if err != nil || co.HasPromoType(magic.PromoTypeSerialized) {
@@ -407,7 +407,7 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	// Match applies this same promo-tag check once ID is set and drops the
 	// listing outright on a mismatch, so failing here defers to the
 	// wording instead of turning an already-landed row into a silent loss.
-	if (magic.Rules{}).IsUnsupported(b, &claimed, hit, mtgmatcher.StageAnswer) {
+	if (magic.Rules{}).IsUnsupported(b, &claimed, hit, matcher.StageAnswer) {
 		return ""
 	}
 
@@ -422,7 +422,7 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 // promo set decorating it: the wording sends a promo shelf to the base set.
 // The other way round is not accepted, as the store shows one base image on a
 // promo listing that the wording had placed correctly.
-func inSetOrPromo(b *mtgmatcher.Backend, wordingSet, imageSet string) bool {
+func inSetOrPromo(b *matcher.Backend, wordingSet, imageSet string) bool {
 	if wordingSet == imageSet {
 		return true
 	}
@@ -435,13 +435,13 @@ func inSetOrPromo(b *mtgmatcher.Backend, wordingSet, imageSet string) bool {
 func namesFrontFace(name, cardName string) bool {
 	front, _, _ := strings.Cut(name, " /")
 	cardFront, _, _ := strings.Cut(cardName, " /")
-	return mtgmatcher.Equals(front, cardFront)
+	return matcher.Equals(front, cardFront)
 }
 
-func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, extra string) (string, string, string) {
+func internalPreprocess(b *matcher.Backend, cardName, edition, variation, extra string) (string, string, string) {
 	switch edition {
 	case "Unlimited":
-		cardName = mtgmatcher.Cut(cardName, "Unlimited")[0]
+		cardName = matcher.Cut(cardName, "Unlimited")[0]
 	case "Arabian Nights":
 		if variation == "V.1" {
 			variation = "dark"
@@ -838,13 +838,13 @@ func promoBasicPlacement(sku string) (set, number string) {
 // trusted only where the landed card confirms it. The store's Number field is
 // not read: several SKUs of one land share it. input is a copy taken before
 // the first Match, which mutates it.
-func matchBasicByImage(b *mtgmatcher.Backend, card *Card, input mtgmatcher.InputCard) (string, bool) {
+func matchBasicByImage(b *matcher.Backend, card *Card, input matcher.InputCard) (string, bool) {
 	imageNumber := basicImageNumber(strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra)))
 	skuNumber := basicImageNumber(card.SKU)
 	if slices.Contains(storeOrderBasics, input.Edition) {
 		skuNumber = ""
 	}
-	var attempts []mtgmatcher.InputCard
+	var attempts []matcher.InputCard
 	for _, number := range []string{skuNumber, imageNumber} {
 		attempt := input
 		attempt.Variation = number
@@ -872,7 +872,7 @@ func matchBasicByImage(b *mtgmatcher.Backend, card *Card, input mtgmatcher.Input
 // matchNumbered matches the card and answers it only where the printing it
 // lands on carries the number: its own, its plain one, or the tail of a
 // The List number, which the set it was printed in prefixes.
-func matchNumbered(b *mtgmatcher.Backend, input *mtgmatcher.InputCard, number string) (string, bool) {
+func matchNumbered(b *matcher.Backend, input *matcher.InputCard, number string) (string, bool) {
 	cardID, err := b.Match(input)
 	if err != nil {
 		return "", false
@@ -891,7 +891,7 @@ func matchNumbered(b *mtgmatcher.Backend, input *mtgmatcher.InputCard, number st
 // number the listing states, where the store's version tag counts its own
 // index and the number names the printing. input is a copy taken before the
 // first Match, which mutates it.
-func matchByListedNumber(b *mtgmatcher.Backend, card *Card, input mtgmatcher.InputCard) (string, bool) {
+func matchByListedNumber(b *matcher.Backend, card *Card, input matcher.InputCard) (string, bool) {
 	number := strings.TrimLeft(card.Number, "0")
 	if number == "" {
 		return "", false
@@ -920,7 +920,7 @@ var genericVersionRe = regexp.MustCompile(`(?i)^version\s*[0-9]+$`)
 // The name is compared exactly rather than through Normalize, which drops a
 // standalone "s": "Store Championship" would otherwise reach the promo set
 // spelled "Store Championships" and take the Game Day cards with it.
-func promoSetBase(b *mtgmatcher.Backend, edition string) (base string, colon bool, ok bool) {
+func promoSetBase(b *matcher.Backend, edition string) (base string, colon bool, ok bool) {
 	if base, found := strings.CutSuffix(edition, ": Promos"); found {
 		return base, true, true
 	}
@@ -938,7 +938,7 @@ func promoSetBase(b *mtgmatcher.Backend, edition string) (base string, colon boo
 // hasPromoPack reports whether the card was ever printed in a promo pack. It
 // walks the card's own printings because the name-keyed lookup answers false
 // for a double-faced card the store names by its front face alone.
-func hasPromoPack(b *mtgmatcher.Backend, cardName string) bool {
+func hasPromoPack(b *matcher.Backend, cardName string) bool {
 	if magic.HasPromoPackPrinting(b, cardName) {
 		return true
 	}
@@ -997,7 +997,7 @@ func imageNumber(extra string) string {
 // printings index answers for nearly every card; the few known only by a
 // flavor name reach their printing through the matcher alone, so ask it
 // second rather than call those names unknown.
-func namesACard(b *mtgmatcher.Backend, cardName string) bool {
+func namesACard(b *matcher.Backend, cardName string) bool {
 	if cardName == "" {
 		return false
 	}
@@ -1005,8 +1005,8 @@ func namesACard(b *mtgmatcher.Backend, cardName string) bool {
 	if err == nil {
 		return true
 	}
-	_, err = b.Match(&mtgmatcher.InputCard{Name: cardName})
-	return !errors.Is(err, mtgmatcher.ErrCardDoesNotExist)
+	_, err = b.Match(&matcher.InputCard{Name: cardName})
+	return !errors.Is(err, matcher.ErrCardDoesNotExist)
 }
 
 var (
@@ -1066,7 +1066,7 @@ const warSparkJapaneseEdition = "War of the Spark: Japanese Alternate-Art Planes
 // foil printings in the set the edition names, lowest first. It returns
 // nothing when any of them is numbered in a way the order cannot be read
 // from.
-func firstPlaceNumbers(b *mtgmatcher.Backend, cardName, edition string) []int {
+func firstPlaceNumbers(b *matcher.Backend, cardName, edition string) []int {
 	set, err := b.GetSetByName(edition)
 	if err != nil {
 		return nil
@@ -1100,17 +1100,17 @@ func namesTheArt(edition, extra string) bool {
 // treatments of one card apart: the store publishes the same name for the
 // plain printing and every borderless or showcase sibling beside it, and
 // prices them separately.
-func preprocessBL(b *mtgmatcher.Backend, cardName, edition, extra string, number int) (*mtgmatcher.InputCard, error) {
+func preprocessBL(b *matcher.Backend, cardName, edition, extra string, number int) (*matcher.InputCard, error) {
 	variant := ""
 	if strings.Contains(edition, "(") {
-		vars := mtgmatcher.SplitVariants(edition)
+		vars := matcher.SplitVariants(edition)
 		edition = vars[0]
 		if len(vars) > 1 {
 			variant = vars[1]
 		}
 	}
 	// The store also writes the version on the name, "X (V.2)".
-	vars := mtgmatcher.SplitVariants(cardName)
+	vars := matcher.SplitVariants(cardName)
 	if variant == "" && len(vars) > 1 {
 		cardName, variant = vars[0], vars[1]
 	}
@@ -1134,7 +1134,7 @@ func preprocessBL(b *mtgmatcher.Backend, cardName, edition, extra string, number
 		variant = strings.TrimSpace(variant + " " + strconv.Itoa(number))
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

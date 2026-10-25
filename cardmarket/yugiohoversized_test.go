@@ -5,7 +5,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
+	_ "github.com/mtgban/go-mtgban/matcher/yugioh"
 )
 
 // yugiohOversizedDatastore is the published datastore cut down to the shapes

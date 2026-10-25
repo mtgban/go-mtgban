@@ -3,10 +3,10 @@ package starcitygames
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/riftbound"
 )
 
 // TestSealedUntrimmedGamePrefixResolves covers the two games whose sealed
@@ -22,7 +22,7 @@ import (
 func TestSealedUntrimmedGamePrefixResolves(t *testing.T) {
 	for _, tt := range []struct {
 		game      string
-		datastore mtgmatcher.Game
+		datastore matcher.Game
 		env       string
 		names     []string
 	}{

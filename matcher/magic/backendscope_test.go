@@ -1,0 +1,103 @@
+package magic
+
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/matcher"
+)
+
+// The List's Game Day exception must search the backend whose printing is
+// being checked, never a different one that happens to carry the answer.
+func TestListGameDayReadsTheGivenBackend(t *testing.T) {
+	card := matcher.Card{Name: "Test Reward", Number: "TST-1"}
+	b := &matcher.Backend{
+		Sets:   map[string]*matcher.Set{"TST": {Name: "Test Expansion"}},
+		Hashes: map[string][]string{matcher.Normalize(card.Name): {"reward"}},
+		UUIDs: map[string]*matcher.CardObject{
+			"reward": {Card: matcher.Card{SetCode: "TST", PromoTypes: []string{PromoTypeGameDay}}},
+		},
+	}
+	in := &matcher.InputCard{Name: card.Name, Variation: "Game Day"}
+	if listEditionCheck(b, in, &card) {
+		t.Fatal("Game Day printing was rejected even though its own backend carries it")
+	}
+
+	// other carries the same Sets and UUIDs as b but no name index: the
+	// Game Day lookup must answer from the backend it is handed, not from a
+	// different backend that happens to hold the same uuid under one.
+	other := &matcher.Backend{Sets: b.Sets, UUIDs: b.UUIDs}
+	if !listEditionCheck(other, in, &card) {
+		t.Fatal("Game Day printing was admitted from a name index it does not carry")
+	}
+}
+
+// The identification hooks answer their auxiliary lookups from the backend they
+// take, and these pin that they read it: the same input answered against an
+// empty backend must find nothing, rather than whatever another backend holds.
+func TestHelpersReadTheGivenBackend(t *testing.T) {
+	realDatastore(t)
+	// A name printed exactly once in Secret Lair Ultimate, which is what
+	// the tag check asks the datastore about.
+	var name string
+	for _, card := range testBackend.Sets["SLU"].Cards {
+		if len(testBackend.MatchInSet(card.Name, "SLU")) == 1 {
+			name = card.Name
+			break
+		}
+	}
+	if name == "" {
+		t.Fatal("no uniquely printed SLU card in this datastore")
+	}
+
+	// The wording says Secret Lair; which drop it belongs to is what the
+	// datastore is asked.
+	inCard := &matcher.InputCard{Name: name, Edition: "Secret Lair Drop"}
+	if !hasSecretLairTag(testBackend, inCard, "SLU") {
+		t.Errorf("hasSecretLairTag(%q) = false against the datastore that holds it", name)
+	}
+	if hasSecretLairTag(&matcher.Backend{}, inCard, "SLU") {
+		t.Errorf("hasSecretLairTag(%q) = true against an empty backend, so it read another", name)
+	}
+}
+
+// The same for the promo tag closures, which reach the datastore to forgive
+// a listing that names a treatment its printing carries untagged.
+func TestPromoTagFuncsReadTheGivenBackend(t *testing.T) {
+	realDatastore(t)
+	var tagFunc func(*matcher.Backend, *matcher.InputCard) bool
+	for _, element := range promoTypeElements {
+		if element.PromoType == PromoTypeGalaxyFoil {
+			tagFunc = element.TagFunc
+			break
+		}
+	}
+	if tagFunc == nil {
+		t.Fatal("no galaxy foil promo element carrying a tag function")
+	}
+
+	// A Secret Lair foil says nothing about the galaxy treatment, so what
+	// the drop was printed in is what the datastore is asked. Command Tower
+	// is the one name the closure answers by number instead.
+	var name string
+	for _, uuid := range testBackend.AllUUIDs {
+		co, err := testBackend.GetUUID(uuid)
+		if err != nil || co.Sealed || co.Name == "Command Tower" {
+			continue
+		}
+		if co.SetCode == "SLD" && co.HasPromoType(PromoTypeGalaxyFoil) {
+			name = co.Name
+			break
+		}
+	}
+	if name == "" {
+		t.Fatal("no galaxy foil printing in this datastore")
+	}
+
+	inCard := &matcher.InputCard{Name: name, Edition: "Secret Lair Drop", Foil: true}
+	if !tagFunc(testBackend, inCard) {
+		t.Errorf("galaxy foil tag for %q = false against the datastore that holds it", name)
+	}
+	if tagFunc(&matcher.Backend{}, inCard) {
+		t.Errorf("galaxy foil tag for %q = true against an empty backend, so it read another", name)
+	}
+}

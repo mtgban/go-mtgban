@@ -12,8 +12,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -27,7 +27,7 @@ type Manaleak struct {
 	logCallback    mtgban.LogCallbackFunc
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	disableRetail  bool
 	disableBuylist bool
@@ -51,7 +51,7 @@ type Manaleak struct {
 }
 
 // NewScraper returns a scraper matching against b.
-func NewScraper(b *mtgmatcher.Backend) *Manaleak {
+func NewScraper(b *matcher.Backend) *Manaleak {
 	ml := Manaleak{backend: b}
 	ml.inventory = mtgban.InventoryRecord{}
 	ml.buylist = mtgban.BuylistRecord{}
@@ -144,7 +144,7 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 	// Tokens are out of scope, and a product page names one by its set only.
 	tokenName, isToken := strings.CutSuffix(product.Name, " Token")
 	if product.FromPage && isToken && ml.backend.IsToken(tokenName) {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 
 	cardName := product.Name
@@ -167,7 +167,7 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 
 	for _, guess := range product.idGuesses() {
 		inputID := guess.id
-		if guess.space == mtgmatcher.IDSpaceTCGplayer {
+		if guess.space == matcher.IDSpaceTCGplayer {
 			inputID = cmp.Or(staleTCGIDs[inputID], inputID)
 		}
 		cardID, err := ml.backend.MatchID(ml.backend.ConvertID(guess.space, inputID), foil, etched)
@@ -176,7 +176,7 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 		}
 	}
 
-	in := mtgmatcher.InputCard{Name: cardName, Edition: product.SetName, Foil: foil}
+	in := matcher.InputCard{Name: cardName, Edition: product.SetName, Foil: foil}
 	kind, sibling := siblingShelves[product.Shelf]
 	switch {
 	case product.FromPage && product.SetName == promoShelf:
@@ -203,7 +203,7 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 // which is not what the row sells, so the row is left unpriced. A category
 // naming no set, such as "Magic 2015 Core Set", accepts any promo set. A card
 // the category's sets do not file may still have a single promo printing.
-func (ml *Manaleak) inSibling(in mtgmatcher.InputCard, etched bool) (string, error) {
+func (ml *Manaleak) inSibling(in matcher.InputCard, etched bool) (string, error) {
 	parent := ""
 	main, err := ml.backend.GetSetByName(in.Edition)
 	if err == nil {
@@ -216,8 +216,8 @@ func (ml *Manaleak) inSibling(in mtgmatcher.InputCard, etched bool) (string, err
 		try.Edition = edition
 		cardID, err := ml.backend.Match(&try)
 		if err != nil {
-			if refused == nil && !errors.Is(err, mtgmatcher.ErrUnsupported) &&
-				!errors.As(err, new(*mtgmatcher.AliasingError)) {
+			if refused == nil && !errors.Is(err, matcher.ErrUnsupported) &&
+				!errors.As(err, new(*matcher.AliasingError)) {
 				refused = err
 			}
 			continue
@@ -238,7 +238,7 @@ func (ml *Manaleak) inSibling(in mtgmatcher.InputCard, etched bool) (string, err
 	if refused != nil {
 		return "", refused
 	}
-	return "", mtgmatcher.ErrUnsupported
+	return "", matcher.ErrUnsupported
 }
 
 // onPromoShelf settles a wording match on the Promos shelf, which files the
@@ -251,7 +251,7 @@ func (ml *Manaleak) onPromoShelf(product MLProduct, cardName, cardID string, err
 	word, byProgram := promoShelfWords[product.Shelf]
 
 	var candidates []string
-	var aliasing *mtgmatcher.AliasingError
+	var aliasing *matcher.AliasingError
 	switch {
 	case err == nil:
 		candidates = []string{cardID}
@@ -279,7 +279,7 @@ func (ml *Manaleak) onPromoShelf(product MLProduct, cardName, cardID string, err
 	}
 
 	if byProgram {
-		in := mtgmatcher.InputCard{Name: cardName, Variation: word, Foil: foil}
+		in := matcher.InputCard{Name: cardName, Variation: word, Foil: foil}
 		cardID, err = ml.backend.Match(&in)
 		if err == nil {
 			co, uuidErr := ml.backend.GetUUID(cardID)
@@ -298,7 +298,7 @@ func (ml *Manaleak) onlyPromo(cardName string, foil, etched bool) (string, error
 	name, _, _ := strings.Cut(cardName, " - ")
 	ids, err := ml.backend.SearchEquals(name)
 	if err != nil {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 
 	var found []string
@@ -314,7 +314,7 @@ func (ml *Manaleak) onlyPromo(cardName string, foil, etched bool) (string, error
 		}
 	}
 	if len(found) != 1 {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 	return found[0], nil
 }
@@ -328,7 +328,7 @@ func (ml *Manaleak) nameAgrees(cardID, cardName string) bool {
 		return false
 	}
 	co, err := ml.backend.GetUUID(cardID)
-	if err == nil && mtgmatcher.Equals(co.Name, cardName) {
+	if err == nil && matcher.Equals(co.Name, cardName) {
 		return true
 	}
 	ids, err := ml.backend.SearchEquals(cardName)
@@ -355,7 +355,7 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 	}
 
 	cardID, err := ml.match(product)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return
 	} else if err != nil {
 		ml.printf("%v", err)
@@ -565,7 +565,7 @@ func (ml *Manaleak) Buylist() mtgban.BuylistRecord {
 func (ml *Manaleak) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Manaleak"
 	info.Shorthand = "ML"
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	info.CountryFlag = "GB"
 	info.InventoryTimestamp = &ml.inventoryDate
 	info.BuylistTimestamp = &ml.buylistDate

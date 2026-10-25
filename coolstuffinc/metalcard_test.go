@@ -3,7 +3,7 @@ package coolstuffinc
 import (
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestPokemonMetalCard pins the Ultra-Premium Collection metal cards, named

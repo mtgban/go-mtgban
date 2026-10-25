@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // Manapool prices Mana Pool's catalog.
@@ -19,7 +19,7 @@ type Manapool struct {
 	logCallback mtgban.LogCallbackFunc
 	partner     string
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -27,7 +27,7 @@ type Manapool struct {
 
 // NewScraper returns a scraper pricing Mana Pool's singles, both what they
 // sell and what they buy, matching against b.
-func NewScraper(b *mtgmatcher.Backend) *Manapool {
+func NewScraper(b *matcher.Backend) *Manapool {
 	mp := Manapool{backend: b}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
@@ -44,14 +44,14 @@ func (mp *Manapool) printf(format string, a ...any) {
 // editions are dropped when the datastore is built - oversize, minigames,
 // front cards, playtest - and a sheet of tokens the datastore carries no set
 // for is dropped the same way, which is what the edition answers for.
-func isUnindexed(b *mtgmatcher.Backend, card Product) bool {
+func isUnindexed(b *matcher.Backend, card Product) bool {
 	_, err := b.GetSet(card.SetCode)
 	return err != nil
 }
 
 // isTokenSheet reports whether the printing a listing landed on sits in a set
 // of tokens, the only place a two-sided listing is a pairing of two faces.
-func isTokenSheet(b *mtgmatcher.Backend, co *mtgmatcher.CardObject) bool {
+func isTokenSheet(b *matcher.Backend, co *matcher.CardObject) bool {
 	set, err := b.GetSet(co.SetCode)
 	return err == nil && set.Type == "token"
 }
@@ -83,7 +83,7 @@ func (mp *Manapool) price(pricelist []Product) {
 			continue
 		}
 		// A two-sided token sheet prints one physical card for a pairing
-		// mtgmatcher/magic may already carry a combined entity for. mtgjson
+		// matcher/magic may already carry a combined entity for. mtgjson
 		// already models some of these natively (one single entity of its
 		// own, its own name already "X // Y") - the plain resolution above
 		// is already correct for those, told apart by its own Name already
@@ -95,7 +95,7 @@ func (mp *Manapool) price(pricelist []Product) {
 		// with cardkingdom's own version of this same problem), and refuse
 		// rather than keep the single-face result when no combined entity
 		// is on file: mtgjson's own tokenProducts feed simply has no
-		// record of every pairing a vendor sells (see mtgmatcher/magic's
+		// record of every pairing a vendor sells (see matcher/magic's
 		// own datastore pairing data), and a listing whose own
 		// name says two faces is worth more than a single-face guess would
 		// silently be wrong for is worth refusing instead.
@@ -133,7 +133,7 @@ func (mp *Manapool) record(card Product, cardID string) {
 	}
 	// The table names English by the empty tag, and Portuguese without the
 	// "(Brazil)" the datastore adds, so the printing's language holds it.
-	lang, found := mtgmatcher.LanguageCode2LanguageTag[strings.ToLower(card.LanguageID)]
+	lang, found := matcher.LanguageCode2LanguageTag[strings.ToLower(card.LanguageID)]
 	if !found || !strings.Contains(co.Language, cmp.Or(lang, "English")) {
 		return
 	}
@@ -192,7 +192,7 @@ func (mp *Manapool) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "MP"
 	info.InventoryTimestamp = &mp.inventoryDate
 	info.NoQuantityInventory = true
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }
 

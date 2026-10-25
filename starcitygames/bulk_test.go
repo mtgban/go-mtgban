@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 // TestBulkBuyRates pins every rate the table quotes. The numbers are SCG's,

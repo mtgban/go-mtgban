@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 var cardTable = map[string]string{
@@ -65,7 +65,7 @@ var promoTable = map[string]string{
 	"Chandra, Torch of Defiance": "Q06",
 }
 
-func preprocess(fullName, edition string, foil bool) (*mtgmatcher.InputCard, error) {
+func preprocess(fullName, edition string, foil bool) (*matcher.InputCard, error) {
 	fullName = strings.Replace(fullName, "[", "(", 1)
 	fullName = strings.Replace(fullName, "]", ")", 1)
 
@@ -74,7 +74,7 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.InputCard, err
 		fullName = lutName
 	}
 
-	s := mtgmatcher.SplitVariants(fullName)
+	s := matcher.SplitVariants(fullName)
 
 	variant := ""
 	cardName := s[0]
@@ -173,7 +173,7 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.InputCard, err
 		edition = "Ikoria: Lair of Behemoths"
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

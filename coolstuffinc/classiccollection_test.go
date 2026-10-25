@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestPokemonClassicCollectionReprintNote pins a Celebrations Classic

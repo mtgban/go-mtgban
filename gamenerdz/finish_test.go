@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
+	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
 func TestNameSaysFoil(t *testing.T) {
@@ -57,7 +57,7 @@ const tiebreakDatastore = `{"data": {
 // finishes of one printing is placed by its own finish, and that the finish
 // does not choose between printings the wording merely failed to tell apart.
 func TestFinishTiebreak(t *testing.T) {
-	b, err := mtgmatcher.Open("pokemon", strings.NewReader(tiebreakDatastore))
+	b, err := matcher.Open("pokemon", strings.NewReader(tiebreakDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}

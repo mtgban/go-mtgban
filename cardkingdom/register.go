@@ -1,17 +1,17 @@
 package cardkingdom
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func init() {
-	mtgban.Register("cardkingdom", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraper)
-	mtgban.Register("cardkingdom_graded", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraperGraded)
-	mtgban.Register("cardkingdom_sealed", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraperSealed)
+	mtgban.Register("cardkingdom", []matcher.Game{matcher.GameMagic}, newScraper)
+	mtgban.Register("cardkingdom_graded", []matcher.Game{matcher.GameMagic}, newScraperGraded)
+	mtgban.Register("cardkingdom_sealed", []matcher.Game{matcher.GameMagic}, newScraperSealed)
 }
 
-func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraper(b)
 	scraper.logCallback = opts.LogCallback
 	scraper.partner = opts.Affiliate
@@ -22,7 +22,7 @@ func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 	return scraper, nil
 }
 
-func newScraperGraded(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraperGraded(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper, err := NewScraperGraded(b)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func newScraperGraded(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scrape
 	return scraper, nil
 }
 
-func newScraperSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraperSealed(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	scraper := NewScraperSealed(b)
 	scraper.logCallback = opts.LogCallback
 	scraper.partner = opts.Affiliate

@@ -4,14 +4,14 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // tieBreak runs a listing through preprocess and the match the way processRow
 // does. It fails the test unless the match is ambiguous, and returns the
 // printing resolveAliasing settles on, nil when it settles on none.
-func tieBreak(t *testing.T, b *mtgmatcher.Backend, name, shelf, notes string) *mtgmatcher.CardObject {
+func tieBreak(t *testing.T, b *matcher.Backend, name, shelf, notes string) *matcher.CardObject {
 	t.Helper()
 
 	card, err := preprocess(b, name, shelf, notes)
@@ -19,7 +19,7 @@ func tieBreak(t *testing.T, b *mtgmatcher.Backend, name, shelf, notes string) *m
 		t.Fatalf("preprocess(%q) = %v", name, err)
 	}
 	_, err = b.Match(card)
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if !errors.As(err, &alias) {
 		t.Fatalf("Match(%q) = %v, want an aliasing", name, err)
 	}
@@ -41,56 +41,56 @@ func TestAliasingContradictions(t *testing.T) {
 
 	for _, tt := range []struct {
 		desc, name, shelf, notes string
-		ok                       func(co *mtgmatcher.CardObject) bool
+		ok                       func(co *matcher.CardObject) bool
 		want                     string
 	}{
 		{
 			desc: "a borderless printing the listing does not call borderless",
 			name: "Betor, Kin to All (Showcase)", shelf: "Tarkir: Dragonstorm",
 			notes: "Near Mint Normal English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return !co.HasPromoType(magic.PromoTypeBorderless) },
+			ok:    func(co *matcher.CardObject) bool { return !co.HasPromoType(magic.PromoTypeBorderless) },
 			want:  "a printing that is not borderless",
 		},
 		{
 			desc: "a flavor name the listing does not write",
 			name: "Beast Within (Borderless)", shelf: "Marvel Universe Eternal-Legal",
 			notes: "Near Mint Normal English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.FlavorName == "" },
+			ok:    func(co *matcher.CardObject) bool { return co.FlavorName == "" },
 			want:  "the printing with no flavor name",
 		},
 		{
 			desc: "a printing never made in the finish on sale",
 			name: "Trailblazer's Boots", shelf: "Mystery Booster Retail Edition Foils",
 			notes: "Near Mint Foil English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.HasFinish(mtgmatcher.FinishFoil) },
+			ok:    func(co *matcher.CardObject) bool { return co.HasFinish(matcher.FinishFoil) },
 			want:  "a printing made in foil",
 		},
 		{
 			desc: "several printings left, the one in the set the shelf is named for",
 			name: "Delighted Halfling (Borderless)", shelf: "Universes Beyond: The Lord of the Rings: Tales of Middle-earth",
 			notes: "Foil",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "LTR" },
+			ok:    func(co *matcher.CardObject) bool { return co.SetCode == "LTR" },
 			want:  "the printing in LTR",
 		},
 		{
 			desc: "a promo pack land a later set reprinted, on the shelf of the set it came in",
 			name: "Deserted Beach", shelf: "Promo Pack: Innistrad: Midnight Hunt",
 			notes: "Near Mint Normal English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "PMID" },
+			ok:    func(co *matcher.CardObject) bool { return co.SetCode == "PMID" },
 			want:  "the printing in PMID",
 		},
 		{
 			desc: "a promo shelf holds the promo, whatever set the shelf is named for",
 			name: "Elektra, Daughter of the Hand", shelf: "Promos: Standard Showdown",
 			notes: "Near Mint Normal English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.IsPromo },
+			ok:    func(co *matcher.CardObject) bool { return co.IsPromo },
 			want:  "a promo",
 		},
 		{
 			desc: "a promo shelf holds its card's only promo, whatever event it was for",
 			name: "Quicksilver, Brash Blur", shelf: "Promos: Standard Showdown",
 			notes: "Near Mint Normal English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.SetCode == "PPRO" && co.Number == "2026-1" },
+			ok:    func(co *matcher.CardObject) bool { return co.SetCode == "PPRO" && co.Number == "2026-1" },
 			want:  "PPRO #2026-1",
 		},
 	} {

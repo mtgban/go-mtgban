@@ -6,18 +6,18 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // Constructor builds a scraper against the datastore it is handed, from the
 // options its caller supplied. It is what a scraper package registers and
 // what NewScraper calls; the game is the datastore's own, b.Game, and the
 // secrets are the options', read with Options.Secret.
-type Constructor func(b *mtgmatcher.Backend, opts Options) (Scraper, error)
+type Constructor func(b *matcher.Backend, opts Options) (Scraper, error)
 
 type registration struct {
 	name  string
-	games []mtgmatcher.Game
+	games []matcher.Game
 	build Constructor
 }
 
@@ -27,7 +27,7 @@ var registeredScrapers []registration
 // it prices, in the style of database/sql's Register. A scraper package
 // calls it from init, so importing the package is what puts its scrapers
 // within NewScraper's reach. Registering a name twice for one game panics.
-func Register(name string, games []mtgmatcher.Game, build Constructor) {
+func Register(name string, games []matcher.Game, build Constructor) {
 	if build == nil {
 		panic("mtgban: Register constructor is nil for " + name)
 	}
@@ -46,7 +46,7 @@ func Register(name string, games []mtgmatcher.Game, build Constructor) {
 	})
 }
 
-func lookup(game mtgmatcher.Game, name string) (registration, bool) {
+func lookup(game matcher.Game, name string) (registration, bool) {
 	for _, reg := range registeredScrapers {
 		if reg.name == name && slices.Contains(reg.games, game) {
 			return reg, true
@@ -56,7 +56,7 @@ func lookup(game mtgmatcher.Game, name string) (registration, bool) {
 }
 
 // Registered lists the names registered for a game, sorted.
-func Registered(game mtgmatcher.Game) []string {
+func Registered(game matcher.Game) []string {
 	var names []string
 	for _, reg := range registeredScrapers {
 		if slices.Contains(reg.games, game) {
@@ -72,7 +72,7 @@ func Registered(game mtgmatcher.Game) []string {
 // "tcg_market"); the game is read off the datastore, which is what the
 // scraper will match against, so the two cannot disagree. A scraper that
 // asks for a secret is built with WithAuthenticator; most ask for none.
-func NewScraper(b *mtgmatcher.Backend, name string, opts ...Option) (Scraper, error) {
+func NewScraper(b *matcher.Backend, name string, opts ...Option) (Scraper, error) {
 	if b == nil {
 		return nil, errors.New("mtgban: NewScraper needs a datastore")
 	}

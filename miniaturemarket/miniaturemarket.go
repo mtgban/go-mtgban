@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Miniaturemarket prices Miniature Market's sealed product; they carry no
@@ -29,7 +29,7 @@ type Miniaturemarket struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 	productMap    map[string]string
-	backend       *mtgmatcher.Backend
+	backend       *matcher.Backend
 	widget        string
 	client        *http.Client
 }
@@ -40,17 +40,17 @@ type Miniaturemarket struct {
 // which serves the paginated product listing the scraper walks; unlike the
 // other storefronts there is no separate shelf name to expose, since the
 // widget id is the only thing a request ever carries.
-var mmGames = map[mtgmatcher.Game]string{
-	mtgmatcher.GameMagic:         "be53d253d6bc3258a8160556dda3e9b2",
-	mtgmatcher.GameLorcana:       "4e0223a87610176ef0d24ef6d2dcde3a",
-	mtgmatcher.GameRiftbound:     "019be122ca9779e5af00a663d064f775",
-	mtgmatcher.GameOnePiece:      "f7ac67a9aa8d255282de7d11391e1b69",
-	mtgmatcher.GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
-	mtgmatcher.GameGundam:        "019be1227c9b730eb41abadcdd09015a",
+var mmGames = map[matcher.Game]string{
+	matcher.GameMagic:         "be53d253d6bc3258a8160556dda3e9b2",
+	matcher.GameLorcana:       "4e0223a87610176ef0d24ef6d2dcde3a",
+	matcher.GameRiftbound:     "019be122ca9779e5af00a663d064f775",
+	matcher.GameOnePiece:      "f7ac67a9aa8d255282de7d11391e1b69",
+	matcher.GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
+	matcher.GameGundam:        "019be1227c9b730eb41abadcdd09015a",
 }
 
 // NewScraperSealed returns a sealed scraper for the datastore's game.
-func NewScraperSealed(b *mtgmatcher.Backend) (*Miniaturemarket, error) {
+func NewScraperSealed(b *matcher.Backend) (*Miniaturemarket, error) {
 	game := b.Game
 	widget, ok := mmGames[game]
 	if !ok {
@@ -105,8 +105,8 @@ var fabDeckSet = regexp.MustCompile(`\s+Deck - Set of \d+`)
 // prefix and parentheticals only decorate, and the bracket code either
 // carries the deck number the canon leads with, or restates a set the rest
 // of the name already spells.
-func sealedName(game mtgmatcher.Game, name string) string {
-	if game == mtgmatcher.GameFleshAndBlood {
+func sealedName(game matcher.Game, name string) string {
+	if game == matcher.GameFleshAndBlood {
 		name = strings.TrimPrefix(name, "Flesh & Blood TCG: ")
 		name = fabPackCount.ReplaceAllString(name, "")
 		// The canon spells an unlimited printing as a bracketed edition at
@@ -128,7 +128,7 @@ func sealedName(game mtgmatcher.Game, name string) string {
 		}
 		return strings.TrimSpace(name)
 	}
-	if game == mtgmatcher.GameGundam {
+	if game == matcher.GameGundam {
 		name = strings.TrimPrefix(name, "GUNDAM Card Game: ")
 		name = gundamDecorations.ReplaceAllString(name, "")
 
@@ -155,7 +155,7 @@ func sealedName(game mtgmatcher.Game, name string) string {
 		return strings.TrimSpace(name)
 	}
 
-	if game != mtgmatcher.GameOnePiece {
+	if game != matcher.GameOnePiece {
 		return name
 	}
 
@@ -199,10 +199,10 @@ func sealedWords(name string) []string {
 //
 // A tie says nothing: two products the storefront's words fit equally are two
 // products it did not choose between, and neither is the answer.
-func resolveByNamedCard(b *mtgmatcher.Backend, listed string) (string, error) {
+func resolveByNamedCard(b *matcher.Backend, listed string) (string, error) {
 	vendor := sealedWords(listed)
 	if len(vendor) == 0 {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 
 	var found string
@@ -217,12 +217,12 @@ func resolveByNamedCard(b *mtgmatcher.Backend, listed string) (string, error) {
 			continue
 		}
 		if found != "" && foundName != co.Name {
-			return "", mtgmatcher.ErrAliasing
+			return "", matcher.ErrAliasing
 		}
 		found, foundName = uuid, co.Name
 	}
 	if found == "" {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 	return found, nil
 }
@@ -258,7 +258,7 @@ func extraWords(candidate, vendor []string) ([]string, bool) {
 // merely exist somewhere in the datastore. Searching by substring alone would
 // answer "case" with Staircase and forgive the word that distinguishes a case
 // from the box in it.
-func extrasNameACard(b *mtgmatcher.Backend, extras, candidate []string) bool {
+func extrasNameACard(b *matcher.Backend, extras, candidate []string) bool {
 	uuids, err := b.SearchContains(strings.Join(extras, " "))
 	if err != nil {
 		return false
@@ -308,14 +308,14 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 	if uuid, found := mm.productMap[id]; found {
 		return uuid, ""
 	}
-	if mm.backend.Game == mtgmatcher.GameMagic {
+	if mm.backend.Game == matcher.GameMagic {
 		return "", "no datastore id"
 	}
 	name := strings.TrimSpace(sealedName(mm.backend.Game, listed))
 	if name == "" {
 		return "", "unnamed listing"
 	}
-	if mtgmatcher.SealedIsLanguageVariant(name) {
+	if matcher.SealedIsLanguageVariant(name) {
 		return "", "language variant"
 	}
 	// A trailing parenthetical is the storefront's decoration on some
@@ -415,7 +415,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 		}
 
 		priceStr := s.Find(`.product-price`).Text()
-		price, err := mtgmatcher.ParsePrice(priceStr)
+		price, err := matcher.ParsePrice(priceStr)
 		if err != nil {
 			channel <- respChan{drop: "unparseable price", name: listed}
 			return
@@ -478,7 +478,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
 	}
 	mm.printf("Loaded %d sealed products", len(mm.productMap))
-	if mm.backend.Game != mtgmatcher.GameMagic {
+	if mm.backend.Game != matcher.GameMagic {
 		mm.printf("Resolving %s products by name", mm.backend.Game)
 	}
 

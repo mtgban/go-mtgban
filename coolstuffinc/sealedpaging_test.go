@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // walkSealedSearch drives the sealed name search over whatever
@@ -13,7 +13,7 @@ import (
 // which pages get asked for.
 func walkSealedSearch(t *testing.T) {
 	t.Helper()
-	csi := Sealed{client: newCSIHTTPClient(), shelf: GameMagic, backend: &mtgmatcher.Backend{Game: mtgmatcher.GameMagic}}
+	csi := Sealed{client: newCSIHTTPClient(), shelf: GameMagic, backend: &matcher.Backend{Game: matcher.GameMagic}}
 	channel := make(chan responseChan, 1)
 	err := csi.processSealedSearch(context.Background(), channel, "Booster Box")
 	if err != nil {

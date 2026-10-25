@@ -5,7 +5,7 @@ import (
 )
 
 // TestPreprocessBuylistResolvesTokenPairing pins a two-sided token buylist
-// row resolving to the combined entity mtgmatcher/magic derives for it,
+// row resolving to the combined entity matcher/magic derives for it,
 // anchored by the row's own Code and Number - CSI's buylist JSON carries
 // both, and PreprocessBuylist routes a "X (Token) // Y (Token)" name through
 // them rather than matching the whole two-face string as one card name.

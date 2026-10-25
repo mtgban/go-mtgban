@@ -6,13 +6,13 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // yugiohEuropeanPrint answers the uuid of the row numbered exactly number
 // in setName, or "" where the datastore has no row at that number - so a
 // case can hold on either shape of the datastore.
-func yugiohEuropeanPrint(t *testing.T, b *mtgmatcher.Backend, setName, number string) string {
+func yugiohEuropeanPrint(t *testing.T, b *matcher.Backend, setName, number string) string {
 	t.Helper()
 	set, err := b.GetSetByName(setName)
 	if err != nil {

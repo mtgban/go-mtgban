@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // Index prices singles from Mana Pool's market valuation, what a card is
@@ -17,14 +17,14 @@ type Index struct {
 	logCallback mtgban.LogCallbackFunc
 	partner     string
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 }
 
 // NewScraperIndex returns an index scraper matching against b.
-func NewScraperIndex(b *mtgmatcher.Backend) *Index {
+func NewScraperIndex(b *matcher.Backend) *Index {
 	mp := Index{backend: b}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
@@ -67,7 +67,7 @@ func (mp *Index) price(singles []Product) {
 				continue
 			}
 
-			uuid := mp.backend.ConvertID(mtgmatcher.IDSpaceScryfall, card.ScryfallID)
+			uuid := mp.backend.ConvertID(matcher.IDSpaceScryfall, card.ScryfallID)
 			// A printing sold etched only quotes its market in the foil
 			// field, and its foil flag would route to the other number.
 			etchedOnly := false
@@ -172,6 +172,6 @@ func (mp *Index) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
 	info.Family = "MP"
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

@@ -15,8 +15,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -232,15 +232,15 @@ var name2shorthand = map[string]string{
 
 // mkmGames is the only way into these scrapers: a game names its Cardmarket
 // id here or it is not one this package is read for.
-var mkmGames = map[mtgmatcher.Game]cm.Game{
-	mtgmatcher.GameMagic:         cm.GameMagic,
-	mtgmatcher.GameLorcana:       cm.GameLorcana,
-	mtgmatcher.GameRiftbound:     cm.GameRiftbound,
-	mtgmatcher.GameOnePiece:      cm.GameOnePiece,
-	mtgmatcher.GameYuGiOh:        cm.GameYuGiOh,
-	mtgmatcher.GameFleshAndBlood: cm.GameFleshAndBlood,
-	mtgmatcher.GamePokemon:       cm.GamePokemon,
-	mtgmatcher.GameGundam:        cm.GameGundam,
+var mkmGames = map[matcher.Game]cm.Game{
+	matcher.GameMagic:         cm.GameMagic,
+	matcher.GameLorcana:       cm.GameLorcana,
+	matcher.GameRiftbound:     cm.GameRiftbound,
+	matcher.GameOnePiece:      cm.GameOnePiece,
+	matcher.GameYuGiOh:        cm.GameYuGiOh,
+	matcher.GameFleshAndBlood: cm.GameFleshAndBlood,
+	matcher.GamePokemon:       cm.GamePokemon,
+	matcher.GameGundam:        cm.GameGundam,
 }
 
 // defaultArticleFilter is the filter a price is read through: played or
@@ -276,7 +276,7 @@ func (mkm *Index) printf(format string, a ...any) {
 // NewScraperIndex returns an index scraper matching against b. It prices
 // from the published catalog and the public price guide, so it needs no
 // credential.
-func NewScraperIndex(b *mtgmatcher.Backend) (*Index, error) {
+func NewScraperIndex(b *matcher.Backend) (*Index, error) {
 	game := b.Game
 	id, found := mkmGames[game]
 	if !found {
@@ -322,7 +322,7 @@ var nameCode = regexp.MustCompile(`\(([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\)$`)
 // matcher reaches past the edition and lands on the ordinary booster
 // printing of that number, which is a mass-printed card wearing a promo's
 // price. A refusal says less but claims nothing.
-func onePieceNumber(b *mtgmatcher.Backend, name, number, expansion string) string {
+func onePieceNumber(b *matcher.Backend, name, number, expansion string) string {
 	fields := nameCode.FindStringSubmatch(name)
 	if fields == nil || strings.EqualFold(fields[1], number) {
 		return number
@@ -336,7 +336,7 @@ func onePieceNumber(b *mtgmatcher.Backend, name, number, expansion string) strin
 // shelvedSets names, for each set of ours, the one expansion of this catalog
 // that sells it. A set no expansion names is absent, and so is an expansion
 // naming no set.
-func shelvedSets(b *mtgmatcher.Backend, list []cm.Expansion) map[string]string {
+func shelvedSets(b *matcher.Backend, list []cm.Expansion) map[string]string {
 	shelved := make(map[string]string, len(list))
 	for _, exp := range list {
 		set, err := b.GetSetByName(cmp.Or(onePieceShelves[exp.Name], exp.Name))
@@ -476,7 +476,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		guide.TrendPrice == 0 && guide.AvgSellPrice == 0 && guide.AvgDay30 == 0 && guide.LowPrice == foilLow {
 		prices[0] = 0
 	}
-	second := co.Finish != mtgmatcher.FinishNonfoil
+	second := co.Finish != matcher.FinishNonfoil
 	if mkm.gameID == cm.GamePokemon {
 		// Reverse holo is the guide's only split: it has no 1st-Edition
 		// column, unlike Market's per-listing query (see
@@ -485,7 +485,7 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 		// print-run axis is handled below instead, by filing the first
 		// pair under every uuid on this product's "not reverse holo"
 		// side.
-		second = co.Finish == mtgmatcher.FinishSlug(pokemonReverseHolo)
+		second = co.Finish == matcher.FinishSlug(pokemonReverseHolo)
 	}
 
 	// A printing on the first side takes the first pair and hands the

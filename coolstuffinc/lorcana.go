@@ -3,7 +3,7 @@ package coolstuffinc
 import (
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // lorcanaSpellings corrects the Lorcana names this storefront misspells.
@@ -65,12 +65,12 @@ var lorcanaQuestNotes = []struct{ marker, edition, wantSet string }{
 // note names when a probe of the card lands in that quest's set, and the shelf
 // it arrived on otherwise. An edition holding no such card widens to every
 // printing, so the landed set is what is checked.
-func lorcanaShelf(b *mtgmatcher.Backend, name, shelf, notes string) string {
+func lorcanaShelf(b *matcher.Backend, name, shelf, notes string) string {
 	for _, quest := range lorcanaQuestNotes {
 		if !strings.Contains(notes, quest.marker) {
 			continue
 		}
-		probe := &mtgmatcher.InputCard{Name: lorcanaSpelling(name), Edition: quest.edition, Variation: lorcanaVariation(notes), Foil: true}
+		probe := &matcher.InputCard{Name: lorcanaSpelling(name), Edition: quest.edition, Variation: lorcanaVariation(notes), Foil: true}
 		id, err := b.Match(probe)
 		if err != nil {
 			continue

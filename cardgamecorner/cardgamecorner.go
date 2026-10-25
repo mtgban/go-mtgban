@@ -12,9 +12,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 const (
@@ -42,12 +42,12 @@ type Cardgamecorner struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 	client    *Client
-	backend   *mtgmatcher.Backend
+	backend   *matcher.Backend
 }
 
 // NewScraper returns a scraper against the datastore, failing if the
 // datastore's game is not one the store sells.
-func NewScraper(b *mtgmatcher.Backend) (*Cardgamecorner, error) {
+func NewScraper(b *matcher.Backend) (*Cardgamecorner, error) {
 	game, ok := cgcGames[b.Game]
 	if !ok {
 		return nil, fmt.Errorf("unsupported game %q", b.Game)
@@ -79,7 +79,7 @@ func (cgc *Cardgamecorner) printf(format string, a ...any) {
 // instead - a number that names no light, and that no other seller repeats
 // - so a listing of one names them all equally. There is nothing to choose
 // between, and nothing worth reporting.
-func blindAttraction(b *mtgmatcher.Backend, probes []string) bool {
+func blindAttraction(b *matcher.Backend, probes []string) bool {
 	for _, probe := range probes {
 		co, err := b.GetUUID(probe)
 		if err != nil || magic.AttractionLights(&co.Card) == "" {
@@ -93,12 +93,12 @@ func blindAttraction(b *mtgmatcher.Backend, probes []string) bool {
 // English is, with a few shelves where another language is the one the
 // datastore carries. Yu-Gi-Oh files its North American English copies as
 // "US".
-func wantedLanguage(game mtgmatcher.Game, language, edition string) bool {
+func wantedLanguage(game matcher.Game, language, edition string) bool {
 	switch language {
 	case "EN":
 		return true
 	case "US":
-		return game == mtgmatcher.GameYuGiOh
+		return game == matcher.GameYuGiOh
 	case "JP":
 		return edition == "War of the Spark: Japanese Alternate-Art Planeswalkers"
 	case "IT":
@@ -143,7 +143,7 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 			}
 
 			theCard, err := preprocess(cgc.backend, &card, i)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if errors.Is(err, matcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
 				if !failedEditions[card.Edition] {
@@ -155,7 +155,7 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 
 			retry := *theCard
 			cardID, byID := "", false
-			if cgc.backend.Game == mtgmatcher.GameOnePiece {
+			if cgc.backend.Game == matcher.GameOnePiece {
 				cardID, byID = cgc.matchByProductImage(&card, theCard.Foil)
 			}
 			if !byID {
@@ -164,22 +164,22 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 			// The basic lands carry nothing but the store's own version tag,
 			// so retry them with the number their SKU spells, then the one
 			// their image names, and ignore the ones neither places.
-			if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && cgc.backend.Game == mtgmatcher.GameMagic && magic.IsBasicLand(card.Name) {
+			if err != nil && !errors.Is(err, matcher.ErrUnsupported) && cgc.backend.Game == matcher.GameMagic && magic.IsBasicLand(card.Name) {
 				id, found := matchBasicByImage(cgc.backend, &card, retry)
 				if !found {
 					continue
 				}
 				cardID, err = id, nil
-			} else if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && cgc.backend.Game == mtgmatcher.GameMagic {
+			} else if err != nil && !errors.Is(err, matcher.ErrUnsupported) && cgc.backend.Game == matcher.GameMagic {
 				id, found := matchByListedNumber(cgc.backend, &card, retry)
 				if found {
 					cardID, err = id, nil
 				}
 			}
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if errors.Is(err, matcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
-				var alias *mtgmatcher.AliasingError
+				var alias *matcher.AliasingError
 				aliased := errors.As(err, &alias)
 				if aliased && blindAttraction(cgc.backend, alias.Probe()) {
 					continue
@@ -267,7 +267,7 @@ func ownersBySKU(listed []listing, editions []Edition) map[string]listing {
 // Every edition is listed before any stock is read, because the stock is
 // asked for by SKU alone, and a SKU can be listed more than once.
 func (cgc *Cardgamecorner) scrape(ctx context.Context) error {
-	editionList, err := cgc.client.GetEditionList(ctx, cgc.backend.Game == mtgmatcher.GameMagic)
+	editionList, err := cgc.client.GetEditionList(ctx, cgc.backend.Game == matcher.GameMagic)
 	if err != nil {
 		return err
 	}
@@ -393,7 +393,7 @@ func (cgc *Cardgamecorner) Load(ctx context.Context) error {
 	}
 
 	// Only Magic's buylist is read
-	if !cgc.disableBuylist && cgc.backend.Game == mtgmatcher.GameMagic {
+	if !cgc.disableBuylist && cgc.backend.Game == matcher.GameMagic {
 		err := cgc.scrapeBL(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
@@ -444,10 +444,10 @@ func (cgc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultCha
 			}
 
 			cardID, err := cgc.backend.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if errors.Is(err, matcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
-				var alias *mtgmatcher.AliasingError
+				var alias *matcher.AliasingError
 				aliased := errors.As(err, &alias)
 				if aliased && blindAttraction(cgc.backend, alias.Probe()) {
 					continue

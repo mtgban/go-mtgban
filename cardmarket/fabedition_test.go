@@ -5,7 +5,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 // TestFabEdition pins the translation from Cardmarket's expansion names to

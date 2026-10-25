@@ -1,0 +1,671 @@
+package matcher
+
+import (
+	"fmt"
+	"log"
+	"maps"
+	"slices"
+	"strings"
+	"time"
+)
+
+// Sheet is one pool a booster draws from, with the weight of each card in it.
+type Sheet struct {
+	AllowDuplicates bool           `json:"allowDuplicates"`
+	BalanceColors   bool           `json:"balanceColors"`
+	Cards           map[string]int `json:"cards"`
+	Fixed           bool           `json:"fixed"`
+	Foil            bool           `json:"foil"`
+	TotalWeight     int            `json:"totalWeight"`
+}
+
+// Booster describes how a product's boosters are built: the sheets available
+// and the weighted configurations that draw from them.
+type Booster struct {
+	Boosters []struct {
+		Contents map[string]int `json:"contents"`
+		Weight   int            `json:"weight"`
+	} `json:"boosters"`
+	BoostersTotalWeight int              `json:"boostersTotalWeight"`
+	Sheets              map[string]Sheet `json:"sheets"`
+	Name                string           `json:"name"`
+}
+
+// SealedContent is one component of a sealed product: a card, a pack, a deck,
+// or a set of alternative configurations chosen at random.
+type SealedContent struct {
+	Code  string `json:"code"`
+	Count int    `json:"count"`
+	Foil  bool   `json:"foil"`
+	Name  string `json:"name"`
+	Set   string `json:"set"`
+	UUID  string `json:"uuid"`
+
+	// For variable_config
+	Chance int `json:"chance"`
+	Weight int `json:"weight"`
+
+	// This recursive definition is used for "variable" mode in which one
+	// possible configuration is chosen at random
+	Configs []map[string][]SealedContent `json:"configs"`
+}
+
+// DeckCard is one card in a preconstructed deck, with its finish.
+type DeckCard struct {
+	Count    int    `json:"count"`
+	IsEtched bool   `json:"isEtched"`
+	IsFoil   bool   `json:"isFoil"`
+	UUID     string `json:"uuid"`
+}
+
+// SealedProduct is a sealed item and, where it is known, what opening it can
+// produce.
+type SealedProduct struct {
+	Category    string                     `json:"category"`
+	Contents    map[string][]SealedContent `json:"contents"`
+	Identifiers map[string]string          `json:"identifiers"`
+	Language    string                     `json:"language"`
+	Name        string                     `json:"name"`
+	SetCode     string                     `json:"setCode"`
+	CardCount   int                        `json:"cardCount"`
+	ReleaseDate string                     `json:"releaseDate"`
+	Subtype     string                     `json:"subtype"`
+	UUID        string                     `json:"uuid"`
+}
+
+// Set is an edition and everything printed in it, cards and sealed alike.
+type Set struct {
+	// BaseSetSize is how many cards the set's base run holds - the "167" a
+	// Magic or Pokemon card prints beside its number, and the same count
+	// where the game publishes it in data instead. Cards numbered above it
+	// are the ones added past that run: Pokemon's secret rares, Lorcana's
+	// enchanted.
+	//
+	// Only four games say it: Magic and Pokemon print it on the card,
+	// Lorcana publishes it as cardCounts.base and Riftbound as
+	// collectorNumberMax. Yu-Gi-Oh, Flesh and Blood, One Piece, Gundam and
+	// Palworld publish no set size at all, and nothing here may invent one
+	// from the highest number carried - the alternate arts and parallel
+	// rares run past the base run, which is the very thing this measures.
+	// Beware a count that looks like one and is not: YGOPRODeck's
+	// num_of_cards is a tally of printings, 355 for a Legend of Blue Eyes
+	// numbered to 126. So zero means "unknown", never "empty".
+	BaseSetSize   int    `json:"baseSetSize"`
+	Code          string `json:"code"`
+	Cards         []Card `json:"cards"`
+	IsFoilOnly    bool   `json:"isFoilOnly"`
+	IsNonFoilOnly bool   `json:"isNonFoilOnly"`
+	IsOnlineOnly  bool   `json:"isOnlineOnly"`
+	KeyruneCode   string `json:"keyruneCode"`
+	Name          string `json:"name"`
+	ParentCode    string `json:"parentCode"`
+	ReleaseDate   string `json:"releaseDate"`
+	Symbol        string `json:"symbol"` // pokemon only
+	TokenSetCode  string `json:"tokenSetCode"`
+	Tokens        []Card `json:"tokens"`
+	Type          string `json:"type"`
+
+	// List of rarities present in the set
+	Rarities []string
+	// List of card colors present in the set
+	Colors []string
+	// Precomputed ReleaseDate value
+	ReleaseDateTime time.Time
+
+	Booster       map[string]Booster `json:"booster"`
+	SealedProduct []SealedProduct    `json:"sealedProduct"`
+	Decks         []struct {
+		Code               string     `json:"code"`
+		Commander          []DeckCard `json:"commander"`
+		MainBoard          []DeckCard `json:"mainBoard"`
+		DisplayCommander   []DeckCard `json:"displayCommander"`
+		Planes             []DeckCard `json:"planes"`
+		Schemes            []DeckCard `json:"schemes"`
+		SideBoard          []DeckCard `json:"sideBoard"`
+		Tokens             []DeckCard `json:"tokens"`
+		Name               string     `json:"name"`
+		SealedProductUUIDs []string   `json:"sealedProductUuids"`
+	} `json:"decks"`
+}
+
+// Card is one printing, with the properties that tell it apart from every
+// other printing of the same name. Fields follow the MTGJSON project, but
+// for Colors and ColorIdentity, which name each color as the game's sets
+// list it ("white") where MTGJSON writes Magic's as letters ("W").
+//
+// Printings names the sets a card of this name is printed in, and the rules
+// read each one back through Backend.Sets. The eight datastore loaders build
+// it from every card without checking its set: a datastore files every card
+// under a set it lists (SPECIFICATIONS.md §2.1).
+type Card struct {
+	Artist              string              `json:"artist"`
+	BorderColor         string              `json:"borderColor"`
+	Colors              []string            `json:"colors"`
+	ColorIdentity       []string            `json:"colorIdentity"`
+	FaceName            string              `json:"faceName"`
+	FaceFlavorName      string              `json:"faceFlavorName"`
+	FacePrintedName     string              `json:"facePrintedName"`
+	Finishes            []string            `json:"finishes"`
+	FlavorName          string              `json:"flavorName"`
+	FlavorText          string              `json:"flavorText"`
+	FrameEffects        []string            `json:"frameEffects"`
+	FrameVersion        string              `json:"frameVersion"`
+	HasContentWarning   bool                `json:"hasContentWarning"`
+	Identifiers         map[string]string   `json:"identifiers"`
+	IsAlternative       bool                `json:"isAlternative"`
+	IsGameChanger       bool                `json:"isGameChanger"`
+	IsFullArt           bool                `json:"isFullArt"`
+	IsFunny             bool                `json:"isFunny"`
+	IsOnlineOnly        bool                `json:"isOnlineOnly"`
+	IsOversized         bool                `json:"isOversized"`
+	IsPromo             bool                `json:"isPromo"`
+	IsReserved          bool                `json:"isReserved"`
+	Language            string              `json:"language"`
+	Layout              string              `json:"layout"`
+	Name                string              `json:"name"`
+	Number              string              `json:"number"`
+	OriginalReleaseDate string              `json:"originalReleaseDate"`
+	PrintedName         string              `json:"printedName"`
+	PrintedType         string              `json:"printedType"`
+	Printings           []string            `json:"printings"`
+	PromoTypes          []string            `json:"promoTypes"`
+	Rarity              string              `json:"rarity"`
+	SetCode             string              `json:"setCode"`
+	SourceProducts      map[string][]string `json:"sourceProducts"`
+	Side                string              `json:"side"`
+	Subsets             []string            `json:"subsets"`
+	Types               []string            `json:"types"`
+	Subtypes            []string            `json:"subtypes"`
+	Supertypes          []string            `json:"supertypes"`
+	UUID                string              `json:"uuid"`
+	Legalities          map[string]string   `json:"legalities"`
+	Variations          []string            `json:"variations"`
+	Watermark           string              `json:"watermark"`
+
+	ForeignData []struct {
+		Name        string            `json:"name"`
+		Language    string            `json:"language"`
+		Identifiers map[string]string `json:"identifiers"`
+		Type        string            `json:"type"`
+		UUID        string            `json:"uuid"`
+	} `json:"foreignData"`
+
+	// PlainNumber is Number with the game's own decorations stripped -
+	// Magic's ★ and †, Riftbound's star, Lorcana's variant letter - and so
+	// it is the number a search matches. It is never longer than Number: a
+	// loader that widens it here instead of narrowing it turns the ordinary
+	// number search into the strict one.
+	PlainNumber string
+
+	// SetTotal is the set size the card's own face prints beside its
+	// number, the "167" of "082/167", which is what tells a reprint from
+	// its original - Cascoon is 44/130 in Diamond & Pearl and 44/127 in
+	// Platinum. It is the card's own rather than the set's, because the
+	// pooled sets - World Championship Decks, the promo pools - hold cards
+	// that keep the total of wherever they were first printed, and the set
+	// they sit in has no one size. Empty means the face prints no total at
+	// all, which is most promos, and that emptiness is meaningful: a
+	// bare-numbered promo is a different printing from its totalled
+	// reprint, so nothing may fill it in from Set.BaseSetSize.
+	//
+	// It is not always a size. Lorcana numbers a set's promos from 1
+	// alongside the set's own cards and prints the run where the size
+	// would go, so "1/P1" sits beside "1/204" and this holds "P1": the
+	// denominator the face prints, whatever the face prints there.
+	SetTotal string
+
+	// FoilUUIDs holds one entry per finish the printing is sold in, mapping
+	// it to the uuid that carries it, keyed by the name CardObject.Finish
+	// carries: FinishSlug of TCGplayer's name for a datastore game, and
+	// mtgjson's for Magic. Beside them, FinishNonfoil and FinishFoil are the
+	// printings a caller's bare flags answer with, where the printing is not
+	// sold under those names itself - Gundam's foil is its Holofoil - since
+	// output() resolves the flags to one of them and pulls the uuid from
+	// here. Loaders populate it; a Card without it falls back to the suffix
+	// rules.
+	FoilUUIDs map[string]string
+
+	// Finish is the name of the finish this specific entry carries, spelled
+	// by FinishSlug: of the name TCGplayer prices it under for a datastore
+	// game - "coldfoil",
+	// "1steditionholofoil" - and FinishNonfoil, FinishFoil and FinishEtched
+	// for Magic. It is set per stored uuid, not on the set-level card, which
+	// represents every finish, and it is what makes two entries the Foil flag
+	// cannot tell apart distinguishable. Sealed entries carry no finish.
+	Finish string
+
+	// A list of URLs containing the image of the card
+	// At a minimum "full" and "thumbnail" versions should be provided
+	Images map[string]string
+}
+
+// Card implements the Stringer interface
+func (c Card) String() string {
+	if c.Number == "" {
+		return fmt.Sprintf("[%s] %s", c.SetCode, c.Name)
+	}
+	return fmt.Sprintf("%s|%s|%s", c.Name, c.SetCode, c.Number)
+}
+
+// HasFinish reports whether the printing was sold in this finish.
+func (c *Card) HasFinish(fi string) bool {
+	return slices.Contains(c.Finishes, fi)
+}
+
+// PrintingKey names the printing a card is one finish of: the uuid of the
+// first finish it is sold in, by name, which every finish sibling of the
+// printing shares. The games storing a CardObject per finish fold their
+// candidates on it, so a printing sold in two finishes is one candidate
+// however the datastore spelled the two uuids.
+func PrintingKey(card Card) string {
+	if len(card.FoilUUIDs) == 0 {
+		return card.UUID
+	}
+	return card.FoilUUIDs[slices.Min(slices.Collect(maps.Keys(card.FoilUUIDs)))]
+}
+
+// HasFrameEffect reports whether the printing carries this frame effect.
+func (c *Card) HasFrameEffect(fe string) bool {
+	return slices.Contains(c.FrameEffects, fe)
+}
+
+// HasPromoType reports whether the printing carries this promo type.
+func (c *Card) HasPromoType(pt string) bool {
+	return slices.Contains(c.PromoTypes, pt)
+}
+
+// CardObject is an extension of Card, containing fields that cannot
+// be easily represented in the original object.
+type CardObject struct {
+	Card
+	Edition string
+	Foil    bool
+	Etched  bool
+	Sealed  bool
+}
+
+// String names the entry as Name|SET|number|finish: the Finish it carries,
+// which tells apart finishes the flags cannot ("coldfoil", "1stedition"), or
+// one read off the flags where it names none. Sealed entries carry no finish.
+func (co CardObject) String() string {
+	if co.Sealed {
+		return co.Card.String()
+	}
+	finish := co.Finish
+	if finish == "" {
+		finish = FinishNonfoil
+		if co.Etched {
+			finish = FinishEtched
+		} else if co.Foil {
+			finish = FinishFoil
+		}
+	}
+	return fmt.Sprintf("%s|%s", co.Card, finish)
+}
+
+// AlternateProps carries the name and number a printing is also known by, for
+// the reskins and flavor names storefronts list instead of the real one.
+type AlternateProps struct {
+	OriginalName   string
+	OriginalNumber string
+	IsFlavor       bool
+}
+
+// Backend is a loaded datastore: every set and printing of one game, with the
+// indexes Match needs and the game's own rules attached. Build one through a
+// game's Load, not by hand.
+type Backend struct {
+	// Game is the name Open loaded this datastore under, as the game's
+	// package registered it ("magic", "pokemon"): what a scraper built on
+	// this backend prices. A backend assembled by hand carries whatever its
+	// builder wrote here, and nothing until it does.
+	Game Game
+
+	// Logger receives the matcher's diagnostics: which finish a listing
+	// named that the game does not, which candidates an id lookup found.
+	// Nil is quiet. It is the caller's to set, so two backends in one
+	// process can report to two places, or one of them to none.
+	Logger *log.Logger
+
+	// Slice of all set codes loaded
+	AllSets []string
+
+	// Map of set code : Set
+	Sets map[string]*Set
+
+	// Map of Normalize(set name) : Set, for name-based lookups
+	NormalizedSets map[string]*Set
+
+	// Map of normalized name : canonical name
+	// This is slightly different for tokens, as they are tagged as such
+	CanonicalNames map[string]string
+
+	// Map of uuid : CardObject. Values are shared with every caller
+	// of GetUUID and must never be modified after the load completes.
+	UUIDs map[string]*CardObject
+
+	// Slice with token names (not normalized and without any "Token" tags)
+	Tokens []string
+
+	// Slice with every uniquely normalized name
+	AllNames []string
+	// Slice with every unique name, as it would appear on a card
+	AllCanonicalNames []string
+	// Slice with every unique name, lower case
+	AllLowerNames []string
+
+	// What AddName and AddSealed have filed already, one set per list: two
+	// spellings can normalize or lowercase to one string, so each list is
+	// deduped on what it holds rather than on one of the others.
+	seenNames           map[string]bool
+	seenLowerNames      map[string]bool
+	seenCanonicalNames  map[string]bool
+	seenSealed          map[string]bool
+	seenLowerSealed     map[string]bool
+	seenCanonicalSealed map[string]bool
+
+	// Slice with every uniquely normalized product name
+	AllSealed []string
+	// Slice with every unique product name, as defined by mtgjson
+	AllCanonicalSealed []string
+	// Slice with every unique product name, lower case
+	AllLowerSealed []string
+
+	// Map of all normalized names to slice of uuids
+	Hashes map[string][]string
+
+	// Map of face/flavor names to set of canonical properties, such as original
+	// name, and number, as well as a way to determine FlavorNames
+	// Neither key nor values are normalized
+	AlternateProps map[string]AlternateProps
+
+	// Slice with every possible non-sealed uuid
+	AllUUIDs []string
+	// Slice with every possible sealed uuid
+	AllSealedUUIDs []string
+
+	// sealedIdx is the sealed namespace as ResolveSealed reads it, built by
+	// SortSealed once every product is filed.
+	sealedIdx *sealedIndex
+
+	// Non-sealed uuids bucketed by set code, each bucket sorted
+	SetUUIDs map[string][]string
+	// Sealed uuids bucketed by set code, each bucket sorted
+	SetSealedUUIDs map[string][]string
+
+	// Non-MTGBAN identifiers to a card (or product) UUID, one map per id
+	// space so the integer spaces never shadow each other. The uuid filed
+	// for a shared identifier is the printing's base sibling: the nonfoil,
+	// or the foil where no nonfoil was sold, or the etched where nothing
+	// else was.
+	ExternalIdentifiers map[IDSpace]map[string]string
+
+	// A list of keywords mapped to the full Commander set name
+	CommanderKeywordMap map[string]string
+
+	// A list of promo types as exported by mtgjson
+	AllPromoTypes []string
+
+	// Rarities is the game's rarities rarest first, spelled by RarityName:
+	// the order its sets list theirs in, and the one RarityRank ranks by.
+	Rarities []string
+
+	// Colors is the game's colours in its own order, as its sets list them:
+	// the order a set's colours are listed in.
+	Colors []string
+
+	// rarityRanks is each rarity's place in Rarities, so a rank is a lookup.
+	rarityRanks map[string]int
+
+	// Map of a rarity to the words its datastore published it as
+	// ("superrare" was "Super Rare"). A card carries its rarity spelled by
+	// RarityName, one word a search can be typed with; this is what puts
+	// the words back for a reader. Empty for Magic, whose rarities are
+	// single words at the source.
+	RarityLabels map[string]string
+
+	// Map of a promo type to the words it was made from, for the games that
+	// slug a qualifier the storefront wrote in full ("premiumcardcollection
+	// bestselectionvol6" was "Premium Card Collection -Best Selection Vol.
+	// 6-"). A promo type is a token so that it can be typed into a search;
+	// this is what puts the words back for a reader. Empty for Magic, whose
+	// types are tokens at the source and have no fuller spelling to keep.
+	PromoTypeLabels map[string]string
+
+	// A list of deck names of Secret Lair Commander cards
+	SLDDeckNames []string
+
+	// TokenPairIndex maps one face of a two-sided token sheet to the
+	// TCGplayer product id of each pairing it was printed in, keyed by the
+	// other face's normalized name. Filed by the game's loader, and empty
+	// for a game that prints no such sheet. See matcher/magic's
+	// buildTokenPairIndices for how it is derived and what it refuses.
+	TokenPairIndex map[string]map[string]string
+
+	// TokenPairIDByUUIDs maps both faces' own uuids, unordered, to the same
+	// product id, for a caller that anchored each face by identity rather
+	// than by name.
+	TokenPairIDByUUIDs map[[2]string]string
+
+	// TokenPairIDByBothNames maps both faces' normalized names, unordered,
+	// to the same product id, for a caller with no identity anchor for
+	// either face.
+	TokenPairIDByBothNames map[[2]string]string
+
+	// Game-specific identification hooks used by Match, attached by the
+	// game's datastore loader via SetRules.
+	rules         GameRules
+	knownFinishes map[string]bool
+}
+
+// Logf reports a diagnostic to the backend's Logger, and to nowhere when
+// there is none. The rules a game attaches through SetRules report through
+// this too, so a datastore's diagnostics all land where its owner said.
+func (b *Backend) Logf(format string, a ...any) {
+	if b.Logger == nil {
+		return
+	}
+	b.Logger.Printf(format, a...)
+}
+
+// Log is Logf for a message with nothing to format.
+func (b *Backend) Log(a ...any) {
+	if b.Logger == nil {
+		return
+	}
+	b.Logger.Println(a...)
+}
+
+const (
+	suffixFoil   = "_f"
+	suffixEtched = "_e"
+)
+
+// IndexSets indexes Sets by their normalized name, so name lookups need one
+// map access instead of rescanning and renormalizing the whole set list.
+// Codes are visited in sorted order so that two sets normalizing to the same
+// name resolve deterministically (lowest code wins, where a scan over the
+// map would follow its random order). Every loader has to call this once
+// its Sets are populated, including the ones living in their own package,
+// which is why it is exported.
+func (b *Backend) IndexSets() {
+	codes := make([]string, 0, len(b.Sets))
+	for code := range b.Sets {
+		codes = append(codes, code)
+	}
+	slices.Sort(codes)
+
+	b.NormalizedSets = map[string]*Set{}
+	for _, code := range codes {
+		name := Normalize(b.Sets[code].Name)
+		_, found := b.NormalizedSets[name]
+		if !found {
+			b.NormalizedSets[name] = b.Sets[code]
+		}
+	}
+}
+
+// IndexSetUUIDs buckets every non-sealed uuid in AllUUIDs by its card's
+// SetCode into SetUUIDs, the per-set sorted index GetUUIDsInSet reads. The
+// sealed counterpart, SetSealedUUIDs, is instead built incrementally as
+// AddSealed files each product; there is no analogous per-card add path, so
+// a loader builds UUIDs and AllUUIDs itself, then calls this once - the
+// same way every loader calls IndexSets once its Sets are populated, which
+// is why this is exported too. Skipping it leaves SetUUIDs nil and
+// GetUUIDsInSet silently answering empty for every set, so the website's
+// edition-only searches (s:CODE, seeded from this index alone, see
+// mtgban-website's searchAndFilter) come back empty for that game.
+func (b *Backend) IndexSetUUIDs() {
+	b.SetUUIDs = map[string][]string{}
+	for _, uuid := range b.AllUUIDs {
+		co := b.UUIDs[uuid]
+		if co == nil {
+			continue
+		}
+		b.SetUUIDs[co.SetCode] = append(b.SetUUIDs[co.SetCode], uuid)
+	}
+	for code := range b.SetUUIDs {
+		slices.Sort(b.SetUUIDs[code])
+	}
+}
+
+// IndexRarities files each rarity's place in Rarities for RarityRank.
+func (b *Backend) IndexRarities() {
+	b.rarityRanks = make(map[string]int, len(b.Rarities))
+	for i, rarity := range b.Rarities {
+		b.rarityRanks[rarity] = i
+	}
+}
+
+// RarityRank is a rarity's place in the game's order, 0 the rarest, under
+// its RarityName or any spelling that folds to it; false for one the game
+// does not rank. A rarity a card carries is its name, and costs a lookup.
+func (b *Backend) RarityRank(rarity string) (int, bool) {
+	rank, found := b.rarityRanks[rarity]
+	if !found {
+		rank, found = b.rarityRanks[RarityName(rarity)]
+	}
+	return rank, found
+}
+
+// AddRarity spells the rarity a printing was published with by RarityName,
+// for the card to carry, and files the words it was published as in
+// RarityLabels. The first spelling filed for a name keeps it. One that is
+// already the name files nothing, and RarityLabel then title-cases it.
+func (b *Backend) AddRarity(rarity string) string {
+	name := RarityName(rarity)
+	label := strings.TrimSpace(rarity)
+	if label != name && b.RarityLabels[name] == "" {
+		b.RarityLabels[name] = label
+	}
+	return name
+}
+
+// RarityLabel spells a rarity the way its datastore published it, falling
+// back on the name title-cased where nothing fuller was kept. Callers
+// displaying a rarity should ask for this: "superrare" reads "Super Rare".
+func (b *Backend) RarityLabel(rarity string) string {
+	if label, found := b.RarityLabels[rarity]; found {
+		return label
+	}
+	return Title(rarity)
+}
+
+// AddName files a card name in each search index that does not already hold
+// it: normalized in AllNames, lower case in AllLowerNames, and as written in
+// AllCanonicalNames.
+//
+// Each list is deduped on what it actually holds rather than on one of the
+// others. Two spellings can normalize or lowercase to one string, and a key
+// stored twice returns its whole hash bucket twice - so a name already
+// present in one list may still be missing from another, and asking the
+// wrong list is how a duplicate gets in.
+//
+// The lists say what they hold, and so does this: AllLowerNames is
+// documented as every unique name in lower case, and a loader that files the
+// name as written leaves it holding something else.
+func (b *Backend) AddName(name string) {
+	if b.seenNames == nil {
+		b.seenNames = map[string]bool{}
+		b.seenLowerNames = map[string]bool{}
+		b.seenCanonicalNames = map[string]bool{}
+	}
+	if n := Normalize(name); !b.seenNames[n] {
+		b.seenNames[n] = true
+		b.AllNames = append(b.AllNames, n)
+	}
+	if lower := strings.ToLower(name); !b.seenLowerNames[lower] {
+		b.seenLowerNames[lower] = true
+		b.AllLowerNames = append(b.AllLowerNames, lower)
+	}
+	if !b.seenCanonicalNames[name] {
+		b.seenCanonicalNames[name] = true
+		b.AllCanonicalNames = append(b.AllCanonicalNames, name)
+	}
+}
+
+// AddCanonicalName files a card's own name: in the search indexes through
+// AddName, and in CanonicalNames as the spelling its normalized form answers
+// with, unless an earlier card's spelling already does. Two names can
+// normalize alike ("As" and "as"), and the first one filed keeps the key.
+//
+// A spelling naming one printing rather than the card, the name with the
+// qualifier a storefront sells it under, goes through AddName alone: it is
+// searchable but never canonical, since Match reads CanonicalNames to decide
+// whether a name keeps its parentheticals.
+func (b *Backend) AddCanonicalName(name string) {
+	n := Normalize(name)
+	if b.CanonicalNames[n] == "" {
+		b.CanonicalNames[n] = name
+	}
+	b.AddName(name)
+}
+
+// AddPromoType files a promotion a printing carries: its token (PromoTypeSlug)
+// in AllPromoTypes once, and the words it reads back as in PromoTypeLabels.
+// The first label filed for a token keeps it, since a catalog writes some
+// promotions two ways and one token can only read back as one.
+//
+// An empty token names no promotion and files nothing. An empty label files
+// none, and PromoTypeLabel then title-cases the token.
+func (b *Backend) AddPromoType(slug, label string) {
+	if slug == "" {
+		return
+	}
+	if !slices.Contains(b.AllPromoTypes, slug) {
+		b.AllPromoTypes = append(b.AllPromoTypes, slug)
+	}
+	if label != "" && b.PromoTypeLabels[slug] == "" {
+		b.PromoTypeLabels[slug] = label
+	}
+}
+
+// AddPrinting files one printing of a card a datastore game sells: the
+// CardObject its uuid resolves to, a copy of card sold in finish (a
+// FinishSlug) and foil as IsFoilFinish says that finish is. The uuid joins
+// AllUUIDs and the hash bucket of each name given, normalized: the card's own
+// and any spelling naming this printing, an empty one skipped. The card's set
+// must already be filed, since the edition is its name.
+//
+// A uuid already filed keeps what it holds, as AddSealed has it.
+func (b *Backend) AddPrinting(card *Card, uuid, finish string, names ...string) {
+	if _, found := b.UUIDs[uuid]; found {
+		return
+	}
+	co := &CardObject{
+		Card:    *card,
+		Edition: b.Sets[card.SetCode].Name,
+		Foil:    IsFoilFinish(finish),
+	}
+	co.UUID = uuid
+	co.Finish = finish
+	b.UUIDs[uuid] = co
+	b.AllUUIDs = append(b.AllUUIDs, uuid)
+	for _, name := range names {
+		if name == "" {
+			continue
+		}
+		n := Normalize(name)
+		b.Hashes[n] = append(b.Hashes[n], uuid)
+	}
+}

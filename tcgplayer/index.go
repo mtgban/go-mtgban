@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/mtgban/go-tcgplayer"
 )
@@ -25,7 +25,7 @@ type Index struct {
 
 	inventory mtgban.InventoryRecord
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	client  *tcgplayer.Client
 
 	// printings maps a product id and the subtype of its price rows to
@@ -45,7 +45,7 @@ func (tcg *Index) printf(format string, a ...any) {
 
 // NewScraperIndex returns an index scraper authenticated with a partner API
 // key pair.
-func NewScraperIndex(b *mtgmatcher.Backend, publicID, privateID string) (*Index, error) {
+func NewScraperIndex(b *matcher.Backend, publicID, privateID string) (*Index, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 // and OAFR's oversized one both carry 245106, which belongs only to the
 // oversized product). Spanning more than one set means the id is wrong on
 // at least one of them, and pricing from it would be a guess.
-func crossSetProductIDs(b *mtgmatcher.Backend) map[string][]string {
+func crossSetProductIDs(b *matcher.Backend) map[string][]string {
 	setsByID := map[string]map[string]bool{}
 	for _, code := range b.GetAllSets() {
 		set, err := b.GetSet(code)
@@ -171,15 +171,15 @@ func crossSetProductIDs(b *mtgmatcher.Backend) map[string][]string {
 
 // soldAsCopy reports whether a printing in language is a copy sold under id,
 // a product the datastore files at its original in another language.
-func soldAsCopy(b *mtgmatcher.Backend, id, language string) bool {
-	original, err := b.GetUUID(b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id))
+func soldAsCopy(b *matcher.Backend, id, language string) bool {
+	original, err := b.GetUUID(b.ConvertID(matcher.IDSpaceTCGplayer, id))
 	return err == nil && original.Language != language
 }
 
 // starTwin returns the star printing that is the other finish of the card's
 // product, if there is one: the same language, numbered "<number>★" and with
 // no product of its own (FRF 65★ is the foil of 95037).
-func starTwin(byNumber map[string]*mtgmatcher.CardObject, card *mtgmatcher.Card) *mtgmatcher.CardObject {
+func starTwin(byNumber map[string]*matcher.CardObject, card *matcher.Card) *matcher.CardObject {
 	twin, found := byNumber[card.Number+"★|"+card.Language]
 	if !found || twin.Identifiers["tcgplayerProductId"] != "" {
 		return nil
@@ -188,8 +188,8 @@ func starTwin(byNumber map[string]*mtgmatcher.CardObject, card *mtgmatcher.Card)
 }
 
 // cardsByNumber indexes a set's cards by number and language.
-func cardsByNumber(b *mtgmatcher.Backend, set *mtgmatcher.Set) map[string]*mtgmatcher.CardObject {
-	byNumber := map[string]*mtgmatcher.CardObject{}
+func cardsByNumber(b *matcher.Backend, set *matcher.Set) map[string]*matcher.CardObject {
+	byNumber := map[string]*matcher.CardObject{}
 	for _, card := range set.Cards {
 		co, found := b.UUIDs[card.UUID]
 		if found {
@@ -204,7 +204,7 @@ func cardsByNumber(b *mtgmatcher.Backend, set *mtgmatcher.Set) map[string]*mtgma
 // finish: "Normal" for nonfoil, "Foil" for foil, and for etched on an etched
 // product. A product claimed by more than one card keeps the first, the same
 // way requesting each id once always did.
-func productPrintings(b *mtgmatcher.Backend, collisions map[string][]string) map[string]map[string]string {
+func productPrintings(b *matcher.Backend, collisions map[string][]string) map[string]map[string]string {
 	printings := map[string]map[string]string{}
 	add := func(id, subtype, cardID string) {
 		if id == "" || cardID == "" || collisions[id] != nil {
@@ -237,9 +237,9 @@ func productPrintings(b *mtgmatcher.Backend, collisions map[string][]string) map
 			if etchedID == "" {
 				etchedID = id
 			}
-			add(id, "Normal", co.FoilUUIDs[mtgmatcher.FinishNonfoil])
-			add(id, "Foil", co.FoilUUIDs[mtgmatcher.FinishFoil])
-			add(etchedID, "Foil", co.FoilUUIDs[mtgmatcher.FinishEtched])
+			add(id, "Normal", co.FoilUUIDs[matcher.FinishNonfoil])
+			add(id, "Foil", co.FoilUUIDs[matcher.FinishFoil])
+			add(etchedID, "Foil", co.FoilUUIDs[matcher.FinishEtched])
 		}
 
 		for _, base := range byNumber {
@@ -248,13 +248,13 @@ func productPrintings(b *mtgmatcher.Backend, collisions map[string][]string) map
 				continue
 			}
 			id := base.Identifiers["tcgplayerProductId"]
-			add(id, "Normal", co.FoilUUIDs[mtgmatcher.FinishNonfoil])
-			add(id, "Foil", co.FoilUUIDs[mtgmatcher.FinishFoil])
+			add(id, "Normal", co.FoilUUIDs[matcher.FinishNonfoil])
+			add(id, "Foil", co.FoilUUIDs[matcher.FinishFoil])
 		}
 	}
 
 	// A two-sided token sheet's combined entity is in no set's card list
-	// (see mtgmatcher/magic/tokenpairs.go), one object per finish.
+	// (see matcher/magic/tokenpairs.go), one object per finish.
 	for uuid, co := range b.UUIDs {
 		if co.Identifiers["derivedTokenPair"] != "true" {
 			continue

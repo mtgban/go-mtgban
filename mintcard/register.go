@@ -3,8 +3,8 @@ package mintcard
 import (
 	"errors"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -20,10 +20,10 @@ func WithSKUs(skus tcgplayer.SKUMap) mtgban.Option {
 }
 
 func init() {
-	mtgban.Register("mintcard", []mtgmatcher.Game{mtgmatcher.GameMagic}, newScraper)
+	mtgban.Register("mintcard", []matcher.Game{matcher.GameMagic}, newScraper)
 }
 
-func newScraper(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func newScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	skus, err := mtgban.Resource[tcgplayer.SKUMap](opts, ResourceSKUs)
 	if err != nil {
 		return nil, err

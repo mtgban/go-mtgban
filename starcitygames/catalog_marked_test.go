@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
 )
 
 // TestFabVariantMarked pins which set codes are read as carrying the marker.

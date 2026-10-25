@@ -3,8 +3,8 @@ package starcitygames
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestSecondStock pins the bucket decision in both stream orders, with no
@@ -85,13 +85,13 @@ func TestStockFold(t *testing.T) {
 // spelled longer qualifies, another physical format or another slot never
 // does - whatever a datastore happens to carry.
 func TestSiblingCandidate(t *testing.T) {
-	base := &mtgmatcher.CardObject{}
+	base := &matcher.CardObject{}
 	base.Name = "Mulan - Imperial Soldier"
 	base.SetCode = "1"
 	base.Number = "118"
 
-	sibling := func(name, set, number string) *mtgmatcher.CardObject {
-		co := &mtgmatcher.CardObject{}
+	sibling := func(name, set, number string) *matcher.CardObject {
+		co := &matcher.CardObject{}
 		co.Name = name
 		co.SetCode = set
 		co.Number = number
@@ -100,7 +100,7 @@ func TestSiblingCandidate(t *testing.T) {
 
 	for _, tt := range []struct {
 		desc string
-		co   *mtgmatcher.CardObject
+		co   *matcher.CardObject
 		want bool
 	}{
 		{"the errata spelling beside the base",

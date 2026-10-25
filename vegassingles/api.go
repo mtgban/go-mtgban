@@ -87,7 +87,7 @@ type VSClient struct {
 }
 
 // NewVSClient returns a client for one product line, in the storefront's own
-// spelling - what vsGames translates an mtgmatcher.Game into, and what
+// spelling - what vsGames translates an matcher.Game into, and what
 // NewScraper hands down.
 func NewVSClient(productLine string) *VSClient {
 	vs := VSClient{}

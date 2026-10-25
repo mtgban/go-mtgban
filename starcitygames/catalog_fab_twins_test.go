@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestResolveFleshAndBloodMarvelTwins pins the two shelves where SCG's own
@@ -93,7 +93,7 @@ func TestResolveFleshAndBloodMarvelTwins(t *testing.T) {
 // field: against such a copy fabCreditedTwin has nothing to
 // match either uuid's Artist against and correctly leaves both alone, which
 // is not this test's premise to assert against.
-func requireCredit(t *testing.T, b *mtgmatcher.Backend, uuid string) {
+func requireCredit(t *testing.T, b *matcher.Backend, uuid string) {
 	t.Helper()
 	co, err := b.GetUUID(uuid)
 	if err != nil || co.Artist == "" {
@@ -196,7 +196,7 @@ func TestFleshAndBloodDuplicateStockRefused(t *testing.T) {
 				ProductType: ProductTypeSingles,
 			}
 			_, err := resolveProduct(b, GameFleshAndBlood, p)
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if !errors.Is(err, matcher.ErrUnsupported) {
 				t.Errorf("resolveProduct(%s) = %v, want ErrUnsupported", sku, err)
 			}
 		})

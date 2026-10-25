@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -33,7 +33,7 @@ type Market struct {
 
 	exchangeRates map[string]float64
 	client        *CTAuthClient
-	backend       *mtgmatcher.Backend
+	backend       *matcher.Backend
 
 	inventory mtgban.InventoryRecord
 
@@ -41,7 +41,7 @@ type Market struct {
 
 	// Flesh and Blood only: fabNumbers of backend and fabListedIDs of
 	// blueprints.
-	fabSiblings map[string][]*mtgmatcher.CardObject
+	fabSiblings map[string][]*matcher.CardObject
 	fabListed   map[string]bool
 
 	gameID int
@@ -59,7 +59,7 @@ var name2shorthand = map[string]string{
 
 // NewScraperMarket returns a market scraper for the datastore's game,
 // authenticated with a full API token.
-func NewScraperMarket(b *mtgmatcher.Backend, token string) (*Market, error) {
+func NewScraperMarket(b *matcher.Backend, token string) (*Market, error) {
 	game := b.Game
 	id, found := ctGames[game]
 	if !found {
@@ -122,7 +122,7 @@ var langMap = map[string]string{
 // treatments the listing prices. A name the product is sold in no printing of
 // falls back to the print run the listing states, then to the flag, which
 // answers with the default rather than nothing.
-func listingID(b *mtgmatcher.Backend, gameID int, id string, card *mtgmatcher.InputCard, product Product) string {
+func listingID(b *matcher.Backend, gameID int, id string, card *matcher.InputCard, product Product) string {
 	var cardID string
 	if card.Finish != "" {
 		cardID, _ = b.MatchIDFinish(id, card.Finish)
@@ -145,9 +145,9 @@ func listingRunFinish(gameID int, product Product) string {
 		return ""
 	}
 	if product.Properties.FirstEdition {
-		return mtgmatcher.PrintingFinish(mtgmatcher.Run1stEdition, "Holofoil")
+		return matcher.PrintingFinish(matcher.Run1stEdition, "Holofoil")
 	}
-	return mtgmatcher.PrintingFinish(mtgmatcher.RunUnlimited, "Holofoil")
+	return matcher.PrintingFinish(matcher.RunUnlimited, "Holofoil")
 }
 
 // tcgIDOverrides corrects a blueprint's own TCGplayerID where it names a
@@ -319,7 +319,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		return
 	}
 
-	var blueprintCard *mtgmatcher.InputCard
+	var blueprintCard *matcher.InputCard
 	if ct.gameID == GameMagic {
 		var err error
 		blueprintCard, err = Preprocess(ct.backend, blueprint)
@@ -338,18 +338,18 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			product.Properties.Altered,
 			product.Graded:
 			continue
-		case mtgmatcher.Contains(product.Description, "ita"),
-			mtgmatcher.Contains(product.Description, "mix"):
+		case matcher.Contains(product.Description, "ita"),
+			matcher.Contains(product.Description, "mix"):
 			continue
 		}
 
 		cond := product.Properties.Condition
 		if product.Properties.Signed ||
-			mtgmatcher.Contains(product.Description, "signed") ||
-			mtgmatcher.Contains(product.Description, "inked") ||
-			mtgmatcher.Contains(product.Description, "stamp") ||
-			mtgmatcher.Contains(product.Description, "poor") ||
-			mtgmatcher.Contains(product.Description, "water") {
+			matcher.Contains(product.Description, "signed") ||
+			matcher.Contains(product.Description, "inked") ||
+			matcher.Contains(product.Description, "stamp") ||
+			matcher.Contains(product.Description, "poor") ||
+			matcher.Contains(product.Description, "water") {
 			cond = "Poor"
 		}
 
@@ -362,7 +362,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// Build the per-game input card; the match and error handling below are
 		// shared. Magic copies the blueprint-derived card (applying the
 		// product language), Lorcana builds one from the product's number.
-		var theCard *mtgmatcher.InputCard
+		var theCard *matcher.InputCard
 		switch ct.gameID {
 		case GameMagic:
 			// Match rewrites the card it is given, so each listing is
@@ -398,7 +398,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			if ct.gameID == GamePalworld {
 				number = palworldNumber(ct.backend, blueprint, number)
 			}
-			theCard = &mtgmatcher.InputCard{
+			theCard = &matcher.InputCard{
 				Name:      gameName(ct.backend, ct.gameID, blueprint),
 				Edition:   gameEdition(ct.backend, ct.gameID, blueprint),
 				Variation: gameVariation(ct.gameID, blueprint, number),
@@ -425,7 +425,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				ids = append(ids, fmt.Sprint(tcgID))
 			}
 			for _, mkmID := range blueprint.CardMarketIDs {
-				uuid := ct.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, fmt.Sprint(mkmID))
+				uuid := ct.backend.ConvertID(matcher.IDSpaceCardmarket, fmt.Sprint(mkmID))
 				if uuid != "" {
 					ids = append(ids, uuid)
 				}
@@ -450,7 +450,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		if byName {
 			var err error
 			cardID, err = ct.backend.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			if errors.Is(err, matcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
 				// Preprocess already tried the full token-pairing gauntlet;
@@ -483,7 +483,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				ct.printf("%q", theCard)
 				ct.printf("%d %+v", bpID, blueprint)
 
-				var alias *mtgmatcher.AliasingError
+				var alias *matcher.AliasingError
 				if errors.As(err, &alias) {
 					for _, probe := range alias.Probe() {
 						co, _ := ct.backend.GetUUID(probe)
@@ -504,7 +504,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 		if ygoNoRow[bpID] {
 			co, err := ct.backend.GetUUID(cardID)
-			if err != nil || !mtgmatcher.Equals(co.Number, ygoBlueprintNumbers[bpID]) {
+			if err != nil || !matcher.Equals(co.Number, ygoBlueprintNumbers[bpID]) {
 				continue
 			}
 		}

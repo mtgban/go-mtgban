@@ -3,11 +3,11 @@ package miniaturemarket
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/gundam"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/fleshandblood"
+	_ "github.com/mtgban/go-mtgban/matcher/gundam"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
 )
 
 func TestSealedNameOnePiece(t *testing.T) {
@@ -41,7 +41,7 @@ func TestSealedNameOnePiece(t *testing.T) {
 			"Heroines Gift Collection",
 		},
 	} {
-		got := sealedName(mtgmatcher.GameOnePiece, tt.in)
+		got := sealedName(matcher.GameOnePiece, tt.in)
 		if got != tt.want {
 			t.Errorf("%q:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
@@ -92,7 +92,7 @@ func TestSealedNameGundam(t *testing.T) {
 			"Gundam Assemble Premium Collection - Mobile Suit Gundam GQuuuuuuX [PC02A]",
 		},
 	} {
-		if got := sealedName(mtgmatcher.GameGundam, tt.in); got != tt.want {
+		if got := sealedName(matcher.GameGundam, tt.in); got != tt.want {
 			t.Errorf("%s:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
 	}
@@ -142,7 +142,7 @@ func TestSealedNameFleshAndBlood(t *testing.T) {
 			"Usurp the Shadow Throne Booster Pack (Preorder)",
 		},
 	} {
-		got := sealedName(mtgmatcher.GameFleshAndBlood, tt.in)
+		got := sealedName(matcher.GameFleshAndBlood, tt.in)
 		if got != tt.want {
 			t.Errorf("%q:\n got  %q\n want %q", tt.in, got, tt.want)
 		}
@@ -152,7 +152,7 @@ func TestSealedNameFleshAndBlood(t *testing.T) {
 // The other games' names already read like their canon: nothing moves.
 func TestSealedNameOtherGamesUntouched(t *testing.T) {
 	name := "Riftbound: League of Legends TCG - Origins Booster Box (Preorder)"
-	if got := sealedName(mtgmatcher.GameRiftbound, name); got != name {
+	if got := sealedName(matcher.GameRiftbound, name); got != name {
 		t.Errorf("riftbound name rewritten: %q", got)
 	}
 }
@@ -195,7 +195,7 @@ func TestResolveListing(t *testing.T) {
 	// does not carry says so rather than vanishing. resolveListing never
 	// reads the backend on this path, so a bare one naming the game is
 	// enough.
-	magic, err := NewScraperSealed(&mtgmatcher.Backend{Game: "magic"})
+	magic, err := NewScraperSealed(&matcher.Backend{Game: "magic"})
 	if err != nil {
 		t.Fatal(err)
 	}

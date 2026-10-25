@@ -3,7 +3,7 @@ package coolstuffinc
 import (
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestPokemonNonHoloDeckExclusive pins a "(Non-Holo)" listing to the plain

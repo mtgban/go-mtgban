@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/palworld"
+	_ "github.com/mtgban/go-mtgban/matcher/palworld"
 )
 
 // palworldNumberDatastore is the rows the placeholder cases reach, as
@@ -40,7 +40,7 @@ const palworldNumberDatastore = `{"meta": {"date": "2026-09-25", "version": "1"}
 // and that a card with two parallels, or a number from its own set, is
 // still refused rather than guessed.
 func TestPalworldPlaceholderNumber(t *testing.T) {
-	b, err := mtgmatcher.Open("palworld", strings.NewReader(palworldNumberDatastore))
+	b, err := matcher.Open("palworld", strings.NewReader(palworldNumberDatastore))
 	if err != nil {
 		t.Fatal(err)
 	}

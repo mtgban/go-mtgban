@@ -11,12 +11,12 @@ import (
 	"slices"
 	"sort"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
-	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
+	"github.com/mtgban/go-mtgban/matcher/sealed"
 )
 
-func getListForDeck(ds *mtgmatcher.Backend, setCode, deckName string) ([]string, error) {
+func getListForDeck(ds *matcher.Backend, setCode, deckName string) ([]string, error) {
 	var list []string
 
 	set, err := ds.GetSet(setCode)
@@ -29,7 +29,7 @@ func getListForDeck(ds *mtgmatcher.Backend, setCode, deckName string) ([]string,
 			continue
 		}
 
-		for _, board := range [][]mtgmatcher.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
+		for _, board := range [][]matcher.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
 			for _, card := range board {
 				uuid, err := ds.MatchID(card.UUID, card.IsFoil)
 				if err != nil {
@@ -44,7 +44,7 @@ func getListForDeck(ds *mtgmatcher.Backend, setCode, deckName string) ([]string,
 	return list, nil
 }
 
-func getListForSealed(ds *mtgmatcher.Backend, setCode, sealedUUID string) ([]string, error) {
+func getListForSealed(ds *matcher.Backend, setCode, sealedUUID string) ([]string, error) {
 	var list []string
 
 	set, err := ds.GetSet(setCode)
@@ -163,7 +163,7 @@ func main() {
 	os.Exit(run(ds))
 }
 
-func run(ds *mtgmatcher.Backend) int {
+func run(ds *matcher.Backend) int {
 	set, err := ds.GetSet(*SetCodeOpt)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, *SetCodeOpt, "not found")

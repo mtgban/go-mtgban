@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -14,25 +14,25 @@ import (
 // number here reads someone else's SYP list rather than failing.
 func TestNewScraperSYPGames(t *testing.T) {
 	for _, tt := range []struct {
-		game     mtgmatcher.Game
+		game     matcher.Game
 		category int
 		wantErr  bool
 	}{
 		// Magic is the zero value of the game field, so it is also what an
 		// unset game asks for - that is the one name this map must hold.
-		{game: mtgmatcher.GameMagic, category: tcgplayer.CategoryMagic},
-		{game: mtgmatcher.GamePokemon, category: tcgplayer.CategoryPokemon},
+		{game: matcher.GameMagic, category: tcgplayer.CategoryMagic},
+		{game: matcher.GamePokemon, category: tcgplayer.CategoryPokemon},
 		// A game the list is not read for is refused rather than fetching a
 		// category whose rows nothing can resolve.
-		{game: mtgmatcher.GameLorcana, wantErr: true},
-		{game: mtgmatcher.GameOnePiece, wantErr: true},
+		{game: matcher.GameLorcana, wantErr: true},
+		{game: matcher.GameOnePiece, wantErr: true},
 	} {
 		name := string(tt.game)
-		if tt.game == mtgmatcher.GameMagic {
+		if tt.game == matcher.GameMagic {
 			name = "Magic"
 		}
 		t.Run(name, func(t *testing.T) {
-			b := &mtgmatcher.Backend{Game: tt.game}
+			b := &matcher.Backend{Game: tt.game}
 			scraper, err := NewScraperSYP(b, "auth")
 			if tt.wantErr {
 				if err == nil {
@@ -56,7 +56,7 @@ func TestNewScraperSYPGames(t *testing.T) {
 // TestInfoNamesTheGame pins that every TCGplayer scraper reports the game of
 // the datastore it was built on.
 func TestInfoNamesTheGame(t *testing.T) {
-	b := &mtgmatcher.Backend{Game: mtgmatcher.GameMagic}
+	b := &matcher.Backend{Game: matcher.GameMagic}
 	market, err := NewScraperMarket(b, "public", "private")
 	if err != nil {
 		t.Fatal(err)
@@ -76,8 +76,8 @@ func TestInfoNamesTheGame(t *testing.T) {
 		"sealed": sealed.Info(),
 		"seller": seller.Info(),
 	} {
-		if info.Game != mtgmatcher.GameMagic {
-			t.Errorf("%s Info().Game is %q, want %q", name, info.Game, mtgmatcher.GameMagic)
+		if info.Game != matcher.GameMagic {
+			t.Errorf("%s Info().Game is %q, want %q", name, info.Game, matcher.GameMagic)
 		}
 	}
 }
@@ -120,7 +120,7 @@ func TestSYPCatalogFromDump(t *testing.T) {
 	}{
 		{"a plain near mint sku names its product", 11, true, 100, "Normal"},
 		{"the foil sibling is a sku of its own", 12, true, 100, "Foil"},
-		{"etched is read off the title, which is the only place it is said", 21, true, 200, mtgmatcher.FinishEtched},
+		{"etched is read off the title, which is the only place it is said", 21, true, 200, matcher.FinishEtched},
 		{"a played grade is not hosted", 13, false, 0, ""},
 		{"nor is another language", 14, false, 0, ""},
 	} {

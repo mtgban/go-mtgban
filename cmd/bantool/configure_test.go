@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // TestRegisteredHalvesAreHonoured walks the targets that ask for one half and
@@ -29,7 +29,7 @@ func TestRegisteredHalvesAreHonoured(t *testing.T) {
 				half = mtgban.WithBuylistOnly()
 			}
 
-			backend := &mtgmatcher.Backend{Game: game}
+			backend := &matcher.Backend{Game: game}
 			_, err := mtgban.NewScraper(backend, key, half)
 			switch {
 			case err == nil:

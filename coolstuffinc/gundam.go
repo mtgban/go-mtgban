@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // gundamShelfCode is the set code this storefront opens a Gundam shelf with,
@@ -101,7 +101,7 @@ func gundamNumberSpelling(number, name string) string {
 // the brackets alone, and taking the last one asks for a card the catalog
 // does not have. The number is written between the two, so it says which is
 // which.
-func gundamCard(b *mtgmatcher.Backend, name, number string) (string, string) {
+func gundamCard(b *matcher.Backend, name, number string) (string, string) {
 	written := name
 	variation := gundamNumberSpelling(number, written)
 	loc := gundamNameCode.FindStringSubmatchIndex(name)
@@ -144,7 +144,7 @@ var gundamNicknames = map[string]string{
 // gundamWording spells a storefront's own code for a promo run the way the
 // catalog's label reads, so the wording match in FilterCards can reach the
 // printing it names.
-func gundamWording(b *mtgmatcher.Backend, name, number, wording string) string {
+func gundamWording(b *matcher.Backend, name, number, wording string) string {
 	if label, found := gundamNicknames[wording]; found {
 		return label
 	}
@@ -167,7 +167,7 @@ var gundamPremiumBandaiTypes = []string{"premiumcardcollection", "premiumaccesso
 
 // gundamPremiumBandai spells "PB01" as whichever of the two the catalog
 // files at this number, or "" where neither does.
-func gundamPremiumBandai(b *mtgmatcher.Backend, name, number string) string {
+func gundamPremiumBandai(b *matcher.Backend, name, number string) string {
 	uuids, err := b.SearchEquals(name)
 	if err != nil {
 		return ""

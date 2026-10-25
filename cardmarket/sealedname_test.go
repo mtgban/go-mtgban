@@ -7,10 +7,10 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
+	_ "github.com/mtgban/go-mtgban/matcher/onepiece"
+	_ "github.com/mtgban/go-mtgban/matcher/yugioh"
 )
 
 // TestEditionRunSpellings pins how a name is offered to the resolver: one
@@ -362,12 +362,12 @@ func TestPruneSubsumed(t *testing.T) {
 
 // sealedPruneBackend is one product under a set whose name a storefront may
 // prepend to it.
-func sealedPruneBackend() *mtgmatcher.Backend {
-	backend := &mtgmatcher.Backend{
-		UUIDs:          map[string]*mtgmatcher.CardObject{},
+func sealedPruneBackend() *matcher.Backend {
+	backend := &matcher.Backend{
+		UUIDs:          map[string]*matcher.CardObject{},
 		Hashes:         map[string][]string{},
 		SetSealedUUIDs: map[string][]string{},
-		Sets: map[string]*mtgmatcher.Set{
+		Sets: map[string]*matcher.Set{
 			"OGN": {Name: "Origins", Code: "OGN"},
 		},
 	}

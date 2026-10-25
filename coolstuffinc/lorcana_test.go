@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestLorcanaSpelling pins the Lorcana names this storefront misspells. Each
@@ -39,12 +39,12 @@ func TestLorcanaSpelling(t *testing.T) {
 			if spelled == test.name {
 				t.Fatalf("lorcanaSpelling(%q) corrected nothing", test.name)
 			}
-			asTyped := &mtgmatcher.InputCard{Name: test.name, Edition: test.edition, Variation: test.number}
+			asTyped := &matcher.InputCard{Name: test.name, Edition: test.edition, Variation: test.number}
 			if id, err := b.Match(asTyped); err == nil {
 				t.Errorf("Match(%q) = %q, want the name to reach nothing before it is corrected",
 					test.name, id)
 			}
-			card := &mtgmatcher.InputCard{Name: spelled, Edition: test.edition, Variation: test.number}
+			card := &matcher.InputCard{Name: spelled, Edition: test.edition, Variation: test.number}
 			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%q) = %v", spelled, err)
@@ -59,7 +59,7 @@ func TestLorcanaSpelling(t *testing.T) {
 			if co.SetCode != test.setCode {
 				t.Errorf("Match(%q) set = %q, want %q", spelled, co.SetCode, test.setCode)
 			}
-			if want := mtgmatcher.ExtractNumber(test.number); co.Number != want {
+			if want := matcher.ExtractNumber(test.number); co.Number != want {
 				t.Errorf("Match(%q) number = %q, want %q", spelled, co.Number, want)
 			}
 		})
@@ -73,7 +73,7 @@ func TestLorcanaSpelling(t *testing.T) {
 func TestLorcanaVariationRainbowFoil(t *testing.T) {
 	b := readGameDatastore(t, "lorcana", "LORCANA_PATH")
 
-	card := &mtgmatcher.InputCard{
+	card := &matcher.InputCard{
 		Name:      "Ariel - Singing Mermaid",
 		Edition:   "Fabled",
 		Variation: lorcanaVariation("15/204, Rainbow Foil Starter Deck Exclusive"),
@@ -92,7 +92,7 @@ func TestLorcanaVariationRainbowFoil(t *testing.T) {
 	}
 
 	// The raw wording, unrewritten, lands on the plain cold foil instead.
-	plain := &mtgmatcher.InputCard{Name: card.Name, Edition: card.Edition, Variation: "15/204, Rainbow Foil Starter Deck Exclusive", Foil: true}
+	plain := &matcher.InputCard{Name: card.Name, Edition: card.Edition, Variation: "15/204, Rainbow Foil Starter Deck Exclusive", Foil: true}
 	plainID, err := b.Match(plain)
 	if err != nil {
 		t.Fatalf("Match(%q) = %v", plain, err)
@@ -115,7 +115,7 @@ func TestLorcanaShelfFollowsTheQuestNote(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			shelf := lorcanaShelf(b, tt.name, tt.shelf, tt.notes)
-			card := &mtgmatcher.InputCard{Name: tt.name, Edition: shelf, Variation: lorcanaVariation(tt.notes), Foil: true}
+			card := &matcher.InputCard{Name: tt.name, Edition: shelf, Variation: lorcanaVariation(tt.notes), Foil: true}
 			id, err := b.Match(card)
 			if err != nil {
 				t.Fatalf("Match(%v) = %v", card, err)
@@ -139,7 +139,7 @@ func TestLorcanaShelfFollowsTheQuestNote(t *testing.T) {
 // TestLorcanaSealedWording pins the storefront's sealed words onto the
 // catalog's through the sealed search, where the wording is read.
 func TestLorcanaSealedWording(t *testing.T) {
-	b := readGameDatastore(t, mtgmatcher.GameLorcana, "LORCANA_PATH")
+	b := readGameDatastore(t, matcher.GameLorcana, "LORCANA_PATH")
 
 	row := func(pid, name string) string {
 		return `<div class="row product-search-row main-container">` +

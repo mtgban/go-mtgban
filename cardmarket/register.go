@@ -6,8 +6,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // Secret names the environment variables bantool has always read these
@@ -78,11 +78,11 @@ const (
 
 // BridgeUseOf reports how much a game's Index and Market scrapers lean on
 // the TCGplayer bridge; see resolveProduct.
-func BridgeUseOf(game mtgmatcher.Game) BridgeUse {
+func BridgeUseOf(game matcher.Game) BridgeUse {
 	switch game {
-	case mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh, mtgmatcher.GameFleshAndBlood:
+	case matcher.GamePokemon, matcher.GameYuGiOh, matcher.GameFleshAndBlood:
 		return BridgeRequired
-	case mtgmatcher.GameOnePiece, mtgmatcher.GameRiftbound, mtgmatcher.GameLorcana, mtgmatcher.GameGundam:
+	case matcher.GameOnePiece, matcher.GameRiftbound, matcher.GameLorcana, matcher.GameGundam:
 		return BridgeHelps
 	default:
 		return BridgeUnused
@@ -94,8 +94,8 @@ func BridgeUseOf(game mtgmatcher.Game) BridgeUse {
 // TCGplayer id where the datastore's own Cardmarket ids run out, which a
 // constructor cannot see in advance for any game but Magic, whose sealed
 // map never falls back to names (see Sealed.Load).
-func SealedBridgeUseOf(game mtgmatcher.Game) BridgeUse {
-	if game == mtgmatcher.GameMagic {
+func SealedBridgeUseOf(game matcher.Game) BridgeUse {
+	if game == matcher.GameMagic {
 		return BridgeUnused
 	}
 	return BridgeRequired
@@ -103,10 +103,10 @@ func SealedBridgeUseOf(game mtgmatcher.Game) BridgeUse {
 
 // cardmarketGames are the games Cardmarket's Index, Market and Sealed
 // scrapers price - the same eight mkmGames names.
-var cardmarketGames = []mtgmatcher.Game{
-	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound,
-	mtgmatcher.GameOnePiece, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
-	mtgmatcher.GameFleshAndBlood, mtgmatcher.GameGundam,
+var cardmarketGames = []matcher.Game{
+	matcher.GameMagic, matcher.GameLorcana, matcher.GameRiftbound,
+	matcher.GameOnePiece, matcher.GamePokemon, matcher.GameYuGiOh,
+	matcher.GameFleshAndBlood, matcher.GameGundam,
 }
 
 func init() {
@@ -118,7 +118,7 @@ func init() {
 // buildIndex is cardmarket's Constructor. It reads no credential: Index
 // prices from a published catalog and the public price guide, and makes no
 // authenticated call; see TestIndexMakesNoAuthenticatedCall.
-func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func buildIndex(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	game := b.Game
 	scraper, err := NewScraperIndex(b)
 	if err != nil {
@@ -153,7 +153,7 @@ func buildIndex(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, err
 }
 
 // buildMarket is cardmarket_market's Constructor.
-func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func buildMarket(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	game := b.Game
 	appToken, err := opts.Secret(SecretAppToken)
 	if err != nil {
@@ -197,7 +197,7 @@ func buildMarket(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, er
 
 // buildSealed is cardmarket_sealed's Constructor; the bridge it needs is
 // SealedBridgeUseOf's question, not BridgeUseOf's.
-func buildSealed(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+func buildSealed(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 	game := b.Game
 	appToken, err := opts.Secret(SecretAppToken)
 	if err != nil {

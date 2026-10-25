@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestYgoNumber pins the collector numbers Card Trader writes its own way:
@@ -41,7 +41,7 @@ func TestYgoNumber(t *testing.T) {
 // Trader spells its own way: a misspelt name and a promo shelved under the
 // booster it came with.
 func TestYgoShelves(t *testing.T) {
-	b := &mtgmatcher.Backend{}
+	b := &matcher.Backend{}
 	bp := Blueprint{Name: "Cyber Repair ant", Version: "Ultra Rare"}
 	if got := gameName(b, GameYuGiOh, &bp); got != "Cyber Repair Plant" {
 		t.Errorf("gameName = %q, want the catalog's spelling", got)

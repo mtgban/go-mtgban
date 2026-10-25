@@ -9,9 +9,9 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
-	"github.com/mtgban/go-mtgban/mtgmatcher/sealed"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
+	"github.com/mtgban/go-mtgban/matcher/sealed"
 )
 
 // PreprocessError reports a listing Preprocess could not turn into a card, and
@@ -96,7 +96,7 @@ var cardNameTypos = map[string]string{
 }
 
 // hasEnglishIn reports whether cos holds an English printing of setCode.
-func hasEnglishIn(cos []*mtgmatcher.CardObject, setCode string) bool {
+func hasEnglishIn(cos []*matcher.CardObject, setCode string) bool {
 	for _, co := range cos {
 		if co.Language == "English" && co.SetCode == setCode {
 			return true
@@ -105,8 +105,8 @@ func hasEnglishIn(cos []*mtgmatcher.CardObject, setCode string) bool {
 	return false
 }
 
-func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []string {
-	cardName = mtgmatcher.SplitVariants(cardName)[0]
+func checkLoadedID(b *matcher.Backend, cardName string, productID int) []string {
+	cardName = matcher.SplitVariants(cardName)[0]
 	cardName = strings.TrimSuffix(cardName, " Token")
 	testProductID := fmt.Sprint(productID)
 
@@ -115,7 +115,7 @@ func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []stri
 		return nil
 	}
 
-	var cos []*mtgmatcher.CardObject
+	var cos []*matcher.CardObject
 	for _, possibleID := range possibleIDs {
 		co, err := b.GetUUID(possibleID)
 		if err != nil {
@@ -157,7 +157,7 @@ func checkLoadedID(b *mtgmatcher.Backend, cardName string, productID int) []stri
 // all, deferring to Preprocess's own name/number/variant matching (which,
 // for Chronicles, already resolves Cardmarket's "(V.2)"-style suffix
 // correctly via magic.VariantsTable).
-func Fallback(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
+func Fallback(b *matcher.Backend, product *cm.Product) (string, string) {
 	var cardID, cardIDFoil string
 
 	// First check if the product id is known
@@ -247,7 +247,7 @@ func Fallback(b *mtgmatcher.Backend, product *cm.Product) (string, string) {
 // links have drifted for real products.
 // A Simplified Chinese alternate art is sold only on its own shelf, though
 // mtgjson links it to the English card's product too.
-func plausiblePrinting(b *mtgmatcher.Backend, expansionName, cardID string) bool {
+func plausiblePrinting(b *matcher.Backend, expansionName, cardID string) bool {
 	if cardID == "" {
 		return true
 	}
@@ -273,18 +273,18 @@ func plausiblePrinting(b *mtgmatcher.Backend, expansionName, cardID string) bool
 
 // Preprocess turns Cardmarket's name, number and edition into the card
 // description the matcher takes.
-func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *matcher.Backend, cardName, number, edition string) (*matcher.InputCard, error) {
 	var foil bool
 
 	// A set's token shelf prices only the printings the datastore links to
 	// its products; a token's bare name would land on any of its namesakes.
 	if strings.HasSuffix(edition, ": Tokens") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	switch number {
 	case "1 of 1":
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	default:
 		// Strip extra letters that may interfere later on
 		// (ie IDW Promos P4 becoming Starter 2000)
@@ -302,11 +302,11 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 	// reached by id; no name route finds them, so refuse them quietly.
 	case "Dungeon of the Mad Mage // Lost Mine of Phandelver",
 		"Dungeon of the Mad Mage // Tomb of Annihilation":
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	var variant string
-	vars := mtgmatcher.SplitVariants(cardName)
+	vars := matcher.SplitVariants(cardName)
 	if len(vars) > 1 {
 		cardName = vars[0]
 		variant = vars[1]
@@ -331,7 +331,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		variant = ""
 
 		if magic.IsBasicLand(cardName) {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 	case "Misprints":
@@ -348,11 +348,11 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		case "Beast of Burden":
 			variant = "prerelease misprint"
 		case "Demigod of Revenge":
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		case "Island":
 			variant = "Arena 1999 misprint"
 		default:
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 	case "Simplified Chinese Alternate Art Cards":
@@ -434,12 +434,12 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 
 	case "Mirage", "Visions":
 		if variant == "V.2" {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 	case "Fourth Edition: Black Bordered":
 		if magic.IsBasicLand(cardName) {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 	case "Planeshift":
@@ -488,7 +488,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		switch cardName {
 		case "Dirtcowl Wurm":
 			if variant == "V.2" {
-				return nil, mtgmatcher.ErrUnsupported
+				return nil, matcher.ErrUnsupported
 			}
 		case "Lu Bu, Master-at-Arms":
 			if variant == "V.1" {
@@ -516,7 +516,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 
 	case "Harper Prism Promos":
 		if variant == "V.2" {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 	case "Gateway Promos":
@@ -697,7 +697,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		case "Reya Dawnbringer":
 			edition = "P10E"
 		case "Shivan Dragon":
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		default:
 			if len(b.MatchInSet(cardName, "PCMD")) == 1 {
 				edition = "PCMD"
@@ -763,7 +763,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			"Gaea's Cradle":
 			variant = "oversized"
 		case "Nalathni Dragon":
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		case "Relentless Rats":
 			switch number {
 			case "":
@@ -989,7 +989,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 			default:
 				// Other languages have other numbers, but Scryfall only tracks
 				// the English ones
-				return nil, mtgmatcher.ErrUnsupported
+				return nil, matcher.ErrUnsupported
 			}
 		}
 
@@ -1250,7 +1250,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 	// Skip Attraction lights, too many
 	case "Unfinity":
 		if len(b.MatchInSet(cardName, "UNF")) > 1 {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 	case "Commander's Arsenal":
@@ -1398,7 +1398,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		// Pre-search the card, if not found it's likely a sideboard variant
 		case strings.HasPrefix(edition, "Pro Tour 1996:"),
 			strings.HasPrefix(edition, "WCD "):
-			_, err := b.Match(&mtgmatcher.InputCard{
+			_, err := b.Match(&matcher.InputCard{
 				Name:    cardName,
 				Edition: edition,
 			})
@@ -1524,7 +1524,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		// A deck MTGJSON has not published yet has no printing to land
 		// on, and the name alone would widen to every printing of it.
 		if sldCommanderDeck(b, ogEdition) == "" {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 
 		matched := false
@@ -1559,7 +1559,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 		}
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
@@ -1574,7 +1574,7 @@ func Preprocess(b *mtgmatcher.Backend, cardName, number, edition string) (*mtgma
 // answers "" too, and Preprocess then skips the expansion without a log
 // line, so an expansion still pricing nothing once its deck is out is
 // checked here first.
-func sldCommanderDeck(b *mtgmatcher.Backend, expansionName string) string {
+func sldCommanderDeck(b *matcher.Backend, expansionName string) string {
 	sld, err := b.GetSet("SLD")
 	if err != nil {
 		return ""
@@ -1601,7 +1601,7 @@ func sldCommanderDeck(b *mtgmatcher.Backend, expansionName string) string {
 // whose PLST number the id map does not carry, the printing MTGJSON's own
 // deck list names for cardName - by the product's own number where the
 // deck reprints that name under more than one printing, else by name.
-func sldCommanderDeckCard(b *mtgmatcher.Backend, expansionName, cardName, number string) string {
+func sldCommanderDeckCard(b *matcher.Backend, expansionName, cardName, number string) string {
 	deck := sldCommanderDeck(b, expansionName)
 	if deck == "" {
 		return ""
@@ -1649,7 +1649,7 @@ const mb2PLSTBooster = "Mystery Booster 2 Booster Pack"
 // across a multi-hour scrape that spends nearly all of it waiting on
 // Cardmarket's own API, so caching the pool buys nothing worth the
 // extra state.
-func mb2PLSTNumber(b *mtgmatcher.Backend, cardName string) string {
+func mb2PLSTNumber(b *matcher.Backend, cardName string) string {
 	for _, uuid := range b.GetSealedUUIDsInSet("MB2") {
 		co, err := b.GetUUID(uuid)
 		if err != nil || co.Name != mb2PLSTBooster {

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 )
 
 // uniqueCopy is the marker vegas.singles puts in a display name when the
@@ -33,25 +33,25 @@ var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?(?:\s*\(Copy\))
 //
 // Both refusals here are deliberate, so they wrap ErrUnsupported: the caller
 // reads that and drops the listing without logging it as a failure.
-func preprocess(b *mtgmatcher.Backend, product VSProduct, game mtgmatcher.Game) (*mtgmatcher.InputCard, error) {
+func preprocess(b *matcher.Backend, product VSProduct, game matcher.Game) (*matcher.InputCard, error) {
 	if uniqueCopy.MatchString(strings.TrimSpace(product.DisplayName)) {
-		return nil, fmt.Errorf("%w: listing is one particular copy, not the printing", mtgmatcher.ErrUnsupported)
+		return nil, fmt.Errorf("%w: listing is one particular copy, not the printing", matcher.ErrUnsupported)
 	}
 
 	if displaySet(product.DisplayName) == oversizeHeading {
-		return nil, fmt.Errorf("%w: listing is an oversize display card, not a single", mtgmatcher.ErrUnsupported)
+		return nil, fmt.Errorf("%w: listing is an oversize display card, not a single", matcher.ErrUnsupported)
 	}
 
-	var card *mtgmatcher.InputCard
+	var card *matcher.InputCard
 	var err error
 	switch game {
-	case mtgmatcher.GameRiftbound:
+	case matcher.GameRiftbound:
 		card, err = preprocessRiftbound(b, product)
-	case mtgmatcher.GameOnePiece:
+	case matcher.GameOnePiece:
 		card, err = preprocessOnePiece(product)
-	case mtgmatcher.GamePokemon:
+	case matcher.GamePokemon:
 		card, err = preprocessPokemon(product)
-	case mtgmatcher.GameGundam:
+	case matcher.GameGundam:
 		card, err = preprocessGundam(product)
 	default:
 		card, err = preprocessMagic(b, product)
@@ -74,17 +74,17 @@ var imageIDRe = regexp.MustCompile(`/(\d{5,7})(?:_[0-9a-f-]{36})?\.[a-z]+(?:\?|$
 // printing at the number and in the set the wording names), in the listing's
 // finish when that printing is sold in it, and for Magic in the set the
 // wording names.
-func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.InputCard) string {
+func imageProductID(b *matcher.Backend, product VSProduct, card *matcher.InputCard) string {
 	m := imageIDRe.FindStringSubmatch(product.ImageURL)
 	if m == nil {
 		return ""
 	}
-	id := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, m[1])
+	id := b.ConvertID(matcher.IDSpaceTCGplayer, m[1])
 	co, err := b.GetUUID(id)
 	if err != nil {
 		return ""
 	}
-	if !mtgmatcher.Equals(co.Name, mtgmatcher.SplitVariants(card.Name)[0]) && !numberedInEdition(b, co, card) {
+	if !matcher.Equals(co.Name, matcher.SplitVariants(card.Name)[0]) && !numberedInEdition(b, co, card) {
 		return ""
 	}
 	if card.Finish != "" {
@@ -93,7 +93,7 @@ func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.I
 			return ""
 		}
 	}
-	if b.Game == mtgmatcher.GameMagic && !magicImageFits(b, id, card) {
+	if b.Game == matcher.GameMagic && !magicImageFits(b, id, card) {
 		return ""
 	}
 	return id
@@ -103,12 +103,12 @@ func imageProductID(b *mtgmatcher.Backend, product VSProduct, card *mtgmatcher.I
 // number the wording names in the edition it names. It settles a printing
 // whose name the storefront and the datastore spell differently, where the
 // number and the set are the same.
-func numberedInEdition(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, card *mtgmatcher.InputCard) bool {
-	if b.Game == mtgmatcher.GameMagic {
+func numberedInEdition(b *matcher.Backend, co *matcher.CardObject, card *matcher.InputCard) bool {
+	if b.Game == matcher.GameMagic {
 		return false
 	}
 	number, _, _ := strings.Cut(card.Variation, " ")
-	if number == "" || !mtgmatcher.Equals(co.Number, number) {
+	if number == "" || !matcher.Equals(co.Number, number) {
 		return false
 	}
 	named, err := b.GetSetByName(card.Edition)
@@ -118,7 +118,7 @@ func numberedInEdition(b *mtgmatcher.Backend, co *mtgmatcher.CardObject, card *m
 // magicImageFits reports whether a Magic printing an image names is sold in
 // the listing's finish, which the id lookup would otherwise clamp to one it
 // is, and sits in the set the wording names, or in its parent or child.
-func magicImageFits(b *mtgmatcher.Backend, id string, card *mtgmatcher.InputCard) bool {
+func magicImageFits(b *matcher.Backend, id string, card *matcher.InputCard) bool {
 	etched := card.IsEtched()
 	landed, err := b.MatchID(id, card.Foil, etched)
 	if err != nil {
@@ -176,7 +176,7 @@ func saysMore(spelled, stated string) bool {
 
 // resolved returns the printing a card names, and nil when it names none. It
 // matches a copy, so the matcher's own edits to the input stay in the probe.
-func resolved(b *mtgmatcher.Backend, card mtgmatcher.InputCard) *mtgmatcher.CardObject {
+func resolved(b *matcher.Backend, card matcher.InputCard) *matcher.CardObject {
 	id, err := b.Match(&card)
 	if err != nil {
 		return nil
@@ -188,7 +188,7 @@ func resolved(b *mtgmatcher.Backend, card mtgmatcher.InputCard) *mtgmatcher.Card
 	return co
 }
 
-func preprocessMagic(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.InputCard, error) {
+func preprocessMagic(b *matcher.Backend, product VSProduct) (*matcher.InputCard, error) {
 	// Display name format: "Hallowed Fountain (RVR-280) - Ravnica Remastered",
 	// and with the printing's own wording standing between the two:
 	// "Acererak the Archlich (Rainbow Foil) (SLD-1784) - Secret Lair Drop".
@@ -201,7 +201,7 @@ func preprocessMagic(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.Inpu
 	if idx := strings.LastIndex(head, " - "); idx != -1 {
 		head = head[:idx]
 	}
-	fields := mtgmatcher.SplitVariants(head)
+	fields := matcher.SplitVariants(head)
 	cardName := fields[0]
 	if fixed, found := cardTable[cardName]; found {
 		cardName = fixed
@@ -243,7 +243,7 @@ func preprocessMagic(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.Inpu
 	// sort keeps and the nonfoil printing is quoted at all.
 	foil := strings.HasSuffix(product.DisplayName, " Foil")
 
-	card := mtgmatcher.InputCard{
+	card := matcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
@@ -414,7 +414,7 @@ func displaySet(displayName string) string {
 
 // namesSet reports whether a set code names the set an edition string spells
 // out. A code the datastore does not use names no set at all.
-func namesSet(b *mtgmatcher.Backend, code, edition string) bool {
+func namesSet(b *matcher.Backend, code, edition string) bool {
 	set, err := b.GetSet(code)
 	if err != nil {
 		return false
@@ -425,7 +425,7 @@ func namesSet(b *mtgmatcher.Backend, code, edition string) bool {
 // readsAs returns the card as an edition string reads it, and the printing
 // that reading lands on, or nil when it lands on none - an edition naming no
 // set included, which would otherwise be read as no edition at all.
-func readsAs(b *mtgmatcher.Backend, card mtgmatcher.InputCard, edition string) (mtgmatcher.InputCard, *mtgmatcher.CardObject) {
+func readsAs(b *matcher.Backend, card matcher.InputCard, edition string) (matcher.InputCard, *matcher.CardObject) {
 	if edition == "" {
 		return card, nil
 	}
@@ -450,7 +450,7 @@ func readsAs(b *mtgmatcher.Backend, card mtgmatcher.InputCard, edition string) (
 // for the promo pack and 14s for the prerelease, and the storefront states
 // the bare number zero-padded or not, so the digits are what is compared. A
 // listing stating no number is answered by no printing.
-func answersNumber(co *mtgmatcher.CardObject, number string) bool {
+func answersNumber(co *matcher.CardObject, number string) bool {
 	if co == nil || number == "" {
 		return false
 	}
@@ -471,7 +471,7 @@ var setQualifier = regexp.MustCompile(`\s*\([^()]*\)$`)
 // exactly is taken: GetSetByName settles for the nearest set it can reach,
 // and the storefront's own headings ("Media Promos", "MagicFest Cards") all
 // reach one that way.
-func spelledSet(b *mtgmatcher.Backend, displayName string) string {
+func spelledSet(b *matcher.Backend, displayName string) string {
 	idx := strings.LastIndex(displayName, " - ")
 	if idx == -1 {
 		return ""
@@ -487,7 +487,7 @@ func spelledSet(b *mtgmatcher.Backend, displayName string) string {
 	}
 	tail = strings.TrimRight(strings.TrimSpace(tail), ":,-")
 	set, err := b.GetSetByName(tail)
-	if err != nil || !mtgmatcher.Equals(set.Name, tail) {
+	if err != nil || !matcher.Equals(set.Name, tail) {
 		return ""
 	}
 	return tail
@@ -546,7 +546,7 @@ var gundamRarity = regexp.MustCompile(`\s*\(([A-Za-z]{1,3}\+*)\)\s*$`)
 // it without its punctuation: the tail says "Starter Deck 09 Destiny
 // Ignition" where the catalog and the body both say "Starter Deck 09:
 // Destiny Ignition".
-func preprocessGundam(product VSProduct) (*mtgmatcher.InputCard, error) {
+func preprocessGundam(product VSProduct) (*matcher.InputCard, error) {
 	all := bandaiCode.FindAllStringSubmatchIndex(product.DisplayName, -1)
 	if all == nil {
 		return nil, errors.New("no card code in display name")
@@ -566,7 +566,7 @@ func preprocessGundam(product VSProduct) (*mtgmatcher.InputCard, error) {
 		cardName = strings.TrimSpace(gundamRarity.ReplaceAllString(cardName, ""))
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Edition:   product.ProductData.SetName,
 		Variation: strings.TrimSpace(variation),
@@ -583,7 +583,7 @@ func preprocessGundam(product VSProduct) (*mtgmatcher.InputCard, error) {
 // the shelf alone would land its Vendetta printing. It is asked of every
 // Riftbound listing, and returns "" when that wording is absent or names no
 // set exactly.
-func riftboundEdition(b *mtgmatcher.Backend, displayName string, numberEnd int) string {
+func riftboundEdition(b *matcher.Backend, displayName string, numberEnd int) string {
 	idx := strings.LastIndex(displayName, " - ")
 	if idx < numberEnd {
 		return ""
@@ -593,13 +593,13 @@ func riftboundEdition(b *mtgmatcher.Backend, displayName string, numberEnd int) 
 		return ""
 	}
 	set, err := b.GetSetByName(wording)
-	if err != nil || !mtgmatcher.Equals(set.Name, wording) {
+	if err != nil || !matcher.Equals(set.Name, wording) {
 		return ""
 	}
 	return set.Name
 }
 
-func preprocessRiftbound(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.InputCard, error) {
+func preprocessRiftbound(b *matcher.Backend, product VSProduct) (*matcher.InputCard, error) {
 	loc := riftboundNumber.FindStringSubmatchIndex(product.DisplayName)
 	if loc == nil {
 		return nil, errors.New("no collector number in display name")
@@ -630,7 +630,7 @@ func preprocessRiftbound(b *mtgmatcher.Backend, product VSProduct) (*mtgmatcher.
 		edition = product.ProductData.SetName
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      strings.TrimSpace(cardName),
 		Edition:   edition,
 		Variation: strings.TrimSpace(variation),
@@ -650,7 +650,7 @@ var bandaiCode = regexp.MustCompile(`\(([A-Z]+\d*-\d+[a-z]?)\)`)
 // Everything before the code stays in the name: the matcher reads variant
 // wording like (Alternate Art) or (Parallel) from it to pick the printing
 // the storefront is describing.
-func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
+func preprocessOnePiece(product VSProduct) (*matcher.InputCard, error) {
 	// The wording before the code is what the name keeps, so the code that
 	// ends it is the last one written rather than the first. This storefront
 	// states the code twice on the printings it says most about - "Roronoa
@@ -667,7 +667,7 @@ func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
 	}
 	loc := all[len(all)-1]
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      strings.TrimSpace(product.DisplayName[:loc[0]]),
 		Edition:   product.ProductData.SetName,
 		Variation: product.DisplayName[loc[2]:loc[3]],
@@ -681,7 +681,7 @@ var donParens = strings.NewReplacer("(", "", ")", "")
 
 // donCard reads the DON!! resource card, which carries no bandai code: the
 // wording before the shelf stands in for it instead.
-func donCard(product VSProduct) *mtgmatcher.InputCard {
+func donCard(product VSProduct) *matcher.InputCard {
 	if !strings.HasPrefix(product.DisplayName, "DON!! Card") {
 		return nil
 	}
@@ -693,7 +693,7 @@ func donCard(product VSProduct) *mtgmatcher.InputCard {
 	head = strings.TrimPrefix(head, "DON!! Card")
 	head = donParens.Replace(head)
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      "DON!! Card",
 		Edition:   product.ProductData.SetName,
 		Variation: strings.TrimSpace(head),
@@ -880,7 +880,7 @@ var pokemonLabels = strings.NewReplacer(
 	"(Game Stop)", "(GameStop Exclusive)",
 )
 
-func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
+func preprocessPokemon(product VSProduct) (*matcher.InputCard, error) {
 	loc := pokemonNumber.FindStringSubmatchIndex(product.DisplayName)
 	if loc == nil {
 		return nil, errors.New("no collector number in display name")
@@ -901,7 +901,7 @@ func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 		number = fixed
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      name,
 		Edition:   edition,
 		Variation: number,

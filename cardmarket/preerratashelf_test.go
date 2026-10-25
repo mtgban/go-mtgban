@@ -6,7 +6,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
+	_ "github.com/mtgban/go-mtgban/matcher/onepiece"
 )
 
 // preErrataShelfDatastore is the published One Piece datastore cut down to

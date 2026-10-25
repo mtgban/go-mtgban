@@ -7,9 +7,9 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
+	_ "github.com/mtgban/go-mtgban/matcher/onepiece"
 )
 
 // onePieceDatastore is the published One Piece datastore cut down to the
@@ -167,7 +167,7 @@ func TestOnePieceReprintWrongVariantIsLoud(t *testing.T) {
 	}
 	channel := make(chan responseChan, 8)
 	err = mkm.processProduct(channel, &product)
-	if !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
+	if !errors.Is(err, matcher.ErrCardWrongVariant) {
 		t.Errorf("processProduct(765980) = %v, want the matcher's wrong-variant error", err)
 	}
 }

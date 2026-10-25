@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestPreprocessImageLetter pins the image names that write a letter between

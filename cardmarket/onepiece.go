@@ -6,7 +6,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // onePieceShelves spells the shelves Cardmarket names apart from the set of
@@ -147,7 +147,7 @@ func (r *resolver) onePieceDeckReprint(product *cm.Product) bool {
 // offCode reports whether the product's name carries a collector number
 // other than the printing's. The bridge's links are another marketplace's,
 // and one pointing at the neighbouring product names the wrong card.
-func offCode(b *mtgmatcher.Backend, product *cm.Product, cardID string) bool {
+func offCode(b *matcher.Backend, product *cm.Product, cardID string) bool {
 	fields := nameCode.FindStringSubmatch(versionTail.ReplaceAllString(product.Name, ""))
 	if fields == nil {
 		return false

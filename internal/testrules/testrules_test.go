@@ -16,7 +16,7 @@ import (
 // Reaching one of these costs about ten seconds and three gigabytes.
 var loaders = []string{
 	"datastore.Read", "datastore.Load", "datastore.Open", "simplecloud.Open",
-	"magic.Load", "mtgmatcher.Open",
+	"magic.Load", "matcher.Open",
 }
 
 // TestMainDoesNotParseADatastore is the rule that keeps a package's tests

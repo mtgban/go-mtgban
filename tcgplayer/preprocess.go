@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -96,7 +96,7 @@ var productOverrides = map[int]struct{ Edition, Number string }{
 // wording names the set when the token is shelved beside every other set's
 // promos, and the edition names it when the token is sold under the set it
 // came with. A sheet the datastore does not carry answers for nothing.
-func japanesePromoSheet(b *mtgmatcher.Backend, wording, edition string) string {
+func japanesePromoSheet(b *matcher.Backend, wording, edition string) string {
 	if !strings.Contains(wording, "JP") || !strings.Contains(wording, "Exclusive") {
 		return ""
 	}
@@ -122,7 +122,7 @@ func japanesePromoSheet(b *mtgmatcher.Backend, wording, edition string) string {
 // takes, splitting TCGplayer's name into a name and its qualifiers and
 // resolving the group id through editions. It reports an error for the
 // products that are not cards.
-func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[int]string) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *matcher.Backend, product *tcgplayer.Product, editions map[int]string) (*matcher.InputCard, error) {
 	cardName, variant := GetProductNameAndVariant(product)
 
 	number := GetProductNumber(product)
@@ -195,15 +195,15 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 			// A two-sided token sheet's product is named "A // B Double-
 			// Sided Token" - a real pairing, not a data error, but neither
 			// half's own name is unique in its set, so the product id is
-			// the whole identity here. Resolve by it (mtgmatcher mints a
+			// the whole identity here. Resolve by it (matcher mints a
 			// combined entity keyed to it when the pairing survives its
-			// own exclusion checks, mtgmatcher/magic/tokenpairs.go) and
+			// own exclusion checks, matcher/magic/tokenpairs.go) and
 			// refuse only what the datastore does not carry.
 			id := strconv.Itoa(product.ProductID)
-			if b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id) == "" {
+			if b.ConvertID(matcher.IDSpaceTCGplayer, id) == "" {
 				return nil, errors.New("no derived pairing for this id")
 			}
-			return &mtgmatcher.InputCard{ID: id}, nil
+			return &matcher.InputCard{ID: id}, nil
 		} else if strings.Contains(edition, "Tales of Middle-earth") && strings.HasSuffix(cardName, "Scene") {
 			return nil, errors.New("unsupported")
 		}
@@ -548,7 +548,7 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 		// any recurring tag available in the VariantsTable
 		for _, code := range []string{"FEM", "4ED", "TMP"} {
 			if strings.Contains(variant, code) {
-				fields := mtgmatcher.Cut(variant, code)
+				fields := matcher.Cut(variant, code)
 				// Clean up by removing the set code and the option sideboard tag
 				vars := strings.TrimPrefix(fields[1], code)
 				vars = strings.TrimSpace(vars)
@@ -735,7 +735,7 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 	default:
 		num := number
 
-		if num != "" && mtgmatcher.ExtractYear(variant) == "" {
+		if num != "" && matcher.ExtractYear(variant) == "" {
 			variant = num
 		}
 	}
@@ -764,17 +764,17 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 		// not a data error, but the wording alone cannot say which pairing:
 		// the same name pairs with several different partners across a
 		// sheet, and neither face's own name is unique in its set. The
-		// product id is the whole identity here; mtgmatcher mints a
+		// product id is the whole identity here; matcher mints a
 		// combined entity keyed to it when the pairing survives its own
-		// exclusion checks (mtgmatcher/magic/tokenpairs.go), so resolve by
+		// exclusion checks (matcher/magic/tokenpairs.go), so resolve by
 		// id and refuse only what the datastore does not carry.
 		rawNum := RawProductNumber(product)
 		if strings.Contains(rawNum, "//") {
 			id := strconv.Itoa(product.ProductID)
-			if b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id) == "" {
+			if b.ConvertID(matcher.IDSpaceTCGplayer, id) == "" {
 				return nil, errors.New("no derived pairing for this id")
 			}
-			return &mtgmatcher.InputCard{ID: id}, nil
+			return &matcher.InputCard{ID: id}, nil
 		}
 	}
 
@@ -804,7 +804,7 @@ func Preprocess(b *mtgmatcher.Backend, product *tcgplayer.Product, editions map[
 		}
 	}
 
-	card := mtgmatcher.InputCard{
+	card := matcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

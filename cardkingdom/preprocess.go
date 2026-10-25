@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-cardkingdom"
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // This table contains all SKUs that contain incorrect codes or codes that could
@@ -163,7 +163,7 @@ var preserveTags = []string{
 	"JPN",
 }
 
-func setCodeExists(b *mtgmatcher.Backend, code string) bool {
+func setCodeExists(b *matcher.Backend, code string) bool {
 	_, err := b.GetSet(code)
 	return err == nil
 }
@@ -178,7 +178,7 @@ var tokenSetPrefixes = []string{"F", "T", "FT", "SF", "RF", "CF"}
 // match and none is worth reporting. The first prefix that leaves a set code
 // decides, and only one ending in the token marker makes a sheet: FTRK is a
 // foil of the TRK set, a card like any other.
-func unindexedTokenSheet(b *mtgmatcher.Backend, sku string) bool {
+func unindexedTokenSheet(b *matcher.Backend, sku string) bool {
 	fields := strings.Split(sku, "-")
 	if len(fields) < 2 || setCodeExists(b, fields[0]) {
 		return false
@@ -195,7 +195,7 @@ func unindexedTokenSheet(b *mtgmatcher.Backend, sku string) bool {
 // resolveEmblem answers the datastore's spelling and number for an emblem row,
 // and empty strings for anything else or for a planeswalker the named set does
 // not pin to exactly one emblem.
-func resolveEmblem(b *mtgmatcher.Backend, edition, cardName, cardVariation string) (string, string) {
+func resolveEmblem(b *matcher.Backend, edition, cardName, cardVariation string) (string, string) {
 	face := cardName
 	for _, separator := range []string{" // ", " - "} {
 		before, _, found := strings.Cut(face, separator)
@@ -238,7 +238,7 @@ func resolveEmblem(b *mtgmatcher.Backend, edition, cardName, cardVariation strin
 
 // Preprocess turns a feed entry into the card description the matcher takes,
 // reporting an error for the entries that are not cards.
-func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
+func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCard, error) {
 	foilVariant := strings.Contains(card.Variation, "Foil") && !strings.Contains(card.Variation, "Non")
 	isFoil := card.IsFoil || foilVariant
 	isEtched := strings.Contains(card.Variation, "Etched")
@@ -300,7 +300,7 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 	// reach, and nothing the log can add.
 	if strings.HasSuffix(card.Name, " Punch Card") {
 		if !sheetHolds(b, setCode, punchcardName) {
-			return nil, mtgmatcher.ErrUnsupported
+			return nil, matcher.ErrUnsupported
 		}
 		card.Name = punchcardName
 	}
@@ -427,13 +427,13 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 		(strings.Contains(card.Name, "Token") || strings.HasPrefix(tokenSetCode, "T") || strings.HasPrefix(tokenSetCode, "FT"))
 
 	// A two-sided token sheet prints one physical card for a pairing
-	// mtgmatcher/magic may already carry a combined entity for - resolve
+	// matcher/magic may already carry a combined entity for - resolve
 	// that precisely, by id, before falling back to the one-face collapse
 	// below. See magic.MatchTokenPairing (shared with every other vendor
 	// package resolving its own two-sided token listings the same way).
 	if isTwoSidedToken {
 		if id := magic.MatchTokenPairing(b, card.ScryfallID, card.Name, isFoil); id != "" {
-			return &mtgmatcher.InputCard{ID: id, Foil: isFoil}, nil
+			return &matcher.InputCard{ID: id, Foil: isFoil}, nil
 		}
 
 		// CK never publishes a scryfallId for a "Mystery Booster/The
@@ -449,7 +449,7 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 		if card.ScryfallID == "" && card.Edition == "Mystery Booster/The List" &&
 			strings.HasPrefix(setCode, "MT") && setCodeExists(b, setCode[1:]) {
 			if id := magic.MatchTokenPairingBySetNumber(b, setCode[1:], number, card.Name, isFoil); id != "" {
-				return &mtgmatcher.InputCard{ID: id, Foil: isFoil}, nil
+				return &matcher.InputCard{ID: id, Foil: isFoil}, nil
 			}
 		}
 	}
@@ -489,10 +489,10 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 	printing := tokenPrinting(b, edition, number)
 	if isFoil && printing != nil &&
 		!printing.HasFinish("foil") && !printing.HasFinish("etched") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      card.Name,
 		Edition:   edition,
 		Variation: variation,
@@ -502,9 +502,9 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 
 // matchPrereleaseSKU rescues a PREL sku Match refused: CK titles it
 // Prerelease, but the id it publishes may name a Release promo instead.
-func matchPrereleaseSKU(b *mtgmatcher.Backend, sku, scryfallID string, foil bool) (string, error) {
+func matchPrereleaseSKU(b *matcher.Backend, sku, scryfallID string, foil bool) (string, error) {
 	if !strings.HasPrefix(sku, "PREL-") {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 	id, err := b.MatchID(scryfallID, foil, false)
 	if err != nil {
@@ -512,7 +512,7 @@ func matchPrereleaseSKU(b *mtgmatcher.Backend, sku, scryfallID string, foil bool
 	}
 	co, err := b.GetUUID(id)
 	if err != nil || !co.HasPromoType(magic.PromoTypeRelease) {
-		return "", mtgmatcher.ErrUnsupported
+		return "", matcher.ErrUnsupported
 	}
 	return id, nil
 }
@@ -523,7 +523,7 @@ const punchcardName = "Punchcard"
 
 // sheetHolds reports whether the set files a printing under exactly this
 // name.
-func sheetHolds(b *mtgmatcher.Backend, code, name string) bool {
+func sheetHolds(b *matcher.Backend, code, name string) bool {
 	set, err := b.GetSet(code)
 	if err != nil {
 		return false
@@ -539,7 +539,7 @@ func sheetHolds(b *mtgmatcher.Backend, code, name string) bool {
 // tokenPrinting answers the printing a token sheet files at a number, asking
 // the sheet rather than the name because a token only carries the Token
 // suffix when a real card answers to the same name.
-func tokenPrinting(b *mtgmatcher.Backend, code, number string) *mtgmatcher.Card {
+func tokenPrinting(b *matcher.Backend, code, number string) *matcher.Card {
 	set, err := b.GetSet(code)
 	if err != nil || set.Type != "token" {
 		return nil
@@ -552,9 +552,9 @@ func tokenPrinting(b *mtgmatcher.Backend, code, number string) *mtgmatcher.Card 
 	return nil
 }
 
-func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
+func preprocessGraded(title string) (*matcher.InputCard, error) {
 	if strings.Contains(title, "Multiverse Mystery Slab") {
-		return nil, mtgmatcher.ErrUnsupported
+		return nil, matcher.ErrUnsupported
 	}
 
 	// A graded title is "Name (edition and grade) #id", and the edition may
@@ -562,7 +562,7 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 	// Pristine 10)". The split hands those back as a third field, and
 	// refusing them dropped 41 listings of the roughly 950 this storefront
 	// grades, every one of them silently.
-	vars := mtgmatcher.SplitVariants(title)
+	vars := matcher.SplitVariants(title)
 	if len(vars) != 2 && len(vars) != 3 {
 		return nil, errors.New("unsupported format")
 	}
@@ -615,7 +615,7 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 
 	// Hack to remove 9.5-style scores
 	variant = strings.Replace(variant, ".", "", -1)
-	num := mtgmatcher.ExtractNumber(variant)
+	num := matcher.ExtractNumber(variant)
 	if num != "" {
 		variant = strings.Replace(variant, num, "", -1)
 	}
@@ -662,7 +662,7 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
-	return &mtgmatcher.InputCard{
+	return &matcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
@@ -673,9 +673,9 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 // matchGraded retries an unknown "Secret Lair" edition against the
 // storefront's own Secret Lair Countdown shelf before giving up, and settles
 // a tie that only a claim-only promo type causes (see unclaimedPrinting).
-func matchGraded(b *mtgmatcher.Backend, theCard *mtgmatcher.InputCard) (string, error) {
+func matchGraded(b *matcher.Backend, theCard *matcher.InputCard) (string, error) {
 	cardID, err := b.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrCardNotInEdition) && theCard.Edition == "Secret Lair" {
+	if errors.Is(err, matcher.ErrCardNotInEdition) && theCard.Edition == "Secret Lair" {
 		retry := *theCard
 		retry.Edition = "Secret Lair Countdown"
 		id, rerr := b.Match(&retry)
@@ -684,7 +684,7 @@ func matchGraded(b *mtgmatcher.Backend, theCard *mtgmatcher.InputCard) (string, 
 		}
 	}
 
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if errors.As(err, &alias) {
 		id := unclaimedPrinting(b, theCard, alias.Probe())
 		if id != "" {
@@ -707,7 +707,7 @@ var gradedClaimOnly = []struct {
 // unclaimedPrinting answers the one candidate left once the printings whose
 // promo type the title never claims are set aside, and empty when that does
 // not leave exactly one.
-func unclaimedPrinting(b *mtgmatcher.Backend, theCard *mtgmatcher.InputCard, candidates []string) string {
+func unclaimedPrinting(b *matcher.Backend, theCard *matcher.InputCard, candidates []string) string {
 	text := strings.ToLower(theCard.Edition + " " + theCard.Variation)
 
 	var left []string

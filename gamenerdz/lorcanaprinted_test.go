@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
 )
 
 // readLorcanaDatastore reads the Lorcana datastore, or skips where the run
 // carries none: this package's other tests read Magic's own.
-func readLorcanaDatastore(t *testing.T) *mtgmatcher.Backend {
+func readLorcanaDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	path := os.Getenv("LORCANA_PATH")
 	if path == "" {

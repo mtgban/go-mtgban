@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestNamedID pins which of a blueprint's two ids answers for it. The ids are
@@ -14,7 +14,7 @@ import (
 // listing stood.
 func TestNamedID(t *testing.T) {
 	b := realDatastore(t)
-	uuid := func(space mtgmatcher.IDSpace, id string) string {
+	uuid := func(space matcher.IDSpace, id string) string {
 		out := b.ConvertID(space, id)
 		if out == "" {
 			t.Fatalf("%s id %q resolves to nothing", space, id)
@@ -23,11 +23,11 @@ func TestNamedID(t *testing.T) {
 	}
 	// The shifted blueprint: its scryfall id is Ecological Appreciation's and
 	// its TCGplayer id is its own.
-	shifted := uuid(mtgmatcher.IDSpaceScryfall, "357ce522-4872-4386-b409-264e23953a53")
-	itsOwn := uuid(mtgmatcher.IDSpaceTCGplayer, "237134")
+	shifted := uuid(matcher.IDSpaceScryfall, "357ce522-4872-4386-b409-264e23953a53")
+	itsOwn := uuid(matcher.IDSpaceTCGplayer, "237134")
 	// A blueprint whose ids agree on the card, which must not move.
-	plainScryfall := uuid(mtgmatcher.IDSpaceScryfall, "e939194a-6993-412c-bbd8-540b9872a721")
-	plainTCGplayer := uuid(mtgmatcher.IDSpaceTCGplayer, "237341")
+	plainScryfall := uuid(matcher.IDSpaceScryfall, "e939194a-6993-412c-bbd8-540b9872a721")
+	plainTCGplayer := uuid(matcher.IDSpaceTCGplayer, "237341")
 
 	for _, tt := range []struct {
 		desc                    string
@@ -79,14 +79,14 @@ func TestNamedID(t *testing.T) {
 func TestNamedIDSamePrinting(t *testing.T) {
 	b := realDatastore(t)
 	scryfall := func(id string) string {
-		out := b.ConvertID(mtgmatcher.IDSpaceScryfall, id)
+		out := b.ConvertID(matcher.IDSpaceScryfall, id)
 		if out == "" {
 			t.Fatalf("scryfall id %q resolves to nothing", id)
 		}
 		return out
 	}
 	tcgplayer := func(id string) string {
-		out := b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id)
+		out := b.ConvertID(matcher.IDSpaceTCGplayer, id)
 		if out == "" {
 			t.Fatalf("TCGplayer id %q resolves to nothing", id)
 		}

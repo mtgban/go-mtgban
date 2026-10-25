@@ -15,11 +15,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // ordinalCaps matches an ordinal a title-caser has capitalised: "1St
-// Place", "3Rd Anniversary". mtgmatcher.Title puts them back down, and a
+// Place", "3Rd Anniversary". matcher.Title puts them back down, and a
 // label carrying one was cased by something else.
 var ordinalCaps = regexp.MustCompile(`[0-9](St|Nd|Rd|Th)\b`)
 
@@ -170,7 +170,7 @@ func Check(loaded Backend, stated Published) Problems {
 			found.Mangled = append(found.Mangled, token+" = "+label)
 		}
 		words := stated.Words[token]
-		if words != "" && label == mtgmatcher.Title(token) && !strings.EqualFold(label, words) {
+		if words != "" && label == matcher.Title(token) && !strings.EqualFold(label, words) {
 			found.RunTogether = append(found.RunTogether, fmt.Sprintf("%s = %q, written %q", token, label, words))
 		}
 	}

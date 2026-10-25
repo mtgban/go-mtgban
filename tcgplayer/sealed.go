@@ -7,8 +7,8 @@ import (
 	"slices"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -22,7 +22,7 @@ type Sealed struct {
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	client  *tcgplayer.Client
 }
 
@@ -34,7 +34,7 @@ func (tcg *Sealed) printf(format string, a ...any) {
 
 // NewScraperSealed returns a sealed scraper authenticated with a partner API
 // key pair.
-func NewScraperSealed(b *mtgmatcher.Backend, publicID, privateID string) (*Sealed, error) {
+func NewScraperSealed(b *matcher.Backend, publicID, privateID string) (*Sealed, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err

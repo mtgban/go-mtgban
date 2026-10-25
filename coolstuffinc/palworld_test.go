@@ -3,9 +3,9 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/palworld"
+	_ "github.com/mtgban/go-mtgban/matcher/palworld"
 )
 
 // TestPalworldNotes pins which tails come off a collector number and which
@@ -59,13 +59,13 @@ func TestPalworldListing(t *testing.T) {
 		{"Soul - Chillet (Demo Caravan Promo)", "Promo", "ESOUL-000 PR Long Blue Creature in Pool Ring", "esoul-003_714403_foil"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			asTyped := mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.notes}
+			asTyped := matcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.notes}
 			id, err := b.Match(&asTyped)
 			if err == nil {
 				t.Errorf("Match(%q, %q) = %q, want the listing to reach nothing before it is read",
 					tt.name, tt.notes, id)
 			}
-			card := mtgmatcher.InputCard{Name: palworldName(tt.name), Edition: tt.edition, Variation: palworldNotes(tt.notes)}
+			card := matcher.InputCard{Name: palworldName(tt.name), Edition: tt.edition, Variation: palworldNotes(tt.notes)}
 			id, err = b.Match(&card)
 			if err != nil {
 				t.Fatalf("Match(%q, %q) = %v", card.Name, card.Variation, err)
@@ -89,7 +89,7 @@ func TestPalworldBuylistNote(t *testing.T) {
 		{"ESS01-002OSR Full Art", "ess01-002osr_723234_foil"},
 	} {
 		product := CSIPriceEntry{Name: "Chillet - Final Frostneedle (Sleeve & Card Set Vol. 1)", ItemSet: "Souls & Misc.", Notes: tt.notes, IsFoil: 1}
-		card := mtgmatcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(buylistVariation(product)), Foil: true}
+		card := matcher.InputCard{Name: palworldName(product.Name), Edition: product.ItemSet, Variation: palworldNotes(buylistVariation(product)), Foil: true}
 		id, err := b.Match(&card)
 		if err != nil || id != tt.uuid {
 			t.Errorf("Match(%q) = %q, %v, want %q", tt.notes, id, err, tt.uuid)

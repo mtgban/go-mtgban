@@ -5,7 +5,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // A product's printing in another language at the same number is priced
@@ -39,19 +39,19 @@ func TestLanguageCopies(t *testing.T) {
 // TestLanguageCopiesUnfiltered pins that a copy in a language the listings
 // filter cannot name is left out, rather than priced from English listings.
 func TestLanguageCopiesUnfiltered(t *testing.T) {
-	card := func(uuid, language string) *mtgmatcher.CardObject {
-		return &mtgmatcher.CardObject{Card: mtgmatcher.Card{
+	card := func(uuid, language string) *matcher.CardObject {
+		return &matcher.CardObject{Card: matcher.Card{
 			UUID: uuid, Name: "Swords", SetCode: "SLD", Language: language, PlainNumber: "1",
 			Identifiers: map[string]string{"mcmId": "7"},
-			FoilUUIDs:   map[string]string{mtgmatcher.FinishNonfoil: uuid},
-			Finish:      mtgmatcher.FinishNonfoil,
+			FoilUUIDs:   map[string]string{matcher.FinishNonfoil: uuid},
+			Finish:      matcher.FinishNonfoil,
 		}}
 	}
-	b := &mtgmatcher.Backend{
-		UUIDs: map[string]*mtgmatcher.CardObject{
+	b := &matcher.Backend{
+		UUIDs: map[string]*matcher.CardObject{
 			"en": card("en", "English"), "ja": card("ja", "Japanese"), "ph": card("ph", "Phyrexian"),
 		},
-		Hashes: map[string][]string{mtgmatcher.Normalize("Swords"): {"en", "ja", "ph"}},
+		Hashes: map[string][]string{matcher.Normalize("Swords"): {"en", "ja", "ph"}},
 	}
 	copies := languageCopies(b, 7, "en", "")
 	if len(copies) != 1 || copies[0][0] != "ja" {

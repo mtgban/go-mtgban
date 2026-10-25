@@ -6,27 +6,27 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
+	_ "github.com/mtgban/go-mtgban/matcher/onepiece"
 )
 
 var (
 	onePieceOnce    sync.Once
 	onePieceErr     error
-	onePieceBackend *mtgmatcher.Backend
+	onePieceBackend *matcher.Backend
 )
 
 // onePieceDatastore reads the One Piece datastore the first time a test asks
 // for it, and skips where the run carries none.
-func onePieceDatastore(t *testing.T) *mtgmatcher.Backend {
+func onePieceDatastore(t *testing.T) *matcher.Backend {
 	t.Helper()
 	onePieceOnce.Do(func() {
 		path := os.Getenv("ONEPIECE_PATH")
 		if path == "" {
 			return
 		}
-		onePieceBackend, onePieceErr = datastore.Read(mtgmatcher.GameOnePiece, path)
+		onePieceBackend, onePieceErr = datastore.Read(matcher.GameOnePiece, path)
 	})
 	if onePieceErr != nil {
 		t.Fatal(onePieceErr)

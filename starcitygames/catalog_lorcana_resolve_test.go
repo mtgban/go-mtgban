@@ -7,15 +7,15 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/matcher/lorcana"
 )
 
 // withGameDatastore loads another game's datastore for a test, skipped where
 // that game's datastore is not configured, which is how the shared
 // `go test ./...` run sees it.
-func withGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatcher.Backend {
+func withGameDatastore(t *testing.T, game matcher.Game, env string) *matcher.Backend {
 	t.Helper()
 	path := os.Getenv(env)
 	if path == "" {
@@ -29,7 +29,7 @@ func withGameDatastore(t *testing.T, game mtgmatcher.Game, env string) *mtgmatch
 	return b
 }
 
-func withLorcana(t *testing.T) *mtgmatcher.Backend {
+func withLorcana(t *testing.T) *matcher.Backend {
 	t.Helper()
 	return withGameDatastore(t, "lorcana", "LORCANA_PATH")
 }
@@ -39,7 +39,7 @@ func withLorcana(t *testing.T) *mtgmatcher.Backend {
 // Lorcana file a checkout carries may predate them; against such a copy the
 // marker has nothing to reach and the listing is skipped, so
 // there is nothing here to assert either way.
-func requireSibling(t *testing.T, b *mtgmatcher.Backend, name string) {
+func requireSibling(t *testing.T, b *matcher.Backend, name string) {
 	t.Helper()
 	uuids, err := b.SearchEquals(name)
 	if err != nil || len(uuids) == 0 {
@@ -143,7 +143,7 @@ func TestResolveLorcanaMarkedPrinting(t *testing.T) {
 			}
 			id, err := resolveProduct(b, GameLorcana, tt.product)
 			if tt.unsupported {
-				if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+				if !errors.Is(err, matcher.ErrUnsupported) {
 					t.Fatalf("got id %q err %v, want ErrUnsupported", id, err)
 				}
 				return
@@ -419,7 +419,7 @@ func TestResolveLorcanaExclusive(t *testing.T) {
 	}
 
 	id, err := resolveProduct(b, GameLorcana, product("SGL-LOR-001-012-JAC", "The First Chapter", "012", "Japanese"))
-	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if !errors.Is(err, matcher.ErrUnsupported) {
 		t.Errorf("Japanese The First Chapter 012 = %q, %v, want ErrUnsupported", id, err)
 	}
 }

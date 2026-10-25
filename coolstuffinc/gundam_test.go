@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 func TestGundamShelf(t *testing.T) {
@@ -77,7 +77,7 @@ func TestGundamCardPremiumBandai(t *testing.T) {
 	if name != "Gundam" || variation != "ST01-001 Premium Card Collection" {
 		t.Errorf("gundamCard(collection) = %q, %q", name, variation)
 	}
-	id, err := b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Gundam Promotional Cards", Variation: variation, Foil: true})
+	id, err := b.Match(&matcher.InputCard{Name: name, Edition: "Gundam Promotional Cards", Variation: variation, Foil: true})
 	if err != nil || id != "st01-001_670590_holofoil" {
 		t.Errorf("Match(collection) = %q, %v, want st01-001_670590_holofoil", id, err)
 	}
@@ -86,7 +86,7 @@ func TestGundamCardPremiumBandai(t *testing.T) {
 	if name != "A Show of Resolve" || variation != "GD01-100 Alt-Art + Premium Accessory Two People" {
 		t.Errorf("gundamCard(accessory) = %q, %q", name, variation)
 	}
-	id, err = b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Gundam Promotional Cards", Variation: variation, Foil: true})
+	id, err = b.Match(&matcher.InputCard{Name: name, Edition: "Gundam Promotional Cards", Variation: variation, Foil: true})
 	if err != nil || id != "gd01-100_653365_holofoil" {
 		t.Errorf("Match(accessory) = %q, %v, want gd01-100_653365_holofoil", id, err)
 	}
@@ -95,7 +95,7 @@ func TestGundamCardPremiumBandai(t *testing.T) {
 	if name != "Resource" || variation != "RP-024 Premium Accessory" {
 		t.Errorf("gundamCard(resource) = %q, %q", name, variation)
 	}
-	id, err = b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Promotional Resource Tokens", Variation: variation, Foil: true})
+	id, err = b.Match(&matcher.InputCard{Name: name, Edition: "Promotional Resource Tokens", Variation: variation, Foil: true})
 	if err != nil || id != "rp-024_681970_holofoil" {
 		t.Errorf("Match(resource) = %q, %v, want rp-024_681970_holofoil", id, err)
 	}
@@ -104,7 +104,7 @@ func TestGundamCardPremiumBandai(t *testing.T) {
 	if name != "Awakened Power" || variation != "GD02-110 Alt-Art + Premium Accessory" {
 		t.Errorf("gundamCard(PB02) = %q, %q", name, variation)
 	}
-	id, err = b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Dual Impact", Variation: variation, Foil: true})
+	id, err = b.Match(&matcher.InputCard{Name: name, Edition: "Dual Impact", Variation: variation, Foil: true})
 	if err != nil || id != "gd02-110_698145_holofoil" {
 		t.Errorf("Match(PB02) = %q, %v, want gd02-110_698145_holofoil", id, err)
 	}
@@ -117,7 +117,7 @@ func TestGundamPIDsNameHeldProducts(t *testing.T) {
 	b := readGameDatastore(t, "gundam", "GUNDAM_PATH")
 
 	for pid, tcgID := range gundamPIDs {
-		_, err := b.Match(&mtgmatcher.InputCard{ID: tcgID, Foil: true})
+		_, err := b.Match(&matcher.InputCard{ID: tcgID, Foil: true})
 		if err != nil {
 			t.Errorf("product %s names TCGplayer %s: %v", pid, tcgID, err)
 		}
@@ -135,7 +135,7 @@ func TestGundamCardNickname(t *testing.T) {
 		t.Errorf("gundamCard(green dress) = %q, %q", name, variation)
 	}
 	variation += " GREEN DRESS GD01-096 " + gundamTier("Rare", name)
-	id, err := b.Match(&mtgmatcher.InputCard{Name: name, Edition: "Newtype Rising", Variation: variation, Foil: true})
+	id, err := b.Match(&matcher.InputCard{Name: name, Edition: "Newtype Rising", Variation: variation, Foil: true})
 	if err != nil || id != "gd01-096_654583_holofoil" {
 		t.Errorf("Match(green dress) = %q, %v, want gd01-096_654583_holofoil", id, err)
 	}

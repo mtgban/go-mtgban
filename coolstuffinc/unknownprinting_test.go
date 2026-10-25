@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestUnknownPrinting pins the two listings dropped for naming a printing the
@@ -76,7 +76,7 @@ func TestUnknownPrintingKept(t *testing.T) {
 			if unknownPrinting(test.name, test.edition) {
 				t.Fatalf("unknownPrinting(%q) dropped the printing it should keep", test.name)
 			}
-			card := &mtgmatcher.InputCard{
+			card := &matcher.InputCard{
 				Name:      catalogColor(test.name),
 				Edition:   printRunEdition(test.edition, ""),
 				Variation: strings.TrimSpace(test.variation),

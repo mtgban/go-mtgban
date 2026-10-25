@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/mtgban/go-cardkingdom"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -28,11 +28,11 @@ type Sealed struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed(b *mtgmatcher.Backend) *Sealed {
+func NewScraperSealed(b *matcher.Backend) *Sealed {
 	ck := Sealed{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
@@ -196,6 +196,6 @@ func (ck *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.BuylistTimestamp = &ck.buylistDate
 	info.SealedMode = true
 	info.CreditMultiplier = 1.3
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

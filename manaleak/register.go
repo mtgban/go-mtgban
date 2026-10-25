@@ -1,13 +1,13 @@
 package manaleak
 
 import (
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func init() {
-	mtgban.Register("manaleak", []mtgmatcher.Game{mtgmatcher.GameMagic},
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+	mtgban.Register("manaleak", []matcher.Game{matcher.GameMagic},
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
 			scraper.logCallback = opts.LogCallback
 			if opts.MaxConcurrency != 0 {

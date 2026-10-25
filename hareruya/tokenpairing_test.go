@@ -3,7 +3,7 @@ package hareruya
 import "testing"
 
 // TestPreprocessResolvesTokenPairing pins a two-sided token listing
-// resolving to the combined entity mtgmatcher/magic derives for it,
+// resolving to the combined entity matcher/magic derives for it,
 // anchored by the set code and collector numbers the storefront's own
 // product_name already carries: "(026/015)《Ooze+Treasure Token》[NCC]"
 // names Ooze as NCC's own token #26 and Treasure as its #15 - confirmed

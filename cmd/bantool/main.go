@@ -33,9 +33,9 @@ import (
 	"github.com/mtgban/go-mtgban/cardgamecorner"
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 	"github.com/mtgban/simplecloud"
 
@@ -47,9 +47,9 @@ import (
 	_ "github.com/mtgban/go-mtgban/hareruya"
 	_ "github.com/mtgban/go-mtgban/manaleak"
 	_ "github.com/mtgban/go-mtgban/manapool"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 	_ "github.com/mtgban/go-mtgban/merlion"
 	_ "github.com/mtgban/go-mtgban/miniaturemarket"
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 	_ "github.com/mtgban/go-mtgban/mtgseattle"
 	_ "github.com/mtgban/go-mtgban/sealedev"
 	_ "github.com/mtgban/go-mtgban/starcitygames"
@@ -79,8 +79,8 @@ type scraperOption struct {
 // resolveGame validates -game against the option table, naming the games
 // actually registered when it does not match. An empty name is the "no
 // -game given" case, since flag.String defaults it to "".
-func resolveGame(options map[mtgmatcher.Game]map[string]*scraperOption, name string) (mtgmatcher.Game, error) {
-	game := mtgmatcher.Game(name)
+func resolveGame(options map[matcher.Game]map[string]*scraperOption, name string) (matcher.Game, error) {
+	game := matcher.Game(name)
 	if _, ok := options[game]; ok {
 		return game, nil
 	}
@@ -101,7 +101,7 @@ func resolveGame(options map[mtgmatcher.Game]map[string]*scraperOption, name str
 // reports why it could not. -store, -sellers and -vendors all take bare
 // registry keys within the sub-map -game selects, so an
 // unknown name is caught here rather than at mtgban.NewScraper.
-func enableStore(scrapers map[string]*scraperOption, game mtgmatcher.Game, name string) (*scraperOption, error) {
+func enableStore(scrapers map[string]*scraperOption, game matcher.Game, name string) (*scraperOption, error) {
 	opt, ok := scrapers[name]
 	if ok {
 		opt.Enabled = true
@@ -120,7 +120,7 @@ func enableStore(scrapers map[string]*scraperOption, game mtgmatcher.Game, name 
 // enableStores applies -store, -sellers and -vendors to one game's
 // scrapers. At least one of the three must name something, or a run has
 // nothing to do.
-func enableStores(scrapers map[string]*scraperOption, game mtgmatcher.Game, store, sellers, vendors string) error {
+func enableStores(scrapers map[string]*scraperOption, game matcher.Game, store, sellers, vendors string) error {
 	if store == "" && sellers == "" && vendors == "" {
 		return errors.New("no store given, run with -h for a list of commands")
 	}
@@ -164,7 +164,7 @@ func enableStores(scrapers map[string]*scraperOption, game mtgmatcher.Game, stor
 // sealed alike, so the same bridge serves both cardmarket scrapers; they
 // receive it as plain data, and the composition of the two vendors happens
 // here and nowhere else.
-func cardtraderBridge(game mtgmatcher.Game) (map[int]int, error) {
+func cardtraderBridge(game matcher.Game) (map[int]int, error) {
 	ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 	if ctTokenBearer == "" {
 		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
@@ -195,9 +195,9 @@ func cardtraderBridge(game mtgmatcher.Game) (map[int]int, error) {
 // halves; three targets across the whole registry do not answer for one of
 // them, and are marked here rather than left for a run to find out the hard
 // way.
-func targets() map[mtgmatcher.Game]map[string]*scraperOption {
-	all := make(map[mtgmatcher.Game]map[string]*scraperOption)
-	for _, game := range mtgmatcher.AllGames {
+func targets() map[matcher.Game]map[string]*scraperOption {
+	all := make(map[matcher.Game]map[string]*scraperOption)
+	for _, game := range matcher.AllGames {
 		scrapers := make(map[string]*scraperOption)
 		for _, name := range mtgban.Registered(game) {
 			scrapers[name] = &scraperOption{}
@@ -207,10 +207,10 @@ func targets() map[mtgmatcher.Game]map[string]*scraperOption {
 
 	// The store keeps no Magic singles shelf - not one variant in 960 sampled
 	// had stock - so only the half it does answer for is asked here.
-	all[mtgmatcher.GameMagic]["vegassingles"].OnlyVendor = true
-	all[mtgmatcher.GameMagic]["mtgseattle"].OnlySeller = true
-	all[mtgmatcher.GameYuGiOh]["coolstuffinc_sealed"].OnlySeller = true
-	all[mtgmatcher.GameLorcana]["coolstuffinc_sealed"].OnlySeller = true
+	all[matcher.GameMagic]["vegassingles"].OnlyVendor = true
+	all[matcher.GameMagic]["mtgseattle"].OnlySeller = true
+	all[matcher.GameYuGiOh]["coolstuffinc_sealed"].OnlySeller = true
+	all[matcher.GameLorcana]["coolstuffinc_sealed"].OnlySeller = true
 
 	return all
 }
@@ -275,7 +275,7 @@ func tcgSYPCatalog() (tcgplayer.SYPCatalog, error) {
 // beyond its own secrets and flags, and wraps each as the typed
 // mtgban.Option its package exports. Loading stays bantool's job; the
 // constructor a key registered receives loaded data only.
-func scraperResources(game mtgmatcher.Game, key string) ([]mtgban.Option, error) {
+func scraperResources(game matcher.Game, key string) ([]mtgban.Option, error) {
 	var opts []mtgban.Option
 
 	switch key {
@@ -318,7 +318,7 @@ func scraperResources(game mtgmatcher.Game, key string) ([]mtgban.Option, error)
 		opts = append(opts, cardmarket.WithBridge(bridge))
 
 	case "cardgamecorner":
-		if game != mtgmatcher.GameOnePiece {
+		if game != matcher.GameOnePiece {
 			break
 		}
 		// The bridge only settles what the wording cannot, so a cardtrader
@@ -331,7 +331,7 @@ func scraperResources(game mtgmatcher.Game, key string) ([]mtgban.Option, error)
 		}
 
 	case "tcg_market", "tcg_sealed":
-		if game != mtgmatcher.GameMagic {
+		if game != matcher.GameMagic {
 			break
 		}
 		skus, err := tcgSKUs()
@@ -381,7 +381,7 @@ func (envAuthenticator) Secret(name string) (string, error) {
 // target); and any catalog, sku list or bridge scraperResources loads.
 // Secrets are not read here either: envAuthenticator goes along as an
 // option and answers each constructor's own Secret* names directly.
-func scraperOptions(game mtgmatcher.Game, key string, opt *scraperOption, maxConcurrency int) ([]mtgban.Option, error) {
+func scraperOptions(game matcher.Game, key string, opt *scraperOption, maxConcurrency int) ([]mtgban.Option, error) {
 	opts := []mtgban.Option{
 		mtgban.WithLogCallback(log.Printf),
 		mtgban.WithAuthenticator(envAuthenticator{}),
@@ -460,7 +460,7 @@ func abortWrite(w io.WriteCloser) error {
 	return w.Close()
 }
 
-func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) (err error) {
+func dumpSeller(backend *matcher.Backend, dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) (err error) {
 	if len(seller.Inventory()) == 0 {
 		return fmt.Errorf("seller %s has no data", seller.Info().Shorthand)
 	}
@@ -499,7 +499,7 @@ func dumpSeller(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sell
 	return err
 }
 
-func dumpVendor(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) (err error) {
+func dumpVendor(backend *matcher.Backend, dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) (err error) {
 	if len(vendor.Buylist()) == 0 {
 		return fmt.Errorf("vendor %s has no data", vendor.Info().Shorthand)
 	}
@@ -617,7 +617,7 @@ func halfShorthands(scraper mtgban.Scraper) ([]string, []string) {
 // what it asks, so a pairing that does not is usually two products meeting on
 // one id - and nothing in the run log says so otherwise, because both halves
 // resolved perfectly well on their own.
-func reportSuspectPricings(backend *mtgmatcher.Backend, sellers []mtgban.Seller, vendors []mtgban.Vendor) {
+func reportSuspectPricings(backend *matcher.Backend, sellers []mtgban.Seller, vendors []mtgban.Vendor) {
 	for _, seller := range sellers {
 		for _, vendor := range vendors {
 			if seller.Info().Shorthand != vendor.Info().Shorthand {
@@ -647,7 +647,7 @@ func reportSuspectPricings(backend *mtgmatcher.Backend, sellers []mtgban.Seller,
 // match folded them onto one id. The run log says nothing about it either -
 // both listings resolved, to the same card - and the pair of listing links
 // is where the wording that tells them apart is published.
-func reportCollapsedPricings(backend *mtgmatcher.Backend, vendors []mtgban.Vendor) {
+func reportCollapsedPricings(backend *matcher.Backend, vendors []mtgban.Vendor) {
 	for _, vendor := range vendors {
 		collapsed := mtgban.CollapsedPricings(vendor.Buylist(), mtgban.CollapsedRatioThreshold)
 		if len(collapsed) == 0 {
@@ -698,7 +698,7 @@ func load(ctx context.Context, scrapers []mtgban.Scraper) ([]mtgban.Seller, []mt
 	return sellers, vendors, errs
 }
 
-func dump(backend *mtgmatcher.Backend, dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string) []error {
+func dump(backend *matcher.Backend, dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string) []error {
 	log.Println("Writing results to", outputPath)
 
 	var sellerErrs []error
@@ -944,7 +944,7 @@ func run() int {
 	defer datastoreReader.Close()
 
 	now := time.Now()
-	backend, err := mtgmatcher.Open(game, datastoreReader)
+	backend, err := matcher.Open(game, datastoreReader)
 	if err != nil {
 		log.Println(err)
 		return 1

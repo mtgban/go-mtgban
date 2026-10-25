@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestArtCardUnsupported pins that the art cards a set booster carries are
@@ -23,8 +23,8 @@ func TestArtCardUnsupported(t *testing.T) {
 			CardName:      "【Art Card】Plains",
 		},
 	} {
-		_, err := Preprocess(&mtgmatcher.Backend{}, product)
-		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+		_, err := Preprocess(&matcher.Backend{}, product)
+		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("Preprocess(%q) = %v, want ErrUnsupported", product.CardName, err)
 		}
 	}

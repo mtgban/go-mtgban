@@ -3,8 +3,8 @@ package cardtrader
 import (
 	"slices"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // SecretToken is the environment variable bantool reads the API token from.
@@ -12,19 +12,19 @@ const SecretToken = "CARDTRADER_TOKEN_BEARER"
 
 // sealedGames are the games ctGames answers for that bantool schedules a
 // Card Trader sealed run under.
-var sealedGames = []mtgmatcher.Game{
-	mtgmatcher.GameMagic, mtgmatcher.GameLorcana, mtgmatcher.GameRiftbound,
-	mtgmatcher.GameOnePiece, mtgmatcher.GamePokemon, mtgmatcher.GameYuGiOh,
-	mtgmatcher.GameFleshAndBlood, mtgmatcher.GameGundam,
+var sealedGames = []matcher.Game{
+	matcher.GameMagic, matcher.GameLorcana, matcher.GameRiftbound,
+	matcher.GameOnePiece, matcher.GamePokemon, matcher.GameYuGiOh,
+	matcher.GameFleshAndBlood, matcher.GameGundam,
 }
 
 // registeredGames are the games of a singles run: Palworld as well, whose
 // sealed product NewScraperSealed refuses.
-var registeredGames = append(slices.Clone(sealedGames), mtgmatcher.GamePalworld)
+var registeredGames = append(slices.Clone(sealedGames), matcher.GamePalworld)
 
 func init() {
 	mtgban.Register("cardtrader", registeredGames,
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			token, err := opts.Secret(SecretToken)
 			if err != nil {
 				return nil, err
@@ -43,7 +43,7 @@ func init() {
 		})
 
 	mtgban.Register("cardtrader_sealed", sealedGames,
-		func(b *mtgmatcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			token, err := opts.Secret(SecretToken)
 			if err != nil {
 				return nil, err

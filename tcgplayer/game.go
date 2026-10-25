@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -41,7 +41,7 @@ type TCGGame struct {
 	sealed    bool
 	sealedMap map[int][]string
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 	client  *tcgplayer.Client
 }
 
@@ -59,20 +59,20 @@ func (tcg *TCGGame) printf(format string, a ...any) {
 // TCGplayer category carrying it. Magic is deliberately absent: it is
 // identified by SKU and has its own scrapers. Supporting one more game is one
 // entry here, provided the matcher has a datastore for it.
-var tcgGames = map[mtgmatcher.Game]int{
-	mtgmatcher.GameLorcana:       tcgplayer.CategoryLorcana,
-	mtgmatcher.GameRiftbound:     tcgplayer.CategoryRiftbound,
-	mtgmatcher.GameOnePiece:      tcgplayer.CategoryOnePiece,
-	mtgmatcher.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
-	mtgmatcher.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
-	mtgmatcher.GamePokemon:       tcgplayer.CategoryPokemon,
-	mtgmatcher.GameGundam:        tcgplayer.CategoryGundam,
-	mtgmatcher.GamePalworld:      tcgplayer.CategoryPalworld,
+var tcgGames = map[matcher.Game]int{
+	matcher.GameLorcana:       tcgplayer.CategoryLorcana,
+	matcher.GameRiftbound:     tcgplayer.CategoryRiftbound,
+	matcher.GameOnePiece:      tcgplayer.CategoryOnePiece,
+	matcher.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
+	matcher.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
+	matcher.GamePokemon:       tcgplayer.CategoryPokemon,
+	matcher.GameGundam:        tcgplayer.CategoryGundam,
+	matcher.GamePalworld:      tcgplayer.CategoryPalworld,
 }
 
 // NewScraperGame returns a singles scraper for one game, authenticated with a
 // partner API key pair.
-func NewScraperGame(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame, error) {
+func NewScraperGame(b *matcher.Backend, publicID, privateID string) (*TCGGame, error) {
 	game := b.Game
 	category, found := tcgGames[game]
 	if !found {
@@ -103,7 +103,7 @@ func NewScraperGame(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame
 // adds later is picked up rather than silently skipped. Products resolve
 // through the sealed product map by their product id, the identity the
 // datastore stamps on every sealed entry.
-func NewScraperGameSealed(b *mtgmatcher.Backend, publicID, privateID string) (*TCGGame, error) {
+func NewScraperGameSealed(b *matcher.Backend, publicID, privateID string) (*TCGGame, error) {
 	tcg, err := NewScraperGame(b, publicID, privateID)
 	if err != nil {
 		return nil, err
@@ -219,13 +219,13 @@ func (tcg *TCGGame) skuEntries(result tcgplayer.SKUPriceSet, sku tcgplayer.SKU, 
 	// the finish identify the sku, and a product the datastore does
 	// not carry is reported rather than guessed from its wording.
 	printing := tcg.printings[sku.PrintingID]
-	theCard := &mtgmatcher.InputCard{
+	theCard := &matcher.InputCard{
 		ID:     fmt.Sprint(sku.ProductID),
 		Finish: printing,
 		Foil:   printing != "Normal",
 	}
 	cardID, err := tcg.backend.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
 		// Name the card, not just the price row: a sku id alone
@@ -233,7 +233,7 @@ func (tcg *TCGGame) skuEntries(result tcgplayer.SKUPriceSet, sku tcgplayer.SKU, 
 		tcg.printf("%v for %q %s (product %d)", err, cardName, printing, sku.ProductID)
 		tcg.printf("%+v", result)
 
-		var alias *mtgmatcher.AliasingError
+		var alias *matcher.AliasingError
 		if errors.As(err, &alias) {
 			probes := alias.Probe()
 			tcg.printf("%d %s got ids: %s", sku.ProductID, cardName, probes)

@@ -3,9 +3,9 @@ package coolstuffinc
 import (
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
 // TestEventNamed pins the events this storefront gives its own name to. The
@@ -53,7 +53,7 @@ func TestEventNamed(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			card := &mtgmatcher.InputCard{
+			card := &matcher.InputCard{
 				Name:      test.name,
 				Edition:   test.edition,
 				Variation: eventNamed(test.number + " " + nameQualifiers(test.name)),

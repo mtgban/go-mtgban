@@ -8,7 +8,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // pokemonForeignExpansions names the Cardmarket Pokemon expansions that are
@@ -132,7 +132,7 @@ var pokemonHoloLinks = map[int]int{
 // datastore cannot answer is an error rather than a fall through to the
 // plain card the row exists to keep the product off.
 func (r *resolver) pokemonByID(product *cm.Product) (string, error) {
-	uuid := r.backend.ConvertID(mtgmatcher.IDSpaceCardmarket, strconv.Itoa(product.IDProduct))
+	uuid := r.backend.ConvertID(matcher.IDSpaceCardmarket, strconv.Itoa(product.IDProduct))
 	if uuid != "" {
 		return uuid, nil
 	}
@@ -245,7 +245,7 @@ var (
 
 // pokemonEditions answers the sets a Cardmarket expansion may hold and the
 // number prefix its promos need.
-func pokemonEditions(b *mtgmatcher.Backend, expansion string) ([]string, string) {
+func pokemonEditions(b *matcher.Backend, expansion string) ([]string, string) {
 	if alias, found := pokemonExpansions[expansion]; found {
 		return alias.sets, alias.prefix
 	}
@@ -377,7 +377,7 @@ var pokemonParenthetical = regexp.MustCompile(`\s*\([^)]*\)`)
 func pokemonPlainName(name string) string {
 	name = pokemonParenthetical.ReplaceAllString(pokemonName(name), "")
 	name = strings.TrimPrefix(name, "Basic ")
-	return mtgmatcher.Normalize(name)
+	return matcher.Normalize(name)
 }
 
 // pokemonPlainNumber is the number two products are compared on: the
@@ -435,7 +435,7 @@ var pokemonLetteredSets = []string{"Alternate Art Promos", "League & Championshi
 // was found live: zero real products carry both a 1st Edition and a Reverse
 // Holofoil finish, so (true, true) is never produced here.
 func pokemonFinishCell(finish string) (isFirstEd, isReverseHolo bool) {
-	switch mtgmatcher.FinishSlug(finish) {
+	switch matcher.FinishSlug(finish) {
 	case "reverseholofoil":
 		return false, true
 	case "1stedition", "1steditionholofoil":
@@ -453,7 +453,7 @@ type pokemonFinishTarget struct {
 	isReverseHolo bool
 }
 
-// pokemonFinishPlan groups cardID's own finish siblings (mtgmatcher.
+// pokemonFinishPlan groups cardID's own finish siblings (matcher.
 // FinishSiblings, which already carries the game's whole vocabulary and
 // handles finish twins) by the Cardmarket cell each projects onto (see
 // pokemonFinishCell), keeping one anchor uuid per occupied cell - cardID
@@ -465,7 +465,7 @@ type pokemonFinishTarget struct {
 // again would file the same listings under two uuids instead of one -
 // confirmed live: 349 real products (EX-era holo rares) carry both a
 // Normal and a Holofoil sibling as one Cardmarket product.
-func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarget {
+func pokemonFinishPlan(b *matcher.Backend, cardID string) []pokemonFinishTarget {
 	type cell struct{ isFirstEd, isReverseHolo bool }
 	anchors := map[cell]int{}
 	var targets []pokemonFinishTarget
@@ -495,8 +495,8 @@ func pokemonFinishPlan(b *mtgmatcher.Backend, cardID string) []pokemonFinishTarg
 // Rows spanning more than one TCGplayer product, or with a row of no
 // TCGplayer product among them, name nothing, and the product stays with the
 // plain card's other siblings.
-func (r *resolver) pokemonStamped(plain *mtgmatcher.CardObject) string {
-	if plain.IsPromo || len(plain.PromoTypes) > 0 || plain.Rarity == mtgmatcher.RarityName("Promo") {
+func (r *resolver) pokemonStamped(plain *matcher.CardObject) string {
+	if plain.IsPromo || len(plain.PromoTypes) > 0 || plain.Rarity == matcher.RarityName("Promo") {
 		return ""
 	}
 	uuids, _ := r.backend.SearchEquals(plain.Name)
@@ -517,7 +517,7 @@ func (r *resolver) pokemonStamped(plain *mtgmatcher.CardObject) string {
 		if id == "" || (found != "" && id != tcgID) {
 			return ""
 		}
-		if found == "" || co.Finish != mtgmatcher.FinishSlug(pokemonReverseHolo) {
+		if found == "" || co.Finish != matcher.FinishSlug(pokemonReverseHolo) {
 			found, tcgID = uuid, id
 		}
 	}

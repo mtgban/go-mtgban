@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-retryablehttp"
@@ -29,7 +29,7 @@ type TOAMagic struct {
 	logCallback    mtgban.LogCallbackFunc
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -38,7 +38,7 @@ type TOAMagic struct {
 }
 
 // NewScraper returns a scraper matching against b.
-func NewScraper(b *mtgmatcher.Backend) *TOAMagic {
+func NewScraper(b *matcher.Backend) *TOAMagic {
 	toa := TOAMagic{backend: b}
 	toa.inventory = mtgban.InventoryRecord{}
 	toa.maxConcurrency = defaultConcurrency
@@ -86,7 +86,7 @@ func (toa *TOAMagic) inventoryOffers(meta *goquery.Selection) []offer {
 			return
 		}
 
-		price, _ := mtgmatcher.ParsePrice(row.Find(`span[class="regular price"]`).Text())
+		price, _ := matcher.ParsePrice(row.Find(`span[class="regular price"]`).Text())
 		if price == 0 {
 			return
 		}
@@ -178,7 +178,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 		}
 
 		cardID, err := toa.backend.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		if errors.Is(err, matcher.ErrUnsupported) {
 			return
 		} else if err != nil {
 			// Skip reporting an error for known failures (invalid variant number)
@@ -200,7 +200,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 			toa.printf("%q", theCard)
 			toa.printf("%s ~ %s ~ %s", cardName, edition, variant)
 
-			var alias *mtgmatcher.AliasingError
+			var alias *matcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
@@ -304,6 +304,6 @@ func (toa *TOAMagic) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Tales of Adventure"
 	info.Shorthand = "TOA"
 	info.InventoryTimestamp = &toa.inventoryDate
-	info.Game = mtgmatcher.GameMagic
+	info.Game = matcher.GameMagic
 	return
 }

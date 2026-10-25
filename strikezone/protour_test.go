@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // TestProTourAndMediaShelf pins which set the Pro Tour and Media promo
@@ -67,7 +67,7 @@ func TestProTourAndMediaShelf(t *testing.T) {
 func TestAutographedRefusal(t *testing.T) {
 	name := "Ajani Goldmane (745) (Autographed)"
 	_, err := preprocess(nil, name, "Secret Lair", "Foil")
-	if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if !errors.Is(err, matcher.ErrUnsupported) {
 		t.Errorf("preprocess(%q) = %v, want ErrUnsupported", name, err)
 	}
 }

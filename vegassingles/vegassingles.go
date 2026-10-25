@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -35,12 +35,12 @@ const (
 // vsGames is what NewScraper is built through: it names the product line a
 // game is sold under, and a game named nowhere here is not one Vegas Singles
 // is read for. The lines themselves stay public, since NewVSClient takes one.
-var vsGames = map[mtgmatcher.Game]string{
-	mtgmatcher.GameMagic:     GameMagic,
-	mtgmatcher.GameRiftbound: GameRiftbound,
-	mtgmatcher.GameOnePiece:  GameOnePiece,
-	mtgmatcher.GamePokemon:   GamePokemon,
-	mtgmatcher.GameGundam:    GameGundam,
+var vsGames = map[matcher.Game]string{
+	matcher.GameMagic:     GameMagic,
+	matcher.GameRiftbound: GameRiftbound,
+	matcher.GameOnePiece:  GameOnePiece,
+	matcher.GamePokemon:   GamePokemon,
+	matcher.GameGundam:    GameGundam,
 }
 
 // listedConditions names the conditions the store buys, per game. The
@@ -53,11 +53,11 @@ var vsGames = map[mtgmatcher.Game]string{
 // It is a buylist setting and reaches nothing else: what the store sells
 // is whatever it has on the shelf, in whatever grade it graded it, and the
 // stock count beside each retail listing is what says so.
-var listedConditions = map[mtgmatcher.Game][]string{
-	mtgmatcher.GameRiftbound: {"Near Mint"},
-	mtgmatcher.GamePokemon:   {"Near Mint"},
-	mtgmatcher.GameOnePiece:  {"Near Mint", "Lightly Played"},
-	mtgmatcher.GameGundam:    {"Near Mint"},
+var listedConditions = map[matcher.Game][]string{
+	matcher.GameRiftbound: {"Near Mint"},
+	matcher.GamePokemon:   {"Near Mint"},
+	matcher.GameOnePiece:  {"Near Mint", "Lightly Played"},
+	matcher.GameGundam:    {"Near Mint"},
 }
 
 // reSlugSeparator matches every run the storefront's product paths write as
@@ -85,7 +85,7 @@ type Vegassingles struct {
 	logCallback    mtgban.LogCallbackFunc
 	maxConcurrency int
 
-	backend *mtgmatcher.Backend
+	backend *matcher.Backend
 
 	client *VSClient
 	line   string
@@ -99,7 +99,7 @@ type Vegassingles struct {
 }
 
 // NewScraper returns a scraper for the game b was loaded for.
-func NewScraper(b *mtgmatcher.Backend) (*Vegassingles, error) {
+func NewScraper(b *matcher.Backend) (*Vegassingles, error) {
 	game := b.Game
 	line, ok := vsGames[game]
 	if !ok {
@@ -129,7 +129,7 @@ func (vs *Vegassingles) listed(title string) bool {
 
 func (vs *Vegassingles) processProduct(product VSProduct) error {
 	theCard, err := preprocess(vs.backend, product, vs.backend.Game)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
 		// Name the product, the way the failure below already does. A
@@ -139,7 +139,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	}
 
 	cardID, err := vs.backend.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	if errors.Is(err, matcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
 		vs.printf("%v", err)

@@ -6,7 +6,7 @@ import (
 )
 
 // TestPreprocessResolvesTokenPairing pins a two-sided token sheet blueprint
-// ("X // Y") resolving to the combined entity mtgmatcher/magic/tokenpairs.go
+// ("X // Y") resolving to the combined entity matcher/magic/tokenpairs.go
 // derives for the same physical pairing, rather than to whichever single
 // face one of the blueprint's own ids happens to name - the same
 // "silently prices the whole two-sided product as if it were just the one

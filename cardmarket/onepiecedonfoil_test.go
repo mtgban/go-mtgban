@@ -6,7 +6,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/matcher"
 )
 
 // onePieceDonDatastore is the published datastore's three Zoro DON!! cards
@@ -72,7 +72,7 @@ func TestOnePieceDonAliasing(t *testing.T) {
 	product := cm.CatalogProduct{ExpansionID: 5244, Name: "Don!! (Elbaph)", Rarity: "DON!!"}
 
 	got := mkm.resolver.resolveMapped(858544, product, exp)
-	var alias *mtgmatcher.AliasingError
+	var alias *matcher.AliasingError
 	if !errors.As(got.err, &alias) || got.cardID != "" {
 		t.Errorf("resolveMapped = (%q, %v), want an aliasing error", got.cardID, got.err)
 	}
