@@ -44,6 +44,18 @@ func TestGameInput(t *testing.T) {
 			want:    mtgmatcher.InputCard{Name: "Goblin Biker Big Gabonga (V.1 - Secret Rare)", Edition: "Phantom Nightmare", Variation: "047 Secret Rare", Finish: "1st Edition"},
 		},
 		{
+			game:    mtgmatcher.GameYuGiOh,
+			card:    Card{Name: "Blue-Eyes White Dragon", Edition: "Legend of Blue Eyes White Dragon ENG (LOB)", Number: "001", Rarity: "Ultra Rare"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil", Language: "EN"},
+			want:    mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Edition: "Legend of Blue Eyes White Dragon ENG (LOB)", Variation: "European Ultra Rare"},
+		},
+		{
+			game:    mtgmatcher.GameYuGiOh,
+			card:    Card{Name: "Blue-Eyes White Dragon", Edition: "Legend of Blue Eyes White Dragon ENG (LOB)", Number: "001", Rarity: "Ultra Rare"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil", Language: "US"},
+			want:    mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Edition: "Legend of Blue Eyes White Dragon ENG (LOB)", Variation: "001 Ultra Rare"},
+		},
+		{
 			game:    mtgmatcher.GameRiftbound,
 			card:    Card{Name: "Vi, Piltover ZHorcer (V.1 - Rare)", Edition: "Unleashed", Number: "187"},
 			variant: Variant{Foil: "Foil"},
@@ -99,20 +111,18 @@ func TestGameFinish(t *testing.T) {
 
 func TestOldShelfSet(t *testing.T) {
 	for _, tt := range []struct {
-		edition  string
-		language string
-		want     string
+		edition string
+		want    string
 	}{
-		{edition: "Legend of Blue Eyes White Dragon ENG (LOB)", language: "US", want: "LOB"},
-		{edition: "Legend of Blue Eyes White Dragon ENG (LOB)", language: "EN"},
-		{edition: "Spell Ruler / Magic Ruler ENG (MRL)", language: "US", want: "MRL"},
-		{edition: "Starter Deck: Yugi ENG (SDY)", language: "US", want: "SDY"},
-		{edition: "Legend of Blue Eyes White Dragon ITA (LDD)", language: "US"},
-		{edition: "Alliance Insight", language: "US"},
+		{edition: "Legend of Blue Eyes White Dragon ENG (LOB)", want: "LOB"},
+		{edition: "Spell Ruler / Magic Ruler ENG (MRL)", want: "MRL"},
+		{edition: "Starter Deck: Yugi ENG (SDY)", want: "SDY"},
+		{edition: "Legend of Blue Eyes White Dragon ITA (LDD)"},
+		{edition: "Alliance Insight"},
 	} {
-		got, found := oldShelfSet(tt.edition, tt.language)
+		got, found := oldShelfSet(tt.edition)
 		if got != tt.want || found != (tt.want != "") {
-			t.Errorf("oldShelfSet(%q, %q) = %q, %t; want %q", tt.edition, tt.language, got, found, tt.want)
+			t.Errorf("oldShelfSet(%q) = %q, %t; want %q", tt.edition, got, found, tt.want)
 		}
 	}
 }

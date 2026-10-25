@@ -1,6 +1,7 @@
 package cardgamecorner
 
 import (
+	"path"
 	"regexp"
 	"strings"
 
@@ -70,7 +71,8 @@ var promoNumberPrefixes = map[string]string{
 }
 
 // gameNames holds the card names the store misspells, by game, as the
-// datastore spells them.
+// datastore spells them, and one Yu-Gi-Oh name it gives in Italian whose
+// image carries no English one.
 var gameNames = map[mtgmatcher.Game]map[string]string{
 	mtgmatcher.GameYuGiOh: {
 		"Abyss Actors' Dress Rehersal":          "Abyss Actors' Dress Rehearsal",
@@ -86,6 +88,7 @@ var gameNames = map[mtgmatcher.Game]map[string]string{
 		"Majespecter Orthus - Nue":              "Majespecter Orthrus - Nue",
 		"Maliss Q HEARTS OF CRYPTER":            "Maliss Q Hearts Crypter",
 		"Outer Entity Azathoth":                 "Outer Entity Azathot",
+		"Raffica di Vento":                      "Gust",
 		"Reincarnation Unvealing Mail":          "Reincarnation Unveiling Mail",
 		"Sky Striker Ace - Azelea Temperance":   "Sky Striker Ace - Azalea Temperance",
 		"Supernatural Regeneration":             "Metaphysical Regeneration",
@@ -128,14 +131,52 @@ var riftboundVersionRe = regexp.MustCompile(`\s*\(V\.[0-9]+ - [^)]*\)$`)
 // of an old set, which ends in the set's code.
 var oldShelfRe = regexp.MustCompile(`ENG \(([A-Z0-9]+)\)$`)
 
-// oldShelfSet returns the set an old Yu-Gi-Oh shelf holds for a copy of the
-// North American print, flagged "US".
-func oldShelfSet(edition, language string) (string, bool) {
+// oldShelfSet returns the set an old Yu-Gi-Oh shelf holds. The North
+// American and the European print of a card are both filed in it, the
+// European one as "European <rarity>".
+func oldShelfSet(edition string) (string, bool) {
 	match := oldShelfRe.FindStringSubmatch(edition)
-	if match == nil || language != "US" {
+	if match == nil {
 		return "", false
 	}
 	return match[1], true
+}
+
+// knownOldShelf returns the set oldShelfSet reads off a shelf, where the
+// datastore knows it.
+func knownOldShelf(b *mtgmatcher.Backend, edition string) (string, bool) {
+	code, found := oldShelfSet(edition)
+	if !found {
+		return "", false
+	}
+	_, err := b.GetSet(code)
+	return code, err == nil
+}
+
+// slugName reads the card an image is named after, where the store gave the
+// name in Italian and the image directory holds the English one.
+func slugName(b *mtgmatcher.Backend, extra string) string {
+	slug := strings.ReplaceAll(path.Base(path.Dir(extra)), "-", " ")
+	if !namesACard(b, slug) {
+		return ""
+	}
+	return slug
+}
+
+// losesFirstEdition reports whether a first edition listing lands on a
+// printing that is not one: the matcher falls back to the unlimited print
+// where the datastore holds no first edition of the card.
+func losesFirstEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	probe := *inCard
+	cardID, err := b.Match(&probe)
+	if err != nil {
+		return false
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	return co.Finish != mtgmatcher.FinishSlug(mtgmatcher.Run1stEdition)
 }
 
 // preprocessGame reads a card of any game but Magic, whose listings name the
@@ -148,8 +189,17 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 
 	inCard := gameInput(b.Game, card, index)
 	code, found := shelfSets[b.Game][card.Edition]
-	if !found && b.Game == mtgmatcher.GameYuGiOh {
-		code, found = oldShelfSet(card.Edition, card.Variants[index].Language)
+	oldShelf := b.Game == mtgmatcher.GameYuGiOh && oldShelfRe.MatchString(card.Edition)
+	if oldShelf {
+		if !namesACard(b, inCard.Name) {
+			name := slugName(b, card.Extra)
+			if name != "" {
+				inCard.Name = name
+			}
+		}
+		if !found {
+			code, found = knownOldShelf(b, card.Edition)
+		}
 	}
 	if found {
 		set, err := b.GetSet(code)
@@ -157,6 +207,12 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 			return nil, err
 		}
 		inCard.Edition = set.Name
+	}
+
+	// A copy of a first edition the datastore lacks, the European ones
+	// still, would be priced as the unlimited it lands on
+	if oldShelf && inCard.Finish == mtgmatcher.Run1stEdition && losesFirstEdition(b, inCard) {
+		return nil, mtgmatcher.ErrUnsupported
 	}
 	return inCard, nil
 }
@@ -179,6 +235,11 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		// A number holds the card at several rarities, which the name
 		// spells only from its second version on
 		number = strings.TrimSpace(number + " " + card.Rarity)
+		// The European print, an old shelf's other one, numbers its
+		// cards on its own
+		if oldShelfRe.MatchString(card.Edition) && variant.Language == "EN" {
+			number = "European " + card.Rarity
+		}
 	case mtgmatcher.GameRiftbound:
 		name = riftboundVersionRe.ReplaceAllString(name, "")
 	case mtgmatcher.GamePokemon:
