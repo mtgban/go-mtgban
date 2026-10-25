@@ -29,6 +29,8 @@ var cardTable = map[string]string{
 	"El-Ajjaj":               "El-Hajjâj",
 	"Immagina Fantasma":      "Phantasmal Image",
 	"Distese di Llanowar":    "Llanowar Wastes",
+	"Tramutante Puntatrice":  "Homing Sliver",
+	"Tramutante Possente":    "Might Sliver",
 
 	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
 	"Mourning Patrol // Mourning Apparition":             "Mourning Patrol",
