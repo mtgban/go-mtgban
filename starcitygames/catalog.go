@@ -1002,6 +1002,11 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 		}
 	}
 
+	// The closed Flesh and Blood refusals hold whatever ids the product sends
+	if game == GameFleshAndBlood && (fabInserts[p.Name] || fabDuplicateStock[p.SKU] || fabUnmade[p.SKU]) {
+		return "", mtgmatcher.ErrUnsupported
+	}
+
 	// The vendor ids resolve directly, Scryfall first, in the product's finish
 	// (matchVendorID); outside Magic the printing must carry the sku's number.
 	// An id the product's own wording contradicts goes to the wording path.
@@ -1092,15 +1097,6 @@ func resolveProductID(b *mtgmatcher.Backend, game int, p CatalogProduct) (string
 	// The catalog's own finish name rides beside the flag: a product is one
 	// printing in one treatment, and only the name says which.
 	if game == GameFleshAndBlood {
-		if fabInserts[p.Name] {
-			return "", mtgmatcher.ErrUnsupported
-		}
-		if fabDuplicateStock[p.SKU] {
-			return "", mtgmatcher.ErrUnsupported
-		}
-		if fabUnmade[p.SKU] {
-			return "", mtgmatcher.ErrUnsupported
-		}
 		name := p.Name
 		if spelled, found := fabNames[name]; found {
 			name = spelled
