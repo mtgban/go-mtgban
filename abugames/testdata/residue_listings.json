@@ -599,5 +599,59 @@
       ]
     },
     "uuid": "d0b1e043-d5e4-5feb-8066-b271adfe8d76"
+  },
+  {
+    "group": "7911360",
+    "card": {
+      "id": "2351716",
+      "product_id": "7911360",
+      "display_title": "Gandalf, White Rider (Extended Art)",
+      "simple_title": "Gandalf, White Rider",
+      "magic_edition_sort": "The Lord of the Rings: Tales of Middle-earth",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "290",
+      "scryfall_id": [
+        "b422ce26-06fb-4748-9c01-32c4be914a77"
+      ],
+      "tcgplayer_id": [
+        499940
+      ],
+      "multiverseid": [
+        620103
+      ]
+    },
+    "uuid": "ee928bc4-03d8-595d-a635-26bd0eaec945"
+  },
+  {
+    "group": "7429110",
+    "card": {
+      "id": "1628418",
+      "product_id": "7429110",
+      "display_title": "Captain's Claws (Goldnight Castigator Shadow) - FOIL",
+      "simple_title": "Captain's Claws",
+      "magic_edition_sort": "Oath of the Gatewatch",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "162",
+      "scryfall_id": [
+        "521ee576-5a51-4353-af38-c461f05d66ce"
+      ],
+      "tcgplayer_id": [
+        111020
+      ],
+      "multiverseid": [
+        407672
+      ]
+    },
+    "uuid": "55b003c0-6916-5323-8b6c-ac15e4b8bccf"
   }
 ]

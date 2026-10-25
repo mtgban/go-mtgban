@@ -31,6 +31,14 @@ var listingCorrections = map[string]struct {
 	"8054274": {title: "Searslicer Goblin (Borderless Mana 393) - FOIL", edition: "Foundations", number: "394", correctedTitle: "Searslicer Goblin (Borderless Mana 394) - FOIL"},
 	"8147346": {title: "Island (346 Surge) - FOIL", edition: "Marvel Super Heroes", number: "436", correctedTitle: "Island (436 Surge) - FOIL"},
 	"7966260": {title: "Missy (Surge 614) - FOIL", edition: "Doctor Who", number: "613", correctedTitle: "Missy (Surge 613) - FOIL"},
+	// The title's Secret Lair number is a typo; card_number and the ids
+	// name the other drop.
+	"8036192": {title: "Homeward Path (Secret Lair 2811)", edition: "Secret Lair Drop", number: "1467", correctedTitle: "Homeward Path (Secret Lair 1467)"},
+	"8036194": {title: "Homeward Path (Secret Lair 2811) - FOIL", edition: "Secret Lair Drop", number: "1467★", correctedTitle: "Homeward Path (Secret Lair 1467) - FOIL"},
+	"8167207": {title: "Arcane Signet (Secret Lair 2464) - FOIL", edition: "Secret Lair Drop", number: "2816", correctedTitle: "Arcane Signet (Secret Lair 2816) - FOIL"},
+	// The plain printing's number and ids are copied onto the variant.
+	"7911360": {title: "Gandalf, White Rider (Extended Art)", edition: "The Lord of the Rings: Tales of Middle-earth", number: "290", correctedNumber: "389", ignoreIDs: true},
+	"7429110": {title: "Captain's Claws (Goldnight Castigator Shadow) - FOIL", edition: "Oath of the Gatewatch", number: "162", correctedNumber: "162†", ignoreIDs: true},
 	// The listings misspell the flavor name, or splice the finish into it.
 	"8100899": {title: "Chancla relampagos | Lightning Greaves (Secret Lair)", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair)"},
 	"8100901": {title: "Chancla relampagos | Lightning Greaves (Secret Lair) - FOIL", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair) - FOIL"},
