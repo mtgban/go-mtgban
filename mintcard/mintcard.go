@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -84,6 +85,28 @@ func (mint *MTGMintCard) soldInFinish(theCard *mtgmatcher.InputCard, err error) 
 	return found
 }
 
+// lumpedArts reports whether err is an aliasing error over several arts of
+// one basic land in one set, for a listing that gave no number: one product
+// stocking every art of a basic names none of them.
+func (mint *MTGMintCard) lumpedArts(card Card, theCard *mtgmatcher.InputCard, err error) bool {
+	var alias *mtgmatcher.AliasingError
+	if !errors.As(err, &alias) || len(alias.Dupes) == 0 || card.Number != "" || theCard.Variation != "" {
+		return false
+	}
+	setCode := ""
+	for _, probe := range alias.Probe() {
+		co, uuidErr := mint.backend.GetUUID(probe)
+		if uuidErr != nil || !mtgmatcher.Equals(co.Name, theCard.Name) || !slices.Contains(co.Supertypes, "Basic") {
+			return false
+		}
+		if setCode != "" && co.SetCode != setCode {
+			return false
+		}
+		setCode = co.SetCode
+	}
+	return true
+}
+
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
 	cond, err := mtgban.ParseCondition(condition)
 	if err != nil {
@@ -123,6 +146,9 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			// A bare name names no origin printing, so one held only by
 			// The List cannot be told apart.
 			if setCode == "MYS" && theCard.Variation == "" && mint.onlyTheList(err) {
+				return
+			}
+			if mint.lumpedArts(card, theCard, err) {
 				return
 			}
 			cardID = mint.soldInFinish(theCard, err)
