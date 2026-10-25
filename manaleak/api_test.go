@@ -2,6 +2,7 @@ package manaleak
 
 import (
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
@@ -112,6 +113,30 @@ func TestParseProduct(t *testing.T) {
 	category, code := parseProduct(doc)
 	if category != "The List" || code != "mtgTLP269131" {
 		t.Errorf("product page parsed as %q, %q", category, code)
+	}
+}
+
+// TestParseGrades pins the grades read off a product page, copied verbatim
+// from manaleak.com, that holds Played and Heavy Play in stock and the rest
+// out of stock: only the two in stock come back, each at its own price.
+func TestParseGrades(t *testing.T) {
+	f, err := os.Open("testdata/product_grades.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	doc, err := goquery.NewDocumentFromReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := parseGrades(doc)
+	want := []MLGrade{
+		{Name: "Played", Price: 96.50, Quantity: 2},
+		{Name: "Heavy Play", Price: 81.66, Quantity: 2},
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("grades parsed as %+v, want %+v", got, want)
 	}
 }
 

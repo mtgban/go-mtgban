@@ -14,6 +14,7 @@ func TestParseCondition(t *testing.T) {
 		want Condition
 	}{
 		{"nm", NM}, {"near mint", NM}, {"mint", NM}, {"nm-mint", NM}, {"nm/m", NM},
+		{"mint/near mint", NM},
 		{"NEAR MINT", NM}, {" Near Mint ", NM},
 
 		{"sp", SP}, {"lp", SP}, {"ex", SP}, {"very fine", SP},
