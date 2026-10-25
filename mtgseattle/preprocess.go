@@ -17,6 +17,7 @@ var cardTable = map[string]string{
 	"Mechagodzilla":                "Crystalline Giant",
 	"B.F.M. 2 (Big Furry Monster)": "B.F.M. (Big Furry Monster Right)",
 	"B.F.M. 1 (Big Furry Monster)": "B.F.M. (Big Furry Monster Left)",
+	"Selesnya Guildate":            "Selesnya Guildgate",
 
 	"_________": "_____",
 }
