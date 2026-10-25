@@ -99,6 +99,12 @@ func TestGameInput(t *testing.T) {
 		},
 		{
 			game:    mtgmatcher.GamePokemon,
+			card:    Card{Name: "Fire Energy", Edition: "Pokémon Trading Card Game Classic: Charizard & Ho-Oh Deck", Number: "033", Rarity: "Fixed"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Fire Energy", Edition: "Pokémon Trading Card Game Classic: Charizard & Ho-Oh Deck", Variation: "033 CLC"},
+		},
+		{
+			game:    mtgmatcher.GamePokemon,
 			card:    Card{Name: "Wooloo", Edition: "Sword & Shield: Black Star Promos", Number: "011", Rarity: "Promo"},
 			variant: Variant{Print: "Unl.", Foil: "Reverse Holo"},
 			want:    mtgmatcher.InputCard{Name: "Wooloo", Edition: "Sword & Shield: Black Star Promos", Variation: "SWSH011", Finish: "Reverse Holofoil"},
