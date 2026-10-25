@@ -45,6 +45,7 @@ func TestPreprocessDetails(t *testing.T) {
 		outVariation string
 		outFinish    string
 		outFoil      bool
+		outLanguage  string
 		err          error
 	}{
 		{
@@ -176,6 +177,20 @@ func TestPreprocessDetails(t *testing.T) {
 			outFinish: "Cold Foil", outFoil: true,
 		},
 		{
+			// A foreign promo keeps its language and loses the label that
+			// repeats it.
+			game: mtgmatcher.GameFleshAndBlood, name: "Enigma, Ledger of Ancestry (Marvel) (Japanese Alternate Art)", edition: "Flesh and Blood Promos",
+			number: "116", details: "Near Mint Rainbow Foil 1st Edition Japanese",
+			outName: "Enigma, Ledger of Ancestry (Marvel)", outVariation: "116", outFoil: true,
+			outLanguage: "Japanese",
+		},
+		{
+			game: mtgmatcher.GameFleshAndBlood, name: "Nuu, Alluring Desire (Japanese Alternative Art) - HER128", edition: "Flesh and Blood Promos",
+			number: "128", details: "Near Mint Rainbow Foil 1st Edition Japanese",
+			outName: "Nuu, Alluring Desire", outVariation: "HER128", outFoil: true,
+			outLanguage: "Japanese",
+		},
+		{
 			game: mtgmatcher.GameYuGiOh, name: "Dark Magician", edition: "Yugi Reloaded",
 			number: "001", details: "Near Mint Normal Unlimited English",
 			outName: "Dark Magician", outVariation: "001",
@@ -195,10 +210,10 @@ func TestPreprocessDetails(t *testing.T) {
 		}
 		if card.Name != tt.outName || card.Variation != tt.outVariation ||
 			card.Finish != tt.outFinish || card.Foil != tt.outFoil ||
-			card.Edition != tt.edition {
-			t.Errorf("%s/%s: got %q/%q/%q/%v; want %q/%q/%q/%v",
-				tt.game, tt.name, card.Name, card.Variation, card.Finish, card.Foil,
-				tt.outName, tt.outVariation, tt.outFinish, tt.outFoil)
+			card.Language != tt.outLanguage || card.Edition != tt.edition {
+			t.Errorf("%s/%s: got %q/%q/%q/%v/%q; want %q/%q/%q/%v/%q",
+				tt.game, tt.name, card.Name, card.Variation, card.Finish, card.Foil, card.Language,
+				tt.outName, tt.outVariation, tt.outFinish, tt.outFoil, tt.outLanguage)
 		}
 	}
 }

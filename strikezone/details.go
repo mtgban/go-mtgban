@@ -165,6 +165,16 @@ func fabListing(cardName, number string) (string, string) {
 	return strings.TrimSpace(fabNumberSpan.ReplaceAllString(cardName, "")), number
 }
 
+// fabLanguageLabel matches the label a printing in another language carries
+// in its name, "(Japanese Alternate Art)", in either spelling of "Alternate".
+var fabLanguageLabel = regexp.MustCompile(`\s*\([A-Za-z]+ Alternat(?:e|ive) Art\)`)
+
+// fabForeignName drops the label a printing in another language carries in
+// its name, which the language already says.
+func fabForeignName(cardName string) string {
+	return strings.TrimSpace(fabLanguageLabel.ReplaceAllString(cardName, ""))
+}
+
 // preprocessDetails turns a row of the games priced through the generic item
 // table into the matcher's input: the name and edition as listed, the Number
 // column as the variation, and the Details wording read for what tells the
@@ -178,7 +188,7 @@ func fabListing(cardName, number string) (string, string) {
 // the same wording flips between "1st Edition" and "Unlimited" row by row.
 func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details string) (*mtgmatcher.InputCard, error) {
 	treatment, run, language := parseDetails(details)
-	if language != "" && language != "English" {
+	if language != "" && language != "English" && game != mtgmatcher.GameFleshAndBlood {
 		return nil, errForeignListing
 	}
 
@@ -293,6 +303,11 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 			Finish:    finish,
 		}, nil
 	case mtgmatcher.GameFleshAndBlood:
+		if language == "English" {
+			language = ""
+		} else if language != "" {
+			cardName = fabForeignName(cardName)
+		}
 		cardName, number = fabListing(cardName, number)
 		// The datastore crosses the run with the treatment, so the two
 		// runs of a card are two printings: "1st Edition Cold Foil". The
@@ -318,6 +333,7 @@ func preprocessDetails(game mtgmatcher.Game, cardName, edition, number, details 
 			Variation: number,
 			Finish:    finish,
 			Foil:      strings.Contains(treatment, "Foil"),
+			Language:  language,
 		}, nil
 	case mtgmatcher.GameYuGiOh:
 		return &mtgmatcher.InputCard{
