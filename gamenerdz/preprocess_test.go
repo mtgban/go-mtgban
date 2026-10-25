@@ -733,8 +733,8 @@ func TestResolveProductPokemonIDNumberConflict(t *testing.T) {
 }
 
 // TestResolveProductMagicSkips pins the listings that name no printing: a
-// letterless product beside the lettered ones the set prints. The lettered
-// sibling still lands.
+// letterless product beside the lettered ones the set prints, and a storefront
+// id known to sell a printing nobody made. The lettered sibling still lands.
 func TestResolveProductMagicSkips(t *testing.T) {
 	b := realDatastore(t)
 	tests := []struct {
@@ -748,6 +748,7 @@ func TestResolveProductMagicSkips(t *testing.T) {
 		{"bg5oG1xUUE", "Very Cryptic Command (UST-049) - Unstable Foil", "ust", "Unstable", "foil", false},
 		{"xa36fGO5Kh", "Swinging Ship (UNF-231) - Unfinity Foil", "unf", "Unfinity", "foil", false},
 		{"Yhb4Bmw66A", "Very Cryptic Command (UST-49F) - Unstable Foil", "ust", "Unstable", "foil", true},
+		{"gNj4crD7UK", "Plains (0267) (WOE) (LIST-0267) - The List", "plst", "The List", "nonfoil", false},
 	}
 	for _, tt := range tests {
 		gn, err := NewScraper(b)

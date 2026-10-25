@@ -241,6 +241,25 @@ var staleTCGIDs = map[int64]int64{
 	638819: 638804,
 }
 
+// unmadeProducts are the storefront ids of listings for a printing that was
+// never made or cannot be sold apart: The List's Plains 0267, Chainer's and
+// Clickslither's promos no set printed, Brisela's meld back face, a nonfoil
+// Dragon's Hoard WPN promo (made only in foil, which sells under its own
+// id), a Gengar and a Rayquaza cosmos holo TCGplayer has no product for, and
+// Fairy Energy from a starter set whose TCGplayer product was deleted. Keyed
+// by id, one id per finish, so that a revised display name does not bring
+// them back.
+var unmadeProducts = map[string]bool{
+	"gNj4crD7UK": true,
+	"OqViCLFgBL": true,
+	"5uNFKdvViT": true,
+	"7PgrDjdjkb": true,
+	"dv1eIMuCGC": true,
+	"vYLJJDFzKh": true,
+	"jBGWXInwmy": true,
+	"KxeSHdeeUG": true,
+}
+
 // resolveProduct names the printing a product is. The retail feed carries
 // the catalog's own TCGplayer id for nearly every Magic product, and it
 // answers first: the display name is the storefront's own wording, and where
@@ -253,6 +272,9 @@ var staleTCGIDs = map[int64]int64{
 // against. An empty id under a nil error is a product the catalog does not
 // carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
+	if unmadeProducts[product.ID] {
+		return "", nil
+	}
 	etched := gn.backend.Game == mtgmatcher.GameMagic && saysEtched(product)
 	tcgID := product.ProductData.TCGProductID
 	if mode == modeRetail {
