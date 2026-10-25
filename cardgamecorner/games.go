@@ -124,8 +124,49 @@ func vendorName(game mtgmatcher.Game, name string) string {
 }
 
 // deltaSpeciesRe matches the words a Delta Species name carries after its
-// Pokemon, which may be cut short and may be followed by an attack.
+// Pokemon, spelled with a "d" for the δ, which may be cut short and may be
+// followed by an attack.
 var deltaSpeciesRe = regexp.MustCompile(` d Delta Species?`)
+
+// nidoranSexes spells the sex of a Nidoran the way the catalog does, with a
+// letter, where the store writes a word or an HTML entity.
+var nidoranSexes = strings.NewReplacer(
+	"Nidoran &female;", "Nidoran F",
+	"Nidoran female", "Nidoran F",
+	"Nidoran ♀", "Nidoran F",
+	"Nidoran &male;", "Nidoran M",
+	"Nidoran male", "Nidoran M",
+	"Nidoran ♂", "Nidoran M",
+)
+
+// energyLetters are the letters the store brackets in the name of a basic
+// energy, which the catalog spells out.
+var energyLetters = strings.NewReplacer("[F]", "Fighting", "[W]", "Water")
+
+// storeEnergyNumberRe matches the number the store gives a basic energy
+// the catalog does not number.
+var storeEnergyNumberRe = regexp.MustCompile(`^E[0-9]{3}$`)
+
+// pokemonName reads the name of a Pokemon listing, whose wording the store
+// spells its own way.
+func pokemonName(card *Card) string {
+	name := deltaSpeciesRe.ReplaceAllString(strings.TrimSpace(card.Name), "")
+	if strings.HasSuffix(name, " Energy") {
+		name = energyLetters.Replace(name)
+	}
+
+	// A "?" stands for the symbol of the sex, which the original name may
+	// still carry
+	if strings.Contains(name, "Nidoran ?") {
+		spelled := nidoranSexes.Replace(card.OrigName)
+		for _, sex := range []string{"Nidoran F", "Nidoran M"} {
+			if strings.Contains(spelled, sex) {
+				name = strings.Replace(name, "Nidoran ?", sex, 1)
+			}
+		}
+	}
+	return nidoranSexes.Replace(name)
+}
 
 // riftboundVersionRe matches the "(V.2 - Showcase)" a Riftbound name ends in,
 // which the number already says: a showcase is "193a" beside the rare's
@@ -254,13 +295,13 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 	case mtgmatcher.GameRiftbound:
 		name = riftboundVersionRe.ReplaceAllString(name, "")
 	case mtgmatcher.GamePokemon:
-		// The storefront spells the δ of a Delta Species card as a "d"
-		// before the words it stands for, which the catalog files as the
-		// variant of the plain name instead
-		name = deltaSpeciesRe.ReplaceAllString(strings.TrimSpace(name), "")
+		name = pokemonName(card)
 		prefix, found := promoNumberPrefixes[card.Edition]
 		if found && !strings.HasPrefix(number, prefix) {
 			number = prefix + number
+		}
+		if strings.HasSuffix(name, " Energy") && storeEnergyNumberRe.MatchString(number) {
+			number = ""
 		}
 	}
 	return &mtgmatcher.InputCard{
