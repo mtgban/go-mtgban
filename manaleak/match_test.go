@@ -3,6 +3,7 @@ package manaleak
 import (
 	"errors"
 	"os"
+	"strconv"
 	"sync"
 	"testing"
 
@@ -251,5 +252,30 @@ func TestBuylistRatioBelowNM(t *testing.T) {
 	}
 	if len(ml.inventory) != 1 {
 		t.Errorf("inventory holds %d cards, want 1", len(ml.inventory))
+	}
+}
+
+// TestListedNMKeepsTheCheapest pins the buylist's reference price to the
+// cheapest listing of a card, whichever product page answered first.
+func TestListedNMKeepsTheCheapest(t *testing.T) {
+	b := realDatastore(t)
+	ml := NewScraper(b)
+	ml.rate = 1
+
+	card := MLProduct{Name: "Bruna, The Fading Light", TCGProductID: "119686", AmbiguousID: true}
+	for i, price := range []float64{12, 10, 11} {
+		retail := card
+		retail.ProductID = strconv.Itoa(i)
+		retail.Price = price
+		retail.Grades = []MLGrade{{Name: "Near Mint", Price: price, Quantity: 1}}
+		ml.processProduct(modeRetail, retail)
+	}
+	if len(ml.listedNM) != 1 {
+		t.Fatalf("listedNM holds %v, want one card", ml.listedNM)
+	}
+	for id, price := range ml.listedNM {
+		if price != 10 {
+			t.Errorf("listedNM[%s] = %v, want 10", id, price)
+		}
 	}
 }
