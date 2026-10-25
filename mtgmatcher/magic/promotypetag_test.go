@@ -59,3 +59,26 @@ func promoTypeElementFor(t *testing.T, promoType string) promoTypeElement {
 	}
 	return promoTypeElements[i]
 }
+
+// A facet foil listing lands on the facet foil printing, not on the plain
+// borderless foil at its own number.
+func TestFacetFoilMatch(t *testing.T) {
+	realDatastore(t)
+	b := testBackend
+
+	for _, variation := range []string{"Borderless Facet Foil", "Facet Foil"} {
+		in := &mtgmatcher.InputCard{Name: "Enlightened Confidant", Edition: "Reality Fracture", Variation: variation, Foil: true}
+		id, err := b.Match(in)
+		if err != nil {
+			t.Errorf("%q: unexpected error: %v", variation, err)
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.SetCode != "FRA" || co.Number != "449" {
+			t.Errorf("%q: landed on %s %s, want FRA 449", variation, co.SetCode, co.Number)
+		}
+	}
+}
