@@ -271,8 +271,8 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 		}
 	}
 
-	printing, found := shelfPrintings[[2]string{edition, cardName}]
-	if found && variation == "" {
+	printing, found := shelfPrintings[[3]string{edition, cardName, variation}]
+	if found {
 		edition, variation = printing[0], printing[1]
 	}
 

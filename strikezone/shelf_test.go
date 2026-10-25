@@ -59,6 +59,9 @@ func TestShelfCards(t *testing.T) {
 		{"Samut, Hazorer's Champion", "Reality Fracture", "Near Mint Normal English", "FRA", "251"},
 		{"Samut, Hazorer's Champion (Borderless)", "Reality Fracture", "Near Mint Foil English", "FRA", "311"},
 		{"Assassin s Trophy", "Secret Lair", "Near Mint Normal English", "SLD", "139"},
+		{"The One Ring (Borderless)", "Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Near Mint Foil English", "LTR", "451"},
+		{"The One Ring (Borderless Poster)", "Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Near Mint Foil English", "LTR", "748"},
+		{"The One Ring (Borderless)", "The Hobbit: Eternal-Legal", "Near Mint Normal English", "HOC", "44"},
 		{"Vampiric Tutor", "Promos: Judge", "Near Mint Foil English", "G00", ""},
 	} {
 		card, err := preprocess(b, tt.name, tt.edition, tt.notes)
