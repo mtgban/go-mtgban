@@ -20,6 +20,7 @@ func TestRiftboundEpithetOnlyChampions(t *testing.T) {
 
 	for _, tt := range []struct {
 		sku, name, number string
+		tcgID             string
 		wantNumber        string
 	}{
 		{sku: "SGL-RIFT-UNL-195-ENF", name: "Ivern - Green Father", number: "195", wantNumber: "195"},
@@ -28,12 +29,16 @@ func TestRiftboundEpithetOnlyChampions(t *testing.T) {
 		{sku: "SGL-RIFT-UNL-189-ENF", name: "Lillia - Bashful Bloom", number: "189", wantNumber: "189"},
 		{sku: "SGL-RIFT-UNL-230-ENA", name: "Lillia - Bashful Bloom", number: "230", wantNumber: "230"},
 		{sku: "SGL-RIFT-UNL-230s-ENA", name: "Lillia - Bashful Bloom", number: "230s", wantNumber: "230*"},
+		// The signature carries the overnumbered card's id, and an id from
+		// another set's #233 is not this set's
+		{sku: "SGL-RIFT-UNL-233s-ENA", name: "Ivern - Green Father", number: "233s", tcgID: "684503", wantNumber: "233*"},
+		{sku: "SGL-RIFT-UNL-233-ENA", name: "Ivern - Green Father", number: "233", tcgID: "653027", wantNumber: "233"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
 			p := CatalogProduct{
 				SKU: tt.sku, Name: tt.name, Game: "Riftbound", Set: "Unleashed",
 				Finish: "Foil", FinishGroup: "Foil", CollectorNumber: tt.number,
-				ProductType: ProductTypeSingles,
+				ProductType: ProductTypeSingles, TCGPlayerID: tt.tcgID,
 			}
 			id, err := resolveProduct(b, GameRiftbound, p)
 			if err != nil {
