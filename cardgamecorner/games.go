@@ -231,6 +231,12 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		name, rainbow = strings.CutSuffix(name, " (Rainbow Foil)")
 		name = strings.TrimSuffix(name, " (Normal)")
 		foil = foil || rainbow
+		// A double-sided card is numbered "001/002" with its faces in
+		// ascending order, which the catalog does not keep, and both
+		// faces are in the name
+		if strings.Contains(name, " // ") {
+			number = ""
+		}
 	case mtgmatcher.GameYuGiOh:
 		// A number holds the card at several rarities, which the name
 		// spells only from its second version on
