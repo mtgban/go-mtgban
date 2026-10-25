@@ -54,6 +54,14 @@ func TestPreprocessBuylistMagic(t *testing.T) {
 			},
 			wantSet: "KHM", wantNum: "401",
 		},
+		{
+			desc: "a non-stamped prerelease row keeps the booster printing",
+			card: CSIPriceEntry{
+				PID: "362367", Name: "Delighted Halfling", ItemSet: "Prerelease Promo", Number: "0402",
+				Notes: "Non-Stamped Prerelease Promo", Image: "LTR0402", IsFoil: 1,
+			},
+			wantSet: "LTR", wantNum: "402",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in, err := PreprocessBuylist(b, tt.card)
