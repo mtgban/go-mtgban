@@ -64,13 +64,13 @@ func TestArbitReportsTheTrade(t *testing.T) {
 	if got.AbsoluteDifference != 15 {
 		t.Errorf("AbsoluteDifference = %v, want 15", got.AbsoluteDifference)
 	}
-	want := (5.0 / 10.0) * math.Log10(1+50) * math.Sqrt(3)
+	want := (5.0 / 10.0) * math.Log10(1+50) * math.Pow(3, 0.25)
 	if math.Abs(got.Profitability-want) > 1e-9 {
 		t.Errorf("Profitability = %v, want %v", got.Profitability, want)
 	}
 }
 
-// A single copy is not multiplied by the square root of one unit, which would
+// A single copy is not multiplied by the fourth root of one unit, which would
 // be the same number, but the branch is what says so.
 func TestArbitDoesNotScaleASingleCopy(t *testing.T) {
 	b := backendFor(plainCard())

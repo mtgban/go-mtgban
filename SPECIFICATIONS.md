@@ -185,14 +185,14 @@ inventory:
    `WriteBuylistToCSV`) applies for itself when it wants store-credit
    pricing.
 5. Tradable `qty = min(invQty, blQty)` (buylist quantity 0 = unlimited).
-   **Profitability** = `(difference / (sell + k)) · log10(1 + spread) · √qty`,
+   **Profitability** = `(difference / (sell + k)) · log10(1 + spread) · qty^(1/4)`,
    or **0** when spread ≤ 0 (the log is NaN, -Inf or negative there; the
    website's negative modes reach these rows with `MinSpread` -30),
-   where `√qty` is applied only when qty > 1 and `k` is
+   where `qty^(1/4)` is applied only when qty > 1 and `k` is
    `ProfitabilityConstant`, a denominator-stabilizing constant that keeps
    cheap cards from dominating (spec reference value 10, configurable via
-   `ArbitOpts`, library default 0; the website passes 2, or 10 in global
-   mode). Changing the log base only rescales the index by a constant - it is
+   `ArbitOpts`, library default 0; the website passes 10). Changing the
+   log base only rescales the index by a constant - it is
    order-preserving for ranking but shifts the absolute `MinProfitability`
    gate. Enforce `MinProfitability`.
 
