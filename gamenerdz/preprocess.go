@@ -493,8 +493,12 @@ var magicNumberTypos = map[magicTypo]string{
 	{"dft", "Webstrike Elite", "455"}:    "544",
 	{"fin", "Traveling Chocobo", "511B"}: "551b",
 	{"fin", "Traveling Chocobo", "511D"}: "551d",
+	{"fmb1", "Knowledge Pool", "103"}:    "MBS-111",
 	{"inr", "Pack Guardian", "316"}:      "416",
 	{"spg", "Galvanic Blast", "010"}:     "100",
+	{"wpn", "Orb of Dragonkind", "001"}:  "J1",
+	{"wpn", "Orb of Dragonkind", "002"}:  "J2",
+	{"wpn", "Orb of Dragonkind", "003"}:  "J3",
 }
 
 // magicName reads the card's name off a display name. The name stops at the
@@ -671,9 +675,10 @@ func preprocessLorcana(product GNProduct) (*mtgmatcher.InputCard, error) {
 }
 
 // pokemonNumber is a collector number as this game's display names write
-// them: "63", "65/130", "SWSH197", and the lettered numbers the alphabet
-// sets carry - Unown is "Z/115" and the Alph Lithographs are "ONE/123".
-var pokemonNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?(?:/[0-9]+)?|[A-Z]+/[0-9]+)$`)
+// them: "63", "65/130", "SWSH197", the lettered numbers the alphabet sets
+// carry - Unown is "Z/115" and the Alph Lithographs are "ONE/123" - and the
+// promo numbers written over their series, "381/SM-P".
+var pokemonNumber = regexp.MustCompile(`^(?:[A-Z]{0,5}[0-9]+[a-zA-Z]?(?:/[0-9]+)?|[A-Z]+/[0-9]+|[0-9]+/[A-Z]+-P)$`)
 
 // pokemonSizedNumber is the half of those written over the set's size,
 // "65/130", "Z/115", "?/115" or "RC10/RC25". Only a card's collector number is written that way,
