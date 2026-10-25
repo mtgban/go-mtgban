@@ -236,19 +236,21 @@ var card2setTable = map[string]string{
 	"Ponder (Future Sight) (002)":           "PF25",
 }
 
-// shelfPrintings are the cards a shelf lists bare that another printing of
-// the same name shares, keyed by shelf and name, with the set and number of
-// the one the shelf holds. A Secret Lair Commander deck's decklist says which
-// reprint it contains, and the Lord of the Rings shelf holds the plain Sauron
-// beside the Pro Tour promo.
-var shelfPrintings = map[[2]string][2]string{
-	{"Secret Lair Commander: From Cute to Brute", "Pongify"}:           {"PLST", "PLC-44"},
-	{"Secret Lair Commander: From Cute to Brute", "Rhys the Redeemed"}: {"PLST", "SHM-237"},
-	{"Secret Lair Commander: Heads I Win", "Arcane Signet"}:            {"PLST", "C21-234"},
-	{"Secret Lair Commander: Heads I Win", "Reshape"}:                  {"PLST", "2XM-64"},
-	{"Secret Lair Commander: Heads I Win", "Ponder"}:                   {"PLST", "C21-125"},
+// shelfPrintings are the cards a shelf lists that another printing of the
+// same name shares, keyed by shelf, name and the variation the listing
+// leaves after the name is split, with the set and number of the one the
+// shelf holds. A Secret Lair Commander deck's decklist says which reprint it
+// contains, and the Lord of the Rings shelf holds the plain Sauron beside the
+// Pro Tour promo and the plain borderless One Ring beside the poster one.
+var shelfPrintings = map[[3]string][2]string{
+	{"Secret Lair Commander: From Cute to Brute", "Pongify", ""}:           {"PLST", "PLC-44"},
+	{"Secret Lair Commander: From Cute to Brute", "Rhys the Redeemed", ""}: {"PLST", "SHM-237"},
+	{"Secret Lair Commander: Heads I Win", "Arcane Signet", ""}:            {"PLST", "C21-234"},
+	{"Secret Lair Commander: Heads I Win", "Ponder", ""}:                   {"PLST", "C21-125"},
+	{"Secret Lair Commander: Heads I Win", "Reshape", ""}:                  {"PLST", "2XM-64"},
 
-	{"Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Sauron, the Dark Lord"}: {"LTR", "224"},
+	{"Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Sauron, the Dark Lord", ""}:  {"LTR", "224"},
+	{"Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "The One Ring", "Borderless"}: {"LTR", "451"},
 }
 
 // These cards don't have any variant, we know they are Promotional Cards,
