@@ -328,6 +328,17 @@ func TestPreprocess(t *testing.T) {
 			name: "Energy Removal 2", edition: "Ruby and Sapphire", variation: "80/109",
 		},
 		{
+			// A promo number is written over its series, not a set size.
+			game: mtgmatcher.GamePokemon,
+			product: GNProduct{
+				DisplayName:    "Clefairy - 381/SM-P (Dream League)  - SM Promos Holofoil",
+				SelectedFinish: "Holofoil",
+				ProductData:    GNProductData{SetName: "SM Promos"},
+			},
+			name: "Clefairy", edition: "SM Promos", variation: "381/SM-P (Dream League)",
+			finish: "Holofoil",
+		},
+		{
 			// The catalog's own number repeated behind the printed one, and
 			// the wording between them. The name ends at the printed number
 			// whether or not a dash of its own opens the description.
