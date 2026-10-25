@@ -1,6 +1,7 @@
 package cardgamecorner
 
 import (
+	"cmp"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -423,6 +424,7 @@ func TestBasicImageNumber(t *testing.T) {
 		"817906":  "",
 		"571283":  "",
 		"10E123":  "123",
+		"C13345":  "345",
 		"noimage": "",
 	} {
 		got := basicImageNumber(extra)
@@ -432,24 +434,58 @@ func TestBasicImageNumber(t *testing.T) {
 	}
 }
 
+// A basic land's image is sometimes another SKU's picture, so the number its
+// SKU spells wins where the two differ, and is left alone where they agree or
+// the SKU names none.
+func TestBasicSKUNumber(t *testing.T) {
+	tests := []struct {
+		name, edition, variation, extra, sku, want string
+	}{
+		{"Island", "Invasion", "335", "IV335", "IV337", "337"},
+		{"Plains", "Lorwyn", "283", "LO283", "LO282", "282"},
+		{"Plains", "Battle for Zendikar", "250", "BFZ250", "BFZ250", "250"},
+		{"Plains", "Battle for Zendikar", "250", "BFZ250", "noimage", "250"},
+		{"Plains", "Battle for Zendikar", "Version 1", "BFZ250", "BFZ251", "Version 1"},
+		{"Plains", "Battle for Zendikar", "", "noimage", "BFZ251", ""},
+		{"Lightning Bolt", "Invasion", "335", "IV335", "IV337", "335"},
+		{"Plains", "Foreign Black Border", "293", "FBB293", "FBB294", "293"},
+		{"Swamp", "Collector's Edition", "295", "CED295", "CED296", "295"},
+	}
+
+	for _, tt := range tests {
+		got := basicSKUNumber(tt.name, tt.edition, tt.variation, tt.extra, tt.sku)
+		if got != tt.want {
+			t.Errorf("basicSKUNumber(%q, %q, %q, %q, %q) = %q, want %q", tt.name, tt.edition, tt.variation, tt.extra, tt.sku, got, tt.want)
+		}
+	}
+}
+
 // A basic the store tags only by its own version index is placed by the number
-// its image names, and only where the landed card carries that number.
+// its SKU spells, then the one its image names, and only where the landed card
+// carries that number. Editions whose SKUs count in the store's own order skip
+// the SKU.
 func TestMatchBasicByImage(t *testing.T) {
 	b := realDatastore(t)
-	input := mtgmatcher.InputCard{Name: "Plains", Edition: "Battle for Zendikar", Variation: "Version 1"}
 	tests := []struct {
-		desc  string
-		image string
-		want  string
+		desc    string
+		image   string
+		sku     string
+		edition string
+		want    string
 	}{
-		{"the image number places the land", "/prodotti/1/1050/BFZ250.jpg", "250"},
-		{"a number the land was never printed with is refused", "/prodotti/1/1050/BFZ300.jpg", ""},
-		{"an image naming no number is refused", "/prodotti/1/1050/noimage.jpg", ""},
+		{"the image number places the land", "/prodotti/1/1050/BFZ250.jpg", "", "", "250"},
+		{"a number the land was never printed with is refused", "/prodotti/1/1050/BFZ300.jpg", "", "", ""},
+		{"an image naming no number is refused", "/prodotti/1/1050/noimage.jpg", "", "", ""},
+		{"the SKU number places the land when the image names none", "/prodotti/1/1050/noimage.jpg", "BFZ250", "", "250"},
+		{"the SKU number places the land over a wrong image number", "/prodotti/1/1050/BFZ300.jpg", "BFZ0250", "", "250"},
+		{"a SKU number the land was never printed with is refused", "/prodotti/1/1050/noimage.jpg", "BFZ300", "", ""},
+		{"a store-order edition skips the SKU number", "/prodotti/1/1050/noimage.jpg", "FBB293", "Foreign Black Border", ""},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			id, found := matchBasicByImage(b, &Card{Extra: tt.image}, input)
+			input := mtgmatcher.InputCard{Name: "Plains", Edition: cmp.Or(tt.edition, "Battle for Zendikar"), Variation: "Version 1"}
+			id, found := matchBasicByImage(b, &Card{Extra: tt.image, SKU: tt.sku}, input)
 			if tt.want == "" {
 				if found {
 					co, _ := b.GetUUID(id)

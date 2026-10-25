@@ -1,6 +1,7 @@
 package cardgamecorner
 
 import (
+	"cmp"
 	"errors"
 	"path"
 	"regexp"
@@ -241,6 +242,8 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 	if found {
 		edition = lutName
 	}
+
+	variation = basicSKUNumber(cardName, edition, variation, extra, card.SKU)
 
 	if id == "" {
 		id = imageProductID(b, card.Edition, card.Extra, cardName, edition, variation, isFoil)
@@ -730,8 +733,8 @@ func internalPreprocess(b *mtgmatcher.Backend, cardName, edition, variation, ext
 	return cardName, edition, variation
 }
 
-// basicImageNumber returns the collector number a basic land's image name
-// spells after its set code, which is 2 to 4 characters long and holds a
+// basicImageNumber returns the collector number a basic land's image name or
+// SKU spells after its set code, which is 2 to 4 characters long and holds a
 // letter, so a Cardmarket id names none. A digit in the fourth place opens
 // the number of a shorter code, so no 4-character code is read there.
 func basicImageNumber(extra string) string {
@@ -751,25 +754,51 @@ func basicImageNumber(extra string) string {
 	return ""
 }
 
+// storeOrderBasics lists the editions whose basic land SKUs count in the
+// store's own order, not in collector order, so a SKU number is not trusted.
+var storeOrderBasics = []string{"Collector's Edition", "Foreign Black Border"}
+
+// basicSKUNumber answers the number a basic land is placed by. The image of a
+// land is sometimes another SKU's picture, so where the SKU spells a number of
+// its own it replaces the one the image gave.
+func basicSKUNumber(cardName, edition, variation, extra, sku string) string {
+	if !magic.IsBasicLand(cardName) || variation == "" || variation != basicImageNumber(extra) {
+		return variation
+	}
+	if slices.Contains(storeOrderBasics, edition) {
+		return variation
+	}
+	return cmp.Or(basicImageNumber(sku), variation)
+}
+
 // matchBasicByImage retries a basic land the wording could not place with the
-// number its image names. The store's version tag counts its own index, which
-// is not collector order, so the number is trusted only where the landed card
-// confirms it. input is a copy taken before the first Match, which mutates it.
+// number its SKU spells after the set code, then with the one its image names.
+// The store's version tag counts its own index, which is not collector order,
+// so a number is trusted only where the landed card confirms it. The store's
+// Number field is not read: several SKUs of one land share it. input is a copy
+// taken before the first Match, which mutates it.
 func matchBasicByImage(b *mtgmatcher.Backend, card *Card, input mtgmatcher.InputCard) (string, bool) {
-	number := basicImageNumber(strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra)))
-	if number == "" {
-		return "", false
+	imageNumber := basicImageNumber(strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra)))
+	skuNumber := basicImageNumber(card.SKU)
+	if slices.Contains(storeOrderBasics, input.Edition) {
+		skuNumber = ""
 	}
-	input.Variation = number
-	cardID, err := b.Match(&input)
-	if err != nil {
-		return "", false
+	for _, number := range []string{skuNumber, imageNumber} {
+		if number == "" {
+			continue
+		}
+		attempt := input
+		attempt.Variation = number
+		cardID, err := b.Match(&attempt)
+		if err != nil {
+			continue
+		}
+		co, err := b.GetUUID(cardID)
+		if err == nil && (co.Number == number || co.PlainNumber == number) {
+			return cardID, true
+		}
 	}
-	co, err := b.GetUUID(cardID)
-	if err != nil || (co.Number != number && co.PlainNumber != number) {
-		return "", false
-	}
-	return cardID, true
+	return "", false
 }
 
 // genericVersionRe matches the store's bare "Version N" tag, which names no
