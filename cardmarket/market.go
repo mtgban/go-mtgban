@@ -746,6 +746,9 @@ func acceptArticle(flags map[string]bool, article cm.Article) (mtgban.Condition,
 	if excludedCountries[article.Seller.Address.Country] {
 		return "", false
 	}
+	if mtgmatcher.Contains(article.Comments, "ink") {
+		return "", false
+	}
 	for param, want := range flags {
 		if articleFlagValue(param, &article) != want {
 			return "", false
