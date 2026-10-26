@@ -35,7 +35,7 @@ func TestSlabCondition(t *testing.T) {
 		{[]string{"Graded", "BGS", "BGS 9"}, "SP", false, false, mtgban.NM, ""},
 		// Less than 8: ABU's condition, held under the grader's 7.
 		{[]string{"Graded", "BGS", "BGS Less than 8"}, "NM", false, false, mtgban.SP, ""},
-		{[]string{"Graded", "BGS", "BGS Less than 8"}, "HP", false, false, mtgban.MP, ""},
+		{[]string{"Graded", "BGS", "BGS Less than 8"}, "HP", false, false, mtgban.HP, ""},
 		{[]string{"Graded", "CGC", "CGC Less than 8"}, "PLD", false, false, mtgban.SP, ""},
 		{[]string{"Graded", "PSA", "PSA Less than 8"}, "NM", false, false, mtgban.NM, ""},
 		{[]string{"Graded", "PSA", "PSA Less than 8"}, "PLD", false, false, mtgban.SP, ""},
@@ -43,7 +43,7 @@ func TestSlabCondition(t *testing.T) {
 		// No grader: ABU's condition alone.
 		{[]string{"Graded"}, "MINT", false, false, mtgban.NM, ""},
 		{[]string{"Graded"}, "PLD", false, false, mtgban.SP, ""},
-		{[]string{"Graded"}, "HP", false, false, mtgban.MP, ""},
+		{[]string{"Graded"}, "HP", false, false, mtgban.HP, ""},
 		{[]string{"Graded"}, "", false, false, "", ""},
 		{[]string{"Graded", "BGS", "BGS Quad 10"}, "MINT", false, false, "", "BGS Quad 10"},
 		// An old or foil card reads its condition a grade stricter, as a

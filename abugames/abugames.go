@@ -273,7 +273,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 
 // abuRetailCondition maps ABU's condition to our grade for a sale listing.
 // A group with a MINT copy on sale is a four-step scale, NM read as SP;
-// otherwise PLD and HP read a grade up unless lowerGrade or foil is set.
+// otherwise PLD reads a grade up unless lowerGrade or foil is set. HP is HP.
 func abuRetailCondition(condition string, hasMintGrade4Retail, lowerGrade, foil bool) (mtgban.Condition, error) {
 	switch condition {
 	case "MINT":
@@ -289,9 +289,6 @@ func abuRetailCondition(condition string, hasMintGrade4Retail, lowerGrade, foil 
 		}
 		return mtgban.MP, nil
 	case "HP":
-		if !lowerGrade && !hasMintGrade4Retail && !foil {
-			return mtgban.MP, nil
-		}
 		return mtgban.HP, nil
 	default:
 		return "", fmt.Errorf("unsupported condition %q", condition)
