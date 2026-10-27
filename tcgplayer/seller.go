@@ -144,9 +144,10 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				continue
 			}
 
+			// The product is filed at one printing and sold in every language
 			if listing.Language != "English" {
-				co, _ := tcg.backend.GetUUID(cardID)
-				if listing.Language != co.Language {
+				cardID, err = tcg.backend.MatchIDLanguage(cardID, listing.Language)
+				if err != nil {
 					continue
 				}
 			}
