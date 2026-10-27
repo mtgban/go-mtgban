@@ -58,3 +58,26 @@ func TestLanguageCopiesUnfiltered(t *testing.T) {
 		t.Errorf("language copies = %v, want the Japanese one alone", copies)
 	}
 }
+
+// An English Legends or The Dark product resolves to its English printing:
+// the Italian copies are Cardmarket's own Legends Italian and The Dark
+// Italian products, and carry none of the English ids.
+func TestFallbackKeepsEnglishBesideItalianCopies(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, product := range []*cm.Product{
+		{IDProduct: 7171, Name: "Moat", ExpansionName: "Legends", Number: "28"},
+		{IDProduct: 7009, Name: "Vampire Bats", ExpansionName: "Legends", Number: "125"},
+		{IDProduct: 7312, Name: "Merfolk Assassin", ExpansionName: "The Dark", Number: "32"},
+	} {
+		cardID, _ := Fallback(b, product)
+		co, err := b.GetUUID(cardID)
+		if err != nil {
+			t.Errorf("%s (%d) did not resolve: %v", product.Name, product.IDProduct, err)
+			continue
+		}
+		if co.Language != "English" || co.Number != product.Number {
+			t.Errorf("%s (%d) resolved to %s %s #%s", product.Name, product.IDProduct, co.Language, co.SetCode, co.Number)
+		}
+	}
+}

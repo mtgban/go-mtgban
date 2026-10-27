@@ -145,7 +145,7 @@ func crossSetProductIDs(b *mtgmatcher.Backend) map[string][]string {
 		for _, card := range set.Cards {
 			for _, key := range [...]string{"tcgplayerProductId", "tcgplayerEtchedProductId"} {
 				id, found := card.Identifiers[key]
-				if !found {
+				if !found || soldAsCopy(b, id, card.Language) {
 					continue
 				}
 				if setsByID[id] == nil {
@@ -167,6 +167,13 @@ func crossSetProductIDs(b *mtgmatcher.Backend) map[string][]string {
 		sort.Strings(collisions[id])
 	}
 	return collisions
+}
+
+// soldAsCopy reports whether a printing in language is a copy sold under id,
+// a product the datastore files at its original in another language.
+func soldAsCopy(b *mtgmatcher.Backend, id, language string) bool {
+	original, err := b.GetUUID(b.ConvertID(mtgmatcher.IDSpaceTCGplayer, id))
+	return err == nil && original.Language != language
 }
 
 // starTwin returns the star printing that is the other finish of the card's
@@ -224,6 +231,9 @@ func productPrintings(b *mtgmatcher.Backend, collisions map[string][]string) map
 			}
 			id := co.Identifiers["tcgplayerProductId"]
 			etchedID := co.Identifiers["tcgplayerEtchedProductId"]
+			if soldAsCopy(b, id, co.Language) || soldAsCopy(b, etchedID, co.Language) {
+				continue
+			}
 			if etchedID == "" {
 				etchedID = id
 			}
