@@ -28,8 +28,14 @@ func (b *Backend) ValidateID(in InputCard, options IDValidationOptions) (string,
 	if requestedLanguage != "" && in.Language == "" {
 		in.Language = "English"
 	}
+	// An id names a card sold in every language: its printing in the one
+	// asked for answers, where the datastore loads it
 	if !matchesLanguage(co.Language, in.Language) {
-		return "", ErrUnsupported
+		id, err := b.MatchIDLanguage(in.ID, in.Language)
+		if err != nil {
+			return "", ErrUnsupported
+		}
+		in.ID = id
 	}
 	finish := in.Finish
 	if finish == "" {

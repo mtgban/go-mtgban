@@ -359,6 +359,26 @@ func (b *Backend) MatchID(inputID string, finishes ...bool) (string, error) {
 	return outID, nil
 }
 
+// MatchIDLanguage returns the printing of the card behind uuid in language,
+// in the same finish: the card itself when it is in that language, or else
+// the one its foreignData names for it. ErrCardUnknownID answers a language
+// the datastore loads no printing of the card in.
+func (b *Backend) MatchIDLanguage(uuid, language string) (string, error) {
+	co, err := b.GetUUID(uuid)
+	if err != nil {
+		return "", err
+	}
+	if co.Language == language {
+		return co.UUID, nil
+	}
+	for _, fd := range co.ForeignData {
+		if fd.Language == language {
+			return b.MatchID(fd.UUID, co.Foil, co.Etched)
+		}
+	}
+	return "", ErrCardUnknownID
+}
+
 // Match resolves a storefront's description of a card to the uuid of the one
 // printing it names, reporting ErrAliasing when the description fits more than
 // one. The input is normalized in place, so a caller can see what the matcher
@@ -390,9 +410,18 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 			co := b.UUIDs[outID]
 			b.Logf("Id found: %v", b.describe(inCard))
 
+			// A product id names a card sold in every language, which the
+			// listing's language narrows to its printing where one is loaded
+			if inCard.Language != "" && !matchesLanguage(co.Language, inCard.Language) {
+				id, err := b.MatchIDLanguage(outID, inCard.Language)
+				if err == nil {
+					outID, co = id, b.UUIDs[id]
+				}
+			}
+
 			// Validation step
 			switch {
-			// Only the default language is supported by id
+			// No printing of the id is loaded in the requested language
 			case inCard.Language != "" && !matchesLanguage(co.Language, inCard.Language):
 				b.Log("Language validation failed, resetting card")
 				inCard.Name = co.Name
