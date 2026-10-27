@@ -305,26 +305,11 @@ func printingsIn(b *mtgmatcher.Backend, uuid string, languages []string) []strin
 	if len(languages) == 0 {
 		return []string{uuid}
 	}
-	co, err := b.GetUUID(uuid)
-	if err != nil {
-		return []string{uuid}
-	}
-
 	var printings []string
 	for _, language := range languages {
-		if co.Language == language {
-			printings = append(printings, uuid)
-			continue
-		}
-		for _, fd := range co.ForeignData {
-			if fd.Language != language {
-				continue
-			}
-			id, err := b.MatchID(fd.UUID, co.Foil, co.Etched)
-			if err == nil {
-				printings = append(printings, id)
-			}
-			break
+		id, err := b.MatchIDLanguage(uuid, language)
+		if err == nil {
+			printings = append(printings, id)
 		}
 	}
 	if len(printings) == 0 {
