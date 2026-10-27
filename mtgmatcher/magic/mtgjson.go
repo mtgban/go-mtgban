@@ -1349,6 +1349,14 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			if !found {
 				continue
 			}
+			// A language copy files only the ids mtgjson gave it: TCGplayer
+			// sells it under the English products, and the other ids it
+			// cloned from the original its mtgjsonId names are the original's
+			original, found := uuids[card.Identifiers["mtgjsonId"]]
+			if found && card.Language != original.Language &&
+				(filing.space == mtgmatcher.IDSpaceTCGplayer || original.Identifiers[filing.tag] == id) {
+				continue
+			}
 			// Skip if already loaded
 			_, found = externalIDs[filing.space][id]
 			if found {
@@ -1823,12 +1831,13 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	dup.Decks = nil
 	dup.Booster = nil
 
-	// Remove store references to avoid duplicates
+	// Cardmarket sells a whole-set copy as an expansion of its own, with its
+	// own products (Legends Italian), so it keeps none of the original's
 	for i := range dup.Cards {
 		altIdentifiers := map[string]string{}
 		for k, v := range dup.Cards[i].Identifiers {
 			switch k {
-			case "tcgplayerProductId", "tcgplayerEtchedProductId", "mcmId", "mcmEtchedId":
+			case "mcmId", "mcmEtchedId":
 				continue
 			}
 			altIdentifiers[k] = v
@@ -1850,6 +1859,7 @@ func mintedSuffix(card Card) string {
 // Duplicate certain cards within the same set according to the language tag
 func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []Card {
 	var duplicates []Card
+	copyOf := map[string]string{}
 
 	if sets[code] == nil {
 		return nil
@@ -1868,6 +1878,12 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
 		dupeCard.Language = langs[tag]
 		dupeCard.Identifiers = maps.Clone(dupeCard.Identifiers)
+		// TCGplayer sells a copy in another language under its original's
+		// products, and one in the original's language under its own
+		if dupeCard.Language == sets[code].Cards[i].Language {
+			delete(dupeCard.Identifiers, "tcgplayerProductId")
+			delete(dupeCard.Identifiers, "tcgplayerEtchedProductId")
+		}
 
 		// A whole-set copy is told apart by its own code, one filed next to
 		// its original only by the tag behind its number
@@ -1885,7 +1901,14 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 			}
 			dupeCard.PrintedName = foreignData.Name
 			dupeCard.PrintedType = foreignData.Type
-			dupeCard.Identifiers["originalScryfallId"] = foreignData.Identifiers["scryfallId"]
+			// mtgjson's ids for this printing replace the original's
+			if id, found := foreignData.Identifiers["scryfallId"]; found {
+				dupeCard.Identifiers["scryfallId"] = id
+				dupeCard.Identifiers["originalScryfallId"] = id
+			}
+			if id, found := foreignData.Identifiers["multiverseId"]; found {
+				dupeCard.Identifiers["multiverseId"] = id
+			}
 			// mtgjson names this printing itself, and knows which products hold it
 			dupeCard.UUID = foreignData.UUID + mintedSuffix(sets[code].Cards[i])
 			if foreignData.SourceProducts != nil {
@@ -1905,7 +1928,19 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 		dupeCard.Images["thumbnail"] = generateImageURL(dupeCard, "small")
 		dupeCard.Images["crop"] = generateImageURL(dupeCard, "art_crop")
 
+		copyOf[mainUUID] = dupeCard.UUID
 		duplicates = append(duplicates, dupeCard)
+	}
+
+	// A copy's variations are its original's in the copy's language, which
+	// is how a finish twin split off the original is found from the copy
+	for i := range duplicates {
+		duplicates[i].Variations = slices.Clone(duplicates[i].Variations)
+		for j, variation := range duplicates[i].Variations {
+			if id, found := copyOf[variation]; found {
+				duplicates[i].Variations[j] = id
+			}
+		}
 	}
 
 	return duplicates
