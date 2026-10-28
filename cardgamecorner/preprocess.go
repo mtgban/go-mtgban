@@ -260,9 +260,10 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 	}, nil
 }
 
-// mcmImageIDRe matches the Cardmarket product id an Extras or Promos shelf's
-// image name carries as its trailing number.
-var mcmImageIDRe = regexp.MustCompile(`[-_/](\d{5,7})(?:-\d+)?\.(?:jpe?g|png)$`)
+// mcmImageIDRe matches the Cardmarket product id an image name carries as its
+// trailing number, on Magic's Extras and Promos shelves and every One Piece
+// one, where the extension is sometimes doubled as ".jpg.png".
+var mcmImageIDRe = regexp.MustCompile(`[-_/](\d{5,7})(?:-\d+)?(?:\.jpe?g)?\.(?:jpe?g|png)$`)
 
 // scryfallImageRe matches the Scryfall id an image name ends with: the whole
 // uuid on older shelves, its first eight digits after the card's slug on newer

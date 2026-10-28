@@ -424,7 +424,7 @@ jobs:
         env:
           ONEPIECE_PATH: "${{ github.workspace }}/${{ needs.cache-onepiece.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/onepiece/... ./vegassingles/... ./coolstuffinc/... ./internal/vocabulary/... -v
+          go test ./mtgmatcher/onepiece/... ./vegassingles/... ./coolstuffinc/... ./cardgamecorner/... ./internal/vocabulary/... -v
 
   test-yugioh:
     needs: cache-yugioh
