@@ -816,13 +816,6 @@ var catalogNames = map[string]string{
 	// strips the rest of SCG's own brace-and-suffix wrapping.
 	"{Dungeon of the Mad Mage Dungeon} // {Lost Mine of the Phandelver Dungeon}": "{Dungeon of the Mad Mage Dungeon} // {Lost Mine of Phandelver Dungeon}",
 
-	// Riftbound's Spiritforged #179: SCG's own catalog drops a letter the
-	// gallery's name carries.
-	"Corina Veraza": "Corinna Veraza",
-	// Vendetta #60: the gallery's own typo ("Crusier"), kept verbatim -
-	// SCG's plainly-spelled "Cruiser" is the one that names no card.
-	"Sky Cruiser": "Sky Crusier",
-
 	// Star Trek #83: SCG's own typo.
 	"Suurok-Class Science Vessek": "Suurok-Class Science Vessel",
 }
