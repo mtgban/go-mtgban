@@ -154,7 +154,13 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 			}
 
 			retry := *theCard
-			cardID, err := cgc.backend.Match(theCard)
+			cardID, byID := "", false
+			if cgc.backend.Game == mtgmatcher.GameOnePiece {
+				cardID, byID = cgc.matchByProductImage(&card, theCard.Foil)
+			}
+			if !byID {
+				cardID, err = cgc.backend.Match(theCard)
+			}
 			// The basic lands carry nothing but the store's own version tag,
 			// so retry them with the number their SKU spells, then the one
 			// their image names, and ignore the ones neither places.
