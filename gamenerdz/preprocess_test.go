@@ -2,6 +2,7 @@ package gamenerdz
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -830,6 +831,54 @@ func TestLetteredOnly(t *testing.T) {
 		got := letteredOnly(b, &mtgmatcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.number})
 		if got != tt.want {
 			t.Errorf("letteredOnly(%s %s %s) = %t, want %t", tt.name, tt.edition, tt.number, got, tt.want)
+		}
+	}
+}
+
+// TestResolveProductRetailLinkedToAnotherCard pins that a retail id naming
+// another card than the display is dropped when the sku's own number is not
+// that card's, and still answers for a misspelled name whose number agrees,
+// a List sku's number being its origin set and number together.
+func TestResolveProductRetailLinkedToAnotherCard(t *testing.T) {
+	b := realDatastore(t)
+	gn, err := NewScraper(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		uuid    string
+		display string
+		sku     string
+		finish  string
+		landed  bool
+	}{
+		{"84952e72-e45d-57dd-8b29-9f2e53949724", "Gruul Guildgate (RNA-249) - Ravnica Allegiance", "MTG-RNA-249-6NUARTU9FH", "foil", false},
+		{"f942bbc8-da13-5983-a60e-5c0f98852d73", "Airbender Lesson (TLA-008) - Avatar: The Last Airbender Foil", "MTG-TLA-008-F-8T1BMOCB1O", "foil", true},
+		{"f71d2683-7f4c-584e-b5b8-dc87440b719c", "Treacherous Terain (LIST-C16-47) - The List", "MTG-PLST-C16-47-AK6D7ICGZV", "nonfoil", true},
+	}
+	for _, tt := range tests {
+		co, err := b.GetUUID(tt.uuid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		tcgID, err := strconv.ParseInt(co.Identifiers["tcgplayerProductId"], 10, 64)
+		if err != nil {
+			t.Fatalf("%s: %v", tt.uuid, err)
+		}
+		product := GNProduct{
+			ID:             tt.sku,
+			DisplayName:    tt.display,
+			SelectedFinish: tt.finish,
+			ProductData:    GNProductData{TCGProductID: tcgID},
+			RetailVariants: []GNRetailVariant{{SKU: tt.sku}},
+		}
+		got, err := gn.resolveProduct(modeRetail, product)
+		if err != nil {
+			t.Errorf("%q: unexpected error %v", tt.display, err)
+			continue
+		}
+		if (got != "") != tt.landed {
+			t.Errorf("%q: got %q; want landed %v", tt.display, got, tt.landed)
 		}
 	}
 }

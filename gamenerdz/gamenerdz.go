@@ -269,8 +269,10 @@ var unmadeProducts = map[string]bool{
 // the same card, so it answers with the id that product carried, where that
 // id names the card the display does. Anything the id does not place is read
 // by its wording, and the retail ids are what that reading is measured
-// against. An empty id under a nil error is a product the catalog does not
-// carry.
+// against. A retail id that names another card than the display does is
+// dropped when the number in the product's own sku is not that card's: the
+// storefront linked the product to another card's record, price included.
+// An empty id under a nil error is a product the catalog does not carry.
 func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, error) {
 	if unmadeProducts[product.ID] {
 		return "", nil
@@ -289,7 +291,12 @@ func (gn *Gamenerdz) resolveProduct(mode string, product GNProduct) (string, err
 	if gn.backend.Game == mtgmatcher.GameMagic && tcgID != 0 {
 		foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 		cardID, err := gn.backend.MatchID(strconv.FormatInt(tcgID, 10), foil, etched)
-		if err == nil && (mode == modeRetail || gn.namesCard(cardID, product.DisplayName, magicName(gn.backend, product.DisplayName))) {
+		named := err == nil && gn.namesCard(cardID, product.DisplayName, magicName(gn.backend, product.DisplayName))
+		if mode == modeRetail && err == nil && !named && gn.skuConflicts(cardID, product) {
+			gn.printf("%s %q: dropped, its catalog link names another card", product.ID, product.DisplayName)
+			return "", nil
+		}
+		if err == nil && (mode == modeRetail || named) {
 			if foil && mintedRipple(gn.backend, cardID, product.DisplayName) {
 				return "", nil
 			}
@@ -535,6 +542,19 @@ func (gn *Gamenerdz) numberConflicts(cardID, variation string) bool {
 	written, _, _ := strings.Cut(fields[0], "/")
 	wrote := numberDigits(written)
 	return wrote != "" && numberDigits(co.Number) != "" && wrote != numberDigits(co.Number)
+}
+
+// skuConflicts reports whether the collector number in a product's sku is not
+// the printing's own. Game Nerdz links some products to another card's catalog
+// record, and the id, body and price all come from that record; the sku is
+// the product's own. A product with no sku number says nothing.
+func (gn *Gamenerdz) skuConflicts(cardID string, product GNProduct) bool {
+	co, err := gn.backend.GetUUID(cardID)
+	if err != nil {
+		return false
+	}
+	wrote := skuNumber(product)
+	return wrote != "" && wrote != numberDigits(co.Number)
 }
 
 // numberDigits is the digits of a collector number without their leading zeros.

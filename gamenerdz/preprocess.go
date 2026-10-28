@@ -73,6 +73,25 @@ func skuMarker(product GNProduct) string {
 	return ""
 }
 
+// skuNumber is the digits of the collector number a product's sku carries:
+// every segment between the set code and the ten-character random tail, so
+// 249 in MTG-RNA-249-F-6NUARTU9FH and 1652 in the List's
+// MTG-PLST-C16-52-AK6D7ICGZV. A sku with nothing there, like
+// MTG-CHR-PGEXSBNC6R, says nothing.
+func skuNumber(product GNProduct) string {
+	for _, variant := range product.RetailVariants {
+		fields := strings.Split(variant.SKU, "-")
+		if len(fields) > 2 {
+			end := 2
+			for end < len(fields) && len(fields[end]) != 10 {
+				end++
+			}
+			return numberDigits(strings.Join(fields[2:end], ""))
+		}
+	}
+	return ""
+}
+
 // doubtfulFoil reports a product whose selectedFinish is the only thing
 // saying foil: its sku carries no finish segment and its name no Foil tail.
 // The field is wrong on some of these - a ninth edition land sold plain is
