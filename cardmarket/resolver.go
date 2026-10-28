@@ -99,6 +99,18 @@ func (r *resolver) logf(format string, a ...any) {
 	}
 }
 
+// productLinks names the TCGplayer product of a Cardmarket product whose
+// CardTrader blueprint links no TCGplayer id or the wrong one. Cardmarket's
+// product ids are global, so one table serves every game.
+var productLinks = map[int]int{
+	905979: 616641, // Gundam Char's Zaku II, Rare +
+	905980: 616640, // Gundam Char's Zaku II, Rare
+	915837: 721891, // Lorcana Q3 Sven - Leaping Reindeer
+	915838: 721882, // Lorcana Q3 Mr. Incredible - Super Strong
+	915839: 721876, // Lorcana Q3 Christopher Robin - Hunny Sage
+	915840: 721878, // Lorcana Q3 Violet Parr - Super Resilient
+}
+
 // errNoPrinting marks a product no route named a printing of ours for. It
 // is what the id-and-name route answers with instead of nothing at all, so a
 // refusal is counted and said out loud rather than passing for a success.
@@ -522,7 +534,7 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			break
 		}
 		tcgID, found := r.tcgBridge[product.IDProduct]
-		if crossed, linked := gundamCrossedLinks[product.IDProduct]; linked {
+		if crossed, linked := productLinks[product.IDProduct]; linked {
 			tcgID, found = crossed, true
 		}
 		// The bridge answers next: One Piece through onePieceByID's
