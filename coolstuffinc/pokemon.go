@@ -24,8 +24,8 @@ import (
 // those would drop 25 real listings to catch nothing.
 //
 // "(Rare)" says the same of a holo rare's theme deck copy, sold beside the
-// "(Holo Rare)" one.
-var pokemonNonHolo = regexp.MustCompile(`(?i)\((?:Non-?\s?Holo|Rare)\)`)
+// "(Holo Rare)" one, and "(Non-Holo Rare)" says it of a deck exclusive.
+var pokemonNonHolo = regexp.MustCompile(`(?i)\((?:Non-?\s?Holo(?:\s+Rare)?|Rare)\)`)
 
 // pokemonNonHoloNote matches the note a Black & White deck exclusive carries
 // where its name carries no bracket.
