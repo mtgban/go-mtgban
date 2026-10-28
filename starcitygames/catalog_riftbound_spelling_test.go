@@ -2,15 +2,10 @@ package starcitygames
 
 import "testing"
 
-// TestRiftboundMisspelledChampionNames pins two Riftbound champions SCG's
-// own catalog spells with a letter dropped from the gallery's name -
-// "Corina Veraza" for "Corinna Veraza", "Sky Cruiser" for "Sky Crusier" (the
-// gallery's own typo, kept verbatim since that is the string every other
-// source has to match). Neither survives an ordinary lookup: the catalog's
-// spelling names no card at all. Fixtures copied from a captured CI run
-// verbatim; without these two catalogNames entries both fail as
-// "unknown card name".
-func TestRiftboundMisspelledChampionNames(t *testing.T) {
+// TestRiftboundChampionNames pins that SCG's catalog names of two Riftbound
+// champions resolve to their printings. Fixtures copied from a captured CI
+// run verbatim.
+func TestRiftboundChampionNames(t *testing.T) {
 	b := withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
 
 	for _, tt := range []struct {
