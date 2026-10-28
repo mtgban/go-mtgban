@@ -124,7 +124,6 @@ var gameNames = map[mtgmatcher.Game]map[string]string{
 		"Target Whistle Team Flare Gear": "Target Whistle",
 	},
 	mtgmatcher.GameRiftbound: {
-		"Corina Veraza":        "Corinna Veraza",
 		"lascylla":             "Iascylla",
 		"Vi, Piltover ZHorcer": "Vi, Piltover Enforcer",
 	},
