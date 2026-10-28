@@ -1143,6 +1143,7 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	}
 
 	var candidates []mtgmatcher.Card
+	named := map[string]bool{}
 	var cards []mtgmatcher.Card
 	for _, code := range slices.Sorted(maps.Keys(cardSet)) {
 		cards = append(cards, cardSet[code]...)
@@ -1164,6 +1165,7 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 			foilUUIDs[mtgmatcher.FinishNonfoil] = uuid
 			foilUUIDs[mtgmatcher.FinishFoil] = uuid
 			card.FoilUUIDs = foilUUIDs
+			named[card.UUID] = true
 		}
 		candidates = append(candidates, card)
 	}
@@ -1192,7 +1194,20 @@ func (r Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, 
 	if len(candidates) <= 1 {
 		return candidates
 	}
-	return tierByVariant(inCard, candidates, number, r.qualifiers)
+	candidates = tierByVariant(inCard, candidates, number, r.qualifiers)
+
+	// Copies left tied are told apart by the run: one never printed in the
+	// named run cannot be the listing while another copy holds it.
+	var holders []mtgmatcher.Card
+	for _, card := range candidates {
+		if named[card.UUID] {
+			holders = append(holders, card)
+		}
+	}
+	if len(holders) > 0 {
+		return holders
+	}
+	return candidates
 }
 
 // tierByRarity keeps the candidates whose rarity the input's wording spells

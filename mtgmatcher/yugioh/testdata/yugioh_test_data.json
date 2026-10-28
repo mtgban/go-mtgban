@@ -1,5 +1,23 @@
 [
     {
+        "description": "1st edition finish drops a date reprint that never had the run",
+        "input": {
+            "name": "Minerva, Lightsworn Maiden",
+            "variant": "002 Super Rare",
+            "edition": "Structure Deck: The Realm of Light",
+            "finish": "1st Edition"
+        },
+        "uuid": "sdli-en002_90992_1stedition"
+    },
+    {
+        "description": "1st edition wording drops a date reprint that never had the run",
+        "input": {
+            "name": "Minerva, Lightsworn Maiden",
+            "variant": "SDLI-EN002 1st Edition"
+        },
+        "uuid": "sdli-en002_90992_1stedition"
+    },
+    {
         "description": "1st edition wording routes to its print run's entry",
         "input": {
             "name": "Blue-Eyes White Dragon",

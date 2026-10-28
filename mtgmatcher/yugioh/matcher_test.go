@@ -48,6 +48,14 @@ var yugiohSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-001 1st Edition"},
 	},
 	{
+		Desc: "1st edition finish drops a date reprint that never had the run",
+		In:   mtgmatcher.InputCard{Name: "Minerva, Lightsworn Maiden", Edition: "Structure Deck: The Realm of Light", Variation: "002 Super Rare", Finish: "1st Edition"},
+	},
+	{
+		Desc: "1st edition wording drops a date reprint that never had the run",
+		In:   mtgmatcher.InputCard{Name: "Minerva, Lightsworn Maiden", Variation: "SDLI-EN002 1st Edition"},
+	},
+	{
 		Desc: "limited wording routes to the limited print run",
 		In:   mtgmatcher.InputCard{Name: "Blizzed, Defender of the Ice Barrier", Variation: "HA01-EN001 Limited"},
 	},
