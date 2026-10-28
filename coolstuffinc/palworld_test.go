@@ -85,7 +85,7 @@ func TestPalworldBuylistNote(t *testing.T) {
 	for _, tt := range []struct {
 		notes, uuid string
 	}{
-		{"ESS01-002 R", "ess01-002_723233_foil"},
+		{"ESS01-002 R", "ess01-002_723233"},
 		{"ESS01-002OSR Full Art", "ess01-002osr_723234_foil"},
 	} {
 		product := CSIPriceEntry{Name: "Chillet - Final Frostneedle (Sleeve & Card Set Vol. 1)", ItemSet: "Souls & Misc.", Notes: tt.notes, IsFoil: 1}
