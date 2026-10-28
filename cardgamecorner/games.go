@@ -337,14 +337,23 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 	return inCard, nil
 }
 
+// onePiecePromoShelfRe matches the shelf holding the promo printings of a
+// set, which names the set's code before its name.
+var onePiecePromoShelfRe = regexp.MustCompile(`^[A-Z]{2}[0-9]{2} - (.+): Promo$`)
+
 // gameInput reads a listing's wording the way the game's rules expect it.
 func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCard {
 	name := card.Name
 	number := card.Number
 	variant := card.Variants[index]
 	foil := variant.Foil == "Foil"
+	edition := card.Edition
 	var rainbow bool
 	switch game {
+	case mtgmatcher.GameOnePiece:
+		// The store spells Cardmarket's "Promos: <set>" shelf as
+		// "<code> - <set>: Promo"
+		edition = onePiecePromoShelfRe.ReplaceAllString(edition, "Promos: $1")
 	case mtgmatcher.GameFleshAndBlood:
 		// Every name ends in its finish, which hides the pitch before it
 		// from the rules, and is the only place a rainbow foil says so
@@ -384,7 +393,7 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 	}
 	return &mtgmatcher.InputCard{
 		Name:      vendorName(game, name),
-		Edition:   card.Edition,
+		Edition:   edition,
 		Variation: number,
 		Foil:      foil,
 		Finish:    gameFinish(game, card, variant, rainbow),
