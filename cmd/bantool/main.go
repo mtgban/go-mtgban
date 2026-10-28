@@ -30,6 +30,7 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/cardgamecorner"
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/mintcard"
@@ -40,7 +41,6 @@ import (
 
 	_ "github.com/mtgban/go-mtgban/abugames"
 	_ "github.com/mtgban/go-mtgban/arcanafrisia"
-	_ "github.com/mtgban/go-mtgban/cardgamecorner"
 	_ "github.com/mtgban/go-mtgban/cardkingdom"
 	_ "github.com/mtgban/go-mtgban/coolstuffinc"
 	_ "github.com/mtgban/go-mtgban/gamenerdz"
@@ -316,6 +316,19 @@ func scraperResources(game mtgmatcher.Game, key string) ([]mtgban.Option, error)
 			return nil, err
 		}
 		opts = append(opts, cardmarket.WithBridge(bridge))
+
+	case "cardgamecorner":
+		if game != mtgmatcher.GameOnePiece {
+			break
+		}
+		// The bridge only settles what the wording cannot, so a cardtrader
+		// that will not answer costs those printings and nothing else.
+		bridge, err := cardtraderBridge(game)
+		if err != nil {
+			log.Printf("bridge unavailable, naming what the wording can on its own: %v", err)
+		} else {
+			opts = append(opts, cardgamecorner.WithBridge(bridge))
+		}
 
 	case "tcg_market", "tcg_sealed":
 		if game != mtgmatcher.GameMagic {

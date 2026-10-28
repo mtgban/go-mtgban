@@ -35,6 +35,10 @@ type Cardgamecorner struct {
 
 	exchangeRate float64
 
+	// bridge maps a Cardmarket product id to the TCGplayer id of the same
+	// product; nil where bantool gave none.
+	bridge map[int]int
+
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 	client    *Client
