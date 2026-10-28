@@ -170,9 +170,7 @@ func preprocess(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.Input
 	// Circle of Protection: Red in Revised EU FWB???
 	if card.Variants[index].ID == 223958 ||
 		// Excruciator RAV duplicate card
-		card.Variants[index].ID == 108840 ||
-		// Wrong English name for Chain Lightning
-		card.OrigName == "Crepaccio" {
+		card.Variants[index].ID == 108840 {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
