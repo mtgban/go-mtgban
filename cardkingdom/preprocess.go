@@ -60,6 +60,9 @@ var skuFixupTable = map[string]string{
 	"SFT40K-015": "SFT40K-015★",
 	"SFT40K-016": "SFT40K-016★",
 
+	// The German misprint of Drudge Skeletons is filed under 4ED 107†
+	"3ED-107-DE": "4ED-107†",
+
 	// Duplicated ULST cards
 	"FMUST-147A": "ULST-55",
 	"FMUST-147F": "ULST-56",
@@ -333,6 +336,7 @@ func Preprocess(b *mtgmatcher.Backend, card cardkingdom.Product) (*mtgmatcher.In
 		variation = card.Variation
 		switch {
 		case strings.Contains(variation, "APAC"),
+			strings.Contains(variation, "German Misprint"),
 			strings.Contains(variation, "Euro"):
 			variation = number
 		case strings.Contains(variation, "Arena"),
