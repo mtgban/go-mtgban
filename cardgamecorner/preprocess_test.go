@@ -504,13 +504,16 @@ func TestMatchBasicByImage(t *testing.T) {
 		edition string
 		want    string
 	}{
-		{"the image number places the land", "/prodotti/1/1050/BFZ250.jpg", "", "", "250"},
+		{"the image number places the land", "/prodotti/1/1050/BFZ250.jpg", "", "", "BFZ 250"},
 		{"a number the land was never printed with is refused", "/prodotti/1/1050/BFZ300.jpg", "", "", ""},
 		{"an image naming no number is refused", "/prodotti/1/1050/noimage.jpg", "", "", ""},
-		{"the SKU number places the land when the image names none", "/prodotti/1/1050/noimage.jpg", "BFZ250", "", "250"},
-		{"the SKU number places the land over a wrong image number", "/prodotti/1/1050/BFZ300.jpg", "BFZ0250", "", "250"},
+		{"the SKU number places the land when the image names none", "/prodotti/1/1050/noimage.jpg", "BFZ250", "", "BFZ 250"},
+		{"the SKU number places the land over a wrong image number", "/prodotti/1/1050/BFZ300.jpg", "BFZ0250", "", "BFZ 250"},
 		{"a SKU number the land was never printed with is refused", "/prodotti/1/1050/noimage.jpg", "BFZ300", "", ""},
 		{"a store-order edition skips the SKU number", "/prodotti/1/1050/noimage.jpg", "FBB293", "Foreign Black Border", ""},
+		{"a promo run's SKU places the land in the run's set", "/prodotti/1/1113/p2018PRWK10.jpg", "p2018PRWK10", "Promo", "PRWK A10"},
+		{"a promo run's SKU index is its collector number", "/prodotti/1/1113/p2017GIFT01.jpg", "p2017GIFT01", "Promo", "G17 1"},
+		{"a promo run's SKU naming another land is refused", "/prodotti/1/1113/p2017GIFT02.jpg", "p2017GIFT02", "Promo", ""},
 	}
 
 	for _, tt := range tests {
@@ -525,8 +528,8 @@ func TestMatchBasicByImage(t *testing.T) {
 				return
 			}
 			co, err := b.GetUUID(id)
-			if !found || err != nil || co.SetCode != "BFZ" || co.Number != tt.want {
-				t.Errorf("matchBasicByImage() = %v, want BFZ %s", co, tt.want)
+			if !found || err != nil || co.SetCode+" "+co.Number != tt.want {
+				t.Errorf("matchBasicByImage() = %v, want %s", co, tt.want)
 			}
 		})
 	}

@@ -3,6 +3,7 @@ package cardgamecorner
 import (
 	"cmp"
 	"errors"
+	"fmt"
 	"path"
 	"regexp"
 	"slices"
@@ -798,24 +799,68 @@ func basicSKUNumber(cardName, edition, variation, extra, sku string) string {
 	return cmp.Or(basicImageNumber(sku), variation)
 }
 
+// promoBasicRuns lists the promo runs whose basic land SKUs, lower-cased, end
+// in the land's index in the run: the set holding the run and how it spells
+// the number. The Arena League years left out count their lands another way.
+var promoBasicRuns = map[string]struct{ set, numberFormat string }{
+	"p2018prwk":   {"PRWK", "A%02d"},
+	"p2019prwk":   {"PRW2", "B%02d"},
+	"p2017gift":   {"G17", "%d"},
+	"p2018m19std": {"PSS3", "%d"},
+	"p2001ar":     {"PAL01", "%d"},
+	"p2002ar":     {"PAL02", "%d"},
+	"p2004ar":     {"PAL04", "%d"},
+	"p2005ar":     {"PAL05", "%d"},
+	"p2006ar":     {"PAL06", "%d"},
+}
+
+// promoBasicPlacement answers the set and number a promo run's SKU spells.
+func promoBasicPlacement(sku string) (set, number string) {
+	sku = strings.ToLower(sku)
+	for prefix, run := range promoBasicRuns {
+		index, found := strings.CutPrefix(sku, prefix)
+		if !found {
+			continue
+		}
+		n, err := strconv.Atoi(index)
+		if err != nil {
+			return "", ""
+		}
+		return run.set, fmt.Sprintf(run.numberFormat, n)
+	}
+	return "", ""
+}
+
 // matchBasicByImage retries a basic land the wording could not place with the
-// number its SKU spells after the set code, then with the one its image names.
-// The store's version tag counts its own index, which is not collector order,
-// so a number is trusted only where the landed card confirms it. The store's
-// Number field is not read: several SKUs of one land share it. input is a copy
-// taken before the first Match, which mutates it.
+// number its SKU spells after the set code, then with the one its image names,
+// then with the set and number a promo run's SKU spells. The store's version
+// tag counts its own index, which is not collector order, so a number is
+// trusted only where the landed card confirms it. The store's Number field is
+// not read: several SKUs of one land share it. input is a copy taken before
+// the first Match, which mutates it.
 func matchBasicByImage(b *mtgmatcher.Backend, card *Card, input mtgmatcher.InputCard) (string, bool) {
 	imageNumber := basicImageNumber(strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra)))
 	skuNumber := basicImageNumber(card.SKU)
 	if slices.Contains(storeOrderBasics, input.Edition) {
 		skuNumber = ""
 	}
+	var attempts []mtgmatcher.InputCard
 	for _, number := range []string{skuNumber, imageNumber} {
+		attempt := input
+		attempt.Variation = number
+		attempts = append(attempts, attempt)
+	}
+	set, number := promoBasicPlacement(card.SKU)
+	promo := input
+	promo.Edition = set
+	promo.Variation = number
+	attempts = append(attempts, promo)
+
+	for _, attempt := range attempts {
+		number := attempt.Variation
 		if number == "" {
 			continue
 		}
-		attempt := input
-		attempt.Variation = number
 		cardID, found := matchNumbered(b, &attempt, number)
 		if found {
 			return cardID, true
