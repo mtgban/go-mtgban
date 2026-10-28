@@ -1378,6 +1378,7 @@ var pkmBlueprintVersions = map[int]string{
 	357913: "Destined Rivals Stamp | 229/182",
 	354633: "Cosmos Holo 026/094",
 	364952: "Cosmos Holo | 079/086",
+	280947: "148/172",
 }
 
 // pkmNames spells the Pokemon names Card Trader misspells.
