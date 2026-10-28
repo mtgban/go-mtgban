@@ -29,6 +29,7 @@ var reprintedPrereleaseShelves = map[string]string{
 var tcgplayerIDWins = map[int]bool{
 	62502:  true, // Bombardment, carries the "No PW Symbol" blueprint's id
 	155482: true, // Illuminate History, carries the Prerelease blueprint's id
+	416464: true, // Aerid Konstrari, Reality Fracture Promos, carries the base FRA 121's id
 }
 
 // namedID picks between the two ids a blueprint carries, preferring the
