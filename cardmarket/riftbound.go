@@ -45,6 +45,18 @@ var riftboundNonEnglish = map[int]bool{
 	917606: true,
 }
 
+// riftboundFoilLinks names the TCGplayer product of the Vendetta: Promos
+// runes (R01-R06, V.2): the shelf sells as its own product the foil rune that
+// TCGplayer sells as the Foil of Vendetta's rune.
+var riftboundFoilLinks = map[int]int{
+	917119: 706028, // Fury Rune
+	917120: 706010, // Calm Rune
+	917123: 706067, // Mind Rune
+	917140: 706006, // Body Rune
+	917141: 706011, // Chaos Rune
+	917151: 706078, // Order Rune
+}
+
 // riftboundShelves spells a Cardmarket shelf of promotional prints as the set
 // the datastore files them in and the bundle it labels them with; a starred
 // number is the bundle's serial-numbered print.

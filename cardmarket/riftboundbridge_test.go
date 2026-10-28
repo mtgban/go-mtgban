@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -113,5 +114,45 @@ func TestRiftboundBridgeRejectsFusedToken(t *testing.T) {
 	}
 	if err == nil && cardID != "" {
 		t.Errorf("resolveProduct(%+v) = (%q, %q, nil), want a wording refusal now that the bridge link is rejected", product, cardID, cardIDFoil)
+	}
+}
+
+// TestRiftboundFoilRunes pins that the Vendetta: Promos runes land on the
+// foil of Vendetta's own rune in both price columns, leaving the plain rune
+// to the set's product.
+func TestRiftboundFoilRunes(t *testing.T) {
+	b := loadRiftboundBackend(t)
+
+	mkm, err := NewScraperIndex(b)
+	if err != nil {
+		t.Fatalf("NewScraperIndex(b) = %v", err)
+	}
+
+	for _, tt := range []struct {
+		id     int
+		name   string
+		number string
+	}{
+		{917119, "Fury Rune (V.2 - Common)", "R01"},
+		{917120, "Calm Rune (V.2 - Common)", "R02"},
+		{917123, "Mind Rune (V.2 - Common)", "R03"},
+		{917140, "Body Rune (V.2 - Common)", "R04"},
+		{917141, "Chaos Rune (V.2 - Common)", "R05"},
+		{917151, "Order Rune (V.2 - Common)", "R06"},
+	} {
+		product := cm.Product{IDProduct: tt.id, Name: tt.name, Number: tt.number, ExpansionName: "Vendetta: Promos"}
+		cardID, cardIDFoil, _, err := mkm.resolveProduct(&product)
+		if err != nil || cardID == "" || cardID != cardIDFoil {
+			t.Errorf("resolveProduct(%d) = (%q, %q, %v), want one printing in both slots", tt.id, cardID, cardIDFoil, err)
+			continue
+		}
+		co, err := b.GetUUID(cardID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := "R" + strings.TrimPrefix(tt.number, "R0")
+		if !co.Foil || co.SetCode != "VEN" || co.Number != want {
+			t.Errorf("resolveProduct(%d) landed on %s (%s %s foil=%v), want the foil of VEN %s", tt.id, cardID, co.SetCode, co.Number, co.Foil, want)
+		}
 	}
 }
