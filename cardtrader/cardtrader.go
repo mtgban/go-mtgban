@@ -39,8 +39,10 @@ type Market struct {
 
 	blueprints map[int]*Blueprint
 
-	// Flesh and Blood only: fabNumbers of backend.
+	// Flesh and Blood only: fabNumbers of backend and fabListedIDs of
+	// blueprints.
 	fabSiblings map[string][]*mtgmatcher.CardObject
+	fabListed   map[string]bool
 
 	gameID int
 }
@@ -508,9 +510,13 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 		// A Flesh and Blood listing flagged in a treatment a sibling at the
 		// number is sold in is that sibling, not this printing: a Regular
-		// copy of Volzar's Cold Foil token is its Normal face.
-		if ct.gameID == GameFleshAndBlood && !fabSameTreatment(ct.backend, ct.fabSiblings, cardID, blueprint.TCGplayerProductID(), product) {
-			continue
+		// copy of Volzar's Cold Foil token is its Normal face. It lands on
+		// that sibling when no blueprint lists it.
+		if ct.gameID == GameFleshAndBlood {
+			cardID = fabListingID(ct.backend, ct.fabSiblings, ct.fabListed, cardID, blueprint.TCGplayerProductID(), product)
+			if cardID == "" {
+				continue
+			}
 		}
 
 		// A starter deck's exclusive foil is its card's Holofoil, and only
@@ -677,6 +683,9 @@ func (ct *Market) Load(ctx context.Context) error {
 
 	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, false)
 	ct.blueprints = blueprints
+	if ct.gameID == GameFleshAndBlood {
+		ct.fabListed = fabListedIDs(blueprints)
+	}
 	ct.printf("Parsing %d expansions with %d blueprints", len(expansions), len(blueprints))
 
 	type expItem struct {
