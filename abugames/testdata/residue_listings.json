@@ -653,5 +653,29 @@
       ]
     },
     "uuid": "55b003c0-6916-5323-8b6c-ac15e4b8bccf"
+  },
+  {
+    "group": "167849",
+    "card": {
+      "id": "297221",
+      "product_id": "167849",
+      "display_title": "Ambush Commander - FOIL",
+      "simple_title": "Ambush Commander",
+      "magic_edition_sort": "Duel Decks Anthology: Elves vs. Goblins",
+      "layout": "Normal",
+      "rarity": "Rare",
+      "language": [
+        "English"
+      ],
+      "title": "English",
+      "card_number": "1",
+      "scryfall_id": [
+        "40fcf59a-9a48-45da-90ba-7e9a46ef9bac"
+      ],
+      "tcgplayer_id": [
+        582767
+      ]
+    },
+    "uuid": "820d4c25-3c52-585e-a99a-40a3ccb5eeb8"
   }
 ]
