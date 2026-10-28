@@ -76,13 +76,23 @@ var numFixes = map[string]string{
 	"ONE274a":                         "ONE274",
 	"ONE275a":                         "ONE275",
 	"ONE276a":                         "ONE276",
+	"SLDMikuScryingSheets":            "SLD1606",
+	"SLDMikuYouthValk":                "SLD1588",
+	"SLD1117a":                        "SLD1117",
+	"SLD1117fea":                      "SLD1117",
+	"TMT0228_02":                      "TMT228",
+	"Island_78_EvT":                   "DDF78",
+	"Island_79_EvT":                   "DDF79",
 	"SLDMikuGiadaJPN":                 "SLD1586",
 	"SLDMikuYouthValkJPN":             "SLD1588",
 	"SLD1112JPN":                      "SLD1112",
 	"396167":                          "THB009",
-	// The images of Tellah 416385 and 416386 are swapped on CSI's side.
+	// The images of Tellah 416385 and 416386 are swapped on CSI's side,
+	// and so are those of the two Copy Land products.
 	"FIN0510": "FIN349",
 	"FIN0349": "FIN510",
+	"M3C0047": "M3C99",
+	"M3C0099": "M3C47",
 }
 
 // shelfNumFixes holds the image stems that name a printing only on one shelf:
