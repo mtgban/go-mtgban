@@ -44,6 +44,12 @@ func TestGameInput(t *testing.T) {
 			want:    mtgmatcher.InputCard{Name: "White Snake (OP06-059)", Edition: "Promos: Wings of the Captain", Variation: "059"},
 		},
 		{
+			game:    mtgmatcher.GameYuGiOh,
+			card:    Card{Name: "Wake Up Your Elemental HERO V.8 - Ultra Rare Overframe )", Edition: "Rarity Collection 5", Number: "142", Rarity: "Overframe"},
+			variant: Variant{Print: "First Edition", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Wake Up Your Elemental HERO (V.8 - Ultra Rare Overframe)", Edition: "Rarity Collection 5", Variation: "142 Overframe", Finish: "1st Edition"},
+		},
+		{
 			game:    mtgmatcher.GameRiftbound,
 			card:    Card{Name: "Miss Fortune, Buccaneer (V.2 - Showcase)", Edition: "Origins", Number: "193a"},
 			variant: Variant{Foil: "Foil"},

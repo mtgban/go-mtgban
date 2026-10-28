@@ -341,6 +341,10 @@ func preprocessGame(b *mtgmatcher.Backend, card *Card, index int) (*mtgmatcher.I
 // set, which names the set's code before its name.
 var onePiecePromoShelfRe = regexp.MustCompile(`^[A-Z]{2}[0-9]{2} - (.+): Promo$`)
 
+// unbracketedVersionRe matches a version whose opening bracket the store
+// dropped, "... V.8 - Ultra Rare Overframe )".
+var unbracketedVersionRe = regexp.MustCompile(`^(.+?) (V\.[0-9]+ - [^()]*?)\s*\)$`)
+
 // gameInput reads a listing's wording the way the game's rules expect it.
 func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCard {
 	name := card.Name
@@ -367,6 +371,7 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 			number = ""
 		}
 	case mtgmatcher.GameYuGiOh:
+		name = unbracketedVersionRe.ReplaceAllString(name, "$1 ($2)")
 		// A number holds the card at several rarities, which the name
 		// spells only from its second version on
 		number = strings.TrimSpace(number + " " + card.Rarity)
