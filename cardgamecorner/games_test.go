@@ -50,6 +50,24 @@ func TestGameInput(t *testing.T) {
 			want:    mtgmatcher.InputCard{Name: "Wake Up Your Elemental HERO (V.8 - Ultra Rare Overframe)", Edition: "Rarity Collection 5", Variation: "142 Overframe", Finish: "1st Edition"},
 		},
 		{
+			game:    mtgmatcher.GameYuGiOh,
+			card:    Card{Name: "Darklord Desire", Edition: "GX Manga Promos", Number: "5", Rarity: "Ultra Rare"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Darklord Desire", Edition: "GX Manga Promos", Variation: "YG05-EN001 Ultra Rare"},
+		},
+		{
+			game:    mtgmatcher.GameYuGiOh,
+			card:    Card{Name: "Infernity General", Edition: "5D's Manga Promos", Number: "03-001", Rarity: "Ultra Rare"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Infernity General", Edition: "5D's Manga Promos", Variation: "YF03-EN001 Ultra Rare"},
+		},
+		{
+			game:    mtgmatcher.GameYuGiOh,
+			card:    Card{Name: "Gorz the Emissary of Darkness", Edition: "R Comic Book Promos", Number: "01-003", Rarity: "Ultra Rare"},
+			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "Gorz the Emissary of Darkness", Edition: "R Comic Book Promos", Variation: "YR01-EN003 Ultra Rare"},
+		},
+		{
 			game:    mtgmatcher.GameRiftbound,
 			card:    Card{Name: "Miss Fortune, Buccaneer (V.2 - Showcase)", Edition: "Origins", Number: "193a"},
 			variant: Variant{Foil: "Foil"},
