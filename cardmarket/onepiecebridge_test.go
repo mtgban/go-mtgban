@@ -7,6 +7,8 @@ import (
 
 	cm "github.com/mtgban/go-cardmarket"
 
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 )
 
@@ -137,7 +139,7 @@ func TestOnePieceGiveWayRefusesWordingTwin(t *testing.T) {
 
 // onePieceReprintDatastore holds a reprint set that keeps a card under its
 // original starter-deck number rather than the base set's, for pinning the
-// Reprints/Demo Decks wrong-variant refusal.
+// Reprints/Demo Decks wrong-variant miss.
 const onePieceReprintDatastore = `{"data": {
  "game": "onepiece",
  "sets": {"OP-RP": {"name": "Revision Pack Cards", "releaseDate": "2023-01-01"}},
@@ -146,10 +148,10 @@ const onePieceReprintDatastore = `{"data": {
  ]
 }}`
 
-// TestOnePieceReprintWrongVariantIsSilent pins that a Reprints product named
+// TestOnePieceReprintWrongVariantIsLoud pins that a Reprints product named
 // with the base set's own number, which the reprint set does not carry at
-// that number, refuses silently instead of surfacing a matcher error.
-func TestOnePieceReprintWrongVariantIsSilent(t *testing.T) {
+// that number, answers the matcher's error rather than a refusal.
+func TestOnePieceReprintWrongVariantIsLoud(t *testing.T) {
 	b := datastoreBackend(t, "onepiece", onePieceReprintDatastore)
 
 	mkm, err := NewScraperIndex(b)
@@ -165,8 +167,8 @@ func TestOnePieceReprintWrongVariantIsSilent(t *testing.T) {
 	}
 	channel := make(chan responseChan, 8)
 	err = mkm.processProduct(channel, &product)
-	if !errors.Is(err, errNoPrinting) {
-		t.Errorf("processProduct(765980) = %v, want errNoPrinting", err)
+	if !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
+		t.Errorf("processProduct(765980) = %v, want the matcher's wrong-variant error", err)
 	}
 }
 

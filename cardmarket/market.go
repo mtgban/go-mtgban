@@ -468,7 +468,7 @@ func (mkm *Market) walkExpansion(ctx context.Context, exp cm.Expansion, ids []in
 			refusedNames = append(refusedNames, fmt.Sprintf("%d %s", id, key))
 		case err != nil:
 			matchErrs++
-			mkm.printf("product id %d returned %s", id, err)
+			mkm.printf("product id %d %q (%s) in %s returned %s", id, mkm.refusalName(mapped.Name), mapped.Number, exp.Name, err)
 		}
 	}
 

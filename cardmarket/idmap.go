@@ -188,7 +188,7 @@ func (mkm *Index) priceProducts(ctx context.Context, products map[int]cm.Catalog
 					refused = append(refused, fmt.Sprintf("%d %s", id, key))
 				case err != nil:
 					matchErrs++
-					mkm.printf("product id %d returned %s", id, err)
+					mkm.printf("product id %d %q (%s) in %s returned %s", id, mkm.refusalName(mapped.Name), mapped.Number, exp.Name, err)
 				}
 			}
 
