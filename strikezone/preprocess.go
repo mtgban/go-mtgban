@@ -408,8 +408,8 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 			variation = "1"
 		}
 	case "Promos: Magicfest":
-		// Only the etched Arcane Signet needs steering; PF25 has no etched
-		// printing of its own, but its other rows land there unaided.
+		// The plain Arcane Signet is a shelfPrintings row; the etched one is
+		// steered here, its variation naming the finish.
 		if cardName == "Arcane Signet" && mtgmatcher.Contains(variation, "Etched") {
 			edition = "P30M"
 		}

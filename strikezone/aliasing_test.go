@@ -60,10 +60,10 @@ func TestAliasingContradictions(t *testing.T) {
 		},
 		{
 			desc: "a printing never made in the finish on sale",
-			name: "Lightning Bolt", shelf: "Promos: Magicfest",
-			notes: "Near Mint Normal English",
-			ok:    func(co *mtgmatcher.CardObject) bool { return co.HasFinish(mtgmatcher.FinishNonfoil) },
-			want:  "a printing made in nonfoil",
+			name: "Trailblazer's Boots", shelf: "Mystery Booster Retail Edition Foils",
+			notes: "Near Mint Foil English",
+			ok:    func(co *mtgmatcher.CardObject) bool { return co.HasFinish(mtgmatcher.FinishFoil) },
+			want:  "a printing made in foil",
 		},
 		{
 			desc: "several printings left, the one in the set the shelf is named for",
@@ -116,7 +116,7 @@ func TestAliasingStands(t *testing.T) {
 		desc, name, shelf, notes string
 	}{
 		{"a non-promo is not what a promo shelf holds", "Scute Swarm", "Promos: Pro Tour", "Near Mint Foil English"},
-		{"two printings the wording fits equally", "Lightning Bolt", "Promos: Magicfest", "Near Mint Foil English"},
+		{"two printings the wording fits equally", "Fabled Passage", "Promos: Prerelease Cards", "Near Mint Foil English"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			co := tieBreak(t, b, tt.name, tt.shelf, tt.notes)
