@@ -946,30 +946,57 @@ func fabTreatment(product Product) string {
 	return product.Properties.FabFoilNew
 }
 
-// fabSameTreatment reports whether a Flesh and Blood listing's treatment,
-// whatever its print run, is the one the printing it resolved to is sold in.
+// fabListingID names the printing a Flesh and Blood listing lands on, or ""
+// where it lands nowhere. The listing keeps the printing it resolved to when
+// its treatment, whatever its print run, is the one that printing is sold in.
 // A treatment no printing at that number is sold in names nothing, so the
 // blueprint's product stands: the printing named by tcgID, or one carrying no
 // promo type. A promo printing reached by name alone keeps the strict rule.
-// siblings is the fabNumbers index of the same backend.
-func fabSameTreatment(b *mtgmatcher.Backend, siblings map[string][]*mtgmatcher.CardObject, cardID string, tcgID int, product Product) bool {
+// Where a sibling at the number is sold in the treatment, the listing belongs
+// to it and is skipped, unless it is the only one and no blueprint carries its
+// product id: nothing else lists it, so the listing lands there.
+// siblings is the fabNumbers index of the same backend and listed the
+// fabListedIDs of its blueprints.
+func fabListingID(b *mtgmatcher.Backend, siblings map[string][]*mtgmatcher.CardObject, listed map[string]bool, cardID string, tcgID int, product Product) string {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
-		return false
+		return ""
 	}
 	landed, found := mtgmatcher.FinishOf(mtgmatcher.FinishSlug(co.Finish))
 	if !found {
-		return false
+		return ""
 	}
 	want := mtgmatcher.FinishSlug(fabTreatment(product))
 	if landed.Treatment == want {
-		return true
+		return cardID
 	}
 	ownProduct := tcgID != 0 && co.Identifiers["tcgplayerProductId"] == fmt.Sprint(tcgID)
 	if len(co.PromoTypes) > 0 && !ownProduct {
-		return false
+		return ""
 	}
-	return !fabTreatmentAtNumber(siblings, co, want)
+	others := fabTreatmentAtNumber(siblings, co, want)
+	switch len(others) {
+	case 0:
+		return cardID
+	case 1:
+		id := others[0].Identifiers["tcgplayerProductId"]
+		if id != "" && !listed[id] {
+			return others[0].UUID
+		}
+	}
+	return ""
+}
+
+// fabListedIDs collects the TCGplayer product ids the blueprints carry.
+func fabListedIDs(blueprints map[int]*Blueprint) map[string]bool {
+	listed := map[string]bool{}
+	for _, bp := range blueprints {
+		id := bp.TCGplayerProductID()
+		if id != 0 {
+			listed[fmt.Sprint(id)] = true
+		}
+	}
+	return listed
 }
 
 // fabNumbers indexes every printing of b by each part of its lowercased
@@ -989,20 +1016,21 @@ func fabNumbers(b *mtgmatcher.Backend) map[string][]*mtgmatcher.CardObject {
 	return index
 }
 
-// fabTreatmentAtNumber reports whether some printing at the collector number
-// of co, in any set, is sold in the treatment want and carries every promo
-// type co carries. Without one the seller's treatment names no printing, and
-// the blueprint's own product is the only candidate.
-func fabTreatmentAtNumber(siblings map[string][]*mtgmatcher.CardObject, co *mtgmatcher.CardObject, want string) bool {
+// fabTreatmentAtNumber lists the printings at the collector number of co, in
+// any set, sold in the treatment want and carrying every promo type co
+// carries. Without one the seller's treatment names no printing, and the
+// blueprint's own product is the only candidate.
+func fabTreatmentAtNumber(siblings map[string][]*mtgmatcher.CardObject, co *mtgmatcher.CardObject, want string) []*mtgmatcher.CardObject {
+	var found []*mtgmatcher.CardObject
 	for _, part := range strings.Split(strings.ToLower(co.Number), "//") {
 		for _, other := range siblings[part] {
-			f, found := mtgmatcher.FinishOf(mtgmatcher.FinishSlug(other.Finish))
-			if found && f.Treatment == want && carriesPromoTypes(other, co.PromoTypes) {
-				return true
+			f, ok := mtgmatcher.FinishOf(mtgmatcher.FinishSlug(other.Finish))
+			if ok && f.Treatment == want && carriesPromoTypes(other, co.PromoTypes) && !slices.Contains(found, other) {
+				found = append(found, other)
 			}
 		}
 	}
-	return false
+	return found
 }
 
 // carriesPromoTypes reports whether co carries every one of promoTypes.
