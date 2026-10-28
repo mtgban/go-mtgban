@@ -8,7 +8,7 @@ var lorcanaRenames = map[int]string{
 
 // lorcanaNonEnglish holds the products Cardmarket shelves among the English
 // cards that were printed in another language alone: the Chinese Exclusive
-// Snow White promo.
+// Snow White and Stitch promos.
 var lorcanaNonEnglish = map[int]bool{
-	895480: true,
+	835454: true, 895480: true,
 }
