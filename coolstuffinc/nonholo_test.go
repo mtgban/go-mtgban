@@ -25,6 +25,8 @@ func TestPokemonNonHoloDeckExclusive(t *testing.T) {
 		{"Chespin - 3/39 - NON HOLO", "XY Kalos Starter", "3-39_84271"},
 		{"Oranguru (Rare) - 113/149", "Sun & Moon", "113-149_131303"},
 		{"Mew (Non-Holo) - 111/110", "Ex Holon Phantoms", "111-110_162457"},
+		{"Type: Null - 89/111 (Non-Holo Rare)", "SM Crimson Invasion", "089-111_216798"},
+		{"Magnezone - 83/156 (Non-Holo Rare)", "SM Ultra Prism", "083-156_158201"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			card := pokemonListing(b, tt.name, tt.edition, "", false)
