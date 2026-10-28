@@ -38,6 +38,12 @@ func TestGameInput(t *testing.T) {
 			want:    mtgmatcher.InputCard{Name: "Star Ryzeal", Edition: "Alliance Insight", Variation: "022 Secret Rare", Finish: "1st Edition"},
 		},
 		{
+			game:    mtgmatcher.GameOnePiece,
+			card:    Card{Name: "White Snake (OP06-059)", Edition: "OP06 - Wings of the Captain: Promo", Number: "059"},
+			variant: Variant{Foil: "Non Foil"},
+			want:    mtgmatcher.InputCard{Name: "White Snake (OP06-059)", Edition: "Promos: Wings of the Captain", Variation: "059"},
+		},
+		{
 			game:    mtgmatcher.GameRiftbound,
 			card:    Card{Name: "Miss Fortune, Buccaneer (V.2 - Showcase)", Edition: "Origins", Number: "193a"},
 			variant: Variant{Foil: "Foil"},
