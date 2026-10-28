@@ -314,8 +314,10 @@ from the shelf collision this section is about.
   card, Ancient Mew, the 2017 wave foil energies), and `pokemonListingIDs`
   names the product, keyed by name and edition, of the listings no matcher
   reads: the 30th Celebration Mews and a jumbo by their bare-letter
-  numbers, and the Pokemon Day Pikachus the POP Series catalog labels
-  without the word Stamp. The shelf probes (`pokemonNonHoloShelf`,
+  numbers, the Pokemon Day Pikachus the POP Series catalog labels
+  without the word Stamp, the prerelease Meganium its note only calls
+  Stamped, and the Non-Holo Professor's Research SWSH178 a promo type
+  keeps the matcher off. The shelf probes (`pokemonNonHoloShelf`,
   `pokemonCosmosHolo`, `pokemonDeckHoloRedirect`) take a shelf only where
   the probe lands on that shelf's set at the listing's number
   (`pokemonLandsAt`).

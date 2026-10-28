@@ -182,8 +182,12 @@ var pokemonReverse2022Energy = regexp.MustCompile(`^(\w+ Energy) - 2022 \(Revers
 // pokemonListingIDs names the catalog product of the listings whose wording no
 // matcher reads: the 30th Celebration Mew, one for each of the Red, Green and
 // Blue scans, a jumbo's bare letter number, and the Pokemon Day stamped
-// Pikachu the POP Series catalog labels without the word Stamp.
+// Pikachu the POP Series catalog labels without the word Stamp, the
+// prerelease stamped Meganium that its note only calls Stamped, and the
+// Non-Holo Professor's Research a promo type keeps the matcher off.
 var pokemonListingIDs = map[string]string{
+	"Meganium - MEP001|ME Promos":                                  "654594",
+	"Professor's Research (Non-Holo) - SWSH178|SWSH Promos":        "246275",
 	"Mew (Red) - R/RGB|30th Celebration":                           "717607",
 	"Mew (Green) - G/RGB|30th Celebration":                         "717608",
 	"Mew (Blue) - B/RGB|30th Celebration":                          "717609",
