@@ -91,6 +91,7 @@ var onePiecePIDs = map[string]string{
 	"423973": "654571", // Rebecca OP05-091 (SP) Stitched Together Border = PRB-02 SP
 	"386653": "539201", // Scratchmen Apoo ST02-008 Offline Regional 2024: the feed's Number says ST03-008
 	"354624": "450300", // Monkey.D.Luffy P-001 (Super Pre-Release) nonfoil = participant, no stamp
+	"354623": "450299", // Monkey.D.Luffy P-001 White Border Large Fist nonfoil = Promotion Pack 2022
 	"378075": "527027", // Monkey.D.Luffy ST01-012 (OP05 1st Anniversary Special) = OP05 Alternate Art
 	"417100": "632776", // Monkey.D.Luffy OP09-061 (Starter Deck) = ST-26
 	"417106": "632819", // Marshall.D.Teach OP09-081 (Starter Deck) = ST-27
@@ -105,6 +106,9 @@ var onePiecePIDs = map[string]string{
 	"447143": "712091", // Kaido OP17-062 (Baki Alternate Art) = Super Alternate Art, beside 447141 = Alternate Art
 	"421641": "643883", // Shanks OP09-001 (PSA Magazine Promo) = 2025 PSA Magazine, not the OP09 Parallel
 	"426348": "648101", // Boa Hancock OP07-051 (Binder Set Alt-Art) = Binder Set Alternate Art
+	"447218": "712119", // Shanks OP13-028 SP = OP17 SP: the feed's Number says OP13-029
+	"377222": "527620", // Roronoa Zoro OP01-025 (Starter Deck 10) = Ultra Deck: The Three Captains
+	"433349": "675746", // Koala OP05-006 (Dash Pack) = EB03 reprint, the one sibling without a Dash Pack label
 }
 
 // onePieceStarterDeck matches the starter deck a name states in brackets.
