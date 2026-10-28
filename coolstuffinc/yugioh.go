@@ -47,6 +47,15 @@ var yugiohPIDs = map[string]string{
 	"292911": "207877", // MVP1-ENSV4 Blue-Eyes White Dragon, the Secret Edition art the buylist numbers
 	"264850": "175258", // MVP1-ENSE4 Blue-Eyes White Dragon, the Special Edition art the sku numbers
 	"207108": "92623",  // MP14-EN073 Bujingi Crane, sold as the 2014 Mega-Tins card
+	"264847": "175255", // MVP1-ENSE1 Duza the Meteor Cubic Vessel
+	"264848": "175256", // MVP1-ENSE2 Krystal Dragon
+	"264849": "175257", // MVP1-ENSE3 Dark Magician
+	"292910": "207876", // MVP1-ENSV3 Dark Magician
+	"292913": "207878", // MVP1-ENSV6 Slifer the Sky Dragon
+	"207123": "92650",  // MP14-EN100 Bujintei Susanowo, not the CT11 Secret Rare
+	"334728": "266073", // SGX1-ENA12 Polymerization, whose catalog name keeps the deck letter
+	"334730": "266075", // SGX1-ENA14 Reinforcement of the Army
+	"282814": "196260", // SS03-ENA22 White Elephant's Gift
 	"114599": "26594",  // STON-ENSP1 Grandmaster of the Six Samurai (Super Rare), not the Secret Rare STON-EN000
 	"412920": "626808", // RA04-EN024 Aleister the Invoker (Platinum Secret Rare) Facing Forward, not EN278
 	"412921": "626809", // RA04-EN024 (Quarter Century Secret Rare) Facing Forward
