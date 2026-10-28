@@ -283,14 +283,20 @@ func scryfallImageID(imagePath string) string {
 
 // imageProductID resolves an image's Cardmarket product id or Scryfall id to
 // a uuid. It is accepted only when it names the listing's card, under the
-// wording's own language, and in the wording's set unless the wording failed -
-// this store also reuses one image across unrelated products.
+// wording's own language, and in the wording's set unless the wording failed or
+// the shelf names no set - this store also reuses one image across unrelated
+// products.
 func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edition, variation string, isFoil bool) string {
+	// The wording of these shelves names no set, so it lands on whichever
+	// printing of the card it finds first and the image is the better witness.
+	imageFirst := strings.HasPrefix(rawEdition, "Secret Lair Commander Deck")
 	switch rawEdition {
 	// These shelves' images are named after the English printing, not the
 	// Italian-only one actually on sale.
 	case "Rinascimento", "Revised EU FBB", "L'Oscurità", "Leggende":
 		return ""
+	case "Promo", "DCI Promo", "Judge Rewards Promos":
+		imageFirst = true
 	}
 	if cardName == "" {
 		return ""
@@ -375,8 +381,30 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	// Where the wording failed, the image's id is the only witness left. A
 	// wording refused as unsupported is a verdict, not a failure.
 	failed := wordingErr != nil && !errors.Is(wordingErr, mtgmatcher.ErrUnsupported)
-	if !sameSet && !failed {
+	if !sameSet && !failed && !imageFirst {
 		return ""
+	}
+
+	// A serialized print is only the one on sale where the wording says so;
+	// otherwise the image names its plain twin, the same number without the
+	// serial suffix.
+	if hit.HasPromoType(magic.PromoTypeSerialized) && !mtgmatcher.Contains(variation+" "+edition, "serial") {
+		var twin *mtgmatcher.CardObject
+		for _, candidate := range ids {
+			co, err := b.GetUUID(candidate)
+			if err != nil || co.HasPromoType(magic.PromoTypeSerialized) {
+				continue
+			}
+			if co.SetCode != hit.SetCode || co.PlainNumber != hit.PlainNumber || co.Language != hit.Language || !namesFrontFace(co.Name, cardName) {
+				continue
+			}
+			twin = co
+			break
+		}
+		if twin == nil {
+			return ""
+		}
+		hit = twin
 	}
 
 	// Match applies this same promo-tag check once ID is set and drops the
