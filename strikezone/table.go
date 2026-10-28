@@ -88,6 +88,9 @@ var cardTable = map[string]string{
 	"Teferi Hero of Dominaria":   "Teferi, Hero of Dominaria",
 	"Sun Ce, Young Conqueror":    "Sun Ce, Young Conquerer",
 
+	// Facet foil digits swapped: FRA 415 is a different card.
+	"Return to the Light Realms (Borderless) (Facet Foil) (0415)": "Return to the Light Realms (Borderless) (Facet Foil) (0451)",
+
 	// Typos AND edition
 	"Faithless Lootoing (IDW Promo)":                "Faithless Looting (IDW)",
 	"Geist of Sain Traft (WMCQ)":                    "Geist of Saint Traft (WMCQ)",
@@ -248,6 +251,11 @@ var shelfPrintings = map[[3]string][2]string{
 	{"Secret Lair Commander: Heads I Win", "Arcane Signet", ""}:            {"PLST", "C21-234"},
 	{"Secret Lair Commander: Heads I Win", "Ponder", ""}:                   {"PLST", "C21-125"},
 	{"Secret Lair Commander: Heads I Win", "Reshape", ""}:                  {"PLST", "2XM-64"},
+
+	{"Promos: Magicfest", "Arcane Signet", ""}:  {"P30M", "1F"},
+	{"Promos: Magicfest", "Lightning Bolt", ""}: {"PF19", "1"},
+
+	{"Secret Lair", "Counterspell", "0002"}: {"PURL", "2"},
 
 	{"Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "Sauron, the Dark Lord", ""}:  {"LTR", "224"},
 	{"Universes Beyond: The Lord of the Rings: Tales of Middle-earth", "The One Ring", "Borderless"}: {"LTR", "451"},
