@@ -1,6 +1,7 @@
 package cardgamecorner
 
 import (
+	"fmt"
 	"path"
 	"regexp"
 	"strings"
@@ -73,14 +74,19 @@ var classicDecks = map[string]string{
 	"Pokémon Trading Card Game Classic: Venusaur & Lugia Deck":    "CLV",
 }
 
-// promoNumberPrefixes is the code each Pokemon Black Star promo shelf leaves
-// off its numbers, which the catalog numbers "SWSH011" where the storefront
-// writes "011".
+// promoNumberPrefixes is the code each promo shelf leaves off its numbers.
+// A Pokemon Black Star promo is numbered "SWSH011" in the catalog where the
+// storefront writes "011"; a Yu-Gi-Oh manga volume is a set of its own,
+// "YF03", of which the storefront writes only the volume.
 var promoNumberPrefixes = map[string]string{
 	"BW Black Star Promos":              "BW",
 	"XY Black Star Promos":              "XY",
 	"Sun & Moon: Black Star Promos":     "SM",
 	"Sword & Shield: Black Star Promos": "SWSH",
+	"5D's Manga Promos":                 "YF",
+	"GX Manga Promos":                   "YG",
+	"ZEXAL Manga Promos":                "YZ",
+	"R Comic Book Promos":               "YR",
 }
 
 // gameNames holds the card names the store misspells, by game, as the
@@ -372,6 +378,15 @@ func gameInput(game mtgmatcher.Game, card *Card, index int) *mtgmatcher.InputCar
 		}
 	case mtgmatcher.GameYuGiOh:
 		name = unbracketedVersionRe.ReplaceAllString(name, "$1 ($2)")
+		// A manga shelf writes the volume, and on most the card index too
+		prefix, found := promoNumberPrefixes[card.Edition]
+		if found {
+			volume, cardIndex, hasIndex := strings.Cut(number, "-")
+			if !hasIndex {
+				cardIndex = "001"
+			}
+			number = fmt.Sprintf("%s%02s-EN%s", prefix, volume, cardIndex)
+		}
 		// A number holds the card at several rarities, which the name
 		// spells only from its second version on
 		number = strings.TrimSpace(number + " " + card.Rarity)
