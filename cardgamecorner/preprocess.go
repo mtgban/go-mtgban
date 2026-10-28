@@ -288,11 +288,14 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	// The wording of these shelves names no set, so it lands on whichever
 	// printing of the card it finds first and the image is the better witness.
 	imageFirst := strings.HasPrefix(rawEdition, "Secret Lair Commander Deck")
+	language := "English"
 	switch rawEdition {
-	// These shelves' images are named after the English printing, not the
-	// Italian-only one actually on sale.
+	case warSparkJapaneseEdition:
+		language = "Japanese"
+	// Most images here are named after the English printing, not the
+	// Italian-only one on sale, so only an Italian hit is the listing's.
 	case "Rinascimento", "Revised EU FBB", "L'Oscurità", "Leggende":
-		return ""
+		language = "Italian"
 	case "Promo", "DCI Promo", "Judge Rewards Promos":
 		imageFirst = true
 	}
@@ -304,11 +307,6 @@ func imageProductID(b *mtgmatcher.Backend, rawEdition, imagePath, cardName, edit
 	scryfall := scryfallImageID(imagePath)
 	if m == nil && scryfall == "" {
 		return ""
-	}
-
-	language := "English"
-	if rawEdition == warSparkJapaneseEdition {
-		language = "Japanese"
 	}
 
 	ids, err := b.SearchContains(cardName)

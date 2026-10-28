@@ -337,6 +337,14 @@ func TestImageProductID(t *testing.T) {
 		}
 	})
 
+	t.Run("an Italian shelf takes an id naming the Italian printing", func(t *testing.T) {
+		got := imageProductID(b, "Rinascimento", "/prodotti/singles/magic/ri/urzas-mine_19398.jpg", "Urza's Mine", "Rinascimento", "053", false)
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "RIN" || co.Number != "178" {
+			t.Errorf("imageProductID resolved to %v, want RIN 178", co)
+		}
+	})
+
 	t.Run("a serialized hit lands on its plain twin unless the wording says so", func(t *testing.T) {
 		image := "/prodotti/singles/magic/xmh3/emrakul-the-world-anew-v4_774085.jpg"
 		got := imageProductID(b, "Modern Horizons 3: Extras", image, "Emrakul, the World Anew", "Modern Horizons 3: Extras", "V.1", false)
