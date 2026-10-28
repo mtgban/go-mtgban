@@ -624,7 +624,10 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					if shelfRun != nil {
 						runFinishes = shelfRun
 					}
-					variation := catalogTreatment(notes)
+					// A preorder's release date follows its note, and the
+					// day of the month would read as a collector number.
+					head, _, _ := strings.Cut(notes, "Preorder Notes:")
+					variation := catalogTreatment(head)
 					shelf = pokemonPromoShelf(csi.backend, cardName, shelf, rarity, isFoil, variation)
 					theCard = pokemonHoloShelf(csi.backend, pokemonCosmosHolo(csi.backend, pokemonListing(csi.backend, cardName, shelf, variation, isFoil), rarity))
 				case mtgmatcher.GameOnePiece:
