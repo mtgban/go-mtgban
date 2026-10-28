@@ -500,3 +500,46 @@ func TestMatchBasicByImage(t *testing.T) {
 		})
 	}
 }
+
+// A card the store's version tag cannot place is retried with the number the
+// listing states, and answered only where the landed printing carries it.
+func TestMatchByListedNumber(t *testing.T) {
+	b := realDatastore(t)
+	tests := []struct {
+		desc    string
+		name    string
+		edition string
+		number  string
+		wantSet string
+		wantNum string
+	}{
+		{"a number settles the version tag", "Ransom Note (V.2)", "Commander: Murders at Karlov Manor", "46", "MKC", "46"},
+		{"a The List number is the tail of its own", "Rout (V.1)", "The List", "34", "PLST", "INV-34"},
+		{"a number the card was never printed with is refused", "Ransom Note (V.2)", "Commander: Murders at Karlov Manor", "999", "", ""},
+		{"a listing stating no number is refused", "Ransom Note (V.2)", "Commander: Murders at Karlov Manor", "", "", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			card := Card{Name: tt.name, Edition: tt.edition, Number: tt.number, Variants: []Variant{{Foil: "Non Foil", Language: "EN"}}}
+			input, err := preprocess(b, &card, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			retry := *input
+
+			id, found := matchByListedNumber(b, &card, retry)
+			if tt.wantSet == "" {
+				if found {
+					co, _ := b.GetUUID(id)
+					t.Errorf("matchByListedNumber() = %v, want no match", co)
+				}
+				return
+			}
+			co, err := b.GetUUID(id)
+			if !found || err != nil || co.SetCode != tt.wantSet || co.Number != tt.wantNum {
+				t.Errorf("matchByListedNumber() = %v, want %s %s", co, tt.wantSet, tt.wantNum)
+			}
+		})
+	}
+}

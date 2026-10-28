@@ -170,6 +170,11 @@ func (cgc *Cardgamecorner) processEntry(channel chan<- resultChan, cards []listi
 					continue
 				}
 				cardID, err = id, nil
+			} else if err != nil && !errors.Is(err, mtgmatcher.ErrUnsupported) && cgc.backend.Game == mtgmatcher.GameMagic {
+				id, found := matchByListedNumber(cgc.backend, &card, retry)
+				if found {
+					cardID, err = id, nil
+				}
 			}
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
