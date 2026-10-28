@@ -456,13 +456,17 @@ func preprocess(b *mtgmatcher.Backend, cardName, edition, notes string) (*mtgmat
 	}
 
 	// Set finish
-	isFoil := strings.Contains(strings.ToLower(notes), "foil")
-	if strings.Contains(strings.ToLower(notes), "etched") {
+	// Etched is its own finish, so an etched listing is not also a foil one,
+	// whether the notes or the card name ("(Foil Etched)") say so.
+	lowNotes := strings.ToLower(notes)
+	etchedNote := strings.Contains(lowNotes, "etched")
+	if etchedNote {
 		if variation != "" {
 			variation += " "
 		}
 		variation += "Etched"
 	}
+	isFoil := strings.Contains(lowNotes, "foil") && !etchedNote && !mtgmatcher.Contains(variation, "Etched")
 
 	var language string
 	for lang := range mtgmatcher.LanguageTag2LanguageCode {

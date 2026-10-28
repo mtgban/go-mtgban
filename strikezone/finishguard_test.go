@@ -73,3 +73,39 @@ func TestFromCuteToBrutePathway(t *testing.T) {
 		t.Errorf("got %s #%s, want PLST #ZNR-259", co.SetCode, co.Number)
 	}
 }
+
+// TestEtchedListingIsNotFoil pins that a "(Foil Etched)" listing asks for the
+// etched finish alone, in both the retail and the buylist notes, so a foil
+// printing such as the Galaxy foil Sol Ring never claims it.
+func TestEtchedListingIsNotFoil(t *testing.T) {
+	b := realDatastore(t)
+
+	tests := []struct {
+		name, notes, number string
+	}{
+		{"Sol Ring (Retro Frame) (Foil Etched)", "Foil", "1074"},
+		{"Plains (Tokyo Lands) (Foil Etched)", "Near Mint Foil English", "46"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			card, err := preprocess(b, tt.name, "Secret Lair", tt.notes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if card.Foil {
+				t.Errorf("etched listing kept Foil: %+v", card)
+			}
+			id, err := b.Match(card)
+			if err != nil {
+				t.Fatal(err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "SLD" || co.Number != tt.number || !co.Etched {
+				t.Errorf("got %s #%s etched=%v, want SLD #%s etched", co.SetCode, co.Number, co.Etched, tt.number)
+			}
+		})
+	}
+}
