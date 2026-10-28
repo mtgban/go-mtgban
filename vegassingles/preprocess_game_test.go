@@ -673,14 +673,14 @@ func TestPreprocessImageID(t *testing.T) {
 func TestPreprocessImageIDNumbered(t *testing.T) {
 	b := withRiftbound(t)
 	product := VSProduct{
-		DisplayName:    "Corina Veraza (179/221) - Spiritforged Foil",
+		DisplayName:    "Corinna Veraza (179/221) - Spiritforged Foil",
 		SelectedFinish: "Foil",
 		ImageURL:       "https://cdn.shopify.com/s/files/1/0912/8761/7842/files/666471_aea6bc27-1b0c-4f1f-8d1e-3b0f4a1c2d3e.jpg?v=1760151809",
 		ProductData:    VSProductData{SetName: "Spiritforged"},
 	}
 
 	other := product
-	other.DisplayName = "Corina Veraza (180/221) - Spiritforged Foil"
+	other.DisplayName = "Corinna Veraza (180/221) - Spiritforged Foil"
 	refused, err := preprocess(b, other, mtgmatcher.GameRiftbound)
 	if err != nil {
 		t.Fatal(err)
