@@ -40,13 +40,6 @@ var gundamLabels = map[int]string{
 	914392: "Store Tournament Participation Pack", // Gundam AGE-1 Normal, GD02-029
 }
 
-// gundamCrossedLinks gives the TCGplayer id of the two Beta Char's Zaku II
-// products whose CardTrader blueprints list each other's Cardmarket id.
-var gundamCrossedLinks = map[int]int{
-	905979: 616641, // Rare +
-	905980: 616640, // Rare
-}
-
 // gundamUnmade lists Cardmarket products that name no printing at all: a
 // duplicate carrying a code of another card, or a prize that is no card.
 var gundamUnmade = map[int]bool{
