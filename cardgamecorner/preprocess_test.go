@@ -329,6 +329,29 @@ func TestImageProductID(t *testing.T) {
 		}
 	})
 
+	t.Run("a promo shelf naming no set takes the id's printing", func(t *testing.T) {
+		got := imageProductID(b, "Promo", "/prodotti/singles/magic/pmf/lightning-bolt-v1_367404.jpg", "Lightning Bolt", "Promo", "", false)
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "PF19" || co.Number != "1" {
+			t.Errorf("imageProductID resolved to %v, want PF19 1", co)
+		}
+	})
+
+	t.Run("a serialized hit lands on its plain twin unless the wording says so", func(t *testing.T) {
+		image := "/prodotti/singles/magic/xmh3/emrakul-the-world-anew-v4_774085.jpg"
+		got := imageProductID(b, "Modern Horizons 3: Extras", image, "Emrakul, the World Anew", "Modern Horizons 3: Extras", "V.1", false)
+		co, err := b.GetUUID(got)
+		if err != nil || co.SetCode != "MH3" || co.Number != "381" {
+			t.Errorf("imageProductID resolved to %v, want MH3 381", co)
+		}
+
+		got = imageProductID(b, "Modern Horizons 3: Extras", image, "Emrakul, the World Anew", "Modern Horizons 3: Extras", "Serial Numbered", false)
+		co, err = b.GetUUID(got)
+		if err != nil || co.SetCode != "MH3" || co.Number != "381z" {
+			t.Errorf("imageProductID resolved to %v, want MH3 381z", co)
+		}
+	})
+
 	t.Run("a Phyrexian-language hit is accepted for an English listing", func(t *testing.T) {
 		got := imageProductID(b, "Phyrexia: All Will Be One: Extras",
 			"/x/phyrexia-all-will-be-one-extras-jace-the-perfected-mind-v5-692910.jpg",
