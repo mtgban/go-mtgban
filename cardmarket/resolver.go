@@ -533,6 +533,17 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			cardIDFoil, _ = r.backend.MatchID(cardID, true)
 			break
 		}
+		// The foil is the whole product: the nonfoil of the same TCGplayer
+		// product is priced by the set's own rune.
+		foilLink, linked := riftboundFoilLinks[product.IDProduct]
+		if linked && r.gameID == cm.GameRiftbound {
+			cardID, err = r.backend.MatchIDFinish(fmt.Sprint(foilLink), "foil")
+			if err != nil {
+				return "", "", false, err
+			}
+			cardIDFoil = cardID
+			break
+		}
 		tcgID, found := r.tcgBridge[product.IDProduct]
 		if crossed, linked := productLinks[product.IDProduct]; linked {
 			tcgID, found = crossed, true
