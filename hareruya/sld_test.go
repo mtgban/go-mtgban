@@ -80,3 +80,29 @@ func TestSecretLairCommanderDeck(t *testing.T) {
 		})
 	}
 }
+
+// A List reprint can carry the plain [SLD] tag in the English line while the
+// Japanese line names the shelf, and Secret Lair holds a card of that name.
+func TestListReprintTaggedSLD(t *testing.T) {
+	b := realDatastore(t)
+	product := Product{
+		ProductName:   "(GRN-123)《獣に囁く者/Beast Whisperer》[PWシンボル付き再版] 緑R",
+		ProductNameEN: "(GRN-123)《Beast Whisperer》[SLD]",
+		CardName:      "Beast Whisperer",
+	}
+	card, err := Preprocess(b, product)
+	if err != nil {
+		t.Fatalf("Preprocess = %v", err)
+	}
+	id, err := b.Match(card)
+	if err != nil {
+		t.Fatalf("Match(%#v) = %v", card, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.SetCode != "PLST" || co.Number != "GRN-123" {
+		t.Errorf("Match(%#v) = %s|%s, want PLST|GRN-123", card, co.SetCode, co.Number)
+	}
+}
