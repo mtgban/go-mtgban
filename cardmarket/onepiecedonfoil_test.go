@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // onePieceDonDatastore is the published datastore's three Zoro DON!! cards
@@ -57,8 +59,8 @@ func TestOnePieceDonFoilVersion(t *testing.T) {
 }
 
 // TestOnePieceDonAliasing pins that an event DON!! the datastore does not
-// carry, which aliases across its DON!! rows, is a refusal rather than an
-// error.
+// carry, which aliases across its DON!! rows, answers the matcher's own
+// error rather than a refusal.
 func TestOnePieceDonAliasing(t *testing.T) {
 	b := datastoreBackend(t, "onepiece", onePieceDonDatastore)
 
@@ -70,7 +72,8 @@ func TestOnePieceDonAliasing(t *testing.T) {
 	product := cm.CatalogProduct{ExpansionID: 5244, Name: "Don!! (Elbaph)", Rarity: "DON!!"}
 
 	got := mkm.resolver.resolveMapped(858544, product, exp)
-	if !errors.Is(got.err, errNoPrinting) || got.cardID != "" {
-		t.Errorf("resolveMapped = (%q, %v), want a refusal", got.cardID, got.err)
+	var alias *mtgmatcher.AliasingError
+	if !errors.As(got.err, &alias) || got.cardID != "" {
+		t.Errorf("resolveMapped = (%q, %v), want an aliasing error", got.cardID, got.err)
 	}
 }

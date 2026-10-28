@@ -128,9 +128,6 @@ func (r *resolver) onePieceByID(product *cm.Product) (string, error) {
 	return id, nil
 }
 
-// onePieceDonRarity is the rarity Cardmarket files every DON!! card under.
-const onePieceDonRarity = "DON!!"
-
 // onePieceTrophy reports whether a product is a serialized trophy card: an
 // event prize, no card of the game, priced only where an id links it.
 func onePieceTrophy(product *cm.Product) bool {

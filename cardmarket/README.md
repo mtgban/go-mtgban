@@ -143,8 +143,9 @@ wording. CardTrader reads the same space through each blueprint's
 shelf that the bridge does not link reaches the booster printing its code
 names, which another shelf prices already, so it is a twin
 (`onePieceDeckReprint`); a bridge-linked one names a printing of its own and
-stays a refusal. An event DON!! no catalog carries aliases across every DON!!
-row and counts as a refusal (`onePieceDonRarity`), and a serialized trophy
+stays a refusal. An event DON!! no catalog carries, and a Reprints/Demo Decks
+card the reprint set does not number the same way, are matcher errors the walk
+names (`product id N ... returned ...`), not refusals. A serialized trophy
 card that no id links is skipped (`onePieceTrophy`). A foil that
 Cardmarket sells as its own product (`foilSold`) is not handed to the plain
 version as a second printing. Yu-Gi-Oh's `yugiohNoRow` holds the products of a

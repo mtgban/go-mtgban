@@ -669,11 +669,6 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// what is left to say; see twinsAmong.
 			var alias *mtgmatcher.AliasingError
 			if r.gameID == cm.GameOnePiece {
-				// An event DON!! no catalog carries aliases across every
-				// DON!! row, which is a refusal, not an alarm.
-				if errors.As(err, &alias) && product.Rarity == onePieceDonRarity {
-					return "", "", false, errNoPrinting
-				}
 				return "", "", false, err
 			}
 			r.logf("%v", err)
@@ -702,12 +697,6 @@ func (r *resolver) resolveProduct(product *cm.Product) (string, string, bool, er
 			// probe's error may carry the more informative verdict
 			if errFoil != nil {
 				err = errFoil
-			}
-			// Reprints/Demo Decks renumber or drop the card outright, so
-			// a wrong-variant miss there names no printing of ours.
-			_, shelved := onePieceShelves[product.ExpansionName]
-			if r.gameID == cm.GameOnePiece && shelved && errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
-				return "", "", false, errNoPrinting
 			}
 			if r.gameID != cm.GameOnePiece {
 				r.logf("%v", err)
