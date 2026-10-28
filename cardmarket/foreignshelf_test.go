@@ -74,6 +74,7 @@ func TestNonEnglishProduct(t *testing.T) {
 		{"Riftbound Chinese Seraphine", cm.GameRiftbound, 917605},
 		{"Riftbound Chinese signed Seraphine", cm.GameRiftbound, 917606},
 		{"Lorcana Chinese Snow White", cm.GameLorcana, 895480},
+		{"Lorcana Chinese Stitch", cm.GameLorcana, 835454},
 	} {
 		r := &resolver{gameID: tt.gameID}
 		_, _, _, err := r.resolveProduct(&cm.Product{IDProduct: tt.id})
