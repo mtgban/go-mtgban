@@ -36,6 +36,9 @@ var listingCorrections = map[string]struct {
 	"8036192": {title: "Homeward Path (Secret Lair 2811)", edition: "Secret Lair Drop", number: "1467", correctedTitle: "Homeward Path (Secret Lair 1467)"},
 	"8036194": {title: "Homeward Path (Secret Lair 2811) - FOIL", edition: "Secret Lair Drop", number: "1467★", correctedTitle: "Homeward Path (Secret Lair 1467) - FOIL"},
 	"8167207": {title: "Arcane Signet (Secret Lair 2464) - FOIL", edition: "Secret Lair Drop", number: "2816", correctedTitle: "Arcane Signet (Secret Lair 2816) - FOIL"},
+	// The Elves vs. Goblins run (167847-167866) is the 2007 deck; the
+	// Anthology edition and the ids belong to The List copy.
+	"167849": {title: "Ambush Commander - FOIL", edition: "Duel Decks Anthology: Elves vs. Goblins", number: "1", correctedEdition: "Elves vs. Goblins", ignoreIDs: true},
 	// The plain printing's number and ids are copied onto the variant.
 	"7911360": {title: "Gandalf, White Rider (Extended Art)", edition: "The Lord of the Rings: Tales of Middle-earth", number: "290", correctedNumber: "389", ignoreIDs: true},
 	"7429110": {title: "Captain's Claws (Goldnight Castigator Shadow) - FOIL", edition: "Oath of the Gatewatch", number: "162", correctedNumber: "162†", ignoreIDs: true},
