@@ -176,7 +176,11 @@ var tcgIDOverrides = map[int]int{
 	// Riftbound: the T1 2025 Worlds Signature Edition Bundle, T1S002.
 	400778: 716016, // Xin Zhao, Vigilant, 002 Showcase
 	400783: 716018, // Xin Zhao, Vigilant, 002s Showcase, Signed Serialized
+	// Riftbound Radiance: the id names the neighbouring or the plain card.
+	415816: 723434, // The Exile, 149, sent Blade of the Exile's 722279
+	417516: 723429, // Seraphine, Inspiring, 065a Alternate Art, sent the plain 723430
 	// Pokemon: none sent either.
+	285780: 658742, // Professor Turo's Scenario, Professor Program Stamp | 171/182
 	340672: 211449, // Palkia & Dialga LEGEND, Jumbo Oversized
 	242584: 250252, // Mewtwo V-UNION, Jumbo Oversized
 	332883: 545663, // Lugia ex, Jumbo Oversized, TCG Classic deck
