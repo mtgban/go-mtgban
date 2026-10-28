@@ -792,16 +792,43 @@ func matchBasicByImage(b *mtgmatcher.Backend, card *Card, input mtgmatcher.Input
 		}
 		attempt := input
 		attempt.Variation = number
-		cardID, err := b.Match(&attempt)
-		if err != nil {
-			continue
-		}
-		co, err := b.GetUUID(cardID)
-		if err == nil && (co.Number == number || co.PlainNumber == number) {
+		cardID, found := matchNumbered(b, &attempt, number)
+		if found {
 			return cardID, true
 		}
 	}
 	return "", false
+}
+
+// matchNumbered matches the card and answers it only where the printing it
+// lands on carries the number: its own, its plain one, or the tail of a
+// The List number, which the set it was printed in prefixes.
+func matchNumbered(b *mtgmatcher.Backend, input *mtgmatcher.InputCard, number string) (string, bool) {
+	cardID, err := b.Match(input)
+	if err != nil {
+		return "", false
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		return "", false
+	}
+	if co.Number == number || co.PlainNumber == number || strings.HasSuffix(co.Number, "-"+number) {
+		return cardID, true
+	}
+	return "", false
+}
+
+// matchByListedNumber retries a card the wording could not place with the
+// number the listing states, where the store's version tag counts its own
+// index and the number names the printing. input is a copy taken before the
+// first Match, which mutates it.
+func matchByListedNumber(b *mtgmatcher.Backend, card *Card, input mtgmatcher.InputCard) (string, bool) {
+	number := strings.TrimLeft(card.Number, "0")
+	if number == "" {
+		return "", false
+	}
+	input.Variation = number
+	return matchNumbered(b, &input, number)
 }
 
 // genericVersionRe matches the store's bare "Version N" tag, which names no
