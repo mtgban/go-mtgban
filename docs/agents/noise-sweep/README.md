@@ -127,6 +127,7 @@ work; see `harnesses.md`.
 | Vendor sells a non-card (marker, insert, binder label) | scraper → `ErrUnsupported` |
 | Vendor sells a printing that was never made | scraper → skip (`ErrUnsupported`), class `unmade`, after a census of the whole shelf or edition; replay the full catalog so only the bogus rows move (#750, #756) |
 | One vendor product covers two printings | leave refused, record it |
+| A Magic printing the datastore has lacks its TCGplayer id, or carries the wrong one | upstream: a row in a Scryfall CSV (scryfall id, old and new TCGplayer id), checked live; no local id table (#1326) |
 | No row exists at all | datastore gap - record, do not paper over |
 
 Datastore gaps are the last resort, not the first explanation. A missing row
