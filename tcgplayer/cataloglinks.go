@@ -22,8 +22,11 @@ import (
 // card only when nothing is in doubt: no card claims the product,
 // the card has no product of its own, the two share an English name and a
 // collector number, the product's group is named for the card's set (whole,
-// or after a "Promo Pack: "-style prefix), and each is the other's only
-// candidate.
+// after a "Promo Pack: "-style prefix, or before a " Reprints" suffix), and
+// each is the other's only candidate. A card numbered "<code>-<number>", as
+// The List files its reprints, is known by the number alone, a two-faced
+// card by its front face alone, and a product named "<name> (<code>)" must
+// come from the set that code names.
 func LoadCatalogLinks(b *matcher.Backend, reader io.Reader) (SKUMap, error) {
 	var dump tcgplayer.CatalogDump
 	err := json.NewDecoder(reader).Decode(&dump)
@@ -42,6 +45,30 @@ var productIDKeys = [...]string{"tcgplayerProductId", "tcgplayerEtchedProductId"
 // catalogLinkKey is what a product and a card must agree on to be linked.
 func catalogLinkKey(setName, name, number string) string {
 	return matcher.Normalize(setName) + "|" + matcher.Normalize(name) + "|" + strings.TrimLeft(number, "0")
+}
+
+// splitSetCode cuts a trailing " (CODE)" off a product name, where CODE is a
+// set code, and returns the name and the code, or the name and "".
+func splitSetCode(name string) (string, string) {
+	head, tail, found := strings.Cut(strings.TrimSuffix(name, ")"), " (")
+	if !found || !strings.HasSuffix(name, ")") || !isSetCode(tail) {
+		return name, ""
+	}
+	return head, tail
+}
+
+// isSetCode reports whether s looks like a set code: two to five capitals
+// or digits.
+func isSetCode(s string) bool {
+	if len(s) < 2 || len(s) > 5 {
+		return false
+	}
+	for _, r := range s {
+		if (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
+			return false
+		}
+	}
+	return true
 }
 
 func catalogLinks(b *matcher.Backend, dump *tcgplayer.CatalogDump) SKUMap {
@@ -64,8 +91,22 @@ func catalogLinks(b *matcher.Backend, dump *tcgplayer.CatalogDump) SKUMap {
 			if owned || card.Language != "English" {
 				continue
 			}
-			key := catalogLinkKey(set.Name, card.Name, card.Number)
-			unlinked[key] = append(unlinked[key], card)
+			names := []string{card.Name}
+			front, _, split := strings.Cut(card.Name, " // ")
+			if split {
+				names = append(names, front)
+			}
+			numbers := []string{card.Number}
+			prefix, tail, found := strings.Cut(card.Number, "-")
+			if found && isSetCode(prefix) {
+				numbers = append(numbers, tail)
+			}
+			for _, name := range names {
+				for _, number := range numbers {
+					key := catalogLinkKey(set.Name, name, number)
+					unlinked[key] = append(unlinked[key], card)
+				}
+			}
 		}
 	}
 
@@ -85,9 +126,18 @@ func catalogLinks(b *matcher.Backend, dump *tcgplayer.CatalogDump) SKUMap {
 		if found {
 			setNames = append(setNames, after)
 		}
+		trimmed, found := strings.CutSuffix(setNames[0], " Reprints")
+		if found {
+			setNames = append(setNames, trimmed)
+		}
+		name, code := splitSetCode(product.Name)
 		var hits []matcher.Card
 		for _, setName := range setNames {
-			hits = append(hits, unlinked[catalogLinkKey(setName, product.Name, number)]...)
+			for _, card := range unlinked[catalogLinkKey(setName, name, number)] {
+				if code == "" || strings.HasPrefix(card.Number, code+"-") {
+					hits = append(hits, card)
+				}
+			}
 		}
 		if len(hits) != 1 {
 			continue

@@ -42,6 +42,33 @@ func unlinkedCards(b *matcher.Backend, n int) []matcher.Card {
 	return cards
 }
 
+// unlinkedListCard returns an English printing numbered "<code>-<number>"
+// that the datastore gives no product, the only one of its set, name and
+// number: how The List files its reprints.
+func unlinkedListCard(b *matcher.Backend) matcher.Card {
+	count := map[string]int{}
+	var all []matcher.Card
+	for _, code := range b.GetAllSets() {
+		set, _ := b.GetSet(code)
+		for _, card := range set.Cards {
+			_, tail, found := strings.Cut(card.Number, "-")
+			if !found || ownsProduct(card) || card.Language != "English" {
+				continue
+			}
+			count[catalogLinkKey(set.Name, card.Name, tail)]++
+			all = append(all, card)
+		}
+	}
+	for _, card := range all {
+		set, _ := b.GetSet(card.SetCode)
+		_, tail, _ := strings.Cut(card.Number, "-")
+		if count[catalogLinkKey(set.Name, card.Name, tail)] == 1 && isSetCode(strings.SplitN(card.Number, "-", 2)[0]) {
+			return card
+		}
+	}
+	return matcher.Card{}
+}
+
 func ownsProduct(card matcher.Card) bool {
 	for _, key := range productIDKeys {
 		if card.Identifiers[key] != "" {
@@ -103,6 +130,11 @@ func TestCatalogLinks(t *testing.T) {
 	if etched.Name == "" {
 		t.Skip("the datastore has no printing sold etched only")
 	}
+	list := unlinkedListCard(b)
+	if list.Name == "" {
+		t.Skip("the datastore gives a product to every printing numbered by set")
+	}
+	listCode, listNumber, _ := strings.Cut(list.Number, "-")
 	claimedID, _ := strconv.Atoi(priced.Identifiers["tcgplayerProductId"])
 
 	setName := func(card matcher.Card) string {
@@ -119,6 +151,7 @@ func TestCatalogLinks(t *testing.T) {
 			{GroupID: 4, Name: "Not " + setName(cards[3])},
 			{GroupID: 5, Name: setName(priced)},
 			{GroupID: 6, Name: setName(etched)},
+			{GroupID: 7, Name: setName(list) + " Reprints"},
 		},
 		Products: []tcgplayer.Product{
 			// A group named for the set after a prefix
@@ -134,6 +167,10 @@ func TestCatalogLinks(t *testing.T) {
 			catalogProduct(900000006, 5, priced.Name, priced.Number),
 			// Nor does one sold etched only
 			catalogProduct(900000007, 6, etched.Name, etched.Number),
+			// A reprints group, the number without its set code, named for the
+			// set it comes from; another set's code ties nothing
+			catalogProduct(900000008, 7, list.Name+" ("+listCode+")", listNumber),
+			catalogProduct(900000009, 7, list.Name+" (ZZZ)", listNumber),
 			// A product a card claims is not up for linking
 			catalogProduct(claimedID, 1, cards[0].Name, cards[0].Number),
 		},
@@ -144,6 +181,7 @@ func TestCatalogLinks(t *testing.T) {
 	want := map[string]int{
 		cards[0].Identifiers["mtgjsonId"]: 900000001,
 		cards[1].Identifiers["mtgjsonId"]: 900000002,
+		list.Identifiers["mtgjsonId"]:     900000008,
 	}
 	if len(links) != len(want) {
 		t.Errorf("got %d links, want %d: %v", len(links), len(want), links)
