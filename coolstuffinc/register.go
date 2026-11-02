@@ -37,7 +37,7 @@ func newScraper(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error)
 	if err != nil {
 		return nil, err
 	}
-	scraper.logCallback = opts.LogCallback
+	scraper.printf = mtgban.TaggedLog("CSI", opts.LogCallback)
 	scraper.targetEdition = opts.TargetEdition
 	scraper.partner = opts.Affiliate
 	includeOOS, err := mtgban.Resource[bool](opts, ResourceIncludeOOS)
@@ -56,7 +56,7 @@ func newScraperSealed(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, 
 	if err != nil {
 		return nil, err
 	}
-	scraper.logCallback = opts.LogCallback
+	scraper.printf = mtgban.TaggedLog("CSISealed", opts.LogCallback)
 	scraper.partner = opts.Affiliate
 	if opts.MaxConcurrency != 0 {
 		scraper.maxConcurrency = opts.MaxConcurrency

@@ -77,24 +77,18 @@ var name2shorthand = map[string]string{
 // Coolstuffinc prices Cool Stuff Inc's singles, both what they sell and what
 // they buy.
 type Coolstuffinc struct {
-	logCallback mtgban.LogCallbackFunc
-	partner     string
+	mtgban.Stock
+
+	printf  mtgban.LogCallbackFunc
+	partner string
 
 	// If set to true scrape will include all entries without a nonfoil NM price
 	// but will be almost twice as slow
 	includeOOS bool
 
-	inventoryDate  time.Time
-	buylistDate    time.Time
 	maxConcurrency int
 
 	targetEdition string
-
-	disableRetail  bool
-	disableBuylist bool
-
-	inventory mtgban.InventoryRecord
-	buylist   mtgban.BuylistRecord
 
 	client  *http.Client
 	shelf   string
@@ -202,13 +196,12 @@ func buylistVariation(product CSIPriceEntry) string {
 // NewScraper returns a singles scraper for the datastore's game.
 func NewScraper(b *matcher.Backend) (*Coolstuffinc, error) {
 	game := b.Game
-	shelf, ok := csiGames[game]
-	if !ok {
-		return nil, fmt.Errorf("unsupported game %q", game)
+	shelf, err := mtgban.ForGame(csiGames, game)
+	if err != nil {
+		return nil, err
 	}
-	csi := Coolstuffinc{}
-	csi.inventory = mtgban.InventoryRecord{}
-	csi.buylist = mtgban.BuylistRecord{}
+	csi := Coolstuffinc{Stock: mtgban.NewStock()}
+	csi.printf = mtgban.TaggedLog("CSI", nil)
 	csi.client = newCSIHTTPClient()
 	csi.maxConcurrency = defaultConcurrency
 	csi.shelf = shelf
@@ -223,12 +216,6 @@ type responseChan struct {
 	cardID   string
 	invEntry *mtgban.InventoryEntry
 	relaxed  bool
-}
-
-func (csi *Coolstuffinc) printf(format string, a ...any) {
-	if csi.logCallback != nil {
-		csi.logCallback("[CSI] "+format, a...)
-	}
 }
 
 // saleTail is what the price column writes in front of a discounted price.
@@ -718,14 +705,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						csi.printf("%v", theCard)
 						csi.printf("'%s' '%s' '%s'", cardName, edition, notes)
 						csi.printf("- %s", link)
-
-						var alias *matcher.AliasingError
-						if errors.As(err, &alias) {
-							for _, probe := range alias.Probe() {
-								card, _ := csi.backend.GetUUID(probe)
-								csi.printf("- %s", card)
-							}
-						}
+						mtgban.LogAliasing(csi.printf, csi.backend, err)
 					}
 					return
 				}
@@ -870,9 +850,9 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 			}
 			var err error
 			if record.relaxed {
-				err = csi.inventory.AddRelaxed(record.cardID, record.invEntry)
+				err = csi.Inventory().AddRelaxed(record.cardID, record.invEntry)
 			} else {
-				err = csi.inventory.Add(record.cardID, record.invEntry)
+				err = csi.Inventory().Add(record.cardID, record.invEntry)
 			}
 			// The search lists a card once per shelf it sits on, so the
 			// same listing arrives twice; the second is the same entry.
@@ -884,8 +864,6 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	)
 
 	csi.printf("This operation took %v", time.Since(start))
-
-	csi.inventoryDate = time.Now()
 
 	return nil
 }
@@ -1072,14 +1050,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			csi.printf("error: %v", err)
 			csi.printf("original: %q", product)
 			csi.printf("preprocessed: %q", theCard)
-
-			var alias *matcher.AliasingError
-			if errors.As(err, &alias) {
-				for _, probe := range alias.Probe() {
-					co, _ := csi.backend.GetUUID(probe)
-					csi.printf("- %s", co)
-				}
-			}
+			mtgban.LogAliasing(csi.printf, csi.backend, err)
 			continue
 		}
 
@@ -1113,7 +1084,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 
 		var priceRatio, sellPrice float64
 
-		invCards := csi.inventory[cardID]
+		invCards := csi.Inventory()[cardID]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -1135,7 +1106,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				},
 			}
 
-			err := csi.buylist.Add(cardID, &buyEntry)
+			err := csi.Buylist().Add(cardID, &buyEntry)
 			if errors.Is(err, mtgban.ErrDuplicateEntry) {
 				// The buylist names a token once per deck it came in,
 				// every one at one price for the one printing.
@@ -1148,8 +1119,6 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		}
 	}
 
-	csi.buylistDate = time.Now()
-
 	return nil
 }
 
@@ -1159,42 +1128,9 @@ func magicPhantomFoilTwin(co *matcher.CardObject, isFoil int, hasNonfoilRow bool
 	return isFoil == 1 && hasNonfoilRow && !co.Foil && !co.Etched
 }
 
-// SetConfig applies options after the scraper was built. See
-// mtgban.ScraperConfig.
-func (csi *Coolstuffinc) SetConfig(opt mtgban.ScraperOptions) {
-	csi.disableRetail = opt.DisableRetail
-	csi.disableBuylist = opt.DisableBuylist
-}
-
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (csi *Coolstuffinc) Load(ctx context.Context) error {
-	var errs []error
-
-	if !csi.disableRetail {
-		err := csi.scrape(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-		}
-	}
-
-	if !csi.disableBuylist {
-		err := csi.parseBL(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-		}
-	}
-
-	return errors.Join(errs...)
-}
-
-// Inventory returns what Load collected. See mtgban.Seller.
-func (csi *Coolstuffinc) Inventory() mtgban.InventoryRecord {
-	return csi.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (csi *Coolstuffinc) Buylist() mtgban.BuylistRecord {
-	return csi.buylist
+	return csi.LoadHalves(ctx, csi.scrape, csi.parseBL)
 }
 
 // MarketNames names the sub-sellers this market splits into. See
@@ -1215,8 +1151,8 @@ func (csi *Coolstuffinc) InfoForScraper(name string) mtgban.ScraperInfo {
 func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSI"
-	info.InventoryTimestamp = &csi.inventoryDate
-	info.BuylistTimestamp = &csi.buylistDate
+	info.InventoryTimestamp = &csi.InventoryDate
+	info.BuylistTimestamp = &csi.BuylistDate
 	info.CreditMultiplier = 1.25
 	info.Game = csi.backend.Game
 	return

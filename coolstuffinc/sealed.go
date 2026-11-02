@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -20,20 +19,14 @@ import (
 
 // Sealed prices Cool Stuff Inc's sealed product.
 type Sealed struct {
-	logCallback mtgban.LogCallbackFunc
-	partner     string
+	mtgban.Stock
 
-	inventoryDate  time.Time
-	buylistDate    time.Time
+	printf  mtgban.LogCallbackFunc
+	partner string
+
 	maxConcurrency int
 
 	productMap map[string]string
-
-	inventory mtgban.InventoryRecord
-	buylist   mtgban.BuylistRecord
-
-	disableRetail  bool
-	disableBuylist bool
 
 	client  *http.Client
 	shelf   string
@@ -43,13 +36,12 @@ type Sealed struct {
 // NewScraperSealed returns a sealed scraper for the datastore's game.
 func NewScraperSealed(b *matcher.Backend) (*Sealed, error) {
 	game := b.Game
-	shelf, ok := csiGames[game]
-	if !ok {
-		return nil, fmt.Errorf("unsupported game %q", game)
+	shelf, err := mtgban.ForGame(csiGames, game)
+	if err != nil {
+		return nil, err
 	}
-	csi := Sealed{}
-	csi.inventory = mtgban.InventoryRecord{}
-	csi.buylist = mtgban.BuylistRecord{}
+	csi := Sealed{Stock: mtgban.NewStock()}
+	csi.printf = mtgban.TaggedLog("CSISealed", nil)
 	csi.client = newCSIHTTPClient()
 	csi.maxConcurrency = defaultConcurrency
 
@@ -70,12 +62,6 @@ func NewScraperSealed(b *matcher.Backend) (*Sealed, error) {
 	csi.shelf = shelf
 	csi.backend = b
 	return &csi, nil
-}
-
-func (csi *Sealed) printf(format string, a ...any) {
-	if csi.logCallback != nil {
-		csi.logCallback("[CSISealed] "+format, a...)
-	}
 }
 
 const sealedURL = "https://www.coolstuffinc.com/sq/2293832?page=1&sb=price|desc"
@@ -118,7 +104,7 @@ func (csi *Sealed) numOfPages(ctx context.Context) (int, error) {
 	return resultsTotal/resultsPerPage + 1, nil
 }
 
-func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- responseChan, page int) error {
+func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- mtgban.Result, page int) error {
 	csi.printf("Processing page %d", page)
 
 	u, err := url.Parse(sealedURL)
@@ -176,9 +162,9 @@ func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- respons
 			link += "?utm_referrer=" + csi.partner
 		}
 
-		out := responseChan{
-			cardID: uuid,
-			invEntry: &mtgban.InventoryEntry{
+		out := mtgban.Result{
+			CardID: uuid,
+			Inventory: &mtgban.InventoryEntry{
 				Price:    price,
 				Quantity: qty,
 				URL:      link,
@@ -204,19 +190,12 @@ func (csi *Sealed) scrape(ctx context.Context) error {
 	}
 
 	mtgban.WorkerPool(ctx, csi.maxConcurrency, pageNums,
-		func(ctx context.Context, page int, results chan<- responseChan) error {
+		func(ctx context.Context, page int, results chan<- mtgban.Result) error {
 			return csi.processSealedPage(ctx, results, page)
 		},
-		func(record responseChan) {
-			err := csi.inventory.Add(record.cardID, record.invEntry)
-			if err != nil {
-				csi.printf("%s", err.Error())
-			}
-		},
+		csi.Collect(csi.printf),
 		csi.printf,
 	)
-
-	csi.inventoryDate = time.Now()
 
 	return nil
 }
@@ -268,7 +247,7 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 
 		var priceRatio, sellPrice float64
 
-		invCards := csi.inventory[uuid]
+		invCards := csi.Inventory()[uuid]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -285,23 +264,14 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 			InstanceID: product.PPQID,
 		}
 
-		err = csi.buylist.Add(uuid, &buyEntry)
+		err = csi.Buylist().Add(uuid, &buyEntry)
 		if err != nil {
 			csi.printf("%s", err.Error())
 			continue
 		}
 	}
 
-	csi.buylistDate = time.Now()
-
 	return nil
-}
-
-// SetConfig applies options after the scraper was built. See
-// mtgban.ScraperConfig.
-func (csi *Sealed) SetConfig(opt mtgban.ScraperOptions) {
-	csi.disableRetail = opt.DisableRetail
-	csi.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -310,38 +280,11 @@ func (csi *Sealed) Load(ctx context.Context) error {
 	// other games ride the same set-facet search the singles use, with
 	// the sealed-name resolver telling the sealed rows apart from the
 	// card ones.
+	retail := csi.scrape
 	if csi.backend.Game != matcher.GameMagic {
-		var errs []error
-		if !csi.disableRetail {
-			if err := csi.scrapeBysets(ctx); err != nil {
-				errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-			}
-		}
-		if !csi.disableBuylist {
-			if err := csi.parseBL(ctx); err != nil {
-				errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-			}
-		}
-		return errors.Join(errs...)
+		retail = csi.scrapeBysets
 	}
-
-	var errs []error
-
-	if !csi.disableRetail {
-		err := csi.scrape(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-		}
-	}
-
-	if !csi.disableBuylist {
-		err := csi.parseBL(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-		}
-	}
-
-	return errors.Join(errs...)
+	return csi.LoadHalves(ctx, retail, csi.parseBL)
 }
 
 // scrapeBysets walks every set of the game through the same search the
@@ -361,28 +304,26 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 	// the first sighting of a product wins
 	seen := map[string]bool{}
 	mtgban.WorkerPool(ctx, csi.maxConcurrency, queries,
-		func(ctx context.Context, query string, channel chan<- responseChan) error {
+		func(ctx context.Context, query string, channel chan<- mtgban.Result) error {
 			err := csi.processSealedSearch(ctx, channel, query)
 			if err != nil {
 				csi.printf("%s: %s", query, err.Error())
 			}
 			return nil
 		},
-		func(record responseChan) {
-			key := record.cardID + "|" + record.invEntry.OriginalID
+		func(record mtgban.Result) {
+			key := record.CardID + "|" + record.Inventory.OriginalID
 			if seen[key] {
 				return
 			}
 			seen[key] = true
-			err := csi.inventory.Add(record.cardID, record.invEntry)
+			err := csi.Inventory().Add(record.CardID, record.Inventory)
 			if err != nil {
 				csi.printf("%v", err)
 			}
 		},
 		csi.printf,
 	)
-
-	csi.inventoryDate = time.Now()
 
 	return nil
 }
@@ -451,7 +392,7 @@ func searchSealed(ctx context.Context, client *http.Client, shelf, query string)
 // processSealedSearch pages through one query's results, pricing every
 // row the sealed-name resolver recognizes. English only: language-variant
 // names are skipped before resolution.
-func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) error {
+func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- mtgban.Result, query string) error {
 	result, err := searchSealed(ctx, csi.client, csi.shelf, query)
 	if err != nil {
 		return err
@@ -533,9 +474,9 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 				return
 			}
 
-			channel <- responseChan{
-				cardID: uuid,
-				invEntry: &mtgban.InventoryEntry{
+			channel <- mtgban.Result{
+				CardID: uuid,
+				Inventory: &mtgban.InventoryEntry{
 					Conditions: mtgban.NM,
 					Price:      price,
 					Quantity:   qty,
@@ -559,23 +500,13 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 	return nil
 }
 
-// Inventory returns what Load collected. See mtgban.Seller.
-func (csi *Sealed) Inventory() mtgban.InventoryRecord {
-	return csi.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (csi *Sealed) Buylist() mtgban.BuylistRecord {
-	return csi.buylist
-}
-
 // Info describes this scraper. See mtgban.Scraper.
 func (csi *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSISealed"
 	info.Game = csi.backend.Game
-	info.InventoryTimestamp = &csi.inventoryDate
-	info.BuylistTimestamp = &csi.buylistDate
+	info.InventoryTimestamp = &csi.InventoryDate
+	info.BuylistTimestamp = &csi.BuylistDate
 	info.SealedMode = true
 	info.CreditMultiplier = 1.25
 	return

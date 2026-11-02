@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 func TestGundamShelf(t *testing.T) {
@@ -261,9 +262,9 @@ func TestPreorderOfferIsSkippedQuietly(t *testing.T) {
 	csi := Coolstuffinc{
 		client: newCSIHTTPClient(),
 		shelf:  GameGundam,
-		logCallback: func(format string, a ...any) {
+		printf: mtgban.TaggedLog("CSI", func(format string, a ...any) {
 			logged = append(logged, fmt.Sprintf(format, a...))
-		},
+		}),
 	}
 	results := make(chan responseChan, 1)
 	err := csi.processSearch(context.Background(), results, "Starter Deck", nil)

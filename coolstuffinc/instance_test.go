@@ -88,7 +88,7 @@ func TestInstanceIDs(t *testing.T) {
 		t.Fatalf("parseBL(): %v", err)
 	}
 	var ids []string
-	for _, entries := range csi.buylist {
+	for _, entries := range csi.Buylist() {
 		for _, entry := range entries {
 			ids = append(ids, entry.InstanceID)
 		}

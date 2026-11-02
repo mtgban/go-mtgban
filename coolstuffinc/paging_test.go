@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // pagingRow is a product row, so a test page can be told from an empty
@@ -47,7 +49,7 @@ func pagingServer(t *testing.T, pages func(srvURL, uri string) (rows int, next s
 
 func walkSearch(t *testing.T) {
 	t.Helper()
-	csi := Coolstuffinc{client: newCSIHTTPClient(), shelf: GameMagic}
+	csi := Coolstuffinc{printf: mtgban.TaggedLog("CSI", nil), client: newCSIHTTPClient(), shelf: GameMagic}
 	results := make(chan responseChan, 1)
 	err := csi.processSearch(context.Background(), results, "Coldsnap", nil)
 	if err != nil {
@@ -171,7 +173,7 @@ func TestPagingReportsARefusedPage(t *testing.T) {
 	csiSearchURL = srv.URL
 	t.Cleanup(func() { csiSearchURL = saved })
 
-	csi := Coolstuffinc{client: newCSIHTTPClient(), shelf: GameMagic}
+	csi := Coolstuffinc{printf: mtgban.TaggedLog("CSI", nil), client: newCSIHTTPClient(), shelf: GameMagic}
 	results := make(chan responseChan, 1)
 	err := csi.processSearch(context.Background(), results, "Coldsnap", nil)
 	if err == nil {

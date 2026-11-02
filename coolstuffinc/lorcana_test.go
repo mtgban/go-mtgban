@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/mtgban"
 
 	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
@@ -163,8 +164,8 @@ func TestLorcanaSealedWording(t *testing.T) {
 	csiSearchURL = srv.URL
 	t.Cleanup(func() { csiSearchURL = saved })
 
-	csi := Sealed{client: newCSIHTTPClient(), shelf: GameLorcana, backend: b}
-	results := make(chan responseChan, 3)
+	csi := Sealed{printf: mtgban.TaggedLog("CSISealed", nil), client: newCSIHTTPClient(), shelf: GameLorcana, backend: b}
+	results := make(chan mtgban.Result, 3)
 	err := csi.processSealedSearch(context.Background(), results, "deck")
 	if err != nil {
 		t.Fatalf("processSealedSearch(): %v", err)
@@ -177,11 +178,11 @@ func TestLorcanaSealedWording(t *testing.T) {
 		"434769": "Disney Lorcana: Wilds Unknown Booster Box Case",
 	}
 	for res := range results {
-		co, err := b.GetUUID(res.cardID)
+		co, err := b.GetUUID(res.CardID)
 		if err != nil {
-			t.Fatalf("GetUUID(%q): %v", res.cardID, err)
+			t.Fatalf("GetUUID(%q): %v", res.CardID, err)
 		}
-		pid := res.invEntry.OriginalID
+		pid := res.Inventory.OriginalID
 		if co.Name != want[pid] {
 			t.Errorf("%s landed on %q, want %q", pid, co.Name, want[pid])
 		}
