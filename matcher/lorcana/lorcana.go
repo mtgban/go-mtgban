@@ -7,7 +7,6 @@ package lorcana
 
 import (
 	"cmp"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -182,13 +181,10 @@ type AllCards struct {
 // It reads the {"meta":...,"data":...} envelope the builders publish, where
 // "data" holds the payload; a bare document reads as empty and is refused.
 func Load(r io.Reader) (*matcher.Backend, error) {
-	var envelope struct {
-		Data AllCards `json:"data"`
-	}
-	if err := json.NewDecoder(r).Decode(&envelope); err != nil {
+	payload, err := matcher.DecodeEnvelope[AllCards](r)
+	if err != nil {
 		return nil, err
 	}
-	payload := envelope.Data
 	if len(payload.Cards) == 0 || len(payload.Sets) == 0 {
 		return nil, errors.New("not a Lorcana datastore")
 	}

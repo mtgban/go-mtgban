@@ -1,6 +1,7 @@
 package matcher
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"maps"
@@ -26,6 +27,20 @@ import (
 
 // GameLoader builds a Backend from a datastore reader for a particular game.
 type GameLoader func(io.Reader) (*Backend, error)
+
+// DecodeEnvelope reads the {"meta":...,"data":...} envelope every datastore
+// builder publishes and returns what "data" holds. A bare document decodes to
+// the zero payload, which a loader then refuses as not its game's datastore.
+func DecodeEnvelope[T any](r io.Reader) (*T, error) {
+	var envelope struct {
+		Data T `json:"data"`
+	}
+	err := json.NewDecoder(r).Decode(&envelope)
+	if err != nil {
+		return nil, err
+	}
+	return &envelope.Data, nil
+}
 
 // NewBackend returns an empty Backend for a datastore game's loader to fill,
 // with every map it and the Add helpers file into made: UUIDs, Hashes,

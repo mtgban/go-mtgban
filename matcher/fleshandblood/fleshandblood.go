@@ -17,7 +17,6 @@ package fleshandblood
 
 import (
 	"cmp"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -131,13 +130,10 @@ type DatastoreSealed struct {
 // It reads the {"meta":...,"data":...} envelope the builders publish, where
 // "data" holds the payload; a bare document reads as empty and is refused.
 func Load(r io.Reader) (*matcher.Backend, error) {
-	var envelope struct {
-		Data Datastore `json:"data"`
-	}
-	if err := json.NewDecoder(r).Decode(&envelope); err != nil {
+	payload, err := matcher.DecodeEnvelope[Datastore](r)
+	if err != nil {
 		return nil, err
 	}
-	payload := envelope.Data
 	if payload.Game != "fleshandblood" || len(payload.Sets) == 0 || len(payload.Cards) == 0 {
 		return nil, errors.New("not a Flesh and Blood datastore")
 	}

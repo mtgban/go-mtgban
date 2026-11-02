@@ -359,9 +359,10 @@ of the same name, and no backend the package keeps for you.
 
 The eight non-Magic loaders share one shape, and a new or changed loader
 keeps it:
-- `Load` reads only the `{"meta":…,"data":…}` envelope. It refuses
-  anything else, and any card missing its id or name, as "not a <Game>
-  datastore". A card with no printing is skipped, not refused.
+- `Load` reads only the `{"meta":…,"data":…}` envelope, through
+  `matcher.DecodeEnvelope`. It refuses anything else, and any card
+  missing its id or name, as "not a <Game> datastore". A card with no
+  printing is skipped, not refused.
 - Cards are read by the names every datastore publishes: `setCode`,
   `number`, `image`, `externalLinks.tcgPlayerId`, and `baseSetSize`,
   `language` and `watermark` where the game has them. Lorcana's `images` is

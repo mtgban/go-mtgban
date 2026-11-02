@@ -2,6 +2,7 @@ package matcher
 
 import (
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -131,5 +132,29 @@ func TestRaritiesRankAsSetsListThem(t *testing.T) {
 		if got != label {
 			t.Errorf("RarityLabel(%q) = %q, want %q", rarity, got, label)
 		}
+	}
+}
+
+// TestDecodeEnvelope pins that the payload is read from "data", and that a
+// bare document decodes to the zero payload a loader then refuses.
+func TestDecodeEnvelope(t *testing.T) {
+	type payload struct {
+		Game string `json:"game"`
+	}
+	for _, tt := range []struct{ doc, want string }{
+		{`{"meta":{},"data":{"game":"gundam"}}`, "gundam"},
+		{`{"game":"gundam"}`, ""},
+	} {
+		got, err := DecodeEnvelope[payload](strings.NewReader(tt.doc))
+		if err != nil {
+			t.Fatalf("DecodeEnvelope(%s): %v", tt.doc, err)
+		}
+		if got.Game != tt.want {
+			t.Errorf("DecodeEnvelope(%s).Game = %q, want %q", tt.doc, got.Game, tt.want)
+		}
+	}
+	_, err := DecodeEnvelope[payload](strings.NewReader(`{"data":`))
+	if err == nil {
+		t.Error("DecodeEnvelope of a truncated document returned no error")
 	}
 }
