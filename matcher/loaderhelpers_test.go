@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 )
 
 // TestPlainOrdinal pins the reduction the games numbering their cards
@@ -156,5 +157,20 @@ func TestDecodeEnvelope(t *testing.T) {
 	_, err := DecodeEnvelope[payload](strings.NewReader(`{"data":`))
 	if err == nil {
 		t.Error("DecodeEnvelope of a truncated document returned no error")
+	}
+}
+
+// TestAddSet pins that a set is filed under its code, in Sets and AllSets,
+// with its release date parsed.
+func TestAddSet(t *testing.T) {
+	b := NewBackend()
+	b.AddSet(&Set{Code: "GD01", Name: "Newtype Rising", ReleaseDate: "2025-07-11"})
+	set := b.Sets["GD01"]
+	if set == nil || !slices.Equal(b.AllSets, []string{"GD01"}) {
+		t.Fatalf("AddSet filed Sets %v, AllSets %v", b.Sets, b.AllSets)
+	}
+	want := time.Date(2025, 7, 11, 0, 0, 0, 0, time.UTC)
+	if !set.ReleaseDateTime.Equal(want) {
+		t.Errorf("ReleaseDateTime = %v, want %v", set.ReleaseDateTime, want)
 	}
 }

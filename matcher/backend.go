@@ -548,6 +548,15 @@ func (b *Backend) RarityRank(rarity string) (int, bool) {
 	return rank, found
 }
 
+// AddSet files a datastore's set under its code, in Sets and AllSets, with
+// its ReleaseDateTime read off ReleaseDate. Each code is the caller's to file
+// once: filing it again replaces the set and lists the code twice.
+func (b *Backend) AddSet(set *Set) {
+	set.ReleaseDateTime, _ = time.Parse("2006-01-02", set.ReleaseDate)
+	b.Sets[set.Code] = set
+	b.AllSets = append(b.AllSets, set.Code)
+}
+
 // AddRarity spells the rarity a printing was published with by RarityName,
 // for the card to carry, and files the words it was published as in
 // RarityLabels. The first spelling filed for a name keeps it. One that is

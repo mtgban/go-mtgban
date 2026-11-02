@@ -12,7 +12,6 @@ import (
 	"io"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
 )
@@ -257,16 +256,13 @@ func (gallery *GalleryBlade) newBackend(properties map[string][]string) *matcher
 
 	// Load all sets first
 	for _, set := range gallery.Sets.Items {
-		b.AllSets = append(b.AllSets, set.ID)
-		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
-		b.Sets[set.ID] = &matcher.Set{
-			Name:            set.Name,
-			Code:            set.ID,
-			BaseSetSize:     set.BaseSetSize,
-			Type:            set.Type,
-			ReleaseDate:     set.ReleaseDate,
-			ReleaseDateTime: releaseDateTime,
-		}
+		b.AddSet(&matcher.Set{
+			Name:        set.Name,
+			Code:        set.ID,
+			BaseSetSize: set.BaseSetSize,
+			Type:        set.Type,
+			ReleaseDate: set.ReleaseDate,
+		})
 	}
 
 	// Gather the full reprint list for each name (keyed by normalized name),

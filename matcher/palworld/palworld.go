@@ -24,7 +24,6 @@ import (
 	"io"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
 )
@@ -162,15 +161,12 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 	b := matcher.NewBackend(matcher.IDSpaceTCGplayer)
 
 	for code, set := range payload.Sets {
-		b.AllSets = append(b.AllSets, code)
-		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
-		b.Sets[code] = &matcher.Set{
-			Name:            set.Name,
-			Code:            code,
-			Type:            set.Type,
-			ReleaseDate:     set.ReleaseDate,
-			ReleaseDateTime: releaseDateTime,
-		}
+		b.AddSet(&matcher.Set{
+			Name:        set.Name,
+			Code:        code,
+			Type:        set.Type,
+			ReleaseDate: set.ReleaseDate,
+		})
 	}
 
 	printingsByName := map[string][]string{}

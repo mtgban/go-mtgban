@@ -13,7 +13,6 @@ import (
 	"maps"
 	"slices"
 	"strconv"
-	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
 )
@@ -322,17 +321,13 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 
 	// Load all sets first
 	for code, set := range ac.Sets {
-		b.AllSets = append(b.AllSets, code)
-
-		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
-		b.Sets[code] = &matcher.Set{
-			Name:            set.Name,
-			Code:            code,
-			ReleaseDate:     set.ReleaseDate,
-			ReleaseDateTime: releaseDateTime,
-			Type:            set.Type,
-			BaseSetSize:     set.BaseSetSize,
-		}
+		b.AddSet(&matcher.Set{
+			Name:        set.Name,
+			Code:        code,
+			ReleaseDate: set.ReleaseDate,
+			Type:        set.Type,
+			BaseSetSize: set.BaseSetSize,
+		})
 	}
 
 	// Which printings are promotional, which no single field says. Upstream
@@ -637,14 +632,11 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 		// from, so an unknown code is a hand-made file; give the product
 		// a set to hang off all the same, or AddSealed would drop it.
 		if b.Sets[product.SetCode] == nil {
-			b.AllSets = append(b.AllSets, product.SetCode)
-			releaseDateTime, _ := time.Parse("2006-01-02", product.ReleaseDate)
-			b.Sets[product.SetCode] = &matcher.Set{
-				Name:            product.SetCode,
-				Code:            product.SetCode,
-				ReleaseDate:     product.ReleaseDate,
-				ReleaseDateTime: releaseDateTime,
-			}
+			b.AddSet(&matcher.Set{
+				Name:        product.SetCode,
+				Code:        product.SetCode,
+				ReleaseDate: product.ReleaseDate,
+			})
 		}
 		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
