@@ -435,6 +435,13 @@ type Backend struct {
 	// A list of deck names of Secret Lair Commander cards
 	SLDDeckNames []string
 
+	// SealedFiller is the game's own name as storefronts prepend it to a
+	// product's ("Pokemon", "One Piece"), lowercased one word at a time:
+	// words the sealed resolver drops as carrying no product identity.
+	// Set by the game's loader, and empty for a game whose name says
+	// nothing a product name could need it for.
+	SealedFiller []string
+
 	// TokenPairIndex maps one face of a two-sided token sheet to the
 	// TCGplayer product id of each pairing it was printed in, keyed by the
 	// other face's normalized name. Filed by the game's loader, and empty

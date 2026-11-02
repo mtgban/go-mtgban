@@ -215,7 +215,7 @@ func TestBothTablesFoldTheSameLetters(t *testing.T) {
 // Every caller folds after lowercasing, so a name that shouts its accent
 // reads as the one that does not.
 func TestSealedTokensFoldAnUppercaseAccent(t *testing.T) {
-	got := sealedTokenCounts("ÉOMER")
+	got := (&Backend{}).sealedTokenCounts("ÉOMER")
 	if got["eomer"] != 1 {
 		t.Errorf("sealedTokenCounts(%q) = %v, want the plain token", "ÉOMER", got)
 	}

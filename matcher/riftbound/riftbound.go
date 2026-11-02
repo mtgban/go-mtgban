@@ -258,6 +258,7 @@ func (gallery *GalleryBlade) newBackend(properties map[string][]string) *matcher
 	}
 
 	b := matcher.NewBackend(matcher.IDSpaceTCGplayer)
+	b.SealedFiller = []string{"riftbound", "league", "legends"}
 
 	// Load all sets first
 	for _, set := range gallery.Sets.Items {

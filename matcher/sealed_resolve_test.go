@@ -1,6 +1,9 @@
 package matcher
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 // The fixture and every expectation below come from the real Cardmarket
 // and StarCityGames catalogs as of 2026-08-10, run against the published
@@ -9,6 +12,11 @@ import "testing"
 func sealedResolveBackend() *Backend {
 	b := &Backend{
 		UUIDs: map[string]*CardObject{},
+		// The fixture holds four games' products, so it drops all their names.
+		SealedFiller: []string{
+			"disney", "lorcana", "riftbound", "league", "legends",
+			"one", "piece", "bandai", "pokemon",
+		},
 		// The cards a sealed name may be decorated with; a bracket only
 		// forgives what the game itself has a card for.
 		CanonicalNames: map[string]string{
@@ -341,14 +349,15 @@ func TestSealedIsLanguageVariant(t *testing.T) {
 // spells without the accent - which is how every catalog but CardTrader's
 // and Cardmarket's spells it.
 func TestSealedTokensFoldAccents(t *testing.T) {
+	b := &Backend{}
 	for _, tt := range []struct{ accented, plain string }{
 		{"Pokémon Center Elite Trainer Box", "Pokemon Center Elite Trainer Box"},
 		{"Mythical Pokémon Collection", "Mythical Pokemon Collection"},
 		// A storefront that shouts its names carries the accent up with it.
 		{"POKÉMON GO ELITE TRAINER BOX", "Pokemon GO Elite Trainer Box"},
 	} {
-		got := sealedTokens(tt.accented)
-		want := sealedTokens(tt.plain)
+		got := b.sealedTokens(tt.accented)
+		want := b.sealedTokens(tt.plain)
 		if !tokensEqual(got, want) {
 			t.Errorf("sealedTokens(%q) = %v, want the same as %q = %v", tt.accented, got, tt.plain, want)
 		}
@@ -865,6 +874,7 @@ func TestResolveSealedOuterBox(t *testing.T) {
 // TestSealedNameSubsumed pins the question a scraper asks of a catalog that
 // reached one product under several of its own names.
 func TestSealedNameSubsumed(t *testing.T) {
+	b := sealedResolveBackend()
 	for _, tt := range []struct {
 		desc   string
 		name   string
@@ -919,7 +929,7 @@ func TestSealedNameSubsumed(t *testing.T) {
 			"Structure Deck: Marik", true,
 		},
 	} {
-		if got := SealedNameSubsumed(tt.name, tt.beside, tt.shelf); got != tt.want {
+		if got := b.SealedNameSubsumed(tt.name, tt.beside, tt.shelf); got != tt.want {
 			t.Errorf("%s: SealedNameSubsumed(%q, %v, %q) = %v, want %v",
 				tt.desc, tt.name, tt.beside, tt.shelf, got, tt.want)
 		}
@@ -927,13 +937,20 @@ func TestSealedNameSubsumed(t *testing.T) {
 }
 
 // TestSealedTokensDropGameName pins that a game's own name carries no product
-// identity, the way every other game's already does. Pokemon storefronts
-// prepend it to half the catalog - "Pokémon TCG: Battle Academy" is the
-// Battle Academy - and read as identity it costs the match.
+// identity. Pokemon storefronts prepend it to half the catalog - "Pokémon
+// TCG: Battle Academy" is the Battle Academy - and read as identity it costs
+// the match. Another game's name is identity: Magic's "All Will Be One"
+// keeps the "one" One Piece drops.
 func TestSealedTokensDropGameName(t *testing.T) {
-	got := sealedTokens("Pokémon TCG: Battle Academy")
-	want := sealedTokens("Battle Academy")
+	pokemon := &Backend{SealedFiller: []string{"pokemon"}}
+	got := pokemon.sealedTokens("Pokémon TCG: Battle Academy")
+	want := pokemon.sealedTokens("Battle Academy")
 	if !tokensEqual(got, want) {
 		t.Errorf("sealedTokens with the game name = %v, want %v", got, want)
+	}
+	magic := &Backend{}
+	got = magic.sealedTokens("Phyrexia: All Will Be One Bundle")
+	if !slices.Contains(got, "one") {
+		t.Errorf("sealedTokens without the game's filler = %v, want one kept", got)
 	}
 }

@@ -3,6 +3,7 @@ package matcher
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -81,14 +82,12 @@ func sealedQuantityTokens(name string) map[string]bool {
 	return out
 }
 
-// sealedFiller are the words that carry no product identity: articles and
-// the game's own name, which storefronts prepend freely.
+// sealedFiller are the words that carry no product identity in any game:
+// articles, and the trading card game every game is. The game's own name,
+// which storefronts prepend freely, is the backend's SealedFiller.
 var sealedFiller = map[string]bool{
 	"the": true, "a": true, "an": true, "of": true, "and": true,
-	"disney": true, "lorcana": true, "riftbound": true, "league": true,
-	"legends": true, "tcg": true, "trading": true, "game": true,
-	"card": true, "cards": true, "one": true, "piece": true,
-	"bandai": true, "pokemon": true,
+	"tcg": true, "trading": true, "game": true, "card": true, "cards": true,
 }
 
 // sealedFold folds the marketplace vocabularies together - TCGplayer's
@@ -116,7 +115,7 @@ func sealedFold(tok string) string {
 // lowercased, deduplicated, sorted, with the filler dropped and the
 // marketplace vocabularies folded together - TCGplayer's "Booster Display"
 // is everyone else's "Booster Box", and a bare "Booster" is a pack.
-func sealedTokens(name string) []string {
+func (b *Backend) sealedTokens(name string) []string {
 	set := map[string]bool{}
 	// The token pattern is plain ASCII, so an accented letter reads as a
 	// separator rather than a letter: "Pokémon" splits into "pok" and "mon"
@@ -124,7 +123,7 @@ func sealedTokens(name string) []string {
 	// are folded the same way before they are looked up.
 	name = asciiLower(name)
 	for _, tok := range sealedTokenRe.FindAllString(name, -1) {
-		if sealedFiller[tok] {
+		if sealedFiller[tok] || slices.Contains(b.SealedFiller, tok) {
 			continue
 		}
 		set[sealedFold(tok)] = true
@@ -193,10 +192,10 @@ func sealedNamesBoxOnly(name string) bool {
 
 // sealedTokenCounts is sealedTokens without the deduplication: how many times
 // a name says each of its words.
-func sealedTokenCounts(name string) map[string]int {
+func (b *Backend) sealedTokenCounts(name string) map[string]int {
 	out := map[string]int{}
 	for _, tok := range sealedTokenRe.FindAllString(asciiLower(name), -1) {
-		if sealedFiller[tok] {
+		if sealedFiller[tok] || slices.Contains(b.SealedFiller, tok) {
 			continue
 		}
 		out[sealedFold(tok)]++
@@ -295,8 +294,8 @@ var sealedPrintRunWords = map[string]bool{
 // run this is. A bracket that names a run alongside anything else - a region,
 // a year - is not one of these: the rest of it is identity we cannot forgive
 // without knowing what it means.
-func sealedPrintRunBracket(inner string) bool {
-	toks := sealedTokens(inner)
+func (b *Backend) sealedPrintRunBracket(inner string) bool {
+	toks := b.sealedTokens(inner)
 	if len(toks) == 0 {
 		return false
 	}
@@ -347,7 +346,7 @@ func (b *Backend) sealedQualifierGroups(name string) []map[string]bool {
 		// number of copies, the placing a promo was handed out for - and
 		// forgiving those would merge products that differ by nothing else.
 		_, isCard := b.CanonicalNames[Normalize(match[1])]
-		if !isCard && !sealedPrintRunBracket(match[1]) {
+		if !isCard && !b.sealedPrintRunBracket(match[1]) {
 			continue
 		}
 		inners = append(inners, match[1])
@@ -361,14 +360,14 @@ func (b *Backend) sealedQualifierGroups(name string) []map[string]bool {
 
 	outside := map[string]bool{}
 	bare := sealedExclusiveRe.ReplaceAllString(bracketRe.ReplaceAllString(name, " "), " ")
-	for _, tok := range sealedTokens(bare) {
+	for _, tok := range b.sealedTokens(bare) {
 		outside[tok] = true
 	}
 
 	var groups []map[string]bool
 	for _, inner := range inners {
 		inside := map[string]bool{}
-		for _, tok := range sealedTokens(inner) {
+		for _, tok := range b.sealedTokens(inner) {
 			if outside[tok] {
 				continue
 			}
@@ -530,12 +529,12 @@ func (b *Backend) buildSealedIndex() *sealedIndex {
 	setCounts := map[string]map[string]int{}
 	for code, set := range b.Sets {
 		own := map[string]bool{}
-		for _, tok := range sealedTokens(set.Name) {
+		for _, tok := range b.sealedTokens(set.Name) {
 			idx.pooled[tok] = true
 			own[tok] = true
 		}
 		setWords[code] = own
-		setCounts[code] = sealedTokenCounts(set.Name)
+		setCounts[code] = b.sealedTokenCounts(set.Name)
 	}
 
 	shelves := map[string][]*sealedEntry{}
@@ -546,9 +545,9 @@ func (b *Backend) buildSealedIndex() *sealedIndex {
 		}
 		entry := &sealedEntry{
 			uuid:     uuid,
-			tokens:   sealedTokens(co.Name),
+			tokens:   b.sealedTokens(co.Name),
 			said:     map[string]bool{},
-			account:  sealedTokenCounts(co.Name),
+			account:  b.sealedTokenCounts(co.Name),
 			groups:   b.sealedQualifierGroups(co.Name),
 			setWords: setWords[co.SetCode],
 			boxOnly:  sealedNamesBoxOnly(co.Name),
@@ -567,7 +566,7 @@ func (b *Backend) buildSealedIndex() *sealedIndex {
 			}
 			var items [][]string
 			for _, item := range sealedListedRe.Split(match[1], -1) {
-				if toks := sealedTokens(item); len(toks) > 0 {
+				if toks := b.sealedTokens(item); len(toks) > 0 {
 					items = append(items, toks)
 				}
 			}
@@ -609,8 +608,8 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 	idx := b.sealedLookup()
 
 	counts := sealedQuantityTokens(name)
-	vendor := sealedTokens(name)
-	vendorCounts := sealedTokenCounts(name)
+	vendor := b.sealedTokens(name)
+	vendorCounts := b.sealedTokenCounts(name)
 	displayOnly := sealedNamesDisplayOnly(name)
 	said := map[string]bool{}
 	for _, tok := range vendor {
@@ -699,7 +698,7 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 			unsaid[contained[0]] < unsaid[contained[1]] {
 			answer = contained[0]
 		} else {
-			answer, _ = sealedHintBreaksTie(hint, contained, unexplained, shared, unsaid, qualifiers)
+			answer, _ = b.sealedHintBreaksTie(hint, contained, unexplained, shared, unsaid, qualifiers)
 		}
 		// Forgiveness runs one way. A candidate the vendor did not say in
 		// full is reachable only because the catalog's own brackets were
@@ -722,12 +721,12 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 // loud - CardTrader shelves `Crucible of War Booster Box` under `Crucible of
 // War - Unlimited`, which names the run the product name omits. A hint that
 // speaks for none of them, or for more than one, leaves the tie standing.
-func sealedHintBreaksTie(hint string, contained []string, unexplained, shared, unsaid map[string]int, qualifiers map[string]map[string]bool) (string, bool) {
+func (b *Backend) sealedHintBreaksTie(hint string, contained []string, unexplained, shared, unsaid map[string]int, qualifiers map[string]map[string]bool) (string, bool) {
 	if hint == "" {
 		return "", false
 	}
 	hintTokens := map[string]bool{}
-	for _, tok := range sealedTokens(hint) {
+	for _, tok := range b.sealedTokens(hint) {
 		hintTokens[sealedPrintRunSynonym(tok)] = true
 	}
 
@@ -870,18 +869,18 @@ func unexplainedTokens(vendor []string, candSet, setTokens, counts map[string]bo
 //
 // The names are split the way the resolver splits them, since a caller reading
 // them any other way reads a difference the resolver never saw.
-func SealedNameSubsumed(name string, beside []string, shelf string) bool {
+func (b *Backend) SealedNameSubsumed(name string, beside []string, shelf string) bool {
 	shelved := map[string]bool{}
-	for _, word := range sealedTokens(shelf) {
+	for _, word := range b.sealedTokens(shelf) {
 		shelved[word] = true
 	}
-	words := sealedTokens(name)
+	words := b.sealedTokens(name)
 	said := map[string]bool{}
 	for _, word := range words {
 		said[word] = true
 	}
 	for _, other := range beside {
-		shorter := sealedTokens(other)
+		shorter := b.sealedTokens(other)
 		// A name left saying nothing says nothing about this one either.
 		if len(shorter) == 0 || len(shorter) >= len(words) {
 			continue

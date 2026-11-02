@@ -315,7 +315,7 @@ func sealedNamePassSkips(bp *Blueprint) (bool, string) {
 
 // pruneSubsumed drops the blueprints that reached a product another blueprint
 // names in fewer words, and returns how many it dropped. Which names those are
-// is matcher.SealedNameSubsumed's question; this walks the blueprints that
+// is Backend.SealedNameSubsumed's question; this walks the blueprints that
 // reached each product and asks it.
 //
 // A blueprint the datastore's own ids answered for is asked about but never
@@ -338,7 +338,7 @@ func (ct *Sealed) pruneSubsumed(blueprints map[int]*Blueprint, productMap map[in
 			}
 		}
 		for _, id := range ids {
-			if !matcher.SealedNameSubsumed(blueprints[id].Name, beside, co.Edition) {
+			if !ct.backend.SealedNameSubsumed(blueprints[id].Name, beside, co.Edition) {
 				continue
 			}
 			ct.printf("%q (%d): names a product built on %s", blueprints[id].Name, id, uuid)

@@ -55,27 +55,33 @@ func TestEditionRunSpellings(t *testing.T) {
 // no reason fold together; anything left over is the product's own identity.
 func TestSealedSaysSameWords(t *testing.T) {
 	for _, tt := range []struct {
-		a, b string
-		want bool
+		a, b   string
+		filler []string
+		want   bool
 	}{
 		// A box is a display and a booster is a pack, in either catalog.
-		{"Rise of the Duelist Booster [1st Edition]", "Rise of the Duelist Booster Pack [1st Edition]", true},
-		{"Maximum Gold: El Dorado Box [1st Edition]", "Maximum Gold: El Dorado Display [1st Edition]", true},
-		{"Dark Revelation 1 Booster [Unlimited Edition]", "Dark Revelation 1 - Booster Pack [Unlimited Edition]", true},
+		{"Rise of the Duelist Booster [1st Edition]", "Rise of the Duelist Booster Pack [1st Edition]", nil, true},
+		{"Maximum Gold: El Dorado Box [1st Edition]", "Maximum Gold: El Dorado Display [1st Edition]", nil, true},
+		{"Dark Revelation 1 Booster [Unlimited Edition]", "Dark Revelation 1 - Booster Pack [Unlimited Edition]", nil, true},
 		// A set number is not a count, whatever it looks like: Hidden
 		// Arsenal 5 is not Hidden Arsenal, and the resolver forgives the
 		// difference because a bare digit reads to it as a quantity.
-		{"Hidden Arsenal 5 Booster [Unlimited Edition]", "Hidden Arsenal - Booster Pack [Unlimited Edition]", false},
+		{"Hidden Arsenal 5 Booster [Unlimited Edition]", "Hidden Arsenal - Booster Pack [Unlimited Edition]", nil, false},
 		// Nor is a name the vendor spells more fully than the datastore.
-		{"Duelist Pack: Yusei Fudo Booster [1st Edition]", "Duelist Pack: Yusei Booster Pack [1st Edition]", false},
+		{"Duelist Pack: Yusei Fudo Booster [1st Edition]", "Duelist Pack: Yusei Booster Pack [1st Edition]", nil, false},
 		// How many the case holds is the vendor's own word too.
-		{"Millennium Pack Booster Box (18 Booster) [1st Edition]", "Millennium Pack - Booster Box [1st Edition]", false},
+		{"Millennium Pack Booster Box (18 Booster) [1st Edition]", "Millennium Pack - Booster Box [1st Edition]", nil, false},
 		// A catalog pluralising the blister a storefront writes singular
 		// is one more spelling neither of them means anything by, and the
 		// resolver folds it too.
-		{"Stellar Crown 3 Pack Blister [Latias]", "Stellar Crown 3 Pack Blisters [Latias]", true},
+		{"Stellar Crown 3 Pack Blister [Latias]", "Stellar Crown 3 Pack Blisters [Latias]", nil, true},
+		// A game's own name is dropped for that game only: Magic's Legends
+		// is a set, One Piece's name is what storefronts prepend.
+		{"Legends Booster Box", "Booster Box", nil, false},
+		{"One Piece Card Game Romance Dawn Booster Box", "Romance Dawn Booster Box", []string{"one", "piece", "bandai"}, true},
 	} {
-		if got := sealedSaysSameWords(tt.a, tt.b); got != tt.want {
+		b := &matcher.Backend{SealedFiller: tt.filler}
+		if got := sealedSaysSameWords(b, tt.a, tt.b); got != tt.want {
 			t.Errorf("sealedSaysSameWords(%q, %q) = %v, want %v", tt.a, tt.b, got, tt.want)
 		}
 	}

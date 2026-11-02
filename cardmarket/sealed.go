@@ -408,7 +408,7 @@ func (mkm *Sealed) resolveSealedName(name string) (string, error) {
 
 // pruneSubsumed drops the products that reached a product another entry of the
 // catalog names in fewer words, and returns how many it dropped. Which names
-// those are is matcher.SealedNameSubsumed's question; this walks the
+// those are is Backend.SealedNameSubsumed's question; this walks the
 // products that reached each one and asks it.
 //
 // A product the bridge or the print-run index answered for is asked about but
@@ -432,7 +432,7 @@ func (mkm *Sealed) pruneSubsumed(names map[int]string, productMap map[int][]stri
 			}
 		}
 		for _, id := range ids {
-			if !matcher.SealedNameSubsumed(names[id], beside, co.Edition) {
+			if !mkm.backend.SealedNameSubsumed(names[id], beside, co.Edition) {
 				continue
 			}
 			mkm.printf("%q (%d): names a product built on %s", names[id], id, uuid)
@@ -589,7 +589,7 @@ func resolveSealedRun(b *matcher.Backend, name string) (string, bool) {
 		if err != nil {
 			continue
 		}
-		if !sealedSaysSameWords(spelling, co.Name) {
+		if !sealedSaysSameWords(b, spelling, co.Name) {
 			continue
 		}
 		if !seen[uuid] {
@@ -604,15 +604,13 @@ func resolveSealedRun(b *matcher.Backend, name string) (string, bool) {
 }
 
 // sealedWordRe splits a name the way the sealed resolver does, and
-// sealedFillerWords drop the same words it drops.
+// sealedFillerWords, with the backend's SealedFiller, drop the same words
+// it drops.
 var sealedWordRe = regexp.MustCompile(`[a-z0-9]+`)
 
 var sealedFillerWords = map[string]bool{
 	"the": true, "a": true, "an": true, "of": true, "and": true,
-	"disney": true, "lorcana": true, "riftbound": true, "league": true,
-	"legends": true, "tcg": true, "trading": true, "game": true,
-	"card": true, "cards": true, "one": true, "piece": true,
-	"bandai": true, "pokemon": true,
+	"tcg": true, "trading": true, "game": true, "card": true, "cards": true,
 }
 
 // sealedWords reduces a name to the words that carry it, folding the
@@ -625,10 +623,10 @@ var sealedFillerWords = map[string]bool{
 // the resolver's job either way - the resolver is asked which product a name
 // describes, and this is asked whether two names describe it in the same
 // words, which is a question only a caller adding words of its own has.
-func sealedWords(name string) []string {
+func sealedWords(b *matcher.Backend, name string) []string {
 	set := map[string]bool{}
 	for _, word := range sealedWordRe.FindAllString(strings.ToLower(name), -1) {
-		if sealedFillerWords[word] {
+		if sealedFillerWords[word] || slices.Contains(b.SealedFiller, word) {
 			continue
 		}
 		switch word {
@@ -651,8 +649,8 @@ func sealedWords(name string) []string {
 }
 
 // sealedSaysSameWords reports whether two names say the same words.
-func sealedSaysSameWords(a, b string) bool {
-	return slices.Equal(sealedWords(a), sealedWords(b))
+func sealedSaysSameWords(b *matcher.Backend, x, y string) bool {
+	return slices.Equal(sealedWords(b, x), sealedWords(b, y))
 }
 
 // printRunRe matches the qualifier a datastore adds to a product it holds in

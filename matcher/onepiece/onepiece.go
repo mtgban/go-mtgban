@@ -173,6 +173,7 @@ func qualifiedName(card *DatastoreCard) string {
 
 func (payload *Datastore) newBackend() *matcher.Backend {
 	b := matcher.NewBackend(matcher.IDSpaceTCGplayer, matcher.IDSpaceCardmarket)
+	b.SealedFiller = []string{"one", "piece", "bandai"}
 
 	for code, set := range payload.Sets {
 		b.AllSets = append(b.AllSets, code)

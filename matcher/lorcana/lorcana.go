@@ -321,6 +321,7 @@ func (ac *AllCards) adoptPrintings() {
 
 func (ac *AllCards) newBackend() *matcher.Backend {
 	b := matcher.NewBackend(matcher.IDSpaceTCGplayer, matcher.IDSpaceCardmarket)
+	b.SealedFiller = []string{"disney", "lorcana"}
 
 	cards := ac.englishCards()
 

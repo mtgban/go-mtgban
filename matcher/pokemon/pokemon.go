@@ -244,6 +244,7 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 
 func (payload *Datastore) newBackend() *matcher.Backend {
 	b := matcher.NewBackend(matcher.IDSpaceTCGplayer, matcher.IDSpaceCardmarket)
+	b.SealedFiller = []string{"pokemon"}
 
 	for code, set := range payload.Sets {
 		b.AllSets = append(b.AllSets, code)
