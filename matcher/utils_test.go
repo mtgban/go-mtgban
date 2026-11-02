@@ -239,14 +239,6 @@ var SplitTests = []SplitTest{
 		Out: []string{"A Token", "B"},
 	},
 	{
-		In:  "Erase (Not the Urza's Legacy One)",
-		Out: []string{"Erase (Not the Urza's Legacy One)"},
-	},
-	{
-		In:  "B.F.M. (Big Furry Monster) (Left)",
-		Out: []string{"B.F.M. (Big Furry Monster)", "Left"},
-	},
-	{
 		In:  "A (B)(C)",
 		Out: []string{"A", "B", "C"},
 	},

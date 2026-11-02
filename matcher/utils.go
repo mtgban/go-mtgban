@@ -73,6 +73,12 @@ func (err *AliasingError) Probe() []string {
 // Regexp for SplitVariants, an optional space and a parenthesis
 var re = regexp.MustCompile(` ?\(`)
 
+// ParenthesizedNames recognise the card names whose first parentheses belong
+// to the name, which SplitVariants then keeps whole. Each reports whether str
+// opens with such a name, and the text the name carries past its closing
+// parenthesis. A game package appends its own from init.
+var ParenthesizedNames []func(str string) (tail string, found bool)
+
 // SplitVariants returns an array of strings from the parentheses-defined fields
 // commonly used to distinguish some cards across editions.
 func SplitVariants(str string) []string {
@@ -84,16 +90,14 @@ func SplitVariants(str string) []string {
 		}
 	}
 	if len(fields) > 1 {
-		if strings.HasPrefix(str, "Erase (Not the Urza's Legacy One)") ||
-			strings.HasPrefix(str, "Hazmat Suit (Used") ||
-			strings.HasPrefix(str, "B.O.B.") ||
-			(Contains(str, "B.F.M.") && strings.Contains(str, "Big Furry Monster")) {
-			fields[0] = fmt.Sprintf("%s (%s)", fields[0], fields[1])
+		for _, named := range ParenthesizedNames {
+			tail, found := named(str)
+			if !found {
+				continue
+			}
+			fields[0] = fmt.Sprintf("%s (%s)%s", fields[0], fields[1], tail)
 			fields = append(fields[:1], fields[2:]...)
-		}
-		if strings.HasPrefix(str, "Dwight, Assistant (to the)") {
-			fields[0] = fmt.Sprintf("%s (%s) King", fields[0], fields[1])
-			fields = append(fields[:1], fields[2:]...)
+			break
 		}
 	}
 
