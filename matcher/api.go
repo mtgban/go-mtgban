@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // GetUUIDs returns every non-sealed uuid in the datastore. The result aliases
@@ -60,12 +61,37 @@ func (b *Backend) GetSet(code string) (*Set, error) {
 		return nil, ErrDatastoreEmpty
 	}
 
-	set, found := b.Sets[strings.ToUpper(code)]
+	set, found := b.setByCode(code)
 	if !found {
 		return nil, ErrCardNotInEdition
 	}
 
 	return set, nil
+}
+
+// setByCode looks a set code up uppercased without allocating: the
+// edition names GetSetByName tries here first all miss, and a ToUpper per
+// miss is a copy per match. A code that is not plain ascii, or longer
+// than a name could be, takes the general route.
+func (b *Backend) setByCode(code string) (*Set, bool) {
+	var buf [128]byte
+	if len(code) > len(buf) {
+		set, found := b.Sets[strings.ToUpper(code)]
+		return set, found
+	}
+	for i := 0; i < len(code); i++ {
+		c := code[i]
+		if c >= utf8.RuneSelf {
+			set, found := b.Sets[strings.ToUpper(code)]
+			return set, found
+		}
+		if 'a' <= c && c <= 'z' {
+			c -= 'a' - 'A'
+		}
+		buf[i] = c
+	}
+	set, found := b.Sets[string(buf[:len(code)])]
+	return set, found
 }
 
 // GetSetByName returns the set an edition string names, trying the set code
