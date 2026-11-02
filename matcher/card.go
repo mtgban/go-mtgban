@@ -52,6 +52,24 @@ type InputCard struct {
 
 	// The language as parsed
 	Language string `json:"language,omitempty"`
+
+	// Edition and Variation as Contains and Equals read them. The rules
+	// ask those inside loops over a name's printings, and the hooks may
+	// rewrite either field between two asks.
+	edition, variation normalized
+}
+
+// normalized is the normal form of one field together with the raw value it
+// was derived from, so it is derived again only once the field has changed.
+type normalized struct {
+	raw, norm string
+}
+
+func (n *normalized) of(raw string) string {
+	if raw != n.raw {
+		n.raw, n.norm = raw, Normalize(raw)
+	}
+	return n.norm
 }
 
 // Card implements the Stringer interface
@@ -145,13 +163,15 @@ func (c *InputCard) IsEtched() bool {
 // property, ignoring case and punctuation. Prefer Contains(c.Variation, prop)
 // where an edition name would match every card printed in it.
 func (c *InputCard) Contains(prop string) bool {
-	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
+	prop = Normalize(prop)
+	return strings.Contains(c.edition.of(c.Edition), prop) || strings.Contains(c.variation.of(c.Variation), prop)
 }
 
 // Equals reports whether either the edition or the variation is exactly the
 // property, ignoring case and punctuation.
 func (c *InputCard) Equals(prop string) bool {
-	return Equals(c.Edition, prop) || Equals(c.Variation, prop)
+	prop = Normalize(prop)
+	return c.edition.of(c.Edition) == prop || c.variation.of(c.Variation) == prop
 }
 
 // IsToken reports whether the name is a token in this datastore. The names a
