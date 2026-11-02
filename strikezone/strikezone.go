@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -93,16 +92,10 @@ var skipSuffixes = []string{
 // Strikezone prices Strike Zone's singles, both what they sell and what they
 // buy.
 type Strikezone struct {
-	logCallback    mtgban.LogCallbackFunc
-	inventoryDate  time.Time
-	buylistDate    time.Time
+	mtgban.Stock
+
+	printf         mtgban.LogCallbackFunc
 	maxConcurrency int
-
-	inventory mtgban.InventoryRecord
-	buylist   mtgban.BuylistRecord
-
-	disableRetail  bool
-	disableBuylist bool
 
 	backend *matcher.Backend
 	shelf   string
@@ -111,31 +104,17 @@ type Strikezone struct {
 
 // NewScraper returns a scraper for the datastore's game.
 func NewScraper(b *matcher.Backend) (*Strikezone, error) {
-	game := b.Game
-	shelf, ok := szGames[game]
-	if !ok {
-		return nil, fmt.Errorf("unsupported game %q", game)
+	shelf, err := mtgban.ForGame(szGames, b.Game)
+	if err != nil {
+		return nil, err
 	}
-	sz := Strikezone{}
-	sz.inventory = mtgban.InventoryRecord{}
-	sz.buylist = mtgban.BuylistRecord{}
+	sz := Strikezone{Stock: mtgban.NewStock()}
+	sz.printf = mtgban.TaggedLog("SZ", nil)
 	sz.maxConcurrency = defaultConcurrency
 	sz.backend = b
 	sz.shelf = shelf
 	sz.client = mtgban.NewHTTPClient()
 	return &sz, nil
-}
-
-func (sz *Strikezone) printf(format string, a ...any) {
-	if sz.logCallback != nil {
-		sz.logCallback("[SZ] "+format, a...)
-	}
-}
-
-type respChan struct {
-	cardID string
-	inv    *mtgban.InventoryEntry
-	bl     *mtgban.BuylistEntry
 }
 
 func (sz *Strikezone) getDoc(ctx context.Context, link string) (*goquery.Document, error) {
@@ -247,7 +226,7 @@ func szCondition(details string) (mtgban.Condition, error) {
 	return "", fmt.Errorf("unsupported %s condition", details)
 }
 
-func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goquery.Selection, edition string, foilSiblings map[string]bool) error {
+func (sz *Strikezone) processRow(mode string, channel chan<- mtgban.Result, el *goquery.Selection, edition string, foilSiblings map[string]bool) error {
 	var cardName, pathURL, notes, cond, qty, price string
 
 	cardName = strings.TrimSpace(el.Find("td:nth-child(1)").Text())
@@ -321,13 +300,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		}
 		sz.printf("%q", theCard)
 		sz.printf("%s|%s|%s", cardName, edition, notes)
-
-		if errors.As(err, &alias) {
-			for _, probe := range alias.Probe() {
-				card, _ := sz.backend.GetUUID(probe)
-				sz.printf("- %s", card)
-			}
-		}
+		mtgban.LogAliasing(sz.printf, sz.backend, err)
 		return err
 	}
 
@@ -356,9 +329,9 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	}
 
 	if mode == modeRetail {
-		channel <- respChan{
-			cardID: cardID,
-			inv: &mtgban.InventoryEntry{
+		channel <- mtgban.Result{
+			CardID: cardID,
+			Inventory: &mtgban.InventoryEntry{
 				Conditions: grade,
 				Price:      cardPrice,
 				Quantity:   quantity,
@@ -369,7 +342,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 	} else if mode == modeBuylist {
 		var sellPrice, priceRatio float64
 
-		invCards := sz.inventory[cardID]
+		invCards := sz.Inventory()[cardID]
 		for _, invCard := range invCards {
 			if invCard.Conditions == mtgban.NM {
 				sellPrice = invCard.Price
@@ -385,9 +358,9 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *goque
 		cardName = url.QueryEscape(strings.Replace(cardName, ",", "", -1))
 		link := "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + cardName
 
-		channel <- respChan{
-			cardID: cardID,
-			bl: &mtgban.BuylistEntry{
+		channel <- mtgban.Result{
+			CardID: cardID,
+			Buylist: &mtgban.BuylistEntry{
 				Conditions: grade,
 				BuyPrice:   cardPrice,
 				Quantity:   quantity,
@@ -409,7 +382,7 @@ func shelfName(h1 string) string {
 	return strings.TrimPrefix(shelf, "Singles ")
 }
 
-func (sz *Strikezone) parseRows(doc *goquery.Document, pageURL, mode string, channel chan<- respChan) {
+func (sz *Strikezone) parseRows(doc *goquery.Document, pageURL, mode string, channel chan<- mtgban.Result) {
 	edition := shelfName(doc.Find("h1").First().Text())
 
 	sz.printf("Parsing %s", edition)
@@ -464,7 +437,7 @@ func (v *visitedPages) first(page string) bool {
 
 // processPage fetches one category page, emits its rows, then walks any
 // deeper category links the same way mtgseattle recurses into subcategories.
-func (sz *Strikezone) processPage(ctx context.Context, channel chan<- respChan, pageURL, mode string, visited *visitedPages) error {
+func (sz *Strikezone) processPage(ctx context.Context, channel chan<- mtgban.Result, pageURL, mode string, visited *visitedPages) error {
 	if !visited.first(pageURL) {
 		return nil
 	}
@@ -506,23 +479,10 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	links := sz.childLinks(doc, link, mode)
 	sz.printf("Found %d categories", len(links))
 
-	consume := func(resp respChan) {
-		if resp.inv != nil {
-			err := sz.inventory.Add(resp.cardID, resp.inv)
-			if err != nil {
-				sz.printf("%v", err)
-			}
-		}
-		if resp.bl != nil {
-			err := sz.buylist.Add(resp.cardID, resp.bl)
-			if err != nil {
-				sz.printf("%v", err)
-			}
-		}
-	}
+	consume := sz.Collect(sz.printf)
 
 	// Hub rows first (the entry URL was scraped for rows as well as links).
-	hubCh := make(chan respChan)
+	hubCh := make(chan mtgban.Result)
 	var hubWG sync.WaitGroup
 	hubWG.Add(1)
 	go func() {
@@ -540,66 +500,29 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	visited := newVisitedPages(link)
 
 	mtgban.WorkerPool(ctx, sz.maxConcurrency, links,
-		func(ctx context.Context, page string, results chan<- respChan) error {
+		func(ctx context.Context, page string, results chan<- mtgban.Result) error {
 			return sz.processPage(ctx, results, page, mode, visited)
 		},
 		consume,
 		sz.printf,
 	)
 
-	if mode == modeRetail {
-		sz.inventoryDate = time.Now()
-	} else if mode == modeBuylist {
-		sz.buylistDate = time.Now()
-	}
-
 	return nil
-}
-
-// SetConfig applies options after the scraper was built. See
-// mtgban.ScraperConfig.
-func (sz *Strikezone) SetConfig(opt mtgban.ScraperOptions) {
-	sz.disableRetail = opt.DisableRetail
-	sz.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (sz *Strikezone) Load(ctx context.Context) error {
-	var errs []error
-
-	if !sz.disableRetail {
-		err := sz.scrape(ctx, modeRetail)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-		}
-	}
-
-	if !sz.disableBuylist {
-		err := sz.scrape(ctx, modeBuylist)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-		}
-	}
-
-	return errors.Join(errs...)
-}
-
-// Inventory returns what Load collected. See mtgban.Seller.
-func (sz *Strikezone) Inventory() mtgban.InventoryRecord {
-	return sz.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (sz *Strikezone) Buylist() mtgban.BuylistRecord {
-	return sz.buylist
+	return sz.LoadHalves(ctx,
+		func(ctx context.Context) error { return sz.scrape(ctx, modeRetail) },
+		func(ctx context.Context) error { return sz.scrape(ctx, modeBuylist) })
 }
 
 // Info describes this scraper. See mtgban.Scraper.
 func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Strike Zone"
 	info.Shorthand = "SZ"
-	info.InventoryTimestamp = &sz.inventoryDate
-	info.BuylistTimestamp = &sz.buylistDate
+	info.InventoryTimestamp = &sz.InventoryDate
+	info.BuylistTimestamp = &sz.BuylistDate
 	info.Game = sz.backend.Game
 	return
 }
