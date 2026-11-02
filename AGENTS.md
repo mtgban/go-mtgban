@@ -259,8 +259,9 @@ the cause. Do not accept the diff as a new baseline.
   `Add`/`AddRelaxed`/`AddStrict`/`AddUnique` enforce defaults (NM, qty 1),
   validate conditions against `FullGradeTags`, refuse a NaN, infinite or
   negative price and a negative quantity, merge duplicates, and keep each
-  slice sorted. `Arbit` depends on that sort leaving the NM entry at
-  `entries[0]`. `AddUnique` is the strictest gate and **ignores price**.
+  slice sorted. `Arbit` gates a card on `entries[0]`, the best grade
+  present, which is not always NM, and prices NM copies against it.
+  `AddUnique` is the strictest gate and **ignores price**.
 - **Grades go through `mtgban.ParseCondition`.** It reads the spellings
   stores share; a word a store reads its own way (CardTrader's "Played",
   Cardmarket's scale) is mapped first, in that scraper's `<tag>Condition`
@@ -550,10 +551,11 @@ beside the datastore. Magic is in that map like every other game.
   itself (`"waste land"`, `"trial and error"`, `"goblin // soldier"`).
   Changing the replacer table can silently re-alias unrelated cards; run the
   full matcher suite after any edit there.
-- The insert-time sort invariant matters: `Arbit` assumes `entries[0]` is the
-  NM entry, and that ordering is a *side effect* of the sort in `add()`. A
-  change to that sort breaks `Arbit` silently. Pin the ordering in
-  `mtgban/base_test.go` before touching it.
+- The insert-time sort invariant matters: `entries[0]` is the best grade
+  present, a *side effect* of the sort in `add()`, and `Arbit` gates a card and
+  prices NM copies on it. It is not always NM: a vendor buying a card only at
+  SP leads with SP. Pin the ordering in `mtgban/base_test.go` before touching
+  it.
 - `Mismatch`'s `defaultGradeMap` covers NM/SP/MP/HP plus `PO` at 0. A
   condition that is unknown, or that maps to zero, causes the pair to be
   *skipped* - not zero-priced - because a zero factor cannot be divided by.

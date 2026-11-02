@@ -117,13 +117,14 @@ vendor). After every insert the slice is re-sorted: condition index in
 `FullGradeTags` first, then price **ascending** for inventory /
 **descending** for buylist, then quantity descending.
 
-**This sort produces a load-bearing invariant: `entries[0]` is the NM entry**
-(more precisely, the lowest-index *present* grade). `Arbit` reads
-`blEntries[0]` as the NM offer - the comment in `mtgban/arbit.go` states it
-outright - and the CSV writers emit rows in the same order. Any change that
-reorders entries, or flips the sort direction in `add()`, silently corrupts
-both. `TestSort` in `base_test.go` pins the order; run it after touching
-the add path.
+**This sort produces a load-bearing invariant: `entries[0]` is the best grade
+present**, the lowest-index grade in `FullGradeTags` the record holds. That is
+NM only when there is an NM entry: a vendor buying a card only at SP leads
+with SP, and published buylists do hold such cards. `Arbit` gates a card on
+`blEntries[0]` and prices NM copies against it, and the CSV writers emit rows
+in the same order. Any change that reorders entries, or flips the sort
+direction in `add()`, silently corrupts both. `TestSort` in `base_test.go`
+pins the order; run it after touching the add path.
 
 `ScraperInfo` carries identity (`Name`, `Shorthand`, `CountryFlag`, and
 `Game`) plus behavior flags consumed by the analysis layer. `Game` is of type
@@ -168,16 +169,18 @@ multiplier.
 `Arbit(b, opts, vendor, seller)` then, for each buylist card present in the
 inventory:
 
-1. Take `blEntries[0]` (NM by sort invariant); skip if
+1. Take `blEntries[0]` (the best grade present); skip if
    `PriceRatio > MaxPriceRatio` or `BuyPrice < MinBuyPrice`.
 2. For each inventory entry: condition denylist, seller allowlist (also
    matched against `CustomFields["SubSellerName"]`, a Cardtrader detail),
    `OnlyBundles`, `MinQuantity` (skipped when the seller reports
    `NoQuantityInventory`), `MinPrice`, then `CustomPriceFilter` (its factor
    composes multiplicatively with the card factor).
-3. Effective sell price = `Price × customFactor × Rate`. If the entry is not
-   NM, linear-scan `blEntries` for the same condition; no matching condition
-   → skip (no cross-grade arbitrage is fabricated).
+3. Effective sell price = `Price × customFactor × Rate`. An NM entry sells
+   against `blEntries[0]`, the best grade the vendor buys at, so a vendor
+   buying a card only at SP takes NM copies at its SP price. Any other entry
+   scans `blEntries` for its own condition; no matching condition → skip
+   (no other cross-grade arbitrage is fabricated).
 4. Compute `difference = buy − sell` and `spread = 100·difference/sell`
    straight from the buylist entry's `BuyPrice`; enforce `MinDiff`,
    `MinSpread`, `MaxSpread`. `Arbit` does **not** apply
@@ -902,7 +905,7 @@ that asymmetry:
 
 | Layer | Targets | Test type | Needs dataset? | Today |
 |-------|---------|-----------|----------------|-------|
-| **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No**, runs in CI | 32 tests in `arbit*_test.go`, plus `Add*` and sort in `base_test.go` |
+| **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No**, runs in CI | 33 tests in `arbit*_test.go`, plus `Add*` and sort in `base_test.go` |
 | **Matcher** (data integrity) | `Match`/`MatchID`, normalization, variants/editions, sealed API | data-backed regression replay | **Yes** - one per game | replay + unit |
 | **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 19 of 24 packages |
 
@@ -910,7 +913,7 @@ Principles: (1) **the money path is unit-tested**, with in-test records and
 no datastore dependency; (2)
 **characterization before refactor** - pin `Arbit`/`Mismatch`/`add()` outputs
 *before* changing them, and refactor under green; (3) **assert invariants, not
-just functions** - the `entries[0] == NM` ordering is a sort side effect that
+just functions** - the best-grade-first ordering is a sort side effect that
 `Arbit` and the CSV writers depend on, and `TestSort` in `mtgban/base_test.go`
 pins it directly; (4) **scrapers:
 breadth over depth** - a few fixture table tests for the gnarliest
@@ -1164,9 +1167,9 @@ golang.org/x/text (normalization), plus the in-house `go-cardkingdom`,
    `RegisterGame` from an `init()`, a blank import to activate, `Open` when
    the game is known and auto-detection is unnecessary. A binary links only
    the games it imports.
-4. **Sorted-record invariants instead of queries** - `entries[0] == NM` is
-   produced by `add()`'s sort and consumed by `Arbit`; the CSV writers rely on
-   the ordering too.
+4. **Sorted-record invariants instead of queries** - `entries[0]` as the best
+   grade present is produced by `add()`'s sort and consumed by `Arbit`; the
+   CSV writers rely on the ordering too.
 5. **Tables before code** - new-set support is data (`VariantsTable`, the
    edition aliases, the promo elements); per-set callbacks are the escape
    hatch, and they live in the game package rather than in core.
