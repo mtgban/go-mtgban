@@ -772,7 +772,6 @@ func plainNumber(number string) string {
 func (ap *AllPrintings) newBackend() *matcher.Backend {
 	canonicalNames := map[string]string{}
 	sealedNames := map[string]string{}
-	sealedProducts := map[string]*SealedProduct{}
 	alternates := map[string]matcher.AlternateProps{}
 	commanderKeywordMap := map[string]string{}
 	// Card and token names are collected as sets: the only question ever
@@ -818,12 +817,9 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 			}
 		}
 
-		// Save the names of sealed products for later sorting, and index them
-		// by uuid so that the source check below is a lookup rather than a
-		// scan of every product in every set
-		for i, product := range set.SealedProduct {
+		// Save the names of sealed products for later sorting
+		for _, product := range set.SealedProduct {
 			sealedNames[product.UUID] = product.Name
-			sealedProducts[product.UUID] = &set.SealedProduct[i]
 		}
 	}
 
@@ -847,6 +843,10 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 	for _, set := range ap.Data {
 		set.ReleaseDateTime, _ = time.Parse("2006-01-02", set.ReleaseDate)
 	}
+
+	// What each sealed product directly holds, for filtering the cards'
+	// sources below
+	sealedContents := directContents(ap.Data)
 
 	for code, set := range ap.Data {
 		var filteredCards []Card
@@ -1133,11 +1133,13 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 
 			card.Printings = printings
 
-			// Filter out unneeded sources and sort them alphabetically
+			// Filter out unneeded sources and sort them alphabetically;
+			// mtgjson keys them by nonfoil, foil and etched only, the
+			// finishes directContents files cards under
 			for finish, sources := range card.SourceProducts {
 				var filtered []string
 				for _, source := range sources {
-					if isBaseSealed(ap.Data, sealedProducts, source, card.UUID, finish) {
+					if sealedContents[sealedCard{source, card.UUID, finish}] {
 						filtered = append(filtered, source)
 					}
 				}
@@ -1650,101 +1652,83 @@ func sealedWithinSealed(product SealedProduct) []string {
 	return list
 }
 
-// Check whether the sealed product directly contains the given card with
-// the requested finish. "Directly" means via a card/deck/pack entry at the
-// top level (or inside a variable config) - not reachable only through a
-// nested sealed sub-product.
-func isBaseSealed(sets map[string]*Set, products map[string]*SealedProduct, productUUID, cardUUID, finish string) bool {
-	product, found := products[productUUID]
-	if !found {
-		return false
-	}
-	return contentsContainCard(sets, product.Contents, cardUUID, finish)
+// sealedCard is a card a sealed product holds, in one finish.
+type sealedCard struct {
+	product, card, finish string
 }
 
-func contentsContainCard(sets map[string]*Set, contents map[string][]SealedContent, cardUUID, finish string) bool {
-	wantFoil := finish == "foil"
-	wantEtched := finish == "etched"
+// directContents lists the cards every sealed product directly holds, once
+// per finish. "Directly" means via a card/deck/pack entry at the top level
+// (or inside a variable config) - not reachable only through a nested
+// sealed sub-product.
+func directContents(sets map[string]*Set) map[sealedCard]bool {
+	contents := map[sealedCard]bool{}
+	for _, set := range sets {
+		for _, product := range set.SealedProduct {
+			addContents(contents, sets, product.UUID, product.Contents)
+		}
+	}
+	return contents
+}
 
-	for key, items := range contents {
-		for _, item := range items {
+func addContents(contents map[sealedCard]bool, sets map[string]*Set, product string, items map[string][]SealedContent) {
+	for key, list := range items {
+		for _, item := range list {
 			switch key {
 			case "card":
-				if item.UUID == cardUUID {
-					if finish == "" {
-						return true
-					}
-					if wantEtched && item.Etched {
-						return true
-					}
-					if wantFoil && item.Foil {
-						return true
-					}
-					if !wantFoil && !wantEtched && !item.Foil && !item.Etched {
-						return true
-					}
-				}
+				addCard(contents, product, item.UUID, item.Foil, item.Etched)
 			case "deck":
-				if set, ok := sets[strings.ToUpper(item.Set)]; ok {
-					for _, d := range set.Decks {
-						if d.Name != item.Name {
-							continue
-						}
-						for _, list := range [][]DeckCard{
-							d.MainBoard, d.SideBoard,
-							d.Commander, d.DisplayCommander,
-							d.Planes, d.Schemes, d.Tokens,
-						} {
-							for _, dc := range list {
-								if dc.UUID != cardUUID {
-									continue
-								}
-								if finish == "" {
-									return true
-								}
-								if wantEtched && dc.IsEtched {
-									return true
-								}
-								if wantFoil && dc.IsFoil {
-									return true
-								}
-								if !wantFoil && !wantEtched && !dc.IsFoil && !dc.IsEtched {
-									return true
-								}
-							}
+				set, ok := sets[strings.ToUpper(item.Set)]
+				if !ok {
+					continue
+				}
+				for _, d := range set.Decks {
+					if d.Name != item.Name {
+						continue
+					}
+					for _, cards := range [][]DeckCard{
+						d.MainBoard, d.SideBoard,
+						d.Commander, d.DisplayCommander,
+						d.Planes, d.Schemes, d.Tokens,
+					} {
+						for _, dc := range cards {
+							addCard(contents, product, dc.UUID, dc.IsFoil, dc.IsEtched)
 						}
 					}
 				}
 			case "pack":
-				if set, ok := sets[strings.ToUpper(item.Set)]; ok {
-					if booster, ok := set.Booster[item.Code]; ok {
-						for _, sheet := range booster.Sheets {
-							if _, ok := sheet.Cards[cardUUID]; !ok {
-								continue
-							}
-							if finish == "" {
-								return true
-							}
-							if (wantFoil || wantEtched) && sheet.Foil {
-								return true
-							}
-							if !wantFoil && !wantEtched && !sheet.Foil {
-								return true
-							}
-						}
+				set, ok := sets[strings.ToUpper(item.Set)]
+				if !ok {
+					continue
+				}
+				// A foil sheet holds etched cards too
+				for _, sheet := range set.Booster[item.Code].Sheets {
+					for uuid := range sheet.Cards {
+						addCard(contents, product, uuid, sheet.Foil, sheet.Foil)
 					}
 				}
 			case "variable":
 				for _, config := range item.Configs {
-					if contentsContainCard(sets, config, cardUUID, finish) {
-						return true
-					}
+					addContents(contents, sets, product, config)
 				}
 				// "sealed": intentionally not handled - nested products don't count as direct.
 			}
 		}
 	}
-	return false
+}
+
+// addCard files a card under every finish its flags name, nonfoil when
+// they name none.
+func addCard(contents map[sealedCard]bool, product, card string, foil, etched bool) {
+	if foil {
+		contents[sealedCard{product, card, matcher.FinishFoil}] = true
+	}
+	if etched {
+		contents[sealedCard{product, card, matcher.FinishEtched}] = true
+	}
+	if !foil && !etched {
+		contents[sealedCard{product, card, matcher.FinishNonfoil}] = true
+	}
 }
 
 var langs = map[string]string{

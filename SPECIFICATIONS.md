@@ -376,9 +376,9 @@ retains only the language maps (`LanguageCode2LanguageTag` and its inverse).
   language loses a tie to it (`FinalizeCandidates`).
 - Same-name double-faced cards collapse to one name, flagged via
   `Identifiers["isDFCSameName"]`. Scryfall image URLs and `ReleaseDateTime`
-  are precomputed. `SourceProducts[finish]` is filtered through
-  `isBaseSealed`/`contentsContainCard` (direct containment per finish - it
-  deliberately does *not* recurse into nested sealed sub-products).
+  are precomputed. `SourceProducts[finish]` is filtered against
+  `directContents` (direct containment per finish - it deliberately does
+  *not* recurse into nested sealed sub-products).
 
 The eight non-Magic loaders are far simpler converters with no patch
 tables. Each keeps the game's rarity and colour orders on the backend, read
