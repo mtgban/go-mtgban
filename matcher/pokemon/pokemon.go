@@ -39,10 +39,10 @@ const setTypePromo = "promo"
 // Datastore is the cmd/pokemon output: sets keyed by code, one card entry
 // per priced printing, and the sealed products.
 type Datastore struct {
-	Game   string                  `json:"game"`
-	Sets   map[string]DatastoreSet `json:"sets"`
-	Cards  []DatastoreCard         `json:"cards"`
-	Sealed []DatastoreSealed       `json:"sealed"`
+	Game   string                    `json:"game"`
+	Sets   map[string]DatastoreSet   `json:"sets"`
+	Cards  []DatastoreCard           `json:"cards"`
+	Sealed []matcher.DatastoreSealed `json:"sealed"`
 
 	// Properties orders the values a set lists, one list per property named
 	// in the singular: rarities rarest first, colours in the game's own order.
@@ -142,18 +142,6 @@ type DatastoreCard struct {
 		// CardmarketID is the Cardmarket product a stamped promo was minted
 		// from, the only product selling it.
 		CardmarketID int `json:"cardmarketId,omitempty"`
-	} `json:"externalLinks"`
-}
-
-// DatastoreSealed is a sealed product, which carries no printing of its own
-// and hangs off the set that issued it.
-type DatastoreSealed struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	SetCode       string `json:"setCode"`
-	Image         string `json:"image"`
-	ExternalLinks struct {
-		TcgPlayerID int `json:"tcgPlayerId"`
 	} `json:"externalLinks"`
 }
 
@@ -378,20 +366,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 
 	b.Rarities = matcher.RarityNames(payload.Properties["rarity"])
 	b.Colors = matcher.ColorNames(payload.Properties["type"])
-	for _, set := range b.Sets {
-		set.Rarities = matcher.RaritiesOf(set.Cards, b.Rarities)
-		set.Colors = matcher.ColorsOf(set.Cards, b.Colors)
-	}
-
-	// Sealed products live in the sealed namespace throughout - uuids in
-	// AllSealedUUIDs, names in the sealed name index, and the product id
-	// as an identifier for BuildSealedProductMap rather than the external
-	// identifier index, mirroring how Magic keeps sealed out of MatchID's
-	// reach - and AddSealed is what files them there.
-	for _, product := range payload.Sealed {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
-	}
-	b.Complete(NewRules(b))
+	b.Complete(NewRules(b), payload.Sealed)
 
 	return b
 }

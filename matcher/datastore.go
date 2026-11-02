@@ -64,11 +64,33 @@ func NewBackend(spaces ...IDSpace) *Backend {
 	return b
 }
 
-// Complete readies a Backend a datastore loader has filled with every set,
-// card and sealed product: AllSets and the name, promo type and sealed lists
-// are put in order, NormalizedSets and SetUUIDs are built, and the game's
-// rules are attached, last because SetRules reads every printing's finishes.
-func (b *Backend) Complete(rules GameRules) {
+// DatastoreSealed is one sealed product as every datastore publishes it.
+type DatastoreSealed struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	SetCode       string `json:"setCode"`
+	ReleaseDate   string `json:"releaseDate"`
+	Image         string `json:"image"`
+	ExternalLinks struct {
+		TcgPlayerID int `json:"tcgPlayerId"`
+	} `json:"externalLinks"`
+}
+
+// Complete readies a Backend a datastore loader has filled with every set
+// and card, and with the game's orders in Rarities and Colors: each set
+// lists its cards' rarities and colours in those orders, the sealed products
+// are filed through AddSealed, AllSets and the name, promo type and sealed
+// lists are put in order, NormalizedSets and SetUUIDs are built, and the
+// game's rules are attached, last because SetRules reads every printing's
+// finishes.
+func (b *Backend) Complete(rules GameRules, sealed []DatastoreSealed) {
+	for _, set := range b.Sets {
+		set.Rarities = RaritiesOf(set.Cards, b.Rarities)
+		set.Colors = ColorsOf(set.Cards, b.Colors)
+	}
+	for _, product := range sealed {
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+	}
 	sort.Strings(b.AllSets)
 	b.IndexSets()
 	sort.Strings(b.AllNames)

@@ -157,16 +157,7 @@ type AllCards struct {
 	// sealed product the TCGplayer catalog files outside the singles type,
 	// minting a set entry for the groups upstream has no set for. A
 	// datastore without it loads with no sealed products.
-	Sealed []struct {
-		ID            string `json:"id"`
-		Name          string `json:"name"`
-		SetCode       string `json:"setCode"`
-		ReleaseDate   string `json:"releaseDate"`
-		Image         string `json:"image"`
-		ExternalLinks struct {
-			TcgPlayerID int `json:"tcgPlayerId"`
-		} `json:"externalLinks"`
-	} `json:"sealed,omitempty"`
+	Sealed []matcher.DatastoreSealed `json:"sealed,omitempty"`
 
 	// treatments are the promo types each printing carries, by uuid, which
 	// Rules keeps to tell a card's printings apart by the treatment a
@@ -609,23 +600,12 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 				b.Sets[code].IsNonFoilOnly = false
 			}
 		}
-
-		b.Sets[code].Rarities = matcher.RaritiesOf(b.Sets[code].Cards, b.Rarities)
-		b.Sets[code].Colors = matcher.ColorsOf(b.Sets[code].Cards, b.Colors)
 	}
 
-	// Load sealed products. They live in the sealed namespace throughout:
-	// their uuids join AllSealedUUIDs and their names the sealed name
-	// index, and the product id is carried as an identifier for
-	// BuildSealedProductMap rather than entering the external identifier
-	// index, mirroring how Magic and Riftbound keep sealed products out
-	// of MatchID's reach.
-	// Sealed products live in the sealed namespace throughout; AddSealed
-	// is what files them there.
+	// The builder mints a set entry for every group it emits sealed from, so
+	// an unknown code is a hand-made file; give the product a set to hang
+	// off all the same, or AddSealed would drop it.
 	for _, product := range ac.Sealed {
-		// The builder mints a set entry for every group it emits sealed
-		// from, so an unknown code is a hand-made file; give the product
-		// a set to hang off all the same, or AddSealed would drop it.
 		if b.Sets[product.SetCode] == nil {
 			b.AddSet(&matcher.Set{
 				Name:        product.SetCode,
@@ -633,10 +613,9 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 				ReleaseDate: product.ReleaseDate,
 			})
 		}
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
 
-	b.Complete(Rules{treatments: ac.treatments})
+	b.Complete(Rules{treatments: ac.treatments}, ac.Sealed)
 
 	return b
 }

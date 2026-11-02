@@ -372,11 +372,12 @@ keeps it:
   `cmp.Or(card.Language, "English")`, since core's filter drops a
   non-English candidate. `AllSets` is sorted before `IndexSets`.
 - `b.Rarities` and `b.Colors` are the datastore's `properties` orders,
-  through `RarityNames` and `ColorNames`, and each set's `Rarities` and
-  `Colors` are sorted by them with `RaritiesOf` and `ColorsOf`. A card's
-  rarity is stored through `b.AddRarity`, spelled by `RarityName`
-  ("superrare"); a rule or display wanting the published words ("Super
-  Rare") asks `b.RarityLabel`.
+  through `RarityNames` and `ColorNames`. `b.Complete` then lists each
+  set's `Rarities` and `Colors` in them, through `RaritiesOf` and
+  `ColorsOf`, and files the `matcher.DatastoreSealed` products it is
+  handed through `AddSealed`. A card's rarity is stored through
+  `b.AddRarity`, spelled by `RarityName` ("superrare"); a rule or display
+  wanting the published words ("Super Rare") asks `b.RarityLabel`.
 
 ### Tables before code
 

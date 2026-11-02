@@ -192,3 +192,24 @@ func TestPrintingsByName(t *testing.T) {
 		t.Errorf("PrintingsByName for Zaku II = %v, want %v", zaku, want)
 	}
 }
+
+// TestCompleteFilesSealed pins what Complete adds to a filled Backend: each
+// set's rarities from its cards, and the sealed products whose set is known,
+// the rest dropped.
+func TestCompleteFilesSealed(t *testing.T) {
+	b := NewBackend()
+	b.AddSet(&Set{Code: "GD01", Name: "Newtype Rising"})
+	b.Sets["GD01"].Cards = []Card{{UUID: "gd01-001", Rarity: "rare"}}
+	b.Rarities = []string{"rare"}
+	b.Complete(candidateTestRules{}, []DatastoreSealed{
+		{ID: "gd01-box", Name: "Newtype Rising Booster Box", SetCode: "GD01"},
+		{ID: "xx-box", Name: "Unknown Booster Box", SetCode: "XX"},
+	})
+	rarities := b.Sets["GD01"].Rarities
+	if !slices.Equal(rarities, []string{"rare"}) {
+		t.Errorf("GD01 Rarities = %v, want [rare]", rarities)
+	}
+	if len(b.SetSealedUUIDs) != 1 || !slices.Equal(b.SetSealedUUIDs["GD01"], []string{"gd01-box"}) {
+		t.Errorf("SetSealedUUIDs = %v, want GD01's box alone", b.SetSealedUUIDs)
+	}
+}

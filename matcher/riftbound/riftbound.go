@@ -53,21 +53,8 @@ type GalleryBlade struct {
 	// appends the sealed products the TCGplayer catalog files outside the
 	// singles type, and mints a set for a group sold only sealed.
 	Sealed struct {
-		Items []GallerySealed `json:"items"`
+		Items []matcher.DatastoreSealed `json:"items"`
 	} `json:"sealed"`
-}
-
-// GallerySealed is a sealed product: a booster box, a display, a starter
-// bundle. It has no collector number, no finish and no gallery entry - the
-// TCGplayer product id is its whole identity.
-type GallerySealed struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	SetCode       string `json:"setCode"`
-	Image         string `json:"image"`
-	ExternalLinks struct {
-		TcgPlayerID int `json:"tcgPlayerId"`
-	} `json:"externalLinks"`
 }
 
 // GallerySet is one set as the gallery publishes it.
@@ -387,25 +374,9 @@ func (gallery *GalleryBlade) newBackend(properties map[string][]string) *matcher
 		}
 	}
 
-	// Update any remaining details on Sets after Cards loading
 	b.Rarities = matcher.RarityNames(properties["rarity"])
 	b.Colors = matcher.ColorNames(properties["domain"])
-	for _, set := range b.Sets {
-		set.Rarities = matcher.RaritiesOf(set.Cards, b.Rarities)
-		set.Colors = matcher.ColorsOf(set.Cards, b.Colors)
-	}
-
-	// Load sealed products. They live in the sealed namespace throughout:
-	// their uuids join AllSealedUUIDs and their names the sealed name
-	// index, and the product id is carried as an identifier for
-	// BuildSealedProductMap rather than entering the external identifier
-	// index, mirroring how Magic keeps sealed out of MatchID's reach.
-	// Sealed products live in the sealed namespace throughout; AddSealed
-	// is what files them there.
-	for _, product := range gallery.Sealed.Items {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
-	}
-	b.Complete(Rules{})
+	b.Complete(Rules{}, gallery.Sealed.Items)
 
 	return b
 }

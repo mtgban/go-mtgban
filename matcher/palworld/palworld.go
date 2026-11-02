@@ -39,8 +39,8 @@ type Datastore struct {
 		// sell them in packs, and empty on every other.
 		Type string `json:"type,omitempty"`
 	} `json:"sets"`
-	Cards  []DatastoreCard   `json:"cards"`
-	Sealed []DatastoreSealed `json:"sealed"`
+	Cards  []DatastoreCard           `json:"cards"`
+	Sealed []matcher.DatastoreSealed `json:"sealed"`
 
 	// Properties orders the values a set lists, one list per property named
 	// in the singular: rarities rarest first, colours in the game's own order.
@@ -97,18 +97,6 @@ type DatastoreCard struct {
 	// "Foil".
 	Finish string `json:"finish"`
 
-	Image         string `json:"image"`
-	ExternalLinks struct {
-		TcgPlayerID int `json:"tcgPlayerId"`
-	} `json:"externalLinks"`
-}
-
-// DatastoreSealed is one sealed product as the datastore publishes it.
-type DatastoreSealed struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	SetCode       string `json:"setCode"`
-	ReleaseDate   string `json:"releaseDate"`
 	Image         string `json:"image"`
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
@@ -267,15 +255,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 
 	b.Rarities = matcher.RarityNames(payload.Properties["rarity"])
 	b.Colors = matcher.ColorNames(payload.Properties["color"])
-	for _, set := range b.Sets {
-		set.Rarities = matcher.RaritiesOf(set.Cards, b.Rarities)
-		set.Colors = matcher.ColorsOf(set.Cards, b.Colors)
-	}
-
-	for _, product := range payload.Sealed {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
-	}
-	b.Complete(Rules{})
+	b.Complete(Rules{}, payload.Sealed)
 
 	return b
 }
