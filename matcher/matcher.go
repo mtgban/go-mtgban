@@ -672,13 +672,16 @@ func (b *Backend) MatchInSet(cardName string, setCode string) (outCards []Card) 
 	if !found {
 		return
 	}
-	for _, card := range set.Cards {
+	// By index: a Card is several hundred bytes, and ranging by value
+	// copies every card in the set to read one name off it
+	for i := range set.Cards {
+		card := &set.Cards[i]
 		// Cut rather than Split: only the front half is ever read, and
 		// Split allocates a slice for every card in the set to hand it
 		// over, whether or not the name has two halves at all
 		front, _, _ := strings.Cut(card.Name, " // ")
 		if cardName == card.Name || cardName == front {
-			outCards = append(outCards, card)
+			outCards = append(outCards, *card)
 		}
 	}
 	return
@@ -691,9 +694,10 @@ func (b *Backend) MatchInSetNumber(cardName, setCode, number string) (outCards [
 	if !found {
 		return
 	}
-	for _, card := range set.Cards {
+	for i := range set.Cards {
+		card := &set.Cards[i]
 		if cardName == card.Name && card.Number == number {
-			outCards = append(outCards, card)
+			outCards = append(outCards, *card)
 		}
 	}
 	return
@@ -706,9 +710,10 @@ func (b *Backend) MatchWithNumber(cardName, setCode, number string) (outCards []
 	if !found {
 		return
 	}
-	for _, card := range set.Cards {
+	for i := range set.Cards {
+		card := &set.Cards[i]
 		if Contains(card.Name, cardName) && card.Number == number {
-			outCards = append(outCards, card)
+			outCards = append(outCards, *card)
 		}
 	}
 	return

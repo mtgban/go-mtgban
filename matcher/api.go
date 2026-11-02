@@ -334,26 +334,26 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 		return false
 	}
 
-	var checkFunc func(Card, string) bool
+	var checkFunc func(*Card, string) bool
 	switch field {
 	case "promo_type":
-		checkFunc = func(card Card, value string) bool {
+		checkFunc = func(card *Card, value string) bool {
 			return card.HasPromoType(value)
 		}
 	case "frame_effect":
-		checkFunc = func(card Card, value string) bool {
+		checkFunc = func(card *Card, value string) bool {
 			return card.HasFrameEffect(value)
 		}
 	case "border_color":
-		checkFunc = func(card Card, value string) bool {
+		checkFunc = func(card *Card, value string) bool {
 			return card.BorderColor == value
 		}
 	case "frame_version":
-		checkFunc = func(card Card, value string) bool {
+		checkFunc = func(card *Card, value string) bool {
 			return card.FrameVersion == value
 		}
 	case "finish":
-		checkFunc = func(card Card, value string) bool {
+		checkFunc = func(card *Card, value string) bool {
 			return card.HasFinish(value)
 		}
 	default:
@@ -410,7 +410,7 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 		if pinnedCode != "" && co.SetCode != pinnedCode {
 			continue
 		}
-		if strings.EqualFold(co.Name, canonicalName) && checkFunc(co.Card, value) {
+		if strings.EqualFold(co.Name, canonicalName) && checkFunc(&co.Card, value) {
 			return true
 		}
 	}
