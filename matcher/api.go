@@ -273,7 +273,7 @@ func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 // Exported because the only caller lives in the per-game rules packages.
 func (b *Backend) NameIsToken(name string) bool {
 	entry, found := b.entry4Name(name)
-	return found && entry.Layout == "token"
+	return found && entry.IsTokenLayout()
 }
 
 // Printings4Card returns the set codes a card by this name was printed in.
@@ -292,7 +292,7 @@ func (b *Backend) Printings4Card(name string) ([]string, error) {
 	printings := slices.Clone(entry.Printings)
 	for _, id := range b.Hashes[Normalize(entry.Name)] {
 		other, ok := b.UUIDs[id]
-		if !ok || !strings.EqualFold(other.Name, entry.Name) || (other.Layout == "token") != (entry.Layout == "token") {
+		if !ok || !strings.EqualFold(other.Name, entry.Name) || other.IsTokenLayout() != entry.IsTokenLayout() {
 			continue
 		}
 		if slices.Equal(other.Printings, entry.Printings) {

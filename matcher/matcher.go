@@ -432,7 +432,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 					inCard.AddToVariant("etched")
 				}
 			// Tokens are unsupported for broken ids in different languages
-			case inCard.Language != "" && co.Layout == "token":
+			case inCard.Language != "" && co.IsTokenLayout():
 				return "", ErrUnsupported
 			// This runs before b.rules is known non-nil, hence the check
 			case b.rules != nil && b.rules.IsUnsupported(b, inCard, co, StageAnswer):

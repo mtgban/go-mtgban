@@ -284,6 +284,11 @@ type CardObject struct {
 	Sealed  bool
 }
 
+// IsTokenLayout reports whether the entry is laid out as a token.
+func (co *CardObject) IsTokenLayout() bool {
+	return co.Layout == "token"
+}
+
 // String names the entry as Name|SET|number|finish: the Finish it carries,
 // which tells apart finishes the flags cannot ("coldfoil", "1stedition"), or
 // one read off the flags where it names none. Sealed entries carry no finish.

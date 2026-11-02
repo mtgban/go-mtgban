@@ -2557,7 +2557,7 @@ func (Rules) AdjustName(b *matcher.Backend, inCard *matcher.InputCard) {
 	uuids, _ := b.SearchHasPrefix(inCard.Name)
 	for _, uuid := range uuids {
 		co, _ := b.GetUUID(uuid)
-		if co.Layout != "normal" && co.Layout != "token" {
+		if co.Layout != "normal" && !co.IsTokenLayout() {
 			inCard.Name = co.Name
 			return
 		}

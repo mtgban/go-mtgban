@@ -929,7 +929,7 @@ func (r *resolver) resolveUUIDs(product *cm.Product, uuids []string) (string, st
 		}
 		// mtgjson also links a few real cards to the emblem or token
 		// product of the same name; a Token product prices tokens only.
-		if r.gameID == cm.GameMagic && product.Rarity == "Token" && co.Layout != "token" {
+		if r.gameID == cm.GameMagic && product.Rarity == "Token" && !co.IsTokenLayout() {
 			continue
 		}
 		sameNumber := strings.EqualFold(co.PlainNumber, product.Number)
