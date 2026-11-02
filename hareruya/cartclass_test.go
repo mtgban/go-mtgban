@@ -27,7 +27,7 @@ func fixture(t *testing.T, name string) *goquery.Document {
 // Each row keeps its own class; the second lot's main row has no button,
 // and must not take its extra row's
 func TestLazyRowClasses(t *testing.T) {
-	got := (&Hareruya{}).lazyResults(fixture(t, "lazy_classes.html"))
+	got := NewScraper(nil).lazyResults(fixture(t, "lazy_classes.html"))
 	want := [][]Row{
 		{
 			{Quantity: 4, Condition: mtgban.NM, Price: 1000, Class: "27947", Main: true},
@@ -51,7 +51,7 @@ func TestLazyRowClasses(t *testing.T) {
 // A lot's main row without a cart button adds the lot's own class; an extra
 // row keeps only its button's.
 func TestListingsForFillsMainClass(t *testing.T) {
-	lazy := (&Hareruya{}).lazyResults(fixture(t, "lazy_classes.html"))
+	lazy := NewScraper(nil).lazyResults(fixture(t, "lazy_classes.html"))
 	got := listingsFor(Product{Product: "2597", ProductClass: "18807"}, lazy)
 	want := []Row{
 		{Quantity: 1, Condition: mtgban.NM, Price: 300, Class: "18807", Main: true},

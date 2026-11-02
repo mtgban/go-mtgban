@@ -40,20 +40,14 @@ var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC)\s*(\S+)$`)
 
 // Hareruya prices Hareruya's singles.
 type Hareruya struct {
-	logCallback    mtgban.LogCallbackFunc
+	mtgban.Stock
+
+	printf         mtgban.LogCallbackFunc
 	maxConcurrency int
 
 	backend *matcher.Backend
 
 	exchangeRate float64
-
-	inventory     mtgban.InventoryRecord
-	inventoryDate time.Time
-	disableRetail bool
-
-	buylist        mtgban.BuylistRecord
-	buylistDate    time.Time
-	disableBuylist bool
 
 	targetEdition string
 
@@ -62,9 +56,8 @@ type Hareruya struct {
 
 // NewScraper returns a singles scraper matching against b.
 func NewScraper(b *matcher.Backend) *Hareruya {
-	ha := Hareruya{backend: b}
-	ha.inventory = mtgban.InventoryRecord{}
-	ha.buylist = mtgban.BuylistRecord{}
+	ha := Hareruya{Stock: mtgban.NewStock(), backend: b}
+	ha.printf = mtgban.TaggedLog("HA", nil)
 	ha.maxConcurrency = defaultConcurrency
 	ha.client = mtgban.NewHTTPClient()
 	return &ha
@@ -78,12 +71,6 @@ type responseChan struct {
 	// duplicate marks a listing the catalog does not tell apart from another
 	// this storefront sells, and which is kept only where that one is absent.
 	duplicate bool
-}
-
-func (ha *Hareruya) printf(format string, a ...any) {
-	if ha.logCallback != nil {
-		ha.logCallback("[HA] "+format, a...)
-	}
 }
 
 func (ha *Hareruya) processBuylistSet(ctx context.Context, channel chan<- responseChan, cardSet string) error {
@@ -208,15 +195,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			ha.printf("%v in cardSet %s at page %d", err, cardSet, page)
 			ha.printf("%q", theCard)
 			ha.printf("%s", title)
-
-			var alias *matcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := ha.backend.GetUUID(probe)
-					ha.printf("- %s", card)
-				}
-			}
+			mtgban.LogAliasing(ha.printf, ha.backend, err)
 			return true
 		}
 
@@ -233,7 +212,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 
 		var priceRatio, sellPrice float64
 
-		invCards := ha.inventory[cardID]
+		invCards := ha.Inventory()[cardID]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -393,15 +372,7 @@ func (ha *Hareruya) walkSet(ctx context.Context, channel chan<- responseChan, ca
 				ha.printf("%v at set %s (page %d)", err, cardSet, i)
 				ha.printf("%q", theCard)
 				ha.printf("%v", product)
-
-				var alias *matcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := ha.backend.GetUUID(probe)
-						ha.printf("- %s", card)
-					}
-				}
+				mtgban.LogAliasing(ha.printf, ha.backend, err)
 				continue
 			}
 
@@ -746,7 +717,7 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	var consume func(responseChan)
 	if mode == modeInventory {
 		consume = func(record responseChan) {
-			err := ha.inventory.Add(record.cardID, record.invEntry)
+			err := ha.Inventory().Add(record.cardID, record.invEntry)
 			if err != nil {
 				ha.printf("%s", err.Error())
 			}
@@ -768,13 +739,13 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 					return
 				}
 				if !isHeld {
-					if _, found := ha.buylist[record.cardID]; found {
+					if _, found := ha.Buylist()[record.cardID]; found {
 						return
 					}
 					heldBy[record.cardID] = record.buyEntry.OriginalID
 				}
 			case isHeld:
-				delete(ha.buylist, record.cardID)
+				delete(ha.Buylist(), record.cardID)
 				delete(heldBy, record.cardID)
 			}
 
@@ -782,9 +753,9 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 			// This store tracks the two different EU/US printings as separate entries
 			var err error
 			if co.SetCode == "MPS" {
-				err = ha.buylist.AddRelaxed(record.cardID, record.buyEntry)
+				err = ha.Buylist().AddRelaxed(record.cardID, record.buyEntry)
 			} else {
-				err = ha.buylist.Add(record.cardID, record.buyEntry)
+				err = ha.Buylist().Add(record.cardID, record.buyEntry)
 			}
 			if err != nil {
 				ha.printf("%s", err.Error())
@@ -806,51 +777,14 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 		ha.printf,
 	)
 
-	if mode == modeInventory {
-		ha.inventoryDate = time.Now()
-	} else if mode == modeBuylist {
-		ha.buylistDate = time.Now()
-	}
-
 	return nil
-}
-
-// SetConfig applies options after the scraper was built. See
-// mtgban.ScraperConfig.
-func (ha *Hareruya) SetConfig(opt mtgban.ScraperOptions) {
-	ha.disableRetail = opt.DisableRetail
-	ha.disableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ha *Hareruya) Load(ctx context.Context) error {
-	var errs []error
-
-	if !ha.disableRetail {
-		err := ha.scrape(ctx, modeInventory)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-		}
-	}
-
-	if !ha.disableBuylist {
-		err := ha.scrape(ctx, modeBuylist)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-		}
-	}
-
-	return errors.Join(errs...)
-}
-
-// Inventory returns what Load collected. See mtgban.Seller.
-func (ha *Hareruya) Inventory() mtgban.InventoryRecord {
-	return ha.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (ha *Hareruya) Buylist() mtgban.BuylistRecord {
-	return ha.buylist
+	return ha.LoadHalves(ctx,
+		func(ctx context.Context) error { return ha.scrape(ctx, modeInventory) },
+		func(ctx context.Context) error { return ha.scrape(ctx, modeBuylist) })
 }
 
 // availableMarketNames are the sub-sellers: the storefront's copies, and
@@ -884,8 +818,8 @@ func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Hareruya"
 	info.Shorthand = "HA"
 	info.CountryFlag = "JP"
-	info.InventoryTimestamp = &ha.inventoryDate
-	info.BuylistTimestamp = &ha.buylistDate
-	info.Game = matcher.GameMagic
+	info.InventoryTimestamp = &ha.InventoryDate
+	info.BuylistTimestamp = &ha.BuylistDate
+	info.Game = ha.backend.Game
 	return
 }

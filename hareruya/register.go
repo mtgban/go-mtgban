@@ -9,7 +9,7 @@ func init() {
 	mtgban.Register("hareruya", []matcher.Game{matcher.GameMagic},
 		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper := NewScraper(b)
-			scraper.logCallback = opts.LogCallback
+			scraper.printf = mtgban.TaggedLog("HA", opts.LogCallback)
 			scraper.targetEdition = opts.TargetEdition
 			if opts.MaxConcurrency != 0 {
 				scraper.maxConcurrency = opts.MaxConcurrency
