@@ -436,17 +436,18 @@ path. The core lookup surface is in `matcher/api.go`: `GetUUIDs`,
    `Load`/`Inventory`/`Buylist`/`Info`), `api.go` (client and auth),
    `preprocess.go` (store text → `InputCard` → `b.Match()`), optional
    `sealed.go`.
-2. Keep the scraper's state in unexported fields: `logCallback`,
-   `maxConcurrency` where it fans out, inventory/buylist plus timestamps,
-   and the `*matcher.Backend` the constructor was handed. Follow
+2. Keep the scraper's state in unexported fields: a `printf` from
+   `mtgban.TaggedLog`, `maxConcurrency` where it fans out, and the
+   `*matcher.Backend` the constructor was handed. Follow
    `starcitygames` for an API-backed store or `mtgseattle` for an
    HTML-scraped one. The `register.go` constructor (step 4) copies what
    bantool passes in `mtgban.Options` (`LogCallback`, `Affiliate`,
    `TargetEdition`, and secrets through `opts.Secret`) onto those fields.
-   A store whose retail and buylist halves can run alone implements
-   `mtgban.ScraperConfig`, whose `SetConfig` receives `DisableRetail` and
-   `DisableBuylist`; the registry refuses to build half of a store that
-   does not.
+   A store whose retail and buylist halves can run alone embeds
+   `mtgban.Stock`, which holds both records and their dates, implements
+   `mtgban.ScraperConfig` and runs the halves `SetConfig` left on through
+   `LoadHalves`; the registry refuses to build half of a store that
+   does not implement `ScraperConfig`.
 3. Fetch with `WorkerPool` plus a client from `mtgban.NewHTTPClient`.
 4. Add a `register.go` whose `init()` calls `mtgban.Register(name, games,
    constructor)`: `name` is the bare registry key the store has always

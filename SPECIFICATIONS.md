@@ -225,6 +225,17 @@ callback. Logging across the codebase is via injected
 `LogCallbackFunc = func(format string, a ...interface{})` fields, never
 globals.
 
+`mtgban/stock.go` holds the plumbing scrapers share. `Stock`, built by
+`NewStock` and embedded, carries the inventory and buylist records, their
+dates and the `ScraperOptions`, answers `Inventory`, `Buylist` and
+`SetConfig`, and `LoadHalves(ctx, retail, buylist)` runs the halves left
+on, wrapping a failure in `ErrInventoryLoad`/`ErrBuylistLoad` and stamping
+the date of each half that succeeds. `Result` is a pool worker's
+`{CardID, Inventory, Buylist}` and `Stock.Collect(printf)` the consume
+func adding it. `TaggedLog(tag, fn)` is the nil-safe `[TAG] ` printf,
+`LogAliasing` the `- card` lines under an `AliasingError`, and
+`ForGame(table, game)` the vendor-value lookup refusing an unknown game.
+
 `mtgban/json.go` round-trips `{info, inventory, buylist}`
 (`WriteSellerToJSON`/`ReadVendorFromJSON`, etc., reconstructing
 `BaseSeller`/`BaseVendor`). `mtgban/csv.go` defines layered headers -
@@ -940,17 +951,19 @@ green in every job.
 
 Idealized shape: `NewScraper(b, creds...)`, a `*matcher.Backend` first,
 always, returning a struct that holds `b` alongside unexported fields that
-its `register.go` sets from `mtgban.Options` (`logCallback`,
-`maxConcurrency`, optional `partner`/`affiliate`), `disableRetail`/
-`disableBuylist` set through `SetConfig`, and `inventory`/`buylist` +
+its `register.go` sets from `mtgban.Options` (`logCallback` or a `printf`
+from `mtgban.TaggedLog`, `maxConcurrency`, optional `partner`/`affiliate`),
+and either an embedded `mtgban.Stock` (§1.4) or its own
+`disableRetail`/`disableBuylist`, `inventory`/`buylist` and
 `inventoryDate`/`buylistDate`. Most packages' `Load(ctx)` fans out via
 `mtgban.WorkerPool`, usually over a client from `mtgban.NewHTTPClient`. Of
 the clients, only the unregistered cardsphere and mtgstocks set
 `LinearJitterBackoff`, and mtgseattle `RateLimitLinearJitterBackoff`. A
 `preprocess.go` translates store naming into `InputCard` + `b.Match()`,
 skipping `ErrUnsupported`, logging `AliasingError`s; results inserted via
-the `Add*` family. Every scraper has a tagged `printf` helper
-(`x.logCallback("[TAG] "+format, a...)`). File
+the `Add*` family. Every scraper has a tagged `printf`, a
+`mtgban.TaggedLog` field or a method calling
+`x.logCallback("[TAG] "+format, a...)`. File
 convention: `<store>.go` / `api.go` / `preprocess.go` / optional `sealed.go`
 (a *separate* scraper struct with its own `SealedMode` `Info`, holding the
 same `b`).
@@ -1098,8 +1111,8 @@ embeds live credentials.
   registered constructor in a package's own `register.go` then reads what
   it needs out of `mtgban.Options` (`opts.LogCallback`, `opts.Affiliate`,
   `opts.TargetEdition`, `opts.MaxConcurrency`, `opts.Secret`) and sets the
-  scraper's unexported fields from it, `scraper.logCallback = opts.LogCallback`
-  alone being 37 assignments across the 20 `register.go` files.
+  scraper's unexported fields from it, the log callback in every one of
+  them.
 - **manapoolOrders** - Mana Pool buyer-order CSV dumps.
 - **boosterGen / boosterList** - booster simulation and sealed introspection
   over the matcher sealed API.
