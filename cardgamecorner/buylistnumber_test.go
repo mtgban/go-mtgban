@@ -3,6 +3,7 @@ package cardgamecorner
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -126,7 +127,8 @@ func TestScrapeBuylistFailure(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			cgc := &Cardgamecorner{
-				buylist: mtgban.BuylistRecord{},
+				Stock:  mtgban.NewStock(),
+				printf: mtgban.TaggedLog("CGC", nil),
 				client: &Client{client: &http.Client{
 					Transport: fakeStorefront{editions: editions, search: test.search, searchStatus: test.status},
 				}},
@@ -136,9 +138,9 @@ func TestScrapeBuylistFailure(t *testing.T) {
 				t.Errorf("GetBuylistForEdition error = %v, want failure %t", err, test.searchFails)
 			}
 
-			err = cgc.scrapeBL(context.Background())
-			if err == nil {
-				t.Fatalf("scrapeBL answered no error with %d entries", len(cgc.buylist))
+			err = cgc.LoadHalves(context.Background(), nil, cgc.scrapeBL)
+			if !errors.Is(err, mtgban.ErrBuylistLoad) {
+				t.Fatalf("scrapeBL answered %v with %d entries", err, len(cgc.Buylist()))
 			}
 			// A failed search has to be reported as one, not as an
 			// empty buylist
@@ -146,7 +148,7 @@ func TestScrapeBuylistFailure(t *testing.T) {
 			if failed != test.searchFails {
 				t.Errorf("scrapeBL error = %v, want failed search %t", err, test.searchFails)
 			}
-			if !cgc.buylistDate.IsZero() {
+			if !cgc.BuylistDate.IsZero() {
 				t.Errorf("buylist dated despite %v", err)
 			}
 		})
