@@ -1576,7 +1576,7 @@ func letteredPromo(b *matcher.Backend, inCard *matcher.InputCard, numbers []stri
 			if !found || co.Sealed || !numberMatches(number, co.Number) {
 				continue
 			}
-			key := productKeyOf(co.Card.Identifiers, uuid)
+			key := matcher.ProductKeyOf(co.Identifiers, matcher.PrintingKey(co.Card))
 			if seen[key] {
 				continue
 			}
@@ -2102,7 +2102,7 @@ func shelfFigures(b *matcher.Backend, cardSet map[string][]matcher.Card) map[str
 		}
 		for i := range set.Cards {
 			card := &set.Cards[i]
-			products[productKeyOf(card.Identifiers, card.UUID)] = true
+			products[matcher.ProductKeyOf(card.Identifiers, card.UUID)] = true
 			if total := foldTotal(card.SetTotal); total != "" {
 				totals[total]++
 			}

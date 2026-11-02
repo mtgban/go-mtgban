@@ -75,7 +75,7 @@ func TestFinishIdentity(t *testing.T) {
 		if co.Sealed {
 			continue
 		}
-		key := productKeyOf(co.Identifiers, uuid)
+		key := matcher.ProductKeyOf(co.Identifiers, matcher.PrintingKey(co.Card))
 		if byProduct[key] == nil {
 			byProduct[key] = map[string]string{}
 		}

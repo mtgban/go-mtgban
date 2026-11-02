@@ -373,19 +373,6 @@ func (card *DatastoreCard) productKey() string {
 	return card.ID
 }
 
-// productKeyOf is the same key read off a card the backend already holds,
-// where those ids hang off Identifiers and the entry's own id is the uuid
-// being asked about.
-func productKeyOf(identifiers map[string]string, uuid string) string {
-	if id := identifiers["tcgplayerProductId"]; id != "" {
-		return id
-	}
-	if id := identifiers["tcgdexId"]; id != "" {
-		return id
-	}
-	return uuid
-}
-
 // plainNumber is the collector number as a person writes it, which for this
 // game means without the zeros the catalog pads an ordinal out to three
 // digits with: card 1 is written "1", not "001". It is what PlainNumber
