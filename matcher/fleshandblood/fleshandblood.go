@@ -188,23 +188,6 @@ const setTypePromo = "promo"
 // the field.
 var quotedRarities = map[string]string{"Marvel": "Marvel"}
 
-// promoTypeSlugs is a printing's promo types as the tokens a query can carry,
-// which is what a card stores: a search splits its words apart before a
-// filter sees them, so a tag only survives the trip as one. A printing that
-// publishes none has none; its variant is the prose they were distilled out
-// of, and reading it back would put on what the builder took off.
-func promoTypeSlugs(card *DatastoreCard) []string {
-	labels := card.PromoTypes
-	if len(labels) == 0 {
-		return nil
-	}
-	out := make([]string, 0, len(labels))
-	for _, label := range labels {
-		out = append(out, matcher.PromoTypeSlug(label))
-	}
-	return out
-}
-
 // describingPromoTypes keeps the labels worth declaring as tags: the ones
 // the printing's own finish or number does not already say. The card keeps
 // the full list either way, which the matcher still reads to tell sibling
@@ -340,7 +323,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 			continue
 		}
 
-		promoTypes := promoTypeSlugs(card)
+		promoTypes := matcher.PromoTypeSlugs(card.PromoTypes)
 		// The mark rides with them without being declared: it is a fact a
 		// listing names, and for an artwork letter it is the only one.
 		if card.Watermark != "" {

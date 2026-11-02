@@ -207,10 +207,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 			continue
 		}
 
-		var promoTypes []string
-		for _, promoType := range card.PromoTypes {
-			promoTypes = append(promoTypes, matcher.PromoTypeSlug(promoType))
-		}
+		promoTypes := matcher.PromoTypeSlugs(card.PromoTypes)
 		// The mark rides with the tags on the card, though it is never
 		// declared as one. It is not a promotion - nothing promoted a
 		// DON!! card for picturing Nami - so it has no place in the

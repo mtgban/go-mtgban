@@ -213,3 +213,17 @@ func TestCompleteFilesSealed(t *testing.T) {
 		t.Errorf("SetSealedUUIDs = %v, want GD01's box alone", b.SetSealedUUIDs)
 	}
 }
+
+// TestPromoTypeSlugs pins a printing's promo types as the tokens it stores,
+// and nil for one that publishes none.
+func TestPromoTypeSlugs(t *testing.T) {
+	none := PromoTypeSlugs(nil)
+	if none != nil {
+		t.Errorf("PromoTypeSlugs(nil) = %#v, want nil", none)
+	}
+	got := PromoTypeSlugs([]string{"Link Rare", "1st Place"})
+	want := []string{"linkrare", "1stplace"}
+	if !slices.Equal(got, want) {
+		t.Errorf("PromoTypeSlugs = %v, want %v", got, want)
+	}
+}

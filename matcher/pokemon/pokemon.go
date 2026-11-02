@@ -188,23 +188,6 @@ func describingPromoTypes(card *DatastoreCard) []string {
 	return out
 }
 
-// promoTypeSlugs is a printing's promo types as the tokens a query can carry,
-// which is what a card stores: a search splits its words apart before a
-// filter sees them, so a tag only survives the trip as one. A printing that
-// publishes none has none; its variant is the prose they were distilled out
-// of, and reading it back would put on what the builder took off.
-func promoTypeSlugs(card *DatastoreCard) []string {
-	labels := card.PromoTypes
-	if len(labels) == 0 {
-		return nil
-	}
-	out := make([]string, 0, len(labels))
-	for _, label := range labels {
-		out = append(out, matcher.PromoTypeSlug(label))
-	}
-	return out
-}
-
 // qualifiedName spells a printing the way TCGplayer names the product, the
 // card name followed by the qualifier that tells it from the siblings
 // sharing its number ("Pikachu (Cosmos Holo)"). Empty for a printing the
@@ -286,7 +269,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 			types = []string{card.Type}
 		}
 
-		promoTypes := promoTypeSlugs(card)
+		promoTypes := matcher.PromoTypeSlugs(card.PromoTypes)
 		finishes, foilUUIDs := matcher.SoldFinishes(uuids)
 		convertedCard := matcher.Card{
 			UUID:    card.ID,

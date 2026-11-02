@@ -496,6 +496,21 @@ func PromoTypeSlug(promoType string) string {
 	return out.String()
 }
 
+// PromoTypeSlugs is a printing's promo types as the tokens a query can
+// carry, which is what a card stores: a search splits its words apart before
+// a filter sees them, so a tag only survives the trip as one. A printing
+// that publishes none has none.
+func PromoTypeSlugs(promoTypes []string) []string {
+	if len(promoTypes) == 0 {
+		return nil
+	}
+	out := make([]string, 0, len(promoTypes))
+	for _, promoType := range promoTypes {
+		out = append(out, PromoTypeSlug(promoType))
+	}
+	return out
+}
+
 // SlugDescribes reports whether a storefront's wording says the words a promo
 // type's slug was made from, as a run of whole words.
 //
