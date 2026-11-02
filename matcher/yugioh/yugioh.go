@@ -173,7 +173,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		// words are title-cased back and the acronyms looked up.
 		for _, promoType := range card.PromoTypes {
 			slug := matcher.PromoTypeSlug(promoType)
-			b.AddPromoType(slug, promoTypeLabel(slug))
+			b.AddPromoType(slug, matcher.LabelPromoType(promoTypeLabels, slug))
 		}
 		if qualified := qualifiedName(&card, printingsByName); qualified != "" {
 			b.AddName(qualified)

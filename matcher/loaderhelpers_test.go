@@ -227,3 +227,18 @@ func TestPromoTypeSlugs(t *testing.T) {
 		t.Errorf("PromoTypeSlugs = %v, want %v", got, want)
 	}
 }
+
+// TestLabelPromoType pins a token's words: the game's table where it has an
+// entry, and the title-cased token where it has none.
+func TestLabelPromoType(t *testing.T) {
+	labels := map[string]string{"linkrare": "Link Rare"}
+	for _, tt := range []struct{ slug, want string }{
+		{"linkrare", "Link Rare"},
+		{"finalist", "Finalist"},
+	} {
+		got := LabelPromoType(labels, tt.slug)
+		if got != tt.want {
+			t.Errorf("LabelPromoType(%q) = %q, want %q", tt.slug, got, tt.want)
+		}
+	}
+}

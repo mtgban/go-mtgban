@@ -283,7 +283,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		// way either side of that lets the two halves land in any order.
 		for _, promoType := range describingPromoTypes(&card) {
 			slug := matcher.PromoTypeSlug(promoType)
-			b.AddPromoType(slug, promoTypeLabel(slug))
+			b.AddPromoType(slug, matcher.LabelPromoType(promoTypeLabels, slug))
 		}
 		if qualified := qualifiedName(&card, printingsByName); qualified != "" {
 			b.AddName(qualified)

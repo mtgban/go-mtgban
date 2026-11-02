@@ -55,14 +55,6 @@ var promoTypeLabels = map[string]string{
 	"bushiroadexpo2026": "Bushiroad EXPO 2026",
 }
 
-// promoTypeLabel is the words a token is shown as.
-func promoTypeLabel(slug string) string {
-	if label, found := promoTypeLabels[slug]; found {
-		return label
-	}
-	return matcher.Title(slug)
-}
-
 // DatastoreCard is one printing as the datastore publishes it.
 type DatastoreCard struct {
 	ID   string `json:"id"`
@@ -173,7 +165,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		// otherwise be shown as "Super Pre-Release Participant".
 		for _, label := range card.PromoTypes {
 			slug := matcher.PromoTypeSlug(label)
-			b.AddPromoType(slug, promoTypeLabel(slug))
+			b.AddPromoType(slug, matcher.LabelPromoType(promoTypeLabels, slug))
 		}
 		b.AddName(qualified)
 	}

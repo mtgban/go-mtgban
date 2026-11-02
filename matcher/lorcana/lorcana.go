@@ -274,15 +274,6 @@ var promoTypeLabels = map[string]string{
 	"verticalwave":            "Vertical Wave",
 }
 
-// promoTypeLabel is the words a token is shown as, from the table above
-// where a title-caser cannot work them out.
-func promoTypeLabel(slug string) string {
-	if label, found := promoTypeLabels[slug]; found {
-		return label
-	}
-	return matcher.Title(slug)
-}
-
 // adoptPrintings reads a card's printings into the uuid each finish prices,
 // and puts the treatments its printings carry on the card as promo types. A
 // Card here is the card, not one of its printings: a query for
@@ -358,7 +349,7 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 		// after being dropped on purpose.
 		for _, tag := range card.PromoTypes {
 			slug := matcher.PromoTypeSlug(tag)
-			b.AddPromoType(slug, promoTypeLabel(slug))
+			b.AddPromoType(slug, matcher.LabelPromoType(promoTypeLabels, slug))
 		}
 	}
 

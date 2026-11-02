@@ -1,9 +1,5 @@
 package gundam
 
-import (
-	"github.com/mtgban/go-mtgban/matcher"
-)
-
 // promoTypeLabels are the words behind a token. Decoration is this side's
 // job - the datastore publishes a slug and nothing else, and a slug cannot
 // give back the boundaries it dropped, so "worldchampionship" reads as
@@ -61,14 +57,4 @@ var promoTypeLabels = map[string]string{
 	"winnerpack":             "Winner Pack",
 	"worldchampionship":      "World Championship",
 	"xarxzero":               "XARX-ZERO",
-}
-
-// promoTypeLabel spells a token the way a reader should see it: the words
-// above where a title-caser cannot work them out, and the title-cased token
-// otherwise.
-func promoTypeLabel(promoType string) string {
-	if label, found := promoTypeLabels[promoType]; found {
-		return label
-	}
-	return matcher.Title(promoType)
 }

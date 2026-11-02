@@ -149,7 +149,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		// Finalist".
 		for _, label := range card.PromoTypes {
 			slug := matcher.PromoTypeSlug(label)
-			b.AddPromoType(slug, promoTypeLabel(slug))
+			b.AddPromoType(slug, matcher.LabelPromoType(promoTypeLabels, slug))
 		}
 		b.AddName(qualified)
 	}

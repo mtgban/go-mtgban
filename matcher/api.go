@@ -511,6 +511,16 @@ func PromoTypeSlugs(promoTypes []string) []string {
 	return out
 }
 
+// LabelPromoType is the words a promo type token is shown as: those a game's
+// labels write down for it, where a title-caser cannot work them out, and
+// the title-cased token otherwise.
+func LabelPromoType(labels map[string]string, slug string) string {
+	if label, found := labels[slug]; found {
+		return label
+	}
+	return Title(slug)
+}
+
 // SlugDescribes reports whether a storefront's wording says the words a promo
 // type's slug was made from, as a run of whole words.
 //
