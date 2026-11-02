@@ -205,3 +205,63 @@ func TestGameLoadRefusesAnotherCategory(t *testing.T) {
 		t.Error("Load() over Magic's catalog error = nil, want it refused")
 	}
 }
+
+// catalogDumpJSON is a dump as tcgdumper writes it, with a key this package
+// does not read and a product's card text beside its collector number.
+const catalogDumpJSON = `{
+	"category": {"categoryId": 86, "name": "Gundam Card Game"},
+	"conditions": [{"conditionId": 1, "name": "Near Mint"}],
+	"languages": [{"languageId": 1, "name": "English", "abbr": "EN"}],
+	"printings": [{"printingId": 168, "name": "Normal"}],
+	"rarities": [{"rarityId": 1, "displayText": "Common"}],
+	"future": {"anything": [1, 2, 3]},
+	"groups": [{"groupId": 24345, "name": "Edition Beta"}],
+	"products": [
+		{"productId": 616532, "name": "Gundam (MA Form)", "cleanName": "Gundam MA Form", "groupId": 24345, "categoryId": 86,
+		 "url": "https://www.tcgplayer.com/product/616532", "imageUrl": "https://tcgplayer-cdn.tcgplayer.com/product/616532_200w.jpg",
+		 "imageCount": 1, "modifiedOn": "2025-01-13T15:52:26.94", "presaleInfo": {"isPresale": false, "note": "a note"},
+		 "productType": "Cards",
+		 "skus": [{"skuId": 8560649, "productId": 616532, "languageId": 1, "printingId": 168, "conditionId": 1}],
+		 "extendedData": [{"name": "Description", "value": "a long card text"}, {"name": "Number", "value": "ST01-002"}]},
+		{"productId": 617436, "name": "Gundam Card Game Edition Beta Box", "groupId": 24345, "categoryId": 86, "productType": "Sealed Products"}
+	]
+}`
+
+func TestLoadCatalogKeepsWhatIsRead(t *testing.T) {
+	dump, err := LoadCatalog(strings.NewReader(catalogDumpJSON))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dump.Category.CategoryID != 86 || len(dump.Languages) != 1 || len(dump.Printings) != 1 || len(dump.Groups) != 1 || len(dump.Conditions) != 1 {
+		t.Errorf("tables read as %+v", dump)
+	}
+	if len(dump.Products) != 2 {
+		t.Fatalf("got %d products, want 2", len(dump.Products))
+	}
+	product := dump.Products[0]
+	if product.ProductID != 616532 || product.Name != "Gundam (MA Form)" || product.GroupID != 24345 || product.ProductType != "Cards" || len(product.Skus) != 1 {
+		t.Errorf("product read as %+v", product)
+	}
+	if product.Extended("Number") != "ST01-002" || len(product.ExtendedData) != 1 {
+		t.Errorf("extended data %+v, want the collector number alone", product.ExtendedData)
+	}
+	if product.URL != "" || product.ImageURL != "" || product.CleanName != "" || product.ModifiedOn != "" || product.ImageCount != 0 || product.PresaleInfo != nil {
+		t.Errorf("product keeps %q %q %q %q %d %+v, which nothing reads", product.URL, product.ImageURL, product.CleanName, product.ModifiedOn, product.ImageCount, product.PresaleInfo)
+	}
+	if dump.Products[1].ExtendedData != nil {
+		t.Errorf("a product with no number keeps %+v", dump.Products[1].ExtendedData)
+	}
+}
+
+func TestLoadCatalogRefusesATruncatedDump(t *testing.T) {
+	for _, cut := range []int{len(catalogDumpJSON) / 2, len(catalogDumpJSON) - 3} {
+		_, err := LoadCatalog(strings.NewReader(catalogDumpJSON[:cut]))
+		if err == nil {
+			t.Errorf("a dump cut at %d of %d was accepted", cut, len(catalogDumpJSON))
+		}
+	}
+	_, err := LoadCatalog(strings.NewReader(`[]`))
+	if err == nil {
+		t.Error("a dump that is no object was accepted")
+	}
+}

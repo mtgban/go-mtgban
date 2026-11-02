@@ -2,7 +2,6 @@ package tcgplayer
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -44,13 +43,9 @@ type SYPCatalog map[int]SYPSku
 // and it is the larger part, five million skus for Magic - is dropped rather
 // than carried through the run.
 func LoadSYPCatalog(reader io.Reader) (SYPCatalog, error) {
-	var dump tcgplayer.CatalogDump
-	err := json.NewDecoder(reader).Decode(&dump)
+	dump, err := LoadCatalog(reader)
 	if err != nil {
 		return nil, err
-	}
-	if len(dump.Products) == 0 {
-		return nil, errors.New("empty catalog dump")
 	}
 
 	// PrintingNames is keyed by product; the printing a sku names is looked
