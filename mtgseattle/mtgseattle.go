@@ -35,28 +35,20 @@ const (
 // MTGSeattle prices MTGSeattle's singles, both what they sell and what they
 // buy.
 type MTGSeattle struct {
-	logCallback    mtgban.LogCallbackFunc
+	mtgban.Stock
+
+	printf         mtgban.LogCallbackFunc
 	maxConcurrency int
 
 	backend *matcher.Backend
-
-	inventoryDate time.Time
-	buylistDate   time.Time
-
-	inventory mtgban.InventoryRecord
-	buylist   mtgban.BuylistRecord
-
-	disableRetail  bool
-	disableBuylist bool
 
 	client *http.Client
 }
 
 // NewScraper returns a scraper matching against b.
 func NewScraper(b *matcher.Backend) *MTGSeattle {
-	ms := MTGSeattle{backend: b}
-	ms.inventory = mtgban.InventoryRecord{}
-	ms.buylist = mtgban.BuylistRecord{}
+	ms := MTGSeattle{Stock: mtgban.NewStock(), backend: b}
+	ms.printf = mtgban.TaggedLog("MS", nil)
 	ms.maxConcurrency = defaultConcurrency
 	// The site appears to throttle rather than reject outright, so
 	// retry slower and longer instead of giving up in seconds.
@@ -81,18 +73,6 @@ func retryErrorHandler(resp *http.Response, err error, numTries int) (*http.Resp
 		return nil, fmt.Errorf("giving up after %d attempt(s), last status %s: %w", numTries, status, err)
 	}
 	return nil, fmt.Errorf("giving up after %d attempt(s), last status %s", numTries, status)
-}
-
-type responseChan struct {
-	cardID   string
-	invEntry *mtgban.InventoryEntry
-	buyEntry *mtgban.BuylistEntry
-}
-
-func (ms *MTGSeattle) printf(format string, a ...any) {
-	if ms.logCallback != nil {
-		ms.logCallback("[MS] "+format, a...)
-	}
 }
 
 // buildProductURL sets layout=false on product, merging it into any
@@ -185,7 +165,7 @@ func buylistOffers(meta *goquery.Selection) []offer {
 	return []offer{{conditions: mtgban.NM, price: price, qty: qty}}
 }
 
-func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- responseChan, product, mode string) error {
+func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- mtgban.Result, product, mode string) error {
 	link, err := buildProductURL(product, mode == modeInventory)
 	if err != nil {
 		return err
@@ -297,15 +277,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			ms.printf("%v", err)
 			ms.printf("%q", theCard)
 			ms.printf("%s ~ %s ~ %s", cardName, edition, variant)
-
-			var alias *matcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := ms.backend.GetUUID(probe)
-					ms.printf("- %s", card)
-				}
-			}
+			mtgban.LogAliasing(ms.printf, ms.backend, err)
 			return
 		}
 
@@ -320,9 +292,9 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 
 		if mode == modeInventory {
 			for _, o := range offers {
-				out := responseChan{
-					cardID: cardID,
-					invEntry: &mtgban.InventoryEntry{
+				out := mtgban.Result{
+					CardID: cardID,
+					Inventory: &mtgban.InventoryEntry{
 						Price:      o.price,
 						Conditions: o.conditions,
 						Quantity:   o.qty,
@@ -335,7 +307,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			price, qty := offers[0].price, offers[0].qty
 			var priceRatio, sellPrice float64
 
-			invCards := ms.inventory[cardID]
+			invCards := ms.Inventory()[cardID]
 			for _, invCard := range invCards {
 				sellPrice = invCard.Price
 				break
@@ -352,9 +324,9 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 				}
 
 				factor := gradeMap[grade]
-				out := responseChan{
-					cardID: cardID,
-					buyEntry: &mtgban.BuylistEntry{
+				out := mtgban.Result{
+					CardID: cardID,
+					Buylist: &mtgban.BuylistEntry{
 						Conditions: grade,
 						BuyPrice:   price * factor,
 						PriceRatio: priceRatio,
@@ -421,69 +393,22 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 	}
 
 	mtgban.WorkerPool(ctx, ms.maxConcurrency, items,
-		func(ctx context.Context, it item, results chan<- responseChan) error {
+		func(ctx context.Context, it item, results chan<- mtgban.Result) error {
 			ms.printf("Processing %s", it.title)
 			return ms.processProduct(ctx, results, it.link, mode)
 		},
-		func(record responseChan) {
-			var err error
-			if record.invEntry != nil {
-				err = ms.inventory.Add(record.cardID, record.invEntry)
-			} else if record.buyEntry != nil {
-				err = ms.buylist.Add(record.cardID, record.buyEntry)
-			}
-			if err != nil {
-				ms.printf("%s", err.Error())
-			}
-		},
+		ms.Collect(ms.printf),
 		ms.printf,
 	)
-
-	if mode == modeInventory {
-		ms.inventoryDate = time.Now()
-	} else if mode == modeBuylist {
-		ms.buylistDate = time.Now()
-	}
 
 	return nil
 }
 
-// SetConfig applies options after the scraper was built. See
-// mtgban.ScraperConfig.
-func (ms *MTGSeattle) SetConfig(opt mtgban.ScraperOptions) {
-	ms.disableRetail = opt.DisableRetail
-	ms.disableBuylist = opt.DisableBuylist
-}
-
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ms *MTGSeattle) Load(ctx context.Context) error {
-	var errs []error
-
-	if !ms.disableRetail {
-		err := ms.scrape(ctx, modeInventory)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-		}
-	}
-
-	if !ms.disableBuylist {
-		err := ms.scrape(ctx, modeBuylist)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-		}
-	}
-
-	return errors.Join(errs...)
-}
-
-// Inventory returns what Load collected. See mtgban.Seller.
-func (ms *MTGSeattle) Inventory() mtgban.InventoryRecord {
-	return ms.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (ms *MTGSeattle) Buylist() mtgban.BuylistRecord {
-	return ms.buylist
+	return ms.LoadHalves(ctx,
+		func(ctx context.Context) error { return ms.scrape(ctx, modeInventory) },
+		func(ctx context.Context) error { return ms.scrape(ctx, modeBuylist) })
 }
 
 func grading(b *matcher.Backend, cardID string, price float64) map[mtgban.Condition]float64 {
@@ -544,9 +469,9 @@ func grading(b *matcher.Backend, cardID string, price float64) map[mtgban.Condit
 func (ms *MTGSeattle) Info() (info mtgban.ScraperInfo) {
 	info.Name = "MTGSeattle"
 	info.Shorthand = "MS"
-	info.InventoryTimestamp = &ms.inventoryDate
-	info.BuylistTimestamp = &ms.buylistDate
+	info.InventoryTimestamp = &ms.InventoryDate
+	info.BuylistTimestamp = &ms.BuylistDate
 	info.CreditMultiplier = 1.33
-	info.Game = matcher.GameMagic
+	info.Game = ms.backend.Game
 	return
 }
