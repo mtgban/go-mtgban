@@ -136,6 +136,28 @@ func TestArbitSkipsAConditionTheVendorDoesNotBuy(t *testing.T) {
 	}
 }
 
+// A vendor buying a card only at SP leads its entries with that grade. The NM
+// copy sells to it at that first offer, and the SP copy at its own.
+func TestArbitPricesNMAgainstTheFirstOffer(t *testing.T) {
+	b := backendFor(plainCard())
+
+	entries := Arbit(b, nil,
+		vendorOf(BuylistRecord{"card": {{Conditions: SP, BuyPrice: 12}}}),
+		sellerOf(InventoryRecord{"card": {
+			{Conditions: NM, Price: 10, Quantity: 1},
+			{Conditions: SP, Price: 8, Quantity: 1},
+		}}, ScraperInfo{Name: "seller"}))
+	if len(entries) != 2 {
+		t.Fatalf("Arbit returned %d entries, want 2", len(entries))
+	}
+	for _, entry := range entries {
+		if entry.BuylistEntry.Conditions != SP {
+			t.Errorf("a %s copy was priced against the %s offer, want SP",
+				entry.InventoryEntry.Conditions, entry.BuylistEntry.Conditions)
+		}
+	}
+}
+
 // TestArbitFilters walks the thresholds one at a time against a trade that
 // clears every one of them by default, so a row going missing names the
 // filter that dropped it.

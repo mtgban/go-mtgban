@@ -396,14 +396,15 @@ func Arbit(b *matcher.Backend, opts *ArbitOpts, vendor Vendor, seller Seller) []
 			continue
 		}
 
-		// The first entry is always NM, and gates the whole card
-		nmEntry := blEntries[0]
+		// The first entry is the best grade the vendor buys at, which is not
+		// always NM, and gates the whole card
+		best := blEntries[0]
 
-		if r.maxPriceRatio != 0 && nmEntry.PriceRatio > r.maxPriceRatio {
+		if r.maxPriceRatio != 0 && best.PriceRatio > r.maxPriceRatio {
 			continue
 		}
 
-		if nmEntry.BuyPrice < r.minBuyPrice {
+		if best.BuyPrice < r.minBuyPrice {
 			continue
 		}
 
@@ -418,26 +419,18 @@ func Arbit(b *matcher.Backend, opts *ArbitOpts, vendor Vendor, seller Seller) []
 				continue
 			}
 
-			// Re-anchor on NM for every inventory entry: the condition
-			// matching below only rebinds this when the entry is not NM,
-			// so a value carried over from a previous iteration would
-			// price this entry against another entry's grade
-			blEntry := nmEntry
-
-			// When invEntry is not NM, we need to account for conditions
+			// An NM copy sells at the best grade the vendor buys at, since
+			// a vendor buying SP alone still takes NM at its SP price; any
+			// other copy sells only at its own grade
+			blEntry := best
 			if invEntry.Conditions != NM {
-				i := 0
-				for i = range blEntries {
-					if blEntries[i].Conditions == invEntry.Conditions {
-						break
-					}
-				}
-				blEntry = blEntries[i]
-				// If, after looping, a matching condition was not found,
-				// just skip the current invEntry
-				if blEntry.Conditions != invEntry.Conditions {
+				i := slices.IndexFunc(blEntries, func(e BuylistEntry) bool {
+					return e.Conditions == invEntry.Conditions
+				})
+				if i < 0 {
 					continue
 				}
+				blEntry = blEntries[i]
 			}
 
 			// Check again to account for conditions
