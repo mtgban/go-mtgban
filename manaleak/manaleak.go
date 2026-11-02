@@ -10,7 +10,6 @@ import (
 	"slices"
 	"strings"
 	"sync/atomic"
-	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -24,21 +23,15 @@ const (
 // they buy. The storefront quotes pounds; every price is converted to
 // dollars at the day's rate.
 type Manaleak struct {
-	logCallback    mtgban.LogCallbackFunc
+	mtgban.Stock
+
+	printf         mtgban.LogCallbackFunc
 	maxConcurrency int
 
 	backend *matcher.Backend
 
-	disableRetail  bool
-	disableBuylist bool
-
 	client *MLClient
 	rate   float64
-
-	inventoryDate time.Time
-	buylistDate   time.Time
-	inventory     mtgban.InventoryRecord
-	buylist       mtgban.BuylistRecord
 
 	// listedNM is the listing's price of each card in stock, which is its
 	// top grade's whatever grades the page holds; the buylist's ratio
@@ -52,26 +45,12 @@ type Manaleak struct {
 
 // NewScraper returns a scraper matching against b.
 func NewScraper(b *matcher.Backend) *Manaleak {
-	ml := Manaleak{backend: b}
-	ml.inventory = mtgban.InventoryRecord{}
-	ml.buylist = mtgban.BuylistRecord{}
+	ml := Manaleak{Stock: mtgban.NewStock(), backend: b}
+	ml.printf = mtgban.TaggedLog("ML", nil)
 	ml.listedNM = map[string]float64{}
 	ml.client = NewMLClient()
 	ml.maxConcurrency = defaultConcurrency
 	return &ml
-}
-
-// SetConfig applies options after the scraper was built. See
-// mtgban.ScraperConfig.
-func (ml *Manaleak) SetConfig(opt mtgban.ScraperOptions) {
-	ml.disableRetail = opt.DisableRetail
-	ml.disableBuylist = opt.DisableBuylist
-}
-
-func (ml *Manaleak) printf(format string, a ...any) {
-	if ml.logCallback != nil {
-		ml.logCallback("[ML] "+format, a...)
-	}
 }
 
 // nameTypos holds the names the storefront misspells, keyed by the spelling
@@ -372,7 +351,7 @@ func (ml *Manaleak) processProduct(mode string, product MLProduct) {
 			priceRatio = product.Price * ml.rate / sellPrice * 100
 		}
 
-		err = ml.buylist.Add(cardID, &mtgban.BuylistEntry{
+		err = ml.Buylist().Add(cardID, &mtgban.BuylistEntry{
 			Conditions: mtgban.NM,
 			BuyPrice:   product.Price * ml.rate,
 			PriceRatio: priceRatio,
@@ -405,7 +384,7 @@ func (ml *Manaleak) addGrades(cardID string, product MLProduct) {
 			ml.printf("unsupported %s condition", grade.Name)
 			continue
 		}
-		err = ml.inventory.Add(cardID, &mtgban.InventoryEntry{
+		err = ml.Inventory().Add(cardID, &mtgban.InventoryEntry{
 			Conditions: cond,
 			Price:      grade.Price * ml.rate,
 			Quantity:   grade.Quantity,
@@ -528,47 +507,19 @@ func (ml *Manaleak) Load(ctx context.Context) error {
 	}
 	ml.rate = rate
 
-	var errs []error
-
-	if !ml.disableRetail {
-		err := ml.scrape(ctx, modeRetail)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-		} else {
-			ml.inventoryDate = time.Now()
-		}
-	}
-
-	if !ml.disableBuylist {
-		err := ml.scrape(ctx, modeBuylist)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-		} else {
-			ml.buylistDate = time.Now()
-		}
-	}
-
-	return errors.Join(errs...)
-}
-
-// Inventory returns what Load collected. See mtgban.Seller.
-func (ml *Manaleak) Inventory() mtgban.InventoryRecord {
-	return ml.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (ml *Manaleak) Buylist() mtgban.BuylistRecord {
-	return ml.buylist
+	return ml.LoadHalves(ctx,
+		func(ctx context.Context) error { return ml.scrape(ctx, modeRetail) },
+		func(ctx context.Context) error { return ml.scrape(ctx, modeBuylist) })
 }
 
 // Info describes this scraper. See mtgban.Scraper.
 func (ml *Manaleak) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Manaleak"
 	info.Shorthand = "ML"
-	info.Game = matcher.GameMagic
+	info.Game = ml.backend.Game
 	info.CountryFlag = "GB"
-	info.InventoryTimestamp = &ml.inventoryDate
-	info.BuylistTimestamp = &ml.buylistDate
+	info.InventoryTimestamp = &ml.InventoryDate
+	info.BuylistTimestamp = &ml.BuylistDate
 	return
 }
 

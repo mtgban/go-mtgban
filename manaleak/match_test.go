@@ -241,17 +241,17 @@ func TestBuylistRatioBelowNM(t *testing.T) {
 	buy.Price = 5
 	ml.processProduct(modeBuylist, buy)
 
-	for id, entries := range ml.inventory {
+	for id, entries := range ml.Inventory() {
 		if len(entries) != 1 || entries[0].Conditions != mtgban.SP || entries[0].Price != 9 {
 			t.Errorf("inventory holds %+v", entries)
 		}
-		bl := ml.buylist[id]
+		bl := ml.Buylist()[id]
 		if len(bl) != 1 || bl[0].PriceRatio != 50 {
 			t.Errorf("buylist holds %+v, want a ratio of 50", bl)
 		}
 	}
-	if len(ml.inventory) != 1 {
-		t.Errorf("inventory holds %d cards, want 1", len(ml.inventory))
+	if len(ml.Inventory()) != 1 {
+		t.Errorf("inventory holds %d cards, want 1", len(ml.Inventory()))
 	}
 }
 
