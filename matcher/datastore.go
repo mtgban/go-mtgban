@@ -117,6 +117,21 @@ func GroupProducts[T any](entries []T, key func(*T) string) [][]*T {
 	return products
 }
 
+// PrintingsByName lists the sets each name is printed in, keyed by the name
+// normalized, in the order the entries first name them: the Printings of
+// every card of that name. printing reads an entry's name and set code.
+func PrintingsByName[T any](entries []T, printing func(*T) (name, setCode string)) map[string][]string {
+	printings := map[string][]string{}
+	for i := range entries {
+		name, setCode := printing(&entries[i])
+		n := Normalize(name)
+		if !slices.Contains(printings[n], setCode) {
+			printings[n] = append(printings[n], setCode)
+		}
+	}
+	return printings
+}
+
 // SoldFinishes reads the printings a product is sold as, the uuid of each
 // keyed by its finish (FinishSlug), into the Card fields saying so. finishes
 // are the flags a storefront can raise for it, nonfoil then foil, each only

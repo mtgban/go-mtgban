@@ -352,14 +352,9 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 	// populates Printings, so Printings4Card works unmodified for Lorcana.
 	// All cards of a name share the same backing array; Printings is
 	// read-only by contract, as it always has been for Magic.
-	printingsByName := map[string][]string{}
-	for _, i := range cards {
-		card := ac.Cards[i]
-		n := matcher.Normalize(card.FullName)
-		if !slices.Contains(printingsByName[n], card.SetCode) {
-			printingsByName[n] = append(printingsByName[n], card.SetCode)
-		}
-	}
+	printingsByName := matcher.PrintingsByName(cards, func(i *int) (string, string) {
+		return ac.Cards[*i].FullName, ac.Cards[*i].SetCode
+	})
 
 	for _, i := range cards {
 		card := ac.Cards[i]

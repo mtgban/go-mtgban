@@ -145,13 +145,9 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		})
 	}
 
-	printingsByName := map[string][]string{}
-	for _, card := range payload.Cards {
-		n := matcher.Normalize(card.Name)
-		if !slices.Contains(printingsByName[n], card.SetCode) {
-			printingsByName[n] = append(printingsByName[n], card.SetCode)
-		}
-	}
+	printingsByName := matcher.PrintingsByName(payload.Cards, func(card *DatastoreCard) (string, string) {
+		return card.Name, card.SetCode
+	})
 
 	for _, card := range payload.Cards {
 		b.AddCanonicalName(card.Name)

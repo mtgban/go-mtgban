@@ -174,3 +174,21 @@ func TestAddSet(t *testing.T) {
 		t.Errorf("ReleaseDateTime = %v, want %v", set.ReleaseDateTime, want)
 	}
 }
+
+// TestPrintingsByName pins the Printings a name's cards share: keyed by the
+// name normalized, its sets in the order the entries first name them, each
+// once.
+func TestPrintingsByName(t *testing.T) {
+	entries := [][2]string{{"Zaku II", "ST01"}, {"Gundam", "GD01"}, {"zaku ii", "GD01"}, {"Zaku II", "ST01"}}
+	got := PrintingsByName(entries, func(entry *[2]string) (string, string) {
+		return entry[0], entry[1]
+	})
+	if len(got) != 2 {
+		t.Errorf("PrintingsByName indexed %d names, want 2: %v", len(got), got)
+	}
+	want := []string{"ST01", "GD01"}
+	zaku := got[Normalize("Zaku II")]
+	if !slices.Equal(zaku, want) {
+		t.Errorf("PrintingsByName for Zaku II = %v, want %v", zaku, want)
+	}
+}

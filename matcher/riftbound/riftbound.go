@@ -270,13 +270,9 @@ func (gallery *GalleryBlade) newBackend(properties map[string][]string) *matcher
 	// complete list, mirroring how Magic populates Printings, so
 	// Printings4Card works unmodified for Riftbound. All cards of a name
 	// share the same backing array; Printings is read-only by contract.
-	printingsByName := map[string][]string{}
-	for _, card := range gallery.Cards.Items {
-		n := matcher.Normalize(card.Name)
-		if !slices.Contains(printingsByName[n], card.SetCode) {
-			printingsByName[n] = append(printingsByName[n], card.SetCode)
-		}
-	}
+	printingsByName := matcher.PrintingsByName(gallery.Cards.Items, func(card *GalleryCard) (string, string) {
+		return card.Name, card.SetCode
+	})
 
 	// Load all card names. 29 pairs of them normalize to one string - the
 	// promos spell an epithet off a dash where the main sets use a comma,
