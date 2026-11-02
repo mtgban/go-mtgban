@@ -82,42 +82,29 @@ func buildProductSlug(displayName string) string {
 
 // Vegassingles prices Vegas Singles' stock of one game.
 type Vegassingles struct {
-	logCallback    mtgban.LogCallbackFunc
+	mtgban.Stock
+
+	printf         mtgban.LogCallbackFunc
 	maxConcurrency int
 
 	backend *matcher.Backend
 
 	client *VSClient
 	line   string
-
-	inventoryDate  time.Time
-	buylistDate    time.Time
-	inventory      mtgban.InventoryRecord
-	buylist        mtgban.BuylistRecord
-	disableRetail  bool
-	disableBuylist bool
 }
 
 // NewScraper returns a scraper for the game b was loaded for.
 func NewScraper(b *matcher.Backend) (*Vegassingles, error) {
-	game := b.Game
-	line, ok := vsGames[game]
-	if !ok {
-		return nil, fmt.Errorf("unsupported game %q", game)
+	line, err := mtgban.ForGame(vsGames, b.Game)
+	if err != nil {
+		return nil, err
 	}
-	vs := Vegassingles{backend: b}
-	vs.inventory = mtgban.InventoryRecord{}
-	vs.buylist = mtgban.BuylistRecord{}
+	vs := Vegassingles{Stock: mtgban.NewStock(), backend: b}
+	vs.printf = mtgban.TaggedLog("VS", nil)
 	vs.client = NewVSClient(line)
 	vs.line = line
 	vs.maxConcurrency = defaultConcurrency
 	return &vs, nil
-}
-
-func (vs *Vegassingles) printf(format string, a ...any) {
-	if vs.logCallback != nil {
-		vs.logCallback("[VS] "+format, a...)
-	}
 }
 
 // listed reports whether the store buys the condition in the product line
@@ -163,7 +150,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	// record keeps the one it has and drops the new one, which is the right
 	// answer; reporting each as an error only buried the run's real ones
 	// under a thousand lines of it.
-	if !vs.disableBuylist {
+	if !vs.Config().DisableBuylist {
 		for _, variant := range product.VariantInfo {
 			if variant.OfferPrice == 0 {
 				continue
@@ -184,7 +171,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 				priceRatio = variant.OfferPrice / product.Price * 100
 			}
 
-			err = vs.buylist.Add(cardID, &mtgban.BuylistEntry{
+			err = vs.Buylist().Add(cardID, &mtgban.BuylistEntry{
 				Conditions: cond,
 				BuyPrice:   variant.OfferPrice,
 				PriceRatio: priceRatio,
@@ -199,7 +186,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	}
 
 	// Process retail variants (from variant_info)
-	if !vs.disableRetail {
+	if !vs.Config().DisableRetail {
 		for _, variant := range product.RetailVariantInfo {
 			// A condition the store holds none of is not on sale whatever number
 			// hangs off it: Add() treats a zero quantity as unsaid and writes 1,
@@ -214,7 +201,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 				continue
 			}
 
-			err = vs.inventory.Add(cardID, &mtgban.InventoryEntry{
+			err = vs.Inventory().Add(cardID, &mtgban.InventoryEntry{
 				Conditions: cond,
 				Price:      variant.Price,
 				Quantity:   variant.InventoryQuantity,
@@ -278,8 +265,8 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 	}
 	vs.printf("Processed %d products", len(seen))
 
-	vs.inventoryDate = time.Now()
-	vs.buylistDate = time.Now()
+	vs.InventoryDate = time.Now()
+	vs.BuylistDate = time.Now()
 
 	return nil
 }
@@ -386,37 +373,21 @@ type pageResult struct {
 	products []VSProduct
 }
 
-// SetConfig turns off either half of the scrape. See mtgban.ScraperConfig.
-//
-// One crawl answers for both halves, so the one left on still pays for the
-// walk that reaches it; what turning the other off saves is publishing a
-// shelf the store does not keep.
-func (vs *Vegassingles) SetConfig(opt mtgban.ScraperOptions) {
-	vs.disableRetail = opt.DisableRetail
-	vs.disableBuylist = opt.DisableBuylist
-}
-
 // Load fetches everything this scraper offers. See mtgban.Scraper.
+//
+// One crawl answers for both halves, so a half SetConfig turned off still
+// pays for the walk that reaches the other; what turning it off saves is
+// publishing a shelf the store does not keep.
 func (vs *Vegassingles) Load(ctx context.Context) error {
 	return vs.scrape(ctx)
-}
-
-// Inventory returns what Load collected. See mtgban.Seller.
-func (vs *Vegassingles) Inventory() mtgban.InventoryRecord {
-	return vs.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (vs *Vegassingles) Buylist() mtgban.BuylistRecord {
-	return vs.buylist
 }
 
 // Info describes this scraper. See mtgban.Scraper.
 func (vs *Vegassingles) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Vegas Singles"
 	info.Shorthand = "VS"
-	info.InventoryTimestamp = &vs.inventoryDate
-	info.BuylistTimestamp = &vs.buylistDate
+	info.InventoryTimestamp = &vs.InventoryDate
+	info.BuylistTimestamp = &vs.BuylistDate
 	info.Game = vs.backend.Game
 	return
 }

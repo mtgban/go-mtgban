@@ -14,7 +14,7 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
-		scraper.logCallback = opts.LogCallback
+		scraper.printf = mtgban.TaggedLog("VS", opts.LogCallback)
 		if opts.MaxConcurrency != 0 {
 			scraper.maxConcurrency = opts.MaxConcurrency
 		}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // TestUniqueCopy pins which listings name one particular card rather than a
@@ -51,8 +52,8 @@ func TestUniqueCopy(t *testing.T) {
 func TestProcessProductSkipsUniqueCopyQuietly(t *testing.T) {
 	var logged []string
 	vs := &Vegassingles{
-		backend:     &matcher.Backend{Game: matcher.GameRiftbound},
-		logCallback: func(format string, a ...any) { logged = append(logged, format) },
+		backend: &matcher.Backend{Game: matcher.GameRiftbound},
+		printf:  mtgban.TaggedLog("VS", func(format string, a ...any) { logged = append(logged, format) }),
 	}
 
 	display := "Vayne - Hunter (Signature) (223*/221) - Spiritforged Foil (Unique) (917717)"

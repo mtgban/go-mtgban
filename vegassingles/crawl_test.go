@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 // storefront answers pages of a catalog of total products laid out size to a
@@ -110,13 +111,13 @@ func TestCrawlSurvivesAFailedTailPage(t *testing.T) {
 	// one, which is not what this is about; keep what the crawl says about
 	// the pages themselves.
 	var reported []string
-	vs.logCallback = func(format string, a ...any) {
+	vs.printf = mtgban.TaggedLog("VS", func(format string, a ...any) {
 		line := fmt.Sprintf(format, a...)
 		if strings.Contains(line, "process error") {
 			return
 		}
 		reported = append(reported, line)
-	}
+	})
 
 	seen := map[string]bool{}
 	cut := vs.crawl(context.Background(), sortForward, "", 2, seen, map[string]bool{})
