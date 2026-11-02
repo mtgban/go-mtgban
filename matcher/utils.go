@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -193,6 +194,15 @@ func ExtractNumber(str string) string {
 	return extractNumber(str, 1993)
 }
 
+// atoi is strconv.Atoi for a field that may be a number: Atoi builds an
+// error for every string that is not one, and most fields are words.
+func atoi(s string) (int, error) {
+	if s == "" || (s[0] != '-' && s[0] != '+' && (s[0] < '0' || s[0] > '9')) {
+		return 0, strconv.ErrSyntax
+	}
+	return strconv.Atoi(s)
+}
+
 // ExtractNumberAny returns the first number in the input whatever its length,
 // where ExtractNumber caps how many digits it will accept.
 func ExtractNumberAny(str string) string {
@@ -202,14 +212,11 @@ func ExtractNumberAny(str string) string {
 func extractNumber(str string, threshold int) string {
 	fields := strings.Fields(str)
 	for _, field := range fields {
-		for _, month := range months {
-			if Equals(field, month) {
-				return ""
-			}
+		if slices.Contains(months, Normalize(field)) {
+			return ""
 		}
 	}
 
-	fields = strings.Fields(str)
 	for _, field := range fields {
 		field = strings.Replace(field, "(", "", -1)
 		field = strings.Replace(field, ")", "", -1)
@@ -230,7 +237,7 @@ func extractNumber(str string, threshold int) string {
 		}
 
 		num := strings.TrimLeft(field, "0")
-		val, err := strconv.Atoi(num)
+		val, err := atoi(num)
 		if err == nil && val < threshold {
 			return num
 		}
@@ -251,13 +258,13 @@ func extractNumber(str string, threshold int) string {
 				}
 
 				// Try converting to an integer number
-				val, err = strconv.Atoi(trimmed)
+				val, err = atoi(trimmed)
 				if err == nil && val < threshold {
 					return strings.ToLower(num)
 				}
 			}
 			if !unicode.IsDigit(rune(num[0])) && num[0] != 'M' {
-				val, err = strconv.Atoi(strings.TrimLeft(num[1:], "0"))
+				val, err = atoi(strings.TrimLeft(num[1:], "0"))
 				if err == nil && val < threshold {
 					return strings.ToLower(num)
 				}

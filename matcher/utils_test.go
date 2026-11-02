@@ -1,6 +1,9 @@
 package matcher
 
-import "testing"
+import (
+	"strconv"
+	"testing"
+)
 
 type ExtractTest struct {
 	In  string
@@ -595,6 +598,17 @@ func TestParsePrice(t *testing.T) {
 		got, err := ParsePrice(in)
 		if err == nil || got != 0 {
 			t.Errorf("ParsePrice(%q) = %v, %v; want 0 and an error", in, got, err)
+		}
+	}
+}
+
+// atoi refuses what Atoi refuses, and agrees where it accepts.
+func TestAtoiAgreesWithStrconv(t *testing.T) {
+	for _, s := range []string{"", "0", "12", "+12", "-12", "012", "12a", "a12", "M10", "1/2", "٣", " 1"} {
+		got, gotErr := atoi(s)
+		want, wantErr := strconv.Atoi(s)
+		if got != want || (gotErr == nil) != (wantErr == nil) {
+			t.Errorf("atoi(%q) = %d,%v; strconv gives %d,%v", s, got, gotErr, want, wantErr)
 		}
 	}
 }
