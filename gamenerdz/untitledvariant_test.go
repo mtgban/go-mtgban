@@ -116,9 +116,9 @@ func TestProcessUntitledBuyVariant(t *testing.T) {
 			t.Fatal(err)
 		}
 		var logs []string
-		gn.logCallback = func(format string, a ...any) {
+		gn.printf = mtgban.TaggedLog("GN", func(format string, a ...any) {
 			logs = append(logs, format)
-		}
+		})
 		if err := gn.processProduct(modeBuylist, product); err != nil {
 			t.Errorf("%s: unexpected error %v", product.ID, err)
 			continue

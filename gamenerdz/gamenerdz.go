@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/matcher/magic"
@@ -105,20 +104,14 @@ const buylistQuantity = 8
 // subset of the other - the store buys cards it does not retail and retails
 // cards it does not buy - so retail and buylist are each their own crawl.
 type Gamenerdz struct {
-	logCallback    mtgban.LogCallbackFunc
-	maxConcurrency int
+	mtgban.Stock
 
-	disableRetail  bool
-	disableBuylist bool
+	printf         mtgban.LogCallbackFunc
+	maxConcurrency int
 
 	client  *GNClient
 	backend *matcher.Backend
 	line    string
-
-	inventoryDate time.Time
-	buylistDate   time.Time
-	inventory     mtgban.InventoryRecord
-	buylist       mtgban.BuylistRecord
 
 	// retailIDs holds the TCGplayer id each retail product carries, by the
 	// storefront's own product id. The buylist record of the same product
@@ -128,33 +121,18 @@ type Gamenerdz struct {
 
 // NewScraper returns a scraper for the datastore's game.
 func NewScraper(b *matcher.Backend) (*Gamenerdz, error) {
-	game := b.Game
-	line, ok := gnGames[game]
-	if !ok {
-		return nil, fmt.Errorf("unsupported game %q", game)
+	line, err := mtgban.ForGame(gnGames, b.Game)
+	if err != nil {
+		return nil, err
 	}
-	gn := Gamenerdz{}
-	gn.inventory = mtgban.InventoryRecord{}
-	gn.buylist = mtgban.BuylistRecord{}
+	gn := Gamenerdz{Stock: mtgban.NewStock()}
+	gn.printf = mtgban.TaggedLog("GN", nil)
 	gn.client = NewGNClient(line)
 	gn.backend = b
 	gn.line = line
 	gn.maxConcurrency = defaultConcurrency
 	gn.retailIDs = map[string]int64{}
 	return &gn, nil
-}
-
-// SetConfig applies options after the scraper was built. See
-// mtgban.ScraperConfig.
-func (gn *Gamenerdz) SetConfig(opt mtgban.ScraperOptions) {
-	gn.disableRetail = opt.DisableRetail
-	gn.disableBuylist = opt.DisableBuylist
-}
-
-func (gn *Gamenerdz) printf(format string, a ...any) {
-	if gn.logCallback != nil {
-		gn.logCallback("[GN] "+format, a...)
-	}
 }
 
 func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
@@ -194,7 +172,7 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 				priceRatio = variant.OfferPrice / product.Price * 100
 			}
 
-			err = gn.buylist.Add(cardID, &mtgban.BuylistEntry{
+			err = gn.Buylist().Add(cardID, &mtgban.BuylistEntry{
 				Conditions: cond,
 				BuyPrice:   variant.OfferPrice,
 				PriceRatio: priceRatio,
@@ -218,7 +196,7 @@ func (gn *Gamenerdz) processProduct(mode string, product GNProduct) error {
 			continue
 		}
 
-		err = gn.inventory.Add(cardID, &mtgban.InventoryEntry{
+		err = gn.Inventory().Add(cardID, &mtgban.InventoryEntry{
 			Conditions: grade(product.DisplayName),
 			Price:      variant.Price,
 			Quantity:   variant.InventoryLevel,
@@ -928,45 +906,17 @@ type pageResult struct {
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (gn *Gamenerdz) Load(ctx context.Context) error {
-	var errs []error
-
-	if !gn.disableRetail {
-		err := gn.scrape(ctx, modeRetail)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrInventoryLoad, err))
-		} else {
-			gn.inventoryDate = time.Now()
-		}
-	}
-
-	if !gn.disableBuylist {
-		err := gn.scrape(ctx, modeBuylist)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%w: %w", mtgban.ErrBuylistLoad, err))
-		} else {
-			gn.buylistDate = time.Now()
-		}
-	}
-
-	return errors.Join(errs...)
-}
-
-// Inventory returns what Load collected. See mtgban.Seller.
-func (gn *Gamenerdz) Inventory() mtgban.InventoryRecord {
-	return gn.inventory
-}
-
-// Buylist returns what Load collected. See mtgban.Vendor.
-func (gn *Gamenerdz) Buylist() mtgban.BuylistRecord {
-	return gn.buylist
+	return gn.LoadHalves(ctx,
+		func(ctx context.Context) error { return gn.scrape(ctx, modeRetail) },
+		func(ctx context.Context) error { return gn.scrape(ctx, modeBuylist) })
 }
 
 // Info describes this scraper. See mtgban.Scraper.
 func (gn *Gamenerdz) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Game Nerdz"
 	info.Shorthand = "GN"
-	info.InventoryTimestamp = &gn.inventoryDate
-	info.BuylistTimestamp = &gn.buylistDate
+	info.InventoryTimestamp = &gn.InventoryDate
+	info.BuylistTimestamp = &gn.BuylistDate
 	// The storefront quotes its buylist in cash and pays 25% over it in
 	// store credit, a ratio its own feed restates on every offer.
 	info.CreditMultiplier = 1.25

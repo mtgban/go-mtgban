@@ -10,6 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/internal/jsonflex"
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/mtgban"
 
 	_ "github.com/mtgban/go-mtgban/matcher/magic"
 	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
@@ -864,9 +865,9 @@ func TestResolveProductMagicSkips(t *testing.T) {
 			t.Fatal(err)
 		}
 		var logs []string
-		gn.logCallback = func(format string, a ...any) {
+		gn.printf = mtgban.TaggedLog("GN", func(format string, a ...any) {
 			logs = append(logs, format)
-		}
+		})
 		product := GNProduct{
 			ID:             tt.id,
 			DisplayName:    tt.display,
