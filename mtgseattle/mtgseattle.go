@@ -293,6 +293,10 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			case "Homelands":
 				return
 			}
+			// Tokens and emblems are out of scope
+			if cardName == "Emblem" || strings.Contains(cardName, "Token") {
+				return
+			}
 
 			ms.printf("%v", err)
 			ms.printf("%q", theCard)
