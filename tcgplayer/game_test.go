@@ -386,8 +386,12 @@ func TestGameIndexProductEntries(t *testing.T) {
 			},
 		},
 		{
-			desc:   "any other price on that finish is reported",
+			desc:   "any price on a finish the printing lacks is let through quietly",
 			result: tcgplayer.ProductPriceSet{ProductID: 616532, LowPrice: 0.4, MarketPrice: 0.5, SubTypeName: "Holofoil"},
+		},
+		{
+			desc:   "a price on a product no card owns is reported",
+			result: tcgplayer.ProductPriceSet{ProductID: 1, LowPrice: 0.4, SubTypeName: "Normal"},
 			logged: true,
 		},
 	} {

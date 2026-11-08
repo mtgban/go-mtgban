@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
@@ -42,6 +43,10 @@ type TCGGameIndex struct {
 
 	backend *matcher.Backend
 	client  *tcgplayer.Client
+
+	// wrongFinish counts the price rows on a finish the printing is not
+	// sold in.
+	wrongFinish atomic.Int64
 }
 
 // availableIndexNames are the index's sub-sellers, in the order of the
@@ -139,17 +144,16 @@ func (tcg *TCGGameIndex) productEntries(result tcgplayer.ProductPriceSet, produc
 	if errors.Is(err, matcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
-		// A row quoting a market price and nothing else is a pricing-side
-		// relic: the catalog has split or retired the printing its subtype
-		// names, and the surviving printing is priced by its own row
-		// alongside this one. Refusing it is right - the stale number can
-		// be many times the real price - but complaining every run is
-		// noise, so only a finish the printing lacks, or one the category
-		// no longer sells, is let through quietly. Any other failure on
-		// such a row still speaks up.
+		// A finish the printing is not sold in is TCGplayer's own listing,
+		// counted as TCGGame counts it.
+		if errors.Is(err, matcher.ErrCardWrongFinish) {
+			tcg.wrongFinish.Add(1)
+			return nil
+		}
+		// A market price alone on a finish the category no longer sells is a
+		// relic of a split or retired printing.
 		marketOnly := result.LowPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0
-		retired := !slices.Contains(tcg.printings, result.SubTypeName)
-		if marketOnly && (retired || errors.Is(err, matcher.ErrCardWrongFinish)) {
+		if marketOnly && !slices.Contains(tcg.printings, result.SubTypeName) {
 			return nil
 		}
 
@@ -245,6 +249,10 @@ func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 	)
 	if err != nil {
 		return err
+	}
+	n := tcg.wrongFinish.Load()
+	if n > 0 {
+		tcg.printf("Skipped %d price rows of a finish the printing is not sold in", n)
 	}
 
 	tcg.inventoryDate = time.Now()
