@@ -126,8 +126,8 @@ func TestResolveOptsDefaults(t *testing.T) {
 	}
 }
 
-// The stabilising constant is what keeps a cheap card from dominating the
-// ranking, so it has to reach the denominator.
+// The constant is what dampens a cheap card in the ranking, so it has to reach
+// the price the return is measured on.
 func TestProfitabilityConstantDampensCheapCards(t *testing.T) {
 	b := backendFor(plainCard())
 
@@ -145,7 +145,7 @@ func TestProfitabilityConstantDampensCheapCards(t *testing.T) {
 	if !(damped < plain) {
 		t.Errorf("a constant of 10 gave %v against %v unconstrained, want it lower", damped, plain)
 	}
-	want := (2.0 / (1.0 + 10)) * math.Log10(1+200)
+	want := math.Pow(2, 0.4) * math.Pow(2.0/(1.0+10), 0.6)
 	if math.Abs(damped-want) > 1e-9 {
 		t.Errorf("Profitability = %v, want %v", damped, want)
 	}

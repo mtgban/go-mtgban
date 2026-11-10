@@ -64,7 +64,7 @@ func TestArbitReportsTheTrade(t *testing.T) {
 	if got.AbsoluteDifference != 15 {
 		t.Errorf("AbsoluteDifference = %v, want 15", got.AbsoluteDifference)
 	}
-	want := (5.0 / 10.0) * math.Log10(1+50) * math.Pow(3, 0.25)
+	want := math.Pow(5, 0.4) * math.Pow(5.0/10.0, 0.6) * math.Pow(3, 0.25)
 	if math.Abs(got.Profitability-want) > 1e-9 {
 		t.Errorf("Profitability = %v, want %v", got.Profitability, want)
 	}
@@ -82,7 +82,7 @@ func TestArbitDoesNotScaleASingleCopy(t *testing.T) {
 	if len(entries) != 1 {
 		t.Fatalf("Arbit returned %d entries, want 1", len(entries))
 	}
-	want := (5.0 / 10.0) * math.Log10(1+50)
+	want := math.Pow(5, 0.4) * math.Pow(5.0/10.0, 0.6)
 	if math.Abs(entries[0].Profitability-want) > 1e-9 {
 		t.Errorf("Profitability = %v, want %v", entries[0].Profitability, want)
 	}
@@ -422,11 +422,9 @@ func TestArbitrageReturnsACompleteRow(t *testing.T) {
 	}
 }
 
-// A negative spread is not a trade that pays, so it scores zero. The index's
-// log10(1+spread) is undefined there: below -1% it is NaN, which slips past
-// every MinProfitability gate, and at exactly -1% it is +Inf, which ranks the
-// row above every real opportunity. The website's negative modes reach these
-// rows with MinSpread -30.
+// A negative spread is not a trade that pays, so it scores zero: the powers of
+// a negative difference are NaN, which slips past every MinProfitability
+// gate. The website's negative modes reach these rows with MinSpread -30.
 func TestArbitScoresANegativeSpreadAsZero(t *testing.T) {
 	for _, tt := range []struct {
 		desc       string
@@ -454,5 +452,40 @@ func TestArbitScoresANegativeSpreadAsZero(t *testing.T) {
 				t.Errorf("Profitability = %v, want 0", got[0].Profitability)
 			}
 		})
+	}
+}
+
+// TestProfitabilityRanksTheTrade pins the order the index exists to give: the
+// return outweighs the profit, and the profit still separates equal returns.
+func TestProfitabilityRanksTheTrade(t *testing.T) {
+	for _, tt := range []struct {
+		desc         string
+		better       [2]float64
+		worse        [2]float64
+		betterCopies int
+	}{
+		{"a doubling on a cheap card over a tenth on a dear one", [2]float64{0.5, 1}, [2]float64{50, 55}, 1},
+		{"the larger trade at the same return", [2]float64{25, 30}, [2]float64{5, 6}, 1},
+		{"the same profit on less money", [2]float64{10, 15}, [2]float64{50, 55}, 1},
+		{"more copies of the same trade", [2]float64{5, 6}, [2]float64{5, 6}, 4},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			better := Profitability(tt.better[0], tt.better[1], tt.betterCopies, 0)
+			worse := Profitability(tt.worse[0], tt.worse[1], 1, 0)
+			if !(better > worse) {
+				t.Errorf("scored %v against %v, want it higher", better, worse)
+			}
+		})
+	}
+}
+
+// A constant that takes the price to zero or below would score +Inf or NaN,
+// and NaN slips past every MinProfitability gate.
+func TestProfitabilityRefusesANegativePrice(t *testing.T) {
+	for _, k := range []float64{-5, -10} {
+		got := Profitability(5, 6, 1, k)
+		if got != 0 {
+			t.Errorf("Profitability with a constant of %v = %v, want 0", k, got)
+		}
 	}
 }

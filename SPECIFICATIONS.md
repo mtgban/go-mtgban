@@ -185,16 +185,16 @@ inventory:
    `WriteBuylistToCSV`) applies for itself when it wants store-credit
    pricing.
 5. Tradable `qty = min(invQty, blQty)` (buylist quantity 0 = unlimited).
-   **Profitability** = `(difference / (sell + k)) · log10(1 + spread) · qty^(1/4)`,
-   or **0** when spread ≤ 0 (the log is NaN, -Inf or negative there; the
-   website's negative modes reach these rows with `MinSpread` -30),
-   where `qty^(1/4)` is applied only when qty > 1 and `k` is
-   `ProfitabilityConstant`, a denominator-stabilizing constant that keeps
-   cheap cards from dominating (spec reference value 10, configurable via
-   `ArbitOpts`, library default 0; the website passes 10). Changing the
-   log base only rescales the index by a constant - it is
-   order-preserving for ranking but shifts the absolute `MinProfitability`
-   gate. Enforce `MinProfitability`.
+   **Profitability** = `difference^0.4 · (difference / (sell + k))^0.6 · qty^(1/4)`,
+   or **0** when the difference is not positive (the powers are NaN there;
+   the website's negative modes reach these rows with `MinSpread` -30),
+   where `qty^(1/4)` is applied only when qty > 1. The return weighs more
+   than the profit: 0.50 → 1 outranks 50 → 55, and 25 → 30 outranks
+   5 → 6. `k` is `ProfitabilityConstant`, added to the price the return is
+   measured on to dampen cheap cards (default 0). The exported
+   `Profitability(sell, buy, qty, k)` is the one place the index is
+   computed, for a consumer scoring rows of its own. Enforce
+   `MinProfitability`.
 
 Results are `[]ArbitEntry{CardId, BuylistEntry, InventoryEntry, Difference,
 Spread, AbsoluteDifference (= diff·qty), Quantity, Profitability}`.
