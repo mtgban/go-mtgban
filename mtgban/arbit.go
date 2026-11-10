@@ -81,8 +81,8 @@ type ArbitOpts struct {
 	// and whether the entry should be skipped or not
 	CustomPriceFilter func(string, InventoryEntry) (float64, bool)
 
-	// Constant used to offset prices (the higher the value, the less impactful
-	// lower prices will be, and vice versa)
+	// Constant added to the price the return is measured on (the higher the
+	// value, the less impactful lower prices will be), defaults to 0
 	ProfitabilityConstant float64
 
 	// Minimum profitability value
@@ -124,13 +124,8 @@ type ArbitEntry struct {
 	// Amount of cards that can be applied
 	Quantity int
 
-	// The higher the number the better the arbit is. Using this formula
-	// Profitability Index (PI) =
-	//   (Difference / (Sell Price + k)) * log10(1 + Spread) * Units^(1/4)
-	// where k is ProfitabilityConstant, a denominator-stabilizing constant
-	// that keeps cheap cards from dominating (reference value 10; configurable
-	// via ArbitOpts, defaults to 0). The Units^(1/4) term is applied only when
-	// Units > 1, and the index is 0 when Spread <= 0.
+	// The higher the number the better the arbit is, as Profitability
+	// scores it with ArbitOpts.ProfitabilityConstant
 	Profitability float64
 }
 
@@ -320,6 +315,29 @@ func asks(entry InventoryEntry, regraded float64) quote {
 	return quote{price: regraded, quantity: entry.Quantity, shelf: entry}
 }
 
+// Profitability scores a trade that buys at sell and sells at buy, so that one
+// can be ranked against another:
+//
+//	Difference^0.4 * (Difference / (Sell + k))^0.6 * Units^(1/4)
+//
+// The return it makes on the price weighs more than the profit, so a
+// large return on a cheap card outranks a thin one on an expensive card,
+// while of two trades at the same return the larger one wins. k dampens
+// cheap cards by adding to the price the return is measured on. The units
+// term applies above one copy, and a trade that pays nothing scores zero.
+func Profitability(sell, buy float64, qty int, k float64) float64 {
+	difference := buy - sell
+	price := sell + k
+	if sell <= 0 || price <= 0 || difference <= 0 {
+		return 0
+	}
+	index := math.Pow(difference, 0.4) * math.Pow(difference/price, 0.6)
+	if qty > 1 {
+		index *= math.Pow(float64(qty), 0.25)
+	}
+	return index
+}
+
 // arbitrage is the comparison both reports are: what a copy costs against
 // what the other side gives for it.
 func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price float64, q quote) (ArbitEntry, bool) {
@@ -346,16 +364,7 @@ func (r *resolvedOpts) arbitrage(cardID string, entry InventoryEntry, price floa
 		qty = min(entry.Quantity, q.quantity)
 	}
 
-	// A spread at or below zero pays nothing and scores zero. log10(1+spread)
-	// is NaN below -1% and -Inf at -1% (a +Inf index), and in between it
-	// scores a loss above a gain of the same size
-	profitability := 0.0
-	if spread > 0 {
-		profitability = (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
-		if qty > 1 {
-			profitability *= math.Pow(float64(qty), 0.25)
-		}
-	}
+	profitability := Profitability(price, q.price, qty, r.profitabilityConstant)
 	if profitability < r.minProfitability {
 		return ArbitEntry{}, false
 	}
