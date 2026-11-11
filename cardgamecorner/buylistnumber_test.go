@@ -107,21 +107,26 @@ func TestBuylistNameVersion(t *testing.T) {
 }
 
 // TestScrapeBuylistFailure pins that a search the storefront reports as
-// failed, or an empty one for every edition, is an error rather than a
-// buylist with the cards missing.
+// failed, or one answering every edition on its first page, is an error
+// rather than a buylist with the cards missing.
 func TestScrapeBuylistFailure(t *testing.T) {
 	const editions = `{"Expansions":[{"Id":1,"Espansione":"Alpha","Enabled":true},{"Id":2,"Espansione":"Beta","Enabled":true}]}`
 	const completed = `{"Result":{"Products":[],"Total":0},"Status":5,"IsCompleted":true}`
+	// One card per page that nobody is buying, of the Total stated
+	const unbought = `{"Result":{"Products":[{"Id":"LEA0001","MinAcquisto":0}],"Total":%d},"Status":5,"IsCompleted":true}`
 	tests := []struct {
 		desc        string
 		search      string
 		status      int
 		searchFails bool
+		want        string
 	}{
-		{"faulted", `{"Result":{"Products":[],"Total":0},"Status":7,"IsCompleted":true,"IsFaulted":true}`, 0, true},
-		{"canceled", `{"Result":{"Products":[],"Total":0},"Status":6,"IsCompleted":true,"IsCanceled":true}`, 0, true},
-		{"server error", completed, http.StatusInternalServerError, true},
-		{"nothing bought anywhere", completed, 0, false},
+		{"faulted", `{"Result":{"Products":[],"Total":0},"Status":7,"IsCompleted":true,"IsFaulted":true}`, 0, true, "editions failed to read"},
+		{"canceled", `{"Result":{"Products":[],"Total":0},"Status":6,"IsCompleted":true,"IsCanceled":true}`, 0, true, "editions failed to read"},
+		{"server error", completed, http.StatusInternalServerError, true, "editions failed to read"},
+		{"nothing listed anywhere", completed, 0, false, "past its first page"},
+		{"every edition on one page", fmt.Sprintf(unbought, 1), 0, false, "past its first page"},
+		{"paged, nothing bought", fmt.Sprintf(unbought, 2), 0, false, "no buylist entry read"},
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
@@ -140,11 +145,8 @@ func TestScrapeBuylistFailure(t *testing.T) {
 			if err == nil {
 				t.Fatalf("scrapeBL answered no error with %d entries", len(cgc.buylist))
 			}
-			// A failed search has to be reported as one, not as an
-			// empty buylist
-			failed := strings.Contains(err.Error(), "editions failed to read")
-			if failed != test.searchFails {
-				t.Errorf("scrapeBL error = %v, want failed search %t", err, test.searchFails)
+			if !strings.Contains(err.Error(), test.want) {
+				t.Errorf("scrapeBL error = %v, want %q", err, test.want)
 			}
 			if !cgc.buylistDate.IsZero() {
 				t.Errorf("buylist dated despite %v", err)
