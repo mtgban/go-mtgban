@@ -373,8 +373,9 @@ func DeckIsRandom(deckSet string) bool {
 // time. "other" lists what holds no card and is never read.
 var sealedKinds = []string{"card", "pack", "deck", "sealed", "variable"}
 
-// ProductDecklist returns the uuids of the fixed decks a sealed product
-// contains, for the products whose contents are known rather than drawn.
+// ProductDecklist returns the uuids of the fixed cards and decks a sealed
+// product contains, for the products whose contents are known rather than
+// drawn.
 //
 // Fixed means fixed: asking twice answers twice the same. Where a product
 // draws for something - the Countdown Kits upgrade cards to foil at a chance
@@ -580,8 +581,8 @@ func IsRandom(b *matcher.Backend, setCode, sealedUUID string) bool {
 	return false
 }
 
-// HasDecklist reports whether the product contains a fixed deck whose
-// contents are known.
+// HasDecklist reports whether the product contains a fixed card, or a fixed
+// deck whose contents are known.
 func HasDecklist(b *matcher.Backend, setCode, sealedUUID string) bool {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -600,7 +601,7 @@ func HasDecklist(b *matcher.Backend, setCode, sealedUUID string) bool {
 					if HasDecklist(b, content.Set, content.UUID) {
 						return true
 					}
-				case "deck":
+				case "card", "deck":
 					return true
 				}
 			}
