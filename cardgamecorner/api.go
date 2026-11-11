@@ -115,14 +115,10 @@ const (
 	singlesPageSize   = 1000
 	variantsBatchSize = 1000
 
-	editionBuylistURL  = "https://www.cardgamecorner.com/webapi/mclistboxes/magic/it"
-	advancedBuylistURL = "https://www.cardgamecorner.com/webapi/mcadvsearch"
-
 	promoEditionID = 1113
 )
 
-// Client reads the Card Game Corner storefront, which serves its catalog and
-// its buylist through different endpoints.
+// Client reads the Card Game Corner storefront's catalog and stock.
 type Client struct {
 	client *http.Client
 	game   string
@@ -231,143 +227,4 @@ func (cgc *Client) GetVariants(ctx context.Context, skus []string) ([]Variant, e
 		return nil, err
 	}
 	return variants, nil
-}
-
-// Expansion is a set as Card Game Corner files it for buying, which does not
-// always agree with Edition.
-type Expansion struct {
-	ID      int    `json:"Id"`
-	Name    string `json:"Espansione"`
-	Enabled bool   `json:"Enabled"`
-}
-
-// BuylistEditionResponse is what the buylist edition endpoint answers with.
-type BuylistEditionResponse struct {
-	Expansions []Expansion `json:"Expansions"`
-}
-
-// GetBuylistEditions returns the editions Card Game Corner is buying from.
-func (cgc *Client) GetBuylistEditions(ctx context.Context) ([]Expansion, error) {
-	link := editionBuylistURL
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := cgc.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var response BuylistEditionResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
-	}
-
-	return response.Expansions, nil
-}
-
-// BuylistRequest is one page of a buylist query.
-type BuylistRequest struct {
-	Q              string  `json:"q"`
-	Game           string  `json:"game"`
-	Edition        int     `json:"edition"`
-	Rarity         string  `json:"rarity"`
-	Color          string  `json:"color"`
-	Firstedition   string  `json:"firstedition"`
-	Foil           string  `json:"foil"`
-	Language       *string `json:"language"`
-	Page           int     `json:"page"`
-	Sort           int     `json:"sort"`
-	IsBuyList      bool    `json:"isBuyList"`
-	OnlyHotBuyList bool    `json:"onlyHotBuyList"`
-	OnlyAvailable  bool    `json:"onlyAvailable"`
-}
-
-// taskRanToCompletion is the status the buylist endpoint reports for a search
-// that finished, whether or not it found anything.
-const taskRanToCompletion = 5
-
-// BuylistResponse is what the buylist endpoint answers with.
-type BuylistResponse struct {
-	Result BuylistResult `json:"Result"`
-
-	ID              int  `json:"Id"`
-	Status          int  `json:"Status"`
-	IsCanceled      bool `json:"IsCanceled"`
-	IsCompleted     bool `json:"IsCompleted"`
-	CreationOptions int  `json:"CreationOptions"`
-	IsFaulted       bool `json:"IsFaulted"`
-}
-
-// BuylistResult is one page of buylist entries.
-type BuylistResult struct {
-	Products []Product `json:"Products"`
-	Total    int       `json:"Total"`
-}
-
-// Product is one card Card Game Corner is buying, with the price they pay.
-type Product struct {
-	ID           string  `json:"Id"`
-	Game         string  `json:"Game"`
-	ModelEn      string  `json:"ModelEn"`
-	Rarity       string  `json:"Rarity"`
-	Category     string  `json:"Category"`
-	Quantity     int     `json:"Quantity"`
-	MinAcquisto  float64 `json:"MinAcquisto"`
-	MaxAcquisto  float64 `json:"MaxAcquisto"`
-	Language     int     `json:"Language"`
-	SerialNumber int     `json:"SerialNumber"`
-}
-
-// GetBuylistForEdition returns one page of what Card Game Corner buys in an
-// edition.
-func (cgc *Client) GetBuylistForEdition(ctx context.Context, edition, page int) (*BuylistResult, error) {
-	payload, err := json.Marshal(&BuylistRequest{
-		IsBuyList: true,
-		Game:      "magic",
-		Page:      page,
-		Edition:   edition,
-		Sort:      5,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	link := advancedBuylistURL
-	if page > 1 {
-		link = fmt.Sprintf("%s?p=%d", advancedBuylistURL, page)
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := cgc.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("edition %d page %d: %s", edition, page, resp.Status)
-	}
-
-	var response BuylistResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
-	}
-
-	// The endpoint answers with the state of the task that ran the search, and
-	// a failed one carries an empty result like an edition with nothing to buy
-	if response.Status != taskRanToCompletion || response.IsFaulted || response.IsCanceled {
-		return nil, fmt.Errorf("edition %d page %d: search failed (status %d, faulted %t, canceled %t)",
-			edition, page, response.Status, response.IsFaulted, response.IsCanceled)
-	}
-
-	return &response.Result, nil
 }

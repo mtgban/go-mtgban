@@ -1025,7 +1025,7 @@ plus Lorcana, Riftbound and Flesh and Blood, which its `scgGames` table maps
 onto SCG's numeric game ids), `coolstuffinc` (seven of the eight non-Magic
 games - every one but Flesh and Blood - `CreditMultiplier 1.25`),
 `hareruya` (JPY, **bespoke 403 → 5-min backoff**), `cardgamecorner` (EUR,
-Italian, retail in seven games, the buylist in Magic alone), `abugames`
+Italian, retail alone, in seven games), `abugames`
 (Solr, MINT-aware grading, each buylist grade a floor, so every grade is filed
 at the best offer at it or below, the one PLD skips included, `InfoForScraper`, graded
 slabs as `ABUGraded`), `mtgseattle` (`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
