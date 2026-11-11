@@ -401,15 +401,16 @@ func (cgc *Cardgamecorner) Buylist() mtgban.BuylistRecord {
 	return cgc.buylist
 }
 
-func (cgc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan, edition Expansion) error {
+// parseBL reads every page of an edition, and returns how many it read.
+func (cgc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultChan, edition Expansion) (int, error) {
 	i := 1
 	totals := 0
 	for {
-		cgc.printf("Querying %s page %d", edition.Name, i)
 		result, err := cgc.client.GetBuylistForEdition(ctx, edition.ID, i)
 		if err != nil {
-			return err
+			return i - 1, err
 		}
+		cgc.printf("Querying %s page %d: %d of %d products", edition.Name, i, len(result.Products), result.Total)
 
 		for _, product := range result.Products {
 			// Product is not being bought
@@ -499,11 +500,11 @@ func (cgc *Cardgamecorner) parseBL(ctx context.Context, channel chan<- resultCha
 		// leaves totals where it was while Total stays positive, so the same
 		// request repeats forever
 		if len(result.Products) == 0 {
-			return fmt.Errorf("%s: page %d was empty after %d of %d products", edition.Name, i, totals, result.Total)
+			return i - 1, fmt.Errorf("%s: page %d was empty after %d of %d products", edition.Name, i, totals, result.Total)
 		}
 	}
 
-	return nil
+	return i - 1, nil
 }
 
 func (cgc *Cardgamecorner) scrapeBL(ctx context.Context) error {
@@ -513,12 +514,15 @@ func (cgc *Cardgamecorner) scrapeBL(ctx context.Context) error {
 	}
 	cgc.printf("Found %d editions", len(editions))
 
-	var failedEditions atomic.Int32
+	var failedEditions, pagedEditions atomic.Int32
 	mtgban.WorkerPool(ctx, cgc.maxConcurrency, editions,
 		func(ctx context.Context, edition Expansion, results chan<- resultChan) error {
-			err := cgc.parseBL(ctx, results, edition)
+			pages, err := cgc.parseBL(ctx, results, edition)
 			if err != nil {
 				failedEditions.Add(1)
+			}
+			if pages > 1 {
+				pagedEditions.Add(1)
 			}
 			return err
 		},
@@ -539,6 +543,11 @@ func (cgc *Cardgamecorner) scrapeBL(ctx context.Context) error {
 	err = ctx.Err()
 	if err != nil {
 		return err
+	}
+	// The search answers every card of an edition, bought or not, so when
+	// every edition fits on its first page the store's index answered short
+	if pagedEditions.Load() == 0 {
+		return fmt.Errorf("no edition of %d ran past its first page", len(editions))
 	}
 	if len(cgc.buylist) == 0 {
 		return fmt.Errorf("no buylist entry read in %d editions", len(editions))
