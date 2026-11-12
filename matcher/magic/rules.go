@@ -444,7 +444,7 @@ func (Rules) AdjustEdition(b *matcher.Backend, inCard *matcher.InputCard) {
 		edition = b.Sets["PSS1"].Name
 
 	// Champs and States
-	case isGenericExtendedArt(inCard) && len(b.MatchInSet(inCard.Name, "PCMP")) != 0:
+	case isGenericExtendedArt(inCard) && len(b.MatchInSet(inCard.Name, "PCMP")) != 0 && !editionHoldsExtendedArt(b, inCard.Name, edition):
 		edition = b.Sets["PCMP"].Name
 
 	// Secret Lair {Ultimate,Drop}
@@ -567,6 +567,10 @@ func (Rules) AdjustEdition(b *matcher.Backend, inCard *matcher.InputCard) {
 
 	// All the oversized commander cards
 	case inCard.Contains("Oversize") && !inCard.Contains("Plane") && !inCard.Contains("Phenomenon"):
+		// Player Rewards oversized stay in their own sets
+		if inCard.Contains("Player Rewards") {
+			break
+		}
 		for _, tag := range []string{
 			"OCM1", "PCMD", "OCMD", "OC13", "OC14", "OC15", "OC16", "OC17", "OC18", "OC19", "OC20",
 		} {
@@ -2629,4 +2633,15 @@ func sameColors(colors, named []string) bool {
 		}
 	}
 	return true
+}
+
+// editionHoldsExtendedArt reports whether the edition resolves to a set that
+// holds an extended-art printing of the card. An edition that does not
+// resolve answers false, since HasPrinting would then look at every set.
+func editionHoldsExtendedArt(b *matcher.Backend, name, edition string) bool {
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return false
+	}
+	return HasExtendedArtPrinting(b, name, set.Code)
 }
