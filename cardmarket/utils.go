@@ -350,6 +350,7 @@ var fabRenames = map[int]string{
 var fabRenumbers = map[int]string{
 	794820: "269", // Heartbeat of Candlehold (Extended Art Rainbow Foil), "270" is Sigil of Brilliance
 	875169: "062", // The Librarian, Magister of History (Marvel), "072" is Cap of Quick Thinking
+	920987: "520", // Pull from Beyond (Blue) (Extended Art Rainbow Foil), "519" is Yellow; drop once fixed
 }
 
 // fabRenamed overwrites a Cardmarket Flesh and Blood product's name and
