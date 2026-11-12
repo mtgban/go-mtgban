@@ -119,7 +119,7 @@ var variantTable = map[string]string{
 	"EURO Land Danish Island Ben Thompson art":         "EURO Land Danish Island",
 	"Eighth Edition Prerelease Promo":                  "Release Promo",
 	"Release 27 Promo":                                 "Release",
-	"2/2 Power and Toughness":                          "misprint",
+	"2/2 Power and Toughness":                          "",
 	"Big Furry Monster Left Side":                      "28",
 	"Big Furry Monster Right Side":                     "29",
 }
