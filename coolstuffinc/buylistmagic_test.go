@@ -62,6 +62,13 @@ func TestPreprocessBuylistMagic(t *testing.T) {
 			},
 			wantSet: "LTR", wantNum: "402",
 		},
+		{
+			desc: "an emblem named after its planeswalker with a dash",
+			card: CSIPriceEntry{
+				PID: "153408", Name: "Emblem - Tamiyo, the Moon Sage", ItemSet: "Avacyn Restored", Code: "AVR",
+			},
+			wantSet: "TAVR", wantNum: "8",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in, err := PreprocessBuylist(b, tt.card)
