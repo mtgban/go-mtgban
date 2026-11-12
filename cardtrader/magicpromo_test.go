@@ -37,8 +37,8 @@ func TestPreprocessPromoWordingVeto(t *testing.T) {
 		if in.ID != want {
 			t.Fatalf("ID = %q, want %q", in.ID, want)
 		}
-		if in.Edition != "Aether Revolt Promos" {
-			t.Errorf("Edition = %q, want the release promo's own edition", in.Edition)
+		if in.Edition != "PAER" {
+			t.Errorf("Edition = %q, want the release promo's set code", in.Edition)
 		}
 		if in.Variation != "" {
 			t.Errorf("Variation = %q, want the Prerelease wording dropped", in.Variation)
@@ -70,7 +70,7 @@ func TestPreprocessPromoWordingVeto(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if in.Edition != "Ravnica Allegiance" {
+		if in.Edition != "RNA" {
 			t.Errorf("Edition = %q, want the shelf wording replaced", in.Edition)
 		}
 
@@ -197,6 +197,8 @@ func TestPreprocessPromoShelves(t *testing.T) {
 			"Welcome Deck 2024", "Charmed Sleep", "", "040", "9aba5b08-ba40-4c67-bf0d-dedbef0af1cc", 0, "PLST", "ELD-40"},
 		{"a Welcome Deck 2024 reprint whose id resolves nowhere is skipped", 331102, CategoryMagicSingles,
 			"Welcome Deck 2024", "Serra Angel", "", "025", "b804473a-0dc6-473a-89c2-0b35ef6856de", 0, "", ""},
+		{"a prerelease set whose own name says Prerelease keeps its id", 12106, CategoryMagicOversized,
+			"M15 Prerelease Challenge", "Garruk the Slayer", "Oversized", "", "c18e2175-ec42-47f2-a40f-426ccaa1e89e", 91617, "PPC1", "1"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
