@@ -119,7 +119,10 @@ var variantTable = map[string]string{
 	"EURO Land Danish Island Ben Thompson art":         "EURO Land Danish Island",
 	"Eighth Edition Prerelease Promo":                  "Release Promo",
 	"Release 27 Promo":                                 "Release",
-	"2/2 Power and Toughness":                          "misprint",
+	"2/2 Power and Toughness":                          "",
+	"Prerelease Hero Promo":                            "Hero's Path Promo",
+	"Theros Prerelease Hero Promo":                     "Hero's Path Promo",
+	"Journey into Nyx Prerelease Hero Promo":           "Hero's Path Promo",
 	"Big Furry Monster Left Side":                      "28",
 	"Big Furry Monster Right Side":                     "29",
 }
@@ -1558,12 +1561,17 @@ func isEmblemListing(b *matcher.Backend, cardName, variant string) bool {
 
 // magicShelfFixups reads the shapes this storefront gives a few classes of
 // listing before the matcher sees them: an emblem named "Emblem" with the
-// planeswalker in the notes, where the catalog names it after the
-// planeswalker; the duel decks headed in the singular; the blank cards a
-// few sets ship, which are not cards; a note saying either of two numbers
-// may be received, of which the first is the one asked for; and the T the
-// storefront hangs on a token's number.
+// planeswalker in the notes, or "Emblem - <planeswalker>", where the name wins
+// over any note, as the catalog names it after the planeswalker; the duel
+// decks headed in the singular; the blank cards a few sets ship, which are
+// not cards; a note saying either of two numbers may be received, of which
+// the first is the one asked for; and the T the storefront hangs on a
+// token's number.
 func magicShelfFixups(cardName, edition, variant string) (string, string, string, error) {
+	rest, found := strings.CutPrefix(cardName, "Emblem - ")
+	if found {
+		cardName, variant = "Emblem", rest
+	}
 	if cardName == "Emblem" && variant != "" {
 		if strings.Contains(variant, "Token") || strings.Contains(variant, "//") {
 			return "", "", "", matcher.ErrUnsupported
