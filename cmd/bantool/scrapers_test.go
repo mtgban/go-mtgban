@@ -43,4 +43,21 @@ func TestCardmarketNeedsItsBridge(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
 		t.Errorf("market was built without a bridge: %v", err)
 	}
+	for _, game := range []matcher.Game{matcher.GameOnePiece, matcher.GameGundam} {
+		for _, store := range []string{"cardmarket", "cardmarket_market"} {
+			_, err = scraperResources(&matcher.Backend{Game: game}, store)
+			if err == nil || !strings.Contains(err.Error(), "CARDTRADER_TOKEN_BEARER") {
+				t.Errorf("%s %s was built without a bridge: %v", game, store, err)
+			}
+		}
+	}
+	// Riftbound and Lorcana are named by the catalog, so they go ahead.
+	for _, game := range []matcher.Game{matcher.GameRiftbound, matcher.GameLorcana} {
+		for _, store := range []string{"cardmarket", "cardmarket_market"} {
+			_, err = scraperResources(&matcher.Backend{Game: game}, store)
+			if err != nil {
+				t.Errorf("%s %s refused without a bridge: %v", game, store, err)
+			}
+		}
+	}
 }

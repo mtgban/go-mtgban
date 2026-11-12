@@ -144,10 +144,10 @@ Re-run the replay (did it land?) **and** a regression corpus for a vendor that
 already works (did anything move?). Grade per listing - gained / lost / moved -
 never on recall alone, and read the gains: a new landing can be a new misprice.
 A row that goes refused→skipped counts as lost, not landed, unless the backend
-holds no printing it could land on. For the `BridgeHelps` games (One Piece,
-Riftbound, Lorcana) bantool also runs when the CardTrader bridge fails to load,
-so replay with the bridge and again without it: the bridge resolves by id first
-and hid 23 One Piece products a name-route change broke. Record the mapping
+holds no printing it could land on. For the `BridgeHelps` games (Riftbound,
+Lorcana) bantool also runs when the CardTrader bridge fails to load, so replay
+with the bridge and again without it: the bridge resolves by id first and can
+hide products a name-route change breaks. Record the mapping
 line (formula in step 2, harnesses.md §G) at the base sha and at the tip, over
 the same N. The Cardmarket walk harness is the standing regression corpus for
 Flesh and Blood; build the equivalent before touching shared matcher code for

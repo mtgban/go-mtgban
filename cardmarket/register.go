@@ -69,10 +69,11 @@ const (
 	BridgeUnused BridgeUse = iota
 	// BridgeHelps means the catalog names most of the shelf by itself; the
 	// bridge settles what a collector number cannot, and its absence only
-	// costs those printings.
+	// leaves those printings unpriced, never on another printing.
 	BridgeHelps
 	// BridgeRequired means same-name products abound and the catalog alone
-	// cannot tell them apart; without a bridge the scraper cannot run.
+	// cannot tell them apart, so a name route lands products on sibling
+	// printings; without a bridge the scraper cannot run.
 	BridgeRequired
 )
 
@@ -80,9 +81,10 @@ const (
 // the TCGplayer bridge; see gameResolvers.
 func BridgeUseOf(game matcher.Game) BridgeUse {
 	switch game {
-	case matcher.GamePokemon, matcher.GameYuGiOh, matcher.GameFleshAndBlood:
+	case matcher.GamePokemon, matcher.GameYuGiOh, matcher.GameFleshAndBlood,
+		matcher.GameOnePiece, matcher.GameGundam:
 		return BridgeRequired
-	case matcher.GameOnePiece, matcher.GameRiftbound, matcher.GameLorcana, matcher.GameGundam:
+	case matcher.GameRiftbound, matcher.GameLorcana:
 		return BridgeHelps
 	default:
 		return BridgeUnused
