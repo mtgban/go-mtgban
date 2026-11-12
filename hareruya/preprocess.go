@@ -1140,6 +1140,7 @@ var promoMap = map[string]map[string]map[string]struct {
 	},
 	"Other Event Promo": {
 		"Arcbound Ravager": {"卯年プロモ": {Edition: "PL23", Variant: "6"}},
+		"Ethereal Armor":   {"卯年プロモ": {Edition: "PL23", Variant: "5"}},
 		"Ephemerate": {
 			"夏休み": {
 				Edition: "PSVC",
@@ -1154,6 +1155,7 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 	},
 	"Other Event anniversary": {
+		"Reliquary Tower": {"Full-Art コマンドフェスト": {Edition: "PF23", Variant: "3"}},
 		"Sol Ring": {
 			"旧枠プロモ": {
 				Edition: "PFDN",
@@ -1891,10 +1893,11 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 	},
 	"The List": {
-		"Lightning Bolt":    {"Textless Magic Fest": {Edition: "PLST", Variant: "PF19-1"}},
-		"Imperious Perfect": {"ゲームデー": {Edition: "PLST", Variant: "PCMP-9"}},
-		"Abrade":            {"ゲームデー": {Edition: "PLST", Variant: "HOU-83"}},
-		"Stasis Snare":      {"BFZ-P": {Edition: "PLST", Variant: "PBFZ-50"}},
+		"Lightning Bolt":     {"Textless Magic Fest": {Edition: "PLST", Variant: "PF19-1"}},
+		"Imperious Perfect":  {"ゲームデー": {Edition: "PLST", Variant: "PCMP-9"}},
+		"Strangleroot Geist": {"ゲームデー": {Edition: "PLST", Variant: "PDKA-127"}},
+		"Abrade":             {"ゲームデー": {Edition: "PLST", Variant: "HOU-83"}},
+		"Stasis Snare":       {"BFZ-P": {Edition: "PLST", Variant: "PBFZ-50"}},
 		"Negate": {
 			"褒賞プログラム": {Edition: "PLST", Variant: "P09-8"},
 		},
