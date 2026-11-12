@@ -42,6 +42,8 @@ var listingCorrections = map[string]struct {
 	// The plain printing's number and ids are copied onto the variant.
 	"7911360": {title: "Gandalf, White Rider (Extended Art)", edition: "The Lord of the Rings: Tales of Middle-earth", number: "290", correctedNumber: "389", ignoreIDs: true},
 	"7429110": {title: "Captain's Claws (Goldnight Castigator Shadow) - FOIL", edition: "Oath of the Gatewatch", number: "162", correctedNumber: "162†", ignoreIDs: true},
+	// No space before the dash, so the letter is lost; the ids name (a).
+	"7996097": {title: "Clandestine Meddler (b- White Curtains) - FOIL", edition: "Murders at Karlov Manor", number: "82", correctedTitle: "Clandestine Meddler (b - White Curtains) - FOIL", ignoreIDs: true},
 	// The listings misspell the flavor name, or splice the finish into it.
 	"8100899": {title: "Chancla relampagos | Lightning Greaves (Secret Lair)", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair)"},
 	"8100901": {title: "Chancla relampagos | Lightning Greaves (Secret Lair) - FOIL", edition: "Secret Lair Drop", number: "2062", correctedTitle: "Chancla relámpago | Lightning Greaves (Secret Lair) - FOIL"},
