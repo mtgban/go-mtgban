@@ -89,12 +89,13 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 		cardID, err := ck.backend.Match(theCard)
 		if errors.Is(err, matcher.ErrUnsupported) {
 			id, rerr := matchPrereleaseSKU(ck.backend, card.SKU, card.ScryfallID, theCard.Foil)
-			if rerr == nil {
-				cardID, err = id, nil
+			if rerr != nil {
+				id, rerr = matchOversizedSKU(ck.backend, card.SKU, card.ScryfallID, theCard.Foil)
 			}
-			if err != nil {
+			if rerr != nil {
 				continue
 			}
+			cardID, err = id, nil
 		} else if err != nil {
 			ogErr := err
 			cardID, err = ck.backend.MatchID(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))

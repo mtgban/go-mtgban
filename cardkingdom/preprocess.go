@@ -517,6 +517,23 @@ func matchPrereleaseSKU(b *matcher.Backend, sku, scryfallID string, foil bool) (
 	return id, nil
 }
 
+// matchOversizedSKU rescues an OP sku, CK's oversized promo family, that
+// Match refused: the id it publishes names the oversized printing.
+func matchOversizedSKU(b *matcher.Backend, sku, scryfallID string, foil bool) (string, error) {
+	if !strings.HasPrefix(sku, "OP") {
+		return "", matcher.ErrUnsupported
+	}
+	id, err := b.MatchID(scryfallID, foil, false)
+	if err != nil {
+		return "", err
+	}
+	co, err := b.GetUUID(id)
+	if err != nil || !co.IsOversized {
+		return "", matcher.ErrUnsupported
+	}
+	return id, nil
+}
+
 // punchcardName is the name the datastore files a punch card under, one word
 // where every vendor selling one writes two.
 const punchcardName = "Punchcard"
