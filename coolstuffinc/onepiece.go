@@ -134,6 +134,7 @@ var onePieceNotePlace = regexp.MustCompile(`(?i)\b(?:participant|winner|finalist
 var onePieceSpellings = strings.NewReplacer(
 	"But If We See Each Other Again...Will You Call Me Your Shipmate?!!", "But If We Ever See Each Other Again... Will You Call Me Your Shipmate?!!",
 	"Kouzuki Momonosuke P-064", "Kouzuki Momonosuke - P-064",
+	"Koala- 041", "Koala - 041",
 	"Winner Pack Vol. 8", "Winner Pack 2024 Oct.-Dec.",
 	"(Jolly Roger)", "(Jolly Roger Foil)",
 	"(Jolly Roger Art)", "(Jolly Roger Foil)",
