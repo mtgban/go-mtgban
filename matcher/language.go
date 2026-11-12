@@ -24,7 +24,7 @@ func (c *InputCard) normalizeLanguage() {
 	}
 	// Override if needed
 	for _, tag := range allLanguageTags {
-		if c.Contains(tag) {
+		if SaysWord(c.Edition, tag, "") || SaysWord(c.Variation, tag, "") {
 			c.Language = tag
 			break
 		}
