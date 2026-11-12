@@ -199,6 +199,7 @@ var pokemonListingIDs = map[string]string{
 	"Delphox - 013/086 (30th Reverse Foil)|ME Chaos Rising":                 "729910",
 	"Moltres - 014/094 (30th Reverse Foil)|ME Phantasmal Flames":            "729915",
 	"Zacian - 045/094 (30th Reverse Foil)|ME Phantasmal Flames":             "729914",
+	"Toxtricity - 068/094 (30th Reverse Foil)|ME Phantasmal Flames":         "731781",
 	"Voltaic Lightning Energy - 084/084 (30th Reverse Foil)|ME Pitch Black": "729904",
 
 	"Fire Energy - MEE002 (30th Reverse Foil)|ME Ascended Heroes":      "729817",

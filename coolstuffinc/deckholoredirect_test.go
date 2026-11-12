@@ -117,14 +117,14 @@ func TestPokemonDeckHoloRedirectNeedsTheListingsNumber(t *testing.T) {
 func TestPokemonUnlisted30thSkipsOffTheDeckSet(t *testing.T) {
 	b := readGameDatastore(t, "pokemon", "POKEMON_PATH")
 	csi := &Coolstuffinc{backend: b}
-	toxtricity := CSIPriceEntry{Name: "Toxtricity - 068/094 (30th Reverse Foil)", ItemSet: "ME Phantasmal Flames", Notes: "30th Celebration Battle Deck Reverse Foil", Number: "068/094", RarityName: "Holo Rare"}
-	_, id, err := buylistPokemon(csi, toxtricity)
+	unlisted := CSIPriceEntry{Name: "Mega Gengar ex - 056/094 (30th Reverse Foil)", ItemSet: "ME Phantasmal Flames", Notes: "30th Celebration Battle Deck Reverse Foil", Number: "056/094", RarityName: "Holo Rare"}
+	_, id, err := buylistPokemon(csi, unlisted)
 	if !errors.Is(err, matcher.ErrUnsupported) {
-		t.Errorf("buylist %q = %q, %v, want ErrUnsupported", toxtricity.Name, id, err)
+		t.Errorf("buylist %q = %q, %v, want ErrUnsupported", unlisted.Name, id, err)
 	}
-	_, id, err = retailPokemon(csi, sellListing{name: toxtricity.Name, edition: toxtricity.ItemSet, notes: toxtricity.Notes, rarity: toxtricity.RarityName})
+	_, id, err = retailPokemon(csi, sellListing{name: unlisted.Name, edition: unlisted.ItemSet, notes: unlisted.Notes, rarity: unlisted.RarityName})
 	if !errors.Is(err, matcher.ErrUnsupported) {
-		t.Errorf("retail %q = %q, %v, want ErrUnsupported", toxtricity.Name, id, err)
+		t.Errorf("retail %q = %q, %v, want ErrUnsupported", unlisted.Name, id, err)
 	}
 
 	energy := sellListing{name: "Fire Energy - MEE002 (30th Reverse Foil)", edition: "ME Ascended Heroes", notes: "30th Celebration Battle Deck Reverse Foil", rarity: "Fixed"}
