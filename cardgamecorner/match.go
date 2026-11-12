@@ -51,11 +51,12 @@ func matchPokemon(cgc *Cardgamecorner, card *Card, _ int, input *matcher.InputCa
 // matchYuGiOh answers a listing on its wording, then looks for the version
 // the product image names: it refines the answer to a printing of the same
 // set and rarity, the alt art or colour the store copied from Cardmarket,
-// and places what the wording refuses. The image of a European copy on an
-// old shelf names the North American print, so it only places what the
-// wording refuses. A listing whose number field is wrong, as it is on a few,
-// is retried with the SKU's number while the SKU still ends in the card's
-// own.
+// and places what the wording refuses. A refusal the image cannot place is
+// retried on the image directory's card name. The image of a European copy
+// on an old shelf names the North American print, so it only places what
+// the wording refuses. A listing whose number field is wrong, as it is on a
+// few, is retried with the SKU's number while the SKU still ends in the
+// card's own.
 func matchYuGiOh(cgc *Cardgamecorner, card *Card, index int, input *matcher.InputCard) (string, error) {
 	retry := *input
 	cardID, err := cgc.backend.Match(input)
@@ -77,8 +78,43 @@ func matchYuGiOh(cgc *Cardgamecorner, card *Card, index int, input *matcher.Inpu
 		if found {
 			return id, nil
 		}
+		id, found = cgc.matchYuGiOhSlug(card, index, retry)
+		if found {
+			return id, nil
+		}
 	}
 	return cardID, err
+}
+
+// matchYuGiOhSlug retries a refused listing with the card its image directory
+// names, for the few whose English name is another real card's. It answers
+// only where the listing states the printing's number, its print run, and
+// the printing sits in the set the SKU opens with.
+func (cgc *Cardgamecorner) matchYuGiOhSlug(card *Card, index int, input matcher.InputCard) (string, bool) {
+	name := slugName(cgc.backend, card.Extra)
+	listed, _, _ := strings.Cut(input.Name, " (")
+	if name == "" || matcher.Equals(name, listed) {
+		return "", false
+	}
+	input.Name = name
+	id, err := cgc.backend.Match(&input)
+	if err != nil {
+		return "", false
+	}
+	co, err := cgc.backend.GetUUID(id)
+	if err != nil || !cgc.statesNumber(card, co.Number) {
+		return "", false
+	}
+	if len(card.SKU) < len(co.SetCode) || !matcher.Equals(card.SKU[:len(co.SetCode)], co.SetCode) {
+		return "", false
+	}
+	return id, sameYuGiOhRun(card, index, co)
+}
+
+// sameYuGiOhRun reports whether a printing is in the print run the variant
+// lists.
+func sameYuGiOhRun(card *Card, index int, co *matcher.CardObject) bool {
+	return (card.Variants[index].Print == "First Edition") == (co.Finish == "1stedition")
 }
 
 // sameSetAndRarity reports whether two printings sit in one set with one
@@ -105,10 +141,7 @@ func (cgc *Cardgamecorner) matchYuGiOhImage(card *Card, index int, input *matche
 	if err != nil || !matcher.Equals(co.Name, name) {
 		return "", false
 	}
-	if (card.Variants[index].Print == "First Edition") != (co.Finish == "1stedition") {
-		return "", false
-	}
-	return id, true
+	return id, sameYuGiOhRun(card, index, co)
 }
 
 // matchMagic retries what the wording cannot place with the number the
