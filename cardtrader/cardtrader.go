@@ -357,18 +357,31 @@ var copyWords = map[string]bool{
 	"mix": true, "mixed": true,
 }
 
-// notTheListedCopy reads whole words only: a substring test fires inside
-// "Italy" and across "from IXALAN" once spaces are stripped.
-func notTheListedCopy(description string) bool {
-	words := strings.FieldsFunc(strings.ToLower(description), func(r rune) bool {
+// poorWords are the description words saying a copy is damaged, signed or
+// stamped, and so graded Poor.
+var poorWords = map[string]bool{
+	"signed": true, "inked": true, "poor": true, "water": true,
+	"stamp": true, "stamped": true, "stamps": true, "stamping": true,
+}
+
+// describes reads whole words only: a substring test fires inside "Italy",
+// "stampa" or "DarkwaterCatacombs", and across "from IXALAN" once spaces
+// are stripped.
+func describes(description string, words map[string]bool) bool {
+	fields := strings.FieldsFunc(strings.ToLower(description), func(r rune) bool {
 		return !unicode.IsLetter(r)
 	})
-	for _, word := range words {
-		if copyWords[word] {
+	for _, word := range fields {
+		if words[word] {
 			return true
 		}
 	}
 	return false
+}
+
+// notTheListedCopy says a description names an Italian or mixed-language copy.
+func notTheListedCopy(description string) bool {
+	return describes(description, copyWords)
 }
 
 // TCGplayerProductID answers the TCGplayer id a blueprint's listings resolve
@@ -417,12 +430,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 
 		cond := product.Properties.Condition
-		if product.Properties.Signed ||
-			matcher.Contains(product.Description, "signed") ||
-			matcher.Contains(product.Description, "inked") ||
-			matcher.Contains(product.Description, "stamp") ||
-			matcher.Contains(product.Description, "poor") ||
-			matcher.Contains(product.Description, "water") {
+		if product.Properties.Signed || describes(product.Description, poorWords) {
 			cond = "Poor"
 		}
 

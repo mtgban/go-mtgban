@@ -81,6 +81,28 @@ func TestAddCheapestOfferAcrossBlueprints(t *testing.T) {
 	}
 }
 
+func TestPoorWords(t *testing.T) {
+	tests := []struct {
+		description string
+		want        bool
+	}{
+		{"Signed by the artist", true},
+		{"Stamped | Pokemon Center", true},
+		{"slightly poor, water damage", true},
+		{"sbustate possono avere line di stampa", false},
+		{"DarkslickShores,DarkwaterCatacombs,SunkenHollow", false},
+		{"Stampede Rider | Theros Beyond Death", false},
+		{"unsigned", false},
+		{"", false},
+	}
+	for _, tt := range tests {
+		got := describes(tt.description, poorWords)
+		if got != tt.want {
+			t.Errorf("describes(%q, poorWords) = %t, want %t", tt.description, got, tt.want)
+		}
+	}
+}
+
 func TestNotTheListedCopy(t *testing.T) {
 	tests := []struct {
 		description string
