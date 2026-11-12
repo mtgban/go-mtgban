@@ -294,6 +294,12 @@ var tcgIDOverrides = map[int]int{
 	412579: 717613, // Char Aznable, ST11-011
 	412580: 717615, // Unicorn Gundam 02 Banshee, ST12-009
 	412581: 717617, // Ple-Twelve, ST12-012
+	// Gundam: Newtype Challenge Mission 5 and GD06 Release Event promos, none sent.
+	413904: 731740, // Char Aznable, GD05-093 Newtype Challenge
+	413905: 731741, // Gyunei's Jagd Doga, GD05-057 Newtype Challenge
+	413906: 731739, // Sazabi, GD05-049 Newtype Challenge
+	415371: 730000, // Elpeo Ple's Qubeley Mk-II, GD06-029 Release Event
+	415372: 730001, // Elpeo Ple, GD06-084 Release Event
 	// Gundam: Store Tournament and Winner Pack 06 promos, none sent.
 	417447: 721540, // Victory Gundam, GD04-011 Participation
 	417448: 721541, // GD04-107 Participation
