@@ -161,9 +161,7 @@ var tcgIDOverrides = map[int]int{
 	295089: 557943, // Engulfing Light (Red), Armory Deck: Boltyn
 	// Flesh and Blood: the id names the hero's Rainbow Foil promo, HER137.
 	331877: 638041, // Puffin, Hightail, SEA001
-	// Pokemon: same shape, a Poké Ball Pattern reverse holo pair.
-	343417: 642431, // Rufflet, 077/086
-	343418: 642432, // Braviary, 078/086
+	// Pokemon: the id names a different Judge.
 	357942: 685999, // Judge, Professor Program Stamp | 167/182
 	// One Piece DON!! promos: no id sent at all.
 	391163: 692132, // Bandai Fest | Elbaph
@@ -192,9 +190,6 @@ var tcgIDOverrides = map[int]int{
 	400786: 716036, // Seraphine, 005s Showcase, Signed Serialized
 	// Riftbound Radiance: the signed card is sent the unsigned Overnumbered id.
 	417936: 724638, // Ekko, Boy Who Shattered Time, 168s Showcase, Signed
-	// Riftbound Radiance: the id names the neighbouring or the plain card.
-	415816: 723434, // The Exile, 149, sent Blade of the Exile's 722279
-	417516: 723429, // Seraphine, Inspiring, 065a Alternate Art, sent the plain 723430
 	// Pokemon: none sent either.
 	302130: 180717, // Zoroark, BW19 Jumbo Oversized
 	285780: 658742, // Professor Turo's Scenario, Professor Program Stamp | 171/182
@@ -287,6 +282,18 @@ var tcgIDOverrides = map[int]int{
 	// Flesh and Blood: the TCGplayer id sent is the Cardmarket one.
 	281847: 580614, // Cintari Saber (Left) (Golden), FAB184
 	281849: 580615, // Cintari Saber (Right) (Golden), FAB185
+	// Flesh and Blood: Corrupted Corpse FAB514a-j, the glued letter is the
+	// watermark and none is sent.
+	413605: 722616, // FAB514a
+	413606: 722618, // FAB514b
+	413607: 722619, // FAB514c
+	413608: 722620, // FAB514d
+	413609: 722621, // FAB514e
+	413610: 722622, // FAB514f
+	413611: 722623, // FAB514g
+	413612: 722624, // FAB514h
+	413613: 722625, // FAB514i
+	413614: 722626, // FAB514j
 	// Flesh and Blood: Spectral Shield's plain print, not its token.
 	289168: 552843, // Spectral Shield, MST158-A
 	// Gundam: the ST11-ST14 release event promos, filed under GD06.
@@ -294,6 +301,12 @@ var tcgIDOverrides = map[int]int{
 	412579: 717613, // Char Aznable, ST11-011
 	412580: 717615, // Unicorn Gundam 02 Banshee, ST12-009
 	412581: 717617, // Ple-Twelve, ST12-012
+	// Gundam: Newtype Challenge Mission 5 and GD06 Release Event promos, none sent.
+	413904: 731740, // Char Aznable, GD05-093 Newtype Challenge
+	413905: 731741, // Gyunei's Jagd Doga, GD05-057 Newtype Challenge
+	413906: 731739, // Sazabi, GD05-049 Newtype Challenge
+	415371: 730000, // Elpeo Ple's Qubeley Mk-II, GD06-029 Release Event
+	415372: 730001, // Elpeo Ple, GD06-084 Release Event
 	// Gundam: Store Tournament and Winner Pack 06 promos, none sent.
 	417447: 721540, // Victory Gundam, GD04-011 Participation
 	417448: 721541, // GD04-107 Participation
@@ -311,6 +324,15 @@ var tcgIDOverrides = map[int]int{
 	417444: 721553, // GD05-094 Winner Pack 06
 	417445: 721554, // GD05-111 Winner Pack 06
 	417446: 721555, // T-029 Winner Pack 06
+	// Tokens: none sent, and the wording misses the row (T-28 for T-028,
+	// Sheep Token for Token: Scapegoat).
+	413488: 721037, // GOOhN, ST11 T-028
+	413553: 721038, // Bit / Funnel, ST13 T-029
+	391101: 694074, // Syrus and Super Vehicroid, TKN5-EN042
+	391104: 694073, // Yuri and Starving Venom Fusion Dragon, TKN5-EN045
+	62968:  81304,  // Scapegoat (Yellow), TKN1-EN002
+	62969:  81305,  // Scapegoat (Orange), TKN1-EN003
+	62970:  81306,  // Scapegoat (Red), TKN1-EN004
 	// Magic: the Scryfall id names the card before it on the shelf.
 	155490: 237359, // Nicol Bolas, God-Pharaoh, PHOU 140p
 	// Magic: the id sent is a sealed product; Cardmarket 914142 names the card.
@@ -335,18 +357,31 @@ var copyWords = map[string]bool{
 	"mix": true, "mixed": true,
 }
 
-// notTheListedCopy reads whole words only: a substring test fires inside
-// "Italy" and across "from IXALAN" once spaces are stripped.
-func notTheListedCopy(description string) bool {
-	words := strings.FieldsFunc(strings.ToLower(description), func(r rune) bool {
+// poorWords are the description words saying a copy is damaged, signed or
+// stamped, and so graded Poor.
+var poorWords = map[string]bool{
+	"signed": true, "inked": true, "poor": true, "water": true,
+	"stamp": true, "stamped": true, "stamps": true, "stamping": true,
+}
+
+// describes reads whole words only: a substring test fires inside "Italy",
+// "stampa" or "DarkwaterCatacombs", and across "from IXALAN" once spaces
+// are stripped.
+func describes(description string, words map[string]bool) bool {
+	fields := strings.FieldsFunc(strings.ToLower(description), func(r rune) bool {
 		return !unicode.IsLetter(r)
 	})
-	for _, word := range words {
-		if copyWords[word] {
+	for _, word := range fields {
+		if words[word] {
 			return true
 		}
 	}
 	return false
+}
+
+// notTheListedCopy says a description names an Italian or mixed-language copy.
+func notTheListedCopy(description string) bool {
+	return describes(description, copyWords)
 }
 
 // TCGplayerProductID answers the TCGplayer id a blueprint's listings resolve
@@ -395,12 +430,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 
 		cond := product.Properties.Condition
-		if product.Properties.Signed ||
-			matcher.Contains(product.Description, "signed") ||
-			matcher.Contains(product.Description, "inked") ||
-			matcher.Contains(product.Description, "stamp") ||
-			matcher.Contains(product.Description, "poor") ||
-			matcher.Contains(product.Description, "water") {
+		if product.Properties.Signed || describes(product.Description, poorWords) {
 			cond = "Poor"
 		}
 
