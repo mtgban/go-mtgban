@@ -22,6 +22,8 @@ func TestPromoEditionDescriptions(t *testing.T) {
 		{"Mutavault", "Magic 2014", "Extended Art", "PCMP", "12", true},
 		{"Flusterstorm", "Promo: Buy-A-Box", "Modern Horizons 1 Buy-a-Box", "MH1", "255", false},
 		{"Flusterstorm", "Promo: Buy-A-Box", "Modern Horizons 3 Buy-a-Box", "MH3", "496", true},
+		{"Glissa, the Traitor", "Promo", "Oversized Player Rewards Promo", "P11", "96", false},
+		{"Wurmcoil Engine", "Promo", "Oversized Player Rewards Promo", "P10", "223", false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			in := matcher.InputCard{Name: tt.name, Edition: tt.edition, Variation: tt.variation, Foil: tt.foil}
