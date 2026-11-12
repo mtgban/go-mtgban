@@ -92,6 +92,14 @@ var pokemonStampLinks = map[int]int{
 	791827: 586830,
 }
 
+// pokemonUnmade lists Cardmarket products no English printing was made for.
+var pokemonUnmade = map[int]bool{
+	278858: true, // Pokemon Rumble Eevee, a list-only product beside the 16 cards
+	278860: true, // Pokemon Rumble Croagunk, likewise
+	690801: true, // XY Black Star Promos Delphox, no such promo
+	690803: true, // XY Black Star Promos Kecleon, French attack names
+}
+
 // pokemonHoloLinks names, by Cardmarket product id, the TCGplayer product
 // whose Holofoil printing a product sells. TCGplayer files the holo and the
 // plain card of a McDonald's Collection 25th Anniversary card or a Prize
@@ -553,7 +561,7 @@ func (r *resolver) bridgeHolds(cardID string, product int) bool {
 // datastore's own or a stamp link (pokemonByID), then the TCGplayer id the
 // bridge knows it by - and only falls back on what the catalog says of it.
 func resolvePokemon(r *resolver, product *cm.Product) (string, string, bool, error) {
-	if pokemonCodeCard(product.Name) {
+	if pokemonCodeCard(product.Name) || pokemonUnmade[product.IDProduct] {
 		return "", "", false, nil
 	}
 	cardID, err := r.pokemonByID(product)
