@@ -336,6 +336,15 @@ func (r Rules) AdjustEdition(b *matcher.Backend, inCard *matcher.InputCard) {
 			}
 		}
 	}
+	// A starter deck reprinting a card of another set, under a name it
+	// already holds: the set the card's own code names.
+	if !named {
+		reprint := reprintSetNamed(b, inCard, edition)
+		if reprint != "" {
+			edition = reprint
+			named = true
+		}
+	}
 	inCard.Edition = edition
 
 	// PromoWildcard is the flag Match already reads to skip edition
@@ -1892,6 +1901,50 @@ var starterDeckRunRe = regexp.MustCompile(`(?i)starter\s+deck\s+([0-9]{1,2})\b`)
 // learnTogetherRe reads TCGplayer's own name for LT-01 as the "LT01" code
 // no storefront actually prints on the card.
 var learnTogetherRe = regexp.MustCompile(`(?i)learn\s+together\s+deck\s+set`)
+
+// reprintSetNamed returns the set a full collector code names, for a starter
+// deck that reprints a card of that set under a name it already holds at
+// another number: the shelf is full of rows of the name, so nothing widens
+// to the printing the code names. A deck holding no row of the name widens
+// on its own, and the shelf wording then picks its own printing, so it is
+// left alone. Codes spanning two sets, such as OP14-EB04, are not matched.
+func reprintSetNamed(b *matcher.Backend, inCard *matcher.InputCard, edition string) string {
+	number := inputNumber(b, inCard)
+	code, _ := splitNumber(number)
+	if code == "" {
+		return ""
+	}
+	shelf, err := b.GetSetByName(edition)
+	if err != nil || !strings.HasPrefix(shelf.Code, "ST-") {
+		return ""
+	}
+	target := ""
+	onShelf := false
+	for _, uuid := range b.Hashes[matcher.Normalize(inCard.Name)] {
+		co, ok := b.UUIDs[uuid]
+		if !ok || co.Sealed {
+			continue
+		}
+		if co.SetCode == shelf.Code {
+			onShelf = true
+		}
+		if !matcher.Equals(number, co.Number) {
+			continue
+		}
+		if co.SetCode == shelf.Code {
+			return ""
+		}
+		if foldSetCode(co.SetCode) != foldSetCode(code) {
+			continue
+		}
+		target = co.SetCode
+	}
+	set, ok := b.Sets[target]
+	if !ok || !onShelf {
+		return ""
+	}
+	return set.Name
+}
 
 // codedSetNamed returns the set a variation names by its code.
 //
