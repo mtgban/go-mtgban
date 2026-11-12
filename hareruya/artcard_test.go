@@ -22,6 +22,11 @@ func TestArtCardUnsupported(t *testing.T) {
 			ProductNameEN: "【Art Card】Plains(001)[LCI]",
 			CardName:      "【Art Card】Plains",
 		},
+		{
+			ProductName:   "(029)■テキストレス■《ウルザの物語/Urza's Saga》(ストアチャンピオンシップ)[SCH] 土地 ※店舗名印字入り",
+			ProductNameEN: "(029)■Textless■《Urza's Saga》[SCH] ※Store name Printed",
+			CardName:      "Urza's Saga",
+		},
 	} {
 		_, err := Preprocess(&matcher.Backend{}, product)
 		if !errors.Is(err, matcher.ErrUnsupported) {
