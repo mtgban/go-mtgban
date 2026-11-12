@@ -1129,7 +1129,7 @@ func foilMisprint(b *matcher.Backend, inCard *matcher.InputCard, card *matcher.C
 			return !strings.HasSuffix(card.Number, SuffixSpecial)
 		}
 	case "Strict Proctor":
-		if !isExtendedArt(inCard) || strings.HasPrefix(maybeNumber, "33") {
+		if inCard.Contains("Misprint") && (!isExtendedArt(inCard) || strings.HasPrefix(maybeNumber, "33")) {
 			return !strings.HasSuffix(card.Number, SuffixSpecial)
 		}
 	case "Reflecting Pool":
