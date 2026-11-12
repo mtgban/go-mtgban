@@ -287,6 +287,18 @@ var tcgIDOverrides = map[int]int{
 	// Flesh and Blood: the TCGplayer id sent is the Cardmarket one.
 	281847: 580614, // Cintari Saber (Left) (Golden), FAB184
 	281849: 580615, // Cintari Saber (Right) (Golden), FAB185
+	// Flesh and Blood: Corrupted Corpse FAB514a-j, the glued letter is the
+	// watermark and none is sent.
+	413605: 722616, // FAB514a
+	413606: 722618, // FAB514b
+	413607: 722619, // FAB514c
+	413608: 722620, // FAB514d
+	413609: 722621, // FAB514e
+	413610: 722622, // FAB514f
+	413611: 722623, // FAB514g
+	413612: 722624, // FAB514h
+	413613: 722625, // FAB514i
+	413614: 722626, // FAB514j
 	// Flesh and Blood: Spectral Shield's plain print, not its token.
 	289168: 552843, // Spectral Shield, MST158-A
 	// Gundam: the ST11-ST14 release event promos, filed under GD06.
