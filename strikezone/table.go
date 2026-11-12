@@ -92,6 +92,7 @@ var cardTable = map[string]string{
 	"Return to the Light Realms (Borderless) (Facet Foil) (0415)": "Return to the Light Realms (Borderless) (Facet Foil) (0451)",
 
 	// Typos AND edition
+	"Ashiok, Dream Render (004) (Stained Glass)":    "Ashiok, Dream Render (Stained Glass)",
 	"Faithless Lootoing (IDW Promo)":                "Faithless Looting (IDW)",
 	"Geist of Sain Traft (WMCQ)":                    "Geist of Saint Traft (WMCQ)",
 	"Grafdiffer s Cage (Prerelease)":                "Grafdigger's Cage (Prerelease)",
