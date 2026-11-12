@@ -120,6 +120,9 @@ var variantTable = map[string]string{
 	"Eighth Edition Prerelease Promo":                  "Release Promo",
 	"Release 27 Promo":                                 "Release",
 	"2/2 Power and Toughness":                          "",
+	"Prerelease Hero Promo":                            "Hero's Path Promo",
+	"Theros Prerelease Hero Promo":                     "Hero's Path Promo",
+	"Journey into Nyx Prerelease Hero Promo":           "Hero's Path Promo",
 	"Big Furry Monster Left Side":                      "28",
 	"Big Furry Monster Right Side":                     "29",
 }
