@@ -162,7 +162,7 @@ func TestPagingReportsARefusedPage(t *testing.T) {
 				pagingRow, srv.URL+"/sq/12345&page=2")
 			return
 		}
-		w.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, `<html></html>`)
 	}))
 	t.Cleanup(srv.Close)
@@ -177,7 +177,7 @@ func TestPagingReportsARefusedPage(t *testing.T) {
 	if err == nil {
 		t.Fatal("processSearch() said nothing about a refused page")
 	}
-	if !strings.Contains(err.Error(), "403") {
+	if !strings.Contains(err.Error(), "404") {
 		t.Errorf("processSearch() = %v, want the status in it", err)
 	}
 }

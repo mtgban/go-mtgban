@@ -62,3 +62,50 @@ func TestSearchSurvivesTransientFailures(t *testing.T) {
 		})
 	}
 }
+
+// TestSearchPageSurvivesForbidden pins that a results page answered 403 is
+// asked for again: giving up there loses the rest of the shelf.
+func TestSearchPageSurvivesForbidden(t *testing.T) {
+	var attempts int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts < 2 {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		_, _ = w.Write([]byte(`<html><span id="nextLink"><a href="/sq/12345&page=3"></a></span></html>`))
+	}))
+	defer srv.Close()
+
+	doc, err := fetchSearchPage(context.Background(), newCSIHTTPClient(), srv.URL)
+	if err != nil {
+		t.Fatalf("fetchSearchPage() after %d attempts: %v", attempts, err)
+	}
+	next := searchNextLink(doc)
+	if next != "/sq/12345&page=3" {
+		t.Errorf("next link = %q, want /sq/12345&page=3", next)
+	}
+}
+
+// TestSearchDoesNotResendForbidden pins that only a GET answered 403 is
+// retried: the first-page search is a POST and is sent once.
+func TestSearchDoesNotResendForbidden(t *testing.T) {
+	var attempts int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer srv.Close()
+
+	saved := csiSearchURL
+	csiSearchURL = srv.URL
+	defer func() { csiSearchURL = saved }()
+
+	_, err := Search(context.Background(), newCSIHTTPClient(), GameMagic, "Coldsnap", false, nil)
+	if err != nil {
+		t.Fatalf("Search(): %v", err)
+	}
+	if attempts != 1 {
+		t.Errorf("served %d attempts, want 1", attempts)
+	}
+}

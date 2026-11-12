@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
@@ -58,9 +59,22 @@ func (t userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error)
 // anything, and each request would pay for a fresh handshake against a
 // storefront being asked for hundreds of editions at a time.
 func newCSIHTTPClient() *http.Client {
-	return mtgban.NewHTTPClient(mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
-		return userAgentTransport{base: rt}
-	}))
+	return mtgban.NewHTTPClient(
+		mtgban.WithHTTPCheckRetry(retryForbidden),
+		mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
+			return userAgentTransport{base: rt}
+		}),
+	)
+}
+
+// retryForbidden adds a GET answered 403 to what the default policy retries.
+// The storefront answers one page of a shelf 403 now and then and the next
+// request through, so giving up there drops the rest of the shelf.
+func retryForbidden(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	if err == nil && resp != nil && resp.StatusCode == http.StatusForbidden && resp.Request != nil && resp.Request.Method == http.MethodGet {
+		return true, nil
+	}
+	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
 // CSIPriceEntry is one card in the buylist feed.
