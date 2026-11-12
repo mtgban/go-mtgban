@@ -93,6 +93,13 @@ func TestPromoShelf(t *testing.T) {
 			wantSet: "PCMP", wantNumber: "9",
 		},
 		{
+			desc: "a game day promo reprinted in The List",
+			jp:   "(ゲームデー)《絡み根の霊/Strangleroot Geist》[PWシンボル付き再版] 緑U",
+			en:   "(ゲームデー)《Strangleroot Geist》[The List]",
+			card: "Strangleroot Geist", foil: "0",
+			wantSet: "PLST", wantNumber: "PDKA-127",
+		},
+		{
 			desc: "the Spotlight Series shelf resolves by treatment, not a per-card row",
 			jp:   "■ボーダーレス■《ミッドガルの傭兵、クラウド/Cloud, Midgar Mercenary》(スポットライトシリーズプロモ)[流星マーク] 白",
 			en:   "■Borderless■《Cloud, Midgar Mercenary》[Spotlight Series Promo]",
