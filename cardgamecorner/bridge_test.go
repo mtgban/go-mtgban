@@ -171,6 +171,16 @@ func TestMatchYuGiOh(t *testing.T) {
 			"Unl.", "lob-e006_unlimited",
 		},
 		{
+			"the image directory names the card the English name does not",
+			Card{Name: "Destiny Hero - Blade Master", Edition: "Duelist Pack: Aster Phoenix", Rarity: "Ultra Rare", Number: "011", SKU: "DP050011", Extra: "/products/ygo/des/destiny-hero-malicious/duelist-pack-aster-phoenix-destiny-hero-malicious-102954.jpg"},
+			"First Edition", "dp05-en011_25632_1stedition",
+		},
+		{
+			"an image directory that is a set code is not a card",
+			Card{Name: "Cosmo Queen the Qeen of Prayers", Edition: "The Infinite Forbidden", Rarity: "Common", Number: "024", SKU: "INFO0024", Extra: "/prodotti/singles/ygo/info/cosmo-queen-the-queen-of-prayers_778153.jpg"},
+			"First Edition", "",
+		},
+		{
 			"an image of another print run",
 			Card{Name: "Protecting Spirit Loagaeth", Edition: "Dawn of Majesty", Rarity: "Super Rare", Number: "025", SKU: "DAMA0025", Extra: "/products/ygo/pro/protecting-spirit-loagaeth/dawn-of-majesty-protecting-spirit-loagaeth-573505.jpg"},
 			"Unl.", "",
