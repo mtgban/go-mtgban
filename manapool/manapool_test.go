@@ -301,7 +301,7 @@ func TestIndexFoilMarketNeedsAFoilFinish(t *testing.T) {
 
 // TestPriceKeepsTheListedLanguage pins that a row is priced when its code
 // names the language of the printing its scryfall id resolves to, Phyrexian
-// included, and dropped when it names another one.
+// included, or one the datastore holds a copy in, and dropped otherwise.
 func TestPriceKeepsTheListedLanguage(t *testing.T) {
 	b := withMagic(t)
 
@@ -314,21 +314,36 @@ func TestPriceKeepsTheListedLanguage(t *testing.T) {
 			ScryfallID: "484b5580-b179-4dce-8bdf-d714eb4635e5", LanguageID: "JA",
 			ConditionID: "NM", FinishID: "NF", LowPrice: 111, AvailableQuantity: 74,
 			URL: "https://manapool.com/card/tdm/378/marang-river-regent-coil-and-catch"},
+		{Name: "Angus Mackenzie", SetCode: "LEG", Number: "217",
+			ScryfallID: "57264bd9-94f6-4d4d-baff-2b2900585635", LanguageID: "IT",
+			ConditionID: "NM", FinishID: "NF", LowPrice: 100, AvailableQuantity: 1,
+			URL: "https://manapool.com/card/leg/217/angus-mackenzie"},
+		{Name: "Sword of Truth and Justice", SetCode: "SLD", Number: "1867",
+			ScryfallID: "f5208aff-a33e-48d9-94eb-98a517099741", LanguageID: "JA",
+			ConditionID: "NM", FinishID: "FO", LowPrice: 1400, AvailableQuantity: 1,
+			URL: "https://manapool.com/card/sld/1867/sword-of-truth-and-justice"},
 	}
 	mp := NewScraper(b)
 	mp.price(rows)
 
-	if len(mp.Inventory()) != 1 {
-		t.Fatalf("priced %d printings, want the Phyrexian one alone", len(mp.Inventory()))
-	}
+	got := map[string]bool{}
 	for id := range mp.Inventory() {
 		co, err := b.GetUUID(id)
 		if err != nil {
 			t.Fatalf("GetUUID(%s) = %v", id, err)
 		}
-		if co.Language != "Phyrexian" {
-			t.Errorf("priced a %s printing, want Phyrexian", co.Language)
+		got[co.Language] = true
+		if co.Language == "Japanese" && !co.Foil {
+			t.Error("priced a nonfoil Japanese copy for a foil row")
 		}
+	}
+	for _, lang := range []string{"Phyrexian", "Italian", "Japanese"} {
+		if !got[lang] {
+			t.Errorf("no %s printing priced", lang)
+		}
+	}
+	if len(mp.Inventory()) != 3 {
+		t.Errorf("priced %d printings, want 3: the TDM Japanese row has no copy", len(mp.Inventory()))
 	}
 }
 
