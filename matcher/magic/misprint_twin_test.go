@@ -38,6 +38,21 @@ func TestMisprintTwin(t *testing.T) {
 			wantSet: "GPT", wantNum: "14",
 		},
 		{
+			desc:    "a foil Strict Proctor is the nonfoil's own foil finish",
+			in:      matcher.InputCard{Name: "Strict Proctor", Edition: "Strixhaven: School of Mages", Foil: true},
+			wantSet: "STX", wantNum: "33",
+		},
+		{
+			desc:    "a Strict Proctor listing that says Misprint reaches the star",
+			in:      matcher.InputCard{Name: "Strict Proctor", Edition: "Strixhaven: School of Mages", Variation: "Misprint", Foil: true},
+			wantSet: "STX", wantNum: "33★",
+		},
+		{
+			desc:    "and so does one naming the star in its collector number",
+			in:      matcher.InputCard{Name: "Strict Proctor", Edition: "Strixhaven: School of Mages", Variation: "33★", Foil: true},
+			wantSet: "STX", wantNum: "33★",
+		},
+		{
 			desc:    "the listing that does say so reaches it",
 			in:      matcher.InputCard{Name: "Shadow Lance", Edition: "Guildpact", Variation: "Misprint", Foil: true},
 			wantSet: "GPT", wantNum: "14★",
