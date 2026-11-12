@@ -171,6 +171,19 @@ func TestPokemonStampLinks(t *testing.T) {
 		{916463, "Lillie's Determination", "MEG 119", "Southeast Asia Promos", "SEA", "119", ""},
 		{916469, "Wally's Compassion", "MEG 132", "Southeast Asia Promos", "SEA", "132", ""},
 		{917602, "Pokemon Run Pikachu", "131", "MEP Black Star Promos", "SEA", "131", ""},
+		{450323, "Salamence", "8", "Dragon Vault", "PR-1539", "008", ""},
+		{450353, "Shelgon", "7", "Dragon Vault", "PR-1539", "007", ""},
+		{671274, "Charizard", "11", "Evolutions", "PR-1451", "11", ""},
+		{671277, "Mewtwo", "51", "Evolutions", "PR-1451", "51", ""},
+		{901314, "Mewtwo", "51", "Evolutions", "PR-1840", "051", ""},
+		{790698, "Briar", "SCR 132", "Promos", "PR-1539", "132", ""},
+		{804345, "Surfer", "SSP 187", "Promos", "PR-1539", "187", ""},
+		{888578, "Judge", "POR 076", "Promos", "PR-1539", "076", ""},
+		{742042, "Lechonk", "154", "Scarlet & Violet", "MCAP", "154", ""},
+		{726923, "Pikachu", "101", "SV Black Star Promos", "SVP", "101", ""},
+		{838393, "Pikachu", "225", "SV Black Star Promos", "SVP", "225", ""},
+		{791827, "Charmander", "004", "151", "MCAP", "004", ""},
+		{865204, "Iris's Fighting Spirit", "JTG 149", "Promos", "PR-1539", "149", ""},
 	})
 }
 
