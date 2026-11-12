@@ -310,6 +310,7 @@ func Preprocess(b *matcher.Backend, product Product) (*matcher.InputCard, error)
 		strings.Contains(product.ProductNameEN, "H19") ||
 		strings.Contains(product.ProductNameEN, "Test Print") ||
 		strings.Contains(product.ProductName, "Ultra Pro Puzzle") ||
+		strings.Contains(product.ProductName, storeStamped) ||
 		strings.Contains(strings.ToLower(product.CardName), "test print") {
 		return nil, matcher.ErrUnsupported
 	}
