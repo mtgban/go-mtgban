@@ -567,6 +567,10 @@ func (Rules) AdjustEdition(b *matcher.Backend, inCard *matcher.InputCard) {
 
 	// All the oversized commander cards
 	case inCard.Contains("Oversize") && !inCard.Contains("Plane") && !inCard.Contains("Phenomenon"):
+		// Player Rewards oversized stay in their own sets
+		if inCard.Contains("Player Rewards") {
+			break
+		}
 		for _, tag := range []string{
 			"OCM1", "PCMD", "OCMD", "OC13", "OC14", "OC15", "OC16", "OC17", "OC18", "OC19", "OC20",
 		} {
