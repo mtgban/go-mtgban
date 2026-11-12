@@ -438,8 +438,9 @@ carries it.
   to run.
 - `CARDMARKET_CATALOG_PATH` - the id-map catalog `Index` and `Market` both resolve
   products from, as `go-cardmarket`'s `mkmcatalog` builds it for every game.
-- `CARDTRADER_TOKEN_BEARER` - the bridge Flesh and Blood, Pokemon and Yu-Gi-Oh
-  require and One Piece merely improves with, for all three scrapers alike
+- `CARDTRADER_TOKEN_BEARER` - the bridge Flesh and Blood, Pokemon, Yu-Gi-Oh,
+  One Piece and Gundam require and Riftbound and Lorcana merely improve with,
+  for all three scrapers alike
   (`TestCardmarketNeedsItsBridge` pins the refusal).
 - `CARDMARKET_MARKET_PATH` - overrides the checked-in live-listing fixture
   `market_replay_test.go` reads by default.
