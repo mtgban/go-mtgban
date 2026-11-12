@@ -176,6 +176,16 @@ func TestPreprocessListPromo(t *testing.T) {
 			},
 			number: "HOU-83",
 		},
+		{
+			desc: "a name that is also a playtest card stays on its PLST row",
+			product: cardkingdom.Product{
+				SKU:       "MMKM-0170",
+				Name:      "Pick Your Poison",
+				Variation: "Murders at Karlov Manor",
+				Edition:   "Mystery Booster/The List",
+			},
+			number: "MKM-170",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			theCard, err := Preprocess(b, tt.product)

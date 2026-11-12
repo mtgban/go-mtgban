@@ -371,6 +371,11 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 			variation = number
 		default:
 			variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
+			// The plain name is the List copy where PLST files one, not
+			// the playtest card a Mystery listing is renamed to
+			if len(b.MatchInSetNumber(card.Name, "PLST", variation)) == 1 {
+				edition = "PLST"
+			}
 			// A trailing P marks CK's promo copy, which PLST files under the
 			// promo set's own code wherever it holds a row for it
 			if strings.HasSuffix(sku, "P") && len(b.MatchInSetNumber(card.Name, "PLST", "P"+variation)) == 1 {
