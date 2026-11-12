@@ -330,7 +330,8 @@ func Preprocess(b *matcher.Backend, bp *Blueprint) (*matcher.InputCard, error) {
 			// Agreeing ids override only where the card has no shelf promo,
 			// asked last since it costs up to four lookups.
 			if vetoed && (len(co.PromoTypes) > 0 || !hasShelfPromo(b, co)) {
-				idEdition = co.Edition
+				// A set's own name can say Prerelease, its code cannot.
+				idEdition = co.SetCode
 				idVariation = ""
 				if strings.Contains(bp.Version, "Etched") {
 					idVariation = "Etched"
