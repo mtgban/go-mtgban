@@ -18,14 +18,50 @@ type catalogSpellings struct {
 	finishes     map[string]map[string]int
 	finishGroups map[string]map[string]int
 	rarities     map[string]map[string]int
+
+	// letterFinishes and letterGroups count the same wording by the finish
+	// letter of the sku, for a finish the index numbers on no product the
+	// catalog also lists.
+	letterFinishes map[string]map[string]int
+	letterGroups   map[string]map[string]int
 }
 
-func (s *catalogSpellings) learn(hit sellListProduct, p CatalogProduct) {
+func (s *catalogSpellings) alloc() {
 	if s.finishes == nil {
 		s.finishes = map[string]map[string]int{}
 		s.finishGroups = map[string]map[string]int{}
 		s.rarities = map[string]map[string]int{}
+		s.letterFinishes = map[string]map[string]int{}
+		s.letterGroups = map[string]map[string]int{}
 	}
+}
+
+// learnLetter counts how a catalog single words the finish its sku letter
+// names. A blank finish teaches nothing, since it would read as plain.
+func (s *catalogSpellings) learnLetter(p CatalogProduct) {
+	letter, ok := skuFinishLetter(p.SKU)
+	if !ok || p.Finish == "" {
+		return
+	}
+	s.alloc()
+	s.game = p.Game
+	countSpelling(s.letterFinishes, letter, p.Finish)
+	countSpelling(s.letterGroups, letter, p.FinishGroup)
+}
+
+// letterFinish returns the catalog's word for the finish letter of a sku,
+// only where every catalog single with that letter words it the same way:
+// a letter shared by several finishes (Magic's F, Lorcana's A) names none.
+func (s *catalogSpellings) letterFinish(sku string) (string, bool) {
+	letter, ok := skuFinishLetter(sku)
+	if !ok || len(s.letterFinishes[letter]) != 1 {
+		return "", false
+	}
+	return spelling(s.letterFinishes, letter)
+}
+
+func (s *catalogSpellings) learn(hit sellListProduct, p CatalogProduct) {
+	s.alloc()
 	s.game = p.Game
 	countSpelling(s.finishes, sellListID(hit.Finish), p.Finish)
 	countSpelling(s.finishGroups, sellListID(hit.Finish), p.FinishGroup)
@@ -77,18 +113,24 @@ func catalogLanguage(code string) (string, bool) {
 
 // listedProduct words a product only the index carries the way the catalog
 // export would. It is false where the catalog spelled none of the products
-// sharing its language, finish or rarity this run, since a blank there would
-// read as English or as plain.
+// sharing its language or rarity this run, or sharing its finish unless the
+// catalog words the sku's finish letter one way only, since a blank there
+// would read as English or as plain.
 func (scg *Starcitygames) listedProduct(sku string, hit sellListProduct) (CatalogProduct, bool) {
 	language, ok := catalogLanguage(hit.Language)
 	if !ok {
 		return CatalogProduct{}, false
 	}
 	finish, ok := spelling(scg.spellings.finishes, sellListID(hit.Finish))
-	if !ok {
-		return CatalogProduct{}, false
-	}
 	group, _ := spelling(scg.spellings.finishGroups, sellListID(hit.Finish))
+	if !ok {
+		finish, ok = scg.spellings.letterFinish(sku)
+		if !ok {
+			return CatalogProduct{}, false
+		}
+		letter, _ := skuFinishLetter(sku)
+		group, _ = spelling(scg.spellings.letterGroups, letter)
+	}
 	rarity, ok := spelling(scg.spellings.rarities, sellListID(hit.Rarity))
 	if !ok {
 		return CatalogProduct{}, false
@@ -142,11 +184,11 @@ func listedLanding(b *matcher.Backend, sku, cardID string) bool {
 	if err != nil {
 		return false
 	}
-	fields := strings.Split(sku, "-")
-	if len(fields) < 5 || len(fields[4]) < 3 {
+	letter, ok := skuFinishLetter(sku)
+	if !ok {
 		return false
 	}
-	if (co.Foil || co.Etched) != (fields[4][2] != 'N') {
+	if (co.Foil || co.Etched) != (letter != "N") {
 		return false
 	}
 

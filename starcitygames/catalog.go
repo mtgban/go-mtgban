@@ -301,6 +301,18 @@ func skuNumber(sku string) string {
 	return fields[3]
 }
 
+// skuFinishLetter returns the finish letter closing a sku's language and
+// finish field, "N" for non-foil. The field is the last, since a number can
+// hold a dash.
+func skuFinishLetter(sku string) (string, bool) {
+	fields := strings.Split(sku, "-")
+	last := fields[len(fields)-1]
+	if len(fields) < 5 || len(last) < 3 {
+		return "", false
+	}
+	return last[2:3], true
+}
+
 // leadingTokenNumber returns the number embedded at the very start of a
 // two-sided token sku's own number segment, stripping one leading "T" -
 // SCG's own treatment/token-shelf marker, distinct from the target token
