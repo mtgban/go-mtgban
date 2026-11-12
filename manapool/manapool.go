@@ -134,8 +134,21 @@ func (mp *Manapool) record(card Product, cardID string) {
 	// The table names English by the empty tag, and Portuguese without the
 	// "(Brazil)" the datastore adds, so the printing's language holds it.
 	lang, found := matcher.LanguageCode2LanguageTag[strings.ToLower(card.LanguageID)]
-	if !found || !strings.Contains(co.Language, cmp.Or(lang, "English")) {
+	if !found {
 		return
+	}
+	if !strings.Contains(co.Language, cmp.Or(lang, "English")) {
+		// A foreign listing is keyed by the English printing's scryfall id, so
+		// the datastore's copy in that language, when it loads one, is priced.
+		copyID, err := mp.backend.MatchIDLanguage(cardID, lang)
+		if err != nil {
+			return
+		}
+		copied, err := mp.backend.GetUUID(copyID)
+		if err != nil || copied.Foil != co.Foil || copied.Etched != co.Etched {
+			return
+		}
+		cardID = copyID
 	}
 
 	// Build URL
