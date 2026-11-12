@@ -12,11 +12,16 @@ import (
 // listings whose wording cannot reach it: the storefront tells the arts of one
 // number apart by the background it describes where the catalog numbers them
 // "Version N" or "A, B, C", and its Promo shelf cannot tell a set from the date
-// reprint made of it later. The product id is the storefront's own and both
-// feeds share it.
+// reprint made of it later, and its rarity label can name neither printing of
+// a number. The product id is the storefront's own and both feeds share it.
 var yugiohPIDs = map[string]string{
 	"412931": "626821", // RA04-EN026 Sky Striker Ace - Raye (Quarter Century Secret Rare) Standing = the original art
 	"412932": "626822", // RA04-EN026 (Quarter Century Secret Rare) Fire Attack = New Art
+	"413637": "627533", // RA04-EN229 El Shaddoll Construct (Platinum Secret Rare) Facing Left = Alternate Art
+	"413638": "627534", // RA04-EN229 (Quarter Century Secret Rare) Facing Left = Alternate Art
+	"413154": "627039", // RA04-EN068 Cyber Dragon Infinity (Quarter Century Secret Rare) Facing Left = Alternate Art
+	"112635": "78153",  // RP01-EN083 Wall of Illusion, 1996 Copyright, not the 2020 date reprint
+	"112549": "130171", // ROD-EN002 Knight's Title, the Super Rare the storefront labels Ultra Parallel Rare
 	"255629": "162087", // LCKC-EN001 Blue-Eyes White Dragon (Blue Ripple Background) = Version 2
 	"255628": "161927", // LCKC-EN001 (Red Sparks Background) = Version 1
 	"255630": "162088", // LCKC-EN001 (Space and Earth Background) = Version 3
