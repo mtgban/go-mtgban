@@ -176,6 +176,16 @@ func TestPreprocessListPromo(t *testing.T) {
 			},
 			number: "HOU-83",
 		},
+		{
+			desc: "a name that is also a playtest card stays on its PLST row",
+			product: cardkingdom.Product{
+				SKU:       "MMKM-0170",
+				Name:      "Pick Your Poison",
+				Variation: "Murders at Karlov Manor",
+				Edition:   "Mystery Booster/The List",
+			},
+			number: "MKM-170",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			theCard, err := Preprocess(b, tt.product)
@@ -615,6 +625,36 @@ func TestMatchPrereleaseSKU(t *testing.T) {
 		_, err := matchPrereleaseSKU(b, "PREL-999", "72449552-aa2c-4ae3-846f-df523c5e6078", false)
 		if !errors.Is(err, matcher.ErrUnsupported) {
 			t.Errorf("matchPrereleaseSKU = %v, want ErrUnsupported", err)
+		}
+	})
+}
+
+// TestMatchOversizedSKU pins matchOversizedSKU rescuing an OP sku by its id
+// when the id names an oversized printing, and refusing any other sku or
+// printing.
+func TestMatchOversizedSKU(t *testing.T) {
+	b := realDatastore(t)
+	const garruk = "e5e7832c-f203-5c89-859f-f6d35d454480"
+	t.Run("an OP sku rescues to its oversized printing", func(t *testing.T) {
+		cardID, err := matchOversizedSKU(b, "OPPC1-001", "c18e2175-ec42-47f2-a40f-426ccaa1e89e", false)
+		if err != nil {
+			t.Fatalf("matchOversizedSKU: %v", err)
+		}
+		if cardID != garruk {
+			co, _ := b.GetUUID(cardID)
+			t.Errorf("matchOversizedSKU = %s (%v), want PPC1 #1", cardID, co)
+		}
+	})
+	t.Run("an OP sku naming a regular printing is refused", func(t *testing.T) {
+		_, err := matchOversizedSKU(b, "OPLST-005", "4638a30d-48e9-42cb-bf5f-001b4259391c", true)
+		if !errors.Is(err, matcher.ErrUnsupported) {
+			t.Errorf("matchOversizedSKU = %v, want ErrUnsupported", err)
+		}
+	})
+	t.Run("a non-OP sku is refused", func(t *testing.T) {
+		_, err := matchOversizedSKU(b, "PLST-005", "4638a30d-48e9-42cb-bf5f-001b4259391c", true)
+		if !errors.Is(err, matcher.ErrUnsupported) {
+			t.Errorf("matchOversizedSKU = %v, want ErrUnsupported", err)
 		}
 	})
 }
