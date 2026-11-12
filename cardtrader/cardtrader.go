@@ -161,9 +161,7 @@ var tcgIDOverrides = map[int]int{
 	295089: 557943, // Engulfing Light (Red), Armory Deck: Boltyn
 	// Flesh and Blood: the id names the hero's Rainbow Foil promo, HER137.
 	331877: 638041, // Puffin, Hightail, SEA001
-	// Pokemon: same shape, a Poké Ball Pattern reverse holo pair.
-	343417: 642431, // Rufflet, 077/086
-	343418: 642432, // Braviary, 078/086
+	// Pokemon: the id names a different Judge.
 	357942: 685999, // Judge, Professor Program Stamp | 167/182
 	// One Piece DON!! promos: no id sent at all.
 	391163: 692132, // Bandai Fest | Elbaph
@@ -192,9 +190,6 @@ var tcgIDOverrides = map[int]int{
 	400786: 716036, // Seraphine, 005s Showcase, Signed Serialized
 	// Riftbound Radiance: the signed card is sent the unsigned Overnumbered id.
 	417936: 724638, // Ekko, Boy Who Shattered Time, 168s Showcase, Signed
-	// Riftbound Radiance: the id names the neighbouring or the plain card.
-	415816: 723434, // The Exile, 149, sent Blade of the Exile's 722279
-	417516: 723429, // Seraphine, Inspiring, 065a Alternate Art, sent the plain 723430
 	// Pokemon: none sent either.
 	302130: 180717, // Zoroark, BW19 Jumbo Oversized
 	285780: 658742, // Professor Turo's Scenario, Professor Program Stamp | 171/182
