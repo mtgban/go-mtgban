@@ -16,6 +16,10 @@ func TestPromoEditionDescriptions(t *testing.T) {
 		{"Ugin, the Spirit Dragon", "Promo", "MagicCon Retro Frame", "PF25", "6", true},
 		{"Arcane Signet", "Promo", "Commandfest 2025", "PF25", "10", false},
 		{"Dark Ritual", "Teenage Mutant Ninja Turtles Eternal", "Borderless Pizza Bundle Promo 131", "TMC", "131", true},
+		{"Mutavault", "Star Trek Commander", "Extended Art 392", "TRC", "392", false},
+		{"Mutavault", "Promo", "Extended Art", "PCMP", "12", true},
+		{"Mutavault", "Champs and States", "Extended Art", "PCMP", "12", true},
+		{"Mutavault", "Magic 2014", "Extended Art", "PCMP", "12", true},
 		{"Flusterstorm", "Promo: Buy-A-Box", "Modern Horizons 1 Buy-a-Box", "MH1", "255", false},
 		{"Flusterstorm", "Promo: Buy-A-Box", "Modern Horizons 3 Buy-a-Box", "MH3", "496", true},
 	} {
