@@ -29,6 +29,7 @@ func singlesFilter() string {
 	return `+language:` + anyOf(singlesLanguages) +
 		` -offline_item:true` +
 		` -magic_features:` + anyOf(oneOffLabels) +
+		` -location_section:"Signed"` +
 		` +((*:* -magic_features:("Actual Picture Card" OR "Graded") -magic_edition:` + old + `)` +
 		` OR (+magic_edition:` + old + ` -magic_features:"Graded")` +
 		` OR (+magic_features:"Graded" +quantity:[1 TO *]))`
