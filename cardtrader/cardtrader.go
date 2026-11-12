@@ -329,6 +329,15 @@ var tcgIDOverrides = map[int]int{
 	417444: 721553, // GD05-094 Winner Pack 06
 	417445: 721554, // GD05-111 Winner Pack 06
 	417446: 721555, // T-029 Winner Pack 06
+	// Tokens: none sent, and the wording misses the row (T-28 for T-028,
+	// Sheep Token for Token: Scapegoat).
+	413488: 721037, // GOOhN, ST11 T-028
+	413553: 721038, // Bit / Funnel, ST13 T-029
+	391101: 694074, // Syrus and Super Vehicroid, TKN5-EN042
+	391104: 694073, // Yuri and Starving Venom Fusion Dragon, TKN5-EN045
+	62968:  81304,  // Scapegoat (Yellow), TKN1-EN002
+	62969:  81305,  // Scapegoat (Orange), TKN1-EN003
+	62970:  81306,  // Scapegoat (Red), TKN1-EN004
 	// Magic: the Scryfall id names the card before it on the shelf.
 	155490: 237359, // Nicol Bolas, God-Pharaoh, PHOU 140p
 	// Magic: the id sent is a sealed product; Cardmarket 914142 names the card.
