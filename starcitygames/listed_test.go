@@ -36,6 +36,21 @@ func TestCatalogSpellings(t *testing.T) {
 		t.Errorf("a product with no finish or rarity number taught a spelling: %v %v", s.finishes, s.rarities)
 	}
 
+	// A finish id nobody shares takes its sku letter's word only where the
+	// catalog words that letter one way.
+	s.learnLetter(CatalogProduct{SKU: "SGL-FAB-PRM-FAB_066-ENG", Finish: "Gold Foil"})
+	s.learnLetter(CatalogProduct{SKU: "SGL-FAB-PRM-FAB_074-ENG", Finish: "Gold Foil"})
+	s.learnLetter(CatalogProduct{SKU: "SGL-MTG-PRM-A_1-ENF", Finish: "Foil"})
+	s.learnLetter(CatalogProduct{SKU: "SGL-MTG-PRM-A_2-ENF", Finish: "Foil Etched"})
+	word, found := s.letterFinish("SGL-FAB-PRM-FAB_050-ENG")
+	if !found || word != "Gold Foil" {
+		t.Errorf("a letter worded one way read as %q, %v", word, found)
+	}
+	_, found = s.letterFinish("SGL-MTG-PRM-A_3-ENF")
+	if found {
+		t.Error("a letter worded two ways was given a word")
+	}
+
 	language, found := catalogLanguage("zt")
 	if !found || language != "Chinese - Traditional" {
 		t.Errorf("zt read as %q, want Chinese - Traditional", language)
@@ -139,5 +154,55 @@ func TestFileListed(t *testing.T) {
 	summary := "[SCG] 8 singles only the sell list carries, 0 worded in a way the catalog never spelled, 0 landed on another printing"
 	if !slices.Contains(logs, summary) {
 		t.Errorf("the run said %q, want the summary %q", logs, summary)
+	}
+}
+
+// TestFileListedByLetter covers a listed-only single whose finish id no
+// catalogued product shares, as both carried it on 2026-11-12: it is worded by
+// its sku letter, which the catalog spells Gold Foil on every single.
+func TestFileListedByLetter(t *testing.T) {
+	b := withGameDatastore(t, "fleshandblood", "FLESHANDBLOOD_PATH")
+
+	scg, err := NewScraper(b, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	scg.logCallback = func(string, ...any) {}
+	scg.listed = map[string]sellListProduct{
+		"SGL-FAB-PRM-FAB_042-ENR": {Name: "Ursur, the Soul Reaper", SetName: "Promotional Cards", Language: "en", CollectorNumber: "042", Finish: 6.0, Rarity: 16.0},
+		"SGL-FAB-PRM-FAB_050-ENG": {Name: "New Horizon", SetName: "Promotional Cards", Language: "en", CollectorNumber: "050", Finish: 5.0, Rarity: 16.0},
+	}
+	scg.offers = map[string]map[mtgban.Condition]sellListVariant{
+		"SGL-FAB-PRM-FAB_050-ENG": {mtgban.NM: {SKU: "SGL-FAB-PRM-FAB_050-ENG1", BuyPrice: 500}},
+	}
+	scg.processProduct(CatalogProduct{
+		SKU: "SGL-FAB-PRM-FAB_042-ENR", Name: "Ursur, the Soul Reaper", Game: "Flesh and Blood",
+		Set: "Promotional Cards", ProductType: ProductTypeSingles, Language: "English", TCGPlayerID: "244349",
+		CollectorNumber: "042", Finish: "Rainbow Foil", FinishGroup: "Foil", Rarity: "Promo",
+	})
+	scg.processProduct(CatalogProduct{
+		SKU: "SGL-FAB-PRM-FAB_066-ENG", Name: "Talismanic Lens", Game: "Flesh and Blood",
+		Set: "Promotional Cards", ProductType: ProductTypeSingles, Language: "English", TCGPlayerID: "275543",
+		CollectorNumber: "066", Finish: "Gold Foil", FinishGroup: "Alt Foil", Rarity: "Promo",
+	})
+	scg.fileListed()
+
+	var landed []string
+	for id, entries := range scg.buylist {
+		for _, entry := range entries {
+			if entry.OriginalID == "SGL-FAB-PRM-FAB_050-ENG" {
+				landed = append(landed, id)
+			}
+		}
+	}
+	if len(landed) != 1 {
+		t.Fatalf("New Horizon filed on %v, want one printing", landed)
+	}
+	co, err := b.GetUUID(landed[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.Number != "FAB050" || !co.Foil {
+		t.Errorf("New Horizon landed on %s %s foil=%v, want the foil FAB050", co.SetCode, co.Number, co.Foil)
 	}
 }

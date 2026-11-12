@@ -100,6 +100,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 	if gameFromCatalog(p.Game) != scg.gameID {
 		return
 	}
+	scg.spellings.learnLetter(p)
 	scg.fileProduct(p, false)
 }
 

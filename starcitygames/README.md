@@ -246,7 +246,9 @@ the same path, with no retail and no vendor id. The index numbers its
 finishes and rarities, so each id takes the spelling the catalog gives most
 of the products both list (`catalogSpellings`); a product whose language,
 finish or rarity the catalog never spelled that run is skipped, since a
-blank would read as English or plain.
+blank would read as English or plain. A finish no shared product carries
+takes the catalog's word for the sku's finish letter, but only where every
+catalog single with that letter words it one way.
 
 With no id, a wording miss widens to any printing of the name, so
 `listedLanding` holds the landing to the sku: its finish letter has to agree
