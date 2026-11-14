@@ -1,6 +1,7 @@
 package starcitygames
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"strconv"
@@ -571,6 +572,7 @@ func ProcessSKU(b *matcher.Backend, cardName, SKU string) (*matcher.InputCard, e
 			out = b.MatchInSetNumber(front, setCode, number)
 		}
 	}
+	out = inLanguage(out, language)
 	if len(out) == 1 {
 		card := out[0]
 		// If there's a single finish make sure the number+finish combination is correct
@@ -632,6 +634,23 @@ func ProcessSKU(b *matcher.Backend, cardName, SKU string) (*matcher.InputCard, e
 		return &backup, alias
 	}
 	return &backup, errors.New("not found")
+}
+
+// inLanguage keeps the printings in the sku's language, where mtgjson files a
+// Japanese copy at its English twin's number (Foundations' 422-441), and all of
+// them where none is in that language.
+func inLanguage(cards []matcher.Card, code string) []matcher.Card {
+	language := cmp.Or(matcher.LanguageCode2LanguageTag[strings.ToLower(code)], "English")
+	var kept []matcher.Card
+	for _, card := range cards {
+		if card.Language == language {
+			kept = append(kept, card)
+		}
+	}
+	if len(kept) == 0 {
+		return cards
+	}
+	return kept
 }
 
 func preprocess(b *matcher.Backend, hit Hit) (*matcher.InputCard, error) {
