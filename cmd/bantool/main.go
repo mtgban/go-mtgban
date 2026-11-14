@@ -194,9 +194,8 @@ func cardtraderBridge(game matcher.Game) (map[int]int, error) {
 
 // targets lists every registered scraper for every game, keyed by game then
 // name. Everything mtgban.Registered(game) names starts out enabled for both
-// halves; three targets across the whole registry do not answer for one of
-// them, and are marked here rather than left for a run to find out the hard
-// way.
+// halves; the few targets that do not answer for one of them are marked here
+// rather than left for a run to find out the hard way.
 func targets() map[matcher.Game]map[string]*scraperOption {
 	all := make(map[matcher.Game]map[string]*scraperOption)
 	for _, game := range matcher.AllGames {
@@ -213,6 +212,9 @@ func targets() map[matcher.Game]map[string]*scraperOption {
 	all[matcher.GameMagic]["mtgseattle"].OnlySeller = true
 	all[matcher.GameYuGiOh]["coolstuffinc_sealed"].OnlySeller = true
 	all[matcher.GameLorcana]["coolstuffinc_sealed"].OnlySeller = true
+	// Cool Stuff Inc buys no Palworld: its sell list is empty and its "Sell
+	// Your Cards" menu does not name the game.
+	all[matcher.GamePalworld]["coolstuffinc"].OnlySeller = true
 
 	return all
 }
