@@ -1,7 +1,6 @@
 package cardmarket
 
 import (
-	"errors"
 	"testing"
 
 	cm "github.com/mtgban/go-cardmarket"
@@ -44,8 +43,8 @@ func TestRiftboundT1Shelf(t *testing.T) {
 }
 
 // TestRiftboundPromoRunes pins that a promo shelf's runes keep to their own
-// set: Vendetta: Promos lands on Vendetta's printings, while Radiance: Promos
-// has none yet and names no printing of ours.
+// set, where TCGplayer files them: each "<Set>: Promos" R06b lands on that
+// set's R06b, and a champion's lettered art on the shelf stays unplaced.
 func TestRiftboundPromoRunes(t *testing.T) {
 	b := loadRiftboundBackend(t)
 	mkm, err := NewScraperIndex(b)
@@ -57,14 +56,31 @@ func TestRiftboundPromoRunes(t *testing.T) {
 		id      int
 		shelf   string
 		product cm.CatalogProduct
-		wantErr error
+		want    string
 	}{
-		{898192, "Vendetta: Promos", cm.CatalogProduct{Name: "Order Rune", Number: "R06b", Rarity: "Showcase"}, nil},
-		{917613, "Radiance: Promos", cm.CatalogProduct{Name: "Order Rune", Number: "R06b", Rarity: "Showcase"}, errNoPrinting},
+		{898192, "Vendetta: Promos", cm.CatalogProduct{Name: "Order Rune", Number: "R06b", Rarity: "Showcase"}, "709750"},
+		{874112, "Spiritforged: Promos", cm.CatalogProduct{Name: "Order Rune", Number: "R06b", Rarity: "Showcase"}, "680432"},
+		{917613, "Radiance: Promos", cm.CatalogProduct{Name: "Order Rune", Number: "R06b", Rarity: "Showcase"}, "732645"},
+		{900504, "Origins: Promos", cm.CatalogProduct{Name: "Yasuo, Remorseful", Number: "076a", Rarity: "Showcase"}, ""},
 	} {
 		got := mkm.resolveMapped(tt.id, tt.product, cm.Expansion{Name: tt.shelf})
-		if !errors.Is(got.err, tt.wantErr) || (tt.wantErr == nil && got.cardID == "") {
-			t.Errorf("%d %q on %s: resolveMapped = (%q, %v), want error %v", tt.id, tt.product.Name, tt.shelf, got.cardID, got.err, tt.wantErr)
+		if tt.want == "" {
+			if got.cardID != "" {
+				t.Errorf("%d %q on %s: landed on %s, want no printing", tt.id, tt.product.Name, tt.shelf, got.cardID)
+			}
+			continue
+		}
+		if got.err != nil || got.cardID == "" {
+			t.Errorf("%d %q on %s: resolveMapped = (%q, %v), want a printing", tt.id, tt.product.Name, tt.shelf, got.cardID, got.err)
+			continue
+		}
+		co, err := b.GetUUID(got.cardID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.Identifiers["tcgplayerProductId"] != tt.want {
+			t.Errorf("%d %q on %s: landed on %s, TCGplayer product %q, want %q",
+				tt.id, tt.product.Name, tt.shelf, got.cardID, co.Identifiers["tcgplayerProductId"], tt.want)
 		}
 	}
 }

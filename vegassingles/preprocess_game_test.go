@@ -210,7 +210,8 @@ func TestPreprocessRiftbound(t *testing.T) {
 }
 
 // A promo shelf can file the rune of another set, naming it between the
-// number and the shelf. The set named there is the printing, not the shelf.
+// number and the shelf. The set named there is the printing, not the shelf,
+// and a rune naming none lands in the set TCGplayer files it in.
 func TestPreprocessRiftboundSpelledSet(t *testing.T) {
 	b := withRiftbound(t)
 
@@ -219,7 +220,7 @@ func TestPreprocessRiftboundSpelledSet(t *testing.T) {
 		display, finish, edition, setCode string
 	}{
 		{"Calm Rune (R02b) Spiritforged - Riftbound Organized Play Promotional Cards Foil", "Foil", "Spiritforged", "SFD"},
-		{"Calm Rune (R02c) (R02c) - Riftbound Organized Play Promotional Cards", "Normal", shelf, "OPP"},
+		{"Calm Rune (R02c) (R02c) - Riftbound Organized Play Promotional Cards", "Normal", shelf, "UNL"},
 	} {
 		card, err := preprocessRiftbound(b, VSProduct{
 			DisplayName:    tt.display,
