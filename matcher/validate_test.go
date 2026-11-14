@@ -51,17 +51,21 @@ func TestValidatePrintingRejectsUnknownRules(t *testing.T) {
 }
 
 func TestNormalizeListingLanguage(t *testing.T) {
-	for _, tt := range []struct{ input, want string }{
-		{"fr", "French"},
-		{"Italian language", "Italian"},
-		{"jp", "Japanese"},
-		{"zhs", "Chinese Simplified"},
-		{"en", ""},
+	for _, tt := range []struct{ input, edition, variation, want string }{
+		{"fr", "", "", "French"},
+		{"Italian language", "", "", "Italian"},
+		{"jp", "", "", "Japanese"},
+		{"zhs", "", "", "Chinese Simplified"},
+		{"en", "", "", ""},
+		{"", "European Land Program", "Euro Blue: Germany", ""},
+		{"", "Chronicles Japanese", "", "Japanese"},
+		{"", "Fourth Edition", "S.Chinese", "Chinese"},
+		{"", "Legends", "German", "German"},
 	} {
-		in := InputCard{Language: tt.input}
+		in := InputCard{Language: tt.input, Edition: tt.edition, Variation: tt.variation}
 		in.normalizeLanguage()
 		if in.Language != tt.want {
-			t.Errorf("%q: got %q, want %q", tt.input, in.Language, tt.want)
+			t.Errorf("%+v: got %q, want %q", tt, in.Language, tt.want)
 		}
 	}
 }
