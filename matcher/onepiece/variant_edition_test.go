@@ -39,6 +39,9 @@ const variantFixture = `{"data": {
 		"OP-RP":     {"name": "Revision Pack Cards", "releaseDate": "2024-09-13"},
 		"OP14":      {"name": "The Azure Sea's Seven", "releaseDate": "2026-01-16"},
 		"OP14 RE":   {"name": "The Azure Sea's Seven Release Event Cards", "releaseDate": "2026-01-09"},
+		"ST-10":     {"name": "ST-10: Ultra Deck The Three Captains", "releaseDate": "2023-11-10"},
+		"ST-23":     {"name": "ST-23: Starter Deck 23 RED Shanks", "releaseDate": "2025-06-06"},
+		"ST-31":     {"name": "ST-31: Starter Deck 31 RED Monkey.D.Luffy", "releaseDate": "2026-07-31"},
 		"OP03 PRE":  {"name": "Pillars of Strength Pre-Release Cards", "releaseDate": "2023-06-16"}
 	},
 	"cards": [
@@ -61,6 +64,9 @@ const variantFixture = `{"data": {
 		{"id": "momo_prb", "name": "Kouzuki Momonosuke", "number": "PRB01-031", "setCode": "PRB-01", "rarity": "C", "finish": "Normal", "promoTypes": ["Reprint"], "variant": "Reprint", "image": "x"},
 		{"id": "op14-012_base", "name": "Bepo", "number": "OP14-012", "setCode": "OP14", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op14-012_re", "name": "Bepo", "number": "OP14-012", "setCode": "OP14 RE", "rarity": "C", "finish": "Normal", "image": "x"},
+		{"id": "st23-004_633764", "name": "Monkey.D.Luffy", "number": "ST23-004", "setCode": "ST-23", "rarity": "Common", "finish": "Normal", "image": "x"},
+		{"id": "st31-004_706317_foil", "name": "Monkey.D.Luffy", "number": "ST31-004", "setCode": "ST-31", "rarity": "Super Rare", "finish": "Foil", "image": "x"},
+		{"id": "op01-016_527619_foil", "name": "Nami", "number": "OP01-016", "setCode": "OP-PR", "rarity": "Rare", "finish": "Foil", "variant": "Ultra Deck: The Three Captains", "watermark": "ultra deck: the three captains", "image": "x"},
 		{"id": "op03-002_base", "name": "Adio", "number": "OP03-002", "setCode": "OP03", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op03-002_pre", "name": "Adio", "number": "OP03-002", "setCode": "OP03 PRE", "rarity": "C", "finish": "Normal", "image": "x"}
 	]
@@ -319,6 +325,19 @@ func TestEditionKeepsVariantPrintings(t *testing.T) {
 			desc: "the same label at its own number still reaches the reprint",
 			in:   matcher.InputCard{Name: "Kouzuki Momonosuke", Variation: "PRB01-031 Reprint", Edition: "OP01 - Romance Dawn"},
 			want: "momo_prb",
+		},
+		{
+			// A starter deck reprints a card of another set under that
+			// set's own code, and the deck already holds other cards under
+			// the name, so the edition alone cannot reach it.
+			desc: "a starter deck reprint resolves to the set its code names",
+			in:   matcher.InputCard{Name: "Monkey.D.Luffy", Variation: "ST23-004", Edition: "ST-31 - Starter Deck 31 RED Monkey.D.Luffy"},
+			want: "st23-004_633764",
+		},
+		{
+			desc: "a deck holding no row of the name keeps its own printing",
+			in:   matcher.InputCard{Name: "Nami", Variation: "OP01-016", Edition: "ST-10 - Ultra Deck: The Three Captains", Foil: true},
+			want: "op01-016_527619_foil",
 		},
 		{
 			desc: "the base printing of that number is unchanged",
