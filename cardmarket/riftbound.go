@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -83,10 +84,9 @@ var riftboundUnpricedShelves = map[string]bool{
 
 // otherSetPromo reports whether a product on a "<Set>: Promos" shelf landed
 // on a printing promoted for another set of the datastore. The matcher folds
-// every such shelf into one "Promos" heading, so a set's promo runes reach the
-// earlier set's printings at the same numbers: Radiance's R01b-R06b land on
-// Vendetta's, which the datastore carries and Vendetta: Promos already prices.
-// A shelf naming its own set keeps its printings.
+// every such shelf into one "Promos" heading, so a set's promo can reach
+// another set's printing at the same number, which that set's own shelf
+// already prices. A shelf naming its own set keeps its printings.
 func (r *resolver) otherSetPromo(product *cm.Product, cardID string) bool {
 	set, promos := strings.CutSuffix(product.ExpansionName, ": Promos")
 	if r.gameID != cm.GameRiftbound || !promos {
@@ -103,6 +103,41 @@ func (r *resolver) otherSetPromo(product *cm.Product, cardID string) bool {
 		}
 	}
 	return false
+}
+
+// ownSetPromo places a promo rune of a "<Set>: Promos" shelf among the set's
+// own printings, where TCGplayer files them (Vendetta's R04b, Origins' 126b).
+// The matcher keeps every promo heading off the main sets, so the set is
+// asked by name, and only a lettered number is kept: the plain printing at a
+// promo's number is the main-set card. Runes alone: a champion's lettered
+// art on these shelves is the main shelf's own product, already priced there.
+func (r *resolver) ownSetPromo(product *cm.Product, cardName, number string) (string, string) {
+	name, promos := strings.CutSuffix(product.ExpansionName, ": Promos")
+	if !promos || !strings.HasSuffix(cardName, " Rune") {
+		return "", ""
+	}
+	set, err := r.backend.GetSetByName(name)
+	if err != nil {
+		return "", ""
+	}
+	cardID, cardIDFoil, err := r.matchNumbered(cardName, set.Name, number, false)
+	if err != nil {
+		return "", ""
+	}
+	for _, id := range []string{cardID, cardIDFoil} {
+		if id == "" {
+			continue
+		}
+		co, err := r.backend.GetUUID(id)
+		if err != nil || co.SetCode != set.Code || co.Number == "" {
+			return "", ""
+		}
+		last := co.Number[len(co.Number)-1]
+		if last >= '0' && last <= '9' {
+			return "", ""
+		}
+	}
+	return cardID, cardIDFoil
 }
 
 // resolveRiftbound names a Riftbound product's printing: the one the
@@ -160,6 +195,12 @@ func resolveRiftbound(r *resolver, product *cm.Product) (string, string, bool, e
 	}
 
 	cardID, cardIDFoil, err := r.matchNumbered(cardName, edition, number, true)
+	if cardID == "" && errors.Is(err, matcher.ErrCardWrongVariant) {
+		cardID, cardIDFoil = r.ownSetPromo(product, cardName, number)
+		if cardID != "" {
+			err = nil
+		}
+	}
 	if err != nil || cardID == "" {
 		return "", "", false, err
 	}

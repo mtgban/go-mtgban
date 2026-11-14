@@ -71,7 +71,7 @@ func TestRiftboundPromoSkuEvent(t *testing.T) {
 		{"SGL-RIFT-PRM-RLS_OGN_202-ENF", "Jinx - Rebel", "202", "OPP", "202"},
 		{"SGL-RIFT-PRM-NN_SFD_R01b-ENF", "Fury Rune", "R01b", "SFD", "R1b"},
 		{"SGL-RIFT-PRM-NN_SFD_R04b-ENF", "Body Rune", "R04b", "SFD", "R4b"},
-		{"SGL-RIFT-PRM-NN_VEN_R04b-ENF", "Body Rune", "R04b", "OPP", "R4b"},
+		{"SGL-RIFT-PRM-NN_VEN_R04b-ENF", "Body Rune", "R04b", "VEN", "R4b"},
 		{"SGL-RIFT-PRM-NN_SFD_007-ENF", "Gem Jammer", "007", "OPP", "7"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
