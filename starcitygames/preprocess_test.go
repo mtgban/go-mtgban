@@ -59,6 +59,11 @@ var SKUTests = []SKUTest{
 		Out: "f91b4613-1633-5428-90ca-420174ceb533",
 	},
 	{
+		// mtgjson files the Japanese copy at the English one's number
+		In:  "SGL-MTG-FDN2-428-JAF1",
+		Out: "7146b2e1-84f3-5b14-8fc4-8a3050dc2699",
+	},
+	{
 		In:  "SGL-MTG-PWSB-ELD2_291-ENN1",
 		Out: "728fa13b-e7e3-5193-a7a3-d18439bb7ee5",
 	},
