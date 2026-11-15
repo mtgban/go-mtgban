@@ -144,6 +144,12 @@ var skuFixupTable = map[string]string{
 	"CFSLD-IFIYW-08": "SLD-IFIYW-8",
 	"CFSLD-IFIYW-09": "SLD-IFIYW-9",
 	"CFSLD-IFIYW-10": "SLD-IFIYW-10",
+
+	// Oversized release promos, filed under DCI: CK says Release Promo, a
+	// promo type the datastore does not carry on these rows
+	"OPHOP-041": "DCI-41",
+	"OPHOP-042": "DCI-42",
+	"OPARC-054": "DCI-54",
 }
 
 // This table contains the names CK misspells, keyed by the sku the listing
