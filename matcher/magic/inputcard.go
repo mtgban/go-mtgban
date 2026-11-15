@@ -378,8 +378,14 @@ func isMysteryList(c *matcher.InputCard) bool {
 // playtestPrinting returns the playtest card the loader filed as "<name>
 // Playtest" when the listing spells its name exactly and its wording reads
 // as that card: it says playtest, names the card's set, or says Mystery for
-// a Mystery Booster playtest card.
+// a Mystery Booster playtest card. A number prefixed with another set's code
+// ("MKM-170") is not the playtest card; any other number ("97", "97-f",
+// "CMB1-97") is left to the card, as CK numbers playtest cards on its own
+// index.
 func playtestPrinting(b *matcher.Backend, c *matcher.InputCard) *matcher.CardObject {
+	prefix, _, found := strings.Cut(matcher.ExtractNumber(c.Variation), "-")
+	_, setErr := b.GetSet(prefix)
+	namesSet := found && setErr == nil
 	for _, uuid := range b.Hashes[matcher.Normalize(c.Name+" Playtest")] {
 		co, err := b.GetUUID(uuid)
 		if err != nil || !strings.EqualFold(co.Name, c.Name+" Playtest") {
@@ -387,7 +393,8 @@ func playtestPrinting(b *matcher.Backend, c *matcher.InputCard) *matcher.CardObj
 		}
 		if c.Contains("Playtest") ||
 			(c.Edition != "" && (matcher.Contains(co.Edition, c.Edition) || matcher.Contains(c.Edition, co.Edition))) ||
-			(isMysteryList(c) && strings.Contains(co.Edition, "Mystery Booster")) {
+			(isMysteryList(c) && strings.Contains(co.Edition, "Mystery Booster") &&
+				(!namesSet || matcher.Equals(prefix, co.SetCode))) {
 			return co
 		}
 	}

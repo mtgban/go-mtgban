@@ -33,3 +33,34 @@ func TestPlaytestEditionPicksItsSet(t *testing.T) {
 		}
 	}
 }
+
+// A Mystery Booster/The List listing names the List reprint's own number and
+// lands on it, while Mystery wording with no number keeps the playtest card.
+func TestPlaytestMysteryListNumber(t *testing.T) {
+	realDatastore(t)
+	b := testBackend
+
+	for _, tc := range []struct {
+		variation, set, number string
+	}{
+		{"MKM-170", "PLST", "MKM-170"},
+		{"", "CMB1", "97"},
+		{"98", "CMB1", "97"},
+		{"97-f", "CMB1", "97"},
+		{"cmb1-97", "CMB1", "97"},
+	} {
+		in := &matcher.InputCard{Name: "Pick Your Poison", Edition: "Mystery Booster/The List", Variation: tc.variation}
+		id, err := b.Match(in)
+		if err != nil {
+			t.Errorf("%q: unexpected error: %v", tc.variation, err)
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if co.SetCode != tc.set || co.Number != tc.number {
+			t.Errorf("%q: landed in %s %s, want %s %s", tc.variation, co.SetCode, co.Number, tc.set, tc.number)
+		}
+	}
+}
