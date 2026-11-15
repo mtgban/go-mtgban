@@ -113,7 +113,7 @@ const (
 	singlesEndpt      = "productssearch-singles"
 	variantsEndpt     = "productssearch-variants"
 	singlesPageSize   = 1000
-	variantsBatchSize = 1000
+	variantsBatchSize = 200 // the most the variants search accepts
 
 	promoEditionID = 1113
 )
