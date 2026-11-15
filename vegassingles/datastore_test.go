@@ -9,9 +9,7 @@ import (
 	"github.com/mtgban/go-mtgban/matcher"
 
 	_ "github.com/mtgban/go-mtgban/matcher/magic"
-	_ "github.com/mtgban/go-mtgban/matcher/onepiece"
 	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
-	_ "github.com/mtgban/go-mtgban/matcher/riftbound"
 )
 
 // withMagic skips a test that reads the Magic datastore where none is
@@ -22,8 +20,8 @@ var (
 	magicB    *matcher.Backend
 )
 
-// withMagic installs AllPrintings as the global the first time a test asks
-// for it, and skips where the run carries none.
+// withMagic loads AllPrintings the first time a test asks for it, and skips
+// where the run carries none.
 func withMagic(t *testing.T) *matcher.Backend {
 	t.Helper()
 	magicOnce.Do(func() {
@@ -62,16 +60,6 @@ func withGameDatastore(t *testing.T, game matcher.Game, env string) *matcher.Bac
 		t.Fatal(err)
 	}
 	return b
-}
-
-func withRiftbound(t *testing.T) *matcher.Backend {
-	t.Helper()
-	return withGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
-}
-
-func withOnePiece(t *testing.T) *matcher.Backend {
-	t.Helper()
-	return withGameDatastore(t, "onepiece", "ONEPIECE_PATH")
 }
 
 func withPokemon(t *testing.T) *matcher.Backend {

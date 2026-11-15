@@ -1029,7 +1029,8 @@ Italian, retail alone, in seven games), `abugames`
 (Solr, MINT-aware grading, each buylist grade a floor, so every grade is filed
 at the best offer at it or below, the one PLD skips included, `InfoForScraper`, graded
 slabs as `ABUGraded`), `mtgseattle` (`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
-`CreditMultiplier 1.1`), `vegassingles`, `manaleak` (GBP),
+`CreditMultiplier 1.1`), `vegassingles` (buylist alone, read from Hippolink by
+TCGplayer product id), `manaleak` (GBP),
 `miniaturemarket` (sealed-only),
 and the unregistered `secretdeskorrigans` (CAD, French) and `toamagic`
 (Spanish), which bantool does not run.

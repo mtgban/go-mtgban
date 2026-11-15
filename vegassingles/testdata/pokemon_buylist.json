@@ -1,0 +1,214 @@
+[
+ {
+  "tcgplayer_product_id": 178900,
+  "product_name": "Espeon",
+  "set_name": "SM - Lost Thunder",
+  "set_code": "SM8",
+  "collector_number": "89/214",
+  "finish": "normal",
+  "is_foil": false,
+  "treatments": [],
+  "hotlist": false,
+  "conditions": [
+   {
+    "condition": "Near Mint",
+    "tcgplayer_sku_id": 3899677,
+    "language": "English",
+    "max_qty": null,
+    "cash": 3.0,
+    "credit": 3.0
+   },
+   {
+    "condition": "Lightly Played",
+    "tcgplayer_sku_id": 3899678,
+    "language": "English",
+    "max_qty": null,
+    "cash": 0.834,
+    "credit": 1.112
+   },
+   {
+    "condition": "Moderately Played",
+    "tcgplayer_sku_id": 3899679,
+    "language": "English",
+    "max_qty": null,
+    "cash": 0.834,
+    "credit": 1.112
+   },
+   {
+    "condition": "Heavily Played",
+    "tcgplayer_sku_id": 3899680,
+    "language": "English",
+    "max_qty": null,
+    "cash": 0.834,
+    "credit": 1.112
+   },
+   {
+    "condition": "Damaged",
+    "tcgplayer_sku_id": 3899681,
+    "language": "English",
+    "max_qty": null,
+    "cash": 0.834,
+    "credit": 1.112
+   }
+  ]
+ },
+ {
+  "tcgplayer_product_id": 178900,
+  "product_name": "Espeon",
+  "set_name": "SM - Lost Thunder",
+  "set_code": "SM8",
+  "collector_number": "89/214",
+  "finish": "reverse_holofoil",
+  "is_foil": true,
+  "treatments": [],
+  "hotlist": false,
+  "conditions": [
+   {
+    "condition": "Near Mint",
+    "tcgplayer_sku_id": 3899682,
+    "language": "English",
+    "max_qty": null,
+    "cash": 9.0,
+    "credit": 11.0
+   },
+   {
+    "condition": "Lightly Played",
+    "tcgplayer_sku_id": 3899683,
+    "language": "English",
+    "max_qty": null,
+    "cash": 8.0,
+    "credit": 10.0
+   },
+   {
+    "condition": "Moderately Played",
+    "tcgplayer_sku_id": 3899684,
+    "language": "English",
+    "max_qty": null,
+    "cash": 7.0,
+    "credit": 9.0
+   },
+   {
+    "condition": "Heavily Played",
+    "tcgplayer_sku_id": 3899685,
+    "language": "English",
+    "max_qty": null,
+    "cash": 6.0,
+    "credit": 8.0
+   },
+   {
+    "condition": "Damaged",
+    "tcgplayer_sku_id": 3899686,
+    "language": "English",
+    "max_qty": null,
+    "cash": 5.0,
+    "credit": 7.0
+   }
+  ]
+ },
+ {
+  "tcgplayer_product_id": 189170,
+  "product_name": "Gengar",
+  "set_name": "SM - Unbroken Bonds",
+  "set_code": "SM10",
+  "collector_number": "70/214",
+  "finish": "normal",
+  "is_foil": false,
+  "treatments": [],
+  "hotlist": false,
+  "conditions": [
+   {
+    "condition": "Near Mint",
+    "tcgplayer_sku_id": 4008928,
+    "language": "English",
+    "max_qty": null,
+    "cash": 14.0,
+    "credit": 17.0
+   },
+   {
+    "condition": "Lightly Played",
+    "tcgplayer_sku_id": 4008929,
+    "language": "English",
+    "max_qty": null,
+    "cash": 13.0,
+    "credit": 16.0
+   },
+   {
+    "condition": "Moderately Played",
+    "tcgplayer_sku_id": 4008930,
+    "language": "English",
+    "max_qty": null,
+    "cash": 11.0,
+    "credit": 14.0
+   },
+   {
+    "condition": "Heavily Played",
+    "tcgplayer_sku_id": 4008931,
+    "language": "English",
+    "max_qty": null,
+    "cash": 10.0,
+    "credit": 12.0
+   },
+   {
+    "condition": "Damaged",
+    "tcgplayer_sku_id": 4008932,
+    "language": "English",
+    "max_qty": null,
+    "cash": 8.0,
+    "credit": 10.0
+   }
+  ]
+ },
+ {
+  "tcgplayer_product_id": 189170,
+  "product_name": "Gengar",
+  "set_name": "SM - Unbroken Bonds",
+  "set_code": "SM10",
+  "collector_number": "70/214",
+  "finish": "reverse_holofoil",
+  "is_foil": true,
+  "treatments": [],
+  "hotlist": false,
+  "conditions": [
+   {
+    "condition": "Near Mint",
+    "tcgplayer_sku_id": 4008933,
+    "language": "English",
+    "max_qty": null,
+    "cash": 42.0,
+    "credit": 52.0
+   },
+   {
+    "condition": "Lightly Played",
+    "tcgplayer_sku_id": 4008934,
+    "language": "English",
+    "max_qty": null,
+    "cash": 38.0,
+    "credit": 47.0
+   },
+   {
+    "condition": "Moderately Played",
+    "tcgplayer_sku_id": 4008935,
+    "language": "English",
+    "max_qty": null,
+    "cash": 34.0,
+    "credit": 42.0
+   },
+   {
+    "condition": "Heavily Played",
+    "tcgplayer_sku_id": 4008936,
+    "language": "English",
+    "max_qty": null,
+    "cash": 30.0,
+    "credit": 37.0
+   },
+   {
+    "condition": "Damaged",
+    "tcgplayer_sku_id": 4008937,
+    "language": "English",
+    "max_qty": null,
+    "cash": 25.0,
+    "credit": 31.0
+   }
+  ]
+ }
+]
