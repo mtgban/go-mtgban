@@ -1377,6 +1377,12 @@ var promoMap = map[string]map[string]map[string]struct {
 			},
 		},
 	},
+	// The Spotlight Series Cloud is printed in Japanese only; its English
+	// copy, which the storefront files on the same product, is the Pro Tour
+	// promo with the same art.
+	"Spotlight Series": {
+		"Cloud, Midgar Mercenary": {"Borderless": {Edition: "PPRO", Variant: "2025-1"}},
+	},
 	"Commander Event Promo": {
 		"Gran-Gran":                {"コマンダーイベントプロモ": {Edition: "PW25", Variant: "14"}},
 		"Spider-Ham, Peter Porker": {"コマンダーイベントプロモ": {Edition: "PW25", Variant: "10"}},
