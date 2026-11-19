@@ -100,14 +100,14 @@ func TestPromoShelf(t *testing.T) {
 			wantSet: "PLST", wantNumber: "PDKA-127",
 		},
 		{
-			desc: "the Spotlight Series shelf resolves by treatment, not a per-card row",
+			desc: "the English Spotlight Series Cloud is the Pro Tour promo, the Spotlight one being Japanese only",
 			jp:   "■ボーダーレス■《ミッドガルの傭兵、クラウド/Cloud, Midgar Mercenary》(スポットライトシリーズプロモ)[流星マーク] 白",
 			en:   "■Borderless■《Cloud, Midgar Mercenary》[Spotlight Series Promo]",
 			card: "Cloud, Midgar Mercenary", foil: "0",
-			wantSet: "PSPL", wantNumber: "4",
+			wantSet: "PPRO", wantNumber: "2025-1",
 		},
 		{
-			desc: "and so does a second card on the same shelf, a different treatment",
+			desc: "the Spotlight Series shelf resolves by treatment, not a per-card row",
 			jp:   "■拡張アート■《暗闇のなぞなぞ勝負/Riddles in the Dark》(スポットライトシリーズプロモ)[流星マーク] 青",
 			en:   "■Extended Art■《Riddles in the Dark》[Spotlight Series Promo]",
 			card: "Riddles in the Dark", foil: "0",
@@ -173,8 +173,9 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】(SCD-288)《太陽の指輪/Sol Ring》[SLD] 茶R", "SLD", "IFIYW-5"},
 		{"【EN】【Foil】(2062)■ボーダーレス■《Chancla relámpagos》//《稲妻のすね当て/Lightning Greaves》[SLD] 茶", "SLD", "2062★"},
 		{"【EN】(2062)■ボーダーレス■《Chancla relámpagos》//《稲妻のすね当て/Lightning Greaves》[SLD] 茶", "SLD", "2062"},
-		// Spotlight Series: no per-card row, resolved by treatment alone.
-		{"【EN】【Foil】■ボーダーレス■《ミッドガルの傭兵、クラウド/Cloud, Midgar Mercenary》(スポットライトシリーズプロモ)[流星マーク] 白", "PSPL", "4"},
+		// Spotlight Series: resolved by treatment alone, except the English
+		// Cloud, which is the Pro Tour promo.
+		{"【EN】【Foil】■ボーダーレス■《ミッドガルの傭兵、クラウド/Cloud, Midgar Mercenary》(スポットライトシリーズプロモ)[流星マーク] 白", "PPRO", "2025-1"},
 		{"【EN】【Foil】■拡張アート■《暗闇のなぞなぞ勝負/Riddles in the Dark》(スポットライトシリーズプロモ)[流星マーク] 青", "PSPL", "12"},
 		{"【EN】■ボーダーレス■《失せろ/Get Lost》(スポットライトシリーズプロモ)[流星マーク] 白", "PSPL", "5"},
 		{"【EN】《峰の恐怖/Terror of the Peaks》(スポットライトシリーズプロモ)[流星マーク] 赤", "PSPL", "1"},
