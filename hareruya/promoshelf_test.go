@@ -107,6 +107,20 @@ func TestPromoShelf(t *testing.T) {
 			wantSet: "PPRO", wantNumber: "2025-1",
 		},
 		{
+			desc: "an English foil Chinese alternate art is the starred printing, not the Chinese one",
+			jp:   "【Foil】■イラスト違い■《アーボーグの骸骨/Urborg Skeleton》[INV] 黒C",
+			en:   "【Foil】■Chinese Alternate Art■《Urborg Skeleton》[INV]",
+			card: "Urborg Skeleton", foil: "1",
+			wantSet: "INV", wantNumber: "134★",
+		},
+		{
+			desc: "and so is the other one",
+			jp:   "【Foil】■イラスト違い■《霊魂焼却/Soul Burn》[INV] 黒C",
+			en:   "【Foil】■Chinese Alternate Art■《Soul Burn》[INV]",
+			card: "Soul Burn", foil: "1",
+			wantSet: "INV", wantNumber: "124★",
+		},
+		{
 			desc: "the Spotlight Series shelf resolves by treatment, not a per-card row",
 			jp:   "■拡張アート■《暗闇のなぞなぞ勝負/Riddles in the Dark》(スポットライトシリーズプロモ)[流星マーク] 青",
 			en:   "■Extended Art■《Riddles in the Dark》[Spotlight Series Promo]",
@@ -180,6 +194,9 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】■ボーダーレス■《失せろ/Get Lost》(スポットライトシリーズプロモ)[流星マーク] 白", "PSPL", "5"},
 		{"【EN】《峰の恐怖/Terror of the Peaks》(スポットライトシリーズプロモ)[流星マーク] 赤", "PSPL", "1"},
 		{"【EN】【Foil】《黒い太陽の日/Day of Black Sun》(スポットライトシリーズプロモ)[流星マーク] 黒", "PSPL", "7"},
+		// The English foil Chinese alternate arts are the starred printings.
+		{"【EN】【Foil】■イラスト違い■《アーボーグの骸骨/Urborg Skeleton》[INV] 黒C", "INV", "134★"},
+		{"【EN】【Foil】■イラスト違い■《霊魂焼却/Soul Burn》[INV] 黒C", "INV", "124★"},
 		// 30th Anniversary History: the retro-framed and the plain printing.
 		{"【EN】【Foil】■旧枠■《セラの天使/Serra Angel》(ヒストリープロモ)[流星マーク] 白", "P30H", "1★"},
 		{"【EN】【Foil】《セラの天使/Serra Angel》(ヒストリープロモ)[流星マーク] 白", "P30H", "1"},

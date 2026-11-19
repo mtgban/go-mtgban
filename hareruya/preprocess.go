@@ -1383,6 +1383,19 @@ var promoMap = map[string]map[string]map[string]struct {
 	"Spotlight Series": {
 		"Cloud, Midgar Mercenary": {"Borderless": {Edition: "PPRO", Variant: "2025-1"}},
 	},
+	// The two Chinese alternate arts also printed as English foils, which
+	// is how the storefront lists them; the word "Chinese" alone would ask
+	// the matcher for the Chinese printing.
+	"INV": {
+		"Soul Burn": {
+			"Chinese Alternate Art": {Edition: "INV", Variant: "124★"},
+			"S-Chinese alt art":     {Edition: "INV", Variant: "124★"},
+		},
+		"Urborg Skeleton": {
+			"Chinese Alternate Art": {Edition: "INV", Variant: "134★"},
+			"S-Chinese alt art":     {Edition: "INV", Variant: "134★"},
+		},
+	},
 	"Commander Event Promo": {
 		"Gran-Gran":                {"コマンダーイベントプロモ": {Edition: "PW25", Variant: "14"}},
 		"Spider-Ham, Peter Porker": {"コマンダーイベントプロモ": {Edition: "PW25", Variant: "10"}},
