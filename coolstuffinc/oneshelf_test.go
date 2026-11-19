@@ -71,4 +71,21 @@ func TestOfferSeen(t *testing.T) {
 	if offerSeen(seen, offer("plain", mtgban.NM, availableMarketNames[1])) {
 		t.Error("a graded copy beside the plain one is another offer")
 	}
+	// Two unique copies of one card differ only by their offer row.
+	unique := offer("plain", mtgban.NM, availableMarketNames[1])
+	unique.invEntry.InstanceID = "11352614"
+	if offerSeen(seen, unique) {
+		t.Error("a unique copy on its own row is another offer")
+	}
+	if !offerSeen(seen, unique) {
+		t.Error("the same unique row off another shelf is seen")
+	}
+	other := offer("plain", mtgban.NM, availableMarketNames[1])
+	other.invEntry.InstanceID = "12498271"
+	if offerSeen(seen, other) {
+		t.Error("a second unique copy on another row is another offer")
+	}
+	if !offerSeen(seen, other) {
+		t.Error("the second unique row off another shelf is seen")
+	}
 }
