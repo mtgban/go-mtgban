@@ -828,14 +828,15 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 }
 
 // offerSeen reports whether this very offer was already collected - the
-// same printing at the same condition from the same seller behind one url -
-// and records it otherwise. The url and the condition alone do not tell
-// offers apart: a product row lists its foil, its graded copies and its
-// first edition as further offers of the same url, and every one of them
-// is filed at NM.
+// same printing at the same condition from the same seller behind one url,
+// on the same offer row - and records it otherwise. The url and the
+// condition alone do not tell offers apart: a product row lists its foil,
+// its graded copies and its first edition as further offers of the same
+// url, and every one of them is filed at NM. Two unique copies of one card
+// share all of that and differ only by row.
 func offerSeen(seen map[string]bool, record responseChan) bool {
 	entry := record.invEntry
-	key := strings.Join([]string{entry.URL, record.cardID, string(entry.Conditions), entry.SellerName}, "\x00")
+	key := strings.Join([]string{entry.URL, record.cardID, string(entry.Conditions), entry.SellerName, entry.InstanceID}, "\x00")
 	if seen[key] {
 		return true
 	}

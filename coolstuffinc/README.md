@@ -136,9 +136,11 @@ run - are also filed at the same url and the same `NM` condition as the
 plain copy. So the dedupe silently ate them as "the same offer already
 seen": Magic's retail row count fell from 101,645 to 74,279 the day the
 dedupe landed, Lorcana's by 40%, Riftbound's by 24% (#555). The key now
-includes the **resolved card id**, not just url+condition+seller - an
-offer is the printing it resolved to, at its condition, from its seller,
-behind its url.
+includes the **resolved card id** and the **offer row id**, not just
+url+condition+seller - an offer is the printing it resolved to, at its
+condition, from its seller, behind its url, on its row. The row id is what
+keeps two unique copies of one card (two "Only 1 In Stock Unique" rows on
+/p/92911, each at its own price) as two entries.
 
 ## Cross-cutting mechanics
 
