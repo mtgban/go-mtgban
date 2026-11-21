@@ -822,6 +822,11 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 
 	csi.printf("This operation took %v", time.Since(start))
 
+	// A refused search answers its form again under a 200, with no rows.
+	if csi.targetEdition == "" && len(csi.inventory) == 0 {
+		return errors.New("no listings found in any edition")
+	}
+
 	csi.inventoryDate = time.Now()
 
 	return nil
