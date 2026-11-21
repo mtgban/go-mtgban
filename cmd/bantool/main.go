@@ -56,6 +56,7 @@ import (
 	_ "github.com/mtgban/go-mtgban/sealedev"
 	_ "github.com/mtgban/go-mtgban/starcitygames"
 	_ "github.com/mtgban/go-mtgban/strikezone"
+	_ "github.com/mtgban/go-mtgban/trolltrader"
 	_ "github.com/mtgban/go-mtgban/vegassingles"
 )
 
