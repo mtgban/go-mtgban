@@ -254,6 +254,14 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 						InstanceID: doc.ID,
 						VendorName: availableTraderNames[1],
 					}
+
+					// ABU's own names, which its buylist invoice sorts by
+					fields := map[string]string{
+						"ABUEdition": doc.Edition,
+						"ABUTitle":   doc.SimpleTitle,
+					}
+					buyEntry.CustomFields = fields
+					tradeEntry.CustomFields = fields
 				}
 			}
 

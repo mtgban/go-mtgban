@@ -940,9 +940,15 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				Quantity:   maxBuylistQuantity,
 				URL:        link,
 				InstanceID: product.PPQID,
+				// CSI's own name, and below its set id where it is known,
+				// which its sell order sorts by
 				CustomFields: map[string]string{
 					"originalProduct": fmt.Sprintf("%+v", product),
+					"CSIName":         product.Name,
 				},
+			}
+			if found {
+				buyEntry.CustomFields["CSIItemSetID"] = id
 			}
 
 			err := csi.buylist.Add(cardID, &buyEntry)

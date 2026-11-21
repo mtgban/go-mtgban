@@ -62,7 +62,8 @@ func (f fixtureTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // TestInstanceIDs pins the id each feed keeps for one store row: the cart's
-// row id on the sale listing, and the PPQID on the buylist.
+// row id on the sale listing, and the PPQID on the buylist, which also keeps
+// the set id and name CSI sorts a sell order by.
 func TestInstanceIDs(t *testing.T) {
 	b := readGameDatastore(t, "palworld", "PALWORLD_PATH")
 
@@ -91,6 +92,9 @@ func TestInstanceIDs(t *testing.T) {
 	for _, entries := range csi.buylist {
 		for _, entry := range entries {
 			ids = append(ids, entry.InstanceID)
+			if entry.CustomFields["CSIItemSetID"] != "212011" || entry.CustomFields["CSIName"] != "Helzephyr - Wings of the Moonless Night (OSR)" {
+				t.Errorf("buylist set id and name = %q, %q", entry.CustomFields["CSIItemSetID"], entry.CustomFields["CSIName"])
+			}
 		}
 	}
 	if len(ids) == 0 {
