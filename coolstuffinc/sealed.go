@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -360,10 +361,14 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 	// The queries overlap ("Booster Box" answers booster and box both);
 	// the first sighting of a product wins
 	seen := map[string]bool{}
+	var rows atomic.Int64
+	var firstErr atomic.Pointer[error]
 	mtgban.WorkerPool(ctx, csi.maxConcurrency, queries,
 		func(ctx context.Context, query string, channel chan<- responseChan) error {
-			err := csi.processSealedSearch(ctx, channel, query)
+			found, err := csi.processSealedSearch(ctx, channel, query)
+			rows.Add(int64(found))
 			if err != nil {
+				firstErr.CompareAndSwap(nil, &err)
 				csi.printf("%s: %s", query, err.Error())
 			}
 			return nil
@@ -381,6 +386,16 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 		},
 		csi.printf,
 	)
+
+	// Rows, not results: a game can have nothing in stock that resolves,
+	// but a refused search answers its form again with no rows at all.
+	if rows.Load() == 0 {
+		failed := firstErr.Load()
+		if failed != nil {
+			return fmt.Errorf("no products found in any search: %w", *failed)
+		}
+		return errors.New("no products found in any search")
+	}
 
 	csi.inventoryDate = time.Now()
 
@@ -450,16 +465,17 @@ func searchSealed(ctx context.Context, client *http.Client, shelf, query string)
 
 // processSealedSearch pages through one query's results, pricing every
 // row the sealed-name resolver recognizes. English only: language-variant
-// names are skipped before resolution.
-func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) error {
+// names are skipped before resolution. It answers how many rows the search
+// returned, priced or not.
+func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) (int, error) {
 	result, err := searchSealed(ctx, csi.client, csi.shelf, query)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(result.Data))
 	if err != nil {
-		return fmt.Errorf("page 1: %w", err)
+		return 0, fmt.Errorf("page 1: %w", err)
 	}
 	next := result.NextLink
 
@@ -473,8 +489,10 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		}
 	}
 
+	found := 0
 	for page := 1; ; page++ {
 		rows := doc.Find(searchRowSelector)
+		found += rows.Length()
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
 			if csi.backend.Game == matcher.GameYuGiOh {
@@ -551,12 +569,12 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 
 		doc, err = fetchSearchPage(ctx, csi.client, next)
 		if err != nil {
-			return fmt.Errorf("page %d: %w", page+1, err)
+			return found, fmt.Errorf("page %d: %w", page+1, err)
 		}
 		next = searchNextLink(doc)
 	}
 
-	return nil
+	return found, nil
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
