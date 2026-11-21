@@ -1,0 +1,573 @@
+{
+  "products": [
+    {
+      "id": 16015533965644,
+      "title": "Counterspell - Release Promo(457)",
+      "handle": "mtg-singles-dmr-counterspell-457",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58514930991436,
+          "sku": "cc-dmr-counterspell-457-nm-f",
+          "available": true,
+          "price": "6.33",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16058571555148,
+      "title": "Amunet, Tyrants' End - Queen Marchesa (1559)",
+      "handle": "mtg-singles-sld-queenmarchesa-1559",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58650147324236,
+          "sku": "cc-sld-queenmarchesa-1559-nm-nf",
+          "available": false,
+          "price": "18.04",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 58650147357004,
+          "sku": "cc-sld-queenmarchesa-1559-nm-f",
+          "available": true,
+          "price": "25.03",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Non-Foil",
+            "Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16064464355660,
+      "title": "Bribery (64)",
+      "handle": "mtg-singles-8ed-bribery-64",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58676327121228,
+          "sku": "cc-8ed-bribery-64-nm-f",
+          "available": true,
+          "price": "18.30",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 58676327153996,
+          "sku": "cc-8ed-bribery-64-nm-nf",
+          "available": true,
+          "price": "5.05",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 58676873232716,
+          "sku": "cc-8ed-bribery-64-lp-nf",
+          "available": true,
+          "price": "4.55",
+          "option1": "Non-Foil",
+          "option2": "Light Played",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Foil",
+            "Non-Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint",
+            "Light Played"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16064591462732,
+      "title": "Emblem - Ellywick Tumblestrum (16)",
+      "handle": "mtg-singles-afr-emblem-ellywicktumblestrum-16",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58676829552972,
+          "sku": "cc-afr-emblemellywicktumblestrum-16-nm-nf",
+          "available": true,
+          "price": "0.37",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Non-Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16064608338252,
+      "title": "Elvish Ranger (Female - 88a)",
+      "handle": "mtg-singles-all-elvishranger-88a",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58676821819724,
+          "sku": "cc-all-elvishranger-88a-nm-nf",
+          "available": false,
+          "price": "0.59",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 58678070149452,
+          "sku": "cc-all-elvishranger-88a-lp-nf",
+          "available": true,
+          "price": "0.53",
+          "option1": "Non-Foil",
+          "option2": "Light Played",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Non-Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint",
+            "Light Played"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16067106406732,
+      "title": "Braids, Cabal Minion (273e)",
+      "handle": "mtg-singles-mh2-braidscabalminion-273e",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58688498172236,
+          "sku": "cc-mh2-braidscabalminion-273e-nm-et",
+          "available": true,
+          "price": "1.66",
+          "option1": "Etched",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Etched"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16072799158604,
+      "title": "Tomb of Annihilation // The Atropal (22/5)",
+      "handle": "mtg-singles-afr-tombofannihilationtheatropal-22x5",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58717320708428,
+          "sku": "cc-afr-tombofannihilationtheatropal-22/-nm-f",
+          "available": true,
+          "price": "0.35",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 58717320741196,
+          "sku": "cc-afr-tombofannihilationtheatropal-22/-nm-nf",
+          "available": true,
+          "price": "0.35",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Foil",
+            "Non-Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16077680640332,
+      "title": "Mirko, Obsessive Theorist (50) (Display Commander)",
+      "handle": "mtg-singles-mkc-mirkoobsessivetheorist-50",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58736023863628,
+          "sku": "cc-mkc-mirkoobsessivetheorist-50-nm-et",
+          "available": true,
+          "price": "0.45",
+          "option1": "Etched",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Etched"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16077851492684,
+      "title": "Stomping Ground (247)",
+      "handle": "mtg-singles-gtc-stompingground-247",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58736596091212,
+          "sku": "cc-gtc-stompingground-247-nm-f",
+          "available": true,
+          "price": "13.35",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": "English"
+        },
+        {
+          "id": 58736596123980,
+          "sku": "cc-gtc-stompingground-247-nm-nf",
+          "available": false,
+          "price": "6.93",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": "English"
+        },
+        {
+          "id": 58754752119116,
+          "sku": "cc-gtc-stompingground-247-lp-nf",
+          "available": true,
+          "price": "6.24",
+          "option1": "Non-Foil",
+          "option2": "Light Played",
+          "option3": "English"
+        },
+        {
+          "id": 58754752512332,
+          "sku": "cc-gtc-stompingground-247-nm-nf-fr",
+          "available": false,
+          "price": "6.93",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": "French"
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Foil",
+            "Non-Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint",
+            "Light Played"
+          ]
+        },
+        {
+          "name": "Language",
+          "position": 3,
+          "values": [
+            "English",
+            "French"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16079566799180,
+      "title": "Raugrin Triome (251)",
+      "handle": "mtg-singles-iko-raugrintriome-251",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58744367612236,
+          "sku": "cc-iko-raugrintriome-251-nm-f",
+          "available": false,
+          "price": "15.16",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 58744367645004,
+          "sku": "cc-iko-raugrintriome-251-nm-nf",
+          "available": true,
+          "price": "13.43",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 58755519676748,
+          "sku": "cc-iko-raugrintriome-251-lp-nf",
+          "available": false,
+          "price": "12.09",
+          "option1": "Non-Foil",
+          "option2": "Light Played",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Foil",
+            "Non-Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint",
+            "Light Played"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16080575299916,
+      "title": "Spider-Sense (284) - BaB Promo",
+      "handle": "mtg-singles-spm-spider-sense-284-bab-promo",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 58748126658892,
+          "sku": "cc-spm-spidersense-284-nm-f",
+          "available": true,
+          "price": "0.81",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16283859091788,
+      "title": "Yorinobu Arasaka - Embracing Destruction (001)",
+      "handle": "cyberpunk-singles-btr-yorinobuarasakaembracingdestruction-001-novarare",
+      "vendor": "Cyberpunk TCG",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 59756083741004,
+          "sku": "cc-btr-yorinobuarasakaembracingdestruction-001-novarare-nm-f",
+          "available": false,
+          "price": "5.40",
+          "option1": "Foil",
+          "option2": "Near Mint",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16283900739916,
+      "title": "Counterspell (rb57)",
+      "handle": "cc-wc98-counterspell-rb57-1cea3b11ecf04cf2a4f39da35e31a66f",
+      "vendor": "Magic: The Gathering",
+      "product_type": "Singles",
+      "variants": [
+        {
+          "id": 59756588106060,
+          "sku": "cc-wc98-counterspell-rb57-66f-nm-signed",
+          "available": false,
+          "price": "1.42",
+          "option1": "Signed",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 59756588138828,
+          "sku": "cc-wc98-counterspell-rb57-66f-nm-nf",
+          "available": true,
+          "price": "1.48",
+          "option1": "Non-Foil",
+          "option2": "Near Mint",
+          "option3": null
+        },
+        {
+          "id": 59756778422604,
+          "sku": "cc-wc98-counterspell-rb57-66f-lp-nf",
+          "available": true,
+          "price": "1.33",
+          "option1": "Non-Foil",
+          "option2": "Light Played",
+          "option3": null
+        }
+      ],
+      "options": [
+        {
+          "name": "Card Finish",
+          "position": 1,
+          "values": [
+            "Signed",
+            "Non-Foil"
+          ]
+        },
+        {
+          "name": "Condition",
+          "position": 2,
+          "values": [
+            "Near Mint",
+            "Light Played"
+          ]
+        }
+      ]
+    }
+  ]
+}
