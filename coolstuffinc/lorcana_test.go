@@ -165,7 +165,7 @@ func TestLorcanaSealedWording(t *testing.T) {
 
 	csi := Sealed{client: newCSIHTTPClient(), shelf: GameLorcana, backend: b}
 	results := make(chan responseChan, 3)
-	err := csi.processSealedSearch(context.Background(), results, "deck")
+	_, err := csi.processSealedSearch(context.Background(), results, "deck")
 	if err != nil {
 		t.Fatalf("processSealedSearch(): %v", err)
 	}
