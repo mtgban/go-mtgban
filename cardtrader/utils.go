@@ -1357,11 +1357,13 @@ var ygoBlueprintEditions = map[int]string{
 // they need the parent starter spelled out the way their shelf-mates already
 // land it; Radical Beam!!'s Version is "Demo Deck", which the matcher does
 // not read as wording for OP-DD, and its shelf, "One Piece Promos", names no
-// set to fall back on either.
+// set to fall back on either. ST-01's fixed-text Luffy is the Revision Pack
+// reprint, which the starter's own shelf never reaches.
 var opBlueprintEditions = map[int]string{
 	305520: "Starter Deck 3: The Seven Warlords of The Sea",
 	305524: "Starter Deck 3: The Seven Warlords of The Sea",
 	377503: "One Piece Demo Deck Cards",
+	318404: "Revision Pack Cards",
 }
 
 // gameEdition names the set a blueprint's shelf sells, which is the shelf's
