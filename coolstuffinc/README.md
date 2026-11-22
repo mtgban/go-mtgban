@@ -437,7 +437,10 @@ from the shelf collision this section is about.
   shelf holds a printing of its own at the same number. `riftboundNotes`
   drops the year from "Worlds Bundle 2025 Promo", and `riftboundSpellings`
   corrects a storefront misspelling of a card name before the shelf probe
-  reads it.
+  reads it. `riftboundPIDs` names by product id, read first on both feeds,
+  the runes the promo shelf sells that the catalog files in the set that
+  issued them (Unleashed's c-lettered and Origins' b-lettered), where
+  neither the shelf nor the note names that set.
 
 ## Known gaps
 

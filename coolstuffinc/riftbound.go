@@ -30,6 +30,25 @@ var riftboundSpellings = strings.NewReplacer(
 	"Guardian Angel (Organized Play Promo)", "Guardian Angel (Top 8)",
 )
 
+// riftboundPIDs names the TCGplayer product a storefront product is, for the
+// runes the promo shelf sells that the catalog files in the set that issued
+// them, Unleashed for the c-lettered and Origins for the b-lettered, where
+// neither the shelf nor the note names that set. The product id is the
+// storefront's own, shared by both feeds.
+var riftboundPIDs = map[string]string{
+	"446983": "697499", // Fury Rune R01c
+	"446987": "697497", // Calm Rune R02c
+	"446992": "697496", // Mind Rune R03c
+	"446999": "697495", // Body Rune R04c
+	"447002": "697493", // Chaos Rune R05c
+	"446996": "697492", // Order Rune R06c
+	"429023": "662902", // Calm Rune 042b, Nexus Night - Origins
+	"429018": "662899", // Mind Rune 089b, Nexus Night - Origins
+	"429019": "662903", // Body Rune 126b, Nexus Night - Origins
+	"429020": "662904", // Chaos Rune 166b, Nexus Night - Origins
+	"429021": "662901", // Order Rune 214b, Nexus Night - Origins
+}
+
 // riftboundShelf answers the set a Riftbound listing belongs to, which is the
 // shelf it arrived on except where that shelf says only "Promo".
 //
@@ -273,6 +292,12 @@ func riftboundCardAt(b *matcher.Backend, code, number string, foil bool) *matche
 // name, and from its image where that wording places nothing.
 func retailRiftbound(csi *Coolstuffinc, l sellListing) (*matcher.InputCard, string, error) {
 	b := csi.backend
+	tcgID, named := riftboundPIDs[l.pid]
+	if named {
+		theCard := &matcher.InputCard{ID: tcgID, Foil: l.foil}
+		cardID, err := l.match(b, theCard)
+		return theCard, cardID, err
+	}
 	riftboundCardName := riftboundSpellings.Replace(l.name)
 	variation := riftboundNotes.Replace(l.notes)
 	if l.edition == "Promo" && l.notes == "" {
@@ -296,6 +321,12 @@ func retailRiftbound(csi *Coolstuffinc, l sellListing) (*matcher.InputCard, stri
 // printing: a promo's finish and prize track.
 func buylistRiftbound(csi *Coolstuffinc, p CSIPriceEntry) (*matcher.InputCard, string, error) {
 	b := csi.backend
+	tcgID, named := riftboundPIDs[p.PID]
+	if named {
+		theCard := &matcher.InputCard{ID: tcgID, Foil: p.IsFoil == 1}
+		cardID, err := b.Match(theCard)
+		return theCard, cardID, err
+	}
 	riftboundCardName := riftboundSpellings.Replace(p.Name)
 	variation := riftboundNotes.Replace(buylistVariation(p))
 	shelf := riftboundShelf(b, p.ItemSet, p.Notes, riftboundCardName, variation, p.IsFoil == 1)

@@ -3,6 +3,8 @@ package coolstuffinc
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
+
 	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
@@ -87,5 +89,19 @@ func TestRiftboundSKUCardRefusesWhatItCannotName(t *testing.T) {
 				t.Errorf("riftboundSKUCard(%q) = %v, want none", tt.stem, card)
 			}
 		})
+	}
+}
+
+// TestRiftboundPIDsNameHeldProducts pins that every product the storefront
+// id table points at is one the datastore holds, so a catalog that drops or
+// renumbers a product shows here and not as a listing gone unpriced.
+func TestRiftboundPIDsNameHeldProducts(t *testing.T) {
+	b := readGameDatastore(t, "riftbound", "RIFTBOUND_PATH")
+
+	for pid, tcgID := range riftboundPIDs {
+		_, err := b.Match(&matcher.InputCard{ID: tcgID})
+		if err != nil {
+			t.Errorf("product %s names TCGplayer %s: %v", pid, tcgID, err)
+		}
 	}
 }
