@@ -377,6 +377,10 @@ var etchedPrintings = map[int]struct{ set, number string }{
 	609622: {"SLD", "316"},  // Fleet Swallower
 	660446: {"SLD", "328"},  // Snow-Covered Mountain
 	674280: {"SLD", "46"},   // Plains
+
+	// Modern Horizons: Retro Frame Cards, CardTrader 157763 and 157753
+	567757: {"H1R", "21"}, // Force of Vigor
+	567767: {"H1R", "31"}, // Sword of Sinew and Steel
 }
 
 // unplacedProducts are products no evidence places on a printing, or
