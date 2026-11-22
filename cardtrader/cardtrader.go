@@ -260,6 +260,7 @@ var tcgIDOverrides = map[int]int{
 	// One Piece promos: none sent, and a blank or unlabelled version.
 	358719: 668182, // Gol.D.Roger P-107, Store Tournament 2025 Vol. 4
 	400812: 719661, // DON!! Flame-Flame Fruit Coliseum, Championships Promo
+	375614: 710744, // Nefeltari Vivi OP13-012, Heroines Cup Playmat card, Premium Bandai
 	337323: 646721, // Kid & Killer EB01-003P2, Offline Regional 25-26 Finalist
 	337325: 646726, // Trafalgar Law OP07-047P2, Offline Regional 25-26 Finalist
 	337316: 646734, // Tony Tony.Chopper P-089, Offline Regional 25-26 Participant
