@@ -19,6 +19,18 @@ func TestLanguageRoutesEdition(t *testing.T) {
 		{"Season of the Witch", "The Dark", "Italian", "DRKITA"},
 		{"Azure Drake", "Chronicles", "Japanese", "BCHR"},
 		{"Junún Efreet", "Renaissance", "Italian", "RIN"},
+		{"Badlands", "Foreign Black Border", "Italian", "FBB"},
+		{"Badlands", "Foreign Black Border", "French", "FBBFR"},
+		{"Badlands", "Foreign Black Border", "German", "FBBDE"},
+		{"Counterspell", "Fourth Edition Foreign Black Border", "Japanese", "4BB"},
+		{"Counterspell", "Fourth Edition Foreign Black Border", "Spanish", "4BBES"},
+		{"Counterspell", "Fourth Edition Foreign Black Border", "Portuguese", "4BBPT"},
+		{"Counterspell", "Fourth Edition Foreign Black Border", "Korean", "4BBKO"},
+		{"Counterspell", "Fourth Edition Foreign Black Border", "Chinese Traditional", "4BBZHT"},
+		{"Angry Mob", "Renaissance", "French", "REN"},
+		{"Angry Mob", "Renaissance", "German", "RENDE"},
+		// FBB was never printed in Spanish
+		{"Badlands", "Foreign Black Border", "Spanish", ""},
 		// Rinascimento reprinted no Legends or The Dark card
 		{"Alabaster Potion", "Renaissance", "Italian", ""},
 		// A white-bordered Japanese Fourth Edition exists, and is not carried

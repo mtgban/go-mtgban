@@ -3,6 +3,7 @@ package magic
 import (
 	"encoding/json"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -257,6 +258,125 @@ func TestMatchIDLanguage(t *testing.T) {
 		})
 		if err != nil || matched != id {
 			t.Errorf("%s #%s matched in %s as %s, %v", original.SetCode, original.Number, co.Language, matched, err)
+		}
+	}
+}
+
+// Every language set holds each card of its base set printed in its language,
+// as that printing, and is filed under its base where the site stacks sets.
+func TestLanguageSets(t *testing.T) {
+	realDatastore(t)
+
+	topParent := func(code string) string {
+		for {
+			set, err := testBackend.GetSet(code)
+			if err != nil || set.ParentCode == "" {
+				return code
+			}
+			code = set.ParentCode
+		}
+	}
+
+	for _, ls := range languageSets {
+		code, language := ls.code+ls.tag, langs[ls.tag]
+		base, err := testBackend.GetSet(ls.code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		set, err := testBackend.GetSet(code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if set.Name != ls.name || set.ParentCode != ls.code || set.ReleaseDate != base.ReleaseDate ||
+			set.Type != base.Type || topParent(code) != topParent(ls.code) {
+			t.Errorf("%s is %q under %s, %s %s; want %q under %s, %s %s", code, set.Name,
+				set.ParentCode, set.ReleaseDate, set.Type, ls.name, ls.code, base.ReleaseDate, base.Type)
+		}
+
+		// Its cards' art letters read like its base's
+		if _, found := VariantsTable[base.Name]; found {
+			if _, found := VariantsTable[set.Name]; !found {
+				t.Errorf("VariantsTable has %q but not %q", base.Name, set.Name)
+			}
+		}
+
+		var want int
+		for _, card := range base.Cards {
+			var printing string
+			for _, fd := range card.ForeignData {
+				if fd.Language == language {
+					printing = fd.UUID
+				}
+			}
+			if printing == "" || card.Language == language {
+				continue
+			}
+			want++
+			copied, err := testBackend.GetUUID(printing)
+			if err != nil {
+				t.Errorf("%s #%s has no %s printing in %s", ls.code, card.Number, language, code)
+				continue
+			}
+			var name, scryfallID string
+			for _, fd := range card.ForeignData {
+				if fd.Language == language {
+					name, scryfallID = fd.Name, fd.Identifiers["scryfallId"]
+				}
+			}
+			if copied.SetCode != code || copied.Edition != set.Name || copied.Number != card.Number ||
+				copied.Name != card.Name || copied.Language != language || copied.PrintedName != name ||
+				copied.Identifiers["scryfallId"] != scryfallID || !strings.Contains(copied.Images["full"], scryfallID) ||
+				copied.Identifiers["mtgjsonId"] != card.Identifiers["mtgjsonId"] ||
+				!slices.Contains(copied.Printings, code) || !slices.Contains(card.Printings, code) {
+				t.Errorf("%s #%s in %s is %s %s #%s %s %q, image %s", ls.code, card.Number, language,
+					copied.Name, copied.SetCode, copied.Number, copied.Language, copied.PrintedName, copied.Images["full"])
+			}
+
+			id, err := testBackend.MatchIDLanguage(card.UUID, language)
+			if err != nil || id != printing {
+				t.Errorf("%s #%s in %s: MatchIDLanguage = %s %v", ls.code, card.Number, language, id, err)
+			}
+			id, err = testBackend.MatchIDLanguage(printing, card.Language)
+			if err != nil || id != card.UUID {
+				t.Errorf("%s #%s in %s: MatchIDLanguage back to %s = %s %v", ls.code, card.Number, language, card.Language, id, err)
+			}
+			in := matcher.InputCard{
+				Name: card.Name, Edition: base.Name, Variation: card.Number,
+				Language: strings.Fields(language)[0],
+			}
+			id, err = testBackend.Match(&in)
+			if err != nil || id != printing {
+				t.Errorf("%s #%s in %s: Match = %s %v", ls.code, card.Number, language, id, err)
+			}
+		}
+		if want == 0 || len(set.Cards) != want {
+			t.Errorf("%s holds %d cards, want the %d %s printings of %s", code, len(set.Cards), want, language, ls.code)
+		}
+	}
+}
+
+// A vendor names a card of these sets by one Scryfall id in every language,
+// mtgjson's own or another printing's (Card Trader's blueprints), and the
+// listing's language picks the printing.
+func TestLanguageSetsFromVendorIDs(t *testing.T) {
+	realDatastore(t)
+	for _, tt := range []struct{ scryfallID, language, want string }{
+		// FBB Badlands, mtgjson's French scan
+		{"2fb67912-3d3d-40d4-8aa0-141a8025b037", "", "e8cb1f71-56a7-5cbf-8f93-99cf78386545"},
+		{"2fb67912-3d3d-40d4-8aa0-141a8025b037", "Italian", "e8cb1f71-56a7-5cbf-8f93-99cf78386545"},
+		{"2fb67912-3d3d-40d4-8aa0-141a8025b037", "French", "77f91bd3-4a2b-55f1-a9e9-7359771d0582"},
+		{"2fb67912-3d3d-40d4-8aa0-141a8025b037", "German", "6610e802-6f8a-5180-ac9b-537dc63736a7"},
+		// 4BB Counterspell, mtgjson's Spanish scan
+		{"79976df3-e989-4f99-8534-dca962f85e3d", "Japanese", "b40a855d-6dcb-5225-8888-421f680a03af"},
+		{"79976df3-e989-4f99-8534-dca962f85e3d", "Spanish", "70d94ab6-6a48-5c29-91ae-a7625bff07d9"},
+		// REN Yotian Soldier, by the German scan Card Trader's blueprint names
+		{"790ca247-bcd1-40a3-9b3e-720fc5fcc37d", "French", "e10242cb-58d6-565d-b9ff-5bd64055ff0f"},
+		{"790ca247-bcd1-40a3-9b3e-720fc5fcc37d", "German", "1be6bdc9-a884-5c89-a990-bba633a4a288"},
+	} {
+		in := matcher.InputCard{ID: tt.scryfallID, Language: tt.language}
+		id, err := testBackend.Match(&in)
+		if err != nil || id != tt.want {
+			t.Errorf("Scryfall %s in %q = %s %v, want %s", tt.scryfallID, tt.language, id, err, tt.want)
 		}
 	}
 }

@@ -4454,6 +4454,8 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Fifth Edition":                       ed5Variants,
 	"Final Fantasy":                       finVariants,
 	"Foreign Black Border":                ed3Variants,
+	"Foreign Black Border (French)":       ed3Variants,
+	"Foreign Black Border (German)":       ed3Variants,
 	"Fourth Edition Foreign Black Border": ed4Variants,
 	"Fourth Edition":                      ed4Variants,
 	"GRN Ravnica Weekend":                 prwkVariants,
@@ -4494,6 +4496,12 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"World Championship Decks 1999":       wc99Variants,
 	"World Championship Decks 2001":       wc01Variants,
 	"World Championship Decks 2002":       wc02Variants,
+
+	// 4th Edition Foreign Black Border's other languages
+	"Fourth Edition Foreign Black Border (Chinese Traditional)": ed4Variants,
+	"Fourth Edition Foreign Black Border (Korean)":              ed4Variants,
+	"Fourth Edition Foreign Black Border (Portuguese)":          ed4Variants,
+	"Fourth Edition Foreign Black Border (Spanish)":             ed4Variants,
 }
 
 // Note that the number is checked with a prefix in order to catch
