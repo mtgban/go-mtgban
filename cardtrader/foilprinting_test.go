@@ -13,8 +13,9 @@ import (
 // files a blueprint's foil listings under the plain printing's id, so the
 // flag has to reach the foil sibling; an etched listing raises the very same
 // flag, and answering it there would file the etched price under the foil
-// printing. The ids are drawn from the datastore so the test holds across
-// its releases.
+// printing. A nonfoil listing leaves the etched printing only on a blueprint
+// whose version names both finishes. The ids are drawn from the datastore so
+// the test holds across its releases.
 func TestFoilPrintingID(t *testing.T) {
 	b := realDatastore(t)
 
@@ -65,21 +66,30 @@ func TestFoilPrintingID(t *testing.T) {
 	}
 
 	tests := []struct {
-		desc   string
-		cardID string
-		want   string
+		desc    string
+		nonfoil bool
+		version string
+		cardID  string
+		want    string
 	}{
-		{"plain printing reaches its foil", plain, foil},
-		{"a double-faced printing reaches its foil", dfc, dfcFoil},
-		{"foil printing stays put", foil, foil},
-		{"etched printing stays put", etched, etched},
-		{"unknown id is left alone", "not-a-uuid", "not-a-uuid"},
-		{"a derived pairing sold in foil reaches its own foil sibling", pairedFoilCapable, pairedFoilCapableFoil},
-		{"a derived pairing never sold in foil is refused, not kept nonfoil", pairedNonfoilOnly, ""},
+		{"plain printing reaches its foil", false, "", plain, foil},
+		{"a double-faced printing reaches its foil", false, "", dfc, dfcFoil},
+		{"foil printing stays put", false, "", foil, foil},
+		{"etched printing stays put", false, "", etched, etched},
+		{"unknown id is left alone", false, "", "not-a-uuid", "not-a-uuid"},
+		{"a derived pairing sold in foil reaches its own foil sibling", false, "", pairedFoilCapable, pairedFoilCapableFoil},
+		{"a derived pairing never sold in foil is refused, not kept nonfoil", false, "", pairedNonfoilOnly, ""},
+		{"a nonfoil listing of a nonfoil and etched blueprint leaves the etched printing", true, "Non-Foil / Etched Foil", etched, plain},
+		{"a nonfoil listing of an etched blueprint stays etched", true, "Etched Foil", etched, etched},
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			got := foilPrintingID(b, test.cardID)
+			var got string
+			if test.nonfoil {
+				got = nonfoilPrintingID(b, &Blueprint{Version: test.version}, test.cardID)
+			} else {
+				got = foilPrintingID(b, test.cardID)
+			}
 			if got != test.want {
 				t.Errorf("got %q, want %q", got, test.want)
 			}

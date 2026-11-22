@@ -619,6 +619,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			if cardID == "" {
 				continue
 			}
+		} else if ct.gameID == GameMagic {
+			cardID = nonfoilPrintingID(ct.backend, blueprint, cardID)
 		}
 
 		qty := product.Quantity
