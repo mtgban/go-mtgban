@@ -549,6 +549,7 @@ func TestNumberedSKUPrefix(t *testing.T) {
 	}{
 		{"Goldberry, River-Daughter (V.1)", "The Lord of The Rings: Tales of Middle-earth Holiday Release", "503", "LTRH0503A", "LTR 503"},
 		{"Innkeeper's Talent", "DCI Promo", "45", "SLP0040", "SLP 45"},
+		{"Sawhorn Nemesis", "Commander: Modern Horizons 3: Extras", "60", "XM3C0060", "M3C 60"},
 	} {
 		card := Card{Name: tt.name, Edition: tt.edition, Number: tt.number, SKU: tt.sku, Variants: []Variant{{Foil: "Non Foil", Language: "EN"}}}
 		input, err := preprocess(b, &card, 0)
