@@ -97,6 +97,26 @@ var PriceListTest = `
       "variation": "German Misprint",
       "edition": "Promotional",
       "is_foil": "false"
+    },
+    {
+      "id": 336574,
+      "sku": "PW26-0019",
+      "scryfall_id": "dceabd88-d8e0-4e19-a625-e8c5b1a2a33a",
+      "url": "mtg/promotional/solemn-simulacrum-magic-presents-promo-non-foil",
+      "name": "Solemn Simulacrum",
+      "variation": "Magic Presents Promo Non-Foil",
+      "edition": "Promotional",
+      "is_foil": "false"
+    },
+    {
+      "id": 336575,
+      "sku": "FPW26-0019",
+      "scryfall_id": "dceabd88-d8e0-4e19-a625-e8c5b1a2a33a",
+      "url": "mtg/promotional/solemn-simulacrum-magic-presents-promo-foil",
+      "name": "Solemn Simulacrum",
+      "variation": "Magic Presents Promo Foil",
+      "edition": "Promotional",
+      "is_foil": "true"
     }
 ]
 `
@@ -107,6 +127,8 @@ var priceListResults = []string{
 	"2b1f73ca-a54d-5735-9404-16b397ca88a3",
 	"12c30aa1-9fcd-542b-a0e8-6d0897c50b76",
 	"e192bff2-ab8a-5daa-a657-ccf199ac30a8",
+	"1554d6ae-839b-5de1-ba12-88d2c66f28c3",
+	"1554d6ae-839b-5de1-ba12-88d2c66f28c3_f",
 }
 
 func TestPreprocess(t *testing.T) {
