@@ -904,6 +904,7 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 				for _, foreignData := range card.ForeignData {
 					if foreignData.Language == language {
 						card.Language = language
+						takePrintedName(&card, foreignData.Name)
 						// mtgjsonId stays mtgjson's card, which TCGplayer skus and the
 						// id index key on: see todo/foreign-black-border-languages.md
 						card.Identifiers["originalScryfallId"] = foreignData.Identifiers["scryfallId"]
@@ -1846,6 +1847,16 @@ func mintedSuffix(card Card) string {
 	return card.UUID[len(id):]
 }
 
+// takePrintedName names a card by its printing in another language. mtgjson
+// fills a non-English card's flavorName with its printed name, so a flavor
+// name that is only that copy follows; a real one, like Miku's, stays.
+func takePrintedName(card *Card, name string) {
+	if card.FlavorName != "" && card.FlavorName == card.PrintedName {
+		card.FlavorName = name
+	}
+	card.PrintedName = name
+}
+
 // Duplicate certain cards within the same set according to the language tag
 func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []Card {
 	var duplicates []Card
@@ -1889,7 +1900,7 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 			if foreignData.Language != dupeCard.Language {
 				continue
 			}
-			dupeCard.PrintedName = foreignData.Name
+			takePrintedName(&dupeCard, foreignData.Name)
 			dupeCard.PrintedType = foreignData.Type
 			// mtgjson's ids for this printing replace the original's
 			if id, found := foreignData.Identifiers["scryfallId"]; found {
