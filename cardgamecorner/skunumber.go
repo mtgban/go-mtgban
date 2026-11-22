@@ -10,8 +10,9 @@ import (
 // numberedSKUPrefixes open the SKUs of the shelves whose version tag counts
 // the store's own index, where the number the listing states names the
 // printing: the Lord of the Rings Holiday Release and the Secret Lair
-// Promos.
-var numberedSKUPrefixes = []string{"LTRH", "SLP"}
+// Promos. The Modern Horizons 3 Commander Extras shelf needs it too, since
+// its name alone lands on the regular printing, not the extended art.
+var numberedSKUPrefixes = []string{"LTRH", "SLP", "XM3C"}
 
 // skuNumberRe matches the three digits a SKU ends with, ahead of the version
 // the store appends to a card it lists more than once.
