@@ -206,6 +206,8 @@ func TestBuylistPromoShelf(t *testing.T) {
 		{"【EN】【Foil】■ボーダーレス■《スタークによる改良、アイアン・スパイダー/Iron Spider, Stark Upgrade》(マーベル・レジェンドプロモ)[流星マーク] 茶", "LMAR", "4"},
 		{"【EN】【Foil】■ボーダーレス■《恐ろしき癒し手、アンチヴェノム/Anti-Venom, Horrifying Healer》(マーベル・レジェンドプロモ)[流星マーク] 白", "LMAR", "1"},
 		{"【EN】【Foil】■ボーダーレス■《スペクタキュラー・スパイダーマン/Spectacular Spider-Man》(マーベル・レジェンドプロモ)[流星マーク] 白", "LMAR", "2"},
+		// The (003) is the intro pack index, not the card's number.
+		{"【EN】【Foil】(003)《悪行の大悪鬼/Archfiend of Depravity》(エントリーセット)[FRF-P] 黒R", "PFRF", "62"},
 		// A stamped copy lands where the set files a promo pack printing.
 		{"【EN】(022)■プロモスタンプ付■《復活した精霊信者、ニッサ/Nissa, Resurgent Animist》[MAT] 緑R", "PMAT", "22p"},
 		{"【EN】(049)■プロモスタンプ付■《再鍛されたレガシー、カーン/Karn, Legacy Reforged》[MAT] 茶R", "", ""},
