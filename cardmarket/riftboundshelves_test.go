@@ -6,9 +6,10 @@ import (
 	cm "github.com/mtgban/go-cardmarket"
 )
 
-// TestRiftboundT1Shelf pins the T1 2025 Worlds Champion Collection shelf: its
-// Showcase print is the Signature Edition bundle's, and a starred number is
-// that bundle's serial-numbered print. The products are the catalog's own.
+// TestRiftboundT1Shelf pins the Riftbound x T1 Worlds 2025 shelf: its V.1
+// Showcase print is the Signature Edition bundle's, a starred number is that
+// bundle's serial-numbered print, and the V.3 is the Player Bundle's. The
+// products are the catalog's own.
 func TestRiftboundT1Shelf(t *testing.T) {
 	b := loadRiftboundBackend(t)
 	mkm, err := NewScraperIndex(b)
@@ -16,7 +17,7 @@ func TestRiftboundT1Shelf(t *testing.T) {
 		t.Fatalf("NewScraperIndex(b) = %v", err)
 	}
 
-	exp := cm.Expansion{Name: "T1 2025 Worlds Champion Collection", SetCode: "T1X"}
+	exp := cm.Expansion{Name: "Riftbound x T1 Worlds 2025", SetCode: "T1X"}
 	for _, tt := range []struct {
 		id      int
 		product cm.CatalogProduct
@@ -24,6 +25,7 @@ func TestRiftboundT1Shelf(t *testing.T) {
 	}{
 		{904070, cm.CatalogProduct{Name: "Ambessa, The Wolf (V.1 - Showcase)", Number: "S001", Rarity: "Showcase", Version: 1}, "716012"},
 		{904071, cm.CatalogProduct{Name: "Ambessa, The Wolf (V.2 - Signed Showcase)", Number: "S001*", Rarity: "Signed Showcase", Version: 2}, "716013"},
+		{923947, cm.CatalogProduct{Name: "Ambessa, The Wolf (V.3 - Showcase)", Number: "A001", Rarity: "Showcase", Version: 3}, "716010"},
 	} {
 		got := mkm.resolveMapped(tt.id, tt.product, exp)
 		if got.err != nil || got.cardID != got.cardIDFoil {

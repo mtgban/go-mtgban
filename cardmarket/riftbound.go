@@ -68,8 +68,8 @@ var riftboundFoilLinks = map[int]int{
 // the datastore files them in and the bundle it labels them with; a starred
 // number is the bundle's serial-numbered print.
 var riftboundShelves = map[string]struct{ edition, label, starLabel string }{
-	"T1 2025 Worlds Champion Collection": {
-		edition:   "Riftbound Promotional Cards",
+	"Riftbound x T1 Worlds 2025": {
+		edition:   "T1 2025 Worlds Champion Bundles",
 		label:     "T1 Worlds Champion Signature Edition Bundle",
 		starLabel: "T1 Worlds Champion Signature Edition Bundle Serial Numbered",
 	},
