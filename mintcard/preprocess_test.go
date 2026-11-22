@@ -71,8 +71,9 @@ func TestPreprocessInserts(t *testing.T) {
 // promo listed under its flavor name with the card's own in parentheses,
 // the helper card of a set whose substitute cards the datastore files, the
 // two cards whose names read like inserts, a Phyrexian printing filed as
-// English beside a List card that only names New Phyrexia, and a catch-all
-// promo shelf numbering its cards by TCGplayer's position, not the card's.
+// English beside a List card that only names New Phyrexia, a List card
+// labelled with the wrong duel deck, and a catch-all promo shelf numbering
+// its cards by TCGplayer's position, not the card's.
 func TestPreprocessShelves(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {
@@ -86,6 +87,7 @@ func TestPreprocessShelves(t *testing.T) {
 		{"Emblem of the Warmind", "Future Sight", "FUT", "English", "FUT", "112"},
 		{"Plains (267) (Phyrexian)", "Phyrexia: All Will Be One", "ONE", "English", "ONE", "267"},
 		{"Beast Within (New Phyrexian)", "Mystery Booster/The List", "MYS", "English", "PLST", "NPH-103"},
+		{"Jhoira of the Ghitu (Duel Decks: Speed vs. Cunning)", "Mystery Booster/The List", "MYS", "English", "PLST", "DDS-1"},
 		{"Lightning Bolt (0002)", "Promo:\u00a0Unique and Miscellaneous", "PMSC", "English", "PW26", "5"},
 		{"La Madre Tierra (Xenagos, God of Revels) (Spanish)", "Secret Lair", "SLD", "English", "SLD", "2061"},
 		{"Carnage, Crimson Chaos", "Promo: Standard Showdown", "PSSP", "English", "PW25", "13"},

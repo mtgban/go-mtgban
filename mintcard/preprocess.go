@@ -146,6 +146,11 @@ func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition,
 		if variant == "Commander" {
 			variant = "Commander 2011"
 		}
+		// Speed vs. Cunning holds no Jhoira: the List reprints the Mind
+		// vs. Might one
+		if cardName == "Jhoira of the Ghitu" && variant == "Duel Decks: Speed vs. Cunning" {
+			variant = "Duel Decks: Mind vs. Might"
+		}
 	case "SLD":
 		// The variant repeats the reskin names of both faces, which no
 		// edition spells, so the match stops at an unknown edition.
