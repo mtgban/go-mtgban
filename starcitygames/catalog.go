@@ -1909,10 +1909,11 @@ var fabDuplicateStock = map[string]bool{
 // a Rainbow Foil of two cards TCGplayer prints only in Normal and Cold Foil
 // (Hyper Driver (Red) DYN110, Flat Trackers HVY155), and the Mastery Pack
 // sheets of tokens and hero cards sold as one product (MPG H01, MPW 134 to
-// 154) that name no single printing.
+// 154, MPA 151 to 154) that name no single printing.
 var fabUnmade = map[string]bool{
 	"SGL-FAB-DYN-110-ENR":             true,
 	"SGL-FAB-HVY-155-ENR":             true,
+	"SGL-FAB-MPA-151_154_153_152-ENN": true,
 	"SGL-FAB-MPG-H01-ENN":             true,
 	"SGL-FAB-MPW-134_135_154_154-ENN": true,
 }
