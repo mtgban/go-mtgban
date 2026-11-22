@@ -46,8 +46,8 @@ Converting every `[...]` to `(...)` is wrong as well: `Dragapult - 091/192
 
 - Fairy Energy in Kalos Starter Set carries the id 85378, which TCGplayer
   deleted, and the datastore has no such energy: not a datastore gap. It is
-  skipped by its storefront id with eight other listings for printings never
-  made (`unmadeProducts`).
+  skipped by its storefront id with twelve other listings for printings never
+  made, or for products that are not cards (`unmadeProducts`).
 - Buylist products whose retail twin is out of stock have no id from the
   crawl; the ids those twins publish are kept in `storefrontTCGIDs`, keyed by
   storefront id.
