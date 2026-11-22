@@ -179,6 +179,13 @@ func TestRetailPromoLine(t *testing.T) {
 			wantSet: "SUM", wantNumber: "305",
 		},
 		{
+			desc: "and on an Alternate Fourth Edition basic, which moves to its own set",
+			jp:   "【アルターネイト版】《平地/Plains》[4ED]B 土地",
+			en:   "【Alternate】《Plains》[4ED]B",
+			card: "Plains", foil: "0",
+			wantSet: "4EDALT", wantNumber: "365",
+		},
+		{
 			desc: "a borderless number the set holds once is not the prerelease copy",
 			jp:   "(402)■ボーダーレス■《喜ぶハーフリング/Delighted Halfling》[LTR-BF] 緑R",
 			en:   "(402)■Borderless■《Delighted Halfling》[LTR-BF]",

@@ -262,6 +262,7 @@ var basicArtSets = map[string]string{
 	"IE":           "CEI",
 	"CE":           "CED",
 	"Summer Magic": "SUM",
+	"4EDALT":       "4EDALT",
 }
 
 // reArtLetter reads the letter a basic land's title states for its art, in
