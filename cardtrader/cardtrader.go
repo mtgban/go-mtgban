@@ -190,6 +190,20 @@ var tcgIDOverrides = map[int]int{
 	400786: 716036, // Seraphine, 005s Showcase, Signed Serialized
 	// Riftbound Radiance: the signed card is sent the unsigned Overnumbered id.
 	417936: 724638, // Ekko, Boy Who Shattered Time, 168s Showcase, Signed
+	// Riftbound: the "b" runes on a promo shelf, none sent; their Cardmarket
+	// ids name the same R0Nb showcase prints.
+	402934: 709748, // Fury Rune, VEN R01b
+	402935: 709746, // Calm Rune, VEN R02b
+	402936: 709749, // Mind Rune, VEN R03b
+	402937: 709745, // Body Rune, VEN R04b
+	402938: 709747, // Chaos Rune, VEN R05b
+	402939: 709750, // Order Rune, VEN R06b
+	417963: 732648, // Fury Rune, RAD R01b
+	417965: 732647, // Calm Rune, RAD R02b
+	417966: 732646, // Mind Rune, RAD R03b
+	417967: 732643, // Body Rune, RAD R04b
+	417968: 732644, // Chaos Rune, RAD R05b
+	417969: 732645, // Order Rune, RAD R06b
 	// Pokemon: none sent either.
 	302130: 180717, // Zoroark, BW19 Jumbo Oversized
 	285780: 658742, // Professor Turo's Scenario, Professor Program Stamp | 171/182
