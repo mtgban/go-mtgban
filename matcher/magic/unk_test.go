@@ -23,6 +23,10 @@ func TestUnknownEventCards(t *testing.T) {
 		{"496930", "Joven and Chandler Playtest", "UNK"},
 		// MTGJSON files this product on UNK's Fast // Furious too
 		{"240150", "Fast // Furious", "MH2"},
+		// Paper foils MTGJSON files as Arena-only
+		{"709764", "Case of the Lost Witness", "MBC"},
+		{"709766", "Oracle of the Alpha", "MBC"},
+		{"709776", "Perforator Crocodile", "MBC"},
 	} {
 		uuid, err := b.MatchID(tc.product)
 		if err != nil {
@@ -49,6 +53,9 @@ func TestUnknownEventCards(t *testing.T) {
 		{"Mox Poison", "Mystery Booster Playtest Cards", "MB2"},
 		{"Mox Poison", "", "MB2"},
 		{"Mox Poison", "Unknown Event", "UNK"},
+		// A foil-only MB2 card reprinted in Mystery Booster Commander
+		{"Oracle of the Alpha", "Mystery Booster Commander Edition", "MBC"},
+		{"Oracle of the Alpha", "Mystery Booster 2", "MB2"},
 		// A pun spelled exactly, in wording that names its set
 		{"Clear, the Mind", "Unknown Event", "UNK"},
 	} {

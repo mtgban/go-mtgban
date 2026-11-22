@@ -1145,9 +1145,7 @@ func (Rules) FilterPrintings(b *matcher.Backend, inCard *matcher.InputCard, edit
 		// a lot of overlap in the product and naming across stores
 		case isMysteryList(inCard) || isSecretLair(inCard):
 			// Mystery Booster Commander Edition is named in full, so that
-			// wording keeps it alone, and nothing else reaches it. Revisit
-			// once it ships: MB2's foil-only Oracle of the Alpha has an MBC
-			// twin told apart by finish alone, unloaded while it has none.
+			// wording keeps it alone, and nothing else reaches it.
 			if inCard.Contains("Mystery Booster Commander") != (set.Code == "MBC") {
 				continue
 			}
