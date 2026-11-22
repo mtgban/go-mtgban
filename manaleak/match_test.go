@@ -71,6 +71,11 @@ func TestMatchAmbiguousID(t *testing.T) {
 			product: MLProduct{Name: "Dread Sanctuary", TCGProductID: "121810", AmbiguousID: true},
 			set:     "CN2", number: "217", finish: "nonfoil",
 		},
+		{
+			name:    "emblem",
+			product: MLProduct{Name: "Emblem - Liliana, The Last Hope", TCGProductID: "120445", AmbiguousID: true},
+			set:     "TEMN", number: "9", finish: "nonfoil",
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
