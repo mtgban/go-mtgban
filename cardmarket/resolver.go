@@ -116,6 +116,11 @@ var productLinks = map[int]int{
 	915839: 721876, // Lorcana Q3 Christopher Robin - Hunny Sage
 	915840: 721878, // Lorcana Q3 Violet Parr - Super Resilient
 	917633: 726179, // Riftbound Clanging Sentry, Radiance Nexus Night promo numbered 0545
+	923947: 716010, // Riftbound Ambessa, The Wolf, T1 Worlds Champion Player Bundle
+	923946: 716015, // Riftbound Xin Zhao, Vigilant, T1 Worlds Champion Player Bundle
+	923945: 716020, // Riftbound Galio, Indefatigable, T1 Worlds Champion Player Bundle
+	923944: 716024, // Riftbound Miss Fortune, Buccaneer, T1 Worlds Champion Player Bundle
+	923943: 716034, // Riftbound Seraphine, Not Alone, T1 Worlds Champion Player Bundle
 	910869: 729853, // Lorcana Hades - Dark Usurper, Challenge Top 8 serialized
 	910870: 729854, // Lorcana Hades - Dark Usurper, Challenge Winner serialized
 	608027: 729995, // Flesh and Blood Arcane Lantern, Everfest Extended Art Cold Foil
