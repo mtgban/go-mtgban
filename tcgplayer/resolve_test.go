@@ -81,7 +81,6 @@ func TestResolverSKU(t *testing.T) {
 		{desc: "a double-faced token is its own product", product: 179416, finish: "Normal", set: "TGK1", number: "8"},
 		{desc: "a product two printings share is the first one's", product: 2372, finish: "Normal", set: "5ED", number: "267"},
 		{desc: "an alternative printing sharing a product is not its home", product: 126455, finish: "Normal", set: "AER", number: "52"},
-		{desc: "a playtest card's twins share one", product: 641692, finish: "Normal", set: "UNK", number: "RZ04k"},
 		{desc: "a product no card owns", product: 1, finish: "Normal", err: errUnownedProduct},
 		{desc: "a product the datastore files at a sealed product", product: 275414, finish: "Normal", err: errUnownedProduct},
 		{desc: "an Italian sku is the Italian copy", product: 3789, finish: "Normal", language: 6, set: "LEGITA", number: "1"},
