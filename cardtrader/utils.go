@@ -559,6 +559,8 @@ var opPromoShelves = map[string]bool{
 	"Store Tournaments Promos": true,
 	"Championships Promo":      true,
 	"Pre-Errata Cards":         true,
+	"Premium Card Collection":  true,
+	"Premium Bandai Products":  true,
 }
 
 // codedShelf matches a shelf named for the set it sells, opening with that
