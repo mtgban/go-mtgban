@@ -1084,9 +1084,12 @@ func resolveMagic(b *matcher.Backend, p CatalogProduct, foil bool) (string, erro
 	// whose primary language isn't English is the right match. Match's
 	// English-only language validation would reject it, so use it directly.
 	// English-primary cards fall through so a foreign single isn't wrongly
-	// collapsed onto the English printing.
+	// collapsed onto the English printing, as does a product in another of
+	// the set's languages, which Match finds from the id.
 	if card.ID != "" {
-		if co, e := b.GetUUID(card.ID); e == nil && co.Language != "" && co.Language != "English" {
+		co, e := b.GetUUID(card.ID)
+		if e == nil && co.Language != "" && co.Language != "English" &&
+			strings.Contains(co.Language, catalogLanguageTag(p.Language)) {
 			return b.MatchID(card.ID, foil, etched)
 		}
 	}
