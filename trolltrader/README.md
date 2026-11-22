@@ -23,6 +23,11 @@ request waits on one ticker, so a run takes about 17 minutes.
   whatever qualifier follows (` - Surge-Foil`, ` (Display Commander)`).
   An art variant reads `(Female - 88a)`; the part after the dash is the
   number.
+- Where the title's number does not land, the SKU's is tried. A title can
+  name only the art, `(Van Camp)`, or carry the wrong number,
+  `Gran-Gran (1)` for PW25 14. Newer SKUs keep the slug's hyphens and add a
+  hash after the number, `cc-pw25-palladium-myr-6-<hash>-nm-nf`, and keep
+  only the last part of a number like `USG-172`.
 - Grades follow the store's own guide: Excellent is SP, Light Played MP,
   Played HP, Poor PO. A few listings say Good, which the guide leaves out;
   it sits between Excellent and Light Played, and reads as MP.
@@ -31,6 +36,12 @@ The store's numbering differs from MTGJSON's in ways the match accepts:
 
 - a foil the datastore numbers apart (`89★`) is numbered as the plain card;
 - an etched foil carries an `e` the datastore does not (`273e`);
+- a foil can carry a letter for its treatment, `317r` ripple, `9s` surge,
+  `2109f` galaxy, and is read as the `★` printing only;
+- a playtest card keeps the number it prints, which MTGJSON replaces
+  (MB2 `265` is MTGJSON's 501);
+- Final Fantasy Commander's surge foils are filed under a code of their
+  own, `FICS`;
 - tokens and emblems are filed under their set's code, where the datastore
   keeps them in the token set, and two-sided tokens are numbered by both
   faces, `22/5`;

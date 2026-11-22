@@ -3,6 +3,7 @@
 package trolltrader
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -127,8 +128,22 @@ func (tt *TrollTrader) match(name, setCode, number, finish string) (string, erro
 			return tokenID, nil
 		}
 	}
+	// A foil the datastore numbers apart can carry a letter naming its
+	// treatment, "317r" for ripple or "9s" for surge
+	if err != nil && flags.foil && foilSuffixRE.MatchString(number) {
+		base := number[:len(number)-1]
+		starID, starErr := tt.matchIn(name, setCode, base, true, flags.etched)
+		if starErr == nil {
+			co, _ := tt.backend.GetUUID(starID)
+			if co.Number == base+magic.SuffixSpecial {
+				return starID, nil
+			}
+		}
+	}
 	return cardID, err
 }
+
+var foilSuffixRE = regexp.MustCompile(`^\d+[a-z]$`)
 
 // matchIn resolves a printing by name, set and number, refusing one that
 // lands anywhere else.
@@ -150,7 +165,11 @@ func (tt *TrollTrader) matchIn(name, setCode, number string, foil, etched bool) 
 	if err != nil {
 		return "", err
 	}
-	if !strings.EqualFold(co.SetCode, setCode) || !sameNumber(number, co.Number, etched) {
+	// MTGJSON numbers playtest cards apart from the number they print,
+	// unless that number names another printing of the card
+	renumbered := co.HasPromoType(magic.PromoTypePlaytest) &&
+		len(tt.backend.MatchInSetNumber(co.Name, co.SetCode, number)) == 0
+	if !strings.EqualFold(co.SetCode, setCode) || !sameNumber(number, co.Number, etched) && !renumbered {
 		return "", fmt.Errorf("%s %s landed on %s %s", setCode, number, co.SetCode, co.Number)
 	}
 	return cardID, nil
@@ -200,6 +219,38 @@ func setCodeOf(product shopifyProduct) string {
 	return ""
 }
 
+// setCodes maps the store's set codes MTGJSON does not use: the store files
+// Final Fantasy Commander's surge foils apart, as FICS.
+var setCodes = map[string]string{
+	"FICS": "FIC",
+}
+
+// skuNumber reads the collector number off a product's SKUs, spelled
+// "cc-<set>-<slug>-<number>-<grade>-<finish>", or with a hyphenated slug
+// and a hash after the number. The second keeps only a number's last part.
+func skuNumber(product shopifyProduct) string {
+	for _, variant := range product.Variants {
+		fields := strings.Split(variant.SKU, "-")
+		n := len(fields)
+		if n < 6 || fields[0] != "cc" {
+			continue
+		}
+		number := fields[3]
+		if n > 6 {
+			if !skuHashRE.MatchString(fields[n-3]) {
+				continue
+			}
+			number = fields[n-4]
+		}
+		if strings.ContainsAny(number, "0123456789") {
+			return number
+		}
+	}
+	return ""
+}
+
+var skuHashRE = regexp.MustCompile(`^(?:[0-9a-f]{3}|[0-9a-f]{32})$`)
+
 // optionValues returns a variant's finish, condition and language, by the
 // product's own option names; a product sold in one language names none.
 func optionValues(product shopifyProduct, variant shopifyVariant) (finish, condition, language string) {
@@ -229,12 +280,14 @@ func (tt *TrollTrader) processProduct(product shopifyProduct) {
 		tt.printf("unparsed product %d: %q", product.ID, product.Title)
 		return
 	}
+	setCode = cmp.Or(setCodes[setCode], setCode)
 	name, number := m[1], m[2]
 	// A variant the store tells apart by art, "Female - 88a"
 	_, after, found := strings.Cut(number, " - ")
 	if found {
 		number = after
 	}
+	skuNum := skuNumber(product)
 	link := baseURL + "/products/" + product.Handle
 
 	for _, variant := range product.Variants {
@@ -256,8 +309,22 @@ func (tt *TrollTrader) processProduct(product shopifyProduct) {
 		}
 
 		cardID, err := tt.match(name, setCode, number, finish)
+		// The SKU numbers the printing where the title names its art,
+		// "(Van Camp)", or carries the wrong number
+		var skuErr error
+		if err != nil && skuNum != "" && skuNum != number {
+			var skuID string
+			skuID, skuErr = tt.match(name, setCode, skuNum, finish)
+			if skuErr == nil {
+				cardID, err = skuID, nil
+			}
+		}
 		if err != nil {
 			tt.logError(err, name, setCode, number, finish)
+			logged := !errors.Is(err, matcher.ErrUnsupported)
+			if logged && skuErr != nil && !errors.Is(skuErr, matcher.ErrUnsupported) {
+				tt.printf("SKU number %s: %v", skuNum, skuErr)
+			}
 			continue
 		}
 

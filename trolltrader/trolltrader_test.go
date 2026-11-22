@@ -143,6 +143,22 @@ func TestProcessProduct(t *testing.T) {
 		{"TAFR", "16", false, false, mtgban.NM}:      0.37,
 		{"TAFR", "5 // 22", false, false, mtgban.NM}: 0.35,
 		{"TAFR", "5 // 22", true, false, mtgban.NM}:  0.35,
+		// The SKU numbers a printing the title names by its art or misnumbers,
+		// a letter suffix names a foil treatment, MTGJSON renumbers playtest
+		// cards, and FICS is the store's shelf for FIC's surge foils
+		{"FEM", "38a", false, false, mtgban.NM}:  1.16,
+		{"FEM", "38a", false, false, mtgban.MP}:  1.04,
+		{"FEM", "38a", false, false, mtgban.HP}:  0.93,
+		{"FEM", "38a", false, false, mtgban.PO}:  0.81,
+		{"ALL", "55b", false, false, mtgban.NM}:  0.35,
+		{"POR", "160d", false, false, mtgban.NM}: 0.40,
+		{"POR", "160d", false, false, mtgban.MP}: 0.36,
+		{"M3C", "317★", true, false, mtgban.NM}:  0.40,
+		{"MB2", "501", false, false, mtgban.NM}:  0.58,
+		{"FIC", "245★", true, false, mtgban.NM}:  0.41,
+		{"PW25", "14", false, false, mtgban.NM}:  0.40,
+		{"PW25", "14", true, false, mtgban.NM}:   2.00,
+		{"PW25", "6", false, false, mtgban.NM}:   0.40,
 	}
 	if !maps.Equal(got, want) {
 		t.Errorf("got %v\nwant %v", got, want)
