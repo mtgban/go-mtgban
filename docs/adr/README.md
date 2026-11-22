@@ -12,6 +12,7 @@ new ADR that supersedes it rather than rewriting history.
 | [0003](0003-atomic-backend-snapshots.md) | Atomically publish immutable backend snapshots | Superseded by ADR-0004 |
 | [0004](0004-localized-matcher-and-scraper-registry.md) | No global state in mtgmatcher; scrapers build on the datastore they are handed | Accepted |
 | [0005](0005-matcher-package-name.md) | The matcher package is named `matcher` | Accepted |
+| [0006](0006-graded-slabs.md) | Graded slabs carry their label; graded stores are flagged singles | Accepted |
 
 ## Format
 
