@@ -90,7 +90,8 @@ func TestMysteryBoosterCardsResolvesToPLSTNumber(t *testing.T) {
 
 // TestShelfWordingResolvesToItsPrinting pins listings whose wording is read
 // as an art index, a release event, an emblem's planeswalker or a token's
-// letter, not a collector number.
+// letter, not a collector number, and the edition names MTG Seattle gives
+// each language of a foreign-only set.
 func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
 	b := realDatastore(t)
 
@@ -111,6 +112,10 @@ func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
 		{"Wurm Token (B)", "Scars of Mirrodin", "", "TSOM", "8"},
 		{"Beast Token A", "Duel Decks: Anthology", "", "TGVL", "8"},
 		{"Beast Token B", "Duel Decks: Garruk vs Liliana", "", "TDDD", "T2"},
+		{"Badlands", "Italian Revised FBB", "", "FBB", "282"},
+		{"Badlands", "French Revised FBB", "", "FBBFR", "282"},
+		{"Badlands", "German Revised FBB", "", "FBBDE", "282"},
+		{"Angry Mob", "German Renaissance", "", "RENDE", "4"},
 	}
 	for _, test := range tests {
 		theCard, err := preprocess(b, test.cardName, test.edition, test.variant)

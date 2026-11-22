@@ -82,10 +82,7 @@ func preprocess(b *matcher.Backend, cardName, edition, variant string) (*matcher
 	}
 
 	switch edition {
-	case "French Revised FBB",
-		"German Revised FBB",
-		"German Revised FWB",
-		"German Renaissance":
+	case "German Revised FWB":
 		return nil, errors.New("foreign")
 	case "Italian Renaissance":
 		if cardName == "Blood Moon" {
