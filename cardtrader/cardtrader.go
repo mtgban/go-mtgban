@@ -348,6 +348,21 @@ var tcgIDOverrides = map[int]int{
 	33507: 21598, // Raging Goblin, POR 145
 	33534: 21582, // Blaze, POR 118
 	33558: 690,   // Hand of Death, POR 96
+	// Magic: the ids sent name the sibling another blueprint sells; the
+	// number names this one.
+	28287:  164322, // Mountain, WC01 tvdl343b
+	28281:  164337, // Swamp, WC01 tvdl347
+	28280:  165081, // Forest, WC01 jt348
+	28289:  165090, // Mountain, WC01 jt343a
+	28339:  165086, // Kavu Chameleon, WC01 jt191sb
+	29562:  164531, // Creeping Mold, WC00 jk220sb
+	27444:  173471, // Plains, WC02 bk333
+	27411:  173884, // Forest, WC02 shh347
+	27420:  173892, // Island, WC02 shh338
+	34968:  158641, // Swamp, PTC gb372
+	34970:  158642, // Swamp, PTC gb371
+	34972:  158640, // Swamp, PTC gb370
+	157074: 240185, // Sword of Sinew and Steel, H1R 31, sent the etched one
 }
 
 // copyWords are the description words saying a listing's copy is not the one
