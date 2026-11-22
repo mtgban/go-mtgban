@@ -30,6 +30,7 @@ var cardTable = map[string]string{
 	"Makindi Siderunner":                  "Makindi Sliderunner",
 	"Anti-Venom, Horrifying Hero":         "Anti-Venom, Horrifying Healer",
 	"Singularity Rapture":                 "Singularity Rupture",
+	"Flare of Fortitud":                   "Flare of Fortitude",
 
 	"The Emperor of Palamecia /The Lord Master of Hell": "The Emperor of Palamecia",
 
