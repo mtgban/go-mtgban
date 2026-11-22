@@ -160,6 +160,55 @@ func foreignBody(b *matcher.Backend, product GNProduct) bool {
 // reprinted from: "Ancestral Mask (MMQ) (LIST-229/350)".
 var magicOrigin = regexp.MustCompile(`\(([0-9A-Z]{2,6})\) \(LIST-`)
 
+// theList is the catalog's name for The List, and listCodes the codes this
+// storefront and the catalog tag and file its two sets under.
+const theList = "The List"
+
+var listCodes = map[string]bool{"LIST": true, "PLIST": true, "PLST": true, "ULST": true}
+
+// listReprint reads the List number, "RIX-174", of a display naming The List
+// whose tag or body set names the printing it was reprinted from:
+// "(PLST-RIX-174) - The List" filed under Rivals of Ixalan, or "(UMA-106) -
+// Ultimate Masters (The List)". A List display naming no origin, such as a
+// Mystery Booster playtest card filed there, is left to its shelf.
+func listReprint(b *matcher.Backend, product GNProduct) (string, bool) {
+	var code string
+	tags := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
+	if tags != nil {
+		code = tags[len(tags)-1][1]
+		origin, number, found := strings.Cut(tags[len(tags)-1][2], "-")
+		if listCodes[code] && found && knownSet(b, origin) {
+			return origin + "-" + strings.TrimLeft(number, "0"), true
+		}
+	}
+	if !strings.Contains(product.DisplayName, "("+theList+")") && magicTailSet(product.DisplayName) != theList {
+		return "", false
+	}
+	origin := code
+	if !knownSet(b, origin) {
+		origin = strings.ToUpper(string(product.ProductData.Set))
+	}
+	if !knownSet(b, origin) {
+		return "", false
+	}
+	number, err := magicNumber(product)
+	if err != nil || strings.Contains(number, "-") {
+		return "", false
+	}
+	number, _, _ = strings.Cut(number, "/")
+	return origin + "-" + strings.TrimLeft(number, "0"), true
+}
+
+// knownSet reports whether a code names a set of the catalog's other than
+// The List.
+func knownSet(b *matcher.Backend, code string) bool {
+	if code == "" || listCodes[code] {
+		return false
+	}
+	_, err := b.GetSet(code)
+	return err == nil
+}
+
 // A Magic display name reads
 //
 //	Aang's Shelter - Teferi's Protection (Borderless) (TLE-007) - Avatar...
@@ -208,6 +257,7 @@ func preprocessMagic(b *matcher.Backend, product GNProduct) (*matcher.InputCard,
 		edition = product.ProductData.SetName
 	}
 	shelfSet := magicShelves[product.ProductData.SetName]
+	listNumber, listed := listReprint(b, product)
 	foil := strings.EqualFold(product.SelectedFinish, "foil") || nameSaysFoil(product.DisplayName)
 	switch {
 	// The promo pack shelves are coded with a second P in front of the
@@ -228,6 +278,10 @@ func preprocessMagic(b *matcher.Backend, product GNProduct) (*matcher.InputCard,
 		if err != nil && namesASet(b, promo[1:]) {
 			edition, number = promo[1:], strings.TrimSuffix(packed, "p")
 		}
+	// A List reprint the storefront filed under the set it came from, body
+	// and all, is still the List's.
+	case listed:
+		edition, number = theList, listNumber
 	// The shelf's name is the catalog's own name for a set the code does
 	// not say: the Timeshifts of a Modern Horizons set are coded with the
 	// set's code and named as the set of their own the catalog files them
@@ -462,7 +516,7 @@ func saysEtched(product GNProduct) bool {
 // magicShelves pairs the shelves this storefront names its own way with the
 // catalog's name for the set.
 var magicShelves = map[string]string{
-	"The List Reprints": "The List",
+	"The List Reprints": theList,
 }
 
 // magicPromoShelves pairs the codes of the shelves that number their promos
