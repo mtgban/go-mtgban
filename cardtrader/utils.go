@@ -1187,6 +1187,20 @@ func foilPrintingID(b *matcher.Backend, cardID string) string {
 	return foilID
 }
 
+// nonfoilPrintingID adopts the nonfoil printing's id for a nonfoil listing of
+// a blueprint sold in both finishes, "Non-Foil / Etched Foil": its version
+// names the etched finish, so every one of its listings first resolves etched.
+func nonfoilPrintingID(b *matcher.Backend, bp *Blueprint, cardID string) string {
+	if !strings.Contains(bp.Version, "Non-Foil") {
+		return cardID
+	}
+	nonfoilID, err := b.MatchID(cardID, false)
+	if err != nil {
+		return cardID
+	}
+	return nonfoilID
+}
+
 // FormatBlueprints indexes blueprints by id and expansions by name, keeping
 // either the sealed products or the singles.
 func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed bool) (map[int]*Blueprint, map[int]string) {
