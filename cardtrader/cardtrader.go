@@ -209,6 +209,8 @@ var tcgIDOverrides = map[int]int{
 	285780: 658742, // Professor Turo's Scenario, Professor Program Stamp | 171/182
 	340672: 211449, // Palkia & Dialga LEGEND, Jumbo Oversized
 	242584: 250252, // Mewtwo V-UNION, Jumbo Oversized
+	242586: 250251, // Greninja V-UNION, Jumbo Oversized
+	242587: 250253, // Zacian V-UNION, Jumbo Oversized
 	332883: 545663, // Lugia ex, Jumbo Oversized, TCG Classic deck
 	171625: 252517, // Charizard, Gold Metal, Celebrations
 	171624: 252516, // Pikachu, Gold Metal, Celebrations
@@ -257,6 +259,9 @@ var tcgIDOverrides = map[int]int{
 	299914: 557054, // Jacq, 175 | Armarouge 49
 	396495: 716740, // Pikachu, MEP 093 | Winner Stamp
 	120070: 136645, // Clefairy, 20th Anniversary Holo Promo 50/83
+	// Pokemon: a Non-Holo deck print, which the wording lands on the set's holo.
+	365943: 547651, // Orthworm, Non-Holo | 151/193
+	118514: 141261, // Poliwrath, Non-Holo Promo | 25/108
 	// One Piece promos: none sent, and a blank or unlabelled version.
 	358719: 668182, // Gol.D.Roger P-107, Store Tournament 2025 Vol. 4
 	400812: 719661, // DON!! Flame-Flame Fruit Coliseum, Championships Promo
