@@ -45,7 +45,8 @@ func spaceSDCC(s string) string {
 var reYearEdition = regexp.MustCompile(`^(\d{4})年版$`)
 
 // dashSuffix reads the tag the storefront appends to a set code. "-RT" names
-// the timeshifted reprints, which are a set of their own and numbered as one.
+// the timeshifted reprints, which are a set of their own and numbered as one,
+// and "-List" the List cards a Mystery Booster carried, which are PLST's.
 // Every other tag describes the frame or the booster a card came out of,
 // which the collector number in the title already pins down, so they are
 // dropped as they always were.
@@ -57,6 +58,9 @@ var reYearEdition = regexp.MustCompile(`^(\d{4})年版$`)
 func dashSuffix(base, suffix string) string {
 	if suffix == "RT" && base == "MH1" {
 		return "H1R"
+	}
+	if suffix == "List" {
+		return "PLST"
 	}
 	return base
 }

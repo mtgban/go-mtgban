@@ -99,11 +99,12 @@ func TestListingsFor(t *testing.T) {
 }
 
 // TestDashSuffix pins which appended tag names a set of its own. Only the
-// timeshifted reprints do; the rest describe a frame or a booster, which the
-// collector number in the title already says.
+// timeshifted reprints and the List do; the rest describe a frame or a
+// booster, which the collector number in the title already says.
 func TestDashSuffix(t *testing.T) {
 	for _, tt := range []struct{ base, suffix, want string }{
 		{"MH1", "RT", "H1R"},
+		{"MBC", "List", "PLST"},
 		{"MH1", "BF", "MH1"},
 		{"MH2", "RT", "MH2"},
 		{"NPH", "P", "NPH"},
