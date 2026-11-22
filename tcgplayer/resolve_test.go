@@ -90,7 +90,8 @@ func TestResolverSKU(t *testing.T) {
 		{desc: "that copy's foil is its star foil", product: 3040, finish: "Foil", language: 2, set: "7ED", number: "157★s", foil: true},
 		{desc: "a foreign variant numbered with a dagger", product: 5197, finish: "Normal", language: 11, set: "MIR", number: "87†"},
 		{desc: "a copy on The List", product: 222411, finish: "Normal", language: 7, set: "PLST", number: "M19-185j"},
-		{desc: "a copy several products share a name with is nobody's", product: 109676, finish: "Normal", language: 5, err: matcher.ErrCardUnknownID},
+		{desc: "a copy several products share a name with is nobody's", product: 38194, finish: "Foil", language: 11, err: matcher.ErrCardUnknownID},
+		{desc: "a sku in another of a foreign-only set's languages is that language's set", product: 109676, finish: "Normal", language: 5, set: "FBBDE", number: "304"},
 		{desc: "an English sku of a printing in another language", product: 557380, finish: "Foil", language: 1, set: "ACR", number: "272", foil: true},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

@@ -332,6 +332,25 @@ func setFamilyEdition(b *matcher.Backend, name, edition, cardEdition, variation 
 	return edition, variation
 }
 
+// languageSet names the set holding a foreign-only set's printings in
+// language, or nothing where edition is not such a set or that one is its own
+func languageSet(b *matcher.Backend, edition, language string) string {
+	if language == "" {
+		return ""
+	}
+	for _, ls := range languageSets {
+		base, found := b.Sets[ls.code]
+		if !found || base.Name != edition || !strings.Contains(langs[ls.tag], language) {
+			continue
+		}
+		set, found := b.Sets[ls.code+ls.tag]
+		if found {
+			return set.Name
+		}
+	}
+	return ""
+}
+
 // AdjustEdition normalizes the edition a storefront published toward a set
 // name. See matcher.GameRules.
 func (Rules) AdjustEdition(b *matcher.Backend, inCard *matcher.InputCard) {
@@ -518,6 +537,8 @@ func (Rules) AdjustEdition(b *matcher.Backend, inCard *matcher.InputCard) {
 	// in, which Match has already read off its wording
 	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && inCard.Language == "Italian":
 		edition += " Italian"
+	case languageSet(b, edition, inCard.Language) != "":
+		edition = languageSet(b, edition, inCard.Language)
 	case inCard.Edition == "Renaissance" && inCard.Language == "Italian" && len(b.MatchInSet(inCard.Name, "RIN")) != 0:
 		edition = "Rinascimento"
 		// This set has lots of variants, strip away any excess data
