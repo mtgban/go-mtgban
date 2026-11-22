@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
@@ -94,7 +95,13 @@ func (vs *Vegassingles) resolve(product HLProduct, language string) (string, err
 	} else {
 		card.Finish = product.Finish
 	}
-	return vs.backend.Match(&card)
+	cardID, err := vs.backend.Match(&card)
+	// The Magic loader does not load Art Series sets, so an id on that shelf
+	// names no card
+	if errors.Is(err, matcher.ErrCardDoesNotExist) && strings.HasSuffix(product.SetName, "Art Series") {
+		return "", matcher.ErrUnsupported
+	}
+	return cardID, err
 }
 
 // processProduct files every cash offer of a product, and reports whether a
