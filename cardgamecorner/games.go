@@ -331,8 +331,8 @@ func preprocessGame(b *matcher.Backend, card *Card, index int) (*matcher.InputCa
 		inCard.Edition = set.Name
 	}
 
-	// A copy of a first edition the datastore lacks, the European ones
-	// still, would be priced as the unlimited it lands on
+	// A copy of a first edition the datastore lacks would be priced as the
+	// unlimited it lands on
 	if oldShelf && inCard.Finish == matcher.Run1stEdition && losesFirstEdition(b, inCard) {
 		return nil, matcher.ErrUnsupported
 	}
