@@ -2222,8 +2222,9 @@ func slugSaidAt(wording, slug string) int {
 
 // doublePackRe matches the product line a Double Pack Set's two DON!!
 // cards are filed under, in the storefront's spelling or the catalog's
-// ("Double Pack Set Vol. 4", "Double Pack Volume 2", "Double Pack Vol 7").
-var doublePackRe = regexp.MustCompile(`(?i)\bdouble\s*pack\b`)
+// ("Double Pack Set Vol. 4", "Double Pack Volume 2", "Double Pack Vol 7"),
+// or by the code cardtrader numbers the volume's DON!! with ("DP13").
+var doublePackRe = regexp.MustCompile(`(?i)\bdouble\s*pack\b|\bdp-?\d+\b`)
 
 // labelOverlap picks, among printings told apart by nothing but a label,
 // the one whose label the storefront's wording names.
@@ -2316,6 +2317,23 @@ func labelOverlap(b *matcher.Backend, inCard *matcher.InputCard, candidates []ma
 			runner, best = best, group
 		} else if runner == nil || group.beats(runner) {
 			runner = group
+		}
+	}
+	// A Double Pack Set's DON!! cards come in their own product, and every
+	// listing selling one names the volume. A wording naming no label at
+	// all is the set's own DON!!, as when the set prints one identity.
+	if best != nil && best.named == 0 && !mustName {
+		var own []matcher.Card
+		for _, card := range candidates {
+			if !doublePackRe.MatchString(promoLabel(b, card)) {
+				own = append(own, card)
+			}
+		}
+		if len(own) > 0 && len(own) < len(candidates) {
+			ownGroups, ownOrder := groupByIdentity(b, own)
+			if len(ownOrder) == 1 {
+				return ownGroups[ownOrder[0]].pick(inCard, treatmentSaid(inCard.Variation))
+			}
 		}
 	}
 	if best == nil || best.named <= len(best.words)-best.named {
