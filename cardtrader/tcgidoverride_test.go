@@ -24,6 +24,7 @@ func TestTCGplayerIDOverrides(t *testing.T) {
 		{"Team Rocket's Giovanni DRI 174, no id sent at all", &Blueprint{ID: 337188, TCGplayerID: 0}, 639952},
 		{"Cintari Saber FAB184 Golden, id sent was the Cardmarket one", &Blueprint{ID: 281847, TCGplayerID: 760040}, 580614},
 		{"Portal Monstrous Growth 173a, no id sent at all", &Blueprint{ID: 33476, TCGplayerID: 0}, 720},
+		{"WCD 2001 Mountain tvdl343b, id named tvdl337", &Blueprint{ID: 28287, TCGplayerID: 164323}, 164322},
 		{"an ordinary blueprint outside the table", &Blueprint{ID: 999999, TCGplayerID: 12345}, 12345},
 	}
 	for _, tt := range tests {

@@ -25,12 +25,15 @@ var reprintedPrereleaseShelves = map[string]string{
 }
 
 // tcgplayerIDWins lists the blueprints whose scryfall id Card Trader copied
-// from a sibling blueprint of the same name and number, leaving the TCGplayer
-// id as the only one naming the printing the blueprint sells.
+// from a sibling blueprint of the same name, leaving the TCGplayer id as the
+// only one naming the printing the blueprint sells.
 var tcgplayerIDWins = map[int]bool{
 	62502:  true, // Bombardment, carries the "No PW Symbol" blueprint's id
 	155482: true, // Illuminate History, carries the Prerelease blueprint's id
 	416464: true, // Aerid Konstrari, Reality Fracture Promos, carries the base FRA 121's id
+	21538:  true, // Forest, DD1 31, carries the Anthology EVG 31's id
+	30511:  true, // Forest, WC99 ml347b, carries ml347a's id
+	30519:  true, // Swamp, WC99 js340b, carries js339's id
 }
 
 // namedID picks between the uuids a blueprint's two ids convert to,
