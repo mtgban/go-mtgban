@@ -199,7 +199,7 @@ read before or after the main match: an Illumineer's Quest promo shelved
 under the set it promotes is found by name and number across every set
 (`lorcanaQuest`), a Japanese or Simplified Chinese promo asks for the name
 plus "(JP Exclusive)" or "(CS Exclusive)" first (`lorcanaExclusives`), and
-`lorcanaNumberRespellings` fixes two promo skus that carry the wrong number.
+`lorcanaNumberRespellings` fixes the promo sku that carries the wrong number.
 
 ### Riftbound
 

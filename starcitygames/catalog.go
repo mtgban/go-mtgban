@@ -1484,12 +1484,10 @@ func bucketKey(sku string) string {
 	return strings.Join(fields, "-")
 }
 
-// lorcanaNumberRespellings spells the promo numbers two skus misnumber,
-// keyed by the sku's number segment: Merlin - Envisioning the Future is PD1 7
-// and the Top 128 Challenge Let It Go is DLPC 2, in the datastore and on
-// TCGplayer alike.
+// lorcanaNumberRespellings spells the promo numbers skus misnumber, keyed by
+// the sku's number segment: the Top 128 Challenge Let It Go is DLPC 2, in the
+// datastore and on TCGplayer alike.
 var lorcanaNumberRespellings = map[string]string{
-	"PD1_013":  "7",
 	"P01_041a": "2",
 }
 
