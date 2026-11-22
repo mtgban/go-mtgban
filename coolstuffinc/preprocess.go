@@ -242,6 +242,19 @@ func buylistLanguage(name, notes string) string {
 	return ""
 }
 
+// csiForeignBlackBorder reads the "Black Bordered (foreign)" shelf: the word
+// in a listing's note names its language, and that the set it was printed in
+var csiForeignBlackBorder = []struct{ word, edition, language string }{
+	{"Italian", "FBB", "Italian"},
+	{"French", "FBB", "French"},
+	{"German", "FBB", "German"},
+	{"Japanese", "4BB", "Japanese"},
+	{"Spanish", "4BB", "Spanish"},
+	{"Portuguese", "4BB", "Portuguese"},
+	{"Korean", "4BB", "Korean"},
+	{"Chinese", "4BB", "Chinese Traditional"},
+}
+
 // preprocess answers the card a retail listing names. foil is the finish of
 // the offer row, which the listing's own wording does not carry.
 func preprocess(b *matcher.Backend, cardName, edition, notes, imgURL string, foil bool) (*matcher.InputCard, error) {
@@ -382,19 +395,15 @@ func preprocess(b *matcher.Backend, cardName, edition, notes, imgURL string, foi
 	switch edition {
 	// The shelf mixes every foreign black-bordered print run under one
 	// name; the language written in the note or the bracket is the only
-	// thing that says which one. Only Italian (FBB) and Japanese (4BB)
-	// have a row in the datastore - the rest were never captured as their
-	// own set, so a German/French/Spanish/Chinese/Korean listing has
-	// nothing to resolve against.
+	// thing that says which one, and the matcher reads the set from it.
 	case "Black Bordered (foreign)":
-		switch {
-		case strings.Contains(variant, "Italian"):
-			edition = "FBB"
-			language = "Italian"
-		case strings.Contains(variant, "Japanese"):
-			edition = "4BB"
-			language = "Japanese"
-		default:
+		for _, run := range csiForeignBlackBorder {
+			if strings.Contains(variant, run.word) {
+				edition, language = run.edition, run.language
+				break
+			}
+		}
+		if language == "" {
 			return nil, matcher.ErrUnsupported
 		}
 
