@@ -59,6 +59,10 @@ type InventoryEntry struct {
 
 	// Any additional extra floating point values
 	ExtraValues map[string]float64 `json:"extra_values,omitempty"`
+
+	// The grading service's label, for a copy sold in a slab; nil for a
+	// raw copy. Conditions holds the slab read as a grade, by Slab.Fold.
+	Slab *Slab `json:"slab,omitempty"`
 }
 
 // Pricing returns the asking price, satisfying GenericEntry so that code
@@ -159,6 +163,9 @@ type ScraperInfo struct {
 
 	// Scraper contains sealed information instead of singles
 	SealedMode bool `json:"sealed,omitempty"`
+
+	// Scraper lists graded slabs only: singles, every entry with its Slab
+	GradedMode bool `json:"graded,omitempty"`
 
 	// Whether the prices can be coalesced in a single entity
 	Family string `json:"family,omitempty"`

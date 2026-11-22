@@ -85,23 +85,33 @@ record built by hand or a dump written by anything else must keep to this.
   store does not say), `Conditions` (a `Condition`, named by `NM` through
   `PO`), `Price` (USD), `URL`, `SellerName`, `Bundle` (part of a
   direct-shipping hub), `OriginalID` (store product id), `InstanceID` (SKU),
-  `CustomFields map[string]string`, `ExtraValues map[string]float64`.
+  `CustomFields map[string]string`, `ExtraValues map[string]float64`, and
+  `Slab` (a grading service's label - grader, score, label - for a copy
+  sold in a slab, nil for a raw one; see ADR-0006).
 - `BuylistEntry`: swaps `Price` for `BuyPrice` + `PriceRatio` (buy/sell
   ratio, a desirability signal) and `SellerName` for `VendorName`.
 
 A scraper reads a store's grade text with `ParseCondition`, which knows the
 spellings stores share and returns `ErrInvalidCondition` for anything else.
+A slab's grade is `Slab.Fold()` (PSA 9 is NM), set by the scraper; a slab
+it cannot read is published as NM with `UnreadSlab`, keeping the store's
+wording, and logged with `UnreadSlabFormat`.
 
 **Insertion semantics** (`add()` in `mtgban/base.go`) - the de-dup engine
 every scraper relies on. Defaults are applied first, and the two sides differ:
 both default an empty condition to `NM`, but only the inventory side
-defaults a zero quantity to `1`. A buylist entry with quantity `0` keeps that
-value, which `Arbit` reads as "unlimited". Conditions outside
+defaults a zero quantity to `1`. An inventory entry with a `Slab` is checked
+first: with no condition, an unsupported grader, or a score off the 1-10
+half steps it is refused with `ErrInvalidCondition`, never defaulted. A
+buylist entry with quantity `0` keeps that value, which `Arbit` reads as
+"unlimited". Conditions outside
 `FullGradeTags = [NM SP MP HP PO]` are rejected with `ErrInvalidCondition`,
 a NaN, infinite or negative `Price` or `BuyPrice` with `ErrInvalidPrice`, and
 a negative quantity with `ErrInvalidQuantity`. A price of zero is kept: Card
 Kingdom publishes an out-of-stock card as an entry carrying its link alone.
-Then a strictness cascade against existing entries for the same card:
+Then a strictness cascade against existing entries for the same card. An
+entry whose `Slab` differs from an existing one's (two slabs, or a slab and
+a raw copy) is another offer and never meets that entry in the cascade:
 
 | Method       | strict | Behavior on duplicate                                          |
 |--------------|--------|----------------------------------------------------------------|
@@ -141,7 +151,8 @@ cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket,
 starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
 and vegassingles. The behavior flags are `MetadataOnly` (index
 prices only, no conditions or quantities), `NoQuantityInventory`,
-`SealedMode`, `CreditMultiplier`
+`SealedMode`, `GradedMode` (a singles seller of slabs only, every entry
+with its `Slab`), `CreditMultiplier`
 (store-credit ratio), `Family` (price-coalescing group), plus
 `InventoryTimestamp`/`BuylistTimestamp` (`*time.Time`; **nil = never
 loaded** - used as the load-completion sentinel).

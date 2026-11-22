@@ -44,6 +44,11 @@ var (
 )
 
 func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int) error {
+	// A slab's grade is its scraper's to choose, never the NM default
+	if entry.Slab != nil && (entry.Conditions == "" || !entry.Slab.valid()) {
+		return fmt.Errorf("%w: slab %+v graded %q for %s", ErrInvalidCondition, *entry.Slab, entry.Conditions, cardID)
+	}
+
 	// Safe defaults
 	if entry.Conditions == "" {
 		entry.Conditions = NM
@@ -65,6 +70,11 @@ func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int)
 	entries, found := inv[cardID]
 	if found {
 		for i := range entries {
+			// A different slab, or a slab beside a raw copy, is another offer
+			if !sameSlab(entry.Slab, entries[i].Slab) {
+				continue
+			}
+
 			if strict > 2 && entry.Conditions == entries[i].Conditions && entry.SellerName == entries[i].SellerName {
 				return fmt.Errorf("%w: duplicate inventory key, same conditions:\n-key: %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, *entry, entries[i])
 			}
