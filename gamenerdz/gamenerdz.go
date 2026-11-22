@@ -366,8 +366,9 @@ func (gn *Gamenerdz) refuse(product GNProduct, err error) {
 // does and not another number than the one it wrote, and by its wording
 // otherwise. Where the two agree on that much the id is right: it names the
 // promo the wording files under its set. Wording the matcher calls
-// unsupported stays unplaced whatever the id says.
-func (gn *Gamenerdz) matchByID(product GNProduct, theCard *matcher.InputCard, tcgID int64) (string, error) {
+// unsupported stays unplaced whatever the id says. It also reports whether
+// the id placed the product.
+func (gn *Gamenerdz) matchByID(product GNProduct, theCard *matcher.InputCard, tcgID int64) (string, bool, error) {
 	idCard := ""
 	if tcgID != 0 {
 		found, err := gn.backend.MatchIDFinish(strconv.FormatInt(tcgID, 10), product.SelectedFinish)
@@ -378,9 +379,9 @@ func (gn *Gamenerdz) matchByID(product GNProduct, theCard *matcher.InputCard, tc
 	// The id is read first, since the matcher rewrites the card it is handed.
 	cardID, err := gn.backend.Match(theCard)
 	if idCard != "" && !errors.Is(err, matcher.ErrUnsupported) {
-		return idCard, nil
+		return idCard, true, nil
 	}
-	return cardID, err
+	return cardID, false, err
 }
 
 // rescue places a product the wording turned down where the listing's finish
@@ -474,7 +475,7 @@ func resolveLorcana(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (st
 		return "", unread(product, err)
 	}
 	foil := theCard.Foil
-	cardID, err := gn.matchByID(product, theCard, tcgID)
+	cardID, _, err := gn.matchByID(product, theCard, tcgID)
 	if err != nil {
 		cardID, err = gn.rescue(product, err)
 	}
@@ -498,7 +499,7 @@ func resolvePokemon(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (st
 	if err != nil {
 		return "", unread(product, err)
 	}
-	cardID, err := gn.matchByID(product, theCard, tcgID)
+	cardID, _, err := gn.matchByID(product, theCard, tcgID)
 	if err != nil && !errors.Is(err, matcher.ErrUnsupported) {
 		retried, found := retryPokemon(gn.backend, product, theCard)
 		if found {
@@ -520,18 +521,23 @@ func resolvePokemon(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (st
 
 // resolveOnePiece reads a product by its id where it names the card, and by
 // its wording otherwise. One without a card code is kept only where it lands
-// on a promo leader.
+// on a promo leader, and one the wording places outside its shelf is refused.
 func resolveOnePiece(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (string, error) {
 	theCard, err := preprocessOnePiece(product)
 	if err != nil {
 		return "", unread(product, err)
 	}
-	cardID, err := gn.matchByID(product, theCard, tcgID)
+	// The matcher rewrites the card it is handed, so the code is read first.
+	code := theCard.Variation
+	cardID, byID, err := gn.matchByID(product, theCard, tcgID)
 	if err != nil {
 		cardID, err = gn.rescue(product, err)
 	}
 	if err == nil && onePieceCodeless(product.DisplayName) && !landedOnLeader(gn.backend, cardID) {
 		err = errors.New("no card code in display name, and no promo leader answers it")
+	}
+	if err == nil && !byID && gn.leftOnePieceShelf(cardID, product, code) {
+		err = errors.New("landed outside the set its shelf names, which prints the card at its code")
 	}
 	if err != nil {
 		gn.refuse(product, err)
@@ -750,6 +756,21 @@ func (gn *Gamenerdz) leftShelf(cardID string, product GNProduct) bool {
 	}
 	co, err := gn.backend.GetUUID(cardID)
 	return err == nil && co.SetCode != shelf.Code
+}
+
+// leftOnePieceShelf reports whether a One Piece listing landed outside the
+// set its shelf names while that set prints the card at the listing's code:
+// a reprint the wording labels the way another set files its own printing.
+func (gn *Gamenerdz) leftOnePieceShelf(cardID string, product GNProduct, code string) bool {
+	shelf, err := gn.backend.GetSetByName(product.ProductData.SetName)
+	if err != nil {
+		return false
+	}
+	co, err := gn.backend.GetUUID(cardID)
+	if err != nil || co.SetCode == shelf.Code {
+		return false
+	}
+	return len(gn.backend.MatchInSetNumber(co.Name, shelf.Code, code)) > 0
 }
 
 // finishPrinted reports whether the printing a product resolved to was sold in

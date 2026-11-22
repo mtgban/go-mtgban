@@ -56,5 +56,10 @@ Converting every `[...]` to `(...)` is wrong as well: `Dragapult - 091/192
 - A few retail ids name another card than their display: `Seel 41` carries
   Ludicolo's, `Beedrill 17/102` Ekans's, `Clickslither (VMA-156)` Necroblossom
   Snarl's. The buylist refuses them; Magic retail lands them as the id says.
+- A One Piece listing whose wording lands outside the set its shelf names,
+  while that set prints the card at the listing's code, is refused: Extra
+  Booster Vol. 2 files its reprinted leaders as Heroine Leader and SP, and the
+  storefront's `(Alternate Art)` label for them reaches another set's
+  alternate art. One its retail id places stays where the id says.
 - `Gum-Gum Mole Pistol (Premium Card Collection -Best Selection Vol.5)` has no
   card code and is not a leader, so it stays refused.
