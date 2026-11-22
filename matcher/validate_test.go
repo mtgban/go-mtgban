@@ -1,6 +1,8 @@
 package matcher
 
 import (
+	"encoding/json"
+	"errors"
 	"testing"
 )
 
@@ -66,6 +68,51 @@ func TestNormalizeListingLanguage(t *testing.T) {
 		in.normalizeLanguage()
 		if in.Language != tt.want {
 			t.Errorf("%+v: got %q, want %q", tt, in.Language, tt.want)
+		}
+	}
+}
+
+// TestMatchIDLanguageSpelling pins that a language spelled shorter than the
+// datastore names the one printing it fits, and none where it fits two or
+// names no language at all.
+func TestMatchIDLanguageSpelling(t *testing.T) {
+	b := &Backend{UUIDs: map[string]*CardObject{}}
+	for uuid, data := range map[string]string{
+		"base": `{"uuid": "base", "language": "Japanese", "foreignData": [
+			{"language": "Portuguese (Brazil)", "uuid": "pt"},
+			{"language": "Chinese Simplified", "uuid": "zhs"},
+			{"language": "Chinese Traditional", "uuid": "zht"}]}`,
+		"lone": `{"uuid": "lone", "language": "English", "foreignData": [
+			{"language": "Italian", "uuid": "ita"}]}`,
+	} {
+		var card Card
+		err := json.Unmarshal([]byte(data), &card)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b.UUIDs[uuid] = &CardObject{Card: card}
+	}
+	for _, uuid := range []string{"pt", "zhs", "zht", "ita"} {
+		b.UUIDs[uuid] = &CardObject{Card: Card{UUID: uuid}}
+	}
+	for _, tt := range []struct{ uuid, language, want string }{
+		{"base", "Portuguese", "pt"},
+		{"base", "Portuguese (Brazil)", "pt"},
+		{"base", "Chinese Traditional", "zht"},
+		{"base", "Japanese", "base"},
+		{"base", "Chinese", ""},
+		{"lone", "Italian", "ita"},
+		{"lone", "", ""},
+	} {
+		got, err := b.MatchIDLanguage(tt.uuid, tt.language)
+		if tt.want == "" {
+			if !errors.Is(err, ErrCardUnknownID) {
+				t.Errorf("MatchIDLanguage(%s, %q) = %q %v, want ErrCardUnknownID", tt.uuid, tt.language, got, err)
+			}
+			continue
+		}
+		if err != nil || got != tt.want {
+			t.Errorf("MatchIDLanguage(%s, %q) = %q %v, want %q", tt.uuid, tt.language, got, err, tt.want)
 		}
 	}
 }

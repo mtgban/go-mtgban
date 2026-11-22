@@ -361,8 +361,10 @@ func (b *Backend) MatchID(inputID string, finishes ...bool) (string, error) {
 
 // MatchIDLanguage returns the printing of the card behind uuid in language,
 // in the same finish: the card itself when it is in that language, or else
-// the one its foreignData names for it. ErrCardUnknownID answers a language
-// the datastore loads no printing of the card in.
+// the one its foreignData names for it. A language a listing spells shorter
+// than the datastore ("Portuguese" for "Portuguese (Brazil)") names the one
+// printing it fits. ErrCardUnknownID answers a language the datastore loads
+// no printing of the card in.
 func (b *Backend) MatchIDLanguage(uuid, language string) (string, error) {
 	co, err := b.GetUUID(uuid)
 	if err != nil {
@@ -371,10 +373,17 @@ func (b *Backend) MatchIDLanguage(uuid, language string) (string, error) {
 	if co.Language == language {
 		return co.UUID, nil
 	}
+	var fits []string
 	for _, fd := range co.ForeignData {
 		if fd.Language == language {
 			return b.MatchID(fd.UUID, co.Foil, co.Etched)
 		}
+		if language != "" && matchesLanguage(fd.Language, language) {
+			fits = append(fits, fd.UUID)
+		}
+	}
+	if len(fits) == 1 {
+		return b.MatchID(fits[0], co.Foil, co.Etched)
 	}
 	return "", ErrCardUnknownID
 }
