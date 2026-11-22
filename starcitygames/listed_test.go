@@ -83,7 +83,7 @@ func TestFileListed(t *testing.T) {
 		// Only the index lists these.
 		"SGL-MTG-3BB-105-ITN":           hit("Demonic Tutor", "3rd Edition - Black Border", "it", "105", nonfoil, rare),
 		"SGL-MTG-WCHP-99KB_ULG_126-ENN": hit("Grim Monolith", "World Championships", "en", "126", nonfoil, rare),
-		// Foreign Black Border is Italian only.
+		// Foreign Black Border's German printing is a set of its own.
 		"SGL-MTG-3BB-105-DEN": hit("Demonic Tutor", "3rd Edition - Black Border", "de", "105", nonfoil, rare),
 		// The year leads the number, so 2000-2004 keep it.
 		"SGL-MTG-WCHP-01JT_MMQ_324-ENN": hit("Rishadan Port", "World Championships", "en", "324", nonfoil, rare),
@@ -135,6 +135,7 @@ func TestFileListed(t *testing.T) {
 		"SGL-MTG-3BB-88-ITN":             "FBB 88",
 		"SGL-MTG-PRM-30A_2023_004-ENF":   "P30A 4",
 		"SGL-MTG-3BB-105-ITN":            "FBB 105",
+		"SGL-MTG-3BB-105-DEN":            "FBBDE 105",
 		"SGL-MTG-WCHP-99KB_ULG_126-ENN":  "WC99 kb126",
 		"SGL-MTG-WCHP-01JT_MMQ_324-ENN":  "WC01 jt324",
 		"SGL-MTG-WCHP-03PK_JUD_062s-ENN": "WC03 pk62sb",

@@ -10,9 +10,9 @@ import (
 // it directly (Match's English-only language gate is bypassed). This includes
 // Foreign Black Border (4BB, and SCG's 3BB -> FBB) and the Italian Legends and
 // The Dark (LEGITA/DRKITA). Each of those sets holds exactly one printing, in
-// one language, so only the product sold in that language resolves; a card of
-// an English-primary set with no distinct foreign set (Portal Three Kingdoms)
-// stays unmatched for the same reason.
+// one language, and FBB and 4BB keep each of their other languages in a set of
+// its own; a card of an English-primary set with no distinct foreign set
+// (Portal Three Kingdoms) stays unmatched.
 func TestResolveProductForeignSets(t *testing.T) {
 	b := withMagic(t)
 
@@ -23,6 +23,9 @@ func TestResolveProductForeignSets(t *testing.T) {
 		{"Vesuvan Doppelganger", "SGL-MTG-3BB-88-ITN", "Italian", "88", "FBB", "88"},
 		{"Caverns of Despair", "SGL-MTG-LEG-136-ITN", "Italian", "136", "LEGITA", "136"},
 		{"Season of the Witch", "SGL-MTG-DRK-52-ITN", "Italian", "52", "DRKITA", "52"},
+		{"Mishra's Factory", "SGL-MTG-4BB-361-KON", "Korean", "361", "4BBKO", "361"},
+		{"Mishra's Factory", "SGL-MTG-4BB-361-ZTN", "Chinese - Traditional", "361", "4BBZHT", "361"},
+		{"Vesuvan Doppelganger", "SGL-MTG-3BB-88-DEN", "German", "88", "FBBDE", "88"},
 	}
 	for _, tt := range a1 {
 		t.Run(tt.name, func(t *testing.T) {
@@ -49,25 +52,6 @@ func TestResolveProductForeignSets(t *testing.T) {
 	}); err == nil {
 		co, _ := b.GetUUID(id)
 		t.Errorf("Portal Three Kingdoms Japanese collapsed onto %s #%s, want unmatched", co.SetCode, co.Number)
-	}
-
-	// SCG sells the foreign sets in languages mtgjson has no printing for.
-	// 4BB is Japanese and FBB Italian, so these have nothing to land on and
-	// must not be folded onto the one printing that does exist.
-	for _, tt := range []struct{ name, sku, lang, num string }{
-		{"Mishra's Factory", "SGL-MTG-4BB-361-KON", "Korean", "361"},
-		{"Mishra's Factory", "SGL-MTG-4BB-361-ZTN", "Chinese - Traditional", "361"},
-		{"Vesuvan Doppelganger", "SGL-MTG-3BB-88-DEN", "German", "88"},
-	} {
-		if id, err := resolveProduct(b, GameMagic, CatalogProduct{
-			SKU: tt.sku, Name: tt.name, Game: "Magic: The Gathering",
-			Language: tt.lang, CollectorNumber: tt.num,
-			Finish: "Non-foil", FinishGroup: "Non-foil",
-		}); err == nil {
-			co, _ := b.GetUUID(id)
-			t.Errorf("%s %s collapsed onto %s #%s (%s), want unmatched",
-				tt.name, tt.lang, co.SetCode, co.Number, co.Language)
-		}
 	}
 }
 
