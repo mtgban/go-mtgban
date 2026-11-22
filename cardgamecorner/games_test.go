@@ -131,6 +131,12 @@ func TestGameInput(t *testing.T) {
 			want:    matcher.InputCard{Name: "Vi, Piltover Enforcer", Edition: "Unleashed", Variation: "187", Foil: true},
 		},
 		{
+			game:    matcher.GameRiftbound,
+			card:    Card{Name: "Calm Rune", Edition: "Unleashed - Promo", Number: "R02b"},
+			variant: Variant{Foil: "Foil"},
+			want:    matcher.InputCard{Name: "Calm Rune", Edition: "Unleashed", Variation: "R02b", Foil: true},
+		},
+		{
 			game:    matcher.GamePokemon,
 			card:    Card{Name: "Gyarados d Delta Species ", Edition: "EX Holon Phantoms", Number: "8", Rarity: "Rare Holo"},
 			variant: Variant{Print: "Unl.", Foil: "Non Foil"},
