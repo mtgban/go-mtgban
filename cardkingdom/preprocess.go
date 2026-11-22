@@ -342,6 +342,7 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 		variation = card.Variation
 		switch {
 		case strings.Contains(variation, "APAC"),
+			strings.Contains(variation, "Magic Presents"),
 			strings.Contains(variation, "German Misprint"),
 			strings.Contains(variation, "Euro"):
 			variation = number
