@@ -29,8 +29,9 @@ func TestCatalogLanguageTag(t *testing.T) {
 	}
 }
 
-// mtgjson keeps one printing for the inherently foreign sets while SCG
-// sells them in several languages, so only the matching one resolves.
+// SCG sells the inherently foreign sets in several languages, and each
+// resolves to its own language's printing; a language the set was never
+// printed in has nothing to land on.
 func TestResolveForeignLanguages(t *testing.T) {
 	b := withMagic(t)
 
@@ -50,20 +51,29 @@ func TestResolveForeignLanguages(t *testing.T) {
 			wantOK: true,
 		},
 		{
-			desc: "the Chinese one has no printing to land on",
+			desc: "the Chinese one lands on 4BB's Chinese set",
 			product: CatalogProduct{
 				Name: "Yotian Soldier", Set: "4th Edition - Black Border",
 				Language: "Chinese - Traditional", CollectorNumber: "360",
 				SKU: "SGL-MTG-4BB-360-ZTN", FinishGroup: "Non-foil",
 			},
-			wantOK: false,
+			wantOK: true,
 		},
 		{
-			desc: "FBB is Italian, so German is dropped",
+			desc: "German lands on FBB's German set",
 			product: CatalogProduct{
 				Name: "Weakness", Set: "3rd Edition - Black Border",
 				Language: "German", CollectorNumber: "136",
 				SKU: "SGL-MTG-3BB-136-DEN", FinishGroup: "Non-foil",
+			},
+			wantOK: true,
+		},
+		{
+			desc: "FBB was never printed in Russian, so that is dropped",
+			product: CatalogProduct{
+				Name: "Weakness", Set: "3rd Edition - Black Border",
+				Language: "Russian", CollectorNumber: "136",
+				SKU: "SGL-MTG-3BB-136-RUN", FinishGroup: "Non-foil",
 			},
 			wantOK: false,
 		},
