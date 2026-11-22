@@ -13,20 +13,24 @@ import (
 // tails bare, as "J26" and "P03". The Secrets of Eternity pair is the silent
 // case: SECE-ENS03 shares its digits with SECE-EN013's neighbour, so a
 // wording naming no number is answered by whichever printing the tiering
-// reaches first.
+// reaches first. The Legendary Modern Decks 2026 pair shares digits and
+// rarity, so only the deck letter parts ENX21 from ENS21.
 const letteredNumberFixture = `{"data": {
 	"game": "yugioh",
 	"sets": {
 		"LDK2": {"name": "Legendary Decks II", "releaseDate": "2016-10-07"},
 		"25YC": {"name": "Championship Prize Cards 2025", "releaseDate": "2025-01-01"},
-		"SECE": {"name": "Secrets of Eternity", "releaseDate": "2015-01-16"}
+		"SECE": {"name": "Secrets of Eternity", "releaseDate": "2015-01-16"},
+		"L26D": {"name": "Legendary Modern Decks 2026", "releaseDate": "2026-03-13"}
 	},
 	"cards": [
 		{"id": "ldk2-enj26_123593_unlimited", "name": "Polymerization", "number": "LDK2-ENJ26", "setCode": "LDK2", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 123593}},
 		{"id": "ldk2-enk22_123546_unlimited", "name": "Polymerization", "number": "LDK2-ENK22", "setCode": "LDK2", "rarity": "Common", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 123546}},
 		{"id": "25yc-enp03_637084_limited", "name": "Blackwing - Gale the Whirlwind", "number": "25YC-ENP03", "setCode": "25YC", "rarity": "Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 637084}},
 		{"id": "sece-en013_100013_1stedition", "name": "Infernoid Antra", "number": "SECE-EN013", "setCode": "SECE", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100013}},
-		{"id": "sece-ens03_100003_1stedition", "name": "Infernoid Antra", "number": "SECE-ENS03", "setCode": "SECE", "rarity": "Super Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100003}}
+		{"id": "sece-ens03_100003_1stedition", "name": "Infernoid Antra", "number": "SECE-ENS03", "setCode": "SECE", "rarity": "Super Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 100003}},
+		{"id": "l26d-ens21_683056_1stedition", "name": "Triple Tactics Talent", "number": "L26D-ENS21", "setCode": "L26D", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 683056}},
+		{"id": "l26d-enx21_683095_1stedition", "name": "Triple Tactics Talent", "number": "L26D-ENX21", "setCode": "L26D", "rarity": "Common", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 683095}}
 	]
 }}`
 
@@ -68,6 +72,23 @@ func TestLetterLedNumberRead(t *testing.T) {
 			in: matcher.InputCard{Name: "Infernoid Antra", Variation: "S03 Super Rare",
 				Edition: "Secrets of Eternity"},
 			want: "sece-ens03_100003_1stedition",
+		},
+		{
+			desc: "the deck letter parts two printings that share their digits",
+			in: matcher.InputCard{Name: "Triple Tactics Talent", Variation: "X21 Common",
+				Edition: "Legendary Modern Decks 2026"},
+			want: "l26d-enx21_683095_1stedition",
+		},
+		{
+			desc: "in either case",
+			in: matcher.InputCard{Name: "Triple Tactics Talent", Variation: "x21 Common",
+				Edition: "Legendary Modern Decks 2026"},
+			want: "l26d-enx21_683095_1stedition",
+		},
+		{
+			desc: "and with no edition to narrow the sets",
+			in:   matcher.InputCard{Name: "Triple Tactics Talent", Variation: "X21 Common"},
+			want: "l26d-enx21_683095_1stedition",
 		},
 		{
 			desc: "a full number keeps its precedence over any letter-led field",

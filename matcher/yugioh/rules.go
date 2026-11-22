@@ -1177,12 +1177,16 @@ func (r Rules) FilterCards(b *matcher.Backend, inCard *matcher.InputCard, sets [
 		return candidates
 	}
 
-	// A verbatim collector number beats a suffix-stripped match, so the
-	// "K" misprint reissues ("EOJ-EN004K") never pull in their base card.
+	// A verbatim collector number beats a suffix-stripped match, so the "K"
+	// misprint reissues ("EOJ-EN004K") never pull in their base card. A bare
+	// letter-led tail ("X21") is verbatim where the number ends with it.
 	if number != "" {
+		lettered := letteredNumber(number) == number
+		tail := strings.ToUpper(number)
 		var exact []matcher.Card
 		for _, card := range candidates {
-			if strings.EqualFold(number, card.Number) {
+			if strings.EqualFold(number, card.Number) ||
+				(lettered && strings.HasSuffix(strings.ToUpper(card.Number), tail)) {
 				exact = append(exact, card)
 			}
 		}
