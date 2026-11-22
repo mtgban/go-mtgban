@@ -159,7 +159,9 @@ func TestBuylistPricesEveryOffer(t *testing.T) {
 
 // TestMagicFinishes asks for a Magic product's finish by name where the
 // matcher knows the word, refusing one the printing was never sold in, and
-// reads a finish spelled in a way it has not seen off the is_foil flag.
+// reads a finish spelled in a way it has not seen off the is_foil flag. A
+// product on an Art Series shelf, which the datastore does not load, is
+// unsupported rather than an unknown card.
 func TestMagicFinishes(t *testing.T) {
 	b := withMagic(t)
 	vs, err := NewScraper(b)
@@ -181,6 +183,7 @@ func TestMagicFinishes(t *testing.T) {
 		{HLProduct{TCGplayerProductID: 505834, Finish: "unheard_of_foil", IsFoil: true}, true, false, "Spectator Seating", nil},
 		// Yidris, Maelstrom Wielder in Commander 2016 is foil only
 		{HLProduct{TCGplayerProductID: 124203, Finish: "normal"}, false, false, "", matcher.ErrCardWrongFinish},
+		{HLProduct{TCGplayerProductID: 244089, Finish: "normal", SetName: "Adventures in the Forgotten Realms Art Series"}, false, false, "", matcher.ErrUnsupported},
 	}
 	for _, test := range tests {
 		p := test.product
