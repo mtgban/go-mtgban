@@ -168,20 +168,30 @@ func describePrinting(b *matcher.Backend, id string) string {
 	return co.SetCode + " " + co.Number + " " + finish
 }
 
-// TestSoldFoilApart replays the V.1 rows of the shelves that sell a card's
-// foil as the V.2 product through resolveMapped: a V.1 with a V.2 beside it
-// gives its foil column up, and one without keeps it.
+// TestSoldFoilApart replays rows of the shelves whose foil another product
+// sells through resolveMapped: a V.1 with a V.2 beside it, or a deck card
+// with a foil-only Extras product at its number, gives its foil column up,
+// and one without keeps it.
 func TestSoldFoilApart(t *testing.T) {
 	b := realDatastore(t)
-	const m3c, w40k = 5657, 5074
+	const m3cDeck, m3c, tmcDeck, tmc, w40k = 5654, 5657, 6346, 6493, 5074
 	catalog := &cm.Catalog{Data: cm.CatalogData{
 		Expansions: map[int]cm.CatalogExpansion{
-			m3c:  {Name: "Commander: Modern Horizons 3: Extras", Code: "XM3C"},
-			w40k: {Name: "Universes Beyond: Warhammer 40,000", Code: "40K"},
+			m3cDeck: {Name: "Commander: Modern Horizons 3", Code: "M3C"},
+			m3c:     {Name: "Commander: Modern Horizons 3: Extras", Code: "XM3C"},
+			tmcDeck: {Name: "Commander: Teenage Mutant Ninja Turtles", Code: "TMC"},
+			tmc:     {Name: "Commander: Teenage Mutant Ninja Turtles: Extras", Code: "XTMC"},
+			w40k:    {Name: "Universes Beyond: Warhammer 40,000", Code: "40K"},
 		},
 		Products: map[int]cm.CatalogProduct{
 			773244: {ExpansionID: m3c, Name: "Barrowgoyf (V.1)", Number: "50", Version: 1},
 			774752: {ExpansionID: m3c, Name: "Barrowgoyf (V.2)", Number: "50", Version: 2},
+			771305: {ExpansionID: m3cDeck, Name: "Hideous Taskmaster", Number: "57"},
+			771306: {ExpansionID: m3cDeck, Name: "Satya, Aetherflux Genius", Number: "3"},
+			774577: {ExpansionID: m3c, Name: "Hideous Taskmaster", Number: "57"},
+			873492: {ExpansionID: tmcDeck, Name: "Bebop, Skull & Crossbones", Number: "15"},
+			873054: {ExpansionID: tmcDeck, Name: "Leonardo, the Balance", Number: "1"},
+			874162: {ExpansionID: tmc, Name: "Bebop, Skull & Crossbones (V.1)", Number: "15", Version: 1},
 			675703: {ExpansionID: w40k, Name: "Celestine, the Living Saint (V.1)", Number: "10", Version: 1},
 			764123: {ExpansionID: w40k, Name: "Celestine, the Living Saint (V.2)", Number: "10", Version: 2},
 			671290: {ExpansionID: w40k, Name: "Sol Ring (V.1)", Number: "249", Version: 1},
@@ -194,6 +204,10 @@ func TestSoldFoilApart(t *testing.T) {
 		wantApart bool
 	}{
 		{773244, true},
+		{771305, true},
+		{771306, false},
+		{873492, true},
+		{873054, false},
 		{675703, true},
 		{671290, false},
 	} {
