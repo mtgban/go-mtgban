@@ -1800,6 +1800,9 @@ var promoMap = map[string]map[string]map[string]struct {
 	"UST-P": {
 		"Earl of Squirrel": {"": {Edition: "PUST", Variant: "108"}},
 	},
+	"FRF-P": {
+		"Archfiend of Depravity": {"3 Intro Pack Promo": {Edition: "PFRF", Variant: "62"}},
+	},
 	"M15-P": {
 		"Aeronaut Tinkerer": {"PURL": {Edition: "PURL", Variant: "8"}},
 	},
