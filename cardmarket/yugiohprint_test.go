@@ -9,10 +9,10 @@ import (
 	"github.com/mtgban/go-mtgban/matcher"
 )
 
-// yugiohEuropeanPrint answers the uuid of the row numbered exactly number
-// in setName, or "" where the datastore has no row at that number - so a
-// case can hold on either shape of the datastore.
-func yugiohEuropeanPrint(t *testing.T, b *matcher.Backend, setName, number string) string {
+// yugiohEuropeanPrint answers the uuids of the row numbered exactly number
+// in setName, its default run and its 1st Edition, or "" where the datastore
+// has no such row or run - so a case can hold on any shape of the datastore.
+func yugiohEuropeanPrint(t *testing.T, b *matcher.Backend, setName, number string) (string, string) {
 	t.Helper()
 	set, err := b.GetSetByName(setName)
 	if err != nil {
@@ -21,10 +21,10 @@ func yugiohEuropeanPrint(t *testing.T, b *matcher.Backend, setName, number strin
 	for _, uuid := range b.GetUUIDsInSet(set.Code) {
 		co, err := b.GetUUID(uuid)
 		if err == nil && co.Number == number {
-			return uuid
+			return co.FoilUUIDs[matcher.FinishNonfoil], co.FoilUUIDs[matcher.FinishSlug(matcher.Run1stEdition)]
 		}
 	}
-	return ""
+	return "", ""
 }
 
 // TestYugiohIndexPrints pins what the version index names on the shelves
@@ -40,10 +40,10 @@ func TestYugiohIndexPrints(t *testing.T) {
 	// Once datastore-gen mints the card's own European first print, the
 	// resolver gives up the CardTrader bridge to the North American row for
 	// its own numbered printing instead; hold either outcome.
-	europeanWant, europeanErr := "", errForeign
-	uuid := yugiohEuropeanPrint(t, b, "Magic Ruler", "MRL-E047")
-	if uuid != "" {
-		europeanWant, europeanErr = uuid, nil
+	europeanErr := errForeign
+	europeanWant, europeanWantFoil := yugiohEuropeanPrint(t, b, "Magic Ruler", "MRL-E047")
+	if europeanWant != "" {
+		europeanErr = nil
 	}
 
 	for _, tt := range []struct {
@@ -61,7 +61,7 @@ func TestYugiohIndexPrints(t *testing.T) {
 		{
 			desc:  "the European print gives the bridged North American row up",
 			mkmID: 104729, bridgeTCG: 22255, name: "Mystical Space Typhoon (V.1 - Ultra Rare)", number: "047", expansion: "Magic Ruler",
-			want: europeanWant, wantErr: europeanErr,
+			want: europeanWant, wantFoil: europeanWantFoil, wantErr: europeanErr,
 		},
 		{
 			desc:  "the European print keeps a row of its own",
