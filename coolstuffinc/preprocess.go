@@ -223,6 +223,7 @@ var nameTable = map[string]string{
 	"Rin and Seri, Inseperable":              "Rin and Seri, Inseparable",
 	"Shadowheart, Dark Justicar":             "Shadowheart, Dark Justiciar",
 	"Sakashima the Imposter":                 "Sakashima the Impostor",
+	"Villanous Wrath":                        "Villainous Wrath",
 
 	"Doric, Nature's Warden // Doric, Owlbear Avenger": "Doric, Nature's Warden",
 }
