@@ -89,7 +89,13 @@ var pokemonStampLinks = map[int]int{
 	450323: 227091, 450353: 251200, 671274: 126022, 671277: 126020,
 	901314: 131305, 790698: 617801, 804345: 617803, 888578: 695405,
 	865204: 663284, 742042: 499365, 726923: 681225, 838393: 649940,
-	791827: 586830,
+	791827: 586830, 280579: 224355, 547906: 220092, 576708: 618732,
+	727118: 515291, 727120: 515288, 766960: 547651, 789025: 576969,
+	794900: 591109, 799715: 594469, 799716: 594470, 799718: 594471,
+	800148: 599649, 801568: 604897, 801569: 598050, 828100: 637651,
+	828101: 635481, 841266: 664145, 841269: 664056, 841271: 664141,
+	841276: 664147, 854291: 659592, 921294: 734563, 873099: 704904,
+	873102: 710279,
 }
 
 // pokemonUnmade lists Cardmarket products no English printing was made for.
@@ -98,6 +104,7 @@ var pokemonUnmade = map[int]bool{
 	278860: true, // Pokemon Rumble Croagunk, likewise
 	690801: true, // XY Black Star Promos Delphox, no such promo
 	690803: true, // XY Black Star Promos Kecleon, French attack names
+	728280: true, // Prize Pack Series Three Vitality Band, not on TPCi's card list
 }
 
 // pokemonHoloLinks names, by Cardmarket product id, the TCGplayer product
