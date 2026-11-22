@@ -133,6 +133,21 @@ func TestMatchProductPage(t *testing.T) {
 			set: "PZEN", number: "9★", finish: "foil",
 		},
 		{
+			name: "Promos shelf of one set", category: "Promos",
+			code: "mtgEURO_11", product: MLProduct{Name: "Forest"},
+			set: "PELP", number: "11", finish: "nonfoil",
+		},
+		{
+			name: "Promos shelf of one set, APAC", category: "Promos",
+			code: "mtgAPAC_14", product: MLProduct{Name: "Plains"},
+			set: "PALP", number: "14", finish: "nonfoil",
+		},
+		{
+			name: "Promos shelf of one set, foil", category: "Promos",
+			code: "mtgCP_2-f", product: MLProduct{Name: "Niv-Mizzet, The Firemind - Foil"},
+			set: "PCMP", number: "2", finish: "foil",
+		},
+		{
 			name: "storefront index on the Promos shelf", category: "Promos",
 			code: "mtgFNMP_122-f", product: MLProduct{Name: "Anathemancer - Foil"},
 			set: "F10", number: "7", finish: "foil",
@@ -187,13 +202,12 @@ func TestMatchProductPage(t *testing.T) {
 	}
 
 	// Rows no printing is provable for stay unpriced: FNM promos of one card
-	// in two years, and a card whose lone answer from the matcher is not the
-	// printing the shelf and number name.
+	// in two years, and a shelf whose index is not the collector number.
 	for _, tc := range []struct {
 		name, category, code string
 	}{
 		{"Goblin Warchief - Foil", "Promos", "mtgFNMP_72-f"},
-		{"Niv-Mizzet, The Firemind - Foil", "Promos", "mtgCP_2-f"},
+		{"Soltari Priest - Foil", "Promos", "mtgSUS_23-f"},
 	} {
 		product := MLProduct{Name: tc.name}
 		product.readPage(tc.category, tc.code)

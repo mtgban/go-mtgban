@@ -117,6 +117,15 @@ var promoShelfWords = map[string]string{
 	"PRO":   "Pro Tour",
 }
 
+// promoShelfSets maps the letters a Promos-shelf product code opens with to
+// the set the shelf holds, for the shelves of one set indexed by its
+// collector numbers.
+var promoShelfSets = map[string]string{
+	"EURO": "PELP",
+	"APAC": "PALP",
+	"CP":   "PCMP",
+}
+
 // promoSetType is the type MTGJSON gives the sets of promos, and starterSetType
 // the one it gives a clash pack, whose card is a promo printing when the pack
 // is filed under a main set.
@@ -180,6 +189,14 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 	kind, sibling := siblingShelves[product.Shelf]
 	switch {
 	case product.FromPage && product.SetName == promoShelf:
+		code, single := promoShelfSets[product.Shelf]
+		if single {
+			set, err := ml.backend.GetSet(code)
+			if err == nil {
+				in.Edition = set.Name
+				in.Variation = product.Number
+			}
+		}
 		cardID, err := ml.backend.Match(&in)
 		return ml.onPromoShelf(product, cardName, cardID, err, foil, etched)
 	case product.FromPage && sibling:
