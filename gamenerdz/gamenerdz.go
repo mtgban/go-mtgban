@@ -257,8 +257,11 @@ var staleTCGIDs = map[int64]int64{
 // id), a Gengar and a Rayquaza cosmos holo TCGplayer has no product for, and
 // Fairy Energy from a starter set and a Release Event Leader Luffy, both
 // from TCGplayer products since deleted; no live Luffy carries the name, so
-// there is no id to move the Release Event one to. Keyed by id, one id per
-// finish, so that a revised display name does not bring them back.
+// there is no id to move the Release Event one to. A Sabo 2nd Anniversary
+// Winner and a Japanese-only Pikachu neither catalog sells sit here too, with
+// two products that are not cards: a board game and a Lorcana puzzle insert.
+// Keyed by id, one id per finish, so that a revised display name does not
+// bring them back.
 var unmadeProducts = map[string]bool{
 	"gNj4crD7UK": true,
 	"OqViCLFgBL": true,
@@ -269,6 +272,10 @@ var unmadeProducts = map[string]bool{
 	"jBGWXInwmy": true,
 	"KxeSHdeeUG": true,
 	"EKoP4ASXOf": true,
+	"q4aZCev6lt": true,
+	"mkVx4GcYVp": true,
+	"1kx6t5IkEc": true,
+	"28jqwxx3NZ": true,
 }
 
 // storefrontTCGIDs are the TCGplayer ids of buylist products whose retail
