@@ -25,6 +25,7 @@ var cardTable = map[string]string{
 	"Time Shrike":            "Tine Shrike",
 	"Treasure Find":          "Treasured Find",
 	"Wax/Wane":               "Wax // Wane",
+	"The Measure of Man":     "The Measure of a Man",
 	"Ramirez Di Pietro":      "Ramirez DePietro",
 	"Sir Shandlar di Eberyn": "Sir Shandlar of Eberyn",
 	"Rohgahh di Kher":        "Rohgahh of Kher Keep",
