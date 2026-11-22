@@ -1855,6 +1855,8 @@ var fabNames = map[string]string{
 	"Robe of Resourcefullness": "Robe of Resourcefulness",
 	"Peace Art Card":           "Peace",
 
+	"Open the Gate to i'Aratheal": "Open the Gate to i'Arathael",
+
 	"Gold / Goldkiss Rum // Gold / Goldkiss Rum": "Goldkiss Rum // Gold",
 }
 
