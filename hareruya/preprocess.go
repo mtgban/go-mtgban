@@ -1322,6 +1322,7 @@ var promoMap = map[string]map[string]map[string]struct {
 		"Plains":            {"Full-Art Illus.Lucas Graciano": {Edition: "PSS4", Variant: "1"}},
 		"Island":            {"Full-Art Illus.Piotr Dura": {Edition: "PSS4", Variant: "2"}},
 		"Swamp":             {"Full-Art Illus.Alexander Forssberg": {Edition: "PSS4", Variant: "3"}},
+		"Forest":            {"Full-Art Illus.Samuele Bandini": {Edition: "PSS4", Variant: "5"}},
 		"Mountain":          {"Full-Art 2024年版 Illus.Alayna Danner": {Edition: "PSS4", Variant: "4"}, "2018年版 Illus.Alayna Danner": {Edition: "PSS3", Variant: "4"}},
 		"Wood Elves": {
 			"Extended Art スタンダード・ショーダウン": {
@@ -1668,6 +1669,9 @@ var promoMap = map[string]map[string]map[string]struct {
 	"9ED-P Prerelease": {
 		"Force of Nature": {"Prerelease": {Edition: "P9ED", Variant: "242★"}},
 	},
+	"DIS-P Prerelease": {
+		"Azorius Guildmage": {"Prerelease": {Edition: "PDIS", Variant: "141★"}},
+	},
 	"Commander Play": {
 		"Palladium Myr": {
 			"Retro Frame Commander Play": {
@@ -1808,10 +1812,12 @@ var promoMap = map[string]map[string]map[string]struct {
 	},
 	"Arena Foil Land": {
 		"Mountain": {"MMQ版": {Edition: "PAL00", Variant: "11"}},
+		"Plains":   {"MMQ版": {Edition: "PAL00", Variant: "8"}},
 		"Forest":   {"ベータ版": {Edition: "PAL01", Variant: "11"}},
 	},
 	"USG": {
 		"Plains": {"アリーナFoilランド": {Edition: "PAL99", Variant: "7"}},
+		"Swamp":  {"アリーナFoilランド": {Edition: "PAL99", Variant: "9"}},
 	},
 	"Game Day Promos": {
 		"Niv-Mizzet, the Firemind": {"ゲームデー": {Edition: "PCMP", Variant: "2"}},
