@@ -60,9 +60,9 @@ type resolver struct {
 	mcmPrintingsMu sync.Mutex
 
 	// foilApart holds, for each expansion of foilApartShelves, the numbers
-	// whose foil is a "(V.2)" product of its own, built on first use; see
+	// whose foil another product sells, built on first use; see
 	// soldFoilApart.
-	foilApart   map[int]map[string]bool
+	foilApart   map[string]map[string]bool
 	foilApartMu sync.Mutex
 
 	// fabDeckSets indexes a Flesh and Blood set's collector-number prefix
@@ -539,35 +539,49 @@ func foilOnlyShelf(product *cm.Product, setCode string) bool {
 	return false
 }
 
-// foilApartShelves are the Magic expansions where the foil of a card is a
-// "(V.2)" product of its own and the "(V.1)" beside it keeps only a thin
-// foil column of mislisted copies. The V.1 gives that column up.
-var foilApartShelves = map[string]bool{
-	"Commander: Modern Horizons 3: Extras": true,
-	"Universes Beyond: Warhammer 40,000":   true,
+// foilApartShelves names, for each Magic expansion whose products keep only a
+// thin foil column of mislisted copies, the expansion selling that foil as a
+// product of its own at the same number: the "(V.2)" beside a "(V.1)" of the
+// same shelf, or a product foilOnlyShelf accepts on an Extras shelf. The
+// product beside it gives that column up.
+var foilApartShelves = map[string]string{
+	"Commander: Modern Horizons 3":            "Commander: Modern Horizons 3: Extras",
+	"Commander: Modern Horizons 3: Extras":    "Commander: Modern Horizons 3: Extras",
+	"Commander: Teenage Mutant Ninja Turtles": "Commander: Teenage Mutant Ninja Turtles: Extras",
+	"Universes Beyond: Warhammer 40,000":      "Universes Beyond: Warhammer 40,000",
 }
 
-// soldFoilApart reports whether mapped is the "(V.1)" of a card whose foil
-// Cardmarket sells as the "(V.2)" product at the same number.
+// soldFoilApart reports whether mapped gives its foil column up to the
+// product foilApartShelves names at its number. Within one shelf only a
+// "(V.1)" gives it up.
 func (r *resolver) soldFoilApart(mapped cm.CatalogProduct, expansion cm.Expansion) bool {
-	if !foilApartShelves[expansion.Name] || mapped.Version != 1 || r.catalog == nil {
+	seller, found := foilApartShelves[expansion.Name]
+	if !found || r.catalog == nil || (seller == expansion.Name && mapped.Version != 1) {
 		return false
 	}
 	r.foilApartMu.Lock()
 	defer r.foilApartMu.Unlock()
 	if r.foilApart == nil {
-		r.foilApart = map[int]map[string]bool{}
+		r.foilApart = map[string]map[string]bool{}
 		for _, product := range r.catalog.Data.Products {
-			if product.Version != 2 || !foilApartShelves[r.catalog.Data.Expansions[product.ExpansionID].Name] {
-				continue
+			shelf := r.catalog.Data.Expansions[product.ExpansionID].Name
+			for giver, sellsFoil := range foilApartShelves {
+				switch {
+				case sellsFoil != shelf, product.Number == "":
+					continue
+				case giver == shelf && product.Version != 2:
+					continue
+				case giver != shelf && !foilOnlyShelf(&cm.Product{Name: product.Name, ExpansionName: shelf}, ""):
+					continue
+				}
+				if r.foilApart[giver] == nil {
+					r.foilApart[giver] = map[string]bool{}
+				}
+				r.foilApart[giver][product.Number] = true
 			}
-			if r.foilApart[product.ExpansionID] == nil {
-				r.foilApart[product.ExpansionID] = map[string]bool{}
-			}
-			r.foilApart[product.ExpansionID][product.Number] = true
 		}
 	}
-	return r.foilApart[expansion.IDExpansion][mapped.Number]
+	return r.foilApart[expansion.Name][mapped.Number]
 }
 
 // gameResolvers names the printings a product of each game belongs to; see
