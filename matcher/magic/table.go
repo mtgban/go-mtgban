@@ -42,6 +42,18 @@ var forcedLanguages = map[string]string{
 	"4BB": "Japanese",
 }
 
+// The other languages a foreign-only set was printed in, each loaded as a set
+// of its own coded <set><tag>, beside the one the set itself is in
+var languageSets = []struct{ code, tag, name string }{
+	{"FBB", "FR", "Foreign Black Border (French)"},
+	{"FBB", "DE", "Foreign Black Border (German)"},
+	{"4BB", "ES", "Fourth Edition Foreign Black Border (Spanish)"},
+	{"4BB", "PT", "Fourth Edition Foreign Black Border (Portuguese)"},
+	{"4BB", "KO", "Fourth Edition Foreign Black Border (Korean)"},
+	{"4BB", "ZHT", "Fourth Edition Foreign Black Border (Chinese Traditional)"},
+	{"REN", "DE", "Renaissance (German)"},
+}
+
 // List of numbers in SLD that need to be decoupled, each with its starred
 // sibling where it has one
 var sldJPNLangDupes = []string{

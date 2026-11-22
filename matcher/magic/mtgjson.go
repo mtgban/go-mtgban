@@ -898,15 +898,16 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 				continue
 			}
 
-			// Only a card printed in the set's language takes it, and its image
+			// Only a card printed in the set's language takes it, with its
+			// name and image
 			language, found := forcedLanguages[set.Code]
 			if found {
 				for _, foreignData := range card.ForeignData {
 					if foreignData.Language == language {
 						card.Language = language
 						takePrintedName(&card, foreignData.Name)
-						// mtgjsonId stays mtgjson's card, which TCGplayer skus and the
-						// id index key on: see todo/foreign-black-border-languages.md
+						// mtgjsonId and scryfallId stay mtgjson's card, which vendors
+						// key on: see docs/foreign-black-border-languages.md
 						card.Identifiers["originalScryfallId"] = foreignData.Identifiers["scryfallId"]
 					}
 				}
@@ -1290,6 +1291,14 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 	duplicate(ap.Data, "The Dark Italian", "DRK", "ITA", "1995-08-01")
 	duplicate(ap.Data, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
 	allSets = append(allSets, "LEGITA", "DRKITA", "4EDALT")
+	for _, ls := range languageSets {
+		base := ap.Data[ls.code]
+		if base == nil {
+			continue
+		}
+		duplicate(ap.Data, ls.name, ls.code, ls.tag, base.ReleaseDate)
+		allSets = append(allSets, ls.code+ls.tag)
+	}
 
 	if ap.Data["SLD"] != nil {
 		sldDupes := duplicateCards(ap.Data, "SLD", "JPN", sldJPNLangDupes)
@@ -1739,6 +1748,12 @@ var langs = map[string]string{
 	"JPN": "Japanese",
 	"ITA": "Italian",
 	"ALT": "English",
+	"FR":  "French",
+	"DE":  "German",
+	"ES":  "Spanish",
+	"PT":  "Portuguese (Brazil)",
+	"KO":  "Korean",
+	"ZHT": "Chinese Traditional",
 }
 
 // Duplicate an entire set of cards, using a custom code and a different language
@@ -1763,10 +1778,26 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	// Add duplicated set (with no cards) to the root, for sortPrintings
 	sets[dup.Code] = &dup
 
+	var languageSet bool
+	for _, ls := range languageSets {
+		if ls.code+ls.tag == dup.Code {
+			languageSet = true
+		}
+	}
+
 	// Rework printings information
 	for i := range sets[code].Cards {
+		// The base card's entry in its own language names the card, so a
+		// language set's copy finds its way back to it
+		if languageSet {
+			nameOwnLanguage(&sets[code].Cards[i])
+		}
 		// Skip misprints from main sets
 		if strings.HasSuffix(sets[code].Cards[i].Number, SuffixVariant) {
+			continue
+		}
+		// A language set holds only the cards printed in its language
+		if languageSet && !printedInOther(sets[code].Cards[i], langs[tag]) {
 			continue
 		}
 
@@ -1834,6 +1865,32 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 			altIdentifiers[k] = v
 		}
 		dup.Cards[i].Identifiers = altIdentifiers
+	}
+}
+
+// printedInOther reports a card printed in language, where that is not the
+// printing the card already is
+func printedInOther(card Card, language string) bool {
+	if card.Language == language {
+		return false
+	}
+	for _, foreignData := range card.ForeignData {
+		if foreignData.Language == language {
+			return true
+		}
+	}
+	return false
+}
+
+// nameOwnLanguage points the card's foreignData entry in its own language at
+// the card, where mtgjson names a printing the loader does not carry
+func nameOwnLanguage(card *Card) {
+	for j, foreignData := range card.ForeignData {
+		if foreignData.Language == card.Language && foreignData.UUID != card.UUID {
+			card.ForeignData = slices.Clone(card.ForeignData)
+			card.ForeignData[j].UUID = card.UUID
+			return
+		}
 	}
 }
 
