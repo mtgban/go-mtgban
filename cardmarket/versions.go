@@ -427,6 +427,9 @@ var unplacedProducts = map[int]bool{
 	244609: true, // Yu-Gi-Oh Perfectly Ultimate Great Moth, The Sacred Cards copy of 104966
 	244610: true, // Yu-Gi-Oh Riryoku, The Sacred Cards copy of 105273
 	244611: true, // Yu-Gi-Oh Negate Attack, The Sacred Cards copy of 104770
+
+	// Cards on a shelf that never held them
+	265494: true, // Yu-Gi-Oh Spellbinding Circle, Starter Deck: Kaiba Reloaded
 }
 
 // versionPrinting answers the nonfoil and foil printings versionPrintings and
