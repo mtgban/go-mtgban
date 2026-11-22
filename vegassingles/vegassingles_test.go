@@ -157,9 +157,9 @@ func TestBuylistPricesEveryOffer(t *testing.T) {
 	}
 }
 
-// TestMagicFinishes reads a Magic product's foiling off its is_foil flag and
-// etching off its finish, so a finish spelled in a way the scraper has not
-// seen still lands by the flag.
+// TestMagicFinishes asks for a Magic product's finish by name where the
+// matcher knows the word, refusing one the printing was never sold in, and
+// reads a finish spelled in a way it has not seen off the is_foil flag.
 func TestMagicFinishes(t *testing.T) {
 	b := withMagic(t)
 	vs, err := NewScraper(b)
@@ -171,17 +171,37 @@ func TestMagicFinishes(t *testing.T) {
 		product      HLProduct
 		foil, etched bool
 		name         string
+		refused      error
 	}{
-		{HLProduct{TCGplayerProductID: 505828, Finish: "normal"}, false, false, "Spectator Seating"},
-		{HLProduct{TCGplayerProductID: 505834, Finish: "foil", IsFoil: true}, true, false, "Spectator Seating"},
-		{HLProduct{TCGplayerProductID: 505840, Finish: "etched", IsFoil: true}, false, true, "Spectator Seating"},
-		{HLProduct{TCGplayerProductID: 725328, Finish: "alternative_foil", IsFoil: true}, true, false, "Heroic Intervention"},
-		{HLProduct{TCGplayerProductID: 505834, Finish: "", IsFoil: false}, false, false, "Spectator Seating"},
-		{HLProduct{TCGplayerProductID: 505834, Finish: "unheard_of_foil", IsFoil: true}, true, false, "Spectator Seating"},
+		{HLProduct{TCGplayerProductID: 505828, Finish: "normal"}, false, false, "Spectator Seating", nil},
+		{HLProduct{TCGplayerProductID: 505834, Finish: "foil", IsFoil: true}, true, false, "Spectator Seating", nil},
+		{HLProduct{TCGplayerProductID: 505840, Finish: "etched", IsFoil: true}, false, true, "Spectator Seating", nil},
+		{HLProduct{TCGplayerProductID: 725328, Finish: "alternative_foil", IsFoil: true}, true, false, "Heroic Intervention", nil},
+		{HLProduct{TCGplayerProductID: 505834, Finish: "", IsFoil: false}, false, false, "Spectator Seating", nil},
+		{HLProduct{TCGplayerProductID: 505834, Finish: "unheard_of_foil", IsFoil: true}, true, false, "Spectator Seating", nil},
+		// Yidris, Maelstrom Wielder in Commander 2016 is foil only
+		{HLProduct{TCGplayerProductID: 124203, Finish: "normal"}, false, false, "", matcher.ErrCardWrongFinish},
 	}
 	for _, test := range tests {
 		p := test.product
 		cardID, err := vs.resolve(p, "English")
+		if test.refused != nil {
+			if !errors.Is(err, test.refused) {
+				t.Errorf("%d %q answered %q, %v, want %v", p.TCGplayerProductID, p.Finish, cardID, err, test.refused)
+			}
+			// A refused offer is filed nowhere, and only a wrong finish is
+			// counted rather than logged on its own line
+			p.Conditions = []HLCondition{{Condition: "Near Mint", Language: "English", Cash: 1}}
+			var logs []string
+			vs.logCallback = func(format string, a ...any) {
+				logs = append(logs, format)
+			}
+			counted := vs.processProduct(p)
+			if counted != errors.Is(test.refused, matcher.ErrCardWrongFinish) || len(logs) != 0 || len(vs.Buylist()) != 0 {
+				t.Errorf("%d %q counted %v, logged %q, filed %d cards", p.TCGplayerProductID, p.Finish, counted, logs, len(vs.Buylist()))
+			}
+			continue
+		}
 		if err != nil {
 			t.Errorf("%d %q: %v", p.TCGplayerProductID, p.Finish, err)
 			continue

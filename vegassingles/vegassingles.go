@@ -71,8 +71,8 @@ func (vs *Vegassingles) printf(format string, a ...any) {
 }
 
 // resolve names the printing a product is sold as in its finish and in
-// language. Magic files its foils and etched foils as printings of their own,
-// which the flags reach; every other game names the finish.
+// language. A finish the matcher names is asked for by name, so a sku in a
+// finish the printing was never sold in is refused rather than clamped.
 func (vs *Vegassingles) resolve(product HLProduct, language string) (string, error) {
 	card := matcher.InputCard{
 		ID: strconv.FormatInt(product.TCGplayerProductID, 10),
@@ -83,11 +83,13 @@ func (vs *Vegassingles) resolve(product HLProduct, language string) (string, err
 		card.Language = language
 	}
 	if vs.backend.Game == matcher.GameMagic {
-		// The flag, not the finish's spelling, says foil: Hippolink names
-		// Magic finishes of its own, such as alternative_foil
-		card.Foil = product.IsFoil
-		if matcher.FinishSlug(product.Finish) == matcher.FinishEtched {
-			card.Variation = "Etched"
+		switch matcher.FinishSlug(product.Finish) {
+		case matcher.FinishNonfoil, matcher.FinishFoil, matcher.FinishEtched:
+			card.Finish = product.Finish
+		default:
+			// Hippolink names Magic finishes of its own, such as
+			// alternative_foil, and only the flag says those are foil
+			card.Foil = product.IsFoil
 		}
 	} else {
 		card.Finish = product.Finish
@@ -95,7 +97,10 @@ func (vs *Vegassingles) resolve(product HLProduct, language string) (string, err
 	return vs.backend.Match(&card)
 }
 
-func (vs *Vegassingles) processProduct(product HLProduct) {
+// processProduct files every cash offer of a product, and reports whether a
+// Magic product was refused for a finish its printing was never sold in.
+func (vs *Vegassingles) processProduct(product HLProduct) bool {
+	var wrongFinish bool
 	productID := strconv.FormatInt(product.TCGplayerProductID, 10)
 
 	u, _ := url.Parse("https://buylist.vegas.singles/")
@@ -119,7 +124,11 @@ func (vs *Vegassingles) processProduct(product HLProduct) {
 			// The datastore loads few printings in other languages, so a
 			// miss there is expected rather than an alarm
 			if err != nil && !errors.Is(err, matcher.ErrUnsupported) && offer.Language == "English" {
-				vs.printf("%s %q (%s, %s): %v", productID, product.ProductName, product.Finish, offer.Language, err)
+				if errors.Is(err, matcher.ErrCardWrongFinish) && vs.backend.Game == matcher.GameMagic {
+					wrongFinish = true
+				} else {
+					vs.printf("%s %q (%s, %s): %v", productID, product.ProductName, product.Finish, offer.Language, err)
+				}
 			}
 			cardIDs[offer.Language] = cardID
 		}
@@ -144,6 +153,7 @@ func (vs *Vegassingles) processProduct(product HLProduct) {
 			vs.printf("%s: %s", productID, err.Error())
 		}
 	}
+	return wrongFinish
 }
 
 // scrape reads every page of the game's buylist. The first page says how
@@ -180,8 +190,14 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 		vs.printf,
 	)
 
+	var wrongFinish int
 	for _, product := range products {
-		vs.processProduct(product)
+		if vs.processProduct(product) {
+			wrongFinish++
+		}
+	}
+	if wrongFinish > 0 {
+		vs.printf("Skipped %d products in a finish their printing is not sold in", wrongFinish)
 	}
 	vs.buylistDate = time.Now()
 	return nil
