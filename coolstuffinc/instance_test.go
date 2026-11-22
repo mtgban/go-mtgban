@@ -118,11 +118,11 @@ func TestYugiohSKURetryOnTheSaleListing(t *testing.T) {
 		t.Fatal(err)
 	}
 	searchFixture(t, "testdata/yugioh_search.html")
-	got := searchResults(t, csi, "Magic Ruler")
+	got := searchResults(t, csi, "The Lost Art Promotion")
 	if len(got) != 1 {
 		t.Fatalf("sent %d offers, want only the one with no note", len(got))
 	}
-	if got[0].invEntry.OriginalID != "1" || got[0].cardID != "mrl-103_22981_unlimited" {
-		t.Errorf("product %s landed %q, want product 1 on mrl-103_22981_unlimited", got[0].invEntry.OriginalID, got[0].cardID)
+	if got[0].invEntry.OriginalID != "1" || got[0].cardID != "lart-en074_617839_limited" {
+		t.Errorf("product %s landed %q, want product 1 on lart-en074_617839_limited", got[0].invEntry.OriginalID, got[0].cardID)
 	}
 }
