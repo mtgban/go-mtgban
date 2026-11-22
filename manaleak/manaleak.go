@@ -169,6 +169,12 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 		foil = true
 	}
 	cardName = cmp.Or(nameTypos[cardName], cardName)
+	// The store files an emblem as "Emblem - <planeswalker>", which the
+	// datastore names "<planeswalker> Emblem".
+	planeswalker, isEmblem := strings.CutPrefix(cardName, "Emblem - ")
+	if isEmblem {
+		cardName = planeswalker + " Emblem"
+	}
 	for _, spelling := range qualifierSpellings {
 		cardName = strings.Replace(cardName, spelling[0], spelling[1], 1)
 	}
