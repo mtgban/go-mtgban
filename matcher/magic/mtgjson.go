@@ -293,6 +293,7 @@ const (
 	PromoTypeOilSlick          = "oilslick"
 	PromoTypePlayPromo         = "playpromo"
 	PromoTypePlayerRewards     = "playerrewards"
+	PromoTypePlaytest          = "playtest"
 	PromoTypePoster            = "poster"
 	PromoTypePrerelease        = "prerelease"
 	PromoTypePromoPack         = "promopack"
