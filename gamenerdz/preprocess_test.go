@@ -834,10 +834,11 @@ func TestResolveProductPokemonByRetailID(t *testing.T) {
 	}
 }
 
-// TestResolveProductPokemonIDNumberConflict pins that a retail id does not
-// place a listing on a printing whose number is not the one the display name
-// writes: Ancient Origins 98 is not Roaring Skies 105.
-func TestResolveProductPokemonIDNumberConflict(t *testing.T) {
+// TestResolveProductPokemonIDUnplaced pins that a retail id does not place a
+// listing on a printing whose number is not the one the display name writes
+// (Ancient Origins 98 is not Roaring Skies 105), nor a metal card the matcher
+// leaves unsupported on the plain card its id names.
+func TestResolveProductPokemonIDUnplaced(t *testing.T) {
 	b, err := matcher.Open("pokemon", strings.NewReader(sizedDatastore))
 	if err != nil {
 		t.Fatal(err)
@@ -847,23 +848,31 @@ func TestResolveProductPokemonIDNumberConflict(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	retail := GNProduct{
-		ID:             "rayquaza",
-		DisplayName:    "M Rayquaza-EX 98/98 - Ancient Origins Holofoil (MP)",
-		SelectedFinish: "Holofoil",
-		ProductData:    GNProductData{SetName: "XY - Roaring Skies", TCGProductID: 98141},
-	}
-	buylist := retail
-	buylist.ProductData.TCGProductID = 0
-
-	for _, mode := range []string{modeRetail, modeBuylist} {
-		product := retail
-		if mode == modeBuylist {
-			product = buylist
-		}
-		uuid, err := gn.resolveProduct(mode, product)
-		if err != nil || uuid != "" {
-			t.Errorf("%s: got %q (%v); want the listing left unplaced", mode, uuid, err)
+	for _, retail := range []GNProduct{
+		{
+			ID:             "rayquaza",
+			DisplayName:    "M Rayquaza-EX 98/98 - Ancient Origins Holofoil (MP)",
+			SelectedFinish: "Holofoil",
+			ProductData:    GNProductData{SetName: "XY - Roaring Skies", TCGProductID: 98141},
+		},
+		{
+			ID:             "zapdos",
+			DisplayName:    "Galarian Zapdos (Metal Card) 82 - SWSH07 Evolving Skies Holofoil",
+			SelectedFinish: "Holofoil",
+			ProductData:    GNProductData{SetName: "SWSH07: Evolving Skies", TCGProductID: 246875},
+		},
+	} {
+		buylist := retail
+		buylist.ProductData.TCGProductID = 0
+		for _, mode := range []string{modeRetail, modeBuylist} {
+			product := retail
+			if mode == modeBuylist {
+				product = buylist
+			}
+			uuid, err := gn.resolveProduct(mode, product)
+			if err != nil || uuid != "" {
+				t.Errorf("%s %s: got %q (%v); want the listing left unplaced", mode, retail.ID, uuid, err)
+			}
 		}
 	}
 }

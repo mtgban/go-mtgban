@@ -361,17 +361,31 @@ func (gn *Gamenerdz) refuse(product GNProduct, err error) {
 	gn.printf("%s: %q", product.ID, product.DisplayName)
 }
 
-// rescue places a product the wording turned down in a game read by its
-// wording first. The id places it as long as it names the same card and does
-// not contradict the number the wording wrote, and the listing's finish
-// settles an aliasing refusal it alone tells apart.
-func (gn *Gamenerdz) rescue(product GNProduct, theCard *matcher.InputCard, tcgID int64, err error) (string, error) {
-	if !errors.Is(err, matcher.ErrUnsupported) && tcgID != 0 {
-		idCard, idErr := gn.backend.MatchIDFinish(strconv.FormatInt(tcgID, 10), product.SelectedFinish)
-		if idErr == nil && gn.namesCard(idCard, product.DisplayName, theCard.Name) && !gn.numberConflicts(idCard, theCard.Variation) {
-			return idCard, nil
+// matchByID places a product of a game read by its wording by the TCGplayer
+// id its retail record carries, as long as the id names the card the wording
+// does and not another number than the one it wrote, and by its wording
+// otherwise. Where the two agree on that much the id is right: it names the
+// promo the wording files under its set. Wording the matcher calls
+// unsupported stays unplaced whatever the id says.
+func (gn *Gamenerdz) matchByID(product GNProduct, theCard *matcher.InputCard, tcgID int64) (string, error) {
+	idCard := ""
+	if tcgID != 0 {
+		found, err := gn.backend.MatchIDFinish(strconv.FormatInt(tcgID, 10), product.SelectedFinish)
+		if err == nil && gn.namesCard(found, product.DisplayName, theCard.Name) && !gn.numberConflicts(found, theCard.Variation) {
+			idCard = found
 		}
 	}
+	// The id is read first, since the matcher rewrites the card it is handed.
+	cardID, err := gn.backend.Match(theCard)
+	if idCard != "" && !errors.Is(err, matcher.ErrUnsupported) {
+		return idCard, nil
+	}
+	return cardID, err
+}
+
+// rescue places a product the wording turned down where the listing's finish
+// settles an aliasing refusal it alone tells apart.
+func (gn *Gamenerdz) rescue(product GNProduct, err error) (string, error) {
 	tied := finishTiebreak(gn.backend, product, err)
 	if tied != "" {
 		return tied, nil
@@ -452,16 +466,17 @@ func resolveMagic(gn *Gamenerdz, mode string, product GNProduct, tcgID int64) (s
 	return cardID, nil
 }
 
-// resolveLorcana reads a product by its wording.
+// resolveLorcana reads a product by its id where it names the card, and by
+// its wording otherwise.
 func resolveLorcana(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (string, error) {
 	theCard, err := preprocessLorcana(product)
 	if err != nil {
 		return "", unread(product, err)
 	}
 	foil := theCard.Foil
-	cardID, err := gn.backend.Match(theCard)
+	cardID, err := gn.matchByID(product, theCard, tcgID)
 	if err != nil {
-		cardID, err = gn.rescue(product, theCard, tcgID, err)
+		cardID, err = gn.rescue(product, err)
 	}
 	if err != nil {
 		gn.refuse(product, err)
@@ -475,15 +490,15 @@ func resolveLorcana(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (st
 	return cardID, nil
 }
 
-// resolvePokemon reads a product by its wording, respelled where the
-// storefront's own fails, and keeps it only on the shelf and the printing it
-// states.
+// resolvePokemon reads a product by its id where it names the card, and by
+// its wording otherwise, respelled where the storefront's own fails, and keeps
+// it only on the shelf and the printing it states.
 func resolvePokemon(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (string, error) {
 	theCard, err := preprocessPokemon(gn.backend, product)
 	if err != nil {
 		return "", unread(product, err)
 	}
-	cardID, err := gn.backend.Match(theCard)
+	cardID, err := gn.matchByID(product, theCard, tcgID)
 	if err != nil && !errors.Is(err, matcher.ErrUnsupported) {
 		retried, found := retryPokemon(gn.backend, product, theCard)
 		if found {
@@ -491,7 +506,7 @@ func resolvePokemon(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (st
 		}
 	}
 	if err != nil {
-		cardID, err = gn.rescue(product, theCard, tcgID, err)
+		cardID, err = gn.rescue(product, err)
 	}
 	if err != nil {
 		gn.refuse(product, err)
@@ -503,16 +518,17 @@ func resolvePokemon(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (st
 	return pokemonStatedPrinting(gn.backend, cardID, product), nil
 }
 
-// resolveOnePiece reads a product by its wording. One without a card code
-// is kept only where it lands on a promo leader.
+// resolveOnePiece reads a product by its id where it names the card, and by
+// its wording otherwise. One without a card code is kept only where it lands
+// on a promo leader.
 func resolveOnePiece(gn *Gamenerdz, _ string, product GNProduct, tcgID int64) (string, error) {
 	theCard, err := preprocessOnePiece(product)
 	if err != nil {
 		return "", unread(product, err)
 	}
-	cardID, err := gn.backend.Match(theCard)
+	cardID, err := gn.matchByID(product, theCard, tcgID)
 	if err != nil {
-		cardID, err = gn.rescue(product, theCard, tcgID, err)
+		cardID, err = gn.rescue(product, err)
 	}
 	if err == nil && onePieceCodeless(product.DisplayName) && !landedOnLeader(gn.backend, cardID) {
 		err = errors.New("no card code in display name, and no promo leader answers it")

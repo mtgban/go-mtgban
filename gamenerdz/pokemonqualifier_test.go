@@ -24,23 +24,30 @@ const snorlaxDatastore = `{"data": {
 }}`
 
 // TestPreprocessPokemonQualifier pins that the wording behind the number
-// reaches the printing it names. The storefront sells these two at $15.31
-// and $251.59, and the number they share cannot tell them apart.
+// reaches the printing it names, and that the retail id names it where the
+// wording does not. The storefront sells these two at $15.31 and $251.59,
+// and the number they share cannot tell them apart.
 func TestPreprocessPokemonQualifier(t *testing.T) {
 	b, err := matcher.Open("pokemon", strings.NewReader(snorlaxDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gn, err := NewScraper(b)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	tests := []struct {
 		displayName string
+		tcgID       int64
 		uuid        string
 	}{
-		{"Snorlax - 051 (Pokemon Center Exclusive)  - SV Scarlet  Violet Promo Cards Holofoil", "051_517270_holofoil"},
-		{"Snorlax - 051  - SV Scarlet  Violet Promo Cards Holofoil", "051_517175_holofoil"},
+		{"Snorlax - 051 (Pokemon Center Exclusive)  - SV Scarlet  Violet Promo Cards Holofoil", 0, "051_517270_holofoil"},
+		{"Snorlax - 051  - SV Scarlet  Violet Promo Cards Holofoil", 0, "051_517175_holofoil"},
+		{"Snorlax - 051  - SV Scarlet  Violet Promo Cards Holofoil", 517270, "051_517270_holofoil"},
 		// Wording the catalog cannot place falls back on the number it was
 		// read from, so it costs the listing nothing.
-		{"Snorlax - 051 (Sealed In A Jar)  - SV Scarlet  Violet Promo Cards Holofoil", "051_517175_holofoil"},
+		{"Snorlax - 051 (Sealed In A Jar)  - SV Scarlet  Violet Promo Cards Holofoil", 0, "051_517175_holofoil"},
 	}
 	for _, tt := range tests {
 		product := GNProduct{
@@ -48,18 +55,9 @@ func TestPreprocessPokemonQualifier(t *testing.T) {
 			SelectedFinish: "Holofoil",
 			ProductData:    GNProductData{SetName: "SV: Scarlet & Violet Promo Cards"},
 		}
-		card, err := preprocess(b, product, matcher.GamePokemon)
-		if err != nil {
-			t.Errorf("%q: unexpected error %v", tt.displayName, err)
-			continue
-		}
-		uuid, err := b.Match(card)
-		if err != nil {
-			t.Errorf("%q: unexpected error %v", tt.displayName, err)
-			continue
-		}
-		if uuid != tt.uuid {
-			t.Errorf("%q: got %q; want %q", tt.displayName, uuid, tt.uuid)
+		uuid, err := resolvePokemon(gn, modeRetail, product, tt.tcgID)
+		if err != nil || uuid != tt.uuid {
+			t.Errorf("%q (%d): got %q (%v); want %q", tt.displayName, tt.tcgID, uuid, err, tt.uuid)
 		}
 	}
 }
