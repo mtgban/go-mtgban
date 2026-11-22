@@ -5,6 +5,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/matcher"
 )
@@ -414,6 +415,11 @@ func gameInput(game matcher.Game, card *Card, index int) *matcher.InputCard {
 		}
 	case matcher.GameRiftbound:
 		name = riftboundVersionRe.ReplaceAllString(name, "")
+		// A promo rune is shelved as "<Set> - Promo" but printed in that
+		// set itself, under a lettered number
+		if strings.HasSuffix(name, " Rune") && strings.TrimRightFunc(number, unicode.IsLetter) != number {
+			edition = strings.TrimSuffix(edition, " - Promo")
+		}
 	case matcher.GamePokemon:
 		name = pokemonName(card)
 		prefix, found := promoNumberPrefixes[card.Edition]
