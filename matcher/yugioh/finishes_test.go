@@ -1,6 +1,7 @@
 package yugioh
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/internal/gametest"
@@ -98,4 +99,38 @@ func TestPrintRunUUIDs(t *testing.T) {
 		t.Fatalf("datastore carries no print runs: %d printings, %d runs", printings, runs)
 	}
 	t.Logf("%d printings, %d print runs, %d orphaned entries", printings, runs, orphans)
+}
+
+// mintedRunsFixture is the two runs datastore-gen mints for one European
+// print, copied from its build: neither carries a TCGplayer product id.
+const mintedRunsFixture = `{"data": {
+	"game": "yugioh",
+	"properties": {"rarity": ["Ultra Rare"], "attribute": ["SPELL"]},
+	"sets": {"MRL": {"name": "Magic Ruler", "releaseDate": "2002-09-16"}},
+	"cards": [
+		{"id": "mrl-e047_unlimited", "name": "Mystical Space Typhoon", "setCode": "MRL", "number": "MRL-E047", "rarity": "Ultra Rare", "finish": "Unlimited", "variant": "European", "promoTypes": ["european"], "type": "Quick-Play Spell", "attribute": "SPELL", "attributes": ["SPELL"], "externalLinks": {"konamiId": 5318639}},
+		{"id": "mrl-e047_1stedition", "name": "Mystical Space Typhoon", "setCode": "MRL", "number": "MRL-E047", "rarity": "Ultra Rare", "finish": "1st Edition", "variant": "European", "promoTypes": ["european"], "type": "Quick-Play Spell", "attribute": "SPELL", "attributes": ["SPELL"], "externalLinks": {"konamiId": 5318639}}
+	]
+}}`
+
+// TestMintedRunsShareAPrinting pins that the runs of a print minted without
+// a product id load as one printing whose FoilUUIDs names each run.
+func TestMintedRunsShareAPrinting(t *testing.T) {
+	b, err := Load(strings.NewReader(mintedRunsFixture))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cards := b.Sets["MRL"].Cards
+	if len(cards) != 1 {
+		t.Fatalf("MRL-E047 loaded as %d printings, want 1", len(cards))
+	}
+	for _, run := range [][2]string{
+		{matcher.RunUnlimited, "mrl-e047_unlimited"},
+		{matcher.Run1stEdition, "mrl-e047_1stedition"},
+	} {
+		got, err := b.MatchIDFinish(cards[0].UUID, matcher.FinishSlug(run[0]))
+		if err != nil || got != run[1] {
+			t.Errorf("run %q = (%q, %v), want %q", run[0], got, err, run[1])
+		}
+	}
 }

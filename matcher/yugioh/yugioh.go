@@ -348,10 +348,10 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 }
 
 // productKey names the product an entry is a printing of, read off what the
-// entry publishes: the product id the catalog stamps on every printing it
-// sells. An entry the builder mints carries none - it is minted one printing
-// at a time, from an upstream record nothing else is minted from - so it is a
-// product of one printing and stands for itself.
+// entry publishes. A product the catalog sells stamps its product id on every
+// printing of it; an entry the builder mints carries none, and names the
+// European code its print runs were minted together from as its number. An
+// entry naming neither is a product of one printing, and stands for itself.
 //
 // Nothing here takes an id apart. The tail an id ends in is the builder's to
 // spell, and a loader that reads one stops folding the day the spelling
@@ -359,6 +359,9 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 func (card *DatastoreCard) productKey() string {
 	if card.ExternalLinks.TcgPlayerID != 0 {
 		return fmt.Sprint(card.ExternalLinks.TcgPlayerID)
+	}
+	if card.Number != "" {
+		return "number " + card.Number
 	}
 	return card.ID
 }
