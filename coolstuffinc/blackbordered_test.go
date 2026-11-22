@@ -12,8 +12,8 @@ import (
 // foreign black-bordered print run under, regardless of era: the language
 // word (in the note, the bracket, or both at once - "Italian language
 // Italian" when a row carries both) is the only thing telling an FBB row
-// from a 4BB one apart, and only those two have a row in the datastore at
-// all. A card genuinely absent from both - Hell's Caretaker only exists as
+// from a 4BB one apart, and the language set within each. A card genuinely
+// absent from both - Hell's Caretaker only exists as
 // the Chronicles Japanese reprint, whatever CSI's own "(Italian)" bracket
 // claims - correctly stays unresolved rather than being forced onto a set
 // that never carried it.
@@ -28,6 +28,7 @@ func TestPreprocessBlackBorderedForeign(t *testing.T) {
 		wantEd       string
 		wantLang     string
 		wantResolved bool // whether Match should find a card
+		wantSet      string
 	}{
 		{
 			desc:         "a bare Italian bracket resolves against FBB",
@@ -52,13 +53,32 @@ func TestPreprocessBlackBorderedForeign(t *testing.T) {
 			wantResolved: true,
 		},
 		{
-			desc:       "German has no row in the datastore and is refused",
-			name:       "Animate Dead (German)",
-			wantPreErr: true,
+			desc:         "German resolves against FBB's German set",
+			name:         "Animate Dead (German)",
+			wantEd:       "FBB",
+			wantLang:     "German",
+			wantResolved: true,
+			wantSet:      "FBBDE",
 		},
 		{
-			desc:       "French has no row in the datastore and is refused",
-			name:       "Badlands (French)",
+			desc:         "French resolves against FBB's French set",
+			name:         "Badlands (French)",
+			wantEd:       "FBB",
+			wantLang:     "French",
+			wantResolved: true,
+			wantSet:      "FBBFR",
+		},
+		{
+			desc:         "Spanish resolves against 4BB's Spanish set",
+			name:         "Alabaster Potion (Spanish)",
+			wantEd:       "4BB",
+			wantLang:     "Spanish",
+			wantResolved: true,
+			wantSet:      "4BBES",
+		},
+		{
+			desc:       "a language neither set was printed in is refused",
+			name:       "Badlands (Russian)",
 			wantPreErr: true,
 		},
 		{
@@ -89,6 +109,10 @@ func TestPreprocessBlackBorderedForeign(t *testing.T) {
 				t.Errorf("Match(%+v) = %q, %v, want a resolved id", card, id, err)
 			} else if !tt.wantResolved && err == nil {
 				t.Errorf("Match(%+v) = %q, nil, want it to stay unresolved", card, id)
+			}
+			co, _ := b.GetUUID(id)
+			if tt.wantSet != "" && (co == nil || co.SetCode != tt.wantSet) {
+				t.Errorf("Match(%+v) = %q, want a printing in %s", card, id, tt.wantSet)
 			}
 		})
 	}
