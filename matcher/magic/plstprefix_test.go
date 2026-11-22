@@ -7,7 +7,8 @@ import (
 )
 
 // namesSourceSet must also match a colon-subtitled set's short form and
-// the singular "Duel Deck" against the datastore's plural "Duel Decks".
+// the singular "Duel Deck" against the datastore's plural "Duel Decks", and
+// a List number spelled in full must pick that printing over its twin.
 func TestPLSTVariationNamesSourceSet(t *testing.T) {
 	realDatastore(t)
 	b := testBackend
@@ -26,6 +27,8 @@ func TestPLSTVariationNamesSourceSet(t *testing.T) {
 		// Goblin Bombardment: DDN-24 (Duel Decks: Speed vs. Cunning) vs
 		// MH2-279 (Modern Horizons 2).
 		{"Goblin Bombardment", "Duel Deck: Speed vs Cunning", "fdd675d2-f65a-5791-add1-00e0078286bf"},
+		// Aerial Responder: E01-2 vs KLD-2, both numbered 2.
+		{"Aerial Responder", "E01-2", "e5ff1a53-3b92-5969-ab98-672283f25260"},
 	} {
 		in := &matcher.InputCard{Name: tc.name, Edition: "Mystery Booster", Variation: tc.variation}
 		id, err := b.Match(in)

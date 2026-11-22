@@ -586,13 +586,14 @@ func namesSourceSet(variation, setName string) bool {
 	return found && pre == v
 }
 
-// namesOtherListSet reports whether the listing names, by its code, the set
-// of another List printing of the card.
+// namesOtherListSet reports whether the listing names another List printing
+// of the card, by its set code or by its full number.
 func namesOtherListSet(b *matcher.Backend, inCard *matcher.InputCard, card *matcher.Card) bool {
 	fields := strings.Fields(inCard.Variation)
 	for _, other := range b.MatchInSet(inCard.Name, "PLST") {
 		code, _, found := strings.Cut(other.Number, "-")
-		if found && other.Number != card.Number && slices.Contains(fields, code) {
+		if found && other.Number != card.Number &&
+			(slices.Contains(fields, code) || slices.Contains(fields, other.Number)) {
 			return true
 		}
 	}
