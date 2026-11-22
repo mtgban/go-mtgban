@@ -330,10 +330,15 @@ func TestImageProductID(t *testing.T) {
 	})
 
 	t.Run("a promo shelf naming no set takes the id's printing", func(t *testing.T) {
-		got := imageProductID(b, "Promo", "/prodotti/singles/magic/pmf/lightning-bolt-v1_367404.jpg", "Lightning Bolt", "Promo", "", false)
-		co, err := b.GetUUID(got)
-		if err != nil || co.SetCode != "PF19" || co.Number != "1" {
-			t.Errorf("imageProductID resolved to %v, want PF19 1", co)
+		for _, tt := range []struct{ shelf, image, name, want string }{
+			{"Promo", "/prodotti/singles/magic/pmf/lightning-bolt-v1_367404.jpg", "Lightning Bolt", "PF19 1"},
+			{"MagicFest Promos", "/prodotti/singles/magic/pmf/swords-to-plowshares-v1_755366.jpg", "Swords to Plowshares", "SLP 20"},
+		} {
+			got := imageProductID(b, tt.shelf, tt.image, tt.name, tt.shelf, "", false)
+			co, err := b.GetUUID(got)
+			if err != nil || co.SetCode+" "+co.Number != tt.want {
+				t.Errorf("imageProductID(%s) resolved to %v, want %s", tt.shelf, co, tt.want)
+			}
 		}
 	})
 
