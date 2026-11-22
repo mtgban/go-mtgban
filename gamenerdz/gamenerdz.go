@@ -380,9 +380,10 @@ func (gn *Gamenerdz) rescue(product GNProduct, theCard *matcher.InputCard, tcgID
 // one. A buylist product answers with its retail twin's id where that id
 // names the card the display does. Anything the id does not place is read by
 // its wording, and the retail ids are what that reading is measured against.
-// A retail id that names another card than the display does is dropped when
+// A product whose id names another card than the display does is dropped when
 // the number in the product's own sku is not that card's: the storefront
-// linked the product to another card's record, price included.
+// linked the product to another card's record, price included, and the
+// buylist twin carries that record's offer too.
 func resolveMagic(gn *Gamenerdz, mode string, product GNProduct, tcgID int64) (string, error) {
 	etched := saysEtched(product)
 	if tcgID != 0 {
@@ -394,8 +395,10 @@ func resolveMagic(gn *Gamenerdz, mode string, product GNProduct, tcgID int64) (s
 		}
 		cardID, err := gn.backend.MatchID(idStr, foil, etched)
 		named := err == nil && gn.namesCard(cardID, product.DisplayName, magicName(gn.backend, product.DisplayName))
-		if mode == modeRetail && err == nil && !named && gn.skuConflicts(cardID, product) {
-			gn.printf("%s %q: dropped, its catalog link names another card", product.ID, product.DisplayName)
+		if err == nil && !named && gn.skuConflicts(cardID, product) {
+			if mode == modeRetail {
+				gn.printf("%s %q: dropped, its catalog link names another card", product.ID, product.DisplayName)
+			}
 			return "", nil
 		}
 		if err == nil && (mode == modeRetail || named) {

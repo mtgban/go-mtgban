@@ -908,8 +908,9 @@ func TestLetteredOnly(t *testing.T) {
 
 // TestResolveProductRetailLinkedToAnotherCard pins that a retail id naming
 // another card than the display is dropped when the sku's own number is not
-// that card's, and still answers for a misspelled name whose number agrees,
-// a List sku's number being its origin set and number together.
+// that card's, its buylist twin with it, and still answers for a misspelled
+// name whose number agrees, a List sku's number being its origin set and
+// number together.
 func TestResolveProductRetailLinkedToAnotherCard(t *testing.T) {
 	b := realDatastore(t)
 	gn, err := NewScraper(b)
@@ -950,6 +951,15 @@ func TestResolveProductRetailLinkedToAnotherCard(t *testing.T) {
 		}
 		if (got != "") != tt.landed {
 			t.Errorf("%q: got %q; want landed %v", tt.display, got, tt.landed)
+		}
+		if tt.landed {
+			continue
+		}
+		// The buylist twin carries the linked record's offer, and goes too.
+		product.ProductData.TCGProductID = 0
+		got, err = gn.resolveProduct(modeBuylist, product)
+		if err != nil || got != "" {
+			t.Errorf("%q buylist: got %q (%v); want the listing dropped", tt.display, got, err)
 		}
 	}
 }
