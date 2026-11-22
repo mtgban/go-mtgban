@@ -74,6 +74,41 @@ func TestReadSellerFromJSONRoundTrip(t *testing.T) {
 	}
 }
 
+// A graded seller comes back with its flag, and each slab with its label;
+// a raw copy beside them comes back with none.
+func TestReadSellerFromJSONRoundTripsSlabs(t *testing.T) {
+	want := InventoryRecord{}
+	for _, entry := range []*InventoryEntry{
+		{Conditions: NM, Price: 400, InstanceID: "1", Slab: &Slab{Grader: "BGS", Score: 9.5, Label: "Black Label"}},
+		{Conditions: NM, Price: 90, InstanceID: "2", Slab: &Slab{}},
+		{Conditions: SP, Price: 4, InstanceID: "3"},
+	} {
+		err := want.Add("uuid-a", entry)
+		if err != nil {
+			t.Fatalf("add: %v", err)
+		}
+	}
+	info := testScraperInfo()
+	info.GradedMode = true
+
+	var buf bytes.Buffer
+	err := WriteSellerToJSON(NewSellerFromInventory(want, info), &buf)
+	if err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	seller, err := ReadSellerFromJSON(&buf)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	got := seller.Inventory()
+	if !sameInventory(got, want) {
+		t.Errorf("inventory did not round-trip:\n got %v\nwant %v", got, want)
+	}
+	if !seller.Info().GradedMode {
+		t.Errorf("GradedMode did not round-trip: %+v", seller.Info())
+	}
+}
+
 func TestReadVendorFromJSONRoundTrip(t *testing.T) {
 	want := testBuylist(t)
 	var buf bytes.Buffer
