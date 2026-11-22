@@ -389,7 +389,9 @@ func (gn *Gamenerdz) rescue(product GNProduct, theCard *matcher.InputCard, tcgID
 // A product whose id names another card than the display does is dropped when
 // the number in the product's own sku is not that card's: the storefront
 // linked the product to another card's record, price included, and the
-// buylist twin carries that record's offer too.
+// buylist twin carries that record's offer too. A display naming a List
+// reprint keeps no id outside The List: the storefront links some of them to
+// the printing they were reprinted from.
 func resolveMagic(gn *Gamenerdz, mode string, product GNProduct, tcgID int64) (string, error) {
 	etched := saysEtched(product)
 	if tcgID != 0 {
@@ -407,7 +409,9 @@ func resolveMagic(gn *Gamenerdz, mode string, product GNProduct, tcgID int64) (s
 			}
 			return "", nil
 		}
-		if err == nil && (mode == modeRetail || named) {
+		_, listed := listReprint(gn.backend, product)
+		offList := listed && !gn.onTheList(cardID)
+		if err == nil && !offList && (mode == modeRetail || named) {
 			if foil && mintedRipple(gn.backend, cardID, product.DisplayName) {
 				return "", nil
 			}
@@ -679,6 +683,12 @@ func (gn *Gamenerdz) numberConflicts(cardID, variation string) bool {
 	written, _, _ := strings.Cut(fields[0], "/")
 	wrote := numberDigits(written)
 	return wrote != "" && numberDigits(co.Number) != "" && wrote != numberDigits(co.Number)
+}
+
+// onTheList reports whether a printing is one of The List's.
+func (gn *Gamenerdz) onTheList(cardID string) bool {
+	co, err := gn.backend.GetUUID(cardID)
+	return err == nil && listCodes[co.SetCode]
 }
 
 // skuConflicts reports whether the collector number in a product's sku is not

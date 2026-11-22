@@ -236,6 +236,34 @@ func TestPreprocess(t *testing.T) {
 			name: "Impact Tremors", edition: "The List", variation: "MOC-285",
 		},
 		{
+			// A List reprint filed under the set it came from, body and all,
+			// is the List's, by the origin its tag or its body names.
+			game: matcher.GameMagic,
+			product: GNProduct{
+				DisplayName: "Zacama, Primal Calamity (PLST-RIX-174) - The List",
+				ProductData: GNProductData{Set: "rix", SetName: "Rivals of Ixalan", CatalogSet: "Rivals of Ixalan"},
+			},
+			name: "Zacama, Primal Calamity", edition: "The List", variation: "RIX-174",
+		},
+		{
+			game: matcher.GameMagic,
+			product: GNProduct{
+				DisplayName: "Crosis, the Purger (PLIST-168) - The List",
+				ProductData: GNProductData{Set: "c17", SetName: "Commander 2017", CatalogSet: "Commander 2017", Number: "168"},
+			},
+			name: "Crosis, the Purger", edition: "The List", variation: "C17-168",
+		},
+		{
+			// A playtest card filed on The List names no origin and stays
+			// on its shelf.
+			game: matcher.GameMagic,
+			product: GNProduct{
+				DisplayName: "Puresteel Angel (PLIST-567) - The List",
+				ProductData: GNProductData{Set: "plist", SetName: "The List", CatalogSet: "The List"},
+			},
+			name: "Puresteel Angel", edition: "The List", variation: "567",
+		},
+		{
 			game: matcher.GameLorcana,
 			product: GNProduct{
 				DisplayName:    "4*Town - Hottest Band of the Year (17/204) - Attack of the Vine",
