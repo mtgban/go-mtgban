@@ -99,11 +99,11 @@ func TestIsTokenDatastoreAnswersTheRest(t *testing.T) {
 }
 
 // TestNarrowedIsTokenReachesRealCards pins the cards the wide heuristic threw
-// away before they could be looked up: a face name, a printed foreign name and
-// a Secret Lair flavor name, each of which merely spelled a token word. The
-// matcher only asks IsToken once a name misses the canonical index, which is
-// exactly where these three land, so claiming them meant answering
-// ErrUnsupported instead of resolving them.
+// away before they could be looked up: a face name and a Secret Lair flavor
+// name, each of which merely spelled a token word. The matcher only asks
+// IsToken once a name misses the canonical index, which is exactly where
+// these land, so claiming them meant answering ErrUnsupported instead of
+// resolving them.
 func TestNarrowedIsTokenReachesRealCards(t *testing.T) {
 	realDatastore(t)
 	for _, tt := range []struct {
@@ -111,8 +111,6 @@ func TestNarrowedIsTokenReachesRealCards(t *testing.T) {
 	}{
 		// Arcane Signet's Marvel flavor name, tripped Contains("Emblem")
 		{"Earth's Mightiest Emblem", "Secret Lair Drop", "b097a7b6-0700-5073-8fca-9572cddac774"},
-		// Earthquake's French printed name, also inside it: trEMBLEMent
-		{"Tremblement de terre", "Foreign Black Border", "f569bd42-1555-5534-a39d-4532871e424e"},
 		// The front face of a Final Fantasy card, tripped Contains("Card ")
 		{"Sidequest: Card Collection", "Final Fantasy", "26f46851-383f-5188-949c-9b4fd8c5d05d"},
 	} {

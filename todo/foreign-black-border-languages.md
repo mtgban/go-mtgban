@@ -60,11 +60,6 @@ card once, in one language, and refuses every other on purpose.
 - `duplicateCards` finds a copy's printed name and Scryfall id by exact
   `foreignData.Language`. mtgjson says "Portuguese (Brazil)"; core's tag is
   "Portuguese" (`matcher/table.go`), so the lookup would miss.
-- The base cards show their forced language's image since #769, but the
-  name the site quotes beside the flag is still mtgjson's `flavorName`,
-  which for these sets holds its own printing's name ("Animation de mur",
-  "Poción de alabastro"). Flavor and printed names are indexed for matching,
-  so changing them needs a replay of its own.
 - Scryfall never scanned many of these printings and serves a stamped
   English placeholder instead. Measured when #769 landed: 24 cards gave up a
   real French or Spanish scan for an Italian or Japanese placeholder, and
