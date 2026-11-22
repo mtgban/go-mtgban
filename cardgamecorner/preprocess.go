@@ -305,7 +305,7 @@ func imageProductID(b *matcher.Backend, rawEdition, imagePath, cardName, edition
 	// Italian-only one on sale, so only an Italian hit is the listing's.
 	case "Rinascimento", "Revised EU FBB", "L'Oscurità", "Leggende":
 		language = "Italian"
-	case "Promo", "DCI Promo", "Judge Rewards Promos":
+	case "Promo", "DCI Promo", "Judge Rewards Promos", "MagicFest Promos":
 		imageFirst = true
 	}
 	if cardName == "" {
