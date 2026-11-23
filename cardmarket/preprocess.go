@@ -243,7 +243,8 @@ func Fallback(b *matcher.Backend, product *cm.Product) (string, string) {
 // product of expansionName - true for an empty id or an expansion this
 // check does not constrain: a WCD shelf only ever sells a WC97-WC04
 // printing, a Pro Tour 1996 shelf a PTC one, an Oversized shelf an
-// oversized one, Foreign Black Bordered an FBB one, and mtgjson's own id
+// oversized one, Foreign Black Bordered an FBB one, Foreign White Bordered an
+// FWB one, and mtgjson's own id
 // links have drifted for real products.
 // A Simplified Chinese alternate art is sold only on its own shelf, though
 // mtgjson links it to the English card's product too.
@@ -267,6 +268,8 @@ func plausiblePrinting(b *matcher.Backend, expansionName, cardID string) bool {
 		return co.IsOversized
 	case expansionName == "Foreign Black Bordered":
 		return co.SetCode == "FBB"
+	case expansionName == "Foreign White Bordered":
+		return co.SetCode == "FWB"
 	}
 	return true
 }
@@ -322,6 +325,7 @@ func Preprocess(b *matcher.Backend, cardName, number, edition string) (*matcher.
 
 	case "The Dark Italian",
 		"Foreign Black Bordered",
+		"Foreign White Bordered",
 		"Coldsnap Theme Decks",
 		"Summer Magic",
 		"Introductory Two-Player Set",
