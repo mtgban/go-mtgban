@@ -138,9 +138,10 @@ The flag describes a published seller, not a scraper's whole record. The
 marketplace parents (`abugames`, `coolstuffinc`, `hareruya`) mix raw copies
 and slabs under one `Info()`; their `InfoForScraper` sets `GradedMode` for
 the graded sub-seller, and `UnfoldScrapers` already writes each sub-seller
-with that `Info`. For a seller with `GradedMode`, every entry has a `Slab`,
-and the sub-sellers beside it carry none. `Add` cannot see `ScraperInfo`, so
-each of the four scrapers pins this in its own test.
+with that `Info`. A slab and a raw copy are never published in one seller:
+every entry of a seller with `GradedMode` has a `Slab`, and no entry of any
+other seller does. `Add` cannot see `ScraperInfo`, so each of the four
+scrapers pins this in its own test.
 
 A graded store is named for its store, the way a sealed one already is:
 Card Kingdom's sealed scraper is "Card Kingdom" beside the singles one, and
@@ -187,11 +188,12 @@ score.
 
 ### 5. Slabs leave the price comparisons
 
-This lands in its own PRs, apart from 1-4. A slab and a raw
-copy of one card are not the same goods, so a spread between them is never
-real. In the library, `Arbit` and `Mismatch` skip an inventory entry with a
-`Slab`, on both the copy and the reference side; bantool and any caller get
-that without a per-page branch. On the site one predicate,
+This lands in its own PRs, after 1-4. A slab and a raw copy of one card are
+not the same goods, so a spread between them is never real. The callers leave
+graded sellers out; `Arbit` and `Mismatch` compare the sellers they are given
+and do not look at `Slab`. No published seller mixes the two (decision 3), so
+a caller reads `GradedMode` on each seller, with marketplace parents unfolded,
+and never `Slab` on each entry. On the site one predicate,
 `rawSingles(info) = !info.SealedMode && !info.GradedMode`, picks the stores
 for:
 
@@ -219,6 +221,7 @@ for:
 | No store flag; the site looks for entries with a `Slab` | Nothing new on `ScraperInfo` | A store's category would flip on a day it lists nothing, and the site needs it at load time for menus and arbit's store lists |
 | A separate graded record type and interface | Full freedom of shape | A slab is still a single card on the same uuid; new readers, writers and unfold paths for four stores |
 | Keep the library; add the four shorthands to the site's arbit and search block lists | Fixes the comparisons today, no schema change | Leaves the label lost, so there is nothing to build the Graded page from; and a list in config drifts from the stores |
+| `Arbit` and `Mismatch` skip an entry with a `Slab` | Every caller is covered at once | Puts a choice of sellers inside the reports, entry by entry, when the seller's flag already answers it |
 
 ## Consequences
 
@@ -266,7 +269,7 @@ lands beside it.
       in singles search.
 - [ ] go-mtgban, after the site labels them: graded stores named for their
       store.
-- [ ] Decision 5: `Arbit`/`Mismatch` skip slabs; the site's `rawSingles`
-      predicate, the API included.
+- [ ] Decision 5, at a later stage: mtgban-website's `rawSingles` predicate,
+      the API included.
 - [ ] Docs: `SPECIFICATIONS.md` and `coolstuffinc/README.md` name all four
       graded sellers.
