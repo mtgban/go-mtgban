@@ -38,6 +38,10 @@ type priceSnapshot struct {
 const (
 	banAPIURL = "https://www.mtgban.com/api/v2/all%s.json?sig=%s"
 
+	// tcgItemLowStore is TCGplayer's lowest listing per sku, its item price
+	// without the shipping.
+	tcgItemLowStore = "TCGItemLow"
+
 	// BulkThreshold is the price under which a card counts as bulk and stops
 	// counting toward a product that draws it at random. A product holding it
 	// for certain, a deck or a fixed drop, still counts it.
@@ -60,8 +64,21 @@ func readPrice(entries []v2Entry) float64 {
 	return 0
 }
 
+// cheaperGrade is the cheaper of a store's near mint and lightly played
+// prices, how TCGplayer's own product Low reads them.
+func cheaperGrade(entries []v2Entry) float64 {
+	var price float64
+	for _, e := range entries {
+		if (e.Condition == "NM" || e.Condition == "SP") && e.Price > 0 && (price == 0 || e.Price < price) {
+			price = e.Price
+		}
+	}
+	return price
+}
+
 // readSide reads one side of the response, each card's prices from the
-// finish it is sold in.
+// finish it is sold in: TCGItemLow at the cheaper of its two best grades,
+// every other store as readPrice reads it.
 func readSide(b *matcher.Backend, side map[string]map[string]map[string][]v2Entry) map[string]map[string]float64 {
 	out := make(map[string]map[string]float64, len(side))
 	for uuid, finishes := range side {
@@ -71,6 +88,9 @@ func readSide(b *matcher.Backend, side map[string]map[string]map[string][]v2Entr
 		}
 		for store, entries := range finishes[co.Finish] {
 			price := readPrice(entries)
+			if store == tcgItemLowStore {
+				price = cheaperGrade(entries)
+			}
 			if price == 0 {
 				continue
 			}
@@ -194,63 +214,77 @@ func loadPrices(ctx context.Context, b *matcher.Backend, sig, selected string) (
 
 	// Adjust Direct/CT0 estimates and drop what they leave at nothing in a
 	// single pass over the catalog. Bulk stays; simulate applies the floor.
-	uuids := b.GetUUIDs()
-	for _, uuid := range uuids {
-		// Price what Cardmarket never polled.
-		mkm.fill(b, &response, uuid)
-
-		tcgLow := response.getRetail(b, uuid, "TCGLow")
-		tcgMarket := response.getRetail(b, uuid, "TCGMarket")
-		directNet := response.getBuylist(b, uuid, "TCGDirectNet")
-
-		if directNet == 0 {
-			// TCG Direct (net) is missing: estimate it from Market, falling back
-			// to Low. Skip entirely if neither is available.
-			if tcgMarket != 0 || tcgLow != 0 {
-				// Use Market as base estimate, or Low as fallback
-				directNet = tcgMarket
-				if directNet == 0 {
-					directNet = tcgLow
-				}
-
-				// Adjust estimate for fees
-				directNet = tcgplayer.DirectPriceAfterFees(directNet)
-
-				response.setBuylist(b, uuid, "TCGDirectNet", directNet)
-			}
-		} else if directNet/2 > tcgMarket {
-			// Direct exists but looks unreliable: cap it at twice Low, or drop it.
-			// (else-if: an estimate from the branch above must not be re-judged here)
-			if tcgLow == 0 || tcgLow*2 > directNet*0.9 {
-				delete(response.Buylist[uuid], "TCGDirectNet")
-			} else {
-				directNet = tcgplayer.DirectPriceAfterFees(tcgLow * 2)
-				response.setBuylist(b, uuid, "TCGDirectNet", directNet)
-			}
-		}
-
-		// Create a custom price
-		direct := response.getRetail(b, uuid, "TCGDirect")
-		directSyp := tcgplayer.DirectSYPPriceAfterFees(direct)
-		response.setBuylist(b, uuid, "TCGDirectSYPNet", directSyp)
-
-		// CardTrader Zero: subtract its flat fee.
-		ct0 := response.getRetail(b, uuid, "CT0")
-		if ct0 > 0 {
-			response.setRetail(b, uuid, "CT0", ct0-getCT0fees(ct0))
-		}
-
-		// Drop the prices left at nothing, and the broken ones.
-		for _, category := range []map[string]map[string]float64{response.Retail, response.Buylist} {
-			for store := range category[uuid] {
-				if getPrice(b, uuid, category[uuid][store]) <= 0 {
-					delete(category[uuid], store)
-				}
-			}
-		}
+	for _, uuid := range b.GetUUIDs() {
+		response.adjust(b, mkm, uuid)
 	}
 
 	return &response, nil
+}
+
+// adjust settles one card's prices after the fetch: the estimates and the
+// fees taken off, then the drop of whatever they leave at nothing.
+func (r *priceSnapshot) adjust(b *matcher.Backend, mkm *mkmCalibration, uuid string) {
+	// Price what Cardmarket never polled.
+	mkm.fill(b, r, uuid)
+
+	tcgLow := r.getRetail(b, uuid, "TCGLow")
+	tcgMarket := r.getRetail(b, uuid, "TCGMarket")
+	directNet := r.getBuylist(b, uuid, "TCGDirectNet")
+
+	if directNet == 0 {
+		// TCG Direct (net) is missing: estimate it from Market, falling back
+		// to Low. Skip entirely if neither is available.
+		if tcgMarket != 0 || tcgLow != 0 {
+			// Use Market as base estimate, or Low as fallback
+			directNet = tcgMarket
+			if directNet == 0 {
+				directNet = tcgLow
+			}
+
+			// Adjust estimate for fees
+			directNet = tcgplayer.DirectPriceAfterFees(directNet)
+
+			r.setBuylist(b, uuid, "TCGDirectNet", directNet)
+		}
+	} else if directNet/2 > tcgMarket {
+		// Direct exists but looks unreliable: cap it at twice Low, or drop it.
+		// (else-if: an estimate from the branch above must not be re-judged here)
+		if tcgLow == 0 || tcgLow*2 > directNet*0.9 {
+			delete(r.Buylist[uuid], "TCGDirectNet")
+		} else {
+			directNet = tcgplayer.DirectPriceAfterFees(tcgLow * 2)
+			r.setBuylist(b, uuid, "TCGDirectNet", directNet)
+		}
+	}
+
+	// TCG Low EV reads the lower of the product Low and the item low.
+	low := r.getRetail(b, uuid, tcgItemLowStore)
+	if low == 0 || (tcgLow != 0 && tcgLow < low) {
+		low = tcgLow
+	}
+	if low != 0 {
+		r.setRetail(b, uuid, tcgItemLowStore, low)
+	}
+
+	// Create a custom price
+	direct := r.getRetail(b, uuid, "TCGDirect")
+	directSyp := tcgplayer.DirectSYPPriceAfterFees(direct)
+	r.setBuylist(b, uuid, "TCGDirectSYPNet", directSyp)
+
+	// CardTrader Zero: subtract its flat fee.
+	ct0 := r.getRetail(b, uuid, "CT0")
+	if ct0 > 0 {
+		r.setRetail(b, uuid, "CT0", ct0-getCT0fees(ct0))
+	}
+
+	// Drop the prices left at nothing, and the broken ones.
+	for _, category := range []map[string]map[string]float64{r.Retail, r.Buylist} {
+		for store := range category[uuid] {
+			if getPrice(b, uuid, category[uuid][store]) <= 0 {
+				delete(category[uuid], store)
+			}
+		}
+	}
 }
 
 // maxStorePrice returns the highest available price for a card across the given

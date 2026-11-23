@@ -95,12 +95,12 @@ var evParameters = []evConfig{
 		TargetsBuylist: true,
 	},
 
-	// TCG Low
+	// TCG Low, read from the lowest item price of each sku
 	{
 		Name:         "TCG Low EV",
 		Shorthand:    "TCGLowEV",
 		StatsFunc:    passthroughFirst,
-		SourceStores: []string{"TCGLow"},
+		SourceStores: []string{tcgItemLowStore},
 	},
 	{
 		Name:      "TCG Low Sim",
@@ -108,7 +108,7 @@ var evParameters = []evConfig{
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
 		},
-		SourceStores: []string{"TCGLow"},
+		SourceStores: []string{tcgItemLowStore},
 		Simulation:   true,
 	},
 
