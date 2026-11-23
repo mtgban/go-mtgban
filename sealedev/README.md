@@ -75,15 +75,24 @@ catalog, and that pass does more than it looks like:
   retail or the highest buylist offer.
 - **A price over `MaxSinglePrice` ($10,000) is discarded as broken**, except
   in LEA, LEB, 3ED, ARN and LEG, where five figures is a real price.
-- **Anything under `BulkThreshold` ($0.50) is pruned**, from every store, and
-  pruned *after* the adjustments below so that an estimate is held to the
-  same floor as a quote.
+- **A price the adjustments below leave at nothing is dropped**, so a card
+  CardTrader Zero's fee eats entirely counts as unpriced there rather than
+  at its price before the fee.
 
-Pruning is what stops a booster's worth of $0.03 commons from accumulating
-into a meaningful-looking EV, at the cost of understating a product genuinely
-made of bulk. That trade is uniform across stores on purpose: the EV columns
-are meant to be compared to each other, and a source with its own threshold
-would read as cheaper for a reason that has nothing to do with its prices.
+Bulk is kept in the snapshot. **A card under `BulkThreshold` ($0.50) counts
+for nothing in a product whose contents are drawn at random**, and at its
+price in one whose contents are fixed, both decided per product in
+`simulate` by `sealed.IsRandom`. The floor is what stops a booster's worth of
+$0.03 commons from accumulating into a meaningful-looking EV. A deck holds
+its commons for certain, so a product made of them, such as the two hundred
+cards of a Foundations Beginner Box, is worth what they sell for. A random
+product holding a fixed one, a bundle with a deck in it, floors the deck's
+cards too: the rule is the product's, not the card's.
+
+The floor is applied after every estimate and the same for every store on
+purpose: the EV columns are meant to be compared to each other, and a source
+with its own threshold would read as cheaper for a reason that has nothing to
+do with its prices.
 
 ## Two of the sources are estimated, not read
 
