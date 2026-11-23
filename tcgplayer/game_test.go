@@ -151,6 +151,14 @@ func TestGameSKUEntry(t *testing.T) {
 			},
 		},
 		{
+			desc:   "the item price of the lowest listing, without its shipping",
+			result: tcgplayer.SKUPriceSet{SKUID: 8560578, LowPrice: 27.5, LowestShipping: 1.5, LowestListingPrice: 29},
+			want: []string{
+				"Gundam ST01-001 foil: TCGplayer NM 29.00 https://www.tcgplayer.com/product/616528?Condition=Near+Mint&Language=English&Printing=Holofoil&direct=false",
+				"Gundam ST01-001 foil: TCGplayer Item Low NM 27.50 https://www.tcgplayer.com/product/616528?Condition=Near+Mint&Language=English&Printing=Holofoil&direct=false",
+			},
+		},
+		{
 			desc:   "lightly played reads as SP",
 			result: tcgplayer.SKUPriceSet{SKUID: 8560579, LowestListingPrice: 33.98, MarketPrice: 33.74},
 			want: []string{
@@ -270,8 +278,8 @@ func TestGameMarketNames(t *testing.T) {
 		metadata []string
 		vendors  []string
 	}{
-		{false, false, []string{"TCGPlayer", "TCGTrends"}, []string{"TCGTrends"}, nil},
-		{false, true, []string{"TCGPlayer", "TCGDirect", "TCGTrends"}, []string{"TCGTrends"}, []string{"TCGDirectNet"}},
+		{false, false, []string{"TCGPlayer", "TCGTrends", "TCGItemLow"}, []string{"TCGTrends"}, nil},
+		{false, true, []string{"TCGPlayer", "TCGDirect", "TCGTrends", "TCGItemLow"}, []string{"TCGTrends"}, []string{"TCGDirectNet"}},
 		{true, false, []string{"TCGSealed"}, nil, nil},
 		{true, true, []string{"TCGSealed"}, nil, nil},
 	} {

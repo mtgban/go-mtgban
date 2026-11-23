@@ -229,8 +229,8 @@ func (tcg *TCGGame) reportSKU(err error, product *tcgplayer.Product, sku tcgplay
 }
 
 // skuEntries are the inventory entries a sku makes: its lowest listing, and
-// for singles its Direct listing and market price, each where TCGplayer
-// quotes one.
+// for singles its Direct listing, market price and the lowest listing's item
+// price, each where TCGplayer quotes one.
 func (tcg *TCGGame) skuEntries(result tcgplayer.SKUPriceSet, sku resolvedSKU) []genericChan {
 	if tcg.sealed {
 		if result.LowestListingPrice == 0 {
@@ -292,6 +292,9 @@ func (tcg *TCGGame) skuEntries(result tcgplayer.SKUPriceSet, sku resolvedSKU) []
 	}
 	if result.MarketPrice > 0 {
 		out = append(out, entry(trendsName, result.MarketPrice, false))
+	}
+	if result.LowPrice > 0 {
+		out = append(out, entry(gameItemLowName, result.LowPrice, false))
 	}
 	return out
 }
@@ -384,12 +387,14 @@ func (tcg *TCGGame) direct() bool {
 }
 
 // TCGGame's sub-scrapers: the lowest listing of a sku, its Direct listing
-// and what that nets the seller after fees, and the market price TCGplayer
-// quotes for it.
+// and what that nets the seller after fees, the market price TCGplayer
+// quotes for it, and the item price of its lowest listing, without the
+// shipping.
 const (
 	gameListingName   = "TCGplayer"
 	gameDirectName    = "TCG Direct"
 	gameDirectNetName = "TCG Direct (net)"
+	gameItemLowName   = "TCGplayer Item Low"
 )
 
 // MarketNames names the sub-sellers this market splits into, the lowest
@@ -399,9 +404,9 @@ func (tcg *TCGGame) MarketNames() []string {
 		return []string{gameListingName}
 	}
 	if tcg.direct() {
-		return []string{gameListingName, gameDirectName, trendsName}
+		return []string{gameListingName, gameDirectName, trendsName, gameItemLowName}
 	}
-	return []string{gameListingName, trendsName}
+	return []string{gameListingName, trendsName, gameItemLowName}
 }
 
 // TraderNames names the sub-vendors this trader splits into: Direct's net,
